@@ -23,12 +23,11 @@ namespace ts {
     //!
     //! @tparam INT_T The underlying integer type.
     //!
-    template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value, int>::type = 0>
+    template <typename INT_T> requires std::integral<INT_T>
     class Integer: public AbstractNumber
     {
     private:
         INT_T _value = 0;
-
     public:
         //!
         //! The underlying signed integer type.
@@ -105,7 +104,7 @@ namespace ts {
         //! @param [in] x An integer of type @a INT2.
         //! @return True if this Integer number generates an overflow when multiplied by @a x.
         //!
-        template<typename INT2, typename std::enable_if<std::is_integral<INT2>::value, int>::type = 0>
+        template<typename INT2> requires std::integral<INT2>
         bool mulOverflow(INT2 x) const { return !bound_check<int_t>(x) || mul_overflow(_value, int_t(x)); }
 
         //!
@@ -144,43 +143,43 @@ namespace ts {
         bool operator<(const Integer& x) const { return _value < x._value; }
         bool operator>(const Integer& x) const { return _value > x._value; }
 
-        template<typename INT2, typename std::enable_if<std::is_integral<INT2>::value, int>::type = 0>
+        template<typename INT2> requires std::integral<INT2>
         Integer operator+(INT2 x) const { return Integer(_value + int_t(x)); }
 
-        template<typename INT2, typename std::enable_if<std::is_integral<INT2>::value, int>::type = 0>
+        template<typename INT2> requires std::integral<INT2>
         Integer operator-(INT2 x) const { return Integer(_value - int_t(x)); }
 
-        template<typename INT2, typename std::enable_if<std::is_integral<INT2>::value, int>::type = 0>
+        template<typename INT2> requires std::integral<INT2>
         Integer operator*(INT2 x) const { return Integer(_value * int_t(x)); }
 
-        template<typename INT2, typename std::enable_if<std::is_integral<INT2>::value, int>::type = 0>
+        template<typename INT2> requires std::integral<INT2>
         Integer operator/(INT2 x) const { return Integer(_value / int_t(x)); }
 
-        template<typename INT2, typename std::enable_if<std::is_integral<INT2>::value, int>::type = 0>
+        template<typename INT2> requires std::integral<INT2>
         Integer& operator+=(INT2 x) { _value += int_t(x); return *this; }
 
-        template<typename INT2, typename std::enable_if<std::is_integral<INT2>::value, int>::type = 0>
+        template<typename INT2> requires std::integral<INT2>
         Integer& operator-=(INT2 x) { _value -= int_t(x); return *this; }
 
-        template<typename INT2, typename std::enable_if<std::is_integral<INT2>::value, int>::type = 0>
+        template<typename INT2> requires std::integral<INT2>
         Integer& operator*=(INT2 x) { _value *= int_t(x); return *this; }
 
-        template<typename INT2, typename std::enable_if<std::is_integral<INT2>::value, int>::type = 0>
+        template<typename INT2> requires std::integral<INT2>
         Integer& operator/=(INT2 x) { _value /= int_t(x); return *this; }
 
-        template<typename INT2, typename std::enable_if<std::is_integral<INT2>::value, int>::type = 0>
+        template<typename INT2> requires std::integral<INT2>
         bool operator==(INT2 x) const { return _value == int_t(x); }
 
-        template<typename INT2, typename std::enable_if<std::is_integral<INT2>::value, int>::type = 0>
+        template<typename INT2> requires std::integral<INT2>
         bool operator<=(INT2 x) const { return _value <= int_t(x); }
 
-        template<typename INT2, typename std::enable_if<std::is_integral<INT2>::value, int>::type = 0>
+        template<typename INT2> requires std::integral<INT2>
         bool operator>=(INT2 x) const { return _value >= int_t(x); }
 
-        template<typename INT2, typename std::enable_if<std::is_integral<INT2>::value, int>::type = 0>
+        template<typename INT2> requires std::integral<INT2>
         bool operator<(INT2 x) const { return _value < int_t(x); }
 
-        template<typename INT2, typename std::enable_if<std::is_integral<INT2>::value, int>::type = 0>
+        template<typename INT2> requires std::integral<INT2>
         bool operator>(INT2 x) const { return _value > int_t(x); }
 
         //! @endcond
@@ -224,41 +223,41 @@ inline bool operator>(INT1 x1, const ts::Integer<INT2>& x2) { return x2 < x1; }
 // Template definitions.
 //----------------------------------------------------------------------------
 
-template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value, int>::type N>
-const ts::Integer<INT_T,N> ts::Integer<INT_T,N>::MIN(std::numeric_limits<INT_T>::min());
+template <typename INT_T> requires std::integral<INT_T>
+const ts::Integer<INT_T> ts::Integer<INT_T>::MIN(std::numeric_limits<INT_T>::min());
 
-template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value, int>::type N>
-const ts::Integer<INT_T,N> ts::Integer<INT_T,N>::MAX(std::numeric_limits<INT_T>::max());
+template <typename INT_T> requires std::integral<INT_T>
+const ts::Integer<INT_T> ts::Integer<INT_T>::MAX(std::numeric_limits<INT_T>::max());
 
 // Virtual numeric conversions.
-template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value, int>::type N>
-int64_t ts::Integer<INT_T,N>::toInt64() const
+template <typename INT_T> requires std::integral<INT_T>
+int64_t ts::Integer<INT_T>::toInt64() const
 {
     return bounded_cast<int64_t>(_value);
 }
 
-template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value, int>::type N>
-double ts::Integer<INT_T,N>::toDouble() const
+template <typename INT_T> requires std::integral<INT_T>
+double ts::Integer<INT_T>::toDouble() const
 {
     return double(_value);
 }
 
-template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value, int>::type N>
-bool ts::Integer<INT_T,N>::inRange(int64_t min, int64_t max) const
+template <typename INT_T> requires std::integral<INT_T>
+bool ts::Integer<INT_T>::inRange(int64_t min, int64_t max) const
 {
     const int64_t r = bounded_cast<int64_t>(_value);
     return r >= min && r <= max;
 }
 
-template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value, int>::type N>
-ts::UString ts::Integer<INT_T,N>::description() const
+template <typename INT_T> requires std::integral<INT_T>
+ts::UString ts::Integer<INT_T>::description() const
 {
     return UString::Format(u"%d-bit %s integer value", 8 * sizeof(int_t), SignedDescription<int_t>());
 }
 
 // Convert the number to a string object.
-template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value, int>::type N>
-ts::UString ts::Integer<INT_T,N>::toString(size_t min_width,
+template <typename INT_T> requires std::integral<INT_T>
+ts::UString ts::Integer<INT_T>::toString(size_t min_width,
                                             bool right_justified,
                                             UChar separator,
                                             bool force_sign,
@@ -271,8 +270,8 @@ ts::UString ts::Integer<INT_T,N>::toString(size_t min_width,
 }
 
 // Parse a string and interpret it as a number.
-template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value, int>::type N>
-bool ts::Integer<INT_T,N>::fromString(const UString& str, UChar separator, UChar decimal_dot)
+template <typename INT_T> requires std::integral<INT_T>
+bool ts::Integer<INT_T>::fromString(const UString& str, UChar separator, UChar decimal_dot)
 {
     return str.toInteger(_value, separator == CHAR_NULL ? UString() : UString(1, separator));
 }

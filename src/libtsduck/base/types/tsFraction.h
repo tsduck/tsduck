@@ -34,7 +34,7 @@ namespace ts {
     //!
     //! @tparam INT_T The integer type for numerator and denominator.
     //!
-    template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value, int>::type = 0>
+    template <typename INT_T> requires std::integral<INT_T>
     class Fraction: public AbstractNumber
     {
     private:
@@ -76,7 +76,7 @@ namespace ts {
         //! @param [in] numerator Initial numerator value.
         //! @throw std::overflow_error When @a numerator is out of range.
         //!
-        template<typename INT1, typename std::enable_if<std::is_integral<INT1>::value, int>::type = 0>
+        template <typename INT1> requires std::integral<INT1>
         Fraction(INT1 numerator);
 
         //!
@@ -88,7 +88,7 @@ namespace ts {
         //! @throw std::underflow_error When @a denominator is zero.
         //! @throw std::overflow_error When @a numerator or @a denominator are out of range.
         //!
-        template<typename INT1, typename INT2, typename std::enable_if<std::is_integral<INT1>::value && std::is_integral<INT2>::value, int>::type = 0>
+        template<typename INT1, typename INT2> requires std::integral<INT1> && std::integral<INT2>
         Fraction(INT1 numerator, INT2 denominator);
 
         // Implementation of interfaces.
@@ -160,12 +160,12 @@ namespace ts {
 
         //!
         //! Check if this Fraction generates an overflow when multiplied by an integer.
-        //! @tparam INT2 Another integer type.
+        //! @tparam INT1 Another integer type.
         //! @param [in] x An integer of type @a INT2.
         //! @return True if this Fraction generates an overflow when multiplied by @a x.
         //!
-        template<typename INT2, typename std::enable_if<std::is_integral<INT2>::value, int>::type = 0>
-        bool mulOverflow(INT2 x) const;
+        template<typename INT1> requires std::integral<INT1>
+        bool mulOverflow(INT1 x) const;
 
         //!
         //! Check if this Fraction generates an overflow when multiplied by another Fraction.
@@ -201,43 +201,43 @@ namespace ts {
         bool operator<(const Fraction& x) const;
         bool operator>(const Fraction& x) const;
 
-        template<typename INT1, typename std::enable_if<std::is_integral<INT1>::value, int>::type = 0>
+        template<typename INT1> requires std::integral<INT1>
         Fraction operator+(INT1 x) const;
 
-        template<typename INT1, typename std::enable_if<std::is_integral<INT1>::value, int>::type = 0>
+        template<typename INT1> requires std::integral<INT1>
         Fraction operator-(INT1 x) const;
 
-        template<typename INT1, typename std::enable_if<std::is_integral<INT1>::value, int>::type = 0>
+        template<typename INT1> requires std::integral<INT1>
         Fraction operator*(INT1 x) const;
 
-        template<typename INT1, typename std::enable_if<std::is_integral<INT1>::value, int>::type = 0>
+        template<typename INT1> requires std::integral<INT1>
         Fraction operator/(INT1 x) const;
 
-        template<typename INT1, typename std::enable_if<std::is_integral<INT1>::value, int>::type = 0>
+        template<typename INT1> requires std::integral<INT1>
         Fraction& operator+=(INT1 x) { return *this = *this + x; }
 
-        template<typename INT1, typename std::enable_if<std::is_integral<INT1>::value, int>::type = 0>
+        template<typename INT1> requires std::integral<INT1>
         Fraction& operator-=(INT1 x) { return *this = *this - x; }
 
-        template<typename INT1, typename std::enable_if<std::is_integral<INT1>::value, int>::type = 0>
+        template<typename INT1> requires std::integral<INT1>
         Fraction& operator*=(INT1 x) { return *this = *this * x; }
 
-        template<typename INT1, typename std::enable_if<std::is_integral<INT1>::value, int>::type = 0>
+        template<typename INT1> requires std::integral<INT1>
         Fraction& operator/=(INT1 x) { return *this = *this / x; }
 
-        template<typename INT1, typename std::enable_if<std::is_integral<INT1>::value, int>::type = 0>
+        template<typename INT1> requires std::integral<INT1>
         bool operator==(INT1 x) const { return _den == 1 && bound_check<int_t>(x) && _num == int_t(x); }
 
-        template<typename INT1, typename std::enable_if<std::is_integral<INT1>::value, int>::type = 0>
+        template<typename INT1> requires std::integral<INT1>
         bool operator<=(INT1 x) const;
 
-        template<typename INT1, typename std::enable_if<std::is_integral<INT1>::value, int>::type = 0>
+        template<typename INT1> requires std::integral<INT1>
         bool operator>=(INT1 x) const;
 
-        template<typename INT1, typename std::enable_if<std::is_integral<INT1>::value, int>::type = 0>
+        template<typename INT1> requires std::integral<INT1>
         bool operator<(INT1 x) const;
 
-        template<typename INT1, typename std::enable_if<std::is_integral<INT1>::value, int>::type = 0>
+        template<typename INT1> requires std::integral<INT1>
         bool operator>(INT1 x) const;
 
         //! @endcond
@@ -247,49 +247,31 @@ namespace ts {
 // The operators are not extensively documented with doxygen (obvious, verbose and redundant).
 #if !defined(DOXYGEN)
 
-template <typename INT1, typename INT2,
-          typename std::enable_if<std::is_integral<INT1>::value, int>::type = 0,
-          typename std::enable_if<std::is_integral<INT2>::value, int>::type = 0>
+template<typename INT1, typename INT2> requires std::integral<INT1> && std::integral<INT2>
 inline ts::Fraction<INT2> operator+(INT1 x1, const ts::Fraction<INT2>& x2) { return x2 + x1; }
 
-template <typename INT1, typename INT2,
-          typename std::enable_if<std::is_integral<INT1>::value, int>::type = 0,
-          typename std::enable_if<std::is_integral<INT2>::value, int>::type = 0>
+template<typename INT1, typename INT2> requires std::integral<INT1> && std::integral<INT2>
 inline ts::Fraction<INT2> operator-(INT1 x1, const ts::Fraction<INT2>& x2) { return -(x2 - x1); }
 
-template <typename INT1, typename INT2,
-          typename std::enable_if<std::is_integral<INT1>::value, int>::type = 0,
-          typename std::enable_if<std::is_integral<INT2>::value, int>::type = 0>
+template<typename INT1, typename INT2> requires std::integral<INT1> && std::integral<INT2>
 inline ts::Fraction<INT2> operator*(INT1 x1, const ts::Fraction<INT2>& x2) { return x2 * x1; }
 
-template <typename INT1, typename INT2,
-          typename std::enable_if<std::is_integral<INT1>::value, int>::type = 0,
-          typename std::enable_if<std::is_integral<INT2>::value, int>::type = 0>
+template<typename INT1, typename INT2> requires std::integral<INT1> && std::integral<INT2>
 inline ts::Fraction<INT2> operator/(INT1 x1, const ts::Fraction<INT2>& x2) { return ts::Fraction<INT2>(x1) / x2; }
 
-template <typename INT1, typename INT2,
-          typename std::enable_if<std::is_integral<INT1>::value, int>::type = 0,
-          typename std::enable_if<std::is_integral<INT2>::value, int>::type = 0>
+template<typename INT1, typename INT2> requires std::integral<INT1> && std::integral<INT2>
 inline bool operator==(INT1 x1, const ts::Fraction<INT2>& x2) { return x2.operator==(x1); }
 
-template <typename INT1, typename INT2,
-          typename std::enable_if<std::is_integral<INT1>::value, int>::type = 0,
-          typename std::enable_if<std::is_integral<INT2>::value, int>::type = 0>
+template<typename INT1, typename INT2> requires std::integral<INT1> && std::integral<INT2>
 inline bool operator<=(INT1 x1, const ts::Fraction<INT2>& x2) { return x2 >= x1; }
 
-template <typename INT1, typename INT2,
-          typename std::enable_if<std::is_integral<INT1>::value, int>::type = 0,
-          typename std::enable_if<std::is_integral<INT2>::value, int>::type = 0>
+template<typename INT1, typename INT2> requires std::integral<INT1> && std::integral<INT2>
 inline bool operator>=(INT1 x1, const ts::Fraction<INT2>& x2) { return x2 <= x1; }
 
-template <typename INT1, typename INT2,
-          typename std::enable_if<std::is_integral<INT1>::value, int>::type = 0,
-          typename std::enable_if<std::is_integral<INT2>::value, int>::type = 0>
+template<typename INT1, typename INT2> requires std::integral<INT1> && std::integral<INT2>
 inline bool operator<(INT1 x1, const ts::Fraction<INT2>& x2) { return x2 > x1; }
 
-template <typename INT1, typename INT2,
-          typename std::enable_if<std::is_integral<INT1>::value, int>::type = 0,
-          typename std::enable_if<std::is_integral<INT2>::value, int>::type = 0>
+template<typename INT1, typename INT2> requires std::integral<INT1> && std::integral<INT2>
 inline bool operator>(INT1 x1, const ts::Fraction<INT2>& x2) { return x2 < x1; }
 #endif // DOXYGEN
 
@@ -300,15 +282,15 @@ inline bool operator>(INT1 x1, const ts::Fraction<INT2>& x2) { return x2 < x1; }
 
 #if !defined(DOXYGEN)
 
-template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value, int>::type N>
-const ts::Fraction<INT_T,N> ts::Fraction<INT_T,N>::MIN(std::numeric_limits<INT_T>::min(), 1, true);
+template <typename INT_T> requires std::integral<INT_T>
+const ts::Fraction<INT_T> ts::Fraction<INT_T>::MIN(std::numeric_limits<INT_T>::min(), 1, true);
 
-template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value, int>::type N>
-const ts::Fraction<INT_T,N> ts::Fraction<INT_T,N>::MAX(std::numeric_limits<INT_T>::max(), 1, true);
+template <typename INT_T> requires std::integral<INT_T>
+const ts::Fraction<INT_T> ts::Fraction<INT_T>::MAX(std::numeric_limits<INT_T>::max(), 1, true);
 
 // Reduce a fraction. Internal operation only. Try to optimize usual cases.
-template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value, int>::type N>
-void ts::Fraction<INT_T,N>::reduce()
+template <typename INT_T> requires std::integral<INT_T>
+void ts::Fraction<INT_T>::reduce()
 {
     if (_num == 0) {
         _den = 1;
@@ -324,17 +306,17 @@ void ts::Fraction<INT_T,N>::reduce()
 }
 
 // Fraction constructors from integers. Try to optimize usual cases.
-template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value, int>::type N>
-template <typename INT1, typename std::enable_if<std::is_integral<INT1>::value, int>::type M>
-ts::Fraction<INT_T,N>::Fraction(INT1 numerator) :
+template <typename INT_T> requires std::integral<INT_T>
+template <typename INT1> requires std::integral<INT1>
+ts::Fraction<INT_T>::Fraction(INT1 numerator) :
     _num(int_t(numerator))
 {
     debug_throw_bound_check<int_t>(numerator);
 }
 
-template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value, int>::type N>
-template <typename INT1, typename INT2, typename std::enable_if<std::is_integral<INT1>::value && std::is_integral<INT2>::value, int>::type M>
-ts::Fraction<INT_T,N>::Fraction(INT1 numerator, INT2 denominator)
+template <typename INT_T> requires std::integral<INT_T>
+template<typename INT1, typename INT2> requires std::integral<INT1> && std::integral<INT2>
+ts::Fraction<INT_T>::Fraction(INT1 numerator, INT2 denominator)
 {
     debug_throw_div_zero(denominator);
     if (numerator != 0) {
@@ -352,34 +334,34 @@ ts::Fraction<INT_T,N>::Fraction(INT1 numerator, INT2 denominator)
 }
 
 // Virtual numeric conversions.
-template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value, int>::type N>
-int64_t ts::Fraction<INT_T,N>::toInt64() const
+template <typename INT_T> requires std::integral<INT_T>
+int64_t ts::Fraction<INT_T>::toInt64() const
 {
     return bounded_cast<int64_t>(_num / _den);
 }
 
-template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value, int>::type N>
-double ts::Fraction<INT_T,N>::toDouble() const
+template <typename INT_T> requires std::integral<INT_T>
+double ts::Fraction<INT_T>::toDouble() const
 {
     return double(_num) / double(_den);
 }
 
-template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value, int>::type N>
-bool ts::Fraction<INT_T,N>::inRange(int64_t min, int64_t max) const
+template <typename INT_T> requires std::integral<INT_T>
+bool ts::Fraction<INT_T>::inRange(int64_t min, int64_t max) const
 {
     const int64_t r = bounded_cast<int64_t>(_num / _den);
     return r >= min && r <= max;
 }
 
-template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value, int>::type N>
-ts::UString ts::Fraction<INT_T,N>::description() const
+template <typename INT_T> requires std::integral<INT_T>
+ts::UString ts::Fraction<INT_T>::description() const
 {
     return UString::Format(u"fraction of two %d-bit integers", 8 * sizeof(int_t));
 }
 
 // Converts to a proper fraction (a fraction that is less than 1).
-template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value, int>::type N>
-typename ts::Fraction<INT_T,N>::int_t ts::Fraction<INT_T,N>::proper()
+template <typename INT_T> requires std::integral<INT_T>
+typename ts::Fraction<INT_T>::int_t ts::Fraction<INT_T>::proper()
 {
     const int_t result = _num / _den;
     _num = _num % _den;
@@ -387,15 +369,15 @@ typename ts::Fraction<INT_T,N>::int_t ts::Fraction<INT_T,N>::proper()
 }
 
 // Basic arithmetic operations.
-template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value, int>::type N>
-typename ts::Fraction<INT_T,N> ts::Fraction<INT_T,N>::operator-() const
+template <typename INT_T> requires std::integral<INT_T>
+typename ts::Fraction<INT_T> ts::Fraction<INT_T>::operator-() const
 {
     debug_thow_neg_overflow<int_t>(_num);
     return Fraction(-_num, _den, true);
 }
 
-template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value, int>::type N>
-typename ts::Fraction<INT_T,N> ts::Fraction<INT_T,N>::operator+(const Fraction& x) const
+template <typename INT_T> requires std::integral<INT_T>
+typename ts::Fraction<INT_T> ts::Fraction<INT_T>::operator+(const Fraction& x) const
 {
     Fraction res;
     if (_den == x._den) {
@@ -417,8 +399,8 @@ typename ts::Fraction<INT_T,N> ts::Fraction<INT_T,N>::operator+(const Fraction& 
     return res;
 }
 
-template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value, int>::type N>
-typename ts::Fraction<INT_T,N> ts::Fraction<INT_T,N>::operator-(const Fraction& x) const
+template <typename INT_T> requires std::integral<INT_T>
+typename ts::Fraction<INT_T> ts::Fraction<INT_T>::operator-(const Fraction& x) const
 {
     Fraction res;
     if (_den == x._den) {
@@ -440,8 +422,8 @@ typename ts::Fraction<INT_T,N> ts::Fraction<INT_T,N>::operator-(const Fraction& 
     return res;
 }
 
-template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value, int>::type N>
-typename ts::Fraction<INT_T,N> ts::Fraction<INT_T,N>::operator*(const Fraction& x) const
+template <typename INT_T> requires std::integral<INT_T>
+typename ts::Fraction<INT_T> ts::Fraction<INT_T>::operator*(const Fraction& x) const
 {
     // Cross-reduce first to limit the risk of overflow.
     int_t gcd = GCD(_num, x._den);
@@ -463,8 +445,8 @@ typename ts::Fraction<INT_T,N> ts::Fraction<INT_T,N>::operator*(const Fraction& 
     return Fraction(num, den, true);
 }
 
-template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value, int>::type N>
-bool ts::Fraction<INT_T,N>::mulOverflow(const Fraction& x) const
+template <typename INT_T> requires std::integral<INT_T>
+bool ts::Fraction<INT_T>::mulOverflow(const Fraction& x) const
 {
     // Cross-reduce first to limit the risk of overflow.
     int_t gcd = GCD(_num, x._den);
@@ -476,22 +458,22 @@ bool ts::Fraction<INT_T,N>::mulOverflow(const Fraction& x) const
     return mul_overflow(num1, num2) || mul_overflow(den1, den2);
 }
 
-template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value, int>::type N>
-typename ts::Fraction<INT_T,N> ts::Fraction<INT_T,N>::operator/(const Fraction& x) const
+template <typename INT_T> requires std::integral<INT_T>
+typename ts::Fraction<INT_T> ts::Fraction<INT_T>::operator/(const Fraction& x) const
 {
     debug_throw_div_zero(x._num);
     return operator*(Fraction(x._den, x._num, true));
 }
 
-template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value, int>::type N>
-bool ts::Fraction<INT_T,N>::divOverflow(const Fraction& x) const
+template <typename INT_T> requires std::integral<INT_T>
+bool ts::Fraction<INT_T>::divOverflow(const Fraction& x) const
 {
     return x._num == 0 || mulOverflow(Fraction(x._den, x._num, true));
 }
 
-template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value, int>::type N>
-template <typename INT1, typename std::enable_if<std::is_integral<INT1>::value, int>::type M>
-typename ts::Fraction<INT_T,N> ts::Fraction<INT_T,N>::operator+(INT1 x) const
+template <typename INT_T> requires std::integral<INT_T>
+template <typename INT1> requires std::integral<INT1>
+typename ts::Fraction<INT_T> ts::Fraction<INT_T>::operator+(INT1 x) const
 {
     const int_t num1 = int_t(x) * _den;
     Fraction res(_num + num1, _den, true);
@@ -502,9 +484,9 @@ typename ts::Fraction<INT_T,N> ts::Fraction<INT_T,N>::operator+(INT1 x) const
     return res;
 }
 
-template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value, int>::type N>
-template <typename INT1, typename std::enable_if<std::is_integral<INT1>::value, int>::type M>
-typename ts::Fraction<INT_T,N> ts::Fraction<INT_T,N>::operator-(INT1 x) const
+template <typename INT_T> requires std::integral<INT_T>
+template <typename INT1> requires std::integral<INT1>
+typename ts::Fraction<INT_T> ts::Fraction<INT_T>::operator-(INT1 x) const
 {
     const int_t num1 = int_t(x) * _den;
     Fraction res(_num - num1, _den, true);
@@ -515,9 +497,9 @@ typename ts::Fraction<INT_T,N> ts::Fraction<INT_T,N>::operator-(INT1 x) const
     return res;
 }
 
-template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value, int>::type N>
-template <typename INT1, typename std::enable_if<std::is_integral<INT1>::value, int>::type M>
-typename ts::Fraction<INT_T,N> ts::Fraction<INT_T,N>::operator*(INT1 x) const
+template <typename INT_T> requires std::integral<INT_T>
+template <typename INT1> requires std::integral<INT1>
+typename ts::Fraction<INT_T> ts::Fraction<INT_T>::operator*(INT1 x) const
 {
     Fraction res(_num * int_t(x), _den, true);
     debug_throw_bound_check<int_t>(x);
@@ -526,16 +508,16 @@ typename ts::Fraction<INT_T,N> ts::Fraction<INT_T,N>::operator*(INT1 x) const
     return res;
 }
 
-template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value, int>::type N>
-template<typename INT1, typename std::enable_if<std::is_integral<INT1>::value, int>::type M>
-bool ts::Fraction<INT_T,N>::mulOverflow(INT1 x) const
+template <typename INT_T> requires std::integral<INT_T>
+template <typename INT1> requires std::integral<INT1>
+bool ts::Fraction<INT_T>::mulOverflow(INT1 x) const
 {
     return !bound_check<int_t>(x) || mul_overflow(_num, int_t(x));
 }
 
-template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value, int>::type N>
-template <typename INT1, typename std::enable_if<std::is_integral<INT1>::value, int>::type M>
-typename ts::Fraction<INT_T,N> ts::Fraction<INT_T,N>::operator/(INT1 x) const
+template <typename INT_T> requires std::integral<INT_T>
+template <typename INT1> requires std::integral<INT1>
+typename ts::Fraction<INT_T> ts::Fraction<INT_T>::operator/(INT1 x) const
 {
     Fraction res(_num, _den * int_t(x), true);
     debug_throw_div_zero(x);
@@ -546,9 +528,9 @@ typename ts::Fraction<INT_T,N> ts::Fraction<INT_T,N>::operator/(INT1 x) const
 }
 
 // Comparison operations.
-#define _TS_FRACTION_COMPARE(op)                       \
-    template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value, int>::type N> \
-    bool ts::Fraction<INT_T,N>::operator op(const Fraction& x) const \
+#define _TS_FRACTION_COMPARE(op)                                   \
+    template <typename INT_T> requires std::integral<INT_T>        \
+    bool ts::Fraction<INT_T>::operator op(const Fraction& x) const \
     {                                                  \
         if (_den == x._den) {                          \
             return _num op x._num;                     \
@@ -569,15 +551,15 @@ _TS_FRACTION_COMPARE(>)
 
 #undef _TS_FRACTION_COMPARE
 
-#define _TS_FRACTION_COMPARE(op)                          \
-    template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value, int>::type N> \
-    template <typename INT1, typename std::enable_if<std::is_integral<INT1>::value, int>::type M> \
-    bool ts::Fraction<INT_T,N>::operator op(INT1 x) const \
-    {                                                     \
-        debug_throw_bound_check<int_t>(x);                \
-        const int_t num1 = int_t(x) * _den;               \
-        debug_throw_mul_overflow(int_t(x), _den, num1);   \
-        return _num op num1;                              \
+#define _TS_FRACTION_COMPARE(op)                            \
+    template <typename INT_T> requires std::integral<INT_T> \
+    template <typename INT1> requires std::integral<INT1>   \
+    bool ts::Fraction<INT_T>::operator op(INT1 x) const     \
+    {                                                       \
+        debug_throw_bound_check<int_t>(x);                  \
+        const int_t num1 = int_t(x) * _den;                 \
+        debug_throw_mul_overflow(int_t(x), _den, num1);     \
+        return _num op num1;                                \
     }
 
 _TS_FRACTION_COMPARE(<=)
@@ -588,8 +570,8 @@ _TS_FRACTION_COMPARE(>)
 #undef _TS_FRACTION_COMPARE
 
 // Convert the fraction to a string object.
-template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value, int>::type N>
-ts::UString ts::Fraction<INT_T,N>::toString(size_t min_width,
+template <typename INT_T> requires std::integral<INT_T>
+ts::UString ts::Fraction<INT_T>::toString(size_t min_width,
                                              bool right_justified,
                                              UChar separator,
                                              bool force_sign,
@@ -615,8 +597,8 @@ ts::UString ts::Fraction<INT_T,N>::toString(size_t min_width,
 }
 
 // Parse a string and interpret it as a fraction.
-template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value, int>::type N>
-bool ts::Fraction<INT_T,N>::fromString(const UString& str, UChar separator, UChar decimal_dot)
+template <typename INT_T> requires std::integral<INT_T>
+bool ts::Fraction<INT_T>::fromString(const UString& str, UChar separator, UChar decimal_dot)
 {
     const UString sep(1, separator);
     const size_t slash = str.find(u'/');

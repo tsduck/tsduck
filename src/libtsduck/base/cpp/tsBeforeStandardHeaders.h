@@ -31,7 +31,7 @@
 // Do not use "#pragma once", can be used multiple times on purpose.
 
 // Enforce inclusion tsPlatform.h but avoid recursion.
-#if !defined(TS_ADDRESS_BITS)
+#if !defined(TS_STRINGIFY)
     #include "tsPlatform.h"
 #endif
 

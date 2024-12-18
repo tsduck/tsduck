@@ -44,30 +44,27 @@ TSUNIT_DEFINE_TEST(Endianness)
     uint32_t i = 0x01020304;
     char* c = reinterpret_cast<char*>(&i);
 
-#if defined(TS_LITTLE_ENDIAN)
-    TSUNIT_ASSERT(TS_LITTLE_ENDIAN_BOOL);
-    TSUNIT_ASSERT(!TS_BIG_ENDIAN_BOOL);
-    TSUNIT_EQUAL(4, c[0]);
-    TSUNIT_EQUAL(3, c[1]);
-    TSUNIT_EQUAL(2, c[2]);
-    TSUNIT_EQUAL(1, c[3]);
-#endif
-
-#if defined(TS_BIG_ENDIAN)
-    TSUNIT_ASSERT(!TS_LITTLE_ENDIAN_BOOL);
-    TSUNIT_ASSERT(TS_BIG_ENDIAN_BOOL);
-    TSUNIT_EQUAL(1, c[0]);
-    TSUNIT_EQUAL(2, c[1]);
-    TSUNIT_EQUAL(3, c[2]);
-    TSUNIT_EQUAL(4, c[3]);
-#endif
+    if constexpr (std::endian::native == std::endian::little) {
+        TSUNIT_EQUAL(4, c[0]);
+        TSUNIT_EQUAL(3, c[1]);
+        TSUNIT_EQUAL(2, c[2]);
+        TSUNIT_EQUAL(1, c[3]);
+    }
+    else if constexpr (std::endian::native == std::endian::big) {
+        TSUNIT_EQUAL(1, c[0]);
+        TSUNIT_EQUAL(2, c[1]);
+        TSUNIT_EQUAL(3, c[2]);
+        TSUNIT_EQUAL(4, c[3]);
+    }
+    else {
+        TSUNIT_FAIL("unknown endian");
+    }
 }
 
 // Test case: predefined integer types.
 TSUNIT_DEFINE_TEST(IntegerTypes)
 {
     debug()
-        << "PlatformTest: TS_ADDRESS_BITS = " << TS_ADDRESS_BITS << std::endl
         << "PlatformTest: sizeof(int) = " << sizeof(int)
         << ", sizeof(long) = " << sizeof(long)
         << ", sizeof(long long) = " << sizeof(long long)
@@ -93,12 +90,6 @@ TSUNIT_DEFINE_TEST(IntegerTypes)
     TSUNIT_EQUAL(2, sizeof(uint16_t));
     TSUNIT_EQUAL(4, sizeof(uint32_t));
     TSUNIT_EQUAL(8, sizeof(uint64_t));
-
-    TSUNIT_EQUAL(0, TS_ADDRESS_BITS % 8);
-    TSUNIT_EQUAL(TS_ADDRESS_BITS / 8, sizeof(void*));
-    TSUNIT_EQUAL(TS_ADDRESS_BITS / 8, sizeof(size_t));
-    TSUNIT_EQUAL(TS_ADDRESS_BITS / 8, sizeof(std::size_t));
-    TSUNIT_EQUAL(TS_ADDRESS_BITS / 8, sizeof(std::ptrdiff_t));
 
     TSUNIT_ASSERT(std::numeric_limits<int8_t>::is_signed);
     TSUNIT_ASSERT(std::numeric_limits<int16_t>::is_signed);

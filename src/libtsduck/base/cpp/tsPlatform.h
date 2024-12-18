@@ -32,7 +32,6 @@
 //!
 //!  @li Compiler: See @link TS_GCC @endlink, @link TS_MSC @endlink, etc.
 //!  @li Operating system: See @link TS_LINUX @endlink, @link TS_WINDOWS @endlink, etc.
-//!  @li Byte ordering: See @link TS_LITTLE_ENDIAN @endlink and @link TS_BIG_ENDIAN @endlink.
 //!  @li Processor architecture: See @link TS_I386 @endlink, @link TS_X86_64 @endlink, etc.
 //!
 //----------------------------------------------------------------------------
@@ -200,14 +199,6 @@
     //! Defined when compiled for a macOS target platform.
     //!
     #define TS_MAC
-     //!
-    //! Defined when compiled for an IBM AIX target platform.
-    //!
-    #define TS_AIX
-    //!
-    //! Defined when compiled for a Sun Solaris target platform.
-    //!
-    #define TS_SOLARIS
     //!
     //! Defined when compiled for a Cygwin target platform.
     //!
@@ -245,17 +236,9 @@
     #if !defined(TS_MAC)
         #define TS_MAC 1
     #endif
-#elif defined(_AIX) || defined(TS_AIX)
-    #if !defined(TS_AIX)
-        #define TS_AIX 1
-    #endif
 #elif defined(__CYGWIN__) || defined(TS_CYGWIN)
     #if !defined(TS_CYGWIN)
         #define TS_CYGWIN 1
-    #endif
-#elif defined(__sun) || defined(TS_SOLARIS)
-    #if !defined(TS_SOLARIS)
-        #define TS_SOLARIS 1
     #endif
 #else
     #error "New unknown operating system, please update tsPlatform.h"
@@ -269,7 +252,7 @@
 #if !defined(TS_BSD) && (defined(TS_FREEBSD) || defined(TS_DRAGONFLYBSD) || defined(TS_OPENBSD) || defined(TS_NETBSD))
     #define TS_BSD 1
 #endif
-#if !defined(TS_UNIX) && (defined(__unix) || defined(__unix__) || defined(TS_LINUX) || defined(TS_BSD) || defined(TS_MAC) || defined(TS_AIX) || defined(TS_CYGWIN) || defined(TS_SOLARIS))
+#if !defined(TS_UNIX) && (defined(__unix) || defined(__unix__) || defined(TS_LINUX) || defined(TS_BSD) || defined(TS_MAC) || defined(TS_CYGWIN))
     #define TS_UNIX 1
 #endif
 
@@ -279,26 +262,6 @@
 //----------------------------------------------------------------------------
 
 #if defined(DOXYGEN)
-    //!
-    //! Defined when compiled for a little-endian or LSB-first target platform.
-    //!
-    #define TS_LITTLE_ENDIAN
-    //!
-    //! Defined when compiled for a big-endian or MSB-first target platform.
-    //!
-    #define TS_BIG_ENDIAN
-    //!
-    //! Defined to @c true when compiled for a little-endian or LSB-first target platform, @a false otherwise.
-    //!
-    #define TS_LITTLE_ENDIAN_BOOL true/false
-    //!
-    //! Defined to @c true when compiled for a big-endian or MSB-first target platform, @a false otherwise.
-    //!
-    #define TS_BIG_ENDIAN_BOOL true/false
-    //!
-    //! Number of bits in an address (or a pointer or a size_t).
-    //!
-    #define TS_ADDRESS_BITS 16, 32, 64, etc.
     //!
     //! Defined when the target processor architecture is Intel IA-32, also known as x86.
     //!
@@ -349,86 +312,49 @@
     #if !defined(TS_I386)
         #define TS_I386 1
     #endif
-    #if !defined(TS_ADDRESS_BITS)
-        #define TS_ADDRESS_BITS 32
-    #endif
 #elif defined(__amd64) || defined(__amd64__) || defined(__x86_64__) || defined(TS_X86_64) || defined(_M_X64)
     #if !defined(TS_X86_64)
         #define TS_X86_64 1
-    #endif
-    #if !defined(TS_ADDRESS_BITS)
-        #define TS_ADDRESS_BITS 64
     #endif
 #elif defined(__ia64__) || defined(_M_IA64)
     #if !defined(TS_IA64)
         #define TS_IA64 1
     #endif
-    #if !defined(TS_ADDRESS_BITS)
-        #define TS_ADDRESS_BITS 64
-    #endif
 #elif defined(__aarch64__) || defined(__arm64__)
     #if !defined(TS_ARM64)
         #define TS_ARM64 1
-    #endif
-    #if !defined(TS_ADDRESS_BITS)
-        #define TS_ADDRESS_BITS 64
     #endif
 #elif defined(__arm__)
     #if !defined(TS_ARM32)
         #define TS_ARM32 1
     #endif
-    #if !defined(TS_ADDRESS_BITS)
-        #define TS_ADDRESS_BITS 32
-    #endif
 #elif defined(__sparc__)
     #if !defined(TS_SPARC)
         #define TS_SPARC 1
-    #endif
-    #if !defined(TS_ADDRESS_BITS)
-        // To be fixed for SPARC 64
-        #define TS_ADDRESS_BITS 32
     #endif
 #elif defined(__powerpc64__)
     #if !defined(TS_POWERPC64)
         #define TS_POWERPC64 1
     #endif
-    #if !defined(TS_ADDRESS_BITS)
-        #define TS_ADDRESS_BITS 64
-    #endif
 #elif defined(__powerpc__)
     #if !defined(TS_POWERPC)
         #define TS_POWERPC 1
-    #endif
-    #if !defined(TS_ADDRESS_BITS)
-        #define TS_ADDRESS_BITS 32
     #endif
 #elif defined(__mips64)
     #if !defined(TS_MIPS64)
         #define TS_MIPS64 1
     #endif
-    #if !defined(TS_ADDRESS_BITS)
-        #define TS_ADDRESS_BITS 64
-    #endif
 #elif defined(__mips__)
     #if !defined(TS_MIPS)
         #define TS_MIPS 1
-    #endif
-    #if !defined(TS_ADDRESS_BITS)
-        #define TS_ADDRESS_BITS 32
     #endif
 #elif defined(__riscv) && defined(__riscv_xlen) && (__riscv_xlen == 64)
     #if !defined(TS_RISCV64)
         #define TS_RISCV64 1
     #endif
-    #if !defined(TS_ADDRESS_BITS)
-        #define TS_ADDRESS_BITS 64
-    #endif
 #elif defined(__s390x__)
     #if !defined(TS_S390X)
         #define TS_S390X 1
-    #endif
-    #if !defined(TS_ADDRESS_BITS)
-        #define TS_ADDRESS_BITS 64
     #endif
 #else
     #error "New unknown processor, please update tsPlatform.h"
@@ -444,44 +370,6 @@
 
 #if !defined(TS_GCC) && !defined(TS_LLVM) && !defined(TS_MSC)
     #error "TSDuck has been tested with GCC, LLVM (Clang) and MSVC compilers only, review this code"
-#endif
-
-// Byte order
-
-// These architectures are mono-endian. Only one possible endianness.
-#if (defined(TS_I386) || defined(TS_X86_64) || defined(TS_IA64) || defined(TS_ALPHA) || defined(TS_RISCV64)) && !defined(TS_LITTLE_ENDIAN)
-    #define TS_LITTLE_ENDIAN 1
-#elif (defined(TS_SPARC) || defined(TS_S390X)) && !defined(TS_BIG_ENDIAN)
-    #define TS_BIG_ENDIAN 1
-#endif
-
-// These architectures are bi-endian. Need to check from the compiler.
-#if (defined(TS_ARM32) || defined(TS_ARM64) || defined(TS_MIPS) || defined(TS_MIPS64) || defined(TS_POWERPC) || defined(TS_POWERPC64)) && !defined(TS_LITTLE_ENDIAN) && !defined(TS_BIG_ENDIAN)
-    #if defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-        #define TS_LITTLE_ENDIAN 1
-    #elif defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
-        #define TS_BIG_ENDIAN 1
-    #elif defined(__LITTLE_ENDIAN__)
-        #define TS_LITTLE_ENDIAN 1
-    #elif defined(__BIG_ENDIAN__)
-        #define TS_BIG_ENDIAN 1
-    #else
-        #error "unknow endianness, __BYTE_ORDER__ not defined"
-    #endif
-#endif
-
-#if defined(TS_LITTLE_ENDIAN)
-    #define TS_LITTLE_ENDIAN_BOOL true
-    #define TS_BIG_ENDIAN_BOOL false
-#elif defined(TS_BIG_ENDIAN)
-    #define TS_LITTLE_ENDIAN_BOOL false
-    #define TS_BIG_ENDIAN_BOOL true
-#else
-    #error "unknow endianness, please update this header file"
-#endif
-
-#if !defined(TS_ADDRESS_BITS)
-    #error "unknow address size, please update this header file"
 #endif
 
 //!
@@ -809,6 +697,7 @@ TS_MSC_NOWARNING(5045)  // Compiler will insert Spectre mitigation for memory lo
 #include <optional>
 #include <variant>
 #include <memory>
+#include <bit>
 #include <type_traits>
 #include <algorithm>
 #include <iterator>

@@ -1638,31 +1638,11 @@ there is some specific work to do.
 
 ----
 #if defined(TS_WINDOWS)
-    typedef ... SystemError;
+    using SystemError = ...;
 #elif defined(TS_UNIX)
-    typedef ... SystemError;
+    using SystemError = ...;
 #else
     #error "unknow O/S, please update SystemError in this header file"
-#endif
-----
-
-*Example 2:* A more complex list of alternatives. But exactly one symbol must be declared at the end.
-
-----
-#if (defined(__i386) || defined(__x86_64)) && !defined(TS_LITTLE_ENDIAN)
-    #define TS_LITTLE_ENDIAN 1
-#elif (defined(__sparc) || defined(__powerpc)) && !defined(TS_BIG_ENDIAN)
-    #define TS_BIG_ENDIAN 1
-#endif
-
-// ... more definitions
-
-#if !defined(TS_LITTLE_ENDIAN) && !defined(TS_BIG_ENDIAN)
-    #error "unknow endian, please update this header file"
-#endif
-
-#if defined(TS_LITTLE_ENDIAN) && defined(TS_BIG_ENDIAN)
-    #error "conflicting endianness, please review this header file"
 #endif
 ----
 

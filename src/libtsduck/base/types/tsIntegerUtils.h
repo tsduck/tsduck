@@ -41,12 +41,12 @@ namespace ts {
     // Implementation tools for make_signed.
     //
     //! @cond nodoxygen
-    template<typename T, size_t SIZE, bool ISSIGNED> struct make_signed_impl { using type = T; };
-    template<> struct make_signed_impl<bool, 1, false> { using type = int8_t; };
-    template<typename T> struct make_signed_impl<T, 1, false> { using type = int16_t; };
-    template<typename T> struct make_signed_impl<T, 2, false> { using type = int32_t; };
-    template<typename T> struct make_signed_impl<T, 4, false> { using type = int64_t; };
-    template<typename T> struct make_signed_impl<T, 8, false> { using type = int64_t; };
+    template<typename T, size_t SIZE, bool ISINT, bool ISSIGNED> struct make_signed_impl { using type = T; };
+    template<> struct make_signed_impl<bool, sizeof(bool), std::integral<bool>, std::signed_integral<bool>> { using type = int8_t; };
+    template<typename T> struct make_signed_impl<T, 1, true, false> { using type = int16_t; };
+    template<typename T> struct make_signed_impl<T, 2, true, false> { using type = int32_t; };
+    template<typename T> struct make_signed_impl<T, 4, true, false> { using type = int64_t; };
+    template<typename T> struct make_signed_impl<T, 8, true, false> { using type = int64_t; };
     //! @endcond
 
     //!
@@ -58,7 +58,7 @@ namespace ts {
     template<typename T>
     struct make_signed {
         //! The equivalent signed type.
-        using type = typename make_signed_impl<T, sizeof(T), std::is_signed<T>::value>::type;
+        using type = typename make_signed_impl<T, sizeof(T), std::integral<T>, std::signed_integral<T>>::type;
     };
 
     //
@@ -74,11 +74,11 @@ namespace ts {
     //! The meta-type ts::int_max selects the integer type with largest width and same signedness as another integer type.
     //! @tparam INT An integer type, any size, signed or unsigned.
     //!
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value, int>::type = 0>
+    template <typename INT> requires std::integral<INT>
     struct int_max {
         //! The integer type with the same signedness and largest width.
         //! In practice, it is either @c std::uintmax_t or @c std::intmax_t.
-        using type = typename int_max_impl<std::is_signed<INT>::value>::type;
+        using type = typename int_max_impl<std::signed_integral<INT>>::type;
     };
 
     //!
@@ -87,13 +87,16 @@ namespace ts {
     //! @param [in] a An integer value.
     //! @return Ansolute value of @a a.
     //!
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value, int>::type = 0>
-    inline INT abs(INT a) { return a; } // unsigned version
-
-    //! @cond nodoxygen
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value, int>::type = 0>
-    inline INT abs(INT a) { return a < 0 ? -a : a; } // signed version
-    //! @endcond
+    template <typename INT> requires std::integral<INT>
+    inline INT abs(INT a)
+    {
+        if constexpr (std::unsigned_integral<INT>) {
+            return a;
+        }
+        else {
+            return a < 0 ? -a : a;
+        }
+    }
 
 #if defined(DOXYGEN)
     //!

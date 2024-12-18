@@ -22,6 +22,7 @@ class IntegerUtilsTest: public tsunit::Test
 {
     TSUNIT_DECLARE_TEST(make_signed);
     TSUNIT_DECLARE_TEST(int_max);
+    TSUNIT_DECLARE_TEST(abs);
     TSUNIT_DECLARE_TEST(bounded_add);
     TSUNIT_DECLARE_TEST(bounded_sub);
     TSUNIT_DECLARE_TEST(round_down);
@@ -78,17 +79,28 @@ TSUNIT_DEFINE_TEST(make_signed)
 
 TSUNIT_DEFINE_TEST(int_max)
 {
-    TSUNIT_ASSERT(std::is_signed<ts::int_max<int>::type>::value);
-    TSUNIT_ASSERT(std::is_signed<ts::int_max<int8_t>::type>::value);
-    TSUNIT_ASSERT(std::is_signed<ts::int_max<int32_t>::type>::value);
-    TSUNIT_ASSERT(std::is_unsigned<ts::int_max<unsigned int>::type>::value);
-    TSUNIT_ASSERT(std::is_unsigned<ts::int_max<uint16_t>::type>::value);
+    TSUNIT_ASSERT(std::signed_integral<ts::int_max<int>::type>);
+    TSUNIT_ASSERT(std::signed_integral<ts::int_max<int8_t>::type>);
+    TSUNIT_ASSERT(std::signed_integral<ts::int_max<int32_t>::type>);
+    TSUNIT_ASSERT(std::unsigned_integral<ts::int_max<unsigned int>::type>);
+    TSUNIT_ASSERT(std::unsigned_integral<ts::int_max<uint16_t>::type>);
 
     TSUNIT_EQUAL(sizeof(std::intmax_t), sizeof(ts::int_max<int>::type));
     TSUNIT_EQUAL(sizeof(std::intmax_t), sizeof(ts::int_max<int8_t>::type));
     TSUNIT_EQUAL(sizeof(std::intmax_t), sizeof(ts::int_max<int32_t>::type));
     TSUNIT_EQUAL(sizeof(std::uintmax_t), sizeof(ts::int_max<unsigned int>::type));
     TSUNIT_EQUAL(sizeof(std::uintmax_t), sizeof(ts::int_max<uint16_t>::type));
+}
+
+TSUNIT_DEFINE_TEST(abs)
+{
+    TSUNIT_EQUAL(0, ts::abs(0));
+    TSUNIT_EQUAL(1, ts::abs(1));
+    TSUNIT_EQUAL(1, ts::abs(-1));
+
+    TSUNIT_EQUAL(100, ts::abs(uint32_t(100)));
+    TSUNIT_EQUAL(100, ts::abs(int32_t(100)));
+    TSUNIT_EQUAL(100, ts::abs(int32_t(-100)));
 }
 
 TSUNIT_DEFINE_TEST(bounded_add)

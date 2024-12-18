@@ -71,7 +71,7 @@ namespace ts {
         //! @param [in] align Column alignment.
         //! @return True on success, false if the @a id column already exists.
         //!
-        template<typename ID, typename std::enable_if<std::is_integral<ID>::value || std::is_enum<ID>::value>::type* = nullptr>
+        template<typename ID> requires std::integral<ID> || std::is_enum_v<ID>
         bool addColumn(ID id, const UString& header, Align align = Align::LEFT) { return addColumnImpl(ColId(id), header, align); }
 
         //!
@@ -82,7 +82,7 @@ namespace ts {
         //! @param [in] value Text value to set.
         //! @return True on success, false if @a column does not exist.
         //!
-        template<typename ID, typename std::enable_if<std::is_integral<ID>::value || std::is_enum<ID>::value>::type* = nullptr>
+        template<typename ID> requires std::integral<ID> || std::is_enum_v<ID>
         bool setCell(ID column, const UString& value) { return setCellImpl(_curline, ColId(column), value); }
 
         //!
@@ -93,7 +93,7 @@ namespace ts {
         //! @param [in] value Text value to set.
         //! @return True on success, false if @a column does not exist.
         //!
-        template<typename ID, typename std::enable_if<std::is_integral<ID>::value || std::is_enum<ID>::value>::type* = nullptr>
+        template<typename ID> requires std::integral<ID> || std::is_enum_v<ID>
         bool setCell(ID column, const StringifyInterface& value) { return setCellImpl(_curline, ColId(column), value.toString()); }
 
         //!
@@ -105,7 +105,7 @@ namespace ts {
         //! @param [in] value Text value to set.
         //! @return True on success, false if @a column does not exist.
         //!
-        template<typename ID, typename std::enable_if<std::is_integral<ID>::value || std::is_enum<ID>::value>::type* = nullptr>
+        template<typename ID> requires std::integral<ID> || std::is_enum_v<ID>
         bool setCell(size_t line, ID column, const UString& value) { return setCellImpl(line, ColId(column), value); }
 
         //!
@@ -117,7 +117,7 @@ namespace ts {
         //! @param [in] value Text value to set.
         //! @return True on success, false if @a column does not exist.
         //!
-        template<typename ID, typename std::enable_if<std::is_integral<ID>::value || std::is_enum<ID>::value>::type* = nullptr>
+        template<typename ID> requires std::integral<ID> || std::is_enum_v<ID>
         bool setCell(size_t line, ID column, const StringifyInterface& value) { return setCellImpl(line, ColId(column), value.toString()); }
 
         //!

@@ -79,6 +79,8 @@ namespace ts {
     {
     #if defined(TS_ARM64)
         asm("rev16 %w0, %w0" : "+r" (x)); return x;
+    #elif if defined (__cpp_lib_byteswap)
+        return std::byteswap(x);
     #elif defined(TS_LINUX)
         return bswap_16(x);
     #elif defined(TS_MSC)
@@ -119,6 +121,8 @@ namespace ts {
     {
     #if defined(TS_ARM64)
         asm("rev %w0, %w0" : "+r" (x)); return x;
+    #elif if defined (__cpp_lib_byteswap)
+        return std::byteswap(x);
     #elif defined(TS_LINUX)
         return bswap_32(x);
     #elif defined(TS_MSC)
@@ -141,6 +145,8 @@ namespace ts {
     {
     #if defined(TS_ARM64)
         asm("rev %0, %0" : "+r" (x)); return x;
+    #elif if defined (__cpp_lib_byteswap)
+        return std::byteswap(x);
     #elif defined(TS_LINUX)
         return bswap_64(x);
     #elif defined(TS_MSC)
@@ -168,11 +174,12 @@ namespace ts {
     //!
     TSDUCKDLL inline uint16_t CondByteSwap16BE(uint16_t x)
     {
-    #if defined(TS_LITTLE_ENDIAN)
-        return ByteSwap16(x);
-    #else
-        return x;
-    #endif
+        if constexpr (std::endian::native == std::endian::little) {
+            return ByteSwap16(x);
+        }
+        else {
+            return x;
+        }
     }
 
     //!
@@ -198,11 +205,12 @@ namespace ts {
     //!
     TSDUCKDLL inline uint32_t CondByteSwap24BE(uint32_t x)
     {
-    #if defined(TS_LITTLE_ENDIAN)
-        return ByteSwap24(x);
-    #else
-        return x & 0x00FFFFFF;
-    #endif
+        if constexpr (std::endian::native == std::endian::little) {
+            return ByteSwap24(x);
+        }
+        else {
+            return x;
+        }
     }
 
     //!
@@ -228,11 +236,12 @@ namespace ts {
     //!
     TSDUCKDLL inline uint32_t CondByteSwap32BE(uint32_t x)
     {
-    #if defined(TS_LITTLE_ENDIAN)
-        return ByteSwap32(x);
-    #else
-        return x;
-    #endif
+        if constexpr (std::endian::native == std::endian::little) {
+            return ByteSwap32(x);
+        }
+        else {
+            return x;
+        }
     }
 
     //!
@@ -258,11 +267,12 @@ namespace ts {
     //!
     TSDUCKDLL inline uint64_t CondByteSwap64BE(uint64_t x)
     {
-    #if defined(TS_LITTLE_ENDIAN)
-        return ByteSwap64(x);
-    #else
-        return x;
-    #endif
+        if constexpr (std::endian::native == std::endian::little) {
+            return ByteSwap64(x);
+        }
+        else {
+            return x;
+        }
     }
 
     //!
@@ -288,11 +298,12 @@ namespace ts {
     //!
     TSDUCKDLL inline uint16_t CondByteSwap16LE(uint16_t x)
     {
-    #if defined(TS_LITTLE_ENDIAN)
-        return x;
-    #else
-        return ByteSwap16(x);
-    #endif
+        if constexpr (std::endian::native == std::endian::little) {
+            return x;
+        }
+        else {
+            return ByteSwap16(x);
+        }
     }
 
     //!
@@ -305,11 +316,12 @@ namespace ts {
     //!
     TSDUCKDLL inline uint32_t CondByteSwap24LE(uint32_t x)
     {
-    #if defined(TS_LITTLE_ENDIAN)
-        return x & 0x00FFFFFF;
-    #else
-        return ByteSwap24(x);
-    #endif
+        if constexpr (std::endian::native == std::endian::little) {
+            return x & 0x00FFFFFF;
+        }
+        else {
+            return ByteSwap24(x);
+        }
     }
 
     //!
@@ -322,11 +334,12 @@ namespace ts {
     //!
     TSDUCKDLL inline uint32_t CondByteSwap32LE(uint32_t x)
     {
-    #if defined(TS_LITTLE_ENDIAN)
-        return x;
-    #else
-        return ByteSwap32(x);
-    #endif
+        if constexpr (std::endian::native == std::endian::little) {
+            return x;
+        }
+        else {
+            return ByteSwap32(x);
+        }
     }
 
     //!
@@ -339,11 +352,12 @@ namespace ts {
     //!
     TSDUCKDLL inline uint64_t CondByteSwap64LE(uint64_t x)
     {
-    #if defined(TS_LITTLE_ENDIAN)
-        return x;
-    #else
-        return ByteSwap64(x);
-    #endif
+        if constexpr (std::endian::native == std::endian::little) {
+            return x;
+        }
+        else {
+            return ByteSwap64(x);
+        }
     }
 
     //!
@@ -355,20 +369,24 @@ namespace ts {
     //! @return On little-endian platforms, return the value of @a x where bytes were swapped.
     //! On big-endian platforms, return the value of @a x unmodified.
     //!
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+    template <typename INT> requires std::integral<INT>
     TSDUCKDLL inline INT CondByteSwapBE(INT x)
     {
-#if defined(TS_BIG_ENDIAN)
-        return x;
-#else
-        switch (sizeof(INT)) {
-            case 1: return x;
-            case 2: return static_cast<INT>(CondByteSwap16BE(static_cast<uint16_t>(x)));
-            case 4: return static_cast<INT>(CondByteSwap32BE(static_cast<uint32_t>(x)));
-            case 8: return static_cast<INT>(CondByteSwap64BE(static_cast<uint64_t>(x)));
-            default: return 0;
+        if constexpr (std::endian::native == std::endian::big || sizeof(INT) == 1) {
+            return x;
         }
-#endif
+        else if constexpr (sizeof(INT) == 2) {
+            return static_cast<INT>(ByteSwap16(static_cast<uint16_t>(x)));
+        }
+        else if constexpr (sizeof(INT) == 4) {
+            return static_cast<INT>(ByteSwap32(static_cast<uint32_t>(x)));
+        }
+        else if constexpr (sizeof(INT) == 8) {
+            return static_cast<INT>(ByteSwap64(static_cast<uint64_t>(x)));
+        }
+        else {
+            static_assert(false, "invalid integer size");
+        }
     }
 
     //!
@@ -380,20 +398,24 @@ namespace ts {
     //! @return On big-endian platforms, return the value of @a x where bytes were swapped.
     //! On little-endian platforms, return the value of @a x unmodified.
     //!
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+    template <typename INT> requires std::integral<INT>
     TSDUCKDLL inline INT CondByteSwapLE(INT x)
     {
-#if defined(TS_BIG_ENDIAN)
-        switch (sizeof(INT)) {
-            case 1: return x;
-            case 2: return static_cast<INT>(CondByteSwap16BE(static_cast<uint16_t>(x)));
-            case 4: return static_cast<INT>(CondByteSwap32BE(static_cast<uint32_t>(x)));
-            case 8: return static_cast<INT>(CondByteSwap64BE(static_cast<uint64_t>(x)));
-            default: return 0;
+        if constexpr (std::endian::native == std::endian::little || sizeof(INT) == 1) {
+            return x;
         }
-#else
-        return x;
-#endif
+        else if constexpr (sizeof(INT) == 2) {
+            return static_cast<INT>(ByteSwap16(static_cast<uint16_t>(x)));
+        }
+        else if constexpr (sizeof(INT) == 4) {
+            return static_cast<INT>(ByteSwap32(static_cast<uint32_t>(x)));
+        }
+        else if constexpr (sizeof(INT) == 8) {
+            return static_cast<INT>(ByteSwap64(static_cast<uint64_t>(x)));
+        }
+        else {
+            static_assert(false, "invalid integer size");
+        }
     }
 
     //!
@@ -410,15 +432,4 @@ namespace ts {
     {
         return CondByteSwapBE<INT>(x);
     }
-
-    // Some specializations, for performance
-
-#if !defined(DOXYGEN)
-    template<> TSDUCKDLL inline uint8_t CondByteSwap   (uint8_t x) {return x;}
-    template<> TSDUCKDLL inline int8_t  CondByteSwap   (int8_t  x) {return x;}
-    template<> TSDUCKDLL inline uint8_t CondByteSwapBE (uint8_t x) {return x;}
-    template<> TSDUCKDLL inline int8_t  CondByteSwapBE (int8_t  x) {return x;}
-    template<> TSDUCKDLL inline uint8_t CondByteSwapLE (uint8_t x) {return x;}
-    template<> TSDUCKDLL inline int8_t  CondByteSwapLE (int8_t  x) {return x;}
-#endif
 }

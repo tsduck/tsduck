@@ -203,7 +203,7 @@ namespace ts {
         //! Specify that read/write operations of integers should use the native endian representation.
         //! The endianness of the buffer is not changed by the various reset() operations.
         //!
-        void setNativeEndian() { _big_endian = TS_BIG_ENDIAN_BOOL; }
+        void setNativeEndian() { _big_endian = std::endian::native == std::endian::big; }
 
         //!
         //! Switch the endianness of read/write operations of integers.
@@ -227,7 +227,7 @@ namespace ts {
         //! Check if read/write operations of integers use the native endian representation.
         //! @return True if the native endian is used, false otherwise.
         //!
-        bool isNativeEndian() const { return _big_endian == TS_BIG_ENDIAN_BOOL; }
+        bool isNativeEndian() const { return _big_endian == (std::endian::native == std::endian::big); }
 
         //!
         //! Reset the buffer, remove link to any external memory, reallocate an internal buffer if necessary.

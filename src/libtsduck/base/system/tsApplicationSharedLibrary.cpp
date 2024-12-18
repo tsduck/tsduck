@@ -108,15 +108,19 @@ void ts::ApplicationSharedLibrary::GetSearchPath(UStringList& directories, const
     // On Unix systens, try directory ../lib[64]/tsduck/ from main executable.
 #if defined(TS_UNIX)
     const UString exec_parent(DirectoryName(exec_dir));
-#if (TS_ADDRESS_BITS == 64) && defined(TS_LINUX)
-    directories.push_back(exec_parent + u"/lib64/tsduck");
-    directories.push_back(exec_parent + u"/lib64");
+#if defined(TS_LINUX)
+    if constexpr (sizeof(void*) == 8) {
+        directories.push_back(exec_parent + u"/lib64/tsduck");
+        directories.push_back(exec_parent + u"/lib64");
+    }
 #endif
     directories.push_back(exec_parent + u"/lib/tsduck");
     directories.push_back(exec_parent + u"/lib");
-#if (TS_ADDRESS_BITS == 64) && defined(TS_LINUX)
-    directories.push_back(u"/usr/lib64/tsduck");
-    directories.push_back(u"/usr/lib64");
+#if defined(TS_LINUX)
+    if constexpr (sizeof(void*) == 8) {
+        directories.push_back(u"/usr/lib64/tsduck");
+        directories.push_back(u"/usr/lib64");
+    }
 #endif
 #if defined(TS_MAC) && defined(TS_X86_64)
     directories.push_back(u"/usr/local/lib/tsduck");

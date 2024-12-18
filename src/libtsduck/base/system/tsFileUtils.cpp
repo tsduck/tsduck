@@ -410,9 +410,9 @@ ts::UString ts::SearchConfigurationFile(const UString& fileName)
     const UString execGrandParent(DirectoryName(execParent));
     dirList.push_back(execParent + u"/etc/tsduck");
     dirList.push_back(execGrandParent + u"/etc/tsduck");
-#if TS_ADDRESS_BITS == 64
-    dirList.push_back(execParent + u"/lib64/tsduck");
-#endif
+    if constexpr (sizeof(void*) == 8) {
+        dirList.push_back(execParent + u"/lib64/tsduck");
+    }
     dirList.push_back(execParent + u"/lib/tsduck");
     dirList.push_back(execParent + u"/share/tsduck");
     // Try all directories from $LD_LIBRARY_PATH.

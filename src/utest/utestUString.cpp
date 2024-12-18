@@ -1622,7 +1622,7 @@ void UStringTest::testArgMixInCalled2(std::initializer_list<ts::ArgMixIn> list)
     TSUNIT_ASSERT(!it->isUCharPtr());
     TSUNIT_ASSERT(!it->isUString());
     TSUNIT_ASSERT(!it->isChrono());
-    TSUNIT_EQUAL(TS_ADDRESS_BITS / 8, it->size());
+    TSUNIT_EQUAL(sizeof(size_t), it->size());
     TSUNIT_EQUAL(8, it->toInt32());
     TSUNIT_EQUAL(8, it->toUInt32());
     TSUNIT_EQUAL(8, it->toInt64());
@@ -2066,7 +2066,7 @@ void UStringTest::testArgMixOutCalled(std::initializer_list<ts::ArgMixOut> list)
     // size_t   sz  = 8;
     TSUNIT_ASSERT(!it->isSigned());
     TSUNIT_ASSERT(it->isUnsigned());
-    TSUNIT_EQUAL(size_t(TS_ADDRESS_BITS / 8), it->size());
+    TSUNIT_EQUAL(sizeof(size_t), it->size());
     TSUNIT_EQUAL(8, u64 = it->toUInt64());
     TSUNIT_ASSERT(it->storeInteger(++u64));
     ++it;

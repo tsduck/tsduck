@@ -11,19 +11,6 @@
 
 
 //----------------------------------------------------------------------------
-// Custom portable ROL64. On Arm64, there are some cases of incorrect code
-// generation with the one from tsRotate.h.
-//----------------------------------------------------------------------------
-
-namespace {
-    inline uint64_t c_rol64(uint64_t x, int k)
-    {
-        return (x << k) | (x >> (64 - k));
-    }
-}
-
-
-//----------------------------------------------------------------------------
 // Return to initial state, not seeded.
 //----------------------------------------------------------------------------
 
@@ -57,7 +44,7 @@ bool ts::Xoshiro256ss::ready() const
 uint64_t ts::Xoshiro256ss::read64()
 {
     // The state values are interpreted in little endian order.
-    const uint64_t result = c_rol64(GetUInt64LE(_state + 1) * 5, 7) * 9;
+    const uint64_t result = std::rotl(GetUInt64LE(_state + 1) * 5, 7) * 9;
     const uint64_t t = GetUInt64LE(_state + 1) << 17;
 
     // 64-bit xor is endian neutral.
@@ -67,7 +54,7 @@ uint64_t ts::Xoshiro256ss::read64()
     _state[0] ^= _state[3];
 
     _state[2] ^= CondByteSwap64LE(t);
-    PutUInt64LE(_state + 3, c_rol64(GetUInt64LE(_state + 3), 45));
+    PutUInt64LE(_state + 3, std::rotl(GetUInt64LE(_state + 3), 45));
 
     return result;
 }

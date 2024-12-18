@@ -83,54 +83,60 @@ TSUNIT_DEFINE_TEST(ByteSwap64)
 
 TSUNIT_DEFINE_TEST(CondByteSwap16BE)
 {
-#if defined(TS_LITTLE_ENDIAN)
-    TSUNIT_EQUAL(0x3412, ts::CondByteSwap16BE(0x1234));
-#else
-    TSUNIT_EQUAL(0x1234, ts::CondByteSwap16BE(0x1234));
-#endif
+    if constexpr (std::endian::native == std::endian::little) {
+        TSUNIT_EQUAL(0x3412, ts::CondByteSwap16BE(0x1234));
+    }
+    else {
+        TSUNIT_EQUAL(0x1234, ts::CondByteSwap16BE(0x1234));
+    }
 }
 
 TSUNIT_DEFINE_TEST(CondByteSwap16LE)
 {
-#if defined(TS_LITTLE_ENDIAN)
-    TSUNIT_EQUAL(0x1234, ts::CondByteSwap16LE(0x1234));
-#else
-    TSUNIT_EQUAL(0x3412, ts::CondByteSwap16LE(0x1234));
-#endif
+    if constexpr (std::endian::native == std::endian::little) {
+        TSUNIT_EQUAL(0x1234, ts::CondByteSwap16LE(0x1234));
+    }
+    else {
+        TSUNIT_EQUAL(0x3412, ts::CondByteSwap16LE(0x1234));
+    }
 }
 
 TSUNIT_DEFINE_TEST(CondByteSwap32BE)
 {
-#if defined(TS_LITTLE_ENDIAN)
-    TSUNIT_EQUAL(0x78563412, ts::CondByteSwap32BE(0x12345678));
-#else
-    TSUNIT_EQUAL(0x12345678, ts::CondByteSwap32BE(0x12345678));
-#endif
+    if constexpr (std::endian::native == std::endian::little) {
+        TSUNIT_EQUAL(0x78563412, ts::CondByteSwap32BE(0x12345678));
+    }
+    else {
+        TSUNIT_EQUAL(0x12345678, ts::CondByteSwap32BE(0x12345678));
+    }
 }
 
 TSUNIT_DEFINE_TEST(CondByteSwap32LE)
 {
-#if defined(TS_LITTLE_ENDIAN)
-    TSUNIT_EQUAL(0x12345678, ts::CondByteSwap32LE(0x12345678));
-#else
-    TSUNIT_EQUAL(0x78563412, ts::CondByteSwap32LE(0x12345678));
-#endif
+    if constexpr (std::endian::native == std::endian::little) {
+        TSUNIT_EQUAL(0x12345678, ts::CondByteSwap32LE(0x12345678));
+    }
+    else {
+        TSUNIT_EQUAL(0x78563412, ts::CondByteSwap32LE(0x12345678));
+    }
 }
 
 TSUNIT_DEFINE_TEST(CondByteSwap64BE)
 {
-#if defined(TS_LITTLE_ENDIAN)
-    TSUNIT_EQUAL(0xEFCDAB8967452301, ts::CondByteSwap64BE(0x0123456789ABCDEF));
-#else
-    TSUNIT_EQUAL(0x0123456789ABCDEF, ts::CondByteSwap64BE(0x0123456789ABCDEF));
-#endif
+    if constexpr (std::endian::native == std::endian::little) {
+        TSUNIT_EQUAL(0xEFCDAB8967452301, ts::CondByteSwap64BE(0x0123456789ABCDEF));
+    }
+    else {
+        TSUNIT_EQUAL(0x0123456789ABCDEF, ts::CondByteSwap64BE(0x0123456789ABCDEF));
+    }
 }
 
 TSUNIT_DEFINE_TEST(CondByteSwap64LE)
 {
-#if defined(TS_LITTLE_ENDIAN)
-    TSUNIT_EQUAL(0x0123456789ABCDEF, ts::CondByteSwap64LE(0x0123456789ABCDEF));
-#else
-    TSUNIT_EQUAL(0xEFCDAB8967452301, ts::CondByteSwap64LE(0x0123456789ABCDEF));
-#endif
+    if constexpr (std::endian::native == std::endian::little) {
+        TSUNIT_EQUAL(0x0123456789ABCDEF, ts::CondByteSwap64LE(0x0123456789ABCDEF));
+    }
+    else {
+        TSUNIT_EQUAL(0xEFCDAB8967452301, ts::CondByteSwap64LE(0x0123456789ABCDEF));
+    }
 }

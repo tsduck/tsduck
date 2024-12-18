@@ -254,17 +254,17 @@ ts::UString ts::VersionInfo::GetSystemVersion()
     if (!version.empty()) {
         name.format(u" (%s)", version);
     }
-    name.format(u", on %s, %d-bit, %s-endian, page size: %d bytes",
-                SysInfo::Instance().cpuName(),
-                TS_ADDRESS_BITS,
-                #if defined(TS_LITTLE_ENDIAN)
-                    u"little",
-                #elif defined(TS_BIG_ENDIAN)
-                   u"big",
-                #else
-                    u"unknown",
-                #endif
-                SysInfo::Instance().memoryPageSize());
+    const UChar* endian = nullptr;
+    if constexpr (std::endian::native == std::endian::big) {
+        endian = u"big";
+    }
+    else if constexpr (std::endian::native == std::endian::little) {
+        endian = u"little";
+    }
+    else {
+        endian = u"unknown";
+    }
+    name.format(u", on %s, %d-bit, %s-endian, page size: %d bytes", SysInfo::Instance().cpuName(), 8 * sizeof(void*), endian, SysInfo::Instance().memoryPageSize());
     return name;
 }
 
