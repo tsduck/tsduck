@@ -115,26 +115,8 @@ if [[ "$SYSTEM" == "Darwin" ]]; then
     $DRYRUN && exit 0
 
     # We need clang 16.x at least.
-    CLANG_MAJOR=$(clang --version 2>/dev/null | head -1 | sed 's/.* \([0-9][0-9]*\)\.[0-9][0-9]*.*/\1/')
-    if [[ -z $CLANG_MAJOR || "$CLANG_MAJOR" -lt 16 || -n $FORCE_CLANG_REINSTALL ]]; then
-        [[ -n $CLANG_MAJOR ]] && echo "==== Current version of clang is $CLANG_MAJOR, need clang 16, trying to update ..."
-        # The usual command to install Xcode command line tools is "xcode-select --install".
-        # However, it launches a GUI and, in the case of a script on a remote server without user,
-        # the installation never completes. As another option, the software update command is
-        # "softwareupdate". However, it will not find anything to update if the command line
-        # tools are already installed. The trick is to create a given file in /tmp which makes
-        # the command think that an installation is required.
-        TRICK=/tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress
-        touch $TRICK
-        NAME=$(softwareupdate --list | grep "\*.*Command Line Tools" | tail -1 | sed -e 's/^.*: *//' )
-        echo "Installing $NAME ..."
-        softwareupdate --install "$NAME" --verbose
-        rm $TRICK
-    fi
-    if [[ -z $(which brew 2>/dev/null) ]]; then
-        # Homebrew not installed
-        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-    fi
+    # Apple clang 15 has a C++20 bug with prevents TSDuck from compiling.
+    "$SCRIPTDIR/install-xcode-command-line-tools.sh" --min 16
     # Sometimes, brew exits with an error status even though the installation completes.
     # Mute this and enforce a good status to avoid GitHub Actions CI failure.
     brew update || true
