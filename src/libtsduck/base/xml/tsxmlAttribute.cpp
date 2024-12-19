@@ -7,12 +7,23 @@
 //----------------------------------------------------------------------------
 
 #include "tsxmlAttribute.h"
-
-// A constant static invalid instance.
-const ts::xml::Attribute ts::xml::Attribute::INVALID;
+#include "tsSingleton.h"
 
 // A non-thread-safe allocator for sequence numbers.
 std::atomic_size_t  ts::xml::Attribute::_allocator(0);
+
+
+//----------------------------------------------------------------------------
+// A constant static invalid instance.
+//----------------------------------------------------------------------------
+
+TS_STATIC_INSTANCE(const, ts::xml::Attribute, INVALID_ATTRIBUTE, ());
+
+const ts::xml::Attribute& ts::xml::Attribute::INVALID()
+{
+    return *INVALID_ATTRIBUTE;
+}
+
 
 //----------------------------------------------------------------------------
 // Constructors.
@@ -89,11 +100,6 @@ void ts::xml::Attribute::setString(const UString& value)
 void ts::xml::Attribute::setBool(bool value)
 {
     setString(UString::TrueFalse(value));
-}
-
-void ts::xml::Attribute::setEnum(const Enumeration& definition, int value)
-{
-    setString(definition.name(value));
 }
 
 void ts::xml::Attribute::setDateTime(const Time& value)

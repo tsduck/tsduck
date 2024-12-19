@@ -399,7 +399,7 @@ const ts::xml::Attribute& ts::xml::Element::attribute(const UString& attributeNa
         report().error(u"attribute '%s' not found in <%s>, line %d", attributeName, name(), lineNumber());
     }
     // Return a reference to a static invalid attribute.
-    return Attribute::INVALID;
+    return Attribute::INVALID();
 }
 
 
@@ -534,34 +534,6 @@ bool ts::xml::Element::getOptionalBoolAttribute(std::optional<bool>& value, cons
     }
 
     return ok;
-}
-
-
-//----------------------------------------------------------------------------
-// Get an enumeration attribute of an XML element.
-//----------------------------------------------------------------------------
-
-bool ts::xml::Element::getEnumAttribute(int& value, const Enumeration& definition, const UString& name, bool required, int defValue) const
-{
-    const Attribute& attr(attribute(name, !required));
-    if (!attr.isValid()) {
-        // Attribute not present.
-        value = defValue;
-        return !required;
-    }
-    else {
-        // Attribute found, get its value.
-        const UString str(attr.value());
-        const int val = definition.value(str, false);
-        if (val == Enumeration::UNKNOWN) {
-            report().error(u"'%s' is not a valid value for attribute '%s' in <%s>, line %d", str, name, this->name(), lineNumber());
-            return false;
-        }
-        else {
-            value = val;
-            return true;
-        }
-    }
 }
 
 

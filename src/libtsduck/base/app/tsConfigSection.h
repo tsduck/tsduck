@@ -77,7 +77,7 @@ namespace ts {
         //! @param [in] defvalue Default value.
         //! @return The value in the entry or @a defvalue if @a entry does not exist, or if @a index is out of range.
         //!
-        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+        template <typename INT> requires std::integral<INT>
         INT value(const UString& entry, size_t index = 0, const INT& defvalue = static_cast<INT>(0)) const;
 
         //!
@@ -144,7 +144,7 @@ namespace ts {
         //! @param [in] entry Entry name.
         //! @param [in] val The value to set.
         //!
-        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+        template <typename INT> requires std::integral<INT>
         void set(const UString& entry, const INT& val)
         {
             this->set(entry, UString::Decimal(val, 0, true, UString()));
@@ -156,7 +156,7 @@ namespace ts {
         //! @param [in] entry Entry name.
         //! @param [in] val The values to set.
         //!
-        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+        template <typename INT> requires std::integral<INT>
         void set(const UString& entry, const std::vector<INT>& val);
 
         //!
@@ -203,7 +203,7 @@ namespace ts {
         //! @param [in] entry Entry name.
         //! @param [in] val The value to append.
         //!
-        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+        template <typename INT> requires std::integral<INT>
         void append(const UString& entry, const INT& val);
 
         //!
@@ -212,7 +212,7 @@ namespace ts {
         //! @param [in] entry Entry name.
         //! @param [in] val The values to append.
         //!
-        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+        template <typename INT> requires std::integral<INT>
         void append(const UString& entry, const std::vector<INT>& val);
 
         //!
@@ -250,7 +250,7 @@ TSDUCKDLL inline std::ostream& operator<<(std::ostream& strm, const ts::ConfigSe
 //----------------------------------------------------------------------------
 
 // Get a value in an entry.
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
+template <typename INT> requires std::integral<INT>
 INT ts::ConfigSection::value(const UString& entry, size_t index, const INT& defvalue) const
 {
     INT result = static_cast<INT>(0);
@@ -263,7 +263,7 @@ INT ts::ConfigSection::value(const UString& entry, size_t index, const INT& defv
 }
 
 // Set the value of an entry as a vector of integers
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
+template <typename INT> requires std::integral<INT>
 void ts::ConfigSection::set(const UString& entry, const std::vector<INT>& val)
 {
     this->deleteEntry(entry);
@@ -271,14 +271,14 @@ void ts::ConfigSection::set(const UString& entry, const std::vector<INT>& val)
 }
 
 // Append an integer value in an antry
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
+template <typename INT> requires std::integral<INT>
 void ts::ConfigSection::append(const UString& entry, const INT& val)
 {
     this->append(entry, UString::Decimal(val, 0, true, UString()));
 }
 
 // Append a vector of integer values in an antry
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
+template <typename INT> requires std::integral<INT>
 void ts::ConfigSection::append(const UString& entry, const std::vector<INT>& val)
 {
     for (size_t i = 0; i < val.size(); ++i) {

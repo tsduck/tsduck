@@ -14,50 +14,48 @@
 #pragma once
 #include "tstlvChannelMessage.h"
 
-namespace ts {
-    namespace tlv {
+namespace ts::tlv {
+    //!
+    //! Base class for DVB SimulCrypt TLV messages operating on streams.
+    //! @ingroup tlv
+    //!
+    class TSDUCKDLL StreamMessage : public ChannelMessage
+    {
+        TS_RULE_OF_FIVE(StreamMessage, override);
+    protected:
         //!
-        //! Base class for DVB SimulCrypt TLV messages operating on streams.
-        //! @ingroup tlv
+        //! Alias for the superclass of subclasses.
         //!
-        class TSDUCKDLL StreamMessage : public ChannelMessage
-        {
-            TS_RULE_OF_FIVE(StreamMessage, override);
-        protected:
-            //!
-            //! Alias for the superclass of subclasses.
-            //!
-            using superclass = StreamMessage;
+        using superclass = StreamMessage;
 
-        public:
-            // Protocol-documented fields:
-            // uint16_t channel_id;
-            uint16_t stream_id = 0;  //!< Stream id.
+    public:
+        // Protocol-documented fields:
+        // uint16_t channel_id;
+        uint16_t stream_id = 0;  //!< Stream id.
 
-            //!
-            //! Constructor.
-            //! @param [in] tag Message tag.
-            //! @param [in] ch_id Channel id.
-            //! @param [in] st_id Stream id.
-            //!
-            StreamMessage(TAG tag, uint16_t ch_id = 0, uint16_t st_id = 0);
+        //!
+        //! Constructor.
+        //! @param [in] tag Message tag.
+        //! @param [in] ch_id Channel id.
+        //! @param [in] st_id Stream id.
+        //!
+        StreamMessage(TAG tag, uint16_t ch_id = 0, uint16_t st_id = 0);
 
-            //!
-            //! Constructor.
-            //! @param [in] protocol_version Protocol version.
-            //! @param [in] tag Message tag.
-            //! @param [in] ch_id Channel id.
-            //! @param [in] st_id Stream id.
-            //!
-            StreamMessage(VERSION protocol_version, TAG tag, uint16_t ch_id = 0, uint16_t st_id = 0);
+        //!
+        //! Constructor.
+        //! @param [in] protocol_version Protocol version.
+        //! @param [in] tag Message tag.
+        //! @param [in] ch_id Channel id.
+        //! @param [in] st_id Stream id.
+        //!
+        StreamMessage(VERSION protocol_version, TAG tag, uint16_t ch_id = 0, uint16_t st_id = 0);
 
-            //!
-            //! Constructor.
-            //! @param [in] fact Message factory containing a binary message.
-            //! @param [in] tag_ch_id Message tag for the channel id field.
-            //! @param [in] tag_st_id Message tag for the stream id field.
-            //!
-            StreamMessage(const tlv::MessageFactory& fact, TAG tag_ch_id, TAG tag_st_id);
-        };
-    }
+        //!
+        //! Constructor.
+        //! @param [in] fact Message factory containing a binary message.
+        //! @param [in] tag_ch_id Message tag for the channel id field.
+        //! @param [in] tag_st_id Message tag for the stream id field.
+        //!
+        StreamMessage(const tlv::MessageFactory& fact, TAG tag_ch_id, TAG tag_st_id);
+    };
 }

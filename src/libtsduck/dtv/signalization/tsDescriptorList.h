@@ -344,7 +344,8 @@ namespace ts {
         //! a descriptor with the corresponding private data specifier.
         //! @return The index of the descriptor in the list or count() if no such descriptor is found.
         //!
-        template <class DESC, typename std::enable_if<std::is_base_of<AbstractDescriptor, DESC>::value>::type* = nullptr>
+        template<class DESC>
+            requires std::derived_from<DESC, AbstractDescriptor>
         size_t search(DuckContext& duck, DID tag, DESC& desc, size_t start_index = 0, PDS pds = 0) const;
 
         //!
@@ -463,7 +464,7 @@ namespace ts {
 //----------------------------------------------------------------------------
 
 // Search a descriptor with the specified tag, starting at the specified index.
-template <class DESC, typename std::enable_if<std::is_base_of<ts::AbstractDescriptor, DESC>::value>::type*>
+template<class DESC> requires std::derived_from<DESC, ts::AbstractDescriptor>
 size_t ts::DescriptorList::search(DuckContext& duck, DID tag, DESC& desc, size_t start_index, PDS pds) const
 {
     // Repeatedly search for a descriptor until one is successfully deserialized

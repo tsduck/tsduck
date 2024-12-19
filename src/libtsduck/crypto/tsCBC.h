@@ -24,7 +24,7 @@ namespace ts {
     //! @tparam CIPHER A subclass of ts::BlockCipher, the underlying block cipher.
     //! @ingroup crypto
     //!
-    template <class CIPHER, typename std::enable_if<std::is_base_of<BlockCipher, CIPHER>::value>::type* = nullptr>
+    template<class CIPHER> requires std::derived_from<CIPHER, ts::BlockCipher>
     class CBC: public CIPHER
     {
         TS_NOCOPY(CBC);
@@ -57,13 +57,13 @@ namespace ts {
 // Need 3 work blocks. The last 2 are only used with "in place" decryption.
 TS_BLOCK_CIPHER_DEFINE_PROPERTIES_TEMPLATE(ts::CBC, CBC, (CIPHER::PROPERTIES(), u"CBC", false, CIPHER::BLOCK_SIZE, 3, CIPHER::BLOCK_SIZE));
 
-template<class CIPHER, typename std::enable_if<std::is_base_of<ts::BlockCipher, CIPHER>::value>::type* N>
-ts::CBC<CIPHER,N>::CBC() : CIPHER(CBC::PROPERTIES())
+template<class CIPHER> requires std::derived_from<CIPHER, ts::BlockCipher>
+ts::CBC<CIPHER>::CBC() : CIPHER(CBC::PROPERTIES())
 {
 }
 
-template<class CIPHER, typename std::enable_if<std::is_base_of<ts::BlockCipher, CIPHER>::value>::type* N>
-ts::CBC<CIPHER,N>::CBC(const BlockCipherProperties& props) : CIPHER(props)
+template<class CIPHER> requires std::derived_from<CIPHER, ts::BlockCipher>
+ts::CBC<CIPHER>::CBC(const BlockCipherProperties& props) : CIPHER(props)
 {
     props.assertCompatibleChaining(CBC::PROPERTIES());
 }
@@ -74,8 +74,8 @@ ts::CBC<CIPHER,N>::CBC(const BlockCipherProperties& props) : CIPHER(props)
 // The algorithm is safe with overlapping buffers.
 //----------------------------------------------------------------------------
 
-template<class CIPHER, typename std::enable_if<std::is_base_of<ts::BlockCipher, CIPHER>::value>::type* N>
-bool ts::CBC<CIPHER,N>::encryptImpl(const void* plain, size_t plain_length, void* cipher, size_t cipher_maxsize, size_t* cipher_length)
+template<class CIPHER> requires std::derived_from<CIPHER, ts::BlockCipher>
+bool ts::CBC<CIPHER>::encryptImpl(const void* plain, size_t plain_length, void* cipher, size_t cipher_maxsize, size_t* cipher_length)
 {
     const size_t bsize = this->properties.block_size;
     uint8_t* work1 = this->work.data();
@@ -115,8 +115,8 @@ bool ts::CBC<CIPHER,N>::encryptImpl(const void* plain, size_t plain_length, void
 // The algorithm needs to specifically process overlapping buffers.
 //----------------------------------------------------------------------------
 
-template<class CIPHER, typename std::enable_if<std::is_base_of<ts::BlockCipher, CIPHER>::value>::type* N>
-bool ts::CBC<CIPHER,N>::decryptImpl(const void* cipher, size_t cipher_length, void* plain, size_t plain_maxsize, size_t* plain_length)
+template<class CIPHER> requires std::derived_from<CIPHER, ts::BlockCipher>
+bool ts::CBC<CIPHER>::decryptImpl(const void* cipher, size_t cipher_length, void* plain, size_t plain_maxsize, size_t* plain_length)
 {
     const size_t bsize = this->properties.block_size;
     uint8_t* work1 = this->work.data();

@@ -161,7 +161,7 @@ namespace ts {
     //! @param [in] last Last value of the range.
     //! @return A vector of @a INT containing all values from @a min to @a max, inclusive.
     //!
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+    template <typename INT> requires std::integral<INT>
     std::vector<INT> Range(INT first, INT last);
 
     //!
@@ -472,7 +472,7 @@ std::list<typename MAP::mapped_type> ts::MapValuesList(const MAP& container)
 // Build a vector of integers containing all values in a range.
 //----------------------------------------------------------------------------
 
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
+template <typename INT> requires std::integral<INT>
 std::vector<INT> ts::Range(INT first, INT last)
 {
     std::vector<INT> vec;

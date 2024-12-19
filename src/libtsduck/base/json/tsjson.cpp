@@ -14,6 +14,8 @@
 #include "tsjsonString.h"
 #include "tsjsonObject.h"
 #include "tsjsonArray.h"
+#include "tsTextParser.h"
+#include "tsEnumeration.h"
 
 TS_DEFINE_GLOBAL(const, ts::Enumeration, ts::json::TypeEnum, ({
     {u"Null literal",  ts::json::Type::Null},

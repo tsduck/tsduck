@@ -37,7 +37,7 @@ namespace ts {
     //!
     //! @tparam CIPHER A subclass of ts::BlockCipher, the underlying block cipher.
     //!
-    template <class CIPHER, typename std::enable_if<std::is_base_of<BlockCipher, CIPHER>::value>::type* = nullptr>
+    template<class CIPHER> requires std::derived_from<CIPHER, ts::BlockCipher>
     class DVS042: public CIPHER
     {
         TS_NOCOPY(DVS042);
@@ -100,13 +100,13 @@ TS_MSC_NOWARNING(4505) // warning C4505: 'ts::DVS042<ts::AES>::encrypt': unrefer
 
 TS_BLOCK_CIPHER_DEFINE_PROPERTIES_TEMPLATE(ts::DVS042, DVS042, (CIPHER::PROPERTIES(), u"DVS042", true, 0, 3, CIPHER::BLOCK_SIZE));
 
-template<class CIPHER, typename std::enable_if<std::is_base_of<ts::BlockCipher, CIPHER>::value>::type* N>
-ts::DVS042<CIPHER,N>::DVS042() : CIPHER(DVS042::PROPERTIES())
+template<class CIPHER> requires std::derived_from<CIPHER, ts::BlockCipher>
+ts::DVS042<CIPHER>::DVS042() : CIPHER(DVS042::PROPERTIES())
 {
 }
 
-template<class CIPHER, typename std::enable_if<std::is_base_of<ts::BlockCipher, CIPHER>::value>::type* N>
-ts::DVS042<CIPHER,N>::DVS042(const BlockCipherProperties& props, bool ignore_short_iv) :
+template<class CIPHER> requires std::derived_from<CIPHER, ts::BlockCipher>
+ts::DVS042<CIPHER>::DVS042(const BlockCipherProperties& props, bool ignore_short_iv) :
     CIPHER(props),
     _ignore_short_iv(ignore_short_iv)
 {
@@ -119,8 +119,8 @@ ts::DVS042<CIPHER,N>::DVS042(const BlockCipherProperties& props, bool ignore_sho
 // Set initialization vectors.
 //----------------------------------------------------------------------------
 
-template<class CIPHER, typename std::enable_if<std::is_base_of<ts::BlockCipher, CIPHER>::value>::type* N>
-bool ts::DVS042<CIPHER,N>::setShortIV(const void* iv_data, size_t iv_length)
+template<class CIPHER> requires std::derived_from<CIPHER, ts::BlockCipher>
+bool ts::DVS042<CIPHER>::setShortIV(const void* iv_data, size_t iv_length)
 {
     if (this->properties.min_iv_size == 0 && iv_length == 0) {
         _short_iv.clear();
@@ -142,8 +142,8 @@ bool ts::DVS042<CIPHER,N>::setShortIV(const void* iv_data, size_t iv_length)
 // The algorithm is safe with overlapping buffers.
 //----------------------------------------------------------------------------
 
-template<class CIPHER, typename std::enable_if<std::is_base_of<ts::BlockCipher, CIPHER>::value>::type* N>
-bool ts::DVS042<CIPHER,N>::encryptImpl(const void* plain, size_t plain_length, void* cipher, size_t cipher_maxsize, size_t* cipher_length)
+template<class CIPHER> requires std::derived_from<CIPHER, ts::BlockCipher>
+bool ts::DVS042<CIPHER>::encryptImpl(const void* plain, size_t plain_length, void* cipher, size_t cipher_maxsize, size_t* cipher_length)
 {
     const size_t bsize = this->properties.block_size;
     uint8_t* work1 = this->work.data();
@@ -195,8 +195,8 @@ bool ts::DVS042<CIPHER,N>::encryptImpl(const void* plain, size_t plain_length, v
 // The algorithm needs to specifically process overlapping buffers.
 //----------------------------------------------------------------------------
 
-template<class CIPHER, typename std::enable_if<std::is_base_of<ts::BlockCipher, CIPHER>::value>::type* N>
-bool ts::DVS042<CIPHER,N>::decryptImpl(const void* cipher, size_t cipher_length, void* plain, size_t plain_maxsize, size_t* plain_length)
+template<class CIPHER> requires std::derived_from<CIPHER, ts::BlockCipher>
+bool ts::DVS042<CIPHER>::decryptImpl(const void* cipher, size_t cipher_length, void* plain, size_t plain_maxsize, size_t* plain_length)
 {
     const size_t bsize = this->properties.block_size;
     uint8_t* work1 = this->work.data();

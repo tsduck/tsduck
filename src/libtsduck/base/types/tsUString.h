@@ -278,7 +278,7 @@ namespace ts {
         //! Can be of any integer type, including a signed type.
         //! @param [in] alloc Allocator.
         //!
-        template <typename CHARTYPE, typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+        template <typename CHARTYPE, typename INT> requires std::integral<INT>
         UString(const std::vector<CHARTYPE>& vec, INT count, const allocator_type& alloc = allocator_type());
 
         //!
@@ -301,7 +301,7 @@ namespace ts {
         //! Can be of any integer type, including a signed type.
         //! @param [in] alloc Allocator.
         //!
-        template <typename CHARTYPE, std::size_t SIZE, typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+        template <typename CHARTYPE, std::size_t SIZE, typename INT> requires std::integral<INT>
         UString(const std::array<CHARTYPE, SIZE>& arr, INT count, const allocator_type& alloc = allocator_type());
 
         //!
@@ -501,7 +501,7 @@ namespace ts {
         //! Can be of any integer type, including a signed type.
         //! @return A reference to this object.
         //!
-        template <typename CHARTYPE, typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+        template <typename CHARTYPE, typename INT> requires std::integral<INT>
         UString& assign(const std::vector<CHARTYPE>& vec, INT count);
 
         //!
@@ -524,7 +524,7 @@ namespace ts {
         //! Can be of any integer type, including a signed type.
         //! @return A reference to this object.
         //!
-        template <typename CHARTYPE, std::size_t SIZE, typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+        template <typename CHARTYPE, std::size_t SIZE, typename INT> requires std::integral<INT>
         UString& assign(const std::array<CHARTYPE, SIZE>& arr, INT count);
 
         //!
@@ -698,7 +698,7 @@ namespace ts {
         //! @param [in] length New size of the string. Ignored if negative or greater than the current string length.
         //! @param [in] trimTrailingSpaces If true, also remove any trailing space.
         //!
-        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+        template <typename INT> requires std::integral<INT>
         void trimLength(INT length, bool trimTrailingSpaces = true);
 
         //!
@@ -1401,7 +1401,7 @@ namespace ts {
         //! @param [in] total The total value.
         //! @return A string representing the percentage of @a value in @a total.
         //!
-        template <typename Int1, typename Int2, typename std::enable_if<std::is_integral<Int1>::value && std::is_integral<Int2>::value>::type* = nullptr>
+        template <typename Int1, typename Int2> requires std::integral<Int1> && std::integral<Int2>
         static UString Percentage(Int1 value, Int2 total);
 
         //!
@@ -1653,7 +1653,7 @@ namespace ts {
         //! @param [in] maxValue maximum allowed value for the decoded integer.
         //! @return True on success, false on error (invalid string).
         //!
-        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+        template <typename INT> requires std::integral<INT>
         bool toInteger(INT& value,
                        const UString& thousandSeparators = UString(),
                        size_type decimals = 0,
@@ -1691,7 +1691,7 @@ namespace ts {
         //! @param [in] maxValue maximum allowed value for the decoded integers.
         //! @return True on success, false on error (invalid string).
         //!
-        template <class CONTAINER, typename std::enable_if<std::is_integral<typename CONTAINER::value_type>::value>::type* = nullptr>
+        template <class CONTAINER> requires std::integral<typename CONTAINER::value_type>
         bool toIntegers(CONTAINER& container,
                         const UString& thousandSeparators = UString(),
                         const UString& listSeparators = UString(u",; "),
@@ -1712,7 +1712,7 @@ namespace ts {
         //! @param [in] maxValue Maximum allowed value for the decoded value.
         //! @return True on success, false on error (invalid string).
         //!
-        template <typename FLT, typename std::enable_if<std::is_floating_point<FLT>::value>::type* = nullptr>
+        template <typename FLT> requires std::floating_point<FLT>
         bool toFloat(FLT& value,
                      FLT minValue = std::numeric_limits<FLT>::lowest(),
                      FLT maxValue = std::numeric_limits<FLT>::max()) const;
@@ -1731,7 +1731,7 @@ namespace ts {
         //! @param [in] pad The padding character to adjust the width.
         //! @return The formatted string.
         //!
-        template <typename INT, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value>::type* = nullptr>
+        template <typename INT> requires ts::int_enum<INT>
         static UString Decimal(INT value,
                                size_type min_width = 0,
                                bool right_justified = true,
@@ -1747,7 +1747,7 @@ namespace ts {
         //! @param [in] force_sign If true, force a '+' sign for positive values.
         //! @return The formatted string.
         //!
-        template <class CONTAINER, typename std::enable_if<std::is_integral<typename CONTAINER::value_type>::value || std::is_enum<typename CONTAINER::value_type>::value>::type* = nullptr>
+        template <class CONTAINER> requires ts::int_enum<typename CONTAINER::value_type>
         static UString Decimal(const CONTAINER& values,
                                const UString& separator = UString(u", "),
                                bool force_sign = false);
@@ -1763,7 +1763,7 @@ namespace ts {
         //! @param [in] use_upper If true, use upper-case hexadecimal digits.
         //! @return The formatted string.
         //!
-        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+        template <typename INT> requires std::integral<INT>
         static UString Hexa(INT value,
                             size_type width = 0,
                             const UString& separator = UString(),
@@ -1782,7 +1782,7 @@ namespace ts {
         //! @param [in] use_upper If true, use upper-case hexadecimal digits.
         //! @return The formatted string.
         //!
-        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+        template <typename INT> requires std::integral<INT>
         static UString HexaMin(INT value,
                                size_type min_width = 0,
                                const UString& separator = UString(),
@@ -1847,7 +1847,7 @@ namespace ts {
         //! @param [in] plural When true, use the plural form (full unit name only, e.g. "milliseconds").
         //! @return A string representing the unit of the @a DURATION.
         //!
-        template <class DURATION, typename std::enable_if<std::is_integral<typename DURATION::rep>::value, int>::type = 0>
+        template <class DURATION> requires std::integral<typename DURATION::rep>
         static UString ChronoUnit(bool short_format = false, bool plural = false)
         {
             return ChronoUnit(DURATION::period::num, DURATION::period::den, short_format, plural);
@@ -2471,26 +2471,26 @@ namespace ts {
 
         // Internal helpers for toInteger(), signed and unsigned versions.
         // Work on trimmed strings, with leading '+' skipped.
-        template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value>::type* = nullptr>
+        template<typename INT> requires std::unsigned_integral<INT>
         static bool ToIntegerHelper(const UChar* start, const UChar* end, INT& value, const UString& thousandSeparators, size_type decimals, const UString& decimalSeparators);
 
-        template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type* = nullptr>
+        template<typename INT> requires std::signed_integral<INT>
         static bool ToIntegerHelper(const UChar* start, const UChar* end, INT& value, const UString& thousandSeparators, size_type decimals, const UString& decimalSeparators);
 
         // Internal helpers for Decimal(), signed and unsigned versions.
         // Produce unpadded strings.
-        template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value>::type* = nullptr>
+        template<typename INT> requires std::unsigned_integral<INT>
         static void DecimalHelper(UString& result, INT value, const UString& separator, bool force_sign);
 
-        template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type* = nullptr>
+        template<typename INT> requires std::signed_integral<INT>
         static void DecimalHelper(UString& result, INT value, const UString& separator, bool force_sign);
 
         // Internal helper for Decimal() when the value is the most negative value of a signed type.
         // This negative value cannot be made positive inside the same signed type.
-        template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value && sizeof(INT) == 8>::type* = nullptr>
+        template<typename INT> requires std::signed_integral<INT> && (sizeof(INT) == 8)
         static void DecimalMostNegative(UString& result, const UString& separator);
 
-        template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value && sizeof(INT) < 8>::type* = nullptr>
+        template<typename INT> requires std::signed_integral<INT> && (sizeof(INT) < 8)
         static void DecimalMostNegative(UString& result, const UString& separator);
 
         // Internal helpers for string formatting.
@@ -2734,7 +2734,7 @@ TSDUCKDLL inline ts::UString operator+(const char* s1, const ts::UString& s2)
 TS_PUSH_WARNING()
 TS_MSC_NOWARNING(4127)
 
-template <typename CHARTYPE, typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
+template <typename CHARTYPE, typename INT> requires std::integral<INT>
 ts::UString& ts::UString::assign(const std::vector<CHARTYPE>& vec, INT count)
 {
     // The character type must be 16 bits.
@@ -2757,7 +2757,7 @@ ts::UString& ts::UString::assign(const std::vector<CHARTYPE>& vec, INT count)
     return *this;
 }
 
-template <typename CHARTYPE, std::size_t SIZE, typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
+template <typename CHARTYPE, std::size_t SIZE, typename INT> requires std::integral<INT>
 ts::UString& ts::UString::assign(const std::array<CHARTYPE, SIZE>& arr, INT count)
 {
     // The character type must be 16 bits.
@@ -2829,7 +2829,7 @@ void ts::UString::assignFromWCharHelper(const wchar_t* wstr, size_type count)
 // Template constructors.
 //----------------------------------------------------------------------------
 
-template <typename CHARTYPE, typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
+template <typename CHARTYPE, typename INT> requires std::integral<INT>
 ts::UString::UString(const std::vector<CHARTYPE>& vec, INT count, const allocator_type& alloc) :
     SuperClass(alloc)
 {
@@ -2843,7 +2843,7 @@ ts::UString::UString(const std::vector<CHARTYPE>& vec, const allocator_type& all
     assign(vec);
 }
 
-template <typename CHARTYPE, std::size_t SIZE, typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
+template <typename CHARTYPE, std::size_t SIZE, typename INT> requires std::integral<INT>
 ts::UString::UString(const std::array<CHARTYPE, SIZE>& arr, INT count, const allocator_type& alloc) :
     SuperClass(alloc)
 {
@@ -3182,7 +3182,7 @@ bool ts::UString::Load(CONTAINER& container, const fs::path& fileName)
 // Convert a string into an integer.
 //----------------------------------------------------------------------------
 
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
+template <typename INT> requires std::integral<INT>
 bool ts::UString::toInteger(INT& value, const UString& thousandSeparators, size_type decimals, const UString& decimalSeparators, INT minValue, INT maxValue) const
 {
     // Locate actual begin and end of integer value. Skip leading redundant '+' sign.
@@ -3204,7 +3204,7 @@ bool ts::UString::toInteger(INT& value, const UString& thousandSeparators, size_
 // Internal helper for toInteger, unsigned version.
 //----------------------------------------------------------------------------
 
-template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value>::type*>
+template<typename INT> requires std::unsigned_integral<INT>
 bool ts::UString::ToIntegerHelper(const UChar* start, const UChar* end, INT& value, const UString& thousandSeparators, size_type decimals, const UString& decimalSeparators)
 {
     // Initial value, up to decode error.
@@ -3269,7 +3269,7 @@ bool ts::UString::ToIntegerHelper(const UChar* start, const UChar* end, INT& val
 // Internal helper for toInteger, signed version.
 //----------------------------------------------------------------------------
 
-template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type*>
+template<typename INT> requires std::signed_integral<INT>
 bool ts::UString::ToIntegerHelper(const UChar* start, const UChar* end, INT& value, const UString& thousandSeparators, size_type decimals, const UString& decimalSeparators)
 {
     // Skip optional minus sign.
@@ -3297,7 +3297,7 @@ bool ts::UString::ToIntegerHelper(const UChar* start, const UChar* end, INT& val
 // Convert a string containing a list of integers into a container of integers.
 //----------------------------------------------------------------------------
 
-template <class CONTAINER, typename std::enable_if<std::is_integral<typename CONTAINER::value_type>::value>::type*>
+template <class CONTAINER> requires std::integral<typename CONTAINER::value_type>
 bool ts::UString::toIntegers(CONTAINER& container,
                              const UString& thousandSeparators,
                              const UString& listSeparators,
@@ -3351,7 +3351,7 @@ bool ts::UString::toIntegers(CONTAINER& container,
 // Convert a string into a floating-point.
 //----------------------------------------------------------------------------
 
-template <typename FLT, typename std::enable_if<std::is_floating_point<FLT>::value>::type*>
+template <typename FLT> requires std::floating_point<FLT>
 bool ts::UString::toFloat(FLT& value, FLT minValue, FLT maxValue) const
 {
     // Convert to an 8-bit string.
@@ -3405,7 +3405,7 @@ CONTAINER& ts::UString::Append(CONTAINER& container, int argc, const char* const
 // Format a string containing a decimal value.
 //----------------------------------------------------------------------------
 
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value>::type*>
+template <typename INT> requires ts::int_enum<INT>
 ts::UString ts::UString::Decimal(INT value,
                                  size_type min_width,
                                  bool right_justified,
@@ -3438,7 +3438,7 @@ ts::UString ts::UString::Decimal(INT value,
 // Format a string containing a list of decimal values.
 //----------------------------------------------------------------------------
 
-template <class CONTAINER, typename std::enable_if<std::is_integral<typename CONTAINER::value_type>::value || std::is_enum<typename CONTAINER::value_type>::value>::type*>
+template <class CONTAINER> requires ts::int_enum<typename CONTAINER::value_type>
 ts::UString ts::UString::Decimal(const CONTAINER& values, const UString& separator, bool force_sign)
 {
     using type_t = typename underlying_type<typename CONTAINER::value_type>::type;
@@ -3460,7 +3460,7 @@ ts::UString ts::UString::Decimal(const CONTAINER& values, const UString& separat
 // Internal helpers for Decimal(), unsigned version.
 //----------------------------------------------------------------------------
 
-template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value>::type*>
+template<typename INT> requires std::unsigned_integral<INT>
 void ts::UString::DecimalHelper(UString& result, INT value, const UString& separator, bool force_sign)
 {
     // Avoid reallocating (most of the time).
@@ -3494,7 +3494,7 @@ void ts::UString::DecimalHelper(UString& result, INT value, const UString& separ
 // Internal helpers for Decimal(), signed version.
 //----------------------------------------------------------------------------
 
-template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type*>
+template<typename INT> requires std::signed_integral<INT>
 void ts::UString::DecimalHelper(UString& result, INT value, const UString& separator, bool force_sign)
 {
     // Unsigned version of the signed type (same size).
@@ -3518,7 +3518,7 @@ void ts::UString::DecimalHelper(UString& result, INT value, const UString& separ
 // a signed type (cannot be made positive inside the same signed type).
 //----------------------------------------------------------------------------
 
-template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value && sizeof(INT) == 8>::type*>
+template<typename INT> requires std::signed_integral<INT> && (sizeof(INT) == 8)
 void ts::UString::DecimalMostNegative(UString& result, const UString& separator)
 {
     // Specialization for 64-bit signed type to avoid infinite recursion.
@@ -3534,7 +3534,7 @@ void ts::UString::DecimalMostNegative(UString& result, const UString& separator)
     }
 }
 
-template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value && sizeof(INT) < 8>::type*>
+template<typename INT> requires std::signed_integral<INT> && (sizeof(INT) < 8)
 void ts::UString::DecimalMostNegative(UString& result, const UString& separator)
 {
     // INT is less than 64-bit long. Use an intermediate 64-bit conversion to have a valid positive value.
@@ -3546,7 +3546,7 @@ void ts::UString::DecimalMostNegative(UString& result, const UString& separator)
 // Format a string containing an hexadecimal value.
 //----------------------------------------------------------------------------
 
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
+template <typename INT> requires std::integral<INT>
 ts::UString ts::UString::Hexa(INT svalue,
                               size_type width,
                               const UString& separator,
@@ -3605,7 +3605,7 @@ ts::UString ts::UString::Hexa(INT svalue,
 // Format a string containing an hexadecimal value (variant).
 //----------------------------------------------------------------------------
 
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
+template <typename INT> requires std::integral<INT>
 ts::UString ts::UString::HexaMin(INT svalue,
                                  size_type min_width,
                                  const UString& separator,
@@ -3665,7 +3665,7 @@ ts::UString ts::UString::HexaMin(INT svalue,
 // Format a percentage string.
 //----------------------------------------------------------------------------
 
-template <typename Int1, typename Int2, typename std::enable_if<std::is_integral<Int1>::value && std::is_integral<Int2>::value>::type*>
+template <typename Int1, typename Int2> requires std::integral<Int1> && std::integral<Int2>
 ts::UString ts::UString::Percentage(Int1 value, Int2 total)
 {
     if (total < 0) {
@@ -3695,7 +3695,7 @@ ts::UString ts::UString::Percentage(const cn::duration<Rep1,Period1>& value, con
 // Reduce the size of the string to a given length from an alien integer type.
 //----------------------------------------------------------------------------
 
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
+template <typename INT> requires std::integral<INT>
 void ts::UString::trimLength(INT length, bool trimTrailingSpaces)
 {
     // We assume here that UString::size_type is the largest unsigned type

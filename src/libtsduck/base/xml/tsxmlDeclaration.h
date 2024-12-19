@@ -14,48 +14,46 @@
 #pragma once
 #include "tsxmlNode.h"
 
-namespace ts {
-    namespace xml {
+namespace ts::xml {
+    //!
+    //! Declaration in an XML document.
+    //! @ingroup xml
+    //!
+    class TSDUCKDLL Declaration: public Node
+    {
+    public:
         //!
-        //! Declaration in an XML document.
-        //! @ingroup xml
+        //! Default XML declaration.
         //!
-        class TSDUCKDLL Declaration: public Node
-        {
-        public:
-            //!
-            //! Default XML declaration.
-            //!
-            static const UChar* const DEFAULT_XML_DECLARATION;
+        static const UChar* const DEFAULT_XML_DECLARATION;
 
-            //!
-            //! Constructor.
-            //! @param [in,out] report Where to report errors.
-            //! @param [in] line Line number in input document.
-            //!
-            explicit Declaration(Report& report = NULLREP, size_t line = 0);
+        //!
+        //! Constructor.
+        //! @param [in,out] report Where to report errors.
+        //! @param [in] line Line number in input document.
+        //!
+        explicit Declaration(Report& report = NULLREP, size_t line = 0);
 
-            //!
-            //! Constructor.
-            //! @param [in,out] parent The parent document into which the declaration is added.
-            //! @param [in] value Content of the declaration. If empty, the default XML declaration is used.
-            //!
-            explicit Declaration(Document* parent, const UString& value = UString());
+        //!
+        //! Constructor.
+        //! @param [in,out] parent The parent document into which the declaration is added.
+        //! @param [in] value Content of the declaration. If empty, the default XML declaration is used.
+        //!
+        explicit Declaration(Document* parent, const UString& value = UString());
 
-            //!
-            //! Copy constructor.
-            //! @param [in] other Other instance to copy.
-            //!
-            Declaration(const Declaration& other);
+        //!
+        //! Copy constructor.
+        //! @param [in] other Other instance to copy.
+        //!
+        Declaration(const Declaration& other);
 
-            // Inherited from xml::Node.
-            virtual Node* clone() const override;
-            virtual UString typeName() const override;
-            virtual void print(TextFormatter& output, bool keepNodeOpen = false) const override;
+        // Inherited from xml::Node.
+        virtual Node* clone() const override;
+        virtual UString typeName() const override;
+        virtual void print(TextFormatter& output, bool keepNodeOpen = false) const override;
 
-        protected:
-            // Inherited from xml::Node.
-            virtual bool parseNode(TextParser& parser, const Node* parent) override;
-        };
-    }
+    protected:
+        // Inherited from xml::Node.
+        virtual bool parseNode(TextParser& parser, const Node* parent) override;
+    };
 }

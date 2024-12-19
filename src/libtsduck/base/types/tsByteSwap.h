@@ -123,7 +123,7 @@ namespace ts {
     {
     #if defined(TS_ARM64)
         asm("rev %w0, %w0" : "+r" (x)); return x;
-    #elif if defined (__cpp_lib_byteswap)
+    #elif defined(__cpp_lib_byteswap)
         return std::byteswap(x);
     #elif defined(TS_LINUX)
         return bswap_32(x);
@@ -147,7 +147,7 @@ namespace ts {
     {
     #if defined(TS_ARM64)
         asm("rev %0, %0" : "+r" (x)); return x;
-    #elif if defined (__cpp_lib_byteswap)
+    #elif defined(__cpp_lib_byteswap)
         return std::byteswap(x);
     #elif defined(TS_LINUX)
         return bswap_64(x);
@@ -429,7 +429,7 @@ namespace ts {
     //! @return On little-endian platforms, return the value of @a x where bytes were swapped.
     //! On big-endian platforms, return the value of @a x unmodified.
     //!
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+    template <typename INT> requires std::integral<INT>
     TSDUCKDLL inline INT CondByteSwap(INT x)
     {
         return CondByteSwapBE<INT>(x);

@@ -15,25 +15,23 @@
 #include "tshlsMediaElement.h"
 #include "tsBitRate.h"
 
-namespace ts {
-    namespace hls {
+namespace ts::hls {
+    //!
+    //! Description of a media segment in an HLS playlist.
+    //! @ingroup hls
+    //!
+    class TSDUCKDLL MediaSegment : public MediaElement
+    {
+        TS_RULE_OF_FIVE(MediaSegment, override);
+    public:
         //!
-        //! Description of a media segment in an HLS playlist.
-        //! @ingroup hls
+        //! Constructor.
         //!
-        class TSDUCKDLL MediaSegment : public MediaElement
-        {
-            TS_RULE_OF_FIVE(MediaSegment, override);
-        public:
-            //!
-            //! Constructor.
-            //!
-            MediaSegment() = default;
+        MediaSegment() = default;
 
-            UString          title {};     //!< Optional segment title.
-            cn::milliseconds duration {};  //!< Segment duration in milliseconds.
-            BitRate          bitrate = 0;  //!< Indicative bitrate.
-            bool             gap = false;  //!< Media is a "gap", should not be loaded by clients.
-        };
-    }
+        UString          title {};     //!< Optional segment title.
+        cn::milliseconds duration {};  //!< Segment duration in milliseconds.
+        BitRate          bitrate = 0;  //!< Indicative bitrate.
+        bool             gap = false;  //!< Media is a "gap", should not be loaded by clients.
+    };
 }

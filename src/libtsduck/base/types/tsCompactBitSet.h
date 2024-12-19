@@ -34,7 +34,7 @@ namespace ts {
     //!
     //! @tparam BITS Number of bits. Must be in the range 0 to 64.
     //!
-    template <const size_t BITS, typename std::enable_if<(BITS > 0)>::type* = nullptr>
+    template <const size_t BITS> requires (BITS > 0 && BITS <= 64)
     class CompactBitSet final
     {
     public:
@@ -81,28 +81,24 @@ namespace ts {
         //! @param [in] values Initial label values to set.
         //! Bits are numbered from LSB to MSB.
         //!
-        template<class CONTAINER, typename std::enable_if<std::is_integral<typename CONTAINER::value_type>::value && std::is_signed<typename CONTAINER::value_type>::value, int>::type = 0>
+        template<class CONTAINER> requires std::integral<typename CONTAINER::value_type>
         CompactBitSet(const CONTAINER& values) :
             _value(0)
         {
             for (auto pos : values) {
-                if (pos >= 0) {
+                if constexpr (std::signed_integral<typename CONTAINER::value_type>) {
+                    if (pos >= 0) {
+                        set(size_t(pos));
+                    }
+                }
+                else if constexpr (std::unsigned_integral<typename CONTAINER::value_type>) {
                     set(size_t(pos));
+                }
+                else {
+                    static_assert(false, "not an integer type");
                 }
             }
         }
-
-        //! @cond nodoxygen
-        // Unsigned version
-        template<class CONTAINER, typename std::enable_if<std::is_integral<typename CONTAINER::value_type>::value && std::is_unsigned<typename CONTAINER::value_type>::value, int>::type = 0>
-        CompactBitSet(const CONTAINER& values) :
-            _value(0)
-        {
-            for (auto pos : values) {
-                set(size_t(pos));
-            }
-        }
-        //! @endcond
 
         //!
         //! Equality operator.

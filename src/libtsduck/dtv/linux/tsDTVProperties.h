@@ -71,7 +71,7 @@ namespace ts {
         //! @param [in] cmd Command code.
         //! @param [in] data Optional command data.
         //!
-        template <typename ENUM, typename std::enable_if<std::is_integral<ENUM>::value || std::is_enum<ENUM>::value>::type* = nullptr>
+        template <typename ENUM> requires std::integral<ENUM> || std::is_enum_v<ENUM>
         void addVar(uint32_t cmd, const std::optional<ENUM>& data)
         {
             if (data.has_value()) {
@@ -124,7 +124,7 @@ namespace ts {
         //! @param [out] values A set receiving all integer values.
         //! @param [in] cmd Command code.
         //!
-        template <typename INT, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value>::type* = nullptr>
+        template <typename INT> requires std::integral<INT> || std::is_enum_v<INT>
         void getValuesByCommand(std::set<INT>& values, uint32_t cmd) const;
 
         //!
@@ -134,7 +134,7 @@ namespace ts {
         //! @param [out] values A set receiving all integer values.
         //! @param [in] index Index in buffer.
         //!
-        template <typename INT, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value>::type* = nullptr>
+        template <typename INT> requires std::integral<INT> || std::is_enum_v<INT>
         void getValuesByIndex(std::set<INT>& values, size_t index) const;
 
         //!
@@ -198,7 +198,7 @@ namespace ts {
 // Template definitions.
 //----------------------------------------------------------------------------
 
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value>::type*>
+template <typename INT> requires std::integral<INT> || std::is_enum_v<INT>
 void ts::DTVProperties::getValuesByCommand(std::set<INT>& values, uint32_t cmd) const
 {
     values.clear();
@@ -210,7 +210,7 @@ void ts::DTVProperties::getValuesByCommand(std::set<INT>& values, uint32_t cmd) 
     }
 }
 
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value>::type*>
+template <typename INT> requires std::integral<INT> || std::is_enum_v<INT>
 void ts::DTVProperties::getValuesByIndex(std::set<INT>& values, size_t index) const
 {
     values.clear();

@@ -14,6 +14,7 @@
 #pragma once
 #include "tsAbstractDescriptor.h"
 #include "tsModulationArgs.h"
+#include "tsIntegerUtils.h"
 
 namespace ts {
 
@@ -57,7 +58,7 @@ namespace ts {
         //! @param defvalue The default value to return if @a value is not a supported one.
         //! @return The corresponding modulation parameter.
         //!
-        template <typename ENUM, typename std::enable_if<std::is_integral<ENUM>::value || std::is_enum<ENUM>::value>::type* = nullptr>
+        template <typename ENUM> requires ts::int_enum<ENUM>
         static ENUM translate(int value, const std::map<int,ENUM>& definition, ENUM defvalue);
 
     private:
@@ -71,7 +72,7 @@ namespace ts {
 // Template definitions.
 //----------------------------------------------------------------------------
 
-template <typename ENUM, typename std::enable_if<std::is_integral<ENUM>::value || std::is_enum<ENUM>::value>::type*>
+template <typename ENUM> requires ts::int_enum<ENUM>
 ENUM ts::AbstractDeliverySystemDescriptor::translate(int value, const std::map<int,ENUM>& definition, ENUM defvalue)
 {
     const auto it = definition.find(value);

@@ -400,8 +400,8 @@ namespace ts {
         //! @param [in] optional  When true, the option's value is optional.
         //! @return A reference to this instance.
         //!
-        template <class NUMTYPE, typename INT1 = int64_t, typename INT2 = int64_t,
-                  typename std::enable_if<std::is_base_of<AbstractNumber, NUMTYPE>::value && std::is_integral<INT1>::value && std::is_integral<INT2>::value, int>::type = 0>
+        template <class NUMTYPE, typename INT1 = int64_t, typename INT2 = int64_t>
+            requires std::derived_from<NUMTYPE, AbstractNumber> && std::integral<INT1> && std::integral<INT2>
         Args& option(const UChar* name,
                      UChar        short_name = 0,
                      size_t       min_occur = 0,
@@ -428,7 +428,7 @@ namespace ts {
         //! @param [in] optional  When true, the option's value is optional.
         //! @return A reference to this instance.
         //!
-        template <class DURATION, typename std::enable_if<std::is_integral<typename DURATION::rep>::value, int>::type = 0>
+        template <class DURATION> requires std::integral<typename DURATION::rep>
         Args& option(const UChar* name,
                      UChar        short_name = 0,
                      size_t       min_occur = 0,
@@ -797,7 +797,7 @@ namespace ts {
         //! an empty string, this specifies a parameter, not an option. If the specified option
         //! was not declared in the syntax of the command, a fatal error is reported.
         //!
-        template <class CONTAINER, typename std::enable_if<std::is_base_of<UString, typename CONTAINER::value_type>::value>::type* = nullptr>
+        template <class CONTAINER> requires std::derived_from<typename CONTAINER::value_type, UString>
         void getValues(CONTAINER& values, const UChar* name = nullptr) const;
 
         //!
@@ -823,7 +823,7 @@ namespace ts {
         //! an empty string, this specifies a parameter, not an option. If the specified option
         //! was not declared in the syntax of the command, a fatal error is reported.
         //!
-        template <class CONTAINER, typename std::enable_if<std::is_base_of<fs::path, typename CONTAINER::value_type>::value>::type* = nullptr>
+        template <class CONTAINER> requires std::derived_from<typename CONTAINER::value_type, fs::path>
         void getPathValues(CONTAINER& values, const UChar* name = nullptr) const;
 
         //!
@@ -844,7 +844,7 @@ namespace ts {
         //! @param [in] index The occurence of the option to return. Zero designates the
         //! first occurence.
         //!
-        template <typename INT, typename INT2 = INT, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value>::type* = nullptr>
+        template <typename INT, typename INT2 = INT> requires ts::int_enum<INT> && ts::int_enum<INT2>
         void getIntValue(INT& value, const UChar* name = nullptr, const INT2 def_value = static_cast<INT2>(0), size_t index = 0) const;
 
         //!
@@ -861,7 +861,7 @@ namespace ts {
         //! first occurence.
         //! @return The integer value of the option or parameter.
         //!
-        template <typename INT, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value>::type* = nullptr>
+        template <typename INT> requires ts::int_enum<INT>
         INT intValue(const UChar* name = nullptr, const INT def_value = static_cast<INT>(0), size_t index = 0) const;
 
         //!
@@ -876,7 +876,7 @@ namespace ts {
         //! is cleared (set to uninitialized) when @a clear_if_absent it true. Otherwise, it
         //! is left unmodified.
         //!
-        template <typename INT, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value>::type* = nullptr>
+        template <typename INT> requires ts::int_enum<INT>
         void getOptionalIntValue(std::optional<INT>& value, const UChar* name = nullptr, bool clear_if_absent = false) const;
 
         //!
@@ -889,7 +889,7 @@ namespace ts {
         //! was not declared in the syntax of the command or declared as a non-string type,
         //! a fatal error is reported.
         //!
-        template <typename INT, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value>::type* = nullptr>
+        template <typename INT> requires ts::int_enum<INT>
         void getIntValues(std::vector<INT>& values, const UChar* name = nullptr) const;
 
         //!
@@ -902,7 +902,7 @@ namespace ts {
         //! was not declared in the syntax of the command or declared as a non-string type,
         //! a fatal error is reported.
         //!
-        template <typename INT, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value>::type* = nullptr>
+        template <typename INT> requires ts::int_enum<INT>
         void getIntValues(std::set<INT>& values, const UChar* name = nullptr) const;
 
         //!
@@ -951,7 +951,7 @@ namespace ts {
         //! is not present in the command line.
         //! @return The OR'ed values of the integer option.
         //!
-        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+        template <typename INT> requires std::integral<INT>
         INT bitMaskValue(const UChar* name = nullptr, const INT& def_value = static_cast<INT>(0)) const;
 
         //!
@@ -970,7 +970,7 @@ namespace ts {
         //! @param [in] def_value The value to return in @a value if the option or parameter
         //! is not present in the command line.
         //!
-        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+        template <typename INT> requires std::integral<INT>
         void getBitMaskValue(INT& value, const UChar* name = nullptr, const INT& def_value = static_cast<INT>(0)) const;
 
         //!
@@ -1163,7 +1163,7 @@ namespace ts {
         //! @param [in] index The occurence of the option to return. Zero designates the
         //! first occurence.
         //!
-        template <class NUMTYPE, typename std::enable_if<std::is_base_of<AbstractNumber, NUMTYPE>::value, int>::type = 0>
+        template <class NUMTYPE> requires std::derived_from<NUMTYPE, AbstractNumber>
         void getValue(NUMTYPE& value, const UChar* name = nullptr, const NUMTYPE& def_value = NUMTYPE(0), size_t index = 0) const;
 
         //!
@@ -1184,7 +1184,7 @@ namespace ts {
         //! @param [in] index The occurence of the option to return. Zero designates the
         //! first occurence.
         //!
-        template <class NUMTYPE, typename INT1, typename std::enable_if<std::is_base_of<AbstractNumber, NUMTYPE>::value && std::is_integral<INT1>::value, int>::type = 0>
+        template <class NUMTYPE, typename INT1> requires std::derived_from<NUMTYPE, AbstractNumber> && std::integral<INT1>
         void getValue(NUMTYPE& value, const UChar* name, INT1 def_value, size_t index = 0) const
         {
             return getValue(value, name, NUMTYPE(def_value), index);
@@ -1208,7 +1208,7 @@ namespace ts {
         //! first occurence.
         //! @return The value of the option or parameter.
         //!
-        template <class NUMTYPE, typename std::enable_if<std::is_base_of<AbstractNumber, NUMTYPE>::value, int>::type = 0>
+        template <class NUMTYPE> requires std::derived_from<NUMTYPE, AbstractNumber>
         NUMTYPE numValue(const UChar* name = nullptr, const NUMTYPE& def_value = NUMTYPE(0), size_t index = 0) const;
 
         //!
@@ -1324,10 +1324,10 @@ namespace ts {
             UString optionType() const;
 
             // Check if an integer value is in range.
-            template <typename INT, typename std::enable_if<std::is_same<INT, uint64_t>::value>::type* = nullptr>
+            template <typename INT> requires std::same_as<INT, uint64_t>
             bool inRange(INT value) const;
 
-            template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+            template <typename INT> requires std::integral<INT>
             bool inRange(INT value) const;
         };
 
@@ -1378,7 +1378,7 @@ namespace ts {
         IOption* search(const UString& name);
 
         // Get the value of an integer option (internal version), return trueu if found.
-        template <typename INT, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value>::type* = nullptr>
+        template <typename INT> requires ts::int_enum<INT>
         bool getIntInternal(INT& value, const UChar* name, size_t index) const;
 
         // Locate an option description. Used by application to get values.
@@ -1398,13 +1398,13 @@ namespace ts {
 //----------------------------------------------------------------------------
 
 // Check if an integer value is in range for an option.
-template <typename INT, typename std::enable_if<std::is_same<INT, uint64_t>::value>::type*>
+template <typename INT> requires std::same_as<INT, uint64_t>
 bool ts::Args::IOption::inRange(INT value) const
 {
     return value < 0x8000000000000000 && static_cast<int64_t>(value) >= min_value && static_cast<int64_t>(value) <= max_value;
 }
 
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
+template <typename INT> requires std::integral<INT>
 bool ts::Args::IOption::inRange(INT value) const
 {
     return static_cast<int64_t>(value) >= min_value && static_cast<int64_t>(value) <= max_value;
@@ -1415,7 +1415,7 @@ bool ts::Args::IOption::inRange(INT value) const
 // Get all occurences of an option in a container of strings.
 //----------------------------------------------------------------------------
 
-template <class CONTAINER, typename std::enable_if<std::is_base_of<ts::UString, typename CONTAINER::value_type>::value>::type*>
+template <class CONTAINER> requires std::derived_from<typename CONTAINER::value_type, ts::UString>
 void ts::Args::getValues(CONTAINER& values, const UChar* name) const
 {
     const IOption& opt(getIOption(name));
@@ -1427,7 +1427,7 @@ void ts::Args::getValues(CONTAINER& values, const UChar* name) const
     }
 }
 
-template <class CONTAINER, typename std::enable_if<std::is_base_of<fs::path, typename CONTAINER::value_type>::value>::type*>
+template <class CONTAINER> requires std::derived_from<typename CONTAINER::value_type, fs::path>
 void ts::Args::getPathValues(CONTAINER& values, const UChar* name) const
 {
     const IOption& opt(getIOption(name));
@@ -1447,7 +1447,7 @@ void ts::Args::getPathValues(CONTAINER& values, const UChar* name) const
 // Get the integer value of an option.
 //----------------------------------------------------------------------------
 
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value>::type*>
+template <typename INT> requires ts::int_enum<INT>
 bool ts::Args::getIntInternal(INT& value, const UChar* name, size_t index) const
 {
     const IOption& opt(getIOption(name));
@@ -1487,7 +1487,7 @@ bool ts::Args::getIntInternal(INT& value, const UChar* name, size_t index) const
     }
 }
 
-template <typename INT, typename INT2, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value>::type*>
+template <typename INT, typename INT2> requires ts::int_enum<INT> && ts::int_enum<INT2>
 void ts::Args::getIntValue(INT& value, const UChar* name, const INT2 def_value, size_t index) const
 {
     if (!getIntInternal(value, name, index)) {
@@ -1495,7 +1495,7 @@ void ts::Args::getIntValue(INT& value, const UChar* name, const INT2 def_value, 
     }
 }
 
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value>::type*>
+template <typename INT> requires ts::int_enum<INT>
 INT ts::Args::intValue(const UChar* name, const INT def_value, size_t index) const
 {
     INT value = def_value;
@@ -1503,7 +1503,7 @@ INT ts::Args::intValue(const UChar* name, const INT def_value, size_t index) con
     return value;
 }
 
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value>::type*>
+template <typename INT> requires ts::int_enum<INT>
 void ts::Args::getOptionalIntValue(std::optional<INT>& value, const UChar* name, bool clear_if_absent) const
 {
     const IOption& opt(getIOption(name));
@@ -1520,7 +1520,7 @@ void ts::Args::getOptionalIntValue(std::optional<INT>& value, const UChar* name,
 // Get the value of an AbstractNumber option.
 //----------------------------------------------------------------------------
 
-template <class NUMTYPE, typename std::enable_if<std::is_base_of<ts::AbstractNumber, NUMTYPE>::value, int>::type N>
+template <class NUMTYPE> requires std::derived_from<NUMTYPE, ts::AbstractNumber>
 void ts::Args::getValue(NUMTYPE& val, const UChar* name, const NUMTYPE& def_value, size_t index) const
 {
     if (!val.fromString(value(name, u"", index))) {
@@ -1528,7 +1528,7 @@ void ts::Args::getValue(NUMTYPE& val, const UChar* name, const NUMTYPE& def_valu
     }
 }
 
-template <class NUMTYPE, typename std::enable_if<std::is_base_of<ts::AbstractNumber, NUMTYPE>::value, int>::type N>
+template <class NUMTYPE> requires std::derived_from<NUMTYPE, ts::AbstractNumber>
 NUMTYPE ts::Args::numValue(const UChar* name, const NUMTYPE& def_value, size_t index) const
 {
     NUMTYPE val;
@@ -1541,7 +1541,7 @@ NUMTYPE ts::Args::numValue(const UChar* name, const NUMTYPE& def_value, size_t i
 // Return all occurences of this option in a vector of integers.
 //----------------------------------------------------------------------------
 
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value>::type*>
+template <typename INT> requires ts::int_enum<INT>
 void ts::Args::getIntValues(std::vector<INT>& values, const UChar* name) const
 {
     const IOption& opt(getIOption(name));
@@ -1561,7 +1561,7 @@ void ts::Args::getIntValues(std::vector<INT>& values, const UChar* name) const
 // Return all occurences of this option in a set of integers.
 //----------------------------------------------------------------------------
 
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value>::type*>
+template <typename INT> requires ts::int_enum<INT>
 void ts::Args::getIntValues(std::set<INT>& values, const UChar* name) const
 {
     const IOption& opt(getIOption(name));
@@ -1629,7 +1629,7 @@ void ts::Args::getIntValues(CompactBitSet<N>& values, const UChar* name, bool de
 // Get an OR'ed of all values of an integer option.
 //----------------------------------------------------------------------------
 
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
+template <typename INT> requires std::integral<INT>
 void ts::Args::getBitMaskValue(INT& value, const UChar* name, const INT& def_value) const
 {
     const IOption& opt(getIOption(name));
@@ -1648,7 +1648,7 @@ void ts::Args::getBitMaskValue(INT& value, const UChar* name, const INT& def_val
     }
 }
 
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
+template <typename INT> requires std::integral<INT>
 INT ts::Args::bitMaskValue(const UChar* name, const INT& def_value) const
 {
     INT value(def_value);

@@ -708,7 +708,7 @@ namespace ts {
         void handleSAT(const SAT&, PID);
 
         // Template common version for CVCT and TVCT.
-        template <class XVCT, typename std::enable_if<std::is_base_of<VCT, XVCT>::value, int>::type = 0>
+        template<class XVCT> requires std::derived_from<XVCT, VCT>
         void handleVCT(const XVCT&, PID, void (SignalizationHandlerInterface::*)(const XVCT&, PID));
 
         // Process a descriptor list, looking for useful information.

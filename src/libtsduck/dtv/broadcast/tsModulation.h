@@ -60,6 +60,7 @@ namespace ts {
     //!
     //! Check if an optional enumeration value is supported by the native implementation.
     //!
+    //! @tparam ENUM An integer or enumeration type for the vallue to check.
     //! @param [in] value A variable object containing an enumeration value from on the
     //! enumeration types in file @link tsModulation.h @endlink.
     //! @param [in] name The name of the feature or enumeration type (eg.
@@ -72,7 +73,7 @@ namespace ts {
     //! to @a report.
     //! @see CheckModEnum()
     //!
-    template <typename ENUM, typename std::enable_if<std::is_integral<ENUM>::value || std::is_enum<ENUM>::value>::type* = nullptr>
+    template <typename ENUM> requires std::integral<ENUM> || std::is_enum_v<ENUM>
     bool CheckModVar(const std::optional<ENUM>& value, const UString& name, const Enumeration& conv, Report& report)
     {
         return !value.has_value() || CheckModEnum(int(value.value()), name, conv, report);

@@ -28,6 +28,7 @@ namespace ts {
     {
     private:
         INT_T _value = 0;
+
     public:
         //!
         //! The underlying signed integer type.
@@ -54,7 +55,7 @@ namespace ts {
         //! @tparam INT2 Some other integer type (signed or unsigned).
         //! @param [in] i Initial value.
         //!
-        template<typename INT2, typename std::enable_if<std::is_integral<INT2>::value, int>::type = 0>
+        template<typename INT2> requires std::integral<INT2>
         Integer(INT2 i) : _value(bounded_cast<int_t>(i)) {}
 
         // Implementation of interfaces.
@@ -189,31 +190,40 @@ namespace ts {
 //! @cond nodoxygen
 // The operators are not extensively documented with doxygen (obvious, verbose and redundant).
 
-template <typename INT1, typename INT2, typename std::enable_if<std::is_integral<INT1>::value && std::is_integral<INT2>::value, int>::type = 0>
+template <typename INT1, typename INT2>
+    requires std::integral<INT1> && std::integral<INT2>
 inline ts::Integer<INT2> operator+(INT1 x1, const ts::Integer<INT2>& x2) { return x2 + x1; }
 
-template <typename INT1, typename INT2, typename std::enable_if<std::is_integral<INT1>::value && std::is_integral<INT2>::value, int>::type = 0>
+template <typename INT1, typename INT2>
+    requires std::integral<INT1> && std::integral<INT2>
 inline ts::Integer<INT2> operator-(INT1 x1, const ts::Integer<INT2>& x2) { return ts::Integer<INT2>(x1) - x2; }
 
-template <typename INT1, typename INT2, typename std::enable_if<std::is_integral<INT1>::value && std::is_integral<INT2>::value, int>::type = 0>
+template <typename INT1, typename INT2>
+    requires std::integral<INT1> && std::integral<INT2>
 inline ts::Integer<INT2> operator*(INT1 x1, const ts::Integer<INT2>& x2) { return x2 * x1; }
 
-template <typename INT1, typename INT2, typename std::enable_if<std::is_integral<INT1>::value && std::is_integral<INT2>::value, int>::type = 0>
+template <typename INT1, typename INT2>
+    requires std::integral<INT1> && std::integral<INT2>
 inline ts::Integer<INT2> operator/(INT1 x1, const ts::Integer<INT2>& x2) { return ts::Integer<INT2>(x1) / x2; }
 
-template <typename INT1, typename INT2, typename std::enable_if<std::is_integral<INT1>::value && std::is_integral<INT2>::value, int>::type = 0>
+template <typename INT1, typename INT2>
+    requires std::integral<INT1> && std::integral<INT2>
 inline bool operator==(INT1 x1, const ts::Integer<INT2>& x2) { return x2.operator==(x1); }
 
-template <typename INT1, typename INT2, typename std::enable_if<std::is_integral<INT1>::value && std::is_integral<INT2>::value, int>::type = 0>
+template <typename INT1, typename INT2>
+    requires std::integral<INT1> && std::integral<INT2>
 inline bool operator<=(INT1 x1, const ts::Integer<INT2>& x2) { return x2 >= x1; }
 
-template <typename INT1, typename INT2, typename std::enable_if<std::is_integral<INT1>::value && std::is_integral<INT2>::value, int>::type = 0>
+template <typename INT1, typename INT2>
+    requires std::integral<INT1> && std::integral<INT2>
 inline bool operator>=(INT1 x1, const ts::Integer<INT2>& x2) { return x2 <= x1; }
 
-template <typename INT1, typename INT2, typename std::enable_if<std::is_integral<INT1>::value && std::is_integral<INT2>::value, int>::type = 0>
+template <typename INT1, typename INT2>
+    requires std::integral<INT1> && std::integral<INT2>
 inline bool operator<(INT1 x1, const ts::Integer<INT2>& x2) { return x2 > x1; }
 
-template <typename INT1, typename INT2, typename std::enable_if<std::is_integral<INT1>::value && std::is_integral<INT2>::value, int>::type = 0>
+template <typename INT1, typename INT2>
+    requires std::integral<INT1> && std::integral<INT2>
 inline bool operator>(INT1 x1, const ts::Integer<INT2>& x2) { return x2 < x1; }
 
 //! @endcond

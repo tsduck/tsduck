@@ -15,7 +15,6 @@
 #include "tsECMGSCS.h"
 
 namespace ts {
-
     //!
     //! Interface for classes which need to be notified of asynchronous ECM generation using ECMGClient.
     //! @ingroup mpeg

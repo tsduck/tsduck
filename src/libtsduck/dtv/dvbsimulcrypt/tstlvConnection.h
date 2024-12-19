@@ -18,122 +18,120 @@
 #include "tstlvMessage.h"
 #include "tstlvLogger.h"
 
-namespace ts {
-    namespace tlv {
+namespace ts::tlv {
+    //!
+    //! TCP connection using TLV messages.
+    //! @ingroup net
+    //! @tparam SAFETY The required type of thread-safety.
+    //!
+    template <ThreadSafety SAFETY>
+    class Connection: public ts::TCPConnection
+    {
+        TS_NOBUILD_NOCOPY(Connection);
+    public:
         //!
-        //! TCP connection using TLV messages.
-        //! @ingroup net
-        //! @tparam SAFETY The required type of thread-safety.
+        //! Reference to superclass.
         //!
-        template <ThreadSafety SAFETY>
-        class Connection: public ts::TCPConnection
-        {
-            TS_NOBUILD_NOCOPY(Connection);
-        public:
-            //!
-            //! Reference to superclass.
-            //!
-            using SuperClass = ts::TCPConnection;
+        using SuperClass = ts::TCPConnection;
 
-            //!
-            //! Generic definition of the mutex for this class.
-            //!
-            using MutexType = typename ThreadSafetyMutex<SAFETY>::type;
+        //!
+        //! Generic definition of the mutex for this class.
+        //!
+        using MutexType = typename ThreadSafetyMutex<SAFETY>::type;
 
-            //!
-            //! Constructor.
-            //! @param [in] protocol The incoming messages are interpreted
-            //! according to this protocol. The reference is kept in this object.
-            //! @param [in] auto_error_response When an invalid message is
-            //! received, the corresponding error message is automatically
-            //! sent back to the sender when @a auto_error_response is true.
-            //! @param [in] max_invalid_msg When non-zero, the connection is
-            //! automatically disconnected when the number of consecutive
-            //! invalid messages has reached this value.
-            //!
-            explicit Connection(const Protocol& protocol, bool auto_error_response = true, size_t max_invalid_msg = 0);
+        //!
+        //! Constructor.
+        //! @param [in] protocol The incoming messages are interpreted
+        //! according to this protocol. The reference is kept in this object.
+        //! @param [in] auto_error_response When an invalid message is
+        //! received, the corresponding error message is automatically
+        //! sent back to the sender when @a auto_error_response is true.
+        //! @param [in] max_invalid_msg When non-zero, the connection is
+        //! automatically disconnected when the number of consecutive
+        //! invalid messages has reached this value.
+        //!
+        explicit Connection(const Protocol& protocol, bool auto_error_response = true, size_t max_invalid_msg = 0);
 
-            //!
-            //! Serialize and send a TLV message.
-            //! @param [in] msg The message to send.
-            //! @param [in,out] report Where to report errors.
-            //! @return True on success, false on error.
-            //!
-            bool send(const Message& msg, Report& report);
+        //!
+        //! Serialize and send a TLV message.
+        //! @param [in] msg The message to send.
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //!
+        bool send(const Message& msg, Report& report);
 
-            //!
-            //! Serialize and send a TLV message.
-            //! @param [in] msg The message to send.
-            //! @param [in,out] logger Where to report errors and messages.
-            //! @return True on success, false on error.
-            //!
-            bool send(const Message& msg, Logger& logger);
+        //!
+        //! Serialize and send a TLV message.
+        //! @param [in] msg The message to send.
+        //! @param [in,out] logger Where to report errors and messages.
+        //! @return True on success, false on error.
+        //!
+        bool send(const Message& msg, Logger& logger);
 
-            //!
-            //! Receive a TLV message.
-            //! Wait for the message, deserialize it and validate it.
-            //! Process invalid messages and loop until a valid message is received.
-            //! @param [out] msg A safe pointer to the received message.
-            //! @param [in] abort If non-zero, invoked when I/O is interrupted
-            //! (in case of user-interrupt, return, otherwise retry).
-            //! @param [in,out] report Where to report errors.
-            //! @return True on success, false on error.
-            //!
-            bool receive(MessagePtr& msg, const AbortInterface* abort, Report& report);
+        //!
+        //! Receive a TLV message.
+        //! Wait for the message, deserialize it and validate it.
+        //! Process invalid messages and loop until a valid message is received.
+        //! @param [out] msg A safe pointer to the received message.
+        //! @param [in] abort If non-zero, invoked when I/O is interrupted
+        //! (in case of user-interrupt, return, otherwise retry).
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //!
+        bool receive(MessagePtr& msg, const AbortInterface* abort, Report& report);
 
-            //!
-            //! Receive a TLV message.
-            //! Wait for the message, deserialize it and validate it.
-            //! Process invalid messages and loop until a valid message is received.
-            //! @param [out] msg A safe pointer to the received message.
-            //! @param [in] abort If non-zero, invoked when I/O is interrupted
-            //! (in case of user-interrupt, return, otherwise retry).
-            //! @param [in,out] logger Where to report errors and messages.
-            //! @return True on success, false on error.
-            //!
-            bool receive(MessagePtr& msg, const AbortInterface* abort, Logger& logger);
+        //!
+        //! Receive a TLV message.
+        //! Wait for the message, deserialize it and validate it.
+        //! Process invalid messages and loop until a valid message is received.
+        //! @param [out] msg A safe pointer to the received message.
+        //! @param [in] abort If non-zero, invoked when I/O is interrupted
+        //! (in case of user-interrupt, return, otherwise retry).
+        //! @param [in,out] logger Where to report errors and messages.
+        //! @return True on success, false on error.
+        //!
+        bool receive(MessagePtr& msg, const AbortInterface* abort, Logger& logger);
 
-            //!
-            //! Get invalid incoming messages processing.
-            //! @return True if, when an invalid message is received, the corresponding
-            //! error message is automatically sent back to the sender.
-            //!
-            bool getAutoErrorResponse() const {return _auto_error_response;}
+        //!
+        //! Get invalid incoming messages processing.
+        //! @return True if, when an invalid message is received, the corresponding
+        //! error message is automatically sent back to the sender.
+        //!
+        bool getAutoErrorResponse() const {return _auto_error_response;}
 
-            //!
-            //! Set invalid incoming messages processing.
-            //! @param [in] on When an invalid message is received, the corresponding
-            //! error message is automatically sent back to the sender when @a on is true.
-            //!
-            void setAutoErrorResponse(bool on) { _auto_error_response = on; }
+        //!
+        //! Set invalid incoming messages processing.
+        //! @param [in] on When an invalid message is received, the corresponding
+        //! error message is automatically sent back to the sender when @a on is true.
+        //!
+        void setAutoErrorResponse(bool on) { _auto_error_response = on; }
 
-            //!
-            //! Get invalid message threshold.
-            //! @return When non-zero, the connection is automatically disconnected
-            //! when the number of consecutive invalid messages has reached this value.
-            //!
-            size_t getMaxInvalidMessages() const {return _max_invalid_msg;}
+        //!
+        //! Get invalid message threshold.
+        //! @return When non-zero, the connection is automatically disconnected
+        //! when the number of consecutive invalid messages has reached this value.
+        //!
+        size_t getMaxInvalidMessages() const {return _max_invalid_msg;}
 
-            //!
-            //! Set invalid message threshold.
-            //! @param [in] n When non-zero, the connection is automatically disconnected
-            //! when the number of consecutive invalid messages has reached this value.
-            //!
-            void setMaxInvalidMessages(size_t n) {_max_invalid_msg = n;}
+        //!
+        //! Set invalid message threshold.
+        //! @param [in] n When non-zero, the connection is automatically disconnected
+        //! when the number of consecutive invalid messages has reached this value.
+        //!
+        void setMaxInvalidMessages(size_t n) {_max_invalid_msg = n;}
 
-        protected:
-            // Inherited from TCPConnection
-            virtual void handleConnected(Report&) override;
+    protected:
+        // Inherited from TCPConnection
+        virtual void handleConnected(Report&) override;
 
-        private:
-            const Protocol& _protocol;
-            bool            _auto_error_response = false;
-            size_t          _max_invalid_msg = 0;
-            size_t          _invalid_msg_count = 0;
-            MutexType       _send_mutex {};
-            MutexType       _receive_mutex {};
-        };
-    }
+    private:
+        const Protocol& _protocol;
+        bool            _auto_error_response = false;
+        size_t          _max_invalid_msg = 0;
+        size_t          _invalid_msg_count = 0;
+        MutexType       _send_mutex {};
+        MutexType       _receive_mutex {};
+    };
 }
 
 

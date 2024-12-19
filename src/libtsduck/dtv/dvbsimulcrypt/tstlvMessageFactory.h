@@ -15,328 +15,326 @@
 #include "tstlvProtocol.h"
 #include "tsMemory.h"
 
-namespace ts {
-    namespace tlv {
+namespace ts::tlv {
 
-        class MessageFactory;
+    class MessageFactory;
+
+    //!
+    //! Safe pointer for MessageFactory (not thread-safe).
+    //!
+    using MessageFactoryPtr = std::shared_ptr<MessageFactory>;
+
+    //!
+    //! Factory class for TLV messages
+    //! @ingroup tlv
+    //!
+    //! The following methods should be used by the application
+    //! to deserialize messages:
+    //! - Constructors
+    //! - errorStatus()
+    //! - errorInformation()
+    //! - commandTag()
+    //! - protocolVersion()
+    //! - factory()
+    //! - buildErrorResponse()
+    //!
+    //! The following types and methods should be used by the
+    //! constructors of the ts::tlv::Message subclasses.
+    //! - Parameter
+    //! - count()
+    //! - get()
+    //! - getCompound()
+    //!
+    //! The get() and getCompound() methods retrieve the value of parameters.
+    //! For each parameter type, two versions are available.
+    //! - The first version returns the first occurence of a
+    //!   parameter and is typically used when the cardinality
+    //!   of a parameter is 1 or 0 to 1. In the later case,
+    //!   the message deserialization routine should first check
+    //!   the availability of the parameter using count().
+    //! - The second version returns all occurences of the
+    //!   parameter in a vector.
+    //!
+    //! An exception is thrown when the parameter is not present
+    //! (first version) or when the actual size of the parameter
+    //! does not match the expected size of the type. In both
+    //! cases, this should not happen in properly written message
+    //! classes since the validity of the parameters were checked
+    //! by the constructor of the MessageFactory.
+    //!
+    class TSDUCKDLL MessageFactory
+    {
+        TS_NOBUILD_NOCOPY(MessageFactory);
+    public:
+        //!
+        //! Constructor: Analyze a TLV message in memory.
+        //! @param [in] addr Address of a binary TLV message.
+        //! @param [in] size Size in bytes of the message.
+        //! @param [in] protocol The message is validated according to this protocol.
+        //!
+        MessageFactory(const void* addr, size_t size, const Protocol& protocol);
 
         //!
-        //! Safe pointer for MessageFactory (not thread-safe).
+        //! Constructor: Analyze a TLV message in memory.
+        //! @param [in] bb Binary TLV message.
+        //! @param [in] protocol The message is validated according to this protocol.
         //!
-        using MessageFactoryPtr = std::shared_ptr<MessageFactory>;
+        MessageFactory(const ByteBlock &bb, const Protocol& protocol);
 
         //!
-        //! Factory class for TLV messages
-        //! @ingroup tlv
+        //! Get the "error status" resulting from the analysis of the message.
+        //! @return The error status. If not OK, there is no valid message.
         //!
-        //! The following methods should be used by the application
-        //! to deserialize messages:
-        //! - Constructors
-        //! - errorStatus()
-        //! - errorInformation()
-        //! - commandTag()
-        //! - protocolVersion()
-        //! - factory()
-        //! - buildErrorResponse()
+        tlv::Error errorStatus() const { return _error_status; }
+
         //!
-        //! The following types and methods should be used by the
-        //! constructors of the ts::tlv::Message subclasses.
-        //! - Parameter
-        //! - count()
-        //! - get()
-        //! - getCompound()
+        //! Get the "error information" resulting from the analysis of the message.
+        //! @return The error information.
         //!
-        //! The get() and getCompound() methods retrieve the value of parameters.
-        //! For each parameter type, two versions are available.
-        //! - The first version returns the first occurence of a
-        //!   parameter and is typically used when the cardinality
-        //!   of a parameter is 1 or 0 to 1. In the later case,
-        //!   the message deserialization routine should first check
-        //!   the availability of the parameter using count().
-        //! - The second version returns all occurences of the
-        //!   parameter in a vector.
+        uint16_t errorInformation() const { return _error_info; }
+
         //!
-        //! An exception is thrown when the parameter is not present
-        //! (first version) or when the actual size of the parameter
-        //! does not match the expected size of the type. In both
-        //! cases, this should not happen in properly written message
-        //! classes since the validity of the parameters were checked
-        //! by the constructor of the MessageFactory.
+        //! Get the message tag.
+        //! @return The message tag.
         //!
-        class TSDUCKDLL MessageFactory
+        TAG commandTag() const { return _command_tag; }
+
+        //!
+        //! Get the protocol version number.
+        //! @return The protocol version number.
+        //!
+        VERSION protocolVersion() const { return _protocol_version; }
+
+        //!
+        //! Return the fully rebuilt message.
+        //! Valid only when errorStatus() == OK.
+        //! @param [out] msg Safe pointer to the rebuilt message.
+        //! Set a null pointer on error.
+        //!
+        void factory(MessagePtr& msg) const;
+
+        //!
+        //! Return the fully rebuilt message.
+        //! Valid only when errorStatus() == OK.
+        //! @return Safe pointer to the rebuilt message or null pointer on error.
+        //!
+        MessagePtr factory() const;
+
+        //!
+        //! Return the error response for the peer.
+        //! Valid only when errorStatus() != OK.
+        //! @param [out] msg Safe pointer to the error response message.
+        //! Set a null pointer without error.
+        //!
+        void buildErrorResponse(MessagePtr& msg) const;
+
+        //!
+        //! Return the error response for the peer.
+        //! Valid only when errorStatus() != OK.
+        //! @return Safe pointer to the error response message or null pointer without error.
+        //!
+        MessagePtr errorResponse() const;
+
+        //!
+        //! Location of one parameter value inside the message block.
+        //! Address and size point into the original message buffer, use with care!
+        //!
+        class Parameter
         {
-            TS_NOBUILD_NOCOPY(MessageFactory);
         public:
-            //!
-            //! Constructor: Analyze a TLV message in memory.
-            //! @param [in] addr Address of a binary TLV message.
-            //! @param [in] size Size in bytes of the message.
-            //! @param [in] protocol The message is validated according to this protocol.
-            //!
-            MessageFactory(const void* addr, size_t size, const Protocol& protocol);
+            const void* tlv_addr = nullptr;  //!< Address of parameter TLV structure.
+            size_t      tlv_size = 0;        //!< Size of parameter TLV structure.
+            const void* addr = nullptr;      //!< Address of parameter value.
+            LENGTH      length = 0;          //!< Length of parameter value.
 
             //!
-            //! Constructor: Analyze a TLV message in memory.
-            //! @param [in] bb Binary TLV message.
-            //! @param [in] protocol The message is validated according to this protocol.
+            //! Constructor.
+            //! @param [in] tlv_addr_ Address of parameter TLV structure.
+            //! @param [in] tlv_size_ Size of parameter TLV structure.
+            //! @param [in] addr_ Address of parameter value.
+            //! @param [in] length_ Length of parameter value.
             //!
-            MessageFactory(const ByteBlock &bb, const Protocol& protocol);
-
-            //!
-            //! Get the "error status" resulting from the analysis of the message.
-            //! @return The error status. If not OK, there is no valid message.
-            //!
-            tlv::Error errorStatus() const { return _error_status; }
-
-            //!
-            //! Get the "error information" resulting from the analysis of the message.
-            //! @return The error information.
-            //!
-            uint16_t errorInformation() const { return _error_info; }
-
-            //!
-            //! Get the message tag.
-            //! @return The message tag.
-            //!
-            TAG commandTag() const { return _command_tag; }
-
-            //!
-            //! Get the protocol version number.
-            //! @return The protocol version number.
-            //!
-            VERSION protocolVersion() const { return _protocol_version; }
-
-            //!
-            //! Return the fully rebuilt message.
-            //! Valid only when errorStatus() == OK.
-            //! @param [out] msg Safe pointer to the rebuilt message.
-            //! Set a null pointer on error.
-            //!
-            void factory(MessagePtr& msg) const;
-
-            //!
-            //! Return the fully rebuilt message.
-            //! Valid only when errorStatus() == OK.
-            //! @return Safe pointer to the rebuilt message or null pointer on error.
-            //!
-            MessagePtr factory() const;
-
-            //!
-            //! Return the error response for the peer.
-            //! Valid only when errorStatus() != OK.
-            //! @param [out] msg Safe pointer to the error response message.
-            //! Set a null pointer without error.
-            //!
-            void buildErrorResponse(MessagePtr& msg) const;
-
-            //!
-            //! Return the error response for the peer.
-            //! Valid only when errorStatus() != OK.
-            //! @return Safe pointer to the error response message or null pointer without error.
-            //!
-            MessagePtr errorResponse() const;
-
-            //!
-            //! Location of one parameter value inside the message block.
-            //! Address and size point into the original message buffer, use with care!
-            //!
-            class Parameter
+            Parameter(const void* tlv_addr_ = nullptr,
+                      size_t      tlv_size_ = 0,
+                      const void* addr_     = nullptr,
+                      LENGTH      length_   = 0) :
+                tlv_addr(tlv_addr_),
+                tlv_size(tlv_size_),
+                addr(addr_),
+                length(length_)
             {
-            public:
-                const void* tlv_addr = nullptr;  //!< Address of parameter TLV structure.
-                size_t      tlv_size = 0;        //!< Size of parameter TLV structure.
-                const void* addr = nullptr;      //!< Address of parameter value.
-                LENGTH      length = 0;          //!< Length of parameter value.
-
-                //!
-                //! Constructor.
-                //! @param [in] tlv_addr_ Address of parameter TLV structure.
-                //! @param [in] tlv_size_ Size of parameter TLV structure.
-                //! @param [in] addr_ Address of parameter value.
-                //! @param [in] length_ Length of parameter value.
-                //!
-                Parameter(const void* tlv_addr_ = nullptr,
-                          size_t      tlv_size_ = 0,
-                          const void* addr_     = nullptr,
-                          LENGTH      length_   = 0) :
-                    tlv_addr(tlv_addr_),
-                    tlv_size(tlv_size_),
-                    addr(addr_),
-                    length(length_)
-                {
-                }
-            };
-
-            //!
-            //! Get actual number of occurences of a parameter.
-            //! @param [in] tag Parameter tag to search.
-            //! @return The actual number of occurences of a parameter.
-            //!
-            size_t count(TAG tag) const { return _params.count(tag); }
-
-            //!
-            //! Get the location of a parameter.
-            //! Address and size point into the original message buffer, use with care!
-            //! @param [in] tag Parameter tag to search.
-            //! @param [out] param Description of the parameter value.
-            //!
-            void get(TAG tag, Parameter& param) const;
-
-            //!
-            //! Get the location of all occurences of a parameter.
-            //! Address and size point into the original message buffer, use with care!
-            //! @param [in] tag Parameter tag to search.
-            //! @param [out] param Vector of descriptions of the parameter values.
-            //!
-            void get(TAG tag, std::vector<Parameter>& param) const;
-
-            //!
-            //! Get an integer parameter.
-            //! @tparam INT Integer type for the value.
-            //! The size of INT must match the parameter size.
-            //! @param [in] tag Parameter tag to search.
-            //! @return The parameter value.
-            //!
-            template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
-            INT get(TAG tag) const;
-
-            //!
-            //! Get an integer parameter.
-            //! @tparam INT Integer type for the value.
-            //! The size of INT must match the parameter size.
-            //! @param [in] tag Parameter tag to search.
-            //! @param [out] param All parameter values.
-            //!
-            template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
-            void get(TAG tag, std::vector<INT>& param) const;
-
-            //!
-            //! Get a boolean parameter.
-            //! This method returns a vector of booleans.
-            //! For one single boolean value, use the template version.
-            //! @param [in] tag Parameter tag to search.
-            //! @param [out] param All parameter values.
-            //!
-            void get(TAG tag, std::vector<bool>& param) const;
-
-            //!
-            //! Get a string parameter.
-            //! @param [in] tag Parameter tag to search.
-            //! @param [out] param Parameter value.
-            //!
-            void get(TAG tag, std::string& param) const
-            {
-                Parameter p;
-                get(tag, p);
-                param.assign(static_cast<const char*>(p.addr), p.length);
             }
-
-            //!
-            //! Get a string parameter.
-            //! @param [in] tag Parameter tag to search.
-            //! @param [out] param All parameter values.
-            //!
-            void get(TAG tag, std::vector<std::string>& param) const;
-
-            //!
-            //! Get an opaque byte block parameter.
-            //! @param [in] tag Parameter tag to search.
-            //! @param [out] param Parameter value.
-            //!
-            void get(TAG tag, ByteBlock& param) const
-            {
-                Parameter p;
-                get(tag, p);
-                param.copy(static_cast<const uint8_t*>(p.addr), p.length);
-            }
-
-            //!
-            //! Get a compound TLV parameter.
-            //! @param [in] tag Parameter tag to search.
-            //! @param [out] param Safe pointer to the parameter value.
-            //!
-            void getCompound(TAG tag, MessagePtr& param) const;
-
-            //!
-            //! Get a compound TLV parameter.
-            //! @param [in] tag Parameter tag to search.
-            //! @param [out] param Vector of safe pointers to all parameter values.
-            //!
-            void getCompound(TAG tag, std::vector<MessagePtr>& param) const;
-
-            //!
-            //! Get a compound TLV parameter (template version).
-            //! @tparam MSG Expected class of parameter value, a subclass of ts::tlv::Message.
-            //! @param [in] tag Parameter tag to search.
-            //! @param [out] param Parameter value.
-            //!
-            template <class MSG>
-            void getCompound(TAG tag, MSG& param) const;
-
-            //!
-            //! Get a compound TLV parameter (template version).
-            //! @tparam MSG Expected class of parameter value, a subclass of ts::tlv::Message.
-            //! @param [in] tag Parameter tag to search.
-            //! @param [out] param Vector of all parameter values.
-            //!
-            template <class MSG>
-            void getCompound(TAG tag, std::vector<MSG>& param) const;
-
-        private:
-            // Internal description of a parameter.
-            // Include the description of compound TLV parameter.
-            // When compound is nullptr, this is not a compound TLV parameter.
-            struct ExtParameter : public Parameter
-            {
-                // Public fields:
-                MessageFactoryPtr compound {}; // for compound TLV parameter
-
-                // Constructor:
-                ExtParameter(const void*     tlv_addr_ = nullptr,
-                             size_t          tlv_size_ = 0,
-                             const void*     addr_ = nullptr,
-                             LENGTH          length_ = 0,
-                             MessageFactory* compound_ = nullptr) :
-                    Parameter(tlv_addr_, tlv_size_, addr_, length_),
-                    compound(compound_)
-                {
-                }
-            };
-
-            // MessageFactory private members:
-            const uint8_t*  _msg_base = nullptr;           // Addresse of raw TLV message
-            size_t          _msg_length = 0;               // Size of raw TLV message
-            const Protocol& _protocol;                     // Associated protocol definition
-            tlv::Error      _error_status {OK};            // Error status or OK
-            uint16_t        _error_info = 0;               // Associated error information
-            bool            _error_info_is_offset = false; // Error info is an offset in message
-            VERSION         _protocol_version = 0;
-            TAG             _command_tag = 0;
-
-            // Location of actual parameters. Point into the message block.
-            using ParameterMultimap = std::multimap <TAG, ExtParameter>;
-            ParameterMultimap _params {};
-
-            // Analyze the TLV message, called by constructors.
-            void analyzeMessage();
-
-            // Expected size of a type: default is sizeof().
-            // Specializations can be provided.
-            template <typename T> size_t dataSize() const {return sizeof(T);}
-
-            // Internal method: Check the size of a parameter.
-            // Should never throw an exception, except bug in the
-            // constructor of the Message subclasses.
-            template <typename T>
-            void checkParamSize(TAG, const ParameterMultimap::const_iterator&) const;
         };
 
-        // Template specializations for performance.
-        //! @cond nodoxygen
-        template<> inline bool MessageFactory::get<bool>(TAG tag) const {return get<uint8_t>(tag) != 0;}
-        template<> inline size_t MessageFactory::dataSize<bool>() const {return 1;}
-        //! @endcond
-    }
+        //!
+        //! Get actual number of occurences of a parameter.
+        //! @param [in] tag Parameter tag to search.
+        //! @return The actual number of occurences of a parameter.
+        //!
+        size_t count(TAG tag) const { return _params.count(tag); }
+
+        //!
+        //! Get the location of a parameter.
+        //! Address and size point into the original message buffer, use with care!
+        //! @param [in] tag Parameter tag to search.
+        //! @param [out] param Description of the parameter value.
+        //!
+        void get(TAG tag, Parameter& param) const;
+
+        //!
+        //! Get the location of all occurences of a parameter.
+        //! Address and size point into the original message buffer, use with care!
+        //! @param [in] tag Parameter tag to search.
+        //! @param [out] param Vector of descriptions of the parameter values.
+        //!
+        void get(TAG tag, std::vector<Parameter>& param) const;
+
+        //!
+        //! Get an integer parameter.
+        //! @tparam INT Integer type for the value.
+        //! The size of INT must match the parameter size.
+        //! @param [in] tag Parameter tag to search.
+        //! @return The parameter value.
+        //!
+        template <typename INT> requires std::integral<INT>
+        INT get(TAG tag) const;
+
+        //!
+        //! Get an integer parameter.
+        //! @tparam INT Integer type for the value.
+        //! The size of INT must match the parameter size.
+        //! @param [in] tag Parameter tag to search.
+        //! @param [out] param All parameter values.
+        //!
+        template <typename INT> requires std::integral<INT>
+        void get(TAG tag, std::vector<INT>& param) const;
+
+        //!
+        //! Get a boolean parameter.
+        //! This method returns a vector of booleans.
+        //! For one single boolean value, use the template version.
+        //! @param [in] tag Parameter tag to search.
+        //! @param [out] param All parameter values.
+        //!
+        void get(TAG tag, std::vector<bool>& param) const;
+
+        //!
+        //! Get a string parameter.
+        //! @param [in] tag Parameter tag to search.
+        //! @param [out] param Parameter value.
+        //!
+        void get(TAG tag, std::string& param) const
+        {
+            Parameter p;
+            get(tag, p);
+            param.assign(static_cast<const char*>(p.addr), p.length);
+        }
+
+        //!
+        //! Get a string parameter.
+        //! @param [in] tag Parameter tag to search.
+        //! @param [out] param All parameter values.
+        //!
+        void get(TAG tag, std::vector<std::string>& param) const;
+
+        //!
+        //! Get an opaque byte block parameter.
+        //! @param [in] tag Parameter tag to search.
+        //! @param [out] param Parameter value.
+        //!
+        void get(TAG tag, ByteBlock& param) const
+        {
+            Parameter p;
+            get(tag, p);
+            param.copy(static_cast<const uint8_t*>(p.addr), p.length);
+        }
+
+        //!
+        //! Get a compound TLV parameter.
+        //! @param [in] tag Parameter tag to search.
+        //! @param [out] param Safe pointer to the parameter value.
+        //!
+        void getCompound(TAG tag, MessagePtr& param) const;
+
+        //!
+        //! Get a compound TLV parameter.
+        //! @param [in] tag Parameter tag to search.
+        //! @param [out] param Vector of safe pointers to all parameter values.
+        //!
+        void getCompound(TAG tag, std::vector<MessagePtr>& param) const;
+
+        //!
+        //! Get a compound TLV parameter (template version).
+        //! @tparam MSG Expected class of parameter value, a subclass of ts::tlv::Message.
+        //! @param [in] tag Parameter tag to search.
+        //! @param [out] param Parameter value.
+        //!
+        template <class MSG>
+        void getCompound(TAG tag, MSG& param) const;
+
+        //!
+        //! Get a compound TLV parameter (template version).
+        //! @tparam MSG Expected class of parameter value, a subclass of ts::tlv::Message.
+        //! @param [in] tag Parameter tag to search.
+        //! @param [out] param Vector of all parameter values.
+        //!
+        template <class MSG>
+        void getCompound(TAG tag, std::vector<MSG>& param) const;
+
+    private:
+        // Internal description of a parameter.
+        // Include the description of compound TLV parameter.
+        // When compound is nullptr, this is not a compound TLV parameter.
+        struct ExtParameter : public Parameter
+        {
+            // Public fields:
+            MessageFactoryPtr compound {}; // for compound TLV parameter
+
+            // Constructor:
+            ExtParameter(const void*     tlv_addr_ = nullptr,
+                         size_t          tlv_size_ = 0,
+                         const void*     addr_ = nullptr,
+                         LENGTH          length_ = 0,
+                         MessageFactory* compound_ = nullptr) :
+                Parameter(tlv_addr_, tlv_size_, addr_, length_),
+                compound(compound_)
+            {
+            }
+        };
+
+        // MessageFactory private members:
+        const uint8_t*  _msg_base = nullptr;           // Addresse of raw TLV message
+        size_t          _msg_length = 0;               // Size of raw TLV message
+        const Protocol& _protocol;                     // Associated protocol definition
+        tlv::Error      _error_status {OK};            // Error status or OK
+        uint16_t        _error_info = 0;               // Associated error information
+        bool            _error_info_is_offset = false; // Error info is an offset in message
+        VERSION         _protocol_version = 0;
+        TAG             _command_tag = 0;
+
+        // Location of actual parameters. Point into the message block.
+        using ParameterMultimap = std::multimap <TAG, ExtParameter>;
+        ParameterMultimap _params {};
+
+        // Analyze the TLV message, called by constructors.
+        void analyzeMessage();
+
+        // Expected size of a type: default is sizeof().
+        // Specializations can be provided.
+        template <typename T> size_t dataSize() const {return sizeof(T);}
+
+        // Internal method: Check the size of a parameter.
+        // Should never throw an exception, except bug in the
+        // constructor of the Message subclasses.
+        template <typename T>
+        void checkParamSize(TAG, const ParameterMultimap::const_iterator&) const;
+    };
+
+    // Template specializations for performance.
+    //! @cond nodoxygen
+    template<> inline bool MessageFactory::get<bool>(TAG tag) const {return get<uint8_t>(tag) != 0;}
+    template<> inline size_t MessageFactory::dataSize<bool>() const {return 1;}
+    //! @endcond
 }
 
 
@@ -355,7 +353,7 @@ void ts::tlv::MessageFactory::checkParamSize(TAG tag, const ParameterMultimap::c
 }
 
 // Get first occurence of an integer parameter:
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
+template <typename INT> requires std::integral<INT>
 INT ts::tlv::MessageFactory::get(TAG tag) const
 {
     const auto it = _params.find(tag);
@@ -369,7 +367,7 @@ INT ts::tlv::MessageFactory::get(TAG tag) const
 }
 
 // Get all occurences of an integer parameter.
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
+template <typename INT> requires std::integral<INT>
 void ts::tlv::MessageFactory::get(TAG tag, std::vector<INT>& param) const
 {
     // Reinitialize result vector

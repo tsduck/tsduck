@@ -983,7 +983,7 @@ namespace ts {
     //! @param [in] i The integer value.
     //! @return The corresponding Tristate value.
     //!
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+    template <typename INT> requires std::integral<INT>
     Tristate ToTristate(INT i) { return Tristate(std::max<INT>(-1, std::min<INT>(1, i))); }
 }
 

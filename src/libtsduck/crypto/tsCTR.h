@@ -24,7 +24,7 @@ namespace ts {
     //!
     //! @tparam CIPHER A subclass of ts::BlockCipher, the underlying block cipher.
     //!
-    template <class CIPHER, typename std::enable_if<std::is_base_of<BlockCipher, CIPHER>::value>::type* = nullptr>
+    template<class CIPHER> requires std::derived_from<CIPHER, ts::BlockCipher>
     class CTR: public CIPHER
     {
         TS_NOCOPY(CTR);
@@ -81,8 +81,8 @@ namespace ts {
 
 TS_BLOCK_CIPHER_DEFINE_PROPERTIES_TEMPLATE(ts::CTR, CTR, (CIPHER::PROPERTIES(), u"CTR", true, 0, 2, CIPHER::BLOCK_SIZE));
 
-template<class CIPHER, typename std::enable_if<std::is_base_of<ts::BlockCipher, CIPHER>::value>::type* N>
-ts::CTR<CIPHER,N>::CTR(size_t counter_bits) : CIPHER(CTR::PROPERTIES())
+template<class CIPHER> requires std::derived_from<CIPHER, ts::BlockCipher>
+ts::CTR<CIPHER>::CTR(size_t counter_bits) : CIPHER(CTR::PROPERTIES())
 {
     setCounterBits(counter_bits);
 }
@@ -92,8 +92,8 @@ ts::CTR<CIPHER,N>::CTR(size_t counter_bits) : CIPHER(CTR::PROPERTIES())
 // Set counter size in bits.
 //----------------------------------------------------------------------------
 
-template<class CIPHER, typename std::enable_if<std::is_base_of<ts::BlockCipher, CIPHER>::value>::type* N>
-void ts::CTR<CIPHER,N>::setCounterBits(size_t counter_bits)
+template<class CIPHER> requires std::derived_from<CIPHER, ts::BlockCipher>
+void ts::CTR<CIPHER>::setCounterBits(size_t counter_bits)
 {
     if (counter_bits == 0) {
         // Default size is half the block size in bits.
@@ -110,8 +110,8 @@ void ts::CTR<CIPHER,N>::setCounterBits(size_t counter_bits)
 // Increment the counter in the first work block.
 //----------------------------------------------------------------------------
 
-template<class CIPHER, typename std::enable_if<std::is_base_of<ts::BlockCipher, CIPHER>::value>::type* N>
-void ts::CTR<CIPHER,N>::incrementCounter()
+template<class CIPHER> requires std::derived_from<CIPHER, ts::BlockCipher>
+void ts::CTR<CIPHER>::incrementCounter()
 {
     const size_t bsize = this->properties.block_size;
     uint8_t* work1 = this->work.data();
@@ -134,8 +134,8 @@ void ts::CTR<CIPHER,N>::incrementCounter()
 // The algorithm is safe with overlapping buffers.
 //----------------------------------------------------------------------------
 
-template<class CIPHER, typename std::enable_if<std::is_base_of<ts::BlockCipher, CIPHER>::value>::type* N>
-bool ts::CTR<CIPHER,N>::encryptImpl(const void* plain, size_t plain_length, void* cipher, size_t cipher_maxsize, size_t* cipher_length)
+template<class CIPHER> requires std::derived_from<CIPHER, ts::BlockCipher>
+bool ts::CTR<CIPHER>::encryptImpl(const void* plain, size_t plain_length, void* cipher, size_t cipher_maxsize, size_t* cipher_length)
 {
     const size_t bsize = this->properties.block_size;
     uint8_t* work1 = this->work.data();
@@ -179,8 +179,8 @@ bool ts::CTR<CIPHER,N>::encryptImpl(const void* plain, size_t plain_length, void
 // Decryption in CTR mode.
 //----------------------------------------------------------------------------
 
-template<class CIPHER, typename std::enable_if<std::is_base_of<ts::BlockCipher, CIPHER>::value>::type* N>
-bool ts::CTR<CIPHER,N>::decryptImpl(const void* cipher, size_t cipher_length, void* plain, size_t plain_maxsize, size_t* plain_length)
+template<class CIPHER> requires std::derived_from<CIPHER, ts::BlockCipher>
+bool ts::CTR<CIPHER>::decryptImpl(const void* cipher, size_t cipher_length, void* plain, size_t plain_maxsize, size_t* plain_length)
 {
     // With CTR, the encryption and decryption are identical operations.
     return encryptImpl(cipher, cipher_length, plain, plain_maxsize, plain_length);

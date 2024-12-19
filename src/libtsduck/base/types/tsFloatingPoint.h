@@ -25,7 +25,7 @@ namespace ts {
     //! attribute only, it does not alter the binary representation of floating-point values.
     //! The default is to display 6 digits.
     //!
-    template <typename FLOAT_T, const size_t PREC = 6, typename std::enable_if<std::is_floating_point<FLOAT_T>::value, int>::type = 0>
+    template <typename FLOAT_T, const size_t PREC = 6> requires std::floating_point<FLOAT_T>
     class FloatingPoint: public AbstractNumber
     {
     private:
@@ -77,7 +77,7 @@ namespace ts {
         //! @tparam NUM_T Some integer or floating-point type.
         //! @param [in] x Initial value.
         //!
-        template<typename NUM_T, typename std::enable_if<std::is_arithmetic<NUM_T>::value, int>::type = 0>
+        template<typename NUM_T> requires std::is_arithmetic_v<NUM_T>
         FloatingPoint(NUM_T x) : _value(float_t(x)) {}
 
         // Implementation of interfaces.
@@ -128,7 +128,7 @@ namespace ts {
         //! @param [in] x An integer of type @a INT2.
         //! @return Always false. A better idea?
         //!
-        template<typename INT2, typename std::enable_if<std::is_integral<INT2>::value, int>::type = 0>
+        template<typename INT2> requires std::integral<INT2>
         bool mulOverflow(INT2 x) const { return false; }
 
         //!
@@ -168,43 +168,43 @@ namespace ts {
         bool operator<(const FloatingPoint& x) const { return _value < x._value; }
         bool operator>(const FloatingPoint& x) const { return _value > x._value; }
 
-        template<typename NUM_T, typename std::enable_if<std::is_arithmetic<NUM_T>::value, int>::type = 0>
+        template<typename NUM_T> requires std::is_arithmetic_v<NUM_T>
         FloatingPoint operator+(NUM_T x) const { return FloatingPoint(_value + float_t(x)); }
 
-        template<typename NUM_T, typename std::enable_if<std::is_arithmetic<NUM_T>::value, int>::type = 0>
+        template<typename NUM_T> requires std::is_arithmetic_v<NUM_T>
         FloatingPoint operator-(NUM_T x) const { return FloatingPoint(_value - float_t(x)); }
 
-        template<typename NUM_T, typename std::enable_if<std::is_arithmetic<NUM_T>::value, int>::type = 0>
+        template<typename NUM_T> requires std::is_arithmetic_v<NUM_T>
         FloatingPoint operator*(NUM_T x) const { return FloatingPoint(_value * float_t(x)); }
 
-        template<typename NUM_T, typename std::enable_if<std::is_arithmetic<NUM_T>::value, int>::type = 0>
+        template<typename NUM_T> requires std::is_arithmetic_v<NUM_T>
         FloatingPoint operator/(NUM_T x) const { return FloatingPoint(_value / float_t(x)); }
 
-        template<typename NUM_T, typename std::enable_if<std::is_arithmetic<NUM_T>::value, int>::type = 0>
+        template<typename NUM_T> requires std::is_arithmetic_v<NUM_T>
         FloatingPoint& operator+=(NUM_T x) { _value += float_t(x); return *this; }
 
-        template<typename NUM_T, typename std::enable_if<std::is_arithmetic<NUM_T>::value, int>::type = 0>
+        template<typename NUM_T> requires std::is_arithmetic_v<NUM_T>
         FloatingPoint& operator-=(NUM_T x) { _value -= float_t(x); return *this; }
 
-        template<typename NUM_T, typename std::enable_if<std::is_arithmetic<NUM_T>::value, int>::type = 0>
+        template<typename NUM_T> requires std::is_arithmetic_v<NUM_T>
         FloatingPoint& operator*=(NUM_T x) { _value *= float_t(x); return *this; }
 
-        template<typename NUM_T, typename std::enable_if<std::is_arithmetic<NUM_T>::value, int>::type = 0>
+        template<typename NUM_T> requires std::is_arithmetic_v<NUM_T>
         FloatingPoint& operator/=(NUM_T x) { _value /= float_t(x); return *this; }
 
-        template<typename NUM_T, typename std::enable_if<std::is_arithmetic<NUM_T>::value, int>::type = 0>
+        template<typename NUM_T> requires std::is_arithmetic_v<NUM_T>
         bool operator==(NUM_T x) const { return std::abs(_value - float_t(x)) < EQUAL_PRECISION; }
 
-        template<typename NUM_T, typename std::enable_if<std::is_arithmetic<NUM_T>::value, int>::type = 0>
+        template<typename NUM_T> requires std::is_arithmetic_v<NUM_T>
         bool operator<=(NUM_T x) const { return _value <= float_t(x); }
 
-        template<typename NUM_T, typename std::enable_if<std::is_arithmetic<NUM_T>::value, int>::type = 0>
+        template<typename NUM_T> requires std::is_arithmetic_v<NUM_T>
         bool operator>=(NUM_T x) const { return _value >= float_t(x); }
 
-        template<typename NUM_T, typename std::enable_if<std::is_arithmetic<NUM_T>::value, int>::type = 0>
+        template<typename NUM_T> requires std::is_arithmetic_v<NUM_T>
         bool operator<(NUM_T x) const { return _value < float_t(x); }
 
-        template<typename NUM_T, typename std::enable_if<std::is_arithmetic<NUM_T>::value, int>::type = 0>
+        template<typename NUM_T> requires std::is_arithmetic_v<NUM_T>
         bool operator>(NUM_T x) const { return _value > float_t(x); }
 
         //! @endcond
@@ -214,33 +214,33 @@ namespace ts {
 //! @cond nodoxygen
 // The operators are not extensively documented with doxygen (obvious, verbose and redundant).
 
-template<typename NUM_T, typename FLOAT_T, const size_t PREC, typename std::enable_if<std::is_arithmetic<NUM_T>::value && std::is_floating_point<FLOAT_T>::value, int>::type = 0>
+template<typename NUM_T, typename FLOAT_T, const size_t PREC> requires std::is_arithmetic_v<NUM_T> && std::floating_point<FLOAT_T>
 inline ts::FloatingPoint<FLOAT_T,PREC> operator+(NUM_T x1, const ts::FloatingPoint<FLOAT_T,PREC>& x2) { return x2 + x1; }
 
-template<typename NUM_T, typename FLOAT_T, const size_t PREC, typename std::enable_if<std::is_arithmetic<NUM_T>::value && std::is_floating_point<FLOAT_T>::value, int>::type = 0>
+template<typename NUM_T, typename FLOAT_T, const size_t PREC> requires std::is_arithmetic_v<NUM_T> && std::floating_point<FLOAT_T>
 inline ts::FloatingPoint<FLOAT_T,PREC> operator-(NUM_T x1, const ts::FloatingPoint<FLOAT_T,PREC>& x2) { return -(x2 - x1); }
 
-template<typename NUM_T, typename FLOAT_T, const size_t PREC, typename std::enable_if<std::is_arithmetic<NUM_T>::value && std::is_floating_point<FLOAT_T>::value, int>::type = 0>
+template<typename NUM_T, typename FLOAT_T, const size_t PREC> requires std::is_arithmetic_v<NUM_T> && std::floating_point<FLOAT_T>
 inline ts::FloatingPoint<FLOAT_T,PREC> operator*(NUM_T x1, const ts::FloatingPoint<FLOAT_T,PREC>& x2) { return x2 * x1; }
 
-template<typename NUM_T, typename FLOAT_T, const size_t PREC, typename std::enable_if<std::is_arithmetic<NUM_T>::value && std::is_floating_point<FLOAT_T>::value, int>::type = 0>
+template<typename NUM_T, typename FLOAT_T, const size_t PREC> requires std::is_arithmetic_v<NUM_T> && std::floating_point<FLOAT_T>
 inline ts::FloatingPoint<FLOAT_T,PREC> operator/(NUM_T x1, const ts::FloatingPoint<FLOAT_T,PREC>& x2) { return ts::FloatingPoint<FLOAT_T,PREC>(x1) / x2; }
 
 // This one explicitly calls the operator== method because without it, you get an error when built with C++20
 // error: in C++20 this comparison calls the current function recursively with reversed arguments
-template<typename NUM_T, typename FLOAT_T, const size_t PREC, typename std::enable_if<std::is_arithmetic<NUM_T>::value && std::is_floating_point<FLOAT_T>::value, int>::type = 0>
+template<typename NUM_T, typename FLOAT_T, const size_t PREC> requires std::is_arithmetic_v<NUM_T> && std::floating_point<FLOAT_T>
 inline bool operator==(NUM_T x1, const ts::FloatingPoint<FLOAT_T,PREC>& x2) { return x2.operator==(x1); }
 
-template<typename NUM_T, typename FLOAT_T, const size_t PREC, typename std::enable_if<std::is_arithmetic<NUM_T>::value && std::is_floating_point<FLOAT_T>::value, int>::type = 0>
+template<typename NUM_T, typename FLOAT_T, const size_t PREC> requires std::is_arithmetic_v<NUM_T> && std::floating_point<FLOAT_T>
 inline bool operator<=(NUM_T x1, const ts::FloatingPoint<FLOAT_T,PREC>& x2) { return x2 >= x1; }
 
-template<typename NUM_T, typename FLOAT_T, const size_t PREC, typename std::enable_if<std::is_arithmetic<NUM_T>::value && std::is_floating_point<FLOAT_T>::value, int>::type = 0>
+template<typename NUM_T, typename FLOAT_T, const size_t PREC> requires std::is_arithmetic_v<NUM_T> && std::floating_point<FLOAT_T>
 inline bool operator>=(NUM_T x1, const ts::FloatingPoint<FLOAT_T,PREC>& x2) { return x2 <= x1; }
 
-template<typename NUM_T, typename FLOAT_T, const size_t PREC, typename std::enable_if<std::is_arithmetic<NUM_T>::value && std::is_floating_point<FLOAT_T>::value, int>::type = 0>
+template<typename NUM_T, typename FLOAT_T, const size_t PREC> requires std::is_arithmetic_v<NUM_T> && std::floating_point<FLOAT_T>
 inline bool operator<(NUM_T x1, const ts::FloatingPoint<FLOAT_T,PREC>& x2) { return x2 > x1; }
 
-template<typename NUM_T, typename FLOAT_T, const size_t PREC, typename std::enable_if<std::is_arithmetic<NUM_T>::value && std::is_floating_point<FLOAT_T>::value, int>::type = 0>
+template<typename NUM_T, typename FLOAT_T, const size_t PREC> requires std::is_arithmetic_v<NUM_T> && std::floating_point<FLOAT_T>
 inline bool operator>(NUM_T x1, const ts::FloatingPoint<FLOAT_T,PREC>& x2) { return x2 < x1; }
 
 //! @endcond
@@ -250,40 +250,40 @@ inline bool operator>(NUM_T x1, const ts::FloatingPoint<FLOAT_T,PREC>& x2) { ret
 // Template definitions.
 //----------------------------------------------------------------------------
 
-template <typename FLOAT_T, const size_t PREC, typename std::enable_if<std::is_floating_point<FLOAT_T>::value, int>::type N>
-const ts::FloatingPoint<FLOAT_T,PREC,N> ts::FloatingPoint<FLOAT_T,PREC,N>::MIN(std::numeric_limits<FLOAT_T>::lowest());
+template<typename FLOAT_T, const size_t PREC> requires std::floating_point<FLOAT_T>
+const ts::FloatingPoint<FLOAT_T,PREC> ts::FloatingPoint<FLOAT_T,PREC>::MIN(std::numeric_limits<FLOAT_T>::lowest());
 
-template <typename FLOAT_T, const size_t PREC, typename std::enable_if<std::is_floating_point<FLOAT_T>::value, int>::type N>
-const ts::FloatingPoint<FLOAT_T,PREC,N> ts::FloatingPoint<FLOAT_T,PREC,N>::MAX(std::numeric_limits<FLOAT_T>::max());
+template<typename FLOAT_T, const size_t PREC> requires std::floating_point<FLOAT_T>
+const ts::FloatingPoint<FLOAT_T,PREC> ts::FloatingPoint<FLOAT_T,PREC>::MAX(std::numeric_limits<FLOAT_T>::max());
 
 // Virtual numeric conversions.
-template <typename FLOAT_T, const size_t PREC, typename std::enable_if<std::is_floating_point<FLOAT_T>::value, int>::type N>
-int64_t ts::FloatingPoint<FLOAT_T,PREC,N>::toInt64() const
+template<typename FLOAT_T, const size_t PREC> requires std::floating_point<FLOAT_T>
+int64_t ts::FloatingPoint<FLOAT_T,PREC>::toInt64() const
 {
     return int64_t(std::round(_value));
 }
 
-template <typename FLOAT_T, const size_t PREC, typename std::enable_if<std::is_floating_point<FLOAT_T>::value, int>::type N>
-double ts::FloatingPoint<FLOAT_T,PREC,N>::toDouble() const
+template<typename FLOAT_T, const size_t PREC> requires std::floating_point<FLOAT_T>
+double ts::FloatingPoint<FLOAT_T,PREC>::toDouble() const
 {
     return double(_value);
 }
 
-template <typename FLOAT_T, const size_t PREC, typename std::enable_if<std::is_floating_point<FLOAT_T>::value, int>::type N>
-bool ts::FloatingPoint<FLOAT_T,PREC,N>::inRange(int64_t min, int64_t max) const
+template<typename FLOAT_T, const size_t PREC> requires std::floating_point<FLOAT_T>
+bool ts::FloatingPoint<FLOAT_T,PREC>::inRange(int64_t min, int64_t max) const
 {
     return _value >= float_t(min) && _value <= float_t(max);
 }
 
-template <typename FLOAT_T, const size_t PREC, typename std::enable_if<std::is_floating_point<FLOAT_T>::value, int>::type N>
-ts::UString ts::FloatingPoint<FLOAT_T,PREC,N>::description() const
+template<typename FLOAT_T, const size_t PREC> requires std::floating_point<FLOAT_T>
+ts::UString ts::FloatingPoint<FLOAT_T,PREC>::description() const
 {
     return UString::Format(u"%d-bit floating-point value", 8 * sizeof(float_t));
 }
 
 // Convert the number to a string object.
-template <typename FLOAT_T, const size_t PREC, typename std::enable_if<std::is_floating_point<FLOAT_T>::value, int>::type N>
-ts::UString ts::FloatingPoint<FLOAT_T,PREC,N>::toString(size_t min_width,
+template<typename FLOAT_T, const size_t PREC> requires std::floating_point<FLOAT_T>
+ts::UString ts::FloatingPoint<FLOAT_T,PREC>::toString(size_t min_width,
                                                         bool right_justified,
                                                         UChar separator,
                                                         bool force_sign,
@@ -309,8 +309,8 @@ ts::UString ts::FloatingPoint<FLOAT_T,PREC,N>::toString(size_t min_width,
 }
 
 // Parse a string and interpret it as a number.
-template <typename FLOAT_T, const size_t PREC, typename std::enable_if<std::is_floating_point<FLOAT_T>::value, int>::type N>
-bool ts::FloatingPoint<FLOAT_T,PREC,N>::fromString(const UString& str, UChar separator, UChar decimal_dot)
+template<typename FLOAT_T, const size_t PREC> requires std::floating_point<FLOAT_T>
+bool ts::FloatingPoint<FLOAT_T,PREC>::fromString(const UString& str, UChar separator, UChar decimal_dot)
 {
     UString str16(str);
     Deformat(str16, separator, decimal_dot);

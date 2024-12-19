@@ -46,13 +46,13 @@ namespace ts {
         //! Translate the binary value in transmission_mode as a TransmissionMode enumeration value.
         //! @return The corresponding TransmissionMode enumeration value.
         //!
-        TransmissionMode getTransmissionMode() const { return translate(transmission_mode, ToTransmissionMode, TM_AUTO); }
+        TransmissionMode getTransmissionMode() const;
 
         //!
         //! Translate the binary value in guard_interval as a GuardInterval enumeration value.
         //! @return The corresponding GuardInterval enumeration value.
         //!
-        GuardInterval getGuardInterval() const { return translate(guard_interval, ToGuardInterval, GUARD_AUTO); }
+        GuardInterval getGuardInterval() const;
 
         // Inherited methods
         DeclareDisplayDescriptor();
@@ -66,9 +66,6 @@ namespace ts {
         virtual bool analyzeXML(DuckContext&, const xml::Element*) override;
 
     private:
-        static const std::map<int, TransmissionMode> ToTransmissionMode;
-        static const std::map<int, GuardInterval> ToGuardInterval;
-
         // The frequency in the descriptor is in units of 1/7 MHz. Conversion functions:
         static uint64_t BinToHz(uint16_t bin) { return (1000000 * uint64_t(bin)) / 7; }
         static uint16_t HzToBin(uint64_t freq) { return uint16_t((7 * freq) / 1000000); }

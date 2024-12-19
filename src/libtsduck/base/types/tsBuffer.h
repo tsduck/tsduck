@@ -713,13 +713,8 @@ namespace ts {
         //! @param [in] bits Number of bits to read.
         //! @return The value of the next @a bits.
         //!
-        template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value>::type* = nullptr>
-        INT getBits(size_t bits); // unsigned version
-
-        //! @cond nodoxygen
-        template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type* = nullptr>
-        INT getBits(size_t bits); // signed version
-        //! @endcond
+        template <typename INT> requires std::integral<INT>
+        INT getBits(size_t bits);
 
         //!
         //! Read the next n bits as an integer value and advance the read pointer.
@@ -727,7 +722,7 @@ namespace ts {
         //! @param [out] value The value of the next @a bits.
         //! @param [in] bits Number of bits to read.
         //!
-        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+        template <typename INT> requires std::integral<INT>
         void getBits(INT& value, size_t bits) { value = getBits<INT>(bits); }
 
         //!
@@ -736,7 +731,7 @@ namespace ts {
         //! @param [out] value The value of the next @a bits as a std::optional instance. If no integer can be read, the std::optional is unset.
         //! @param [in] bits Number of bits to read.
         //!
-        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+        template <typename INT> requires std::integral<INT>
         void getBits(std::optional<INT>& value, size_t bits);
 
         //!
@@ -754,7 +749,7 @@ namespace ts {
         //! @param [in] bits Number of bits to write.
         //! @return True on success, false on error (read only or no more space to write).
         //!
-        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+        template <typename INT> requires std::integral<INT>
         bool putBits(INT value, size_t bits);
 
         //!
@@ -765,7 +760,7 @@ namespace ts {
         //! @param [in] bits Number of bits to write.
         //! @return True on success, false on error (read only or no more space to write).
         //!
-        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+        template <typename INT> requires std::integral<INT>
         bool putBits(const std::optional<INT>& value, size_t bits)
         {
             return !value.has_value() || putBits(value.value(), bits);
@@ -1087,7 +1082,7 @@ namespace ts {
         //! @param [in] bcd_count Number of BCD digits (@a bcd_count * 4 bits).
         //! @return The decoded BCD value or zero in case of error.
         //!
-        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+        template <typename INT> requires std::integral<INT>
         INT getBCD(size_t bcd_count);
 
         //!
@@ -1098,7 +1093,7 @@ namespace ts {
         //! @param [in] bcd_count Number of BCD digits (@a bcd_count * 4 bits).
         //! @return True on success, false on error.
         //!
-        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+        template <typename INT> requires std::integral<INT>
         bool getBCD(INT& value, size_t bcd_count);
 
         //!
@@ -1108,7 +1103,7 @@ namespace ts {
         //! @param [in] bcd_count Number of BCD digits (@a bcd_count * 4 bits).
         //! @return True on success, false on error (read only or no more space to write).
         //!
-        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+        template <typename INT> requires std::integral<INT>
         bool putBCD(INT value, size_t bcd_count);
 
         //!
@@ -1429,7 +1424,7 @@ namespace ts {
         const uint8_t* rdb(size_t bytes);
 
         // Internal put integer method.
-        template <typename INT, typename std::enable_if<std::is_integral<INT>::value || std::is_floating_point<INT>::value, int>::type = 0>
+        template <typename INT> requires std::integral<INT> || std::floating_point<INT>
         bool putint(INT value, size_t bytes, void (*putBE)(void*,INT), void (*putLE)(void*,INT));
 
         // Request some read size. Return actually possible read size. Set read error if lower than requested.
@@ -1500,15 +1495,79 @@ namespace ts {
 //----------------------------------------------------------------------------
 
 // Read the next n bits as an integer value and advance the read pointer.
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type*>
+template <typename INT> requires std::integral<INT>
 INT ts::Buffer::getBits(size_t bits)
 {
-    using UNSINT = typename std::make_unsigned<INT>::type;
-    const INT value = static_cast<INT>(getBits<UNSINT>(bits));
-    return SignExtend(value, bits);
+    if constexpr (std::signed_integral<INT>) {
+        // Signed type: use the unsigned version, then extend the sign bit.
+        using UNSINT = typename std::make_unsigned<INT>::type;
+        const INT value = static_cast<INT>(getBits<UNSINT>(bits));
+        return SignExtend(value, bits);
+    }
+    else if constexpr (std::unsigned_integral<INT>) {
+        // Unsigned type: extract bits.
+
+        // No read if read error is already set or not enough bits to read.
+        if (_read_error || currentReadBitOffset() + bits > currentWriteBitOffset()) {
+            _read_error = true;
+            return 0;
+        }
+
+        INT val = 0;
+
+        if (_big_endian) {
+            // Read leading bits up to byte boundary
+            while (bits > 0 && _state.rbit != 0) {
+                val = INT(val << 1) | INT(getBit());
+                --bits;
+            }
+
+            // Read complete bytes
+            while (bits > 7) {
+                val = INT(val << 8) | INT(_buffer[_state.rbyte++]);
+                bits -= 8;
+            }
+
+            // Read trailing bits
+            while (bits > 0) {
+                val = INT(val << 1) | INT(getBit());
+                --bits;
+            }
+        }
+        else {
+            // Little endian decoding
+            int shift = 0;
+
+            // Read leading bits up to byte boundary
+            while (bits > 0 && _state.rbit != 0) {
+                val |= INT(getBit()) << shift;
+                --bits;
+                shift++;
+            }
+
+            // Read complete bytes
+            while (bits > 7) {
+                val |= INT(_buffer[_state.rbyte++]) << shift;
+                bits -= 8;
+                shift += 8;
+            }
+
+            // Read trailing bits
+            while (bits > 0) {
+                val |= INT(getBit()) << shift;
+                --bits;
+                shift++;
+            }
+        }
+
+        return val;
+    }
+    else {
+        static_assert(false, "not an integral type");
+    }
 }
 
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
+template <typename INT> requires std::integral<INT>
 void ts::Buffer::getBits(std::optional<INT>& value, size_t bits)
 {
     if (_read_error || currentReadBitOffset() + bits > currentWriteBitOffset()) {
@@ -1526,67 +1585,8 @@ void ts::Buffer::getBits(cn::duration<Rep,Period>& value, size_t bits)
     value = cn::duration<Rep,Period>(getBits<Rep>(bits));
 }
 
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value>::type*>
-INT ts::Buffer::getBits(size_t bits)
-{
-    // No read if read error is already set or not enough bits to read.
-    if (_read_error || currentReadBitOffset() + bits > currentWriteBitOffset()) {
-        _read_error = true;
-        return 0;
-    }
-
-    INT val = 0;
-
-    if (_big_endian) {
-        // Read leading bits up to byte boundary
-        while (bits > 0 && _state.rbit != 0) {
-            val = INT(val << 1) | INT(getBit());
-            --bits;
-        }
-
-        // Read complete bytes
-        while (bits > 7) {
-            val = INT(val << 8) | INT(_buffer[_state.rbyte++]);
-            bits -= 8;
-        }
-
-        // Read trailing bits
-        while (bits > 0) {
-            val = INT(val << 1) | INT(getBit());
-            --bits;
-        }
-    }
-    else {
-        // Little endian decoding
-        int shift = 0;
-
-        // Read leading bits up to byte boundary
-        while (bits > 0 && _state.rbit != 0) {
-            val |= INT(getBit()) << shift;
-            --bits;
-            shift++;
-        }
-
-        // Read complete bytes
-        while (bits > 7) {
-            val |= INT(_buffer[_state.rbyte++]) << shift;
-            bits -= 8;
-            shift += 8;
-        }
-
-        // Read trailing bits
-        while (bits > 0) {
-            val |= INT(getBit()) << shift;
-            --bits;
-            shift++;
-        }
-    }
-
-    return val;
-}
-
 // Put the next n bits from an integer value and advance the write pointer.
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
+template <typename INT> requires std::integral<INT>
 bool ts::Buffer::putBits(INT value, size_t bits)
 {
     // No write if write error is already set or read-only or not enough bits to write.
@@ -1642,7 +1642,7 @@ bool ts::Buffer::putBits(INT value, size_t bits)
 }
 
 // Internal put integer method.
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value || std::is_floating_point<INT>::value, int>::type>
+template <typename INT> requires std::integral<INT> || std::floating_point<INT>
 bool ts::Buffer::putint(INT value, size_t bytes, void (*putBE)(void*,INT), void (*putLE)(void*,INT))
 {
     // Internally used to write up to 8 bytes (64-bit integers).
@@ -1689,7 +1689,7 @@ bool ts::Buffer::putint(INT value, size_t bytes, void (*putBE)(void*,INT), void 
 }
 
 // Read the next 4*n bits as a BCD value.
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
+template <typename INT> requires std::integral<INT>
 INT ts::Buffer::getBCD(size_t bcd_count)
 {
     INT value = 0;
@@ -1697,7 +1697,7 @@ INT ts::Buffer::getBCD(size_t bcd_count)
     return value;
 }
 
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
+template <typename INT> requires std::integral<INT>
 bool ts::Buffer::getBCD(INT& value, size_t bcd_count)
 {
     using UNSINT = typename std::make_unsigned<INT>::type;
@@ -1723,7 +1723,7 @@ bool ts::Buffer::getBCD(INT& value, size_t bcd_count)
 }
 
 // Put the next 4*n bits as a BCD value.
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
+template <typename INT> requires std::integral<INT>
 bool ts::Buffer::putBCD(INT value, size_t bcd_count)
 {
     // No write if write error is already set or read-only or not enough bits to write.

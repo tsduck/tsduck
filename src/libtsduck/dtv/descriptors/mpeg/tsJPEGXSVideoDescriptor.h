@@ -71,9 +71,5 @@ namespace ts {
         virtual void deserializePayload(PSIBuffer&) override;
         virtual void buildXML(DuckContext&, xml::Element*) const override;
         virtual bool analyzeXML(DuckContext&, const xml::Element*) override;
-
-    private:
-        // Enumerations for XML.
-        static const Enumeration FramerateDenominators;
     };
 }

@@ -24,7 +24,8 @@ namespace ts {
     //! @param epsilon The approximation tolerance.
     //! @return True if @a a and @a b are approximately equal, false otherwise.
     //!
-    template <typename T, typename std::enable_if<std::is_floating_point<T>::value, int>::type = 0>
+    template <typename T>
+        requires std::floating_point<T>
     inline bool equal_float(T a, T b, T epsilon = 2 * std::numeric_limits<T>::epsilon())
     {
         const T aa = std::fabs(a);
@@ -40,8 +41,8 @@ namespace ts {
     //! @tparam mantissa_bits Expected number of bits in the mantissa.
     //! @return True if @a T matches the expected sizes, false otherwise.
     //!
-    template <typename T, int storage_bits, int exponent_bits, int mantissa_bits,
-              typename std::enable_if<std::is_floating_point<T>::value, int>::type = 0>
+    template <typename T, int storage_bits, int exponent_bits, int mantissa_bits>
+        requires std::floating_point<T>
     inline constexpr bool match_ieee_float()
     {
         return
@@ -54,8 +55,7 @@ namespace ts {
 
     // Fallback for non-floating types.
     //! @cond nodoxygen
-    template <typename T, int storage_bits, int exponent_bits, int mantissa_bits,
-              typename std::enable_if<!std::is_floating_point<T>::value, int>::type = 0>
+    template <typename T, int storage_bits, int exponent_bits, int mantissa_bits>
     inline constexpr bool match_ieee_float() { return false; }
     //! @endcond
 

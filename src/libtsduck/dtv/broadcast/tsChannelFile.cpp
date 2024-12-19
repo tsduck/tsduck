@@ -365,8 +365,8 @@ bool ts::ChannelFile::parseDocument(const xml::Document& doc)
         // Get network properties.
         xml::ElementVector xts;
         success =
-            itnet->getIntAttribute<uint16_t>(net->id, u"id", true) &&
-            itnet->getIntEnumAttribute(net->type, *TunerTypeEnum, u"type", true) &&
+            itnet->getIntAttribute(net->id, u"id", true) &&
+            itnet->getEnumAttribute(net->type, *TunerTypeEnum, u"type", true) &&
             itnet->getChildren(xts, u"ts") &&
             success;
 
@@ -377,8 +377,8 @@ bool ts::ChannelFile::parseDocument(const xml::Document& doc)
             uint16_t tsid = 0;
             uint16_t onid = 0;
             bool tsOk =
-                itts->getIntAttribute<uint16_t>(tsid, u"id", true) &&
-                itts->getIntAttribute<uint16_t>(onid, u"onid", false, 0xFFFF);
+                itts->getIntAttribute(tsid, u"id", true) &&
+                itts->getIntAttribute(onid, u"onid", false, 0xFFFF);
             success = tsOk && success;
 
             if (tsOk) {
@@ -531,64 +531,64 @@ bool ts::ChannelFile::fromXML(ModulationArgs& mod, const xml::Element* elem, Tun
     else if (elem->name().similar(u"dvbs")) {
         mod.delivery_system = DS_DVB_S;
         return elem->getOptionalIntAttribute(mod.satellite_number, u"satellite", 0, 3) &&
-               elem->getVariableIntAttribute(mod.frequency, u"frequency", true) &&
-               elem->getVariableIntAttribute(mod.symbol_rate, u"symbolrate", false, 27500000) &&
-               elem->getVariableIntEnumAttribute(mod.modulation, *ModulationEnum, u"modulation", false, QPSK) &&
-               elem->getVariableIntEnumAttribute(mod.delivery_system, *DeliverySystemEnum, u"system", false, DS_DVB_S) &&
-               elem->getOptionalIntEnumAttribute(mod.inner_fec, *InnerFECEnum, u"FEC") &&
-               elem->getOptionalIntEnumAttribute(mod.inversion, *SpectralInversionEnum, u"inversion") &&
-               elem->getOptionalIntEnumAttribute(mod.polarity, *PolarizationEnum, u"polarity") &&
-               (mod.delivery_system == DS_DVB_S || elem->getOptionalIntEnumAttribute(mod.pilots, *PilotEnum, u"pilots")) &&
-               (mod.delivery_system == DS_DVB_S || elem->getOptionalIntEnumAttribute(mod.roll_off, *RollOffEnum, u"rolloff")) &&
+               elem->getIntAttribute(mod.frequency, u"frequency", true) &&
+               elem->getIntAttribute(mod.symbol_rate, u"symbolrate", false, 27500000) &&
+               elem->getEnumAttribute(mod.modulation, *ModulationEnum, u"modulation", false, QPSK) &&
+               elem->getEnumAttribute(mod.delivery_system, *DeliverySystemEnum, u"system", false, DS_DVB_S) &&
+               elem->getOptionalEnumAttribute(mod.inner_fec, *InnerFECEnum, u"FEC") &&
+               elem->getOptionalEnumAttribute(mod.inversion, *SpectralInversionEnum, u"inversion") &&
+               elem->getOptionalEnumAttribute(mod.polarity, *PolarizationEnum, u"polarity") &&
+               (mod.delivery_system == DS_DVB_S || elem->getOptionalEnumAttribute(mod.pilots, *PilotEnum, u"pilots")) &&
+               (mod.delivery_system == DS_DVB_S || elem->getOptionalEnumAttribute(mod.roll_off, *RollOffEnum, u"rolloff")) &&
                (mod.delivery_system == DS_DVB_S || elem->getOptionalIntAttribute<uint32_t>(mod.isi, u"isi")) &&
                (mod.delivery_system == DS_DVB_S || elem->getOptionalIntAttribute<uint32_t>(mod.pls_code, u"PLS_code")) &&
-               (mod.delivery_system == DS_DVB_S || elem->getOptionalIntEnumAttribute(mod.pls_mode, *PLSModeEnum, u"PLS_mode"));
+               (mod.delivery_system == DS_DVB_S || elem->getOptionalEnumAttribute(mod.pls_mode, *PLSModeEnum, u"PLS_mode"));
     }
     else if (elem->name().similar(u"dvbt")) {
         mod.delivery_system = DS_DVB_T;
-        return elem->getVariableIntAttribute(mod.frequency, u"frequency", true) &&
-               elem->getVariableIntEnumAttribute(mod.modulation, *ModulationEnum, u"modulation", false, QAM_64) &&
+        return elem->getIntAttribute(mod.frequency, u"frequency", true) &&
+               elem->getEnumAttribute(mod.modulation, *ModulationEnum, u"modulation", false, QAM_64) &&
                GetLegacyBandWidth(mod.bandwidth, elem, u"bandwidth") &&
-               elem->getOptionalIntEnumAttribute(mod.transmission_mode, *TransmissionModeEnum, u"transmission") &&
-               elem->getOptionalIntEnumAttribute(mod.guard_interval, *GuardIntervalEnum, u"guard") &&
-               elem->getOptionalIntEnumAttribute(mod.fec_hp, *InnerFECEnum, u"HPFEC") &&
-               elem->getOptionalIntEnumAttribute(mod.fec_lp, *InnerFECEnum, u"LPFEC") &&
-               elem->getOptionalIntEnumAttribute(mod.inversion, *SpectralInversionEnum, u"inversion") &&
-               elem->getOptionalIntEnumAttribute(mod.hierarchy, *HierarchyEnum, u"hierarchy") &&
+               elem->getOptionalEnumAttribute(mod.transmission_mode, *TransmissionModeEnum, u"transmission") &&
+               elem->getOptionalEnumAttribute(mod.guard_interval, *GuardIntervalEnum, u"guard") &&
+               elem->getOptionalEnumAttribute(mod.fec_hp, *InnerFECEnum, u"HPFEC") &&
+               elem->getOptionalEnumAttribute(mod.fec_lp, *InnerFECEnum, u"LPFEC") &&
+               elem->getOptionalEnumAttribute(mod.inversion, *SpectralInversionEnum, u"inversion") &&
+               elem->getOptionalEnumAttribute(mod.hierarchy, *HierarchyEnum, u"hierarchy") &&
                elem->getOptionalIntAttribute(mod.plp, u"PLP", 0, 255);
     }
     else if (elem->name().similar(u"dvbc")) {
         mod.delivery_system = DS_DVB_C;
-        return elem->getVariableIntAttribute(mod.frequency, u"frequency", true) &&
-               elem->getVariableIntAttribute(mod.symbol_rate, u"symbolrate", false, 6900000) &&
-               elem->getVariableIntEnumAttribute(mod.modulation, *ModulationEnum, u"modulation", false, QAM_64) &&
-               elem->getVariableIntEnumAttribute(mod.delivery_system, *DeliverySystemEnum, u"system", false, DS_DVB_C) &&
-               elem->getOptionalIntEnumAttribute(mod.inner_fec, *InnerFECEnum, u"FEC") &&
-               elem->getOptionalIntEnumAttribute(mod.inversion, *SpectralInversionEnum, u"inversion");
+        return elem->getIntAttribute(mod.frequency, u"frequency", true) &&
+               elem->getIntAttribute(mod.symbol_rate, u"symbolrate", false, 6900000) &&
+               elem->getEnumAttribute(mod.modulation, *ModulationEnum, u"modulation", false, QAM_64) &&
+               elem->getEnumAttribute(mod.delivery_system, *DeliverySystemEnum, u"system", false, DS_DVB_C) &&
+               elem->getOptionalEnumAttribute(mod.inner_fec, *InnerFECEnum, u"FEC") &&
+               elem->getOptionalEnumAttribute(mod.inversion, *SpectralInversionEnum, u"inversion");
     }
     else if (elem->name().similar(u"atsc")) {
         mod.delivery_system = DS_ATSC;
-        return elem->getVariableIntAttribute(mod.frequency, u"frequency", true) &&
-               elem->getVariableIntEnumAttribute(mod.modulation, *ModulationEnum, u"modulation", false, VSB_8) &&
-               elem->getOptionalIntEnumAttribute(mod.inversion, *SpectralInversionEnum, u"inversion");
+        return elem->getIntAttribute(mod.frequency, u"frequency", true) &&
+               elem->getEnumAttribute(mod.modulation, *ModulationEnum, u"modulation", false, VSB_8) &&
+               elem->getOptionalEnumAttribute(mod.inversion, *SpectralInversionEnum, u"inversion");
     }
     else if (elem->name().similar(u"isdbt")) {
         mod.delivery_system = DS_ISDB_T;
-        return elem->getVariableIntAttribute(mod.frequency, u"frequency", true) &&
+        return elem->getIntAttribute(mod.frequency, u"frequency", true) &&
                GetLegacyBandWidth(mod.bandwidth, elem, u"bandwidth") &&
-               elem->getOptionalIntEnumAttribute(mod.transmission_mode, *TransmissionModeEnum, u"transmission") &&
-               elem->getOptionalIntEnumAttribute(mod.guard_interval, *GuardIntervalEnum, u"guard") &&
-               elem->getOptionalIntEnumAttribute(mod.inversion, *SpectralInversionEnum, u"inversion");
+               elem->getOptionalEnumAttribute(mod.transmission_mode, *TransmissionModeEnum, u"transmission") &&
+               elem->getOptionalEnumAttribute(mod.guard_interval, *GuardIntervalEnum, u"guard") &&
+               elem->getOptionalEnumAttribute(mod.inversion, *SpectralInversionEnum, u"inversion");
     }
     else if (elem->name().similar(u"isdbs")) {
         mod.delivery_system = DS_ISDB_S;
         mod.stream_id = ts_id;
         return elem->getOptionalIntAttribute(mod.satellite_number, u"satellite", 0, 3) &&
-               elem->getVariableIntAttribute(mod.frequency, u"frequency", true) &&
-               elem->getVariableIntAttribute(mod.symbol_rate, u"symbolrate", false, 27500000) &&
-               elem->getOptionalIntEnumAttribute(mod.inner_fec, *InnerFECEnum, u"FEC") &&
-               elem->getOptionalIntEnumAttribute(mod.inversion, *SpectralInversionEnum, u"inversion") &&
-               elem->getOptionalIntEnumAttribute(mod.polarity, *PolarizationEnum, u"polarity");
+               elem->getIntAttribute(mod.frequency, u"frequency", true) &&
+               elem->getIntAttribute(mod.symbol_rate, u"symbolrate", false, 27500000) &&
+               elem->getOptionalEnumAttribute(mod.inner_fec, *InnerFECEnum, u"FEC") &&
+               elem->getOptionalEnumAttribute(mod.inversion, *SpectralInversionEnum, u"inversion") &&
+               elem->getOptionalEnumAttribute(mod.polarity, *PolarizationEnum, u"polarity");
     }
     else {
         // Not a valid modulation parameters node.

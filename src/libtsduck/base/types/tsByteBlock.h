@@ -469,7 +469,7 @@ namespace ts {
         //! @tparam INT Integer type to serialize.
         //! @param [in] i Integer value to serialize at the end of the block.
         //!
-        template<typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+        template <typename INT> requires std::integral<INT>
         void append(INT i)
         {
             PutInt<INT>(enlarge(sizeof(INT)), i);

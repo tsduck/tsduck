@@ -175,7 +175,7 @@ namespace ts {
         //! @param [in] p A ComPtr to a @a COMSUBCLASS object.
         //! @return A reference to this object.
         //!
-        template <class COMSUBCLASS, typename std::enable_if<std::is_base_of<COMCLASS,COMSUBCLASS>::value>::type* = nullptr>
+        template <class COMSUBCLASS> requires std::derived_from<COMSUBCLASS, COMCLASS>
         ComPtr<COMCLASS>& assign(const ComPtr<COMSUBCLASS>& p);
 
         //!
@@ -438,7 +438,7 @@ int ts::ComPtr<COMCLASS>::refCount() const
 //-----------------------------------------------------------------------------
 
 template <class COMCLASS>
-template <class COMSUBCLASS, typename std::enable_if<std::is_base_of<COMCLASS,COMSUBCLASS>::value>::type*>
+template <class COMSUBCLASS> requires std::derived_from<COMSUBCLASS, COMCLASS>
 ts::ComPtr<COMCLASS>& ts::ComPtr<COMCLASS>::assign(const ComPtr<COMSUBCLASS>& p)
 {
     TRACE_ENTRY();

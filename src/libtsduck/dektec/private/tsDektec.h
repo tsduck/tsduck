@@ -59,10 +59,8 @@ namespace ts {
     //! @param [in] value A FixedPoint value.
     //! @return Corresponding Dektec-defined fractional int.
     //!
-    template <class FIXED,
-              typename INT = typename FIXED::int_t,
-              const size_t PREC = FIXED::PRECISION,
-              typename std::enable_if<std::is_base_of<FixedPoint<INT,PREC>, FIXED>::value, int>::type = 0>
+    template <class FIXED, typename INT = typename FIXED::int_t, const size_t PREC = FIXED::PRECISION>
+        requires std::derived_from<FIXED, FixedPoint<INT,PREC>>
     Dtapi::DtFractionInt ToDektecFractionInt(FIXED value)
     {
         // DtFractionInt uses "int" members. We may use larger types in our fraction type.
@@ -86,10 +84,8 @@ namespace ts {
     //! @param [out] result The converted FixedPoint value.
     //! @param [in] value A Dektec-defined fractional int.
     //!
-    template <class FIXED,
-              typename INT = typename FIXED::int_t,
-              const size_t PREC = FIXED::PRECISION,
-              typename std::enable_if<std::is_base_of<FixedPoint<INT,PREC>, FIXED>::value, int>::type = 0>
+    template <class FIXED, typename INT = typename FIXED::int_t, const size_t PREC = FIXED::PRECISION>
+        requires std::derived_from<FIXED, FixedPoint<INT,PREC>>
     void FromDektecFractionInt(FIXED& result, Dtapi::DtFractionInt value)
     {
         result = value.m_Num;
@@ -103,9 +99,8 @@ namespace ts {
     //! @param [in] value A FixedPoint value.
     //! @return Corresponding Dektec-defined fractional int.
     //!
-    template <class FRAC,
-              typename INT = typename FRAC::int_t,
-              typename std::enable_if<std::is_base_of<Fraction<INT>, FRAC>::value, int>::type = 0>
+    template <class FRAC, typename INT = typename FRAC::int_t>
+        requires std::derived_from<FRAC, Fraction<INT>>
     Dtapi::DtFractionInt ToDektecFractionInt(const FRAC& value)
     {
         // DtFractionInt uses "int" members. We may use larger types in our fraction type.
@@ -129,9 +124,8 @@ namespace ts {
     //! @param [out] result The converted FixedPoint value.
     //! @param [in] value A Dektec-defined fractional int.
     //!
-    template <class FRAC,
-              typename INT = typename FRAC::int_t,
-              typename std::enable_if<std::is_base_of<Fraction<INT>, FRAC>::value, int>::type = 0>
+    template <class FRAC, typename INT = typename FRAC::int_t>
+        requires std::derived_from<FRAC, Fraction<INT>>
     void FromDektecFractionInt(FRAC& result, Dtapi::DtFractionInt value)
     {
         result = FRAC(value.m_Num, value.m_Den);
@@ -144,9 +138,8 @@ namespace ts {
     //! @param [in] value An Integer value.
     //! @return Corresponding Dektec-defined fractional int.
     //!
-    template <class INTEG,
-              typename INT_T = typename INTEG::int_t,
-              typename std::enable_if<std::is_base_of<Integer<INT_T>, INTEG>::value, int>::type = 0>
+    template <class INTEG, typename INT_T = typename INTEG::int_t>
+        requires std::derived_from<INTEG, Integer<INT_T>>
     inline Dtapi::DtFractionInt ToDektecFractionInt(const INTEG& value)
     {
         return Dtapi::DtFractionInt(int(value.toInt()), 1);
@@ -159,9 +152,8 @@ namespace ts {
     //! @param [out] result The converted Integer value.
     //! @param [in] value A Dektec-defined fractional int.
     //!
-    template <class INTEG,
-              typename INT_T = typename INTEG::int_t,
-              typename std::enable_if<std::is_base_of<Integer<INT_T>, INTEG>::value, int>::type = 0>
+    template <class INTEG, typename INT_T = typename INTEG::int_t>
+        requires std::derived_from<INTEG, Integer<INT_T>>
     inline void FromDektecFractionInt(INTEG& result, Dtapi::DtFractionInt value)
     {
         result = INTEG(rounded_div(value.m_Num, value.m_Den));
@@ -174,10 +166,8 @@ namespace ts {
     //! @param [in] value A FloatingPoint value.
     //! @return Corresponding Dektec-defined fractional int.
     //!
-    template <class FPOINT,
-              typename FLOAT_T = typename FPOINT::float_t,
-              const size_t PREC = FPOINT::DISPLAY_PRECISION,
-              typename std::enable_if<std::is_base_of<FloatingPoint<FLOAT_T,PREC>, FPOINT>::value, int>::type = 0>
+    template <class FPOINT, typename FLOAT_T = typename FPOINT::float_t, const size_t PREC = FPOINT::DISPLAY_PRECISION>
+        requires std::derived_from<FPOINT, FloatingPoint<FLOAT_T,PREC>>
     inline Dtapi::DtFractionInt ToDektecFractionInt(const FPOINT& value)
     {
         constexpr int factor = static_power10<int,PREC>::value;
@@ -199,10 +189,8 @@ namespace ts {
     //! @param [out] result The converted FloatingPoint value.
     //! @param [in] value A Dektec-defined fractional int.
     //!
-    template <class FPOINT,
-              typename FLOAT_T = typename FPOINT::float_t,
-              const size_t PREC = FPOINT::DISPLAY_PRECISION,
-              typename std::enable_if<std::is_base_of<FloatingPoint<FLOAT_T,PREC>, FPOINT>::value, int>::type = 0>
+    template <class FPOINT, typename FLOAT_T = typename FPOINT::float_t, const size_t PREC = FPOINT::DISPLAY_PRECISION>
+        requires std::derived_from<FPOINT, FloatingPoint<FLOAT_T,PREC>>
     inline void FromDektecFractionInt(FPOINT& result, Dtapi::DtFractionInt value)
     {
         result = FPOINT(FLOAT_T(value.m_Num) / FLOAT_T(value.m_Den));

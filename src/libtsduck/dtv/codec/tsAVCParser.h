@@ -96,7 +96,7 @@ namespace ts {
         //! @param [in] n Number of bits to read.
         //! @return True on success, false on error.
         //!
-        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+        template <typename INT> requires std::integral<INT>
         bool nextBits(INT& val, size_t n);
 
         //!
@@ -106,7 +106,7 @@ namespace ts {
         //! @param [in] n Number of bits to read.
         //! @return True on success, false on error.
         //!
-        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+        template <typename INT> requires std::integral<INT>
         bool readBits(INT& val, size_t n);
 
         //!
@@ -116,9 +116,7 @@ namespace ts {
         //! @param [in] n Number of bits to read.
         //! @return True on success, false on error.
         //!
-        template <typename INT,
-                  typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr,
-                  typename std::enable_if<std::is_unsigned<INT>::value>::type* = nullptr>
+        template <typename INT> requires std::unsigned_integral<INT>
         bool u(INT& val, size_t n)
         {
             return readBits(val, n);
@@ -131,9 +129,7 @@ namespace ts {
         //! @param [in] n Number of bits to read.
         //! @return True on success, false on error.
         //!
-        template <typename INT,
-                  typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr,
-                  typename std::enable_if<std::is_signed<INT>::value>::type* = nullptr>
+        template <typename INT> requires std::signed_integral<INT>
         bool i(INT& val, size_t n)
         {
             return readBits(val, n);
@@ -145,9 +141,7 @@ namespace ts {
         //! @param [out] val Returned integer value.
         //! @return True on success, false on error.
         //!
-        template <typename INT,
-                  typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr,
-                  typename std::enable_if<std::is_unsigned<INT>::value>::type* = nullptr>
+        template <typename INT> requires std::unsigned_integral<INT>
         bool ue(INT& val)
         {
             return expColomb(val);
@@ -159,9 +153,7 @@ namespace ts {
         //! @param [out] val Returned integer value.
         //! @return True on success, false on error.
         //!
-        template <typename INT,
-                  typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr,
-                  typename std::enable_if<std::is_signed<INT>::value>::type* = nullptr>
+        template <typename INT> requires std::signed_integral<INT>
         bool se(INT& val);
 
     private:
@@ -190,7 +182,7 @@ namespace ts {
         uint8_t readNextBit();
 
         // Extract Exp-Golomb-coded value using n bits.
-        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+        template <typename INT> requires std::integral<INT>
         bool expColomb(INT&);
     };
 }
@@ -200,7 +192,7 @@ namespace ts {
 //----------------------------------------------------------------------------
 
 // Provide the next n bits without advancing the bitstream pointer.
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
+template <typename INT> requires std::integral<INT>
 bool ts::AVCParser::nextBits(INT& val, size_t n)
 {
     ts_avcparser_assert_consistent();
@@ -216,7 +208,7 @@ bool ts::AVCParser::nextBits(INT& val, size_t n)
 }
 
 // Read the next n bits and advance the bitstream pointer.
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
+template <typename INT> requires std::integral<INT>
 bool ts::AVCParser::readBits(INT& val, size_t n)
 {
     ts_avcparser_assert_consistent();
@@ -260,7 +252,7 @@ bool ts::AVCParser::readBits(INT& val, size_t n)
 }
 
 // Extract Exp-Golomb-coded value using n bits.
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
+template <typename INT> requires std::integral<INT>
 bool ts::AVCParser::expColomb(INT& val)
 {
     ts_avcparser_assert_consistent();
@@ -284,7 +276,7 @@ bool ts::AVCParser::expColomb(INT& val)
 }
 
 // Signed integer Exp-Golomb-coded using n bits.
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*, typename std::enable_if<std::is_signed<INT>::value>::type*>
+template <typename INT> requires std::signed_integral<INT>
 bool ts::AVCParser::se(INT& val)
 {
     // See ISO/IEC 14496-10 section 9.1.1

@@ -126,7 +126,8 @@ namespace ts {
         //! Used in replacement of the "Bits=XX" directive in the .names file.
         //! @return The corresponding name.
         //!
-        template <typename INT, typename std::enable_if<std::is_integral<INT>::value, int>::type = 0>
+        template <typename INT>
+            requires std::integral<INT>
         static UString DataName(const UChar* xml_name, const UChar* section, INT value, NamesFlags flags = NamesFlags::NAME, INT alternate = 0, size_t bits = 0)
         {
             return NamesFile::Instance(NamesFile::Predefined::DTV)->
@@ -145,7 +146,8 @@ namespace ts {
         //! Used in replacement of the "Bits=XX" directive in the .names file.
         //! @return The corresponding name.
         //!
-        template <typename INT, typename std::enable_if<std::is_integral<INT>::value, int>::type = 0>
+        template <typename INT>
+            requires std::integral<INT>
         UString dataName(const UChar* section, INT value, NamesFlags flags = NamesFlags::NAME, INT alternate = 0, size_t bits = 0)
         {
             return DataName<INT>(_xml_name, section, value, flags, alternate, bits);

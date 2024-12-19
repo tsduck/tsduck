@@ -1015,7 +1015,7 @@ namespace ts {
     //! @param [in] p An address pointing to an INT in big endian representation.
     //! @return The INT value in native byte order, deserialized from @a p.
     //!
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+    template <typename INT> requires std::integral<INT>
     TSDUCKDLL inline INT GetIntBE(const void* p)
     {
         return CondByteSwapBE<INT>(*(static_cast<const INT*>(p)));
@@ -1028,7 +1028,7 @@ namespace ts {
     //! @param [in] p An address pointing to an INT in little endian representation.
     //! @return The INT value in native byte order, deserialized from @a p.
     //!
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+    template <typename INT> requires std::integral<INT>
     TSDUCKDLL inline INT GetIntLE(const void* p)
     {
         return CondByteSwapLE<INT>(*(static_cast<const INT*>(p)));
@@ -1041,7 +1041,7 @@ namespace ts {
     //! @param [in] p An address pointing to an INT in big endian representation.
     //! @param [out] i The INT value in native byte order, deserialized from @a p.
     //!
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+    template <typename INT> requires std::integral<INT>
     TSDUCKDLL inline void GetIntBE(const void* p, INT& i)
     {
         i = CondByteSwapBE<INT>(*(static_cast<const INT*>(p)));
@@ -1054,7 +1054,7 @@ namespace ts {
     //! @param [in] p An address pointing to an INT in little endian representation.
     //! @param [out] i The INT value in native byte order, deserialized from @a p.
     //!
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+    template <typename INT> requires std::integral<INT>
     TSDUCKDLL inline void GetIntLE(const void* p, INT& i)
     {
         i = CondByteSwapLE<INT>(*(static_cast<const INT*>(p)));
@@ -1067,7 +1067,7 @@ namespace ts {
     //! @param [out] p An address where to serialize the integer.
     //! @param [in]  i The INT in native byte order to serialize in big endian representation.
     //!
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+    template <typename INT> requires std::integral<INT>
     TSDUCKDLL inline void PutIntBE(void* p, INT i)
     {
         *(static_cast<INT*>(p)) = CondByteSwapBE<INT>(i);
@@ -1080,7 +1080,7 @@ namespace ts {
     //! @param [out] p An address where to serialize the integer.
     //! @param [in]  i The INT in native byte order to serialize in little endian representation.
     //!
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+    template <typename INT> requires std::integral<INT>
     TSDUCKDLL inline void PutIntLE(void* p, INT i)
     {
         *(static_cast<INT*>(p)) = CondByteSwapLE<INT>(i);
@@ -1090,22 +1090,22 @@ namespace ts {
 
     // Non-inline versions when strict memory alignment is required.
 
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+    template <typename INT> requires std::integral<INT>
     TSDUCKDLL INT GetIntBE(const void* p);
 
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+    template <typename INT> requires std::integral<INT>
     TSDUCKDLL INT GetIntLE(const void* p);
 
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+    template <typename INT> requires std::integral<INT>
     TSDUCKDLL void GetIntBE(const void* p, INT& i);
 
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+    template <typename INT> requires std::integral<INT>
     TSDUCKDLL void GetIntLE(const void* p, INT& i);
 
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+    template <typename INT> requires std::integral<INT>
     TSDUCKDLL void PutIntBE(void* p, INT i);
 
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+    template <typename INT> requires std::integral<INT>
     TSDUCKDLL void PutIntLE(void* p, INT i);
 
 #endif
@@ -1117,7 +1117,7 @@ namespace ts {
     //! @param [in] p An address pointing to an INT in big endian representation.
     //! @return The INT value in native byte order, deserialized from @a p.
     //!
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+    template <typename INT> requires std::integral<INT>
     TSDUCKDLL inline INT GetInt(const void* p)
     {
         return GetIntBE<INT>(p);
@@ -1130,7 +1130,7 @@ namespace ts {
     //! @param [in] p An address pointing to an INT in big endian representation.
     //! @param [out] i The INT value in native byte order, deserialized from @a p.
     //!
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+    template <typename INT> requires std::integral<INT>
     TSDUCKDLL inline void GetInt(const void* p, INT& i)
     {
         GetIntBE<INT>(p, i);
@@ -1143,7 +1143,7 @@ namespace ts {
     //! @param [out] p An address where to serialize the integer.
     //! @param [in]  i The INT in native byte order to serialize in big endian representation.
     //!
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+    template <typename INT> requires std::integral<INT>
     TSDUCKDLL inline void PutInt(void* p, INT i)
     {
         PutIntBE<INT>(p, i);
@@ -1157,7 +1157,7 @@ namespace ts {
     //! @param [in] size Size in bytes of the integer. Must be 1 to 8.
     //! @return The INT value in native byte order, deserialized from @a p.
     //!
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+    template <typename INT> requires std::integral<INT>
     TSDUCKDLL inline INT GetIntVarBE(const void* p, size_t size);
 
     //!
@@ -1168,7 +1168,7 @@ namespace ts {
     //! @param [in] size Size in bytes of the integer. Must be 1 to 8.
     //! @return The INT value in native byte order, deserialized from @a p.
     //!
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+    template <typename INT> requires std::integral<INT>
     TSDUCKDLL inline INT GetIntVarLE(const void* p, size_t size);
 
     //!
@@ -1179,7 +1179,7 @@ namespace ts {
     //! @param [in] size Size in bytes of the integer. Must be 1 to 8.
     //! @param [out] i The INT value in native byte order, deserialized from @a p.
     //!
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+    template <typename INT> requires std::integral<INT>
     TSDUCKDLL inline void GetIntVarBE(const void* p, size_t size, INT& i)
     {
         i = GetIntVarBE<INT>(p, size);
@@ -1193,7 +1193,7 @@ namespace ts {
     //! @param [in] size Size in bytes of the integer. Must be 1 to 8.
     //! @param [out] i The INT value in native byte order, deserialized from @a p.
     //!
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+    template <typename INT> requires std::integral<INT>
     TSDUCKDLL inline void GetIntVarLE(const void* p, size_t size, INT& i)
     {
         i = GetIntVarLE<INT>(p, size);
@@ -1207,7 +1207,7 @@ namespace ts {
     //! @param [in] size Size in bytes of the integer. Must be 1 to 8.
     //! @param [in] i The INT in native byte order to serialize in big endian representation.
     //!
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+    template <typename INT> requires std::integral<INT>
     TSDUCKDLL inline void PutIntVarBE(void* p, size_t size, INT i);
 
     //!
@@ -1218,7 +1218,7 @@ namespace ts {
     //! @param [in] size Size in bytes of the integer. Must be 1 to 8.
     //! @param [in] i The INT in native byte order to serialize in little endian representation.
     //!
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+    template <typename INT> requires std::integral<INT>
     TSDUCKDLL inline void PutIntVarLE(void* p, size_t size, INT i);
 
     //!
@@ -1229,7 +1229,7 @@ namespace ts {
     //! @param [in] size Size in bytes of the integer. Must be 1 to 8.
     //! @return The INT value in native byte order, deserialized from @a p.
     //!
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+    template <typename INT> requires std::integral<INT>
     TSDUCKDLL inline INT GetIntVar(const void* p, size_t size)
     {
         return GetIntVarBE<INT>(p, size);
@@ -1243,7 +1243,7 @@ namespace ts {
     //! @param [in] size Size in bytes of the integer. Must be 1 to 8.
     //! @param [out] i The INT value in native byte order, deserialized from @a p.
     //!
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+    template <typename INT> requires std::integral<INT>
     TSDUCKDLL inline void GetIntVar(const void* p, size_t size, INT& i)
     {
         GetIntVarBE<INT>(p, size, i);
@@ -1257,7 +1257,7 @@ namespace ts {
     //! @param [in] size Size in bytes of the integer. Must be 1 to 8.
     //! @param [in] i The INT in native byte order to serialize in big endian representation.
     //!
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+    template <typename INT> requires std::integral<INT>
     TSDUCKDLL inline void PutIntVar(void* p, size_t size, INT i)
     {
         PutIntVarBE<INT>(p, size, i);
@@ -1272,75 +1272,123 @@ namespace ts {
 // Memory access with strict alignment.
 #if defined(TS_STRICT_MEMORY_ALIGN)
 
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
+template <typename INT> requires std::integral<INT>
 INT ts::GetIntBE(const void* p)
 {
-    switch (sizeof(INT)) {
-        case 1: return static_cast<INT>(GetUInt8(p));
-        case 2: return static_cast<INT>(GetUInt16BE(p));
-        case 4: return static_cast<INT>(GetUInt32BE(p));
-        case 8: return static_cast<INT>(GetUInt64BE(p));
-        default: assert (false); return 0;
+    if constexpr (sizeof(INT) == 1) {
+        return static_cast<INT>(GetUInt8(p));
+    }
+    else if constexpr (sizeof(INT) == 2) {
+        return static_cast<INT>(GetUInt16BE(p));
+    }
+    else if constexpr (sizeof(INT) == 4) {
+        return static_cast<INT>(GetUInt32BE(p));
+    }
+    else if constexpr (sizeof(INT) == 8) {
+        return static_cast<INT>(GetUInt64BE(p));
+    }
+    else {
+        static_assert(false, "invalid integer size");
     }
 }
 
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
+template <typename INT> requires std::integral<INT>
 INT ts::GetIntLE(const void* p)
 {
-    switch (sizeof(INT)) {
-        case 1: return static_cast<INT>(GetUInt8(p));
-        case 2: return static_cast<INT>(GetUInt16LE(p));
-        case 4: return static_cast<INT>(GetUInt32LE(p));
-        case 8: return static_cast<INT>(GetUInt64LE(p));
-        default: assert (false); return 0;
+    if constexpr (sizeof(INT) == 1) {
+        return static_cast<INT>(GetUInt8(p));
+    }
+    else if constexpr (sizeof(INT) == 2) {
+        return static_cast<INT>(GetUInt16LE(p));
+    }
+    else if constexpr (sizeof(INT) == 4) {
+        return static_cast<INT>(GetUInt32LE(p));
+    }
+    else if constexpr (sizeof(INT) == 8) {
+        return static_cast<INT>(GetUInt64LE(p));
+    }
+    else {
+        static_assert(false, "invalid integer size");
     }
 }
 
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
+template <typename INT> requires std::integral<INT>
 void ts::GetIntBE(const void* p, INT& i)
 {
-    switch (sizeof(INT)) {
-        case 1: i = static_cast<INT>(GetUInt8(p)); break;
-        case 2: i = static_cast<INT>(GetUInt16BE(p)); break;
-        case 4: i = static_cast<INT>(GetUInt32BE(p)); break;
-        case 8: i = static_cast<INT>(GetUInt64BE(p)); break;
-        default: assert(false); i = 0;  break;
+    if constexpr (sizeof(INT) == 1) {
+        i = static_cast<INT>(GetUInt8(p)); break;
+    }
+    else if constexpr (sizeof(INT) == 2) {
+        i = static_cast<INT>(GetUInt16BE(p)); break;
+    }
+    else if constexpr (sizeof(INT) == 4) {
+        i = static_cast<INT>(GetUInt32BE(p)); break;
+    }
+    else if constexpr (sizeof(INT) == 8) {
+        i = static_cast<INT>(GetUInt64BE(p)); break;
+    }
+    else {
+        static_assert(false, "invalid integer size");
     }
 }
 
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
+template <typename INT> requires std::integral<INT>
 void ts::GetIntLE(const void* p, INT& i)
 {
-    switch (sizeof(INT)) {
-        case 1: i = static_cast<INT>(GetUInt8(p)); break;
-        case 2: i = static_cast<INT>(GetUInt16LE(p)); break;
-        case 4: i = static_cast<INT>(GetUInt32LE(p)); break;
-        case 8: i = static_cast<INT>(GetUInt64LE(p)); break;
-        default: assert(false); i = 0;  break;
+    if constexpr (sizeof(INT) == 1) {
+        i = static_cast<INT>(GetUInt8(p)); break;
+    }
+    else if constexpr (sizeof(INT) == 2) {
+        i = static_cast<INT>(GetUInt16LE(p)); break;
+    }
+    else if constexpr (sizeof(INT) == 4) {
+        i = static_cast<INT>(GetUInt32LE(p)); break;
+    }
+    else if constexpr (sizeof(INT) == 8) {
+        i = static_cast<INT>(GetUInt64LE(p)); break;
+    }
+    else {
+        static_assert(false, "invalid integer size");
     }
 }
 
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
+template <typename INT> requires std::integral<INT>
 void ts::PutIntBE(void* p, INT i)
 {
-    switch (sizeof(INT)) {
-        case 1: PutUInt8(p, static_cast<uint8_t>(i)); break;
-        case 2: PutUInt16BE(p, static_cast<uint16_t>(i)); break;
-        case 4: PutUInt32BE(p, static_cast<uint32_t>(i)); break;
-        case 8: PutUInt64BE(p, static_cast<uint64_t>(i)); break;
-        default: assert(false); break;
+    if constexpr (sizeof(INT) == 1) {
+        PutUInt8(p, static_cast<uint8_t>(i)); break;
+    }
+    else if constexpr (sizeof(INT) == 2) {
+        PutUInt16BE(p, static_cast<uint16_t>(i)); break;
+    }
+    else if constexpr (sizeof(INT) == 4) {
+        PutUInt32BE(p, static_cast<uint32_t>(i)); break;
+    }
+    else if constexpr (sizeof(INT) == 8) {
+        PutUInt64BE(p, static_cast<uint64_t>(i)); break;
+    }
+    else {
+        static_assert(false, "invalid integer size");
     }
 }
 
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
+template <typename INT> requires std::integral<INT>
 void ts::PutIntLE(void* p, INT i)
 {
-    switch (sizeof(INT)) {
-        case 1: PutUInt8(p, static_cast<uint8_t>(i)); break;
-        case 2: PutUInt16LE(p, static_cast<uint16_t>(i)); break;
-        case 4: PutUInt32LE(p, static_cast<uint32_t>(i)); break;
-        case 8: PutUInt64LE(p, static_cast<uint64_t>(i)); break;
-        default: assert(false); break;
+    if constexpr (sizeof(INT) == 1) {
+        PutUInt8(p, static_cast<uint8_t>(i)); break;
+    }
+    else if constexpr (sizeof(INT) == 2) {
+        PutUInt16LE(p, static_cast<uint16_t>(i)); break;
+    }
+    else if constexpr (sizeof(INT) == 4) {
+        PutUInt32LE(p, static_cast<uint32_t>(i)); break;
+    }
+    else if constexpr (sizeof(INT) == 8) {
+        PutUInt64LE(p, static_cast<uint64_t>(i)); break;
+    }
+    else {
+        static_assert(false, "invalid integer size");
     }
 }
 
@@ -1351,7 +1399,7 @@ void ts::PutIntLE(void* p, INT i)
 // Variable-length integers serialization.
 //----------------------------------------------------------------------------
 
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
+template <typename INT> requires std::integral<INT>
 INT ts::GetIntVarBE(const void* p, size_t size)
 {
     switch (size) {
@@ -1366,7 +1414,7 @@ INT ts::GetIntVarBE(const void* p, size_t size)
     }
 }
 
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
+template <typename INT> requires std::integral<INT>
 INT ts::GetIntVarLE(const void* p, size_t size)
 {
     switch (size) {
@@ -1381,7 +1429,7 @@ INT ts::GetIntVarLE(const void* p, size_t size)
     }
 }
 
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
+template <typename INT> requires std::integral<INT>
 void ts::PutIntVarBE(void* p, size_t size, INT i)
 {
     switch (size) {
@@ -1396,7 +1444,7 @@ void ts::PutIntVarBE(void* p, size_t size, INT i)
     }
 }
 
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
+template <typename INT> requires std::integral<INT>
 void ts::PutIntVarLE(void* p, size_t size, INT i)
 {
     switch (size) {

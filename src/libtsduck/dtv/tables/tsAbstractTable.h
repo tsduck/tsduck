@@ -241,7 +241,8 @@ namespace ts {
         //! @tparam KEY A type which is used as key of the map.
         //! @tparam ENTRY A subclass of EntryBase (enforced at compile-time).
         //!
-        template<typename KEY, class ENTRY, typename std::enable_if<std::is_base_of<EntryBase, ENTRY>::value>::type* = nullptr>
+        template<typename KEY, class ENTRY>
+            requires std::derived_from<ENTRY, EntryBase>
         class EntryWithDescriptorsMap : public std::map<KEY, ENTRY>
         {
         public:
@@ -349,7 +350,8 @@ namespace ts {
         //! containing a descriptor list since it is not CopyAssignable or CopyConstructible.
         //! @tparam ENTRY A subclass of EntryBase (enforced at compile-time).
         //!
-        template<class ENTRY, typename std::enable_if<std::is_base_of<EntryBase, ENTRY>::value>::type* = nullptr>
+        template<class ENTRY>
+            requires std::derived_from<ENTRY, EntryBase>
         class EntryWithDescriptorsList : public EntryWithDescriptorsMap<size_t, ENTRY>
         {
         public:
@@ -504,16 +506,16 @@ namespace ts {
 // Template definitions.
 //----------------------------------------------------------------------------
 
-template<typename KEY, class ENTRY, typename std::enable_if<std::is_base_of<ts::AbstractTable::EntryBase, ENTRY>::value>::type* N>
-ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY,N>::EntryWithDescriptorsMap(const AbstractTable* table, bool auto_ordering) :
+template<typename KEY, class ENTRY> requires std::derived_from<ENTRY, ts::AbstractTable::EntryBase>
+ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY>::EntryWithDescriptorsMap(const AbstractTable* table, bool auto_ordering) :
     SuperClass(),
     _table(table),
     _auto_ordering(auto_ordering)
 {
 }
 
-template<typename KEY, class ENTRY, typename std::enable_if<std::is_base_of<ts::AbstractTable::EntryBase, ENTRY>::value>::type* N>
-ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY,N>::EntryWithDescriptorsMap(const AbstractTable* table, const EntryWithDescriptorsMap& other) :
+template<typename KEY, class ENTRY> requires std::derived_from<ENTRY, ts::AbstractTable::EntryBase>
+ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY>::EntryWithDescriptorsMap(const AbstractTable* table, const EntryWithDescriptorsMap& other) :
     SuperClass(),
     _table(table),
     _auto_ordering(other._auto_ordering)
@@ -524,8 +526,8 @@ ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY,N>::EntryWithDescriptorsMap
     }
 }
 
-template<typename KEY, class ENTRY, typename std::enable_if<std::is_base_of<ts::AbstractTable::EntryBase, ENTRY>::value>::type* N>
-ts::AbstractTable::EntryWithDescriptorsMap<KEY, ENTRY, N>::EntryWithDescriptorsMap(const AbstractTable* table, EntryWithDescriptorsMap&& other) :
+template<typename KEY, class ENTRY> requires std::derived_from<ENTRY, ts::AbstractTable::EntryBase>
+ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY>::EntryWithDescriptorsMap(const AbstractTable* table, EntryWithDescriptorsMap&& other) :
     SuperClass(),
     _table(table),
     _auto_ordering(other._auto_ordering)
@@ -544,8 +546,8 @@ ts::AbstractTable::EntryWithDescriptorsMap<KEY, ENTRY, N>::EntryWithDescriptorsM
 // Template list of subclasses of EntryWithDescriptors - Assignment.
 //----------------------------------------------------------------------------
 
-template<typename KEY, class ENTRY, typename std::enable_if<std::is_base_of<ts::AbstractTable::EntryBase, ENTRY>::value>::type* N>
-ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY,N>& ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY,N>::operator=(const EntryWithDescriptorsMap& other)
+template<typename KEY, class ENTRY> requires std::derived_from<ENTRY, ts::AbstractTable::EntryBase>
+ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY>& ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY>::operator=(const EntryWithDescriptorsMap& other)
 {
     if (&other != this) {
         // Use same auto ordering as copied map.
@@ -559,8 +561,8 @@ ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY,N>& ts::AbstractTable::Entr
     return *this;
 }
 
-template<typename KEY, class ENTRY, typename std::enable_if<std::is_base_of<ts::AbstractTable::EntryBase, ENTRY>::value>::type* N>
-ts::AbstractTable::EntryWithDescriptorsMap<KEY, ENTRY, N>& ts::AbstractTable::EntryWithDescriptorsMap<KEY, ENTRY, N>::operator=(EntryWithDescriptorsMap&& other)
+template<typename KEY, class ENTRY> requires std::derived_from<ENTRY, ts::AbstractTable::EntryBase>
+ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY>& ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY>::operator=(EntryWithDescriptorsMap&& other)
 {
     if (&other != this) {
         // Use same auto ordering as copied map.
@@ -582,8 +584,8 @@ ts::AbstractTable::EntryWithDescriptorsMap<KEY, ENTRY, N>& ts::AbstractTable::En
 // Template map of subclasses of EntryWithDescriptors - Swap.
 //----------------------------------------------------------------------------
 
-template<typename KEY, class ENTRY, typename std::enable_if<std::is_base_of<ts::AbstractTable::EntryBase, ENTRY>::value>::type* N>
-void ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY,N>::swap(EntryWithDescriptorsMap& other)
+template<typename KEY, class ENTRY> requires std::derived_from<ENTRY, ts::AbstractTable::EntryBase>
+void ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY>::swap(EntryWithDescriptorsMap& other)
 {
     if (&other != this) {
         // Unefficient but functionally correct.
@@ -597,8 +599,8 @@ void ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY,N>::swap(EntryWithDesc
 // Template map of subclasses of EntryWithDescriptors - Subscripts.
 //----------------------------------------------------------------------------
 
-template<typename KEY, class ENTRY, typename std::enable_if<std::is_base_of<ts::AbstractTable::EntryBase, ENTRY>::value>::type* N>
-ENTRY& ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY,N>::operator[](const KEY& key)
+template<typename KEY, class ENTRY> requires std::derived_from<ENTRY, ts::AbstractTable::EntryBase>
+ENTRY& ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY>::operator[](const KEY& key)
 {
     // The emplace operation ensures that the object is constructed with the supplied arguments (and not copied).
     // This form is more complex but the simplest form of emplace (without the piecewise_construct and tuples)
@@ -613,8 +615,8 @@ ENTRY& ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY,N>::operator[](const
     return entry;
 }
 
-template<typename KEY, class ENTRY, typename std::enable_if<std::is_base_of<ts::AbstractTable::EntryBase, ENTRY>::value>::type* N>
-const ENTRY& ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY,N>::operator[](const KEY& key) const
+template<typename KEY, class ENTRY> requires std::derived_from<ENTRY, ts::AbstractTable::EntryBase>
+const ENTRY& ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY>::operator[](const KEY& key) const
 {
     // Here, we must not create any element (the instance is read-only).
     const auto it = this->find(key);
@@ -631,8 +633,8 @@ const ENTRY& ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY,N>::operator[]
 // Get the insertion order of entrie in the table.
 //----------------------------------------------------------------------------
 
-template<typename KEY, class ENTRY, typename std::enable_if<std::is_base_of<ts::AbstractTable::EntryBase, ENTRY>::value>::type* N>
-void ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY,N>::getOrder(std::vector<KEY>& order) const
+template<typename KEY, class ENTRY> requires std::derived_from<ENTRY, ts::AbstractTable::EntryBase>
+void ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY>::getOrder(std::vector<KEY>& order) const
 {
     // Build a multimap of keys, indexed by order_hint.
     std::multimap<size_t, KEY> kmap;
@@ -654,8 +656,8 @@ void ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY,N>::getOrder(std::vect
 // Set the insertion order of entrie in the table.
 //----------------------------------------------------------------------------
 
-template<typename KEY, class ENTRY, typename std::enable_if<std::is_base_of<ts::AbstractTable::EntryBase, ENTRY>::value>::type* N>
-void ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY,N>::setOrder(const std::vector<KEY>& order)
+template<typename KEY, class ENTRY> requires std::derived_from<ENTRY, ts::AbstractTable::EntryBase>
+void ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY>::setOrder(const std::vector<KEY>& order)
 {
     // First pass: get initial ordering.
     std::vector<KEY> input;
@@ -686,8 +688,8 @@ void ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY,N>::setOrder(const std
 // Get the next ordering hint to be used in an entry.
 //----------------------------------------------------------------------------
 
-template<typename KEY, class ENTRY, typename std::enable_if<std::is_base_of<ts::AbstractTable::EntryBase, ENTRY>::value>::type* N>
-size_t ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY,N>::nextOrder() const
+template<typename KEY, class ENTRY> requires std::derived_from<ENTRY, ts::AbstractTable::EntryBase>
+size_t ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY>::nextOrder() const
 {
     size_t next = 0;
     for (const auto& entry : *this) {

@@ -28,7 +28,7 @@ namespace ts {
     //!
     //!  @tparam CIPHER A subclass of ts::BlockCipher, the underlying block cipher.
     //!
-    template <class CIPHER, typename std::enable_if<std::is_base_of<BlockCipher, CIPHER>::value>::type* = nullptr>
+    template<class CIPHER> requires std::derived_from<CIPHER, ts::BlockCipher>
     class CTS3: public CIPHER
     {
         TS_NOCOPY(CTS3);
@@ -56,8 +56,8 @@ namespace ts {
 
 TS_BLOCK_CIPHER_DEFINE_PROPERTIES_TEMPLATE(ts::CTS3, CTS3, (CIPHER::PROPERTIES(), u"CTS3", true, CIPHER::BLOCK_SIZE + 1, 2, 0));
 
-template<class CIPHER, typename std::enable_if<std::is_base_of<ts::BlockCipher, CIPHER>::value>::type* N>
-ts::CTS3<CIPHER,N>::CTS3() : CIPHER(CTS3::PROPERTIES())
+template<class CIPHER> requires std::derived_from<CIPHER, ts::BlockCipher>
+ts::CTS3<CIPHER>::CTS3() : CIPHER(CTS3::PROPERTIES())
 {
 }
 
@@ -67,8 +67,8 @@ ts::CTS3<CIPHER,N>::CTS3() : CIPHER(CTS3::PROPERTIES())
 // The algorithm needs to specifically process overlapping buffers.
 //----------------------------------------------------------------------------
 
-template<class CIPHER, typename std::enable_if<std::is_base_of<ts::BlockCipher, CIPHER>::value>::type* N>
-bool ts::CTS3<CIPHER,N>::encryptImpl(const void* plain, size_t plain_length, void* cipher, size_t cipher_maxsize, size_t* cipher_length)
+template<class CIPHER> requires std::derived_from<CIPHER, ts::BlockCipher>
+bool ts::CTS3<CIPHER>::encryptImpl(const void* plain, size_t plain_length, void* cipher, size_t cipher_maxsize, size_t* cipher_length)
 {
     const size_t bsize = this->properties.block_size;
     uint8_t* work1 = this->work.data();
@@ -131,8 +131,8 @@ bool ts::CTS3<CIPHER,N>::encryptImpl(const void* plain, size_t plain_length, voi
 // The algorithm needs to specifically process overlapping buffers.
 //----------------------------------------------------------------------------
 
-template<class CIPHER, typename std::enable_if<std::is_base_of<ts::BlockCipher, CIPHER>::value>::type* N>
-bool ts::CTS3<CIPHER,N>::decryptImpl(const void* cipher, size_t cipher_length, void* plain, size_t plain_maxsize, size_t* plain_length)
+template<class CIPHER> requires std::derived_from<CIPHER, ts::BlockCipher>
+bool ts::CTS3<CIPHER>::decryptImpl(const void* cipher, size_t cipher_length, void* plain, size_t plain_maxsize, size_t* plain_length)
 {
     const size_t bsize = this->properties.block_size;
     uint8_t* work1 = this->work.data();

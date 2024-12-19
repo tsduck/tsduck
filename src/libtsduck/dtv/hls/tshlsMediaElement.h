@@ -15,33 +15,31 @@
 #include "tsURL.h"
 #include "tsStringifyInterface.h"
 
-namespace ts {
-    namespace hls {
+namespace ts::hls {
+    //!
+    //! Description of a media "element" (sub-playlist or segment) inside an HLS playlist.
+    //! @ingroup hls
+    //!
+    class TSDUCKDLL MediaElement: public StringifyInterface
+    {
+    public:
         //!
-        //! Description of a media "element" (sub-playlist or segment) inside an HLS playlist.
-        //! @ingroup hls
+        //! Constructor.
         //!
-        class TSDUCKDLL MediaElement: public StringifyInterface
-        {
-        public:
-            //!
-            //! Constructor.
-            //!
-            MediaElement() = default;
+        MediaElement() = default;
 
-            //!
-            //! Get the URL string to use.
-            //! @return The URL string to use.
-            //!
-            UString urlString() const;
+        //!
+        //! Get the URL string to use.
+        //! @return The URL string to use.
+        //!
+        UString urlString() const;
 
-            // Implementation of StringifyInterface
-            virtual UString toString() const override;
+        // Implementation of StringifyInterface
+        virtual UString toString() const override;
 
-            // Public fields.
-            UString relativeURI {};  //!< Relative URI, verbatime from playlist.
-            UString filePath {};     //!< Full file path.
-            URL     url {};          //!< Full URL, invalid if accessed by file path only.
-        };
-    }
+        // Public fields.
+        UString relativeURI {};  //!< Relative URI, verbatime from playlist.
+        UString filePath {};     //!< Full file path.
+        URL     url {};          //!< Full URL, invalid if accessed by file path only.
+    };
 }

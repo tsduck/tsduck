@@ -213,7 +213,8 @@ namespace ts {
     //! @param [in] distance Distance between the two bytes.
     //! @return Interval in DURATION units between the two bytes.
     //!
-    template <class DURATION = cn::milliseconds, typename std::enable_if<std::is_integral<typename DURATION::rep>::value, int>::type = 0>
+    template <class DURATION = cn::milliseconds>
+        requires std::integral<typename DURATION::rep>
     inline DURATION ByteInterval(const BitRate& bitrate, std::intmax_t distance)
     {
         return DURATION(typename DURATION::rep(bitrate == 0 ? 0 : ((distance * 8 * DURATION::period::den) / (DURATION::period::num * bitrate)).toInt()));
@@ -228,7 +229,8 @@ namespace ts {
     //! @return Interval in DURATION units between the first byte of the first packet
     //! and the first byte of the second packet.
     //!
-    template <class DURATION = cn::milliseconds, typename std::enable_if<std::is_integral<typename DURATION::rep>::value, int>::type = 0>
+    template <class DURATION = cn::milliseconds>
+        requires std::integral<typename DURATION::rep>
     inline DURATION PacketInterval(const BitRate& bitrate, PacketCounter distance)
     {
         return ByteInterval<DURATION>(bitrate, distance * PKT_SIZE);

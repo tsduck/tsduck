@@ -120,7 +120,8 @@ namespace ts {
         //! @param [in] propid Id of the property to search.
         //! @return True when the property was found, false otherwise.
         //!
-        template <typename VALTYPE, typename IVALTYPE, class FILTER, typename std::enable_if<std::is_base_of<::IBDA_SignalStatistics, FILTER>::value>::type* = nullptr>
+        template <typename VALTYPE, typename IVALTYPE, class FILTER>
+            requires std::derived_from<FILTER, ::IBDA_SignalStatistics>
         bool searchProperty(VALTYPE& retvalue,
                             PropSearch searchtype,
                             ::HRESULT (__stdcall FILTER::* getmethod)(IVALTYPE*),
@@ -147,7 +148,8 @@ namespace ts {
         //! @param [in] propid Id of the property to search.
         //! @return True when the property was found, false otherwise.
         //!
-        template <typename VALTYPE, typename ARGTYPE, typename IVALTYPE, class FILTER, typename std::enable_if<std::is_same<::IBDA_DigitalDemodulator, FILTER>::value>::type* = nullptr>
+        template <typename VALTYPE, typename ARGTYPE, typename IVALTYPE, class FILTER>
+            requires std::derived_from<FILTER, ::IBDA_DigitalDemodulator>
         bool searchVarProperty(VALTYPE unset,
                                std::optional<ARGTYPE>& parameter,
                                PropSearch searchtype,
@@ -162,7 +164,8 @@ namespace ts {
 #if !defined(DOXYGEN)
 
         // There is one specialization per interface type.
-        template <typename VALTYPE, typename ARGTYPE, typename IVALTYPE, class FILTER, typename std::enable_if<std::is_same<::IBDA_DigitalDemodulator2, FILTER>::value>::type* = nullptr>
+        template <typename VALTYPE, typename ARGTYPE, typename IVALTYPE, class FILTER>
+            requires std::derived_from<FILTER, ::IBDA_DigitalDemodulator2>
         bool searchVarProperty(VALTYPE unset,
                                std::optional<ARGTYPE>& parameter,
                                PropSearch searchtype,

@@ -14,6 +14,7 @@
 #pragma once
 #include "tsUString.h"
 #include "tsEnumUtils.h"
+#include "tsIntegerUtils.h"
 #include "tsReport.h"
 #include "tsSingleton.h"
 #include "tsVersionInfo.h"
@@ -391,7 +392,7 @@ namespace ts {
     //! @param [in] alternate_value Display this integer value if flags ALTERNATE is set.
     //! @return The corresponding name.
     //!
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value, int>::type = 0>
+    template <typename INT> requires ts::int_enum<INT>
     UString NameFromDTV(const UString& section_name, INT value, NamesFlags flags = NamesFlags::NAME, INT alternate_value = static_cast<INT>(0))
     {
         return NamesFile::Instance(NamesFile::Predefined::DTV)->nameFromSection(section_name, NamesFile::Value(value), flags, NamesFile::Value(alternate_value));
@@ -407,7 +408,7 @@ namespace ts {
     //! @param [in] alternate_value Display this integer value if flags ALTERNATE is set.
     //! @return The corresponding name.
     //!
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value, int>::type = 0>
+    template <typename INT> requires ts::int_enum<INT>
     UString NameFromDTVWithFallback(const UString& section_name, INT value1, INT value2, NamesFlags flags = NamesFlags::NAME, INT alternate_value = static_cast<INT>(0))
     {
         return NamesFile::Instance(NamesFile::Predefined::DTV)->nameFromSectionWithFallback(section_name, NamesFile::Value(value1), NamesFile::Value(value2), flags, NamesFile::Value(alternate_value));

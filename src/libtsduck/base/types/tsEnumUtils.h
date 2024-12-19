@@ -84,7 +84,7 @@ namespace ts {
 //! @param [in] a Operand.
 //! @return Bitwise "not" @a a
 //!
-template <typename ENUM, typename std::enable_if<std::is_enum<ENUM>::value && ts::EnableBitMaskOperators<ENUM>::value>::type* = nullptr>
+template <typename ENUM> requires std::is_enum_v<ENUM> && ts::EnableBitMaskOperators<ENUM>::value
 inline constexpr ENUM operator~(ENUM a)
 {
     using IENUM = typename std::underlying_type<ENUM>::type;
@@ -97,7 +97,7 @@ inline constexpr ENUM operator~(ENUM a)
 //! @param [in] a Enumeration value. Typically an expression uing bitmask "and" or "or" operators on @a ENUM.
 //! @return True if @a a is zero (no flag set).
 //!
-template <typename ENUM, typename std::enable_if<std::is_enum<ENUM>::value && ts::EnableBitMaskOperators<ENUM>::value>::type* = nullptr>
+template <typename ENUM> requires std::is_enum_v<ENUM> && ts::EnableBitMaskOperators<ENUM>::value
 inline constexpr bool operator!(ENUM a)
 {
     using IENUM = typename std::underlying_type<ENUM>::type;
@@ -111,7 +111,7 @@ inline constexpr bool operator!(ENUM a)
 //! @param [in] b Second operand.
 //! @return Bitwise @a a "or" @a b
 //!
-template <typename ENUM, typename std::enable_if<std::is_enum<ENUM>::value && ts::EnableBitMaskOperators<ENUM>::value>::type* = nullptr>
+template <typename ENUM> requires std::is_enum_v<ENUM> && ts::EnableBitMaskOperators<ENUM>::value
 inline constexpr ENUM operator|(ENUM a, ENUM b)
 {
     using IENUM = typename std::underlying_type<ENUM>::type;
@@ -125,7 +125,7 @@ inline constexpr ENUM operator|(ENUM a, ENUM b)
 //! @param [in] b Second operand.
 //! @return Bitwise @a a "and" @a b
 //!
-template <typename ENUM, typename std::enable_if<std::is_enum<ENUM>::value && ts::EnableBitMaskOperators<ENUM>::value>::type* = nullptr>
+template <typename ENUM> requires std::is_enum_v<ENUM> && ts::EnableBitMaskOperators<ENUM>::value
 inline constexpr ENUM operator&(ENUM a, ENUM b)
 {
     using IENUM = typename std::underlying_type<ENUM>::type;
@@ -139,7 +139,7 @@ inline constexpr ENUM operator&(ENUM a, ENUM b)
 //! @param [in] b Second operand.
 //! @return Bitwise @a a "xor" @a b
 //!
-template <typename ENUM, typename std::enable_if<std::is_enum<ENUM>::value && ts::EnableBitMaskOperators<ENUM>::value>::type* = nullptr>
+template <typename ENUM> requires std::is_enum_v<ENUM> && ts::EnableBitMaskOperators<ENUM>::value
 inline constexpr ENUM operator^(ENUM a, ENUM b)
 {
     using IENUM = typename std::underlying_type<ENUM>::type;
@@ -153,7 +153,7 @@ inline constexpr ENUM operator^(ENUM a, ENUM b)
 //! @param [in] b Second operand.
 //! @return A reference to @a a.
 //!
-template <typename ENUM, typename std::enable_if<std::is_enum<ENUM>::value && ts::EnableBitMaskOperators<ENUM>::value>::type* = nullptr>
+template <typename ENUM> requires std::is_enum_v<ENUM> && ts::EnableBitMaskOperators<ENUM>::value
 inline ENUM& operator|=(ENUM& a, ENUM b)
 {
     return a = a | b;
@@ -166,7 +166,7 @@ inline ENUM& operator|=(ENUM& a, ENUM b)
 //! @param [in] b Second operand.
 //! @return A reference to @a a.
 //!
-template <typename ENUM, typename std::enable_if<std::is_enum<ENUM>::value && ts::EnableBitMaskOperators<ENUM>::value>::type* = nullptr>
+template <typename ENUM> requires std::is_enum_v<ENUM> && ts::EnableBitMaskOperators<ENUM>::value
 inline ENUM& operator&=(ENUM& a, ENUM b)
 {
     return a = a & b;
@@ -179,7 +179,7 @@ inline ENUM& operator&=(ENUM& a, ENUM b)
 //! @param [in] b Second operand.
 //! @return A reference to @a a.
 //!
-template <typename ENUM, typename std::enable_if<std::is_enum<ENUM>::value && ts::EnableBitMaskOperators<ENUM>::value>::type* = nullptr>
+template <typename ENUM> requires std::is_enum_v<ENUM> && ts::EnableBitMaskOperators<ENUM>::value
 inline ENUM& operator^=(ENUM& a, ENUM b)
 {
     return a = a ^ b;
@@ -192,7 +192,7 @@ inline ENUM& operator^=(ENUM& a, ENUM b)
 //! @param [in] b Number of bits to shift.
 //! @return Bitwise @a a, shifted left @a b bits.
 //!
-template <typename ENUM, typename std::enable_if<std::is_enum<ENUM>::value && ts::EnableBitMaskOperators<ENUM>::value>::type* = nullptr>
+template <typename ENUM> requires std::is_enum_v<ENUM> && ts::EnableBitMaskOperators<ENUM>::value
 inline constexpr ENUM operator<<(ENUM a, size_t b)
 {
     using IENUM = typename std::underlying_type<ENUM>::type;
@@ -206,7 +206,7 @@ inline constexpr ENUM operator<<(ENUM a, size_t b)
 //! @param [in] b Number of bits to shift.
 //! @return Bitwise @a a, shifted right @a b bits.
 //!
-template <typename ENUM, typename std::enable_if<std::is_enum<ENUM>::value && ts::EnableBitMaskOperators<ENUM>::value>::type* = nullptr>
+template <typename ENUM> requires std::is_enum_v<ENUM> && ts::EnableBitMaskOperators<ENUM>::value
 inline constexpr ENUM operator>>(ENUM a, size_t b)
 {
     using IENUM = typename std::underlying_type<ENUM>::type;
@@ -220,7 +220,7 @@ inline constexpr ENUM operator>>(ENUM a, size_t b)
 //! @param [in] b Number of bits to shift.
 //! @return A reference to @a a.
 //!
-template <typename ENUM, typename std::enable_if<std::is_enum<ENUM>::value && ts::EnableBitMaskOperators<ENUM>::value>::type* = nullptr>
+template <typename ENUM> requires std::is_enum_v<ENUM> && ts::EnableBitMaskOperators<ENUM>::value
 inline ENUM& operator<<=(ENUM& a, size_t b)
 {
     return a = a << b;
@@ -233,7 +233,7 @@ inline ENUM& operator<<=(ENUM& a, size_t b)
 //! @param [in] b Number of bits to shift.
 //! @return A reference to @a a.
 //!
-template <typename ENUM, typename std::enable_if<std::is_enum<ENUM>::value && ts::EnableBitMaskOperators<ENUM>::value>::type* = nullptr>
+template <typename ENUM> requires std::is_enum_v<ENUM> && ts::EnableBitMaskOperators<ENUM>::value
 inline ENUM& operator>>=(ENUM& a, size_t b)
 {
     return a = a >> b;

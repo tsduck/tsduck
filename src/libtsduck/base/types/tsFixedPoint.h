@@ -30,7 +30,8 @@ namespace ts {
     //! @tparam INT_T The underlying signed integer type.
     //! @tparam PREC The decimal precision in digits.
     //!
-    template <typename INT_T, const size_t PREC, typename std::enable_if<std::is_integral<INT_T>::value && std::is_signed<INT_T>::value, int>::type = 0>
+    template <typename INT_T, const size_t PREC>
+        requires std::signed_integral<INT_T>
     class FixedPoint: public AbstractNumber
     {
     private:
@@ -72,7 +73,7 @@ namespace ts {
         //! @tparam INT2 Some other integer type (signed or unsigned).
         //! @param [in] i Initial value in integral number of units which is converted into the fixed-precision representation.
         //!
-        template<typename INT2, typename std::enable_if<std::is_integral<INT2>::value, int>::type = 0>
+        template<typename INT2> requires std::integral<INT2>
         FixedPoint(INT2 i) : _value(bounded_cast<int_t>(int64_t(i) * FACTOR)) {}
 
         //!
@@ -136,7 +137,7 @@ namespace ts {
         //! @param [in] x An integer of type @a INT2.
         //! @return True if this fixed-point number generates an overflow when multiplied by @a x.
         //!
-        template<typename INT2, typename std::enable_if<std::is_integral<INT2>::value, int>::type = 0>
+        template<typename INT2> requires std::integral<INT2>
         bool mulOverflow(INT2 x) const { return !bound_check<int_t>(x) || mul_overflow(_value, int_t(x)); }
 
         //!
@@ -174,43 +175,43 @@ namespace ts {
         bool operator<(const FixedPoint& x) const { return _value < x._value; }
         bool operator>(const FixedPoint& x) const { return _value > x._value; }
 
-        template<typename INT2, typename std::enable_if<std::is_integral<INT2>::value, int>::type = 0>
+        template<typename INT2> requires std::integral<INT2>
         FixedPoint operator+(INT2 x) const { return FixedPoint(_value + (int_t(x) * FACTOR), true); }
 
-        template<typename INT2, typename std::enable_if<std::is_integral<INT2>::value, int>::type = 0>
+        template<typename INT2> requires std::integral<INT2>
         FixedPoint operator-(INT2 x) const { return FixedPoint(_value - (int_t(x) * FACTOR), true); }
 
-        template<typename INT2, typename std::enable_if<std::is_integral<INT2>::value, int>::type = 0>
+        template<typename INT2> requires std::integral<INT2>
         FixedPoint operator*(INT2 x) const { return FixedPoint(_value * int_t(x), true); }
 
-        template<typename INT2, typename std::enable_if<std::is_integral<INT2>::value, int>::type = 0>
+        template<typename INT2> requires std::integral<INT2>
         FixedPoint operator/(INT2 x) const { return FixedPoint(_value / int_t(x), true); }
 
-        template<typename INT2, typename std::enable_if<std::is_integral<INT2>::value, int>::type = 0>
+        template<typename INT2> requires std::integral<INT2>
         FixedPoint& operator+=(INT2 x) { _value += int_t(x) * FACTOR; return *this; }
 
-        template<typename INT2, typename std::enable_if<std::is_integral<INT2>::value, int>::type = 0>
+        template<typename INT2> requires std::integral<INT2>
         FixedPoint& operator-=(INT2 x) { _value -= int_t(x) * FACTOR; return *this; }
 
-        template<typename INT2, typename std::enable_if<std::is_integral<INT2>::value, int>::type = 0>
+        template<typename INT2> requires std::integral<INT2>
         FixedPoint& operator*=(INT2 x) { _value *= int_t(x); return *this; }
 
-        template<typename INT2, typename std::enable_if<std::is_integral<INT2>::value, int>::type = 0>
+        template<typename INT2> requires std::integral<INT2>
         FixedPoint& operator/=(INT2 x) { _value /= int_t(x); return *this; }
 
-        template<typename INT2, typename std::enable_if<std::is_integral<INT2>::value, int>::type = 0>
+        template<typename INT2> requires std::integral<INT2>
         bool operator==(INT2 x) const { return _value == int_t(x) * FACTOR; }
 
-        template<typename INT2, typename std::enable_if<std::is_integral<INT2>::value, int>::type = 0>
+        template<typename INT2> requires std::integral<INT2>
         bool operator<=(INT2 x) const { return _value <= int_t(x) * FACTOR; }
 
-        template<typename INT2, typename std::enable_if<std::is_integral<INT2>::value, int>::type = 0>
+        template<typename INT2> requires std::integral<INT2>
         bool operator>=(INT2 x) const { return _value >= int_t(x) * FACTOR; }
 
-        template<typename INT2, typename std::enable_if<std::is_integral<INT2>::value, int>::type = 0>
+        template<typename INT2> requires std::integral<INT2>
         bool operator<(INT2 x) const { return _value < int_t(x) * FACTOR; }
 
-        template<typename INT2, typename std::enable_if<std::is_integral<INT2>::value, int>::type = 0>
+        template<typename INT2> requires std::integral<INT2>
         bool operator>(INT2 x) const { return _value > int_t(x) * FACTOR; }
 
         //! @endcond
@@ -220,49 +221,40 @@ namespace ts {
 //! @cond nodoxygen
 // The operators are not extensively documented with doxygen (obvious, verbose and redundant).
 
-template <typename INT1, typename INT2, const size_t PREC,
-          typename std::enable_if<std::is_integral<INT1>::value, int>::type = 0,
-          typename std::enable_if<std::is_integral<INT2>::value && std::is_signed<INT2>::value, int>::type = 0>
+template <typename INT1, typename INT2, const size_t PREC>
+    requires std::integral<INT1> && std::signed_integral<INT2>
 inline ts::FixedPoint<INT2, PREC> operator+(INT1 x1, ts::FixedPoint<INT2, PREC> x2) { return x2 + x1; }
 
-template <typename INT1, typename INT2, const size_t PREC,
-          typename std::enable_if<std::is_integral<INT1>::value, int>::type = 0,
-          typename std::enable_if<std::is_integral<INT2>::value && std::is_signed<INT2>::value, int>::type = 0>
+template <typename INT1, typename INT2, const size_t PREC>
+    requires std::integral<INT1> && std::signed_integral<INT2>
 inline ts::FixedPoint<INT2, PREC> operator-(INT1 x1, ts::FixedPoint<INT2, PREC> x2) { return -(x2 - x1); }
 
-template <typename INT1, typename INT2, const size_t PREC,
-          typename std::enable_if<std::is_integral<INT1>::value, int>::type = 0,
-          typename std::enable_if<std::is_integral<INT2>::value && std::is_signed<INT2>::value, int>::type = 0>
+template <typename INT1, typename INT2, const size_t PREC>
+    requires std::integral<INT1> && std::signed_integral<INT2>
 inline ts::FixedPoint<INT2, PREC> operator*(INT1 x1, ts::FixedPoint<INT2, PREC> x2) { return x2 * x1; }
 
-template <typename INT1, typename INT2, const size_t PREC,
-          typename std::enable_if<std::is_integral<INT1>::value, int>::type = 0,
-          typename std::enable_if<std::is_integral<INT2>::value && std::is_signed<INT2>::value, int>::type = 0>
+template <typename INT1, typename INT2, const size_t PREC>
+    requires std::integral<INT1> && std::signed_integral<INT2>
 inline ts::FixedPoint<INT2, PREC> operator/(INT1 x1, ts::FixedPoint<INT2, PREC> x2) { return ts::FixedPoint<INT2, PREC>(x1) / x2; }
 
-template <typename INT1, typename INT2, const size_t PREC,
-          typename std::enable_if<std::is_integral<INT1>::value, int>::type = 0,
-          typename std::enable_if<std::is_integral<INT2>::value && std::is_signed<INT2>::value, int>::type = 0>
+template <typename INT1, typename INT2, const size_t PREC>
+    requires std::integral<INT1> && std::signed_integral<INT2>
 inline bool operator==(INT1 x1, ts::FixedPoint<INT2, PREC> x2) { return x2.operator==(x1); }
 
-template <typename INT1, typename INT2, const size_t PREC,
-          typename std::enable_if<std::is_integral<INT1>::value, int>::type = 0,
-          typename std::enable_if<std::is_integral<INT2>::value && std::is_signed<INT2>::value, int>::type = 0>
+template <typename INT1, typename INT2, const size_t PREC>
+    requires std::integral<INT1> && std::signed_integral<INT2>
 inline bool operator<=(INT1 x1, ts::FixedPoint<INT2, PREC> x2) { return x2 >= x1; }
 
-template <typename INT1, typename INT2, const size_t PREC,
-          typename std::enable_if<std::is_integral<INT1>::value, int>::type = 0,
-          typename std::enable_if<std::is_integral<INT2>::value && std::is_signed<INT2>::value, int>::type = 0>
+template <typename INT1, typename INT2, const size_t PREC>
+    requires std::integral<INT1> && std::signed_integral<INT2>
 inline bool operator>=(INT1 x1, ts::FixedPoint<INT2, PREC> x2) { return x2 <= x1; }
 
-template <typename INT1, typename INT2, const size_t PREC,
-          typename std::enable_if<std::is_integral<INT1>::value, int>::type = 0,
-          typename std::enable_if<std::is_integral<INT2>::value && std::is_signed<INT2>::value, int>::type = 0>
+template <typename INT1, typename INT2, const size_t PREC>
+    requires std::integral<INT1> && std::signed_integral<INT2>
 inline bool operator<(INT1 x1, ts::FixedPoint<INT2, PREC> x2) { return x2 > x1; }
 
-template <typename INT1, typename INT2, const size_t PREC,
-          typename std::enable_if<std::is_integral<INT1>::value, int>::type = 0,
-          typename std::enable_if<std::is_integral<INT2>::value && std::is_signed<INT2>::value, int>::type = 0>
+template <typename INT1, typename INT2, const size_t PREC>
+    requires std::integral<INT1> && std::signed_integral<INT2>
 inline bool operator>(INT1 x1, ts::FixedPoint<INT2, PREC> x2) { return x2 < x1; }
 
 //! @endcond
@@ -272,48 +264,48 @@ inline bool operator>(INT1 x1, ts::FixedPoint<INT2, PREC> x2) { return x2 < x1; 
 // Template definitions.
 //----------------------------------------------------------------------------
 
-template <typename INT_T, const size_t PREC, typename std::enable_if<std::is_integral<INT_T>::value && std::is_signed<INT_T>::value, int>::type N>
-const ts::FixedPoint<INT_T,PREC,N> ts::FixedPoint<INT_T,PREC,N>::MIN(std::numeric_limits<INT_T>::min(), true);
+template<typename INT_T, const size_t PREC> requires std::signed_integral<INT_T>
+const ts::FixedPoint<INT_T,PREC> ts::FixedPoint<INT_T,PREC>::MIN(std::numeric_limits<INT_T>::min(), true);
 
-template <typename INT_T, const size_t PREC, typename std::enable_if<std::is_integral<INT_T>::value && std::is_signed<INT_T>::value, int>::type N>
-const ts::FixedPoint<INT_T,PREC,N> ts::FixedPoint<INT_T,PREC,N>::MAX(std::numeric_limits<INT_T>::max(), true);
+template<typename INT_T, const size_t PREC> requires std::signed_integral<INT_T>
+const ts::FixedPoint<INT_T,PREC> ts::FixedPoint<INT_T,PREC>::MAX(std::numeric_limits<INT_T>::max(), true);
 
 // Virtual numeric conversions.
-template <typename INT_T, const size_t PREC, typename std::enable_if<std::is_integral<INT_T>::value && std::is_signed<INT_T>::value, int>::type N>
-int64_t ts::FixedPoint<INT_T,PREC,N>::toInt64() const
+template<typename INT_T, const size_t PREC> requires std::signed_integral<INT_T>
+int64_t ts::FixedPoint<INT_T,PREC>::toInt64() const
 {
     return bounded_cast<int64_t>(_value / FACTOR);
 }
 
-template <typename INT_T, const size_t PREC, typename std::enable_if<std::is_integral<INT_T>::value && std::is_signed<INT_T>::value, int>::type N>
-double ts::FixedPoint<INT_T,PREC,N>::toDouble() const
+template<typename INT_T, const size_t PREC> requires std::signed_integral<INT_T>
+double ts::FixedPoint<INT_T,PREC>::toDouble() const
 {
     return double(_value) / FACTOR;
 }
 
-template <typename INT_T, const size_t PREC, typename std::enable_if<std::is_integral<INT_T>::value && std::is_signed<INT_T>::value, int>::type N>
-bool ts::FixedPoint<INT_T,PREC,N>::inRange(int64_t min, int64_t max) const
+template<typename INT_T, const size_t PREC> requires std::signed_integral<INT_T>
+bool ts::FixedPoint<INT_T,PREC>::inRange(int64_t min, int64_t max) const
 {
     const int64_t r = bounded_cast<int64_t>(_value / FACTOR);
     return r >= min && r <= max;
 }
 
-template <typename INT_T, const size_t PREC, typename std::enable_if<std::is_integral<INT_T>::value && std::is_signed<INT_T>::value, int>::type N>
-ts::UString ts::FixedPoint<INT_T,PREC,N>::description() const
+template<typename INT_T, const size_t PREC> requires std::signed_integral<INT_T>
+ts::UString ts::FixedPoint<INT_T,PREC>::description() const
 {
     return UString::Format(u"%d-bit fixed-point value with up to %d decimals", 8 * sizeof(int_t), PRECISION);
 }
 
 // Convert the number to a string object.
-template <typename INT_T, const size_t PREC, typename std::enable_if<std::is_integral<INT_T>::value && std::is_signed<INT_T>::value, int>::type N>
-ts::UString ts::FixedPoint<INT_T,PREC,N>::toString(size_t min_width,
-                                                   bool right_justified,
-                                                   UChar separator,
-                                                   bool force_sign,
-                                                   size_t decimals,
-                                                   bool force_decimals,
-                                                   UChar decimal_dot,
-                                                   UChar pad) const
+template<typename INT_T, const size_t PREC> requires std::signed_integral<INT_T>
+ts::UString ts::FixedPoint<INT_T,PREC>::toString(size_t min_width,
+                                                 bool right_justified,
+                                                 UChar separator,
+                                                 bool force_sign,
+                                                 size_t decimals,
+                                                 bool force_decimals,
+                                                 UChar decimal_dot,
+                                                 UChar pad) const
 {
     UString str(UString::Decimal(_value / FACTOR, 0, true, UString()));
     str.append(u'.');
@@ -323,8 +315,8 @@ ts::UString ts::FixedPoint<INT_T,PREC,N>::toString(size_t min_width,
 }
 
 // Parse a string and interpret it as a number.
-template <typename INT_T, const size_t PREC, typename std::enable_if<std::is_integral<INT_T>::value && std::is_signed<INT_T>::value, int>::type N>
-bool ts::FixedPoint<INT_T,PREC,N>::fromString(const UString& str, UChar separator, UChar decimal_dot)
+template<typename INT_T, const size_t PREC> requires std::signed_integral<INT_T>
+bool ts::FixedPoint<INT_T,PREC>::fromString(const UString& str, UChar separator, UChar decimal_dot)
 {
     UString s(str);
     Deformat(s, separator, decimal_dot);

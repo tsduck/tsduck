@@ -24,7 +24,7 @@ namespace ts {
     //!
     //! @tparam CIPHER A subclass of ts::BlockCipher, the underlying block cipher.
     //!
-    template <class CIPHER, typename std::enable_if<std::is_base_of<BlockCipher, CIPHER>::value>::type* = nullptr>
+    template<class CIPHER> requires std::derived_from<CIPHER, ts::BlockCipher>
     class ECB: public CIPHER
     {
         TS_NOCOPY(ECB);
@@ -58,13 +58,13 @@ namespace ts {
 
 TS_BLOCK_CIPHER_DEFINE_PROPERTIES_TEMPLATE(ts::ECB, ECB, (CIPHER::PROPERTIES(), u"ECB", false, CIPHER::BLOCK_SIZE, 0, 0));
 
-template<class CIPHER, typename std::enable_if<std::is_base_of<ts::BlockCipher, CIPHER>::value>::type* N>
-ts::ECB<CIPHER,N>::ECB() : CIPHER(ECB::PROPERTIES())
+template<class CIPHER> requires std::derived_from<CIPHER, ts::BlockCipher>
+ts::ECB<CIPHER>::ECB() : CIPHER(ECB::PROPERTIES())
 {
 }
 
-template<class CIPHER, typename std::enable_if<std::is_base_of<ts::BlockCipher, CIPHER>::value>::type* N>
-ts::ECB<CIPHER,N>::ECB(const BlockCipherProperties& props) : CIPHER(props)
+template<class CIPHER> requires std::derived_from<CIPHER, ts::BlockCipher>
+ts::ECB<CIPHER>::ECB(const BlockCipherProperties& props) : CIPHER(props)
 {
     props.assertCompatibleChaining(ECB::PROPERTIES());
 }
@@ -75,8 +75,8 @@ ts::ECB<CIPHER,N>::ECB(const BlockCipherProperties& props) : CIPHER(props)
 // The algorithm is safe with overlapping buffers.
 //----------------------------------------------------------------------------
 
-template<class CIPHER, typename std::enable_if<std::is_base_of<ts::BlockCipher, CIPHER>::value>::type* N>
-bool ts::ECB<CIPHER,N>::encryptImpl(const void* plain, size_t plain_length, void* cipher, size_t cipher_maxsize, size_t* cipher_length)
+template<class CIPHER> requires std::derived_from<CIPHER, ts::BlockCipher>
+bool ts::ECB<CIPHER>::encryptImpl(const void* plain, size_t plain_length, void* cipher, size_t cipher_maxsize, size_t* cipher_length)
 {
     const size_t bsize = this->properties.block_size;
 
@@ -108,8 +108,8 @@ bool ts::ECB<CIPHER,N>::encryptImpl(const void* plain, size_t plain_length, void
 // The algorithm is safe with overlapping buffers.
 //----------------------------------------------------------------------------
 
-template<class CIPHER, typename std::enable_if<std::is_base_of<ts::BlockCipher, CIPHER>::value>::type* N>
-bool ts::ECB<CIPHER,N>::decryptImpl(const void* cipher, size_t cipher_length, void* plain, size_t plain_maxsize, size_t* plain_length)
+template<class CIPHER> requires std::derived_from<CIPHER, ts::BlockCipher>
+bool ts::ECB<CIPHER>::decryptImpl(const void* cipher, size_t cipher_length, void* plain, size_t plain_maxsize, size_t* plain_length)
 {
     const size_t bsize = this->properties.block_size;
 

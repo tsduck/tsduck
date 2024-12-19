@@ -69,7 +69,7 @@ namespace ts {
         //! @see Args::Flags
         //! @see Args::Args()
         //!
-        template <class HANDLER, typename std::enable_if<std::is_base_of<CommandLineHandler, HANDLER>::value, int>::type = 0>
+        template <class HANDLER> requires std::derived_from<HANDLER, CommandLineHandler>
         Args* command(HANDLER* handler,
                       CommandStatus (HANDLER::*method)(const UString&, Args&),
                       const UString& name,
@@ -87,7 +87,7 @@ namespace ts {
         //! @param [in] method Command handler method. A null pointer is allowed (unhandled command).
         //! @param [in] name Command name. If empty (the default), @a handler is set on all commands.
         //!
-        template <class HANDLER, typename std::enable_if<std::is_base_of<CommandLineHandler, HANDLER>::value, int>::type = 0>
+        template <class HANDLER> requires std::derived_from<HANDLER, CommandLineHandler>
         void setCommandLineHandler(HANDLER* handler, CommandStatus (HANDLER::*method)(const UString&, Args&), const UString& name = UString())
         {
             return setCommandLineHandlerImpl(handler, static_cast<CommandLineMethod>(method), name);

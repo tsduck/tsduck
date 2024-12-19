@@ -277,7 +277,8 @@ ts::Standards ts::PSIRepository::DescriptorClass::getStandards() const
 
 // Selection algorithm between two possible tables or descriptors with the same id or characteristics.
 // See comment in header file about mixed ISDB-DVB compatibility.
-template<class SIG, typename std::enable_if<std::is_base_of<ts::PSIRepository::SignalizationClass, SIG>::value>::type* = nullptr>
+template<class SIG>
+    requires std::derived_from<SIG, ts::PSIRepository::SignalizationClass>
 void AddCandidate(std::shared_ptr<SIG>& fallback, size_t& fallback_count, const std::shared_ptr<SIG>& candidate, ts::Standards env_standards)
 {
     constexpr ts::Standards ISDB = ts::Standards::ISDB;

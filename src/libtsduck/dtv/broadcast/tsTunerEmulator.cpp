@@ -92,7 +92,7 @@ bool ts::TunerEmulator::open(const UString& device_name, bool info_only)
     const xml::Element* def = root->findFirstChild(u"defaults", true);
     bool success = true;
     if (def != nullptr) {
-        success = def->getIntEnumAttribute(def_delivery, *DeliverySystemEnum, u"delivery", false, DS_UNDEFINED) &&
+        success = def->getEnumAttribute(def_delivery, *DeliverySystemEnum, u"delivery", false, DS_UNDEFINED) &&
                   def->getIntAttribute(def_bandwidth, u"bandwidth", false, 0) &&
                   def->getAttribute(def_directory, u"directory", false);
         if (def_directory.empty()) {
@@ -113,8 +113,8 @@ bool ts::TunerEmulator::open(const UString& device_name, bool info_only)
     for (auto it = xtuners.begin(); success && it != xtuners.end(); ++it) {
         TunerType type = TT_UNDEFINED;
         DeliverySystem sys = DS_UNDEFINED;
-        success = (*it)->getIntEnumAttribute(type, *TunerTypeEnum, u"type", false, TT_UNDEFINED) &&
-                  (*it)->getIntEnumAttribute(sys, *DeliverySystemEnum, u"delivery", false, DS_UNDEFINED);
+        success = (*it)->getEnumAttribute(type, *TunerTypeEnum, u"type", false, TT_UNDEFINED) &&
+                  (*it)->getEnumAttribute(sys, *DeliverySystemEnum, u"delivery", false, DS_UNDEFINED);
         if (type != TT_UNDEFINED) {
             _delivery_systems.insertAll(type);
         }
@@ -131,11 +131,11 @@ bool ts::TunerEmulator::open(const UString& device_name, bool info_only)
         Channel chan;
         success = (*it)->getIntAttribute(chan.frequency, u"frequency", true) &&
                   (*it)->getIntAttribute(chan.bandwidth, u"bandwidth", false, def_bandwidth) &&
-                  (*it)->getIntEnumAttribute(chan.delivery, *DeliverySystemEnum, u"delivery", false, def_delivery) &&
-                  (*it)->getOptionalIntEnumAttribute(chan.polarity, *PolarizationEnum, u"polarization") &&
+                  (*it)->getEnumAttribute(chan.delivery, *DeliverySystemEnum, u"delivery", false, def_delivery) &&
+                  (*it)->getOptionalEnumAttribute(chan.polarity, *PolarizationEnum, u"polarization") &&
                   (*it)->getOptionalIntAttribute(chan.symbol_rate, u"symbol_rate") &&
-                  (*it)->getOptionalIntEnumAttribute(chan.inner_fec, *InnerFECEnum, u"FEC_inner") &&
-                  (*it)->getOptionalIntEnumAttribute(chan.modulation, *ModulationEnum, u"modulation") &&
+                  (*it)->getOptionalEnumAttribute(chan.inner_fec, *InnerFECEnum, u"FEC_inner") &&
+                  (*it)->getOptionalEnumAttribute(chan.modulation, *ModulationEnum, u"modulation") &&
                   (*it)->getAttribute(chan.file, u"file", false) &&
                   (*it)->getAttribute(chan.pipe, u"pipe", false);
         chan.file.trim();

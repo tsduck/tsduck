@@ -15,295 +15,293 @@
 #include "tstlvSerializer.h"
 #include "tsUString.h"
 
-namespace ts {
-    namespace tlv {
+namespace ts::tlv {
+    //!
+    //! Abstract base class for TLV messages
+    //! @ingroup tlv
+    //!
+    //! All messages use the same structure as the DVB interfaces defined in the
+    //! "DVB Simulcrypt Head End" standard, that is to say a TLV protocol.
+    //! The messages shall have the same generic format as all connection-oriented
+    //! TLV DVB Simulcrypt protocols and illustrated as follow:
+    //!
+    //! @code
+    //!     generic_message
+    //!     {
+    //!         protocol_version      1 byte
+    //!         message_type          2 bytes
+    //!         message_length        2 bytes
+    //!         for (i=0; i < n; i++)
+    //!         {
+    //!             parameter_type    2 bytes
+    //!             parameter_length  2 bytes
+    //!             parameter_value   <parameter_length> bytes
+    //!         }
+    //!     }
+    //! @endcode
+    //!
+    //! The protocols use the same byte order and parameter order as DVB Simulcrypt
+    //! protocols: For parameters with a size two or more bytes, the first byte to
+    //! be transmitted will be the most significant byte. This is commonly known as
+    //! "big endian" or "MSB first". Parameters do not need to be ordered within the
+    //! generic message.
+    //!
+    class TSDUCKDLL Message
+    {
+        TS_RULE_OF_FIVE(Message, );
+    protected:
         //!
-        //! Abstract base class for TLV messages
-        //! @ingroup tlv
+        //! Alias for the superclass of subclasses.
         //!
-        //! All messages use the same structure as the DVB interfaces defined in the
-        //! "DVB Simulcrypt Head End" standard, that is to say a TLV protocol.
-        //! The messages shall have the same generic format as all connection-oriented
-        //! TLV DVB Simulcrypt protocols and illustrated as follow:
+        using superclass = Message;
+
+    public:
         //!
-        //! @code
-        //!     generic_message
-        //!     {
-        //!         protocol_version      1 byte
-        //!         message_type          2 bytes
-        //!         message_length        2 bytes
-        //!         for (i=0; i < n; i++)
-        //!         {
-        //!             parameter_type    2 bytes
-        //!             parameter_length  2 bytes
-        //!             parameter_value   <parameter_length> bytes
-        //!         }
-        //!     }
-        //! @endcode
+        //! Check if the message has a protocol version number.
+        //! @return True if the message has a protocol version number.
         //!
-        //! The protocols use the same byte order and parameter order as DVB Simulcrypt
-        //! protocols: For parameters with a size two or more bytes, the first byte to
-        //! be transmitted will be the most significant byte. This is commonly known as
-        //! "big endian" or "MSB first". Parameters do not need to be ordered within the
-        //! generic message.
+        bool hasProtocolVersion() const { return _has_version; }
+
         //!
-        class TSDUCKDLL Message
+        //! Get the protocol version number.
+        //! @return The protocol version number.
+        //!
+        VERSION protocolVersion() const { return _version; }
+
+        //!
+        //! Force the protocol version number to another value.
+        //! Use with care.
+        //! @param [in] version The protocol version number.
+        //!
+        void forceProtocolVersion(VERSION version) { _version = version; }
+
+        //!
+        //! Get the message tag.
+        //! @return The message tag.
+        //!
+        TAG tag() const { return _tag; }
+
+        //!
+        //! Serialize the message using a Serializer.
+        //! @param [in,out] zer A TLV serializer.
+        //!
+        void serialize(Serializer& zer) const;
+
+        //!
+        //! Dump routine.
+        //! Create a string representing the message content.
+        //! The implementation in the base class dumps the common fields.
+        //! Can be used by subclasses.
+        //! @param [in] indent Left indentation size.
+        //! @return A string representing the message.
+        //!
+        virtual UString dump(size_t indent = 0) const;
+
+    protected:
+        //!
+        //! Protected constructor for subclasses.
+        //! @param [in] tag Message tag.
+        //!
+        Message(TAG tag);
+
+        //!
+        //! Protected constructor for subclasses.
+        //! @param [in] protocol_version Protocol version.
+        //! @param [in] tag Message tag.
+        //!
+        Message(VERSION protocol_version, TAG tag);
+
+        //!
+        //! Parameter serialization.
+        //! This protected pure virtual method must be implemented
+        //! by subclasses to serialize their parameters.
+        //! @param [in,out] zer A TLV serializer.
+        //!
+        virtual void serializeParameters(Serializer& zer) const = 0;
+
+        //!
+        //! Dump a vector of strings (helper routine for subclasses).
+        //! @param [in] indent Left indentation size.
+        //! @param [in] name Parameter name.
+        //! @param [in] value Vector of strings.
+        //! @return The formatted string with embedded new-lines.
+        //!
+        static UString dumpVector(size_t indent, const UString& name, const UStringVector& value);
+
+        //!
+        //! Dump an optional byte block (helper routine for subclasses).
+        //! @param [in] indent Left indentation size.
+        //! @param [in] name Parameter name.
+        //! @param [in] has_value If false, no value is available, return an empty string.
+        //! @param [in] value Byte block.
+        //! @param [in] flags Hexa dump flags for ts::Hexa().
+        //! @return The formatted string with embedded new-lines.
+        //!
+        static UString dumpOptional(size_t indent,
+                                    const UString& name,
+                                    bool has_value,
+                                    const ByteBlock& value,
+                                    uint32_t flags = UString::HEXA | UString::ASCII);
+
+        //!
+        //! Dump an integer value in decimal (helper routine for subclasses).
+        //! @tparam INT An integer type.
+        //! @param [in] indent Left indentation size.
+        //! @param [in] name Parameter name.
+        //! @param [in] value Integer value.
+        //! @return The formatted string with embedded new-lines.
+        //!
+        template <typename INT> requires std::integral<INT>
+        static UString dumpDecimal(size_t indent, const UString& name, const INT& value)
         {
-            TS_RULE_OF_FIVE(Message, );
-        protected:
-            //!
-            //! Alias for the superclass of subclasses.
-            //!
-            using superclass = Message;
-
-        public:
-            //!
-            //! Check if the message has a protocol version number.
-            //! @return True if the message has a protocol version number.
-            //!
-            bool hasProtocolVersion() const { return _has_version; }
-
-            //!
-            //! Get the protocol version number.
-            //! @return The protocol version number.
-            //!
-            VERSION protocolVersion() const { return _version; }
-
-            //!
-            //! Force the protocol version number to another value.
-            //! Use with care.
-            //! @param [in] version The protocol version number.
-            //!
-            void forceProtocolVersion(VERSION version) { _version = version; }
-
-            //!
-            //! Get the message tag.
-            //! @return The message tag.
-            //!
-            TAG tag() const { return _tag; }
-
-            //!
-            //! Serialize the message using a Serializer.
-            //! @param [in,out] zer A TLV serializer.
-            //!
-            void serialize(Serializer& zer) const;
-
-            //!
-            //! Dump routine.
-            //! Create a string representing the message content.
-            //! The implementation in the base class dumps the common fields.
-            //! Can be used by subclasses.
-            //! @param [in] indent Left indentation size.
-            //! @return A string representing the message.
-            //!
-            virtual UString dump(size_t indent = 0) const;
-
-        protected:
-            //!
-            //! Protected constructor for subclasses.
-            //! @param [in] tag Message tag.
-            //!
-            Message(TAG tag);
-
-            //!
-            //! Protected constructor for subclasses.
-            //! @param [in] protocol_version Protocol version.
-            //! @param [in] tag Message tag.
-            //!
-            Message(VERSION protocol_version, TAG tag);
-
-            //!
-            //! Parameter serialization.
-            //! This protected pure virtual method must be implemented
-            //! by subclasses to serialize their parameters.
-            //! @param [in,out] zer A TLV serializer.
-            //!
-            virtual void serializeParameters(Serializer& zer) const = 0;
-
-            //!
-            //! Dump a vector of strings (helper routine for subclasses).
-            //! @param [in] indent Left indentation size.
-            //! @param [in] name Parameter name.
-            //! @param [in] value Vector of strings.
-            //! @return The formatted string with embedded new-lines.
-            //!
-            static UString dumpVector(size_t indent, const UString& name, const UStringVector& value);
-
-            //!
-            //! Dump an optional byte block (helper routine for subclasses).
-            //! @param [in] indent Left indentation size.
-            //! @param [in] name Parameter name.
-            //! @param [in] has_value If false, no value is available, return an empty string.
-            //! @param [in] value Byte block.
-            //! @param [in] flags Hexa dump flags for ts::Hexa().
-            //! @return The formatted string with embedded new-lines.
-            //!
-            static UString dumpOptional(size_t indent,
-                                        const UString& name,
-                                        bool has_value,
-                                        const ByteBlock& value,
-                                        uint32_t flags = UString::HEXA | UString::ASCII);
-
-            //!
-            //! Dump an integer value in decimal (helper routine for subclasses).
-            //! @tparam INT An integer type.
-            //! @param [in] indent Left indentation size.
-            //! @param [in] name Parameter name.
-            //! @param [in] value Integer value.
-            //! @return The formatted string with embedded new-lines.
-            //!
-            template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
-            static UString dumpDecimal(size_t indent, const UString& name, const INT& value)
-            {
-                return UString::Format(u"%*s%s = %d\n", indent, u"", name, value);
-            }
-
-            //!
-            //! Dump an integer value in hexadecimal (helper routine for subclasses).
-            //! @tparam INT An integer type.
-            //! @param [in] indent Left indentation size.
-            //! @param [in] name Parameter name.
-            //! @param [in] value Integer value.
-            //! @return The formatted string with embedded new-lines.
-            //!
-            template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
-            static UString dumpHexa(size_t indent, const UString& name, const INT& value)
-            {
-                return UString::Format(u"%*s%s = 0x%X\n", indent, u"", name, value);
-            }
-
-            //!
-            //! Dump an integer value (helper routine for subclasses).
-            //! Signed integer types are dumped in decimal, unsigned types in hexadecimal.
-            //! @tparam INT An integer type.
-            //! @param [in] indent Left indentation size.
-            //! @param [in] name Parameter name.
-            //! @param [in] value Integer value.
-            //! @return The formatted string with embedded new-lines.
-            //!
-            template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
-            static UString dumpInteger(size_t indent, const UString& name, const INT& value)
-            {
-                return std::numeric_limits<INT>::is_signed ? dumpDecimal(indent, name, value) : dumpHexa(indent, name, value);
-            }
-
-            //!
-            //! Dump an optional integer value in decimal (helper routine for subclasses).
-            //! @tparam INT An integer type.
-            //! @param [in] indent Left indentation size.
-            //! @param [in] name Parameter name.
-            //! @param [in] has_value If false, no value is available, return an empty string.
-            //! @param [in] value Integer value.
-            //! @return The formatted string with embedded new-lines.
-            //!
-            template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
-            static UString dumpOptionalDecimal(size_t indent, const UString& name, bool has_value, const INT& value)
-            {
-                return has_value ? dumpDecimal(indent, name, value) : u"";
-            }
-
-            //!
-            //! Dump an optional integer value in decimal (helper routine for subclasses).
-            //! @tparam INT An integer type.
-            //! @param [in] indent Left indentation size.
-            //! @param [in] name Parameter name.
-            //! @param [in] value Integer value.
-            //! @return The formatted string with embedded new-lines.
-            //!
-            template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
-            static UString dumpOptionalDecimal(size_t indent, const UString& name, const std::optional<INT>& value)
-            {
-                return value.has_value() ? dumpDecimal(indent, name, value.value()) : u"";
-            }
-
-            //!
-            //! Dump an optional integer value in hexadecimal (helper routine for subclasses).
-            //! @tparam INT An integer type.
-            //! @param [in] indent Left indentation size.
-            //! @param [in] name Parameter name.
-            //! @param [in] has_value If false, no value is available, return an empty string.
-            //! @param [in] value Integer value.
-            //! @return The formatted string with embedded new-lines.
-            //!
-            template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
-            static UString dumpOptionalHexa(size_t indent, const UString& name, bool has_value, const INT& value)
-            {
-                return has_value ? dumpHexa(indent, name, value) : u"";
-            }
-
-            //!
-            //! Dump an optional integer value in hexadecimal (helper routine for subclasses).
-            //! @tparam INT An integer type.
-            //! @param [in] indent Left indentation size.
-            //! @param [in] name Parameter name.
-            //! @param [in] value Integer value.
-            //! @return The formatted string with embedded new-lines.
-            //!
-            template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
-            static UString dumpOptionalHexa(size_t indent, const UString& name, const std::optional<INT>& value)
-            {
-                return value.has_value() ? dumpHexa(indent, name, value.value()) : u"";
-            }
-
-            //!
-            //! Dump an optional integer value (helper routine for subclasses).
-            //! Signed integer types are dumped in decimal, unsigned types in hexadecimal.
-            //! @tparam INT An integer type.
-            //! @param [in] indent Left indentation size.
-            //! @param [in] name Parameter name.
-            //! @param [in] has_value If false, no value is available, return an empty string.
-            //! @param [in] value Integer value.
-            //! @return The formatted string with embedded new-lines.
-            //!
-            template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
-            static UString dumpOptionalInteger(size_t indent, const UString& name, bool has_value, const INT& value)
-            {
-                return has_value ? dumpInteger(indent, name, value) : u"";
-            }
-
-            //!
-            //! Dump an optional integer value (helper routine for subclasses).
-            //! Signed integer types are dumped in decimal, unsigned types in hexadecimal.
-            //! @tparam INT An integer type.
-            //! @param [in] indent Left indentation size.
-            //! @param [in] name Parameter name.
-            //! @param [in] value Integer value.
-            //! @return The formatted string with embedded new-lines.
-            //!
-            template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
-            static UString dumpOptionalInteger(size_t indent, const UString& name, const std::optional<INT>& value)
-            {
-                return value.has_value() ? dumpInteger(indent, name, value.value()) : u"";
-            }
-
-            //!
-            //! Dump a vector of integer values (helper routine for subclasses).
-            //! Signed integer types are dumped in decimal, unsigned types in hexadecimal.
-            //! @tparam INT An integer type.
-            //! @param [in] indent Left indentation size.
-            //! @param [in] name Parameter name.
-            //! @param [in] val Vector of integer values.
-            //! @param [in] toString Optional function to convert an @a INT value into a string.
-            //! @return The formatted string with embedded new-lines.
-            //!
-            template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
-            static UString dumpVector(size_t indent, const UString& name, const std::vector<INT>& val, UString(*toString)(INT) = nullptr);
-
-        private:
-            // Unreachable constructor.
-            Message() = delete;
-
-            // Private members
-            bool    _has_version = false;
-            VERSION _version = 0;
-            TAG     _tag = 0;
-        };
+            return UString::Format(u"%*s%s = %d\n", indent, u"", name, value);
+        }
 
         //!
-        //! Shared pointer for TLV messages.
+        //! Dump an integer value in hexadecimal (helper routine for subclasses).
+        //! @tparam INT An integer type.
+        //! @param [in] indent Left indentation size.
+        //! @param [in] name Parameter name.
+        //! @param [in] value Integer value.
+        //! @return The formatted string with embedded new-lines.
         //!
-        using MessagePtr = std::shared_ptr<Message>;
-    }
+        template <typename INT> requires std::integral<INT>
+        static UString dumpHexa(size_t indent, const UString& name, const INT& value)
+        {
+            return UString::Format(u"%*s%s = 0x%X\n", indent, u"", name, value);
+        }
+
+        //!
+        //! Dump an integer value (helper routine for subclasses).
+        //! Signed integer types are dumped in decimal, unsigned types in hexadecimal.
+        //! @tparam INT An integer type.
+        //! @param [in] indent Left indentation size.
+        //! @param [in] name Parameter name.
+        //! @param [in] value Integer value.
+        //! @return The formatted string with embedded new-lines.
+        //!
+        template <typename INT> requires std::integral<INT>
+        static UString dumpInteger(size_t indent, const UString& name, const INT& value)
+        {
+            return std::numeric_limits<INT>::is_signed ? dumpDecimal(indent, name, value) : dumpHexa(indent, name, value);
+        }
+
+        //!
+        //! Dump an optional integer value in decimal (helper routine for subclasses).
+        //! @tparam INT An integer type.
+        //! @param [in] indent Left indentation size.
+        //! @param [in] name Parameter name.
+        //! @param [in] has_value If false, no value is available, return an empty string.
+        //! @param [in] value Integer value.
+        //! @return The formatted string with embedded new-lines.
+        //!
+        template <typename INT> requires std::integral<INT>
+        static UString dumpOptionalDecimal(size_t indent, const UString& name, bool has_value, const INT& value)
+        {
+            return has_value ? dumpDecimal(indent, name, value) : u"";
+        }
+
+        //!
+        //! Dump an optional integer value in decimal (helper routine for subclasses).
+        //! @tparam INT An integer type.
+        //! @param [in] indent Left indentation size.
+        //! @param [in] name Parameter name.
+        //! @param [in] value Integer value.
+        //! @return The formatted string with embedded new-lines.
+        //!
+        template <typename INT> requires std::integral<INT>
+        static UString dumpOptionalDecimal(size_t indent, const UString& name, const std::optional<INT>& value)
+        {
+            return value.has_value() ? dumpDecimal(indent, name, value.value()) : u"";
+        }
+
+        //!
+        //! Dump an optional integer value in hexadecimal (helper routine for subclasses).
+        //! @tparam INT An integer type.
+        //! @param [in] indent Left indentation size.
+        //! @param [in] name Parameter name.
+        //! @param [in] has_value If false, no value is available, return an empty string.
+        //! @param [in] value Integer value.
+        //! @return The formatted string with embedded new-lines.
+        //!
+        template <typename INT> requires std::integral<INT>
+        static UString dumpOptionalHexa(size_t indent, const UString& name, bool has_value, const INT& value)
+        {
+            return has_value ? dumpHexa(indent, name, value) : u"";
+        }
+
+        //!
+        //! Dump an optional integer value in hexadecimal (helper routine for subclasses).
+        //! @tparam INT An integer type.
+        //! @param [in] indent Left indentation size.
+        //! @param [in] name Parameter name.
+        //! @param [in] value Integer value.
+        //! @return The formatted string with embedded new-lines.
+        //!
+        template <typename INT> requires std::integral<INT>
+        static UString dumpOptionalHexa(size_t indent, const UString& name, const std::optional<INT>& value)
+        {
+            return value.has_value() ? dumpHexa(indent, name, value.value()) : u"";
+        }
+
+        //!
+        //! Dump an optional integer value (helper routine for subclasses).
+        //! Signed integer types are dumped in decimal, unsigned types in hexadecimal.
+        //! @tparam INT An integer type.
+        //! @param [in] indent Left indentation size.
+        //! @param [in] name Parameter name.
+        //! @param [in] has_value If false, no value is available, return an empty string.
+        //! @param [in] value Integer value.
+        //! @return The formatted string with embedded new-lines.
+        //!
+        template <typename INT> requires std::integral<INT>
+        static UString dumpOptionalInteger(size_t indent, const UString& name, bool has_value, const INT& value)
+        {
+            return has_value ? dumpInteger(indent, name, value) : u"";
+        }
+
+        //!
+        //! Dump an optional integer value (helper routine for subclasses).
+        //! Signed integer types are dumped in decimal, unsigned types in hexadecimal.
+        //! @tparam INT An integer type.
+        //! @param [in] indent Left indentation size.
+        //! @param [in] name Parameter name.
+        //! @param [in] value Integer value.
+        //! @return The formatted string with embedded new-lines.
+        //!
+        template <typename INT> requires std::integral<INT>
+        static UString dumpOptionalInteger(size_t indent, const UString& name, const std::optional<INT>& value)
+        {
+            return value.has_value() ? dumpInteger(indent, name, value.value()) : u"";
+        }
+
+        //!
+        //! Dump a vector of integer values (helper routine for subclasses).
+        //! Signed integer types are dumped in decimal, unsigned types in hexadecimal.
+        //! @tparam INT An integer type.
+        //! @param [in] indent Left indentation size.
+        //! @param [in] name Parameter name.
+        //! @param [in] val Vector of integer values.
+        //! @param [in] toString Optional function to convert an @a INT value into a string.
+        //! @return The formatted string with embedded new-lines.
+        //!
+        template <typename INT> requires std::integral<INT>
+        static UString dumpVector(size_t indent, const UString& name, const std::vector<INT>& val, UString(*toString)(INT) = nullptr);
+
+    private:
+        // Unreachable constructor.
+        Message() = delete;
+
+        // Private members
+        bool    _has_version = false;
+        VERSION _version = 0;
+        TAG     _tag = 0;
+    };
+
+    //!
+    //! Shared pointer for TLV messages.
+    //!
+    using MessagePtr = std::shared_ptr<Message>;
 }
 
 //!
@@ -357,7 +355,7 @@ namespace ts {
 #if !defined(DOXYGEN)
 
 // Dump a vector of integer values (helper routine for subclasses).
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
+template <typename INT> requires std::integral<INT>
 ts::UString ts::tlv::Message::dumpVector(size_t indent, const UString& name, const std::vector<INT>& val, UString(*toString)(INT))
 {
     UString s;

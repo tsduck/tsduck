@@ -383,15 +383,15 @@ ts::HFBand::HFBandPtr ts::HFBand::FromXML(const xml::Element* elem)
     for (const auto& it : xchannels) {
         ChannelsRange chan;
         const bool ok =
-            it->getIntAttribute<uint32_t>(chan.first_channel, u"first_channel", true) &&
-            it->getIntAttribute<uint32_t>(chan.last_channel, u"last_channel", true, 0, chan.first_channel) &&
-            it->getIntAttribute<uint64_t>(chan.base_frequency, u"base_frequency", true) &&
-            it->getIntAttribute<uint64_t>(chan.channel_width, u"channel_width", true) &&
-            it->getIntAttribute<int32_t>(chan.first_offset, u"first_offset", false, 0) &&
-            it->getIntAttribute<int32_t>(chan.last_offset, u"last_offset", false, 0, chan.first_offset) &&
-            it->getIntAttribute<uint64_t>(chan.offset_width, u"offset_width", false, 0) &&
-            it->getIntEnumAttribute<Polarization>(chan.even_polarity, *PolarizationEnum, u"even_polarity", false, POL_NONE) &&
-            it->getIntEnumAttribute<Polarization>(chan.odd_polarity, *PolarizationEnum, u"odd_polarity", false, POL_NONE);
+            it->getIntAttribute(chan.first_channel, u"first_channel", true) &&
+            it->getIntAttribute(chan.last_channel, u"last_channel", true, 0, chan.first_channel) &&
+            it->getIntAttribute(chan.base_frequency, u"base_frequency", true) &&
+            it->getIntAttribute(chan.channel_width, u"channel_width", true) &&
+            it->getIntAttribute(chan.first_offset, u"first_offset", false, 0) &&
+            it->getIntAttribute(chan.last_offset, u"last_offset", false, 0, chan.first_offset) &&
+            it->getIntAttribute(chan.offset_width, u"offset_width", false, 0) &&
+            it->getEnumAttribute(chan.even_polarity, *PolarizationEnum, u"even_polarity", false, POL_NONE) &&
+            it->getEnumAttribute(chan.odd_polarity, *PolarizationEnum, u"odd_polarity", false, POL_NONE);
         success = success && ok;
         if (ok) {
             // Insert the channels range in the list.

@@ -12,6 +12,7 @@
 #include "tsPSIRepository.h"
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
+#include "tsSingleton.h"
 #include "tsxmlElement.h"
 
 #define MY_XML_NAME u"ISP_access_mode_descriptor"
@@ -20,12 +21,6 @@
 
 TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
-namespace {
-    const ts::Enumeration AccessModeNames({
-        {u"unused", 0},
-        {u"dialup", 1},
-    });
-}
 
 //----------------------------------------------------------------------------
 // Constructors
@@ -81,12 +76,17 @@ void ts::ISPAccessModeDescriptor::DisplayDescriptor(TablesDisplay& disp, const t
 // XML serialization
 //----------------------------------------------------------------------------
 
+TS_STATIC_INSTANCE(const, ts::Enumeration, AccessModeNames, ({
+    {u"unused", 0},
+    {u"dialup", 1},
+}));
+
 void ts::ISPAccessModeDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    root->setIntEnumAttribute(AccessModeNames, u"access_mode", access_mode);
+    root->setEnumAttribute(AccessModeNames, u"access_mode", access_mode);
 }
 
 bool ts::ISPAccessModeDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntEnumAttribute(access_mode, AccessModeNames, u"access_mode", true);
+    return element->getEnumAttribute(access_mode, AccessModeNames, u"access_mode", true);
 }

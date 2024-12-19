@@ -14,6 +14,7 @@
 #pragma once
 #include "tsUChar.h"
 #include "tsEnumUtils.h"
+#include "tsIntegerUtils.h"
 #include "tsAbstractNumber.h"
 #include "tsStringifyInterface.h"
 
@@ -155,7 +156,7 @@ namespace ts {
         //! and the raw value if true. Ignored for plain integer types.
         //! @return The argument data as an integer value of type @a INT or zero for a string or double.
         //!
-        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+        template <typename INT> requires std::integral<INT>
         INT toInteger(bool raw = false) const;
         //!
         //! Get the argument data value as a 32-bit signed integer.
@@ -230,7 +231,7 @@ namespace ts {
         //! @param [in] i The integer value to store in the argument data.
         //! @return True on success, false if the argument data is not a pointer to integer.
         //!
-        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+        template <typename INT> requires std::integral<INT>
         bool storeInteger(INT i) const;
 
         //!
@@ -238,7 +239,7 @@ namespace ts {
         //! @param [in] f The floating point value to store in the argument data.
         //! @return True on success, false if the argument data is not a pointer to double.
         //!
-        template <typename FLOAT, typename std::enable_if<std::is_floating_point<FLOAT>::value>::type* = nullptr>
+        template <typename FLOAT> requires std::floating_point<FLOAT>
         bool storeFloat(FLOAT f) const;
 
         //!
@@ -530,7 +531,7 @@ namespace ts {
         //! Constructor from an integer or enum type.
         //! @param [in] i Integer value of the ArgMix. Internally stored as a 32-bit or 64-bit integer.
         //!
-        template<typename T, typename std::enable_if<std::is_integral<T>::value || std::is_enum<T>::value, int>::type = 0>
+        template<typename T> requires ts::int_enum<T>
         ArgMixIn(T i) : ArgMix(storage_type<T>::value, sizeof(i), static_cast<typename storage_type<T>::type>(i)) {}
         //!
         //! Constructor from a std::chrono::duration value.
@@ -580,7 +581,7 @@ namespace ts {
         //! Constructor from the address of an integer or enum data.
         //! @param [in] ptr Address of an integer or enum data.
         //!
-        template<typename T, typename std::enable_if<std::is_integral<T>::value || std::is_enum<T>::value>::type* = nullptr>
+        template<typename T> requires ts::int_enum<T>
         ArgMixOut(T* ptr) : ArgMix(reference_type<T>::value, sizeof(T), Value(ptr)) {}
         //!
         //! Constructor from the address of floating point data.
@@ -601,7 +602,7 @@ namespace ts {
 //----------------------------------------------------------------------------
 
 // Return ArgMix value as an integer.
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
+template <typename INT> requires std::integral<INT>
 INT ts::ArgMix::toInteger(bool raw) const
 {
     switch (_type) {
@@ -639,7 +640,7 @@ INT ts::ArgMix::toInteger(bool raw) const
 }
 
 // Store an integer value in the argument data, for pointers to integer.
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
+template <typename INT> requires std::integral<INT>
 bool ts::ArgMix::storeInteger(INT i) const
 {
     switch (_type) {
@@ -677,7 +678,7 @@ bool ts::ArgMix::storeInteger(INT i) const
 }
 
 // Store a floating point value in the argument data, for pointers to double.
-template <typename FLOAT, typename std::enable_if<std::is_floating_point<FLOAT>::value>::type*>
+template <typename FLOAT> requires std::floating_point<FLOAT>
 bool ts::ArgMix::storeFloat(FLOAT f) const
 {
     if (_type == (POINTER | DOUBLE)) {

@@ -15,36 +15,34 @@
 #include "tshlsMediaElement.h"
 #include "tsBitRate.h"
 
-namespace ts {
-    namespace hls {
+namespace ts::hls {
+    //!
+    //! Description of a media playlist inside an HLS master playlist.
+    //! @ingroup hls
+    //!
+    class TSDUCKDLL MediaPlayList: public MediaElement
+    {
+    public:
         //!
-        //! Description of a media playlist inside an HLS master playlist.
-        //! @ingroup hls
+        //! Constructor.
         //!
-        class TSDUCKDLL MediaPlayList: public MediaElement
-        {
-        public:
-            //!
-            //! Constructor.
-            //!
-            MediaPlayList() = default;
+        MediaPlayList() = default;
 
-            // Implementation of StringifyInterface
-            virtual UString toString() const override;
+        // Implementation of StringifyInterface
+        virtual UString toString() const override;
 
-            // Public fields.
-            BitRate bandwidth = 0;        //!< Peak bandwidth.
-            BitRate averageBandwidth = 0; //!< Average bandwidth.
-            size_t  width = 0;            //!< Resolution width in pixels.
-            size_t  height = 0;           //!< Resolution height in pixels.
-            size_t  frameRate = 0;        //!< Frame rate in milli-fps.
-            UString codecs {};            //!< List of codecs.
-            UString hdcp {};              //!< HDCP level.
-            UString videoRange {};        //!< Video range description.
-            UString video {};             //!< Video description.
-            UString audio {};             //!< Audio description.
-            UString subtitles {};         //!< Subtitles description.
-            UString closedCaptions {};    //!< Closed-captions description.
-        };
-    }
+        // Public fields.
+        BitRate bandwidth = 0;        //!< Peak bandwidth.
+        BitRate averageBandwidth = 0; //!< Average bandwidth.
+        size_t  width = 0;            //!< Resolution width in pixels.
+        size_t  height = 0;           //!< Resolution height in pixels.
+        size_t  frameRate = 0;        //!< Frame rate in milli-fps.
+        UString codecs {};            //!< List of codecs.
+        UString hdcp {};              //!< HDCP level.
+        UString videoRange {};        //!< Video range description.
+        UString video {};             //!< Video description.
+        UString audio {};             //!< Audio description.
+        UString subtitles {};         //!< Subtitles description.
+        UString closedCaptions {};    //!< Closed-captions description.
+    };
 }

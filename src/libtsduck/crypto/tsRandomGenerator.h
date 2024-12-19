@@ -70,7 +70,7 @@ namespace ts {
         //! @param [in] max Maximum value to return.
         //! @return True on success, false on error.
         //!
-        template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value>::type* = nullptr>
+        template<typename INT_T> requires std::integral<INT_T>
         bool readInt(INT_T& value, INT_T min = std::numeric_limits<INT_T>::min(), INT_T max = std::numeric_limits<INT_T>::max());
 
         //!
@@ -85,7 +85,7 @@ namespace ts {
 // Template definitions.
 //----------------------------------------------------------------------------
 
-template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value>::type*>
+template<typename INT_T> requires std::integral<INT_T>
 bool ts::RandomGenerator::readInt(INT_T& value, INT_T min, INT_T max)
 {
     if (min > max) {

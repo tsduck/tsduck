@@ -70,7 +70,7 @@ namespace ts {
         //! @param [in] name A name to display for the value.
         //! @param [in] n The integer value to display.
         //!
-        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+        template <typename INT> requires std::integral<INT>
         void disp(std::ostream& out, const UString& margin, const UChar* name, INT n) const
         {
             out << margin << name << " = " << int64_t(n) << std::endl;
@@ -85,7 +85,7 @@ namespace ts {
         //! @param [in] name A name to display for the value.
         //! @param [in] n The integer values to display.
         //!
-        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+        template <typename INT> requires std::integral<INT>
         void disp(std::ostream& out, const UString& margin, const UChar* name, std::vector<INT> n) const
         {
             for (size_t i = 0; i < n.size(); ++i) {

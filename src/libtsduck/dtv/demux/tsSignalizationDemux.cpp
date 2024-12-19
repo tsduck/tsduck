@@ -1033,7 +1033,7 @@ void ts::SignalizationDemux::handleMGT(const MGT& mgt, PID pid)
 // Process a VCT (TVCT or CVCT).
 //----------------------------------------------------------------------------
 
-template <class XVCT, typename std::enable_if<std::is_base_of<ts::VCT, XVCT>::value, int>::type>
+template<class XVCT> requires std::derived_from<XVCT, ts::VCT>
 void ts::SignalizationDemux::handleVCT(const XVCT& vct, PID pid, void (SignalizationHandlerInterface::*handle)(const XVCT&, PID))
 {
     // Call specific and generic form of VCT handler.

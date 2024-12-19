@@ -338,29 +338,29 @@ namespace ts {
         //! @param Args Args for the BlockCipherProperties constructor.
         //!
 #define TS_BLOCK_CIPHER_DEFINE_PROPERTIES_TEMPLATE(CipherClass, Prefix, Args)             \
-        template<class CIPHER, typename std::enable_if<std::is_base_of<ts::BlockCipher, CIPHER>::value>::type* N> \
-        const ts::BlockCipherProperties& CipherClass<CIPHER,N>::Prefix##_PropertiesSingleton::Instance() \
+        template<class CIPHER> requires std::derived_from<CIPHER, ts::BlockCipher>        \
+        const ts::BlockCipherProperties& CipherClass<CIPHER>::Prefix##_PropertiesSingleton::Instance() \
         {                                                                                 \
             if (_instance == nullptr) {                                                   \
                 std::call_once(_once_flag, []() {                                         \
                     _instance = new BlockCipherProperties Args;                           \
-                    ts::atexit(CipherClass<CIPHER,N>::Prefix##_PropertiesSingleton::CleanupSingleton); \
+                    ts::atexit(CipherClass<CIPHER>::Prefix##_PropertiesSingleton::CleanupSingleton); \
                 });                                                                       \
             }                                                                             \
             return *_instance;                                                            \
         }                                                                                 \
-        template<class CIPHER, typename std::enable_if<std::is_base_of<ts::BlockCipher, CIPHER>::value>::type* N> \
-        void CipherClass<CIPHER,N>::Prefix##_PropertiesSingleton::CleanupSingleton(void*) \
+        template<class CIPHER> requires std::derived_from<CIPHER, ts::BlockCipher>        \
+        void CipherClass<CIPHER>::Prefix##_PropertiesSingleton::CleanupSingleton(void*)   \
         {                                                                                 \
             if (_instance != nullptr) {                                                   \
                 delete _instance;                                                         \
                 _instance = nullptr;                                                      \
             }                                                                             \
         }                                                                                 \
-        template<class CIPHER, typename std::enable_if<std::is_base_of<ts::BlockCipher, CIPHER>::value>::type* N>           \
-        const ts::BlockCipherProperties* volatile CipherClass<CIPHER,N>::Prefix##_PropertiesSingleton::_instance = nullptr; \
-        template<class CIPHER, typename std::enable_if<std::is_base_of<ts::BlockCipher, CIPHER>::value>::type* N>           \
-        std::once_flag CipherClass<CIPHER,N>::Prefix##_PropertiesSingleton::_once_flag {}
+        template<class CIPHER> requires std::derived_from<CIPHER, ts::BlockCipher>        \
+        const ts::BlockCipherProperties* volatile CipherClass<CIPHER>::Prefix##_PropertiesSingleton::_instance = nullptr; \
+        template<class CIPHER> requires std::derived_from<CIPHER, ts::BlockCipher>        \
+        std::once_flag CipherClass<CIPHER>::Prefix##_PropertiesSingleton::_once_flag {}
 
         //!
         //! Constructor for subclasses.

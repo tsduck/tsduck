@@ -63,7 +63,7 @@ namespace ts {
             //! @param n Name for the value.
             //! @param v Value for the name.
             //!
-            template <typename INTENUM, typename std::enable_if<std::is_integral<INTENUM>::value || std::is_enum<INTENUM>::value>::type* = nullptr>
+            template <typename INTENUM> requires std::integral<INTENUM> || std::is_enum_v<INTENUM>
             NameValue(const UString& n, INTENUM v) : name(n), value(static_cast<int_t>(v)) {}
 
             //!
@@ -72,7 +72,7 @@ namespace ts {
             //! @param n Name for the value.
             //! @param v Value for the name.
             //!
-            template <typename INTENUM, typename std::enable_if<std::is_integral<INTENUM>::value || std::is_enum<INTENUM>::value>::type* = nullptr>
+            template <typename INTENUM> requires std::integral<INTENUM> || std::is_enum_v<INTENUM>
             NameValue(const UChar* n, INTENUM v) : name(n), value(static_cast<int_t>(v)) {}
         };
 
@@ -113,7 +113,7 @@ namespace ts {
         //! @param [in] name A string for a symbol.
         //! @param [in] value The corresponding integer value.
         //!
-        template <typename INTENUM, typename std::enable_if<std::is_integral<INTENUM>::value || std::is_enum<INTENUM>::value>::type* = nullptr>
+        template <typename INTENUM> requires std::integral<INTENUM> || std::is_enum_v<INTENUM>
         void add(const UString& name, INTENUM value) { _map.insert(std::make_pair(static_cast<int_t>(value), name)); }
 
         //!
@@ -152,7 +152,7 @@ namespace ts {
         //! @a name can be interpreted as an integer value.
         //!
         //!
-        template <typename INTENUM, typename std::enable_if<std::is_integral<INTENUM>::value || std::is_enum<INTENUM>::value>::type* = nullptr>
+        template <typename INTENUM> requires std::integral<INTENUM> || std::is_enum_v<INTENUM>
         bool getValue(INTENUM& e, const UString& name, bool caseSensitive = true, bool abbreviated = true) const;
 
         //!
@@ -168,7 +168,7 @@ namespace ts {
 
         //!
         //! Get the name from an enumeration value.
-        //! @tparam INT An integer or enumeration type.
+        //! @tparam INTENUM An integer or enumeration type.
         //! @param [in] value An enumeration value to search.
         //! @param [in] hexa If true and no name exists for @a value, return the value
         //! as an hexadecimal string with "0x" prefix instead of decimal.
@@ -178,8 +178,8 @@ namespace ts {
         //! If several names were registered with the same value, one of them is returned but which
         //! one is returned is unspecified.
         //!
-        template <typename INT, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value>::type* = nullptr>
-        UString name(INT value, bool hexa = false, size_t hexDigitCount = 0) const
+        template <typename INTENUM> requires std::integral<INTENUM> || std::is_enum_v<INTENUM>
+        UString name(INTENUM value, bool hexa = false, size_t hexDigitCount = 0) const
         {
             return intToName(static_cast<int_t>(value), hexa, hexDigitCount);
         }
@@ -290,7 +290,7 @@ namespace ts {
 #if !defined(DOXYGEN)
 
 // Get the enumeration value from a name.
-template <typename INTENUM, typename std::enable_if<std::is_integral<INTENUM>::value || std::is_enum<INTENUM>::value>::type*>
+template <typename INTENUM> requires std::integral<INTENUM> || std::is_enum_v<INTENUM>
 bool ts::Enumeration::getValue(INTENUM& e, const UString& name, bool caseSensitive, bool abbreviated) const
 {
     const int_t i = value(name, caseSensitive, abbreviated);
