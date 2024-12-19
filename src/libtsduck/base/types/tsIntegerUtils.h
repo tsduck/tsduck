@@ -15,27 +15,6 @@
 #pragma once
 #include "tsUChar.h"
 
-//!
-//! A convenience macro to declare a template with complex @c std::enable_if conditions on two integer types.
-//! This macro declares two template integer types @a INT1 and @a INT2. It expands to:
-//! @code
-//! template <typename INT1, typename INT2, typename std::enable_if<...>::type = 0>
-//! @endcode
-//!
-//! @param sign1 Either @a signed or @a unsigned, condition on first integer type INT1.
-//! @param op A comparison operator ('==', '<', '>=', etc) to apply on the sizes of @a INT1 and @a INT2.
-//! @param sign2 Either @a signed or @a unsigned, condition on second integer type INT2.
-//!
-#define TS_TEMPLATE_IF_INTS(sign1, op, sign2)                          \
-    template <typename INT1,                                           \
-              typename INT2,                                           \
-              typename std::enable_if<std::is_integral<INT1>::value && \
-                                      std::is_integral<INT2>::value && \
-                                      std::is_##sign1<INT1>::value &&  \
-                                      std::is_##sign2<INT2>::value &&  \
-                                      (sizeof(INT1) op sizeof(INT2)),  \
-                                      int>::type = 0>
-
 namespace ts {
     //
     // Implementation tools for make_signed.
@@ -98,7 +77,6 @@ namespace ts {
         }
     }
 
-#if defined(DOXYGEN)
     //!
     //! Integer cross-type bound check.
     //! @tparam INT1 An integer type.
@@ -106,45 +84,47 @@ namespace ts {
     //! @param [in] x An integer value of type @a INT2.
     //! @return True if the value of @a x is within the limits of type @a INT1.
     //!
-    template <typename INT1, typename INT2, typename std::enable_if<std::is_integral<INT1>::value && std::is_integral<INT2>::value, int>::type = 0>
-    bool bound_check(INT2 x);
-#else
-    // Actual implementations of bound_check, depending on type profiles.
+    template <typename INT1, typename INT2> requires std::integral<INT1> && std::integral<INT2>
+    inline bool bound_check(INT2 x)
+    {
+        // Actual implementations of bound_check, depending on type profiles.
+        if constexpr (std::signed_integral<INT1> && std::unsigned_integral<INT2> && sizeof(INT1) <= sizeof(INT2)) {
+            // signed <-- unsigned of same or larger size (test: higher bound).
+            return x <= INT2(std::numeric_limits<INT1>::max());
+        }
+        else if constexpr (std::signed_integral<INT1> && std::unsigned_integral<INT2> && sizeof(INT1) > sizeof(INT2)) {
+            // signed <-- unsigned of smaller size (always fit).
+            return true;
+        }
+        else if constexpr (std::unsigned_integral<INT1> && std::signed_integral<INT2> && sizeof(INT1) < sizeof(INT2)) {
+            // unsigned <-- signed of larger size (test: lower and higher bounds).
+            return x >= 0 && x <= INT2(std::numeric_limits<INT1>::max());
+        }
+        else if constexpr (std::unsigned_integral<INT1> && std::signed_integral<INT2> && sizeof(INT1) >= sizeof(INT2)) {
+            // unsigned <-- signed of same or smaller size (test: lower bound).
+            return x >= 0;
+        }
+        else if constexpr (std::unsigned_integral<INT1> && std::unsigned_integral<INT2> && sizeof(INT1) < sizeof(INT2)) {
+            // unsigned <-- unsigned of larger size (test: higher bound).
+            return x <= INT2(std::numeric_limits<INT1>::max());
+        }
+        else if constexpr (std::unsigned_integral<INT1> && std::unsigned_integral<INT2> && sizeof(INT1) >= sizeof(INT2)) {
+            // unsigned <-- unsigned of smaller size (always fit).
+            return true;
+        }
+        else if constexpr (std::signed_integral<INT1> && std::signed_integral<INT2> && sizeof(INT1) >= sizeof(INT2)) {
+            // signed <-- signed of smaller size (always fit).
+            return true;
+        }
+        else if constexpr (std::signed_integral<INT1> && std::signed_integral<INT2> && sizeof(INT1) < sizeof(INT2)) {
+            // signed <-- signed of larger size (test: lower and higher bounds).
+            return x >= INT2(std::numeric_limits<INT1>::min()) && x <= INT2(std::numeric_limits<INT1>::max());
+        }
+        else {
+            static_assert(false);
+        }
+    }
 
-    // signed <-- unsigned of same or larger size (test: higher bound).
-    TS_TEMPLATE_IF_INTS(signed, <=, unsigned)
-    inline bool bound_check(INT2 x) { return x <= INT2(std::numeric_limits<INT1>::max()); }
-
-    // signed <-- unsigned of smaller size (always fit).
-    TS_TEMPLATE_IF_INTS(signed, >, unsigned)
-    inline bool bound_check(INT2 x) { return true; }
-
-    // unsigned <-- signed of larger size (test: lower and higher bounds).
-    TS_TEMPLATE_IF_INTS(unsigned, <, signed)
-    inline bool bound_check(INT2 x) { return x >= 0 && x <= INT2(std::numeric_limits<INT1>::max()); }
-
-    // unsigned <-- signed of same or smaller size (test: lower bound).
-    TS_TEMPLATE_IF_INTS(unsigned, >=, signed)
-    inline bool bound_check(INT2 x) { return x >= 0; }
-
-    // unsigned <-- unsigned of larger size (test: higher bound).
-    TS_TEMPLATE_IF_INTS(unsigned, <, unsigned)
-    inline bool bound_check(INT2 x) { return x <= INT2(std::numeric_limits<INT1>::max()); }
-
-    // unsigned <-- unsigned of smaller size (always fit).
-    TS_TEMPLATE_IF_INTS(unsigned, >=, unsigned)
-    inline bool bound_check(INT2 x) { return true; }
-
-    // signed <-- signed of smaller size (always fit).
-    TS_TEMPLATE_IF_INTS(signed, >=, signed)
-    inline bool bound_check(INT2 x) { return true; }
-
-    // signed <-- signed of larger size (test: lower and higher bounds).
-    TS_TEMPLATE_IF_INTS(signed, <, signed)
-    inline bool bound_check(INT2 x) { return x >= INT2(std::numeric_limits<INT1>::min()) && x <= INT2(std::numeric_limits<INT1>::max()); }
-#endif
-
-#if defined(DOXYGEN)
     //!
     //! Bounded integer cast.
     //! @tparam INT1 An integer type.
@@ -152,46 +132,46 @@ namespace ts {
     //! @param [in] x An integer value of type @a INT2.
     //! @return The value of @a x, within the limits of type @a INT1.
     //!
-    template <typename INT1, typename INT2, typename std::enable_if<std::is_integral<INT1>::value && std::is_integral<INT2>::value, int>::type = 0>
-    INT1 bounded_cast(INT2 x);
-#else
-    // Actual implementations of bounded_cast, depending on type profiles.
-
-    // signed <-- unsigned of same or larger size (test: higher bound).
-    TS_TEMPLATE_IF_INTS(signed, <=, unsigned)
-    inline INT1 bounded_cast(INT2 x) { return INT1(std::min<INT2>(x, INT2(std::numeric_limits<INT1>::max()))); }
-
-    // signed <-- unsigned of smaller size (always fit).
-    TS_TEMPLATE_IF_INTS(signed, >, unsigned)
-    inline INT1 bounded_cast(INT2 x) { return INT1(x); }
-
-    // unsigned <-- signed of larger size (test: lower and higher bounds).
-    TS_TEMPLATE_IF_INTS(unsigned, <, signed)
-    inline INT1 bounded_cast(INT2 x) { return x < 0 ? 0 : INT1(std::min<INT2>(x, INT2(std::numeric_limits<INT1>::max()))); }
-
-    // unsigned <-- signed of same or smaller size (test: lower bound).
-    TS_TEMPLATE_IF_INTS(unsigned, >=, signed)
-    inline INT1 bounded_cast(INT2 x) { return x < 0 ? 0 : INT1(x); }
-
-    // unsigned <-- unsigned of larger size (test: higher bound).
-    TS_TEMPLATE_IF_INTS(unsigned, <, unsigned)
-    inline INT1 bounded_cast(INT2 x) { return INT1(std::min<INT2>(x, INT2(std::numeric_limits<INT1>::max()))); }
-
-    // unsigned <-- unsigned of smaller size (always fit).
-    TS_TEMPLATE_IF_INTS(unsigned, >=, unsigned)
-    inline INT1 bounded_cast(INT2 x) { return INT1(x); }
-
-    // signed <-- signed of smaller size (always fit).
-    TS_TEMPLATE_IF_INTS(signed, >=, signed)
-    inline INT1 bounded_cast(INT2 x) { return INT1(x); }
-
-    // signed <-- signed of larger size (test: lower and higher bounds).
-    TS_TEMPLATE_IF_INTS(signed, <, signed)
+    template <typename INT1, typename INT2> requires std::integral<INT1> && std::integral<INT2>
     inline INT1 bounded_cast(INT2 x)
     {
-        return INT1(std::max<INT2>(INT2(std::numeric_limits<INT1>::min()), std::min<INT2>(x, INT2(std::numeric_limits<INT1>::max()))));
+        // Actual implementations of bounded_cast, depending on type profiles.
+        if constexpr (std::signed_integral<INT1> && std::unsigned_integral<INT2> && sizeof(INT1) <= sizeof(INT2)) {
+            // signed <-- unsigned of same or larger size (test: higher bound).
+            return INT1(std::min<INT2>(x, INT2(std::numeric_limits<INT1>::max())));
+        }
+        else if constexpr (std::signed_integral<INT1> && std::unsigned_integral<INT2> && sizeof(INT1) > sizeof(INT2)) {
+            // signed <-- unsigned of smaller size (always fit).
+            return INT1(x);
+        }
+        else if constexpr (std::unsigned_integral<INT1> && std::signed_integral<INT2> && sizeof(INT1) < sizeof(INT2)) {
+            // unsigned <-- signed of larger size (test: lower and higher bounds).
+            return x < 0 ? 0 : INT1(std::min<INT2>(x, INT2(std::numeric_limits<INT1>::max())));
+        }
+        else if constexpr (std::unsigned_integral<INT1> && std::signed_integral<INT2> && sizeof(INT1) >= sizeof(INT2)) {
+            // unsigned <-- signed of same or smaller size (test: lower bound).
+            return x < 0 ? 0 : INT1(x);
+        }
+        else if constexpr (std::unsigned_integral<INT1> && std::unsigned_integral<INT2> && sizeof(INT1) < sizeof(INT2)) {
+            // unsigned <-- unsigned of larger size (test: higher bound).
+            return INT1(std::min<INT2>(x, INT2(std::numeric_limits<INT1>::max())));
+        }
+        else if constexpr (std::unsigned_integral<INT1> && std::unsigned_integral<INT2> && sizeof(INT1) >= sizeof(INT2)) {
+            // unsigned <-- unsigned of smaller size (always fit).
+            return INT1(x);
+        }
+        else if constexpr (std::signed_integral<INT1> && std::signed_integral<INT2> && sizeof(INT1) >= sizeof(INT2)) {
+            // signed <-- signed of smaller size (always fit).
+            return INT1(x);
+        }
+        else if constexpr (std::signed_integral<INT1> && std::signed_integral<INT2> && sizeof(INT1) < sizeof(INT2)) {
+            // signed <-- signed of larger size (test: lower and higher bounds).
+            return INT1(std::max<INT2>(INT2(std::numeric_limits<INT1>::min()), std::min<INT2>(x, INT2(std::numeric_limits<INT1>::max()))));
+        }
+        else {
+            static_assert(false);
+        }
     }
-#endif
 
     //!
     //! Throw an exception if an integer value does not fall into the range of another integer type.
@@ -200,14 +180,14 @@ namespace ts {
     //! @param [in] x An integer value of type @a INT2.
     //! @throw std::out_of_range When the value of @a x is ouside the limits of type @a INT1.
     //!
-    template <typename INT1, typename INT2, typename std::enable_if<std::is_integral<INT1>::value && std::is_integral<INT2>::value, int>::type = 0>
-    void throw_bound_check(INT2 x) {
+    template <typename INT1, typename INT2> requires std::integral<INT1> && std::integral<INT2>
+    void throw_bound_check(INT2 x)
+    {
         if (!bound_check<INT1>(x)) {
             throw std::out_of_range("integer value out of range");
         }
     }
 
-#if defined(DEBUG) || defined(DOXYGEN)
     //!
     //! In debug mode, throw an exception if an integer value does not fall into the range of another integer type.
     //! If the macro @c DEBUG is not defined, this function does nothing.
@@ -216,12 +196,13 @@ namespace ts {
     //! @param [in] x An integer value of type @a INT2.
     //! @throw std::out_of_range When the value of @a x is ouside the limits of type @a INT1.
     //!
-    template <typename INT1, typename INT2, typename std::enable_if<std::is_integral<INT1>::value && std::is_integral<INT2>::value, int>::type = 0>
-    inline void debug_throw_bound_check(INT2 x) { throw_bound_check<INT1>(x); }
-#else
-    template <typename INT1, typename INT2, typename std::enable_if<std::is_integral<INT1>::value && std::is_integral<INT2>::value, int>::type = 0>
-    inline void debug_throw_bound_check(INT2 x) {}
+    template <typename INT1, typename INT2> requires std::integral<INT1> && std::integral<INT2>
+    inline void debug_throw_bound_check(INT2 x)
+    {
+#if defined(DEBUG)
+        throw_bound_check<INT1>(x);
 #endif
+    }
 
     //!
     //! Check if an integer addition generates an overflow.
@@ -231,24 +212,28 @@ namespace ts {
     //! @param [in] res The result of @a a + @a b.
     //! @return True if @a a + @a b generated an overflow.
     //!
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value, int>::type = 0>
-    inline bool add_overflow(INT a, INT b, INT res) { return a > res; } // unsigned version
-
-    //! @cond nodoxygen
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value, int>::type = 0>
-    inline bool add_overflow(INT a, INT b, INT res) { // signed version
-        // A mask with sign bit set for the INT type.
-        TS_PUSH_WARNING()
-        TS_GCC_NOWARNING(shift-negative-value)
-        TS_LLVM_NOWARNING(shift-sign-overflow)
-        constexpr INT sign_bit = static_cast<INT>(1) << (8 * sizeof(INT) - 1);
-        TS_POP_WARNING()
-        // MSB of (x ^ y) is set when x and y have distinct signs.
-        // If a and b have distinct signs, never overflow.
-        // If a and b have same sign, overflow when the result has a different sign.
-        return ((~(a ^ b)) & (a ^ res) & sign_bit) != 0;
+    template <typename INT> requires std::integral<INT>
+    inline bool add_overflow(INT a, INT b, INT res)
+    {
+        if constexpr (std::unsigned_integral<INT>) {
+            return a > res;
+        }
+        else if constexpr (std::signed_integral<INT>) {
+            // A mask with sign bit set for the INT type.
+            TS_PUSH_WARNING()
+            TS_GCC_NOWARNING(shift-negative-value)
+            TS_LLVM_NOWARNING(shift-sign-overflow)
+            constexpr INT sign_bit = static_cast<INT>(1) << (8 * sizeof(INT) - 1);
+            TS_POP_WARNING()
+            // MSB of (x ^ y) is set when x and y have distinct signs.
+            // If a and b have distinct signs, never overflow.
+            // If a and b have same sign, overflow when the result has a different sign.
+            return ((~(a ^ b)) & (a ^ res) & sign_bit) != 0;
+        }
+        else {
+            static_assert(false);
+        }
     }
-    //! @endcond
 
     //!
     //! Check if an integer addition generates an overflow.
@@ -257,7 +242,7 @@ namespace ts {
     //! @param [in] b Second integer.
     //! @return True if @a a + @a b generated an overflow.
     //!
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value, int>::type = 0>
+    template <typename INT> requires std::integral<INT>
     bool add_overflow(INT a, INT b) TS_NO_OPTIMIZE;
 
     //!
@@ -268,13 +253,19 @@ namespace ts {
     //! @param [in] res The result of @a a - @a b.
     //! @return True if @a a - @a b generated an overflow.
     //!
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value, int>::type = 0>
-    inline bool sub_overflow(INT a, INT b, INT res) { return a < b; } // unsigned version
-
-    //! @cond nodoxygen
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value, int>::type = 0>
-    inline bool sub_overflow(INT a, INT b, INT res) { return add_overflow(a, -b, res); } // signed version
-    //! @endcond
+    template <typename INT> requires std::integral<INT>
+    inline bool sub_overflow(INT a, INT b, INT res)
+    {
+        if constexpr (std::unsigned_integral<INT>) {
+            return a < b;
+        }
+        else if constexpr (std::signed_integral<INT>) {
+            return add_overflow(a, -b, res);
+        }
+        else {
+            static_assert(false);
+        }
+    }
 
     //!
     //! Check if an integer substraction generates an overflow.
@@ -283,7 +274,7 @@ namespace ts {
     //! @param [in] b Second integer.
     //! @return True if @a a - @a b generated an overflow.
     //!
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value, int>::type = 0>
+    template <typename INT> requires std::integral<INT>
     bool sub_overflow(INT a, INT b) TS_NO_OPTIMIZE;
 
     //!
@@ -292,13 +283,19 @@ namespace ts {
     //! @param [in] a An integer value.
     //! @return True if @a -a generates an overflow.
     //!
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value, int>::type = 0>
-    inline bool neg_overflow(INT a) { return a != 0; } // unsigned version
-
-    //! @cond nodoxygen
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value, int>::type = 0>
-    inline bool neg_overflow(INT a) { return a == std::numeric_limits<INT>::min(); } // signed version
-    //! @endcond
+    template <typename INT> requires std::integral<INT>
+    inline bool neg_overflow(INT a)
+    {
+        if constexpr (std::unsigned_integral<INT>) {
+            return a != 0;
+        }
+        else if constexpr (std::signed_integral<INT>) {
+            return a == std::numeric_limits<INT>::min();
+        }
+        else {
+            static_assert(false);
+        }
+    }
 
     //!
     //! Check if an integer multiplication generates an overflow.
@@ -308,8 +305,11 @@ namespace ts {
     //! @param [in] res The result of @a a * @a b.
     //! @return True if @a a * @a b generated an overflow.
     //!
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value, int>::type = 0>
-    inline bool mul_overflow(INT a, INT b, INT res) { return a != 0 && res / a != b; }
+    template <typename INT> requires std::integral<INT>
+    inline bool mul_overflow(INT a, INT b, INT res)
+    {
+        return a != 0 && res / a != b;
+    }
 
     //!
     //! Check if an integer multiplication generates an overflow.
@@ -318,7 +318,7 @@ namespace ts {
     //! @param [in] b Second integer.
     //! @return True if @a a * @a b generated an overflow.
     //!
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value, int>::type = 0>
+    template <typename INT> requires std::integral<INT>
     bool mul_overflow(INT a, INT b) TS_NO_OPTIMIZE;
 
     //!
@@ -329,8 +329,9 @@ namespace ts {
     //! @param [in] res The result of @a a + @a b.
     //! @throw std::overflow_error When @a a + @a b generated an overflow.
     //!
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value, int>::type = 0>
-    inline void throw_add_overflow(INT a, INT b, INT res) {
+    template <typename INT> requires std::integral<INT>
+    inline void throw_add_overflow(INT a, INT b, INT res)
+    {
         if (add_overflow(a, b, res)) {
             throw std::overflow_error("addition overflow");
         }
@@ -344,8 +345,9 @@ namespace ts {
     //! @param [in] res The result of @a a - @a b.
     //! @throw std::overflow_error When @a a - @a b generated an overflow.
     //!
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value, int>::type = 0>
-    inline void throw_sub_overflow(INT a, INT b, INT res) {
+    template <typename INT> requires std::integral<INT>
+    inline void throw_sub_overflow(INT a, INT b, INT res)
+    {
         if (sub_overflow(a, b, res)) {
             throw std::overflow_error("substraction overflow");
         }
@@ -357,8 +359,9 @@ namespace ts {
     //! @param [in] a An integer value.
     //! @throw std::overflow_error When @a -a generates an overflow.
     //!
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value, int>::type = 0>
-    inline void thow_neg_overflow(INT a) {
+    template <typename INT> requires std::integral<INT>
+    inline void thow_neg_overflow(INT a)
+    {
         if (neg_overflow(a)) {
             throw std::overflow_error("sign negation overflow");
         }
@@ -372,8 +375,9 @@ namespace ts {
     //! @param [in] res The result of @a a * @a b.
     //! @throw std::overflow_error When @a a * @a b generated an overflow.
     //!
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value, int>::type = 0>
-    inline void throw_mul_overflow(INT a, INT b, INT res) {
+    template <typename INT> requires std::integral<INT>
+    inline void throw_mul_overflow(INT a, INT b, INT res)
+    {
         if (mul_overflow(a, b, res)) {
             throw std::overflow_error("multiplication overflow");
         }
@@ -385,14 +389,14 @@ namespace ts {
     //! @param [in] den The denominator of an integer division.
     //! @throw std::underflow_error When @a den is zero.
     //!
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value, int>::type = 0>
-    inline void throw_div_zero(INT den) {
+    template <typename INT> requires std::integral<INT>
+    inline void throw_div_zero(INT den)
+    {
         if (den == INT(0)) {
             throw std::underflow_error("divide by zero");
         }
     }
 
-#if defined(DEBUG) || defined(DOXYGEN)
     //!
     //! In debug mode, throw an exception if an integer addition generates an overflow.
     //! If the macro @c DEBUG is not defined, this function does nothing.
@@ -402,8 +406,13 @@ namespace ts {
     //! @param [in] res The result of @a a + @a b.
     //! @throw std::overflow_error When @a a + @a b generated an overflow.
     //!
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value, int>::type = 0>
-    inline void debug_throw_add_overflow(INT a, INT b, INT res) { throw_add_overflow(a, b, res); }
+    template <typename INT> requires std::integral<INT>
+    inline void debug_throw_add_overflow(INT a, INT b, INT res)
+    {
+#if defined(DEBUG)
+        throw_add_overflow(a, b, res);
+#endif
+    }
 
     //!
     //! In debug mode, throw an exception if an integer substraction generates an overflow.
@@ -414,8 +423,13 @@ namespace ts {
     //! @param [in] res The result of @a a - @a b.
     //! @throw std::overflow_error When @a a - @a b generated an overflow.
     //!
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value, int>::type = 0>
-    inline void debug_throw_sub_overflow(INT a, INT b, INT res) { throw_sub_overflow(a, b, res); }
+    template <typename INT> requires std::integral<INT>
+    inline void debug_throw_sub_overflow(INT a, INT b, INT res)
+    {
+#if defined(DEBUG)
+        throw_sub_overflow(a, b, res);
+#endif
+    }
 
     //!
     //! In debug mode, throw an exception if the negation (opposite sign) of an integer generates an overflow.
@@ -424,8 +438,13 @@ namespace ts {
     //! @param [in] a An integer value.
     //! @throw std::overflow_error When @a -a generates an overflow.
     //!
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value, int>::type = 0>
-    inline void debug_thow_neg_overflow(INT a) { thow_neg_overflow(a); }
+    template <typename INT> requires std::integral<INT>
+    inline void debug_thow_neg_overflow(INT a)
+    {
+#if defined(DEBUG)
+        thow_neg_overflow(a);
+#endif
+    }
 
     //!
     //! In debug mode, throw an exception if an integer multiplication generates an overflow.
@@ -436,8 +455,13 @@ namespace ts {
     //! @param [in] res The result of @a a * @a b.
     //! @throw std::overflow_error When @a a * @a b generated an overflow.
     //!
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value, int>::type = 0>
-    inline void debug_throw_mul_overflow(INT a, INT b, INT res) { throw_mul_overflow(a, b, res); }
+    template <typename INT> requires std::integral<INT>
+    inline void debug_throw_mul_overflow(INT a, INT b, INT res)
+    {
+#if defined(DEBUG)
+        throw_mul_overflow(a, b, res);
+#endif
+    }
 
     //!
     //! In debug mode, throw an exception if the denominator of an integer division is zero.
@@ -446,24 +470,13 @@ namespace ts {
     //! @param [in] den The denominator of an integer division.
     //! @throw std::underflow_error When @a den is zero.
     //!
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value, int>::type = 0>
-    inline void debug_throw_div_zero(INT den) { throw_div_zero(den); }
-#else
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value, int>::type = 0>
-    inline void debug_throw_add_overflow(INT a, INT b, INT res) {}
-
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value, int>::type = 0>
-    inline void debug_throw_sub_overflow(INT a, INT b, INT res) {}
-
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value, int>::type = 0>
-    inline void debug_thow_neg_overflow(INT a) {}
-
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value, int>::type = 0>
-    inline void debug_throw_mul_overflow(INT a, INT b, INT res) {}
-
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value, int>::type = 0>
-    inline void debug_throw_div_zero(INT den) {}
+    template <typename INT> requires std::integral<INT>
+    inline void debug_throw_div_zero(INT den)
+    {
+#if defined(DEBUG)
+        throw_div_zero(den);
 #endif
+    }
 
     //!
     //! Integer division with rounding to closest value (instead of truncating).
@@ -472,13 +485,19 @@ namespace ts {
     //! @param [in] b An integer.
     //! @return The value of @a a / @a b, rounded to closest value.
     //!
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value>::type* = nullptr>
-    INT rounded_div(INT a, INT b) { return (a + b/2) / b; } // unsigned version
-
-    //! @cond nodoxygen
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type* = nullptr>
-    INT rounded_div(INT a, INT b) { return ((a < 0) ^ (b < 0)) ? ((a - b/2) / b) : ((a + b/2) / b); } // signed version
-    //! @endcond
+    template <typename INT> requires std::integral<INT>
+    INT rounded_div(INT a, INT b)
+    {
+        if constexpr (std::unsigned_integral<INT>) {
+            return (a + b/2) / b;
+        }
+        else if constexpr (std::signed_integral<INT>) {
+            return ((a < 0) ^ (b < 0)) ? ((a - b/2) / b) : ((a + b/2) / b);
+        }
+        else {
+            static_assert(false);
+        }
+    }
 
     //!
     //! Check if an integer value is negative, optimized for signed or unsigned type.
@@ -486,13 +505,19 @@ namespace ts {
     //! @param [in] a An integer.
     //! @return True if @a a is negative.
     //!
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value>::type* = nullptr>
-    bool is_negative(INT a) { return false; } // unsigned version
-
-    //! @cond nodoxygen
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type* = nullptr>
-    bool is_negative(INT a) { return a < 0; } // signed version
-    //! @endcond
+    template <typename INT> requires std::integral<INT>
+    bool is_negative(INT a)
+    {
+        if constexpr (std::unsigned_integral<INT>) {
+            return false;
+        }
+        else if constexpr (std::signed_integral<INT>) {
+            return a < 0;
+        }
+        else {
+            static_assert(false);
+        }
+    }
 
     //!
     //! Perform a bounded addition without overflow.
@@ -503,13 +528,8 @@ namespace ts {
     //! case of underflow or overflow, the result is the min or max
     //! value of the type, respectively.
     //!
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value>::type* = nullptr>
-    INT bounded_add(INT a, INT b); // unsigned version
-
-    //! @cond nodoxygen
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type* = nullptr>
-    INT bounded_add(INT a, INT b); // signed version
-    //! @endcond
+    template <typename INT> requires std::integral<INT>
+    INT bounded_add(INT a, INT b);
 
     //!
     //! Perform a bounded subtraction without overflow.
@@ -520,13 +540,8 @@ namespace ts {
     //! case of underflow or overflow, the result is the min or max
     //! value of the type, respectively.
     //!
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value>::type* = nullptr>
-    INT bounded_sub(INT a, INT b); // unsigned version
-
-    //! @cond nodoxygen
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type* = nullptr>
-    INT bounded_sub(INT a, INT b); // signed version
-    //! @endcond
+    template <typename INT> requires std::integral<INT>
+    INT bounded_sub(INT a, INT b);
 
     //!
     //! Round @a x down to previous multiple of a factor @a f.
@@ -535,13 +550,8 @@ namespace ts {
     //! @param [in] f A factor (its absolute value is used if negative).
     //! @return The value @a x rounded down to previous multiple of @a f.
     //!
-    template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value>::type* = nullptr>
-    INT round_down(INT x, INT f); // unsigned version
-
-    //! @cond nodoxygen
-    template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type* = nullptr>
-    INT round_down(INT x, INT f); // signed version
-    //! @endcond
+    template <typename INT> requires std::integral<INT>
+    INT round_down(INT x, INT f);
 
     //!
     //! Round @a x up to next multiple of a factor @a f.
@@ -550,13 +560,8 @@ namespace ts {
     //! @param [in] f A factor (its absolute value is used if negative).
     //! @return The value @a x rounded up to next multiple of @a f.
     //!
-    template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value>::type* = nullptr>
-    INT round_up(INT x, INT f); // unsigned version
-
-    //! @cond nodoxygen
-    template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type* = nullptr>
-    INT round_up(INT x, INT f); // signed version
-    //! @endcond
+    template <typename INT> requires std::integral<INT>
+    INT round_up(INT x, INT f);
 
     //!
     //! Reduce the sign of an integer fraction.
@@ -565,13 +570,22 @@ namespace ts {
     //! @param [in,out] num Fraction numerator.
     //! @param [in,out] den Fraction denominator.
     //!
-    template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value, int>::type = 0>
-    void sign_reduce(INT& num, INT& den) {} // unsigned version
-
-    //! @cond nodoxygen
-    template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value, int>::type = 0>
-    void sign_reduce(INT& num, INT& den) { if (den < 0) { num = -num; den = -den; } } // signed version
-    //! @endcond
+    template <typename INT> requires std::integral<INT>
+    void sign_reduce(INT& num, INT& den)
+    {
+        if constexpr (std::unsigned_integral<INT>) {
+            // no sign
+        }
+        else if constexpr (std::signed_integral<INT>) {
+            if (den < 0) {
+                num = -num;
+                den = -den;
+            }
+        }
+        else {
+            static_assert(false);
+        }
+    }
 
     //!
     //! Perform a sign extension on any subset of a signed integer.
@@ -581,7 +595,7 @@ namespace ts {
     //! @param [in] bits Number of least significant bits containing a signed value.
     //! @return A signed integer containing the same signed value with proper sign extension on the full size of INT.
     //!
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type* = nullptr>
+    template <typename INT> requires std::signed_integral<INT>
     INT SignExtend(INT x, size_t bits);
 
     //!
@@ -609,13 +623,8 @@ namespace ts {
     //! @return The minimum number of bits to represent the value up to its most-significant '1' bit.
     //! This is never zero, at least one bit is needed to represent the value zero.
     //!
-    template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value>::type* = nullptr>
-    size_t BitSize(INT x); // unsigned version
-
-    //! @cond nodoxygen
-    template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type* = nullptr>
-    size_t BitSize(INT x); // signed version
-    //! @endcond
+    template <typename INT> requires std::integral<INT>
+    size_t BitSize(INT x);
 
     //!
     //! Get the signed/unsigned qualifier of an integer type as a string.
@@ -623,13 +632,19 @@ namespace ts {
     //! @tparam INT An integer type.
     //! @return Either u"signed" or u"unsigned".
     //!
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value, int>::type = 0>
-    inline const UChar* SignedDescription() { return u"unsigned"; } // unsigned version
-
-    //! @cond nodoxygen
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value, int>::type = 0>
-    inline const UChar* SignedDescription() { return u"signed"; } // signed version
-    //! @endcond
+    template <typename INT> requires std::integral<INT>
+    inline const UChar* SignedDescription()
+    {
+        if constexpr (std::unsigned_integral<INT>) {
+            return u"unsigned";
+        }
+        else if constexpr (std::signed_integral<INT>) {
+            return u"signed";
+        }
+        else {
+            static_assert(false);
+        }
+    }
 
     //!
     //! Compute a greatest common denominator (GCD).
@@ -639,13 +654,8 @@ namespace ts {
     //! @param [in] y An integer.
     //! @return The greatest common denominator (GCD) of @a x and @a y. Always positive.
     //!
-    template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value>::type* = nullptr>
+    template <typename INT> requires std::integral<INT>
     INT GCD(INT x, INT y);
-
-    //! @cond nodoxygen
-    template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type* = nullptr>
-    INT GCD(INT x, INT y); // signed version
-    //! @endcond
 
     //!
     //! Largest representable power of 10 in integer types.
@@ -733,21 +743,21 @@ namespace ts {
 //----------------------------------------------------------------------------
 
 // Not inlined to avoid optimization which breaks the code.
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value, int>::type N>
+template <typename INT> requires std::integral<INT>
 bool ts::add_overflow(INT a, INT b)
 {
     INT res = a + b;
     return add_overflow<INT>(a, b, res);
 }
 
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value, int>::type N>
+template <typename INT> requires std::integral<INT>
 bool ts::sub_overflow(INT a, INT b)
 {
     INT res = a - b;
     return sub_overflow<INT>(a, b, res);
 }
 
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value, int>::type N>
+template <typename INT> requires std::integral<INT>
 bool ts::mul_overflow(INT a, INT b)
 {
     INT res = a * b;
@@ -759,34 +769,36 @@ bool ts::mul_overflow(INT a, INT b)
 // Perform a bounded addition without overflow.
 //----------------------------------------------------------------------------
 
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value>::type*>
+template <typename INT> requires std::integral<INT>
 INT ts::bounded_add(INT a, INT b)
 {
-    // Unsigned addition.
-    if (a > std::numeric_limits<INT>::max() - b) {
-        // Overflow.
-        return std::numeric_limits<INT>::max();
+    if constexpr (std::unsigned_integral<INT>) {
+        // Unsigned addition.
+        if (a > std::numeric_limits<INT>::max() - b) {
+            // Overflow.
+            return std::numeric_limits<INT>::max();
+        }
+        else {
+            return a + b;
+        }
+    }
+    else if constexpr (std::signed_integral<INT>) {
+        // Signed addition.
+        const INT c = a + b;
+        if (a > 0 && b > 0 && c <= 0) {
+            // Overflow.
+            return std::numeric_limits<INT>::max();
+        }
+        else if (a < 0 && b < 0 && c >= 0) {
+            // Underflow.
+            return std::numeric_limits<INT>::min();
+        }
+        else {
+            return c;
+        }
     }
     else {
-        return a + b;
-    }
-}
-
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type*>
-INT ts::bounded_add(INT a, INT b)
-{
-    // Signed addition.
-    const INT c = a + b;
-    if (a > 0 && b > 0 && c <= 0) {
-        // Overflow.
-        return std::numeric_limits<INT>::max();
-    }
-    else if (a < 0 && b < 0 && c >= 0) {
-        // Underflow.
-        return std::numeric_limits<INT>::min();
-    }
-    else {
-        return c;
+        static_assert(false);
     }
 }
 
@@ -795,34 +807,36 @@ INT ts::bounded_add(INT a, INT b)
 // Perform a bounded subtraction without overflow.
 //----------------------------------------------------------------------------
 
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value>::type*>
+template <typename INT> requires std::integral<INT>
 INT ts::bounded_sub(INT a, INT b)
 {
-    // Unsigned subtraction.
-    if (a < b) {
-        // Underflow.
-        return 0;
+    if constexpr (std::unsigned_integral<INT>) {
+        // Unsigned subtraction.
+        if (a < b) {
+            // Underflow.
+            return 0;
+        }
+        else {
+            return a - b;
+        }
+    }
+    else if constexpr (std::signed_integral<INT>) {
+        // Signed subtraction.
+        const INT c = a - b;
+        if (a > 0 && b < 0 && c <= 0) {
+            // Overflow.
+            return std::numeric_limits<INT>::max();
+        }
+        else if (a < 0 && b > 0 && c >= 0) {
+            // Underflow.
+            return std::numeric_limits<INT>::min();
+        }
+        else {
+            return c;
+        }
     }
     else {
-        return a - b;
-    }
-}
-
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type*>
-INT ts::bounded_sub(INT a, INT b)
-{
-    // Signed subtraction.
-    const INT c = a - b;
-    if (a > 0 && b < 0 && c <= 0) {
-        // Overflow.
-        return std::numeric_limits<INT>::max();
-    }
-    else if (a < 0 && b > 0 && c >= 0) {
-        // Underflow.
-        return std::numeric_limits<INT>::min();
-    }
-    else {
-        return c;
+        static_assert(false);
     }
 }
 
@@ -831,30 +845,34 @@ INT ts::bounded_sub(INT a, INT b)
 // Rounding integers up and down.
 //----------------------------------------------------------------------------
 
-template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value>::type*>
+template <typename INT> requires std::integral<INT>
 INT ts::round_down(INT x, INT f)
 {
-    return f == 0 ? x : x - x % f;
+    if constexpr (std::unsigned_integral<INT>) {
+        return f == 0 ? x : x - x % f;
+    }
+    else if constexpr (std::signed_integral<INT>) {
+        f = INT(std::abs(f));
+        return f == 0 ? x : (x >= 0 ? x - x % f : x - (f + x % f) % f);
+    }
+    else {
+        static_assert(false);
+    }
 }
 
-template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type*>
-INT ts::round_down(INT x, INT f)
-{
-    f = INT(std::abs(f));
-    return f == 0 ? x : (x >= 0 ? x - x % f : x - (f + x % f) % f);
-}
-
-template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value>::type*>
+template <typename INT> requires std::integral<INT>
 INT ts::round_up(INT x, INT f)
 {
-    return f == 0 ? x : x + (f - x % f) % f;
-}
-
-template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type*>
-INT ts::round_up(INT x, INT f)
-{
-    f = INT(std::abs(f));
-    return f == 0 ? x : (x >= 0 ? x + (f - x % f) % f : x - x % f);
+    if constexpr (std::unsigned_integral<INT>) {
+        return f == 0 ? x : x + (f - x % f) % f;
+    }
+    else if constexpr (std::signed_integral<INT>) {
+        f = INT(std::abs(f));
+        return f == 0 ? x : (x >= 0 ? x + (f - x % f) % f : x - x % f);
+    }
+    else {
+        static_assert(false);
+    }
 }
 
 
@@ -862,7 +880,7 @@ INT ts::round_up(INT x, INT f)
 // Perform a sign extension on any subset of a signed integer.
 //----------------------------------------------------------------------------
 
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type*>
+template <typename INT> requires std::signed_integral<INT>
 INT ts::SignExtend(INT x, size_t bits)
 {
     if (bits < 2) {
@@ -891,54 +909,58 @@ INT ts::SignExtend(INT x, size_t bits)
 // Get the size in bits of an unsigned integer value.
 //----------------------------------------------------------------------------
 
-template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value>::type*>
+template <typename INT> requires std::integral<INT>
 size_t ts::BitSize(INT x)
 {
-    size_t size = 1;
-    const size_t maxbit = 8 * sizeof(INT);
-    for (size_t bit = 0; bit < maxbit && (x = x >> 1) != 0; ++bit) {
-        ++size;
+    if constexpr (std::unsigned_integral<INT>) {
+        size_t size = 1;
+        const size_t maxbit = 8 * sizeof(INT);
+        for (size_t bit = 0; bit < maxbit && (x = x >> 1) != 0; ++bit) {
+            ++size;
+        }
+        return size;
     }
-    return size;
+    else if constexpr (std::signed_integral<INT>) {
+        using UNS_INT = typename std::make_unsigned<INT>::type;
+        return BitSize<UNS_INT>(UNS_INT(x));
+    }
+    else {
+        static_assert(false);
+    }
 }
 
-template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type*>
-size_t ts::BitSize(INT x)
-{
-    using UNS_INT = typename std::make_unsigned<INT>::type;
-    return BitSize<UNS_INT>(UNS_INT(x));
-}
 
 //----------------------------------------------------------------------------
 // Compute a greatest common denominator (GCD).
 //----------------------------------------------------------------------------
 
-template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value>::type*>
+template <typename INT> requires std::integral<INT>
 INT ts::GCD(INT x, INT y)
 {
-    INT z;
-    while (y != 0) {
-        z = x % y;
-        x = y;
-        y = z;
+    if constexpr (std::unsigned_integral<INT>) {
+        INT z;
+        while (y != 0) {
+            z = x % y;
+            x = y;
+            y = z;
+        }
     }
-    return x;
-}
-
-template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type*>
-INT ts::GCD(INT x, INT y)
-{
-    INT z;
-    if (x < 0) {
-        x = -x;
+    else if constexpr (std::signed_integral<INT>) {
+        INT z;
+        if (x < 0) {
+            x = -x;
+        }
+        if (y < 0) {
+            y = -y;
+        }
+        while (y != 0) {
+            z = x % y;
+            x = y;
+            y = z;
+        }
     }
-    if (y < 0) {
-        y = -y;
-    }
-    while (y != 0) {
-        z = x % y;
-        x = y;
-        y = z;
+    else {
+        static_assert(false);
     }
     return x;
 }

@@ -79,7 +79,7 @@ namespace ts {
     {
     #if defined(TS_ARM64)
         asm("rev16 %w0, %w0" : "+r" (x)); return x;
-    #elif if defined (__cpp_lib_byteswap)
+    #elif defined(__cpp_lib_byteswap)
         return std::byteswap(x);
     #elif defined(TS_LINUX)
         return bswap_16(x);
@@ -103,6 +103,8 @@ namespace ts {
     {
     #if defined(TS_ARM64)
         asm("rev %w0, %w0 \n lsr %w0, %w0, #8" : "+r" (x)); return x;
+    #elif defined(__cpp_lib_byteswap)
+        return std::byteswap(x) >> 8;
     #else
         return ((x << 16) & 0x00FF0000) | (x & 0x0000FF00) | ((x >> 16) & 0x000000FF);
     #endif
