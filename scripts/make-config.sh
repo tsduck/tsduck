@@ -302,10 +302,10 @@ BINROOT="$ROOTDIR/bin"
 # Fixed suffix to add to generated BINDIR directory name for some specialized builds.
 [[ -n $GCOV && $BINDIR_SUFFIX != *-gcov* ]] && BINDIR_SUFFIX="${BINDIR_SUFFIX}-gcov"
 [[ -n $GPROF && $BINDIR_SUFFIX != *-gprof* ]] && BINDIR_SUFFIX="${BINDIR_SUFFIX}-gprof"
-[[ -n $ASAN && $BINDIR_SUFFIX != *-asan*  ]] && BINDIR_SUFFIX="${BINDIR_SUFFIX}-asan"
-[[ -n $UBSAN && $BINDIR_SUFFIX != *-ubsan*  ]] && BINDIR_SUFFIX="${BINDIR_SUFFIX}-ubsan"
-[[ -n $LLVM && $BINDIR_SUFFIX != *-clang*  ]] && BINDIR_SUFFIX="${BINDIR_SUFFIX}-clang"
-[[ -n $STATIC && $BINDIR_SUFFIX != *-static*  ]] && BINDIR_SUFFIX="${BINDIR_SUFFIX}-static"
+[[ -n $ASAN && $BINDIR_SUFFIX != *-asan* ]] && BINDIR_SUFFIX="${BINDIR_SUFFIX}-asan"
+[[ -n $UBSAN && $BINDIR_SUFFIX != *-ubsan* ]] && BINDIR_SUFFIX="${BINDIR_SUFFIX}-ubsan"
+[[ -n $LLVM && $BINDIR_SUFFIX != *-clang* ]] && BINDIR_SUFFIX="${BINDIR_SUFFIX}-clang"
+[[ -n $STATIC && $BINDIR_SUFFIX != *-static* ]] && BINDIR_SUFFIX="${BINDIR_SUFFIX}-static"
 
 # Output directories for final binaries and objects.
 [[ -n $HOSTNAME ]] && hpart="-$HOSTNAME" || hpart=""
@@ -322,6 +322,10 @@ if [[ -n $BINDIR ]]; then
         # BINDIR is externally specified and is a relative directory.
         # Transform it into an absolute path for recursion.
         BINDIR=$($REALPATH -m "$BINDIR")
+    fi
+    if [[ -n $BINDIR_SUFFIX && $BINDIR != *$BINDIR_SUFFIX ]]; then
+        # Make sure that the suffix is applied
+        BINDIR="${BINDIR}${BINDIR_SUFFIX}"
     fi
     if [[ $MAKEOVERRIDES == *BINDIR=* && $BINDIR != $inbindir ]]; then
         # Redefine BINDIR is specified in MAKEOVERRIDES.

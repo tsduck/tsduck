@@ -192,7 +192,10 @@ inline ENUM& operator^=(ENUM& a, ENUM b)
 //! @param [in] b Number of bits to shift.
 //! @return Bitwise @a a, shifted left @a b bits.
 //!
-template <typename ENUM> requires std::is_enum_v<ENUM> && ts::EnableBitMaskOperators<ENUM>::value
+//! Implementation note: The use of std::enable_if instead of the "requires" directive
+//! is a workaround for a bug in clang 19.
+//!
+template <typename ENUM, typename std::enable_if<std::is_enum<ENUM>::value && ts::EnableBitMaskOperators<ENUM>::value>::type* = nullptr>
 inline constexpr ENUM operator<<(ENUM a, size_t b)
 {
     using IENUM = typename std::underlying_type<ENUM>::type;
@@ -206,7 +209,10 @@ inline constexpr ENUM operator<<(ENUM a, size_t b)
 //! @param [in] b Number of bits to shift.
 //! @return Bitwise @a a, shifted right @a b bits.
 //!
-template <typename ENUM> requires std::is_enum_v<ENUM> && ts::EnableBitMaskOperators<ENUM>::value
+//! Implementation note: The use of std::enable_if instead of the "requires" directive
+//! is a workaround for a bug in clang 19.
+//!
+template <typename ENUM, typename std::enable_if<std::is_enum<ENUM>::value && ts::EnableBitMaskOperators<ENUM>::value>::type* = nullptr>
 inline constexpr ENUM operator>>(ENUM a, size_t b)
 {
     using IENUM = typename std::underlying_type<ENUM>::type;
@@ -220,7 +226,10 @@ inline constexpr ENUM operator>>(ENUM a, size_t b)
 //! @param [in] b Number of bits to shift.
 //! @return A reference to @a a.
 //!
-template <typename ENUM> requires std::is_enum_v<ENUM> && ts::EnableBitMaskOperators<ENUM>::value
+//! Implementation note: The use of std::enable_if instead of the "requires" directive
+//! is a workaround for a bug in clang 19.
+//!
+template <typename ENUM, typename std::enable_if<std::is_enum<ENUM>::value && ts::EnableBitMaskOperators<ENUM>::value>::type* = nullptr>
 inline ENUM& operator<<=(ENUM& a, size_t b)
 {
     return a = a << b;
@@ -233,7 +242,10 @@ inline ENUM& operator<<=(ENUM& a, size_t b)
 //! @param [in] b Number of bits to shift.
 //! @return A reference to @a a.
 //!
-template <typename ENUM> requires std::is_enum_v<ENUM> && ts::EnableBitMaskOperators<ENUM>::value
+//! Implementation note: The use of std::enable_if instead of the "requires" directive
+//! is a workaround for a bug in clang 19.
+//!
+template <typename ENUM, typename std::enable_if<std::is_enum<ENUM>::value && ts::EnableBitMaskOperators<ENUM>::value>::type* = nullptr>
 inline ENUM& operator>>=(ENUM& a, size_t b)
 {
     return a = a >> b;
