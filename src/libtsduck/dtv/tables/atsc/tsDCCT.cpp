@@ -312,7 +312,7 @@ bool ts::DCCT::analyzeXML(DuckContext& duck, const xml::Element* element)
         const xml::Element* const e1 = xtests[i1];
         xml::ElementVector xterms;
         Test& test(tests.newEntry()); // add a new Test at the end of the list.
-        ok = e1->getIntEnumAttribute(test.dcc_context, DCCContextNames, u"dcc_context", true) &&
+        ok = e1->getEnumAttribute(test.dcc_context, DCCContextNames, u"dcc_context", true) &&
             e1->getIntAttribute(test.dcc_from_major_channel_number, u"dcc_from_major_channel_number", true) &&
             e1->getIntAttribute(test.dcc_from_minor_channel_number, u"dcc_from_minor_channel_number", true) &&
             e1->getIntAttribute(test.dcc_to_major_channel_number, u"dcc_to_major_channel_number", true) &&

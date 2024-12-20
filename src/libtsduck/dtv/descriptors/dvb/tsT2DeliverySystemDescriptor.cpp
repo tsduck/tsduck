@@ -226,10 +226,10 @@ void ts::T2DeliverySystemDescriptor::buildXML(DuckContext& duck, xml::Element* r
     root->setIntAttribute(u"T2_system_id", T2_system_id, true);
     if (has_extension) {
         xml::Element* ext = root->addElement(u"extension");
-        ext->setIntEnumAttribute(SisoNames, u"SISO_MISO", SISO_MISO);
-        ext->setIntEnumAttribute(BandwidthNames, u"bandwidth", bandwidth);
-        ext->setIntEnumAttribute(GuardIntervalNames, u"guard_interval", guard_interval);
-        ext->setIntEnumAttribute(TransmissionModeNames, u"transmission_mode", transmission_mode);
+        ext->setEnumAttribute(SisoNames, u"SISO_MISO", SISO_MISO);
+        ext->setEnumAttribute(BandwidthNames, u"bandwidth", bandwidth);
+        ext->setEnumAttribute(GuardIntervalNames, u"guard_interval", guard_interval);
+        ext->setEnumAttribute(TransmissionModeNames, u"transmission_mode", transmission_mode);
         ext->setBoolAttribute(u"other_frequency", other_frequency);
         ext->setBoolAttribute(u"tfs", tfs);
         for (const auto& it1 : cells) {
@@ -264,10 +264,10 @@ bool ts::T2DeliverySystemDescriptor::analyzeXML(DuckContext& duck, const xml::El
 
     if (has_extension) {
         xml::ElementVector xcells;
-        ok = ext[0]->getIntEnumAttribute(SISO_MISO, SisoNames, u"SISO_MISO", true) &&
-             ext[0]->getIntEnumAttribute(bandwidth, BandwidthNames, u"bandwidth", true) &&
-             ext[0]->getIntEnumAttribute(guard_interval, GuardIntervalNames, u"guard_interval", true) &&
-             ext[0]->getIntEnumAttribute(transmission_mode, TransmissionModeNames, u"transmission_mode", true) &&
+        ok = ext[0]->getEnumAttribute(SISO_MISO, SisoNames, u"SISO_MISO", true) &&
+             ext[0]->getEnumAttribute(bandwidth, BandwidthNames, u"bandwidth", true) &&
+             ext[0]->getEnumAttribute(guard_interval, GuardIntervalNames, u"guard_interval", true) &&
+             ext[0]->getEnumAttribute(transmission_mode, TransmissionModeNames, u"transmission_mode", true) &&
              ext[0]->getBoolAttribute(other_frequency, u"other_frequency", true) &&
              ext[0]->getBoolAttribute(tfs, u"tfs", true) &&
              ext[0]->getChildren(xcells, u"cell");

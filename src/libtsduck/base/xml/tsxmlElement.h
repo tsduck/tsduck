@@ -703,7 +703,7 @@ namespace ts::xml {
         //! @return True on success, false on error.
         //!
         template <typename FLT, typename FLT1 = FLT, typename FLT2 = FLT, typename FLT3 = FLT>
-            requires std::floating_point<FLT> && std::floating_point<FLT1> && std::floating_point<FLT2> && std::floating_point<FLT3>
+            requires std::floating_point<FLT> && std::is_arithmetic_v<FLT1> && std::is_arithmetic_v<FLT2> && std::is_arithmetic_v<FLT3>
         bool getFloatAttribute(FLT& value,
                                const UString& name,
                                bool required = false,
@@ -721,7 +721,7 @@ namespace ts::xml {
         //! @return True on success, false on error.
         //!
         template <typename FLT, typename FLT1 = FLT, typename FLT2 = FLT>
-            requires std::floating_point<FLT> && std::floating_point<FLT1> && std::floating_point<FLT2>
+            requires std::floating_point<FLT> && std::is_arithmetic_v<FLT1> && std::is_arithmetic_v<FLT2>
         bool getOptionalFloatAttribute(std::optional<FLT>& value,
                                        const UString& name,
                                        FLT1 minValue = std::numeric_limits<FLT>::lowest(),
@@ -742,7 +742,7 @@ namespace ts::xml {
         //! @return True on success, false on error.
         //!
         template <typename FLT, typename FLT1 = FLT, typename FLT2 = FLT, typename FLT3 = FLT>
-            requires std::floating_point<FLT> && std::floating_point<FLT1> && std::floating_point<FLT2> && std::floating_point<FLT3>
+            requires std::floating_point<FLT> && std::is_arithmetic_v<FLT1> && std::is_arithmetic_v<FLT2> && std::is_arithmetic_v<FLT3>
         bool getVariableFloatAttribute(std::optional<FLT>& value,
                                        const UString& name,
                                        bool required = false,
@@ -1065,7 +1065,7 @@ bool ts::xml::Element::getOptionalEnumAttribute(std::optional<INT>& value, const
 
 // Get a floating-point attribute of an XML element.
 template <typename FLT, typename FLT1, typename FLT2, typename FLT3>
-    requires std::floating_point<FLT> && std::floating_point<FLT1> && std::floating_point<FLT2> && std::floating_point<FLT3>
+    requires std::floating_point<FLT> && std::is_arithmetic_v<FLT1> && std::is_arithmetic_v<FLT2> && std::is_arithmetic_v<FLT3>
 bool ts::xml::Element::getFloatAttribute(FLT& value, const UString& name, bool required, FLT1 defValue, FLT2 minValue, FLT3 maxValue) const
 {
     const Attribute& attr(attribute(name, !required));
@@ -1094,7 +1094,7 @@ bool ts::xml::Element::getFloatAttribute(FLT& value, const UString& name, bool r
 
 // Get an optional floating-point attribute of an XML element.
 template <typename FLT, typename FLT1, typename FLT2>
-    requires std::floating_point<FLT> && std::floating_point<FLT1> && std::floating_point<FLT2>
+    requires std::floating_point<FLT> && std::is_arithmetic_v<FLT1> && std::is_arithmetic_v<FLT2>
 bool ts::xml::Element::getOptionalFloatAttribute(std::optional<FLT>& value, const UString& name, FLT1 minValue, FLT2 maxValue) const
 {
     FLT v = FLT(0.0);

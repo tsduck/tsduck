@@ -526,7 +526,7 @@ bool ts::EIT::analyzeXML(DuckContext& duck, const xml::Element* element)
         ok = children[i]->getIntAttribute(event.event_id, u"event_id", true, 0, 0x0000, 0xFFFF) &&
              children[i]->getDateTimeAttribute(event.start_time, u"start_time", true) &&
              children[i]->getTimeAttribute(event.duration, u"duration", true) &&
-             children[i]->getIntEnumAttribute(event.running_status, *RunningStatusEnum, u"running_status", false, 0) &&
+             children[i]->getEnumAttribute(event.running_status, *RunningStatusEnum, u"running_status", false, 0) &&
              children[i]->getBoolAttribute(event.CA_controlled, u"CA_mode", false, false) &&
              event.descs.fromXML(duck, children[i]);
     }

@@ -267,7 +267,7 @@ bool ts::MGT::analyzeXML(DuckContext& duck, const xml::Element* element)
     for (size_t index = 0; ok && index < children.size(); ++index) {
         // Add a new TableType at the end of the list.
         TableType& tt(tables.newEntry());
-        ok = children[index]->getIntEnumAttribute(tt.table_type, TableTypeEnum::Instance(), u"type", true) &&
+        ok = children[index]->getEnumAttribute(tt.table_type, TableTypeEnum::Instance(), u"type", true) &&
              children[index]->getIntAttribute<PID>(tt.table_type_PID, u"PID", true, 0, 0x0000, 0x1FFF) &&
              children[index]->getIntAttribute(tt.table_type_version_number, u"version_number", true, 0, 0, 31) &&
              children[index]->getIntAttribute(tt.number_bytes, u"number_bytes", true) &&

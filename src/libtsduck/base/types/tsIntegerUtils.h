@@ -18,7 +18,6 @@
 namespace ts {
     //!
     //! A C++20 concept which requires a type to be an integer or an enumeration type.
-    //! @tparam T The type to test.
     //!
     template<typename T>
     concept int_enum = std::is_integral<T>::value || std::is_enum<T>::value;

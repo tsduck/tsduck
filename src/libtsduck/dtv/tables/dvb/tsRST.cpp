@@ -146,7 +146,7 @@ bool ts::RST::analyzeXML(DuckContext& duck, const xml::Element* element)
              children[index]->getIntAttribute(event.original_network_id, u"original_network_id", true, 0, 0x0000, 0xFFFF) &&
              children[index]->getIntAttribute(event.service_id, u"service_id", true, 0, 0x0000, 0xFFFF) &&
              children[index]->getIntAttribute(event.event_id, u"event_id", true, 0, 0x0000, 0xFFFF) &&
-             children[index]->getIntEnumAttribute(event.running_status, *RunningStatusEnum, u"running_status", true);
+             children[index]->getEnumAttribute(event.running_status, *RunningStatusEnum, u"running_status", true);
         if (ok) {
             events.push_back(event);
         }

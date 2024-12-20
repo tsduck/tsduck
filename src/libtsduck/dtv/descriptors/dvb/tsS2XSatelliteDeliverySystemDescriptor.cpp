@@ -290,9 +290,9 @@ void ts::S2XSatelliteDeliverySystemDescriptor::buildChannelXML(const Channel& ch
     xml::Element* e = parent->addElement(name);
     e->setIntAttribute(u"frequency", channel.frequency, false);
     e->setAttribute(u"orbital_position", UString::Format(u"%d.%d", channel.orbital_position / 10, channel.orbital_position % 10));
-    e->setIntEnumAttribute(SatelliteDeliverySystemDescriptor::DirectionNames, u"west_east_flag", channel.east_not_west);
-    e->setIntEnumAttribute(SatelliteDeliverySystemDescriptor::PolarizationNames, u"polarization", channel.polarization);
-    e->setIntEnumAttribute(RollOffNames, u"roll_off", channel.roll_off);
+    e->setEnumAttribute(SatelliteDeliverySystemDescriptor::DirectionNames, u"west_east_flag", channel.east_not_west);
+    e->setEnumAttribute(SatelliteDeliverySystemDescriptor::PolarizationNames, u"polarization", channel.polarization);
+    e->setEnumAttribute(RollOffNames, u"roll_off", channel.roll_off);
     e->setIntAttribute(u"symbol_rate", channel.symbol_rate, false);
     if (channel.multiple_input_stream_flag) {
         e->setIntAttribute(u"input_stream_identifier", channel.input_stream_identifier, true);
@@ -344,9 +344,9 @@ bool ts::S2XSatelliteDeliverySystemDescriptor::getChannelXML(Channel& channel, D
         element->getIntAttribute(channel.frequency, u"frequency", true) &&
         element->getIntAttribute(channel.symbol_rate, u"symbol_rate", true) &&
         element->getAttribute(orbit, u"orbital_position", true) &&
-        element->getIntEnumAttribute(channel.east_not_west, SatelliteDeliverySystemDescriptor::DirectionNames, u"west_east_flag", true) &&
-        element->getIntEnumAttribute(channel.polarization, SatelliteDeliverySystemDescriptor::PolarizationNames, u"polarization", true) &&
-        element->getIntEnumAttribute(channel.roll_off, RollOffNames, u"roll_off", true) &&
+        element->getEnumAttribute(channel.east_not_west, SatelliteDeliverySystemDescriptor::DirectionNames, u"west_east_flag", true) &&
+        element->getEnumAttribute(channel.polarization, SatelliteDeliverySystemDescriptor::PolarizationNames, u"polarization", true) &&
+        element->getEnumAttribute(channel.roll_off, RollOffNames, u"roll_off", true) &&
         element->getOptionalIntAttribute(stream, u"input_stream_identifier");
 
     if (ok) {

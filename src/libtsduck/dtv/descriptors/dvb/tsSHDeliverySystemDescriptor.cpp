@@ -262,19 +262,19 @@ void ts::SHDeliverySystemDescriptor::buildXML(DuckContext& duck, xml::Element* r
         xml::Element* mod = root->addElement(u"modulation");
         if (it.is_ofdm) {
             xml::Element* e = mod->addElement(u"OFDM");
-            e->setIntEnumAttribute(BandwidthNames, u"bandwidth", it.ofdm.bandwidth);
+            e->setEnumAttribute(BandwidthNames, u"bandwidth", it.ofdm.bandwidth);
             e->setIntAttribute(u"priority", it.ofdm.priority);
             e->setIntAttribute(u"constellation_and_hierarchy", it.ofdm.constellation_and_hierarchy);
             e->setIntAttribute(u"code_rate", it.ofdm.code_rate);
-            e->setIntEnumAttribute(GuardIntervalNames, u"guard_interval", it.ofdm.guard_interval);
-            e->setIntEnumAttribute(TransmissionModeNames, u"transmission_mode", it.ofdm.transmission_mode);
+            e->setEnumAttribute(GuardIntervalNames, u"guard_interval", it.ofdm.guard_interval);
+            e->setEnumAttribute(TransmissionModeNames, u"transmission_mode", it.ofdm.transmission_mode);
             e->setBoolAttribute(u"common_frequency", it.ofdm.common_frequency);
         }
         else {
             xml::Element* e = mod->addElement(u"TDM");
-            e->setIntEnumAttribute(PolarizationNames, u"polarization", it.tdm.polarization);
-            e->setIntEnumAttribute(RollOffNames, u"roll_off", it.tdm.roll_off);
-            e->setIntEnumAttribute(ModulationNames, u"modulation_mode", it.tdm.modulation_mode);
+            e->setEnumAttribute(PolarizationNames, u"polarization", it.tdm.polarization);
+            e->setEnumAttribute(RollOffNames, u"roll_off", it.tdm.roll_off);
+            e->setEnumAttribute(ModulationNames, u"modulation_mode", it.tdm.modulation_mode);
             e->setIntAttribute(u"code_rate", it.tdm.code_rate);
             e->setIntAttribute(u"symbol_rate", it.tdm.symbol_rate);
         }
@@ -316,19 +316,19 @@ bool ts::SHDeliverySystemDescriptor::analyzeXML(DuckContext& duck, const xml::El
             mod.is_ofdm = !xofdm.empty();
             if (mod.is_ofdm) {
                 assert(xofdm.size() == 1);
-                ok = xofdm[0]->getIntEnumAttribute(mod.ofdm.bandwidth, BandwidthNames, u"bandwidth", true) &&
+                ok = xofdm[0]->getEnumAttribute(mod.ofdm.bandwidth, BandwidthNames, u"bandwidth", true) &&
                      xofdm[0]->getIntAttribute(mod.ofdm.priority, u"priority", true, 0, 0, 1) &&
                      xofdm[0]->getIntAttribute(mod.ofdm.constellation_and_hierarchy, u"constellation_and_hierarchy", true, 0, 0, 0x07) &&
                      xofdm[0]->getIntAttribute(mod.ofdm.code_rate, u"code_rate", true, 0, 0, 0x0F) &&
-                     xofdm[0]->getIntEnumAttribute(mod.ofdm.guard_interval, GuardIntervalNames, u"guard_interval", true) &&
-                     xofdm[0]->getIntEnumAttribute(mod.ofdm.transmission_mode, TransmissionModeNames, u"transmission_mode", true) &&
+                     xofdm[0]->getEnumAttribute(mod.ofdm.guard_interval, GuardIntervalNames, u"guard_interval", true) &&
+                     xofdm[0]->getEnumAttribute(mod.ofdm.transmission_mode, TransmissionModeNames, u"transmission_mode", true) &&
                      xofdm[0]->getBoolAttribute(mod.ofdm.common_frequency, u"common_frequency", true);
             }
             else {
                 assert(xtdm.size() == 1);
-                ok = xtdm[0]->getIntEnumAttribute(mod.tdm.polarization, PolarizationNames, u"polarization", true) &&
-                     xtdm[0]->getIntEnumAttribute(mod.tdm.roll_off, RollOffNames, u"roll_off", true) &&
-                     xtdm[0]->getIntEnumAttribute(mod.tdm.modulation_mode, ModulationNames, u"modulation_mode", true) &&
+                ok = xtdm[0]->getEnumAttribute(mod.tdm.polarization, PolarizationNames, u"polarization", true) &&
+                     xtdm[0]->getEnumAttribute(mod.tdm.roll_off, RollOffNames, u"roll_off", true) &&
+                     xtdm[0]->getEnumAttribute(mod.tdm.modulation_mode, ModulationNames, u"modulation_mode", true) &&
                      xtdm[0]->getIntAttribute(mod.tdm.code_rate, u"code_rate", true, 0, 0, 0x0F) &&
                      xtdm[0]->getIntAttribute(mod.tdm.symbol_rate, u"symbol_rate", true, 0, 0, 0x1F);
             }

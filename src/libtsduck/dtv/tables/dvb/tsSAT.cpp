@@ -970,7 +970,7 @@ void ts::SAT::satellite_position_v3_info_type::v3_satellite_type::v3_satellite_m
     total_start_time.toXML(root->addElement(u"total_start_time"));
     total_stop_time.toXML(root->addElement(u"total_stop_time"));
     if (interpolation_type.has_value() && interpolation_degree.has_value()) {
-        root->setIntEnumAttribute(InterpolationTypes, u"interpolation_type", interpolation_type.value());
+        root->setEnumAttribute(InterpolationTypes, u"interpolation_type", interpolation_type.value());
         root->setIntAttribute(u"interpolation_degree", interpolation_degree.value());
     }
     if (usable_start_time.has_value()) {
@@ -988,7 +988,7 @@ bool ts::SAT::satellite_position_v3_info_type::v3_satellite_type::v3_satellite_m
     uint8_t           t_interpolation_degree = 0;
     bool              ok = total_start_time.fromXML(element, u"total_start_time") &&
                            total_stop_time.fromXML(element, u"total_stop_time") &&
-                           element->getIntEnumAttribute(t_interpolation_type, InterpolationTypes, u"interpolation_type", true) &&
+                           element->getEnumAttribute(t_interpolation_type, InterpolationTypes, u"interpolation_type", true) &&
                            element->getIntAttribute(t_interpolation_degree, u"interpolation_degree", true, 0, 0, 7);
     if (ok) {
         interpolation_type = t_interpolation_type;

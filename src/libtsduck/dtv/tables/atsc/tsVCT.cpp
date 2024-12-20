@@ -485,7 +485,7 @@ bool ts::VCT::analyzeXML(DuckContext& duck, const xml::Element* element)
         ok = children[index]->getAttribute(ch.short_name, u"short_name", true, UString(), 0, 7) &&
              children[index]->getIntAttribute(ch.major_channel_number, u"major_channel_number", true, 0, 0, 0x03FF) &&
              children[index]->getIntAttribute(ch.minor_channel_number, u"minor_channel_number", true, 0, 0, 0x03FF) &&
-             children[index]->getIntEnumAttribute(ch.modulation_mode, *ModulationModeEnum, u"modulation_mode", true) &&
+             children[index]->getEnumAttribute(ch.modulation_mode, *ModulationModeEnum, u"modulation_mode", true) &&
              children[index]->getIntAttribute(ch.carrier_frequency, u"carrier_frequency", false, 0) &&
              children[index]->getIntAttribute(ch.channel_TSID, u"channel_TSID", true) &&
              children[index]->getIntAttribute(ch.program_number, u"program_number", true) &&
@@ -493,7 +493,7 @@ bool ts::VCT::analyzeXML(DuckContext& duck, const xml::Element* element)
              children[index]->getBoolAttribute(ch.access_controlled, u"access_controlled", false, false) &&
              children[index]->getBoolAttribute(ch.hidden, u"hidden", false, false) &&
              children[index]->getBoolAttribute(ch.hide_guide, u"hide_guide", false, false) &&
-             children[index]->getIntEnumAttribute(ch.service_type, *ServiceTypeEnum, u"service_type", false, ATSC_STYPE_DTV) &&
+             children[index]->getEnumAttribute(ch.service_type, *ServiceTypeEnum, u"service_type", false, ATSC_STYPE_DTV) &&
              children[index]->getIntAttribute(ch.source_id, u"source_id", true) &&
              ch.descs.fromXML(duck, children[index]);
 

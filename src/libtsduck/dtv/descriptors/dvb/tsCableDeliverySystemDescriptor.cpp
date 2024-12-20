@@ -151,10 +151,10 @@ namespace {
 void ts::CableDeliverySystemDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"frequency", frequency, false);
-    root->setIntEnumAttribute(OuterFecNames, u"FEC_outer", FEC_outer);
-    root->setIntEnumAttribute(ModulationNames, u"modulation", modulation);
+    root->setEnumAttribute(OuterFecNames, u"FEC_outer", FEC_outer);
+    root->setEnumAttribute(ModulationNames, u"modulation", modulation);
     root->setIntAttribute(u"symbol_rate", symbol_rate, false);
-    root->setIntEnumAttribute(InnerFecNames, u"FEC_inner", FEC_inner);
+    root->setEnumAttribute(InnerFecNames, u"FEC_inner", FEC_inner);
 }
 
 
@@ -165,10 +165,10 @@ void ts::CableDeliverySystemDescriptor::buildXML(DuckContext& duck, xml::Element
 bool ts::CableDeliverySystemDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     return element->getIntAttribute(frequency, u"frequency", true) &&
-           element->getIntEnumAttribute(FEC_outer, OuterFecNames, u"FEC_outer", false, 2) &&
-           element->getIntEnumAttribute(modulation, ModulationNames, u"modulation", false, 1) &&
+           element->getEnumAttribute(FEC_outer, OuterFecNames, u"FEC_outer", false, 2) &&
+           element->getEnumAttribute(modulation, ModulationNames, u"modulation", false, 1) &&
            element->getIntAttribute(symbol_rate, u"symbol_rate", true) &&
-           element->getIntEnumAttribute(FEC_inner, InnerFecNames, u"FEC_inner", true);
+           element->getEnumAttribute(FEC_inner, InnerFecNames, u"FEC_inner", true);
 }
 
 

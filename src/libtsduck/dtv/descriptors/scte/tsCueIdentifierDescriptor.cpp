@@ -109,5 +109,5 @@ void ts::CueIdentifierDescriptor::buildXML(DuckContext& duck, xml::Element* root
 
 bool ts::CueIdentifierDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntEnumAttribute(cue_stream_type, *CueStreamTypeEnum, u"cue_stream_type", true);
+    return element->getEnumAttribute(cue_stream_type, *CueStreamTypeEnum, u"cue_stream_type", true);
 }

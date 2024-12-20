@@ -350,7 +350,7 @@ bool ts::DCCSCT::analyzeXML(DuckContext& duck, const xml::Element* element)
         // Add a new Update at the end of the list.
         Update& upd(updates.newEntry());
         xml::ElementVector unused;
-        ok = children[index]->getIntEnumAttribute(upd.update_type, UpdateTypeNames, u"update_type", true) &&
+        ok = children[index]->getEnumAttribute(upd.update_type, UpdateTypeNames, u"update_type", true) &&
             children[index]->getIntAttribute(upd.genre_category_code, u"genre_category_code", upd.update_type == new_genre_category) &&
             children[index]->getIntAttribute(upd.dcc_state_location_code, u"dcc_state_location_code", upd.update_type == new_state) &&
             children[index]->getIntAttribute(upd.state_code, u"state_code", upd.update_type == new_county) &&

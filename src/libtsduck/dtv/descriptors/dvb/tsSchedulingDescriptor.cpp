@@ -132,9 +132,9 @@ void ts::SchedulingDescriptor::buildXML(DuckContext& duck, xml::Element* root) c
     root->setDateTimeAttribute(u"end_date_time", end_date_time);
     root->setBoolAttribute(u"final_availability", final_availability);
     root->setBoolAttribute(u"periodicity", periodicity);
-    root->setIntEnumAttribute(SchedulingUnitNames, u"period_unit", period_unit);
-    root->setIntEnumAttribute(SchedulingUnitNames, u"duration_unit", duration_unit);
-    root->setIntEnumAttribute(SchedulingUnitNames, u"estimated_cycle_time_unit", estimated_cycle_time_unit);
+    root->setEnumAttribute(SchedulingUnitNames, u"period_unit", period_unit);
+    root->setEnumAttribute(SchedulingUnitNames, u"duration_unit", duration_unit);
+    root->setEnumAttribute(SchedulingUnitNames, u"estimated_cycle_time_unit", estimated_cycle_time_unit);
     root->setIntAttribute(u"period", period);
     root->setIntAttribute(u"duration", duration);
     root->setIntAttribute(u"estimated_cycle_time", estimated_cycle_time);
@@ -152,9 +152,9 @@ bool ts::SchedulingDescriptor::analyzeXML(DuckContext& duck, const xml::Element*
             element->getDateTimeAttribute(end_date_time, u"end_date_time", true) &&
             element->getBoolAttribute(final_availability, u"final_availability", true) &&
             element->getBoolAttribute(periodicity, u"periodicity", true) &&
-            element->getIntEnumAttribute(period_unit, SchedulingUnitNames, u"period_unit", true) &&
-            element->getIntEnumAttribute(duration_unit, SchedulingUnitNames, u"duration_unit", true) &&
-            element->getIntEnumAttribute(estimated_cycle_time_unit, SchedulingUnitNames, u"estimated_cycle_time_unit", true) &&
+            element->getEnumAttribute(period_unit, SchedulingUnitNames, u"period_unit", true) &&
+            element->getEnumAttribute(duration_unit, SchedulingUnitNames, u"duration_unit", true) &&
+            element->getEnumAttribute(estimated_cycle_time_unit, SchedulingUnitNames, u"estimated_cycle_time_unit", true) &&
             element->getIntAttribute(period, u"period", true) &&
             element->getIntAttribute(duration, u"duration", true) &&
             element->getIntAttribute(estimated_cycle_time, u"estimated_cycle_time", true) &&

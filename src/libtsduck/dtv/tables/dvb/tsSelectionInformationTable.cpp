@@ -171,7 +171,7 @@ bool ts::SelectionInformationTable::analyzeXML(DuckContext& duck, const xml::Ele
     for (size_t index = 0; ok && index < children.size(); ++index) {
         uint16_t id = 0;
         ok = children[index]->getIntAttribute(id, u"service_id", true) &&
-             children[index]->getIntEnumAttribute(services[id].running_status, *RunningStatusEnum, u"running_status", true) &&
+             children[index]->getEnumAttribute(services[id].running_status, *RunningStatusEnum, u"running_status", true) &&
              services[id].descs.fromXML(duck, children[index]);
     }
     return ok;

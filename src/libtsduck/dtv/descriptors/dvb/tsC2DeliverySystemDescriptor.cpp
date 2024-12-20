@@ -116,7 +116,7 @@ void ts::C2DeliverySystemDescriptor::buildXML(DuckContext& duck, xml::Element* r
     root->setIntAttribute(u"C2_system_tuning_frequency", C2_system_tuning_frequency);
     root->setIntAttribute(u"C2_system_tuning_frequency_type", C2_system_tuning_frequency_type);
     root->setIntAttribute(u"active_OFDM_symbol_duration", active_OFDM_symbol_duration);
-    root->setIntEnumAttribute(C2GuardIntervalNames, u"guard_interval", guard_interval);
+    root->setEnumAttribute(C2GuardIntervalNames, u"guard_interval", guard_interval);
 }
 
 
@@ -131,5 +131,5 @@ bool ts::C2DeliverySystemDescriptor::analyzeXML(DuckContext& duck, const xml::El
             element->getIntAttribute(C2_system_tuning_frequency, u"C2_system_tuning_frequency", true) &&
             element->getIntAttribute(C2_system_tuning_frequency_type, u"C2_system_tuning_frequency_type", true, 0, 0, 3) &&
             element->getIntAttribute(active_OFDM_symbol_duration, u"active_OFDM_symbol_duration", true, 0, 0, 7) &&
-            element->getIntEnumAttribute(guard_interval, C2GuardIntervalNames, u"guard_interval", true);
+            element->getEnumAttribute(guard_interval, C2GuardIntervalNames, u"guard_interval", true);
 }

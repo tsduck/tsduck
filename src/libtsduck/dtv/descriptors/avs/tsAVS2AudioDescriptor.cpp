@@ -225,8 +225,8 @@ void ts::AVS2AudioDescriptor::buildXML(DuckContext& duck, xml::Element* root) co
 bool ts::AVS2AudioDescriptor::avs_version_info::fromXML(const xml::Element* element)
 {
     bool ok = element->getIntAttribute(audio_codec_id, u"audio_codec_id", true, 0, 0, 15) &&
-              element->getIntEnumAttribute(coding_profile, AVS2AudioDescriptor::CodingProfiles, u"coding_profile", true) &&
-              element->getIntEnumAttribute(resolution, AVS3AudioDescriptor::Resolutions, u"resolution", true);
+              element->getEnumAttribute(coding_profile, AVS2AudioDescriptor::CodingProfiles, u"coding_profile", true) &&
+              element->getEnumAttribute(resolution, AVS3AudioDescriptor::Resolutions, u"resolution", true);
     if (ok && (audio_codec_id == AVS3AudioDescriptor::General_Coding)) {
         ok = element->getIntAttribute(bitrate_index, u"bitrate_index", true, 0, 0, 0x0f) &&
              element->getEnumAttribute(bitstream_type, AVS3AudioDescriptor::GeneralBitstreamTypes, u"bitstream_type", true) &&

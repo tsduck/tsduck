@@ -101,7 +101,7 @@ void ts::IPMACGenericStreamLocationDescriptor::DisplayDescriptor(TablesDisplay& 
 void ts::IPMACGenericStreamLocationDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"interactive_network_id", interactive_network_id, true);
-    root->setIntEnumAttribute(ModulationTypeNames, u"modulation_system_type", modulation_system_type);
+    root->setEnumAttribute(ModulationTypeNames, u"modulation_system_type", modulation_system_type);
     root->setIntAttribute(u"modulation_system_id", modulation_system_id, true);
     root->setIntAttribute(u"PHY_stream_id", PHY_stream_id, true);
     root->addHexaTextChild(u"selector_bytes", selector_bytes, true);
@@ -110,7 +110,7 @@ void ts::IPMACGenericStreamLocationDescriptor::buildXML(DuckContext& duck, xml::
 bool ts::IPMACGenericStreamLocationDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     return element->getIntAttribute(interactive_network_id, u"interactive_network_id", true) &&
-           element->getIntEnumAttribute(modulation_system_type, ModulationTypeNames, u"modulation_system_type", true) &&
+           element->getEnumAttribute(modulation_system_type, ModulationTypeNames, u"modulation_system_type", true) &&
            element->getIntAttribute(modulation_system_id, u"modulation_system_id", false) &&
            element->getIntAttribute(PHY_stream_id, u"PHY_stream_id", false) &&
            element->getHexaTextChild(selector_bytes, u"selector_bytes", false, 0, MAX_DESCRIPTOR_SIZE - 9);

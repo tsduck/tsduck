@@ -303,12 +303,12 @@ void ts::S2Xv2SatelliteDeliverySystemDescriptor::buildXML(DuckContext& duck, xml
 {
     root->setIntAttribute(u"delivery_system_id", delivery_system_id, true);
     root->setIntAttribute(u"S2Xv2_mode", S2Xv2_mode);
-    root->setIntEnumAttribute(S2XSatelliteDeliverySystemDescriptor::RollOffNames, u"roll_off", roll_off);
+    root->setEnumAttribute(S2XSatelliteDeliverySystemDescriptor::RollOffNames, u"roll_off", roll_off);
     root->setIntAttribute(u"NCR_reference", NCR_reference);
     root->setIntAttribute(u"NCR_version", NCR_version);
     root->setIntAttribute(u"NCR_version", NCR_version);
     root->setIntAttribute(u"channel_bond", channel_bond);
-    root->setIntEnumAttribute(SatelliteDeliverySystemDescriptor::PolarizationNames, u"polarization", polarization);
+    root->setEnumAttribute(SatelliteDeliverySystemDescriptor::PolarizationNames, u"polarization", polarization);
 
     root->setIntAttribute(u"TS_GS_S2X_mode", TS_GS_S2X_mode);
     root->setIntAttribute(u"receiver_profiles", receiver_profiles, true);
@@ -356,11 +356,11 @@ bool ts::S2Xv2SatelliteDeliverySystemDescriptor::analyzeXML(DuckContext& duck, c
     bool ok =
         element->getIntAttribute(delivery_system_id, u"delivery_system_id", true) &&
         element->getIntAttribute(S2Xv2_mode, u"S2Xv2_mode", true, 0, 0, 0x0F) &&
-        element->getIntEnumAttribute(roll_off, S2XSatelliteDeliverySystemDescriptor::RollOffNames, u"roll_off", true) &&
+        element->getEnumAttribute(roll_off, S2XSatelliteDeliverySystemDescriptor::RollOffNames, u"roll_off", true) &&
         element->getIntAttribute(NCR_reference, u"NCR_reference", true, 0, 0, 0x01) &&
         element->getIntAttribute(NCR_version, u"NCR_version", true, 0, 0, 0x01) &&
         element->getIntAttribute(channel_bond, u"channel_bond", true, 0, 0, 0x03) &&
-        element->getIntEnumAttribute(polarization, SatelliteDeliverySystemDescriptor::PolarizationNames, u"polarization", true) &&
+        element->getEnumAttribute(polarization, SatelliteDeliverySystemDescriptor::PolarizationNames, u"polarization", true) &&
         element->getIntAttribute(TS_GS_S2X_mode, u"TS_GS_S2X_mode", true, 0, 0, 0x03) &&
         element->getIntAttribute(receiver_profiles, u"receiver_profiles", true, 0, 0, 0x1F) &&
         element->getIntAttribute(satellite_id, u"satellite_id", true, 0, 0, 0xFFFFFF) &&
