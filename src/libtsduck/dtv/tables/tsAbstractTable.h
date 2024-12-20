@@ -241,8 +241,11 @@ namespace ts {
         //! @tparam KEY A type which is used as key of the map.
         //! @tparam ENTRY A subclass of EntryBase (enforced at compile-time).
         //!
+        //! Implementation note: Because of a bug in MSVC, the full path of EntryBase
+        //! must be specified in the "requires" directive.
+        //!
         template<typename KEY, class ENTRY>
-            requires std::derived_from<ENTRY, EntryBase>
+            requires std::derived_from<ENTRY, ts::AbstractTable::EntryBase>
         class EntryWithDescriptorsMap : public std::map<KEY, ENTRY>
         {
         public:

@@ -345,7 +345,7 @@ namespace ts {
         //! @return The index of the descriptor in the list or count() if no such descriptor is found.
         //!
         template<class DESC>
-            requires std::derived_from<DESC, AbstractDescriptor>
+            requires std::derived_from<DESC, ts::AbstractDescriptor>
         size_t search(DuckContext& duck, DID tag, DESC& desc, size_t start_index = 0, PDS pds = 0) const;
 
         //!

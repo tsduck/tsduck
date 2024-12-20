@@ -797,7 +797,7 @@ namespace ts {
         //! an empty string, this specifies a parameter, not an option. If the specified option
         //! was not declared in the syntax of the command, a fatal error is reported.
         //!
-        template <class CONTAINER> requires std::derived_from<typename CONTAINER::value_type, UString>
+        template <class CONTAINER> requires std::derived_from<typename CONTAINER::value_type, ts::UString>
         void getValues(CONTAINER& values, const UChar* name = nullptr) const;
 
         //!
@@ -1163,7 +1163,7 @@ namespace ts {
         //! @param [in] index The occurence of the option to return. Zero designates the
         //! first occurence.
         //!
-        template <class NUMTYPE> requires std::derived_from<NUMTYPE, AbstractNumber>
+        template <class NUMTYPE> requires std::derived_from<NUMTYPE, ts::AbstractNumber>
         void getValue(NUMTYPE& value, const UChar* name = nullptr, const NUMTYPE& def_value = NUMTYPE(0), size_t index = 0) const;
 
         //!
@@ -1208,7 +1208,7 @@ namespace ts {
         //! first occurence.
         //! @return The value of the option or parameter.
         //!
-        template <class NUMTYPE> requires std::derived_from<NUMTYPE, AbstractNumber>
+        template <class NUMTYPE> requires std::derived_from<NUMTYPE, ts::AbstractNumber>
         NUMTYPE numValue(const UChar* name = nullptr, const NUMTYPE& def_value = NUMTYPE(0), size_t index = 0) const;
 
         //!
