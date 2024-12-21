@@ -8,33 +8,81 @@ Defined by MPEG in <<ISO-13818-6>>.
     version="uint5, default=0"
     current="bool, default=true"
     table_id_extension="uint16, default=0xFFFF"
-    protocol_discriminator="uint8, required"
-    dsmcc_type="uint8, required"
+    protocol_discriminator="uint8, required, default=0x11"
+    dsmcc_type="uint8, required, default=0x03"
     message_id="uint16, required"
     transaction_id="uint32, required">
   <DSI>
     <server_id>
       Hexadecimal content
     </server_id>
-    <private_data>
-      Hexadecimal content
-    </private_data>
+    <IOR>
+      <type_id>
+        Hexadecimal content
+      </type_id>
+      <tagged_profile profile_id_tag="uint32_t, required" profile_data_byte_order="uint8, required">
+        <!-- profile_id_tag = 0x49534F06 -->
+        <BIOP_profile_body>
+          <lite_component component_id_tag="uint32_t, required">
+            <!-- component_id_tag = 0x49534F50 (TAG_ObjectLocation) -->
+            <BIOP_object_location
+              carousel_id="uint32_t, required"
+              module_id="uint16_t, required"
+              version_major="uint8_t, required"
+              version_minor="uint8_t, required">
+              <object_key_data>
+                  Hexadecimal content
+              </object_key_data>
+            </BIOP_object_location>
+            <!-- component_id_tag = 0x49534F40 (TAG_ConnBinder) -->
+            <DSM_conn_binder>
+              <BIOP_tap
+                id="uint16, required"
+                use="uint16, required"
+                association_tag="uint16, required"
+                selector_type="uint16, required"
+                transaction_id="uint32, required"
+                timeout="uint32, required"/>
+            </DSM_conn_binder>
+            <!-- component_id_tag = other (Unknown) -->
+            <Unknown_component>
+              <component_data>
+                  Hexadecimal content
+              </component_data>
+            </Unknown_component>
+          </lite_component>
+        </BIOP_profile_body>
+        <!-- profile_id_tag = 0x49534F05 -->
+        <Lite_options_profile_body>
+          <profile_data>
+          Hexadecimal content
+          </profile_data>
+        </Lite_options_profile_body>
+        <!-- profile_id_tag = other -->
+        <Unknown_profile_body>
+          <profile_data>
+          Hexadecimal content
+          </profile_data>
+        </Unknown_profile_body>
+      </tagged_profile>
+    </IOR>
   </DSI>
   <DII
     download_id="uint32, required"
-    block_size="uint16, required"
-    number_of_modules="uint16, required">
+    block_size="uint16, required">
     <module
       module_id="uint16, required"
       module_size="uint32, required"
-      module_version="uint8, required">
-      <module_info>
-        Hexadecimal content
-      </module_info>
+      module_version="uint8, required"
+      module_timeout="uint32, required"
+      block_timeout="uint32, required"
+      min_block_time="uint32, required">
+      <tap
+        id="uint16, required"
+        use="uint16, required"
+        association_tag="uint16, required"/>
+      <DESCRIPTOR_LIST>
     </module>
-    <dii_private_data>
-      Hexadecimal content
-    </dii_private_data>
   </DII>
 </DSMCC_user_to_network_message>
 ----

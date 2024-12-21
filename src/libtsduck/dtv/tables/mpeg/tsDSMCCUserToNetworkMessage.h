@@ -59,7 +59,7 @@ namespace ts {
             Tap tap {};
 
             // UnknownComponent
-            ByteBlock component_data {};
+            std::optional<ByteBlock> component_data {};
         };
 
         class TSDUCKDLL TaggedProfile {
@@ -72,7 +72,7 @@ namespace ts {
             std::list<LiteComponent> liteComponents {};
 
             // Any other profile for now
-            ByteBlock profile_data {};
+            std::optional<ByteBlock> profile_data {};
         };
 
         class TSDUCKDLL IOR {
@@ -128,14 +128,16 @@ namespace ts {
 
         // Inherited methods
         DeclareDisplaySection();
+        virtual bool     isPrivate() const override;
         virtual uint16_t tableIdExtension() const override;
 
     protected:
         // Inherited methods
-        virtual void clearContent() override;
-        virtual void serializePayload(BinaryTable&, PSIBuffer&) const override;
-        virtual void deserializePayload(PSIBuffer&, const Section&) override;
-        virtual void buildXML(DuckContext&, xml::Element*) const override;
-        virtual bool analyzeXML(DuckContext& duck, const xml::Element* element) override;
+        virtual void   clearContent() override;
+        virtual size_t maxPayloadSize() const override;
+        virtual void   serializePayload(BinaryTable&, PSIBuffer&) const override;
+        virtual void   deserializePayload(PSIBuffer&, const Section&) override;
+        virtual void   buildXML(DuckContext&, xml::Element*) const override;
+        virtual bool   analyzeXML(DuckContext& duck, const xml::Element* element) override;
     };
 }  // namespace ts

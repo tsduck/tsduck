@@ -43,15 +43,14 @@ ts::DSMCCUserToNetworkMessage::Module::Module(const AbstractTable* table) :
 {
 }
 
-
 //----------------------------------------------------------------------------
 // Deserialization
 //----------------------------------------------------------------------------
 
 void ts::DSMCCUserToNetworkMessage::clearContent()
 {
-    protocol_discriminator = 0x11;
-    dsmcc_type = 0x03;
+    protocol_discriminator = 0;
+    dsmcc_type = 0;
     message_id = 0;
     transaction_id = 0;
 
@@ -64,9 +63,29 @@ void ts::DSMCCUserToNetworkMessage::clearContent()
     modules.clear();
 }
 
+//----------------------------------------------------------------------------
+// Inherited public methods
+//----------------------------------------------------------------------------
+
+bool ts::DSMCCUserToNetworkMessage::isPrivate() const
+{
+    return false;  // MPEG-defined
+}
+
+size_t ts::DSMCCUserToNetworkMessage::maxPayloadSize() const
+{
+    // Although declared as a "non-private section" in the MPEG sense, the
+    // DSM-CC section can use up to 4096 bytes according to
+    // ETSI TS 102 809 V1.3.1 (2017-06), Table B.2.
+    //
+    // The maximum section length is 4096 bytes for all types of sections used in object carousel.
+    // The section overhead is 12 bytes, leaving a maxium 4084 of payload per section.
+    return MAX_PRIVATE_LONG_SECTION_PAYLOAD_SIZE;
+}
+
 uint16_t ts::DSMCCUserToNetworkMessage::tableIdExtension() const
 {
-    return 0x0000;
+    return uint16_t(transaction_id & 0xFFFF);
 }
 
 //----------------------------------------------------------------------------
@@ -84,9 +103,7 @@ void ts::DSMCCUserToNetworkMessage::deserializePayload(PSIBuffer& buf, const Sec
 
     const uint8_t adaptation_length = buf.getUInt8();
 
-    // Skip message length
-    buf.skipBytes(2);
-    /*uint16_t message_length = buf.getUInt16();*/
+    buf.skipBytes(2);  // message_length
 
     /* For object carousel it should be 0 */
     if (adaptation_length > 0) {
@@ -97,11 +114,8 @@ void ts::DSMCCUserToNetworkMessage::deserializePayload(PSIBuffer& buf, const Sec
     if (message_id == 0x1006) {
         buf.getBytes(server_id, SERVER_ID_SIZE);
 
-        // CompatibilityDescriptor
-        buf.skipBytes(2);
-
-        // private_data_length
-        buf.skipBytes(2);
+        buf.skipBytes(2);  // compatibility_descriptor_length
+        buf.skipBytes(2);  // private_data_length
 
         uint32_t type_id_length = buf.getUInt32();
 
@@ -186,7 +200,7 @@ void ts::DSMCCUserToNetworkMessage::deserializePayload(PSIBuffer& buf, const Sec
 
                             unknownComponent.component_id_tag = component_id_tag;
 
-                            buf.getBytes(unknownComponent.component_data, component_data_length);
+                            buf.getBytes(unknownComponent.component_data.value(), component_data_length);
 
                             tagged_profile.liteComponents.push_back(unknownComponent);
 
@@ -196,27 +210,24 @@ void ts::DSMCCUserToNetworkMessage::deserializePayload(PSIBuffer& buf, const Sec
                 }
             }
             else if (tagged_profile.profile_id_tag == 0x49534F05) {  // TAG_LITE_OPTIONS (Lite Options Profile Body)
-                buf.getBytes(tagged_profile.profile_data, profile_data_length - 1);
+                buf.getBytes(tagged_profile.profile_data.value(), profile_data_length - 1);
             }
             else {
-                buf.getBytes(tagged_profile.profile_data, profile_data_length - 1);
+                buf.getBytes(tagged_profile.profile_data.value(), profile_data_length - 1);
             }
 
             ior.tagged_profiles.push_back(tagged_profile);
         }
 
-        // download_taps_count + service_context_list_count + user_info_length
-        buf.skipBytes(4);
+        buf.skipBytes(4);  // download_taps_count + service_context_list_count + user_info_length
     }
     else if (message_id == 0x1002) {
+
         download_id = buf.getUInt32();
         block_size = buf.getUInt16();
 
-        //windowSize + ackPeriod + tCDownloadWindow + tCDownloadScenario
-        buf.skipBytes(10);
-
-        // CompatibilityDescriptor
-        buf.skipBytes(2);
+        buf.skipBytes(10);  // windowSize + ackPeriod + tCDownloadWindow + tCDownloadScenario
+        buf.skipBytes(2);   // compatibility_descriptor_length
 
         const uint16_t number_of_modules = buf.getUInt16();
 
@@ -227,16 +238,13 @@ void ts::DSMCCUserToNetworkMessage::deserializePayload(PSIBuffer& buf, const Sec
             module.module_size = buf.getUInt32();
             module.module_version = buf.getUInt8();
 
-            // moduleInfoLength
-            buf.skipBytes(1);
+            buf.skipBytes(1);  // module_info_length
 
             module.module_timeout = buf.getUInt32();
             module.block_timeout = buf.getUInt32();
             module.min_block_time = buf.getUInt32();
 
             const uint8_t taps_count = buf.getUInt8();
-
-            /*buf.skipBytes(taps_count * 7);  // reserved*/
 
             for (size_t j = 0; j < taps_count; j++) {
                 Tap tap;
@@ -251,12 +259,12 @@ void ts::DSMCCUserToNetworkMessage::deserializePayload(PSIBuffer& buf, const Sec
             }
 
             uint8_t user_info_length = buf.getUInt8();
-            /*buf.skipBytes(user_info_length);  // user_info*/
+
             buf.getDescriptorList(module.descs, user_info_length);
         }
 
-        /*buf.skipBytes(2);  // private_data_length*/
         uint16_t private_data_length = buf.getUInt16();
+
         buf.skipBytes(private_data_length);
     }
     else {
@@ -271,43 +279,63 @@ void ts::DSMCCUserToNetworkMessage::deserializePayload(PSIBuffer& buf, const Sec
 //----------------------------------------------------------------------------
 void ts::DSMCCUserToNetworkMessage::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 {
+    /* DSMCC_UNM Table consist only one section so we do not need to worry about overflow */
+
     buf.putUInt8(protocol_discriminator);
     buf.putUInt8(dsmcc_type);
     buf.putUInt16(message_id);
     buf.putUInt32(transaction_id);
+    buf.putUInt8(0xFF);  // reserved
+    buf.putUInt8(0x00);  // adaptation_length
+
+    buf.pushWriteSequenceWithLeadingLength(16);
 
     if (message_id == 0x1006) {
         buf.putBytes(server_id);
+        buf.putUInt16(0x0000);  // compatibility_descriptor_length
+
+        buf.pushWriteSequenceWithLeadingLength(16);  // private_data
+
+        //IOP::IOR
+        buf.putUInt32(ior.type_id.size());
         buf.putBytes(ior.type_id);
 
-        for (auto it = ior.tagged_profiles.begin(); it != ior.tagged_profiles.end();) {
-            const TaggedProfile& tagged_profile(*it);
+        buf.putUInt32(ior.tagged_profiles.size());
 
+        for (const auto& tagged_profile : ior.tagged_profiles) {
             buf.putUInt32(tagged_profile.profile_id_tag);
+
+            buf.pushWriteSequenceWithLeadingLength(32);  // profile_data
+
             buf.putUInt8(tagged_profile.profile_data_byte_order);
 
-            if (tagged_profile.profile_id_tag == 0x49534F06) {
+            if (tagged_profile.profile_id_tag == 0x49534F06) {  // TAG_BIOP (BIOP Profile Body)
+
+                buf.putUInt8(tagged_profile.liteComponents.size());
+
                 for (const auto& liteComponent : tagged_profile.liteComponents) {
                     buf.putUInt32(liteComponent.component_id_tag);
 
+                    buf.pushWriteSequenceWithLeadingLength(8);  // component_data
+
                     switch (liteComponent.component_id_tag) {
                         case 0x49534F50: {  // TAG_ObjectLocation
-                            buf.putUInt32(liteComponent.component_id_tag);
                             buf.putUInt32(liteComponent.carousel_id);
                             buf.putUInt16(liteComponent.module_id);
                             buf.putUInt8(liteComponent.version_major);
                             buf.putUInt8(liteComponent.version_minor);
                             buf.putUInt8(liteComponent.object_key_data.size());
                             buf.putBytes(liteComponent.object_key_data);
-                            /*}*/
                             break;
                         }
 
-                        case 0x49534F40: {  // TAG_ConnBinder
-                            buf.putUInt32(liteComponent.component_id_tag);
+                        case 0x49534F40: {       // TAG_ConnBinder
+                            buf.putUInt8(0x01);  // taps_count TODO: for now only one tap assumed but this needs to be
+                                                 // fixed
                             buf.putUInt16(liteComponent.tap.id);
                             buf.putUInt16(liteComponent.tap.use);
                             buf.putUInt16(liteComponent.tap.association_tag);
+                            buf.putUInt8(0x0A);  // selector_length fixed
                             buf.putUInt16(liteComponent.tap.selector_type);
                             buf.putUInt32(liteComponent.tap.transaction_id);
                             buf.putUInt32(liteComponent.tap.timeout);
@@ -315,45 +343,88 @@ void ts::DSMCCUserToNetworkMessage::serializePayload(BinaryTable& table, PSIBuff
                         }
 
                         default: {  //UnknownComponent
-                            buf.putUInt32(liteComponent.component_id_tag);
-                            buf.putBytes(liteComponent.component_data);
+                            if (liteComponent.component_data.has_value()) {
+                                buf.putBytes(liteComponent.component_data.value());
+                            }
                         }
                     }
+
+                    buf.popState();  // close component_data
                 }
             }
             else if (tagged_profile.profile_id_tag == 0x49534F05) {  // TAG_LITE_OPTIONS (Lite Options Profile Body)
-                buf.putBytes(tagged_profile.profile_data);
+                if (tagged_profile.profile_data.has_value()) {
+                    buf.putBytes(tagged_profile.profile_data.value());
+                }
             }
             else {
-                buf.putBytes(tagged_profile.profile_data);
+                if (tagged_profile.profile_data.has_value()) {
+                    buf.putBytes(tagged_profile.profile_data.value());
+                }
             }
+
+            buf.popState();  // close profile_data
         }
+
+        buf.putUInt8(0x00);     // download_taps_count
+        buf.putUInt8(0x00);     // service_context_list_count
+        buf.putUInt16(0x0000);  // user_info_length
+
+        buf.popState();  // close private_data
     }
     else if (message_id == 0x1002) {
+
         buf.putUInt32(download_id);
         buf.putUInt16(block_size);
+
+        // ETSI TR 101 202 V1.2.1 5.7.5.1
+        // Not used and set to zero
+        buf.putUInt8(0x00);         // windowSize
+        buf.putUInt8(0x00);         // ackPeriod
+        buf.putUInt32(0x00000000);  // tCDownloadWindow
+        buf.putUInt32(0x00000000);  // tCDownloadScenario
+        buf.putUInt16(0x0000);      // compatibility_descriptor_length
+
         buf.putUInt16(modules.size());
 
-        for (auto it_module = modules.begin(); !buf.error() && it_module != modules.end();) {
-            const Module& module(it_module->second);
+        for (const auto& module : modules) {
 
-            buf.putUInt16(module.module_id);
-            buf.putUInt32(module.module_size);
-            buf.putUInt8(module.module_version);
+            buf.putUInt16(module.second.module_id);
+            buf.putUInt32(module.second.module_size);
+            buf.putUInt8(module.second.module_version);
 
-            buf.putUInt32(module.module_timeout);
-            buf.putUInt32(module.block_timeout);
-            buf.putUInt32(module.min_block_time);
+            buf.pushWriteSequenceWithLeadingLength(8);  // module_info_length
 
-            for (const auto& tap : module.taps) {
+            // BIOP::ModuleInfo
+
+            buf.putUInt32(module.second.module_timeout);
+            buf.putUInt32(module.second.block_timeout);
+            buf.putUInt32(module.second.min_block_time);
+
+            buf.putUInt8(module.second.taps.size());  // taps_count
+
+            for (const auto& tap : module.second.taps) {
                 buf.putUInt16(tap.id);
                 buf.putUInt16(tap.use);
                 buf.putUInt16(tap.association_tag);
-                buf.putUInt8(0);  // selector_length
+                buf.putUInt8(0x00);  // selector_length
             }
-            buf.putDescriptorList(module.descs);
+
+            buf.pushWriteSequenceWithLeadingLength(8);  // user_info_length
+
+            // Normaly I would use putDescriptorListWithLength
+            // but UserInfoLength is only 1 byte instead of 2 asssumed
+            // by above method
+            buf.putDescriptorList(module.second.descs);
+
+            buf.popState();  // close user_info_length
+
+            buf.popState();  // close module_info_length
         }
+
+        buf.putUInt16(0x0000);  // private_data_length
     }
+    buf.popState();  // close message_length
 }
 
 void ts::DSMCCUserToNetworkMessage::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
@@ -367,14 +438,11 @@ void ts::DSMCCUserToNetworkMessage::DisplaySection(TablesDisplay& disp, const ts
         message_id = buf.getUInt16();
         const uint32_t transaction_id = buf.getUInt32();
 
-        // Skip reserved
-        buf.skipBytes(1);
+        buf.skipBytes(1);  // reserved
 
         adaptation_length = buf.getUInt8();
 
-        // Skip message length
-        /*message_length = buf.getUInt16();*/
-        buf.skipBytes(2);
+        buf.skipBytes(2);  // message_length
 
         /* For object carousel it should be 0 */
         if (adaptation_length > 0) {
@@ -395,11 +463,9 @@ void ts::DSMCCUserToNetworkMessage::DisplaySection(TablesDisplay& disp, const ts
     if (message_id == 0x1006) {  //DSI
         disp.displayPrivateData(u"Server id", buf, SERVER_ID_SIZE, margin);
 
-        // CompatibilityDescriptor
-        buf.skipBytes(2);
+        buf.skipBytes(2);  // compatibility_descriptor_length shall be 0x0000
+        buf.skipBytes(2);  // private_data_length
 
-        /*uint16_t private_data_length = buf.getUInt16();*/
-        buf.skipBytes(2);
         uint32_t  type_id_length = buf.getUInt32();
         ByteBlock type_id {};
 
@@ -418,7 +484,7 @@ void ts::DSMCCUserToNetworkMessage::DisplaySection(TablesDisplay& disp, const ts
             uint8_t  profile_data_byte_order = buf.getUInt8();
 
             disp << margin << "ProfileId Tag: " << DataName(MY_XML_NAME, u"tag", profile_id_tag, NamesFlags::HEXA_FIRST) << std::endl;
-            disp << margin << UString::Format(u"Profile Data Byte Orded: %n", profile_data_byte_order) << std::endl;
+            disp << margin << UString::Format(u"Profile Data Byte Order: %n", profile_data_byte_order) << std::endl;
 
             if (profile_id_tag == 0x49534F06) {  // TAG_BIOP (BIOP Profile Body)
                 uint8_t lite_component_count = buf.getUInt8();
@@ -465,8 +531,7 @@ void ts::DSMCCUserToNetworkMessage::DisplaySection(TablesDisplay& disp, const ts
                                 uint16_t use = buf.getUInt16();
                                 uint16_t association_tag = buf.getUInt16();
 
-                                // selector_length
-                                buf.skipBytes(1);
+                                buf.skipBytes(1);  // selector_length
 
                                 uint16_t selector_type = buf.getUInt16();
                                 uint32_t transaction_id = buf.getUInt32();
@@ -509,11 +574,8 @@ void ts::DSMCCUserToNetworkMessage::DisplaySection(TablesDisplay& disp, const ts
         disp << margin << UString::Format(u"Download id: %n", buf.getUInt32()) << std::endl;
         disp << margin << UString::Format(u"Block size: %n", buf.getUInt16()) << std::endl;
 
-        //windowSize + ackPeriod + tCDownloadWindow + tCDownloadScenario
-        buf.skipBytes(10);
-
-        // CompatibilityDescriptor
-        buf.skipBytes(2);
+        buf.skipBytes(10);  // windowSize + ackPeriod + tCDownloadWindow + tCDownloadScenario
+        buf.skipBytes(2);   // compatibility_descriptor_length
 
         uint16_t number_of_modules = buf.getUInt16();
 
@@ -527,8 +589,7 @@ void ts::DSMCCUserToNetworkMessage::DisplaySection(TablesDisplay& disp, const ts
             disp << margin << UString::Format(u"Module size: %n", module_size) << std::endl;
             disp << margin << UString::Format(u"Module version: %n", module_version) << std::endl;
 
-            /*uint8_t module_info_length = buf.getUInt8();*/
-            buf.skipBytes(1);
+            buf.skipBytes(1);  // module_info_length
 
             uint32_t module_timeout = buf.getUInt32();
             uint32_t block_timeout = buf.getUInt32();
@@ -581,6 +642,8 @@ void ts::DSMCCUserToNetworkMessage::DisplaySection(TablesDisplay& disp, const ts
 
 void ts::DSMCCUserToNetworkMessage::buildXML(DuckContext& duck, xml::Element* root) const
 {
+    root->setIntAttribute(u"version", version);
+    root->setBoolAttribute(u"current", is_current);
     root->setIntAttribute(u"protocol_discriminator", protocol_discriminator, true);
     root->setIntAttribute(u"dsmcc_type", dsmcc_type, true);
     root->setIntAttribute(u"message_id", message_id, true);
@@ -594,21 +657,24 @@ void ts::DSMCCUserToNetworkMessage::buildXML(DuckContext& duck, xml::Element* ro
         ior_entry->addHexaTextChild(u"type_id", ior.type_id, true);
 
         for (const auto& profile : ior.tagged_profiles) {
-            xml::Element* profile_entry = ior_entry->addElement(u"tagged_profile");
-            profile_entry->setIntAttribute(u"profile_id_tag", profile.profile_id_tag, true);
-            profile_entry->setIntAttribute(u"profile_data_byte_order", profile.profile_data_byte_order, true);
+
+            xml::Element* tagged_profile_entry = ior_entry->addElement(u"tagged_profile");
+
+            tagged_profile_entry->setIntAttribute(u"profile_id_tag", profile.profile_id_tag, true);
+            tagged_profile_entry->setIntAttribute(u"profile_data_byte_order", profile.profile_data_byte_order, true);
 
             if (profile.profile_id_tag == 0x49534F06) {
 
-                xml::Element* biop_profile_body_entry = profile_entry->addElement(u"BIOP_Profile_Body");
-                biop_profile_body_entry->setIntAttribute(u"lite_component_count", profile.liteComponents.size(), false);
+                xml::Element* biop_profile_body_entry = tagged_profile_entry->addElement(u"BIOP_profile_body");
 
                 for (const auto& liteComponent : profile.liteComponents) {
 
+                    xml::Element* lite_component_entry = biop_profile_body_entry->addElement(u"lite_component");
+                    lite_component_entry->setIntAttribute(u"component_id_tag", liteComponent.component_id_tag, true);
+
                     switch (liteComponent.component_id_tag) {
                         case 0x49534F50: {  // TAG_ObjectLocation
-                            xml::Element* biop_object_location_entry = biop_profile_body_entry->addElement(u"BIOP_object_location");
-                            biop_object_location_entry->setIntAttribute(u"component_id_tag", liteComponent.component_id_tag, true);
+                            xml::Element* biop_object_location_entry = lite_component_entry->addElement(u"BIOP_object_location");
                             biop_object_location_entry->setIntAttribute(u"carousel_id", liteComponent.carousel_id, true);
                             biop_object_location_entry->setIntAttribute(u"module_id", liteComponent.module_id, true);
                             biop_object_location_entry->setIntAttribute(u"version_major", liteComponent.version_major, true);
@@ -618,8 +684,7 @@ void ts::DSMCCUserToNetworkMessage::buildXML(DuckContext& duck, xml::Element* ro
                         }
 
                         case 0x49534F40: {  // TAG_ConnBinder
-                            xml::Element* dsm_conn_binder_entry = profile_entry->addElement(u"DSM_conn_binder");
-                            dsm_conn_binder_entry->setIntAttribute(u"component_id_tag", liteComponent.component_id_tag, true);
+                            xml::Element* dsm_conn_binder_entry = lite_component_entry->addElement(u"DSM_conn_binder");
 
                             xml::Element* tap_entry = dsm_conn_binder_entry->addElement(u"BIOP_tap");
                             tap_entry->setIntAttribute(u"id", liteComponent.tap.id, true);
@@ -632,18 +697,27 @@ void ts::DSMCCUserToNetworkMessage::buildXML(DuckContext& duck, xml::Element* ro
                         }
 
                         default: {
-                            xml::Element* unknown_component_entry = profile_entry->addElement(u"Unknown_component");
-                            unknown_component_entry->setIntAttribute(u"component_id_tag", liteComponent.component_id_tag, true);
-                            unknown_component_entry->addHexaTextChild(u"component_data", liteComponent.component_data, true);
+                            xml::Element* unknown_component_entry = lite_component_entry->addElement(u"Unknown_component");
+                            if (liteComponent.component_data.has_value()) {
+                                unknown_component_entry->addHexaTextChild(u"component_data", liteComponent.component_data.value(), true);
+                            }
                         }
                     }
                 }
             }
             else if (profile.profile_id_tag == 0x49534F05) {  // TAG_LITE_OPTIONS (Lite Options Profile Body)
-                profile_entry->addHexaTextChild(u"profile_data", profile.profile_data, true);
+                xml::Element* lite_options_profile_entry = tagged_profile_entry->addElement(u"Lite_options_profile_body");
+
+                if (profile.profile_data.has_value()) {
+                    lite_options_profile_entry->addHexaTextChild(u"profile_data", profile.profile_data.value(), true);
+                }
             }
             else {
-                profile_entry->addHexaTextChild(u"profile_data", profile.profile_data, true);
+                xml::Element* unknown_profile_entry = tagged_profile_entry->addElement(u"Unknown_profile");
+
+                if (profile.profile_data.has_value()) {
+                    unknown_profile_entry->addHexaTextChild(u"profile_data", profile.profile_data.value(), true);
+                }
             }
         }
     }
@@ -652,7 +726,6 @@ void ts::DSMCCUserToNetworkMessage::buildXML(DuckContext& duck, xml::Element* ro
         xml::Element* dii = root->addElement(u"DII");
         dii->setIntAttribute(u"download_id", download_id, true);
         dii->setIntAttribute(u"block_size", block_size, true);
-        dii->setIntAttribute(u"number_of_modules", modules.size(), false);
 
         for (const auto& it : modules) {
             xml::Element* mod = dii->addElement(u"module");
@@ -668,7 +741,6 @@ void ts::DSMCCUserToNetworkMessage::buildXML(DuckContext& duck, xml::Element* ro
                 t->setIntAttribute(u"id", tap.id, true);
                 t->setIntAttribute(u"use", tap.use, true);
                 t->setIntAttribute(u"association_tag", tap.association_tag, true);
-                t->setIntAttribute(u"selector_type", tap.selector_type, true);
             }
             it.second.descs.toXML(duck, mod);
         }
@@ -682,6 +754,8 @@ void ts::DSMCCUserToNetworkMessage::buildXML(DuckContext& duck, xml::Element* ro
 bool ts::DSMCCUserToNetworkMessage::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     bool ok =
+        element->getIntAttribute(version, u"version", false, 0, 0, 31) &&
+        element->getBoolAttribute(is_current, u"current", false, true) &&
         element->getIntAttribute(protocol_discriminator, u"protocol_discriminator", false, 0x11) &&
         element->getIntAttribute(dsmcc_type, u"dsmcc_type", true, 0x03) &&
         element->getIntAttribute(message_id, u"message_id", true) &&
@@ -689,21 +763,94 @@ bool ts::DSMCCUserToNetworkMessage::analyzeXML(DuckContext& duck, const xml::Ele
 
     if (message_id == 0x1006) {
 
-        ok = element->getHexaTextChild(server_id, u"server_id");
+        const xml::Element* dsi_element = element->findFirstChild(u"DSI", true);
 
-        const xml::Element* ior_element = element->findFirstChild(u"IOR", true);
-        xml::ElementVector  children;
+        ok = dsi_element->getHexaTextChild(server_id, u"server_id");
+
+        const xml::Element* ior_element = dsi_element->findFirstChild(u"IOR", true);
+        xml::ElementVector  profile_elements;
 
         ok = ior_element->getHexaTextChild(ior.type_id, u"type_id") &&
-             ior_element->getChildren(children, u"tagged_profile");
+             ior_element->getChildren(profile_elements, u"tagged_profile");
 
-        for (auto it = children.begin(); ok && it != children.end(); ++it) {
+        for (size_t it = 0; ok && it < profile_elements.size(); ++it) {
             TaggedProfile tagged_profile;
 
-            ok = (*it)->getIntAttribute(tagged_profile.profile_id_tag, u"profile_id_tag", true) &&
-                 (*it)->getIntAttribute(tagged_profile.profile_data_byte_order, u"profile_data_byte_order", true);
+            ok = profile_elements[it]->getIntAttribute(tagged_profile.profile_id_tag, u"profile_id_tag", true) &&
+                 profile_elements[it]->getIntAttribute(tagged_profile.profile_data_byte_order, u"profile_data_byte_order", true);
 
-            //TODO LiteComponents
+            if (tagged_profile.profile_id_tag == 0x49534F06) {  // TAG_BIOP (BIOP fg Profile Body)
+                const xml::Element* biop_profile_body_element = profile_elements[it]->findFirstChild(u"BIOP_profile_body", true);
+                xml::ElementVector  lite_component_elements;
+
+                ok = biop_profile_body_element->getChildren(lite_component_elements, u"lite_component");
+
+                for (size_t it2 = 0; ok && it2 < lite_component_elements.size(); ++it2) {
+                    LiteComponent liteComponent;
+
+                    ok = lite_component_elements[it2]->getIntAttribute(liteComponent.component_id_tag, u"component_id_tag", true);
+
+                    switch (liteComponent.component_id_tag) {
+                        case 0x49534F50: {  // TAG_ObjectLocation
+                            const xml::Element* biop_object_location_element = lite_component_elements[it2]->findFirstChild(u"BIOP_object_location", true);
+
+                            ok = biop_object_location_element->getIntAttribute(liteComponent.carousel_id, u"carousel_id", true) &&
+                                 biop_object_location_element->getIntAttribute(liteComponent.module_id, u"module_id", true) &&
+                                 biop_object_location_element->getIntAttribute(liteComponent.version_major, u"version_major", true) &&
+                                 biop_object_location_element->getIntAttribute(liteComponent.version_minor, u"version_minor", true);
+
+                            ByteBlock bb;
+                            if (biop_object_location_element->getHexaTextChild(bb, u"object_key_data")) {
+                                liteComponent.object_key_data = bb;
+                            }
+
+                            break;
+                        }
+
+                        case 0x49534F40: {  //TAG_ConnBinder
+                            const xml::Element* dsm_conn_binder_element = lite_component_elements[it2]->findFirstChild(u"DSM_conn_binder", true);
+                            const xml::Element* biop_tap_element = dsm_conn_binder_element->findFirstChild(u"BIOP_tap", true);
+
+                            ok = biop_tap_element->getIntAttribute(liteComponent.tap.id, u"id", true) &&
+                                 biop_tap_element->getIntAttribute(liteComponent.tap.use, u"use", true) &&
+                                 biop_tap_element->getIntAttribute(liteComponent.tap.association_tag, u"association_tag", true) &&
+                                 biop_tap_element->getIntAttribute(liteComponent.tap.selector_type, u"selector_type", true) &&
+                                 biop_tap_element->getIntAttribute(liteComponent.tap.transaction_id, u"transaction_id", true) &&
+                                 biop_tap_element->getIntAttribute(liteComponent.tap.timeout, u"timeout", true);
+
+                            break;
+                        }
+
+                        default: {  //UnknownComponent
+                            ByteBlock bb;
+                            if (lite_component_elements[it2]->getHexaTextChild(bb, u"component_data")) {
+                                liteComponent.component_data = bb;
+                            }
+                            break;
+                        }
+                    }
+
+                    if (ok) {
+                        tagged_profile.liteComponents.push_back(liteComponent);
+                    }
+                }
+            }
+            else if (tagged_profile.profile_id_tag == 0x49534F05) {  // TODO: TAG_LITE_OPTIONS (Lite Options Profile Body)
+                const xml::Element* lite_options_profile_body_element = profile_elements[it]->findFirstChild(u"Lite_options_profile_body", true);
+
+                ByteBlock bb;
+                if (lite_options_profile_body_element->getHexaTextChild(bb, u"profile_data")) {
+                    tagged_profile.profile_data = bb;
+                }
+            }
+            else {  // Any other Profile Type
+                const xml::Element* unknown_profile_body_element = profile_elements[it]->findFirstChild(u"Unknown_profile_body", true);
+
+                ByteBlock bb;
+                if (unknown_profile_body_element->getHexaTextChild(bb, u"profile_data")) {
+                    tagged_profile.profile_data = bb;
+                }
+            }
 
             if (ok) {
                 ior.tagged_profiles.push_back(tagged_profile);
@@ -711,37 +858,36 @@ bool ts::DSMCCUserToNetworkMessage::analyzeXML(DuckContext& duck, const xml::Ele
         }
     }
     else if (message_id == 0x1002) {
-        xml::ElementVector children;
+        const xml::Element* dii_element = element->findFirstChild(u"DII", true);
+        xml::ElementVector  module_elements;
 
-        ok = element->getIntAttribute(download_id, u"download_id", true) &&
-             element->getIntAttribute(block_size, u"block_size", true) &&
-             element->getChildren(children, u"module");
+        ok = dii_element->getIntAttribute(download_id, u"download_id", true) &&
+             dii_element->getIntAttribute(block_size, u"block_size", true) &&
+             dii_element->getChildren(module_elements, u"module");
 
-        for (size_t it = 0; ok && it < children.size(); ++it) {
-            Module& module(modules.newEntry());
+        for (size_t it = 0; ok && it < module_elements.size(); ++it) {
+            Module&            module(modules.newEntry());
+            xml::ElementVector unused;
+            xml::ElementVector tap_elements;
 
-            xml::ElementVector children2;
+            ok = module_elements[it]->getIntAttribute(module.module_id, u"module_id", true) &&
+                 module_elements[it]->getIntAttribute(module.module_size, u"module_size", true) &&
+                 module_elements[it]->getIntAttribute(module.module_version, u"module_version", true) &&
+                 module_elements[it]->getIntAttribute(module.module_timeout, u"module_timeout", true) &&
+                 module_elements[it]->getIntAttribute(module.block_timeout, u"block_timeout", true) &&
+                 module_elements[it]->getIntAttribute(module.min_block_time, u"min_block_time", true) &&
+                 module_elements[it]->getChildren(tap_elements, u"tap");
 
-            ok = children[it]->getIntAttribute(module.module_id, u"module_id", true) &&
-                 children[it]->getIntAttribute(module.module_size, u"module_size", true) &&
-                 children[it]->getIntAttribute(module.module_version, u"module_version", true) &&
-                 children[it]->getIntAttribute(module.module_timeout, u"module_timeout", true) &&
-                 children[it]->getIntAttribute(module.block_timeout, u"block_timeout", true) &&
-                 children[it]->getIntAttribute(module.min_block_time, u"min_block_time", true) &&
-                 children[it]->getChildren(children2, u"tap");
-
-
-            for (size_t it2 = 0; ok && it2 < children2.size(); ++it2) {
+            for (size_t itt = 0; ok && itt < tap_elements.size(); ++itt) {
                 Tap tap;
 
-                ok = children2[it2]->getIntAttribute(tap.id, u"id", true) &&
-                     children2[it2]->getIntAttribute(tap.use, u"use", true) &&
-                     children2[it2]->getIntAttribute(tap.association_tag, u"association_tag", true) &&
-                     children2[it2]->getIntAttribute(tap.selector_type, u"selector_type", true);
+                ok = tap_elements[itt]->getIntAttribute(tap.id, u"id", true) &&
+                     tap_elements[itt]->getIntAttribute(tap.use, u"use", true) &&
+                     tap_elements[itt]->getIntAttribute(tap.association_tag, u"association_tag", true);
 
                 module.taps.push_back(tap);
             }
-            ok = module.descs.fromXML(duck, children[it]);
+            ok = module.descs.fromXML(duck, unused, module_elements[it], u"tap");
         }
     }
 

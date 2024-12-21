@@ -53,6 +53,15 @@ void ts::DSMCCDownloadDataMessage::clearContent()
     block_data.clear();
 }
 
+//----------------------------------------------------------------------------
+// Inherited public methods
+//----------------------------------------------------------------------------
+
+bool ts::DSMCCDownloadDataMessage::isPrivate() const
+{
+    return false;  // MPEG-defined
+}
+
 uint16_t ts::DSMCCDownloadDataMessage::tableIdExtension() const
 {
     return module_id;
@@ -69,13 +78,11 @@ void ts::DSMCCDownloadDataMessage::deserializePayload(PSIBuffer& buf, const Sect
     message_id = buf.getUInt16();
     download_id = buf.getUInt32();
 
-    buf.skipBytes(1);
+    buf.skipBytes(1);  // reserved
 
     uint8_t adaptation_length = buf.getUInt8();
 
-    // Skip message length
-    buf.skipBytes(2);
-    /*uint16_t message_length = buf.getUInt16();*/
+    buf.skipBytes(2);  // message_length
 
     /* For object carousel it should be 0 */
     if (adaptation_length > 0) {
@@ -85,8 +92,7 @@ void ts::DSMCCDownloadDataMessage::deserializePayload(PSIBuffer& buf, const Sect
     module_id = buf.getUInt16();
     module_version = buf.getUInt8();
 
-    // Reserved
-    buf.skipBytes(1);
+    buf.skipBytes(1);  // reserved
 
     block_number = buf.getUInt16();
     buf.getBytesAppend(block_data);

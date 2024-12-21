@@ -49,6 +49,7 @@ namespace ts {
 
         // Inherited methods
         DeclareDisplaySection();
+        virtual bool     isPrivate() const override;
         virtual uint16_t tableIdExtension() const override;
 
     protected:
