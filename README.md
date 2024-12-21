@@ -40,6 +40,7 @@ TSDuck comes with a comprehensive [User's Guide](https://tsduck.io/download/docs
 
 All utilities and plugins accept the option `--help` to display their syntax.
 
+TSDuck is developed in C++, using modern C++20 coding practices.
 For programmers, TSDuck provides a large collection of C++ classes in one single library.
 These classes manipulate, in a completely portable way, MPEG transport streams, MPEG/DVB/ATSC/ISDB
 signalization and many other features.

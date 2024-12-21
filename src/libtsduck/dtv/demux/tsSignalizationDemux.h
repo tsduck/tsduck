@@ -732,13 +732,13 @@ namespace ts {
 template<typename T>
 T ts::SignalizationDemux::getPIDContextField(PID pid, const T& no_value, T PIDContext::* field) const
 {
-    auto ctx = _pids.find(pid);
+    const PIDContextMap::const_iterator ctx = _pids.find(pid);
     return ctx == _pids.end() ? no_value : (*ctx->second).*field;
 }
 
 template<typename T>
 T ts::SignalizationDemux::getPIDPointField(PID pid, const T& no_value, PIDPoint PIDContext::* pp, T PIDPoint::* field) const
 {
-    auto ctx = _pids.find(pid);
+    const PIDContextMap::const_iterator ctx = _pids.find(pid);
     return ctx == _pids.end() ? no_value : (*ctx->second).*pp.*field;
 }
