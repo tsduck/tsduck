@@ -59,7 +59,7 @@ file, You can obtain one at http://mozilla.org/MPL/2.0/.
 [[ Windows, the TSDuck binary installers include the LIBRIST binaries.     ]]
 [[ Reference site: https://code.videolan.org/rist/librist                  ]]
 
-Copyright © 2019-2020, VideoLAN and librist authors
+Copyright (c) 2019-2020, VideoLAN and librist authors
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
