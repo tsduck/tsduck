@@ -26,8 +26,8 @@ namespace ts {
         // Public members:
         uint16_t xait_original_network_id = 0;  //!< 16 bits.
         uint16_t xait_service_id = 0;           //!< 16 bits.
-        uint8_t  xait_version_number = 0;       //!< 16 bits.
-        uint8_t  xait_update_policy = 0;        //!< 16 bits.
+        uint8_t  xait_version_number = 0;       //!< 5 bits.
+        uint8_t  xait_update_policy = 0;        //!< 3 bits.
 
         //!
         //! Default constructor.
