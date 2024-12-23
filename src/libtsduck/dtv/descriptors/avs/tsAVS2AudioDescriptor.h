@@ -88,9 +88,6 @@ namespace ts {
         // Inherited methods
         DeclareDisplayDescriptor();
 
-        // Enumerations for XML.
-        static const Enumeration CodingProfiles;    //!< premitted ciding profiles - see
-
         // Inherited methods
         virtual void clearContent() override;
         virtual void serializePayload(PSIBuffer&) const override;

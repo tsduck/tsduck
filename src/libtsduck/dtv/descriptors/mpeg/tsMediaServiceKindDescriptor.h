@@ -79,11 +79,6 @@ namespace ts {
         // Inherited methods
         DeclareDisplayDescriptor();
 
-    private:
-        // Enumerations for XML.
-        static const Enumeration MediaDescriptionFlag;
-        static const Enumeration MediaType;
-
     protected:
         // Inherited methods
         virtual void clearContent() override;

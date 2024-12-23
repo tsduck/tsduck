@@ -344,6 +344,12 @@ const ts::Enumeration ts::AVS3AudioDescriptor::CodingProfiles({
     {u"HOA", 2},
 });
 
+#include "tsSingleton.h"
+TS_STATIC_INSTANCE(const, ts::Enumeration, avsCodingProfiles, ({
+    {u"basic", 0},
+    {u"object", 1},
+    {u"HOA", 2},
+}));
 
 //----------------------------------------------------------------------------
 // XML serialization

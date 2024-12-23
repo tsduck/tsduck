@@ -54,9 +54,6 @@ namespace ts {
         DeclareDisplayDescriptor();
 
     private:
-        // Enumerations for XML.
-        static const Enumeration ChromaSamplePosition;
-
         // provide a textual representation of the subsampling format
         static UString SubsamplingFormat(bool subsampling_x, bool subsampling_y, bool monochrome);
 

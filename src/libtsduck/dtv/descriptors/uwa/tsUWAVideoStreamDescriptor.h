@@ -44,10 +44,6 @@ namespace ts {
         // Inherited methods
         DeclareDisplayDescriptor();
 
-    private:
-        // Enumerations for XML.
-        static const Enumeration VersionNumbers;
-
     protected:
         // Inherited methods
         virtual void clearContent() override;
