@@ -26,6 +26,15 @@ def repo_root():
             raise ValueError('repository directory not found below %s' % dir)
         dir = parent
 
+# Print an error.
+def error(message):
+    print('%s: %s' % (os.path.basename(sys.argv[0]), message), file=sys.stderr)
+
+# Print a fatal error and exit.
+def fatal_error(message):
+    error(message)
+    exit(1)
+
 # Run a command and get stdout+stderr.
 # Need a list of strings as command.
 def run(cmd, err=subprocess.STDOUT, cwd=None):

@@ -143,9 +143,7 @@ CLOC_SOURCES = src
 CLOC_FLAGS   = --skip-uniqueness --quiet --exclude-ext=.tgz,.tar.gz,.tar,.pdf,.pptx,.docx
 .PHONY: cloc
 cloc:
-	@$(CLOC) $(CLOC_FLAGS) $(CLOC_SOURCES) | \
-	    tee /dev/stderr | grep SUM: | awk '{print "Total lines in source files:   " $$3 + $$4 + $$5}'
-	@echo >&2 '-------------------------------------------'
+	@$(CLOC) $(CLOC_FLAGS) $(CLOC_SOURCES)
 
 # Static code analysis: Run Coverity.
 
