@@ -579,8 +579,6 @@ namespace ts {
                     void deserialize(PSIBuffer& buf, bool usable_start_time_flag, bool usable_stop_time_flag);
                     void serialize(PSIBuffer& buf) const;
                     //! @endcond
-                private:
-                    static const Enumeration InterpolationTypes;
                 };
 
                 //!

@@ -12,6 +12,7 @@
 #include "tsPSIRepository.h"
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
+#include "tsSingleton.h"
 #include "tsxmlElement.h"
 
 #define MY_XML_NAME u"Media_service_kind_descriptor"
@@ -192,16 +193,16 @@ void ts::MediaServiceKindDescriptor::DisplayDescriptor(TablesDisplay& disp, cons
 // Enumerations for XML.
 //----------------------------------------------------------------------------
 
-const ts::Enumeration ts::MediaServiceKindDescriptor::MediaDescriptionFlag({
+TS_STATIC_INSTANCE(const, ts::Enumeration, MediaDescriptionFlag, ({
     {u"self",      0},
     {u"associate", 1},
-});
-const ts::Enumeration ts::MediaServiceKindDescriptor::MediaType({
+}));
+TS_STATIC_INSTANCE(const, ts::Enumeration, MediaType, ({
     {u"unknown",   0},
     {u"video",     1},
     {u"audio",     2},
     {u"text/data", 3},
-    });
+}));
 
 //----------------------------------------------------------------------------
 // XML serialization
@@ -211,8 +212,8 @@ void ts::MediaServiceKindDescriptor::buildXML(DuckContext& duck, xml::Element* r
 {
     for (auto msk : media_service_kinds) {
         ts::xml::Element* element = root->addElement(u"media_service_kind");
-        element->setEnumAttribute(MediaDescriptionFlag, u"media_description", msk.media_description_flag);
-        element->setEnumAttribute(MediaType, u"media_type", msk.media_type_idc);
+        element->setEnumAttribute(*MediaDescriptionFlag, u"media_description", msk.media_description_flag);
+        element->setEnumAttribute(*MediaType, u"media_type", msk.media_type_idc);
         if (msk.ID_length_code.has_value() && msk.ID_type.has_value()) {
             element->setIntAttribute(u"ID_length_code", msk.ID_length_code.value());
             element->setIntAttribute(u"ID_type", msk.ID_type.value(), true);
@@ -251,8 +252,8 @@ bool ts::MediaServiceKindDescriptor::analyzeXML(DuckContext& duck, const xml::El
         for (size_t i=0; ok && i<children.size(); i++) {
             media_service_kind_type newMSK;
             int mdf=0, mt=0;
-            ok = children[i]->getEnumAttribute(mdf, MediaDescriptionFlag, u"media_description", true) &&
-                 children[i]->getEnumAttribute(mt, MediaType, u"media_type", true) &&
+            ok = children[i]->getEnumAttribute(mdf, *MediaDescriptionFlag, u"media_description", true) &&
+                 children[i]->getEnumAttribute(mt, *MediaType, u"media_type", true) &&
                  children[i]->getOptionalIntAttribute(newMSK.ID_length_code, u"ID_length_code", 0, 0x7) &&
                  children[i]->getOptionalIntAttribute(newMSK.ID_type, u"ID_type", 0, 0x1FFF);
             newMSK.media_description_flag = uint8_t(mdf);

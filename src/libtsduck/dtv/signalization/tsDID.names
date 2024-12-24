@@ -23,7 +23,7 @@
 #   - 0xrrrrrrrr = DVB private data specifier value (PDS).
 #
 # - Dual private descriptor: Can be used either as private MPEG or private DVB
-#   descriptor. The same 32-bit value is used as MPREG REGID and DVB PDS.
+#   descriptor. The same 32-bit value is used as MPEG REGID and DVB PDS.
 #   - EDID = 0x0003_01_rrrrrrrr_tt
 #   - 0xrrrrrrrr = DVB private data specifier value (PDS).
 #
