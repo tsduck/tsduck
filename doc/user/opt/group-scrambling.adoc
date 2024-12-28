@@ -112,9 +112,15 @@ Each line of the file must contain exactly 16 hexadecimal digits
 (32 digits with `--atis-idsa`, `--dvb-cissa`, `--aes-cbc`, `--aes-ctr`).
 
 [.optdoc]
+During scrambling, the next control word is used at each start of crypto-period.
+At the end of the list of control words, the list is rewound and scrambling restarts with the first one.
+Using the plugin `scrambler`, scheduling crypto-periods and distinct control words is possible only when a service is specified.
+If individual PID's are specifically scrambled, there is no crypto-period and only the first control word of the file is used.
+
+[.optdoc]
 During descrambling, the next control word is used
 each time a new _transport_scrambling_control_ value is found in the header of a TS packet.
-At the end of the list of control words, restart with the first one.
+At the end of the list of control words, the list is rewound and descrambling restarts with the first one.
 
 [.opt]
 *--iv* _hexa-digits_
@@ -140,8 +146,8 @@ This option is ignored with other encryption algorithms.
 [.optdoc]
 Specifies a text file to create with all control words.
 Each line of the file will contain a control word with 16 or 32 hexadecimal digits, depending on the scrambling algorithm.
-Each time a new control word is used to descramble packets, it is logged in the file.
+Each time a new control word is used to scramble or descramble packets, it is logged in the file.
 
 [.optdoc]
-This option is specifically useful when the control words are dynamically extracted from ECM's.
+During scrambling, this option is specifically useful when the control words are dynamically extracted from ECM's.
 The created file can be used later using `--cw-file` to perform a direct descrambling test.

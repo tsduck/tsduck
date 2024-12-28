@@ -15,8 +15,8 @@ DVB scrambler
 This plugin is a DVB scrambler, either using a static control word or using an external ECMG.
 In the latter case, the plugin generates the control words, schedules crypto-periods and inserts ECM's.
 
-The control words are generated using
-the default pseudo-random number generator of the operating system with additional security improvements.
+The control words are generated using the default pseudo-random number generator of the operating system
+with some additional security improvements.
 Although these values are reasonably random, there is no security commitment
 and this scrambler should be used for test purpose only, not for production.
 
@@ -43,13 +43,16 @@ The optional parameter specifies the service to scramble.
 include::{docdir}/opt/optdoc-service.adoc[tags=!*]
 
 [.optdoc]
-If no service is specified, a list of PID's to scramble must be provided using `--pid` options.
-When specific PID's are provided, fixed control words must be specified as well.
-
-[.optdoc]
 If no fixed CW is specified, a random CW is generated for each crypto-period
 and ECM's containing the current and next CW's are created and inserted in the stream.
 ECM's can be created only when a service is specified.
+
+[.optdoc]
+If no service is specified, a list of PID's to scramble must be provided using `--pid` options.
+When specific PID's are provided, a fixed control word must be specified as well.
+Because the concept of crypto-period is closely linked to ECM's and because ECM PID's are defined in a service,
+it is not possible to schedule crypto-periods when specific PID's are provided instead of a service.
+If a file of control-words is specified (option `--cw-file`), only the first control word is used.
 
 [.usage]
 General options
@@ -119,7 +122,13 @@ Specifying higher values is a way to reduce the scrambling CPU load while keepin
 [.optdoc]
 Scramble packets with these PID values.
 Several `--pid` options may be specified.
-By default, scramble the specified service.
+By default, scramble the service which is specified as parameter.
+
+[.optdoc]
+When specific PID's are provided, a fixed control word must be specified as well.
+Because the concept of crypto-period is closely linked to ECM's and because ECM PID's are defined in a service,
+it is not possible to schedule crypto-periods when specific PID's are provided instead of a service.
+If a file of control-words is specified (option `--cw-file`), only the first control word is used.
 
 [.opt]
 *--pid-ecm* _value_

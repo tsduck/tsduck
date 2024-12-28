@@ -222,17 +222,17 @@ ts::ScramblerPlugin::ScramblerPlugin(TSP* tsp_) :
 
     option(u"", 0, STRING, 0, 1);
     help(u"",
-         u"Specifies the optional service to scramble. If no service is specified, a "
-         u"list of PID's to scramble must be provided using --pid options. When PID's "
-         u"are provided, fixed control words must be specified as well.\n\n"
-         u"If no fixed CW is specified, a random CW is generated for each crypto-period "
-         u"and ECM's containing the current and next CW's are created and inserted in "
-         u"the stream. ECM's can be created only when a service is specified.\n\n"
+         u"Specifies the optional service to scramble. "
+         u"If no service is specified, a list of PID's to scramble must be provided using --pid options. "
+         u"When PID's are provided, fixed control words must be specified as well.\n\n"
+         u"If no fixed CW is specified, a random CW is generated for each crypto-period and "
+         u"ECM's containing the current and next CW's are created and inserted in the stream. "
+         u"Crypto-periods and ECM's can be created only when a service is specified.\n\n"
          u"If the argument is an integer value (either decimal or hexadecimal), it is interpreted as a service id. "
          u"If it is an empty string or \"-\", the first service in the PAT is scrambled. "
          u"Otherwise, it is interpreted as a service name, as specified in the SDT. "
          u"The name is not case sensitive and blanks are ignored. "
-         u"If the input TS does not contain an SDT, use service ids only.");
+         u"If the input TS does not contain any SDT or VCT, use service ids only.");
 
     option<BitRate>(u"bitrate-ecm", 'b');
     help(u"bitrate-ecm",
@@ -274,8 +274,9 @@ ts::ScramblerPlugin::ScramblerPlugin(TSP* tsp_) :
 
     option(u"pid", 'p', PIDVAL, 0, UNLIMITED_COUNT);
     help(u"pid", u"pid1[-pid2]",
-         u"Scramble packets with these PID values. Several -p or --pid options may be "
-         u"specified. By default, scramble the specified service.");
+         u"Scramble packets with these PID values. "
+         u"Several -p or --pid options may be specified. "
+         u"By default, scramble the service which is provided as parameter.");
 
     option(u"pid-ecm", 0, PIDVAL);
     help(u"pid-ecm",
