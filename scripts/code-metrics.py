@@ -13,7 +13,7 @@ import tsbuild, sys, os, fnmatch
 
 # A class to hold a file type.
 # If description is None, the file type is to be ignored.
-# Pattern can be a string, or a list of strings.
+# Pattern can be a string or a list of strings.
 class filetype:
     # Constructor.
     def __init__(self, description=None, pattern=None, single_comment=None, open_comment=None, close_comment=None):
@@ -37,17 +37,7 @@ class filetype:
         elif pattern is not None:
             tsbuild.fatal_error('invalid file pattern: %s' % str(pattern))
 
-    # Copy from another instance, reset counters.
-    def copy(other):
-        ftype = filetype()
-        ftype.description = other.description
-        ftype.pattern = other.pattern
-        ftype.single_comment = other.single_comment
-        ftype.open_comment = other.open_comment
-        ftype.close_comment = other.close_comment
-        return ftype
-
-    # Check if a file path matches the file type.
+    # Check if a file path matches one of the file types.
     def match(self, path):
         name = os.path.basename(path)
         for pat in self.pattern:
@@ -69,33 +59,33 @@ class filetype:
     # Display width of description.
     description_header = 'File type'
     description_width = len(description_header)
-    data_width = 10
-    percent_width = 6
-
-    # Display header line.
-    def print_header():
-        print('%-*s  %*s  %*s  %*s  %*s  %*s  %*s  %*s  %*s' %
-              (filetype.description_width, filetype.description_header,
-               filetype.data_width, 'Files',
-               filetype.data_width, 'Blank', filetype.percent_width, '',
-               filetype.data_width, 'Comment', filetype.percent_width, '',
-               filetype.data_width, 'Code', filetype.percent_width, '',
-               filetype.data_width, 'Total'))
-        print('%s  %s  %s  %s  %s  %s  %s  %s  %s' %
-              (filetype.description_width * '-',
-               filetype.data_width * '-',
-               filetype.data_width * '-', filetype.percent_width * ' ',
-               filetype.data_width * '-', filetype.percent_width * ' ',
-               filetype.data_width * '-', filetype.percent_width * ' ',
-               filetype.data_width * '-'))
+    data_width = 9
+    percent_width = 9
 
     # Format a percentage.
     def percent(x, max):
-        return '' if max == 0 else '(%d%%)' % int((100*x)/max)
+        return '' if max == 0 else '%d%%' % int((100*x)/max)
 
-    # Display on one line.
-    def print(self):
-        print('%-*s  %*d  %*d  %*s  %*d  %*s  %*d  %*s  %*d' %
+    # Display header for lines of code.
+    def print_lines_header():
+        print('| %-*s | %*s | %*s | %*s | %*s | %*s | %*s | %*s | %*s |' %
+              (filetype.description_width, filetype.description_header,
+               filetype.data_width, 'Files',
+               filetype.data_width, 'Blank', filetype.percent_width, 'Blank %',
+               filetype.data_width, 'Comment', filetype.percent_width, 'Comment %',
+               filetype.data_width, 'Code', filetype.percent_width, 'Code %',
+               filetype.data_width, 'Total'))
+        print('| %s | %s: | %s: | %s: | %s: | %s: | %s: | %s: | %s: |' %
+              (filetype.description_width * '-',
+               (filetype.data_width - 1) * '-',
+               (filetype.data_width - 1) * '-', (filetype.percent_width - 1) * '-',
+               (filetype.data_width - 1) * '-', (filetype.percent_width - 1) * '-',
+               (filetype.data_width - 1) * '-', (filetype.percent_width - 1) * '-',
+               (filetype.data_width - 1) * '-'))
+
+    # Display lines of code on one line.
+    def print_lines(self):
+        print('| %-*s | %*d | %*d | %*s | %*d | %*s | %*d | %*s | %*d |' %
               (filetype.description_width, self.description,
                filetype.data_width, self.files,
                filetype.data_width, self.blank_lines,
@@ -105,6 +95,32 @@ class filetype:
                filetype.data_width, self.code_lines,
                filetype.percent_width, filetype.percent(self.code_lines, self.total_lines),
                filetype.data_width, self.total_lines))
+
+    # Display header for characters of code.
+    def print_chars_header():
+        print('| %-*s | %*s | %*s | %*s | %*s | %*s | %*s |' %
+              (filetype.description_width, filetype.description_header,
+               filetype.data_width, 'Files',
+               filetype.data_width, 'Comment', filetype.percent_width, 'Comment %',
+               filetype.data_width, 'Code', filetype.percent_width, 'Code %',
+               filetype.data_width, 'Total'))
+        print('| %s | %s: | %s: | %s: | %s: | %s: | %s: |' %
+              (filetype.description_width * '-',
+               (filetype.data_width - 1) * '-',
+               (filetype.data_width - 1) * '-', (filetype.percent_width - 1) * '-',
+               (filetype.data_width - 1) * '-', (filetype.percent_width - 1) * '-',
+               (filetype.data_width - 1) * '-'))
+
+    # Display characters of code on one line.
+    def print_chars(self):
+        print('| %-*s | %*d | %*d | %*s | %*d | %*s | %*d |' %
+              (filetype.description_width, self.description,
+               filetype.data_width, self.files,
+               filetype.data_width, self.comment_chars,
+               filetype.percent_width, filetype.percent(self.comment_chars, self.total_chars),
+               filetype.data_width, self.code_chars,
+               filetype.percent_width, filetype.percent(self.code_chars, self.total_chars),
+               filetype.data_width, self.total_chars))
 
     # Process one source file.
     def process_file(self, path):
@@ -194,7 +210,7 @@ class filetype:
                     self.comment_chars += end - start
                         
 # Results by type appear in this order.
-files_total = filetype('Total')
+# Files and directories with None as description are ignored.
 files_order = [
     filetype('C++ code',      '*.cpp', '//', '/*', '*/'),
     filetype('C++ header',    '*.h', '//', '/*', '*/'),
@@ -217,21 +233,8 @@ files_order = [
     filetype('Asciidoc',      '*.adoc', '//'),
     filetype('Doxygen',       ['Doxyfile*', '*.dox'], '#'),
     filetype('Packaging',     ['*.nsi', '*.control', '*.spec', '*.perms', '*.rules', '*.pc', 'Dockerfile*'], '#'),
-    filetype(None,            '.git'),
-    filetype(None,            '__pycache__'),
-    filetype(None,            'bin'),
-    filetype(None,            'installers'),
-    filetype(None,            'build'),
-    filetype(None,            '*.xlsx'),
-    filetype(None,            '*.pptx'),
-    filetype(None,            '*.pdf'),
-    filetype(None,            '*.bin'),
-    filetype(None,            '*.ts'),
-    filetype(None,            '*.xcf'),
-    filetype(None,            '*.png'),
-    filetype(None,            '*.ico'),
-    filetype(None,            '*.arch-*'),
-    filetype(None,            '*.user')
+    filetype(None,            ['.git', '__pycache__', 'bin', 'installers', 'build']),
+    filetype(None,            ['*.xlsx', '*.pptx', '*.pdf', '*.bin', '*.ts', '*.xcf', '*.png', '*.ico', '*.arch-*', '*.user'])
 ]
 
 # Process all files in a directory of the project.
@@ -248,22 +251,38 @@ def process_directory(root):
             process_directory(path)
         elif ftype is None:
             tsbuild.error('unknown file type: %s' % path)
-        elif ftype.description is None:
-            pass # ignore that file
-        else:
-            # Process the file.
-            ft = filetype.copy(ftype)
-            ft.process_file(path)
-            ftype.add(ft)
-            files_total.add(ft)
+        elif ftype.description is not None:
+            ftype.process_file(path)
 
 # Main code.
 if __name__ == '__main__':
     process_directory(tsbuild.repo_root())
+    files_total = filetype('Total')
+    files_cpp = filetype('C++')
+    for ft in files_order:
+        files_total.add(ft)
+        if isinstance(ft.description, str) and ft.description.startswith(files_cpp.description):
+            files_cpp.add(ft)
     filetype.description_width = max(filetype.description_width, len(files_total.description))
     filetype.description_width = max(filetype.description_width, max([len(ft.description) for ft in files_order if ft.description is not None]))
-    filetype.print_header()
+    print('## TSDuck Code Metrics')
+    print()
+    print('Version %s.%s-%s' % tsbuild.version())
+    print()
+    print('### Lines of code')
+    print()
+    filetype.print_lines_header()
+    files_total.print_lines()
+    files_cpp.print_lines()
     for ft in files_order:
         if ft.description is not None and ft.total_lines > 0:
-            ft.print()
-    files_total.print()
+            ft.print_lines()
+    print()
+    print('### Characters of code')
+    print()
+    filetype.print_chars_header()
+    files_total.print_chars()
+    files_cpp.print_chars()
+    for ft in files_order:
+        if ft.description is not None and ft.total_chars > 0:
+            ft.print_chars()
