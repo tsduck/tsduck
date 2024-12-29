@@ -86,7 +86,7 @@ namespace ts {
 // Name of the section which define names for the keys in the map.
 template<typename KEY, typename VALUE, const ts::UString* KEYNAMESECTION, ts::NamesFile::Predefined NAMESFILE>
     requires std::integral<KEY> && std::integral<VALUE>
-const ts::UString& ts::IntegerMap<KEY,VALUE,KEYNAMESECTION,NAMESFILE>::KEY_NAMES_SECTION(KEYNAMESECTION == nullptr ? *EMPTY_STRING : *KEYNAMESECTION);
+const ts::UString& ts::IntegerMap<KEY,VALUE,KEYNAMESECTION,NAMESFILE>::KEY_NAMES_SECTION(KEYNAMESECTION == nullptr ? UString::EMPTY() : *KEYNAMESECTION);
 
 // Accumulate all values from another map.
 template<typename KEY, typename VALUE, const ts::UString* KEYNAMESECTION, ts::NamesFile::Predefined NAMESFILE>

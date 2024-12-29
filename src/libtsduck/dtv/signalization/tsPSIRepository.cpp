@@ -16,9 +16,6 @@
 
 TS_DEFINE_SINGLETON(ts::PSIRepository);
 
-TS_STATIC_INSTANCE(const, ts::PSIRepository::TableClass, NullTableClass, ());
-TS_STATIC_INSTANCE(const, ts::PSIRepository::DescriptorClass, NullDescriptorClass, ());
-
 
 //----------------------------------------------------------------------------
 // Repository singleton constructor.
@@ -343,7 +340,14 @@ const ts::PSIRepository::TableClass& ts::PSIRepository::getTable(TID tid, const 
     }
 
     // If no exact match was found, use a fallback if there is only one (no ambiguity).
-    return fallback_count == 1 ? *fallback : *NullTableClass;
+    if (fallback_count == 1) {
+        return *fallback;
+    }
+    else {
+        // Thread-safe init-safe static data pattern:
+        static const TableClass null_table_class;
+        return null_table_class;
+    }
 }
 
 
@@ -353,12 +357,15 @@ const ts::PSIRepository::TableClass& ts::PSIRepository::getTable(TID tid, const 
 
 const ts::PSIRepository::DescriptorClass& ts::PSIRepository::getDescriptor(EDID edid) const
 {
+    // Thread-safe init-safe static data pattern:
+    static const DescriptorClass null_descriptor_class;
+
     // Get the range of XDID entries for this family of descriptors.
     const auto bounds(_descriptors_by_xdid.equal_range(edid.xdid()));
 
     // If the bounds are equal, no element matches, unknown descritor.
     if (bounds.first == bounds.second) {
-        return *NullDescriptorClass;
+        return null_descriptor_class;
     }
 
     // If there is only one descriptor, use it without further analysis.
@@ -373,7 +380,9 @@ const ts::PSIRepository::DescriptorClass& ts::PSIRepository::getDescriptor(EDID 
             return *next->second;
         }
     }
-    return *NullDescriptorClass; // ambiguous descriptor
+
+    // Ambiguous descriptor.
+    return null_descriptor_class;
 }
 
 
@@ -383,12 +392,15 @@ const ts::PSIRepository::DescriptorClass& ts::PSIRepository::getDescriptor(EDID 
 
 const ts::PSIRepository::DescriptorClass& ts::PSIRepository::getDescriptor(XDID xdid, DescriptorContext& context) const
 {
+    // Thread-safe init-safe static data pattern:
+    static const DescriptorClass null_descriptor_class;
+
     // Get the range of XDID entries for this family of descriptors.
     const auto bounds(_descriptors_by_xdid.equal_range(xdid));
 
     // If the bounds are equal, no element matches, unknown descritor.
     if (bounds.first == bounds.second) {
-        return *NullDescriptorClass;
+        return null_descriptor_class;
     }
 
     // Immediately get TID and standards from the context.
@@ -454,7 +466,7 @@ const ts::PSIRepository::DescriptorClass& ts::PSIRepository::getDescriptor(XDID 
 
     // No private descriptor found. If there is exactly one regular match, we keep it.
     // Otherwise, there is either nothing found or some ambiguity.
-    return match_count == 1 ? *match : *NullDescriptorClass;
+    return match_count == 1 ? *match : null_descriptor_class;
 }
 
 
@@ -466,7 +478,10 @@ const ts::PSIRepository::DescriptorClass& ts::PSIRepository::getDescriptor(std::
 {
     const auto bounds(_descriptors_by_type_index.equal_range(index));
     if (bounds.first == bounds.second) {
-        return *NullDescriptorClass; // not found
+        // Descriptor class not found.
+        // Thread-safe init-safe static data pattern:
+        static const DescriptorClass null_descriptor_class;
+        return null_descriptor_class;
     }
     if (tid != TID_NULL) {
         for (auto next = bounds.first; next != bounds.second; ++next) {
@@ -487,13 +502,27 @@ const ts::PSIRepository::DescriptorClass& ts::PSIRepository::getDescriptor(std::
 const ts::PSIRepository::TableClass& ts::PSIRepository::getTable(const UString& xml_name) const
 {
     const auto it = xml_name.findSimilar(_tables_by_xml_name);
-    return it != _tables_by_xml_name.end() ? *it->second : *NullTableClass;
+    if (it != _tables_by_xml_name.end()) {
+        return *it->second;
+    }
+    else {
+        // Thread-safe init-safe static data pattern:
+        static const TableClass null_table_class;
+        return null_table_class;
+    }
 }
 
 const ts::PSIRepository::DescriptorClass& ts::PSIRepository::getDescriptor(const UString& xml_name) const
 {
     const auto it = xml_name.findSimilar(_descriptors_by_xml_name);
-    return it != _descriptors_by_xml_name.end() ? *it->second : *NullDescriptorClass;
+    if (it != _descriptors_by_xml_name.end()) {
+        return *it->second;
+    }
+    else {
+        // Thread-safe init-safe static data pattern:
+        static const DescriptorClass null_descriptor_class;
+        return null_descriptor_class;
+    }
 }
 
 ts::DisplayCADescriptorFunction ts::PSIRepository::getCADescriptorDisplay(CASID cas_id) const

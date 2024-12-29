@@ -369,11 +369,16 @@ void ts::LinkageDescriptor::DisplayPrivateDeferredINT(TablesDisplay& disp, PSIBu
 
 
 //----------------------------------------------------------------------------
-// Enumerations for XML.
+// Thread-safe init-safe static data patterns.
 //----------------------------------------------------------------------------
 
-namespace {
-    const ts::Enumeration OriginTypeNames({{u"NIT", 0}, {u"SDT", 1}});
+const ts::Enumeration& ts::LinkageDescriptor::OriginTypeNames()
+{
+    static const Enumeration data({
+        {u"NIT", 0},
+        {u"SDT", 1}
+    });
+    return data;
 }
 
 
@@ -391,7 +396,7 @@ void ts::LinkageDescriptor::buildXML(DuckContext& duck, xml::Element* root) cons
     if (linkage_type == LINKAGE_HAND_OVER) {
         xml::Element* e = root->addElement(u"mobile_handover_info");
         e->setIntAttribute(u"handover_type", mobile_handover_info.handover_type, true);
-        e->setEnumAttribute(OriginTypeNames, u"origin_type", mobile_handover_info.origin_type);
+        e->setEnumAttribute(OriginTypeNames(), u"origin_type", mobile_handover_info.origin_type);
         if (mobile_handover_info.handover_type >= 1 && mobile_handover_info.handover_type <= 3) {
             e->setIntAttribute(u"network_id", mobile_handover_info.network_id, true);
         }
@@ -463,11 +468,11 @@ bool ts::LinkageDescriptor::analyzeXML(DuckContext& duck, const xml::Element* el
 
     if (ok && !mobileElements.empty()) {
         ok = mobileElements[0]->getIntAttribute(mobile_handover_info.handover_type, u"handover_type", true, 0, 0, 0x0F) &&
-             mobileElements[0]->getEnumAttribute(mobile_handover_info.origin_type, OriginTypeNames, u"origin_type", true) &&
+             mobileElements[0]->getEnumAttribute(mobile_handover_info.origin_type, OriginTypeNames(), u"origin_type", true) &&
              mobileElements[0]->getIntAttribute(mobile_handover_info.network_id, u"network_id",
-                                                          mobile_handover_info.handover_type >= 1 && mobile_handover_info.handover_type <= 3) &&
+                                                mobile_handover_info.handover_type >= 1 && mobile_handover_info.handover_type <= 3) &&
              mobileElements[0]->getIntAttribute(mobile_handover_info.initial_service_id, u"initial_service_id",
-                                                          mobile_handover_info.origin_type == 0x00);
+                                                mobile_handover_info.origin_type == 0x00);
     }
 
     if (ok && !eventElements.empty()) {

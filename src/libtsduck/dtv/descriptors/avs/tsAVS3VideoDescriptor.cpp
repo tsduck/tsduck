@@ -13,26 +13,12 @@
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
-#include "tsSingleton.h"
 
 #define MY_XML_NAME u"AVS3_video_descriptor"
 #define MY_CLASS    ts::AVS3VideoDescriptor
 #define MY_EDID     ts::EDID::PrivateDual(ts::DID_AVS3_VIDEO, ts::PDS_AVSVideo)
 
 TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
-
-// T/AI 109.2 Table B.1
-TS_STATIC_INSTANCE(const, std::set<uint8_t>, VALID_PROFILE_IDS, ({
-    0x20, 0x22, 0x30, 0x32
-}));
-
-// T/AI 109.2 Table B.2
-TS_STATIC_INSTANCE(const, std::set<uint8_t>, VALID_LEVEL_IDS, ({
-    0x10, 0x12, 0x14, 0x20, 0x22,
-    0x40, 0x42, 0x41, 0x43, 0x44, 0x46, 0x45, 0x47, 0x48, 0x4a, 0x49, 0x4b,
-    0x50, 0x52, 0x51, 0x53, 0x54, 0x56, 0x55, 0x57, 0x58, 0x5a, 0x59, 0x5b,
-    0x60, 0x62, 0x61, 0x63, 0x64, 0x66, 0x65, 0x67, 0x68, 0x6a, 0x69, 0x6b
-}));
 
 
 //----------------------------------------------------------------------------
@@ -171,6 +157,19 @@ void ts::AVS3VideoDescriptor::buildXML(DuckContext& duck, xml::Element* root) co
 
 bool ts::AVS3VideoDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
+    // T/AI 109.2 Table B.1
+    static const std::set<uint8_t> VALID_PROFILE_IDS {
+        0x20, 0x22, 0x30, 0x32
+    };
+
+    // T/AI 109.2 Table B.2
+    static const std::set<uint8_t> VALID_LEVEL_IDS {
+        0x10, 0x12, 0x14, 0x20, 0x22,
+        0x40, 0x42, 0x41, 0x43, 0x44, 0x46, 0x45, 0x47, 0x48, 0x4a, 0x49, 0x4b,
+        0x50, 0x52, 0x51, 0x53, 0x54, 0x56, 0x55, 0x57, 0x58, 0x5a, 0x59, 0x5b,
+        0x60, 0x62, 0x61, 0x63, 0x64, 0x66, 0x65, 0x67, 0x68, 0x6a, 0x69, 0x6b
+    };
+
     bool ok =
         element->getIntAttribute(profile_id, u"profile_id", true, 0, 0x20, 0x32) &&
         element->getIntAttribute(level_id, u"level_id", true, 0, 0x10, 0x6B) &&
@@ -186,11 +185,11 @@ bool ts::AVS3VideoDescriptor::analyzeXML(DuckContext& duck, const xml::Element* 
         element->getIntAttribute(transfer_characteristics, u"transfer_characteristics", true, 0, 1, 14) &&
         element->getIntAttribute(matrix_coefficients, u"matrix_coefficients", true, 0, 1, 9); // although 3 is 'reserved'
 
-    if (!VALID_PROFILE_IDS->contains(profile_id)) {
+    if (!VALID_PROFILE_IDS.contains(profile_id)) {
         element->report().error(u"'%d' is not a valid profile_id in <%s>, line %d", profile_id, element->name(), element->lineNumber());
         ok = false;
     }
-    if (!VALID_LEVEL_IDS->contains(level_id)) {
+    if (!VALID_LEVEL_IDS.contains(level_id)) {
         element->report().error(u"'%d' is not a valid level_id in <%s>, line %d", level_id, element->name(), element->lineNumber());
         ok = false;
     }

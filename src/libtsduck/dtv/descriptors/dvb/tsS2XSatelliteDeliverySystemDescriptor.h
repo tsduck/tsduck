@@ -81,10 +81,6 @@ namespace ts {
         virtual bool analyzeXML(DuckContext&, const xml::Element*) override;
 
     private:
-        friend class S2Xv2SatelliteDeliverySystemDescriptor;
-        // Enumerations for XML.
-        static const Enumeration RollOffNames;
-
         // Serialization / deserialization of a channel description.
         void serializeChannel(const Channel&, PSIBuffer&) const;
         void deserializeChannel(Channel&, PSIBuffer&);

@@ -14,7 +14,6 @@
 
 #pragma once
 #include "tsEnumeration.h"
-#include "tsSingleton.h"
 
 namespace ts {
     //!
@@ -31,8 +30,9 @@ namespace ts {
 
     //!
     //! Enumeration description of running status values.
+    //! @return A constant reference to the enumeration description.
     //!
-    TS_DECLARE_GLOBAL(const, Enumeration, RunningStatusEnum);
+    TSDUCKDLL const Enumeration& RunningStatusEnum();
 
     //!
     //! Scrambling mode values (in scrambling_descriptor)

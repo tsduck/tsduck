@@ -12,12 +12,11 @@
 #include "tsPSIRepository.h"
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
-#include "tsSingleton.h"
 #include "tsxmlElement.h"
 
 #define MY_XML_NAME u"AV1_video_descriptor"
 #define MY_CLASS    ts::AV1VideoDescriptor
-#define MY_EDID    ts::EDID::PrivateMPEG(ts::DID_AOM_AV1_VIDEO, ts::REGID_AOM)
+#define MY_EDID     ts::EDID::PrivateMPEG(ts::DID_AOM_AV1_VIDEO, ts::REGID_AOM)
 #define MY_EDID_2   ts::EDID::PrivateDVB(ts::DID_AOM_AV1_VIDEO, ts::PDS_AOM)
 
 // This descriptor uses distinct MPEG REGID and DVB PDS.
@@ -174,14 +173,18 @@ void ts::AV1VideoDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::De
 
 
 //----------------------------------------------------------------------------
-// Enumerations for XML.
+// Thread-safe init-safe static data patterns.
 //----------------------------------------------------------------------------
 
-TS_STATIC_INSTANCE(const, ts::Enumeration, ChromaSamplePosition, ({
-    {u"unknown", 0},
-    {u"vertical", 1},
-    {u"colocated", 2},
-}));
+const ts::Enumeration& ts::AV1VideoDescriptor::ChromaSamplePosition()
+{
+    static const Enumeration data({
+        {u"unknown", 0},
+        {u"vertical", 1},
+        {u"colocated", 2},
+    });
+    return data;
+}
 
 
 //----------------------------------------------------------------------------
@@ -199,7 +202,7 @@ void ts::AV1VideoDescriptor::buildXML(DuckContext& duck, xml::Element* root) con
     root->setBoolAttribute(u"monochrome", monochrome);
     root->setBoolAttribute(u"chroma_subsampling_x", chroma_subsampling_x);
     root->setBoolAttribute(u"chroma_subsampling_y", chroma_subsampling_y);
-    root->setEnumAttribute(*ChromaSamplePosition, u"chroma_sample_position", chroma_sample_position);
+    root->setEnumAttribute(ChromaSamplePosition(), u"chroma_sample_position", chroma_sample_position);
     root->setIntAttribute(u"HDR_WCG_idc", HDR_WCG_idc);
     root->setOptionalIntAttribute(u"initial_presentation_delay_minus_one", initial_presentation_delay_minus_one);
 }
@@ -222,7 +225,7 @@ bool ts::AV1VideoDescriptor::analyzeXML(DuckContext& duck, const xml::Element* e
         element->getBoolAttribute(monochrome, u"monochrome", true) &&
         element->getBoolAttribute(chroma_subsampling_x, u"chroma_subsampling_x", true) &&
         element->getBoolAttribute(chroma_subsampling_y, u"chroma_subsampling_y", true) &&
-        element->getEnumAttribute(csp, *ChromaSamplePosition, u"chroma_sample_position", true, 0) &&
+        element->getEnumAttribute(csp, ChromaSamplePosition(), u"chroma_sample_position", true, 0) &&
         element->getIntAttribute(HDR_WCG_idc, u"HDR_WCG_idc", true, 3, 0, 3) &&
         element->getOptionalIntAttribute(initial_presentation_delay_minus_one, u"initial_presentation_delay_minus_one", 0, 0xF);
     chroma_sample_position = uint8_t(csp);

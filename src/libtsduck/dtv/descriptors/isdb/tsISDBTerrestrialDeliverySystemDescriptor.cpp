@@ -12,7 +12,6 @@
 #include "tsPSIRepository.h"
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
-#include "tsSingleton.h"
 #include "tsxmlElement.h"
 
 #define MY_XML_NAME u"ISDB_terrestrial_delivery_system_descriptor"
@@ -47,33 +46,53 @@ ts::ISDBTerrestrialDeliverySystemDescriptor::ISDBTerrestrialDeliverySystemDescri
 
 
 //----------------------------------------------------------------------------
-// Translate the binary values in transmission_mode or guard_interval.
+// Thread-safe init-safe static data patterns.
 //----------------------------------------------------------------------------
 
-using ToTransmissionModeMap = std::map<int, ts::TransmissionMode>;
-using ToGuardIntervalMap = std::map<int, ts::GuardInterval>;
-
-TS_STATIC_INSTANCE(const, ToTransmissionModeMap, ToTransmissionMode, ({
-    {0, ts::TM_2K}, // Mode 1
-    {1, ts::TM_4K}, // Mode 2
-    {2, ts::TM_8K}, // Mode 3
-}));
-
-TS_STATIC_INSTANCE(const, ToGuardIntervalMap, ToGuardInterval, ({
-    {0, ts::GUARD_1_32},
-    {1, ts::GUARD_1_16},
-    {2, ts::GUARD_1_8},
-    {3, ts::GUARD_1_4},
-}));
-
-ts::TransmissionMode ts::ISDBTerrestrialDeliverySystemDescriptor::getTransmissionMode() const
+const std::map<int, ts::TransmissionMode>& ts::ISDBTerrestrialDeliverySystemDescriptor::ToTransmissionMode()
 {
-    return translate(transmission_mode, *ToTransmissionMode, TM_AUTO);
+    static const std::map<int, TransmissionMode> data {
+        {0, TM_2K}, // Mode 1
+        {1, TM_4K}, // Mode 2
+        {2, TM_8K}, // Mode 3
+    };
+    return data;
 }
 
-ts::GuardInterval ts::ISDBTerrestrialDeliverySystemDescriptor::getGuardInterval() const
+const std::map<int, ts::GuardInterval>& ts::ISDBTerrestrialDeliverySystemDescriptor::ToGuardInterval()
 {
-    return translate(guard_interval, *ToGuardInterval, GUARD_AUTO);
+    static const std::map<int, GuardInterval> data {
+        {0, GUARD_1_32},
+        {1, GUARD_1_16},
+        {2, GUARD_1_8},
+        {3, GUARD_1_4},
+    };
+    return data;
+}
+
+const ts::Enumeration& ts::ISDBTerrestrialDeliverySystemDescriptor::GuardIntervalNames()
+{
+    static const Enumeration data({
+        {u"1/32", 0},
+        {u"1/16", 1},
+        {u"1/8",  2},
+        {u"1/4",  3},
+    });
+    return data;
+}
+
+const ts::Enumeration& ts::ISDBTerrestrialDeliverySystemDescriptor::TransmissionModeNames()
+{
+    static const Enumeration data({
+        {u"2k",        0},
+        {u"mode1",     0},
+        {u"4k",        1},
+        {u"mode2",     1},
+        {u"8k",        2},
+        {u"mode3",     2},
+        {u"undefined", 3},
+    });
+    return data;
 }
 
 
@@ -108,28 +127,6 @@ void ts::ISDBTerrestrialDeliverySystemDescriptor::deserializePayload(PSIBuffer& 
 
 
 //----------------------------------------------------------------------------
-// Enumerations in XML data.
-//----------------------------------------------------------------------------
-
-TS_STATIC_INSTANCE(const, ts::Enumeration, GuardIntervalNames, ({
-    {u"1/32", 0},
-    {u"1/16", 1},
-    {u"1/8",  2},
-    {u"1/4",  3},
-}));
-
-TS_STATIC_INSTANCE(const, ts::Enumeration, TransmissionModeNames, ({
-    {u"2k",        0},
-    {u"mode1",     0},
-    {u"4k",        1},
-    {u"mode2",     1},
-    {u"8k",        2},
-    {u"mode3",     2},
-    {u"undefined", 3},
-}));
-
-
-//----------------------------------------------------------------------------
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
@@ -139,8 +136,8 @@ void ts::ISDBTerrestrialDeliverySystemDescriptor::DisplayDescriptor(TablesDispla
         disp << margin << UString::Format(u"Area code: 0x%3X (%<d)", buf.getBits<uint16_t>(12)) << std::endl;
         const uint8_t guard = buf.getBits<uint8_t>(2);
         const uint8_t mode = buf.getBits<uint8_t>(2);
-        disp << margin << UString::Format(u"Guard interval: %d (%s)", guard, GuardIntervalNames->name(guard)) << std::endl;
-        disp << margin << UString::Format(u"Transmission mode: %d (%s)", mode, TransmissionModeNames->name(mode)) << std::endl;
+        disp << margin << UString::Format(u"Guard interval: %d (%s)", guard, GuardIntervalNames().name(guard)) << std::endl;
+        disp << margin << UString::Format(u"Transmission mode: %d (%s)", mode, TransmissionModeNames().name(mode)) << std::endl;
     }
     while (buf.canReadBytes(2)) {
         disp << margin << UString::Format(u"Frequency: %'d Hz", BinToHz(buf.getUInt16())) << std::endl;
@@ -155,8 +152,8 @@ void ts::ISDBTerrestrialDeliverySystemDescriptor::DisplayDescriptor(TablesDispla
 void ts::ISDBTerrestrialDeliverySystemDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"area_code", area_code, true);
-    root->setEnumAttribute(*GuardIntervalNames, u"guard_interval", guard_interval);
-    root->setEnumAttribute(*TransmissionModeNames, u"transmission_mode", transmission_mode);
+    root->setEnumAttribute(GuardIntervalNames(), u"guard_interval", guard_interval);
+    root->setEnumAttribute(TransmissionModeNames(), u"transmission_mode", transmission_mode);
     for (auto it : frequencies) {
         root->addElement(u"frequency")->setIntAttribute(u"value", it, false);
     }
@@ -172,8 +169,8 @@ bool ts::ISDBTerrestrialDeliverySystemDescriptor::analyzeXML(DuckContext& duck, 
     xml::ElementVector xfreq;
     bool ok =
         element->getIntAttribute(area_code, u"area_code", true, 0, 0, 0x0FFF) &&
-        element->getEnumAttribute(guard_interval, *GuardIntervalNames, u"guard_interval", true) &&
-        element->getEnumAttribute(transmission_mode, *TransmissionModeNames, u"transmission_mode", true) &&
+        element->getEnumAttribute(guard_interval, GuardIntervalNames(), u"guard_interval", true) &&
+        element->getEnumAttribute(transmission_mode, TransmissionModeNames(), u"transmission_mode", true) &&
         element->getChildren(xfreq, u"frequency", 0, 126);
 
     for (auto it = xfreq.begin(); ok && it != xfreq.end(); ++it) {

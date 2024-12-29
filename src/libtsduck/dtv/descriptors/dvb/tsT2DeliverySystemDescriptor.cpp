@@ -136,15 +136,21 @@ void ts::T2DeliverySystemDescriptor::deserializePayload(PSIBuffer& buf)
 
 
 //----------------------------------------------------------------------------
-// Enumerations for XML and disp.
+// Thread-safe init-safe static data patterns.
 //----------------------------------------------------------------------------
 
-namespace {
-    const ts::Enumeration SisoNames({
+const ts::Enumeration& ts::T2DeliverySystemDescriptor::SisoNames()
+{
+    static const Enumeration data({
         {u"SISO", 0},
         {u"MISO", 1},
     });
-    const ts::Enumeration BandwidthNames({
+    return data;
+}
+
+const ts::Enumeration& ts::T2DeliverySystemDescriptor::BandwidthNames()
+{
+    static const Enumeration data({
         {u"8MHz",     0},
         {u"7MHz",     1},
         {u"6MHz",     2},
@@ -152,7 +158,11 @@ namespace {
         {u"10MHz",    4},
         {u"1.712MHz", 5},
     });
-    const ts::Enumeration GuardIntervalNames({
+    return data;
+}
+const ts::Enumeration& ts::T2DeliverySystemDescriptor::GuardIntervalNames()
+{
+    static const Enumeration data({
         {u"1/32",   0},
         {u"1/16",   1},
         {u"1/8",    2},
@@ -161,7 +171,11 @@ namespace {
         {u"19/128", 5},
         {u"19/256", 6},
     });
-    const ts::Enumeration TransmissionModeNames({
+    return data;
+}
+const ts::Enumeration& ts::T2DeliverySystemDescriptor::TransmissionModeNames()
+{
+    static const Enumeration data({
         {u"2k",  0},
         {u"8k",  1},
         {u"4k",  2},
@@ -169,6 +183,7 @@ namespace {
         {u"16k", 4},
         {u"32k", 5},
     });
+    return data;
 }
 
 
@@ -183,11 +198,11 @@ void ts::T2DeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp, cons
         disp << UString::Format(u", T2 system id: %n", buf.getUInt16()) << std::endl;
 
         if (buf.canReadBytes(2)) {
-            disp << margin << "SISO/MISO: " << SisoNames.name(buf.getBits<uint8_t>(2)) << std::endl;
-            disp << margin << "Bandwidth: " << BandwidthNames.name(buf.getBits<uint8_t>(4)) << std::endl;
+            disp << margin << "SISO/MISO: " << SisoNames().name(buf.getBits<uint8_t>(2)) << std::endl;
+            disp << margin << "Bandwidth: " << BandwidthNames().name(buf.getBits<uint8_t>(4)) << std::endl;
             buf.skipBits(2);
-            disp << margin << "Guard interval: " << GuardIntervalNames.name(buf.getBits<uint8_t>(3)) << std::endl;
-            disp << margin << "Transmission mode: " << TransmissionModeNames.name(buf.getBits<uint8_t>(3)) << std::endl;
+            disp << margin << "Guard interval: " << GuardIntervalNames().name(buf.getBits<uint8_t>(3)) << std::endl;
+            disp << margin << "Transmission mode: " << TransmissionModeNames().name(buf.getBits<uint8_t>(3)) << std::endl;
             disp << margin << UString::Format(u"Other frequency: %s", buf.getBool()) << std::endl;
             const bool tfs = buf.getBool();
             disp << margin << UString::Format(u"TFS arrangement: %s", tfs) << std::endl;
@@ -226,10 +241,10 @@ void ts::T2DeliverySystemDescriptor::buildXML(DuckContext& duck, xml::Element* r
     root->setIntAttribute(u"T2_system_id", T2_system_id, true);
     if (has_extension) {
         xml::Element* ext = root->addElement(u"extension");
-        ext->setEnumAttribute(SisoNames, u"SISO_MISO", SISO_MISO);
-        ext->setEnumAttribute(BandwidthNames, u"bandwidth", bandwidth);
-        ext->setEnumAttribute(GuardIntervalNames, u"guard_interval", guard_interval);
-        ext->setEnumAttribute(TransmissionModeNames, u"transmission_mode", transmission_mode);
+        ext->setEnumAttribute(SisoNames(), u"SISO_MISO", SISO_MISO);
+        ext->setEnumAttribute(BandwidthNames(), u"bandwidth", bandwidth);
+        ext->setEnumAttribute(GuardIntervalNames(), u"guard_interval", guard_interval);
+        ext->setEnumAttribute(TransmissionModeNames(), u"transmission_mode", transmission_mode);
         ext->setBoolAttribute(u"other_frequency", other_frequency);
         ext->setBoolAttribute(u"tfs", tfs);
         for (const auto& it1 : cells) {
@@ -264,10 +279,10 @@ bool ts::T2DeliverySystemDescriptor::analyzeXML(DuckContext& duck, const xml::El
 
     if (has_extension) {
         xml::ElementVector xcells;
-        ok = ext[0]->getEnumAttribute(SISO_MISO, SisoNames, u"SISO_MISO", true) &&
-             ext[0]->getEnumAttribute(bandwidth, BandwidthNames, u"bandwidth", true) &&
-             ext[0]->getEnumAttribute(guard_interval, GuardIntervalNames, u"guard_interval", true) &&
-             ext[0]->getEnumAttribute(transmission_mode, TransmissionModeNames, u"transmission_mode", true) &&
+        ok = ext[0]->getEnumAttribute(SISO_MISO, SisoNames(), u"SISO_MISO", true) &&
+             ext[0]->getEnumAttribute(bandwidth, BandwidthNames(), u"bandwidth", true) &&
+             ext[0]->getEnumAttribute(guard_interval, GuardIntervalNames(), u"guard_interval", true) &&
+             ext[0]->getEnumAttribute(transmission_mode, TransmissionModeNames(), u"transmission_mode", true) &&
              ext[0]->getBoolAttribute(other_frequency, u"other_frequency", true) &&
              ext[0]->getBoolAttribute(tfs, u"tfs", true) &&
              ext[0]->getChildren(xcells, u"cell");

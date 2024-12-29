@@ -22,24 +22,6 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescript
 
 
 //----------------------------------------------------------------------------
-// Definition of names for cue stream types.
-//----------------------------------------------------------------------------
-
-TS_STATIC_INSTANCE(const, ts::Enumeration, CueStreamTypeEnum, ({
-    {u"insert_null_schedule", 0x00},
-    {u"all",                  0x01},
-    {u"segmentation",         0x02},
-    {u"tiered_splicing",      0x03},
-    {u"tiered_segmentation",  0x04},
-}));
-
-const ts::Enumeration& ts::CueIdentifierDescriptor::CueStreamTypeNames()
-{
-    return *CueStreamTypeEnum;
-}
-
-
-//----------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------
 
@@ -77,6 +59,24 @@ void ts::CueIdentifierDescriptor::deserializePayload(PSIBuffer& buf)
 
 
 //----------------------------------------------------------------------------
+// Definition of names for cue stream types.
+//----------------------------------------------------------------------------
+
+const ts::Enumeration& ts::CueIdentifierDescriptor::CueStreamTypeNames()
+{
+    // Thread-safe init-safe static data patterns.
+    static const Enumeration data({
+        {u"insert_null_schedule", 0x00},
+        {u"all",                  0x01},
+        {u"segmentation",         0x02},
+        {u"tiered_splicing",      0x03},
+        {u"tiered_segmentation",  0x04},
+    });
+    return data;
+}
+
+
+//----------------------------------------------------------------------------
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
@@ -104,10 +104,10 @@ void ts::CueIdentifierDescriptor::DisplayDescriptor(TablesDisplay& disp, const t
 
 void ts::CueIdentifierDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    root->setEnumAttribute(*CueStreamTypeEnum, u"cue_stream_type", cue_stream_type);
+    root->setEnumAttribute(CueStreamTypeNames(), u"cue_stream_type", cue_stream_type);
 }
 
 bool ts::CueIdentifierDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getEnumAttribute(cue_stream_type, *CueStreamTypeEnum, u"cue_stream_type", true);
+    return element->getEnumAttribute(cue_stream_type, CueStreamTypeNames(), u"cue_stream_type", true);
 }

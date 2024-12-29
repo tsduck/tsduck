@@ -12,7 +12,6 @@
 #include "tsPSIRepository.h"
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
-#include "tsSingleton.h"
 #include "tsxmlElement.h"
 
 #define MY_XML_NAME u"JPEG_XS_video_descriptor"
@@ -201,14 +200,18 @@ void ts::JPEGXSVideoDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts:
 
 
 //----------------------------------------------------------------------------
-// Enumerations for XML.
+// Thread-safe init-safe static data patterns.
 //----------------------------------------------------------------------------
 
-TS_STATIC_INSTANCE(const, ts::Enumeration, FramerateDenominators, ({
-    // Table A.8 of ISO/IEC 21122-3
-    {u"1", 1},
-    {u"1.001", 2},
-}));
+const ts::Enumeration& ts::JPEGXSVideoDescriptor::FramerateDenominators()
+{
+    static const Enumeration data({
+        // Table A.8 of ISO/IEC 21122-3
+        {u"1",     1},
+        {u"1.001", 2},
+    });
+    return data;
+}
 
 
 //----------------------------------------------------------------------------
@@ -222,7 +225,7 @@ void ts::JPEGXSVideoDescriptor::buildXML(DuckContext& duck, xml::Element* root) 
     root->setIntAttribute(u"vertical_size", vertical_size);
     root->setIntAttribute(u"brat", brat);
     root->setIntAttribute(u"interlace_mode", interlace_mode);
-    root->setEnumAttribute(*FramerateDenominators, u"framerate_DEN", framerate_DEN);
+    root->setEnumAttribute(FramerateDenominators(), u"framerate_DEN", framerate_DEN);
     root->setIntAttribute(u"framerate_NUM", framerate_NUM);
     root->setOptionalIntAttribute(u"sample_bitdepth", sample_bitdepth);
     root->setOptionalIntAttribute(u"sampling_structure", sampling_structure);
@@ -257,7 +260,7 @@ bool ts::JPEGXSVideoDescriptor::analyzeXML(DuckContext& duck, const xml::Element
         element->getIntAttribute(vertical_size, u"vertical_size", true) &&
         element->getIntAttribute(brat, u"brat", true) &&
         element->getIntAttribute(interlace_mode, u"interlace_mode", true, 0, 0, 0x03) &&
-        element->getEnumAttribute(framerate_DEN, *FramerateDenominators, u"framerate_DEN", true) &&
+        element->getEnumAttribute(framerate_DEN, FramerateDenominators(), u"framerate_DEN", true) &&
         element->getIntAttribute(framerate_NUM, u"framerate_NUM", true) &&
         element->getOptionalIntAttribute(sample_bitdepth, u"sample_bitdepth", 0, 0xF) &&
         element->getOptionalIntAttribute(sampling_structure, u"sampling_structure", 0, 0xF) &&

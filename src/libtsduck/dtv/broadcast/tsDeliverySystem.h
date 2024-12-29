@@ -15,7 +15,6 @@
 #pragma once
 #include "tsStandards.h"
 #include "tsEnumeration.h"
-#include "tsSingleton.h"
 #include "tsStringifyInterface.h"
 
 #if defined(TS_LINUX)
@@ -96,8 +95,9 @@ namespace ts {
 
     //!
     //! Enumeration description of ts::DeliverySystem.
+    //! @return A constant reference to the enumeration description of ts::DeliverySystem.
     //!
-    TS_DECLARE_GLOBAL(const, Enumeration, DeliverySystemEnum);
+    TSDUCKDLL const Enumeration& DeliverySystemEnum();
 
     //!
     //! A subset of ts::DeliverySystem describing types of tuners.
@@ -115,8 +115,9 @@ namespace ts {
 
     //!
     //! Enumeration description for the subset of ts::DeliverySystem describing types of tuners.
+    //! @return A constant reference to the enumeration description for the subset of ts::DeliverySystem describing types of tuners.
     //!
-    TS_DECLARE_GLOBAL(const, Enumeration, TunerTypeEnum);
+    TSDUCKDLL const Enumeration& TunerTypeEnum();
 
     //!
     //! Get the tuner type of a delivery system.

@@ -90,25 +90,25 @@ namespace ts {
         //! Translate the binary value in polarization as a Polarization enumeration value.
         //! @return The corresponding Polarization enumeration value.
         //!
-        Polarization getPolarization() const { return translate(polarization, ToPolarization, POL_AUTO); }
+        Polarization getPolarization() const { return translate(polarization, ToPolarization(), POL_AUTO); }
 
         //!
         //! Translate the binary value in FEC_inner as a InnerFEC enumeration value.
         //! @return The corresponding InnerFEC enumeration value.
         //!
-        InnerFEC getInnerFEC() const { return translate(FEC_inner, _system == DS_ISDB_S ? ISDBToInnerFEC : DVBToInnerFEC, FEC_AUTO); }
+        InnerFEC getInnerFEC() const { return translate(FEC_inner, _system == DS_ISDB_S ? ISDBToInnerFEC() : DVBToInnerFEC(), FEC_AUTO); }
 
         //!
         //! Translate the binary value in modulation as a Modulation enumeration value.
         //! @return The corresponding Modulation enumeration value.
         //!
-        Modulation getModulation() const { return translate(modulation, _system == DS_ISDB_S ? ISDBToModulation : DVBToModulation, QAM_AUTO); }
+        Modulation getModulation() const { return translate(modulation, _system == DS_ISDB_S ? ISDBToModulation() : DVBToModulation(), QAM_AUTO); }
 
         //!
         //! Translate the binary value in roll_off as a RollOff enumeration value.
         //! @return The corresponding RollOff enumeration value.
         //!
-        RollOff getRollOff() const { return _system == DS_DVB_S2 ? translate(roll_off, ToRollOff, ROLLOFF_AUTO) : ROLLOFF_AUTO; }
+        RollOff getRollOff() const { return _system == DS_DVB_S2 ? translate(roll_off, ToRollOff(), ROLLOFF_AUTO) : ROLLOFF_AUTO; }
 
         // Inherited methods
         virtual DeliverySystem deliverySystem(const DuckContext&) const override;
@@ -123,26 +123,26 @@ namespace ts {
         virtual bool analyzeXML(DuckContext&, const xml::Element*) override;
 
     private:
+        static DeliverySystem ResolveDeliverySystem(const DuckContext&, DeliverySystem);
+
+        // Thread-safe init-safe static data patterns.
+        static const Enumeration& DirectionNames();
+        static const Enumeration& PolarizationNames();
+        static const Enumeration& RollOffNames();
+        static const Enumeration& ModulationNamesDVB();
+        static const Enumeration& ModulationNamesISDB();
+        static const Enumeration& CodeRateNamesDVB();
+        static const Enumeration& CodeRateNamesISDB();
+        static const std::map<int, Polarization>& ToPolarization();
+        static const std::map<int, InnerFEC>& DVBToInnerFEC();
+        static const std::map<int, InnerFEC>& ISDBToInnerFEC();
+        static const std::map<int, Modulation>& DVBToModulation();
+        static const std::map<int, Modulation>& ISDBToModulation();
+        static const std::map<int, RollOff>& ToRollOff();
+
+        // The static functions above are accessible to other classes which use the same encoding.
         friend class S2XSatelliteDeliverySystemDescriptor;
         friend class S2Xv2SatelliteDeliverySystemDescriptor;
         friend class SAT;
-        static DeliverySystem ResolveDeliverySystem(const DuckContext&, DeliverySystem);
-
-        // Enumerations for XML.
-        static const Enumeration DirectionNames;
-        static const Enumeration PolarizationNames;
-        static const Enumeration RollOffNames;
-        static const Enumeration ModulationNamesDVB;
-        static const Enumeration ModulationNamesISDB;
-        static const Enumeration CodeRateNamesDVB;
-        static const Enumeration CodeRateNamesISDB;
-
-        // Translation tables from binary values.
-        static const std::map<int, Polarization> ToPolarization;
-        static const std::map<int, InnerFEC> DVBToInnerFEC;
-        static const std::map<int, InnerFEC> ISDBToInnerFEC;
-        static const std::map<int, Modulation> DVBToModulation;
-        static const std::map<int, Modulation> ISDBToModulation;
-        static const std::map<int, RollOff> ToRollOff;
     };
 }

@@ -122,7 +122,7 @@ ts::FilterPlugin::FilterPlugin(TSP* tsp_) :
          u"Select clear (unscrambled) packets. "
          u"Equivalent to --scrambling-control 0.");
 
-    option(u"codec", 0, *CodecTypeArgEnum);
+    option(u"codec", 0, CodecTypeArgEnum());
     help(u"codec", u"name",
          u"Select packets from PID's which were encoded with the specified codec format.");
 

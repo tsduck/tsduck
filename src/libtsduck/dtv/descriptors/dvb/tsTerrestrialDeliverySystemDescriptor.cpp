@@ -11,7 +11,6 @@
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
 #include "tsPSIBuffer.h"
-#include "tsSingleton.h"
 #include "tsxmlElement.h"
 
 #define MY_XML_NAME u"terrestrial_delivery_system_descriptor"
@@ -54,91 +53,137 @@ void ts::TerrestrialDeliverySystemDescriptor::clearContent()
 
 
 //----------------------------------------------------------------------------
-// Translation tables
+// Thread-safe init-safe static data patterns.
 //----------------------------------------------------------------------------
 
-using ToBandWidthMap = std::map<int, ts::BandWidth>;
-using ToConstellationMap = std::map<int, ts::Modulation>;
-using ToInnerFECMap = std::map<int, ts::InnerFEC>;
-using ToTransmissionModeMap = std::map<int, ts::TransmissionMode>;
-using ToGuardIntervalMap = std::map<int, ts::GuardInterval>;
-using ToHierarchyMap = std::map<int, ts::Hierarchy>;
-
-TS_STATIC_INSTANCE(const, ToBandWidthMap, ToBandWidth, ({
-    {0, 8000000},
-    {1, 7000000},
-    {2, 6000000},
-    {3, 5000000},
-}));
-
-TS_STATIC_INSTANCE(const, ToConstellationMap, ToConstellation, ({
-    {0, ts::QPSK},
-    {1, ts::QAM_16},
-    {2, ts::QAM_64},
-}));
-
-TS_STATIC_INSTANCE(const, ToInnerFECMap, ToInnerFEC, ({
-    {0, ts::FEC_1_2},
-    {1, ts::FEC_2_3},
-    {2, ts::FEC_3_4},
-    {3, ts::FEC_5_6},
-    {4, ts::FEC_7_8},
-}));
-
-TS_STATIC_INSTANCE(const, ToTransmissionModeMap, ToTransmissionMode, ({
-    {0, ts::TM_2K},
-    {1, ts::TM_8K},
-    {2, ts::TM_4K},
-}));
-
-TS_STATIC_INSTANCE(const, ToGuardIntervalMap, ToGuardInterval, ({
-    {0, ts::GUARD_1_32},
-    {1, ts::GUARD_1_16},
-    {2, ts::GUARD_1_8},
-    {3, ts::GUARD_1_4},
-}));
-
-TS_STATIC_INSTANCE(const, ToHierarchyMap, ToHierarchy, ({
-    {0, ts::HIERARCHY_NONE},
-    {1, ts::HIERARCHY_1},
-    {2, ts::HIERARCHY_2},
-    {3, ts::HIERARCHY_4},
-}));
-
-ts::BandWidth ts::TerrestrialDeliverySystemDescriptor::getBandwidth() const
+const std::map<int, ts::BandWidth>& ts::TerrestrialDeliverySystemDescriptor::ToBandWidth()
 {
-    return translate(bandwidth, *ToBandWidth, BandWidth(0));
+    static const std::map<int, BandWidth> data {
+        {0, 8000000},
+        {1, 7000000},
+        {2, 6000000},
+        {3, 5000000},
+    };
+    return data;
 }
 
-ts::Modulation ts::TerrestrialDeliverySystemDescriptor::getConstellation() const
+const std::map<int, ts::Modulation>& ts::TerrestrialDeliverySystemDescriptor::ToConstellation()
 {
-    return translate(constellation, *ToConstellation, QAM_AUTO);
+    static const std::map<int, Modulation> data {
+        {0, QPSK},
+        {1, QAM_16},
+        {2, QAM_64},
+    };
+    return data;
 }
 
-ts::InnerFEC ts::TerrestrialDeliverySystemDescriptor::getCodeRateHP() const
+const std::map<int, ts::InnerFEC>& ts::TerrestrialDeliverySystemDescriptor::ToInnerFEC()
 {
-    return translate(code_rate_hp, *ToInnerFEC, FEC_AUTO);
+    static const std::map<int, InnerFEC> data {
+        {0, FEC_1_2},
+        {1, FEC_2_3},
+        {2, FEC_3_4},
+        {3, FEC_5_6},
+        {4, FEC_7_8},
+    };
+    return data;
 }
 
-ts::InnerFEC ts::TerrestrialDeliverySystemDescriptor::getCodeRateLP() const
+const std::map<int, ts::TransmissionMode>& ts::TerrestrialDeliverySystemDescriptor::ToTransmissionMode()
 {
-    return translate(code_rate_lp, *ToInnerFEC, FEC_AUTO);
+    static const std::map<int, TransmissionMode> data {
+        {0, TM_2K},
+        {1, TM_8K},
+        {2, TM_4K},
+    };
+    return data;
 }
 
-ts::TransmissionMode ts::TerrestrialDeliverySystemDescriptor::getTransmissionMode() const
+const std::map<int, ts::GuardInterval>& ts::TerrestrialDeliverySystemDescriptor::ToGuardInterval()
 {
-    return translate(transmission_mode, *ToTransmissionMode, TM_AUTO);
+    static const std::map<int, GuardInterval> data {
+        {0, GUARD_1_32},
+        {1, GUARD_1_16},
+        {2, GUARD_1_8},
+        {3, GUARD_1_4},
+    };
+    return data;
 }
 
-ts::GuardInterval ts::TerrestrialDeliverySystemDescriptor::getGuardInterval() const
+const std::map<int, ts::Hierarchy>& ts::TerrestrialDeliverySystemDescriptor::ToHierarchy()
 {
-    return translate(guard_interval, *ToGuardInterval, GUARD_AUTO);
+    static const std::map<int, Hierarchy> data {
+        {0, HIERARCHY_NONE},
+        {1, HIERARCHY_1},
+        {2, HIERARCHY_2},
+        {3, HIERARCHY_4},
+    };
+    return data;
 }
 
-ts::Hierarchy ts::TerrestrialDeliverySystemDescriptor::getHierarchy() const
+const ts::Enumeration& ts::TerrestrialDeliverySystemDescriptor::BandwidthNames()
 {
-    return translate(hierarchy, *ToHierarchy, HIERARCHY_AUTO);
+    static const Enumeration data({
+        {u"8MHz", 0},
+        {u"7MHz", 1},
+        {u"6MHz", 2},
+        {u"5MHz", 3},
+    });
+    return data;
 }
+
+const ts::Enumeration& ts::TerrestrialDeliverySystemDescriptor::PriorityNames()
+{
+    static const Enumeration data({
+        {u"HP", 1},
+        {u"LP", 0},
+    });
+    return data;
+}
+
+const ts::Enumeration& ts::TerrestrialDeliverySystemDescriptor::ConstellationNames()
+{
+    static const Enumeration data({
+        {u"QPSK",   0},
+        {u"16-QAM", 1},
+        {u"64-QAM", 2},
+    });
+    return data;
+}
+
+const ts::Enumeration& ts::TerrestrialDeliverySystemDescriptor::CodeRateNames()
+{
+    static const Enumeration data({
+        {u"1/2", 0},
+        {u"2/3", 1},
+        {u"3/4", 2},
+        {u"5/6", 3},
+        {u"7/8", 4},
+    });
+    return data;
+}
+
+const ts::Enumeration& ts::TerrestrialDeliverySystemDescriptor::GuardIntervalNames()
+{
+    static const Enumeration data({
+        {u"1/32", 0},
+        {u"1/16", 1},
+        {u"1/8",  2},
+        {u"1/4",  3},
+    });
+    return data;
+}
+
+const ts::Enumeration& ts::TerrestrialDeliverySystemDescriptor::TransmissionModeNames()
+{
+    static const Enumeration data({
+        {u"2k", 0},
+        {u"8k", 1},
+        {u"4k", 2},
+    });
+    return data;
+}
+
 
 //----------------------------------------------------------------------------
 // Serialization
@@ -276,66 +321,22 @@ void ts::TerrestrialDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& d
 
 
 //----------------------------------------------------------------------------
-// Enumerations in XML data.
-//----------------------------------------------------------------------------
-
-TS_STATIC_INSTANCE(const, ts::Enumeration, BandwidthNames, ({
-    {u"8MHz", 0},
-    {u"7MHz", 1},
-    {u"6MHz", 2},
-    {u"5MHz", 3},
-}));
-
-TS_STATIC_INSTANCE(const, ts::Enumeration, PriorityNames, ({
-    {u"HP", 1},
-    {u"LP", 0},
-}));
-
-TS_STATIC_INSTANCE(const, ts::Enumeration, ConstellationNames, ({
-    {u"QPSK",   0},
-    {u"16-QAM", 1},
-    {u"64-QAM", 2},
-}));
-
-TS_STATIC_INSTANCE(const, ts::Enumeration, CodeRateNames, ({
-    {u"1/2", 0},
-    {u"2/3", 1},
-    {u"3/4", 2},
-    {u"5/6", 3},
-    {u"7/8", 4},
-}));
-
-TS_STATIC_INSTANCE(const, ts::Enumeration, GuardIntervalNames, ({
-    {u"1/32", 0},
-    {u"1/16", 1},
-    {u"1/8",  2},
-    {u"1/4",  3},
-}));
-
-TS_STATIC_INSTANCE(const, ts::Enumeration, TransmissionModeNames, ({
-    {u"2k", 0},
-    {u"8k", 1},
-    {u"4k", 2},
-}));
-
-
-//----------------------------------------------------------------------------
 // XML serialization
 //----------------------------------------------------------------------------
 
 void ts::TerrestrialDeliverySystemDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"centre_frequency", centre_frequency, false);
-    root->setEnumAttribute(*BandwidthNames, u"bandwidth", bandwidth);
-    root->setEnumAttribute(*PriorityNames, u"priority", int(high_priority));
+    root->setEnumAttribute(BandwidthNames(), u"bandwidth", bandwidth);
+    root->setEnumAttribute(PriorityNames(), u"priority", int(high_priority));
     root->setBoolAttribute(u"no_time_slicing", no_time_slicing);
     root->setBoolAttribute(u"no_MPE_FEC", no_mpe_fec);
-    root->setEnumAttribute(*ConstellationNames, u"constellation", constellation);
+    root->setEnumAttribute(ConstellationNames(), u"constellation", constellation);
     root->setIntAttribute(u"hierarchy_information", hierarchy);
-    root->setEnumAttribute(*CodeRateNames, u"code_rate_HP_stream", code_rate_hp);
-    root->setEnumAttribute(*CodeRateNames, u"code_rate_LP_stream", code_rate_lp);
-    root->setEnumAttribute(*GuardIntervalNames, u"guard_interval", guard_interval);
-    root->setEnumAttribute(*TransmissionModeNames, u"transmission_mode", transmission_mode);
+    root->setEnumAttribute(CodeRateNames(), u"code_rate_HP_stream", code_rate_hp);
+    root->setEnumAttribute(CodeRateNames(), u"code_rate_LP_stream", code_rate_lp);
+    root->setEnumAttribute(GuardIntervalNames(), u"guard_interval", guard_interval);
+    root->setEnumAttribute(TransmissionModeNames(), u"transmission_mode", transmission_mode);
     root->setBoolAttribute(u"other_frequency", other_frequency);
 }
 
@@ -346,16 +347,16 @@ void ts::TerrestrialDeliverySystemDescriptor::buildXML(DuckContext& duck, xml::E
 
 bool ts::TerrestrialDeliverySystemDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return  element->getIntAttribute(centre_frequency, u"centre_frequency", true) &&
-            element->getEnumAttribute(bandwidth, *BandwidthNames, u"bandwidth", true) &&
-            element->getEnumAttribute(high_priority, *PriorityNames, u"priority", true) &&
-            element->getBoolAttribute(no_time_slicing, u"no_time_slicing", true) &&
-            element->getBoolAttribute(no_mpe_fec, u"no_MPE_FEC", true) &&
-            element->getEnumAttribute(constellation, *ConstellationNames, u"constellation", true) &&
-            element->getIntAttribute(hierarchy, u"hierarchy_information", true) &&
-            element->getEnumAttribute(code_rate_hp, *CodeRateNames, u"code_rate_HP_stream", true) &&
-            element->getEnumAttribute(code_rate_lp, *CodeRateNames, u"code_rate_LP_stream", true) &&
-            element->getEnumAttribute(guard_interval, *GuardIntervalNames, u"guard_interval", true) &&
-            element->getEnumAttribute(transmission_mode, *TransmissionModeNames, u"transmission_mode", true) &&
-            element->getBoolAttribute(other_frequency, u"other_frequency", true);
+    return element->getIntAttribute(centre_frequency, u"centre_frequency", true) &&
+           element->getEnumAttribute(bandwidth, BandwidthNames(), u"bandwidth", true) &&
+           element->getEnumAttribute(high_priority, PriorityNames(), u"priority", true) &&
+           element->getBoolAttribute(no_time_slicing, u"no_time_slicing", true) &&
+           element->getBoolAttribute(no_mpe_fec, u"no_MPE_FEC", true) &&
+           element->getEnumAttribute(constellation, ConstellationNames(), u"constellation", true) &&
+           element->getIntAttribute(hierarchy, u"hierarchy_information", true) &&
+           element->getEnumAttribute(code_rate_hp, CodeRateNames(), u"code_rate_HP_stream", true) &&
+           element->getEnumAttribute(code_rate_lp, CodeRateNames(), u"code_rate_LP_stream", true) &&
+           element->getEnumAttribute(guard_interval, GuardIntervalNames(), u"guard_interval", true) &&
+           element->getEnumAttribute(transmission_mode, TransmissionModeNames(), u"transmission_mode", true) &&
+           element->getBoolAttribute(other_frequency, u"other_frequency", true);
 }

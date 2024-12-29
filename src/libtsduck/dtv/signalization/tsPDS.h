@@ -14,7 +14,6 @@
 
 #pragma once
 #include "tsEnumeration.h"
-#include "tsSingleton.h"
 #include "tsNamesFile.h"
 
 namespace ts {
@@ -53,8 +52,9 @@ namespace ts {
     //!
     //! Enumeration description of PDS values.
     //! Typically used to implement PDS-related command line options.
+    //! @return A constant reference to the enumeration description.
     //!
-    TS_DECLARE_GLOBAL(const, Enumeration, PrivateDataSpecifierEnum);
+    TSDUCKDLL const Enumeration& PrivateDataSpecifierEnum();
 
     //!
     //! Name of a Private Data Specifier.

@@ -92,7 +92,7 @@ bool ts::TunerEmulator::open(const UString& device_name, bool info_only)
     const xml::Element* def = root->findFirstChild(u"defaults", true);
     bool success = true;
     if (def != nullptr) {
-        success = def->getEnumAttribute(def_delivery, *DeliverySystemEnum, u"delivery", false, DS_UNDEFINED) &&
+        success = def->getEnumAttribute(def_delivery, DeliverySystemEnum(), u"delivery", false, DS_UNDEFINED) &&
                   def->getIntAttribute(def_bandwidth, u"bandwidth", false, 0) &&
                   def->getAttribute(def_directory, u"directory", false);
         if (def_directory.empty()) {
@@ -104,7 +104,7 @@ bool ts::TunerEmulator::open(const UString& device_name, bool info_only)
         if (def_delivery != DS_UNDEFINED) {
             _delivery_systems.insert(def_delivery);
         }
-        _duck.report().debug(u"defaults: delivery: %s, bandwidth: %'d Hz, directory: %s", DeliverySystemEnum->name(def_delivery), def_bandwidth, def_directory);
+        _duck.report().debug(u"defaults: delivery: %s, bandwidth: %'d Hz, directory: %s", DeliverySystemEnum().name(def_delivery), def_bandwidth, def_directory);
     }
 
     // Get all supported delivery systems (in addition to those in the various channels).
@@ -113,8 +113,8 @@ bool ts::TunerEmulator::open(const UString& device_name, bool info_only)
     for (auto it = xtuners.begin(); success && it != xtuners.end(); ++it) {
         TunerType type = TT_UNDEFINED;
         DeliverySystem sys = DS_UNDEFINED;
-        success = (*it)->getEnumAttribute(type, *TunerTypeEnum, u"type", false, TT_UNDEFINED) &&
-                  (*it)->getEnumAttribute(sys, *DeliverySystemEnum, u"delivery", false, DS_UNDEFINED);
+        success = (*it)->getEnumAttribute(type, TunerTypeEnum(), u"type", false, TT_UNDEFINED) &&
+                  (*it)->getEnumAttribute(sys, DeliverySystemEnum(), u"delivery", false, DS_UNDEFINED);
         if (type != TT_UNDEFINED) {
             _delivery_systems.insertAll(type);
         }
@@ -131,11 +131,11 @@ bool ts::TunerEmulator::open(const UString& device_name, bool info_only)
         Channel chan;
         success = (*it)->getIntAttribute(chan.frequency, u"frequency", true) &&
                   (*it)->getIntAttribute(chan.bandwidth, u"bandwidth", false, def_bandwidth) &&
-                  (*it)->getEnumAttribute(chan.delivery, *DeliverySystemEnum, u"delivery", false, def_delivery) &&
-                  (*it)->getOptionalEnumAttribute(chan.polarity, *PolarizationEnum, u"polarization") &&
+                  (*it)->getEnumAttribute(chan.delivery, DeliverySystemEnum(), u"delivery", false, def_delivery) &&
+                  (*it)->getOptionalEnumAttribute(chan.polarity, PolarizationEnum(), u"polarization") &&
                   (*it)->getOptionalIntAttribute(chan.symbol_rate, u"symbol_rate") &&
-                  (*it)->getOptionalEnumAttribute(chan.inner_fec, *InnerFECEnum, u"FEC_inner") &&
-                  (*it)->getOptionalEnumAttribute(chan.modulation, *ModulationEnum, u"modulation") &&
+                  (*it)->getOptionalEnumAttribute(chan.inner_fec, InnerFECEnum(), u"FEC_inner") &&
+                  (*it)->getOptionalEnumAttribute(chan.modulation, ModulationEnum(), u"modulation") &&
                   (*it)->getAttribute(chan.file, u"file", false) &&
                   (*it)->getAttribute(chan.pipe, u"pipe", false);
         chan.file.trim();
@@ -275,7 +275,7 @@ bool ts::TunerEmulator::tune(ModulationArgs& params)
 
     // Check modulation parameters.
     if (delsys != DS_UNDEFINED && chan.delivery != DS_UNDEFINED && delsys != chan.delivery) {
-        _duck.report().error(u"delivery system at %'d Hz is %s, %s requested", freq, DeliverySystemEnum->name(chan.delivery), DeliverySystemEnum->name(delsys));
+        _duck.report().error(u"delivery system at %'d Hz is %s, %s requested", freq, DeliverySystemEnum().name(chan.delivery), DeliverySystemEnum().name(delsys));
         return false;
     }
     if ((params.modulation.has_value() && chan.modulation.has_value() && params.modulation != chan.modulation) ||
@@ -292,7 +292,7 @@ bool ts::TunerEmulator::tune(ModulationArgs& params)
 
     if (IsSatelliteDelivery(params.delivery_system.value())) {
         if (!params.lnb.has_value()) {
-            _duck.report().warning(u"no LNB set for satellite delivery %s", DeliverySystemEnum->name(params.delivery_system.value()));
+            _duck.report().warning(u"no LNB set for satellite delivery %s", DeliverySystemEnum().name(params.delivery_system.value()));
         }
         else {
             _duck.report().debug(u"using LNB %s", params.lnb.value());
@@ -425,7 +425,7 @@ std::ostream& ts::TunerEmulator::displayStatus(std::ostream& strm, const UString
     if (_state == State::TUNED || _state == State::STARTED) {
         assert(_tune_index < _channels.size());
         strm << "Current:" << std::endl;
-        strm << "  Delivery system: " << DeliverySystemEnum->name(_channels[_tune_index].delivery) << std::endl;
+        strm << "  Delivery system: " << DeliverySystemEnum().name(_channels[_tune_index].delivery) << std::endl;
         strm << "  Frequency: " << UString::Decimal(_tune_frequency) << " Hz" << std::endl;
         strm << "  Signal strength: " << _strength << " %" << std::endl;
         strm << std::endl;
@@ -433,7 +433,7 @@ std::ostream& ts::TunerEmulator::displayStatus(std::ostream& strm, const UString
     strm << "Number of active channels: " << _channels.size() << std::endl;
     for (size_t i = 0; i < _channels.size(); ++i) {
         const Channel& chan(_channels[i]);
-        strm << "  " << UString::Decimal(chan.frequency) << " Hz (" << DeliverySystemEnum->name(chan.delivery)
+        strm << "  " << UString::Decimal(chan.frequency) << " Hz (" << DeliverySystemEnum().name(chan.delivery)
              << ", width: " << UString::Decimal(chan.bandwidth) << ")";
         if (!chan.file.empty()) {
             strm << " file: " << chan.file;

@@ -78,13 +78,17 @@ void ts::C2DeliverySystemDescriptor::deserializePayload(PSIBuffer& buf)
 
 
 //----------------------------------------------------------------------------
-// Enumerations for XML.
+// Thread-safe init-safe static data patterns.
 //----------------------------------------------------------------------------
 
-const ts::Enumeration ts::C2DeliverySystemDescriptor::C2GuardIntervalNames({
-    {u"1/128", 0},
-    {u"1/64",  1},
-});
+const ts::Enumeration& ts::C2DeliverySystemDescriptor::C2GuardIntervalNames()
+{
+    static const Enumeration data({
+        {u"1/128", 0},
+        {u"1/64",  1},
+    });
+    return data;
+}
 
 
 //----------------------------------------------------------------------------
@@ -100,7 +104,7 @@ void ts::C2DeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp, cons
         disp << margin << UString::Format(u"Tuning frequency type: %s", DataName(MY_XML_NAME, u"C2TuningType", buf.getBits<uint8_t>(2), NamesFlags::FIRST)) << std::endl;
         disp << margin << UString::Format(u"Symbol duration: %s", DataName(MY_XML_NAME, u"C2SymbolDuration", buf.getBits<uint8_t>(3), NamesFlags::FIRST)) << std::endl;
         const uint8_t guard = buf.getBits<uint8_t>(3);
-        disp << margin << UString::Format(u"Guard interval: %d (%s)", guard, C2GuardIntervalNames.name(guard)) << std::endl;
+        disp << margin << UString::Format(u"Guard interval: %d (%s)", guard, C2GuardIntervalNames().name(guard)) << std::endl;
     }
 }
 
@@ -116,7 +120,7 @@ void ts::C2DeliverySystemDescriptor::buildXML(DuckContext& duck, xml::Element* r
     root->setIntAttribute(u"C2_system_tuning_frequency", C2_system_tuning_frequency);
     root->setIntAttribute(u"C2_system_tuning_frequency_type", C2_system_tuning_frequency_type);
     root->setIntAttribute(u"active_OFDM_symbol_duration", active_OFDM_symbol_duration);
-    root->setEnumAttribute(C2GuardIntervalNames, u"guard_interval", guard_interval);
+    root->setEnumAttribute(C2GuardIntervalNames(), u"guard_interval", guard_interval);
 }
 
 
@@ -126,10 +130,10 @@ void ts::C2DeliverySystemDescriptor::buildXML(DuckContext& duck, xml::Element* r
 
 bool ts::C2DeliverySystemDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return  element->getIntAttribute(plp_id, u"plp_id", true) &&
-            element->getIntAttribute(data_slice_id, u"data_slice_id", true) &&
-            element->getIntAttribute(C2_system_tuning_frequency, u"C2_system_tuning_frequency", true) &&
-            element->getIntAttribute(C2_system_tuning_frequency_type, u"C2_system_tuning_frequency_type", true, 0, 0, 3) &&
-            element->getIntAttribute(active_OFDM_symbol_duration, u"active_OFDM_symbol_duration", true, 0, 0, 7) &&
-            element->getEnumAttribute(guard_interval, C2GuardIntervalNames, u"guard_interval", true);
+    return element->getIntAttribute(plp_id, u"plp_id", true) &&
+           element->getIntAttribute(data_slice_id, u"data_slice_id", true) &&
+           element->getIntAttribute(C2_system_tuning_frequency, u"C2_system_tuning_frequency", true) &&
+           element->getIntAttribute(C2_system_tuning_frequency_type, u"C2_system_tuning_frequency_type", true, 0, 0, 3) &&
+           element->getIntAttribute(active_OFDM_symbol_duration, u"active_OFDM_symbol_duration", true, 0, 0, 7) &&
+           element->getEnumAttribute(guard_interval, C2GuardIntervalNames(), u"guard_interval", true);
 }

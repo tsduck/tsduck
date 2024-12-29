@@ -944,7 +944,7 @@ bool ts::TunerDevice::getCurrentTuning(ModulationArgs& params, bool reset_unknow
         case DS_DSS:
         case DS_UNDEFINED:
         default:  {
-            _duck.report().error(u"cannot get current tuning for delivery system %s", DeliverySystemEnum->name(delsys));
+            _duck.report().error(u"cannot get current tuning for delivery system %s", DeliverySystemEnum().name(delsys));
             return false;
         }
     }
@@ -1134,7 +1134,7 @@ bool ts::TunerDevice::tune(ModulationArgs& params)
     // In case of satellite delivery, we need to control the dish.
     if (IsSatelliteDelivery(params.delivery_system.value())) {
         if (!params.lnb.has_value()) {
-            _duck.report().warning(u"no LNB set for satellite delivery %s", DeliverySystemEnum->name(params.delivery_system.value()));
+            _duck.report().warning(u"no LNB set for satellite delivery %s", DeliverySystemEnum().name(params.delivery_system.value()));
         }
         else {
             _duck.report().debug(u"using LNB %s", params.lnb.value());
@@ -1306,7 +1306,7 @@ bool ts::TunerDevice::tune(ModulationArgs& params)
         case DS_DSS:
         case DS_UNDEFINED:
         default:  {
-            _duck.report().error(u"cannot tune on delivery system %s", DeliverySystemEnum->name(params.delivery_system.value()));
+            _duck.report().error(u"cannot tune on delivery system %s", DeliverySystemEnum().name(params.delivery_system.value()));
             return false;
         }
     }
@@ -1820,7 +1820,7 @@ std::ostream& ts::TunerDevice::displayStatus(std::ostream& strm, const ts::UStri
         delsys = _delivery_systems.preferred();
     }
     const TunerType ttype = TunerTypeOf(delsys);
-    Display(strm, margin, u"Delivery system", DeliverySystemEnum->name(delsys), u"");
+    Display(strm, margin, u"Delivery system", DeliverySystemEnum().name(delsys), u"");
 
     // Display frequency characteristics
     const uint64_t freq = params.frequency.value_or(0);
@@ -1859,31 +1859,31 @@ std::ostream& ts::TunerDevice::displayStatus(std::ostream& strm, const ts::UStri
 
     // Frontend-specific information
     if (params.inversion.has_value()) {
-        Display(strm, margin, u"Spectral inversion", SpectralInversionEnum->name(params.inversion.value()), u"");
+        Display(strm, margin, u"Spectral inversion", SpectralInversionEnum().name(params.inversion.value()), u"");
     }
     if (params.inner_fec.has_value()) {
-        Display(strm, margin, u"FEC(inner)", InnerFECEnum->name(params.inner_fec.value()), u"");
+        Display(strm, margin, u"FEC(inner)", InnerFECEnum().name(params.inner_fec.value()), u"");
     }
     if (params.modulation.has_value()) {
-        Display(strm, margin, u"Modulation", ModulationEnum->name(params.modulation.value()), u"");
+        Display(strm, margin, u"Modulation", ModulationEnum().name(params.modulation.value()), u"");
     }
     if (params.bandwidth.has_value()) {
         Display(strm, margin, u"Bandwidth", UString::Decimal(params.bandwidth.value()), u"Hz");
     }
     if (params.fec_hp.has_value()) {
-        Display(strm, margin, u"FEC(high priority)", InnerFECEnum->name(params.fec_hp.value()), u"");
+        Display(strm, margin, u"FEC(high priority)", InnerFECEnum().name(params.fec_hp.value()), u"");
     }
     if (params.fec_lp.has_value()) {
-        Display(strm, margin, u"FEC(low priority)", InnerFECEnum->name(params.fec_lp.value()), u"");
+        Display(strm, margin, u"FEC(low priority)", InnerFECEnum().name(params.fec_lp.value()), u"");
     }
     if (params.transmission_mode.has_value()) {
-        Display(strm, margin, u"Transmission mode", TransmissionModeEnum->name(params.transmission_mode.value()), u"");
+        Display(strm, margin, u"Transmission mode", TransmissionModeEnum().name(params.transmission_mode.value()), u"");
     }
     if (params.guard_interval.has_value()) {
-        Display(strm, margin, u"Guard interval", GuardIntervalEnum->name(params.guard_interval.value()), u"");
+        Display(strm, margin, u"Guard interval", GuardIntervalEnum().name(params.guard_interval.value()), u"");
     }
     if (params.hierarchy.has_value()) {
-        Display(strm, margin, u"Hierarchy", HierarchyEnum->name(params.hierarchy.value()), u"");
+        Display(strm, margin, u"Hierarchy", HierarchyEnum().name(params.hierarchy.value()), u"");
     }
     if (params.plp.has_value() && params.plp != PLP_DISABLE) {
         Display(strm, margin, u"PLP", UString::Decimal(params.plp.value()), u"");

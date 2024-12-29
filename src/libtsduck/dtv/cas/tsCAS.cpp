@@ -22,16 +22,13 @@ namespace {
     {
         TS_NOCOPY(CASRepository);
     public:
-        // Constructor.
-        CASRepository();
+        // Only one instance.
+        static CASRepository& Instance();
 
         // Proxy functions for public interface.
         ts::CASFamily casFamilyOf(ts::CASID casid) const;
         bool getCASIdRange(ts::CASFamily cas, ts::CASID& min, ts::CASID& max) const;
         void getAllCASFamilies(std::set<ts::CASFamily>& cas) const;
-
-        // Implementation of NamesFile::Visitor.
-        virtual bool handleNameValue(const ts::UString& section_name, ts::NamesFile::Value value, const ts::UString& name) override;
 
     private:
         struct CASDesc {
@@ -40,17 +37,30 @@ namespace {
             ts::CASID     max = ts::CASID_NULL;
         };
 
+        // Members of the repository.
         mutable std::mutex _mutex {};
         std::list<CASDesc> _cas {};
+
+        // Constructor is private (only one static instance).
+        CASRepository();
+
+        // Implementation of NamesFile::Visitor.
+        virtual bool handleNameValue(const ts::UString& section_name, ts::NamesFile::Value value, const ts::UString& name) override;
     };
 }
-
-TS_STATIC_INSTANCE(, CASRepository, AllCAS, ());
 
 
 //----------------------------------------------------------------------------
 // Fill the CAS repository from names files.
 //----------------------------------------------------------------------------
+
+// Only one instance.
+CASRepository& CASRepository::Instance()
+{
+    // Thread-safe init-safe static data pattern:
+    static CASRepository repo;
+    return repo;
+}
 
 // Constructor.
 CASRepository::CASRepository()
@@ -94,7 +104,7 @@ bool CASRepository::handleNameValue(const ts::UString& section_name, ts::NamesFi
 
 ts::CASFamily ts::CASFamilyOf(CASID casid)
 {
-    return AllCAS->casFamilyOf(casid);
+    return CASRepository::Instance().casFamilyOf(casid);
 }
 
 ts::CASFamily CASRepository::casFamilyOf(ts::CASID casid) const
@@ -116,20 +126,20 @@ ts::CASFamily CASRepository::casFamilyOf(ts::CASID casid) const
 
 bool ts::GetCASIdRange(CASFamily cas, CASID& min, CASID& max)
 {
-    return AllCAS->getCASIdRange(cas, min, max);
+    return CASRepository::Instance().getCASIdRange(cas, min, max);
 }
 
 ts::CASID ts::FirstCASId(CASFamily cas)
 {
     CASID min, max;
-    AllCAS->getCASIdRange(cas, min, max);
+    CASRepository::Instance().getCASIdRange(cas, min, max);
     return min;
 }
 
 ts::CASID ts::LastCASId(CASFamily cas)
 {
     CASID min, max;
-    AllCAS->getCASIdRange(cas, min, max);
+    CASRepository::Instance().getCASIdRange(cas, min, max);
     return max;
 }
 
@@ -183,7 +193,7 @@ ts::UString ts::CASIdName(const DuckContext& duck, CASID casid, NamesFlags flags
 
 void ts::GetAllCASFamilies(std::set<CASFamily>& cas)
 {
-    AllCAS->getAllCASFamilies(cas);
+    CASRepository::Instance().getAllCASFamilies(cas);
 }
 
 void CASRepository::getAllCASFamilies(std::set<ts::CASFamily>& cas) const

@@ -7,7 +7,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsS2Xv2SatelliteDeliverySystemDescriptor.h"
-#include "tsS2XSatelliteDeliverySystemDescriptor.h"
 #include "tsSatelliteDeliverySystemDescriptor.h"
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
@@ -206,7 +205,7 @@ void ts::S2Xv2SatelliteDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay
         uint8_t _S2Xv2_mode = buf.getBits<uint8_t>(4);
         disp << ", S2Xv2 mode: " << DataName(MY_XML_NAME, u"S2Xv2_mode", _S2Xv2_mode, NamesFlags::VALUE);
         bool _multiple_input_stream_flag = buf.getBool();
-        disp << ", Roll-off factor: " << S2XSatelliteDeliverySystemDescriptor::RollOffNames.name(buf.getBits<uint8_t>(3)) << std::endl;
+        disp << ", Roll-off factor: " << SatelliteDeliverySystemDescriptor::RollOffNames().name(buf.getBits<uint8_t>(3)) << std::endl;
         buf.skipReservedBits(2, 0);
         disp << margin << "NCR reference: " << DataName(MY_XML_NAME, u"NCR_reference", buf.getBits<uint8_t>(1), NamesFlags::VALUE) << std::endl;
         disp << margin << "NCR version: " << DataName(MY_XML_NAME, u"NCR_version", buf.getBits<uint8_t>(1), NamesFlags::VALUE);
@@ -303,12 +302,12 @@ void ts::S2Xv2SatelliteDeliverySystemDescriptor::buildXML(DuckContext& duck, xml
 {
     root->setIntAttribute(u"delivery_system_id", delivery_system_id, true);
     root->setIntAttribute(u"S2Xv2_mode", S2Xv2_mode);
-    root->setEnumAttribute(S2XSatelliteDeliverySystemDescriptor::RollOffNames, u"roll_off", roll_off);
+    root->setEnumAttribute(SatelliteDeliverySystemDescriptor::RollOffNames(), u"roll_off", roll_off);
     root->setIntAttribute(u"NCR_reference", NCR_reference);
     root->setIntAttribute(u"NCR_version", NCR_version);
     root->setIntAttribute(u"NCR_version", NCR_version);
     root->setIntAttribute(u"channel_bond", channel_bond);
-    root->setEnumAttribute(SatelliteDeliverySystemDescriptor::PolarizationNames, u"polarization", polarization);
+    root->setEnumAttribute(SatelliteDeliverySystemDescriptor::PolarizationNames(), u"polarization", polarization);
 
     root->setIntAttribute(u"TS_GS_S2X_mode", TS_GS_S2X_mode);
     root->setIntAttribute(u"receiver_profiles", receiver_profiles, true);
@@ -356,11 +355,11 @@ bool ts::S2Xv2SatelliteDeliverySystemDescriptor::analyzeXML(DuckContext& duck, c
     bool ok =
         element->getIntAttribute(delivery_system_id, u"delivery_system_id", true) &&
         element->getIntAttribute(S2Xv2_mode, u"S2Xv2_mode", true, 0, 0, 0x0F) &&
-        element->getEnumAttribute(roll_off, S2XSatelliteDeliverySystemDescriptor::RollOffNames, u"roll_off", true) &&
+        element->getEnumAttribute(roll_off, SatelliteDeliverySystemDescriptor::RollOffNames(), u"roll_off", true) &&
         element->getIntAttribute(NCR_reference, u"NCR_reference", true, 0, 0, 0x01) &&
         element->getIntAttribute(NCR_version, u"NCR_version", true, 0, 0, 0x01) &&
         element->getIntAttribute(channel_bond, u"channel_bond", true, 0, 0, 0x03) &&
-        element->getEnumAttribute(polarization, SatelliteDeliverySystemDescriptor::PolarizationNames, u"polarization", true) &&
+        element->getEnumAttribute(polarization, SatelliteDeliverySystemDescriptor::PolarizationNames(), u"polarization", true) &&
         element->getIntAttribute(TS_GS_S2X_mode, u"TS_GS_S2X_mode", true, 0, 0, 0x03) &&
         element->getIntAttribute(receiver_profiles, u"receiver_profiles", true, 0, 0, 0x1F) &&
         element->getIntAttribute(satellite_id, u"satellite_id", true, 0, 0, 0xFFFFFF) &&
@@ -379,12 +378,12 @@ bool ts::S2Xv2SatelliteDeliverySystemDescriptor::analyzeXML(DuckContext& duck, c
     if (ok && (S2Xv2_mode == 2 || S2Xv2_mode == 5)) {
         ok &= element->getIntAttribute(timeslice_number, u"timeslice_number", true);
     }
-    if (channel_bond == 1) {
+    if (ok && channel_bond == 1) {
         xml::ElementVector secondary_delivery_systems;
-        ok &= element->getChildren(secondary_delivery_systems, u"secondary_delivery_system", 1, 2);
+        ok = element->getChildren(secondary_delivery_systems, u"secondary_delivery_system", 1, 2);
         for (size_t i = 0; ok && i < secondary_delivery_systems.size(); ++i) {
             uint32_t _secondary_delivery_system_id;
-            ok &= secondary_delivery_systems[i]->getIntAttribute(_secondary_delivery_system_id, u"id", true);
+            ok = secondary_delivery_systems[i]->getIntAttribute(_secondary_delivery_system_id, u"id", true);
             if (ok) {
                 secondary_delivery_system_ids.push_back(_secondary_delivery_system_id);
             }
@@ -395,7 +394,7 @@ bool ts::S2Xv2SatelliteDeliverySystemDescriptor::analyzeXML(DuckContext& duck, c
     }
     if (ok && (S2Xv2_mode == 4 || S2Xv2_mode == 5)) {
         xml::ElementVector _superframes;
-        ok &= element->getChildren(_superframes, u"superframe", 1, 1);
+        ok = element->getChildren(_superframes, u"superframe", 1, 1);
         if (ok) {
             ok = _superframes[0]->getIntAttribute(SOSF_WH_sequence_number, u"SOSF_WH_sequence_number", true) &&
                  _superframes[0]->getIntAttribute(reference_scrambling_index, u"reference_scrambling_index", true, 0, 0, 0xFFFFF) &&
@@ -403,10 +402,10 @@ bool ts::S2Xv2SatelliteDeliverySystemDescriptor::analyzeXML(DuckContext& duck, c
                  _superframes[0]->getIntAttribute(superframe_pilots_WH_sequence_number, u"superframe_pilots_WH_sequence_number", true, 0, 0, 0x1F) &&
                  _superframes[0]->getIntAttribute(postamble_PLI, u"postamble_PLI", true, 0, 0, 7);
             if (ok && _superframes[0]->hasAttribute(u"SFFI")) {
-                ok &= _superframes[0]->getOptionalIntAttribute(SFFI, u"SFFI", 0, 0xF);
+                ok = _superframes[0]->getOptionalIntAttribute(SFFI, u"SFFI", 0, 0xF);
             }
             if (ok && _superframes[0]->hasAttribute(u"beamhopping_time_plan_id")) {
-                ok &= _superframes[0]->getOptionalIntAttribute(beamhopping_time_plan_id, u"beamhopping_time_plan_id");
+                ok = _superframes[0]->getOptionalIntAttribute(beamhopping_time_plan_id, u"beamhopping_time_plan_id");
             }
         }
     }

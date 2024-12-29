@@ -13,7 +13,6 @@
 
 #pragma once
 #include "tsAbstractDescriptor.h"
-#include "tsByteBlock.h"
 
 namespace ts {
     //!
@@ -54,5 +53,9 @@ namespace ts {
         virtual void deserializePayload(PSIBuffer&) override;
         virtual void buildXML(DuckContext&, xml::Element*) const override;
         virtual bool analyzeXML(DuckContext&, const xml::Element*) override;
+
+    private:
+        // Thread-safe init-safe static data patterns.
+        static const Enumeration& AccessModeNames();
     };
 }

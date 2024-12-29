@@ -8,49 +8,50 @@
 
 #include "tsStandards.h"
 #include "tsNamesFile.h"
-#include "tsSingleton.h"
 
 
 //----------------------------------------------------------------------------
 // Check compatibility between standards.
 //----------------------------------------------------------------------------
-//
-// Compatibility matrix, one by one:
-//
-//           NONE  MPEG  DVB   SCTE  ATSC  ISDB JAPAN  ABNT
-//   NONE           X     X     X     X     X     X     X
-//   MPEG                 X     X     X     X     X     X
-//   DVB                        X     -    (X)   (X)   (X)
-//   SCTE                             X     X     X     X
-//   ATSC                                   -     -     -
-//   ISDB                                         X     X
-//   JAPAN                                              -
-//   ABNT
-//
-//  X  : Compatible.
-// (X) : Mixed compatibility. ISDB is based on a subset of DVB and adds other
-//       tables and descriptors. The DVB subset is compatible with ISDB. When
-//       another DID or TID is defined with two distinct semantics, one for DVB
-//       and one for ISDB, if ISDB is part of the current standards we use the
-//       ISDB semantics, otherwise we use the DVB semantics. This mixed
-//       compatibility is disabled by DVBONLY.
-//
-// The following set lists all pairs of incompatible standards:
-//
-TS_STATIC_INSTANCE(const, std::set<ts::Standards>, IncompatibleStandards, ({
-    (ts::Standards::ATSC    | ts::Standards::DVB),
-    (ts::Standards::ATSC    | ts::Standards::ISDB),
-    (ts::Standards::ATSC    | ts::Standards::JAPAN),
-    (ts::Standards::ATSC    | ts::Standards::ABNT),
-    (ts::Standards::JAPAN   | ts::Standards::ABNT),
-    (ts::Standards::DVBONLY | ts::Standards::ISDB),
-    (ts::Standards::DVBONLY | ts::Standards::JAPAN),
-    (ts::Standards::DVBONLY | ts::Standards::ABNT)
-}));
 
 bool ts::CompatibleStandards(Standards std)
 {
-    for (auto forbidden : *IncompatibleStandards) {
+    //
+    // Compatibility matrix, one by one:
+    //
+    //           NONE  MPEG  DVB   SCTE  ATSC  ISDB JAPAN  ABNT
+    //   NONE           X     X     X     X     X     X     X
+    //   MPEG                 X     X     X     X     X     X
+    //   DVB                        X     -    (X)   (X)   (X)
+    //   SCTE                             X     X     X     X
+    //   ATSC                                   -     -     -
+    //   ISDB                                         X     X
+    //   JAPAN                                              -
+    //   ABNT
+    //
+    //  X  : Compatible.
+    // (X) : Mixed compatibility. ISDB is based on a subset of DVB and adds other
+    //       tables and descriptors. The DVB subset is compatible with ISDB. When
+    //       another DID or TID is defined with two distinct semantics, one for DVB
+    //       and one for ISDB, if ISDB is part of the current standards we use the
+    //       ISDB semantics, otherwise we use the DVB semantics. This mixed
+    //       compatibility is disabled by DVBONLY.
+    //
+    // The following set lists all pairs of incompatible standards
+    // (thread-safe init-safe static data patterns).
+    //
+    static const std::set<ts::Standards> incompatible_standards {
+        (ts::Standards::ATSC    | ts::Standards::DVB),
+        (ts::Standards::ATSC    | ts::Standards::ISDB),
+        (ts::Standards::ATSC    | ts::Standards::JAPAN),
+        (ts::Standards::ATSC    | ts::Standards::ABNT),
+        (ts::Standards::JAPAN   | ts::Standards::ABNT),
+        (ts::Standards::DVBONLY | ts::Standards::ISDB),
+        (ts::Standards::DVBONLY | ts::Standards::JAPAN),
+        (ts::Standards::DVBONLY | ts::Standards::ABNT)
+    };
+
+    for (auto forbidden : incompatible_standards) {
         if ((std & forbidden) == forbidden) {
             return false; // contains a pair of incompatible standards
         }

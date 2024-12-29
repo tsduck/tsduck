@@ -78,71 +78,181 @@ void ts::SatelliteDeliverySystemDescriptor::setDeliverySystem(const DuckContext&
 
 
 //----------------------------------------------------------------------------
-// Translation tables
+// Thread-safe init-safe static data patterns.
 //----------------------------------------------------------------------------
 
-const std::map<int, ts::Polarization> ts::SatelliteDeliverySystemDescriptor::ToPolarization
+const std::map<int, ts::Polarization>& ts::SatelliteDeliverySystemDescriptor::ToPolarization()
 {
-    {0, POL_HORIZONTAL},
-    {1, POL_VERTICAL},
-    {2, POL_LEFT},
-    {3, POL_RIGHT},
-};
+    static const std::map<int, Polarization> data {
+        {0, POL_HORIZONTAL},
+        {1, POL_VERTICAL},
+        {2, POL_LEFT},
+        {3, POL_RIGHT},
+    };
+    return data;
+}
 
-const std::map<int, ts::InnerFEC> ts::SatelliteDeliverySystemDescriptor::DVBToInnerFEC
+const std::map<int, ts::InnerFEC>& ts::SatelliteDeliverySystemDescriptor::DVBToInnerFEC()
 {
-    {1,  FEC_1_2},
-    {2,  FEC_2_3},
-    {3,  FEC_3_4},
-    {4,  FEC_5_6},
-    {5,  FEC_7_8},
-    {6,  FEC_8_9},
-    {7,  FEC_3_5},
-    {8,  FEC_4_5},
-    {9,  FEC_9_10},
-    {15, FEC_NONE},
-};
+    static const std::map<int, InnerFEC> data {
+        {1,  FEC_1_2},
+        {2,  FEC_2_3},
+        {3,  FEC_3_4},
+        {4,  FEC_5_6},
+        {5,  FEC_7_8},
+        {6,  FEC_8_9},
+        {7,  FEC_3_5},
+        {8,  FEC_4_5},
+        {9,  FEC_9_10},
+        {15, FEC_NONE},
+    };
+    return data;
+}
 
-const std::map<int, ts::InnerFEC> ts::SatelliteDeliverySystemDescriptor::ISDBToInnerFEC
+const std::map<int, ts::InnerFEC>& ts::SatelliteDeliverySystemDescriptor::ISDBToInnerFEC()
 {
-    {1, FEC_1_2},
-    {2, FEC_2_3},
-    {3, FEC_3_4},
-    {4, FEC_5_6},
-    {5, FEC_7_8},
-    // 8  = ISDB-S system (refer to TMCC signal)
-    // 9  = 2.6GHz band digital satellite sound broadcasting
-    // 10 = Advanced narrow-band CS digital broadcasting (refer to PLHEADER)
-    // 11 = Advanced wide broad-band satellite digital broadcasting (refer to TMCC signal)
-    // Don't really know how to translate this...
-    {15, FEC_NONE},
-};
+    static const std::map<int, InnerFEC> data {
+        {1, FEC_1_2},
+        {2, FEC_2_3},
+        {3, FEC_3_4},
+        {4, FEC_5_6},
+        {5, FEC_7_8},
+        // 8  = ISDB-S system (refer to TMCC signal)
+        // 9  = 2.6GHz band digital satellite sound broadcasting
+        // 10 = Advanced narrow-band CS digital broadcasting (refer to PLHEADER)
+        // 11 = Advanced wide broad-band satellite digital broadcasting (refer to TMCC signal)
+        // Don't really know how to translate this...
+        {15, FEC_NONE},
+    };
+    return data;
+}
 
-const std::map<int, ts::Modulation> ts::SatelliteDeliverySystemDescriptor::DVBToModulation
+const std::map<int, ts::Modulation>& ts::SatelliteDeliverySystemDescriptor::DVBToModulation()
 {
-    {0, QAM_AUTO},
-    {1, QPSK},
-    {2, PSK_8},
-    {3, QAM_16},
-};
+    static const std::map<int, Modulation> data {
+        {0, QAM_AUTO},
+        {1, QPSK},
+        {2, PSK_8},
+        {3, QAM_16},
+    };
+    return data;
+}
 
-const std::map<int, ts::Modulation> ts::SatelliteDeliverySystemDescriptor::ISDBToModulation
+const std::map<int, ts::Modulation>& ts::SatelliteDeliverySystemDescriptor::ISDBToModulation()
 {
-    {0, QAM_AUTO},
-    {1, QPSK},
-    {8, PSK_8}, // "ISDB-S system (refer to TMCC signal)", TC8PSK?, is this the same as PSK_8?
-    // 9  = 2.6GHz band digital satellite sound broadcasting
-    // 10 = Advanced narrow-band CS digital broadcasting
-    // Don't really know how to translate this...
-};
+    static const std::map<int, Modulation> data {
+        {0, QAM_AUTO},
+        {1, QPSK},
+        {8, PSK_8}, // "ISDB-S system (refer to TMCC signal)", TC8PSK?, is this the same as PSK_8?
+        // 9  = 2.6GHz band digital satellite sound broadcasting
+        // 10 = Advanced narrow-band CS digital broadcasting
+        // Don't really know how to translate this...
+    };
+    return data;
+}
 
-const std::map<int, ts::RollOff> ts::SatelliteDeliverySystemDescriptor::ToRollOff
+const std::map<int, ts::RollOff>& ts::SatelliteDeliverySystemDescriptor::ToRollOff()
 {
-    {0, ROLLOFF_35},
-    {1, ROLLOFF_25},
-    {2, ROLLOFF_20},
-    {3, ROLLOFF_AUTO},
-};
+    static const std::map<int, RollOff> data {
+        {0, ROLLOFF_35},
+        {1, ROLLOFF_25},
+        {2, ROLLOFF_20},
+        {3, ROLLOFF_AUTO},
+    };
+    return data;
+}
+
+const ts::Enumeration& ts::SatelliteDeliverySystemDescriptor::DirectionNames()
+{
+    static const Enumeration data({
+        {u"west", 0},
+        {u"east", 1},
+    });
+    return data;
+}
+
+const ts::Enumeration& ts::SatelliteDeliverySystemDescriptor::PolarizationNames()
+{
+    static const Enumeration data({
+        {u"horizontal", 0},
+        {u"vertical",   1},
+        {u"left",       2},
+        {u"right",      3},
+    });
+    return data;
+}
+
+const ts::Enumeration& ts::SatelliteDeliverySystemDescriptor::RollOffNames()
+{
+    static const Enumeration data({
+        {u"0.35",     0},
+        {u"0.25",     1},
+        {u"0.20",     2},
+        {u"reserved", 3},
+        {u"0.15",     4},  // DVB-S2X
+        {u"0.10",     5},  // DVB-S2X
+        {u"0.05",     6},  // DVB-S2X
+    });
+    return data;
+}
+
+const ts::Enumeration& ts::SatelliteDeliverySystemDescriptor::ModulationNamesDVB()
+{
+    static const Enumeration data({
+        {u"auto",   0},
+        {u"QPSK",   1},
+        {u"8PSK",   2},
+        {u"16-QAM", 3},
+    });
+    return data;
+}
+
+const ts::Enumeration& ts::SatelliteDeliverySystemDescriptor::ModulationNamesISDB()
+{
+    static const Enumeration data({
+        {u"auto",         0},
+        {u"QPSK",         1},
+        {u"ISDB-S",       8}, // TC8PSK ?
+        {u"2.6GHzMobile", 9},
+        {u"AdvancedCS",  10},
+    });
+    return data;
+}
+
+const ts::Enumeration& ts::SatelliteDeliverySystemDescriptor::CodeRateNamesDVB()
+{
+    static const Enumeration data({
+        {u"undefined", 0},
+        {u"1/2",       1},
+        {u"2/3",       2},
+        {u"3/4",       3},
+        {u"5/6",       4},
+        {u"7/8",       5},
+        {u"8/9",       6},
+        {u"3/5",       7},
+        {u"4/5",       8},
+        {u"9/10",      9},
+        {u"none",     15},
+    });
+    return data;
+}
+
+const ts::Enumeration& ts::SatelliteDeliverySystemDescriptor::CodeRateNamesISDB()
+{
+    static const Enumeration data({
+        {u"undefined",    0},
+        {u"1/2",          1},
+        {u"2/3",          2},
+        {u"3/4",          3},
+        {u"5/6",          4},
+        {u"7/8",          5},
+        {u"ISDB-S",       8},
+        {u"2.6GHzMobile", 9},
+        {u"AdvancedCS",  10},
+        {u"none",        15},
+    });
+    return data;
+}
 
 
 //----------------------------------------------------------------------------
@@ -219,13 +329,13 @@ void ts::SatelliteDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& dis
         disp << margin << "Polarization: " << DataName(MY_XML_NAME, u"Polarization", buf.getBits<uint8_t>(2), NamesFlags::VALUE | NamesFlags::DECIMAL) << std::endl;
         const bool isdb = bool(disp.duck().standards() & Standards::ISDB);
         if (isdb) {
-            disp << margin << "Delivery system: " << DeliverySystemEnum->name(DS_ISDB_S) << std::endl;
+            disp << margin << "Delivery system: " << DeliverySystemEnum().name(DS_ISDB_S) << std::endl;
             disp << margin << "Modulation: " << DataName(MY_XML_NAME, u"ISDBModulation", buf.getBits<uint8_t>(5), NamesFlags::VALUE | NamesFlags::DECIMAL) << std::endl;
         }
         else {
             const uint8_t roll_off = buf.getBits<uint8_t>(2);
             const bool s2 = buf.getBool();
-            disp << margin << "Delivery system: " << DeliverySystemEnum->name(s2 ? DS_DVB_S2 : DS_DVB_S) << std::endl;
+            disp << margin << "Delivery system: " << DeliverySystemEnum().name(s2 ? DS_DVB_S2 : DS_DVB_S) << std::endl;
             disp << margin << "Modulation: " << DataName(MY_XML_NAME, u"DVBModulation", buf.getBits<uint8_t>(2), NamesFlags::VALUE | NamesFlags::DECIMAL);
             if (s2) {
                 disp << ", roll off: " << DataName(MY_XML_NAME, u"DVBS2RollOff", roll_off, NamesFlags::VALUE | NamesFlags::DECIMAL);
@@ -240,72 +350,6 @@ void ts::SatelliteDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& dis
 
 
 //----------------------------------------------------------------------------
-// Enumerations for XML.
-//----------------------------------------------------------------------------
-
-const ts::Enumeration ts::SatelliteDeliverySystemDescriptor::DirectionNames({
-    {u"west", 0},
-    {u"east", 1},
-});
-
-const ts::Enumeration ts::SatelliteDeliverySystemDescriptor::PolarizationNames({
-    {u"horizontal", 0},
-    {u"vertical",   1},
-    {u"left",       2},
-    {u"right",      3},
-});
-
-const ts::Enumeration ts::SatelliteDeliverySystemDescriptor::RollOffNames({
-    {u"0.35",     0},
-    {u"0.25",     1},
-    {u"0.20",     2},
-    {u"reserved", 3},
-});
-
-const ts::Enumeration ts::SatelliteDeliverySystemDescriptor::ModulationNamesDVB({
-    {u"auto",   0},
-    {u"QPSK",   1},
-    {u"8PSK",   2},
-    {u"16-QAM", 3},
-});
-
-const ts::Enumeration ts::SatelliteDeliverySystemDescriptor::ModulationNamesISDB({
-    {u"auto",         0},
-    {u"QPSK",         1},
-    {u"ISDB-S",       8}, // TC8PSK ?
-    {u"2.6GHzMobile", 9},
-    {u"AdvancedCS",  10},
-});
-
-const ts::Enumeration ts::SatelliteDeliverySystemDescriptor::CodeRateNamesDVB({
-    {u"undefined", 0},
-    {u"1/2",       1},
-    {u"2/3",       2},
-    {u"3/4",       3},
-    {u"5/6",       4},
-    {u"7/8",       5},
-    {u"8/9",       6},
-    {u"3/5",       7},
-    {u"4/5",       8},
-    {u"9/10",      9},
-    {u"none",     15},
-});
-
-const ts::Enumeration ts::SatelliteDeliverySystemDescriptor::CodeRateNamesISDB({
-    {u"undefined",    0},
-    {u"1/2",          1},
-    {u"2/3",          2},
-    {u"3/4",          3},
-    {u"5/6",          4},
-    {u"7/8",          5},
-    {u"ISDB-S",       8},
-    {u"2.6GHzMobile", 9},
-    {u"AdvancedCS",  10},
-    {u"none",        15},
-});
-
-
-//----------------------------------------------------------------------------
 // XML serialization
 //----------------------------------------------------------------------------
 
@@ -316,15 +360,15 @@ void ts::SatelliteDeliverySystemDescriptor::buildXML(DuckContext& duck, xml::Ele
 
     root->setIntAttribute(u"frequency", frequency, false);
     root->setAttribute(u"orbital_position", UString::Format(u"%d.%d", orbital_position / 10, orbital_position % 10));
-    root->setEnumAttribute(DirectionNames, u"west_east_flag", east_not_west);
-    root->setEnumAttribute(PolarizationNames, u"polarization", polarization);
+    root->setEnumAttribute(DirectionNames(), u"west_east_flag", east_not_west);
+    root->setEnumAttribute(PolarizationNames(), u"polarization", polarization);
     if (delsys == DS_DVB_S2) {
-        root->setEnumAttribute(RollOffNames, u"roll_off", roll_off);
+        root->setEnumAttribute(RollOffNames(), u"roll_off", roll_off);
     }
-    root->setEnumAttribute(*DeliverySystemEnum, u"modulation_system", delsys);
-    root->setEnumAttribute(isDVB ? ModulationNamesDVB : ModulationNamesISDB, u"modulation_type", modulation);
+    root->setEnumAttribute(DeliverySystemEnum(), u"modulation_system", delsys);
+    root->setEnumAttribute(isDVB ? ModulationNamesDVB() : ModulationNamesISDB(), u"modulation_type", modulation);
     root->setIntAttribute(u"symbol_rate", symbol_rate, false);
-    root->setEnumAttribute(isDVB ? CodeRateNamesDVB : CodeRateNamesISDB, u"FEC_inner", FEC_inner);
+    root->setEnumAttribute(isDVB ? CodeRateNamesDVB() : CodeRateNamesISDB(), u"FEC_inner", FEC_inner);
 }
 
 
@@ -338,11 +382,11 @@ bool ts::SatelliteDeliverySystemDescriptor::analyzeXML(DuckContext& duck, const 
     bool ok =
         element->getIntAttribute(frequency, u"frequency", true) &&
         element->getAttribute(orbit, u"orbital_position", true) &&
-        element->getEnumAttribute(east_not_west, DirectionNames, u"west_east_flag", true) &&
-        element->getEnumAttribute(polarization, PolarizationNames, u"polarization", true) &&
-        element->getEnumAttribute(roll_off, RollOffNames, u"roll_off", false, 0) &&
+        element->getEnumAttribute(east_not_west, DirectionNames(), u"west_east_flag", true) &&
+        element->getEnumAttribute(polarization, PolarizationNames(), u"polarization", true) &&
+        element->getEnumAttribute(roll_off, RollOffNames(), u"roll_off", false, 0) &&
         element->getIntAttribute(symbol_rate, u"symbol_rate", true) &&
-        element->getEnumAttribute<DeliverySystem>(_system, *DeliverySystemEnum, u"modulation_system", true);
+        element->getEnumAttribute<DeliverySystem>(_system, DeliverySystemEnum(), u"modulation_system", true);
 
     if (ok) {
         // Enforce a valid delivery system (DVB-S, DVB-S2, ISDB-S).
@@ -350,14 +394,14 @@ bool ts::SatelliteDeliverySystemDescriptor::analyzeXML(DuckContext& duck, const 
         if (_system == DS_ISDB_S) {
             // ISDB-S variant.
             // Default modulation: ISDB-S (8)
-            ok = element->getEnumAttribute(modulation, ModulationNamesISDB, u"modulation_type", false, 8) &&
-                 element->getEnumAttribute(FEC_inner, CodeRateNamesISDB, u"FEC_inner", true);
+            ok = element->getEnumAttribute(modulation, ModulationNamesISDB(), u"modulation_type", false, 8) &&
+                 element->getEnumAttribute(FEC_inner, CodeRateNamesISDB(), u"FEC_inner", true);
         }
         else {
             // DVB-S/S2 variant.
             // Default modulation: QPSK (1)
-            ok = element->getEnumAttribute(modulation, ModulationNamesDVB, u"modulation_type", false, 1) &&
-                 element->getEnumAttribute(FEC_inner, CodeRateNamesDVB, u"FEC_inner", true);
+            ok = element->getEnumAttribute(modulation, ModulationNamesDVB(), u"modulation_type", false, 1) &&
+                 element->getEnumAttribute(FEC_inner, CodeRateNamesDVB(), u"FEC_inner", true);
         }
     }
 

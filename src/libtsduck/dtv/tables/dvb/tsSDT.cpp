@@ -394,7 +394,7 @@ void ts::SDT::buildXML(DuckContext& duck, xml::Element* root) const
         e->setBoolAttribute(u"EIT_schedule", it.second.EITs_present);
         e->setBoolAttribute(u"EIT_present_following", it.second.EITpf_present);
         e->setBoolAttribute(u"CA_mode", it.second.CA_controlled);
-        e->setEnumAttribute(*RunningStatusEnum, u"running_status", it.second.running_status);
+        e->setEnumAttribute(RunningStatusEnum(), u"running_status", it.second.running_status);
         it.second.descs.toXML(duck, e);
     }
 }
@@ -425,7 +425,7 @@ bool ts::SDT::analyzeXML(DuckContext& duck, const xml::Element* element)
              children[index]->getBoolAttribute(services[id].EITs_present, u"EIT_schedule", false, false) &&
              children[index]->getBoolAttribute(services[id].EITpf_present, u"EIT_present_following", false, false) &&
              children[index]->getBoolAttribute(services[id].CA_controlled, u"CA_mode", false, false) &&
-             children[index]->getEnumAttribute(rs, *RunningStatusEnum, u"running_status", false, 0) &&
+             children[index]->getEnumAttribute(rs, RunningStatusEnum(), u"running_status", false, 0) &&
              services[id].descs.fromXML(duck, children[index]);
         if (ok) {
             services[id].running_status = uint8_t(rs);

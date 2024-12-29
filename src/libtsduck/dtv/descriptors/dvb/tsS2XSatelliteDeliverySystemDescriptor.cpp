@@ -164,20 +164,6 @@ void ts::S2XSatelliteDeliverySystemDescriptor::deserializeChannel(Channel& chann
 
 
 //----------------------------------------------------------------------------
-// Enumerations for XML.
-//----------------------------------------------------------------------------
-
-const ts::Enumeration ts::S2XSatelliteDeliverySystemDescriptor::RollOffNames({
-    {u"0.35", 0},
-    {u"0.25", 1},
-    {u"0.20", 2},
-    {u"0.15", 4},
-    {u"0.10", 5},
-    {u"0.05", 6},
-});
-
-
-//----------------------------------------------------------------------------
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
@@ -246,7 +232,7 @@ void ts::S2XSatelliteDeliverySystemDescriptor::DisplayChannel(TablesDisplay& dis
         const bool multiple = buf.getBool();
         disp << margin << "  Multiple input stream: " << UString::YesNo(multiple) << std::endl;
         buf.skipBits(1);
-        disp << margin << "  Roll-off factor: " << RollOffNames.name(buf.getBits<uint8_t>(3)) << std::endl;
+        disp << margin << "  Roll-off factor: " << SatelliteDeliverySystemDescriptor::RollOffNames().name(buf.getBits<uint8_t>(3)) << std::endl;
         buf.skipBits(4);
         disp << margin << UString::Format(u"  Symbol rate: %d", buf.getBCD<uint32_t>(3));
         disp << UString::Format(u".%04d Msymbol/s", buf.getBCD<uint32_t>(4)) << std::endl;
@@ -290,9 +276,9 @@ void ts::S2XSatelliteDeliverySystemDescriptor::buildChannelXML(const Channel& ch
     xml::Element* e = parent->addElement(name);
     e->setIntAttribute(u"frequency", channel.frequency, false);
     e->setAttribute(u"orbital_position", UString::Format(u"%d.%d", channel.orbital_position / 10, channel.orbital_position % 10));
-    e->setEnumAttribute(SatelliteDeliverySystemDescriptor::DirectionNames, u"west_east_flag", channel.east_not_west);
-    e->setEnumAttribute(SatelliteDeliverySystemDescriptor::PolarizationNames, u"polarization", channel.polarization);
-    e->setEnumAttribute(RollOffNames, u"roll_off", channel.roll_off);
+    e->setEnumAttribute(SatelliteDeliverySystemDescriptor::DirectionNames(), u"west_east_flag", channel.east_not_west);
+    e->setEnumAttribute(SatelliteDeliverySystemDescriptor::PolarizationNames(), u"polarization", channel.polarization);
+    e->setEnumAttribute(SatelliteDeliverySystemDescriptor::RollOffNames(), u"roll_off", channel.roll_off);
     e->setIntAttribute(u"symbol_rate", channel.symbol_rate, false);
     if (channel.multiple_input_stream_flag) {
         e->setIntAttribute(u"input_stream_identifier", channel.input_stream_identifier, true);
@@ -344,9 +330,9 @@ bool ts::S2XSatelliteDeliverySystemDescriptor::getChannelXML(Channel& channel, D
         element->getIntAttribute(channel.frequency, u"frequency", true) &&
         element->getIntAttribute(channel.symbol_rate, u"symbol_rate", true) &&
         element->getAttribute(orbit, u"orbital_position", true) &&
-        element->getEnumAttribute(channel.east_not_west, SatelliteDeliverySystemDescriptor::DirectionNames, u"west_east_flag", true) &&
-        element->getEnumAttribute(channel.polarization, SatelliteDeliverySystemDescriptor::PolarizationNames, u"polarization", true) &&
-        element->getEnumAttribute(channel.roll_off, RollOffNames, u"roll_off", true) &&
+        element->getEnumAttribute(channel.east_not_west, SatelliteDeliverySystemDescriptor::DirectionNames(), u"west_east_flag", true) &&
+        element->getEnumAttribute(channel.polarization, SatelliteDeliverySystemDescriptor::PolarizationNames(), u"polarization", true) &&
+        element->getEnumAttribute(channel.roll_off, SatelliteDeliverySystemDescriptor::RollOffNames(), u"roll_off", true) &&
         element->getOptionalIntAttribute(stream, u"input_stream_identifier");
 
     if (ok) {

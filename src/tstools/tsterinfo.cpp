@@ -308,9 +308,9 @@ int MainCode(int argc, char *argv[])
             if (opt.simple) {
                 std::cout << it->tune.theoreticalBitrate() << std::endl
                           << ts::UString::Decimal(it->tune.bandwidth.value()) << std::endl
-                          << ts::InnerFECEnum->name(it->tune.fec_hp.value()) << std::endl
-                          << ts::ModulationEnum->name(it->tune.modulation.value()) << std::endl
-                          << ts::GuardIntervalEnum->name(it->tune.guard_interval.value()) << std::endl;
+                          << ts::InnerFECEnum().name(it->tune.fec_hp.value()) << std::endl
+                          << ts::ModulationEnum().name(it->tune.modulation.value()) << std::endl
+                          << ts::GuardIntervalEnum().name(it->tune.guard_interval.value()) << std::endl;
             }
             else {
                 if (count > 0) {
@@ -319,9 +319,9 @@ int MainCode(int argc, char *argv[])
                 Display(u"Nominal bitrate", it->tune.theoreticalBitrate().toString(), u"b/s");
                 Display(u"Bitrate difference", it->bitrate_diff.toString(), u"b/s");
                 Display(u"Bandwidth", ts::UString::Decimal(it->tune.bandwidth.value()), u"Hz");
-                Display(u"FEC (high priority)", ts::InnerFECEnum->name(it->tune.fec_hp.value()), u"");
-                Display(u"Constellation", ts::ModulationEnum->name(it->tune.modulation.value()), u"");
-                Display(u"Guard interval", ts::GuardIntervalEnum->name(it->tune.guard_interval.value()), u"");
+                Display(u"FEC (high priority)", ts::InnerFECEnum().name(it->tune.fec_hp.value()), u"");
+                Display(u"Constellation", ts::ModulationEnum().name(it->tune.modulation.value()), u"");
+                Display(u"Guard interval", ts::GuardIntervalEnum().name(it->tune.guard_interval.value()), u"");
             }
         }
     }

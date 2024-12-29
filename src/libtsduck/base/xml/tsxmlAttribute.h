@@ -208,11 +208,11 @@ namespace ts::xml {
         static const Attribute& INVALID();
 
     private:
-        bool    _valid;
-        UString _name;
-        UString _value;
-        size_t  _line;
-        size_t  _sequence;  // insertion sequence
+        bool    _valid = false;
+        UString _name {};
+        UString _value {};
+        size_t  _line = 0;
+        size_t  _sequence = 0;  // insertion sequence
 
         // An for sequence numbers.
         static std::atomic_size_t _allocator;

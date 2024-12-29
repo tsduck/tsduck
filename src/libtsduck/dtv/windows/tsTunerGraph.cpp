@@ -431,7 +431,7 @@ bool ts::TunerGraph::sendTuneRequest(DuckContext& duck, const ModulationArgs& pa
     const TunerType ttype = TunerTypeOf(params.delivery_system.value());
     const auto it = _net_types.find(ttype);
     if (it == _net_types.end()) {
-        duck.report().error(u"tuner \"%s\" does not support %s", _tuner_name, TunerTypeEnum->name(ttype));
+        duck.report().error(u"tuner \"%s\" does not support %s", _tuner_name, TunerTypeEnum().name(ttype));
         return false;
     }
 

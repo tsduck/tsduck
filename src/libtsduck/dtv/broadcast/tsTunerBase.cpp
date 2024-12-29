@@ -190,13 +190,13 @@ bool ts::TunerBase::checkTuneParameters(ModulationArgs& params) const
             return false;
         }
         else if (delivery_systems.size() > 1) {
-            _duck.report().verbose(u"using default deliver system %s", DeliverySystemEnum->name(params.delivery_system.value()));
+            _duck.report().verbose(u"using default deliver system %s", DeliverySystemEnum().name(params.delivery_system.value()));
         }
     }
 
     // Check if the delivery system is supported by this tuner.
     if (!delivery_systems.contains(params.delivery_system.value())) {
-        _duck.report().error(u"deliver system %s not supported on tuner %s", DeliverySystemEnum->name(params.delivery_system.value()), deviceName());
+        _duck.report().error(u"deliver system %s not supported on tuner %s", DeliverySystemEnum().name(params.delivery_system.value()), deviceName());
         return false;
     }
 
@@ -208,14 +208,14 @@ bool ts::TunerBase::checkTuneParameters(ModulationArgs& params) const
 
     // Check if all specified values are supported on the operating system.
     return
-        CheckModVar(params.inversion, u"spectral inversion", *SpectralInversionEnum, _duck.report()) &&
-        CheckModVar(params.inner_fec, u"FEC", *InnerFECEnum, _duck.report()) &&
-        CheckModVar(params.modulation, u"modulation", *ModulationEnum, _duck.report()) &&
-        CheckModVar(params.fec_hp, u"FEC", *InnerFECEnum, _duck.report()) &&
-        CheckModVar(params.fec_lp, u"FEC", *InnerFECEnum, _duck.report()) &&
-        CheckModVar(params.transmission_mode, u"transmission mode", *TransmissionModeEnum, _duck.report()) &&
-        CheckModVar(params.guard_interval, u"guard interval", *GuardIntervalEnum, _duck.report()) &&
-        CheckModVar(params.hierarchy, u"hierarchy", *HierarchyEnum, _duck.report()) &&
-        CheckModVar(params.pilots, u"pilots", *PilotEnum, _duck.report()) &&
-        CheckModVar(params.roll_off, u"roll-off factor", *RollOffEnum, _duck.report());
+        CheckModVar(params.inversion, u"spectral inversion", SpectralInversionEnum(), _duck.report()) &&
+        CheckModVar(params.inner_fec, u"FEC", InnerFECEnum(), _duck.report()) &&
+        CheckModVar(params.modulation, u"modulation", ModulationEnum(), _duck.report()) &&
+        CheckModVar(params.fec_hp, u"FEC", InnerFECEnum(), _duck.report()) &&
+        CheckModVar(params.fec_lp, u"FEC", InnerFECEnum(), _duck.report()) &&
+        CheckModVar(params.transmission_mode, u"transmission mode", TransmissionModeEnum(), _duck.report()) &&
+        CheckModVar(params.guard_interval, u"guard interval", GuardIntervalEnum(), _duck.report()) &&
+        CheckModVar(params.hierarchy, u"hierarchy", HierarchyEnum(), _duck.report()) &&
+        CheckModVar(params.pilots, u"pilots", PilotEnum(), _duck.report()) &&
+        CheckModVar(params.roll_off, u"roll-off factor", RollOffEnum(), _duck.report());
 }

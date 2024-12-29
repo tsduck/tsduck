@@ -7,14 +7,13 @@
 //----------------------------------------------------------------------------
 
 #include "tsEnvironment.h"
-#include "tsSingleton.h"
 
 #if defined(TS_MAC) || defined(TS_BSD)
     extern char **environ; // not defined in public headers
 #endif
 
 // External calls to environment variables are not reentrant. Use a global mutex.
-TS_STATIC_INSTANCE(, std::mutex, EnvironmentMutex, ());
+TS_STATIC_MUTEX(std::mutex, EnvironmentMutex);
 
 
 //----------------------------------------------------------------------------
@@ -23,7 +22,7 @@ TS_STATIC_INSTANCE(, std::mutex, EnvironmentMutex, ());
 
 bool ts::EnvironmentExists(const UString& name)
 {
-    std::lock_guard<std::mutex> lock(*EnvironmentMutex);
+    std::lock_guard<std::mutex> lock(EnvironmentMutex());
 
 #if defined(TS_WINDOWS)
     std::array<::WCHAR, 2> unused;
@@ -41,7 +40,7 @@ bool ts::EnvironmentExists(const UString& name)
 
 ts::UString ts::GetEnvironment(const UString& name, const UString& def)
 {
-    std::lock_guard<std::mutex> lock(*EnvironmentMutex);
+    std::lock_guard<std::mutex> lock(EnvironmentMutex());
 
 #if defined(TS_WINDOWS)
     std::vector<::WCHAR> value;
@@ -65,7 +64,7 @@ ts::UString ts::GetEnvironment(const UString& name, const UString& def)
 
 bool ts::SetEnvironment(const UString& name, const UString& value)
 {
-    std::lock_guard<std::mutex> lock(*EnvironmentMutex);
+    std::lock_guard<std::mutex> lock(EnvironmentMutex());
 
 #if defined(TS_WINDOWS)
     return ::SetEnvironmentVariableW(name.wc_str(), value.wc_str()) != 0;
@@ -82,7 +81,7 @@ bool ts::SetEnvironment(const UString& name, const UString& value)
 
 bool ts::DeleteEnvironment(const UString& name)
 {
-    std::lock_guard<std::mutex> lock(*EnvironmentMutex);
+    std::lock_guard<std::mutex> lock(EnvironmentMutex());
 
 #if defined(TS_WINDOWS)
     return ::SetEnvironmentVariableW(name.wc_str(), nullptr) != 0;
@@ -213,7 +212,7 @@ namespace {
 
 void ts::GetEnvironment(Environment& env)
 {
-    std::lock_guard<std::mutex> lock(*EnvironmentMutex);
+    std::lock_guard<std::mutex> lock(EnvironmentMutex());
     env.clear();
 
 #if defined(TS_WINDOWS)

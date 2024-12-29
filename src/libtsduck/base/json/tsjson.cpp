@@ -15,17 +15,26 @@
 #include "tsjsonObject.h"
 #include "tsjsonArray.h"
 #include "tsTextParser.h"
-#include "tsEnumeration.h"
 
-TS_DEFINE_GLOBAL(const, ts::Enumeration, ts::json::TypeEnum, ({
-    {u"Null literal",  ts::json::Type::Null},
-    {u"True literal",  ts::json::Type::True},
-    {u"False literal", ts::json::Type::False},
-    {u"string",        ts::json::Type::String},
-    {u"number",        ts::json::Type::Number},
-    {u"object",        ts::json::Type::Object},
-    {u"array",         ts::json::Type::Array},
-}));
+
+//----------------------------------------------------------------------------
+// Enumeration description of ts::json::Type.
+//----------------------------------------------------------------------------
+
+const ts::Enumeration& ts::json::TypeEnum()
+{
+    // Thread-safe init-safe static data pattern:
+    static const Enumeration data {
+        {u"Null literal",  ts::json::Type::Null},
+        {u"True literal",  ts::json::Type::True},
+        {u"False literal", ts::json::Type::False},
+        {u"string",        ts::json::Type::String},
+        {u"number",        ts::json::Type::Number},
+        {u"object",        ts::json::Type::Object},
+        {u"array",         ts::json::Type::Array},
+    };
+    return data;
+}
 
 
 //----------------------------------------------------------------------------

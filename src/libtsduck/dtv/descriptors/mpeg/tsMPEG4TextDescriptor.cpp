@@ -13,30 +13,12 @@
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
-#include "tsSingleton.h"
 
 #define MY_XML_NAME u"MPEG4_text_descriptor"
 #define MY_CLASS    ts::MPEG4TextDescriptor
 #define MY_EDID     ts::EDID::Regular(ts::DID_MPEG_MPEG4_TEXT, ts::Standards::MPEG)
 
 TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
-
-// ISO/IEC 14496-17 Table 1
-TS_STATIC_INSTANCE(const, std::set<uint8_t>, ALLOWED_TEXTFORMAT_VALUES, ({
-    0x01,
-    0xF0, 0xF1, 0xF2, 0xF3, 0xF4, 0xF5, 0xF6, 0xF7 ,
-    0xF8, 0xF9, 0xFA, 0xFB, 0xFC, 0xFD, 0xFE
-}));
-
-// ISO/IEC 14496-17 Table 5
-TS_STATIC_INSTANCE(const, std::set<uint8_t>, ALLOWED_3GPPBASEFORMAT_VALUES, ({
-    0x10
-}));
-
-// ISO/IEC 14496-17 Table 6
-TS_STATIC_INSTANCE(const, std::set<uint8_t>, ALLOWED_PROFILELEVEL_VALUES, ({
-    0x10
-}));
 
 
 //----------------------------------------------------------------------------
@@ -67,7 +49,7 @@ void ts::MPEG4TextDescriptor::clearContent()
 }
 
 ts::MPEG4TextDescriptor::MPEG4TextDescriptor(DuckContext& duck, const Descriptor& desc) :
-        MPEG4TextDescriptor()
+    MPEG4TextDescriptor()
 {
     deserialize(duck, desc);
 }
@@ -265,6 +247,23 @@ void ts::MPEG4TextDescriptor::buildXML(DuckContext& duck, xml::Element* root) co
 
 bool ts::MPEG4TextDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
+    // ISO/IEC 14496-17 Table 1
+    static const std::set<uint8_t> ALLOWED_TEXTFORMAT_VALUES {
+        0x01,
+        0xF0, 0xF1, 0xF2, 0xF3, 0xF4, 0xF5, 0xF6, 0xF7,
+        0xF8, 0xF9, 0xFA, 0xFB, 0xFC, 0xFD, 0xFE
+    };
+
+    // ISO/IEC 14496-17 Table 5
+    static const std::set<uint8_t> ALLOWED_3GPPBASEFORMAT_VALUES {
+        0x10
+    };
+
+    // ISO/IEC 14496-17 Table 6
+    static const std::set<uint8_t> ALLOWED_PROFILELEVEL_VALUES {
+        0x10
+    };
+
     xml::ElementVector Compatible_3GPPFormat_children;
     xml::ElementVector Sample_index_and_description_children;
     bool ok =
@@ -283,11 +282,11 @@ bool ts::MPEG4TextDescriptor::analyzeXML(DuckContext& duck, const xml::Element* 
         element->getChildren(Compatible_3GPPFormat_children, u"Compatible_3GPPFormat") &&
         element->getChildren(Sample_index_and_description_children, u"Sample_index_and_description");
 
-    if (!ALLOWED_3GPPBASEFORMAT_VALUES->contains(ThreeGPPBaseFormat)) {
+    if (!ALLOWED_3GPPBASEFORMAT_VALUES.contains(ThreeGPPBaseFormat)) {
         element->report().error(u"line %d: in <%s>, attribute 'ThreeGPPBaseFormat' has a reserved value (0x%X)", element->lineNumber(), element->name(), ThreeGPPBaseFormat);
         ok = false;
     }
-    if (!ALLOWED_PROFILELEVEL_VALUES->contains(profileLevel)) {
+    if (!ALLOWED_PROFILELEVEL_VALUES.contains(profileLevel)) {
         element->report().error(u"line %d: in <%s>, attribute 'profileLevel' has a reserved value (%d)", element->lineNumber(), element->name(), profileLevel);
         ok = false;
     }
@@ -299,7 +298,7 @@ bool ts::MPEG4TextDescriptor::analyzeXML(DuckContext& duck, const xml::Element* 
     for (auto it : Compatible_3GPPFormat_children) {
         uint8_t value = 0;
         ok &= it->getIntAttribute(value, u"value", true);
-        if (!ALLOWED_3GPPBASEFORMAT_VALUES->contains(value)) {
+        if (!ALLOWED_3GPPBASEFORMAT_VALUES.contains(value)) {
             element->report().error(u"line %d: in <%s>, element 'Compatible_3GPPFormat' has a reserved value (0x%X)", element->lineNumber(), element->name(), value);
             ok = false;
         }
@@ -311,7 +310,7 @@ bool ts::MPEG4TextDescriptor::analyzeXML(DuckContext& duck, const xml::Element* 
              it->getIntAttribute(sample.sample_index, u"sample_index", true) &&
              it->getIntAttribute(sample.SampleDescription.textFormat, u"textFormat") &&
              it->getHexaText(sample.SampleDescription.formatSpecificTextConfig);
-        if (ok && !ALLOWED_TEXTFORMAT_VALUES->contains(sample.SampleDescription.textFormat)) {
+        if (ok && !ALLOWED_TEXTFORMAT_VALUES.contains(sample.SampleDescription.textFormat)) {
             element->report().error(u"line %d: in <%s>, attribute 'textFormat' has a reserved value (0x%X)", element->lineNumber(), element->name(), sample.SampleDescription.textFormat);
             ok = false;
         }

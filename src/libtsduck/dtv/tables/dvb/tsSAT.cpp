@@ -128,14 +128,14 @@ void ts::SAT::satellite_position_v2_info_type::geostationary_position_type::dese
 void ts::SAT::satellite_position_v2_info_type::geostationary_position_type::toXML(xml::Element* root)
 {
     root->setAttribute(u"orbital_position", UString::Format(u"%d.%d",  orbital_position / 10, orbital_position % 10 ));
-    root->setEnumAttribute(SatelliteDeliverySystemDescriptor::DirectionNames, u"west_east_flag", west_east_flag);
+    root->setEnumAttribute(SatelliteDeliverySystemDescriptor::DirectionNames(), u"west_east_flag", west_east_flag);
 }
 
 bool ts::SAT::satellite_position_v2_info_type::geostationary_position_type::fromXML(const xml::Element* element)
 {
     UString orbit;
     bool ok = element->getAttribute(orbit, u"orbital_position", true) &&
-        element->getEnumAttribute(west_east_flag, SatelliteDeliverySystemDescriptor::DirectionNames, u"west_east_flag", true);
+              element->getEnumAttribute(west_east_flag, SatelliteDeliverySystemDescriptor::DirectionNames(), u"west_east_flag", true);
 
     if (ok) {
         // Expected orbital position is "XX.X" as in "19.2".
@@ -959,18 +959,23 @@ void ts::SAT::satellite_position_v3_info_type::v3_satellite_type::v3_satellite_m
     }
 }
 
-TS_STATIC_INSTANCE(const, ts::Enumeration, InterpolationTypes, ({
-    {u"Linear", 1},
-    {u"Lagrange", 2},
-    {u"Hermite", 4},
-}));
+// Thread-safe init-safe static data patterns.
+const ts::Enumeration& ts::SAT::InterpolationTypes()
+{
+    static const Enumeration data({
+        {u"Linear",   1},
+        {u"Lagrange", 2},
+        {u"Hermite",  4},
+    });
+    return data;
+}
 
 void ts::SAT::satellite_position_v3_info_type::v3_satellite_type::v3_satellite_metadata_type::toXML(xml::Element* root)
 {
     total_start_time.toXML(root->addElement(u"total_start_time"));
     total_stop_time.toXML(root->addElement(u"total_stop_time"));
     if (interpolation_type.has_value() && interpolation_degree.has_value()) {
-        root->setEnumAttribute(*InterpolationTypes, u"interpolation_type", interpolation_type.value());
+        root->setEnumAttribute(InterpolationTypes(), u"interpolation_type", interpolation_type.value());
         root->setIntAttribute(u"interpolation_degree", interpolation_degree.value());
     }
     if (usable_start_time.has_value()) {
@@ -988,7 +993,7 @@ bool ts::SAT::satellite_position_v3_info_type::v3_satellite_type::v3_satellite_m
     uint8_t           t_interpolation_degree = 0;
     bool              ok = total_start_time.fromXML(element, u"total_start_time") &&
                            total_stop_time.fromXML(element, u"total_stop_time") &&
-                           element->getEnumAttribute(t_interpolation_type, *InterpolationTypes, u"interpolation_type", true) &&
+                           element->getEnumAttribute(t_interpolation_type, InterpolationTypes(), u"interpolation_type", true) &&
                            element->getIntAttribute(t_interpolation_degree, u"interpolation_degree", true, 0, 0, 7);
     if (ok) {
         interpolation_type = t_interpolation_type;

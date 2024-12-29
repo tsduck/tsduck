@@ -7,21 +7,20 @@
 //----------------------------------------------------------------------------
 
 #include "tsxmlAttribute.h"
-#include "tsSingleton.h"
 
 // A non-thread-safe allocator for sequence numbers.
-std::atomic_size_t  ts::xml::Attribute::_allocator(0);
+std::atomic_size_t ts::xml::Attribute::_allocator(0);
 
 
 //----------------------------------------------------------------------------
 // A constant static invalid instance.
 //----------------------------------------------------------------------------
 
-TS_STATIC_INSTANCE(const, ts::xml::Attribute, INVALID_ATTRIBUTE, ());
-
 const ts::xml::Attribute& ts::xml::Attribute::INVALID()
 {
-    return *INVALID_ATTRIBUTE;
+    // Thread-safe init-safe static data pattern:
+    static const Attribute invalid;
+    return invalid;
 }
 
 
@@ -30,10 +29,6 @@ const ts::xml::Attribute& ts::xml::Attribute::INVALID()
 //----------------------------------------------------------------------------
 
 ts::xml::Attribute::Attribute() :
-    _valid(false),
-    _name(),
-    _value(),
-    _line(0),
     _sequence(++_allocator)
 {
 }

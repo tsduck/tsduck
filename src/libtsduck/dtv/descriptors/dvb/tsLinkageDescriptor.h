@@ -149,5 +149,8 @@ namespace ts {
         static void DisplayPrivateTableSSU(TablesDisplay& display, PSIBuffer& buf, const UString& margin, uint8_t ltype);
         static void DisplayPrivateINT(TablesDisplay& display, PSIBuffer& buf, const UString& margin, uint8_t ltype);
         static void DisplayPrivateDeferredINT(TablesDisplay& display, PSIBuffer& buf, const UString& margin, uint8_t ltype);
+
+        // Thread-safe init-safe static data patterns.
+        static const Enumeration& OriginTypeNames();
     };
 }

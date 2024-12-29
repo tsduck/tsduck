@@ -89,5 +89,12 @@ namespace ts {
         virtual void deserializePayload(PSIBuffer&) override;
         virtual void buildXML(DuckContext&, xml::Element*) const override;
         virtual bool analyzeXML(DuckContext&, const xml::Element*) override;
+
+    private:
+        // Thread-safe init-safe static data patterns.
+        static const Enumeration& SisoNames();
+        static const Enumeration& BandwidthNames();
+        static const Enumeration& GuardIntervalNames();
+        static const Enumeration& TransmissionModeNames();
     };
 }

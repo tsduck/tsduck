@@ -56,8 +56,10 @@ namespace ts {
         virtual bool analyzeXML(DuckContext&, const xml::Element*) override;
 
     private:
-        // Enumerations for XML. Also used in class C2BundleDeliverySystemDescriptor.
+        // Thread-safe init-safe static data patterns.
+        static const Enumeration& C2GuardIntervalNames();
+
+        // The static functions above are accessible to other classes which use the same encoding.
         friend class C2BundleDeliverySystemDescriptor;
-        static const ts::Enumeration C2GuardIntervalNames;
     };
 }

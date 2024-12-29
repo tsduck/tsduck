@@ -790,7 +790,10 @@ namespace ts {
         virtual void buildXML(DuckContext&, xml::Element*) const override;
         virtual bool analyzeXML(DuckContext&, const xml::Element*) override;
 
-    public:
+    private:
+        // Thread-safe init-safe static data patterns.
+        static const Enumeration& InterpolationTypes();
+
         // for satellite access table
         static constexpr auto SATELLITE_POSITION_V2_INFO = 0;      //!< satellite access table contains satellite positioning information
         static constexpr auto satellite_table_id_min = SATELLITE_POSITION_V2_INFO;  //!< Min satellite table id.

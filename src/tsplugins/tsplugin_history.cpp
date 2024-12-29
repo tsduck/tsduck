@@ -235,7 +235,7 @@ bool ts::HistoryPlugin::stop()
     // Report last packet of each PID
     for (const auto& it : _cpids) {
         if (!_report_iframe && it.second.last_iframe_pkt != 0) {
-            report(it.second.last_iframe_pkt, u"PID %n, last intra-frame, %s, service %n", it.first, CodecTypeEnum->name(it.second.codec), it.second.service_id);
+            report(it.second.last_iframe_pkt, u"PID %n, last intra-frame, %s, service %n", it.first, CodecTypeEnum().name(it.second.codec), it.second.service_id);
         }
         if (it.second.pkt_count > 0) {
             report(it.second.last_pkt, u"PID %n last packet, %s", it.first, it.second.scrambling ? u"scrambled" : u"clear");
@@ -539,10 +539,10 @@ ts::ProcessorPlugin::Status ts::HistoryPlugin::processPacket(TSPacket& pkt, TSPa
         if (PESPacket::FindIntraImage(pkt.getPayload(), pkt.getPayloadSize(), cpid.stream_type, cpid.codec) != NPOS) {
             // The PES packet contains the start of a video intra-frame.
             if (_report_iframe) {
-                report(u"PID %n, new intra-frame, %s, service %n", pid, CodecTypeEnum->name(cpid.codec), cpid.service_id);
+                report(u"PID %n, new intra-frame, %s, service %n", pid, CodecTypeEnum().name(cpid.codec), cpid.service_id);
             }
             else if (cpid.last_iframe_pkt == 0) {
-                report(u"PID %n, first intra-frame, %s, service %n", pid, CodecTypeEnum->name(cpid.codec), cpid.service_id);
+                report(u"PID %n, first intra-frame, %s, service %n", pid, CodecTypeEnum().name(cpid.codec), cpid.service_id);
             }
             cpid.last_iframe_pkt = tsp->pluginPackets();
         }

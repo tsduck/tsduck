@@ -12,7 +12,6 @@
 #include "tsPSIRepository.h"
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
-#include "tsSingleton.h"
 #include "tsxmlElement.h"
 
 #define MY_XML_NAME u"CUVV_video_stream_descriptor"
@@ -21,17 +20,6 @@
 
 TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
-
-//----------------------------------------------------------------------------
-// Enumerations, names for values
-//----------------------------------------------------------------------------
-
-TS_STATIC_INSTANCE(const, ts::Enumeration, VersionNumbers, ({
-    {u"1.0", 0x0005},
-    {u"2.0", 0x0006},
-    {u"3.0", 0x0007},
-    {u"4.0", 0x0008},
-}));
 
 //----------------------------------------------------------------------------
 // Constructors
@@ -84,6 +72,22 @@ void ts::UWAVideoStreamDescriptor::deserializePayload(PSIBuffer& buf)
 
 
 //----------------------------------------------------------------------------
+// Thread-safe init-safe static data patterns.
+//----------------------------------------------------------------------------
+
+const ts::Enumeration& ts::UWAVideoStreamDescriptor::VersionNumbers()
+{
+    static const Enumeration data({
+        {u"1.0", 0x0005},
+        {u"2.0", 0x0006},
+        {u"3.0", 0x0007},
+        {u"4.0", 0x0008},
+    });
+    return data;
+}
+
+
+//----------------------------------------------------------------------------
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
@@ -120,7 +124,7 @@ void ts::UWAVideoStreamDescriptor::buildXML(DuckContext& duck, xml::Element* roo
     root->setIntAttribute(u"cuvv_tag", cuvv_tag, true);
     root->setIntAttribute(u"cuva_version_map", cuva_version_map, true);
     root->setIntAttribute(u"terminal_provide_code", terminal_provide_code, true);
-    root->setEnumAttribute(*VersionNumbers, u"terminal_provide_oriented_code", terminal_provide_oriented_code);
+    root->setEnumAttribute(VersionNumbers(), u"terminal_provide_oriented_code", terminal_provide_oriented_code);
 }
 
 
@@ -133,5 +137,5 @@ bool ts::UWAVideoStreamDescriptor::analyzeXML(DuckContext& duck, const xml::Elem
     return element->getIntAttribute(cuvv_tag, u"cuvv_tag", true, ts::REGID_CUVV, ts::REGID_CUVV, ts::REGID_CUVV) &&
            element->getIntAttribute(cuva_version_map, u"cuva_version_map", true) &&
            element->getIntAttribute(terminal_provide_code, u"terminal_provide_code", true, 0x0004, 0x0004, 0x0004) &&
-           element->getEnumAttribute(terminal_provide_oriented_code, *VersionNumbers, u"terminal_provide_oriented_code", true, 0x0005);
+           element->getEnumAttribute(terminal_provide_oriented_code, VersionNumbers(), u"terminal_provide_oriented_code", true, 0x0005);
 }

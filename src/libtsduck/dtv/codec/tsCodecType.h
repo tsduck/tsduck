@@ -15,7 +15,6 @@
 #pragma once
 #include "tsEnumeration.h"
 #include "tsNamesFile.h"
-#include "tsSingleton.h"
 #include "tsTS.h" // required by GCC, see comment below
 
 namespace ts {
@@ -63,17 +62,19 @@ namespace ts {
 
     //!
     //! Enumeration description of ts::CodecType (display).
-    //! The version is suitable to display codec names.
+    //! This version is suitable to display codec names.
+    //! @return A constant reference to an Enumeration.
     //! @see CodecTypeArgEnum
     //!
-    TS_DECLARE_GLOBAL(const, Enumeration, CodecTypeEnum);
+   TSDUCKDLL const Enumeration& CodecTypeEnum();
 
     //!
     //! Enumeration description of ts::CodecType (command line argument).
-    //! The version is suitable to define command line arguments taking codec names as parameter.
+    //! This version is suitable to define command line arguments taking codec names as parameter.
+    //! @return A constant reference to an Enumeration.
     //! @see CodecTypeEnum
     //!
-    TS_DECLARE_GLOBAL(const, Enumeration, CodecTypeArgEnum);
+    TSDUCKDLL const Enumeration& CodecTypeArgEnum();
 
     //!
     //! Check if a codec type value indicates an audio stream.

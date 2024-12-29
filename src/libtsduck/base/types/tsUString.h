@@ -15,7 +15,6 @@
 #include "tsUChar.h"
 #include "tsArgMix.h"
 #include "tsMemory.h"
-#include "tsSingleton.h"
 
 //!
 //! Do not declare legacy method as "deprecated".
@@ -141,6 +140,13 @@ namespace ts {
         //! Explicit reference to superclass.
         //!
         using SuperClass = std::u16string;
+
+        //!
+        //! A static empty string.
+        //! Can be used when a reference to a static empty string is required.
+        //! @return A constant reference to the empty string.
+        //!
+        static const UString& EMPTY();
 
         //!
         //! The 3-byte so-called "UTF-8 Byte Order Mark".
@@ -2603,12 +2609,6 @@ namespace ts {
             bool processField();
         };
     };
-
-    //!
-    //! A static empty string.
-    //! Can be used when a reference to a static empty string is required.
-    //!
-    TS_DECLARE_GLOBAL(const, UString, EMPTY_STRING);
 }
 
 //!

@@ -53,10 +53,6 @@ namespace ts {
         // Inherited methods
         DeclareDisplayDescriptor();
 
-    private:
-        // provide a textual representation of the subsampling format
-        static UString SubsamplingFormat(bool subsampling_x, bool subsampling_y, bool monochrome);
-
     protected:
         // Inherited methods
         virtual void clearContent() override;
@@ -64,5 +60,12 @@ namespace ts {
         virtual void deserializePayload(PSIBuffer&) override;
         virtual void buildXML(DuckContext&, xml::Element*) const override;
         virtual bool analyzeXML(DuckContext&, const xml::Element*) override;
+
+    private:
+        // Thread-safe init-safe static data patterns.
+        static const Enumeration& ChromaSamplePosition();
+
+        // provide a textual representation of the subsampling format
+        static UString SubsamplingFormat(bool subsampling_x, bool subsampling_y, bool monochrome);
     };
 }

@@ -69,7 +69,7 @@ TSUNIT_DEFINE_TEST(TunerArgs)
 
 void DVBTest::testParameters(ts::DeliverySystem delsys)
 {
-    debug() << "DVBTest: Default TunerParameters, type: " << ts::DeliverySystemEnum->name(delsys) << std::endl;
+    debug() << "DVBTest: Default TunerParameters, type: " << ts::DeliverySystemEnum().name(delsys) << std::endl;
 
     ts::ModulationArgs params;
     params.delivery_system = delsys;

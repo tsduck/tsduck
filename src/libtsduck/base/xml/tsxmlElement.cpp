@@ -62,7 +62,7 @@ void ts::xml::Element::clear()
 
 const ts::UString& ts::xml::Element::parentName() const
 {
-    return parent() == nullptr ? *EMPTY_STRING : parent()->value();
+    return parent() == nullptr ? UString::EMPTY() : parent()->value();
 }
 
 

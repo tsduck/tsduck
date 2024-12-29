@@ -60,19 +60,28 @@ void ts::ISPAccessModeDescriptor::deserializePayload(PSIBuffer& buf)
 
 
 //----------------------------------------------------------------------------
-// Static method to display a descriptor.
+// Thread-safe init-safe static data patterns.
 //----------------------------------------------------------------------------
 
-TS_STATIC_INSTANCE(const, ts::Enumeration, AccessModeNames, ({
-    {u"unused", 0},
-    {u"dialup", 1},
-}));
+const ts::Enumeration& ts::ISPAccessModeDescriptor::AccessModeNames()
+{
+    static const Enumeration data({
+        {u"unused", 0},
+        {u"dialup", 1},
+    });
+    return data;
+}
+
+
+//----------------------------------------------------------------------------
+// Static method to display a descriptor.
+//----------------------------------------------------------------------------
 
 void ts::ISPAccessModeDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(1)) {
         const uint8_t mode = buf.getUInt8();
-        disp << margin << UString::Format(u"Access mode: 0x%X (%s)", mode, AccessModeNames->name(mode)) << std::endl;
+        disp << margin << UString::Format(u"Access mode: 0x%X (%s)", mode, AccessModeNames().name(mode)) << std::endl;
     }
 }
 
@@ -83,10 +92,10 @@ void ts::ISPAccessModeDescriptor::DisplayDescriptor(TablesDisplay& disp, const t
 
 void ts::ISPAccessModeDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    root->setEnumAttribute(*AccessModeNames, u"access_mode", access_mode);
+    root->setEnumAttribute(AccessModeNames(), u"access_mode", access_mode);
 }
 
 bool ts::ISPAccessModeDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getEnumAttribute(access_mode, *AccessModeNames, u"access_mode", true);
+    return element->getEnumAttribute(access_mode, AccessModeNames(), u"access_mode", true);
 }

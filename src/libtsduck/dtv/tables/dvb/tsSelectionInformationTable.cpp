@@ -131,7 +131,7 @@ void ts::SelectionInformationTable::DisplaySection(TablesDisplay& disp, const ts
     while (buf.canReadBytes(4)) {
         disp << margin << UString::Format(u"Service id: %n", buf.getUInt16());
         buf.skipReservedBits(1);
-        disp << ", Status: " << RunningStatusEnum->name(buf.getBits<uint8_t>(3)) << std::endl;
+        disp << ", Status: " << RunningStatusEnum().name(buf.getBits<uint8_t>(3)) << std::endl;
         disp.displayDescriptorListWithLength(section, context, false, buf, margin);
     }
 }
@@ -150,7 +150,7 @@ void ts::SelectionInformationTable::buildXML(DuckContext& duck, xml::Element* ro
     for (const auto& it : services) {
         xml::Element* e = root->addElement(u"service");
         e->setIntAttribute(u"service_id", it.first, true);
-        e->setEnumAttribute(*RunningStatusEnum, u"running_status", it.second.running_status);
+        e->setEnumAttribute(RunningStatusEnum(), u"running_status", it.second.running_status);
         it.second.descs.toXML(duck, e);
     }
 }
@@ -171,7 +171,7 @@ bool ts::SelectionInformationTable::analyzeXML(DuckContext& duck, const xml::Ele
     for (size_t index = 0; ok && index < children.size(); ++index) {
         uint16_t id = 0;
         ok = children[index]->getIntAttribute(id, u"service_id", true) &&
-             children[index]->getEnumAttribute(services[id].running_status, *RunningStatusEnum, u"running_status", true) &&
+             children[index]->getEnumAttribute(services[id].running_status, RunningStatusEnum(), u"running_status", true) &&
              services[id].descs.fromXML(duck, children[index]);
     }
     return ok;

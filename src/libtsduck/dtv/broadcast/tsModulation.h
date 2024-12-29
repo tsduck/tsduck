@@ -15,7 +15,6 @@
 #pragma once
 #include "tsEnumeration.h"
 #include "tsReport.h"
-#include "tsSingleton.h"
 
 #if defined(TS_WINDOWS)
     #include "tsBeforeStandardHeaders.h"
@@ -169,8 +168,9 @@ namespace ts {
 
     //!
     //! Enumeration description of ts::Modulation.
+    //! @return A constant reference to the enumeration description.
     //!
-    TS_DECLARE_GLOBAL(const, Enumeration, ModulationEnum);
+    TSDUCKDLL const Enumeration& ModulationEnum();
 
     //!
     //! Compute the number of bits per symbol for a specified modulation.
@@ -200,8 +200,9 @@ namespace ts {
 
     //!
     //! Enumeration description of ts::SpectralInversion.
+    //! @return A constant reference to the enumeration description.
     //!
-    TS_DECLARE_GLOBAL(const, Enumeration, SpectralInversionEnum);
+    TSDUCKDLL const Enumeration& SpectralInversionEnum();
 
     //!
     //! Inner Forward Error Correction
@@ -350,8 +351,9 @@ namespace ts {
 
     //!
     //! Enumeration description of ts::InnerFEC.
+    //! @return A constant reference to the enumeration description.
     //!
-    TS_DECLARE_GLOBAL(const, Enumeration, InnerFECEnum);
+    TSDUCKDLL const Enumeration& InnerFECEnum();
 
     //!
     //! Compute the multiplier of a FEC value.
@@ -390,8 +392,9 @@ namespace ts {
 
     //!
     //! Enumeration description of ts::Polarization.
+    //! @return A constant reference to the enumeration description.
     //!
-    TS_DECLARE_GLOBAL(const, Enumeration, PolarizationEnum);
+    TSDUCKDLL const Enumeration& PolarizationEnum();
 
     //!
     //! Pilot (DVB-S2)
@@ -414,8 +417,9 @@ namespace ts {
 
     //!
     //! Enumeration description of ts::Pilot.
+    //! @return A constant reference to the enumeration description.
     //!
-    TS_DECLARE_GLOBAL(const, Enumeration, PilotEnum);
+    TSDUCKDLL const Enumeration& PilotEnum();
 
     //!
     //! Roll-off (DVB-S2)
@@ -456,8 +460,9 @@ namespace ts {
 
     //!
     //! Enumeration description of ts::RollOff.
+    //! @return A constant reference to the enumeration description.
     //!
-    TS_DECLARE_GLOBAL(const, Enumeration, RollOffEnum);
+    TSDUCKDLL const Enumeration& RollOffEnum();
 
     //!
     //! Bandwidth (OFDM, DVB-T/T2)
@@ -520,8 +525,9 @@ namespace ts {
 
     //!
     //! Enumeration description of ts::TransmissionMode.
+    //! @return A constant reference to the enumeration description.
     //!
-    TS_DECLARE_GLOBAL(const, Enumeration, TransmissionModeEnum);
+    TSDUCKDLL const Enumeration& TransmissionModeEnum();
 
     //!
     //! Guard interval (OFDM)
@@ -581,8 +587,9 @@ namespace ts {
 
     //!
     //! Enumeration description of ts::GuardInterval.
+    //! @return A constant reference to the enumeration description.
     //!
-    TS_DECLARE_GLOBAL(const, Enumeration, GuardIntervalEnum);
+    TSDUCKDLL const Enumeration& GuardIntervalEnum();
 
     //!
     //! Compute the multiplier of a guard interval value.
@@ -625,8 +632,9 @@ namespace ts {
 
     //!
     //! Enumeration description of ts::Hierarchy.
+    //! @return A constant reference to the enumeration description.
     //!
-    TS_DECLARE_GLOBAL(const, Enumeration, HierarchyEnum);
+    TSDUCKDLL const Enumeration& HierarchyEnum();
 
     //
     // Representation of multistream in DVB-T2, DVB-S2, ISDB-S.
@@ -649,8 +657,9 @@ namespace ts {
 
     //!
     //! Enumeration description of ts::PLSMode.
+    //! @return A constant reference to the enumeration description.
     //!
-    TS_DECLARE_GLOBAL(const, Enumeration, PLSModeEnum);
+    TSDUCKDLL const Enumeration& PLSModeEnum();
 
     //!
     //! Convert a PLS code from GOLD to ROOT mode.

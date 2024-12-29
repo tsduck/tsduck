@@ -18,8 +18,17 @@
 #include "tsIntegerUtils.h"
 #include "tsEnumeration.h"
 
+
+//----------------------------------------------------------------------------
 // A static empty string.
-TS_DEFINE_GLOBAL(const, ts::UString, ts::EMPTY_STRING, ());
+//----------------------------------------------------------------------------
+
+const ts::UString& ts::UString::EMPTY()
+{
+    // Thread-safe init-safe static data pattern:
+    static const UString empty;
+    return empty;
+}
 
 
 //----------------------------------------------------------------------------
@@ -1332,48 +1341,66 @@ ts::UString ts::UString::HumanSize(int64_t value, const UString& units, bool for
 // Format the name of an instance of std::chrono::duration based on its ratio.
 //----------------------------------------------------------------------------
 
-// A static instance of a map from num/den to string.
 namespace {
+
+    // std::ratio is a compile-time template, we need a run-time variant.
     struct Ratio
     {
         std::intmax_t num;
         std::intmax_t den;
-        bool operator<(const Ratio& other) const { return num < other.num || (num == other.num && den < other.den); }
+        auto operator<=>(const Ratio&) const = default;
     };
+
+    // how to interpret a ratio
     struct UnitNames
     {
-        const ts::UChar* sname;
-        const ts::UChar* lname;
-        const ts::UChar* pname;
+        const ts::UChar* sname; // short name
+        const ts::UChar* lname; // long name
+        const ts::UChar* pname; // plural form, if different from adding "s"
     };
-    using UnitMap = std::map<Ratio,UnitNames>;
+
+    // Build one map entry when building the initial map.
+    template <class DURATION> requires std::integral<typename DURATION::rep>
+    inline constexpr std::pair<Ratio, UnitNames> ChronoEntry(const ts::UChar* sname, const ts::UChar* lname, const ts::UChar* pname = nullptr)
+    {
+        return std::pair<Ratio, UnitNames>{{DURATION::period::num, DURATION::period::den}, {sname, lname, pname}};
+    }
+
+    // A static instance of a map from num/den to string.
+    // The initial value contains all standard duration types.
+    // Additional duration types can be added later.
+    std::map<Ratio, UnitNames>& ChronoUnitMap()
+    {
+        // Thread-safe init-safe static data pattern:
+        static std::map<Ratio, UnitNames> data {
+            ChronoEntry<cn::seconds>      (u"s",  u"second"),
+            ChronoEntry<ts::deciseconds>  (u"ds", u"decisecond"),
+            ChronoEntry<cn::milliseconds> (u"ms", u"millisecond"),
+            ChronoEntry<cn::microseconds> (u"us", u"microsecond"),
+            ChronoEntry<cn::nanoseconds>  (u"ns", u"nanosecond"),
+            ChronoEntry<cn::minutes>      (u"mn", u"minute"),
+            ChronoEntry<cn::hours>        (u"h",  u"hour"),
+            ChronoEntry<cn::days>         (u"d",  u"day"),
+            ChronoEntry<cn::weeks>        (u"w",  u"week"),
+            ChronoEntry<cn::months>       (u"m",  u"month"),
+            ChronoEntry<cn::years>        (u"y",  u"year"),
+        };
+        return data;
+    }
 }
-TS_STATIC_INSTANCE(, UnitMap, ChronoUnitMap, ());
 
 // The constructor registers a new std::chrono::duration unit name.
 ts::UString::RegisterChronoUnit::RegisterChronoUnit(std::intmax_t num, std::intmax_t den, const UChar* sname, const UChar* lname, const UChar* pname)
 {
-    ChronoUnitMap->insert(std::make_pair<Ratio, UnitNames>({num, den}, {sname, lname, pname}));
+    ChronoUnitMap().insert(std::make_pair<Ratio, UnitNames>({num, den}, {sname, lname, pname}));
 }
-
-// Standard std::cn::chrono::duration types.
-TS_REGISTER_CHRONO_UNIT(cn::seconds, u"s", u"second");
-TS_REGISTER_CHRONO_UNIT(ts::deciseconds, u"ds", u"decisecond");
-TS_REGISTER_CHRONO_UNIT(cn::milliseconds, u"ms", u"millisecond");
-TS_REGISTER_CHRONO_UNIT(cn::microseconds, u"us", u"microsecond");
-TS_REGISTER_CHRONO_UNIT(cn::nanoseconds, u"ns", u"nanosecond");
-TS_REGISTER_CHRONO_UNIT(cn::minutes, u"mn", u"minute");
-TS_REGISTER_CHRONO_UNIT(cn::hours, u"h",  u"hour");
-TS_REGISTER_CHRONO_UNIT(cn::days, u"d", u"day");
-TS_REGISTER_CHRONO_UNIT(cn::weeks, u"w", u"week");
-TS_REGISTER_CHRONO_UNIT(cn::months, u"m", u"month");
-TS_REGISTER_CHRONO_UNIT(cn::years, u"y", u"year");
 
 // Public interface to get the chrono unit names
 ts::UString ts::UString::ChronoUnit(std::intmax_t num, std::intmax_t den, bool short_format, bool plural)
 {
-    const auto it = ChronoUnitMap->find({num, den});
-    if (it != ChronoUnitMap->end()) {
+    const auto& cmap(ChronoUnitMap());
+    const auto it = cmap.find({num, den});
+    if (it != cmap.end()) {
         if (short_format) {
             return UString(it->second.sname);
         }
@@ -1548,19 +1575,19 @@ bool ts::UString::getLine(std::istream& strm)
 // Convert a string into a bool value.
 //----------------------------------------------------------------------------
 
-TS_STATIC_INSTANCE(const, ts::Enumeration, BoolEnum, ({
-    {u"false", 0},
-    {u"true",  1},
-    {u"yes",   1},
-    {u"no",    0},
-    {u"on",    1},
-    {u"off",   0},
-}));
-
 bool ts::UString::toBool(bool& value) const
 {
-    const int iValue = BoolEnum->value(*this, false);
+    // Thread-safe init-safe static data pattern:
+    static const Enumeration bool_enum({
+        {u"false", 0},
+        {u"true",  1},
+        {u"yes",   1},
+        {u"no",    0},
+        {u"on",    1},
+        {u"off",   0},
+    });
 
+    const int iValue = bool_enum.value(*this, false);
     if (iValue == Enumeration::UNKNOWN) {
         // Invalid string and invalid integer.
         value = false;
@@ -1577,9 +1604,10 @@ bool ts::UString::toBool(bool& value) const
 // Convert a string into a Tristate value.
 //----------------------------------------------------------------------------
 
-// An enumeration for Tristate values. We use very large integer values
-// for predefined strings to avoid clash with user-specified values.
 namespace {
+
+    // An enumeration for Tristate values. We use very large integer values
+    // for predefined strings to avoid clash with user-specified values.
     enum {
         TSE_FALSE = std::numeric_limits<int>::min(),
         TSE_TRUE,
@@ -1591,26 +1619,32 @@ namespace {
         TSE_UNKNOWN,
         TSE_LAST  // Last predefined value
     };
+
+    const ts::Enumeration& TristateEnum()
+    {
+        // Thread-safe init-safe static data pattern:
+        static const ts::Enumeration data({
+            {u"false",   TSE_FALSE},
+            {u"true",    TSE_TRUE},
+            {u"yes",     TSE_YES},
+            {u"no",      TSE_NO},
+            {u"on",      TSE_ON},
+            {u"off",     TSE_OFF},
+            {u"maybe",   TSE_MAYBE},
+            {u"unknown", TSE_UNKNOWN},
+        });
+        return data;
+    }
 }
-TS_STATIC_INSTANCE(const, ts::Enumeration, TristateEnum, ({
-    {u"false",   TSE_FALSE},
-    {u"true",    TSE_TRUE},
-    {u"yes",     TSE_YES},
-    {u"no",      TSE_NO},
-    {u"on",      TSE_ON},
-    {u"off",     TSE_OFF},
-    {u"maybe",   TSE_MAYBE},
-    {u"unknown", TSE_UNKNOWN},
-}));
 
 ts::UString ts::UString::TristateNamesList()
 {
-    return TristateEnum->nameList();
+    return TristateEnum().nameList();
 }
 
 bool ts::UString::toTristate(Tristate& value) const
 {
-    const int iValue = TristateEnum->value(*this, false);
+    const int iValue = TristateEnum().value(*this, false);
 
     if (iValue == Enumeration::UNKNOWN) {
         // Invalid string and invalid integer.

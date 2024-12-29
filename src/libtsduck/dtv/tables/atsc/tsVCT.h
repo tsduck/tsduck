@@ -165,6 +165,10 @@ namespace ts {
         virtual bool analyzeXML(DuckContext&, const xml::Element*) override;
 
     private:
+        // Thread-safe init-safe static data patterns.
+        static const Enumeration& ModulationModeEnum();
+        static const Enumeration& ServiceTypeEnum();
+
         // Internal version of find by Service class.
         ChannelList::const_iterator findServiceInternal(Service& service, bool exact_match, bool same_ts) const;
     };

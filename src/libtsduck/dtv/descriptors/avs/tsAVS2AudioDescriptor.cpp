@@ -177,13 +177,17 @@ void ts::AVS2AudioDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::D
 
 
 //----------------------------------------------------------------------------
-// Enumerations for XML
+// Thread-safe init-safe static data patterns.
 //----------------------------------------------------------------------------
 
-TS_STATIC_INSTANCE(const, ts::Enumeration, CodingProfiles, ({
-    {u"basic", 0},
-    {u"object", 1},
-}));
+const ts::Enumeration& ts::AVS2AudioDescriptor::CodingProfiles()
+{
+    static const Enumeration data({
+        {u"basic",  0},
+        {u"object", 1},
+    });
+    return data;
+}
 
 
 //----------------------------------------------------------------------------
@@ -193,7 +197,7 @@ TS_STATIC_INSTANCE(const, ts::Enumeration, CodingProfiles, ({
 void ts::AVS2AudioDescriptor::avs_version_info::toXML(xml::Element* root) const
 {
     root->setIntAttribute(u"audio_codec_id", audio_codec_id);
-    root->setEnumAttribute(*CodingProfiles, u"coding_profile", coding_profile);
+    root->setEnumAttribute(CodingProfiles(), u"coding_profile", coding_profile);
     root->setEnumAttribute(AVS3AudioDescriptor::Resolutions, u"resolution", resolution);
     if (audio_codec_id == AVS3AudioDescriptor::General_Coding) {
         root->setIntAttribute(u"bitrate_index", bitrate_index, true);
@@ -226,7 +230,7 @@ void ts::AVS2AudioDescriptor::buildXML(DuckContext& duck, xml::Element* root) co
 bool ts::AVS2AudioDescriptor::avs_version_info::fromXML(const xml::Element* element)
 {
     bool ok = element->getIntAttribute(audio_codec_id, u"audio_codec_id", true, 0, 0, 15) &&
-              element->getEnumAttribute(coding_profile, *CodingProfiles, u"coding_profile", true) &&
+              element->getEnumAttribute(coding_profile, CodingProfiles(), u"coding_profile", true) &&
               element->getEnumAttribute(resolution, AVS3AudioDescriptor::Resolutions, u"resolution", true);
     if (ok && (audio_codec_id == AVS3AudioDescriptor::General_Coding)) {
         ok = element->getIntAttribute(bitrate_index, u"bitrate_index", true, 0, 0, 0x0f) &&

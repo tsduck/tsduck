@@ -104,7 +104,7 @@ ts::HiDesOutputPlugin::HiDesOutputPlugin(TSP* tsp_) :
     }));
     help(u"high-priority-fec", u"Error correction for high priority streams. The default is 2/3.");
 
-    option(u"spectral-inversion", 's', *SpectralInversionEnum);
+    option(u"spectral-inversion", 's', SpectralInversionEnum());
     help(u"spectral-inversion", u"Spectral inversion. The default is auto.");
 
     option(u"transmission-mode", 't', Enumeration({

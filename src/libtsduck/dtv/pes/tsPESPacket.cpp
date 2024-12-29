@@ -16,7 +16,6 @@
 #include "tsAVCAccessUnitDelimiter.h"
 #include "tsHEVCAccessUnitDelimiter.h"
 #include "tsVVCAccessUnitDelimiter.h"
-#include "tsSingleton.h"
 
 
 //----------------------------------------------------------------------------
@@ -286,23 +285,6 @@ bool ts::PESPacket::operator==(const PESPacket& pp) const
 
 
 //----------------------------------------------------------------------------
-// List of functions to check the compatibility of PES content and codec.
-//----------------------------------------------------------------------------
-
-using ContentCheckFunction = bool (*)(const uint8_t* data, size_t size, uint8_t stream_type);
-using CodecCheckMap = std::map<ts::CodecType, ContentCheckFunction>;
-TS_STATIC_INSTANCE(const, CodecCheckMap, StaticCodecCheckMap, ({
-    std::make_pair(ts::CodecType::MPEG1_VIDEO, ts::PESPacket::IsMPEG2Video),
-    std::make_pair(ts::CodecType::MPEG2_VIDEO, ts::PESPacket::IsMPEG2Video),
-    std::make_pair(ts::CodecType::AC3, ts::PESPacket::IsAC3),
-    std::make_pair(ts::CodecType::EAC3, ts::PESPacket::IsAC3),
-    std::make_pair(ts::CodecType::AVC, ts::PESPacket::IsAVC),
-    std::make_pair(ts::CodecType::HEVC, ts::PESPacket::IsHEVC),
-    std::make_pair(ts::CodecType::VVC, ts::PESPacket::IsVVC),
-}));
-
-
-//----------------------------------------------------------------------------
 // Set a default codec type.
 //----------------------------------------------------------------------------
 
@@ -310,9 +292,25 @@ void ts::PESPacket::setDefaultCodec(CodecType default_codec)
 {
     // If the codec if already set or the new one is undefined, nothing to do.
     if (_is_valid && _codec == CodecType::UNDEFINED && default_codec != CodecType::UNDEFINED) {
+
+        // Profile of a function which checks if a data area matches a codec type.
+        using ContentCheckFunction = bool (*)(const uint8_t* data, size_t size, uint8_t stream_type);
+
+        // A static map which associates a codec type and its checking function.
+        static const std::map<CodecType, ContentCheckFunction> CodecCheckMap {
+            {CodecType::MPEG1_VIDEO, IsMPEG2Video},
+            {CodecType::MPEG2_VIDEO, IsMPEG2Video},
+            {CodecType::AC3,         IsAC3},
+            {CodecType::EAC3,        IsAC3},
+            {CodecType::AVC,         IsAVC},
+            {CodecType::HEVC,        IsHEVC},
+            {CodecType::VVC,         IsVVC},
+        };
+
         // Check if the specified default codec has a PES content checking function.
-        const auto it = StaticCodecCheckMap->find(default_codec);
-        if (it == StaticCodecCheckMap->end() || it->second(content(), size(), _stream_type)) {
+        const auto it = CodecCheckMap.find(default_codec);
+        if (it == CodecCheckMap.end() || it->second(content(), size(), _stream_type)) {
+            // No codec type checking function or there is a function and the code type is correct.
             _codec = default_codec;
         }
     }

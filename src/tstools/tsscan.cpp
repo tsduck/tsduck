@@ -79,7 +79,7 @@ ScanOptions::ScanOptions(int argc, char *argv[]) :
 
     // The following option replaces --delivery-system as defined in ModulationArgs (through TunerArgs).
     // We want to allow more than one value for it.
-    option(u"delivery-system", 0, *ts::DeliverySystemEnum, 0, ts::Args::UNLIMITED_COUNT);
+    option(u"delivery-system", 0, ts::DeliverySystemEnum(), 0, ts::Args::UNLIMITED_COUNT);
     help(u"delivery-system",
          u"Specify which delivery system to use. "
          u"By default, use the default system for the tuner.\n"
@@ -337,7 +337,7 @@ void OffsetScanner::scanAll(ts::DeliverySystem sys)
 {
     ts::UString desc;
     if (sys != ts::DS_UNDEFINED) {
-        desc.format(u" (%s)", ts::DeliverySystemEnum->name(sys));
+        desc.format(u" (%s)", ts::DeliverySystemEnum().name(sys));
     }
     if (!_opt.hfband->isValidChannel(_channel, _opt)) {
         return;

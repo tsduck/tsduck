@@ -496,7 +496,7 @@ void ts::EIT::buildXML(DuckContext& duck, xml::Element* root) const
         e->setIntAttribute(u"event_id", it.second.event_id, true);
         e->setDateTimeAttribute(u"start_time", it.second.start_time);
         e->setTimeAttribute(u"duration", it.second.duration);
-        e->setEnumAttribute(*RunningStatusEnum, u"running_status", it.second.running_status);
+        e->setEnumAttribute(RunningStatusEnum(), u"running_status", it.second.running_status);
         e->setBoolAttribute(u"CA_mode", it.second.CA_controlled);
         it.second.descs.toXML(duck, e);
     }
@@ -526,7 +526,7 @@ bool ts::EIT::analyzeXML(DuckContext& duck, const xml::Element* element)
         ok = children[i]->getIntAttribute(event.event_id, u"event_id", true, 0, 0x0000, 0xFFFF) &&
              children[i]->getDateTimeAttribute(event.start_time, u"start_time", true) &&
              children[i]->getTimeAttribute(event.duration, u"duration", true) &&
-             children[i]->getEnumAttribute(event.running_status, *RunningStatusEnum, u"running_status", false, 0) &&
+             children[i]->getEnumAttribute(event.running_status, RunningStatusEnum(), u"running_status", false, 0) &&
              children[i]->getBoolAttribute(event.CA_controlled, u"CA_mode", false, false) &&
              event.descs.fromXML(duck, children[i]);
     }

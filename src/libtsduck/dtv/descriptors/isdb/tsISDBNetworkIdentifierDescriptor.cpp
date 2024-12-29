@@ -89,17 +89,21 @@ void ts::ISDBNetworkIdentifierDescriptor::DisplayDescriptor(TablesDisplay& disp,
 
 
 //----------------------------------------------------------------------------
-// Enumerations for XML
+// Thread-safe init-safe static data patterns.
 //----------------------------------------------------------------------------
 
-TS_STATIC_INSTANCE(const, ts::Enumeration, MediaTypes, ({
-    // media_type table in ARIB STD-B21, 9.1.8.3 (as corrected in email by ARIB)
-    {u"AB", 0x4142},  // Advanced BS
-    {u"AC", 0x4143},  // Advanced wide-band CS
-    {u"BS", 0x4253},  // BS/broadband CS
-    {u"CS", 0x4353},  // Narrow-band CS / Advanced narrow-band
-    {u"TB", 0x5442},  // Terrestrial broadcasting
-}));
+const ts::Enumeration& ts::ISDBNetworkIdentifierDescriptor::MediaTypes()
+{
+    static const Enumeration data({
+        // media_type table in ARIB STD-B21, 9.1.8.3 (as corrected in email by ARIB)
+        {u"AB", 0x4142},  // Advanced BS
+        {u"AC", 0x4143},  // Advanced wide-band CS
+        {u"BS", 0x4253},  // BS/broadband CS
+        {u"CS", 0x4353},  // Narrow-band CS / Advanced narrow-band
+        {u"TB", 0x5442},  // Terrestrial broadcasting
+    });
+    return data;
+}
 
 
 //----------------------------------------------------------------------------
@@ -109,7 +113,7 @@ TS_STATIC_INSTANCE(const, ts::Enumeration, MediaTypes, ({
 void ts::ISDBNetworkIdentifierDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setAttribute(u"country_code", country_code);
-    root->setEnumAttribute(*MediaTypes, u"media_type", media_type);
+    root->setEnumAttribute(MediaTypes(), u"media_type", media_type);
     root->setIntAttribute(u"network_id", network_id, true);
     root->addHexaTextChild(u"private_data", private_data, true);
 }
@@ -122,7 +126,7 @@ void ts::ISDBNetworkIdentifierDescriptor::buildXML(DuckContext& duck, xml::Eleme
 bool ts::ISDBNetworkIdentifierDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     return element->getAttribute(country_code, u"country_code", true, u"", 3, 3) &&
-           element->getEnumAttribute(media_type, *MediaTypes, u"media_type", true) &&
+           element->getEnumAttribute(media_type, MediaTypes(), u"media_type", true) &&
            element->getIntAttribute(network_id, u"network_id", true) &&
            element->getHexaTextChild(private_data, u"private_data");
 }

@@ -8,11 +8,17 @@
 
 #include "tsDVB.h"
 
-TS_DEFINE_GLOBAL(const, ts::Enumeration, ts::RunningStatusEnum, ({
-    {u"undefined",   RS_UNDEFINED},
-    {u"not-running", RS_NOT_RUNNING},
-    {u"starting",    RS_STARTING},
-    {u"pausing",     RS_PAUSING},
-    {u"running",     RS_RUNNING},
-    {u"off-air",     RS_OFF_AIR},
-}));
+
+// Enumeration description of running status values.
+const ts::Enumeration& ts::RunningStatusEnum()
+{
+    static const Enumeration data {
+        {u"undefined",   RS_UNDEFINED},
+        {u"not-running", RS_NOT_RUNNING},
+        {u"starting",    RS_STARTING},
+        {u"pausing",     RS_PAUSING},
+        {u"running",     RS_RUNNING},
+        {u"off-air",     RS_OFF_AIR},
+    };
+    return data;
+}

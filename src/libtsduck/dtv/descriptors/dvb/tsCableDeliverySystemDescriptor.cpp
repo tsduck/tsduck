@@ -52,31 +52,77 @@ ts::CableDeliverySystemDescriptor::CableDeliverySystemDescriptor(DuckContext& du
 
 
 //----------------------------------------------------------------------------
-// Translation tables
+// Thread-safe init-safe static data patterns.
 //----------------------------------------------------------------------------
 
-const std::map<int, ts::InnerFEC> ts::CableDeliverySystemDescriptor::ToInnerFEC
+const std::map<int, ts::InnerFEC>& ts::CableDeliverySystemDescriptor::ToInnerFEC()
 {
-    {1,  FEC_1_2},
-    {2,  FEC_2_3},
-    {3,  FEC_3_4},
-    {4,  FEC_5_6},
-    {5,  FEC_7_8},
-    {6,  FEC_8_9},
-    {7,  FEC_3_5},
-    {8,  FEC_4_5},
-    {9,  FEC_9_10},
-    {15, FEC_NONE},
-};
+    static const std::map<int, InnerFEC> data {
+        {1,  FEC_1_2},
+        {2,  FEC_2_3},
+        {3,  FEC_3_4},
+        {4,  FEC_5_6},
+        {5,  FEC_7_8},
+        {6,  FEC_8_9},
+        {7,  FEC_3_5},
+        {8,  FEC_4_5},
+        {9,  FEC_9_10},
+        {15, FEC_NONE},
+    };
+    return data;
+}
 
-const std::map<int, ts::Modulation> ts::CableDeliverySystemDescriptor::ToModulation
+const std::map<int, ts::Modulation>& ts::CableDeliverySystemDescriptor::ToModulation()
 {
-    {1, QAM_16},
-    {2, QAM_32},
-    {3, QAM_64},
-    {4, QAM_128},
-    {5, QAM_256},
-};
+    static const std::map<int, Modulation> data {
+        {1, QAM_16},
+        {2, QAM_32},
+        {3, QAM_64},
+        {4, QAM_128},
+        {5, QAM_256},
+    };
+    return data;
+}
+
+const ts::Enumeration& ts::CableDeliverySystemDescriptor::ModulationNames()
+{
+    static const Enumeration data({
+        {u"16-QAM",  1},
+        {u"32-QAM",  2},
+        {u"64-QAM",  3},
+        {u"128-QAM", 4},
+        {u"256-QAM", 5},
+    });
+    return data;
+}
+
+const ts::Enumeration& ts::CableDeliverySystemDescriptor::OuterFecNames()
+{
+    static const Enumeration data({
+        {u"undefined", 0},
+        {u"none",      1},
+        {u"RS",        2},
+    });
+    return data;
+}
+
+const ts::Enumeration& ts::CableDeliverySystemDescriptor::InnerFecNames()
+{
+    static const Enumeration data({
+        {u"undefined", 0},
+        {u"1/2",       1},
+        {u"2/3",       2},
+        {u"3/4",       3},
+        {u"5/6",       4},
+        {u"7/8",       5},
+        {u"8/9",       6},
+        {u"3/5",       7},
+        {u"4/5",       8},
+        {u"9/10",      9},
+        {u"none",     15},
+    });
+    return data;
+}
 
 
 //----------------------------------------------------------------------------
@@ -110,51 +156,16 @@ void ts::CableDeliverySystemDescriptor::deserializePayload(PSIBuffer& buf)
 
 
 //----------------------------------------------------------------------------
-// Enumerations for XML.
-//----------------------------------------------------------------------------
-
-namespace {
-    const ts::Enumeration ModulationNames({
-        {u"16-QAM", 1},
-        {u"32-QAM", 2},
-        {u"64-QAM", 3},
-        {u"128-QAM", 4},
-        {u"256-QAM", 5},
-    });
-
-    const ts::Enumeration OuterFecNames({
-        {u"undefined", 0},
-        {u"none", 1},
-        {u"RS", 2},
-    });
-
-    const ts::Enumeration InnerFecNames({
-        {u"undefined", 0},
-        {u"1/2", 1},
-        {u"2/3", 2},
-        {u"3/4", 3},
-        {u"5/6", 4},
-        {u"7/8", 5},
-        {u"8/9", 6},
-        {u"3/5", 7},
-        {u"4/5", 8},
-        {u"9/10", 9},
-        {u"none", 15},
-    });
-}
-
-
-//----------------------------------------------------------------------------
 // XML serialization
 //----------------------------------------------------------------------------
 
 void ts::CableDeliverySystemDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"frequency", frequency, false);
-    root->setEnumAttribute(OuterFecNames, u"FEC_outer", FEC_outer);
-    root->setEnumAttribute(ModulationNames, u"modulation", modulation);
+    root->setEnumAttribute(OuterFecNames(), u"FEC_outer", FEC_outer);
+    root->setEnumAttribute(ModulationNames(), u"modulation", modulation);
     root->setIntAttribute(u"symbol_rate", symbol_rate, false);
-    root->setEnumAttribute(InnerFecNames, u"FEC_inner", FEC_inner);
+    root->setEnumAttribute(InnerFecNames(), u"FEC_inner", FEC_inner);
 }
 
 
@@ -165,10 +176,10 @@ void ts::CableDeliverySystemDescriptor::buildXML(DuckContext& duck, xml::Element
 bool ts::CableDeliverySystemDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     return element->getIntAttribute(frequency, u"frequency", true) &&
-           element->getEnumAttribute(FEC_outer, OuterFecNames, u"FEC_outer", false, 2) &&
-           element->getEnumAttribute(modulation, ModulationNames, u"modulation", false, 1) &&
+           element->getEnumAttribute(FEC_outer, OuterFecNames(), u"FEC_outer", false, 2) &&
+           element->getEnumAttribute(modulation, ModulationNames(), u"modulation", false, 1) &&
            element->getIntAttribute(symbol_rate, u"symbol_rate", true) &&
-           element->getEnumAttribute(FEC_inner, InnerFecNames, u"FEC_inner", true);
+           element->getEnumAttribute(FEC_inner, InnerFecNames(), u"FEC_inner", true);
 }
 
 

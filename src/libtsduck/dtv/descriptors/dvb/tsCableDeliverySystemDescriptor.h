@@ -47,13 +47,13 @@ namespace ts {
         //! Translate the binary value in FEC_inner as a InnerFEC enumeration value.
         //! @return The corresponding InnerFEC enumeration value.
         //!
-        InnerFEC getInnerFEC() const { return translate(FEC_inner, ToInnerFEC, FEC_AUTO); }
+        InnerFEC getInnerFEC() const { return translate(FEC_inner, ToInnerFEC(), FEC_AUTO); }
 
         //!
         //! Translate the binary value in modulation as a Modulation enumeration value.
         //! @return The corresponding Modulation enumeration value.
         //!
-        Modulation getModulation() const { return translate(modulation, ToModulation, QAM_AUTO); }
+        Modulation getModulation() const { return translate(modulation, ToModulation(), QAM_AUTO); }
 
         // Inherited methods
         DeclareDisplayDescriptor();
@@ -67,7 +67,11 @@ namespace ts {
         virtual bool analyzeXML(DuckContext&, const xml::Element*) override;
 
     private:
-        static const std::map<int, InnerFEC> ToInnerFEC;
-        static const std::map<int, Modulation> ToModulation;
+        // Thread-safe init-safe static data patterns.
+        static const Enumeration& ModulationNames();
+        static const Enumeration& OuterFecNames();
+        static const Enumeration& InnerFecNames();
+        static const std::map<int, InnerFEC>& ToInnerFEC();
+        static const std::map<int, Modulation>& ToModulation();
     };
 }

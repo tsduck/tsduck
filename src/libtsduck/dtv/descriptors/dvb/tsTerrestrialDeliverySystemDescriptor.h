@@ -53,43 +53,43 @@ namespace ts {
         //! Translate the binary value in bandwidth as a BandWidth value in Hz.
         //! @return The corresponding BandWidth value in Hz.
         //!
-        BandWidth getBandwidth() const;
+        BandWidth getBandwidth() const { return translate(bandwidth, ToBandWidth(), BandWidth(0)); }
 
         //!
         //! Translate the binary value in constellation as a Modulation enumeration value.
         //! @return The corresponding Modulation enumeration value.
         //!
-        Modulation getConstellation() const;
+        Modulation getConstellation() const { return translate(constellation, ToConstellation(), QAM_AUTO); }
 
         //!
         //! Translate the binary value in code_rate_hp as a InnerFEC enumeration value.
         //! @return The corresponding InnerFEC enumeration value.
         //!
-        InnerFEC getCodeRateHP() const;
+        InnerFEC getCodeRateHP() const { return translate(code_rate_hp, ToInnerFEC(), FEC_AUTO); }
 
         //!
         //! Translate the binary value in code_rate_lp as a InnerFEC enumeration value.
         //! @return The corresponding InnerFEC enumeration value.
         //!
-        InnerFEC getCodeRateLP() const;
+        InnerFEC getCodeRateLP() const { return translate(code_rate_lp, ToInnerFEC(), FEC_AUTO); }
 
         //!
         //! Translate the binary value in transmission_mode as a TransmissionMode enumeration value.
         //! @return The corresponding TransmissionMode enumeration value.
         //!
-        TransmissionMode getTransmissionMode() const;
+        TransmissionMode getTransmissionMode() const { return translate(transmission_mode, ToTransmissionMode(), TM_AUTO); }
 
         //!
         //! Translate the binary value in guard_interval as a GuardInterval enumeration value.
         //! @return The corresponding GuardInterval enumeration value.
         //!
-        GuardInterval getGuardInterval() const;
+        GuardInterval getGuardInterval() const { return translate(guard_interval, ToGuardInterval(), GUARD_AUTO); }
 
         //!
         //! Translate the binary value in hierarchy as a Hierarchy enumeration value.
         //! @return The corresponding Hierarchy enumeration value.
         //!
-        Hierarchy getHierarchy() const;
+        Hierarchy getHierarchy() const { return translate(hierarchy, ToHierarchy(), HIERARCHY_AUTO); }
 
         // Inherited methods
         DeclareDisplayDescriptor();
@@ -101,5 +101,20 @@ namespace ts {
         virtual void deserializePayload(PSIBuffer&) override;
         virtual void buildXML(DuckContext&, xml::Element*) const override;
         virtual bool analyzeXML(DuckContext&, const xml::Element*) override;
+
+    private:
+        // Thread-safe init-safe static data patterns.
+        static const Enumeration& BandwidthNames();
+        static const Enumeration& PriorityNames();
+        static const Enumeration& ConstellationNames();
+        static const Enumeration& CodeRateNames();
+        static const Enumeration& GuardIntervalNames();
+        static const Enumeration& TransmissionModeNames();
+        static const std::map<int, BandWidth>& ToBandWidth();
+        static const std::map<int, Modulation>& ToConstellation();
+        static const std::map<int, InnerFEC>& ToInnerFEC();
+        static const std::map<int, TransmissionMode>& ToTransmissionMode();
+        static const std::map<int, GuardInterval>& ToGuardInterval();
+        static const std::map<int, Hierarchy>& ToHierarchy();
     };
 }

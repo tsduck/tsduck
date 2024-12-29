@@ -8,108 +8,90 @@
 
 #include "tsCodecType.h"
 
-TS_DEFINE_GLOBAL(const, ts::Enumeration, ts::CodecTypeEnum, ({
-    {u"undefined",     ts::CodecType::UNDEFINED},
-    {u"MPEG-1 Video",  ts::CodecType::MPEG1_VIDEO},
-    {u"MPEG-1 Audio",  ts::CodecType::MPEG1_AUDIO},
-    {u"MPEG-2 Video",  ts::CodecType::MPEG2_VIDEO},
-    {u"MPEG-2 Audio",  ts::CodecType::MPEG2_AUDIO},
-    {u"MP3",           ts::CodecType::MP3},
-    {u"AAC",           ts::CodecType::AAC},
-    {u"AC3",           ts::CodecType::AC3},
-    {u"E-AC3",         ts::CodecType::EAC3},
-    {u"AC4",           ts::CodecType::AC4},
-    {u"MPEG-4 Video",  ts::CodecType::MPEG4_VIDEO},
-    {u"HE-AAC",        ts::CodecType::HEAAC},
-    {u"JPEG-2000",     ts::CodecType::J2K},
-    {u"AVC H.264",     ts::CodecType::AVC},
-    {u"HEVC H.265",    ts::CodecType::HEVC},
-    {u"VVC H.266",     ts::CodecType::VVC},
-    {u"EVC",           ts::CodecType::EVC},
-    {u"LC-EVC",        ts::CodecType::LCEVC},
-    {u"VP9",           ts::CodecType::VP9},
-    {u"AV1",           ts::CodecType::AV1},
-    {u"DTS",           ts::CodecType::DTS},
-    {u"DTS-HD",        ts::CodecType::DTSHD},
-    {u"Teletext",      ts::CodecType::TELETEXT},
-    {u"DVB Subtitles", ts::CodecType::DVB_SUBTITLES},
-    {u"AVS3 Video",    ts::CodecType::AVS3_VIDEO},
-    {u"AVS2 Audio",    ts::CodecType::AVS2_AUDIO},
-    {u"AVS3 Audio",    ts::CodecType::AVS3_AUDIO},
-}));
 
-TS_DEFINE_GLOBAL(const, ts::Enumeration, ts::CodecTypeArgEnum, ({
-    {u"undefined",     ts::CodecType::UNDEFINED},
-    {u"MPEG-1-Video",  ts::CodecType::MPEG1_VIDEO},
-    {u"MP1Video",      ts::CodecType::MPEG1_VIDEO},
-    {u"MPEG-1-Audio",  ts::CodecType::MPEG1_AUDIO},
-    {u"MP1Audio",      ts::CodecType::MPEG1_AUDIO},
-    {u"MPEG-2-Video",  ts::CodecType::MPEG2_VIDEO},
-    {u"MP2Video",      ts::CodecType::MPEG2_VIDEO},
-    {u"MPEG-2-Audio",  ts::CodecType::MPEG2_AUDIO},
-    {u"MP2Audio",      ts::CodecType::MPEG2_AUDIO},
-    {u"MP3",           ts::CodecType::MP3},
-    {u"AAC",           ts::CodecType::AAC},
-    {u"AC3",           ts::CodecType::AC3},
-    {u"EAC3",          ts::CodecType::EAC3},
-    {u"AC4",           ts::CodecType::AC4},
-    {u"MPEG-4-Video",  ts::CodecType::MPEG4_VIDEO},
-    {u"MP4Video",      ts::CodecType::MPEG4_VIDEO},
-    {u"HEAAC",         ts::CodecType::HEAAC},
-    {u"JPEG2000",      ts::CodecType::J2K},
-    {u"AVC",           ts::CodecType::AVC},
-    {u"H264",          ts::CodecType::AVC},
-    {u"HEVC",          ts::CodecType::HEVC},
-    {u"H265",          ts::CodecType::HEVC},
-    {u"VVC",           ts::CodecType::VVC},
-    {u"H266",          ts::CodecType::VVC},
-    {u"EVC",           ts::CodecType::EVC},
-    {u"LCEVC",         ts::CodecType::LCEVC},
-    {u"VP9",           ts::CodecType::VP9},
-    {u"AV1",           ts::CodecType::AV1},
-    {u"DTS",           ts::CodecType::DTS},
-    {u"DTSHD",         ts::CodecType::DTSHD},
-    {u"Teletext",      ts::CodecType::TELETEXT},
-    {u"DVBSubtitles",  ts::CodecType::DVB_SUBTITLES},
-    {u"AVS3Video",     ts::CodecType::AVS3_VIDEO},
-    {u"AVS2Audio",     ts::CodecType::AVS2_AUDIO},
-    {u"AVS3Audio",     ts::CodecType::AVS3_AUDIO},
-}));
+//----------------------------------------------------------------------------
+// Enumeration description of ts::CodecType.
+//----------------------------------------------------------------------------
 
-TS_STATIC_INSTANCE(const, std::set<ts::CodecType>, AudioCodecs, ({
-    ts::CodecType::MPEG1_AUDIO,
-    ts::CodecType::MPEG2_AUDIO,
-    ts::CodecType::MP3,
-    ts::CodecType::AAC,
-    ts::CodecType::AC3,
-    ts::CodecType::EAC3,
-    ts::CodecType::AC4,
-    ts::CodecType::HEAAC,
-    ts::CodecType::DTS,
-    ts::CodecType::DTSHD,
-    ts::CodecType::AVS2_AUDIO,
-    ts::CodecType::AVS3_AUDIO,
-}));
+// This version is suitable to display codec names.
+const ts::Enumeration& ts::CodecTypeEnum()
+{
+    // Thread-safe init-safe static data pattern:
+    static const Enumeration data({
+        {u"undefined",     CodecType::UNDEFINED},
+        {u"MPEG-1 Video",  CodecType::MPEG1_VIDEO},
+        {u"MPEG-1 Audio",  CodecType::MPEG1_AUDIO},
+        {u"MPEG-2 Video",  CodecType::MPEG2_VIDEO},
+        {u"MPEG-2 Audio",  CodecType::MPEG2_AUDIO},
+        {u"MP3",           CodecType::MP3},
+        {u"AAC",           CodecType::AAC},
+        {u"AC3",           CodecType::AC3},
+        {u"E-AC3",         CodecType::EAC3},
+        {u"AC4",           CodecType::AC4},
+        {u"MPEG-4 Video",  CodecType::MPEG4_VIDEO},
+        {u"HE-AAC",        CodecType::HEAAC},
+        {u"JPEG-2000",     CodecType::J2K},
+        {u"AVC H.264",     CodecType::AVC},
+        {u"HEVC H.265",    CodecType::HEVC},
+        {u"VVC H.266",     CodecType::VVC},
+        {u"EVC",           CodecType::EVC},
+        {u"LC-EVC",        CodecType::LCEVC},
+        {u"VP9",           CodecType::VP9},
+        {u"AV1",           CodecType::AV1},
+        {u"DTS",           CodecType::DTS},
+        {u"DTS-HD",        CodecType::DTSHD},
+        {u"Teletext",      CodecType::TELETEXT},
+        {u"DVB Subtitles", CodecType::DVB_SUBTITLES},
+        {u"AVS3 Video",    CodecType::AVS3_VIDEO},
+        {u"AVS2 Audio",    CodecType::AVS2_AUDIO},
+        {u"AVS3 Audio",    CodecType::AVS3_AUDIO},
+    });
+    return data;
+}
 
-TS_STATIC_INSTANCE(const, std::set<ts::CodecType>, VideoCodecs, ({
-    ts::CodecType::MPEG1_VIDEO,
-    ts::CodecType::MPEG2_VIDEO,
-    ts::CodecType::MPEG4_VIDEO,
-    ts::CodecType::J2K,
-    ts::CodecType::AVC,
-    ts::CodecType::HEVC,
-    ts::CodecType::VVC,
-    ts::CodecType::EVC,
-    ts::CodecType::LCEVC,
-    ts::CodecType::VP9,
-    ts::CodecType::AV1,
-    ts::CodecType::AVS3_VIDEO,
-}));
-
-TS_STATIC_INSTANCE(const, std::set<ts::CodecType>, SubtitlingTypes, ({
-    ts::CodecType::TELETEXT,
-    ts::CodecType::DVB_SUBTITLES,
-}));
+// This version is suitable to define command line arguments taking codec names as parameter.
+const ts::Enumeration& ts::CodecTypeArgEnum()
+{
+    // Thread-safe init-safe static data pattern:
+    static const Enumeration data({
+        {u"undefined",     CodecType::UNDEFINED},
+        {u"MPEG-1-Video",  CodecType::MPEG1_VIDEO},
+        {u"MP1Video",      CodecType::MPEG1_VIDEO},
+        {u"MPEG-1-Audio",  CodecType::MPEG1_AUDIO},
+        {u"MP1Audio",      CodecType::MPEG1_AUDIO},
+        {u"MPEG-2-Video",  CodecType::MPEG2_VIDEO},
+        {u"MP2Video",      CodecType::MPEG2_VIDEO},
+        {u"MPEG-2-Audio",  CodecType::MPEG2_AUDIO},
+        {u"MP2Audio",      CodecType::MPEG2_AUDIO},
+        {u"MP3",           CodecType::MP3},
+        {u"AAC",           CodecType::AAC},
+        {u"AC3",           CodecType::AC3},
+        {u"EAC3",          CodecType::EAC3},
+        {u"AC4",           CodecType::AC4},
+        {u"MPEG-4-Video",  CodecType::MPEG4_VIDEO},
+        {u"MP4Video",      CodecType::MPEG4_VIDEO},
+        {u"HEAAC",         CodecType::HEAAC},
+        {u"JPEG2000",      CodecType::J2K},
+        {u"AVC",           CodecType::AVC},
+        {u"H264",          CodecType::AVC},
+        {u"HEVC",          CodecType::HEVC},
+        {u"H265",          CodecType::HEVC},
+        {u"VVC",           CodecType::VVC},
+        {u"H266",          CodecType::VVC},
+        {u"EVC",           CodecType::EVC},
+        {u"LCEVC",         CodecType::LCEVC},
+        {u"VP9",           CodecType::VP9},
+        {u"AV1",           CodecType::AV1},
+        {u"DTS",           CodecType::DTS},
+        {u"DTSHD",         CodecType::DTSHD},
+        {u"Teletext",      CodecType::TELETEXT},
+        {u"DVBSubtitles",  CodecType::DVB_SUBTITLES},
+        {u"AVS3Video",     CodecType::AVS3_VIDEO},
+        {u"AVS2Audio",     CodecType::AVS2_AUDIO},
+        {u"AVS3Audio",     CodecType::AVS3_AUDIO},
+    });
+    return data;
+}
 
 
 //----------------------------------------------------------------------------
@@ -118,17 +100,55 @@ TS_STATIC_INSTANCE(const, std::set<ts::CodecType>, SubtitlingTypes, ({
 
 bool ts::CodecTypeIsAudio(CodecType ct)
 {
-    return AudioCodecs->contains(ct);
+    // Thread-safe init-safe static data pattern:
+    static const std::set<CodecType> audio_codecs {
+        CodecType::MPEG1_AUDIO,
+        CodecType::MPEG2_AUDIO,
+        CodecType::MP3,
+        CodecType::AAC,
+        CodecType::AC3,
+        CodecType::EAC3,
+        CodecType::AC4,
+        CodecType::HEAAC,
+        CodecType::DTS,
+        CodecType::DTSHD,
+        CodecType::AVS2_AUDIO,
+        CodecType::AVS3_AUDIO,
+    };
+
+    return audio_codecs.contains(ct);
 }
 
 bool ts::CodecTypeIsVideo(CodecType ct)
 {
-    return VideoCodecs->contains(ct);
+    // Thread-safe init-safe static data pattern:
+    static const std::set<CodecType> video_codecs {
+        CodecType::MPEG1_VIDEO,
+        CodecType::MPEG2_VIDEO,
+        CodecType::MPEG4_VIDEO,
+        CodecType::J2K,
+        CodecType::AVC,
+        CodecType::HEVC,
+        CodecType::VVC,
+        CodecType::EVC,
+        CodecType::LCEVC,
+        CodecType::VP9,
+        CodecType::AV1,
+        CodecType::AVS3_VIDEO,
+    };
+
+    return video_codecs.contains(ct);
 }
 
 bool ts::CodecTypeIsSubtitles(CodecType ct)
 {
-    return SubtitlingTypes->contains(ct);
+    // Thread-safe init-safe static data pattern:
+    static const std::set<CodecType> subtitling_types {
+        CodecType::TELETEXT,
+        CodecType::DVB_SUBTITLES,
+    };
+
+    return subtitling_types.contains(ct);
 }
 
 

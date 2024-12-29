@@ -12,6 +12,7 @@
 #include "tsPSIRepository.h"
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
+#include "tsSingleton.h"
 #include "tsxmlElement.h"
 
 #define MY_XML_NAME u"IPMAC_generic_stream_location_descriptor"
@@ -20,14 +21,6 @@
 
 TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
-namespace {
-    const ts::Enumeration ModulationTypeNames({
-        {u"DVB-S2",  0},
-        {u"DVB-T2",  1},
-        {u"DVB-C2",  2},
-        {u"DVB-NGH", 3},
-    });
-}
 
 //----------------------------------------------------------------------------
 // Constructors
@@ -78,6 +71,22 @@ void ts::IPMACGenericStreamLocationDescriptor::deserializePayload(PSIBuffer& buf
 
 
 //----------------------------------------------------------------------------
+// Thread-safe init-safe static data patterns.
+//----------------------------------------------------------------------------
+
+const ts::Enumeration& ts::IPMACGenericStreamLocationDescriptor::ModulationTypeNames()
+{
+    static const Enumeration data({
+        {u"DVB-S2",  0},
+        {u"DVB-T2",  1},
+        {u"DVB-C2",  2},
+        {u"DVB-NGH", 3},
+    });
+    return data;
+}
+
+
+//----------------------------------------------------------------------------
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
@@ -86,7 +95,7 @@ void ts::IPMACGenericStreamLocationDescriptor::DisplayDescriptor(TablesDisplay& 
     if (buf.canReadBytes(7)) {
         disp << margin << UString::Format(u"Interactive network id: %n", buf.getUInt16()) << std::endl;
         const uint8_t systype = buf.getUInt8();
-        disp << margin << UString::Format(u"Modulation system type: 0x%X (%s)", systype, ModulationTypeNames.name(systype)) << std::endl;
+        disp << margin << UString::Format(u"Modulation system type: 0x%X (%s)", systype, ModulationTypeNames().name(systype)) << std::endl;
         disp << margin << UString::Format(u"Modulation system id: %n", buf.getUInt16()) << std::endl;
         disp << margin << UString::Format(u"Physical stream id: %n", buf.getUInt16()) << std::endl;
         disp.displayPrivateData(u"Selector bytes", buf, NPOS, margin);
@@ -101,7 +110,7 @@ void ts::IPMACGenericStreamLocationDescriptor::DisplayDescriptor(TablesDisplay& 
 void ts::IPMACGenericStreamLocationDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"interactive_network_id", interactive_network_id, true);
-    root->setEnumAttribute(ModulationTypeNames, u"modulation_system_type", modulation_system_type);
+    root->setEnumAttribute(ModulationTypeNames(), u"modulation_system_type", modulation_system_type);
     root->setIntAttribute(u"modulation_system_id", modulation_system_id, true);
     root->setIntAttribute(u"PHY_stream_id", PHY_stream_id, true);
     root->addHexaTextChild(u"selector_bytes", selector_bytes, true);
@@ -110,7 +119,7 @@ void ts::IPMACGenericStreamLocationDescriptor::buildXML(DuckContext& duck, xml::
 bool ts::IPMACGenericStreamLocationDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     return element->getIntAttribute(interactive_network_id, u"interactive_network_id", true) &&
-           element->getEnumAttribute(modulation_system_type, ModulationTypeNames, u"modulation_system_type", true) &&
+           element->getEnumAttribute(modulation_system_type, ModulationTypeNames(), u"modulation_system_type", true) &&
            element->getIntAttribute(modulation_system_id, u"modulation_system_id", false) &&
            element->getIntAttribute(PHY_stream_id, u"PHY_stream_id", false) &&
            element->getHexaTextChild(selector_bytes, u"selector_bytes", false, 0, MAX_DESCRIPTOR_SIZE - 9);
