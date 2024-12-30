@@ -30,7 +30,7 @@ namespace ts {
     public:
         FetchBCryptAlgorithm(::LPCWSTR algo_id, ::LPCWSTR chain_mode = nullptr);
         ~FetchBCryptAlgorithm();
-        void getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length) { algo = _algo; length = _objlength; }
+        void getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length) const { algo = _algo; length = _objlength; }
     private:
         ::BCRYPT_ALG_HANDLE _algo = nullptr;
         size_t _objlength = 0;

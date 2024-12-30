@@ -8,12 +8,20 @@
 
 #include "tsPlugin.h"
 
+
+//----------------------------------------------------------------------------
 // Displayable names of plugin types.
-TS_DEFINE_GLOBAL(const, ts::Enumeration, ts::PluginTypeNames, ({
-    {u"input",            ts::PluginType::INPUT},
-    {u"output",           ts::PluginType::OUTPUT},
-    {u"packet processor", ts::PluginType::PROCESSOR},
-}));
+//----------------------------------------------------------------------------
+
+const ts::Enumeration& ts::PluginTypeNames()
+{
+    static const Enumeration data {
+        {u"input",            PluginType::INPUT},
+        {u"output",           PluginType::OUTPUT},
+        {u"packet processor", PluginType::PROCESSOR},
+    };
+    return data;
+}
 
 
 //----------------------------------------------------------------------------

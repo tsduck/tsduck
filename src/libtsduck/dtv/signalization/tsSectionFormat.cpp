@@ -15,18 +15,26 @@
 // Enumerations, names for values
 //----------------------------------------------------------------------------
 
-TS_DEFINE_GLOBAL(const, ts::Enumeration, ts::SectionFormatEnum, ({
-    {u"unspecified", ts::SectionFormat::UNSPECIFIED},
-    {u"binary",      ts::SectionFormat::BINARY},
-    {u"XML",         ts::SectionFormat::XML},
-    {u"JSON",        ts::SectionFormat::JSON},
-}));
+const ts::Enumeration& ts::SectionFormatEnum()
+{
+    static const Enumeration data {
+        {u"unspecified", SectionFormat::UNSPECIFIED},
+        {u"binary",      SectionFormat::BINARY},
+        {u"XML",         SectionFormat::XML},
+        {u"JSON",        SectionFormat::JSON},
+    };
+    return data;
+}
 
-TS_DEFINE_GLOBAL(const, ts::Enumeration, ts::SpecifiedSectionFormatEnum, ({
-    {u"binary", ts::SectionFormat::BINARY},
-    {u"XML",    ts::SectionFormat::XML},
-    {u"JSON",   ts::SectionFormat::JSON},
-}));
+const ts::Enumeration& ts::SpecifiedSectionFormatEnum()
+{
+    static const Enumeration data {
+        {u"binary", SectionFormat::BINARY},
+        {u"XML",    SectionFormat::XML},
+        {u"JSON",   SectionFormat::JSON},
+    };
+    return data;
+}
 
 
 //----------------------------------------------------------------------------

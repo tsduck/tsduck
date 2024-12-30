@@ -28,7 +28,7 @@ namespace ts {
         //! @param [in] pid_filter The set of PID's to analyze or fix.
         //! @param [in] report Where to report discontinuity errors. Drop errors if null.
         //!
-        explicit ContinuityAnalyzer(const PIDSet& pid_filter = NoPID, Report* report = nullptr);
+        explicit ContinuityAnalyzer(const PIDSet& pid_filter = NoPID(), Report* report = nullptr);
 
         // Implementation note:
         // "= default" definitions required for copy constructor and assignments so that

@@ -14,12 +14,20 @@
 #include "tsPSIBuffer.h"
 #include "tsCRC32.h"
 
+
+//----------------------------------------------------------------------------
 // Enumeration description of TableScope values.
-TS_DEFINE_GLOBAL(const, ts::Enumeration, ts::TableScopeEnum, ({
-    {u"none",   ts::TableScope::NONE},
-    {u"actual", ts::TableScope::ACTUAL},
-    {u"all",    ts::TableScope::ALL},
-}));
+//----------------------------------------------------------------------------
+
+const ts::Enumeration& ts::TableScopeEnum()
+{
+    static const Enumeration data {
+        {u"none",   TableScope::NONE},
+        {u"actual", TableScope::ACTUAL},
+        {u"all",    TableScope::ALL},
+    };
+    return data;
+}
 
 
 //----------------------------------------------------------------------------

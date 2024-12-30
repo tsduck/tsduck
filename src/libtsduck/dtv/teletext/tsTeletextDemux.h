@@ -37,7 +37,7 @@ namespace ts {
         //! @param [in] handler User handler for Teletext notification.
         //! @param [in] pids The set of PID's to demux.
         //!
-        explicit TeletextDemux(DuckContext& duck, TeletextHandlerInterface* handler = nullptr, const PIDSet& pids = NoPID);
+        explicit TeletextDemux(DuckContext& duck, TeletextHandlerInterface* handler = nullptr, const PIDSet& pids = NoPID());
 
         //!
         //! Destructor.

@@ -102,7 +102,7 @@ namespace ts {
         emmgmux::Protocol  _protocol {};                    // EMMG/PDG <=> MUX protocol instance
         PacketCounter      _pkt_next_data = 0;              // Next data insertion point
         PID                _data_pid = PID_NULL;            // PID for data (constant after start)
-        ContinuityAnalyzer _cc_fixer {AllPIDs, this};       // To fix continuity counters in injected PID
+        ContinuityAnalyzer _cc_fixer {AllPIDs(), this};     // To fix continuity counters in injected PID
         BitRate            _max_bitrate = 0;                // Max data PID's bitrate (constant after start)
         bool               _unregulated = false;            // Insert data packet as soon as received.
         IPSocketAddress    _tcp_address {};                 // TCP port and optional local address.

@@ -12,7 +12,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsSingleton.h"
+#include "tsPlatform.h"
 
 namespace ts {
     //!
@@ -21,8 +21,13 @@ namespace ts {
     //!
     class TSDUCKDLL UID
     {
-        // This class is a singleton. Use static Instance() method.
-        TS_DECLARE_SINGLETON(UID);
+        TS_NOCOPY(UID);
+    public:
+        //!
+        //! Get the instance of the CerrReport singleton.
+        //! @return A reference to the CerrReport singleton.
+        //!
+        static UID& Instance();
 
     public:
         //!
@@ -32,6 +37,7 @@ namespace ts {
         uint64_t newUID();
 
     private:
+        UID();
         std::atomic<uint64_t> _next_uid {};
     };
 }

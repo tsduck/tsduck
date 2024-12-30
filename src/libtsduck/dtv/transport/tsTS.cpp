@@ -8,29 +8,50 @@
 
 #include "tsTS.h"
 
-
-// These PID sets respectively contains no PID and all PID's.
-// The default constructor for PIDSet (std::bitset) sets all bits to 0.
-const ts::PIDSet ts::NoPID;
-const ts::PIDSet ts::AllPIDs(~NoPID);
-
-// Enumeration description of ts::PIDClass.
-TS_DEFINE_GLOBAL(const, ts::Enumeration, ts::PIDClassEnum, ({
-    {u"undefined", ts::PIDClass::UNDEFINED},
-    {u"PSI/SI",    ts::PIDClass::PSI},
-    {u"EMM",       ts::PIDClass::EMM},
-    {u"ECM",       ts::PIDClass::ECM},
-    {u"video",     ts::PIDClass::VIDEO},
-    {u"audio",     ts::PIDClass::AUDIO},
-    {u"subtitles", ts::PIDClass::SUBTITLES},
-    {u"data",      ts::PIDClass::DATA},
-    {u"PCR",       ts::PIDClass::PCR_ONLY},
-    {u"stuffing",  ts::PIDClass::STUFFING},
-}));
-
-// Our std::cn::chrono::duration types for transport streams.
+// Register our std::chrono::duration types for transport streams.
 TS_REGISTER_CHRONO_UNIT(ts::PCR, u"PCR", u"PCR", u"PCR");
 TS_REGISTER_CHRONO_UNIT(ts::PTS, u"PTS/DTS", u"PTS/DTS", u"PTS/DTS");
+
+
+//----------------------------------------------------------------------------
+// These PID sets respectively contains no PID and all PID's.
+//----------------------------------------------------------------------------
+
+const ts::PIDSet& ts::NoPID()
+{
+    // The default constructor for PIDSet (std::bitset) sets all bits to 0.
+    static const PIDSet data;
+    return data;
+}
+
+const ts::PIDSet& ts::AllPIDs()
+{
+    // The default constructor for PIDSet (std::bitset) sets all bits to 0.
+    static const PIDSet data(~NoPID());
+    return data;
+}
+
+
+//----------------------------------------------------------------------------
+// Enumeration description of ts::PIDClass.
+//----------------------------------------------------------------------------
+
+const ts::Enumeration& ts::PIDClassEnum()
+{
+    static const Enumeration data {
+        {u"undefined", PIDClass::UNDEFINED},
+        {u"PSI/SI",    PIDClass::PSI},
+        {u"EMM",       PIDClass::EMM},
+        {u"ECM",       PIDClass::ECM},
+        {u"video",     PIDClass::VIDEO},
+        {u"audio",     PIDClass::AUDIO},
+        {u"subtitles", PIDClass::SUBTITLES},
+        {u"data",      PIDClass::DATA},
+        {u"PCR",       PIDClass::PCR_ONLY},
+        {u"stuffing",  PIDClass::STUFFING},
+    };
+    return data;
+}
 
 
 //----------------------------------------------------------------------------

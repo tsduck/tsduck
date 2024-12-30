@@ -133,8 +133,15 @@ void ts::TSAnalyzer::resetSectionDemux()
 // Description of a few known PID's
 //----------------------------------------------------------------------------
 
-TS_DEFINE_SINGLETON(ts::TSAnalyzer::PIDContext::KnownPIDMap);
+// Get the instance of the singleton.
+ts::TSAnalyzer::PIDContext::KnownPIDMap& ts::TSAnalyzer::PIDContext::KnownPIDMap::Instance()
+{
+    // Thread-safe init-safe static data pattern:
+    static KnownPIDMap singleton;
+    return singleton;
+}
 
+// Constructor of the singleton.
 ts::TSAnalyzer::PIDContext::KnownPIDMap::KnownPIDMap()
 {
     //  PID             Description                 Optional  Carry sections
@@ -707,7 +714,7 @@ void ts::TSAnalyzer::analyzeMGT(const MGT& mgt)
 
         // The table type and its name.
         const MGT::TableType& tab(it.second);
-        const UString name(u"ATSC " + MGT::TableTypeName(tab.table_type));
+        const UString name(u"ATSC " + MGT::TableTypeEnum().name(tab.table_type));
 
         // Get the PID context.
         const PIDContextPtr ps(getPID(tab.table_type_PID, name));

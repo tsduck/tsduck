@@ -32,7 +32,6 @@
 #include "tsDCT.h"
 #include "tsTime.h"
 #include "tsUString.h"
-#include "tsSingleton.h"
 
 namespace ts {
     //!
@@ -414,8 +413,10 @@ namespace ts {
             // Singleton repository of these known PID's.
             class KnownPIDMap : public std::map<PID, KnownPID>
             {
-                TS_DECLARE_SINGLETON(KnownPIDMap);
+            private:
+                KnownPIDMap();
             public:
+                static KnownPIDMap& Instance();
                 void add(PID p, const UChar* name, bool is_optional, bool has_sections)
                 {
                     insert(std::pair<PID,KnownPID>(p, {name, is_optional, has_sections}));

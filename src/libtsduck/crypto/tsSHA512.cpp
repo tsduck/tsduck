@@ -12,11 +12,11 @@
 
 #if defined(TS_WINDOWS)
 
-TS_STATIC_INSTANCE(, ts::FetchBCryptAlgorithm, Fetch, (BCRYPT_SHA512_ALGORITHM));
-
 void ts::SHA512::getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length) const
 {
-    Fetch->getAlgorithm(algo, length);
+    // Thread-safe init-safe static data pattern:
+    static const FetchBCryptAlgorithm fetch(BCRYPT_SHA512_ALGORITHM);
+    fetch.getAlgorithm(algo, length);
 }
 
 #else

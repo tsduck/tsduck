@@ -12,7 +12,6 @@
 #include "tsPSIRepository.h"
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
-#include "tsSingleton.h"
 #include "tsxmlElement.h"
 
 #define MY_XML_NAME u"ISP_access_mode_descriptor"

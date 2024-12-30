@@ -263,7 +263,7 @@ bool ts::SpliceMonitorPlugin::start()
     _sig_demux.reset();
     _sig_demux.addFilteredTableId(TID_PMT);
     _section_demux.reset();
-    _section_demux.setPIDFilter(NoPID);
+    _section_demux.setPIDFilter(NoPID());
     _displayed_table = false;
 
     // Starting demuxing on the splice PID if specified on the command line.

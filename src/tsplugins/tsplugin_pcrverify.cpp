@@ -214,7 +214,7 @@ ts::ProcessorPlugin::Status ts::PCRVerifyPlugin::processPacket(TSPacket& pkt, TS
             _nb_pcr_unchecked++;
         }
         else if (pc.pcr_timesource != next_pc.pcr_timesource) {
-            verbose(u"distinct time sources for PCR packets: %s then %s", TimeSourceEnum->name(pc.pcr_timesource), TimeSourceEnum->name(next_pc.pcr_timesource));
+            verbose(u"distinct time sources for PCR packets: %s then %s", TimeSourceEnum().name(pc.pcr_timesource), TimeSourceEnum().name(next_pc.pcr_timesource));
             _nb_pcr_unchecked++;
         }
         else {
@@ -270,7 +270,7 @@ ts::ProcessorPlugin::Status ts::PCRVerifyPlugin::processPacket(TSPacket& pkt, TS
                      bit_jit / PKT_SIZE_BITS,
                      (bit_jit / 8) % PKT_SIZE,
                      bit_jit % 8,
-                     TimeSourceEnum->name(next_pc.pcr_timesource));
+                     TimeSourceEnum().name(next_pc.pcr_timesource));
             }
         }
 

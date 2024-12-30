@@ -28,7 +28,7 @@ namespace ts {
         //! @param [in,out] duck TSDuck execution context. The reference is kept inside the demux.
         //! @param [in] pid_filter The set of PID's to demux.
         //!
-        StandaloneTableDemux(DuckContext& duck, const PIDSet& pid_filter = NoPID);
+        StandaloneTableDemux(DuckContext& duck, const PIDSet& pid_filter = NoPID());
 
         //!
         //! Get the number of demuxed tables so far.

@@ -48,7 +48,7 @@ namespace ts {
         explicit SectionDemux(DuckContext& duck,
                               TableHandlerInterface* table_handler = nullptr,
                               SectionHandlerInterface* section_handler = nullptr,
-                              const PIDSet& pid_filter = NoPID);
+                              const PIDSet& pid_filter = NoPID());
 
         // Inherited methods
         virtual void feedPacket(const TSPacket& pkt) override;

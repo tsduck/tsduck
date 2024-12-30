@@ -468,7 +468,7 @@ void ts::PCRExtractPlugin::processValue(PIDContext& ctx, PIDData PIDContext::* p
             }
             *_output << _separator;
             if (mdata.hasInputTimeStamp()) {
-                *_output << TimeSourceEnum->name(mdata.getInputTimeSource()).toLower();
+                *_output << TimeSourceEnum().name(mdata.getInputTimeSource()).toLower();
             }
             *_output << _separator;
             if (mdata.hasInputTimeStamp()) {

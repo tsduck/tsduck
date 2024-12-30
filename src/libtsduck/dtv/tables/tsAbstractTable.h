@@ -32,8 +32,9 @@ namespace ts {
     //!
     //! Enumeration description of TableScope values.
     //! Typically used to implement command line options.
+    //! @return A constant reference to the enumeration description.
     //!
-    TS_DECLARE_GLOBAL(const, Enumeration, TableScopeEnum);
+    TSDUCKDLL const Enumeration& TableScopeEnum();
 
     //!
     //! Abstract base class for MPEG PSI/SI tables.

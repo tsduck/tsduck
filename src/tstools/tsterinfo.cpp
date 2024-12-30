@@ -24,7 +24,7 @@ TS_MAIN(MainCode);
 //----------------------------------------------------------------------------
 
 namespace {
-    // No need to use TS_STATIC_INSTANCE, this is used in a main program.
+    // No need to worry about initialization order, this is used in a main program.
     const ts::Enumeration DVBTModulationEnum({
         {u"QPSK",   ts::QPSK},
         {u"16-QAM", ts::QAM_16},

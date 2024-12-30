@@ -32,11 +32,11 @@ ts::TDES::TDES(const BlockCipherProperties& props) : BlockCipher(props)
 
 #if defined(TS_WINDOWS)
 
-TS_STATIC_INSTANCE(, ts::FetchBCryptAlgorithm, FetchECB, (BCRYPT_3DES_ALGORITHM, BCRYPT_CHAIN_MODE_ECB));
-
 void ts::TDES::getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length, bool& ignore_iv) const
 {
-    FetchECB->getAlgorithm(algo, length);
+    // Thread-safe init-safe static data pattern:
+    static const FetchBCryptAlgorithm fetch(BCRYPT_3DES_ALGORITHM, BCRYPT_CHAIN_MODE_ECB);
+    fetch.getAlgorithm(algo, length);
     // This is ECB mode, ignore IV which may be used by a upper chaining mode.
     ignore_iv = true;
 }
@@ -76,7 +76,9 @@ ts::ECB<ts::TDES>::ECB(const BlockCipherProperties& props) : TDES(props)
 
 void ts::ECB<ts::TDES>::getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length, bool& ignore_iv) const
 {
-    FetchECB->getAlgorithm(algo, length);
+    // Thread-safe init-safe static data pattern:
+    static const FetchBCryptAlgorithm fetch(BCRYPT_3DES_ALGORITHM, BCRYPT_CHAIN_MODE_ECB);
+    fetch.getAlgorithm(algo, length);
     // This is ECB mode, ignore IV which may be used by a upper chaining mode.
     ignore_iv = true;
 }
@@ -111,11 +113,11 @@ ts::CBC<ts::TDES>::CBC(const BlockCipherProperties& props) : TDES(props)
 
 #if defined(TS_WINDOWS)
 
-TS_STATIC_INSTANCE(, ts::FetchBCryptAlgorithm, FetchCBC, (BCRYPT_3DES_ALGORITHM, BCRYPT_CHAIN_MODE_CBC));
-
 void ts::CBC<ts::TDES>::getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length, bool& ignore_iv) const
 {
-    FetchCBC->getAlgorithm(algo, length);
+    // Thread-safe init-safe static data pattern:
+    static const FetchBCryptAlgorithm fetch(BCRYPT_3DES_ALGORITHM, BCRYPT_CHAIN_MODE_CBC);
+    fetch.getAlgorithm(algo, length);
     ignore_iv = false;
 }
 

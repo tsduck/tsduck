@@ -13,7 +13,6 @@
 #include "tsPSIRepository.h"
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
-#include "tsSingleton.h"
 #include "tsxmlElement.h"
 #include "tsDVBCharTableUTF16.h"
 

@@ -55,7 +55,7 @@ void PacketizerTest::DemuxTable(ts::BinaryTablePtr& binTable, const char* name, 
     TSUNIT_EQUAL(0, packets_size % ts::PKT_SIZE);
 
     ts::DuckContext duck;
-    ts::StandaloneTableDemux demux(duck, ts::AllPIDs);
+    ts::StandaloneTableDemux demux(duck, ts::AllPIDs());
     const ts::TSPacket* pkt = reinterpret_cast<const ts::TSPacket*>(packets);
     for (size_t pi = 0; pi < packets_size / ts::PKT_SIZE; ++pi) {
         demux.feedPacket (pkt[pi]);

@@ -59,7 +59,7 @@ ts::SignalizationDemux::SignalizationDemux(DuckContext& duck, SignalizationHandl
 void ts::SignalizationDemux::reset()
 {
     _demux.reset();
-    _demux.setPIDFilter(NoPID);
+    _demux.setPIDFilter(NoPID());
     _filtered_tids.clear();
     _filtered_srv_ids.clear();
     _filtered_srv_names.clear();

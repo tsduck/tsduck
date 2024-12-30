@@ -32,8 +32,9 @@ namespace ts {
 
     //!
     //! Displayable names of plugin types.
+    //! @return A constant reference to the enumeration description.
     //!
-    TS_DECLARE_GLOBAL(const, Enumeration, PluginTypeNames);
+    TSDUCKDLL const Enumeration& PluginTypeNames();
 
     //!
     //! Base class of all @c tsp plugins.

@@ -69,7 +69,7 @@ namespace ts {
         bool writePackets(TSPacket* buffer, const TSPacketMetadata* metadata, size_t packet_count, PID pid, Report& report);
 
     private:
-        ContinuityAnalyzer _ccFixer {AllPIDs};
+        ContinuityAnalyzer _ccFixer {AllPIDs()};
 
         // Make openRead() and read-only writePackets() inaccessible.
         bool openRead(const fs::path&, size_t, uint64_t, Report&) = delete;

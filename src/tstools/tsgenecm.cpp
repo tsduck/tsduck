@@ -97,7 +97,7 @@ namespace {
             }
 
             // Demux the ECM sections from the TS packets.
-            ts::StandaloneTableDemux demux(opt.duck, ts::AllPIDs);
+            ts::StandaloneTableDemux demux(opt.duck, ts::AllPIDs());
             for (size_t index = 0; index + ts::PKT_SIZE <= response.ECM_datagram.size(); index += ts::PKT_SIZE) {
                 ts::TSPacket pkt;
                 pkt.copyFrom(&response.ECM_datagram[index]);

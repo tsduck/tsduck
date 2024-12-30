@@ -51,9 +51,9 @@ namespace ts {
         uint64_t      _youngest_pts = 0;              // stores last pcr value seen (calculated from PCR to PTS value by dividing by 300)
         uint64_t      _pts_last_inserted = 0;         // stores nearest pts (actually pcr/300) of last packet insertion
         TSPacketFormat     _file_format = TSPacketFormat::AUTODETECT; // Input file format
-        TSPacketLabelSet   _setLabels {};             // Labels to set on output packets.
-        TSPacketLabelSet   _resetLabels {};           // Labels to reset on output packets.
-        ContinuityAnalyzer _cc_fixer {AllPIDs, this}; // To fix continuity counters in mux'ed PID's
+        TSPacketLabelSet   _setLabels {};                // Labels to set on output packets.
+        TSPacketLabelSet   _resetLabels {};              // Labels to reset on output packets.
+        ContinuityAnalyzer _cc_fixer {AllPIDs(), this};  // To fix continuity counters in mux'ed PID's
     };
 }
 

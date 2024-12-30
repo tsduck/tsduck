@@ -45,7 +45,7 @@ namespace ts {
         //! @param [in] mpe_handler The object to invoke when MPE information is found.
         //! @param [in] pid_filter The set of MPE PID's to demux.
         //!
-        explicit MPEDemux(DuckContext& duck, MPEHandlerInterface* mpe_handler = nullptr, const PIDSet& pid_filter = NoPID);
+        explicit MPEDemux(DuckContext& duck, MPEHandlerInterface* mpe_handler = nullptr, const PIDSet& pid_filter = NoPID());
 
         //!
         //! Destructor.

@@ -128,7 +128,7 @@ namespace ts {
         //! @param [in,out] duck TSDuck execution context. The reference is kept inside the demux.
         //! @param [in] pid_filter The initial set of PID's to demux.
         //!
-        explicit AbstractDemux(DuckContext& duck, const PIDSet& pid_filter = NoPID);
+        explicit AbstractDemux(DuckContext& duck, const PIDSet& pid_filter = NoPID());
 
         //!
         //! Helper for subclass, before invoking an application-defined handler.

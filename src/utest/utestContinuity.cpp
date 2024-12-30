@@ -35,7 +35,7 @@ TSUNIT_REGISTER(ContinuityTest);
 TSUNIT_DEFINE_TEST(Analyze)
 {
     ts::ReportBuffer<ts::ThreadSafety::None> log;
-    ts::ContinuityAnalyzer fixer(ts::AllPIDs, &log);
+    ts::ContinuityAnalyzer fixer(ts::AllPIDs(), &log);
 
     fixer.setDisplay(true);
     fixer.setMessagePrefix(u"foo: ");
@@ -108,7 +108,7 @@ TSUNIT_DEFINE_TEST(Analyze)
 TSUNIT_DEFINE_TEST(Fix)
 {
     ts::ReportBuffer<ts::ThreadSafety::None> log;
-    ts::ContinuityAnalyzer fixer(ts::AllPIDs, &log);
+    ts::ContinuityAnalyzer fixer(ts::AllPIDs(), &log);
 
     fixer.setDisplay(true);
     fixer.setFix(true);

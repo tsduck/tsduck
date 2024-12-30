@@ -8,17 +8,21 @@
 
 #include "tsTimeSource.h"
 
-TS_DEFINE_GLOBAL(const, ts::Enumeration, ts::TimeSourceEnum, ({
-    {u"undefined", ts::TimeSource::UNDEFINED},
-    {u"hardware",  ts::TimeSource::HARDWARE},
-    {u"kernel",    ts::TimeSource::KERNEL},
-    {u"tsp",       ts::TimeSource::TSP},
-    {u"RTP",       ts::TimeSource::RTP},
-    {u"SRT",       ts::TimeSource::SRT},
-    {u"M2TS",      ts::TimeSource::M2TS},
-    {u"PCR",       ts::TimeSource::PCR},
-    {u"DTS",       ts::TimeSource::DTS},
-    {u"PTS",       ts::TimeSource::PTS},
-    {u"PCAP",      ts::TimeSource::PCAP},
-    {u"RIST",      ts::TimeSource::RIST},
-}));
+const ts::Enumeration& ts::TimeSourceEnum()
+{
+    static const Enumeration data {
+        {u"undefined", TimeSource::UNDEFINED},
+        {u"hardware",  TimeSource::HARDWARE},
+        {u"kernel",    TimeSource::KERNEL},
+        {u"tsp",       TimeSource::TSP},
+        {u"RTP",       TimeSource::RTP},
+        {u"SRT",       TimeSource::SRT},
+        {u"M2TS",      TimeSource::M2TS},
+        {u"PCR",       TimeSource::PCR},
+        {u"DTS",       TimeSource::DTS},
+        {u"PTS",       TimeSource::PTS},
+        {u"PCAP",      TimeSource::PCAP},
+        {u"RIST",      TimeSource::RIST},
+    };
+    return data;
+}

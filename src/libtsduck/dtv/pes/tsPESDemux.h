@@ -42,7 +42,7 @@ namespace ts {
         //! @param [in] handler The object to invoke when PES packets are analyzed.
         //! @param [in] pids The set of PID's to demux.
         //!
-        explicit PESDemux(DuckContext& duck, PESHandlerInterface* handler = nullptr, const PIDSet& pids = AllPIDs);
+        explicit PESDemux(DuckContext& duck, PESHandlerInterface* handler = nullptr, const PIDSet& pids = AllPIDs());
 
         //!
         //! Destructor.

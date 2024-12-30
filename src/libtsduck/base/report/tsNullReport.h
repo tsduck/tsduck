@@ -13,7 +13,6 @@
 
 #pragma once
 #include "tsReport.h"
-#include "tsSingleton.h"
 
 namespace ts {
     //!
@@ -22,10 +21,21 @@ namespace ts {
     //!
     class TSDUCKDLL NullReport : public Report
     {
-        TS_DECLARE_SINGLETON(NullReport);
+        TS_NOCOPY(NullReport);
+    public:
+        //!
+        //! Get the instance of the CerrReport singleton.
+        //! @return A reference to the CerrReport singleton.
+        //!
+        static NullReport& Instance();
+
     protected:
         // String interface implementation
         virtual void writeLog(int severity, const UString& msg) override;
+
+    private:
+        // Prevent direct construction.
+        NullReport() = default;
     };
 }
 

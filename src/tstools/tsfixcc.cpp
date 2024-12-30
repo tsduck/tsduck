@@ -96,7 +96,7 @@ bool Options::fileError(const ts::UChar* message)
 int MainCode(int argc, char *argv[])
 {
     Options opt(argc, argv);
-    ts::ContinuityAnalyzer fixer(ts::AllPIDs, &opt);
+    ts::ContinuityAnalyzer fixer(ts::AllPIDs(), &opt);
 
     // Configure the CC analyzer.
     fixer.setDisplay(true);

@@ -139,7 +139,7 @@ namespace ts {
         //! @param [in] pcrReference The PID with PCR's to use as reference to add PCR's in
         //! the encapsulating PID. When PID_NULL, do not add PCR.
         //!
-        PacketEncapsulation(PID pidOutput = PID_NULL, const PIDSet& pidInput = NoPID, PID pcrReference = PID_NULL);
+        PacketEncapsulation(PID pidOutput = PID_NULL, const PIDSet& pidInput = NoPID(), PID pcrReference = PID_NULL);
 
         //!
         //! Reset the encapsulation.
@@ -148,7 +148,7 @@ namespace ts {
         //! @param [in] pcrReference The PID with PCR's to use as reference to add PCR's in
         //! the encapsulating PID. When PID_NULL, do not add PCR.
         //!
-        void reset(PID pidOutput = PID_NULL, const PIDSet& pidInput = NoPID, PID pcrReference = PID_NULL);
+        void reset(PID pidOutput = PID_NULL, const PIDSet& pidInput = NoPID(), PID pcrReference = PID_NULL);
 
         //!
         //! Process a TS packet from the input stream.

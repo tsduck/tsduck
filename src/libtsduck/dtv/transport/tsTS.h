@@ -16,7 +16,6 @@
 #include "tsUString.h"
 #include "tsBitRate.h"
 #include "tsEnumeration.h"
-#include "tsSingleton.h"
 
 namespace ts {
     //!
@@ -115,13 +114,15 @@ namespace ts {
 
     //!
     //! PIDSet constant with no PID set.
+    //! @return A constant reference to the PIDSet constant.
     //!
-    TSDUCKDLL extern const PIDSet NoPID;
+    TSDUCKDLL const PIDSet& NoPID();
 
     //!
     //! PIDSet constant with all PID's set.
+    //! @return A constant reference to the PIDSet constant.
     //!
-    TSDUCKDLL extern const PIDSet AllPIDs;
+    TSDUCKDLL const PIDSet& AllPIDs();
 
     //!
     //! Size (in bits) of a Continuity Counter (CC) field.
@@ -393,8 +394,9 @@ namespace ts {
 
     //!
     //! Enumeration description of ts::PIDClass.
+    //! @return A constant reference to the enumeration description.
     //!
-    TS_DECLARE_GLOBAL(const, Enumeration, PIDClassEnum);
+    TSDUCKDLL const Enumeration& PIDClassEnum();
 
     //---------------------------------------------------------------------
     // MPEG clock representation:

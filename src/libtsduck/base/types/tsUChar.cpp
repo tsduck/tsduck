@@ -9,22 +9,29 @@
 #include "tsUChar.h"
 #include "tsUString.h"
 #include "tsAlgorithm.h"
-#include "tsSingleton.h"
 
 
 //----------------------------------------------------------------------------
 // The macro MAP_SINGLETON defines a singleton class which inherits
 // from std::map<key_type, value_type>.
-// The constructor needs to be separately defined.
+// Only the constructor needs to be separately defined.
 //----------------------------------------------------------------------------
 
 #define MAP_SINGLETON(classname, key_type, value_type)      \
     class classname : public std::map<key_type, value_type> \
     {                                                       \
-        TS_DECLARE_SINGLETON(classname);                    \
+    private:                                                \
+        classname();                                        \
+    public:                                                 \
+        static const classname& Instance();                 \
         using SuperClass = std::map<key_type, value_type>;  \
     };                                                      \
-    TS_DEFINE_SINGLETON(classname)
+    const classname& classname::Instance()                  \
+    {                                                       \
+        static const classname singleton;                   \
+        return singleton;                                   \
+    }                                                       \
+    using TS_UNIQUE_NAME(for_trailing_semicolon) = int
 
 
 //----------------------------------------------------------------------------

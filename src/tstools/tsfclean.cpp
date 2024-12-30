@@ -313,13 +313,13 @@ ts::FileCleaner::FileCleaner(FileCleanOptions& opt, const fs::path& infile_name)
                     // No PTS detected in this PID. Start passing it after video.
                     pctx.hold = pids[pctx.video_pid].hold;
                     if (!pctx.hold) {
-                        _opt.debug(u"releasing %s PID %n, associated video PID %d, no PTS found", PIDClassEnum->name(pid_class), pid, pctx.video_pid);
+                        _opt.debug(u"releasing %s PID %n, associated video PID %d, no PTS found", PIDClassEnum().name(pid_class), pid, pctx.video_pid);
                     }
                 }
                 else if (SequencedPTS(pctx.start_pts, pts)) {
                     // Passed the video start PTS -> start passing audio or
                     pctx.hold = false;
-                    _opt.debug(u"releasing %s PID %n, associated video PID %d, PTS %'d (%s)", PIDClassEnum->name(pid_class), pid, pctx.video_pid, pts, pts == INVALID_PTS ? u"invalid" : u"valid");
+                    _opt.debug(u"releasing %s PID %n, associated video PID %d, PTS %'d (%s)", PIDClassEnum().name(pid_class), pid, pctx.video_pid, pts, pts == INVALID_PTS ? u"invalid" : u"valid");
                 }
             }
             if (!pctx.hold) {
@@ -338,7 +338,7 @@ ts::FileCleaner::FileCleaner(FileCleanOptions& opt, const fs::path& infile_name)
                 pkt.setCC(pctx.start_cc + CC_MAX - 1);
             }
             writePacket(pkt);
-            _opt.debug(u"passing PCR-only packet on %s PID %n, associated video PID %d", PIDClassEnum->name(pid_class), pid, pctx.video_pid);
+            _opt.debug(u"passing PCR-only packet on %s PID %n, associated video PID %d", PIDClassEnum().name(pid_class), pid, pctx.video_pid);
         }
     }
 

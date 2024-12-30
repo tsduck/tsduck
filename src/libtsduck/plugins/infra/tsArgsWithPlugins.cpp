@@ -36,7 +36,7 @@ ts::ArgsWithPlugins::ArgsWithPlugins(size_t min_inputs,
 {
     setDirectSyntax(syntax);
 
-    option(u"list-plugins", 'l', PluginRepository::ListProcessorEnum, 0, 1, true);
+    option(u"list-plugins", 'l', PluginRepository::ListProcessorEnum(), 0, 1, true);
     help(u"list-plugins", u"List all available plugins.");
 }
 

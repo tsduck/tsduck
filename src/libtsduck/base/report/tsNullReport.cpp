@@ -8,9 +8,15 @@
 
 #include "tsNullReport.h"
 
-// Define singleton instance
-TS_DEFINE_SINGLETON(ts::NullReport);
+// Get the instance of the singleton.
+ts::NullReport& ts::NullReport::Instance()
+{
+    // Thread-safe init-safe static data pattern:
+    static NullReport singleton;
+    return singleton;
+}
 
 // Does nothing, really nothing at all.
-ts::NullReport::NullReport() {}
-void ts::NullReport::writeLog(int severity, const UString &msg) {}
+void ts::NullReport::writeLog(int severity, const UString &msg)
+{
+}

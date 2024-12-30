@@ -14,7 +14,6 @@
 #pragma once
 #include "tsAbstractLongTable.h"
 #include "tsDescriptorList.h"
-#include "tsSingleton.h"
 #include "tsEnumeration.h"
 #include "tsTS.h"
 
@@ -91,11 +90,10 @@ namespace ts {
         DeclareDisplaySection();
 
         //!
-        //! Get the name for a 16-bit table type from an MGT.
-        //! @param [in] table_type Table type value.
-        //! @return The corresponding name.
+        //! Enumeration description of 16-bit table types from an MGT.
+        //! @return A constant reference to the enumeration description.
         //!
-        static UString TableTypeName(uint16_t table_type);
+        static const Enumeration& TableTypeEnum();
 
     protected:
         // Inherited methods
@@ -106,11 +104,12 @@ namespace ts {
         virtual bool analyzeXML(DuckContext&, const xml::Element*) override;
 
     private:
-        // An Enumeration object for table_type.
+        // An Enumeration type for table_type.
         // Need a specific constructor because of the large list of values.
-        class TableTypeEnum : public Enumeration
+        class TableTypeEnumeration : public Enumeration
         {
-            TS_DECLARE_SINGLETON(TableTypeEnum);
+        public:
+            TableTypeEnumeration();
         };
     };
 }

@@ -32,11 +32,11 @@ ts::AES256::AES256(const BlockCipherProperties& props) : BlockCipher(props)
 
 #if defined(TS_WINDOWS)
 
-TS_STATIC_INSTANCE(, ts::FetchBCryptAlgorithm, FetchECB, (BCRYPT_AES_ALGORITHM, BCRYPT_CHAIN_MODE_ECB));
-
 void ts::AES256::getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length, bool& ignore_iv) const
 {
-    FetchECB->getAlgorithm(algo, length);
+    // Thread-safe init-safe static data pattern:
+    static const FetchBCryptAlgorithm fetch(BCRYPT_AES_ALGORITHM, BCRYPT_CHAIN_MODE_ECB);
+    fetch.getAlgorithm(algo, length);
     // This is ECB mode, ignore IV which may be used by a upper chaining mode.
     ignore_iv = true;
 }
@@ -76,7 +76,9 @@ ts::ECB<ts::AES256>::ECB(const BlockCipherProperties& props) : AES256(props)
 
 void ts::ECB<ts::AES256>::getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length, bool& ignore_iv) const
 {
-    FetchECB->getAlgorithm(algo, length);
+    // Thread-safe init-safe static data pattern:
+    static const FetchBCryptAlgorithm fetch(BCRYPT_AES_ALGORITHM, BCRYPT_CHAIN_MODE_ECB);
+    fetch.getAlgorithm(algo, length);
     // This is ECB mode, ignore IV which may be used by a upper chaining mode.
     ignore_iv = true;
 }
@@ -109,11 +111,11 @@ ts::CBC<ts::AES256>::CBC(const BlockCipherProperties& props) : AES256(props)
 
 #if defined(TS_WINDOWS)
 
-TS_STATIC_INSTANCE(, ts::FetchBCryptAlgorithm, FetchCBC, (BCRYPT_AES_ALGORITHM, BCRYPT_CHAIN_MODE_CBC));
-
 void ts::CBC<ts::AES256>::getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length, bool& ignore_iv) const
 {
-    FetchCBC->getAlgorithm(algo, length);
+    // Thread-safe init-safe static data pattern:
+    static const FetchBCryptAlgorithm fetch(BCRYPT_AES_ALGORITHM, BCRYPT_CHAIN_MODE_CBC);
+    fetch.getAlgorithm(algo, length);
     ignore_iv = false;
 }
 

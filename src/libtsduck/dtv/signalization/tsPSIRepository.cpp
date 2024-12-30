@@ -14,7 +14,17 @@
 #include "tsTextTable.h"
 #include "tsSysUtils.h"
 
-TS_DEFINE_SINGLETON(ts::PSIRepository);
+
+//----------------------------------------------------------------------------
+// Get the instance of the PSIRepository singleton.
+//----------------------------------------------------------------------------
+
+ts::PSIRepository& ts::PSIRepository::Instance()
+{
+    // Thread-safe init-safe static data pattern:
+    static PSIRepository repo;
+    return repo;
+}
 
 
 //----------------------------------------------------------------------------

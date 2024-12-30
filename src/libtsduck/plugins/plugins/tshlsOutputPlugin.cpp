@@ -24,7 +24,7 @@ TS_REGISTER_OUTPUT_PLUGIN(u"hls", ts::hls::OutputPlugin);
 ts::hls::OutputPlugin::OutputPlugin(TSP* tsp_) :
     ts::OutputPlugin(tsp_, u"Generate HTTP Live Streaming (HLS) media", u"[options] filename"),
     _demux(duck, this),
-    _ccFixer(NoPID, this)
+    _ccFixer(NoPID(), this)
 {
     option(u"", 0, FILENAME, 1, 1);
     help(u"",
@@ -201,7 +201,7 @@ bool ts::hls::OutputPlugin::start()
 
     // Initialize the demux to get the PAT and PMT.
     _demux.reset();
-    _demux.setPIDFilter(NoPID);
+    _demux.setPIDFilter(NoPID());
     _demux.addPID(PID_PAT);
     _patPackets.clear();
     _pmtPackets.clear();
@@ -214,7 +214,7 @@ bool ts::hls::OutputPlugin::start()
     // Fix continuity counters in PAT PID. Will add the PMT PID when found.
     _ccFixer.reset();
     _ccFixer.setGenerator(true);
-    _ccFixer.setPIDFilter(NoPID);
+    _ccFixer.setPIDFilter(NoPID());
     _ccFixer.addPID(PID_PAT);
 
     // Initialize the segment and playlist files.

@@ -16,7 +16,6 @@
 #include "tsProcessorPlugin.h"
 #include "tsOutputPlugin.h"
 #include "tsReport.h"
-#include "tsSingleton.h"
 #include "tsVersionInfo.h"
 
 namespace ts {
@@ -28,9 +27,14 @@ namespace ts {
     //!
     class TSDUCKDLL PluginRepository
     {
-        TS_DECLARE_SINGLETON(PluginRepository);
-
+        TS_NOCOPY(PluginRepository);
     public:
+        //!
+        //! Get the instance of the PluginRepository singleton.
+        //! @return A reference to the PluginRepository singleton.
+        //!
+        static PluginRepository& Instance();
+
         //!
         //! Profile of a function which creates an input plugin.
         //! @param [in] tsp Associated callback to tsp.
@@ -166,7 +170,7 @@ namespace ts {
         //!
         //! Convenient command line options for "list processor" option.
         //!
-        static const Enumeration ListProcessorEnum;
+        static const Enumeration& ListProcessorEnum();
 
         //!
         //! List all tsp processors.
@@ -221,8 +225,12 @@ namespace ts {
         ProcessorMap _processorPlugins {};
         OutputMap    _outputPlugins {};
 
-        template<typename FACTORY>
+        // Get plugin factory by name.
+        template <typename FACTORY>
         FACTORY getFactory(const UString& name, const UString& type, const std::map<UString,FACTORY>&, Report&);
+
+        // Inaccessible singleton contructor.
+        PluginRepository() = default;
 
         // List one plugin.
         static void ListOnePlugin(UString& out, const UString& name, Plugin* plugin, size_t name_width, int flags);

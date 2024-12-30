@@ -179,7 +179,7 @@ void DemuxTest::testTable(const char* name, const uint8_t* ref_packets, size_t r
     // Analyze TS packets. We expect only one table
 
     const ts::TSPacket* ref_pkt = reinterpret_cast<const ts::TSPacket*>(ref_packets);
-    ts::StandaloneTableDemux demux(duck, ts::AllPIDs);
+    ts::StandaloneTableDemux demux(duck, ts::AllPIDs());
 
     for (size_t pi = 0; pi < ref_packets_size / ts::PKT_SIZE; ++pi) {
         demux.feedPacket(ref_pkt[pi]);
@@ -359,7 +359,7 @@ void DemuxTest::testTable(const char* name, const uint8_t* ref_packets, size_t r
 
     // Reanalyze the packetized table and check it is identical to table2
 
-    ts::StandaloneTableDemux demux2(duck, ts::AllPIDs);
+    ts::StandaloneTableDemux demux2(duck, ts::AllPIDs());
 
     for (const auto& pkt : packets) {
         demux2.feedPacket(pkt);

@@ -13,7 +13,6 @@
 
 #pragma once
 #include "tsEnumeration.h"
-#include "tsSingleton.h"
 
 namespace ts {
 
@@ -32,18 +31,21 @@ namespace ts {
 
     //!
     //! Enumeration description of ts::TSPacketFormat.
+    //! @return A constant reference to the enumeration description.
     //!
-    TS_DECLARE_GLOBAL(const, Enumeration, TSPacketFormatEnum);
+    TSDUCKDLL const Enumeration& TSPacketFormatEnum();
 
     //!
     //! Enumeration description of ts::TSPacketFormat as input file option.
+    //! @return A constant reference to the enumeration description.
     //!
-    TS_DECLARE_GLOBAL(const, Enumeration, TSPacketFormatInputEnum);
+    TSDUCKDLL const Enumeration& TSPacketFormatInputEnum();
 
     //!
     //! Enumeration description of ts::TSPacketFormat as output file option.
+    //! @return A constant reference to the enumeration description.
     //!
-    TS_DECLARE_GLOBAL(const, Enumeration, TSPacketFormatOutputEnum);
+    TSDUCKDLL const Enumeration& TSPacketFormatOutputEnum();
 
     //!
     //! Add the definition of a -\-format option for TS packet format in input files.

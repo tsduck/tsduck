@@ -147,13 +147,10 @@ void ts::MGT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 
 
 //----------------------------------------------------------------------------
-// An Enumeration object for table_type.
-// Need a specific constructor because of the large list of values.
+// Enumeration description of 16-bit table types from an MGT.
 //----------------------------------------------------------------------------
 
-TS_DEFINE_SINGLETON(ts::MGT::TableTypeEnum);
-
-ts::MGT::TableTypeEnum::TableTypeEnum() :
+ts::MGT::TableTypeEnumeration::TableTypeEnumeration() :
     Enumeration({
         {u"TVCT-current", 0x0000},
         {u"TVCT-next",    0x0001},
@@ -181,14 +178,10 @@ ts::MGT::TableTypeEnum::TableTypeEnum() :
     }
 }
 
-
-//----------------------------------------------------------------------------
-// Get the name for a 16-bit table type from an MGT.
-//----------------------------------------------------------------------------
-
-ts::UString ts::MGT::TableTypeName(uint16_t table_type)
+const ts::Enumeration& ts::MGT::TableTypeEnum()
 {
-    return TableTypeEnum::Instance().name(table_type);
+    static const TableTypeEnumeration data;
+    return data;
 }
 
 
@@ -218,7 +211,7 @@ void ts::MGT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
         }
 
         const uint16_t type = buf.getUInt16();
-        disp << margin << UString::Format(u"- Table type: %s (0x%X)", TableTypeName(type), type) << std::endl;
+        disp << margin << UString::Format(u"- Table type: %s (0x%X)", TableTypeEnum().name(type), type) << std::endl;
         disp << margin << UString::Format(u"  PID: %n", buf.getPID());
         buf.skipBits(3);
         disp << UString::Format(u", version: %d", buf.getBits<uint8_t>(5));
@@ -243,7 +236,7 @@ void ts::MGT::buildXML(DuckContext& duck, xml::Element* root) const
 
     for (const auto& it : tables) {
         xml::Element* e = root->addElement(u"table");
-        e->setEnumAttribute(TableTypeEnum::Instance(), u"type", it.second.table_type);
+        e->setEnumAttribute(TableTypeEnum(), u"type", it.second.table_type);
         e->setIntAttribute(u"PID", it.second.table_type_PID, true);
         e->setIntAttribute(u"version_number", it.second.table_type_version_number);
         e->setIntAttribute(u"number_bytes", it.second.number_bytes);
@@ -267,7 +260,7 @@ bool ts::MGT::analyzeXML(DuckContext& duck, const xml::Element* element)
     for (size_t index = 0; ok && index < children.size(); ++index) {
         // Add a new TableType at the end of the list.
         TableType& tt(tables.newEntry());
-        ok = children[index]->getEnumAttribute(tt.table_type, TableTypeEnum::Instance(), u"type", true) &&
+        ok = children[index]->getEnumAttribute(tt.table_type, TableTypeEnum(), u"type", true) &&
              children[index]->getIntAttribute<PID>(tt.table_type_PID, u"PID", true, 0, 0x0000, 0x1FFF) &&
              children[index]->getIntAttribute(tt.table_type_version_number, u"version_number", true, 0, 0, 31) &&
              children[index]->getIntAttribute(tt.number_bytes, u"number_bytes", true) &&

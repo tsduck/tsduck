@@ -19,8 +19,13 @@
 #include "tsUID.h"
 #include "tsTime.h"
 
-// Define singleton instance
-TS_DEFINE_SINGLETON(ts::UID);
+// Get the instance of the singleton.
+ts::UID& ts::UID::Instance()
+{
+    // Thread-safe init-safe static data pattern:
+    static UID singleton;
+    return singleton;
+}
 
 // Constructor
 ts::UID::UID()

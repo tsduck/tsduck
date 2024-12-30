@@ -12,26 +12,36 @@
 #include "tsAlgorithm.h"
 #include "tsCerrReport.h"
 
-TS_DEFINE_SINGLETON(ts::PluginRepository);
 
+//----------------------------------------------------------------------------
 // Options for --list-processor.
-const ts::Enumeration ts::PluginRepository::ListProcessorEnum({
-    {u"all",          ts::PluginRepository::LIST_ALL},
-    {u"input",        ts::PluginRepository::LIST_INPUT  | ts::PluginRepository::LIST_COMPACT},
-    {u"output",       ts::PluginRepository::LIST_OUTPUT | ts::PluginRepository::LIST_COMPACT},
-    {u"packet",       ts::PluginRepository::LIST_PACKET | ts::PluginRepository::LIST_COMPACT},
-    {u"names-input",  ts::PluginRepository::LIST_INPUT  | ts::PluginRepository::LIST_NAMES},
-    {u"names-output", ts::PluginRepository::LIST_OUTPUT | ts::PluginRepository::LIST_NAMES},
-    {u"names-packet", ts::PluginRepository::LIST_PACKET | ts::PluginRepository::LIST_NAMES},
-});
-
-
-//----------------------------------------------------------------------------
-// Constructors
 //----------------------------------------------------------------------------
 
-ts::PluginRepository::PluginRepository()
+const ts::Enumeration& ts::PluginRepository::ListProcessorEnum()
 {
+    // Thread-safe init-safe static data patterns.
+    static const Enumeration data({
+        {u"all",          LIST_ALL},
+        {u"input",        LIST_INPUT  | LIST_COMPACT},
+        {u"output",       LIST_OUTPUT | LIST_COMPACT},
+        {u"packet",       LIST_PACKET | LIST_COMPACT},
+        {u"names-input",  LIST_INPUT  | LIST_NAMES},
+        {u"names-output", LIST_OUTPUT | LIST_NAMES},
+        {u"names-packet", LIST_PACKET | LIST_NAMES},
+    });
+    return data;
+}
+
+
+//----------------------------------------------------------------------------
+// Get the instance of the PluginRepository singleton.
+//----------------------------------------------------------------------------
+
+ts::PluginRepository& ts::PluginRepository::Instance()
+{
+    // Thread-safe init-safe static data pattern:
+    static PluginRepository repo;
+    return repo;
 }
 
 
