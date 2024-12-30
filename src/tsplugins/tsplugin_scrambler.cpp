@@ -141,6 +141,7 @@ namespace ts {
         bool              _scramble_audio = false;      // Scramble all audio components
         bool              _scramble_video = false;      // Scramble all video components
         bool              _scramble_subtitles = false;  // Scramble all subtitles components
+        PID               _only_pid = PID_NULL;         // Only PID to scramble (part of _service streams)
         bool              _synchronous_ecmg = false;    // Synchronous ECM generation
         bool              _ignore_scrambled = false;    // Ignore packets which are already scrambled
         bool              _update_pmt = false;          // Update PMT.
@@ -265,6 +266,12 @@ ts::ScramblerPlugin::ScramblerPlugin(TSP* tsp_) :
          u"Do not scramble video components in the selected service. By default, "
          u"all video components are scrambled.");
 
+    option(u"only-pid", 0, PIDVAL);
+    help(u"only-pid",
+         u"Only scramble the component from the selected service which matches "
+         u"the given PID."
+         u"By default, all components are scrambled.");
+
     option(u"partial-scrambling", 0, POSITIVE);
     help(u"partial-scrambling", u"count",
          u"Do not scramble all packets, only one packet every \"count\" packets. "
@@ -332,6 +339,7 @@ bool ts::ScramblerPlugin::getOptions()
     _scramble_audio = !present(u"no-audio");
     _scramble_video = !present(u"no-video");
     _scramble_subtitles = present(u"subtitles");
+    getIntValue(_only_pid, u"only-pid", PID_NULL);
     _ignore_scrambled = present(u"ignore-scrambled");
     _pre_reduce_cw = present(u"pre-reduce-cw");
     getChronoValue(_clear_period, u"clear-period", cn::seconds(0));
@@ -490,7 +498,7 @@ void ts::ScramblerPlugin::handlePMT(const PMT& table, PID)
         const PID pid = it.first;
         const PMT::Stream& stream(it.second);
         _input_pids.set(pid);
-        if ((_scramble_audio && stream.isAudio(duck)) || (_scramble_video && stream.isVideo(duck)) || (_scramble_subtitles && stream.isSubtitles(duck))) {
+        if (((_scramble_audio && stream.isAudio(duck)) || (_scramble_video && stream.isVideo(duck)) || (_scramble_subtitles && stream.isSubtitles(duck))) && (_only_pid == PID_NULL || _only_pid == pid)) {
             _scrambled_pids.set(pid);
             verbose(u"starting scrambling PID 0x%X", pid);
         }
