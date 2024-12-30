@@ -13,9 +13,14 @@ namespace {
     const uint8_t iv_zero[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 }
 
-TS_BLOCK_CIPHER_DEFINE_PROPERTIES(ts::IDSA, IDSA, (DVS042<AES128>::PROPERTIES(), u"ATIS-IDSA", iv_zero, sizeof(iv_zero)));
+const ts::BlockCipherProperties& ts::IDSA::Properties()
+{
+    // Thread-safe init-safe static data pattern:
+    static const BlockCipherProperties props(DVS042<AES128>::Properties(), u"ATIS-IDSA", iv_zero, sizeof(iv_zero));
+    return props;
+}
 
-ts::IDSA::IDSA() : DVS042<AES128>(IDSA::PROPERTIES(), true)
+ts::IDSA::IDSA() : DVS042<AES128>(IDSA::Properties(), true)
 {
 }
 

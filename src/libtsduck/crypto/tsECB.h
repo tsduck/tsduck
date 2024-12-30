@@ -35,7 +35,9 @@ namespace ts {
         ECB();
 
     protected:
-        TS_BLOCK_CIPHER_DECLARE_PROPERTIES(ECB);
+        //! Properties of this algorithm.
+        //! @return A constant reference to the properties.
+        static const BlockCipherProperties& Properties();
 
         //! Constructor for subclasses which add some properties, such as fixed IV.
         //! @param [in] props Constant reference to a block of properties of this block cipher.
@@ -56,17 +58,23 @@ namespace ts {
 
 #if !defined(DOXYGEN)
 
-TS_BLOCK_CIPHER_DEFINE_PROPERTIES_TEMPLATE(ts::ECB, ECB, (CIPHER::PROPERTIES(), u"ECB", false, CIPHER::BLOCK_SIZE, 0, 0));
+template<class CIPHER> requires std::derived_from<CIPHER, ts::BlockCipher>
+const ts::BlockCipherProperties& ts::ECB<CIPHER>::Properties()
+{
+    // Thread-safe init-safe static data pattern:
+    static const BlockCipherProperties props(CIPHER::Properties(), u"ECB", false, CIPHER::BLOCK_SIZE, 0, 0);
+    return props;
+}
 
 template<class CIPHER> requires std::derived_from<CIPHER, ts::BlockCipher>
-ts::ECB<CIPHER>::ECB() : CIPHER(ECB::PROPERTIES())
+ts::ECB<CIPHER>::ECB() : CIPHER(ECB::Properties())
 {
 }
 
 template<class CIPHER> requires std::derived_from<CIPHER, ts::BlockCipher>
 ts::ECB<CIPHER>::ECB(const BlockCipherProperties& props) : CIPHER(props)
 {
-    props.assertCompatibleChaining(ECB::PROPERTIES());
+    props.assertCompatibleChaining(ECB::Properties());
 }
 
 

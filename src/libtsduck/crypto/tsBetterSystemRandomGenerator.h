@@ -14,7 +14,6 @@
 
 #pragma once
 #include "tsSystemRandomGenerator.h"
-#include "tsSingleton.h"
 #include "tsReport.h"
 #include "tsByteBlock.h"
 #include "tsUString.h"
@@ -51,7 +50,7 @@ namespace ts {
     //!
     class TSDUCKDLL BetterSystemRandomGenerator: public SystemRandomGenerator
     {
-        TS_DECLARE_SINGLETON(BetterSystemRandomGenerator);
+        TS_SINGLETON(BetterSystemRandomGenerator);
 
     public:
         // Implementation of RandomGenerator interface:

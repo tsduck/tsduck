@@ -23,7 +23,6 @@
     #include "tsSysCtl.h"
 #endif
 
-// Define singleton instance
 TS_DEFINE_SINGLETON(ts::SysInfo);
 
 

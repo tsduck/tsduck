@@ -8,10 +8,14 @@
 
 #include "tsSCTE52.h"
 
-TS_BLOCK_CIPHER_DEFINE_PROPERTIES(ts::SCTE52_2003, SCTE52, (DVS042<DES>::PROPERTIES(), u"ANSI/SCTE 52 (2003)", nullptr, 0));
-TS_BLOCK_CIPHER_DEFINE_PROPERTIES(ts::SCTE52_2008, SCTE52, (DVS042<DES>::PROPERTIES(), u"ANSI/SCTE 52 (2008)", nullptr, 0));
+const ts::BlockCipherProperties& ts::SCTE52_2003::Properties()
+{
+    // Thread-safe init-safe static data pattern:
+    static const BlockCipherProperties props(DVS042<DES>::Properties(), u"ANSI/SCTE 52 (2003)", nullptr, 0);
+    return props;
+}
 
-ts::SCTE52_2003::SCTE52_2003() : DVS042<DES>(SCTE52_2003::PROPERTIES(), true)
+ts::SCTE52_2003::SCTE52_2003() : DVS042<DES>(SCTE52_2003::Properties(), true)
 {
 }
 
@@ -19,7 +23,14 @@ ts::SCTE52_2003::~SCTE52_2003()
 {
 }
 
-ts::SCTE52_2008::SCTE52_2008() : DVS042<DES>(SCTE52_2008::PROPERTIES())
+const ts::BlockCipherProperties& ts::SCTE52_2008::Properties()
+{
+    // Thread-safe init-safe static data pattern:
+    static const BlockCipherProperties props(DVS042<DES>::Properties(), u"ANSI/SCTE 52 (2008)", nullptr, 0);
+    return props;
+}
+
+ts::SCTE52_2008::SCTE52_2008() : DVS042<DES>(SCTE52_2008::Properties())
 {
 }
 

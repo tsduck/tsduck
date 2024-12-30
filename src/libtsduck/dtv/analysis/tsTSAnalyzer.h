@@ -413,10 +413,8 @@ namespace ts {
             // Singleton repository of these known PID's.
             class KnownPIDMap : public std::map<PID, KnownPID>
             {
-            private:
-                KnownPIDMap();
+                TS_SINGLETON(KnownPIDMap);
             public:
-                static KnownPIDMap& Instance();
                 void add(PID p, const UChar* name, bool is_optional, bool has_sections)
                 {
                     insert(std::pair<PID,KnownPID>(p, {name, is_optional, has_sections}));

@@ -15,7 +15,6 @@
 #include "tsStringifyInterface.h"
 #include "tsIPAddressMask.h"
 #include "tsCerrReport.h"
-#include "tsSingleton.h"
 
 namespace ts {
 
@@ -126,7 +125,7 @@ namespace ts {
         // The shared repository of local network interfaces.
         class InterfaceRepository
         {
-            TS_DECLARE_SINGLETON(InterfaceRepository);
+            TS_SINGLETON(InterfaceRepository);
         public:
             std::mutex mutex {};
             NetworkInterfaceVector addresses {};

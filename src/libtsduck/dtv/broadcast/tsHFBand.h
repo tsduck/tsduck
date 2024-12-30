@@ -14,7 +14,6 @@
 #pragma once
 #include "tsModulation.h"
 #include "tsCerrReport.h"
-#include "tsSingleton.h"
 #include "tsxml.h"
 
 namespace ts {
@@ -321,7 +320,7 @@ namespace ts {
         // The repository of HF bands.
         class HFBandRepository
         {
-            TS_DECLARE_SINGLETON(HFBandRepository);
+            TS_SINGLETON(HFBandRepository);
         public:
             // Load the repository if not already done. Return false on error.
             bool load(Report&);

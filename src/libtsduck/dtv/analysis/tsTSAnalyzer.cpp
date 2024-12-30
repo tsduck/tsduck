@@ -133,13 +133,7 @@ void ts::TSAnalyzer::resetSectionDemux()
 // Description of a few known PID's
 //----------------------------------------------------------------------------
 
-// Get the instance of the singleton.
-ts::TSAnalyzer::PIDContext::KnownPIDMap& ts::TSAnalyzer::PIDContext::KnownPIDMap::Instance()
-{
-    // Thread-safe init-safe static data pattern:
-    static KnownPIDMap singleton;
-    return singleton;
-}
+TS_DEFINE_SINGLETON(ts::TSAnalyzer::PIDContext::KnownPIDMap);
 
 // Constructor of the singleton.
 ts::TSAnalyzer::PIDContext::KnownPIDMap::KnownPIDMap()

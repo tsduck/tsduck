@@ -13,9 +13,14 @@ namespace {
     const uint8_t ivs[16] = {0x44, 0x56, 0x42, 0x54, 0x4d, 0x43, 0x50, 0x54, 0x41, 0x45, 0x53, 0x43, 0x49, 0x53, 0x53, 0x41};
 }
 
-TS_BLOCK_CIPHER_DEFINE_PROPERTIES(ts::DVBCISSA, DVBCISSA, (CBC<AES128>::PROPERTIES(), u"DVB-CISSA", ivs, sizeof(ivs)));
+const ts::BlockCipherProperties& ts::DVBCISSA::Properties()
+{
+    // Thread-safe init-safe static data pattern:
+    static const BlockCipherProperties props(CBC<AES128>::Properties(), u"DVB-CISSA", ivs, sizeof(ivs));
+    return props;
+}
 
-ts::DVBCISSA::DVBCISSA() : CBC<AES128>(DVBCISSA::PROPERTIES())
+ts::DVBCISSA::DVBCISSA() : CBC<AES128>(DVBCISSA::Properties())
 {
 }
 

@@ -16,7 +16,6 @@
 #include "tsEnumUtils.h"
 #include "tsIntegerUtils.h"
 #include "tsReport.h"
-#include "tsSingleton.h"
 #include "tsVersionInfo.h"
 
 namespace ts {
@@ -357,7 +356,7 @@ namespace ts {
         // A singleton which manages all NamesFile instances (thread-safe).
         class AllInstances
         {
-            TS_DECLARE_SINGLETON(AllInstances);
+            TS_SINGLETON(AllInstances);
         public:
             NamesFilePtr getFile(const UString& fileName, bool mergeExtensions);
             NamesFilePtr getFile(Predefined index);

@@ -30,7 +30,9 @@ namespace ts {
         static constexpr size_t KEY_SIZE = 8;    //!< DES key size in bytes.
 
     protected:
-        TS_BLOCK_CIPHER_DECLARE_PROPERTIES(DES);
+        //! Properties of this algorithm.
+        //! @return A constant reference to the properties.
+        static const BlockCipherProperties& Properties();
 
         //! Constructor for subclasses which add some properties, such as chaining mode.
         //! @param [in] props Constant reference to a block of properties of this block cipher.
@@ -54,7 +56,7 @@ namespace ts {
     public:
         ECB();
     protected:
-        TS_BLOCK_CIPHER_DECLARE_PROPERTIES(ECB);
+        static const BlockCipherProperties& Properties();
         ECB(const BlockCipherProperties& props);
 #if defined(TS_WINDOWS)
         virtual void getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length, bool& ignore_iv) const override;
@@ -72,7 +74,7 @@ namespace ts {
     public:
         CBC();
     protected:
-        TS_BLOCK_CIPHER_DECLARE_PROPERTIES(CBC);
+        static const BlockCipherProperties& Properties();
         CBC(const BlockCipherProperties& props);
 #if defined(TS_WINDOWS)
         virtual void getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length, bool& ignore_iv) const override;

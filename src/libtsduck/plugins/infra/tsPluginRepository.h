@@ -27,14 +27,8 @@ namespace ts {
     //!
     class TSDUCKDLL PluginRepository
     {
-        TS_NOCOPY(PluginRepository);
+        TS_SINGLETON(PluginRepository);
     public:
-        //!
-        //! Get the instance of the PluginRepository singleton.
-        //! @return A reference to the PluginRepository singleton.
-        //!
-        static PluginRepository& Instance();
-
         //!
         //! Profile of a function which creates an input plugin.
         //! @param [in] tsp Associated callback to tsp.
@@ -216,9 +210,9 @@ namespace ts {
         };
 
     private:
-        using InputMap = std::map<UString, InputPluginFactory>    ;
+        using InputMap = std::map<UString, InputPluginFactory>;
         using ProcessorMap = std::map<UString, ProcessorPluginFactory>;
-        using OutputMap = std::map<UString, OutputPluginFactory>   ;
+        using OutputMap = std::map<UString, OutputPluginFactory>;
 
         bool         _sharedLibraryAllowed = true;
         InputMap     _inputPlugins {};
@@ -228,9 +222,6 @@ namespace ts {
         // Get plugin factory by name.
         template <typename FACTORY>
         FACTORY getFactory(const UString& name, const UString& type, const std::map<UString,FACTORY>&, Report&);
-
-        // Inaccessible singleton contructor.
-        PluginRepository() = default;
 
         // List one plugin.
         static void ListOnePlugin(UString& out, const UString& name, Plugin* plugin, size_t name_width, int flags);

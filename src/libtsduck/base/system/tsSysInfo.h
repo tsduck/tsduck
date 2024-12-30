@@ -12,7 +12,6 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsSingleton.h"
 #include "tsUString.h"
 
 namespace ts {
@@ -22,7 +21,7 @@ namespace ts {
     //!
     class TSDUCKDLL SysInfo
     {
-        TS_DECLARE_SINGLETON(SysInfo);
+        TS_SINGLETON(SysInfo);
     public:
         //!
         //! Operating system architecture.

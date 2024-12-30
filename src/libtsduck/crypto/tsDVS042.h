@@ -69,7 +69,9 @@ namespace ts {
         bool setShortIV(const ByteBlock& iv) { return setShortIV(iv.data(), iv.size()); }
 
     protected:
-        TS_BLOCK_CIPHER_DECLARE_PROPERTIES(DVS042);
+        //! Properties of this algorithm.
+        //! @return A constant reference to the properties.
+        static const BlockCipherProperties& Properties();
 
         //! Constructor for subclasses which add some properties, such as fixed IV.
         //! @param [in] props Constant reference to a block of properties of this block cipher.
@@ -98,10 +100,16 @@ namespace ts {
 TS_PUSH_WARNING()
 TS_MSC_NOWARNING(4505) // warning C4505: 'ts::DVS042<ts::AES>::encrypt': unreferenced local function has been removed
 
-TS_BLOCK_CIPHER_DEFINE_PROPERTIES_TEMPLATE(ts::DVS042, DVS042, (CIPHER::PROPERTIES(), u"DVS042", true, 0, 3, CIPHER::BLOCK_SIZE));
+template<class CIPHER> requires std::derived_from<CIPHER, ts::BlockCipher>
+const ts::BlockCipherProperties& ts::DVS042<CIPHER>::Properties()
+{
+    // Thread-safe init-safe static data pattern:
+    static const BlockCipherProperties props(CIPHER::Properties(), u"DVS042", true, 0, 3, CIPHER::BLOCK_SIZE);
+    return props;
+}
 
 template<class CIPHER> requires std::derived_from<CIPHER, ts::BlockCipher>
-ts::DVS042<CIPHER>::DVS042() : CIPHER(DVS042::PROPERTIES())
+ts::DVS042<CIPHER>::DVS042() : CIPHER(DVS042::Properties())
 {
 }
 
@@ -110,7 +118,7 @@ ts::DVS042<CIPHER>::DVS042(const BlockCipherProperties& props, bool ignore_short
     CIPHER(props),
     _ignore_short_iv(ignore_short_iv)
 {
-    props.assertCompatibleChaining(DVS042::PROPERTIES());
+    props.assertCompatibleChaining(DVS042::Properties());
 }
 
 

@@ -13,7 +13,6 @@
 
 #pragma once
 #include "tsConfigFile.h"
-#include "tsSingleton.h"
 
 namespace ts {
     //!
@@ -22,9 +21,7 @@ namespace ts {
     //!
     class TSDUCKDLL DuckConfigFile : public ConfigFile
     {
-        // This class is a singleton. Use static Instance() method.
-        TS_DECLARE_SINGLETON(DuckConfigFile);
-
+        TS_SINGLETON(DuckConfigFile);
     public:
         //!
         //! Get the value of an entry.

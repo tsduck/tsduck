@@ -26,7 +26,6 @@
     #include <openssl/opensslv.h>
     #include <openssl/evp.h>
     #include <openssl/err.h>
-    #include "tsAfterStandardHeaders.h"
     #if !defined(OPENSSL_VERSION_MAJOR) // before v3
         #define OPENSSL_VERSION_MAJOR (OPENSSL_VERSION_NUMBER >> 28)
     #endif
@@ -34,15 +33,17 @@
         #define OPENSSL_VERSION_MINOR ((OPENSSL_VERSION_NUMBER >> 20) & 0xFF)
     #endif
     #if OPENSSL_VERSION_MAJOR >= 3
-        #include "tsBeforeStandardHeaders.h"
+        // Starting with OpenSSL 3.0, algorithms are stored in providers.
+        #define TS_OPENSSL_PROVIDERS 1
         #include <openssl/core_names.h>
         #include <openssl/provider.h>
-        #include "tsAfterStandardHeaders.h"
     #elif !defined(OPENSSL_atexit)
         // OpenBSD uses LibreSSL 4.0.0 which says it is OpenSSL 2.0.0 but
         // emulates OpenSSL v3, except that OPENSSL_atexit is not available.
         #define OPENSSL_atexit atexit
     #endif
+    #include "tsAfterStandardHeaders.h"
+
 #endif
 
 namespace ts {

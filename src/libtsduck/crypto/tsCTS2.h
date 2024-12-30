@@ -36,7 +36,9 @@ namespace ts {
         CTS2();
 
     protected:
-        TS_BLOCK_CIPHER_DECLARE_PROPERTIES(CTS2);
+        //! Properties of this algorithm.
+        //! @return A constant reference to the properties.
+        static const BlockCipherProperties& Properties();
 
         // Implementation of BlockCipher interface.
         //! @cond nodoxygen
@@ -53,10 +55,16 @@ namespace ts {
 
 #if !defined(DOXYGEN)
 
-TS_BLOCK_CIPHER_DEFINE_PROPERTIES_TEMPLATE(ts::CTS2, CTS2, (CIPHER::PROPERTIES(), u"CTS2", true, CIPHER::BLOCK_SIZE, 3, CIPHER::BLOCK_SIZE));
+template<class CIPHER> requires std::derived_from<CIPHER, ts::BlockCipher>
+const ts::BlockCipherProperties& ts::CTS2<CIPHER>::Properties()
+{
+    // Thread-safe init-safe static data pattern:
+    static const BlockCipherProperties props(CIPHER::Properties(), u"CTS2", true, CIPHER::BLOCK_SIZE, 3, CIPHER::BLOCK_SIZE);
+    return props;
+}
 
 template<class CIPHER> requires std::derived_from<CIPHER, ts::BlockCipher>
-ts::CTS2<CIPHER>::CTS2() : CIPHER(CTS2::PROPERTIES())
+ts::CTS2<CIPHER>::CTS2() : CIPHER(CTS2::Properties())
 {
 }
 

@@ -7,7 +7,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsSHA512.h"
-#include "tsSingleton.h"
 #include "tsInitCryptoLibrary.h"
 
 #if defined(TS_WINDOWS)
@@ -21,12 +20,11 @@ void ts::SHA512::getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length) const
 
 #else
 
-// The singleton needs to be destroyed no later that OpenSSL cleanup.
-TS_STATIC_INSTANCE_ATEXIT(const, ts::FetchHashAlgorithm, Preset, ("SHA512"), OPENSSL_atexit);
-
 const EVP_MD_CTX* ts::SHA512::referenceContext() const
 {
-    return Preset->referenceContext();
+    // Thread-safe init-safe static data pattern:
+    static const FetchHashAlgorithm fetch("SHA512");
+    return fetch.referenceContext();
 }
 
 #endif

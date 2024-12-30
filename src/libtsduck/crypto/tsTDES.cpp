@@ -7,7 +7,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsTDES.h"
-#include "tsSingleton.h"
 #include "tsInitCryptoLibrary.h"
 
 
@@ -15,9 +14,14 @@
 // Basic implementation (one block)
 //----------------------------------------------------------------------------
 
-TS_BLOCK_CIPHER_DEFINE_PROPERTIES(ts::TDES, TDES, (u"TDES", ts::TDES::BLOCK_SIZE, ts::TDES::KEY_SIZE));
+const ts::BlockCipherProperties& ts::TDES::Properties()
+{
+    // Thread-safe init-safe static data pattern:
+    static const BlockCipherProperties props(u"TDES", ts::TDES::BLOCK_SIZE, ts::TDES::KEY_SIZE);
+    return props;
+}
 
-ts::TDES::TDES() : BlockCipher(TDES::PROPERTIES())
+ts::TDES::TDES() : BlockCipher(TDES::Properties())
 {
     // OpenSSL and Windows BCrypt can encrypt/decrypt in place.
     canProcessInPlace(true);
@@ -26,7 +30,7 @@ ts::TDES::TDES() : BlockCipher(TDES::PROPERTIES())
 ts::TDES::TDES(const BlockCipherProperties& props) : BlockCipher(props)
 {
     // OpenSSL and Windows BCrypt can encrypt/decrypt in place.
-    props.assertCompatibleBase(TDES::PROPERTIES());
+    props.assertCompatibleBase(TDES::Properties());
     canProcessInPlace(true);
 }
 
@@ -43,12 +47,11 @@ void ts::TDES::getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length, bool& ign
 
 #else
 
-// The singleton needs to be destroyed no later that OpenSSL cleanup.
-TS_STATIC_INSTANCE_ATEXIT(const, ts::FetchCipherAlgorithm, Algo, ("DES-EDE3-ECB"), OPENSSL_atexit);
-
 const EVP_CIPHER* ts::TDES::getAlgorithm() const
 {
-    return Algo->algorithm();
+    // Thread-safe init-safe static data pattern:
+    static const FetchCipherAlgorithm fetch("DES-EDE3-ECB");
+    return fetch.algorithm();
 }
 
 #endif
@@ -58,8 +61,14 @@ const EVP_CIPHER* ts::TDES::getAlgorithm() const
 // Template specialization for ECB mode.
 //----------------------------------------------------------------------------
 
-TS_BLOCK_CIPHER_DEFINE_PROPERTIES(ts::ECB<ts::TDES>, ECB, (ts::TDES::PROPERTIES(), u"ECB", false, ts::TDES::BLOCK_SIZE, 0, 0));
-ts::ECB<ts::TDES>::ECB() : TDES(ts::ECB<ts::TDES>::PROPERTIES())
+const ts::BlockCipherProperties& ts::ECB<ts::TDES>::Properties()
+{
+    // Thread-safe init-safe static data pattern:
+    static const BlockCipherProperties props(ts::TDES::Properties(), u"ECB", false, ts::TDES::BLOCK_SIZE, 0, 0);
+    return props;
+}
+
+ts::ECB<ts::TDES>::ECB() : TDES(ts::ECB<ts::TDES>::Properties())
 {
     // OpenSSL and Windows BCrypt can encrypt/decrypt in place.
     canProcessInPlace(true);
@@ -67,7 +76,7 @@ ts::ECB<ts::TDES>::ECB() : TDES(ts::ECB<ts::TDES>::PROPERTIES())
 
 ts::ECB<ts::TDES>::ECB(const BlockCipherProperties& props) : TDES(props)
 {
-    props.assertCompatibleChaining(ts::ECB<ts::TDES>::PROPERTIES());
+    props.assertCompatibleChaining(ts::ECB<ts::TDES>::Properties());
     // OpenSSL and Windows BCrypt can encrypt/decrypt in place.
     canProcessInPlace(true);
 }
@@ -87,7 +96,9 @@ void ts::ECB<ts::TDES>::getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length, 
 
 const EVP_CIPHER* ts::ECB<ts::TDES>::getAlgorithm() const
 {
-    return Algo->algorithm();
+    // Thread-safe init-safe static data pattern:
+    static const FetchCipherAlgorithm fetch("DES-EDE3-ECB");
+    return fetch.algorithm();
 }
 
 #endif
@@ -97,8 +108,14 @@ const EVP_CIPHER* ts::ECB<ts::TDES>::getAlgorithm() const
 // Template specialization for CBC mode.
 //----------------------------------------------------------------------------
 
-TS_BLOCK_CIPHER_DEFINE_PROPERTIES(ts::CBC<ts::TDES>, CBC, (ts::TDES::PROPERTIES(), u"CBC", false, ts::TDES::BLOCK_SIZE, 0, ts::TDES::BLOCK_SIZE));
-ts::CBC<ts::TDES>::CBC() : TDES(ts::CBC<ts::TDES>::PROPERTIES())
+const ts::BlockCipherProperties& ts::CBC<ts::TDES>::Properties()
+{
+    // Thread-safe init-safe static data pattern:
+    static const BlockCipherProperties props(ts::TDES::Properties(), u"CBC", false, ts::TDES::BLOCK_SIZE, 0, ts::TDES::BLOCK_SIZE);
+    return props;
+}
+
+ts::CBC<ts::TDES>::CBC() : TDES(ts::CBC<ts::TDES>::Properties())
 {
     // OpenSSL and Windows BCrypt can encrypt/decrypt in place.
     canProcessInPlace(true);
@@ -106,7 +123,7 @@ ts::CBC<ts::TDES>::CBC() : TDES(ts::CBC<ts::TDES>::PROPERTIES())
 
 ts::CBC<ts::TDES>::CBC(const BlockCipherProperties& props) : TDES(props)
 {
-    props.assertCompatibleChaining(ts::CBC<ts::TDES>::PROPERTIES());
+    props.assertCompatibleChaining(ts::CBC<ts::TDES>::Properties());
     // OpenSSL and Windows BCrypt can encrypt/decrypt in place.
     canProcessInPlace(true);
 }
@@ -123,12 +140,11 @@ void ts::CBC<ts::TDES>::getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length, 
 
 #else
 
-// The singleton needs to be destroyed no later that OpenSSL cleanup.
-TS_STATIC_INSTANCE_ATEXIT(const, ts::FetchCipherAlgorithm, AlgoCBC, ("DES-EDE3-CBC"), OPENSSL_atexit);
-
 const EVP_CIPHER* ts::CBC<ts::TDES>::getAlgorithm() const
 {
-    return AlgoCBC->algorithm();
+    // Thread-safe init-safe static data pattern:
+    static const FetchCipherAlgorithm fetch("DES-EDE3-CBC");
+    return fetch.algorithm();
 }
 
 #endif

@@ -30,7 +30,10 @@ namespace ts {
         DVBCISSA();
         //! Destructor.
         virtual ~DVBCISSA() override;
+
     protected:
-        TS_BLOCK_CIPHER_DECLARE_PROPERTIES(DVBCISSA);
+        //! Properties of this algorithm.
+        //! @return A constant reference to the properties.
+        static const BlockCipherProperties& Properties();
     };
 }

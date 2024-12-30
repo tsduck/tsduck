@@ -8,7 +8,6 @@
 
 #include "tsSRTSocket.h"
 #include "tsLibSRT.h"
-#include "tsSingleton.h"
 #include "tsArgs.h"
 #include "tsjsonObject.h"
 #include "tsTime.h"
@@ -308,7 +307,7 @@ size_t ts::SRTSocket::totalReceivedBytes() const { return 0; }
 namespace {
     class SRTInit
     {
-        TS_DECLARE_SINGLETON(SRTInit);
+        TS_SINGLETON(SRTInit);
     public:
         ~SRTInit();
     };

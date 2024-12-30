@@ -8,7 +8,6 @@
 
 #include "tsInitCryptoLibrary.h"
 #include "tsEnvironment.h"
-#include "tsAlgorithm.h"
 
 
 //----------------------------------------------------------------------------
@@ -49,25 +48,117 @@ ts::FetchBCryptAlgorithm::~FetchBCryptAlgorithm()
 #else
 
 //----------------------------------------------------------------------------
-// OpenSSL crypto library support (Unix systems only).
+// Base class for objects which must be terminated with OpenSSL.
 //----------------------------------------------------------------------------
 
-// A singleton which initialize the cryptographic library.
-// The singleton needs to be destroyed no later that OpenSSL cleanup.
-// OpenSSL is supposed to cleanup all its resources on exit, using atexit() handlers.
-// However, providers are not unloaded in this context. This is probably a bug in
-// OpenSSL because the result is inconsistent: Providers are still loaded and use
-// resources but they are unusable because OpenSSL is closed. The only safe way to
-// deallocate providers is to call OSSL_PROVIDER_unload() from a OPENSSL_atexit()
-// handler. This is explained here: https://github.com/lelegard/openssl-prov-leak
-TS_DEFINE_SINGLETON_ATEXIT(ts::InitCryptoLibrary, OPENSSL_atexit);
+TS_DEFINE_SINGLETON(ts::TerminateWithOpenSSL::Repo);
 
-// Providers management in OpenSSL 3.0 onwards..
+// The constructor registers the object into the repository of object to terminate.
+ts::TerminateWithOpenSSL::TerminateWithOpenSSL()
+{
+    Repo::Instance().registerObject(this);
+}
+
+// The destructor deregisters the object to avoid being called later.
+ts::TerminateWithOpenSSL::~TerminateWithOpenSSL()
+{
+    Repo::Instance().deregisterObject(this);
+}
+
+// The private constructor of the Repo singleton registers exitHandler() to OpenSSL_atexit().
+ts::TerminateWithOpenSSL::Repo::Repo()
+{
+    OPENSSL_atexit(exitHandler);
+}
+
+// Register an instance.
+void ts::TerminateWithOpenSSL::Repo::registerObject(TerminateWithOpenSSL* obj)
+{
+    if (obj != nullptr) {
+        std::lock_guard<std::mutex> lock(_mutex);
+        _list.push_back(obj);
+    }
+}
+
+// Deregister an instance.
+void ts::TerminateWithOpenSSL::Repo::deregisterObject(TerminateWithOpenSSL* obj)
+{
+    if (obj != nullptr) {
+        std::lock_guard<std::mutex> lock(_mutex);
+        for (auto it = _list.begin(); it != _list.end(); ) {
+            if (*it == obj) {
+                it = _list.erase(it);
+            }
+            else {
+                ++it;
+            }
+        }
+    }
+}
+
+// This method calls the terminate() method of all active instances of TerminateWithOpenSSL in
+// reverse order of registration and deregisters them.
+void ts::TerminateWithOpenSSL::Repo::terminate()
+{
+    for (;;) {
+        TerminateWithOpenSSL* obj = nullptr;
+        {
+            std::lock_guard<std::mutex> lock(_mutex);
+            if (_list.empty()) {
+                return;
+            }
+            obj = _list.back();
+            _list.pop_back();
+        }
+        if (obj != nullptr) {
+            obj->terminate();
+        }
+    }
+}
+
+// This static method is executed by OpenSSL termination procedure.
+void ts::TerminateWithOpenSSL::Repo::exitHandler()
+{
+    Instance().terminate();
+}
+
+
+//----------------------------------------------------------------------------
+// A singleton which initialize the OpenSSL cryptographic library.
+//----------------------------------------------------------------------------
+
+TS_DEFINE_SINGLETON(ts::InitCryptoLibrary);
+
+// Initialize OpenSSL.
+ts::InitCryptoLibrary::InitCryptoLibrary()
+{
+    ERR_load_crypto_strings();
+    OpenSSL_add_all_algorithms();
+    _debug = !GetEnvironment(u"TS_DEBUG_OPENSSL").empty();
+}
+
+// Destructor is the same as terminate().
+ts::InitCryptoLibrary::~InitCryptoLibrary()
+{
+    InitCryptoLibrary::terminate();
+}
+
+// Unload all providers. Must be idempotent.
+void ts::InitCryptoLibrary::terminate()
+{
 #if defined(TS_OPENSSL_PROVIDERS)
+    std::lock_guard<std::mutex> lock(_mutex);
+    for (const auto& prov : _providers) {
+        OSSL_PROVIDER_unload(prov.second);
+    }
+    _providers.clear();
+#endif
+}
 
 // Load an OpenSSL provider if not yet loaded.
 void ts::InitCryptoLibrary::loadProvider(const char* provider)
 {
+#if defined(TS_OPENSSL_PROVIDERS)
     const std::string name(provider != nullptr ? provider : "");
     if (!name.empty()) {
         std::lock_guard<std::mutex> lock(_mutex);
@@ -81,16 +172,7 @@ void ts::InitCryptoLibrary::loadProvider(const char* provider)
             }
         }
     }
-}
-
-// Unload all providers.
-ts::InitCryptoLibrary::~InitCryptoLibrary()
-{
-    std::lock_guard<std::mutex> lock(_mutex);
-    for (const auto& prov : _providers) {
-        OSSL_PROVIDER_unload(prov.second);
-    }
-    _providers.clear();
+#endif
 }
 
 // Get the properies string from an OpenSSL provider.
@@ -99,17 +181,11 @@ std::string ts::InitCryptoLibrary::providerProperties(const char* provider)
     return provider == nullptr || provider[0] == '\0' ? std::string() : std::string("provider=") + provider;
 }
 
-#endif // TS_OPENSSL_PROVIDERS
 
-// Initialize OpenSSL.
-ts::InitCryptoLibrary::InitCryptoLibrary()
-{
-    ERR_load_crypto_strings();
-    OpenSSL_add_all_algorithms();
-    _debug = !GetEnvironment(u"TS_DEBUG_OPENSSL").empty();
-}
-
+//----------------------------------------------------------------------------
 // A class to create a singleton with a preset hash context for OpenSSL.
+//----------------------------------------------------------------------------
+
 ts::FetchHashAlgorithm::FetchHashAlgorithm(const char* algo, const char* provider)
 {
 #if defined(TS_OPENSSL_PROVIDERS)
@@ -130,8 +206,12 @@ ts::FetchHashAlgorithm::FetchHashAlgorithm(const char* algo, const char* provide
     PrintCryptographicLibraryErrors();
 }
 
-// Cleanup hash context for OpenSSL.
 ts::FetchHashAlgorithm::~FetchHashAlgorithm()
+{
+    FetchHashAlgorithm::terminate();
+}
+
+void ts::FetchHashAlgorithm::terminate()
 {
     if (_context != nullptr) {
         EVP_MD_CTX_free(_context);
@@ -146,7 +226,11 @@ ts::FetchHashAlgorithm::~FetchHashAlgorithm()
 #endif
 }
 
+
+//----------------------------------------------------------------------------
 // A class to create a singleton with a preset cipher algorithm for OpenSSL.
+//----------------------------------------------------------------------------
+
 ts::FetchCipherAlgorithm::FetchCipherAlgorithm(const char* algo, const char* provider)
 {
 #if defined(TS_OPENSSL_PROVIDERS)
@@ -159,8 +243,12 @@ ts::FetchCipherAlgorithm::FetchCipherAlgorithm(const char* algo, const char* pro
     PrintCryptographicLibraryErrors();
 }
 
-// Cleanup cipher algorithm for OpenSSL.
 ts::FetchCipherAlgorithm::~FetchCipherAlgorithm()
+{
+    FetchCipherAlgorithm::terminate();
+}
+
+void ts::FetchCipherAlgorithm::terminate()
 {
 #if defined(TS_OPENSSL_PROVIDERS)
     if (_algo != nullptr) {

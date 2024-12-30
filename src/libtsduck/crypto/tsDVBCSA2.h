@@ -69,7 +69,9 @@ namespace ts {
         static bool IsReducedCW(const uint8_t *cw);
 
     protected:
-        TS_BLOCK_CIPHER_DECLARE_PROPERTIES(DVBCSA2);
+        //! Properties of this algorithm.
+        //! @return A constant reference to the properties.
+        static const BlockCipherProperties& Properties();
 
         // Implementation of BlockCipher interface.
         virtual bool setKeyImpl() override;

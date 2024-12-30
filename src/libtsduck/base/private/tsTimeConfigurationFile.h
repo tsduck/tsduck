@@ -12,7 +12,6 @@
 //-----------------------------------------------------------------------------
 
 #pragma once
-#include "tsSingleton.h"
 #include "tsTime.h"
 
 namespace ts {
@@ -23,7 +22,7 @@ namespace ts {
     //!
     class TimeConfigurationFile
     {
-        TS_DECLARE_SINGLETON(TimeConfigurationFile);
+        TS_SINGLETON(TimeConfigurationFile);
     public:
         //!
         //! Get the number of leap seconds between two UTC dates.

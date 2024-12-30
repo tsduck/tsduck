@@ -12,7 +12,6 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsSingleton.h"
 #include "tsReport.h"
 #include "tsVersionInfo.h"
 
@@ -43,7 +42,7 @@ namespace ts {
     //!
     class TSDUCKDLL DuckExtensionRepository
     {
-        TS_DECLARE_SINGLETON(DuckExtensionRepository);
+        TS_SINGLETON(DuckExtensionRepository);
     public:
         //!
         //! Get the number of loaded extensions.

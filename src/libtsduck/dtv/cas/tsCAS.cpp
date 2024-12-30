@@ -20,11 +20,8 @@ namespace {
     // A repository of all CAS.
     class CASRepository : private ts::NamesFile::Visitor
     {
-        TS_NOCOPY(CASRepository);
+        TS_SINGLETON(CASRepository);
     public:
-        // Only one instance.
-        static CASRepository& Instance();
-
         // Proxy functions for public interface.
         ts::CASFamily casFamilyOf(ts::CASID casid) const;
         bool getCASIdRange(ts::CASFamily cas, ts::CASID& min, ts::CASID& max) const;
@@ -41,9 +38,6 @@ namespace {
         mutable std::mutex _mutex {};
         std::list<CASDesc> _cas {};
 
-        // Constructor is private (only one static instance).
-        CASRepository();
-
         // Implementation of NamesFile::Visitor.
         virtual bool handleNameValue(const ts::UString& section_name, ts::NamesFile::Value value, const ts::UString& name) override;
     };
@@ -54,13 +48,7 @@ namespace {
 // Fill the CAS repository from names files.
 //----------------------------------------------------------------------------
 
-// Only one instance.
-CASRepository& CASRepository::Instance()
-{
-    // Thread-safe init-safe static data pattern:
-    static CASRepository repo;
-    return repo;
-}
+TS_DEFINE_SINGLETON(CASRepository);
 
 // Constructor.
 CASRepository::CASRepository()

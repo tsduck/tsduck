@@ -14,7 +14,6 @@
 #pragma once
 #include "tsUString.h"
 #include "tsException.h"
-#include "tsSingleton.h"
 
 namespace ts {
     //!
@@ -187,7 +186,7 @@ namespace ts {
         // Repository of character sets.
         class Repository
         {
-            TS_DECLARE_SINGLETON(Repository);
+            TS_SINGLETON(Repository);
         public:
             const Charset* get(const UString& name) const;
             UStringList getAllNames() const;

@@ -42,13 +42,8 @@ namespace ts {
     //!
     class TSDUCKDLL PSIRepository : private NamesFile::Visitor
     {
+        TS_SINGLETON(PSIRepository);
     public:
-        //!
-        //! Get the instance of the PSIRepository singleton.
-        //! @return A reference to the PSIRepository singleton.
-        //! 
-        static PSIRepository& Instance();
-
         //!
         //! Profile of a function which creates a table.
         //! @return A safe pointer to an instance of a concrete subclass of AbstractTable.
@@ -377,9 +372,6 @@ namespace ts {
         std::map<UString, DescriptorClassPtr>              _descriptors_by_xml_name {};    // Description of all descriptors, by XML name (including legacy names).
         std::multimap<std::type_index, DescriptorClassPtr> _descriptors_by_type_index {};  // Description of all descriptors, by RTTI type index (multiple entries if multiple EDID).
         std::multimap<UString, TID>                        _descriptor_tids {};            // XML descriptor name to table id for table-specific descriptors
-
-        // Private constructor of the singleton.
-        PSIRepository();
 
         // Display functions for CA_descriptor by CA_system_id.
         std::map<uint16_t, DisplayCADescriptorFunction> _casid_descriptor_displays {};

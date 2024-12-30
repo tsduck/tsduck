@@ -12,7 +12,6 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsSingleton.h"
 #include "tsObject.h"
 #include "tsUString.h"
 
@@ -27,7 +26,7 @@ namespace ts {
     //!
     class TSDUCKDLL ObjectRepository
     {
-        TS_DECLARE_SINGLETON(ObjectRepository);
+        TS_SINGLETON(ObjectRepository);
     public:
         //!
         //! Store a safe pointer to an Object (or typically a subclass thereof) in the repository.

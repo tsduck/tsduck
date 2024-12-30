@@ -896,6 +896,63 @@ TS_MSC_NOWARNING(5045)  // Compiler will insert Spectre mitigation for memory lo
         auto operator<=>(const classname&) const = default \
         /** @endcond */
 
+//!
+//! Singleton class declaration.
+//!
+//! A singleton is a design pattern where a class can have only one instance.
+//! The macro TS_SINGLETON must be used inside the singleton class declaration.
+//! @param classname Name of the singleton class, without namespace or outer class name.
+//!
+//! Example code:
+//! @code
+//! // File: MySingle.h
+//! namespace foo {
+//!     class MySingle {
+//!        TS_SINGLETON(MySingle);
+//!        ....
+//! @endcode
+//!
+//! @code
+//! // File: MySingle.cpp
+//! #include "MySingle.h"
+//!
+//! TS_DEFINE_SINGLETON(foo::MySingle);
+//! foo::MySingle::MySingle() : ... { ... }
+//! ....
+//! @endcode
+//!
+//! The class becomes a singleton. The default constructor is private.
+//! Use static Instance() method to get the instance of the singleton.
+//!
+//! @see TS_DEFINE_SINGLETON()
+//! @hideinitializer
+//!
+#define TS_SINGLETON(classname)                                     \
+        TS_NOCOPY(classname);                                       \
+    private:                                                        \
+        classname();                                                \
+    public:                                                         \
+        /** Get the instance of the singleton of this class. */     \
+        /** @return The instance of the singleton of this class. */ \
+        static classname& Instance()
+
+//!
+//! Singleton class definition.
+//!
+//! The macro TS_DEFINE_SINGLETON must be used in the implementation of a singleton class.
+//! @param fullclassname Fully qualified name of the singleton class.
+//! @see TS_SINGLETON()
+//! @hideinitializer
+//!
+#define TS_DEFINE_SINGLETON(fullclassname)              \
+    fullclassname& fullclassname::Instance()            \
+    {                                                   \
+        /* Thread-safe init-safe static data pattern */ \
+        static fullclassname instance;                  \
+        return instance;                                \
+    }                                                   \
+    using TS_UNIQUE_NAME(for_trailing_semicolon) = int
+
 
 //----------------------------------------------------------------------------
 // Source code identification.

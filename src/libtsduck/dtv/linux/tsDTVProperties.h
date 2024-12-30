@@ -13,7 +13,6 @@
 
 #pragma once
 #include "tsReport.h"
-#include "tsSingleton.h"
 
 #include "tsBeforeStandardHeaders.h"
 #include <linux/dvb/version.h>
@@ -183,7 +182,7 @@ namespace ts {
         // A singleton holding all DTV_ names.
         class DTVNames
         {
-            TS_DECLARE_SINGLETON(DTVNames);
+            TS_SINGLETON(DTVNames);
         public:
             const char* name(uint32_t cmd);
         private:

@@ -8,7 +8,6 @@
 
 #include "tsUChar.h"
 #include "tsUString.h"
-#include "tsAlgorithm.h"
 
 
 //----------------------------------------------------------------------------
@@ -20,18 +19,11 @@
 #define MAP_SINGLETON(classname, key_type, value_type)      \
     class classname : public std::map<key_type, value_type> \
     {                                                       \
-    private:                                                \
-        classname();                                        \
+        TS_SINGLETON(classname);                            \
     public:                                                 \
-        static const classname& Instance();                 \
         using SuperClass = std::map<key_type, value_type>;  \
     };                                                      \
-    const classname& classname::Instance()                  \
-    {                                                       \
-        static const classname singleton;                   \
-        return singleton;                                   \
-    }                                                       \
-    using TS_UNIQUE_NAME(for_trailing_semicolon) = int
+    TS_DEFINE_SINGLETON(classname)
 
 
 //----------------------------------------------------------------------------

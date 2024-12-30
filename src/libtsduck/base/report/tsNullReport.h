@@ -21,21 +21,10 @@ namespace ts {
     //!
     class TSDUCKDLL NullReport : public Report
     {
-        TS_NOCOPY(NullReport);
-    public:
-        //!
-        //! Get the instance of the CerrReport singleton.
-        //! @return A reference to the CerrReport singleton.
-        //!
-        static NullReport& Instance();
-
+        TS_SINGLETON(NullReport);
     protected:
         // String interface implementation
         virtual void writeLog(int severity, const UString& msg) override;
-
-    private:
-        // Prevent direct construction.
-        NullReport() = default;
     };
 }
 

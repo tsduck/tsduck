@@ -13,7 +13,6 @@
 
 #pragma once
 #include "tsCharset.h"
-#include "tsSingleton.h"
 
 namespace ts {
     //!
@@ -129,7 +128,7 @@ namespace ts {
         // Repository of DVB character tables by table code.
         class TableCodeRepository
         {
-            TS_DECLARE_SINGLETON(TableCodeRepository);
+            TS_SINGLETON(TableCodeRepository);
         public:
             const DVBCharTable* get(uint32_t code) const;
             void add(uint32_t code, const DVBCharTable* charset);

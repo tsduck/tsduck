@@ -53,7 +53,9 @@ namespace ts {
         size_t counterBits() const {return _counter_bits;}
 
     protected:
-        TS_BLOCK_CIPHER_DECLARE_PROPERTIES(CTR);
+        //! Properties of this algorithm.
+        //! @return A constant reference to the properties.
+        static const BlockCipherProperties& Properties();
 
         // Implementation of BlockCipher interface.
         //! @cond nodoxygen
@@ -79,10 +81,16 @@ namespace ts {
 
 #if !defined(DOXYGEN)
 
-TS_BLOCK_CIPHER_DEFINE_PROPERTIES_TEMPLATE(ts::CTR, CTR, (CIPHER::PROPERTIES(), u"CTR", true, 0, 2, CIPHER::BLOCK_SIZE));
+template<class CIPHER> requires std::derived_from<CIPHER, ts::BlockCipher>
+const ts::BlockCipherProperties& ts::CTR<CIPHER>::Properties()
+{
+    // Thread-safe init-safe static data pattern:
+    static const BlockCipherProperties props(CIPHER::Properties(), u"CTR", true, 0, 2, CIPHER::BLOCK_SIZE);
+    return props;
+}
 
 template<class CIPHER> requires std::derived_from<CIPHER, ts::BlockCipher>
-ts::CTR<CIPHER>::CTR(size_t counter_bits) : CIPHER(CTR::PROPERTIES())
+ts::CTR<CIPHER>::CTR(size_t counter_bits) : CIPHER(CTR::Properties())
 {
     setCounterBits(counter_bits);
 }

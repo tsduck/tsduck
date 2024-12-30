@@ -9,13 +9,7 @@
 #include "tsCerrReport.h"
 #include "tsEnvironment.h"
 
-// Get the instance of the singleton.
-ts::CerrReport& ts::CerrReport::Instance()
-{
-    // Thread-safe init-safe static data pattern:
-    static CerrReport singleton;
-    return singleton;
-}
+TS_DEFINE_SINGLETON(ts::CerrReport);
 
 // Constructor.
 ts::CerrReport::CerrReport()

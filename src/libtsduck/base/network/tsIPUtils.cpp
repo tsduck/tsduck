@@ -7,7 +7,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsIPUtils.h"
-#include "tsSingleton.h"
 
 #if defined(TS_WINDOWS)
     #include "tsBeforeStandardHeaders.h"
@@ -49,7 +48,7 @@ bool ts::IPInitialize(Report& report)
 namespace {
     class getaddrinfo_error_category: public std::error_category
     {
-        TS_DECLARE_SINGLETON(getaddrinfo_error_category);
+        TS_SINGLETON(getaddrinfo_error_category);
     public:
         virtual const char* name() const noexcept override;
         virtual std::string message(int code) const override;

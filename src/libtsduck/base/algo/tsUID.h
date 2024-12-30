@@ -21,14 +21,7 @@ namespace ts {
     //!
     class TSDUCKDLL UID
     {
-        TS_NOCOPY(UID);
-    public:
-        //!
-        //! Get the instance of the CerrReport singleton.
-        //! @return A reference to the CerrReport singleton.
-        //!
-        static UID& Instance();
-
+        TS_SINGLETON(UID);
     public:
         //!
         //! Generate a new UID.
@@ -37,7 +30,6 @@ namespace ts {
         uint64_t newUID();
 
     private:
-        UID();
         std::atomic<uint64_t> _next_uid {};
     };
 }

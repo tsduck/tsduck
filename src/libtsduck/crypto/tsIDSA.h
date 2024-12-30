@@ -28,7 +28,10 @@ namespace ts {
         IDSA();
         //! Destructor.
         virtual ~IDSA() override;
+
     protected:
-        TS_BLOCK_CIPHER_DECLARE_PROPERTIES(IDSA);
+        //! Properties of this algorithm.
+        //! @return A constant reference to the properties.
+        static const BlockCipherProperties& Properties();
     };
 }

@@ -11,7 +11,6 @@
 #include "tsFileUtils.h"
 #include "tsSysUtils.h"
 
-// Define singleton instance
 TS_DEFINE_SINGLETON(ts::DuckConfigFile);
 
 

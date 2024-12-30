@@ -54,10 +54,15 @@ bool ts::DVBCSA2::IsReducedCW(const uint8_t *cw)
 // Default Constructor.
 //----------------------------------------------------------------------------
 
-TS_BLOCK_CIPHER_DEFINE_PROPERTIES(ts::DVBCSA2, DVBCSA2, (BlockCipherProperties(u"DVB-CSA2", ts::DVBCSA2::BLOCK_SIZE, ts::DVBCSA2::KEY_SIZE), nullptr, true, 0, 0, 0, 0));
+const ts::BlockCipherProperties& ts::DVBCSA2::Properties()
+{
+    // Thread-safe init-safe static data pattern:
+    static const BlockCipherProperties props(BlockCipherProperties(u"DVB-CSA2", ts::DVBCSA2::BLOCK_SIZE, ts::DVBCSA2::KEY_SIZE), nullptr, true, 0, 0, 0, 0);
+    return props;
+}
 
 ts::DVBCSA2::DVBCSA2(EntropyMode mode) :
-    BlockCipher(DVBCSA2::PROPERTIES()),
+    BlockCipher(DVBCSA2::Properties()),
     _mode(mode)
 {
     canProcessInPlace(true);

@@ -12,7 +12,6 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsSingleton.h"
 #include "tsCryptoLibrary.h"
 
 // Private header, not accessible to applications.
@@ -22,8 +21,10 @@ namespace ts {
 
 #if defined(TS_WINDOWS)
 
-    // A class to open a BCrypt algorithm only once.
-    // Store algorithm handle and subobject length in bytes.
+    //!
+    //! Windows: A class to open a BCrypt algorithm only once.
+    //! Store algorithm handle and subobject length in bytes.
+    //!
     class FetchBCryptAlgorithm
     {
         TS_NOBUILD_NOCOPY(FetchBCryptAlgorithm);
@@ -38,50 +39,84 @@ namespace ts {
 
 #else
 
-    // Starting with OpenSSL 3.0, algorithms are stored in providers.
-    // Providers must be separately managed (see comments in .cpp file).
-    #if OPENSSL_VERSION_MAJOR >= 3
-        #define TS_OPENSSL_PROVIDERS 1
-    #endif
-
-    // A singleton which initializes the cryptographic library.
-    class InitCryptoLibrary
+    //!
+    //! Base class for objects which must be terminated with OpenSSL.
+    //!
+    class TerminateWithOpenSSL
     {
-        TS_DECLARE_SINGLETON(InitCryptoLibrary);
+        TS_NOCOPY(TerminateWithOpenSSL);
+    public:
+        TerminateWithOpenSSL();
+        virtual ~TerminateWithOpenSSL();
+
+        // This method terminates anything about OpenSSL which must be cleaned up.
+        // This method must be idempotent and must be called in the subclass destructor.
+        virtual void terminate() = 0;
+
+    private:
+        // This internal class is a repository of all active instances of TerminateWithOpenSSL.
+        // The constructor and destructor of TerminateWithOpenSSL perform the registration / deregistration.
+        class Repo
+        {
+            TS_SINGLETON(Repo);
+        public:
+            // Register / deregister an instance.
+            void registerObject(TerminateWithOpenSSL*);
+            void deregisterObject(TerminateWithOpenSSL*);
+
+        private:
+            // List of registered instances, under protection of a mutex.
+            std::mutex _mutex {};
+            std::list<TerminateWithOpenSSL*> _list {};
+
+            // This method calls the terminate() method of all active instances of TerminateWithOpenSSL in
+            // reverse order of registration and deregisters them.
+            void terminate();
+
+            // This static method is executed by OpenSSL termination procedure.
+            static void exitHandler();
+        };
+    };
+
+    //!
+    //! A singleton which initializes the OpenSSL cryptographic library.
+    //!
+    class InitCryptoLibrary : public TerminateWithOpenSSL
+    {
+        TS_SINGLETON(InitCryptoLibrary);
     public:
         // Check if environment variable TS_DEBUG_OPENSSL was defined.
         bool debug() const { return _debug; }
 
-    private:
-        bool _debug = false;
+        // Implementation of TerminateWithOpenSSL.
+        virtual void terminate() override;
+        virtual ~InitCryptoLibrary() override;
 
-    #if defined(TS_OPENSSL_PROVIDERS)
-
-    public:
         // Load an OpenSSL provider if not yet loaded.
         void loadProvider(const char* provider);
-
-        // Unload all providers.
-        ~InitCryptoLibrary();
 
         // Get the properies string from an OpenSSL provider.
         static std::string providerProperties(const char* provider);
 
     private:
+        bool _debug = false;
+    #if defined(TS_OPENSSL_PROVIDERS)
         std::mutex _mutex {};
         std::map<std::string,OSSL_PROVIDER*> _providers {};
-
-    #endif // TS_OPENSSL_PROVIDERS
+    #endif
     };
 
-    // A class to create a singleton with a preset hash context for OpenSSL.
-    // This method speeds up the creation of hash context (the standard EVP scenario is too slow).
-    class FetchHashAlgorithm
+    //!
+    //! A class to create a singleton with a preset hash context for OpenSSL.
+    //! This method speeds up the creation of hash context (the standard EVP scenario is too slow).
+    //!
+    class FetchHashAlgorithm : public TerminateWithOpenSSL
     {
         TS_NOBUILD_NOCOPY(FetchHashAlgorithm);
     public:
         FetchHashAlgorithm(const char* algo, const char* provider = nullptr);
-        ~FetchHashAlgorithm();
+        virtual ~FetchHashAlgorithm() override;
+        virtual void terminate() override;
         const EVP_MD_CTX* referenceContext() const { return _context; }
     private:
         // With OpenSSL 3, this should not be const because of EVP_MD_free.
@@ -89,13 +124,16 @@ namespace ts {
         EVP_MD_CTX* _context = nullptr;
     };
 
-    // A class to create a singleton with a preset cipher algorithm for OpenSSL.
-    class FetchCipherAlgorithm
+    //!
+    //! A class to create a singleton with a preset cipher algorithm for OpenSSL.
+    //!
+    class FetchCipherAlgorithm : public TerminateWithOpenSSL
     {
         TS_NOBUILD_NOCOPY(FetchCipherAlgorithm);
     public:
         FetchCipherAlgorithm(const char* algo, const char* provider = nullptr);
-        ~FetchCipherAlgorithm();
+        virtual ~FetchCipherAlgorithm() override;
+        virtual void terminate() override;
         const EVP_CIPHER* algorithm() const { return _algo; }
     private:
         // With OpenSSL 3, this should not be const because of EVP_CIPHER_free.
@@ -104,8 +142,10 @@ namespace ts {
 
 #endif
 
-    // Internal function to initialize the underlying cryptographic library.
-    // Can be called many times, executed only once.
+    //!
+    //! Internal function to initialize the underlying cryptographic library.
+    //! Can be called many times, executed only once.
+    //!
     inline void InitCryptographicLibrary()
     {
     #if !defined(TS_WINDOWS)
@@ -113,7 +153,9 @@ namespace ts {
     #endif
     }
 
-    // Internal function to display errors from the underlying cryptographic library on standard error.
+    //!
+    //! Internal function to display errors from the underlying cryptographic library on standard error.
+    //!
     inline void PrintCryptographicLibraryErrors()
     {
     #if !defined(TS_WINDOWS)

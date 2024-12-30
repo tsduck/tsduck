@@ -33,7 +33,9 @@ namespace ts {
         CBC();
 
     protected:
-        TS_BLOCK_CIPHER_DECLARE_PROPERTIES(CBC);
+        //! Properties of this algorithm.
+        //! @return A constant reference to the properties.
+        static const BlockCipherProperties& Properties();
 
         //! Constructor for subclasses which add some properties, such as fixed IV.
         //! @param [in] props Constant reference to a block of properties of this block cipher.
@@ -54,18 +56,24 @@ namespace ts {
 
 #if !defined(DOXYGEN)
 
-// Need 3 work blocks. The last 2 are only used with "in place" decryption.
-TS_BLOCK_CIPHER_DEFINE_PROPERTIES_TEMPLATE(ts::CBC, CBC, (CIPHER::PROPERTIES(), u"CBC", false, CIPHER::BLOCK_SIZE, 3, CIPHER::BLOCK_SIZE));
+template<class CIPHER> requires std::derived_from<CIPHER, ts::BlockCipher>
+const ts::BlockCipherProperties& ts::CBC<CIPHER>::Properties()
+{
+    // Need 3 work blocks. The last 2 are only used with "in place" decryption.
+    // Thread-safe init-safe static data pattern:
+    static const BlockCipherProperties props(CIPHER::Properties(), u"CBC", false, CIPHER::BLOCK_SIZE, 3, CIPHER::BLOCK_SIZE);
+    return props;
+}
 
 template<class CIPHER> requires std::derived_from<CIPHER, ts::BlockCipher>
-ts::CBC<CIPHER>::CBC() : CIPHER(CBC::PROPERTIES())
+ts::CBC<CIPHER>::CBC() : CIPHER(CBC::Properties())
 {
 }
 
 template<class CIPHER> requires std::derived_from<CIPHER, ts::BlockCipher>
 ts::CBC<CIPHER>::CBC(const BlockCipherProperties& props) : CIPHER(props)
 {
-    props.assertCompatibleChaining(CBC::PROPERTIES());
+    props.assertCompatibleChaining(CBC::Properties());
 }
 
 

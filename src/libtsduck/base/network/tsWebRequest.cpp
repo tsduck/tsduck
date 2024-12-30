@@ -15,7 +15,6 @@
 #include "tsFatal.h"
 #include "tsFileUtils.h"
 #include "tsErrCodeReport.h"
-#include "tsSingleton.h"
 #include "tsURL.h"
 
 
@@ -27,7 +26,7 @@
 namespace {
     class DefaultProxy
     {
-        TS_DECLARE_SINGLETON(DefaultProxy);
+        TS_SINGLETON(DefaultProxy);
     public:
         const ts::URL url;
     };

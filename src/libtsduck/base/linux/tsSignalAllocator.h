@@ -12,7 +12,6 @@
 //-----------------------------------------------------------------------------
 
 #pragma once
-#include "tsSingleton.h"
 
 #include "tsBeforeStandardHeaders.h"
 #include <signal.h>
@@ -26,7 +25,7 @@ namespace ts {
     class TSDUCKDLL SignalAllocator
     {
         // This class is a singleton. Use static Instance() method.
-        TS_DECLARE_SINGLETON(SignalAllocator);
+        TS_SINGLETON(SignalAllocator);
 
     public:
         //!

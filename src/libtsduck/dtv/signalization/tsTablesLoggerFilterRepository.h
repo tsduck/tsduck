@@ -13,7 +13,6 @@
 
 #pragma once
 #include "tsTablesLoggerFilterInterface.h"
-#include "tsSingleton.h"
 
 namespace ts {
     //!
@@ -22,7 +21,7 @@ namespace ts {
     //!
     class TSDUCKDLL TablesLoggerFilterRepository
     {
-        TS_DECLARE_SINGLETON(TablesLoggerFilterRepository);
+        TS_SINGLETON(TablesLoggerFilterRepository);
     public:
         //!
         //! Create an instance of all registered section filters.

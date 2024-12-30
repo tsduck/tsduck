@@ -17,7 +17,6 @@
 #include "tsCerrReport.h"
 #include "tsModulation.h"
 #include "tsReport.h"
-#include "tsSingleton.h"
 #include "tsxml.h"
 
 namespace ts {
@@ -207,7 +206,7 @@ namespace ts {
         // The repository of known LNB's.
         class LNBRepository
         {
-            TS_DECLARE_SINGLETON(LNBRepository);
+            TS_SINGLETON(LNBRepository);
         public:
             // Get an LNB by name or alias from the repository (default LNB when name is empty).
             // Return null pointer when not found.

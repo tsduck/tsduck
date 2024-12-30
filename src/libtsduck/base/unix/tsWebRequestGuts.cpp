@@ -37,7 +37,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsWebRequest.h"
-#include "tsSingleton.h"
 #include "tsFileUtils.h"
 #include "tsSysUtils.h"
 #include "tsURL.h"
@@ -120,7 +119,7 @@ namespace {
     // This singleton initialized libcurl in its constructor.
     class LibCurlInit
     {
-        TS_DECLARE_SINGLETON(LibCurlInit);
+        TS_SINGLETON(LibCurlInit);
     public:
         // Status code of libcurl initialization.
         const ::CURLcode initStatus;

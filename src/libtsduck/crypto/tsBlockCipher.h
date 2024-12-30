@@ -16,7 +16,6 @@
 #include "tsByteBlock.h"
 #include "tsCryptoLibrary.h"
 #include "tsBlockCipherProperties.h"
-#include "tsSingleton.h"
 
 namespace ts {
 
@@ -274,93 +273,6 @@ namespace ts {
         //! Accessible to subclasses, but constant.
         //!
         const BlockCipherProperties& properties;
-
-        //!
-        //! @hideinitializer
-        //! Declare the static properties of a BlockCipher subclass.
-        //! A static function named PROPERTIES() is declared.
-        //! @param Prefix A unique symbol prefix for this BlockCipher subclass.
-        //! Used to avoid the same names in subclasses of that BlockCipher subclass.
-        //!
-#define TS_BLOCK_CIPHER_DECLARE_PROPERTIES(Prefix)                  \
-        /** Properties of this algorithm. */                        \
-        /** @return A constant reference to the properties. */      \
-        static const BlockCipherProperties& PROPERTIES()            \
-        {                                                           \
-            return Prefix##_PropertiesSingleton::Instance();        \
-        }                                                           \
-        /** @cond nodoxygen */                                      \
-        class Prefix##_PropertiesSingleton                          \
-        {                                                           \
-            TS_NOCOPY(Prefix##_PropertiesSingleton);                \
-        public:                                                     \
-            static const BlockCipherProperties& Instance();         \
-        private:                                                    \
-            static const BlockCipherProperties* volatile _instance; \
-            static std::once_flag _once_flag;                       \
-            static void CleanupSingleton(void*);                    \
-        }                                                           \
-        /** @endcond */
-
-        //!
-        //! @hideinitializer
-        //! Define the implementation of the static properties of a BlockCipher subclass.
-        //! @param CipherClass Fully qualified name of the BlockCipher subclass.
-        //! @param Prefix Same prefix as used in TS_BLOCK_CIPHER_DECLARE_PROPERTIES.
-        //! @param Args Args for the BlockCipherProperties constructor.
-        //!
-#define TS_BLOCK_CIPHER_DEFINE_PROPERTIES(CipherClass, Prefix, Args)            \
-        const ts::BlockCipherProperties& CipherClass::Prefix##_PropertiesSingleton::Instance() \
-        {                                                                       \
-            if (_instance == nullptr) {                                         \
-                std::call_once(_once_flag, []() {                               \
-                    _instance = new BlockCipherProperties Args;                 \
-                    ts::atexit(CipherClass::Prefix##_PropertiesSingleton::CleanupSingleton); \
-                });                                                             \
-            }                                                                   \
-            return *_instance;                                                  \
-        }                                                                       \
-        void CipherClass::Prefix##_PropertiesSingleton::CleanupSingleton(void*) \
-        {                                                                       \
-            if (_instance != nullptr) {                                         \
-                delete _instance;                                               \
-                _instance = nullptr;                                            \
-            }                                                                   \
-        }                                                                       \
-        const ts::BlockCipherProperties* volatile CipherClass::Prefix##_PropertiesSingleton::_instance = nullptr; \
-        std::once_flag CipherClass::Prefix##_PropertiesSingleton::_once_flag {}
-
-        //!
-        //! @hideinitializer
-        //! Define the implementation of the static properties of a template BlockCipher subclass.
-        //! @param CipherClass Fully qualified name of the BlockCipher subclass.
-        //! @param Prefix Same prefix as used in TS_BLOCK_CIPHER_DECLARE_PROPERTIES.
-        //! @param Args Args for the BlockCipherProperties constructor.
-        //!
-#define TS_BLOCK_CIPHER_DEFINE_PROPERTIES_TEMPLATE(CipherClass, Prefix, Args)             \
-        template<class CIPHER> requires std::derived_from<CIPHER, ts::BlockCipher>        \
-        const ts::BlockCipherProperties& CipherClass<CIPHER>::Prefix##_PropertiesSingleton::Instance() \
-        {                                                                                 \
-            if (_instance == nullptr) {                                                   \
-                std::call_once(_once_flag, []() {                                         \
-                    _instance = new BlockCipherProperties Args;                           \
-                    ts::atexit(CipherClass<CIPHER>::Prefix##_PropertiesSingleton::CleanupSingleton); \
-                });                                                                       \
-            }                                                                             \
-            return *_instance;                                                            \
-        }                                                                                 \
-        template<class CIPHER> requires std::derived_from<CIPHER, ts::BlockCipher>        \
-        void CipherClass<CIPHER>::Prefix##_PropertiesSingleton::CleanupSingleton(void*)   \
-        {                                                                                 \
-            if (_instance != nullptr) {                                                   \
-                delete _instance;                                                         \
-                _instance = nullptr;                                                      \
-            }                                                                             \
-        }                                                                                 \
-        template<class CIPHER> requires std::derived_from<CIPHER, ts::BlockCipher>        \
-        const ts::BlockCipherProperties* volatile CipherClass<CIPHER>::Prefix##_PropertiesSingleton::_instance = nullptr; \
-        template<class CIPHER> requires std::derived_from<CIPHER, ts::BlockCipher>        \
-        std::once_flag CipherClass<CIPHER>::Prefix##_PropertiesSingleton::_once_flag {}
 
         //!
         //! Constructor for subclasses.

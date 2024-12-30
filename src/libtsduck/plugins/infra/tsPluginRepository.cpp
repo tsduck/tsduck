@@ -12,6 +12,9 @@
 #include "tsAlgorithm.h"
 #include "tsCerrReport.h"
 
+TS_DEFINE_SINGLETON(ts::PluginRepository);
+ts::PluginRepository::PluginRepository() {}
+
 
 //----------------------------------------------------------------------------
 // Options for --list-processor.
@@ -30,18 +33,6 @@ const ts::Enumeration& ts::PluginRepository::ListProcessorEnum()
         {u"names-packet", LIST_PACKET | LIST_NAMES},
     });
     return data;
-}
-
-
-//----------------------------------------------------------------------------
-// Get the instance of the PluginRepository singleton.
-//----------------------------------------------------------------------------
-
-ts::PluginRepository& ts::PluginRepository::Instance()
-{
-    // Thread-safe init-safe static data pattern:
-    static PluginRepository repo;
-    return repo;
 }
 
 

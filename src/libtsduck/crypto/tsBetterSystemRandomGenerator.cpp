@@ -7,7 +7,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsBetterSystemRandomGenerator.h"
-#include "tsSingleton.h"
 #include "tsFileUtils.h"
 
 // Define singleton instance

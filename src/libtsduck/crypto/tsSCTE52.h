@@ -35,8 +35,11 @@ namespace ts {
         SCTE52_2003();
         //! Destructor.
         virtual ~SCTE52_2003() override;
+
     protected:
-        TS_BLOCK_CIPHER_DECLARE_PROPERTIES(SCTE52);
+        //! Properties of this algorithm.
+        //! @return A constant reference to the properties.
+        static const BlockCipherProperties& Properties();
     };
 
     //!
@@ -58,7 +61,10 @@ namespace ts {
         SCTE52_2008();
         //! Destructor.
         virtual ~SCTE52_2008() override;
+
     protected:
-        TS_BLOCK_CIPHER_DECLARE_PROPERTIES(SCTE52);
+        //! Properties of this algorithm.
+        //! @return A constant reference to the properties.
+        static const BlockCipherProperties& Properties();
     };
 }
