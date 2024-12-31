@@ -112,10 +112,10 @@ By default, all video components are scrambled.
 
 [.optdoc]
 Only scramble the component in the selected service which matches this PID.
-By default, all components are scrambled.
+By default, all audio and video components of the service are scrambled.
 
 [.optdoc]
-Unlike the -p or --pid options, the provided PID must be part of the selected
+Unlike the `-p` or `--pid` options, the provided PID must be part of the selected
 service in order to scramble exactly one of its components.
 Because this option only filters out components and the plugin is still dealing
 with a service, the ECM's and crypto-periods are operational with this option.

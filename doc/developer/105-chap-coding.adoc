@@ -1395,6 +1395,137 @@ namespace {
 }
 ----
 
+[#shareddata]
+===== Global data
+
+[.rule]
+[Rule] The order of initialization of {cpp} modules is undefined.
+Never use non-constexpr global variables, at compilation unit level, at namespace level, or as static class members.
+Use the singleton design pattern for variable objects or local static data for constant objects.
+
+All global data are constructed at the initialization of the application, before `main()` is called.
+Data with the `constexpr` attributes are guaranteed to be built at compilation time, their content is always valid.
+Most other global data must be dynamically built, their constructor must be executed.
+
+In each compilation unit (i.e. object file), the compiler generates one initialization routine
+which calls all constructors of all global data which are defined in this unit.
+When the application or shared library is built, the linker is somehow responsible for creating one
+big initialization routine which will call the initialization routines of all compilation units, one by one.
+
+The core problem is that there is no way to explicitly control the order of execution of these initialization routines.
+This is a limitation of the {cpp} language. Other languages such as Ada have specific pragmas to control this order, not {cpp}.
+
+Executing a constructor may involve complex processing, calling external functions or referencing external data
+from other modules. When a constructor is called during the initialization phase and references an object from
+another module, and this other object was not yet constructed because the initialization routine of its
+compilation unit will be called later, weird things happen (usually a crash).
+
+The most disturbing aspect is the unreliability of the process. The application may work when built
+with compiler A and fail when built with compiler B. Or the application may have worked from the
+beginning and then suddenly crash after adding a module or an object. In all cases, the core
+problem is indeterminism of initialization order. In other words, when it works, it's only by chance.
+
+This is why you should _never_ use non-`constexpr` global variables, at compilation unit level,
+at namespace level, or as static class members.
+
+The solution to somewhat control the order of initialization of global objects is to force
+the construction of an object when it is used for the first time.
+This includes cases where the compilation unit into which this object is defined is not yet initialized.
+Yes, it is possible to force the construction of an object before its compilation unit.
+
+There are several techniques for this. Starting with {cpp}11, the semantic of _local static data_
+(static objects which are defined inside a function) has been carefully specified.
+
+[quote,cppreference.com]
+Block variables with static or thread storage duration are initialized the first time
+control passes through their declaration (unless their initialization is zero- or constant-initialization,
+which can be performed before the block is first entered). On all further calls, the declaration is skipped.
+If multiple threads attempt to initialize the same static local variable concurrently,
+the initialization occurs exactly once (similar behavior can be obtained for arbitrary functions with `std::call_once`).
+Usual implementations of this feature use variants of the double-checked locking pattern,
+which reduces runtime overhead for already-initialized local statics to a single non-atomic boolean comparison.
+
+As an example, consider the following code:
+
+----
+const std::vector<int>& ConfigTable()
+{
+    static const std::vector<int> table {1, 2, 3, 4, 5};
+    return table;
+}
+----
+
+The static data `table` is constructed exactly once, when `ConfigTable()` is called for the first time.
+All subsequent calls return the same reference to the same object.
+
+Moreover, if the first and second call to `ConfigTable()` are simultaneously performed from two distinct
+threads, the rules of the language impose that some hidden form of synchronization is applied. Only one
+construction is safey performed. The second call waits for the completion of the contruction to proceed.
+
+Therefore, the coding rule can be illustrated by the following example and counter-example:
+
+[cols="<1a,1,<1a",frame=none,grid=none,stripes=none,options="autowidth,noheader"]
+|===
+s|Good code: m|{nbsp}{nbsp}{nbsp}{nbsp} s|Bad code:
+
+|
+----
+const std::vector<int>& ConfigTable()
+{
+    static const std::vector<int> table {1, 2, 3};
+    return table;
+}
+
+void something()
+{
+    for (auto i : ConfigTable()) {
+        ...
+    }
+}
+----
+|
+|
+----
+const std::vector<int> ConfigTable {1, 2, 3};
+
+
+
+
+
+void something()
+{
+    for (auto i : ConfigTable) {
+        ...
+    }
+}
+----
+|===
+
+The _singleton_ design pattern is a variant of this technique. A class has no public constructor so that no
+application can build its own instance of the class. Instead, the class contains a static method which
+returns a reference to the sole instance of the class.
+
+----
+class Singleton
+{
+private:
+    // Constructor cannot be used outside the class.
+    Singleton();
+public:
+    // Return a reference to the single instance of the class.
+    static Singleton& Instance();
+};
+
+Singleton& Singleton::Instance()
+{
+    static Singleton the_one;
+    return the_one;
+}
+----
+
+In the TSDuck library, this pattern is implemented using the two macros `TS_SINGLETON()`
+(in a header file) and `TS_DEFINE_SINGLETON()` (in the corresponding compilation unit).
+
 [.rule]
 [Rule] Never use static variables in inline functions.
 

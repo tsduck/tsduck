@@ -209,13 +209,20 @@ such as list of descriptors, DVB, ARIB and ATSC strings or "Modified Julian Date
 ===== Singletons and static data
 
 The _singleton_ design pattern is simple in theory, but not so simple to implement correctly in practice.
-The TSDuck library encapsulates the implementation difficulties using the two macros `TS_DECLARE_SINGLETON()`
+The TSDuck library encapsulates the implementation difficulties using the two macros `TS_SINGLETON()`
 (in a header file) and `TS_DEFINE_SINGLETON()` (in the corresponding compilation unit).
 
-Similarly, using static data can be a nightmare because it is impossible to manage
-the initialization order of modules in {cpp}.
-Again, the TSDuck library encapsulates these implementation difficulties using the macro `TS_STATIC_INSTANCE()`.
-This is a variant of the singleton pattern, privately used inside a compilation unit.
+In practice, the singleton design pattern is a specific case of _global static data_,
+variables which are defined outside any function.
+Using static data can be a nightmare because it is impossible to manage the initialization order of modules in {cpp}.
+
+In the past, how to properly managed singletons and static data was quite difficult,
+involving dangerous pointer and thread synchronization tricks.
+This has been abundantly documented by Scott Meyers (see <<MEYERS-EFF>>).
+
+In modern {cpp}, most of these difficulties have been solved in the language using _local static data_.
+In practice, the same tricks are used but they are now hidden inside the compiler and the run-time library.
+See xref:shareddata[xrefstyle=short] for programming guidelines.
 
 [#errreport]
 ===== Error reporting

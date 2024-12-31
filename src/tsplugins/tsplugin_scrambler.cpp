@@ -268,9 +268,8 @@ ts::ScramblerPlugin::ScramblerPlugin(TSP* tsp_) :
 
     option(u"only-pid", 0, PIDVAL);
     help(u"only-pid",
-         u"Only scramble the component from the selected service which matches "
-         u"the given PID."
-         u"By default, all components are scrambled.");
+         u"Only scramble the component from the selected service which matches the given PID. "
+         u"By default, all audio and video components of the service are scrambled.");
 
     option(u"partial-scrambling", 0, POSITIVE);
     help(u"partial-scrambling", u"count",
@@ -500,7 +499,7 @@ void ts::ScramblerPlugin::handlePMT(const PMT& table, PID)
         _input_pids.set(pid);
         if (((_scramble_audio && stream.isAudio(duck)) || (_scramble_video && stream.isVideo(duck)) || (_scramble_subtitles && stream.isSubtitles(duck))) && (_only_pid == PID_NULL || _only_pid == pid)) {
             _scrambled_pids.set(pid);
-            verbose(u"starting scrambling PID 0x%X", pid);
+            verbose(u"starting scrambling PID %n", pid);
         }
     }
 

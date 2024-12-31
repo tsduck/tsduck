@@ -29,6 +29,7 @@ Athanasios Oikonomou
 Masayuki Nagamachi
 Frédéric Peignot
 Antti Plathan
+Yannick Potin
 Ubaldo Porcheddu
 Stefan Pöschel
 Carson Riker
