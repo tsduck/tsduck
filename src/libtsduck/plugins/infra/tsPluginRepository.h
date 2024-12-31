@@ -163,6 +163,7 @@ namespace ts {
 
         //!
         //! Convenient command line options for "list processor" option.
+        //! @return A constant reference to the enumeration description.
         //!
         static const Enumeration& ListProcessorEnum();
 
