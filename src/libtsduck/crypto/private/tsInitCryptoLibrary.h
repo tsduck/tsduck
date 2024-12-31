@@ -74,7 +74,13 @@ namespace ts {
             void terminate();
 
             // This static method is executed by OpenSSL termination procedure.
+            // It calls the instance's terminate().
             static void exitHandler();
+
+            // Warning: the OpenSSL termination procedure can be called after the Repo destructor.
+            // This static boolean is set to true as long as the Repo singleton is alive.
+            static bool active;
+            ~Repo();
         };
     };
 

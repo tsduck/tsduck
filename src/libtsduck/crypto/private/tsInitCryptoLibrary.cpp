@@ -65,10 +65,23 @@ ts::TerminateWithOpenSSL::~TerminateWithOpenSSL()
     Repo::Instance().deregisterObject(this);
 }
 
+// Warning: the OpenSSL termination procedure can be called after the Repo destructor.
+// This static boolean is set to true as long as the Repo singleton is alive.
+bool ts::TerminateWithOpenSSL::Repo::active = false;
+
 // The private constructor of the Repo singleton registers exitHandler() to OpenSSL_atexit().
 ts::TerminateWithOpenSSL::Repo::Repo()
 {
+    active = true;
     OPENSSL_atexit(exitHandler);
+}
+
+// Destructor may be called before exitHandler().
+// Make sure exitHandler() will not call a destructed object.
+ts::TerminateWithOpenSSL::Repo::~Repo()
+{
+    terminate();
+    active = false;
 }
 
 // Register an instance.
@@ -117,9 +130,12 @@ void ts::TerminateWithOpenSSL::Repo::terminate()
 }
 
 // This static method is executed by OpenSSL termination procedure.
+// Warning: may be called after Repo's destructor.
 void ts::TerminateWithOpenSSL::Repo::exitHandler()
 {
-    Instance().terminate();
+    if (active) {
+        Instance().terminate();
+    }
 }
 
 
