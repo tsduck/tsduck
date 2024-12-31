@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2024, Thierry Lelegard
+// Copyright (c) 2005-2025, Thierry Lelegard
 // BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
@@ -95,7 +95,7 @@ namespace {
         }
 
         // Read file, compute CRC.
-        std::vector<char> buffer(1024 * 2024);
+        std::vector<char> buffer(1024 * 1024);
         while (!in->eof()) {
             in->read(&buffer[0], buffer.size());
             size_t insize = size_t(in->gcount());

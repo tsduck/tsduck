@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2024, Thierry Lelegard (PES mode by lars18th)
+// Copyright (c) 2005-2025, Thierry Lelegard (PES mode by lars18th)
 // BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------

@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2024, Thierry Lelegard
+// Copyright (c) 2005-2025, Thierry Lelegard
 // BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 // Windows resource file, used to build all applications and plugins.
@@ -35,7 +35,7 @@ BEGIN
     BEGIN
       VALUE "ProductName",      "TSDuck\0"
       VALUE "ProductVersion",   VERSION_STRING "\0"
-      VALUE "LegalCopyright",   "Copyright (c) 2005-2024, Thierry Lelegard\0"
+      VALUE "LegalCopyright",   "Copyright (c) 2005-2025, Thierry Lelegard\0"
       VALUE "FileDescription",  "TSDuck - The MPEG Transport Stream Toolkit\0"
       VALUE "FileVersion",      VERSION_STRING "\0"
       VALUE "OriginalFilename", STRINGIZE(TS_WINVER_FILENAME) "\0"
