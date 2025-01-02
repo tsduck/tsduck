@@ -1,3 +1,4 @@
+---
 #-----------------------------------------------------------------------------
 #
 #  TSDuck - The MPEG Transport Stream Toolkit
@@ -21,7 +22,7 @@ on:
 jobs:
   analyze:
     name: Analyze
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     permissions:
       actions: read
@@ -37,38 +38,38 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-    - name: Install dependencies
-      run: scripts/install-prerequisites.sh
+      - name: Install dependencies
+        run: scripts/install-prerequisites.sh
 
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v3
-      with:
-        languages: ${{ matrix.language }}
-        config: |
-          paths:
-          - src
-          paths-ignore:
-          - src/utest
-          query-filters:
-          - exclude:
-            # CWE-327: Use of a broken or risky cryptographic algorithm
-            # We use DES for SCTE52, this is history, not a security alert
-            tags: /cwe-327/
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          config: |
+            paths:
+            - src
+            paths-ignore:
+            - src/utest
+            query-filters:
+            - exclude:
+              # CWE-327: Use of a broken or risky cryptographic algorithm
+              # We use DES for SCTE52, this is history, not a security alert
+              tags: /cwe-327/
 
-    - if: matrix.language == 'cpp'
-      name: Custom build (C++)
-      run: make -j5 NOTEST=1
+      - if: matrix.language == 'cpp'
+        name: Custom build (C++)
+        run: make -j5 NOTEST=1
 
-    - if: matrix.language == 'java'
-      name: Custom build (Java)
-      run: make -C src/libtsduck/java
+      - if: matrix.language == 'java'
+        name: Custom build (Java)
+        run: make -C src/libtsduck/java
 
-    - if: matrix.language == 'python'
-      name: Autobuild (Python)
-      uses: github/codeql-action/autobuild@v3
+      - if: matrix.language == 'python'
+        name: Autobuild (Python)
+        uses: github/codeql-action/autobuild@v3
 
-    - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v3
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
