@@ -183,7 +183,7 @@ CHMOD               # chmod (or GNU chmod if different).
 DATE                # date (or GNU date if different).
 REALPATH            # realpath (or GNU realpath if different).
 TAR                 # tar (or GNU tar if different).
-XDGOPEN             # open (or xdg-open is not set as alternative)
+XDGOPEN             # open (or xdg-open if not set as alternative)
 SUDO                # sudo or empty if already running as root.
 PYTHON              # Python command, at least Python 3.
 PYTHON_VERSION      # Full Python version.
@@ -204,6 +204,8 @@ BINDIR              # Directory for all binary files; include architecture and h
 BINDIR_SUFFIX       # Fixed suffix to add to BINDIR; ignored if BINDIR is defined as input variable.
 OBJDIR              # Subdirectory of BINDIR where object files are stored;
                     # named objs-$(CURDIR) for each source directory where make is executed.
+TOPLEVEL_CURDIR     # Value of CURDIR at the top-level invocation of make.
+TOPLEVEL_BINDIR     # Value of BINDIR at the top-level invocation of make (typically on command line).
 STATIC_LIBTSDUCK    # Generated static library for TSDuck library.
 SHARED_LIBTSDUCK    # Generated shared library for TSDuck library.
 INSTALLERDIR        # Output directory for binary packages and installers.

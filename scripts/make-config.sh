@@ -93,7 +93,7 @@ extract-version() {
         head -1
 }
 
-debug "==== make-config in $(pwd)"
+debug "==== make-config in $(pwd), MAKELEVEL=$MAKELEVEL"
 
 # Read list of variables from config file at project root.
 root=$(cd $(dirname ${BASH_SOURCE[0]})/..; pwd)
@@ -277,16 +277,78 @@ fi
 [[ -z $MAKEFLAGS_SMP && $MAKEFLAGS != *-j* && $CPU_COUNT -gt 1 ]] && MAKEFLAGS_SMP="-j$CPU_COUNT"
 
 #-----------------------------------------------------------------------------
+# Cross-compilation support.
+#-----------------------------------------------------------------------------
+
+# If NATIVEBINDIR is specified in input, transform it into an absolute path for recursion.
+if [[ -n $NATIVEBINDIR && $MAKEOVERRIDES == *NATIVEBINDIR=* ]]; then
+    INNATIVEBINDIR="$NATIVEBINDIR"
+    NATIVEBINDIR=$($REALPATH -m "$NATIVEBINDIR")
+    MAKEOVERRIDES=$($SED <<<$MAKEOVERRIDES -e "s|NATIVEBINDIR=$INNATIVEBINDIR|NATIVEBINDIR=$NATIVEBINDIR|")
+fi
+
+if [[ -z $CROSS$CROSS_TARGET ]]; then
+    # No cross-compilation.
+    CXXFLAGS_CROSS=
+    LDFLAGS_CROSS=
+    # In last step of build, always use the version of tsxml which is built.
+    # Note: DYLD_LIBRARY_PATH is used on macOS only.
+    TSXML='LD_LIBRARY_PATH="$(BINDIR):$(LD_LIBRARY_PATH)" DYLD_LIBRARY_PATH="$(BINDIR):$(DYLD_LIBRARY_PATH)" $(BINDIR)/tsxml'
+else
+    # Perform cross-compilation.
+    CROSS=1
+    # Cross-compilation tools are in /usr/local by default.
+    [[ -z $CROSS_PREFIX ]] && CROSS_PREFIX="/usr/local"
+    # If cross target undefined, find the first one.
+    # We look for a file pattern: PREFIX/TARGET/bin/TARGET-gcc
+    [[ -z $CROSS_TARGET ]] && CROSS_TARGET=$(
+        ls "$CROSS_PREFIX"/*/bin/*-gcc 2>/dev/null | \
+        $GREP "$CROSS_PREFIX"'//*\([^/]*\)/bin/\1-gcc' | \
+        $SED -e "s|^$CROSS_PREFIX//*||" -e 's|/.*$||' | \
+        head -1)
+    [[ -z $CROSS_TARGET ]] && error "CROSS is defined but no cross-compilation tool-chain was found"
+    # Adjust target. Use "arm" as main target if CROSS_TARGET starts with "arm".
+    [[ $CROSS_TARGET == arm* ]] && MAIN_ARCH=arm || MAIN_ARCH=$CROSS_TARGET
+    CXXFLAGS_TARGET=
+    # Redirect build tools.
+    search-cross() {
+        ls 2>/dev/null \
+           $CROSS_PREFIX/$CROSS_TARGET/bin/$CROSS_TARGET-$1 \
+           $CROSS_PREFIX/$CROSS_TARGET/bin/$1 \
+           $CROSS_PREFIX/bin/$CROSS_TARGET-$1 | \
+           head -1
+    }
+    CXX=$(search-cross g++)
+    GCC=$(search-cross gcc)
+    LD=$(search-cross ld)
+    [[ -z $CXX ]] && error "cross g++ not found for $CROSS_TARGET"
+    [[ -z $GCC ]] && error "cross gcc not found for $CROSS_TARGET"
+    [[ -z $LD ]] && error "cross ld not found for $CROSS_TARGET"
+    # Add options. The layout can be different, so use them all.
+    CXXFLAGS_CROSS='-I$(CROSS_PREFIX)/$(CROSS_TARGET)/include -I$(CROSS_PREFIX)/$(CROSS_TARGET)/$(CROSS_TARGET)/include -I$(CROSS_PREFIX)/$(CROSS_TARGET)/$(CROSS_TARGET)/libc/include'
+    LDFLAGS_CROSS='-L$(CROSS_PREFIX)/$(CROSS_TARGET)/lib -L$(CROSS_PREFIX)/$(CROSS_TARGET)/$(CROSS_TARGET)/lib -L$(CROSS_PREFIX)/$(CROSS_TARGET)/$(CROSS_TARGET)/libc/lib'
+    # In last step of build, use tsxml from 1) command line, 2) already installed, 3) previous native build.
+    [[ -z $TSXML ]] && TSXML=$(which tsxml 2>/dev/null)
+    [[ -z $TSXML && -x $NATIVEBINDIR/tsxml ]] && \
+        TSXML='LD_LIBRARY_PATH="$(NATIVEBINDIR):$(LD_LIBRARY_PATH)" DYLD_LIBRARY_PATH="$(NATIVEBINDIR):$(DYLD_LIBRARY_PATH)" $(NATIVEBINDIR)/tsxml'
+    [[ -z $TSXML ]] && error "no native TSDuck found for cross-compilation, check NATIVEBINDIR"
+fi
+
+#-----------------------------------------------------------------------------
 # Project structure.
 #-----------------------------------------------------------------------------
+
+# Keep the value of BINDIR as specified in the top-level make invocation.
+if [[ -z $TOPLEVEL_CURDIR ]]; then
+    TOPLEVEL_CURDIR="$CURDIR"
+    TOPLEVEL_BINDIR="$BINDIR"
+fi
 
 # Project specific directories.
 if [[ $ROOTDIR != $root ]]; then
     # Switched project root, as in rpm build.
     ROOTDIR="$root"
-    BINDIR=
-    NATIVEBINDIR=
-    TSXML=
+    TOPLEVEL_CURDIR="$CURDIR"
 fi
 INSTALLERDIR="$ROOTDIR/pkg/installers"
 SCRIPTSDIR="$ROOTDIR/scripts"
@@ -308,30 +370,12 @@ BINROOT="$ROOTDIR/bin"
 [[ -n $STATIC && $BINDIR_SUFFIX != *-static* ]] && BINDIR_SUFFIX="${BINDIR_SUFFIX}-static"
 
 # Output directories for final binaries and objects.
-[[ -n $HOSTNAME ]] && hpart="-$HOSTNAME" || hpart=""
 inbindir="$BINDIR"
-if [[ -n $BINDIR ]]; then
-    if [[ -z $DEBUG && $BINDIR == *debug-* ]]; then
-        # Switched from a debug build to a release build.
-        BINDIR="${BINDIR//debug-/release-}"
-    elif [[ -n $DEBUG && $BINDIR == *release-* ]]; then
-        # Switched from a release build to a debug build.
-        BINDIR="${BINDIR//release-/debug-}"
-    fi
-    if [[ $BINDIR != /* ]]; then
-        # BINDIR is externally specified and is a relative directory.
-        # Transform it into an absolute path for recursion.
-        BINDIR=$($REALPATH -m "$BINDIR")
-    fi
-    if [[ -n $BINDIR_SUFFIX && $BINDIR != *$BINDIR_SUFFIX ]]; then
-        # Make sure that the suffix is applied
-        BINDIR="${BINDIR}${BINDIR_SUFFIX}"
-    fi
-    if [[ $MAKEOVERRIDES == *BINDIR=* && $BINDIR != $inbindir ]]; then
-        # Redefine BINDIR is specified in MAKEOVERRIDES.
-        MAKEOVERRIDES=$($SED <<<$MAKEOVERRIDES -e "s|BINDIR=$inbindir|BINDIR=$BINDIR|")
-    fi
+if [[ -n $TOPLEVEL_BINDIR ]]; then
+    # BINDIR was specified on the initial command line.
+    [[ $BINDIR == /* ]] || BINDIR=$($REALPATH -m "$TOPLEVEL_CURDIR/$BINDIR")
 else
+    [[ -n $HOSTNAME ]] && hpart="-$HOSTNAME" || hpart=""
     if [[ -n $DEBUG ]]; then
         # Default BINDIR for debug mode.
         BINDIR="$BINROOT/debug-${MAIN_ARCH}${hpart}${BINDIR_SUFFIX}"
@@ -339,6 +383,10 @@ else
         # Default BINDIR for release mode.
         BINDIR="$BINROOT/release-${MAIN_ARCH}${hpart}${BINDIR_SUFFIX}"
     fi
+fi
+if [[ $MAKEOVERRIDES == *BINDIR=* && $BINDIR != $inbindir ]]; then
+    # Redefine BINDIR is specified in MAKEOVERRIDES.
+    MAKEOVERRIDES=$($SED <<<$MAKEOVERRIDES -e "s|BINDIR=$inbindir|BINDIR=$BINDIR|")
 fi
 
 # Subdirectory of $BINDIR where object files are stored; named from make's CURDIR.
@@ -399,67 +447,6 @@ if [[ -n $M32 ]]; then
     CXXFLAGS_TARGET="-march=i686"
     CXXFLAGS_M32="-m32"
     LDFLAGS_M32="-m32"
-fi
-
-# Cross-compilation support.
-if [[ -n $NATIVEBINDIR && $MAKEOVERRIDES == *NATIVEBINDIR=* ]]; then
-    # NATIVEBINDIR is specified in input, transform it into an absolute path for recursion.
-    INNATIVEBINDIR="$NATIVEBINDIR"
-    NATIVEBINDIR=$($REALPATH -m "$NATIVEBINDIR")
-    MAKEOVERRIDES=$($SED <<<$MAKEOVERRIDES -e "s|NATIVEBINDIR=$INNATIVEBINDIR|NATIVEBINDIR=$NATIVEBINDIR|")
-fi
-if [[ -z $CROSS$CROSS_TARGET ]]; then
-    # No cross-compilation.
-    CXXFLAGS_CROSS=
-    LDFLAGS_CROSS=
-    NATIVEBINDIR="$BINDIR"
-    if [[ -z $MACOS ]]; then
-        TSXML='LD_LIBRARY_PATH="$(BINDIR):$(LD_LIBRARY_PATH)" $(BINDIR)/tsxml'
-    else
-        TSXML='LD_LIBRARY_PATH="$(BINDIR):$(LD_LIBRARY_PATH)" DYLD_LIBRARY_PATH="$(BINDIR):$(DYLD_LIBRARY_PATH)" $(BINDIR)/tsxml'
-    fi
-else
-    # Perform cross-compilation.
-    CROSS=1
-    # Cross-compilation tools are in /usr/local by default.
-    [[ -z $CROSS_PREFIX ]] && CROSS_PREFIX="/usr/local"
-    # If cross target undefined, find the first one.
-    # We look for a file pattern: PREFIX/TARGET/bin/TARGET-gcc
-    [[ -z $CROSS_TARGET ]] && CROSS_TARGET=$(
-        ls "$CROSS_PREFIX"/*/bin/*-gcc 2>/dev/null | \
-        $GREP "$CROSS_PREFIX"'//*\([^/]*\)/bin/\1-gcc' | \
-        $SED -e "s|^$CROSS_PREFIX//*||" -e 's|/.*$||' | \
-        head -1)
-    [[ -z $CROSS_TARGET ]] && error "CROSS is defined but no cross-compilation tool-chain was found"
-    # Adjust target. Use "arm" as main target if CROSS_TARGET starts with "arm".
-    [[ $CROSS_TARGET == arm* ]] && MAIN_ARCH=arm || MAIN_ARCH=$CROSS_TARGET
-    CXXFLAGS_TARGET=
-    # Redirect build tools.
-    search-cross() {
-        ls 2>/dev/null \
-           $CROSS_PREFIX/$CROSS_TARGET/bin/$CROSS_TARGET-$1 \
-           $CROSS_PREFIX/$CROSS_TARGET/bin/$1 \
-           $CROSS_PREFIX/bin/$CROSS_TARGET-$1 | \
-           head -1
-    }
-    CXX=$(search-cross g++)
-    GCC=$(search-cross gcc)
-    LD=$(search-cross ld)
-    [[ -z $CXX ]] && error "cross g++ not found for $CROSS_TARGET"
-    [[ -z $GCC ]] && error "cross gcc not found for $CROSS_TARGET"
-    [[ -z $LD ]] && error "cross ld not found for $CROSS_TARGET"
-    # Add options. The layout can be different, so use them all.
-    CXXFLAGS_CROSS='-I$(CROSS_PREFIX)/$(CROSS_TARGET)/include -I$(CROSS_PREFIX)/$(CROSS_TARGET)/$(CROSS_TARGET)/include -I$(CROSS_PREFIX)/$(CROSS_TARGET)/$(CROSS_TARGET)/libc/include'
-    LDFLAGS_CROSS='-L$(CROSS_PREFIX)/$(CROSS_TARGET)/lib -L$(CROSS_PREFIX)/$(CROSS_TARGET)/$(CROSS_TARGET)/lib -L$(CROSS_PREFIX)/$(CROSS_TARGET)/$(CROSS_TARGET)/libc/lib'
-    [[ -z $TSXML ]] && TSXML=$(which tsxml 2>/dev/null)
-    if [[ -z $TSXML && -x $NATIVEBINDIR/tsxml ]]; then
-        if [[ -z $MACOS ]]; then
-            TSXML='LD_LIBRARY_PATH="$(NATIVEBINDIR):$(LD_LIBRARY_PATH)" $(NATIVEBINDIR)/tsxml'
-        else
-            TSXML='LD_LIBRARY_PATH="$(NATIVEBINDIR):$(LD_LIBRARY_PATH)" DYLD_LIBRARY_PATH="$(NATIVEBINDIR):$(DYLD_LIBRARY_PATH)" $(NATIVEBINDIR)/tsxml'
-        fi
-    fi
-    [[ -z $TSXML ]] && error "no native TSDuck found for cross-compilation, check NATIVEBINDIR"
 fi
 
 # Get current compiler version, usually in form x.y.z
