@@ -30,6 +30,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     env:
       BINDIR: bin
+      DEBUG: true
+      GCOV: true
       CXXFLAGS_STANDARD: -std=c++${{ matrix.std }}
       ORIGIN_REPO: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
       REFERENCE_REPO: tsduck/tsduck
@@ -43,7 +45,7 @@ jobs:
           ${{ matrix.compiler }} --version
           scripts/java-config.sh
       - name: Build TSDuck
-        run: make -j5 gcov
+        run: make -j5
       - name: Check built version
         run: make show-version
       - name: Run unitary tests
