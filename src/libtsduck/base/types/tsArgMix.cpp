@@ -88,7 +88,12 @@ const char* ts::ArgMix::toCharPtr() const
         case STRING | BIT8 | CLASS | PATH: {
             // When fs::path uses 8-bit chars, internally.
             if constexpr (sizeof(fs::path::value_type) == 1) {
-                return _value.path == nullptr ? "" : _value.path->c_str();
+                if (_value.path == nullptr) {
+                    return "";
+                }
+                else {
+                    return _value.path->c_str();
+                }
             }
             else {
                 return "";
