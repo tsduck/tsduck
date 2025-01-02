@@ -366,6 +366,7 @@ elif [[ -f /etc/redhat-release ]]; then
     [[ -n $STATIC                ]] && PKGLIST+=(glibc-static libstdc++-static)
     [[ -z $NODOC                 ]] && PKGLIST+=(ruby-devel qpdf)
     [[ -z $NODOC                 ]] && GEMLIST+=(asciidoctor asciidoctor-pdf rouge)
+    [[ $EL -le 999               ]] && PKGLIST+=(gcc-toolset-13 gcc-toolset-13-gcc-c++ gcc-toolset-13-runtime gcc-toolset-13-binutils gcc-toolset-13-libatomic-devel)
 
     echo "Packages: ${PKGLIST[*]}"
     $DRYRUN && exit 0

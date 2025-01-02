@@ -118,7 +118,7 @@ TSDuck has been tested with the following compilers on at least one operating sy
 
 |GCC
 |Linux, BSD
-|11.0
+|13.0
 
 |Clang
 |Linux, macOS
@@ -190,19 +190,22 @@ Should this be possible, contributions from Slackware experts are welcome.
 {cpp} language version
 
 TSDuck now requires a {cpp}20 compliant compiler.
-{cpp}20 support in GCC starts with version 11.
+{cpp}20 support in GCC offically starts with version 11.
+However, because of several bugs in the compiler, TSDuck can only be compiled with GCC 13 or higher.
 
-All recent Linux distros use GCC 11, 12 or 13.
+Most recent Linux distros use GCC 13.
 Some older distros which come with older GCC versions may propose alternative GCC packages with more recent versions.
 
 If your distro is too old and doesn't provide any GCC 11 package, then you cannot build TSDuck version 3.36 and higher.
 On such systems, the highest TSDuck version which can be built is 3.35.
+Similarly, if your distro doesn't provide any GCC 13 package, then you cannot build TSDuck version 3.40 and higher.
+On such systems, the highest TSDuck version which can be built is 3.39.
 This is the cost of obsolescence...
 
 [.usage]
 Using Clang as an alternative to GCC
 
-If your distro is too old and doesn't provide any GCC 11 package, another alternative is to use LLVM/Clang.
+If your distro is too old and doesn't provide any GCC 13 package, another alternative is to use LLVM/Clang.
 Most distros with old versions of GCC provide decently recent versions of Clang.
 To force a build with LLVM/Clang instead of GCC, defined the `make` variable `LLVM`:
 
@@ -218,32 +221,32 @@ With older versions of GCC, using Clang probably does not work because
 the corresponding standard library does not contain the {cpp}20 features.
 
 [.usage]
-Red Hat 8.x example
+Red Hat example
 
-Starting with Red Hat Entreprise Linux 9, all GCC versions correctly support {cpp}20.
+As of Red Hat Entreprise Linux 9.5, the default GCC version is 11, which does not correctly support {cpp}20.
 
-However, RedHat Entreprise Linux 8.8 comes with GCC 8.5.0.
-You can install and use GCC 11 using the following commands:
+However, you can install and use GCC 13 using the following commands:
 
 [source,shell]
 ----
-$ sudo dnf install gcc-toolset-11-gcc-c++ gcc-toolset-11-libatomic-devel
-$ source /opt/rh/gcc-toolset-11/enable
+$ sudo dnf install gcc-toolset-13 gcc-toolset-13-gcc-c++ gcc-toolset-13-runtime \
+                   gcc-toolset-13-binutils gcc-toolset-13-libatomic-devel
+$ source /opt/rh/gcc-toolset-13/enable
 $ make ...
 ----
 
-The first command installs the GCC 11 packages.
+The first command installs the GCC 13 packages.
 The second command defines the required environment variables in the current process.
 The last one builds TSDuck.
 
-TIP: On RHEL, the GCC 11 packages are available in the AppStream repository.
+TIP: On RHEL, the GCC 13 packages are available in the `appstream` repository.
 Make sure to have activated it first.
 
 [.usage]
 Other Linux distros
 
 Older versions of other distros such as Ubuntu, Debian and others
-have equivalent alternative packages for GCC 11, with different names,
+have equivalent alternative packages for GCC 13, with different names,
 when they come with an older version of GCC.
 
 If there is no `enable` script (as in the example above) to setup the environment,
@@ -252,7 +255,7 @@ The provided values are examples only and may be different in specific environme
 
 [source,shell]
 ----
-$ make CXX=g++-11 CC=gcc-11 GCC=gcc-11 CPP="gcc-11 -E" AR=gcc-ar-11 ...
+$ make CXX=g++-13 CC=gcc-13 GCC=gcc-13 CPP="gcc-13 -E" AR=gcc-ar-13 ...
 ----
 
 Since `make` uses the environment for the initial values of its variables,
