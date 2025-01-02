@@ -1,3 +1,4 @@
+---
 #-----------------------------------------------------------------------------
 #
 #  TSDuck - The MPEG Transport Stream Toolkit
@@ -18,7 +19,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest]
+        os: [ubuntu-24.04]
         compiler: [gcc]
         std: [20]
     name: Sanitizer on ${{ matrix.os }} with ${{ matrix.compiler }}, C++${{ matrix.std }}
@@ -32,34 +33,34 @@ jobs:
       REFERENCE_REPO: tsduck/tsduck
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
-    - uses: actions/checkout@master
-    - name: Install dependencies
-      run: |
-        scripts/install-prerequisites.sh
-        ${{ matrix.compiler }} --version
-    - name: Build TSDuck
-      run: make -j5
-    - name: Check built version
-      run: make show-version
-    - name: Run unitary tests
-      run: make test
-    - name: Download test suite
-      run: |
-        # Try to download '<repo>-test' from the pull request owner, if there is one.
-        if curl -fsL "https://github.com/${ORIGIN_REPO}-test/tarball/master" -o test.tgz; then
-            echo "Downloaded test suite from $ORIGIN_REPO"
-        else
-            curl -fsL "https://github.com/${REFERENCE_REPO}-test/tarball/master" -o test.tgz
-            echo "Downloaded test suite from $REFERENCE_REPO"
-        fi
-        mkdir -p ../tsduck-test
-        tar -C ../tsduck-test -x -z -f test.tgz --strip 1
-    - name: Run test suite
-      run: |
-        make test-suite && status=$? || status=$?
-        cd ../tsduck-test
-        for f in $(find tmp -name '*.diff'); do
-            echo "==== $f";
-            cat "$f"
-        done
-        exit $status
+      - uses: actions/checkout@master
+      - name: Install dependencies
+        run: |
+          scripts/install-prerequisites.sh
+          ${{ matrix.compiler }} --version
+      - name: Build TSDuck
+        run: make -j5
+      - name: Check built version
+        run: make show-version
+      - name: Run unitary tests
+        run: make test
+      - name: Download test suite
+        run: |
+          # Try to download '<repo>-test' from the pull request owner, if there is one.
+          if curl -fsL "https://github.com/${ORIGIN_REPO}-test/tarball/master" -o test.tgz; then
+              echo "Downloaded test suite from $ORIGIN_REPO"
+          else
+              curl -fsL "https://github.com/${REFERENCE_REPO}-test/tarball/master" -o test.tgz
+              echo "Downloaded test suite from $REFERENCE_REPO"
+          fi
+          mkdir -p ../tsduck-test
+          tar -C ../tsduck-test -x -z -f test.tgz --strip 1
+      - name: Run test suite
+        run: |
+          make test-suite && status=$? || status=$?
+          cd ../tsduck-test
+          for f in $(find tmp -name '*.diff'); do
+              echo "==== $f";
+              cat "$f"
+          done
+          exit $status

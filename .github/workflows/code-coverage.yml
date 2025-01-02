@@ -1,3 +1,4 @@
+---
 #-----------------------------------------------------------------------------
 #
 #  TSDuck - The MPEG Transport Stream Toolkit
@@ -23,7 +24,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest]
+        os: [ubuntu-24.04]
         compiler: [gcc]
         std: [20]
     name: Coverage on ${{ matrix.os }} with ${{ matrix.compiler }}, C++${{ matrix.std }}
