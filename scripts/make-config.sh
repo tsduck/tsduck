@@ -402,7 +402,7 @@ if [[ -n $M32 ]]; then
 fi
 
 # Cross-compilation support.
-if [[ -n $NATIVEBINDIR ]]; then
+if [[ -n $NATIVEBINDIR && $MAKEOVERRIDES == *NATIVEBINDIR=* ]]; then
     # NATIVEBINDIR is specified in input, transform it into an absolute path for recursion.
     INNATIVEBINDIR="$NATIVEBINDIR"
     NATIVEBINDIR=$($REALPATH -m "$NATIVEBINDIR")
@@ -412,11 +412,11 @@ if [[ -z $CROSS$CROSS_TARGET ]]; then
     # No cross-compilation.
     CXXFLAGS_CROSS=
     LDFLAGS_CROSS=
-    [[ -z $NATIVEBINDIR ]] && NATIVEBINDIR="$BINDIR"
+    NATIVEBINDIR="$BINDIR"
     if [[ -z $MACOS ]]; then
-        TSXML='LD_LIBRARY_PATH="$(NATIVEBINDIR):$(LD_LIBRARY_PATH)" $(NATIVEBINDIR)/tsxml'
+        TSXML='LD_LIBRARY_PATH="$(BINDIR):$(LD_LIBRARY_PATH)" $(BINDIR)/tsxml'
     else
-        TSXML='LD_LIBRARY_PATH="$(NATIVEBINDIR):$(LD_LIBRARY_PATH)" DYLD_LIBRARY_PATH="$(NATIVEBINDIR):$(DYLD_LIBRARY_PATH)" $(NATIVEBINDIR)/tsxml'
+        TSXML='LD_LIBRARY_PATH="$(BINDIR):$(LD_LIBRARY_PATH)" DYLD_LIBRARY_PATH="$(BINDIR):$(DYLD_LIBRARY_PATH)" $(BINDIR)/tsxml'
     fi
 else
     # Perform cross-compilation.

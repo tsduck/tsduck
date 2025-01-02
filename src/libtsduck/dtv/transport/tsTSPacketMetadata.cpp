@@ -104,9 +104,11 @@ size_t ts::TSPacketMetadata::getAuxData(void* data, size_t max_size) const
 
 void ts::TSPacketMetadata::getAuxData(void* data, size_t max_size, uint8_t pad) const
 {
-    const size_t size = data == nullptr ? 0 : std::min<size_t>(max_size, _aux_data_size);
-    MemCopy(data, _aux_data, size);
-    MemSet(reinterpret_cast<uint8_t*>(data) + size, pad, max_size - size);
+    if (data != nullptr) {
+        const size_t size = std::min<size_t>(max_size, _aux_data_size);
+        MemCopy(data, _aux_data, size);
+        MemSet(reinterpret_cast<uint8_t*>(data) + size, pad, max_size - size);
+    }
 }
 
 

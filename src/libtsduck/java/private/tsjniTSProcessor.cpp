@@ -128,7 +128,7 @@ TSDUCKJNI jboolean JNICALL Java_io_tsduck_TSProcessor_start(JNIEnv* env, jobject
     }
 
     // Finally start the TSProcessor.
-    return ok = ok && tsp->start(args);
+    return ok && tsp->start(args);
 }
 
 #endif // TS_NO_JAVA

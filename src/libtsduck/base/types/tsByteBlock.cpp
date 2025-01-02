@@ -37,7 +37,7 @@ ts::ByteBlock::ByteBlock(size_type size, uint8_t value) :
 ts::ByteBlock::ByteBlock(const void* data, size_type size) :
     ByteVector(size)
 {
-    if (size > 0) {
+    if (size > 0 && data != nullptr) {
         MemCopy(&(*this)[0], data, size);
     }
 }
@@ -47,7 +47,7 @@ ts::ByteBlock::ByteBlock(const void* data, size_type size) :
 //----------------------------------------------------------------------------
 
 ts::ByteBlock::ByteBlock(const char* str) :
-    ByteVector(std::strlen(str))
+    ByteVector(str == nullptr ? 0 : std::strlen(str))
 {
     if (size() > 0) {
         MemCopy(data(), str, size());

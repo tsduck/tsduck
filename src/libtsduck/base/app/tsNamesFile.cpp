@@ -667,7 +667,7 @@ ts::UString ts::NamesFile::nameFromSectionWithFallback(const UString& section_na
 
     if (section == nullptr) {
         // Non-existent section, no name.
-        return Formatted(value1, UString(), flags, bits != 0 ? bits : section->bits, alternate_value);
+        return Formatted(value1, UString(), flags, bits, alternate_value);
     }
     else if (!name.empty()) {
         // value1 has a name
