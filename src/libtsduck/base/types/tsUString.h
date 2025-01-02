@@ -149,6 +149,13 @@ namespace ts {
         static const UString& EMPTY();
 
         //!
+        //! A static empty 8-bit string.
+        //! Can be used when a reference to a static empty string is required.
+        //! @return A constant reference to the empty string.
+        //!
+        static const std::string& EMPTY8();
+
+        //!
         //! The 3-byte so-called "UTF-8 Byte Order Mark".
         //!
         static constexpr const char* UTF8_BOM = "\xEF\xBB\xBF";

@@ -280,23 +280,16 @@ namespace ts {
             BIT64     = 0x0100,  //!< 64-bit integer.
             POINTER   = 0x0200,  //!< A pointer to a writeable data (data type is given by other bits).
             STRINGIFY = 0x0400,  //!< A pointer to a StringifyInterface object.
-            PATH      = 0x0800,  //!< A pointer to a StringifyInterface object.
+            PATH      = 0x0800,  //!< A pointer to a std::filesystem::path object.
             DOUBLE    = 0x1000,  //!< Double floating point type.
             ANUMBER   = 0x2000,  //!< A pointer to an AbstractNumber object.
             CHRONO    = 0x4000,  //!< A instance of std::chrono::duration.
         };
 
-        //!
-        //! Size flag for std::filesystem::path, either BIT8 or BIT16.
-        //!
-        static constexpr TypeFlags BITPATH =
-#if defined(TS_WINDOWS)
-            BIT16;
-        static_assert(sizeof(fs::path::value_type) == 2);
-#else
-            BIT8;
-        static_assert(sizeof(fs::path::value_type) == 1);
-#endif
+        // Get the TypeFlags value of an integer size.
+        //! @cond nodoxygen
+        template<size_t SIZE> struct SizeFlags { static constexpr TypeFlags value = 0; };
+        //! @endcond
 
 #if !defined(DOXYGEN)
         //
@@ -443,14 +436,18 @@ namespace ts {
         const std::intmax_t _den;       //!< Ratio denominator for chrono types.
         mutable UString*    _aux;       //!< Auxiliary string (for StringifyInterface and character pointers).
 
-        // Static data used to return references to constant empty string class objects.
-        static const std::string empty;
-        static const ts::UString uempty;
-
         // Instances are directly built in initializer lists and cannot be assigned.
         ArgMix& operator=(ArgMix&&) = delete;
         ArgMix& operator=(const ArgMix&) = delete;
     };
+
+    // Specializations for ArgMix::SizeFlags for integral types.
+    //! @cond nodoxygen
+    template<> struct ArgMix::SizeFlags<1> { static constexpr TypeFlags value = BIT8; };
+    template<> struct ArgMix::SizeFlags<2> { static constexpr TypeFlags value = BIT16; };
+    template<> struct ArgMix::SizeFlags<4> { static constexpr TypeFlags value = BIT32; };
+    template<> struct ArgMix::SizeFlags<8> { static constexpr TypeFlags value = BIT64; };
+    //! @endcond
 
     //!
     //! Define an element of an argument list with mixed integer and string input types.
@@ -511,7 +508,7 @@ namespace ts {
         //! Constructor from a std::filesystem::path object.
         //! @param [in] s Reference to a path object.
         //!
-        ArgMixIn(const fs::path& s) : ArgMix(STRING | BITPATH | CLASS | PATH, 0, s) {}
+        ArgMixIn(const fs::path& s) : ArgMix(STRING | SizeFlags<sizeof(fs::path::value_type)>::value | CLASS | PATH, 0, s) {}
         //!
         //! Constructor from an AbstractNumber object.
         //! @param [in] s Reference to an AbstractNumber object.

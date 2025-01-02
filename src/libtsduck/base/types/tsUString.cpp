@@ -30,6 +30,13 @@ const ts::UString& ts::UString::EMPTY()
     return empty;
 }
 
+const std::string& ts::UString::EMPTY8()
+{
+    // Thread-safe init-safe static data pattern:
+    static const std::string empty;
+    return empty;
+}
+
 
 //----------------------------------------------------------------------------
 // Conversions with Windows Unicode strings (Windows-specific).

@@ -9,9 +9,6 @@
 #include "tsArgMix.h"
 #include "tsUString.h"
 
-const std::string ts::ArgMix::empty;
-const ts::UString ts::ArgMix::uempty;
-
 
 //----------------------------------------------------------------------------
 // ArgMix constructors.
@@ -88,12 +85,15 @@ const char* ts::ArgMix::toCharPtr() const
             // A pointer to std::string.
             return _value.string == nullptr ? "" : _value.string->c_str();
         }
-#if !defined(TS_WINDOWS)
         case STRING | BIT8 | CLASS | PATH: {
-            // On Unix, fs::path uses 8-bit chars, internally. Need to allocate an auxiliary string.
-            return _value.path == nullptr ? "" : _value.path->c_str();
+            // When fs::path uses 8-bit chars, internally.
+            if constexpr (sizeof(fs::path::value_type) == 1) {
+                return _value.path == nullptr ? "" : _value.path->c_str();
+            }
+            else {
+                return "";
+            }
         }
-#endif
         default: {
             return "";
         }
@@ -134,17 +134,21 @@ const ts::UChar* ts::ArgMix::toUCharPtr() const
             }
             return _aux == nullptr ? u"" : _aux->c_str();
         }
-        case STRING | BITPATH | CLASS | PATH: {
-#if defined(TS_WINDOWS)
-            // On Windows, fs::path uses 16-bit chars, internally.
-            return _value.path == nullptr ? u"" : reinterpret_cast<const UChar*>(_value.path->c_str());
-#else
-            // On Unix, fs::path uses 8-bit chars, internally. Need to allocate an auxiliary string.
+        case STRING | BIT16 | CLASS | PATH: {
+            // When fs::path uses 16-bit chars, internally (typically Windows).
+            if constexpr (sizeof(fs::path::value_type) == 2) {
+                return _value.path == nullptr ? u"" : reinterpret_cast<const UChar*>(_value.path->c_str());
+            }
+            else {
+                return u"";
+            }
+        }
+        case STRING | BIT8 | CLASS | PATH: {
+            // When fs::path uses 8-bit chars, internally. Need to allocate an auxiliary string.
             if (_value.path != nullptr && _aux == nullptr) {
                 _aux = new UString(*_value.path);
             }
             return _aux == nullptr ? u"" : _aux->c_str();
-#endif
         }
         case ANUMBER: {
             // A pointer to AbstractNumer. Need to allocate an auxiliary string.
@@ -161,7 +165,7 @@ const ts::UChar* ts::ArgMix::toUCharPtr() const
 
 const std::string& ts::ArgMix::toString() const
 {
-    return _type == (STRING | BIT8 | CLASS) && _value.string != nullptr ? *_value.string : empty;
+    return _type == (STRING | BIT8 | CLASS) && _value.string != nullptr ? *_value.string : UString::EMPTY8();
 }
 
 const ts::UString& ts::ArgMix::toUString() const
@@ -173,7 +177,7 @@ const ts::UString& ts::ArgMix::toUString() const
                 _aux = new UString;
                 _aux->assignFromUTF8(_value.charptr);
             }
-            return _aux == nullptr ? uempty : *_aux;
+            return _aux == nullptr ? UString::EMPTY() : *_aux;
         }
         case STRING | BIT8 | CLASS: {
             // A pointer to std::string. Need to allocate an auxiliary string.
@@ -181,42 +185,42 @@ const ts::UString& ts::ArgMix::toUString() const
                 _aux = new UString;
                 _aux->assignFromUTF8(*_value.string);
             }
-            return _aux == nullptr ? uempty : *_aux;
+            return _aux == nullptr ? UString::EMPTY() : *_aux;
         }
         case STRING | BIT16: {
             // A pointer to UChar. Need to allocate an auxiliary string.
             if (_value.charptr != nullptr && _aux == nullptr) {
                 _aux = new UString(_value.ucharptr);
             }
-            return _aux == nullptr ? uempty : *_aux;
+            return _aux == nullptr ? UString::EMPTY() : *_aux;
         }
         case STRING | BIT16 | CLASS: {
             // A pointer to UString.
-            return _value.ustring == nullptr ? uempty : *_value.ustring;
+            return _value.ustring == nullptr ? UString::EMPTY() : *_value.ustring;
         }
         case STRING | BIT16 | CLASS | STRINGIFY: {
             // A pointer to StringifyInterface. Need to allocate an auxiliary string.
             if (_value.stringify != nullptr && _aux == nullptr) {
                 _aux = new UString(_value.stringify->toString());
             }
-            return _aux == nullptr ? uempty : *_aux;
+            return _aux == nullptr ? UString::EMPTY() : *_aux;
         }
-        case STRING | BITPATH | CLASS | PATH: {
+        case STRING | SizeFlags<sizeof(fs::path::value_type)>::value | CLASS | PATH: {
             // A pointer to fs::path. Need to allocate an auxiliary string.
             if (_value.path != nullptr && _aux == nullptr) {
                 _aux = new UString(*_value.path);
             }
-            return _aux == nullptr ? uempty : *_aux;
+            return _aux == nullptr ? UString::EMPTY() : *_aux;
         }
         case ANUMBER: {
             // A pointer to AbstractNumer. Need to allocate an auxiliary string.
             if (_value.anumber != nullptr && _aux == nullptr) {
                 _aux = new UString(_value.anumber->toString());
             }
-            return _aux == nullptr ? uempty : *_aux;
+            return _aux == nullptr ? UString::EMPTY() : *_aux;
         }
         default: {
-            return uempty;
+            return UString::EMPTY();
         }
     }
 }

@@ -1189,3 +1189,23 @@ namespace std {
     /** @cond nodoxygen */                                                       \
     using TS_UNIQUE_NAME(for_trailing_semicolon) = int                           \
     /** @endcond */
+
+
+//----------------------------------------------------------------------------
+// Compiler bugs.
+//----------------------------------------------------------------------------
+
+//! @cond nodoxygen
+#if (defined(TS_GCC_ONLY) && TS_GCC_VERSION < 130000) || (defined(__clang_major__) && __clang_major__ < 16)
+    // Workarounds for buggy compilers :(
+    // No need to elaborate, too disgusting...
+    // Please use at least GCC 13 and Clang 16, not old crap.
+    TS_LLVM_NOWARNING(zero-as-null-pointer-constant)
+    TS_LLVM_NOWARNING(unused-local-typedefs)
+    TS_GCC_NOWARNING(unused-local-typedefs)
+    TS_PUSH_WARNING()
+    TS_LLVM_NOWARNING(keyword-macro)
+    #define static_assert(...) using TS_UNIQUE_NAME(for_trailing_semicolon) = int
+    TS_POP_WARNING()
+#endif
+//! @endcond

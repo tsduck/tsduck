@@ -127,7 +127,7 @@ namespace ts {
             return x >= INT2(std::numeric_limits<INT1>::min()) && x <= INT2(std::numeric_limits<INT1>::max());
         }
         else {
-            static_assert(false);
+            static_assert(false, "invalid integer type");
         }
     }
 
@@ -175,7 +175,7 @@ namespace ts {
             return INT1(std::max<INT2>(INT2(std::numeric_limits<INT1>::min()), std::min<INT2>(x, INT2(std::numeric_limits<INT1>::max()))));
         }
         else {
-            static_assert(false);
+            static_assert(false, "invalid integer type");
         }
     }
 
@@ -237,7 +237,7 @@ namespace ts {
             return ((~(a ^ b)) & (a ^ res) & sign_bit) != 0;
         }
         else {
-            static_assert(false);
+            static_assert(false, "invalid integer type");
         }
     }
 
@@ -269,7 +269,7 @@ namespace ts {
             return add_overflow(a, -b, res);
         }
         else {
-            static_assert(false);
+            static_assert(false, "invalid integer type");
         }
     }
 
@@ -299,7 +299,7 @@ namespace ts {
             return a == std::numeric_limits<INT>::min();
         }
         else {
-            static_assert(false);
+            static_assert(false, "invalid integer type");
         }
     }
 
@@ -501,7 +501,7 @@ namespace ts {
             return ((a < 0) ^ (b < 0)) ? ((a - b/2) / b) : ((a + b/2) / b);
         }
         else {
-            static_assert(false);
+            static_assert(false, "invalid integer type");
         }
     }
 
@@ -521,7 +521,7 @@ namespace ts {
             return a < 0;
         }
         else {
-            static_assert(false);
+            static_assert(false, "invalid integer type");
         }
     }
 
@@ -589,7 +589,7 @@ namespace ts {
             }
         }
         else {
-            static_assert(false);
+            static_assert(false, "invalid integer type");
         }
     }
 
@@ -648,7 +648,7 @@ namespace ts {
             return u"signed";
         }
         else {
-            static_assert(false);
+            static_assert(false, "invalid integer type");
         }
     }
 
@@ -804,7 +804,7 @@ INT ts::bounded_add(INT a, INT b)
         }
     }
     else {
-        static_assert(false);
+        static_assert(false, "invalid integer type");
     }
 }
 
@@ -842,7 +842,7 @@ INT ts::bounded_sub(INT a, INT b)
         }
     }
     else {
-        static_assert(false);
+        static_assert(false, "invalid integer type");
     }
 }
 
@@ -862,7 +862,7 @@ INT ts::round_down(INT x, INT f)
         return f == 0 ? x : (x >= 0 ? x - x % f : x - (f + x % f) % f);
     }
     else {
-        static_assert(false);
+        static_assert(false, "invalid integer type");
     }
 }
 
@@ -877,7 +877,7 @@ INT ts::round_up(INT x, INT f)
         return f == 0 ? x : (x >= 0 ? x + (f - x % f) % f : x - x % f);
     }
     else {
-        static_assert(false);
+        static_assert(false, "invalid integer type");
     }
 }
 
@@ -931,7 +931,7 @@ size_t ts::BitSize(INT x)
         return BitSize<UNS_INT>(UNS_INT(x));
     }
     else {
-        static_assert(false);
+        static_assert(false, "invalid integer type");
     }
 }
 
@@ -966,7 +966,7 @@ INT ts::GCD(INT x, INT y)
         }
     }
     else {
-        static_assert(false);
+        static_assert(false, "invalid integer type");
     }
     return x;
 }
