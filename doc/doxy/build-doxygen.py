@@ -87,7 +87,7 @@ else:
 
 # Run doxygen in same directory as this script (where Doxyfile is).
 print('Running doxygen version: %s ...' % doxy_version)
-subprocess.run([doxygen], env=env, cwd=SCRIPTDIR)
+status = subprocess.run([doxygen], env=env, cwd=SCRIPTDIR)
 
 # Collect all 'group_*.html' files. Count files and directories.
 # Delete empty subdirectories (older versions of doxygen created many for nothing in case of hierachical output).
@@ -138,3 +138,4 @@ with open(os.path.join(HTMLDIR, 'classes.html')) as input:
                 file_count += 1
 
 print('Generated %d files in %d directories' % (file_count, dir_count))
+exit(status.returncode)

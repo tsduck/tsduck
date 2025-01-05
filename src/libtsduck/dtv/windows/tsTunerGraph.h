@@ -90,10 +90,10 @@ namespace ts {
         //! Search criteria for properties.
         //!
         enum PropSearch {
-            psFIRST,    //! Keep first value, when found.
-            psLAST,     //! Keep last value.
-            psLOWEST,   //! Keep lowest value.
-            psHIGHEST   //! Keep highest value.
+            psFIRST,    //!< Keep first value, when found.
+            psLAST,     //!< Keep last value.
+            psLOWEST,   //!< Keep lowest value.
+            psHIGHEST   //!< Keep highest value.
         };
 
         //!

@@ -103,14 +103,14 @@ namespace ts {
     //! A subset of ts::DeliverySystem describing types of tuners.
     //!
     enum TunerType {
-        TT_UNDEFINED = DS_UNDEFINED,
-        TT_DVB_S     = DS_DVB_S,
-        TT_DVB_T     = DS_DVB_T,
-        TT_DVB_C     = DS_DVB_C,
-        TT_ISDB_S    = DS_ISDB_S,
-        TT_ISDB_T    = DS_ISDB_T,
-        TT_ISDB_C    = DS_ISDB_C,
-        TT_ATSC      = DS_ATSC,
+        TT_UNDEFINED = DS_UNDEFINED,  //!< Undefined.
+        TT_DVB_S     = DS_DVB_S,      //!< DVB satellite reception.
+        TT_DVB_T     = DS_DVB_T,      //!< DVB terrestrial reception.
+        TT_DVB_C     = DS_DVB_C,      //!< DVB cable reception.
+        TT_ISDB_S    = DS_ISDB_S,     //!< ISDB satellite reception.
+        TT_ISDB_T    = DS_ISDB_T,     //!< ISDB terrestrial reception.
+        TT_ISDB_C    = DS_ISDB_C,     //!< ISDB cable reception.
+        TT_ATSC      = DS_ATSC,       //!< ATSC terrestrial reception.
     };
 
     //!

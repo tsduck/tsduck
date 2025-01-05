@@ -29,9 +29,11 @@ CREATE_SUBDIRS   = YES
 
 # Error reporting:
 
-QUIET                = YES
-WARN_NO_PARAMDOC     = YES
-WARN_IF_UNDOCUMENTED = YES
+QUIET                  = YES
+WARN_NO_PARAMDOC       = YES
+WARN_IF_UNDOCUMENTED   = YES
+WARN_IF_UNDOC_ENUM_VAL = YES
+WARN_AS_ERROR          = FAIL_ON_WARNINGS
 
 # Source code analysis:
 

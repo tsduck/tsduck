@@ -104,7 +104,7 @@ namespace ts {
         //! Can be used as bitmask.
         //!
         enum class TagFlags {
-            NONE   = 0x0000,   //! Tag is not allowed anywhere.
+            NONE   = 0x0000,   //!< Tag is not allowed anywhere.
             MASTER = 0x0001,   //!< The tag is allowed in master playlists.
             MEDIA  = 0x0002,   //!< The tag is allowed in media playlists.
         };

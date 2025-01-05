@@ -250,7 +250,8 @@ jobs:
     - name: Build documentation
       if: env.REBUILD == 'true'
       run: |
-        make docs doxygen
+        make docs
+        make doxygen || true # don't fail on undocumented features here
         rm -f bin/doc/*.bigpdf
         cp doc/presentations/*.pdf bin/doc || true
         echo "${{ env.VERSION }}" >bin/doxy/docversion.txt

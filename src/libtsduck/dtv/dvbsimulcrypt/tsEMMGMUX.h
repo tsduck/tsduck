@@ -127,9 +127,9 @@ namespace ts {
             //! EMMG <=> MUX data types.
             //!
             enum : uint8_t {
-                EMM     = 0x00,  //! Injected data are EMM.
-                PRIVATE = 0x01,  //! Injected data are private.
-                ECM     = 0x02,  //! Injected data are ECM, DVB-reserved.
+                EMM     = 0x00,  //!< Injected data are EMM.
+                PRIVATE = 0x01,  //!< Injected data are private.
+                ECM     = 0x02,  //!< Injected data are ECM, DVB-reserved.
             };
         };
 
