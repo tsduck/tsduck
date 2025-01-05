@@ -165,7 +165,7 @@ void ts::TunerDeviceInfo::SearchFiles(UStringList& files, const UString& root, c
                     name != u"system" &&
                     name != u"uprobe" &&
                     name != u"virtual" &&
-                    !name.startWith(u"LNXSYS"))
+                    !name.startsWith(u"LNXSYS"))
                 {
                     // We can recurse.
                     SearchFiles(files, loc, pattern, levels - 1);

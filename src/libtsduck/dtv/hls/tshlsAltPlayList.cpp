@@ -23,8 +23,8 @@ ts::UString ts::hls::AltPlayList::toString() const
     if (!name.empty()) {
         str.format(u", name: %s", name);
     }
-    if (!groupId.empty()) {
-        str.format(u", group id: %s", groupId);
+    if (!group_id.empty()) {
+        str.format(u", group id: %s", group_id);
     }
     if (!language.empty()) {
         str.format(u", language: %s", language);

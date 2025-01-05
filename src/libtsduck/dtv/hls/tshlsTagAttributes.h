@@ -49,23 +49,23 @@ namespace ts::hls {
         //!
         //! Get the value of a string attribute.
         //! @param [in] name Attribute name.
-        //! @param [in] defValue Default value if not present.
+        //! @param [in] def_value Default value if not present.
         //! @return Attribute value.
         //!
-        UString value(const UString& name, const UString& defValue = UString()) const;
+        UString value(const UString& name, const UString& def_value = UString()) const;
 
         //!
         //! Get the value of an integer attribute.
         //! @tparam INT An integer type.
         //! @param [out] val Decoded value.
         //! @param [in] name Attribute name.
-        //! @param [in] defValue Default value if not present.
+        //! @param [in] def_value Default value if not present.
         //!
         template <typename INT> requires std::integral<INT>
-        void getIntValue(INT& val, const UString& name, INT defValue = static_cast<INT>(0)) const
+        void getIntValue(INT& val, const UString& name, INT def_value = static_cast<INT>(0)) const
         {
             if (!value(name).toInteger(val)) {
-                val = defValue;
+                val = def_value;
             }
         }
 
@@ -74,13 +74,13 @@ namespace ts::hls {
         //! @tparam NUMBER A subclass of AbstractNumber.
         //! @param [out] val Decoded value.
         //! @param [in] name Attribute name.
-        //! @param [in] defValue Default value if not present.
+        //! @param [in] def_value Default value if not present.
         //!
         template <class NUMBER> requires std::derived_from<NUMBER, AbstractNumber>
-        void getValue(NUMBER& val, const UString& name, const NUMBER& defValue = NUMBER()) const
+        void getValue(NUMBER& val, const UString& name, const NUMBER& def_value = NUMBER()) const
         {
             if (!val.fromString(value(name))) {
-                val = defValue;
+                val = def_value;
             }
         }
 
@@ -91,13 +91,13 @@ namespace ts::hls {
         //! If the value is a decimal one, use 3 decimal digits. Examples: "90" -> 90000,
         //! "1.12" -> 1120, "32.1234" -> 32123.
         //! @param [in] name Attribute name.
-        //! @param [in] defValue Default value if not present.
+        //! @param [in] def_value Default value if not present.
         //!
         template <typename INT> requires std::integral<INT>
-        void getMilliValue(INT& val, const UString& name, INT defValue = static_cast<INT>(0)) const
+        void getMilliValue(INT& val, const UString& name, INT def_value = static_cast<INT>(0)) const
         {
             if (!ToMilliValue(val, value(name))) {
-                val = defValue;
+                val = def_value;
             }
         }
 

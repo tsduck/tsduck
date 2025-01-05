@@ -48,12 +48,12 @@ ts::UString ts::VernacularFilePath(const UString& path)
 
 #if defined(TS_WINDOWS)
     // With Windows Linux Subsystem, the syntax "/mnt/c/" means "C:\"
-    if (vern.length() >= 6 && vern.startWith(u"/mnt/") && IsAlpha(vern[5]) && (vern.length() == 6 || vern[6] == u'/')) {
+    if (vern.length() >= 6 && vern.startsWith(u"/mnt/") && IsAlpha(vern[5]) && (vern.length() == 6 || vern[6] == u'/')) {
         vern.erase(0, 4);
     }
 
     // With Cygwin, the syntax "/cygdrive/C/" means "C:\"
-    if (vern.startWith(u"/cygdrive/")) {
+    if (vern.startsWith(u"/cygdrive/")) {
         vern.erase(0, 9);
     }
 
@@ -88,7 +88,7 @@ ts::UString ts::VernacularFilePath(const UString& path)
 bool ts::IsAbsoluteFilePath(const ts::UString& path)
 {
 #if defined(TS_WINDOWS)
-    return path.startWith(u"\\\\") || (path.length() >= 3 && IsAlpha(path[0]) && path[1] == u':' && path[2] == u'\\');
+    return path.startsWith(u"\\\\") || (path.length() >= 3 && IsAlpha(path[0]) && path[1] == u':' && path[2] == u'\\');
 #else
     return !path.empty() && path[0] == u'/';
 #endif
@@ -265,7 +265,7 @@ ts::UString ts::BaseName(const UString& path, const UString& suffix)
 {
     const UString::size_type sep = LastPathSeparator(path);
     const UString base(path.substr(sep == NPOS ? 0 : sep + 1));
-    const bool suffixFound = !suffix.empty() && base.endWith(suffix, FILE_SYSTEM_CASE_SENSITVITY);
+    const bool suffixFound = !suffix.empty() && base.endsWith(suffix, FILE_SYSTEM_CASE_SENSITVITY);
     return suffixFound ? base.substr(0, base.size() - suffix.size()) : base;
 }
 
@@ -348,7 +348,7 @@ ts::UString ts::SearchExecutableFile(const UString& fileName, const UString& pat
 
     // Adjust file name with the executable suffix.
     UString name(fileName);
-    if (!name.endWith(EXECUTABLE_FILE_SUFFIX, FILE_SYSTEM_CASE_SENSITVITY)) {
+    if (!name.endsWith(EXECUTABLE_FILE_SUFFIX, FILE_SYSTEM_CASE_SENSITVITY)) {
         name.append(EXECUTABLE_FILE_SUFFIX);
     }
 

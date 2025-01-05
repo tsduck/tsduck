@@ -234,7 +234,7 @@ bool ts::TunerDevice::open(const UString& device_name, bool info_only)
         // Default tuner is first one
         fields.push_back(dvb_directory ? u"/dev/dvb/adapter0" : u"/dev/dvb0");
     }
-    else if (!device_name.startWith(u"/dev/dvb")) {
+    else if (!device_name.startsWith(u"/dev/dvb")) {
         // If the name does not start with /dev/dvb, check if this is a known device full description.
         TunerPtrVector all_tuners;
         GetAllTuners(_duck, all_tuners);

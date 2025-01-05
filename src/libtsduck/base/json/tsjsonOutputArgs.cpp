@@ -36,10 +36,10 @@ void ts::json::OutputArgs::defineArgs(Args& args, bool use_short_opt, const UStr
     // For --json, description is directly used as help. For other forms of output, reuse it as introduction.
     UString intro(description);
     if (!intro.empty()) {
-        if (!intro.endWith(u".")) {
+        if (!intro.endsWith(u".")) {
             intro.append(u".");
         }
-        if (!intro.endWith(u" ")) {
+        if (!intro.endsWith(u" ")) {
             intro.append(u" ");
         }
     }

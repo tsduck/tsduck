@@ -109,7 +109,7 @@ namespace ts::hls {
         //! Set a directory name where all loaded files or URL are automatically saved.
         //! @param [in] dir A directory name.
         //!
-        void setAutoSaveDirectory(const UString& dir) { _autoSaveDir = dir; }
+        void setAutoSaveDirectory(const UString& dir) { _auto_save_dir = dir; }
 
         //!
         //! Check if the playlist has been successfully loaded.
@@ -138,7 +138,7 @@ namespace ts::hls {
         //! if the object has been modified.
         //! @return A constant reference to the original loaded text lines.
         //!
-        const UStringList& originalLoadedContent() const { return _loadedContent; }
+        const UStringList& originalLoadedContent() const { return _loaded_content; }
 
         //!
         //! Get the original URL.
@@ -186,19 +186,19 @@ namespace ts::hls {
         //! @param [in] tag A custom tag line to add in the playlist. If @a does not start
         //! with a @c '#', it will be automatically added.
         //!
-        void addCustomTag(const UString& tag) { _extraTags.push_back(tag); }
+        void addCustomTag(const UString& tag) { _extra_tags.push_back(tag); }
 
         //!
         //! Clear all application-specific custom tags.
         //! @see addCustomTag()
         //!
-        void clearCustomTags() { _extraTags.clear(); }
+        void clearCustomTags() { _extra_tags.clear(); }
 
         //!
         //! Check if the playlist can be updated (and must be reloaded later).
         //! @return True if the playlist can be updated (and must be reloaded later).
         //!
-        bool isUpdatable() const { return (_type == PlayListType::EVENT || _type == PlayListType::LIVE) && !_endList; }
+        bool isUpdatable() const { return (_type == PlayListType::EVENT || _type == PlayListType::LIVE) && !_end_list; }
 
         //!
         //! Check if the playlist is a media playlist (contains references to media segments).
@@ -222,7 +222,7 @@ namespace ts::hls {
         //! Get the segment target duration (informative, in media playlist).
         //! @return The segment target duration in seconds.
         //!
-        cn::seconds targetDuration() const { return _targetDuration; }
+        cn::seconds targetDuration() const { return _target_duration; }
 
         //!
         //! Set the segment target duration in a media playlist.
@@ -236,7 +236,7 @@ namespace ts::hls {
         //! Get the sequence number of first segment (in media playlist).
         //! @return The sequence number of first segment.
         //!
-        size_t mediaSequence() const { return _mediaSequence; }
+        size_t mediaSequence() const { return _media_sequence; }
 
         //!
         //! Set the sequence number of first segment in a media playlist.
@@ -251,7 +251,7 @@ namespace ts::hls {
         //! @return The end of list indicator. If true, there is no need to reload
         //! the playlist, there will not be any new segment.
         //!
-        bool endList() const { return _endList; }
+        bool endList() const { return _end_list; }
 
         //!
         //! Set the end of list indicator in a media playlist.
@@ -277,7 +277,7 @@ namespace ts::hls {
         //! Get the number of altenative rendition playlists (in master playlist).
         //! @return The number of altenative rendition playlists.
         //!
-        size_t altPlayListCount() const { return _altPlaylists.size(); }
+        size_t altPlayListCount() const { return _alt_playlists.size(); }
 
         //!
         //! Get a constant reference to a media segment (in media playlist).
@@ -312,14 +312,14 @@ namespace ts::hls {
         //! Get the download UTC time of the playlist.
         //! @return The download UTC time of the playlist.
         //!
-        Time downloadUTC() const { return _utcDownload; }
+        Time downloadUTC() const { return _utc_download; }
 
         //!
         //! Get the playout estimated termination UTC time of the playlist (in media playlist).
         //! @return The estimated playout UTC time of the playlist. This is the download time
         //! of the playlist plus the sum of all segment durations.
         //!
-        Time terminationUTC() const { return _utcTermination; }
+        Time terminationUTC() const { return _utc_termination; }
 
         //!
         //! Get a constant reference to a media playlist description (in master playlist).
@@ -346,21 +346,21 @@ namespace ts::hls {
 
         //!
         //! Select the first media playlist with specific constraints.
-        //! @param [in] minBitrate Minimum bitrate. Zero means no minimum.
-        //! @param [in] maxBitrate Maximum bitrate. Zero means no maximum.
-        //! @param [in] minWidth Minimum width. Zero means no minimum.
-        //! @param [in] maxWidth Maximum width. Zero means no maximum.
-        //! @param [in] minHeight Minimum height. Zero means no minimum.
-        //! @param [in] maxHeight Maximum height. Zero means no maximum.
+        //! @param [in] min_bitrate Minimum bitrate. Zero means no minimum.
+        //! @param [in] max_bitrate Maximum bitrate. Zero means no maximum.
+        //! @param [in] min_width Minimum width. Zero means no minimum.
+        //! @param [in] max_width Maximum width. Zero means no maximum.
+        //! @param [in] min_height Minimum height. Zero means no minimum.
+        //! @param [in] max_height Maximum height. Zero means no maximum.
         //! @return Index of the selected media play list or NPOS if there is none.
         //! If all criteria are zero, select the first playlist.
         //!
-        size_t selectPlayList(const BitRate& minBitrate,
-                              const BitRate& maxBitrate,
-                              size_t minWidth,
-                              size_t maxWidth,
-                              size_t minHeight,
-                              size_t maxHeight) const;
+        size_t selectPlayList(const BitRate& min_bitrate,
+                              const BitRate& max_bitrate,
+                              size_t min_width,
+                              size_t max_width,
+                              size_t min_height,
+                              size_t max_height) const;
 
         //!
         //! Select the media playlist with the lowest bitrate.
@@ -413,14 +413,14 @@ namespace ts::hls {
         //! Select the first alternative rendition playlist with specific criteria.
         //! @param [in] type The type to match. Ignored if empty.
         //! @param [in] name The name to match. Ignored if empty.
-        //! @param [in] groupId The group-id to match. Ignored if empty.
+        //! @param [in] group_id The group-id to match. Ignored if empty.
         //! @param [in] language The language to match. Ignored if empty.
         //! @return Index of the selected alternative rendition playlist which matches all non-empty criteria
         //! or NPOS if there is none. If all criteria are empty, select the first playlist.
         //!
         size_t selectAltPlayList(const UString& type = UString(),
                                  const UString& name = UString(),
-                                 const UString& groupId = UString(),
+                                 const UString& group_id = UString(),
                                  const UString& language = UString()) const;
 
         // Implementation of StringifyInterface
@@ -436,20 +436,20 @@ namespace ts::hls {
         int                _version = 1;         // Playlist format version.
         PlayListType       _type = PlayListType::UNKNOWN; // Playlist type.
         UString            _original {};         // Original URL or file name.
-        UString            _fileBase {};         // Base file path to resolve relative URI's (when original is a file name).
-        bool               _isURL = false;       // The base is an URL, not a directory name.
+        UString            _file_base {};        // Base file path to resolve relative URI's (when original is a file name).
+        bool               _is_url = false;      // The base is an URL, not a directory name.
         URL                _url {};              // Original URL.
-        cn::seconds        _targetDuration {};   // Segment target duration (media playlist).
-        size_t             _mediaSequence = 0;   // Sequence number of first segment (media playlist).
-        bool               _endList = false;     // End of list indicator (media playlist).
-        Time               _utcDownload {};      // UTC time of download.
-        Time               _utcTermination {};   // UTC time of termination (download + all segment durations).
+        cn::seconds        _target_duration {};  // Segment target duration (media playlist).
+        size_t             _media_sequence = 0;  // Sequence number of first segment (media playlist).
+        bool               _end_list = false;    // End of list indicator (media playlist).
+        Time               _utc_download {};     // UTC time of download.
+        Time               _utc_termination {};  // UTC time of termination (download + all segment durations).
         MediaSegmentQueue  _segments {};         // List of media segments (media playlist).
         MediaPlayListQueue _playlists {};        // List of media playlists (master playlist).
-        AltPlayListQueue   _altPlaylists {};     // List of alternative rendition media playlists (master playlist).
-        UStringList        _loadedContent {};    // Loaded text content (can be different from current content).
-        UString            _autoSaveDir {};      // If not empty, automatically save loaded playlist to this directory.
-        UStringList        _extraTags {};        // Additional tags which were manually added by the application.
+        AltPlayListQueue   _alt_playlists {};    // List of alternative rendition media playlists (master playlist).
+        UStringList        _loaded_content {};   // Loaded text content (can be different from current content).
+        UString            _auto_save_dir {};    // If not empty, automatically save loaded playlist to this directory.
+        UStringList        _extra_tags {};       // Additional tags which were manually added by the application.
 
         // Empty data to return.
         static const MediaSegment EmptySegment;

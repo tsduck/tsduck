@@ -360,43 +360,43 @@ bool ts::GitHubRelease::IsPlatformAsset(const UString& fileName)
     }
 
     if (os == SysInfo::WINDOWS) {
-        return fileName.endWith(u".exe", ts::CASE_INSENSITIVE) &&
-               ((arch == SysInfo::INTEL64 && fileName.contain(u"win64", ts::CASE_INSENSITIVE)) ||
-                (arch == SysInfo::INTEL32 && fileName.endWith(u".exe", ts::CASE_INSENSITIVE)));
+        return fileName.endsWith(u".exe", ts::CASE_INSENSITIVE) &&
+               ((arch == SysInfo::INTEL64 && fileName.contains(u"win64", ts::CASE_INSENSITIVE)) ||
+                (arch == SysInfo::INTEL32 && fileName.endsWith(u".exe", ts::CASE_INSENSITIVE)));
     }
     else if (os == SysInfo::MACOS) {
-        return fileName.endWith(u".dmg");
+        return fileName.endsWith(u".dmg");
     }
     else if (osFlavor == SysInfo::FEDORA) {
-        return fileName.contain(u".fc" + smv) &&
-               (fileName.endWith(u".noarch.rpm") ||
-                (arch == SysInfo::INTEL64 && fileName.endWith(u".x86_64.rpm")) ||
-                (arch == SysInfo::INTEL32 && (fileName.endWith(u".i386.rpm") || fileName.endWith(u".i686.rpm"))) ||
-                (arch == SysInfo::ARM64 && fileName.endWith(u".aarch64.rpm")));
+        return fileName.contains(u".fc" + smv) &&
+               (fileName.endsWith(u".noarch.rpm") ||
+                (arch == SysInfo::INTEL64 && fileName.endsWith(u".x86_64.rpm")) ||
+                (arch == SysInfo::INTEL32 && (fileName.endsWith(u".i386.rpm") || fileName.endsWith(u".i686.rpm"))) ||
+                (arch == SysInfo::ARM64 && fileName.endsWith(u".aarch64.rpm")));
     }
     else if (osFlavor == SysInfo::REDHAT) {
-        return fileName.contain(u".el" + smv) &&
-               (fileName.endWith(u".noarch.rpm") ||
-                (arch == SysInfo::INTEL64 && fileName.endWith(u".x86_64.rpm")) ||
-                (arch == SysInfo::INTEL32 && (fileName.endWith(u".i386.rpm") || fileName.endWith(u".i686.rpm"))) ||
-                (arch == SysInfo::ARM64 && fileName.endWith(u".aarch64.rpm")));
+        return fileName.contains(u".el" + smv) &&
+               (fileName.endsWith(u".noarch.rpm") ||
+                (arch == SysInfo::INTEL64 && fileName.endsWith(u".x86_64.rpm")) ||
+                (arch == SysInfo::INTEL32 && (fileName.endsWith(u".i386.rpm") || fileName.endsWith(u".i686.rpm"))) ||
+                (arch == SysInfo::ARM64 && fileName.endsWith(u".aarch64.rpm")));
     }
     else if (osFlavor == SysInfo::UBUNTU) {
-        return fileName.contain(u".ubuntu" + smv) &&
-               (fileName.endWith(u"_all.deb") ||
-                (arch == SysInfo::INTEL64 && fileName.endWith(u"_amd64.deb")) ||
-                (arch == SysInfo::INTEL32 && (fileName.endWith(u"_i386.deb") || fileName.endWith(u"_i686.deb"))) ||
-                (arch == SysInfo::ARM64 && (fileName.endWith(u"_arm64.deb") || fileName.endWith(u"_aarch64.deb"))));
+        return fileName.contains(u".ubuntu" + smv) &&
+               (fileName.endsWith(u"_all.deb") ||
+                (arch == SysInfo::INTEL64 && fileName.endsWith(u"_amd64.deb")) ||
+                (arch == SysInfo::INTEL32 && (fileName.endsWith(u"_i386.deb") || fileName.endsWith(u"_i686.deb"))) ||
+                (arch == SysInfo::ARM64 && (fileName.endsWith(u"_arm64.deb") || fileName.endsWith(u"_aarch64.deb"))));
     }
     else if (osFlavor == SysInfo::DEBIAN) {
-        return fileName.contain(u".debian" + smv) &&
-               (fileName.endWith(u"_all.deb") ||
-                (arch == SysInfo::INTEL64 && fileName.endWith(u"_amd64.deb")) ||
-                (arch == SysInfo::INTEL32 && (fileName.endWith(u"_i386.deb") || fileName.endWith(u"_i686.deb"))) ||
-                (arch == SysInfo::ARM64 && (fileName.endWith(u"_arm64.deb") || fileName.endWith(u"_aarch64.deb"))));
+        return fileName.contains(u".debian" + smv) &&
+               (fileName.endsWith(u"_all.deb") ||
+                (arch == SysInfo::INTEL64 && fileName.endsWith(u"_amd64.deb")) ||
+                (arch == SysInfo::INTEL32 && (fileName.endsWith(u"_i386.deb") || fileName.endsWith(u"_i686.deb"))) ||
+                (arch == SysInfo::ARM64 && (fileName.endsWith(u"_arm64.deb") || fileName.endsWith(u"_aarch64.deb"))));
     }
     else if (osFlavor == SysInfo::RASPBIAN && arch == SysInfo::ARM32) {
-        return fileName.contain(u".raspbian" + smv) && (fileName.endWith(u"_armhf.deb") || fileName.endWith(u"_all.deb"));
+        return fileName.contains(u".raspbian" + smv) && (fileName.endsWith(u"_armhf.deb") || fileName.endsWith(u"_all.deb"));
     }
     else {
         return false;  // unknown platform.

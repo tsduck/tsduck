@@ -482,27 +482,27 @@ namespace ts {
         //! General routine to convert from UTF-16 to UTF-8.
         //! Stop when the input buffer is empty or the output buffer is full, whichever comes first.
         //! Invalid input values are silently ignored and skipped.
-        //! @param [in,out] inStart Address of the input UTF-16 buffer to convert.
+        //! @param [in,out] in_start Address of the input UTF-16 buffer to convert.
         //! Updated upon return to point after the last converted character.
-        //! @param [in] inEnd Address after the end of the input UTF-16 buffer.
-        //! @param [in,out] outStart Address of the output UTF-8 buffer to fill.
+        //! @param [in] in_end Address after the end of the input UTF-16 buffer.
+        //! @param [in,out] out_start Address of the output UTF-8 buffer to fill.
         //! Updated upon return to point after the last converted character.
-        //! @param [in] outEnd Address after the end of the output UTF-8 buffer to fill.
+        //! @param [in] out_end Address after the end of the output UTF-8 buffer to fill.
         //!
-        static void ConvertUTF16ToUTF8(const UChar*& inStart, const UChar* inEnd, char*& outStart, char* outEnd);
+        static void ConvertUTF16ToUTF8(const UChar*& in_start, const UChar* in_end, char*& out_start, char* out_end);
 
         //!
         //! General routine to convert from UTF-8 to UTF-16.
         //! Stop when the input buffer is empty or the output buffer is full, whichever comes first.
         //! Invalid input values are silently ignored and skipped.
-        //! @param [in,out] inStart Address of the input UTF-8 buffer to convert.
+        //! @param [in,out] in_start Address of the input UTF-8 buffer to convert.
         //! Updated upon return to point after the last converted character.
-        //! @param [in] inEnd Address after the end of the input UTF-8 buffer.
-        //! @param [in,out] outStart Address of the output UTF-16 buffer to fill.
+        //! @param [in] in_end Address after the end of the input UTF-8 buffer.
+        //! @param [in,out] out_start Address of the output UTF-16 buffer to fill.
         //! Updated upon return to point after the last converted character.
-        //! @param [in] outEnd Address after the end of the output UTF-16 buffer to fill.
+        //! @param [in] out_end Address after the end of the output UTF-16 buffer to fill.
         //!
-        static void ConvertUTF8ToUTF16(const char*& inStart, const char* inEnd, UChar*& outStart, UChar* outEnd);
+        static void ConvertUTF8ToUTF16(const char*& in_start, const char* in_end, UChar*& out_start, UChar* out_end);
 
         //!
         //! Assign from a @c std::vector of 16-bit characters of any type.
@@ -682,22 +682,22 @@ namespace ts {
         //! Truncate this string to a given display width.
         //! Any combining diacritical character is not counted in display position.
         //! Similarly, any surrogate pair is considered as one single character.
-        //! @param [in] maxWidth Maximum display width, after which the string is truncated.
+        //! @param [in] max_width Maximum display width, after which the string is truncated.
         //! @param [in] direction Direction to move when counting width. When RIGHT_TO_LEFT, the
         //! width is counted from the end of the string and the beginning of the string is truncated.
         //!
-        void truncateWidth(size_type maxWidth, StringDirection direction = LEFT_TO_RIGHT);
+        void truncateWidth(size_type max_width, StringDirection direction = LEFT_TO_RIGHT);
 
         //!
         //! Return a copy of this string, truncated to a given display width.
         //! Any combining diacritical character is not counted in display position.
         //! Similarly, any surrogate pair is considered as one single character.
-        //! @param [in] maxWidth Maximum display width, after which the string is truncated.
+        //! @param [in] max_width Maximum display width, after which the string is truncated.
         //! @param [in] direction Direction to move when counting width. When RIGHT_TO_LEFT, the
         //! width is counted from the end of the string and the beginning of the string is truncated.
         //! @return A copy of the string, truncated to the given display width.
         //!
-        UString toTruncatedWidth(size_type maxWidth, StringDirection direction = LEFT_TO_RIGHT) const;
+        UString toTruncatedWidth(size_type max_width, StringDirection direction = LEFT_TO_RIGHT) const;
 
         //!
         //! Reverse the order of characters in the string.
@@ -709,10 +709,10 @@ namespace ts {
         //! This method is useful when the string has been used as an input buffer.
         //! @tparam INT An integer type.
         //! @param [in] length New size of the string. Ignored if negative or greater than the current string length.
-        //! @param [in] trimTrailingSpaces If true, also remove any trailing space.
+        //! @param [in] trim_trailing_spaces If true, also remove any trailing space.
         //!
         template <typename INT> requires std::integral<INT>
-        void trimLength(INT length, bool trimTrailingSpaces = true);
+        void trimLength(INT length, bool trim_trailing_spaces = true);
 
         //!
         //! Return a copy of the string where characters are reversed.
@@ -894,18 +894,18 @@ namespace ts {
         //! Check if the string starts with a specified prefix.
         //! @param [in] prefix A string prefix to check.
         //! @param [in] cs Indicate if the comparison is case-sensitive.
-        //! @param [in] skip_space If true, ignore initial spaces in this string.
+        //! @param [in] skip_spaces If true, ignore initial spaces in this string.
         //! @param [in] start Start index where to match the prefix.
         //! @return True if this string starts with @a prefix, false otherwise.
         //!
-        bool startWith(const UString& prefix, CaseSensitivity cs = CASE_SENSITIVE, bool skip_space = false, size_type start = 0) const;
+        bool startsWith(const UString& prefix, CaseSensitivity cs = CASE_SENSITIVE, bool skip_spaces = false, size_type start = 0) const;
 
         //!
         //! Check if a string contains a specified character.
         //! @param [in] c A character to check.
         //! @return True if this string contains @a c, false otherwise.
         //!
-        bool contain(UChar c) const;
+        bool contains(UChar c) const;
 
         //!
         //! Check if a string contains a specified substring.
@@ -913,17 +913,17 @@ namespace ts {
         //! @param [in] cs Indicate if the comparison is case-sensitive.
         //! @return True if this string contains @a substring, false otherwise.
         //!
-        bool contain(const UString& substring, CaseSensitivity cs = CASE_SENSITIVE) const;
+        bool contains(const UString& substring, CaseSensitivity cs = CASE_SENSITIVE) const;
 
         //!
         //! Check if a string ends with a specified suffix.
         //! @param [in] suffix A string suffix to check.
         //! @param [in] cs Indicate if the comparison is case-sensitive.
-        //! @param [in] skip_space If true, ignore trailing spaces in this string.
+        //! @param [in] skip_spaces If true, ignore trailing spaces in this string.
         //! @param [in] end Last logical character to check in the string. By default, use the end of string.
         //! @return True if this string ends with @a suffix, false otherwise.
         //!
-        bool endWith(const UString& suffix, CaseSensitivity cs = CASE_SENSITIVE, bool skip_space = false, size_type end = NPOS) const;
+        bool endsWith(const UString& suffix, CaseSensitivity cs = CASE_SENSITIVE, bool skip_spaces = false, size_type end = NPOS) const;
 
         //!
         //! Compute the number of similar leading characters in two strings.
@@ -946,14 +946,14 @@ namespace ts {
         //! @tparam CONTAINER A container class of @c UString as defined by the C++ Standard Template Library (STL).
         //! @param [out] container A container of @c UString which receives the segments of the splitted string.
         //! @param [in] separator The character which is used to separate the segments.
-        //! @param [in] trimSpaces If true (the default), each segment is trimmed, i.e. all leading and trailing space characters are removed.
-        //! @param [in] removeEmpty If true, empty segments are ignored
+        //! @param [in] trim_spaces If true (the default), each segment is trimmed, i.e. all leading and trailing space characters are removed.
+        //! @param [in] remove_empty If true, empty segments are ignored
         //!
         template <class CONTAINER>
-        void split(CONTAINER& container, UChar separator = COMMA, bool trimSpaces = true, bool removeEmpty = false) const
+        void split(CONTAINER& container, UChar separator = COMMA, bool trim_spaces = true, bool remove_empty = false) const
         {
             container.clear();
-            splitAppend(container, separator, trimSpaces, removeEmpty);
+            splitAppend(container, separator, trim_spaces, remove_empty);
         }
 
         //!
@@ -962,11 +962,11 @@ namespace ts {
         //! @param [in,out] container A container of @c UString which receives the segments of the splitted string.
         //! The strings are appended to the container without erasing previous content.
         //! @param [in] separator The character which is used to separate the segments.
-        //! @param [in] trimSpaces If true (the default), each segment is trimmed, i.e. all leading and trailing space characters are removed.
-        //! @param [in] removeEmpty If true, empty segments are ignored
+        //! @param [in] trim_spaces If true (the default), each segment is trimmed, i.e. all leading and trailing space characters are removed.
+        //! @param [in] remove_empty If true, empty segments are ignored
         //!
         template <class CONTAINER>
-        void splitAppend(CONTAINER& container, UChar separator = COMMA, bool trimSpaces = true, bool removeEmpty = false) const;
+        void splitAppend(CONTAINER& container, UChar separator = COMMA, bool trim_spaces = true, bool remove_empty = false) const;
 
         //!
         //! Split the string into shell-style arguments.
@@ -999,15 +999,15 @@ namespace ts {
         //! Split a string into segments which are identified by their starting / ending characters (respectively "[" and "]" by default).
         //! @tparam CONTAINER A container class of @c UString as defined by the C++ Standard Template Library (STL).
         //! @param [out] container A container of @c UString which receives the segments of the splitted string.
-        //! @param [in] startWith The character which is used to identify the start of a segment of @a input.
-        //! @param [in] endWith The character which is used to identify the end of a segment of @a input.
-        //! @param [in] trimSpaces If true (the default), each segment is trimmed, i.e. all leading and trailing space characters are removed.
+        //! @param [in] starts_with The character which is used to identify the start of a segment of @a input.
+        //! @param [in] ends_with The character which is used to identify the end of a segment of @a input.
+        //! @param [in] trim_spaces If true (the default), each segment is trimmed, i.e. all leading and trailing space characters are removed.
         //!
         template <class CONTAINER>
-        void splitBlocks(CONTAINER& container, UChar startWith = u'[', UChar endWith = u']', bool trimSpaces = true) const
+        void splitBlocks(CONTAINER& container, UChar starts_with = u'[', UChar ends_with = u']', bool trim_spaces = true) const
         {
             container.clear();
-            splitBlocksAppend(container, startWith, endWith, trimSpaces);
+            splitBlocksAppend(container, starts_with, ends_with, trim_spaces);
         }
 
         //!
@@ -1015,78 +1015,78 @@ namespace ts {
         //! @tparam CONTAINER A container class of @c UString as defined by the C++ Standard Template Library (STL).
         //! @param [in,out] container A container of @c UString which receives the segments of the splitted string.
         //! The strings are appended to the container without erasing previous content.
-        //! @param [in] startWith The character which is used to identify the start of a segment of @a input.
-        //! @param [in] endWith The character which is used to identify the end of a segment of @a input.
-        //! @param [in] trimSpaces If true (the default), each segment is trimmed, i.e. all leading and trailing space characters are removed.
+        //! @param [in] starts_with The character which is used to identify the start of a segment of @a input.
+        //! @param [in] ends_with The character which is used to identify the end of a segment of @a input.
+        //! @param [in] trim_spaces If true (the default), each segment is trimmed, i.e. all leading and trailing space characters are removed.
         //!
         template <class CONTAINER>
-        void splitBlocksAppend(CONTAINER& container, UChar startWith = u'[', UChar endWith = u']', bool trimSpaces = true) const;
+        void splitBlocksAppend(CONTAINER& container, UChar starts_with = u'[', UChar ends_with = u']', bool trim_spaces = true) const;
 
         //!
         //! Split a string into multiple lines which are not longer than a specified maximum width.
-        //! The splits occur on spaces or after any character in @a otherSeparators.
+        //! The splits occur on spaces or after any character in @a other_separators.
         //! @tparam CONTAINER A container class of @c UString as defined by the C++ Standard Template Library (STL).
         //! @param [out] container A container of @c UString which receives the lines of the splitted string.
-        //! @param [in] maxWidth Maximum width of each resulting line.
-        //! @param [in] otherSeparators A string containing all characters which
+        //! @param [in] max_width Maximum width of each resulting line.
+        //! @param [in] other_separators A string containing all characters which
         //! are acceptable as line break points (in addition to space characters
         //! which are always potential line break points).
-        //! @param [in] nextMargin A string which is prepended to all lines after the first one.
-        //! @param [in] forceSplit If true, longer lines without separators
+        //! @param [in] next_margin A string which is prepended to all lines after the first one.
+        //! @param [in] force_split If true, longer lines without separators
         //! are split at the maximum width (by default, longer lines without
-        //! separators are not split, resulting in lines longer than @a maxWidth).
+        //! separators are not split, resulting in lines longer than @a max_width).
         //!
         template <class CONTAINER>
         void splitLines(CONTAINER& container,
-                        size_type maxWidth,
-                        const UString& otherSeparators = UString(),
-                        const UString& nextMargin = UString(),
-                        bool forceSplit = false) const
+                        size_type max_width,
+                        const UString& other_separators = UString(),
+                        const UString& next_margin = UString(),
+                        bool force_split = false) const
         {
             container.clear();
-            splitLinesAppend(container, maxWidth, otherSeparators, nextMargin, forceSplit);
+            splitLinesAppend(container, max_width, other_separators, next_margin, force_split);
         }
 
         //!
         //! Split a string into multiple lines which are not longer than a specified maximum width.
-        //! The splits occur on spaces or after any character in @a otherSeparators.
+        //! The splits occur on spaces or after any character in @a other_separators.
         //! @tparam CONTAINER A container class of @c UString as defined by the C++ Standard Template Library (STL).
         //! @param [in,out] container A container of @c UString which receives the lines of the splitted string.
         //! The strings are appended to the container without erasing previous content.
-        //! @param [in] maxWidth Maximum width of each resulting line.
-        //! @param [in] otherSeparators A string containing all characters which
+        //! @param [in] max_width Maximum width of each resulting line.
+        //! @param [in] other_separators A string containing all characters which
         //! are acceptable as line break points (in addition to space characters
         //! which are always potential line break points).
-        //! @param [in] nextMargin A string which is prepended to all lines after the first one.
-        //! @param [in] forceSplit If true, longer lines without separators
+        //! @param [in] next_margin A string which is prepended to all lines after the first one.
+        //! @param [in] force_split If true, longer lines without separators
         //! are split at the maximum width (by default, longer lines without
-        //! separators are not split, resulting in lines longer than @a maxWidth).
+        //! separators are not split, resulting in lines longer than @a max_width).
         //!
         template <class CONTAINER>
         void splitLinesAppend(CONTAINER& container,
-                              size_type maxWidth,
-                              const UString& otherSeparators = UString(),
-                              const UString& nextMargin = UString(),
-                              bool forceSplit = false) const;
+                              size_type max_width,
+                              const UString& other_separators = UString(),
+                              const UString& next_margin = UString(),
+                              bool force_split = false) const;
 
         //!
         //! Split a string into multiple lines which are not longer than a specified maximum width.
-        //! The splits occur on spaces or after any character in @a otherSeparators.
-        //! @param [in] maxWidth Maximum width of each resulting line.
-        //! @param [in] otherSeparators A string containing all characters which
+        //! The splits occur on spaces or after any character in @a other_separators.
+        //! @param [in] max_width Maximum width of each resulting line.
+        //! @param [in] other_separators A string containing all characters which
         //! are acceptable as line break points (in addition to space characters
         //! which are always potential line break points).
-        //! @param [in] nextMargin A string which is prepended to all lines after the first one.
-        //! @param [in] forceSplit If true, longer lines without separators
+        //! @param [in] next_margin A string which is prepended to all lines after the first one.
+        //! @param [in] force_split If true, longer lines without separators
         //! are split at the maximum width (by default, longer lines without
-        //! separators are not split, resulting in lines longer than @a maxWidth).
+        //! separators are not split, resulting in lines longer than @a max_width).
         //! @param [in] lineSeparator The sequence of characters for line feed.
         //! @return The splitted string with embedded line separators.
         //!
-        UString toSplitLines(size_type maxWidth,
-                             const UString& otherSeparators = UString(),
-                             const UString& nextMargin = UString(),
-                             bool forceSplit = false,
+        UString toSplitLines(size_type max_width,
+                             const UString& other_separators = UString(),
+                             const UString& next_margin = UString(),
+                             bool force_split = false,
                              const UString lineSeparator = UString(1, LINE_FEED)) const;
 
         //!
@@ -1097,11 +1097,11 @@ namespace ts {
         //! @param [in] begin An iterator pointing to the first string.
         //! @param [in] end An iterator pointing @em after the last string.
         //! @param [in] separator A string to insert between all segments.
-        //! @param [in] removeEmpty If true, empty segments are ignored
+        //! @param [in] remove_empty If true, empty segments are ignored
         //! @return The big string containing all segments and separators.
         //!
         template <class ITERATOR>
-        static UString Join(ITERATOR begin, ITERATOR end, const UString& separator = UString(u", "), bool removeEmpty = false);
+        static UString Join(ITERATOR begin, ITERATOR end, const UString& separator = UString(u", "), bool remove_empty = false);
 
         //!
         //! Join a container of strings into one big string.
@@ -1109,13 +1109,13 @@ namespace ts {
         //! @tparam CONTAINER A container class of @c UString as defined by the C++ Standard Template Library (STL).
         //! @param [in] container A container of @c UString containing all strings to concatenate.
         //! @param [in] separator A string to insert between all segments.
-        //! @param [in] removeEmpty If true, empty segments are ignored
+        //! @param [in] remove_empty If true, empty segments are ignored
         //! @return The big string containing all segments and separators.
         //!
         template <class CONTAINER>
-        static UString Join(const CONTAINER& container, const UString& separator = UString(u", "), bool removeEmpty = false)
+        static UString Join(const CONTAINER& container, const UString& separator = UString(u", "), bool remove_empty = false)
         {
-            return Join(container.begin(), container.end(), separator, removeEmpty);
+            return Join(container.begin(), container.end(), separator, remove_empty);
         }
 
         //!
@@ -1127,9 +1127,9 @@ namespace ts {
         //! @param [in] truncate If true and this string is longer than @a width,
         //! it is truncated to @a width character. If false, this string is
         //! never truncated, possibly resulting in a string longer than @a width.
-        //! @param [in] spacesBeforePad Number of spaces before padding.
+        //! @param [in] spaces_before_pad Number of spaces before padding.
         //!
-        void justifyLeft(size_type width, UChar pad = SPACE, bool truncate = false, size_t spacesBeforePad = 0);
+        void justifyLeft(size_type width, UChar pad = SPACE, bool truncate = false, size_t spaces_before_pad = 0);
 
         //!
         //! Return a left-justified (padded and optionally truncated) string.
@@ -1140,10 +1140,10 @@ namespace ts {
         //! @param [in] truncate If true and this string is longer than @a width,
         //! it is truncated to @a width character. If false, this string is
         //! never truncated, possibly resulting in a string longer than @a width.
-        //! @param [in] spacesBeforePad Number of spaces before padding.
+        //! @param [in] spaces_before_pad Number of spaces before padding.
         //! @return The justified string.
         //!
-        UString toJustifiedLeft(size_type width, UChar pad = SPACE, bool truncate = false, size_t spacesBeforePad = 0) const;
+        UString toJustifiedLeft(size_type width, UChar pad = SPACE, bool truncate = false, size_t spaces_before_pad = 0) const;
 
         //!
         //! Right-justified (pad and optionally truncate) string.
@@ -1154,9 +1154,9 @@ namespace ts {
         //! @param [in] truncate If true and this string is longer than @a width,
         //! the beginning of @a str is truncated. If false, this string is
         //! never truncated, possibly resulting in a string longer than @a width.
-        //! @param [in] spacesAfterPad Number of spaces after padding.
+        //! @param [in] spaces_after_pad Number of spaces after padding.
         //!
-        void justifyRight(size_type width, UChar pad = SPACE, bool truncate = false, size_t spacesAfterPad = 0);
+        void justifyRight(size_type width, UChar pad = SPACE, bool truncate = false, size_t spaces_after_pad = 0);
 
         //!
         //! Return a right-justified (padded and optionally truncated) string.
@@ -1167,10 +1167,10 @@ namespace ts {
         //! @param [in] truncate If true and this string is longer than @a width,
         //! the beginning of @a str is truncated. If false, this string is
         //! never truncated, possibly resulting in a string longer than @a width.
-        //! @param [in] spacesAfterPad Number of spaces after padding.
+        //! @param [in] spaces_after_pad Number of spaces after padding.
         //! @return The justified string.
         //!
-        UString toJustifiedRight(size_type width, UChar pad = SPACE, bool truncate = false, size_t spacesAfterPad = 0) const;
+        UString toJustifiedRight(size_type width, UChar pad = SPACE, bool truncate = false, size_t spaces_after_pad = 0) const;
 
         //!
         //! Centered-justified (pad and optionally truncate) string.
@@ -1181,9 +1181,9 @@ namespace ts {
         //! @param [in] truncate If true and this string is longer than @a width,
         //! this string is truncated to @a width character. If false, this string is
         //! never truncated, possibly resulting in a string longer than @a width.
-        //! @param [in] spacesAroundPad Number of spaces around padding.
+        //! @param [in] spaces_around_pad Number of spaces around padding.
         //!
-        void justifyCentered(size_type width, UChar pad = SPACE, bool truncate = false, size_t spacesAroundPad = 0);
+        void justifyCentered(size_type width, UChar pad = SPACE, bool truncate = false, size_t spaces_around_pad = 0);
 
         //!
         //! Return a centered-justified (padded and optionally truncated) string.
@@ -1194,10 +1194,10 @@ namespace ts {
         //! @param [in] truncate If true and this string is longer than @a width,
         //! this string is truncated to @a width character. If false, this string is
         //! never truncated, possibly resulting in a string longer than @a width.
-        //! @param [in] spacesAroundPad Number of spaces around padding.
+        //! @param [in] spaces_around_pad Number of spaces around padding.
         //! @return The justified string.
         //!
-        UString toJustifiedCentered(size_type width, UChar pad = SPACE, bool truncate = false, size_t spacesAroundPad = 0) const;
+        UString toJustifiedCentered(size_type width, UChar pad = SPACE, bool truncate = false, size_t spaces_around_pad = 0) const;
 
         //!
         //! Justify string, pad in the middle.
@@ -1207,9 +1207,9 @@ namespace ts {
         //! @param [in] right The right part of the string to justify. This string is used as left part.
         //! @param [in] width The required width of the result string.
         //! @param [in] pad The character to insert between the two parts.
-        //! @param [in] spacesAroundPad Number of spaces around padding.
+        //! @param [in] spaces_around_pad Number of spaces around padding.
         //!
-        void justify(const UString& right, size_type width, UChar pad = SPACE, size_t spacesAroundPad = 0);
+        void justify(const UString& right, size_type width, UChar pad = SPACE, size_t spaces_around_pad = 0);
 
         //!
         //! Return a justified string, pad in the middle.
@@ -1219,10 +1219,10 @@ namespace ts {
         //! @param [in] right The right part of the string to justify. This string is used as left part.
         //! @param [in] width The required width of the result string.
         //! @param [in] pad The character to insert between the two parts.
-        //! @param [in] spacesAroundPad Number of spaces around padding.
+        //! @param [in] spaces_around_pad Number of spaces around padding.
         //! @return The justified string.
         //!
-        UString toJustified(const UString& right, size_type width, UChar pad = SPACE, size_t spacesAroundPad = 0) const;
+        UString toJustified(const UString& right, size_type width, UChar pad = SPACE, size_t spaces_around_pad = 0) const;
 
         //--------------------------------------------------------------------
         // Format transformations
@@ -1240,62 +1240,62 @@ namespace ts {
 
         //!
         //! Replace the string with a "quoted" version of it.
-        //! If this string contains any space character or any character from @a specialCharacters,
-        //! then the string is replaced with a value surrounded by the @a quoteCharacter and
+        //! If this string contains any space character or any character from @a special_characters,
+        //! then the string is replaced with a value surrounded by the @a quote_character and
         //! all special characters are properly escaped using a backslash.
-        //! @param [in] quoteCharacter The character to be used as quote.
-        //! @param [in] specialCharacters The list of special characters.
-        //! The @a quoteCharacter is implicitly part of @a specialCharacters.
-        //! @param [in] forceQuote If true, force quote, even if the content does not require it.
+        //! @param [in] quote_character The character to be used as quote.
+        //! @param [in] special_characters The list of special characters.
+        //! The @a quote_character is implicitly part of @a special_characters.
+        //! @param [in] force_quote If true, force quote, even if the content does not require it.
         //!
-        void quoted(UChar quoteCharacter = u'\'', const UString& specialCharacters = DEFAULT_SPECIAL_CHARACTERS, bool forceQuote = false);
+        void quoted(UChar quote_character = u'\'', const UString& special_characters = DEFAULT_SPECIAL_CHARACTERS, bool force_quote = false);
 
         //!
         //! Return a "quoted" version of this string.
-        //! @param [in] quoteCharacter The character to be used as quote.
-        //! @param [in] specialCharacters The list of special characters.
-        //! The @a quoteCharacter is implicitly part of @a specialCharacters.
-        //! @param [in] forceQuote If true, force quote, even if the content does not require it.
+        //! @param [in] quote_character The character to be used as quote.
+        //! @param [in] special_characters The list of special characters.
+        //! The @a quote_character is implicitly part of @a special_characters.
+        //! @param [in] force_quote If true, force quote, even if the content does not require it.
         //! @return A "quoted" version of this string.
         //! @see quoted()
         //!
-        UString toQuoted(UChar quoteCharacter = u'\'', const UString& specialCharacters = DEFAULT_SPECIAL_CHARACTERS, bool forceQuote = false) const;
+        UString toQuoted(UChar quote_character = u'\'', const UString& special_characters = DEFAULT_SPECIAL_CHARACTERS, bool force_quote = false) const;
 
         //!
         //! Convert a container of strings into one big string where all elements are properly quoted when necessary.
         //! This string object receives the final line with quoted elements.
         //! @tparam CONTAINER A container class of @c UString as defined by the C++ Standard Template Library (STL).
         //! @param [in] container A container of @c UString containing all elements.
-        //! @param [in] quoteCharacter The character to be used as quote.
-        //! @param [in] specialCharacters The list of special characters.
-        //! The @a quoteCharacter is implicitly part of @a specialCharacters.
+        //! @param [in] quote_character The character to be used as quote.
+        //! @param [in] special_characters The list of special characters.
+        //! The @a quote_character is implicitly part of @a special_characters.
         //!
         template <class CONTAINER>
-        void quotedLine(const CONTAINER& container, UChar quoteCharacter = u'\'', const UString& specialCharacters = DEFAULT_SPECIAL_CHARACTERS);
+        void quotedLine(const CONTAINER& container, UChar quote_character = u'\'', const UString& special_characters = DEFAULT_SPECIAL_CHARACTERS);
 
         //!
         //! Convert a container of strings into one big string where all elements are properly quoted when necessary.
         //! @tparam CONTAINER A container class of @c UString as defined by the C++ Standard Template Library (STL).
         //! @param [in] container A container of @c UString containing all elements.
-        //! @param [in] quoteCharacter The character to be used as quote.
-        //! @param [in] specialCharacters The list of special characters.
-        //! The @a quoteCharacter is implicitly part of @a specialCharacters.
+        //! @param [in] quote_character The character to be used as quote.
+        //! @param [in] special_characters The list of special characters.
+        //! The @a quote_character is implicitly part of @a special_characters.
         //! @return The final line with quoted elements.
         //!
         template <class CONTAINER>
-        static UString ToQuotedLine(const CONTAINER& container, UChar quoteCharacter = u'\'', const UString& specialCharacters = DEFAULT_SPECIAL_CHARACTERS);
+        static UString ToQuotedLine(const CONTAINER& container, UChar quote_character = u'\'', const UString& special_characters = DEFAULT_SPECIAL_CHARACTERS);
 
         //!
         //! Split this string in space-separated possibly-quoted elements.
         //! @tparam CONTAINER A container class of @c UString as defined by the C++ Standard Template Library (STL).
         //! @param [out] container A container of @c UString receiving all unquoted elements.
-        //! @param [in] quoteCharacters All characters which are recognized as quote at the beginning of an element.
-        //! @param [in] specialCharacters The list of special characters.
-        //! The @a quoteCharacter is implicitly part of @a specialCharacters.
+        //! @param [in] quote_characters All characters which are recognized as quote at the beginning of an element.
+        //! @param [in] special_characters The list of special characters.
+        //! The @a quote_character is implicitly part of @a special_characters.
         //! @see quoted()
         //!
         template <class CONTAINER>
-        void fromQuotedLine(CONTAINER& container, const UString& quoteCharacters = DEFAULT_QUOTE_CHARACTERS, const UString& specialCharacters = DEFAULT_SPECIAL_CHARACTERS) const;
+        void fromQuotedLine(CONTAINER& container, const UString& quote_characters = DEFAULT_QUOTE_CHARACTERS, const UString& special_characters = DEFAULT_SPECIAL_CHARACTERS) const;
 
         //!
         //! Convert the string into a suitable HTML representation.
@@ -1403,10 +1403,10 @@ namespace ts {
         //! Format a human-readable size using MB, kB or B as appropriate.
         //! @param [in] value A size value in basic units. This is a signed value.
         //! @param [in] units A string for the units. The default is "B" (for bytes).
-        //! @param [in] forceSign If true, use a '+' sign for positive value.
+        //! @param [in] force_sign If true, use a '+' sign for positive value.
         //! @return A human-readable representation of the size value.
         //!
-        static UString HumanSize(int64_t value, const UString& units = u"B", bool forceSign = false);
+        static UString HumanSize(int64_t value, const UString& units = u"B", bool force_sign = false);
 
         //!
         //! Format a percentage string.
@@ -1504,13 +1504,13 @@ namespace ts {
 
         //!
         //! Save this string into a file, in UTF-8 format.
-        //! @param [in] fileName The name of the text file where to save this string.
+        //! @param [in] file_name The name of the text file where to save this string.
         //! @param [in] append If true, append this string at the end of the file.
         //! If false (the default), overwrite the file if it already existed.
-        //! @param [in] enforceLastLineFeed If true and this string does not end with a line feed, force a final line feed.
+        //! @param [in] enforce_last_line_feed If true and this string does not end with a line feed, force a final line feed.
         //! @return True on success, false on error (mostly file errors).
         //!
-        bool save(const fs::path& fileName, bool append = false, bool enforceLastLineFeed = false) const;
+        bool save(const fs::path& file_name, bool append = false, bool enforce_last_line_feed = false) const;
 
         //!
         //! Save strings from a container into a file, in UTF-8 format, one per line.
@@ -1518,25 +1518,25 @@ namespace ts {
         //! @tparam ITERATOR An iterator class over UString as defined by the C++ Standard Template Library (STL).
         //! @param [in] begin An iterator pointing to the first string.
         //! @param [in] end An iterator pointing @em after the last string.
-        //! @param [in] fileName The name of the text file where to save the strings.
+        //! @param [in] file_name The name of the text file where to save the strings.
         //! @param [in] append If true, append the strings at the end of the file.
         //! If false (the default), overwrite the file if it already existed.
         //! @return True on success, false on error (mostly file errors).
         //!
         template <class ITERATOR>
-        static bool Save(ITERATOR begin, ITERATOR end, const fs::path& fileName, bool append = false);
+        static bool Save(ITERATOR begin, ITERATOR end, const fs::path& file_name, bool append = false);
 
         //!
         //! Save strings from a container into a file, in UTF-8 format, one per line.
         //! @tparam CONTAINER A container class of UString as defined by the C++ Standard Template Library (STL).
         //! @param [in] container A container of UString containing all strings to save.
-        //! @param [in] fileName The name of the text file where to save the strings.
+        //! @param [in] file_name The name of the text file where to save the strings.
         //! @param [in] append If true, append the strings at the end of the file.
         //! If false (the default), overwrite the file if it already existed.
         //! @return True on success, false on error (mostly file errors).
         //!
         template <class CONTAINER>
-        static bool Save(const CONTAINER& container, const fs::path& fileName, bool append = false);
+        static bool Save(const CONTAINER& container, const fs::path& file_name, bool append = false);
 
         //!
         //! Save strings from a container into a stream, in UTF-8 format, one per line.
@@ -1564,22 +1564,22 @@ namespace ts {
         //! Load all lines of a text file in UTF-8 format as UString's into a container.
         //! @tparam CONTAINER A container class of UString as defined by the C++ Standard Template Library (STL).
         //! @param [out] container A container of UString receiving all lines of the file. Each line of the text file is a separate string.
-        //! @param [in] fileName The name of the text file from where to load the strings.
+        //! @param [in] file_name The name of the text file from where to load the strings.
         //! @return True on success, false on error (mostly file errors).
         //!
         template <class CONTAINER>
-        static bool Load(CONTAINER& container, const fs::path& fileName);
+        static bool Load(CONTAINER& container, const fs::path& file_name);
 
         //!
         //! Load all lines of a text file in UTF-8 format as UString's and append them in a container.
         //! @tparam CONTAINER A container class of UString as defined by the C++ Standard Template Library (STL).
         //! @param [in,out] container A container of UString receiving all lines of the file. Each line of the text file is a separate string.
-        //! @param [in] fileName The name of the text file from where to load the strings.
+        //! @param [in] file_name The name of the text file from where to load the strings.
         //! Each line of the text file is inserted as a separate string.
         //! @return True on success, false on error (mostly file errors).
         //!
         template <class CONTAINER>
-        static bool LoadAppend(CONTAINER& container, const fs::path& fileName);
+        static bool LoadAppend(CONTAINER& container, const fs::path& file_name);
 
         //!
         //! Load all lines of a text file in UTF-8 format as UString's into a container.
@@ -1652,27 +1652,27 @@ namespace ts {
         //! The toInteger function decodes integer values of this type.
         //! @param [out] value The returned decoded value. On error (invalid string), @a value
         //! contains what could be decoded up to the first invalid character.
-        //! @param [in] thousandSeparators A string of characters which are interpreted as thousands
-        //! separators and are ignored. <i>Any character</i> from the @a thousandSeparators string
+        //! @param [in] thousand_separators A string of characters which are interpreted as thousands
+        //! separators and are ignored. <i>Any character</i> from the @a thousand_separators string
         //! is interpreted as a separator. Note that this implies that the optional thousands separators
         //! may have one character only.
         //! @param [in] decimals Reference number of decimal digits. When @a decimals is greater than
         //! zero, the result is automatically adjusted by the corresponding power of ten. For instance,
         //! when @a decimals is 3, u"12" returns 12000, u"12.34" returns 12340 and "12.345678" returns 12345.
         //! All extra decimals are accepted but ignored.
-        //! @param [in] decimalSeparators A string of characters which are interpreted as decimal point.
+        //! @param [in] decimal_separators A string of characters which are interpreted as decimal point.
         //! A decimal point is allowed only in base 10.
-        //! @param [in] minValue minimum allowed value for the decoded integer.
-        //! @param [in] maxValue maximum allowed value for the decoded integer.
+        //! @param [in] min_value minimum allowed value for the decoded integer.
+        //! @param [in] max_value maximum allowed value for the decoded integer.
         //! @return True on success, false on error (invalid string).
         //!
         template <typename INT> requires std::integral<INT>
         bool toInteger(INT& value,
-                       const UString& thousandSeparators = UString(),
+                       const UString& thousand_separators = UString(),
                        size_type decimals = 0,
-                       const UString& decimalSeparators = u".",
-                       INT minValue = std::numeric_limits<INT>::min(),
-                       INT maxValue = std::numeric_limits<INT>::max()) const;
+                       const UString& decimal_separators = u".",
+                       INT min_value = std::numeric_limits<INT>::min(),
+                       INT max_value = std::numeric_limits<INT>::max()) const;
 
         //!
         //! Convert a string containing a list of integers into a container of integers.
@@ -1686,8 +1686,8 @@ namespace ts {
         //! @param [out] container The returned decoded values. The previous content of the container is discarded.
         //! The integer values are added in the container in the order of the decoded string.
         //! On error (invalid string), @a container contains what could be decoded up to the first invalid character.
-        //! @param [in] thousandSeparators A string of characters which are interpreted as thousands
-        //! separators and are ignored. <i>Any character</i> from the @a thousandSeparators string
+        //! @param [in] thousand_separators A string of characters which are interpreted as thousands
+        //! separators and are ignored. <i>Any character</i> from the @a thousand_separators string
         //! is interpreted as a separator. Note that this implies that the optional thousands separators
         //! may have one character only.
         //! @param [in] listSeparators A string of characters which are interpreted as list separators.
@@ -1698,20 +1698,20 @@ namespace ts {
         //! zero, the result is automatically adjusted by the corresponding power of ten. For instance,
         //! when @a decimals is 3, u"12" returns 12000, u"12.34" returns 12340 and "12.345678" returns 12345.
         //! All extra decimals are accepted but ignored.
-        //! @param [in] decimalSeparators A string of characters which are interpreted as decimal point.
+        //! @param [in] decimal_separators A string of characters which are interpreted as decimal point.
         //! A decimal point is allowed only in base 10.
-        //! @param [in] minValue minimum allowed value for the decoded integers.
-        //! @param [in] maxValue maximum allowed value for the decoded integers.
+        //! @param [in] min_value minimum allowed value for the decoded integers.
+        //! @param [in] max_value maximum allowed value for the decoded integers.
         //! @return True on success, false on error (invalid string).
         //!
         template <class CONTAINER> requires std::integral<typename CONTAINER::value_type>
         bool toIntegers(CONTAINER& container,
-                        const UString& thousandSeparators = UString(),
+                        const UString& thousand_separators = UString(),
                         const UString& listSeparators = UString(u",; "),
                         size_type decimals = 0,
-                        const UString& decimalSeparators = UString(u"."),
-                        typename CONTAINER::value_type minValue = std::numeric_limits<typename CONTAINER::value_type>::min(),
-                        typename CONTAINER::value_type maxValue = std::numeric_limits<typename CONTAINER::value_type>::max()) const;
+                        const UString& decimal_separators = UString(u"."),
+                        typename CONTAINER::value_type min_value = std::numeric_limits<typename CONTAINER::value_type>::min(),
+                        typename CONTAINER::value_type max_value = std::numeric_limits<typename CONTAINER::value_type>::max()) const;
 
         //!
         //! Convert a string into a floating-point.
@@ -1721,14 +1721,14 @@ namespace ts {
         //! @tparam FLT A floating-point type.
         //! The toFloat() function decodes floating-point values of this type.
         //! @param [out] value The returned decoded value.
-        //! @param [in] minValue Minimum allowed value for the decoded value.
-        //! @param [in] maxValue Maximum allowed value for the decoded value.
+        //! @param [in] min_value Minimum allowed value for the decoded value.
+        //! @param [in] max_value Maximum allowed value for the decoded value.
         //! @return True on success, false on error (invalid string).
         //!
         template <typename FLT> requires std::floating_point<FLT>
         bool toFloat(FLT& value,
-                     FLT minValue = std::numeric_limits<FLT>::lowest(),
-                     FLT maxValue = std::numeric_limits<FLT>::max()) const;
+                     FLT min_value = std::numeric_limits<FLT>::lowest(),
+                     FLT max_value = std::numeric_limits<FLT>::max()) const;
 
         //!
         //! Format a string containing a decimal value.
@@ -1820,19 +1820,19 @@ namespace ts {
         //! is interpreted in units of the temaplte std::chrono::duration type.
         //! @param [out] value The returned decoded value. On error (invalid string), @a value
         //! contains what could be decoded up to the first invalid character.
-        //! @param [in] thousandSeparators A string of characters which are interpreted as thousands
-        //! separators and are ignored. <i>Any character</i> from the @a thousandSeparators string
+        //! @param [in] thousand_separators A string of characters which are interpreted as thousands
+        //! separators and are ignored. <i>Any character</i> from the @a thousand_separators string
         //! is interpreted as a separator. Note that this implies that the optional thousands separators
         //! may have one character only.
-        //! @param [in] minValue minimum allowed value for the decoded value.
-        //! @param [in] maxValue maximum allowed value for the decoded value.
+        //! @param [in] min_value minimum allowed value for the decoded value.
+        //! @param [in] max_value maximum allowed value for the decoded value.
         //! @return True on success, false on error (invalid string).
         //!
         template <class Rep, class Period>
         bool toChrono(cn::duration<Rep, Period>& value,
-                      const UString& thousandSeparators = UString(),
-                      const cn::duration<Rep, Period>& minValue = cn::duration<Rep, Period>::min(),
-                      const cn::duration<Rep, Period>& maxValue = cn::duration<Rep, Period>::max()) const;
+                      const UString& thousand_separators = UString(),
+                      const cn::duration<Rep, Period>& min_value = cn::duration<Rep, Period>::min(),
+                      const cn::duration<Rep, Period>& max_value = cn::duration<Rep, Period>::max()) const;
 
         //!
         //! Format a string containing a std::chrono::duration value, with units.
@@ -2485,10 +2485,10 @@ namespace ts {
         // Internal helpers for toInteger(), signed and unsigned versions.
         // Work on trimmed strings, with leading '+' skipped.
         template<typename INT> requires std::unsigned_integral<INT>
-        static bool ToIntegerHelper(const UChar* start, const UChar* end, INT& value, const UString& thousandSeparators, size_type decimals, const UString& decimalSeparators);
+        static bool ToIntegerHelper(const UChar* start, const UChar* end, INT& value, const UString& thousand_separators, size_type decimals, const UString& decimal_separators);
 
         template<typename INT> requires std::signed_integral<INT>
-        static bool ToIntegerHelper(const UChar* start, const UChar* end, INT& value, const UString& thousandSeparators, size_type decimals, const UString& decimalSeparators);
+        static bool ToIntegerHelper(const UChar* start, const UChar* end, INT& value, const UString& thousand_separators, size_type decimals, const UString& decimal_separators);
 
         // Internal helpers for Decimal(), signed and unsigned versions.
         // Produce unpadded strings.
@@ -2648,7 +2648,7 @@ TSDUCKDLL std::ostream& operator<<(std::ostream& strm, const ts::UChar* str);
 //! @param [in] c A character.
 //! @return A reference to the @a strm object.
 //!
-TSDUCKDLL std::ostream& operator<<(std::ostream& strm, const ts::UChar c);
+TSDUCKDLL std::ostream& operator<<(std::ostream& strm, ts::UChar c);
 
 //!
 //! Output operator for stringifiable objects on standard text streams.
@@ -2870,7 +2870,7 @@ ts::UString::UString(const std::array<CHARTYPE, SIZE>& arr, const allocator_type
 //----------------------------------------------------------------------------
 
 template <class CONTAINER>
-void ts::UString::splitAppend(CONTAINER& container, UChar separator, bool trimSpaces, bool removeEmpty) const
+void ts::UString::splitAppend(CONTAINER& container, UChar separator, bool trim_spaces, bool remove_empty) const
 {
     const UChar* sep = nullptr;
     const UChar* input = data();
@@ -2882,10 +2882,10 @@ void ts::UString::splitAppend(CONTAINER& container, UChar separator, bool trimSp
         }
         // Extract segment
         UString segment(input, sep - input);
-        if (trimSpaces) {
+        if (trim_spaces) {
             segment.trim();
         }
-        if (!removeEmpty || !segment.empty()) {
+        if (!remove_empty || !segment.empty()) {
             container.push_back(segment);
         }
         // Move to beginning of next segment
@@ -2947,7 +2947,7 @@ void ts::UString::splitShellStyleAppend(CONTAINER& container) const
 //----------------------------------------------------------------------------
 
 template <class CONTAINER>
-void ts::UString::splitBlocksAppend(CONTAINER& container, UChar startWith, UChar endWith, bool trimSpaces) const
+void ts::UString::splitBlocksAppend(CONTAINER& container, UChar starts_with, UChar ends_with, bool trim_spaces) const
 {
     const UChar *sep = nullptr;
     const UChar* input = c_str();
@@ -2955,18 +2955,18 @@ void ts::UString::splitBlocksAppend(CONTAINER& container, UChar startWith, UChar
     do {
         int blocksStillOpen = 0;
         // Locate next block-opening character
-        while (*input != startWith && *input != 0) {
+        while (*input != starts_with && *input != 0) {
             // Input now points to the first block opening character
             ++input;
         }
 
         // Locate the next block-ending character corresponding to the considered block
         for (sep = input; *sep != 0; ++sep) {
-            if (*sep == startWith) {
+            if (*sep == starts_with) {
                 ++blocksStillOpen;
                 continue;
             }
-            if (*sep == endWith) {
+            if (*sep == ends_with) {
                 --blocksStillOpen;
                 if (blocksStillOpen == 0) {
                     break;
@@ -2977,7 +2977,7 @@ void ts::UString::splitBlocksAppend(CONTAINER& container, UChar startWith, UChar
         // Extract segment
         UString segment(input, sep - input + (*sep == 0 ? 0 : 1));
         // trim spaces if needed
-        if (trimSpaces) {
+        if (trim_spaces) {
             segment.trim();
         }
         container.push_back(segment);
@@ -2992,10 +2992,10 @@ void ts::UString::splitBlocksAppend(CONTAINER& container, UChar startWith, UChar
 //----------------------------------------------------------------------------
 
 template <class CONTAINER>
-void ts::UString::splitLinesAppend(CONTAINER& lines, size_t maxWidth, const UString& otherSeparators, const UString& nextMargin, bool forceSplit) const
+void ts::UString::splitLinesAppend(CONTAINER& lines, size_t max_width, const UString& other_separators, const UString& next_margin, bool force_split) const
 {
     // If line smaller than max size or next margin too wide, return one line
-    if (length() <= maxWidth || nextMargin.length() >= maxWidth) {
+    if (length() <= max_width || next_margin.length() >= max_width) {
         lines.push_back(*this);
         return;
     }
@@ -3008,18 +3008,18 @@ void ts::UString::splitLinesAppend(CONTAINER& lines, size_t maxWidth, const UStr
     // Cut lines
     while (cur < length()) {
         // If @cur is a space or if the previous character is a possible separator, we may cut at cur.
-        if (IsSpace(at(cur)) || (cur > start && otherSeparators.find(at(cur-1)) != NPOS)) {
+        if (IsSpace(at(cur)) || (cur > start && other_separators.find(at(cur-1)) != NPOS)) {
             // Possible end of line here
             eol = cur;
         }
         // Determine if we need to cut here.
         bool cut = at(cur) == LINE_FEED;
-        if (!cut && marginLength + cur - start >= maxWidth) { // Reached max width
+        if (!cut && marginLength + cur - start >= max_width) { // Reached max width
             if (eol > start) {
                 // Found a previous possible end-of-line
                 cut = true;
             }
-            else if (forceSplit) {
+            else if (force_split) {
                 // No previous possible end-of-line but force cut
                 eol = cur;
                 cut = true;
@@ -3030,13 +3030,13 @@ void ts::UString::splitLinesAppend(CONTAINER& lines, size_t maxWidth, const UStr
             // Add current line.
             UString line;
             if (marginLength > 0) {
-                line.append(nextMargin);
+                line.append(next_margin);
             }
             line.append(substr(start, eol - start));
             line.trim(false, true); // trim trailing spaces
             lines.push_back(line);
             // Start new line, skip leading spaces
-            marginLength = nextMargin.length();
+            marginLength = next_margin.length();
             start = eol < length() && at(eol) == LINE_FEED ? eol + 1 : eol;
             while (start < length() && IsSpace(at(start)) && at(start) != LINE_FEED) {
                 start++;
@@ -3050,7 +3050,7 @@ void ts::UString::splitLinesAppend(CONTAINER& lines, size_t maxWidth, const UStr
 
     // Rest of string on last line
     if (start < length()) {
-        lines.push_back(nextMargin + substr(start));
+        lines.push_back(next_margin + substr(start));
     }
 }
 
@@ -3060,11 +3060,11 @@ void ts::UString::splitLinesAppend(CONTAINER& lines, size_t maxWidth, const UStr
 //----------------------------------------------------------------------------
 
 template <class ITERATOR>
-ts::UString ts::UString::Join(ITERATOR begin, ITERATOR end, const UString& separator, bool removeEmpty)
+ts::UString ts::UString::Join(ITERATOR begin, ITERATOR end, const UString& separator, bool remove_empty)
 {
     UString res;
     while (begin != end) {
-        if (!removeEmpty || !begin->empty()) {
+        if (!remove_empty || !begin->empty()) {
             if (!res.empty()) {
                 res.append(separator);
             }
@@ -3112,9 +3112,9 @@ typename CONTAINER::const_iterator ts::UString::findSimilar(const CONTAINER& con
 //----------------------------------------------------------------------------
 
 template <class ITERATOR>
-bool ts::UString::Save(ITERATOR begin, ITERATOR end, const fs::path& fileName, bool append)
+bool ts::UString::Save(ITERATOR begin, ITERATOR end, const fs::path& file_name, bool append)
 {
-    std::ofstream file(fileName, append ? (std::ios::out | std::ios::app) : std::ios::out);
+    std::ofstream file(file_name, append ? (std::ios::out | std::ios::app) : std::ios::out);
     Save(begin, end, file);
     file.close();
     return !file.fail();
@@ -3137,9 +3137,9 @@ bool ts::UString::Save(const CONTAINER& container, std::ostream& strm)
 }
 
 template <class CONTAINER>
-bool ts::UString::Save(const CONTAINER& container, const fs::path& fileName, bool append)
+bool ts::UString::Save(const CONTAINER& container, const fs::path& file_name, bool append)
 {
-    return Save(container.begin(), container.end(), fileName, append);
+    return Save(container.begin(), container.end(), file_name, append);
 }
 
 
@@ -3171,17 +3171,17 @@ bool ts::UString::Load(CONTAINER& container, std::istream& strm)
 }
 
 template <class CONTAINER>
-bool ts::UString::LoadAppend(CONTAINER& container, const fs::path& fileName)
+bool ts::UString::LoadAppend(CONTAINER& container, const fs::path& file_name)
 {
-    std::ifstream file(fileName);
+    std::ifstream file(file_name);
     return LoadAppend(container, file);
 }
 
 template <class CONTAINER>
-bool ts::UString::Load(CONTAINER& container, const fs::path& fileName)
+bool ts::UString::Load(CONTAINER& container, const fs::path& file_name)
 {
     container.clear();
-    return LoadAppend(container, fileName);
+    return LoadAppend(container, file_name);
 }
 
 
@@ -3190,7 +3190,7 @@ bool ts::UString::Load(CONTAINER& container, const fs::path& fileName)
 //----------------------------------------------------------------------------
 
 template <typename INT> requires std::integral<INT>
-bool ts::UString::toInteger(INT& value, const UString& thousandSeparators, size_type decimals, const UString& decimalSeparators, INT minValue, INT maxValue) const
+bool ts::UString::toInteger(INT& value, const UString& thousand_separators, size_type decimals, const UString& decimal_separators, INT min_value, INT max_value) const
 {
     // Locate actual begin and end of integer value. Skip leading redundant '+' sign.
     const UChar* start = data();
@@ -3203,7 +3203,7 @@ bool ts::UString::toInteger(INT& value, const UString& thousandSeparators, size_
     }
 
     // Decode the value. Use unsigned or signed version.
-    return ToIntegerHelper(start, end, value, thousandSeparators, decimals, decimalSeparators) && value >= minValue && value <= maxValue;
+    return ToIntegerHelper(start, end, value, thousand_separators, decimals, decimal_separators) && value >= min_value && value <= max_value;
 }
 
 
@@ -3212,7 +3212,7 @@ bool ts::UString::toInteger(INT& value, const UString& thousandSeparators, size_
 //----------------------------------------------------------------------------
 
 template<typename INT> requires std::unsigned_integral<INT>
-bool ts::UString::ToIntegerHelper(const UChar* start, const UChar* end, INT& value, const UString& thousandSeparators, size_type decimals, const UString& decimalSeparators)
+bool ts::UString::ToIntegerHelper(const UChar* start, const UChar* end, INT& value, const UString& thousand_separators, size_type decimals, const UString& decimal_separators)
 {
     // Initial value, up to decode error.
     value = static_cast<INT>(0);
@@ -3246,7 +3246,7 @@ bool ts::UString::ToIntegerHelper(const UChar* start, const UChar* end, INT& val
                 ++dec_count;
             }
         }
-        else if (decimalSeparators.contain(*start)) {
+        else if (decimal_separators.contains(*start)) {
             // Found a decimal point. Only one is allowed.
             // A decimal point is allowed only in base 10.
             // By default (decimal == 0), no decimal point is allowed.
@@ -3255,7 +3255,7 @@ bool ts::UString::ToIntegerHelper(const UChar* start, const UChar* end, INT& val
             }
             dec_found = true;
         }
-        else if (!thousandSeparators.contain(*start)) {
+        else if (!thousand_separators.contains(*start)) {
             // Character is not a possible thousands separator to ignore.
             return false;
         }
@@ -3277,7 +3277,7 @@ bool ts::UString::ToIntegerHelper(const UChar* start, const UChar* end, INT& val
 //----------------------------------------------------------------------------
 
 template<typename INT> requires std::signed_integral<INT>
-bool ts::UString::ToIntegerHelper(const UChar* start, const UChar* end, INT& value, const UString& thousandSeparators, size_type decimals, const UString& decimalSeparators)
+bool ts::UString::ToIntegerHelper(const UChar* start, const UChar* end, INT& value, const UString& thousand_separators, size_type decimals, const UString& decimal_separators)
 {
     // Skip optional minus sign.
     bool negative = false;
@@ -3288,7 +3288,7 @@ bool ts::UString::ToIntegerHelper(const UChar* start, const UChar* end, INT& val
 
     // Decode the string as an unsigned integer.
     typename std::make_unsigned<INT>::type uvalue = 0;
-    const bool ok = ToIntegerHelper(start, end, uvalue, thousandSeparators, decimals, decimalSeparators);
+    const bool ok = ToIntegerHelper(start, end, uvalue, thousand_separators, decimals, decimal_separators);
 
     // Convert the unsigned integer as signed integer with the appropriate sign.
     value = static_cast<INT>(uvalue);
@@ -3306,12 +3306,12 @@ bool ts::UString::ToIntegerHelper(const UChar* start, const UChar* end, INT& val
 
 template <class CONTAINER> requires std::integral<typename CONTAINER::value_type>
 bool ts::UString::toIntegers(CONTAINER& container,
-                             const UString& thousandSeparators,
+                             const UString& thousand_separators,
                              const UString& listSeparators,
                              size_type decimals,
-                             const UString& decimalSeparators,
-                             typename CONTAINER::value_type minValue,
-                             typename CONTAINER::value_type maxValue) const
+                             const UString& decimal_separators,
+                             typename CONTAINER::value_type min_value,
+                             typename CONTAINER::value_type max_value) const
 {
     // Let's name int_type the integer type.
     // In all STL standard containers, value_type is an alias for the element type.
@@ -3341,7 +3341,7 @@ bool ts::UString::toIntegers(CONTAINER& container,
         }
         // Decode segment
         int_type value = static_cast<int_type>(0);
-        if (!substr(start, end - start).toInteger<int_type>(value, thousandSeparators, decimals, decimalSeparators, minValue, maxValue)) {
+        if (!substr(start, end - start).toInteger<int_type>(value, thousand_separators, decimals, decimal_separators, min_value, max_value)) {
             return false;
         }
         container.push_back(value);
@@ -3359,7 +3359,7 @@ bool ts::UString::toIntegers(CONTAINER& container,
 //----------------------------------------------------------------------------
 
 template <typename FLT> requires std::floating_point<FLT>
-bool ts::UString::toFloat(FLT& value, FLT minValue, FLT maxValue) const
+bool ts::UString::toFloat(FLT& value, FLT min_value, FLT max_value) const
 {
     // Convert to an 8-bit string.
     std::string str;
@@ -3371,7 +3371,7 @@ bool ts::UString::toFloat(FLT& value, FLT minValue, FLT maxValue) const
     char dummy = 0;
     const int count = ::sscanf(str.c_str(), "%lf%c", &flt, &dummy);
     value = FLT(flt);
-    return count == 1 && value >= minValue && value <= maxValue;
+    return count == 1 && value >= min_value && value <= max_value;
 }
 
 
@@ -3381,13 +3381,13 @@ bool ts::UString::toFloat(FLT& value, FLT minValue, FLT maxValue) const
 
 template <class Rep, class Period>
 bool ts::UString::toChrono(cn::duration<Rep, Period>& value,
-                           const UString& thousandSeparators,
-                           const cn::duration<Rep, Period>& minValue,
-                           const cn::duration<Rep, Period>& maxValue) const
+                           const UString& thousand_separators,
+                           const cn::duration<Rep, Period>& min_value,
+                           const cn::duration<Rep, Period>& max_value) const
 {
     using Duration = cn::duration<Rep, Period>;
     typename Duration::rep ivalue = 0;
-    const bool ok = toInteger(ivalue, thousandSeparators, 0, UString(), minValue.count(), maxValue.count());
+    const bool ok = toInteger(ivalue, thousand_separators, 0, UString(), min_value.count(), max_value.count());
     value = Duration(ivalue);
     return ok;
 }
@@ -3703,12 +3703,12 @@ ts::UString ts::UString::Percentage(const cn::duration<Rep1,Period1>& value, con
 //----------------------------------------------------------------------------
 
 template <typename INT> requires std::integral<INT>
-void ts::UString::trimLength(INT length, bool trimTrailingSpaces)
+void ts::UString::trimLength(INT length, bool trim_trailing_spaces)
 {
     // We assume here that UString::size_type is the largest unsigned type
     // and that it is safe to convert any positive value into this type.
     resize(std::min<size_type>(size(), size_type(std::max<INT>(0, length))));
-    trim(false, trimTrailingSpaces);
+    trim(false, trim_trailing_spaces);
 }
 
 
@@ -3718,22 +3718,22 @@ void ts::UString::trimLength(INT length, bool trimTrailingSpaces)
 //----------------------------------------------------------------------------
 
 template <class CONTAINER>
-void ts::UString::quotedLine(const CONTAINER& container, UChar quoteCharacter, const UString& specialCharacters)
+void ts::UString::quotedLine(const CONTAINER& container, UChar quote_character, const UString& special_characters)
 {
     clear();
     for (const auto& it : container) {
         if (!empty()) {
             append(SPACE);
         }
-        append(it.toQuoted(quoteCharacter, specialCharacters));
+        append(it.toQuoted(quote_character, special_characters));
     }
 }
 
 template <class CONTAINER>
-ts::UString ts::UString::ToQuotedLine(const CONTAINER& container, UChar quoteCharacter, const UString& specialCharacters)
+ts::UString ts::UString::ToQuotedLine(const CONTAINER& container, UChar quote_character, const UString& special_characters)
 {
     UString result;
-    result.quotedLine(container, quoteCharacter, specialCharacters);
+    result.quotedLine(container, quote_character, special_characters);
     return result;
 }
 
@@ -3743,7 +3743,7 @@ ts::UString ts::UString::ToQuotedLine(const CONTAINER& container, UChar quoteCha
 //----------------------------------------------------------------------------
 
 template <class CONTAINER>
-void ts::UString::fromQuotedLine(CONTAINER& container, const UString& quoteCharacters, const UString& specialCharacters) const
+void ts::UString::fromQuotedLine(CONTAINER& container, const UString& quote_characters, const UString& special_characters) const
 {
     container.clear();
 
@@ -3769,7 +3769,7 @@ void ts::UString::fromQuotedLine(CONTAINER& container, const UString& quoteChara
         // Accumulate characters from the current word.
         while (index < size() && (quoteOpen || !IsSpace(at(index)))) {
             UChar c = at(index++);
-            if (!quoteOpen && quoteCharacters.contain(c)) {
+            if (!quoteOpen && quote_characters.contains(c)) {
                 // Start of a quoted sequence.
                 quoteOpen = true;
                 quoteChar = c;

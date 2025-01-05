@@ -42,7 +42,7 @@ ts::Enumeration::int_t ts::Enumeration::value(const UString& name, bool caseSens
             // Found an exact match
             return it.first;
         }
-        else if (abbreviated && it.second.startWith(name, caseSensitive ? CASE_SENSITIVE : CASE_INSENSITIVE)) {
+        else if (abbreviated && it.second.startsWith(name, caseSensitive ? CASE_SENSITIVE : CASE_INSENSITIVE)) {
             // Found an abbreviated version
             if (++previousCount == 1) {
                 // First abbreviation, remember it and continue searching
@@ -86,7 +86,7 @@ ts::UString ts::Enumeration::error(const UString& name1, bool caseSensitive, boo
             // Found an exact match, there is no error.
             return UString();
         }
-        else if (abbreviated && it.second.startWith(name1, caseSensitive ? CASE_SENSITIVE : CASE_INSENSITIVE)) {
+        else if (abbreviated && it.second.startsWith(name1, caseSensitive ? CASE_SENSITIVE : CASE_INSENSITIVE)) {
             // Found an abbreviated version.
             maybe.push_back(prefix + it.second);
         }

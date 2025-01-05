@@ -75,8 +75,8 @@ TSUNIT_DEFINE_TEST(MasterPlaylist)
     TSUNIT_EQUAL(u"https://tsduck.io/download/test/hls/img_bipbop_adv_example_ts/master.m3u8", pl.url());
     ts::hls::MediaElement media;
     pl.buildURL(media, u"foo.bar");
-    TSUNIT_EQUAL(u"foo.bar", media.relativeURI);
-    TSUNIT_EQUAL(u"/download/test/hls/img_bipbop_adv_example_ts/foo.bar", media.filePath);
+    TSUNIT_EQUAL(u"foo.bar", media.relative_uri);
+    TSUNIT_EQUAL(u"/download/test/hls/img_bipbop_adv_example_ts/foo.bar", media.file_path);
     TSUNIT_EQUAL(u"https://tsduck.io/download/test/hls/img_bipbop_adv_example_ts/foo.bar", media.url.toString());
     TSUNIT_EQUAL(u"https://tsduck.io/download/test/hls/img_bipbop_adv_example_ts/foo.bar", media.urlString());
     TSUNIT_EQUAL(0, pl.segmentCount());
@@ -87,34 +87,34 @@ TSUNIT_DEFINE_TEST(MasterPlaylist)
     TSUNIT_ASSERT(!pl.endList());
     TSUNIT_EQUAL(ts::hls::PlayListType::MASTER, pl.type());
 
-    TSUNIT_EQUAL(u"v5/prog_index.m3u8", pl.playList(0).relativeURI);
+    TSUNIT_EQUAL(u"v5/prog_index.m3u8", pl.playList(0).relative_uri);
     TSUNIT_EQUAL(2227464, pl.playList(0).bandwidth.toInt());
-    TSUNIT_EQUAL(2218327, pl.playList(0).averageBandwidth.toInt());
+    TSUNIT_EQUAL(2218327, pl.playList(0).average_bandwidth.toInt());
     TSUNIT_EQUAL(960, pl.playList(0).width);
     TSUNIT_EQUAL(540, pl.playList(0).height);
-    TSUNIT_EQUAL(60000, pl.playList(0).frameRate);
+    TSUNIT_EQUAL(60000, pl.playList(0).frame_rate);
     TSUNIT_EQUAL(u"avc1.640020,mp4a.40.2", pl.playList(0).codecs);
     TSUNIT_EQUAL(u"", pl.playList(0).hdcp);
-    TSUNIT_EQUAL(u"", pl.playList(0).videoRange);
+    TSUNIT_EQUAL(u"", pl.playList(0).video_range);
     TSUNIT_EQUAL(u"", pl.playList(0).video);
     TSUNIT_EQUAL(u"aud1", pl.playList(0).audio);
     TSUNIT_EQUAL(u"sub1", pl.playList(0).subtitles);
-    TSUNIT_EQUAL(u"cc1", pl.playList(0).closedCaptions);
+    TSUNIT_EQUAL(u"cc1", pl.playList(0).closed_captions);
     TSUNIT_EQUAL(u"v5/prog_index.m3u8, 960x540, 2,227,464 b/s, @60 fps", pl.playList(0).toString());
 
-    TSUNIT_EQUAL(u"v2/prog_index.m3u8", pl.playList(23).relativeURI);
+    TSUNIT_EQUAL(u"v2/prog_index.m3u8", pl.playList(23).relative_uri);
     TSUNIT_EQUAL(582387, pl.playList(23).bandwidth.toInt());
-    TSUNIT_EQUAL(570616, pl.playList(23).averageBandwidth.toInt());
+    TSUNIT_EQUAL(570616, pl.playList(23).average_bandwidth.toInt());
     TSUNIT_EQUAL(480, pl.playList(23).width);
     TSUNIT_EQUAL(270, pl.playList(23).height);
-    TSUNIT_EQUAL(30000, pl.playList(23).frameRate);
+    TSUNIT_EQUAL(30000, pl.playList(23).frame_rate);
     TSUNIT_EQUAL(u"avc1.640015,ec-3", pl.playList(23).codecs);
     TSUNIT_EQUAL(u"", pl.playList(23).hdcp);
-    TSUNIT_EQUAL(u"", pl.playList(23).videoRange);
+    TSUNIT_EQUAL(u"", pl.playList(23).video_range);
     TSUNIT_EQUAL(u"", pl.playList(23).video);
     TSUNIT_EQUAL(u"aud3", pl.playList(23).audio);
     TSUNIT_EQUAL(u"sub1", pl.playList(23).subtitles);
-    TSUNIT_EQUAL(u"cc1", pl.playList(23).closedCaptions);
+    TSUNIT_EQUAL(u"cc1", pl.playList(23).closed_captions);
     TSUNIT_EQUAL(u"v2/prog_index.m3u8, 480x270, 582,387 b/s, @30 fps", pl.playList(23).toString());
 
     TSUNIT_EQUAL(0, pl.selectPlayList(0, 0, 0, 0, 0, 0));
@@ -143,46 +143,46 @@ TSUNIT_DEFINE_TEST(MasterPlaylistWithAlternate)
     TSUNIT_ASSERT(!pl.endList());
     TSUNIT_EQUAL(ts::hls::PlayListType::MASTER, pl.type());
 
-    TSUNIT_EQUAL(u"04_hd.m3u8", pl.playList(0).relativeURI);
+    TSUNIT_EQUAL(u"04_hd.m3u8", pl.playList(0).relative_uri);
     TSUNIT_EQUAL(1209781, pl.playList(0).bandwidth.toInt());
     TSUNIT_EQUAL(768, pl.playList(0).width);
     TSUNIT_EQUAL(432, pl.playList(0).height);
-    TSUNIT_EQUAL(25000, pl.playList(0).frameRate);
+    TSUNIT_EQUAL(25000, pl.playList(0).frame_rate);
     TSUNIT_EQUAL(u"avc1.4D4020,mp4a.40.2", pl.playList(0).codecs);
     TSUNIT_EQUAL(u"", pl.playList(0).hdcp);
-    TSUNIT_EQUAL(u"", pl.playList(0).videoRange);
+    TSUNIT_EQUAL(u"", pl.playList(0).video_range);
     TSUNIT_EQUAL(u"", pl.playList(0).video);
     TSUNIT_EQUAL(u"audio2", pl.playList(0).audio);
     TSUNIT_EQUAL(u"", pl.playList(0).subtitles);
-    TSUNIT_EQUAL(u"", pl.playList(0).closedCaptions);
+    TSUNIT_EQUAL(u"", pl.playList(0).closed_captions);
     TSUNIT_EQUAL(u"04_hd.m3u8, 768x432, 1,209,781 b/s, @25 fps", pl.playList(0).toString());
 
-    TSUNIT_EQUAL(u"09_hd.m3u8", pl.altPlayList(0).relativeURI);
+    TSUNIT_EQUAL(u"09_hd.m3u8", pl.altPlayList(0).relative_uri);
     TSUNIT_EQUAL(u"AUDIO", pl.altPlayList(0).type);
-    TSUNIT_EQUAL(u"audio2", pl.altPlayList(0).groupId);
+    TSUNIT_EQUAL(u"audio2", pl.altPlayList(0).group_id);
     TSUNIT_EQUAL(u"ENG", pl.altPlayList(0).name);
     TSUNIT_EQUAL(u"ENG", pl.altPlayList(0).language);
-    TSUNIT_EQUAL(u"", pl.altPlayList(0).stableRenditionId);
-    TSUNIT_EQUAL(u"", pl.altPlayList(0).assocLanguage);
-    TSUNIT_EQUAL(u"", pl.altPlayList(0).inStreamId);
+    TSUNIT_EQUAL(u"", pl.altPlayList(0).stable_rendition_id);
+    TSUNIT_EQUAL(u"", pl.altPlayList(0).assoc_language);
+    TSUNIT_EQUAL(u"", pl.altPlayList(0).in_stream_id);
     TSUNIT_EQUAL(u"", pl.altPlayList(0).characteristics);
     TSUNIT_EQUAL(u"", pl.altPlayList(0).channels);
-    TSUNIT_ASSERT(pl.altPlayList(0).isDefault);
-    TSUNIT_ASSERT(pl.altPlayList(0).autoselect);
+    TSUNIT_ASSERT(pl.altPlayList(0).is_default);
+    TSUNIT_ASSERT(pl.altPlayList(0).auto_select);
     TSUNIT_ASSERT(!pl.altPlayList(0).forced);
 
-    TSUNIT_EQUAL(u"01_hd.m3u8", pl.altPlayList(1).relativeURI);
+    TSUNIT_EQUAL(u"01_hd.m3u8", pl.altPlayList(1).relative_uri);
     TSUNIT_EQUAL(u"AUDIO", pl.altPlayList(1).type);
-    TSUNIT_EQUAL(u"audio1", pl.altPlayList(1).groupId);
+    TSUNIT_EQUAL(u"audio1", pl.altPlayList(1).group_id);
     TSUNIT_EQUAL(u"FOO", pl.altPlayList(1).name);
     TSUNIT_EQUAL(u"FOO", pl.altPlayList(1).language);
-    TSUNIT_EQUAL(u"", pl.altPlayList(1).stableRenditionId);
-    TSUNIT_EQUAL(u"", pl.altPlayList(1).assocLanguage);
-    TSUNIT_EQUAL(u"", pl.altPlayList(1).inStreamId);
+    TSUNIT_EQUAL(u"", pl.altPlayList(1).stable_rendition_id);
+    TSUNIT_EQUAL(u"", pl.altPlayList(1).assoc_language);
+    TSUNIT_EQUAL(u"", pl.altPlayList(1).in_stream_id);
     TSUNIT_EQUAL(u"", pl.altPlayList(1).characteristics);
     TSUNIT_EQUAL(u"", pl.altPlayList(1).channels);
-    TSUNIT_ASSERT(!pl.altPlayList(1).isDefault);
-    TSUNIT_ASSERT(!pl.altPlayList(1).autoselect);
+    TSUNIT_ASSERT(!pl.altPlayList(1).is_default);
+    TSUNIT_ASSERT(!pl.altPlayList(1).auto_select);
     TSUNIT_ASSERT(!pl.altPlayList(1).forced);
 }
 
@@ -208,13 +208,13 @@ TSUNIT_DEFINE_TEST(MediaPlaylist)
     TSUNIT_EQUAL(0, pl.mediaSequence());
     TSUNIT_ASSERT(pl.endList());
 
-    TSUNIT_EQUAL(u"fileSequence0.ts", pl.segment(0).relativeURI);
+    TSUNIT_EQUAL(u"fileSequence0.ts", pl.segment(0).relative_uri);
     TSUNIT_EQUAL(u"", pl.segment(0).title);
     TSUNIT_EQUAL(2060 * 1024, pl.segment(0).bitrate.toInt());
     TSUNIT_EQUAL(6000, pl.segment(0).duration.count());
     TSUNIT_ASSERT(!pl.segment(0).gap);
 
-    TSUNIT_EQUAL(u"fileSequence99.ts", pl.segment(99).relativeURI);
+    TSUNIT_EQUAL(u"fileSequence99.ts", pl.segment(99).relative_uri);
     TSUNIT_EQUAL(u"", pl.segment(99).title);
     TSUNIT_EQUAL(2055 * 1024, pl.segment(99).bitrate.toInt());
     TSUNIT_EQUAL(6000, pl.segment(99).duration.count());
@@ -224,7 +224,7 @@ TSUNIT_DEFINE_TEST(MediaPlaylist)
     TSUNIT_ASSERT(pl.popFirstSegment(seg));
     TSUNIT_EQUAL(99, pl.segmentCount());
 
-    TSUNIT_EQUAL(u"fileSequence0.ts", seg.relativeURI);
+    TSUNIT_EQUAL(u"fileSequence0.ts", seg.relative_uri);
     TSUNIT_EQUAL(u"", seg.title);
     TSUNIT_EQUAL(2060 * 1024, seg.bitrate.toInt());
     TSUNIT_EQUAL(6000, seg.duration.count());
@@ -241,29 +241,29 @@ TSUNIT_DEFINE_TEST(BuildMasterPlaylist)
     TSUNIT_EQUAL(3, pl.version());
 
     ts::hls::MediaPlayList mpl1;
-    mpl1.relativeURI = u"/c/test/path/playlists/pl1.m3u8";
+    mpl1.relative_uri = u"/c/test/path/playlists/pl1.m3u8";
     mpl1.bandwidth = 1234567;
-    mpl1.averageBandwidth = 1200000;
+    mpl1.average_bandwidth = 1200000;
     mpl1.width = 720;
     mpl1.height = 576;
-    mpl1.frameRate = 30123;
+    mpl1.frame_rate = 30123;
     mpl1.codecs = u"cot,cot";
     mpl1.hdcp = u"NONE";
-    mpl1.videoRange = u"SDR";
+    mpl1.video_range = u"SDR";
     mpl1.video = u"vid1";
     mpl1.audio = u"aud3";
     mpl1.subtitles = u"sub1";
-    mpl1.closedCaptions = u"cc1";
+    mpl1.closed_captions = u"cc1";
 
     TSUNIT_ASSERT(pl.addPlayList(mpl1));
 
     ts::hls::MediaPlayList mpl2;
-    mpl2.relativeURI = u"/c/test/path/playlists/pl2.m3u8";
+    mpl2.relative_uri = u"/c/test/path/playlists/pl2.m3u8";
     mpl2.bandwidth = 3456789;
-    mpl2.averageBandwidth = 3400000;
+    mpl2.average_bandwidth = 3400000;
     mpl2.width = 1920;
     mpl2.height = 1080;
-    mpl2.frameRate = 60567;
+    mpl2.frame_rate = 60567;
 
     TSUNIT_ASSERT(pl.addPlayList(mpl2));
 
@@ -302,14 +302,14 @@ TSUNIT_DEFINE_TEST(BuildMediaPlaylist)
     TSUNIT_EQUAL(ts::hls::PlayListType::VOD, pl.type());
 
     ts::hls::MediaSegment seg1;
-    seg1.relativeURI = u"/c/test/path/segments/seg-0001.ts";
+    seg1.relative_uri = u"/c/test/path/segments/seg-0001.ts";
     seg1.title = u"Segment1";
     seg1.duration = cn::milliseconds(4920);
     seg1.bitrate = 1233920;
     TSUNIT_ASSERT(pl.addSegment(seg1));
 
     ts::hls::MediaSegment seg2;
-    seg2.relativeURI = u"/c/test/path/segments/seg-0002.ts";
+    seg2.relative_uri = u"/c/test/path/segments/seg-0002.ts";
     seg2.duration = cn::milliseconds(4971);
     seg2.bitrate = 1653760;
     TSUNIT_ASSERT(pl.addSegment(seg2));
@@ -334,7 +334,7 @@ TSUNIT_DEFINE_TEST(BuildMediaPlaylist)
     TSUNIT_EQUAL(refContent1, pl.textContent());
 
     ts::hls::MediaSegment seg3;
-    seg3.relativeURI = u"/c/test/path/segments/seg-0003.ts";
+    seg3.relative_uri = u"/c/test/path/segments/seg-0003.ts";
     seg3.duration = cn::milliseconds(4984);
     seg3.bitrate = 1653760;
     TSUNIT_ASSERT(pl.addSegment(seg3));

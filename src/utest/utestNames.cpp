@@ -441,7 +441,7 @@ TSUNIT_DEFINE_TEST(IP)
 {
     // Just check that the names file is correctly read and valid.
     TSUNIT_EQUAL(0, ts::NamesFile::Instance(ts::NamesFile::Predefined::IP)->errorCount());
-    TSUNIT_ASSERT(ts::NamesFile::Instance(ts::NamesFile::Predefined::IP)->nameFromSection(u"IPProtocol", 6).startWith(u"TCP"));
+    TSUNIT_ASSERT(ts::NamesFile::Instance(ts::NamesFile::Predefined::IP)->nameFromSection(u"IPProtocol", 6).startsWith(u"TCP"));
 }
 
 TSUNIT_DEFINE_TEST(Extension)

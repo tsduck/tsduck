@@ -98,8 +98,8 @@ ts::json::ValuePtr ts::xml::JSONConverter::convertElementToJSON(const Element* m
             // Get description, empty string without error if not found.
             model->getAttribute(description, it.first, false);
             description.trim(true, false, false);
-            intModel = description.startWith(u"uint", CASE_INSENSITIVE) || description.startWith(u"int", CASE_INSENSITIVE);
-            boolModel = description.startWith(u"bool", CASE_INSENSITIVE);
+            intModel = description.startsWith(u"uint", CASE_INSENSITIVE) || description.startsWith(u"int", CASE_INSENSITIVE);
+            boolModel = description.startsWith(u"bool", CASE_INSENSITIVE);
         }
 
         // Try to convert as an integer or boolean if defined as such by the model.
@@ -193,7 +193,7 @@ ts::json::ValuePtr ts::xml::JSONConverter::convertChildrenToJSON(const Element* 
             if (getTextModel) {
                 getTextModel = false;
                 model->getText(textModel, true);
-                hexaModel = textModel.startWith(u"hexa", CASE_INSENSITIVE);
+                hexaModel = textModel.startsWith(u"hexa", CASE_INSENSITIVE);
             }
             // Trim the text content according to model and command line options.
             content.trim(hexaModel || xml_tweaks.x2jTrimText, hexaModel || xml_tweaks.x2jTrimText, hexaModel || xml_tweaks.x2jCollapseText);

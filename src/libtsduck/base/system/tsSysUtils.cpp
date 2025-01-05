@@ -585,7 +585,7 @@ ts::UString ts::ClassName(const std::type_index index)
         }
 #endif
         // Cleanup various initial decoration, depending on compiler.
-        if (name.startWith(u"class ")) {
+        if (name.startsWith(u"class ")) {
             name.erase(0, 6);
         }
         // MSC: `anonymous namespace'::

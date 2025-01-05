@@ -54,11 +54,11 @@ namespace ts {
         //!
         //! Set a new timeout value.
         //! @param [in] timeout New watchdog timeout in milliseconds. Zero means no timeout.
-        //! @param [in] autoStart If true and @a timeout is non zero, the timeout is
+        //! @param [in] auto_start If true and @a timeout is non zero, the timeout is
         //! automatically started. Otherwise, it is suspended. The previous timeout,
         //! if active, is automatically canceled.
         //!
-        void setTimeout(cn::milliseconds timeout, bool autoStart = false);
+        void setTimeout(cn::milliseconds timeout, bool auto_start = false);
 
         //!
         //! Restart the watchdog, the previous timeout is canceled.
@@ -80,17 +80,17 @@ namespace ts {
         //! Set some arbitrary "watchdog id" value.
         //! @param [in] id Application-defined watchdog id to assign.
         //!
-        void setWatchDogId(int id) { _watchDogId = id; }
+        void setWatchDogId(int id) { _watch_dog_id = id; }
 
         //!
         //! Get the "watchdog id" value, as previously stored by the application.
         //! @return The application-defined watchdog id.
         //!
-        int watchDogId() const { return _watchDogId; }
+        int watchDogId() const { return _watch_dog_id; }
 
     private:
         Report&                   _log;                // For debug messages.
-        volatile int              _watchDogId = 0;     // Application-defined watchdog identifier.
+        volatile int              _watch_dog_id = 0;   // Application-defined watchdog identifier.
         volatile bool             _terminate = false;  // Terminate the thread.
         std::mutex                _mutex {};           // Mutex to protect the following fields.
         std::condition_variable   _condition {};       // Condition to signal when something changed.

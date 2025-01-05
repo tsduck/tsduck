@@ -33,17 +33,17 @@ namespace ts::hls {
         virtual UString toString() const override;
 
         // Public fields.
-        bool    isDefault = false;     //!< The client should play this Rendition in the absence of information from the user indicating a different choice.
-        bool    autoselect = false;    //!< The client may choose to play this Rendition in the absence of explicit user preference.
-        bool    forced = false;        //!< The Rendition contains content that is considered essential to play.
-        UString name {};               //!< Human-readable description of the Rendition. Required.
-        UString type {};               //!< Playlist type, required, one of "AUDIO", "VIDEO", "SUBTITLES", "CLOSED-CAPTIONS".
-        UString groupId {};            //!< Group to which the Rendition belongs. Required.
-        UString stableRenditionId {};  //!< Stable identifier for the URI within the Multivariant Playlist. Optional.
-        UString language {};           //!< Primary language used in the Rendition. Optional.
-        UString assocLanguage {};      //!< Associated language. Optional.
-        UString inStreamId {};         //!< Rendition within the segments in the Media Playlist.
-        UString characteristics {};    //!< Media Characteristic Tags (MCTs) separated by comma (,) characters.
-        UString channels {};           //!< Ordered, slash-separated ("/") list of channel parameters.
+        bool    is_default = false;      //!< The client should play this Rendition in the absence of information from the user indicating a different choice.
+        bool    auto_select = false;     //!< The client may choose to play this Rendition in the absence of explicit user preference.
+        bool    forced = false;          //!< The Rendition contains content that is considered essential to play.
+        UString name {};                 //!< Human-readable description of the Rendition. Required.
+        UString type {};                 //!< Playlist type, required, one of "AUDIO", "VIDEO", "SUBTITLES", "CLOSED-CAPTIONS".
+        UString group_id {};             //!< Group to which the Rendition belongs. Required.
+        UString stable_rendition_id {};  //!< Stable identifier for the URI within the Multivariant Playlist. Optional.
+        UString language {};             //!< Primary language used in the Rendition. Optional.
+        UString assoc_language {};       //!< Associated language. Optional.
+        UString in_stream_id {};         //!< Rendition within the segments in the Media Playlist.
+        UString characteristics {};      //!< Media Characteristic Tags (MCTs) separated by comma (,) characters.
+        UString channels {};             //!< Ordered, slash-separated ("/") list of channel parameters.
     };
 }

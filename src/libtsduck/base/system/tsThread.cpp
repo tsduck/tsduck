@@ -327,7 +327,7 @@ void ts::Thread::mainWrapper()
         if (name.empty()) {
             name = _typename;
             // Thread names are limited on some systems, remove unnecessary prefix.
-            if (name.startWith(u"ts::")) {
+            if (name.startsWith(u"ts::")) {
                 name.erase(0, 4);
             }
             name.substitute(u"::", u".");

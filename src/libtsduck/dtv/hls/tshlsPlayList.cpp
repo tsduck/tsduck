@@ -22,19 +22,19 @@ void ts::hls::PlayList::clear()
     _version = 1;
     _type = PlayListType::UNKNOWN;
     _original.clear();
-    _fileBase.clear();
-    _isURL = false;
+    _file_base.clear();
+    _is_url = false;
     _url.clear();
-    _targetDuration = cn::seconds::zero();
-    _mediaSequence = 0;
-    _endList = false;
-    _utcDownload = Time::Epoch;
-    _utcTermination = Time::Epoch;
+    _target_duration = cn::seconds::zero();
+    _media_sequence = 0;
+    _end_list = false;
+    _utc_download = Time::Epoch;
+    _utc_termination = Time::Epoch;
     _segments.clear();
     _playlists.clear();
-    _altPlaylists.clear();
-    _loadedContent.clear();
-    _extraTags.clear();
+    _alt_playlists.clear();
+    _loaded_content.clear();
+    _extra_tags.clear();
     // Preserve _autoSaveDir
 }
 
@@ -50,10 +50,10 @@ void ts::hls::PlayList::reset(ts::hls::PlayListType type, const ts::UString &fil
     _version = version;
     _type = type;
     _original = AbsoluteFilePath(filename);
-    _fileBase = DirectoryName(_original) + fs::path::preferred_separator;
-    _isURL = false;
+    _file_base = DirectoryName(_original) + fs::path::preferred_separator;
+    _is_url = false;
     _url.clear();
-    _extraTags.clear();
+    _extra_tags.clear();
 }
 
 
@@ -63,21 +63,21 @@ void ts::hls::PlayList::reset(ts::hls::PlayListType type, const ts::UString &fil
 
 void ts::hls::PlayList::buildURL(MediaElement& media, const UString& uri) const
 {
-    media.relativeURI = uri;
+    media.relative_uri = uri;
     media.url.clear();
 
-    if (_isURL) {
+    if (_is_url) {
         // Build a full URL, based on original URL.
         media.url.setURL(uri, _url);
-        media.filePath = media.url.getPath();
+        media.file_path = media.url.getPath();
     }
-    else if (uri.startWith(u"/")) {
+    else if (uri.startsWith(u"/")) {
         // The original URI was a file and the segment is an absolute file name.
-        media.filePath = uri;
+        media.file_path = uri;
     }
     else {
         // The original URI was a file and the segment is a relative file name.
-        media.filePath = _fileBase + uri;
+        media.file_path = _file_base + uri;
     }
 }
 
@@ -137,7 +137,7 @@ bool ts::hls::PlayList::setTypeMedia(Report& report)
 bool ts::hls::PlayList::setTargetDuration(cn::seconds duration, Report& report)
 {
     if (setTypeMedia(report)) {
-        _targetDuration = duration;
+        _target_duration = duration;
         return true;
     }
     else {
@@ -148,7 +148,7 @@ bool ts::hls::PlayList::setTargetDuration(cn::seconds duration, Report& report)
 bool ts::hls::PlayList::setMediaSequence(size_t seq, Report& report)
 {
     if (setTypeMedia(report)) {
-        _mediaSequence = seq;
+        _media_sequence = seq;
         return true;
     }
     else {
@@ -159,7 +159,7 @@ bool ts::hls::PlayList::setMediaSequence(size_t seq, Report& report)
 bool ts::hls::PlayList::setEndList(bool end, Report& report)
 {
     if (setTypeMedia(report)) {
-        _endList = end;
+        _end_list = end;
         return true;
     }
     else {
@@ -188,7 +188,7 @@ bool ts::hls::PlayList::popFirstSegment()
     }
     else {
         _segments.pop_front();
-        _mediaSequence++;
+        _media_sequence++;
         return true;
     }
 }
@@ -202,7 +202,7 @@ bool ts::hls::PlayList::popFirstSegment(MediaSegment& seg)
     else {
         seg = _segments.front();
         _segments.pop_front();
-        _mediaSequence++;
+        _media_sequence++;
         return true;
     }
 }
@@ -214,7 +214,7 @@ const ts::hls::MediaPlayList& ts::hls::PlayList::playList(size_t index) const
 
 const ts::hls::AltPlayList& ts::hls::PlayList::altPlayList(size_t index) const
 {
-    return index < _altPlaylists.size() ? _altPlaylists[index] : EmptyAltPlayList;
+    return index < _alt_playlists.size() ? _alt_playlists[index] : EmptyAltPlayList;
 }
 
 
@@ -231,8 +231,8 @@ void ts::hls::PlayList::deletePlayList(size_t index)
 
 void ts::hls::PlayList::deleteAltPlayList(size_t index)
 {
-    if (index < _altPlaylists.size()) {
-        _altPlaylists.erase(_altPlaylists.begin() + index);
+    if (index < _alt_playlists.size()) {
+        _alt_playlists.erase(_alt_playlists.begin() + index);
     }
 }
 
@@ -243,7 +243,7 @@ void ts::hls::PlayList::deleteAltPlayList(size_t index)
 
 bool ts::hls::PlayList::addSegment(const MediaSegment& seg, Report& report)
 {
-    if (seg.relativeURI.empty()) {
+    if (seg.relative_uri.empty()) {
         report.error(u"empty media segment URI");
         return false;
     }
@@ -251,9 +251,9 @@ bool ts::hls::PlayList::addSegment(const MediaSegment& seg, Report& report)
         // Add the segment.
         _segments.push_back(seg);
         // Build a relative URI.
-        if (!_isURL && !_original.empty()) {
+        if (!_is_url && !_original.empty()) {
             // The playlist's URI is a file name, update the segment's URI.
-            _segments.back().relativeURI = RelativeFilePath(seg.relativeURI, _fileBase, FILE_SYSTEM_CASE_SENSITVITY, true);
+            _segments.back().relative_uri = RelativeFilePath(seg.relative_uri, _file_base, FILE_SYSTEM_CASE_SENSITVITY, true);
         }
         return true;
     }
@@ -265,7 +265,7 @@ bool ts::hls::PlayList::addSegment(const MediaSegment& seg, Report& report)
 
 bool ts::hls::PlayList::addPlayList(const MediaPlayList& pl, Report& report)
 {
-    if (pl.relativeURI.empty()) {
+    if (pl.relative_uri.empty()) {
         report.error(u"empty media playlist URI");
         return false;
     }
@@ -273,9 +273,9 @@ bool ts::hls::PlayList::addPlayList(const MediaPlayList& pl, Report& report)
         // Add the media playlist.
         _playlists.push_back(pl);
         // Build a relative URI.
-        if (!_isURL && !_original.empty()) {
+        if (!_is_url && !_original.empty()) {
             // The master playlist's URI is a file name, update the media playlist's URI.
-            _playlists.back().relativeURI = RelativeFilePath(pl.relativeURI, _fileBase, FILE_SYSTEM_CASE_SENSITVITY, true);
+            _playlists.back().relative_uri = RelativeFilePath(pl.relative_uri, _file_base, FILE_SYSTEM_CASE_SENSITVITY, true);
         }
         return true;
     }
@@ -289,11 +289,11 @@ bool ts::hls::PlayList::addAltPlayList(const AltPlayList& pl, Report& report)
 {
     if (setType(PlayListType::MASTER, report)) {
         // Add the media playlist.
-        _altPlaylists.push_back(pl);
+        _alt_playlists.push_back(pl);
         // Build a relative URI if there is one (the URI field is optional in an alternative rendition playlist).
-        if (!pl.relativeURI.empty() && !_isURL && !_original.empty()) {
+        if (!pl.relative_uri.empty() && !_is_url && !_original.empty()) {
             // The master playlist's URI is a file name, update the media playlist's URI.
-            _altPlaylists.back().relativeURI = RelativeFilePath(pl.relativeURI, _fileBase, FILE_SYSTEM_CASE_SENSITVITY, true);
+            _alt_playlists.back().relative_uri = RelativeFilePath(pl.relative_uri, _file_base, FILE_SYSTEM_CASE_SENSITVITY, true);
         }
         return true;
     }
@@ -307,16 +307,16 @@ bool ts::hls::PlayList::addAltPlayList(const AltPlayList& pl, Report& report)
 // Select a media playlist with specific constraints.
 //----------------------------------------------------------------------------
 
-size_t ts::hls::PlayList::selectPlayList(const BitRate& minBitrate, const BitRate& maxBitrate, size_t minWidth, size_t maxWidth, size_t minHeight, size_t maxHeight) const
+size_t ts::hls::PlayList::selectPlayList(const BitRate& min_bitrate, const BitRate& max_bitrate, size_t min_width, size_t max_width, size_t min_height, size_t max_height) const
 {
     for (size_t i = 0; i < _playlists.size(); ++i) {
         const MediaPlayList& pl(_playlists[i]);
-        if ((minBitrate == 0 || pl.bandwidth >= minBitrate) &&
-            (maxBitrate == 0 || (pl.bandwidth > 0 && pl.bandwidth <= maxBitrate)) &&
-            (minWidth == 0 || pl.width >= minWidth) &&
-            (maxWidth == 0 || (pl.width > 0 && pl.width <= maxWidth)) &&
-            (minHeight == 0 || pl.height >= minHeight) &&
-            (maxHeight == 0 || (pl.height > 0 && pl.height <= maxHeight)))
+        if ((min_bitrate == 0 || pl.bandwidth >= min_bitrate) &&
+            (max_bitrate == 0 || (pl.bandwidth > 0 && pl.bandwidth <= max_bitrate)) &&
+            (min_width == 0 || pl.width >= min_width) &&
+            (max_width == 0 || (pl.width > 0 && pl.width <= max_width)) &&
+            (min_height == 0 || pl.height >= min_height) &&
+            (max_height == 0 || (pl.height > 0 && pl.height <= max_height)))
         {
             // Match all criteria.
             return i;
@@ -388,13 +388,13 @@ size_t ts::hls::PlayList::selectPlayListHighestResolution() const
 // Select the first alternative rendition playlist with specific criteria.
 //----------------------------------------------------------------------------
 
-size_t ts::hls::PlayList::selectAltPlayList(const UString& type, const UString& name, const UString& groupId, const UString& language) const
+size_t ts::hls::PlayList::selectAltPlayList(const UString& type, const UString& name, const UString& group_id, const UString& language) const
 {
-    for (size_t i = 0; i < _altPlaylists.size(); ++i) {
-        const AltPlayList& pl(_altPlaylists[i]);
+    for (size_t i = 0; i < _alt_playlists.size(); ++i) {
+        const AltPlayList& pl(_alt_playlists[i]);
         if ((type.empty() || pl.type.similar(type)) &&
             (name.empty() || pl.name.similar(name)) &&
-            (groupId.empty() || pl.groupId.similar(groupId)) &&
+            (group_id.empty() || pl.group_id.similar(group_id)) &&
             (language.empty() || pl.language.similar(language)))
         {
             // Match all criteria.
@@ -431,7 +431,7 @@ bool ts::hls::PlayList::loadURL(const URL& url, bool strict, const WebRequestArg
     // Keep the URL.
     _url = url;
     _original = url.toString();
-    _isURL = true;
+    _is_url = true;
 
     // Build a web request to download the playlist.
     WebRequest web(report);
@@ -461,8 +461,8 @@ bool ts::hls::PlayList::loadURL(const URL& url, bool strict, const WebRequestArg
     // Check strict conformance: according to RFC 8216, a playlist must either ends in .m3u8 or .m3u - OR -
     // HTTP Content-Type is application/vnd.apple.mpegurl or audio/mpegurl.
     if (strict &&
-        !_original.endWith(u".m3u8", CASE_INSENSITIVE) &&
-        !_original.endWith(u".m3u", CASE_INSENSITIVE) &&
+        !_original.endsWith(u".m3u8", CASE_INSENSITIVE) &&
+        !_original.endsWith(u".m3u", CASE_INSENSITIVE) &&
         mime != u"application/vnd.apple.mpegurl" &&
         mime != u"application/mpegurl" &&
         mime != u"audio/mpegurl")
@@ -473,7 +473,7 @@ bool ts::hls::PlayList::loadURL(const URL& url, bool strict, const WebRequestArg
 
     // Split content lines.
     text.remove(CARRIAGE_RETURN);
-    text.split(_loadedContent, LINE_FEED, false, false);
+    text.split(_loaded_content, LINE_FEED, false, false);
 
     // Autosave if necessary, ignore errors.
     autoSave(report);
@@ -494,17 +494,17 @@ bool ts::hls::PlayList::loadFile(const UString& filename, bool strict, PlayListT
 
     // Keep file name.
     _original = filename;
-    _fileBase = DirectoryName(filename) + fs::path::preferred_separator;
-    _isURL = false;
+    _file_base = DirectoryName(filename) + fs::path::preferred_separator;
+    _is_url = false;
 
     // Check strict conformance: according to RFC 8216, a playlist must either ends in .m3u8 or .m3u.
-    if (strict && !filename.endWith(u".m3u8", CASE_INSENSITIVE) && !filename.endWith(u".m3u", CASE_INSENSITIVE)) {
+    if (strict && !filename.endsWith(u".m3u8", CASE_INSENSITIVE) && !filename.endsWith(u".m3u", CASE_INSENSITIVE)) {
         report.error(u"Invalid file name extension for HLS playlist in %s", filename);
         return false;
     }
 
     // Load the file.
-    if (UString::Load(_loadedContent, filename)) {
+    if (UString::Load(_loaded_content, filename)) {
         // Autosave if necessary, ignore errors.
         autoSave(report);
         // Load from the text.
@@ -543,16 +543,16 @@ bool ts::hls::PlayList::reload(bool strict, const WebRequestArgs& args, ts::Repo
 
     // Reload the new content in another object.
     PlayList plNew;
-    if ((_isURL && !plNew.loadURL(_original, strict, args, PlayListType::UNKNOWN, report)) ||
-        (!_isURL && !plNew.loadFile(_original, strict, PlayListType::UNKNOWN, report)))
+    if ((_is_url && !plNew.loadURL(_original, strict, args, PlayListType::UNKNOWN, report)) ||
+        (!_is_url && !plNew.loadFile(_original, strict, PlayListType::UNKNOWN, report)))
     {
         return false;
     }
     assert(plNew._valid);
-    report.debug(u"playlist media sequence: old: %d/%s, new: %d/%d", _mediaSequence, _segments.size(), plNew._mediaSequence, plNew._segments.size());
+    report.debug(u"playlist media sequence: old: %d/%s, new: %d/%d", _media_sequence, _segments.size(), plNew._media_sequence, plNew._segments.size());
 
     // If no new segment is present, nothing to do.
-    if (plNew._mediaSequence + plNew._segments.size() <= _mediaSequence + _segments.size()) {
+    if (plNew._media_sequence + plNew._segments.size() <= _media_sequence + _segments.size()) {
         report.debug(u"no new segment in playlist");
         return true;
     }
@@ -560,22 +560,22 @@ bool ts::hls::PlayList::reload(bool strict, const WebRequestArgs& args, ts::Repo
     // Copy global characteristics.
     _type = plNew._type;
     _version = plNew._version;
-    _targetDuration = plNew._targetDuration;
-    _endList = plNew._endList;
-    _utcTermination = plNew._utcTermination;
-    _loadedContent.swap(plNew._loadedContent);
+    _target_duration = plNew._target_duration;
+    _end_list = plNew._end_list;
+    _utc_termination = plNew._utc_termination;
+    _loaded_content.swap(plNew._loaded_content);
 
     // Copy missing segments.
-    if (_mediaSequence + _segments.size() < plNew._mediaSequence) {
+    if (_media_sequence + _segments.size() < plNew._media_sequence) {
         // There are missing segments, we reloaded too late.
-        report.warning(u"missed %d HLS segments, dropping %d outdated segments", plNew._mediaSequence - _mediaSequence - _segments.size(), _segments.size());
+        report.warning(u"missed %d HLS segments, dropping %d outdated segments", plNew._media_sequence - _media_sequence - _segments.size(), _segments.size());
         // Dropping current segments, reloading fresh contiguous set of segments.
-        _mediaSequence = plNew._mediaSequence;
+        _media_sequence = plNew._media_sequence;
         _segments.swap(plNew._segments);
     }
     else {
         // Start at first new segment, copy all new segments.
-        for (size_t i = _mediaSequence + _segments.size() - plNew._mediaSequence; i < plNew._segments.size(); ++i) {
+        for (size_t i = _media_sequence + _segments.size() - plNew._media_sequence; i < plNew._segments.size(); ++i) {
             _segments.push_back(plNew._segments[i]);
         }
     }
@@ -593,7 +593,7 @@ bool ts::hls::PlayList::reload(bool strict, const WebRequestArgs& args, ts::Repo
 
 bool ts::hls::PlayList::parse(const UString& text, bool strict, Report& report)
 {
-    text.toRemoved(CARRIAGE_RETURN).split(_loadedContent, LINE_FEED, false, false);
+    text.toRemoved(CARRIAGE_RETURN).split(_loaded_content, LINE_FEED, false, false);
     return parse(strict, report);
 }
 
@@ -619,7 +619,7 @@ bool ts::hls::PlayList::parse(bool strict, Report& report)
     UString tagParams;
 
     // The playlist must always start with #EXTM3U.
-    if (_loadedContent.empty() || !getTag(_loadedContent.front(), tag, tagParams, strict, report) || tag != Tag::EXTM3U) {
+    if (_loaded_content.empty() || !getTag(_loaded_content.front(), tag, tagParams, strict, report) || tag != Tag::EXTM3U) {
         report.error(u"invalid HLS playlist, does not start with #EXTM3U");
         return false;
     }
@@ -628,11 +628,11 @@ bool ts::hls::PlayList::parse(bool strict, Report& report)
     _valid = true;
 
     // Initial download time.
-    _utcDownload = _utcTermination = Time::CurrentUTC();
+    _utc_download = _utc_termination = Time::CurrentUTC();
 
     // Loop on all lines in file.
     uint32_t lineNumber = 0;
-    for (const auto& it : _loadedContent) {
+    for (const auto& it : _loaded_content) {
 
         // In non-strict mode, ignore leading and trailing spaces.
         UString line(it);
@@ -649,7 +649,7 @@ bool ts::hls::PlayList::parse(bool strict, Report& report)
                 // Enqueue a new playlist description.
                 buildURL(plNext, line);
                 _playlists.push_back(plNext);
-                if (!plNext.filePath.endWith(u".m3u8", CASE_INSENSITIVE)) {
+                if (!plNext.file_path.endsWith(u".m3u8", CASE_INSENSITIVE)) {
                     report.debug(u"unexpected playlist file extension in reference URI: %s", line);
                 }
                 // Reset description of next playlist.
@@ -658,9 +658,9 @@ bool ts::hls::PlayList::parse(bool strict, Report& report)
             else if (isMedia()) {
                 // Enqueue a new media segment.
                 buildURL(segNext, line);
-                _utcTermination += segNext.duration;
+                _utc_termination += segNext.duration;
                 _segments.push_back(segNext);
-                if (!segNext.filePath.endWith(u".ts", CASE_INSENSITIVE)) {
+                if (!segNext.file_path.endsWith(u".ts", CASE_INSENSITIVE)) {
                     report.debug(u"unexpected segment file extension in reference URI: %s", line);
                 }
                 // Reset description of next segment.
@@ -723,7 +723,7 @@ bool ts::hls::PlayList::parse(bool strict, Report& report)
                 }
                 case Tag::TARGETDURATION: {
                     // #EXT-X-TARGETDURATION:s
-                    if (!tagParams.toChrono(_targetDuration) && strict) {
+                    if (!tagParams.toChrono(_target_duration) && strict) {
                         report.error(u"invalid target duration in %s", line);
                         _valid = false;
                     }
@@ -731,14 +731,14 @@ bool ts::hls::PlayList::parse(bool strict, Report& report)
                 }
                 case Tag::MEDIA_SEQUENCE: {
                     // #EXT-X-MEDIA-SEQUENCE:number
-                    if (!tagParams.toInteger(_mediaSequence) && strict) {
+                    if (!tagParams.toInteger(_media_sequence) && strict) {
                         report.error(u"invalid media sequence in %s", line);
                         _valid = false;
                     }
                     break;
                 }
                 case Tag::ENDLIST: {
-                    _endList = true;
+                    _end_list = true;
                     break;
                 }
                 case Tag::PLAYLIST_TYPE: {
@@ -759,16 +759,16 @@ bool ts::hls::PlayList::parse(bool strict, Report& report)
                     // Apply to next playlist only.
                     const TagAttributes attr(tagParams);
                     attr.getValue(plNext.bandwidth, u"BANDWIDTH");
-                    attr.getValue(plNext.averageBandwidth, u"AVERAGE-BANDWIDTH");
+                    attr.getValue(plNext.average_bandwidth, u"AVERAGE-BANDWIDTH");
                     attr.value(u"RESOLUTION").scan(u"%dx%d", &plNext.width, &plNext.height);
-                    attr.getMilliValue(plNext.frameRate, u"FRAME-RATE");
+                    attr.getMilliValue(plNext.frame_rate, u"FRAME-RATE");
                     plNext.codecs = attr.value(u"CODECS");
                     plNext.hdcp = attr.value(u"HDCP-LEVEL");
-                    plNext.videoRange = attr.value(u"VIDEO-RANGE");
+                    plNext.video_range = attr.value(u"VIDEO-RANGE");
                     plNext.video = attr.value(u"VIDEO");
                     plNext.audio = attr.value(u"AUDIO");
                     plNext.subtitles = attr.value(u"SUBTITLES");
-                    plNext.closedCaptions = attr.value(u"CLOSED-CAPTIONS");
+                    plNext.closed_captions = attr.value(u"CLOSED-CAPTIONS");
                     break;
                 }
                 case Tag::MEDIA: {
@@ -777,24 +777,24 @@ bool ts::hls::PlayList::parse(bool strict, Report& report)
                     AltPlayList pl;
                     pl.name = attr.value(u"NAME");
                     pl.type = attr.value(u"TYPE");
-                    pl.groupId = attr.value(u"GROUP-ID");
-                    pl.stableRenditionId = attr.value(u"STABLE-RENDITION-ID");
+                    pl.group_id = attr.value(u"GROUP-ID");
+                    pl.stable_rendition_id = attr.value(u"STABLE-RENDITION-ID");
                     pl.language = attr.value(u"LANGUAGE");
-                    pl.assocLanguage = attr.value(u"ASSOC-LANGUAGE");
-                    pl.inStreamId = attr.value(u"INSTREAM-ID");
+                    pl.assoc_language = attr.value(u"ASSOC-LANGUAGE");
+                    pl.in_stream_id = attr.value(u"INSTREAM-ID");
                     pl.characteristics = attr.value(u"CHARACTERISTICS");
                     pl.channels = attr.value(u"CHANNELS");
-                    pl.isDefault = attr.value(u"DEFAULT").similar(u"YES");
-                    pl.autoselect = attr.value(u"AUTOSELECT").similar(u"YES");
+                    pl.is_default = attr.value(u"DEFAULT").similar(u"YES");
+                    pl.auto_select = attr.value(u"AUTOSELECT").similar(u"YES");
                     pl.forced = attr.value(u"FORCED").similar(u"YES");
                     const UString uri(attr.value(u"URI"));
                     if (!uri.empty()) {
                         buildURL(pl, uri);
-                        if (!pl.filePath.endWith(u".m3u8", CASE_INSENSITIVE)) {
+                        if (!pl.file_path.endsWith(u".m3u8", CASE_INSENSITIVE)) {
                             report.debug(u"unexpected playlist file extension in reference URI: %s", uri);
                         }
                     }
-                    _altPlaylists.push_back(pl);
+                    _alt_playlists.push_back(pl);
                     break;
                 }
                 case Tag::BYTERANGE:
@@ -839,7 +839,7 @@ bool ts::hls::PlayList::parse(bool strict, Report& report)
 bool ts::hls::PlayList::getTag(const UString& line, Tag& tag, UString& params, bool strict, Report& report)
 {
     // Check if this is a tag line.
-    if (!line.startWith(u"#EXT", strict ? CASE_SENSITIVE : CASE_INSENSITIVE)) {
+    if (!line.startsWith(u"#EXT", strict ? CASE_SENSITIVE : CASE_INSENSITIVE)) {
         return false;
     }
 
@@ -896,7 +896,7 @@ bool ts::hls::PlayList::getTag(const UString& line, Tag& tag, UString& params, b
 
 bool ts::hls::PlayList::isURI(const UString& line, bool strict, Report& report)
 {
-    if (line.empty() || line.startWith(u"#")) {
+    if (line.empty() || line.startsWith(u"#")) {
         // Not an URI line.
         return false;
     }
@@ -904,14 +904,14 @@ bool ts::hls::PlayList::isURI(const UString& line, bool strict, Report& report)
     // Build a full path of the URI and extract the path name (without trailing query or fragment).
     MediaElement me;
     buildURL(me, line);
-    const UString name(me.url.isValid() ? me.url.getPath() : me.filePath);
+    const UString name(me.url.isValid() ? me.url.getPath() : me.file_path);
 
     // If the URI extension is known, set playlist type.
-    if (name.endWith(u".m3u8", CASE_INSENSITIVE) || name.endWith(u".m3u", CASE_INSENSITIVE)) {
+    if (name.endsWith(u".m3u8", CASE_INSENSITIVE) || name.endsWith(u".m3u", CASE_INSENSITIVE)) {
         // Reference to another playlist, this is a master playlist.
         setType(PlayListType::MASTER, report);
     }
-    else if (name.endWith(u".ts", CASE_INSENSITIVE)) {
+    else if (name.endsWith(u".ts", CASE_INSENSITIVE)) {
         // Reference to a TS file, this is a media playlist.
         setTypeMedia(report);
     }
@@ -926,14 +926,14 @@ bool ts::hls::PlayList::isURI(const UString& line, bool strict, Report& report)
 
 bool ts::hls::PlayList::autoSave(Report& report)
 {
-    if (_autoSaveDir.empty() || _original.empty()) {
+    if (_auto_save_dir.empty() || _original.empty()) {
         // No need to save
         return true;
     }
     else {
-        const UString name(_autoSaveDir + fs::path::preferred_separator + BaseName(_original));
+        const UString name(_auto_save_dir + fs::path::preferred_separator + BaseName(_original));
         report.verbose(u"saving playlist to %s", name);
-        const bool ok = UString::Save(_loadedContent, name);
+        const bool ok = UString::Save(_loaded_content, name);
         if (!ok) {
             report.warning(u"error saving playlist to %s", name);
         }
@@ -950,7 +950,7 @@ ts::UString ts::hls::PlayList::toString() const
 {
     UString str;
 
-    if (_isURL) {
+    if (_is_url) {
         const size_t slash = _original.rfind(u'/');
         str = slash == NPOS ? _original : _original.substr(slash + 1);
     }
@@ -978,12 +978,12 @@ ts::UString ts::hls::PlayList::toString() const
     }
     else if (_type == PlayListType::MASTER) {
         str.format(u", %d media playlists", _playlists.size());
-        if (!_altPlaylists.empty()) {
-            str.format(u", %d alternative rendition playlists", _altPlaylists.size());
+        if (!_alt_playlists.empty()) {
+            str.format(u", %d alternative rendition playlists", _alt_playlists.size());
         }
     }
-    if (_targetDuration > cn::seconds::zero()) {
-        str.format(u", %s/segment", _targetDuration);
+    if (_target_duration > cn::seconds::zero()) {
+        str.format(u", %s/segment", _target_duration);
     }
     return str;
 }
@@ -996,7 +996,7 @@ ts::UString ts::hls::PlayList::toString() const
 bool ts::hls::PlayList::saveFile(const ts::UString &filename, ts::Report &report) const
 {
     // Check that we have a valid file name to store the file.
-    if (filename.empty() && (_isURL || _original.empty())) {
+    if (filename.empty() && (_is_url || _original.empty())) {
         report.error(u"no file name specified to store the HLS playlist");
         return false;
     }
@@ -1035,19 +1035,19 @@ ts::UString ts::hls::PlayList::textContent(ts::Report &report) const
     text.format(u"#%s\n#%s:%d\n", TagNames().name(Tag::EXTM3U), TagNames().name(Tag::VERSION), _version);
 
     // Insert application-specific tags before standard tags.
-    for (const auto& tag : _extraTags) {
-        text.format(u"%s%s\n", tag.startWith(u"#") ? u"" : u"#", tag);
+    for (const auto& tag : _extra_tags) {
+        text.format(u"%s%s\n", tag.startsWith(u"#") ? u"" : u"#", tag);
     }
 
     if (isMaster()) {
         // Loop on all alternative rendition playlists.
-        for (const auto& pl : _altPlaylists) {
+        for (const auto& pl : _alt_playlists) {
             // The initial fields are required.
-            text.format(u"#%s:TYPE=%s,GROUP-ID=\"%s\",NAME=\"%s\"", TagNames().name(Tag::MEDIA), pl.type, pl.groupId, pl.name);
-            if (pl.isDefault) {
+            text.format(u"#%s:TYPE=%s,GROUP-ID=\"%s\",NAME=\"%s\"", TagNames().name(Tag::MEDIA), pl.type, pl.group_id, pl.name);
+            if (pl.is_default) {
                 text.append(u",DEFAULT=YES");
             }
-            if (pl.autoselect) {
+            if (pl.auto_select) {
                 text.append(u",AUTOSELECT=YES");
             }
             if (pl.forced) {
@@ -1056,14 +1056,14 @@ ts::UString ts::hls::PlayList::textContent(ts::Report &report) const
             if (!pl.language.empty()) {
                 text.format(u",LANGUAGE=\"%s\"", pl.language);
             }
-            if (!pl.assocLanguage.empty()) {
-                text.format(u",ASSOC-LANGUAGE=\"%s\"", pl.assocLanguage);
+            if (!pl.assoc_language.empty()) {
+                text.format(u",ASSOC-LANGUAGE=\"%s\"", pl.assoc_language);
             }
-            if (!pl.stableRenditionId.empty()) {
-                text.format(u",STABLE-RENDITION-ID=\"%s\"", pl.stableRenditionId);
+            if (!pl.stable_rendition_id.empty()) {
+                text.format(u",STABLE-RENDITION-ID=\"%s\"", pl.stable_rendition_id);
             }
-            if (!pl.inStreamId.empty()) {
-                text.format(u",INSTREAM-ID=\"%s\"", pl.inStreamId);
+            if (!pl.in_stream_id.empty()) {
+                text.format(u",INSTREAM-ID=\"%s\"", pl.in_stream_id);
             }
             if (!pl.characteristics.empty()) {
                 text.format(u",CHARACTERISTICS=\"%s\"", pl.characteristics);
@@ -1071,24 +1071,24 @@ ts::UString ts::hls::PlayList::textContent(ts::Report &report) const
             if (!pl.channels.empty()) {
                 text.format(u",CHANNELS=\"%s\"", pl.channels);
             }
-            if (!pl.relativeURI.empty()) {
-                text.format(u",URI=\"%s\"", pl.relativeURI);
+            if (!pl.relative_uri.empty()) {
+                text.format(u",URI=\"%s\"", pl.relative_uri);
             }
             // Close the #EXT-X-MEDIA line.
             text.append(u'\n');
         }
         // Loop on all media playlists.
         for (const auto& pl : _playlists) {
-            if (!pl.relativeURI.empty()) {
+            if (!pl.relative_uri.empty()) {
                 // The #EXT-X-STREAM-INF line must exactly preceed the URI line.
                 // Take care about string parameters: some are documented as quoted-string and
                 // some as enumerated-string. The former shall be quoted, the latter shall not.
                 text.format(u"#%s:BANDWIDTH=%d", TagNames().name(Tag::STREAM_INF), pl.bandwidth.toInt());
-                if (pl.averageBandwidth > 0) {
-                    text.format(u",AVERAGE-BANDWIDTH=%d", pl.averageBandwidth.toInt());
+                if (pl.average_bandwidth > 0) {
+                    text.format(u",AVERAGE-BANDWIDTH=%d", pl.average_bandwidth.toInt());
                 }
-                if (pl.frameRate > 0) {
-                    text.format(u",FRAME-RATE=%d.%03d", pl.frameRate / 1000, pl.frameRate % 1000);
+                if (pl.frame_rate > 0) {
+                    text.format(u",FRAME-RATE=%d.%03d", pl.frame_rate / 1000, pl.frame_rate % 1000);
                 }
                 if (pl.width > 0 && pl.height > 0) {
                     text.format(u",RESOLUTION=%dx%d", pl.width, pl.height);
@@ -1099,8 +1099,8 @@ ts::UString ts::hls::PlayList::textContent(ts::Report &report) const
                 if (!pl.hdcp.empty()) {
                     text.format(u",HDCP-LEVEL=%s", pl.hdcp);
                 }
-                if (!pl.videoRange.empty()) {
-                    text.format(u",VIDEO-RANGE=%s", pl.videoRange);
+                if (!pl.video_range.empty()) {
+                    text.format(u",VIDEO-RANGE=%s", pl.video_range);
                 }
                 if (!pl.video.empty()) {
                     text.format(u",VIDEO=\"%s\"", pl.video);
@@ -1111,27 +1111,27 @@ ts::UString ts::hls::PlayList::textContent(ts::Report &report) const
                 if (!pl.subtitles.empty()) {
                     text.format(u",SUBTITLES=\"%s\"", pl.subtitles);
                 }
-                if (!pl.closedCaptions.empty()) {
-                    if (pl.closedCaptions.similar(u"NONE")) {
+                if (!pl.closed_captions.empty()) {
+                    if (pl.closed_captions.similar(u"NONE")) {
                         // enumerated-string
                         text.append(u",CLOSED-CAPTIONS=NONE");
                     }
                     else {
                         // quoted-string
-                        text.format(u",CLOSED-CAPTIONS=\"%s\"", pl.closedCaptions);
+                        text.format(u",CLOSED-CAPTIONS=\"%s\"", pl.closed_captions);
                     }
                 }
                 // Close the #EXT-X-STREAM-INF line.
                 text.append(u'\n');
                 // The URI line must come right after #EXT-X-STREAM-INF.
-                text.format(u"%s\n", pl.relativeURI);
+                text.format(u"%s\n", pl.relative_uri);
             }
         }
     }
     else if (isMedia()) {
         // Global tags.
-        text.format(u"#%s:%d\n", TagNames().name(Tag::TARGETDURATION), _targetDuration.count());
-        text.format(u"#%s:%d\n", TagNames().name(Tag::MEDIA_SEQUENCE), _mediaSequence);
+        text.format(u"#%s:%d\n", TagNames().name(Tag::TARGETDURATION), _target_duration.count());
+        text.format(u"#%s:%d\n", TagNames().name(Tag::MEDIA_SEQUENCE), _media_sequence);
         if (_type == PlayListType::VOD) {
             text.format(u"#%s:VOD\n", TagNames().name(Tag::PLAYLIST_TYPE));
         }
@@ -1141,7 +1141,7 @@ ts::UString ts::hls::PlayList::textContent(ts::Report &report) const
 
         // Loop on all media segments.
         for (const auto& seg : _segments) {
-            if (!seg.relativeURI.empty()) {
+            if (!seg.relative_uri.empty()) {
                 text.format(u"#%s:%d.%03d,%s\n", TagNames().name(Tag::EXTINF), seg.duration.count() / 1000, seg.duration.count() % 1000, seg.title);
                 if (seg.bitrate > 1024) {
                     text.format(u"#%s:%d\n", TagNames().name(Tag::BITRATE), (seg.bitrate / 1024).toInt());
@@ -1149,12 +1149,12 @@ ts::UString ts::hls::PlayList::textContent(ts::Report &report) const
                 if (seg.gap) {
                     text.format(u"#%s\n", TagNames().name(Tag::GAP));
                 }
-                text.format(u"%s\n", seg.relativeURI);
+                text.format(u"%s\n", seg.relative_uri);
             }
         }
 
         // Mark end of list when necessary.
-        if (_endList) {
+        if (_end_list) {
             text.format(u"#%s\n", TagNames().name(Tag::ENDLIST));
         }
     }

@@ -59,7 +59,7 @@ bool ts::Tuner::open(const UString& device_name, bool info_only)
         _duck.report().error(u"internal error, tuner already open");
         return false;
     }
-    else if (device_name.endWith(u".xml", CASE_INSENSITIVE)) {
+    else if (device_name.endsWith(u".xml", CASE_INSENSITIVE)) {
         // The device name is an XML file, create a tuner emulator.
         if (_emulator == nullptr) {
             // First time we use an emulator, allocate one.

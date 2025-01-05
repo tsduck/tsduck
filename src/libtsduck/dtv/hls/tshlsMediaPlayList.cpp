@@ -23,14 +23,14 @@ ts::UString ts::hls::MediaPlayList::toString() const
     if (bandwidth > 0) {
         str.format(u", %'d b/s", bandwidth);
     }
-    else if (averageBandwidth > 0) {
-        str.format(u", %'d b/s", averageBandwidth);
+    else if (average_bandwidth > 0) {
+        str.format(u", %'d b/s", average_bandwidth);
     }
-    if (frameRate % 1000 != 0) {
-        str.format(u", @%d.%03d fps", frameRate / 1000, frameRate % 1000);
+    if (frame_rate % 1000 != 0) {
+        str.format(u", @%d.%03d fps", frame_rate / 1000, frame_rate % 1000);
     }
-    else if (frameRate > 0) {
-        str.format(u", @%d fps", frameRate / 1000);
+    else if (frame_rate > 0) {
+        str.format(u", @%d fps", frame_rate / 1000);
     }
 
     return str;

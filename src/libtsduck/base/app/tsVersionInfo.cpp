@@ -34,64 +34,77 @@ const int tsduckLibraryVersionCommit = TS_COMMIT;
 const int TSDUCK_LIBRARY_VERSION_SYMBOL = TS_VERSION_INTEGER;
 const int TSDUCK_LIBRARY_BITRATE_SYMBOL = 0;
 
+
+//----------------------------------------------------------------------------
+// Enumeration descriptions.
+//----------------------------------------------------------------------------
+
 // Enumeration description of ts::VersionFormat.
-const ts::Enumeration ts::VersionInfo::FormatEnum({
-    {u"short",        ts::VersionInfo::Format::SHORT},
-    {u"long",         ts::VersionInfo::Format::LONG},
-    {u"integer",      ts::VersionInfo::Format::INTEGER},
-    {u"date",         ts::VersionInfo::Format::DATE},
-    {u"compiler",     ts::VersionInfo::Format::COMPILER},
-    {u"system",       ts::VersionInfo::Format::SYSTEM},
-    {u"acceleration", ts::VersionInfo::Format::ACCELERATION},
-    {u"bitrate",      ts::VersionInfo::Format::BITRATE},
-    {u"nsis",         ts::VersionInfo::Format::NSIS},
-    {u"crypto",       ts::VersionInfo::Format::CRYPTO},
-    {u"dektec",       ts::VersionInfo::Format::DEKTEC},
-    {u"http",         ts::VersionInfo::Format::HTTP},
-    {u"srt",          ts::VersionInfo::Format::SRT},
-    {u"rist",         ts::VersionInfo::Format::RIST},
-    {u"vatek",        ts::VersionInfo::Format::VATEK},
-    {u"all",          ts::VersionInfo::Format::ALL},
-});
+const ts::Enumeration& ts::VersionInfo::FormatEnum()
+{
+    static const Enumeration data {
+        {u"short",        Format::SHORT},
+        {u"long",         Format::LONG},
+        {u"integer",      Format::INTEGER},
+        {u"date",         Format::DATE},
+        {u"compiler",     Format::COMPILER},
+        {u"system",       Format::SYSTEM},
+        {u"acceleration", Format::ACCELERATION},
+        {u"bitrate",      Format::BITRATE},
+        {u"nsis",         Format::NSIS},
+        {u"crypto",       Format::CRYPTO},
+        {u"dektec",       Format::DEKTEC},
+        {u"http",         Format::HTTP},
+        {u"srt",          Format::SRT},
+        {u"rist",         Format::RIST},
+        {u"vatek",        Format::VATEK},
+        {u"all",          Format::ALL},
+    };
+    return data;
+}
 
 // Enumeration of supported features.
-const ts::Enumeration ts::VersionInfo::SupportEnum({
-#if defined(TS_NO_DTAPI)
+const ts::Enumeration& ts::VersionInfo::SupportEnum()
+{
+    static const Enumeration data {
+    #if defined(TS_NO_DTAPI)
         {u"dektec", 0},
-#else
+    #else
         {u"dektec", 1},
-#endif
-#if defined(TS_NO_HIDES)
+    #endif
+    #if defined(TS_NO_HIDES)
         {u"hides", 0},
-#else
+    #else
         {u"hides", 1},
-#endif
-#if defined(TS_NO_NOCURL) && !defined(TS_WINDOWS)
+    #endif
+    #if defined(TS_NO_NOCURL) && !defined(TS_WINDOWS)
         {u"http", 0},
-#else
+    #else
         {u"http", 1},
-#endif
-#if defined(TS_NO_PCSC)
+    #endif
+    #if defined(TS_NO_PCSC)
         {u"pcsc", 0},
-#else
+    #else
         {u"pcsc", 1},
-#endif
-#if defined(TS_NO_RIST)
+    #endif
+    #if defined(TS_NO_RIST)
         {u"rist", 0},
-#else
+    #else
         {u"rist", 1},
-#endif
-#if defined(TS_NO_SRT)
+    #endif
+    #if defined(TS_NO_SRT)
         {u"srt", 0},
-#else
+    #else
         {u"srt", 1},
-#endif
-#if defined(TS_NO_VATEK)
+    #endif
+    #if defined(TS_NO_VATEK)
         {u"vatek", 0},
-#else
+    #else
         {u"vatek", 1},
-#endif
-});
+    #endif
+    };
+    return data;
+}
 
 
 //----------------------------------------------------------------------------

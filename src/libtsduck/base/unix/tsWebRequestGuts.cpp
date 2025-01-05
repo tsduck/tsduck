@@ -149,13 +149,13 @@ namespace {
         for (const auto& dir : dirs) {
             const size_t eq = dir.find(u'=');
             if (eq != ts::NPOS) {
-                if (dir.startWith(u"RETRY=", ts::CASE_INSENSITIVE)) {
+                if (dir.startsWith(u"RETRY=", ts::CASE_INSENSITIVE)) {
                     dir.substr(eq + 1).toInteger(retry.retries);
                 }
-                else if (dir.startWith(u"INTERVAL=", ts::CASE_INSENSITIVE)) {
+                else if (dir.startsWith(u"INTERVAL=", ts::CASE_INSENSITIVE)) {
                     dir.substr(eq + 1).toChrono(retry.interval);
                 }
-                else if (dir.startWith(u"HOST=", ts::CASE_INSENSITIVE)) {
+                else if (dir.startsWith(u"HOST=", ts::CASE_INSENSITIVE)) {
                     _retries.insert(std::make_pair(dir.substr(eq + 1).toLower(), retry));
                 }
             }
@@ -555,7 +555,7 @@ bool ts::WebRequest::SystemGuts::downloadError(const UString& msg, bool* certErr
     // In practice, we get messages like this one:
     // "SSL peer certificate or SSH remote key was not OK, SSL certificate problem: unable to get local issuer certificate"
     if (certError != nullptr) {
-        *certError = msg.contain(u"certificate", CASE_INSENSITIVE);
+        *certError = msg.contains(u"certificate", CASE_INSENSITIVE);
         if (*certError) {
             // In case of certificate error, fail silently.
             level = Severity::Debug;

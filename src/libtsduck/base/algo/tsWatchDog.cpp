@@ -15,7 +15,7 @@
 
 ts::WatchDog::WatchDog(WatchDogHandlerInterface* handler, cn::milliseconds timeout, int id, Report& log) :
     _log(log),
-    _watchDogId(id),
+    _watch_dog_id(id),
     _handler(handler),
     _timeout(timeout)
 {
@@ -64,12 +64,12 @@ void ts::WatchDog::activate()
 // Set a new timeout value.
 //----------------------------------------------------------------------------
 
-void ts::WatchDog::setTimeout(cn::milliseconds timeout, bool autoStart)
+void ts::WatchDog::setTimeout(cn::milliseconds timeout, bool auto_start)
 {
     std::lock_guard<std::mutex> lock(_mutex);
     _timeout = timeout;
-    _active = autoStart;
-    if (autoStart) {
+    _active = auto_start;
+    if (auto_start) {
         activate();
     }
 }
@@ -107,7 +107,7 @@ void ts::WatchDog::suspend()
 
 void ts::WatchDog::main()
 {
-    _log.debug(u"Watchdog thread started, id %d", _watchDogId);
+    _log.debug(u"Watchdog thread started, id %d", _watch_dog_id);
 
     while (!_terminate) {
         bool expired = false;
@@ -127,10 +127,10 @@ void ts::WatchDog::main()
 
         // Handle the expiration. No longer under mutex protection to avoid deadlocks in handler.
         if (!_terminate && expired && h != nullptr) {
-            _log.debug(u"Watchdog expired, id %d", _watchDogId);
+            _log.debug(u"Watchdog expired, id %d", _watch_dog_id);
             h->handleWatchDogTimeout(*this);
         }
     }
 
-    _log.debug(u"Watchdog thread completed, id %d", _watchDogId);
+    _log.debug(u"Watchdog thread completed, id %d", _watch_dog_id);
 }

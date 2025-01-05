@@ -15,7 +15,7 @@
 
 ts::UString ts::hls::MediaElement::toString() const
 {
-    return relativeURI.empty() ? u"unknown URI" : relativeURI;
+    return relative_uri.empty() ? u"unknown URI" : relative_uri;
 }
 
 
@@ -25,5 +25,5 @@ ts::UString ts::hls::MediaElement::toString() const
 
 ts::UString ts::hls::MediaElement::urlString() const
 {
-    return url.isValid() ? url.toString() : filePath;
+    return url.isValid() ? url.toString() : file_path;
 }

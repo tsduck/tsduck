@@ -79,15 +79,15 @@ const ::WCHAR* ts::UString::wc_str() const
 // General routine to convert from UTF-16 to UTF-8.
 //----------------------------------------------------------------------------
 
-void ts::UString::ConvertUTF16ToUTF8(const UChar*& inStart, const UChar* inEnd, char*& outStart, char* outEnd)
+void ts::UString::ConvertUTF16ToUTF8(const UChar*& in_start, const UChar* in_end, char*& out_start, char* out_end)
 {
     uint32_t code;
     uint32_t high6;
 
-    while (inStart < inEnd && outStart < outEnd) {
+    while (in_start < in_end && out_start < out_end) {
 
         // Get current code point as 16-bit value.
-        code = *inStart++;
+        code = *in_start++;
 
         // Get the higher 6 bits of the 16-bit value.
         high6 = code & 0xFC00;
@@ -101,31 +101,31 @@ void ts::UString::ConvertUTF16ToUTF8(const UChar*& inStart, const UChar* inEnd, 
 
         if (high6 == 0xD800) {
             // This is a "leading surrogate", must be followed by a "trailing surrogate".
-            if (inStart >= inEnd) {
+            if (in_start >= in_end) {
                 // Invalid truncated input string, stop here.
                 break;
             }
             // A surrogate pair always gives a code point value over 0x10000.
             // This will be encoded in UTF-8 using 4 bytes, check that we have room for it.
-            if (outStart + 4 > outEnd) {
-                inStart--;  // Push back the leading surrogate into the input buffer.
+            if (out_start + 4 > out_end) {
+                in_start--;  // Push back the leading surrogate into the input buffer.
                 break;
             }
             // Get the "trailing surrogate".
-            const uint32_t surr = *inStart++;
+            const uint32_t surr = *in_start++;
             // Ignore the code point if the leading surrogate is not in the valid range.
             if ((surr & 0xFC00) == 0xDC00) {
                 // Rebuild the 32-bit value of the code point.
                 code = 0x010000 + (((code - 0xD800) << 10) | (surr - 0xDC00));
                 // Encode it as 4 bytes in UTF-8.
-                outStart[3] = char(0x80 | (code & 0x3F));
+                out_start[3] = char(0x80 | (code & 0x3F));
                 code >>= 6;
-                outStart[2] = char(0x80 | (code & 0x3F));
+                out_start[2] = char(0x80 | (code & 0x3F));
                 code >>= 6;
-                outStart[1] = char(0x80 | (code & 0x3F));
+                out_start[1] = char(0x80 | (code & 0x3F));
                 code >>= 6;
-                outStart[0] = char(0xF0 | (code & 0x07));
-                outStart += 4;
+                out_start[0] = char(0xF0 | (code & 0x07));
+                out_start += 4;
             }
         }
 
@@ -133,27 +133,27 @@ void ts::UString::ConvertUTF16ToUTF8(const UChar*& inStart, const UChar* inEnd, 
             // The 16-bit value is the code point.
             if (code < 0x0080) {
                 // ASCII compatible value, one byte encoding.
-                *outStart++ = char(code);
+                *out_start++ = char(code);
             }
-            else if (code < 0x800 && outStart + 1 < outEnd) {
+            else if (code < 0x800 && out_start + 1 < out_end) {
                 // 2 bytes encoding.
-                outStart[1] = char(0x80 | (code & 0x3F));
+                out_start[1] = char(0x80 | (code & 0x3F));
                 code >>= 6;
-                outStart[0] = char(0xC0 | (code & 0x1F));
-                outStart += 2;
+                out_start[0] = char(0xC0 | (code & 0x1F));
+                out_start += 2;
             }
-            else if (code >= 0x800 && outStart + 2 < outEnd) {
+            else if (code >= 0x800 && out_start + 2 < out_end) {
                 // 3 bytes encoding.
-                outStart[2] = char(0x80 | (code & 0x3F));
+                out_start[2] = char(0x80 | (code & 0x3F));
                 code >>= 6;
-                outStart[1] = char(0x80 | (code & 0x3F));
+                out_start[1] = char(0x80 | (code & 0x3F));
                 code >>= 6;
-                outStart[0] = char(0xE0 | (code & 0x0F));
-                outStart += 3;
+                out_start[0] = char(0xE0 | (code & 0x0F));
+                out_start += 3;
             }
             else {
                 // There not enough space in the output buffer.
-                inStart--;  // Push back the leading surrogate into the input buffer.
+                in_start--;  // Push back the leading surrogate into the input buffer.
                 break;
             }
         }
@@ -165,7 +165,7 @@ void ts::UString::ConvertUTF16ToUTF8(const UChar*& inStart, const UChar* inEnd, 
 // Output operator for ts::UChar on standard text streams with UTF-8 conv.
 //----------------------------------------------------------------------------
 
-std::ostream& operator<<(std::ostream& strm, const ts::UChar c)
+std::ostream& operator<<(std::ostream& strm, ts::UChar c)
 {
     // See comments in ConvertUTF16ToUTF8().
     if ((c & 0xF800) == 0xD800) {
@@ -191,14 +191,14 @@ std::ostream& operator<<(std::ostream& strm, const ts::UChar c)
 // General routine to convert from UTF-8 to UTF-16.
 //----------------------------------------------------------------------------
 
-void ts::UString::ConvertUTF8ToUTF16(const char*& inStart, const char* inEnd, UChar*& outStart, UChar* outEnd)
+void ts::UString::ConvertUTF8ToUTF16(const char*& in_start, const char* in_end, UChar*& out_start, UChar* out_end)
 {
     uint32_t code;
 
-    while (inStart < inEnd && outStart < outEnd) {
+    while (in_start < in_end && out_start < out_end) {
 
         // Get current code point at 8-bit value.
-        code = *inStart++ & 0xFF;
+        code = *in_start++ & 0xFF;
 
         // Process potential continuation bytes and rebuild the code point.
         // Note: to speed up the processing, we do not check that continuation bytes,
@@ -206,48 +206,48 @@ void ts::UString::ConvertUTF8ToUTF16(const char*& inStart, const char* inEnd, UC
 
         if (code < 0x80) {
             // 0xxx xxxx, ASCII compatible value, one byte encoding.
-            *outStart++ = uint16_t(code);
+            *out_start++ = uint16_t(code);
         }
         else if ((code & 0xE0) == 0xC0) {
             // 110x xxx, 2 byte encoding.
-            if (inStart >= inEnd) {
+            if (in_start >= in_end) {
                 // Invalid truncated input string, stop here.
                 break;
             }
             else {
-                *outStart++ = uint16_t((code & 0x1F) << 6) | (*inStart++ & 0x3F);
+                *out_start++ = uint16_t((code & 0x1F) << 6) | (*in_start++ & 0x3F);
             }
         }
         else if ((code & 0xF0) == 0xE0) {
             // 1110 xxxx, 3 byte encoding.
-            if (inStart + 1 >= inEnd) {
+            if (in_start + 1 >= in_end) {
                 // Invalid truncated input string, stop here.
-                inStart = inEnd;
+                in_start = in_end;
                 break;
             }
             else {
-                *outStart++ = uint16_t((code & 0x0F) << 12) | uint16_t((uint16_t(inStart[0] & 0x3F)) << 6) | (inStart[1] & 0x3F);
-                inStart += 2;
+                *out_start++ = uint16_t((code & 0x0F) << 12) | uint16_t((uint16_t(in_start[0] & 0x3F)) << 6) | (in_start[1] & 0x3F);
+                in_start += 2;
             }
         }
         else if ((code & 0xF8) == 0xF0) {
             // 1111 0xxx, 4 byte encoding.
-            if (inStart + 2 >= inEnd) {
+            if (in_start + 2 >= in_end) {
                 // Invalid truncated input string, stop here.
-                inStart = inEnd;
+                in_start = in_end;
                 break;
             }
-            else if (outStart + 1 >= outEnd) {
+            else if (out_start + 1 >= out_end) {
                 // We need 2 16-bit values in UTF-16.
-                inStart--;  // Push back the leading byte into the input buffer.
+                in_start--;  // Push back the leading byte into the input buffer.
                 break;
             }
             else {
-                code = ((code & 0x07) << 18) | ((uint32_t(inStart[0] & 0x3F)) << 12) | ((uint32_t(inStart[1] & 0x3F)) << 6) | (inStart[2] & 0x3F);
-                inStart += 3;
+                code = ((code & 0x07) << 18) | ((uint32_t(in_start[0] & 0x3F)) << 12) | ((uint32_t(in_start[1] & 0x3F)) << 6) | (in_start[2] & 0x3F);
+                in_start += 3;
                 code -= 0x10000;
-                *outStart++ = uint16_t(0xD800 + (code >> 10));
-                *outStart++ = uint16_t(0xDC00 + (code & 0x03FF));
+                *out_start++ = uint16_t(0xD800 + (code >> 10));
+                *out_start++ = uint16_t(0xDC00 + (code & 0x03FF));
             }
         }
         else {
@@ -325,18 +325,18 @@ ts::UString& ts::UString::assignFromUTF8(const char* utf8, size_type count)
         resize(count);
 
         // Convert from UTF-8 directly into this object.
-        const char* inStart = utf8;
+        const char* in_start = utf8;
         UChar* out = data();
-        UChar* outStart = out;
-        ConvertUTF8ToUTF16(inStart, inStart + count, outStart, outStart + count);
+        UChar* out_start = out;
+        ConvertUTF8ToUTF16(in_start, in_start + count, out_start, out_start + count);
 
-        assert(inStart >= utf8);
-        assert(inStart == utf8 + count);
-        assert(outStart >= out);
-        assert(outStart <= out + count);
+        assert(in_start >= utf8);
+        assert(in_start == utf8 + count);
+        assert(out_start >= out);
+        assert(out_start <= out + count);
 
         // Truncate to the exact number of characters.
-        resize(outStart - out);
+        resize(out_start - out);
     }
     return *this;
 }
@@ -351,11 +351,11 @@ void ts::UString::toUTF8(std::string& utf8) const
     // The maximum number of UTF-8 bytes is 3 times the number of UTF-16 codes.
     utf8.resize(3 * size());
 
-    const UChar* inStart = data();
-    char* outStart = const_cast<char*>(utf8.data());
-    ConvertUTF16ToUTF8(inStart, inStart + size(), outStart, outStart + utf8.size());
+    const UChar* in_start = data();
+    char* out_start = const_cast<char*>(utf8.data());
+    ConvertUTF16ToUTF8(in_start, in_start + size(), out_start, out_start + utf8.size());
 
-    utf8.resize(outStart - utf8.data());
+    utf8.resize(out_start - utf8.data());
 }
 
 std::string ts::UString::toUTF8() const
@@ -514,16 +514,16 @@ ts::UString::size_type ts::UString::displayPosition(size_type count, size_type f
 // Truncate this string to a given display width.
 //----------------------------------------------------------------------------
 
-void ts::UString::truncateWidth(size_type maxWidth, StringDirection direction)
+void ts::UString::truncateWidth(size_type max_width, StringDirection direction)
 {
     switch (direction) {
         case LEFT_TO_RIGHT: {
-            const size_t pos = displayPosition(maxWidth, 0, LEFT_TO_RIGHT);
+            const size_t pos = displayPosition(max_width, 0, LEFT_TO_RIGHT);
             resize(pos);
             break;
         }
         case RIGHT_TO_LEFT: {
-            const size_t pos = displayPosition(maxWidth, length(), RIGHT_TO_LEFT);
+            const size_t pos = displayPosition(max_width, length(), RIGHT_TO_LEFT);
             erase(0, pos);
             break;
         }
@@ -534,10 +534,10 @@ void ts::UString::truncateWidth(size_type maxWidth, StringDirection direction)
     }
 }
 
-ts::UString ts::UString::toTruncatedWidth(size_type maxWidth, StringDirection direction) const
+ts::UString ts::UString::toTruncatedWidth(size_type max_width, StringDirection direction) const
 {
     UString result(*this);
-    result.truncateWidth(maxWidth, direction);
+    result.truncateWidth(max_width, direction);
     return result;
 }
 
@@ -833,14 +833,14 @@ ts::UString ts::UString::toIndented(size_t count) const
 
 void ts::UString::removePrefix(const UString& prefix, CaseSensitivity cs)
 {
-    if (startWith(prefix, cs)) {
+    if (startsWith(prefix, cs)) {
         erase(0, prefix.length());
     }
 }
 
 void ts::UString::removeSuffix(const UString& suffix, CaseSensitivity cs)
 {
-    if (endWith(suffix, cs)) {
+    if (endsWith(suffix, cs)) {
         assert(length() >= suffix.length());
         erase(length() - suffix.length());
     }
@@ -860,12 +860,12 @@ ts::UString ts::UString::toRemovedSuffix(const UString& suffix, CaseSensitivity 
     return result;
 }
 
-bool ts::UString::startWith(const UString& prefix, CaseSensitivity cs, bool skip_space, size_type start) const
+bool ts::UString::startsWith(const UString& prefix, CaseSensitivity cs, bool skip_spaces, size_type start) const
 {
     const size_type end = length();
     const size_type sublen = prefix.length();
 
-    if (skip_space) {
+    if (skip_spaces) {
         while (start < end && IsSpace(at(start))) {
             ++start;
         }
@@ -894,12 +894,12 @@ bool ts::UString::startWith(const UString& prefix, CaseSensitivity cs, bool skip
     }
 }
 
-bool ts::UString::endWith(const UString& suffix, CaseSensitivity cs, bool skip_space, size_type end) const
+bool ts::UString::endsWith(const UString& suffix, CaseSensitivity cs, bool skip_spaces, size_type end) const
 {
     size_type iString = std::min(end, length());
     size_type iSuffix = suffix.length();
 
-    if (skip_space) {
+    if (skip_spaces) {
         while (iString > 0 && IsSpace(at(iString - 1))) {
             --iString;
         }
@@ -930,12 +930,12 @@ bool ts::UString::endWith(const UString& suffix, CaseSensitivity cs, bool skip_s
     }
 }
 
-bool ts::UString::contain(UChar c) const
+bool ts::UString::contains(UChar c) const
 {
     return find(c) != NPOS;
 }
 
-bool ts::UString::contain(const UString& substring, CaseSensitivity cs) const
+bool ts::UString::contains(const UString& substring, CaseSensitivity cs) const
 {
     switch (cs) {
         case CASE_SENSITIVE: {
@@ -956,7 +956,7 @@ bool ts::UString::contain(const UString& substring, CaseSensitivity cs) const
 // Compute the number of similar leading/trailing characters in two strings.
 //----------------------------------------------------------------------------
 
-size_t ts::UString::commonPrefixSize(const ts::UString &str, ts::CaseSensitivity cs) const
+size_t ts::UString::commonPrefixSize(const UString &str, CaseSensitivity cs) const
 {
     const size_t len = std::min(length(), str.length());
     for (size_t i = 0; i < len; ++i) {
@@ -974,7 +974,7 @@ size_t ts::UString::commonPrefixSize(const ts::UString &str, ts::CaseSensitivity
     return len;
 }
 
-size_t ts::UString::commonSuffixSize(const ts::UString &str, ts::CaseSensitivity cs) const
+size_t ts::UString::commonSuffixSize(const UString &str, CaseSensitivity cs) const
 {
     const size_t len1 = length();
     const size_t len2 = str.length();
@@ -999,10 +999,10 @@ size_t ts::UString::commonSuffixSize(const ts::UString &str, ts::CaseSensitivity
 // Split a string into multiple lines which are not longer than a specified maximum width.
 //----------------------------------------------------------------------------
 
-ts::UString ts::UString::toSplitLines(size_type maxWidth, const ts::UString& otherSeparators, const ts::UString& nextMargin, bool forceSplit, const ts::UString lineSeparator) const
+ts::UString ts::UString::toSplitLines(size_type max_width, const UString& other_separators, const UString& next_margin, bool force_split, const UString lineSeparator) const
 {
     UStringList lines;
-    splitLines(lines, maxWidth, otherSeparators, nextMargin, forceSplit);
+    splitLines(lines, max_width, other_separators, next_margin, force_split);
     return Join(lines, lineSeparator);
 }
 
@@ -1011,23 +1011,23 @@ ts::UString ts::UString::toSplitLines(size_type maxWidth, const ts::UString& oth
 // Left-justify (pad and optionally truncate) string.
 //----------------------------------------------------------------------------
 
-void ts::UString::justifyLeft(size_type wid, UChar pad, bool truncate, size_t spacesBeforePad)
+void ts::UString::justifyLeft(size_type wid, UChar pad, bool truncate, size_t spaces_before_pad)
 {
     const size_type len = width();
     if (truncate && len > wid) {
         truncateWidth(wid);
     }
     else if (len < wid) {
-        spacesBeforePad = std::min(spacesBeforePad, wid - len);
-        append(spacesBeforePad, SPACE);
-        append(wid - len - spacesBeforePad, pad);
+        spaces_before_pad = std::min(spaces_before_pad, wid - len);
+        append(spaces_before_pad, SPACE);
+        append(wid - len - spaces_before_pad, pad);
     }
 }
 
-ts::UString ts::UString::toJustifiedLeft(size_type wid, UChar pad, bool truncate, size_t spacesBeforePad) const
+ts::UString ts::UString::toJustifiedLeft(size_type wid, UChar pad, bool truncate, size_t spaces_before_pad) const
 {
     UString result(*this);
-    result.justifyLeft(wid, pad, truncate, spacesBeforePad);
+    result.justifyLeft(wid, pad, truncate, spaces_before_pad);
     return result;
 }
 
@@ -1036,23 +1036,23 @@ ts::UString ts::UString::toJustifiedLeft(size_type wid, UChar pad, bool truncate
 // Right-justified (pad and optionally truncate) string.
 //----------------------------------------------------------------------------
 
-void ts::UString::justifyRight(size_type wid, UChar pad, bool truncate, size_t spacesAfterPad)
+void ts::UString::justifyRight(size_type wid, UChar pad, bool truncate, size_t spaces_after_pad)
 {
     const size_type len = width();
     if (truncate && len > wid) {
         truncateWidth(wid, RIGHT_TO_LEFT);
     }
     else if (len < wid) {
-        spacesAfterPad = std::min(spacesAfterPad, wid - len);
-        insert(0, spacesAfterPad, SPACE);
-        insert(0, wid - len - spacesAfterPad, pad);
+        spaces_after_pad = std::min(spaces_after_pad, wid - len);
+        insert(0, spaces_after_pad, SPACE);
+        insert(0, wid - len - spaces_after_pad, pad);
     }
 }
 
-ts::UString ts::UString::toJustifiedRight(size_type wid, UChar pad, bool truncate, size_t spacesAfterPad) const
+ts::UString ts::UString::toJustifiedRight(size_type wid, UChar pad, bool truncate, size_t spaces_after_pad) const
 {
     UString result(*this);
-    result.justifyRight(wid, pad, truncate, spacesAfterPad);
+    result.justifyRight(wid, pad, truncate, spaces_after_pad);
     return result;
 }
 
@@ -1061,7 +1061,7 @@ ts::UString ts::UString::toJustifiedRight(size_type wid, UChar pad, bool truncat
 // Centered-justified (pad and optionally truncate) string.
 //----------------------------------------------------------------------------
 
-void ts::UString::justifyCentered(size_type wid, UChar pad, bool truncate, size_t spacesAroundPad)
+void ts::UString::justifyCentered(size_type wid, UChar pad, bool truncate, size_t spaces_around_pad)
 {
     const size_type len = width();
     if (truncate && len > wid) {
@@ -1069,9 +1069,9 @@ void ts::UString::justifyCentered(size_type wid, UChar pad, bool truncate, size_
     }
     else if (len < wid) {
         const size_type leftSize = (wid - len) / 2;
-        const size_type leftSpaces = std::min(spacesAroundPad, leftSize);
+        const size_type leftSpaces = std::min(spaces_around_pad, leftSize);
         const size_type rightSize = wid - len - leftSize;
-        const size_type rightSpaces = std::min(spacesAroundPad, rightSize);
+        const size_type rightSpaces = std::min(spaces_around_pad, rightSize);
         insert(0, leftSpaces, SPACE);
         insert(0, leftSize - leftSpaces, pad);
         append(rightSpaces, SPACE);
@@ -1079,10 +1079,10 @@ void ts::UString::justifyCentered(size_type wid, UChar pad, bool truncate, size_
     }
 }
 
-ts::UString ts::UString::toJustifiedCentered(size_type wid, UChar pad, bool truncate, size_t spacesAroundPad) const
+ts::UString ts::UString::toJustifiedCentered(size_type wid, UChar pad, bool truncate, size_t spaces_around_pad) const
 {
     UString result(*this);
-    result.justifyCentered(wid, pad, truncate, spacesAroundPad);
+    result.justifyCentered(wid, pad, truncate, spaces_around_pad);
     return result;
 }
 
@@ -1091,13 +1091,13 @@ ts::UString ts::UString::toJustifiedCentered(size_type wid, UChar pad, bool trun
 // Justify string, pad in the middle.
 //----------------------------------------------------------------------------
 
-void ts::UString::justify(const UString& right, size_type wid, UChar pad, size_t spacesAroundPad)
+void ts::UString::justify(const UString& right, size_type wid, UChar pad, size_t spaces_around_pad)
 {
     const size_type len = this->width() + right.width();
     if (len < wid) {
         const size_t padWidth = wid - len;
-        const size_t leftSpaces = std::min(spacesAroundPad, padWidth);
-        const size_t rightSpaces = std::min(spacesAroundPad, padWidth - leftSpaces);
+        const size_t leftSpaces = std::min(spaces_around_pad, padWidth);
+        const size_t rightSpaces = std::min(spaces_around_pad, padWidth - leftSpaces);
         append(leftSpaces, SPACE);
         append(padWidth - rightSpaces - leftSpaces, pad);
         append(rightSpaces, SPACE);
@@ -1105,10 +1105,10 @@ void ts::UString::justify(const UString& right, size_type wid, UChar pad, size_t
     append(right);
 }
 
-ts::UString ts::UString::toJustified(const UString& right, size_type wid, UChar pad, size_t spacesAroundPad) const
+ts::UString ts::UString::toJustified(const UString& right, size_type wid, UChar pad, size_t spaces_around_pad) const
 {
     UString result(*this);
-    result.justify(right, wid, pad, spacesAroundPad);
+    result.justify(right, wid, pad, spaces_around_pad);
     return result;
 }
 
@@ -1117,31 +1117,31 @@ ts::UString ts::UString::toJustified(const UString& right, size_type wid, UChar 
 // Replace the string with a "quoted" version of it.
 //----------------------------------------------------------------------------
 
-ts::UString ts::UString::toQuoted(UChar quoteCharacter, const UString& specialCharacters, bool forceQuote) const
+ts::UString ts::UString::toQuoted(UChar quote_character, const UString& special_characters, bool force_quote) const
 {
     UString result(*this);
-    result.quoted(quoteCharacter, specialCharacters, forceQuote);
+    result.quoted(quote_character, special_characters, force_quote);
     return result;
 }
 
-void ts::UString::quoted(UChar quoteCharacter, const UString& specialCharacters, bool forceQuote)
+void ts::UString::quoted(UChar quote_character, const UString& special_characters, bool force_quote)
 {
     // Check if the string contains any character which requires quoting.
     // An empty string needs to be quoted as well to be identified as an actual empty string.
-    bool needQuote = forceQuote || empty();
+    bool needQuote = force_quote || empty();
     for (size_type i = 0; !needQuote && i < size(); ++i) {
         const UChar c = at(i);
-        needQuote = c == '\\' || c == quoteCharacter || IsSpace(c) || specialCharacters.contain(c);
+        needQuote = c == '\\' || c == quote_character || IsSpace(c) || special_characters.contains(c);
     }
 
     // Perform quoting only if needed.
     if (needQuote) {
         // Opening quote.
-        insert(0, 1, quoteCharacter);
+        insert(0, 1, quote_character);
         // Loop on all characters. Skip new opening quote.
         for (size_type i = 1; i < size(); ++i) {
             const UChar c = at(i);
-            if (c == '\\' || c == quoteCharacter) {
+            if (c == '\\' || c == quote_character) {
                 // This character must be escaped.
                 insert(i++, 1, '\\');
             }
@@ -1168,7 +1168,7 @@ void ts::UString::quoted(UChar quoteCharacter, const UString& specialCharacters,
             }
         }
         // Final quote.
-        push_back(quoteCharacter);
+        push_back(quote_character);
     }
 }
 
@@ -1325,21 +1325,21 @@ ts::UString ts::UString::AfterBytes(const std::streampos& position)
     return bytes <= 0 ? UString() : Format(u" after %'d bytes", bytes);
 }
 
-ts::UString ts::UString::HumanSize(int64_t value, const UString& units, bool forceSign)
+ts::UString ts::UString::HumanSize(int64_t value, const UString& units, bool force_sign)
 {
     const int64_t k = 1024;
 
     if (value < 8 * k) { // less than 8 kB => use bytes
-        return Decimal(value, 0, true, u",", forceSign) + u" " + units;
+        return Decimal(value, 0, true, u",", force_sign) + u" " + units;
     }
     else if (value < 8 * k * k) { // between 8 kB and 8 MB => use kB
-        return Decimal(value / k, 0, true, u",", forceSign) + u" k" + units;
+        return Decimal(value / k, 0, true, u",", force_sign) + u" k" + units;
     }
     else if (value < 8 * k * k * k) { // between 8 MB and 8 GB => use MB
-        return Decimal(value / (k * k), 0, true, u",", forceSign) + u" M" + units;
+        return Decimal(value / (k * k), 0, true, u",", force_sign) + u" M" + units;
     }
     else { // more than 8 GB => use GB
-        return Decimal(value / (k * k * k), 0, true, u",", forceSign) + u" G" + units;
+        return Decimal(value / (k * k * k), 0, true, u",", force_sign) + u" G" + units;
     }
 }
 
@@ -1522,11 +1522,11 @@ bool ts::UString::similar(const void* addr, size_type size) const
 // Save this string into a file, in UTF-8 format.
 //----------------------------------------------------------------------------
 
-bool ts::UString::save(const fs::path& fileName, bool append, bool enforceLastLineFeed) const
+bool ts::UString::save(const fs::path& file_name, bool append, bool enforce_last_line_feed) const
 {
-    std::ofstream file(fileName, append ? (std::ios::out | std::ios::app) : std::ios::out);
+    std::ofstream file(file_name, append ? (std::ios::out | std::ios::app) : std::ios::out);
     file << *this;
-    if (enforceLastLineFeed && !empty() && back() != LINE_FEED) {
+    if (enforce_last_line_feed && !empty() && back() != LINE_FEED) {
         // Check if the first end of line is a LF or CR/LF.
         // Use the same eol sequence for the last one, regardless of the system.
         const size_type lf = find(LINE_FEED);
@@ -2100,14 +2100,14 @@ void ts::UString::ArgMixInContext::processArg()
     //       * : Can be used instead of @e digits. The integer value is taken from the argument list.
 
     bool leftJustified = false;
-    bool forceSign = false;
+    bool force_sign = false;
     bool useSeparator = false;
     bool reusePrevious = false;
     bool hasDot = false;
     bool shortFormat = false;
     UChar pad = u' ';
     size_t minWidth = 0;
-    size_t maxWidth = std::numeric_limits<size_t>::max();
+    size_t max_width = std::numeric_limits<size_t>::max();
     size_t precision = 0;
 
     if (*_fmt == u'<') {
@@ -2119,7 +2119,7 @@ void ts::UString::ArgMixInContext::processArg()
         _fmt++;
     }
     if (*_fmt == u'+') {
-        forceSign = true;
+        force_sign = true;
         _fmt++;
     }
     if (*_fmt == u'0') {
@@ -2130,10 +2130,10 @@ void ts::UString::ArgMixInContext::processArg()
     if (*_fmt == u'.') {
         ++_fmt;
         hasDot = true;
-        getFormatSize(maxWidth);
-        precision = maxWidth;
-        if (maxWidth < minWidth) {
-            maxWidth = minWidth;
+        getFormatSize(max_width);
+        precision = max_width;
+        if (max_width < minWidth) {
+            max_width = minWidth;
         }
     }
     if (*_fmt == u'\'') {
@@ -2215,19 +2215,19 @@ void ts::UString::ArgMixInContext::processArg()
             UString units(1, u' ');
             units.append(ChronoUnit(argit->num(), argit->den(), shortFormat, std::abs(ivalue) > 1));
             const size_t ulen = units.length();
-            value.assign(Decimal(ivalue, minWidth < ulen ? 0 : minWidth - ulen, !leftJustified, separator, forceSign, pad));
+            value.assign(Decimal(ivalue, minWidth < ulen ? 0 : minWidth - ulen, !leftJustified, separator, force_sign, pad));
             value.append(units);
         }
         else if (cmd == u'n') {
             // Format the string from a number.
-            // 4 possible formats, 2-bit index: forceSign || useSeparator
+            // 4 possible formats, 2-bit index: force_sign || useSeparator
             static const UChar* const formats[4] = {
                 u"0x%X (%<d)",     // 0b00
                 u"0x%'X (%<'d)",   // 0b01 -> useSeparator
-                u"0x%+X (%<+d)",   // 0b10 -> forceSign
-                u"0x%+'X (%<+'d)"  // 0b11 -> forceSign && useSeparator
+                u"0x%+X (%<+d)",   // 0b10 -> force_sign
+                u"0x%+'X (%<+'d)"  // 0b11 -> force_sign && useSeparator
             };
-            value.formatHelper(formats[(int(forceSign) << 1) | int(useSeparator)], {*argit});
+            value.formatHelper(formats[(int(force_sign) << 1) | int(useSeparator)], {*argit});
         }
         else {
             // Not a string, should not get there.
@@ -2235,9 +2235,9 @@ void ts::UString::ArgMixInContext::processArg()
         }
         // Truncate the string.
         size_t wid = value.width();
-        if (maxWidth < wid) {
-            value.truncateWidth(maxWidth, leftJustified ? LEFT_TO_RIGHT : RIGHT_TO_LEFT);
-            wid = maxWidth;
+        if (max_width < wid) {
+            value.truncateWidth(max_width, leftJustified ? LEFT_TO_RIGHT : RIGHT_TO_LEFT);
+            wid = max_width;
         }
         // Insert the string with optional padding.
         if (minWidth > wid && !leftJustified) {
@@ -2250,7 +2250,7 @@ void ts::UString::ArgMixInContext::processArg()
     }
     else if (argit->isAbstractNumber() && cmd == u's') {
         // An AbstractNumber using the most general string format.
-        _result.append(argit->toAbstractNumber().toString(minWidth, !leftJustified, separatorChar, forceSign, precision > 0 ? precision : NPOS, false, FULL_STOP, pad));
+        _result.append(argit->toAbstractNumber().toString(minWidth, !leftJustified, separatorChar, force_sign, precision > 0 ? precision : NPOS, false, FULL_STOP, pad));
     }
     else if (cmd == u'c') {
         // Use an integer value as an Unicode code point.
@@ -2293,11 +2293,11 @@ void ts::UString::ArgMixInContext::processArg()
             debug(u"type mismatch, not a double or fixed-point", cmd);
         }
         if (argit->isAbstractNumber()) {
-            _result.append(argit->toAbstractNumber().toString(minWidth, !leftJustified, separatorChar, forceSign, precision > 0 ? precision : NPOS, hasDot, FULL_STOP, pad));
+            _result.append(argit->toAbstractNumber().toString(minWidth, !leftJustified, separatorChar, force_sign, precision > 0 ? precision : NPOS, hasDot, FULL_STOP, pad));
         }
         else {
             // Get a float or convert an integer to a float. Default to 6 decimal digits.
-            _result.append(Float(argit->toDouble(), minWidth, precision > 0 ? precision : 6, forceSign));
+            _result.append(Float(argit->toDouble(), minWidth, precision > 0 ? precision : 6, force_sign));
         }
     }
     else {
@@ -2307,24 +2307,24 @@ void ts::UString::ArgMixInContext::processArg()
         }
         if (argit->isAbstractNumber()) {
             // Format AbstractNumber without decimals.
-            _result.append(argit->toAbstractNumber().toString(minWidth, !leftJustified, separatorChar, forceSign, 0, true, FULL_STOP, pad));
+            _result.append(argit->toAbstractNumber().toString(minWidth, !leftJustified, separatorChar, force_sign, 0, true, FULL_STOP, pad));
         }
         else if (argit->size() > 4) {
             // Stored as 64-bit integer.
             if (argit->isSigned()) {
-                _result.append(Decimal(argit->toInt64(), minWidth, !leftJustified, separator, forceSign, pad));
+                _result.append(Decimal(argit->toInt64(), minWidth, !leftJustified, separator, force_sign, pad));
             }
             else {
-                _result.append(Decimal(argit->toUInt64(), minWidth, !leftJustified, separator, forceSign, pad));
+                _result.append(Decimal(argit->toUInt64(), minWidth, !leftJustified, separator, force_sign, pad));
             }
         }
         else {
             // Stored as 32-bit integer.
             if (argit->isSigned()) {
-                _result.append(Decimal(argit->toInt32(), minWidth, !leftJustified, separator, forceSign, pad));
+                _result.append(Decimal(argit->toInt32(), minWidth, !leftJustified, separator, force_sign, pad));
             }
             else {
-                _result.append(Decimal(argit->toUInt32(), minWidth, !leftJustified, separator, forceSign, pad));
+                _result.append(Decimal(argit->toUInt32(), minWidth, !leftJustified, separator, force_sign, pad));
             }
         }
     }

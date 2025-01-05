@@ -102,7 +102,7 @@ void ts::tsswitch::CommandListener::main()
         else if (cmd == u"next") {
             _core.nextInput();
         }
-        else if (cmd.startWith(u"prev")) {
+        else if (cmd.startsWith(u"prev")) {
             _core.previousInput();
         }
         else if (cmd == u"quit" || cmd == u"exit") {

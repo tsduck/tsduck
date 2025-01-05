@@ -217,7 +217,7 @@ bool ts::HTTPOutputPlugin::startSession()
     const bool is_get = fields.size() >= 1 && fields[0] == u"GET";
     const UString& resource(fields.size() >= 2 ? fields[1] : empty);
     const UString& protocol(fields.size() >= 3 ? fields[2] : empty);
-    const bool valid = is_get && resource == u"/" && protocol.startWith(u"HTTP/");
+    const bool valid = is_get && resource == u"/" && protocol.startsWith(u"HTTP/");
 
     if (!valid && !_ignore_bad_request) {
         error(u"invalid client request: %s", request);

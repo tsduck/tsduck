@@ -79,15 +79,17 @@ namespace ts {
         //!
         //! Enumeration description of class Format.
         //! Typically used to implement the -\-version command line option.
+        //! @return A constant reference to the enumeration description.
         //!
-        static const Enumeration FormatEnum;
+        static const Enumeration& FormatEnum();
 
         //!
         //! Enumeration of supported features.
         //! Typically used to implement the -\-support command line option.
         //! For each name, the value is 1 if the feature is supported and 0 if it is not.
+        //! @return A constant reference to the enumeration description.
         //!
-        static const Enumeration SupportEnum;
+        static const Enumeration& SupportEnum();
 
         //!
         //! Get the TSDuck formatted version number.

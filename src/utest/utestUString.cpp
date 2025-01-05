@@ -767,62 +767,62 @@ TSUNIT_DEFINE_TEST(RemoveSuffix)
 
 TSUNIT_DEFINE_TEST(Start)
 {
-    TSUNIT_ASSERT(ts::UString(u"azertyuiop").startWith(u"azer"));
-    TSUNIT_ASSERT(!ts::UString(u"azertyuiop").startWith(u"aZer"));
-    TSUNIT_ASSERT(!ts::UString(u"azertyuiop").startWith(u"azeR"));
+    TSUNIT_ASSERT(ts::UString(u"azertyuiop").startsWith(u"azer"));
+    TSUNIT_ASSERT(!ts::UString(u"azertyuiop").startsWith(u"aZer"));
+    TSUNIT_ASSERT(!ts::UString(u"azertyuiop").startsWith(u"azeR"));
 
-    TSUNIT_ASSERT(ts::UString(u"azertyuiop").startWith(u"azer", ts::CASE_INSENSITIVE));
-    TSUNIT_ASSERT(ts::UString(u"azertyuiop").startWith(u"aZer", ts::CASE_INSENSITIVE));
-    TSUNIT_ASSERT(ts::UString(u"azertyuiop").startWith(u"azeR", ts::CASE_INSENSITIVE));
-    TSUNIT_ASSERT(!ts::UString(u"azertyuiop").startWith(u"azerq", ts::CASE_INSENSITIVE));
-    TSUNIT_ASSERT(ts::UString(u"azertyuiop").startWith(u"rtyu", ts::CASE_INSENSITIVE, false, 3));
-    TSUNIT_ASSERT(!ts::UString(u"azertyuiop").startWith(u"azer", ts::CASE_INSENSITIVE, false, 3));
-    TSUNIT_ASSERT(!ts::UString(u"azertyuiop").startWith(u"azer", ts::CASE_INSENSITIVE, false, 2500));
+    TSUNIT_ASSERT(ts::UString(u"azertyuiop").startsWith(u"azer", ts::CASE_INSENSITIVE));
+    TSUNIT_ASSERT(ts::UString(u"azertyuiop").startsWith(u"aZer", ts::CASE_INSENSITIVE));
+    TSUNIT_ASSERT(ts::UString(u"azertyuiop").startsWith(u"azeR", ts::CASE_INSENSITIVE));
+    TSUNIT_ASSERT(!ts::UString(u"azertyuiop").startsWith(u"azerq", ts::CASE_INSENSITIVE));
+    TSUNIT_ASSERT(ts::UString(u"azertyuiop").startsWith(u"rtyu", ts::CASE_INSENSITIVE, false, 3));
+    TSUNIT_ASSERT(!ts::UString(u"azertyuiop").startsWith(u"azer", ts::CASE_INSENSITIVE, false, 3));
+    TSUNIT_ASSERT(!ts::UString(u"azertyuiop").startsWith(u"azer", ts::CASE_INSENSITIVE, false, 2500));
 
-    TSUNIT_ASSERT(ts::UString(u"azertyuiop").startWith(u""));
-    TSUNIT_ASSERT(!ts::UString(u"azertyuiop").startWith(u"azertyuiopqsdf"));
+    TSUNIT_ASSERT(ts::UString(u"azertyuiop").startsWith(u""));
+    TSUNIT_ASSERT(!ts::UString(u"azertyuiop").startsWith(u"azertyuiopqsdf"));
 
-    TSUNIT_ASSERT(ts::UString(u"azertyuiop").startWith(u"", ts::CASE_INSENSITIVE));
-    TSUNIT_ASSERT(!ts::UString(u"azertyuiop").startWith(u"azertyuiopqsdf", ts::CASE_INSENSITIVE));
+    TSUNIT_ASSERT(ts::UString(u"azertyuiop").startsWith(u"", ts::CASE_INSENSITIVE));
+    TSUNIT_ASSERT(!ts::UString(u"azertyuiop").startsWith(u"azertyuiopqsdf", ts::CASE_INSENSITIVE));
 
-    TSUNIT_ASSERT(ts::UString(u"").startWith(u""));
-    TSUNIT_ASSERT(!ts::UString(u"").startWith(u"abcd"));
+    TSUNIT_ASSERT(ts::UString(u"").startsWith(u""));
+    TSUNIT_ASSERT(!ts::UString(u"").startsWith(u"abcd"));
 
-    TSUNIT_ASSERT(ts::UString(u"").startWith(u"", ts::CASE_INSENSITIVE));
-    TSUNIT_ASSERT(!ts::UString(u"").startWith(u"abcd", ts::CASE_INSENSITIVE));
+    TSUNIT_ASSERT(ts::UString(u"").startsWith(u"", ts::CASE_INSENSITIVE));
+    TSUNIT_ASSERT(!ts::UString(u"").startsWith(u"abcd", ts::CASE_INSENSITIVE));
 
-    TSUNIT_ASSERT(!ts::UString(u"  azertyuiop").startWith(u"az", ts::CASE_SENSITIVE, false));
-    TSUNIT_ASSERT(ts::UString(u"  azertyuiop").startWith(u"az", ts::CASE_SENSITIVE, true));
+    TSUNIT_ASSERT(!ts::UString(u"  azertyuiop").startsWith(u"az", ts::CASE_SENSITIVE, false));
+    TSUNIT_ASSERT(ts::UString(u"  azertyuiop").startsWith(u"az", ts::CASE_SENSITIVE, true));
 }
 
 TSUNIT_DEFINE_TEST(End)
 {
-    TSUNIT_ASSERT(ts::UString(u"azertyuiop").endWith(u"uiop"));
-    TSUNIT_ASSERT(!ts::UString(u"azertyuiop").endWith(u"uiOp"));
-    TSUNIT_ASSERT(!ts::UString(u"azertyuiop").endWith(u"Uiop"));
+    TSUNIT_ASSERT(ts::UString(u"azertyuiop").endsWith(u"uiop"));
+    TSUNIT_ASSERT(!ts::UString(u"azertyuiop").endsWith(u"uiOp"));
+    TSUNIT_ASSERT(!ts::UString(u"azertyuiop").endsWith(u"Uiop"));
 
-    TSUNIT_ASSERT(ts::UString(u"azertyuiop").endWith(u"uiop", ts::CASE_INSENSITIVE));
-    TSUNIT_ASSERT(ts::UString(u"azertyuiop").endWith(u"uiOp", ts::CASE_INSENSITIVE));
-    TSUNIT_ASSERT(ts::UString(u"azertyuiop").endWith(u"Uiop", ts::CASE_INSENSITIVE));
-    TSUNIT_ASSERT(!ts::UString(u"azertyuiop").endWith(u"wuiop", ts::CASE_INSENSITIVE));
+    TSUNIT_ASSERT(ts::UString(u"azertyuiop").endsWith(u"uiop", ts::CASE_INSENSITIVE));
+    TSUNIT_ASSERT(ts::UString(u"azertyuiop").endsWith(u"uiOp", ts::CASE_INSENSITIVE));
+    TSUNIT_ASSERT(ts::UString(u"azertyuiop").endsWith(u"Uiop", ts::CASE_INSENSITIVE));
+    TSUNIT_ASSERT(!ts::UString(u"azertyuiop").endsWith(u"wuiop", ts::CASE_INSENSITIVE));
 
-    TSUNIT_ASSERT(ts::UString(u"azertyuiop").endWith(u""));
-    TSUNIT_ASSERT(!ts::UString(u"azertyuiop").endWith(u"qsazertyuiop"));
+    TSUNIT_ASSERT(ts::UString(u"azertyuiop").endsWith(u""));
+    TSUNIT_ASSERT(!ts::UString(u"azertyuiop").endsWith(u"qsazertyuiop"));
 
-    TSUNIT_ASSERT(ts::UString(u"azertyuiop").endWith(u"", ts::CASE_INSENSITIVE));
-    TSUNIT_ASSERT(!ts::UString(u"azertyuiop").endWith(u"qsazertyuiop", ts::CASE_INSENSITIVE));
-    TSUNIT_ASSERT(ts::UString(u"azertyuiop").endWith(u"erty", ts::CASE_INSENSITIVE, false, 6));
-    TSUNIT_ASSERT(!ts::UString(u"azertyuiop").endWith(u"uiop", ts::CASE_INSENSITIVE, false, 6));
-    TSUNIT_ASSERT(ts::UString(u"azertyuiop").endWith(u"uiop", ts::CASE_INSENSITIVE, false, 2500));
+    TSUNIT_ASSERT(ts::UString(u"azertyuiop").endsWith(u"", ts::CASE_INSENSITIVE));
+    TSUNIT_ASSERT(!ts::UString(u"azertyuiop").endsWith(u"qsazertyuiop", ts::CASE_INSENSITIVE));
+    TSUNIT_ASSERT(ts::UString(u"azertyuiop").endsWith(u"erty", ts::CASE_INSENSITIVE, false, 6));
+    TSUNIT_ASSERT(!ts::UString(u"azertyuiop").endsWith(u"uiop", ts::CASE_INSENSITIVE, false, 6));
+    TSUNIT_ASSERT(ts::UString(u"azertyuiop").endsWith(u"uiop", ts::CASE_INSENSITIVE, false, 2500));
 
-    TSUNIT_ASSERT(ts::UString(u"").endWith(u""));
-    TSUNIT_ASSERT(!ts::UString(u"").endWith(u"abcd"));
+    TSUNIT_ASSERT(ts::UString(u"").endsWith(u""));
+    TSUNIT_ASSERT(!ts::UString(u"").endsWith(u"abcd"));
 
-    TSUNIT_ASSERT(ts::UString(u"").endWith(u"", ts::CASE_INSENSITIVE));
-    TSUNIT_ASSERT(!ts::UString(u"").endWith(u"abcd", ts::CASE_INSENSITIVE));
+    TSUNIT_ASSERT(ts::UString(u"").endsWith(u"", ts::CASE_INSENSITIVE));
+    TSUNIT_ASSERT(!ts::UString(u"").endsWith(u"abcd", ts::CASE_INSENSITIVE));
 
-    TSUNIT_ASSERT(!ts::UString(u"azertyuiop  ").endWith(u"uiop", ts::CASE_SENSITIVE, false));
-    TSUNIT_ASSERT(ts::UString(u"azertyuiop  ").endWith(u"uiop", ts::CASE_SENSITIVE, true));
+    TSUNIT_ASSERT(!ts::UString(u"azertyuiop  ").endsWith(u"uiop", ts::CASE_SENSITIVE, false));
+    TSUNIT_ASSERT(ts::UString(u"azertyuiop  ").endsWith(u"uiop", ts::CASE_SENSITIVE, true));
 }
 
 TSUNIT_DEFINE_TEST(JustifyLeft)

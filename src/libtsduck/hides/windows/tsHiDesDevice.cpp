@@ -224,7 +224,7 @@ bool ts::HiDesDevice::Guts::getDevices(HiDesDeviceInfoList* list, int index, con
 
         // Check if the name has the required prefix and class id for an it950x device.
         // Filter out names containing " RX " in case this means a receiver (not verified yet).
-        if (fname.startWith(u"IT95") && !fname.contain(u" RX ") && CanonicalGUID(clsid) == itclsid) {
+        if (fname.startsWith(u"IT95") && !fname.contains(u" RX ") && CanonicalGUID(clsid) == itclsid) {
             report.debug(u"HiDes: found device \"%s\"", fname);
 
             // We must increment deviceIndex now because this is an index of all it950x devices.

@@ -488,7 +488,7 @@ void ts::Args::adjustPredefinedOptions()
         _iopts.erase(u"version");
     }
     else if (!_iopts.contains(u"version")) {
-        addOption(IOption(this, u"version", 0,  VersionInfo::FormatEnum, 0, 1, IOPT_PREDEFINED | IOPT_OPTVALUE));
+        addOption(IOption(this, u"version", 0,  VersionInfo::FormatEnum(), 0, 1, IOPT_PREDEFINED | IOPT_OPTVALUE));
         help(u"version", u"name", u"Display the TSDuck version number.");
     }
 
@@ -1479,12 +1479,12 @@ bool ts::Args::processArgsRedirection(UStringVector& args)
     bool result = true;
 
     for (auto it = args.begin(); it != args.end(); ) {
-        if (it->startWith(u"@@")) {
+        if (it->startsWith(u"@@")) {
             // An initial double @ means a single literal @. Remove the first @.
             it->erase(0, 1);
             ++it;
         }
-        else if (it->startWith(u"@")) {
+        else if (it->startsWith(u"@")) {
             // Replace the line with the content of a file.
 
             // Get the file name.

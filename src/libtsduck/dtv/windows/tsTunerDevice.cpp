@@ -561,7 +561,7 @@ bool ts::TunerDevice::FindTuners(DuckContext& duck, TunerDevice* tuner, TunerPtr
     std::vector<ComPtr<::IMoniker>> tuner_monikers;
 
     // First, check if tuner device name is a device path in order to get a direct moniker.
-    if (tuner != nullptr && tuner->_device_name.startWith(u"@")) {
+    if (tuner != nullptr && tuner->_device_name.startsWith(u"@")) {
         report.debug(u"looking for DVB device path \"%s\"", tuner->_device_name);
         IBindCtx* lpBC = nullptr;
         IMoniker* pmTuner = nullptr;
