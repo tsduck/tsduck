@@ -160,7 +160,7 @@ void ts::HiDesDevice::Guts::GetAllDeviceNames(UStringVector& names)
 
     // Then, filter out receiver devices (we keep only transmitters / modulators).
     for (auto it = names.begin(); it != names.end(); ) {
-        if (it->contain(u"-rx")) {
+        if (it->contains(u"-rx")) {
             it = names.erase(it);
         }
         else {
