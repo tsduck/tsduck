@@ -862,6 +862,9 @@ ts::UString ts::UString::toRemovedSuffix(const UString& suffix, CaseSensitivity 
 
 bool ts::UString::starts_with(const UString& prefix, CaseSensitivity cs, bool skip_spaces, size_type start) const
 {
+    if (cs == CASE_SENSITIVE && skip_spaces == false && start == 0) {
+        return SuperClass::starts_with(prefix);
+    }
     const size_type end = length();
     const size_type sublen = prefix.length();
 
@@ -896,6 +899,9 @@ bool ts::UString::starts_with(const UString& prefix, CaseSensitivity cs, bool sk
 
 bool ts::UString::ends_with(const UString& suffix, CaseSensitivity cs, bool skip_spaces, size_type end) const
 {
+    if (cs == CASE_SENSITIVE && skip_spaces == false && end == NPOS) {
+        return SuperClass::ends_with(suffix);
+    }
     size_type iString = std::min(end, length());
     size_type iSuffix = suffix.length();
 
