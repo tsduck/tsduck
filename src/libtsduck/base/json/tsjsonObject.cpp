@@ -225,7 +225,7 @@ ts::json::Value& ts::json::Object::query(const UString& path, bool create, Type 
         }
         else if (create) {
             // Determine next field type
-            ValuePtr val(Factory(next.empty() ? type : (next.startsWith(u"[") ? Type::Array : Type::Object)));
+            ValuePtr val(Factory(next.empty() ? type : (next.starts_with(u"[") ? Type::Array : Type::Object)));
             _fields[field] = val;
             return val->query(next, create, type); // recursive query
         }

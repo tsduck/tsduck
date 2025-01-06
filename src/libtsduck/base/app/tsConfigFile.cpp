@@ -139,7 +139,7 @@ void ts::ConfigFile::merge(std::istream& strm)
     while (line.getLine(strm)) {
 
         // Rebuild multi-line.
-        while (line.endsWith(u"\\")) {
+        while (line.ends_with(u"\\")) {
             line.erase(line.size() - 1);
             if (!cont.getLine(strm)) {
                 break;
@@ -150,10 +150,10 @@ void ts::ConfigFile::merge(std::istream& strm)
         // Remove leading blanks.
         line.trim(true, false);
 
-        if (line.startsWith(u"#")) {
+        if (line.starts_with(u"#")) {
             // Ignore comment lines.
         }
-        else if (line.startsWith(u"[")) {
+        else if (line.starts_with(u"[")) {
             // Handle section name
             line.erase(0, 1);
             if ((pos = line.find(u']')) != NPOS) {

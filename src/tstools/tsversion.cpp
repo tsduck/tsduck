@@ -222,7 +222,7 @@ Options::Options(int argc, char *argv[]) :
         if (!fs::is_directory(out_dir)) {
             error(u"directory not found: %s", out_dir);
         }
-        else if (!out_dir.endsWith(ts::UString(1, fs::path::preferred_separator))) {
+        else if (!out_dir.ends_with(ts::UString(1, fs::path::preferred_separator))) {
             // Make sure we can use out_dir directly with a file name.
             out_dir.append(fs::path::preferred_separator);
         }

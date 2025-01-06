@@ -125,7 +125,7 @@ ts::UString ts::WinDeviceName(::HANDLE handle)
         // Convert to a UString.
         UString name(name_buffer, size);
         // Remove useless prefix \\?\ if present.
-        if (name.startsWith(u"\\\\?\\")) {
+        if (name.starts_with(u"\\\\?\\")) {
             name.erase(0, 4);
         }
         return name;

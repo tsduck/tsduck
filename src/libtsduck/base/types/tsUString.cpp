@@ -833,14 +833,14 @@ ts::UString ts::UString::toIndented(size_t count) const
 
 void ts::UString::removePrefix(const UString& prefix, CaseSensitivity cs)
 {
-    if (startsWith(prefix, cs)) {
+    if (starts_with(prefix, cs)) {
         erase(0, prefix.length());
     }
 }
 
 void ts::UString::removeSuffix(const UString& suffix, CaseSensitivity cs)
 {
-    if (endsWith(suffix, cs)) {
+    if (ends_with(suffix, cs)) {
         assert(length() >= suffix.length());
         erase(length() - suffix.length());
     }
@@ -860,7 +860,7 @@ ts::UString ts::UString::toRemovedSuffix(const UString& suffix, CaseSensitivity 
     return result;
 }
 
-bool ts::UString::startsWith(const UString& prefix, CaseSensitivity cs, bool skip_spaces, size_type start) const
+bool ts::UString::starts_with(const UString& prefix, CaseSensitivity cs, bool skip_spaces, size_type start) const
 {
     const size_type end = length();
     const size_type sublen = prefix.length();
@@ -894,7 +894,7 @@ bool ts::UString::startsWith(const UString& prefix, CaseSensitivity cs, bool ski
     }
 }
 
-bool ts::UString::endsWith(const UString& suffix, CaseSensitivity cs, bool skip_spaces, size_type end) const
+bool ts::UString::ends_with(const UString& suffix, CaseSensitivity cs, bool skip_spaces, size_type end) const
 {
     size_type iString = std::min(end, length());
     size_type iSuffix = suffix.length();

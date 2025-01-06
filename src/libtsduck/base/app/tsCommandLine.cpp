@@ -242,11 +242,11 @@ ts::CommandStatus ts::CommandLine::processCommands(UStringVector& lines, bool ex
     // Reduce comment and continuation lines.
     for (size_t i = 0; i < lines.size(); ) {
         lines[i].trim();
-        if (lines[i].empty() || lines[i].startsWith(u"#")) {
+        if (lines[i].empty() || lines[i].starts_with(u"#")) {
             // Comment line, drop it.
             lines.erase(lines.begin() + i);
         }
-        else if (i > 0 && lines[i-1].endsWith(u"\\")) {
+        else if (i > 0 && lines[i-1].ends_with(u"\\")) {
             // Append as continuation of previous line and remove this line.
             lines[i-1].pop_back();
             lines[i-1].append(lines[i]);
@@ -256,7 +256,7 @@ ts::CommandStatus ts::CommandLine::processCommands(UStringVector& lines, bool ex
             ++i;
         }
     }
-    if (!lines.empty() && lines.back().endsWith(u"\\")) {
+    if (!lines.empty() && lines.back().ends_with(u"\\")) {
         // Last line ends with backslash, error but ignore it, drop it.
         lines.back().pop_back();
         lines.back().trim();
