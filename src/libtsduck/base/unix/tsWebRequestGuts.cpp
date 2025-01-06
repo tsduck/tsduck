@@ -149,13 +149,13 @@ namespace {
         for (const auto& dir : dirs) {
             const size_t eq = dir.find(u'=');
             if (eq != ts::NPOS) {
-                if (dir.startsWith(u"RETRY=", ts::CASE_INSENSITIVE)) {
+                if (dir.starts_with(u"RETRY=", ts::CASE_INSENSITIVE)) {
                     dir.substr(eq + 1).toInteger(retry.retries);
                 }
-                else if (dir.startsWith(u"INTERVAL=", ts::CASE_INSENSITIVE)) {
+                else if (dir.starts_with(u"INTERVAL=", ts::CASE_INSENSITIVE)) {
                     dir.substr(eq + 1).toChrono(retry.interval);
                 }
-                else if (dir.startsWith(u"HOST=", ts::CASE_INSENSITIVE)) {
+                else if (dir.starts_with(u"HOST=", ts::CASE_INSENSITIVE)) {
                     _retries.insert(std::make_pair(dir.substr(eq + 1).toLower(), retry));
                 }
             }
