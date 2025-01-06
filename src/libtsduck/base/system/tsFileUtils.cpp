@@ -348,7 +348,7 @@ ts::UString ts::SearchExecutableFile(const UString& fileName, const UString& pat
 
     // Adjust file name with the executable suffix.
     UString name(fileName);
-    if (!name.endsWith(EXECUTABLE_FILE_SUFFIX, FILE_SYSTEM_CASE_SENSITVITY)) {
+    if (!name.ends_with(EXECUTABLE_FILE_SUFFIX, FILE_SYSTEM_CASE_SENSITVITY)) {
         name.append(EXECUTABLE_FILE_SUFFIX);
     }
 
