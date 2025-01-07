@@ -78,8 +78,8 @@ void ts::UpdateDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::UpdateDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canRead()) {
-        disp << margin << "Update flag: " << DataName(MY_XML_NAME, u"SSUUpdateFlag", buf.getBits<uint8_t>(2), NamesFlags::DECIMAL_FIRST) << std::endl;
-        disp << margin << "Update method: " << DataName(MY_XML_NAME, u"SSUUpdateMethod", buf.getBits<uint8_t>(4), NamesFlags::DECIMAL_FIRST) << std::endl;
+        disp << margin << "Update flag: " << DataName(MY_XML_NAME, u"SSUUpdateFlag", buf.getBits<uint8_t>(2), NamesFlags::DEC_VALUE_NAME) << std::endl;
+        disp << margin << "Update method: " << DataName(MY_XML_NAME, u"SSUUpdateMethod", buf.getBits<uint8_t>(4), NamesFlags::DEC_VALUE_NAME) << std::endl;
         disp << margin << UString::Format(u"Update priority: %d", buf.getBits<uint8_t>(2)) << std::endl;
         disp.displayPrivateData(u"Private data", buf, NPOS, margin);
     }

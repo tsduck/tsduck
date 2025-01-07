@@ -13,7 +13,6 @@
 
 #pragma once
 #include "tsUChar.h"
-#include "tsEnumUtils.h"
 #include "tsIntegerUtils.h"
 #include "tsAbstractNumber.h"
 #include "tsStringifyInterface.h"

@@ -203,15 +203,15 @@ void ts::ATSCAC3AudioStreamDescriptor::DisplayDescriptor(TablesDisplay& disp, co
 {
     if (buf.canReadBytes(3)) {
         // Fixed initial size: 3 bytes.
-        disp << margin << "Sample rate: " << DataName(MY_XML_NAME, u"SampleRateCode", buf.getBits<uint8_t>(3), NamesFlags::VALUE) << std::endl;
+        disp << margin << "Sample rate: " << DataName(MY_XML_NAME, u"SampleRateCode", buf.getBits<uint8_t>(3), NamesFlags::NAME_VALUE) << std::endl;
         disp << margin << UString::Format(u"AC-3 coding version: %n", buf.getBits<uint8_t>(5)) << std::endl;
         const uint8_t bitrate = buf.getBits<uint8_t>(6);
-        disp << margin << "Bit rate: " << DataName(MY_XML_NAME, u"BitRateCode", bitrate & 0x1F, NamesFlags::VALUE) << ((bitrate & 0x20) == 0 ? "" : " max") << std::endl;
-        disp << margin << "Surround mode: " << DataName(MY_XML_NAME, u"SurroundMode", buf.getBits<uint8_t>(2), NamesFlags::VALUE) << std::endl;
+        disp << margin << "Bit rate: " << DataName(MY_XML_NAME, u"BitRateCode", bitrate & 0x1F, NamesFlags::NAME_VALUE) << ((bitrate & 0x20) == 0 ? "" : " max") << std::endl;
+        disp << margin << "Surround mode: " << DataName(MY_XML_NAME, u"SurroundMode", buf.getBits<uint8_t>(2), NamesFlags::NAME_VALUE) << std::endl;
         const uint8_t bsmod = buf.getBits<uint8_t>(3);
-        disp << margin << "Bitstream mode: " << DataName(MY_XML_NAME, u"BitStreamMode", bsmod, NamesFlags::VALUE) << std::endl;
+        disp << margin << "Bitstream mode: " << DataName(MY_XML_NAME, u"BitStreamMode", bsmod, NamesFlags::NAME_VALUE) << std::endl;
         const uint8_t channels = buf.getBits<uint8_t>(4);
-        disp << margin << "Num. channels: " << DataName(MY_XML_NAME, u"NumChannels", channels, NamesFlags::VALUE) << std::endl;
+        disp << margin << "Num. channels: " << DataName(MY_XML_NAME, u"NumChannels", channels, NamesFlags::NAME_VALUE) << std::endl;
         disp << margin << UString::Format(u"Full service: %s", buf.getBool()) << std::endl;
 
         // Ignore langcode and langcode2, deprecated

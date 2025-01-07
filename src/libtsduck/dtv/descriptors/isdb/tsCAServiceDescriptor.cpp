@@ -13,7 +13,6 @@
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
-#include "tsNames.h"
 
 #define MY_XML_NAME u"CA_service_descriptor"
 #define MY_CLASS    ts::CAServiceDescriptor
@@ -83,7 +82,7 @@ void ts::CAServiceDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::CAServiceDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(4)) {
-        disp << margin << "CA System Id: " << CASIdName(disp.duck(), buf.getUInt16(), NamesFlags::FIRST) << std::endl;
+        disp << margin << "CA System Id: " << CASIdName(disp.duck(), buf.getUInt16(), NamesFlags::VALUE_NAME) << std::endl;
         disp << margin << UString::Format(u"CA broadcaster group id: %n", buf.getUInt8()) << std::endl;
         disp << margin << UString::Format(u"Delay time: %d days", buf.getUInt8()) << std::endl;
         while (buf.canReadBytes(2)) {

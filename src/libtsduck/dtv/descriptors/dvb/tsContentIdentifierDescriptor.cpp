@@ -89,9 +89,9 @@ void ts::ContentIdentifierDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::ContentIdentifierDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     while (buf.canReadBytes(1)) {
-        disp << margin << "- CRID type: " << DataName(MY_XML_NAME, u"CRIDType", buf.getBits<uint8_t>(6), NamesFlags::HEXA_FIRST) << std::endl;
+        disp << margin << "- CRID type: " << DataName(MY_XML_NAME, u"CRIDType", buf.getBits<uint8_t>(6), NamesFlags::HEX_VALUE_NAME) << std::endl;
         const uint8_t loc = buf.getBits<uint8_t>(2);
-        disp << margin << "  CRID location: " << DataName(MY_XML_NAME, u"CRIDLocation", loc, NamesFlags::DECIMAL_FIRST) << std::endl;
+        disp << margin << "  CRID location: " << DataName(MY_XML_NAME, u"CRIDLocation", loc, NamesFlags::DEC_VALUE_NAME) << std::endl;
         if (loc == 0 && buf.canReadBytes(1)) {
             disp << margin << "  CRID: \"" << buf.getUTF8WithLength() << "\"" << std::endl;
         }

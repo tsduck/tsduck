@@ -18,7 +18,6 @@
 #include "tsPAT.h"
 #include "tsPMT.h"
 #include "tsSDT.h"
-#include "tsNames.h"
 #include "tsunit.h"
 
 #include "tables/psi_pat_r4_packets.h"

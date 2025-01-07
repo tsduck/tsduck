@@ -17,6 +17,13 @@
 
 namespace ts {
     //!
+    //! Origin of Modified Julian Dates (MJD).
+    //! The origin of MJD is 17 Nov 1858 00:00:00.
+    //! The UNIX epoch (1 Jan 1970) is 40587 days from julian time origin.
+    //!
+    constexpr uint32_t MJD_EPOCH = 40587;
+
+    //!
     //! Storage format of Modified Julian Dates as used by DVB.
     //!
     //! The original DVB format is a weird one, a mixture of binary format (for the date)

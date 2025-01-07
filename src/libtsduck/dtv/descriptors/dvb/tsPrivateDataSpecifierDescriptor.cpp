@@ -13,7 +13,6 @@
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
-#include "tsNames.h"
 
 #define MY_XML_NAME u"private_data_specifier_descriptor"
 #define MY_CLASS    ts::PrivateDataSpecifierDescriptor
@@ -66,7 +65,7 @@ void ts::PrivateDataSpecifierDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::PrivateDataSpecifierDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(4)) {
-        disp << margin << "Specifier: " << PDSName(buf.getUInt32(), NamesFlags::FIRST) << std::endl;
+        disp << margin << "Specifier: " << PDSName(buf.getUInt32(), NamesFlags::VALUE_NAME) << std::endl;
     }
 }
 

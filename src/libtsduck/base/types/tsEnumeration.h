@@ -46,7 +46,7 @@ namespace ts {
         //! This value means "not found".
         //! It is returned by methods which search an integer value.
         //!
-        static const int_t UNKNOWN;
+        static constexpr int_t UNKNOWN = std::numeric_limits<ts::Enumeration::int_t>::max();
 
         //!
         //! A structure used in the constructor of an Enumeration.
@@ -121,7 +121,7 @@ namespace ts {
         //! @param [in] name The string to search. This string may also
         //! contain an integer value in decimal or hexadecimal representation
         //! in which case this integer value is returned.
-        //! @param [in] caseSensitive If false, the search is not case
+        //! @param [in] case_sensitive If false, the search is not case
         //! sensitive and @a name may match an equivalent string with
         //! distinct letter case. If true (the default), an exact match is required.
         //! @param [in] abbreviated If true (the default), any non-ambiguous
@@ -132,7 +132,7 @@ namespace ts {
         //! with the same name, one of them is returned but which one is
         //! returned is unspecified.
         //!
-        int_t value(const UString& name, bool caseSensitive = true, bool abbreviated = true) const;
+        int_t value(const UString& name, bool case_sensitive = true, bool abbreviated = true) const;
 
         //!
         //! Get the enumeration value from a name.
@@ -143,7 +143,7 @@ namespace ts {
         //! @param [in] name The string to search. This string may also
         //! contain an integer value in decimal or hexadecimal representation
         //! in which case this integer value is returned.
-        //! @param [in] caseSensitive If false, the search is not case
+        //! @param [in] case_sensitive If false, the search is not case
         //! sensitive and @a name may match an equivalent string with
         //! distinct letter case. If true (the default), an exact match is required.
         //! @param [in] abbreviated If true (the default), any non-ambiguous
@@ -153,18 +153,18 @@ namespace ts {
         //!
         //!
         template <typename INTENUM> requires std::integral<INTENUM> || std::is_enum_v<INTENUM>
-        bool getValue(INTENUM& e, const UString& name, bool caseSensitive = true, bool abbreviated = true) const;
+        bool getValue(INTENUM& e, const UString& name, bool case_sensitive = true, bool abbreviated = true) const;
 
         //!
         //! Get the error message about a name failing to match a value.
         //! @param [in] name The string to search.
-        //! @param [in] caseSensitive If false, the search is not case sensitive.
+        //! @param [in] case_sensitive If false, the search is not case sensitive.
         //! @param [in] abbreviated If true, any non-ambiguous abbreviation is valid.
         //! @param [in] designator How to designate the name in the message (e.g. "name", "command", "option").
         //! @param [in] prefix Prefix to prepend each candidate in case of ambiguous name.
         //! @return The corresponding error message or an empty string is there is no error.
         //!
-        UString error(const UString& name, bool caseSensitive = true, bool abbreviated = true, const UString& designator = u"name", const UString& prefix = UString()) const;
+        UString error(const UString& name, bool case_sensitive = true, bool abbreviated = true, const UString& designator = u"name", const UString& prefix = UString()) const;
 
         //!
         //! Get the name from an enumeration value.

@@ -13,7 +13,6 @@
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
-#include "tsNames.h"
 #include "tsDescriptorList.h"
 
 #define MY_XML_NAME u"CA_descriptor"
@@ -91,7 +90,7 @@ void ts::CADescriptor::DisplayDescriptor(TablesDisplay& disp, const Descriptor& 
     if (buf.canReadBytes(4)) {
         // Display common part
         const CASID casid = buf.getUInt16();
-        disp << margin << "CA System Id: " << CASIdName(disp.duck(), casid, NamesFlags::FIRST);
+        disp << margin << "CA System Id: " << CASIdName(disp.duck(), casid, NamesFlags::VALUE_NAME);
         const TID tid = context.getTableId();
         disp << ", " << (tid == TID_CAT ? u"EMM" : (tid == TID_PMT ? u"ECM" : u"CA"));
         disp << UString::Format(u" PID: %n", buf.getPID()) << std::endl;

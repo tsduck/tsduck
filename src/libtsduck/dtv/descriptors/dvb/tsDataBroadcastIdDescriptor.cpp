@@ -13,7 +13,7 @@
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
-#include "tsNames.h"
+#include "tsDVB.h"
 
 #define MY_XML_NAME u"data_broadcast_id_descriptor"
 #define MY_CLASS    ts::DataBroadcastIdDescriptor
@@ -75,7 +75,7 @@ void ts::DataBroadcastIdDescriptor::DisplayDescriptor(TablesDisplay& disp, const
 {
     if (buf.canReadBytes(2)) {
         const uint16_t id = buf.getUInt16();
-        disp << margin << "Data broadcast id: " << names::DataBroadcastId(id, NamesFlags::BOTH_FIRST) << std::endl;
+        disp << margin << "Data broadcast id: " << DataBroadcastIdName(id, NamesFlags::HEX_DEC_VALUE_NAME) << std::endl;
         DisplaySelectorBytes(disp, buf, margin, id);
     }
 }
@@ -128,7 +128,7 @@ void ts::DataBroadcastIdDescriptor::DisplaySelectorSSU(TablesDisplay& disp, PSIB
     buf.pushReadSizeFromLength(8); // OUI_data_length
 
     while (buf.canReadBytes(6)) {
-        disp << margin << "OUI: " << NameFromOUI(buf.getUInt24(), NamesFlags::FIRST) << std::endl;
+        disp << margin << "OUI: " << NameFromOUI(buf.getUInt24(), NamesFlags::VALUE_NAME) << std::endl;
         buf.skipBits(4);
         const uint8_t upd_type = buf.getBits<uint8_t>(4);
         disp << margin << UString::Format(u"  Update type: 0x%X (", upd_type);
@@ -187,7 +187,7 @@ void ts::DataBroadcastIdDescriptor::DisplaySelectorINT(TablesDisplay& disp, PSIB
 {
     buf.pushReadSizeFromLength(8); // platform_id_data_length
     while (buf.canReadBytes(5)) {
-        disp << margin << "- Platform id: " << DataName(u"INT", u"platform_id", buf.getUInt24(), NamesFlags::HEXA_FIRST) << std::endl;
+        disp << margin << "- Platform id: " << DataName(u"INT", u"platform_id", buf.getUInt24(), NamesFlags::HEX_VALUE_NAME) << std::endl;
         disp << margin << UString::Format(u"  Action type: 0x%X, version: ", buf.getUInt8());
         buf.skipBits(2);
         if (buf.getBool()) {

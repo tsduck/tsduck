@@ -11,7 +11,6 @@
 #include "tsPAT.h"
 #include "tsPMT.h"
 #include "tsCAT.h"
-#include "tsNames.h"
 #include "tsDuckContext.h"
 
 

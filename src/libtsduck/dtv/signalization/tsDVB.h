@@ -14,8 +14,59 @@
 
 #pragma once
 #include "tsEnumeration.h"
+#include "tsNamesFile.h"
 
 namespace ts {
+
+    class DuckContext;
+
+    //!
+    //! A placeholder for "invalid network id" value.
+    //! In theory, all 16-bit values can be valid network id. However, this one is "usually" not used.
+    //!
+    constexpr uint16_t INVALID_NETWORK_ID = 0xFFFF;
+
+    //!
+    //! Name of Original Network Id.
+    //! @param [in] id Original Network Id.
+    //! @param [in] flags Presentation flags.
+    //! @return The corresponding name.
+    //!
+    TSDUCKDLL UString OriginalNetworkIdName(uint16_t id, NamesFlags flags = NamesFlags::NAME);
+
+    //!
+    //! Name of Network Id.
+    //! @param [in] id Network Id.
+    //! @param [in] flags Presentation flags.
+    //! @return The corresponding name.
+    //!
+    TSDUCKDLL UString NetworkIdName(uint16_t id, NamesFlags flags = NamesFlags::NAME);
+
+    //!
+    //! Name of Bouquet Id.
+    //! @param [in] id Bouquet Id.
+    //! @param [in] flags Presentation flags.
+    //! @return The corresponding name.
+    //!
+    TSDUCKDLL UString BouquetIdName(uint16_t id, NamesFlags flags = NamesFlags::NAME);
+
+    //!
+    //! Name of service type (in Service Descriptor).
+    //! @param [in] st Service type (in Service Descriptor).
+    //! @param [in] flags Presentation flags.
+    //! @return The corresponding name.
+    //!
+    TSDUCKDLL UString ServiceTypeName(uint8_t st, NamesFlags flags = NamesFlags::NAME);
+
+    //!
+    //! Name of content name (in Content Descriptor).
+    //! @param [in] duck TSDuck execution context (used to select from other standards).
+    //! @param [in] c Content name.
+    //! @param [in] flags Presentation flags.
+    //! @return The corresponding name.
+    //!
+    TSDUCKDLL UString ContentIdName(const DuckContext& duck, uint8_t c, NamesFlags flags = NamesFlags::NAME);
+
     //!
     //! Running status values (in RST, EIT, etc.)
     //!
@@ -33,6 +84,14 @@ namespace ts {
     //! @return A constant reference to the enumeration description.
     //!
     TSDUCKDLL const Enumeration& RunningStatusEnum();
+
+    //!
+    //! Name of Running Status (in SDT).
+    //! @param [in] rs Running Status (in SDT).
+    //! @param [in] flags Presentation flags.
+    //! @return The corresponding name.
+    //!
+    TSDUCKDLL UString RunningStatusName(uint8_t rs, NamesFlags flags = NamesFlags::NAME);
 
     //!
     //! Scrambling mode values (in scrambling_descriptor)
@@ -112,6 +171,14 @@ namespace ts {
         DBID_BBG_OBJECT_CSL       = 0xBBB2, //!< BBG Object Caroussel
         DBID_BBG                  = 0xBBBB, //!< Bertelsmann Broadband Group
     };
+
+    //!
+    //! Name of Data broadcast id (in Data Broadcast Id Descriptor).
+    //! @param [in] id Data broadcast id (in Data Broadcast Id Descriptor).
+    //! @param [in] flags Presentation flags.
+    //! @return The corresponding name.
+    //!
+    TSDUCKDLL UString DataBroadcastIdName(uint16_t id, NamesFlags flags = NamesFlags::NAME);
 
     //!
     //! DVB-MHP transport protocol ids.

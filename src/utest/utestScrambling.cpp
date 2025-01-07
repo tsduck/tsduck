@@ -12,7 +12,7 @@
 
 #include "tsDVBCSA2.h"
 #include "tsTSPacket.h"
-#include "tsNames.h"
+#include "tsNamesFile.h"
 #include "tsunit.h"
 
 

@@ -16,7 +16,6 @@
 #include "tsSectionDemux.h"
 #include "tsPESPacket.h"
 #include "tsTime.h"
-#include "tsNames.h"
 #include "tsCAS.h"
 #include "tsPES.h"
 #include "tsPAT.h"
@@ -529,11 +528,11 @@ ts::ProcessorPlugin::Status ts::HistoryPlugin::processPacket(TSPacket& pkt, TSPa
     if (has_pes_start) {
         if (!cpid.pes_strid.has_value()) {
             // Found first PES stream id in the PID.
-            report(u"PID %n, PES stream_id is %s", pid, NameFromDTV(u"pes.stream_id", pes_stream_id, NamesFlags::FIRST));
+            report(u"PID %n, PES stream_id is %s", pid, NameFromDTV(u"pes.stream_id", pes_stream_id, NamesFlags::VALUE_NAME));
         }
         else if (cpid.pes_strid != pes_stream_id && !_ignore_stream_id) {
             // PES stream id has changed in the PID.
-            report(u"PID %n, PES stream_id modified from 0x%X to %s", pid, cpid.pes_strid.value(), NameFromDTV(u"pes.stream_id", pes_stream_id, NamesFlags::FIRST));
+            report(u"PID %n, PES stream_id modified from 0x%X to %s", pid, cpid.pes_strid.value(), NameFromDTV(u"pes.stream_id", pes_stream_id, NamesFlags::VALUE_NAME));
         }
         cpid.pes_strid = pes_stream_id;
         if (PESPacket::FindIntraImage(pkt.getPayload(), pkt.getPayloadSize(), cpid.stream_type, cpid.codec) != NPOS) {

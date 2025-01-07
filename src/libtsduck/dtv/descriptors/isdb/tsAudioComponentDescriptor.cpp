@@ -14,7 +14,6 @@
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 #include "tsStreamType.h"
-#include "tsNames.h"
 
 #define MY_XML_NAME u"audio_component_descriptor"
 #define MY_CLASS    ts::AudioComponentDescriptor
@@ -113,15 +112,15 @@ void ts::AudioComponentDescriptor::DisplayDescriptor(TablesDisplay& disp, const 
     if (buf.canReadBytes(9)) {
         buf.skipBits(4);
         disp << margin << UString::Format(u"Content type: %n", buf.getBits<uint8_t>(4)) << std::endl;
-        disp << margin << "Component type: " << DataName(MY_XML_NAME, u"component_type", buf.getUInt8(), NamesFlags::FIRST) << std::endl;
+        disp << margin << "Component type: " << DataName(MY_XML_NAME, u"component_type", buf.getUInt8(), NamesFlags::VALUE_NAME) << std::endl;
         disp << margin << UString::Format(u"Component tag: %n", buf.getUInt8()) << std::endl;
-        disp << margin << "Stream type: " << StreamTypeName(buf.getUInt8(), NamesFlags::FIRST) << std::endl;
+        disp << margin << "Stream type: " << StreamTypeName(buf.getUInt8(), NamesFlags::VALUE_NAME) << std::endl;
         const uint8_t group = buf.getUInt8();
         disp << margin << UString::Format(u"Simulcast group: 0x%X (%<d%s)", group, group == 0xFF ? u", none" : u"") << std::endl;
         const bool multi = buf.getBool();
         disp << margin << UString::Format(u"Main component: %s", buf.getBool()) << std::endl;
-        disp << margin << "Quality indicator: " << DataName(MY_XML_NAME, u"Quality", buf.getBits<uint8_t>(2), NamesFlags::FIRST) << std::endl;
-        disp << margin << "Sampling rate: " << DataName(MY_XML_NAME, u"Sampling", buf.getBits<uint8_t>(3), NamesFlags::FIRST) << std::endl;
+        disp << margin << "Quality indicator: " << DataName(MY_XML_NAME, u"Quality", buf.getBits<uint8_t>(2), NamesFlags::VALUE_NAME) << std::endl;
+        disp << margin << "Sampling rate: " << DataName(MY_XML_NAME, u"Sampling", buf.getBits<uint8_t>(3), NamesFlags::VALUE_NAME) << std::endl;
         buf.skipBits(1);
         disp << margin << "Language code: \"" << buf.getLanguageCode() << "\"" << std::endl;
         if (multi && buf.canReadBytes(3)) {

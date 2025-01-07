@@ -119,13 +119,13 @@ void ts::EASAudioFileDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts
             buf.pushReadSizeFromLength(8); // loop_length
             if (buf.canReadBytes(1)) {
                 const bool file_name_present = buf.getBool();
-                disp << margin << "- Audio format: " << DataName(MY_XML_NAME, u"Format", buf.getBits<uint8_t>(7), NamesFlags::VALUE) << std::endl;
+                disp << margin << "- Audio format: " << DataName(MY_XML_NAME, u"Format", buf.getBits<uint8_t>(7), NamesFlags::NAME_VALUE) << std::endl;
                 if (file_name_present && buf.canReadBytes(1)) {
                     disp << margin << "  File name: \"" << buf.getUTF8WithLength() << "\"" << std::endl;
                 }
                 if (buf.canReadBytes(1)) {
                     const uint8_t audio_source = buf.getUInt8();
-                    disp << margin << "  Audio source: " << DataName(MY_XML_NAME, u"Source", audio_source, NamesFlags::VALUE) << std::endl;
+                    disp << margin << "  Audio source: " << DataName(MY_XML_NAME, u"Source", audio_source, NamesFlags::NAME_VALUE) << std::endl;
                     if (audio_source == 0x01 && buf.canReadBytes(8)) {
                         disp << margin << UString::Format(u"  Program number: %n", buf.getUInt16()) << std::endl;
                         disp << margin << UString::Format(u"  Carousel id: %n", buf.getUInt32()) << std::endl;

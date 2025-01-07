@@ -13,7 +13,7 @@
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
-#include "tsNames.h"
+#include "tsDVB.h"
 
 #define MY_XML_NAME u"sky_logical_channel_number_descriptor"
 #define MY_CLASS    ts::SkyLogicalChannelNumberDescriptor
@@ -90,7 +90,7 @@ void ts::SkyLogicalChannelNumberDescriptor::DisplayDescriptor(TablesDisplay& dis
         disp << margin << UString::Format(u"Region Id: %5d (0x%<X)", buf.getUInt16()) << std::endl;
         while (buf.canReadBytes(9)) {
             disp << margin << UString::Format(u"Service Id: %5d (0x%<X)", buf.getUInt16());
-            disp << ", Service Type: " << names::ServiceType(buf.getUInt8(), NamesFlags::FIRST);
+            disp << ", Service Type: " << ServiceTypeName(buf.getUInt8(), NamesFlags::VALUE_NAME);
             disp << UString::Format(u", Channel number: %3d", buf.getUInt16());
             disp << UString::Format(u", Lcn: %5d",  buf.getUInt16());
             disp << UString::Format(u", Sky Id: %5d (0x%<X)", buf.getUInt16()) << std::endl;

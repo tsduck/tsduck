@@ -113,7 +113,7 @@ void ts::LogoTransmissionDescriptor::DisplayDescriptor(TablesDisplay& disp, cons
 {
     if (buf.canReadBytes(1)) {
         const uint8_t ttype = buf.getUInt8();
-        disp << margin << "Logo transmission type: " << DataName(MY_XML_NAME, u"Type", ttype, NamesFlags::HEXA_FIRST) << std::endl;
+        disp << margin << "Logo transmission type: " << DataName(MY_XML_NAME, u"Type", ttype, NamesFlags::HEX_VALUE_NAME) << std::endl;
         if (ttype == 0x01 && buf.canReadBytes(6)) {
             buf.skipBits(7);
             disp << margin << UString::Format(u"Logo id: 0x%03X (%<d)", buf.getBits<uint16_t>(9)) << std::endl;

@@ -11,7 +11,6 @@
 #include "tsDuckContext.h"
 #include "tsCRC32.h"
 #include "tsSHA1.h"
-#include "tsNames.h"
 #include "tsMemory.h"
 #include "tsFatal.h"
 
@@ -605,7 +604,7 @@ std::ostream& ts::Section::dump(std::ostream& strm, int indent, CASID cas, bool 
     // If PID is the null PID, this means "unknown PID"
     if (!no_header) {
         strm << margin << ""
-             << UString::Format(u"* Section dump, PID %n, TID %s", sourcePID(), TIDName(duck, tid, cas, NamesFlags::BOTH_FIRST))
+             << UString::Format(u"* Section dump, PID %n, TID %s", sourcePID(), TIDName(duck, tid, cas, NamesFlags::HEX_DEC_VALUE_NAME))
              << std::endl
              << margin << "  Section size: " << size() << " bytes, header: " << (isLongSection() ? "long" : "short")
              << std::endl;

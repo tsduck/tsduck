@@ -16,7 +16,6 @@
 #include "tsSectionDemux.h"
 #include "tsCyclingPacketizer.h"
 #include "tsAlgorithm.h"
-#include "tsNames.h"
 #include "tsEITProcessor.h"
 #include "tsCADescriptor.h"
 #include "tsPAT.h"

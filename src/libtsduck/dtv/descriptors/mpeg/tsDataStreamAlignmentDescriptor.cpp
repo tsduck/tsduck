@@ -64,7 +64,7 @@ void ts::DataStreamAlignmentDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::DataStreamAlignmentDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(1)) {
-        disp << margin << "Alignment type: " << DataName(MY_XML_NAME, u"DataStreamAlignment", buf.getUInt8(), NamesFlags::BOTH_FIRST) << std::endl;
+        disp << margin << "Alignment type: " << DataName(MY_XML_NAME, u"DataStreamAlignment", buf.getUInt8(), NamesFlags::HEX_DEC_VALUE_NAME) << std::endl;
     }
 }
 

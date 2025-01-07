@@ -157,7 +157,7 @@ void ts::MosaicDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Desc
     while (buf.canReadBytes(3)) {
         disp << margin << UString::Format(u"- Logical cell id: %n", buf.getBits<uint8_t>(6)) << std::endl;
         buf.skipBits(7);
-        disp << margin << "  Presentation info: " << DataName(MY_XML_NAME, u"LogicalCellPresentation", buf.getBits<uint8_t>(3), NamesFlags::DECIMAL_FIRST) << std::endl;
+        disp << margin << "  Presentation info: " << DataName(MY_XML_NAME, u"LogicalCellPresentation", buf.getBits<uint8_t>(3), NamesFlags::DEC_VALUE_NAME) << std::endl;
 
         buf.pushReadSizeFromLength(8); // elementary_cell_field_length
         while (buf.canReadBytes(1)) {
@@ -167,7 +167,7 @@ void ts::MosaicDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Desc
         buf.popState(); // end of elementary_cell_field_length
 
         const uint8_t link = buf.getUInt8();
-        disp << margin << "  Cell linkage info: " << DataName(MY_XML_NAME, u"CellLinkageInfo", link, NamesFlags::DECIMAL_FIRST) << std::endl;
+        disp << margin << "  Cell linkage info: " << DataName(MY_XML_NAME, u"CellLinkageInfo", link, NamesFlags::DEC_VALUE_NAME) << std::endl;
 
         if (link == 0x01 && buf.canReadBytes(2)) {
             disp << margin << UString::Format(u"  Bouquet id: %n", buf.getUInt16()) << std::endl;

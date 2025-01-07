@@ -541,7 +541,7 @@ void ts::PESPlugin::handlePESPacket(PESDemux&, const PESPacket& pkt)
     // Report packet description
     if (_trace_packets) {
         *_out << "* " << prefix(pkt)
-              << ", stream_id " << NameFromDTV(u"pes.stream_id", pkt.getStreamId(), NamesFlags::FIRST)
+              << ", stream_id " << NameFromDTV(u"pes.stream_id", pkt.getStreamId(), NamesFlags::VALUE_NAME)
               << UString::Format(u", size: %d bytes (header: %d, payload: %d)", pkt.size(), pkt.headerSize(), pkt.payloadSize());
         const size_t spurious = pkt.spuriousDataSize();
         if (spurious > 0) {
@@ -645,7 +645,7 @@ void ts::PESPlugin::handleVideoStartCode(PESDemux&, const PESPacket& pkt, uint8_
     // Dump video start code.
     if (_dump_start_code) {
         *_out << "* " << prefix(pkt)
-              << ", start code " << NameFromDTV(u"pes.stream_id", start_code, NamesFlags::FIRST)
+              << ", start code " << NameFromDTV(u"pes.stream_id", start_code, NamesFlags::VALUE_NAME)
               << UString::Format(u", offset in PES payload: %d, size: %d bytes", offset, size)
               << std::endl;
 
@@ -690,7 +690,7 @@ void ts::PESPlugin::handleAccessUnit(PESDemux&, const PESPacket& pes, uint8_t au
         const CodecType codec = pes.getCodec();
 
         // Hexadecimal dump
-        *_out << "* " << prefix(pes) << ", " << CodecTypeEnum().name(codec) << " access unit type " << AccessUnitTypeName(codec, au_type, NamesFlags::FIRST) << std::endl;
+        *_out << "* " << prefix(pes) << ", " << CodecTypeEnum().name(codec) << " access unit type " << AccessUnitTypeName(codec, au_type, NamesFlags::VALUE_NAME) << std::endl;
         *_out << UString::Format(u"  Offset in PES payload: %d, size: %d bytes", offset, size) << std::endl;
 
         size_t dsize = size;
@@ -756,7 +756,7 @@ void ts::PESPlugin::handleSEI(PESDemux& demux, const PESPacket& pkt, uint32_t se
     }
 
     // Now display the SEI.
-    *_out << "* " << prefix(pkt) << ", SEI type " << NameFromDTV(u"avc.sei_type", sei_type, NamesFlags::FIRST) << std::endl;
+    *_out << "* " << prefix(pkt) << ", SEI type " << NameFromDTV(u"avc.sei_type", sei_type, NamesFlags::VALUE_NAME) << std::endl;
     *_out << UString::Format(u"  Offset in PES payload: %d, size: %d bytes", offset, size) << std::endl;
 
     size_t dsize = size;
@@ -776,7 +776,7 @@ void ts::PESPlugin::handleSEI(PESDemux& demux, const PESPacket& pkt, uint32_t se
 void ts::PESPlugin::handleNewMPEG2AudioAttributes(PESDemux&, const PESPacket& pkt, const MPEG2AudioAttributes& aa)
 {
     if (_audio_attributes) {
-        *_out << "* " << prefix(pkt) << ", stream_id " << NameFromDTV(u"pes.stream_id", pkt.getStreamId(), NamesFlags::FIRST) << ", audio attributes:" << std::endl;
+        *_out << "* " << prefix(pkt) << ", stream_id " << NameFromDTV(u"pes.stream_id", pkt.getStreamId(), NamesFlags::VALUE_NAME) << ", audio attributes:" << std::endl;
         *_out << "  " << aa << std::endl;
         lastDump(*_out);
     }
@@ -790,7 +790,7 @@ void ts::PESPlugin::handleNewMPEG2AudioAttributes(PESDemux&, const PESPacket& pk
 void ts::PESPlugin::handleNewAC3Attributes(PESDemux&, const PESPacket& pkt, const AC3Attributes& aa)
 {
     if (_audio_attributes) {
-        *_out << "* " << prefix(pkt) << ", stream_id " << NameFromDTV(u"pes.stream_id", pkt.getStreamId(), NamesFlags::FIRST) << ", AC-3 audio attributes:" << std::endl;
+        *_out << "* " << prefix(pkt) << ", stream_id " << NameFromDTV(u"pes.stream_id", pkt.getStreamId(), NamesFlags::VALUE_NAME) << ", AC-3 audio attributes:" << std::endl;
         *_out << "  " << aa << std::endl;
         lastDump(*_out);
     }
@@ -804,7 +804,7 @@ void ts::PESPlugin::handleNewAC3Attributes(PESDemux&, const PESPacket& pkt, cons
 void ts::PESPlugin::handleNewMPEG2VideoAttributes(PESDemux&, const PESPacket& pkt, const MPEG2VideoAttributes& va)
 {
     if (_video_attributes) {
-        *_out << "* " << prefix(pkt) << ", stream_id " << NameFromDTV(u"pes.stream_id", pkt.getStreamId(), NamesFlags::FIRST) << ", video attributes:" << std::endl;
+        *_out << "* " << prefix(pkt) << ", stream_id " << NameFromDTV(u"pes.stream_id", pkt.getStreamId(), NamesFlags::VALUE_NAME) << ", video attributes:" << std::endl;
         *_out << "  " << va << std::endl;
         *_out << UString::Format(u"  Maximum bitrate: %'d b/s, VBV buffer size: %'d bits", va.maximumBitRate(), va.vbvSize()) << std::endl;
         lastDump(*_out);
@@ -819,7 +819,7 @@ void ts::PESPlugin::handleNewMPEG2VideoAttributes(PESDemux&, const PESPacket& pk
 void ts::PESPlugin::handleNewAVCAttributes(PESDemux&, const PESPacket& pkt, const AVCAttributes& va)
 {
     if (_video_attributes) {
-        *_out << "* " << prefix(pkt) << ", stream_id " << NameFromDTV(u"pes.stream_id", pkt.getStreamId(), NamesFlags::FIRST) << ", AVC video attributes:" << std::endl;
+        *_out << "* " << prefix(pkt) << ", stream_id " << NameFromDTV(u"pes.stream_id", pkt.getStreamId(), NamesFlags::VALUE_NAME) << ", AVC video attributes:" << std::endl;
         *_out << "  " << va << std::endl;
         lastDump(*_out);
     }
@@ -833,7 +833,7 @@ void ts::PESPlugin::handleNewAVCAttributes(PESDemux&, const PESPacket& pkt, cons
 void ts::PESPlugin::handleNewHEVCAttributes(PESDemux&, const PESPacket& pkt, const HEVCAttributes& va)
 {
     if (_video_attributes) {
-        *_out << "* " << prefix(pkt) << ", stream_id " << NameFromDTV(u"pes.stream_id", pkt.getStreamId(), NamesFlags::FIRST) << ", HEVC video attributes:" << std::endl;
+        *_out << "* " << prefix(pkt) << ", stream_id " << NameFromDTV(u"pes.stream_id", pkt.getStreamId(), NamesFlags::VALUE_NAME) << ", HEVC video attributes:" << std::endl;
         *_out << "  " << va << std::endl;
         lastDump(*_out);
     }

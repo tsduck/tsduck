@@ -326,25 +326,25 @@ void ts::SatelliteDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& dis
         disp << margin << UString::Format(u"Orbital position: %d", buf.getBCD<uint32_t>(3));
         disp << UString::Format(u".%d degree, ", buf.getBCD<uint32_t>(1));
         disp << (buf.getBool() ? "east" : "west") << std::endl;
-        disp << margin << "Polarization: " << DataName(MY_XML_NAME, u"Polarization", buf.getBits<uint8_t>(2), NamesFlags::VALUE | NamesFlags::DECIMAL) << std::endl;
+        disp << margin << "Polarization: " << DataName(MY_XML_NAME, u"Polarization", buf.getBits<uint8_t>(2), NamesFlags::NAME_VALUE | NamesFlags::DECIMAL) << std::endl;
         const bool isdb = bool(disp.duck().standards() & Standards::ISDB);
         if (isdb) {
             disp << margin << "Delivery system: " << DeliverySystemEnum().name(DS_ISDB_S) << std::endl;
-            disp << margin << "Modulation: " << DataName(MY_XML_NAME, u"ISDBModulation", buf.getBits<uint8_t>(5), NamesFlags::VALUE | NamesFlags::DECIMAL) << std::endl;
+            disp << margin << "Modulation: " << DataName(MY_XML_NAME, u"ISDBModulation", buf.getBits<uint8_t>(5), NamesFlags::NAME_VALUE | NamesFlags::DECIMAL) << std::endl;
         }
         else {
             const uint8_t roll_off = buf.getBits<uint8_t>(2);
             const bool s2 = buf.getBool();
             disp << margin << "Delivery system: " << DeliverySystemEnum().name(s2 ? DS_DVB_S2 : DS_DVB_S) << std::endl;
-            disp << margin << "Modulation: " << DataName(MY_XML_NAME, u"DVBModulation", buf.getBits<uint8_t>(2), NamesFlags::VALUE | NamesFlags::DECIMAL);
+            disp << margin << "Modulation: " << DataName(MY_XML_NAME, u"DVBModulation", buf.getBits<uint8_t>(2), NamesFlags::NAME_VALUE | NamesFlags::DECIMAL);
             if (s2) {
-                disp << ", roll off: " << DataName(MY_XML_NAME, u"DVBS2RollOff", roll_off, NamesFlags::VALUE | NamesFlags::DECIMAL);
+                disp << ", roll off: " << DataName(MY_XML_NAME, u"DVBS2RollOff", roll_off, NamesFlags::NAME_VALUE | NamesFlags::DECIMAL);
             }
             disp << std::endl;
         }
         disp << margin << UString::Format(u"Symbol rate: %d", buf.getBCD<uint32_t>(3));
         disp << UString::Format(u".%04d Msymbol/s", buf.getBCD<uint32_t>(4)) << std::endl;
-        disp << margin << "Inner FEC: " << DataName(MY_XML_NAME, isdb ? u"ISDBSatelliteFEC" : u"DVBSatelliteFEC", buf.getBits<uint8_t>(4), NamesFlags::VALUE | NamesFlags::DECIMAL) << std::endl;
+        disp << margin << "Inner FEC: " << DataName(MY_XML_NAME, isdb ? u"ISDBSatelliteFEC" : u"DVBSatelliteFEC", buf.getBits<uint8_t>(4), NamesFlags::NAME_VALUE | NamesFlags::DECIMAL) << std::endl;
     }
 }
 

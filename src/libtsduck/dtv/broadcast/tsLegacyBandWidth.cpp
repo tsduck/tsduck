@@ -18,7 +18,8 @@
 bool ts::LegacyBandWidthToHz(BandWidth& hz, const UString& str)
 {
     // Redefine legacy names with values in Hz.
-    const Enumeration legacy({
+    // Thread-safe init-safe static data pattern:
+    static const Enumeration legacy({
         {u"auto",      0},
         {u"1.712-MHz", 1'712'000},
         {u"5-MHz",     5'000'000},

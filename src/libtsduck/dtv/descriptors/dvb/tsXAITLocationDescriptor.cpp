@@ -13,7 +13,6 @@
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
-#include "tsNames.h"
 
 #define MY_XML_NAME u"xait_location_descriptor"
 #define MY_CLASS    ts::XAITLocationDescriptor
@@ -77,7 +76,7 @@ void ts::XAITLocationDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts
         disp << margin << UString::Format(u"Original network id: %n", buf.getUInt16());
         disp << UString::Format(u", service id: %n", buf.getUInt16()) << std::endl;
         disp << margin << "Version number: " << buf.getBits<uint16_t>(5);
-        disp << u", update policy: " << DataName(MY_XML_NAME, u"update_policy", buf.getBits<uint8_t>(3), NamesFlags::DECIMAL_FIRST) << std::endl;
+        disp << u", update policy: " << DataName(MY_XML_NAME, u"update_policy", buf.getBits<uint8_t>(3), NamesFlags::DEC_VALUE_NAME) << std::endl;
     }
 }
 

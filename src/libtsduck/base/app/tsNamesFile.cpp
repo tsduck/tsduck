@@ -485,7 +485,7 @@ int ts::NamesFile::HexaDigits(size_t bits)
 // Compute the display mask
 ts::NamesFile::Value ts::NamesFile::DisplayMask(size_t bits)
 {
-    if (bits == 0 || bits >= 4 * sizeof(Value)) {
+    if (bits == 0 || bits >= 8 * sizeof(Value)) {
         // Unspecified, keep all bits.
         return ~Value(0);
     }
@@ -525,7 +525,7 @@ ts::UString ts::NamesFile::Formatted(Value value, const UString& name, NamesFlag
         }
         else if (!(flags & NamesFlags::NAME_OR_VALUE)) {
             // Force value display with a default name.
-            flags |= NamesFlags::VALUE;
+            flags |= NamesFlags::NAME_VALUE;
             defaultName = u"unknown";
             displayName = &defaultName;
         }
@@ -539,7 +539,7 @@ ts::UString ts::NamesFile::Formatted(Value value, const UString& name, NamesFlag
         }
     }
 
-    if (!(flags & (NamesFlags::VALUE | NamesFlags::FIRST))) {
+    if (!(flags & (NamesFlags::NAME_VALUE | NamesFlags::VALUE_NAME))) {
         // Name only.
         return *displayName;
     }
@@ -548,18 +548,18 @@ ts::UString ts::NamesFile::Formatted(Value value, const UString& name, NamesFlag
     TS_LLVM_NOWARNING(switch-enum) // enumeration values not explicitly handled in switch
     TS_MSC_NOWARNING(4061)         // enumerator in switch of enum is not explicitly handled by a case label
 
-    switch (flags & (NamesFlags::FIRST | NamesFlags::DECIMAL | NamesFlags::HEXA)) {
+    switch (flags & (NamesFlags::VALUE_NAME | NamesFlags::DECIMAL | NamesFlags::HEXA)) {
         case NamesFlags::DECIMAL:
             return UString::Format(u"%s (%d)", *displayName, value);
         case NamesFlags::HEXA:
             return UString::Format(u"%s (0x%0*X)", *displayName, HexaDigits(bits), value);
         case NamesFlags::HEXA | NamesFlags::DECIMAL:
             return UString::Format(u"%s (0x%0*X, %d)", *displayName, HexaDigits(bits), value, value);
-        case NamesFlags::DECIMAL | NamesFlags::FIRST:
+        case NamesFlags::DECIMAL | NamesFlags::VALUE_NAME:
             return UString::Format(u"%d (%s)", value, *displayName);
-        case NamesFlags::HEXA | NamesFlags::FIRST:
+        case NamesFlags::HEXA | NamesFlags::VALUE_NAME:
             return UString::Format(u"0x%0*X (%s)", HexaDigits(bits), value, *displayName);
-        case NamesFlags::HEXA | NamesFlags::DECIMAL | NamesFlags::FIRST:
+        case NamesFlags::HEXA | NamesFlags::DECIMAL | NamesFlags::VALUE_NAME:
             return UString::Format(u"0x%0*X (%d, %s)", HexaDigits(bits), value, value, *displayName);
         default:
             assert(false);

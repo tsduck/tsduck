@@ -109,12 +109,12 @@ void ts::AVS3VideoDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::AVS3VideoDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(8)) {
-        disp << margin << "Profile ID: " << DataName(MY_XML_NAME, u"profile", buf.getUInt8(), NamesFlags::VALUE);
-        disp << ", Level ID: " << DataName(MY_XML_NAME, u"level", buf.getUInt8(), NamesFlags::VALUE);
+        disp << margin << "Profile ID: " << DataName(MY_XML_NAME, u"profile", buf.getUInt8(), NamesFlags::NAME_VALUE);
+        disp << ", Level ID: " << DataName(MY_XML_NAME, u"level", buf.getUInt8(), NamesFlags::NAME_VALUE);
         disp << ", Multiple frame rate: " << UString::TrueFalse(buf.getBool()) << std::endl;
-        disp << margin << "Frame rate code: " << DataName(MY_XML_NAME, u"frame_rate", buf.getBits<uint8_t>(4), NamesFlags::VALUE | NamesFlags::DECIMAL);
-        disp << ", Sample precision: " << DataName(MY_XML_NAME, u"sample_precision", buf.getBits<uint8_t>(3), NamesFlags::VALUE | NamesFlags::DECIMAL);
-        disp << ", Chroma format: " << DataName(MY_XML_NAME, u"chroma_format", buf.getBits<uint8_t>(2), NamesFlags::VALUE | NamesFlags::DECIMAL) << std::endl;
+        disp << margin << "Frame rate code: " << DataName(MY_XML_NAME, u"frame_rate", buf.getBits<uint8_t>(4), NamesFlags::NAME_VALUE | NamesFlags::DECIMAL);
+        disp << ", Sample precision: " << DataName(MY_XML_NAME, u"sample_precision", buf.getBits<uint8_t>(3), NamesFlags::NAME_VALUE | NamesFlags::DECIMAL);
+        disp << ", Chroma format: " << DataName(MY_XML_NAME, u"chroma_format", buf.getBits<uint8_t>(2), NamesFlags::NAME_VALUE | NamesFlags::DECIMAL) << std::endl;
         disp << margin << "Temporal ID: " << UString::TrueFalse(buf.getBool());
         disp << ", TD mode: " << UString::TrueFalse(buf.getBool()) << std::endl;
         disp << margin << "Library stream: " << UString::TrueFalse(buf.getBool());

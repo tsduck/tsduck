@@ -90,7 +90,7 @@ void ts::ContentAvailabilityDescriptor::DisplayDescriptor(TablesDisplay& disp, c
         disp << margin << UString::Format(u"Copy restriction mode: %s", buf.getBool()) << std::endl;
         disp << margin << UString::Format(u"Image constraint toke: %s", buf.getBool()) << std::endl;
         disp << margin << UString::Format(u"Retention mode: %s", buf.getBool()) << std::endl;
-        disp << margin << "Retention state: " << DataName(MY_XML_NAME, u"RetentionState", buf.getBits<uint8_t>(3), NamesFlags::DECIMAL_FIRST) << std::endl;
+        disp << margin << "Retention state: " << DataName(MY_XML_NAME, u"RetentionState", buf.getBits<uint8_t>(3), NamesFlags::DEC_VALUE_NAME) << std::endl;
         disp << margin << UString::Format(u"Encryption mode: %s", buf.getBool()) << std::endl;
         disp.displayPrivateData(u"Reserved future use", buf, NPOS, margin);
     }

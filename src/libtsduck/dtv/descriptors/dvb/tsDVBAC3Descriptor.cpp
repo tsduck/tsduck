@@ -152,7 +152,7 @@ void ts::DVBAC3Descriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Desc
         const bool asvc_flag = buf.getBool();
         buf.skipBits(4);
         if (component_type_flag && buf.canReadBytes(1)) {
-            disp << margin << "Component type: " << ComponentTypeName(buf.getUInt8(), NamesFlags::FIRST) << std::endl;
+            disp << margin << "Component type: " << ComponentTypeName(buf.getUInt8(), NamesFlags::VALUE_NAME) << std::endl;
         }
         if (bsid_flag && buf.canReadBytes(1)) {
             disp << margin << UString::Format(u"AC-3 coding version: %n", buf.getUInt8()) << std::endl;

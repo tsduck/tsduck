@@ -88,7 +88,7 @@ void ts::ComponentDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::D
         const uint8_t stream_content_ext = buf.getBits<uint8_t>(4);
         const uint8_t stream_content = buf.getBits<uint8_t>(4);
         const uint8_t component_type = buf.getUInt8();
-        disp << margin << "Content/type: " << ComponentTypeName(disp.duck(), stream_content, stream_content_ext, component_type, NamesFlags::FIRST) << std::endl;
+        disp << margin << "Content/type: " << ComponentTypeName(disp.duck(), stream_content, stream_content_ext, component_type, NamesFlags::VALUE_NAME) << std::endl;
         if (stream_content_ext == 0xE && stream_content == 0xB) {
             DisplayNGAComponentFeatures(disp, margin + u"  ", component_type);
         }

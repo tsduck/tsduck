@@ -16,25 +16,6 @@
 #include "tsPlatform.h"
 
 namespace ts {
-    //
-    // Implementation tools for underlying_type.
-    //
-    //! @cond nodoxygen
-    template<bool ISENUM, typename T> struct underlying_type_1 { using type = T; };
-    template<typename T> struct underlying_type_1<true, T> { using type = typename std::underlying_type<T>::type; };
-    //! @endcond
-
-    //!
-    //! The meta-type ts::underlying_type is a generalization of std::underlying_type which works on integer types as well.
-    //! The underlying type of an integer type is the type itself.
-    //! @tparam T An integral or enumeration type.
-    //!
-    template<typename T>
-    struct underlying_type {
-        //! The underlying integer type.
-        using type = typename underlying_type_1<std::is_enum<T>::value, T>::type;
-    };
-
     //!
     //! This traits is used to enable bitmask operators on an enumeration type.
     //! The default value disables these operators. Define a template specialization

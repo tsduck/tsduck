@@ -92,15 +92,15 @@ void ts::MPEGH3DAudioDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::MPEGH3DAudioDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(3)) {
-        disp << margin << "3D-audio profile level indication: " << DataName(MY_XML_NAME, u"mpegh_3da_profile_level_indication", buf.getUInt8(), NamesFlags::VALUE) << std::endl;
+        disp << margin << "3D-audio profile level indication: " << DataName(MY_XML_NAME, u"mpegh_3da_profile_level_indication", buf.getUInt8(), NamesFlags::NAME_VALUE) << std::endl;
         disp << margin << UString::Format(u"Interactivity enabled: %s", buf.getBool()) << std::endl;
         const bool compatibleProfileSetsPresent = !buf.getBool(); // bit=0 means present
         buf.skipBits(8);
-        disp << margin << "Reference channel layout: " << DataName(MY_XML_NAME, u"reference_channel_layout", buf.getBits<uint8_t>(6), NamesFlags::VALUE | NamesFlags::DECIMAL) << std::endl;
+        disp << margin << "Reference channel layout: " << DataName(MY_XML_NAME, u"reference_channel_layout", buf.getBits<uint8_t>(6), NamesFlags::NAME_VALUE | NamesFlags::DECIMAL) << std::endl;
         if (compatibleProfileSetsPresent) {
             const uint8_t numCompatibleSets = buf.getUInt8();
             for (uint8_t i = 0; buf.canRead() && i < numCompatibleSets; i++)
-                disp << margin << "Compatible Set Indication: " << DataName(MY_XML_NAME, u"mpegh_3da_profile_level_indication", buf.getUInt8(), NamesFlags::VALUE) << std::endl;
+                disp << margin << "Compatible Set Indication: " << DataName(MY_XML_NAME, u"mpegh_3da_profile_level_indication", buf.getUInt8(), NamesFlags::NAME_VALUE) << std::endl;
         }
         disp.displayPrivateData(u"Reserved data", buf, NPOS, margin);
     }

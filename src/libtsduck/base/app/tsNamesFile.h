@@ -13,30 +13,30 @@
 
 #pragma once
 #include "tsUString.h"
-#include "tsEnumUtils.h"
 #include "tsIntegerUtils.h"
+#include "tsEnumUtils.h"
 #include "tsReport.h"
 #include "tsVersionInfo.h"
 
 namespace ts {
     //!
-    //! Flags to be used in the formating of names in NamesFile.
+    //! Flags to be used in the formating of names using class Names.
     //! Values can be used as bit-masks.
     //! @ingroup app
     //!
     enum class NamesFlags : uint16_t {
         NAME          = 0x0000,   //!< Name only, no value. This is the default.
-        VALUE         = 0x0001,   //!< Include the value: "name (value)".
-        FIRST         = 0x0002,   //!< Same with value first: "value (name)".
+        NAME_VALUE    = 0x0001,   //!< Include the value after name: "name (value)".
+        VALUE_NAME    = 0x0002,   //!< Same with value first: "value (name)".
         HEXA          = 0x0004,   //!< Value in hexadecimal. This is the default.
         DECIMAL       = 0x0008,   //!< Value in decimal. Both DECIMAL and HEXA can be specified.
-        BOTH          = HEXA | DECIMAL,          //!< Value in decimal and hexadecimal.
-        HEXA_FIRST    = FIRST | HEXA,            //!< Value in hexadecimal in first position.
-        DECIMAL_FIRST = FIRST | DECIMAL,         //!< Value in decimal in first position.
-        BOTH_FIRST    = FIRST | HEXA | DECIMAL,  //!< Value in decimal and hexadecimal in first position.
-        ALTERNATE     = 0x0010,                  //!< Display an alternate integer value.
-        NAME_OR_VALUE = 0x0020,                  //!< Display name if defined or value only if not defined.
-        NO_UNKNOWN    = 0x0040,                  //!< Ignore unknown values, return an empty string.
+        ALTERNATE     = 0x0010,   //!< Display an alternate integer value.
+        NAME_OR_VALUE = 0x0020,   //!< Display name if defined or value only if not defined.
+        NO_UNKNOWN    = 0x0040,   //!< Ignore unknown values, return an empty string.
+        HEX_DEC            = HEXA | DECIMAL,               //!< Value in decimal and hexadecimal.
+        HEX_VALUE_NAME     = VALUE_NAME | HEXA,            //!< Value in hexadecimal in first position.
+        DEC_VALUE_NAME     = VALUE_NAME | DECIMAL,         //!< Value in decimal in first position.
+        HEX_DEC_VALUE_NAME = VALUE_NAME | HEXA | DECIMAL,  //!< Value in decimal and hexadecimal in first position.
     };
 }
 TS_ENABLE_BITMASK_OPERATORS(ts::NamesFlags);
@@ -141,7 +141,7 @@ namespace ts {
         //!
         //! Largest integer type we manage in the repository of names.
         //!
-        using Value = uint64_t;
+        using Value = std::uintmax_t;
 
         //!
         //! Get the complete path of the configuration file from which the names were loaded.

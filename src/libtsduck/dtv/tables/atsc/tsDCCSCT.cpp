@@ -7,7 +7,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsDCCSCT.h"
-#include "tsNames.h"
 #include "tsBinaryTable.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"

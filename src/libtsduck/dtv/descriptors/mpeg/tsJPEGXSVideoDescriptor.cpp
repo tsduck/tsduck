@@ -160,7 +160,7 @@ void ts::JPEGXSVideoDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts:
         disp << margin << "Descriptor version: " << int(buf.getUInt8());
         disp << ", horizontal size: " << buf.getUInt16() << ", vertical size: " << buf.getUInt16() << std::endl;
         disp << margin << "Max bitrate: " << buf.getUInt32() << "Mbit/s" << std::endl;
-        disp << margin << "Interlace: " << DataName(MY_XML_NAME, u"interlace_mode", buf.getBits<uint8_t>(2), NamesFlags::VALUE | NamesFlags::DECIMAL) << std::endl;
+        disp << margin << "Interlace: " << DataName(MY_XML_NAME, u"interlace_mode", buf.getBits<uint8_t>(2), NamesFlags::NAME_VALUE | NamesFlags::DECIMAL) << std::endl;
         uint8_t denominator = buf.getBits<uint8_t>(6);
         buf.skipReservedBits(8, 0);
         disp << margin << "Framerate: " << buf.getUInt16() << "/" << DataName(MY_XML_NAME, u"framerate_DEN", denominator);
@@ -168,21 +168,21 @@ void ts::JPEGXSVideoDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts:
         if (_valid_flag) {
             buf.skipReservedBits(7, 0);
             disp << ", bitdepth: " << int(buf.getBits<uint8_t>(4)+1) << "bits";
-            disp << ", structure: " << DataName(MY_XML_NAME, u"sampling_structure", buf.getBits<uint8_t>(4), NamesFlags::VALUE | NamesFlags::DECIMAL);
+            disp << ", structure: " << DataName(MY_XML_NAME, u"sampling_structure", buf.getBits<uint8_t>(4), NamesFlags::NAME_VALUE | NamesFlags::DECIMAL);
         }
         else {
             buf.skipReservedBits(15, 0);
         }
         disp << std::endl;
         uint16_t _Ppih = buf.getUInt16();
-        disp << margin << "Profile: " << DataName(MY_XML_NAME, u"profile", _Ppih, NamesFlags::VALUE);
-        disp << ", level: " << DataName(MY_XML_NAME, u"level", buf.getUInt8(), NamesFlags::VALUE);
-        disp << ", sublevel: " << DataName(MY_XML_NAME, u"sublevel", buf.getUInt8(), NamesFlags::VALUE) << std::endl;
+        disp << margin << "Profile: " << DataName(MY_XML_NAME, u"profile", _Ppih, NamesFlags::NAME_VALUE);
+        disp << ", level: " << DataName(MY_XML_NAME, u"level", buf.getUInt8(), NamesFlags::NAME_VALUE);
+        disp << ", sublevel: " << DataName(MY_XML_NAME, u"sublevel", buf.getUInt8(), NamesFlags::NAME_VALUE) << std::endl;
         disp << margin << "Max buffer size: " << buf.getUInt32();
         disp << ", buffer model: " << int(buf.getUInt8()) << std::endl;
-        disp << margin << "Colour primaries: " << DataName(MY_XML_NAME, u"colour_primaries", buf.getUInt8(), NamesFlags::VALUE | NamesFlags::DECIMAL);
-        disp << ", transfer characteristics: " << DataName(MY_XML_NAME, u"transfer_characteristics", buf.getUInt8(), NamesFlags::VALUE | NamesFlags::DECIMAL) << std::endl;
-        disp << margin << "Matrix coefficients: " << DataName(MY_XML_NAME, u"matrix_coefficients", buf.getUInt8(), NamesFlags::VALUE | NamesFlags::DECIMAL) << std::endl;
+        disp << margin << "Colour primaries: " << DataName(MY_XML_NAME, u"colour_primaries", buf.getUInt8(), NamesFlags::NAME_VALUE | NamesFlags::DECIMAL);
+        disp << ", transfer characteristics: " << DataName(MY_XML_NAME, u"transfer_characteristics", buf.getUInt8(), NamesFlags::NAME_VALUE | NamesFlags::DECIMAL) << std::endl;
+        disp << margin << "Matrix coefficients: " << DataName(MY_XML_NAME, u"matrix_coefficients", buf.getUInt8(), NamesFlags::NAME_VALUE | NamesFlags::DECIMAL) << std::endl;
         disp << margin << "Video full range: " << UString::TrueFalse(buf.getBool());
         buf.skipReservedBits(7);
         disp << ", still mode: " << UString::TrueFalse(buf.getBool()) << std::endl;

@@ -9,7 +9,6 @@
 #include "tsPacketizer.h"
 #include "tsTSPacket.h"
 #include "tsSection.h"
-#include "tsNames.h"
 
 
 //----------------------------------------------------------------------------

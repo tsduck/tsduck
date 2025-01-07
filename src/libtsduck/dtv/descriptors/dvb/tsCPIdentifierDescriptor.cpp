@@ -98,6 +98,6 @@ bool ts::CPIdentifierDescriptor::analyzeXML(DuckContext& duck, const xml::Elemen
 void ts::CPIdentifierDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     while (buf.canReadBytes(2)) {
-        disp << margin << "CP System Id: " << DataName(MY_XML_NAME, u"CPSystemId", buf.getUInt16(), NamesFlags::FIRST) << std::endl;
+        disp << margin << "CP System Id: " << DataName(MY_XML_NAME, u"CPSystemId", buf.getUInt16(), NamesFlags::VALUE_NAME) << std::endl;
     }
 }

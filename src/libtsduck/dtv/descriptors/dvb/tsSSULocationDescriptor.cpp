@@ -13,7 +13,7 @@
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
-#include "tsNames.h"
+#include "tsDVB.h"
 
 #define MY_XML_NAME u"SSU_location_descriptor"
 #define MY_CLASS    ts::SSULocationDescriptor
@@ -81,7 +81,7 @@ void ts::SSULocationDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts:
 {
     if (buf.canReadBytes(2)) {
         const uint16_t id = buf.getUInt16();
-        disp << margin << "Data broadcast id: " << names::DataBroadcastId(id, NamesFlags::HEXA_FIRST) << std::endl;
+        disp << margin << "Data broadcast id: " << DataBroadcastIdName(id, NamesFlags::HEX_VALUE_NAME) << std::endl;
         if (id == 0x000A && buf.canReadBytes(2)) {
             disp << margin << UString::Format(u"Association tag: %n", buf.getUInt16()) << std::endl;
         }

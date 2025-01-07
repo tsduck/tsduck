@@ -23,6 +23,32 @@ namespace ts {
     concept int_enum = std::is_integral<T>::value || std::is_enum<T>::value;
 
     //
+    // Implementation tools for underlying_type.
+    //
+    //! @cond nodoxygen
+    template<bool ISENUM, typename T> struct underlying_type_1 { using type = T; };
+    template<typename T> struct underlying_type_1<true, T> { using type = typename std::underlying_type<T>::type; };
+    //! @endcond
+
+    //!
+    //! The meta-type ts::underlying_type is a generalization of std::underlying_type which works on integral or floating-point types as well.
+    //! The underlying type of any type other than enum is the type itself.
+    //! @tparam T An integral or enumeration type.
+    //!
+    template<typename T>
+    struct underlying_type {
+        //! The underlying integer type.
+        using type = typename underlying_type_1<std::is_enum<T>::value, T>::type;
+    };
+
+    //!
+    //! Helper type for ts::underlying_type.
+    //! @tparam T An integral or enumeration type.
+    //!
+    template<typename T>
+    using underlying_type_t = typename underlying_type<T>::type;
+
+    //
     // Implementation tools for make_signed.
     //
     //! @cond nodoxygen
@@ -46,6 +72,13 @@ namespace ts {
         using type = typename make_signed_impl<T, sizeof(T), std::integral<T>, std::signed_integral<T>>::type;
     };
 
+    //!
+    //! Helper type for ts::make_signed.
+    //! @tparam T An integral or floating-point type.
+    //!
+    template<typename T>
+    using make_signed_t = typename make_signed<T>::type;
+
     //
     // Implementation tools for int_max.
     //
@@ -65,6 +98,31 @@ namespace ts {
         //! In practice, it is either @c std::uintmax_t or @c std::intmax_t.
         using type = typename int_max_impl<std::signed_integral<INT>>::type;
     };
+
+    //!
+    //! Helper type for ts::int_max.
+    //! @tparam INT An integer type, any size, signed or unsigned.
+    //!
+    template <typename INT> requires std::integral<INT>
+    using int_max_t = typename int_max<INT>::type;
+
+    //!
+    //! Statically check if a integral or enum value is negative.
+    //! @tparam T An integral or enumeration type.
+    //! @param [in] x A value of type @a T.
+    //! @return True if the underlying integral type of @a T is signed and @a x is negative.
+    //! False otherwise.
+    //!
+    template<typename T> requires int_enum<T>
+    constexpr bool is_negative(T x)
+    {
+        if constexpr (std::signed_integral<underlying_type_t<T>>) {
+            return static_cast<underlying_type_t<T>>(x) < 0;
+        }
+        else {
+            return false;
+        }
+    }
 
     //!
     //! Absolute value of integer types, also working on unsigned types.
@@ -506,26 +564,6 @@ namespace ts {
     }
 
     //!
-    //! Check if an integer value is negative, optimized for signed or unsigned type.
-    //! @tparam INT An integer type, any size, signed or unsigned.
-    //! @param [in] a An integer.
-    //! @return True if @a a is negative.
-    //!
-    template <typename INT> requires std::integral<INT>
-    bool is_negative(INT a)
-    {
-        if constexpr (std::unsigned_integral<INT>) {
-            return false;
-        }
-        else if constexpr (std::signed_integral<INT>) {
-            return a < 0;
-        }
-        else {
-            static_assert(false, "invalid integer type");
-        }
-    }
-
-    //!
     //! Perform a bounded addition without overflow.
     //! @tparam INT An integer type, any size, signed or unsigned.
     //! @param [in] a First integer.
@@ -631,6 +669,15 @@ namespace ts {
     //!
     template <typename INT> requires std::integral<INT>
     size_t BitSize(INT x);
+
+    //!
+    //! Get the mask to select a given number of least significant bits in an integer value.
+    //! @tparam INT An integer type.
+    //! @param [in] bits Number of least significant bits to select. Zero means all bits.
+    //! @return The corresponding mask.
+    //!
+    template <typename INT> requires std::integral<INT>
+    INT LSBMask(size_t bits);
 
     //!
     //! Get the signed/unsigned qualifier of an integer type as a string.
@@ -932,6 +979,22 @@ size_t ts::BitSize(INT x)
     }
     else {
         static_assert(false, "invalid integer type");
+    }
+}
+
+//----------------------------------------------------------------------------
+// Get the mask to select a given number of least significant bits.
+//----------------------------------------------------------------------------
+
+template <typename INT> requires std::integral<INT>
+INT ts::LSBMask(size_t bits)
+{
+    if (bits == 0 || bits >= 8 * sizeof(INT)) {
+        // Unspecified, keep all bits.
+        return ~INT(0);
+    }
+    else {
+        return ~INT(0) >> (8 * sizeof(INT) - bits);
     }
 }
 

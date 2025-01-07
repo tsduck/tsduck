@@ -13,7 +13,6 @@
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
-#include "tsNames.h"
 
 #define MY_XML_NAME u"ISDB_network_identifier_descriptor"
 #define MY_CLASS    ts::ISDBNetworkIdentifierDescriptor
@@ -80,7 +79,7 @@ void ts::ISDBNetworkIdentifierDescriptor::DisplayDescriptor(TablesDisplay& disp,
 {
     if (buf.canReadBytes(7)) {
         disp << margin << "Country code: " << buf.getLanguageCode() << std::endl;
-        disp << margin << "Media type: " << DataName(MY_XML_NAME, u"media_type", buf.getUInt16(), NamesFlags::VALUE);
+        disp << margin << "Media type: " << DataName(MY_XML_NAME, u"media_type", buf.getUInt16(), NamesFlags::NAME_VALUE);
         disp << UString::Format(u", network id: 0x%X", buf.getUInt16()) << std::endl;
         disp.displayPrivateData(u"Private data", buf, NPOS, margin);
     }

@@ -8,7 +8,6 @@
 
 #include "tsSDT.h"
 #include "tsDVB.h"
-#include "tsNames.h"
 #include "tsBinaryTable.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
@@ -370,7 +369,7 @@ void ts::SDT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
         disp << ", EITp/f: " << UString::YesNo(buf.getBool());
         const uint8_t running_status = buf.getBits<uint8_t>(3);
         disp << ", CA mode: " << (buf.getBool() ? "controlled" : "free") << std::endl;
-        disp << margin << "Running status: " << names::RunningStatus(running_status) << std::endl;
+        disp << margin << "Running status: " << RunningStatusName(running_status) << std::endl;
         disp.displayDescriptorListWithLength(section, context, false, buf, margin);
     }
 }

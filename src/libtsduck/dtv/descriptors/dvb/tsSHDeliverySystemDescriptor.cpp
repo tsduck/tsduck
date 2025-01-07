@@ -219,8 +219,8 @@ void ts::SHDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp, cons
                 disp << margin << "- Modulation type: OFDM" << std::endl;
                 disp << margin << "  Bandwidth: " << BandwidthNames.name(buf.getBits<uint8_t>(3)) << std::endl;
                 disp << margin << UString::Format(u"  Priority: %d", buf.getBit()) << std::endl;
-                disp << margin << "  Constellation & hierarchy: " << DataName(MY_XML_NAME, u"ConstellationHierarchy", buf.getBits<uint8_t>(3), NamesFlags::FIRST) << std::endl;
-                disp << margin << "  Code rate: " << DataName(MY_XML_NAME, u"CodeRate", buf.getBits<uint8_t>(4), NamesFlags::FIRST) << std::endl;
+                disp << margin << "  Constellation & hierarchy: " << DataName(MY_XML_NAME, u"ConstellationHierarchy", buf.getBits<uint8_t>(3), NamesFlags::VALUE_NAME) << std::endl;
+                disp << margin << "  Code rate: " << DataName(MY_XML_NAME, u"CodeRate", buf.getBits<uint8_t>(4), NamesFlags::VALUE_NAME) << std::endl;
                 disp << margin << "  Guard interval: " << GuardIntervalNames.name(buf.getBits<uint8_t>(2)) << std::endl;
                 disp << margin << "  Transmission mode: " << TransmissionModeNames.name(buf.getBits<uint8_t>(2)) << std::endl;
                 disp << margin << UString::Format(u"  Common frequency: %s", buf.getBool()) << std::endl;
@@ -230,7 +230,7 @@ void ts::SHDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp, cons
                 disp << margin << "  Polarization: " << PolarizationNames.name(buf.getBits<uint8_t>(2)) << std::endl;
                 disp << margin << "  Roll off: " << RollOffNames.name(buf.getBits<uint8_t>(2)) << std::endl;
                 disp << margin << "  Modulation mode: " << ModulationNames.name(buf.getBits<uint8_t>(2)) << std::endl;
-                disp << margin << "  Code rate: " << DataName(MY_XML_NAME, u"CodeRate", buf.getBits<uint8_t>(4), NamesFlags::FIRST) << std::endl;
+                disp << margin << "  Code rate: " << DataName(MY_XML_NAME, u"CodeRate", buf.getBits<uint8_t>(4), NamesFlags::VALUE_NAME) << std::endl;
                 disp << margin << UString::Format(u"  Symbol rate code: %n", buf.getBits<uint8_t>(5)) << std::endl;
                 buf.skipBits(1);
             }

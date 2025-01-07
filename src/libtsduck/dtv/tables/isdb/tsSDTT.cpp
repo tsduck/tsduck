@@ -229,15 +229,15 @@ void ts::SDTT::DisplaySection(TablesDisplay& disp, const ts::Section& section, P
             disp << margin << "  Group: " << buf.getBits<int>(4);
             disp << ", target version: " << buf.getBits<int>(12);
             disp << ", new version: " << buf.getBits<int>(12) << std::endl;
-            disp << margin << "  Download level: " << DataName(MY_XML_NAME, u"download_level", buf.getBits<uint8_t>(2), NamesFlags::DECIMAL_FIRST) << std::endl;
-            disp << margin << "  Version indicator: " << DataName(MY_XML_NAME, u"version_indicator", buf.getBits<uint8_t>(2), NamesFlags::DECIMAL_FIRST) << std::endl;
+            disp << margin << "  Download level: " << DataName(MY_XML_NAME, u"download_level", buf.getBits<uint8_t>(2), NamesFlags::DEC_VALUE_NAME) << std::endl;
+            disp << margin << "  Version indicator: " << DataName(MY_XML_NAME, u"version_indicator", buf.getBits<uint8_t>(2), NamesFlags::DEC_VALUE_NAME) << std::endl;
             buf.getBits(content_description_length, 12);
             const bool maker_id_flag = buf.getBool();
             const bool valid = (maker_id_flag && !extended_maker_id) || (!maker_id_flag && extended_maker_id);
             disp << margin << "  Maker id flag: " << UString::TrueFalse(maker_id_flag) << (valid ? " (valid)" : " (invalid)") << std::endl;
             buf.skipReservedBits(3);
             buf.getBits(schedule_description_length, 12);
-            disp << margin << "  Schedule timeshift: " << DataName(MY_XML_NAME, u"schedule_timeshift_information", buf.getBits<uint8_t>(4), NamesFlags::DECIMAL_FIRST) << std::endl;
+            disp << margin << "  Schedule timeshift: " << DataName(MY_XML_NAME, u"schedule_timeshift_information", buf.getBits<uint8_t>(4), NamesFlags::DEC_VALUE_NAME) << std::endl;
             buf.pushReadSize(buf.currentReadByteOffset() + content_description_length);  // level 1
             buf.pushReadSize(buf.currentReadByteOffset() + schedule_description_length); // level 2
             for (size_t i = 0; buf.canReadBytes(8); ++i) {

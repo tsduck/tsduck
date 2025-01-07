@@ -155,7 +155,7 @@ void ts::ecmgscs::Protocol::factory(const tlv::MessageFactory& fact, tlv::Messag
 
 ts::UString ts::ecmgscs::Errors::Name(uint16_t status)
 {
-    return NameFromDTV(u"EcmgScsErrors", status, NamesFlags::HEXA_FIRST);
+    return NameFromDTV(u"EcmgScsErrors", status, NamesFlags::HEX_VALUE_NAME);
 }
 
 

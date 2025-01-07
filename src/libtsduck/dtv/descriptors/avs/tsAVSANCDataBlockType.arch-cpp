@@ -286,7 +286,7 @@ void ts::anc_data_block_type::object_extension_metadata_block_type::display(Tabl
 void ts::anc_data_block_type::loudness_metadata_block_type::avs3_loudness::display(TablesDisplay& disp, const UString& margin, const int index)
 {
     disp << margin << "[" << index << "] "
-         << DataName(MY_XML_NAME, u"loudness_value_type", loudnessValDef, NamesFlags::VALUE);
+         << DataName(MY_XML_NAME, u"loudness_value_type", loudnessValDef, NamesFlags::NAME_VALUE);
     switch (loudnessValDef) {
         case 0x0:  // Unknown
             disp << UString::Format(u": 0x%X", loudnessVal);
@@ -307,7 +307,7 @@ void ts::anc_data_block_type::loudness_metadata_block_type::avs3_loudness::displ
             disp << UString::Format(u": %6.4f (%d)", 80 + loudnessVal, loudnessVal);
             break;
         case 0x8:  // Create room type
-            disp << ": " << DataName(MY_XML_NAME, u"room_type", loudnessVal, NamesFlags::VALUE);
+            disp << ": " << DataName(MY_XML_NAME, u"room_type", loudnessVal, NamesFlags::NAME_VALUE);
             break;
         case 0x9:  // Short-term loudness
             disp << UString::Format(u": %6.4f (%d)", -116 + (loudnessVal * 0.5), loudnessVal);
@@ -325,7 +325,7 @@ void ts::anc_data_block_type::loudness_metadata_block_type::display(TablesDispla
     if (samplePeakLevel.has_value()) {
         disp << UString::Format(u", Sample Peak Level: %6.4f (%d)", ValueRange(samplePeakLevel.value(), 0xFFF, -107, 20), samplePeakLevel.value());
     }
-    disp << ", Loudness Measure: " << DataName(MY_XML_NAME, u"loudness_measure", loudnessMeasure, NamesFlags::VALUE) << std::endl;
+    disp << ", Loudness Measure: " << DataName(MY_XML_NAME, u"loudness_measure", loudnessMeasure, NamesFlags::NAME_VALUE) << std::endl;
     int index = 0;
     for (auto li : loudnessValues) {
         li.display(disp, margin, index++);

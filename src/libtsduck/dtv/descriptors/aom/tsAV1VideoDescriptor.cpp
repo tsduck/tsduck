@@ -148,7 +148,7 @@ void ts::AV1VideoDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::De
         buf.skipReservedBits(1);
         disp << margin << "Version: " << int(buf.getBits<uint8_t>(7));
         disp << ", profile: " << int(buf.getBits<uint8_t>(3));
-        disp << ", level: " << DataName(MY_XML_NAME, u"seq_level_idx", buf.getBits<uint8_t>(5), NamesFlags::VALUE | NamesFlags::DECIMAL);
+        disp << ", level: " << DataName(MY_XML_NAME, u"seq_level_idx", buf.getBits<uint8_t>(5), NamesFlags::NAME_VALUE | NamesFlags::DECIMAL);
         disp << ", tier: " << int(buf.getBit()) << std::endl;
         disp << margin << "High bitdepth: " << UString::YesNo(buf.getBool());
         disp << ", 12 bit: " << UString::YesNo(buf.getBool());
@@ -157,8 +157,8 @@ void ts::AV1VideoDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::De
         bool subsampling_y = buf.getBool();
         disp << ", monochrome: " << UString::YesNo(monochrome) << ", chroma subsampling x=" << UString::YesNo(subsampling_x) << " y=" << UString::YesNo(subsampling_y);
         disp << ", --> " << SubsamplingFormat(subsampling_x, subsampling_y, monochrome) << std::endl;
-        disp << margin << "Chroma sample position: " << DataName(MY_XML_NAME, u"chroma_sample_position", buf.getBits<uint8_t>(2), NamesFlags::VALUE | NamesFlags::DECIMAL);
-        disp << ", HDR WCG idc: " << DataName(MY_XML_NAME, u"hdr_wcg_idc", buf.getBits<uint8_t>(2), NamesFlags::VALUE | NamesFlags::DECIMAL) << std::endl;
+        disp << margin << "Chroma sample position: " << DataName(MY_XML_NAME, u"chroma_sample_position", buf.getBits<uint8_t>(2), NamesFlags::NAME_VALUE | NamesFlags::DECIMAL);
+        disp << ", HDR WCG idc: " << DataName(MY_XML_NAME, u"hdr_wcg_idc", buf.getBits<uint8_t>(2), NamesFlags::NAME_VALUE | NamesFlags::DECIMAL) << std::endl;
         buf.skipReservedBits(1, 0);
         bool _initial_presentation_delay_present = buf.getBool();
         if (_initial_presentation_delay_present) {

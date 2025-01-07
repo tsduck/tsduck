@@ -67,7 +67,7 @@ void ts::StreamModeDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::StreamModeDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(2)) {
-        disp << margin << UString::Format(u"Stream mode: %s", DataName(MY_XML_NAME, u"StreamMode", buf.getUInt8(), NamesFlags::HEXA_FIRST)) << std::endl;
+        disp << margin << UString::Format(u"Stream mode: %s", DataName(MY_XML_NAME, u"StreamMode", buf.getUInt8(), NamesFlags::HEX_VALUE_NAME)) << std::endl;
         buf.skipBits(8);
     }
 }

@@ -234,10 +234,10 @@ void ts::AVS3AudioDescriptor::deserializePayload(PSIBuffer& buf)
 
 void ts::AVS3AudioDescriptor::general_coding_type::display(TablesDisplay& disp, const UString& margin)
 {
-    disp << margin << "General High-rate Coding. Coding Profile: " << DataName(MY_XML_NAME, u"coding_profile", coding_profile, NamesFlags::VALUE);
+    disp << margin << "General High-rate Coding. Coding Profile: " << DataName(MY_XML_NAME, u"coding_profile", coding_profile, NamesFlags::NAME_VALUE);
     disp << ", Bitstream Type: " << GeneralBitstreamTypes.name(bitstream_type, true) << std::endl;
     disp << margin << "  "
-         << "Bitrate: " << DataName(MY_XML_NAME, u"channel_bitrate", (channel_number_index << 8) | bitrate_index, NamesFlags::VALUE)
+         << "Bitrate: " << DataName(MY_XML_NAME, u"channel_bitrate", (channel_number_index << 8) | bitrate_index, NamesFlags::NAME_VALUE)
          << ", Raw Frame Length: " << raw_frame_length << std::endl;
 }
 
@@ -247,9 +247,9 @@ void ts::AVS3AudioDescriptor::lossless_coding_type::display(TablesDisplay& disp,
         disp << ", Sampling Frequency (actual): " << sampling_frequency << " Hz" << std::endl;
     }
     else {
-        disp << ", Sampling Frequency (index): " << DataName(MY_XML_NAME, u"sampling_frequency_index", _sampling_frequency_index, NamesFlags::VALUE) << std::endl;
+        disp << ", Sampling Frequency (index): " << DataName(MY_XML_NAME, u"sampling_frequency_index", _sampling_frequency_index, NamesFlags::NAME_VALUE) << std::endl;
     }
-    disp << margin << "Lossless Coding. Coding Profile: " << DataName(MY_XML_NAME, u"coding_profile", coding_profile, NamesFlags::VALUE);
+    disp << margin << "Lossless Coding. Coding Profile: " << DataName(MY_XML_NAME, u"coding_profile", coding_profile, NamesFlags::NAME_VALUE);
     disp << ", channel number: " << int(channel_number) << std::endl;
 }
 
@@ -257,12 +257,12 @@ void ts::AVS3AudioDescriptor::fullrate_coding_type::display(TablesDisplay& disp,
 {
     const UString err_msg = u"**ERROR**";
     bool ok = true;
-    disp << margin << "General Full-rate Coding. NN Type: " << DataName(MY_XML_NAME, u"nn_type", nn_type, NamesFlags::VALUE) << std::endl;
+    disp << margin << "General Full-rate Coding. NN Type: " << DataName(MY_XML_NAME, u"nn_type", nn_type, NamesFlags::NAME_VALUE) << std::endl;
     disp << margin << "  ";
     switch (content_type()) {
         case Channel_signal:
             disp << "Channel Signal - "
-                 << (channel_num_index.has_value() ? DataName(MY_XML_NAME, u"channel_number_idx", channel_num_index.value(), NamesFlags::VALUE) : err_msg);
+                 << (channel_num_index.has_value() ? DataName(MY_XML_NAME, u"channel_number_idx", channel_num_index.value(), NamesFlags::NAME_VALUE) : err_msg);
             break;
         case Object_signal:
             disp << "Object Signal - "
@@ -270,7 +270,7 @@ void ts::AVS3AudioDescriptor::fullrate_coding_type::display(TablesDisplay& disp,
             break;
         case Mix_signal:
             disp << "Mix Signal - "
-                 << (channel_num_index.has_value() ? DataName(MY_XML_NAME, u"channel_number_idx", channel_num_index.value(), NamesFlags::VALUE) : err_msg)
+                 << (channel_num_index.has_value() ? DataName(MY_XML_NAME, u"channel_number_idx", channel_num_index.value(), NamesFlags::NAME_VALUE) : err_msg)
                  << (num_objects.has_value() ? UString::Format(u", number of objects: %d", num_objects.value() + 1) : err_msg);
             break;
         case HOA_signal:
@@ -293,11 +293,11 @@ void ts::AVS3AudioDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::D
 {
     if (buf.canReadBytes(2)) {
         const uint8_t _codec_id = buf.getBits<uint8_t>(4);
-        disp << margin << "Codec ID: " << DataName(MY_XML_NAME, u"audio_codec_id", _codec_id, NamesFlags::VALUE);
+        disp << margin << "Codec ID: " << DataName(MY_XML_NAME, u"audio_codec_id", _codec_id, NamesFlags::NAME_VALUE);
         const uint8_t _sampling_frequency_index = buf.getBits<uint8_t>(4);
         switch (_codec_id) {
             case General_Coding: {
-                    disp << ", Sampling Frequency (index): " << DataName(MY_XML_NAME, u"sampling_frequency_index", _sampling_frequency_index, NamesFlags::VALUE) << std::endl;
+                    disp << ", Sampling Frequency (index): " << DataName(MY_XML_NAME, u"sampling_frequency_index", _sampling_frequency_index, NamesFlags::NAME_VALUE) << std::endl;
                     general_coding_type gc(buf);
                     gc.display(disp, margin);
                 }
@@ -308,7 +308,7 @@ void ts::AVS3AudioDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::D
                 }
                 break;
             case Fullrate_Coding: {
-                    disp << ", Sampling Frequency (index): " << DataName(MY_XML_NAME, u"sampling_frequency_index", _sampling_frequency_index, NamesFlags::VALUE) << std::endl;
+                    disp << ", Sampling Frequency (index): " << DataName(MY_XML_NAME, u"sampling_frequency_index", _sampling_frequency_index, NamesFlags::NAME_VALUE) << std::endl;
                     fullrate_coding_type fc(buf);
                     fc.display(disp, margin);
                 }
@@ -316,7 +316,7 @@ void ts::AVS3AudioDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::D
             default:
                 break;
         }
-        disp << margin << "Resolution: " << DataName(MY_XML_NAME, u"resolution", buf.getBits<uint8_t>(2), NamesFlags::VALUE) << std::endl;
+        disp << margin << "Resolution: " << DataName(MY_XML_NAME, u"resolution", buf.getBits<uint8_t>(2), NamesFlags::NAME_VALUE) << std::endl;
         buf.skipBits(6);
         disp.displayPrivateData(u"Additional information", buf, NPOS, margin);
     }

@@ -223,7 +223,7 @@ void ts::CPCMDeliverySignallingDescriptor::DisplayDescriptor(TablesDisplay& disp
         uint8_t cpcm_version = buf.getUInt8();
         disp << margin << "CPCM version: " << int(cpcm_version) << std::endl;
         if (cpcm_version == 0x01) {
-            disp << margin << "Copy control: " << DataName(MY_XML_NAME, u"copy_control", buf.getBits<uint8_t>(3), NamesFlags::VALUE | NamesFlags::DECIMAL) << std::endl;
+            disp << margin << "Copy control: " << DataName(MY_XML_NAME, u"copy_control", buf.getBits<uint8_t>(3), NamesFlags::NAME_VALUE | NamesFlags::DECIMAL) << std::endl;
             disp << margin << "Do not CPCM scramble: " << UString::TrueFalse(buf.getBool());
             disp << ", viewable: " << UString::TrueFalse(buf.getBool()) << std::endl;
             bool view_window_activated = buf.getBool();
@@ -231,8 +231,8 @@ void ts::CPCMDeliverySignallingDescriptor::DisplayDescriptor(TablesDisplay& disp
             bool simultaneous_view_count_activated = buf.getBool();
             disp << margin << "Move local: " << UString::TrueFalse(buf.getBool());
             disp << ", copy local: " << UString::TrueFalse(buf.getBool()) << std::endl;
-            disp << margin << "Move and copy propagation: " << DataName(MY_XML_NAME, u"move_copy_propagation", buf.getBits<uint8_t>(2), NamesFlags::VALUE | NamesFlags::DECIMAL) << std::endl;
-            disp << margin << "View propagation: " << DataName(MY_XML_NAME, u"view_propagation", buf.getBits<uint8_t>(2), NamesFlags::VALUE | NamesFlags::DECIMAL) << std::endl;
+            disp << margin << "Move and copy propagation: " << DataName(MY_XML_NAME, u"move_copy_propagation", buf.getBits<uint8_t>(2), NamesFlags::NAME_VALUE | NamesFlags::DECIMAL) << std::endl;
+            disp << margin << "View propagation: " << DataName(MY_XML_NAME, u"view_propagation", buf.getBits<uint8_t>(2), NamesFlags::NAME_VALUE | NamesFlags::DECIMAL) << std::endl;
             bool remote_access_delay_flag = buf.getBool();
             bool remote_access_date_flag = buf.getBool();
             bool remote_access_record_flag = buf.getBool();

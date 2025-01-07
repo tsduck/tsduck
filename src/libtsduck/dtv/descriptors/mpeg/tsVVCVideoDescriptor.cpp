@@ -130,7 +130,7 @@ void ts::VVCVideoDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::VVCVideoDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(2)) {
-        disp << margin << "Profile IDC: " << DataName(MY_XML_NAME, u"profile_idc", buf.getBits<uint8_t>(7), NamesFlags::VALUE);
+        disp << margin << "Profile IDC: " << DataName(MY_XML_NAME, u"profile_idc", buf.getBits<uint8_t>(7), NamesFlags::NAME_VALUE);
         disp << ", tier: " << DataName(MY_XML_NAME, u"tier", buf.getBool()) << std::endl;
         const size_t num_sub_profiles = buf.getUInt8();
         if (num_sub_profiles > 0) {
@@ -151,13 +151,13 @@ void ts::VVCVideoDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::De
         disp << ", non packed: " << UString::TrueFalse(buf.getBool());
         disp << ", frame only: " << UString::TrueFalse(buf.getBool()) << std::endl;
         buf.skipReservedBits(4, 0);
-        disp << margin << "Level IDC: " << DataName(MY_XML_NAME, u"level_idc", buf.getUInt8(), NamesFlags::VALUE);
+        disp << margin << "Level IDC: " << DataName(MY_XML_NAME, u"level_idc", buf.getUInt8(), NamesFlags::NAME_VALUE);
         const bool temporal = buf.getBool();
         disp << ", still pictures: " << UString::TrueFalse(buf.getBool());
         disp << ", 24-hour pictures: " << UString::TrueFalse(buf.getBool()) << std::endl;
         buf.skipReservedBits(5);
         const uint16_t hdr_wcg_idc = buf.getBits<uint16_t>(2);
-        disp << margin << "HDR WCG idc: " << DataName(MY_XML_NAME, u"hdr_wcg_idc", hdr_wcg_idc, NamesFlags::VALUE | NamesFlags::DECIMAL);
+        disp << margin << "HDR WCG idc: " << DataName(MY_XML_NAME, u"hdr_wcg_idc", hdr_wcg_idc, NamesFlags::NAME_VALUE | NamesFlags::DECIMAL);
         buf.skipReservedBits(2);
         const uint16_t vprop = buf.getBits<uint16_t>(4);
         disp << ", video properties: " << DataName(MY_XML_NAME, u"video_properties", (hdr_wcg_idc << 8) | vprop) << " (" << vprop << ")" << std::endl;

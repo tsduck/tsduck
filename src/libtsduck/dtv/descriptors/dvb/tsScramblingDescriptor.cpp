@@ -65,7 +65,7 @@ void ts::ScramblingDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::ScramblingDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(1)) {
-        disp << margin << UString::Format(u"Scrambling mode: %s", NameFromDTV(u"ScramblingMode", buf.getUInt8(), NamesFlags::HEXA_FIRST)) << std::endl;
+        disp << margin << UString::Format(u"Scrambling mode: %s", NameFromDTV(u"ScramblingMode", buf.getUInt8(), NamesFlags::HEX_VALUE_NAME)) << std::endl;
     }
 }
 

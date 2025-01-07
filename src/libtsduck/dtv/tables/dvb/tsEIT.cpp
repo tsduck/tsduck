@@ -9,7 +9,6 @@
 #include "tsEIT.h"
 #include "tsEITGenerator.h"
 #include "tsAlgorithm.h"
-#include "tsNames.h"
 #include "tsDVB.h"
 #include "tsMJD.h"
 #include "tsBinaryTable.h"
@@ -463,7 +462,7 @@ void ts::EIT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
             disp << margin << UString::Format(u"  Duration: %02d", buf.getBCD<int>(2));
             disp << UString::Format(u":%02d", buf.getBCD<int>(2));
             disp << UString::Format(u":%02d", buf.getBCD<int>(2)) << std::endl;
-            disp << margin << "  Running status: " << names::RunningStatus(buf.getBits<uint8_t>(3)) << std::endl;
+            disp << margin << "  Running status: " << RunningStatusName(buf.getBits<uint8_t>(3)) << std::endl;
             disp << margin << "  CA mode: " << (buf.getBool() ? "controlled" : "free") << std::endl;
             disp.displayDescriptorListWithLength(section, context, false, buf, margin + u"  ");
         }

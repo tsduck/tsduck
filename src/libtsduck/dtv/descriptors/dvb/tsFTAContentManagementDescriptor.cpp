@@ -83,7 +83,7 @@ void ts::FTAContentManagementDescriptor::DisplayDescriptor(TablesDisplay& disp, 
         disp << margin << UString::Format(u"User-defined: %s", buf.getBool()) << std::endl;
         buf.skipBits(3);
         disp << margin << UString::Format(u"Do not scramble: %s", buf.getBool()) << std::endl;
-        disp << margin << "Access over Internet: " << DataName(MY_XML_NAME, u"RemoteAccessInternet", buf.getBits<uint8_t>(2), NamesFlags::DECIMAL_FIRST) << std::endl;
+        disp << margin << "Access over Internet: " << DataName(MY_XML_NAME, u"RemoteAccessInternet", buf.getBits<uint8_t>(2), NamesFlags::DEC_VALUE_NAME) << std::endl;
         disp << margin << UString::Format(u"Do not apply revocation: %s", buf.getBool()) << std::endl;
     }
 }

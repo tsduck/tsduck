@@ -69,7 +69,7 @@ void ts::AdaptationFieldDataDescriptor::DisplayDescriptor(TablesDisplay& disp, c
         disp << margin << UString::Format(u"Adaptation field data identifier: 0x%X", id) << std::endl;
         for (int i = 0; i < 8; ++i) {
             if ((id & (1 << i)) != 0) {
-                disp << margin << "  " << DataName(MY_XML_NAME, u"DataIdentifier", (1 << i), NamesFlags::HEXA_FIRST) << std::endl;
+                disp << margin << "  " << DataName(MY_XML_NAME, u"DataIdentifier", (1 << i), NamesFlags::HEX_VALUE_NAME) << std::endl;
             }
         }
     }

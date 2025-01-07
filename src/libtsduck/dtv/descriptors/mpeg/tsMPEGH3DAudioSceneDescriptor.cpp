@@ -376,7 +376,7 @@ void ts::MPEGH3DAudioSceneDescriptor::MH3D_InteractivityInfo_type::display(Table
     const bool mae_allowGainInteractivity = buf.getBool();
     const bool mae_hasContentLanguage = buf.getBool();
     buf.skipReservedBits(4);
-    disp << ", content kind: " << DataName(MY_XML_NAME, u"mae_contentKind", buf.getBits<uint8_t>(4), NamesFlags::VALUE | NamesFlags::DECIMAL) << std::endl;
+    disp << ", content kind: " << DataName(MY_XML_NAME, u"mae_contentKind", buf.getBits<uint8_t>(4), NamesFlags::NAME_VALUE | NamesFlags::DECIMAL) << std::endl;
     if (mae_allowPositionInteractivity) {
         PositionInteractivityType pi;
         pi.display(disp, buf, margin);
@@ -435,7 +435,7 @@ void ts::MPEGH3DAudioSceneDescriptor::MH3D_PresetGroup_type::display(TablesDispl
     buf.skipReservedBits(3);
     disp << margin << "Preset Group (" << int(groupNum) << ") id: " << int(buf.getBits<uint8_t>(5));
     buf.skipReservedBits(3);
-    disp << ", kind: " << DataName(MY_XML_NAME, u"mae_groupPresetKind", buf.getBits<uint8_t>(5), NamesFlags::VALUE | NamesFlags::DECIMAL) << std::endl;
+    disp << ", kind: " << DataName(MY_XML_NAME, u"mae_groupPresetKind", buf.getBits<uint8_t>(5), NamesFlags::NAME_VALUE | NamesFlags::DECIMAL) << std::endl;
     buf.skipReservedBits(4);
     const uint8_t mae_numGroupPresetConditions = buf.getBits<uint8_t>(4);
     for (uint8_t j = 0; j < mae_numGroupPresetConditions + 1; j++) {

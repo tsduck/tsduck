@@ -138,7 +138,7 @@ ts::UString ts::HiDesDevice::Guts::HiDesErrorMessage(ssize_t driver_status, int 
 
     // HiDes status can be a negative value. Zero means no error.
     if (driver_status != 0) {
-        msg = NamesFile::Instance(NamesFile::Predefined::HIDES)->nameFromSection(u"HiDesErrorLinux", std::abs(driver_status), NamesFlags::HEXA_FIRST);
+        msg = NamesFile::Instance(NamesFile::Predefined::HIDES)->nameFromSection(u"HiDesErrorLinux", std::abs(driver_status), NamesFlags::HEX_VALUE_NAME);
     }
 
     // In case errno was also set.

@@ -13,7 +13,6 @@
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
-#include "tsNames.h"
 
 #define MY_XML_NAME u"PMT"
 #define MY_CLASS ts::PMT
@@ -519,7 +518,7 @@ void ts::PMT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
     while (buf.canRead()) {
         const uint8_t type = buf.getUInt8();
         const PID pid = buf.getPID();
-        disp << margin << "Elementary stream: type " << StreamTypeName(type, context.getREGIDs(), NamesFlags::FIRST)
+        disp << margin << "Elementary stream: type " << StreamTypeName(type, context.getREGIDs(), NamesFlags::VALUE_NAME)
              << UString::Format(u", PID: %n", pid) << std::endl;
         disp.displayDescriptorListWithLength(section, context, false, buf, margin);
     }

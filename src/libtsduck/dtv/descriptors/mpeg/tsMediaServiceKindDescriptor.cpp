@@ -142,14 +142,14 @@ void ts::MediaServiceKindDescriptor::DisplayDescriptor(TablesDisplay& disp, cons
     uint16_t loop = 0;
     bool ok = true;
     while (ok && buf.canReadBytes(1)) {
-        disp << margin << "[" << loop++ << "] " << DataName(MY_XML_NAME, u"media_description_flag", buf.getBit(), NamesFlags::VALUE | NamesFlags::DECIMAL);
+        disp << margin << "[" << loop++ << "] " << DataName(MY_XML_NAME, u"media_description_flag", buf.getBit(), NamesFlags::NAME_VALUE | NamesFlags::DECIMAL);
         bool _identifier_flag = buf.getBool();
         uint8_t _lang_pairs = buf.getBits<uint8_t>(3);
-        disp << ", media type: " << DataName(MY_XML_NAME, u"media_type", buf.getBits<uint8_t>(2), NamesFlags::VALUE | NamesFlags::DECIMAL) << std::endl;
+        disp << ", media type: " << DataName(MY_XML_NAME, u"media_type", buf.getBits<uint8_t>(2), NamesFlags::NAME_VALUE | NamesFlags::DECIMAL) << std::endl;
         buf.skipReservedBits(1);
         if (_identifier_flag) {
             uint8_t _ID_length_code = buf.getBits<uint8_t>(3), _ID_len = 0;
-            disp << margin << " ID type: " << DataName(MY_XML_NAME, u"ID_type", buf.getBits<uint16_t>(13), NamesFlags::VALUE);
+            disp << margin << " ID type: " << DataName(MY_XML_NAME, u"ID_type", buf.getBits<uint16_t>(13), NamesFlags::NAME_VALUE);
             switch (_ID_length_code) {
                 case 0: _ID_len = 1; break;
                 case 1: _ID_len = 2; break;
@@ -164,7 +164,7 @@ void ts::MediaServiceKindDescriptor::DisplayDescriptor(TablesDisplay& disp, cons
             disp << ", media ID: " << ((_ID_len == 0) ? UString(u"!! length error!!") : buf.getUTF8(_ID_len)) << std::endl;
         }
         for (uint8_t i = 0; ok && i < _lang_pairs; i++) {
-            disp << margin << "  language [" << int(i) << "] configuration: " << DataName(MY_XML_NAME, u"configuration_type", buf.getBits<uint8_t>(2), NamesFlags::VALUE | NamesFlags::DECIMAL);
+            disp << margin << "  language [" << int(i) << "] configuration: " << DataName(MY_XML_NAME, u"configuration_type", buf.getBits<uint8_t>(2), NamesFlags::NAME_VALUE | NamesFlags::DECIMAL);
             uint8_t _lang_purpose_cnt = buf.getBits<uint8_t>(3);
             uint8_t _lang_len_idc = buf.getBits<uint8_t>(2), _lang_len = 0;
             buf.skipReservedBits(1);
@@ -178,7 +178,7 @@ void ts::MediaServiceKindDescriptor::DisplayDescriptor(TablesDisplay& disp, cons
             disp << ", language: " << ((_lang_len == 0) ? UString(u"!! length error!!") : buf.getUTF8(_lang_len)) << std::endl;
             UStringVector purposes;
             for (uint8_t k=0; ok && k<_lang_purpose_cnt; k++) {
-                purposes.push_back(DataName(MY_XML_NAME, u"purpose", buf.getUInt8(), NamesFlags::VALUE));
+                purposes.push_back(DataName(MY_XML_NAME, u"purpose", buf.getUInt8(), NamesFlags::NAME_VALUE));
             }
             if (!purposes.empty()) {
                 disp.displayVector(UString::Format(u"  Purpose%s:",  (purposes.size() > 1) ? "s" : "" ), purposes, margin, true, 2);

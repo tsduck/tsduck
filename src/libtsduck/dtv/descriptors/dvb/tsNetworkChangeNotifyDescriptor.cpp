@@ -122,7 +122,7 @@ void ts::NetworkChangeNotifyDescriptor::DisplayDescriptor(TablesDisplay& disp, c
             disp << UString::Format(u":%02d", buf.getBCD<uint8_t>(2)) << std::endl;
             disp << margin << UString::Format(u"    Receiver category: 0x%X", buf.getBits<uint8_t>(3)) << std::endl;
             const bool invariant_ts_present = buf.getBool();
-            disp << margin << "    Change type: " << DataName(MY_XML_NAME, u"ChangeType", buf.getBits<uint8_t>(4), NamesFlags::HEXA_FIRST) << std::endl;
+            disp << margin << "    Change type: " << DataName(MY_XML_NAME, u"ChangeType", buf.getBits<uint8_t>(4), NamesFlags::HEX_VALUE_NAME) << std::endl;
             disp << margin << UString::Format(u"    Message id: 0x%X", buf.getUInt8()) << std::endl;
             if (invariant_ts_present && buf.canReadBytes(4)) {
                 disp << margin << UString::Format(u"    Invariant TS id: 0x%X", buf.getUInt16());

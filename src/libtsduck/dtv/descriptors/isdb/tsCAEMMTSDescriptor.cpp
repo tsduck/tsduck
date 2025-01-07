@@ -13,7 +13,6 @@
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
-#include "tsNames.h"
 
 #define MY_XML_NAME u"CA_EMM_TS_descriptor"
 #define MY_CLASS    ts::CAEMMTSDescriptor
@@ -74,7 +73,7 @@ void ts::CAEMMTSDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::CAEMMTSDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(4)) {
-        disp << margin << "CA System Id: " << CASIdName(disp.duck(), buf.getUInt16(), NamesFlags::FIRST) << std::endl;
+        disp << margin << "CA System Id: " << CASIdName(disp.duck(), buf.getUInt16(), NamesFlags::VALUE_NAME) << std::endl;
         disp << margin << UString::Format(u"Transport stream id: %n", buf.getUInt16()) << std::endl;
         disp << margin << UString::Format(u"Original network id: %n", buf.getUInt16()) << std::endl;
         disp << margin << UString::Format(u"Power-on time: %d minutes", buf.getUInt8()) << std::endl;

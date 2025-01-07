@@ -8,9 +8,6 @@
 
 #include "tsEnumeration.h"
 
-// Values for "not found"
-const ts::Enumeration::int_t ts::Enumeration::UNKNOWN = std::numeric_limits<ts::Enumeration::int_t>::max();
-
 
 //----------------------------------------------------------------------------
 // Constructor from a variable list of string/value pairs.
@@ -31,18 +28,18 @@ ts::Enumeration::Enumeration(std::initializer_list<NameValue> values)
 TS_PUSH_WARNING()
 TS_GCC_NOWARNING(shadow) // workaround for a bug in GCC 7.5
 
-ts::Enumeration::int_t ts::Enumeration::value(const UString& name, bool caseSensitive, bool abbreviated) const
+ts::Enumeration::int_t ts::Enumeration::value(const UString& name, bool case_sensitive, bool abbreviated) const
 {
     const UString lcName(name.toLower());
     size_t previousCount = 0;
     int_t previous = UNKNOWN;
 
     for (const auto& it : _map) {
-        if ((caseSensitive && it.second == name) || (!caseSensitive && it.second.toLower() == lcName)) {
+        if ((case_sensitive && it.second == name) || (!case_sensitive && it.second.toLower() == lcName)) {
             // Found an exact match
             return it.first;
         }
-        else if (abbreviated && it.second.startsWith(name, caseSensitive ? CASE_SENSITIVE : CASE_INSENSITIVE)) {
+        else if (abbreviated && it.second.startsWith(name, case_sensitive ? CASE_SENSITIVE : CASE_INSENSITIVE)) {
             // Found an abbreviated version
             if (++previousCount == 1) {
                 // First abbreviation, remember it and continue searching
@@ -76,17 +73,17 @@ TS_POP_WARNING()
 // Get the error message about a name failing to match a value.
 //----------------------------------------------------------------------------
 
-ts::UString ts::Enumeration::error(const UString& name1, bool caseSensitive, bool abbreviated, const UString& designator, const UString& prefix) const
+ts::UString ts::Enumeration::error(const UString& name1, bool case_sensitive, bool abbreviated, const UString& designator, const UString& prefix) const
 {
     const UString lcName(name1.toLower());
     UStringList maybe;
 
     for (const auto& it : _map) {
-        if ((caseSensitive && it.second == name1) || (!caseSensitive && it.second.toLower() == lcName)) {
+        if ((case_sensitive && it.second == name1) || (!case_sensitive && it.second.toLower() == lcName)) {
             // Found an exact match, there is no error.
             return UString();
         }
-        else if (abbreviated && it.second.startsWith(name1, caseSensitive ? CASE_SENSITIVE : CASE_INSENSITIVE)) {
+        else if (abbreviated && it.second.startsWith(name1, case_sensitive ? CASE_SENSITIVE : CASE_INSENSITIVE)) {
             // Found an abbreviated version.
             maybe.push_back(prefix + it.second);
         }

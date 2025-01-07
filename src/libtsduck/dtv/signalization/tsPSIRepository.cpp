@@ -10,7 +10,6 @@
 #include "tsDuckContext.h"
 #include "tsAlgorithm.h"
 #include "tsCerrReport.h"
-#include "tsNames.h"
 #include "tsTextTable.h"
 #include "tsSysUtils.h"
 

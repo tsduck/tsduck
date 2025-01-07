@@ -157,14 +157,14 @@ ts::UString ts::MPEG4TextDescriptor::TimedText_TS26245(ByteBlock formatSpecificT
 void ts::MPEG4TextDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(8)) {
-        disp << margin << "Text format: " << DataName(MY_XML_NAME, u"textFormat", buf.getUInt8(), NamesFlags::VALUE);
+        disp << margin << "Text format: " << DataName(MY_XML_NAME, u"textFormat", buf.getUInt8(), NamesFlags::NAME_VALUE);
         buf.pushReadSizeFromLength(16); // textConfigLength
         disp << ", config length: " << buf.remainingReadBytes() << std::endl;
-        disp << margin << "3GPP base format: " << DataName(MY_XML_NAME, u"ThreeGPPBaseFormat", buf.getUInt8(), NamesFlags::VALUE);
-        disp << ", level: " << DataName(MY_XML_NAME, u"profileLevel", buf.getUInt8(), NamesFlags::VALUE);
+        disp << margin << "3GPP base format: " << DataName(MY_XML_NAME, u"ThreeGPPBaseFormat", buf.getUInt8(), NamesFlags::NAME_VALUE);
+        disp << ", level: " << DataName(MY_XML_NAME, u"profileLevel", buf.getUInt8(), NamesFlags::NAME_VALUE);
         disp << ", clock frequency: " << UString::Decimal(buf.getUInt24()) << " Hz" << std::endl;
         const bool contains_list_of_compatible_3GPPFormats_flag = buf.getBool();
-        disp << margin << "Sample description: " << DataName(MY_XML_NAME, u"sampleDescriptionFlags", buf.getBits<uint8_t>(2), NamesFlags::VALUE) << std::endl;
+        disp << margin << "Sample description: " << DataName(MY_XML_NAME, u"sampleDescriptionFlags", buf.getBits<uint8_t>(2), NamesFlags::NAME_VALUE) << std::endl;
         const bool SampleDescription_carriage_flag = buf.getBool();
         const bool positioning_information_flag = buf.getBool();
         buf.skipBits(3);  // ISO/IEC 14496-17 is not explicit on the value of reserved buts
@@ -184,7 +184,7 @@ void ts::MPEG4TextDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::D
             for (uint8_t i = 0; i < number_of_SampleDescriptions; i++) {
                 disp << margin << UString::Format(u"Sample description[%d]: index=0x%X", i, buf.getUInt8());
                 const uint8_t textFormat = buf.getUInt8();
-                disp << ", format: " << DataName(MY_XML_NAME, u"textFormat", textFormat, NamesFlags::VALUE);
+                disp << ", format: " << DataName(MY_XML_NAME, u"textFormat", textFormat, NamesFlags::NAME_VALUE);
                 const uint16_t textConfigLength = buf.getUInt16();
                 disp << ", length: " << textConfigLength << std::endl;
                 if (textConfigLength > 0) {

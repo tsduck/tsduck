@@ -67,7 +67,7 @@ void ts::TransportProfileDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::TransportProfileDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(1)) {
-        disp << margin << "Transport profile: " << DataName(MY_XML_NAME, u"Profile", buf.getUInt8(), NamesFlags::HEXA_FIRST) << std::endl;
+        disp << margin << "Transport profile: " << DataName(MY_XML_NAME, u"Profile", buf.getUInt8(), NamesFlags::HEX_VALUE_NAME) << std::endl;
         disp.displayPrivateData(u"Private data", buf, NPOS, margin);
     }
 }

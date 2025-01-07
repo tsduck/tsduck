@@ -15,7 +15,6 @@
 #include "tsDescriptor.h"
 #include "tsDescriptorList.h"
 #include "tsATSCMultipleString.h"
-#include "tsNames.h"
 #include "tsIntegerUtils.h"
 
 
@@ -681,7 +680,7 @@ void ts::TablesDisplay::displayDescriptorList(const Section& section, Descriptor
 
         // Display descriptor header
         strm << margin << "- Descriptor " << desc_index++ << ": "
-             << DIDName(desc_tag, context, NamesFlags::VALUE | NamesFlags::BOTH) << ", "
+             << DIDName(desc_tag, context, NamesFlags::NAME_VALUE | NamesFlags::HEX_DEC) << ", "
              << desc_length << " bytes" << std::endl;
 
         // Display descriptor.
@@ -717,7 +716,7 @@ void ts::TablesDisplay::displayDescriptorList(const DescriptorList& dlist, Descr
         if (desc != nullptr) {
             context.setCurrentDescriptorList(&dlist, i);
             strm << margin << "- Descriptor " << i << ": "
-                 << DIDName(desc->tag(), context, NamesFlags::VALUE | NamesFlags::BOTH) << ", "
+                 << DIDName(desc->tag(), context, NamesFlags::NAME_VALUE | NamesFlags::HEX_DEC) << ", "
                  << desc->size() << " bytes" << std::endl;
             displayDescriptor(*desc, context, margin + u"  ");
         }
@@ -743,7 +742,7 @@ void ts::TablesDisplay::displayDescriptorData(const Descriptor& desc, Descriptor
         header_size++;
         size--;
         // Display extended descriptor header
-        strm << margin << "MPEG extended descriptor: " << XDIDNameMPEG(ext, NamesFlags::VALUE | NamesFlags::BOTH) << std::endl;
+        strm << margin << "MPEG extended descriptor: " << XDIDNameMPEG(ext, NamesFlags::NAME_VALUE | NamesFlags::HEX_DEC) << std::endl;
     }
     else if (desc.tag() == DID_DVB_EXTENSION && size >= 1) {
         // Extension descriptor, the extension id is in the first byte of the payload.
@@ -751,7 +750,7 @@ void ts::TablesDisplay::displayDescriptorData(const Descriptor& desc, Descriptor
         header_size++;
         size--;
         // Display extended descriptor header
-        strm << margin << "Extended descriptor: " << XDIDNameDVB(ext, NamesFlags::VALUE | NamesFlags::BOTH) << std::endl;
+        strm << margin << "Extended descriptor: " << XDIDNameDVB(ext, NamesFlags::NAME_VALUE | NamesFlags::HEX_DEC) << std::endl;
     }
 
     // Locate the display handler for this descriptor payload.

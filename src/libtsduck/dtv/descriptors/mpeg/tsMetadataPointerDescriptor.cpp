@@ -129,7 +129,7 @@ void ts::MetadataPointerDescriptor::DisplayDescriptor(TablesDisplay& disp, const
     }
     else {
         const uint16_t format = buf.getUInt16();
-        disp << margin << "Metadata application format: " << DataName(MY_XML_NAME, u"application_format", format, NamesFlags::HEXA_FIRST) << std::endl;
+        disp << margin << "Metadata application format: " << DataName(MY_XML_NAME, u"application_format", format, NamesFlags::HEX_VALUE_NAME) << std::endl;
         if (format == 0xFFFF && buf.remainingReadBytes() >= 4) {
             disp << margin << UString::Format(u"Metadata application format identifier: %n", buf.getUInt32()) << std::endl;
         }
@@ -140,7 +140,7 @@ void ts::MetadataPointerDescriptor::DisplayDescriptor(TablesDisplay& disp, const
     }
     else {
         const uint8_t format = buf.getUInt8();
-        disp << margin << "Metadata format: " << DataName(MY_XML_NAME, u"metadata_format", format, NamesFlags::HEXA_FIRST) << std::endl;
+        disp << margin << "Metadata format: " << DataName(MY_XML_NAME, u"metadata_format", format, NamesFlags::HEX_VALUE_NAME) << std::endl;
         if (format == 0xFF && buf.remainingReadBytes() >= 4) {
             disp << margin << UString::Format(u"Metadata format identifier: %n", buf.getUInt32()) << std::endl;
         }
@@ -153,7 +153,7 @@ void ts::MetadataPointerDescriptor::DisplayDescriptor(TablesDisplay& disp, const
         disp << margin << UString::Format(u"Metadata service id: %n", buf.getUInt8()) << std::endl;
         const bool metadata_locator_record_flag = buf.getBool();
         const uint8_t flags = buf.getBits<uint8_t>(2);
-        disp << margin << "MPEG carriage flags: " << DataName(MY_XML_NAME, u"carriage_flags", flags, NamesFlags::DECIMAL_FIRST) << std::endl;
+        disp << margin << "MPEG carriage flags: " << DataName(MY_XML_NAME, u"carriage_flags", flags, NamesFlags::DEC_VALUE_NAME) << std::endl;
         buf.skipBits(5);
         if (metadata_locator_record_flag) {
             const size_t length = buf.getUInt8();

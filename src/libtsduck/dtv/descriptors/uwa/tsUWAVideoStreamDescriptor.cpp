@@ -94,10 +94,10 @@ const ts::Enumeration& ts::UWAVideoStreamDescriptor::VersionNumbers()
 void ts::UWAVideoStreamDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(10)) {
-        disp << margin << "CUVV Tag: " << DataName(MY_XML_NAME, u"CUVV_tag", buf.getUInt32(), NamesFlags::VALUE | NamesFlags::HEXA);
+        disp << margin << "CUVV Tag: " << DataName(MY_XML_NAME, u"CUVV_tag", buf.getUInt32(), NamesFlags::NAME_VALUE | NamesFlags::HEXA);
         uint16_t _version_map = buf.getUInt16();
         disp << ", provider code: " << UString::Format(u"0x%x", buf.getUInt16());
-        disp << ", provider oriented code: " << DataName(MY_XML_NAME, u"terminal_provide_oriented_code", buf.getInt16(), NamesFlags::VALUE | NamesFlags::HEXA) << std::endl;
+        disp << ", provider oriented code: " << DataName(MY_XML_NAME, u"terminal_provide_oriented_code", buf.getInt16(), NamesFlags::NAME_VALUE | NamesFlags::HEXA) << std::endl;
 
         std::vector<int8_t> versions;
         for (uint8_t i = 0; i < 16; i++) {

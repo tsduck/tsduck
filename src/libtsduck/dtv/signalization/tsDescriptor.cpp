@@ -11,7 +11,6 @@
 #include "tsAbstractDescriptor.h"
 #include "tsAbstractTable.h"
 #include "tsxmlElement.h"
-#include "tsNames.h"
 
 
 //----------------------------------------------------------------------------

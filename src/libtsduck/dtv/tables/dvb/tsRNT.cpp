@@ -221,7 +221,7 @@ void ts::RNT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
     disp << margin << UString::Format(u"Context id: %n", section.tableIdExtension()) << std::endl;
 
     if (buf.canReadBytes(3)) {
-        disp << margin << "Context id type: " << DataName(MY_XML_NAME, u"ContextIdType", buf.getUInt8(), NamesFlags::HEXA_FIRST) << std::endl;
+        disp << margin << "Context id type: " << DataName(MY_XML_NAME, u"ContextIdType", buf.getUInt8(), NamesFlags::HEX_VALUE_NAME) << std::endl;
         DescriptorContext context(disp.duck(), section.tableId(), section.definingStandards());
         disp.displayDescriptorListWithLength(section, context, true, buf, margin, u"RNT top-level descriptors:", u"None");
 
@@ -239,7 +239,7 @@ void ts::RNT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
                 disp << margin << "  - CRID authority name: \"" << buf.getStringWithByteLength() << "\"" << std::endl;
                 if (buf.canReadBytes(1)) {
                     buf.skipBits(2);
-                    disp << margin << "    CRID authority policy: " << DataName(MY_XML_NAME, u"AuthorityPolicy", buf.getBits<uint8_t>(2), NamesFlags::DECIMAL_FIRST) << std::endl;
+                    disp << margin << "    CRID authority policy: " << DataName(MY_XML_NAME, u"AuthorityPolicy", buf.getBits<uint8_t>(2), NamesFlags::DEC_VALUE_NAME) << std::endl;
                     disp.displayDescriptorListWithLength(section, context, false, buf, margin + u"    ", u"CRID authority-level descriptors:", u"None");
                 }
             }

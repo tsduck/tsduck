@@ -13,7 +13,6 @@
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
-#include "tsNames.h"
 
 #define MY_XML_NAME u"ISDB_component_group_descriptor"
 #define MY_CLASS    ts::ISDBComponentGroupDescriptor
@@ -165,7 +164,7 @@ void ts::ISDBComponentGroupDescriptor::ComponentGroup::CAUnit::deserialize(PSIBu
 void ts::ISDBComponentGroupDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(1)) {
-        disp << margin << "Component group type: " << DataName(MY_XML_NAME, u"component_group_type", buf.getBits<uint8_t>(3), NamesFlags::VALUE) << std::endl;
+        disp << margin << "Component group type: " << DataName(MY_XML_NAME, u"component_group_type", buf.getBits<uint8_t>(3), NamesFlags::NAME_VALUE) << std::endl;
         const bool total_bit_rate_flag = buf.getBool();
         const size_t num_of_group = buf.getBits<uint8_t>(4);
         for (size_t i = 0; i < num_of_group; i++) {
@@ -178,7 +177,7 @@ void ts::ISDBComponentGroupDescriptor::DisplayDescriptor(TablesDisplay& disp, co
 void ts::ISDBComponentGroupDescriptor::ComponentGroup::display(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, bool total_bit_rate_flag, size_t group_num)
 {
     disp << margin << UString::Format(u"Component group #%2d; id: ", group_num)
-         << DataName(MY_XML_NAME, u"component_group_id", buf.getBits<uint8_t>(4), NamesFlags::VALUE)  << std::endl;
+         << DataName(MY_XML_NAME, u"component_group_id", buf.getBits<uint8_t>(4), NamesFlags::NAME_VALUE)  << std::endl;
     const size_t num_of_CA_unit = buf.getBits<uint8_t>(4);
     for (size_t i = 0; i < num_of_CA_unit; i++) {
         CAUnit unit;
@@ -196,7 +195,7 @@ void ts::ISDBComponentGroupDescriptor::ComponentGroup::display(TablesDisplay& di
 void ts::ISDBComponentGroupDescriptor::ComponentGroup::CAUnit::display(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, size_t group_num)
 {
     disp << margin << UString::Format(u"CA unit #%2d", group_num) << "; id: "
-         << DataName(MY_XML_NAME, u"CA_unit_id", buf.getBits<uint8_t>(4), NamesFlags::VALUE) << std::endl;
+         << DataName(MY_XML_NAME, u"CA_unit_id", buf.getBits<uint8_t>(4), NamesFlags::NAME_VALUE) << std::endl;
     const size_t num_of_component = buf.getBits<uint8_t>(4);
     ByteBlock _component_tags;
     for (size_t i = 0; i < num_of_component; i++) {

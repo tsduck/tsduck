@@ -13,7 +13,7 @@
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
-#include "tsNames.h"
+#include "tsDVB.h"
 
 #define MY_XML_NAME u"content_descriptor"
 #define MY_CLASS    ts::ContentDescriptor
@@ -77,7 +77,7 @@ void ts::ContentDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::ContentDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     while (buf.canReadBytes(2)) {
-        disp << margin << "Content: " << names::Content(disp.duck(), buf.getUInt8(), NamesFlags::FIRST);
+        disp << margin << "Content: " << ContentIdName(disp.duck(), buf.getUInt8(), NamesFlags::VALUE_NAME);
         disp << UString::Format(u" / User: 0x%X", buf.getUInt8()) << std::endl;
     }
 }
