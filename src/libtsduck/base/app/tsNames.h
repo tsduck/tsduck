@@ -64,6 +64,7 @@ namespace ts {
     //!
     class TSDUCKDLL Names
     {
+        TS_NOMOVE(Names);
     public:
         //!
         //! Unsigned integer type used in representations of values.
@@ -86,6 +87,7 @@ namespace ts {
         //!
         struct NameValue
         {
+            TS_NOMOVE(NameValue);
         public:
             const UString name;       //!< Name for the value.
             const uint_t  first;      //!< First value for the name, in unsigned form.
@@ -105,7 +107,8 @@ namespace ts {
                 last(first),
                 neg_first(ts::is_negative(v)),
                 neg_last(neg_first)
-            {}
+            {
+            }
 
             //!
             //! Constructor.
@@ -338,7 +341,6 @@ namespace ts {
         //!
         //! Get the names from a bit-mask value.
         //! The method is useful only when the integer values in the enumeration are bit-masks.
-        //! @tparam INTENUM An integer or enumeration type.
         //! @param [in] value A bit-mask, built from integer values in the Names object.
         //! @param [in] separator The separator to be used between values, a comma by default.
         //! @param [in] hexa If true and no name exists for a value, insert the value

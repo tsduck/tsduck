@@ -101,7 +101,7 @@ TSUNIT_DEFINE_TEST(Value)
 
     e1.add(u"FirstRepetition", 48);
 
-    const int vFirstRepetition = e1.value(u"FirstRepetition");
+    const ts::Names::int_t vFirstRepetition = e1.value(u"FirstRepetition");
     TSUNIT_ASSERT(vFirstRepetition == 47 || vFirstRepetition == 48);
 
     TSUNIT_ASSERT(e1.value(u"1") == 1);
