@@ -5,6 +5,7 @@
     <DSMCC_download_data_message
         version="uint5, default=0"
         current="bool, default=true"
+        table_id_extension="uint16, default=0xFFFF"
         protocol_discriminator="uint8, required"
         dsmcc_type="uint8, required"
         message_id="uint16, required"

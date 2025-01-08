@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2024, Piotr Serafin
+// Copyright (c) 2025, Piotr Serafin
 // BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
@@ -43,23 +43,33 @@ ts::DSMCCDownloadDataMessage::DSMCCDownloadDataMessage(DuckContext& duck, const 
 
 void ts::DSMCCDownloadDataMessage::clearContent()
 {
+    table_id_ext = 0;
     protocol_discriminator = 0x11;
     dsmcc_type = 0x00;
     message_id = 0;
     download_id = 0;
     module_id = 0;
     module_version = 0;
-    block_number = 0;
     block_data.clear();
 }
 
 //----------------------------------------------------------------------------
 // Inherited public methods
 //----------------------------------------------------------------------------
-
 bool ts::DSMCCDownloadDataMessage::isPrivate() const
 {
     return false;  // MPEG-defined
+}
+
+size_t ts::DSMCCDownloadDataMessage::maxPayloadSize() const
+{
+    // Although declared as a "non-private section" in the MPEG sense, the
+    // DSM-CC section can use up to 4096 bytes according to
+    // ETSI TS 102 809 V1.3.1 (2017-06), Table B.2.
+    //
+    // The maximum section length is 4096 bytes for all types of sections used in object carousel.
+    // The section overhead is 12 bytes, leaving a maxium 4084 of payload per section.
+    return MAX_PRIVATE_LONG_SECTION_PAYLOAD_SIZE;
 }
 
 uint16_t ts::DSMCCDownloadDataMessage::tableIdExtension() const
@@ -73,6 +83,7 @@ uint16_t ts::DSMCCDownloadDataMessage::tableIdExtension() const
 
 void ts::DSMCCDownloadDataMessage::deserializePayload(PSIBuffer& buf, const Section& section)
 {
+    table_id_ext = section.tableIdExtension();
     protocol_discriminator = buf.getUInt8();
     dsmcc_type = buf.getUInt8();
     message_id = buf.getUInt16();
@@ -93,8 +104,8 @@ void ts::DSMCCDownloadDataMessage::deserializePayload(PSIBuffer& buf, const Sect
     module_version = buf.getUInt8();
 
     buf.skipBytes(1);  // reserved
+    buf.skipBytes(2);  // block_number
 
-    block_number = buf.getUInt16();
     buf.getBytesAppend(block_data);
 }
 
@@ -107,23 +118,38 @@ void ts::DSMCCDownloadDataMessage::serializePayload(BinaryTable& table, PSIBuffe
     buf.putUInt8(dsmcc_type);
     buf.putUInt16(message_id);
     buf.putUInt32(download_id);
-    buf.putUInt16(module_id);
-    buf.putUInt8(module_version);
-    buf.putUInt16(block_number);
+
+    buf.putUInt8(0xFF);  // reserved
+    buf.putUInt8(0x00);  // adaptation_length
+
     buf.pushState();
 
-    // Loop on new sections until all block bytes are gone.
-    size_t block_data_index = 0;
-    while (table.sectionCount() == 0 || block_data_index < block_data.size()) {
+    uint16_t block_number = 0x0000;
+    size_t   block_data_index = 0;
+
+    while (block_data_index < block_data.size()) {
+
+        buf.pushWriteSequenceWithLeadingLength(16);  // message_length
+        buf.putUInt16(module_id);
+        buf.putUInt8(module_version);
+        buf.putUInt8(0xFF);  // reserved
+
+        buf.putUInt16(block_number);
         block_data_index += buf.putBytes(block_data, block_data_index, std::min(block_data.size() - block_data_index, buf.remainingWriteBytes()));
+
+        buf.popState();  // message_length
+
         addOneSection(table, buf);
+
+        block_number++;
     }
 }
 
 void ts::DSMCCDownloadDataMessage::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    /*uint16_t message_length = 0;*/
-    uint8_t adaptation_length = 0;
+    const uint16_t tidext = section.tableIdExtension();
+
+    disp << margin << UString::Format(u"Table extension id: %n", tidext) << std::endl;
 
     if (buf.canReadBytes(12)) {
         const uint8_t  protocol_discriminator = buf.getUInt8();
@@ -131,13 +157,11 @@ void ts::DSMCCDownloadDataMessage::DisplaySection(TablesDisplay& disp, const ts:
         const uint16_t message_id = buf.getUInt16();
         const uint32_t download_id = buf.getUInt32();
 
-        // Skip reserved
-        buf.skipBytes(1);
+        buf.skipBytes(1);  // reserved
 
-        adaptation_length = buf.getUInt8();
-        // Skip message length
-        /*message_length = buf.getUInt16();*/
-        buf.skipBytes(2);
+        uint16_t adaptation_length = buf.getUInt8();
+
+        buf.skipBytes(2);  // message_length
 
         /* For object carousel it should be 0 */
         if (adaptation_length > 0) {
@@ -177,6 +201,9 @@ void ts::DSMCCDownloadDataMessage::DisplaySection(TablesDisplay& disp, const ts:
 
 void ts::DSMCCDownloadDataMessage::buildXML(DuckContext& duck, xml::Element* root) const
 {
+    root->setIntAttribute(u"version", version);
+    root->setBoolAttribute(u"current", is_current);
+    root->setIntAttribute(u"table_id_extension", table_id_ext, true);
     root->setIntAttribute(u"protocol_discriminator", protocol_discriminator, true);
     root->setIntAttribute(u"dsmcc_type", dsmcc_type, true);
     root->setIntAttribute(u"message_id", message_id, true);
@@ -192,7 +219,10 @@ void ts::DSMCCDownloadDataMessage::buildXML(DuckContext& duck, xml::Element* roo
 
 bool ts::DSMCCDownloadDataMessage::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute(protocol_discriminator, u"protocol_discriminator", false, 0x11) &&
+    return element->getIntAttribute(version, u"version", false, 0, 0, 31) &&
+           element->getBoolAttribute(is_current, u"current", false, true) &&
+           element->getIntAttribute(table_id_ext, u"table_id_extension", true) &&
+           element->getIntAttribute(protocol_discriminator, u"protocol_discriminator", false, 0x11) &&
            element->getIntAttribute(dsmcc_type, u"dsmcc_type", true, 0x03) &&
            element->getIntAttribute(message_id, u"message_id", true) &&
            element->getIntAttribute(download_id, u"download_id", true) &&

@@ -7,12 +7,13 @@ Defined by MPEG in <<ISO-13818-6>>.
 <DSMCC_download_data_message
     version="uint5, default=0"
     current="bool, default=true"
+    table_id_extension="uint16, default=0xFFFF"
     protocol_discriminator="uint8, required"
     dsmcc_type="uint8, required"
     message_id="uint16, required"
     download_id="uint32, required"
     module_id="uint16, required"
-    module_version="uint8, required"
+    module_version="uint8, required">
   <block_data>
     Hexadecimal content
   </block_data>
