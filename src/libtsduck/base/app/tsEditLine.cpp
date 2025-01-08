@@ -114,7 +114,7 @@ bool ts::EditLine::readLine(UString& line, bool skip_empty, bool trim, bool cont
             subline.trim();
         }
         line.append(subline);
-        if (continuing && line.endsWith(u"\\")) {
+        if (continuing && line.ends_with(u"\\")) {
             // Need to read a continuation line.
             line.pop_back();
             prompt = &_next_prompt;

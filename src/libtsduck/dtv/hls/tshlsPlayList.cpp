@@ -71,7 +71,7 @@ void ts::hls::PlayList::buildURL(MediaElement& media, const UString& uri) const
         media.url.setURL(uri, _url);
         media.file_path = media.url.getPath();
     }
-    else if (uri.startsWith(u"/")) {
+    else if (uri.starts_with(u"/")) {
         // The original URI was a file and the segment is an absolute file name.
         media.file_path = uri;
     }
@@ -461,8 +461,8 @@ bool ts::hls::PlayList::loadURL(const URL& url, bool strict, const WebRequestArg
     // Check strict conformance: according to RFC 8216, a playlist must either ends in .m3u8 or .m3u - OR -
     // HTTP Content-Type is application/vnd.apple.mpegurl or audio/mpegurl.
     if (strict &&
-        !_original.endsWith(u".m3u8", CASE_INSENSITIVE) &&
-        !_original.endsWith(u".m3u", CASE_INSENSITIVE) &&
+        !_original.ends_with(u".m3u8", CASE_INSENSITIVE) &&
+        !_original.ends_with(u".m3u", CASE_INSENSITIVE) &&
         mime != u"application/vnd.apple.mpegurl" &&
         mime != u"application/mpegurl" &&
         mime != u"audio/mpegurl")
@@ -498,7 +498,7 @@ bool ts::hls::PlayList::loadFile(const UString& filename, bool strict, PlayListT
     _is_url = false;
 
     // Check strict conformance: according to RFC 8216, a playlist must either ends in .m3u8 or .m3u.
-    if (strict && !filename.endsWith(u".m3u8", CASE_INSENSITIVE) && !filename.endsWith(u".m3u", CASE_INSENSITIVE)) {
+    if (strict && !filename.ends_with(u".m3u8", CASE_INSENSITIVE) && !filename.ends_with(u".m3u", CASE_INSENSITIVE)) {
         report.error(u"Invalid file name extension for HLS playlist in %s", filename);
         return false;
     }
@@ -649,7 +649,7 @@ bool ts::hls::PlayList::parse(bool strict, Report& report)
                 // Enqueue a new playlist description.
                 buildURL(plNext, line);
                 _playlists.push_back(plNext);
-                if (!plNext.file_path.endsWith(u".m3u8", CASE_INSENSITIVE)) {
+                if (!plNext.file_path.ends_with(u".m3u8", CASE_INSENSITIVE)) {
                     report.debug(u"unexpected playlist file extension in reference URI: %s", line);
                 }
                 // Reset description of next playlist.
@@ -660,7 +660,7 @@ bool ts::hls::PlayList::parse(bool strict, Report& report)
                 buildURL(segNext, line);
                 _utc_termination += segNext.duration;
                 _segments.push_back(segNext);
-                if (!segNext.file_path.endsWith(u".ts", CASE_INSENSITIVE)) {
+                if (!segNext.file_path.ends_with(u".ts", CASE_INSENSITIVE)) {
                     report.debug(u"unexpected segment file extension in reference URI: %s", line);
                 }
                 // Reset description of next segment.
@@ -790,7 +790,7 @@ bool ts::hls::PlayList::parse(bool strict, Report& report)
                     const UString uri(attr.value(u"URI"));
                     if (!uri.empty()) {
                         buildURL(pl, uri);
-                        if (!pl.file_path.endsWith(u".m3u8", CASE_INSENSITIVE)) {
+                        if (!pl.file_path.ends_with(u".m3u8", CASE_INSENSITIVE)) {
                             report.debug(u"unexpected playlist file extension in reference URI: %s", uri);
                         }
                     }
@@ -839,7 +839,7 @@ bool ts::hls::PlayList::parse(bool strict, Report& report)
 bool ts::hls::PlayList::getTag(const UString& line, Tag& tag, UString& params, bool strict, Report& report)
 {
     // Check if this is a tag line.
-    if (!line.startsWith(u"#EXT", strict ? CASE_SENSITIVE : CASE_INSENSITIVE)) {
+    if (!line.starts_with(u"#EXT", strict ? CASE_SENSITIVE : CASE_INSENSITIVE)) {
         return false;
     }
 
@@ -896,7 +896,7 @@ bool ts::hls::PlayList::getTag(const UString& line, Tag& tag, UString& params, b
 
 bool ts::hls::PlayList::isURI(const UString& line, bool strict, Report& report)
 {
-    if (line.empty() || line.startsWith(u"#")) {
+    if (line.empty() || line.starts_with(u"#")) {
         // Not an URI line.
         return false;
     }
@@ -907,11 +907,11 @@ bool ts::hls::PlayList::isURI(const UString& line, bool strict, Report& report)
     const UString name(me.url.isValid() ? me.url.getPath() : me.file_path);
 
     // If the URI extension is known, set playlist type.
-    if (name.endsWith(u".m3u8", CASE_INSENSITIVE) || name.endsWith(u".m3u", CASE_INSENSITIVE)) {
+    if (name.ends_with(u".m3u8", CASE_INSENSITIVE) || name.ends_with(u".m3u", CASE_INSENSITIVE)) {
         // Reference to another playlist, this is a master playlist.
         setType(PlayListType::MASTER, report);
     }
-    else if (name.endsWith(u".ts", CASE_INSENSITIVE)) {
+    else if (name.ends_with(u".ts", CASE_INSENSITIVE)) {
         // Reference to a TS file, this is a media playlist.
         setTypeMedia(report);
     }
@@ -1036,7 +1036,7 @@ ts::UString ts::hls::PlayList::textContent(ts::Report &report) const
 
     // Insert application-specific tags before standard tags.
     for (const auto& tag : _extra_tags) {
-        text.format(u"%s%s\n", tag.startsWith(u"#") ? u"" : u"#", tag);
+        text.format(u"%s%s\n", tag.starts_with(u"#") ? u"" : u"#", tag);
     }
 
     if (isMaster()) {

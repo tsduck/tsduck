@@ -23,7 +23,7 @@ void ts::URL::setURL(const UString& path)
     // Default to a file URL.
     if (_scheme.empty()) {
         _scheme = u"file";
-        if (!_path.startsWith(u"/")) {
+        if (!_path.starts_with(u"/")) {
             // Make it an absolute path.
             UString dir(fs::current_path(&ErrCodeReport()));
 #if defined(TS_WINDOWS)
@@ -31,7 +31,7 @@ void ts::URL::setURL(const UString& path)
             dir.insert(0, u"/");
 #endif
             // A directory must end with a slash in a URL.
-            if (!dir.endsWith(u"/") && !_path.empty()) {
+            if (!dir.ends_with(u"/") && !_path.empty()) {
                 dir.append(u"/");
             }
             _path.insert(0, dir);
@@ -180,9 +180,9 @@ void ts::URL::applyBase(const URL& base)
             // Completely missing path, use base
             _path = base._path;
         }
-        else if (!_path.startsWith(u"/")) {
+        else if (!_path.starts_with(u"/")) {
             // Relative path, append after base.
-            if (base._path.endsWith(u"/")) {
+            if (base._path.ends_with(u"/")) {
                 // Base path is a directory, use it.
                 _path.insert(0, base._path);
             }
@@ -212,7 +212,7 @@ void ts::URL::applyBase(const URL& base)
 
 void ts::URL::cleanupPath()
 {
-    const bool end_slash = _path.endsWith(u"/");
+    const bool end_slash = _path.ends_with(u"/");
 
     // Use CleanupFilePath() which works on OS separators.
 #if defined(TS_WINDOWS)
@@ -224,7 +224,7 @@ void ts::URL::cleanupPath()
 #endif
 
     // Preserve final slash (meaningful in URL) if removed by CleanupFilePath().
-    if (end_slash && !_path.endsWith(u"/")) {
+    if (end_slash && !_path.ends_with(u"/")) {
         _path.append(u"/");
     }
 }
@@ -275,7 +275,7 @@ ts::UString ts::URL::toString(bool useWinInet) const
         if (_port != 0) {
             url.append(UString::Format(u":%d", _port));
         }
-        if (!_path.startsWith(u"/")) {
+        if (!_path.starts_with(u"/")) {
             // Enforce a slash between host and path.
             url.append(u"/");
         }
@@ -312,7 +312,7 @@ ts::UString ts::URL::toRelative(const URL& base, bool useWinInet) const
     // Get directory part of base path.
     size_t start = 0;
     const size_t last_slash = base._path.rfind(u'/');
-    if (last_slash < base._path.size() && _path.startsWith(base._path.substr(0, last_slash + 1))) {
+    if (last_slash < base._path.size() && _path.starts_with(base._path.substr(0, last_slash + 1))) {
         // The path has the same base, including trailing slash.
         start = last_slash + 1;
     }

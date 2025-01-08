@@ -280,7 +280,7 @@ void ts::WebRequest::processReponseHeaders(const UString& text)
         const size_t colon = line.find(u':');
         size_t size = 0;
 
-        if (line.startsWith(u"HTTP/")) {
+        if (line.starts_with(u"HTTP/")) {
             // This is the initial header. When we receive this, this is either
             // the first time we are called for this request or we have been
             // redirected to another URL. In all cases, reset the context.

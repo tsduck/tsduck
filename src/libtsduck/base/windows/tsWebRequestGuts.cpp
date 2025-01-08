@@ -289,7 +289,7 @@ bool ts::WebRequest::SystemGuts::init()
 
         // Send the response headers to the WebRequest object.
         // Do not expect any response header from file: URL.
-        if (_previousURL.startsWith(u"file:")) {
+        if (_previousURL.starts_with(u"file:")) {
             // Pass empty headers to the WebRequest.
             _request.processReponseHeaders(u"");
         }

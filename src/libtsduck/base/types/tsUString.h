@@ -898,7 +898,46 @@ namespace ts {
         //! @param [in] start Start index where to match the prefix.
         //! @return True if this string starts with @a prefix, false otherwise.
         //!
-        bool startsWith(const UString& prefix, CaseSensitivity cs = CASE_SENSITIVE, bool skip_spaces = false, size_type start = 0) const;
+        bool starts_with(const UString& prefix, CaseSensitivity cs = CASE_SENSITIVE, bool skip_spaces = false, size_type start = 0) const;
+
+        //!
+        //! Check if the string starts with a specified prefix.
+        //! @param [in] prefix A string prefix to check.
+        //! @param [in] cs Indicate if the comparison is case-sensitive.
+        //! @param [in] skip_spaces If true, ignore initial spaces in this string.
+        //! @param [in] start Start index where to match the prefix.
+        //! @return True if this string starts with @a prefix, false otherwise.
+        //!
+        bool starts_with(const std::u16string_view& prefix, CaseSensitivity cs = CASE_SENSITIVE, bool skip_spaces = false, size_type start = 0) const
+        {
+            return starts_with(UString(prefix), cs, skip_spaces, start);
+        }
+
+        //!
+        //! Check if the string starts with a specified prefix.
+        //! @param [in] prefix A string prefix to check.
+        //! @param [in] cs Indicate if the comparison is case-sensitive.
+        //! @param [in] skip_spaces If true, ignore initial spaces in this string.
+        //! @param [in] start Start index where to match the prefix.
+        //! @return True if this string starts with @a prefix, false otherwise.
+        //!
+        bool starts_with(UChar prefix, CaseSensitivity cs = CASE_SENSITIVE, bool skip_spaces = false, size_type start = 0) const
+        {
+            return starts_with(UString(1, prefix), cs, skip_spaces, start);
+        }
+
+        //!
+        //! Check if the string starts with a specified prefix.
+        //! @param [in] prefix A string prefix to check.
+        //! @param [in] cs Indicate if the comparison is case-sensitive.
+        //! @param [in] skip_spaces If true, ignore initial spaces in this string.
+        //! @param [in] start Start index where to match the prefix.
+        //! @return True if this string starts with @a prefix, false otherwise.
+        //!
+        bool starts_with(const UChar* prefix, CaseSensitivity cs = CASE_SENSITIVE, bool skip_spaces = false, size_type start = 0) const
+        {
+            return starts_with(UString(prefix), cs, skip_spaces, start);
+        }
 
         //!
         //! Check if a string contains a specified character.
@@ -923,7 +962,46 @@ namespace ts {
         //! @param [in] end Last logical character to check in the string. By default, use the end of string.
         //! @return True if this string ends with @a suffix, false otherwise.
         //!
-        bool endsWith(const UString& suffix, CaseSensitivity cs = CASE_SENSITIVE, bool skip_spaces = false, size_type end = NPOS) const;
+        bool ends_with(const UString& suffix, CaseSensitivity cs = CASE_SENSITIVE, bool skip_spaces = false, size_type end = NPOS) const;
+
+        //!
+        //! Check if a string ends with a specified suffix.
+        //! @param [in] suffix A string suffix to check.
+        //! @param [in] cs Indicate if the comparison is case-sensitive.
+        //! @param [in] skip_spaces If true, ignore trailing spaces in this string.
+        //! @param [in] end Last logical character to check in the string. By default, use the end of string.
+        //! @return True if this string ends with @a suffix, false otherwise.
+        //!
+        bool ends_with(const std::u16string_view& suffix, CaseSensitivity cs = CASE_SENSITIVE, bool skip_spaces = false, size_type end = NPOS) const
+        {
+            return ends_with(UString(suffix), cs, skip_spaces, end);
+        }
+
+        //!
+        //! Check if a string ends with a specified suffix.
+        //! @param [in] suffix A string suffix to check.
+        //! @param [in] cs Indicate if the comparison is case-sensitive.
+        //! @param [in] skip_spaces If true, ignore trailing spaces in this string.
+        //! @param [in] end Last logical character to check in the string. By default, use the end of string.
+        //! @return True if this string ends with @a suffix, false otherwise.
+        //!
+        bool ends_with(UChar suffix, CaseSensitivity cs = CASE_SENSITIVE, bool skip_spaces = false, size_type end = NPOS) const
+        {
+            return ends_with(UString(1, suffix), cs, skip_spaces, end);
+        }
+
+        //!
+        //! Check if a string ends with a specified suffix.
+        //! @param [in] suffix A string suffix to check.
+        //! @param [in] cs Indicate if the comparison is case-sensitive.
+        //! @param [in] skip_spaces If true, ignore trailing spaces in this string.
+        //! @param [in] end Last logical character to check in the string. By default, use the end of string.
+        //! @return True if this string ends with @a suffix, false otherwise.
+        //!
+        bool ends_with(const UChar* suffix, CaseSensitivity cs = CASE_SENSITIVE, bool skip_spaces = false, size_type end = NPOS) const
+        {
+            return ends_with(UString(suffix), cs, skip_spaces, end);
+        }
 
         //!
         //! Compute the number of similar leading characters in two strings.

@@ -317,7 +317,7 @@ TSUNIT_DEFINE_TEST(ErrCodeReport)
     TSUNIT_ASSERT(!fs::is_directory(nodir, &ts::ErrCodeReport(log, u"isdir", nodir)));
     debug() << "ReportTest::testErrCodeReport: log: \"" << log.messages() << "\"" << std::endl;
     TSUNIT_ASSERT(!log.empty());
-    TSUNIT_ASSERT(log.messages().startsWith(u"Error: isdir " + nodir + u":"));
+    TSUNIT_ASSERT(log.messages().starts_with(u"Error: isdir " + nodir + u":"));
 }
 
 // Test case: report delegation.

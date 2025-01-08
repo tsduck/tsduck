@@ -156,7 +156,7 @@ bool ts::Names::getValueImpl(uint_t& e, const UString& name, bool case_sensitive
             e = it.second->first;
             return true;
         }
-        else if (abbreviated && it.second->name.startsWith(name, case_sensitive ? CASE_SENSITIVE : CASE_INSENSITIVE)) {
+        else if (abbreviated && it.second->name.starts_with(name, case_sensitive ? CASE_SENSITIVE : CASE_INSENSITIVE)) {
             // Found an abbreviated version
             if (++previous_count == 1) {
                 // First abbreviation, remember it and continue searching
@@ -197,7 +197,7 @@ ts::UString ts::Names::error(const UString& name, bool case_sensitive, bool abbr
             // Found an exact match, there is no error.
             return UString();
         }
-        else if (abbreviated && it.second->name.startsWith(name, case_sensitive ? CASE_SENSITIVE : CASE_INSENSITIVE)) {
+        else if (abbreviated && it.second->name.starts_with(name, case_sensitive ? CASE_SENSITIVE : CASE_INSENSITIVE)) {
             // Found an abbreviated version.
             maybe.push_back(prefix + it.second->name);
         }
@@ -646,11 +646,11 @@ bool ts::Names::AllInstances::loadFileLocked(const UString& file_name)
 
     // If no directory is specified, try with ".names" extension and "tsduck." prefix.
     UString full_path(SearchConfigurationFile(file_name));
-    if (full_path.empty() && !file_name.endsWith(u".names", CASE_INSENSITIVE)) {
+    if (full_path.empty() && !file_name.ends_with(u".names", CASE_INSENSITIVE)) {
         UString name2(file_name + u".names");
         names.insert(name2);
         full_path = SearchConfigurationFile(name2);
-        if (full_path.empty() && !file_name.contains(u'/') && !file_name.contains(u'\\') && !name2.startsWith(u"tsduck.", CASE_INSENSITIVE)) {
+        if (full_path.empty() && !file_name.contains(u'/') && !file_name.contains(u'\\') && !name2.starts_with(u"tsduck.", CASE_INSENSITIVE)) {
             name2.insert(0, u"tsduck.");
             names.insert(name2);
             full_path = SearchConfigurationFile(name2);

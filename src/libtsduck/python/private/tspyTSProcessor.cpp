@@ -108,7 +108,7 @@ TSDUCKPY bool tspyStartTSProcessor(void* tsp, const tspyTSProcessorArgs* pyargs)
 
     // Analyze list of strings.
     auto it = fields.begin();
-    if (it != fields.end() && !it->startsWith(u"-")) {
+    if (it != fields.end() && !it->starts_with(u"-")) {
         // First element is application name.
         args.app_name = *it++;
     }

@@ -104,7 +104,7 @@ void WebRequestTest::testURL(const ts::UString& url, bool expectRedirection, boo
         TSUNIT_ASSERT(request.finalURL() != request.originalURL());
     }
     if (expectSSL) {
-        TSUNIT_ASSERT(request.finalURL().startsWith(u"https:"));
+        TSUNIT_ASSERT(request.finalURL().starts_with(u"https:"));
     }
 
     // Test text download.
@@ -123,7 +123,7 @@ void WebRequestTest::testURL(const ts::UString& url, bool expectRedirection, boo
             TSUNIT_ASSERT(request.finalURL() != request.originalURL());
         }
         if (expectSSL) {
-            TSUNIT_ASSERT(request.finalURL().startsWith(u"https:"));
+            TSUNIT_ASSERT(request.finalURL().starts_with(u"https:"));
         }
     }
 
@@ -137,7 +137,7 @@ void WebRequestTest::testURL(const ts::UString& url, bool expectRedirection, boo
         TSUNIT_ASSERT(request.finalURL() != request.originalURL());
     }
     if (expectSSL) {
-        TSUNIT_ASSERT(request.finalURL().startsWith(u"https:"));
+        TSUNIT_ASSERT(request.finalURL().starts_with(u"https:"));
     }
 
     // Load downloaded file.
