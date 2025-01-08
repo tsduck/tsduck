@@ -13,18 +13,18 @@
 
 // Name of a Descriptor ID.
 ts::UString ts::DIDName(DID did, DescriptorContext& context, NamesFlags flags)
-{    
-    return NamesFile::Formatted(did, PSIRepository::Instance().getDescriptor(XDID(did), context).display_name, flags, 8);
+{
+    return Names::Format(did, PSIRepository::Instance().getDescriptor(XDID(did), context).display_name, flags, 8);
 }
 
 // Name of an MPEG extension descriptor ID.
 ts::UString ts::XDIDNameMPEG(DID xdid, NamesFlags flags)
 {
-    return NamesFile::Formatted(xdid, PSIRepository::Instance().getDescriptor(EDID::ExtensionMPEG(xdid)).display_name, flags, 8);
+    return Names::Format(xdid, PSIRepository::Instance().getDescriptor(EDID::ExtensionMPEG(xdid)).display_name, flags, 8);
 }
 
 // Name of a DVB extension descriptor ID.
 ts::UString ts::XDIDNameDVB(DID xdid, NamesFlags flags)
 {
-    return NamesFile::Formatted(xdid, PSIRepository::Instance().getDescriptor(EDID::ExtensionDVB(xdid)).display_name, flags, 8);
+    return Names::Format(xdid, PSIRepository::Instance().getDescriptor(EDID::ExtensionDVB(xdid)).display_name, flags, 8);
 }

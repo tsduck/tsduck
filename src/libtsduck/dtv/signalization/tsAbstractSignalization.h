@@ -115,7 +115,6 @@ namespace ts {
 
         //!
         //! Get a name from a specified section in the DVB names file.
-        //! @tparam INT An integer type.
         //! @param [in] xml_name Table or descriptor name, as used in XML structures.
         //! @param [in] section Name of section to search. Not case-sensitive. The actual section in
         //! the names file is prefixed by the XML name, followed by a dot.
@@ -126,17 +125,14 @@ namespace ts {
         //! Used in replacement of the "Bits=XX" directive in the .names file.
         //! @return The corresponding name.
         //!
-        template <typename INT>
-            requires std::integral<INT>
-        static UString DataName(const UChar* xml_name, const UChar* section, INT value, NamesFlags flags = NamesFlags::NAME, INT alternate = 0, size_t bits = 0)
+        template <typename T1, typename T2 = Names::uint_t> requires ts::int_enum<T1> && ts::int_enum<T2>
+        static UString DataName(const UChar* xml_name, const UChar* section, T1 value, NamesFlags flags = NamesFlags::NAME, T2 alternate = 0, size_t bits = 0)
         {
-            return NamesFile::Instance(NamesFile::Predefined::DTV)->
-                    nameFromSection(UString::Format(u"%s.%s", xml_name, section), NamesFile::Value(value), flags, NamesFile::Value(alternate), bits);
+            return NameFromSection(u"dtv", UString::Format(u"%s.%s", xml_name, section), value, flags, alternate, bits);
         }
 
         //!
         //! Get a name from a specified section in the DVB names file for that signalization structure.
-        //! @tparam INT An integer type.
         //! @param [in] section Name of section to search. Not case-sensitive. The actual section in
         //! the names file is prefixed by the XML name of the structure, followed by a dot.
         //! @param [in] value Value to get the name for.
@@ -146,11 +142,10 @@ namespace ts {
         //! Used in replacement of the "Bits=XX" directive in the .names file.
         //! @return The corresponding name.
         //!
-        template <typename INT>
-            requires std::integral<INT>
-        UString dataName(const UChar* section, INT value, NamesFlags flags = NamesFlags::NAME, INT alternate = 0, size_t bits = 0)
+        template <typename T1, typename T2 = Names::uint_t> requires ts::int_enum<T1> && ts::int_enum<T2>
+        UString dataName(const UChar* section, T1 value, NamesFlags flags = NamesFlags::NAME, T2 alternate = 0, size_t bits = 0)
         {
-            return DataName<INT>(_xml_name, section, value, flags, alternate, bits);
+            return DataName(_xml_name, section, value, flags, alternate, bits);
         }
 
     protected:

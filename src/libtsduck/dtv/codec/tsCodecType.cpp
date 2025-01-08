@@ -169,9 +169,9 @@ ts::UString ts::AccessUnitTypeName(CodecType codec, uint8_t type, NamesFlags fla
         table = u"vvc.unit_type";
     }
     if (table != nullptr) {
-        return NameFromDTV(table, NamesFile::Value(type), flags);
+        return NameFromSection(u"dtv", table, type, flags);
     }
     else {
-        return NamesFile::Formatted(NamesFile::Value(type), u"unknown", flags, 8);
+        return Names::Format(type, u"unknown", flags, 8);
     }
 }

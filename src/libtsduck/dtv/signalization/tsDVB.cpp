@@ -7,6 +7,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsDVB.h"
+#include "tsNames.h"
 #include "tsDuckContext.h"
 
 
@@ -16,27 +17,27 @@
 
 ts::UString ts::NetworkIdName(uint16_t id, NamesFlags flags)
 {
-    return NameFromDTV(u"NetworkId", NamesFile::Value(id), flags);
+    return NameFromSection(u"dtv", u"NetworkId", id, flags);
 }
 
 ts::UString ts::OriginalNetworkIdName(uint16_t id, NamesFlags flags)
 {
-    return NameFromDTV(u"OriginalNetworkId", NamesFile::Value(id), flags);
+    return NameFromSection(u"dtv", u"OriginalNetworkId", id, flags);
 }
 
 ts::UString ts::BouquetIdName(uint16_t id, NamesFlags flags)
 {
-    return NameFromDTV(u"BouquetId", NamesFile::Value(id), flags);
+    return NameFromSection(u"dtv", u"BouquetId", id, flags);
 }
 
 ts::UString ts::ServiceTypeName(uint8_t type, NamesFlags flags)
 {
-    return NameFromDTV(u"ServiceType", NamesFile::Value(type), flags);
+    return NameFromSection(u"dtv", u"ServiceType", type, flags);
 }
 
 ts::UString ts::DataBroadcastIdName(uint16_t id, NamesFlags flags)
 {
-    return NameFromDTV(u"DataBroadcastId", NamesFile::Value(id), flags);
+    return NameFromSection(u"dtv", u"DataBroadcastId", id, flags);
 }
 
 
@@ -59,7 +60,7 @@ const ts::Enumeration& ts::RunningStatusEnum()
 
 ts::UString ts::RunningStatusName(uint8_t status, NamesFlags flags)
 {
-    return NameFromDTV(u"RunningStatus", NamesFile::Value(status), flags);
+    return NameFromSection(u"dtv", u"RunningStatus", status, flags);
 }
 
 
@@ -71,14 +72,14 @@ ts::UString ts::ContentIdName(const DuckContext& duck, uint8_t x, NamesFlags fla
 {
     if (bool(duck.standards() & Standards::JAPAN)) {
         // Japan / ISDB uses a completely different mapping.
-        return NameFromDTV(u"ContentIdJapan", NamesFile::Value(x), flags);
+        return NameFromSection(u"dtv", u"ContentIdJapan", x, flags);
     }
     else if (bool(duck.standards() & Standards::ABNT)) {
         // ABNT (Brazil) / ISDB uses a completely different mapping.
-        return NameFromDTV(u"ContentIdABNT", NamesFile::Value(x), flags);
+        return NameFromSection(u"dtv", u"ContentIdABNT", x, flags);
     }
     else {
         // Standard DVB mapping.
-        return NameFromDTV(u"ContentId", NamesFile::Value(x), flags);
+        return NameFromSection(u"dtv", u"ContentId", x, flags);
     }
 }

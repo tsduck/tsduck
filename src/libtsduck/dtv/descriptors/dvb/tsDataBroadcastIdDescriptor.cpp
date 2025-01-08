@@ -14,6 +14,7 @@
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 #include "tsDVB.h"
+#include "tsOUI.h"
 
 #define MY_XML_NAME u"data_broadcast_id_descriptor"
 #define MY_CLASS    ts::DataBroadcastIdDescriptor
@@ -128,7 +129,7 @@ void ts::DataBroadcastIdDescriptor::DisplaySelectorSSU(TablesDisplay& disp, PSIB
     buf.pushReadSizeFromLength(8); // OUI_data_length
 
     while (buf.canReadBytes(6)) {
-        disp << margin << "OUI: " << NameFromOUI(buf.getUInt24(), NamesFlags::VALUE_NAME) << std::endl;
+        disp << margin << "OUI: " << OUIName(buf.getUInt24(), NamesFlags::VALUE_NAME) << std::endl;
         buf.skipBits(4);
         const uint8_t upd_type = buf.getBits<uint8_t>(4);
         disp << margin << UString::Format(u"  Update type: 0x%X (", upd_type);

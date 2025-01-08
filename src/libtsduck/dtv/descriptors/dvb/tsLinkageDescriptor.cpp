@@ -13,6 +13,7 @@
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
+#include "tsOUI.h"
 
 #define MY_XML_NAME u"linkage_descriptor"
 #define MY_CLASS    ts::LinkageDescriptor
@@ -292,7 +293,7 @@ void ts::LinkageDescriptor::DisplayPrivateSSU(TablesDisplay& disp, PSIBuffer& bu
 {
     buf.pushReadSizeFromLength(8); // OUI_data_length
     while (buf.canReadBytes(4)) {
-        disp << margin << "OUI: " << NameFromOUI(buf.getUInt24(), NamesFlags::VALUE_NAME) << std::endl;
+        disp << margin << "OUI: " << OUIName(buf.getUInt24(), NamesFlags::VALUE_NAME) << std::endl;
         const size_t len = buf.getUInt8();
         disp.displayPrivateData(u"Selector data", buf, len, margin);
     }

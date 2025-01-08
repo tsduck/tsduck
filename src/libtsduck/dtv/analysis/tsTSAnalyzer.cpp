@@ -947,7 +947,7 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
                     const TeletextDescriptor desc(_duck, bindesc);
                     for (auto& e : desc.entries) {
                         AppendUnique(ps->languages, e.language_code);
-                        ps->addAttribute(NameFromDTV(u"teletext_descriptor.teletext_type", e.teletext_type));
+                        ps->addAttribute(NameFromSection(u"dtv", u"teletext_descriptor.teletext_type", e.teletext_type));
                     }
                 }
                 break;

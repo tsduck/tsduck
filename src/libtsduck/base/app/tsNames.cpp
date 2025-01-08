@@ -138,35 +138,52 @@ ts::Names::ValueRangePtr ts::Names::getRangeLocked(uint_t val) const
 ts::Names::int_t ts::Names::value(const UString& name, bool case_sensitive, bool abbreviated) const
 {
     uint_t val = 0;
-    return getValueImpl(val, name, case_sensitive, abbreviated) ? static_cast<int_t>(val) : UNKNOWN;
+    return getValueImpl(val, name, case_sensitive, abbreviated, true) ? static_cast<int_t>(val) : UNKNOWN;
 }
 
-bool ts::Names::getValueImpl(uint_t& e, const UString& name, bool case_sensitive, bool abbreviated) const
+bool ts::Names::getValueImpl(uint_t& e, const UString& name, bool case_sensitive, bool abbreviated, bool allow_integer_value) const
 {
     const UString lc_name(name.toLower());
     size_t previous_count = 0;
     ValueRangePtr previous;
 
-    // Read lock (shared).
-    std::shared_lock<std::shared_mutex> lock(_mutex);
+    const Names* sec = this;
+    NamesPtr sec_ptr;
 
-    for (const auto& it : _entries) {
-        if ((case_sensitive && it.second->name == name) || (!case_sensitive && it.second->name.toLower() == lc_name)) {
-            // Found an exact match.
-            e = it.second->first;
-            return true;
-        }
-        else if (abbreviated && it.second->name.starts_with(name, case_sensitive ? CASE_SENSITIVE : CASE_INSENSITIVE)) {
-            // Found an abbreviated version
-            if (++previous_count == 1) {
-                // First abbreviation, remember it and continue searching
-                previous = it.second;
+    // Loop on inherited sections.
+    for (int levels = MAX_INHERIT; sec != nullptr && levels > 0; --levels) {
+
+        // Loop on all values in this section.
+        {
+            // Read lock (shared).
+            std::shared_lock<std::shared_mutex> lock(sec->_mutex);
+
+            for (const auto& it : sec->_entries) {
+                if ((case_sensitive && it.second->name == name) || (!case_sensitive && it.second->name.toLower() == lc_name)) {
+                    // Found an exact match.
+                    e = it.second->first;
+                    return true;
+                }
+                else if (abbreviated && it.second->name.starts_with(name, case_sensitive ? CASE_SENSITIVE : CASE_INSENSITIVE)) {
+                    // Found an abbreviated version
+                    if (++previous_count == 1) {
+                        // First abbreviation, remember it and continue searching
+                        previous = it.second;
+                    }
+                    else {
+                        // Another abbreviation already found, name is ambiguous
+                        break;
+                    }
+                }
             }
-            else {
-                // Another abbreviation already found, name is ambiguous
-                break;
-            }
         }
+
+        // "Superclass" section name.
+        if (sec->_inherit.empty()) {
+            break;
+        }
+        sec_ptr = AllInstances::Instance().get(sec->_inherit, UString(), false);
+        sec = sec_ptr.get();
     }
 
     if (previous_count == 1) {
@@ -176,7 +193,7 @@ bool ts::Names::getValueImpl(uint_t& e, const UString& name, bool case_sensitive
     }
 
     // Check if name evaluates to an integer
-    return name.toInteger(e, u",");
+    return allow_integer_value && name.toInteger(e, u",");
 }
 
 
@@ -222,9 +239,27 @@ ts::UString ts::Names::error(const UString& name, bool case_sensitive, bool abbr
 
 bool ts::Names::containsImpl(uint_t value) const
 {
-    // Read lock (shared).
-    std::shared_lock<std::shared_mutex> lock(_mutex);
-    return getRangeLocked(value) != nullptr;
+    const Names* sec = this;
+    NamesPtr sec_ptr;
+
+    // Loop on inherited sections.
+    for (int levels = MAX_INHERIT; sec != nullptr && levels > 0; --levels) {
+        // Search in current section.
+        {
+            // Read lock (shared).
+            std::shared_lock<std::shared_mutex> lock(sec->_mutex);
+            if (sec->getRangeLocked(value) != nullptr) {
+                return true;
+            }
+        }
+        // "Superclass" section name.
+        if (sec->_inherit.empty()) {
+            break;
+        }
+        sec_ptr = AllInstances::Instance().get(sec->_inherit, UString(), false);
+        sec = sec_ptr.get();
+    }
+    return false;
 }
 
 
@@ -232,25 +267,48 @@ bool ts::Names::containsImpl(uint_t value) const
 // Translate a value as a string.
 //----------------------------------------------------------------------------
 
-ts::UString ts::Names::getNameImpl(uint_t value, bool hexa, size_t hex_digits, size_t default_hex_digits) const
+ts::UString ts::Names::getNameOrValue(uint_t value, bool hexa, size_t hex_digits, size_t default_hex_digits) const
 {
-    // Read lock (shared).
-    std::shared_lock<std::shared_mutex> lock(_mutex);
-
-    const auto range = getRangeLocked(value);
-    if (range != nullptr && !range->name.empty()) {
-        return range->name;
-    }
-    else if (hexa) {
-        // Actual number of hexa digits to print.
-        if (hex_digits == 0) {
-            hex_digits = _bits == 0 ? default_hex_digits : (_bits + 3) / 4;
+    UString name(getName(value));
+    if (name.empty()) {
+        if (hexa) {
+            // Actual number of hexa digits to print.
+            if (hex_digits == 0) {
+                hex_digits = _bits == 0 ? default_hex_digits : (_bits + 3) / 4;
+            }
+            name.format(u"0x%0*X", hex_digits, value);
         }
-        return UString::Format(u"0x%0*X", hex_digits, value);
+        else {
+            name.format(u"%d", value);
+        }
     }
-    else {
-        return UString::Decimal(value, 0, true, UString());
+    return name;
+}
+
+ts::UString ts::Names::getName(uint_t value) const
+{
+    const Names* sec = this;
+    NamesPtr sec_ptr;
+
+    // Loop on inherited sections.
+    for (int levels = MAX_INHERIT; sec != nullptr && levels > 0; --levels) {
+        // Search in current section.
+        {
+            // Read lock (shared).
+            std::shared_lock<std::shared_mutex> lock(sec->_mutex);
+            const auto range = sec->getRangeLocked(value);
+            if (range != nullptr && !range->name.empty()) {
+                return range->name;
+            }
+        }
+        // "Superclass" section name.
+        if (sec->_inherit.empty()) {
+            break;
+        }
+        sec_ptr = AllInstances::Instance().get(sec->_inherit, UString(), false);
+        sec = sec_ptr.get();
     }
+    return UString();
 }
 
 
@@ -308,41 +366,20 @@ ts::UString ts::Names::bitMaskNamesImpl(uint_t value, const UString& separator, 
 
 ts::UString ts::Names::formatted(uint_t value, NamesFlags flags, uint_t alternate_value, size_t bits) const
 {
-    // Read lock (shared).
-    std::shared_lock<std::shared_mutex> lock(_mutex);
-    return formattedLocked(value, flags, alternate_value, bits);
+    UString name(getName(value));
+    return Format(value, name, flags, bits != 0 ? bits : _bits, alternate_value);
 }
-
-ts::UString ts::Names::formattedLocked(uint_t value, NamesFlags flags, uint_t alternate_value, size_t bits) const
-{
-    const auto range = getRangeLocked(value);
-    if (range == nullptr) {
-        // Non-existent value, no name.
-        return Format(value, UString(), flags, bits, alternate_value);
-    }
-    else {
-        return Format(value, range->name, flags, bits != 0 ? bits : _bits, alternate_value);
-    }
-}
-
-
-//----------------------------------------------------------------------------
-// Get a fully formatted name from a value, with alternate fallback value.
-//----------------------------------------------------------------------------
 
 ts::UString ts::Names::formattedWithFallback(uint_t value1, uint_t value2, NamesFlags flags, uint_t alternate_value, size_t bits) const
 {
-    // Read lock (shared).
-    std::shared_lock<std::shared_mutex> lock(_mutex);
-
-    const auto range = getRangeLocked(value1);
-    if (range == nullptr) {
+    UString name(getName(value1));
+    if (name.empty()) {
         // value1 has no name, use value2, restart from the beginning in case of inheritance.
-        return formattedLocked(value2, flags, alternate_value, bits);
+        return formatted(value2, flags, alternate_value, bits);
     }
     else {
         // value1 has a name
-        return Format(value1, range->name, flags, bits != 0 ? bits : _bits, alternate_value);
+        return Format(value1, name, flags, bits != 0 ? bits : _bits, alternate_value);
     }
 }
 
@@ -483,7 +520,7 @@ size_t ts::Names::visit(Visitor* visitor) const
     NamesPtr sec_ptr;
 
     // Loop on inherited sections.
-    for (int levels = MAX_INHERIT; levels > 0; --levels) {
+    for (int levels = MAX_INHERIT; sec != nullptr && levels > 0; --levels) {
 
         // Loop on all values in this section.
         {
@@ -503,7 +540,7 @@ size_t ts::Names::visit(Visitor* visitor) const
         if (sec->_inherit.empty()) {
             break;
         }
-        sec_ptr = AllInstances::Instance().get(sec->_inherit);
+        sec_ptr = AllInstances::Instance().get(sec->_inherit, UString(), false);
         sec = sec_ptr.get();
     }
     return visit_count;
@@ -521,7 +558,7 @@ size_t ts::Names::visit(Visitor* visitor, uint_t value) const
     NamesPtr sec_ptr;
 
     // Loop on inherited sections.
-    for (int levels = MAX_INHERIT; levels > 0; --levels) {
+    for (int levels = MAX_INHERIT; sec != nullptr && levels > 0; --levels) {
 
         {
             // Read lock (shared).
@@ -566,20 +603,10 @@ size_t ts::Names::visit(Visitor* visitor, uint_t value) const
         if (sec->_inherit.empty()) {
             break;
         }
-        sec_ptr = AllInstances::Instance().get(sec->_inherit);
+        sec_ptr = AllInstances::Instance().get(sec->_inherit, UString(), false);
         sec = sec_ptr.get();
     }
     return visit_count;
-}
-
-
-//----------------------------------------------------------------------------
-// Load a ".names" file and merge its content into all loaded Names instances.
-//----------------------------------------------------------------------------
-
-bool ts::Names::MergeFile(const UString& file_name)
-{
-    return AllInstances::Instance().loadFile(file_name);
 }
 
 
@@ -601,28 +628,31 @@ bool ts::Names::AllInstances::loadFile(const UString& file_name)
 }
 
 // Get or create a section.
-ts::NamesPtr ts::Names::AllInstances::get(const UString& section_name, const UString& file_name)
+ts::NamesPtr ts::Names::AllInstances::get(const UString& section_name, const UString& file_name, bool create)
 {
     std::lock_guard<std::mutex> lock(_mutex);
     if (!file_name.empty()) {
         // Ignore errors (logged on standard error)
         loadFileLocked(file_name);
     }
-    return getLocked(section_name);
+    return getLocked(section_name, create);
 }
 
 // Get or create a section with exclusive lock already held.
-ts::NamesPtr ts::Names::AllInstances::getLocked(const UString& section_name)
+ts::NamesPtr ts::Names::AllInstances::getLocked(const UString& section_name, bool create)
 {
     const UString sname(NormalizedSectionName(section_name));
     const auto it = _names.find(sname);
     if (it != _names.end()) {
         return it->second;
     }
-    else {
+    else if (create) {
         auto sec = _names[sname] = std::make_shared<Names>();
         sec->_section_name = section_name;
         return sec;
+    }
+    else {
+        return nullptr;
     }
 }
 
@@ -639,21 +669,37 @@ bool ts::Names::AllInstances::loadFileLocked(const UString& file_name)
         return true;
     }
 
-    // The file has not been recorded in its short form. Build the list of names
-    // to record if the file is successfully loaded later.
-    std::set<UString> names;
-    names.insert(file_name);
-
+    // The file has not been recorded in its short form.
+    // Build the list of names to record if the file is successfully loaded later.
     // If no directory is specified, try with ".names" extension and "tsduck." prefix.
-    UString full_path(SearchConfigurationFile(file_name));
-    if (full_path.empty() && !file_name.ends_with(u".names", CASE_INSENSITIVE)) {
+    // Don't make file system access in this sequence, only check already loaded files.
+    std::vector<UString> possible_names;
+    possible_names.reserve(3);
+    possible_names.push_back(file_name);
+    if (!file_name.ends_with(u".names", CASE_INSENSITIVE)) {
         UString name2(file_name + u".names");
-        names.insert(name2);
-        full_path = SearchConfigurationFile(name2);
-        if (full_path.empty() && !file_name.contains(u'/') && !file_name.contains(u'\\') && !name2.starts_with(u"tsduck.", CASE_INSENSITIVE)) {
+        if (_loaded_files.contains(name2)) {
+            return true;
+        }
+        possible_names.push_back(name2);
+        if (!file_name.contains(u'/') && !file_name.contains(u'\\') && !name2.starts_with(u"tsduck.", CASE_INSENSITIVE)) {
             name2.insert(0, u"tsduck.");
-            names.insert(name2);
-            full_path = SearchConfigurationFile(name2);
+            if (_loaded_files.contains(name2)) {
+                return true;
+            }
+            possible_names.push_back(name2);
+        }
+    }
+
+    // The file is not loaded in any form. Now search all corresponding files.
+    // Build a set of searched files and aliases.
+    std::set<UString> names;
+    UString full_path;
+    for (const auto& name : possible_names) {
+        names.insert(name);
+        full_path = SearchConfigurationFile(name);
+        if (!full_path.empty()) {
+            break;
         }
     }
 
@@ -662,12 +708,16 @@ bool ts::Names::AllInstances::loadFileLocked(const UString& file_name)
         CERR.error(u"configuration file '%s' not found", file_name);
         return false;
     }
+    if (_loaded_files.contains(full_path)) {
+        return true;
+    }
 
     // Now we have an existing file and several possible names for it. Keep all names so that we won't try to reload it again.
     // If there are errors in the file, this won't change in a future reload (assuming that the file remains unchanged).
     _loaded_files.insert(names.begin(), names.end());
     _loaded_files.insert(full_path);
 
+    CERR.debug(u"loading names from %s, aliases: %s", full_path, UString::Join(names));
     std::ifstream strm(full_path.toUTF8().c_str());
     if (!strm) {
         CERR.error(u"error opening file %s", full_path);
@@ -699,7 +749,7 @@ bool ts::Names::AllInstances::loadFileLocked(const UString& file_name)
                     section->_mutex.unlock();
                 }
                 // Get or create associated section.
-                section = getLocked(line);
+                section = getLocked(line, true);
                 // Get write lock on this section (exclusive).
                 section->_mutex.lock();
             }
@@ -730,7 +780,7 @@ bool ts::Names::AllInstances::loadFileLocked(const UString& file_name)
 
     // Verify that all sections have bits size.
     for (const auto& sname : section_names) {
-        auto& sec(*getLocked(sname));
+        auto& sec(*getLocked(sname, true));
 
         // Fetch bits value from "superclasses".
         UString parent(sec._inherit);
@@ -871,7 +921,7 @@ bool ts::Names::AllInstances::decodeDefinition(const UString& file_name, const U
     if (valid) {
         if (section->freeRangeLocked(first, last)) {
             // Valid range, add it.
-            section->add(value, first, last);
+            section->addValueImplLocked(value, first, last);
         }
         else {
             CERR.error(u"%s: section %s, range 0x%X-0x%X overlaps with an existing range", file_name, section->_section_name, first, last);

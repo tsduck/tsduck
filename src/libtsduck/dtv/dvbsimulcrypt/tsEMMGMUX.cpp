@@ -160,7 +160,7 @@ void ts::emmgmux::Protocol::factory(const tlv::MessageFactory& fact, tlv::Messag
 
 ts::UString ts::emmgmux::Errors::Name(uint16_t status)
 {
-    return NameFromDTV(u"EmmgPdgMuxErrors", status, NamesFlags::HEX_VALUE_NAME);
+    return NameFromSection(u"dtv", u"EmmgPdgMuxErrors", status, NamesFlags::HEX_VALUE_NAME);
 }
 
 

@@ -198,7 +198,7 @@ ts::UString ts::ComponentDescriptor::ComponentTypeName(const DuckContext& duck, 
         return DataName(MY_XML_NAME, u"component_type.japan", nType, flags | NamesFlags::ALTERNATE, dType, bits);
     }
     else if (stream_content == 4) {
-        return NamesFile::Formatted(dType, AC3Descriptor::ComponentTypeName(uint8_t(nType)), flags, 16);
+        return Names::Format(dType, AC3Descriptor::ComponentTypeName(uint8_t(nType)), flags, 16);
     }
     else {
         return DataName(MY_XML_NAME, u"component_type", nType, flags | NamesFlags::ALTERNATE, dType, bits);

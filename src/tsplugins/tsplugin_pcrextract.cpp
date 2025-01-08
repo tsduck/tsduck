@@ -658,7 +658,7 @@ void ts::PCRExtractPlugin::processSpliceCommand(PID pid, SpliceInformationTable&
     const uint64_t command_pts = sit.splice_command_type == SPLICE_INSERT ? sit.splice_insert.lowestPTS() : INVALID_PTS;
 
     // Start of message.
-    UString msg(UString::Format(u"PID: %n, SCTE 35 command %s", pid, NameFromDTV(u"SpliceCommandType", sit.splice_command_type)));
+    UString msg(UString::Format(u"PID: %n, SCTE 35 command %s", pid, NameFromSection(u"dtv", u"SpliceCommandType", sit.splice_command_type)));
     if (sit.splice_command_type == SPLICE_INSERT) {
         if (sit.splice_insert.canceled) {
             msg += u" canceled";

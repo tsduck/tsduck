@@ -13,6 +13,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
+#include "tsNames.h"
 
 namespace ts {
     //!
@@ -23,4 +24,12 @@ namespace ts {
         SKARDIN  = 0x001222,  //!< OUI for Skardin (UK)
         LOGIWAYS = 0x002660,  //!< OUI for Logiways
     };
+
+    //!
+    //! Get the name of an IEEE-assigned Organizationally Unique Identifier (OUI).
+    //! @param [in] oui 24-bit OUI value.
+    //! @param [in] flags Presentation flags.
+    //! @return The corresponding name.
+    //!
+    TSDUCKDLL UString OUIName(uint32_t oui, NamesFlags flags = NamesFlags::NAME);
 }

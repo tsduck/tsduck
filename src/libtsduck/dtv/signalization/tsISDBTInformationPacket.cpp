@@ -76,10 +76,10 @@ void ts::ISDBTInformationPacket::ModeGI::deserialize(DuckContext& duck, PSIBuffe
 void ts::ISDBTInformationPacket::ModeGI::display(DuckContext& duck, std::ostream& strm, const UString& margin) const
 {
     strm << margin << "initialization_timing_indicator: " << int(initialization_timing_indicator) << std::endl
-         << margin << "current mode: " << NameFromDTV(u"ISDB.mode", current_mode, NamesFlags::VALUE_NAME)
-         << ", guard interval: " << NameFromDTV(u"ISDB.guard_interval", current_guard_interval, NamesFlags::VALUE_NAME) << std::endl
-         << margin << "next mode: " << NameFromDTV(u"ISDB.mode", next_mode, NamesFlags::VALUE_NAME)
-         << ", guard interval: " << NameFromDTV(u"ISDB.guard_interval", next_guard_interval, NamesFlags::VALUE_NAME) << std::endl;
+         << margin << "current mode: " << NameFromSection(u"dtv", u"ISDB.mode", current_mode, NamesFlags::VALUE_NAME)
+         << ", guard interval: " << NameFromSection(u"dtv", u"ISDB.guard_interval", current_guard_interval, NamesFlags::VALUE_NAME) << std::endl
+         << margin << "next mode: " << NameFromSection(u"dtv", u"ISDB.mode", next_mode, NamesFlags::VALUE_NAME)
+         << ", guard interval: " << NameFromSection(u"dtv", u"ISDB.guard_interval", next_guard_interval, NamesFlags::VALUE_NAME) << std::endl;
 }
 
 
@@ -97,8 +97,8 @@ void ts::ISDBTInformationPacket::TransmissionParameters::deserialize(DuckContext
 
 void ts::ISDBTInformationPacket::TransmissionParameters::display(DuckContext& duck, std::ostream& strm, const UString& margin) const
 {
-    strm << margin << "Modulation: " << NameFromDTV(u"ISDB.modulation", modulation_scheme, NamesFlags::VALUE_NAME)
-         << ", coding rate: " << NameFromDTV(u"ISDB.coding_rate", coding_rate_of_inner_code, NamesFlags::VALUE_NAME) << std::endl
+    strm << margin << "Modulation: " << NameFromSection(u"dtv", u"ISDB.modulation", modulation_scheme, NamesFlags::VALUE_NAME)
+         << ", coding rate: " << NameFromSection(u"dtv", u"ISDB.coding_rate", coding_rate_of_inner_code, NamesFlags::VALUE_NAME) << std::endl
          << margin << "Time interleaving: " << int(length_of_time_interleaving)
          << ", number of segments: " << int(number_of_segments) << std::endl;
 }
@@ -146,7 +146,7 @@ void ts::ISDBTInformationPacket::TMCC::deserialize(DuckContext& duck, PSIBuffer&
 
 void ts::ISDBTInformationPacket::TMCC::display(DuckContext& duck, std::ostream& strm, const UString& margin) const
 {
-    strm << margin << "System identifier: " << NameFromDTV(u"ISDB.system_identification", system_identifier, NamesFlags::VALUE_NAME) << std::endl
+    strm << margin << "System identifier: " << NameFromSection(u"dtv", u"ISDB.system_identification", system_identifier, NamesFlags::VALUE_NAME) << std::endl
          << margin << "Count down index: " << int(count_down_index)
          << ", switch-on alert: " << UString::YesNo(switch_on_control_flag_used_for_alert_broadcasting) << std::endl
          << margin << "Current configuration information:" << std::endl;

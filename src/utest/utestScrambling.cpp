@@ -145,7 +145,7 @@ TSUNIT_DEFINE_TEST(Scrambling)
         debug() << "ScramblingTest: " << ti << ", header: " << header_size <<
               " byte, payload: " << payload_size <<
               " bytes, PID: " << vec->plain.getPID() <<
-              ", scrambling: " << ts::NameFromDTV(u"ts.scrambling_control", scv) << std::endl;
+              ", scrambling: " << ts::NameFromSection(u"dtv", u"ts.scrambling_control", scv) << std::endl;
 
         TSUNIT_ASSERT(header_size == vec->cipher.getHeaderSize());
         TSUNIT_ASSERT(payload_size == vec->cipher.getPayloadSize());

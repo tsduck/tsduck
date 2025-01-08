@@ -14,5 +14,5 @@
 // Name of a Table ID.
 ts::UString ts::TIDName(const DuckContext& duck, TID tid, CASID cas, NamesFlags flags)
 {
-    return NamesFile::Formatted(tid, PSIRepository::Instance().getTable(tid, SectionContext(PID_NULL, duck.standards(), cas)).display_name, flags, 8);
+    return Names::Format(tid, PSIRepository::Instance().getTable(tid, SectionContext(PID_NULL, duck.standards(), cas)).display_name, flags, 8);
 }

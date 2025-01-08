@@ -91,7 +91,9 @@ bool ts::TSScrambling::setScramblingType(uint8_t scrambling, bool overrideExplic
 
         // Set scrambling type.
         if (_scrambling_type != scrambling) {
-            _report.debug(u"switching scrambling type from %s to %s", NameFromDTV(u"ScramblingMode", _scrambling_type), NameFromDTV(u"ScramblingMode", scrambling));
+            if (_report.debug()) {
+                _report.debug(u"switching scrambling type from %s to %s", NameFromSection(u"dtv", u"ScramblingMode", _scrambling_type), NameFromSection(u"dtv", u"ScramblingMode", scrambling));
+            }
             _scrambling_type = scrambling;
         }
     }

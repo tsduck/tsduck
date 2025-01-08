@@ -66,7 +66,7 @@ ts::UString ts::MPEG2VideoAttributes::frameRateName() const
 
 ts::UString ts::MPEG2VideoAttributes::aspectRatioName() const
 {
-    return _is_valid ? NameFromDTV(u"mpeg2.aspect_ratio", _ar_code) : UString();
+    return _is_valid ? NameFromSection(u"dtv", u"mpeg2.aspect_ratio", _ar_code) : UString();
 }
 
 
@@ -76,7 +76,7 @@ ts::UString ts::MPEG2VideoAttributes::aspectRatioName() const
 
 ts::UString ts::MPEG2VideoAttributes::chromaFormatName() const
 {
-    return _is_valid ? NameFromDTV(u"mpeg2.chroma_format", _cf_code) : UString();
+    return _is_valid ? NameFromSection(u"dtv", u"mpeg2.chroma_format", _cf_code) : UString();
 }
 
 

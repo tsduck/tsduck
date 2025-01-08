@@ -9,6 +9,7 @@
 #include "tsTSAnalyzerReport.h"
 #include "tsjsonObject.h"
 #include "tsDVB.h"
+#include "tsOUI.h"
 
 
 //----------------------------------------------------------------------------
@@ -318,7 +319,7 @@ void ts::TSAnalyzerReport::reportServicePID(Grid& grid, const PIDContext& pc) co
         bool first = true;
         for (auto oui : pc.ssu_oui) {
             description += first ? u" (SSU " : u", ";
-            description += NameFromOUI(oui);
+            description += OUIName(oui);
             first = false;
         }
         description += u")";
@@ -493,7 +494,7 @@ void ts::TSAnalyzerReport::reportPIDs(Grid& grid, const UString& title)
 
         // Type of PES data, if available
         if (pc.same_stream_id) {
-            grid.putLine(u"PES stream id: " + NameFromDTV(u"pes.stream_id", pc.pes_stream_id, NamesFlags::VALUE_NAME));
+            grid.putLine(u"PES stream id: " + NameFromSection(u"dtv", u"pes.stream_id", pc.pes_stream_id, NamesFlags::VALUE_NAME));
         }
 
         // Audio/video attributes.
@@ -508,7 +509,7 @@ void ts::TSAnalyzerReport::reportPIDs(Grid& grid, const UString& title)
 
         // List of System Software Update OUI's on this PID.
         for (auto oui : pc.ssu_oui) {
-            grid.putLine(u"SSU OUI: " + NameFromOUI(oui, NamesFlags::VALUE_NAME));
+            grid.putLine(u"SSU OUI: " + OUIName(oui, NamesFlags::VALUE_NAME));
         }
 
         // ISDB-T layers.

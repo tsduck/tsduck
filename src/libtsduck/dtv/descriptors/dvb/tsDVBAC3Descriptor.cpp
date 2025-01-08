@@ -13,6 +13,7 @@
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
+#include "tsNames.h"
 
 #define MY_XML_NAME u"DVB_AC3_descriptor"
 #define MY_XML_NAME_LEGACY u"AC3_descriptor"
@@ -135,7 +136,7 @@ ts::UString ts::DVBAC3Descriptor::ComponentTypeName(uint8_t type, NamesFlags fla
         default: assert(false); // unreachable
     }
 
-    return NamesFile::Formatted(type, s, flags, 8);
+    return Names::Format(type, s, flags, 8);
 }
 
 

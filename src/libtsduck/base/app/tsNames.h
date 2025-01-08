@@ -14,10 +14,31 @@
 #pragma once
 #include "tsUString.h"
 #include "tsIntegerUtils.h"
-#include "tsNamesFile.h"
+#include "tsEnumUtils.h"
+#include "tsVersionInfo.h"
 
-//@@@ TODO: MOVE HERE THE DEFINITION OF NamesFlags.
-//@@@ TODO: THEN REMOVE CLASSES Enumeration AND NamesFile.
+namespace ts {
+    //!
+    //! Flags to be used in the formating of names using class Names.
+    //! Values can be used as bit-masks.
+    //! @ingroup app
+    //!
+    enum class NamesFlags : uint16_t {
+        NAME          = 0x0000,   //!< Name only, no value. This is the default.
+        NAME_VALUE    = 0x0001,   //!< Include the value after name: "name (value)".
+        VALUE_NAME    = 0x0002,   //!< Same with value first: "value (name)".
+        HEXA          = 0x0004,   //!< Value in hexadecimal. This is the default.
+        DECIMAL       = 0x0008,   //!< Value in decimal. Both DECIMAL and HEXA can be specified.
+        ALTERNATE     = 0x0010,   //!< Display an alternate integer value.
+        NAME_OR_VALUE = 0x0020,   //!< Display name if defined or value only if not defined.
+        NO_UNKNOWN    = 0x0040,   //!< Ignore unknown values, return an empty string.
+        HEX_DEC            = HEXA | DECIMAL,               //!< Value in decimal and hexadecimal.
+        HEX_VALUE_NAME     = VALUE_NAME | HEXA,            //!< Value in hexadecimal in first position.
+        DEC_VALUE_NAME     = VALUE_NAME | DECIMAL,         //!< Value in decimal in first position.
+        HEX_DEC_VALUE_NAME = VALUE_NAME | HEXA | DECIMAL,  //!< Value in decimal and hexadecimal in first position.
+    };
+}
+TS_ENABLE_BITMASK_OPERATORS(ts::NamesFlags);
 
 namespace ts {
 
@@ -198,6 +219,22 @@ namespace ts {
         bool freeRange(uint_t first, uint_t last) const;
 
         //!
+        //! Check if a name exists in the section.
+        //! @param [in] name The string to search.
+        //! @param [in] case_sensitive If false, the search is not case
+        //! sensitive and @a name may match an equivalent string with
+        //! distinct letter case. If true (the default), an exact match is required.
+        //! @param [in] abbreviated If true (the default), any non-ambiguous
+        //! abbreviation is valid. If false, a full name string must be provided.
+        //! @return True if @a name exists in the section.
+        //!
+        bool contains(const UString& name, bool case_sensitive = true, bool abbreviated = false) const
+        {
+            uint_t val = 0;
+            return getValueImpl(val, name, case_sensitive, abbreviated, false);
+        }
+
+        //!
         //! Get the signed value from a name.
         //! @param [in] name The string to search. This string may also
         //! contain an integer value in decimal or hexadecimal representation
@@ -260,7 +297,7 @@ namespace ts {
         template <typename T> requires ts::int_enum<T>
         UString name(T value, bool hexa = false, size_t hex_digit_count = 0) const
         {
-            return getNameImpl(static_cast<uint_t>(value), hexa, hex_digit_count, 2 * sizeof(T));
+            return getNameOrValue(static_cast<uint_t>(value), hexa, hex_digit_count, 2 * sizeof(T));
         }
 
         //!
@@ -295,48 +332,19 @@ namespace ts {
         }
 
         //!
-        //! Get a fully formatted name from a specified section of a ".names" file.
+        //! Get the Names instance for a specified section of a ".names" file.
         //! @param [in] file_name Name of the ".names" file. This is typically a short name.
-        //! See MergeFile() for details.
+        //! See MergeFile() for details. If empty, only search in already loaded sections.
         //! @param [in] section_name Name of section to search. Not case-sensitive.
-        //! @param [in] value Value to get the name for.
-        //! @param [in] flags Presentation flags.
-        //! @param [in] alternate_value Display this integer value if flags ALTERNATE is set.
-        //! @param [in] bits Optional size in bits of the displayed data.
-        //! Used in replacement of the "Bits=XX" directive in the .names file.
-        //! @return The corresponding name.
+        //! @param [in] create If true, create the section if it does not exist.
+        //! @return A shared pointer to the Names instance for the section. Return null if
+        //! the section does not exist and @a create is false.
         //! @see MergeFile()
         //!
-        template <typename T1, typename T2 = uint_t> requires ts::int_enum<T1> && ts::int_enum<T2>
-        static UString NameFromSection(const UString& file_name,
-                                       const UString& section_name,
-                                       T1 value,
-                                       NamesFlags flags = NamesFlags::NAME,
-                                       T2 alternate_value = 0,
-                                       size_t bits = 0);
-
-        //!
-        //! Get a fully formatted name from a specified section of a ".names" file, with alternate fallback value.
-        //! @param [in] file_name Name of the ".names" file. This is typically a short name.
-        //! See MergeFile() for details.
-        //! @param [in] section_name Name of section to search. Not case-sensitive.
-        //! @param [in] value1 Value to get the name for.
-        //! @param [in] value2 Alternate value if no name is found for @a value1.
-        //! @param [in] flags Presentation flags.
-        //! @param [in] alternate_value Display this integer value if flags ALTERNATE is set.
-        //! @param [in] bits Optional size in bits of the displayed data.
-        //! Used in replacement of the "Bits=XX" directive in the .names file.
-        //! @return The corresponding name.
-        //! @see MergeFile()
-        //!
-        template <typename T1, typename T2, typename T3 = uint_t> requires ts::int_enum<T1> && ts::int_enum<T2> && ts::int_enum<T3>
-        static UString NameFromSectionWithFallback(const UString& file_name,
-                                                   const UString& section_name,
-                                                   T1 value1,
-                                                   T2 value2,
-                                                   NamesFlags flags = NamesFlags::NAME,
-                                                   T3 alternate_value = 0,
-                                                   size_t bits = 0);
+        static NamesPtr GetSection(const UString& file_name, const UString& section_name, bool create)
+        {
+            return AllInstances::Instance().get(section_name, file_name, create);
+        }
 
         //!
         //! Get the names from a bit-mask value.
@@ -480,7 +488,35 @@ namespace ts {
         //! files "foo", "foo.names" and "tsduck.foo.names" until one is found.
         //! @return True on success, false on error.
         //!
-        static bool MergeFile(const UString& file_name);
+        static bool MergeFile(const UString& file_name)
+        {
+            return AllInstances::Instance().loadFile(file_name);
+        }
+
+
+        //!
+        //! A class to register additional names files to merge with the TSDuck names file.
+        //! The registration is performed using constructors.
+        //! Thus, it is possible to perform a registration in the declaration of a static object.
+        //!
+        class TSDUCKDLL RegisterExtensionFile
+        {
+            TS_NOBUILD_NOCOPY(RegisterExtensionFile);
+        public:
+            //!
+            //! Register an additional names file.
+            //! This file will be merged with the main names files.
+            //! @param [in] file_name Name of the names file. This should be a simple file name,
+            //! without directory. This file will be searched in the same directory as the executable,
+            //! then in all directories from $TSPLUGINS_PATH, then from $LD_LIBRARY_PATH (Linux only),
+            //! then from $PATH.
+            //! @see TS_REGISTER_NAMES_FILE
+            //!
+            RegisterExtensionFile(const UString& file_name)
+            {
+                MergeFile(file_name);
+            }
+        };
 
     private:
         // Description of a range of values with same name.
@@ -519,12 +555,12 @@ namespace ts {
         void addValueImpl(const NameValue& range);
         void addValueImplLocked(const NameValue& range);
         void addValueImplLocked(const UString& name, uint_t first, uint_t last);
-        bool getValueImpl(uint_t& e, const UString& name, bool case_sensitive, bool abbreviated) const;
+        bool getValueImpl(uint_t& e, const UString& name, bool case_sensitive, bool abbreviated, bool allow_integer_value) const;
         bool containsImpl(uint_t value) const;
-        UString getNameImpl(uint_t value, bool hexa, size_t hex_digits, size_t default_hex_digits) const;
+        UString getName(uint_t value) const;
+        UString getNameOrValue(uint_t value, bool hexa, size_t hex_digits, size_t default_hex_digits) const;
         UString bitMaskNamesImpl(uint_t value, const UString& separator, bool hexa, size_t hex_digits, size_t default_hex_digits) const;
         UString formatted(uint_t value, NamesFlags flags, uint_t alternate_value, size_t bits) const;
-        UString formattedLocked(uint_t value, NamesFlags flags, uint_t alternate_value, size_t bits) const;
         UString formattedWithFallback(uint_t value1, uint_t value2, NamesFlags flags, uint_t alternate_value, size_t bits) const;
 
         // A singleton which manages all named instances of Names.
@@ -540,8 +576,8 @@ namespace ts {
             // ".names" suffix and "tsduck." prefix. Merge existing sections with same name.
             bool loadFile(const UString& file_name);
 
-            // Get or create a section. Never null on return.
-            NamesPtr get(const UString& section_name, const UString& file_name = UString());
+            // Get or create a section. Never null on return when create is true.
+            NamesPtr get(const UString& section_name, const UString& file_name, bool create);
 
         private:
             std::mutex _mutex {};
@@ -552,7 +588,7 @@ namespace ts {
             bool loadFileLocked(const UString& file_name);
 
             // Get or create a section with exclusive lock already held.
-            NamesPtr getLocked(const UString& section_name);
+            NamesPtr getLocked(const UString& section_name, bool create);
 
             // Decode a line as "first[-last] = name". Return true on success, false on error.
             bool decodeDefinition(const UString& file_name, const UString& line, NamesPtr section);
@@ -561,7 +597,69 @@ namespace ts {
             static UString NormalizedSectionName(const UString& section_name) { return section_name.toTrimmed().toLower(); }
         };
     };
+
+    //!
+    //! Get a fully formatted name from a specified section of a ".names" file.
+    //! @param [in] file_name Name of the ".names" file. This is typically a short name.
+    //! See MergeFile() for details. If empty, only search in already loaded sections.
+    //! @param [in] section_name Name of section to search. Not case-sensitive.
+    //! @param [in] value Value to get the name for.
+    //! @param [in] flags Presentation flags.
+    //! @param [in] alternate_value Display this integer value if flags ALTERNATE is set.
+    //! @param [in] bits Optional size in bits of the displayed data.
+    //! Used in replacement of the "Bits=XX" directive in the .names file.
+    //! @return The corresponding name.
+    //! @see MergeFile()
+    //!
+    template <typename T1, typename T2 = Names::uint_t> requires ts::int_enum<T1> && ts::int_enum<T2>
+    UString NameFromSection(const UString& file_name,
+                            const UString& section_name,
+                            T1 value,
+                            NamesFlags flags = NamesFlags::NAME,
+                            T2 alternate_value = 0,
+                            size_t bits = 0)
+    {
+        return Names::GetSection(file_name, section_name, true)->name(value, flags, alternate_value, bits);
+    }
+
+    //!
+    //! Get a fully formatted name from a specified section of a ".names" file, with alternate fallback value.
+    //! @param [in] file_name Name of the ".names" file. This is typically a short name.
+    //! See MergeFile() for details. If empty, only search in already loaded sections.
+    //! @param [in] section_name Name of section to search. Not case-sensitive.
+    //! @param [in] value1 Value to get the name for.
+    //! @param [in] value2 Alternate value if no name is found for @a value1.
+    //! @param [in] flags Presentation flags.
+    //! @param [in] alternate_value Display this integer value if flags ALTERNATE is set.
+    //! @param [in] bits Optional size in bits of the displayed data.
+    //! Used in replacement of the "Bits=XX" directive in the .names file.
+    //! @return The corresponding name.
+    //! @see MergeFile()
+    //!
+    template <typename T1, typename T2, typename T3 = Names::uint_t> requires ts::int_enum<T1> && ts::int_enum<T2> && ts::int_enum<T3>
+    UString NameFromSectionWithFallback(const UString& file_name,
+                                        const UString& section_name,
+                                        T1 value1,
+                                        T2 value2,
+                                        NamesFlags flags = NamesFlags::NAME,
+                                        T3 alternate_value = 0,
+                                        size_t bits = 0)
+    {
+        return Names::GetSection(file_name, section_name, true)->nameWithFallback(value1, value2, flags, alternate_value, bits);
+    }
 }
+
+//!
+//! @hideinitializer
+//! Registration of an extension ".names" file.
+//! This macro is typically used in the .cpp file of a TSDuck extension.
+//! @param filename Name of a @c .names file. If the name does not include a directory,
+//! the file is searched in the default configuration directories of TSDuck.
+//! @see SearchConfigurationFile()
+//!
+#define TS_REGISTER_NAMES_FILE(filename) \
+    TS_LIBCHECK(); \
+    static ts::Names::RegisterExtensionFile TS_UNIQUE_NAME(_Registrar)(filename)
 
 
 //----------------------------------------------------------------------------
@@ -575,7 +673,7 @@ template <typename T> requires ts::int_enum<T>
 bool ts::Names::getValue(T& e, const UString& name, bool case_sensitive, bool abbreviated) const
 {
     uint_t v = 0;
-    const bool ok = getValueImpl(v, name, case_sensitive, abbreviated);
+    const bool ok = getValueImpl(v, name, case_sensitive, abbreviated, true);
     if (ok) {
         e = static_cast<T>(v);
     }
@@ -607,33 +705,6 @@ ts::UString ts::Names::names(ITERATOR begin, ITERATOR end, const UString& separa
         ++begin;
     }
     return res;
-}
-
-// Get a fully formatted name from a specified section of a ".names" file.
-template <typename T1, typename T2> requires ts::int_enum<T1> && ts::int_enum<T2>
-ts::UString ts::Names::NameFromSection(const UString& file_name,
-                                       const UString& section_name,
-                                       T1 value,
-                                       NamesFlags flags,
-                                       T2 alternate_value,
-                                       size_t bits)
-{
-    return AllInstances::Instance().get(section_name, file_name)->
-        formatted(static_cast<uint_t>(value), flags, static_cast<uint_t>(alternate_value), bits);
-}
-
-// Get a fully formatted name from a specified section of a ".names" file, with alternate fallback value.
-template <typename T1, typename T2, typename T3> requires ts::int_enum<T1> && ts::int_enum<T2> && ts::int_enum<T3>
-ts::UString ts::Names::NameFromSectionWithFallback(const UString& file_name,
-                                                   const UString& section_name,
-                                                   T1 value1,
-                                                   T2 value2,
-                                                   NamesFlags flags,
-                                                   T3 alternate_value,
-                                                   size_t bits)
-{
-    return AllInstances::Instance().get(section_name, file_name)->
-        formattedWithFallback(static_cast<uint_t>(value1), static_cast<uint_t>(value2), flags, static_cast<uint_t>(alternate_value), bits);
 }
 
 #endif // DOXYGEN

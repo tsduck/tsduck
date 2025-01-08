@@ -13,6 +13,7 @@
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
+#include "tsOUI.h"
 
 #define MY_XML_NAME u"UNT"
 #define MY_CLASS ts::UNT
@@ -306,7 +307,7 @@ void ts::UNT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
         const uint8_t oui_hash = section.tableIdExtension() & 0xFF;
         const uint8_t comp_hash = uint8_t(oui >> 16) ^ uint8_t(oui >> 8) ^ uint8_t(oui);
         const UString oui_check(oui_hash == comp_hash ? u"valid" : UString::Format(u"invalid, should be 0x%X", comp_hash));
-        disp << margin << "OUI: " << NameFromOUI(oui, NamesFlags::HEX_VALUE_NAME) << std::endl;
+        disp << margin << "OUI: " << OUIName(oui, NamesFlags::HEX_VALUE_NAME) << std::endl;
         disp << margin << UString::Format(u"Action type: 0x%X", uint8_t(section.tableIdExtension() >> 8));
         disp << UString::Format(u", processing order: 0x%X", buf.getUInt8());
         disp << UString::Format(u", OUI hash: 0x%X (%s)", oui_hash, oui_check) << std::endl;
@@ -344,7 +345,7 @@ void ts::UNT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
             buf.pushReadSizeFromLength(8);
 
             disp << margin << UString::Format(u"    Specifier type: 0x%X", buf.getUInt8());
-            disp << UString::Format(u", specifier data (OUI): %s", NameFromOUI(buf.getUInt24(), NamesFlags::HEX_VALUE_NAME)) << std::endl;
+            disp << UString::Format(u", specifier data (OUI): %s", OUIName(buf.getUInt24(), NamesFlags::HEX_VALUE_NAME)) << std::endl;
             disp << margin << UString::Format(u"    Model: %n", buf.getUInt16());
             disp << UString::Format(u", version: %n", buf.getUInt16()) << std::endl;
             const size_t subDescriptorCount = buf.getUInt8();

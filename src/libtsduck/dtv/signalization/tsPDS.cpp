@@ -42,5 +42,5 @@ const ts::Enumeration& ts::PrivateDataSpecifierEnum()
 
 ts::UString ts::PDSName(PDS pds, NamesFlags flags)
 {
-    return NameFromDTV(u"PrivateDataSpecifier", NamesFile::Value(pds), flags);
+    return NameFromSection(u"dtv", u"PrivateDataSpecifier", pds, flags);
 }

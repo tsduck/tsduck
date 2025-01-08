@@ -16,13 +16,13 @@
 ts::UString ts::REGIDName(REGID regid, NamesFlags flags)
 {
     // If a name exists for the value, use it.
-    const NamesFile::NamesFilePtr repo = NamesFile::Instance(NamesFile::Predefined::DTV);
-    if (repo->nameExists(u"mpeg.registration_id", NamesFile::Value(regid))) {
-        return repo->nameFromSection(u"mpeg.registration_id", NamesFile::Value(regid), flags);
+    UString name(NameFromSection(u"dtv", u"mpeg.registration_id", regid, flags | NamesFlags::NO_UNKNOWN));
+    if (!name.empty()) {
+        return name;
     }
 
     // Registration ids are often 32-bits ASCII string. Check if this is the case.
-    UString name(u"\"");
+    name = u"\"";
     for (int i = 24; i >= 0; i -= 8) {
         const uint8_t c = uint8_t(regid >> i);
         if (c >= 0x20 && c <= 0x7E) {
@@ -38,5 +38,5 @@ ts::UString ts::REGIDName(REGID regid, NamesFlags flags)
     if (!name.empty()) {
         name.push_back(u'"');
     }
-    return NamesFile::Formatted(NamesFile::Value(regid), name, flags, 32);
+    return Names::Format(regid, name, flags, 32);
 }

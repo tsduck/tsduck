@@ -14,32 +14,8 @@
 #pragma once
 #include "tsUString.h"
 #include "tsIntegerUtils.h"
-#include "tsEnumUtils.h"
 #include "tsReport.h"
-#include "tsVersionInfo.h"
-
-namespace ts {
-    //!
-    //! Flags to be used in the formating of names using class Names.
-    //! Values can be used as bit-masks.
-    //! @ingroup app
-    //!
-    enum class NamesFlags : uint16_t {
-        NAME          = 0x0000,   //!< Name only, no value. This is the default.
-        NAME_VALUE    = 0x0001,   //!< Include the value after name: "name (value)".
-        VALUE_NAME    = 0x0002,   //!< Same with value first: "value (name)".
-        HEXA          = 0x0004,   //!< Value in hexadecimal. This is the default.
-        DECIMAL       = 0x0008,   //!< Value in decimal. Both DECIMAL and HEXA can be specified.
-        ALTERNATE     = 0x0010,   //!< Display an alternate integer value.
-        NAME_OR_VALUE = 0x0020,   //!< Display name if defined or value only if not defined.
-        NO_UNKNOWN    = 0x0040,   //!< Ignore unknown values, return an empty string.
-        HEX_DEC            = HEXA | DECIMAL,               //!< Value in decimal and hexadecimal.
-        HEX_VALUE_NAME     = VALUE_NAME | HEXA,            //!< Value in hexadecimal in first position.
-        DEC_VALUE_NAME     = VALUE_NAME | DECIMAL,         //!< Value in decimal in first position.
-        HEX_DEC_VALUE_NAME = VALUE_NAME | HEXA | DECIMAL,  //!< Value in decimal and hexadecimal in first position.
-    };
-}
-TS_ENABLE_BITMASK_OPERATORS(ts::NamesFlags);
+#include "tsNames.h"
 
 namespace ts {
     //!
@@ -381,58 +357,4 @@ namespace ts {
             std::array <Predef, size_t(Predefined::COUNT)> _predef {};
         };
     };
-
-    //!
-    //! Get a name from a specified section in the DTV names file.
-    //! @tparam INT An integer or enum type.
-    //! @param [in] section_name Name of section to search. Not case-sensitive.
-    //! @param [in] value Value to get the name for.
-    //! @param [in] flags Presentation flags.
-    //! @param [in] alternate_value Display this integer value if flags ALTERNATE is set.
-    //! @return The corresponding name.
-    //!
-    template <typename INT> requires ts::int_enum<INT>
-    UString NameFromDTV(const UString& section_name, INT value, NamesFlags flags = NamesFlags::NAME, INT alternate_value = static_cast<INT>(0))
-    {
-        return NamesFile::Instance(NamesFile::Predefined::DTV)->nameFromSection(section_name, NamesFile::Value(value), flags, NamesFile::Value(alternate_value));
-    }
-
-    //!
-    //! Get a name from a specified section in the DTV names file, with alternate fallback value.
-    //! @tparam INT An integer or enum type.
-    //! @param [in] section_name Name of section to search. Not case-sensitive.
-    //! @param [in] value1 Value to get the name for.
-    //! @param [in] value2 Alternate value if no name is found for @a value1.
-    //! @param [in] flags Presentation flags.
-    //! @param [in] alternate_value Display this integer value if flags ALTERNATE is set.
-    //! @return The corresponding name.
-    //!
-    template <typename INT> requires ts::int_enum<INT>
-    UString NameFromDTVWithFallback(const UString& section_name, INT value1, INT value2, NamesFlags flags = NamesFlags::NAME, INT alternate_value = static_cast<INT>(0))
-    {
-        return NamesFile::Instance(NamesFile::Predefined::DTV)->nameFromSectionWithFallback(section_name, NamesFile::Value(value1), NamesFile::Value(value2), flags, NamesFile::Value(alternate_value));
-    }
-
-    //!
-    //! Get the name of an OUI (IEEE-assigned Organizationally Unique Identifier), 24 bits.
-    //! @param [in] oui Organizationally Unique Identifier), 24 bits.
-    //! @param [in] flags Presentation flags.
-    //! @return The corresponding name.
-    //!
-    TSDUCKDLL inline UString NameFromOUI(uint32_t oui, NamesFlags flags = NamesFlags::NAME)
-    {
-        return NamesFile::Instance(NamesFile::Predefined::OUI)->nameFromSection(u"OUI", NamesFile::Value(oui), flags);
-    }
 }
-
-//!
-//! @hideinitializer
-//! Registration of an extension names file inside the ts::PSIRepository singleton.
-//! This macro is typically used in the .cpp file of a TSDuck extension.
-//! @param filename Name of a @c .names file. If the name does not include a directory,
-//! the file is searched in the default configuration directories of TSDuck.
-//! @see SearchConfigurationFile()
-//!
-#define TS_REGISTER_NAMES_FILE(filename) \
-    TS_LIBCHECK(); \
-    static ts::NamesFile::RegisterExtensionFile TS_UNIQUE_NAME(_Registrar)(filename)
