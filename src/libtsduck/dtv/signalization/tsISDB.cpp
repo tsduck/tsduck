@@ -9,4 +9,4 @@
 #include "tsISDB.h"
 
 // Name of section of ISDB-T layer short names.
-const ts::UString ts::ISDBTLayerCounterNamesSection(u"ISDB.short_layer_indicator");
+const ts::UChar ts::ISDBTLayerCounterNamesSection[] = u"ISDB.short_layer_indicator";

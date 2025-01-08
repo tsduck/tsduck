@@ -697,9 +697,13 @@ bool ts::Names::AllInstances::loadFileLocked(const UString& file_name)
     UString full_path;
     for (const auto& name : possible_names) {
         names.insert(name);
-        full_path = SearchConfigurationFile(name);
-        if (!full_path.empty()) {
-            break;
+        // Foolproof hack: Don't try to seach file on simple names (no directory) with no extension
+        // (e.g. "ip") to avoid reading system binary files such as /usr/bin/ip (silly isn't it?)
+        if (name.contains(u'/') || name.contains(u'\\') || name.contains(u'.')) {
+            full_path = SearchConfigurationFile(name);
+            if (!full_path.empty()) {
+                break;
+            }
         }
     }
 
