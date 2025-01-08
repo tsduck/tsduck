@@ -936,6 +936,7 @@ bool ts::UString::ends_with(const UString& suffix, CaseSensitivity cs, bool skip
     }
 }
 
+
 bool ts::UString::contains(UChar c) const
 {
     return find(c) != NPOS;

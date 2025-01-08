@@ -793,6 +793,37 @@ TSUNIT_DEFINE_TEST(Start)
 
     TSUNIT_ASSERT(!ts::UString(u"  azertyuiop").starts_with(u"az", ts::CASE_SENSITIVE, false));
     TSUNIT_ASSERT(ts::UString(u"  azertyuiop").starts_with(u"az", ts::CASE_SENSITIVE, true));
+
+    const ts::UChar a = u'a';
+    TSUNIT_ASSERT(ts::UString(u"azertyuiop").starts_with(a));
+    TSUNIT_ASSERT(ts::UString(u"azertyuiop").starts_with(a, ts::CASE_SENSITIVE, false));
+    TSUNIT_ASSERT(!ts::UString(u"AZERTYIUOP").starts_with(a, ts::CASE_SENSITIVE, false));
+    TSUNIT_ASSERT(ts::UString(u"AZERTYIUOP").starts_with(a, ts::CASE_INSENSITIVE, false));
+    TSUNIT_ASSERT(!ts::UString(u"  azertyuiop").starts_with(a, ts::CASE_SENSITIVE, false));
+    TSUNIT_ASSERT(ts::UString(u"  azertyuiop").starts_with(a, ts::CASE_SENSITIVE, true));
+
+    const ts::UChar q = u'q';
+    TSUNIT_ASSERT(!ts::UString(u"azertyuiop").starts_with(q));
+    TSUNIT_ASSERT(!ts::UString(u"AZERTYIUOP").starts_with(q, ts::CASE_INSENSITIVE));
+    TSUNIT_ASSERT(!ts::UString(u"AZERTYIUOP").starts_with(a, ts::CASE_SENSITIVE));
+
+    const ts::UChar azer[] = u"azer";
+    TSUNIT_ASSERT(ts::UString(u"azertyuiop").starts_with(azer));
+    TSUNIT_ASSERT(ts::UString(u"azertyuiop").starts_with(azer, ts::CASE_SENSITIVE, false));
+    TSUNIT_ASSERT(!ts::UString(u"AZERTYIUOP").starts_with(azer, ts::CASE_SENSITIVE, false));
+    TSUNIT_ASSERT(ts::UString(u"AZERTYIUOP").starts_with(azer, ts::CASE_INSENSITIVE, false));
+    TSUNIT_ASSERT(!ts::UString(u"  azertyuiop").starts_with(azer, ts::CASE_SENSITIVE, false));
+    TSUNIT_ASSERT(ts::UString(u"  azertyuiop").starts_with(azer, ts::CASE_SENSITIVE, true));
+    TSUNIT_ASSERT(ts::UString(u"  AZERTYIUOP").starts_with(azer, ts::CASE_INSENSITIVE, true));
+
+    std::u16string_view azert = u"azert";
+    TSUNIT_ASSERT(ts::UString(u"azertyuiop").starts_with(azert));
+    TSUNIT_ASSERT(ts::UString(u"azertyuiop").starts_with(azert, ts::CASE_SENSITIVE, false));
+    TSUNIT_ASSERT(!ts::UString(u"AZERTYIUOP").starts_with(azert, ts::CASE_SENSITIVE, false));
+    TSUNIT_ASSERT(ts::UString(u"AZERTYIUOP").starts_with(azert, ts::CASE_INSENSITIVE, false));
+    TSUNIT_ASSERT(!ts::UString(u"  azertyuiop").starts_with(azert, ts::CASE_SENSITIVE, false));
+    TSUNIT_ASSERT(ts::UString(u"  azertyuiop").starts_with(azert, ts::CASE_SENSITIVE, true));
+    TSUNIT_ASSERT(ts::UString(u"  AZERTYIUOP").starts_with(azert, ts::CASE_INSENSITIVE, true));
 }
 
 TSUNIT_DEFINE_TEST(End)
@@ -823,6 +854,37 @@ TSUNIT_DEFINE_TEST(End)
 
     TSUNIT_ASSERT(!ts::UString(u"azertyuiop  ").ends_with(u"uiop", ts::CASE_SENSITIVE, false));
     TSUNIT_ASSERT(ts::UString(u"azertyuiop  ").ends_with(u"uiop", ts::CASE_SENSITIVE, true));
+
+    ts::UChar p = u'p';
+    TSUNIT_ASSERT(ts::UString(u"azertyuiop").ends_with(p));
+    TSUNIT_ASSERT(ts::UString(u"azertyuiop").ends_with(p, ts::CASE_SENSITIVE, false));
+    TSUNIT_ASSERT(!ts::UString(u"AZERTYIUOP").ends_with(p, ts::CASE_SENSITIVE, false));
+    TSUNIT_ASSERT(ts::UString(u"AZERTYIUOP").ends_with(p, ts::CASE_INSENSITIVE, false));
+    TSUNIT_ASSERT(!ts::UString(u"  azertyuiop").ends_with(p, ts::CASE_SENSITIVE, false));
+    TSUNIT_ASSERT(ts::UString(u"  azertyuiop").ends_with(p, ts::CASE_SENSITIVE, true));
+
+    const ts::UChar q = u'q';
+    TSUNIT_ASSERT(!ts::UString(u"azertyuiop").ends_with(q));
+    TSUNIT_ASSERT(!ts::UString(u"AZERTYIUOP").ends_with(q, ts::CASE_INSENSITIVE));
+    TSUNIT_ASSERT(!ts::UString(u"AZERTYIUOP").ends_with(p, ts::CASE_SENSITIVE));
+
+    const ts::UChar uiop[] = u"uiop";
+    TSUNIT_ASSERT(ts::UString(u"azertyuiop").ends_with(uiop));
+    TSUNIT_ASSERT(ts::UString(u"azertyuiop").ends_with(uiop, ts::CASE_SENSITIVE, false));
+    TSUNIT_ASSERT(!ts::UString(u"AZERTYIUOP").ends_with(uiop, ts::CASE_SENSITIVE, false));
+    TSUNIT_ASSERT(ts::UString(u"AZERTYIUOP").ends_with(uiop, ts::CASE_INSENSITIVE, false));
+    TSUNIT_ASSERT(!ts::UString(u"azertyuiop   ").ends_with(uiop, ts::CASE_SENSITIVE, false));
+    TSUNIT_ASSERT(ts::UString(u"azertyuiop   ").ends_with(uiop, ts::CASE_SENSITIVE, true));
+    TSUNIT_ASSERT(ts::UString(u"AZERTYIUOP   ").ends_with(uiop, ts::CASE_INSENSITIVE, true));
+
+    std::u16string_view iop = u"iop";
+    TSUNIT_ASSERT(ts::UString(u"azertyuiop").ends_with(iop));
+    TSUNIT_ASSERT(ts::UString(u"azertyuiop").ends_with(iop, ts::CASE_SENSITIVE, false));
+    TSUNIT_ASSERT(!ts::UString(u"AZERTYIUOP").ends_with(iop, ts::CASE_SENSITIVE, false));
+    TSUNIT_ASSERT(ts::UString(u"AZERTYIUOP").ends_with(iop, ts::CASE_INSENSITIVE, false));
+    TSUNIT_ASSERT(!ts::UString(u"azertyuiop      ").ends_with(iop, ts::CASE_SENSITIVE, false));
+    TSUNIT_ASSERT(ts::UString(u"azertyuiop    ").ends_with(iop, ts::CASE_SENSITIVE, true));
+    TSUNIT_ASSERT(ts::UString(u"AZERTYIUOP    ").ends_with(iop, ts::CASE_INSENSITIVE, true));
 }
 
 TSUNIT_DEFINE_TEST(JustifyLeft)
