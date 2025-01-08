@@ -45,10 +45,10 @@ namespace ts {
         //! Note: unlisted systems are not supported.
         //!
         enum SysOS {
-            LINUX,
-            MACOS,
-            BSD,
-            WINDOWS
+            LINUX,   //!< Any Linux distro.
+            MACOS,   //!< Apple macOS.
+            BSD,     //!< Any BSD flavor.
+            WINDOWS  //!< Microsoft Windows.
         };
         //!
         //! Operating systems flavor, typically a Linux distribution.
