@@ -44,20 +44,26 @@ ts::DSMCCUserToNetworkMessage::Module::Module(const AbstractTable* table) :
 }
 
 //----------------------------------------------------------------------------
-// Deserialization
+// DSM-CC Message Header
 //----------------------------------------------------------------------------
 
-void ts::DSMCCUserToNetworkMessage::clearContent()
+void ts::DSMCCUserToNetworkMessage::MessageHeader::clear()
 {
     protocol_discriminator = DSMCC_PROTOCOL_DISCRIMINATOR;
     dsmcc_type = DSMCC_TYPE_DOWNLOAD_MESSAGE;
     message_id = 0;
     transaction_id = 0;
+}
 
-    //DSI
+void ts::DSMCCUserToNetworkMessage::clearContent()
+{
+    // DSM-CC Message Header
+    header.clear();
+
+    // DSI
     server_id.clear();
 
-    //DII
+    // DII
     download_id = 0;
     block_size = 0;
     modules.clear();
@@ -85,7 +91,7 @@ size_t ts::DSMCCUserToNetworkMessage::maxPayloadSize() const
 
 uint16_t ts::DSMCCUserToNetworkMessage::tableIdExtension() const
 {
-    return uint16_t(transaction_id & 0xFFFF);
+    return uint16_t(header.transaction_id & 0xFFFF);
 }
 
 //----------------------------------------------------------------------------
@@ -94,10 +100,10 @@ uint16_t ts::DSMCCUserToNetworkMessage::tableIdExtension() const
 
 void ts::DSMCCUserToNetworkMessage::deserializePayload(PSIBuffer& buf, const Section& section)
 {
-    protocol_discriminator = buf.getUInt8();
-    dsmcc_type = buf.getUInt8();
-    message_id = buf.getUInt16();
-    transaction_id = buf.getUInt32();
+    header.protocol_discriminator = buf.getUInt8();
+    header.dsmcc_type = buf.getUInt8();
+    header.message_id = buf.getUInt16();
+    header.transaction_id = buf.getUInt32();
 
     buf.skipBytes(1);
 
@@ -111,7 +117,7 @@ void ts::DSMCCUserToNetworkMessage::deserializePayload(PSIBuffer& buf, const Sec
         buf.skipBytes(adaptation_length);
     }
 
-    if (message_id == DSMCC_MESSAGE_ID_DSI) {
+    if (header.message_id == DSMCC_MESSAGE_ID_DSI) {
         buf.getBytes(server_id, SERVER_ID_SIZE);
 
         buf.skipBytes(2);  // compatibility_descriptor_length
@@ -221,7 +227,7 @@ void ts::DSMCCUserToNetworkMessage::deserializePayload(PSIBuffer& buf, const Sec
 
         buf.skipBytes(4);  // download_taps_count + service_context_list_count + user_info_length
     }
-    else if (message_id == DSMCC_MESSAGE_ID_DII) {
+    else if (header.message_id == DSMCC_MESSAGE_ID_DII) {
 
         download_id = buf.getUInt32();
         block_size = buf.getUInt16();
@@ -281,16 +287,16 @@ void ts::DSMCCUserToNetworkMessage::serializePayload(BinaryTable& table, PSIBuff
 {
     // DSMCC_UNM Table consist only one section so we do not need to worry about overflow
 
-    buf.putUInt8(protocol_discriminator);
-    buf.putUInt8(dsmcc_type);
-    buf.putUInt16(message_id);
-    buf.putUInt32(transaction_id);
+    buf.putUInt8(header.protocol_discriminator);
+    buf.putUInt8(header.dsmcc_type);
+    buf.putUInt16(header.message_id);
+    buf.putUInt32(header.transaction_id);
     buf.putUInt8(0xFF);  // reserved
     buf.putUInt8(0x00);  // adaptation_length
 
     buf.pushWriteSequenceWithLeadingLength(16);
 
-    if (message_id == DSMCC_MESSAGE_ID_DSI) {
+    if (header.message_id == DSMCC_MESSAGE_ID_DSI) {
         buf.putBytes(server_id);
         buf.putUInt16(0x0000);  // compatibility_descriptor_length
 
@@ -372,7 +378,7 @@ void ts::DSMCCUserToNetworkMessage::serializePayload(BinaryTable& table, PSIBuff
 
         buf.popState();  // close private_data
     }
-    else if (message_id == DSMCC_MESSAGE_ID_DII) {
+    else if (header.message_id == DSMCC_MESSAGE_ID_DII) {
 
         buf.putUInt32(download_id);
         buf.putUInt16(block_size);
@@ -644,12 +650,12 @@ void ts::DSMCCUserToNetworkMessage::buildXML(DuckContext& duck, xml::Element* ro
 {
     root->setIntAttribute(u"version", version);
     root->setBoolAttribute(u"current", is_current);
-    root->setIntAttribute(u"protocol_discriminator", protocol_discriminator, true);
-    root->setIntAttribute(u"dsmcc_type", dsmcc_type, true);
-    root->setIntAttribute(u"message_id", message_id, true);
-    root->setIntAttribute(u"transaction_id", transaction_id, true);
+    root->setIntAttribute(u"protocol_discriminator", header.protocol_discriminator, true);
+    root->setIntAttribute(u"dsmcc_type", header.dsmcc_type, true);
+    root->setIntAttribute(u"message_id", header.message_id, true);
+    root->setIntAttribute(u"transaction_id", header.transaction_id, true);
 
-    if (message_id == DSMCC_MESSAGE_ID_DSI) {
+    if (header.message_id == DSMCC_MESSAGE_ID_DSI) {
         xml::Element* dsi = root->addElement(u"DSI");
         dsi->addHexaTextChild(u"server_id", server_id, true);
 
@@ -721,7 +727,7 @@ void ts::DSMCCUserToNetworkMessage::buildXML(DuckContext& duck, xml::Element* ro
             }
         }
     }
-    else if (message_id == DSMCC_MESSAGE_ID_DII) {
+    else if (header.message_id == DSMCC_MESSAGE_ID_DII) {
 
         xml::Element* dii = root->addElement(u"DII");
         dii->setIntAttribute(u"download_id", download_id, true);
@@ -756,12 +762,12 @@ bool ts::DSMCCUserToNetworkMessage::analyzeXML(DuckContext& duck, const xml::Ele
     bool ok =
         element->getIntAttribute(version, u"version", false, 0, 0, 31) &&
         element->getBoolAttribute(is_current, u"current", false, true) &&
-        element->getIntAttribute(protocol_discriminator, u"protocol_discriminator", false, 0x11) &&
-        element->getIntAttribute(dsmcc_type, u"dsmcc_type", true, 0x03) &&
-        element->getIntAttribute(message_id, u"message_id", true) &&
-        element->getIntAttribute(transaction_id, u"transaction_id", true);
+        element->getIntAttribute(header.protocol_discriminator, u"protocol_discriminator", false, 0x11) &&
+        element->getIntAttribute(header.dsmcc_type, u"dsmcc_type", true, 0x03) &&
+        element->getIntAttribute(header.message_id, u"message_id", true) &&
+        element->getIntAttribute(header.transaction_id, u"transaction_id", true);
 
-    if (message_id == DSMCC_MESSAGE_ID_DSI) {
+    if (header.message_id == DSMCC_MESSAGE_ID_DSI) {
 
         const xml::Element* dsi_element = element->findFirstChild(u"DSI", true);
 
@@ -857,7 +863,7 @@ bool ts::DSMCCUserToNetworkMessage::analyzeXML(DuckContext& duck, const xml::Ele
             }
         }
     }
-    else if (message_id == DSMCC_MESSAGE_ID_DII) {
+    else if (header.message_id == DSMCC_MESSAGE_ID_DII) {
         const xml::Element* dii_element = element->findFirstChild(u"DII", true);
         xml::ElementVector  module_elements;
 

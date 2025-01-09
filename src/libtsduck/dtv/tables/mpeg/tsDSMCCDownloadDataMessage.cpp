@@ -38,16 +38,21 @@ ts::DSMCCDownloadDataMessage::DSMCCDownloadDataMessage(DuckContext& duck, const 
 }
 
 //----------------------------------------------------------------------------
-// Deserialization
+// DSM-CC Message Header
 //----------------------------------------------------------------------------
+
+void ts::DSMCCDownloadDataMessage::DownloadDataHeader::clear()
+{
+    protocol_discriminator = DSMCC_PROTOCOL_DISCRIMINATOR;
+    dsmcc_type = DSMCC_TYPE_DOWNLOAD_MESSAGE;
+    message_id = 0;
+    download_id = 0;
+}
 
 void ts::DSMCCDownloadDataMessage::clearContent()
 {
     table_id_ext = 0;
-    protocol_discriminator = DSMCC_PROTOCOL_DISCRIMINATOR;
-    dsmcc_type = DSMCC_TYPE_DOWNLOAD_MESSAGE;
-    message_id = DSMCC_MESSAGE_ID_DDB;
-    download_id = 0;
+    header.clear();
     module_id = 0;
     module_version = 0;
     block_data.clear();
@@ -84,10 +89,10 @@ uint16_t ts::DSMCCDownloadDataMessage::tableIdExtension() const
 void ts::DSMCCDownloadDataMessage::deserializePayload(PSIBuffer& buf, const Section& section)
 {
     table_id_ext = section.tableIdExtension();
-    protocol_discriminator = buf.getUInt8();
-    dsmcc_type = buf.getUInt8();
-    message_id = buf.getUInt16();
-    download_id = buf.getUInt32();
+    header.protocol_discriminator = buf.getUInt8();
+    header.dsmcc_type = buf.getUInt8();
+    header.message_id = buf.getUInt16();
+    header.download_id = buf.getUInt32();
 
     buf.skipBytes(1);  // reserved
 
@@ -114,10 +119,10 @@ void ts::DSMCCDownloadDataMessage::deserializePayload(PSIBuffer& buf, const Sect
 //----------------------------------------------------------------------------
 void ts::DSMCCDownloadDataMessage::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 {
-    buf.putUInt8(protocol_discriminator);
-    buf.putUInt8(dsmcc_type);
-    buf.putUInt16(message_id);
-    buf.putUInt32(download_id);
+    buf.putUInt8(header.protocol_discriminator);
+    buf.putUInt8(header.dsmcc_type);
+    buf.putUInt16(header.message_id);
+    buf.putUInt32(header.download_id);
 
     buf.putUInt8(0xFF);  // reserved
     buf.putUInt8(0x00);  // adaptation_length
@@ -204,10 +209,10 @@ void ts::DSMCCDownloadDataMessage::buildXML(DuckContext& duck, xml::Element* roo
     root->setIntAttribute(u"version", version);
     root->setBoolAttribute(u"current", is_current);
     root->setIntAttribute(u"table_id_extension", table_id_ext, true);
-    root->setIntAttribute(u"protocol_discriminator", protocol_discriminator, true);
-    root->setIntAttribute(u"dsmcc_type", dsmcc_type, true);
-    root->setIntAttribute(u"message_id", message_id, true);
-    root->setIntAttribute(u"download_id", download_id, true);
+    root->setIntAttribute(u"protocol_discriminator", header.protocol_discriminator, true);
+    root->setIntAttribute(u"dsmcc_type", header.dsmcc_type, true);
+    root->setIntAttribute(u"message_id", header.message_id, true);
+    root->setIntAttribute(u"download_id", header.download_id, true);
     root->setIntAttribute(u"module_id", module_id, true);
     root->setIntAttribute(u"module_version", module_version, true);
     root->addHexaTextChild(u"block_data", block_data, true);
@@ -222,10 +227,10 @@ bool ts::DSMCCDownloadDataMessage::analyzeXML(DuckContext& duck, const xml::Elem
     return element->getIntAttribute(version, u"version", false, 0, 0, 31) &&
            element->getBoolAttribute(is_current, u"current", false, true) &&
            element->getIntAttribute(table_id_ext, u"table_id_extension", true) &&
-           element->getIntAttribute(protocol_discriminator, u"protocol_discriminator", false, 0x11) &&
-           element->getIntAttribute(dsmcc_type, u"dsmcc_type", true, 0x03) &&
-           element->getIntAttribute(message_id, u"message_id", true) &&
-           element->getIntAttribute(download_id, u"download_id", true) &&
+           element->getIntAttribute(header.protocol_discriminator, u"protocol_discriminator", false, 0x11) &&
+           element->getIntAttribute(header.dsmcc_type, u"dsmcc_type", true, 0x03) &&
+           element->getIntAttribute(header.message_id, u"message_id", true) &&
+           element->getIntAttribute(header.download_id, u"download_id", true) &&
            element->getIntAttribute(module_id, u"module_id", true) &&
            element->getIntAttribute(module_version, u"module_version", true) &&
            element->getHexaTextChild(block_data, u"block_data");

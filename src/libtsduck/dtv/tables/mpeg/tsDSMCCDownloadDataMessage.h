@@ -23,15 +23,32 @@ namespace ts {
     //!
     class TSDUCKDLL DSMCCDownloadDataMessage: public AbstractLongTable {
     public:
-        // DSMCCDownloadDataMessage public members:
-        uint16_t  table_id_ext = 0;                                       //!< Module Id where block belongs
-        uint8_t   protocol_discriminator = DSMCC_PROTOCOL_DISCRIMINATOR;  //!< Indicates that the message is MPEG-2 DSM-CC message.
-        uint8_t   dsmcc_type = DSMCC_TYPE_DOWNLOAD_MESSAGE;               //!< Indicates type of MPEG-2 DSM-CC message.
-        uint16_t  message_id = DSMCC_MESSAGE_ID_DDB;                      //!< Indicates type of message which is being passed.
-        uint32_t  download_id = 0;                                        //!< Used to associate the download data messages and the download control messages of a single instance of a download scenario.
-        uint16_t  module_id = 0;                                          //!< Identifies to which module this block belongs.
-        uint8_t   module_version = 0;                                     //!< Identifies the version of the module to which this block belongs.
-        ByteBlock block_data {};                                          //!< Conveys the data of the block.
+        class TSDUCKDLL DownloadDataHeader {
+            TS_DEFAULT_COPY_MOVE(DownloadDataHeader);
+
+        public:
+            // DSMCCDownloadDataMessage public members:
+            uint8_t  protocol_discriminator = DSMCC_PROTOCOL_DISCRIMINATOR;  //!< Indicates that the message is MPEG-2 DSM-CC message.
+            uint8_t  dsmcc_type = DSMCC_TYPE_DOWNLOAD_MESSAGE;               //!< Indicates type of MPEG-2 DSM-CC message.
+            uint16_t message_id = DSMCC_MESSAGE_ID_DDB;                      //!< Indicates type of message which is being passed.
+            uint32_t download_id = 0;                                        //!< Used to associate the download data messages and the download control messages of a single instance of a download scenario.
+
+            //!
+            //! Default constructor.
+            //!
+            DownloadDataHeader() = default;
+
+            //!
+            //! Clear values.
+            //!
+            void clear();
+        };
+
+        uint16_t           table_id_ext = 0;    //!< Module Id where block belongs
+        DownloadDataHeader header {};           //!< DSM-CC Download Data Header
+        uint16_t           module_id = 0;       //!< Identifies to which module this block belongs.
+        uint8_t            module_version = 0;  //!< Identifies the version of the module to which this block belongs.
+        ByteBlock          block_data {};       //!< Conveys the data of the block.
 
         //!
         //! Default constructor.

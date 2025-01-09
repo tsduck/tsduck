@@ -23,17 +23,32 @@ namespace ts {
     //!
     class TSDUCKDLL DSMCCUserToNetworkMessage: public AbstractLongTable {
     public:
-        // DSMCCUserToNetworkMessage public members:
-        uint8_t  protocol_discriminator = DSMCC_PROTOCOL_DISCRIMINATOR;  //!< Indicates that the message is MPEG-2 DSM-CC message.
-        uint8_t  dsmcc_type = DSMCC_TYPE_DOWNLOAD_MESSAGE;               //!< Indicates type of MPEG-2 DSM-CC message.
-        uint16_t message_id = 0;                                         //!< Indicates type of message which is being passed.
-        uint32_t transaction_id = 0;                                     //!< Used for session integrity and error processing.
+        class TSDUCKDLL MessageHeader {
+            TS_DEFAULT_COPY_MOVE(MessageHeader);
+
+        public:
+            // DSMCCUserToNetworkMessage public members:
+            uint8_t  protocol_discriminator = DSMCC_PROTOCOL_DISCRIMINATOR;  //!< Indicates that the message is MPEG-2 DSM-CC message.
+            uint8_t  dsmcc_type = DSMCC_TYPE_DOWNLOAD_MESSAGE;               //!< Indicates type of MPEG-2 DSM-CC message.
+            uint16_t message_id = 0;                                         //!< Indicates type of message which is being passed.
+            uint32_t transaction_id = 0;                                     //!< Used for session integrity and error processing.
+
+            //!
+            //! Default constructor.
+            //!
+            MessageHeader() = default;
+
+            //!
+            //! Clear values.
+            //!
+            void clear();
+        };
 
         class TSDUCKDLL Tap {
         public:
-            Tap() = default;       //!< Default constructor.
-            uint16_t id = 0x0000;  //!< Tap Id
-            uint16_t use = 0x0016;
+            Tap() = default;        //!< Default constructor.
+            uint16_t id = 0x0000;   //!< Tap Id
+            uint16_t use = 0x0016;  //!<
             uint16_t association_tag = 0x0000;
             uint16_t selector_type = 0x0001;
             uint32_t transaction_id = 0;
@@ -82,10 +97,6 @@ namespace ts {
             std::list<TaggedProfile> tagged_profiles {};
         };
 
-
-        ByteBlock server_id {};  //!< Conveys the data of the block.
-        IOR       ior {};
-
         //  ******************************
         //  *** DownloadInfoIndication ***
         //  ******************************
@@ -104,6 +115,10 @@ namespace ts {
 
             explicit Module(const AbstractTable* table);
         };
+
+        MessageHeader header {};
+        ByteBlock     server_id {};  //!< Conveys the data of the block.
+        IOR           ior {};
 
         using ModuleList = EntryWithDescriptorsList<Module>;
 
