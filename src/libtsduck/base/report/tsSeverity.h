@@ -47,7 +47,8 @@ namespace ts {
 
         //!
         //! An enumeration to use severity values on the command line for instance.
+        //! @return A constant reference to the enumeration data.
         //!
-        static const Names Enums;
+        static const Names& Enums();
     };
 }

@@ -218,7 +218,7 @@ namespace ts {
         STDMETHODIMP ReceiveCanBlock();
 
         // Supported media subtypes
-        static const int MAX_MEDIA_SUBTYPES = 3;
+        static constexpr int MAX_MEDIA_SUBTYPES = 3;
         static const ::GUID MEDIA_SUBTYPES[MAX_MEDIA_SUBTYPES];
 
         //! @endcond

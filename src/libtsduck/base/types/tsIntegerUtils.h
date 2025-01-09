@@ -114,7 +114,7 @@ namespace ts {
     //! False otherwise.
     //!
     template<typename T> requires int_enum<T>
-    constexpr bool is_negative(T x)
+    inline constexpr bool is_negative(T x)
     {
         if constexpr (std::signed_integral<underlying_type_t<T>>) {
             return static_cast<underlying_type_t<T>>(x) < 0;
@@ -131,7 +131,7 @@ namespace ts {
     //! @return Ansolute value of @a a.
     //!
     template <typename INT> requires std::integral<INT>
-    inline INT abs(INT a)
+    inline constexpr INT abs(INT a)
     {
         if constexpr (std::unsigned_integral<INT>) {
             return a;
@@ -149,7 +149,7 @@ namespace ts {
     //! @return True if the value of @a x is within the limits of type @a INT1.
     //!
     template <typename INT1, typename INT2> requires std::integral<INT1> && std::integral<INT2>
-    inline bool bound_check(INT2 x)
+    inline constexpr bool bound_check(INT2 x)
     {
         // Actual implementations of bound_check, depending on type profiles.
         if constexpr (std::signed_integral<INT1> && std::unsigned_integral<INT2> && sizeof(INT1) <= sizeof(INT2)) {
@@ -197,7 +197,7 @@ namespace ts {
     //! @return The value of @a x, within the limits of type @a INT1.
     //!
     template <typename INT1, typename INT2> requires std::integral<INT1> && std::integral<INT2>
-    inline INT1 bounded_cast(INT2 x)
+    inline constexpr INT1 bounded_cast(INT2 x)
     {
         // Actual implementations of bounded_cast, depending on type profiles.
         if constexpr (std::signed_integral<INT1> && std::unsigned_integral<INT2> && sizeof(INT1) <= sizeof(INT2)) {
@@ -277,7 +277,7 @@ namespace ts {
     //! @return True if @a a + @a b generated an overflow.
     //!
     template <typename INT> requires std::integral<INT>
-    inline bool add_overflow(INT a, INT b, INT res)
+    inline constexpr bool add_overflow(INT a, INT b, INT res)
     {
         if constexpr (std::unsigned_integral<INT>) {
             return a > res;
@@ -370,7 +370,7 @@ namespace ts {
     //! @return True if @a a * @a b generated an overflow.
     //!
     template <typename INT> requires std::integral<INT>
-    inline bool mul_overflow(INT a, INT b, INT res)
+    inline constexpr bool mul_overflow(INT a, INT b, INT res)
     {
         return a != 0 && res / a != b;
     }
@@ -550,7 +550,7 @@ namespace ts {
     //! @return The value of @a a / @a b, rounded to closest value.
     //!
     template <typename INT> requires std::integral<INT>
-    INT rounded_div(INT a, INT b)
+    inline constexpr INT rounded_div(INT a, INT b)
     {
         if constexpr (std::unsigned_integral<INT>) {
             return (a + b/2) / b;
@@ -615,7 +615,7 @@ namespace ts {
     //! @param [in,out] den Fraction denominator.
     //!
     template <typename INT> requires std::integral<INT>
-    void sign_reduce(INT& num, INT& den)
+    inline constexpr void sign_reduce(INT& num, INT& den)
     {
         if constexpr (std::unsigned_integral<INT>) {
             // no sign
@@ -686,7 +686,7 @@ namespace ts {
     //! @return Either u"signed" or u"unsigned".
     //!
     template <typename INT> requires std::integral<INT>
-    inline const UChar* SignedDescription()
+    inline constexpr const UChar* SignedDescription()
     {
         if constexpr (std::unsigned_integral<INT>) {
             return u"unsigned";

@@ -111,12 +111,12 @@ CmdOptions::CmdOptions(int argc, char *argv[]) :
          u"Subsequent streams use sequential values. "
          u"The default is 0.");
 
-    option(u"log-data", 0, ts::Severity::Enums, 0, 1, true);
+    option(u"log-data", 0, ts::Severity::Enums(), 0, 1, true);
     help(u"log-data", u"level",
          u"Same as --log-protocol but applies to CW_provision and ECM_response messages only. "
          u"To debug the session management without being flooded by data messages, use --log-protocol=info --log-data=debug.");
 
-    option(u"log-protocol", 0, ts::Severity::Enums, 0, 1, true);
+    option(u"log-protocol", 0, ts::Severity::Enums(), 0, 1, true);
     help(u"log-protocol", u"level",
          u"Log all ECMG <=> SCS protocol messages using the specified level. "
          u"If the option is not present, the messages are logged at debug level only. "

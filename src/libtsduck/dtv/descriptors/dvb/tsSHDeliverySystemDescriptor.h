@@ -103,12 +103,12 @@ namespace ts {
         virtual bool analyzeXML(DuckContext&, const xml::Element*) override;
 
     private:
-        // Enumerations for XML and display.
-        static const Names BandwidthNames;
-        static const Names GuardIntervalNames;
-        static const Names TransmissionModeNames;
-        static const Names PolarizationNames;
-        static const Names RollOffNames;
-        static const Names ModulationNames;
+        // Thread-safe init-safe static data patterns.
+        static const Names& BandwidthNames();
+        static const Names& GuardIntervalNames();
+        static const Names& TransmissionModeNames();
+        static const Names& PolarizationNames();
+        static const Names& RollOffNames();
+        static const Names& ModulationNames();
     };
 }

@@ -281,11 +281,11 @@ namespace ts {
         std::vector<StringElement> _strings {};
 
         // The encoding mode for UTF-16:
-        static const uint8_t MODE_UTF16 = 0x3F;
+        static constexpr uint8_t MODE_UTF16 = 0x3F;
 
         // Set of encoding modes which directly encode Unicode points.
         // Encoding mode 0xNN encodes Unicode range 0xNN00 to 0xNNFF.
-        static const std::set<uint8_t> _unicode_modes;
+        static const std::set<uint8_t>& UNICODE_MODES();
 
         // Get the encoding mode for a string.
         // One of the Unicode modes if all characters in the string are in the same 255-code range.

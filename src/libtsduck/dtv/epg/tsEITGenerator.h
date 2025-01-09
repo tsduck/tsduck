@@ -169,7 +169,7 @@ namespace ts {
         explicit EITGenerator(DuckContext& duck,
                               PID pid = PID_EIT,
                               EITOptions options = EITOptions::GEN_ALL | EITOptions::LOAD_INPUT,
-                              const EITRepetitionProfile& profile = EITRepetitionProfile::SatelliteCable);
+                              const EITRepetitionProfile& profile = EITRepetitionProfile::SatelliteCable());
 
         //!
         //! Reset the EIT generator to default state.

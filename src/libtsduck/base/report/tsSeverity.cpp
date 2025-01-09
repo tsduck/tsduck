@@ -13,17 +13,22 @@
 
 //----------------------------------------------------------------------------
 // Enumeration to use severity values on the command line for instance.
+// Thread-safe init-safe static data patterns.
 //----------------------------------------------------------------------------
 
-const ts::Names ts::Severity::Enums({
-    {u"fatal",   ts::Severity::Fatal},
-    {u"severe",  ts::Severity::Severe},
-    {u"error",   ts::Severity::Error},
-    {u"warning", ts::Severity::Warning},
-    {u"info",    ts::Severity::Info},
-    {u"verbose", ts::Severity::Verbose},
-    {u"debug",   ts::Severity::Debug},
-});
+const ts::Names& ts::Severity::Enums()
+{
+    static const Names data {
+        {u"fatal",   ts::Severity::Fatal},
+        {u"severe",  ts::Severity::Severe},
+        {u"error",   ts::Severity::Error},
+        {u"warning", ts::Severity::Warning},
+        {u"info",    ts::Severity::Info},
+        {u"verbose", ts::Severity::Verbose},
+        {u"debug",   ts::Severity::Debug},
+    };
+    return data;
+}
 
 
 //----------------------------------------------------------------------------

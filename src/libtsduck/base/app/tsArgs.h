@@ -577,6 +577,7 @@ namespace ts {
         //!
         //! Names description of HelpFormat.
         //! Typically used to implement the -\-help command line option.
+        //! @return A constant reference to the enumeration description.
         //!
         static const Names& HelpFormatEnum();
 

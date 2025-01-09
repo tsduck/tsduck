@@ -797,7 +797,7 @@ STDMETHODIMP ts::SinkPin::ReceiveMultiple(::IMediaSample** pSamples, long nSampl
 
 // Supported media subtypes
 
-const ::GUID ts::SinkPin::MEDIA_SUBTYPES [MAX_MEDIA_SUBTYPES] = {
+const ::GUID ts::SinkPin::MEDIA_SUBTYPES[MAX_MEDIA_SUBTYPES] = {
     MEDIASUBTYPE_MPEG2_TRANSPORT,
     MEDIASUBTYPE_MPEG2_TRANSPORT_STRIDE,
     KSDATAFORMAT_SUBTYPE_BDA_MPEG2_TRANSPORT,

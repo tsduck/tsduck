@@ -29,8 +29,8 @@ namespace ts {
         uint32_t minimum_overall_smoothing_rate = UNDEFINED_SMOOTHING_RATE;      //!< 22 bits
         uint16_t maximum_overall_smoothing_buffer = UNDEFINED_SMOOTHING_BUFFER;  //!< 14 bits
 
-        static const uint32_t UNDEFINED_SMOOTHING_RATE   = 0x3FFFFF;  //!< "undefined" value for @a minimum_overall_smoothing_rate.
-        static const uint16_t UNDEFINED_SMOOTHING_BUFFER = 0x3FFF;    //!< "undefined" value for @a maximum_overall_smoothing_buffer.
+        static constexpr uint32_t UNDEFINED_SMOOTHING_RATE   = 0x3FFFFF;  //!< "undefined" value for @a minimum_overall_smoothing_rate.
+        static constexpr uint16_t UNDEFINED_SMOOTHING_BUFFER = 0x3FFF;    //!< "undefined" value for @a maximum_overall_smoothing_buffer.
 
         //!
         //! Default constructor.

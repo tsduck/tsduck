@@ -39,11 +39,6 @@ namespace ts {
             TERRESTRIAL = 3,  //!< Encoded as terrestrial frequency.
         };
 
-        //!
-        //! Enumeration description of coding types.
-        //!
-        static const Names CodingTypeEnum;
-
         // FrequencyListDescriptor public members:
         uint8_t               coding_type = UNDEFINED;  //!< 2 bits, type of frequency (cable, satellite, etc.)
         std::vector<uint64_t> frequencies {};           //!< The list of centre frequencies.
@@ -72,6 +67,9 @@ namespace ts {
         virtual bool analyzeXML(DuckContext&, const xml::Element*) override;
 
     private:
+        // Thread-safe init-safe static data patterns.
+        static const Names& CodingTypeEnum();
+
         // Decode a frequency at a 4-byte data area.
         static uint64_t DecodeFrequency(uint8_t coding_type, PSIBuffer&);
     };

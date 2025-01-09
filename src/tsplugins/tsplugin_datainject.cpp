@@ -170,13 +170,13 @@ ts::DataInjectPlugin::DataInjectPlugin(TSP* tsp_) :
          u"Specifies the version of the EMMG/PDG <=> MUX DVB SimulCrypt protocol. "
          u"Valid values are 1 to 5. The default is " TS_USTRINGIFY(DEFAULT_PROTOCOL_VERSION) u".");
 
-    option(u"log-data", 0, ts::Severity::Enums, 0, 1, true);
+    option(u"log-data", 0, ts::Severity::Enums(), 0, 1, true);
     help(u"log-data", u"level",
          u"Same as --log-protocol but applies to data_provision messages only. To "
          u"debug the session management without being flooded by data messages, use "
          u"--log-protocol=info --log-data=debug.");
 
-    option(u"log-protocol", 0, ts::Severity::Enums, 0, 1, true);
+    option(u"log-protocol", 0, ts::Severity::Enums(), 0, 1, true);
     help(u"log-protocol", u"level",
          u"Log all EMMG/PDG <=> MUX protocol messages using the specified level. If "
          u"the option is not present, the messages are logged at debug level only. "

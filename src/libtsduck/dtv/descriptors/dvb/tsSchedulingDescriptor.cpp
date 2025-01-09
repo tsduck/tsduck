@@ -21,13 +21,6 @@
 
 TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
-const ts::Names ts::SchedulingDescriptor::SchedulingUnitNames({
-    {u"second", 0},
-    {u"minute", 1},
-    {u"hour",   2},
-    {u"day",    3},
-});
-
 
 //----------------------------------------------------------------------------
 // Constructors
@@ -101,6 +94,22 @@ void ts::SchedulingDescriptor::deserializePayload(PSIBuffer& buf)
 
 
 //----------------------------------------------------------------------------
+// Thread-safe init-safe static data patterns.
+//----------------------------------------------------------------------------
+
+const ts::Names& ts::SchedulingDescriptor::SchedulingUnitNames()
+{
+    static const Names data {
+        {u"second", 0},
+        {u"minute", 1},
+        {u"hour",   2},
+        {u"day",    3},
+    };
+    return data;
+}
+
+
+//----------------------------------------------------------------------------
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
@@ -114,9 +123,9 @@ void ts::SchedulingDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::
         const uint8_t period_unit = buf.getBits<uint8_t>(2);
         const uint8_t duration_unit = buf.getBits<uint8_t>(2);
         const uint8_t cycle_unit = buf.getBits<uint8_t>(2);
-        disp << margin << UString::Format(u"Period: %d %ss", buf.getUInt8(), SchedulingUnitNames.name(period_unit)) << std::endl;
-        disp << margin << UString::Format(u"Duration: %d %ss", buf.getUInt8(), SchedulingUnitNames.name(duration_unit)) << std::endl;
-        disp << margin << UString::Format(u"Estimated cycle time: %d %ss", buf.getUInt8(), SchedulingUnitNames.name(cycle_unit)) << std::endl;
+        disp << margin << UString::Format(u"Period: %d %ss", buf.getUInt8(), SchedulingUnitNames().name(period_unit)) << std::endl;
+        disp << margin << UString::Format(u"Duration: %d %ss", buf.getUInt8(), SchedulingUnitNames().name(duration_unit)) << std::endl;
+        disp << margin << UString::Format(u"Estimated cycle time: %d %ss", buf.getUInt8(), SchedulingUnitNames().name(cycle_unit)) << std::endl;
         disp.displayPrivateData(u"Private data", buf, NPOS, margin);
     }
 }
@@ -132,9 +141,9 @@ void ts::SchedulingDescriptor::buildXML(DuckContext& duck, xml::Element* root) c
     root->setDateTimeAttribute(u"end_date_time", end_date_time);
     root->setBoolAttribute(u"final_availability", final_availability);
     root->setBoolAttribute(u"periodicity", periodicity);
-    root->setEnumAttribute(SchedulingUnitNames, u"period_unit", period_unit);
-    root->setEnumAttribute(SchedulingUnitNames, u"duration_unit", duration_unit);
-    root->setEnumAttribute(SchedulingUnitNames, u"estimated_cycle_time_unit", estimated_cycle_time_unit);
+    root->setEnumAttribute(SchedulingUnitNames(), u"period_unit", period_unit);
+    root->setEnumAttribute(SchedulingUnitNames(), u"duration_unit", duration_unit);
+    root->setEnumAttribute(SchedulingUnitNames(), u"estimated_cycle_time_unit", estimated_cycle_time_unit);
     root->setIntAttribute(u"period", period);
     root->setIntAttribute(u"duration", duration);
     root->setIntAttribute(u"estimated_cycle_time", estimated_cycle_time);
@@ -152,9 +161,9 @@ bool ts::SchedulingDescriptor::analyzeXML(DuckContext& duck, const xml::Element*
             element->getDateTimeAttribute(end_date_time, u"end_date_time", true) &&
             element->getBoolAttribute(final_availability, u"final_availability", true) &&
             element->getBoolAttribute(periodicity, u"periodicity", true) &&
-            element->getEnumAttribute(period_unit, SchedulingUnitNames, u"period_unit", true) &&
-            element->getEnumAttribute(duration_unit, SchedulingUnitNames, u"duration_unit", true) &&
-            element->getEnumAttribute(estimated_cycle_time_unit, SchedulingUnitNames, u"estimated_cycle_time_unit", true) &&
+            element->getEnumAttribute(period_unit, SchedulingUnitNames(), u"period_unit", true) &&
+            element->getEnumAttribute(duration_unit, SchedulingUnitNames(), u"duration_unit", true) &&
+            element->getEnumAttribute(estimated_cycle_time_unit, SchedulingUnitNames(), u"estimated_cycle_time_unit", true) &&
             element->getIntAttribute(period, u"period", true) &&
             element->getIntAttribute(duration, u"duration", true) &&
             element->getIntAttribute(estimated_cycle_time, u"estimated_cycle_time", true) &&

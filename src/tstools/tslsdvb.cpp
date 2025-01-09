@@ -58,7 +58,7 @@ Options::Options(int argc, char *argv[]) :
     option(u"list-devices", 'l');
     help(u"list-devices", u"Get a list of all tuner and receiver devices, equivalent to --test list-devices.");
 
-    option(u"test", 't', ts::DirectShowTest::TestNames);
+    option(u"test", 't', ts::DirectShowTest::TestNames());
     help(u"test", u"name",
          u"Run a specific DirectShow test. Very verbose output, for debug only. "
          u"The default is none.");

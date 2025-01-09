@@ -103,15 +103,15 @@ namespace ts {
         //!
         //! XML tag name for generic descriptors.
         //!
-        static const UChar* const XML_GENERIC_DESCRIPTOR;
+        static constexpr const UChar* XML_GENERIC_DESCRIPTOR = u"generic_descriptor";
         //!
         //! XML tag name for generic short sections.
         //!
-        static const UChar* const XML_GENERIC_SHORT_TABLE;
+        static constexpr const UChar* XML_GENERIC_SHORT_TABLE = u"generic_short_table";
         //!
         //! XML tag name for generic tables with long sections.
         //!
-        static const UChar* const XML_GENERIC_LONG_TABLE;
+        static constexpr const UChar* XML_GENERIC_LONG_TABLE = u"generic_long_table";
 
         //!
         //! Get a name from a specified section in the DVB names file.

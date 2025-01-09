@@ -44,18 +44,6 @@ void ts::FrequencyListDescriptor::clearContent()
 
 
 //----------------------------------------------------------------------------
-// Enumeration description of coding types.
-//----------------------------------------------------------------------------
-
-const ts::Names ts::FrequencyListDescriptor::CodingTypeEnum({
-    {u"undefined",   ts::FrequencyListDescriptor::UNDEFINED},
-    {u"satellite",   ts::FrequencyListDescriptor::SATELLITE},
-    {u"cable",       ts::FrequencyListDescriptor::CABLE},
-    {u"terrestrial", ts::FrequencyListDescriptor::TERRESTRIAL},
-});
-
-
-//----------------------------------------------------------------------------
 // Serialization
 //----------------------------------------------------------------------------
 
@@ -118,6 +106,22 @@ void ts::FrequencyListDescriptor::deserializePayload(PSIBuffer& buf)
 
 
 //----------------------------------------------------------------------------
+// Thread-safe init-safe static data patterns.
+//----------------------------------------------------------------------------
+
+const ts::Names& ts::FrequencyListDescriptor::CodingTypeEnum()
+{
+    static const Names data {
+        {u"undefined",   UNDEFINED},
+        {u"satellite",   SATELLITE},
+        {u"cable",       CABLE},
+        {u"terrestrial", TERRESTRIAL},
+    };
+    return data;
+}
+
+
+//----------------------------------------------------------------------------
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
@@ -126,7 +130,7 @@ void ts::FrequencyListDescriptor::DisplayDescriptor(TablesDisplay& disp, const t
     if (buf.canReadBytes(1)) {
         buf.skipBits(6);
         const uint8_t type = buf.getBits<uint8_t>(2);
-        disp << margin << UString::Format(u"Coding type: %d (%s)", type, CodingTypeEnum.name(type)) << std::endl;
+        disp << margin << UString::Format(u"Coding type: %d (%s)", type, CodingTypeEnum().name(type)) << std::endl;
         while (buf.canReadBytes(4)) {
             disp << margin << UString::Format(u"Centre frequency: %'d Hz", DecodeFrequency(type, buf)) << std::endl;
         }
@@ -140,7 +144,7 @@ void ts::FrequencyListDescriptor::DisplayDescriptor(TablesDisplay& disp, const t
 
 void ts::FrequencyListDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    root->setEnumAttribute(CodingTypeEnum, u"coding_type", coding_type);
+    root->setEnumAttribute(CodingTypeEnum(), u"coding_type", coding_type);
     for (auto it : frequencies) {
         root->addElement(u"centre_frequency")->setIntAttribute(u"value", it);
     }
@@ -155,7 +159,7 @@ bool ts::FrequencyListDescriptor::analyzeXML(DuckContext& duck, const xml::Eleme
 {
     xml::ElementVector children;
     bool ok =
-        element->getEnumAttribute(coding_type, CodingTypeEnum, u"coding_type", true) &&
+        element->getEnumAttribute(coding_type, CodingTypeEnum(), u"coding_type", true) &&
         element->getChildren(children, u"centre_frequency", 0, MAX_ENTRIES);
 
     for (size_t i = 0; ok && i < children.size(); ++i) {

@@ -10,15 +10,23 @@
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 #include "tsTablesDisplay.h"
-#include "tsAlgorithm.h"
 
+
+//----------------------------------------------------------------------------
 // Set of encoding modes which directly encode Unicode points.
-const std::set<uint8_t> ts::ATSCMultipleString::_unicode_modes({
-    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06,
-    0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10,
-    0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27,
-    0x30, 0x31, 0x32, 0x33
-});
+// Thread-safe init-safe static data patterns.
+//----------------------------------------------------------------------------
+
+const std::set<uint8_t>& ts::ATSCMultipleString::UNICODE_MODES()
+{
+    static const std::set<uint8_t> data({
+        0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06,
+        0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10,
+        0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27,
+        0x30, 0x31, 0x32, 0x33
+    });
+    return data;
+}
 
 
 //----------------------------------------------------------------------------
@@ -198,7 +206,7 @@ uint8_t ts::ATSCMultipleString::EncodingMode(const UString& text)
     uint8_t mode = 0x00;
     for (size_t i = 0; i < text.size(); ++i) {
         const uint8_t msb = uint8_t(text[i] >> 8);
-        if (!_unicode_modes.contains(msb)) {
+        if (!UNICODE_MODES().contains(msb)) {
             // The MSB of the character is not a supported mode.
             return MODE_UTF16;
         }
@@ -478,7 +486,7 @@ bool ts::ATSCMultipleString::DecodeSegment(UString& segment, const uint8_t*& dat
     // Decode segment.
     if (compression == 0) {
         // Uncompressed segment.
-        if (_unicode_modes.contains(mode)) {
+        if (UNICODE_MODES().contains(mode)) {
             // One byte per char.
             const UChar base = UChar(uint16_t(mode) << 8);
             for (size_t i = 0; i < nbytes; ++i) {

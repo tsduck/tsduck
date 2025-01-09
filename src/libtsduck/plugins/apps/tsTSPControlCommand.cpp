@@ -28,7 +28,7 @@ ts::TSPControlCommand::TSPControlCommand(Report& report) :
               u"and let the processing continue until the process naturally exits.");
 
     arg = command(u"set-log", u"Change log level in the tsp process", u"level", flags | Args::NO_VERBOSE);
-    arg->option(u"", 0, Severity::Enums, 1, 1);
+    arg->option(u"", 0, Severity::Enums(), 1, 1);
     arg->help(u"",
               u"Specify a new logging level for the tsp process. "
               u"It can be either a name or a positive value for higher debug levels.");

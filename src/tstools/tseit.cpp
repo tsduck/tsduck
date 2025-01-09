@@ -222,7 +222,7 @@ namespace ts {
         DuckContext     _duck {&_opt};
         BitRate         _ts_bitrate = 0;
         EITOptions      _eit_options = EITOptions::GEN_ALL | EITOptions::LOAD_INPUT;
-        EITGenerator    _eit_gen {_duck, PID_EIT, _eit_options, EITRepetitionProfile::SatelliteCable};
+        EITGenerator    _eit_gen {_duck, PID_EIT, _eit_options, EITRepetitionProfile::SatelliteCable()};
 
         // Get full path of an input or output directory.
         UString fileName(const UString& directory, const UString& name) const;
@@ -516,10 +516,10 @@ ts::CommandStatus ts::EITCommand::set(const UString& command, Args& args)
     }
 
     if (args.present(u"satellite")) {
-        _eit_gen.setProfile(EITRepetitionProfile::SatelliteCable);
+        _eit_gen.setProfile(EITRepetitionProfile::SatelliteCable());
     }
     if (args.present(u"terrestrial")) {
-        _eit_gen.setProfile(EITRepetitionProfile::Terrestrial);
+        _eit_gen.setProfile(EITRepetitionProfile::Terrestrial());
     }
     if (args.present(u"ts-id")) {
         _eit_gen.setTransportStreamId(args.intValue<uint16_t>(u"ts-id"));

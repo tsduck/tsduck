@@ -90,7 +90,7 @@ namespace ts {
         //! Constructor from a 64-bit EDID value.
         //! @param [in] edid 64-bit EDID value.
         //!
-        explicit EDID(uint64_t edid) : _edid(edid) {}
+        explicit constexpr EDID(uint64_t edid) : _edid(edid) {}
 
         //! @cond nodoxygen
         auto operator<=>(const EDID&) const = default;
@@ -113,7 +113,7 @@ namespace ts {
         //! @param [in] std Relevant standards.
         //! @return The corresponding EDID.
         //!
-        static EDID Regular(DID did, Standards std)
+        static constexpr EDID Regular(DID did, Standards std)
         {
             return EDID(0x000000FFFFFFFF00 |
                         (uint64_t(Type::REGULAR) << 40) |
@@ -127,7 +127,7 @@ namespace ts {
         //! @param [in] regid Associated registration id.
         //! @return The corresponding EDID.
         //!
-        static EDID PrivateMPEG(DID did, REGID regid)
+        static constexpr EDID PrivateMPEG(DID did, REGID regid)
         {
             return EDID((uint64_t(Type::PRIVATE) << 40) |
                         (uint64_t(Standards::MPEG) << 48) |
@@ -141,7 +141,7 @@ namespace ts {
         //! @param [in] pds Associated private data specifier.
         //! @return The corresponding EDID.
         //!
-        static EDID PrivateDVB(DID did, PDS pds)
+        static constexpr EDID PrivateDVB(DID did, PDS pds)
         {
             return EDID((uint64_t(Type::PRIVATE) << 40) |
                         (uint64_t(Standards::DVB) << 48) |
@@ -158,7 +158,7 @@ namespace ts {
         //! @param [in] pds Associated registration id and private data specifier.
         //! @return The corresponding EDID.
         //!
-        static EDID PrivateDual(DID did, PDS pds)
+        static constexpr EDID PrivateDual(DID did, PDS pds)
         {
             return EDID((uint64_t(Type::PRIVATE) << 40) |
                         (uint64_t(Standards::MPEG | Standards::DVB) << 48) |
@@ -171,7 +171,7 @@ namespace ts {
         //! @param [in] ext Associated tag extension. The descriptor tag is implicitly DID_MPEG_EXTENSION.
         //! @return The corresponding EDID.
         //!
-        static EDID ExtensionMPEG(DID ext)
+        static constexpr EDID ExtensionMPEG(DID ext)
         {
             return EDID(0x000000FFFFFF0000 |
                         (uint64_t(Type::EXTENDED) << 40) |
@@ -185,7 +185,7 @@ namespace ts {
         //! @param [in] ext Associated tag extension. The descriptor tag is implicitly DID_DVB_EXTENSION.
         //! @return The corresponding EDID.
         //!
-        static EDID ExtensionDVB(DID ext)
+        static constexpr EDID ExtensionDVB(DID ext)
         {
             return EDID(0x000000FFFFFF0000 |
                         (uint64_t(Type::EXTENDED) << 40) |

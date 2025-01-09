@@ -46,8 +46,9 @@ namespace ts {
 
         //!
         //! An enumeration of TestType names, typically used for command line options.
+        //! @return A constant reference to the enumation data.
         //!
-        static const Names TestNames;
+        static const Names& TestNames();
 
         //!
         //! Run one test.

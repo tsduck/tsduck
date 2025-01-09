@@ -21,8 +21,6 @@
 #include "tsTerrestrialDeliverySystemDescriptor.h"
 #include "tsISDBTerrestrialDeliverySystemDescriptor.h"
 
-const ts::UString ts::ModulationArgs::DEFAULT_ISDBT_LAYERS(u"ABC"); // all layers
-
 
 //----------------------------------------------------------------------------
 // Reset all values, they become "unset"

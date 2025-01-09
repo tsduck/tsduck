@@ -172,13 +172,27 @@ bool ts::hls::PlayList::setEndList(bool end, Report& report)
 // Get a constant reference to a component.
 //----------------------------------------------------------------------------
 
-const ts::hls::MediaSegment ts::hls::PlayList::EmptySegment;
-const ts::hls::MediaPlayList ts::hls::PlayList::EmptyPlayList;
-const ts::hls::AltPlayList ts::hls::PlayList::EmptyAltPlayList;
+const ts::hls::MediaSegment& ts::hls::PlayList::EmptySegment()
+{
+    static const MediaSegment data;
+    return data;
+}
+
+const ts::hls::MediaPlayList& ts::hls::PlayList::EmptyPlayList()
+{
+    static const MediaPlayList data;
+    return data;
+}
+
+const ts::hls::AltPlayList& ts::hls::PlayList::EmptyAltPlayList()
+{
+    static const AltPlayList data;
+    return data;
+}
 
 const ts::hls::MediaSegment& ts::hls::PlayList::segment(size_t index) const
 {
-    return index < _segments.size() ? _segments[index] : EmptySegment;
+    return index < _segments.size() ? _segments[index] : EmptySegment();
 }
 
 bool ts::hls::PlayList::popFirstSegment()
@@ -196,7 +210,7 @@ bool ts::hls::PlayList::popFirstSegment()
 bool ts::hls::PlayList::popFirstSegment(MediaSegment& seg)
 {
     if (_segments.empty()) {
-        seg = EmptySegment;
+        seg = EmptySegment();
         return false;
     }
     else {
@@ -209,12 +223,12 @@ bool ts::hls::PlayList::popFirstSegment(MediaSegment& seg)
 
 const ts::hls::MediaPlayList& ts::hls::PlayList::playList(size_t index) const
 {
-    return index < _playlists.size() ? _playlists[index] : EmptyPlayList;
+    return index < _playlists.size() ? _playlists[index] : EmptyPlayList();
 }
 
 const ts::hls::AltPlayList& ts::hls::PlayList::altPlayList(size_t index) const
 {
-    return index < _alt_playlists.size() ? _alt_playlists[index] : EmptyAltPlayList;
+    return index < _alt_playlists.size() ? _alt_playlists[index] : EmptyAltPlayList();
 }
 
 

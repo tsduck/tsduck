@@ -188,12 +188,14 @@ namespace ts {
         //!
         //! Copy assignment.
         //! @param [in] other Other instance to copy.
+        //! @return A reference to this object.
         //!
         Names& operator=(const Names& other);
 
         //!
         //! Move assignment.
         //! @param [in] other Other instance to move.
+        //! @return A reference to this object.
         //!
         Names& operator=(Names&& other);
 
