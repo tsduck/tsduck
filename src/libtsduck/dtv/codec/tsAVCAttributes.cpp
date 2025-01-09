@@ -8,7 +8,7 @@
 
 #include "tsAVCAttributes.h"
 #include "tsAVCSequenceParameterSet.h"
-#include "tsNamesFile.h"
+#include "tsNames.h"
 
 
 //----------------------------------------------------------------------------

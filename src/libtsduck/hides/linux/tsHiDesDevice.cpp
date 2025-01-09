@@ -67,7 +67,7 @@
 #include "tsNullReport.h"
 #include "tsMemory.h"
 #include "tsFileUtils.h"
-#include "tsNamesFile.h"
+#include "tsNames.h"
 
 // Maximum size of our transfers. See comments above.
 #define ITE_MAX_SEND_PACKETS  172
@@ -138,7 +138,7 @@ ts::UString ts::HiDesDevice::Guts::HiDesErrorMessage(ssize_t driver_status, int 
 
     // HiDes status can be a negative value. Zero means no error.
     if (driver_status != 0) {
-        msg = NamesFile::Instance(NamesFile::Predefined::HIDES)->nameFromSection(u"HiDesErrorLinux", std::abs(driver_status), NamesFlags::HEX_VALUE_NAME);
+        msg = NameFromSection(u"hides", u"HiDesErrorLinux", std::abs(driver_status), NamesFlags::HEX_VALUE_NAME);
     }
 
     // In case errno was also set.

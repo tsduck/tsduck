@@ -38,7 +38,7 @@ namespace {
         mutable std::mutex _mutex {};
         std::list<CASDesc> _cas {};
 
-        // Implementation of NamesFile::Visitor.
+        // Implementation of Names::Visitor.
         virtual bool handleNameValue(const ts::Names& section, ts::Names::uint_t value, const ts::UString& name) override;
     };
 }

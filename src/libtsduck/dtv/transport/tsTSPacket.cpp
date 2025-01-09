@@ -10,7 +10,7 @@
 #include "tsPES.h"
 #include "tsByteBlock.h"
 #include "tsBuffer.h"
-#include "tsNamesFile.h"
+#include "tsNames.h"
 
 
 //----------------------------------------------------------------------------

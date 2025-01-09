@@ -11,7 +11,7 @@
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
-#include "tsNamesFile.h"
+#include "tsNames.h"
 #include "tsFloatingPoint.h"
 
 #define MY_XML_NAME u"AVS_ANC_data_block"

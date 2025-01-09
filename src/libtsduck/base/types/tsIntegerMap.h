@@ -13,7 +13,7 @@
 
 #pragma once
 #include "tsUString.h"
-#include "tsNamesFile.h"
+#include "tsNames.h"
 #include "tsjsonValue.h"
 
 namespace ts {
@@ -23,12 +23,10 @@ namespace ts {
     //!
     //! @tparam KEY Integer type for keys.
     //! @tparam VALUE Integer type for values.
-    //! @tparam KEYNAMESECTION If not null, name of the section in @a NAMESFILE which define names for the keys in the map.
-    //! @tparam NAMESFILE Index of names file containing @a KEYNAMESECTION.
+    //! @tparam NAMESFILE If not null, names file containing @a KEYNAMESECTION.
+    //! @tparam KEYNAMESECTION If not null, name of the section which defines names for the keys in the map.
     //!
-    template <typename KEY, typename VALUE,
-              const UChar* KEYNAMESECTION = nullptr,
-              NamesFile::Predefined NAMESFILE = NamesFile::Predefined::DTV>
+    template <typename KEY, typename VALUE, const UChar* NAMESFILE = nullptr, const UChar* KEYNAMESECTION = nullptr>
         requires std::integral<KEY> && std::integral<VALUE>
     class IntegerMap : public std::map<KEY, VALUE>
     {
@@ -83,9 +81,9 @@ namespace ts {
 //----------------------------------------------------------------------------
 
 // Accumulate all values from another map.
-template<typename KEY, typename VALUE, const ts::UChar* KEYNAMESECTION, ts::NamesFile::Predefined NAMESFILE>
+template<typename KEY, typename VALUE, const ts::UChar* NAMESFILE, const ts::UChar* KEYNAMESECTION>
     requires std::integral<KEY> && std::integral<VALUE>
-void ts::IntegerMap<KEY,VALUE,KEYNAMESECTION,NAMESFILE>::accumulate(const IntegerMap& val)
+void ts::IntegerMap<KEY,VALUE,NAMESFILE,KEYNAMESECTION>::accumulate(const IntegerMap& val)
 {
     for (const auto& it : val) {
         (*this)[it.first] += it.second;
@@ -93,9 +91,9 @@ void ts::IntegerMap<KEY,VALUE,KEYNAMESECTION,NAMESFILE>::accumulate(const Intege
 }
 
 // Format a string for all keys in the map.
-template<typename KEY, typename VALUE, const ts::UChar* KEYNAMESECTION, ts::NamesFile::Predefined NAMESFILE>
+template<typename KEY, typename VALUE, const ts::UChar* NAMESFILE, const ts::UChar* KEYNAMESECTION>
     requires std::integral<KEY> && std::integral<VALUE>
-ts::UString ts::IntegerMap<KEY,VALUE,KEYNAMESECTION,NAMESFILE>::toStringKeys(VALUE total) const
+ts::UString ts::IntegerMap<KEY,VALUE,NAMESFILE,KEYNAMESECTION>::toStringKeys(VALUE total) const
 {
     // Adjust total if not present.
     if (total == 0) {
@@ -108,9 +106,9 @@ ts::UString ts::IntegerMap<KEY,VALUE,KEYNAMESECTION,NAMESFILE>::toStringKeys(VAL
     const bool percent = total > 0 && (this->size() > 1 || (this->size() == 1 && this->begin()->second != total));
 
     // File names to use.
-    NamesFile::NamesFilePtr file;
-    if (KEYNAMESECTION != nullptr) {
-        file = NamesFile::Instance(NAMESFILE);
+    NamesPtr section;
+    if constexpr (KEYNAMESECTION != nullptr) {
+        section = Names::GetSection(NAMESFILE, KEYNAMESECTION, false);
     }
 
     // Format the list.
@@ -118,19 +116,21 @@ ts::UString ts::IntegerMap<KEY,VALUE,KEYNAMESECTION,NAMESFILE>::toStringKeys(VAL
     const UChar* const sep = u", ";
     for (const auto& it : *this) {
         str.format(u"%d", it.first);
-        if (percent || file != nullptr) {
+        if (percent || section != nullptr) {
             str.append(u" (");
         }
-        if (file != nullptr) {
-            str.append(file->nameFromSection(KEYNAMESECTION, NamesFile::Value(it.first), NamesFlags::NAME));
+        if constexpr (KEYNAMESECTION != nullptr) {
+            if (section != nullptr) {
+                str.append(section->name(it.first, NamesFlags::NAME));
+            }
         }
-        if (percent && file != nullptr) {
+        if (percent && section != nullptr) {
             str.append(u' ');
         }
         if (percent) {
             str.format(u"%.1f%%", (100.0 * double(it.second)) / double(total));
         }
-        if (percent || file != nullptr) {
+        if (percent || section != nullptr) {
             str.append(u')');
         }
         str.append(sep);
@@ -142,9 +142,9 @@ ts::UString ts::IntegerMap<KEY,VALUE,KEYNAMESECTION,NAMESFILE>::toStringKeys(VAL
 }
 
 // Build a string of all keys for "normalized" output in TSDuck.
-template<typename KEY, typename VALUE, const ts::UChar* KEYNAMESECTION, ts::NamesFile::Predefined NAMESFILE>
+template<typename KEY, typename VALUE, const ts::UChar* NAMESFILE, const ts::UChar* KEYNAMESECTION>
     requires std::integral<KEY> && std::integral<VALUE>
-ts::UString ts::IntegerMap<KEY,VALUE,KEYNAMESECTION,NAMESFILE>::toNormalizedKeys() const
+ts::UString ts::IntegerMap<KEY,VALUE,NAMESFILE,KEYNAMESECTION>::toNormalizedKeys() const
 {
     UString str;
     for (const auto& it : *this) {
@@ -157,9 +157,9 @@ ts::UString ts::IntegerMap<KEY,VALUE,KEYNAMESECTION,NAMESFILE>::toNormalizedKeys
 }
 
 // Display a normalized representation of all keys in the map.
-template<typename KEY, typename VALUE, const ts::UChar* KEYNAMESECTION, ts::NamesFile::Predefined NAMESFILE>
+template<typename KEY, typename VALUE, const ts::UChar* NAMESFILE, const ts::UChar* KEYNAMESECTION>
     requires std::integral<KEY> && std::integral<VALUE>
-void ts::IntegerMap<KEY,VALUE,KEYNAMESECTION,NAMESFILE>::addNormalizedKeys(std::ostream& stm, const UChar* type, bool ignore_empty) const
+void ts::IntegerMap<KEY,VALUE,NAMESFILE,KEYNAMESECTION>::addNormalizedKeys(std::ostream& stm, const UChar* type, bool ignore_empty) const
 {
     if (!ignore_empty || !this->empty()) {
         stm << type << '=' << toNormalizedKeys() << ':';
@@ -167,9 +167,9 @@ void ts::IntegerMap<KEY,VALUE,KEYNAMESECTION,NAMESFILE>::addNormalizedKeys(std::
 }
 
 // Add a list of all keys as a JSON array.
-template<typename KEY, typename VALUE, const ts::UChar* KEYNAMESECTION, ts::NamesFile::Predefined NAMESFILE>
+template<typename KEY, typename VALUE, const ts::UChar* NAMESFILE, const ts::UChar* KEYNAMESECTION>
     requires std::integral<KEY> && std::integral<VALUE>
-void ts::IntegerMap<KEY,VALUE,KEYNAMESECTION,NAMESFILE>::addKeys(json::Value& parent, const UString& path, bool ignore_empty) const
+void ts::IntegerMap<KEY,VALUE,NAMESFILE,KEYNAMESECTION>::addKeys(json::Value& parent, const UString& path, bool ignore_empty) const
 {
     if (!ignore_empty || !this->empty()) {
         json::Value& arr(parent.query(path, true, json::Type::Array));

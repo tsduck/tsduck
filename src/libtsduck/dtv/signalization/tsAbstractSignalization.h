@@ -13,7 +13,7 @@
 
 #pragma once
 #include "tsAbstractDefinedByStandards.h"
-#include "tsNamesFile.h"
+#include "tsNames.h"
 #include "tsxml.h"
 
 namespace ts {

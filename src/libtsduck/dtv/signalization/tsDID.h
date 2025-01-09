@@ -13,7 +13,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsNamesFile.h"
+#include "tsNames.h"
 #include "tsDescriptorContext.h"
 
 namespace ts {

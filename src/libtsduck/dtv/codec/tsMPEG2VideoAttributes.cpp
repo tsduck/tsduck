@@ -9,7 +9,7 @@
 #include "tsMPEG2VideoAttributes.h"
 #include "tsMemory.h"
 #include "tsMPEG2.h"
-#include "tsNamesFile.h"
+#include "tsNames.h"
 
 
 //----------------------------------------------------------------------------

@@ -12,7 +12,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsNamesFile.h"
+#include "tsNames.h"
 
 namespace ts {
 

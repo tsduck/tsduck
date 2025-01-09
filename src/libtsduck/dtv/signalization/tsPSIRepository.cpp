@@ -24,14 +24,15 @@ ts::PSIRepository::PSIRepository()
 {
     CERR.debug(u"creating PSIRepository");
 
-    // Load all table names from a names file.
-    const auto repo = NamesFile::Instance(NamesFile::Predefined::DTV);
-    repo->visitSection(this, u"TableId");
-    repo->visitSection(this, u"DescriptorId");
+    // Load all table names from a ".names" file.
+    const NamesPtr tid_repo = Names::GetSection(u"dtv", u"TableId", true);
+    const NamesPtr did_repo = Names::GetSection(u"dtv", u"DescriptorId", true);
+    tid_repo->visit(this);
+    did_repo->visit(this);
 
     // Subscribe to further modifications (merge of extension files).
-    repo->subscribe(this, u"TableId");
-    repo->subscribe(this, u"DescriptorId");
+    tid_repo->subscribe(this);
+    did_repo->subscribe(this);
 }
 
 
@@ -51,9 +52,9 @@ ts::PSIRepository::RegisterXML::RegisterXML(const UString& file_name)
 // (executed in PSIRepository constructor)
 //----------------------------------------------------------------------------
 
-bool ts::PSIRepository::handleNameValue(const UString& section_name, NamesFile::Value value, const UString& name)
+bool ts::PSIRepository::handleNameValue(const Names& section, Names::uint_t value, const UString& name)
 {
-    if (section_name.similar(u"TableId")) {
+    if (section.sectionName().similar(u"TableId")) {
         // Register a table name. Decode the extended table id.
         const Standards std = Standards((value >> 16) & 0xFFFF);
         const CASFamily cas = CASFamily((value >> 8) & 0xFF);
@@ -83,7 +84,7 @@ bool ts::PSIRepository::handleNameValue(const UString& section_name, NamesFile::
             _tables_by_tid.insert(std::make_pair(tid, tc));
         }
     }
-    else if (section_name.similar(u"DescriptorId")) {
+    else if (section.sectionName().similar(u"DescriptorId")) {
         // Register a descriptor name. The value is an EDID.
         const EDID edid(value);
 

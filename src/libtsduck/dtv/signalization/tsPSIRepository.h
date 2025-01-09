@@ -13,6 +13,7 @@
 
 #pragma once
 #include "tsEDID.h"
+#include "tsNames.h"
 #include "tsTablesPtr.h"
 #include "tsVersionInfo.h"
 #include "tsSectionContext.h"
@@ -40,7 +41,7 @@ namespace ts {
     //!
     //! @ingroup mpeg
     //!
-    class TSDUCKDLL PSIRepository : private NamesFile::Visitor
+    class TSDUCKDLL PSIRepository : private Names::Visitor
     {
         TS_SINGLETON(PSIRepository);
     public:
@@ -379,8 +380,8 @@ namespace ts {
         // Additional XML model files for tables and descriptors.
         UStringList _xml_extension_files {};
 
-        // Implementation of NamesFile::Visitor.
-        virtual bool handleNameValue(const UString& section_name, NamesFile::Value value, const UString& name) override;
+        // Implementation of Names::Visitor.
+        virtual bool handleNameValue(const Names& section, Names::uint_t value, const UString& name) override;
 
         // Display utilities.
         static UString NameToString(const UString& prefix, const UString& name, const UString& suffix);

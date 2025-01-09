@@ -8,7 +8,7 @@
 
 #include "tsDektecDevice.h"
 #include "tsDektecUtils.h"
-#include "tsNamesFile.h"
+#include "tsNames.h"
 
 #if defined(TS_NO_DTAPI)
 TS_LLVM_NOWARNING(missing-variable-declarations)
@@ -350,7 +350,7 @@ ts::UString ts::DektecDevice::DtCapsToString(const Dtapi::DtCaps& flags)
             if (!caps.empty()) {
                 caps += u", ";
             }
-            caps += NamesFile::Instance(NamesFile::Predefined::DEKTEC)->nameFromSection(u"DtCaps", c, NamesFlags::NAME_OR_VALUE | NamesFlags::DECIMAL);
+            caps += NameFromSection(u"dektec", u"DtCaps", c, NamesFlags::NAME_OR_VALUE | NamesFlags::DECIMAL);
         }
     }
     return caps;

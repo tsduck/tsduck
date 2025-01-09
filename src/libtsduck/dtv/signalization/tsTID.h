@@ -14,7 +14,7 @@
 
 #pragma once
 #include "tsCAS.h"
-#include "tsNamesFile.h"
+#include "tsNames.h"
 
 namespace ts {
 

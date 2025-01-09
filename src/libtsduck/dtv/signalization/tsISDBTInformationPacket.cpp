@@ -9,7 +9,7 @@
 #include "tsISDBTInformationPacket.h"
 #include "tsDuckContext.h"
 #include "tsPSIBuffer.h"
-#include "tsNamesFile.h"
+#include "tsNames.h"
 #include "tsCRC32.h"
 
 

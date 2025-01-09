@@ -14,7 +14,7 @@
 
 #pragma once
 #include "tsEnumeration.h"
-#include "tsNamesFile.h"
+#include "tsNames.h"
 #include "tsTS.h" // required by GCC, see comment below
 
 namespace ts {

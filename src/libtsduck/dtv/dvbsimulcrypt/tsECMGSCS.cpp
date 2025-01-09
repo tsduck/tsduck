@@ -8,7 +8,7 @@
 
 #include "tsECMGSCS.h"
 #include "tstlvMessageFactory.h"
-#include "tsNamesFile.h"
+#include "tsNames.h"
 
 
 //----------------------------------------------------------------------------

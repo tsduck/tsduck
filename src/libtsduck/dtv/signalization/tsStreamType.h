@@ -14,7 +14,7 @@
 
 #pragma once
 #include "tsREGID.h"
-#include "tsNamesFile.h"
+#include "tsNames.h"
 
 namespace ts {
 

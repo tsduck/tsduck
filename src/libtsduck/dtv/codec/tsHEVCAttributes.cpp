@@ -8,7 +8,7 @@
 
 #include "tsHEVCAttributes.h"
 #include "tsHEVCSequenceParameterSet.h"
-#include "tsNamesFile.h"
+#include "tsNames.h"
 
 
 //----------------------------------------------------------------------------
