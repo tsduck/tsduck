@@ -12,7 +12,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsEnumeration.h"
+#include "tsNames.h"
 #include "tsReport.h"
 #include "tsThread.h"
 #include "tsVersion.h"
@@ -81,7 +81,7 @@ namespace ts {
         //! Typically used to implement the -\-version command line option.
         //! @return A constant reference to the enumeration description.
         //!
-        static const Enumeration& FormatEnum();
+        static const Names& FormatEnum();
 
         //!
         //! Enumeration of supported features.
@@ -89,7 +89,7 @@ namespace ts {
         //! For each name, the value is 1 if the feature is supported and 0 if it is not.
         //! @return A constant reference to the enumeration description.
         //!
-        static const Enumeration& SupportEnum();
+        static const Names& SupportEnum();
 
         //!
         //! Get the TSDuck formatted version number.

@@ -62,10 +62,10 @@ void ts::CueIdentifierDescriptor::deserializePayload(PSIBuffer& buf)
 // Definition of names for cue stream types.
 //----------------------------------------------------------------------------
 
-const ts::Enumeration& ts::CueIdentifierDescriptor::CueStreamTypeNames()
+const ts::Names& ts::CueIdentifierDescriptor::CueStreamTypeNames()
 {
     // Thread-safe init-safe static data patterns.
-    static const Enumeration data({
+    static const Names data({
         {u"insert_null_schedule", 0x00},
         {u"all",                  0x01},
         {u"segmentation",         0x02},

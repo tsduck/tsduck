@@ -84,10 +84,6 @@ namespace ts {
     //!
     class TSDUCKDLL Names
     {
-    private:
-        Names(Names&&) = delete;
-        Names& operator=(Names&&) = delete;
-        Names& operator=(const Names&) = delete;
     public:
         //!
         //! Unsigned integer type used in representations of values.
@@ -178,10 +174,28 @@ namespace ts {
         Names(const Names& other);
 
         //!
+        //! Move constructor.
+        //! @param [in] other Other instance to move.
+        //!
+        Names(Names&& other);
+
+        //!
         //! Constructor from a variable list of string/value pairs.
         //! @param [in] values Variable list of name/value pairs.
         //!
         Names(std::initializer_list<NameValue> values);
+
+        //!
+        //! Copy assignment.
+        //! @param [in] other Other instance to copy.
+        //!
+        Names& operator=(const Names& other);
+
+        //!
+        //! Move assignment.
+        //! @param [in] other Other instance to move.
+        //!
+        Names& operator=(Names&& other);
 
         //!
         //! Check if the list of names is empty.

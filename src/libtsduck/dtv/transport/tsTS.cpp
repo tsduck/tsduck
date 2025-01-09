@@ -36,9 +36,9 @@ const ts::PIDSet& ts::AllPIDs()
 // Enumeration description of ts::PIDClass.
 //----------------------------------------------------------------------------
 
-const ts::Enumeration& ts::PIDClassEnum()
+const ts::Names& ts::PIDClassEnum()
 {
-    static const Enumeration data {
+    static const Names data {
         {u"undefined", PIDClass::UNDEFINED},
         {u"PSI/SI",    PIDClass::PSI},
         {u"EMM",       PIDClass::EMM},

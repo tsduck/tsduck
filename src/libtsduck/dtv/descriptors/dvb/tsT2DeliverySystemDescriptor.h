@@ -92,9 +92,9 @@ namespace ts {
 
     private:
         // Thread-safe init-safe static data patterns.
-        static const Enumeration& SisoNames();
-        static const Enumeration& BandwidthNames();
-        static const Enumeration& GuardIntervalNames();
-        static const Enumeration& TransmissionModeNames();
+        static const Names& SisoNames();
+        static const Names& BandwidthNames();
+        static const Names& GuardIntervalNames();
+        static const Names& TransmissionModeNames();
     };
 }

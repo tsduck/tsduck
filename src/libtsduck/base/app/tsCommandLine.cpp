@@ -61,7 +61,7 @@ void ts::CommandLine::setCommandLineHandlerImpl(CommandLineHandler* handler, Com
     else {
         // Set one command.
         const CmdId id = _cmd_enum.value(name);
-        if (id != Enumeration::UNKNOWN) {
+        if (id != Names::UNKNOWN) {
             _commands[id].handler = handler;
             _commands[id].method = method;
         }
@@ -77,7 +77,7 @@ ts::Args* ts::CommandLine::commandImpl(CommandLineHandler* handler, CommandLineM
 {
     // Check if the command already exists.
     CmdId id = _cmd_enum.value(name, true, false);
-    if (id == Enumeration::UNKNOWN) {
+    if (id == Names::UNKNOWN) {
         // New command.
         id = _cmd_id_alloc++;
         _cmd_enum.add(name, id);
@@ -129,7 +129,7 @@ bool ts::CommandLine::analyzeCommand(const UString& name, const UStringVector& a
 {
     // Look for command name.
     const CmdId cmd_id = _cmd_enum.value(name);
-    if (cmd_id == Enumeration::UNKNOWN) {
+    if (cmd_id == Names::UNKNOWN) {
         _report.error(_cmd_enum.error(name, true, true, u"command"));
         return false;
     }
@@ -164,7 +164,7 @@ ts::CommandStatus ts::CommandLine::processCommand(const UString& name, const USt
 
     // Look for command name.
     const CmdId cmd_id = _cmd_enum.value(name);
-    if (cmd_id == Enumeration::UNKNOWN) {
+    if (cmd_id == Names::UNKNOWN) {
         log->error(_cmd_enum.error(name, true, true, u"command"));
         return CommandStatus::ERROR;
     }

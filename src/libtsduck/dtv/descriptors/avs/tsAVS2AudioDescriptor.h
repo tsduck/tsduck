@@ -97,6 +97,6 @@ namespace ts {
 
     private:
         // Thread-safe init-safe static data patterns.
-        static const Enumeration& CodingProfiles();
+        static const Names& CodingProfiles();
     };
 }

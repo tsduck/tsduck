@@ -12,7 +12,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsEnumeration.h"
+#include "tsNames.h"
 #include "tsEnumUtils.h"
 
 namespace ts {
@@ -114,7 +114,7 @@ namespace ts {
         //! The names are the actual tag names from a .M3U8 playlist file.
         //! @return A constant reference to the enumeration description.
         //!
-        TSDUCKDLL const Enumeration& TagNames();
+        TSDUCKDLL const Names& TagNames();
 
         //!
         //! Get the properties of a Tag.

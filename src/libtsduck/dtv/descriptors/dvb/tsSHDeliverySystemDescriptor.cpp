@@ -141,7 +141,7 @@ void ts::SHDeliverySystemDescriptor::deserializePayload(PSIBuffer& buf)
 // Enumerations for XML and disp.
 //----------------------------------------------------------------------------
 
-const ts::Enumeration ts::SHDeliverySystemDescriptor::BandwidthNames({
+const ts::Names ts::SHDeliverySystemDescriptor::BandwidthNames({
     {u"8MHz",   0},
     {u"7MHz",   1},
     {u"6MHz",   2},
@@ -149,35 +149,35 @@ const ts::Enumeration ts::SHDeliverySystemDescriptor::BandwidthNames({
     {u"1.7MHz", 4},
 });
 
-const ts::Enumeration ts::SHDeliverySystemDescriptor::GuardIntervalNames({
+const ts::Names ts::SHDeliverySystemDescriptor::GuardIntervalNames({
     {u"1/32", 0},
     {u"1/16", 1},
     {u"1/8",  2},
     {u"1/4",  3},
 });
 
-const ts::Enumeration ts::SHDeliverySystemDescriptor::TransmissionModeNames({
+const ts::Names ts::SHDeliverySystemDescriptor::TransmissionModeNames({
     {u"1k",  0},
     {u"2k",  1},
     {u"4k",  2},
     {u"8k",  3},
 });
 
-const ts::Enumeration ts::SHDeliverySystemDescriptor::PolarizationNames({
+const ts::Names ts::SHDeliverySystemDescriptor::PolarizationNames({
     {u"horizontal", 0},
     {u"vertical",   1},
     {u"left",       2},
     {u"right",      3},
 });
 
-const ts::Enumeration ts::SHDeliverySystemDescriptor::RollOffNames({
+const ts::Names ts::SHDeliverySystemDescriptor::RollOffNames({
     {u"0.35",     0},
     {u"0.25",     1},
     {u"0.15",     2},
     {u"reserved", 3},
 });
 
-const ts::Enumeration ts::SHDeliverySystemDescriptor::ModulationNames({
+const ts::Names ts::SHDeliverySystemDescriptor::ModulationNames({
     {u"QPSK",     0},
     {u"8PSK",     1},
     {u"16APSK",   2},

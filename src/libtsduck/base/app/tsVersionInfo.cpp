@@ -40,9 +40,9 @@ const int TSDUCK_LIBRARY_BITRATE_SYMBOL = 0;
 //----------------------------------------------------------------------------
 
 // Enumeration description of ts::VersionFormat.
-const ts::Enumeration& ts::VersionInfo::FormatEnum()
+const ts::Names& ts::VersionInfo::FormatEnum()
 {
-    static const Enumeration data {
+    static const Names data {
         {u"short",        Format::SHORT},
         {u"long",         Format::LONG},
         {u"integer",      Format::INTEGER},
@@ -64,9 +64,9 @@ const ts::Enumeration& ts::VersionInfo::FormatEnum()
 }
 
 // Enumeration of supported features.
-const ts::Enumeration& ts::VersionInfo::SupportEnum()
+const ts::Names& ts::VersionInfo::SupportEnum()
 {
-    static const Enumeration data {
+    static const Names data {
     #if defined(TS_NO_DTAPI)
         {u"dektec", 0},
     #else

@@ -151,6 +151,6 @@ namespace ts {
         static void DisplayPrivateDeferredINT(TablesDisplay& display, PSIBuffer& buf, const UString& margin, uint8_t ltype);
 
         // Thread-safe init-safe static data patterns.
-        static const Enumeration& OriginTypeNames();
+        static const Names& OriginTypeNames();
     };
 }

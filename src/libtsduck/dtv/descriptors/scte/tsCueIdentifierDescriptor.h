@@ -44,7 +44,7 @@ namespace ts {
         //! Definition of names for cue stream types.
         //! @return A constant reference to an Enumeration object for cue stream types.
         //!
-        static const Enumeration& CueStreamTypeNames();
+        static const Names& CueStreamTypeNames();
 
         // Inherited methods
         DeclareDisplayDescriptor();

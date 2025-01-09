@@ -139,7 +139,7 @@ ts::PESPlugin::PESPlugin(TSP* tsp_) :
          u"By default, there is no guarantee that the unbounded buffered data at end of stream "
          u"form a valid PES packet and they are discarded.");
 
-    option(u"h26x-default-format", 0, Enumeration({
+    option(u"h26x-default-format", 0, Names({
         {u"AVC",   CodecType::AVC},
         {u"H.264", CodecType::AVC},
         {u"HEVC",  CodecType::HEVC},

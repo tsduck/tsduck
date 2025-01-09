@@ -15,7 +15,7 @@
 #pragma once
 #include "tsUString.h"
 #include "tsBitRate.h"
-#include "tsEnumeration.h"
+#include "tsNames.h"
 
 namespace ts {
     //!
@@ -396,7 +396,7 @@ namespace ts {
     //! Enumeration description of ts::PIDClass.
     //! @return A constant reference to the enumeration description.
     //!
-    TSDUCKDLL const Enumeration& PIDClassEnum();
+    TSDUCKDLL const Names& PIDClassEnum();
 
     //---------------------------------------------------------------------
     // MPEG clock representation:

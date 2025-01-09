@@ -373,9 +373,9 @@ void ts::LinkageDescriptor::DisplayPrivateDeferredINT(TablesDisplay& disp, PSIBu
 // Thread-safe init-safe static data patterns.
 //----------------------------------------------------------------------------
 
-const ts::Enumeration& ts::LinkageDescriptor::OriginTypeNames()
+const ts::Names& ts::LinkageDescriptor::OriginTypeNames()
 {
-    static const Enumeration data({
+    static const Names data({
         {u"NIT", 0},
         {u"SDT", 1}
     });

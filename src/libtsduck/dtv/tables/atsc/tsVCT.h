@@ -14,7 +14,7 @@
 #pragma once
 #include "tsAbstractLongTable.h"
 #include "tsDescriptorList.h"
-#include "tsEnumeration.h"
+#include "tsNames.h"
 #include "tsService.h"
 
 namespace ts {
@@ -166,8 +166,8 @@ namespace ts {
 
     private:
         // Thread-safe init-safe static data patterns.
-        static const Enumeration& ModulationModeEnum();
-        static const Enumeration& ServiceTypeEnum();
+        static const Names& ModulationModeEnum();
+        static const Names& ServiceTypeEnum();
 
         // Internal version of find by Service class.
         ChannelList::const_iterator findServiceInternal(Service& service, bool exact_match, bool same_ts) const;

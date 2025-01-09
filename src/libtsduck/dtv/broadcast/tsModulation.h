@@ -13,7 +13,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsEnumeration.h"
+#include "tsNames.h"
 #include "tsReport.h"
 
 #if defined(TS_WINDOWS)
@@ -47,14 +47,14 @@ namespace ts {
     //! enumeration types in file @link tsModulation.h @endlink.
     //! @param [in] name The name of the feature or enumeration type (eg.
     //! "FEC", "guard interval", etc.) Used to report errors.
-    //! @param [in] conv The ts::Enumeration instance for the enumeration type.
+    //! @param [in] conv The ts::Names instance for the enumeration type.
     //! Used to report errors.
     //! @param [in] report Where to report errors.
     //! @return True if @a value is supported on the operating system. False if
     //! the feature is not supported. In this case, an error message is reported
     //! to @a report.
     //!
-    TSDUCKDLL bool CheckModEnum(int value, const UString& name, const Enumeration& conv, Report& report);
+    TSDUCKDLL bool CheckModEnum(int value, const UString& name, const Names& conv, Report& report);
 
     //!
     //! Check if an optional enumeration value is supported by the native implementation.
@@ -64,7 +64,7 @@ namespace ts {
     //! enumeration types in file @link tsModulation.h @endlink.
     //! @param [in] name The name of the feature or enumeration type (eg.
     //! "FEC", "guard interval", etc.) Used to report errors.
-    //! @param [in] conv The ts::Enumeration instance for the enumeration type.
+    //! @param [in] conv The ts::Names instance for the enumeration type.
     //! Used to report errors.
     //! @param [in] report Where to report errors.
     //! @return True if either @a value is not set or its value is supported on the operating system.
@@ -73,7 +73,7 @@ namespace ts {
     //! @see CheckModEnum()
     //!
     template <typename ENUM> requires std::integral<ENUM> || std::is_enum_v<ENUM>
-    bool CheckModVar(const std::optional<ENUM>& value, const UString& name, const Enumeration& conv, Report& report)
+    bool CheckModVar(const std::optional<ENUM>& value, const UString& name, const Names& conv, Report& report)
     {
         return !value.has_value() || CheckModEnum(int(value.value()), name, conv, report);
     }
@@ -170,7 +170,7 @@ namespace ts {
     //! Enumeration description of ts::Modulation.
     //! @return A constant reference to the enumeration description.
     //!
-    TSDUCKDLL const Enumeration& ModulationEnum();
+    TSDUCKDLL const Names& ModulationEnum();
 
     //!
     //! Compute the number of bits per symbol for a specified modulation.
@@ -202,7 +202,7 @@ namespace ts {
     //! Enumeration description of ts::SpectralInversion.
     //! @return A constant reference to the enumeration description.
     //!
-    TSDUCKDLL const Enumeration& SpectralInversionEnum();
+    TSDUCKDLL const Names& SpectralInversionEnum();
 
     //!
     //! Inner Forward Error Correction
@@ -353,7 +353,7 @@ namespace ts {
     //! Enumeration description of ts::InnerFEC.
     //! @return A constant reference to the enumeration description.
     //!
-    TSDUCKDLL const Enumeration& InnerFECEnum();
+    TSDUCKDLL const Names& InnerFECEnum();
 
     //!
     //! Compute the multiplier of a FEC value.
@@ -394,7 +394,7 @@ namespace ts {
     //! Enumeration description of ts::Polarization.
     //! @return A constant reference to the enumeration description.
     //!
-    TSDUCKDLL const Enumeration& PolarizationEnum();
+    TSDUCKDLL const Names& PolarizationEnum();
 
     //!
     //! Pilot (DVB-S2)
@@ -419,7 +419,7 @@ namespace ts {
     //! Enumeration description of ts::Pilot.
     //! @return A constant reference to the enumeration description.
     //!
-    TSDUCKDLL const Enumeration& PilotEnum();
+    TSDUCKDLL const Names& PilotEnum();
 
     //!
     //! Roll-off (DVB-S2)
@@ -462,7 +462,7 @@ namespace ts {
     //! Enumeration description of ts::RollOff.
     //! @return A constant reference to the enumeration description.
     //!
-    TSDUCKDLL const Enumeration& RollOffEnum();
+    TSDUCKDLL const Names& RollOffEnum();
 
     //!
     //! Bandwidth (OFDM, DVB-T/T2)
@@ -527,7 +527,7 @@ namespace ts {
     //! Enumeration description of ts::TransmissionMode.
     //! @return A constant reference to the enumeration description.
     //!
-    TSDUCKDLL const Enumeration& TransmissionModeEnum();
+    TSDUCKDLL const Names& TransmissionModeEnum();
 
     //!
     //! Guard interval (OFDM)
@@ -589,7 +589,7 @@ namespace ts {
     //! Enumeration description of ts::GuardInterval.
     //! @return A constant reference to the enumeration description.
     //!
-    TSDUCKDLL const Enumeration& GuardIntervalEnum();
+    TSDUCKDLL const Names& GuardIntervalEnum();
 
     //!
     //! Compute the multiplier of a guard interval value.
@@ -634,7 +634,7 @@ namespace ts {
     //! Enumeration description of ts::Hierarchy.
     //! @return A constant reference to the enumeration description.
     //!
-    TSDUCKDLL const Enumeration& HierarchyEnum();
+    TSDUCKDLL const Names& HierarchyEnum();
 
     //
     // Representation of multistream in DVB-T2, DVB-S2, ISDB-S.
@@ -659,7 +659,7 @@ namespace ts {
     //! Enumeration description of ts::PLSMode.
     //! @return A constant reference to the enumeration description.
     //!
-    TSDUCKDLL const Enumeration& PLSModeEnum();
+    TSDUCKDLL const Names& PLSModeEnum();
 
     //!
     //! Convert a PLS code from GOLD to ROOT mode.

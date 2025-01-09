@@ -68,9 +68,9 @@ namespace ts {
 
     private:
         // Thread-safe init-safe static data patterns.
-        static const Enumeration& ModulationNames();
-        static const Enumeration& OuterFecNames();
-        static const Enumeration& InnerFecNames();
+        static const Names& ModulationNames();
+        static const Names& OuterFecNames();
+        static const Names& InnerFecNames();
         static const std::map<int, InnerFEC>& ToInnerFEC();
         static const std::map<int, Modulation>& ToModulation();
     };

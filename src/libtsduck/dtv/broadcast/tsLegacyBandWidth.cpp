@@ -30,7 +30,7 @@ bool ts::LegacyBandWidthToHz(BandWidth& hz, const UString& str)
     });
 
     Names::int_t bw = legacy.value(str, false);
-    if (bw != Enumeration::UNKNOWN) {
+    if (bw != Names::UNKNOWN) {
         // Found a legacy value.
         hz = BandWidth(bw);
         return true;

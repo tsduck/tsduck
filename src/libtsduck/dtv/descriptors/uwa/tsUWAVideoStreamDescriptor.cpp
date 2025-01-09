@@ -75,9 +75,9 @@ void ts::UWAVideoStreamDescriptor::deserializePayload(PSIBuffer& buf)
 // Thread-safe init-safe static data patterns.
 //----------------------------------------------------------------------------
 
-const ts::Enumeration& ts::UWAVideoStreamDescriptor::VersionNumbers()
+const ts::Names& ts::UWAVideoStreamDescriptor::VersionNumbers()
 {
-    static const Enumeration data({
+    static const Names data({
         {u"1.0", 0x0005},
         {u"2.0", 0x0006},
         {u"3.0", 0x0007},

@@ -193,18 +193,18 @@ void ts::MediaServiceKindDescriptor::DisplayDescriptor(TablesDisplay& disp, cons
 // Thread-safe init-safe static data patterns.
 //----------------------------------------------------------------------------
 
-const ts::Enumeration& ts::MediaServiceKindDescriptor::MediaDescriptionFlag()
+const ts::Names& ts::MediaServiceKindDescriptor::MediaDescriptionFlag()
 {
-    static const Enumeration data({
+    static const Names data({
         {u"self",      0},
         {u"associate", 1},
     });
     return data;
 }
 
-const ts::Enumeration& ts::MediaServiceKindDescriptor::MediaType()
+const ts::Names& ts::MediaServiceKindDescriptor::MediaType()
 {
-    static const Enumeration data({
+    static const Names data({
         {u"unknown",   0},
         {u"video",     1},
         {u"audio",     2},

@@ -47,7 +47,7 @@ void ts::FrequencyListDescriptor::clearContent()
 // Enumeration description of coding types.
 //----------------------------------------------------------------------------
 
-const ts::Enumeration ts::FrequencyListDescriptor::CodingTypeEnum({
+const ts::Names ts::FrequencyListDescriptor::CodingTypeEnum({
     {u"undefined",   ts::FrequencyListDescriptor::UNDEFINED},
     {u"satellite",   ts::FrequencyListDescriptor::SATELLITE},
     {u"cable",       ts::FrequencyListDescriptor::CABLE},

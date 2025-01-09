@@ -70,8 +70,8 @@ namespace ts {
         // Thread-safe init-safe static data patterns.
         static const std::map<int, TransmissionMode>& ToTransmissionMode();
         static const std::map<int, GuardInterval>& ToGuardInterval();
-        static const Enumeration& GuardIntervalNames();
-        static const Enumeration& TransmissionModeNames();
+        static const Names& GuardIntervalNames();
+        static const Names& TransmissionModeNames();
 
         // The frequency in the descriptor is in units of 1/7 MHz. Conversion functions:
         static uint64_t BinToHz(uint16_t bin) { return (1000000 * uint64_t(bin)) / 7; }

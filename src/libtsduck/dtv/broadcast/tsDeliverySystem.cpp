@@ -99,10 +99,10 @@ namespace {
 // Enumerations, names for values
 //----------------------------------------------------------------------------
 
-const ts::Enumeration& ts::DeliverySystemEnum()
+const ts::Names& ts::DeliverySystemEnum()
 {
     // Thread-safe init-safe static data pattern:
-    static const Enumeration data {
+    static const Names data {
         {u"undefined",   DS_UNDEFINED},
         {u"DVB-S",       DS_DVB_S},
         {u"DVB-S2",      DS_DVB_S2},
@@ -128,10 +128,10 @@ const ts::Enumeration& ts::DeliverySystemEnum()
     return data;
 }
 
-const ts::Enumeration& ts::TunerTypeEnum()
+const ts::Names& ts::TunerTypeEnum()
 {
     // Thread-safe init-safe static data pattern:
-    static const Enumeration data {
+    static const Names data {
         {u"DVB-S",  TT_DVB_S},
         {u"DVB-T",  TT_DVB_T},
         {u"DVB-C",  TT_DVB_C},

@@ -411,9 +411,9 @@ void ts::VCT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
 // Thread-safe init-safe static data patterns.
 //----------------------------------------------------------------------------
 
-const ts::Enumeration& ts::VCT::ModulationModeEnum()
+const ts::Names& ts::VCT::ModulationModeEnum()
 {
-    static const Enumeration data({
+    static const Names data({
         {u"analog",  0x01},
         {u"64-QAM",  0x02},
         {u"256-QAM", 0x03},
@@ -423,9 +423,9 @@ const ts::Enumeration& ts::VCT::ModulationModeEnum()
     return data;
 }
 
-const ts::Enumeration& ts::VCT::ServiceTypeEnum()
+const ts::Names& ts::VCT::ServiceTypeEnum()
 {
-    static const Enumeration data({
+    static const Names data({
         {u"analog",   0x01},
         {u"dtv",      0x02},
         {u"audio",    0x03},

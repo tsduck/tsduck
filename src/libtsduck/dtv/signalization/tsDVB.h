@@ -13,7 +13,6 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsEnumeration.h"
 #include "tsNames.h"
 
 namespace ts {
@@ -83,7 +82,7 @@ namespace ts {
     //! Enumeration description of running status values.
     //! @return A constant reference to the enumeration description.
     //!
-    TSDUCKDLL const Enumeration& RunningStatusEnum();
+    TSDUCKDLL const Names& RunningStatusEnum();
 
     //!
     //! Name of Running Status (in SDT).

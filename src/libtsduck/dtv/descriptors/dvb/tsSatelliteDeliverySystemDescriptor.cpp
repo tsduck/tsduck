@@ -162,18 +162,18 @@ const std::map<int, ts::RollOff>& ts::SatelliteDeliverySystemDescriptor::ToRollO
     return data;
 }
 
-const ts::Enumeration& ts::SatelliteDeliverySystemDescriptor::DirectionNames()
+const ts::Names& ts::SatelliteDeliverySystemDescriptor::DirectionNames()
 {
-    static const Enumeration data({
+    static const Names data({
         {u"west", 0},
         {u"east", 1},
     });
     return data;
 }
 
-const ts::Enumeration& ts::SatelliteDeliverySystemDescriptor::PolarizationNames()
+const ts::Names& ts::SatelliteDeliverySystemDescriptor::PolarizationNames()
 {
-    static const Enumeration data({
+    static const Names data({
         {u"horizontal", 0},
         {u"vertical",   1},
         {u"left",       2},
@@ -182,9 +182,9 @@ const ts::Enumeration& ts::SatelliteDeliverySystemDescriptor::PolarizationNames(
     return data;
 }
 
-const ts::Enumeration& ts::SatelliteDeliverySystemDescriptor::RollOffNames()
+const ts::Names& ts::SatelliteDeliverySystemDescriptor::RollOffNames()
 {
-    static const Enumeration data({
+    static const Names data({
         {u"0.35",     0},
         {u"0.25",     1},
         {u"0.20",     2},
@@ -196,9 +196,9 @@ const ts::Enumeration& ts::SatelliteDeliverySystemDescriptor::RollOffNames()
     return data;
 }
 
-const ts::Enumeration& ts::SatelliteDeliverySystemDescriptor::ModulationNamesDVB()
+const ts::Names& ts::SatelliteDeliverySystemDescriptor::ModulationNamesDVB()
 {
-    static const Enumeration data({
+    static const Names data({
         {u"auto",   0},
         {u"QPSK",   1},
         {u"8PSK",   2},
@@ -207,9 +207,9 @@ const ts::Enumeration& ts::SatelliteDeliverySystemDescriptor::ModulationNamesDVB
     return data;
 }
 
-const ts::Enumeration& ts::SatelliteDeliverySystemDescriptor::ModulationNamesISDB()
+const ts::Names& ts::SatelliteDeliverySystemDescriptor::ModulationNamesISDB()
 {
-    static const Enumeration data({
+    static const Names data({
         {u"auto",         0},
         {u"QPSK",         1},
         {u"ISDB-S",       8}, // TC8PSK ?
@@ -219,9 +219,9 @@ const ts::Enumeration& ts::SatelliteDeliverySystemDescriptor::ModulationNamesISD
     return data;
 }
 
-const ts::Enumeration& ts::SatelliteDeliverySystemDescriptor::CodeRateNamesDVB()
+const ts::Names& ts::SatelliteDeliverySystemDescriptor::CodeRateNamesDVB()
 {
-    static const Enumeration data({
+    static const Names data({
         {u"undefined", 0},
         {u"1/2",       1},
         {u"2/3",       2},
@@ -237,9 +237,9 @@ const ts::Enumeration& ts::SatelliteDeliverySystemDescriptor::CodeRateNamesDVB()
     return data;
 }
 
-const ts::Enumeration& ts::SatelliteDeliverySystemDescriptor::CodeRateNamesISDB()
+const ts::Names& ts::SatelliteDeliverySystemDescriptor::CodeRateNamesISDB()
 {
-    static const Enumeration data({
+    static const Names data({
         {u"undefined",    0},
         {u"1/2",          1},
         {u"2/3",          2},

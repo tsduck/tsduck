@@ -15,7 +15,7 @@
 //
 // An enumeration of TestType names.
 //
-const ts::Enumeration ts::DirectShowTest::TestNames({
+const ts::Names ts::DirectShowTest::TestNames({
     {u"none",              NONE},
     {u"list-devices",      LIST_DEVICES},
     {u"enumerate-devices", ENUMERATE_DEVICES},

@@ -139,18 +139,18 @@ void ts::T2DeliverySystemDescriptor::deserializePayload(PSIBuffer& buf)
 // Thread-safe init-safe static data patterns.
 //----------------------------------------------------------------------------
 
-const ts::Enumeration& ts::T2DeliverySystemDescriptor::SisoNames()
+const ts::Names& ts::T2DeliverySystemDescriptor::SisoNames()
 {
-    static const Enumeration data({
+    static const Names data({
         {u"SISO", 0},
         {u"MISO", 1},
     });
     return data;
 }
 
-const ts::Enumeration& ts::T2DeliverySystemDescriptor::BandwidthNames()
+const ts::Names& ts::T2DeliverySystemDescriptor::BandwidthNames()
 {
-    static const Enumeration data({
+    static const Names data({
         {u"8MHz",     0},
         {u"7MHz",     1},
         {u"6MHz",     2},
@@ -160,9 +160,9 @@ const ts::Enumeration& ts::T2DeliverySystemDescriptor::BandwidthNames()
     });
     return data;
 }
-const ts::Enumeration& ts::T2DeliverySystemDescriptor::GuardIntervalNames()
+const ts::Names& ts::T2DeliverySystemDescriptor::GuardIntervalNames()
 {
-    static const Enumeration data({
+    static const Names data({
         {u"1/32",   0},
         {u"1/16",   1},
         {u"1/8",    2},
@@ -173,9 +173,9 @@ const ts::Enumeration& ts::T2DeliverySystemDescriptor::GuardIntervalNames()
     });
     return data;
 }
-const ts::Enumeration& ts::T2DeliverySystemDescriptor::TransmissionModeNames()
+const ts::Names& ts::T2DeliverySystemDescriptor::TransmissionModeNames()
 {
-    static const Enumeration data({
+    static const Names data({
         {u"2k",  0},
         {u"8k",  1},
         {u"4k",  2},

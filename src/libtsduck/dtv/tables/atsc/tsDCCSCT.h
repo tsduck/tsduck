@@ -15,7 +15,7 @@
 #include "tsAbstractLongTable.h"
 #include "tsATSCMultipleString.h"
 #include "tsDescriptorList.h"
-#include "tsEnumeration.h"
+#include "tsNames.h"
 
 namespace ts {
     //!

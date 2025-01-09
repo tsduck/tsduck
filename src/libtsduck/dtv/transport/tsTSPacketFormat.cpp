@@ -14,9 +14,9 @@
 // Enumeration descriptions of TSPacketFormat.
 //----------------------------------------------------------------------------
 
-const ts::Enumeration& ts::TSPacketFormatEnum()
+const ts::Names& ts::TSPacketFormatEnum()
 {
-    static const Enumeration data {
+    static const Names data {
         {u"autodetect", TSPacketFormat::AUTODETECT},
         {u"TS",         TSPacketFormat::TS},
         {u"M2TS",       TSPacketFormat::M2TS},
@@ -26,9 +26,9 @@ const ts::Enumeration& ts::TSPacketFormatEnum()
     return data;
 }
 
-const ts::Enumeration& ts::TSPacketFormatInputEnum()
+const ts::Names& ts::TSPacketFormatInputEnum()
 {
-    static const Enumeration data {
+    static const Names data {
         {u"autodetect", TSPacketFormat::AUTODETECT},
         {u"TS",         TSPacketFormat::TS},
         {u"M2TS",       TSPacketFormat::M2TS},
@@ -38,9 +38,9 @@ const ts::Enumeration& ts::TSPacketFormatInputEnum()
     return data;
 }
 
-const ts::Enumeration& ts::TSPacketFormatOutputEnum()
+const ts::Names& ts::TSPacketFormatOutputEnum()
 {
-    static const Enumeration data {
+    static const Names data {
         {u"TS",    TSPacketFormat::TS},
         {u"M2TS",  TSPacketFormat::M2TS},
         {u"RS204", TSPacketFormat::RS204},

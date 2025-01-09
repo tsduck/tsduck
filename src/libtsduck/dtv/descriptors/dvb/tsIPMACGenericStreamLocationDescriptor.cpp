@@ -73,9 +73,9 @@ void ts::IPMACGenericStreamLocationDescriptor::deserializePayload(PSIBuffer& buf
 // Thread-safe init-safe static data patterns.
 //----------------------------------------------------------------------------
 
-const ts::Enumeration& ts::IPMACGenericStreamLocationDescriptor::ModulationTypeNames()
+const ts::Names& ts::IPMACGenericStreamLocationDescriptor::ModulationTypeNames()
 {
-    static const Enumeration data({
+    static const Names data({
         {u"DVB-S2",  0},
         {u"DVB-T2",  1},
         {u"DVB-C2",  2},

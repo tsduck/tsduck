@@ -12,7 +12,7 @@
 //-----------------------------------------------------------------------------
 
 #pragma once
-#include "tsEnumeration.h"
+#include "tsNames.h"
 #include "tsReport.h"
 #include "tsComPtr.h"
 #include "tsDirectShow.h"
@@ -47,7 +47,7 @@ namespace ts {
         //!
         //! An enumeration of TestType names, typically used for command line options.
         //!
-        static const Enumeration TestNames;
+        static const Names TestNames;
 
         //!
         //! Run one test.

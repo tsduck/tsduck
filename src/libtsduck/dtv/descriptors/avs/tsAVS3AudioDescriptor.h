@@ -166,20 +166,21 @@ namespace ts {
         virtual void buildXML(DuckContext&, xml::Element*) const override;
         virtual bool analyzeXML(DuckContext&, const xml::Element*) override;
 
-        friend class AVS2AudioDescriptor;
-        static constexpr uint8_t General_Coding = 0x00;     //!< value for audio_codec_id when general high rate coding is used
-        static constexpr uint8_t Lossless_Coding = 0x01;    //!< value for audio_codec_id when lossless coding is used
-        static constexpr uint8_t Fullrate_Coding = 0x02;    //!< value for audio_codec_id when general full rate coding is used
+        static constexpr uint8_t General_Coding = 0x00;       //!< value for audio_codec_id when general high rate coding is used
+        static constexpr uint8_t Lossless_Coding = 0x01;      //!< value for audio_codec_id when lossless coding is used
+        static constexpr uint8_t Fullrate_Coding = 0x02;      //!< value for audio_codec_id when general full rate coding is used
 
-        static constexpr uint8_t Channel_signal = 0x0;      //!< value for content_type when channel based audio is used
-        static constexpr uint8_t Object_signal = 0x1;       //!< value for content_type when object based audio is used
-        static constexpr uint8_t Mix_signal = 0x2;          //!< value for content_type when hybrid (mix of channels and objects) audio is used
-        static constexpr uint8_t HOA_signal = 0x3;          //!< value for content_type when ambisonic audio is used
+        static constexpr uint8_t Channel_signal = 0x0;        //!< value for content_type when channel based audio is used
+        static constexpr uint8_t Object_signal = 0x1;         //!< value for content_type when object based audio is used
+        static constexpr uint8_t Mix_signal = 0x2;            //!< value for content_type when hybrid (mix of channels and objects) audio is used
+        static constexpr uint8_t HOA_signal = 0x3;            //!< value for content_type when ambisonic audio is used
         static constexpr uint8_t INVALID_CONTENT_TYPE = 0xF;  //!< value for content_type when audio coding method cannot be determined
 
-        // Enumerations for XML.
-        static const Enumeration GeneralBitstreamTypes;     //!< readable bitstream type values for XML
-        static const Enumeration Resolutions;               //!< readable resolution values for XML
-        static const Enumeration CodingProfiles;            //!< readable coding profiles for XML
+    private:
+        friend class AVS2AudioDescriptor;
+        // Thread-safe init-safe static data patterns.
+        static const Names& GeneralBitstreamTypes();     //!< readable bitstream type values for XML
+        static const Names& Resolutions();               //!< readable resolution values for XML
+        static const Names& CodingProfiles();            //!< readable coding profiles for XML
     };
 }

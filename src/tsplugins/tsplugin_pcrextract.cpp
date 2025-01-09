@@ -81,7 +81,7 @@ namespace ts {
 
         // Types of time stamps.
         enum class DataType {PCR, OPCR, PTS, DTS};
-        static const Enumeration _type_names;
+        static const Names _type_names;
 
         TS_POP_WARNING()
 
@@ -240,7 +240,7 @@ ts::PCRExtractPlugin::PCRExtractPlugin(TSP* tsp_) :
 // Substructures constructors
 //----------------------------------------------------------------------------
 
-const ts::Enumeration ts::PCRExtractPlugin::_type_names({
+const ts::Names ts::PCRExtractPlugin::_type_names({
     {u"PCR",  DataType::PCR},
     {u"OPCR", DataType::OPCR},
     {u"DTS",  DataType::DTS},

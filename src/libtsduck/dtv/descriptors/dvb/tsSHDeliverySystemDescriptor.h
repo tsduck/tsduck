@@ -104,11 +104,11 @@ namespace ts {
 
     private:
         // Enumerations for XML and display.
-        static const Enumeration BandwidthNames;
-        static const Enumeration GuardIntervalNames;
-        static const Enumeration TransmissionModeNames;
-        static const Enumeration PolarizationNames;
-        static const Enumeration RollOffNames;
-        static const Enumeration ModulationNames;
+        static const Names BandwidthNames;
+        static const Names GuardIntervalNames;
+        static const Names TransmissionModeNames;
+        static const Names PolarizationNames;
+        static const Names RollOffNames;
+        static const Names ModulationNames;
     };
 }

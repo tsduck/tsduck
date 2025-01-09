@@ -81,9 +81,9 @@ void ts::C2DeliverySystemDescriptor::deserializePayload(PSIBuffer& buf)
 // Thread-safe init-safe static data patterns.
 //----------------------------------------------------------------------------
 
-const ts::Enumeration& ts::C2DeliverySystemDescriptor::C2GuardIntervalNames()
+const ts::Names& ts::C2DeliverySystemDescriptor::C2GuardIntervalNames()
 {
-    static const Enumeration data({
+    static const Names data({
         {u"1/128", 0},
         {u"1/64",  1},
     });

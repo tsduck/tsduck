@@ -13,7 +13,6 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsEnumeration.h"
 #include "tsNames.h"
 
 namespace ts {
@@ -54,7 +53,7 @@ namespace ts {
     //! Typically used to implement PDS-related command line options.
     //! @return A constant reference to the enumeration description.
     //!
-    TSDUCKDLL const Enumeration& PrivateDataSpecifierEnum();
+    TSDUCKDLL const Names& PrivateDataSpecifierEnum();
 
     //!
     //! Name of a Private Data Specifier.

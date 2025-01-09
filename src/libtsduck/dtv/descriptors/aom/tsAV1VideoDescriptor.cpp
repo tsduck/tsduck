@@ -176,9 +176,9 @@ void ts::AV1VideoDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::De
 // Thread-safe init-safe static data patterns.
 //----------------------------------------------------------------------------
 
-const ts::Enumeration& ts::AV1VideoDescriptor::ChromaSamplePosition()
+const ts::Names& ts::AV1VideoDescriptor::ChromaSamplePosition()
 {
-    static const Enumeration data({
+    static const Names data({
         {u"unknown", 0},
         {u"vertical", 1},
         {u"colocated", 2},

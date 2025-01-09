@@ -13,7 +13,7 @@
 
 #pragma once
 #include "tsAbstractTable.h"
-#include "tsEnumeration.h"
+#include "tsNames.h"
 
 namespace ts {
     //!

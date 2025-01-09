@@ -14,7 +14,7 @@
 #pragma once
 #include "tsAbstractLongTable.h"
 #include "tsDescriptorList.h"
-#include "tsEnumeration.h"
+#include "tsNames.h"
 #include "tsTime.h"
 
 namespace ts {
@@ -140,6 +140,6 @@ namespace ts {
         virtual bool analyzeXML(DuckContext&, const xml::Element*) override;
 
     private:
-        static const Enumeration DCCContextNames;
+        static const Names DCCContextNames;
     };
 }

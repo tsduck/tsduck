@@ -63,7 +63,7 @@ namespace ts {
 
     private:
         // Thread-safe init-safe static data patterns.
-        static const Enumeration& ChromaSamplePosition();
+        static const Names& ChromaSamplePosition();
 
         // provide a textual representation of the subsampling format
         static UString SubsamplingFormat(bool subsampling_x, bool subsampling_y, bool monochrome);

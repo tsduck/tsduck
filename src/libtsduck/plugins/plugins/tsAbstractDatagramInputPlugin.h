@@ -15,7 +15,7 @@
 #include "tsInputPlugin.h"
 #include "tsTSPacketMetadata.h"
 #include "tsByteBlock.h"
-#include "tsEnumeration.h"
+#include "tsNames.h"
 #include "tsTime.h"
 
 namespace ts {
@@ -91,7 +91,7 @@ namespace ts {
         TSDatagramInputOptions _options = TSDatagramInputOptions::NONE;
         cn::milliseconds _eval_time {};                    // Bitrate evaluation interval in milli-seconds
         cn::milliseconds _display_time {};                 // Bitrate display interval in milli-seconds
-        Enumeration      _time_priority_enum {};           // Enumeration values for _time_priority
+        Names            _time_priority_enum {};           // Enumeration values for _time_priority
         TimePriority     _time_priority = RTP_TSP;         // Priority of time stamps sources.
         TimePriority     _default_time_priority = RTP_TSP; // Priority of time stamps sources.
         bool             _rs204_format = false;            // Input packets are always 204-byte format.

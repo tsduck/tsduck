@@ -87,8 +87,9 @@ namespace ts {
 
         //!
         //! Names of packet status values.
+        //! @return A constant reference to the enumeration description.
         //!
-        static const Enumeration StatusNames;
+        static const Names& StatusNames();
 
         //!
         //! Get the preferred packet window size.

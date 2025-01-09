@@ -21,7 +21,7 @@
 
 TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
-const ts::Enumeration ts::SchedulingDescriptor::SchedulingUnitNames({
+const ts::Names ts::SchedulingDescriptor::SchedulingUnitNames({
     {u"second", 0},
     {u"minute", 1},
     {u"hour",   2},

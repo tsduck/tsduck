@@ -90,9 +90,9 @@ void ts::ISDBNetworkIdentifierDescriptor::DisplayDescriptor(TablesDisplay& disp,
 // Thread-safe init-safe static data patterns.
 //----------------------------------------------------------------------------
 
-const ts::Enumeration& ts::ISDBNetworkIdentifierDescriptor::MediaTypes()
+const ts::Names& ts::ISDBNetworkIdentifierDescriptor::MediaTypes()
 {
-    static const Enumeration data({
+    static const Names data({
         // media_type table in ARIB STD-B21, 9.1.8.3 (as corrected in email by ARIB)
         {u"AB", 0x4142},  // Advanced BS
         {u"AC", 0x4143},  // Advanced wide-band CS

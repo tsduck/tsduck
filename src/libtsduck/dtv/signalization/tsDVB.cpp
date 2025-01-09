@@ -45,9 +45,9 @@ ts::UString ts::DataBroadcastIdName(uint16_t id, NamesFlags flags)
 // Name of Running Status (in SDT).
 //----------------------------------------------------------------------------
 
-const ts::Enumeration& ts::RunningStatusEnum()
+const ts::Names& ts::RunningStatusEnum()
 {
-    static const Enumeration data {
+    static const Names data {
         {u"undefined",   RS_UNDEFINED},
         {u"not-running", RS_NOT_RUNNING},
         {u"starting",    RS_STARTING},

@@ -34,7 +34,7 @@ namespace ts {
     //! Typically used to implement command line options.
     //! @return A constant reference to the enumeration description.
     //!
-    TSDUCKDLL const Enumeration& TableScopeEnum();
+    TSDUCKDLL const Names& TableScopeEnum();
 
     //!
     //! Abstract base class for MPEG PSI/SI tables.

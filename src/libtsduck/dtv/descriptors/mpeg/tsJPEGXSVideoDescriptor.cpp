@@ -203,9 +203,9 @@ void ts::JPEGXSVideoDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts:
 // Thread-safe init-safe static data patterns.
 //----------------------------------------------------------------------------
 
-const ts::Enumeration& ts::JPEGXSVideoDescriptor::FramerateDenominators()
+const ts::Names& ts::JPEGXSVideoDescriptor::FramerateDenominators()
 {
-    static const Enumeration data({
+    static const Names data({
         // Table A.8 of ISO/IEC 21122-3
         {u"1",     1},
         {u"1.001", 2},

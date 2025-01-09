@@ -25,19 +25,19 @@ TS_MAIN(MainCode);
 
 namespace {
     // No need to worry about initialization order, this is used in a main program.
-    const ts::Enumeration DVBTModulationEnum({
+    const ts::Names DVBTModulationEnum({
         {u"QPSK",   ts::QPSK},
         {u"16-QAM", ts::QAM_16},
         {u"64-QAM", ts::QAM_64},
     });
-    const ts::Enumeration DVBTHPFECEnum({
+    const ts::Names DVBTHPFECEnum({
         {u"1/2",  ts::FEC_1_2},
         {u"2/3",  ts::FEC_2_3},
         {u"3/4",  ts::FEC_3_4},
         {u"5/6",  ts::FEC_5_6},
         {u"7/8",  ts::FEC_7_8},
     });
-    const ts::Enumeration DVBTGuardIntervalEnum({
+    const ts::Names DVBTGuardIntervalEnum({
         {u"1/32", ts::GUARD_1_32},
         {u"1/16", ts::GUARD_1_16},
         {u"1/8",  ts::GUARD_1_8},

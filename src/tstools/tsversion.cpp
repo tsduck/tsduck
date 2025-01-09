@@ -90,7 +90,7 @@ Options::Options(int argc, char *argv[]) :
 
     // Enumeration of support options. The values are 0 or 1, indicating support.
     // Add a negative value meaning list all.
-    ts::Enumeration support(ts::VersionInfo::SupportEnum());
+    ts::Names support(ts::VersionInfo::SupportEnum());
     support.add(u"all", -1);
 
     option(u"support", 0, support);

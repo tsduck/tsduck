@@ -66,6 +66,6 @@ namespace ts {
         virtual bool analyzeXML(DuckContext&, const xml::Element*) override;
 
     private:
-        static const Enumeration SchedulingUnitNames;
+        static const Names SchedulingUnitNames;
     };
 }

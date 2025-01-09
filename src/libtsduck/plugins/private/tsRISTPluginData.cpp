@@ -66,7 +66,7 @@ void ts::RISTPluginData::defineArgs(Args& args)
               u"Default buffer size in milliseconds for packet retransmissions. "
               u"This value overrides the 'buffer=' parameter in the URL.");
 
-    args.option(u"encryption-type", 0, Enumeration({ // actual value is an AES key size in bits
+    args.option(u"encryption-type", 0, Names({ // actual value is an AES key size in bits
         {u"AES-128", 128},
         {u"AES-256", 256},
     }));
@@ -74,7 +74,7 @@ void ts::RISTPluginData::defineArgs(Args& args)
               u"Specify the encryption type (none by default). "
               u"This value is used when the 'aes-type=' parameter is not present in the URL.");
 
-    args.option(u"profile", 0, Enumeration({
+    args.option(u"profile", 0, Names({
         {u"simple",   RIST_PROFILE_SIMPLE},
         {u"main",     RIST_PROFILE_MAIN},
         {u"advanced", RIST_PROFILE_ADVANCED},

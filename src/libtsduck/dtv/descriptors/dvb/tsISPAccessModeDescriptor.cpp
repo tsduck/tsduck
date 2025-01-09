@@ -62,9 +62,9 @@ void ts::ISPAccessModeDescriptor::deserializePayload(PSIBuffer& buf)
 // Thread-safe init-safe static data patterns.
 //----------------------------------------------------------------------------
 
-const ts::Enumeration& ts::ISPAccessModeDescriptor::AccessModeNames()
+const ts::Names& ts::ISPAccessModeDescriptor::AccessModeNames()
 {
-    static const Enumeration data({
+    static const Names data({
         {u"unused", 0},
         {u"dialup", 1},
     });

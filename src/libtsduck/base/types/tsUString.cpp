@@ -16,7 +16,7 @@
 #include "tsByteBlock.h"
 #include "tsEnvironment.h"
 #include "tsIntegerUtils.h"
-#include "tsEnumeration.h"
+#include "tsNames.h"
 
 
 //----------------------------------------------------------------------------
@@ -1602,7 +1602,7 @@ bool ts::UString::toBool(bool& value) const
     });
 
     const Names::int_t iValue = bool_enum.value(*this, false);
-    if (iValue == Enumeration::UNKNOWN) {
+    if (iValue == Names::UNKNOWN) {
         // Invalid string and invalid integer.
         value = false;
         return false;
@@ -1622,7 +1622,7 @@ namespace {
 
     // An enumeration for Tristate values. We use very large integer values
     // for predefined strings to avoid clash with user-specified values.
-    enum {
+    enum : ts::Names::int_t {
         TSE_FALSE = std::numeric_limits<ts::Names::int_t>::min(),
         TSE_TRUE,
         TSE_YES,
@@ -1660,7 +1660,7 @@ bool ts::UString::toTristate(Tristate& value) const
 {
     const Names::int_t i_value = TristateEnum().value(*this, false);
 
-    if (i_value == Enumeration::UNKNOWN) {
+    if (i_value == Names::UNKNOWN) {
         // Invalid string and invalid integer.
         value = Tristate::Maybe;
         return false;

@@ -13,7 +13,7 @@
 
 #pragma once
 #include "tsAbstractDescriptor.h"
-#include "tsEnumeration.h"
+#include "tsNames.h"
 
 namespace ts {
     //!
@@ -42,7 +42,7 @@ namespace ts {
         //!
         //! Enumeration description of coding types.
         //!
-        static const Enumeration CodingTypeEnum;
+        static const Names CodingTypeEnum;
 
         // FrequencyListDescriptor public members:
         uint8_t               coding_type = UNDEFINED;  //!< 2 bits, type of frequency (cable, satellite, etc.)

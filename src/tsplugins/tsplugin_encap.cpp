@@ -95,7 +95,7 @@ ts::EncapPlugin::EncapPlugin(TSP* tsp_) :
          u"Several --pid options can be specified. "
          u"The null PID 0x1FFF cannot be encapsulated.");
 
-    option(u"pes-mode", 0, Enumeration({
+    option(u"pes-mode", 0, Names({
         {u"disabled", PacketEncapsulation::DISABLED},
         {u"fixed",    PacketEncapsulation::FIXED},
         {u"variable", PacketEncapsulation::VARIABLE},

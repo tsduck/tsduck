@@ -126,13 +126,13 @@ namespace ts {
         static DeliverySystem ResolveDeliverySystem(const DuckContext&, DeliverySystem);
 
         // Thread-safe init-safe static data patterns.
-        static const Enumeration& DirectionNames();
-        static const Enumeration& PolarizationNames();
-        static const Enumeration& RollOffNames();
-        static const Enumeration& ModulationNamesDVB();
-        static const Enumeration& ModulationNamesISDB();
-        static const Enumeration& CodeRateNamesDVB();
-        static const Enumeration& CodeRateNamesISDB();
+        static const Names& DirectionNames();
+        static const Names& PolarizationNames();
+        static const Names& RollOffNames();
+        static const Names& ModulationNamesDVB();
+        static const Names& ModulationNamesISDB();
+        static const Names& CodeRateNamesDVB();
+        static const Names& CodeRateNamesISDB();
         static const std::map<int, Polarization>& ToPolarization();
         static const std::map<int, InnerFEC>& DVBToInnerFEC();
         static const std::map<int, InnerFEC>& ISDBToInnerFEC();

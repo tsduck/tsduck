@@ -34,7 +34,7 @@ namespace {
     static constexpr cn::milliseconds MIN_SEND_INTERVAL = cn::milliseconds(4);
 
     // Values for --type option.
-    const ts::Enumeration DataTypeEnum({
+    const ts::Names DataTypeEnum({
         {u"emm",          0},
         {u"private-data", 1},
         {u"ecm",          2},

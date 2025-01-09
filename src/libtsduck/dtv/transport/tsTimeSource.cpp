@@ -8,9 +8,9 @@
 
 #include "tsTimeSource.h"
 
-const ts::Enumeration& ts::TimeSourceEnum()
+const ts::Names& ts::TimeSourceEnum()
 {
-    static const Enumeration data {
+    static const Names data {
         {u"undefined", TimeSource::UNDEFINED},
         {u"hardware",  TimeSource::HARDWARE},
         {u"kernel",    TimeSource::KERNEL},

@@ -19,9 +19,10 @@ ts::Names::Visitor::~Visitor() {}
 
 
 //----------------------------------------------------------------------------
-// Constructors.
+// Constructors and assignments.
 //----------------------------------------------------------------------------
 
+// Explicit initialization from a list of values.
 ts::Names::Names(std::initializer_list<NameValue> values)
 {
     // No need to lock, this is a constructor.
@@ -30,6 +31,7 @@ ts::Names::Names(std::initializer_list<NameValue> values)
     }
 }
 
+// Copy constructor.
 ts::Names::Names(const Names& other)
 {
     // Read lock (shared) on the other instance.
@@ -48,6 +50,67 @@ ts::Names::Names(const Names& other)
     // Since these elements are read-only, this is not an issue.
     _entries = other._entries;
     _short_entries = other._short_entries;
+}
+
+// Copy constructor.
+ts::Names::Names(Names&& other)
+{
+    // Read lock (shared) on the other instance.
+    std::shared_lock<std::shared_mutex> lock(_mutex);
+
+    // Move required fields. Don't copy subscribed visitors.
+    _section_name = std::move(other._section_name);
+    _is_signed = other._is_signed;
+    _has_extended = other._has_extended;
+    _bits = other._bits;
+    _mask = other._mask;
+    _inherit = std::move(other._inherit);
+    _entries = std::move(other._entries);
+    _short_entries = std::move(other._short_entries);
+}
+
+// Copy assignment.
+ts::Names& ts::Names::operator=(const Names& other)
+{
+    if (&other != this) {
+        // Read lock (shared) on the other instance.
+        std::shared_lock<std::shared_mutex> lock(_mutex);
+
+        // Copy required fields. Don't copy subscribed visitors.
+        _section_name = other._section_name;
+        _is_signed = other._is_signed;
+        _has_extended = other._has_extended;
+        _bits = other._bits;
+        _mask = other._mask;
+        _inherit = other._inherit;
+
+        // Duplicate the maps. However, the element of the maps are ValueRangePtr.
+        // The shared pointers point to the same ValueRange's as the other instance.
+        // Since these elements are read-only, this is not an issue.
+        _entries = other._entries;
+        _short_entries = other._short_entries;
+    }
+    return *this;
+}
+
+// Move assignment.
+ts::Names& ts::Names::operator=(Names&& other)
+{
+    if (&other != this) {
+        // Read lock (shared) on the other instance.
+        std::shared_lock<std::shared_mutex> lock(_mutex);
+
+        // Move required fields. Don't copy subscribed visitors.
+        _section_name = std::move(other._section_name);
+        _is_signed = other._is_signed;
+        _has_extended = other._has_extended;
+        _bits = other._bits;
+        _mask = other._mask;
+        _inherit = std::move(other._inherit);
+        _entries = std::move(other._entries);
+        _short_entries = std::move(other._short_entries);
+    }
+    return *this;
 }
 
 

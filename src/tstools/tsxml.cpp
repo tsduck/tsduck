@@ -67,7 +67,7 @@ Options::Options(int argc, char *argv[]) :
     option(u"", 0, FILENAME, 0, UNLIMITED_COUNT);
     help(u"", u"Specify the list of input files. If any is specified as '-', the standard input is used.");
 
-    option(u"attributes-merge", 0, ts::Enumeration({
+    option(u"attributes-merge", 0, ts::Names({
         {u"add",     ts::xml::MergeAttributes::ADD},
         {u"none",    ts::xml::MergeAttributes::NONE},
         {u"replace", ts::xml::MergeAttributes::REPLACE},

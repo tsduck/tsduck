@@ -21,7 +21,7 @@
 
 TS_REGISTER_TABLE(MY_CLASS, {MY_TID}, MY_STD, MY_XML_NAME, MY_CLASS::DisplaySection);
 
-const ts::Enumeration ts::DCCT::DCCContextNames({
+const ts::Names ts::DCCT::DCCContextNames({
     {u"temporary_retune", ts::DCCT::temporary_retune},
     {u"channel_redirect", ts::DCCT::channel_redirect},
 });

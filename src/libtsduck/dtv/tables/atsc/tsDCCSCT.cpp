@@ -218,9 +218,9 @@ void ts::DCCSCT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 const ts::Names& ts::DCCSCT::UpdateTypeNames()
 {
     static const Names data({
-        {u"new_genre_category", ts::DCCSCT::new_genre_category},
-        {u"new_state",          ts::DCCSCT::new_state},
-        {u"new_county",         ts::DCCSCT::new_county},
+        {u"new_genre_category", new_genre_category},
+        {u"new_state",          new_state},
+        {u"new_county",         new_county},
     });
     return data;
 }
