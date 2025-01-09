@@ -7,7 +7,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsSeverity.h"
-#include "tsEnumeration.h"
+#include "tsNames.h"
 #include "tsUString.h"
 
 
@@ -15,7 +15,7 @@
 // Enumeration to use severity values on the command line for instance.
 //----------------------------------------------------------------------------
 
-const ts::Enumeration ts::Severity::Enums({
+const ts::Names ts::Severity::Enums({
     {u"fatal",   ts::Severity::Fatal},
     {u"severe",  ts::Severity::Severe},
     {u"error",   ts::Severity::Error},

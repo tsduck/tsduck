@@ -175,7 +175,7 @@ Options::Options(int argc, char *argv[]) :
             support.getAllNames(names);
             names.sort();
             for (const auto& fname : names) {
-                const int value = support.value(fname);
+                const auto value = support.value(fname);
                 if (value >= 0) {
                     std::cout << fname << ": " << ts::UString::YesNo(value != 0) << std::endl;
                 }

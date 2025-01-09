@@ -1028,7 +1028,7 @@ bool ts::xml::Element::getEnumAttribute(INT& value, const Enumeration& definitio
     else {
         // Attribute found, get its value.
         const UString str(attr.value());
-        const int val = definition.value(str, false);
+        const Names::int_t val = definition.value(str, false);
         if (val == Enumeration::UNKNOWN) {
             report().error(u"'%s' is not a valid value for attribute '%s' in <%s>, line %d", str, name, this->name(), lineNumber());
             return false;

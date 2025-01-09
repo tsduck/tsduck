@@ -792,7 +792,7 @@ namespace ts {
 
     private:
         // Thread-safe init-safe static data patterns.
-        static const Enumeration& InterpolationTypes();
+        static const Names& InterpolationTypes();
 
         // for satellite access table
         static constexpr auto SATELLITE_POSITION_V2_INFO = 0;      //!< satellite access table contains satellite positioning information

@@ -1280,7 +1280,7 @@ bool ts::Args::validateParameter(IOption& opt, const std::optional<UString>& val
     }
     else if (!opt.enumeration.empty()) {
         // Enumeration value expected, get corresponding integer value (not case sensitive)
-        int i = opt.enumeration.value(val.value(), false);
+        Names::int_t i = opt.enumeration.value(val.value(), false);
         if (i == Enumeration::UNKNOWN) {
             error(u"invalid value %s for %s, use one of %s", val.value(), opt.display(), optionNames(opt.name.c_str()));
             return false;

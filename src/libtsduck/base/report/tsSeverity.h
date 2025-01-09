@@ -17,7 +17,7 @@
 namespace ts {
 
     class UString;
-    class Enumeration;
+    class Names;
 
     //!
     //! Message severity.
@@ -48,6 +48,6 @@ namespace ts {
         //!
         //! An enumeration to use severity values on the command line for instance.
         //!
-        static const Enumeration Enums;
+        static const Names Enums;
     };
 }

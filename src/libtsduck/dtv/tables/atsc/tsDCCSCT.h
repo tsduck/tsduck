@@ -113,6 +113,7 @@ namespace ts {
         virtual bool analyzeXML(DuckContext&, const xml::Element*) override;
 
     private:
-        static const Enumeration UpdateTypeNames;
+        // Thread-safe init-safe static data patterns.
+        static const Names& UpdateTypeNames();
     };
 }

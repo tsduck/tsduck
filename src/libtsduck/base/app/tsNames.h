@@ -15,7 +15,6 @@
 #include "tsUString.h"
 #include "tsIntegerUtils.h"
 #include "tsEnumUtils.h"
-#include "tsVersionInfo.h"
 
 namespace ts {
     //!
@@ -85,7 +84,10 @@ namespace ts {
     //!
     class TSDUCKDLL Names
     {
-        TS_NOMOVE(Names);
+    private:
+        Names(Names&&) = delete;
+        Names& operator=(Names&&) = delete;
+        Names& operator=(const Names&) = delete;
     public:
         //!
         //! Unsigned integer type used in representations of values.
@@ -168,6 +170,12 @@ namespace ts {
         //! Default constructor
         //!
         Names() = default;
+
+        //!
+        //! Copy constructor.
+        //! @param [in] other Other instance to copy.
+        //!
+        Names(const Names& other);
 
         //!
         //! Constructor from a variable list of string/value pairs.

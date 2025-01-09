@@ -114,7 +114,7 @@ namespace ts::xml {
         template <typename INT> requires ts::int_enum<INT>
         void setEnum(const Enumeration& definition, INT value)
         {
-            setString(definition.name(int(value), true, 2 * sizeof(INT)));
+            setString(definition.name(value, true, 2 * sizeof(INT)));
         }
 
         //!

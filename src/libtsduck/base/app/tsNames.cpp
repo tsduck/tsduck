@@ -19,7 +19,7 @@ ts::Names::Visitor::~Visitor() {}
 
 
 //----------------------------------------------------------------------------
-// Constructor from a variable list of string/value pairs.
+// Constructors.
 //----------------------------------------------------------------------------
 
 ts::Names::Names(std::initializer_list<NameValue> values)
@@ -28,6 +28,26 @@ ts::Names::Names(std::initializer_list<NameValue> values)
     for (const auto& it : values) {
         addValueImplLocked(it);
     }
+}
+
+ts::Names::Names(const Names& other)
+{
+    // Read lock (shared) on the other instance.
+    std::shared_lock<std::shared_mutex> lock(_mutex);
+
+    // Copy required fields. Don't copy subscribed visitors.
+    _section_name = other._section_name;
+    _is_signed = other._is_signed;
+    _has_extended = other._has_extended;
+    _bits = other._bits;
+    _mask = other._mask;
+    _inherit = other._inherit;
+
+    // Duplicate the maps. However, the element of the maps are ValueRangePtr.
+    // The shared pointers point to the same ValueRange's as the other instance.
+    // Since these elements are read-only, this is not an issue.
+    _entries = other._entries;
+    _short_entries = other._short_entries;
 }
 
 
@@ -192,8 +212,22 @@ bool ts::Names::getValueImpl(uint_t& e, const UString& name, bool case_sensitive
         return true;
     }
 
-    // Check if name evaluates to an integer
-    return allow_integer_value && name.toInteger(e, u",");
+    // Check if name evaluates to an integer. If the Names contains negative values,
+    // then interpret it as a signed value. Double conversion will occur later.
+    if (!allow_integer_value) {
+        return false;
+    }
+    else if (_is_signed) {
+        int_t se = 0;
+        const bool ok = name.toInteger(se, u",");
+        if (ok) {
+            e = static_cast<uint_t>(se);
+        }
+        return ok;
+    }
+    else {
+        return name.toInteger(e, u",");
+    }
 }
 
 

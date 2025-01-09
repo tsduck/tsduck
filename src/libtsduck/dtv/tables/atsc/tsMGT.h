@@ -93,7 +93,7 @@ namespace ts {
         //! Enumeration description of 16-bit table types from an MGT.
         //! @return A constant reference to the enumeration description.
         //!
-        static const Enumeration& TableTypeEnum();
+        static const Names& TableTypeEnum();
 
     protected:
         // Inherited methods
@@ -106,10 +106,10 @@ namespace ts {
     private:
         // An Enumeration type for table_type.
         // Need a specific constructor because of the large list of values.
-        class TableTypeEnumeration : public Enumeration
+        class TableTypeNames : public Names
         {
         public:
-            TableTypeEnumeration();
+            TableTypeNames();
         };
     };
 }

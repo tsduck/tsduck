@@ -960,9 +960,9 @@ void ts::SAT::satellite_position_v3_info_type::v3_satellite_type::v3_satellite_m
 }
 
 // Thread-safe init-safe static data patterns.
-const ts::Enumeration& ts::SAT::InterpolationTypes()
+const ts::Names& ts::SAT::InterpolationTypes()
 {
-    static const Enumeration data({
+    static const Names data({
         {u"Linear",   1},
         {u"Lagrange", 2},
         {u"Hermite",  4},
