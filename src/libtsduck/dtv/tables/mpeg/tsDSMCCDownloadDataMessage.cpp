@@ -44,9 +44,9 @@ ts::DSMCCDownloadDataMessage::DSMCCDownloadDataMessage(DuckContext& duck, const 
 void ts::DSMCCDownloadDataMessage::clearContent()
 {
     table_id_ext = 0;
-    protocol_discriminator = 0x11;
-    dsmcc_type = 0x00;
-    message_id = 0;
+    protocol_discriminator = DSMCC_PROTOCOL_DISCRIMINATOR;
+    dsmcc_type = DSMCC_TYPE_DOWNLOAD_MESSAGE;
+    message_id = DSMCC_MESSAGE_ID_DDB;
     download_id = 0;
     module_id = 0;
     module_version = 0;
@@ -95,7 +95,7 @@ void ts::DSMCCDownloadDataMessage::deserializePayload(PSIBuffer& buf, const Sect
 
     buf.skipBytes(2);  // message_length
 
-    /* For object carousel it should be 0 */
+    // For object carousel it should be 0
     if (adaptation_length > 0) {
         buf.skipBytes(adaptation_length);
     }
@@ -151,7 +151,7 @@ void ts::DSMCCDownloadDataMessage::DisplaySection(TablesDisplay& disp, const ts:
 
     disp << margin << UString::Format(u"Table extension id: %n", tidext) << std::endl;
 
-    if (buf.canReadBytes(12)) {
+    if (buf.canReadBytes(DOWNLOAD_DATA_HEADER_SIZE)) {
         const uint8_t  protocol_discriminator = buf.getUInt8();
         const uint8_t  dsmcc_type = buf.getUInt8();
         const uint16_t message_id = buf.getUInt16();
@@ -163,14 +163,14 @@ void ts::DSMCCDownloadDataMessage::DisplaySection(TablesDisplay& disp, const ts:
 
         buf.skipBytes(2);  // message_length
 
-        /* For object carousel it should be 0 */
+        // For object carousel it should be 0
         if (adaptation_length > 0) {
             buf.skipBytes(adaptation_length);
         }
 
         disp << margin << UString::Format(u"Protocol discriminator: %n", protocol_discriminator) << std::endl;
         disp << margin << "Dsmcc type: " << DataName(MY_XML_NAME, u"dsmcc_type", dsmcc_type, NamesFlags::HEXA_FIRST) << std::endl;
-        if (dsmcc_type == 0x03) {
+        if (dsmcc_type == DSMCC_TYPE_DOWNLOAD_MESSAGE) {
             disp << margin << "Message id: " << DataName(MY_XML_NAME, u"message_id", message_id, NamesFlags::HEXA_FIRST) << std::endl;
         }
         else {

@@ -24,10 +24,10 @@ namespace ts {
     class TSDUCKDLL DSMCCUserToNetworkMessage: public AbstractLongTable {
     public:
         // DSMCCUserToNetworkMessage public members:
-        uint8_t  protocol_discriminator = 0x11;  //!< Indicates that the message is MPEG-2 DSM-CC message.
-        uint8_t  dsmcc_type = 0x03;              //!< Indicates type of MPEG-2 DSM-CC message.
-        uint16_t message_id = 0;                 //!< Indicates type of message which is being passed.
-        uint32_t transaction_id = 0;             //!< Used for session integrity and error processing.
+        uint8_t  protocol_discriminator = DSMCC_PROTOCOL_DISCRIMINATOR;  //!< Indicates that the message is MPEG-2 DSM-CC message.
+        uint8_t  dsmcc_type = DSMCC_TYPE_DOWNLOAD_MESSAGE;               //!< Indicates type of MPEG-2 DSM-CC message.
+        uint16_t message_id = 0;                                         //!< Indicates type of message which is being passed.
+        uint32_t transaction_id = 0;                                     //!< Used for session integrity and error processing.
 
         class TSDUCKDLL Tap {
         public:
@@ -82,7 +82,6 @@ namespace ts {
             std::list<TaggedProfile> tagged_profiles {};
         };
 
-        static constexpr size_t SERVER_ID_SIZE = 20;  //!< Fixed size in bytes of server_id.
 
         ByteBlock server_id {};  //!< Conveys the data of the block.
         IOR       ior {};
@@ -139,5 +138,18 @@ namespace ts {
         virtual void   deserializePayload(PSIBuffer&, const Section&) override;
         virtual void   buildXML(DuckContext&, xml::Element*) const override;
         virtual bool   analyzeXML(DuckContext& duck, const xml::Element* element) override;
+
+    private:
+        static constexpr size_t MESSAGE_HEADER_SIZE = 12;  //!< DSM-CC Message Header size w/o adaptation header
+        static constexpr size_t SERVER_ID_SIZE = 20;       //!< Fixed size in bytes of server_id.
+
+        static constexpr uint8_t  DSMCC_PROTOCOL_DISCRIMINATOR = 0x11;     //!< Protocol Discriminator for DSM-CC
+        static constexpr uint8_t  DSMCC_TYPE_DOWNLOAD_MESSAGE = 0x03;      //!< MPEG-2 DSM-CC Download Message
+        static constexpr uint16_t DSMCC_MESSAGE_ID_DII = 0x1002;           //!< DownloadInfoIndication
+        static constexpr uint16_t DSMCC_MESSAGE_ID_DSI = 0x1006;           //!< DownloadServerInitiate
+        static constexpr uint32_t DSMCC_TAG_LITE_OPTIONS = 0x49534F05;     //!< TAG_LITE_OPTIONS (Lite Options Profile Body)
+        static constexpr uint32_t DSMCC_TAG_BIOP_PROFILE = 0x49534F06;     //!< TAG_BIOP (BIOP Profile Body)
+        static constexpr uint32_t DSMCC_TAG_CONN_BINDER = 0x49534F40;      //!< TAG_ConnBinder (DSM::ConnBinder)
+        static constexpr uint32_t DSMCC_TAG_OBJECT_LOCATION = 0x49534F50;  //!< TAG_ObjectLocation (BIOP::ObjectLocation)
     };
 }  // namespace ts
