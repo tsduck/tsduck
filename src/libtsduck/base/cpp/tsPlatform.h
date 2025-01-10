@@ -409,7 +409,10 @@
     // TSDuck code becomes compatible with older and newer mscvp140.dll. This definition should be removed some day,
     // when all environments are upgraded to a recent mscvp140.dll, which means probably never...
     //
-    #define _DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR 1
+    // Edit of January 2025: It seems that GitHub silently fixed their runner issue in the previous months.
+    // We now disable the workaround. These comments will remain for some time in case the problem reappears.
+    //
+    // #define _DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR 1
 #endif
 
 
