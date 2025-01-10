@@ -175,9 +175,9 @@ void ts::DSMCCDownloadDataMessage::DisplaySection(TablesDisplay& disp, const ts:
         }
 
         disp << margin << UString::Format(u"Protocol discriminator: %n", protocol_discriminator) << std::endl;
-        disp << margin << "Dsmcc type: " << DataName(MY_XML_NAME, u"dsmcc_type", dsmcc_type, NamesFlags::HEXA_FIRST) << std::endl;
+        disp << margin << "Dsmcc type: " << DataName(MY_XML_NAME, u"dsmcc_type", dsmcc_type, NamesFlags::HEX_VALUE_NAME) << std::endl;
         if (dsmcc_type == DSMCC_TYPE_DOWNLOAD_MESSAGE) {
-            disp << margin << "Message id: " << DataName(MY_XML_NAME, u"message_id", message_id, NamesFlags::HEXA_FIRST) << std::endl;
+            disp << margin << "Message id: " << DataName(MY_XML_NAME, u"message_id", message_id, NamesFlags::HEX_VALUE_NAME) << std::endl;
         }
         else {
             disp << margin << UString::Format(u"Message id: %n", message_id) << std::endl;

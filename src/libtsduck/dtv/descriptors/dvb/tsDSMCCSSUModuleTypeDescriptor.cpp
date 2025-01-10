@@ -50,7 +50,7 @@ void ts::DSMCCSSUModuleTypeDescriptor::clearContent()
 void ts::DSMCCSSUModuleTypeDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(1)) {
-        disp << margin << "SSU Module Type: " << DataName(MY_XML_NAME, u"SSU_module_type", buf.getUInt8(), NamesFlags::HEXA_FIRST) << std::endl;
+        disp << margin << "SSU Module Type: " << DataName(MY_XML_NAME, u"SSU_module_type", buf.getUInt8(), NamesFlags::HEX_VALUE_NAME) << std::endl;
     }
 }
 

@@ -53,7 +53,7 @@ void ts::DSMCCGroupLinkDescriptor::DisplayDescriptor(TablesDisplay& disp, const 
     if (buf.canReadBytes(5)) {
         const uint8_t  position = buf.getUInt8();
         const uint32_t group_id = buf.getUInt32();
-        disp << margin << "Position: " << DataName(MY_XML_NAME, u"position", position, NamesFlags::HEXA_FIRST) << std::endl;
+        disp << margin << "Position: " << DataName(MY_XML_NAME, u"position", position, NamesFlags::HEX_VALUE_NAME) << std::endl;
         disp << margin << UString::Format(u"Group Id: %n", group_id) << std::endl;
     }
 }

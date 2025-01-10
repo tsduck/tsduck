@@ -456,9 +456,9 @@ void ts::DSMCCUserToNetworkMessage::DisplaySection(TablesDisplay& disp, const ts
         }
 
         disp << margin << UString::Format(u"Protocol discriminator: %n", protocol_discriminator) << std::endl;
-        disp << margin << "Dsmcc type: " << DataName(MY_XML_NAME, u"dsmcc_type", dsmcc_type, NamesFlags::HEXA_FIRST) << std::endl;
+        disp << margin << "Dsmcc type: " << DataName(MY_XML_NAME, u"dsmcc_type", dsmcc_type, NamesFlags::HEX_VALUE_NAME) << std::endl;
         if (dsmcc_type == 0x03) {
-            disp << margin << "Message id: " << DataName(MY_XML_NAME, u"message_id", message_id, NamesFlags::HEXA_FIRST) << std::endl;
+            disp << margin << "Message id: " << DataName(MY_XML_NAME, u"message_id", message_id, NamesFlags::HEX_VALUE_NAME) << std::endl;
         }
         else {
             disp << margin << UString::Format(u"Message id: %n", message_id) << std::endl;
@@ -489,7 +489,7 @@ void ts::DSMCCUserToNetworkMessage::DisplaySection(TablesDisplay& disp, const ts
             uint32_t profile_data_length = buf.getUInt32();
             uint8_t  profile_data_byte_order = buf.getUInt8();
 
-            disp << margin << "ProfileId Tag: " << DataName(MY_XML_NAME, u"tag", profile_id_tag, NamesFlags::HEXA_FIRST) << std::endl;
+            disp << margin << "ProfileId Tag: " << DataName(MY_XML_NAME, u"tag", profile_id_tag, NamesFlags::HEX_VALUE_NAME) << std::endl;
             disp << margin << UString::Format(u"Profile Data Byte Order: %n", profile_data_byte_order) << std::endl;
 
             if (profile_id_tag == DSMCC_TAG_BIOP_PROFILE) {  // TAG_BIOP (BIOP Profile Body)
@@ -501,7 +501,7 @@ void ts::DSMCCUserToNetworkMessage::DisplaySection(TablesDisplay& disp, const ts
                     uint32_t componentid_tag = buf.getUInt32();
                     uint8_t  component_data_length = buf.getUInt8();
 
-                    disp << margin << "ComponentId Tag: " << DataName(MY_XML_NAME, u"tag", componentid_tag, NamesFlags::HEXA_FIRST) << std::endl;
+                    disp << margin << "ComponentId Tag: " << DataName(MY_XML_NAME, u"tag", componentid_tag, NamesFlags::HEX_VALUE_NAME) << std::endl;
 
                     switch (componentid_tag) {
                         case DSMCC_TAG_OBJECT_LOCATION: {  // TAG_ObjectLocation
@@ -544,7 +544,7 @@ void ts::DSMCCUserToNetworkMessage::DisplaySection(TablesDisplay& disp, const ts
                                 uint32_t timeout = buf.getUInt32();
 
                                 disp << margin << UString::Format(u"Tap id: %n", id) << std::endl;
-                                disp << margin << "Tap use: " << DataName(MY_XML_NAME, u"tap_use", use, NamesFlags::HEXA_FIRST) << std::endl;
+                                disp << margin << "Tap use: " << DataName(MY_XML_NAME, u"tap_use", use, NamesFlags::HEX_VALUE_NAME) << std::endl;
                                 disp << margin << UString::Format(u"Tap association tag: %n", association_tag) << std::endl;
                                 disp << margin << UString::Format(u"Tap selector type: %n", selector_type) << std::endl;
                                 disp << margin << UString::Format(u"Tap transaction id: %n", transaction_id) << std::endl;
@@ -620,7 +620,7 @@ void ts::DSMCCUserToNetworkMessage::DisplaySection(TablesDisplay& disp, const ts
                 }
 
                 disp << margin << UString::Format(u"Tap id: %n", id) << std::endl;
-                disp << margin << "Tap use: " << DataName(MY_XML_NAME, u"tap_use", use, NamesFlags::HEXA_FIRST) << std::endl;
+                disp << margin << "Tap use: " << DataName(MY_XML_NAME, u"tap_use", use, NamesFlags::HEX_VALUE_NAME) << std::endl;
                 disp << margin << UString::Format(u"Tap association tag: %n", association_tag) << std::endl;
                 if (selector_length > 0) {
                     disp.displayVector(u"Selector type: ", selector_type, margin);
