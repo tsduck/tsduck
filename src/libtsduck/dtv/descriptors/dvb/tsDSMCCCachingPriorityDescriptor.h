@@ -22,7 +22,8 @@ namespace ts {
     //! @see ETSI TS 102 809 V1.3.1 (2017-06), B.2.2.4.2
     //! @ingroup descriptor
     //!
-    class TSDUCKDLL DSMCCCachingPriorityDescriptor: public AbstractDescriptor {
+    class TSDUCKDLL DSMCCCachingPriorityDescriptor: public AbstractDescriptor
+    {
     public:
         // DSMCCCachingPriorityDescriptor public members:
         uint8_t priority_value = 0;      //!< Indicates the caching priority for the objects within this module.

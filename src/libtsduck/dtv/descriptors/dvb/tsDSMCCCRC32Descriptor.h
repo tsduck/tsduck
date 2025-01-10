@@ -22,7 +22,8 @@ namespace ts {
     //! @see ETSI EN 301 192 V1.7.1 (2021-08), 10.2.6
     //! @ingroup descriptor
     //!
-    class TSDUCKDLL DSMCCCRC32Descriptor: public AbstractDescriptor {
+    class TSDUCKDLL DSMCCCRC32Descriptor: public AbstractDescriptor
+    {
     public:
         // DSMCCCRC32Descriptor public members:
         uint32_t crc32 = 0;  //!< CRC32 value

@@ -22,7 +22,8 @@ namespace ts {
     //! @see ETSI EN 301 192 V1.7.1 (2021-08), 10.2.11
     //! @ingroup descriptor
     //!
-    class TSDUCKDLL DSMCCCompressedModuleDescriptor: public AbstractDescriptor {
+    class TSDUCKDLL DSMCCCompressedModuleDescriptor: public AbstractDescriptor
+    {
     public:
         // DSMCCCompressedModuleDescriptor public members:
         uint8_t  compression_method = 0;  //!< Compression method identifier.

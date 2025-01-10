@@ -21,7 +21,8 @@ namespace ts {
     //! @see ETSI TS 102 727 V1.1.1 (2010-01), B.2.2.4.1
     //! @ingroup descriptor
     //!
-    class TSDUCKDLL DSMCCLabelDescriptor: public AbstractDescriptor {
+    class TSDUCKDLL DSMCCLabelDescriptor: public AbstractDescriptor
+    {
     public:
         // DSMCCLabelDescriptor public members:
         UString label {};  //!< Label of the module.

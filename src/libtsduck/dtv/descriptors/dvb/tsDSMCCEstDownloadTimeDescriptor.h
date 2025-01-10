@@ -22,7 +22,8 @@ namespace ts {
     //! @see ETSI EN 301 192 V1.7.1 (2021-08), 10.2.8
     //! @ingroup descriptor
     //!
-    class TSDUCKDLL DSMCCEstDownloadTimeDescriptor: public AbstractDescriptor {
+    class TSDUCKDLL DSMCCEstDownloadTimeDescriptor: public AbstractDescriptor
+    {
     public:
         // DSMCCEstDownloadTimeDescriptor public members:
         uint32_t est_download_time = 0;  //!< Estimated download time of data in seconds.

@@ -23,7 +23,8 @@ namespace ts {
     //! @see ETSI TS 102 006, 9.6.2.1
     //! @ingroup descriptor
     //!
-    class TSDUCKDLL DSMCCSubgroupAssociationDescriptor: public AbstractDescriptor {
+    class TSDUCKDLL DSMCCSubgroupAssociationDescriptor: public AbstractDescriptor
+    {
     public:
         // DSMCCSubgroupAssociationDescriptor public members:
         uint64_t subgroup_tag = 0;  //!< 40 bits, subgroup tag

@@ -22,7 +22,8 @@ namespace ts {
     //! @see ETSI TS 102 006 V1.4.1 (2015-06), 8.2.1.
     //! @ingroup descriptor
     //!
-    class TSDUCKDLL DSMCCSSUModuleTypeDescriptor: public AbstractDescriptor {
+    class TSDUCKDLL DSMCCSSUModuleTypeDescriptor: public AbstractDescriptor
+    {
     public:
         // DSMCCSSUModuleTypeDescriptor public members:
         uint8_t ssu_module_type = 0;  //!< SSU Module Type

@@ -21,15 +21,16 @@ namespace ts {
     //! @see ISO/IEC 13818-6, ITU-T Rec. 9.2.2 and 9.2.7. ETSI TR 101 202 V1.2.1 (2003-01), A.1, A.3, A.4, B.
     //! @ingroup table
     //!
-    class TSDUCKDLL DSMCCUserToNetworkMessage: public AbstractLongTable {
+    class TSDUCKDLL DSMCCUserToNetworkMessage: public AbstractLongTable
+    {
     public:
         //!
         //! Representation of DSM-CC Message Header structure
         //! @see ETSI TR 101 202 V1.2.1 (2003-01), A.1
         //!
-        class TSDUCKDLL MessageHeader {
+        class TSDUCKDLL MessageHeader
+        {
             TS_DEFAULT_COPY_MOVE(MessageHeader);
-
         public:
             // DSMCCUserToNetworkMessage public members:
             uint8_t  protocol_discriminator = DSMCC_PROTOCOL_DISCRIMINATOR;  //!< Indicates that the message is MPEG-2 DSM-CC message.
@@ -52,7 +53,8 @@ namespace ts {
         //! Representation of Tap structure
         //! @see ETSI TR 101 202 V1.2.1 (2003-01), 4.7.2.5
         //!
-        class TSDUCKDLL Tap {
+        class TSDUCKDLL Tap
+        {
         public:
             Tap() = default;                    //!< Default constructor.
             uint16_t id = 0x0000;               //!< This field is for private use (shall be set to zero if not used).
@@ -71,7 +73,8 @@ namespace ts {
         //! Representation of LiteComponent structure (BIOP::Object Location, DSM::ConnBinder)
         //! @see ETSI TR 101 202 V1.2.1 (2003-01), Table 4.5
         //!
-        class TSDUCKDLL LiteComponent {
+        class TSDUCKDLL LiteComponent
+        {
         public:
             LiteComponent() = default;      //!< Default constructor.
             uint32_t component_id_tag = 0;  //!< Component idenfitier tag (eg. TAG_ObjectLocation, TAG_ConnBinder).
@@ -94,7 +97,8 @@ namespace ts {
         //! Representation of TaggedProfile structure (BIOP Profile Body, Lite Options Profile Body)
         //! @see ETSI TR 101 202 V1.2.1 (2003-01), 4.7.3.2, 4.7.3.3
         //!
-        class TSDUCKDLL TaggedProfile {
+        class TSDUCKDLL TaggedProfile
+        {
         public:
             TaggedProfile() = default;             //!< Default constructor.
             uint32_t profile_id_tag = 0;           //!< Profile identifier tag (eg. TAG_BIOP, TAG_LITE_OPTIONS).
@@ -111,7 +115,8 @@ namespace ts {
         //! Representation of Interoperable Object Reference (IOR) structure
         //! @see ETSI TR 101 202 V1.2.1 (2003-01), 4.7.3.1
         //!
-        class TSDUCKDLL IOR {
+        class TSDUCKDLL IOR
+        {
         public:
             IOR() = default;                              //!< Default constructor.
             ByteBlock                type_id {};          //!< U-U Objects type_id.
@@ -126,10 +131,10 @@ namespace ts {
         //! Representation of BIOP::ModuleInfo structure
         //! @see ETSI TR 101 202 V1.2.1 (2003-01), Table 4.14
         //!
-        class TSDUCKDLL Module: public EntryWithDescriptors {
+        class TSDUCKDLL Module: public EntryWithDescriptors
+        {
             TS_NO_DEFAULT_CONSTRUCTORS(Module);
             TS_DEFAULT_ASSIGMENTS(Module);
-
         public:
             uint16_t       module_id = 0;       //!< Identifies the module.
             uint32_t       module_size = 0;     //!< Length of the module in bytes.

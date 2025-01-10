@@ -22,7 +22,8 @@ namespace ts {
     //! @see ETSI EN 301 192 V1.7.1 (2021-08), 10.2.5
     //! @ingroup descriptor
     //!
-    class TSDUCKDLL DSMCCModuleLinkDescriptor: public AbstractDescriptor {
+    class TSDUCKDLL DSMCCModuleLinkDescriptor: public AbstractDescriptor
+    {
     public:
         // DSMCCModuleLinkDescriptor public members:
         uint8_t  position = 0;   //!< Position of the module.

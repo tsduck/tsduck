@@ -21,15 +21,16 @@ namespace ts {
     //! @see ISO/IEC 13818-6, ITU-T Rec. 9.2.2 and 9.2.7. ETSI TR 101 202 V1.2.1 (2003-01), A.2, A.5, B
     //! @ingroup table
     //!
-    class TSDUCKDLL DSMCCDownloadDataMessage: public AbstractLongTable {
+    class TSDUCKDLL DSMCCDownloadDataMessage: public AbstractLongTable
+    {
     public:
         //!
         //! Representation of Download Data Header
         //! @see ETSI TR 101 202 V1.2.1 (2003-01), A.2
         //!
-        class TSDUCKDLL DownloadDataHeader {
+        class TSDUCKDLL DownloadDataHeader
+        {
             TS_DEFAULT_COPY_MOVE(DownloadDataHeader);
-
         public:
             // DSMCCDownloadDataMessage public members:
             uint8_t  protocol_discriminator = DSMCC_PROTOCOL_DISCRIMINATOR;  //!< Indicates that the message is MPEG-2 DSM-CC message.

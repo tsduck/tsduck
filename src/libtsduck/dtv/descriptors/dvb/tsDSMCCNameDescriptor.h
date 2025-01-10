@@ -21,7 +21,8 @@ namespace ts {
     //! @see ETSI EN 301 192 V1.7.1 (2021-08), 10.2.3
     //! @ingroup descriptor
     //!
-    class TSDUCKDLL DSMCCNameDescriptor: public AbstractDescriptor {
+    class TSDUCKDLL DSMCCNameDescriptor: public AbstractDescriptor
+    {
     public:
         // DSMCCNameDescriptor public members:
         UString name {};  //!< Name of the module or group.

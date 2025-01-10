@@ -22,7 +22,8 @@ namespace ts {
     //! @see ETSI EN 301 192 V1.7.1 (2021-08), 10.2.7
     //! @ingroup descriptor
     //!
-    class TSDUCKDLL DSMCCLocationDescriptor: public AbstractDescriptor {
+    class TSDUCKDLL DSMCCLocationDescriptor: public AbstractDescriptor
+    {
     public:
         // DSMCCLocationDescriptor public members:
         uint8_t location_tag = 0;  //!< Value as the component_tag in the stream identifier descriptor.

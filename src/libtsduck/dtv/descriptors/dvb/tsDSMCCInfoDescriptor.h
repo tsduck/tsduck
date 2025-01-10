@@ -20,7 +20,8 @@ namespace ts {
     //! @see ETSI EN 301 192 V1.7.1 (2021-08), 10.2.4
     //! @ingroup descriptor
     //!
-    class TSDUCKDLL DSMCCInfoDescriptor: public AbstractDescriptor {
+    class TSDUCKDLL DSMCCInfoDescriptor: public AbstractDescriptor
+    {
     public:
         // DSMCCInfoDescriptor public members:
         UString language_code {};  //!< ISO-639 language code, 3 chars.

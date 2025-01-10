@@ -61,6 +61,7 @@ void ts::DSMCCDownloadDataMessage::clearContent()
 //----------------------------------------------------------------------------
 // Inherited public methods
 //----------------------------------------------------------------------------
+
 bool ts::DSMCCDownloadDataMessage::isPrivate() const
 {
     return false;  // MPEG-defined

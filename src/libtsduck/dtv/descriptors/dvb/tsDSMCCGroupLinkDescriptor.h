@@ -22,7 +22,8 @@ namespace ts {
     //! @see ETSI EN 301 192 V1.7.1 (2021-08), 10.2.9
     //! @ingroup descriptor
     //!
-    class TSDUCKDLL DSMCCGroupLinkDescriptor: public AbstractDescriptor {
+    class TSDUCKDLL DSMCCGroupLinkDescriptor: public AbstractDescriptor
+    {
     public:
         // DSMCCGroupLinkDescriptor public members:
         uint8_t  position = 0;  //!< Position of the group.
