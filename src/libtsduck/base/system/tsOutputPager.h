@@ -30,7 +30,7 @@ namespace ts {
         //! Default name of the environment variable containing the pager command.
         //! The default environment variable is @c PAGER.
         //!
-        static const UChar* const DEFAULT_PAGER;
+        static constexpr const UChar* const DEFAULT_PAGER = u"PAGER";
 
         //!
         //! Default constructor.

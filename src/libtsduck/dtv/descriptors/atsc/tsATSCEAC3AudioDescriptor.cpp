@@ -209,8 +209,8 @@ void ts::ATSCEAC3AudioDescriptor::DisplayDescriptor(TablesDisplay& disp, const t
         buf.skipBits(1);
         disp << margin << UString::Format(u"Mixinfo exists: %s", mixinfo) << std::endl;
         disp << margin << UString::Format(u"Full service: %s", buf.getBool()) << std::endl;
-        disp << margin << "Audio service type: " << DataName(MY_XML_NAME, u"ServiceType", buf.getBits<uint8_t>(3), NamesFlags::VALUE) << std::endl;
-        disp << margin << "Num. channels: " << DataName(MY_XML_NAME, u"NumChannels", buf.getBits<uint8_t>(3), NamesFlags::VALUE) << std::endl;
+        disp << margin << "Audio service type: " << DataName(MY_XML_NAME, u"ServiceType", buf.getBits<uint8_t>(3), NamesFlags::NAME_VALUE) << std::endl;
+        disp << margin << "Num. channels: " << DataName(MY_XML_NAME, u"NumChannels", buf.getBits<uint8_t>(3), NamesFlags::NAME_VALUE) << std::endl;
 
         if (buf.canRead()) {
             lang_flag = buf.getBool();

@@ -12,16 +12,23 @@
 #include "tsDirectShowFilterCategory.h"
 #include "tsNullReport.h"
 
-//
+
+//-----------------------------------------------------------------------------
 // An enumeration of TestType names.
-//
-const ts::Enumeration ts::DirectShowTest::TestNames({
-    {u"none",              NONE},
-    {u"list-devices",      LIST_DEVICES},
-    {u"enumerate-devices", ENUMERATE_DEVICES},
-    {u"tuning-spaces",     TUNING_SPACES},
-    {u"bda-tuners",        BDA_TUNERS},
-});
+// Thread-safe init-safe static data patterns.
+//-----------------------------------------------------------------------------
+
+const ts::Names& ts::DirectShowTest::TestNames()
+{
+    static const Names data {
+        {u"none",              NONE},
+        {u"list-devices",      LIST_DEVICES},
+        {u"enumerate-devices", ENUMERATE_DEVICES},
+        {u"tuning-spaces",     TUNING_SPACES},
+        {u"bda-tuners",        BDA_TUNERS},
+    };
+    return data;
+}
 
 
 //-----------------------------------------------------------------------------

@@ -29,7 +29,7 @@ namespace ts {
         //!
         //! Unit of the @a maximum_bitrate field in bits/second.
         //!
-        static const uint32_t BITRATE_UNIT = 50 * 8;
+        static constexpr uint32_t BITRATE_UNIT = 50 * 8;
 
         //!
         //! Default constructor.

@@ -7,7 +7,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsDCCSCT.h"
-#include "tsNames.h"
 #include "tsBinaryTable.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
@@ -21,12 +20,6 @@
 #define MY_STD ts::Standards::ATSC
 
 TS_REGISTER_TABLE(MY_CLASS, {MY_TID}, MY_STD, MY_XML_NAME, MY_CLASS::DisplaySection);
-
-const ts::Enumeration ts::DCCSCT::UpdateTypeNames({
-    {u"new_genre_category", ts::DCCSCT::new_genre_category},
-    {u"new_state",          ts::DCCSCT::new_state},
-    {u"new_county",         ts::DCCSCT::new_county},
-});
 
 
 //----------------------------------------------------------------------------
@@ -219,6 +212,21 @@ void ts::DCCSCT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 
 
 //----------------------------------------------------------------------------
+// Thread-safe init-safe static data patterns.
+//----------------------------------------------------------------------------
+
+const ts::Names& ts::DCCSCT::UpdateTypeNames()
+{
+    static const Names data({
+        {u"new_genre_category", new_genre_category},
+        {u"new_state",          new_state},
+        {u"new_county",         new_county},
+    });
+    return data;
+}
+
+
+//----------------------------------------------------------------------------
 // A static method to display a DCCSCT section.
 //----------------------------------------------------------------------------
 
@@ -244,7 +252,7 @@ void ts::DCCSCT::DisplaySection(TablesDisplay& disp, const ts::Section& section,
         }
 
         const uint8_t utype = buf.getUInt8();
-        disp << margin << UString::Format(u"- Update type: 0x%X (%s)", utype, UpdateTypeNames.name(utype)) << std::endl;
+        disp << margin << UString::Format(u"- Update type: 0x%X (%s)", utype, UpdateTypeNames().name(utype)) << std::endl;
 
         // Reduce read area to update data.
         buf.pushReadSizeFromLength(8);
@@ -306,7 +314,7 @@ void ts::DCCSCT::buildXML(DuckContext& duck, xml::Element* root) const
 
     for (const auto& upd : updates) {
         xml::Element* e = root->addElement(u"update");
-        e->setEnumAttribute(UpdateTypeNames, u"update_type", upd.second.update_type);
+        e->setEnumAttribute(UpdateTypeNames(), u"update_type", upd.second.update_type);
         upd.second.descs.toXML(duck, e);
         switch (upd.second.update_type) {
             case new_genre_category: {
@@ -350,7 +358,7 @@ bool ts::DCCSCT::analyzeXML(DuckContext& duck, const xml::Element* element)
         // Add a new Update at the end of the list.
         Update& upd(updates.newEntry());
         xml::ElementVector unused;
-        ok = children[index]->getEnumAttribute(upd.update_type, UpdateTypeNames, u"update_type", true) &&
+        ok = children[index]->getEnumAttribute(upd.update_type, UpdateTypeNames(), u"update_type", true) &&
             children[index]->getIntAttribute(upd.genre_category_code, u"genre_category_code", upd.update_type == new_genre_category) &&
             children[index]->getIntAttribute(upd.dcc_state_location_code, u"dcc_state_location_code", upd.update_type == new_state) &&
             children[index]->getIntAttribute(upd.state_code, u"state_code", upd.update_type == new_county) &&

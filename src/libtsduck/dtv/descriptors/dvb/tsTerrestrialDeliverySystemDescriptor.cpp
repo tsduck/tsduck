@@ -121,9 +121,9 @@ const std::map<int, ts::Hierarchy>& ts::TerrestrialDeliverySystemDescriptor::ToH
     return data;
 }
 
-const ts::Enumeration& ts::TerrestrialDeliverySystemDescriptor::BandwidthNames()
+const ts::Names& ts::TerrestrialDeliverySystemDescriptor::BandwidthNames()
 {
-    static const Enumeration data({
+    static const Names data({
         {u"8MHz", 0},
         {u"7MHz", 1},
         {u"6MHz", 2},
@@ -132,18 +132,18 @@ const ts::Enumeration& ts::TerrestrialDeliverySystemDescriptor::BandwidthNames()
     return data;
 }
 
-const ts::Enumeration& ts::TerrestrialDeliverySystemDescriptor::PriorityNames()
+const ts::Names& ts::TerrestrialDeliverySystemDescriptor::PriorityNames()
 {
-    static const Enumeration data({
+    static const Names data({
         {u"HP", 1},
         {u"LP", 0},
     });
     return data;
 }
 
-const ts::Enumeration& ts::TerrestrialDeliverySystemDescriptor::ConstellationNames()
+const ts::Names& ts::TerrestrialDeliverySystemDescriptor::ConstellationNames()
 {
-    static const Enumeration data({
+    static const Names data({
         {u"QPSK",   0},
         {u"16-QAM", 1},
         {u"64-QAM", 2},
@@ -151,9 +151,9 @@ const ts::Enumeration& ts::TerrestrialDeliverySystemDescriptor::ConstellationNam
     return data;
 }
 
-const ts::Enumeration& ts::TerrestrialDeliverySystemDescriptor::CodeRateNames()
+const ts::Names& ts::TerrestrialDeliverySystemDescriptor::CodeRateNames()
 {
-    static const Enumeration data({
+    static const Names data({
         {u"1/2", 0},
         {u"2/3", 1},
         {u"3/4", 2},
@@ -163,9 +163,9 @@ const ts::Enumeration& ts::TerrestrialDeliverySystemDescriptor::CodeRateNames()
     return data;
 }
 
-const ts::Enumeration& ts::TerrestrialDeliverySystemDescriptor::GuardIntervalNames()
+const ts::Names& ts::TerrestrialDeliverySystemDescriptor::GuardIntervalNames()
 {
-    static const Enumeration data({
+    static const Names data({
         {u"1/32", 0},
         {u"1/16", 1},
         {u"1/8",  2},
@@ -174,9 +174,9 @@ const ts::Enumeration& ts::TerrestrialDeliverySystemDescriptor::GuardIntervalNam
     return data;
 }
 
-const ts::Enumeration& ts::TerrestrialDeliverySystemDescriptor::TransmissionModeNames()
+const ts::Names& ts::TerrestrialDeliverySystemDescriptor::TransmissionModeNames()
 {
-    static const Enumeration data({
+    static const Names data({
         {u"2k", 0},
         {u"8k", 1},
         {u"4k", 2},

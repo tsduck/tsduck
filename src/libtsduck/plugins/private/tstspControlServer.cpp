@@ -190,7 +190,7 @@ ts::CommandStatus ts::tsp::ControlServer::executeSetLog(const UString& command, 
 
     // Set log severity of the main logger.
     _log.setMaxSeverity(level);
-    _log.log(level, u"set log level to %s", Severity::Enums.name(level));
+    _log.log(level, u"set log level to %s", Severity::Enums().name(level));
 
     // Also set the log severity on each individual plugin.
     std::lock_guard<std::recursive_mutex> lock(_global_mutex);

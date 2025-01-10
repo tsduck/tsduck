@@ -452,9 +452,9 @@ namespace ts::hls {
         UStringList        _extra_tags {};       // Additional tags which were manually added by the application.
 
         // Empty data to return.
-        static const MediaSegment EmptySegment;
-        static const MediaPlayList EmptyPlayList;
-        static const AltPlayList EmptyAltPlayList;
+        static const MediaSegment& EmptySegment();
+        static const MediaPlayList& EmptyPlayList();
+        static const AltPlayList& EmptyAltPlayList();
 
         // Load from the text content.
         bool parse(const UString& text, bool strict, Report& report);

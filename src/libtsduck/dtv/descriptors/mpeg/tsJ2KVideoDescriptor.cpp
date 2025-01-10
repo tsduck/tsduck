@@ -256,9 +256,9 @@ void ts::J2KVideoDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::De
         disp << margin << UString::Format(u"Interlaced video: %s", buf.getBool()) << std::endl;
         buf.skipBits(6);
         if (isExtendedCapability) {
-            disp << margin << "Colour primaries: " << DataName(MY_XML_NAME, u"colour_primaries", buf.getUInt8(), NamesFlags::VALUE | NamesFlags::DECIMAL);
-            disp << ", transfer characteristics: " << DataName(MY_XML_NAME, u"transfer_characteristics", buf.getUInt8(), NamesFlags::VALUE | NamesFlags::DECIMAL) << std::endl;
-            disp << margin << "Matrix coefficients: " << DataName(MY_XML_NAME, u"matrix_coefficients", buf.getUInt8(), NamesFlags::VALUE | NamesFlags::DECIMAL) << std::endl;
+            disp << margin << "Colour primaries: " << DataName(MY_XML_NAME, u"colour_primaries", buf.getUInt8(), NamesFlags::NAME_VALUE | NamesFlags::DECIMAL);
+            disp << ", transfer characteristics: " << DataName(MY_XML_NAME, u"transfer_characteristics", buf.getUInt8(), NamesFlags::NAME_VALUE | NamesFlags::DECIMAL) << std::endl;
+            disp << margin << "Matrix coefficients: " << DataName(MY_XML_NAME, u"matrix_coefficients", buf.getUInt8(), NamesFlags::NAME_VALUE | NamesFlags::DECIMAL) << std::endl;
             disp << margin << "Video full range: " << UString::TrueFalse(buf.getBool()) << std::endl;
             buf.skipReservedBits(7);
             if (stripe_flag) {

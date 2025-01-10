@@ -387,7 +387,7 @@ namespace ts::xml {
         //! @param [in] value Attribute value.
         //!
         template <typename INT> requires ts::int_enum<INT>
-        void setEnumAttribute(const Enumeration& definition, const UString& name, INT value)
+        void setEnumAttribute(const Names& definition, const UString& name, INT value)
         {
             refAttribute(name).setEnum(definition, value);
         }
@@ -400,7 +400,7 @@ namespace ts::xml {
         //! @param [in] value Attribute optional value. If the variable is not set, no attribute is set.
         //!
         template <typename INT> requires ts::int_enum<INT>
-        void setOptionalEnumAttribute(const Enumeration& definition, const UString& name, const std::optional<INT>& value)
+        void setOptionalEnumAttribute(const Names& definition, const UString& name, const std::optional<INT>& value)
         {
             if (value.has_value()) {
                 refAttribute(name).setEnum(definition, value.value());
@@ -658,7 +658,7 @@ namespace ts::xml {
         //!
         template <typename INT, typename INT1 = INT>
             requires ts::int_enum<INT> && ts::int_enum<INT1>
-        bool getEnumAttribute(INT& value, const Enumeration& definition, const UString& name, bool required = false, INT1 defValue = INT(0)) const;
+        bool getEnumAttribute(INT& value, const Names& definition, const UString& name, bool required = false, INT1 defValue = INT(0)) const;
 
         //!
         //! Get an enumeration attribute of an XML element.
@@ -672,7 +672,7 @@ namespace ts::xml {
         //!
         template <typename INT, typename INT1 = INT>
             requires ts::int_enum<INT> && ts::int_enum<INT1>
-        bool getEnumAttribute(std::optional<INT>& value, const Enumeration& definition, const UString& name, bool required = false, INT1 defValue = INT(0)) const
+        bool getEnumAttribute(std::optional<INT>& value, const Names& definition, const UString& name, bool required = false, INT1 defValue = INT(0)) const
         {
             set_default(value, defValue);
             return getEnumAttribute(value.value(), definition, name, required, defValue);
@@ -689,7 +689,7 @@ namespace ts::xml {
         //!
         template <typename INT>
             requires ts::int_enum<INT>
-        bool getOptionalEnumAttribute(std::optional<INT>& value, const Enumeration& definition, const UString& name) const;
+        bool getOptionalEnumAttribute(std::optional<INT>& value, const Names& definition, const UString& name) const;
 
         //!
         //! Get a floating-point attribute of an XML element.
@@ -1017,7 +1017,7 @@ bool ts::xml::Element::getConditionalIntAttribute(std::optional<INT>& value, con
 // Get an enumeration attribute of an XML element.
 template <typename INT, typename INT1>
     requires ts::int_enum<INT> && ts::int_enum<INT1>
-bool ts::xml::Element::getEnumAttribute(INT& value, const Enumeration& definition, const UString& name, bool required, INT1 defValue) const
+bool ts::xml::Element::getEnumAttribute(INT& value, const Names& definition, const UString& name, bool required, INT1 defValue) const
 {
     const Attribute& attr(attribute(name, !required));
     if (!attr.isValid()) {
@@ -1028,8 +1028,8 @@ bool ts::xml::Element::getEnumAttribute(INT& value, const Enumeration& definitio
     else {
         // Attribute found, get its value.
         const UString str(attr.value());
-        const int val = definition.value(str, false);
-        if (val == Enumeration::UNKNOWN) {
+        const Names::int_t val = definition.value(str, false);
+        if (val == Names::UNKNOWN) {
             report().error(u"'%s' is not a valid value for attribute '%s' in <%s>, line %d", str, name, this->name(), lineNumber());
             return false;
         }
@@ -1043,7 +1043,7 @@ bool ts::xml::Element::getEnumAttribute(INT& value, const Enumeration& definitio
 // Get an optional enumeration attribute of an XML element.
 template <typename INT>
     requires ts::int_enum<INT>
-bool ts::xml::Element::getOptionalEnumAttribute(std::optional<INT>& value, const Enumeration& definition, const UString& name) const
+bool ts::xml::Element::getOptionalEnumAttribute(std::optional<INT>& value, const Names& definition, const UString& name) const
 {
     INT v = INT(0);
     if (!hasAttribute(name)) {

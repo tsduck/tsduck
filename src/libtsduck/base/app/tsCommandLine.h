@@ -14,7 +14,7 @@
 #pragma once
 #include "tsArgs.h"
 #include "tsCommandLineHandler.h"
-#include "tsEnumeration.h"
+#include "tsNames.h"
 #include "tsEditLine.h"
 #include "tsCerrReport.h"
 
@@ -240,14 +240,17 @@ namespace ts {
             CommandLine& _cmdline;
         };
 
+        // Command id.
+        using CmdId = Names::int_t;
+
         // CommandLine private members.
-        Report&            _report;
-        UString            _shell {};
-        bool               _process_redirections = false;
-        int                _cmd_id_alloc = 0;  // sequential allocator of command ids.
-        Enumeration        _cmd_enum {};       // commands name and ids, used to handle abbreviated command names.
-        std::map<int,Cmd>  _commands {};       // command ids to arguments.
-        PredefinedCommands _predefined;        // predefined commands handler.
+        Report&             _report;
+        UString             _shell {};
+        bool                _process_redirections = false;
+        CmdId               _cmd_id_alloc = 0;     // sequential allocator of command ids.
+        Names               _cmd_enum {};          // commands name and ids, used to handle abbreviated command names.
+        PredefinedCommands  _predefined;           // predefined commands handler.
+        std::map<CmdId,Cmd> _commands {};          // command ids to arguments.
 
         // Build a list of command line definitions, sorted by name.
         void getSortedCmd(std::vector<const Cmd*>&) const;

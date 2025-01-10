@@ -14,10 +14,10 @@
 //----------------------------------------------------------------------------
 
 // This version is suitable to display codec names.
-const ts::Enumeration& ts::CodecTypeEnum()
+const ts::Names& ts::CodecTypeEnum()
 {
     // Thread-safe init-safe static data pattern:
-    static const Enumeration data({
+    static const Names data({
         {u"undefined",     CodecType::UNDEFINED},
         {u"MPEG-1 Video",  CodecType::MPEG1_VIDEO},
         {u"MPEG-1 Audio",  CodecType::MPEG1_AUDIO},
@@ -50,10 +50,10 @@ const ts::Enumeration& ts::CodecTypeEnum()
 }
 
 // This version is suitable to define command line arguments taking codec names as parameter.
-const ts::Enumeration& ts::CodecTypeArgEnum()
+const ts::Names& ts::CodecTypeArgEnum()
 {
     // Thread-safe init-safe static data pattern:
-    static const Enumeration data({
+    static const Names data({
         {u"undefined",     CodecType::UNDEFINED},
         {u"MPEG-1-Video",  CodecType::MPEG1_VIDEO},
         {u"MP1Video",      CodecType::MPEG1_VIDEO},
@@ -169,9 +169,9 @@ ts::UString ts::AccessUnitTypeName(CodecType codec, uint8_t type, NamesFlags fla
         table = u"vvc.unit_type";
     }
     if (table != nullptr) {
-        return NameFromDTV(table, NamesFile::Value(type), flags);
+        return NameFromSection(u"dtv", table, type, flags);
     }
     else {
-        return NamesFile::Formatted(NamesFile::Value(type), u"unknown", flags, 8);
+        return Names::Format(type, u"unknown", flags, 8);
     }
 }

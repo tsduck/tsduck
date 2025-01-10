@@ -290,7 +290,7 @@ void ts::SpliceSegmentationDescriptor::DisplayDescriptor(TablesDisplay& disp, co
             buf.setUserError();
         }
         else {
-            disp << margin << UString::Format(u"Segmentation upid type: %s", DataName(MY_XML_NAME, u"UpIdType", buf.getUInt8(), NamesFlags::HEXA_FIRST)) << std::endl;
+            disp << margin << UString::Format(u"Segmentation upid type: %s", DataName(MY_XML_NAME, u"UpIdType", buf.getUInt8(), NamesFlags::HEX_VALUE_NAME)) << std::endl;
             const size_t upid_size = buf.getUInt8();
             disp.displayPrivateData(u"Upid data", buf, upid_size, margin);
         }
@@ -302,7 +302,7 @@ void ts::SpliceSegmentationDescriptor::DisplayDescriptor(TablesDisplay& disp, co
         }
         else {
             type_id = buf.getUInt8();
-            disp << margin << UString::Format(u"Segmentation type id: %s", DataName(MY_XML_NAME, u"TypeId", type_id, NamesFlags::HEXA_FIRST)) << std::endl;
+            disp << margin << UString::Format(u"Segmentation type id: %s", DataName(MY_XML_NAME, u"TypeId", type_id, NamesFlags::HEX_VALUE_NAME)) << std::endl;
             disp << margin << UString::Format(u"Segment number: %d", buf.getUInt8());
             disp << UString::Format(u", expected segments: %d", buf.getUInt8()) << std::endl;
         }

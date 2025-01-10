@@ -1694,7 +1694,7 @@ namespace {
                       const ts::UString& margin,
                       const ts::UString& name,
                       uint32_t value,
-                      const ts::Enumeration& table)
+                      const ts::Names& table)
     {
         const size_t max_width = 78;
         bool first = true;
@@ -1749,7 +1749,7 @@ std::ostream& ts::TunerDevice::displayStatus(std::ostream& strm, const ts::UStri
     }
 
     // Strings for enum fe_status
-    const Enumeration enum_fe_status({
+    const Names enum_fe_status({
         {u"has signal",  ::FE_HAS_SIGNAL},
         {u"has carrier", ::FE_HAS_CARRIER},
         {u"has viterbi", ::FE_HAS_VITERBI},
@@ -1760,7 +1760,7 @@ std::ostream& ts::TunerDevice::displayStatus(std::ostream& strm, const ts::UStri
     });
 
     // Strings for enum fe_caps
-    const Enumeration enum_fe_caps({
+    const Names enum_fe_caps({
         {u"inversion auto",         ::FE_CAN_INVERSION_AUTO},
         {u"FEC 1/2",                ::FE_CAN_FEC_1_2},
         {u"FEC 2/3",                ::FE_CAN_FEC_2_3},

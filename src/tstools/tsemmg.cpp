@@ -34,7 +34,7 @@ namespace {
     static constexpr cn::milliseconds MIN_SEND_INTERVAL = cn::milliseconds(4);
 
     // Values for --type option.
-    const ts::Enumeration DataTypeEnum({
+    const ts::Names DataTypeEnum({
         {u"emm",          0},
         {u"private-data", 1},
         {u"ecm",          2},
@@ -152,13 +152,13 @@ EMMGOptions::EMMGOptions(int argc, char *argv[]) :
          u"Ignore the allocated bandwidth as returned by the MUX, continue to send "
          u"data at the planned bandwidth, even if it is higher than the allocated bandwidth.");
 
-    option(u"log-data", 0, ts::Severity::Enums, 0, 1, true);
+    option(u"log-data", 0, ts::Severity::Enums(), 0, 1, true);
     help(u"log-data",
          u"Same as --log-protocol but applies to data_provision messages only. To "
          u"debug the session management without being flooded by data messages, use "
          u"--log-protocol=info --log-data=debug.");
 
-    option(u"log-protocol", 0, ts::Severity::Enums, 0, 1, true);
+    option(u"log-protocol", 0, ts::Severity::Enums(), 0, 1, true);
     help(u"log-protocol",
          u"Log all EMMG/PDG <=> MUX protocol messages using the specified level. If "
          u"the option is not present, the messages are logged at debug level only. "

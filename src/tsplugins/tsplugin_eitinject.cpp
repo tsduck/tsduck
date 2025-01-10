@@ -139,35 +139,35 @@ ts::EITInjectPlugin::EITInjectPlugin(TSP* tsp_) :
     option<cn::seconds>(u"cycle-pf-actual");
     help(u"cycle-pf-actual",
          u"Repetition cycle in seconds for EIT p/f actual. "
-         u"The default is " + UString::Chrono(EITRepetitionProfile::SatelliteCable.cycle_seconds[size_t(EITProfile::PF_ACTUAL)]) + u".");
+         u"The default is " + UString::Chrono(EITRepetitionProfile::SatelliteCable().cycle_seconds[size_t(EITProfile::PF_ACTUAL)]) + u".");
 
     option<cn::seconds>(u"cycle-pf-other");
     help(u"cycle-pf-other",
          u"Repetition cycle in seconds for EIT p/f other. "
-         u"The default is " + UString::Chrono(EITRepetitionProfile::SatelliteCable.cycle_seconds[size_t(EITProfile::PF_OTHER)]) + u".");
+         u"The default is " + UString::Chrono(EITRepetitionProfile::SatelliteCable().cycle_seconds[size_t(EITProfile::PF_OTHER)]) + u".");
 
     option<cn::seconds>(u"cycle-schedule-actual-prime");
     help(u"cycle-schedule-actual-prime",
          u"Repetition cycle in seconds for EIT schedule actual in the \"prime\" period. "
-         u"The default is " + UString::Chrono(EITRepetitionProfile::SatelliteCable.cycle_seconds[size_t(EITProfile::SCHED_ACTUAL_PRIME)]) + u". "
+         u"The default is " + UString::Chrono(EITRepetitionProfile::SatelliteCable().cycle_seconds[size_t(EITProfile::SCHED_ACTUAL_PRIME)]) + u". "
          u"See options --prime-days.");
 
     option<cn::seconds>(u"cycle-schedule-actual-later");
     help(u"cycle-schedule-actual-later",
          u"Repetition cycle in seconds for EIT schedule actual after the \"prime\" period. "
-         u"The default is " + UString::Chrono(EITRepetitionProfile::SatelliteCable.cycle_seconds[size_t(EITProfile::SCHED_ACTUAL_LATER)]) + u". "
+         u"The default is " + UString::Chrono(EITRepetitionProfile::SatelliteCable().cycle_seconds[size_t(EITProfile::SCHED_ACTUAL_LATER)]) + u". "
          u"See options --prime-days.");
 
     option<cn::seconds>(u"cycle-schedule-other-prime");
     help(u"cycle-schedule-other-prime",
          u"Repetition cycle in seconds for EIT schedule other in the \"prime\" period. "
-         u"The default is " + UString::Chrono(EITRepetitionProfile::SatelliteCable.cycle_seconds[size_t(EITProfile::SCHED_OTHER_PRIME)]) + u". "
+         u"The default is " + UString::Chrono(EITRepetitionProfile::SatelliteCable().cycle_seconds[size_t(EITProfile::SCHED_OTHER_PRIME)]) + u". "
          u"See options --prime-days.");
 
     option<cn::seconds>(u"cycle-schedule-other-later");
     help(u"cycle-schedule-other-later",
          u"Repetition cycle in seconds for EIT schedule other after the \"prime\" period. "
-         u"The default is " + UString::Chrono(EITRepetitionProfile::SatelliteCable.cycle_seconds[size_t(EITProfile::SCHED_OTHER_LATER)]) + u". "
+         u"The default is " + UString::Chrono(EITRepetitionProfile::SatelliteCable().cycle_seconds[size_t(EITProfile::SCHED_OTHER_LATER)]) + u". "
          u"See options --prime-days.");
 
     option(u"delete-files", 'd');
@@ -248,7 +248,7 @@ ts::EITInjectPlugin::EITInjectPlugin(TSP* tsp_) :
          u"Duration, in days, of the \"prime\" period for EIT schedule. "
          u"EIT schedule for events in the prime period (i.e. the next few days) "
          u"are repeated more frequently than EIT schedule for later events. "
-         u"The default is " + UString::Chrono(EITRepetitionProfile::SatelliteCable.prime_days) + u".");
+         u"The default is " + UString::Chrono(EITRepetitionProfile::SatelliteCable().prime_days) + u".");
 
     option(u"schedule");
     help(u"schedule",
@@ -365,7 +365,7 @@ bool ts::EITInjectPlugin::getOptions()
     }
 
     // EIT repetition cycles. First, use a generic profile, then customize individual values.
-    _eit_profile = present(u"terrestrial") ? EITRepetitionProfile::Terrestrial : EITRepetitionProfile::SatelliteCable;
+    _eit_profile = present(u"terrestrial") ? EITRepetitionProfile::Terrestrial() : EITRepetitionProfile::SatelliteCable();
     updateChronoValue(_eit_profile.prime_days, u"prime-days");
     updateChronoValue(_eit_profile.cycle_seconds[size_t(EITProfile::PF_ACTUAL)], u"cycle-pf-actual");
     updateChronoValue(_eit_profile.cycle_seconds[size_t(EITProfile::PF_OTHER)], u"cycle-pf-other");

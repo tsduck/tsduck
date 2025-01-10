@@ -10,10 +10,6 @@
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 
-const ts::UChar* const ts::AbstractSignalization::XML_GENERIC_DESCRIPTOR  = u"generic_descriptor";
-const ts::UChar* const ts::AbstractSignalization::XML_GENERIC_SHORT_TABLE = u"generic_short_table";
-const ts::UChar* const ts::AbstractSignalization::XML_GENERIC_LONG_TABLE  = u"generic_long_table";
-
 
 //----------------------------------------------------------------------------
 // Constructors, assignments and destructors.

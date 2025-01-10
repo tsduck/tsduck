@@ -8,9 +8,10 @@
 
 #include "tsTSAnalyzer.h"
 #include "tsT2MIPacket.h"
+#include "tsDVB.h"
+#include "tsATSC.h"
 #include "tsTVCT.h"
 #include "tsCVCT.h"
-#include "tsATSC.h"
 #include "tsServiceDescriptor.h"
 #include "tsNetworkNameDescriptor.h"
 #include "tsAACDescriptor.h"
@@ -21,7 +22,6 @@
 #include "tsBinaryTable.h"
 #include "tsDuckContext.h"
 #include "tsCAS.h"
-#include "tsNames.h"
 #include "tsAlgorithm.h"
 
 // Constant string "Unreferenced"
@@ -947,7 +947,7 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
                     const TeletextDescriptor desc(_duck, bindesc);
                     for (auto& e : desc.entries) {
                         AppendUnique(ps->languages, e.language_code);
-                        ps->addAttribute(NameFromDTV(u"teletext_descriptor.teletext_type", e.teletext_type));
+                        ps->addAttribute(NameFromSection(u"dtv", u"teletext_descriptor.teletext_type", e.teletext_type));
                     }
                 }
                 break;
@@ -1066,7 +1066,7 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
                         }
                         default: {
                             if (ps != nullptr) {
-                                ps->comment =  names::DataBroadcastId(dbid);
+                                ps->comment = DataBroadcastIdName(dbid);
                             }
                             break;
                         }

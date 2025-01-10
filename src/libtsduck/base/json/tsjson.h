@@ -14,7 +14,7 @@
 #pragma once
 #include "tsUString.h"
 #include "tsNullReport.h"
-#include "tsEnumeration.h"
+#include "tsNames.h"
 
 namespace ts {
 
@@ -71,7 +71,7 @@ namespace ts::json {
     //! Enumeration description of ts::json::Type.
     //! @return A constant reference to the enumeration description.
     //!
-    TSDUCKDLL const Enumeration& TypeEnum();
+    TSDUCKDLL const Names& TypeEnum();
 
     //!
     //! Create a JSON value by type.

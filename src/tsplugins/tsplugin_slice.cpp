@@ -13,7 +13,7 @@
 
 #include "tsPluginRepository.h"
 #include "tsPCRAnalyzer.h"
-#include "tsEnumeration.h"
+#include "tsNames.h"
 
 
 //----------------------------------------------------------------------------
@@ -135,9 +135,9 @@ bool ts::SlicePlugin::start()
     _next_index = 0;
 
     if (verbose()) {
-        verbose(u"initial packet processing: %s", StatusNames.name(_status));
+        verbose(u"initial packet processing: %s", StatusNames().name(_status));
         for (auto& it : _events) {
-            verbose(u"packet %s after %'d %s", StatusNames.name(it.status), it.value, _use_time ? u"ms" : u"packets");
+            verbose(u"packet %s after %'d %s", StatusNames().name(it.status), it.value, _use_time ? u"ms" : u"packets");
         }
     }
 
@@ -204,7 +204,7 @@ ts::ProcessorPlugin::Status ts::SlicePlugin::processPacket(TSPacket& pkt, TSPack
         // Yes, we just passed a schedule
         _status = _events[_next_index].status;
         _next_index++;
-        verbose(u"new packet processing: %s after %'d packets", StatusNames.name(_status), tsp->pluginPackets());
+        verbose(u"new packet processing: %s after %'d packets", StatusNames().name(_status), tsp->pluginPackets());
     }
     return _status;
 }

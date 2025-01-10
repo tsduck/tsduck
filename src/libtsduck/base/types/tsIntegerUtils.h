@@ -23,6 +23,32 @@ namespace ts {
     concept int_enum = std::is_integral<T>::value || std::is_enum<T>::value;
 
     //
+    // Implementation tools for underlying_type.
+    //
+    //! @cond nodoxygen
+    template<bool ISENUM, typename T> struct underlying_type_1 { using type = T; };
+    template<typename T> struct underlying_type_1<true, T> { using type = typename std::underlying_type<T>::type; };
+    //! @endcond
+
+    //!
+    //! The meta-type ts::underlying_type is a generalization of std::underlying_type which works on integral or floating-point types as well.
+    //! The underlying type of any type other than enum is the type itself.
+    //! @tparam T An integral or enumeration type.
+    //!
+    template<typename T>
+    struct underlying_type {
+        //! The underlying integer type.
+        using type = typename underlying_type_1<std::is_enum<T>::value, T>::type;
+    };
+
+    //!
+    //! Helper type for ts::underlying_type.
+    //! @tparam T An integral or enumeration type.
+    //!
+    template<typename T>
+    using underlying_type_t = typename underlying_type<T>::type;
+
+    //
     // Implementation tools for make_signed.
     //
     //! @cond nodoxygen
@@ -46,6 +72,13 @@ namespace ts {
         using type = typename make_signed_impl<T, sizeof(T), std::integral<T>, std::signed_integral<T>>::type;
     };
 
+    //!
+    //! Helper type for ts::make_signed.
+    //! @tparam T An integral or floating-point type.
+    //!
+    template<typename T>
+    using make_signed_t = typename make_signed<T>::type;
+
     //
     // Implementation tools for int_max.
     //
@@ -67,13 +100,38 @@ namespace ts {
     };
 
     //!
+    //! Helper type for ts::int_max.
+    //! @tparam INT An integer type, any size, signed or unsigned.
+    //!
+    template <typename INT> requires std::integral<INT>
+    using int_max_t = typename int_max<INT>::type;
+
+    //!
+    //! Statically check if a integral or enum value is negative.
+    //! @tparam T An integral or enumeration type.
+    //! @param [in] x A value of type @a T.
+    //! @return True if the underlying integral type of @a T is signed and @a x is negative.
+    //! False otherwise.
+    //!
+    template<typename T> requires int_enum<T>
+    inline constexpr bool is_negative(T x)
+    {
+        if constexpr (std::signed_integral<underlying_type_t<T>>) {
+            return static_cast<underlying_type_t<T>>(x) < 0;
+        }
+        else {
+            return false;
+        }
+    }
+
+    //!
     //! Absolute value of integer types, also working on unsigned types.
     //! @tparam INT An integer type, any size, signed or unsigned.
     //! @param [in] a An integer value.
     //! @return Ansolute value of @a a.
     //!
     template <typename INT> requires std::integral<INT>
-    inline INT abs(INT a)
+    inline constexpr INT abs(INT a)
     {
         if constexpr (std::unsigned_integral<INT>) {
             return a;
@@ -91,7 +149,7 @@ namespace ts {
     //! @return True if the value of @a x is within the limits of type @a INT1.
     //!
     template <typename INT1, typename INT2> requires std::integral<INT1> && std::integral<INT2>
-    inline bool bound_check(INT2 x)
+    inline constexpr bool bound_check(INT2 x)
     {
         // Actual implementations of bound_check, depending on type profiles.
         if constexpr (std::signed_integral<INT1> && std::unsigned_integral<INT2> && sizeof(INT1) <= sizeof(INT2)) {
@@ -139,7 +197,7 @@ namespace ts {
     //! @return The value of @a x, within the limits of type @a INT1.
     //!
     template <typename INT1, typename INT2> requires std::integral<INT1> && std::integral<INT2>
-    inline INT1 bounded_cast(INT2 x)
+    inline constexpr INT1 bounded_cast(INT2 x)
     {
         // Actual implementations of bounded_cast, depending on type profiles.
         if constexpr (std::signed_integral<INT1> && std::unsigned_integral<INT2> && sizeof(INT1) <= sizeof(INT2)) {
@@ -219,7 +277,7 @@ namespace ts {
     //! @return True if @a a + @a b generated an overflow.
     //!
     template <typename INT> requires std::integral<INT>
-    inline bool add_overflow(INT a, INT b, INT res)
+    inline constexpr bool add_overflow(INT a, INT b, INT res)
     {
         if constexpr (std::unsigned_integral<INT>) {
             return a > res;
@@ -312,7 +370,7 @@ namespace ts {
     //! @return True if @a a * @a b generated an overflow.
     //!
     template <typename INT> requires std::integral<INT>
-    inline bool mul_overflow(INT a, INT b, INT res)
+    inline constexpr bool mul_overflow(INT a, INT b, INT res)
     {
         return a != 0 && res / a != b;
     }
@@ -492,33 +550,13 @@ namespace ts {
     //! @return The value of @a a / @a b, rounded to closest value.
     //!
     template <typename INT> requires std::integral<INT>
-    INT rounded_div(INT a, INT b)
+    inline constexpr INT rounded_div(INT a, INT b)
     {
         if constexpr (std::unsigned_integral<INT>) {
             return (a + b/2) / b;
         }
         else if constexpr (std::signed_integral<INT>) {
             return ((a < 0) ^ (b < 0)) ? ((a - b/2) / b) : ((a + b/2) / b);
-        }
-        else {
-            static_assert(false, "invalid integer type");
-        }
-    }
-
-    //!
-    //! Check if an integer value is negative, optimized for signed or unsigned type.
-    //! @tparam INT An integer type, any size, signed or unsigned.
-    //! @param [in] a An integer.
-    //! @return True if @a a is negative.
-    //!
-    template <typename INT> requires std::integral<INT>
-    bool is_negative(INT a)
-    {
-        if constexpr (std::unsigned_integral<INT>) {
-            return false;
-        }
-        else if constexpr (std::signed_integral<INT>) {
-            return a < 0;
         }
         else {
             static_assert(false, "invalid integer type");
@@ -577,7 +615,7 @@ namespace ts {
     //! @param [in,out] den Fraction denominator.
     //!
     template <typename INT> requires std::integral<INT>
-    void sign_reduce(INT& num, INT& den)
+    inline constexpr void sign_reduce(INT& num, INT& den)
     {
         if constexpr (std::unsigned_integral<INT>) {
             // no sign
@@ -633,13 +671,22 @@ namespace ts {
     size_t BitSize(INT x);
 
     //!
+    //! Get the mask to select a given number of least significant bits in an integer value.
+    //! @tparam INT An integer type.
+    //! @param [in] bits Number of least significant bits to select. Zero means all bits.
+    //! @return The corresponding mask.
+    //!
+    template <typename INT> requires std::integral<INT>
+    INT LSBMask(size_t bits);
+
+    //!
     //! Get the signed/unsigned qualifier of an integer type as a string.
     //!
     //! @tparam INT An integer type.
     //! @return Either u"signed" or u"unsigned".
     //!
     template <typename INT> requires std::integral<INT>
-    inline const UChar* SignedDescription()
+    inline constexpr const UChar* SignedDescription()
     {
         if constexpr (std::unsigned_integral<INT>) {
             return u"unsigned";
@@ -932,6 +979,22 @@ size_t ts::BitSize(INT x)
     }
     else {
         static_assert(false, "invalid integer type");
+    }
+}
+
+//----------------------------------------------------------------------------
+// Get the mask to select a given number of least significant bits.
+//----------------------------------------------------------------------------
+
+template <typename INT> requires std::integral<INT>
+INT ts::LSBMask(size_t bits)
+{
+    if (bits == 0 || bits >= 8 * sizeof(INT)) {
+        // Unspecified, keep all bits.
+        return ~INT(0);
+    }
+    else {
+        return ~INT(0) >> (8 * sizeof(INT) - bits);
     }
 }
 

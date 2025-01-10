@@ -17,7 +17,6 @@
 #include "tsSectionDemux.h"
 #include "tsBinaryTable.h"
 #include "tsTSPacket.h"
-#include "tsNames.h"
 #include "tsTDT.h"
 #include "tsTOT.h"
 TS_MAIN(MainCode);

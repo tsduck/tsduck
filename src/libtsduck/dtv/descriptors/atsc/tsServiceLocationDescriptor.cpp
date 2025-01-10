@@ -13,7 +13,7 @@
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
-#include "tsNames.h"
+#include "tsDVB.h"
 
 #define MY_XML_NAME u"service_location_descriptor"
 #define MY_CLASS    ts::ServiceLocationDescriptor
@@ -107,7 +107,7 @@ void ts::ServiceLocationDescriptor::DisplayDescriptor(TablesDisplay& disp, const
         for (size_t i = 0; i < count && buf.canReadBytes(6); ++i) {
             const uint8_t stype = buf.getUInt8();
             disp << margin << UString::Format(u"- PID: %n", buf.getPID());
-            disp << ", language: \"" << buf.getLanguageCode() << "\", type: " << names::ServiceType(stype, NamesFlags::FIRST) << std::endl;
+            disp << ", language: \"" << buf.getLanguageCode() << "\", type: " << ServiceTypeName(stype, NamesFlags::VALUE_NAME) << std::endl;
         }
     }
 }

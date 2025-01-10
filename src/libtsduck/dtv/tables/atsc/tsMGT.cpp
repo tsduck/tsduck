@@ -150,8 +150,8 @@ void ts::MGT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 // Enumeration description of 16-bit table types from an MGT.
 //----------------------------------------------------------------------------
 
-ts::MGT::TableTypeEnumeration::TableTypeEnumeration() :
-    Enumeration({
+ts::MGT::TableTypeNames::TableTypeNames() :
+    Names({
         {u"TVCT-current", 0x0000},
         {u"TVCT-next",    0x0001},
         {u"CVCT-current", 0x0002},
@@ -178,9 +178,9 @@ ts::MGT::TableTypeEnumeration::TableTypeEnumeration() :
     }
 }
 
-const ts::Enumeration& ts::MGT::TableTypeEnum()
+const ts::Names& ts::MGT::TableTypeEnum()
 {
-    static const TableTypeEnumeration data;
+    static const TableTypeNames data;
     return data;
 }
 

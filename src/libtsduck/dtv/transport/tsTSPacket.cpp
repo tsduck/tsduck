@@ -10,7 +10,7 @@
 #include "tsPES.h"
 #include "tsByteBlock.h"
 #include "tsBuffer.h"
-#include "tsNamesFile.h"
+#include "tsNames.h"
 
 
 //----------------------------------------------------------------------------
@@ -1251,7 +1251,7 @@ std::ostream& ts::TSPacket::display(std::ostream& strm, uint32_t flags, size_t i
             if (!af_descriptor_not_present_flag) {
                 strm << margin << "AF descriptors (" << buf.remainingReadBytes() << " bytes): " << std::endl;
                 while (buf.canReadBytes(2)) {
-                    strm << margin << "- Tag: " << NameFromDTV(u"ts.af_descriptor_tag", buf.getUInt8(), NamesFlags::FIRST) << std::endl;
+                    strm << margin << "- Tag: " << NameFromSection(u"dtv", u"ts.af_descriptor_tag", buf.getUInt8(), NamesFlags::VALUE_NAME) << std::endl;
                     const size_t len = buf.getUInt8();
                     strm << margin << "  Length: " << len << " bytes" << std::endl
                          << UString::Dump(buf.getBytes(len), UString::HEXA | UString::ASCII | UString::OFFSET | UString::BPL, margin.size() + 2, 16);
@@ -1270,7 +1270,7 @@ std::ostream& ts::TSPacket::display(std::ostream& strm, uint32_t flags, size_t i
         uint8_t sid = b[header_size + 3];
         uint16_t length = GetUInt16(b + header_size + 4);
         strm << margin << "---- PES Header ----" << std::endl
-             << margin << "Stream id: " << NameFromDTV(u"pes.stream_id", sid, NamesFlags::FIRST) << std::endl
+             << margin << "Stream id: " << NameFromSection(u"dtv", u"pes.stream_id", sid, NamesFlags::VALUE_NAME) << std::endl
              << margin << "PES packet length: " << length;
         if (length == 0) {
             strm << " (unbounded)";

@@ -13,7 +13,7 @@
 #include "tsPSIRepository.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
-#include "tsNames.h"
+#include "tsDVB.h"
 
 #define MY_XML_NAME u"service_descriptor"
 #define MY_CLASS    ts::ServiceDescriptor
@@ -79,7 +79,7 @@ void ts::ServiceDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::ServiceDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(1)) {
-        disp << margin << "Service type: " << names::ServiceType(buf.getUInt8(), NamesFlags::FIRST) << std::endl;
+        disp << margin << "Service type: " << ServiceTypeName(buf.getUInt8(), NamesFlags::VALUE_NAME) << std::endl;
         const UString provider(buf.getStringWithByteLength());
         const UString service(buf.getStringWithByteLength());
         disp << margin << "Service: \"" << service << "\", Provider: \"" << provider << "\"" << std::endl;

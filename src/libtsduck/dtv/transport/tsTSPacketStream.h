@@ -17,7 +17,7 @@
 #include "tsTSPacketFormat.h"
 #include "tsTSPacketMetadata.h"
 #include "tsTSPacket.h"
-#include "tsEnumeration.h"
+#include "tsNames.h"
 
 namespace ts {
 

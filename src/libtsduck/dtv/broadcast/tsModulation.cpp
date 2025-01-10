@@ -15,7 +15,7 @@
 // and return false.
 //----------------------------------------------------------------------------
 
-bool ts::CheckModEnum(int value, const UString& name, const Enumeration& conv, Report& report)
+bool ts::CheckModEnum(int value, const UString& name, const Names& conv, Report& report)
 {
     if (value > -10) {
         return true;
@@ -37,9 +37,9 @@ bool ts::CheckModEnum(int value, const UString& name, const Enumeration& conv, R
 // Enumerations, names for values
 //----------------------------------------------------------------------------
 
-const ts::Enumeration& ts::ModulationEnum()
+const ts::Names& ts::ModulationEnum()
 {
-    static const Enumeration data {
+    static const Names data {
         {u"QPSK",      QPSK},
         {u"8-PSK",     PSK_8},
         {u"QAM",       QAM_AUTO},
@@ -65,9 +65,9 @@ const ts::Enumeration& ts::ModulationEnum()
     return data;
 }
 
-const ts::Enumeration& ts::InnerFECEnum()
+const ts::Names& ts::InnerFECEnum()
 {
-    static const Enumeration data {
+    static const Names data {
         {u"none",  FEC_NONE},
         {u"auto",  FEC_AUTO},
         {u"1/2",   FEC_1_2},
@@ -106,9 +106,9 @@ const ts::Enumeration& ts::InnerFECEnum()
     return data;
 }
 
-const ts::Enumeration& ts::PolarizationEnum()
+const ts::Names& ts::PolarizationEnum()
 {
-    static const Enumeration data {
+    static const Names data {
         {u"none",       POL_NONE},
         {u"auto",       POL_AUTO},
         {u"horizontal", POL_HORIZONTAL},
@@ -119,9 +119,9 @@ const ts::Enumeration& ts::PolarizationEnum()
     return data;
 }
 
-const ts::Enumeration& ts::PilotEnum()
+const ts::Names& ts::PilotEnum()
 {
-    static const Enumeration data {
+    static const Names data {
         {u"auto", PILOT_AUTO},
         {u"on",   PILOT_ON},
         {u"off",  PILOT_OFF},
@@ -129,9 +129,9 @@ const ts::Enumeration& ts::PilotEnum()
     return data;
 }
 
-const ts::Enumeration& ts::RollOffEnum()
+const ts::Names& ts::RollOffEnum()
 {
-    static const Enumeration data {
+    static const Names data {
         {u"auto", ROLLOFF_AUTO},
         {u"0.35", ROLLOFF_35},
         {u"0.25", ROLLOFF_25},
@@ -143,9 +143,9 @@ const ts::Enumeration& ts::RollOffEnum()
     return data;
 }
 
-const ts::Enumeration& ts::TransmissionModeEnum()
+const ts::Names& ts::TransmissionModeEnum()
 {
-    static const Enumeration data {
+    static const Names data {
         {u"auto",           TM_AUTO},
         {u"2K",             TM_2K},
         {u"4K",             TM_4K},
@@ -161,9 +161,9 @@ const ts::Enumeration& ts::TransmissionModeEnum()
     return data;
 }
 
-const ts::Enumeration& ts::GuardIntervalEnum()
+const ts::Names& ts::GuardIntervalEnum()
 {
-    static const Enumeration data {
+    static const Names data {
         {u"auto",    GUARD_AUTO},
         {u"1/32",    GUARD_1_32},
         {u"1/16",    GUARD_1_16},
@@ -180,9 +180,9 @@ const ts::Enumeration& ts::GuardIntervalEnum()
     return data;
 }
 
-const ts::Enumeration& ts::HierarchyEnum()
+const ts::Names& ts::HierarchyEnum()
 {
-    static const Enumeration data {
+    static const Names data {
         {u"auto", HIERARCHY_AUTO},
         {u"none", HIERARCHY_NONE},
         {u"1",    HIERARCHY_1},
@@ -192,9 +192,9 @@ const ts::Enumeration& ts::HierarchyEnum()
     return data;
 }
 
-const ts::Enumeration& ts::SpectralInversionEnum()
+const ts::Names& ts::SpectralInversionEnum()
 {
-    static const Enumeration data {
+    static const Names data {
         {u"off",  SPINV_OFF},
         {u"on",   SPINV_ON},
         {u"auto", SPINV_AUTO},
@@ -202,9 +202,9 @@ const ts::Enumeration& ts::SpectralInversionEnum()
     return data;
 }
 
-const ts::Enumeration& ts::PLSModeEnum()
+const ts::Names& ts::PLSModeEnum()
 {
-    static const Enumeration data {
+    static const Names data {
         {u"ROOT", PLS_ROOT},
         {u"GOLD", PLS_GOLD},
     };

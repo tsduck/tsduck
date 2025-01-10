@@ -72,7 +72,7 @@ void ts::GenreDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descr
         size_t count = buf.getBits<size_t>(5);
         disp << margin << UString::Format(u"Attribute count: %d", count) << std::endl;
         while (count-- > 0 && buf.canReadBytes(1)) {
-            disp << margin << " - Attribute: " << DataName(MY_XML_NAME, u"code", buf.getUInt8(), NamesFlags::FIRST) << std::endl;
+            disp << margin << " - Attribute: " << DataName(MY_XML_NAME, u"code", buf.getUInt8(), NamesFlags::VALUE_NAME) << std::endl;
         }
     }
 }

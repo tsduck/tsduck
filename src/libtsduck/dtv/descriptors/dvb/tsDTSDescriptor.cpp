@@ -8,7 +8,7 @@
 
 #include "tsDTSDescriptor.h"
 #include "tsDescriptor.h"
-#include "tsNamesFile.h"
+#include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
 #include "tsPSIBuffer.h"

@@ -293,7 +293,7 @@ void ts::T2MIPlugin::handleT2MIPacket(T2MIDemux& demux, const T2MIPacket& pkt)
             plpInfo = UString::Format(u", PLP: %n", plp);
         }
         info(u"PID %n, packet type: %s, size: %d bytes, packet count: %d, superframe index: %d, frame index: %d%s",
-             pid, NameFromDTV(u"t2mi.packet_type", pkt.packetType(), NamesFlags::HEXA_FIRST),
+             pid, NameFromSection(u"dtv", u"t2mi.packet_type", pkt.packetType(), NamesFlags::HEX_VALUE_NAME),
              pkt.size(), pkt.packetCount(), pkt.superframeIndex(), pkt.frameIndex(), plpInfo);
     }
 

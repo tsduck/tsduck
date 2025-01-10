@@ -78,7 +78,7 @@ namespace ts {
         //! @param [in] x Initial value.
         //!
         template<typename NUM_T> requires std::is_arithmetic_v<NUM_T>
-        FloatingPoint(NUM_T x) : _value(float_t(x)) {}
+        constexpr FloatingPoint(NUM_T x) : _value(float_t(x)) {}
 
         // Implementation of interfaces.
         virtual ts::UString description() const override;

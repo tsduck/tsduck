@@ -94,19 +94,6 @@ namespace ts {
     constexpr uint8_t SVERSION_MAX = 1 << SVERSION_BITS;
 
     //!
-    //! Origin of Modified Julian Dates (MJD).
-    //! The origin of MJD is 17 Nov 1858 00:00:00.
-    //! The UNIX epoch (1 Jan 1970) is 40587 days from julian time origin.
-    //!
-    constexpr uint32_t MJD_EPOCH = 40587;
-
-    //!
-    //! A placeholder for "invalid network id" value.
-    //! In theory, all 16-bit values can be valid network id. However, this one is "usually" not used.
-    //!
-    constexpr uint16_t INVALID_NETWORK_ID = 0xFFFF;
-
-    //!
     //! A placeholder for "invalid transport stream id" value.
     //! In theory, all 16-bit values can be valid TS id. However, this one is "usually" not used.
     //!

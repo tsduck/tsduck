@@ -114,8 +114,8 @@ namespace ts {
         bool getGainRange(int& minGain, int& maxGain, uint64_t frequency, BandWidth bandwidth, Report& report = CERR);
 
         // Allowed range for DC calibration values.
-        static const int IT95X_DC_CAL_MIN = -512;  //!< Minimum DC calibration value.
-        static const int IT95X_DC_CAL_MAX =  512;  //!< Maximum DC calibration value.
+        static constexpr int IT95X_DC_CAL_MIN = -512;  //!< Minimum DC calibration value.
+        static constexpr int IT95X_DC_CAL_MAX =  512;  //!< Maximum DC calibration value.
 
         //!
         //! Set DC calibration values.

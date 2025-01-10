@@ -148,7 +148,7 @@ void ts::DVBEnhancedAC3Descriptor::DisplayDescriptor(TablesDisplay& disp, const 
         const bool substream3_flag = buf.getBool();
 
         if (component_type_flag && buf.canReadBytes(1)) {
-            disp << margin << "Component type: " << DVBAC3Descriptor::ComponentTypeName(buf.getUInt8(), NamesFlags::FIRST) << std::endl;
+            disp << margin << "Component type: " << DVBAC3Descriptor::ComponentTypeName(buf.getUInt8(), NamesFlags::VALUE_NAME) << std::endl;
         }
         if (bsid_flag && buf.canReadBytes(1)) {
             disp << margin << UString::Format(u"AC-3 coding version: %n", buf.getUInt8()) << std::endl;
@@ -163,13 +163,13 @@ void ts::DVBEnhancedAC3Descriptor::DisplayDescriptor(TablesDisplay& disp, const 
             disp << margin << "Substream 0: Mixing control metadata" << std::endl;
         }
         if (substream1_flag && buf.canReadBytes(1)) {
-            disp << margin << "Substream 1: " << DVBAC3Descriptor::ComponentTypeName(buf.getUInt8(), NamesFlags::FIRST) << std::endl;
+            disp << margin << "Substream 1: " << DVBAC3Descriptor::ComponentTypeName(buf.getUInt8(), NamesFlags::VALUE_NAME) << std::endl;
         }
         if (substream2_flag && buf.canReadBytes(1)) {
-            disp << margin << "Substream 2: " << DVBAC3Descriptor::ComponentTypeName(buf.getUInt8(), NamesFlags::FIRST) << std::endl;
+            disp << margin << "Substream 2: " << DVBAC3Descriptor::ComponentTypeName(buf.getUInt8(), NamesFlags::VALUE_NAME) << std::endl;
         }
         if (substream3_flag && buf.canReadBytes(1)) {
-            disp << margin << "Substream 3: " << DVBAC3Descriptor::ComponentTypeName(buf.getUInt8(), NamesFlags::FIRST) << std::endl;
+            disp << margin << "Substream 3: " << DVBAC3Descriptor::ComponentTypeName(buf.getUInt8(), NamesFlags::VALUE_NAME) << std::endl;
         }
         disp.displayPrivateData(u"Additional information", buf, NPOS, margin);
     }

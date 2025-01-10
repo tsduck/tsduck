@@ -85,14 +85,16 @@ namespace ts {
         //!
         //! Standard EIT repetition profile for satellite and cable networks.
         //! @see ETSI TS 101 211, section 4.1.4
+        //! @return A constant reference to the repetition profile.
         //!
-        static const EITRepetitionProfile SatelliteCable;
+        static const EITRepetitionProfile& SatelliteCable();
 
         //!
         //! Standard EIT repetition profile for terrestrial networks.
         //! @see ETSI TS 101 211, section 4.1.4
+        //! @return A constant reference to the repetition profile.
         //!
-        static const EITRepetitionProfile Terrestrial;
+        static const EITRepetitionProfile& Terrestrial();
 
         //!
         //! Constructor.

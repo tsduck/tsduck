@@ -14,117 +14,117 @@
 // Enumeration for various Dektec constants, names for values
 //-----------------------------------------------------------------------------
 
-const ts::Enumeration& ts::DektecModulationTypes()
+const ts::Names& ts::DektecModulationTypes()
 {
-    static const Enumeration data {
+    static const Names data {
     #if !defined(TS_NO_DTAPI)
-        {u"DVBS-QPSK", DTAPI_MOD_DVBS_QPSK},
-        {u"DVBS-BPSK", DTAPI_MOD_DVBS_BPSK},
-        {u"4-QAM", DTAPI_MOD_QAM4},
-        {u"16-QAM", DTAPI_MOD_QAM16},
-        {u"32-QAM", DTAPI_MOD_QAM32},
-        {u"64-QAM", DTAPI_MOD_QAM64},
-        {u"128-QAM", DTAPI_MOD_QAM128},
-        {u"256-QAM", DTAPI_MOD_QAM256},
-        {u"DVBT", DTAPI_MOD_DVBT},
-        {u"ATSC", DTAPI_MOD_ATSC},
-        {u"DVB-T2", DTAPI_MOD_DVBT2},
-        {u"ISDB-T", DTAPI_MOD_ISDBT},
-        {u"IQDIRECT", DTAPI_MOD_IQDIRECT},
-        {u"DVBS2-QPSK", DTAPI_MOD_DVBS2_QPSK},
-        {u"DVBS2-8PSK", DTAPI_MOD_DVBS2_8PSK},
+        {u"DVBS-QPSK",    DTAPI_MOD_DVBS_QPSK},
+        {u"DVBS-BPSK",    DTAPI_MOD_DVBS_BPSK},
+        {u"4-QAM",        DTAPI_MOD_QAM4},
+        {u"16-QAM",       DTAPI_MOD_QAM16},
+        {u"32-QAM",       DTAPI_MOD_QAM32},
+        {u"64-QAM",       DTAPI_MOD_QAM64},
+        {u"128-QAM",      DTAPI_MOD_QAM128},
+        {u"256-QAM",      DTAPI_MOD_QAM256},
+        {u"DVBT",         DTAPI_MOD_DVBT},
+        {u"ATSC",         DTAPI_MOD_ATSC},
+        {u"DVB-T2",       DTAPI_MOD_DVBT2},
+        {u"ISDB-T",       DTAPI_MOD_ISDBT},
+        {u"IQDIRECT",     DTAPI_MOD_IQDIRECT},
+        {u"DVBS2-QPSK",   DTAPI_MOD_DVBS2_QPSK},
+        {u"DVBS2-8PSK",   DTAPI_MOD_DVBS2_8PSK},
         {u"DVBS2-16APSK", DTAPI_MOD_DVBS2_16APSK},
         {u"DVBS2-32APSK", DTAPI_MOD_DVBS2_32APSK},
-        {u"DMB-TH", DTAPI_MOD_DMBTH},
-        {u"ADTB-T", DTAPI_MOD_ADTBT},
-        {u"CMMB", DTAPI_MOD_CMMB},
-        {u"T2MI", DTAPI_MOD_T2MI},
-        {u"DVBC2", DTAPI_MOD_DVBC2}
+        {u"DMB-TH",       DTAPI_MOD_DMBTH},
+        {u"ADTB-T",       DTAPI_MOD_ADTBT},
+        {u"CMMB",         DTAPI_MOD_CMMB},
+        {u"T2MI",         DTAPI_MOD_T2MI},
+        {u"DVBC2",        DTAPI_MOD_DVBC2}
     #endif
     };
     return data;
 }
 
-const ts::Enumeration& ts::DektecVSB()
+const ts::Names& ts::DektecVSB()
 {
-    static const Enumeration data {
+    static const Names data {
     #if !defined(TS_NO_DTAPI)
-        {u"8-VSB", DTAPI_MOD_ATSC_VSB8},
+        {u"8-VSB",  DTAPI_MOD_ATSC_VSB8},
         {u"16-VSB", DTAPI_MOD_ATSC_VSB16},
     #endif
     };
     return data;
 }
 
-const ts::Enumeration& ts::DektecFEC()
+const ts::Names& ts::DektecFEC()
 {
-    static const Enumeration data {
+    static const Names data {
     #if !defined(TS_NO_DTAPI)
-        {u"1/2", DTAPI_MOD_1_2},
-        {u"2/3", DTAPI_MOD_2_3},
-        {u"3/4", DTAPI_MOD_3_4},
-        {u"4/5", DTAPI_MOD_4_5},
-        {u"5/6", DTAPI_MOD_5_6},
-        {u"6/7", DTAPI_MOD_6_7},
-        {u"7/8", DTAPI_MOD_7_8},
-        {u"1/4", DTAPI_MOD_1_4},
-        {u"1/3", DTAPI_MOD_1_3},
-        {u"2/5", DTAPI_MOD_2_5},
-        {u"3/5", DTAPI_MOD_3_5},
-        {u"8/9", DTAPI_MOD_8_9},
-        {u"9/10", DTAPI_MOD_9_10},
+        {u"1/2",         DTAPI_MOD_1_2},
+        {u"2/3",         DTAPI_MOD_2_3},
+        {u"3/4",         DTAPI_MOD_3_4},
+        {u"4/5",         DTAPI_MOD_4_5},
+        {u"5/6",         DTAPI_MOD_5_6},
+        {u"6/7",         DTAPI_MOD_6_7},
+        {u"7/8",         DTAPI_MOD_7_8},
+        {u"1/4",         DTAPI_MOD_1_4},
+        {u"1/3",         DTAPI_MOD_1_3},
+        {u"2/5",         DTAPI_MOD_2_5},
+        {u"3/5",         DTAPI_MOD_3_5},
+        {u"8/9",         DTAPI_MOD_8_9},
+        {u"9/10",        DTAPI_MOD_9_10},
         {u"unknown-FEC", DTAPI_MOD_CR_UNK},
     #endif
     };
     return data;
 }
 
-const ts::Enumeration& ts::DektecInversion()
+const ts::Names& ts::DektecInversion()
 {
-    static const Enumeration data {
+    static const Names data {
     #if !defined(TS_NO_DTAPI)
         {u"non-inverted", DTAPI_MOD_S_S2_SPECNONINV},
-        {u"inverted", DTAPI_MOD_S_S2_SPECINV},
+        {u"inverted",     DTAPI_MOD_S_S2_SPECINV},
     #endif
     };
     return data;
 }
 
-const ts::Enumeration& ts::DektecDVBTProperty()
+const ts::Names& ts::DektecDVBTProperty()
 {
-    static const Enumeration data {
+    static const Names data {
     #if !defined(TS_NO_DTAPI)
-        {u"5-MHz", DTAPI_MOD_DVBT_5MHZ},
-        {u"6-MHz", DTAPI_MOD_DVBT_6MHZ},
-        {u"7-MHz", DTAPI_MOD_DVBT_7MHZ},
-        {u"8-MHz", DTAPI_MOD_DVBT_8MHZ},
-        {u"unknown-bandwidth", DTAPI_MOD_DVBT_BW_UNK},
-        {u"QPSK", DTAPI_MOD_DVBT_QPSK},
-        {u"16-QAM", DTAPI_MOD_DVBT_QAM16},
-        {u"64-QAM", DTAPI_MOD_DVBT_QAM64},
-        {u"unknown-constellation", DTAPI_MOD_DVBT_CO_UNK},
-        {u"1/32", DTAPI_MOD_DVBT_G_1_32},
-        {u"1/16", DTAPI_MOD_DVBT_G_1_16},
-        {u"1/8", DTAPI_MOD_DVBT_G_1_8},
-        {u"1/4", DTAPI_MOD_DVBT_G_1_4},
-        {u"unknown-guard-interval", DTAPI_MOD_DVBT_GU_UNK},
-        {u"indepth-interleave", DTAPI_MOD_DVBT_INDEPTH},
-        {u"native-interleave", DTAPI_MOD_DVBT_NATIVE},
-        {u"2K", DTAPI_MOD_DVBT_2K},
-        {u"4K", DTAPI_MOD_DVBT_4K},
-        {u"8K", DTAPI_MOD_DVBT_8K},
+        {u"5-MHz",                     DTAPI_MOD_DVBT_5MHZ},
+        {u"6-MHz",                     DTAPI_MOD_DVBT_6MHZ},
+        {u"7-MHz",                     DTAPI_MOD_DVBT_7MHZ},
+        {u"8-MHz",                     DTAPI_MOD_DVBT_8MHZ},
+        {u"unknown-bandwidth",         DTAPI_MOD_DVBT_BW_UNK},
+        {u"QPSK",                      DTAPI_MOD_DVBT_QPSK},
+        {u"16-QAM",                    DTAPI_MOD_DVBT_QAM16},
+        {u"64-QAM",                    DTAPI_MOD_DVBT_QAM64},
+        {u"unknown-constellation",     DTAPI_MOD_DVBT_CO_UNK},
+        {u"1/32",                      DTAPI_MOD_DVBT_G_1_32},
+        {u"1/16",                      DTAPI_MOD_DVBT_G_1_16},
+        {u"1/8",                       DTAPI_MOD_DVBT_G_1_8},
+        {u"1/4",                       DTAPI_MOD_DVBT_G_1_4},
+        {u"unknown-guard-interval",    DTAPI_MOD_DVBT_GU_UNK},
+        {u"indepth-interleave",        DTAPI_MOD_DVBT_INDEPTH},
+        {u"native-interleave",         DTAPI_MOD_DVBT_NATIVE},
+        {u"2K",                        DTAPI_MOD_DVBT_2K},
+        {u"4K",                        DTAPI_MOD_DVBT_4K},
+        {u"8K",                        DTAPI_MOD_DVBT_8K},
         {u"unknown-transmission-mode", DTAPI_MOD_DVBT_MD_UNK},
     #endif
     };
     return data;
 }
 
-const ts::Enumeration& ts::DektecPowerMode()
+const ts::Names& ts::DektecPowerMode()
 {
-    static const Enumeration data {
+    static const Names data {
     #if !defined(TS_NO_DTAPI)
         {u"high-quality", DTAPI_IOCONFIG_MODHQ},
-        {u"low-power", DTAPI_IOCONFIG_LOWPWR},
+        {u"low-power",    DTAPI_IOCONFIG_LOWPWR},
     #endif
     };
     return data;

@@ -383,7 +383,7 @@ bool ts::RCT::DVBBinaryLocator::Display(TablesDisplay& disp, PSIBuffer& buf, con
         const bool inline_service = buf.getBool();
         buf.skipReservedBits(1);
         const uint16_t start_date = buf.getBits<uint16_t>(9);
-        disp << margin << "Identifier type: " << DataName(MY_XML_NAME, u"dvb_identifier_type", identifier_type, NamesFlags::FIRST) << std::endl
+        disp << margin << "Identifier type: " << DataName(MY_XML_NAME, u"dvb_identifier_type", identifier_type, NamesFlags::VALUE_NAME) << std::endl
              << margin << UString::Format(u"Scheduled time reliability: %s, inline service: %s", scheduled_time_reliability, inline_service) << std::endl
              << margin << "Start date: " << start_date << " (" << (start + cn::days(start_date)).format(Time::DATE) << ")" << std::endl;
         if (inline_service) {
@@ -458,8 +458,8 @@ bool ts::RCT::Link::Display(TablesDisplay& disp, const ts::Section& section, Des
     if (ok) {
         const uint8_t link_type = buf.getBits<uint8_t>(4);
         buf.skipReservedBits(2);
-        disp << margin << "Link type: " << DataName(MY_XML_NAME, u"link_type", link_type, NamesFlags::FIRST) << std::endl;
-        disp << margin << "Related classification: " << DataName(MY_XML_NAME, u"how_related_classification_scheme_id", buf.getBits<uint8_t>(6), NamesFlags::FIRST) << std::endl;
+        disp << margin << "Link type: " << DataName(MY_XML_NAME, u"link_type", link_type, NamesFlags::VALUE_NAME) << std::endl;
+        disp << margin << "Related classification: " << DataName(MY_XML_NAME, u"how_related_classification_scheme_id", buf.getBits<uint8_t>(6), NamesFlags::VALUE_NAME) << std::endl;
         disp << margin << UString::Format(u"Term id: %n", buf.getBits<uint16_t>(12));
         disp << UString::Format(u", group id: %n", buf.getBits<uint16_t>(4)) << std::endl;
         disp << margin << "Precedence: " << buf.getBits<uint16_t>(4) << std::endl;

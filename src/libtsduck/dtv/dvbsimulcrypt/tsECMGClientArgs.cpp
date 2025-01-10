@@ -38,13 +38,13 @@ void ts::ECMGClientArgs::defineArgs(Args& args)
          u"Specifies the version of the ECMG <=> SCS DVB SimulCrypt protocol. "
          u"Valid values are 2 and 3. The default is 2.");
 
-    args.option(u"log-data", 0, ts::Severity::Enums, 0, 1, true);
+    args.option(u"log-data", 0, ts::Severity::Enums(), 0, 1, true);
     args.help(u"log-data", u"level",
          u"Same as --log-protocol but applies to CW_provision and ECM_response "
          u"messages only. To debug the session management without being flooded by "
          u"data messages, use --log-protocol=info --log-data=debug.");
 
-    args.option(u"log-protocol", 0, ts::Severity::Enums, 0, 1, true);
+    args.option(u"log-protocol", 0, ts::Severity::Enums(), 0, 1, true);
     args.help(u"log-protocol", u"level",
          u"Log all ECMG <=> SCS protocol messages using the specified level. If the "
          u"option is not present, the messages are logged at debug level only. If the "

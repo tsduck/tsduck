@@ -65,7 +65,7 @@ void ts::IPSignallingDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::IPSignallingDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(3)) {
-        disp << margin << "Platform id: " << DataName(u"INT", u"platform_id", buf.getUInt24(), NamesFlags::FIRST) << std::endl;
+        disp << margin << "Platform id: " << DataName(u"INT", u"platform_id", buf.getUInt24(), NamesFlags::VALUE_NAME) << std::endl;
     }
 }
 

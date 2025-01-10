@@ -12,7 +12,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsPluginRepository.h"
-#include "tsEnumeration.h"
+#include "tsNames.h"
 #include "tsSystemRandomGenerator.h"
 
 
@@ -94,7 +94,7 @@ ts::PCREditPlugin::PCREditPlugin(TSP* tsp_) :
          u"The added value is a random number in the range -n to +n where n is the absolute value of the corresponding parameter. "
          u"This option is typically used to intentionally corrupt time stamps.");
 
-    option(u"unit", 'u', Enumeration({
+    option(u"unit", 'u', Names({
         {u"default",     UNIT_DEFAULT},
         {u"pcr",         UNIT_PCR},
         {u"pts",         UNIT_PTS},

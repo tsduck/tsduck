@@ -60,8 +60,8 @@ void ts::CommandLine::setCommandLineHandlerImpl(CommandLineHandler* handler, Com
     }
     else {
         // Set one command.
-        const int id = _cmd_enum.value(name);
-        if (id != Enumeration::UNKNOWN) {
+        const CmdId id = _cmd_enum.value(name);
+        if (id != Names::UNKNOWN) {
             _commands[id].handler = handler;
             _commands[id].method = method;
         }
@@ -76,8 +76,8 @@ void ts::CommandLine::setCommandLineHandlerImpl(CommandLineHandler* handler, Com
 ts::Args* ts::CommandLine::commandImpl(CommandLineHandler* handler, CommandLineMethod method, const UString& name, const UString& description, const UString& syntax, int flags)
 {
     // Check if the command already exists.
-    int id = _cmd_enum.value(name, true, false);
-    if (id == Enumeration::UNKNOWN) {
+    CmdId id = _cmd_enum.value(name, true, false);
+    if (id == Names::UNKNOWN) {
         // New command.
         id = _cmd_id_alloc++;
         _cmd_enum.add(name, id);
@@ -128,8 +128,8 @@ bool ts::CommandLine::analyzeCommand(const UString& line)
 bool ts::CommandLine::analyzeCommand(const UString& name, const UStringVector& arguments)
 {
     // Look for command name.
-    const int cmd_id = _cmd_enum.value(name);
-    if (cmd_id == Enumeration::UNKNOWN) {
+    const CmdId cmd_id = _cmd_enum.value(name);
+    if (cmd_id == Names::UNKNOWN) {
         _report.error(_cmd_enum.error(name, true, true, u"command"));
         return false;
     }
@@ -163,8 +163,8 @@ ts::CommandStatus ts::CommandLine::processCommand(const UString& name, const USt
     Report* log = redirect != nullptr ? redirect : &_report;
 
     // Look for command name.
-    const int cmd_id = _cmd_enum.value(name);
-    if (cmd_id == Enumeration::UNKNOWN) {
+    const CmdId cmd_id = _cmd_enum.value(name);
+    if (cmd_id == Names::UNKNOWN) {
         log->error(_cmd_enum.error(name, true, true, u"command"));
         return CommandStatus::ERROR;
     }

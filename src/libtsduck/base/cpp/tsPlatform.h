@@ -714,6 +714,7 @@ TS_MSC_NOWARNING(5045)  // Compiler will insert Spectre mitigation for memory lo
 #include <atomic>
 #include <thread>
 #include <mutex>
+#include <shared_mutex>
 #include <condition_variable>
 #include <chrono>
 #include <filesystem>
@@ -815,6 +816,16 @@ TS_MSC_NOWARNING(5045)  // Compiler will insert Spectre mitigation for memory lo
         classname(const classname&) = delete;       \
         classname& operator=(classname&&) = delete; \
         classname& operator=(const classname&) = delete
+
+//!
+//! A macro to disable object move in the declaration of a class.
+//! The move constructor and assignment are explicitly deleted.
+//! @param classname Name of the enclosing class.
+//!
+#define TS_NOMOVE(classname)         \
+private:                             \
+    classname(classname&&) = delete; \
+    classname& operator=(classname&&) = delete
 
 //!
 //! A macro to disable default constructor and object copy in the declaration of a class.

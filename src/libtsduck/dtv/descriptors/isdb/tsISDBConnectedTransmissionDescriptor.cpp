@@ -13,7 +13,6 @@
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
-#include "tsNames.h"
 
 #define MY_XML_NAME u"ISDB_connected_transmission_descriptor"
 #define MY_CLASS    ts::ISDBConnectedTransmissionDescriptor
@@ -87,10 +86,10 @@ void ts::ISDBConnectedTransmissionDescriptor::DisplayDescriptor(TablesDisplay& d
 {
     if (buf.canReadBytes(3)) {
         disp << margin << UString::Format(u"Connected transmission group id: %n", buf.getUInt16()) << std::endl;
-        disp << margin << "Segment type: " << DataName(MY_XML_NAME, u"segment_type", buf.getBits<uint8_t>(2), NamesFlags::VALUE | NamesFlags::DECIMAL) << std::endl;
-        disp << margin << "Modulation type A: " << DataName(MY_XML_NAME, u"modulation_type", buf.getBits<uint8_t>(2), NamesFlags::VALUE | NamesFlags::DECIMAL) << std::endl;
-        disp << margin << "Modulation type B: " << DataName(MY_XML_NAME, u"modulation_type", buf.getBits<uint8_t>(2), NamesFlags::VALUE | NamesFlags::DECIMAL) << std::endl;
-        disp << margin << "Modulation type C: " << DataName(MY_XML_NAME, u"modulation_type", buf.getBits<uint8_t>(2), NamesFlags::VALUE | NamesFlags::DECIMAL) << std::endl;
+        disp << margin << "Segment type: " << DataName(MY_XML_NAME, u"segment_type", buf.getBits<uint8_t>(2), NamesFlags::NAME_VALUE | NamesFlags::DECIMAL) << std::endl;
+        disp << margin << "Modulation type A: " << DataName(MY_XML_NAME, u"modulation_type", buf.getBits<uint8_t>(2), NamesFlags::NAME_VALUE | NamesFlags::DECIMAL) << std::endl;
+        disp << margin << "Modulation type B: " << DataName(MY_XML_NAME, u"modulation_type", buf.getBits<uint8_t>(2), NamesFlags::NAME_VALUE | NamesFlags::DECIMAL) << std::endl;
+        disp << margin << "Modulation type C: " << DataName(MY_XML_NAME, u"modulation_type", buf.getBits<uint8_t>(2), NamesFlags::NAME_VALUE | NamesFlags::DECIMAL) << std::endl;
 
         disp.displayPrivateData(u"Additional connected transmission info", buf, NPOS, margin);
     }

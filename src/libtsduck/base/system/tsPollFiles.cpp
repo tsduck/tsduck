@@ -83,7 +83,7 @@ bool ts::PollFiles::pollOnce()
         if (pf->_pending && now >= pf->_found_date + _min_stable_delay) {
             pf->_pending = false;
             _notified_files.push_back(pf);
-            _report.debug(u"PolledFiles: %s %s", PolledFile::StatusEnumeration.name(pf->_status), name);
+            _report.debug(u"PolledFiles: %s %s", PolledFile::StatusEnumeration().name(pf->_status), name);
         }
 
         // Next polled file

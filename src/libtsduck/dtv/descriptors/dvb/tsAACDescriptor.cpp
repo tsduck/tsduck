@@ -99,7 +99,7 @@ void ts::AACDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descrip
         disp << margin << UString::Format(u"SOAC DE flag: %s", buf.getBool()) << std::endl;
         buf.skipBits(6);
         if (has_AAC_type && buf.canRead()) {
-            disp << margin << "AAC type: " << ComponentDescriptor::ComponentTypeName(disp.duck(), 6, 0, buf.getUInt8(), NamesFlags::HEXA_FIRST, 8) << std::endl;
+            disp << margin << "AAC type: " << ComponentDescriptor::ComponentTypeName(disp.duck(), 6, 0, buf.getUInt8(), NamesFlags::HEX_VALUE_NAME, 8) << std::endl;
         }
         disp.displayPrivateData(u"Additional information", buf, NPOS, margin);
     }

@@ -15,9 +15,9 @@
 // Enumerations, names for values
 //----------------------------------------------------------------------------
 
-const ts::Enumeration& ts::SectionFormatEnum()
+const ts::Names& ts::SectionFormatEnum()
 {
-    static const Enumeration data {
+    static const Names data {
         {u"unspecified", SectionFormat::UNSPECIFIED},
         {u"binary",      SectionFormat::BINARY},
         {u"XML",         SectionFormat::XML},
@@ -26,9 +26,9 @@ const ts::Enumeration& ts::SectionFormatEnum()
     return data;
 }
 
-const ts::Enumeration& ts::SpecifiedSectionFormatEnum()
+const ts::Names& ts::SpecifiedSectionFormatEnum()
 {
-    static const Enumeration data {
+    static const Names data {
         {u"binary", SectionFormat::BINARY},
         {u"XML",    SectionFormat::XML},
         {u"JSON",   SectionFormat::JSON},

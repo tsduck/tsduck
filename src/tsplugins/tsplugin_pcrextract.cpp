@@ -81,7 +81,7 @@ namespace ts {
 
         // Types of time stamps.
         enum class DataType {PCR, OPCR, PTS, DTS};
-        static const Enumeration _type_names;
+        static const Names _type_names;
 
         TS_POP_WARNING()
 
@@ -240,7 +240,7 @@ ts::PCRExtractPlugin::PCRExtractPlugin(TSP* tsp_) :
 // Substructures constructors
 //----------------------------------------------------------------------------
 
-const ts::Enumeration ts::PCRExtractPlugin::_type_names({
+const ts::Names ts::PCRExtractPlugin::_type_names({
     {u"PCR",  DataType::PCR},
     {u"OPCR", DataType::OPCR},
     {u"DTS",  DataType::DTS},
@@ -658,7 +658,7 @@ void ts::PCRExtractPlugin::processSpliceCommand(PID pid, SpliceInformationTable&
     const uint64_t command_pts = sit.splice_command_type == SPLICE_INSERT ? sit.splice_insert.lowestPTS() : INVALID_PTS;
 
     // Start of message.
-    UString msg(UString::Format(u"PID: %n, SCTE 35 command %s", pid, NameFromDTV(u"SpliceCommandType", sit.splice_command_type)));
+    UString msg(UString::Format(u"PID: %n, SCTE 35 command %s", pid, NameFromSection(u"dtv", u"SpliceCommandType", sit.splice_command_type)));
     if (sit.splice_command_type == SPLICE_INSERT) {
         if (sit.splice_insert.canceled) {
             msg += u" canceled";

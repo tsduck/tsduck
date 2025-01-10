@@ -13,7 +13,6 @@
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
-#include "tsNames.h"
 
 #define MY_XML_NAME u"ISDB_access_control_descriptor"
 #define MY_CLASS    ts::ISDBAccessControlDescriptor
@@ -82,8 +81,8 @@ void ts::ISDBAccessControlDescriptor::DisplayDescriptor(TablesDisplay& disp, con
     if (buf.canReadBytes(4)) {
         const TID tid = context.getTableId();
         const UChar* const dtype = tid == TID_CAT ? u"EMM" : (tid == TID_PMT ? u"ECM" : u"CA");
-        disp << margin << "CA System Id: " << CASIdName(disp.duck(), buf.getUInt16(), NamesFlags::FIRST) << std::endl;
-        disp << margin << "Transmission type: " << DataName(MY_XML_NAME, u"CATransmissionType", buf.getBits<uint8_t>(3), NamesFlags::DECIMAL_FIRST) << std::endl;
+        disp << margin << "CA System Id: " << CASIdName(disp.duck(), buf.getUInt16(), NamesFlags::VALUE_NAME) << std::endl;
+        disp << margin << "Transmission type: " << DataName(MY_XML_NAME, u"CATransmissionType", buf.getBits<uint8_t>(3), NamesFlags::DEC_VALUE_NAME) << std::endl;
         disp << margin << UString::Format(u"%s PID: %n", dtype, buf.getPID()) << std::endl;
         disp.displayPrivateData(u"Private CA data", buf, NPOS, margin);
     }

@@ -127,7 +127,7 @@ void ts::BasicLocalEventDescriptor::DisplayDescriptor(TablesDisplay& disp, const
     if (buf.canReadBytes(2)) {
         buf.skipBits(4);
         const uint8_t mode = buf.getBits<uint8_t>(4);
-        disp << margin << "Segmentation mode: " << DataName(MY_XML_NAME, u"Mode", mode, NamesFlags::DECIMAL_FIRST) << std::endl;
+        disp << margin << "Segmentation mode: " << DataName(MY_XML_NAME, u"Mode", mode, NamesFlags::DEC_VALUE_NAME) << std::endl;
         buf.pushReadSizeFromLength(8); // segmentation_info_length
         if (mode == 0) {
         }

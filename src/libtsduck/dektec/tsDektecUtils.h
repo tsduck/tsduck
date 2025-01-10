@@ -13,7 +13,7 @@
 //-----------------------------------------------------------------------------
 
 #pragma once
-#include "tsEnumeration.h"
+#include "tsNames.h"
 
 namespace ts {
     //!
@@ -39,37 +39,37 @@ namespace ts {
     //! Enumeration (names/values) for Dektec modulation constants (DTAPI_MOD_DVBS_QPSK, etc).
     //! @return A constant reference to the enumeration description.
     //!
-    TSDUCKDLL const Enumeration& DektecModulationTypes();
+    TSDUCKDLL const Names& DektecModulationTypes();
 
     //!
     //! Enumeration (names/values) for Dektec VSB constants (DTAPI_MOD_ATSC_VSB8, etc).
     //! @return A constant reference to the enumeration description.
     //!
-    TSDUCKDLL const Enumeration& DektecVSB();
+    TSDUCKDLL const Names& DektecVSB();
 
     //!
     //! Enumeration (names/values) for Dektec FEC constants (DTAPI_MOD_1_2, etc).
     //! @return A constant reference to the enumeration description.
     //!
-    TSDUCKDLL const Enumeration& DektecFEC();
+    TSDUCKDLL const Names& DektecFEC();
 
     //!
     //! Enumeration (names/values) for Dektec spectral inversion constants (DTAPI_MOD_SPECNONINV, etc).
     //! @return A constant reference to the enumeration description.
     //!
-    TSDUCKDLL const Enumeration& DektecInversion();
+    TSDUCKDLL const Names& DektecInversion();
 
     //!
     //! Enumeration (names/values) for Dektec DVB-T properties constants (DTAPI_MOD_DVBT_*, etc).
     //! @return A constant reference to the enumeration description.
     //!
-    TSDUCKDLL const Enumeration& DektecDVBTProperty();
+    TSDUCKDLL const Names& DektecDVBTProperty();
 
     //!
     //! Enumeration (names/values) for Dektec DTU-315 modulator power modes.
     //! @return A constant reference to the enumeration description.
     //!
-    TSDUCKDLL const Enumeration& DektecPowerMode();
+    TSDUCKDLL const Names& DektecPowerMode();
 
     //!
     //! Check if this version of TSDuck was built with Dektec support.

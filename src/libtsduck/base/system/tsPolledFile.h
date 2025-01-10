@@ -12,7 +12,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsEnumeration.h"
+#include "tsNames.h"
 #include "tsTime.h"
 
 namespace ts {
@@ -34,8 +34,9 @@ namespace ts {
 
         //!
         //! Enumeration names for Status.
+        //! @return A constant reference to the enumeration description.
         //!
-        static const ts::Enumeration StatusEnumeration;
+        static const Names& StatusEnumeration();
 
         //!
         //! Get the file name.

@@ -75,7 +75,7 @@ void ts::IODDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::IODDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(2)) {
-        disp << margin << "Scope of IOD label: " << DataName(MY_XML_NAME, u"scope", buf.getUInt8(), NamesFlags::BOTH_FIRST) << std::endl;
+        disp << margin << "Scope of IOD label: " << DataName(MY_XML_NAME, u"scope", buf.getUInt8(), NamesFlags::HEX_DEC_VALUE_NAME) << std::endl;
         disp << margin << UString::Format(u"IOD label: %n", buf.getUInt8()) << std::endl;
         disp.displayPrivateData(u"InitialObjectDescriptor", buf, NPOS, margin);
     }

@@ -19,9 +19,9 @@
 // Enumeration description of TableScope values.
 //----------------------------------------------------------------------------
 
-const ts::Enumeration& ts::TableScopeEnum()
+const ts::Names& ts::TableScopeEnum()
 {
-    static const Enumeration data {
+    static const Names data {
         {u"none",   TableScope::NONE},
         {u"actual", TableScope::ACTUAL},
         {u"all",    TableScope::ALL},

@@ -153,11 +153,11 @@ void ts::ERT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
 
     if (buf.canReadBytes(3)) {
         disp << margin << UString::Format(u"Information provider id: %n", buf.getUInt16()) << std::endl;
-        disp << margin << "Relation type: " << DataName(MY_XML_NAME, u"RelationType", buf.getBits<uint8_t>(4), NamesFlags::DECIMAL_FIRST) << std::endl;
+        disp << margin << "Relation type: " << DataName(MY_XML_NAME, u"RelationType", buf.getBits<uint8_t>(4), NamesFlags::DEC_VALUE_NAME) << std::endl;
         buf.skipBits(4);
         while (buf.canReadBytes(8)) {
             disp << margin << UString::Format(u"- Node id: %n", buf.getUInt16()) << std::endl;
-            disp << margin << "  Collection mode: " << DataName(MY_XML_NAME, u"CollectionMode", buf.getBits<uint8_t>(4), NamesFlags::DECIMAL_FIRST) << std::endl;
+            disp << margin << "  Collection mode: " << DataName(MY_XML_NAME, u"CollectionMode", buf.getBits<uint8_t>(4), NamesFlags::DEC_VALUE_NAME) << std::endl;
             buf.skipBits(4);
             disp << margin << UString::Format(u"  Parent node id: %n", buf.getUInt16()) << std::endl;
             disp << margin << UString::Format(u"  Reference number: %n", buf.getUInt8()) << std::endl;

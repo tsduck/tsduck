@@ -85,8 +85,8 @@ void ts::DVBDTSUHDDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::D
     if (buf.canReadBytes(2)) {
         uint8_t decoder_profile_code = buf.getBits<uint8_t>(6);
         disp << margin << "Decoder profile code: " << int(decoder_profile_code) << ", decoder profile: " << int(decoder_profile_code + 2) << std::endl;
-        disp << margin << "Frame duration: " << DataName(MY_XML_NAME, u"FrameDurationCode", buf.getBits<uint8_t>(2), NamesFlags::VALUE|NamesFlags::DECIMAL);
-        disp << ", max payload: " << DataName(MY_XML_NAME, u"MaxPayloadCode", buf.getBits<uint8_t>(3), NamesFlags::VALUE | NamesFlags::DECIMAL);
+        disp << margin << "Frame duration: " << DataName(MY_XML_NAME, u"FrameDurationCode", buf.getBits<uint8_t>(2), NamesFlags::NAME_VALUE|NamesFlags::DECIMAL);
+        disp << ", max payload: " << DataName(MY_XML_NAME, u"MaxPayloadCode", buf.getBits<uint8_t>(3), NamesFlags::NAME_VALUE | NamesFlags::DECIMAL);
         buf.skipReservedBits(2, 0);
         disp << ", stream index: " << buf.getBits<uint16_t>(3) << std::endl;
         disp << margin << "Codec Selector: " << UString::Dump(buf.getBytes(), UString::SINGLE_LINE) << std::endl;

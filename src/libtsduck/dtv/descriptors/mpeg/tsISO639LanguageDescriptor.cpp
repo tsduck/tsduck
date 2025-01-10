@@ -104,7 +104,7 @@ void ts::ISO639LanguageDescriptor::DisplayDescriptor(TablesDisplay& disp, const 
 {
     while (buf.canReadBytes(4)) {
         disp << margin << "Language: " << buf.getLanguageCode();
-        disp << ", Type: " << DataName(MY_XML_NAME, u"audio_type", buf.getUInt8(), NamesFlags::FIRST) << std::endl;
+        disp << ", Type: " << DataName(MY_XML_NAME, u"audio_type", buf.getUInt8(), NamesFlags::VALUE_NAME) << std::endl;
     }
 }
 

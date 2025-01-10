@@ -17,19 +17,23 @@
 // Define this environment variable to debug options redefinition issues.
 #define TS_DEBUG_ENV u"TS_DEBUG_ARGS"
 
-// List of characters which are allowed thousands separators and decimal points in integer values
-const ts::UChar* const ts::Args::THOUSANDS_SEPARATORS = u", ";
-const ts::UChar* const ts::Args::DECIMAL_POINTS = u".";
 
+//----------------------------------------------------------------------------
 // Enumeration description of HelpFormat.
-const ts::Enumeration ts::Args::HelpFormatEnum({
-    {u"name",        ts::Args::HELP_NAME},
-    {u"description", ts::Args::HELP_DESCRIPTION},
-    {u"usage",       ts::Args::HELP_USAGE},
-    {u"syntax",      ts::Args::HELP_SYNTAX},
-    {u"full",        ts::Args::HELP_FULL},
-    {u"options",     ts::Args::HELP_OPTIONS},
-});
+//----------------------------------------------------------------------------
+
+const ts::Names& ts::Args::HelpFormatEnum()
+{
+    static const Names data({
+        {u"name", ts::Args::HELP_NAME},
+        {u"description", ts::Args::HELP_DESCRIPTION},
+        {u"usage", ts::Args::HELP_USAGE},
+        {u"syntax", ts::Args::HELP_SYNTAX},
+        {u"full", ts::Args::HELP_FULL},
+        {u"options", ts::Args::HELP_OPTIONS},
+    });
+    return data;
+}
 
 
 //----------------------------------------------------------------------------
@@ -166,13 +170,13 @@ ts::Args::IOption::IOption(Args*           parent,
     }
 }
 
-ts::Args::IOption::IOption(Args*              parent,
-                           const UChar*       name_,
-                           UChar              short_name_,
-                           const Enumeration& enumeration_,
-                           size_t             min_occur_,
-                           size_t             max_occur_,
-                           uint32_t           flags_) :
+ts::Args::IOption::IOption(Args*        parent,
+                           const UChar* name_,
+                           UChar        short_name_,
+                           const Names& enumeration_,
+                           size_t       min_occur_,
+                           size_t       max_occur_,
+                           uint32_t     flags_) :
 
     name(name_ == nullptr ? UString() : name_),
     short_name(short_name_),
@@ -261,7 +265,7 @@ ts::UString ts::Args::IOption::valueDescription(ValueContext ctx) const
 
 
 //----------------------------------------------------------------------------
-// When the option has an Enumeration type, get a list of all valid names.
+// When the option has a Names type, get a list of all valid names.
 //----------------------------------------------------------------------------
 
 ts::UString ts::Args::IOption::optionNames(const UString& separator) const
@@ -479,7 +483,7 @@ void ts::Args::adjustPredefinedOptions()
         _iopts.erase(u"help");
     }
     else if (!_iopts.contains(u"help")) {
-        addOption(IOption(this, u"help", 0, HelpFormatEnum, 0, 1, IOPT_PREDEFINED | IOPT_OPTVALUE | IOPT_OPTVAL_NOHELP));
+        addOption(IOption(this, u"help", 0, HelpFormatEnum(), 0, 1, IOPT_PREDEFINED | IOPT_OPTVALUE | IOPT_OPTVAL_NOHELP));
         help(u"help", u"Display this help text.");
     }
 
@@ -615,7 +619,7 @@ ts::Args& ts::Args::help(const UChar* name, const UString& syntax, const UString
 
 
 //----------------------------------------------------------------------------
-// When an option has an Enumeration type, get a list of all valid names.
+// When an option has a Names type, get a list of all valid names.
 //----------------------------------------------------------------------------
 
 ts::UString ts::Args::optionNames(const ts::UChar* name, const ts::UString& separator) const
@@ -1280,8 +1284,8 @@ bool ts::Args::validateParameter(IOption& opt, const std::optional<UString>& val
     }
     else if (!opt.enumeration.empty()) {
         // Enumeration value expected, get corresponding integer value (not case sensitive)
-        int i = opt.enumeration.value(val.value(), false);
-        if (i == Enumeration::UNKNOWN) {
+        Names::int_t i = opt.enumeration.value(val.value(), false);
+        if (i == Names::UNKNOWN) {
             error(u"invalid value %s for %s, use one of %s", val.value(), opt.display(), optionNames(opt.name.c_str()));
             return false;
         }

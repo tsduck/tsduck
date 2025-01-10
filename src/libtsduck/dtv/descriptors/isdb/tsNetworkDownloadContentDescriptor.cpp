@@ -164,7 +164,7 @@ void ts::NetworkDownloadContentDescriptor::DisplayDescriptor(TablesDisplay& disp
         disp << margin << UString::Format(u"Connect timer: %d", buf.getUInt24()) << std::endl;
 
         const uint8_t address_type = buf.getUInt8();
-        disp << margin << "Address type: " << DataName(MY_XML_NAME, u"address_type", address_type, NamesFlags::VALUE) << std::endl;
+        disp << margin << "Address type: " << DataName(MY_XML_NAME, u"address_type", address_type, NamesFlags::NAME_VALUE) << std::endl;
 
         bool ok = true;
         switch (address_type) {

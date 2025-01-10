@@ -8,7 +8,7 @@
 
 #include "tsHEVCAttributes.h"
 #include "tsHEVCSequenceParameterSet.h"
-#include "tsNamesFile.h"
+#include "tsNames.h"
 
 
 //----------------------------------------------------------------------------
@@ -44,12 +44,12 @@ ts::UString ts::HEVCAttributes::levelName() const
 
 ts::UString ts::HEVCAttributes::profileName() const
 {
-    return _is_valid? NameFromDTV(u"hevc.profile", _profile) : UString();
+    return _is_valid? NameFromSection(u"dtv", u"hevc.profile", _profile) : UString();
 }
 
 ts::UString ts::HEVCAttributes::chromaFormatName() const
 {
-    return _is_valid ? NameFromDTV(u"mpeg2.chroma_format", _chroma) : UString();
+    return _is_valid ? NameFromSection(u"dtv", u"mpeg2.chroma_format", _chroma) : UString();
 }
 
 

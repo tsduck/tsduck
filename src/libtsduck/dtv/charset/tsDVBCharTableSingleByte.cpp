@@ -10,6 +10,7 @@
 #include "tsUString.h"
 
 // Static instances of corresponding DVB charsets.
+// The charset tables register themselves during initialization.
 const ts::DVBCharset ts::DVBCharTableSingleByte::DVB_ISO_6937(u"ISO-6937", &RAW_ISO_6937);
 const ts::DVBCharset ts::DVBCharTableSingleByte::DVB_ISO_8859_1(u"ISO-8859-1", &RAW_ISO_8859_1);
 const ts::DVBCharset ts::DVBCharTableSingleByte::DVB_ISO_8859_2(u"ISO-8859-2", &RAW_ISO_8859_2);

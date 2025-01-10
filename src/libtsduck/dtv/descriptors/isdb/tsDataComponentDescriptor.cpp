@@ -67,7 +67,7 @@ void ts::DataComponentDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::DataComponentDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(2)) {
-        disp << margin << "Data component id: " << DataName(MY_XML_NAME, u"DataComponentId", buf.getUInt16(), NamesFlags::HEXA_FIRST) << std::endl;
+        disp << margin << "Data component id: " << DataName(MY_XML_NAME, u"DataComponentId", buf.getUInt16(), NamesFlags::HEX_VALUE_NAME) << std::endl;
         disp.displayPrivateData(u"Additional data component info", buf, NPOS, margin);
     }
 }

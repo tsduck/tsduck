@@ -144,11 +144,11 @@ void ts::ImageIconDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::D
 
         if (descnum == 0) {
             const uint8_t transport = buf.getBits<uint8_t>(2);
-            disp << margin << "Transport mode: " << DataName(MY_XML_NAME, u"TransportMode", transport, NamesFlags::DECIMAL_FIRST) << std::endl;
+            disp << margin << "Transport mode: " << DataName(MY_XML_NAME, u"TransportMode", transport, NamesFlags::DEC_VALUE_NAME) << std::endl;
             const bool has_position = buf.getBool();
             disp << margin << "Position specified: " << UString::YesNo(has_position) << std::endl;
             if (has_position) {
-                disp << margin << "Coordinate system: " << DataName(MY_XML_NAME, u"CoordinateSystem", buf.getBits<uint8_t>(3), NamesFlags::DECIMAL_FIRST) << std::endl;
+                disp << margin << "Coordinate system: " << DataName(MY_XML_NAME, u"CoordinateSystem", buf.getBits<uint8_t>(3), NamesFlags::DEC_VALUE_NAME) << std::endl;
                 buf.skipBits(2);
                 if (buf.canReadBytes(3)) {
                     disp << margin << UString::Format(u"Horizontal origin: %d", buf.getBits<uint16_t>(12));

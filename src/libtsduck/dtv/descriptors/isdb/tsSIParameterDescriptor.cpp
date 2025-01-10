@@ -13,7 +13,6 @@
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
-#include "tsNames.h"
 #include "tsMJD.h"
 
 #define MY_XML_NAME u"SI_parameter_descriptor"
@@ -90,7 +89,7 @@ void ts::SIParameterDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts:
         disp << margin << UString::Format(u"Parameter version: %n", buf.getUInt8()) << std::endl;
         disp << margin << "Update time: " << buf.getMJD(MJD_DATE).format(Time::DATE) << std::endl;
         while (buf.canReadBytes(2)) {
-            disp << margin << "- Table id: " << TIDName(disp.duck(), buf.getUInt8(), CASID_NULL, NamesFlags::HEXA_FIRST) << std::endl;
+            disp << margin << "- Table id: " << TIDName(disp.duck(), buf.getUInt8(), CASID_NULL, NamesFlags::HEX_VALUE_NAME) << std::endl;
             disp.displayPrivateData(u"Table description", buf, buf.getUInt8(), margin + u"  ");
         }
     }

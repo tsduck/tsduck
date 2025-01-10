@@ -114,7 +114,7 @@ void ts::DigitalCopyControlDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::DigitalCopyControlDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(1)) {
-        disp << margin << "Recording control: " << DataName(MY_XML_NAME, u"CopyControl", buf.getBits<uint8_t>(2), NamesFlags::DECIMAL_FIRST) << std::endl;
+        disp << margin << "Recording control: " << DataName(MY_XML_NAME, u"CopyControl", buf.getBits<uint8_t>(2), NamesFlags::DEC_VALUE_NAME) << std::endl;
         const bool bitrate_flag = buf.getBool();
         const bool comp_flag = buf.getBool();
         disp << margin << UString::Format(u"User-defined: 0x%1X (%<d)", buf.getBits<uint8_t>(4)) << std::endl;
@@ -128,7 +128,7 @@ void ts::DigitalCopyControlDescriptor::DisplayDescriptor(TablesDisplay& disp, co
             buf.pushReadSizeFromLength(8); // component_control_length
             while (buf.canReadBytes(2)) {
                 disp << margin << UString::Format(u"- Component tag: %n", buf.getUInt8()) << std::endl;
-                disp << margin << "  Recording control: " << DataName(MY_XML_NAME, u"CopyControl", buf.getBits<uint8_t>(2), NamesFlags::DECIMAL_FIRST) << std::endl;
+                disp << margin << "  Recording control: " << DataName(MY_XML_NAME, u"CopyControl", buf.getBits<uint8_t>(2), NamesFlags::DEC_VALUE_NAME) << std::endl;
                 const bool bflag = buf.getBool();
                 buf.skipBits(1);
                 disp << margin << UString::Format(u"  User-defined: 0x%1X (%<d)", buf.getBits<uint8_t>(4)) << std::endl;

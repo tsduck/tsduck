@@ -203,15 +203,15 @@ void ts::S2Xv2SatelliteDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay
     if (buf.canReadBytes(4)) {
         disp << margin << UString::Format(u"Delivery sytsem id: 0x%08X",  buf.getUInt32() );
         uint8_t _S2Xv2_mode = buf.getBits<uint8_t>(4);
-        disp << ", S2Xv2 mode: " << DataName(MY_XML_NAME, u"S2Xv2_mode", _S2Xv2_mode, NamesFlags::VALUE);
+        disp << ", S2Xv2 mode: " << DataName(MY_XML_NAME, u"S2Xv2_mode", _S2Xv2_mode, NamesFlags::NAME_VALUE);
         bool _multiple_input_stream_flag = buf.getBool();
         disp << ", Roll-off factor: " << SatelliteDeliverySystemDescriptor::RollOffNames().name(buf.getBits<uint8_t>(3)) << std::endl;
         buf.skipReservedBits(2, 0);
-        disp << margin << "NCR reference: " << DataName(MY_XML_NAME, u"NCR_reference", buf.getBits<uint8_t>(1), NamesFlags::VALUE) << std::endl;
-        disp << margin << "NCR version: " << DataName(MY_XML_NAME, u"NCR_version", buf.getBits<uint8_t>(1), NamesFlags::VALUE);
+        disp << margin << "NCR reference: " << DataName(MY_XML_NAME, u"NCR_reference", buf.getBits<uint8_t>(1), NamesFlags::NAME_VALUE) << std::endl;
+        disp << margin << "NCR version: " << DataName(MY_XML_NAME, u"NCR_version", buf.getBits<uint8_t>(1), NamesFlags::NAME_VALUE);
         uint8_t _channel_bond = buf.getBits<uint8_t>(2);
-        disp << ", channel bond: " << DataName(MY_XML_NAME, u"channel_bond", _channel_bond, NamesFlags::VALUE);
-        disp << ", polarization: " << DataName(MY_XML_NAME, u"Polarization", buf.getBits<uint8_t>(2), NamesFlags::VALUE) << std::endl;
+        disp << ", channel bond: " << DataName(MY_XML_NAME, u"channel_bond", _channel_bond, NamesFlags::NAME_VALUE);
+        disp << ", polarization: " << DataName(MY_XML_NAME, u"Polarization", buf.getBits<uint8_t>(2), NamesFlags::NAME_VALUE) << std::endl;
         uint8_t _scrambling_sequence_selector = 0;
         if (_S2Xv2_mode == 1 || _S2Xv2_mode == 2) {
             _scrambling_sequence_selector = buf.getBits<uint8_t>(1);
@@ -219,7 +219,7 @@ void ts::S2Xv2SatelliteDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay
         else {
             buf.skipReservedBits(1, 0);
         }
-        disp << margin << "TS/GS S2X mode: " << DataName(MY_XML_NAME, u"TSGSS2Xv2Mode", buf.getBits<uint8_t>(2), NamesFlags::DECIMAL_FIRST) << std::endl;
+        disp << margin << "TS/GS S2X mode: " << DataName(MY_XML_NAME, u"TSGSS2Xv2Mode", buf.getBits<uint8_t>(2), NamesFlags::DEC_VALUE_NAME) << std::endl;
         const uint8_t _receiver_profiles = buf.getBits<uint8_t>(5);
         disp << margin << UString::Format(u"Receiver profiles: 0x%X",  _receiver_profiles );
         if ((_receiver_profiles & 0x01) != 0) {
@@ -287,7 +287,7 @@ void ts::S2Xv2SatelliteDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay
                 disp << ", beamhopping time plan selector: " << buf.getUInt32();
             }
             disp << ", superframe pilots WH sequence number: " << int(buf.getBits<uint8_t>(5)) << std::endl;
-            disp << margin << "Postamble PLI: " << DataName(MY_XML_NAME, u"postamble_PLI", buf.getBits<uint8_t>(3), NamesFlags::VALUE | NamesFlags::DECIMAL) << std::endl;
+            disp << margin << "Postamble PLI: " << DataName(MY_XML_NAME, u"postamble_PLI", buf.getBits<uint8_t>(3), NamesFlags::NAME_VALUE | NamesFlags::DECIMAL) << std::endl;
         }
         disp.displayPrivateData(u"Reserved for future use", buf, NPOS, margin);
     }

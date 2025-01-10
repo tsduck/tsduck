@@ -37,7 +37,7 @@ namespace ts {
         //! Get the character set name.
         //! @return The name.
         //!
-        UString name() const {return _name;}
+        UString name() const { return _name; }
 
         //!
         //! Get a character set by name.

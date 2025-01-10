@@ -243,7 +243,7 @@ void ts::tsswitch::Core::handleWatchDogTimeout(WatchDog& watchdog)
 // Names of actions for debug messages.
 //----------------------------------------------------------------------------
 
-const ts::Enumeration ts::tsswitch::Core::_actionNames({
+const ts::Names ts::tsswitch::Core::_actionNames({
     {u"NONE",            NONE},
     {u"START",           START},
     {u"WAIT_STARTED",    WAIT_STARTED},

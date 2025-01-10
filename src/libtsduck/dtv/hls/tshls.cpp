@@ -13,9 +13,9 @@
 // Enumeration description of ts::hls::Tag.
 //----------------------------------------------------------------------------
 
-const ts::Enumeration& ts::hls::TagNames()
+const ts::Names& ts::hls::TagNames()
 {
-    static const Enumeration data {
+    static const Names data {
         {u"EXTM3U",                       Tag::EXTM3U},
         {u"EXT-X-VERSION",                Tag::VERSION},
         {u"EXTINF",                       Tag::EXTINF},

@@ -21,10 +21,10 @@
 // Enumeration description of ts::json::Type.
 //----------------------------------------------------------------------------
 
-const ts::Enumeration& ts::json::TypeEnum()
+const ts::Names& ts::json::TypeEnum()
 {
     // Thread-safe init-safe static data pattern:
-    static const Enumeration data {
+    static const Names data {
         {u"Null literal",  ts::json::Type::Null},
         {u"True literal",  ts::json::Type::True},
         {u"False literal", ts::json::Type::False},

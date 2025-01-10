@@ -13,9 +13,9 @@
 // Displayable names of plugin types.
 //----------------------------------------------------------------------------
 
-const ts::Enumeration& ts::PluginTypeNames()
+const ts::Names& ts::PluginTypeNames()
 {
-    static const Enumeration data {
+    static const Names data {
         {u"input",            PluginType::INPUT},
         {u"output",           PluginType::OUTPUT},
         {u"packet processor", PluginType::PROCESSOR},

@@ -12,7 +12,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsEnumeration.h"
+#include "tsNames.h"
 
 namespace ts {
     //!
@@ -30,14 +30,14 @@ namespace ts {
     //! Enumeration description of ts::SectionFormat.
     //! @return A constant reference to the enumeration description.
     //!
-    TSDUCKDLL const Enumeration& SectionFormatEnum();
+    TSDUCKDLL const Names& SectionFormatEnum();
 
     //!
     //! Enumeration description of ts::SectionFormat, excluding ts::SectionFormat::UNSPECIFIED.
     //! Useful to declare a parameter value which needs a specific format.
     //! @return A constant reference to the enumeration description.
     //!
-    TSDUCKDLL const Enumeration& SpecifiedSectionFormatEnum();
+    TSDUCKDLL const Names& SpecifiedSectionFormatEnum();
 
     //!
     //! Get a section file type, based on a file name.

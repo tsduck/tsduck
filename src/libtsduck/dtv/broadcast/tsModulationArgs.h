@@ -308,7 +308,7 @@ namespace ts {
         //!
         //! Default value for ISDB-T layers (all layers: "ABC").
         //!
-        static const UString DEFAULT_ISDBT_LAYERS;
+        static constexpr const UChar* DEFAULT_ISDBT_LAYERS = u"ABC";
         //!
         //! Check if an ISDB-T time interleaving value is valid.
         //! @param [in] ti Time interleaving value. Valid values: 0, 1, 2, 4 or -1 (auto).

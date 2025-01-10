@@ -13,7 +13,7 @@
 
 #pragma once
 #include "tsReport.h"
-#include "tsEnumeration.h"
+#include "tsNames.h"
 #include "tsByteBlock.h"
 #include "tsAbstractNumber.h"
 #include "tsCompactBitSet.h"
@@ -375,12 +375,12 @@ namespace ts {
         //! @param [in] optional  When true, the option's value is optional.
         //! @return A reference to this instance.
         //!
-        Args& option(const UChar*        name,
-                     UChar               short_name,
-                     const Enumeration&  enumeration,
-                     size_t              min_occur = 0,
-                     size_t              max_occur = 0,
-                     bool                optional = false)
+        Args& option(const UChar*  name,
+                     UChar         short_name,
+                     const Names&  enumeration,
+                     size_t        min_occur = 0,
+                     size_t        max_occur = 0,
+                     bool          optional = false)
         {
             addOption(IOption(this, name, short_name, enumeration, min_occur, max_occur, optional ? uint32_t(IOPT_OPTVALUE) : 0));
             return *this;
@@ -466,11 +466,11 @@ namespace ts {
         }
 
         //!
-        //! When an option has an Enumeration type, get a list of all valid names.
+        //! When an option has an Names type, get a list of all valid names.
         //! @param [in] name Long name of option. 0 or "" means a parameter, not an option.
         //! @param [in] separator The separator to be used between values, a comma by default.
         //! @return A comma-separated list of all possible names.
-        //! @see Enumeration::nameList()
+        //! @see Names::nameList()
         //!
         UString optionNames(const UChar* name, const UString& separator = u", ") const;
 
@@ -504,7 +504,7 @@ namespace ts {
         //! To be used as value for parameter @ max_value to indicate that there is no
         //! limit to the parameter integer value.
         //!
-        static const int64_t UNLIMITED_VALUE = std::numeric_limits<int64_t>::max();
+        static constexpr int64_t UNLIMITED_VALUE = std::numeric_limits<int64_t>::max();
 
         //!
         //! Set the description of the command.
@@ -575,10 +575,11 @@ namespace ts {
         };
 
         //!
-        //! Enumeration description of HelpFormat.
+        //! Names description of HelpFormat.
         //! Typically used to implement the -\-help command line option.
+        //! @return A constant reference to the enumeration description.
         //!
-        static const Enumeration HelpFormatEnum;
+        static const Names& HelpFormatEnum();
 
         //!
         //! Default line width for help texts.
@@ -938,9 +939,9 @@ namespace ts {
         //!
         //! Get an OR'ed of all values of an integer option in the last analyzed command line.
         //!
-        //! This method is typically useful when the values of an option are taken from an
-        //! Enumeration and each value is a bit mask. When specifying several values,
-        //! the result of this method is a mask of all specified options.
+        //! This method is typically useful when the values of an option are taken from a Names
+        //! and each value is a bit mask. When specifying several values, the result of this
+        //! method is a mask of all specified options.
         //!
         //! @tparam INT An integer type for the result.
         //! @param [in] name The full name of the option. If the parameter is a null pointer or
@@ -957,9 +958,9 @@ namespace ts {
         //!
         //! Get an OR'ed of all values of an integer option in the last analyzed command line.
         //!
-        //! This method is typically useful when the values of an option are taken from an
-        //! Enumeration and each value is a bit mask. When specifying several values,
-        //! the result of this method is a mask of all specified options.
+        //! This method is typically useful when the values of an option are taken from a Names
+        //! and each value is a bit mask. When specifying several values, the result of this
+        //! method is a mask of all specified options.
         //!
         //! @tparam INT An integer type for the result.
         //! @param [out] value A variable receiving the OR'ed values of the integer option.
@@ -1264,6 +1265,7 @@ namespace ts {
         // Internal representation of Option
         class TSDUCKDLL IOption
         {
+            TS_DEFAULT_COPY_MOVE(IOption);
         public:
             UString           name {};         // Long name (u"verbose" for --verbose)
             UChar             short_name = 0;  // Short option name (u'v' for -v), 0 if unused
@@ -1274,7 +1276,7 @@ namespace ts {
             int64_t           max_value = 0;   // Maximum value (for integer args)
             size_t            decimals = 0;    // Number of meaningful decimal digits
             uint32_t          flags = 0;       // Option flags
-            Enumeration       enumeration {};  // Enumeration values (if not empty)
+            Names             enumeration {};  // Enumeration values (if not empty)
             UString           syntax {};       // Syntax of value (informational, "address:port" for instance)
             UString           help {};         // Help description
             ArgValueVector    values {};       // Set of values after analysis
@@ -1299,13 +1301,13 @@ namespace ts {
                     std::intmax_t   den = 0);
 
             // Constructor:
-            IOption(Args*              parent,
-                    const UChar*       name,
-                    UChar              short_name,
-                    const Enumeration& enumeration,
-                    size_t             min_occur,
-                    size_t             max_occur,
-                    uint32_t           flags);
+            IOption(Args*        parent,
+                    const UChar* name,
+                    UChar        short_name,
+                    const Names& enumeration,
+                    size_t       min_occur,
+                    size_t       max_occur,
+                    uint32_t     flags);
 
             // Displayable name
             UString display() const;
@@ -1314,7 +1316,7 @@ namespace ts {
             enum ValueContext {ALONE, SHORT, LONG};
             UString valueDescription(ValueContext ctx) const;
 
-            // When the option has an Enumeration type, get a list of all valid names.
+            // When the option has a Names type, get a list of all valid names.
             UString optionNames(const UString& separator) const;
 
             // Complete option help text.
@@ -1348,8 +1350,8 @@ namespace ts {
         int           _flags = 0;
 
         // List of characters which are allowed thousands separators and decimal points in integer values
-        static const UChar* const THOUSANDS_SEPARATORS;
-        static const UChar* const DECIMAL_POINTS;
+        static constexpr const UChar* THOUSANDS_SEPARATORS = u", ";
+        static constexpr const UChar* DECIMAL_POINTS = u".";
 
         // Add a new option.
         void addOption(const IOption& opt);

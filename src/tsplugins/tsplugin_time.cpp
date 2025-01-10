@@ -14,7 +14,7 @@
 #include "tsPluginRepository.h"
 #include "tsSectionDemux.h"
 #include "tsBinaryTable.h"
-#include "tsEnumeration.h"
+#include "tsNames.h"
 #include "tsTime.h"
 #include "tsTDT.h"
 
@@ -153,9 +153,9 @@ bool ts::TimePlugin::start()
     std::sort(_events.begin(), _events.end());
 
     if (verbose()) {
-        verbose(u"initial packet processing: %s", StatusNames.name(_status));
+        verbose(u"initial packet processing: %s", StatusNames().name(_status));
         for (auto& it : _events) {
-            verbose(u"packet %s after %s", StatusNames.name(it.status), it.time.format(Time::DATETIME));
+            verbose(u"packet %s after %s", StatusNames().name(it.status), it.time.format(Time::DATETIME));
         }
     }
 
@@ -250,7 +250,7 @@ ts::ProcessorPlugin::Status ts::TimePlugin::processPacket(TSPacket& pkt, TSPacke
         _next_index++;
 
         if (verbose()) {
-            verbose(u"%s: new packet processing: %s", _last_time.format(Time::DATETIME), StatusNames.name(_status));
+            verbose(u"%s: new packet processing: %s", _last_time.format(Time::DATETIME), StatusNames().name(_status));
         }
     }
 

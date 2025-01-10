@@ -74,6 +74,6 @@ namespace ts {
 
     private:
         // Thread-safe init-safe static data patterns.
-        static const Enumeration& FramerateDenominators();
+        static const Names& FramerateDenominators();
     };
 }

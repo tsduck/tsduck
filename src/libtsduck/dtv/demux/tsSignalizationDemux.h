@@ -21,6 +21,7 @@
 #include "tsPAT.h"
 #include "tsPMT.h"
 #include "tsNIT.h"
+#include "tsDVB.h"
 
 namespace ts {
     //!

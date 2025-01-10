@@ -101,7 +101,7 @@ void ts::SeriesDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Desc
     if (buf.canReadBytes(8)) {
         disp << margin << UString::Format(u"Series id: %n", buf.getUInt16()) << std::endl;
         disp << margin << UString::Format(u"Repeat label: %d", buf.getBits<uint8_t>(4)) << std::endl;
-        disp << margin << "Program pattern: " << DataName(MY_XML_NAME, u"ProgramPattern", buf.getBits<uint8_t>(3), NamesFlags::DECIMAL_FIRST) << std::endl;
+        disp << margin << "Program pattern: " << DataName(MY_XML_NAME, u"ProgramPattern", buf.getBits<uint8_t>(3), NamesFlags::DEC_VALUE_NAME) << std::endl;
         const bool date_valid = buf.getBool();
         const Time exp(buf.getMJD(MJD_DATE));
         disp << margin << "Expire date: " << (date_valid ? exp.format(Time::DATE) : u"unspecified") << std::endl;

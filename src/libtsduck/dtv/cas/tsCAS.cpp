@@ -18,7 +18,7 @@
 namespace {
 
     // A repository of all CAS.
-    class CASRepository : private ts::NamesFile::Visitor
+    class CASRepository : private ts::Names::Visitor
     {
         TS_SINGLETON(CASRepository);
     public:
@@ -38,8 +38,8 @@ namespace {
         mutable std::mutex _mutex {};
         std::list<CASDesc> _cas {};
 
-        // Implementation of NamesFile::Visitor.
-        virtual bool handleNameValue(const ts::UString& section_name, ts::NamesFile::Value value, const ts::UString& name) override;
+        // Implementation of Names::Visitor.
+        virtual bool handleNameValue(const ts::Names& section, ts::Names::uint_t value, const ts::UString& name) override;
     };
 }
 
@@ -56,13 +56,13 @@ CASRepository::CASRepository()
     CERR.debug(u"creating PSIRepository");
 
     // Load all CAS ranges from a names file and subscribe to further updates.
-    const auto repo = ts::NamesFile::Instance(ts::NamesFile::Predefined::DTV);
-    repo->visitSection(this, u"CASFamilyRange");
-    repo->subscribe(this, u"CASFamilyRange");
+    const auto section = ts::Names::GetSection(u"dtv", u"CASFamilyRange", true);
+    section->visit(this);
+    section->subscribe(this);
 }
 
 // Get a range of CAS ids.
-bool CASRepository::handleNameValue(const ts::UString& section_name, ts::NamesFile::Value value, const ts::UString& name)
+bool CASRepository::handleNameValue(const ts::Names& section, ts::Names::uint_t value, const ts::UString& name)
 {
     // Cleanup name: remove comments and spaces.
     ts::UString range(name);
@@ -152,7 +152,7 @@ bool CASRepository::getCASIdRange(ts::CASFamily cas, ts::CASID& min, ts::CASID& 
 
 ts::UString ts::CASFamilyName(CASFamily cas)
 {
-    return NameFromDTV(u"CASFamily", cas, NamesFlags::NAME | NamesFlags::DECIMAL);
+    return NameFromSection(u"dtv", u"CASFamily", cas, NamesFlags::NAME | NamesFlags::DECIMAL);
 }
 
 
@@ -164,14 +164,14 @@ ts::UString ts::CASIdName(const DuckContext& duck, CASID casid, NamesFlags flags
 {
     // In the case of ISDB, look into another table (but only known names).
     if (bool(duck.standards() & Standards::ISDB)) {
-        const UString name(NameFromDTV(u"ARIBCASystemId", NamesFile::Value(casid), flags | NamesFlags::NO_UNKNOWN));
+        const UString name(NameFromSection(u"dtv", u"ARIBCASystemId", casid, flags | NamesFlags::NO_UNKNOWN));
         if (!name.empty()) {
             return name;
         }
     }
 
     // Not ISDB or not found in ISDB, use standard CAS names.
-    return NameFromDTV(u"CASystemId", NamesFile::Value(casid), flags);
+    return NameFromSection(u"dtv", u"CASystemId", casid, flags);
 }
 
 

@@ -379,7 +379,7 @@ void ts::VCT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
         disp << margin << "- Channel " << buf.getBits<uint16_t>(10);
         disp << "." << buf.getBits<uint16_t>(10);
         disp << ", short name: \"" << name << "\"" << std::endl;
-        disp << margin << "  Modulation: " << NameFromDTV(u"ATSCModulationModes", buf.getUInt8());
+        disp << margin << "  Modulation: " << NameFromSection(u"dtv", u"ATSCModulationModes", buf.getUInt8());
         disp << UString::Format(u", frequency: %'d", buf.getUInt32()) << std::endl;
         disp << margin << UString::Format(u"  TS id: %n", buf.getUInt16());
         disp << UString::Format(u", program number: %n", buf.getUInt16()) << std::endl;
@@ -396,7 +396,7 @@ void ts::VCT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
         }
         disp << margin << "  Hidden: " << UString::YesNo(hidden) << ", hide guide: " << UString::YesNo(buf.getBool()) << std::endl;
         buf.skipBits(3);
-        disp << margin << "  Service type: " << NameFromDTV(u"ATSCServiceType", buf.getBits<uint8_t>(6));
+        disp << margin << "  Service type: " << NameFromSection(u"dtv", u"ATSCServiceType", buf.getBits<uint8_t>(6));
         disp << UString::Format(u", source id: %n", buf.getUInt16()) << std::endl;
 
         disp.displayDescriptorListWithLength(section, context, false, buf, margin + u"  ", UString(), UString(), 10);
@@ -411,9 +411,9 @@ void ts::VCT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
 // Thread-safe init-safe static data patterns.
 //----------------------------------------------------------------------------
 
-const ts::Enumeration& ts::VCT::ModulationModeEnum()
+const ts::Names& ts::VCT::ModulationModeEnum()
 {
-    static const Enumeration data({
+    static const Names data({
         {u"analog",  0x01},
         {u"64-QAM",  0x02},
         {u"256-QAM", 0x03},
@@ -423,9 +423,9 @@ const ts::Enumeration& ts::VCT::ModulationModeEnum()
     return data;
 }
 
-const ts::Enumeration& ts::VCT::ServiceTypeEnum()
+const ts::Names& ts::VCT::ServiceTypeEnum()
 {
-    static const Enumeration data({
+    static const Names data({
         {u"analog",   0x01},
         {u"dtv",      0x02},
         {u"audio",    0x03},

@@ -215,8 +215,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"scrambler", ts::ScramblerPlugin);
 //----------------------------------------------------------------------------
 
 ts::ScramblerPlugin::ScramblerPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"DVB scrambler", u"[options] [service]"),
-    _cp()  // required on old gcc 10 and below (gcc bug)
+    ProcessorPlugin(tsp_, u"DVB scrambler", u"[options] [service]")
 {
     // We need to define character sets to specify service names.
     duck.defineArgsForCharset(*this);

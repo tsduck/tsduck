@@ -76,7 +76,7 @@ void ts::QualityExtensionDescriptor::DisplayDescriptor(TablesDisplay& disp, cons
         disp << margin << "Field size bytes: " << int(buf.getUInt8()) << std::endl;
         const uint8_t metric_count = buf.getUInt8();
         for (uint8_t i = 1; i <= metric_count; i++) {
-            disp << margin << "Metric code [" << int(i) << "]: " << DataName(MY_XML_NAME, u"metric_code", buf.getUInt32(), NamesFlags::HEXA_FIRST) << std::endl;
+            disp << margin << "Metric code [" << int(i) << "]: " << DataName(MY_XML_NAME, u"metric_code", buf.getUInt32(), NamesFlags::HEX_VALUE_NAME) << std::endl;
          }
     }
 }

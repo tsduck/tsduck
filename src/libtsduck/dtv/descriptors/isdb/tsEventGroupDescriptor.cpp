@@ -110,7 +110,7 @@ void ts::EventGroupDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::
 {
     if (buf.canReadBytes(1)) {
         const uint8_t type = buf.getBits<uint8_t>(4);
-        disp << margin << "Group type: " << DataName(MY_XML_NAME, u"Type", type, NamesFlags::DECIMAL_FIRST) << std::endl;
+        disp << margin << "Group type: " << DataName(MY_XML_NAME, u"Type", type, NamesFlags::DEC_VALUE_NAME) << std::endl;
         size_t count = buf.getBits<size_t>(4);
         disp << margin << "Actual events:" << (count == 0 ? " none" : "") << std::endl;
         while (count-- > 0 && buf.canReadBytes(4)) {

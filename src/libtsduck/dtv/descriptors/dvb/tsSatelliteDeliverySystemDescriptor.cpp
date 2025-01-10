@@ -162,18 +162,18 @@ const std::map<int, ts::RollOff>& ts::SatelliteDeliverySystemDescriptor::ToRollO
     return data;
 }
 
-const ts::Enumeration& ts::SatelliteDeliverySystemDescriptor::DirectionNames()
+const ts::Names& ts::SatelliteDeliverySystemDescriptor::DirectionNames()
 {
-    static const Enumeration data({
+    static const Names data({
         {u"west", 0},
         {u"east", 1},
     });
     return data;
 }
 
-const ts::Enumeration& ts::SatelliteDeliverySystemDescriptor::PolarizationNames()
+const ts::Names& ts::SatelliteDeliverySystemDescriptor::PolarizationNames()
 {
-    static const Enumeration data({
+    static const Names data({
         {u"horizontal", 0},
         {u"vertical",   1},
         {u"left",       2},
@@ -182,9 +182,9 @@ const ts::Enumeration& ts::SatelliteDeliverySystemDescriptor::PolarizationNames(
     return data;
 }
 
-const ts::Enumeration& ts::SatelliteDeliverySystemDescriptor::RollOffNames()
+const ts::Names& ts::SatelliteDeliverySystemDescriptor::RollOffNames()
 {
-    static const Enumeration data({
+    static const Names data({
         {u"0.35",     0},
         {u"0.25",     1},
         {u"0.20",     2},
@@ -196,9 +196,9 @@ const ts::Enumeration& ts::SatelliteDeliverySystemDescriptor::RollOffNames()
     return data;
 }
 
-const ts::Enumeration& ts::SatelliteDeliverySystemDescriptor::ModulationNamesDVB()
+const ts::Names& ts::SatelliteDeliverySystemDescriptor::ModulationNamesDVB()
 {
-    static const Enumeration data({
+    static const Names data({
         {u"auto",   0},
         {u"QPSK",   1},
         {u"8PSK",   2},
@@ -207,9 +207,9 @@ const ts::Enumeration& ts::SatelliteDeliverySystemDescriptor::ModulationNamesDVB
     return data;
 }
 
-const ts::Enumeration& ts::SatelliteDeliverySystemDescriptor::ModulationNamesISDB()
+const ts::Names& ts::SatelliteDeliverySystemDescriptor::ModulationNamesISDB()
 {
-    static const Enumeration data({
+    static const Names data({
         {u"auto",         0},
         {u"QPSK",         1},
         {u"ISDB-S",       8}, // TC8PSK ?
@@ -219,9 +219,9 @@ const ts::Enumeration& ts::SatelliteDeliverySystemDescriptor::ModulationNamesISD
     return data;
 }
 
-const ts::Enumeration& ts::SatelliteDeliverySystemDescriptor::CodeRateNamesDVB()
+const ts::Names& ts::SatelliteDeliverySystemDescriptor::CodeRateNamesDVB()
 {
-    static const Enumeration data({
+    static const Names data({
         {u"undefined", 0},
         {u"1/2",       1},
         {u"2/3",       2},
@@ -237,9 +237,9 @@ const ts::Enumeration& ts::SatelliteDeliverySystemDescriptor::CodeRateNamesDVB()
     return data;
 }
 
-const ts::Enumeration& ts::SatelliteDeliverySystemDescriptor::CodeRateNamesISDB()
+const ts::Names& ts::SatelliteDeliverySystemDescriptor::CodeRateNamesISDB()
 {
-    static const Enumeration data({
+    static const Names data({
         {u"undefined",    0},
         {u"1/2",          1},
         {u"2/3",          2},
@@ -326,25 +326,25 @@ void ts::SatelliteDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& dis
         disp << margin << UString::Format(u"Orbital position: %d", buf.getBCD<uint32_t>(3));
         disp << UString::Format(u".%d degree, ", buf.getBCD<uint32_t>(1));
         disp << (buf.getBool() ? "east" : "west") << std::endl;
-        disp << margin << "Polarization: " << DataName(MY_XML_NAME, u"Polarization", buf.getBits<uint8_t>(2), NamesFlags::VALUE | NamesFlags::DECIMAL) << std::endl;
+        disp << margin << "Polarization: " << DataName(MY_XML_NAME, u"Polarization", buf.getBits<uint8_t>(2), NamesFlags::NAME_VALUE | NamesFlags::DECIMAL) << std::endl;
         const bool isdb = bool(disp.duck().standards() & Standards::ISDB);
         if (isdb) {
             disp << margin << "Delivery system: " << DeliverySystemEnum().name(DS_ISDB_S) << std::endl;
-            disp << margin << "Modulation: " << DataName(MY_XML_NAME, u"ISDBModulation", buf.getBits<uint8_t>(5), NamesFlags::VALUE | NamesFlags::DECIMAL) << std::endl;
+            disp << margin << "Modulation: " << DataName(MY_XML_NAME, u"ISDBModulation", buf.getBits<uint8_t>(5), NamesFlags::NAME_VALUE | NamesFlags::DECIMAL) << std::endl;
         }
         else {
             const uint8_t roll_off = buf.getBits<uint8_t>(2);
             const bool s2 = buf.getBool();
             disp << margin << "Delivery system: " << DeliverySystemEnum().name(s2 ? DS_DVB_S2 : DS_DVB_S) << std::endl;
-            disp << margin << "Modulation: " << DataName(MY_XML_NAME, u"DVBModulation", buf.getBits<uint8_t>(2), NamesFlags::VALUE | NamesFlags::DECIMAL);
+            disp << margin << "Modulation: " << DataName(MY_XML_NAME, u"DVBModulation", buf.getBits<uint8_t>(2), NamesFlags::NAME_VALUE | NamesFlags::DECIMAL);
             if (s2) {
-                disp << ", roll off: " << DataName(MY_XML_NAME, u"DVBS2RollOff", roll_off, NamesFlags::VALUE | NamesFlags::DECIMAL);
+                disp << ", roll off: " << DataName(MY_XML_NAME, u"DVBS2RollOff", roll_off, NamesFlags::NAME_VALUE | NamesFlags::DECIMAL);
             }
             disp << std::endl;
         }
         disp << margin << UString::Format(u"Symbol rate: %d", buf.getBCD<uint32_t>(3));
         disp << UString::Format(u".%04d Msymbol/s", buf.getBCD<uint32_t>(4)) << std::endl;
-        disp << margin << "Inner FEC: " << DataName(MY_XML_NAME, isdb ? u"ISDBSatelliteFEC" : u"DVBSatelliteFEC", buf.getBits<uint8_t>(4), NamesFlags::VALUE | NamesFlags::DECIMAL) << std::endl;
+        disp << margin << "Inner FEC: " << DataName(MY_XML_NAME, isdb ? u"ISDBSatelliteFEC" : u"DVBSatelliteFEC", buf.getBits<uint8_t>(4), NamesFlags::NAME_VALUE | NamesFlags::DECIMAL) << std::endl;
     }
 }
 

@@ -7,7 +7,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsTSScrambling.h"
-#include "tsNames.h"
 #include "tsArgs.h"
 
 
@@ -18,29 +17,18 @@
 ts::TSScrambling::TSScrambling(Report& report, uint8_t scrambling) :
     _report(report),
     _scrambling_type(scrambling),
-    _next_cw(_cw_list.end()),
-    _dvbcsa(),    // required on old gcc 10 and below (gcc bug)
-    _dvbcissa(),  // required on old gcc 10 and below (gcc bug)
-    _idsa(),      // required on old gcc 10 and below (gcc bug)
-    _aescbc(),    // required on old gcc 10 and below (gcc bug)
-    _aesctr()     // required on old gcc 10 and below (gcc bug)
+    _next_cw(_cw_list.end())
 
 {
     setScramblingType(scrambling);
 }
 
 ts::TSScrambling::TSScrambling(const TSScrambling& other) :
-    BlockCipherAlertInterface(other),  // required on old gcc 8.5 and below (gcc bug)
     _report(other._report),
     _scrambling_type(other._scrambling_type),
     _explicit_type(other._explicit_type),
     _cw_list(other._cw_list),
-    _next_cw(_cw_list.end()),
-    _dvbcsa(),    // required on old gcc 10 and below (gcc bug)
-    _dvbcissa(),  // required on old gcc 10 and below (gcc bug)
-    _idsa(),      // required on old gcc 10 and below (gcc bug)
-    _aescbc(),    // required on old gcc 10 and below (gcc bug)
-    _aesctr()     // required on old gcc 10 and below (gcc bug)
+    _next_cw(_cw_list.end())
 {
     setScramblingType(_scrambling_type);
     _dvbcsa[0].setEntropyMode(other._dvbcsa[0].entropyMode());
@@ -52,12 +40,7 @@ ts::TSScrambling::TSScrambling(TSScrambling&& other) :
     _scrambling_type(other._scrambling_type),
     _explicit_type(other._explicit_type),
     _cw_list(other._cw_list),
-    _next_cw(_cw_list.end()),
-    _dvbcsa(),    // required on old gcc 10 and below (gcc bug)
-    _dvbcissa(),  // required on old gcc 10 and below (gcc bug)
-    _idsa(),      // required on old gcc 10 and below (gcc bug)
-    _aescbc(),    // required on old gcc 10 and below (gcc bug)
-    _aesctr()     // required on old gcc 10 and below (gcc bug)
+    _next_cw(_cw_list.end())
 {
     setScramblingType(_scrambling_type);
     _dvbcsa[0].setEntropyMode(other._dvbcsa[0].entropyMode());
@@ -108,7 +91,9 @@ bool ts::TSScrambling::setScramblingType(uint8_t scrambling, bool overrideExplic
 
         // Set scrambling type.
         if (_scrambling_type != scrambling) {
-            _report.debug(u"switching scrambling type from %s to %s", NameFromDTV(u"ScramblingMode", _scrambling_type), NameFromDTV(u"ScramblingMode", scrambling));
+            if (_report.debug()) {
+                _report.debug(u"switching scrambling type from %s to %s", NameFromSection(u"dtv", u"ScramblingMode", _scrambling_type), NameFromSection(u"dtv", u"ScramblingMode", scrambling));
+            }
             _scrambling_type = scrambling;
         }
     }

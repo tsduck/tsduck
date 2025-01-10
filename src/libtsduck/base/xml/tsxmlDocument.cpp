@@ -20,14 +20,12 @@
 //----------------------------------------------------------------------------
 
 ts::xml::Document::Document(Report& report) :
-    Node(report, 1),
-    StringifyInterface() // required on old gcc 8.5 and below (gcc bug)
+    Node(report, 1)
 {
 }
 
 ts::xml::Document::Document(const Document& other) :
     Node(other),
-    StringifyInterface(), // required on old gcc 8.5 and below (gcc bug)
     _tweaks(other._tweaks)
 {
 }

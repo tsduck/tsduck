@@ -13,11 +13,15 @@
 // Enumerations, names for values
 //----------------------------------------------------------------------------
 
-const ts::Enumeration ts::PolledFile::StatusEnumeration({
-    {u"modified", ts::PolledFile::MODIFIED},
-    {u"added",    ts::PolledFile::ADDED},
-    {u"deleted",  ts::PolledFile::DELETED},
-});
+const ts::Names& ts::PolledFile::StatusEnumeration()
+{
+    static const Names data({
+        {u"modified", MODIFIED},
+        {u"added",    ADDED},
+        {u"deleted",  DELETED},
+    });
+    return data;
+}
 
 
 //----------------------------------------------------------------------------

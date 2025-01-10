@@ -203,7 +203,7 @@ void ts::DTSHDDescriptor::DisplaySubstreamInfo(TablesDisplay& disp, bool present
         const size_t num_assets = buf.getBits<size_t>(3) + 1;
         disp << margin << UString::Format(u"  Asset count: %d, channel count: %d", num_assets, buf.getBits<uint8_t>(5)) << std::endl;
         disp << margin << UString::Format(u"  Low Frequency Effects (LFE): %s", buf.getBool()) << std::endl;
-        disp << margin << UString::Format(u"  Sampling frequency: %s", DataName(MY_XML_NAME, u"SamplingFrequency", buf.getBits<uint8_t>(4), NamesFlags::VALUE)) << std::endl;
+        disp << margin << UString::Format(u"  Sampling frequency: %s", DataName(MY_XML_NAME, u"SamplingFrequency", buf.getBits<uint8_t>(4), NamesFlags::NAME_VALUE)) << std::endl;
         disp << margin << UString::Format(u"  Sample resolution > 16 bits: %s", buf.getBool()) << std::endl;
         buf.skipBits(2);
 
@@ -211,7 +211,7 @@ void ts::DTSHDDescriptor::DisplaySubstreamInfo(TablesDisplay& disp, bool present
         for (size_t asset_index = 0; asset_index < num_assets && buf.canReadBytes(3); ++asset_index) {
             disp << margin << UString::Format(u"  Asset %d:", asset_index) << std::endl;
             disp << margin << "    Construction: "
-                 << DataName(MY_XML_NAME, u"AssetConstruction", buf.getBits<uint8_t>(5) + (asset_index == 0 ? 0 : 0x0100), NamesFlags::VALUE)
+                 << DataName(MY_XML_NAME, u"AssetConstruction", buf.getBits<uint8_t>(5) + (asset_index == 0 ? 0 : 0x0100), NamesFlags::NAME_VALUE)
                  << std::endl;
             disp << margin << UString::Format(u"    VBR: %s", buf.getBool());
             const bool br_scaling = buf.getBool();
@@ -237,8 +237,8 @@ void ts::DTSHDDescriptor::DisplaySubstreamInfo(TablesDisplay& disp, bool present
                 const uint8_t type = buf.getUInt8();
                 disp << margin << UString::Format(u"    Component type: 0x%X", type) << std::endl;
                 disp << margin << UString::Format(u"      %s", (type & 0x40) != 0 ? u"Full service" : u"Combined service") << std::endl;
-                disp << margin << UString::Format(u"      Service type: %s", DataName(MY_XML_NAME, u"ServiceType", (type >> 3) & 0x07, NamesFlags::VALUE)) << std::endl;
-                disp << margin << UString::Format(u"      Number of channels: %s", DataName(MY_XML_NAME, u"NumberOfChannels", type & 0x07, NamesFlags::VALUE)) << std::endl;
+                disp << margin << UString::Format(u"      Service type: %s", DataName(MY_XML_NAME, u"ServiceType", (type >> 3) & 0x07, NamesFlags::NAME_VALUE)) << std::endl;
+                disp << margin << UString::Format(u"      Number of channels: %s", DataName(MY_XML_NAME, u"NumberOfChannels", type & 0x07, NamesFlags::NAME_VALUE)) << std::endl;
             }
             if (language_code_flag && buf.canReadBytes(3)) {
                 disp << margin << "    Language code: \"" << buf.getLanguageCode() << "\"" << std::endl;

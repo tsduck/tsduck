@@ -16,7 +16,7 @@
 #include "tsByteBlock.h"
 #include "tsEnvironment.h"
 #include "tsIntegerUtils.h"
-#include "tsEnumeration.h"
+#include "tsNames.h"
 
 
 //----------------------------------------------------------------------------
@@ -1592,7 +1592,7 @@ bool ts::UString::getLine(std::istream& strm)
 bool ts::UString::toBool(bool& value) const
 {
     // Thread-safe init-safe static data pattern:
-    static const Enumeration bool_enum({
+    static const Names bool_enum({
         {u"false", 0},
         {u"true",  1},
         {u"yes",   1},
@@ -1601,8 +1601,8 @@ bool ts::UString::toBool(bool& value) const
         {u"off",   0},
     });
 
-    const int iValue = bool_enum.value(*this, false);
-    if (iValue == Enumeration::UNKNOWN) {
+    const Names::int_t iValue = bool_enum.value(*this, false);
+    if (iValue == Names::UNKNOWN) {
         // Invalid string and invalid integer.
         value = false;
         return false;
@@ -1622,8 +1622,8 @@ namespace {
 
     // An enumeration for Tristate values. We use very large integer values
     // for predefined strings to avoid clash with user-specified values.
-    enum {
-        TSE_FALSE = std::numeric_limits<int>::min(),
+    enum : ts::Names::int_t {
+        TSE_FALSE = std::numeric_limits<ts::Names::int_t>::min(),
         TSE_TRUE,
         TSE_YES,
         TSE_NO,
@@ -1634,10 +1634,10 @@ namespace {
         TSE_LAST  // Last predefined value
     };
 
-    const ts::Enumeration& TristateEnum()
+    const ts::Names& TristateEnum()
     {
         // Thread-safe init-safe static data pattern:
-        static const ts::Enumeration data({
+        static const ts::Names data({
             {u"false",   TSE_FALSE},
             {u"true",    TSE_TRUE},
             {u"yes",     TSE_YES},
@@ -1658,16 +1658,16 @@ ts::UString ts::UString::TristateNamesList()
 
 bool ts::UString::toTristate(Tristate& value) const
 {
-    const int iValue = TristateEnum().value(*this, false);
+    const Names::int_t i_value = TristateEnum().value(*this, false);
 
-    if (iValue == Enumeration::UNKNOWN) {
+    if (i_value == Names::UNKNOWN) {
         // Invalid string and invalid integer.
         value = Tristate::Maybe;
         return false;
     }
     else {
         // Valid string or integer.
-        switch (iValue) {
+        switch (i_value) {
             case TSE_FALSE:
             case TSE_NO:
             case TSE_OFF:
@@ -1684,7 +1684,7 @@ bool ts::UString::toTristate(Tristate& value) const
                 break;
             default:
                 // Got an integer value.
-                value = ToTristate(iValue);
+                value = ToTristate(i_value);
                 break;
         }
         return true;

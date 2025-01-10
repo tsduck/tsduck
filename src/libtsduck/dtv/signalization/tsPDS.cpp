@@ -13,9 +13,9 @@
 // Enumeration description of PDS values.
 //----------------------------------------------------------------------------
 
-const ts::Enumeration& ts::PrivateDataSpecifierEnum()
+const ts::Names& ts::PrivateDataSpecifierEnum()
 {
-    static const Enumeration data {
+    static const Names data {
         {u"BskyB",     ts::PDS_BSKYB},
         {u"Nagra",     ts::PDS_NAGRA},
         {u"TPS",       ts::PDS_TPS},
@@ -42,5 +42,5 @@ const ts::Enumeration& ts::PrivateDataSpecifierEnum()
 
 ts::UString ts::PDSName(PDS pds, NamesFlags flags)
 {
-    return NameFromDTV(u"PrivateDataSpecifier", NamesFile::Value(pds), flags);
+    return NameFromSection(u"dtv", u"PrivateDataSpecifier", pds, flags);
 }

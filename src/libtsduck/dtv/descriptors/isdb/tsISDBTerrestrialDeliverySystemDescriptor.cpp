@@ -70,9 +70,9 @@ const std::map<int, ts::GuardInterval>& ts::ISDBTerrestrialDeliverySystemDescrip
     return data;
 }
 
-const ts::Enumeration& ts::ISDBTerrestrialDeliverySystemDescriptor::GuardIntervalNames()
+const ts::Names& ts::ISDBTerrestrialDeliverySystemDescriptor::GuardIntervalNames()
 {
-    static const Enumeration data({
+    static const Names data({
         {u"1/32", 0},
         {u"1/16", 1},
         {u"1/8",  2},
@@ -81,9 +81,9 @@ const ts::Enumeration& ts::ISDBTerrestrialDeliverySystemDescriptor::GuardInterva
     return data;
 }
 
-const ts::Enumeration& ts::ISDBTerrestrialDeliverySystemDescriptor::TransmissionModeNames()
+const ts::Names& ts::ISDBTerrestrialDeliverySystemDescriptor::TransmissionModeNames()
 {
-    static const Enumeration data({
+    static const Names data({
         {u"2k",        0},
         {u"mode1",     0},
         {u"4k",        1},

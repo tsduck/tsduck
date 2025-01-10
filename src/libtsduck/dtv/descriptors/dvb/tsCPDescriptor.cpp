@@ -92,7 +92,7 @@ bool ts::CPDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element
 void ts::CPDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(4)) {
-        disp << margin << "CP System Id: " << DataName(MY_XML_NAME, u"CPSystemId", buf.getUInt16(), NamesFlags::FIRST);
+        disp << margin << "CP System Id: " << DataName(MY_XML_NAME, u"CPSystemId", buf.getUInt16(), NamesFlags::VALUE_NAME);
         disp << UString::Format(u", CP PID: %n", buf.getPID()) << std::endl;
         disp.displayPrivateData(u"Private CP data", buf, NPOS, margin);
     }

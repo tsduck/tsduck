@@ -8,14 +8,6 @@
 
 #include "tsProcessorPlugin.h"
 
-const ts::Enumeration ts::ProcessorPlugin::StatusNames({
-    {u"pass", TSP_OK},
-    {u"stop", TSP_END},
-    {u"drop", TSP_DROP},
-    {u"null", TSP_NULL}
-});
-
-
 //----------------------------------------------------------------------------
 // Constructors and destructors.
 //----------------------------------------------------------------------------
@@ -39,6 +31,22 @@ ts::ProcessorPlugin::ProcessorPlugin(TSP* tsp_, const UString& description, cons
          u"Several --only-label options may be specified. "
          u"See also option --except-label. "
          u"This is a generic option which is defined in all packet processing plugins.");
+}
+
+
+//----------------------------------------------------------------------------
+// Thread-safe init-safe static data patterns.
+//----------------------------------------------------------------------------
+
+const ts::Names& ts::ProcessorPlugin::StatusNames()
+{
+    static const Names data({
+        {u"pass", TSP_OK},
+        {u"stop", TSP_END},
+        {u"drop", TSP_DROP},
+        {u"null", TSP_NULL}
+    });
+    return data;
 }
 
 

@@ -34,7 +34,7 @@ namespace {
 
 void ts::DefineDektecIOStandardArgs(Args& args)
 {
-    args.option(u"io-standard", 0, Enumeration({
+    args.option(u"io-standard", 0, Names({
         {u"ASI",                  IoConfigParams(DTAPI_IOCONFIG_ASI)},                                 // DVB-ASI transport stream
         {u"SPI",                  IoConfigParams(DTAPI_IOCONFIG_SPI)},                                 // DVB-SPI transport stream
         {u"IF-AD-converter",      IoConfigParams(DTAPI_IOCONFIG_IFADC)},                               // IF A/D converter
@@ -214,7 +214,7 @@ void ts::DefineDektecIPArgs(Args& args, bool receive)
                   u"TS-over-IP: Use SMPTE-2022 error correction.");
     }
     else {
-        args.option(u"smpte-2022-fec", 0, Enumeration({
+        args.option(u"smpte-2022-fec", 0, Names({
             {u"none",    DTAPI_FEC_DISABLE},
             {u"2d-m1",   DTAPI_FEC_2D_M1},
             {u"2d-m1-b", DTAPI_FEC_2D_M1_B},

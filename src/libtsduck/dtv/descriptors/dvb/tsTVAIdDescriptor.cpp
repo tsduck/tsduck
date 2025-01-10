@@ -81,7 +81,7 @@ void ts::TVAIdDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descr
     while (buf.canReadBytes(3)) {
         disp << margin << UString::Format(u"TVA id: %n", buf.getUInt16());
         buf.skipBits(5);
-        disp << ", running status: " << DataName(MY_XML_NAME, u"RunningStatus", buf.getBits<uint8_t>(3), NamesFlags::DECIMAL_FIRST) << std::endl;
+        disp << ", running status: " << DataName(MY_XML_NAME, u"RunningStatus", buf.getBits<uint8_t>(3), NamesFlags::DEC_VALUE_NAME) << std::endl;
     }
 }
 

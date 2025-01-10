@@ -13,7 +13,7 @@
 
 #pragma once
 #include "tsxmlTweaks.h"
-#include "tsEnumeration.h"
+#include "tsNames.h"
 #include "tsIntegerUtils.h"
 #include "tsTime.h"
 
@@ -112,9 +112,9 @@ namespace ts::xml {
         //! @param [in] value Attribute value.
         //!
         template <typename INT> requires ts::int_enum<INT>
-        void setEnum(const Enumeration& definition, INT value)
+        void setEnum(const Names& definition, INT value)
         {
-            setString(definition.name(int(value), true, 2 * sizeof(INT)));
+            setString(definition.name(value, true, 2 * sizeof(INT)));
         }
 
         //!

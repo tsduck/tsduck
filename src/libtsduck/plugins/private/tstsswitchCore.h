@@ -183,7 +183,7 @@ namespace ts {
             ActionSet                   _events {};         // Pending events, waiting to be cleared.
 
             // Names of actions for debug messages.
-            static const Enumeration _actionNames;
+            static const Names _actionNames;
 
             // Change input plugin with mutex already held.
             void setInputLocked(size_t index, bool abortCurrent);

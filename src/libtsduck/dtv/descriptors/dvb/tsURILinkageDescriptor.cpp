@@ -119,7 +119,7 @@ void ts::URILinkageDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::URILinkageDescriptor::DVB_I_Info::display(TablesDisplay& disp, PSIBuffer& buf, const UString& margin)
 {
     const uint8_t ep_type = buf.getUInt8();
-    disp << margin << "End point type: " << DataName(MY_XML_NAME, u"DVB_I_Endpoint_type", ep_type, NamesFlags::HEXA_FIRST) << std::endl;
+    disp << margin << "End point type: " << DataName(MY_XML_NAME, u"DVB_I_Endpoint_type", ep_type, NamesFlags::HEX_VALUE_NAME) << std::endl;
     if (ep_type == END_POINT_SERVICE_LIST_EXTENDED) {
         UString sl_name = buf.getStringWithByteLength();
         if (!sl_name.empty()) {
@@ -137,7 +137,7 @@ void ts::URILinkageDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::
 {
     if (buf.canReadBytes(2)) {
         const uint8_t type = buf.getUInt8();
-        disp << margin << "URI linkage type: " << DataName(MY_XML_NAME, u"LinkageType", type, NamesFlags::HEXA_FIRST) << std::endl;
+        disp << margin << "URI linkage type: " << DataName(MY_XML_NAME, u"LinkageType", type, NamesFlags::HEX_VALUE_NAME) << std::endl;
         disp << margin << "URI: " << buf.getStringWithByteLength() << std::endl;
         if ((type == URI_LINKAGE_ONLINE_SDT || type == URI_LINKAGE_IPTV_SDnS) && buf.canReadBytes(2)) {
             const int interval = buf.getUInt16();

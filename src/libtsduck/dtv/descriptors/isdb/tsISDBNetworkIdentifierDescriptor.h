@@ -56,6 +56,6 @@ namespace ts {
 
     private:
         // Thread-safe init-safe static data patterns.
-        static const Enumeration& MediaTypes();
+        static const Names& MediaTypes();
     };
 }

@@ -13,7 +13,7 @@
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
-#include "tsNames.h"
+#include "tsDVB.h"
 
 #define MY_XML_NAME u"service_list_descriptor"
 #define MY_CLASS    ts::ServiceListDescriptor
@@ -124,7 +124,7 @@ void ts::ServiceListDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts:
 {
     while (buf.canReadBytes(3)) {
         disp << margin << UString::Format(u"Service id: %n", buf.getUInt16());
-        disp << ", Type: " << names::ServiceType(buf.getUInt8(), NamesFlags::FIRST) << std::endl;
+        disp << ", Type: " << ServiceTypeName(buf.getUInt8(), NamesFlags::VALUE_NAME) << std::endl;
     }
 }
 

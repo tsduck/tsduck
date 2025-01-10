@@ -21,11 +21,6 @@
 
 TS_REGISTER_TABLE(MY_CLASS, {MY_TID}, MY_STD, MY_XML_NAME, MY_CLASS::DisplaySection);
 
-const ts::Enumeration ts::DCCT::DCCContextNames({
-    {u"temporary_retune", ts::DCCT::temporary_retune},
-    {u"channel_redirect", ts::DCCT::channel_redirect},
-});
-
 
 //----------------------------------------------------------------------------
 // Constructors
@@ -210,6 +205,20 @@ void ts::DCCT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 
 
 //----------------------------------------------------------------------------
+// Thread-safe init-safe static data patterns.
+//----------------------------------------------------------------------------
+
+const ts::Names& ts::DCCT::DCCContextNames()
+{
+    static const Names data({
+        {u"temporary_retune", temporary_retune},
+        {u"channel_redirect", channel_redirect},
+    });
+    return data;
+}
+
+
+//----------------------------------------------------------------------------
 // A static method to display a DCCT section.
 //----------------------------------------------------------------------------
 
@@ -229,7 +238,7 @@ void ts::DCCT::DisplaySection(TablesDisplay& disp, const ts::Section& section, P
         while (buf.canReadBytes(15) && dcc_test_count-- > 0) {
 
             const uint8_t ctx = buf.getBit();
-            disp << margin << UString::Format(u"- DCC context: %d (%s)", ctx, DCCContextNames.name(ctx)) << std::endl;
+            disp << margin << UString::Format(u"- DCC context: %d (%s)", ctx, DCCContextNames().name(ctx)) << std::endl;
             buf.skipBits(3);
             disp << margin << "  DCC from channel " << buf.getBits<uint16_t>(10);
             disp << "." << buf.getBits<uint16_t>(10);
@@ -244,7 +253,7 @@ void ts::DCCT::DisplaySection(TablesDisplay& disp, const ts::Section& section, P
 
             // Loop on all DCC selection terms.
             while (dcc_term_count-- > 0 && buf.canReadBytes(9)) {
-                disp << margin << "  - DCC selection type: " << DataName(MY_XML_NAME, u"selection_type", buf.getUInt8(), NamesFlags::FIRST) << std::endl;
+                disp << margin << "  - DCC selection type: " << DataName(MY_XML_NAME, u"selection_type", buf.getUInt8(), NamesFlags::VALUE_NAME) << std::endl;
                 disp << margin << UString::Format(u"    DCC selection id: 0x%X", buf.getUInt64()) << std::endl;
                 disp.displayDescriptorListWithLength(section, context, false, buf, margin + u"    ", u"DCC selection term descriptors:", UString(), 10);
             }
@@ -274,7 +283,7 @@ void ts::DCCT::buildXML(DuckContext& duck, xml::Element* root) const
     for (const auto& it1 : tests) {
         const Test& test(it1.second);
         xml::Element* e1 = root->addElement(u"dcc_test");
-        e1->setEnumAttribute(DCCContextNames, u"dcc_context", test.dcc_context);
+        e1->setEnumAttribute(DCCContextNames(), u"dcc_context", test.dcc_context);
         e1->setIntAttribute(u"dcc_from_major_channel_number", test.dcc_from_major_channel_number);
         e1->setIntAttribute(u"dcc_from_minor_channel_number", test.dcc_from_minor_channel_number);
         e1->setIntAttribute(u"dcc_to_major_channel_number", test.dcc_to_major_channel_number);
@@ -312,7 +321,7 @@ bool ts::DCCT::analyzeXML(DuckContext& duck, const xml::Element* element)
         const xml::Element* const e1 = xtests[i1];
         xml::ElementVector xterms;
         Test& test(tests.newEntry()); // add a new Test at the end of the list.
-        ok = e1->getEnumAttribute(test.dcc_context, DCCContextNames, u"dcc_context", true) &&
+        ok = e1->getEnumAttribute(test.dcc_context, DCCContextNames(), u"dcc_context", true) &&
             e1->getIntAttribute(test.dcc_from_major_channel_number, u"dcc_from_major_channel_number", true) &&
             e1->getIntAttribute(test.dcc_from_minor_channel_number, u"dcc_from_minor_channel_number", true) &&
             e1->getIntAttribute(test.dcc_to_major_channel_number, u"dcc_to_major_channel_number", true) &&

@@ -960,9 +960,9 @@ void ts::SAT::satellite_position_v3_info_type::v3_satellite_type::v3_satellite_m
 }
 
 // Thread-safe init-safe static data patterns.
-const ts::Enumeration& ts::SAT::InterpolationTypes()
+const ts::Names& ts::SAT::InterpolationTypes()
 {
-    static const Enumeration data({
+    static const Names data({
         {u"Linear",   1},
         {u"Lagrange", 2},
         {u"Hermite",  4},
@@ -1618,7 +1618,7 @@ void ts::SAT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
             break;
         case TIME_ASSOCIATION_INFO: {  // Time Association  - EN 300 468, clause 5.2.11.4
             uint8_t _association_type = buf.getBits<uint8_t>(4);
-            disp << margin << "Time association: " << DataName(MY_XML_NAME, u"UTC_mode", _association_type, NamesFlags::VALUE | NamesFlags::DECIMAL) << std::endl;
+            disp << margin << "Time association: " << DataName(MY_XML_NAME, u"UTC_mode", _association_type, NamesFlags::NAME_VALUE | NamesFlags::DECIMAL) << std::endl;
             if (_association_type == 1) {
                 disp << margin << "Leap 59:" << UString::TrueFalse(buf.getBool());
                 disp << ", leap 61: " << UString::TrueFalse(buf.getBool());
@@ -1640,7 +1640,7 @@ void ts::SAT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
                 buf.skipBits(12);  // beamhopping_time_plan_length
                 buf.skipReservedBits(6, 0);
                 uint8_t _time_plan_mode = buf.getBits<uint8_t>(2);
-                disp << ", mode: " << DataName(MY_XML_NAME, u"time_plan_mode", _time_plan_mode, NamesFlags::VALUE | NamesFlags::DECIMAL) << std::endl;
+                disp << ", mode: " << DataName(MY_XML_NAME, u"time_plan_mode", _time_plan_mode, NamesFlags::NAME_VALUE | NamesFlags::DECIMAL) << std::endl;
                 disp << margin << "  Time of application: " << ncr(buf);
                 disp << ", cycle duration: " << ncr(buf) << std::endl;
                 if (_time_plan_mode == HOP_1_TRANSMISSION) {

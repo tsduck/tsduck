@@ -23,7 +23,6 @@
 #include "tsBAT.h"
 #include "tsTOT.h"
 #include "tsTDT.h"
-#include "tsNames.h"
 #include "tsunit.h"
 
 #include "tables/psi_bat_cplus_packets.h"

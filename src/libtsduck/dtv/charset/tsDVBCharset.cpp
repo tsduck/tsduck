@@ -12,6 +12,7 @@
 #include "tsDVBCharTableUTF8.h"
 
 // Default predefined DVB character set (using ISO-6937 as default table).
+// The charset table registers itself during initialization.
 const ts::DVBCharset ts::DVBCharset::DVB(u"DVB");
 
 

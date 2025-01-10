@@ -11,31 +11,40 @@
 
 //----------------------------------------------------------------------------
 // Predefined EIT repetition profiles.
+// Thread-safe init-safe static data patterns.
 //----------------------------------------------------------------------------
 
-const ts::EITRepetitionProfile ts::EITRepetitionProfile::SatelliteCable{
-    cn::days(8),          // prime_days
-    {                     // cycle_seconds
-        cn::seconds(2),   // PF_ACTUAL
-        cn::seconds(10),  // PF_OTHER
-        cn::seconds(10),  // SCHED_ACTUAL_PRIME
-        cn::seconds(10),  // SCHED_OTHER_PRIME
-        cn::seconds(30),  // SCHED_ACTUAL_LATER
-        cn::seconds(30)   // SCHED_OTHER_LATER
-    }
-};
+const ts::EITRepetitionProfile& ts::EITRepetitionProfile::SatelliteCable()
+{
+    static const EITRepetitionProfile data{
+        cn::days(8),          // prime_days
+        {                     // cycle_seconds
+            cn::seconds(2),   // PF_ACTUAL
+            cn::seconds(10),  // PF_OTHER
+            cn::seconds(10),  // SCHED_ACTUAL_PRIME
+            cn::seconds(10),  // SCHED_OTHER_PRIME
+            cn::seconds(30),  // SCHED_ACTUAL_LATER
+            cn::seconds(30)   // SCHED_OTHER_LATER
+        }
+    };
+    return data;
+}
 
-const ts::EITRepetitionProfile ts::EITRepetitionProfile::Terrestrial{
-    cn::days(1),          // prime_days
-    {                     // cycle_seconds
-        cn::seconds(2),   // PF_ACTUAL
-        cn::seconds(20),  // PF_OTHER
-        cn::seconds(10),  // SCHED_ACTUAL_PRIME
-        cn::seconds(60),  // SCHED_OTHER_PRIME
-        cn::seconds(30),  // SCHED_ACTUAL_LATER
-        cn::seconds(300)  // SCHED_OTHER_LATER
-    }
-};
+const ts::EITRepetitionProfile& ts::EITRepetitionProfile::Terrestrial()
+{
+    static const EITRepetitionProfile data{
+        cn::days(1),          // prime_days
+        {                     // cycle_seconds
+            cn::seconds(2),   // PF_ACTUAL
+            cn::seconds(20),  // PF_OTHER
+            cn::seconds(10),  // SCHED_ACTUAL_PRIME
+            cn::seconds(60),  // SCHED_OTHER_PRIME
+            cn::seconds(30),  // SCHED_ACTUAL_LATER
+            cn::seconds(300)  // SCHED_OTHER_LATER
+        }
+    };
+    return data;
+}
 
 
 //----------------------------------------------------------------------------

@@ -16,7 +16,6 @@
 #include "tsSectionDemux.h"
 #include "tsPESPacket.h"
 #include "tsTime.h"
-#include "tsNames.h"
 #include "tsCAS.h"
 #include "tsPES.h"
 #include "tsPAT.h"
@@ -515,7 +514,7 @@ ts::ProcessorPlugin::Status ts::HistoryPlugin::processPacket(TSPacket& pkt, TSPa
     }
     else if (!ignore_scrambling && cpid.scrambling == 0 && scrambling != 0) {
         // Clear to scrambled transition
-        report(u"PID %n, clear to scrambled transition, %s key, service %n", pid, NameFromDTV(u"ts.scrambling_control", scrambling), cpid.service_id);
+        report(u"PID %n, clear to scrambled transition, %s key, service %n", pid, NameFromSection(u"dtv", u"ts.scrambling_control", scrambling), cpid.service_id);
     }
     else if (!ignore_scrambling && cpid.scrambling != 0 && scrambling == 0) {
         // Scrambled to clear transition
@@ -523,17 +522,17 @@ ts::ProcessorPlugin::Status ts::HistoryPlugin::processPacket(TSPacket& pkt, TSPa
     }
     else if (!ignore_scrambling && _report_cas && cpid.scrambling != scrambling) {
         // New crypto-period
-        report(u"PID %n, new crypto-period, %s key, service %n", pid, NameFromDTV(u"ts.scrambling_control", scrambling), cpid.service_id);
+        report(u"PID %n, new crypto-period, %s key, service %n", pid, NameFromSection(u"dtv", u"ts.scrambling_control", scrambling), cpid.service_id);
     }
 
     if (has_pes_start) {
         if (!cpid.pes_strid.has_value()) {
             // Found first PES stream id in the PID.
-            report(u"PID %n, PES stream_id is %s", pid, NameFromDTV(u"pes.stream_id", pes_stream_id, NamesFlags::FIRST));
+            report(u"PID %n, PES stream_id is %s", pid, NameFromSection(u"dtv", u"pes.stream_id", pes_stream_id, NamesFlags::VALUE_NAME));
         }
         else if (cpid.pes_strid != pes_stream_id && !_ignore_stream_id) {
             // PES stream id has changed in the PID.
-            report(u"PID %n, PES stream_id modified from 0x%X to %s", pid, cpid.pes_strid.value(), NameFromDTV(u"pes.stream_id", pes_stream_id, NamesFlags::FIRST));
+            report(u"PID %n, PES stream_id modified from 0x%X to %s", pid, cpid.pes_strid.value(), NameFromSection(u"dtv", u"pes.stream_id", pes_stream_id, NamesFlags::VALUE_NAME));
         }
         cpid.pes_strid = pes_stream_id;
         if (PESPacket::FindIntraImage(pkt.getPayload(), pkt.getPayloadSize(), cpid.stream_type, cpid.codec) != NPOS) {

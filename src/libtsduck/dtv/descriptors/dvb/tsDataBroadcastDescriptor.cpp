@@ -14,7 +14,7 @@
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
-#include "tsNames.h"
+#include "tsDVB.h"
 
 #define MY_XML_NAME u"data_broadcast_descriptor"
 #define MY_CLASS    ts::DataBroadcastDescriptor
@@ -56,7 +56,7 @@ void ts::DataBroadcastDescriptor::DisplayDescriptor(TablesDisplay& disp, const t
 {
     if (buf.canReadBytes(4)) {
         const uint16_t dbid = buf.getUInt16();
-        disp << margin << "Data broadcast id: " << names::DataBroadcastId(dbid, NamesFlags::BOTH_FIRST) << std::endl;
+        disp << margin << "Data broadcast id: " << DataBroadcastIdName(dbid, NamesFlags::HEX_DEC_VALUE_NAME) << std::endl;
         disp << margin << UString::Format(u"Component tag: %n, ", buf.getUInt8()) << std::endl;
 
         buf.pushReadSizeFromLength(8); // selector_length

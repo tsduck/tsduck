@@ -10,9 +10,6 @@
 #include "tsFileUtils.h"
 #include "tsSysUtils.h"
 
-// Default name of the environment variable containing the pager command.
-const ts::UChar* const ts::OutputPager::DEFAULT_PAGER = u"PAGER";
-
 
 //----------------------------------------------------------------------------
 // Constructors and destructors.

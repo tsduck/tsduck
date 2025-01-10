@@ -13,6 +13,7 @@
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
+#include "tsOUI.h"
 
 #define MY_XML_NAME u"linkage_descriptor"
 #define MY_CLASS    ts::LinkageDescriptor
@@ -224,7 +225,7 @@ void ts::LinkageDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Des
         disp << margin << UString::Format(u"Original network Id: %n", buf.getUInt16()) << std::endl;
         disp << margin << UString::Format(u"Service id: %n", buf.getUInt16()) << std::endl;
         const uint8_t ltype = buf.getUInt8();
-        disp << margin << UString::Format(u"Linkage type: %s", DataName(MY_XML_NAME, u"linkage_type", ltype, NamesFlags::FIRST)) << std::endl;
+        disp << margin << UString::Format(u"Linkage type: %s", DataName(MY_XML_NAME, u"linkage_type", ltype, NamesFlags::VALUE_NAME)) << std::endl;
 
         // Variable part
         switch (ltype) {
@@ -292,7 +293,7 @@ void ts::LinkageDescriptor::DisplayPrivateSSU(TablesDisplay& disp, PSIBuffer& bu
 {
     buf.pushReadSizeFromLength(8); // OUI_data_length
     while (buf.canReadBytes(4)) {
-        disp << margin << "OUI: " << NameFromOUI(buf.getUInt24(), NamesFlags::FIRST) << std::endl;
+        disp << margin << "OUI: " << OUIName(buf.getUInt24(), NamesFlags::VALUE_NAME) << std::endl;
         const size_t len = buf.getUInt8();
         disp.displayPrivateData(u"Selector data", buf, len, margin);
     }
@@ -330,7 +331,7 @@ void ts::LinkageDescriptor::DisplayPrivateINT(TablesDisplay& disp, PSIBuffer& bu
 {
     buf.pushReadSizeFromLength(8); // platform_id_data_length
     while (buf.canReadBytes(4)) {
-        disp << margin << UString::Format(u"- Platform id: %s", DataName(u"INT", u"platform_id", buf.getUInt24(), NamesFlags::HEXA_FIRST)) << std::endl;
+        disp << margin << UString::Format(u"- Platform id: %s", DataName(u"INT", u"platform_id", buf.getUInt24(), NamesFlags::HEX_VALUE_NAME)) << std::endl;
         buf.pushReadSizeFromLength(8); // platform_name_loop_length
         while (buf.canReadBytes(4)) {
             disp << margin << "  Language: " << buf.getLanguageCode();
@@ -372,9 +373,9 @@ void ts::LinkageDescriptor::DisplayPrivateDeferredINT(TablesDisplay& disp, PSIBu
 // Thread-safe init-safe static data patterns.
 //----------------------------------------------------------------------------
 
-const ts::Enumeration& ts::LinkageDescriptor::OriginTypeNames()
+const ts::Names& ts::LinkageDescriptor::OriginTypeNames()
 {
-    static const Enumeration data({
+    static const Names data({
         {u"NIT", 0},
         {u"SDT", 1}
     });

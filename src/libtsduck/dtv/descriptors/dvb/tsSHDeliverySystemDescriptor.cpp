@@ -138,52 +138,75 @@ void ts::SHDeliverySystemDescriptor::deserializePayload(PSIBuffer& buf)
 
 
 //----------------------------------------------------------------------------
-// Enumerations for XML and disp.
+// Thread-safe init-safe static data patterns.
 //----------------------------------------------------------------------------
 
-const ts::Enumeration ts::SHDeliverySystemDescriptor::BandwidthNames({
-    {u"8MHz",   0},
-    {u"7MHz",   1},
-    {u"6MHz",   2},
-    {u"5MHz",   3},
-    {u"1.7MHz", 4},
-});
+const ts::Names& ts::SHDeliverySystemDescriptor::BandwidthNames()
+{
+    static const Names data {
+        {u"8MHz",   0},
+        {u"7MHz",   1},
+        {u"6MHz",   2},
+        {u"5MHz",   3},
+        {u"1.7MHz", 4},
+    };
+    return data;
+}
 
-const ts::Enumeration ts::SHDeliverySystemDescriptor::GuardIntervalNames({
-    {u"1/32", 0},
-    {u"1/16", 1},
-    {u"1/8",  2},
-    {u"1/4",  3},
-});
+const ts::Names& ts::SHDeliverySystemDescriptor::GuardIntervalNames()
+{
+    static const Names data {
+        {u"1/32", 0},
+        {u"1/16", 1},
+        {u"1/8",  2},
+        {u"1/4",  3},
+    };
+    return data;
+}
 
-const ts::Enumeration ts::SHDeliverySystemDescriptor::TransmissionModeNames({
-    {u"1k",  0},
-    {u"2k",  1},
-    {u"4k",  2},
-    {u"8k",  3},
-});
+const ts::Names& ts::SHDeliverySystemDescriptor::TransmissionModeNames()
+{
+    static const Names data {
+        {u"1k",  0},
+        {u"2k",  1},
+        {u"4k",  2},
+        {u"8k",  3},
+    };
+    return data;
+}
 
-const ts::Enumeration ts::SHDeliverySystemDescriptor::PolarizationNames({
-    {u"horizontal", 0},
-    {u"vertical",   1},
-    {u"left",       2},
-    {u"right",      3},
-});
+const ts::Names& ts::SHDeliverySystemDescriptor::PolarizationNames()
+{
+    static const Names data {
+        {u"horizontal", 0},
+        {u"vertical",   1},
+        {u"left",       2},
+        {u"right",      3},
+    };
+    return data;
+}
 
-const ts::Enumeration ts::SHDeliverySystemDescriptor::RollOffNames({
-    {u"0.35",     0},
-    {u"0.25",     1},
-    {u"0.15",     2},
-    {u"reserved", 3},
-});
+const ts::Names& ts::SHDeliverySystemDescriptor::RollOffNames()
+{
+    static const Names data {
+        {u"0.35",     0},
+        {u"0.25",     1},
+        {u"0.15",     2},
+        {u"reserved", 3},
+    };
+    return data;
+}
 
-const ts::Enumeration ts::SHDeliverySystemDescriptor::ModulationNames({
-    {u"QPSK",     0},
-    {u"8PSK",     1},
-    {u"16APSK",   2},
-    {u"reserved", 3},
-});
-
+const ts::Names& ts::SHDeliverySystemDescriptor::ModulationNames()
+{
+    static const Names data {
+        {u"QPSK",     0},
+        {u"8PSK",     1},
+        {u"16APSK",   2},
+        {u"reserved", 3},
+    };
+    return data;
+}
 
 
 //----------------------------------------------------------------------------
@@ -217,20 +240,20 @@ void ts::SHDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp, cons
             buf.skipBits(5);
             if (is_ofdm) {
                 disp << margin << "- Modulation type: OFDM" << std::endl;
-                disp << margin << "  Bandwidth: " << BandwidthNames.name(buf.getBits<uint8_t>(3)) << std::endl;
+                disp << margin << "  Bandwidth: " << BandwidthNames().name(buf.getBits<uint8_t>(3)) << std::endl;
                 disp << margin << UString::Format(u"  Priority: %d", buf.getBit()) << std::endl;
-                disp << margin << "  Constellation & hierarchy: " << DataName(MY_XML_NAME, u"ConstellationHierarchy", buf.getBits<uint8_t>(3), NamesFlags::FIRST) << std::endl;
-                disp << margin << "  Code rate: " << DataName(MY_XML_NAME, u"CodeRate", buf.getBits<uint8_t>(4), NamesFlags::FIRST) << std::endl;
-                disp << margin << "  Guard interval: " << GuardIntervalNames.name(buf.getBits<uint8_t>(2)) << std::endl;
-                disp << margin << "  Transmission mode: " << TransmissionModeNames.name(buf.getBits<uint8_t>(2)) << std::endl;
+                disp << margin << "  Constellation & hierarchy: " << DataName(MY_XML_NAME, u"ConstellationHierarchy", buf.getBits<uint8_t>(3), NamesFlags::VALUE_NAME) << std::endl;
+                disp << margin << "  Code rate: " << DataName(MY_XML_NAME, u"CodeRate", buf.getBits<uint8_t>(4), NamesFlags::VALUE_NAME) << std::endl;
+                disp << margin << "  Guard interval: " << GuardIntervalNames().name(buf.getBits<uint8_t>(2)) << std::endl;
+                disp << margin << "  Transmission mode: " << TransmissionModeNames().name(buf.getBits<uint8_t>(2)) << std::endl;
                 disp << margin << UString::Format(u"  Common frequency: %s", buf.getBool()) << std::endl;
             }
             else {
                 disp << margin << "- Modulation type: TDM" << std::endl;
-                disp << margin << "  Polarization: " << PolarizationNames.name(buf.getBits<uint8_t>(2)) << std::endl;
-                disp << margin << "  Roll off: " << RollOffNames.name(buf.getBits<uint8_t>(2)) << std::endl;
-                disp << margin << "  Modulation mode: " << ModulationNames.name(buf.getBits<uint8_t>(2)) << std::endl;
-                disp << margin << "  Code rate: " << DataName(MY_XML_NAME, u"CodeRate", buf.getBits<uint8_t>(4), NamesFlags::FIRST) << std::endl;
+                disp << margin << "  Polarization: " << PolarizationNames().name(buf.getBits<uint8_t>(2)) << std::endl;
+                disp << margin << "  Roll off: " << RollOffNames().name(buf.getBits<uint8_t>(2)) << std::endl;
+                disp << margin << "  Modulation mode: " << ModulationNames().name(buf.getBits<uint8_t>(2)) << std::endl;
+                disp << margin << "  Code rate: " << DataName(MY_XML_NAME, u"CodeRate", buf.getBits<uint8_t>(4), NamesFlags::VALUE_NAME) << std::endl;
                 disp << margin << UString::Format(u"  Symbol rate code: %n", buf.getBits<uint8_t>(5)) << std::endl;
                 buf.skipBits(1);
             }
@@ -262,19 +285,19 @@ void ts::SHDeliverySystemDescriptor::buildXML(DuckContext& duck, xml::Element* r
         xml::Element* mod = root->addElement(u"modulation");
         if (it.is_ofdm) {
             xml::Element* e = mod->addElement(u"OFDM");
-            e->setEnumAttribute(BandwidthNames, u"bandwidth", it.ofdm.bandwidth);
+            e->setEnumAttribute(BandwidthNames(), u"bandwidth", it.ofdm.bandwidth);
             e->setIntAttribute(u"priority", it.ofdm.priority);
             e->setIntAttribute(u"constellation_and_hierarchy", it.ofdm.constellation_and_hierarchy);
             e->setIntAttribute(u"code_rate", it.ofdm.code_rate);
-            e->setEnumAttribute(GuardIntervalNames, u"guard_interval", it.ofdm.guard_interval);
-            e->setEnumAttribute(TransmissionModeNames, u"transmission_mode", it.ofdm.transmission_mode);
+            e->setEnumAttribute(GuardIntervalNames(), u"guard_interval", it.ofdm.guard_interval);
+            e->setEnumAttribute(TransmissionModeNames(), u"transmission_mode", it.ofdm.transmission_mode);
             e->setBoolAttribute(u"common_frequency", it.ofdm.common_frequency);
         }
         else {
             xml::Element* e = mod->addElement(u"TDM");
-            e->setEnumAttribute(PolarizationNames, u"polarization", it.tdm.polarization);
-            e->setEnumAttribute(RollOffNames, u"roll_off", it.tdm.roll_off);
-            e->setEnumAttribute(ModulationNames, u"modulation_mode", it.tdm.modulation_mode);
+            e->setEnumAttribute(PolarizationNames(), u"polarization", it.tdm.polarization);
+            e->setEnumAttribute(RollOffNames(), u"roll_off", it.tdm.roll_off);
+            e->setEnumAttribute(ModulationNames(), u"modulation_mode", it.tdm.modulation_mode);
             e->setIntAttribute(u"code_rate", it.tdm.code_rate);
             e->setIntAttribute(u"symbol_rate", it.tdm.symbol_rate);
         }
@@ -316,19 +339,19 @@ bool ts::SHDeliverySystemDescriptor::analyzeXML(DuckContext& duck, const xml::El
             mod.is_ofdm = !xofdm.empty();
             if (mod.is_ofdm) {
                 assert(xofdm.size() == 1);
-                ok = xofdm[0]->getEnumAttribute(mod.ofdm.bandwidth, BandwidthNames, u"bandwidth", true) &&
+                ok = xofdm[0]->getEnumAttribute(mod.ofdm.bandwidth, BandwidthNames(), u"bandwidth", true) &&
                      xofdm[0]->getIntAttribute(mod.ofdm.priority, u"priority", true, 0, 0, 1) &&
                      xofdm[0]->getIntAttribute(mod.ofdm.constellation_and_hierarchy, u"constellation_and_hierarchy", true, 0, 0, 0x07) &&
                      xofdm[0]->getIntAttribute(mod.ofdm.code_rate, u"code_rate", true, 0, 0, 0x0F) &&
-                     xofdm[0]->getEnumAttribute(mod.ofdm.guard_interval, GuardIntervalNames, u"guard_interval", true) &&
-                     xofdm[0]->getEnumAttribute(mod.ofdm.transmission_mode, TransmissionModeNames, u"transmission_mode", true) &&
+                     xofdm[0]->getEnumAttribute(mod.ofdm.guard_interval, GuardIntervalNames(), u"guard_interval", true) &&
+                     xofdm[0]->getEnumAttribute(mod.ofdm.transmission_mode, TransmissionModeNames(), u"transmission_mode", true) &&
                      xofdm[0]->getBoolAttribute(mod.ofdm.common_frequency, u"common_frequency", true);
             }
             else {
                 assert(xtdm.size() == 1);
-                ok = xtdm[0]->getEnumAttribute(mod.tdm.polarization, PolarizationNames, u"polarization", true) &&
-                     xtdm[0]->getEnumAttribute(mod.tdm.roll_off, RollOffNames, u"roll_off", true) &&
-                     xtdm[0]->getEnumAttribute(mod.tdm.modulation_mode, ModulationNames, u"modulation_mode", true) &&
+                ok = xtdm[0]->getEnumAttribute(mod.tdm.polarization, PolarizationNames(), u"polarization", true) &&
+                     xtdm[0]->getEnumAttribute(mod.tdm.roll_off, RollOffNames(), u"roll_off", true) &&
+                     xtdm[0]->getEnumAttribute(mod.tdm.modulation_mode, ModulationNames(), u"modulation_mode", true) &&
                      xtdm[0]->getIntAttribute(mod.tdm.code_rate, u"code_rate", true, 0, 0, 0x0F) &&
                      xtdm[0]->getIntAttribute(mod.tdm.symbol_rate, u"symbol_rate", true, 0, 0, 0x1F);
             }

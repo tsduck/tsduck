@@ -16,7 +16,7 @@
 
 #include "tsDektec.h"
 #include "tsCerrReport.h"
-#include "tsEnumeration.h"
+#include "tsNames.h"
 
 namespace ts {
 

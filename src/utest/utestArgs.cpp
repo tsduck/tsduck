@@ -227,8 +227,8 @@ namespace {
             option(u"opt6", 'b', ts::Args::UINT8);
             option(u"opt7",  0,  ts::Args::UINT16);
             option(u"opt8",  0,  ts::Args::UINT32, 0, 0, 0, 0, true);
-            option(u"opt9", 'c', ts::Enumeration({{u"val1", 11}, {u"val2", 12}, {u"val3", 13}}));
-            option(u"mask",  0,  ts::Enumeration({{u"bit1", 0x01}, {u"bit2", 0x02}, {u"bit3", 0x04}}), 0, ts::Args::UNLIMITED_COUNT);
+            option(u"opt9", 'c', ts::Names({{u"val1", 11}, {u"val2", 12}, {u"val3", 13}}));
+            option(u"mask",  0,  ts::Names({{u"bit1", 0x01}, {u"bit2", 0x02}, {u"bit3", 0x04}}), 0, ts::Args::UNLIMITED_COUNT);
             option(u"opt10", 0,  ts::Args::UNSIGNED, 0, ts::Args::UNLIMITED_COUNT, 0, 0, false, 3);
             option<cn::seconds>(u"opt11");
 

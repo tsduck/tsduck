@@ -57,7 +57,7 @@ namespace ts {
 
     private:
         // Thread-safe init-safe static data patterns.
-        static const Enumeration& C2GuardIntervalNames();
+        static const Names& C2GuardIntervalNames();
 
         // The static functions above are accessible to other classes which use the same encoding.
         friend class C2BundleDeliverySystemDescriptor;

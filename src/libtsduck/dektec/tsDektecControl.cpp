@@ -118,7 +118,7 @@ ts::DektecControl::DektecControl(int argc, char *argv[]) :
          u"Set the specified port in input mode. This applies to bidirectional "
          u"ports which can be either set in input or output mode.");
 
-    option(u"led", 'l', Enumeration({
+    option(u"led", 'l', Names({
         {u"off",      DTAPI_LED_OFF},
         {u"green",    DTAPI_LED_GREEN},
         {u"red",      DTAPI_LED_RED},

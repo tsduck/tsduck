@@ -103,7 +103,7 @@ void ts::HierarchyDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::D
         disp << margin << "No temporal scalability: " << UString::TrueFalse(buf.getBool()) << std::endl;
         disp << margin << "No spatial scalability: " << UString::TrueFalse(buf.getBool()) << std::endl;
         disp << margin << "No quality scalability: " << UString::TrueFalse(buf.getBool()) << std::endl;
-        disp << margin << "Hierarchy type: " << DataName(MY_XML_NAME, u"HierarchyType", buf.getBits<uint8_t>(4), NamesFlags::BOTH_FIRST) << std::endl;
+        disp << margin << "Hierarchy type: " << DataName(MY_XML_NAME, u"HierarchyType", buf.getBits<uint8_t>(4), NamesFlags::HEX_DEC_VALUE_NAME) << std::endl;
         buf.skipReservedBits(2);
         disp << margin << UString::Format(u"Hierarchy layer index: %d", buf.getBits<uint8_t>(6)) << std::endl;
         disp << margin << "Tref present: " << UString::TrueFalse(buf.getBool()) << std::endl;

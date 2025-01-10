@@ -141,29 +141,27 @@ bool ts::StreamTypeIsAudio(uint8_t st, const DescriptorList& dlist)
 ts::UString ts::StreamTypeName(uint8_t st, NamesFlags flags)
 {
     // No registration id, use the stream type alone.
-    const NamesFile::NamesFilePtr repo = NamesFile::Instance(NamesFile::Predefined::DTV);
-    return repo->nameFromSection(u"StreamType", NamesFile::Value(st), flags);
+    return NameFromSection(u"dtv", u"StreamType", st, flags);
 }
 
 ts::UString ts::StreamTypeName(uint8_t st, const REGIDVector& regids, NamesFlags flags)
 {
-    const NamesFile::NamesFilePtr repo = NamesFile::Instance(NamesFile::Predefined::DTV);
-
     // The default value is the stream type alone.
-    NamesFile::Value value = NamesFile::Value(st);
+    Names::uint_t value = st;
+    NamesPtr section = Names::GetSection(u"dtv", u"StreamType", true);
 
     // Check all registration ids to see if there is one stream type with that id.
     // Browse the list of REGID's backward, from highest to lowest priority.
     for (auto it = regids.rbegin(); it != regids.rend(); ++it) {
-        const NamesFile::Value full = (NamesFile::Value(*it) << 8) | NamesFile::Value(st);
-        if (repo->nameExists(u"StreamType", full)) {
+        const Names::uint_t full = (Names::uint_t(*it) << 8) | st;
+        if (section->contains(full)) {
             value = full;
             break;
         }
     }
 
     // Not found with a registration id, try with simple stream type.
-    return repo->nameFromSection(u"StreamType", value, flags);
+    return section->name(value, flags);
 }
 
 ts::UString ts::StreamTypeName(uint8_t st, const DuckContext& duck, const DescriptorList& dlist, NamesFlags flags)

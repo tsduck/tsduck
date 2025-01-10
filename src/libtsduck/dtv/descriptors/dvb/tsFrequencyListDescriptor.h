@@ -13,7 +13,7 @@
 
 #pragma once
 #include "tsAbstractDescriptor.h"
-#include "tsEnumeration.h"
+#include "tsNames.h"
 
 namespace ts {
     //!
@@ -38,11 +38,6 @@ namespace ts {
             CABLE       = 2,  //!< Encoded as cable frequency.
             TERRESTRIAL = 3,  //!< Encoded as terrestrial frequency.
         };
-
-        //!
-        //! Enumeration description of coding types.
-        //!
-        static const Enumeration CodingTypeEnum;
 
         // FrequencyListDescriptor public members:
         uint8_t               coding_type = UNDEFINED;  //!< 2 bits, type of frequency (cable, satellite, etc.)
@@ -72,6 +67,9 @@ namespace ts {
         virtual bool analyzeXML(DuckContext&, const xml::Element*) override;
 
     private:
+        // Thread-safe init-safe static data patterns.
+        static const Names& CodingTypeEnum();
+
         // Decode a frequency at a 4-byte data area.
         static uint64_t DecodeFrequency(uint8_t coding_type, PSIBuffer&);
     };

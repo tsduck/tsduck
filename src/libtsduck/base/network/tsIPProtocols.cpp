@@ -7,7 +7,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsIPProtocols.h"
-#include "tsNamesFile.h"
+#include "tsNames.h"
 
 
 //----------------------------------------------------------------------------
@@ -17,7 +17,7 @@
 ts::UString ts::IPProtocolName(uint8_t protocol, bool long_format)
 {
     // The strings in tsduck.ip.names use format "acronym: description".
-    UString name(ts::NamesFile::Instance(ts::NamesFile::Predefined::IP)->nameFromSection(u"IPProtocol", protocol));
+    UString name(NameFromSection(u"ip", u"IPProtocol", protocol));
     if (!long_format) {
         const size_t colon = name.find(u':');
         if (colon != NPOS) {

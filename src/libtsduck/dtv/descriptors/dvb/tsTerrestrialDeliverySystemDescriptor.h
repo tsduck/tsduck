@@ -104,12 +104,12 @@ namespace ts {
 
     private:
         // Thread-safe init-safe static data patterns.
-        static const Enumeration& BandwidthNames();
-        static const Enumeration& PriorityNames();
-        static const Enumeration& ConstellationNames();
-        static const Enumeration& CodeRateNames();
-        static const Enumeration& GuardIntervalNames();
-        static const Enumeration& TransmissionModeNames();
+        static const Names& BandwidthNames();
+        static const Names& PriorityNames();
+        static const Names& ConstellationNames();
+        static const Names& CodeRateNames();
+        static const Names& GuardIntervalNames();
+        static const Names& TransmissionModeNames();
         static const std::map<int, BandWidth>& ToBandWidth();
         static const std::map<int, Modulation>& ToConstellation();
         static const std::map<int, InnerFEC>& ToInnerFEC();

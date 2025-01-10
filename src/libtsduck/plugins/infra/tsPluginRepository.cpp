@@ -20,10 +20,10 @@ ts::PluginRepository::PluginRepository() {}
 // Options for --list-processor.
 //----------------------------------------------------------------------------
 
-const ts::Enumeration& ts::PluginRepository::ListProcessorEnum()
+const ts::Names& ts::PluginRepository::ListProcessorEnum()
 {
     // Thread-safe init-safe static data patterns.
-    static const Enumeration data({
+    static const Names data({
         {u"all",          LIST_ALL},
         {u"input",        LIST_INPUT  | LIST_COMPACT},
         {u"output",       LIST_OUTPUT | LIST_COMPACT},

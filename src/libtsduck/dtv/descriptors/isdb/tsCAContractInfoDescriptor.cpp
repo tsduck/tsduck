@@ -13,7 +13,6 @@
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
-#include "tsNames.h"
 
 #define MY_XML_NAME u"CA_contract_info_descriptor"
 #define MY_CLASS    ts::CAContractInfoDescriptor
@@ -86,7 +85,7 @@ void ts::CAContractInfoDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::CAContractInfoDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(5)) {
-        disp << margin << "CA System Id: " << CASIdName(disp.duck(), buf.getUInt16(), NamesFlags::FIRST) << std::endl;
+        disp << margin << "CA System Id: " << CASIdName(disp.duck(), buf.getUInt16(), NamesFlags::VALUE_NAME) << std::endl;
         disp << margin << UString::Format(u"CA unit id: %d", buf.getBits<uint8_t>(4)) << std::endl;
         for (size_t count = buf.getBits<size_t>(4); buf.canRead() && count > 0; count--) {
             disp << margin << UString::Format(u"Component tag: %n", buf.getUInt8()) << std::endl;

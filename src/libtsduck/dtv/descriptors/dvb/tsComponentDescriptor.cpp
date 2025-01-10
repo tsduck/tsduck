@@ -88,7 +88,7 @@ void ts::ComponentDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::D
         const uint8_t stream_content_ext = buf.getBits<uint8_t>(4);
         const uint8_t stream_content = buf.getBits<uint8_t>(4);
         const uint8_t component_type = buf.getUInt8();
-        disp << margin << "Content/type: " << ComponentTypeName(disp.duck(), stream_content, stream_content_ext, component_type, NamesFlags::FIRST) << std::endl;
+        disp << margin << "Content/type: " << ComponentTypeName(disp.duck(), stream_content, stream_content_ext, component_type, NamesFlags::VALUE_NAME) << std::endl;
         if (stream_content_ext == 0xE && stream_content == 0xB) {
             DisplayNGAComponentFeatures(disp, margin + u"  ", component_type);
         }
@@ -198,7 +198,7 @@ ts::UString ts::ComponentDescriptor::ComponentTypeName(const DuckContext& duck, 
         return DataName(MY_XML_NAME, u"component_type.japan", nType, flags | NamesFlags::ALTERNATE, dType, bits);
     }
     else if (stream_content == 4) {
-        return NamesFile::Formatted(dType, AC3Descriptor::ComponentTypeName(uint8_t(nType)), flags, 16);
+        return Names::Format(dType, AC3Descriptor::ComponentTypeName(uint8_t(nType)), flags, 16);
     }
     else {
         return DataName(MY_XML_NAME, u"component_type", nType, flags | NamesFlags::ALTERNATE, dType, bits);

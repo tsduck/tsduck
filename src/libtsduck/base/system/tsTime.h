@@ -707,7 +707,7 @@ namespace ts {
         int64_t _value = 0;
 
         // Private constructor from a 64-bit value
-        Time(const int64_t& value) : _value(value) {}
+        constexpr Time(const int64_t& value) : _value(value) {}
 
         // Static private routine: Build the 64-bit value from fields
         static int64_t ToInt64(int year, int month, int day, int hour, int minute, int second, int millisecond);

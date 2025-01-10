@@ -7,9 +7,9 @@
 //----------------------------------------------------------------------------
 
 #include "tsTSAnalyzerReport.h"
-#include "tsNames.h"
 #include "tsjsonObject.h"
-#include "tsAlgorithm.h"
+#include "tsDVB.h"
+#include "tsOUI.h"
 
 
 //----------------------------------------------------------------------------
@@ -319,7 +319,7 @@ void ts::TSAnalyzerReport::reportServicePID(Grid& grid, const PIDContext& pc) co
         bool first = true;
         for (auto oui : pc.ssu_oui) {
             description += first ? u" (SSU " : u", ";
-            description += NameFromOUI(oui);
+            description += OUIName(oui);
             first = false;
         }
         description += u")";
@@ -394,7 +394,7 @@ void ts::TSAnalyzerReport::reportServices(Grid& grid, const UString& title)
         grid.putLine(UString::Format(u"Service name: %s, provider: %s", sv.getName(), sv.getProvider()) +
                      (sv.lcn.has_value() ? UString::Format(u", LCN: %d", *sv.lcn) : UString()) +
                      (sv.hidden ? u" (hidden)" : u""));
-        grid.putLine(u"Service type: " + names::ServiceType(sv.service_type, NamesFlags::FIRST));
+        grid.putLine(u"Service type: " + ServiceTypeName(sv.service_type, NamesFlags::VALUE_NAME));
         grid.putLine(UString::Format(u"TS packets: %'d, PID's: %d (clear: %d, scrambled: %d)", sv.ts_pkt_cnt, sv.pid_cnt, sv.pid_cnt - sv.scrambled_pid_cnt, sv.scrambled_pid_cnt));
         if (!sv.isdb_layers.empty()) {
             grid.putMultiLine(u"ISDB-T layers: " + sv.isdb_layers.toStringKeys(sv.ts_pkt_cnt));
@@ -405,7 +405,7 @@ void ts::TSAnalyzerReport::reportServices(Grid& grid, const UString& title)
                      (sv.pcr_pid == 0 || sv.pcr_pid == PID_NULL ? u"None" : UString::Format(u"%n", sv.pcr_pid)));
 
         // Display all PID's of this service
-        reportServiceHeader(grid, names::ServiceType(sv.service_type), sv.scrambled_pid_cnt > 0, sv.bitrate, _ts_bitrate, wide);
+        reportServiceHeader(grid, ServiceTypeName(sv.service_type), sv.scrambled_pid_cnt > 0, sv.bitrate, _ts_bitrate, wide);
         for (const auto& pid_it : _pids) {
             const PIDContext& pc(*pid_it.second);
             if (pc.services.contains(sv.service_id)) {
@@ -494,7 +494,7 @@ void ts::TSAnalyzerReport::reportPIDs(Grid& grid, const UString& title)
 
         // Type of PES data, if available
         if (pc.same_stream_id) {
-            grid.putLine(u"PES stream id: " + NameFromDTV(u"pes.stream_id", pc.pes_stream_id, NamesFlags::FIRST));
+            grid.putLine(u"PES stream id: " + NameFromSection(u"dtv", u"pes.stream_id", pc.pes_stream_id, NamesFlags::VALUE_NAME));
         }
 
         // Audio/video attributes.
@@ -509,7 +509,7 @@ void ts::TSAnalyzerReport::reportPIDs(Grid& grid, const UString& title)
 
         // List of System Software Update OUI's on this PID.
         for (auto oui : pc.ssu_oui) {
-            grid.putLine(u"SSU OUI: " + NameFromOUI(oui, NamesFlags::FIRST));
+            grid.putLine(u"SSU OUI: " + OUIName(oui, NamesFlags::VALUE_NAME));
         }
 
         // ISDB-T layers.
@@ -646,7 +646,7 @@ void ts::TSAnalyzerReport::reportTables(Grid& grid, const UString& title)
 
             // Header line: TID
             grid.subSection();
-            grid.putLine(TIDName(_duck, tid, pc.cas_id, NamesFlags::BOTH_FIRST) +
+            grid.putLine(TIDName(_duck, tid, pc.cas_id, NamesFlags::HEX_DEC_VALUE_NAME) +
                          (isShort ? u"" : UString::Format(u", TID ext: %n", etc.xtid.tidExt())));
 
             // 4-columns output, first column remains empty.
@@ -1207,7 +1207,7 @@ void ts::TSAnalyzerReport::reportJSON(TSAnalyzerOptions& opt, std::ostream& stm,
         jv.add(u"provider", sv.getProvider());
         jv.add(u"name", sv.getName());
         jv.add(u"type", sv.service_type);
-        jv.add(u"type-name", names::ServiceType(sv.service_type));
+        jv.add(u"type-name", ServiceTypeName(sv.service_type));
         if (_ts_id.has_value()) {
             jv.add(u"tsid", *_ts_id);
         }
