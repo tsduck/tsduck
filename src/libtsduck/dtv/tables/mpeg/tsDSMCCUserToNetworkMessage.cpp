@@ -303,10 +303,10 @@ void ts::DSMCCUserToNetworkMessage::serializePayload(BinaryTable& table, PSIBuff
         buf.pushWriteSequenceWithLeadingLength(16);  // private_data
 
         // IOP::IOR
-        buf.putUInt32(ior.type_id.size());
+        buf.putUInt32(uint32_t(ior.type_id.size()));
         buf.putBytes(ior.type_id);
 
-        buf.putUInt32(ior.tagged_profiles.size());
+        buf.putUInt32(uint32_t(ior.tagged_profiles.size()));
 
         for (const auto& tagged_profile : ior.tagged_profiles) {
             buf.putUInt32(tagged_profile.profile_id_tag);
@@ -317,7 +317,7 @@ void ts::DSMCCUserToNetworkMessage::serializePayload(BinaryTable& table, PSIBuff
 
             if (tagged_profile.profile_id_tag == DSMCC_TAG_BIOP_PROFILE) {  // TAG_BIOP (BIOP Profile Body)
 
-                buf.putUInt8(tagged_profile.liteComponents.size());
+                buf.putUInt8(uint8_t(tagged_profile.liteComponents.size()));
 
                 for (const auto& liteComponent : tagged_profile.liteComponents) {
                     buf.putUInt32(liteComponent.component_id_tag);
@@ -330,7 +330,7 @@ void ts::DSMCCUserToNetworkMessage::serializePayload(BinaryTable& table, PSIBuff
                             buf.putUInt16(liteComponent.module_id);
                             buf.putUInt8(liteComponent.version_major);
                             buf.putUInt8(liteComponent.version_minor);
-                            buf.putUInt8(liteComponent.object_key_data.size());
+                            buf.putUInt8(uint8_t(liteComponent.object_key_data.size()));
                             buf.putBytes(liteComponent.object_key_data);
                             break;
                         }
@@ -391,7 +391,7 @@ void ts::DSMCCUserToNetworkMessage::serializePayload(BinaryTable& table, PSIBuff
         buf.putUInt32(0x00000000);  // tCDownloadScenario
         buf.putUInt16(0x0000);      // compatibility_descriptor_length
 
-        buf.putUInt16(modules.size());
+        buf.putUInt16(uint16_t(modules.size()));
 
         for (const auto& module : modules) {
 
@@ -407,7 +407,7 @@ void ts::DSMCCUserToNetworkMessage::serializePayload(BinaryTable& table, PSIBuff
             buf.putUInt32(module.second.block_timeout);
             buf.putUInt32(module.second.min_block_time);
 
-            buf.putUInt8(module.second.taps.size());  // taps_count
+            buf.putUInt8(uint8_t(module.second.taps.size()));  // taps_count
 
             for (const auto& tap : module.second.taps) {
                 buf.putUInt16(tap.id);

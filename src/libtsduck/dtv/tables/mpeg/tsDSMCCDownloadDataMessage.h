@@ -18,11 +18,15 @@ namespace ts {
     //!
     //! Representation of an DSM-CC Download Data Message Table (DSMCCDownloadDataMessage)
     //!
-    //! @see ISO/IEC 13818-6, ITU-T Rec. 9.2.2 and 9.2.7. ETSI TR 101 202 V1.2.1 (2003-01), A.2, A.5, B.
+    //! @see ISO/IEC 13818-6, ITU-T Rec. 9.2.2 and 9.2.7. ETSI TR 101 202 V1.2.1 (2003-01), A.2, A.5, B
     //! @ingroup table
     //!
     class TSDUCKDLL DSMCCDownloadDataMessage: public AbstractLongTable {
     public:
+        //!
+        //! Representation of Download Data Header
+        //! @see ETSI TR 101 202 V1.2.1 (2003-01), A.2
+        //!
         class TSDUCKDLL DownloadDataHeader {
             TS_DEFAULT_COPY_MOVE(DownloadDataHeader);
 
@@ -44,8 +48,8 @@ namespace ts {
             void clear();
         };
 
-        uint16_t           table_id_ext = 0;    //!< Module Id where block belongs
-        DownloadDataHeader header {};           //!< DSM-CC Download Data Header
+        uint16_t           table_id_ext = 0;    //!< Module Id where block belongs.
+        DownloadDataHeader header {};           //!< DSM-CC Download Data Header.
         uint16_t           module_id = 0;       //!< Identifies to which module this block belongs.
         uint8_t            module_version = 0;  //!< Identifies the version of the module to which this block belongs.
         ByteBlock          block_data {};       //!< Conveys the data of the block.
@@ -79,10 +83,10 @@ namespace ts {
         virtual bool   analyzeXML(DuckContext& duck, const xml::Element* element) override;
 
     private:
-        static constexpr size_t DOWNLOAD_DATA_HEADER_SIZE = 12;  //!< DSM-CC Download Data Header size w/o adaptation header
+        static constexpr size_t DOWNLOAD_DATA_HEADER_SIZE = 12;  //!< DSM-CC Download Data Header size w/o adaptation header.
 
-        static constexpr uint8_t  DSMCC_PROTOCOL_DISCRIMINATOR = 0x11;  //!< Protocol Discriminator for DSM-CC
-        static constexpr uint8_t  DSMCC_TYPE_DOWNLOAD_MESSAGE = 0x03;   //!< MPEG-2 DSM-CC Download Message
-        static constexpr uint16_t DSMCC_MESSAGE_ID_DDB = 0x1003;        //!< DownloadDataMessage
+        static constexpr uint8_t  DSMCC_PROTOCOL_DISCRIMINATOR = 0x11;  //!< Protocol Discriminator for DSM-CC.
+        static constexpr uint8_t  DSMCC_TYPE_DOWNLOAD_MESSAGE = 0x03;   //!< MPEG-2 DSM-CC Download Message.
+        static constexpr uint16_t DSMCC_MESSAGE_ID_DDB = 0x1003;        //!< DownloadDataMessage.
     };
 }  // namespace ts
