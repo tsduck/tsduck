@@ -7,7 +7,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  A singleton which generates 64-bit UID, unique integer
+//!  A function which generates 64-bit UID, unique integer
 //!
 //----------------------------------------------------------------------------
 
@@ -16,20 +16,9 @@
 
 namespace ts {
     //!
-    //! A singleton which generates 64-bit UID, unique integer.
+    //! Generate a new 64-bit UID, unique integer.
     //! @ingroup cpp
+    //! @return A new unique 64-bit value.
     //!
-    class TSDUCKDLL UID
-    {
-        TS_SINGLETON(UID);
-    public:
-        //!
-        //! Generate a new UID.
-        //! @return A new unique 64-bit value.
-        //!
-        uint64_t newUID();
-
-    private:
-        std::atomic<uint64_t> _next_uid {};
-    };
+    uint64_t UID();
 }

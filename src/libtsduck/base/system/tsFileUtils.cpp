@@ -307,7 +307,7 @@ fs::path ts::UserHomeDirectory()
 fs::path ts::TempFile(const UString& suffix)
 {
     fs::path name(fs::temp_directory_path());
-    name /= UString::Format(u"tstmp-%X%s", UID::Instance().newUID(), suffix);
+    name /= UString::Format(u"tstmp-%X%s", UID(), suffix);
     return name;
 }
 

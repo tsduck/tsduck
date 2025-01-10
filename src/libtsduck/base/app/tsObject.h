@@ -29,6 +29,7 @@ namespace ts {
     //!
     //! This type of object is typically derived by application-defined classes and
     //! used to communicate these user-data between independent modules or plugins.
+    //! @see ObjectRepository
     //!
     class TSDUCKDLL Object
     {

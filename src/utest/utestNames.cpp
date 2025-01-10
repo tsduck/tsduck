@@ -184,6 +184,7 @@ TSUNIT_DEFINE_TEST(Value)
     TSUNIT_ASSERT(vFirstRepetition == 47 || vFirstRepetition == 48);
 
     TSUNIT_ASSERT(e1.value(u"1") == 1);
+    TSUNIT_ASSERT(e1.value(u"-1234") == -1234);
     TSUNIT_ASSERT(e1.value(u"0x10") == 16);
     TSUNIT_ASSERT(e1.value(u"x10") == ts::Names::UNKNOWN);
 }

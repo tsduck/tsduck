@@ -392,11 +392,13 @@ TSUNIT_DEFINE_TEST(ErrorCode)
 
 TSUNIT_DEFINE_TEST(Uid)
 {
-    debug() << "SysUtilsTest: newUid() = 0x" << ts::UString::Hexa(ts::UID::Instance().newUID()) << std::endl;
+    debug() << "SysUtilsTest: UID() = 0x" << ts::UString::Hexa(ts::UID()) << std::endl;
+    debug() << "SysUtilsTest: UID() = 0x" << ts::UString::Hexa(ts::UID()) << std::endl;
+    debug() << "SysUtilsTest: UID() = 0x" << ts::UString::Hexa(ts::UID()) << std::endl;
 
-    TSUNIT_ASSERT(ts::UID::Instance().newUID() != ts::UID::Instance().newUID());
-    TSUNIT_ASSERT(ts::UID::Instance().newUID() != ts::UID::Instance().newUID());
-    TSUNIT_ASSERT(ts::UID::Instance().newUID() != ts::UID::Instance().newUID());
+    TSUNIT_ASSERT(ts::UID() != ts::UID());
+    TSUNIT_ASSERT(ts::UID() != ts::UID());
+    TSUNIT_ASSERT(ts::UID() != ts::UID());
 }
 
 TSUNIT_DEFINE_TEST(VernacularFilePath)

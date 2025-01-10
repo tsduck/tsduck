@@ -14,7 +14,6 @@
 #pragma once
 #include "tsReport.h"
 #include "tsUString.h"
-#include "tsAlgorithm.h"
 
 namespace ts {
     //!

@@ -42,7 +42,7 @@ namespace ts {
         //! @param [in] name Name which is associated to the object.
         //! @return A safe-pointer to the stored object or a null pointer when not found.
         //!
-        ObjectPtr retrieve(const UString& name);
+        ObjectPtr retrieve(const UString& name) const;
 
         //!
         //! Erase an object from the repository.
@@ -51,7 +51,7 @@ namespace ts {
         void erase(const UString& name);
 
     private:
-        std::mutex _mutex {};
+        mutable std::shared_mutex    _mutex {};
         std::map<UString, ObjectPtr> _repository {};
     };
 }

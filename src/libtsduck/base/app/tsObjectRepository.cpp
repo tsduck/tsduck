@@ -26,7 +26,9 @@ ts::ObjectRepository::ObjectRepository()
 
 ts::ObjectPtr ts::ObjectRepository::store(const UString& name, const ObjectPtr& value)
 {
-    std::lock_guard<std::mutex> lock(_mutex);
+    // Write lock (exclusive).
+    std::lock_guard<std::shared_mutex> lock(_mutex);
+
     const ObjectPtr previous = _repository[name];
     if (value == nullptr) {
         _repository.erase(name);
@@ -42,9 +44,11 @@ ts::ObjectPtr ts::ObjectRepository::store(const UString& name, const ObjectPtr& 
 // Get the safe pointer to an Object in the repository
 //----------------------------------------------------------------------------
 
-ts::ObjectPtr ts::ObjectRepository::retrieve(const UString& name)
+ts::ObjectPtr ts::ObjectRepository::retrieve(const UString& name) const
 {
-    std::lock_guard<std::mutex> lock(_mutex);
+    // Read lock (shared).
+    std::shared_lock<std::shared_mutex> lock(_mutex);
+
     const auto pos = _repository.find(name);
     return pos != _repository.end() ? pos->second : ObjectPtr();
 }
@@ -56,6 +60,8 @@ ts::ObjectPtr ts::ObjectRepository::retrieve(const UString& name)
 
 void ts::ObjectRepository::erase(const UString& name)
 {
-    std::lock_guard<std::mutex> lock(_mutex);
+    // Write lock (exclusive).
+    std::lock_guard<std::shared_mutex> lock(_mutex);
+
     _repository.erase(name);
 }

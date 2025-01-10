@@ -52,9 +52,9 @@ namespace ts {
     //! Representation of a set of translations between names for identifiers.
     //! @ingroup app
     //!
-    //! An instance of Names contains a consistent set of translations for one type of
-    //! identifiers. Translations can be performed in both directions, from name to
-    //! identifier or from identifier to name.
+    //! An instance of Names contains a consistent set of translations for one type of identifier.
+    //! Identifiers are integer values of any integral or enumeration type. Translations can be
+    //! performed in both directions, from name to identifier or from identifier to name.
     //!
     //! When translating from name to identifier value:
     //! - The string values can be abbreviated up to the shortest unambiguous string
@@ -68,8 +68,24 @@ namespace ts {
     //! An instance of Names can be used to define values for command line arguments or
     //! XML elements and attributes.
     //!
-    //! An instance of Names can be constructed from a hardcoded set of name/value pairs
-    //! or from a section of a ".names" file.
+    //! An instance of Names can be manually constructed in the code, either using a list of
+    //! name / identifier pairs in the constructor, or adding translations one by one, or both.
+    //!
+    //! Example:
+    //! @code
+    //! ts::Names e({{u"FirstElement", -1}, {u"SecondElement", 7}, {u"LastElement", 458}});
+    //! e.add(u"Other", 48);
+    //! @endcode
+    //!
+    //! An instance of Names can also be constructed from a section of a ".names" file.
+    //! See the method Names::MergeFile() for the designation method for ".names" files.
+    //! All ".names" files are loaded in a global repository of sections.
+    //!
+    //! If sections with the same name are loaded from different files, their content are merged.
+    //! This is how "TSDuck extensions" can add their own identifiers to TSDuck-provided names.
+    //! It is possible to query a section by name, returning a shared pointer to the corresponding
+    //! instance of Names. It is also possible to directly translate a value into a name using the
+    //! non-member functions NameFromSection() and NameFromSectionWithFallback().
     //!
     //! The integer type for the identifier is the largest signed or unsigned integer in the
     //! system (in practice, this is 64 bits). To avoid making the whole class a template one,
@@ -210,6 +226,12 @@ namespace ts {
         //! @return True if the list of values contains negative values from a signed integral type.
         //!
         bool isSigned() const { return _is_signed; }
+
+        //!
+        //! Get the number of significant bits in values, when specified using "Bits = nn" in a ".names" file.
+        //! @return The number of significant bits in values. Zero means unspecified.
+        //!
+        size_t bits() const { return _bits; }
 
         //!
         //! Get the section name of this instance when it was loaded from a ".names" file.

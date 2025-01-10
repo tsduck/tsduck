@@ -46,7 +46,7 @@
     - Descriptor 0: Registration (0x05, 5), 4 bytes
       Format identifier: 0x464F4F54 ("FOOT")
 
-* unknown (0x80), TID 0x80 (128), PID 0x0103 (259)
+* Foo ECM (even), TID 0x80 (128), PID 0x0103 (259)
   Short section, total size: 10 bytes
   - Section 0:
     Foo id: 0x0123
@@ -65,7 +65,7 @@
       Message id: 32, language: eng
       Message: "The message"
 
-* unknown (0x88), TID 0x88 (136), PID 0x0200 (512)
+* Foo EMM-6, TID 0x88 (136), PID 0x0200 (512)
   Short section, total size: 9 bytes
   - Section 0:
     Foo id: 0x0123
