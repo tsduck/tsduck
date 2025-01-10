@@ -20,5 +20,5 @@ namespace ts {
     //! @ingroup cpp
     //! @return A new unique 64-bit value.
     //!
-    uint64_t UID();
+    TSDUCKDLL uint64_t UID();
 }
