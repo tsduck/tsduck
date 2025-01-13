@@ -29,8 +29,8 @@ namespace ts {
       TableHandlerInterface {
       private:
       TSP* _tsp;
-      SectionDemux _demux;
       DuckContext  _duck;
+      SectionDemux _demux {_duck, this, nullptr};
       bool         _has_cat = false;
 
     public:

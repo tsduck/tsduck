@@ -21,10 +21,13 @@
 #include <tsSectionDemux.h>
 
 ts::TR101_290Analyzer::TR101_290Analyzer(TSP* tsp) :
-    _tsp(tsp), _demux()
+    _tsp(tsp)
 {
     auto ptr = std::make_shared<ts::TR101_290Analyzer::ServiceContext>(0, ServiceContext::ServiceContextType::Pat);
     _services.insert(std::make_pair(0, ptr));
+
+    _demux.addPID(PID_PAT);
+    _demux.addPID(PID_CAT);
 }
 
 void ts::TR101_290Analyzer::handleTable(SectionDemux& demux, const BinaryTable& table)
@@ -51,12 +54,14 @@ void ts::TR101_290Analyzer::handleTable(SectionDemux& demux, const BinaryTable& 
             auto s2 = getService(pid);
             s2->_type = ServiceContext::Pmt;
             s2->_pmt_service_id = service_id;
+            _demux.addPID(pid);
         }
 
         // Remove PMT assignments.
         for (auto it = _services.begin(); it != _services.end(); ++it) {
             if (it->second->_type == ServiceContext::Pmt && !pat.pmts.contains(it->second->_pmt_service_id)) {
                 it->second->_type = ServiceContext::Unassigned;
+                _demux.removePID(it->first);
             }
         }
 
@@ -216,12 +221,7 @@ void ts::TR101_290Analyzer::feedPacket(const TSPacket& packet, const TSPacketMet
     auto service = getService(packet.getPID());
     auto bitrate = _tsp->bitrate();
     processPacket(*service, packet, mdata, _tsp->bitrate().toInt64());
-
-    if (packet.getPID() == PID_PAT) {
-        if (packet.getPUSI()) {
-
-        }
-    }
+    _demux.feedPacket(packet);
 }
 
 const char* ERR = "[ERR]";
