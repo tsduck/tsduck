@@ -35,13 +35,13 @@ void ts::TR101_290Analyzer::handleTable(SectionDemux& demux, const BinaryTable& 
     auto service = getService(table.sourcePID());
 
     if (table.sourcePID() == PID_PAT && table.tableId() != TID_PAT) {
-        service->pat_error++;
-        service->pat_error_2++;
+        service->pat_err.count++;
+        service->pat_err2.count++;
     }
 
     if (service->_type == ServiceContext::Pmt && table.tableId() != TID_PMT) {
-        service->pmt_error++;
-        service->pmt_error_2++;
+        service->pmt_err.count++;
+        service->pmt_err2.count++;
     }
 
     if (table.tableId() == TID_PAT && service->_type == ServiceContext::Pat) {
@@ -103,7 +103,7 @@ std::shared_ptr<ts::TR101_290Analyzer::ServiceContext> ts::TR101_290Analyzer::ge
     return it->second;
 }
 
-void ts::TR101_290Analyzer::processPacket(ServiceContext& ctx, const TSPacket& pkt, const TSPacketMetadata& mdata, const uint64_t bitrate) const
+void ts::TR101_290Analyzer::processPacket(ServiceContext& ctx, const TSPacket& pkt, const TSPacketMetadata& mdata) const
 {
 
     // todo: do TS packets ever arrive with invalid sync bytes this deep in?
@@ -122,13 +122,13 @@ void ts::TR101_290Analyzer::processPacket(ServiceContext& ctx, const TSPacket& p
 
     if (ctx._type == ServiceContext::Pat) {
         if (pkt.getScrambling()) {
-            ctx.pat_error++;
-            ctx.pat_error_2++;
+            ctx.pat_err.count++;
+            ctx.pat_err2.count++;
         }
     } else if (ctx._type == ServiceContext::Pmt) {
         if (pkt.getScrambling()) {
-            ctx.pmt_error++;
-            ctx.pmt_error_2++;
+            ctx.pmt_err.count++;
+            ctx.pmt_err2.count++;
         }
     }
 
@@ -164,21 +164,22 @@ void ts::TR101_290Analyzer::processPacket(ServiceContext& ctx, const TSPacket& p
 
     // PID error.
     // todo: do we want to be doing PID error tests on PAT/PMT as well?
-    if (bitrate && ctx._type != ServiceContext::Unassigned) {
-        const auto dur = (pkt_ts - ctx.last_packet_ts) / bitrate;
+    if (ctx._type != ServiceContext::Unassigned) {
+        const auto dur = pkt_ts - ctx.last_packet_ts;
+        ctx.pid_err.pushSysClockFreq(dur);
+
         if (dur > 5 * SYSTEM_CLOCK_FREQ) {
-            ctx.pid_error++;
+            ctx.pid_err.count++;
         }
     }
 
     // PTS error.
     if (pkt.hasPTS()) {
-        if (bitrate) {
-            if (ctx.last_pts_ts != INVALID_PTS) {
-                auto dur = (pkt_ts - ctx.last_pts_ts) / bitrate;
-                if (dur > 700 * SYSTEM_CLOCK_FREQ /  1000) {
-                    ctx.ptr_error++;
-                }
+        if (ctx.last_pts_ts != INVALID_PTS) {
+            auto dur = pkt_ts - ctx.last_pts_ts;
+            ctx.pts_err.pushSysClockFreq(dur);
+            if (dur > 700 * SYSTEM_CLOCK_FREQ /  1000) {
+                ctx.pts_err.count++;
             }
         }
         ctx.last_pts_ts = pkt_ts;
@@ -187,29 +188,34 @@ void ts::TR101_290Analyzer::processPacket(ServiceContext& ctx, const TSPacket& p
     // PCR error.
     if (pkt.hasPCR()) {
         auto pcr = pkt.getPCR();
-        if (bitrate && ctx.last_pcr_val != INVALID_PCR && ctx.last_pcr_ts != INVALID_PCR) {
+        if (ctx.last_pcr_val != INVALID_PCR && ctx.last_pcr_ts != INVALID_PCR) {
             auto pcr_dist = pcr - ctx.last_pcr_val;
-            auto pcr_dist_dur = pcr_dist / bitrate;
+            ctx.pcr_discontinuity_err.pushSysClockFreq(pcr_dist);
+
             if (llabs(pcr_dist) > 100 * SYSTEM_CLOCK_FREQ /  1000) {
-                ctx.pcr_discontinuity_indicator_error++;
+                ctx.pcr_discontinuity_err.count++;
                 ctx.pcr_error++;
             }
 
             auto pkt_dist = pkt_ts - ctx.last_pcr_ts;
-            auto pkt_dist_dur = pkt_dist / bitrate;
-            if (pkt_dist_dur > 100 * SYSTEM_CLOCK_FREQ /  1000) {
-                ctx.pcr_repetition_error++;
-                ctx.pat_error++;
+            ctx.pcr_repetition_err.pushSysClockFreq(pkt_dist);
+
+            if (pkt_dist > 100 * SYSTEM_CLOCK_FREQ /  1000) {
+                ctx.pcr_repetition_err.count++;
+                ctx.pcr_error++;
             }
 
-            auto delta = llabs(pcr_dist_dur - pkt_dist_dur);
-            if (delta > 500 * SYSTEM_CLOCK_FREQ / 1e9) {
-                ctx.pcr_accuracy_error++;
+            auto delta = pcr_dist - (int64_t(_tsp->pluginPackets() - ctx.last_pcr_ctr) * PKT_SIZE_BITS * SYSTEM_CLOCK_FREQ / _tsp->bitrate());
+            ctx.pcr_accuracy_err.pushSysClockFreq(delta.toInt64());
+
+            if (llabs(delta.toInt64()) > 500ll * int64_t(SYSTEM_CLOCK_FREQ) / int64_t(1e9)) {
+                ctx.pcr_accuracy_err.count++;
             }
         }
 
         ctx.last_pcr_val = pcr;
         ctx.last_pcr_ts = pkt_ts;
+        ctx.last_pcr_ctr = _tsp->pluginPackets();
     }
 
     ctx.last_packet_ts = pkt_ts;
@@ -220,7 +226,7 @@ void ts::TR101_290Analyzer::feedPacket(const TSPacket& packet, const TSPacketMet
 {
     auto service = getService(packet.getPID());
     auto bitrate = _tsp->bitrate();
-    processPacket(*service, packet, mdata, _tsp->bitrate().toInt64());
+    processPacket(*service, packet, mdata);
     _demux.feedPacket(packet);
 }
 
@@ -230,6 +236,7 @@ const char* NA  = "[N/A]";
 struct ErrorState {
     int count;
     bool show;
+    std::string str;
 };
 
 typedef std::function<ErrorState(const ts::TR101_290Analyzer::ServiceContext&)> get_func;
@@ -251,7 +258,7 @@ static void print(const char* name, const get_func& fn,  std::ostream& stm, std:
     for (auto it = _services.begin(); it != _services.end(); it++) {
         auto val = fn(*it->second);
         if (val.show)
-            stm << "\t" << (val.count == 0 ? OK : ERR) << "PID 0x" << std::format("{:X}", it->second->_pid) << ": " << val.count << "\n";
+            stm << "\t" << (val.count == 0 ? OK : ERR) << "PID 0x" << std::format("{:X}", it->second->_pid) << ": " << val.count << " " << val.str << "\n";
     }
 }
 
@@ -274,19 +281,19 @@ bool is_pmt(const ts::TR101_290Analyzer::ServiceContext& ctx) {return ctx._type 
 bool is_table(const ts::TR101_290Analyzer::ServiceContext& ctx) {return ctx._type == ts::TR101_290Analyzer::ServiceContext::Pmt || ctx._type == ts::TR101_290Analyzer::ServiceContext::Pat;}
 
 ErrorState get_sync_byte_err(const ts::TR101_290Analyzer::ServiceContext& ctx) {return {ctx.sync_byte_error, true};}
-ErrorState get_pat_error(const ts::TR101_290Analyzer::ServiceContext& ctx) {return {ctx.pat_error, is_pat(ctx)};}
-ErrorState get_pat_error2(const ts::TR101_290Analyzer::ServiceContext& ctx) {return {ctx.pat_error_2,is_pat(ctx)};}
+ErrorState get_pat_error(const ts::TR101_290Analyzer::ServiceContext& ctx) {return {ctx.pat_err.count, is_pat(ctx), ctx.pat_err.to_string()};}
+ErrorState get_pat_error2(const ts::TR101_290Analyzer::ServiceContext& ctx) {return {ctx.pat_err2.count,is_pat(ctx), ctx.pat_err2.to_string()};}
 ErrorState get_cc_err(const ts::TR101_290Analyzer::ServiceContext& ctx) {return {ctx.cc_error, true};}
-ErrorState get_pmt_error(const ts::TR101_290Analyzer::ServiceContext& ctx) {return {ctx.pmt_error, is_pmt(ctx)};}
-ErrorState get_pmt_error2(const ts::TR101_290Analyzer::ServiceContext& ctx) {return {ctx.pmt_error_2, is_pmt(ctx)};}
-ErrorState get_pid_error(const ts::TR101_290Analyzer::ServiceContext& ctx) {return {ctx.pid_error, !is_pmt(ctx) && !is_pat(ctx)};}
+ErrorState get_pmt_error(const ts::TR101_290Analyzer::ServiceContext& ctx) {return {ctx.pmt_err.count, is_pmt(ctx), ctx.pmt_err.to_string()};}
+ErrorState get_pmt_error2(const ts::TR101_290Analyzer::ServiceContext& ctx) {return {ctx.pmt_err2.count, is_pmt(ctx), ctx.pmt_err2.to_string()};}
+ErrorState get_pid_error(const ts::TR101_290Analyzer::ServiceContext& ctx) {return {ctx.pid_err.count, !is_pmt(ctx) && !is_pat(ctx), ctx.pid_err.to_string()};}
 ErrorState get_transport_error(const ts::TR101_290Analyzer::ServiceContext& ctx) {return {ctx.transport_error, true};}
 ErrorState get_crc_error(const ts::TR101_290Analyzer::ServiceContext& ctx) {return {ctx.crc_error, is_table(ctx)};}
 ErrorState get_pcr_error(const ts::TR101_290Analyzer::ServiceContext& ctx) {return {ctx.pcr_error, ctx.has_pcr};}
-ErrorState get_repetition_error(const ts::TR101_290Analyzer::ServiceContext& ctx) {return {ctx.pcr_repetition_error, ctx.has_pcr};}
-ErrorState get_discontinuity_error(const ts::TR101_290Analyzer::ServiceContext& ctx) {return {ctx.pcr_discontinuity_indicator_error, ctx.has_pcr};}
-ErrorState get_accuracy_error(const ts::TR101_290Analyzer::ServiceContext& ctx) {return {ctx.pcr_accuracy_error, ctx.has_pcr};}
-ErrorState get_pts_error(const ts::TR101_290Analyzer::ServiceContext& ctx) {return {ctx.ptr_error, is_pes(ctx)};}
+ErrorState get_repetition_error(const ts::TR101_290Analyzer::ServiceContext& ctx) {return {ctx.pcr_repetition_err.count, ctx.has_pcr, ctx.pcr_repetition_err.to_string()};}
+ErrorState get_discontinuity_error(const ts::TR101_290Analyzer::ServiceContext& ctx) {return {ctx.pcr_discontinuity_err.count, ctx.has_pcr, ctx.pcr_discontinuity_err.to_string()};}
+ErrorState get_accuracy_error(const ts::TR101_290Analyzer::ServiceContext& ctx) {return {ctx.pcr_accuracy_err.count, ctx.has_pcr, ctx.pcr_accuracy_err.to_string()};}
+ErrorState get_pts_error(const ts::TR101_290Analyzer::ServiceContext& ctx) {return {ctx.pts_err.count, is_pes(ctx), ctx.pts_err.to_string()};}
 ErrorState get_cat_error(const ts::TR101_290Analyzer::ServiceContext& ctx) {return {ctx.cat_error, false};} // todo
 
 void ts::TR101_290Analyzer::report(std::ostream& stm, int& opt, Report& rep)
@@ -329,19 +336,19 @@ void ts::TR101_290Analyzer::reset()
 {
     for (auto it = _services.begin(); it != _services.end(); ++it) {
         it->second->sync_byte_error = 0;
-        it->second->pat_error = 0;
-        it->second->pat_error_2 = 0;
+        it->second->pat_err.clear();
+        it->second->pat_err2.clear();
         it->second->cc_error = 0;
-        it->second->pmt_error = 0;
-        it->second->pmt_error_2 = 0;
-        it->second->pid_error = 0;
+        it->second->pmt_err .clear();
+        it->second->pmt_err2 .clear();
+        it->second->pid_err .clear();
         it->second->transport_error = 0;
         it->second->crc_error = 0;
         it->second->pcr_error = 0;
-        it->second->pcr_repetition_error = 0;
-        it->second->pcr_discontinuity_indicator_error = 0;
-        it->second->pcr_accuracy_error = 0;
-        it->second->ptr_error = 0;
+        it->second->pcr_repetition_err .clear();
+        it->second->pcr_discontinuity_err .clear();
+        it->second->pcr_accuracy_err .clear();
+        it->second->pts_err .clear();
         it->second->cat_error = 0;
     }
 }
