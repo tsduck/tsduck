@@ -1,6 +1,15 @@
+//----------------------------------------------------------------------------
 //
-// Created by staz on 1/12/25.
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2025, Staz Modrzynski
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
+//----------------------------------------------------------------------------
+//
+//  Transport stream processor shared library:
+//  TR 101-290 analyzer.
+//
+//----------------------------------------------------------------------------
 
 #ifndef TSTR101ANALYZER_H
 #define TSTR101ANALYZER_H
