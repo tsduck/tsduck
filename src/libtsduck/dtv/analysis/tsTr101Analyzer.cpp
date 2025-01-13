@@ -69,8 +69,8 @@ void ts::TR101_290Analyzer::handleTable(SectionDemux& demux, const BinaryTable& 
         const auto pmt = PMT(_duck, table);
 
         // Ensure all PIDs are assigned to this service.
-        for (auto map : pmt.streams) {
-            const auto s2 = getService(map.first);
+        for (auto it = pmt.streams.begin(); it != pmt.streams.end(); it++) {
+            const auto s2 = getService(it->first);
             s2->_type = ServiceContext::Assigned;
             s2->_pmt_service_id = service->_pmt_service_id;
         }
