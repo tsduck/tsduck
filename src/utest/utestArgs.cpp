@@ -148,7 +148,7 @@ TSUNIT_DEFINE_TEST(HelpDefault)
                  u"      Display the TSDuck version number.\n"
                  u"      The 'name' must be one of \"acceleration\", \"all\", \"bitrate\", \"compiler\",\n"
                  u"      \"crypto\", \"date\", \"dektec\", \"http\", \"integer\", \"long\", \"nsis\", \"rist\",\n"
-                 u"      \"short\", \"srt\", \"system\", \"vatek\".\n",
+                 u"      \"short\", \"srt\", \"system\", \"vatek\", \"zlib\".\n",
                  log.messages());
 
     args.setShell(u"{shell}");
@@ -177,7 +177,7 @@ TSUNIT_DEFINE_TEST(HelpDefault)
                  u"      Display the TSDuck version number.\n"
                  u"      The 'name' must be one of \"acceleration\", \"all\", \"bitrate\", \"compiler\",\n"
                  u"      \"crypto\", \"date\", \"dektec\", \"http\", \"integer\", \"long\", \"nsis\", \"rist\",\n"
-                 u"      \"short\", \"srt\", \"system\", \"vatek\".\n",
+                 u"      \"short\", \"srt\", \"system\", \"vatek\", \"zlib\".\n",
                  log.messages());
 
     log.clear();
@@ -326,7 +326,7 @@ TSUNIT_DEFINE_TEST(HelpCustom)
                  u"      Display the TSDuck version number.\n"
                  u"      The 'name' must be one of \"acceleration\", \"all\", \"bitrate\", \"compiler\",\n"
                  u"      \"crypto\", \"date\", \"dektec\", \"http\", \"integer\", \"long\", \"nsis\", \"rist\",\n"
-                 u"      \"short\", \"srt\", \"system\", \"vatek\".\n",
+                 u"      \"short\", \"srt\", \"system\", \"vatek\", \"zlib\".\n",
                  log.messages());
 }
 

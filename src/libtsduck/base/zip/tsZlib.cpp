@@ -45,6 +45,7 @@
     TS_GCC_NOWARNING(zero-as-null-pointer-constant)
     TS_GCC_NOWARNING(unused-function)
     TS_GCC_NOWARNING(sign-compare)
+    TS_MSC_NOWARNING(4018)
     #include "sdefl.h"
     #include "sinfl.h"
     TS_POP_WARNING()
