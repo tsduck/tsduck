@@ -116,3 +116,17 @@ SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
 CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+                            ==== Small Deflate ====
+
+[[ Small Deflate is a small bare bone lossless compression library which   ]]
+[[ implements the Deflate (RFC 1951) compressed data format specification  ]]
+[[ standard. Inside TSDuck, it is used as replacement for zlib on Windows. ]]
+
+This software is available under 2 licenses -- choose whichever you prefer.
+
+ALTERNATIVE A - MIT License
+Copyright (c) 2020-2023 Micha Mettke
+
+ALTERNATIVE B - Public Domain (www.unlicense.org)
+This is free and unencumbered software released into the public domain.

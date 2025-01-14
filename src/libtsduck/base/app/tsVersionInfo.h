@@ -68,6 +68,7 @@ namespace ts {
             BITRATE,      //!< Representation of bitrate values.
             NSIS,         //!< Output NSIS @c !define directives.
             CRYPTO,       //!< Version of the cryptographic library which is used.
+            ZLIB,         //!< Version of the zlib compression library which is used.
             DEKTEC,       //!< Version of embedded Dektec DTAPI and detected Dektec drivers.
             HTTP,         //!< Version of HTTP library which is used.
             SRT,          //!< Version of SRT library which is used.

@@ -25,6 +25,10 @@ BuildRequires:  libcurl-devel
 Requires:       pcsc-lite
 BuildRequires:  pcsc-lite-devel
 %endif
+%if 0%{!?nozlib:1}
+Requires:       zlib
+BuildRequires:  zlib-devel
+%endif
 %if 0%{!?nosrt:1}
 Requires:       srt-libs
 BuildRequires:  srt-devel
@@ -61,6 +65,9 @@ Requires:       pcsc-lite-devel
 %if 0%{!?nocurl:1}
 Requires:       libcurl-devel
 %endif
+%if 0%{!?nozlib:1}
+Requires:       zlib-devel
+%endif
 %if 0%{!?nosrt:1}
 Requires:       srt-devel
 %endif
@@ -79,7 +86,7 @@ developing applications that use %{name}.
 %global debug_package %{nil}
 
 # Propagate component exclusions.
-%define makeflags NOTEST=1 %{?nosrt:NOSRT=1} %{?norist:NORIST=1} %{?nopcsc:NOPCSC=1} %{?nocurl:NOCURL=1} %{?noeditline:NOEDITLINE=1} %{?nodektec:NODEKTEC=1} %{?novatek:NOVATEK=1} %{?nodoc:NODOC=1} %{?mflags}
+%define makeflags NOTEST=1 %{?nozlib:NOZLIB=1} %{?nosrt:NOSRT=1} %{?norist:NORIST=1} %{?nopcsc:NOPCSC=1} %{?nocurl:NOCURL=1} %{?noeditline:NOEDITLINE=1} %{?nodektec:NODEKTEC=1} %{?novatek:NOVATEK=1} %{?nodoc:NODOC=1} %{?mflags}
 
 %prep
 %setup -q -n %{name}-%{version}-%{commit}

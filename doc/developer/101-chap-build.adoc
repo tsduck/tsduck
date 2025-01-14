@@ -423,6 +423,7 @@ The following `make` variables can be defined:
 |NODEKTEC |No Dektec device support, remove dependency to `DTAPI`.
 |NOHIDES |No HiDes device support.
 |NOVATEK |No VATek device support (modulators based on VATek chips), remove dependency to `libvatek`.
+|NOZLIB |Don't use zlib, use embedded "Small Deflate" instead, remove dependency to `zlib`.
 |NOCURL |No HTTP support, remove dependency to `libcurl`.
 |NOPCSC |No smartcard support, remove dependency to `pcsc-lite`.
 |NOEDITLINE |No interactive line editing, remove dependency to `libedit`.

@@ -60,3 +60,7 @@ _"Copyright © 2019-2020 SipRadius LLC. All right reserved."_
 *LibVatek*: On Windows and Linux, the TSDuck binary distribution contains the LibVatek library in static form.
 This is an open-source library which is distributed under the BSD 2-Clause License (see <<VATek-SDK>>).
 _"Copyright © 2022, Richie Chang."_
+
+*Small Deflate (sdefl)*: On Windows, the TSDuck binary distribution contains the Small Deflate library in static form.
+This is an open-source library which is distributed under two licenses, MIT License and Public Domain License.
+_"Copyright (c) 2020-2023 Micha Mettke."_

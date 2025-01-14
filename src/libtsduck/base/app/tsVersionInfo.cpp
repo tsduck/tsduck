@@ -20,6 +20,7 @@
 #include "tsWebRequest.h"
 #include "tsSRTSocket.h"
 #include "tsRIST.h"
+#include "tsZlib.h"
 
 // Exported version of the TSDuck library.
 // The names of these symbols are constant, their values are not.
@@ -53,6 +54,7 @@ const ts::Names& ts::VersionInfo::FormatEnum()
         {u"bitrate",      Format::BITRATE},
         {u"nsis",         Format::NSIS},
         {u"crypto",       Format::CRYPTO},
+        {u"zlib",         Format::ZLIB},
         {u"dektec",       Format::DEKTEC},
         {u"http",         Format::HTTP},
         {u"srt",          Format::SRT},
@@ -344,6 +346,10 @@ ts::UString ts::VersionInfo::GetVersion(Format format, const UString& applicatio
             // The version of the HTTP library.
             return WebRequest::GetLibraryVersion();
         }
+        case Format::ZLIB: {
+            // The version of the zlib compression library.
+            return Zlib::GetVersion();
+        }
         case Format::SRT: {
             // The version of the SRT library.
             return SRTSocket::GetLibraryVersion();
@@ -366,6 +372,7 @@ ts::UString ts::VersionInfo::GetVersion(Format format, const UString& applicatio
                 u"Dektec: " + GetVersion(Format::DEKTEC) + LINE_FEED +
                 u"VATek: " + GetVersion(Format::VATEK) + LINE_FEED +
                 u"Cryptographic library: " + GetVersion(Format::CRYPTO) + LINE_FEED +
+                u"Deflate library: " + GetVersion(Format::ZLIB) + LINE_FEED +
                 u"Web library: " + GetVersion(Format::HTTP) + LINE_FEED +
                 u"SRT library: " + GetVersion(Format::SRT) + LINE_FEED +
                 u"RIST library: " + GetVersion(Format::RIST);

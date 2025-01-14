@@ -184,6 +184,7 @@ elif [[ "$SYSTEM" == "OpenBSD" ]]; then
     disamb_pkg() { pkg_info -Q $1 | grep "^$1-[0-9]" | grep -v -e -static | sort | tail -1 | sed -e 's/ .*//'; }
 
     PKGLIST+=(git curl zip bash gsed ggrep gmake $(disamb_pkg gtar) dos2unix coreutils $(disamb_pkg python))
+    [[ -z $NOZLIB    ]] && PKGLIST+=(zlib)
     [[ -z $NOPCSC    ]] && PKGLIST+=(pcsc-lite)
     [[ -z $NOJAVA    ]] && PKGLIST+=($(disamb_pkg jdk))
     [[ -z $NODOXYGEN ]] && PKGLIST+=(doxygen graphviz)
@@ -207,6 +208,7 @@ elif [[ "$SYSTEM" == "NetBSD" ]]; then
 
     PKGLIST+=(git curl mozilla-rootcerts zip bash gsed grep gmake gtar dos2unix coreutils python310 py310-expat openssl)
     [[ -z $NOEDITLINE ]] && PKGLIST+=(editline)
+    [[ -z $NOZLIB     ]] && PKGLIST+=(zlib)
     [[ -z $NOPCSC     ]] && PKGLIST+=(pcsc-lite)
     [[ -z $NOJAVA     ]] && PKGLIST+=(openjdk17)
     [[ -z $NODOXYGEN  ]] && PKGLIST+=(doxygen graphviz)
@@ -232,6 +234,7 @@ elif [[ "$DISTRO" == "Ubuntu" ]]; then
     PKGLIST+=(git g++ cmake flex bison dos2unix curl tar zip linux-libc-dev dpkg-dev python3 libssl-dev)
     [[ -z $NOEDITLINE                                      ]] && PKGLIST+=(libedit-dev)
     [[ -z $NOPCSC                                          ]] && PKGLIST+=(pcscd libpcsclite-dev)
+    [[ -z $NOZLIB                                          ]] && PKGLIST+=(zlib1g-dev)
     [[ -z $NOCURL && $MAJOR -le 17                         ]] && PKGLIST+=(libcurl3 libcurl3-dev)
     [[ -z $NOCURL && $MAJOR -gt 17                         ]] && PKGLIST+=(libcurl4 libcurl4-openssl-dev)
     [[ -z $NORIST && $VERSION -ge 2210                     ]] && PKGLIST+=(librist-dev)
@@ -265,6 +268,7 @@ elif [[ "$DISTRO" == "Linuxmint" ]]; then
 
     PKGLIST+=(git g++ cmake flex bison dos2unix curl tar zip linux-libc-dev dpkg-dev python3 libssl-dev)
     [[ -z $NOEDITLINE                              ]] && PKGLIST+=(libedit-dev)
+    [[ -z $NOZLIB                                  ]] && PKGLIST+=(zlib1g-dev)
     [[ -z $NOPCSC                                  ]] && PKGLIST+=(pcscd libpcsclite-dev)
     [[ -z $NOSRT && $MAJOR -ge 20 && $MAJOR -lt 21 ]] && PKGLIST+=(libsrt-dev)
     [[ -z $NOSRT && $MAJOR -ge 21                  ]] && PKGLIST+=(libsrt-openssl-dev)
@@ -293,6 +297,7 @@ elif [[ "$DISTRO" = "Debian" || "$DISTRO" = "Raspbian" ]]; then
 
     PKGLIST+=(git g++ cmake flex bison dos2unix curl tar zip linux-libc-dev dpkg-dev python3 libssl-dev)
     [[ -z $NOEDITLINE              ]] && PKGLIST+=(libedit-dev)
+    [[ -z $NOZLIB                  ]] && PKGLIST+=(zlib1g-dev)
     [[ -z $NOPCSC                  ]] && PKGLIST+=(pcscd libpcsclite-dev)
     [[ -z $NOCURL && $MAJOR -le 9  ]] && PKGLIST+=(libcurl3 libcurl3-dev)
     [[ -z $NOCURL && $MAJOR -gt 9  ]] && PKGLIST+=(libcurl4 libcurl4-openssl-dev)
@@ -324,6 +329,7 @@ elif [[ -f /etc/fedora-release ]]; then
 
     PKGLIST+=(git gcc-c++ cmake flex bison dos2unix curl tar zip kernel-headers libatomic rpmdevtools python3 openssl-devel)
     [[ -z $NOEDITLINE           ]] && PKGLIST+=(libedit-devel)
+    [[ -z $NOZLIB               ]] && PKGLIST+=(zlib-devel)
     [[ -z $NOPCSC               ]] && PKGLIST+=(pcsc-tools pcsc-lite-devel)
     [[ -z $NORIST && $FC -ge 36 ]] && PKGLIST+=(librist-devel)
     [[ -z $NOSRT && $FC -ge 31  ]] && PKGLIST+=(srt-devel)
@@ -355,6 +361,7 @@ elif [[ -f /etc/redhat-release ]]; then
 
     PKGLIST+=(git gcc-c++ cmake flex bison dos2unix curl tar zip kernel-headers libatomic rpmdevtools python3 openssl-devel)
     [[ -z $NOEDITLINE            ]] && PKGLIST+=(libedit-devel)
+    [[ -z $NOZLIB                ]] && PKGLIST+=(zlib-devel)
     [[ -z $NOPCSC                ]] && PKGLIST+=(pcsc-lite pcsc-lite-devel)
     [[ -z $NORIST && $EL -ge 902 ]] && PKGLIST+=(librist-devel)
     [[ -z $NOSRT && $EL -ge 802  ]] && PKGLIST+=(srt-devel)
@@ -408,6 +415,7 @@ elif [[ -f /etc/os-release ]] && grep -q -i '^ID.*suse' /etc/os-release; then
 
     PKGLIST+=(git make gcc-c++ cmake flex bison dos2unix curl tar zip linux-glibc-devel rpmdevtools python3 libopenssl-3-devel)
     [[ -z $NOEDITLINE                           ]] && PKGLIST+=(libedit-devel)
+    [[ -z $NOZLIB                               ]] && PKGLIST+=(zlib-devel)
     [[ -z $NOPCSC                               ]] && PKGLIST+=(pcsc-tools pcsc-lite-devel)
     [[ -z $NORIST && ( -z $OS || $OS -ge 1505 ) ]] && PKGLIST+=(librist-devel)
     [[ -z $NOSRT                                ]] && PKGLIST+=(srt-devel)
@@ -436,6 +444,7 @@ elif [[ -f /etc/arch-release ]]; then
 
     PKGLIST+=(git make gcc cmake flex bison dos2unix core/which inetutils net-tools curl tar zip linux-api-headers python openssl)
     [[ -z $NOEDITLINE ]] && PKGLIST+=(libedit)
+    [[ -z $NOZLIB     ]] && PKGLIST+=(zlib)
     [[ -z $NOPCSC     ]] && PKGLIST+=(pcsclite)
     [[ -z $NOSRT      ]] && PKGLIST+=(srt)
     [[ -z $NOVATEK    ]] && PKGLIST+=(libusb)
@@ -465,6 +474,7 @@ elif [[ -f /etc/alpine-release ]]; then
 
     PKGLIST+=(bash coreutils diffutils procps util-linux linux-headers git make cmake flex bison g++ dos2unix curl tar zip dpkg python3 openssl-dev)
     [[ -z $NOEDITLINE            ]] && PKGLIST+=(libedit-dev)
+    [[ -z $NOZLIB                ]] && PKGLIST+=(zlib-dev)
     [[ -z $NOPCSC                ]] && PKGLIST+=(pcsc-lite-dev)
     [[ -z $NORIST && $AL -ge 316 ]] && PKGLIST+=(librist-dev)
     [[ -z $NOSRT                 ]] && PKGLIST+=(libsrt-dev)
@@ -495,6 +505,7 @@ elif [[ -f /etc/gentoo-release ]]; then
 
     PKGLIST+=(sys-devel/gcc dev-vcs/git dev-build/cmake app-text/dos2unix net-misc/curl app-arch/tar app-arch/zip app-arch/unzip sys-kernel/linux-headers dev-lang/python dev-libs/openssl)
     [[ -z $NOEDITLINE ]] && PKGLIST+=(dev-libs/libedit)
+    [[ -z $NOZLIB     ]] && PKGLIST+=(sys-libs/zlib)
     [[ -z $NOPCSC     ]] && PKGLIST+=(sys-apps/pcsc-lite)
     [[ -z $NOSRT      ]] && PKGLIST+=(net-libs/srt)
     [[ -z $NOVATEK    ]] && PKGLIST+=(dev-libs/libusb)
