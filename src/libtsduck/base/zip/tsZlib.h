@@ -7,7 +7,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Description of a polled file.
+//!  Implementation of RFC 1951 data compression, a.k.a. zlib format.
 //!
 //----------------------------------------------------------------------------
 
@@ -18,11 +18,13 @@
 namespace ts {
     //!
     //! Implementation of RFC 1951 data compression, a.k.a. zlib format, a.k.a. DEFLATE.
-    //! This interface is a proxy to the zlib library on UNIX systems (Linux, macOS, BSD).
-    //! On Windows system, the source code of TSDuck embeds the header-only implementation
-    //! called "Small Deflate" or "sdefl". The sdefl is also used when the macro TS_NO_ZLIB
-    //! is defined on any system.
     //! @ingroup system
+    //!
+    //! This interface is a proxy to the zlib library on UNIX systems (Linux, macOS, BSD).
+    //! On Windows systems, the source code of TSDuck embeds the header-only implementation
+    //! called "Small Deflate" or "sdefl". The sdefl implementation is also used when the
+    //! macro TS_NO_ZLIB is defined on any system.
+    //!
     //! @see RFC 1950 ZLIB Compressed Data Format Specification version 3.3
     //! @see RFC 1951 DEFLATE Compressed Data Format Specification version 1.3
     //! @see https://www.zlib.net
