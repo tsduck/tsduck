@@ -149,5 +149,5 @@ namespace ts {
     //! Get a string description of the bitrate format.
     //! @return A string description of the bitrate format.
     //!
-    UString GetBitRateDescription();
+    TSDUCKDLL UString GetBitRateDescription();
 }

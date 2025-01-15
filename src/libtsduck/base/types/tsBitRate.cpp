@@ -20,5 +20,3 @@ ts::UString ts::GetBitRateDescription()
 {
     return ts::BitRate().description();
 }
-
-
