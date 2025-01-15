@@ -49,6 +49,17 @@ void ts::TR101_290Analyzer::handleTable(SectionDemux& demux, const BinaryTable& 
 
         const auto pat = PAT(_duck, table);
 
+        if (service->_last_table_ts != INVALID_PCR) {
+            auto diff = _currentTimestamp - service->_last_table_ts;
+            service->pat_err.pushSysClockFreq(diff);
+            service->pat_err2.pushSysClockFreq(diff);
+            if (diff > 500 * SYSTEM_CLOCK_FREQ / 1000) {
+                service->pat_err.count++;
+                service->pat_err2.count++;
+            }
+        }
+        service->_last_table_ts = _currentTimestamp;
+
         // Assign PMTs.
         for (auto [service_id, pid] : pat.pmts) {
             auto s2 = getService(pid);
@@ -67,6 +78,17 @@ void ts::TR101_290Analyzer::handleTable(SectionDemux& demux, const BinaryTable& 
 
     } else if (table.tableId() == TID_PMT && service->_type == ServiceContext::Pmt) {
         const auto pmt = PMT(_duck, table);
+
+        if (service->_last_table_ts != INVALID_PCR) {
+            auto diff = _currentTimestamp - service->_last_table_ts;
+            service->pmt_err.pushSysClockFreq(diff);
+            service->pmt_err2.pushSysClockFreq(diff);
+            if (diff > 500 * SYSTEM_CLOCK_FREQ / 1000) {
+                service->pmt_err.count++;
+                service->pmt_err2.count++;
+            }
+        }
+        service->_last_table_ts = _currentTimestamp;
 
         // Ensure all PIDs are assigned to this service.
         for (auto it = pmt.streams.begin(); it != pmt.streams.end(); it++) {
@@ -224,6 +246,7 @@ void ts::TR101_290Analyzer::processPacket(ServiceContext& ctx, const TSPacket& p
 
 void ts::TR101_290Analyzer::feedPacket(const TSPacket& packet, const TSPacketMetadata& mdata)
 {
+    _currentTimestamp = mdata.getInputTimeStamp().count();
     auto service = getService(packet.getPID());
     auto bitrate = _tsp->bitrate();
     processPacket(*service, packet, mdata);

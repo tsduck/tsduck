@@ -32,6 +32,7 @@ namespace ts {
       DuckContext  _duck;
       SectionDemux _demux {_duck, this, nullptr};
       bool         _has_cat = false;
+      uint64_t          _currentTimestamp;
 
     public:
       struct ServiceContext {
@@ -89,6 +90,7 @@ namespace ts {
         uint64_t last_packet_ts;
         uint64_t last_pcr_ts;
         PacketCounter last_pcr_ctr;
+        uint64_t _last_table_ts = INVALID_PCR;
 
         uint64_t last_pcr_val = INVALID_PCR;
         uint8_t last_cc = 0;
