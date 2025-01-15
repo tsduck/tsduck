@@ -257,6 +257,13 @@ namespace ts {
         void add(const UString& name, T1 first, T2 last) { addValueImpl(NameValue(name, first, last)); }
 
         //!
+        //! Add a translation from a given name to a new unique value.
+        //! @param [in] name A string for a symbol.
+        //! @return The corresponding new unique integer value or @c UNKNOWN if no new value is available.
+        //!
+        int_t addNewValue(const UString& name);
+
+        //!
         //! Check if a range is free, ie no value is defined in the range.
         //! @param [in] first First value in the range to check.
         //! @param [in] last Last value in the range to check.

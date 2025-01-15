@@ -187,6 +187,49 @@ void ts::Names::addValueImplLocked(const UString& name, uint_t first, uint_t las
 
 
 //----------------------------------------------------------------------------
+// Add a translation from a given name to a new unique value.
+//----------------------------------------------------------------------------
+
+ts::Names::int_t ts::Names::addNewValue(const UString& name)
+{
+    // Write lock (exclusive).
+    std::lock_guard<std::shared_mutex> lock(_mutex);
+    if (_entries.empty()) {
+        // No value present, use zero.
+        addValueImplLocked(name, 0, 0);
+        return 0;
+    }
+    else if (_entries.rbegin()->second->last < uint_t(std::numeric_limits<int_t>::max())) {
+        // There are some free values after last one, use next value.
+        const uint_t next = _entries.rbegin()->second->last + 1;
+        addValueImplLocked(name, next, next);
+        return int_t(next);
+    }
+    else {
+        // No room after last value, search a free value.
+        auto it = _entries.rbegin();
+        uint_t next = it->second->first;
+        while (++it != _entries.rend()) {
+            if (it->second->last + 1 < next) {
+                // Found a free value between two ranges.
+                next = it->second->last + 1;
+                addValueImplLocked(name, next, next);
+                return int_t(next);
+            }
+            next = it->second->first;
+        }
+        if (_entries.begin()->second->first > 0) {
+            // Found a free value before first range.
+            next = _entries.begin()->second->first - 1;
+            addValueImplLocked(name, next, next);
+            return int_t(next);
+        }
+        return UNKNOWN;
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Get the range for a given value, nullptr if not found.
 //----------------------------------------------------------------------------
 

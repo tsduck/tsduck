@@ -8,6 +8,10 @@
 
 #include "tsCryptoLibrary.h"
 #include "tsInitCryptoLibrary.h"
+#include "tsVersionInfo.h"
+
+// Register for options --version.
+TS_REGISTER_FEATURE(u"crypto", u"Cryptographic library", ALWAYS, ts::GetCryptographicLibraryVersion);
 
 
 //----------------------------------------------------------------------------

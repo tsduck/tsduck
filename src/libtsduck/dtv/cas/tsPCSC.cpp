@@ -10,14 +10,24 @@
 #include "tsSysUtils.h"
 #include "tsFatal.h"
 #include "tsMemory.h"
+#include "tsVersionInfo.h"
+
 
 #if defined(TS_NO_PCSC)
+
 TS_LLVM_NOWARNING(missing-variable-declarations)
 bool tsPCSCIsEmpty = true; // Avoid warning about empty module.
+
+// Register for option --support
+TS_REGISTER_FEATURE(u"pcsc", u"PC/SC", UNSUPPORTED, nullptr);
+
 #else
 
 // SCARD_ macros contains many "old style" casts.
 TS_LLVM_NOWARNING(old-style-cast)
+
+// Register for option --support
+TS_REGISTER_FEATURE(u"pcsc", u"PC/SC", SUPPORTED, nullptr);
 
 
 //----------------------------------------------------------------------------

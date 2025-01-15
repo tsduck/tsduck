@@ -36,6 +36,7 @@ class NamesTest: public tsunit::Test
     TSUNIT_DECLARE_TEST(Name);
     TSUNIT_DECLARE_TEST(Names);
     TSUNIT_DECLARE_TEST(Value);
+    TSUNIT_DECLARE_TEST(Unique);
     TSUNIT_DECLARE_TEST(NameList);
     TSUNIT_DECLARE_TEST(Error);
     TSUNIT_DECLARE_TEST(OUI);
@@ -187,6 +188,38 @@ TSUNIT_DEFINE_TEST(Value)
     TSUNIT_ASSERT(e1.value(u"-1234") == -1234);
     TSUNIT_ASSERT(e1.value(u"0x10") == 16);
     TSUNIT_ASSERT(e1.value(u"x10") == ts::Names::UNKNOWN);
+}
+
+TSUNIT_DEFINE_TEST(Unique)
+{
+    ts::Names e1;
+    e1.add(u"foo", 10, 1'000);
+    TSUNIT_ASSERT(e1.freeRange(0, 9));
+    TSUNIT_ASSERT(e1.freeRange(1'001, 2'000));
+    TSUNIT_ASSERT(!e1.freeRange(2, 10));
+    TSUNIT_ASSERT(!e1.freeRange(2, 90));
+    TSUNIT_ASSERT(!e1.freeRange(990, 2'000));
+    TSUNIT_ASSERT(!e1.freeRange(1000, 2'000));
+    TSUNIT_ASSERT(!e1.freeRange(2, 10'000));
+    TSUNIT_EQUAL(1'001, e1.addNewValue(u"bar"));
+    TSUNIT_ASSERT(!e1.freeRange(1'001, 2'000));
+
+    ts::Names e2;
+    e2.add(u"foo", 2, std::numeric_limits<ts::Names::int_t>::max());
+
+    auto newval = e2.addNewValue(u"n1");
+    debug() << "NamesTest::Unique: newval = " << newval << std::endl;
+    TSUNIT_ASSERT(newval != ts::Names::UNKNOWN);
+    TSUNIT_ASSERT(newval >= 0);
+
+    newval = e2.addNewValue(u"n2");
+    debug() << "NamesTest::Unique: newval = " << newval << std::endl;
+    TSUNIT_ASSERT(newval != ts::Names::UNKNOWN);
+    TSUNIT_ASSERT(newval >= 0);
+
+    newval = e2.addNewValue(u"n3");
+    debug() << "NamesTest::Unique: newval = " << newval << std::endl;
+    TSUNIT_EQUAL(ts::Names::UNKNOWN, newval);
 }
 
 TSUNIT_DEFINE_TEST(NameList)

@@ -121,6 +121,24 @@ namespace ts {
         //!
         size_t memoryPageSize() const { return _memoryPageSize; }
 
+        //!
+        //! Build a string representing the system on which the application runs.
+        //! @return A string describing the system.
+        //!
+        static ts::UString GetSystemVersion();
+
+        //!
+        //! Build a string representing the compiler which was used to build TSDuck.
+        //! @return A string describing the compiler.
+        //!
+        static ts::UString GetCompilerVersion();
+
+        //!
+        //! Build a string describing the hardware accelerations on the system on which the application runs.
+        //! @return A string describing the hardware accelerations.
+        //!
+        static ts::UString GetAccelerations();
+
     private:
         SysArch   _arch;
         UString   _cpuName;

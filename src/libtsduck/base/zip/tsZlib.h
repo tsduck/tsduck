@@ -34,10 +34,10 @@ namespace ts {
     {
     public:
         //!
-        //! Get the Zlib version.
-        //! @return The Zlib version.
+        //! Get the Zlib library version.
+        //! @return The Zlib library version.
         //!
-        static UString GetVersion();
+        static UString GetLibraryVersion();
 
         //!
         //! Compress data according to the DEFLATE algorithm.

@@ -5,22 +5,20 @@
 // BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  Version identification of TSDuck.
-//!
+
+#include "tsBitRate.h"
+#include "tsVersionInfo.h"
+
+
+//----------------------------------------------------------------------------
+// Register a description of bitrates for the --version options
 //----------------------------------------------------------------------------
 
-#pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 40
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 4110
+TS_REGISTER_FEATURE(u"bitrate", u"Bitrate", ALWAYS, ts::GetBitRateDescription);
+
+ts::UString ts::GetBitRateDescription()
+{
+    return ts::BitRate().description();
+}
+
+

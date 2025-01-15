@@ -10,6 +10,7 @@
 #include "tsEnvironment.h"
 #include "tsMemory.h"
 #include "tsCryptoAcceleration.h"
+#include "tsVersionInfo.h"
 
 #if defined(TS_LINUX)
     #include <sys/auxv.h>
@@ -295,4 +296,103 @@ ts::SysInfo::SysInfo() :
             #endif
         }
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Build a string representing the system on which the application runs.
+//----------------------------------------------------------------------------
+
+TS_REGISTER_FEATURE(u"system", u"System", ALWAYS, ts::SysInfo::GetSystemVersion);
+
+ts::UString ts::SysInfo::GetSystemVersion()
+{
+    UString name(Instance().systemName());
+    const UString version(Instance().systemVersion());
+    if (!version.empty()) {
+        name.format(u" (%s)", version);
+    }
+    const UChar* endian = nullptr;
+    if constexpr (std::endian::native == std::endian::big) {
+        endian = u"big";
+    }
+    else if constexpr (std::endian::native == std::endian::little) {
+        endian = u"little";
+    }
+    else {
+        endian = u"unknown";
+    }
+    name.format(u", on %s, %d-bit, %s-endian, page size: %d bytes", Instance().cpuName(), 8 * sizeof(void*), endian, Instance().memoryPageSize());
+    return name;
+}
+
+
+//----------------------------------------------------------------------------
+// Build a string describing the hardware accelerations on the system on which the application runs.
+//----------------------------------------------------------------------------
+
+TS_REGISTER_FEATURE(u"acceleration", u"Acceleration", ALWAYS, ts::SysInfo::GetAccelerations);
+
+ts::UString ts::SysInfo::GetAccelerations()
+{
+    return UString::Format(u"CRC32: %s", UString::YesNo(Instance().crcInstructions()));
+}
+
+
+//----------------------------------------------------------------------------
+// Build a string representing the compiler which was used to build TSDuck.
+//----------------------------------------------------------------------------
+
+TS_REGISTER_FEATURE(u"compiler", u"Compiler", ALWAYS, ts::SysInfo::GetCompilerVersion);
+
+ts::UString ts::SysInfo::GetCompilerVersion()
+{
+    UString version;
+
+// Add compiler type and version.
+#if defined(_MSC_FULL_VER)
+    version.format(u"MSVC %02d.%02d.%05d", _MSC_FULL_VER / 10000000, (_MSC_FULL_VER / 100000) % 100, _MSC_FULL_VER % 100000);
+    #if defined(_MSC_BUILD)
+    version.append(UString::Format(u".%02d", _MSC_BUILD));
+    #endif
+#elif defined(_MSC_VER)
+    version.format(u"MSVC %02d.%02d", _MSC_VER / 100, _MSC_VER % 100);
+    #if defined(_MSC_BUILD)
+    version.append(UString::Format(u".%02d", _MSC_BUILD));
+    #endif
+#elif defined(__clang_version__)
+    version.format(u"Clang %s", __clang_version__);
+#elif defined(__llvm__) || defined(__clang__) || defined(__clang_major__)
+    version.assign(u"Clang ");
+    #if defined(__clang_major__)
+    version.append(UString::Format(u"%d", __clang_major__));
+    #endif
+    #if defined(__clang_minor__)
+    version.append(UString::Format(u".%d", __clang_minor__));
+    #endif
+    #if defined(__clang_patchlevel__)
+    version.append(UString::Format(u".%d", __clang_patchlevel__));
+    #endif
+#elif defined(__GNUC__)
+    version.format(u"GCC %d", __GNUC__);
+    #if defined(__GNUC_MINOR__)
+    version.append(UString::Format(u".%d", __GNUC_MINOR__));
+    #endif
+    #if defined(__GNUC_PATCHLEVEL__)
+    version.append(UString::Format(u".%d", __GNUC_PATCHLEVEL__));
+    #endif
+#else
+    version.assign(u"unknown compiler");
+#endif
+
+// Add C++ revision level.
+#if defined(_MSVC_LANG)
+    // With MSVC, the standard macro __cplusplus is stuck at 199711 for obscure reasons.
+    // The actual level of language standard is in the system-specific macro _MSVC_LANG.
+    version.append(UString::Format(u", C++ std %04d.%02d", _MSVC_LANG / 100, _MSVC_LANG % 100));
+#elif defined(__cplusplus)
+    version.append(UString::Format(u", C++ std %04d.%02d", __cplusplus / 100, __cplusplus % 100));
+#endif
+
+    return version;
 }

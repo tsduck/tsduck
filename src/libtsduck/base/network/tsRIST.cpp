@@ -8,6 +8,7 @@
 
 #include "tsRIST.h"
 #include "tsLibRIST.h"
+#include "tsVersionInfo.h"
 
 
 //----------------------------------------------------------------------------
@@ -22,3 +23,16 @@ ts::UString ts::GetRISTLibraryVersion()
     return UString::Format(u"librist version %s, API version %s", ::librist_version(), ::librist_api_version());
 #endif
 }
+
+
+//----------------------------------------------------------------------------
+// Register for options --version and --support.
+//----------------------------------------------------------------------------
+
+#if defined(TS_NO_RIST)
+    #define SUPPORT UNSUPPORTED
+#else
+    #define SUPPORT SUPPORTED
+#endif
+
+TS_REGISTER_FEATURE(u"rist", u"RIST library", SUPPORT, ts::GetRISTLibraryVersion);

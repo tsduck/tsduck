@@ -7,12 +7,26 @@
 //-----------------------------------------------------------------------------
 
 #include "tsVatekUtils.h"
+#include "tsVersionInfo.h"
 
 #if !defined(TS_NO_VATEK)
 #include "tsBeforeStandardHeaders.h"
 #include <vatek_sdk_device.h>
 #include "tsAfterStandardHeaders.h"
 #endif
+
+
+//----------------------------------------------------------------------------
+// Register for options --version and --support.
+//----------------------------------------------------------------------------
+
+#if defined(TS_NO_VATEK)
+    #define SUPPORT UNSUPPORTED
+#else
+    #define SUPPORT SUPPORTED
+#endif
+
+TS_REGISTER_FEATURE(u"vatek", u"VATek", SUPPORT, ts::GetVatekVersion);
 
 
 //-----------------------------------------------------------------------------

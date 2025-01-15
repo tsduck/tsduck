@@ -14,6 +14,20 @@
 #include "tsMemory.h"
 #include "tsNullReport.h"
 #include "tsFatal.h"
+#include "tsVersionInfo.h"
+
+
+//----------------------------------------------------------------------------
+// Register for options --version and --support.
+//----------------------------------------------------------------------------
+
+#if defined(TS_NO_SRT)
+    #define SUPPORT UNSUPPORTED
+#else
+    #define SUPPORT SUPPORTED
+#endif
+
+TS_REGISTER_FEATURE(u"srt", u"SRT library", SUPPORT, ts::SRTSocket::GetLibraryVersion);
 
 
 //----------------------------------------------------------------------------

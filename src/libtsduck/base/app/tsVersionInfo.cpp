@@ -11,16 +11,7 @@
 #include "tsGitHubRelease.h"
 #include "tsNullReport.h"
 #include "tsErrCodeReport.h"
-#include "tsCryptoLibrary.h"
-#include "tsVatekUtils.h"
-#include "tsSysInfo.h"
-#include "tsSysUtils.h"
 #include "tsFileUtils.h"
-#include "tsDektecUtils.h"
-#include "tsWebRequest.h"
-#include "tsSRTSocket.h"
-#include "tsRIST.h"
-#include "tsZlib.h"
 
 // Exported version of the TSDuck library.
 // The names of these symbols are constant, their values are not.
@@ -41,71 +32,48 @@ const int TSDUCK_LIBRARY_BITRATE_SYMBOL = 0;
 //----------------------------------------------------------------------------
 
 // Enumeration description of ts::VersionFormat.
-const ts::Names& ts::VersionInfo::FormatEnum()
+ts::Names& ts::VersionInfo::FormatEnumNames()
 {
-    static const Names data {
-        {u"short",        Format::SHORT},
-        {u"long",         Format::LONG},
-        {u"integer",      Format::INTEGER},
-        {u"date",         Format::DATE},
-        {u"compiler",     Format::COMPILER},
-        {u"system",       Format::SYSTEM},
-        {u"acceleration", Format::ACCELERATION},
-        {u"bitrate",      Format::BITRATE},
-        {u"nsis",         Format::NSIS},
-        {u"crypto",       Format::CRYPTO},
-        {u"zlib",         Format::ZLIB},
-        {u"dektec",       Format::DEKTEC},
-        {u"http",         Format::HTTP},
-        {u"srt",          Format::SRT},
-        {u"rist",         Format::RIST},
-        {u"vatek",        Format::VATEK},
-        {u"all",          Format::ALL},
+    static Names data {
+        {u"all",     Format::ALL},
+        {u"short",   Format::SHORT},
+        {u"long",    Format::LONG},
+        {u"integer", Format::INTEGER},
+        {u"date",    Format::DATE},
     };
     return data;
 }
 
 // Enumeration of supported features.
-const ts::Names& ts::VersionInfo::SupportEnum()
+ts::Names& ts::VersionInfo::SupportEnumNames()
 {
-    static const Names data {
-    #if defined(TS_NO_DTAPI)
-        {u"dektec", 0},
-    #else
-        {u"dektec", 1},
-    #endif
-    #if defined(TS_NO_HIDES)
-        {u"hides", 0},
-    #else
-        {u"hides", 1},
-    #endif
-    #if defined(TS_NO_NOCURL) && !defined(TS_WINDOWS)
-        {u"http", 0},
-    #else
-        {u"http", 1},
-    #endif
-    #if defined(TS_NO_PCSC)
-        {u"pcsc", 0},
-    #else
-        {u"pcsc", 1},
-    #endif
-    #if defined(TS_NO_RIST)
-        {u"rist", 0},
-    #else
-        {u"rist", 1},
-    #endif
-    #if defined(TS_NO_SRT)
-        {u"srt", 0},
-    #else
-        {u"srt", 1},
-    #endif
-    #if defined(TS_NO_VATEK)
-        {u"vatek", 0},
-    #else
-        {u"vatek", 1},
-    #endif
-    };
+    static Names data;
     return data;
+}
+
+// A map of options with versions.
+ts::VersionInfo::VersionOptionMap& ts::VersionInfo::VersionOptions()
+{
+    static VersionOptionMap data;
+    return data;
+}
+
+
+//----------------------------------------------------------------------------
+// Register a feature.
+//----------------------------------------------------------------------------
+
+ts::VersionInfo::RegisterFeature::RegisterFeature(const UString& option, const UString& name, Support support, GetVersionFunc get_version)
+{
+    // Add an option for --version when the feature has a version function.
+    if (get_version != nullptr) {
+        VersionOptions().insert(std::make_pair(FormatEnumNames().addNewValue(option), std::make_pair(name, get_version)));
+    }
+
+    // Add an option for --support when the feature is optional.
+    if (support != ALWAYS) {
+        SupportEnumNames().add(option, int(support == SUPPORTED));
+    }
 }
 
 
@@ -202,95 +170,26 @@ void ts::VersionInfo::main()
 
 
 //----------------------------------------------------------------------------
-// Build a string representing the compiler version.
-//----------------------------------------------------------------------------
-
-ts::UString ts::VersionInfo::GetCompilerVersion()
-{
-    UString version;
-
-    // Add compiler type and version.
-#if defined(_MSC_FULL_VER)
-    version.format(u"MSVC %02d.%02d.%05d", _MSC_FULL_VER / 10000000, (_MSC_FULL_VER / 100000) % 100, _MSC_FULL_VER % 100000);
-    #if defined(_MSC_BUILD)
-        version.append(UString::Format(u".%02d", _MSC_BUILD));
-    #endif
-#elif defined(_MSC_VER)
-    version.format(u"MSVC %02d.%02d", _MSC_VER / 100, _MSC_VER % 100);
-    #if defined(_MSC_BUILD)
-        version.append(UString::Format(u".%02d", _MSC_BUILD));
-    #endif
-#elif defined(__clang_version__)
-    version.format(u"Clang %s", __clang_version__);
-#elif defined(__llvm__) || defined(__clang__) || defined(__clang_major__)
-    version.assign(u"Clang ");
-    #if defined(__clang_major__)
-        version.append(UString::Format(u"%d", __clang_major__));
-    #endif
-    #if defined(__clang_minor__)
-        version.append(UString::Format(u".%d", __clang_minor__));
-    #endif
-    #if defined(__clang_patchlevel__)
-        version.append(UString::Format(u".%d", __clang_patchlevel__));
-    #endif
-#elif defined(__GNUC__)
-    version.format(u"GCC %d", __GNUC__);
-    #if defined(__GNUC_MINOR__)
-        version.append(UString::Format(u".%d", __GNUC_MINOR__));
-    #endif
-    #if defined(__GNUC_PATCHLEVEL__)
-        version.append(UString::Format(u".%d", __GNUC_PATCHLEVEL__));
-    #endif
-#else
-    version.assign(u"unknown compiler");
-#endif
-
-    // Add C++ revision level.
-#if defined(_MSVC_LANG)
-    // With MSVC, the standard macro __cplusplus is stuck at 199711 for obscure reasons.
-    // The actual level of language standard is in the system-specific macro _MSVC_LANG.
-    version.append(UString::Format(u", C++ std %04d.%02d", _MSVC_LANG / 100, _MSVC_LANG % 100));
-#elif defined(__cplusplus)
-    version.append(UString::Format(u", C++ std %04d.%02d", __cplusplus / 100, __cplusplus % 100));
-#endif
-
-    return version;
-}
-
-
-//----------------------------------------------------------------------------
-// Build a string representing the system on which the application runs.
-//----------------------------------------------------------------------------
-
-ts::UString ts::VersionInfo::GetSystemVersion()
-{
-    UString name(SysInfo::Instance().systemName());
-    const UString version(SysInfo::Instance().systemVersion());
-    if (!version.empty()) {
-        name.format(u" (%s)", version);
-    }
-    const UChar* endian = nullptr;
-    if constexpr (std::endian::native == std::endian::big) {
-        endian = u"big";
-    }
-    else if constexpr (std::endian::native == std::endian::little) {
-        endian = u"little";
-    }
-    else {
-        endian = u"unknown";
-    }
-    name.format(u", on %s, %d-bit, %s-endian, page size: %d bytes", SysInfo::Instance().cpuName(), 8 * sizeof(void*), endian, SysInfo::Instance().memoryPageSize());
-    return name;
-}
-
-
-//----------------------------------------------------------------------------
 // Build version string.
 //----------------------------------------------------------------------------
 
 ts::UString ts::VersionInfo::GetVersion(Format format, const UString& applicationName)
 {
     switch (format) {
+        case Format::ALL: {
+            // All features. Start with application description.
+            UString version = GetVersion(Format::LONG, applicationName) + LINE_FEED + u"Built " + GetVersion(Format::DATE);
+            // Add all dynamically added features.
+            UStringList features;
+            for (const auto& it : VersionOptions()) {
+                features.push_back(it.second.first + u": " + it.second.second());
+            }
+            features.sort();
+            if (!features.empty()) {
+                version += UString::EOL;
+            }
+            return version + UString::Join(features, UString::EOL);
+        }
         case Format::SHORT: {
             // The simplest version.
             // This environment variable can be used to force the version (for debug purpose).
@@ -314,72 +213,10 @@ ts::UString ts::VersionInfo::GetVersion(Format format, const UString& applicatio
             return UString::Format(u"%s - %s", __DATE__, __TIME__);
             TS_POP_WARNING()
         }
-        case Format::COMPILER: {
-            return GetCompilerVersion();
-        }
-        case Format::SYSTEM: {
-            return GetSystemVersion();
-        }
-        case Format::BITRATE: {
-            return BitRate().description();
-        }
-        case Format::NSIS: {
-            // A definition directive for NSIS.
-            // The name tsduckVersion contains the visible version.
-            // The name tsduckVersionInfi contains a Window normalized version number X.X.X.X.
-            return UString::Format(u"!define tsduckVersion \"%s\"\n!define tsduckVersionInfo \"%d.%d.%d.0\"",
-                                   GetVersion(Format::SHORT), TS_VERSION_MAJOR, TS_VERSION_MINOR, TS_COMMIT);
-        }
-        case Format::CRYPTO: {
-            // The version of the cryptographiclibrary.
-            return ts::GetCryptographicLibraryVersion();
-        }
-        case Format::DEKTEC: {
-            // The version of Dektec components.
-            return GetDektecVersions();
-        }
-        case Format::VATEK: {
-            // The version of the Vatek library.
-            return ts::GetVatekVersion();
-        }
-        case Format::HTTP: {
-            // The version of the HTTP library.
-            return WebRequest::GetLibraryVersion();
-        }
-        case Format::ZLIB: {
-            // The version of the zlib compression library.
-            return Zlib::GetVersion();
-        }
-        case Format::SRT: {
-            // The version of the SRT library.
-            return SRTSocket::GetLibraryVersion();
-        }
-        case Format::RIST: {
-            // The version of the RIST library.
-            return GetRISTLibraryVersion();
-        }
-        case Format::ACCELERATION: {
-            // Support for accelerated instructions.
-            return UString::Format(u"CRC32: %s", UString::YesNo(SysInfo::Instance().crcInstructions()));
-        }
-        case Format::ALL: {
-            return GetVersion(Format::LONG, applicationName) + LINE_FEED +
-                u"Built " + GetVersion(Format::DATE) + LINE_FEED +
-                u"Using " + GetVersion(Format::COMPILER) + LINE_FEED +
-                u"System: " + GetVersion(Format::SYSTEM) + LINE_FEED +
-                u"Acceleration: " + GetVersion(Format::ACCELERATION) + LINE_FEED +
-                u"Bitrate: " + GetVersion(Format::BITRATE) + LINE_FEED +
-                u"Dektec: " + GetVersion(Format::DEKTEC) + LINE_FEED +
-                u"VATek: " + GetVersion(Format::VATEK) + LINE_FEED +
-                u"Cryptographic library: " + GetVersion(Format::CRYPTO) + LINE_FEED +
-                u"Deflate library: " + GetVersion(Format::ZLIB) + LINE_FEED +
-                u"Web library: " + GetVersion(Format::HTTP) + LINE_FEED +
-                u"SRT library: " + GetVersion(Format::SRT) + LINE_FEED +
-                u"RIST library: " + GetVersion(Format::RIST);
-        }
         default: {
-            // Undefined type, return an empty string.
-            return UString();
+            // Look for a dynamically added feature.
+            const auto it = VersionOptions().find(Names::int_t(format));
+            return it == VersionOptions().end() ? UString() : it->second.second();
         }
     }
 }

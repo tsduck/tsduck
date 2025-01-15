@@ -8,6 +8,7 @@
 
 #include "tsZlib.h"
 #include "tsMemory.h"
+#include "tsVersionInfo.h"
 
 // We use "sdefl" on Windows and when TS_NO_ZLIB is defined.
 #if defined(TS_WINDOWS) && !defined(TS_NO_ZLIB)
@@ -63,7 +64,10 @@
 // Get the Zlib version.
 //----------------------------------------------------------------------------
 
-ts::UString ts::Zlib::GetVersion()
+// Register for options --version.
+TS_REGISTER_FEATURE(u"zlib", u"Deflate library", ALWAYS, ts::Zlib::GetLibraryVersion);
+
+ts::UString ts::Zlib::GetLibraryVersion()
 {
 #if defined(TS_NO_ZLIB)
     return u"Small Deflate (sdefl) 1.00";

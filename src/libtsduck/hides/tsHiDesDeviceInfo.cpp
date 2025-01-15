@@ -7,6 +7,21 @@
 //----------------------------------------------------------------------------
 
 #include "tsHiDesDeviceInfo.h"
+#include "tsVersionInfo.h"
+
+
+//----------------------------------------------------------------------------
+// Register for options --version and --support
+// (no specific version since there is no specific library).
+//----------------------------------------------------------------------------
+
+#if defined(TS_NO_HIDES)
+    #define SUPPORT UNSUPPORTED
+#else
+    #define SUPPORT SUPPORTED
+#endif
+
+TS_REGISTER_FEATURE(u"hides", u"HiDes", SUPPORT, nullptr);
 
 
 //----------------------------------------------------------------------------

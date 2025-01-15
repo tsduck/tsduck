@@ -12,7 +12,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsPlatform.h"
+#include "tsUString.h"
 
 #if defined(DOXYGEN)
 //!
@@ -144,4 +144,10 @@ namespace ts {
 #else
 #error "undefined implementation of BitRate"
 #endif
+
+    //!
+    //! Get a string description of the bitrate format.
+    //! @return A string description of the bitrate format.
+    //!
+    UString GetBitRateDescription();
 }

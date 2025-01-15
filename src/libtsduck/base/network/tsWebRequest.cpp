@@ -16,6 +16,20 @@
 #include "tsFileUtils.h"
 #include "tsErrCodeReport.h"
 #include "tsURL.h"
+#include "tsVersionInfo.h"
+
+
+//----------------------------------------------------------------------------
+// Register for options --version and --support.
+//----------------------------------------------------------------------------
+
+#if defined(TS_NO_CURL) && !defined(TS_WINDOWS)
+    #define SUPPORT UNSUPPORTED
+#else
+    #define SUPPORT SUPPORTED
+#endif
+
+TS_REGISTER_FEATURE(u"http", u"Web library", SUPPORT, ts::WebRequest::GetLibraryVersion);
 
 
 //----------------------------------------------------------------------------

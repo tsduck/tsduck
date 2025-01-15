@@ -301,9 +301,6 @@ endif::[]
 |long
 |TSDuck version in long string format. This is the default.
 
-|nsis
-|TSDuck version in NSIS directive format (legacy, no longer used).
-
 |rist
 |Version of the RIST library.
 
@@ -318,6 +315,9 @@ endif::[]
 
 |vatek
 |Version of the VATek library (for VATek-based modulators).
+
+|zlib
+|Version of the zlib library (or compatible library).
 
 |===
 
