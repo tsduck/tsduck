@@ -1,0 +1,359 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2025, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+[#modreg]
+=== Modularity and self-registration
+
+==== Principles of independence
+
+For the sake of scalability and maintenance, TSDuck is designed in a modular way.
+A "module" is mostly a {cpp} class which is made of two files, a `.h` header file and a `.cpp` body file.
+
+NOTE: The {cpp}20 revision of the language has introduced a new concept named `module` which is different.
+In this chapter, we use the term "module" in its general meaning.
+
+When a module is not designed to create multiple instances of a class and could be implemented as
+inter-dependent functions managing a repository of global data, the _singleton_ design pattern is used.
+See xref:shareddata[xrefstyle=short] for more details on singletons and shared data.
+
+In rare cases, a module is just a collection of independent support functions, for operating system features for instance.
+
+To avoid name clashing, all {cpp} declarations (classes, functions, types, constants) are placed in the namespace `ts`.
+All macros have a name starting with `TS_`.
+
+The TSDuck library is roughly split into three hierarchical layers:
+
+* *Base*: A collection of {cpp}, operating system, and application utilities.
+  This layer is not related to Digital TV and could be independently packaged
+  for the benefit of any application.
+* *DTV*: A collections of {cpp} classes to manipulate Digital TV concepts.
+  They are the building blocks for any {cpp} application in the broadcast or streaming field.
+* *Plugins*: The plugin infrastructure which is used by TSDuck applications such as `tsp` and `tsswitch`.
+  The corresponding classes can also be used by external applications which run chains of plugins
+  to process transport streams.
+
+These layers have a strict hierarchical organization.
+Classes in "Base" cannot reference classes in the next layers.
+Classes in "DTV" can reference classes from "Base" but not from "Plugins", etc.
+
+The TSDuck commands are separate executables and the plugins are separate shared libraries.
+They are independently built and may reference anything from the TSDuck library.
+
+[.srctree]
+==== Source files structure
+
+The `src` directory is structured as follow:
+
+* `libtsduck` contains all source files for the TSDuck library.
+  Any new source file inside this directory tree is automatically built as part of the library.
+* `tsplugins` contains all plugins.
+  Any new source file inside this directory tree is automatically built as one separate shared library.
+  This means that a plugin must be inside one single source file.
+  However, it can rely on classes from the TSDuck library for most features.
+* `tstools` contains all commands.
+  Any new source file inside this directory tree is automatically built as one separate executable.
+  This means that a command must be inside one single source file.
+
+The additional subdirectories `utest` and `utils` contain the source code of unitary tests
+and packaging utilities which are not part of the TSDuck product itself.
+
+There are several thousands of source files inside `libtduck`.
+They are organized according to logical and technical constraints.
+
+On a logical perspective, `libtsduck` is split into `base`, `crypto`, `dtv`, `plugins`, etc.
+Each subdirectory is further divided into logical subdomains.
+There is no strict rule, just some good common sense.
+
+On a technical perspective, however, there are several strict rules based on the name of the subdirectories.
+By default, all source files at any depth of subdirectories are compiled, included in the TSDuck library.
+All `.h` header files are public. They are installed with the TSDuck development environment for third-party applications.
+
+There are some exceptions, based on the name of the subdirectories:
+
+* `private`: All source files in a subdirectory named `private`, anywhere below `src/libtsduck`,
+  is considered as private to the TSDuck library. The header files will not be installed with
+  the TSDuck development environment and the corresponding classes are not visible from applications.
+* `linux`, `mac`, `freebsd`, `netbsd`, `openbsd`, `dragonflybsd`, `bsd`, `unix`, `windows`:
+  A subdirectory with any of these names is specific to the corresponding operating system and
+  is compiled only on that operating system. If there are header files, they are installed
+  on the corresponding operating system. The names `unix` and `bsd` are more generic and are
+  included on all UNIX systems and all BSD systems, respectively.
+
+[.windllcrap]
+==== Windows constraints
+
+All classes, functions, and objects in the TSDuck library are gathered into one large shared library,
+`libtsduck.so` on Linux and BSD, `libtsduck.dylib` on macOS, `tsduck.dll` on Windows,
+
+A {cpp} class is exported out of a shared library through a set of mangled symbols, one per method or static field.
+This is straightforward on UNIX systems; this is only a matter of build commands, without impact on the source code.
+
+On Windows, however, this is more complicated and painful (everything is more painful on Windows).
+By default, a symbol is not exported out of a DLL.
+A {cpp} class can be referenced only from inside the DLL but an external application which is
+linked against that DLL cannot reference any class in the DLL.
+Linking this application will result in "undefined symbol" errors.
+
+It is possible to declare a class or function as exported from the DLL.
+However, this cannot be done using the build commands.
+Specific directives shall be present in the header files, only on Windows,
+and differently depending whether you include the header to build the library ("export")
+or to use the library from an application ("import").
+
+All that dirt is hidden in TSDuck using the macro `TSDUCKDLL` which translates to
+an export directive when building the DLL, an import directive when using the DLL,
+and nothing on non-Windows system.
+
+As a consequence, under `src/libtsduck` (with the exception of `private` subdirectories),
+all public declarations in header files must have a `TSDUCKDLL` attribute.
+If this attribute is omitted, nothing changes on non-Windows systems and even on Windows
+systems when that declaration is not referenced from outside the DLL (it is not needed
+for references from inside the DLL). You may have the illusion that it works,
+until you compile an application on Windows which references that declaration
+and you get an "undefined symbol" error from the linker.
+
+The `TSDUCKDLL` attribute must be used in classes, functions and variables which
+are defined at namespace level. For instance:
+
+[source,c++]
+----
+namespace ts {
+    class TSDUCKDLL UString { ... };
+    TSDUCKDLL size_t GetProcessVirtualSize();
+}
+----
+
+Inline functions must have this attribute too. In the general case, the corresponding
+code will be inlined in the application, referencing nothing in the DLL.
+However, when compiling for debug, without optimization, the code is not inlined
+and the application code references the symbol in the DLL.
+
+[source,c++]
+----
+namespace ts {
+    TSDUCKDLL inline int SmallFunction() { ... }
+}
+----
+
+Inside a class, the methods and fields do not need a `TSDUCKDLL` attribute.
+They benefit from the attribute of the class.
+Inner classes, on the other hand, must have a `TSDUCKDLL` attribute.
+See the example below.
+
+[source,c++]
+----
+namespace ts {
+    class TSDUCKDLL Outer
+    {
+    public:
+        // Method: no attribute.
+        bool serialize() const;
+
+        // Inner class: need an attribute.
+        class TSDUCKDLL Inner { ... };
+    };
+}
+----
+
+As a general rule, private inner classes do not need a `TSDUCKDLL` attribute.
+Being private, they cannot be referenced by the applications.
+However, they can be referenced inside inlined public methods of the same class.
+See the following example.
+The private inner class is not directly accessible from an application.
+However, when the code of the public method `ts::Outer::cool()` is inlined in
+the application, the binary of that application contains a reference to the
+symbol `ts::Outer::Inner::Foo()`. Without a `TSDUCKDLL` attribute on the inner
+class, even though it is private, an "undefined symbol" error will be generated.
+
+Therefore, in doubt, also use `TSDUCKDLL` attribute in private inner classes.
+
+[source,c++]
+----
+namespace ts {
+    class TSDUCKDLL Outer
+    {
+    public:
+        void cool() { Inner::Foo(); }
+    private:
+        // Private inner class needs TSDUCKDLL if referenced by public inlined method.
+        class TSDUCKDLL Inner
+        {
+        public:
+            static void Foo();
+        };
+    };
+}
+----
+
+Template classes and functions do not need any `TSDUCKDLL` attribute.
+Their instantiations are completely generated inside the application.
+
+[.selfreg]
+==== Self registration of modules
+
+The TSDuck code base is huge.
+For instance, there are hundredths of MPEG tables and descriptors with one class per table or descriptor.
+There are more than one hundred plugins.
+All tables, descriptors, plugins must be known from some central repository in order to be created when necessary.
+
+New tables, descriptors, or plugins are regularly added, possibly by independent contributors.
+The challenge is to add new features or new objects without modifying the core code,
+without explicitly referencing them from some central structure.
+
+To achieve this, TSDuck extensively uses the mechanism of _self-registration_ of a module.
+To add a new descriptor, for instance, it is sufficient to create the `.h` and `.cpp` source
+files of the corresponing class, nothing else. The presence of the source files is sufficient
+to declare the descriptor.
+
+This is possible thanks to a set of `TS_REGISTER` macros.
+As an example, inside the `.cpp` file of a descriptor, the macro `TS_REGISTER_DESCRIPTOR`
+must be placed at the top level of the source file, with a few parameters describing the
+descriptor. The same principle applies to extensions, plugins, tables, formatting functions, etc.
+
+The `TS_REGISTER` macros generate code which is executed during the initialization of the application,
+before `main()` is called. See xref:shareddata[xrefstyle=short] for more details on initialization.
+
+Therefore, just because the corresponding object file is present in the library, it will be
+initialized with the application. And of course, this initialization code will register
+the feature (extension, plugin, table, descriptor, etc.) into the right repository.
+
+The tables below list all `TS_REGISTER` macros by category.
+Refer to the {home}doxy/[TSDuck Programming Reference] for a complete documentation.
+
+[.usage]
+General-purpose registrations
+
+The following macros are general-purpose. They can be used anywhere.
+They register application-specific features into the core of the TSDuck library.
+Thus, the "base" layer of the TSDuck library remains independent,
+without explicit reference to higher-level layers.
+
+// PDF backend does not correctly process "autowidth" tables.
+[.compact-table]
+ifndef::backend-pdf[]
+[cols="<1m,<1",frame=none,grid=none,stripes=none,options="autowidth,noheader"]
+endif::[]
+ifdef::backend-pdf[]
+[cols="<25m,<75",frame=none,grid=none,stripes=none]
+endif::[]
+|===
+
+|TS_REGISTER_FEATURE
+|Register a specific optional mandatory or optional feature, for instance a specific library
+ or hardware acceleration. Depending on the parameters which are provided to the macro, the
+ feature will be added to options `--version` or `--support` (in command  `tsversion`).
+ The user will be able to check if the feature is supported or not, and display the version.
+
+|TS_REGISTER_CHRONO_UNIT
+|TSDuck uses the {cpp}17 standard template type `std::chrono::duration` (or `cn::duration`)
+ for all durations. In addition to standard durations (milliseconds, seconds, hours, etc.),
+ TSDuck defines all sorts of durations, especially for PCR, PTS, DTS and other timing units
+ which are used in the DTV domain. In the base class `UString`, several methods format durations
+ with the appropriate units. The macro `TS_REGISTER_CHRONO_UNIT` registers a new duration unit
+ and how to format it.
+
+|===
+
+[.usage]
+PSI/SI registrations
+
+The following macros are used by developers who implement new tables or descriptors.
+
+// PDF backend does not correctly process "autowidth" tables.
+[.compact-table]
+ifndef::backend-pdf[]
+[cols="<1m,<1",frame=none,grid=none,stripes=none,options="autowidth,noheader"]
+endif::[]
+ifdef::backend-pdf[]
+[cols="<28m,<72",frame=none,grid=none,stripes=none]
+endif::[]
+|===
+
+|TS_REGISTER_TABLE
+|Register a fully implemented PSI/SI table.
+ This macro is typically used in the `.cpp` file of a table.
+
+|TS_REGISTER_SECTION
+|Register a known table with a display functions but no full {cpp} class.
+ This macro is typically used in the `.cpp` file of a CAS-specific module or TSDuck extension.
+
+|TS_REGISTER_DESCRIPTOR
+|Register a fully implemented PSI/SI descriptor.
+ This macro is typically used in the `.cpp` file of a descriptor.
+
+|TS_REGISTER_CA_DESCRIPTOR
+|Register a display function for a _CA_descriptor_.
+ This macro is typically used in the `.cpp` file of a CAS-specific module or TSDuck extension.
+
+|===
+
+[.usage]
+Plugins registrations
+
+The following macros register a {cpp} class as a TSDuck plugin.
+They are typically used in the `.cpp` file of a plugin.
+If the plugin can be used in several roles (input, output, packet processing),
+there are as many difference {cpp} classes as roles and one macro is used per class.
+
+[.compact-table]
+[cols="<1m,<1",frame=none,grid=none,stripes=none,options="autowidth,noheader"]
+|===
+
+|TS_REGISTER_INPUT_PLUGIN
+|Register an input plugin class in the plugin repository.
+
+|TS_REGISTER_OUTPUT_PLUGIN
+|Register an output plugin class in the plugin repository.
+
+|TS_REGISTER_PROCESSOR_PLUGIN
+|Register a packet processing plugin class in the plugin repository.
+
+|===
+
+[.usage]
+Extension registrations
+
+The following macros are typically used in an independant TSDuck extension.
+They are used to "hook" the extension inside the running TSDuck library.
+All previous `TS_REGISTER` macros are also used when necessary in extensions
+but the following ones are more specifically dedicated to extensions.
+
+// PDF backend does not correctly process "autowidth" tables.
+[.compact-table]
+ifndef::backend-pdf[]
+[cols="<1m,<1",frame=none,grid=none,stripes=none,options="autowidth,noheader"]
+endif::[]
+ifdef::backend-pdf[]
+[cols="<28m,<72",frame=none,grid=none,stripes=none]
+endif::[]
+|===
+
+|TS_REGISTER_EXTENSION
+|Register a TSDuck extension. This macro is typically used in the `tslibext_XXX.so`
+ shared library of an extension. This is an optional macro, an extension can work
+ without it. However, it helps identifying which extensions are loaded.
+
+|TS_REGISTER_XML_FILE
+|Register an extension XML model file for the PSI/SI tables and descriptors
+ of that extension. The content is merged with the XML model of all tables and
+ descriptors which are supported by TSDuck.
+
+|TS_REGISTER_NAMES_FILE
+|Registration of an extension `.names` file. All definitions are merged with the
+ definitions which are provided by TSDuck (table ids, descriptor ids, etc.)
+
+|TS_REGISTER_SECTION_FILTER
+|Register a section filter, a class implementing `TablesLoggerFilterInterface`.
+ Commands such as `tstables` and plugins such as `tables` are able to filter sections
+ based on some criteria: table id, network id, etc. An extension can add its own filters
+ based on its own criteria on its own private tables. The code of a section filter
+ can define new command line options which are added to commands such as `tstables` and
+ plugins such as `tables`. It also analyzes sections to filter them according to the
+ value of the command line options.
+
+|===

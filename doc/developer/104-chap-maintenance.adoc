@@ -11,5 +11,6 @@
 
 include::104-01-testing.adoc[]
 include::104-02-automation.adoc[]
-include::104-03-tsp-design.adoc[]
+include::104-03-modularity.adoc[]
 include::104-04-new-signalization.adoc[]
+include::104-05-tsp-design.adoc[]

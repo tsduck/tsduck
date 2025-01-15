@@ -295,6 +295,9 @@ h1 {
     font-size: 2em;
     margin: 0.67em 0;
 }
+h2, h3 {
+    margin-top: 1.5em !important;
+}
 h1, h2, h3, #toctitle, .sidebarblock>.content>.title, h4, h5, h6 {
     font-family: "Helvetica Neue", "Helvetica", "Noto Sans", Helvetica, Arial, sans-serif;
     font-weight: 500;

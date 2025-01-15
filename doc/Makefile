@@ -18,6 +18,10 @@ docs-pdf: userguide-pdf devguide-pdf
 doxygen:
 	$(PYTHON) doxy/build-doxygen.py
 
+# When opening files using Firefox on Linux, there are a log to anoying error messages.
+
+POST_XDGOPEN = $(if $(LINUX),2>&1 | grep -v -e 'GTK' -e 'GFX' -e 'Failed to load module' | sed '/^ *$$/d')
+
 # Input directories.
 
 IMAGESDIR  = $(ROOTDIR)/images
@@ -101,9 +105,9 @@ userguide-pdf: $(BINDOC)/tsduck.pdf
 
 open-userguide: open-userguide-html open-userguide-pdf
 open-userguide-html: $(BINDOC)/tsduck.html
-	$(XDGOPEN) $<
+	$(XDGOPEN) $< $(POST_XDGOPEN)
 open-userguide-pdf: $(BINDOC)/tsduck.pdf
-	$(XDGOPEN) $<
+	$(XDGOPEN) $< $(POST_XDGOPEN)
 
 # Each table and descriptor has a .adoc file in the source tree.
 # Create one .adoc file per type (table or descriptor) and standard,
@@ -172,9 +176,9 @@ devguide-pdf: $(BINDOC)/tsduck-dev.pdf
 
 open-devguide: open-devguide-html open-devguide-pdf
 open-devguide-html: $(BINDOC)/tsduck-dev.html
-	$(XDGOPEN) $<
+	$(XDGOPEN) $< $(POST_XDGOPEN)
 open-devguide-pdf: $(BINDOC)/tsduck-dev.pdf
-	$(XDGOPEN) $<
+	$(XDGOPEN) $< $(POST_XDGOPEN)
 
 # Documentation generation.
 
