@@ -259,7 +259,7 @@ const char* NA  = "[N/A]";
 struct ErrorState {
     int count;
     bool show;
-    std::string str;
+    std::string str{};
 };
 
 typedef std::function<ErrorState(const ts::TR101_290Analyzer::ServiceContext&)> get_func;

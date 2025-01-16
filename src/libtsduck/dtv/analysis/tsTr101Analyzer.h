@@ -19,6 +19,7 @@
 
 #include <tsDuckContext.h>
 #include <tsNullReport.h>
+#include <tsPlugin.h>
 #include <tsSectionDemux.h>
 #include <tsTSP.h>
 #include <tsTableHandlerInterface.h>
@@ -27,12 +28,19 @@ namespace ts {
 
     class TR101_290Analyzer final:
       TableHandlerInterface {
+
+      TR101_290Analyzer() = delete;
+      TR101_290Analyzer(TR101_290Analyzer &&) = delete;
+      TR101_290Analyzer(const TR101_290Analyzer &) = delete;
+      TR101_290Analyzer &operator=(TR101_290Analyzer &&) = delete;
+      TR101_290Analyzer &operator=(const TR101_290Analyzer &) = delete;
+
       private:
       TSP* _tsp;
-      DuckContext  _duck;
+      DuckContext  _duck{};
       SectionDemux _demux {_duck, this, nullptr};
       bool         _has_cat = false;
-      uint64_t          _currentTimestamp;
+      uint64_t          _currentTimestamp = INVALID_PTS;
 
     public:
       struct ServiceContext {
@@ -44,11 +52,11 @@ namespace ts {
         };
 
         struct IntMinMax {
-          bool is_ms;
-          int count;
-          int min;
-          int max;
-          int curr;
+          bool is_ms = true;
+          int count =0;
+          int min = 0;
+          int max = 0;
+          int curr = 0;
 
           std::string to_string() const {
             if (is_ms) {
@@ -83,13 +91,13 @@ namespace ts {
 
         int _pid;
         ServiceContextType _type;
-        int _pmt_service_id;
+        int _pmt_service_id = -1;
 
         bool     first_packet = true;
         uint64_t last_pts_ts = INVALID_PTS;
-        uint64_t last_packet_ts;
-        uint64_t last_pcr_ts;
-        PacketCounter last_pcr_ctr;
+        uint64_t last_packet_ts = INVALID_PCR;
+        uint64_t last_pcr_ts = INVALID_PCR;
+        PacketCounter last_pcr_ctr = INVALID_PACKET_COUNTER;
         uint64_t _last_table_ts = INVALID_PCR;
 
         uint64_t last_pcr_val = INVALID_PCR;
@@ -120,7 +128,7 @@ namespace ts {
         int cat_error = 0;
       };
 
-      std::map<int, std::shared_ptr<ServiceContext>> _services; ///< Services std::map<PMT_PID, ServiceContext>
+      std::map<int, std::shared_ptr<ServiceContext>> _services{}; ///< Services std::map<PMT_PID, ServiceContext>
 
     protected:
       void handleTable(SectionDemux &demux, const BinaryTable &table) override;
