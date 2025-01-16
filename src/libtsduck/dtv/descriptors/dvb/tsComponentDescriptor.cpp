@@ -89,6 +89,10 @@ void ts::ComponentDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::D
         const uint8_t stream_content = buf.getBits<uint8_t>(4);
         const uint8_t component_type = buf.getUInt8();
         disp << margin << "Content/type: " << ComponentTypeName(disp.duck(), stream_content, stream_content_ext, component_type, NamesFlags::VALUE_NAME) << std::endl;
+        if (stream_content >= 0x1 && stream_content <= 0x8 && stream_content_ext != 0xF) {
+            disp << margin << "  warning! stream_content_ext should be 0xF when stream_content is 0x1..0x8." << std::endl
+                 << margin << "  (see note 1 in Table 26 of ETSI EN 300 468) " << std::endl;
+        }
         if (stream_content_ext == 0xE && stream_content == 0xB) {
             DisplayNGAComponentFeatures(disp, margin + u"  ", component_type);
         }
@@ -179,19 +183,13 @@ ts::UString ts::ComponentDescriptor::ComponentTypeName(const DuckContext& duck, 
 
     // Stream content and extension use 4 bits.
     stream_content &= 0x0F;
-    if (stream_content >= 1 && stream_content <= 8) {
-        stream_content_ext = 0x0F;
-    }
-    else {
-        stream_content_ext &= 0x0F;
-    }
+    uint8_t lookup_stream_content_ext = (stream_content >= 1 && stream_content <= 8) ? 0x0F : (stream_content_ext & 0x0F);
 
     // Value to use for name lookup:
-    const uint16_t nType = uint16_t((uint16_t(stream_content) << 12) | (uint16_t(stream_content_ext) << 8) | component_type);
+    const uint16_t nType = uint16_t((uint16_t(stream_content) << 12) | (uint16_t(lookup_stream_content_ext) << 8) | component_type);
 
-    // To display the value, we use the real binary value where stream_content_ext
-    // is forced to zero when stream_content is in the range 1 to 8. Value to display:
-    const uint16_t dType = uint16_t((stream_content >= 1 && stream_content <= 8 ? 0 : (uint16_t(stream_content_ext) << 12)) | (uint16_t(stream_content) << 8) | component_type);
+    // Value to display, we use the real binary value for stream_content_ext 
+    const uint16_t dType = uint16_t((uint16_t(stream_content_ext) << 12) | (uint16_t(stream_content) << 8) | component_type);
 
     if (bool(duck.standards() & Standards::JAPAN)) {
         // Japan / ISDB uses a completely different mapping.
@@ -227,10 +225,14 @@ void ts::ComponentDescriptor::buildXML(DuckContext& duck, xml::Element* root) co
 
 bool ts::ComponentDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute(stream_content, u"stream_content", true, 0x00, 0x00, 0x0F) &&
-           element->getIntAttribute(stream_content_ext, u"stream_content_ext", false, 0x0F, 0x00, 0x0F) &&
-           element->getIntAttribute(component_type, u"component_type", true, 0x00, 0x00, 0xFF) &&
-           element->getIntAttribute(component_tag, u"component_tag", false, 0x00, 0x00, 0xFF) &&
-           element->getAttribute(language_code, u"language_code", true, u"", 3, 3) &&
-           element->getAttribute(text, u"text", false, u"", 0, MAX_DESCRIPTOR_SIZE - 8);
+    bool ok =  element->getIntAttribute(stream_content, u"stream_content", true, 0x00, 0x00, 0x0F) &&
+               element->getIntAttribute(stream_content_ext, u"stream_content_ext", false, 0x0F, 0x00, 0x0F) &&
+               element->getIntAttribute(component_type, u"component_type", true, 0x00, 0x00, 0xFF) &&
+               element->getIntAttribute(component_tag, u"component_tag", false, 0x00, 0x00, 0xFF) &&
+               element->getAttribute(language_code, u"language_code", true, u"", 3, 3) &&
+               element->getAttribute(text, u"text", false, u"", 0, MAX_DESCRIPTOR_SIZE - 8);
+    if (ok && (stream_content >= 0x1 && stream_content <= 0x8 && stream_content_ext != 0xF)) {
+        element->report().warning(u"stream_content_ext should be 0xF when stream_content is 0x1..0x8 (see note 1 in Table 26 of ETSI EN 300 468), in <%s> line %d", element->name(), element->lineNumber());
+    }
+    return ok;
 }
