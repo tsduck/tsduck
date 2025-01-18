@@ -184,11 +184,10 @@ elif [[ "$SYSTEM" == "OpenBSD" ]]; then
     disamb_pkg() { pkg_info -Q $1 | grep "^$1-[0-9]" | grep -v -e -static | sort | tail -1 | sed -e 's/ .*//'; }
 
     PKGLIST+=(git curl zip bash gsed ggrep gmake $(disamb_pkg gtar) dos2unix coreutils $(disamb_pkg python))
-    [[ -z $NOZLIB    ]] && PKGLIST+=(zlib)
     [[ -z $NOPCSC    ]] && PKGLIST+=(pcsc-lite)
     [[ -z $NOJAVA    ]] && PKGLIST+=($(disamb_pkg jdk))
     [[ -z $NODOXYGEN ]] && PKGLIST+=(doxygen graphviz)
-    [[ -z $NODOC     ]] && PKGLIST+=(ruby ruby-shims asciidoctor qpdf)
+    [[ -z $NODOC     ]] && PKGLIST+=($(disamb_pkg ruby) ruby-shims asciidoctor qpdf)
     [[ -z $NODOC     ]] && GEMLIST+=(asciidoctor-pdf rouge)
 
     echo "Packages: ${PKGLIST[*]}"

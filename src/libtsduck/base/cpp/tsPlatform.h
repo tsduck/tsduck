@@ -1210,7 +1210,7 @@ namespace std {
 //----------------------------------------------------------------------------
 
 //! @cond nodoxygen
-#if (defined(TS_GCC_ONLY) && TS_GCC_VERSION < 130000) || (defined(__clang_major__) && __clang_major__ < 16)
+#if (defined(TS_GCC_ONLY) && TS_GCC_VERSION < 130000) || (defined(__clang_major__) && __clang_major__ < 17)
     // Workarounds for buggy compilers :(
     // No need to elaborate, too disgusting...
     // Please use at least GCC 13 and Clang 16, not old crap.
