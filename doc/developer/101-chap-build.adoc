@@ -279,12 +279,24 @@ $ sudo pkgin install gcc14 gcc14-libs
 ----
 
 The compilation environment is installed in `/usr/pkg/gcc14`.
-Using GCC 14 is simply enabled by adding `/usr/pkg/gcc14/bin` at the beginning of the `PATH`:
+Using GCC 14 is enabled by adding `/usr/pkg/gcc14/bin` at the beginning of the `PATH`:
 
 [source,shell]
 ----
 $ export PATH="/usr/pkg/gcc14/bin:$PATH"
 ----
+
+However, linker options shall be passed to `gmake`:
+
+[source,shell]
+----
+$ gmake LDFLAGS_EXTRA="-L/usr/pkg/gcc14/lib -Wl,-rpath=/usr/pkg/gcc14/lib" ...
+----
+
+Note the command `gmake`, the GNU Make command. See xref:bsdreq[xrefstyle=short] for more details.
+
+Since `gmake` uses the environment for the initial values of its variables,
+it is also possible to define `LDFLAGS_EXTRA` as environment variables in some initialization script.
 
 [.usage]
 DragonFlyBSD example
@@ -293,11 +305,11 @@ As of this writing, the most recent version of DragonFlyBSD is 6.4.0, which come
 Even though DragonFlyBSD is supposed to be based on FreeBSD,
 its GCC version is way behind FreeBSD version 14.0 which comes with GCC 12.2.
 
-More recent GCC packages are available for DragonFlyBSD. To install GCC 13:
+More recent GCC packages are available for DragonFlyBSD. To install GCC 14:
 
 [source,shell]
 ----
-$ sudo pkg install gcc13
+$ sudo pkg install gcc14
 ----
 
 However, because all *BSD systems are carefully incompatible between each other,
@@ -307,14 +319,12 @@ Building TSDuck:
 
 [source,shell]
 ----
-$ gmake CXX=g++13 CC=gcc13 GCC=gcc13 CPP="gcc13 -E" AR=gcc-ar13 LDFLAGS_EXTRA="-Wl,-rpath=/usr/local/lib/gcc13" ...
+$ gmake CXX=g++14 CC=gcc14 GCC=gcc14 CPP="gcc14 -E" AR=gcc-ar14 LDFLAGS_EXTRA="-Wl,-rpath=/usr/local/lib/gcc14" ...
 ----
 
-Since `make` uses the environment for the initial values of its variables,
-it is also possibe to define them as environment variables in some initialization script
-instead of using such a complex `make` command..
-
-Note the command `gmake`, the GNU Make command. See xref:bsdreq[xrefstyle=short] for more details.
+Again, since `gmake` uses the environment for the initial values of its variables,
+it is also possible to define them as environment variables in some initialization script
+instead of using such a complex `gmake` command.
 
 [#bsdreq]
 ===== GNU Make requirements
