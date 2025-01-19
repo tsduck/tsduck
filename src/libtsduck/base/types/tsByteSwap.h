@@ -387,7 +387,7 @@ namespace ts {
             return static_cast<INT>(ByteSwap64(static_cast<uint64_t>(x)));
         }
         else {
-            static_assert(false, "invalid integer size");
+            static_assert(dependent_false<INT>, "invalid integer size");
         }
     }
 
@@ -416,7 +416,7 @@ namespace ts {
             return static_cast<INT>(ByteSwap64(static_cast<uint64_t>(x)));
         }
         else {
-            static_assert(false, "invalid integer size");
+            static_assert(dependent_false<INT>, "invalid integer size");
         }
     }
 

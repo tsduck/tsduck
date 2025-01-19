@@ -1563,7 +1563,7 @@ INT ts::Buffer::getBits(size_t bits)
         return val;
     }
     else {
-        static_assert(false, "not an integral type");
+        static_assert(dependent_false<INT>, "not an integral type");
     }
 }
 

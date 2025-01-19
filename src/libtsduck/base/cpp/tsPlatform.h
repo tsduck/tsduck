@@ -1056,6 +1056,19 @@ namespace ts {
     //!
     template <typename INT> requires std::integral<INT>
     Tristate ToTristate(INT i) { return Tristate(std::max<INT>(-1, std::min<INT>(1, i))); }
+
+    //!
+    //! A "false" expression which is built from a template type T.
+    //! @tparam T A type, any type but typically a template parameter.
+    //!
+    //! With C++20, structures with a cascade of "if constexpr" are good replacements for conditional
+    //! compilation or SFINAE templates. At the end such a cascade, it is common to trap unsupported cases
+    //! using a "static_assert(false)". However, static_assert(false) is "ill-formed, no diagnostic required",
+    //! meaning that it may compile, or not. It depends on the compiler. To avoid this, we build a non-literal
+    //! expression which always evaluates to false but depends on a type, typically a template parameter type.
+    //!
+    template <typename T>
+    constexpr bool dependent_false = std::false_type::value;
 }
 
 
@@ -1203,23 +1216,3 @@ namespace std {
     /** @cond nodoxygen */                                                       \
     using TS_UNIQUE_NAME(for_trailing_semicolon) = int                           \
     /** @endcond */
-
-
-//----------------------------------------------------------------------------
-// Compiler bugs.
-//----------------------------------------------------------------------------
-
-//! @cond nodoxygen
-#if (defined(TS_GCC_ONLY) && TS_GCC_VERSION < 130000) || (defined(__clang_major__) && __clang_major__ < 16)
-    // Workarounds for buggy compilers :(
-    // No need to elaborate, too disgusting...
-    // Please use at least GCC 13 and Clang 16, not old crap.
-    TS_LLVM_NOWARNING(zero-as-null-pointer-constant)
-    TS_LLVM_NOWARNING(unused-local-typedefs)
-    TS_GCC_NOWARNING(unused-local-typedefs)
-    TS_PUSH_WARNING()
-    TS_LLVM_NOWARNING(keyword-macro)
-    #define static_assert(...) using TS_UNIQUE_NAME(for_trailing_semicolon) = int
-    TS_POP_WARNING()
-#endif
-//! @endcond

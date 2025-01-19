@@ -95,7 +95,7 @@ namespace ts {
                     set(size_t(pos));
                 }
                 else {
-                    static_assert(false, "not an integral type");
+                    static_assert(dependent_false<int_t>, "not an integral type");
                 }
             }
         }

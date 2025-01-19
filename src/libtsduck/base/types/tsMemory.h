@@ -1288,7 +1288,7 @@ INT ts::GetIntBE(const void* p)
         return static_cast<INT>(GetUInt64BE(p));
     }
     else {
-        static_assert(false, "invalid integer size");
+        static_assert(dependent_false<INT>, "invalid integer size");
     }
 }
 
@@ -1308,7 +1308,7 @@ INT ts::GetIntLE(const void* p)
         return static_cast<INT>(GetUInt64LE(p));
     }
     else {
-        static_assert(false, "invalid integer size");
+        static_assert(dependent_false<INT>, "invalid integer size");
     }
 }
 
@@ -1328,7 +1328,7 @@ void ts::GetIntBE(const void* p, INT& i)
         i = static_cast<INT>(GetUInt64BE(p)); break;
     }
     else {
-        static_assert(false, "invalid integer size");
+        static_assert(dependent_false<INT>, "invalid integer size");
     }
 }
 
@@ -1348,7 +1348,7 @@ void ts::GetIntLE(const void* p, INT& i)
         i = static_cast<INT>(GetUInt64LE(p)); break;
     }
     else {
-        static_assert(false, "invalid integer size");
+        static_assert(dependent_false<INT>, "invalid integer size");
     }
 }
 
@@ -1368,7 +1368,7 @@ void ts::PutIntBE(void* p, INT i)
         PutUInt64BE(p, static_cast<uint64_t>(i)); break;
     }
     else {
-        static_assert(false, "invalid integer size");
+        static_assert(dependent_false<INT>, "invalid integer size");
     }
 }
 
@@ -1388,7 +1388,7 @@ void ts::PutIntLE(void* p, INT i)
         PutUInt64LE(p, static_cast<uint64_t>(i)); break;
     }
     else {
-        static_assert(false, "invalid integer size");
+        static_assert(dependent_false<INT>, "invalid integer size");
     }
 }
 
