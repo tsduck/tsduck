@@ -68,6 +68,19 @@ getcmd() {
     echo $cmd
 }
 
+# Find a command in PATH which can be followed by a version.
+# For instance, asciidoctor-pdf is named asciidoctor-pdf33 on OpenBDS.
+findcmdvers() {
+    # Direct command name works in most cases.
+    local name="$1"
+    local cmd=$(which "$name" 2>/dev/null)
+    if [[ -z $cmd ]]; then
+        # Not found, look for versioned names.
+        cmd=$(for dir in ${PATH//:/ }; do echo "$dir/$name"*; done | tr ' ' '\n' | grep -v '\*' | grep -e "/$name"'[-\.0-9]*$' | tail -1)
+    fi
+    [[ -n $cmd ]] && echo "$cmd"
+}
+
 # Check if a wildcard designates a valid file. Return non empty string if a file exists.
 exist-wildcard () {
     local f=
@@ -182,6 +195,10 @@ export LOCAL_OS LOCAL_ARCH
 [[ -z $XDGOPEN ]] && XDGOPEN=$(getcmd xdg-open open)
 [[ -z $PYTHON ]] && PYTHON=$(getcmd python3 python)
 [[ -z $SUDO && $(id -u) -ne 0 ]] && SUDO=sudo
+
+# Commands which are sometimes installed with a version in the name.
+[[ -z $ASCIIDOCTOR ]] && ASCIIDOCTOR=$(findcmdvers asciidoctor)
+[[ -z $ASCIIDOCTOR_PDF ]] && ASCIIDOCTOR_PDF=$(findcmdvers asciidoctor-pdf)
 
 # Python 3 is required for build scripts.
 [[ -z $PYTHON_VERSION ]] && PYTHON_VERSION=$(extract-version "$PYTHON")

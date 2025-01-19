@@ -122,7 +122,7 @@ TSDuck has been tested with the following compilers on at least one operating sy
 
 |Clang
 |Linux, macOS
-|16.0
+|17.0
 
 |MSVC
 |Windows
@@ -208,6 +208,10 @@ Using Clang as an alternative to GCC
 If your distro is too old and doesn't provide any GCC 13 package, another alternative is to use LLVM/Clang.
 Most distros with old versions of GCC provide decently recent versions of Clang.
 To force a build with LLVM/Clang instead of GCC, defined the `make` variable `LLVM`:
+
+The minimum required version for Clang is 17.0.
+{cpp}20 support in Clang was gradually included from versions 8 to 16.
+However, just like GCC 11, the initial versions are buggy and TSDuck can be built only woth Clang 17 onwards.
 
 [source,shell]
 ----

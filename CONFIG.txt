@@ -94,6 +94,8 @@ LLVM_VERSION                 # Full clang version.
 LLVM_MAJOR                   # Clang major version.
 USE_GCC                      # Non-empty when the C++ compiler is gcc.
 USE_LLVM                     # Non-empty when the C++ compiler is clang (LLVM).
+ASCIIDOCTOR                  # Asciidoctor HTML generator.
+ASCIIDOCTOR_PDF              # Asciidoctor PDF generator.
 
 # Java environment:
 JAVAC                        # Java compiler command.

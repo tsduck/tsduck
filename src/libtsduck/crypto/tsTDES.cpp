@@ -49,8 +49,10 @@ void ts::TDES::getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length, bool& ign
 
 const EVP_CIPHER* ts::TDES::getAlgorithm() const
 {
+    // Unlike other OpenSSL algorithms, TDES in ECB mode is named DES-EDE3, without -ECB suffix.
+    // Some implementations have an alias from DES-EDE3-ECB to DES-EDE3, but no all.
     // Thread-safe init-safe static data pattern:
-    static const FetchCipherAlgorithm fetch("DES-EDE3-ECB");
+    static const FetchCipherAlgorithm fetch("DES-EDE3");
     return fetch.algorithm();
 }
 
@@ -96,8 +98,10 @@ void ts::ECB<ts::TDES>::getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length, 
 
 const EVP_CIPHER* ts::ECB<ts::TDES>::getAlgorithm() const
 {
+    // Unlike other OpenSSL algorithms, TDES in ECB mode is named DES-EDE3, without -ECB suffix.
+    // Some implementations have an alias from DES-EDE3-ECB to DES-EDE3, but no all.
     // Thread-safe init-safe static data pattern:
-    static const FetchCipherAlgorithm fetch("DES-EDE3-ECB");
+    static const FetchCipherAlgorithm fetch("DES-EDE3");
     return fetch.algorithm();
 }
 
