@@ -437,6 +437,7 @@ The following `make` variables can be defined:
 |NODEKTEC |No Dektec device support, remove dependency to `DTAPI`.
 |NOHIDES |No HiDes device support.
 |NOVATEK |No VATek device support (modulators based on VATek chips), remove dependency to `libvatek`.
+|NOOPENSSL |No cryptographic support, remove dependency to `openssl`.
 |NOZLIB |Don't use zlib, use embedded "Small Deflate" instead, remove dependency to `zlib`.
 |NOCURL |No HTTP support, remove dependency to `libcurl`.
 |NOPCSC |No smartcard support, remove dependency to `pcsc-lite`.
@@ -455,9 +456,6 @@ The following command, for instance, builds TSDuck without dependency to `pcsc-l
 ----
 $ make NOPCSC=1 NOCURL=1 NODEKTEC=1
 ----
-
-Some dependencies such as `openssl` (cryptographic library) cannot be removed
-because they are deeply used inside TSDuck.
 
 The variables `NOJAVA` and `NOPYTHON` remove the bindings for the Java and Python languages, respectively.
 However, they do not remove any external dependency because these bindings do not need any.

@@ -51,6 +51,7 @@ installer: tarball $(RPMBUILDROOT)
 	      -D 'commit $(shell $(GET_TSDUCK_VERSION) --commit)' \
 	      -D 'distro $(DISTRO)' \
 	      -D '_smp_mflags $(MAKEFLAGS_SMP)' \
+	      $(if $(NOOPENSSL),-D 'noopenssl 1') \
 	      $(if $(NOZLIB),-D 'nozlib 1') \
 	      $(if $(NOSRT),-D 'nosrt 1') \
 	      $(if $(NORIST),-D 'norist 1') \

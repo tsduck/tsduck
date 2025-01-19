@@ -34,6 +34,17 @@ ts::TDES::TDES(const BlockCipherProperties& props) : BlockCipher(props)
     canProcessInPlace(true);
 }
 
+ts::TDES::~TDES()
+{
+}
+
+
+//----------------------------------------------------------------------------
+// Implementation using external cryptographic libraries.
+//----------------------------------------------------------------------------
+
+#if !defined(TS_NO_CRYPTO_LIBRARY)
+
 #if defined(TS_WINDOWS)
 
 void ts::TDES::getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length, bool& ignore_iv) const
@@ -45,7 +56,7 @@ void ts::TDES::getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length, bool& ign
     ignore_iv = true;
 }
 
-#else
+#elif !defined(TS_NO_OPENSSL)
 
 const EVP_CIPHER* ts::TDES::getAlgorithm() const
 {
@@ -94,7 +105,7 @@ void ts::ECB<ts::TDES>::getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length, 
     ignore_iv = true;
 }
 
-#else
+#elif !defined(TS_NO_OPENSSL)
 
 const EVP_CIPHER* ts::ECB<ts::TDES>::getAlgorithm() const
 {
@@ -142,7 +153,7 @@ void ts::CBC<ts::TDES>::getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length, 
     ignore_iv = false;
 }
 
-#else
+#elif !defined(TS_NO_OPENSSL)
 
 const EVP_CIPHER* ts::CBC<ts::TDES>::getAlgorithm() const
 {
@@ -152,3 +163,5 @@ const EVP_CIPHER* ts::CBC<ts::TDES>::getAlgorithm() const
 }
 
 #endif
+
+#endif // TS_NO_CRYPTO_LIBRARY

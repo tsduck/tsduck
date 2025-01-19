@@ -439,6 +439,7 @@ if [[ -z $PRECONFIG_DONE ]]; then
     [[ $PRECONFIG == */TS_NO_ZLIB/* ]] && NOZLIB=1
     [[ $PRECONFIG == */TS_NO_SRT/* ]] && NOSRT=1
     [[ $PRECONFIG == */TS_NO_RIST/* ]] && NORIST=1
+    [[ $PRECONFIG == */TS_NO_OPENSSL/* ]] && NOOPENSSL=1
 fi
 
 #-----------------------------------------------------------------------------
@@ -771,6 +772,7 @@ else
 fi
 
 # Other optional features.
+[[ -n $NOOPENSSL ]] && CXXFLAGS_INCLUDES="$CXXFLAGS_INCLUDES -DTS_NO_OPENSSL=1"
 [[ -n $NOGITHUB ]] && CXXFLAGS_INCLUDES="$CXXFLAGS_INCLUDES -DTS_NO_GITHUB=1"
 [[ -n $ASSERTIONS ]] && CXXFLAGS_INCLUDES="$CXXFLAGS_INCLUDES -DTS_KEEP_ASSERTIONS=1"
 [[ -n $NOHWACCEL ]] && CXXFLAGS_INCLUDES="$CXXFLAGS_INCLUDES -DTS_NO_ARM_CRC32_INSTRUCTIONS=1"
@@ -781,10 +783,11 @@ fi
 # Note, however, that LIBTSDUCK_LDLIBS is still necessary when linking applications
 # against the TSDuck static library.
 LIBTSDUCK_CXXFLAGS_INCLUDES="$LIBTSDUCK_CXXFLAGS_INCLUDES $CXXFLAGS_JAVA"
-LIBTSDUCK_LDLIBS="$LIBTSDUCK_LDLIBS -lcrypto $LDLIBS_PCSC"
+LIBTSDUCK_LDLIBS="$LIBTSDUCK_LDLIBS $LDLIBS_PCSC"
 [[ -n $FREEBSD ]] && LIBTSDUCK_LDLIBS="$LIBTSDUCK_LDLIBS -lprocstat"
 [[ -n $OPENBSD$NETBSD$DRAGONFLYBSD ]] && LIBTSDUCK_LDLIBS="$LIBTSDUCK_LDLIBS -lkvm"
 [[ -n $LINUX ]] && LIBTSDUCK_LDLIBS="$LIBTSDUCK_LDLIBS -latomic"
+[[ -z $NOOPENSSL ]] && LIBTSDUCK_LDLIBS="$LIBTSDUCK_LDLIBS -lcrypto"
 [[ -n $NODTAPI ]] && LIBTSDUCK_CXXFLAGS_INCLUDES="$LIBTSDUCK_CXXFLAGS_INCLUDES -DTS_NO_DTAPI=1"
 [[ -n $NOHIDES ]] && LIBTSDUCK_CXXFLAGS_INCLUDES="$LIBTSDUCK_CXXFLAGS_INCLUDES -DTS_NO_HIDES=1"
 [[ -n $NOVATEK ]] && LIBTSDUCK_CXXFLAGS_INCLUDES="$LIBTSDUCK_CXXFLAGS_INCLUDES -DTS_NO_VATEK=1"
@@ -867,6 +870,7 @@ NO_TSPLUGINS="tsplugin_dektec tsplugin_drop tsplugin_file tsplugin_fork tsplugin
 
 # Build a list of tools and plugins to not build or deinstall from the system tree.
 NO_TSTOOLS=
+[[ -n $NOOPENSSL ]] && NO_TSPLUGINS="$NO_TSPLUGINS tsplugin_aes tsplugin_descrambler tsplugin_scrambler"
 [[ -n $NODTAPI ]] && NO_TSTOOLS="$NO_TSTOOLS tsdektec"
 [[ -n $NOHIDES ]] && NO_TSTOOLS="$NO_TSTOOLS tshides"
 [[ -n $NOHIDES ]] && NO_TSPLUGINS="$NO_TSPLUGINS tsplugin_hides"

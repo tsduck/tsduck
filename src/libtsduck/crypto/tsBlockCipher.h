@@ -330,7 +330,7 @@ namespace ts {
         virtual void getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length, bool& ignore_iv) const;
 #endif
 
-#if !defined(TS_WINDOWS) || defined(DOXYGEN)
+#if (!defined(TS_WINDOWS) && !defined(TS_NO_OPENSSL)) || defined(DOXYGEN)
         //!
         //! Get the EVP for the cipher algorithm, when the subclass uses OpenSSL.
         //! @return EVP cipher.
@@ -364,7 +364,7 @@ namespace ts {
         ByteBlock _obj {};
         ByteBlock _work_iv {}; // BCrypt update the IV for reuse, use this one preserve _current_iv
         bool _ignore_iv = false;
-#else
+#elif !defined(TS_NO_OPENSSL)
         const EVP_CIPHER* _algo = nullptr;
         EVP_CIPHER_CTX* _encrypt = nullptr;
         EVP_CIPHER_CTX* _decrypt = nullptr;

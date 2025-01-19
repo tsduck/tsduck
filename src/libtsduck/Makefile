@@ -153,6 +153,7 @@ install-devel: $(if $(NOSTATIC),,$(STATIC_LIBTSDUCK)) $(TSDUCK_H)
 	install -d -m 755 $(SYSROOT)$(USRLIBDIR) $(SYSROOT)$(SYSPREFIX)/include/tsduck
 	$(if $(NOSTATIC),,install -m 644 $(STATIC_LIBTSDUCK) $(SYSROOT)$(USRLIBDIR))
 	install -m 644 $(addsuffix /*.h,$(PUBLIC_INCLUDES)) $(TSDUCK_H) $(SYSROOT)$(SYSPREFIX)/include/tsduck
+	$(if $(NOOPENSSL), echo '#define TS_NO_OPENSSL 1' >>$(PRECONFIG))
 	$(if $(NOPCSC), echo '#define TS_NO_PCSC 1' >>$(PRECONFIG))
 	$(if $(NOGITHUB), echo '#define TS_NO_GITHUB 1' >>$(PRECONFIG))
 	$(if $(NODTAPI), echo '#define TS_NO_DTAPI 1' >>$(PRECONFIG))

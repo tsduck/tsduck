@@ -9,6 +9,10 @@
 #include "tsSHA512.h"
 #include "tsInitCryptoLibrary.h"
 
+ts::SHA512::~SHA512()
+{
+}
+
 #if defined(TS_WINDOWS)
 
 void ts::SHA512::getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length) const
@@ -18,7 +22,7 @@ void ts::SHA512::getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length) const
     fetch.getAlgorithm(algo, length);
 }
 
-#else
+#elif !defined(TS_NO_OPENSSL)
 
 const EVP_MD_CTX* ts::SHA512::referenceContext() const
 {

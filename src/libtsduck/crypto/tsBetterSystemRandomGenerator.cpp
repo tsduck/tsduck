@@ -12,13 +12,22 @@
 // Define singleton instance
 TS_DEFINE_SINGLETON(ts::BetterSystemRandomGenerator);
 
+// Destructor.
+ts::BetterSystemRandomGenerator::~BetterSystemRandomGenerator() {}
+
+#if defined(TS_NO_CRYPTO_LIBRARY)
+// Constructor.
+ts::BetterSystemRandomGenerator::BetterSystemRandomGenerator() {}
+
+// The rest is implemented only when a cryptographic library is used.
+#else
+
 // A fixed AES-128 key for post-processing.
 namespace {
     const uint8_t _fixedKey[] = {
         0x68, 0xA3, 0xA1, 0xE0, 0x68, 0x89, 0x7F, 0x9A, 0x05, 0xD5, 0x90, 0xDC, 0xD9, 0x0D, 0x70, 0x4F,
     };
 }
-
 
 //----------------------------------------------------------------------------
 // Constructor
@@ -158,3 +167,5 @@ bool ts::BetterSystemRandomGenerator::read(void* buffer, size_t size)
     }
     return true;
 }
+
+#endif // TS_NO_CRYPTO_LIBRARY

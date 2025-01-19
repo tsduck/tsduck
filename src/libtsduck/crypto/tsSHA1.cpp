@@ -9,6 +9,10 @@
 #include "tsSHA1.h"
 #include "tsInitCryptoLibrary.h"
 
+ts::SHA1::~SHA1()
+{
+}
+
 #if defined(TS_WINDOWS)
 
 void ts::SHA1::getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length) const
@@ -18,7 +22,7 @@ void ts::SHA1::getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length) const
     fetch.getAlgorithm(algo, length);
 }
 
-#else
+#elif !defined(TS_NO_OPENSSL)
 
 const EVP_MD_CTX* ts::SHA1::referenceContext() const
 {

@@ -10,8 +10,18 @@
 #include "tsInitCryptoLibrary.h"
 #include "tsVersionInfo.h"
 
-// Register for options --version.
-TS_REGISTER_FEATURE(u"crypto", u"Cryptographic library", ALWAYS, ts::GetCryptographicLibraryVersion);
+
+//----------------------------------------------------------------------------
+// Register for options --version and --support.
+//----------------------------------------------------------------------------
+
+#if !defined(TS_WINDOWS) && defined(TS_NO_OPENSSL)
+#define SUPPORT UNSUPPORTED
+#else
+#define SUPPORT SUPPORTED
+#endif
+
+TS_REGISTER_FEATURE(u"crypto", u"Cryptographic library", SUPPORT, ts::GetCryptographicLibraryVersion);
 
 
 //----------------------------------------------------------------------------
@@ -22,7 +32,9 @@ ts::UString ts::GetCryptographicLibraryVersion()
 {
     InitCryptographicLibrary();
 
-#if defined(TS_WINDOWS)
+#if defined(TS_NO_CRYPTO_LIBRARY)
+    return u"This version of TSDuck was compiled without cryptographic library support";
+#elif defined(TS_WINDOWS)
     // Don't know how to get the version of BCrypt library.
     return u"Microsoft BCrypt";
 #elif defined(OPENSSL_FULL_VERSION_STRING)

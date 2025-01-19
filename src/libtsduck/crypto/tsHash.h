@@ -107,7 +107,7 @@ namespace ts {
         virtual void getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length) const;
 #endif
 
-#if !defined(TS_WINDOWS) || defined(DOXYGEN)
+#if (!defined(TS_WINDOWS) && !defined(TS_NO_OPENSSL)) || defined(DOXYGEN)
         //!
         //! Get reference hash context, when the subclass uses OpenSSL.
         //! @return Reference EVP hash context. To be copied into each new hash object.
@@ -122,7 +122,7 @@ namespace ts {
         ::BCRYPT_ALG_HANDLE _algo = nullptr;
         ::BCRYPT_HASH_HANDLE _hash = nullptr;
         ByteBlock _obj {};
-#else
+#elif !defined(TS_NO_OPENSSL)
         EVP_MD_CTX* _context = nullptr;
 #endif
     };

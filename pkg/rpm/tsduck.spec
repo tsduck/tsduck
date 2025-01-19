@@ -11,8 +11,10 @@ BuildRequires:  gcc-c++
 BuildRequires:  gcc
 BuildRequires:  make
 BuildRequires:  binutils
+%if 0%{!?noopenssl:1}
 Requires:       openssl-libs
 BuildRequires:  openssl-devel
+%endif
 %if 0%{!?noeditline:1}
 Requires:       libedit
 BuildRequires:  libedit-devel
@@ -55,7 +57,9 @@ process MPEG Transport Streams (TS), either as recorded files or live streams.
 Summary:        Development files for %{name}
 Group:          Development/Libraries
 Requires:       %{name} = %{version}-%{release}
+%if 0%{!?noopenssl:1}
 Requires:       openssl-devel
+%endif
 %if 0%{!?noeditline:1}
 Requires:       libedit-devel
 %endif
@@ -86,7 +90,7 @@ developing applications that use %{name}.
 %global debug_package %{nil}
 
 # Propagate component exclusions.
-%define makeflags NOTEST=1 %{?nozlib:NOZLIB=1} %{?nosrt:NOSRT=1} %{?norist:NORIST=1} %{?nopcsc:NOPCSC=1} %{?nocurl:NOCURL=1} %{?noeditline:NOEDITLINE=1} %{?nodektec:NODEKTEC=1} %{?novatek:NOVATEK=1} %{?nodoc:NODOC=1} %{?mflags}
+%define makeflags NOTEST=1 %{?noopenssl:NOOPENSSL=1} %{?nozlib:NOZLIB=1} %{?nosrt:NOSRT=1} %{?norist:NORIST=1} %{?nopcsc:NOPCSC=1} %{?nocurl:NOCURL=1} %{?noeditline:NOEDITLINE=1} %{?nodektec:NODEKTEC=1} %{?novatek:NOVATEK=1} %{?nodoc:NODOC=1} %{?mflags}
 
 %prep
 %setup -q -n %{name}-%{version}-%{commit}

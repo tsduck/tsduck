@@ -45,7 +45,7 @@ ts::FetchBCryptAlgorithm::~FetchBCryptAlgorithm()
     }
 }
 
-#else
+#elif !defined(TS_NO_OPENSSL)
 
 //----------------------------------------------------------------------------
 // Base class for objects which must be terminated with OpenSSL.
@@ -274,4 +274,7 @@ void ts::FetchCipherAlgorithm::terminate()
 #endif
 }
 
+#else
+TS_LLVM_NOWARNING(missing-variable-declarations)
+bool tsInitCryptoLibraryIsEmpty = true; // Avoid warning about empty module.
 #endif

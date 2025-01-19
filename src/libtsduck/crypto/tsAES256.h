@@ -26,6 +26,7 @@ namespace ts {
         TS_NOCOPY(AES256);
     public:
         AES256();                                 //!< Constructor.
+        virtual ~AES256() override;               //!< Destructor.
         static constexpr size_t BLOCK_SIZE = 16;  //!< AES-256 block size in bytes.
         static constexpr size_t KEY_SIZE = 32;    //!< AES-256 key size in bytes.
 
@@ -40,15 +41,15 @@ namespace ts {
 
 #if defined(TS_WINDOWS)
         virtual void getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length, bool& ignore_iv) const override;
-#else
+#elif !defined(TS_NO_OPENSSL)
         virtual const EVP_CIPHER* getAlgorithm() const override;
 #endif
     };
 
+#if !defined(TS_NO_CRYPTO_LIBRARY) && !defined(DOXYGEN)
     //
     // Chaining blocks specializations, when implemented in the system cryptographic library.
     //
-    //! @cond nodoxygen
     template<>
     class TSDUCKDLL ECB<AES256>: public AES256
     {
@@ -60,13 +61,11 @@ namespace ts {
         ECB(const BlockCipherProperties& props);
 #if defined(TS_WINDOWS)
         virtual void getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length, bool& ignore_iv) const override;
-#else
+#elif !defined(TS_NO_OPENSSL)
         virtual const EVP_CIPHER* getAlgorithm() const override;
 #endif
     };
-    //! @endcond
 
-    //! @cond nodoxygen
     template<>
     class TSDUCKDLL CBC<AES256>: public AES256
     {
@@ -78,9 +77,10 @@ namespace ts {
         CBC(const BlockCipherProperties& props);
 #if defined(TS_WINDOWS)
         virtual void getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length, bool& ignore_iv) const override;
-#else
+#elif !defined(TS_NO_OPENSSL)
         virtual const EVP_CIPHER* getAlgorithm() const override;
 #endif
     };
-    //! @endcond
+
+#endif // TS_NO_CRYPTO_LIBRARY
 }

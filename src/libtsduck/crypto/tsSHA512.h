@@ -23,10 +23,8 @@ namespace ts {
     {
         TS_NOCOPY(SHA512);
     public:
-        //!
-        //! Constructor.
-        //!
-        SHA512() : Hash(u"SHA-512", HASH_SIZE) {}
+        SHA512() : Hash(u"SHA-512", HASH_SIZE) {}  //!< Constructor.
+        virtual ~SHA512() override;                //!< Destructor.
 
         //!
         //! SHA-512 hash size in bytes (512 bits).
@@ -36,7 +34,7 @@ namespace ts {
     protected:
 #if defined(TS_WINDOWS)
         virtual void getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length) const override;
-#else
+#elif !defined(TS_NO_OPENSSL)
         virtual const EVP_MD_CTX* referenceContext() const override;
 #endif
     };

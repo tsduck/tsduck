@@ -37,7 +37,7 @@ namespace ts {
         size_t _objlength = 0;
     };
 
-#else
+#elif !defined(TS_NO_OPENSSL)
 
     //!
     //! Base class for objects which must be terminated with OpenSSL.
@@ -154,7 +154,7 @@ namespace ts {
     //!
     inline void InitCryptographicLibrary()
     {
-    #if !defined(TS_WINDOWS)
+    #if !defined(TS_WINDOWS) && !defined(TS_NO_OPENSSL)
         InitCryptoLibrary::Instance();
     #endif
     }
@@ -164,7 +164,7 @@ namespace ts {
     //!
     inline void PrintCryptographicLibraryErrors()
     {
-    #if !defined(TS_WINDOWS)
+    #if !defined(TS_WINDOWS) && !defined(TS_NO_OPENSSL)
         if (InitCryptoLibrary::Instance().debug()) {
             ERR_print_errors_fp(stderr);
         }

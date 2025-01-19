@@ -48,11 +48,19 @@ namespace ts {
     //! - The entropy file is rewritten after each block => poor performances.
     //! - Concurrent processes overwrite the same .tsseed file.
     //!
+    //! Additional notes:
+    //! - On UNIX systems, is TSDuck is built with option NOOPENSSL, the random
+    //!   is directly extracted from SystemRandomGenerator.
+    //!
     class TSDUCKDLL BetterSystemRandomGenerator: public SystemRandomGenerator
     {
         TS_SINGLETON(BetterSystemRandomGenerator);
-
     public:
+        //! Destructor.
+        virtual ~BetterSystemRandomGenerator() override;
+
+#if !defined(TS_NO_CRYPTO_LIBRARY)
+
         // Implementation of RandomGenerator interface:
         virtual UString name() const override;
         virtual bool ready() const override;
@@ -71,5 +79,7 @@ namespace ts {
 
         // Update the content of the random pool with new data.
         bool updatePool();
+
+#endif
     };
 }

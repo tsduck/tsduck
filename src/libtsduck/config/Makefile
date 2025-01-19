@@ -66,6 +66,7 @@ install-devel:
 	sed -e 's|{{VERSION}}|$(shell $(GET_TSDUCK_VERSION) --dotted)|g' \
 	    -e 's|{{PREFIX}}|$(SYSPREFIX)|g' \
 	    -e 's|{{LIBDIR}}|$(USRLIBDIR)|g' \
+	    $(if $(NOOPENSSL),-e 's|libcrypto||g') \
 	    $(if $(NOZLIB),-e 's|zlib||g') \
 	    $(if $(NOSRT),-e 's|srt||g') \
 	    $(if $(NORIST),-e 's|librist||g') \
