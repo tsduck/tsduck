@@ -58,7 +58,7 @@ deb-tools-control:
 	mkdir -p $(TMPROOT)/DEBIAN
 	sed -e 's/{{VERSION}}/$(VERSION)$(DISTRO)/g' \
 	    -e 's/{{ARCH}}/$(DEB_ARCH)/g' \
-	    $(if $(NOOPENSSL),-e '/libssl/d',-e 's/ libssl,/ $(call F_GETSODPKG,libcrypto)/' \
+	    $(if $(NOOPENSSL),-e '/libssl/d',-e 's/ libssl,/ $(call F_GETSODPKG,libcrypto)/') \
 	    $(if $(NOZLIB),-e '/zlib/d',-e 's/ zlib,/ $(call F_GETSODPKG,libz)/') \
 	    $(if $(NOSRT),-e '/libsrt/d',-e 's/ libsrt,/ $(call F_GETSODPKG,libsrt)/') \
 	    $(if $(NORIST),-e '/librist/d',-e 's/ librist,/ $(call F_GETSODPKG,librist)/') \
