@@ -21,6 +21,10 @@ Write-Output "==== libsrt download and installation procedure"
 
 . "$PSScriptRoot\install-common.ps1"
 
+if ($env:PROCESSOR_ARCHITECTURE -like 'Arm64*') {
+    Exit-Script "libsrt is not available on Arm64"
+}
+
 # Get the URL of the latest installer.
 $URL = (Get-URL-In-GitHub "Haivision/srt" @("/libsrt-.*\.exe$", "/libsrt-.*-win-installer\.zip$"))
 

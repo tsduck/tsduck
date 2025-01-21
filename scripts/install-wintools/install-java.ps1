@@ -32,13 +32,8 @@ Write-Output "==== Java (AdoptOpenJDK) download and installation procedure"
 # REST API for the latest releases of Eclipse Temurin.
 $API = "https://api.adoptium.net/v3"
 
-# Get JDK or JRE.
-if ($JRE) {
-    $ImageType = "jre"
-}
-else {
-    $ImageType = "jdk"
-}
+$ImageType = if ($JRE) { "jre" } else { "jdk" }
+$Arch = if ($env:PROCESSOR_ARCHITECTURE -like 'Arm64*') { "aarch64" } else { "x64" }
 
 # Get latest LTS versions, in reverse order.
 $all_lts = (Invoke-RestMethod $API/info/available_releases).available_lts_releases
@@ -49,7 +44,7 @@ foreach ($lts in $all_lts) {
 
     $bin = (Invoke-RestMethod $API/assets/latest/$lts/hotspot).binary | `
         Where-Object os -eq windows | `
-        Where-Object architecture -eq x64 | `
+        Where-Object architecture -eq $Arch | `
         Where-Object jvm_impl -eq hotspot | `
         Where-Object heap_size -eq normal | `
         Where-Object image_type -eq $ImageType | `

@@ -18,13 +18,8 @@ param(
 )
 
 Write-Output "==== NSIS download and installation procedure"
-
 . "$PSScriptRoot\install-common.ps1"
 
-Install-Standard-Exe `
-    "https://nsis.sourceforge.io/Download" `
-    "*/nsis-*-setup.exe?download" `
-    "http://prdownloads.sourceforge.net/nsis/nsis-3.05-setup.exe?download" `
-    @("/S")
+winget install NSIS.NSIS --accept-source-agreements
 
 Exit-Script

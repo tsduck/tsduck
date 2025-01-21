@@ -21,6 +21,10 @@ Write-Output "==== Dektec WinSDK download and installation procedure"
 
 . "$PSScriptRoot\install-common.ps1"
 
+if ($env:PROCESSOR_ARCHITECTURE -like 'Arm64*') {
+    Exit-Script "Dektec WinSDK is not available on Arm64"
+}
+
 $ReleasePage = "http://www.dektec.com/downloads/SDK/"
 $DtapiInstaller = "DekTec SDK - Windows Setup.exe"
 

@@ -21,6 +21,10 @@ Write-Output "==== librist download and installation procedure"
 
 . "$PSScriptRoot\install-common.ps1"
 
+if ($env:PROCESSOR_ARCHITECTURE -like 'Arm64*') {
+    Exit-Script "librist is not available on Arm64"
+}
+
 Install-GitHub-Exe 'tsduck/rist-installer' '/librist-.*\.exe$' @("/S")
 
 Propagate-Environment "LIBRIST"
