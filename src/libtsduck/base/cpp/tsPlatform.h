@@ -280,6 +280,11 @@
     //!
     #define TS_ARM64
     //!
+    //! Defined when the target processor architecture is 64-bit ARM and inline assembler is allowed.
+    //! This is typically true with GCC and Clang but false with MSC.
+    //!
+    #define TS_ASM_ARM64
+    //!
     //! Defined when the target processor architecture is 32-bit Power PC.
     //!
     #define TS_POWERPC
@@ -320,9 +325,12 @@
     #if !defined(TS_IA64)
         #define TS_IA64 1
     #endif
-#elif defined(__aarch64__) || defined(__arm64__)
+#elif defined(__aarch64__) || defined(__arm64__) || defined(_ARM64_) || defined(_M_ARM64)
     #if !defined(TS_ARM64)
         #define TS_ARM64 1
+    #endif
+    #if !defined(TS_MSC) && !defined(TS_ASM_ARM64)
+        #define TS_ASM_ARM64 1
     #endif
 #elif defined(__arm__)
     #if !defined(TS_ARM32)
@@ -670,6 +678,7 @@ TS_MSC_NOWARNING(4627)  // 'header_file': skipped when looking for precompiled h
 TS_MSC_NOWARNING(4628)  // digraphs not supported with -Ze. Character sequence '<:' not interpreted as alternate token for '['
 TS_MSC_NOWARNING(4710)  // function not inlined
 TS_MSC_NOWARNING(4738)  // storing 32-bit float result in memory, possible loss of performance
+TS_MSC_NOWARNING(4746)  // volatile access of '<expression>' is subject to /volatile: <iso | ms> setting; consider using __iso_volatile_load / store intrinsic functions
 TS_MSC_NOWARNING(4820)  // 'n' bytes padding added after data member 'nnnnn'
 TS_MSC_NOWARNING(5026)  // move constructor was implicitly defined as deleted
 TS_MSC_NOWARNING(5039)  // pointer or reference to potentially throwing function passed to extern C function under -EHc. Undefined behavior may occur if this function throws an exception

@@ -29,7 +29,7 @@ namespace ts {
     //!
     TSDUCKDLL inline int32_t SignExtend24(int32_t x)
     {
-    #if defined(TS_ARM64)
+    #if defined(TS_ASM_ARM64)
         asm("sbfm %w0, %w0, #0, #23" : "+r" (x)); return x;
     #else
         return (x & 0x00800000) == 0 ? (x & 0x00FFFFFF) : int32_t(uint32_t(x) | 0xFF000000);
@@ -44,7 +44,7 @@ namespace ts {
     //!
     TSDUCKDLL inline int64_t SignExtend40(int64_t x)
     {
-    #if defined(TS_ARM64)
+    #if defined(TS_ASM_ARM64)
         asm("sbfm %0, %0, #0, #39" : "+r" (x)); return x;
     #else
         return (x & 0x0000008000000000) == 0 ? (x & 0x000000FFFFFFFFFF) : int64_t(uint64_t(x) | 0xFFFFFF0000000000);
@@ -59,7 +59,7 @@ namespace ts {
     //!
     TSDUCKDLL inline int64_t SignExtend48(int64_t x)
     {
-    #if defined(TS_ARM64)
+    #if defined(TS_ASM_ARM64)
         asm("sbfm %0, %0, #0, #47" : "+r" (x)); return x;
     #else
         return (x & 0x0000800000000000) == 0 ? (x & 0x0000FFFFFFFFFFFF) : int64_t(uint64_t(x) | 0xFFFF000000000000);
@@ -77,7 +77,7 @@ namespace ts {
     //!
     TSDUCKDLL inline uint16_t ByteSwap16(uint16_t x)
     {
-    #if defined(TS_ARM64)
+    #if defined(TS_ASM_ARM64)
         asm("rev16 %w0, %w0" : "+r" (x)); return x;
     #elif defined(__cpp_lib_byteswap)
         return std::byteswap(x);
@@ -101,10 +101,12 @@ namespace ts {
     //!
     TSDUCKDLL inline uint32_t ByteSwap24(uint32_t x)
     {
-    #if defined(TS_ARM64)
+    #if defined(TS_ASM_ARM64)
         asm("rev %w0, %w0 \n lsr %w0, %w0, #8" : "+r" (x)); return x;
     #elif defined(__cpp_lib_byteswap)
         return std::byteswap(x) >> 8;
+    #elif defined(TS_MSC)
+        return _byteswap_ulong(x) >> 8;
     #else
         return ((x << 16) & 0x00FF0000) | (x & 0x0000FF00) | ((x >> 16) & 0x000000FF);
     #endif
@@ -121,7 +123,7 @@ namespace ts {
     //!
     TSDUCKDLL inline uint32_t ByteSwap32(uint32_t x)
     {
-    #if defined(TS_ARM64)
+    #if defined(TS_ASM_ARM64)
         asm("rev %w0, %w0" : "+r" (x)); return x;
     #elif defined(__cpp_lib_byteswap)
         return std::byteswap(x);
@@ -145,7 +147,7 @@ namespace ts {
     //!
     TSDUCKDLL inline uint64_t ByteSwap64(uint64_t x)
     {
-    #if defined(TS_ARM64)
+    #if defined(TS_ASM_ARM64)
         asm("rev %0, %0" : "+r" (x)); return x;
     #elif defined(__cpp_lib_byteswap)
         return std::byteswap(x);

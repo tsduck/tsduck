@@ -13,6 +13,7 @@
     #include "tsBeforeStandardHeaders.h"
     #include "iphlpapi.h"
     #include "tsAfterStandardHeaders.h"
+    #pragma comment(lib, "Iphlpapi.lib")
 #endif
 
 

@@ -59,6 +59,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <DisableSpecificWarnings Condition="'$(MSBuildToolsVersion)'=='14.0'">4800;4702;4592;4505;$(DisableSpecificWarnings)</DisableSpecificWarnings>
       <DisableSpecificWarnings Condition="'$(MSBuildToolsVersion)'=='17.0'">4800;4702;4592;4505;5264;$(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <DisableSpecificWarnings Condition="'$(Platform)'=='ARM64'">4746;$(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>TS_WINVER_FILENAME="$(TargetName)$(TargetExt)";%(PreprocessorDefinitions)</PreprocessorDefinitions>

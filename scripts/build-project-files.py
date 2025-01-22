@@ -52,7 +52,7 @@ tools = get_cpp(src_dir + os.sep + 'tstools')
 plugins = get_cpp(src_dir + os.sep + 'tsplugins')
 
 # "Other" MSBuild projects (ie. not tools, not plugins).
-others = ['config', 'utests-tsduckdll', 'utests-tsducklib', 'tsduckdll', 'tsducklib', 'tsp_static', 'tsprofiling', 'tsmux', 'setpath']
+others = ['config', 'utests-tsduckdll', 'utests-tsducklib', 'tsduckdll', 'tsducklib', 'tsp_static', 'tsprofiling', 'tsmux', 'tsnet', 'setpath']
 
 # MSBuild / Visual Studio solution description.
 cxx_project_guid = '8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942'
@@ -70,6 +70,7 @@ ms_deps = {
     'tsp_static': {'deps': ['tsducklib']},
     'tsprofiling': {'deps': ['tsduckdll']},
     'tsmux': {'deps': ['tsduckdll'] + plugins},
+    'tsnet': {'deps': ['tsduckdll']},
     'setpath': {'deps': ['tsducklib']}
 }
 
@@ -183,8 +184,10 @@ with open(ms_dir + os.sep + 'tsduck.sln', 'w', encoding = 'utf-8-sig', newline =
     f.write('\tGlobalSection(SolutionConfigurationPlatforms) = preSolution\n')
     f.write('\t\tDebug|Win32 = Debug|Win32\n')
     f.write('\t\tDebug|x64 = Debug|x64\n')
+    f.write('\t\tDebug|ARM64 = Debug|ARM64\n')
     f.write('\t\tRelease|Win32 = Release|Win32\n')
     f.write('\t\tRelease|x64 = Release|x64\n')
+    f.write('\t\tRelease|ARM64 = Release|ARM64\n')
     f.write('\tEndGlobalSection\n')
     f.write('\tGlobalSection(ProjectConfigurationPlatforms) = postSolution\n')
 
@@ -194,10 +197,14 @@ with open(ms_dir + os.sep + 'tsduck.sln', 'w', encoding = 'utf-8-sig', newline =
         f.write('\t\t{%s}.Debug|Win32.Build.0 = Debug|Win32\n' % (guid))
         f.write('\t\t{%s}.Debug|x64.ActiveCfg = Debug|x64\n' % (guid))
         f.write('\t\t{%s}.Debug|x64.Build.0 = Debug|x64\n' % (guid))
+        f.write('\t\t{%s}.Debug|ARM64.ActiveCfg = Debug|ARM64\n' % (guid))
+        f.write('\t\t{%s}.Debug|ARM64.Build.0 = Debug|ARM64\n' % (guid))
         f.write('\t\t{%s}.Release|Win32.ActiveCfg = Release|Win32\n' % (guid))
         f.write('\t\t{%s}.Release|Win32.Build.0 = Release|Win32\n' % (guid))
         f.write('\t\t{%s}.Release|x64.ActiveCfg = Release|x64\n' % (guid))
         f.write('\t\t{%s}.Release|x64.Build.0 = Release|x64\n' % (guid))
+        f.write('\t\t{%s}.Release|ARM64.ActiveCfg = Release|ARM64\n' % (guid))
+        f.write('\t\t{%s}.Release|ARM64.Build.0 = Release|ARM64\n' % (guid))
 
     f.write('\tEndGlobalSection\n')
     f.write('\tGlobalSection(SolutionProperties) = preSolution\n')
