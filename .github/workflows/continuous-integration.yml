@@ -156,6 +156,9 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
     - uses: actions/checkout@master
+    - name: Install winget
+      run: |
+        scripts/install-wintools/winget-install.ps1
     - name: Install dependencies
       run: |
         scripts/install-prerequisites.ps1 -GitHubActions -NoDoxygen -NoInstaller -NoPause
