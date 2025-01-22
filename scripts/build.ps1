@@ -54,13 +54,18 @@
 
  .PARAMETER Win32
 
-  Generate the 32-bit version of the binaries. If neither -Win32 nor -Win64
-  is specified, both versions are built by default.
+  Generate the 32-bit Intel version of the binaries. If neither -Win32 nor -Win64
+  nor -Arm64 is specified, the version for the native system is built by default.
 
  .PARAMETER Win64
 
-  Generate the 64-bit version of the binaries. If neither -Win32 nor -Win64
-  is specified, both versions are built by default.
+  Generate the 64-bit Intel version of the binaries. If neither -Win32 nor -Win64
+  nor -Arm64 is specified, the version for the native system is built by default.
+
+ .PARAMETER Arm64
+
+  Generate the 64-bit Arm version of the binaries. If neither -Win32 nor -Win64
+  nor -Arm64 is specified, the version for the native system is built by default.
 #>
 param(
     [int]$Parallel = 0,
@@ -72,6 +77,7 @@ param(
     [switch]$Release = $false,
     [switch]$Win32 = $false,
     [switch]$Win64 = $false,
+    [switch]$Arm64 = $false,
     [switch]$NoStatic = $false,
     [switch]$NoPause = $false
 )
@@ -87,9 +93,16 @@ Import-Module -Force -Name "${PSScriptRoot}\tsbuild.psm1"
 if (-not $Debug -and -not $Release -and -not $Installer) {
     $Release = $true
 }
-if (-not $Win32 -and -not $Win64) {
-    $Win32 = $true
-    $Win64 = $true
+if (-not $Win32 -and -not $Win64 -and -not $Arm64) {
+    if ($env:PROCESSOR_ARCHITECTURE -like 'arm64*') {
+        $Arm64 = $true
+    }
+    elseif ($env:PROCESSOR_ARCHITECTURE -like 'amd64*') {
+        $Win64 = $true
+    }
+    elseif ($env:PROCESSOR_ARCHITECTURE -like 'x86*') {
+        $Win32 = $true
+    }
 }
 
 # Get the project directories.
@@ -139,6 +152,7 @@ if ($Prerequisites) {
 # A function to invoke MSBuild.
 function Call-MSBuild ([string] $configuration, [string] $platform, [string] $target = "")
 {
+    Write-Output "==== Building $configuration for $platform"
     if ($Parallel -gt 0) {
         $OptCPU = "/maxcpucount:$Parallel"
     }
@@ -164,15 +178,21 @@ function Call-MSBuild ([string] $configuration, [string] $platform, [string] $ta
 $AllTargets = @(Select-String -Path "${ProjDir}\*.vcxproj" -Pattern '<RootNameSpace>' |
                 ForEach-Object { $_ -replace '.*<RootNameSpace> *','' -replace ' *</RootNameSpace>.*','' })
 $plugins = ($AllTargets | Select-String "tsplugin_*") -join ';'
-$commands = ($AllTargets | Select-String -NotMatch @("tsduck*", "tsplugin_*", "tsp_static", "setpath", "utest*")) -join ';'
+$commands = ($AllTargets | Select-String -NotMatch @("tsduck*", "tsplugin_*", "tsp_static", "setpath", "utest*", "tsmux", "tsnet", "tsprofiling")) -join ';'
 
 # Rebuild TSDuck.
 if ($Installer) {
     # We build everything except test programs for the "Release" configuration.
     # Then, we need the DLL for "Debug" configurations (development environment).
     $targets = "tsduckdll;tsducklib;$commands;$plugins;setpath"
-    Call-MSBuild Release x64 $targets
-    Call-MSBuild Debug x64 tsduckdll
+    if ($Arm64) {
+        Call-MSBuild Release ARM64 $targets
+        Call-MSBuild Debug ARM64 tsduckdll
+    }
+    if ($Win64) {
+        Call-MSBuild Release x64 $targets
+        Call-MSBuild Debug x64 tsduckdll
+    }
     if ($Win32) {
         Call-MSBuild Release Win32 $targets
         Call-MSBuild Debug Win32 tsduckdll
@@ -186,11 +206,17 @@ else {
     else {
         $targets = ""
     }
+    if ($Release -and $Arm64) {
+        Call-MSBuild Release ARM64 $targets
+    }
     if ($Release -and $Win64) {
         Call-MSBuild Release x64 $targets
     }
     if ($Release -and $Win32) {
         Call-MSBuild Release Win32 $targets
+    }
+    if ($Debug -and $Arm64) {
+        Call-MSBuild Debug ARM64 $targets
     }
     if ($Debug -and $Win64) {
         Call-MSBuild Debug x64 $targets

@@ -9,8 +9,9 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(DtapiIncludePath)'==''">
+    <!-- Fake but existing dependency is required -->
     <DektecInput>NUL:</DektecInput>
-    <DektecDep></DektecDep>
+    <DektecDep>$(TSDuckRootDir)scripts\build-dektec-names.py</DektecDep>
   </PropertyGroup>
 
   <Target Name="BuildDektecNames" Inputs="$(DektecDep)" Outputs="$(OutDir)tsduck.dektec.names">

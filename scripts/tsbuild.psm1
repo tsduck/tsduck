@@ -18,6 +18,7 @@
 #  - New-TempDirectory
 #  - New-ZipFile [-Path] <String> [[-Root] <String>] [-Input <Object>] [-Force
 #  - Find-MSBuild
+#  - Find-VCRedist
 #  - Find-Java
 #
 #-----------------------------------------------------------------------------
@@ -362,7 +363,16 @@ Export-ModuleMember -Function New-ZipFile
 function Find-MSBuild
 {
     # Try fast path first
-    $Path = Get-ChildItem "C:\Program Files\Microsoft Visual Studio\*\*\MSBuild\Current\Bin\MSBuild.exe" | Select-Object -Last 1
+    if ($env:PROCESSOR_ARCHITECTURE -like 'arm64*') {
+        $final = "Bin\arm64"
+    }
+    elseif ($env:PROCESSOR_ARCHITECTURE -like 'amd64*') {
+        $final = "Bin\amd64"
+    }
+    else {
+        $final = "Bin"
+    }
+    $Path = Get-ChildItem "C:\Program Files\Microsoft Visual Studio\*\*\MSBuild\Current\$final\MSBuild.exe" | Select-Object -Last 1
     if ($Path -ne $null) {
         $Path = $Path.FullName
     }
@@ -409,9 +419,9 @@ function Find-VCRedist
     else {
         # Fallback: search everywhere
         $Path = Get-ChildItem -Recurse -Path "C:\Program Files*\Microsoft Visual Studio" -Include $Name -ErrorAction Ignore |
-                 ForEach-Object { (Get-Command $_).FileVersionInfo } |
-                 Sort-Object -Unique -Property FileVersion  |
-                 ForEach-Object { $_.FileName} | Select-Object -Last 1
+                ForEach-Object { (Get-Command $_).FileVersionInfo } |
+                Sort-Object -Unique -Property FileVersion  |
+                ForEach-Object { $_.FileName} | Select-Object -Last 1
     }
     if (-not $Path) {
         Exit-Script -NoPause:$NoPause "MSVC Redistributable Libraries Installer $Name not found"

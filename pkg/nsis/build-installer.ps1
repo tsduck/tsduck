@@ -16,7 +16,7 @@
   Build the binary installers for Windows. The release version of the project
   is automatically rebuilt before building the installer.
 
-  By default, installers are built for 64-bit systems only, full executable
+  By default, installers are built for 64-bit Intel systems only, full executable
   binary installer and portable archive (for install without admin rights).
   The development environments are provided for 64-bit applications only.
 
@@ -52,9 +52,21 @@
 
  .PARAMETER Win32
 
-  Generate the 32-bit installers in addition to the 64-bit installers.
-  Also build development environments for 32-bit and 64-bit applications
-  in the two installers.
+  Generate the 32-bit Intel installers. If neither -Win32 nor -Win64 nor -Arm64
+  is specified, the version for the native system is built by default. The
+  development environments are provided for all selected platforms.
+
+ .PARAMETER Win64
+
+  Generate the 64-bit Intel installers. If neither -Win32 nor -Win64 nor -Arm64
+  is specified, the version for the native system is built by default. The
+  development environments are provided for all selected platforms.
+
+ .PARAMETER Arm64
+
+  Generate the 64-bit Arm installers. If neither -Win32 nor -Win64 nor -Arm64
+  is specified, the version for the native system is built by default. The
+  development environments are provided for all selected platforms.
 #>
 [CmdletBinding()]
 param(
@@ -65,6 +77,8 @@ param(
     [switch]$NoLowPriority = $false,
     [switch]$NoPortable = $false,
     [switch]$Prerequisites = $false,
+    [switch]$Arm64 = $false,
+    [switch]$Win64 = $false,
     [switch]$Win32 = $false
 )
 
@@ -98,12 +112,20 @@ if (-not $NoInstaller) {
 # MSVC redistributable installer.
 if (-not $NoInstaller -or -not $NoPortable) {
     Write-Output "Searching MSVC Redistributable Libraries Installers..."
-    # Use "*x64" instead of "*64" since some VS installations may include an arm64 version.
-    $VCRedist64 = Find-VCRedist "vc*redist*x64.exe"
-    Write-Output "MSVC Redistributable 64-bit: $VCRedist64"
+    $VCRedistArm64 = ""
+    $VCRedist64 = ""
+    $VCRedist32 = ""
+    if ($Arm64) {
+        $VCRedistArm64 = Find-VCRedist "vc*redist*arm64.exe"
+        Write-Output "MSVC Redistributable 64-bit Arm: $VCRedistArm64"
+    }
+    if ($Win64) {
+        $VCRedist64 = Find-VCRedist "vc*redist*x64.exe"
+        Write-Output "MSVC Redistributable 64-bit Intel: $VCRedist64"
+    }
     if ($Win32) {
         $VCRedist32 = Find-VCRedist "vc*redist*86.exe"
-        Write-Output "MSVC Redistributable 32-bit: $VCRedist32"
+        Write-Output "MSVC Redistributable 32-bit Intel: $VCRedist32"
     }
 }
 
@@ -116,7 +138,7 @@ if (-not $NoLowPriority) {
 if (-not $NoBuild) {
     Write-Output "Compiling..."
     Push-Location
-    & "${ScriptsDir}\build.ps1" -Installer -NoPause -Win32:$Win32 -Win64 -GitPull:$GitPull -Prerequisites:$Prerequisites -NoLowPriority:$NoLowPriority
+    & "${ScriptsDir}\build.ps1" -Installer -NoPause -Win32:$Win32 -Win64:$Win64 -Arm64:$Arm64 -GitPull:$GitPull -Prerequisites:$Prerequisites -NoLowPriority:$NoLowPriority
     $Code = $LastExitCode
     Pop-Location
     if ($Code -ne 0) {
@@ -130,7 +152,7 @@ $Version = (python "${ScriptsDir}\get-version-from-sources.py")
 $VersionInfo = (python "${ScriptsDir}\get-version-from-sources.py" --windows)
 
 # A function to build a binary installer.
-function Build-Binary([string]$BinSuffix, [string]$Arch, [string]$OtherDevArch, [string]$VCRedist, [string]$HeadersDir)
+function Build-Binary([string]$BinSuffix, [string]$Arch, [string]$OtherDevArch1, [string]$OtherDevArch2, [string]$VCRedist, [string]$HeadersDir)
 {
     Write-Output "Building installer for $Arch..."
 
@@ -152,7 +174,7 @@ function Build-Binary([string]$BinSuffix, [string]$Arch, [string]$OtherDevArch, 
     }
 
     # Build the binary installer.
-    & $NSIS /V2 $NsisOptJar /D$Arch /DBinDir=$BinDir /DDev$Arch /DDev$OtherDevArch `
+    & $NSIS /V2 $NsisOptJar /D$Arch /DBinDir=$BinDir /DDev$Arch /DDev$OtherDevArch1 /DDev$OtherDevArch2 `
         /DVCRedist=$VCRedist /DVCRedistName=$VCRedistName /DHeadersDir=$HeadersDir `
         /DVersion=$Version /DVersionInfo=$VersionInfo $NsisScript
 }
@@ -175,12 +197,17 @@ if (-not $NoInstaller) {
 
     Push-Location $TempDir
     try {
+        $IfArm64 = if ($Arm64) {"Arm64"} else {""}
+        $IfWin64 = if ($Win64) {"Win64"} else {""}
+        $IfWin32 = if ($Win32) {"Win32"} else {""}
         if ($Win32) {
-            Build-Binary "x64" "Win64" "Win32" $VCRedist64 $TempDir
-            Build-Binary "Win32" "Win32" "Win64" $VCRedist32 $TempDir
+            Build-Binary "Win32" "Win32" $IfWin64 $IfArm64 $VCRedist32 $TempDir
         }
-        else {
-            Build-Binary "x64" "Win64" "" $VCRedist64 $TempDir
+        if ($Win64) {
+            Build-Binary "x64" "Win64" $IfWin32 $IfArm64 $VCRedist64 $TempDir
+        }
+        if ($Arm64) {
+            Build-Binary "ARM64" "Arm64" $IfWin32 $IfWin64 $VCRedistArm64 $TempDir
         }
     }
     finally {
@@ -214,7 +241,7 @@ function Build-Portable([string]$BinSuffix, [string]$InstallerSuffix, [string]$V
         Copy-Item "${RootDir}\OTHERS.txt" -Destination $TempRoot
 
         $TempBin = (New-Directory "${TempRoot}\bin")
-        Copy-Item "${BinDir}\ts*.exe" -Exclude @("*_static.exe", "tsprofiling.exe", "tsmux.exe") -Destination $TempBin
+        Copy-Item "${BinDir}\ts*.exe" -Exclude @("*_static.exe", "tsprofiling.exe", "tsmux.exe", "tsnet.exe") -Destination $TempBin
         Copy-Item "${BinDir}\ts*.dll" -Destination $TempBin
         Copy-Item "${BinDir}\ts*.xml" -Destination $TempBin
         Copy-Item "${BinDir}\ts*.names" -Destination $TempBin
@@ -250,8 +277,11 @@ function Build-Portable([string]$BinSuffix, [string]$InstallerSuffix, [string]$V
 if (-not $NoPortable -and $Win32) {
     Build-Portable "Win32" "Win32" $VCRedist32
 }
-if (-not $NoPortable) {
+if (-not $NoPortable -and $Win64) {
     Build-Portable "x64" "Win64" $VCRedist64
+}
+if (-not $NoPortable -and $Arm64) {
+    Build-Portable "ARM64" "Arm64" $VCRedistArm64
 }
 
 Exit-Script -NoPause:$NoPause

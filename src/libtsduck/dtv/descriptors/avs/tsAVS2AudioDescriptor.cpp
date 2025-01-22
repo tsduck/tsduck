@@ -106,7 +106,7 @@ void ts::AVS2AudioDescriptor::deserializePayload(PSIBuffer& buf)
 {
     num_channels = buf.getUInt8();
     buf.getBits(sample_rate_index, 4);
-    const bool avs_version_flag = buf.getBit();
+    const bool avs_version_flag = buf.getBool();
     const bool text_present_flag = buf.getBool();
     const bool language_present_flag = buf.getBool();
     buf.skipBits(1);
@@ -157,7 +157,7 @@ void ts::AVS2AudioDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::D
         uint8_t _num_channels = buf.getUInt8();
         disp << margin << "Channels: " << uint16_t(_num_channels);
         disp << ", Sample rate (Hz): " << DataName(MY_XML_NAME, u"sample_rate_index", buf.getBits<uint8_t>(4), NamesFlags::NAME_VALUE | NamesFlags::DECIMAL) << std::endl;
-        const bool avs_version_flag = buf.getBit();
+        const bool avs_version_flag = buf.getBool();
         const bool text_present_flag = buf.getBool();
         const bool language_present_flag = buf.getBool();
         buf.skipReservedBits(1, 0);
