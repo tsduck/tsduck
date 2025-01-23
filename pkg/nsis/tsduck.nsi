@@ -11,13 +11,20 @@
 ;  - Version : Product version.
 ;  - VersionInfo : Product version info in Windows format.
 ;  - BinDir : Directory of built binaries (.exe and .dll).
-;  - Win64 : If defined, generate a 64-bit installer (default: 32-bit).
-;  - DevWin64 : If defined, add development libraries for Win64.
+;  - Win32 : If defined, generate a 32-bit Intel installer.
+;  - Win64 : If defined, generate a 64-bit Intel installer.
+;  - Arm64 : If defined, generate a 64-bit Arm installer.
 ;  - DevWin32 : If defined, add development libraries for Win32.
+;  - DevWin64 : If defined, add development libraries for Win64.
+;  - DevArm64 : If defined, add development libraries for Arm64.
 ;  - HeadersDir : Directory containing all header files (development options).
 ;  - VCRedist : Full path of the MSVC redistributable installer.
 ;  - VCRedistName : Base name of the MSVC redistributable installer.
 ;  - JarFile : Optional name of the JAR file for Java bindings.
+;
+;  Note: Win32, Win64, Arm64 are mutually exclusive. This is the architecture
+;  of the binaries. DevWin32, DevWin64, DevArm64 can be combined. Several
+;  development environments can be included in the same installer.
 ;
 ;-----------------------------------------------------------------------------
 
@@ -49,11 +56,18 @@ VIAddVersionKey LegalCopyright "Copyright (c) 2005-2025, Thierry Lelegard"
 VIAddVersionKey FileVersion "${VersionInfo}"
 VIAddVersionKey FileDescription "TSDuck - The MPEG Transport Stream Toolkit"
 
-; Name of binary installer file.
+; Name of binary installer file and default installation folder.
 !ifdef Win64
     OutFile "${InstallerDir}\TSDuck-Win64-${Version}.exe"
-!else
+    InstallDir "$PROGRAMFILES64\TSDuck"
+!else ifdef Win32
     OutFile "${InstallerDir}\TSDuck-Win32-${Version}.exe"
+    InstallDir "$PROGRAMFILES\TSDuck"
+!else ifdef Arm64
+    OutFile "${InstallerDir}\TSDuck-Arm64-${Version}.exe"
+    InstallDir "$PROGRAMFILES64\TSDuck"
+!else
+    Error "Undefined target platform"
 !endif
 
 ; Generate a Unicode installer (default is ANSI).
@@ -76,13 +90,6 @@ RequestExecutionLevel admin
 !define MUI_ABORTWARNING
 !define MUI_ICON "${RootDir}\images\tsduck.ico"
 !define MUI_UNICON "${RootDir}\images\tsduck.ico"
-
-; Default installation folder.
-!ifdef Win64
-    InstallDir "$PROGRAMFILES64\TSDuck"
-!else
-    InstallDir "$PROGRAMFILES\TSDuck"
-!endif
 
 ; Get installation folder from registry if available from a previous installation.
 InstallDirRegKey HKLM "${ProductKey}" "InstallDir"
@@ -246,6 +253,18 @@ Section /o "C++ Development" SectionDevelopment
     SetOutPath "$INSTDIR\lib\Debug-Win64"
     File "${BinRoot}\Debug-x64\tsduck.lib"
     File "${BinRoot}\Debug-x64\tsduck.dll"
+!endif
+
+!ifdef DevArm64
+    CreateDirectory "$INSTDIR\lib\Release-Arm64"
+    SetOutPath "$INSTDIR\lib\Release-Arm64"
+    File "${BinRoot}\Release-ARM64\tsduck.lib"
+    File "${BinRoot}\Release-ARM64\tsduck.dll"
+
+    CreateDirectory "$INSTDIR\lib\Debug-Arm64"
+    SetOutPath "$INSTDIR\lib\Debug-Arm64"
+    File "${BinRoot}\Debug-ARM64\tsduck.lib"
+    File "${BinRoot}\Debug-ARM64\tsduck.dll"
 !endif
 
     ; Visual Studio property files.
@@ -445,14 +464,31 @@ function .onInit
     ; In 64-bit installers, don't use registry redirection. Also prevent execution
     ; of 64-bit installers on 32-bit systems (the installer itself is 32-bit and
     ; can run on 32-bit systems but it contains 64-bit executables).
+    ${If} ${RunningX64}
+    ${OrIf} ${IsNativeARM64}
+        SetRegView 64
+    ${EndIf}
+
     !ifdef Win64
-        ${If} ${RunningX64}
-            SetRegView 64
-        ${Else}
+        ${IfNot} ${IsNativeAMD64}
             MessageBox MB_OK|MB_ICONSTOP \
-                "This is a 64-bit version of TSDuck.$\r$\n\
-                You have a 32-bit version of Windows.$\r$\n\
-                Please use a 32-bit version of TSDuck on this system."
+                "This is a 64-bit Intel version of TSDuck.$\r$\n\
+                Not suitable for this system."
+            Quit
+        ${EndIf}
+    !else ifdef Arm64
+        ${IfNot} ${IsNativeARM64}
+            MessageBox MB_OK|MB_ICONSTOP \
+                "This is an Arm64 version of TSDuck.$\r$\n\
+                Not suitable for this system."
+            Quit
+        ${EndIf}
+    !else
+        ${If} ${IsNativeAMD64}
+        ${OrIf} ${IsNativeARM64}
+            MessageBox MB_OK|MB_ICONSTOP \
+                "This is a 32-bit Intel version of TSDuck.$\r$\n\
+                Not suitable for this system."
             Quit
         ${EndIf}
     !endif
@@ -517,10 +553,9 @@ functionEnd
 function un.onInit
 
     ; In 64-bit installers, don't use registry redirection.
-    !ifdef Win64
-        ${If} ${RunningX64}
-            SetRegView 64
-        ${EndIf}
-    !endif
+    ${If} ${RunningX64}
+    ${OrIf} ${IsNativeARM64}
+        SetRegView 64
+    ${EndIf}
 
 functionEnd

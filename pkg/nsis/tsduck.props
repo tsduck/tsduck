@@ -7,6 +7,16 @@
 
   <!-- Select appropriate directory for binary libraries -->
   <Choose>
+    <When Condition="'$(Configuration)|$(Platform)'=='Release|ARM64' OR '$(Configuration)|$(Platform)'=='Release|Arm64'">
+      <PropertyGroup Label="UserMacros">
+        <TSDUCKLIB>$(TSDUCK)\lib\Release-Arm64</TSDUCKLIB>
+      </PropertyGroup>
+    </When>
+    <When Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64' OR '$(Configuration)|$(Platform)'=='Debug|Arm64'">
+      <PropertyGroup Label="UserMacros">
+        <TSDUCKLIB>$(TSDUCK)\lib\Debug-Arm64</TSDUCKLIB>
+      </PropertyGroup>
+    </When>
     <When Condition="'$(Configuration)|$(Platform)'=='Release|x64' OR '$(Configuration)|$(Platform)'=='Release|Win64'">
       <PropertyGroup Label="UserMacros">
         <TSDUCKLIB>$(TSDUCK)\lib\Release-Win64</TSDUCKLIB>
@@ -34,7 +44,7 @@
     <ClCompile>
       <AdditionalIncludeDirectories>$(TSDUCK)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_TSDUCKDLL_USE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <LanguageStandard Condition="'$(TS_NOSTDCPP)'==''">stdcpp17</LanguageStandard>
+      <LanguageStandard Condition="'$(TS_NOSTDCPP)'==''">stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <AdditionalDependencies>tsduck.lib;%(AdditionalDependencies)</AdditionalDependencies>
