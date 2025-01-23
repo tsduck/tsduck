@@ -82,6 +82,19 @@ param(
     [switch]$Win32 = $false
 )
 
+# Apply defaults.
+if (-not $Win32 -and -not $Win64 -and -not $Arm64) {
+    if ($env:PROCESSOR_ARCHITECTURE -like 'arm64*') {
+        $Arm64 = $true
+    }
+    elseif ($env:PROCESSOR_ARCHITECTURE -like 'amd64*') {
+        $Win64 = $true
+    }
+    elseif ($env:PROCESSOR_ARCHITECTURE -like 'x86*') {
+        $Win32 = $true
+    }
+}
+
 # Get the project directories.
 $RootDir    = (Split-Path -Parent (Split-Path -Parent $PSScriptRoot))
 $ScriptsDir = "${RootDir}\scripts"
