@@ -13,7 +13,7 @@ In practice, TSDuck is used for:
 - Monitor and report conditions on the stream (video and audio properties, bitrates, crypto-periods, signalization).
 - On-the-fly transformation or injection of content and signalization.
 - Modify, remove, rename, extract services.
-- Work on live transport streams, DVB-S/C/T, ATSC, ISDB-T, ASI, UDP ("IP-TV"), HTTP, HLS, SRT, RIST or offline transport stream files.
+- Work on live transport streams, DVB-S/C/T, ATSC, ISDB-T, ASI, UDP ("IP-TV"), HTTP, HLS, SRT, RIST or offline transport stream files or `pcap` network capture files.
 - Use specialized hardware such as cheap DVB, ATSC or ISDB tuners (USB, PCI), professional Dektec devices, cheap HiDes modulators, VATek-based modulators (e.g. Suntechtv U3, USB).
 - Re-route transport streams to other applications.
 - Extract or inject Multi-Protocol Encapsulation (MPE) between TS and UDP/IP.
@@ -53,6 +53,8 @@ Python or Java applications.
 ### Building
 
 TSDuck can be built on Windows, Linux, macOS and BSD systems.
+The primary target architectures are Intel x86_64 and Arm64 but
+TSDuck is regularly built and tested on x86, Arm32, RISC-V, PowerPC or IBM s390x.
 See the [building section](https://tsduck.io/download/docs/tsduck-dev.html#building)
 in the developer's guide for more details.
 
@@ -79,7 +81,7 @@ using [![Donate](https://tsduck.io/images/donate-paypal.svg)](https://tsduck.io/
 
 ### License
 
-TSDuck is distributed under the terms of the Simplified BSD License.
+TSDuck is distributed under the terms of the Simplified 2-Clause BSD License.
 See the file `LICENSE.txt` for details.
 
 *Copyright (c) 2005-2025, Thierry Lelegard*<br/>

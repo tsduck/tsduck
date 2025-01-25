@@ -53,8 +53,10 @@ class installer:
 installers = [
     installer('TSDuck-Win64-{VERSION}.exe',                  False, True,  'Windows (Intel, 64 bits'),
     installer('TSDuck-Win32-{VERSION}.exe',                  False, False, 'Windows (Intel, 32 bits)'),
+    installer('TSDuck-Arm64-{VERSION}.exe',                  False, False, 'Windows (Arm, 64 bits)'),
     installer('TSDuck-Win64-{VERSION}-Portable.zip',         False, True,  'Windows (Intel, 64 bits, portable)'),
     installer('TSDuck-Win32-{VERSION}-Portable.zip',         False, False, 'Windows (Intel, 32 bits, portable)'),
+    installer('TSDuck-Arm64-{VERSION}-Portable.zip',         False, False, 'Windows (Arm, 64 bits, portable)'),
     installer('tsduck-{VERSION}.el{OS}.x86_64.rpm',          False, True,  'RedHat and clones (Intel, 64 bits)'),
     installer('tsduck-{VERSION}.el{OS}.aarch64.rpm',         False, False, 'RedHat and clones (Arm, 64 bits)'),
     installer('tsduck-{VERSION}.fc{OS}.x86_64.rpm',          False, True,  'Fedora (Intel, 64 bits)'),

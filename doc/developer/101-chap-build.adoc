@@ -51,10 +51,10 @@ TSDuck has been tested on the following operating systems on at least one CPU ar
 |OS |Variants
 
 |macOS
-|Intel and Apple Silicon
+|Intel and "Apple Silicon" (Arm64)
 
 |Windows
-|Tested on Intel only
+|Intel (32 and 64 bits) and Arm64
 
 |Linux
 |Ubuntu, Debian, Raspbian, Mint, Fedora, Red Hat, CentOS, Rocky, Alma, openSUSE, Arch, Alpine, Gentoo, Slackware
@@ -105,7 +105,7 @@ TSDuck has been tested on the following CPU architectures on at least one operat
 
 |===
 
-NOTE: Some tests were done by contributors and were not verified.
+NOTE: Some tests were done by contributors and were not verified (MIPS for instance).
 Some tests were performed using `qemu`, on an emulated platform, not a physical CPU.
 This is the case for RISC-V, PowerPC, IBM s390x.
 
@@ -696,7 +696,16 @@ We recommend to use Visual Studio 2022.
 
 Execute the PowerShell script `scripts\build.ps1`.
 The TSDuck binaries, executables and DLL's, are built in directories named `bin\<target>-<platform>`,
-for instance `bin\Release-x64` or `bin\Debug-Win32`.
+for instance `bin\Release-x64`, `bin\Debug-Win32`, or `bin\Release-ARM64`.
+
+By default, the binaries are produced for the same architecture as the build system (typically Win64).
+To build for other targets, run the build script from a PowerShell window and add one or more options from
+`-Win32`, `-Win64`, `-Arm64`.
+
+TIP: If you want to build the Arm64 version from an Intel Windows system, do not forget to install the
+latest version of the ARM64 build tools and libraries from the "individual components" list in the
+Visual Studio installer program. Be careful to select "ARM64" or "ARM64/ARM64EC" tools.
+Do not select "ARM" build tools, they target Arm32 architectures.
 
 To cleanup the repository tree and return to a pristine source state,
 execute the PowerShell script `scripts\cleanup.ps1`.
@@ -705,9 +714,10 @@ execute the PowerShell script `scripts\cleanup.ps1`.
 ===== Building the Windows installers
 
 Execute the PowerShell script `pkg\nsis\build-installer.ps1`.
-By default, only the 64-bit installer is built.
-To build the two installers, for 32-bit and 64-bit systems, run the build
-script from a PowerShell window and add the option `-Win32`.
+
+As with `scripts\build.ps1`, only one installer is built by default, for the same architecture as the build system.
+To build other installers, run the build script from a PowerShell window and add one or more options from
+`-Win32`, `-Win64`, `-Arm64`.
 
 There is no need to build the TSDuck binaries before building the installers.
 Building the binaries, is part of the installer build.
