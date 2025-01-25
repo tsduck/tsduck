@@ -40,6 +40,7 @@ namespace ts {
         cn::nanoseconds   _output_interval {};
         bool              _multiple_output = false;
         bool              _cumulative = false;
+        BitRate			  _bitrate {};
         TSAnalyzerOptions _analyzer_options {};
 
         // Working data:
@@ -94,6 +95,11 @@ ts::Tr101_290::Tr101_290(TSP* tsp_) :
          u"specified output file name has the form 'base.ext', each file is created "
          u"with a time stamp in its name as 'base-YYYYMMDD-hhmmss.ext'.");
 
+    option<BitRate>(u"bitrate", 'b');
+    help(u"bitrate",
+     u"Verify the PCR's according to this transport bitrate. "
+     u"By default (or when zero), use the input bitrate as reported by the input device.");
+
     option(u"output-file", 'o', FILENAME);
     help(u"output-file",
          u"Specify the output text file for the analysis result. "
@@ -113,6 +119,7 @@ bool ts::Tr101_290::getOptions()
     getChronoValue(_output_interval, u"interval");
     _multiple_output = present(u"multiple-files");
     _cumulative = present(u"cumulative");
+    getValue(_bitrate, u"bitrate", 0);
     return true;
 }
 
@@ -221,7 +228,12 @@ bool ts::Tr101_290::stop()
 ts::ProcessorPlugin::Status ts::Tr101_290::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
     // Feed the analyzer with one packet
-    _analyzer.feedPacket(pkt, pkt_data, tsp->bitrate(), tsp->pluginPackets());
+
+    auto bitrate = _bitrate;
+    if (bitrate == 0)
+        bitrate = tsp->bitrate();
+
+    _analyzer.feedPacket(pkt, pkt_data, bitrate, tsp->pluginPackets());
 
     // With --interval, check if it is time to produce a report
     if (_output_interval > cn::nanoseconds::zero() && _metrics.processedPacket() && _metrics.sessionNanoSeconds() >= _next_report) {
