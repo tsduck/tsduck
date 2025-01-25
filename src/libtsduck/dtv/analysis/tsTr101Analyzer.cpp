@@ -97,7 +97,7 @@ void ts::TR101_290Analyzer::handleSection(SectionDemux& demux, const Section& ta
             auto diff = long(_currentTimestamp - service->_last_table_ts);
             service->pat_err.pushSysClockFreq(diff);
             service->pat_err2.pushSysClockFreq(diff);
-            auto limit = 500llu * SYSTEM_CLOCK_FREQ / 1000;
+            auto limit = 500l * SYSTEM_CLOCK_FREQ / 1000;
             if (diff > limit) {
                 service->pat_err.count++;
                 service->pat_err2.count++;
@@ -110,7 +110,7 @@ void ts::TR101_290Analyzer::handleSection(SectionDemux& demux, const Section& ta
             auto diff = long(_currentTimestamp - service->_last_table_ts);
             service->pmt_err.pushSysClockFreq(diff);
             service->pmt_err2.pushSysClockFreq(diff);
-            auto limit = 500llu * SYSTEM_CLOCK_FREQ / 1000;
+            auto limit = 500l * SYSTEM_CLOCK_FREQ / 1000;
             if (diff > limit) {
                 service->pmt_err.count++;
                 service->pmt_err2.count++;
@@ -272,9 +272,9 @@ void ts::TR101_290Analyzer::feedPacket(const TSPacket& packet, const TSPacketMet
     _demux.feedPacket(packet);
 }
 
-const char* ERR = "[ERR]";
-const char* OK  = "[OK] ";
-const char* NA  = "[N/A]";
+const char* ERR = "[ERR] ";
+const char* OK  = "[OK]  ";
+const char* NA  = "[N/A] ";
 struct ErrorState {
     long count;
     bool show;
@@ -300,7 +300,7 @@ static void print(const char* name, const get_func& fn,  std::ostream& stm, std:
     for (auto it = _services.begin(); it != _services.end(); it++) {
         auto val = fn(*it->second);
         if (val.show)
-            stm << "\t" << (val.count == 0 ? OK : ERR) << "PID 0x" << std::format("{:X}", it->second->_pid) << ": " << val.count << " " << val.str << "\n";
+            stm << "\t" << (val.count == 0 ? OK : ERR) << "PID 0x" << std::format("{:X}", it->second->_pid) << " ("<<it->second->_pid<<"): " << val.count << " " << val.str << "\n";
     }
 }
 
@@ -312,7 +312,7 @@ static void print_real(const char* name, const get_func& fn, std::ostream& stm, 
     print(name, fn, stm, _services);
 }
 
-static void print_custom(const char* name, int count, std::ostream& stm, std::map<ts::PID, std::shared_ptr<ts::TR101_290Analyzer::ServiceContext>>& _services)
+static void print_custom(const char* name, long count, std::ostream& stm, std::map<ts::PID, std::shared_ptr<ts::TR101_290Analyzer::ServiceContext>>& _services)
 {
     stm << (count == 0 ? OK : ERR) << " " << name << ": " << count << "\n";
 }
