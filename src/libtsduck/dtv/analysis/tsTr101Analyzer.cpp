@@ -16,13 +16,12 @@
 
 #include <functional>
 #include <tsBinaryTable.h>
+#include <tsGrid.h>
 #include <tsPAT.h>
 #include <tsPMT.h>
 #include <tsSectionDemux.h>
 
-ts::TR101_290Analyzer::TR101_290Analyzer(TSP* tsp) :
-    _tsp(tsp)
-{
+ts::TR101_290Analyzer::TR101_290Analyzer(DuckContext& duck): _duck(duck) {
     auto ptr = std::make_shared<ts::TR101_290Analyzer::ServiceContext>(0, ServiceContext::ServiceContextType::Pat);
     _services.insert(std::make_pair(0, ptr));
 
@@ -34,31 +33,8 @@ void ts::TR101_290Analyzer::handleTable(SectionDemux& demux, const BinaryTable& 
 {
     auto service = getService(table.sourcePID());
 
-    if (table.sourcePID() == PID_PAT && table.tableId() != TID_PAT) {
-        service->pat_err.count++;
-        service->pat_err2.count++;
-    }
-
-    if (service->_type == ServiceContext::Pmt && table.tableId() != TID_PMT) {
-        service->pmt_err.count++;
-        service->pmt_err2.count++;
-    }
-
     if (table.tableId() == TID_PAT && service->_type == ServiceContext::Pat) {
-        service->_type = ServiceContext::Pat;
-
         const auto pat = PAT(_duck, table);
-
-        if (service->_last_table_ts != INVALID_PCR) {
-            auto diff = _currentTimestamp - service->_last_table_ts;
-            service->pat_err.pushSysClockFreq(diff);
-            service->pat_err2.pushSysClockFreq(diff);
-            if (diff > 500 * SYSTEM_CLOCK_FREQ / 1000) {
-                service->pat_err.count++;
-                service->pat_err2.count++;
-            }
-        }
-        service->_last_table_ts = _currentTimestamp;
 
         // Assign PMTs.
         for (auto [service_id, pid] : pat.pmts) {
@@ -75,20 +51,8 @@ void ts::TR101_290Analyzer::handleTable(SectionDemux& demux, const BinaryTable& 
                 _demux.removePID(it->first);
             }
         }
-
     } else if (table.tableId() == TID_PMT && service->_type == ServiceContext::Pmt) {
         const auto pmt = PMT(_duck, table);
-
-        if (service->_last_table_ts != INVALID_PCR) {
-            auto diff = _currentTimestamp - service->_last_table_ts;
-            service->pmt_err.pushSysClockFreq(diff);
-            service->pmt_err2.pushSysClockFreq(diff);
-            if (diff > 500 * SYSTEM_CLOCK_FREQ / 1000) {
-                service->pmt_err.count++;
-                service->pmt_err2.count++;
-            }
-        }
-        service->_last_table_ts = _currentTimestamp;
 
         // Ensure all PIDs are assigned to this service.
         for (auto it = pmt.streams.begin(); it != pmt.streams.end(); it++) {
@@ -105,10 +69,64 @@ void ts::TR101_290Analyzer::handleTable(SectionDemux& demux, const BinaryTable& 
                 }
             }
         }
-    } else if (table.tableId() == TID_CAT) {
+    }
+}
+
+void ts::TR101_290Analyzer::handleSection(SectionDemux& demux, const Section& table)
+{
+    if (table.sectionNumber() != 0) {
+        // we only care about the first packet that has arrived.
+        return;
+    }
+
+    auto service = getService(table.sourcePID());
+
+    if (table.sourcePID() == PID_PAT && table.tableId() != TID_PAT) {
+        service->pat_err.count++;
+        service->pat_err2.count++;
+    }
+
+    if (service->_type == ServiceContext::Pmt && table.tableId() != TID_PMT) {
+        service->pmt_err.count++;
+        service->pmt_err2.count++;
+    }
+
+    if (table.tableId() == TID_PAT && service->_type == ServiceContext::Pat) {
+        service->_type = ServiceContext::Pat;
+        if (service->_last_table_ts != INVALID_PCR) {
+            auto diff = long(_currentTimestamp - service->_last_table_ts);
+            service->pat_err.pushSysClockFreq(diff);
+            service->pat_err2.pushSysClockFreq(diff);
+            auto limit = 500llu * SYSTEM_CLOCK_FREQ / 1000;
+            if (diff > limit) {
+                service->pat_err.count++;
+                service->pat_err2.count++;
+            }
+        }
+        service->_last_table_ts = _currentTimestamp;
+    }
+    else if (table.tableId() == TID_PMT && service->_type == ServiceContext::Pmt) {
+        if (service->_last_table_ts != INVALID_PCR) {
+            auto diff = long(_currentTimestamp - service->_last_table_ts);
+            service->pmt_err.pushSysClockFreq(diff);
+            service->pmt_err2.pushSysClockFreq(diff);
+            auto limit = 500llu * SYSTEM_CLOCK_FREQ / 1000;
+            if (diff > limit) {
+                service->pmt_err.count++;
+                service->pmt_err2.count++;
+            }
+        }
+        service->_last_table_ts = _currentTimestamp;
+    }
+    else if (table.tableId() == TID_CAT) {
         // todo: figure out a timeout for this so this isn't true forever.
         _has_cat = true;
     }
+}
+void ts::TR101_290Analyzer::handleInvalidSection(SectionDemux& demux, const DemuxedData& data) {
+    auto _service = getService(data.sourcePID());
+    // todo: it is not guaranteed that it is a CRC error that causes this issue.
+    _service->crc_error++;
 }
 
 std::shared_ptr<ts::TR101_290Analyzer::ServiceContext> ts::TR101_290Analyzer::getService(PID pid)
@@ -187,7 +205,7 @@ void ts::TR101_290Analyzer::processPacket(ServiceContext& ctx, const TSPacket& p
     // PID error.
     // todo: do we want to be doing PID error tests on PAT/PMT as well?
     if (ctx._type != ServiceContext::Unassigned) {
-        const auto dur = pkt_ts - ctx.last_packet_ts;
+        const auto dur = long(pkt_ts - ctx.last_packet_ts);
         ctx.pid_err.pushSysClockFreq(dur);
 
         if (dur > 5 * SYSTEM_CLOCK_FREQ) {
@@ -198,7 +216,7 @@ void ts::TR101_290Analyzer::processPacket(ServiceContext& ctx, const TSPacket& p
     // PTS error.
     if (pkt.hasPTS()) {
         if (ctx.last_pts_ts != INVALID_PTS) {
-            auto dur = pkt_ts - ctx.last_pts_ts;
+            auto dur = long(pkt_ts - ctx.last_pts_ts);
             ctx.pts_err.pushSysClockFreq(dur);
             if (dur > 700 * SYSTEM_CLOCK_FREQ /  1000) {
                 ctx.pts_err.count++;
@@ -212,23 +230,23 @@ void ts::TR101_290Analyzer::processPacket(ServiceContext& ctx, const TSPacket& p
         auto pcr = pkt.getPCR();
         if (ctx.last_pcr_val != INVALID_PCR && ctx.last_pcr_ts != INVALID_PCR) {
             auto pcr_dist = pcr - ctx.last_pcr_val;
-            ctx.pcr_discontinuity_err.pushSysClockFreq(pcr_dist);
+            ctx.pcr_discontinuity_err.pushSysClockFreq((int)pcr_dist);
 
-            if (llabs(pcr_dist) > 100 * SYSTEM_CLOCK_FREQ /  1000) {
+            if (pcr_dist > 100 * SYSTEM_CLOCK_FREQ /  1000) {
                 ctx.pcr_discontinuity_err.count++;
                 ctx.pcr_error++;
             }
 
             auto pkt_dist = pkt_ts - ctx.last_pcr_ts;
-            ctx.pcr_repetition_err.pushSysClockFreq(pkt_dist);
+            ctx.pcr_repetition_err.pushSysClockFreq((int)pkt_dist);
 
             if (pkt_dist > 100 * SYSTEM_CLOCK_FREQ /  1000) {
                 ctx.pcr_repetition_err.count++;
                 ctx.pcr_error++;
             }
 
-            auto delta = pcr_dist - (int64_t(_tsp->pluginPackets() - ctx.last_pcr_ctr) * PKT_SIZE_BITS * SYSTEM_CLOCK_FREQ / _tsp->bitrate());
-            ctx.pcr_accuracy_err.pushSysClockFreq(delta.toInt64());
+            auto delta = pcr_dist - (int64_t(_packetIndex - ctx.last_pcr_ctr) * PKT_SIZE_BITS * SYSTEM_CLOCK_FREQ / _bitrate);
+            ctx.pcr_accuracy_err.pushSysClockFreq(delta.toInt());
 
             if (llabs(delta.toInt64()) > 500ll * int64_t(SYSTEM_CLOCK_FREQ) / int64_t(1e9)) {
                 ctx.pcr_accuracy_err.count++;
@@ -237,18 +255,19 @@ void ts::TR101_290Analyzer::processPacket(ServiceContext& ctx, const TSPacket& p
 
         ctx.last_pcr_val = pcr;
         ctx.last_pcr_ts = pkt_ts;
-        ctx.last_pcr_ctr = _tsp->pluginPackets();
+        ctx.last_pcr_ctr = _packetIndex; //_tsp->pluginPackets();
     }
 
     ctx.last_packet_ts = pkt_ts;
     ctx.last_cc = pkt.getCC();
 }
 
-void ts::TR101_290Analyzer::feedPacket(const TSPacket& packet, const TSPacketMetadata& mdata)
+void ts::TR101_290Analyzer::feedPacket(const TSPacket& packet, const TSPacketMetadata& mdata, BitRate bitrate, PacketCounter packetIndex)
 {
     _currentTimestamp = mdata.getInputTimeStamp().count();
     auto service = getService(packet.getPID());
-    auto bitrate = _tsp->bitrate();
+    _bitrate = bitrate;
+    _packetIndex = packetIndex;
     processPacket(*service, packet, mdata);
     _demux.feedPacket(packet);
 }
@@ -257,7 +276,7 @@ const char* ERR = "[ERR]";
 const char* OK  = "[OK] ";
 const char* NA  = "[N/A]";
 struct ErrorState {
-    int count;
+    long count;
     bool show;
     std::string str{};
 };
@@ -265,9 +284,9 @@ struct ErrorState {
 typedef std::function<ErrorState(const ts::TR101_290Analyzer::ServiceContext&)> get_func;
 
 
-static int count(const get_func& fn, std::map<int,  std::shared_ptr<ts::TR101_290Analyzer::ServiceContext>>& _services)
+static long count(const get_func& fn, std::map<ts::PID,  std::shared_ptr<ts::TR101_290Analyzer::ServiceContext>>& _services)
 {
-    int count = 0;
+    long count = 0;
     for (auto it = _services.begin(); it != _services.end(); it++) {
         auto val = fn(*it->second);
         if (val.show)
@@ -276,7 +295,7 @@ static int count(const get_func& fn, std::map<int,  std::shared_ptr<ts::TR101_29
     return count;
 }
 
-static void print(const char* name, const get_func& fn,  std::ostream& stm, std::map<int, std::shared_ptr<ts::TR101_290Analyzer::ServiceContext>>& _services)
+static void print(const char* name, const get_func& fn,  std::ostream& stm, std::map<ts::PID, std::shared_ptr<ts::TR101_290Analyzer::ServiceContext>>& _services)
 {
     for (auto it = _services.begin(); it != _services.end(); it++) {
         auto val = fn(*it->second);
@@ -285,15 +304,15 @@ static void print(const char* name, const get_func& fn,  std::ostream& stm, std:
     }
 }
 
-static void print_real(const char* name, const get_func& fn, std::ostream& stm, std::map<int, std::shared_ptr<ts::TR101_290Analyzer::ServiceContext>>& _services)
+static void print_real(const char* name, const get_func& fn, std::ostream& stm, std::map<ts::PID, std::shared_ptr<ts::TR101_290Analyzer::ServiceContext>>& _services)
 {
-    int count = ::count(fn , _services);
+    auto count = ::count(fn , _services);
 
     stm << (count == 0 ? OK : ERR) << " " << name << ": " << count << "\n";
     print(name, fn, stm, _services);
 }
 
-static void print_custom(const char* name, int count, std::ostream& stm, std::map<int, std::shared_ptr<ts::TR101_290Analyzer::ServiceContext>>& _services)
+static void print_custom(const char* name, int count, std::ostream& stm, std::map<ts::PID, std::shared_ptr<ts::TR101_290Analyzer::ServiceContext>>& _services)
 {
     stm << (count == 0 ? OK : ERR) << " " << name << ": " << count << "\n";
 }
@@ -344,7 +363,7 @@ void ts::TR101_290Analyzer::report(std::ostream& stm, int& opt, Report& rep)
     // todo: CRC validation can be done per PID.
     SectionDemux::Status status;
     _demux.getStatus(status);
-    print_custom("CRC_error", status.wrong_crc, stm, _services);
+    print_custom("CRC_error", long(status.wrong_crc), stm, _services);
 
 
     print_real("PCR_error", get_pcr_error, stm, _services);
@@ -357,21 +376,21 @@ void ts::TR101_290Analyzer::report(std::ostream& stm, int& opt, Report& rep)
 
 void ts::TR101_290Analyzer::reset()
 {
-    for (auto it = _services.begin(); it != _services.end(); ++it) {
-        it->second->sync_byte_error = 0;
-        it->second->pat_err.clear();
-        it->second->pat_err2.clear();
-        it->second->cc_error = 0;
-        it->second->pmt_err .clear();
-        it->second->pmt_err2 .clear();
-        it->second->pid_err .clear();
-        it->second->transport_error = 0;
-        it->second->crc_error = 0;
-        it->second->pcr_error = 0;
-        it->second->pcr_repetition_err .clear();
-        it->second->pcr_discontinuity_err .clear();
-        it->second->pcr_accuracy_err .clear();
-        it->second->pts_err .clear();
-        it->second->cat_error = 0;
+    for (auto & [_, service] : _services) {
+        service->sync_byte_error = 0;
+        service->pat_err.clear();
+        service->pat_err2.clear();
+        service->cc_error = 0;
+        service->pmt_err.clear();
+        service->pmt_err2.clear();
+        service->pid_err.clear();
+        service->transport_error = 0;
+        service->crc_error = 0;
+        service->pcr_error = 0;
+        service->pcr_repetition_err.clear();
+        service->pcr_discontinuity_err.clear();
+        service->pcr_accuracy_err.clear();
+        service->pts_err.clear();
+        service->cat_error = 0;
     }
 }

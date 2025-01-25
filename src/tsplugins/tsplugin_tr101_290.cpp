@@ -65,7 +65,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"tr101_290", ts::Tr101_290);
 
 ts::Tr101_290::Tr101_290(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Analyze the TS feed following the TR 101-290 rules.", u"[options]"),
-_analyzer(tsp_)
+	_analyzer(duck)
 {
     // Define all standard analysis options.
     duck.defineArgsForStandards(*this);
@@ -221,7 +221,7 @@ bool ts::Tr101_290::stop()
 ts::ProcessorPlugin::Status ts::Tr101_290::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
     // Feed the analyzer with one packet
-    _analyzer.feedPacket(pkt, pkt_data);
+    _analyzer.feedPacket(pkt, pkt_data, tsp->bitrate(), tsp->pluginPackets());
 
     // With --interval, check if it is time to produce a report
     if (_output_interval > cn::nanoseconds::zero() && _metrics.processedPacket() && _metrics.sessionNanoSeconds() >= _next_report) {
