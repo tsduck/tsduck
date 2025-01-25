@@ -120,7 +120,11 @@ void ts::TR101_290Analyzer::handleSection(SectionDemux& demux, const Section& ta
     }
     else if (table.tableId() == TID_CAT) {
         // todo: figure out a timeout for this so this isn't true forever.
-        _has_cat = true;
+        _lastCatIndex = _packetIndex;
+
+        for (auto & [_, s2] : _services) {
+            s2->cat_error = 0;
+        }
     }
 }
 void ts::TR101_290Analyzer::handleInvalidSection(SectionDemux& demux, const DemuxedData& data) {
@@ -156,8 +160,13 @@ void ts::TR101_290Analyzer::processPacket(ServiceContext& ctx, const TSPacket& p
         ctx.transport_error++;
     }
 
-    if (pkt.isScrambled() && !_has_cat) {
-        ctx.cat_error++;
+    if (pkt.isScrambled()) {
+        // To the best of my knowledge, there is no specification that defines how frequently the CAT should be transmitted.
+        bool cat_invalid = _lastCatIndex == INVALID_PACKET_COUNTER || (_packetIndex - _lastCatIndex > 10 * SYSTEM_CLOCK_FREQ);
+
+        if (cat_invalid) {
+            ctx.cat_error++;
+        }
     }
 
     if (ctx._type == ServiceContext::Pat) {

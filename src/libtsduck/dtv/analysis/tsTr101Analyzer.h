@@ -145,7 +145,7 @@ namespace ts {
     private:
         DuckContext&  _duck;
         SectionDemux _demux {_duck, this, this};
-        bool         _has_cat = false;
+        PacketCounter         _lastCatIndex = INVALID_PACKET_COUNTER;
         uint64_t     _currentTimestamp = INVALID_PTS;
         std::map<PID, std::shared_ptr<ServiceContext>> _services {};  ///< Services std::map<PMT_PID, ServiceContext>
         BitRate _bitrate = 0;
