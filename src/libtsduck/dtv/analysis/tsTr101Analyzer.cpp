@@ -15,11 +15,27 @@
 #include "tsTr101Analyzer.h"
 
 #include <functional>
+#include <tsArgs.h>
 #include <tsBinaryTable.h>
-#include <tsGrid.h>
 #include <tsPAT.h>
 #include <tsPMT.h>
-#include <tsSectionDemux.h>
+#include <tsjsonObject.h>
+
+// Defined in TR 101 290 Section 5.2.1
+#define PAT_INTERVAL (500l * SYSTEM_CLOCK_FREQ / 1000)
+
+// Defined in TR 101 290 Section 5.2.1
+#define PMT_INTERVAL (500l * SYSTEM_CLOCK_FREQ / 1000)
+
+// To the best of my knowledge, there is no specification that defines how frequently the CAT should be transmitted.
+#define CAT_VALID_INTERVAL (10l * SYSTEM_CLOCK_FREQ)
+
+// Defined in TR 101 290 Section 5.2.2
+#define PTS_REPETITION_INTERVAL (700l * SYSTEM_CLOCK_FREQ / 1000)
+
+#define PCR_DISCONTINUITY_LIMIT (100l * SYSTEM_CLOCK_FREQ /  1000)
+#define PCR_REPETITION_LIMIT (100l * SYSTEM_CLOCK_FREQ /  1000)
+#define PCR_ACCURACY_LIMIT_DOUBLE (500.0 / 1e9)
 
 ts::TR101_290Analyzer::TR101_290Analyzer(DuckContext& duck): _duck(duck) {
     auto ptr = std::make_shared<ts::TR101_290Analyzer::ServiceContext>(0, ServiceContext::ServiceContextType::Pat);
@@ -97,8 +113,7 @@ void ts::TR101_290Analyzer::handleSection(SectionDemux& demux, const Section& ta
             auto diff = long(_currentTimestamp - service->_last_table_ts);
             service->pat_err.pushSysClockFreq(diff);
             service->pat_err2.pushSysClockFreq(diff);
-            auto limit = 500l * SYSTEM_CLOCK_FREQ / 1000;
-            if (diff > limit) {
+            if (diff > PAT_INTERVAL) {
                 service->pat_err.count++;
                 service->pat_err2.count++;
             }
@@ -110,8 +125,7 @@ void ts::TR101_290Analyzer::handleSection(SectionDemux& demux, const Section& ta
             auto diff = long(_currentTimestamp - service->_last_table_ts);
             service->pmt_err.pushSysClockFreq(diff);
             service->pmt_err2.pushSysClockFreq(diff);
-            auto limit = 500l * SYSTEM_CLOCK_FREQ / 1000;
-            if (diff > limit) {
+            if (diff > PMT_INTERVAL) {
                 service->pmt_err.count++;
                 service->pmt_err2.count++;
             }
@@ -119,7 +133,6 @@ void ts::TR101_290Analyzer::handleSection(SectionDemux& demux, const Section& ta
         service->_last_table_ts = _currentTimestamp;
     }
     else if (table.tableId() == TID_CAT) {
-        // todo: figure out a timeout for this so this isn't true forever.
         _lastCatIndex = _packetIndex;
 
         for (auto & [_, s2] : _services) {
@@ -137,16 +150,30 @@ std::shared_ptr<ts::TR101_290Analyzer::ServiceContext> ts::TR101_290Analyzer::ge
 {
     auto it = _services.find(pid);
     if (it == _services.end()) {
-        auto service = std::make_shared<ServiceContext>(ServiceContext{
+        auto service = std::make_shared<ServiceContext>(ServiceContext {
             ._pid = pid,
-            ._type = ServiceContext::Unassigned
-        });
+            ._type = ServiceContext::Unassigned});
         _services.insert(std::make_pair(pid, service));
         return service;
     }
     return it->second;
 }
 
+void ts::TR101_Options::defineArgs(Args& args)
+{
+    json.defineArgs(args, true, u"JSON");
+
+    args.option(u"show-report", 0, Args::NONE);
+    args.help(u"show-report", u"Show an TR 101-290 analyzer report before exiting. By default this is enabled, unless JSON is set.");
+}
+
+bool ts::TR101_Options::loadArgs(DuckContext& duck, Args& args)
+{
+    if (!json.loadArgs(duck, args)) return false;
+
+    show_report = !json.useJSON() || args.present(u"show-report");
+    return true;
+}
 void ts::TR101_290Analyzer::processPacket(ServiceContext& ctx, const TSPacket& pkt, const TSPacketMetadata& mdata) const
 {
 
@@ -161,8 +188,7 @@ void ts::TR101_290Analyzer::processPacket(ServiceContext& ctx, const TSPacket& p
     }
 
     if (pkt.isScrambled()) {
-        // To the best of my knowledge, there is no specification that defines how frequently the CAT should be transmitted.
-        bool cat_invalid = _lastCatIndex == INVALID_PACKET_COUNTER || (_packetIndex - _lastCatIndex > 10 * SYSTEM_CLOCK_FREQ);
+        bool cat_invalid = _lastCatIndex == INVALID_PACKET_COUNTER || (_packetIndex - _lastCatIndex > CAT_VALID_INTERVAL);
 
         if (cat_invalid) {
             ctx.cat_error++;
@@ -227,7 +253,9 @@ void ts::TR101_290Analyzer::processPacket(ServiceContext& ctx, const TSPacket& p
         if (ctx.last_pts_ts != INVALID_PTS) {
             auto dur = long(pkt_ts - ctx.last_pts_ts);
             ctx.pts_err.pushSysClockFreq(dur);
-            if (dur > 700 * SYSTEM_CLOCK_FREQ /  1000) {
+            // TODO: The limitation to 700 ms should not be applied to still pictures.
+            // From TR 101 290 Table 5.0b
+            if (dur > PTS_REPETITION_INTERVAL) {
                 ctx.pts_err.count++;
             }
         }
@@ -241,7 +269,7 @@ void ts::TR101_290Analyzer::processPacket(ServiceContext& ctx, const TSPacket& p
             auto pcr_dist = pcr - ctx.last_pcr_val;
             ctx.pcr_discontinuity_err.pushSysClockFreq((int)pcr_dist);
 
-            if (pcr_dist > 100 * SYSTEM_CLOCK_FREQ /  1000) {
+            if (pcr_dist > PCR_DISCONTINUITY_LIMIT) {
                 ctx.pcr_discontinuity_err.count++;
                 ctx.pcr_error++;
             }
@@ -249,15 +277,15 @@ void ts::TR101_290Analyzer::processPacket(ServiceContext& ctx, const TSPacket& p
             auto pkt_dist = pkt_ts - ctx.last_pcr_ts;
             ctx.pcr_repetition_err.pushSysClockFreq((int)pkt_dist);
 
-            if (pkt_dist > 100 * SYSTEM_CLOCK_FREQ /  1000) {
+            if (pkt_dist > PCR_REPETITION_LIMIT) {
                 ctx.pcr_repetition_err.count++;
                 ctx.pcr_error++;
             }
 
-            auto delta = pcr_dist - (int64_t(_packetIndex - ctx.last_pcr_ctr) * PKT_SIZE_BITS * SYSTEM_CLOCK_FREQ / _bitrate);
-            ctx.pcr_accuracy_err.pushSysClockFreq(delta.toInt());
+            auto pcr_accuracy_sec = pcr_dist - (int64_t(_packetIndex - ctx.last_pcr_ctr) * PKT_SIZE_BITS * SYSTEM_CLOCK_FREQ / _bitrate);
+            ctx.pcr_accuracy_err.pushSysClockFreq(pcr_accuracy_sec.toInt());
 
-            if (llabs(delta.toInt64()) > 500ll * int64_t(SYSTEM_CLOCK_FREQ) / int64_t(1e9)) {
+            if (fabs(pcr_accuracy_sec.toDouble()) > PCR_ACCURACY_LIMIT_DOUBLE) {
                 ctx.pcr_accuracy_err.count++;
             }
         }
@@ -281,13 +309,13 @@ void ts::TR101_290Analyzer::feedPacket(const TSPacket& packet, const TSPacketMet
     _demux.feedPacket(packet);
 }
 
-const char* ERR = "[ERR] ";
-const char* OK  = "[OK]  ";
-const char* NA  = "[N/A] ";
+const char16_t* ERR = u"[ERR] ";
+const char16_t* OK  = u"[OK]  ";
+const char16_t* NA  = u"[N/A] ";
 struct ErrorState {
-    long count;
-    bool show;
-    std::string str{};
+    long count=0;
+    bool show=false;
+    std::optional<ts::TR101_290Analyzer::ServiceContext::IntMinMax> min_max{};
 };
 
 typedef std::function<ErrorState(const ts::TR101_290Analyzer::ServiceContext&)> get_func;
@@ -304,26 +332,61 @@ static long count(const get_func& fn, std::map<ts::PID,  std::shared_ptr<ts::TR1
     return count;
 }
 
-static void print(const char* name, const get_func& fn,  std::ostream& stm, std::map<ts::PID, std::shared_ptr<ts::TR101_290Analyzer::ServiceContext>>& _services)
+static void print(const char16_t* name, const get_func& fn,  std::ostream& stm, std::map<ts::PID, std::shared_ptr<ts::TR101_290Analyzer::ServiceContext>>& _services)
 {
     for (auto it = _services.begin(); it != _services.end(); it++) {
         auto val = fn(*it->second);
-        if (val.show)
-            stm << "\t" << (val.count == 0 ? OK : ERR) << "PID 0x" << std::format("{:X}", it->second->_pid) << " ("<<it->second->_pid<<"): " << val.count << " " << val.str << "\n";
+        if (val.show) {
+            ts::UString min_max;
+            if (val.min_max)
+                min_max  = val.min_max->to_string();
+
+            ts::UString fmt;
+            fmt.format(u"{:X}", it->second->_pid);
+            stm << u"\t" << (val.count == 0 ? OK : ERR) << u"PID 0x" << fmt << u" ("<<it->second->_pid<< u"): " << val.count << u" " << min_max << u"\n";
+        }
     }
 }
 
-static void print_real(const char* name, const get_func& fn, std::ostream& stm, std::map<ts::PID, std::shared_ptr<ts::TR101_290Analyzer::ServiceContext>>& _services)
+static void print_real(const char16_t* name, const get_func& fn, std::ostream& stm, std::map<ts::PID, std::shared_ptr<ts::TR101_290Analyzer::ServiceContext>>& _services)
 {
     auto count = ::count(fn , _services);
 
-    stm << (count == 0 ? OK : ERR) << " " << name << ": " << count << "\n";
+    stm << (count == 0 ? OK : ERR) << u" " << name << u": " << count << u"\n";
     print(name, fn, stm, _services);
 }
 
-static void print_custom(const char* name, long count, std::ostream& stm, std::map<ts::PID, std::shared_ptr<ts::TR101_290Analyzer::ServiceContext>>& _services)
+// static void print_custom(const char* name, long count, std::ostream& stm, std::map<ts::PID, std::shared_ptr<ts::TR101_290Analyzer::ServiceContext>>& _services)
+// {
+//     stm << (count == 0 ? OK : ERR) << " " << name << ": " << count << "\n";
+// }
+
+
+
+static void json(const char16_t* name, const get_func& fn,  ts::json::Value& stm, ts::json::Value& pids, std::map<ts::PID, std::shared_ptr<ts::TR101_290Analyzer::ServiceContext>>& _services)
 {
-    stm << (count == 0 ? OK : ERR) << " " << name << ": " << count << "\n";
+    for (auto it = _services.begin(); it != _services.end(); it++) {
+        auto val = fn(*it->second);
+        if (val.show) {
+            stm.add(u"count", val.count);
+
+            ts::json::Value& v(pids.query(ts::UString::Decimal(it->first, 0, true, u""), true));
+            ts::json::Value& v2(v.query(name, true));
+            v2.add(u"curr", val.count);
+            if (val.min_max) {
+                val.min_max->defineJson(v2);
+            }
+        }
+    }
+}
+
+static void json_real(const char* name, const get_func& fn, ts::json::Value& stm, std::map<ts::PID, std::shared_ptr<ts::TR101_290Analyzer::ServiceContext>>& _services)
+{
+    auto count = ::count(fn , _services);
+
+    stm.add(ts::UString::FromUTF8(name), count);
+    ts::json::Value& pids(stm.query(u"pids", true));
+    json(ts::UString::FromUTF8(name).data(), fn, stm, pids, _services);
 }
 
 bool is_pes(const ts::TR101_290Analyzer::ServiceContext& ctx) {return ctx._type == ts::TR101_290Analyzer::ServiceContext::Assigned;}
@@ -332,55 +395,90 @@ bool is_pmt(const ts::TR101_290Analyzer::ServiceContext& ctx) {return ctx._type 
 bool is_table(const ts::TR101_290Analyzer::ServiceContext& ctx) {return ctx._type == ts::TR101_290Analyzer::ServiceContext::Pmt || ctx._type == ts::TR101_290Analyzer::ServiceContext::Pat;}
 
 ErrorState get_sync_byte_err(const ts::TR101_290Analyzer::ServiceContext& ctx) {return {ctx.sync_byte_error, true};}
-ErrorState get_pat_error(const ts::TR101_290Analyzer::ServiceContext& ctx) {return {ctx.pat_err.count, is_pat(ctx), ctx.pat_err.to_string()};}
-ErrorState get_pat_error2(const ts::TR101_290Analyzer::ServiceContext& ctx) {return {ctx.pat_err2.count,is_pat(ctx), ctx.pat_err2.to_string()};}
+ErrorState get_pat_error(const ts::TR101_290Analyzer::ServiceContext& ctx) {return {ctx.pat_err.count, is_pat(ctx), ctx.pat_err};}
+ErrorState get_pat_error2(const ts::TR101_290Analyzer::ServiceContext& ctx) {return {ctx.pat_err2.count,is_pat(ctx), ctx.pat_err2};}
 ErrorState get_cc_err(const ts::TR101_290Analyzer::ServiceContext& ctx) {return {ctx.cc_error, true};}
-ErrorState get_pmt_error(const ts::TR101_290Analyzer::ServiceContext& ctx) {return {ctx.pmt_err.count, is_pmt(ctx), ctx.pmt_err.to_string()};}
-ErrorState get_pmt_error2(const ts::TR101_290Analyzer::ServiceContext& ctx) {return {ctx.pmt_err2.count, is_pmt(ctx), ctx.pmt_err2.to_string()};}
-ErrorState get_pid_error(const ts::TR101_290Analyzer::ServiceContext& ctx) {return {ctx.pid_err.count, !is_pmt(ctx) && !is_pat(ctx), ctx.pid_err.to_string()};}
+ErrorState get_pmt_error(const ts::TR101_290Analyzer::ServiceContext& ctx) {return {ctx.pmt_err.count, is_pmt(ctx), ctx.pmt_err};}
+ErrorState get_pmt_error2(const ts::TR101_290Analyzer::ServiceContext& ctx) {return {ctx.pmt_err2.count, is_pmt(ctx), ctx.pmt_err2};}
+ErrorState get_pid_error(const ts::TR101_290Analyzer::ServiceContext& ctx) {return {ctx.pid_err.count, !is_pmt(ctx) && !is_pat(ctx), ctx.pid_err};}
 ErrorState get_transport_error(const ts::TR101_290Analyzer::ServiceContext& ctx) {return {ctx.transport_error, true};}
 ErrorState get_crc_error(const ts::TR101_290Analyzer::ServiceContext& ctx) {return {ctx.crc_error, is_table(ctx)};}
 ErrorState get_pcr_error(const ts::TR101_290Analyzer::ServiceContext& ctx) {return {ctx.pcr_error, ctx.has_pcr};}
-ErrorState get_repetition_error(const ts::TR101_290Analyzer::ServiceContext& ctx) {return {ctx.pcr_repetition_err.count, ctx.has_pcr, ctx.pcr_repetition_err.to_string()};}
-ErrorState get_discontinuity_error(const ts::TR101_290Analyzer::ServiceContext& ctx) {return {ctx.pcr_discontinuity_err.count, ctx.has_pcr, ctx.pcr_discontinuity_err.to_string()};}
-ErrorState get_accuracy_error(const ts::TR101_290Analyzer::ServiceContext& ctx) {return {ctx.pcr_accuracy_err.count, ctx.has_pcr, ctx.pcr_accuracy_err.to_string()};}
-ErrorState get_pts_error(const ts::TR101_290Analyzer::ServiceContext& ctx) {return {ctx.pts_err.count, is_pes(ctx), ctx.pts_err.to_string()};}
-ErrorState get_cat_error(const ts::TR101_290Analyzer::ServiceContext& ctx) {return {ctx.cat_error, false};} // todo
+ErrorState get_repetition_error(const ts::TR101_290Analyzer::ServiceContext& ctx) {return {ctx.pcr_repetition_err.count, ctx.has_pcr, ctx.pcr_repetition_err};}
+ErrorState get_discontinuity_error(const ts::TR101_290Analyzer::ServiceContext& ctx) {return {ctx.pcr_discontinuity_err.count, ctx.has_pcr, ctx.pcr_discontinuity_err};}
+ErrorState get_accuracy_error(const ts::TR101_290Analyzer::ServiceContext& ctx) {return {ctx.pcr_accuracy_err.count, ctx.has_pcr, ctx.pcr_accuracy_err};}
+ErrorState get_pts_error(const ts::TR101_290Analyzer::ServiceContext& ctx) {return {ctx.pts_err.count, is_pes(ctx), ctx.pts_err};}
+ErrorState get_cat_error(const ts::TR101_290Analyzer::ServiceContext& ctx) {return {ctx.cat_error, true};}
 
 void ts::TR101_290Analyzer::report(std::ostream& stm, int& opt, Report& rep)
 {
     stm << "Priority 1 Errors:\n";
     // todo: TS_sync_loss may not be a valid test in IP-based systems and covered by Sync_byte_error.
     // print_real("TS_sync_loss", NULL, stm, _services);
-
-    print_real("Sync_byte_error", get_sync_byte_err, stm, _services);
+    // print_real("Sync_byte_error", get_sync_byte_err, stm, _services);
 
     // todo: make sure that we don't have data on the PAT pid that is not a valid table.
-    print_real("PAT_error", get_pat_error, stm, _services);
-    print_real("PAT_error2", get_pat_error2, stm, _services);
-    print_real("Continuity_count_error", get_cc_err, stm, _services);
+    print_real(u"PAT_error", get_pat_error, stm, _services);
+    print_real(u"PAT_error2", get_pat_error2, stm, _services);
+    print_real(u"Continuity_count_error", get_cc_err, stm, _services);
 
     // todo: make sure that we don't have data on the PMT pid that is not a valid table.
-    print_real("PMT_error", get_pmt_error, stm, _services);
-    print_real("PMT_error_2", get_pmt_error2, stm, _services);
+    print_real(u"PMT_error", get_pmt_error, stm, _services);
+    print_real(u"PMT_error_2", get_pmt_error2, stm, _services);
 
-    print_real("PID_error", get_pid_error, stm, _services);
+    print_real(u"PID_error", get_pid_error, stm, _services);
 
     stm << "\nPriority 2 Errors:\n";
-    print_real("Transport_error", get_transport_error, stm, _services);
+    print_real(u"Transport_error", get_transport_error, stm, _services);
+    print_real(u"CRC_error", get_crc_error, stm, _services);
+    print_real(u"PCR_error", get_pcr_error, stm, _services);
+    print_real(u"PCR_repetition_error", get_repetition_error, stm, _services);
+    print_real(u"PCR_discontinuity_indicator_error", get_discontinuity_error, stm, _services);
+    print_real(u"PCR_accuracy_error", get_accuracy_error, stm, _services);
+    print_real(u"PTS_error", get_pts_error, stm, _services);
+    print_real(u"CAT_error", get_cat_error, stm, _services);
+}
 
-    // todo: CRC validation can be done per PID.
-    SectionDemux::Status status;
-    _demux.getStatus(status);
-    print_custom("CRC_error", long(status.wrong_crc), stm, _services);
+void ts::TR101_290Analyzer::reportJSON(TR101_Options& opt, std::ostream& stm, const UString& title, Report& rep)
+{
+    // JSON root.
+    json::Object root;
 
+    // Add user-supplied title.
+    if (!title.empty()) {
+        root.add(u"title", title);
+    }
 
-    print_real("PCR_error", get_pcr_error, stm, _services);
-    print_real("PCR_repetition_error", get_repetition_error, stm, _services);
-    print_real("PCR_discontinuity_indicator_error", get_discontinuity_error, stm, _services);
-    print_real("PCR_accuracy_error", get_accuracy_error, stm, _services);
-    print_real("PTS_error", get_pts_error, stm, _services);
-    print_real("CAT_error", get_cat_error, stm, _services);
+    json::Value& obj(root.query(u"tr101", true));
+    // if (_ts_id.has_value()) {
+    //     ts.add(u"id", *_ts_id);
+    // }
+
+    // todo: TS_sync_loss may not be a valid test in IP-based systems and covered by Sync_byte_error.
+    // print_real("TS_sync_loss", NULL, stm, _services);
+    // print_real("Sync_byte_error", get_sync_byte_err, stm, _services);
+
+    // todo: make sure that we don't have data on the PAT pid that is not a valid table.
+    json_real("PAT_error", get_pat_error, obj, _services);
+    json_real("PAT_error2", get_pat_error2, obj, _services);
+    json_real("Continuity_count_error", get_cc_err, obj, _services);
+
+    // todo: make sure that we don't have data on the PMT pid that is not a valid table.
+    json_real("PMT_error", get_pmt_error, obj, _services);
+    json_real("PMT_error_2", get_pmt_error2, obj, _services);
+
+    json_real("PID_error", get_pid_error, obj, _services);
+
+    json_real("Transport_error", get_transport_error, obj, _services);
+    json_real("CRC_error", get_crc_error, obj, _services);
+    json_real("PCR_error", get_pcr_error, obj, _services);
+    json_real("PCR_repetition_error", get_repetition_error, obj, _services);
+    json_real("PCR_discontinuity_indicator_error", get_discontinuity_error, obj, _services);
+    json_real("PCR_accuracy_error", get_accuracy_error, obj, _services);
+    json_real("PTS_error", get_pts_error, obj, _services);
+    json_real("CAT_error", get_cat_error, obj, _services);
+
+    opt.json.report(root, stm, rep);
 }
 
 void ts::TR101_290Analyzer::reset()

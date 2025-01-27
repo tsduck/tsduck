@@ -17,14 +17,37 @@
 #include "tsTSPacket.h"
 #include "tsTSPacketMetadata.h"
 
-#include <tsDuckContext.h>
-#include <tsNullReport.h>
-#include <tsPlugin.h>
-#include <tsSectionDemux.h>
-#include <tsTSP.h>
-#include <tsTableHandlerInterface.h>
+#include "tsDuckContext.h"
+#include "tsNullReport.h"
+#include "tsSectionDemux.h"
+#include "tsTableHandlerInterface.h"
+#include "tsjsonOutputArgs.h"
+#include "tsjsonValue.h"
 
 namespace ts {
+
+    class TR101_Options {
+
+    public:
+        json::OutputArgs json {};            //!< Options -\-json and -\-json-line
+        bool show_report;
+
+        //!
+        //! Add command line option definitions in an Args.
+        //! @param [in,out] args Command line arguments to update.
+        //!
+        void defineArgs(Args& args);
+
+        //!
+        //! Load arguments from command line.
+        //! Args error indicator is set in case of incorrect arguments.
+        //! @param [in,out] duck TSDuck execution context.
+        //! @param [in,out] args Command line arguments.
+        //! @return True on success, false on error in argument line.
+        //!
+        bool loadArgs(DuckContext& duck, Args& args);
+    };
+
     class TR101_290Analyzer final:
         TableHandlerInterface,
         SectionHandlerInterface,
@@ -51,32 +74,47 @@ namespace ts {
                 long  max = LONG_MIN;
                 long  curr = 0;
 
-                // todo: to_json
-
-                std::string to_string() const
+                UString to_string() const
                 {
                     if (is_ms) {
-                        std::string maxStr;
+                        UString maxStr;
                         if (this->max != LONG_MIN) {
-                            maxStr = " MAX: " + std::format("{:.2f}", this->max / 1000000.0) + "ms";
+                            UString fmt;
+                            fmt.format(u"{:.2f}", double(this->max) / 1000000.0);
+                            maxStr = u" MAX: " + fmt + u"ms";
                         }
-                        std::string minStr;
+                        UString minStr;
                         if (this->min != LONG_MAX) {
-                            minStr = " MIN: " + std::format("{:.2f}", this->min / 1000000.0) + "ms";
+                            UString fmt;
+                            fmt.format(u"{:.2f}", double(this->min) / 1000000.0);
+                            minStr = u" MIN: " + fmt + u"ms";
                         }
 
-                        return minStr + maxStr + " CURR: " + std::format("{:.2f}", curr / 1000000.0) + "ms";
+                        UString fmt;
+                        fmt.format(u"{:.2f}", double(curr) / 1000000.0);
+                        return minStr + maxStr + u" CURR: " + fmt + u"ms";
                     } else {
-                        std::string maxStr;
+                        UString maxStr;
                         if (this->max != LONG_MIN) {
-                            maxStr = " MAX: " + std::to_string(this->max) + "ns";
+                            maxStr = u" MAX: " + UString::Decimal(this->max) + u"ns";
                         }
-                        std::string minStr;
+                        UString minStr;
                         if (this->min != LONG_MAX) {
-                            minStr = " MIN: " + std::to_string(this->min) + "ns";
+                            minStr = u" MIN: " + UString::Decimal(this->min) + u"ns";
                         }
-                        return minStr + maxStr + " CURR: " + std::to_string(curr) + "ns";
+                        return minStr + maxStr + u" CURR: " + UString::Decimal(curr) + u"ns";
                     }
+                }
+
+                void defineJson(json::Value& value) const
+                {
+                    if (this->max != LONG_MIN) {
+                        value.add(u"max", double(this->max) / 1e9);
+                    }
+                    if (this->min != LONG_MAX) {
+                        value.add(u"min", double(this->min) / 1e9);
+                    }
+                    value.add(u"curr", double(this->curr) / 1e9);
                 }
 
                 void pushNs(long val)
@@ -155,7 +193,7 @@ namespace ts {
 
     protected:
         // CALLBACKS
-        void                            handleTable(SectionDemux& demux, const BinaryTable& table) override;
+        void handleTable(SectionDemux& demux, const BinaryTable& table) override;
         void handleSection(SectionDemux& demux, const Section& section) override;
         void handleInvalidSection(SectionDemux& demux, const DemuxedData& data) override;
 
@@ -181,6 +219,8 @@ namespace ts {
         //! @param [in,out] rep Where to report errors.
         //!
         void report(std::ostream& strm, int& opt, Report& rep = NULLREP);
+
+        void reportJSON(TR101_Options& opt, std::ostream& stm, const UString& title, Report& rep);
 
         //! Reset the table to defaults, clearing any counters.
         void reset();

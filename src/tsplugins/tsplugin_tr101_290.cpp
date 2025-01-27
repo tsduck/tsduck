@@ -15,8 +15,7 @@
 #include "tsTSAnalyzerReport.h"
 #include "tsTSSpeedMetrics.h"
 #include "tsFileNameGenerator.h"
-
-#include <tsTr101Analyzer.h>
+#include "tsTr101Analyzer.h"
 
 
 //----------------------------------------------------------------------------
@@ -41,7 +40,7 @@ namespace ts {
         bool              _multiple_output = false;
         bool              _cumulative = false;
         BitRate			  _bitrate {};
-        TSAnalyzerOptions _analyzer_options {};
+        TR101_Options _analyzer_options {};
 
         // Working data:
         std::ofstream     _output_stream {};
@@ -69,10 +68,10 @@ ts::Tr101_290::Tr101_290(TSP* tsp_) :
 	_analyzer(duck)
 {
     // Define all standard analysis options.
-    duck.defineArgsForStandards(*this);
-    duck.defineArgsForCharset(*this);
-    duck.defineArgsForTimeReference(*this);
-    duck.defineArgsForPDS(*this);
+//    duck.defineArgsForStandards(*this);
+//    duck.defineArgsForCharset(*this);
+//    duck.defineArgsForTimeReference(*this);
+//    duck.defineArgsForPDS(*this);
     _analyzer_options.defineArgs(*this);
 
     option(u"cumulative", 'c');
@@ -202,8 +201,15 @@ bool ts::Tr101_290::produceReport()
         // _analyzer.setBitrateHint(tsp->bitrate(), tsp->bitrateConfidence());
 
         // Produce the report
-        int a;
-        _analyzer.report(*_output, a, *this);
+        if (_analyzer_options.show_report) {
+        	int a;
+        	_analyzer.report(*_output, a, *this);
+        }
+
+        if (_analyzer_options.json.useJSON()) {
+        	_analyzer.reportJSON(_analyzer_options, *_output, u"", *this);
+        }
+
         closeOutput();
         return true;
     }
