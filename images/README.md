@@ -34,3 +34,11 @@ The diagrams are created using Microsoft PowerPoint and exported as `.png` files
 
 Initially, there was one big documentation file. Now, it has been split into
 one smaller file per diagram.
+
+## SVG files
+
+The XML contents of SVG files were edited by hand.
+
+Using `<text>` SVG tags with imported fonts works on most browsers but not with GIMP.
+Therefore, the name "TSDuck" was converted to a SVG path using https://danmarshall.github.io/google-font-to-svg-path/
+The font file `gadugib.ttf` was uploaded.
