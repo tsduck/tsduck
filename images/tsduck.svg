@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" version="1.0" width="1000" height="1000">
+  <title>TSDuck logo</title>
+  <circle fill="#2c6e49" stroke-width="0" cx="500" cy="500" r="500"/>
+  <path fill="#4c956c" stroke-width="0" d="M 500,0 a 500,500 0 0 0 0,1000 Z" />
+  <polyline fill="none" stroke="#fefee3" stroke-width="80" stroke-linecap="round" stroke-linejoin="round"
+            points="224,572 304,470 386,574 488,370 580,650 718,324 794,426"/>
+</svg>
