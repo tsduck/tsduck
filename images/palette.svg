@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" version="1.0" width="1400" height="200">
+  <title>TSDuck palette</title>
+  <defs>
+    <style type="text/css">
+      .color {
+          font-family: Sans,Arial,Helvetica;
+          font-size: 30px;
+      }
+      .name {
+          font-family: Sans,Arial,Helvetica;
+          font-size: 15px;
+      }
+    </style>
+  </defs>
+  <svg x="0" y="0">
+    <rect x="0" y="0" width="200" height="200" fill="#2C6E49" stroke-width="0"/>
+    <text x="16" y="157" fill="white" class="color">2C6E49</text>
+    <text x="16" y="177" fill="white" class="name">Dark Spring Green</text>
+  </svg>
+  <svg x="200" y="0">
+    <rect x="0" y="0" width="200" height="200" fill="#4C956C" stroke-width="0"/>
+    <text x="16" y="157" fill="white" class="color">4C956C</text>
+    <text x="16" y="177" fill="white" class="name">Middle Green</text>
+  </svg>
+  <svg x="400" y="0">
+    <rect x="0" y="0" width="200" height="200" fill="#85C19F" stroke-width="0"/>
+    <text x="16" y="157" fill="black" class="color">85C19F</text>
+    <text x="16" y="177" fill="black" class="name">Light Green</text>
+  </svg>
+  <svg x="600" y="0">
+    <rect x="0" y="0" width="200" height="200" fill="#FEFEE3" stroke-width="0"/>
+    <text x="16" y="157" fill="black" class="color">FEFEE3</text>
+    <text x="16" y="177" fill="black" class="name">Light Yellow</text>
+  </svg>
+  <svg x="800" y="0">
+    <rect x="0" y="0" width="200" height="200" fill="#FFC9B9" stroke-width="0"/>
+    <text x="16" y="157" fill="black" class="color">FFC9B9</text>
+    <text x="16" y="177" fill="black" class="name">Melon</text>
+  </svg>
+  <svg x="1000" y="0">
+    <rect x="0" y="0" width="200" height="200" fill="#D68C45" stroke-width="0"/>
+    <text x="16" y="157" fill="black" class="color">D68C45</text>
+    <text x="16" y="177" fill="black" class="name">Persian Orange</text>
+  </svg>
+  <svg x="1200" y="0">
+    <rect x="0" y="0" width="200" height="200" fill="#009688" stroke-width="0"/>
+    <text x="16" y="157" fill="white" class="color">009688</text>
+    <text x="16" y="177" fill="white" class="name">Teal Green</text>
+  </svg>
+</svg>
