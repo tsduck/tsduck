@@ -150,7 +150,7 @@ namespace ts {
         // Implementation of interfaces.
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;
         virtual void handleSection(SectionDemux&, const Section&) override;
-        virtual void handleInvalidSection(SectionDemux&, const DemuxedData&) override;
+        virtual void handleInvalidSection(SectionDemux&, const DemuxedData&, Section::Status) override;
 
     private:
         // Command line options:

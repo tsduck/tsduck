@@ -20,7 +20,7 @@ doxygen:
 
 # When opening files using Firefox on Linux, there are a log to anoying error messages.
 
-POST_XDGOPEN = $(if $(LINUX),2>&1 | grep -v -e 'GTK' -e 'GFX' -e 'Failed to load module' | sed '/^ *$$/d')
+POST_XDGOPEN = $(if $(LINUX),2>/dev/null)
 
 # Input directories.
 

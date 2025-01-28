@@ -22,6 +22,7 @@
 #include "tsPSI.h"
 #include "tsCAS.h"
 #include "tsTS.h"
+#include "tsNames.h"
 
 namespace ts {
     //!
@@ -45,6 +46,26 @@ namespace ts {
         //! Explicit identification of super class.
         //!
         using SuperClass = DemuxedData;
+
+        //!
+        //! Status of a section, including reasons for invalid sections.
+        //!
+        enum Status {
+            VALID,        //!< Section is valid.
+            UNDEFINED,    //!< Section is invalid for some undefined reason.
+            INV_DATA,     //!< Invalid memory data (e.g. null pointer, uninitialized object).
+            INV_HEADER,   //!< Invalid section header (e.g. truncated, no complete header).
+            INV_SIZE,     //!< Invalid section size in header, does not match the data size.
+            INV_SEC_NUM,  //!< Invalid section number, greater than "last section number".
+            INV_CRC32,    //!< Invalid CRC32, corrupted section.
+            INV_REPEAT,   //!< Invalid repeated section: same version but different content.
+        };
+
+        //!
+        //! Enumeration description of ts::Section::Status.
+        //! @return A constant reference to the enumeration description.
+        //!
+        static const Names& StatusEnum();
 
         //!
         //! Default constructor.
@@ -235,7 +256,13 @@ namespace ts {
         //! Check if the section has valid content.
         //! @return True if the section has valid content.
         //!
-        bool isValid() const { return _is_valid; }
+        bool isValid() const { return _status == VALID; }
+
+        //!
+        //! Get the section status.
+        //! @return The section status. If not VALID, this value indicates why the section is invalid.
+        //!
+        Status status() const { return _status; }
 
         //!
         //! Equality operator.
@@ -250,7 +277,7 @@ namespace ts {
         //! Get the table id.
         //! @return The table id or TID_NULL if the table is invalid.
         //!
-        TID tableId() const { return _is_valid ? content()[0] : uint8_t(TID_NULL); }
+        TID tableId() const { return isValid() ? content()[0] : uint8_t(TID_NULL); }
 
         //!
         //! This static method checks if a data area of at least 3 bytes can be the start of a long section.
@@ -264,19 +291,19 @@ namespace ts {
         //! Check if the section is a long one.
         //! @return True if the section is a long one.
         //!
-        bool isLongSection() const { return _is_valid && StartLongSection(content(), size()); }
+        bool isLongSection() const { return isValid() && StartLongSection(content(), size()); }
 
         //!
         //! Check if the section is a short one.
         //! @return True if the section is a short one.
         //!
-        bool isShortSection() const { return _is_valid && !isLongSection(); }
+        bool isShortSection() const { return isValid() && !isLongSection(); }
 
         //!
         //! Check if the section is a private one (ie. not MPEG-defined).
         //! @return True if the section is a private one (ie. not MPEG-defined).
         //!
-        bool isPrivateSection() const { return _is_valid && (content()[1] & 0x40) != 0; }
+        bool isPrivateSection() const { return isValid() && (content()[1] & 0x40) != 0; }
 
         //!
         //! Get the table id extension (long section only).
@@ -324,7 +351,7 @@ namespace ts {
         //! Size of the section header.
         //! @return Size of the section header.
         //!
-        size_t headerSize() const { return _is_valid ? (isLongSection() ? LONG_SECTION_HEADER_SIZE : SHORT_SECTION_HEADER_SIZE) : 0; }
+        size_t headerSize() const { return isValid() ? (isLongSection() ? LONG_SECTION_HEADER_SIZE : SHORT_SECTION_HEADER_SIZE) : 0; }
 
         //!
         //! Access to the payload of the section.
@@ -339,7 +366,7 @@ namespace ts {
         //!
         const uint8_t* payload() const
         {
-            return _is_valid ? (content() + (isLongSection() ? LONG_SECTION_HEADER_SIZE : SHORT_SECTION_HEADER_SIZE)) : nullptr;
+            return isValid() ? (content() + (isLongSection() ? LONG_SECTION_HEADER_SIZE : SHORT_SECTION_HEADER_SIZE)) : nullptr;
         }
 
         //!
@@ -349,7 +376,7 @@ namespace ts {
         //!
         size_t payloadSize() const
         {
-            return _is_valid ? size() - (isLongSection() ? LONG_SECTION_HEADER_SIZE + SECTION_CRC32_SIZE : SHORT_SECTION_HEADER_SIZE) : 0;
+            return isValid() ? size() - (isLongSection() ? LONG_SECTION_HEADER_SIZE + SECTION_CRC32_SIZE : SHORT_SECTION_HEADER_SIZE) : 0;
         }
 
         //!
@@ -528,10 +555,13 @@ namespace ts {
 
     private:
         // Private fields
-        bool _is_valid = false;
+        Status _status = INV_DATA;
 
         // Validate binary content.
         void validate(CRC32::Validation);
+
+        // Clear content and set error.
+        void invalidate(Status status) { SuperClass::clear(); _status = status; }
 
         // Inaccessible operations
         Section(const Section&) = delete;

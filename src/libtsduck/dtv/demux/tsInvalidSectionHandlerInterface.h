@@ -12,7 +12,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsDemuxedData.h"
+#include "tsSection.h"
 
 namespace ts {
 
@@ -33,7 +33,8 @@ namespace ts {
         //! This hook is invoked when an invalid section is detected.
         //! @param [in,out] demux The demux which sends the section.
         //! @param [in] data The invalid section from the demux.
+        //! @param [in] status Reason for the section to be invalid.
         //!
-        virtual void handleInvalidSection(SectionDemux& demux, const DemuxedData& data) = 0;
+        virtual void handleInvalidSection(SectionDemux& demux, const DemuxedData& data, Section::Status status) = 0;
     };
 }

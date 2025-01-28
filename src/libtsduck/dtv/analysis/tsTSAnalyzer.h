@@ -546,7 +546,7 @@ namespace ts {
         virtual void handleSection(SectionDemux&, const Section&) override;
 
         // Implementation of InvalidSectionHandlerInterface
-        virtual void handleInvalidSection(SectionDemux&, const DemuxedData&) override;
+        virtual void handleInvalidSection(SectionDemux&, const DemuxedData&, Section::Status) override;
 
         // Implementation of PESHandlerInterface
         virtual void handleNewMPEG2AudioAttributes(PESDemux&, const PESPacket&, const MPEG2AudioAttributes&) override;

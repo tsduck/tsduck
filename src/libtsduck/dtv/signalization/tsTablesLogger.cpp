@@ -819,23 +819,21 @@ void ts::TablesLogger::handleSection(SectionDemux& demux, const Section& section
 // Only used with option --invalid-sections
 //----------------------------------------------------------------------------
 
-void ts::TablesLogger::handleInvalidSection(SectionDemux& demux, const DemuxedData& ddata)
+void ts::TablesLogger::handleInvalidSection(SectionDemux& demux, const DemuxedData& ddata, Section::Status status)
 {
     const uint8_t* const data = ddata.content();
     const size_t size = ddata.size();
 
-    // Try to determine the reason for the invalid section.
-    const size_t sec_size = Section::SectionSize(data, size);
-    const bool is_long = Section::StartLongSection(data, size);
+    // Build a reason message for the invalid section.
     UString reason;
-    if (sec_size > 0 && sec_size != size) {
-        reason.format(u"invalid section size: %d, data size: %d", sec_size, size);
+    if (status == Section::INV_SIZE) {
+        reason.format(u"invalid section size: %d, data size: %d", Section::SectionSize(data, size), size);
     }
-    else if (is_long && sec_size > 4 && CRC32(data, sec_size - 4) != GetUInt32(data + sec_size - 4)) {
-        reason = u"invalid CRC32, corrupted section";
-    }
-    else if (is_long && data[6] > data[7]) {
+    else if (status == Section::INV_SEC_NUM && size > 7) {
         reason.format(u"invalid section number: %d, last section: %d", data[6], data[7]);
+    }
+    else {
+        reason = Section::StatusEnum().name(status);
     }
 
     preDisplay(ddata.firstTSPacketIndex(), ddata.lastTSPacketIndex());

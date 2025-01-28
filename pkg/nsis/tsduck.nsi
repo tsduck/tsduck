@@ -126,6 +126,11 @@ Section "Tools & Plugins" SectionTools
     Delete "$INSTDIR\bin\tsduck.dvb.names"
     Delete "$INSTDIR\bin\tsduck.names"
 
+    ; Delete test programs which may have been erroneously included in previous version.
+    Delete "$INSTDIR\bin\tsprofiling.exe"
+    Delete "$INSTDIR\bin\tsmux.exe"
+    Delete "$INSTDIR\bin\tsnet.exe"
+
     ; Delete obsolete plugins from previous versions.
     ; Maintenance: also update Makefile.inc
     Delete "$INSTDIR\bin\tsplugin_dektec.dll"
@@ -146,7 +151,7 @@ Section "Tools & Plugins" SectionTools
     ; Create folder for binaries
     CreateDirectory "$INSTDIR\bin"
     SetOutPath "$INSTDIR\bin"
-    File /x *_static.exe /x tsprofiling.exe /x tsmux.exe "${BinDir}\ts*.exe"
+    File /x *_static.exe /x tsprofiling.exe /x tsmux.exe /x tsnet.exe "${BinDir}\ts*.exe"
     File "${BinDir}\ts*.dll"
     File "${BinDir}\ts*.xml"
     File "${BinDir}\ts*.names"

@@ -366,6 +366,9 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
         {
             _duck.report().log(_ts_error_level, u"invalid section length: %'d bytes, PID %n, TID %n, packet index %'d", section_length, pid, tid, _packet_count);
             _status.inv_sect_length++;
+            if (notifyInvalid(pid, Section::INV_SIZE, ts_start, section_length)) {
+                return; // demux was reset
+            }
             if (pusi_section != nullptr && ts_start < pusi_section) {
                 // We can resync at a PUSI later in the TS buffer.
                 ts_size -= (pusi_section - ts_start);
@@ -387,6 +390,9 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
             _status.truncated_sect++;
             // Resynchronize to actual section start
             section_length = actual_length;
+            if (notifyInvalid(pid, Section::INV_SIZE, ts_start, section_length)) {
+                return; // demux was reset
+            }
         }
 
         // Exit when end of section is missing. Wait for next TS packets.
@@ -401,7 +407,7 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
         uint8_t last_section_number = 0;
 
         if (section_ok && long_header) {
-            xtid = XTID (xtid.tid(), GetUInt16 (ts_start + 3));
+            xtid = XTID (xtid.tid(), GetUInt16(ts_start + 3));
             version = (ts_start[5] >> 1) & 0x1F;
             is_next = (ts_start[5] & 0x01) == 0;
             section_number = ts_start[6];
@@ -411,16 +417,20 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
                 _duck.report().log(_ts_error_level, u"invalid section index: %d/%d, PID %n, TID %n, packet index %'d", section_number, last_section_number, pid, tid, _packet_count);
                 _status.inv_sect_index++;
                 section_ok = false;
+                if (notifyInvalid(pid, Section::INV_SEC_NUM, ts_start, section_length)) {
+                    return; // demux was reset
+                }
             }
         }
 
         // Sections with the 'next' indicator are filtered by options.
-
         if (is_next && !_get_next) {
+            // Section is ignored but not reported as invalid section.
             _status.is_next++;
             section_ok = false;
         }
         if (!is_next && !_get_current) {
+            // Section is ignored but not reported as invalid section.
             section_ok = false;
         }
 
@@ -453,6 +463,9 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
                     _duck.report().log(_ts_error_level, u"inconsistent last section index: %d, was %d, PID %n, TID %n, packet index %'d", last_section_number, tc->sect_expected - 1, pid, tid, _packet_count);
                     _status.inv_sect_index++;
                     section_ok = false;
+                    if (notifyInvalid(pid, Section::INV_SEC_NUM, ts_start, section_length)) {
+                        return; // demux was reset
+                    }
                 }
             }
 
@@ -470,6 +483,9 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
                     tc->sect_received--;
                     tc->notified = false;
                     _status.inv_sect_version++;
+                    if (notifyInvalid(pid, Section::INV_REPEAT, ts_start, section_length)) {
+                        return; // demux was reset
+                    }
                 }
             }
 
@@ -485,6 +501,9 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
                     _duck.report().log(_ts_error_level, u"invalid section CRC, PID %n, TID %n, section %d, version %d, packet index %'d", pid, tid, section_number, version, _packet_count);
                     _status.wrong_crc++;  // only possible error (hum?)
                     section_ok = false;
+                    if (notifyInvalid(pid, sect_ptr->status(), ts_start, section_length)) {
+                        return; // demux was reset
+                    }
                 }
             }
 
@@ -508,24 +527,6 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
                     // If the table is completed and a handler is present, build the table.
                     tc->notify(*this, false, false);
                 }
-            }
-            catch (...) {
-                afterCallingHandler(false);
-                throw;
-            }
-            if (afterCallingHandler(true)) {
-                return;  // the PID of this packet or the complete demux was reset.
-            }
-        }
-
-        // If a handler is defined for invalid sections, call it.
-        if (!section_ok && _invalid_handler != nullptr) {
-            beforeCallingHandler(pid);
-            try {
-                DemuxedData data(ts_start, section_length, pid);
-                data.setFirstTSPacketIndex(pusi_pkt_index);
-                data.setLastTSPacketIndex(_packet_count);
-                _invalid_handler->handleInvalidSection(*this, data);
             }
             catch (...) {
                 afterCallingHandler(false);
@@ -584,4 +585,34 @@ void ts::SectionDemux::fixAndFlush(bool pack, bool fill_eit)
         }
         afterCallingHandler(true);
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Notify the application that the content of the TS payload buffer is invalid.
+//----------------------------------------------------------------------------
+
+bool ts::SectionDemux::notifyInvalid(PID pid, Section::Status status, const uint8_t* ts_start, size_t ts_size)
+{
+    if (_invalid_handler != nullptr) {
+        // Build a demuxed data from the TS payload buffer.
+        PIDContext& pc(_pids[pid]);
+        if (ts_start >= pc.ts.data() && ts_start < pc.ts.dataEnd()) {
+            DemuxedData data(ts_start, std::min<size_t>(ts_size, pc.ts.dataEnd() - ts_start), pid);
+            data.setFirstTSPacketIndex(pc.pusi_pkt_index);
+            data.setLastTSPacketIndex(_packet_count);
+
+            // Notify the application.
+            beforeCallingHandler(pid);
+            try {
+                _invalid_handler->handleInvalidSection(*this, data, status);
+            }
+            catch (...) {
+                afterCallingHandler(false);
+                throw;
+            }
+            return afterCallingHandler(true);
+        }
+    }
+    return false;
 }

@@ -337,7 +337,7 @@ void ts::TSAnalyzer::PIDContext::addDescriptionOrAttribute(const UString& desc)
 // Implementation of InvalidSectionHandlerInterface
 //----------------------------------------------------------------------------
 
-void ts::TSAnalyzer::handleInvalidSection(SectionDemux&, const DemuxedData& data)
+void ts::TSAnalyzer::handleInvalidSection(SectionDemux&, const DemuxedData& data, Section::Status status)
 {
     getPID(data.sourcePID())->inv_sections++;
 }

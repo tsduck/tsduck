@@ -514,6 +514,14 @@ So, keep in mind that these devices are not tested for every new version of TSDu
 |Tested OK ^(xref:tt6[6])^
 |Tested OK
 
+|Microsoft
+|Xbox One Digital TV Tuner
+|DVB-T/T2/C
+|1
+|USB
+|Tested OK ^(xref:tt33[33])^
+|Not tested
+
 |MyGica
 |T230C
 |DVB-T/T2
@@ -583,6 +591,14 @@ So, keep in mind that these devices are not tested for every new version of TSDu
 |DVB-T/T2
 |1
 |Pi ^(xref:tt32[32])^
+|Tested OK
+|Not tested
+
+|Realtek
+|RTL2832 (a.k.a. RTL-SDR)
+|DVB-T
+|1
+|USB
 |Tested OK
 |Not tested
 
@@ -814,6 +830,8 @@ Notes from the table:
 32. [[tt32]] The Raspberry Pi TV HAT can be connected to Raspberry Pi boards only.
     It uses the 40-pin Raspberry Pi board connector.
     It is top-mounted using the _Raspberry HAT_ form factor.
+33. [[tt33]] The Microsoft Xbox One Digital TV Tuner requires additional firmware `dvb-demod-mn88472-02.fw`
+    from http://palosaari.fi/linux/v4l-dvb/firmware/MN88472/02/latest/
 
 === Dektec devices
 

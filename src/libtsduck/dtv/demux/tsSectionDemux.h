@@ -274,6 +274,10 @@ namespace ts {
         // If fill_eit is true, add missing sections in EIT.
         void fixAndFlush(bool pack, bool fill_eit);
 
+        // Notify the application that the content of the TS payload buffer is invalid.
+        // Return true if a delayed reset was executed.
+        bool notifyInvalid(PID pid, Section::Status status, const uint8_t* ts_start, size_t ts_size);
+
         // Private members:
         TableHandlerInterface*          _table_handler = nullptr;
         SectionHandlerInterface*        _section_handler = nullptr;
