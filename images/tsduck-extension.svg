@@ -2,6 +2,7 @@
   <title>TSDuck logo</title>
   <circle fill="#2c6e49" stroke-width="0" cx="500" cy="500" r="500"/>
   <path fill="#4c956c" stroke-width="0" d="M 500,0 a 500,500 0 0 0 0,1000 Z" />
-  <polyline fill="none" stroke="#fefee3" stroke-width="80" stroke-opacity="1" stroke-linecap="round" stroke-linejoin="round"
+  <polyline fill="none" stroke="#d68c45" stroke-width="80" stroke-opacity="1" stroke-linecap="round" stroke-linejoin="round"
             points="224,572 304,470 386,574 488,370 580,650 718,324 794,426"/>
+  <circle fill="none" stroke="#d68c45" stroke-width="60" stroke-opacity="1" cx="500" cy="500" r="470"/>
 </svg>
