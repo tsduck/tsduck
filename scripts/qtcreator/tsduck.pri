@@ -62,7 +62,7 @@ equals(DTAPI_HEADER, ''): DEFINES += TS_NO_DTAPI=1
 QMAKE_CXXFLAGS += $$system($$PROJROOT/scripts/java-config.sh --cflags)
 
 # Other configuration.
-LIBS += -ledit
+LIBS += -ledit -lz
 linux|mac|mingw {
     QMAKE_CXXFLAGS_WARN_ON = -Werror -Wall -Wextra -Wno-error=deprecated-declarations
     QMAKE_CXXFLAGS += -fno-strict-aliasing -fstack-protector-all
