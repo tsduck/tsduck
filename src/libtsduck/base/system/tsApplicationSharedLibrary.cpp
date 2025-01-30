@@ -172,7 +172,7 @@ void ts::ApplicationSharedLibrary::GetPluginList(UStringVector& files, const USt
         // Eliminate files with already registered base names.
         while (index < files.size()) {
             const UString base(BaseName(files[index]));
-            if (basenames.find(base) != basenames.end()) {
+            if (basenames.contains(base)) {
                 CERR.log(2, u"  \"%s\", duplicated, ignored", files[index]);
                 files.erase(files.begin() + index);
             }

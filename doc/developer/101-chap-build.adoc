@@ -766,29 +766,41 @@ bin\Debug-Win32\tsp.exe
 
 The following list summarizes the packages which are built and dropped
 into the `pkg/installers` directory, through a few examples, assuming that the
-current version of TSDuck is 3.37-3670.
+current version of TSDuck is 3.40-4134.
 
 [.compact-table]
 [cols="<1m,<1",frame=none,grid=none,stripes=none,options="autowidth,noheader"]
 |===
-|tsduck_3.37-3670.ubuntu23_amd64.deb |Binary package for 64-bit Ubuntu 23.x
-|tsduck_3.37-3670.ubuntu23_arm64.deb |Binary package for Arm 64-bit Ubuntu 23.x
-|tsduck_3.37-3670.debian12_amd64.deb |Binary package for 64-bit Debian 12
-|tsduck_3.37-3670.raspbian12_armhf.deb |Binary package for 32-bit Raspbian 12 (Raspberry Pi)
-|tsduck-3.37-3670.el9.x86_64.rpm |Binary package for 64-bit Red Hat 9.x and clones
-|tsduck-3.37-3670.el9.src.rpm |Source package for Red Hat and clones
-|tsduck-3.37-3670.fc39.x86_64.rpm |Binary package for 64-bit Fedora 39
-|tsduck-3.37-3670.fc39.src.rpm |Source package for Fedora
-|tsduck-dev_3.37-3670.ubuntu23_amd64.deb |Development package for 64-bit Ubuntu 23.x
-|tsduck-dev_3.37-3670.ubuntu23_arm64.deb |Development package for Arm 64-bit Ubuntu 23.x
-|tsduck-dev_3.37-3670.debian12_amd64.deb |Development package for 64-bit Debian 12
-|tsduck-dev_3.37-3670.raspbian12_armhf.deb |Development package for 32-bit Raspbian (Raspberry Pi)
-|tsduck-devel-3.37-3670.el9.x86_64.rpm |Development package for 64-bit Red Hat 9.x and clones
-|tsduck-devel-3.37-3670.fc39.x86_64.rpm |Development package for 64-bit Fedora 39
-|TSDuck-Win32-3.37-3670.exe |Binary installer for 32-bit Windows
-|TSDuck-Win64-3.37-3670.exe |Binary installer for 64-bit Windows
-|TSDuck-Win32-3.37-3670-Portable.zip |Portable package for 32-bit Windows
-|TSDuck-Win64-3.37-3670-Portable.zip |Portable package for 64-bit Windows
+|tsduck_3.40-4134.ubuntu24_amd64.deb |Binary package for Intel 64-bit Ubuntu 24.x
+|tsduck_3.40-4134.ubuntu24_arm64.deb |Binary package for Arm 64-bit Ubuntu 24.x
+|tsduck_3.40-4134.ubuntu24_riscv64.deb |Binary package for RISC-V 64-bit Ubuntu 24.x
+|tsduck_3.40-4134.ubuntu24_s390x.deb |Binary package for IBM s390x 64-bit Ubuntu 24.x
+|tsduck_3.40-4134.debian12_amd64.deb |Binary package for Intel 64-bit Debian 12
+|tsduck_3.40-4134.debian12_arm64.deb |Binary package for Arm 64-bit Debian 12
+|tsduck_3.40-4134.raspbian12_armhf.deb |Binary package for Arm 32-bit Raspbian 12 (Raspberry Pi)
+|tsduck-3.40-4134.el9.x86_64.rpm |Binary package for Intel 64-bit Red Hat 9.x and clones
+|tsduck-3.40-4134.el9.aarch64.rpm |Binary package for Arm 64-bit Red Hat 9.x and clones
+|tsduck-3.40-4134.el9.src.rpm |Source package for Red Hat and clones
+|tsduck-3.40-4134.fc41.x86_64.rpm |Binary package for Intel 64-bit Fedora 41
+|tsduck-3.40-4134.fc41.aarch64.rpm |Binary package for Arm 64-bit Fedora 41
+|tsduck-3.40-4134.fc41.src.rpm |Source package for Fedora
+|tsduck-dev_3.40-4134.ubuntu24_amd64.deb |Development package for Intel 64-bit Ubuntu 24.x
+|tsduck-dev_3.40-4134.ubuntu24_arm64.deb |Development package for Arm 64-bit Ubuntu 24.x
+|tsduck-dev_3.40-4134.ubuntu24_riscv64.deb |Development package for RISC-V 64-bit Ubuntu 24.x
+|tsduck-dev_3.40-4134.ubuntu24_s390x.deb |Development package for IBM s390x 64-bit Ubuntu 24.x
+|tsduck-dev_3.40-4134.debian12_amd64.deb |Development package for Intel 64-bit Debian 12
+|tsduck-dev_3.40-4134.debian12_arm64.deb |Development package for Arm 64-bit Debian 12
+|tsduck-dev_3.40-4134.raspbian12_armhf.deb |Development package for Intel 32-bit Raspbian (Raspberry Pi)
+|tsduck-devel-3.40-4134.el9.x86_64.rpm |Development package for Intel 64-bit Red Hat 9.x and clones
+|tsduck-devel-3.40-4134.el9.aarch64.rpm |Development package for Arm 64-bit Red Hat 9.x and clones
+|tsduck-devel-3.40-4134.fc41.x86_64.rpm |Development package for Intel 64-bit Fedora 41
+|tsduck-devel-3.40-4134.fc41.aarch64.rpm |Development package for Arm 64-bit Fedora 41
+|TSDuck-Win32-3.40-4134.exe |Binary installer for Intel 32-bit Windows
+|TSDuck-Win64-3.40-4134.exe |Binary installer for Intel 64-bit Windows
+|TSDuck-Arm64-3.40-4134.exe |Binary installer for Arm 64-bit Windows
+|TSDuck-Win32-3.40-4134-Portable.zip |Portable package for Intel 32-bit Windows
+|TSDuck-Win64-3.40-4134-Portable.zip |Portable package for Intel 64-bit Windows
+|TSDuck-Arm64-3.40-4134-Portable.zip |Portable package for Arm 64-bit Windows
 |===
 
 On Linux systems, there are two different packages.
@@ -1019,7 +1031,7 @@ are available for the following configurations:
 [.compact-list]
 * Fedora (64-bit Intel)
 * Ubuntu (64-bit Intel and Arm)
-* RedHat, CentOS, Alma Linux (64-bit Intel)
+* RedHat, CentOS, Alma Linux, Rocky Linux (64-bit Intel)
 * Debian (64-bit Intel)
 * Raspbian (32-Bit Arm, Raspberry Pi)
 

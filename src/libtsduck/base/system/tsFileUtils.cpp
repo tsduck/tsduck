@@ -430,8 +430,10 @@ ts::UString ts::SearchConfigurationFile(const UString& fileName)
     if (!tsroot.empty()) {
         dirList.push_back(tsroot + u"\\bin");
     }
-#elif defined(TS_MAC)
+#elif defined(TS_MAC) && defined(TS_X86_64)
     dirList.push_back(u"/usr/local/share/tsduck");
+#elif defined(TS_MAC) && defined(TS_ARM64)
+    dirList.push_back(u"/opt/homebrew/share/tsduck");
 #elif defined(TS_UNIX)
     dirList.push_back(u"/usr/share/tsduck");
 #endif

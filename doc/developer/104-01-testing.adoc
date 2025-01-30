@@ -63,16 +63,16 @@ the static library. On {unix}, both versions of the test suite are built and run
 ----
 $ make -j10 test
   .....
-  [CXX] utestXML.cpp
+  [CXX] utestZlib.cpp
   [LD] /home/tsduck/bin/release-x86_64-vmubuntu/utest
   [LD] /home/tsduck/bin/release-x86_64-vmubuntu/utest_static
-TSPLUGINS_PATH=/home/tsduck/bin/release-x86_64-vmubuntu LD_LIBRARY_PATH=/home/tsduck/bin/release-x86_64-vmubuntu /home/tsduck/bin/release-x86_64-vmubuntu/utest
+  [UTEST] /home/tsduck/bin/release-x86_64-vmubuntu/utest 
 
-OK (619 tests, 28730 assertions)
+OK (666 tests, 32317 assertions)
 
-TSPLUGINS_PATH=/home/tsduck/bin/release-x86_64-vmubuntu LD_LIBRARY_PATH=/home/tsduck/bin/release-x86_64-vmubuntu /home/tsduck/bin/release-x86_64-vmubuntu/utest_static
+  [UTEST] /home/tsduck/bin/release-x86_64-vmubuntu/utest_static 
 
-OK (616 tests, 28707 assertions)
+OK (663 tests, 32294 assertions)
 
 $
 ----
@@ -88,16 +88,19 @@ They can be run manually or from Visual Studio:
 
 [source,powershell]
 ----
-D:\tsduck> bin\Release-x64\utests-tsduckdll.exe
+PS D:\tsduck> .\bin\Release-x64\utests-tsduckdll.exe
 
-OK (619 tests, 28747 assertions)
+OK (666 tests, 32369 assertions)
 
-D:\tsduck> bin\Release-x64\utests-tsducklib.exe
+PS D:\tsduck> .\bin\Release-x64\utests-tsducklib.exe
 
-OK (616 tests, 28724 assertions)
+OK (663 tests, 32346 assertions)
 
-D:\tsduck>
+PS D:\tsduck>
 ----
+
+Note that the number of assertions is slightly different on Windows
+because some system-specific tests are different.
 
 By default, the test program runs all tests and reports failures only.
 But `utest` also accepts a few command options which make it appropriate to debug individual features.
@@ -118,23 +121,19 @@ First, the option `-l` is used to list all available tests:
 ----
 $ utest -l
 AlgorithmTest
-    AlgorithmTest::testEnumerateCombinations
+    AlgorithmTest::EnumerateCombinations
 ArgsTest
-    ArgsTest::testAccessors
-    ArgsTest::testAmbiguousOption
+    ArgsTest::Accessors
+    ArgsTest::AmbiguousOption
 ........
-    WebRequestTest::testNoRedirection
-    WebRequestTest::testReadMeFile
-XMLTest
-    XMLTest::testChannels
-    XMLTest::testCreation
-    XMLTest::testDocument
-    XMLTest::testEscape
-    XMLTest::testFileBOM
-    XMLTest::testInvalid
-    XMLTest::testKeepOpen
-    XMLTest::testTweaks
-    XMLTest::testValidation
+    XMLTest::Validation
+Xoshiro256ssTest
+    Xoshiro256ssTest::Random
+ZlibTest
+    ZlibTest::AllLevels
+    ZlibTest::Reference1
+    ZlibTest::Reference4
+    ZlibTest::Reference9
 $
 ----
 
@@ -146,7 +145,7 @@ For instance:
 [source,shell]
 ----
 $ utest -t ArgsTest
-$ utest -t XMLTest::testValidation
+$ utest -t XMLTest::Validation
 ----
 
 The option `-d` is used to produce debug message (see examples in the test source files).
@@ -257,6 +256,42 @@ First, TSDuck shall be rebuilt in its repository.
 
 Then, when the option `--dev` is specified to a test script or to `run-all-tests.sh`,
 the test suite automatically uses the TSDuck executables from the development repository.
+
+[source,shell]
+------
+$ ./run-all-tests.sh --dev
+----  Testing TSDuck - The MPEG Transport Stream Toolkit - version 3.40-4133 from /home/tsduck/bin/release-x86_64-vmubuntu
+----  test-001: Test test-001.tsanalyze.full.txt passed
+----  test-001: Test test-001.tsanalyze.full.log passed
+........
+----  test-179: Test test-179.tstabdump.txt passed
+----  test-179: Test test-179.tstabdump.log passed
+----  ALL 2545 tests passed
+$
+------
+
+The test suite is made of `bash` shell scripts.
+On Windows systems, the suite can be run from a "Git Bash" window for instance.
+
+On {unix}, in the `tsduck` project, the `make` target `test-suite` runs
+the test suite on the binaries which were just built.
+It assumes that the work areas of the git repositories `tsduck` and `tsduck-test` are
+located side by side in the same parent directory.
+This target updates the `tsduck-test` repository from its remote origin and runs the test suite.
+
+[source,shell]
+------
+$ make test-suite
+Already up to date.
+----  Testing TSDuck - The MPEG Transport Stream Toolkit - version 3.40-4133 from /home/tsduck/bin/release-x86_64-vmubuntu
+----  test-001: Test test-001.tsanalyze.full.txt passed
+----  test-001: Test test-001.tsanalyze.full.log passed
+........
+----  test-179: Test test-179.tstabdump.txt passed
+----  test-179: Test test-179.tstabdump.log passed
+----  ALL 2545 tests passed
+$
+------
 
 [#testlargefiles]
 ===== Large files
