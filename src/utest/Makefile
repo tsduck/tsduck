@@ -16,6 +16,8 @@ default: execs
 .PHONY: execs
 execs: $(BINDIR)/utest $(if $(NOSTATIC),,$(BINDIR)/utest_static)
 
+CXXFLAGS_INCLUDES += $(APPS_CXXFLAGS_INCLUDES)
+
 # All source files participate in one single big unitary test executable.
 OBJS = $(addprefix $(OBJDIR)/,$(addsuffix .o,$(sort $(notdir $(basename $(wildcard *.cpp))))))
 

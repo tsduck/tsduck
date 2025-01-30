@@ -5,9 +5,10 @@
 #  Copyright (c) 2005-2025, Thierry Lelegard
 #  BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 #
-#  Rebuilt tsduck.h, the global header for the TSDuck library. This script is
-#  useful when source files are added to or removed from src/libtsduck.
-#  Syntax: build-tsduck-header.py [out-file]
+#  Rebuilt tscore.h or tsduck.h, the global header for the TSCore or TSDuck
+#  library. This script is useful when source files are added to or removed
+#  from src/libtscore or src/libtsduck.
+#  Syntax: build-tsduck-header.py tscode|tsduck [out-file]
 #
 #-----------------------------------------------------------------------------
 
@@ -28,7 +29,7 @@ headers = {
 }
 unixen  = ['linux', 'mac', 'freebsd', 'netbsd', 'openbsd', 'dragonflybsd']
 bsds    = ['freebsd', 'netbsd', 'openbsd', 'dragonflybsd']
-exclude = ['tsduck.h', 'tsBeforeStandardHeaders.h', 'tsAfterStandardHeaders.h']
+exclude = ['tscore.h', 'tsduck.h', 'tsBeforeStandardHeaders.h', 'tsAfterStandardHeaders.h']
 
 # Recursively collect header files.
 def collect_headers(root):
@@ -45,10 +46,10 @@ def collect_headers(root):
             headers[index].append(name)
 
 # Generate the header file.
-def generate_header(out):
+def generate_header(target, out):
     # Collect header files.
     rootdir = tsbuild.repo_root()
-    collect_headers(rootdir + '/src/libtsduck')
+    collect_headers(rootdir + '/src/lib' + target)
     # Extend Unix-like systems with common Unix definitions.
     for osname in unixen:
         headers[osname].extend(headers['unix'])
@@ -59,11 +60,14 @@ def generate_header(out):
     del headers['unix']
     del headers['bsd']
 
-    # Insert common source file header.
-    tsbuild.write_source_header('//', 'TSDuck global header (include all headers)', file=out)
-
-    # Print include directives.
-    intro = '#pragma once'
+    # Generate the file.
+    if target == 'tsduck':
+        tsbuild.write_source_header('//', ' TSDuck library global header (include all headers)', file=out)
+        print('#pragma once', file=out)
+        intro = '#include "tscore.h"'
+    else:
+        tsbuild.write_source_header('//', ' TSDuck core library global header (include all headers)', file=out)
+        intro = '#pragma once'
     for system, files in headers.items():
         files = sorted(files, key = str.casefold)
         print(intro, file=out)
@@ -77,8 +81,10 @@ def generate_header(out):
 
 # Main code.
 if __name__ == '__main__':
-    if len(sys.argv) < 2:
-        generate_header(sys.stdout)
+    if len(sys.argv) < 2 or (sys.argv[1] != 'tscore' and sys.argv[1] != 'tsduck'):
+        tsbuild.fatal_error('invalid command, specify "tscore" or "tsduck"')
+    elif len(sys.argv) == 2:
+        generate_header(sys.argv[1], sys.stdout)
     else:
-        with open(sys.argv[1], 'w') as f:
-            generate_header(f)
+        with open(sys.argv[2], 'w') as f:
+            generate_header(sys.argv[1], f)

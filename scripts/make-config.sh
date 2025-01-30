@@ -135,7 +135,7 @@ debug "INLIBTSDUCK='$INLIBTSDUCK'"
 # For maintenance or cleanup operations, we should not download stuff (we may even want
 # to delete them in the case of a cleanup operation).
 NOEXTLIBS=1
-if [[ $INLIBTSDUCK ]]; then
+if [[ -n $INLIBTSDUCK ]]; then
     if [[ -z ${MAKECMDGOALS// /} ]]; then
         # Default build in libtsduck: use external libraries.
         NOEXTLIBS=
@@ -309,8 +309,11 @@ if [[ -z $CROSS$CROSS_TARGET ]]; then
     CXXFLAGS_CROSS=
     LDFLAGS_CROSS=
     # In last step of build, always use the version of tsxml which is built.
-    # Note: DYLD_LIBRARY_PATH is used on macOS only.
-    TSXML='LD_LIBRARY_PATH="$(BINDIR):$(LD_LIBRARY_PATH)" DYLD_LIBRARY_PATH="$(BINDIR):$(DYLD_LIBRARY_PATH)" $(BINDIR)/tsxml'
+    if [[ -n $MACOS ]]; then
+        TSXML='LD_LIBRARY_PATH="$(BINDIR):$(LD_LIBRARY_PATH)" DYLD_LIBRARY_PATH="$(BINDIR):$(DYLD_LIBRARY_PATH)" $(BINDIR)/tsxml'
+    else
+        TSXML='LD_LIBRARY_PATH="$(BINDIR):$(LD_LIBRARY_PATH)" $(BINDIR)/tsxml'
+    fi
 else
     # Perform cross-compilation.
     CROSS=1
@@ -366,10 +369,13 @@ if [[ $ROOTDIR != $root ]]; then
     # Switched project root, as in rpm build.
     ROOTDIR="$root"
     TOPLEVEL_CURDIR="$CURDIR"
+    # Reset list of include directories.
+    ALL_INCLUDES=
 fi
 INSTALLERDIR="$ROOTDIR/pkg/installers"
 SCRIPTSDIR="$ROOTDIR/scripts"
 SRCROOT="$ROOTDIR/src"
+LIBTSCOREDIR="$SRCROOT/libtscore"
 LIBTSDUCKDIR="$SRCROOT/libtsduck"
 TSTOOLSDIR="$SRCROOT/tstools"
 TSPLUGINSDIR="$SRCROOT/tsplugins"
@@ -410,6 +416,8 @@ fi
 OBJDIR="$BINDIR/objs-\$(notdir \$(CURDIR))"
 
 # Output library files depend on $(BINDIR) in makefile.
+STATIC_LIBTSCORE="$BINDIR/libtscore.a"
+SHARED_LIBTSCORE="$BINDIR/libtscore$SO_SUFFIX"
 STATIC_LIBTSDUCK="$BINDIR/libtsduck.a"
 SHARED_LIBTSDUCK="$BINDIR/libtsduck$SO_SUFFIX"
 
@@ -425,7 +433,7 @@ if [[ -z $PRECONFIG_DONE ]]; then
     PRECONFIG_DONE=1
 
     # List of defined macros in tsPreConfiguration.h
-    PRECONFIG=/$($SED "$LIBTSDUCKDIR/base/cpp/tsPreConfiguration.h" -e '/^ *#define/!d' -e 's/^ *#define *//' -e 's/[( ].*//')/
+    PRECONFIG=/$($SED "$LIBTSCOREDIR/cpp/tsPreConfiguration.h" -e '/^ *#define/!d' -e 's/^ *#define *//' -e 's/[( ].*//')/
     PRECONFIG=${PRECONFIG//$'\n'/\/}
 
     # See possible predefinitions in tsPreConfiguration.h in src/libtsduck/Makefile.
@@ -447,8 +455,13 @@ fi
 #-----------------------------------------------------------------------------
 
 # Reset these variables, we always rebuild them from scratch.
+LIBTSCORE_CXXFLAGS_INCLUDES=
+LIBTSCORE_INCLUDES=
+LIBTSCORE_LDLIBS=
 LIBTSDUCK_CXXFLAGS_INCLUDES=
+LIBTSDUCK_INCLUDES=
 LIBTSDUCK_LDLIBS=
+APPS_CXXFLAGS_INCLUDES=
 CXXFLAGS_INCLUDES=
 CXXFLAGS_WARNINGS=
 CXXFLAGS_NO_WARNINGS=
@@ -784,20 +797,20 @@ fi
 # against the TSDuck static library.
 LIBTSDUCK_CXXFLAGS_INCLUDES="$LIBTSDUCK_CXXFLAGS_INCLUDES $CXXFLAGS_JAVA"
 LIBTSDUCK_LDLIBS="$LIBTSDUCK_LDLIBS $LDLIBS_PCSC"
-[[ -n $FREEBSD ]] && LIBTSDUCK_LDLIBS="$LIBTSDUCK_LDLIBS -lprocstat"
-[[ -n $OPENBSD$NETBSD$DRAGONFLYBSD ]] && LIBTSDUCK_LDLIBS="$LIBTSDUCK_LDLIBS -lkvm"
-[[ -n $LINUX ]] && LIBTSDUCK_LDLIBS="$LIBTSDUCK_LDLIBS -latomic"
-[[ -z $NOOPENSSL ]] && LIBTSDUCK_LDLIBS="$LIBTSDUCK_LDLIBS -lcrypto"
+[[ -n $FREEBSD ]] && LIBTSCORE_LDLIBS="$LIBTSCORE_LDLIBS -lprocstat"
+[[ -n $OPENBSD$NETBSD$DRAGONFLYBSD ]] && LIBTSCORE_LDLIBS="$LIBTSCORE_LDLIBS -lkvm"
+[[ -n $LINUX ]] && LIBTSCORE_LDLIBS="$LIBTSCORE_LDLIBS -latomic"
+[[ -z $NOOPENSSL ]] && LIBTSCORE_LDLIBS="$LIBTSCORE_LDLIBS -lcrypto"
 [[ -n $NODTAPI ]] && LIBTSDUCK_CXXFLAGS_INCLUDES="$LIBTSDUCK_CXXFLAGS_INCLUDES -DTS_NO_DTAPI=1"
 [[ -n $NOHIDES ]] && LIBTSDUCK_CXXFLAGS_INCLUDES="$LIBTSDUCK_CXXFLAGS_INCLUDES -DTS_NO_HIDES=1"
 [[ -n $NOVATEK ]] && LIBTSDUCK_CXXFLAGS_INCLUDES="$LIBTSDUCK_CXXFLAGS_INCLUDES -DTS_NO_VATEK=1"
 if [[ -n $NOEDITLINE ]]; then
-    LIBTSDUCK_CXXFLAGS_INCLUDES="$LIBTSDUCK_CXXFLAGS_INCLUDES -DTS_NO_EDITLINE=1"
+    LIBTSCORE_CXXFLAGS_INCLUDES="$LIBTSCORE_CXXFLAGS_INCLUDES -DTS_NO_EDITLINE=1"
 else
-    LIBTSDUCK_LDLIBS="$LIBTSDUCK_LDLIBS -ledit"
+    LIBTSCORE_LDLIBS="$LIBTSCORE_LDLIBS -ledit"
 fi
 if [[ -n $NOCURL ]]; then
-    LIBTSDUCK_CXXFLAGS_INCLUDES="$LIBTSDUCK_CXXFLAGS_INCLUDES -DTS_NO_CURL=1"
+    LIBTSCORE_CXXFLAGS_INCLUDES="$LIBTSCORE_CXXFLAGS_INCLUDES -DTS_NO_CURL=1"
 else
     if [[ -z $CURL_DONE ]]; then
         CURL_DONE=1
@@ -805,13 +818,13 @@ else
         # Remove useless explicit references to /usr/lib which break usage of alternative compilers
         LDLIBS_CURL=$(curl-config --libs | $SED -e 's|-L/usr/lib||' -e 's|-Wl,-R/usr/lib||')
     fi
-    LIBTSDUCK_CXXFLAGS_INCLUDES="$LIBTSDUCK_CXXFLAGS_INCLUDES $CXXFLAGS_CURL"
-    LIBTSDUCK_LDLIBS="$LIBTSDUCK_LDLIBS $LDLIBS_CURL"
+    LIBTSCORE_CXXFLAGS_INCLUDES="$LIBTSCORE_CXXFLAGS_INCLUDES $CXXFLAGS_CURL"
+    LIBTSCORE_LDLIBS="$LIBTSCORE_LDLIBS $LDLIBS_CURL"
 fi
 if [[ -n $NOZLIB ]]; then
-    LIBTSDUCK_CXXFLAGS_INCLUDES="$LIBTSDUCK_CXXFLAGS_INCLUDES -DTS_NO_ZLIB=1"
+    LIBTSCORE_CXXFLAGS_INCLUDES="$LIBTSCORE_CXXFLAGS_INCLUDES -DTS_NO_ZLIB=1"
 else
-    LIBTSDUCK_LDLIBS="$LIBTSDUCK_LDLIBS -lz"
+    LIBTSCORE_LDLIBS="$LIBTSCORE_LDLIBS -lz"
 fi
 if [[ -n $NOSRT ]]; then
     LIBTSDUCK_CXXFLAGS_INCLUDES="$LIBTSDUCK_CXXFLAGS_INCLUDES -DTS_NO_SRT=1"
@@ -844,25 +857,43 @@ if [[ -z $OTHER_OS ]]; then
 fi
 
 # List of libtsduck directories containing header files.
+# Done once only because it accesses the file system.
 if [[ -z $ALL_INCLUDES ]]; then
-    for dir in $(find $LIBTSDUCKDIR -type d); do
-        [[ " $OTHER_OS " != *" $(fbasename $dir) "* && -n $(exist-wildcard $dir/*.h) ]] && ALL_INCLUDES="$ALL_INCLUDES $dir"
-    done
-fi
-
-# List of libtsduck directories containing private and public headers.
-if [[ -z $PRIVATE_INCLUDES || -z $PUBLIC_INCLUDES || -z $CXXFLAGS_PRIVATE_INCLUDES || -z $CXXFLAGS_PUBLIC_INCLUDES ]]; then
-    for dir in $ALL_INCLUDES; do
-        if [[ $(fbasename $dir) == private ]]; then
-            PRIVATE_INCLUDES="$PRIVATE_INCLUDES $dir"
-            CXXFLAGS_PRIVATE_INCLUDES="$CXXFLAGS_PRIVATE_INCLUDES -I$dir"
-        else
-            PUBLIC_INCLUDES="$PUBLIC_INCLUDES $dir"
-            CXXFLAGS_PUBLIC_INCLUDES="$CXXFLAGS_PUBLIC_INCLUDES -I$dir"
+    for dir in $(find $LIBTSCOREDIR $LIBTSDUCKDIR -type d); do
+        if [[ " $OTHER_OS " != *" $(fbasename $dir) "* && -n $(exist-wildcard $dir/*.h) ]]; then
+            # This is a directory containing headers, not specific to another operating system.
+            ALL_INCLUDES="$ALL_INCLUDES $dir"
         fi
     done
 fi
-CXXFLAGS_INCLUDES="$CXXFLAGS_INCLUDES $CXXFLAGS_PUBLIC_INCLUDES"
+
+# Classify the directories containing headers.
+# Done everytime, only based on string matching.
+for dir in $ALL_INCLUDES; do
+    case $dir in
+        */libtscore/*/private|*/libtscore/private)
+            # Private directory in libtscore. Only used when compiling libtscore.
+            LIBTSCORE_CXXFLAGS_INCLUDES="$LIBTSCORE_CXXFLAGS_INCLUDES -I$dir"
+            ;;
+        */libtsduck/*/private|*/libtsduck/private)
+            # Private directory in libtsduck. Only used when compiling libtsduck.
+            LIBTSDUCK_CXXFLAGS_INCLUDES="$LIBTSDUCK_CXXFLAGS_INCLUDES -I$dir"
+            ;;
+        */libtscore/*|*/libtscore)
+            # Public directory in libtscore. Used everywhere.
+            LIBTSCORE_INCLUDES="$LIBTSCORE_INCLUDES $dir"
+            LIBTSCORE_CXXFLAGS_INCLUDES="$LIBTSCORE_CXXFLAGS_INCLUDES -I$dir"
+            LIBTSDUCK_CXXFLAGS_INCLUDES="$LIBTSDUCK_CXXFLAGS_INCLUDES -I$dir"
+            APPS_CXXFLAGS_INCLUDES="$APPS_CXXFLAGS_INCLUDES -I$dir"
+            ;;
+        */libtsduck/*|*/libtsduck)
+            # Public directory in libtsduck. Used everywhere, except when compiling libtscore.
+            LIBTSDUCK_INCLUDES="$LIBTSDUCK_INCLUDES $dir"
+            LIBTSDUCK_CXXFLAGS_INCLUDES="$LIBTSDUCK_CXXFLAGS_INCLUDES -I$dir"
+            APPS_CXXFLAGS_INCLUDES="$APPS_CXXFLAGS_INCLUDES -I$dir"
+            ;;
+    esac
+done
 
 # Obsolete plugins, were in separate shared libraries, now in libtsduck.so.
 # Maintenance: also update pkg/nsis/tsduck.nsi (Windows).

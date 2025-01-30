@@ -43,7 +43,7 @@ if [[ "$1" == --commit ]]; then
     [[ $(echo -n "$SHA" | wc -c) -eq 40 ]] || error "suspect commit SHAR '$SHA', should be 40 hex chars"
 
     # Get the TSDuck version from the source file.
-    VERSION=$(curl -sL "https://raw.githubusercontent.com/tsduck/tsduck/$SHA/src/libtsduck/tsVersion.h" |
+    VERSION=$(curl -sL "https://raw.githubusercontent.com/tsduck/tsduck/$SHA/src/libtscore/tsVersion.h" |
               sed -e '/#define *TS_/!d' -e 's|^.*#define *[A-Z_]* *||' |
               tr '\r\n' '  ' |
               sed -e 's|^ *\([0-9]*\)  *\([0-9]*\)  *\([0-9]*\) *$|\1.\2-\3|')

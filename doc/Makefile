@@ -61,7 +61,7 @@ ADOCFLAGS_PDF  = $(ADOCFLAGS) -a pdf-themesdir="$(ADOCDIR)" -a pdf-theme="$(THEM
 # Not really all .png images are used, but the exact list may vary while the documents are edited.
 # So, better rebuild if an image was added or updated.
 
-COMMON_INPUTS      = $(ADOCDIR)/attributes.adoc $(ADOCDIR)/macros.rb $(wildcard $(IMAGESDIR)/*.png) $(LIBTSDUCKDIR)/tsVersion.h
+COMMON_INPUTS      = $(ADOCDIR)/attributes.adoc $(ADOCDIR)/macros.rb $(wildcard $(IMAGESDIR)/*.png) $(LIBTSCOREDIR)/tsVersion.h
 COMMON_INPUTS_HTML = $(COMMON_INPUTS) $(CSSFILE) $(BINDOCINFO)/docinfo.html $(BINDOCINFO)/docinfo-footer.html
 COMMON_INPUTS_PDF  = $(COMMON_INPUTS) $(THEMEFILE)
 

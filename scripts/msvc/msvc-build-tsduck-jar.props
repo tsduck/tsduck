@@ -8,7 +8,7 @@
   </ItemGroup>
 
   <Target Name="BuildTSDuckJar"
-          Inputs="@(JavaSources);$(TSDuckRootDir)src\libtsduck\tsVersion.h"
+          Inputs="@(JavaSources);$(TSDuckRootDir)src\libtscore\tsVersion.h"
           Outputs="$(TSDuckRootDir)bin\java\tsduck.jar">
 	<Message Text="Building $(TSDuckRootDir)bin\java\tsduck.jar" Importance="high"/>
     <Exec ConsoleToMSBuild='true'

@@ -166,7 +166,7 @@ by the "autobump" workflow.
 ===== Updating the version number
 
 Once a release is published, the minor version number of TSDuck `TS_VERSION_MINOR`
-must be updated in the source file `src/libtsduck/tsVersion.h`.
+must be updated in the source file `src/libtscore/tsVersion.h`.
 
 This is currently not automated and shall be manually updated before
 the first commit following the publication of a new release.

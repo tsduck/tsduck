@@ -59,7 +59,7 @@ def version():
     match = re.search(r'^ *#define +TS_VERSION_MAJOR +(\d+) *$.*' +
                       r'^ *#define +TS_VERSION_MINOR +(\d+) *$.*' +
                       r'^ *#define +TS_COMMIT +(\d+) *$',
-                      read(repo_root() + '/src/libtsduck/tsVersion.h'),
+                      read(repo_root() + '/src/libtscore/tsVersion.h'),
                       re.MULTILINE | re.DOTALL)
     if match is None:
         return 0, 0, 0

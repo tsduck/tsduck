@@ -44,7 +44,7 @@ export PATH=$PATH:/usr/local/bin
 [[ -n "$(which ggrep 2>/dev/null)" ]] && grep() { ggrep "$@"; }
 
 # The commit number is in tsVersion.h
-SRCFILE="$ROOTDIR/src/libtsduck/tsVersion.h"
+SRCFILE="$ROOTDIR/src/libtscore/tsVersion.h"
 PREFIX="#define TS_COMMIT"
 
 # Max of two values.

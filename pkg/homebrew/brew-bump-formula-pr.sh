@@ -46,7 +46,7 @@ rm -rf "$TMPDIR"
 mkdir -p "$TMPDIR"
 curl -sL "$URL" -o "$TARFILE" || error "error downloading $URL"
 [[ -f "$TARFILE" ]] || error "error downloading $URL"
-tar tzf "$TARFILE" | grep -q src/libtsduck/tsVersion.h || error "invalid source tar file, tsVersion.h not found"
+tar tzf "$TARFILE" | grep -q src/libtscore/tsVersion.h || error "invalid source tar file, tsVersion.h not found"
 V=$(tar xzf "$TARFILE" --to-stdout '*/tsVersion.h' | sed -e '/^#define TS_/!d' -e 's/^#define TS_.* //' | tr '\n' .)
 [[ ${V/%./} == ${VERSION//-/.} ]] || error "version in tsVersion.h does not match $VERSION"
 

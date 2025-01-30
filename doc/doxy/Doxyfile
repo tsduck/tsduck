@@ -18,7 +18,7 @@ PROJECT_LOGO   = ../../images/tsduck-48.png
 
 # Input and output files:
 
-INPUT            = . ../../src/libtsduck
+INPUT            = . ../../src/libtscore ../../src/libtsduck
 FILE_PATTERNS    = *.h *.dox *.md *.java *.py
 EXCLUDE_PATTERNS = */private/* README.md tsPreConfiguration.h
 RECURSIVE        = YES

@@ -13,6 +13,8 @@ include ../../Makefile.inc
 EXECS := $(addprefix $(BINDIR)/,$(TSTOOLS))
 ALLTOOLS := $(sort $(basename $(wildcard ts*.cpp)))
 
+CXXFLAGS_INCLUDES += $(APPS_CXXFLAGS_INCLUDES)
+
 default: $(EXECS) tsduck-completion.bash
 	@true
 

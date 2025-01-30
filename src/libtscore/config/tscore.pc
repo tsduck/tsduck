@@ -1,0 +1,12 @@
+prefix={{PREFIX}}
+libdir={{LIBDIR}}
+
+Name: TSCore
+Description: TSDuck core library
+URL: https://tsduck.io/
+Version: {{VERSION}}
+Requires: libcrypto
+Requires.private: libcurl, zlib, libedit
+Libs: -L${libdir} -ltscore
+Libs.private: -lprocstat -lkvm -lpthread -lrt -latomic -ldl -lm -lstdc++
+Cflags: -I${prefix}/include/tscore {{STDCPP}}

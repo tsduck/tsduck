@@ -95,7 +95,7 @@ def get_tsduck_version():
     match = re.search(r'^ *#define +TS_VERSION_MAJOR +(\d+) *$.*' +
                       r'^ *#define +TS_VERSION_MINOR +(\d+) *$.*' +
                       r'^ *#define +TS_COMMIT +(\d+) *$',
-                      repo.get_text_file('src/libtsduck/tsVersion.h'),
+                      repo.get_text_file('src/libtscore/tsVersion.h'),
                       re.MULTILINE | re.DOTALL)
     return None if match is None else '%s.%s-%s' % (match.group(1), match.group(2), match.group(3))
 

@@ -15,7 +15,7 @@ include ../../Makefile.inc
 
 # Most source files are located in subdirectories but should be considered as part of libtsduck.
 
-VPATH := $(filter-out $(addprefix %/,$(OTHER_OS)) $(if $(NOJAVA),java/% %/java) $(if $(NOPYTHON),python/% %/python), \
+VPATH := $(filter-out $(OTHER_OS) $(addprefix %/,$(OTHER_OS)) $(if $(NOJAVA),java/% %/java) $(if $(NOPYTHON),python/% %/python), \
            $(patsubst %/,%,$(sort $(dir $(wildcard */*.cpp */*/*.cpp */*/*/*.cpp)))))
 VPATH_SOURCES := $(sort $(notdir $(wildcard $(addsuffix /*.cpp,$(VPATH)))))
 
@@ -47,30 +47,15 @@ TSDUCK_H = $(BINDIR)/include/tsduck.h
 headers: $(TSDUCK_H)
 $(TSDUCK_H): $(wildcard *.h */*.h */*/*.h */*/*/*.h)
 	$(call LOG,[GEN] $(notdir $@)) mkdir -p $(dir $@); \
-	$(PYTHON) $(SCRIPTSDIR)/build-tsduck-header.py $@
+	$(PYTHON) $(SCRIPTSDIR)/build-tsduck-header.py tsduck $@
 
 $(OBJDIR)/tsduck.o: $(TSDUCK_H)
 $(OBJDIR)/tsduck.o: CXXFLAGS_INCLUDES += -I$(dir $(TSDUCK_H))
 
-# The private headers are used internally to libtsduck.
+# Specific compilation options:
 
 CXXFLAGS_INCLUDES += $(LIBTSDUCK_CXXFLAGS_INCLUDES)
-
-# Specific (per-module) compilation options:
-
 $(OBJDIR)/tsDVBCSA2.o: CXXFLAGS_OPTIMIZE = $(CXXFLAGS_FULLSPEED)
-
-ifeq ($(LOCAL_OS)-$(subst aarch64,arm64,$(LOCAL_ARCH)),linux-arm64)
-    # On Linux Arm64, allow the usage of specialized instructions by the compiler.
-    # The code will explicitly check at run time if they are supported before using them.
-    # We must limit this to specialized modules which are never called when these
-    # instructions are not supported.
-    $(OBJDIR)/tsCRC32.accel.o: CXXFLAGS_TARGET = -march=armv8-a+crc
-endif
-
-# Add libtsduck internal headers when compiling libtsduck.
-
-CXXFLAGS_INCLUDES += $(CXXFLAGS_PRIVATE_INCLUDES)
 
 # By default, both static and dynamic libraries are created but only use
 # the dynamic one when building tools and plugins. In case of static build,
@@ -146,22 +131,9 @@ install-tools: $(SHARED_LIBTSDUCK)
 	install -m 644 $(SHARED_LIBTSDUCK) $(SYSROOT)$(USRLIBDIR)
 	+@$(call RECURSE,config $(if $(NOPYTHON),,python) $(if $(NOJAVA),,java))
 
-PRECONFIG = $(SYSROOT)$(SYSPREFIX)/include/tsduck/tsPreConfiguration.h
-
 install-devel: $(if $(NOSTATIC),,$(STATIC_LIBTSDUCK)) $(TSDUCK_H)
 	rm -rf $(SYSROOT)$(SYSPREFIX)/include/tsduck
 	install -d -m 755 $(SYSROOT)$(USRLIBDIR) $(SYSROOT)$(SYSPREFIX)/include/tsduck
 	$(if $(NOSTATIC),,install -m 644 $(STATIC_LIBTSDUCK) $(SYSROOT)$(USRLIBDIR))
-	install -m 644 $(addsuffix /*.h,$(PUBLIC_INCLUDES)) $(TSDUCK_H) $(SYSROOT)$(SYSPREFIX)/include/tsduck
-	$(if $(NOOPENSSL), echo '#define TS_NO_OPENSSL 1' >>$(PRECONFIG))
-	$(if $(NOPCSC), echo '#define TS_NO_PCSC 1' >>$(PRECONFIG))
-	$(if $(NOGITHUB), echo '#define TS_NO_GITHUB 1' >>$(PRECONFIG))
-	$(if $(NODTAPI), echo '#define TS_NO_DTAPI 1' >>$(PRECONFIG))
-	$(if $(NOHIDES), echo '#define TS_NO_HIDES 1' >>$(PRECONFIG))
-	$(if $(NOVATEK), echo '#define TS_NO_VATEK 1' >>$(PRECONFIG))
-	$(if $(NOEDITLINE), echo '#define TS_NO_EDITLINE 1' >>$(PRECONFIG))
-	$(if $(NOCURL), echo '#define TS_NO_CURL 1' >>$(PRECONFIG))
-	$(if $(NOZLIB), echo '#define TS_NO_ZLIB 1' >>$(PRECONFIG))
-	$(if $(NOSRT), echo '#define TS_NO_SRT 1' >>$(PRECONFIG))
-	$(if $(NORIST), echo '#define TS_NO_RIST 1' >>$(PRECONFIG))
+	install -m 644 $(addsuffix /*.h,$(LIBTSDUCK_INCLUDES)) $(TSDUCK_H) $(SYSROOT)$(SYSPREFIX)/include/tsduck
 	+@$(call RECURSE,config $(if $(NOPYTHON),,python) $(if $(NOJAVA),,java))

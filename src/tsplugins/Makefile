@@ -16,6 +16,7 @@ ifeq ($(STATIC),)
 
 # Dynamic link (the default), we build shared objects.
 SHLIBS := $(addprefix $(BINDIR)/,$(addsuffix $(SO_SUFFIX),$(TSPLUGINS)))
+CXXFLAGS_INCLUDES += $(APPS_CXXFLAGS_INCLUDES)
 
 default: shlibs
 	@true

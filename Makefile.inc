@@ -56,7 +56,7 @@ _SHELL_LINES = $(subst -=EOL=-,$(NL),$(shell ($(1)) | sed 's/$$/-=EOL=-/'))
 # the project root.
 
 _ROOTDIR := $(abspath $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST)))))
-_EXCLUDES = ^% @% *% \%% <% >% +% -% _% ?% .% ALL_% ANDROID_% PREPROCESS.% COMPILE.% LINK.% LINT.% CPPFLAGS CXXFLAGS %_INCLUDES GITHUB_%
+_EXCLUDES = ^% @% *% \%% <% >% +% -% _% ?% .% PS1 PS2 PROMPT_% DBUS_% HIST% ALL_% ANDROID_% PREPROCESS.% COMPILE.% LINK.% LINT.% CPPFLAGS CXXFLAGS %_INCLUDES GITHUB_%
 _VARIABLES = $(filter-out $(_EXCLUDES),$(.VARIABLES)) ALL_INCLUDES
 $(eval $(call _SHELL_LINES,$(_ROOTDIR)/scripts/make-config.sh $(foreach v,$(_VARIABLES),$(v)='$($(v))')))
 

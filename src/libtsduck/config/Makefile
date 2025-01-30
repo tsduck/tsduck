@@ -11,7 +11,7 @@
 DONT_BUILD_DEPS := TRUE
 include ../../../Makefile.inc
 
-CONFIGS_SRC  = $(filter-out %.skeleton.xml %.skeleton.names,$(wildcard tsduck*.xml tsduck*.names))
+CONFIGS_SRC  = $(filter-out %.skeleton.xml,$(wildcard tsduck*.xml tsduck*.names))
 CONFIGS_DEST = $(addprefix $(BINDIR)/,$(CONFIGS_SRC))
 TABLES_SRC   = tsduck.tables.skeleton.xml
 TABLES_SUBS  = $(wildcard ../dtv/tables/*/*.xml ../dtv/descriptors/*/*.xml)

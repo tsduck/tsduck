@@ -23,6 +23,8 @@ EXECS := $(addprefix $(BINDIR)/,$(filter-out setpath $(if $(NOTEST)$(NOSTATIC),t
 .PHONY: execs
 execs: $(EXECS)
 
+CXXFLAGS_INCLUDES += $(APPS_CXXFLAGS_INCLUDES)
+
 # We always build tsprofiling with the static library.
 
 STATIC_DEPS = $(addprefix $(BINDIR)/objs-tsplugins/,$(addsuffix .o,$(TSPLUGINS))) $(STATIC_LIBTSDUCK)
