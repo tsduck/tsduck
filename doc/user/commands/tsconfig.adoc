@@ -64,7 +64,7 @@ Display command help text.
 *--include*
 
 [.optdoc]
-Display the include directory.
+Display the include directories.
 
 [.opt]
 *--install-dvb-firmware*
@@ -107,7 +107,7 @@ In a makefile, this is used in `LDLIBS`.
 *--nostdcpp*
 
 [.optdoc]
-When present before `--cflags`, no {cpp} standard level is imposed in the compilation flags.
+When present, no {cpp} standard level is imposed in the compilation flags.
 
 [.optdoc]
 By default, the command `tsconfig --cflags` forces {cpp}20 as level of {cpp} language standard.
@@ -153,6 +153,16 @@ Display the shared object files extension (`.so`, `.dylib`, `.dll`).
 [.optdoc]
 Display the static library linking flags.
 In a makefile, this is used in `LDLIBS`.
+
+[.opt]
+*--tscore*
+
+[.optdoc]
+Use the TSDuck core library (`libtscore`) only, not the complete TSDuck library (`libtsduck`).
+The TSDuck core library contains generic {cpp} classes for applications but does
+not contains all Digital TV classes. When the Digital TV classes are not needed,
+using this option dramatically reduces the memory footprint of the application
+and speeds up its startup.
 
 [.opt]
 *--vernum*

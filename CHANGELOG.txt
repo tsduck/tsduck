@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.40-4088 (Jan 2025)
+VERSION 3.40-4134 (Feb 2025)
 
 [NEW] New commands and plugins:
 
@@ -17,6 +17,7 @@ VERSION 3.40-4088 (Jan 2025)
     - Option --dvb in all commands and plugins where options --atsc, --isdb and
       similar options on regional standards were defined.
     - Option --only-pid in the plugin "scrambler".
+    - Option --tscore in "tsconfig".
 
 [BUG] Bug fixes:
 

@@ -33,11 +33,12 @@ Syntax: $SCRIPT [options]
   --lib         directory for TSDuck dynamic libraries (except plugins)
   --plugin      directory for TSDuck plugins
   --config      directory for TSDuck configuration files
-  --include     include directory
+  --include     include directories
   --java        jar file for TSDuck Java bindings, to be added in CLASSPATH
   --python      directory for TSDuck Python bindings, to be added in PYTHONPATH
 
-  --nostdcpp    when present before --cflags, do not impose a C++ standard level
+  --tscore      use libtscore only, not libtsduck (reduced footprint)
+  --nostdcpp    do not impose a C++ standard level in cflags
   --help        display this help and exit
   --version     output version information
   --vernum      output the version information as a number
@@ -69,8 +70,18 @@ cmd_config() {
     echo "$(cmd_prefix)/share/tsduck"
 }
 
+incl_preconfig() {
+    echo "$(cmd_prefix)/include/tscore/tsPreConfiguration.h"
+}
+
+incl_version() {
+    echo "$(cmd_prefix)/include/tscore/tsVersion.h"
+}
+
 cmd_include() {
-    echo "$(cmd_prefix)/include/tsduck"
+    local dir=
+    [[ -z $TS_TSCORE ]] && dir="$(cmd_prefix)/include/tsduck "
+    echo "${dir}$(cmd_prefix)/include/tscore"
 }
 
 cmd_java() {
@@ -83,27 +94,23 @@ cmd_python() {
 }
 
 no_pcsc() {
-    grep -q TS_NO_PCSC "$(cmd_include)/tsPreConfiguration.h" 2>/dev/null
+    grep -q TS_NO_PCSC $(incl_preconfig) 2>/dev/null
 }
 
 no_zlib() {
-    grep -q TS_NO_ZLIB "$(cmd_include)/tsPreConfiguration.h" 2>/dev/null
+    grep -q TS_NO_ZLIB $(incl_preconfig) 2>/dev/null
 }
 
 no_srt() {
-    grep -q TS_NO_SRT "$(cmd_include)/tsPreConfiguration.h" 2>/dev/null
+    grep -q TS_NO_SRT $(incl_preconfig) 2>/dev/null
 }
 
 no_rist() {
-    grep -q TS_NO_RIST "$(cmd_include)/tsPreConfiguration.h" 2>/dev/null
+    grep -q TS_NO_RIST $(incl_preconfig) 2>/dev/null
 }
 
 cmd_lib() {
-    dirname $(ls $(cmd_prefix)/lib*/libtsduck$(cmd_so) 2>/dev/null | head -1) 2>/dev/null
-}
-
-cmd_nostdcpp() {
-    TS_NOSTDCPP=true
+    dirname $(ls $(cmd_prefix)/lib*/libtscore$(cmd_so) 2>/dev/null | head -1) 2>/dev/null
 }
 
 brewprefix() {
@@ -117,9 +124,11 @@ brewprefix() {
 cmd_cflags() {
     local pcsc=
     local std="{{STDCPP}}"
-    [[ $SYSTEM == Linux && -d /usr/include/PCSC ]] && ! $(no_pcsc) && pcsc="-I/usr/include/PCSC"
-    [[ -n "$TS_NOSTDCPP" ]] && std=""
-    echo "-I$(cmd_include) $(brewprefix -I /include) $pcsc $std"
+    local inc=
+    [[ -z $TS_TSCORE && $SYSTEM == Linux && -d /usr/include/PCSC ]] && ! $(no_pcsc) && pcsc="-I/usr/include/PCSC"
+    [[ -n $TS_NOSTDCPP ]] && std=""
+    [[ -z $TS_TSCORE ]] && inc="-I$(cmd_prefix)/include/tsduck"
+    echo "$inc -I$(cmd_prefix)/include/tscore $(brewprefix -I /include) $pcsc $std"
 }
 
 cmd_so() {
@@ -136,8 +145,8 @@ libs_common() {
     local pcsc=
     local rt=
     local dl=
-    [[ $SYSTEM == Darwin ]] && ! $(no_pcsc) && pcsc="-framework PCSC"
-    [[ $SYSTEM == Linux && -d /usr/include/PCSC ]] && ! $(no_pcsc) && pcsc="-lpcsclite"
+    [[ -z $TS_TSCORE && $SYSTEM == Darwin ]] && ! $(no_pcsc) && pcsc="-framework PCSC"
+    [[ -z $TS_TSCORE && $SYSTEM == Linux && -d /usr/include/PCSC ]] && ! $(no_pcsc) && pcsc="-lpcsclite"
     [[ $SYSTEM == Linux ]] && rt="-lrt"
     [[ $SYSTEM == OpenBSD ]] || dl="-ldl"
     echo "$(brewprefix -L /lib) $pcsc -lpthread $rt $dl -lm -lstdc++"
@@ -147,35 +156,39 @@ cmd_libs() {
     local lib=$(cmd_lib)
     local usrlib=/usr/lib
     local lopt=
+    local lib1=
     [[ -n $(ls /usr/lib64/libc.so* 2>/dev/null) ]] && usrlib=/usr/lib64
     [[ $lib != $usrlib ]] && lopt="-L$lib"
-    echo "$lopt -ltsduck $(libs_common)"
+    [[ -z $TS_TSCORE ]] && lib1="-ltsduck"
+    echo "$lopt $lib1 -ltscore $(libs_common)"
 }
 
 cmd_staticlibs() {
+    local lib1=
     local zlib=
     local srt=
     local rist=
     local other=
+    [[ -z $TS_TSCORE ]] && lib1="$(cmd_lib)/libtsduck.a"
     $(no_zlib) || zlib="-lz"
     $(no_srt) || srt=$(ls /usr/lib/libsrt.a /usr/local/lib/libsrt.a /opt/homebrew/lib/libsrt.a 2>/dev/null | head -1)
     $(no_rist) || rist=$(ls /usr/lib/librist.a /usr/local/lib/librist.a /opt/homebrew/lib/librist.a 2>/dev/null | head -1)
     [[ $SYSTEM == Linux ]] && other="$other -latomic"
     [[ $SYSTEM == FreeBSD ]] && other="$other -lprocstat"
     [[ $SYSTEM == OpenBSD || $SYSTEM == NetBSD ]] && other="$other -lkvm"
-    echo "$(cmd_lib)/libtsduck.a $srt $rist $zlib $(curl-config --static-libs 2>/dev/null) -ledit $other $(libs_common)"
+    echo "$lib1 $(cmd_lib)/libtscore.a $srt $rist $zlib $(curl-config --static-libs 2>/dev/null) -ledit $other $(libs_common)"
 }
 
 version_major() {
-    sed -e '/#define *TS_VERSION_MAJOR/!d' -e 's/ *$//' -e 's/.* //' $(cmd_include)/tsVersion.h 2>/dev/null
+    sed -e '/#define *TS_VERSION_MAJOR/!d' -e 's/ *$//' -e 's/.* //' $(incl_version) 2>/dev/null
 }
 
 version_minor() {
-    sed -e '/#define *TS_VERSION_MINOR/!d' -e 's/ *$//' -e 's/.* //' $(cmd_include)/tsVersion.h 2>/dev/null
+    sed -e '/#define *TS_VERSION_MINOR/!d' -e 's/ *$//' -e 's/.* //' $(incl_version) 2>/dev/null
 }
 
 version_commit() {
-    sed -e '/#define *TS_COMMIT/!d' -e 's/ *$//' -e 's/.* //' $(cmd_include)/tsVersion.h 2>/dev/null
+    sed -e '/#define *TS_COMMIT/!d' -e 's/ *$//' -e 's/.* //' $(incl_version) 2>/dev/null
 }
 
 cmd_version() {
@@ -215,7 +228,20 @@ cmd_install_firmware() {
         tar -C "$fwdir" -xzpvf - --strip-components=2 --wildcards 'OpenELEC-dvb-firmware-*/firmware'
 }
 
-if [ $# -eq 0 ]; then
+# Main processing. First pass: get global options.
+TS_NOSTDCPP=
+TS_TSCORE=
+TS_ARGS=()
+for arg in "$@"; do
+    case "$arg" in
+        --nostdcpp) TS_NOSTDCPP=true ;;
+        --tscore) TS_TSCORE=true ;;
+        *) TS_ARGS+=("$arg")
+    esac
+done
+
+# Second pass: process the options.
+if [ ${#TS_ARGS[@]} -eq 0 ]; then
     # No option, display everything.
     echo "version: $(cmd_version)"
     echo "prefix: $(cmd_prefix)"
@@ -232,7 +258,7 @@ if [ $# -eq 0 ]; then
     echo "python: $(cmd_python)"
 else
     # Display options one by one.
-    for arg in "$@"; do
+    for arg in "${TS_ARGS[@]}"; do
         case "$arg" in
             --bin) cmd_bin ;;
             --cflags) cmd_cflags ;;
@@ -242,7 +268,6 @@ else
             --java) cmd_java ;;
             --lib) cmd_lib ;;
             --libs) cmd_libs ;;
-            --nostdcpp) cmd_nostdcpp ;;
             --plugin) cmd_plugin ;;
             --prefix) cmd_prefix ;;
             --python) cmd_python ;;
