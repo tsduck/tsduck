@@ -96,7 +96,6 @@ $(STATIC_LIBTSCORE): $(OBJS_STATIC_LIB)
 
 install-tools: $(SHARED_LIBTSCORE)
 	install -d -m 755 $(SYSROOT)$(USRLIBDIR)
-	$(if $(MACOS),rm -rf $(SYSROOT)$(USRLIBDIR)/libtscore.so,)
 	install -m 644 $(SHARED_LIBTSCORE) $(SYSROOT)$(USRLIBDIR)
 	+@$(call RECURSE,config)
 

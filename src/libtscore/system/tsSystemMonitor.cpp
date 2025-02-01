@@ -211,13 +211,13 @@ bool ts::SystemMonitor::loadConfigurationFile(const UString& config)
     // Load the repository XML file. Search it in TSDuck directory if the default file is used.
     const bool use_default_config = config.empty();
     xml::Document doc(_report);
-    if (!doc.load(use_default_config ? u"tsduck.monitor.xml" : config, use_default_config)) {
+    if (!doc.load(use_default_config ? u"tscore.monitor.xml" : config, use_default_config)) {
         return false;
     }
 
     // Load the XML model. Search it in TSDuck directory.
     xml::ModelDocument model(_report);
-    if (!model.load(u"tsduck.monitor.model.xml", true)) {
+    if (!model.load(u"tscore.monitor.model.xml", true)) {
         _report.error(u"Model for TSDuck system monitoring XML files not found");
         return false;
     }

@@ -1,14 +1,11 @@
-CONFIG += plugin
+CONFIG += plugin libtscore
 include(../tsduck.pri)
 TEMPLATE = lib
 TARGET = libtsduck
 INCLUDEPATH += $$system("find $$SRCROOT/libtsduck -type d ! -name windows ! -name \\*bsd ! -name $$NOSYSDIR ! -name __pycache__")
 
 linux|mac {
-    QMAKE_CXXFLAGS += $$system("curl-config --cflags")
     LIBS += $$system("$$PROJROOT/scripts/vatek-config.sh --ldlibs")
-    LIBS += $$system("curl-config --libs")
-    LIBS += -lcrypto
 }
 
 linux {

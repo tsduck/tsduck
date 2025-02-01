@@ -23,13 +23,13 @@ tsduck-completion.bash: $(addsuffix .cpp,$(ALLTOOLS))
 
 ifeq ($(STATIC),)
     # With dynamic link (the default), we use the shareable library.
-    $(EXECS): $(SHARED_LIBTSDUCK)
+    $(EXECS): $(SHARED_LIBTSDUCK) $(SHARED_LIBTSCORE)
 else
     # With static link, we compile in a specific directory and we link tsp with all plugins.
     LDFLAGS_EXTRA += -static
     LDLIBS_EXTRA += $(LIBTSDUCK_LDLIBS)
     $(BINDIR)/tsp: $(addprefix $(BINDIR)/objs-tsplugins/,$(addsuffix .o,$(TSPLUGINS)))
-    $(EXECS): $(STATIC_LIBTSDUCK)
+    $(EXECS): $(STATIC_LIBTSDUCK) $(STATIC_LIBTSCORE)
 endif
 
 # Some executables depend on PCSC.

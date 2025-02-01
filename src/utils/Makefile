@@ -27,11 +27,11 @@ CXXFLAGS_INCLUDES += $(APPS_CXXFLAGS_INCLUDES)
 
 # We always build tsprofiling with the static library.
 
-STATIC_DEPS = $(addprefix $(BINDIR)/objs-tsplugins/,$(addsuffix .o,$(TSPLUGINS))) $(STATIC_LIBTSDUCK)
+STATIC_DEPS = $(addprefix $(BINDIR)/objs-tsplugins/,$(addsuffix .o,$(TSPLUGINS))) $(STATIC_LIBTSDUCK) $(STATIC_LIBTSCORE)
 ifeq ($(STATIC),)
     $(BINDIR)/tsprofiling: $(STATIC_DEPS)
-    $(BINDIR)/tsprofiling: LDLIBS_EXTRA += $(LIBTSDUCK_LDLIBS)
-    $(filter-out $(BINDIR)/tsprofiling,$(EXECS)): $(SHARED_LIBTSDUCK)
+    $(BINDIR)/tsprofiling: LDLIBS_EXTRA += $(LIBTSDUCK_LDLIBS) $(LIBTSCORE_LDLIBS)
+    $(filter-out $(BINDIR)/tsprofiling,$(EXECS)): $(SHARED_LIBTSDUCK) $(SHARED_LIBTSCORE)
 else
     LDFLAGS_EXTRA = -static
     $(EXECS): $(STATIC_DEPS)

@@ -113,7 +113,7 @@ Options::Options(int argc, char *argv[]) :
 
     option(u"monitor");
     help(u"monitor",
-         u"A shortcut for '--model tsduck.monitor.model.xml'. "
+         u"A shortcut for '--model tscore.monitor.model.xml'. "
          u"It verifies that the input files are valid system monitoring configuration files.");
 
     option(u"output", 'o', FILENAME);

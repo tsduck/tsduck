@@ -14,4 +14,4 @@ TSDIRS = $$system(cd $$_PRO_FILE_PWD_; find . -maxdepth 1 -type d -name ts\\*)
 TSDIRS = $$replace(TSDIRS,./,)
 TSDIRS = $$replace(TSDIRS,tsxml,)
 TSDIRS = $$sorted(TSDIRS)
-SUBDIRS += libtsduck tsxml $$TSDIRS utest
+SUBDIRS += libtscore libtsduck tsxml $$TSDIRS utest

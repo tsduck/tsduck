@@ -54,7 +54,7 @@ def write(filename, content):
         f.write(content)
 
 # Get the TSDuck version from the file tsVersion.h.
-# Return as major, minor, commit/
+# Return as major, minor, commit.
 def version():
     match = re.search(r'^ *#define +TS_VERSION_MAJOR +(\d+) *$.*' +
                       r'^ *#define +TS_VERSION_MINOR +(\d+) *$.*' +

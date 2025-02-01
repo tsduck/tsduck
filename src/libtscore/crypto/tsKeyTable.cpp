@@ -118,7 +118,7 @@ bool ts::KeyTable::parseXML(xml::Document& doc, bool replace, size_t id_size, si
 {
     // Load the XML model. Search it in TSDuck directory.
     xml::ModelDocument model(doc.report());
-    if (!model.load(u"tsduck.keytable.model.xml", true)) {
+    if (!model.load(u"tscore.keytable.model.xml", true)) {
         doc.report().error(u"Model for TSDuck key table XML files not found");
         return false;
     }

@@ -626,7 +626,7 @@ elif [[ -n $DRAGONFLYBSD ]]; then
 elif [[ -n $MACOS ]]; then
     [[ $LLVM_MAJOR -ge 15 ]] && dup="-no_warn_duplicate_libraries" || $dup=
     LDFLAGS_LINKER="-Wl,-rpath,@executable_path -Wl,-rpath,@executable_path/../lib -Xlinker $dup"
-    SOFLAGS="-install_name '@rpath/\$(notdir \$@)'"
+    SOFLAGS="-Wl,-rpath,@loader_path -install_name '@rpath/\$(notdir \$@)'"
 fi
 
 # Global compilation flags, only based on other sub-variables (substitution will be done by make).

@@ -101,8 +101,8 @@ make %{?_smp_mflags} %{makeflags}
 %install
 rm -rf $RPM_BUILD_ROOT
 make %{makeflags} install SYSROOT=$RPM_BUILD_ROOT
-# Weird note: libtsduck.so needs to be executable, otherwise rpm does not consider it as a valid dependency.
-chmod 0755 $RPM_BUILD_ROOT/usr/lib*/libtsduck.so
+# Weird note: shared libraries needs to be executable, otherwise rpm does not consider them as valid dependencies.
+chmod 0755 $RPM_BUILD_ROOT/usr/lib*/libts*.so
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -110,6 +110,7 @@ rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(-,root,root,-)
 %{_bindir}/ts*
+%{_libdir}/libtscore.so
 %{_libdir}/libtsduck.so
 %{_libdir}/tsduck
 %{_datadir}/tsduck
@@ -127,8 +128,11 @@ rm -rf $RPM_BUILD_ROOT
 
 %files devel
 %defattr(-,root,root,-)
+%{_libdir}/libtscore.a
 %{_libdir}/libtsduck.a
+%{_includedir}/tscore
 %{_includedir}/tsduck
+%{_datadir}/pkgconfig/tscore.pc
 %{_datadir}/pkgconfig/tsduck.pc
 %if 0%{!?nodoc:1}
 %{_docdir}/tsduck/tsduck-dev.html

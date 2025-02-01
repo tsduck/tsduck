@@ -5,7 +5,7 @@ Name: TSDuck
 Description: MPEG Transport Stream Toolkit
 URL: https://tsduck.io/
 Version: {{VERSION}}
-Requires: libpcsclite, libcrypto
+Requires: tscore, libpcsclite, libcrypto
 Requires.private: libcurl, zlib, srt, librist, libedit, libusb-1.0
 Libs: -L${libdir} -ltsduck
 Libs.private: -lprocstat -lkvm -lpthread -lrt -latomic -ldl -lm -lstdc++

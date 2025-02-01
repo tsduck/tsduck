@@ -11,7 +11,7 @@
 DONT_BUILD_DEPS := TRUE
 include ../../../Makefile.inc
 
-CONFIGS_SRC  = $(wildcard tscore*.xml tscore*.names)
+CONFIGS_SRC  = $(wildcard tscore.*.xml tscore.*.names)
 CONFIGS_DEST = $(addprefix $(BINDIR)/,$(CONFIGS_SRC))
 
 # Main build targets.
@@ -30,8 +30,9 @@ $(BINDIR)/%: %
 
 install-tools:
 	install -d -m 755 $(SYSROOT)$(SYSPREFIX)/share/tsduck
-	install -m 644 $(CONFIGS_SRC) $(NAMES_DEST) $(DEKTEC_DEST) $(SYSROOT)$(SYSPREFIX)/share/tsduck
-	rm -f $(SYSROOT)$(SYSPREFIX)/share/tsduck/tsduck.names
+	install -m 644 $(CONFIGS_SRC) $(SYSROOT)$(SYSPREFIX)/share/tsduck
+	cd $(SYSROOT)$(SYSPREFIX)/share/tsduck; rm -f tsduck.names tsduck.ip.* tsduck.keytable.* tsduck.monitor.* tsduck.time.*
+
 install-devel:
 	install -d -m 755 $(SYSROOT)$(SYSPREFIX)/share/pkgconfig
 	sed -e 's|{{VERSION}}|$(shell $(GET_TSDUCK_VERSION) --dotted)|g' \

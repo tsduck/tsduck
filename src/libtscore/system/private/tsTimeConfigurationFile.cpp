@@ -24,7 +24,7 @@ ts::TimeConfigurationFile::TimeConfigurationFile()
     // Load the configuration XML file and model. Search them in TSDuck directory if the default file is used.
     xml::Document doc(CERR);
     xml::ModelDocument model(CERR);
-    if (!doc.load(u"tsduck.time.xml", true) || !model.load(u"tsduck.time.model.xml", true) || !model.validate(doc)) {
+    if (!doc.load(u"tscore.time.xml", true) || !model.load(u"tscore.time.model.xml", true) || !model.validate(doc)) {
         return;
     }
 

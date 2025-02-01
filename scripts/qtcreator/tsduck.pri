@@ -109,20 +109,20 @@ else {
 }
 tstool {
     # TSDuck tools shall use "CONFIG += tstool"
-    CONFIG += libtsduck config_files
+    CONFIG += libtscore libtsduck config_files
     TEMPLATE = app
     SOURCES += $$SRCROOT/tstools/$${TARGET}.cpp
 }
 util {
     # TSDuck utils shall use "CONFIG += util"
-    CONFIG += libtsduck config_files
+    CONFIG += libtscore libtsduck config_files
     PRE_TARGETDEPS += ../tsxml/tsxml
     TEMPLATE = app
     SOURCES += $$SRCROOT/utils/$${TARGET}.cpp
 }
 tsplugin {
     # TSP plugins shall use "CONFIG += tsplugin"
-    CONFIG += libtsduck plugin
+    CONFIG += libtscore libtsduck plugin
     TEMPLATE = lib
     SOURCES += $$SRCROOT/tsplugins/$${TARGET}.cpp
     QMAKE_POST_LINK += mkdir -p ../tsp $$escape_expand(\\n\\t)
@@ -130,8 +130,17 @@ tsplugin {
     QMAKE_POST_LINK += mkdir -p ../tsprofiling $$escape_expand(\\n\\t)
     QMAKE_POST_LINK += cp $${TARGET}$$SO ../tsprofiling $$escape_expand(\\n\\t)
 }
+libtscore {
+    # Applications using libtscore shall use "CONFIG += libtscore".
+    linux:QMAKE_LFLAGS += -Wl,--rpath=\'\$\$ORIGIN/../libtscore\'
+    LIBS = ../libtscore/libtscore$$SO $$LIBS
+    PRE_TARGETDEPS += ../libtscore/libtscore$$SO
+    DEPENDPATH += ../libtscore
+    INCLUDEPATH += $$system("find $$SRCROOT/libtscore -type d ! -name windows ! -name \\*bsd ! -name $$NOSYSDIR ! -name private ! -name __pycache__")
+}
 libtsduck {
     # Applications using libtsduck shall use "CONFIG += libtsduck".
+    CONFIG += libtscore
     linux:QMAKE_LFLAGS += -Wl,--rpath=\'\$\$ORIGIN/../libtsduck\'
     LIBS = ../libtsduck/libtsduck$$SO $$LIBS
     PRE_TARGETDEPS += ../libtsduck/libtsduck$$SO
@@ -139,14 +148,14 @@ libtsduck {
     INCLUDEPATH += $$system("find $$SRCROOT/libtsduck -type d ! -name windows ! -name \\*bsd ! -name $$NOSYSDIR ! -name private ! -name __pycache__")
 }
 config_files {
+    QMAKE_POST_LINK += cp $$SRCROOT/libtscore/config/*.names $$SRCROOT/libtscore/config/*.xml . $$escape_expand(\\n\\t)
     QMAKE_POST_LINK += cp $$SRCROOT/libtsduck/config/*.names $$SRCROOT/libtsduck/config/*.xml . $$escape_expand(\\n\\t)
-    QMAKE_POST_LINK += rm -f *.skeleton.names *.skeleton.xml $$escape_expand(\\n\\t)
+    QMAKE_POST_LINK += rm -f *.skeleton.xml $$escape_expand(\\n\\t)
     equals(DTAPI_HEADER, ''): DTAPI_INPUT = /dev/null
     else: DTAPI_INPUT = $$DTAPI_HEADER
     QMAKE_POST_LINK += $$PYTHON $$PROJROOT/scripts/build-dektec-names.py $$DTAPI_INPUT tsduck.dektec.names $$escape_expand(\\n\\t)
     QMAKE_POST_LINK += $$PYTHON $$PROJROOT/scripts/build-dtv-names.py \
                        tsduck.dtv.names \
-                       $$SRCROOT/libtsduck/base \
                        $$SRCROOT/libtsduck/dtv \
                        $$escape_expand(\\n\\t)
     QMAKE_POST_LINK += ../tsxml/tsxml --merge --sort _tables --sort _descriptors --uncomment \

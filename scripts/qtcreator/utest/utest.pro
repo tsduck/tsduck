@@ -1,4 +1,4 @@
-CONFIG += libtsduck config_files
+CONFIG += libtscore libtsduck config_files
 include(../tsduck.pri)
 TEMPLATE = app
 TARGET = utest

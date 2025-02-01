@@ -323,7 +323,7 @@ namespace ts {
         //! International Earth Rotation and Reference Systems Service (IERS), to ensure that the difference between the UTC and UT1
         //! readings will never exceed 0.9 seconds. >>
         //!
-        //! TSDuck uses a configuration file (tsduck.time.xml) to define the list of known leap seconds.
+        //! TSDuck uses a configuration file (tscore.time.xml) to define the list of known leap seconds.
         //!
         //! The TAI (International Atomic Time) starts Jan 1st 1958. Before this date, there is no leap second.
         //! Between 1958 and 1972, there are globally 10 leap seconds but they are not precisely allocated.

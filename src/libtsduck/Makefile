@@ -68,10 +68,11 @@ libs: $(if $(NOSTATIC),,$(STATIC_LIBTSDUCK)) $(if $(STATIC),,$(SHARED_LIBTSDUCK)
 # We change the current directory to OBJDIR and use object file names without directory,
 # otherwise the command line is too long when the directory path is long.
 
-$(SHARED_LIBTSDUCK): $(OBJS) $(DTAPI_OBJECT)
+$(SHARED_LIBTSDUCK): $(OBJS) $(DTAPI_OBJECT) $(SHARED_LIBTSCORE)
 	@echo '  [DTAPI] $(if $(DTAPI_OBJECT),using $(DTAPI_OBJECT),no DTAPI available)'
 	$(call LOG,[LD] $@) cd $(OBJDIR); \
-	$(CXX) $(SOFLAGS) $(LDFLAGS) $(notdir $(OBJS)) $(DTAPI_OBJECT) $(LIBTSDUCK_LDLIBS) $(LDLIBS_EXTRA) $(LDLIBS) -shared -o $@
+	$(CXX) $(SOFLAGS) $(LDFLAGS) $(notdir $(OBJS)) $(DTAPI_OBJECT) -L$(dir $(SHARED_LIBTSCORE)) -ltscore \
+	    $(LIBTSDUCK_LDLIBS) $(LDLIBS_EXTRA) $(LDLIBS) -shared -o $@
 
 # The static library is build differently. There are four specific categories:
 # tables, descriptors, charsets and plugins. These classes use self-registration

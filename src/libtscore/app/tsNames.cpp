@@ -811,23 +811,33 @@ bool ts::Names::AllInstances::loadFileLocked(const UString& file_name)
 
     // The file has not been recorded in its short form.
     // Build the list of names to record if the file is successfully loaded later.
-    // If no directory is specified, try with ".names" extension and "tsduck." prefix.
+    // If no directory is specified, try with ".names" extension and "tscore." or "tsduck." prefix.
     // Don't make file system access in this sequence, only check already loaded files.
     std::vector<UString> possible_names;
-    possible_names.reserve(3);
     possible_names.push_back(file_name);
     if (!file_name.ends_with(u".names", CASE_INSENSITIVE)) {
-        UString name2(file_name + u".names");
+        const UString name2(file_name + u".names");
         if (_loaded_files.contains(name2)) {
             return true;
         }
         possible_names.push_back(name2);
-        if (!file_name.contains(u'/') && !file_name.contains(u'\\') && !name2.starts_with(u"tsduck.", CASE_INSENSITIVE)) {
-            name2.insert(0, u"tsduck.");
-            if (_loaded_files.contains(name2)) {
+        if (!file_name.contains(u'/') &&
+            !file_name.contains(u'\\') &&
+            !name2.starts_with(u"tscore.", CASE_INSENSITIVE) &&
+            !name2.starts_with(u"tsduck.", CASE_INSENSITIVE))
+        {
+            // First, try with "tscore." prefix.
+            UString name3(u"tscore." + name2);
+            if (_loaded_files.contains(name3)) {
                 return true;
             }
-            possible_names.push_back(name2);
+            possible_names.push_back(name3);
+            // Then, try with "tsduck." prefix.
+            name3 = u"tsduck." + name2;
+            if (_loaded_files.contains(name3)) {
+                return true;
+            }
+            possible_names.push_back(name3);
         }
     }
 

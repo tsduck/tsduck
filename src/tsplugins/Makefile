@@ -21,7 +21,7 @@ CXXFLAGS_INCLUDES += $(APPS_CXXFLAGS_INCLUDES)
 default: shlibs
 	@true
 shlibs: $(SHLIBS)
-$(SHLIBS): $(SHARED_LIBTSDUCK)
+$(SHLIBS): $(SHARED_LIBTSDUCK) $(SHARED_LIBTSCORE)
 
 install install-tools: $(SHLIBS)
 	install -d -m 755 $(SYSROOT)$(USRLIBDIR)/tsduck
