@@ -8,7 +8,7 @@
 
 #include "tsHTTPOutputPlugin.h"
 #include "tsPluginRepository.h"
-#include "tsVersionString.h"
+#include "tsVersionInfo.h"
 
 TS_REGISTER_OUTPUT_PLUGIN(u"http", ts::HTTPOutputPlugin);
 

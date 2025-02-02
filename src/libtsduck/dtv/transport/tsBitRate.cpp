@@ -9,6 +9,12 @@
 #include "tsBitRate.h"
 #include "tsVersionInfo.h"
 
+// Exported symbol, the name of which depends on the BitRate implementation.
+// When an executable or shared library references these symbols, it is guaranteed that a
+// compatible TSDuck library is activated. Otherwise, the dynamic references would have failed.
+// Only the symbol names matter, the value is just unimportant.
+const int TSDUCK_LIBRARY_BITRATE_SYMBOL = 0;
+
 
 //----------------------------------------------------------------------------
 // Register a description of bitrates for the --version options

@@ -12,7 +12,6 @@
 
 #include "tspy.h"
 #include "tsVersionInfo.h"
-#include "tsVersionString.h"
 
 TSDUCKPY uint32_t tspyVersionInteger()
 {

@@ -40,7 +40,7 @@ int TSCOREDLL MainWrapper(int (*func)(int argc, char* argv[]), int argc, char* a
 //! @hideinitializer
 //!
 #define TS_MAIN(func)                                  \
-    int func(int argc, char *argv[]);                  \
+    static int func(int argc, char *argv[]);           \
     int main(int argc, char *argv[])                   \
     {                                                  \
         TS_LIBCHECK();                                 \

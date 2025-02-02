@@ -16,7 +16,21 @@
 #include "tsReport.h"
 #include "tsThread.h"
 #include "tsVersion.h"
-#include "tsBitRate.h"
+
+//!
+//! Define the TSDuck version as an 8-bit string literal.
+//!
+#define TS_VERSION_STRING TS_STRINGIFY(TS_VERSION_MAJOR) "." TS_STRINGIFY(TS_VERSION_MINOR) "-" TS_STRINGIFY(TS_COMMIT)
+
+//!
+//! Define the TSDuck version as a 16-bit string literal.
+//!
+#define TS_VERSION_USTRING TS_USTRINGIFY(TS_VERSION_MAJOR) u"." TS_USTRINGIFY(TS_VERSION_MINOR) u"-" TS_USTRINGIFY(TS_COMMIT)
+
+//!
+//! Define the TSDuck version as an integer, suitable for comparisons.
+//!
+#define TS_VERSION_INTEGER ((TS_VERSION_MAJOR * 10000000) + (TS_VERSION_MINOR * 100000) + TS_COMMIT)
 
 //!
 //! TSDuck namespace, containing all TSDuck classes and functions.
@@ -164,23 +178,11 @@ extern "C" {
     //!
     extern const int TSCOREDLL tsduckLibraryVersionCommit;
 
+    // Compute the name of a symbol which describe the TSDuck library version.
     //! @cond nodoxygen
-    #define TS_SYM2(a,b) TS_SYM2a(a,b)
-    #define TS_SYM2a(a,b) a##_##b
     #define TS_SYM4(a,b,c,d) TS_SYM4a(a,b,c,d)
     #define TS_SYM4a(a,b,c,d) a##_##b##_##c##_##d
     #define TSDUCK_LIBRARY_VERSION_SYMBOL TS_SYM4(TSDUCK_LIBRARY_VERSION,TS_VERSION_MAJOR,TS_VERSION_MINOR,TS_COMMIT)
-    #if defined(TS_BITRATE_FRACTION)
-        #define TSDUCK_LIBRARY_BITRATE_SYMBOL TSDUCK_LIBRARY_BITRATE_FRACTION
-    #elif defined(TS_BITRATE_INTEGER)
-        #define TSDUCK_LIBRARY_BITRATE_SYMBOL TSDUCK_LIBRARY_BITRATE_INTEGER
-    #elif defined(TS_BITRATE_FLOAT)
-        #define TSDUCK_LIBRARY_BITRATE_SYMBOL TSDUCK_LIBRARY_BITRATE_FLOAT
-    #elif defined(TS_BITRATE_FIXED)
-        #define TSDUCK_LIBRARY_BITRATE_SYMBOL TS_SYM2(TSDUCK_LIBRARY_BITRATE_FIXED,TS_BITRATE_DECIMALS)
-    #else
-        #error "undefined implementation of BitRate"
-    #endif
     //! @endcond
 
     //!
@@ -197,13 +199,6 @@ extern "C" {
     //! @endcode
     //!
     extern const int TSCOREDLL TSDUCK_LIBRARY_VERSION_SYMBOL;
-
-    //!
-    //! Generate a dependency on the bitrate implementation.
-    //! Enforcing this dependency prevents mixing binaries which
-    //! were compiled using different implementations of BitRate.
-    //!
-    extern const int TSCOREDLL TSDUCK_LIBRARY_BITRATE_SYMBOL;
 }
 
 //!
@@ -222,9 +217,7 @@ extern "C" {
 //!
 //! @hideinitializer
 //!
-#define TS_LIBCHECK() \
-    TS_STATIC_REFERENCE(version, &TSDUCK_LIBRARY_VERSION_SYMBOL); \
-    TS_STATIC_REFERENCE(bitrate, &TSDUCK_LIBRARY_BITRATE_SYMBOL)
+#define TS_LIBCHECK() TS_STATIC_REFERENCE(version, &TSDUCK_LIBRARY_VERSION_SYMBOL)
 
 #if defined(DOXYGEN)
 //!
@@ -232,7 +225,7 @@ extern "C" {
 //!
 //! When this macro is defined on the compilation command line, no version
 //! check is performed on GitHub. The utility @e tsversion does not call
-//! GitHub, does not check, downlaod or upgrade new versions.
+//! GitHub, does not check, download or upgrade new versions.
 //!
 //! This macro is typically used by packagers of Linux distros who have the
 //! exclusive distribution of software packages. In that case, the packages

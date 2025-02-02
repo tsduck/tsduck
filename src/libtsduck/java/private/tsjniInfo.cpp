@@ -11,7 +11,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsVersionInfo.h"
-#include "tsVersionString.h"
 #include "tsjni.h"
 
 #if !defined(TS_NO_JAVA)

@@ -64,7 +64,7 @@
 
 // Default representation for BitRate values.
 #if !defined(TS_BITRATE_INTEGER) && !defined(TS_BITRATE_FRACTION) && !defined(TS_BITRATE_FLOAT) && !defined(TS_BITRATE_FIXED)
-#define TS_BITRATE_FLOAT 1
+    #define TS_BITRATE_FLOAT 1
 #endif
 
 #endif
@@ -78,7 +78,7 @@
 //! @see TS_BITRATE_FIXED
 //!
 #if !defined(TS_BITRATE_DECIMALS)
-#define TS_BITRATE_DECIMALS 1
+    #define TS_BITRATE_DECIMALS 1
 #endif
 
 //!
@@ -90,18 +90,18 @@
 //! @see TS_BITRATE_FLOAT
 //!
 #if !defined(TS_BITRATE_DISPLAY_DECIMALS)
-#define TS_BITRATE_DISPLAY_DECIMALS 2
+    #define TS_BITRATE_DISPLAY_DECIMALS 2
 #endif
 
 // Required header for implementation of BitRate.
 #if defined(TS_BITRATE_INTEGER)
-#include "tsInteger.h"
+    #include "tsInteger.h"
 #elif defined(TS_BITRATE_FRACTION)
-#include "tsFraction.h"
+    #include "tsFraction.h"
 #elif defined(TS_BITRATE_FLOAT)
-#include "tsFloatingPoint.h"
+    #include "tsFloatingPoint.h"
 #elif defined(TS_BITRATE_FIXED)
-#include "tsFixedPoint.h"
+    #include "tsFixedPoint.h"
 #endif
 
 namespace ts {
@@ -142,12 +142,44 @@ namespace ts {
 #elif defined(TS_BITRATE_FIXED)
     using BitRate = FixedPoint<int64_t, TS_BITRATE_DECIMALS>;
 #else
-#error "undefined implementation of BitRate"
+    #error "undefined implementation of BitRate"
 #endif
 
     //!
     //! Get a string description of the bitrate format.
     //! @return A string description of the bitrate format.
     //!
-    TSCOREDLL UString GetBitRateDescription();
+    TSDUCKDLL UString GetBitRateDescription();
 }
+
+extern "C" {
+    // Compute the name of a symbol which describe the bitrate implementation.
+    //! @cond nodoxygen
+    #define TS_SYM2(a,b) TS_SYM2a(a,b)
+    #define TS_SYM2a(a,b) a##_##b
+    #if defined(TS_BITRATE_FRACTION)
+        #define TSDUCK_LIBRARY_BITRATE_SYMBOL TSDUCK_LIBRARY_BITRATE_FRACTION
+    #elif defined(TS_BITRATE_INTEGER)
+        #define TSDUCK_LIBRARY_BITRATE_SYMBOL TSDUCK_LIBRARY_BITRATE_INTEGER
+    #elif defined(TS_BITRATE_FLOAT)
+        #define TSDUCK_LIBRARY_BITRATE_SYMBOL TSDUCK_LIBRARY_BITRATE_FLOAT
+    #elif defined(TS_BITRATE_FIXED)
+        #define TSDUCK_LIBRARY_BITRATE_SYMBOL TS_SYM2(TSDUCK_LIBRARY_BITRATE_FIXED,TS_BITRATE_DECIMALS)
+    #else
+        #error "undefined implementation of BitRate"
+    #endif
+    //! @endcond
+
+    //!
+    //! Generate a dependency on the bitrate implementation.
+    //! Enforcing this dependency prevents mixing binaries which
+    //! were compiled using different implementations of BitRate.
+    //!
+    extern const int TSDUCKDLL TSDUCK_LIBRARY_BITRATE_SYMBOL;
+}
+
+// In all compilation units which include tsBitRate.h, generate a reference
+// to the symbol which describes the BitRate implementation.
+//! @cond nodoxygen
+TS_STATIC_REFERENCE(bitrate, &TSDUCK_LIBRARY_BITRATE_SYMBOL);
+//! @endcond
