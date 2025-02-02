@@ -612,20 +612,19 @@ if [[ -n $LINUX ]]; then
     LDFLAGS_LINKER="-Wl,--as-needed,-rpath,'\$\$ORIGIN',-z,noexecstack"
     SOFLAGS='-Wl,-soname=$(notdir $@),-z,noexecstack'
 elif [[ -n $FREEBSD ]]; then
-    LDFLAGS_LINKER="-Wl,-rpath,'\$\$ORIGIN',-z,noexecstack"
+    LDFLAGS_LINKER="-Wl,--as-needed,-rpath,'\$\$ORIGIN',-z,noexecstack"
     SOFLAGS='-Wl,-soname=$(notdir $@),-z,noexecstack'
 elif [[ -n $OPENBSD ]]; then
-    LDFLAGS_LINKER="-Wl,-z,origin,-rpath,'\$\$ORIGIN',-z,noexecstack"
+    LDFLAGS_LINKER="-Wl,--as-needed,-z,origin,-rpath,'\$\$ORIGIN',-z,noexecstack"
     SOFLAGS='-Wl,-soname=$(notdir $@),-z,noexecstack'
 elif [[ -n $NETBSD ]]; then
-    LDFLAGS_LINKER="-Wl,-rpath,'\$\$ORIGIN',-rpath,\$(ALTDEVROOT)/lib,-z,noexecstack"
+    LDFLAGS_LINKER="-Wl,--as-needed,-rpath,'\$\$ORIGIN',-rpath,\$(ALTDEVROOT)/lib,-z,noexecstack"
     SOFLAGS='-Wl,-soname=$(notdir $@),-z,noexecstack'
 elif [[ -n $DRAGONFLYBSD ]]; then
-    LDFLAGS_LINKER="-Wl,-z,origin,-rpath,'\$\$ORIGIN',-z,noexecstack"
+    LDFLAGS_LINKER="-Wl,--as-needed,-z,origin,-rpath,'\$\$ORIGIN',-z,noexecstack"
     SOFLAGS='-Wl,-soname=$(notdir $@),-z,noexecstack'
 elif [[ -n $MACOS ]]; then
-    [[ $LLVM_MAJOR -ge 15 ]] && dup="-no_warn_duplicate_libraries" || $dup=
-    LDFLAGS_LINKER="-Wl,-rpath,@executable_path -Wl,-rpath,@executable_path/../lib -Xlinker $dup"
+    LDFLAGS_LINKER="-Wl,-rpath,@executable_path,-rpath,@executable_path/../lib,-no_warn_duplicate_libraries,-dead_strip_dylibs"
     SOFLAGS="-Wl,-rpath,@loader_path -install_name '@rpath/\$(notdir \$@)'"
 fi
 

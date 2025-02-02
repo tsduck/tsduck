@@ -24,20 +24,15 @@ tsduck-completion.bash: $(addsuffix .cpp,$(ALLTOOLS))
 # Some executables depend on PCSC.
 $(BINDIR)/tssmartcard: LDLIBS_EXTRA = $(LDLIBS_PCSC)
 
-# Most executables need libstuck but some need libtscore only.
-TSCORE_ONLY = $(addprefix $(BINDIR)/,tscrc32 tsftrunc tsresync)
-
 ifeq ($(STATIC),)
     # With dynamic link (the default), we use the shareable library.
-    $(filter-out $(TSCORE_ONLY),$(EXECS)): $(SHARED_LIBTSDUCK) $(SHARED_LIBTSCORE)
-    $(TSCORE_ONLY): $(SHARED_LIBTSCORE)
+    $(EXECS): $(SHARED_LIBTSDUCK) $(SHARED_LIBTSCORE)
 else
     # With static link, we compile in a specific directory and we link tsp with all plugins.
     LDFLAGS_EXTRA += -static
     LDLIBS_EXTRA += $(LIBTSDUCK_LDLIBS)
     $(BINDIR)/tsp: $(addprefix $(BINDIR)/objs-tsplugins/,$(addsuffix .o,$(TSPLUGINS)))
-    $(filter-out $(TSCORE_ONLY),$(EXECS)): $(STATIC_LIBTSDUCK) $(STATIC_LIBTSCORE)
-    $(TSCORE_ONLY): $(STATIC_LIBTSCORE)
+    $(EXECS): $(STATIC_LIBTSDUCK) $(STATIC_LIBTSCORE)
 endif
 
 .PHONY: install install-tools
