@@ -35,7 +35,7 @@ namespace ts {
     //! </tsduck>
     //! @endcode
     //!
-    class TSDUCKDLL KeyTable
+    class TSCOREDLL KeyTable
     {
     public:
         //!

@@ -13,3 +13,9 @@ using NSIS, a free open-source packager for Windows.
 - `tsduck.props` : This Visual Studio property file is installed with the TSDuck
   development environment. It is referenced by third-party applications using
   the TSDuck library.
+
+- `tscore.props` : This Visual Studio property file is installed with the TSDuck
+  development environment. It is referenced by third-party applications using
+  the TSCore library only. Applications using the TSDuck library don't need it
+  because it is invoked from `tsduck.props`.
+

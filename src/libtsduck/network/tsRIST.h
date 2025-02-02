@@ -19,5 +19,5 @@ namespace ts {
     //! Get the version of the RIST library.
     //! @return A string describing the RIST library version (or the lack of RIST support).
     //!
-    TSCOREDLL UString GetRISTLibraryVersion();
+    TSDUCKDLL UString GetRISTLibraryVersion();
 }

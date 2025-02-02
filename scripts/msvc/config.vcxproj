@@ -19,6 +19,7 @@
     <CallTarget Targets='BuildConfigFiles'/>
     <CallTarget Targets='BuildDtvNames'/>
     <CallTarget Targets='BuildDektecNames'/>
+    <CallTarget Targets='BuildTSCoreHeader'/>
     <CallTarget Targets='BuildTSDuckHeader'/>
     <CallTarget Targets='BuildTSDuckJar'/>
   </Target>
@@ -29,6 +30,7 @@
     <CallTarget Targets='BuildConfigFiles'/>
     <CallTarget Targets='BuildDtvNames'/>
     <CallTarget Targets='BuildDektecNames'/>
+    <CallTarget Targets='BuildTSCoreHeader'/>
     <CallTarget Targets='BuildTSDuckHeader'/>
     <CallTarget Targets='BuildTablesModel'/>
   </Target>

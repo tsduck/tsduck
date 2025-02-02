@@ -4,7 +4,7 @@
   <!-- Must be included in .vcxproj to create a DLL -->
 
   <ImportGroup Label="PropertySheets">
-    <Import Project="msvc-common-base.props" />
+    <Import Project="msvc-common-base.props"/>
   </ImportGroup>
 
   <PropertyGroup Label="Configuration">
@@ -22,7 +22,7 @@
   </ItemDefinitionGroup>
 
   <ItemGroup Condition="'$(SolutionName)'=='tsduck'">
-    <ResourceCompile Include="..\tsduck.rc" />
+    <ResourceCompile Include="..\tsduck.rc"/>
   </ItemGroup>
 
 </Project>

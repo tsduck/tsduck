@@ -1016,7 +1016,7 @@ namespace ts {
     //! @return The INT value in native byte order, deserialized from @a p.
     //!
     template <typename INT> requires std::integral<INT>
-    TSCOREDLL inline INT GetIntBE(const void* p)
+    inline INT GetIntBE(const void* p)
     {
         return CondByteSwapBE<INT>(*(static_cast<const INT*>(p)));
     }
@@ -1029,7 +1029,7 @@ namespace ts {
     //! @return The INT value in native byte order, deserialized from @a p.
     //!
     template <typename INT> requires std::integral<INT>
-    TSCOREDLL inline INT GetIntLE(const void* p)
+    inline INT GetIntLE(const void* p)
     {
         return CondByteSwapLE<INT>(*(static_cast<const INT*>(p)));
     }
@@ -1042,7 +1042,7 @@ namespace ts {
     //! @param [out] i The INT value in native byte order, deserialized from @a p.
     //!
     template <typename INT> requires std::integral<INT>
-    TSCOREDLL inline void GetIntBE(const void* p, INT& i)
+    inline void GetIntBE(const void* p, INT& i)
     {
         i = CondByteSwapBE<INT>(*(static_cast<const INT*>(p)));
     }
@@ -1055,7 +1055,7 @@ namespace ts {
     //! @param [out] i The INT value in native byte order, deserialized from @a p.
     //!
     template <typename INT> requires std::integral<INT>
-    TSCOREDLL inline void GetIntLE(const void* p, INT& i)
+    inline void GetIntLE(const void* p, INT& i)
     {
         i = CondByteSwapLE<INT>(*(static_cast<const INT*>(p)));
     }
@@ -1068,7 +1068,7 @@ namespace ts {
     //! @param [in]  i The INT in native byte order to serialize in big endian representation.
     //!
     template <typename INT> requires std::integral<INT>
-    TSCOREDLL inline void PutIntBE(void* p, INT i)
+    inline void PutIntBE(void* p, INT i)
     {
         *(static_cast<INT*>(p)) = CondByteSwapBE<INT>(i);
     }
@@ -1081,7 +1081,7 @@ namespace ts {
     //! @param [in]  i The INT in native byte order to serialize in little endian representation.
     //!
     template <typename INT> requires std::integral<INT>
-    TSCOREDLL inline void PutIntLE(void* p, INT i)
+    inline void PutIntLE(void* p, INT i)
     {
         *(static_cast<INT*>(p)) = CondByteSwapLE<INT>(i);
     }
@@ -1091,22 +1091,22 @@ namespace ts {
     // Non-inline versions when strict memory alignment is required.
 
     template <typename INT> requires std::integral<INT>
-    TSCOREDLL INT GetIntBE(const void* p);
+    INT GetIntBE(const void* p);
 
     template <typename INT> requires std::integral<INT>
-    TSCOREDLL INT GetIntLE(const void* p);
+    INT GetIntLE(const void* p);
 
     template <typename INT> requires std::integral<INT>
-    TSCOREDLL void GetIntBE(const void* p, INT& i);
+    void GetIntBE(const void* p, INT& i);
 
     template <typename INT> requires std::integral<INT>
-    TSCOREDLL void GetIntLE(const void* p, INT& i);
+    void GetIntLE(const void* p, INT& i);
 
     template <typename INT> requires std::integral<INT>
-    TSCOREDLL void PutIntBE(void* p, INT i);
+    void PutIntBE(void* p, INT i);
 
     template <typename INT> requires std::integral<INT>
-    TSCOREDLL void PutIntLE(void* p, INT i);
+    void PutIntLE(void* p, INT i);
 
 #endif
 
@@ -1118,7 +1118,7 @@ namespace ts {
     //! @return The INT value in native byte order, deserialized from @a p.
     //!
     template <typename INT> requires std::integral<INT>
-    TSCOREDLL inline INT GetInt(const void* p)
+    inline INT GetInt(const void* p)
     {
         return GetIntBE<INT>(p);
     }
@@ -1131,7 +1131,7 @@ namespace ts {
     //! @param [out] i The INT value in native byte order, deserialized from @a p.
     //!
     template <typename INT> requires std::integral<INT>
-    TSCOREDLL inline void GetInt(const void* p, INT& i)
+    inline void GetInt(const void* p, INT& i)
     {
         GetIntBE<INT>(p, i);
     }
@@ -1144,7 +1144,7 @@ namespace ts {
     //! @param [in]  i The INT in native byte order to serialize in big endian representation.
     //!
     template <typename INT> requires std::integral<INT>
-    TSCOREDLL inline void PutInt(void* p, INT i)
+    inline void PutInt(void* p, INT i)
     {
         PutIntBE<INT>(p, i);
     }
@@ -1158,7 +1158,7 @@ namespace ts {
     //! @return The INT value in native byte order, deserialized from @a p.
     //!
     template <typename INT> requires std::integral<INT>
-    TSCOREDLL inline INT GetIntVarBE(const void* p, size_t size);
+    INT GetIntVarBE(const void* p, size_t size);
 
     //!
     //! Template function getting a variable-length integer from serialized data in little endian representation.
@@ -1169,7 +1169,7 @@ namespace ts {
     //! @return The INT value in native byte order, deserialized from @a p.
     //!
     template <typename INT> requires std::integral<INT>
-    TSCOREDLL inline INT GetIntVarLE(const void* p, size_t size);
+    INT GetIntVarLE(const void* p, size_t size);
 
     //!
     //! Template function getting a variable-length integer from serialized data in big endian representation.
@@ -1180,7 +1180,7 @@ namespace ts {
     //! @param [out] i The INT value in native byte order, deserialized from @a p.
     //!
     template <typename INT> requires std::integral<INT>
-    TSCOREDLL inline void GetIntVarBE(const void* p, size_t size, INT& i)
+    inline void GetIntVarBE(const void* p, size_t size, INT& i)
     {
         i = GetIntVarBE<INT>(p, size);
     }
@@ -1194,7 +1194,7 @@ namespace ts {
     //! @param [out] i The INT value in native byte order, deserialized from @a p.
     //!
     template <typename INT> requires std::integral<INT>
-    TSCOREDLL inline void GetIntVarLE(const void* p, size_t size, INT& i)
+    inline void GetIntVarLE(const void* p, size_t size, INT& i)
     {
         i = GetIntVarLE<INT>(p, size);
     }
@@ -1208,7 +1208,7 @@ namespace ts {
     //! @param [in] i The INT in native byte order to serialize in big endian representation.
     //!
     template <typename INT> requires std::integral<INT>
-    TSCOREDLL inline void PutIntVarBE(void* p, size_t size, INT i);
+    inline void PutIntVarBE(void* p, size_t size, INT i);
 
     //!
     //! Template function serializing a variable-length integer data in little endian representation.
@@ -1219,7 +1219,7 @@ namespace ts {
     //! @param [in] i The INT in native byte order to serialize in little endian representation.
     //!
     template <typename INT> requires std::integral<INT>
-    TSCOREDLL inline void PutIntVarLE(void* p, size_t size, INT i);
+    inline void PutIntVarLE(void* p, size_t size, INT i);
 
     //!
     //! Template function getting a variable-length integer from serialized data in big endian representation.
@@ -1230,7 +1230,7 @@ namespace ts {
     //! @return The INT value in native byte order, deserialized from @a p.
     //!
     template <typename INT> requires std::integral<INT>
-    TSCOREDLL inline INT GetIntVar(const void* p, size_t size)
+    inline INT GetIntVar(const void* p, size_t size)
     {
         return GetIntVarBE<INT>(p, size);
     }
@@ -1244,7 +1244,7 @@ namespace ts {
     //! @param [out] i The INT value in native byte order, deserialized from @a p.
     //!
     template <typename INT> requires std::integral<INT>
-    TSCOREDLL inline void GetIntVar(const void* p, size_t size, INT& i)
+    inline void GetIntVar(const void* p, size_t size, INT& i)
     {
         GetIntVarBE<INT>(p, size, i);
     }
@@ -1258,7 +1258,7 @@ namespace ts {
     //! @param [in] i The INT in native byte order to serialize in big endian representation.
     //!
     template <typename INT> requires std::integral<INT>
-    TSCOREDLL inline void PutIntVar(void* p, size_t size, INT i)
+    inline void PutIntVar(void* p, size_t size, INT i)
     {
         PutIntVarBE<INT>(p, size, i);
     }

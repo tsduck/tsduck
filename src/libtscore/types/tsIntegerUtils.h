@@ -648,7 +648,7 @@ namespace ts {
     //! @param [in] digitSeparatorSize Size in characters of the digit-grouping separator.
     //! @return The maximum width in characters.
     //!
-    size_t MaxDecimalWidth(size_t typeSize, size_t digitSeparatorSize = 0);
+    TSCOREDLL size_t MaxDecimalWidth(size_t typeSize, size_t digitSeparatorSize = 0);
 
     //!
     //! Compute the maximum width of the hexadecimal representation of an integer type.
@@ -656,7 +656,7 @@ namespace ts {
     //! @param [in] digitSeparatorSize Size in characters of the digit-grouping separator.
     //! @return The maximum width in characters.
     //!
-    size_t MaxHexaWidth(size_t typeSize, size_t digitSeparatorSize = 0);
+    TSCOREDLL size_t MaxHexaWidth(size_t typeSize, size_t digitSeparatorSize = 0);
 
     //!
     //! Get the size in bits of an integer value.

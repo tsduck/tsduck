@@ -58,7 +58,7 @@ namespace ts {
     //! @see https://www.srtalliance.org/
     //! @ingroup net
     //!
-    class TSCOREDLL SRTSocket
+    class TSDUCKDLL SRTSocket
     {
         TS_NOCOPY(SRTSocket);
     public:

@@ -95,7 +95,7 @@ STDMETHODIMP ts::SinkFilter::GetClassID(::CLSID* pClsID)
         return E_POINTER;
     }
     else {
-        *pClsID = CLSID_SinkFilter;
+        *pClsID = TSDuck_CLSID_SinkFilter;
         return S_OK;
     }
 }

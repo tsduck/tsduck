@@ -4,8 +4,9 @@
   <!-- Must be included in .vcxproj files to use the TSDuck static library -->
 
   <ImportGroup Label="PropertySheets">
-    <Import Project="msvc-use-dtapi.props" />
-    <Import Project="msvc-use-vatek.props" />
+    <Import Project="msvc-use-tscorelib.props"/>
+    <Import Project="msvc-use-dtapi.props"/>
+    <Import Project="msvc-use-vatek.props"/>
   </ImportGroup>
 
   <ItemDefinitionGroup>

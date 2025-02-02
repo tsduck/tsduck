@@ -4,7 +4,7 @@
   <!-- Must be included in .vcxproj to create a static library -->
 
   <ImportGroup Label="PropertySheets">
-    <Import Project="msvc-common-base.props" />
+    <Import Project="msvc-common-base.props"/>
   </ImportGroup>
 
   <PropertyGroup Label="Configuration">

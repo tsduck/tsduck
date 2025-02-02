@@ -374,7 +374,7 @@ namespace ts {
     //! On big-endian platforms, return the value of @a x unmodified.
     //!
     template <typename INT> requires std::integral<INT>
-    TSCOREDLL inline INT CondByteSwapBE(INT x)
+    inline INT CondByteSwapBE(INT x)
     {
         if constexpr (std::endian::native == std::endian::big || sizeof(INT) == 1) {
             return x;
@@ -403,7 +403,7 @@ namespace ts {
     //! On little-endian platforms, return the value of @a x unmodified.
     //!
     template <typename INT> requires std::integral<INT>
-    TSCOREDLL inline INT CondByteSwapLE(INT x)
+    inline INT CondByteSwapLE(INT x)
     {
         if constexpr (std::endian::native == std::endian::little || sizeof(INT) == 1) {
             return x;
@@ -432,7 +432,7 @@ namespace ts {
     //! On big-endian platforms, return the value of @a x unmodified.
     //!
     template <typename INT> requires std::integral<INT>
-    TSCOREDLL inline INT CondByteSwap(INT x)
+    inline INT CondByteSwap(INT x)
     {
         return CondByteSwapBE<INT>(x);
     }

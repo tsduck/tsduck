@@ -10,38 +10,70 @@
     <IntDir>$(OutDir)$(ProjectName)\</IntDir>
   </PropertyGroup>
 
-  <!-- Locate all directories in libtsduck (for inclusion of header files) -->
+  <!-- Locate all directories in libtscore and libtsduck (for inclusion of header files) -->
 
   <ItemGroup>
-    <LibPublicHeaders  Include="$(TSDuckRootDir)src\libtsduck\**\*.h"
-                       Exclude="$(TSDuckRootDir)src\libtsduck\**\unix\**;
-                                $(TSDuckRootDir)src\libtsduck\**\linux\**;
-                                $(TSDuckRootDir)src\libtsduck\**\mac\**;
-                                $(TSDuckRootDir)src\libtsduck\**\bsd\**;
-                                $(TSDuckRootDir)src\libtsduck\**\freebsd\**;
-                                $(TSDuckRootDir)src\libtsduck\**\netbsd\**;
-                                $(TSDuckRootDir)src\libtsduck\**\openbsd\**;
-                                $(TSDuckRootDir)src\libtsduck\**\dragonflybsd\**;
-                                $(TSDuckRootDir)src\libtsduck\**\private\**;
-                                $(TSDuckRootDir)src\libtsduck\**\__pycache__\**"/>
-    <LibPrivateHeaders Include="$(TSDuckRootDir)src\libtsduck\**\private\**\*.h"/>
-    <LibSources        Include="$(TSDuckRootDir)src\libtsduck\**\*.cpp"
-                       Exclude="$(TSDuckRootDir)src\libtsduck\**\unix\**;
-                                $(TSDuckRootDir)src\libtsduck\**\linux\**;
-                                $(TSDuckRootDir)src\libtsduck\**\mac\**;
-                                $(TSDuckRootDir)src\libtsduck\**\bsd\**;
-                                $(TSDuckRootDir)src\libtsduck\**\freebsd\**;
-                                $(TSDuckRootDir)src\libtsduck\**\netbsd\**;
-                                $(TSDuckRootDir)src\libtsduck\**\openbsd\**;
-                                $(TSDuckRootDir)src\libtsduck\**\dragonflybsd\**;
-                                $(TSDuckRootDir)src\libtsduck\**\__pycache__\**"/>
-    <LibPublicDirs     Include="@(LibPublicHeaders->'%(RootDir)%(Directory)'->Distinct())"/>
-    <LibPrivateDirs    Include="@(LibPrivateHeaders->'%(RootDir)%(Directory)'->Distinct())"/>
+    <LibCorePublicHeaders  Include="$(TSDuckRootDir)src\libtscore\**\*.h"
+                           Exclude="$(TSDuckRootDir)src\libtscore\**\unix\**;
+                                    $(TSDuckRootDir)src\libtscore\**\linux\**;
+                                    $(TSDuckRootDir)src\libtscore\**\mac\**;
+                                    $(TSDuckRootDir)src\libtscore\**\bsd\**;
+                                    $(TSDuckRootDir)src\libtscore\**\freebsd\**;
+                                    $(TSDuckRootDir)src\libtscore\**\netbsd\**;
+                                    $(TSDuckRootDir)src\libtscore\**\openbsd\**;
+                                    $(TSDuckRootDir)src\libtscore\**\dragonflybsd\**;
+                                    $(TSDuckRootDir)src\libtscore\**\private\**;
+                                    $(TSDuckRootDir)src\libtscore\**\__pycache__\**"/>
+    <LibCorePrivateHeaders Include="$(TSDuckRootDir)src\libtscore\**\private\**\*.h"/>
+    <LibCoreSources        Include="$(TSDuckRootDir)src\libtscore\**\*.cpp"
+                           Exclude="$(TSDuckRootDir)src\libtscore\**\unix\**;
+                                    $(TSDuckRootDir)src\libtscore\**\linux\**;
+                                    $(TSDuckRootDir)src\libtscore\**\mac\**;
+                                    $(TSDuckRootDir)src\libtscore\**\bsd\**;
+                                    $(TSDuckRootDir)src\libtscore\**\freebsd\**;
+                                    $(TSDuckRootDir)src\libtscore\**\netbsd\**;
+                                    $(TSDuckRootDir)src\libtscore\**\openbsd\**;
+                                    $(TSDuckRootDir)src\libtscore\**\dragonflybsd\**;
+                                    $(TSDuckRootDir)src\libtscore\**\__pycache__\**"/>
+    <LibCorePublicDirs     Include="@(LibCorePublicHeaders->'%(RootDir)%(Directory)'->Distinct())"/>
+    <LibCorePrivateDirs    Include="@(LibCorePrivateHeaders->'%(RootDir)%(Directory)'->Distinct())"/>
   </ItemGroup>
 
   <PropertyGroup Label="Configuration">
-    <TSDuckLibDirs>@(LibPublicDirs)</TSDuckLibDirs>
-    <TSDuckLibDirsInternal>@(LibPrivateDirs)</TSDuckLibDirsInternal>
+    <TSCoreLibDirs>@(LibCorePublicDirs)</TSCoreLibDirs>
+    <TSCoreLibDirsInternal>@(LibCorePrivateDirs)</TSCoreLibDirsInternal>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <LibDuckPublicHeaders  Include="$(TSDuckRootDir)src\libtsduck\**\*.h"
+                           Exclude="$(TSDuckRootDir)src\libtsduck\**\unix\**;
+                                    $(TSDuckRootDir)src\libtsduck\**\linux\**;
+                                    $(TSDuckRootDir)src\libtsduck\**\mac\**;
+                                    $(TSDuckRootDir)src\libtsduck\**\bsd\**;
+                                    $(TSDuckRootDir)src\libtsduck\**\freebsd\**;
+                                    $(TSDuckRootDir)src\libtsduck\**\netbsd\**;
+                                    $(TSDuckRootDir)src\libtsduck\**\openbsd\**;
+                                    $(TSDuckRootDir)src\libtsduck\**\dragonflybsd\**;
+                                    $(TSDuckRootDir)src\libtsduck\**\private\**;
+                                    $(TSDuckRootDir)src\libtsduck\**\__pycache__\**"/>
+    <LibDuckPrivateHeaders Include="$(TSDuckRootDir)src\libtsduck\**\private\**\*.h"/>
+    <LibDuckSources        Include="$(TSDuckRootDir)src\libtsduck\**\*.cpp"
+                           Exclude="$(TSDuckRootDir)src\libtsduck\**\unix\**;
+                                    $(TSDuckRootDir)src\libtsduck\**\linux\**;
+                                    $(TSDuckRootDir)src\libtsduck\**\mac\**;
+                                    $(TSDuckRootDir)src\libtsduck\**\bsd\**;
+                                    $(TSDuckRootDir)src\libtsduck\**\freebsd\**;
+                                    $(TSDuckRootDir)src\libtsduck\**\netbsd\**;
+                                    $(TSDuckRootDir)src\libtsduck\**\openbsd\**;
+                                    $(TSDuckRootDir)src\libtsduck\**\dragonflybsd\**;
+                                    $(TSDuckRootDir)src\libtsduck\**\__pycache__\**"/>
+    <LibDuckPublicDirs     Include="@(LibDuckPublicHeaders->'%(RootDir)%(Directory)'->Distinct())"/>
+    <LibDuckPrivateDirs    Include="@(LibDuckPrivateHeaders->'%(RootDir)%(Directory)'->Distinct())"/>
+  </ItemGroup>
+
+  <PropertyGroup Label="Configuration">
+    <TSDuckLibDirs>@(LibDuckPublicDirs)</TSDuckLibDirs>
+    <TSDuckLibDirsInternal>@(LibDuckPrivateDirs)</TSDuckLibDirsInternal>
   </PropertyGroup>
 
   <!-- Common build options -->
@@ -63,7 +95,7 @@
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>TS_WINVER_FILENAME="$(TargetName)$(TargetExt)";%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(TSDuckRootDir)src\libtsduck;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(TSDuckRootDir)src\libtscore;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

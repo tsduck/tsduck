@@ -165,6 +165,10 @@ Section "Documentation" SectionDocumentation
     ; Work on "all users" context, not current user.
     SetShellVarContext all
 
+    ; Delete obsolete files from previous versions.
+    Delete "$INSTDIR\doc\tsduck.pdf"
+    Delete "$INSTDIR\doc\tsduck-dev.pdf"
+
     ; Documentation files.
     CreateDirectory "$INSTDIR\doc"
     SetOutPath "$INSTDIR\doc"
@@ -230,8 +234,12 @@ Section /o "C++ Development" SectionDevelopment
 
     ; TSDuck header files.
     CreateDirectory "$INSTDIR\include"
-    SetOutPath "$INSTDIR\include"
-    File "${HeadersDir}\*.h"
+    CreateDirectory "$INSTDIR\include\tscore"
+    SetOutPath "$INSTDIR\include\tscore"
+    File "${HeadersDir}\tscore\*.h"
+    CreateDirectory "$INSTDIR\include\tsduck"
+    SetOutPath "$INSTDIR\include\tsduck"
+    File "${HeadersDir}\tsduck\*.h"
 
     ; TSDuck libraries.
     CreateDirectory "$INSTDIR\lib"
@@ -239,11 +247,15 @@ Section /o "C++ Development" SectionDevelopment
 !ifdef DevWin32
     CreateDirectory "$INSTDIR\lib\Release-Win32"
     SetOutPath "$INSTDIR\lib\Release-Win32"
+    File "${BinRoot}\Release-Win32\tscore.lib"
+    File "${BinRoot}\Release-Win32\tscore.dll"
     File "${BinRoot}\Release-Win32\tsduck.lib"
     File "${BinRoot}\Release-Win32\tsduck.dll"
 
     CreateDirectory "$INSTDIR\lib\Debug-Win32"
     SetOutPath "$INSTDIR\lib\Debug-Win32"
+    File "${BinRoot}\Debug-Win32\tscore.lib"
+    File "${BinRoot}\Debug-Win32\tscore.dll"
     File "${BinRoot}\Debug-Win32\tsduck.lib"
     File "${BinRoot}\Debug-Win32\tsduck.dll"
 !endif
@@ -251,11 +263,15 @@ Section /o "C++ Development" SectionDevelopment
 !ifdef DevWin64
     CreateDirectory "$INSTDIR\lib\Release-Win64"
     SetOutPath "$INSTDIR\lib\Release-Win64"
+    File "${BinRoot}\Release-x64\tscore.lib"
+    File "${BinRoot}\Release-x64\tscore.dll"
     File "${BinRoot}\Release-x64\tsduck.lib"
     File "${BinRoot}\Release-x64\tsduck.dll"
 
     CreateDirectory "$INSTDIR\lib\Debug-Win64"
     SetOutPath "$INSTDIR\lib\Debug-Win64"
+    File "${BinRoot}\Debug-x64\tscore.lib"
+    File "${BinRoot}\Debug-x64\tscore.dll"
     File "${BinRoot}\Debug-x64\tsduck.lib"
     File "${BinRoot}\Debug-x64\tsduck.dll"
 !endif
@@ -263,17 +279,22 @@ Section /o "C++ Development" SectionDevelopment
 !ifdef DevArm64
     CreateDirectory "$INSTDIR\lib\Release-Arm64"
     SetOutPath "$INSTDIR\lib\Release-Arm64"
+    File "${BinRoot}\Release-ARM64\tscore.lib"
+    File "${BinRoot}\Release-ARM64\tscore.dll"
     File "${BinRoot}\Release-ARM64\tsduck.lib"
     File "${BinRoot}\Release-ARM64\tsduck.dll"
 
     CreateDirectory "$INSTDIR\lib\Debug-Arm64"
     SetOutPath "$INSTDIR\lib\Debug-Arm64"
+    File "${BinRoot}\Debug-ARM64\tscore.lib"
+    File "${BinRoot}\Debug-ARM64\tscore.dll"
     File "${BinRoot}\Debug-ARM64\tsduck.lib"
     File "${BinRoot}\Debug-ARM64\tsduck.dll"
 !endif
 
     ; Visual Studio property files.
     SetOutPath "$INSTDIR"
+    File "${RootDir}\pkg\nsis\tscore.props"
     File "${RootDir}\pkg\nsis\tsduck.props"
 
 SectionEnd
@@ -387,6 +408,7 @@ Section "-Common" SectionCommon
         ; Remove previous installation of development environment.
         RMDir /r "$INSTDIR\include"
         RMDir /r "$INSTDIR\lib"
+        Delete "$INSTDIR\tscore.props"
         Delete "$INSTDIR\tsduck.props"
     ${EndIf}
 
@@ -447,6 +469,7 @@ Section "Uninstall"
     RMDir /r "$0\java"
     RMDir /r "$0\include"
     RMDir /r "$0\lib"
+    Delete "$0\tscore.props"
     Delete "$0\tsduck.props"
     Delete "$0\LICENSE.txt"
     Delete "$0\OTHERS.txt"

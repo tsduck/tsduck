@@ -4,11 +4,17 @@
   <!-- A target to copy .xml and .names into destination -->
 
   <PropertyGroup>
-    <LibConfigDir>$(TSDuckRootDir)src\libtsduck\config\</LibConfigDir>
+    <LibCoreConfigDir>$(TSDuckRootDir)src\libtscore\config\</LibCoreConfigDir>
+    <LibDuckConfigDir>$(TSDuckRootDir)src\libtsduck\config\</LibDuckConfigDir>
   </PropertyGroup>
 
   <ItemGroup>
-    <LibConfigFiles Include="$(LibConfigDir)*.xml;$(LibConfigDir)*.names" Exclude="$(LibConfigDir)*.skeleton.*"/>
+    <LibConfigFiles Include="$(LibCoreConfigDir)*.xml;
+                             $(LibCoreConfigDir)*.names;
+                             $(LibDuckConfigDir)*.xml;
+                             $(LibDuckConfigDir)*.names"
+                    Exclude="$(LibCoreConfigDir)*.skeleton.*;
+                             $(LibDuckConfigDir)*.skeleton.*"/>
   </ItemGroup>
 
   <Target Name="BuildConfigFiles" Inputs="@(LibConfigFiles)" Outputs="@(LibConfigFiles->'$(OutDir)%(Filename)%(Extension)')">

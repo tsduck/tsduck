@@ -3,13 +3,13 @@
 
   <!-- Must be included at the end of each .vcxproj file -->
 
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props"/>
   <ImportGroup Label="PropertySheets">
     <Import Label="LocalAppDataPlatform"
             Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props"
-            Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" />
+            Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')"/>
   </ImportGroup>
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets"/>
 
   <!-- After building tsxml, we can generate the XML definitions for all tables and descriptors -->
 

@@ -20,7 +20,6 @@
 #include "tsByteBlock.h"
 #include "tsFileUtils.h"
 #include "tsSysUtils.h"
-#include "tsSysUtils.h"
 #include "tsWinUtils.h"
 #include "tsRegistry.h"
 

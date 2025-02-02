@@ -13,6 +13,7 @@
 
   <ImportGroup Label="PropertySheets">
     <Import Project="msvc-target-dll.props"/>
+    <Import Project="msvc-use-tscoredll.props"/>
     <Import Project="msvc-use-dtapi.props"/>
     <Import Project="msvc-use-vatek.props"/>
     <Import Project="msvc-use-librist.props"/>
@@ -30,8 +31,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ClInclude Include="@(LibPublicHeaders);@(LibPrivateHeaders)"/>
-    <ClCompile Include="@(LibSources)"/>
+    <ClInclude Include="@(LibDuckPublicHeaders);@(LibDuckPrivateHeaders)"/>
+    <ClCompile Include="@(LibDuckSources)"/>
   </ItemGroup>
 
   <ItemDefinitionGroup>

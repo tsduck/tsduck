@@ -192,21 +192,29 @@ function Build-Binary([string]$BinSuffix, [string]$Arch, [string]$OtherDevArch1,
         /DVersion=$Version /DVersionInfo=$VersionInfo $NsisScript
 }
 
-# Build binary installers.
-if (-not $NoInstaller) {
-
-    # Create a temporary directory for header files (development options).
-    $TempDir = New-TempDirectory
+# A function to copy a set of header files.
+function Copy-Headers([string]$OutputRoot, [string]$Name)
+{
+    $OutDir = (New-Directory "${OutputRoot}\${Name}")
     $Exclude = @("*\unix\*", "*\linux\*", "*\mac\*", "*\bsd\*", "*\private\*")
-    Copy-Item "${BinInclude}\tsduck.h" "${TempDir}\tsduck.h"
-    Get-ChildItem "${SrcDir}\libtsduck" -Recurse -Include "*.h" | `
+    Copy-Item "${BinInclude}\${Name}.h" "${OutDir}\${Name}.h"
+    Get-ChildItem "${SrcDir}\lib${Name}" -Recurse -Include "*.h" | `
         Where-Object {
             $fname = $_.FullName
             ($Exclude | ForEach-Object { $fname -like $_ }) -notcontains $true
         } | `
         ForEach-Object {
-            Copy-Item $_ $TempDir
+            Copy-Item $_ $OutDir
         }
+}
+
+# Build binary installers.
+if (-not $NoInstaller) {
+
+    # Create a temporary directory for header files (development options).
+    $TempDir = New-TempDirectory
+    Copy-Headers $TempDir "tscore"
+    Copy-Headers $TempDir "tsduck"
 
     Push-Location $TempDir
     try {

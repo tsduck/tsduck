@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--  TSDuck - The MPEG Transport Stream Toolkit                    -->
+<!--  Visual Studio or MSBuild property file to use TSCore library  -->
+
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!-- Select appropriate directory for binary libraries -->
+  <Choose>
+    <When Condition="'$(Configuration)|$(Platform)'=='Release|ARM64' OR '$(Configuration)|$(Platform)'=='Release|Arm64'">
+      <PropertyGroup Label="UserMacros">
+        <TSDUCKLIB>$(TSDUCK)\lib\Release-Arm64</TSDUCKLIB>
+      </PropertyGroup>
+    </When>
+    <When Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64' OR '$(Configuration)|$(Platform)'=='Debug|Arm64'">
+      <PropertyGroup Label="UserMacros">
+        <TSDUCKLIB>$(TSDUCK)\lib\Debug-Arm64</TSDUCKLIB>
+      </PropertyGroup>
+    </When>
+    <When Condition="'$(Configuration)|$(Platform)'=='Release|x64' OR '$(Configuration)|$(Platform)'=='Release|Win64'">
+      <PropertyGroup Label="UserMacros">
+        <TSDUCKLIB>$(TSDUCK)\lib\Release-Win64</TSDUCKLIB>
+      </PropertyGroup>
+    </When>
+    <When Condition="'$(Configuration)|$(Platform)'=='Debug|x64' OR '$(Configuration)|$(Platform)'=='Debug|Win64'">
+      <PropertyGroup Label="UserMacros">
+        <TSDUCKLIB>$(TSDUCK)\lib\Debug-Win64</TSDUCKLIB>
+      </PropertyGroup>
+    </When>
+    <When Condition="'$(Configuration)|$(Platform)'=='Release|x86' OR '$(Configuration)|$(Platform)'=='Release|Win32'">
+      <PropertyGroup Label="UserMacros">
+        <TSDUCKLIB>$(TSDUCK)\lib\Release-Win32</TSDUCKLIB>
+      </PropertyGroup>
+    </When>
+    <When Condition="'$(Configuration)|$(Platform)'=='Debug|x86' OR '$(Configuration)|$(Platform)'=='Debug|Win32'">
+      <PropertyGroup Label="UserMacros">
+        <TSDUCKLIB>$(TSDUCK)\lib\Debug-Win32</TSDUCKLIB>
+      </PropertyGroup>
+    </When>
+  </Choose>
+
+  <!-- Compilation and link options -->
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(TSDUCK)\include;$(TSDUCK)\include\tscore;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_TSCOREDLL_USE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <LanguageStandard Condition="'$(TS_NOSTDCPP)'==''">stdcpp20</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>tscore.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(TSDUCKLIB);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+
+  <!-- Copy TSCore DLL into project directory to allow direct testing -->
+  <Target Name="CopyTSCoreToDestination">
+    <Message Text="Copying $(TSDUCKLIB)\tscore.dll to $(OutDir)" />
+    <Copy SourceFiles="$(TSDUCKLIB)\tscore.dll" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" />
+  </Target>
+  <PropertyGroup>
+    <PrepareForRunDependsOn>$(PrepareForRunDependsOn);CopyTSCoreToDestination</PrepareForRunDependsOn>
+  </PropertyGroup>
+
+</Project>

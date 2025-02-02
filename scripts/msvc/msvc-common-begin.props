@@ -30,7 +30,7 @@
     </ProjectConfiguration>
   </ItemGroup>
 
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props"/>
 
   <Choose>
     <When Condition="'$(DefaultPlatformToolset)' != ''">

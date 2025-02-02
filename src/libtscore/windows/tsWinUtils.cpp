@@ -436,7 +436,7 @@ ts::UString ts::NameGUID(const ::GUID& guid)
         _N_(ANALOG_TV_NETWORK_TYPE)
         _N_(ATSC_TERRESTRIAL_TV_NETWORK_TYPE)
         _N_(CLSID_Proxy)
-        _N_(CLSID_SinkFilter) // TSDuck specific.
+        _N_(TSDuck_CLSID_SinkFilter)
         _N_(DIGITAL_CABLE_NETWORK_TYPE)
         _N_(DIRECT_TV_SATELLITE_TV_NETWORK_TYPE)
         _N_(DVB_CABLE_TV_NETWORK_TYPE)

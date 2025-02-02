@@ -24,19 +24,12 @@
 #>
 param([switch]$NoPause = $false)
 
-# Fast search of MSBuild.
-$Search = @("C:\Program Files\Microsoft Visual Studio\*\Community\MSBuild\Current\Bin\amd64\MSBuild.exe",
-            "C:\Program Files\Microsoft Visual Studio\*\Community\MSBuild\Current\Bin\MSBuild.exe")
-$MSBuild = Get-Item $Search | Select-Object -First 1 | ForEach-Object { $_.FullName}
-if (-not $MSBuid) {
-	# If not immediately found, use a full search.
-    Import-Module -Force -Name "${PSScriptRoot}\tsbuild.psm1"
-    $MSBuild = (Find-MSBuild)
-}
+Import-Module -Force -Name "${PSScriptRoot}\tsbuild.psm1"
+$MSBuild = (Find-MSBuild)
 
 # Build configuration files for all configurations.
 foreach ($configuration in @("Release", "Debug")) {
-    foreach ($platform in @("x64", "Win32")) {
+    foreach ($platform in @("x64", "Win32", "ARM64")) {
         Write-Output "======== Building for $configuration-$platform ..."
         & $MSBuild ${PSScriptRoot}\msvc\config.vcxproj /nologo /property:Configuration=$configuration /property:Platform=$platform /target:BuildAllConfig
     }

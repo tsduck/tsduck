@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <ImportGroup Label="PropertySheets">
+    <Import Project="msvc-common-begin.props"/>
+  </ImportGroup>
+
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{46723B5B-69EA-4453-B7BD-2B307EB88432}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>tscorelib</RootNamespace>
+  </PropertyGroup>
+
+  <ImportGroup Label="PropertySheets">
+    <Import Project="msvc-target-lib.props"/>
+    <Import Project="msvc-build-config-files.props"/>
+    <Import Project="msvc-build-tsduck-header.props"/>
+  </ImportGroup>
+
+  <ItemGroup>
+    <ClInclude Include="@(LibCorePublicHeaders);@(LibCorePrivateHeaders)"/>
+    <ClCompile Include="@(LibCoreSources)"/>
+  </ItemGroup>
+
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(TSCoreLibDirs);$(TSCoreLibDirsInternal);$(BinRootDir)include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+
+  <ImportGroup Label="PropertySheets">
+    <Import Project="msvc-common-end.props"/>
+  </ImportGroup>
+
+</Project>

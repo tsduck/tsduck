@@ -12,10 +12,11 @@
   </PropertyGroup>
 
   <ImportGroup Label="PropertySheets">
-    <Import Project="msvc-target-lib.props" />
-    <Import Project="msvc-use-dtapi.props" />
+    <Import Project="msvc-target-lib.props"/>
+    <Import Project="msvc-use-tscorelib.props"/>
+    <Import Project="msvc-use-dtapi.props"/>
     <Import Project="msvc-use-vatek.props"/>
-    <Import Project="msvc-disable-srt.props" />
+    <Import Project="msvc-disable-srt.props"/>
     <Import Project="msvc-disable-rist.props"/>
     <Import Project="msvc-use-java.props"/>
     <Import Project="msvc-build-config-files.props"/>
@@ -26,8 +27,8 @@
   </ImportGroup>
 
   <ItemGroup>
-    <ClInclude Include="@(LibPublicHeaders);@(LibPrivateHeaders)"/>
-    <ClCompile Include="@(LibSources)"/>
+    <ClInclude Include="@(LibDuckPublicHeaders);@(LibDuckPrivateHeaders)"/>
+    <ClCompile Include="@(LibDuckSources)"/>
   </ItemGroup>
 
   <ItemDefinitionGroup>

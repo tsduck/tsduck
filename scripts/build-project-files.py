@@ -52,7 +52,7 @@ tools = get_cpp(src_dir + os.sep + 'tstools')
 plugins = get_cpp(src_dir + os.sep + 'tsplugins')
 
 # "Other" MSBuild projects (ie. not tools, not plugins).
-others = ['config', 'utests-tsduckdll', 'utests-tsducklib', 'tsduckdll', 'tsducklib', 'tsp_static', 'tsprofiling', 'tsmux', 'tsnet', 'setpath']
+others = ['config', 'utests-tsduckdll', 'utests-tsducklib', 'tscoredll', 'tscorelib', 'tsduckdll', 'tsducklib', 'tsp_static', 'tsprofiling', 'tsmux', 'tsnet', 'setpath']
 
 # MSBuild / Visual Studio solution description.
 cxx_project_guid = '8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942'
@@ -63,15 +63,17 @@ ms_deps = {
     'tsp': {'deps': list(plugins)},
     'tsswitch': {'deps': ['tsplugin_dvb', 'tsplugin_hides']},
     # all "others" must be listed below, at least for tsduckdll vs. tsducklib.
-    'tsduckdll': {'deps': ['config']},
-    'tsducklib': {'deps': ['config']},
+    'tscoredll': {'deps': ['config']},
+    'tscorelib': {'deps': ['config']},
+    'tsduckdll': {'deps': ['tscoredll', 'config']},
+    'tsducklib': {'deps': ['tscorelib', 'config']},
     'utests-tsduckdll': {'deps': ['tsduckdll', 'tsplugin_merge']},
     'utests-tsducklib': {'deps': ['tsducklib']},
     'tsp_static': {'deps': ['tsducklib']},
     'tsprofiling': {'deps': ['tsduckdll']},
     'tsmux': {'deps': ['tsduckdll'] + plugins},
-    'tsnet': {'deps': ['tsduckdll']},
-    'setpath': {'deps': ['tsducklib']}
+    'tsnet': {'deps': ['tscoredll']},
+    'setpath': {'deps': ['tscorelib']}
 }
 
 # Build other MSBuild projects descriptions with empty fields.

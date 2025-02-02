@@ -3,6 +3,10 @@
 
   <!-- Must be included in .vcxproj files to use the TSDuck DLL -->
 
+  <ImportGroup Label="PropertySheets">
+    <Import Project="msvc-use-tscoredll.props"/>
+  </ImportGroup>
+
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>$(TSDuckLibDirs);$(BinRootDir)include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>

@@ -37,30 +37,21 @@
 #pragma once
 #include "tsPlatform.h"
 
+#include "tsBeforeStandardHeaders.h"
+#include <strmif.h>
+#include "tsAfterStandardHeaders.h"
+
 #if !defined(DOXYGEN) // This file is impossible to correctly document with doxygen.
-
-// Declaration and definition of application-specific GUID's.
-// The definition is expanded in tsComIds.cpp.
-
-#if defined(TS_COMIDS_DEFINE)
-#define TS_APP_GUID(name, l, w1, w2, b1, b2, b3, b4, b5, b6, b7, b8) \
-    namespace ts {TSCOREDLL extern const ::GUID name;} \
-    const ::GUID ts::name {l, w1, w2, {b1, b2, b3, b4, b5, b6, b7, b8}}
-#else
-#define TS_APP_GUID(name, l, w1, w2, b1, b2, b3, b4, b5, b6, b7, b8) \
-    namespace ts {TSCOREDLL extern const ::GUID name;}
-#endif
-
 
 // Declaration and definition of Windows-defined GUID's
 // The definition is expanded in tsComIds.cpp.
 
 #if defined(TS_COMIDS_DEFINE)
-#define TS_WIN_GUID(name, l, w1, w2, b1, b2, b3, b4, b5, b6, b7, b8) \
-    extern "C" const ::GUID name {l, w1, w2, {b1, b2, b3, b4, b5, b6, b7, b8}}
+    #define TS_WIN_GUID(name, l, w1, w2, b1, b2, b3, b4, b5, b6, b7, b8) \
+        extern "C" const ::GUID name {l, w1, w2, {b1, b2, b3, b4, b5, b6, b7, b8}}
 #else
-#define TS_WIN_GUID(name, l, w1, w2, b1, b2, b3, b4, b5, b6, b7, b8) \
-    extern "C" const ::GUID name
+    #define TS_WIN_GUID(name, l, w1, w2, b1, b2, b3, b4, b5, b6, b7, b8) \
+        extern "C" const ::GUID name
 #endif
 
 
@@ -68,11 +59,8 @@
 // List of GUID's
 //-----------------------------------------------------------------------------
 
-// TSDuck-defined GUID's
-
-TS_APP_GUID(CLSID_SinkFilter, 0x80233368, 0x504D, 0x45BD, 0xA8, 0xF3, 0xD7, 0xB0, 0x3C, 0x95, 0x11, 0x72);
-
-// Windows-defined GUID's
+// TSDuck specific GUID's.
+TS_WIN_GUID(TSDuck_CLSID_SinkFilter, 0x80233368, 0x504D, 0x45BD, 0xA8, 0xF3, 0xD7, 0xB0, 0x3C, 0x95, 0x11, 0x72);
 
 TS_WIN_GUID(AM_INTERFACESETID_Standard, 0x1a8766a0l, 0x62ce, 0x11cf, 0xa5, 0xd6, 0x28, 0xdb, 0x04, 0xc1, 0x00, 0x00);
 TS_WIN_GUID(AM_KSCATEGORY_AUDIO, 0x6994ad04, 0x93ef, 0x11d0, 0xa3, 0xcc, 0x00, 0xa0, 0xc9, 0x22, 0x31, 0x96);
@@ -798,7 +786,6 @@ TS_WIN_GUID(IID_IPinConnection, 0x4a9a62d3, 0x27d4, 0x403d, 0x91, 0xe9, 0x89, 0x
 TS_WIN_GUID(IID_IPinFlowControl, 0xc56e9858, 0xdbf3, 0x4f6b, 0x81, 0x19, 0x38, 0x4a, 0xf2, 0x06, 0x0d, 0xeb);
 TS_WIN_GUID(IID_IPinInfo, 0x56a868bd, 0x0ad4, 0x11ce, 0xb0, 0x3a, 0x00, 0x20, 0xaf, 0x0b, 0xa7, 0x70);
 TS_WIN_GUID(IID_IPropertySetter, 0xae9472bd, 0xb0c3, 0x11d2, 0x8d, 0x24, 0x00, 0xa0, 0xc9, 0x44, 0x1e, 0x20);
-TS_WIN_GUID(IID_IQualityControl, 0x56a868a5, 0x0ad4, 0x11ce, 0xb0, 0x3a, 0x00, 0x20, 0xaf, 0x0b, 0xa7, 0x70);
 TS_WIN_GUID(IID_IQualProp, 0x1bd0ecb0, 0xf8e2, 0x11ce, 0xaa, 0xc6, 0x00, 0x20, 0xaf, 0x0b, 0x99, 0xa3);
 TS_WIN_GUID(IID_IQueueCommand, 0x56a868b7, 0x0ad4, 0x11ce, 0xb0, 0x3a, 0x00, 0x20, 0xaf, 0x0b, 0xa7, 0x70);
 TS_WIN_GUID(IID_IReferenceClock, 0x56a86897, 0x0ad4, 0x11ce, 0xb0, 0x3a, 0x00, 0x20, 0xaf, 0x0b, 0xa7, 0x70);

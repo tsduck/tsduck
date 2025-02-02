@@ -59,7 +59,7 @@ namespace ts {
     //!                MEDIASUBTYPE_MPEG2_TRANSPORT_STRIDE
     //!                KSDATAFORMAT_SUBTYPE_BDA_MPEG2_TRANSPORT
     //!
-    class SinkFilter : public ::IBaseFilter
+    class TSDUCKDLL SinkFilter : public ::IBaseFilter
     {
         TS_NOBUILD_NOCOPY(SinkFilter);
     public:
@@ -168,7 +168,7 @@ namespace ts {
     //! SinkPin, input pin for SinkFilter (Windows-specific).
     //! @ingroup windows
     //!
-    class SinkPin: public ::IPin, public ::IMemInputPin
+    class TSDUCKDLL SinkPin: public ::IPin, public ::IMemInputPin
     {
         TS_NOBUILD_NOCOPY(SinkPin);
     public:
@@ -237,7 +237,7 @@ namespace ts {
     //! SinkEnumMediaTypes, enumerator returned by \::IPin\::EnumMediaTypes (Windows-specific).
     //! @ingroup windows
     //!
-    class SinkEnumMediaTypes : public ::IEnumMediaTypes
+    class TSDUCKDLL SinkEnumMediaTypes : public ::IEnumMediaTypes
     {
         TS_NOBUILD_NOCOPY(SinkEnumMediaTypes);
     public:
@@ -279,7 +279,7 @@ namespace ts {
     //! SinkEnumPins, enumerator returned by \::IBaseFilter\::EnumPins (Windows-specific).
     //! @ingroup windows
     //!
-    class SinkEnumPins : public ::IEnumPins
+    class TSDUCKDLL SinkEnumPins : public ::IEnumPins
     {
         TS_NOBUILD_NOCOPY(SinkEnumPins);
     public:
