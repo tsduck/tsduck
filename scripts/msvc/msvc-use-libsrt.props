@@ -2,12 +2,13 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <!-- Must be included in .vcxproj files to use the SRT library -->
+  <!-- Currenly disabled when compiling for ARM64 -->
 
-  <ImportGroup Label="PropertySheets" Condition="'$(LIBSRT)' != ''">
+  <ImportGroup Label="PropertySheets" Condition="'$(LIBSRT)' != '' AND '$(Platform)' != 'ARM64'">
     <Import Project="$(LIBSRT)\libsrt.props"/>
   </ImportGroup>
 
-  <ImportGroup Label="PropertySheets" Condition="'$(LIBSRT)' == ''">
+  <ImportGroup Label="PropertySheets" Condition="'$(LIBSRT)' == '' OR '$(Platform)' == 'ARM64'">
     <Import Project="msvc-disable-srt.props"/>
   </ImportGroup>
 

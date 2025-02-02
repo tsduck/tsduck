@@ -2,12 +2,13 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <!-- Must be included in .vcxproj files to use the RIST library -->
+  <!-- Currenly disabled when compiling for ARM64 -->
 
-  <ImportGroup Label="PropertySheets" Condition="'$(LIBRIST)' != ''">
+  <ImportGroup Label="PropertySheets" Condition="'$(LIBRIST)' != '' AND '$(Platform)' != 'ARM64'">
     <Import Project="$(LIBRIST)\librist-static.props"/>
   </ImportGroup>
 
-  <ImportGroup Label="PropertySheets" Condition="'$(LIBRIST)' == ''">
+  <ImportGroup Label="PropertySheets" Condition="'$(LIBRIST)' == '' OR '$(Platform)' == 'ARM64'">
     <Import Project="msvc-disable-rist.props"/>
   </ImportGroup>
 
