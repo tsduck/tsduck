@@ -21,19 +21,24 @@ default: $(EXECS) tsduck-completion.bash
 tsduck-completion.bash: $(addsuffix .cpp,$(ALLTOOLS))
 	$(call LOG,[GEN] $@) $(SED) -i -e 's/^__ts_cmds=(.*$$/__ts_cmds=($(ALLTOOLS))/' $@
 
+# Some executables depend on PCSC.
+$(BINDIR)/tssmartcard: LDLIBS_EXTRA = $(LDLIBS_PCSC)
+
+# Most executables need libstuck but some need libtscore only.
+TSCORE_ONLY = $(addprefix $(BINDIR)/,tscrc32 tsftrunc tsresync)
+
 ifeq ($(STATIC),)
     # With dynamic link (the default), we use the shareable library.
-    $(EXECS): $(SHARED_LIBTSDUCK) $(SHARED_LIBTSCORE)
+    $(filter-out $(TSCORE_ONLY),$(EXECS)): $(SHARED_LIBTSDUCK) $(SHARED_LIBTSCORE)
+    $(TSCORE_ONLY): $(SHARED_LIBTSCORE)
 else
     # With static link, we compile in a specific directory and we link tsp with all plugins.
     LDFLAGS_EXTRA += -static
     LDLIBS_EXTRA += $(LIBTSDUCK_LDLIBS)
     $(BINDIR)/tsp: $(addprefix $(BINDIR)/objs-tsplugins/,$(addsuffix .o,$(TSPLUGINS)))
-    $(EXECS): $(STATIC_LIBTSDUCK) $(STATIC_LIBTSCORE)
+    $(filter-out $(TSCORE_ONLY),$(EXECS)): $(STATIC_LIBTSDUCK) $(STATIC_LIBTSCORE)
+    $(TSCORE_ONLY): $(STATIC_LIBTSCORE)
 endif
-
-# Some executables depend on PCSC.
-$(BINDIR)/tssmartcard: LDLIBS_EXTRA = $(LDLIBS_PCSC)
 
 .PHONY: install install-tools
 install install-tools: $(EXECS) tsduck-completion.bash
