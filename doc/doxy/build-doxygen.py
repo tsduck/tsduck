@@ -15,7 +15,7 @@ import re, os, sys, glob, shutil, subprocess
 SCRIPT     = os.path.basename(sys.argv[0])
 SCRIPTDIR  = os.path.dirname(os.path.abspath(sys.argv[0]))
 ROOTDIR    = os.path.dirname(os.path.dirname(SCRIPTDIR))
-SRCDIR     = os.sep.join([ROOTDIR, 'src', 'libtsduck'])
+SRCDIRS    = [os.sep.join([ROOTDIR, 'src', 'libtscore']), os.sep.join([ROOTDIR, 'src', 'libtsduck'])]
 DOXYDIR    = os.sep.join([ROOTDIR, 'bin', 'doxy'])
 HTMLDIR    = os.sep.join([DOXYDIR, 'html'])
 GROUPDIR   = os.sep.join([HTMLDIR, 'group'])
@@ -78,7 +78,7 @@ os.makedirs(DOXYDIR, exist_ok=True)
 # Build an environment for execution of doxygen.
 env = os.environ.copy()
 env['TS_FULL_VERSION'] = command_text([sys.executable, GETVERSION]).strip()
-env['DOXY_INCLUDE_PATH'] = ' '.join([d[0] for d in os.walk(SRCDIR)])
+env['DOXY_INCLUDE_PATH'] = ' '.join(sum([[d[0] for d in os.walk(s)] for s in SRCDIRS], start=[]))
 if dot is None:
     env['HAVE_DOT'] = 'NO'
 else:

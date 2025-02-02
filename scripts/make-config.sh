@@ -609,12 +609,7 @@ ARFLAGS_ADD="rc"
 
 # $(SOFLAGS) specifies options when creating shared objects (.so or .dylib files).
 if [[ -n $LINUX ]]; then
-    # On macOS and Linux, when a library is mentioned in the linker command but not used (no reference to any symbol
-    # in that library), the library is loaded in the program anyway. This is important in the case of libtscore
-    # and libtsduck because some processing is performed in their initialization. However, for some unknown reason,
-    # Ubuntu does the opposite: the library is not loaded by default. This is maybe true on other distros as well.
-    # To have a consistent and deterministic behavior, we force the load of all libraries on all Linux distros.
-    LDFLAGS_LINKER="-Wl,--no-as-needed,-rpath,'\$\$ORIGIN',-z,noexecstack"
+    LDFLAGS_LINKER="-Wl,--as-needed,-rpath,'\$\$ORIGIN',-z,noexecstack"
     SOFLAGS='-Wl,-soname=$(notdir $@),-z,noexecstack'
 elif [[ -n $FREEBSD ]]; then
     LDFLAGS_LINKER="-Wl,-rpath,'\$\$ORIGIN',-z,noexecstack"

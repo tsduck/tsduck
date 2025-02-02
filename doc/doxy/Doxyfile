@@ -47,7 +47,9 @@ HIDE_FRIEND_COMPOUNDS  = YES
 INTERNAL_DOCS          = NO
 INHERIT_DOCS           = YES
 INLINE_INHERITED_MEMB  = YES
+ENABLE_PREPROCESSING   = YES
 MACRO_EXPANSION        = YES
+EXPAND_ONLY_PREDEF     = NO
 PREDEFINED            += DOXYGEN
 
 # Using style from https://github.com/jothepro/doxygen-awesome-css
