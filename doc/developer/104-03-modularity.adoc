@@ -26,10 +26,10 @@ In rare cases, a module is just a collection of independent support functions, f
 To avoid name clashing, all {cpp} declarations (classes, functions, types, constants) are placed in the namespace `ts`.
 All macros have a name starting with `TS_`.
 
-The TSDuck library is roughly split into three hierarchical layers:
+The TSDuck libraries are roughly split into three hierarchical layers:
 
-* *Base*: A collection of {cpp}, operating system, and application utilities.
-  This layer is not related to Digital TV and could be independently packaged
+* *TSCore*: A collection of {cpp}, operating system, and application utilities.
+  This layer is not related to Digital TV. It is independently packaged in the TSCore library
   for the benefit of any application.
 * *DTV*: A collections of {cpp} classes to manipulate Digital TV concepts.
   They are the building blocks for any {cpp} application in the broadcast or streaming field.
@@ -38,8 +38,8 @@ The TSDuck library is roughly split into three hierarchical layers:
   to process transport streams.
 
 These layers have a strict hierarchical organization.
-Classes in "Base" cannot reference classes in the next layers.
-Classes in "DTV" can reference classes from "Base" but not from "Plugins", etc.
+Classes in "TSCore" cannot reference classes in the next layers.
+Classes in "DTV" can reference classes from "TSCore" but not from "Plugins", etc.
 
 The TSDuck commands are separate executables and the plugins are separate shared libraries.
 They are independently built and may reference anything from the TSDuck library.
@@ -49,8 +49,10 @@ They are independently built and may reference anything from the TSDuck library.
 
 The `src` directory is structured as follow:
 
+* `libtscore` contains all source files for the TSCore library.
+  Any new source file inside this directory tree is automatically built as part of the TSCore library.
 * `libtsduck` contains all source files for the TSDuck library.
-  Any new source file inside this directory tree is automatically built as part of the library.
+  Any new source file inside this directory tree is automatically built as part of the TSDuck library.
 * `tsplugins` contains all plugins.
   Any new source file inside this directory tree is automatically built as one separate shared library.
   This means that a plugin must be inside one single source file.
@@ -62,22 +64,20 @@ The `src` directory is structured as follow:
 The additional subdirectories `utest` and `utils` contain the source code of unitary tests
 and packaging utilities which are not part of the TSDuck product itself.
 
-There are several thousands of source files inside `libtduck`.
+There are several thousands of source files inside `libtscore` and `libtsduck`.
 They are organized according to logical and technical constraints.
 
-On a logical perspective, `libtsduck` is split into `base`, `crypto`, `dtv`, `plugins`, etc.
-Each subdirectory is further divided into logical subdomains.
-There is no strict rule, just some good common sense.
-
-On a technical perspective, however, there are several strict rules based on the name of the subdirectories.
-By default, all source files at any depth of subdirectories are compiled, included in the TSDuck library.
-All `.h` header files are public. They are installed with the TSDuck development environment for third-party applications.
+On a technical perspective, there are several strict rules based on the name of the subdirectories.
+By default, all source files at any depth of subdirectories are compiled, included in the TSCore or
+TSDuck library. All `.h` header files are public by default. They are installed with the TSDuck
+development environment for third-party applications.
 
 There are some exceptions, based on the name of the subdirectories:
 
-* `private`: All source files in a subdirectory named `private`, anywhere below `src/libtsduck`,
-  is considered as private to the TSDuck library. The header files will not be installed with
-  the TSDuck development environment and the corresponding classes are not visible from applications.
+* `private`: All source files in a subdirectory named `private`, anywhere below `src/libtscore`
+  or `src/libtsduck`, is considered as private to the corresponding library. The header files
+  will not be installed with the TSDuck development environment and the corresponding classes
+  are not visible from applications.
 * `linux`, `mac`, `freebsd`, `netbsd`, `openbsd`, `dragonflybsd`, `bsd`, `unix`, `windows`:
   A subdirectory with any of these names is specific to the corresponding operating system and
   is compiled only on that operating system. If there are header files, they are installed
@@ -87,11 +87,13 @@ There are some exceptions, based on the name of the subdirectories:
 [.windllcrap]
 ==== Windows constraints
 
-All classes, functions, and objects in the TSDuck library are gathered into one large shared library,
-`libtsduck.so` on Linux and BSD, `libtsduck.dylib` on macOS, `tsduck.dll` on Windows,
+All classes, functions, and objects in the TSDuck libraries are gathered into two shared libraries,
+`libtscore.so` and `libtsduck.so` on Linux and BSD, `libtscore.dylib` and `libtsduck.dylib` on macOS,
+`tscore.dll` and `tsduck.dll` on Windows,
 
-A {cpp} class is exported out of a shared library through a set of mangled symbols, one per method or static field.
-This is straightforward on UNIX systems; this is only a matter of build commands, without impact on the source code.
+A {cpp} class is exported out of a shared library through a set of mangled symbols, one per method
+or static field. This is straightforward on UNIX systems; this is only a matter of build commands,
+without impact on the source code.
 
 On Windows, however, this is more complicated and painful (everything is more painful on Windows).
 By default, a symbol is not exported out of a DLL.
@@ -105,20 +107,24 @@ Specific directives shall be present in the header files, only on Windows,
 and differently depending whether you include the header to build the library ("export")
 or to use the library from an application ("import").
 
-All that dirt is hidden in TSDuck using the macro `TSDUCKDLL` which translates to
-an export directive when building the DLL, an import directive when using the DLL,
+All that dirt is hidden in TSDuck using the macros `TSCOREDLL` and `TSDUCKDLL` which translate
+to an export directive when building the corresponding DLL, an import directive when using the DLL,
 and nothing on non-Windows system.
 
-As a consequence, under `src/libtsduck` (with the exception of `private` subdirectories),
-all public declarations in header files must have a `TSDUCKDLL` attribute.
-If this attribute is omitted, nothing changes on non-Windows systems and even on Windows
-systems when that declaration is not referenced from outside the DLL (it is not needed
-for references from inside the DLL). You may have the illusion that it works,
-until you compile an application on Windows which references that declaration
-and you get an "undefined symbol" error from the linker.
+As a consequence, under `src/libtscore` and `src/libtsduck` (with the exception of `private`
+subdirectories), all public declarations in header files must have a `TSCOREDLL` or `TSDUCKDLL`
+attribute. If this attribute is omitted, nothing changes on non-Windows systems and even on
+Windows systems when that declaration is not referenced from outside the DLL (it is not needed
+for references from inside the DLL). You may have the illusion that it works, until you compile
+an application on Windows which references that declaration and you get an "undefined symbol"
+error from the linker.
 
-The `TSDUCKDLL` attribute must be used in classes, functions and variables which
-are defined at namespace level. For instance:
+Take care to use the right attribute: `TSCOREDLL` in header files under `src/libtscore` and
+`TSDUCKDLL` in header files under `src/libtsduck`. In case of mismatch, expect weird linking
+effects.
+
+The `TSCOREDLL` and `TSDUCKDLL` attributes must be used in classes, functions and variables
+which are defined at namespace level. For instance, in the TSDuck library:
 
 [source,c++]
 ----
@@ -140,9 +146,9 @@ namespace ts {
 }
 ----
 
-Inside a class, the methods and fields do not need a `TSDUCKDLL` attribute.
+Inside a class, the methods and fields do not need a `TSCOREDLL` or `TSDUCKDLL` attribute.
 They benefit from the attribute of the class.
-Inner classes, on the other hand, must have a `TSDUCKDLL` attribute.
+Inner classes, on the other hand, must have a `TSCOREDLL` or `TSDUCKDLL` attribute.
 See the example below.
 
 [source,c++]
@@ -160,7 +166,7 @@ namespace ts {
 }
 ----
 
-As a general rule, private inner classes do not need a `TSDUCKDLL` attribute.
+As a general rule, private inner classes do not need a `TSCOREDLL` or `TSDUCKDLL` attribute.
 Being private, they cannot be referenced by the applications.
 However, they can be referenced inside inlined public methods of the same class.
 See the following example.
@@ -170,7 +176,7 @@ the application, the binary of that application contains a reference to the
 symbol `ts::Outer::Inner::Foo()`. Without a `TSDUCKDLL` attribute on the inner
 class, even though it is private, an "undefined symbol" error will be generated.
 
-Therefore, in doubt, also use `TSDUCKDLL` attribute in private inner classes.
+Therefore, in doubt, also use a `TSCOREDLL` or `TSDUCKDLL` attribute in private inner classes.
 
 [source,c++]
 ----
@@ -190,7 +196,7 @@ namespace ts {
 }
 ----
 
-Template classes and functions do not need any `TSDUCKDLL` attribute.
+Template classes and functions do not need any `TSCOREDLL` or `TSDUCKDLL` attribute.
 Their instantiations are completely generated inside the application.
 
 [.selfreg]
@@ -228,9 +234,9 @@ Refer to the {home}doxy/[TSDuck Programming Reference] for a complete documentat
 [.usage]
 General-purpose registrations
 
-The following macros are general-purpose. They can be used anywhere.
-They register application-specific features into the core of the TSDuck library.
-Thus, the "base" layer of the TSDuck library remains independent,
+The following macros are general-purpose.
+They register application-specific features into the TSCore library.
+This is how the TSCore library remains independent from the TSDuck library,
 without explicit reference to higher-level layers.
 
 // PDF backend does not correctly process "autowidth" tables.

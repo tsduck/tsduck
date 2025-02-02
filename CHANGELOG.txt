@@ -2,11 +2,14 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.40-4134 (Feb 2025)
+VERSION 3.40-4135 (Feb 2025)
 
 [NEW] New commands and plugins:
 
   * Added plugin "isdbinfo": Extract ISDB-T information from the stream.
+  * For third-party application developers, the TSDuck library has  been  split
+    into TSCore and TSDuck. The former is a subset for applications  not  using
+    Digital TV features. See the developer's guide for more details.
 
 [IMP] Improvements on existing commands and plugins:
 

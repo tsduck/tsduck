@@ -21,13 +21,51 @@ It also describes how to develop TSDuck plugins and TSDuck extensions outside th
 Although we encourage open source contributions to enrich the project,
 it can be useful to extend TSDuck in private applications to test proprietary features.
 
+[#twolibs]
+=== Two libraries: TSCore and TSDuck
+
+Starting with version 3.40, the TSDuck library has been split in two parts:
+
+* The TSCore library contains generic {cpp} classes and features which are not specific to Digital TV.
+
+* The TSDuck library contains all Digital TV classes and features. It depends on the TSCore library
+  for basic features.
+
+Although it does not compete with other widely used {cpp} utility libraries, the TSCore library can be
+useful to any type of application. It include features for networking, text processing (including XML
+and JSON handling), advanced strings, unified logging and reporting, data serialization and deserialization, etc.
+
+Before the split, the size of the TSDuck library became quite large. Most of it was made of {cpp}
+classes to handle Digital TV features, including nearly 400 classes to handle tables
+and descriptors which are defined by the various Digital TV standards. In addition to their large
+memory footprint, these classes self-register themselves at the initialization of the TSDuck
+library, slowing down the application startup on small systems.
+
+For applications which only used the basic features of the TSDuck library, the Digital TV features
+became too bulky. Therefore, these basic features were extracted as a new "TSCore" library.
+
+The TSCore shared library file is named `libtscore.so`, `libtscore.dylib`, or `tscore.dll`,
+depending on the operating system. 
+The TSDuck shared library file is named `libtsduck.so`, `libtsduck.dylib`, or `tsduck.dll`,
+
+Their respective header files are installed in directories `include/tscore` and `include/tsduck`
+(the exact location of the `include` parent directory depends on the operating system).
+
+Therefore, the two development environments are separated.
+The various sections of this chapter explains in details how to use each of them.
+
+Since the TSDuck library uses the TSCore library, any application which uses the former
+has implicit access to the latter.
+Specifically, applications which already used the monolythic TSDuck library before
+version 3.40 can be built without any change.
+
 [#usinglibrary]
-=== Building an application with the TSDuck library
+=== Building an application with the TSDuck libraries
 
 [#libreq]
 ==== Pre-requisites
 
-To be able to build applications or `tsp` plugins with the TSDuck library,
+To be able to build applications or `tsp` plugins with the TSDuck libraries,
 you must install the TSDuck development environment first.
 
 * On Windows systems, you must select the optional "Development" component during the installation.
@@ -61,6 +99,16 @@ Just run `make` to build the application.
 $ make
 ----
 
+As explained in the user's guide, use the `tsconfig` option `--tscore` if you want to
+use the TSCore library only, not the full TSDuck library for Digital TV.
+For instance:
+
+[source,make]
+----
+CXXFLAGS += $(shell tsconfig --tscore --cflags)
+LDLIBS += $(shell tsconfig --tscore --libs)
+----
+
 [.usage]
 {cpp} language level
 
@@ -82,7 +130,7 @@ It may be compatible with Visual Studio 2019 or earlier, but without guarantee.
 
 The environment variable `TSDUCK` is defined to the root of the TSDuck installation tree.
 A Visual Studio property file named `tsduck.props` is installed here.
-It provides all definitions and options to use the TSDuck library.
+It provides all definitions and options to use the TSDuck libraries.
 
 Create the solution and projects for your application.
 Then, manually edit the project file, named for instance `app.vcxproj`,
@@ -95,6 +143,14 @@ and insert the following line just before the final `</Project>` closing tag:
 
 Then build your project normally.
 
+If you want to use the TSCore library only, not the full TSDuck library for Digital TV,
+use the file `tscore.props` instead:
+
+[source,xml]
+----
+<Import Project="$(TSDUCK)\tscore.props"/>
+----
+
 [.usage]
 {cpp} language level
 
@@ -105,16 +161,16 @@ The application shall then define its own {cpp} standard in its project files.
 This user-specified {cpp} standard cannot be lower than {cpp}20.
 
 //----------------------------------------------------------------------------
-=== Overview of the TSDuck library
+=== Overview of the TSDuck libraries
 //----------------------------------------------------------------------------
 
-The TSDuck library contains general-purpose {cpp} classes and utilities to handle
+The TSDuck libraries contain general-purpose {cpp} classes and utilities to handle
 MPEG transport streams.
 
 For programming details, see the
 {home}doxy/[programming reference documentation online] (doxygen-generated).
 
-Roughly, the TSDuck library provides two categories of features:
+Roughly, the TSDuck libraries provide two categories of features:
 
 * Operating system abstraction layer to make the application code fully portable between heterogeneous platforms.
   This is similar to frameworks such as Qt, but much more lightweight.
@@ -141,7 +197,7 @@ The file `tsPlatform.h` contains some very low level definitions such as macros 
 ===== {cpp} strings
 
 C and {cpp} strings are made of 8-bit characters which are notoriously unable to represent international character sets.
-The usage of `std::string` with the TSDuck library is discouraged in favor of _Unicode strings_.
+The usage of `std::string` with the TSDuck libraries is discouraged in favor of _Unicode strings_.
 
 [#unicodestring]
 ===== Unicode strings
@@ -209,7 +265,7 @@ such as list of descriptors, DVB, ARIB and ATSC strings or "Modified Julian Date
 ===== Singletons and static data
 
 The _singleton_ design pattern is simple in theory, but not so simple to implement correctly in practice.
-The TSDuck library encapsulates the implementation difficulties using the two macros `TS_SINGLETON()`
+The TSCore library encapsulates the implementation difficulties using the two macros `TS_SINGLETON()`
 (in a header file) and `TS_DEFINE_SINGLETON()` (in the corresponding compilation unit).
 
 In practice, the singleton design pattern is a specific case of _global static data_,
@@ -234,7 +290,7 @@ ranging from `ts::Severity::Debug` to `ts::Severity::Fatal`.
 Each instance of classref:Report[] defines which levels of message are reported to the user.
 This is usually triggered by command-line options such as `--verbose` or `--debug`.
 
-Most classes or methods from the TSDuck library use a reference to an instance of classref:Report[] to report messages and errors.
+Most classes or methods from the TSDuck libraries use a reference to an instance of classref:Report[] to report messages and errors.
 The actual reporting object is often built at application level and then propagated to all layers of code.
 
 Some interesting subclasses of classref:Report[] are:
@@ -297,29 +353,30 @@ Enumeration values are handled through classref:Enumeration[].
 [#xml]
 ===== XML data
 
-The TSDuck library embeds an XML parser and several classes to handle a DOM structure.
+The TSCore library embeds an XML parser and several classes to handle a DOM structure.
 
 See the class `ts::xml::Node`, the abstract base class of the DOM hierarchy.
 
 [#json]
 ===== JSON data
 
-The TSDuck library embeds a JSON parser and several classes to handle JSON values.
+The TSCore library embeds a JSON parser and several classes to handle JSON values.
 
 See the class `ts::json::Value`, the abstract base class of the JSON hierarchy.
 
 [#crypto]
 ==== Cryptography
 
-The TSDuck library contains a few cryptographic classes.
-The TSDuck library is *not* a cryptographic library and will never be.
+The TSDuck libraries contain a few cryptographic classes.
+These libraries are *not* cryptographic libraries and will never be.
 Cryptography is a serious matter which should be left to cryptographers.
 
 Some transport stream processing operations require some cryptography, essentially block ciphers and hash functions.
-The TSDuck library proposes an homogeneous API over them.
+The TSCore library proposes an homogeneous API over them.
 Standard cryptographic primitives are implemented using the standard system libraries,
 _OpenSSL_ on {unix}, _BCrypt_ on Windows.
-Less standard primitives are directly implemented in TSDuck.
+Less standard primitives are directly implemented in the TSCore library.
+Specific algorithms which are defined by Digital TV standard bodies (DVB, SCTE or IDSA) are implemented in the TSDuck library.
 
 The abstract class classref:BlockCipher[] is the root of a hierarchy of symmetric cryptography classes,
 including chaining modes.
@@ -478,7 +535,7 @@ This class is built on top of native system libraries, _libcurl_ on {unix}, _Win
 [#sharelibs]
 ===== Shared libraries
 
-The TSDuck library contains classes to load shared libraries
+The TSCore library contains classes to load shared libraries
 (`.dll` on Windows, `.so` on Linux and BSD, `.dylib` on macOS)
 and lookup symbols inside them in a portable way.
 These classes are typically used to load `tsp` plugins but can be used in any application.
