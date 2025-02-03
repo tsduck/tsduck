@@ -18,7 +18,7 @@
 namespace ts {
     //!
     //! HEVC scaling list data structure.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //! @see ITU-T Rec. H.265, 7.3.4 and 7.4.5
     //!
     class TSDUCKDLL HEVCScalingListData: public AbstractVideoStructure

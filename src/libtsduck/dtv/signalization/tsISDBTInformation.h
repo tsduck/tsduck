@@ -20,7 +20,7 @@ namespace ts {
 
     //!
     //! ISDB-T Information block in a TS packet trailer (204-byte packet).
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //! @see ARIB STD-B31, section 5.5.2
     //!
     class TSDUCKDLL ISDBTInformation

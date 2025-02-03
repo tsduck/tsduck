@@ -19,7 +19,7 @@
 namespace ts {
     //!
     //! Base class for TCP and UDP sockets.
-    //! @ingroup net
+    //! @ingroup libtscore net
     //!
     class TSCOREDLL Socket
     {

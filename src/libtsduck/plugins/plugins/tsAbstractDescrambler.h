@@ -22,7 +22,7 @@ namespace ts {
 
     //!
     //! Abstract base class for DVB descrambler plugins.
-    //! @ingroup plugin
+    //! @ingroup libtsduck plugin
     //!
     class TSDUCKDLL AbstractDescrambler:
         public ProcessorPlugin,

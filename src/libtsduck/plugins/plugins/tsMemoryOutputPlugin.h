@@ -17,7 +17,7 @@
 namespace ts {
     //!
     //! Memory output plugin for tsp.
-    //! @ingroup plugin
+    //! @ingroup libtsduck plugin
     //!
     class TSDUCKDLL MemoryOutputPlugin: public OutputPlugin
     {

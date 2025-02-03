@@ -18,7 +18,7 @@
 namespace ts {
     //!
     //! Information on Linux DVB tuner device.
-    //! @ingroup unix
+    //! @ingroup libtsduck unix
     //!
     class TunerDeviceInfo
     {

@@ -27,7 +27,7 @@
 namespace ts {
     //!
     //! A binary or XML file containing PSI/SI sections and tables.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     //! A <i>section file</i> contains one or more sections. Short sections are
     //! also tables. Long sections need to be grouped to form a table. When a

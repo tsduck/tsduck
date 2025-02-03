@@ -36,7 +36,7 @@ namespace ts {
 
     //!
     //! Base class for Digital TV tuners.
-    //! @ingroup hardware
+    //! @ingroup libtsduck hardware
     //!
     //! The TunerBase class defines all virtual methods to access a tuner.
     //! All services in the base class are "unimplemented" and return an error.

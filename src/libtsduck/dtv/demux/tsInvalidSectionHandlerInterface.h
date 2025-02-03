@@ -20,7 +20,7 @@ namespace ts {
 
     //!
     //! Abstract interface to receive an invalid MPEG section from a SectionDemux.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     //! This abstract interface must be implemented by classes which need to be
     //! notified of the content of invalid sections using a SectionDemux.

@@ -18,7 +18,7 @@
 namespace ts {
     //!
     //! Association of a PID and an @e operator id (CAS-specific).
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     struct TSDUCKDLL PIDOperator
     {

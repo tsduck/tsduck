@@ -23,7 +23,7 @@ namespace ts {
 
         //!
         //! Execution context of a tsswitch plugin.
-        //! @ingroup plugin
+        //! @ingroup libtsduck plugin
         //!
         class PluginExecutor : public PluginThread
         {

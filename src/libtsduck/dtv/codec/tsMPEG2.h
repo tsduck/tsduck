@@ -7,7 +7,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  @ingroup mpeg
+//!  @ingroup libtsduck mpeg
 //!  Basic definitions for MPEG-2 video coding standard.
 //!  @see ISO/IEC 113818-2, H.262
 //!

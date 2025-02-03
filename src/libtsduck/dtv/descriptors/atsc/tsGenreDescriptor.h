@@ -19,7 +19,7 @@ namespace ts {
     //!
     //! Representation of an ATSC genre_descriptor.
     //! @see ATSC A/65, section 6.9.13.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL GenreDescriptor : public AbstractDescriptor
     {

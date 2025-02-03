@@ -17,7 +17,7 @@
 namespace ts {
     //!
     //! Parser for Advanced Video Coding data.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     //! Originally defined for AVC, it is now used in:
     //!  - AVC, Advanced Video Coding, ISO 14496-10, ITU-T Rec. H.264.

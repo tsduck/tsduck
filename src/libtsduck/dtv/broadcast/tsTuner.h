@@ -19,7 +19,7 @@
 namespace ts {
     //!
     //! General-purpose implementation of a digital TV tuner.
-    //! @ingroup hardware
+    //! @ingroup libtsduck hardware
     //!
     //! This class encapsulates physical tuners and file-based tuner emulators.
     //! When a "tuner name" is an XML file (a file path ending in ".xml"), the

@@ -19,7 +19,7 @@ namespace ts {
     //!
     //! Representation of an ISDB logo_transmission_descriptor.
     //! @see ARIB STD-B10, Part 2, 6.2.44
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL LogoTransmissionDescriptor : public AbstractDescriptor
     {

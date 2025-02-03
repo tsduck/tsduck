@@ -18,7 +18,7 @@
 namespace ts {
     //!
     //! Abstract base class for PRNG's (pseudo-random numbers generators).
-    //! @ingroup crypto
+    //! @ingroup libtscore crypto
     //!
     class TSCOREDLL RandomGenerator
     {

@@ -19,7 +19,7 @@ namespace ts {
     //!
     //! Representation of a label_descriptor.
     //! @see ETSI TS 102 727 V1.1.1 (2010-01), B.2.2.4.1
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL DSMCCLabelDescriptor: public AbstractDescriptor
     {

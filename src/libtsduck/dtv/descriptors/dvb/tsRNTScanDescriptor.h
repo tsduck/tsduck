@@ -22,7 +22,7 @@ namespace ts {
     //! because its tag reuses a DVB-defined one.
     //!
     //! @see ETSI TS 102 323 clause 5.3.7.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL RNTScanDescriptor: public AbstractDescriptor
     {

@@ -17,7 +17,7 @@
 namespace ts {
     //!
     //! Representation of an HEVC access unit delimiter (AUD).
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //! @see ITU-T Rec. H.265, section 7.3.2.5 and 7.4.3.5
     //!
     class TSDUCKDLL HEVCAccessUnitDelimiter: public AbstractHEVCAccessUnit

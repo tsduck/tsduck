@@ -7,7 +7,7 @@
 //-----------------------------------------------------------------------------
 //!
 //!  @file
-//!  @ingroup windows
+//!  @ingroup libtsduck windows
 //!  DirectShow AM_MEDIA_TYPE utilities (Windows-specific).
 //!
 //-----------------------------------------------------------------------------

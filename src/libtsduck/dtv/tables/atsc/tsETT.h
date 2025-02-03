@@ -19,7 +19,7 @@ namespace ts {
     //!
     //! Representation of an ATSC Extended Text Table (ETT)
     //! @see ATSC A/65, section 6.6.
-    //! @ingroup table
+    //! @ingroup libtsduck table
     //!
     class TSDUCKDLL ETT : public AbstractLongTable
     {

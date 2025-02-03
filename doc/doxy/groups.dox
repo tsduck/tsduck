@@ -1,5 +1,16 @@
 /**
 
+@defgroup tslibs TSDuck libraries
+There are two libraries in the TSDuck development environment.
+
+  @defgroup libtscore The TSCore library
+  @ingroup tslibs
+  Generic C++ features.
+
+  @defgroup libtsduck The TSDuck library
+  @ingroup tslibs
+  Digital Television features.
+
 @defgroup core Core classes
 Generic core classes.
 

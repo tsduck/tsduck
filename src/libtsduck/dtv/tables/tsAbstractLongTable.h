@@ -17,7 +17,7 @@
 namespace ts {
     //!
     //! Abstract base class for MPEG PSI/SI tables with long sections.
-    //! @ingroup table
+    //! @ingroup libtsduck table
     //!
     class TSDUCKDLL AbstractLongTable: public AbstractTable
     {

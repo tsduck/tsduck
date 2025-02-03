@@ -20,7 +20,7 @@ namespace ts {
     //!
     //! Input @c tsp plugin interface.
     //!
-    //! @ingroup plugin
+    //! @ingroup libtsduck plugin
     //!
     //! All shared libraries providing input capability shall return
     //! an object implementing this abstract interface.

@@ -18,7 +18,7 @@
 namespace ts {
     //!
     //! This class produces a formatted table of text lines and columns.
-    //! @ingroup cpp
+    //! @ingroup libtscore cpp
     //! @see Grid
     //!
     //! Comparison with class Grid:

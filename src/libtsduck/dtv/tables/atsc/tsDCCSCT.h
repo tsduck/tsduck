@@ -21,7 +21,7 @@ namespace ts {
     //!
     //! Representation of an ATSC Directed Channel Change Selection Code Table (DCCSCT).
     //! @see ATSC A/65, section 6.8.
-    //! @ingroup table
+    //! @ingroup libtsduck table
     //!
     class TSDUCKDLL DCCSCT : public AbstractLongTable
     {

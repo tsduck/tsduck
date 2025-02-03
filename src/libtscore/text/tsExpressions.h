@@ -18,7 +18,7 @@
 namespace ts {
     //!
     //! Expression resolver based on the definition of symbols.
-    //! @ingroup cpp
+    //! @ingroup libtscore cpp
     //!
     //! Symbols are words starting with a letter and made of alphanumerical characters
     //! and underscores. Symbol names are case sensitive. Symbols can be defined and

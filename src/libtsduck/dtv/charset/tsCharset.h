@@ -18,7 +18,7 @@
 namespace ts {
     //!
     //! Definition of a character set for PSI/SI encoding.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     class TSDUCKDLL Charset
     {

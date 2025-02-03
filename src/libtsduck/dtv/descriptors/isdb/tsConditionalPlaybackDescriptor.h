@@ -20,7 +20,7 @@ namespace ts {
     //!
     //! Representation of an ISDB conditional_playback_descriptor.
     //! @see ARIB STD-B25, Part 2, 2.3.2.6.4
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL ConditionalPlaybackDescriptor : public AbstractDescriptor
     {

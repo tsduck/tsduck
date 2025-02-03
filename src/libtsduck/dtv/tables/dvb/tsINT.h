@@ -19,7 +19,7 @@ namespace ts {
     //!
     //! Representation of an IP/MAC Notification Table (INT).
     //! @see ETSI EN 301 192, 8.4.3
-    //! @ingroup table
+    //! @ingroup libtsduck table
     //!
     class TSDUCKDLL INT : public AbstractLongTable
     {

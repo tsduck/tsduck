@@ -22,7 +22,7 @@ namespace ts {
 
     //!
     //! A combination of IP address and network mask or prefix.
-    //! @ingroup net
+    //! @ingroup libtscore net
     //!
     class TSCOREDLL IPAddressMask: public IPAddress
     {

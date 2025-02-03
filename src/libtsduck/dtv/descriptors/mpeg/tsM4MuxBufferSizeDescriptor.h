@@ -19,7 +19,7 @@ namespace ts {
     //! Representation of an M4 Mux Buffer Size descriptor.
     //!
     //! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.6.50.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL M4MuxBufferSizeDescriptor : public AbstractDescriptor
     {

@@ -19,7 +19,7 @@ namespace ts {
     //!
     //! Representation of an ISDB Event Relation Table (ERT).
     //! @see ARIB STD-B10, Part 3, 5.1.2
-    //! @ingroup table
+    //! @ingroup libtsduck table
     //!
     class TSDUCKDLL ERT : public AbstractLongTable
     {

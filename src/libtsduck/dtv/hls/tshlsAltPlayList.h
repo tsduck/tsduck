@@ -19,7 +19,7 @@ namespace ts::hls {
     //! Description of an alternative rendition media playlist inside an HLS master playlist.
     //! Alternative rendition media playlists are introduced by the tag @c \#EXT-X-MEDIA while
     //! regular media playlists (class MediaPlayList) are introduced by the tag @c \#EXT-X-STREAM-INF.
-    //! @ingroup hls
+    //! @ingroup libtsduck hls
     //!
     class TSDUCKDLL AltPlayList: public MediaElement
     {

@@ -17,7 +17,7 @@
 namespace ts::xml {
     //!
     //! Representation of a "running" XML document which is displayed on the fly.
-    //! @ingroup xml
+    //! @ingroup libtscore xml
     //!
     //! The idea is to display or save an XML document which is built element
     //! by element without waiting for the end of the document. Moreover,

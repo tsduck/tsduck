@@ -18,7 +18,7 @@
 namespace ts {
     //!
     //! A subclass of ts::Report which outputs messages in a text file.
-    //! @ingroup log
+    //! @ingroup libtscore log
     //!
     //! Reentrancy is supported though the template parameter @a SAFETY.
     //!

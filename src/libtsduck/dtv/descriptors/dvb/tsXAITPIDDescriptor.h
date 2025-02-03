@@ -20,7 +20,7 @@ namespace ts {
     //!
     //! Representation of a xait_pid_descriptor.
     //! @see ETSI TS 102 727, 10.17.3.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL XAITPIDDescriptor : public AbstractDescriptor
     {

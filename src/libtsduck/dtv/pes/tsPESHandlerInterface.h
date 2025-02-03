@@ -29,7 +29,7 @@ namespace ts {
     //!
     //! Abstract interface to be notified of PES packets using a PESDemux.
     //! All hooks are optional, ie. they have an empty default implementation.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     class TSDUCKDLL PESHandlerInterface
     {

@@ -17,7 +17,7 @@
 namespace ts {
     //!
     //! Abstract interface to read raw data from a stream.
-    //! @ingroup system
+    //! @ingroup libtscore system
     //!
     class TSCOREDLL AbstractReadStreamInterface
     {

@@ -18,7 +18,7 @@
 namespace ts {
     //!
     //! Generate subtitles in SubRip format (aka SRT).
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     class TSDUCKDLL SubRipGenerator
     {

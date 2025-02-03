@@ -18,7 +18,7 @@ namespace ts {
     //!
     //! Representation of a multilingual_service_name_descriptor.
     //! @see ETSI EN 300 468, 6.2.25.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL MultilingualServiceNameDescriptor : public AbstractDescriptor
     {

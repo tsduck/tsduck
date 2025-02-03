@@ -20,7 +20,7 @@ namespace ts {
     //!
     //! Registry of plugin event handlers.
     //! Used as base class for tsp and tsswitch implementations.
-    //! @ingroup plugin
+    //! @ingroup libtsduck plugin
     //!
     class TSDUCKDLL PluginEventHandlerRegistry
     {

@@ -17,7 +17,7 @@
 namespace ts {
     //!
     //! Implementation of a TCP/IP server.
-    //! @ingroup net
+    //! @ingroup libtscore net
     //!
     //! The following lists the typical server-side scenario in the correct order.
     //! Many steps such as setting socket options are optional. The symbol [*] means mandatory.

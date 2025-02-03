@@ -23,7 +23,7 @@ namespace ts {
     namespace tslatencymonitor {
         //!
         //! Execution context of a tslatencymonitor input plugin.
-        //! @ingroup plugin
+        //! @ingroup libtsduck plugin
         //!
         class InputExecutor : public PluginThread
         {

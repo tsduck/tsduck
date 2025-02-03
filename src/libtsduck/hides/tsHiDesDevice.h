@@ -21,7 +21,7 @@
 namespace ts {
     //!
     //! Encapsulation of a HiDes modulator device.
-    //! @ingroup hardware
+    //! @ingroup libtsduck hardware
     //!
     class TSDUCKDLL HiDesDevice
     {

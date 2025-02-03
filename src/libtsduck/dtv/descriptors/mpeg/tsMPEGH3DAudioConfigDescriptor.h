@@ -19,7 +19,7 @@ namespace ts {
     //!
     //! Representation of an MPEGH_3D_audio_config_descriptor.
     //! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.6.108.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     //! This is a limited implementation. The mpegh3daConfig() is represented
     //! as a binary blob. A future version may chose to describe the internal structure

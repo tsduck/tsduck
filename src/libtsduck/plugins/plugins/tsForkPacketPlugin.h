@@ -20,7 +20,7 @@ namespace ts {
     //!
     //! File packet processor plugin for tsp.
     //! Fork a process and send TS packets to its standard input (pipe).
-    //! @ingroup plugin
+    //! @ingroup libtsduck plugin
     //!
     class TSDUCKDLL ForkPacketPlugin: public ProcessorPlugin
     {

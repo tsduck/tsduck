@@ -17,7 +17,7 @@
 namespace ts {
     //!
     //! eXtension Descriptor Id.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     //! Most descriptors are identified by an 8-bit tag or DID. MPEG and DVB use the concept of
     //! "extension descriptor", with one single DID value and several extension descriptor ids.

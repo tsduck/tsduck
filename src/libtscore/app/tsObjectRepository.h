@@ -18,7 +18,7 @@
 namespace ts {
     //!
     //! A global repository of general-purpose base class for polymophic objects.
-    //! @ingroup cpp
+    //! @ingroup libtscore cpp
     //!
     //! The repository is a thread-safe singleton. It can be used as a central
     //! repository of user-defined objects which is shared by all modules, all

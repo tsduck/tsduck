@@ -22,6 +22,7 @@ namespace ts {
     namespace hls {
         //!
         //! Types of .M3U8 playlist.
+        //! @ingroup hls
         //!
         //! - Master playlist. It contains references to media playlists (typically same content with various bitrates).
         //!   Also called "multivariant playlist" in recent versions of the HLS standard.
@@ -102,6 +103,7 @@ namespace ts {
         //!
         //! Properties of playlist tags.
         //! Can be used as bitmask.
+        //! @ingroup hls
         //!
         enum class TagFlags {
             NONE   = 0x0000,   //!< Tag is not allowed anywhere.
@@ -112,12 +114,14 @@ namespace ts {
         //!
         //! Enumeration description of ts::hls::Tag.
         //! The names are the actual tag names from a .M3U8 playlist file.
+        //! @ingroup hls
         //! @return A constant reference to the enumeration description.
         //!
         TSDUCKDLL const Names& TagNames();
 
         //!
         //! Get the properties of a Tag.
+        //! @ingroup hls
         //! @param [in] tag The tag to get the properties of.
         //! @return A bitmask of TagFlags.
         //!

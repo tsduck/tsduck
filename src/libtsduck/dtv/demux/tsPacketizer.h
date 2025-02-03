@@ -18,7 +18,7 @@
 namespace ts {
     //!
     //! Packetization of MPEG sections into Transport Stream packets.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     //! Sections are provided by an object implementing SectionProviderInterface.
     //!

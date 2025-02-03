@@ -19,7 +19,7 @@ namespace ts {
     //!
     //! Representation of an ISDB carousel_compatible_composite_descriptor.
     //! @see ARIB STD-B10, Part 2, 6.2.46
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL CarouselCompatibleCompositeDescriptor : public AbstractDescriptor
     {

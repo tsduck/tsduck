@@ -20,7 +20,7 @@ namespace ts {
     namespace jni {
         //!
         //! Synchronous message report with notification to a Java class.
-        //! @ingroup java
+        //! @ingroup libtsduck java
         //!
         class TSDUCKDLL SyncReport : public ts::Report
         {

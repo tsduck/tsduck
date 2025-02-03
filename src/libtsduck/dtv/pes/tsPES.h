@@ -7,7 +7,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  @ingroup mpeg
+//!  @ingroup libtsduck mpeg
 //!  Common definitions for MPEG PES (Packetized Elementary Stream) layer.
 //!
 //----------------------------------------------------------------------------

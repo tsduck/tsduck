@@ -19,7 +19,7 @@ namespace ts {
     //!
     //! Representation of a extended_event_descriptor.
     //! @see ETSI EN 300 468, 6.2.15.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL ExtendedEventDescriptor : public AbstractDescriptor
     {

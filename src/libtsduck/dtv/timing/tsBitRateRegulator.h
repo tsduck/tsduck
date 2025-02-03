@@ -18,7 +18,7 @@
 namespace ts {
     //!
     //! Regulate execution speed based on a bitrate.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //! @see PCRRegulator
     //!
     class TSDUCKDLL BitRateRegulator

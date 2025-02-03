@@ -20,7 +20,7 @@ namespace ts {
 
     //!
     //! Interface for classes which need to be notified when an alert is raised on a block cipher.
-    //! @ingroup crypto
+    //! @ingroup libtscore crypto
     //!
     class TSCOREDLL BlockCipherAlertInterface
     {

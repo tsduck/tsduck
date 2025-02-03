@@ -20,7 +20,7 @@
 namespace ts {
     //!
     //! A class which encapsulates a DirectShow network type and its properties (Windows-specific).
-    //! @ingroup windows
+    //! @ingroup libtsduck windows
     //!
     class TSDUCKDLL DirectShowNetworkType
     {

@@ -23,7 +23,7 @@ namespace ts {
 
     //!
     //! Description of a network interface.
-    //! @ingroup net
+    //! @ingroup libtscore net
     //!
     //! The concept of "network interface" is very system-specific. There are physical and virtual
     //! interfaces, interface names and addresses. Here, a NetworkInterface instance describes one

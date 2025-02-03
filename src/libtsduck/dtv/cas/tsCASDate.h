@@ -19,7 +19,7 @@ namespace ts {
     //!
     //! Template representation of a CAS date.
     //! This general format is used by several CAS vendors.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     //! @tparam YEARBASE The base year for the dates (CAS dependent).
     //!

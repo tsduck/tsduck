@@ -19,7 +19,7 @@
 namespace ts {
     //!
     //! AES-256 block cipher
-    //! @ingroup crypto
+    //! @ingroup libtscore crypto
     //!
     class TSCOREDLL AES256: public BlockCipher
     {

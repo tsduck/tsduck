@@ -33,7 +33,7 @@ namespace ts::json {
     //!
     //! @see http://json.org/
     //! @see https://tools.ietf.org/html/rfc8259
-    //! @ingroup json
+    //! @ingroup libtscore json
     //!
     class TSCOREDLL Value
     {

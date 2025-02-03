@@ -20,7 +20,7 @@ namespace ts {
         //!
         //! Execution context of a tsp output plugin.
         //! This class is internal to the TSDuck library and cannot be called by applications.
-        //! @ingroup plugin
+        //! @ingroup libtsduck plugin
         //!
         class OutputExecutor: public PluginExecutor
         {

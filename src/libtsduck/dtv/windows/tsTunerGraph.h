@@ -21,7 +21,7 @@
 namespace ts {
     //!
     //! A specialization of a DirectShow graph for tuner reception (Windows-specific).
-    //! @ingroup windows
+    //! @ingroup libtsduck windows
     //!
     //! A DirectShow graph for TS capture is usually made of the following filters:
     //! - Network provider (typically "Microsoft DVBx Network Provider")

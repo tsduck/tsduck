@@ -24,7 +24,7 @@ namespace ts {
 namespace ts::json {
     //!
     //! Command line arguments for JSON reports (@c -\-json, @c -\-json-line, @c -\-json-udp, @c -\-json-tcp).
-    //! @ingroup cmd
+    //! @ingroup libtscore cmd
     //!
     class TSCOREDLL OutputArgs
     {

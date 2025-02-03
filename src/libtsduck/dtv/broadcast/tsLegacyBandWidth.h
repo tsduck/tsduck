@@ -7,7 +7,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  @ingroup hardware
+//!  @ingroup libtsduck hardware
 //!  Handling of legacy definitions for terrestrial modulation bandwidths.
 //!
 //!  Legacy issue: The bandwith type for DVB-T/T2 and ISDB-T used to be an enum type

@@ -7,7 +7,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  @ingroup mpeg
+//!  @ingroup libtsduck mpeg
 //!  Basic definitions for Advanced Video Coding (AVC, H.264) standard.
 //!  @see ISO/IEC 14496-10, ITU-T Rec. H.264
 //!

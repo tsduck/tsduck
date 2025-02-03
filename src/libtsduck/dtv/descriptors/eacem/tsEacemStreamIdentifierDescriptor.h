@@ -21,7 +21,7 @@ namespace ts {
     //!
     //! This is a private descriptor, must be preceded by the EACEM/EICTA PDS.
     //! @see EACEM Technical Report Number TR-030, 9.2.11.2.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL EacemStreamIdentifierDescriptor : public AbstractDescriptor
     {

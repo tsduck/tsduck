@@ -18,7 +18,7 @@ namespace ts {
     //!
     //! Representation of a Bouquet Association Table (BAT).
     //! @see ETSI EN 300 468, 5.2.2
-    //! @ingroup table
+    //! @ingroup libtsduck table
     //!
     class TSDUCKDLL BAT : public AbstractTransportListTable
     {

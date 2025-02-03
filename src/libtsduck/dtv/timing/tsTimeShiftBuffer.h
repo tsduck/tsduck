@@ -24,7 +24,7 @@ namespace ts {
     //!
     //! A TS packet buffer for time shift.
     //! The buffer is partly implemented in virtual memory and partly on disk.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     class TSDUCKDLL TimeShiftBuffer
     {

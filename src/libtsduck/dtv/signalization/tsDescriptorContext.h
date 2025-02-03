@@ -25,7 +25,7 @@ namespace ts {
 
     //!
     //! A class to lookup the context of MPEG PSI/SI descriptors.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     //! The interface of the base class is used to understand the context of a descriptor.
     //! When getting a binary descriptor, for instance, it is not always easy to determine

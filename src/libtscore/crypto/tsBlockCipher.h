@@ -24,7 +24,7 @@ namespace ts {
     //!
     //! Base class for all block ciphers.
     //! A block cipher may be a base encryption algorithm (one block) or includes a chaining mode.
-    //! @ingroup crypto
+    //! @ingroup libtscore crypto
     //!
     class TSCOREDLL BlockCipher
     {

@@ -21,7 +21,7 @@ namespace ts {
 
     //!
     //! Report options for the class TSAnalyzer.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     //! The default options are
     //! -\-ts-analysis -\-service-analysis -\-pid-analysis -\-table-analysis

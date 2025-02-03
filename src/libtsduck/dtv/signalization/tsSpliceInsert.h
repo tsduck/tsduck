@@ -21,7 +21,7 @@ namespace ts {
     //! Representation of an SCTE 35 SpliceInsert command.
     //!
     //! @see ANSI/SCTE 35, 9.3.3.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     class TSDUCKDLL SpliceInsert : public AbstractSignalization
     {

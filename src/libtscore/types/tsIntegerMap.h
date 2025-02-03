@@ -19,7 +19,7 @@
 namespace ts {
     //!
     //! Generic map of integers, indexed by integer.
-    //! @ingroup cpp
+    //! @ingroup libtscore cpp
     //!
     //! @tparam KEY Integer type for keys.
     //! @tparam VALUE Integer type for values.

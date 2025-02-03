@@ -21,7 +21,7 @@ namespace ts {
 
     //!
     //! Parameters and command line arguments for asynchronous log.
-    //! @ingroup cmd
+    //! @ingroup libtscore cmd
     //!
     class TSCOREDLL AsyncReportArgs
     {

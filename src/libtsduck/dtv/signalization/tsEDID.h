@@ -22,7 +22,7 @@
 namespace ts {
     //!
     //! Extended MPEG descriptor id.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     //! For convenience, it is sometimes useful to identify descriptors using
     //! an "extended DID" because a descriptor tag is not always enough to

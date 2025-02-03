@@ -19,7 +19,7 @@ namespace ts {
     //!
     //! Representation of an ISDB Local event Information Table (LIT).
     //! @see ARIB STD-B10, Part 3, 5.1.1
-    //! @ingroup table
+    //! @ingroup libtsduck table
     //!
     class TSDUCKDLL LIT : public AbstractLongTable
     {

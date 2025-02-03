@@ -20,7 +20,7 @@
 namespace ts {
     //!
     //! Abstract base class for HTTP-based input plugins.
-    //! @ingroup plugin
+    //! @ingroup libtsduck plugin
     //!
     class TSDUCKDLL AbstractHTTPInputPlugin: public InputPlugin
     {

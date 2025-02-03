@@ -7,7 +7,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  @ingroup mpeg
+//!  @ingroup libtsduck mpeg
 //!  Common definitions for MPEG PSI (Program Specific Information) layer.
 //!  Also contains definitions for DVB SI (Service Information) and ATSC.
 //!

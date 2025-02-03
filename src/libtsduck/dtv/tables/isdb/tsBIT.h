@@ -19,7 +19,7 @@ namespace ts {
     //!
     //! Representation of an ISDB Broadcaster Information Table (BIT).
     //! @see ARIB STD-B10, Part 2, 5.2.13
-    //! @ingroup table
+    //! @ingroup libtsduck table
     //!
     class TSDUCKDLL BIT : public AbstractLongTable
     {

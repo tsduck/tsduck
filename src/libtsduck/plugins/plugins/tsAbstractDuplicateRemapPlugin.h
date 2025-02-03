@@ -18,7 +18,7 @@ namespace ts {
     //!
     //! Abstract base class for the plugins @c duplicate and @c remap.
     //! This common base class defines the common options and their parsing.
-    //! @ingroup plugin
+    //! @ingroup libtsduck plugin
     //!
     class TSDUCKDLL AbstractDuplicateRemapPlugin: public ProcessorPlugin
     {

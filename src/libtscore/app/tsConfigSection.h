@@ -20,7 +20,7 @@
 namespace ts {
     //!
     //! Representation of a "configuration section".
-    //! @ingroup app
+    //! @ingroup libtscore app
     //!
     //! A configuration section contains a list of "entries". Each entry has one
     //! or more values. A value can be interpreted as a string, integer or boolean.

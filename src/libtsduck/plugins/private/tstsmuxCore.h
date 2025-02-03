@@ -29,7 +29,7 @@ namespace ts {
     namespace tsmux {
         //!
         //! Multiplexer (tsmux) core engine.
-        //! @ingroup plugin
+        //! @ingroup libtsduck plugin
         //!
         class Core: private Thread, private SectionProviderInterface
         {

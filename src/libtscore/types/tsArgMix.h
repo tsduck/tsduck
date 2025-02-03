@@ -57,7 +57,7 @@ namespace ts {
     //! This is a base class. It can be used only through the two derived
     //! classes ArgMixIn and ArgMixOut.
     //!
-    //! @ingroup cpp
+    //! @ingroup libtscore cpp
     //!
     class TSCOREDLL ArgMix
     {
@@ -459,7 +459,7 @@ namespace ts {
     //! for a std::initializer_list<ArgMixIn> which is used as parameter to Format().
     //! But this is not guaranteed in other usages.
     //!
-    //! @ingroup cpp
+    //! @ingroup libtscore cpp
     //!
     class TSCOREDLL ArgMixIn: public ArgMix
     {
@@ -554,7 +554,7 @@ namespace ts {
     //! for a std::initializer_list<ArgMixOut> which is used as parameter to Scan().
     //! But this is not guaranteed in other usages.
     //!
-    //! @ingroup cpp
+    //! @ingroup libtscore cpp
     //!
     class TSCOREDLL ArgMixOut: public ArgMix
     {

@@ -18,7 +18,7 @@
 namespace ts {
     //!
     //! A repository of TSDuck extensions.
-    //! @ingroup plugin
+    //! @ingroup libtsduck plugin
     //!
     //! This class is a singleton. Use static Instance() method to access the single instance.
     //!

@@ -19,7 +19,7 @@ namespace ts {
     //!
     //! Representation of an ATSC extended_channel_name_descriptor.
     //! @see ATSC A/65, section 6.9.4.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL ExtendedChannelNameDescriptor : public AbstractDescriptor
     {

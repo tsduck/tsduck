@@ -18,7 +18,7 @@
 namespace ts {
     //!
     //! Packetization of PES data into Transport Stream packets in one shot.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     class TSDUCKDLL PESOneShotPacketizer: public PESStreamPacketizer
     {

@@ -17,7 +17,7 @@
 namespace ts {
     //!
     //! Reliable Internet Stream Transport (RIST) input plugin for tsp.
-    //! @ingroup plugin
+    //! @ingroup libtsduck plugin
     //!
     class TSDUCKDLL RISTInputPlugin: public AbstractDatagramInputPlugin
     {

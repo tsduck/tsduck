@@ -18,7 +18,7 @@
 namespace ts {
     //!
     //! Transport stream file input with a seekable buffer.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     //! This variant of TSFile allows to seek back and forth to some extent
     //! without doing I/O's and can work on non-seekable files (pipes for instance).

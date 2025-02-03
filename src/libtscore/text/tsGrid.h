@@ -17,7 +17,7 @@
 namespace ts {
     //!
     //! This class produces a report in a grid format with tables and sections.
-    //! @ingroup cpp
+    //! @ingroup libtscore cpp
     //! @see TextTable
     //!
     class TSCOREDLL Grid

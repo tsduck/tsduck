@@ -18,7 +18,7 @@
 namespace ts {
     //!
     //! Packetization of MPEG sections into Transport Stream packets in one shot.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     class TSDUCKDLL OneShotPacketizer: public CyclingPacketizer
     {

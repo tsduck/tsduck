@@ -26,7 +26,7 @@ namespace ts::tlv {
 
     //!
     //! Factory class for TLV messages
-    //! @ingroup tlv
+    //! @ingroup libtsduck tlv
     //!
     //! The following methods should be used by the application
     //! to deserialize messages:

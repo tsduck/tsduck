@@ -18,7 +18,7 @@ namespace ts {
     //!
     //! Representation of a subtitling_descriptor.
     //! @see ETSI EN 300 468, 6.2.41.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL SubtitlingDescriptor : public AbstractDescriptor
     {

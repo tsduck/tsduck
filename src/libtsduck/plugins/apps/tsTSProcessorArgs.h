@@ -22,7 +22,7 @@ namespace ts {
 
     //!
     //! Transport stream processor options and their command line options.
-    //! @ingroup plugin
+    //! @ingroup libtsduck plugin
     //!
     class TSDUCKDLL TSProcessorArgs
     {

@@ -22,7 +22,7 @@ namespace ts {
     //! Base class for ATSC Virtual Channel Table (VCT).
     //! Existing concrete subclasses are TVCT (terrestrial) and CVCT (cable).
     //! @see ATSC A/65, section 6.3.
-    //! @ingroup table
+    //! @ingroup libtsduck table
     //!
     class TSDUCKDLL VCT : public AbstractLongTable
     {

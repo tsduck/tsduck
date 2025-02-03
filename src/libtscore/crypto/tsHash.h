@@ -19,7 +19,7 @@
 namespace ts {
     //!
     //! Base class for all hash functions.
-    //! @ingroup crypto
+    //! @ingroup libtscore crypto
     //!
     class TSCOREDLL Hash
     {

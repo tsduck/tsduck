@@ -22,7 +22,7 @@ namespace ts {
     //!
     //! ISDB-T Information Packet (IIP).
     //! Contained in specific TS packets in IIP PID (0x1FF0).
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //! @see ARIB STD-B31, section 5.5.3
     //!
     class TSDUCKDLL ISDBTInformationPacket

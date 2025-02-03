@@ -19,7 +19,7 @@ namespace ts {
     //!
     //! Representation of an ISDB Linked Description Table (LDT).
     //! @see ARIB STD-B10, Part 2, 5.2.15
-    //! @ingroup table
+    //! @ingroup libtsduck table
     //!
     class TSDUCKDLL LDT : public AbstractLongTable
     {

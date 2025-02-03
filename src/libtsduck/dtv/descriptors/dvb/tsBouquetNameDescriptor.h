@@ -19,7 +19,7 @@ namespace ts {
     //!
     //! Representation of a bouquet_name_descriptor.
     //! @see ETSI EN 300 468, 6.2.4.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL BouquetNameDescriptor : public AbstractDescriptor
     {

@@ -7,7 +7,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  @ingroup java
+//!  @ingroup libtsduck java
 //!  Base definitions for the TSDuck Java bindings (JNI C++ implementation).
 //!  JNI utilitities for other JNI modules.
 //!

@@ -17,7 +17,7 @@
 namespace ts {
     //!
     //! Full identification of a DVB service (aka "DVB triplet").
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     class TSDUCKDLL ServiceIdTriplet: public TransportStreamId
     {

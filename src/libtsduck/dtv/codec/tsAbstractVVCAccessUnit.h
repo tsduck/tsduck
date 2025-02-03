@@ -18,7 +18,7 @@ namespace ts {
     //!
     //! Base class for VVC (H.266) access units, aka NALunits.
     //! @see ITU-T Rec. H.266, section 7.3.1
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     class TSDUCKDLL AbstractVVCAccessUnit: public AbstractVideoAccessUnit
     {

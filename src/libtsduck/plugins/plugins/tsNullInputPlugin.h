@@ -17,7 +17,7 @@
 namespace ts {
     //!
     //! Null packet input plugin for tsp.
-    //! @ingroup plugin
+    //! @ingroup libtsduck plugin
     //!
     class TSDUCKDLL NullInputPlugin: public InputPlugin
     {

@@ -18,7 +18,7 @@ namespace ts {
     //!
     //! Representation of a info_descriptor (DSM-CC U-N Message DSI/DII specific).
     //! @see ETSI EN 301 192 V1.7.1 (2021-08), 10.2.4
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL DSMCCInfoDescriptor: public AbstractDescriptor
     {

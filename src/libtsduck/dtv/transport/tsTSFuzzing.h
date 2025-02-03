@@ -20,7 +20,7 @@ namespace ts {
     //!
     //! Transport stream packets fuzzing.
     //! This class performs random corruptions on transport streams packets.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     class TSDUCKDLL TSFuzzing
     {

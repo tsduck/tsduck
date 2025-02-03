@@ -18,7 +18,7 @@
 namespace ts {
     //!
     //! Representation of an AVC access unit delimiter (AUD).
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     //! AVC is Advanced Video Coding, ISO 14496-10, ITU H.264.
     //!

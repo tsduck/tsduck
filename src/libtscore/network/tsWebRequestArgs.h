@@ -21,7 +21,7 @@ namespace ts {
 
     //!
     //! Command line arguments for the class WebRequest.
-    //! @ingroup net
+    //! @ingroup libtscore net
     //!
     class TSCOREDLL WebRequestArgs
     {

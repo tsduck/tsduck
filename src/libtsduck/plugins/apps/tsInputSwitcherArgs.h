@@ -22,7 +22,7 @@ namespace ts {
 
     //!
     //! Transport stream input switcher command-line options.
-    //! @ingroup plugin
+    //! @ingroup libtsduck plugin
     //!
     class TSDUCKDLL InputSwitcherArgs
     {

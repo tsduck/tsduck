@@ -19,7 +19,7 @@
 namespace ts {
     //!
     //! Template representation of fixed-precision numbers.
-    //! @ingroup cpp
+    //! @ingroup libtscore cpp
     //!
     //! A fixed-precision number is internally represented by an integer but with a different
     //! representation of a "unit". This concept is inspired by "fixed" types in Ada.

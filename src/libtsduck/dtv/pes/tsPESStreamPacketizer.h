@@ -17,7 +17,7 @@
 namespace ts {
     //!
     //! Packetization of PES data into Transport Stream packets in "push" mode.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     //! This class works in "push" mode; the application pushes new PES packets
     //! in the packetizer, asynchronously from the generation of the TS packets.

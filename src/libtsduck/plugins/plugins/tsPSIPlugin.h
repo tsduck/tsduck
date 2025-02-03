@@ -19,7 +19,7 @@
 namespace ts {
     //!
     //! Display PSI/SI information plugin for tsp.
-    //! @ingroup plugin
+    //! @ingroup libtsduck plugin
     //!
     class TSDUCKDLL PSIPlugin : public ProcessorPlugin, private SectionHandlerInterface
     {

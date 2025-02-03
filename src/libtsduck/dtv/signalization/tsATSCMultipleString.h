@@ -31,7 +31,7 @@ namespace ts {
     //! support non-compressed text.
     //!
     //! @see ATSC A/65, section 6.10.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     class TSDUCKDLL ATSCMultipleString
     {

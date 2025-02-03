@@ -18,7 +18,7 @@
 namespace ts {
     //!
     //! HEVC profile, tier and level structure.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //! @see ITU-T Rec. H.265, 7.3.3
     //!
     class TSDUCKDLL HEVCProfileTierLevel: public AbstractVideoStructure

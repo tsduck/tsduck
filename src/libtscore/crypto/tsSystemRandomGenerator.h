@@ -25,7 +25,7 @@ namespace ts {
     //!
     //! System-provided PRNG (pseudo-random numbers generator).
     //! Usually not the best PRNG on earth, but fine for most usages.
-    //! @ingroup crypto
+    //! @ingroup libtscore crypto
     //!
     class TSCOREDLL SystemRandomGenerator: public RandomGenerator
     {

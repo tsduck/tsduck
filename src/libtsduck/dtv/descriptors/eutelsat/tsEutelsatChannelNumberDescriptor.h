@@ -18,7 +18,7 @@
 namespace ts {
     //!
     //! Representation of an Eutelsat_channel_number_descriptor.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     //! This is a private descriptor, must be preceded by the Eutelsat PDS.
     //! See document "Via Eutelsat Fransat set-top-box specification",

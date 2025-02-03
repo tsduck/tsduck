@@ -21,7 +21,7 @@ namespace ts {
     //!
     //! Representation of an ISDB SI_parameter_descriptor.
     //! @see ARIB STD-B10, Part 2, 6.2.35
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL SIParameterDescriptor : public AbstractDescriptor
     {

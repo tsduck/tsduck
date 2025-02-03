@@ -18,7 +18,7 @@ namespace ts {
     //!
     //! Representation of an ISDB hybrid_information_descriptor.
     //! @see ARIB STD-B10, Part 2, 6.2.58
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL HybridInformationDescriptor : public AbstractDescriptor
     {

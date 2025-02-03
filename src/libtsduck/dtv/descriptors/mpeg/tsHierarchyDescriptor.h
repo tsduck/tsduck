@@ -18,7 +18,7 @@ namespace ts {
     //!
     //! Representation of a hierarchy_descriptor.
     //! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.6.6.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL HierarchyDescriptor : public AbstractDescriptor
     {

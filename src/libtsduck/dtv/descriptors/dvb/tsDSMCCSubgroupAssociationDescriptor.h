@@ -21,7 +21,7 @@ namespace ts {
     //! This descriptor cannot be present in other tables than a DSI
     //!
     //! @see ETSI TS 102 006, 9.6.2.1
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL DSMCCSubgroupAssociationDescriptor: public AbstractDescriptor
     {

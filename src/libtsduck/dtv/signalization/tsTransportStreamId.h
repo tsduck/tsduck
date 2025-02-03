@@ -17,7 +17,7 @@
 namespace ts {
     //!
     //! Full identification of a DVB transport stream.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     class TSDUCKDLL TransportStreamId: public StringifyInterface
     {

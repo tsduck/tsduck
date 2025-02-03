@@ -25,7 +25,7 @@
 namespace ts {
     //!
     //! This class extracts PES packets from TS packets.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     class TSDUCKDLL PESDemux: public TimeTrackerDemux, private TableHandlerInterface
     {

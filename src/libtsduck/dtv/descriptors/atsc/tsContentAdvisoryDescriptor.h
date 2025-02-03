@@ -19,7 +19,7 @@ namespace ts {
     //!
     //! Representation of an ATSC content_advisory_descriptor.
     //! @see ATSC A/65, section 6.9.3.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL ContentAdvisoryDescriptor : public AbstractDescriptor
     {

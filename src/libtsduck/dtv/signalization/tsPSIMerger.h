@@ -24,7 +24,7 @@
 namespace ts {
     //!
     //! This class merges PSI/SI tables from two TS, replacing TS packets.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     //! Definitions:
     //!  - Main stream: the main TS which will be modified.

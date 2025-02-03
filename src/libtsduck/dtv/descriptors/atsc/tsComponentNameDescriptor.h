@@ -19,7 +19,7 @@ namespace ts {
     //!
     //! Representation of an ATSC component_name_descriptor.
     //! @see ATSC A/65, section 6.9.7.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL ComponentNameDescriptor : public AbstractDescriptor
     {

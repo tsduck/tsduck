@@ -19,7 +19,7 @@ namespace ts {
     //!
     //! Representation of an MPEG-defined MPEGH_3D_audio_multi_stream_descriptor.
     //! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.6.114.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL MPEGH3DAudioMultiStreamDescriptor : public AbstractDescriptor
     {

@@ -22,7 +22,7 @@ namespace ts {
     //! because its tag reuses an MPEG-defined one.
     //!
     //! @see ETSI TS 102 006, 9.5.2.11
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL SSUEventNameDescriptor : public AbstractDescriptor
     {

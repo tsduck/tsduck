@@ -21,7 +21,7 @@
 namespace ts::tlv {
     //!
     //! TCP connection using TLV messages.
-    //! @ingroup net
+    //! @ingroup libtsduck net
     //! @tparam SAFETY The required type of thread-safety.
     //!
     template <ThreadSafety SAFETY>

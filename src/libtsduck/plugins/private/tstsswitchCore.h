@@ -25,7 +25,7 @@ namespace ts {
     namespace tsswitch {
         //!
         //! Input switch (tsswitch) core engine.
-        //! @ingroup plugin
+        //! @ingroup libtsduck plugin
         //!
         class Core: private WatchDogHandlerInterface
         {

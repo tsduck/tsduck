@@ -26,7 +26,7 @@ namespace ts {
     //! from those PID's and how they are reported to the application depend
     //! on the concrete demux class.
     //!
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     class TSDUCKDLL AbstractDemux
     {

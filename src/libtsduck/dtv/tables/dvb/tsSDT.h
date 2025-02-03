@@ -21,7 +21,7 @@ namespace ts {
     //!
     //! Representation of a Service Description Table (SDT).
     //! @see ETSI EN 300 468, 5.2.3
-    //! @ingroup table
+    //! @ingroup libtsduck table
     //!
     class TSDUCKDLL SDT : public AbstractLongTable
     {

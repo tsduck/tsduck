@@ -25,7 +25,7 @@ namespace ts {
     //!
     //! Implementation of the latency monitor
     //! This class is used by the @a tslatencymonitor utility.
-    //! @ingroup plugin
+    //! @ingroup libtsduck plugin
     //!
     class TSDUCKDLL LatencyMonitor
     {

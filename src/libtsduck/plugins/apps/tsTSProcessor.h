@@ -31,7 +31,7 @@ namespace ts {
     //! Core of the TSP Transport Stream Processor.
     //! This class is used by the @a tsp utility.
     //! It can also be used in other applications to run a chain of plugins.
-    //! @ingroup plugin
+    //! @ingroup libtsduck plugin
     //!
     class TSDUCKDLL TSProcessor: public PluginEventHandlerRegistry
     {

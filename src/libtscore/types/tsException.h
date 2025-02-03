@@ -17,7 +17,7 @@
 namespace ts {
     //!
     //! Base class for all exceptions in TSDuck.
-    //! @ingroup cpp
+    //! @ingroup libtscore cpp
     //!
     class TSCOREDLL Exception : public std::exception
     {
@@ -100,7 +100,7 @@ namespace ts {
 namespace ts {
     //!
     //! Implementation error.
-    //! @ingroup cpp
+    //! @ingroup libtscore cpp
     //!
     TS_DECLARE_EXCEPTION(ImplementationError);
 }

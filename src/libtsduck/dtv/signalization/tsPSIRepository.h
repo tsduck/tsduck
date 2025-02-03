@@ -39,7 +39,7 @@ namespace ts {
     //! with two distinct semantics, one for DVB and one for ISDB, if ISDB is part of the current
     //! standards we use the ISDB semantics, otherwise we use the DVB semantics.
     //!
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     class TSDUCKDLL PSIRepository : private Names::Visitor
     {

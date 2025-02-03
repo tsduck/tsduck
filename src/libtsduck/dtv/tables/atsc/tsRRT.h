@@ -20,7 +20,7 @@ namespace ts {
     //!
     //! Representation of an ATSC Rating Region Table (RRT).
     //! @see ATSC A/65, section 6.4.
-    //! @ingroup table
+    //! @ingroup libtsduck table
     //!
     class TSDUCKDLL RRT : public AbstractLongTable
     {

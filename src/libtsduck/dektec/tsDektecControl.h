@@ -20,7 +20,7 @@ namespace ts {
     //! A class implementing the tsdektec control utility.
     //! This is defined as a separate class the interface of which does not depend on DTAPI.
     //! The binary DTAPI is privately isolated inside the TSDuck library.
-    //! @ingroup hardware
+    //! @ingroup libtsduck hardware
     //!
     class TSDUCKDLL DektecControl: private Args
     {

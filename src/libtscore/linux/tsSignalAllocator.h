@@ -20,7 +20,7 @@
 namespace ts {
     //!
     //! Allocate POSIX real-time signal numbers (Linux-specific).
-    //! @ingroup unix
+    //! @ingroup libtscore unix
     //!
     class TSCOREDLL SignalAllocator
     {

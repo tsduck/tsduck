@@ -31,7 +31,7 @@ namespace ts {
 
     //!
     //! Abstract base class for MPEG PSI/SI descriptors.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     //! A descriptor subclass shall override the following methods:
     //! - extendedTag() (for MPEG-defined and DVB-defined extension descriptors)

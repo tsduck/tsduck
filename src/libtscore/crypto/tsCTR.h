@@ -18,7 +18,7 @@
 namespace ts {
     //!
     //! Counter (CTR) chaining mode.
-    //! @ingroup crypto
+    //! @ingroup libtscore crypto
     //!
     //! CTR can process a residue. The plain text and cipher text can have any size.
     //!

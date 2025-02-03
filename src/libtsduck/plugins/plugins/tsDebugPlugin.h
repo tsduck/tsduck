@@ -17,7 +17,7 @@
 namespace ts {
     //!
     //! Debug packet processor plugin for tsp.
-    //! @ingroup plugin
+    //! @ingroup libtsduck plugin
     //!
     class TSDUCKDLL DebugPlugin: public ProcessorPlugin
     {

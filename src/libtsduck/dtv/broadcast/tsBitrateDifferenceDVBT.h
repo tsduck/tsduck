@@ -25,7 +25,7 @@ namespace ts {
 
     //!
     //! A variant of DVB-T tuners parameters with an offset between a target bitrate and their theoretical bitrate.
-    //! @ingroup hardware
+    //! @ingroup libtsduck hardware
     //!
     class TSDUCKDLL BitrateDifferenceDVBT
     {

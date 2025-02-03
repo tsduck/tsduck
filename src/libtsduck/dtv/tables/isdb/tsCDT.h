@@ -19,7 +19,7 @@ namespace ts {
     //!
     //! Representation of an ISDB Common Data Table (CDT).
     //! @see ARIB STD-B21, 12.2.2.2
-    //! @ingroup table
+    //! @ingroup libtsduck table
     //!
     class TSDUCKDLL CDT : public AbstractLongTable
     {

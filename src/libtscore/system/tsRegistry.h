@@ -18,7 +18,7 @@
 namespace ts {
     //!
     //! A class to encapsulate the access to the Windows registry.
-    //! @ingroup windows
+    //! @ingroup libtscore windows
     //!
     //! Vocabulary :
     //!  - Key        : Node of the registry (kind of "directory").

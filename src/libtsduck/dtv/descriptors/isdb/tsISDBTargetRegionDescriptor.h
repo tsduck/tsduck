@@ -18,7 +18,7 @@ namespace ts {
     //!
     //! Representation of an ISDB target_region_descriptor.
     //! @see ARIB STD-B10, Part 2, 6.2.27
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL ISDBTargetRegionDescriptor : public AbstractDescriptor
     {

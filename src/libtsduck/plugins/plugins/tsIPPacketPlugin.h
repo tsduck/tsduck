@@ -18,7 +18,7 @@
 namespace ts {
     //!
     //! IP output plugin for tsp.
-    //! @ingroup plugin
+    //! @ingroup libtsduck plugin
     //!
     class TSDUCKDLL IPPacketPlugin: public ProcessorPlugin
     {

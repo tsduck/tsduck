@@ -20,7 +20,7 @@ namespace ts {
     namespace tsswitch {
         //!
         //! Input switch (tsswitch) event dispatcher.
-        //! @ingroup plugin
+        //! @ingroup libtsduck plugin
         //!
         class EventDispatcher
         {

@@ -26,7 +26,7 @@
 namespace ts {
     //!
     //! General-purpose signalization demux.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     class TSDUCKDLL SignalizationDemux:
         private TableHandlerInterface,

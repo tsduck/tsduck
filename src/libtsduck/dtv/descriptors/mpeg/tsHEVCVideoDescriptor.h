@@ -19,7 +19,7 @@ namespace ts {
     //! Representation of an HEVC_video_descriptor.
     //!
     //! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.6.95.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL HEVCVideoDescriptor : public AbstractDescriptor
     {

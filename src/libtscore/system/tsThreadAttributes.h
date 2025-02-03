@@ -17,7 +17,7 @@
 namespace ts {
     //!
     //! Set of attributes for a thread object (ts::Thread).
-    //! @ingroup thread
+    //! @ingroup libtscore thread
     //!
     class TSCOREDLL ThreadAttributes
     {

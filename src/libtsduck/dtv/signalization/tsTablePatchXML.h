@@ -25,7 +25,7 @@ namespace ts {
     //!
     //! Implementation of on-the-fly table patching using XML.
     //! This class is typically used to handle -\-patch-xml command line options.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     class TSDUCKDLL TablePatchXML
     {

@@ -19,7 +19,7 @@ namespace ts {
     //! Representation of an DSM-CC User-to-Network Message Table (DownloadServerInitiate, DownloadInfoIndication)
     //!
     //! @see ISO/IEC 13818-6, ITU-T Rec. 9.2.2 and 9.2.7. ETSI TR 101 202 V1.2.1 (2003-01), A.1, A.3, A.4, B.
-    //! @ingroup table
+    //! @ingroup libtsduck table
     //!
     class TSDUCKDLL DSMCCUserToNetworkMessage: public AbstractLongTable
     {

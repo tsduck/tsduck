@@ -31,7 +31,7 @@ namespace ts {
 
     //!
     //! A class to display PSI/SI tables.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     class TSDUCKDLL TablesDisplay
     {

@@ -67,7 +67,7 @@ namespace ts {
 
     //!
     //! An implementation of UTF-16 strings.
-    //! @ingroup cpp
+    //! @ingroup libtscore cpp
     //!
     //! This class is an extension of @c std::u16string with additional services.
     //!

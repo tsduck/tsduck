@@ -19,7 +19,7 @@ namespace ts {
     //!
     //! Representation of an ISDB series_descriptor.
     //! @see ARIB STD-B10, Part 2, 6.2.33
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL SeriesDescriptor : public AbstractDescriptor
     {

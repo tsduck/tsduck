@@ -20,7 +20,7 @@ namespace ts {
     //!
     //! Representation of an ATSC System Time Table (STT)
     //! @see ATSC A/65, section 6.1.
-    //! @ingroup table
+    //! @ingroup libtsduck table
     //!
     //! Warning: The ATSC STT violates the common usage rules of MPEG sections,
     //! as defined in ISO/IEC 13818-1. An STT section is, by essence, unique.

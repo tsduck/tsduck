@@ -17,7 +17,7 @@
 namespace ts {
     //!
     //! A class to redirect an output stream.
-    //! @ingroup system
+    //! @ingroup libtscore system
     //!
     //! The constructor redirects a specific output stream (@c std::cout by default) to
     //! a given file. The destructor automatically restores the previous output stream.

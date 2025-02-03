@@ -22,7 +22,7 @@ namespace ts {
     //!
     //! This is a private descriptor, must be preceded by the Free TV Australia PDS.
     //! @see Free TV Australia Operational Practice OP-41, section 2.2
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL AustraliaLogicalChannelDescriptor : public AbstractLogicalChannelDescriptor
     {

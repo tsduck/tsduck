@@ -22,7 +22,7 @@
 namespace ts {
     //!
     //! A multi-standard storage of Logical Channel Numbers (LCN).
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     //! Logical Channel Numbers (LCN) are an important data for operators and users.
     //! However, there is not standard way to define them in the signalization.

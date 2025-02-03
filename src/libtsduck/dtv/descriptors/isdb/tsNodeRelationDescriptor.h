@@ -18,7 +18,7 @@ namespace ts {
     //!
     //! Representation of an ISDB node_relation_descriptor.
     //! @see ARIB STD-B10, Part 3, 5.2.3
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL NodeRelationDescriptor : public AbstractDescriptor
     {

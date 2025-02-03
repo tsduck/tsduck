@@ -17,7 +17,7 @@
 namespace ts {
     //!
     //! Abstract interface to write raw data on a stream.
-    //! @ingroup system
+    //! @ingroup libtscore system
     //!
     class TSCOREDLL AbstractWriteStreamInterface
     {

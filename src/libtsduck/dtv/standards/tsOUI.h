@@ -7,7 +7,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  @ingroup mpeg
+//!  @ingroup libtsduck mpeg
 //!  Common definitions for IEEE Organizationally Unique Identifier (OUI).
 //!
 //----------------------------------------------------------------------------

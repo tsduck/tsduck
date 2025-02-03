@@ -18,7 +18,7 @@
 namespace ts {
     //!
     //! Representation of a Tag, Length, Value (TVL) syntax.
-    //! @ingroup cmd
+    //! @ingroup libtscore cmd
     //!
     //! An instance of this class describe how a part of a data area, typically
     //! in the payload of an MPEG section, is structured as a suite of TLV records.

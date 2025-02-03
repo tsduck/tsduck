@@ -19,7 +19,7 @@ namespace ts {
     //! Representation of an Media_service_kind_descriptor.
     //!
     //! @see ISO/IEC 13818-1 (Amd.1) 2.6.141
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     //! The media_service_kind_descriptor can read on the Program or PID ES stream itself or can
     //! read on auxiliary PID ES that are dependent on the principal PID media component ES (i.e.

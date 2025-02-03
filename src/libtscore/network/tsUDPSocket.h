@@ -29,7 +29,7 @@
 namespace ts {
     //!
     //! UDP Socket.
-    //! @ingroup net
+    //! @ingroup libtscore net
     //!
     class TSCOREDLL UDPSocket: public Socket
     {

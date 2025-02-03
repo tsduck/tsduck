@@ -18,7 +18,7 @@
 namespace ts::hls {
     //!
     //! Description of a media segment in an HLS playlist.
-    //! @ingroup hls
+    //! @ingroup libtsduck hls
     //!
     class TSDUCKDLL MediaSegment : public MediaElement
     {

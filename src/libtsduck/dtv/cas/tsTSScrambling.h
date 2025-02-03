@@ -30,7 +30,7 @@ namespace ts {
 
     //!
     //! Transport stream scrambling using multiple algorithms.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     //! Include command line arguments processing.
     //!

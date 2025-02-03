@@ -21,7 +21,7 @@
 namespace ts {
     //!
     //! Extract Teletext subtitles plugin for tsp.
-    //! @ingroup plugin
+    //! @ingroup libtsduck plugin
     //!
     class TSDUCKDLL TeletextPlugin: public ProcessorPlugin, private SignalizationHandlerInterface, private TeletextHandlerInterface
     {

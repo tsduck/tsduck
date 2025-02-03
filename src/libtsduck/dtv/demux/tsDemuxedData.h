@@ -18,7 +18,7 @@
 namespace ts {
     //!
     //! Base class for all kinds of demuxed data.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     class TSDUCKDLL DemuxedData
     {

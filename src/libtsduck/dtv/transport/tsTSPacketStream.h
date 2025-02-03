@@ -25,7 +25,7 @@ namespace ts {
 
     //!
     //! Read/write TS packets on a stream.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     class TSDUCKDLL TSPacketStream
     {

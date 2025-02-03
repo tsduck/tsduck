@@ -20,7 +20,7 @@ namespace ts {
     //! This descriptor cannot be present in other tables than a DII (0x3B)
     //!
     //! @see ETSI EN 301 192 V1.7.1 (2021-08), 10.2.6
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL DSMCCCRC32Descriptor: public AbstractDescriptor
     {

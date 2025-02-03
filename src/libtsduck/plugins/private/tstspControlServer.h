@@ -25,7 +25,7 @@ namespace ts {
         //!
         //! Transport stream processor control command server.
         //! This class is internal to the TSDuck library and cannot be called by applications.
-        //! @ingroup plugin
+        //! @ingroup libtsduck plugin
         //!
         class ControlServer : public CommandLineHandler, private Thread
         {

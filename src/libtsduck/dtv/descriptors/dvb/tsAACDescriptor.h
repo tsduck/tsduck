@@ -19,7 +19,7 @@ namespace ts {
     //!
     //! Representation of an AAC_descriptor.
     //! @see ETSI EN 300 468, H.2.1.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL AACDescriptor : public AbstractDescriptor
     {

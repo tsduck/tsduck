@@ -18,7 +18,7 @@
 namespace ts {
     //!
     //! Base class for video access units, aka NALunits.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     class TSDUCKDLL AbstractVideoAccessUnit: public AbstractVideoData
     {

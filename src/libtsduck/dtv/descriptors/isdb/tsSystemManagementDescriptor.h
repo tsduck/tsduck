@@ -19,7 +19,7 @@ namespace ts {
     //!
     //! Representation of an ISDB system_management_descriptor.
     //! @see ARIB STD-B10, Part 2, 6.2.21
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL SystemManagementDescriptor : public AbstractDescriptor
     {

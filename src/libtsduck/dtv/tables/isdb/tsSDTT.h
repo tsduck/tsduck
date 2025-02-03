@@ -20,7 +20,7 @@ namespace ts {
     //!
     //! Representation of an ISDB Software Download Trigger Table (SDTT).
     //! @see ARIB STD-B21, 12.2.1.1
-    //! @ingroup table
+    //! @ingroup libtsduck table
     //!
     class TSDUCKDLL SDTT : public AbstractLongTable
     {

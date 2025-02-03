@@ -18,7 +18,7 @@ namespace ts {
     //!
     //! Representation of a country_availability_descriptor.
     //! @see ETSI EN 300 468, 6.2.10.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL CountryAvailabilityDescriptor : public AbstractDescriptor
     {

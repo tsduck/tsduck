@@ -22,7 +22,7 @@ namespace ts {
 
     //!
     //! Generic socket address class (IPv4 or IPv6 address & port).
-    //! @ingroup net
+    //! @ingroup libtscore net
     //!
     //! The string representation is "addr[:port]" or "[addr:]port".
     //!

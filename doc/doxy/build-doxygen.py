@@ -7,9 +7,17 @@
 #
 #  Python script to build the documentation using Doxygen.
 #
+#  With option -e or --enforce-groups, update all "@ingroup" directives in
+#  source header files to add group "libtscore" or "libtsduck". However,
+#  because of a bug in doxygen, this does not work on enum types, typdefs,
+#  or functions at namespace level.
+#
 #-----------------------------------------------------------------------------
 
 import re, os, sys, glob, shutil, subprocess
+
+# With option -e or --enforce-groups, update all "@ingroup" directives.
+update_groups = '-e' in sys.argv or '--enforce-groups' in sys.argv
 
 # Calling script name, project root.
 SCRIPT     = os.path.basename(sys.argv[0])
@@ -54,6 +62,40 @@ def extract_version(s):
     else:
         return match.group(0), (10000 * int(match.group(1))) + (100 * int(match.group(2))) + int(match.group(3))
 
+# Process a source header file, enforce "libtscore" or "libtsduck" in the "@ingroup" directives.
+# Return 0 on success, the number of missing names if the file had to be rewritten with added group names.
+def check_file(filename, groupname):
+    content = ''
+    missing = 0
+    with open(filename, 'r') as input:
+        for lin in input:
+            match = re.search(r'^(.*//! *@ingroup) +(.*)$', lin)
+            if match is not None:
+                names = match.group(2).split()
+                if groupname not in names:
+                    # Target group name is missing.
+                    missing += 1
+                    # Cleanup incorrect library group names.
+                    names = [n for n in names if not n.startswith('libts')]
+                    # Rebuild the line with library group name in first position.
+                    lin = match.group(1) + ' ' + groupname + ' ' + ' '.join(names) + '\n'
+            content += lin
+    if missing > 0:
+        print('error: missing %d "%s" group name in %s' % (missing, groupname, filename), file=sys.stderr)
+        with open(filename, 'w') as output:
+            output.write(content)
+    return missing
+
+# Check a tree of source header files.
+# Return the total number of missing group names.
+def check_file_tree(dirname, groupname):
+    missing = 0
+    for dir, dnames, fnames in os.walk(dirname):
+        for fnam in fnames:
+            if fnam.endswith('.h'):
+                missing += check_file(dir + os.sep + fnam, groupname)
+    return missing
+
 # Create an html file which redirects to another one.
 def redirect_html(sourcedir, sourcefile, target):
     reltarget = os.path.relpath(target, sourcedir)
@@ -62,6 +104,12 @@ def redirect_html(sourcedir, sourcefile, target):
         print('<head><meta http-equiv="refresh" content="0; url=%s"></head>' % reltarget, file=output)
         print('<body>Moved <a href="%s">here</a></body>' % reltarget, file=output)
         print('</html>', file=output)
+
+# Check and fix "@ingroup" directives in all header files.
+missing_group_names = 0
+if update_groups:
+    for dir in SRCDIRS:
+        missing_group_names += check_file_tree(dir, os.path.basename(dir))
 
 # Search Doxygen and Dot.
 doxygen = which('doxygen', r'C:\Program Files*\Doxygen*\bin')
@@ -138,4 +186,7 @@ with open(os.path.join(HTMLDIR, 'classes.html')) as input:
                 file_count += 1
 
 print('Generated %d files in %d directories' % (file_count, dir_count))
-exit(status.returncode)
+if missing_group_names > 0:
+    print('Missing %d libtscore or libtsduck group names' % missing_group_names)
+
+exit(min(1, missing_group_names + status.returncode))

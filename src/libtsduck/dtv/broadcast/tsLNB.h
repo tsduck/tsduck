@@ -22,7 +22,7 @@
 namespace ts {
     //!
     //! Description of a Low-Noise Block (LNB) converter in a satellite dish.
-    //! @ingroup hardware
+    //! @ingroup libtsduck hardware
     //!
     //! The satellite carrier frequency is used to carry the signal from the
     //! satellite to the dish. This value is public and is stored in the NIT

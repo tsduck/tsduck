@@ -18,7 +18,7 @@
 namespace ts {
     //!
     //! Reliable Internet Stream Transport (RIST) output plugin for tsp.
-    //! @ingroup plugin
+    //! @ingroup libtsduck plugin
     //!
     class TSDUCKDLL RISTOutputPlugin: public OutputPlugin, private TSDatagramOutputHandlerInterface
     {

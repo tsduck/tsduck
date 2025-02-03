@@ -22,7 +22,7 @@ namespace ts {
     //! multiples of the block size of the underlying block cipher.
     //!
     //! @tparam CIPHER A subclass of ts::BlockCipher, the underlying block cipher.
-    //! @ingroup crypto
+    //! @ingroup libtscore crypto
     //!
     template<class CIPHER> requires std::derived_from<CIPHER, ts::BlockCipher>
     class CBC: public CIPHER

@@ -20,7 +20,7 @@ namespace ts {
     //! Send application output to a "pager" application such as "more" or "less".
     //! Paging is done on stdout or stderr or both, depending on which is a terminal.
     //! If neither stdout nor stderr are terminals, paging is not allowed.
-    //! @ingroup system
+    //! @ingroup libtscore system
     //!
     class TSCOREDLL OutputPager : public ForkPipe
     {

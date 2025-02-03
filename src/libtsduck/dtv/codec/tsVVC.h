@@ -7,7 +7,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  @ingroup mpeg
+//!  @ingroup libtsduck mpeg
 //!  Basic definitions for Versatile Video Coding (VVC, H.266) standard.
 //!  @see ITU-T Rec. H.266
 //!

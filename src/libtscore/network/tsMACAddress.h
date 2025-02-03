@@ -18,7 +18,7 @@
 namespace ts {
     //!
     //! A basic representation of a MAC address.
-    //! @ingroup net
+    //! @ingroup libtscore net
     //!
     //! The string representation is "hh:hh:hh:hh:hh:hh".
     //!

@@ -31,7 +31,7 @@
 namespace ts {
     //!
     //! Encapsulation of Linux DVB property lists.
-    //! @ingroup unix
+    //! @ingroup libtsduck unix
     //!
     class TSDUCKDLL DTVProperties
     {

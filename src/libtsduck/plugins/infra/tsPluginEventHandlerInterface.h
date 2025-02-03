@@ -17,7 +17,7 @@
 namespace ts {
     //!
     //! Abstract interface to receive events from a plugin.
-    //! @ingroup plugin
+    //! @ingroup libtsduck plugin
     //!
     //! This abstract interface must be implemented by classes which need to
     //! receive events from plugins.

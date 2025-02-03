@@ -18,7 +18,7 @@ namespace ts {
     //!
     //! Representation of an ISDB LDT_linkage_descriptor.
     //! @see ARIB STD-B10, Part 2, 6.2.40
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL ISDBLDTLinkageDescriptor : public AbstractDescriptor
     {

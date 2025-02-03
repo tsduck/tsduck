@@ -7,7 +7,7 @@
 //-----------------------------------------------------------------------------
 //!
 //!  @file
-//!  @ingroup hardware
+//!  @ingroup libtsduck hardware
 //!  Some basic utilities for Dektec API, without direct reference to DTAPI.
 //!
 //-----------------------------------------------------------------------------

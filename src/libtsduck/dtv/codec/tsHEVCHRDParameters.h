@@ -18,7 +18,7 @@
 namespace ts {
     //!
     //! HEVC HRD (Hypothetical Reference Decoder) parameters.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //! @see ITU-T Rec. H.265, E.2.2
     //!
     class TSDUCKDLL HEVCHRDParameters: public AbstractVideoStructure

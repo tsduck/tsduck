@@ -44,7 +44,7 @@ namespace ts {
     //! General-purpose signalization handler interface.
     //! A subclass may choose to implement any handler.
     //! The default implementation of a handler is to do nothing.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     class TSDUCKDLL SignalizationHandlerInterface
     {

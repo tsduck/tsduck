@@ -19,7 +19,7 @@
 namespace ts {
     //!
     //! Representation of an AVC sequence parameter set access unit.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     //! AVC is Advanced Video Coding, ISO 14496-10, ITU H.264.
     //!

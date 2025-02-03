@@ -18,7 +18,7 @@
 namespace ts {
     //!
     //! Abstract representation of a logical_channel_descriptor for different private data specifiers.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL AbstractLogicalChannelDescriptor : public AbstractDescriptor
     {

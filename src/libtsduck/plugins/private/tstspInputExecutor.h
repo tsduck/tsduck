@@ -22,7 +22,7 @@ namespace ts {
         //!
         //! Execution context of a tsp input plugin.
         //! This class is internal to the TSDuck library and cannot be called by applications.
-        //! @ingroup plugin
+        //! @ingroup libtsduck plugin
         //!
         class InputExecutor: public PluginExecutor, private WatchDogHandlerInterface
         {

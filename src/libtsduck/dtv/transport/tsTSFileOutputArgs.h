@@ -23,7 +23,7 @@
 namespace ts {
     //!
     //! Transport stream file output with command-line arguments.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     class TSDUCKDLL TSFileOutputArgs
     {

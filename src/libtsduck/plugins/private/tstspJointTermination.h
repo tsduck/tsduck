@@ -21,7 +21,7 @@ namespace ts {
         //! Implementation of "Joint Termination" in the Transport stream processor.
         //! This is a subclass of ts::TSP and a superclass of all plugin executors.
         //! This class is internal to the TSDuck library and cannot be called by applications.
-        //! @ingroup plugin
+        //! @ingroup libtsduck plugin
         //!
         class JointTermination: public PluginThread
         {

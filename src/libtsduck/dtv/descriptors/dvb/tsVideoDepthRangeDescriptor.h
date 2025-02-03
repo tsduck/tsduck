@@ -19,7 +19,7 @@ namespace ts {
     //!
     //! Representation of a video_depth_range_descriptor
     //! @see ETSI EN 300 468, 6.4.16.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL VideoDepthRangeDescriptor : public AbstractDescriptor
     {

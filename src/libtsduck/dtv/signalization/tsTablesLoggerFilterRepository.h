@@ -17,7 +17,7 @@
 namespace ts {
     //!
     //! The repository of section filters for TablesLogger.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     class TSDUCKDLL TablesLoggerFilterRepository
     {

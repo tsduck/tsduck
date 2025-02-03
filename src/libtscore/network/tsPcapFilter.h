@@ -25,7 +25,7 @@ namespace ts {
     //! This class also sets filtering options from the command line:
     //! @c -\-first-packet, @c -\-first-timestamp, @c -\-first-date, @c -\-last-packet, @c -\-last-timestamp, @c -\-last-date.
     //!
-    //! @ingroup net
+    //! @ingroup libtscore net
     //!
     class TSCOREDLL PcapFilter: public PcapFile
     {

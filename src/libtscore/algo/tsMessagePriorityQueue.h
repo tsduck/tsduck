@@ -17,7 +17,7 @@
 namespace ts {
     //!
     //! Template message queue for inter-thread communication with priority.
-    //! @ingroup thread
+    //! @ingroup libtscore thread
     //!
     //! The ts::MessagePriorityQueue template class implements a synchronized
     //! access to a shared queue of generic messages. Each message has a priority.

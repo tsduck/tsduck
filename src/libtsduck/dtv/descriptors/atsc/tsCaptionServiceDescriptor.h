@@ -18,7 +18,7 @@ namespace ts {
     //!
     //! Representation of an ATSC caption_service_descriptor.
     //! @see ATSC A/65, section 6.9.2.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL CaptionServiceDescriptor : public AbstractDescriptor
     {

@@ -18,7 +18,7 @@ namespace ts {
     //!
     //! Representation of a telephone_descriptor
     //! @see ETSI EN 300 468, 6.2.42.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL TelephoneDescriptor : public AbstractDescriptor
     {

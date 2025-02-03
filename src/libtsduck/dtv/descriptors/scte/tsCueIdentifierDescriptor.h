@@ -19,7 +19,7 @@ namespace ts {
     //!
     //! Representation of a cue_identifier_descriptor (SCTE 35).
     //! @see ANSI/SCTE 35, 8.2.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL CueIdentifierDescriptor : public AbstractDescriptor
     {

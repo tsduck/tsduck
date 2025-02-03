@@ -7,7 +7,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  @ingroup mpeg
+//!  @ingroup libtsduck mpeg
 //!  Basic definitions for High Efficiency Video Coding (HEVC, H.265) standard.
 //!  @see ITU-T Rec. H.265
 //!

@@ -19,7 +19,7 @@
 namespace ts {
     //!
     //! HTTP output plugin for tsp.
-    //! @ingroup plugin
+    //! @ingroup libtsduck plugin
     //!
     class TSDUCKDLL HTTPOutputPlugin: public OutputPlugin
     {

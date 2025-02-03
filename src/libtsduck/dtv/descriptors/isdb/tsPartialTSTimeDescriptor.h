@@ -19,7 +19,7 @@ namespace ts {
     //!
     //! Representation of an ISDB partialTS_time_descriptor.
     //! @see ARIB STD-B21, 9.1.8.3 (3)
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL PartialTSTimeDescriptor : public AbstractDescriptor
     {

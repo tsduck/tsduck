@@ -17,7 +17,7 @@
 namespace ts {
     //!
     //! A compact version of std::bitset.
-    //! @ingroup cpp
+    //! @ingroup libtscore cpp
     //!
     //! This class is more efficient than std::bitset for small sizes,
     //! typically 32 bits or less.

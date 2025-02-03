@@ -36,7 +36,7 @@ namespace ts {
     //! Abstract base class for input plugins receiving real-time datagrams.
     //! The input bitrate is computed from the received bytes and wall-clock time.
     //! TS packets are located in each received datagram, skipping potential headers.
-    //! @ingroup plugin
+    //! @ingroup libtsduck plugin
     //!
     class TSDUCKDLL AbstractDatagramInputPlugin: public InputPlugin
     {

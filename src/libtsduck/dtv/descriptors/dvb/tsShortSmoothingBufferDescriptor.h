@@ -19,7 +19,7 @@ namespace ts {
     //!
     //! Representation of a short_smoothing_buffer_descriptor.
     //! @see ETSI EN 300 468, 6.2.38.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL ShortSmoothingBufferDescriptor : public AbstractDescriptor
     {

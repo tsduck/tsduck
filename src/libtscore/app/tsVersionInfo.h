@@ -38,7 +38,7 @@
 namespace ts {
     //!
     //! Information about version identification of TSDuck.
-    //! @ingroup app
+    //! @ingroup libtscore app
     //!
     class TSCOREDLL VersionInfo : private Thread
     {

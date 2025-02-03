@@ -22,7 +22,7 @@
 namespace ts {
     //!
     //! An encapsulation of command line syntax and analysis.
-    //! @ingroup cmd
+    //! @ingroup libtscore cmd
     //!
     //! The various properties of a command line (an instance of this class) are:
     //! - The "description" string: A short one-line description, e.g. "Wonderful File Copier".

@@ -7,7 +7,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  @ingroup cpp
+//!  @ingroup libtscore cpp
 //!  Technical header to include before including standard and system headers.
 //!
 //!  This header file cleans up the compilation state to prepare for system

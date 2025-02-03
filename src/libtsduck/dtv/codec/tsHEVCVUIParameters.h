@@ -19,7 +19,7 @@
 namespace ts {
     //!
     //! HEVC VUI (Video Usability Information) parameters.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //! @see ITU-T Rec. H.265, E.2.1
     //!
     class TSDUCKDLL HEVCVUIParameters: public AbstractVideoStructure

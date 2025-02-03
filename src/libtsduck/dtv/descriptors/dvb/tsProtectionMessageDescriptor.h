@@ -19,7 +19,7 @@ namespace ts {
     //!
     //! Representation of a protection_message_descriptor.
     //! @see ETSI TS 102 809, 9.3.3
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL ProtectionMessageDescriptor : public AbstractDescriptor
     {

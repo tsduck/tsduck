@@ -32,14 +32,14 @@ namespace ts {
 
     //!
     //! Displayable names of plugin types.
+    //! @ingroup plugin
     //! @return A constant reference to the enumeration description.
     //!
     TSDUCKDLL const Names& PluginTypeNames();
 
     //!
     //! Base class of all @c tsp plugins.
-    //!
-    //! @ingroup plugin
+    //! @ingroup libtsduck plugin
     //!
     //! Plugin is a subclass of Args; each constructor is expected to define
     //! the syntax, help and option definitions for the command line.

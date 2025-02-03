@@ -17,7 +17,7 @@
 namespace ts {
     //!
     //! An efficient TSDuck-specific TS packets encapsulation in a PID.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     //! An instance of this class encapsulates several PID's from the
     //! input transport stream into one single output PID. Functionally,

@@ -19,7 +19,7 @@ namespace ts {
     //!
     //! Representation of an MVC_operation_point_descriptor.
     //! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.6.82.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL MVCOperationPointDescriptor : public AbstractDescriptor
     {

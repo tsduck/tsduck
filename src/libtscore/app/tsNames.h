@@ -50,7 +50,7 @@ namespace ts {
 
     //!
     //! Representation of a set of translations between names for identifiers.
-    //! @ingroup app
+    //! @ingroup libtscore app
     //!
     //! An instance of Names contains a consistent set of translations for one type of identifier.
     //! Identifiers are integer values of any integral or enumeration type. Translations can be

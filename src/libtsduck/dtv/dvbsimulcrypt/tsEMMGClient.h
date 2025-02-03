@@ -32,7 +32,7 @@ namespace ts {
     //! is supported here. The UDP version is currently unsupported.
     //!
     //! @see DVB standard ETSI TS 103.197 V1.4.1 for EMMG/PDG <=> MUX protocol.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     class TSDUCKDLL EMMGClient: private Thread
     {

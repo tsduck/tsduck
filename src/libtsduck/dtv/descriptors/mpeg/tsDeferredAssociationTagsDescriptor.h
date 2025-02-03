@@ -19,7 +19,7 @@ namespace ts {
     //!
     //! Representation of a deferred_association_tags_descriptor.
     //! @see ISO/IEC 13818-6 (DSM-CC), 11.4.3.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL DeferredAssociationTagsDescriptor : public AbstractDescriptor
     {

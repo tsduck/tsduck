@@ -20,7 +20,7 @@ namespace ts {
     //!
     //! Base class for threads executing a tsp plugin.
     //! The subclasses shall implement the TSP interface.
-    //! @ingroup plugin
+    //! @ingroup libtsduck plugin
     //!
     class TSDUCKDLL PluginThread: public Thread, public TSP
     {

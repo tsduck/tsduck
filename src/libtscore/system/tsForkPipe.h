@@ -20,7 +20,7 @@
 namespace ts {
     //!
     //! Fork a process and create an optional pipe to its standard input.
-    //! @ingroup system
+    //! @ingroup libtscore system
     //!
     //! This class can be used as any output stream when the output is a pipe.
     //!

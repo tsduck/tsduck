@@ -37,7 +37,7 @@
 namespace ts {
     //!
     //! Managed pointers for COM objects, auto-released (Windows-specific).
-    //! @ingroup windows
+    //! @ingroup libtscore windows
     //! @tparam COMCLASS A COM interface or object class.
     //!
     //! If @c TS_COM_INSTRUMENTATION is defined and the application is

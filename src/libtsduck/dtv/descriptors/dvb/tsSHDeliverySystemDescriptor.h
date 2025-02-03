@@ -19,7 +19,7 @@ namespace ts {
     //! Representation of a SH_delivery_system_descriptor.
     //!
     //! @see ETSI EN 300 468, 6.4.6.2
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL SHDeliverySystemDescriptor : public AbstractDescriptor
     {

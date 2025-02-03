@@ -18,7 +18,7 @@
 namespace ts {
     //!
     //! Secure Reliable Transport (SRT) input plugin for tsp.
-    //! @ingroup plugin
+    //! @ingroup libtsduck plugin
     //!
     class TSDUCKDLL SRTInputPlugin: public AbstractDatagramInputPlugin
     {

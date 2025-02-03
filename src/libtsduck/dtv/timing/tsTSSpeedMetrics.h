@@ -17,7 +17,7 @@
 namespace ts {
     //!
     //! TS processing speed metrics evaluation.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     //! An instance of this class evaluates the reading or processing speed
     //! of a TS. This is different from the TS bitrate, as evaluated by the

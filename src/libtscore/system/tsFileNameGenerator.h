@@ -17,7 +17,7 @@
 namespace ts {
     //!
     //! Generate file names based on counter or dates and time.
-    //! @ingroup system
+    //! @ingroup libtscore system
     //!
     //! An instance of this class is used when an application needs to generate
     //! multiple files based on a naming pattern and a counter or date and time.

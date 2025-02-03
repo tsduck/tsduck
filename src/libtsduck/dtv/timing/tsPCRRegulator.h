@@ -18,7 +18,7 @@
 namespace ts {
     //!
     //! Regulate execution speed based on PCR's in one reference PID.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //! @see BitRateRegulator
     //!
     class TSDUCKDLL PCRRegulator

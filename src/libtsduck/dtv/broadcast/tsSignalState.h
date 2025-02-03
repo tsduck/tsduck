@@ -19,7 +19,7 @@
 namespace ts {
     //!
     //! State of a modulated broadcast signal.
-    //! @ingroup hardware
+    //! @ingroup libtsduck hardware
     //!
     //! The type of information on the state of a modulated broadcast signal highly
     //! depends on the operating systems and drivers. The units also differ. The

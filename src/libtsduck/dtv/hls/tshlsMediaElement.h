@@ -18,7 +18,7 @@
 namespace ts::hls {
     //!
     //! Description of a media "element" (sub-playlist or segment) inside an HLS playlist.
-    //! @ingroup hls
+    //! @ingroup libtsduck hls
     //!
     class TSDUCKDLL MediaElement: public StringifyInterface
     {

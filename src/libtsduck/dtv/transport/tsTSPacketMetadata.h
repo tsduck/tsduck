@@ -24,6 +24,7 @@ namespace ts {
 
     //!
     //! A set of labels used as metadata for a TS packet.
+    //! @ingroup mpeg
     //!
     //! Each packet in a tsp processing chain has a set of "labels".
     //! A label is a integer value from 0 to 31. Various plugins may
@@ -38,13 +39,11 @@ namespace ts {
     //! It was previously implemented as std::bitset<32> but this
     //! type may use up to 64 bits, depending on the platform.
     //!
-    //! @ingroup mpeg
-    //!
     using TSPacketLabelSet = CompactBitSet<32>;
 
     //!
     //! Metadata of an MPEG-2 transport packet for tsp plugins.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     //! An instance of this class is passed with each TS packet to packet processor plugins.
     //!

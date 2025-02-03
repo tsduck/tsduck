@@ -32,7 +32,7 @@ namespace ts {
 
     //!
     //! An interface which handles a command from a CommandLine instance.
-    //! @ingroup cmd
+    //! @ingroup libtscore cmd
     //!
     class TSCOREDLL CommandLineHandler
     {

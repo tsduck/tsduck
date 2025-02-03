@@ -18,7 +18,7 @@ namespace ts {
     //!
     //! Representation of a stream_identifier_descriptor.
     //! @see ETSI EN 300 468, 6.2.39.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL StreamIdentifierDescriptor : public AbstractDescriptor
     {

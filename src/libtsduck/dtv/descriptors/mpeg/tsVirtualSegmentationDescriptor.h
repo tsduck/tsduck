@@ -20,7 +20,7 @@ namespace ts {
     //! Representation of an MPEG-defined virtual_segmentation_descriptor.
     //!
     //! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.6.120.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL VirtualSegmentationDescriptor : public AbstractDescriptor
     {

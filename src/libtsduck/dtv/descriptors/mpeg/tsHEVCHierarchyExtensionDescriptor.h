@@ -20,7 +20,7 @@ namespace ts {
     //! Representation of an MPEG-defined HEVC_hierarchy_extension_descriptor.
     //!
     //! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.6.102.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL HEVCHierarchyExtensionDescriptor : public AbstractDescriptor
     {

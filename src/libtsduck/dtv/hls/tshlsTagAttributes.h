@@ -17,7 +17,7 @@
 namespace ts::hls {
     //!
     //! Attributes of a tag in an HLS playlist.
-    //! @ingroup hls
+    //! @ingroup libtsduck hls
     //!
     class TSDUCKDLL TagAttributes
     {

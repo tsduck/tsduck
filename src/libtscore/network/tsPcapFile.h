@@ -21,7 +21,7 @@
 namespace ts {
     //!
     //! Read a pcap or pcapng capture file format.
-    //! @ingroup net
+    //! @ingroup libtscore net
     //!
     //! This is the type of files which is created by Wireshark.
     //! This class reads a pcap or pcapng file and extracts IP frames (IPv4 or IPv6).

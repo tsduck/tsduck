@@ -21,7 +21,7 @@
 namespace ts {
     //!
     //! Definition of a basic and non-secure implementation of a symmetric key table.
-    //! @ingroup crypto
+    //! @ingroup libtscore crypto
     //!
     //! Each key is identified using a binary key id. The key value is a byte block.
     //! There is no constraint on the key id and value sizes, it depends on the application.

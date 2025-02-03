@@ -59,7 +59,7 @@ namespace ts {
 
     //!
     //! EIT sections repetition profile.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     class TSDUCKDLL EITRepetitionProfile
     {

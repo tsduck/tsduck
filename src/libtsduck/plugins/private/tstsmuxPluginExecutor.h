@@ -22,7 +22,7 @@ namespace ts {
     namespace tsmux {
         //!
         //! Execution context of a tsmux plugin.
-        //! @ingroup plugin
+        //! @ingroup libtsduck plugin
         //!
         class PluginExecutor : public PluginThread
         {

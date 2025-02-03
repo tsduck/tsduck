@@ -17,7 +17,7 @@
 namespace ts {
     //!
     //! Abstract base class for AVC data, either access units or structures.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     //! Typically used in:
     //!  - AVC, Advanced Video Coding, ISO 14496-10, ITU-T Rec. H.264.

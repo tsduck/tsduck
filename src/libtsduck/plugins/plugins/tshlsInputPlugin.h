@@ -20,7 +20,7 @@ namespace ts {
     namespace hls {
         //!
         //! HTTP Live Streaming (HLS) input plugin for tsp.
-        //! @ingroup plugin
+        //! @ingroup libtsduck plugin
         //!
         //! The input plugin can read HLS playlists and media segments from local
         //! files or receive them in real time using HTTP or HTTPS.

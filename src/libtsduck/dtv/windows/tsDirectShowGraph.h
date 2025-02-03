@@ -19,7 +19,7 @@
 namespace ts {
     //!
     //! An encapsulation of a DirectShow graph (Windows-specific).
-    //! @ingroup windows
+    //! @ingroup libtsduck windows
     //!
     class TSDUCKDLL DirectShowGraph
     {

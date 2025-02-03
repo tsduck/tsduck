@@ -17,7 +17,7 @@
 namespace ts::xml {
     //!
     //! Text element in an XML document.
-    //! @ingroup xml
+    //! @ingroup libtscore xml
     //!
     class TSCOREDLL Text: public Node
     {

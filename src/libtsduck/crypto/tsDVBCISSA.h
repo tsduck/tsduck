@@ -19,7 +19,7 @@ namespace ts {
     //!
     //! DVB-CISSA AES-based TS packet encryption.
     //! (CISSA = Common IPTV Software-oriented Scrambling Algorithm).
-    //! @ingroup crypto
+    //! @ingroup libtsduck crypto
     //! @see ETSI TS 103 127, chapter 6
     //!
     class TSDUCKDLL DVBCISSA: public CBC<AES128>

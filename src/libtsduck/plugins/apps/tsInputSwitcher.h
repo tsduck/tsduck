@@ -27,7 +27,7 @@ namespace ts {
     //! Implementation of the input plugin switcher.
     //! This class is used by the @a tsswitch utility.
     //! It can also be used in other applications to switch between input plugins.
-    //! @ingroup plugin
+    //! @ingroup libtsduck plugin
     //!
     class TSDUCKDLL InputSwitcher: public PluginEventHandlerRegistry
     {

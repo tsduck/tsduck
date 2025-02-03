@@ -22,7 +22,7 @@ namespace ts {
     namespace tsp {
         //!
         //! Execution context of a tsp plugin.
-        //! @ingroup plugin
+        //! @ingroup libtsduck plugin
         //!
         class PluginExecutor: public JointTermination, public RingNode
         {

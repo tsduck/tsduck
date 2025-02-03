@@ -21,7 +21,7 @@ namespace ts {
     //!
     //! This is a private descriptor, must be preceded by the DTG/OFCOM PDS.
     //! @see The D-Book 7 Part A (DTG), section 8.5.3.7
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL DTGPreferredNameListDescriptor : public AbstractPreferredNameListDescriptor
     {

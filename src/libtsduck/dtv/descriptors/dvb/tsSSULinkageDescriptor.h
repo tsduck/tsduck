@@ -21,7 +21,7 @@ namespace ts {
     //! SSU uses linkage type 0x09.
     //! @see ETSI EN 300 468, 6.2.19.
     //! @see ETSI TS 102 006, 6.1.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL SSULinkageDescriptor : public AbstractDescriptor
     {

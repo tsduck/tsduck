@@ -24,7 +24,7 @@ namespace ts {
     //!
     //! TSP callback for plugins.
     //!
-    //! @ingroup plugin
+    //! @ingroup libtsduck plugin
     //!
     //! Each plugin has an associated TSP object to communicate with the
     //! Transport Stream Processor main executable.

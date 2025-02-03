@@ -17,7 +17,7 @@
 namespace ts {
     //!
     //! An interface to be implemented by a class to handle user Ctrl-C interrupt.
-    //! @ingroup system
+    //! @ingroup libtscore system
     //!
     class TSCOREDLL InterruptHandler
     {

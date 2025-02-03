@@ -18,7 +18,7 @@ namespace ts {
     //!
     //! Representation of an ISDB CA_EMM_TS_descriptor.
     //! @see ARIB STD-B25, Part 1, 4.7.1
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL CAEMMTSDescriptor : public AbstractDescriptor
     {

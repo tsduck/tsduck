@@ -19,7 +19,7 @@ namespace ts {
     //!
     //! Representation of an ISDB STC_reference_descriptor.
     //! @see ARIB STD-B10, Part 3, 5.2.5
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL STCReferenceDescriptor : public AbstractDescriptor
     {

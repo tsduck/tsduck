@@ -18,7 +18,7 @@
 namespace ts::json {
     //!
     //! Representation of a "running" JSON document which is displayed on the fly.
-    //! @ingroup json
+    //! @ingroup libtscore json
     //!
     //! The idea is to display or save a JSON document containing an array of values
     //! which is built value by value without waiting for the end of the document.

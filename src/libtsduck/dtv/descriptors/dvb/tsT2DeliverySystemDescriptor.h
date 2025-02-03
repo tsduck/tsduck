@@ -19,7 +19,7 @@ namespace ts {
     //! Representation of a T2_delivery_system_descriptor.
     //!
     //! @see ETSI EN 300 468, 6.4.6.3
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL T2DeliverySystemDescriptor : public AbstractDeliverySystemDescriptor
     {

@@ -19,7 +19,7 @@ namespace ts {
     //!
     //! Representation of a network_change_notify_descriptor
     //! @see ETSI EN 300 468, 6.4.9.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL NetworkChangeNotifyDescriptor : public AbstractDescriptor
     {

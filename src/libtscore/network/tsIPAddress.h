@@ -24,7 +24,7 @@ namespace ts {
 
     //!
     //! A generic representation of an IP address, IPv4 or IPv6.
-    //! @ingroup net
+    //! @ingroup libtscore net
     //! @see https://en.wikipedia.org/wiki/IPv6_address
     //!
     //! An instance of this class can hold an IPv4 or an IPv6 address.

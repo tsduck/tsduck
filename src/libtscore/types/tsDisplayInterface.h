@@ -18,7 +18,7 @@
 namespace ts {
     //!
     //! An interface to be implemented by classes supporting display to a standard text stream.
-    //! @ingroup cpp
+    //! @ingroup libtscore cpp
     //!
     class TSCOREDLL DisplayInterface
     {

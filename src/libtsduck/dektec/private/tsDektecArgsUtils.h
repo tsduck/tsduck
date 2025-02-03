@@ -7,7 +7,7 @@
 //-----------------------------------------------------------------------------
 //!
 //! @file
-//! @ingroup hardware
+//! @ingroup libtsduck hardware
 //! Some basic command line utilities for Dektec API.
 //! The definition of command line options is done even without DTAPI so
 //! that the syntax of commands and plugins does not change. The extraction

@@ -22,7 +22,7 @@ namespace ts {
     //!
     //! Definition of the UTF-8 DVB character set.
     //! @see ETSI EN 300 468, Annex A.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     class TSDUCKDLL DVBCharTableUTF16 : public DVBCharTable
     {

@@ -25,7 +25,7 @@ namespace ts {
     //!
     //! Digital TV tuner physical device.
     //! One version of this class exists for each operating system.
-    //! @ingroup hardware
+    //! @ingroup libtsduck hardware
     //!
     class TSDUCKDLL TunerDevice: public TunerBase
     {

@@ -20,7 +20,7 @@ namespace ts {
     //!
     //! Representation of an ISDB Partial Content Announcement Table (PCAT).
     //! @see ARIB STD-B10, Part 2, 5.2.12
-    //! @ingroup table
+    //! @ingroup libtsduck table
     //!
     class TSDUCKDLL PCAT : public AbstractLongTable
     {

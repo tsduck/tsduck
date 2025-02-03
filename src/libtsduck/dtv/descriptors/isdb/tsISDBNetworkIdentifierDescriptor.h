@@ -19,7 +19,7 @@ namespace ts {
     //!
     //! Representation of an ISDB network_identifier_descriptor.
     //! @see ARIB STD-B21, Part 2, 9.1.8.3
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL ISDBNetworkIdentifierDescriptor : public AbstractDescriptor
     {

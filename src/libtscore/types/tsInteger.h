@@ -19,7 +19,7 @@
 namespace ts {
     //!
     //! Encapsulation of an integer type as an AbstractNumber.
-    //! @ingroup cpp
+    //! @ingroup libtscore cpp
     //!
     //! @tparam INT_T The underlying integer type.
     //!

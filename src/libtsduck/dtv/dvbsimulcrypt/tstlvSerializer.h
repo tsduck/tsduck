@@ -18,7 +18,7 @@
 namespace ts::tlv {
     //!
     //! Serialization of TLV messages.
-    //! @ingroup tlv
+    //! @ingroup libtsduck tlv
     //!
     //! A DVB message is serialized in TLV into a ByteBlock.
     //! A Serializer is always associated to a ByteBlock.

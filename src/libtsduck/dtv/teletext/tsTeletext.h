@@ -7,7 +7,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  @ingroup mpeg
+//!  @ingroup libtsduck mpeg
 //!  Common definitions for Teletext PES packets.
 //!  Reference: ETSI EN 300 472 V1.3.1, "DVB; Specification for conveying
 //!  ITU-R System B Teletext in DVB bitstreams"

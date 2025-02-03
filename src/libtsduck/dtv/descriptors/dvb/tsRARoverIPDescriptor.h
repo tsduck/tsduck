@@ -23,7 +23,7 @@ namespace ts {
     //! because its tag reuses a DVB-defined one.
     //!
     //! @see ETSI TS 102 323 clause 5.3.6.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL RARoverIPDescriptor: public AbstractDescriptor
     {

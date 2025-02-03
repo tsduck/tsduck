@@ -17,7 +17,7 @@
 namespace ts {
     //!
     //! Representation of a Uniform Resource Locator (URL).
-    //! @ingroup net
+    //! @ingroup libtscore net
     //!
     class TSCOREDLL URL
     {

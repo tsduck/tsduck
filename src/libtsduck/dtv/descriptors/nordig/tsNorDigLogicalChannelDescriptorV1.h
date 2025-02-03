@@ -21,7 +21,7 @@ namespace ts {
     //!
     //! This is a private descriptor, must be preceded by the NorDig PDS.
     //! @see NorDig Unified Requirements ver. 3.1.1, 12.2.9.2.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL NorDigLogicalChannelDescriptorV1 : public AbstractDescriptor
     {

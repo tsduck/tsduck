@@ -24,7 +24,7 @@ namespace ts {
     //!
     //! Representation of a Satellite Access Table (SAT).
     //! @see ETSI EN 300 468, 5.2.11
-    //! @ingroup table
+    //! @ingroup libtsduck table
     //!
     class TSDUCKDLL SAT : public AbstractLongTable
     {

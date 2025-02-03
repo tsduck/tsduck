@@ -20,7 +20,7 @@ namespace ts {
 
     //!
     //! Generic datagram handler interface.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     //! This abstract interface must be implemented by classes which send datagrams of TS packets.
     //!

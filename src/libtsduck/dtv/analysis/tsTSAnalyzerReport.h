@@ -21,7 +21,7 @@
 namespace ts {
     //!
     //! A subclass of TSAnalyzer with reporting capabilities.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     class TSDUCKDLL TSAnalyzerReport: public TSAnalyzer
     {

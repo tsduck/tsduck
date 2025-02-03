@@ -20,7 +20,7 @@ namespace ts {
     //!
     //! @see ETSI EN 300 468, 6.4.6.4
     //! @see C2DeliverySystemDescriptor
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL C2BundleDeliverySystemDescriptor : public AbstractDeliverySystemDescriptor
     {

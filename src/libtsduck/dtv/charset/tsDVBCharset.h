@@ -38,7 +38,7 @@ namespace ts {
     //! character table by default.
     //!
     //! @see ETSI EN 300 468, annex A
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     class TSDUCKDLL DVBCharset: public Charset
     {

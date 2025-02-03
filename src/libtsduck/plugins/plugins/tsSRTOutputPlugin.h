@@ -19,7 +19,7 @@
 namespace ts {
     //!
     //! Secure Reliable Transport (SRT) output plugin for tsp.
-    //! @ingroup plugin
+    //! @ingroup libtsduck plugin
     //!
     class TSDUCKDLL SRTOutputPlugin: public OutputPlugin, private TSDatagramOutputHandlerInterface
     {

@@ -17,7 +17,7 @@
 namespace ts {
     //!
     //! Command-line options for one plugin.
-    //! @ingroup plugin
+    //! @ingroup libtsduck plugin
     //!
     class TSDUCKDLL PluginOptions
     {

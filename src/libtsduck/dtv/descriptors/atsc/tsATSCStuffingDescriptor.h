@@ -19,7 +19,7 @@ namespace ts {
     //!
     //! Representation of an ATSC stuffing_descriptor.
     //! @see ATSC A/65, section 6.9.8.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL ATSCStuffingDescriptor : public AbstractDescriptor
     {

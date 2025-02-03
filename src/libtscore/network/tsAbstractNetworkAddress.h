@@ -18,7 +18,7 @@
 namespace ts {
     //!
     //! Abstract base class for all network address and socket address classes.
-    //! @ingroup net
+    //! @ingroup libtscore net
     //!
     //! For each family (IPv4, IPv6, MAC), there is a binary representation
     //! of the address (4, 16 or 7 bytes). In the IP families, socket addresses

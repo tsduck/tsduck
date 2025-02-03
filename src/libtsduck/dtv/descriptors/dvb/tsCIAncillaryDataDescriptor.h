@@ -19,7 +19,7 @@ namespace ts {
     //!
     //! Representation of a CI_ancillary_data_descriptor.
     //! @see ETSI EN 300 468, 6.4.1.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL CIAncillaryDataDescriptor : public AbstractDescriptor
     {

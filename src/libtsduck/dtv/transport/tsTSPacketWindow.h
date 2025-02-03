@@ -18,7 +18,7 @@
 namespace ts {
     //!
     //! A view over a window of a buffer of TS packets.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     //! An instance of this class encapsulates a view over a logical buffer of TS packets.
     //! The logical view is a set of N packets with associated metadata. The physical

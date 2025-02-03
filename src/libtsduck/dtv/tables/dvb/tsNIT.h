@@ -18,7 +18,7 @@ namespace ts {
     //!
     //! Representation of a Network Information Table (NIT)
     //! @see ETSI EN 300 468, 5.2.1
-    //! @ingroup table
+    //! @ingroup libtsduck table
     //!
     class TSDUCKDLL NIT : public AbstractTransportListTable
     {

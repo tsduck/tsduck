@@ -20,7 +20,7 @@ namespace ts {
     //! Representation of an LCEVC_video_descriptor.
     //!
     //! @see ISO/IEC 13818-1 (Amd.1) 2.6.137, ITU-T Rec. H.222.0.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL LCEVCLinkageDescriptor : public AbstractDescriptor
     {

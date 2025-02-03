@@ -19,7 +19,7 @@
 namespace ts {
     //!
     //! Cyclic Redundancy Check as used in MPEG sections.
-    //! @ingroup crypto
+    //! @ingroup libtscore crypto
     //!
     class TSCOREDLL CRC32
     {

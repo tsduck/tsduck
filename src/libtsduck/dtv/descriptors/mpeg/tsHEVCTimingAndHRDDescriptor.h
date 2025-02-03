@@ -19,7 +19,7 @@ namespace ts {
     //! Representation of an HEVC_timing_and_HRD_descriptor.
     //!
     //! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.6.97.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL HEVCTimingAndHRDDescriptor : public AbstractDescriptor
     {

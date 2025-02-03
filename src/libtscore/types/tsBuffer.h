@@ -21,7 +21,7 @@
 namespace ts {
     //!
     //! General-purpose memory buffer with bit access.
-    //! @ingroup cpp
+    //! @ingroup libtscore cpp
     //!
     //! A buffer has the following properties:
     //! - Internal memory space (freeed with the buffer object) or external memory area.

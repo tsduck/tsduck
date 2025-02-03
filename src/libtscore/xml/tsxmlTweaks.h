@@ -23,7 +23,7 @@ namespace ts::xml {
     //!
     //! Global tweaks to manipulate, parse and format XML documents.
     //! Each document is associated with a Tweaks structure.
-    //! @ingroup xml
+    //! @ingroup libtscore xml
     //!
     class TSCOREDLL Tweaks
     {

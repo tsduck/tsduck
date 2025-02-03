@@ -18,7 +18,7 @@ namespace ts {
     //!
     //! Representation of an ISDB DownLoad Table (DLT).
     //! @see ARIB STD-B16, 4.4
-    //! @ingroup table
+    //! @ingroup libtsduck table
     //!
     //! Note: the ARIB STD-B16 is only in available in Japanese version and not
     //! generally available for download. The following is a summary of the

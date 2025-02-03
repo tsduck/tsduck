@@ -19,7 +19,7 @@ namespace ts {
     //!
     //! Representation of a DSM-CC NPT_reference_descriptor.
     //! @see ISO/IEC 13818-6, 8.1.1.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL NPTReferenceDescriptor : public AbstractDescriptor
     {

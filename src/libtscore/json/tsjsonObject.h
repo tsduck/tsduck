@@ -17,7 +17,7 @@
 namespace ts::json {
     //!
     //! Implementation of a JSON object.
-    //! @ingroup json
+    //! @ingroup libtscore json
     //!
     class TSCOREDLL Object: public Value
     {

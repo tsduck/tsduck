@@ -18,7 +18,7 @@ namespace ts {
     //!
     //! Representation of an CUVV_video_stream_descriptor.
     //! @see T/UWA 005-2.1.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL UWAVideoStreamDescriptor : public AbstractDescriptor
     {

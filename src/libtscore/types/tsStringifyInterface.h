@@ -20,7 +20,7 @@ namespace ts {
 
     //!
     //! An interface to be implemented by classes supporting a conversion to UString.
-    //! @ingroup cpp
+    //! @ingroup libtscore cpp
     //!
     class TSCOREDLL StringifyInterface
     {

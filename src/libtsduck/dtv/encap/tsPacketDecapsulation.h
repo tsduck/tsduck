@@ -18,7 +18,7 @@ namespace ts {
     //!
     //! An efficient TSDuck-specific TS packets decapsulation from a PID.
     //! This class extract packets which were encapsulated using PacketEncapsulation.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //! @see PacketEncapsulation
     //!
     class TSDUCKDLL PacketDecapsulation

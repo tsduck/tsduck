@@ -31,7 +31,7 @@ namespace ts {
     //! the TSDuck library. This class provides only basic device information.
     //! All access to Dektec devices is normally done using the @c tsdektec
     //! command or the @c dektec plugin.
-    //! @ingroup hardware
+    //! @ingroup libtsduck hardware
     //!
     class TSDUCKDLL DektecDeviceInfo
     {

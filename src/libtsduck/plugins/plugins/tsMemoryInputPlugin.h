@@ -17,7 +17,7 @@
 namespace ts {
     //!
     //! Memory input plugin for tsp.
-    //! @ingroup plugin
+    //! @ingroup libtsduck plugin
     //!
     class TSDUCKDLL MemoryInputPlugin: public InputPlugin
     {

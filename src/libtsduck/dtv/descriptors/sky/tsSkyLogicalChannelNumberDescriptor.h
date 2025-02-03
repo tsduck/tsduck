@@ -20,7 +20,7 @@ namespace ts {
     //! Representation of a sky_logical_channel_number_descriptor.
     //!
     //! This is a private descriptor, must be preceded by the BskyB PDS.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL SkyLogicalChannelNumberDescriptor : public AbstractDescriptor
     {

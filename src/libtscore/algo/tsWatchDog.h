@@ -20,7 +20,7 @@
 namespace ts {
     //!
     //! General-purpose timeout watchdog.
-    //! @ingroup thread
+    //! @ingroup libtscore thread
     //!
     //! The watchdog is initially suspended. A call to restart() reinitializes the timer
     //! and starts the watchdog. After the timeout, the watchdog automatically triggers

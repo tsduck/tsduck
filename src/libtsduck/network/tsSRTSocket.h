@@ -56,7 +56,7 @@ namespace ts {
     //! all methods will fail with an error status.
     //! @see https://github.com/Haivision/srt
     //! @see https://www.srtalliance.org/
-    //! @ingroup net
+    //! @ingroup libtsduck net
     //!
     class TSDUCKDLL SRTSocket
     {

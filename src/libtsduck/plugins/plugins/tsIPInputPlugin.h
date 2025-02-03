@@ -18,7 +18,7 @@
 namespace ts {
     //!
     //! IP input plugin for tsp.
-    //! @ingroup plugin
+    //! @ingroup libtsduck plugin
     //!
     class TSDUCKDLL IPInputPlugin: public AbstractDatagramInputPlugin
     {

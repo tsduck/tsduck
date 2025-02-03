@@ -28,7 +28,7 @@
 namespace ts {
     //!
     //! Base class for sub-structures inside video access units.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     class TSDUCKDLL AbstractVideoStructure: public AbstractVideoData
     {

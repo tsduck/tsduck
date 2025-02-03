@@ -22,7 +22,7 @@ namespace ts {
 
     //!
     //! Command line arguments for @c -\-pager or @c -\-no-pager.
-    //! @ingroup cmd
+    //! @ingroup libtscore cmd
     //!
     class TSCOREDLL PagerArgs
     {

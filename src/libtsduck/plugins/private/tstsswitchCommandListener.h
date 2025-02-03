@@ -24,7 +24,7 @@ namespace ts {
 
         //!
         //! Input switch (tsswitch) remote control command receiver.
-        //! @ingroup plugin
+        //! @ingroup libtsduck plugin
         //!
         class CommandListener : private Thread
         {

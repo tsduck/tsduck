@@ -23,7 +23,7 @@ namespace ts {
     //! Context of a plugin event.
     //! Each time a plugin signals an event for the application, a PluginEventContext
     //! instance is built and passed to all registered event handlers for that event.
-    //! @ingroup plugin
+    //! @ingroup libtsduck plugin
     //!
     class TSDUCKDLL PluginEventContext
     {

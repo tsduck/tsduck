@@ -20,7 +20,7 @@ namespace ts {
     //! Representation of an SCTE 35 SpliceSchedule command.
     //!
     //! @see ANSI/SCTE 35, 9.3.2.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     class TSDUCKDLL SpliceSchedule : public AbstractSignalization
     {

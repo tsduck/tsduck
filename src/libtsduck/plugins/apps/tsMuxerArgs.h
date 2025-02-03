@@ -22,7 +22,7 @@ namespace ts {
 
     //!
     //! Transport stream multiplexer command-line options.
-    //! @ingroup plugin
+    //! @ingroup libtsduck plugin
     //!
     class TSDUCKDLL MuxerArgs
     {

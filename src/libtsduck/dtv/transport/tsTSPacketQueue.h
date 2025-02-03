@@ -19,7 +19,7 @@
 namespace ts {
     //!
     //! Transport stream packet queue for inter-thread communication.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     //! A writer thread produces packets. The input packets are directly written
     //! into the buffer. The writer thread invokes lockWriteBuffer() to get

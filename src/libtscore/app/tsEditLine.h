@@ -22,7 +22,7 @@
 namespace ts {
     //!
     //! Read input lines with bash-like line editing when possible.
-    //! @ingroup app
+    //! @ingroup libtscore app
     //!
     class TSCOREDLL EditLine
     {

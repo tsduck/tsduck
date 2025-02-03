@@ -18,7 +18,7 @@
 namespace ts {
     //!
     //! Control the insertion points of TS packets in a stream based on various criteria.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     //! The scenarion is the following:
     //! - The main transport stream has some known bitrate.

@@ -19,7 +19,7 @@ namespace ts {
     //!
     //! Representation of a time_slice_fec_identifier_descriptor.
     //! @see ETSI EN 301 192, 9.5.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL TimeSliceFECIdentifierDescriptor : public AbstractDescriptor
     {

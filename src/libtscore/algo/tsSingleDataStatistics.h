@@ -19,7 +19,7 @@
 namespace ts {
     //!
     //! Statistics over a single set of data (integer or floating point).
-    //! @ingroup cpp
+    //! @ingroup libtscore cpp
     //! @tparam NUMBER Integer or floating point data type.
     //! A specialization is available for std::chrono::duration types.
     //! @tparam DEFAULT_FLOAT Default floating point type for finer results.

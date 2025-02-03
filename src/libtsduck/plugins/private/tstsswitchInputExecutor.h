@@ -20,7 +20,7 @@ namespace ts {
     namespace tsswitch {
         //!
         //! Execution context of a tsswitch input plugin.
-        //! @ingroup plugin
+        //! @ingroup libtsduck plugin
         //!
         class InputExecutor : public PluginExecutor
         {

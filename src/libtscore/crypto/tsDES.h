@@ -19,7 +19,7 @@
 namespace ts {
     //!
     //! DES block cipher.
-    //! @ingroup crypto
+    //! @ingroup libtscore crypto
     //!
     class TSCOREDLL DES: public BlockCipher
     {

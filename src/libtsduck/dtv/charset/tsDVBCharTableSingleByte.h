@@ -29,7 +29,7 @@ namespace ts {
     //! - The code 0x8A is interpreted as a new line.
     //!
     //! @see ETSI EN 300 468, Annex A.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     class TSDUCKDLL DVBCharTableSingleByte: public DVBCharTable
     {

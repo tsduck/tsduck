@@ -20,7 +20,7 @@
 namespace ts {
     //!
     //! Dektec output plugin for @c tsp.
-    //! @ingroup plugin
+    //! @ingroup libtsduck plugin
     //!
     class TSDUCKDLL DektecOutputPlugin: public OutputPlugin
     {

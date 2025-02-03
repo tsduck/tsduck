@@ -18,7 +18,7 @@
 namespace ts {
     //!
     //! A proxy class to automatically report std::error_code errors.
-    //! @ingroup log
+    //! @ingroup libtscore log
     //!
     //! This class derives from std::error_code and can be used in any C++
     //! standard library call which takes an output parameter of type std::error_code.

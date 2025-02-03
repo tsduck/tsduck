@@ -25,7 +25,7 @@ namespace ts {
     namespace hls {
         //!
         //! HTTP Live Streaming (HLS) output plugin for tsp.
-        //! @ingroup plugin
+        //! @ingroup libtsduck plugin
         //!
         //! The output plugin generates playlists and media segments on local files
         //! only. It can also purge obsolete media segments and regenerate live

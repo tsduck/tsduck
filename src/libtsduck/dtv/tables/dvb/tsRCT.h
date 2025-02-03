@@ -19,7 +19,7 @@ namespace ts {
     //!
     //! Representation of a Related Content Table (RCT)
     //! @see ETSI TS 102 323, 10.4.2
-    //! @ingroup table
+    //! @ingroup libtsduck table
     //!
     class TSDUCKDLL RCT : public AbstractLongTable
     {

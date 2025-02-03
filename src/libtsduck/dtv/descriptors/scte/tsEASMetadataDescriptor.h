@@ -23,7 +23,7 @@ namespace ts {
     //! because its tag reuses an MPEG-defined one.
     //!
     //! @see SCTE 164, 5.0
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL EASMetadataDescriptor : public AbstractDescriptor
     {

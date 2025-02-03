@@ -18,7 +18,7 @@ namespace ts {
 
     //!
     //! Base class for objects being part of a ring, ie. a double-linked list with no begin or end.
-    //! @ingroup cpp
+    //! @ingroup libtscore cpp
     //!
     //! This class is not thread-safe. Access to all objects which are part of the same ring
     //! shall be synchronized.

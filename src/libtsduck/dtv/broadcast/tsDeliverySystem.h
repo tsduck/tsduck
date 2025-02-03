@@ -7,7 +7,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  @ingroup hardware
+//!  @ingroup libtsduck hardware
 //!  Definition for transmission delivery systems.
 //!
 //----------------------------------------------------------------------------

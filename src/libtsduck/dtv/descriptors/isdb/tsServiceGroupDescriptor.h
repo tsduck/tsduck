@@ -20,7 +20,7 @@ namespace ts {
     //!
     //! Representation of an ISDB service_group_descriptor.
     //! @see ARIB STD-B10, Part 2, 6.2.49
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL ServiceGroupDescriptor : public AbstractDescriptor
     {

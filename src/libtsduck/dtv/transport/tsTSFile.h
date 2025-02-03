@@ -23,7 +23,7 @@ namespace ts {
 
     //!
     //! Transport stream file, input and/or output.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     class TSDUCKDLL TSFile :
         public TSPacketStream,

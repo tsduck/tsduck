@@ -27,7 +27,7 @@ namespace ts {
 
     //!
     //! Shared library handling (.so on Linux, .dylib on macOS, .dll on Windows).
-    //! @ingroup system
+    //! @ingroup libtscore system
     //!
     class TSCOREDLL SharedLibrary
     {

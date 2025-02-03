@@ -21,7 +21,7 @@
 namespace ts {
     //!
     //! An XML file containing the description of TV channels and their networks.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     //! The XML template for such files is in file @c tsduck.channels.model.xml.
     //! This is a proprietary XML syntax from TSDuck which is used to replace the

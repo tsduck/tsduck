@@ -19,7 +19,7 @@ namespace ts {
     //!
     //! Representation of a DVB DTS-UHD descriptor.
     //! @see ETSI EN 300 468, annex G.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL DVBDTSUHDDescriptor : public AbstractDescriptor
     {

@@ -27,7 +27,7 @@ namespace ts {
     //! Similarly, when used to serialize tables from an XML file, the string shall
     //! be an hexadecimal string which is directly transposed as binary data.
     //!
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     class TSDUCKDLL DumpCharset: public Charset
     {

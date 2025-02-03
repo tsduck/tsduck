@@ -19,7 +19,7 @@ namespace ts {
     //!
     //! A class implementing the tsvatek control utility.
     //! This is defined as a separate class the interface of which does not depend on the Vatek core library.
-    //! @ingroup hardware
+    //! @ingroup libtsduck hardware
     //!
     class TSDUCKDLL VatekControl: private Args
     {

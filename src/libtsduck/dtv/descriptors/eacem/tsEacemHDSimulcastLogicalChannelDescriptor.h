@@ -20,7 +20,7 @@ namespace ts {
     //! Representation of an EACEM-defined HD_simulcast_logical_channel_descriptor.
     //!
     //! This is a private descriptor, must be preceded by the EACEM/EICTA PDS.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL EacemHDSimulcastLogicalChannelDescriptor : public AbstractLogicalChannelDescriptor
     {

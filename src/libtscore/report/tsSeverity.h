@@ -21,7 +21,7 @@ namespace ts {
 
     //!
     //! Message severity.
-    //! @ingroup log
+    //! @ingroup libtscore log
     //!
     //! Positive values are debug levels. The typical default reporting level is @c Info.
     //! All messages with a higher level (@c Verbose and all debug levels) are not reported by default.

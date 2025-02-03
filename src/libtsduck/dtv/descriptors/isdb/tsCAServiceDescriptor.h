@@ -18,7 +18,7 @@ namespace ts {
     //!
     //! Representation of an ISDB CA_service_descriptor.
     //! @see ARIB STD-B25, Part 1, 4.7.3
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL CAServiceDescriptor : public AbstractDescriptor
     {

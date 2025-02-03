@@ -38,7 +38,7 @@ namespace ts {
 
     //!
     //! Abstract base class for MPEG PSI/SI tables.
-    //! @ingroup table
+    //! @ingroup libtsduck table
     //!
     //! Some methods are declared as "virtual final". Since these methods are not
     //! inherited, this seems useless. This is in fact a compilation check. These

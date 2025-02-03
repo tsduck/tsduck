@@ -53,7 +53,7 @@ namespace ts {
     //!
     //! @see ETSI EN 300 468, 5.2.4
     //! @see ETSI TS 101 211, 4.1.4
-    //! @ingroup table
+    //! @ingroup libtsduck table
     //!
     class TSDUCKDLL EIT : public AbstractLongTable
     {

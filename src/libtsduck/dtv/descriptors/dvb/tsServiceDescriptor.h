@@ -19,7 +19,7 @@ namespace ts {
     //!
     //! Representation of a service_descriptor.
     //! @see ETSI EN 300 468, 6.2.33.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL ServiceDescriptor : public AbstractDescriptor
     {

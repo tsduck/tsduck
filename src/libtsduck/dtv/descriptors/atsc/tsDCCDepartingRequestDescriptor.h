@@ -19,7 +19,7 @@ namespace ts {
     //!
     //! Representation of an ATSC dcc_departing_request_descriptor.
     //! @see ATSC A/65, section 6.9.10.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL DCCDepartingRequestDescriptor : public AbstractDescriptor
     {

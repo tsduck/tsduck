@@ -25,7 +25,7 @@
 namespace ts {
     //!
     //! A specialized subclass of ts::Buffer for PSI serialization.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     class TSDUCKDLL PSIBuffer : public Buffer
     {

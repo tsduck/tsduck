@@ -19,7 +19,7 @@ namespace ts {
     //!
     //! Representation of a DVB service_prominence_descriptor.
     //! @see ETSI EN 300 468, clause 6.4.18.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     //! Note: SOGI = Service Of General Interest
     //!

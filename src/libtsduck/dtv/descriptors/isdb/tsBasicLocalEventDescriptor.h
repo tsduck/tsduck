@@ -19,7 +19,7 @@ namespace ts {
     //!
     //! Representation of an ISDB basic_local_event_descriptor.
     //! @see ARIB STD-B10, Part 3, 5.2.1
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL BasicLocalEventDescriptor : public AbstractDescriptor
     {

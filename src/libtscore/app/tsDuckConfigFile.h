@@ -17,7 +17,7 @@
 namespace ts {
     //!
     //! A singleton which contains the TSDuck configuration file.
-    //! @ingroup app
+    //! @ingroup libtscore app
     //!
     class TSCOREDLL DuckConfigFile : public ConfigFile
     {

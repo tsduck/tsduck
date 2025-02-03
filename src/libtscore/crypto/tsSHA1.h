@@ -17,7 +17,7 @@
 namespace ts {
     //!
     //! SHA-1 hash.
-    //! @ingroup crypto
+    //! @ingroup libtscore crypto
     //!
     class TSCOREDLL SHA1: public Hash
     {

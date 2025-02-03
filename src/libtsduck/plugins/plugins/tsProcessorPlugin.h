@@ -21,7 +21,7 @@ namespace ts {
     //!
     //! Packet processing @c tsp plugin interface.
     //!
-    //! @ingroup plugin
+    //! @ingroup libtsduck plugin
     //!
     //! All shared libraries providing packet processing capability shall return
     //! an object implementing this abstract interface.

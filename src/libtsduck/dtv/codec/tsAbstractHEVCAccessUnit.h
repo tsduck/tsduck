@@ -18,7 +18,7 @@ namespace ts {
     //!
     //! Base class for HEVC access units, aka NALunits.
     //! @see ITU-T Rec. H.265, section 7.3.1
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     class TSDUCKDLL AbstractHEVCAccessUnit: public AbstractVideoAccessUnit
     {

@@ -22,7 +22,7 @@ namespace ts {
     //! because its tag reuses an MPEG-defined one.
     //!
     //! @see ETSI TS 101 812, 10.9.2.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL DVBJApplicationLocationDescriptor : public AbstractDescriptor
     {

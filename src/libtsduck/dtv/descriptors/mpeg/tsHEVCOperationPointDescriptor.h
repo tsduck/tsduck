@@ -19,7 +19,7 @@ namespace ts {
     //!
     //! Representation of an Auxiliary_video_stream_descriptor.
     //! @see ISO/IEC 13818-1 | ITU-T H.222.0 clause 2.6.100
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL HEVCOperationPointDescriptor : public AbstractDescriptor
     {

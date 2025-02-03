@@ -19,7 +19,7 @@ namespace ts {
     //!
     //! Representation of an ISDB partial_reception_descriptor.
     //! @see ARIB STD-B10, Part 2, 6.2.32
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL PartialReceptionDescriptor : public AbstractDescriptor
     {

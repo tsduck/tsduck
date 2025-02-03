@@ -19,7 +19,7 @@ namespace ts {
     //!
     //! Representation of an ATSC service_location_descriptor.
     //! @see ATSC A/65, section 6.9.5.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL ServiceLocationDescriptor : public AbstractDescriptor
     {

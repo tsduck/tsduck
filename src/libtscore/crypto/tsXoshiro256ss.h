@@ -17,7 +17,7 @@
 namespace ts {
     //!
     //! Xoshiro256** PRNG (pseudo-random numbers generator).
-    //! @ingroup crypto
+    //! @ingroup libtscore crypto
     //! @see https://en.wikipedia.org/wiki/Xorshift
     //!
     class TSCOREDLL Xoshiro256ss: public RandomGenerator

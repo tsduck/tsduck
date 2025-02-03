@@ -19,7 +19,7 @@ namespace ts {
     //!
     //! Representation of a file name and an associated repetition rate.
     //! This is typically used to handle section files to inject into transport streams.
-    //! @ingroup cmd
+    //! @ingroup libtsduck cmd
     //!
     class TSDUCKDLL FileNameRate
     {

@@ -43,7 +43,7 @@ namespace ts {
     //!
     //! @see ETSI EN 300 468, Annex A.
     //! @see DVBCharset
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     class TSDUCKDLL DVBCharTable: public Charset
     {

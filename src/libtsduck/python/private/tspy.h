@@ -7,7 +7,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  @ingroup python
+//!  @ingroup libtsduck python
 //!  Base definitions for the TSDuck Python bindings (C++ implementation).
 //!
 //----------------------------------------------------------------------------

@@ -20,7 +20,7 @@ namespace ts {
     //!
     //! Representation of a DSM-CC stream_event_descriptor.
     //! @see ISO/IEC 13818-6, 8.3.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL StreamEventDescriptor : public AbstractDescriptor
     {

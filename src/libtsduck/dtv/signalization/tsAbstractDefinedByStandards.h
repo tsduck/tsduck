@@ -17,7 +17,7 @@
 namespace ts {
     //!
     //! Abstract base class for objects which are defined by standards.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     class TSDUCKDLL AbstractDefinedByStandards
     {

@@ -19,7 +19,7 @@ namespace ts {
     //!
     //! Representation of a name_descriptor.
     //! @see ETSI EN 301 192 V1.7.1 (2021-08), 10.2.3
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL DSMCCNameDescriptor: public AbstractDescriptor
     {

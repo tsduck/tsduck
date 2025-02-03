@@ -19,7 +19,7 @@
 namespace ts {
     //!
     //! Base class for message reporting and monitoring.
-    //! @ingroup log
+    //! @ingroup libtscore log
     //!
     //! Maximum severity: Each Report instance has an adjustable "maximum severity". All messages
     //! with a higher severity are dropped without reporting. The initial default severity is

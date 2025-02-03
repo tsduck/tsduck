@@ -17,7 +17,7 @@
 namespace ts {
     //!
     //! A class to save and restore the state of the Windows console.
-    //! @ingroup windows
+    //! @ingroup libtscore windows
     //!
     //! On Windows, the old DOS console and the PowerShell console use "code pages"
     //! for characters. By default, the current code page is some locale which is

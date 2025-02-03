@@ -21,7 +21,7 @@
 namespace ts {
     //!
     //! Digital TV tuner emulator.
-    //! @ingroup hardware
+    //! @ingroup libtsduck hardware
     //!
     //! A tuner emulator implements the TunerBase interface without physical tuner.
     //! The "device name" is the name of an XML file which describes the tuner configuration.

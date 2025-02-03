@@ -19,7 +19,7 @@ namespace ts {
     //! Representation of an MPEG-defined green_extension_descriptor.
     //!
     //! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.6.104.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL GreenExtensionDescriptor : public AbstractDescriptor
     {

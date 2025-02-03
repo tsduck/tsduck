@@ -19,7 +19,7 @@
 namespace ts {
     //!
     //! Representation of a configuration file.
-    //! @ingroup app
+    //! @ingroup libtscore app
     //!
     //! Configuration files are based on the old ".INI" syntax on Windows systems.
     //! Lines starting with a '#' are comments and are ignored.

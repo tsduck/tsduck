@@ -20,7 +20,7 @@ namespace ts {
     //!
     //! Representation of an ISDB event_group_descriptor.
     //! @see ARIB STD-B10, Part 2, 6.2.34
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL EventGroupDescriptor : public AbstractDescriptor
     {

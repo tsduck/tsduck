@@ -21,7 +21,7 @@ namespace ts {
 
     //!
     //! Command line arguments for the class UDPReceiver.
-    //! @ingroup net
+    //! @ingroup libtscore net
     //!
     class TSCOREDLL UDPReceiverArgs
     {

@@ -20,7 +20,7 @@
 namespace ts::xml {
     //!
     //! Attribute of an XML element.
-    //! @ingroup xml
+    //! @ingroup libtscore xml
     //!
     class TSCOREDLL Attribute
     {

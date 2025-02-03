@@ -19,7 +19,7 @@
 namespace ts {
     //!
     //! Describe a DVB or ATSC service.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     //! An instance of this class contains all possible properties of a
     //! DVB service. But all properties are optional. They may be set and

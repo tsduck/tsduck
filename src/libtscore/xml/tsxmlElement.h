@@ -26,7 +26,7 @@ namespace ts::xml {
 
     //!
     //! Structured element in an XML document.
-    //! @ingroup xml
+    //! @ingroup libtscore xml
     //!
     class TSCOREDLL Element: public Node
     {

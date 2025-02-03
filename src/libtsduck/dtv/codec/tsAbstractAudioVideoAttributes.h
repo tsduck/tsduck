@@ -19,7 +19,7 @@ namespace ts {
 
     //!
     //! Abstract base class for MPEG audio and video attributes
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     class TSDUCKDLL AbstractAudioVideoAttributes: public StringifyInterface
     {

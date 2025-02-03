@@ -21,7 +21,7 @@
 namespace ts {
     //!
     //! Transport stream file input with command-line arguments.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     class TSDUCKDLL TSFileInputArgs
     {

@@ -18,7 +18,7 @@
 namespace ts {
     //!
     //! Packetization of PES data into Transport Stream packets.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     //! PES packets are provided by an object implementing PESProviderInterface.
     //! This means that this class works in "pull" mode; it pulls new PES packets

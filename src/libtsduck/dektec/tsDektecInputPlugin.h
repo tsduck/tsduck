@@ -19,7 +19,7 @@
 namespace ts {
     //!
     //! Dektec input plugin for @c tsp.
-    //! @ingroup plugin
+    //! @ingroup libtsduck plugin
     //!
     class TSDUCKDLL DektecInputPlugin: public InputPlugin
     {

@@ -19,7 +19,7 @@ namespace ts {
     //! Representation of a VBI_teletext_descriptor.
     //! This descriptor has the same structure as a teletext_descriptor.
     //! @see ETSI EN 300 468, 6.2.48.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL VBITeletextDescriptor : public TeletextDescriptor
     {

@@ -24,7 +24,7 @@ namespace ts {
     //!
     //! The option -\-list-plugins is automatically added and processed.
     //!
-    //! @ingroup plugin
+    //! @ingroup libtsduck plugin
     //!
     class TSDUCKDLL ArgsWithPlugins: public Args
     {

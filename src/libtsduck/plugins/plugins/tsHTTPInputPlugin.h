@@ -17,7 +17,7 @@
 namespace ts {
     //!
     //! HTTP input plugin for tsp.
-    //! @ingroup plugin
+    //! @ingroup libtsduck plugin
     //!
     //!
     class TSDUCKDLL HTTPInputPlugin: public AbstractHTTPInputPlugin

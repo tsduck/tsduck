@@ -18,7 +18,7 @@
 namespace ts {
     //!
     //! This class implements a macOS XML PList file.
-    //! @ingroup unix
+    //! @ingroup libtscore unix
     //!
     class TSCOREDLL MacPList: public std::map<UString, UString>
     {

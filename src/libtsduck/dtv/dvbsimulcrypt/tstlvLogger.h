@@ -19,7 +19,7 @@
 namespace ts::tlv {
     //!
     //! A logger class for TLV messages
-    //! @ingroup tlv
+    //! @ingroup libtsduck tlv
     //!
     //! This class encapsulates a logging and debug facility for TLV messages.
     //! All messages are logged on a Report object under specific conditions.

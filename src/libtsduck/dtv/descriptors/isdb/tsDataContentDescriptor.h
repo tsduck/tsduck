@@ -19,7 +19,7 @@ namespace ts {
     //!
     //! Representation of an ISDB data_content_descriptor.
     //! @see ARIB STD-B10, Part 2, 6.2.28
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL DataContentDescriptor : public AbstractDescriptor
     {

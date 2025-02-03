@@ -24,7 +24,7 @@ namespace ts {
 
     //!
     //! Command line arguments for section file processing.
-    //! @ingroup cmd
+    //! @ingroup libtsduck cmd
     //!
     class TSDUCKDLL SectionFileArgs
     {

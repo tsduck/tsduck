@@ -19,7 +19,7 @@
 namespace ts {
     //!
     //! A base class to lookup the context of MPEG PSI/SI sections.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     //! The interface of the base class is used to understand the context of a section.
     //! When getting a binary section, for instance, it is not always easy to determine

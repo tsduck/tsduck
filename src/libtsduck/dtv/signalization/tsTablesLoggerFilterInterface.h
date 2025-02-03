@@ -23,7 +23,7 @@ namespace ts {
 
     //!
     //! An interface which is used to filter sections in TablesLogger.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     //! This abstract interface must be implemented by classes which
     //! define filtering rules for TablesLogger. There is one main

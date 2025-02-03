@@ -18,7 +18,7 @@
 namespace ts {
     //!
     //! File input plugin for tsp.
-    //! @ingroup plugin
+    //! @ingroup libtsduck plugin
     //!
     class TSDUCKDLL FileInputPlugin: public InputPlugin
     {

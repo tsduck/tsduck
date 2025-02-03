@@ -19,7 +19,7 @@ namespace ts {
     //! Representation of an MPEG-defined af_extensions_descriptor.
     //!
     //! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.6.99.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL AFExtensionsDescriptor : public AbstractDescriptor
     {

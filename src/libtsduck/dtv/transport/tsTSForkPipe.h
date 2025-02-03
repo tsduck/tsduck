@@ -18,7 +18,7 @@
 namespace ts {
     //!
     //! A subclass of ts::ForkPipe which exchanges TS packets on the pipe.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     class TSDUCKDLL TSForkPipe: public ForkPipe, public TSPacketStream
     {

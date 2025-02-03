@@ -21,7 +21,7 @@ namespace ts {
     //!
     //! Representation of an ATSC Event Information Table (ATSC EIT).
     //! @see ATSC A/65, section 6.5.
-    //! @ingroup table
+    //! @ingroup libtsduck table
     //!
     class TSDUCKDLL ATSCEIT : public AbstractLongTable
     {

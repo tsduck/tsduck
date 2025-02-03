@@ -21,7 +21,7 @@
 namespace ts {
     //!
     //! A basic command line interpreter.
-    //! @ingroup cmd
+    //! @ingroup libtscore cmd
     //!
     class TSCOREDLL CommandLine
     {

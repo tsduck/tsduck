@@ -19,7 +19,7 @@
 namespace ts {
     //!
     //! Abstract interface for classes which provide MPEG sections into a Packetizer.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     //! This abstract interface must be implemented by classes which provide
     //! MPEG sections into a Packetizer.

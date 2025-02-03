@@ -7,7 +7,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  @ingroup tlv
+//!  @ingroup libtsduck tlv
 //!  TSDuck internal messages, based on DVB SimulCrypt head-end TLV messages.
 //!
 //----------------------------------------------------------------------------

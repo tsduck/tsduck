@@ -18,7 +18,7 @@ namespace ts {
     //!
     //! Representation of an multiplex_buffer_utilization_descriptor.
     //! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.6.22.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL MultiplexBufferUtilizationDescriptor : public AbstractDescriptor
     {

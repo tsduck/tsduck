@@ -20,7 +20,7 @@ namespace ts {
 
     //!
     //! Abstract base class for DVB delivery system descriptors.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL AbstractDeliverySystemDescriptor : public AbstractDescriptor
     {

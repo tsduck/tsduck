@@ -18,7 +18,7 @@
 namespace ts {
     //!
     //! Parameters for tuners and their command-line definitions.
-    //! @ingroup hardware
+    //! @ingroup libtsduck hardware
     //!
     //! All values may be "set" or "unset", depending on command line arguments.
     //! All options for all types of tuners are included here.

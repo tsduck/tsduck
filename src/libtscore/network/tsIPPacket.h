@@ -19,7 +19,7 @@
 namespace ts {
     //!
     //! Representation of a raw IPv4 or IPv6 packet.
-    //! @ingroup net
+    //! @ingroup libtscore net
     //!
     class TSCOREDLL IPPacket
     {

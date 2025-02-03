@@ -17,7 +17,7 @@
 namespace ts {
     //!
     //! A singleton holding information on the current operating system.
-    //! @ingroup system
+    //! @ingroup libtscore system
     //!
     class TSCOREDLL SysInfo
     {

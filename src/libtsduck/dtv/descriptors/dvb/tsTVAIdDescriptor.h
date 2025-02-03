@@ -19,7 +19,7 @@ namespace ts {
     //! Representation of a DVB-defined TVA_id_descriptor.
     //! Note: TVA stands for TV-Anytime.
     //! @see ETSI TS 102 323, 11.2.4.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL TVAIdDescriptor : public AbstractDescriptor
     {

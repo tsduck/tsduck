@@ -22,7 +22,7 @@ namespace ts {
     //!
     //! Representation of a Program Map Table (PMT).
     //! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.4.4.8
-    //! @ingroup table
+    //! @ingroup libtsduck table
     //!
     class TSDUCKDLL PMT : public AbstractLongTable
     {

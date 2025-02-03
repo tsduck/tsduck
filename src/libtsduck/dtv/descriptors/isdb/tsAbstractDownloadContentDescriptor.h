@@ -18,7 +18,7 @@
 namespace ts {
     //!
     //! Base class for ISDB download content descriptors.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL AbstractDownloadContentDescriptor : public AbstractDescriptor
     {

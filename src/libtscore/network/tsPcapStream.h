@@ -17,7 +17,7 @@
 namespace ts {
     //!
     //! Read a TCP/IP session from a pcap or pcapng file.
-    //! @ingroup net
+    //! @ingroup libtscore net
     //!
     //! A TCP session uses two continuous streams, one in each direction,
     //! between two socket addresses.

@@ -17,7 +17,7 @@
 namespace ts {
     //!
     //! A singleton implementing Report which drops all messages.
-    //! @ingroup log
+    //! @ingroup libtscore log
     //!
     class TSCOREDLL NullReport : public Report
     {

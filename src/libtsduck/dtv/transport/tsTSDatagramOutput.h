@@ -40,7 +40,7 @@ namespace ts {
 
     //!
     //! Send TS packets over datagrams (UDP, SRT, RIST, etc.)
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     class TSDUCKDLL TSDatagramOutput: private TSDatagramOutputHandlerInterface
     {

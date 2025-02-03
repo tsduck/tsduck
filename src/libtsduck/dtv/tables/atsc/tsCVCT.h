@@ -18,7 +18,7 @@ namespace ts {
     //!
     //! Representation of an ATSC Cable Virtual Channel Table (CVCT)
     //! @see ATSC A/65, section 6.3.2.
-    //! @ingroup table
+    //! @ingroup libtsduck table
     //!
     class TSDUCKDLL CVCT : public VCT
     {

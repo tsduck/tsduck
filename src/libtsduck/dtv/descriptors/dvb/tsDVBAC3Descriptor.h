@@ -19,7 +19,7 @@ namespace ts {
     //!
     //! Representation of a DVB AC-3_descriptor.
     //! @see ETSI EN 300 468, D.3.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL DVBAC3Descriptor : public AbstractDescriptor
     {

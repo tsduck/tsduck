@@ -17,7 +17,7 @@
 namespace ts {
     //!
     //! Representation of a VVC access unit delimiter (AUD).
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //! @see ITU-T Rec. H.266, section 7.3.2.10 and 7.4.3.10
     //!
     class TSDUCKDLL VVCAccessUnitDelimiter: public AbstractVVCAccessUnit

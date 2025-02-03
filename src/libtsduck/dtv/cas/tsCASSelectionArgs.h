@@ -24,7 +24,7 @@ namespace ts {
 
     //!
     //! Command line arguments to select Conditional Access Systems.
-    //! @ingroup cmd
+    //! @ingroup libtsduck cmd
     //!
     class TSDUCKDLL CASSelectionArgs
     {

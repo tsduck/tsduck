@@ -19,7 +19,7 @@ namespace ts {
     //!
     //! Representation of an ECM_repetition_rate_descriptor.
     //! @see ETSI EN 301 192, 9.7.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL ECMRepetitionRateDescriptor : public AbstractDescriptor
     {

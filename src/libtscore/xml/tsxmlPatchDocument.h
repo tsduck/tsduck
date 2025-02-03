@@ -18,7 +18,7 @@
 namespace ts::xml {
     //!
     //! Representation of an XML document which is used to patch another XML document.
-    //! @ingroup xml
+    //! @ingroup libtscore xml
     //!
     //! A patch is an XML document which is used to add, delete or modify parts of
     //! another XML document. This is a minimal mechanism, much less powerful than XSLT.

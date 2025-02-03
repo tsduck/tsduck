@@ -34,7 +34,7 @@ namespace ts {
 
     //!
     //! This class holds information from GitHub about a release of a project.
-    //! @ingroup app
+    //! @ingroup libtscore app
     //!
     class TSCOREDLL GitHubRelease
     {

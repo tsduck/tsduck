@@ -22,7 +22,7 @@ namespace ts {
 
     //!
     //! Abstract superclass for packetizer classes (sections or PES packets).
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     class TSDUCKDLL AbstractPacketizer
     {

@@ -18,7 +18,7 @@ namespace ts {
     //!
     //! Representation of an ISDB Download Control Table (DCT).
     //! @see ARIB STD-B16, 4.3
-    //! @ingroup table
+    //! @ingroup libtsduck table
     //!
     //! Note: the ARIB STD-B16 is only in available in Japanese version and not
     //! generally available for download. The following is a summary of the

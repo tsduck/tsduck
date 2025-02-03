@@ -21,7 +21,7 @@ namespace ts {
     //! Representation of a J2K_video_descriptor.
     //!
     //! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.6.80.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL J2KVideoDescriptor : public AbstractDescriptor
     {

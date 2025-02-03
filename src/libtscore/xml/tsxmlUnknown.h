@@ -17,7 +17,7 @@
 namespace ts::xml {
     //!
     //! Unknown element in an XML document.
-    //! @ingroup xml
+    //! @ingroup libtscore xml
     //!
     class TSCOREDLL Unknown: public Node
     {

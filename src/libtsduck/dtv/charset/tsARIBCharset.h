@@ -33,7 +33,7 @@ namespace ts {
     //! @see ISO/IEC 2022
     //! @see https://en.wikipedia.org/wiki/ARIB_STD_B24_character_set
     //! @see https://en.wikipedia.org/wiki/ISO/IEC_2022
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     class TSDUCKDLL ARIBCharset: public Charset
     {

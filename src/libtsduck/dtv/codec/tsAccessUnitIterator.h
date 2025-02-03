@@ -19,7 +19,7 @@
 namespace ts {
     //!
     //! Iterator for common AVC/HEVC/VVC video access units.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     //! Some H.26x video coding formats use a common access unit bitstream
     //! format. This class is an iterator over the payload of a PES packet

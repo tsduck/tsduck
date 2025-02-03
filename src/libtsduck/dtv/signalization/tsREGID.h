@@ -7,7 +7,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  @ingroup mpeg
+//!  @ingroup libtsduck mpeg
 //!  Registration id in MPEG-defined registration_descriptor.
 //!
 //----------------------------------------------------------------------------

@@ -23,7 +23,7 @@
 namespace ts {
     //!
     //! Generate and insert EIT sections based on an EPG content.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     //! To generate EIT sections, an instance of EITGenerator needs:
     //! - The identity of the actual TS. Set using EITGenerator::setTransportStreamId() or

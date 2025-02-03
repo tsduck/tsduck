@@ -23,7 +23,7 @@ namespace ts {
 
     //!
     //! Command line arguments for the class ECMGClient.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     class TSDUCKDLL ECMGClientArgs
     {

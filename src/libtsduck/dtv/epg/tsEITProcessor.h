@@ -21,7 +21,7 @@
 namespace ts {
     //!
     //! Perform various transformations on an EIT PID.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     //! The object is continuously invoked for all packets in a TS.
     //! Packets from one specific PID, the EIT PID, are replaced.

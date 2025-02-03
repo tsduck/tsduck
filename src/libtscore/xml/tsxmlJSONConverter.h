@@ -20,7 +20,7 @@
 namespace ts::xml {
     //!
     //! XML-to-JSON converter.
-    //! @ingroup xml
+    //! @ingroup libtscore xml
     //!
     //! An XML-to-JSON converter is a model document which is used to convert
     //! an XML document into a JSON object.

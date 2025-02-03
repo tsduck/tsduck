@@ -7,7 +7,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  @ingroup cpp
+//!  @ingroup libtscore cpp
 //!  Pre-configuration header, defining configuration macros.
 //!
 //!  This header file shall remain empty in the source tree and in a full

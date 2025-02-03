@@ -20,7 +20,7 @@
 namespace ts::xml {
     //!
     //! Representation of an XML document.
-    //! @ingroup xml
+    //! @ingroup libtscore xml
     //!
     class TSCOREDLL Document: public Node, public StringifyInterface
     {

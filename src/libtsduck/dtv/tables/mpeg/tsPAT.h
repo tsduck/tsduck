@@ -19,7 +19,7 @@ namespace ts {
     //!
     //! Representation of a Program Association Table (PAT).
     //! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.4.4.3
-    //! @ingroup table
+    //! @ingroup libtsduck table
     //!
     class TSDUCKDLL PAT : public AbstractLongTable
     {

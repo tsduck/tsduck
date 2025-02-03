@@ -17,7 +17,7 @@
 namespace ts {
     //!
     //! Properties of a block cipher.
-    //! @ingroup crypto
+    //! @ingroup libtscore crypto
     //!
     class TSCOREDLL BlockCipherProperties
     {

@@ -18,7 +18,7 @@ namespace ts {
     //!
     //! Representation of a service_relocated_descriptor.
     //! @see ETSI EN 300 468, 6.4.9.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL ServiceRelocatedDescriptor : public AbstractDescriptor
     {

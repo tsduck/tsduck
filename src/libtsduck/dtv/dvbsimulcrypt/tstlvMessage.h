@@ -18,7 +18,7 @@
 namespace ts::tlv {
     //!
     //! Abstract base class for TLV messages
-    //! @ingroup tlv
+    //! @ingroup libtsduck tlv
     //!
     //! All messages use the same structure as the DVB interfaces defined in the
     //! "DVB Simulcrypt Head End" standard, that is to say a TLV protocol.

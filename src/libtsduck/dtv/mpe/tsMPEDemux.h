@@ -21,7 +21,7 @@
 namespace ts {
     //!
     //! This class extracts MPE (Multi-Protocol Encapsulation) datagrams from TS packets.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     //! The signalization is analyzed. MPE components in services are signaled to a handler.
     //! The application decides which MPE PID's should be demuxed. These PID's can

@@ -22,7 +22,7 @@ namespace ts {
     //! Note that the so-called "sequence_number" in the SCTE 18 standard
     //! is in fact the "version" of the table, in MPEG parlance.
     //! @see ANSI/SCTE 18, section 5.
-    //! @ingroup table
+    //! @ingroup libtsduck table
     //!
     class TSDUCKDLL CableEmergencyAlertTable : public AbstractLongTable
     {

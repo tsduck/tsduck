@@ -17,7 +17,7 @@
 namespace ts {
     //!
     //! Video attributes for HEVC / H.265.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     //! An HEVCAttributes object is built by transmitting HEVC access units
     //! (aka "NALunits"). The state of the object may change after adding a

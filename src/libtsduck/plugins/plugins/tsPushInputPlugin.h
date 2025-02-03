@@ -19,7 +19,7 @@
 namespace ts {
     //!
     //! Abstract superclass for input tsp plugins working in push mode.
-    //! @ingroup plugin
+    //! @ingroup libtsduck plugin
     //!
     //! An input plugin works in "pull" mode by default. When @c tsp needs mode
     //! input packets, it calls the receive() method of the plugin to "pull" packets.

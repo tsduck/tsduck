@@ -18,7 +18,7 @@ namespace ts {
     //!
     //! Representation of an ISDB Network Board Information Table (NBIT).
     //! @see ARIB STD-B10, Part 2, 5.2.14
-    //! @ingroup table
+    //! @ingroup libtsduck table
     //!
     class TSDUCKDLL NBIT : public AbstractLongTable
     {

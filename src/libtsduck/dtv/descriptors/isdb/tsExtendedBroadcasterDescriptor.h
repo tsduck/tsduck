@@ -20,7 +20,7 @@ namespace ts {
     //!
     //! Representation of an ISDB extended_broadcaster_descriptor.
     //! @see ARIB STD-B10, Part 2, 6.2.43
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL ExtendedBroadcasterDescriptor : public AbstractDescriptor
     {

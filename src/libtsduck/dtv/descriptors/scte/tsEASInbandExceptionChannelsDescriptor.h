@@ -23,7 +23,7 @@ namespace ts {
     //! because its tag reuses an MPEG-defined one.
     //!
     //! @see SCTE 18, 5.1.2
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL EASInbandExceptionChannelsDescriptor : public AbstractDescriptor
     {

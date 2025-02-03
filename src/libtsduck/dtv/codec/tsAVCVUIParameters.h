@@ -19,7 +19,7 @@
 namespace ts {
     //!
     //! AVC VUI (Video Usability Information) parameters.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     //! AVC is Advanced Video Coding, ISO 14496-10, ITU H.264.
     //!

@@ -17,7 +17,7 @@
 namespace ts::xml {
     //!
     //! Representation of the model of an XML document.
-    //! @ingroup xml
+    //! @ingroup libtscore xml
     //!
     //! A model is an XML document which is used to validate another XML document.
     //! This is a minimal mechanism, much less powerful than XML-Schema.

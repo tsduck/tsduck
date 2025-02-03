@@ -18,7 +18,7 @@ namespace ts {
     //!
     //! Representation of a Transport Stream Description Table (TSDT)
     //! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.4.4.12
-    //! @ingroup table
+    //! @ingroup libtsduck table
     //!
     class TSDUCKDLL TSDT : public AbstractDescriptorsTable
     {

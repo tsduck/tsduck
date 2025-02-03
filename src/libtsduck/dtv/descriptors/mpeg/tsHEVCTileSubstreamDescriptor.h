@@ -22,7 +22,7 @@ namespace ts {
     //! Representation of an HEVC_tile_substream_descriptor.
     //!
     //! @see ISO/IEC 13818-1 clasue 2.6.122
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL HEVCTileSubstreamDescriptor : public AbstractDescriptor
     {

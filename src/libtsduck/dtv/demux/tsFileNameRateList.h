@@ -19,7 +19,7 @@ namespace ts {
     //!
     //! Specialized list of file names and an associated repetition rates.
     //! This is typically used to handle section files to inject into transport streams.
-    //! @ingroup cmd
+    //! @ingroup libtsduck cmd
     //!
     class TSDUCKDLL FileNameRateList : public std::list<FileNameRate>
     {

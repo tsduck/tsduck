@@ -18,7 +18,7 @@
 namespace ts {
     //!
     //! List of HEVC short-term reference picture sets.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //! @see ITU-T Rec. H.265, 7.3.7 and 7.4.8.
     //!
     //! The HEVC structure st_ref_pic_set(stRpsIdx) is defined in 7.3.7 for index @a stRpsIdx.

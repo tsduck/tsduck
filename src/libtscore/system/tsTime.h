@@ -19,7 +19,7 @@
 namespace ts {
     //!
     //! The @c Time class implements a basic representation of time.
-    //! @ingroup system
+    //! @ingroup libtscore system
     //!
     //! The implementation is based on the operating system representation
     //! of time. This means that the range of representable time values

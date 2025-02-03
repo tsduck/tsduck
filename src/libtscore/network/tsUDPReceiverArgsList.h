@@ -18,7 +18,7 @@ namespace ts {
     //!
     //! Command line arguments for the class UDPReceiver.
     //! On the command line, depending on the application, zero, one, or more, receivers can be specified.
-    //! @ingroup net
+    //! @ingroup libtscore net
     //!
     class TSCOREDLL UDPReceiverArgsList: public std::vector<UDPReceiverArgs>
     {

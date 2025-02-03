@@ -18,7 +18,7 @@ namespace ts {
     //!
     //! Representation of a DVB-defined content_identifier_descriptor.
     //! @see ETSI TS 102 323, 12.1.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL ContentIdentifierDescriptor : public AbstractDescriptor
     {

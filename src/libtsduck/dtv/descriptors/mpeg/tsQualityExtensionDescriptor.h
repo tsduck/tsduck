@@ -22,7 +22,7 @@ namespace ts {
     //! timed mettic infomration is provided in the Quality_Access_Unt() - ISO/IEC 13818-1 clause 2.20
     //!
     //! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.6.119 and ISO/ISC 23001-10
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL QualityExtensionDescriptor : public AbstractDescriptor
     {

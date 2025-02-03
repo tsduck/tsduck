@@ -18,7 +18,7 @@ namespace ts {
     //!
     //! Representation of an RAR_over_IP_descriptor
     //! @see ETSI TS 102 323 clause 6.3.3 and clause 5.2.2 for interpretation.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL DefaultAuthorityDescriptor: public AbstractDescriptor
     {

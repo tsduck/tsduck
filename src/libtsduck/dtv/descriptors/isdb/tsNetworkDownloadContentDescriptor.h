@@ -19,7 +19,7 @@ namespace ts {
     //!
     //! Representation of an ISDB network_download_content_descriptor.
     //! @see ARIB STD-B21, 12.2.1.1
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL NetworkDownloadContentDescriptor : public AbstractDownloadContentDescriptor
     {

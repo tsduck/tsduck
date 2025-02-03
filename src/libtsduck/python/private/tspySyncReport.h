@@ -18,7 +18,7 @@ namespace ts {
     namespace py {
         //!
         //! Synchronous message report with notification to a Python class.
-        //! @ingroup python
+        //! @ingroup libtsduck python
         //!
         class TSDUCKDLL SyncReport : public ts::Report
         {

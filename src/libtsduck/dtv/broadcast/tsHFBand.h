@@ -19,7 +19,7 @@
 namespace ts {
     //!
     //! Definition of an HF frequency band (UHF, VHF).
-    //! @ingroup hardware
+    //! @ingroup libtsduck hardware
     //!
     //! Each region or country has it own definitions of the frequencies bands and layouts.
     //! The most common types of frequency bands are VHF (Very High Frequency) and UHF

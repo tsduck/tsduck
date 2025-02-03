@@ -20,7 +20,7 @@ namespace ts {
 
     //!
     //! Expiration handler interface for general-purpose timeout watchdog.
-    //! @ingroup thread
+    //! @ingroup libtscore thread
     //!
     class TSCOREDLL WatchDogHandlerInterface
     {

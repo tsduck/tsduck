@@ -25,7 +25,7 @@
 namespace ts::hls {
     //!
     //! Playlist for HTTP Live Streaming (HLS).
-    //! @ingroup hls
+    //! @ingroup libtsduck hls
     //!
     class TSDUCKDLL PlayList: public StringifyInterface
     {

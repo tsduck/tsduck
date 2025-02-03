@@ -18,7 +18,7 @@
 namespace ts {
     //!
     //! Implementation of RFC 1951 data compression, a.k.a. zlib format, a.k.a. DEFLATE.
-    //! @ingroup system
+    //! @ingroup libtscore system
     //!
     //! This interface is a proxy to the zlib library on UNIX systems (Linux, macOS, BSD).
     //! On Windows systems, the source code of TSDuck embeds the header-only implementation

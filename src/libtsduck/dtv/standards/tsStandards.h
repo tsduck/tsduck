@@ -34,6 +34,7 @@ namespace ts {
 
     //!
     //! Return a string representing a list of standards.
+    //! @ingroup mpeg
     //! @param [in] standards A bit mask of standards.
     //! @return A string representing the standards.
     //!
@@ -43,6 +44,7 @@ namespace ts {
     //! Check compatibility between standards.
     //! Some standards are compatible, they can be used together. Example: MPEG and DVB.
     //! Some standards are incompatible and cannot be used together. Example: DVB and ATSC.
+    //! @ingroup mpeg
     //! @param [in] std Set of standards.
     //! @return True if all standards in @a std are compatible with each other.
     //!

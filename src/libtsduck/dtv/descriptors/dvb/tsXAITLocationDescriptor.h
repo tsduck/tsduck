@@ -18,7 +18,7 @@ namespace ts {
     //!
     //! Representation of a xait_location_descriptor.
     //! @see ETSI TS 102 727, 10.17.6.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL XAITLocationDescriptor : public AbstractDescriptor
     {

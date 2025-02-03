@@ -28,7 +28,7 @@ namespace ts {
 
     //!
     //! TSDuck execution context containing current preferences.
-    //! @ingroup app
+    //! @ingroup libtsduck app
     //!
     //! An instance of this class contains specific contextual information
     //! for the execution of TSDuck. This context contains either user's

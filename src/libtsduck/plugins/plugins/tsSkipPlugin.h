@@ -17,7 +17,7 @@
 namespace ts {
     //!
     //! Skip packet processor plugin for tsp.
-    //! @ingroup plugin
+    //! @ingroup libtsduck plugin
     //!
     class TSDUCKDLL SkipPlugin: public ProcessorPlugin
     {

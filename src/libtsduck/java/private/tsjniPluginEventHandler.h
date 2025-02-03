@@ -20,7 +20,7 @@ namespace ts {
     namespace jni {
         //!
         //! Plugin event handler with forwarding to a Java class.
-        //! @ingroup java
+        //! @ingroup libtsduck java
         //!
         class TSDUCKDLL PluginEventHandler : public ts::PluginEventHandlerInterface
         {

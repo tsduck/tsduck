@@ -20,7 +20,7 @@ namespace ts {
     namespace tsmux {
         //!
         //! Execution context of a tsmux output plugin.
-        //! @ingroup plugin
+        //! @ingroup libtsduck plugin
         //!
         class OutputExecutor : public PluginExecutor
         {

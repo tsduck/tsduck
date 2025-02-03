@@ -18,7 +18,7 @@ namespace ts {
     //!
     //! Representation of an ATSC Terrestrial Virtual Channel Table (TVCT)
     //! @see ATSC A/65, section 6.3.1.
-    //! @ingroup table
+    //! @ingroup libtsduck table
     //!
     class TSDUCKDLL TVCT : public VCT
     {

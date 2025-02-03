@@ -18,7 +18,7 @@ namespace ts {
     //!
     //! Representation of an ISDB short_node_information_descriptor.
     //! @see ARIB STD-B10, Part 3, 5.2.4
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL ShortNodeInformationDescriptor : public AbstractDescriptor
     {

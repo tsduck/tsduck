@@ -19,7 +19,7 @@ namespace ts {
     //!
     //! Representation of a DSM-CC stream_mode_descriptor.
     //! @see ISO/IEC 13818-6, 8.2.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL StreamModeDescriptor : public AbstractDescriptor
     {

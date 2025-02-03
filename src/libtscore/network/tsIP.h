@@ -7,7 +7,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  @ingroup net
+//!  @ingroup libtscore net
 //!  Include the multiple and messy system headers for IP networking.
 //!
 //----------------------------------------------------------------------------

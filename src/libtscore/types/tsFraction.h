@@ -19,7 +19,7 @@
 namespace ts {
     //!
     //! Template representation of fractional numbers.
-    //! @ingroup cpp
+    //! @ingroup libtscore cpp
     //!
     //! Fraction are always reduced so that the numerator and denominator have no common divisor other than 1.
     //! For signed integer types, the signed is carried by the numerator and the denominator is always positive.

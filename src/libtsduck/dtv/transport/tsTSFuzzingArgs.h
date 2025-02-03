@@ -23,7 +23,7 @@ namespace ts {
 
     //!
     //! Command line arguments for transport stream packets fuzzing.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     class TSDUCKDLL TSFuzzingArgs
     {

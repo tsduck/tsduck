@@ -18,7 +18,7 @@ namespace ts {
     //!
     //! Representation of a time_shifted_event_descriptor.
     //! @see ETSI EN 300 468, 6.2.44.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL TimeShiftedEventDescriptor : public AbstractDescriptor
     {

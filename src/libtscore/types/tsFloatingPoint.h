@@ -18,7 +18,7 @@
 namespace ts {
     //!
     //! Encapsulation of a double floating-point as an AbstractNumber.
-    //! @ingroup cpp
+    //! @ingroup libtscore cpp
     //!
     //! @tparam FLOAT_T The underlying floating-point type.
     //! @tparam PREC The number of decimal digits to display by default. This is a display

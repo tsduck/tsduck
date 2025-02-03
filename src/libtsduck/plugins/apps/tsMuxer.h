@@ -26,7 +26,7 @@ namespace ts {
     //! Implementation of the TS multiplexer.
     //! This class is used by the @a tsmux utility.
     //! It can also be used in other applications to multiplex input streams.
-    //! @ingroup plugin
+    //! @ingroup libtsduck plugin
     //!
     class TSDUCKDLL Muxer: public PluginEventHandlerRegistry
     {

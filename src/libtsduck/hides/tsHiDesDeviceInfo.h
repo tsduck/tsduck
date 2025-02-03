@@ -18,7 +18,7 @@ namespace ts {
     //!
     //! Information about a HiDes modulator device.
     //! Some public fields are available on Windows or Linux only.
-    //! @ingroup hardware
+    //! @ingroup libtsduck hardware
     //!
     class TSDUCKDLL HiDesDeviceInfo
     {

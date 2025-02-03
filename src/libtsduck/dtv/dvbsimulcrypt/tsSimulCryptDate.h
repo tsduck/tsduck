@@ -20,7 +20,7 @@
 namespace ts {
     //!
     //! Representation of a date in DVB SimulCrypt protocols (ETSI TS 103 197).
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     //! A DVB SimulCrypt date is represented on 8 bytes:
     //! - year:       2 bytes

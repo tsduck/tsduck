@@ -18,7 +18,7 @@
 namespace ts {
     //!
     //! Extended MPEG table id.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     //! For convenience, it is sometimes useful to identify tables using an
     //! "extended TID", a combination of TID and TIDext. On one PID, two tables

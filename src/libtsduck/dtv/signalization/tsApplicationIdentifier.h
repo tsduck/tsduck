@@ -17,7 +17,7 @@
 namespace ts {
     //!
     //! Representation of an Application Identifier
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     class TSDUCKDLL ApplicationIdentifier
     {

@@ -19,7 +19,7 @@ namespace ts {
     //!
     //! Representation of a Running Status Table (RST).
     //! @see ETSI EN 300 468, 5.2.7
-    //! @ingroup table
+    //! @ingroup libtsduck table
     //!
     class TSDUCKDLL RST : public AbstractTable
     {

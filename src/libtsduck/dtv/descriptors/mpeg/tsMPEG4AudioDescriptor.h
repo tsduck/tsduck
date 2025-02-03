@@ -18,7 +18,7 @@ namespace ts {
     //!
     //! Representation of an MPEG4_audio_descriptor.
     //! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.6.38.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL MPEG4AudioDescriptor : public AbstractDescriptor
     {

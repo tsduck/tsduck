@@ -18,7 +18,7 @@
 namespace ts {
     //!
     //! Representation of an application shared library.
-    //! @ingroup system
+    //! @ingroup libtscore system
     //!
     class TSCOREDLL ApplicationSharedLibrary: public SharedLibrary
     {

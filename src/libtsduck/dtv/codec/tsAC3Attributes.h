@@ -23,7 +23,7 @@ namespace ts {
     //! An AC3Attributes object is built by transmitting audio frames from
     //! PES payloads. Initially, an AC3Attributes object is invalid.
     //!
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     class TSDUCKDLL AC3Attributes: public AbstractAudioVideoAttributes
     {

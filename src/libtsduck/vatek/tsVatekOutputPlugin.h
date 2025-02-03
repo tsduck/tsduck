@@ -21,7 +21,7 @@
 namespace ts {
     //!
     //! Vatek output plugin for @c tsp.
-    //! @ingroup plugin
+    //! @ingroup libtsduck plugin
     //!
     class TSDUCKDLL VatekOutputPlugin: public OutputPlugin
     {

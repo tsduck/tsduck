@@ -7,7 +7,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  @ingroup windows
+//!  @ingroup libtsduck windows
 //!  Include the definitions for DirectShow (Windows media framework).
 //!
 //----------------------------------------------------------------------------

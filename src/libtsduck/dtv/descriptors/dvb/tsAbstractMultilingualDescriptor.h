@@ -19,7 +19,7 @@ namespace ts {
     //! Abstract base class for DVB descriptors with a multilingual name.
     //! Subclasses may have a "prolog" between the descriptor header and
     //! the multilingual names loop.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL AbstractMultilingualDescriptor : public AbstractDescriptor
     {

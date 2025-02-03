@@ -18,7 +18,7 @@ namespace ts {
     //!
     //! Representation of a DVB VVC_subpictures_descriptor.
     //! @see ETSI EN 300 468, clause 6.4.17.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL VVCSubpicturesDescriptor : public AbstractDescriptor
     {

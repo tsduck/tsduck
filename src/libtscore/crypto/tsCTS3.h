@@ -17,7 +17,7 @@
 namespace ts {
     //!
     //!  Cipher text Stealing (CTS) mode, alternative 3.
-    //!  @ingroup crypto
+    //!  @ingroup libtscore crypto
     //!
     //!  Several incompatible designs of CTS exist. This one implements the
     //!  description of "ECB ciphertext stealing" in

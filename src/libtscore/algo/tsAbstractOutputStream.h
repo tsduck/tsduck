@@ -17,7 +17,7 @@
 namespace ts {
     //!
     //! Intermediate abstract class to help implementing @c std::ostream.
-    //! @ingroup cpp
+    //! @ingroup libtscore cpp
     //!
     class TSCOREDLL AbstractOutputStream:
         public std::basic_ostream<char>,     // Public base

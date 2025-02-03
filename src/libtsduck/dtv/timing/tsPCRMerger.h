@@ -20,7 +20,7 @@
 namespace ts {
     //!
     //! Adjust PCR clocks when a TS is merged into a larger one.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     //! In each PID with PCR's in the merged stream, we keep the first PCR
     //! value unchanged. Then, we need to adjust all subsequent PCR's.

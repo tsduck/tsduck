@@ -18,7 +18,7 @@
 namespace ts {
     //!
     //! UDP datagram receiver with common command line options.
-    //! @ingroup net
+    //! @ingroup libtscore net
     //!
     class TSCOREDLL UDPReceiver: public UDPSocket
     {

@@ -27,7 +27,7 @@ namespace ts {
     //! - Each datagram shall fit into one section.
     //!
     //! @see ETSI EN 301 192, section 7.1.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     class TSDUCKDLL MPEPacket
     {

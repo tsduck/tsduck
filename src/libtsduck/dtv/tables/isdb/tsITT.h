@@ -19,7 +19,7 @@ namespace ts {
     //!
     //! Representation of an ISDB Index Transmission information Table (ITT).
     //! @see ARIB STD-B10, Part 3, 5.1.3
-    //! @ingroup table
+    //! @ingroup libtsduck table
     //!
     class TSDUCKDLL ITT : public AbstractLongTable
     {

@@ -19,7 +19,7 @@ namespace ts {
     //!
     //! Representation of an ATSC redistribution_control_descriptor.
     //! @see ATSC A/65, section 6.9.12.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL RedistributionControlDescriptor : public AbstractDescriptor
     {

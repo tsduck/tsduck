@@ -18,7 +18,7 @@ namespace ts {
     //!
     //! Definition of TSP control commands syntax.
     //! These commands are used with the @a tspcontrol utility to inspect or modify a running @a tsp command.
-    //! @ingroup plugin
+    //! @ingroup libtsduck plugin
     //!
     class TSDUCKDLL TSPControlCommand : public CommandLine
     {

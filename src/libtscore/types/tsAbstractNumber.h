@@ -20,7 +20,7 @@ namespace ts {
 
     //!
     //! Abstract base class for different representations of "numbers".
-    //! @ingroup cpp
+    //! @ingroup libtscore cpp
     //!
     //! All arithmetic and comparison operators shall be defined by concrete subclasses between
     //! number instances and between a number instance and an integer value, both directions.

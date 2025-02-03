@@ -7,7 +7,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  @ingroup cpp
+//!  @ingroup libtscore cpp
 //!  Technical header to include after including standard and system headers.
 //!  @see tsBeforeStandardHeaders.h
 //!

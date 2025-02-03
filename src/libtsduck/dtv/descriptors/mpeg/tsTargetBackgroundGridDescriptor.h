@@ -18,7 +18,7 @@ namespace ts {
     //!
     //! Representation of a target_background_grid_descriptor.
     //! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.6.12.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL TargetBackgroundGridDescriptor : public AbstractDescriptor
     {

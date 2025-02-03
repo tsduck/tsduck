@@ -21,7 +21,7 @@ namespace ts {
     //!
     //! Representation of an ISDB SI_prime_TS_descriptor.
     //! @see ARIB STD-B10, Part 2, 6.2.38
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL SIPrimeTSDescriptor : public AbstractDescriptor
     {

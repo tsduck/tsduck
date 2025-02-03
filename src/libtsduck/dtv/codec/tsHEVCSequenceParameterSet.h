@@ -21,7 +21,7 @@
 namespace ts {
     //!
     //! Representation of an HEVC sequence parameter set access unit.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //! @see ITU H.265, sections 7.3.2.2 and 7.4.3.2
     //!
     class TSDUCKDLL HEVCSequenceParameterSet: public AbstractHEVCAccessUnit

@@ -17,7 +17,7 @@
 namespace ts::xml {
     //!
     //! Comment in an XML document.
-    //! @ingroup xml
+    //! @ingroup libtscore xml
     //!
     class TSCOREDLL Comment: public Node
     {

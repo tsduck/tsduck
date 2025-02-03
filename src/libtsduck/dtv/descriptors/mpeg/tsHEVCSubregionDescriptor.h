@@ -22,7 +22,7 @@ namespace ts {
     //! Representation of an HEVC_subregion_descriptor.
     //!
     //! @see ISO/IEC 13818-1 clause 2.6.138.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL HEVCSubregionDescriptor : public AbstractDescriptor
     {

@@ -19,7 +19,7 @@ namespace ts {
     //! Representation of an AVS3_video_descriptor.
     //!
     //! @see AVS T/AI 109.6, 9.3.2.
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL AVS3VideoDescriptor : public AbstractDescriptor
     {

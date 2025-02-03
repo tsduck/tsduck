@@ -23,7 +23,7 @@ namespace ts {
 
     //!
     //! Command line arguments for transport stream packets dump.
-    //! @ingroup cmd
+    //! @ingroup libtsduck cmd
     //!
     class TSDUCKDLL TSDumpArgs
     {

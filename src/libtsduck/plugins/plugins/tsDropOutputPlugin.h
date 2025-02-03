@@ -17,7 +17,7 @@
 namespace ts {
     //!
     //! Drop output plugin for tsp.
-    //! @ingroup plugin
+    //! @ingroup libtsduck plugin
     //!
     class TSDUCKDLL DropOutputPlugin: public OutputPlugin
     {

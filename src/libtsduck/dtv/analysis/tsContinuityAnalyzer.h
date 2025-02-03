@@ -18,7 +18,7 @@
 namespace ts {
     //!
     //! Continuity counters analysis and repair.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     class TSDUCKDLL ContinuityAnalyzer
     {

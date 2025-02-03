@@ -21,7 +21,7 @@ namespace ts {
     //!
     //! Representation of an ATSC Master Guide Table (MGT)
     //! @see ATSC A/65, section 6.2.
-    //! @ingroup table
+    //! @ingroup libtsduck table
     //!
     class TSDUCKDLL MGT : public AbstractLongTable
     {

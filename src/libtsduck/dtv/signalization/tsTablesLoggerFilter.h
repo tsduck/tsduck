@@ -19,7 +19,7 @@
 namespace ts {
     //!
     //! The default section filter for TablesLogger.
-    //! @ingroup mpeg
+    //! @ingroup libtsduck mpeg
     //!
     class TSDUCKDLL TablesLoggerFilter: public TablesLoggerFilterInterface
     {

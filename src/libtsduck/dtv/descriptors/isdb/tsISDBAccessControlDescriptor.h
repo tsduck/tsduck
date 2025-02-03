@@ -20,7 +20,7 @@ namespace ts {
     //!
     //! Representation of an ISDB access_control_descriptor.
     //! @see ARIB STD-B10, Part 2, 6.2.54
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL ISDBAccessControlDescriptor : public AbstractDescriptor
     {

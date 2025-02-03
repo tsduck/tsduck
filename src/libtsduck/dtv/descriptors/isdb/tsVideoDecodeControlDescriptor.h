@@ -18,7 +18,7 @@ namespace ts {
     //!
     //! Representation of an ISDB video_decode_control_descriptor.
     //! @see ARIB STD-B10, Part 2, 6.2.30
-    //! @ingroup descriptor
+    //! @ingroup libtsduck descriptor
     //!
     class TSDUCKDLL VideoDecodeControlDescriptor : public AbstractDescriptor
     {

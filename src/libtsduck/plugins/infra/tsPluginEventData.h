@@ -17,7 +17,7 @@
 namespace ts {
     //!
     //! General-purpose plugin event data referencing binary data to exchange with applications.
-    //! @ingroup plugin
+    //! @ingroup libtsduck plugin
     //!
     //! This subclass of Object can be used as "plugin data" when a plugin triggers
     //! an event and wants to pass to the application a read-only binary area.
