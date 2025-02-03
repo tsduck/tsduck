@@ -181,14 +181,11 @@ $plugins = ($AllTargets | Select-String "tsplugin_*") -join ';'
 $commands = ($AllTargets | Select-String -NotMatch @("tsduck*", "tsplugin_*", "tsp_static", "setpath", "utest*", "tsmux", "tsnet", "tsprofiling")) -join ';'
 
 # Rebuild TSDuck.
+# We must build Intel targets first, then Arm64, see tsxml-wrapper.ps1 for explanations.
 if ($Installer) {
     # We build everything except test programs for the "Release" configuration.
     # Then, we need the DLL for "Debug" configurations (development environment).
     $targets = "tsduckdll;tsducklib;$commands;$plugins;setpath"
-    if ($Arm64) {
-        Call-MSBuild Release ARM64 $targets
-        Call-MSBuild Debug ARM64 tsduckdll
-    }
     if ($Win64) {
         Call-MSBuild Release x64 $targets
         Call-MSBuild Debug x64 tsduckdll
@@ -196,6 +193,10 @@ if ($Installer) {
     if ($Win32) {
         Call-MSBuild Release Win32 $targets
         Call-MSBuild Debug Win32 tsduckdll
+    }
+    if ($Arm64) {
+        Call-MSBuild Release ARM64 $targets
+        Call-MSBuild Debug ARM64 tsduckdll
     }
 }
 else {
@@ -206,23 +207,23 @@ else {
     else {
         $targets = ""
     }
-    if ($Release -and $Arm64) {
-        Call-MSBuild Release ARM64 $targets
-    }
     if ($Release -and $Win64) {
         Call-MSBuild Release x64 $targets
     }
     if ($Release -and $Win32) {
         Call-MSBuild Release Win32 $targets
     }
-    if ($Debug -and $Arm64) {
-        Call-MSBuild Debug ARM64 $targets
+    if ($Release -and $Arm64) {
+        Call-MSBuild Release ARM64 $targets
     }
     if ($Debug -and $Win64) {
         Call-MSBuild Debug x64 $targets
     }
     if ($Debug -and $Win32) {
         Call-MSBuild Debug Win32 $targets
+    }
+    if ($Debug -and $Arm64) {
+        Call-MSBuild Debug ARM64 $targets
     }
 }
 

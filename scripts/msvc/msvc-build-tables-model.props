@@ -13,63 +13,17 @@
     <DtvXmlFiles Include="$(DtvRoot)tables\**\*.xml;$(DtvRoot)descriptors\**\*.xml"/>
   </ItemGroup>
 
-  <Choose>
-    <!-- Find a tsxml.exe somewhere -->
-    <!-- Be careful that the target and native architectures can be different -->
-    <!-- Possible values for target Platform: "Win32", "x64", "ARM64" -->
-    <!-- Possible values for PROCESSOR_ARCHITECTURE are "X86", "AMD64", "ARM64" -->
-    <!-- Intel executables can be emulated on ARM64, not the opposite -->
-    <When Condition="Exists('$(BinRootDir)Release-ARM64\tsxml.exe') AND '$(PROCESSOR_ARCHITECTURE)' == 'ARM64'">
-      <PropertyGroup>
-        <TsXmlExe>$(BinRootDir)Release-x64\tsxml.exe</TsXmlExe>
-      </PropertyGroup>
-    </When>
-    <When Condition="Exists('$(BinRootDir)Debug-ARM64\tsxml.exe') AND '$(PROCESSOR_ARCHITECTURE)' == 'ARM64'">
-      <PropertyGroup>
-        <TsXmlExe>$(BinRootDir)Debug-x64\tsxml.exe</TsXmlExe>
-      </PropertyGroup>
-    </When>
-    <When Condition="Exists('$(BinRootDir)Release-x64\tsxml.exe') AND '$(PROCESSOR_ARCHITECTURE)' != 'X86'">
-      <PropertyGroup>
-        <TsXmlExe>$(BinRootDir)Release-x64\tsxml.exe</TsXmlExe>
-      </PropertyGroup>
-    </When>
-    <When Condition="Exists('$(BinRootDir)Release-Win32\tsxml.exe')">
-      <PropertyGroup>
-        <TsXmlExe>$(BinRootDir)Release-Win32\tsxml.exe</TsXmlExe>
-      </PropertyGroup>
-    </When>
-    <When Condition="Exists('$(BinRootDir)Debug-x64\tsxml.exe') AND '$(PROCESSOR_ARCHITECTURE)' != 'X86'">
-      <PropertyGroup>
-        <TsXmlExe>$(BinRootDir)Debug-x64\tsxml.exe</TsXmlExe>
-      </PropertyGroup>
-    </When>
-    <When Condition="Exists('$(BinRootDir)Debug-Win32\tsxml.exe')">
-      <PropertyGroup>
-        <TsXmlExe>$(BinRootDir)Debug-Win32\tsxml.exe</TsXmlExe>
-      </PropertyGroup>
-    </When>
-    <When Condition="'$(TSDUCK)' != '' AND Exists('$(TSDUCK)\bin\tsxml.exe')">
-      <PropertyGroup>
-        <TsXmlExe>$(TSDUCK)\bin\tsxml.exe</TsXmlExe>
-      </PropertyGroup>
-    </When>
-  </Choose>
-
   <Target Name="BuildTablesModel" Inputs="$(TablesSkeletonXml);@(DtvXmlFiles)" Outputs="$(TablesModelXml)">
 	<Message Text="Building $(TablesModelXml)" Importance="high"/>
-	<Message Text="Native architecture: $(PROCESSOR_ARCHITECTURE)" Importance="high"/>
-	<Message Text="Using tsxml: $(TsXmlExe)" Importance="high"/>
     <PropertyGroup>
       <!-- Reduce the length of the list of files, will use the removed prefix as working directory -->
       <!-- Without this, MSBuild fails with "command too long" -->
       <DtvXmlFilesSpace>@(DtvXmlFiles,' ')</DtvXmlFilesSpace>
       <DtvXmlFilesBase>$(DtvXmlFilesSpace.Replace('$(DtvRoot)',''))</DtvXmlFilesBase>
     </PropertyGroup>
-    <Error Condition="'$(TsXmlExe)' == ''" Text="No tsxml.exe found, rebuild the project first"/>
     <MakeDir Directories="$(OutDir)" Condition="!Exists('$(OutDir)')"/>
     <Exec WorkingDirectory="$(DtvRoot)"
-          Command='"$(TsXmlExe)" --merge "$(TablesSkeletonXml)" $(DtvXmlFilesBase) --sort _tables --sort _descriptors --uncomment -o "$(TablesModelXml)"'/>
+          Command='PowerShell -NonInteractive "$(TSDuckRootDir)scripts\tsxml-wrapper.ps1" --merge "$(TablesSkeletonXml)" $(DtvXmlFilesBase) --sort _tables --sort _descriptors --uncomment -o "$(TablesModelXml)"'/>
   </Target>
 
 </Project>
