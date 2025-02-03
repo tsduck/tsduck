@@ -21,9 +21,9 @@ namespace ts::tlv {
     //!
     //! The class ts::tlv::Protocol defines the syntax of a TLV protocol.
     //! Used by ts::tlv::MessageFactory to validate a message.
-    //! @ingroup libtsduck tlv
+    //! @ingroup libtscore tlv
     //!
-    class TSDUCKDLL Protocol
+    class TSCOREDLL Protocol
     {
         TS_NOCOPY(Protocol);
     public:

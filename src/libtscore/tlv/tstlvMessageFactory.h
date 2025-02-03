@@ -26,7 +26,7 @@ namespace ts::tlv {
 
     //!
     //! Factory class for TLV messages
-    //! @ingroup libtsduck tlv
+    //! @ingroup libtscore tlv
     //!
     //! The following methods should be used by the application
     //! to deserialize messages:
@@ -62,7 +62,7 @@ namespace ts::tlv {
     //! classes since the validity of the parameters were checked
     //! by the constructor of the MessageFactory.
     //!
-    class TSDUCKDLL MessageFactory
+    class TSCOREDLL MessageFactory
     {
         TS_NOBUILD_NOCOPY(MessageFactory);
     public:

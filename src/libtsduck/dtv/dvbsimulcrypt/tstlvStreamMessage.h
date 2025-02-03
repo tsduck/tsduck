@@ -17,7 +17,7 @@
 namespace ts::tlv {
     //!
     //! Base class for DVB SimulCrypt TLV messages operating on streams.
-    //! @ingroup libtsduck tlv
+    //! @ingroup libtsduck mpeg tlv
     //!
     class TSDUCKDLL StreamMessage : public ChannelMessage
     {

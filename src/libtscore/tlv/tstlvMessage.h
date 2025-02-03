@@ -18,7 +18,7 @@
 namespace ts::tlv {
     //!
     //! Abstract base class for TLV messages
-    //! @ingroup libtsduck tlv
+    //! @ingroup libtscore tlv
     //!
     //! All messages use the same structure as the DVB interfaces defined in the
     //! "DVB Simulcrypt Head End" standard, that is to say a TLV protocol.
@@ -40,13 +40,16 @@ namespace ts::tlv {
     //!     }
     //! @endcode
     //!
+    //! The version field is optional and defined by the protocol. A protocol decides
+    //! if there is a leading version byte to each message
+    //!
     //! The protocols use the same byte order and parameter order as DVB Simulcrypt
     //! protocols: For parameters with a size two or more bytes, the first byte to
     //! be transmitted will be the most significant byte. This is commonly known as
     //! "big endian" or "MSB first". Parameters do not need to be ordered within the
     //! generic message.
     //!
-    class TSDUCKDLL Message
+    class TSCOREDLL Message
     {
         TS_RULE_OF_FIVE(Message, );
     protected:

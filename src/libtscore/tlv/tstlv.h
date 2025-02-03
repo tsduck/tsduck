@@ -17,6 +17,7 @@
 namespace ts {
     //!
     //! Namespace for TLV protocols (Tag / Length / Value)
+    //! @ingroup tlv
     //!
     namespace tlv {
         class Protocol;
@@ -39,6 +40,7 @@ namespace ts::tlv {
 
     //!
     //! Errors from TLV message analysis.
+    //! @ingroup tlv
     //!
     //! An error is associated with a 16-bit "error information".
     //!

@@ -18,12 +18,12 @@
 namespace ts::tlv {
     //!
     //! Serialization of TLV messages.
-    //! @ingroup libtsduck tlv
+    //! @ingroup libtscore tlv
     //!
     //! A DVB message is serialized in TLV into a ByteBlock.
     //! A Serializer is always associated to a ByteBlock.
     //!
-    class TSDUCKDLL Serializer
+    class TSCOREDLL Serializer
     {
     private:
         // Private members:

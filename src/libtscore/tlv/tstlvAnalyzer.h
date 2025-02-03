@@ -17,9 +17,9 @@
 namespace ts::tlv {
     //!
     //! Analysis (deserialization) of TLV messages.
-    //! @ingroup libtsduck tlv
+    //! @ingroup libtscore tlv
     //!
-    class TSDUCKDLL Analyzer
+    class TSCOREDLL Analyzer
     {
         TS_NOBUILD_NOCOPY(Analyzer);
     public:

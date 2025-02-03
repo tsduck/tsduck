@@ -19,7 +19,7 @@
 namespace ts::tlv {
     //!
     //! A logger class for TLV messages
-    //! @ingroup libtsduck tlv
+    //! @ingroup libtscore tlv
     //!
     //! This class encapsulates a logging and debug facility for TLV messages.
     //! All messages are logged on a Report object under specific conditions.
@@ -27,7 +27,7 @@ namespace ts::tlv {
     //! Depending on its maximum severity, the report will display or not
     //! each message.
     //!
-    class TSDUCKDLL Logger
+    class TSCOREDLL Logger
     {
         TS_DEFAULT_COPY_MOVE(Logger);
     public:
