@@ -22,9 +22,25 @@ Generic core classes.
   @ingroup core
   Portable operating system layer.
 
-  @defgroup thread Multi-threading
-  @ingroup core
-  Multi-threading and synchronization features.
+    @defgroup files File system
+    @ingroup system
+    File system and file path features (in addition to std::filesystem).
+
+    @defgroup environment Environment variables
+    @ingroup system
+    System environment variables features.
+
+    @defgroup thread Multi-threading
+    @ingroup system
+    Multi-threading and synchronization features.
+
+    @defgroup unix Unix
+    @ingroup system
+    Unix specific features.
+
+    @defgroup windows Windows
+    @ingroup system
+    Windows specific features.
 
   @defgroup net Networking
   @ingroup core
@@ -33,14 +49,6 @@ Generic core classes.
   @defgroup log Message logging
   @ingroup core
   Unified message logging.
-
-  @defgroup unix Unix
-  @ingroup core
-  Unix specific features.
-
-  @defgroup windows Windows
-  @ingroup core
-  Windows specific features.
 
 @defgroup data Data formats
 Handling various data formats.
@@ -63,17 +71,17 @@ Cryptographic algorithms.
 @defgroup dtv Digital TV
 Digital television features.
 
-  @defgroup mpeg MPEG-DVB core
+  @defgroup mpeg MPEG Digital TV core
   @ingroup dtv
-  MPEG-DVB core features.
+  MPEG Digital TV core features.
 
-  @defgroup table MPEG-DVB tables
+  @defgroup table MPEG tables
   @ingroup dtv
-  Tables used in MPEG-DVB systems.
+  Tables used in MPEG systems signalization.
 
-  @defgroup descriptor MPEG-DVB descriptors
+  @defgroup descriptor MPEG descriptors
   @ingroup dtv
-  Most common descriptors used in MPEG-DVB systems.
+  Descriptors used in MPEG systems signalization.
 
   @defgroup hls HTTP Live Streaming (HLS)
   @ingroup dtv
@@ -81,7 +89,7 @@ Digital television features.
 
   @defgroup hardware Hardware support
   @ingroup dtv
-  Specific hardware support (Dektec, tuners)
+  Specific hardware support (tuners, Dektec, HiDes, VATek)
 
 @defgroup appdev Application
 Application development.

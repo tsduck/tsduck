@@ -41,6 +41,7 @@ namespace ts {
 
     //!
     //! Profile of a CommandLineHandler method which is invoked by a CommandLine instance for one command.
+    //! @ingroup cmd
     //! @param [in] command Name of the command, unabbreviated, as defined in CommandLine::command().
     //! @param [in,out] args Command line arguments.
     //! @return Status of the execution of the command.

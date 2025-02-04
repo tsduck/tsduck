@@ -29,6 +29,7 @@ namespace ts {
     //! Get a Unix sysctl(2) boolean value by name.
     //! This function now works on BSD systems only (macOS, FreeBSD, OpenBSD, DragonFlyBSD).
     //! Linux no longer supports sysctl(2), replaced by the /proc/sys filesystem.
+    //! @ingroup unix
     //! @param [in] name Name of the data to return.
     //! @return The bool value. False if not found.
     //!
@@ -37,6 +38,7 @@ namespace ts {
     //! Get a Unix sysctl(2) string value.
     //! This function now works on BSD systems only (macOS, FreeBSD, OpenBSD, DragonFlyBSD).
     //! Linux no longer supports sysctl(2), replaced by the /proc/sys filesystem.
+    //! @ingroup unix
     //! @param [in] oid Identifier of the data to return as a list of int values.
     //! @return The string value or empty if not found.
     //!
@@ -45,6 +47,7 @@ namespace ts {
     //! Get a Unix sysctl(2) binary value.
     //! This function now works on BSD systems only (macOS, FreeBSD, OpenBSD, DragonFlyBSD).
     //! Linux no longer supports sysctl(2), replaced by the /proc/sys filesystem.
+    //! @ingroup unix
     //! @param [in] oid Identifier of the data to return as a list of int values.
     //! @return The binary value or empty if not found.
     //!

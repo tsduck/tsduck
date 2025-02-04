@@ -20,6 +20,7 @@ namespace ts {
 
     //!
     //! Safe pointer for Object (thread-safe).
+    //! @ingroup cpp
     //!
     using ObjectPtr = std::shared_ptr<Object>;
 

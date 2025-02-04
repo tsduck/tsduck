@@ -22,6 +22,7 @@
 namespace ts {
     //!
     //! Executable file suffix.
+    //! @ingroup files
     //!
 #if defined(DOXYGEN)
     constexpr const UChar* EXECUTABLE_FILE_SUFFIX = platform - specific(".exe", "");  // for doc only
@@ -33,6 +34,7 @@ namespace ts {
 
     //!
     //! File name extension of shared library file names (".so" on Linux, '.dylib" on macOS, ".dll" on Windows).
+    //! @ingroup files
     //!
 #if defined(DOXYGEN)
     constexpr const UChar* SHARED_LIBRARY_SUFFIX = platform - specific(".dll", ".so", ".dylib");  // for doc only
@@ -46,6 +48,7 @@ namespace ts {
 
     //!
     //! Case-sensitivity of the names in the file system.
+    //! @ingroup files
     //!
 #if defined(DOXYGEN)
     constexpr CaseSensitivity FILE_SYSTEM_CASE_SENSITVITY = platform-specific;
@@ -60,12 +63,13 @@ namespace ts {
     //!
     //! Default separator in CSV (comma-separated values) format.
     //! CSV files are suitable for analysis using tools such as Microsoft Excel.
+    //! @ingroup files
     //!
     constexpr const UChar* DEFAULT_CSV_SEPARATOR = u",";
 
     //!
     //! Return a "vernacular" version of a file path.
-    //!
+    //! @ingroup files
     //! @param [in] path A file path.
     //! @return A copy of @a path where all '/' and '\' have been
     //! translated into the local directory separator.
@@ -74,7 +78,7 @@ namespace ts {
 
     //!
     //! Check if a file path is absolute (starting at a root of a file system).
-    //!
+    //! @ingroup files
     //! @param [in] path A file path.
     //! @return True if @a path is an absolute file path.
     //!
@@ -82,7 +86,7 @@ namespace ts {
 
     //!
     //! Build the absolute form of a file path.
-    //!
+    //! @ingroup files
     //! @param [in] path A file path.
     //! @param [in] base The base directory to use if @a path is a relative file path.
     //! By default, when @a base is empty, the current working directory is used.
@@ -92,7 +96,7 @@ namespace ts {
 
     //!
     //! Build a relative form of a file path, relative to a base directory.
-    //!
+    //! @ingroup files
     //! @param [in] path A file path.
     //! @param [in] base The base directory to use.
     //! By default, when @a base is empty, the current working directory is used.
@@ -109,7 +113,7 @@ namespace ts {
 
     //!
     //! Cleanup a file path.
-    //!
+    //! @ingroup files
     //! @param [in] path A file path.
     //! @return The clean form of @a path. Double slashes are removed.
     //! Forms such as "." or ".." are reduced.
@@ -118,7 +122,7 @@ namespace ts {
 
     //!
     //! Return the directory name of a file path ("dir/foo.bar" => "dir").
-    //!
+    //! @ingroup files
     //! @param [in] path A file path.
     //! @return The directory name of @a path ("dir/foo.bar" => "dir").
     //!
@@ -126,7 +130,7 @@ namespace ts {
 
     //!
     //! Return the base file name of a file path ("dir/foo.bar" => "foo.bar").
-    //!
+    //! @ingroup files
     //! @param [in] path A file path.
     //! @param [in] suffix An optional file suffix.
     //! If @a path ends in @a suffix, the suffix is removed.
@@ -136,7 +140,7 @@ namespace ts {
 
     //!
     //! Get the current user's home directory.
-    //!
+    //! @ingroup files
     //! @return The full path of the current user's home directory.
     //! @throw ts::Exception In case of operating system error.
     //!
@@ -144,6 +148,7 @@ namespace ts {
 
     //!
     //! Return the name of a unique temporary file.
+    //! @ingroup files
     //! @param [in] suffix An optional suffix to add to the file name.
     //! @return A unique temporary file name.
     //!
@@ -151,7 +156,7 @@ namespace ts {
 
     //!
     //! Get the local time of the last modification of a file.
-    //!
+    //! @ingroup files
     //! @param [in] path A file path.
     //! @return Last modification time or Time::Epoch in case of error.
     //!
@@ -159,6 +164,7 @@ namespace ts {
 
     //!
     //! Get the UTC time of the last modification of a file.
+    //! @ingroup files
     //! @param [in] path A file path.
     //! @return Last modification time or Time::Epoch in case of error.
     //!
@@ -166,7 +172,7 @@ namespace ts {
 
     //!
     //! Get all files matching a specified wildcard pattern and append them into a container.
-    //!
+    //! @ingroup files
     //! @tparam CONTAINER A container class of @c UString as defined by the
     //! C++ Standard Template Library (STL).
     //! @param [in,out] container A container of @c UString receiving the
@@ -182,7 +188,7 @@ namespace ts {
 
     //!
     //! Get all files matching a specified wildcard pattern.
-    //!
+    //! @ingroup files
     //! @tparam CONTAINER A container class of @c UString as defined by the
     //! C++ Standard Template Library (STL).
     //! @param [out] container A container of @c UString receiving the
@@ -201,7 +207,7 @@ namespace ts {
 
     //!
     //! Search all files matching a specified wildcard pattern in a directory tree and append them into a container.
-    //!
+    //! @ingroup files
     //! @tparam CONTAINER A container class of @c UString as defined by the C++ Standard Template Library (STL).
     //! @param [in,out] container A container of @c UString receiving the the names of all files matching the wildcard.
     //! The names are appended at the end of the existing content of the container.
@@ -218,7 +224,7 @@ namespace ts {
 
     //!
     //! Search all files matching a specified wildcard pattern in a directory tree.
-    //!
+    //! @ingroup files
     //! @tparam CONTAINER A container class of @c UString as defined by the C++ Standard Template Library (STL).
     //! @param [out] container A container of @c UString receiving the the names of all files matching the wildcard.
     //! @param [in] root Root directory into which the files are searched.
@@ -238,6 +244,7 @@ namespace ts {
 
     //!
     //! Search an executable file.
+    //! @ingroup files
     //! @param [in] fileName Name of the file to search.
     //! @param [in] pathName Name of the seach path environment variable.
     //! @return The path to an existing file or an empty path if not found.
@@ -246,6 +253,7 @@ namespace ts {
 
     //!
     //! Search a configuration file.
+    //! @ingroup files
     //! @param [in] fileName Name of the file to search.
     //! If @a fileName is not found and does not contain any directory part, search this file
     //! in the following places:
@@ -264,6 +272,7 @@ namespace ts {
 
     //!
     //! Build the name of a user-specific configuration file.
+    //! @ingroup files
     //! @param [in] fileName Base name of the configuration file.
     //! @param [in] winFileName Alternative base name on Windows. If empty, @a fileName is used.
     //! @return The path to the user-specific configuration file. The file may exist or not.

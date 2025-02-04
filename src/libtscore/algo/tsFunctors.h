@@ -7,7 +7,6 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  @ingroup libtscore cpp
 //!  Miscellaneous C++ general-purpose functors.
 //!
 //----------------------------------------------------------------------------
@@ -18,6 +17,7 @@
 namespace ts {
     //!
     //! Assign ("=") functor.
+    //! @ingroup cpp
     //! @tparam T Data type to assign.
     //!
     template <typename T>
@@ -33,6 +33,7 @@ namespace ts {
 
     //!
     //! Assign with binary and ("&=") functor.
+    //! @ingroup cpp
     //! @tparam T Data type to assign.
     //!
     template <typename T>
@@ -48,6 +49,7 @@ namespace ts {
 
     //!
     //! Assign with binary or ("|=") functor.
+    //! @ingroup cpp
     //! @tparam T Data type to assign.
     //!
     template <typename T>
@@ -63,6 +65,7 @@ namespace ts {
 
     //!
     //! Assign with binary exclusive or ("^=") functor.
+    //! @ingroup cpp
     //! @tparam T Data type to assign.
     //!
     template <typename T>

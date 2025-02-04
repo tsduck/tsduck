@@ -23,12 +23,14 @@ namespace ts {
     //! On other systems (Windows), using IP and socket without initialization fails.
     //! This method is a portable way to ensure that IP is properly initialized.
     //! It shall be called at least once before using IP in the application.
+    //! @ingroup net
     //! @return True on success, false on error.
     //!
     TSCOREDLL bool IPInitialize(Report& = CERR);
 
     //!
     //! Get the std::error_category for getaddrinfo() error code (Unix only).
+    //! @ingroup net
     //! @return A constant reference to a std::error_category instance.
     //!
     TSCOREDLL const std::error_category& getaddrinfo_category();
@@ -41,6 +43,7 @@ namespace ts {
 
     //!
     //! Data type for socket descriptors as returned by the socket() system call.
+    //! @ingroup net
     //!
 #if defined(DOXYGEN)
     using SysSocketType = platform_specific;
@@ -52,6 +55,7 @@ namespace ts {
 
     //!
     //! Value of type SysSocketType which is returned by the socket() system call in case of failure.
+    //! @ingroup net
     //! Example:
     //! @code
     //! SysSocketType sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
@@ -70,6 +74,7 @@ namespace ts {
 
     //!
     //! System error code value meaning "connection reset by peer".
+    //! @ingroup net
     //!
 #if defined(DOXYGEN)
     constexpr int SYS_SOCKET_ERR_RESET = platform_specific;
@@ -81,6 +86,7 @@ namespace ts {
 
     //!
     //! System error code value meaning "peer socket not connected".
+    //! @ingroup net
     //!
 #if defined(DOXYGEN)
     constexpr int SYS_SOCKET_ERR_NOTCONN = platform_specific;
@@ -92,6 +98,7 @@ namespace ts {
 
     //!
     //! Integer data type which receives the length of a struct sockaddr.
+    //! @ingroup net
     //! Example:
     //! @code
     //! struct sockaddr sock_addr;
@@ -111,6 +118,7 @@ namespace ts {
 
     //!
     //! Integer data type for a "signed size" returned from send() or recv() system calls.
+    //! @ingroup net
     //! Example:
     //! @code
     //! SysSocketSignedSizeType got = recv(sock, SysRecvBufferPointer(&data), max_size, 0);
@@ -126,6 +134,7 @@ namespace ts {
 
     //!
     //! Integer data type for the Time To Live (TTL) socket option.
+    //! @ingroup net
     //! Example:
     //! @code
     //! SysSocketTTLType ttl = 10;
@@ -144,6 +153,7 @@ namespace ts {
 
     //!
     //! Integer data type for the multicast Time To Live (TTL) socket option.
+    //! @ingroup net
     //! Example:
     //! @code
     //! SysSocketMulticastTTLType mttl = 1;
@@ -162,6 +172,7 @@ namespace ts {
 
     //!
     //! Integer data type for the Type Of Service (TOS) IPv4 socket option.
+    //! @ingroup net
     //!
 #if defined(DOXYGEN)
     using SysSocketTOSType = platform_specific;
@@ -173,6 +184,7 @@ namespace ts {
 
     //!
     //! Integer data type for the Traffic Class (TCLASS) IPv6 socket option.
+    //! @ingroup net
     //!
 #if defined(DOXYGEN)
     using SysSocketTClassType = platform_specific;
@@ -184,6 +196,7 @@ namespace ts {
 
     //!
     //! Integer data type for the IPV6_V6ONLY socket option.
+    //! @ingroup net
     //!
 #if defined(DOXYGEN)
     using SysSocketV6OnlyType = platform_specific;
@@ -195,6 +208,7 @@ namespace ts {
 
     //!
     //! Integer data type for the IPv4 multicast loop socket option.
+    //! @ingroup net
     //! Example:
     //! @code
     //! SysSocketMulticastLoopType mloop = 1;
@@ -213,6 +227,7 @@ namespace ts {
 
     //!
     //! Integer data type for the IPv6 multicast loop socket option.
+    //! @ingroup net
     //! Example:
     //! @code
     //! SysSocketMulticastLoopType6 mloop = 1;
@@ -231,6 +246,7 @@ namespace ts {
 
     //!
     //! Integer data type for the IP_PKTINFO socket option.
+    //! @ingroup net
     //! Example:
     //! @code
     //! SysSocketPktInfoType state = 1;
@@ -249,6 +265,7 @@ namespace ts {
 
     //!
     //! Integer data type for the field l_linger in the struct linger socket option.
+    //! @ingroup net
     //! All systems do not use the same type size and this may generate some warnings.
     //! Example:
     //! @code
@@ -266,6 +283,7 @@ namespace ts {
 
     //!
     //! Pointer type for the address of a socket option value.
+    //! @ingroup net
     //! The "standard" parameter type is @c void* but some systems use other exotic values.
     //! Example:
     //! @code
@@ -285,6 +303,7 @@ namespace ts {
 
     //!
     //! Pointer type for the address of the data buffer for a recv() system call.
+    //! @ingroup net
     //! The "standard" parameter type is @c void* but some systems use other exotic values.
     //! Example:
     //! @code
@@ -301,6 +320,7 @@ namespace ts {
 
     //!
     //! Pointer type for the address of the data buffer for a send() system call.
+    //! @ingroup net
     //! The "standard" parameter type is @c void* but some systems use other exotic values.
     //! Example:
     //! @code
@@ -317,6 +337,7 @@ namespace ts {
 
     //!
     //! Integer type for the size of the data buffer for a send() system call.
+    //! @ingroup net
     //!
 #if defined(DOXYGEN)
     using SysSendSizeType = platform_specific;
@@ -328,6 +349,7 @@ namespace ts {
 
     //!
     //! Name of the option for the shutdown() system call which means "close on both directions".
+    //! @ingroup net
     //! Example:
     //! @code
     //! shutdown(sock, SYS_SOCKET_SHUT_RDWR);
@@ -343,6 +365,7 @@ namespace ts {
 
     //!
     //! Name of the option for the shutdown() system call which means "close on receive side".
+    //! @ingroup net
     //! Example:
     //! @code
     //! shutdown(sock, SYS_SOCKET_SHUT_RD);
@@ -358,6 +381,7 @@ namespace ts {
 
     //!
     //! Name of the option for the shutdown() system call which means "close on send side".
+    //! @ingroup net
     //! Example:
     //! @code
     //! shutdown(sock, SYS_SOCKET_SHUT_WR);
@@ -374,6 +398,7 @@ namespace ts {
     //!
     //! The close() system call which applies to socket devices.
     //! The "standard" name is @c close but some systems use other exotic names.
+    //! @ingroup net
     //! @param [in] sock System socket descriptor.
     //! @return Error code.
     //!

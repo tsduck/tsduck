@@ -14,13 +14,16 @@
 #pragma once
 //!
 //! TSDuck major version.
+//! @ingroup app
 //!
 #define TS_VERSION_MAJOR 3
 //!
 //! TSDuck minor version.
+//! @ingroup app
 //!
 #define TS_VERSION_MINOR 40
 //!
 //! TSDuck commit number (automatically updated by Git hooks).
+//! @ingroup app
 //!
-#define TS_COMMIT 4150
+#define TS_COMMIT 4151

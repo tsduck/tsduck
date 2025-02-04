@@ -17,7 +17,7 @@
 namespace ts {
     //!
     //! Interface for classes listening for file modification.
-    //! @ingroup libtscore system
+    //! @ingroup libtscore files
     //!
     class TSCOREDLL PollFilesListener
     {

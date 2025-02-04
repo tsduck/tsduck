@@ -45,6 +45,7 @@ namespace ts {
 
     //!
     //! Safe pointer for Names.
+    //! @ingroup app
     //!
     using NamesPtr = std::shared_ptr<Names>;
 

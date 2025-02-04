@@ -24,11 +24,13 @@ namespace ts {
 
     //!
     //! Smart pointer to a GitHubRelease (not thread-safe).
+    //! @ingroup app
     //!
     using GitHubReleasePtr = std::shared_ptr<GitHubRelease>;
 
     //!
     //! Vector of smart pointers to GitHubRelease objects.
+    //! @ingroup app
     //!
     using GitHubReleaseVector = std::vector<GitHubReleasePtr>;
 

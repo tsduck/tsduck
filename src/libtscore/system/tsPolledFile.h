@@ -18,7 +18,7 @@
 namespace ts {
     //!
     //! Description of a polled file.
-    //! @ingroup libtscore system
+    //! @ingroup libtscore files
     //!
     class TSCOREDLL PolledFile
     {

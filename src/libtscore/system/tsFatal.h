@@ -7,7 +7,6 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  @ingroup libtscore cpp
 //!  Handle some fatal situations.
 //!
 //----------------------------------------------------------------------------
@@ -17,6 +16,7 @@
 
 //!
 //! Build a string literal for fatal error messages.
+//! @ingroup app
 //! @param literal 8-bit string literal
 //!
 #define TS_FATALMSG(literal) "\n\n*** " literal ", aborting...\n\n"
@@ -24,6 +24,7 @@
 //!
 //! @hideinitializer
 //! Abort the application with a fatal error message.
+//! @ingroup app
 //! @param literal 8-bit string literal error message.
 //! @see ts::FatalError
 //!
@@ -33,6 +34,7 @@ namespace ts {
     //!
     //! Handle a fatal error.
     //! An emergency message is output and the application is terminated.
+    //! @ingroup app
     //! @param [in] message Address of an emergency error message to output.
     //! @param [in] length Length of @a message. The caller must specify @a length
     //! in a static way. In that kind of fatal error, we can't even dare to call strlen().
@@ -44,12 +46,14 @@ namespace ts {
     //! Out of virtual memory, very dangerous situation, really can't
     //! recover from that, need to abort immediately. An emergency error
     //! message is output and the application is terminated.
+    //! @ingroup app
     //!
     [[noreturn]] TSCOREDLL void FatalMemoryAllocation();
 
     //!
     //! Check the value of a pointer and abort the application when zero.
     //! This function is typically after a new.
+    //! @ingroup app
     //! @param [in] ptr The pointer to check.
     //! @see FatalMemoryAllocation()
     //!

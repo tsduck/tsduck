@@ -90,6 +90,7 @@ namespace ts {
 
     //!
     //! Get the name of an IP protocol (UDP, TCP, etc).
+    //! @ingroup net
     //! @param [in] protocol Protocol identifier, as set in IP header.
     //! @param [in] long_format If false (the default), return a simple acronym.
     //! When true, return a full description string.
@@ -125,6 +126,7 @@ namespace ts {
 
     //!
     //! Check if two TCP sequence numbers are ordered, including wrapping back at 0xFFFFFFFF.
+    //! @ingroup net
     //! @param [in] seq1 First TCP sequence number.
     //! @param [in] seq2 Second TCP sequence number.
     //! @return True if @a seq1 strictly logically preceeds @a seq2.
@@ -133,6 +135,7 @@ namespace ts {
 
     //!
     //! Compute the difference between two TCP sequence numbers, including wrapping back at 0xFFFFFFFF.
+    //! @ingroup net
     //! @param [in] seq1 First TCP sequence number.
     //! @param [in] seq2 Second TCP sequence number which must logically follow @a seq1.
     //! @return The difference between @a seq1 and @a seq2.
@@ -149,6 +152,7 @@ namespace ts {
 
     //!
     //! Definition of a number of RTP clock units as a std::chrono::duration type.
+    //! @ingroup net
     //!
     using rtp_units = cn::duration<std::intmax_t, std::ratio<1, RTP_RATE_MP2T>>;
 
@@ -160,6 +164,7 @@ namespace ts {
 
     //!
     //! A structure which describes a VLAN identification.
+    //! @ingroup libtscore net
     //!
     class TSCOREDLL VLANId
     {
@@ -183,6 +188,7 @@ namespace ts {
 
     //!
     //! A stack of VLAN identifiers, from outer to inner VLAN.
+    //! @ingroup libtscore net
     //!
     TS_PUSH_WARNING()
     TS_GCC_NOWARNING(non-virtual-dtor) // The derived class allocates nothing and we only need the base destructor

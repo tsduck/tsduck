@@ -7,7 +7,6 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  @ingroup libtscore app
 //!  Define a standard main() function with appropriate checks.
 //!
 //----------------------------------------------------------------------------
@@ -25,6 +24,7 @@
 //! On Windows, the COM environment and IP networking are initialized.
 //! The Windows console is set to UTF-8 mode and restored to its previous value on exit.
 //!
+//! @ingroup app
 //! @param [in] func The actual main function with the same profile as main().
 //! @param [in] argc Command line parameter count.
 //! @param [in] argv Command line parameters.
@@ -36,6 +36,7 @@ int TSCOREDLL MainWrapper(int (*func)(int argc, char* argv[]), int argc, char* a
 //! A macro which expands to a main() program.
 //! An explicit reference is made to the TSDuck library version to check
 //! that the compilation and runtime versions are identical.
+//! @ingroup app
 //! @param func The actual main function with the same profile as main().
 //! @hideinitializer
 //!

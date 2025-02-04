@@ -19,6 +19,7 @@
 namespace ts {
     //!
     //! Bit masks options to load shared libraries.
+    //! @ingroup system
     //!
     enum class SharedLibraryFlags : uint16_t {
         NONE      = 0x00,  //!< No option

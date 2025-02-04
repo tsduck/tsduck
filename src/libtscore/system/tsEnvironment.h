@@ -7,7 +7,6 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  @ingroup libtscore system
 //!  Accessing environment variables.
 //!
 //----------------------------------------------------------------------------
@@ -18,6 +17,7 @@
 namespace ts {
     //!
     //! Environment variable containing the command search path.
+    //! @ingroup environment
     //!
 #if defined(DOXYGEN)
     constexpr const UChar* PATH_ENVIRONMENT_VARIABLE = platform - specific("PATH", "Path");  // for doc only
@@ -31,11 +31,13 @@ namespace ts {
 
     //!
     //! Name of the environment variable which contains a list of paths for plugins.
+    //! @ingroup environment
     //!
     constexpr const UChar* PLUGINS_PATH_ENVIRONMENT_VARIABLE = u"TSPLUGINS_PATH";
 
     //!
     //! Separator character in search paths.
+    //! @ingroup environment
     //!
 #if defined(DOXYGEN)
     constexpr UChar SEARCH_PATH_SEPARATOR = platform-specific (':', ';'); // for doc only
@@ -49,6 +51,7 @@ namespace ts {
 
     //!
     //! Check if an environment variable exists.
+    //! @ingroup environment
     //! @param [in] varname Environment variable name.
     //! @return True if the specified environment variable exists, false otherwise.
     //!
@@ -56,6 +59,7 @@ namespace ts {
 
     //!
     //! Get the value of an environment variable.
+    //! @ingroup environment
     //! @param [in] varname Environment variable name.
     //! @param [in] defvalue Default value if the specified environment variable does not exist.
     //! @return The value of the specified environment variable it it exists, @a defvalue otherwise.
@@ -64,9 +68,8 @@ namespace ts {
 
     //!
     //! Get the value of an environment variable containing a search path.
-    //!
     //! The search path is analyzed and split into individual directory names.
-    //!
+    //! @ingroup environment
     //! @tparam CONTAINER A container class of @c UString as defined by the C++ Standard Template Library (STL).
     //! @param [out] container A container of @c UString receiving the directory names.
     //! @param [in] name Environment variable name.
@@ -80,9 +83,8 @@ namespace ts {
 
     //!
     //! Get the value of an environment variable containing a search path.
-    //!
     //! The search path is analyzed and split into individual directory names.
-    //!
+    //! @ingroup environment
     //! @tparam CONTAINER A container class of @c UString as defined by the C++ Standard Template Library (STL).
     //! @param [in,out] container A container of @c UString receiving the directory names.
     //! The directory names are appended to the container without erasing previous content.
@@ -97,10 +99,9 @@ namespace ts {
 
     //!
     //! Set the value of an environment variable.
-    //!
     //! If the variable previously existed, its value is overwritten.
     //! If it did not exist, it is created.
-    //!
+    //! @ingroup environment
     //! @param [in] name Environment variable name.
     //! @param [in] value Environment variable value.
     //! @return True on success, false on error.
@@ -109,10 +110,9 @@ namespace ts {
 
     //!
     //! Set the value of an environment variable containing a search path.
-    //!
     //! If the variable previously existed, its value is overwritten.
     //! If it did not exist, it is created.
-    //!
+    //! @ingroup environment
     //! @tparam CONTAINER A container class of @c UString as defined by the C++ Standard Template Library (STL).
     //! @param [in] name Environment variable name.
     //! @param [in] container A container of @c UString containing directory names.
@@ -125,9 +125,8 @@ namespace ts {
 
     //!
     //! Delete an environment variable.
-    //!
     //! If the variable did not exist, do nothing, do not generate an error.
-    //!
+    //! @ingroup environment
     //! @param [in] name Environment variable name.
     //! @return True on success, false on error.
     //!
@@ -135,12 +134,11 @@ namespace ts {
 
     //!
     //! Expand environment variables inside a file path (or any string).
-    //!
     //! Environment variable references '$name' or '${name}' are replaced
     //! by the corresponding values from the environment.
     //! In the first form, 'name' is the longest combination of letters, digits and underscore.
     //! A combination \\$ is interpreted as a literal $, not an environment variable reference.
-    //!
+    //! @ingroup environment
     //! @param [in] path A path string containing references to environment variables.
     //! @return The expanded string.
     //!
@@ -148,6 +146,7 @@ namespace ts {
 
     //!
     //! Define a container type holding all environment variables.
+    //! @ingroup environment
     //!
     //! For each element in the container, the @e key is the name of an
     //! environment variable and the @e value is the corresponding value
@@ -157,7 +156,7 @@ namespace ts {
 
     //!
     //! Get the content of the entire environment (all environment variables).
-    //!
+    //! @ingroup environment
     //! @param [out] env An associative container which receives the content
     //! of the environment. Each @e key is the name of an environment variable
     //! and the corresponding @e value is the value of this environment variable.
@@ -169,7 +168,7 @@ namespace ts {
     //! Each line shall be in the form "name = value".
     //! Empty line and line starting with '#' are ignored.
     //! Spaces are trimmed.
-    //!
+    //! @ingroup environment
     //! @param [out] env An associative container which receives the content of the environment.
     //! Each @e key is the name of an environment variable and the corresponding @e value is
     //! the value of this environment variable.

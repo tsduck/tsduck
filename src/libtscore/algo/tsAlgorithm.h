@@ -7,7 +7,6 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  @ingroup libtscore cpp
 //!  Miscellaneous C++ algorithms supplementing the standard \<algorithm\>.
 //!
 //!  This file declares several template functions implementing general-purpose
@@ -22,6 +21,7 @@
 namespace ts {
     //!
     //! Enumerate all 'k'-elements combinations of a 'n'-elements set.
+    //! @ingroup cpp
     //!
     //! This function enumerates all possible sets of 'k' elements within
     //! a set of 'n' elements. For each combination, a user-supplied predicate
@@ -74,6 +74,7 @@ namespace ts {
 
     //!
     //! Append an element into a container if not already present in the container.
+    //! @ingroup cpp
     //!
     //! If the element @a e is not already present in the @a container, @a e
     //! is appended at the end of the @a container. Otherwise, the @a container
@@ -91,6 +92,7 @@ namespace ts {
 
     //!
     //! Remove duplicated elements in a container.
+    //! @ingroup cpp
     //!
     //! When duplicates are found, this first occurence is kept, aothers are removed.
     //!
@@ -105,7 +107,7 @@ namespace ts {
 
     //!
     //! Get the size of the smallest object in a container of objects having a @c size() method.
-    //!
+    //! @ingroup cpp
     //! @tparam CONTAINER A container class as defined by the C++ Standard Template Library (STL).
     //! @param [in] container A container of objects.
     //! @return The size of the smallest object in @a container.
@@ -115,7 +117,7 @@ namespace ts {
 
     //!
     //! Get the size of the largest object in a container of objects having a @c size() method.
-    //!
+    //! @ingroup cpp
     //! @tparam CONTAINER A container class as defined by the C++ Standard Template Library (STL).
     //! @param [in] container A container of objects.
     //! @return The size of the largest object in @a container.
@@ -125,7 +127,7 @@ namespace ts {
 
     //!
     //! Get the list of all keys in a map.
-    //!
+    //! @ingroup cpp
     //! @tparam MAP A map container class as defined by the C++ Standard Template Library (STL).
     //! @param [in] container A container of objects.
     //! @return The list of all keys in @a container.
@@ -135,7 +137,7 @@ namespace ts {
 
     //!
     //! Get the set of all keys in a map.
-    //!
+    //! @ingroup cpp
     //! @tparam MAP A map container class as defined by the C++ Standard Template Library (STL).
     //! @param [in] container A container of objects.
     //! @return The set of all keys in @a container.
@@ -145,7 +147,7 @@ namespace ts {
 
     //!
     //! Get the list of all values in a map.
-    //!
+    //! @ingroup cpp
     //! @tparam MAP A map container class as defined by the C++ Standard Template Library (STL).
     //! @param [in] container A container of objects.
     //! @return The list of all values in @a container.
@@ -155,7 +157,7 @@ namespace ts {
 
     //!
     //! Build a vector of integers containing all values in a range.
-    //!
+    //! @ingroup cpp
     //! @tparam INT An integral type.
     //! @param [in] first First value of the range.
     //! @param [in] last Last value of the range.
@@ -166,6 +168,7 @@ namespace ts {
 
     //!
     //! I/O manipulator for subclasses of <code>std::basic_ostream</code>.
+    //! @ingroup cpp
     //!
     //! The standard C++ library contains support for I/O manipulators on <code>std::basic_ios</code>,
     //! <code>std::basic_istream</code> and <code>std::basic_ostream</code> but not for their subclasses.
@@ -209,6 +212,7 @@ namespace ts {
 
     //!
     //! I/O manipulator with argument for subclasses of <code>std::basic_ostream</code>.
+    //! @ingroup cpp
     //!
     //! This class has a similar role as IOManipulator() for functions using one argument.
     //!
@@ -268,6 +272,7 @@ namespace ts {
 
 //!
 //! An overload of operator "<<" on <code>std::basic_ostream</code> for ts::IOManipulatorProxy.
+//! @ingroup cpp
 //! @tparam OSTREAM A subclass of <code>std::basic_ostream</code>.
 //! @tparam PARAM The type of the parameter for the manipulator.
 //! @param [in,out] strm The stream of class @a OSTREAM to manipulate.

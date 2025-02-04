@@ -732,6 +732,7 @@ TS_MSC_NOWARNING(5045)  // Compiler will insert Spectre mitigation for memory lo
 
 //!
 //! Attribute to explicitly disable optimization in a function.
+//! @ingroup cpp
 //!
 //! Example:
 //! @code
@@ -753,6 +754,7 @@ TS_MSC_NOWARNING(5045)  // Compiler will insert Spectre mitigation for memory lo
 //!
 //! Definition of the name of the current function.
 //! This is typically __func__ but recent compilers have "pretty" names for C++.
+//! @ingroup cpp
 //!
 #if defined(DOXYGEN)
     #define TS_FUNCTION
@@ -765,13 +767,15 @@ TS_MSC_NOWARNING(5045)  // Compiler will insert Spectre mitigation for memory lo
 #endif
 
 //!
-//! String version of __LINE__
+//! String version of __LINE__, the source code line number.
+//! @ingroup cpp
 //!
 #define TS_SLINE TS_STRINGIFY(__LINE__)
 
 //!
 //! @hideinitializer
 //! Attribute to declare a class or function from tscore.dll on Windows.
+//! @ingroup windows
 //!
 //! When building tscore.dll on Windows, define _TSCOREDLL_IMPL in the project options.
 //! When building a project which references tscore.dll, define _TSCOREDLL_USE.
@@ -790,7 +794,8 @@ TS_MSC_NOWARNING(5045)  // Compiler will insert Spectre mitigation for memory lo
 
 //!
 //! @hideinitializer
-//! Attribute to declare a class or function from  tsduck.dll on Windows.
+//! Attribute to declare a class or function from tsduck.dll on Windows.
+//! @ingroup windows
 //!
 //! When building tsduck.dll on Windows, define _TSDUCKDLL_IMPL in the project options.
 //! When building a project which references tsduck.dll, define _TSDUCKDLL_USE.
@@ -810,6 +815,7 @@ TS_MSC_NOWARNING(5045)  // Compiler will insert Spectre mitigation for memory lo
 //!
 //! A macro to disable object copy in the declaration of a class.
 //! The copy and move constructors and assignments are explicitly deleted.
+//! @ingroup cpp
 //! @param classname Name of the enclosing class.
 //!
 #define TS_NOCOPY(classname)                        \
@@ -822,6 +828,7 @@ TS_MSC_NOWARNING(5045)  // Compiler will insert Spectre mitigation for memory lo
 //!
 //! A macro to disable object move in the declaration of a class.
 //! The move constructor and assignment are explicitly deleted.
+//! @ingroup cpp
 //! @param classname Name of the enclosing class.
 //!
 #define TS_NOMOVE(classname)         \
@@ -832,6 +839,7 @@ private:                             \
 //!
 //! A macro to disable default constructor and object copy in the declaration of a class.
 //! The default, copy and move constructors and assignments are explicitly deleted.
+//! @ingroup cpp
 //! @param classname Name of the enclosing class.
 //!
 #define TS_NOBUILD_NOCOPY(classname)                \
@@ -845,6 +853,7 @@ private:                             \
 //!
 //! A macro to disable default constructors in the declaration of a class.
 //! The default, copy and move constructors are explicitly deleted.
+//! @ingroup cpp
 //! @param classname Name of the enclosing class.
 //!
 #define TS_NO_DEFAULT_CONSTRUCTORS(classname) \
@@ -855,6 +864,7 @@ private:                             \
 
 //!
 //! A macro to declare the default assignment operators in the declaration of a class.
+//! @ingroup cpp
 //! @param classname Name of the enclosing class.
 //!
 #define TS_DEFAULT_ASSIGMENTS(classname)                  \
@@ -866,6 +876,7 @@ private:                             \
 
 //!
 //! A macro to declare the default copy and move constructors and assignment operators in the declaration of a class.
+//! @ingroup cpp
 //! @param classname Name of the enclosing class.
 //!
 #define TS_DEFAULT_COPY_MOVE(classname)                   \
@@ -880,6 +891,7 @@ private:                             \
 //!
 //! A macro to apply the C++ "rule of five" in the declaration of a class.
 //! An explicit virtual destructor is declared. The copy and move constructors and assignments are defaulted.
+//! @ingroup cpp
 //! @param classname Name of the enclosing class.
 //! @param dtor_attributes Post attributes for the destructor.
 //!
@@ -895,6 +907,7 @@ private:                             \
 
 //!
 //! A macro to declare the basic operators in the declaration of an interface class.
+//! @ingroup cpp
 //! @param classname Name of the enclosing class.
 //!
 #define TS_INTERFACE(classname)                            \
@@ -911,6 +924,7 @@ private:                             \
 
 //!
 //! Singleton class declaration.
+//! @ingroup cpp
 //!
 //! A singleton is a design pattern where a class can have only one instance.
 //! The macro TS_SINGLETON must be used inside the singleton class declaration.
@@ -951,6 +965,7 @@ private:                             \
 
 //!
 //! Singleton class definition.
+//! @ingroup cpp
 //!
 //! The macro TS_DEFINE_SINGLETON must be used in the implementation of a singleton class.
 //! @param fullclassname Fully qualified name of the singleton class.
@@ -975,6 +990,7 @@ private:                             \
 //! This macro generates a reference to some address (string literal, external symbol, etc.)
 //! The reference is a unique static symbol which is otherwise unused.
 //! The difficulty is to make sure that the compiler will not optimize away this data (it is local and unused).
+//! @ingroup cpp
 //! @param suffix Some unique suffix if the macro is invoked several times on the same line.
 //! @param addr An address to reference (string literal, external symbol, etc.)
 //! @hideinitializer
@@ -996,29 +1012,30 @@ private:                             \
 namespace ts {
 
     // Some common pointer types, typically for casting.
-    using char_ptr = char*;                    //!< Pointer to @c char
-    using int8_ptr = int8_t*;                  //!< Pointer to @c int8_t
-    using int16_ptr = int16_t*;                //!< Pointer to @c int16_t
-    using int32_ptr = int32_t*;                //!< Pointer to @c int32_t
-    using int64_ptr = int64_t*;                //!< Pointer to @c int64_t
-    using uint8_ptr = uint8_t*;                //!< Pointer to @c uint8_t
-    using uint16_ptr = uint16_t*;              //!< Pointer to @c uint16_t
-    using uint32_ptr = uint32_t*;              //!< Pointer to @c uint32_t
-    using uint64_ptr = uint64_t*;              //!< Pointer to @c uint64_t
-    using const_char_ptr = const char*;        //!< Pointer to @c const char
-    using const_int8_ptr = const int8_t*;      //!< Pointer to @c const int8_t
-    using const_int16_ptr = const int16_t*;    //!< Pointer to @c const int16_t
-    using const_int32_ptr = const int32_t*;    //!< Pointer to @c const int32_t
-    using const_int64_ptr = const int64_t*;    //!< Pointer to @c const int64_t
-    using const_uint8_ptr = const uint8_t*;    //!< Pointer to @c const uint8_t
-    using const_uint16_ptr = const uint16_t*;  //!< Pointer to @c const uint16_t
-    using const_uint32_ptr = const uint32_t*;  //!< Pointer to @c const uint32_t
-    using const_uint64_ptr = const uint64_t*;  //!< Pointer to @c const uint64_t
+    using char_ptr = char*;                    //!< Pointer to @c char @ingroup cpp
+    using int8_ptr = int8_t*;                  //!< Pointer to @c int8_t @ingroup cpp
+    using int16_ptr = int16_t*;                //!< Pointer to @c int16_t @ingroup cpp
+    using int32_ptr = int32_t*;                //!< Pointer to @c int32_t @ingroup cpp
+    using int64_ptr = int64_t*;                //!< Pointer to @c int64_t @ingroup cpp
+    using uint8_ptr = uint8_t*;                //!< Pointer to @c uint8_t @ingroup cpp
+    using uint16_ptr = uint16_t*;              //!< Pointer to @c uint16_t @ingroup cpp
+    using uint32_ptr = uint32_t*;              //!< Pointer to @c uint32_t @ingroup cpp
+    using uint64_ptr = uint64_t*;              //!< Pointer to @c uint64_t @ingroup cpp
+    using const_char_ptr = const char*;        //!< Pointer to @c const char @ingroup cpp
+    using const_int8_ptr = const int8_t*;      //!< Pointer to @c const int8_t @ingroup cpp
+    using const_int16_ptr = const int16_t*;    //!< Pointer to @c const int16_t @ingroup cpp
+    using const_int32_ptr = const int32_t*;    //!< Pointer to @c const int32_t @ingroup cpp
+    using const_int64_ptr = const int64_t*;    //!< Pointer to @c const int64_t @ingroup cpp
+    using const_uint8_ptr = const uint8_t*;    //!< Pointer to @c const uint8_t @ingroup cpp
+    using const_uint16_ptr = const uint16_t*;  //!< Pointer to @c const uint16_t @ingroup cpp
+    using const_uint32_ptr = const uint32_t*;  //!< Pointer to @c const uint32_t @ingroup cpp
+    using const_uint64_ptr = const uint64_t*;  //!< Pointer to @c const uint64_t @ingroup cpp
 
     //!
     //! Constant meaning "no size", "not found" or "do not resize".
     //! An alternative value for the standard @c std::string::npos value.
     //! Required on Windows to avoid linking issue.
+//! @ingroup cpp
     //!
 #if defined(TS_WINDOWS)
     constexpr size_t NPOS = size_t(-1);
@@ -1028,6 +1045,7 @@ namespace ts {
 
     //!
     //! Enumeration type used to indicate if the data referenced by a pointer shall be copied or shared.
+    //! @ingroup cpp
     //!
     enum class ShareMode {
         COPY,  //!< Data shall be copied.
@@ -1040,6 +1058,7 @@ namespace ts {
     //! - Zero means false.
     //! - Any positive value means true.
     //! - Any negative value means "maybe" or "dont't know".
+    //! @ingroup cpp
     //!
     enum class Tristate {
         Maybe = -1,  //!< Undefined value (and more generally all negative values).
@@ -1049,6 +1068,7 @@ namespace ts {
 
     //!
     //! Normalize any integer value in the range of a Tristate value.
+    //! @ingroup cpp
     //! @tparam INT An integer type.
     //! @param [in] i The integer value.
     //! @return The corresponding Tristate value.
@@ -1058,6 +1078,7 @@ namespace ts {
 
     //!
     //! A "false" expression which is built from a template type T.
+    //! @ingroup cpp
     //! @tparam T A type, any type but typically a template parameter.
     //!
     //! With C++20, structures with a cascade of "if constexpr" are good replacements for conditional
@@ -1078,6 +1099,7 @@ namespace ts {
 namespace ts {
     //!
     //! Set a default value in a std::optional object, if there is none.
+    //! @ingroup cpp
     //! @tparam T The type of the optional object.
     //! @tparam U The type of the default value to set.
     //! @param [in,out] opt The optinal object to set.
@@ -1097,14 +1119,17 @@ namespace ts {
 // File systems, extending C++11 mechanisms.
 //----------------------------------------------------------------------------
 
-//!
-//! Namespace @c fs is a shortcut for @c std::filesystem.
-//!
+//
+// Namespace @c fs is a shortcut for @c std::filesystem.
+// @ingroup cpp
+// (not in doxygen format since doxygen cannot document namespace aliases)
+//
 namespace fs = std::filesystem;
 
 namespace ts {
     //!
     //! This error code is returned by some functions in std::filesystem.
+    //! @ingroup cpp
     //!
     constexpr std::uintmax_t FS_ERROR = static_cast<std::uintmax_t>(-1);
 }
@@ -1114,9 +1139,11 @@ namespace ts {
 // Time and duration, extending C++11 and C++17 mechanisms.
 //----------------------------------------------------------------------------
 
-//!
-//! Namespace @c cn is a shortcut for @c std::chrono.
-//!
+//
+// Namespace @c cn is a shortcut for @c std::chrono.
+// @ingroup cpp
+// (not in doxygen format since doxygen cannot document namespace aliases)
+//
 namespace cn = std::chrono;
 
 namespace ts {
@@ -1125,6 +1152,7 @@ namespace ts {
 
     //!
     //! A derivative of std::chrono::duration for deciseconds (1/10 of a second).
+    //! @ingroup cpp
     //! @see std::chrono::milliseconds
     //! @see std::chrono::seconds
     //!
@@ -1132,6 +1160,7 @@ namespace ts {
 
     //!
     //! Definition of a monotonic time.
+    //! @ingroup cpp
     //!
     using monotonic_time = cn::time_point<cn::steady_clock>;
 }
@@ -1145,6 +1174,7 @@ namespace ts {
     //!
     //! A null_mutex class which can be used to replace @c std::mutex or @c std::recursive_mutex.
     //! Used to instantiate synchronized template classes in a mono-thread environment.
+    //! @ingroup libtscore thread
     //!
     class TSCOREDLL null_mutex
     {
@@ -1160,6 +1190,7 @@ namespace ts {
 
     //!
     //! Thread safety property of a class.
+    //! @ingroup thread
     //!
     enum class ThreadSafety {
         Full,  //!< Thread safe, can be used from multiple threads.
@@ -1168,6 +1199,7 @@ namespace ts {
 
     //!
     //! Define the appropriate mutex class for a given level of thread-safety.
+    //! @ingroup thread
     //! @tparam THS Thread-safety level.
     //!
     template<ThreadSafety THS>
@@ -1204,6 +1236,7 @@ namespace std {
 //! initializaiton phase, it is not possible to rely on the fact that the mutex object is
 //! already initialized. This macro solves this problem using an encapsulation of the mutex
 //! object inside a private function of the module.
+//! @ingroup thread
 //! @param mutex_class Fully qualified name of the mutex class.
 //! @param function_name Name of the instance function which returns the mutex object.
 //! @hideinitializer

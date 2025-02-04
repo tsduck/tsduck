@@ -29,6 +29,7 @@ namespace ts {
 
     //!
     //! List of pcap-ng block types.
+    //! @ingroup net
     //!
     enum PcapNgBlockType : uint32_t {
         PCAPNG_SECTION_HEADER  = PCAPNG_MAGIC,  //!< Section header block.
@@ -46,6 +47,7 @@ namespace ts {
 
     //!
     //! List of pcap LINKTYPE values.
+    //! @ingroup net
     //! @see http://www.tcpdump.org/linktypes.html
     //!
     enum PcapLinkType : uint16_t {
@@ -170,6 +172,7 @@ namespace ts {
 
     //!
     //! Protocol types for LINKTYPE_NULL and LINKTYPE_LOOP (BSD loopback encapsulation).
+    //! @ingroup net
     //! @see https://www.tcpdump.org/linktypes/LINKTYPE_NULL.html
     //! @see https://www.tcpdump.org/linktypes/LINKTYPE_LOOP.html
     //!
@@ -185,6 +188,7 @@ namespace ts {
 
     //!
     //! List of pcap-ng option codes.
+    //! @ingroup net
     //!
     enum PcapNgOptionCode : uint32_t {
         PCAPNG_OPT_ENDOFOPT   =  0,  //!< End of option list.

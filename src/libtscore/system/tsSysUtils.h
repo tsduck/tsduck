@@ -41,6 +41,7 @@ namespace ts {
     //! Windows API. On Win32, various sources confirm that WSAGetLastError() just call GetLastError().
     //! Thus, in this application, we do not make the difference.
     //!
+    //! @ingroup system
     //! @return The error code of the last operating system call.
     //!
     TSCOREDLL inline int LastSysErrorCode()
@@ -54,6 +55,7 @@ namespace ts {
 
     //!
     //! Format a system error code into a string.
+    //! @ingroup system
     //! @param [in] code An error code from the operating system.
     //! Typically a result from @c errno (Unix) or @c GetLastError() (Windows).
     //! @param [in] category Error category, system by default.
@@ -66,6 +68,7 @@ namespace ts {
 
     //!
     //! Portable type for ioctl() request parameter.
+    //! @ingroup system
     //!
     #if defined(DOXYGEN)
         using ioctl_request_t = platform-dependent;
@@ -82,24 +85,28 @@ namespace ts {
 
     //!
     //! Get the name of the current application executable file.
+    //! @ingroup system
     //! @return The full path of the executable file which is run in the current process.
     //!
     TSCOREDLL fs::path ExecutableFile();
 
     //!
     //! Get the name of the executable or shared library file containing the caller code.
+    //! @ingroup system
     //! @return The full path of the file or empty in case of error or if not supported.
     //!
     TSCOREDLL fs::path CallerLibraryFile();
 
     //!
     //! Check if the current user is privileged (root on UNIX, an administrator on Windows).
+    //! @ingroup system
     //! @return True if the current user is privileged.
     //!
     TSCOREDLL bool IsPrivilegedUser();
 
     //!
     //! Get the CPU time of the process in milliseconds.
+    //! @ingroup system
     //! @return The CPU time of the process in milliseconds.
     //! @throw ts::Exception on error.
     //!
@@ -107,6 +114,7 @@ namespace ts {
 
     //!
     //! Get the virtual memory size of the process in bytes.
+    //! @ingroup system
     //! @return The virtual memory size of the process in bytes.
     //! @throw ts::Exception on error.
     //!
@@ -114,6 +122,7 @@ namespace ts {
 
     //!
     //! Ensure that writing to a broken pipe does not kill the current process.
+    //! @ingroup system
     //!
     //! On UNIX systems, writing to a <i>broken pipe</i>, i.e. a pipe with
     //! no process reading from it, kills the current process. This may not
@@ -135,6 +144,7 @@ namespace ts {
 
     //!
     //! Request a minimum resolution for the system timers.
+    //! @ingroup system
     //! @param [in,out] precision On input, specify the requested minimum resolution in any std::chrono::duration units.
     //! On output, return the obtained guaranteed minimum resolution. The guaranteed precision value can be equal to or
     //! greater than the requested value. The default system resolution is 20 ms on Win32, which can be too long for applications.
@@ -148,24 +158,28 @@ namespace ts {
 
     //!
     //! Check if the standard input is a terminal.
+    //! @ingroup system
     //! @return True if the standard input is a terminal.
     //!
     TSCOREDLL bool StdInIsTerminal();
 
     //!
     //! Check if the standard output is a terminal.
+    //! @ingroup system
     //! @return True if the standard output is a terminal.
     //!
     TSCOREDLL bool StdOutIsTerminal();
 
     //!
     //! Check if the standard error is a terminal.
+    //! @ingroup system
     //! @return True if the standard error is a terminal.
     //!
     TSCOREDLL bool StdErrIsTerminal();
 
     //!
     //! Put the standard input stream in binary mode.
+    //! @ingroup system
     //!
     //! On UNIX systems, this does not make any difference.
     //! On Windows systems, however, in a stream which is not open in
@@ -182,6 +196,7 @@ namespace ts {
 
     //!
     //! Put the standard output stream in binary mode.
+    //! @ingroup system
     //!
     //! On UNIX systems, this does not make any difference.
     //! On Windows systems, however, in a stream which is not open in
@@ -199,6 +214,7 @@ namespace ts {
     //!
     //! Get the name of a class from the @c type_index of a class.
     //! The result may be not portable.
+    //! @ingroup cpp
     //! @param [in] index The @c type_index of a class.
     //! @return An implementation-specific name of the class.
     //!
@@ -207,6 +223,7 @@ namespace ts {
     //!
     //! Get the name of a class from the @c type_info of an object.
     //! The result may be not portable.
+    //! @ingroup cpp
     //! @param [in] info The @c type_info of an object.
     //! @return An implementation-specific name of the object class.
     //!
