@@ -137,7 +137,16 @@ function Open-Doc($File)
 # Generate docinfo files.
 if ($Html) {
     Copy-Item "$AdocDir\docinfo.html" "$BinDocInfo\docinfo.html"
-    ("<script>`n" + (Get-Content "$AdocDir\tocbot.min.js") + "`n</script>`n" + (Get-Content "$AdocDir\docinfo-footer.in.html")) |
+    $logo = [IO.File]::ReadAllText("$ImagesDir\tsduck-logo.svg")
+    ("<script>`n" +
+     (Get-Content "$AdocDir\tocbot.min.js") +
+     "`n</script>`n" +
+     "<style>`n" +
+     "img.tsduck-logo {content: url(data:image/svg+xml;base64," +
+     [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($logo)) +
+     ");}`n" +
+     "</style>`n" +
+     (Get-Content "$AdocDir\docinfo-footer.in.html")) |
         Out-File "$BinDocInfo\docinfo-footer.html" -Encoding utf8
 }
 
