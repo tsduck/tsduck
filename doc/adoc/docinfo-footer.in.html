@@ -3,14 +3,14 @@
   var h1 = document.getElementsByTagName('h1')[0];
   h1.innerHTML = '&nbsp;&nbsp;&nbsp;' + h1.innerHTML;
   var img = document.createElement('img');
-  img.setAttribute('class', 'tsduck-48');
-  img.setAttribute('style', 'vertical-align:middle');
+  img.setAttribute('class', 'tsduck-logo');
+  img.setAttribute('style', 'vertical-align:middle;width:64px;height:64px');
   h1.prepend(img);
   /* prepend logo in ToC title */
   var toctitle = document.getElementById('toctitle');
   toctitle.innerHTML = '&nbsp;&nbsp;' + toctitle.innerHTML;
   img = document.createElement('img');
-  img.setAttribute('class', 'tsduck-32');
+  img.setAttribute('class', 'tsduck-logo');
   img.setAttribute('style', 'vertical-align:middle;width:20px;height:20px');
   toctitle.prepend(img);
   /* replace the ToC using tocbot */

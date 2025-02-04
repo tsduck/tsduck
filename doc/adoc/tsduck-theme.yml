@@ -88,7 +88,7 @@ title-page:
   logo:
     top: 25%
     align: left
-    image: image:../../images/tsduck-256.png[pdfwidth=1.5in]
+    image: image:../../images/tsduck-logo.svg[pdfwidth=1.5in]
   title:
     top: 24%
     font-size: $heading-h1-font-size * 1.25

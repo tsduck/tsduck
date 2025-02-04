@@ -13,7 +13,9 @@
 *.java text linguist-language=Java
 *.js text linguist-language=JavaScript
 *.py text linguist-language=Python
+*.rb text linguist-language=Ruby
 *.xml text linguist-language=XML
+*.svg text linguist-language=SVG
 *.yml text linguist-language=YAML
 *.pro text linguist-language=QMake
 *.pri text linguist-language=QMake

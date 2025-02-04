@@ -30,6 +30,7 @@ ADOCDIR    = $(DOCROOT)/adoc
 USERDOCDIR = $(DOCROOT)/user
 DEVDOCDIR  = $(DOCROOT)/developer
 USERSIXML  = $(USERDOCDIR)/20D-app-si-xml.adoc
+LOGO_SVG   = $(IMAGESDIR)/tsduck-logo.svg
 
 # Output directories.
 
@@ -81,13 +82,18 @@ $(BINDOCINFO)/docinfo.html: $(ADOCDIR)/docinfo.html
 	mkdir -p $(dir $@); \
 	cp $< $@
 
-$(BINDOCINFO)/docinfo-footer.html: $(ADOCDIR)/docinfo-footer.in.html $(ADOCDIR)/tocbot.min.js
+$(BINDOCINFO)/docinfo-footer.html: $(ADOCDIR)/docinfo-footer.in.html $(ADOCDIR)/tocbot.min.js $(LOGO_SVG)
 	$(call LOG,[GEN] $@) \
 	mkdir -p $(dir $@); \
 	echo "<script>" >$@; \
 	cat $(ADOCDIR)/tocbot.min.js >>$@; \
 	echo "" >>$@; \
 	echo "</script>" >>$@; \
+	echo "<style>" >>$@; \
+	echo -n "img.tsduck-logo {content: url(data:image/svg+xml;base64," >>$@; \
+	base64 -w0 $(LOGO_SVG) >>$@; \
+	echo ");}" >>$@; \
+	echo "</style>" >>$@; \
 	cat $(ADOCDIR)/docinfo-footer.in.html >>$@
 
 #-----------------------------------------------------------------------------

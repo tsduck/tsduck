@@ -219,7 +219,8 @@ files_order = [
     filetype('Ruby',          '*.rb', '#'),
     filetype('Bash shell',    ['*.sh', '*.bash', 'bash-*', 'tsconfig'], '#'),
     filetype('PowerShell',    ['*.ps1', '*.psm1'], '#'),
-    filetype('Tools config',  ['.gitattributes', '.gitignore', '.clang-format', '.editorconfig', '.classpath', '.project', '*.supp', '*.rc', '*.reg'], '#'),
+    filetype('Tools config',  ['.gitattributes', '.gitignore', '.clang-format', '.editorconfig', '.classpath', '.project',
+                               '*.supp', '*.rc', '*.reg'], '#'),
     filetype('Make',          ['Makefile*', '*.mk'], '#'),
     filetype('Visual Studio', ['*.sln', '*.vcxproj', '*.props']),
     filetype('Qt Creator',    ['*.pro', '*.pri'], '#'),
@@ -233,8 +234,8 @@ files_order = [
     filetype('Asciidoc',      '*.adoc', '//'),
     filetype('Doxygen',       ['Doxyfile*', '*.dox'], '#'),
     filetype('Packaging',     ['*.nsi', '*.control', '*.spec', '*.perms', '*.rules', '*.pc', 'Dockerfile*'], '#'),
-    filetype(None,            ['.git', '__pycache__', 'bin', 'installers', 'build']),
-    filetype(None,            ['*.xlsx', '*.pptx', '*.pdf', '*.bin', '*.ts', '*.xcf', '*.png', '*.ico', '*.arch-*', '*.user'])
+    filetype(None,            ['.git', '__pycache__', 'bin', 'installers', 'build', '*.arch-*', '*.user']),
+    filetype(None,            ['*.xlsx', '*.pptx', '*.pdf', '*.bin', '*.ts', '*.xcf', '*.png', '*.svg', '*.ico'])
 ]
 
 # Process all files in a directory of the project.
