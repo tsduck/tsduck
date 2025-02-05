@@ -19,6 +19,7 @@ namespace ts {
 
     //!
     //! Check if a byte is a valid Binary Coded Decimal (BCD) value.
+    //! @ingroup cpp
     //! @param [in] b A byte containing a BCD-encoded value.
     //! @return True if the value is valid BCDn false otherwise.
     //!
@@ -29,6 +30,7 @@ namespace ts {
 
     //!
     //! Return the decimal value of a Binary Coded Decimal (BCD) encoded byte.
+    //! @ingroup cpp
     //! @param [in] b A byte containing a BCD-encoded value.
     //! @return The decoded value in the range 0 to 99.
     //!
@@ -39,6 +41,7 @@ namespace ts {
 
     //!
     //! Return a one-byte Binary Coded Decimal (BCD) representation of an integer
+    //! @ingroup cpp
     //! @param [in] i The integer to encode (must be in 0..99).
     //! @return One byte containing the BCD-encoded value of @a i.
     //!
@@ -49,6 +52,7 @@ namespace ts {
 
     //!
     //! Return the decimal value of a Binary Coded Decimal (BCD) encoded string.
+    //! @ingroup cpp
     //! @param [in] bcd Address of an array of bytes.
     //! @param [in] bcd_count Number of BCD digits (@a bcd_count / 2 bytes).
     //! Note that @a bcd_count can be even.
@@ -61,6 +65,7 @@ namespace ts {
 
     //!
     //! Encode a Binary Coded Decimal (BCD) string.
+    //! @ingroup cpp
     //! @param [out] bcd Address of an array of bytes.
     //! Its size must be at least (@a bcd_count + 1) / 2 bytes.
     //! @param [in] bcd_count Number of BCD digits.
@@ -79,6 +84,7 @@ namespace ts {
 
     //!
     //! Decode a string representation of a variable-length Binary Coded Decimal (BCD) encoded integer.
+    //! @ingroup cpp
     //! @param [out] str Returned string representation.
     //! @param [in] bcd Address of an array of bytes.
     //! @param [in] bcd_count Number of BCD digits (@a bcd_count / 2 bytes).

@@ -20,6 +20,7 @@ namespace ts {
     //! This traits is used to enable bitmask operators on an enumeration type.
     //! The default value disables these operators. Define a template specialization
     //! or use macro TS_ENABLE_BITMASK_OPERATORS to enable the bitmask operators.
+    //! @ingroup libtscore cpp
     //! @see TS_ENABLE_BITMASK_OPERATORS
     //! @tparam T Any type.
     //!
@@ -34,6 +35,7 @@ namespace ts {
 //!
 //! @hideinitializer
 //! This macro enables bitmask operators on an enumeration type.
+//! @ingroup cpp
 //! @param T An enumeration type or enumeration class.
 //!
 //! Example:

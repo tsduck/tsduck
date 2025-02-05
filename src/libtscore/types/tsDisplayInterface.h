@@ -37,6 +37,7 @@ namespace ts {
 
 //!
 //! Display operator for displayable objects.
+//! @ingroup cpp
 //! @param [in,out] strm Where to output the content.
 //! @param [in] obj The object to display.
 //! @return A reference to @a strm.

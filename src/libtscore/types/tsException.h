@@ -50,6 +50,7 @@ namespace ts {
 //!
 //! @hideinitializer
 //! This macro declares an exception as a subclass of ts::Exception.
+//! @ingroup cpp
 //! @param [in] name Name of the exception class.
 //!
 // Note: With clang (LLVM), we can track the use of inlined virtual tables using warning -Wweak-vtables.
@@ -91,6 +92,7 @@ namespace ts {
 
 //!
 //! Locate the source of the exception in the Exception constructor message string.
+//! @ingroup cpp
 //!
 #define TS_SRCLOC __FILE__ ":" TS_SLINE ": "
 
@@ -100,6 +102,7 @@ namespace ts {
 namespace ts {
     //!
     //! Implementation error.
+    //! @ingroup cpp
     //! @ingroup libtscore cpp
     //!
     TS_DECLARE_EXCEPTION(ImplementationError);

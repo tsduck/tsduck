@@ -18,6 +18,7 @@
 //!
 //! Zeroing an plain memory variable.
 //! Do not use with instances of C++ classes.
+//! @ingroup cpp
 //! @param [out] var Name of a variable.
 //!
 #define TS_ZERO(var) ts::MemZero(&(var), sizeof(var))
@@ -25,6 +26,7 @@
 namespace ts {
     //!
     //! Zeroing a memory area.
+    //! @ingroup cpp
     //! @param [out] addr Address of a memory area to fill with zeroes.
     //! @param [in] size Size in bytes of the memory area.
     //!
@@ -42,6 +44,7 @@ namespace ts {
     //!
     //! Setting a memory area.
     //! Similar to std::memset() but explicitly does nothing on zero size.
+    //! @ingroup cpp
     //! @param [out] addr Address of a memory area to fill with @a value.
     //! @param [in] value Byte value to set in all area.
     //! @param [in] size Size in bytes of the memory area.
@@ -57,6 +60,7 @@ namespace ts {
     //! Copying a memory area.
     //! Similar to std::memcpy() and std::memmove() but explicitly does nothing on zero size.
     //! Overlapping source and destination are allowed, as with std::memmove().
+    //! @ingroup cpp
     //! @param [out] dest Base address of destination area.
     //! @param [in] src Base address of source area.
     //! @param [in] size Size in bytes of the memory area.
@@ -71,6 +75,7 @@ namespace ts {
     //!
     //! Comparing two memory areas.
     //! Similar to std::memcmp() but explicitly does nothing on zero size.
+    //! @ingroup cpp
     //! @param [in] addr1 Base address of first area.
     //! @param [in] addr2 Base address of second area.
     //! @param [in] size Size in bytes of the memory area.
@@ -83,6 +88,7 @@ namespace ts {
 
     //!
     //! Check if two memory areas are identical.
+    //! @ingroup cpp
     //! @param [in] addr1 Base address of first area.
     //! @param [in] addr2 Base address of second area.
     //! @param [in] size Size in bytes of the memory area.
@@ -96,6 +102,7 @@ namespace ts {
     //!
     //! Compute an exclusive or over memory areas.
     //! The input and output areas can overlap only if they start at the same address.
+    //! @ingroup cpp
     //! @param [out] dest Destination start address.
     //! @param [in] src1 Start address of the first area.
     //! @param [in] src2 Start address of the second area.
@@ -105,6 +112,7 @@ namespace ts {
 
     //!
     //! Check if a memory area starts with the specified prefix.
+    //! @ingroup cpp
     //! @param [in] area Address of a memory area to check.
     //! @param [in] area_size Size in bytes of the memory area.
     //! @param [in] prefix Address of the content of the prefix to check.
@@ -115,6 +123,7 @@ namespace ts {
 
     //!
     //! Locate a pattern into a memory area.
+    //! @ingroup cpp
     //! @param [in] area Address of a memory area to check.
     //! @param [in] area_size Size in bytes of the memory area.
     //! @param [in] pattern Address of the content of the pattern to check.
@@ -126,6 +135,7 @@ namespace ts {
     //!
     //! Locate a 3-byte pattern 00 00 XY into a memory area.
     //! This is a specialized version of LocatePattern().
+    //! @ingroup cpp
     //! @param [in] area Address of a memory area to check.
     //! @param [in] area_size Size in bytes of the memory area.
     //! @param [in] third Third byte of the pattern, after 00 00.
@@ -135,6 +145,7 @@ namespace ts {
 
     //!
     //! Check if a memory area contains all identical byte values.
+    //! @ingroup cpp
     //! @param [in] area Address of a memory area to check.
     //! @param [in] area_size Size in bytes of the memory area.
     //! @return True if @a area_size is greater than 1 and all bytes in @a area are identical.
@@ -152,7 +163,7 @@ namespace ts {
 
     //!
     //! Function getting a 16-bit unsigned integer from serialized data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] p An address pointing to a 16-bit unsigned integer in big endian representation.
     //! @return The 16-bit unsigned integer in native byte order, deserialized from @a p.
     //!
@@ -160,7 +171,7 @@ namespace ts {
 
     //!
     //! Function getting a 32-bit unsigned integer from serialized data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] p An address pointing to a 32-bit unsigned integer in big endian representation.
     //! @return The 32-bit unsigned integer in native byte order, deserialized from @a p.
     //!
@@ -168,7 +179,7 @@ namespace ts {
 
     //!
     //! Function getting a 24-bit unsigned integer from serialized data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] p An address pointing to a 24-bit unsigned integer in big endian representation.
     //! @return The 24-bit unsigned integer in native byte order, deserialized from @a p.
     //!
@@ -176,7 +187,7 @@ namespace ts {
 
     //!
     //! Function getting a 64-bit unsigned integer from serialized data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] p An address pointing to a 64-bit unsigned integer in big endian representation.
     //! @return The 64-bit unsigned integer in native byte order, deserialized from @a p.
     //!
@@ -184,7 +195,7 @@ namespace ts {
 
     //!
     //! Function getting a 40-bit unsigned integer from serialized data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] p An address pointing to a 40-bit unsigned integer in big endian representation.
     //! @return The 40-bit unsigned integer in native byte order, deserialized from @a p.
     //!
@@ -192,7 +203,7 @@ namespace ts {
 
     //!
     //! Function getting a 48-bit unsigned integer from serialized data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] p An address pointing to a 48-bit unsigned integer in big endian representation.
     //! @return The 48-bit unsigned integer in native byte order, deserialized from @a p.
     //!
@@ -200,7 +211,7 @@ namespace ts {
 
     //!
     //! Function getting a 16-bit unsigned integer from serialized data in little endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] p An address pointing to a 16-bit unsigned integer in little endian representation.
     //! @return The 16-bit unsigned integer in native byte order, deserialized from @a p.
     //!
@@ -208,7 +219,7 @@ namespace ts {
 
     //!
     //! Function getting a 32-bit unsigned integer from serialized data in little endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] p An address pointing to a 32-bit unsigned integer in little endian representation.
     //! @return The 32-bit unsigned integer in native byte order, deserialized from @a p.
     //!
@@ -216,7 +227,7 @@ namespace ts {
 
     //!
     //! Function getting a 24-bit unsigned integer from serialized data in little endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] p An address pointing to a 24-bit unsigned integer in little endian representation.
     //! @return The 24-bit unsigned integer in native byte order, deserialized from @a p.
     //!
@@ -224,7 +235,7 @@ namespace ts {
 
     //!
     //! Function getting a 64-bit unsigned integer from serialized data in little endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] p An address pointing to a 64-bit unsigned integer in little endian representation.
     //! @return The 64-bit unsigned integer in native byte order, deserialized from @a p.
     //!
@@ -232,7 +243,7 @@ namespace ts {
 
     //!
     //! Function getting a 40-bit unsigned integer from serialized data in little endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] p An address pointing to a 40-bit unsigned integer in little endian representation.
     //! @return The 40-bit unsigned integer in native byte order, deserialized from @a p.
     //!
@@ -240,7 +251,7 @@ namespace ts {
 
     //!
     //! Function getting a 48-bit unsigned integer from serialized data in little endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] p An address pointing to a 48-bit unsigned integer in little endian representation.
     //! @return The 48-bit unsigned integer in native byte order, deserialized from @a p.
     //!
@@ -248,7 +259,7 @@ namespace ts {
 
     //!
     //! Function serializing a 16-bit unsigned integer data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [out] p An address where to serialize the 16-bit unsigned integer.
     //! @param [in]  i The 16-bit unsigned integer in native byte order to serialize in big endian representation.
     //!
@@ -256,7 +267,7 @@ namespace ts {
 
     //!
     //! Function serializing a 32-bit unsigned integer data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [out] p An address where to serialize the 32-bit unsigned integer.
     //! @param [in]  i The 32-bit unsigned integer in native byte order to serialize in big endian representation.
     //!
@@ -264,7 +275,7 @@ namespace ts {
 
     //!
     //! Function serializing a 64-bit unsigned integer data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [out] p An address where to serialize the 64-bit unsigned integer.
     //! @param [in]  i The 64-bit unsigned integer in native byte order to serialize in big endian representation.
     //!
@@ -272,7 +283,7 @@ namespace ts {
 
     //!
     //! Function serializing a 16-bit unsigned integer data in little endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [out] p An address where to serialize the 16-bit unsigned integer.
     //! @param [in]  i The 16-bit unsigned integer in native byte order to serialize in little endian representation.
     //!
@@ -280,7 +291,7 @@ namespace ts {
 
     //!
     //! Function serializing a 32-bit unsigned integer data in little endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [out] p An address where to serialize the 32-bit unsigned integer.
     //! @param [in]  i The 32-bit unsigned integer in native byte order to serialize in little endian representation.
     //!
@@ -288,7 +299,7 @@ namespace ts {
 
     //!
     //! Function serializing a 64-bit unsigned integer data in little endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [out] p An address where to serialize the 64-bit unsigned integer.
     //! @param [in]  i The 64-bit unsigned integer in native byte order to serialize in little endian representation.
     //!
@@ -296,7 +307,7 @@ namespace ts {
 
     //!
     //! Function serializing a 24-bit unsigned integer data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [out] p An address where to serialize the 24-bit unsigned integer.
     //! @param [in]  i The 24-bit unsigned integer in native byte order to serialize in big endian representation.
     //!
@@ -304,7 +315,7 @@ namespace ts {
 
     //!
     //! Function serializing a 24-bit unsigned integer data in little endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [out] p An address where to serialize the 24-bit unsigned integer.
     //! @param [in]  i The 24-bit unsigned integer in native byte order to serialize in little endian representation.
     //!
@@ -312,7 +323,7 @@ namespace ts {
 
     //!
     //! Function serializing a 40-bit unsigned integer data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [out] p An address where to serialize the 40-bit unsigned integer.
     //! @param [in]  i The 40-bit unsigned integer in native byte order to serialize in big endian representation.
     //!
@@ -320,7 +331,7 @@ namespace ts {
 
     //!
     //! Function serializing a 40-bit unsigned integer data in little endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [out] p An address where to serialize the 40-bit unsigned integer.
     //! @param [in]  i The 40-bit unsigned integer in native byte order to serialize in little endian representation.
     //!
@@ -328,7 +339,7 @@ namespace ts {
 
     //!
     //! Function serializing a 48-bit unsigned integer data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [out] p An address where to serialize the 48-bit unsigned integer.
     //! @param [in]  i The 48-bit unsigned integer in native byte order to serialize in big endian representation.
     //!
@@ -336,7 +347,7 @@ namespace ts {
 
     //!
     //! Function serializing a 48-bit unsigned integer data in little endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [out] p An address where to serialize the 48-bit unsigned integer.
     //! @param [in]  i The 48-bit unsigned integer in native byte order to serialize in little endian representation.
     //!
@@ -378,10 +389,9 @@ namespace ts {
 
     //!
     //! Function getting an 8-bit unsigned integer from serialized data.
-    //!
     //! Note: There is no byte-swapping in the serialization / deserialization
     //! of 8-bit integer data. But this function is provided for consistency.
-    //!
+    //! @ingroup cpp
     //! @param [in] p An address pointing to an 8-bit unsigned integer.
     //! @return The 8-bit unsigned integer at @a p.
     //!
@@ -389,7 +399,7 @@ namespace ts {
 
     //!
     //! Function getting a 16-bit unsigned integer from serialized data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] p An address pointing to a 16-bit unsigned integer in big endian representation.
     //! @return The 16-bit unsigned integer in native byte order, deserialized from @a p.
     //!
@@ -397,7 +407,7 @@ namespace ts {
 
     //!
     //! Function getting a 24-bit unsigned integer from serialized data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] p An address pointing to a 24-bit unsigned integer in big endian representation.
     //! @return The 24-bit unsigned integer in native byte order, deserialized from @a p.
     //!
@@ -405,7 +415,7 @@ namespace ts {
 
     //!
     //! Function getting a 32-bit unsigned integer from serialized data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] p An address pointing to a 32-bit unsigned integer in big endian representation.
     //! @return The 32-bit unsigned integer in native byte order, deserialized from @a p.
     //!
@@ -413,7 +423,7 @@ namespace ts {
 
     //!
     //! Function getting a 40-bit unsigned integer from serialized data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] p An address pointing to a 40-bit unsigned integer in big endian representation.
     //! @return The 40-bit unsigned integer in native byte order, deserialized from @a p.
     //!
@@ -421,7 +431,7 @@ namespace ts {
 
     //!
     //! Function getting a 48-bit unsigned integer from serialized data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] p An address pointing to a 48-bit unsigned integer in big endian representation.
     //! @return The 48-bit unsigned integer in native byte order, deserialized from @a p.
     //!
@@ -429,7 +439,7 @@ namespace ts {
 
     //!
     //! Function getting a 64-bit unsigned integer from serialized data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] p An address pointing to a 64-bit unsigned integer in big endian representation.
     //! @return The 64-bit unsigned integer in native byte order, deserialized from @a p.
     //!
@@ -437,10 +447,9 @@ namespace ts {
 
     //!
     //! Function getting an 8-bit signed integer from serialized data.
-    //!
     //! Note: There is no byte-swapping in the serialization / deserialization
     //! of 8-bit integer data. But this function is provided for consistency.
-    //!
+    //! @ingroup cpp
     //! @param [in] p An address pointing to an 8-bit signed integer.
     //! @return The 8-bit signed integer at @a p.
     //!
@@ -448,7 +457,7 @@ namespace ts {
 
     //!
     //! Function getting a 16-bit signed integer from serialized data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] p An address pointing to a 16-bit signed integer in big endian representation.
     //! @return The 16-bit signed integer in native byte order, deserialized from @a p.
     //!
@@ -456,7 +465,7 @@ namespace ts {
 
     //!
     //! Function getting a 24-bit signed integer from serialized data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] p An address pointing to a 24-bit signed integer in big endian representation.
     //! @return The 24-bit signed integer in native byte order, deserialized from @a p.
     //!
@@ -464,7 +473,7 @@ namespace ts {
 
     //!
     //! Function getting a 32-bit signed integer from serialized data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] p An address pointing to a 32-bit signed integer in big endian representation.
     //! @return The 32-bit signed integer in native byte order, deserialized from @a p.
     //!
@@ -472,7 +481,7 @@ namespace ts {
 
     //!
     //! Function getting a 64-bit signed integer from serialized data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] p An address pointing to a 64-bit signed integer in big endian representation.
     //! @return The 64-bit signed integer in native byte order, deserialized from @a p.
     //!
@@ -480,7 +489,7 @@ namespace ts {
 
     //!
     //! Function getting a 16-bit signed integer from serialized data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] p An address pointing to a 16-bit signed integer in big endian representation.
     //! @return The 16-bit signed integer in native byte order, deserialized from @a p.
     //!
@@ -488,7 +497,7 @@ namespace ts {
 
     //!
     //! Function getting a 24-bit signed integer from serialized data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] p An address pointing to a 24-bit signed integer in big endian representation.
     //! @return The 24-bit signed integer in native byte order, deserialized from @a p.
     //!
@@ -496,7 +505,7 @@ namespace ts {
 
     //!
     //! Function getting a 32-bit signed integer from serialized data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] p An address pointing to a 32-bit signed integer in big endian representation.
     //! @return The 32-bit signed integer in native byte order, deserialized from @a p.
     //!
@@ -504,7 +513,7 @@ namespace ts {
 
     //!
     //! Function getting a 40-bit signed integer from serialized data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] p An address pointing to a 40-bit signed integer in big endian representation.
     //! @return The 64-bit signed integer in native byte order, deserialized from @a p.
     //!
@@ -512,7 +521,7 @@ namespace ts {
 
     //!
     //! Function getting a 48-bit signed integer from serialized data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] p An address pointing to a 48-bit signed integer in big endian representation.
     //! @return The 64-bit signed integer in native byte order, deserialized from @a p.
     //!
@@ -520,7 +529,7 @@ namespace ts {
 
     //!
     //! Function getting a 64-bit signed integer from serialized data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] p An address pointing to a 64-bit signed integer in big endian representation.
     //! @return The 64-bit signed integer in native byte order, deserialized from @a p.
     //!
@@ -528,7 +537,7 @@ namespace ts {
 
     //!
     //! Function getting a 16-bit signed integer from serialized data in little endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] p An address pointing to a 16-bit signed integer in little endian representation.
     //! @return The 16-bit signed integer in native byte order, deserialized from @a p.
     //!
@@ -536,7 +545,7 @@ namespace ts {
 
     //!
     //! Function getting a 24-bit signed integer from serialized data in little endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] p An address pointing to a 24-bit signed integer in little endian representation.
     //! @return The 32-bit signed integer in native byte order, deserialized from @a p.
     //!
@@ -544,7 +553,7 @@ namespace ts {
 
     //!
     //! Function getting a 32-bit signed integer from serialized data in little endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] p An address pointing to a 32-bit signed integer in little endian representation.
     //! @return The 32-bit signed integer in native byte order, deserialized from @a p.
     //!
@@ -552,7 +561,7 @@ namespace ts {
 
     //!
     //! Function getting a 40-bit signed integer from serialized data in little endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] p An address pointing to a 40-bit signed integer in little endian representation.
     //! @return The 64-bit signed integer in native byte order, deserialized from @a p.
     //!
@@ -560,7 +569,7 @@ namespace ts {
 
     //!
     //! Function getting a 48-bit signed integer from serialized data in little endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] p An address pointing to a 48-bit signed integer in little endian representation.
     //! @return The 64-bit signed integer in native byte order, deserialized from @a p.
     //!
@@ -568,7 +577,7 @@ namespace ts {
 
     //!
     //! Function getting a 64-bit signed integer from serialized data in little endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] p An address pointing to a 64-bit signed integer in little endian representation.
     //! @return The 64-bit signed integer in native byte order, deserialized from @a p.
     //!
@@ -579,7 +588,7 @@ namespace ts {
     //!
     //! Note: There is no byte-swapping in the serialization / deserialization
     //! of 8-bit integer data. But this function is provided for consistency.
-    //!
+    //! @ingroup cpp
     //! @param [in] p An address pointing to an 8-bit unsigned integer.
     //! @param [out] i The 8-bit unsigned integer at @a p.
     //!
@@ -587,7 +596,7 @@ namespace ts {
 
     //!
     //! Function getting a 16-bit unsigned integer from serialized data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] p An address pointing to a 16-bit unsigned integer in big endian representation.
     //! @param [out] i The 16-bit unsigned integer in native byte order, deserialized from @a p.
     //!
@@ -595,7 +604,7 @@ namespace ts {
 
     //!
     //! Function getting a 24-bit unsigned integer from serialized data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] p An address pointing to a 24-bit unsigned integer in big endian representation.
     //! @param [out] i The 32-bit unsigned integer in native byte order, deserialized from @a p.
     //!
@@ -603,7 +612,7 @@ namespace ts {
 
     //!
     //! Function getting a 32-bit unsigned integer from serialized data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] p An address pointing to a 32-bit unsigned integer in big endian representation.
     //! @param [out] i The 32-bit unsigned integer in native byte order, deserialized from @a p.
     //!
@@ -611,7 +620,7 @@ namespace ts {
 
     //!
     //! Function getting a 40-bit unsigned integer from serialized data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] p An address pointing to a 40-bit unsigned integer in big endian representation.
     //! @param [out] i The 64-bit unsigned integer in native byte order, deserialized from @a p.
     //!
@@ -619,7 +628,7 @@ namespace ts {
 
     //!
     //! Function getting a 48-bit unsigned integer from serialized data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] p An address pointing to a 48-bit unsigned integer in big endian representation.
     //! @param [out] i The 64-bit unsigned integer in native byte order, deserialized from @a p.
     //!
@@ -627,7 +636,7 @@ namespace ts {
 
     //!
     //! Function getting a 64-bit unsigned integer from serialized data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] p An address pointing to a 64-bit unsigned integer in big endian representation.
     //! @param [out] i The 64-bit unsigned integer in native byte order, deserialized from @a p.
     //!
@@ -635,7 +644,7 @@ namespace ts {
 
     //!
     //! Function getting a 16-bit unsigned integer from serialized data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] p An address pointing to a 16-bit unsigned integer in big endian representation.
     //! @param [out] i The 16-bit unsigned integer in native byte order, deserialized from @a p.
     //!
@@ -643,7 +652,7 @@ namespace ts {
 
     //!
     //! Function getting a 24-bit unsigned integer from serialized data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] p An address pointing to a 24-bit unsigned integer in big endian representation.
     //! @param [out] i The 32-bit unsigned integer in native byte order, deserialized from @a p.
     //!
@@ -651,7 +660,7 @@ namespace ts {
 
     //!
     //! Function getting a 32-bit unsigned integer from serialized data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] p An address pointing to a 32-bit unsigned integer in big endian representation.
     //! @param [out] i The 32-bit unsigned integer in native byte order, deserialized from @a p.
     //!
@@ -659,7 +668,7 @@ namespace ts {
 
     //!
     //! Function getting a 64-bit unsigned integer from serialized data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] p An address pointing to a 64-bit unsigned integer in big endian representation.
     //! @param [out] i The 64-bit unsigned integer in native byte order, deserialized from @a p.
     //!
@@ -667,7 +676,7 @@ namespace ts {
 
     //!
     //! Function getting a 16-bit unsigned integer from serialized data in little endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] p An address pointing to a 16-bit unsigned integer in little endian representation.
     //! @param [out] i The 16-bit unsigned integer in native byte order, deserialized from @a p.
     //!
@@ -675,7 +684,7 @@ namespace ts {
 
     //!
     //! Function getting a 24-bit unsigned integer from serialized data in little endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] p An address pointing to a 24-bit unsigned integer in little endian representation.
     //! @param [out] i The 24-bit unsigned integer in native byte order, deserialized from @a p.
     //!
@@ -683,7 +692,7 @@ namespace ts {
 
     //!
     //! Function getting a 32-bit unsigned integer from serialized data in little endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] p An address pointing to a 32-bit unsigned integer in little endian representation.
     //! @param [out] i The 32-bit unsigned integer in native byte order, deserialized from @a p.
     //!
@@ -691,7 +700,7 @@ namespace ts {
 
     //!
     //! Function getting a 64-bit unsigned integer from serialized data in little endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] p An address pointing to a 64-bit unsigned integer in little endian representation.
     //! @param [out] i The 64-bit unsigned integer in native byte order, deserialized from @a p.
     //!
@@ -702,7 +711,7 @@ namespace ts {
     //!
     //! Note: There is no byte-swapping in the serialization / deserialization
     //! of 8-bit integer data. But this function is provided for consistency.
-    //!
+    //! @ingroup cpp
     //! @param [in] p An address pointing to an 8-bit signed integer.
     //! @param [out] i The 8-bit signed integer at @a p.
     //!
@@ -710,7 +719,7 @@ namespace ts {
 
     //!
     //! Function getting a 16-bit signed integer from serialized data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] p An address pointing to a 16-bit signed integer in big endian representation.
     //! @param [out] i The 16-bit signed integer in native byte order, deserialized from @a p.
     //!
@@ -718,7 +727,7 @@ namespace ts {
 
     //!
     //! Function getting a 24-bit signed integer from serialized data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] p An address pointing to a 24-bit signed integer in big endian representation.
     //! @param [out] i The 24-bit signed integer in native byte order, deserialized from @a p.
     //!
@@ -726,7 +735,7 @@ namespace ts {
 
     //!
     //! Function getting a 32-bit signed integer from serialized data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] p An address pointing to a 32-bit signed integer in big endian representation.
     //! @param [out] i The 32-bit signed integer in native byte order, deserialized from @a p.
     //!
@@ -734,7 +743,7 @@ namespace ts {
 
     //!
     //! Function getting a 64-bit signed integer from serialized data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] p An address pointing to a 64-bit signed integer in big endian representation.
     //! @param [out] i The 64-bit signed integer in native byte order, deserialized from @a p.
     //!
@@ -742,7 +751,7 @@ namespace ts {
 
     //!
     //! Function getting a 16-bit signed integer from serialized data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] p An address pointing to a 16-bit signed integer in big endian representation.
     //! @param [out] i The 16-bit signed integer in native byte order, deserialized from @a p.
     //!
@@ -750,7 +759,7 @@ namespace ts {
 
     //!
     //! Function getting a 24-bit signed integer from serialized data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] p An address pointing to a 24-bit signed integer in big endian representation.
     //! @param [out] i The 24-bit signed integer in native byte order, deserialized from @a p.
     //!
@@ -758,7 +767,7 @@ namespace ts {
 
     //!
     //! Function getting a 32-bit signed integer from serialized data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] p An address pointing to a 32-bit signed integer in big endian representation.
     //! @param [out] i The 32-bit signed integer in native byte order, deserialized from @a p.
     //!
@@ -766,7 +775,7 @@ namespace ts {
 
     //!
     //! Function getting a 64-bit signed integer from serialized data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] p An address pointing to a 64-bit signed integer in big endian representation.
     //! @param [out] i The 64-bit signed integer in native byte order, deserialized from @a p.
     //!
@@ -774,7 +783,7 @@ namespace ts {
 
     //!
     //! Function getting a 16-bit signed integer from serialized data in little endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] p An address pointing to a 16-bit signed integer in little endian representation.
     //! @param [out] i The 16-bit signed integer in native byte order, deserialized from @a p.
     //!
@@ -782,7 +791,7 @@ namespace ts {
 
     //!
     //! Function getting a 24-bit signed integer from serialized data in little endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] p An address pointing to a 24-bit signed integer in little endian representation.
     //! @param [out] i The 32-bit signed integer in native byte order, deserialized from @a p.
     //!
@@ -790,7 +799,7 @@ namespace ts {
 
     //!
     //! Function getting a 32-bit signed integer from serialized data in little endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] p An address pointing to a 32-bit signed integer in little endian representation.
     //! @param [out] i The 32-bit signed integer in native byte order, deserialized from @a p.
     //!
@@ -798,7 +807,7 @@ namespace ts {
 
     //!
     //! Function getting a 64-bit signed integer from serialized data in little endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] p An address pointing to a 64-bit signed integer in little endian representation.
     //! @param [out] i The 64-bit signed integer in native byte order, deserialized from @a p.
     //!
@@ -809,7 +818,7 @@ namespace ts {
     //!
     //! Note: There is no byte-swapping in the serialization / deserialization
     //! of 8-bit integer data. But this function is provided for consistency.
-    //!
+    //! @ingroup cpp
     //! @param [out] p An address where to serialize the 8-bit unsigned integer.
     //! @param [in]  i The 8-bit unsigned integer to serialize.
     //!
@@ -817,7 +826,7 @@ namespace ts {
 
     //!
     //! Function serializing a 16-bit unsigned integer data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [out] p An address where to serialize the 16-bit unsigned integer.
     //! @param [in]  i The 16-bit unsigned integer in native byte order to serialize in big endian representation.
     //!
@@ -825,7 +834,7 @@ namespace ts {
 
     //!
     //! Function serializing a 24-bit unsigned integer data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [out] p An address where to serialize the 24-bit unsigned integer.
     //! @param [in]  i The 24-bit unsigned integer in native byte order to serialize in big endian representation.
     //!
@@ -833,7 +842,7 @@ namespace ts {
 
     //!
     //! Function serializing a 32-bit unsigned integer data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [out] p An address where to serialize the 32-bit unsigned integer.
     //! @param [in]  i The 32-bit unsigned integer in native byte order to serialize in big endian representation.
     //!
@@ -841,7 +850,7 @@ namespace ts {
 
     //!
     //! Function serializing a 40-bit unsigned integer data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [out] p An address where to serialize the 40-bit unsigned integer.
     //! @param [in]  i The 40-bit unsigned integer in native byte order to serialize in big endian representation.
     //!
@@ -849,7 +858,7 @@ namespace ts {
 
     //!
     //! Function serializing a 48-bit unsigned integer data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [out] p An address where to serialize the 48-bit unsigned integer.
     //! @param [in]  i The 48-bit unsigned integer in native byte order to serialize in big endian representation.
     //!
@@ -857,7 +866,7 @@ namespace ts {
 
     //!
     //! Function serializing a 64-bit unsigned integer data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [out] p An address where to serialize the 64-bit unsigned integer.
     //! @param [in]  i The 64-bit unsigned integer in native byte order to serialize in big endian representation.
     //!
@@ -868,7 +877,7 @@ namespace ts {
     //!
     //! Note: There is no byte-swapping in the serialization / deserialization
     //! of 8-bit integer data. But this function is provided for consistency.
-    //!
+    //! @ingroup cpp
     //! @param [out] p An address where to serialize the 8-bit signed integer.
     //! @param [in]  i The 8-bit signed integer to serialize.
     //!
@@ -876,7 +885,7 @@ namespace ts {
 
     //!
     //! Function serializing a 16-bit signed integer data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [out] p An address where to serialize the 16-bit signed integer.
     //! @param [in]  i The 16-bit signed integer in native byte order to serialize in big endian representation.
     //!
@@ -884,7 +893,7 @@ namespace ts {
 
     //!
     //! Function serializing a 24-bit signed integer data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [out] p An address where to serialize the 24-bit signed integer.
     //! @param [in]  i The 32-bit signed integer in native byte order to serialize in big endian representation.
     //!
@@ -892,7 +901,7 @@ namespace ts {
 
     //!
     //! Function serializing a 32-bit signed integer data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [out] p An address where to serialize the 32-bit signed integer.
     //! @param [in]  i The 32-bit signed integer in native byte order to serialize in big endian representation.
     //!
@@ -900,7 +909,7 @@ namespace ts {
 
     //!
     //! Function serializing a 64-bit signed integer data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [out] p An address where to serialize the 64-bit signed integer.
     //! @param [in]  i The 64-bit signed integer in native byte order to serialize in big endian representation.
     //!
@@ -908,7 +917,7 @@ namespace ts {
 
     //!
     //! Function serializing a 16-bit signed integer data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [out] p An address where to serialize the 16-bit signed integer.
     //! @param [in]  i The 16-bit signed integer in native byte order to serialize in big endian representation.
     //!
@@ -916,7 +925,7 @@ namespace ts {
 
     //!
     //! Function serializing a 24-bit signed integer data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [out] p An address where to serialize the 24-bit signed integer.
     //! @param [in]  i The 32-bit signed integer in native byte order to serialize in big endian representation.
     //!
@@ -924,7 +933,7 @@ namespace ts {
 
     //!
     //! Function serializing a 32-bit signed integer data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [out] p An address where to serialize the 32-bit signed integer.
     //! @param [in]  i The 32-bit signed integer in native byte order to serialize in big endian representation.
     //!
@@ -932,7 +941,7 @@ namespace ts {
 
     //!
     //! Function serializing a 40-bit signed integer data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [out] p An address where to serialize the 40-bit signed integer.
     //! @param [in]  i The 64-bit signed integer in native byte order to serialize in big endian representation.
     //!
@@ -940,7 +949,7 @@ namespace ts {
 
     //!
     //! Function serializing a 48-bit signed integer data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [out] p An address where to serialize the 48-bit signed integer.
     //! @param [in]  i The 64-bit signed integer in native byte order to serialize in big endian representation.
     //!
@@ -948,7 +957,7 @@ namespace ts {
 
     //!
     //! Function serializing a 64-bit signed integer data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [out] p An address where to serialize the 64-bit signed integer.
     //! @param [in]  i The 64-bit signed integer in native byte order to serialize in big endian representation.
     //!
@@ -956,7 +965,7 @@ namespace ts {
 
     //!
     //! Function serializing a 16-bit signed integer data in little endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [out] p An address where to serialize the 16-bit signed integer.
     //! @param [in]  i The 16-bit signed integer in native byte order to serialize in little endian representation.
     //!
@@ -964,7 +973,7 @@ namespace ts {
 
     //!
     //! Function serializing a 24-bit signed integer data in little endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [out] p An address where to serialize the 24-bit signed integer.
     //! @param [in]  i The 32-bit signed integer in native byte order to serialize in little endian representation.
     //!
@@ -972,7 +981,7 @@ namespace ts {
 
     //!
     //! Function serializing a 32-bit signed integer data in little endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [out] p An address where to serialize the 32-bit signed integer.
     //! @param [in]  i The 32-bit signed integer in native byte order to serialize in little endian representation.
     //!
@@ -980,7 +989,7 @@ namespace ts {
 
     //!
     //! Function serializing a 40-bit signed integer data in little endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [out] p An address where to serialize the 40-bit signed integer.
     //! @param [in]  i The 64-bit signed integer in native byte order to serialize in little endian representation.
     //!
@@ -988,7 +997,7 @@ namespace ts {
 
     //!
     //! Function serializing a 48-bit signed integer data in little endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [out] p An address where to serialize the 48-bit signed integer.
     //! @param [in]  i The 64-bit signed integer in native byte order to serialize in little endian representation.
     //!
@@ -996,7 +1005,7 @@ namespace ts {
 
     //!
     //! Function serializing a 64-bit signed integer data in little endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [out] p An address where to serialize the 64-bit signed integer.
     //! @param [in]  i The 64-bit signed integer in native byte order to serialize in little endian representation.
     //!
@@ -1010,7 +1019,7 @@ namespace ts {
 
     //!
     //! Template function getting an integer from serialized data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @tparam INT Some integer type.
     //! @param [in] p An address pointing to an INT in big endian representation.
     //! @return The INT value in native byte order, deserialized from @a p.
@@ -1023,7 +1032,7 @@ namespace ts {
 
     //!
     //! Template function getting an integer from serialized data in little endian representation.
-    //!
+    //! @ingroup cpp
     //! @tparam INT Some integer type.
     //! @param [in] p An address pointing to an INT in little endian representation.
     //! @return The INT value in native byte order, deserialized from @a p.
@@ -1036,7 +1045,7 @@ namespace ts {
 
     //!
     //! Template function getting an integer from serialized data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @tparam INT Some integer type.
     //! @param [in] p An address pointing to an INT in big endian representation.
     //! @param [out] i The INT value in native byte order, deserialized from @a p.
@@ -1049,7 +1058,7 @@ namespace ts {
 
     //!
     //! Template function getting an integer from serialized data in little endian representation.
-    //!
+    //! @ingroup cpp
     //! @tparam INT Some integer type.
     //! @param [in] p An address pointing to an INT in little endian representation.
     //! @param [out] i The INT value in native byte order, deserialized from @a p.
@@ -1062,7 +1071,7 @@ namespace ts {
 
     //!
     //! Template function serializing an integer data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @tparam INT Some integer type.
     //! @param [out] p An address where to serialize the integer.
     //! @param [in]  i The INT in native byte order to serialize in big endian representation.
@@ -1075,7 +1084,7 @@ namespace ts {
 
     //!
     //! Template function serializing an integer data in little endian representation.
-    //!
+    //! @ingroup cpp
     //! @tparam INT Some integer type.
     //! @param [out] p An address where to serialize the integer.
     //! @param [in]  i The INT in native byte order to serialize in little endian representation.
@@ -1112,7 +1121,7 @@ namespace ts {
 
     //!
     //! Template function getting an integer from serialized data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @tparam INT Some integer type.
     //! @param [in] p An address pointing to an INT in big endian representation.
     //! @return The INT value in native byte order, deserialized from @a p.
@@ -1125,7 +1134,7 @@ namespace ts {
 
     //!
     //! Template function getting an integer from serialized data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @tparam INT Some integer type.
     //! @param [in] p An address pointing to an INT in big endian representation.
     //! @param [out] i The INT value in native byte order, deserialized from @a p.
@@ -1138,7 +1147,7 @@ namespace ts {
 
     //!
     //! Template function serializing an integer data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @tparam INT Some integer type.
     //! @param [out] p An address where to serialize the integer.
     //! @param [in]  i The INT in native byte order to serialize in big endian representation.
@@ -1151,7 +1160,7 @@ namespace ts {
 
     //!
     //! Template function getting a variable-length integer from serialized data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @tparam INT Some integer type.
     //! @param [in] p An address pointing to an INT in big endian representation.
     //! @param [in] size Size in bytes of the integer. Must be 1 to 8.
@@ -1162,7 +1171,7 @@ namespace ts {
 
     //!
     //! Template function getting a variable-length integer from serialized data in little endian representation.
-    //!
+    //! @ingroup cpp
     //! @tparam INT Some integer type.
     //! @param [in] p An address pointing to an INT in little endian representation.
     //! @param [in] size Size in bytes of the integer. Must be 1 to 8.
@@ -1173,7 +1182,7 @@ namespace ts {
 
     //!
     //! Template function getting a variable-length integer from serialized data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @tparam INT Some integer type.
     //! @param [in] p An address pointing to an INT in big endian representation.
     //! @param [in] size Size in bytes of the integer. Must be 1 to 8.
@@ -1187,7 +1196,7 @@ namespace ts {
 
     //!
     //! Template function getting a variable-length integer from serialized data in little endian representation.
-    //!
+    //! @ingroup cpp
     //! @tparam INT Some integer type.
     //! @param [in] p An address pointing to an INT in little endian representation.
     //! @param [in] size Size in bytes of the integer. Must be 1 to 8.
@@ -1201,7 +1210,7 @@ namespace ts {
 
     //!
     //! Template function serializing a variable-length integer data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @tparam INT Some integer type.
     //! @param [out] p An address where to serialize the integer.
     //! @param [in] size Size in bytes of the integer. Must be 1 to 8.
@@ -1212,7 +1221,7 @@ namespace ts {
 
     //!
     //! Template function serializing a variable-length integer data in little endian representation.
-    //!
+    //! @ingroup cpp
     //! @tparam INT Some integer type.
     //! @param [out] p An address where to serialize the integer.
     //! @param [in] size Size in bytes of the integer. Must be 1 to 8.
@@ -1223,7 +1232,7 @@ namespace ts {
 
     //!
     //! Template function getting a variable-length integer from serialized data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @tparam INT Some integer type.
     //! @param [in] p An address pointing to an INT in big endian representation.
     //! @param [in] size Size in bytes of the integer. Must be 1 to 8.
@@ -1237,7 +1246,7 @@ namespace ts {
 
     //!
     //! Template function getting a variable-length integer from serialized data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @tparam INT Some integer type.
     //! @param [in] p An address pointing to an INT in big endian representation.
     //! @param [in] size Size in bytes of the integer. Must be 1 to 8.
@@ -1251,7 +1260,7 @@ namespace ts {
 
     //!
     //! Template function serializing a variable-length integer data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @tparam INT Some integer type.
     //! @param [out] p An address where to serialize the integer.
     //! @param [in] size Size in bytes of the integer. Must be 1 to 8.

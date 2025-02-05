@@ -18,6 +18,7 @@
 namespace ts {
     //!
     //! This template function compares two floating point values for approximated equality.
+    //! @ingroup cpp
     //! @tparam T A floating point type.
     //! @param a First value to test.
     //! @param b Second value to test.
@@ -35,6 +36,7 @@ namespace ts {
 
     //!
     //! This template function checks if a floating point type matches a given IEEE represenation.
+    //! @ingroup cpp
     //! @tparam T An floating point type, any size or representation.
     //! @tparam storage_bits Expected size in bits of the type.
     //! @tparam exponent_bits Expected number of bits in the exponent.
@@ -61,6 +63,7 @@ namespace ts {
 
     //!
     //! Definition of an IEEE floating point type with a given represenation.
+    //! @ingroup cpp
     //! @tparam storage_bits Expected size in bits of the type.
     //! @tparam exponent_bits Expected number of bits in the exponent.
     //! @tparam mantissa_bits Expected number of bits in the mantissa.
@@ -89,16 +92,19 @@ namespace ts {
 
     //!
     //! 32-bit IEEE floating point type.
+    //! @ingroup cpp
     //!
     using ieee_float32_t = typename ieee_float<32, 8, 23>::type;
 
     //!
     //! 64-bit IEEE floating point type.
+    //! @ingroup cpp
     //!
     using ieee_float64_t = typename ieee_float<64, 11, 52>::type;
 
     //!
     //! 80-bit IEEE floating point type.
+    //! @ingroup cpp
     //!
     //! Some systems cannot implement this. It is typically only available on Intel platforms.
     //! On other platforms, this type is @a void..
@@ -107,7 +113,7 @@ namespace ts {
 
     //!
     //! 128-bit IEEE floating point type.
-    //!
+    //! @ingroup cpp
     //! Some systems cannot implement this.
     //! GCC and Clang on Intel use a 80-bit floating type for long double.
     //! In that case, this type is @a void.
@@ -116,7 +122,7 @@ namespace ts {
 
     //!
     //! Function getting a 32-bit IEEE float from serialized data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] p An address pointing to a 32-bit IEEE float in big endian representation.
     //! @return The 32-bit IEEE float in native byte order, deserialized from @a p.
     //!
@@ -131,7 +137,7 @@ namespace ts {
 
     //!
     //! Function getting a 32-bit IEEE float from serialized data in little endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] p An address pointing to a 32-bit IEEE float in little endian representation.
     //! @return The 32-bit IEEE float in native byte order, deserialized from @a p.
     //!
@@ -146,7 +152,7 @@ namespace ts {
 
     //!
     //! Function getting a 32-bit IEEE float from serialized data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] p An address pointing to a 32-bit IEEE float in big endian representation.
     //! @return The 32-bit IEEE float in native byte order, deserialized from @a p.
     //!
@@ -154,7 +160,7 @@ namespace ts {
 
     //!
     //! Function getting a 64-bit IEEE float from serialized data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] p An address pointing to a 64-bit IEEE float in big endian representation.
     //! @return The 64-bit IEEE float in native byte order, deserialized from @a p.
     //!
@@ -169,7 +175,7 @@ namespace ts {
 
     //!
     //! Function getting a 64-bit IEEE float from serialized data in little endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] p An address pointing to a 64-bit IEEE float in little endian representation.
     //! @return The 64-bit IEEE float in native byte order, deserialized from @a p.
     //!
@@ -184,7 +190,7 @@ namespace ts {
 
     //!
     //! Function getting a 64-bit IEEE float from serialized data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] p An address pointing to a 64-bit IEEE float in big endian representation.
     //! @return The 64-bit IEEE float in native byte order, deserialized from @a p.
     //!
@@ -192,7 +198,7 @@ namespace ts {
 
     //!
     //! Function serializing a 32-bit IEEE float data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [out] p An address where to serialize the 32-bit IEEE float.
     //! @param [in]  f The 32-bit IEEE float in native byte order to serialize in big endian representation.
     //!
@@ -206,7 +212,7 @@ namespace ts {
 
     //!
     //! Function serializing a 32-bit IEEE float data in little endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [out] p An address where to serialize the 32-bit IEEE float.
     //! @param [in]  f The 32-bit IEEE float in native byte order to serialize in little endian representation.
     //!
@@ -220,7 +226,7 @@ namespace ts {
 
     //!
     //! Function serializing a 32-bit IEEE float data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [out] p An address where to serialize the 32-bit IEEE float.
     //! @param [in]  f The 32-bit IEEE float in native byte order to serialize in big endian representation.
     //!
@@ -228,7 +234,7 @@ namespace ts {
 
     //!
     //! Function serializing a 64-bit IEEE float data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [out] p An address where to serialize the 64-bit IEEE float.
     //! @param [in]  f The 64-bit IEEE float in native byte order to serialize in big endian representation.
     //!
@@ -242,7 +248,7 @@ namespace ts {
 
     //!
     //! Function serializing a 64-bit IEEE float data in little endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [out] p An address where to serialize the 64-bit IEEE float.
     //! @param [in]  f The 64-bit IEEE float in native byte order to serialize in little endian representation.
     //!
@@ -256,7 +262,7 @@ namespace ts {
 
     //!
     //! Function serializing a 64-bit IEEE float data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [out] p An address where to serialize the 64-bit IEEE float.
     //! @param [in]  f The 64-bit IEEE float in native byte order to serialize in big endian representation.
     //!

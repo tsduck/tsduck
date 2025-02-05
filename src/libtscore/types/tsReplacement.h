@@ -20,6 +20,7 @@ namespace ts {
     //! Each data structure is supposed to have a unique "identifier" inside the container.
     //! The exact interpretation of each policy may depend on the service which uses it.
     //! Can be used as a bit mask.
+    //! @ingroup cpp
     //!
     enum class Replacement : uint8_t {
         NONE    = 0x00,  //!< No known standard

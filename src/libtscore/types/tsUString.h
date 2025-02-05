@@ -38,6 +38,7 @@ namespace ts {
 
     //!
     //! Direction used on string operations.
+    //! @ingroup cpp
     //!
     enum StringDirection {
         LEFT_TO_RIGHT,   //!< From beginning of string.
@@ -47,6 +48,7 @@ namespace ts {
     //!
     //! Options used on string comparisons.
     //! Can be combined with or.
+    //! @ingroup cpp
     //!
     enum StringComparison : uint32_t {
         SCOMP_DEFAULT          = 0x0000,  //!< Default, strict comparison.
@@ -57,11 +59,13 @@ namespace ts {
 
     //!
     //! Vector of strings
+    //! @ingroup cpp
     //!
     using UStringVector = std::vector<UString>;
 
     //!
     //! List of strings
+    //! @ingroup cpp
     //!
     using UStringList = std::list<UString>;
 
@@ -2699,6 +2703,7 @@ namespace ts {
 //!
 //! @hideinitializer
 //! Registration of a new std::chrono::duration unit name.
+//! @ingroup cpp
 //! @param classname An instance of std::chrono::duration.
 //!
 #define TS_REGISTER_CHRONO_UNIT(classname, ...) \

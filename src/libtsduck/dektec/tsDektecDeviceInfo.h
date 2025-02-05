@@ -21,6 +21,7 @@ namespace ts {
 
     //!
     //! A vector of Dektec device information.
+    //! @ingroup hardware
     //!
     using DektecDeviceInfoVector = std::vector<DektecDeviceInfo>;
 

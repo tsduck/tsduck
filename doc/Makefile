@@ -76,23 +76,23 @@ $(BINDOC)/%.pdf: $(BINDOC)/%.bigpdf
 # This setup creates an expandable table of content inside the left side bar.
 #-----------------------------------------------------------------------------
 
-$(BINDOCINFO)/docinfo.html: $(ADOCDIR)/docinfo.html
+$(BINDOCINFO)/docinfo.html: $(ADOCDIR)/docinfo.in.html $(IMAGESDIR)/tsduck-logo.svg
 	$(call LOG,[GEN] $@) \
 	mkdir -p $(dir $@); \
-	cp $< $@
+	cp $(ADOCDIR)/docinfo.in.html $@; \
+	echo "<style>" >>$@; \
+	echo -n "img.tsduck-logo {content: url(data:image/svg+xml;base64," >>$@; \
+	$(BASE64) $(IMAGESDIR)/tsduck-logo.svg | tr -d '\n' >>$@; \
+	echo ");}" >>$@; \
+	echo "</style>" >>$@
 
-$(BINDOCINFO)/docinfo-footer.html: $(ADOCDIR)/docinfo-footer.in.html $(ADOCDIR)/tocbot.min.js $(IMAGESDIR)/tsduck-logo.svg
+$(BINDOCINFO)/docinfo-footer.html: $(ADOCDIR)/docinfo-footer.in.html $(ADOCDIR)/tocbot.min.js
 	$(call LOG,[GEN] $@) \
 	mkdir -p $(dir $@); \
 	echo "<script>" >$@; \
 	cat $(ADOCDIR)/tocbot.min.js >>$@; \
 	echo "" >>$@; \
 	echo "</script>" >>$@; \
-	echo "<style>" >>$@; \
-	echo -n "img.tsduck-logo {content: url(data:image/svg+xml;base64," >>$@; \
-	base64 -w0 $(IMAGESDIR)/tsduck-logo.svg >>$@; \
-	echo ");}" >>$@; \
-	echo "</style>" >>$@; \
 	cat $(ADOCDIR)/docinfo-footer.in.html >>$@
 
 #-----------------------------------------------------------------------------

@@ -50,10 +50,12 @@
 #if defined(DOXYGEN)
     //!
     //! Defined when the compiler is GCC, also known as "GNU C", or a GCC-compatible compiler.
+    //! @ingroup cpp
     //!
     #define TS_GCC
     //!
     //! Defined when the compiler is exactly GCC, also known as "GNU C", not a GCC-compatible compiler.
+    //! @ingroup cpp
     //!
     #define TS_GCC_ONLY
     //!
@@ -65,6 +67,7 @@
     //! Defined when the compiler is Microsoft C/C++, the default compiler
     //! in the Microsoft Visual Studio environment. Also used on command line
     //! and batch file as the @c cl command.
+    //! @ingroup cpp
     //!
     #define TS_MSC
     //
@@ -95,6 +98,7 @@
     //! GCC version, encoded as an integer.
     //! Example: 40801 for GCC 4.8.1.
     //! Undefined when the compiler is not GCC or its version is unknown.
+    //! @ingroup cpp
     //!
     #define TS_GCC_VERSION
     //
@@ -105,6 +109,7 @@
 #if defined(DOXYGEN)
     //!
     //! Level of C++ language, same as predefined @a __cplusplus, but safe with MSVC.
+    //! @ingroup cpp
     //!
     //! Microsoft-specific ways of signaling the language level: With Visual Studio 2017,
     //! there are flags such as /std:c++14 to specify the level of language. However,
@@ -118,10 +123,12 @@
     #define TS_CPLUSPLUS
     //!
     //! Defined when the compiler is compliant with C++20.
+    //! @ingroup cpp
     //!
     #define TS_CXX20
     //!
     //! Defined when the compiler is compliant with C++23.
+    //! @ingroup cpp
     //!
     #define TS_CXX23
     //
@@ -162,10 +169,12 @@
 #if defined(DOXYGEN)
     //!
     //! Defined when compiled for a Microsoft Windows target platform.
+    //! @ingroup cpp
     //!
     #define TS_WINDOWS
     //!
     //! Defined when compiled for any flavor of UNIX target platforms.
+    //! @ingroup cpp
     //!
     //! This symbol comes in addition to the specific symbol for the
     //! target platform (@link TS_LINUX @endlink, etc.)
@@ -173,38 +182,47 @@
     #define TS_UNIX
     //!
     //! Defined when compiled for a Linux target platform.
+    //! @ingroup cpp
     //!
     #define TS_LINUX
     //!
     //! Defined when compiled for a BSD target platform (FreeBSD, OpenBSD, NetBSD, DragonFlyBSD).
+    //! @ingroup cpp
     //!
     #define TS_BSD
     //!
     //! Defined when compiled for a FreeBSD target platform.
+    //! @ingroup cpp
     //!
     #define TS_FREEBSD
     //!
     //! Defined when compiled for an OpenBSD target platform.
+    //! @ingroup cpp
     //!
     #define TS_OPENBSD
     //!
     //! Defined when compiled for a NetBSD target platform.
+    //! @ingroup cpp
     //!
     #define TS_NETBSD
     //!
     //! Defined when compiled for a DragonFlyBSD target platform.
+    //! @ingroup cpp
     //!
     #define TS_DRAGONFLYBSD
     //!
     //! Defined when compiled for a macOS target platform.
+    //! @ingroup cpp
     //!
     #define TS_MAC
     //!
     //! Defined when compiled for a Cygwin target platform.
+    //! @ingroup cpp
     //!
     #define TS_CYGWIN
     //!
     //! Defined when compiled for an Android target platform.
+    //! @ingroup cpp
     //!
     #define TS_ANDROID
 
@@ -264,52 +282,64 @@
 #if defined(DOXYGEN)
     //!
     //! Defined when the target processor architecture is Intel IA-32, also known as x86.
+    //! @ingroup cpp
     //!
     #define TS_I386
     //!
     //! Defined when the target processor architecture is the 64-bit extension of the
     //! IA-32 architecture, also known as AMD-64 or Intel x86-64.
+    //! @ingroup cpp
     //!
     #define TS_X86_64
     //!
     //! Defined when the target processor architecture is 32-bit ARM.
+    //! @ingroup cpp
     //!
     #define TS_ARM32
     //!
     //! Defined when the target processor architecture is 64-bit ARM.
+    //! @ingroup cpp
     //!
     #define TS_ARM64
     //!
     //! Defined when the target processor architecture is 64-bit ARM and inline assembler is allowed.
     //! This is typically true with GCC and Clang but false with MSC.
+    //! @ingroup cpp
     //!
     #define TS_ASM_ARM64
     //!
     //! Defined when the target processor architecture is 32-bit Power PC.
+    //! @ingroup cpp
     //!
     #define TS_POWERPC
     //!
     //! Defined when the target processor architecture is 64-bit Power PC.
+    //! @ingroup cpp
     //!
     #define TS_POWERPC64
     //!
     //! Defined when the target processor architecture is Sun SPARC architecture.
+    //! @ingroup cpp
     //!
     #define TS_SPARC
     //!
     //! Defined when the target processor architecture is 32-bit MIPS architecture.
+    //! @ingroup cpp
     //!
     #define TS_MIPS
     //!
     //! Defined when the target processor architecture is 64-bit MIPS architecture.
+    //! @ingroup cpp
     //!
     #define TS_MIPS64
     //!
     //! Defined when the target processor architecture is 64-bit RISC-V.
+    //! @ingroup cpp
     //!
     #define TS_RISCV64
     //!
     //! Defined when the target processor architecture is S390X.
+    //! @ingroup cpp
     //!
     #define TS_S390X
 
@@ -382,6 +412,7 @@
 
 //!
 //! Defined when the CPU requires strict memory alignment (address must be a multiple of the data size).
+//! @ingroup cpp
 //!
 #if (defined(DOXYGEN) || defined(__ARM_ARCH_5TEJ__)) && !defined(TS_STRICT_MEMORY_ALIGN)
     #define TS_STRICT_MEMORY_ALIGN 1
@@ -389,6 +420,7 @@
 
 //!
 //! Define TS_NO_ARM_CRC32_INSTRUCTIONS from the command line if you want to disable the usage of Arm64 CRC32 instructions.
+//! @ingroup cpp
 //!
 #if defined(DOXYGEN)
     #define TS_NO_ARM_CRC32_INSTRUCTIONS
@@ -402,6 +434,7 @@
 #if defined(DOXYGEN)
     //!
     //! User-defined macro to enable static linking of plugins.
+    //! @ingroup cpp
     //!
     //! If TSDUCK_STATIC_PLUGINS is defined, typically on the compilation command line,
     //! all plugins are linked statically. Dynamic loading of plugins is disabled.
@@ -410,6 +443,7 @@
     #define TSDUCK_STATIC_PLUGINS 1
     //!
     //! Applications which link against the TSDuck static library.
+    //! @ingroup cpp
     //!
     //! Applications which link against the TSDuck static library should define
     //! TSDUCK_STATIC_LIBRARY. This symbol can be used to force external references.
@@ -420,6 +454,7 @@
     #define TSDUCK_STATIC_LIBRARY 1
     //!
     //! User-defined macro to enable full static linking.
+    //! @ingroup cpp
     //!
     //! If TSDUCK_STATIC is defined, typically on the compilation command line,
     //! the code is compiled and linked statically, including system libraries.
@@ -468,6 +503,7 @@
 //!
 //! @hideinitializer
 //! This macro transforms the @e value of a macro parameter into the equivalent string literal.
+//! @ingroup cpp
 //!
 //! This is a very specific macro. It is typically used only inside the definition of
 //! another macro. It is similar to the @# token in the preprocessor but has a slightly
@@ -498,6 +534,7 @@
 //!
 //! @hideinitializer
 //! This macro transforms the @e value of a macro parameter into the equivalent 16-bit Unicode string literal.
+//! @ingroup cpp
 //!
 //! This macro is equivalent to TS_STRINGIFY() except that the string literal is of the for @c u"..." instead of @c "..."
 //! @see TS_STRINGIFY()
@@ -520,6 +557,7 @@
 //! It is typically used in more complex macro definitions. These complex
 //! macros should be defined on one single line. All invocations of TS_UNIQUE_NAME
 //! generate the same symbol when placed one the same source line.
+//! @ingroup cpp
 //! @param prefix Prefix for the symbol. Using different prefixes, several
 //! distinct unique identifiers can be used on the same line.
 //!
@@ -533,6 +571,7 @@
 #if defined(DOXYGEN)
     //!
     //! Helper macro for the C++11 keyword @c _Pragma.
+    //! @ingroup cpp
     //!
     //! With the C++11 standard, the keywork @c _Pragma uses a string literal.
     //! However, Visual C++ does not support it as of Visual Studio 2019.
@@ -549,26 +588,31 @@
     #define TS_PRAGMA(directive)
     //!
     //! Save the compiler's warnings reporting.
+    //! @ingroup cpp
     //! @see TS_POP_WARNING
     //!
     #define TS_PUSH_WARNING()
     //!
     //! Restore the compiler's warnings reporting from a previous TS_PUSH_WARNING().
+    //! @ingroup cpp
     //! @see TS_PUSH_WARNING
     //!
     #define TS_POP_WARNING()
     //!
     //! Disable a warning with the LLVM/clang compiler (does nothing on other compilers).
+    //! @ingroup cpp
     //! @param name Warning name, as used after command line option @c -W
     //!
     #define TS_LLVM_NOWARNING(name)
     //!
     //! Disable a warning with the GCC compiler (does nothing on other compilers).
+    //! @ingroup cpp
     //! @param name Warning name, as used after command line option @c -W
     //!
     #define TS_GCC_NOWARNING(name)
     //!
     //! Disable a warning with the Microsoft Visual C++ compiler (does nothing on other compilers).
+    //! @ingroup cpp
     //! @param num Warning number.
     //!
     #define TS_MSC_NOWARNING(num)

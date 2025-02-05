@@ -136,16 +136,20 @@ function Open-Doc($File)
 
 # Generate docinfo files.
 if ($Html) {
-    Copy-Item "$AdocDir\docinfo.html" "$BinDocInfo\docinfo.html"
+    # Load TSDuck as a string (SVG is XML text).
     $logo = [IO.File]::ReadAllText("$ImagesDir\tsduck-logo.svg")
-    ("<script>`n" +
-     (Get-Content "$AdocDir\tocbot.min.js") +
-     "`n</script>`n" +
+    # Generate docinfo.html (will go into <head>).
+    ((Get-Content "$AdocDir\docinfo.in.html") +
      "<style>`n" +
      "img.tsduck-logo {content: url(data:image/svg+xml;base64," +
      [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($logo)) +
      ");}`n" +
-     "</style>`n" +
+     "</style>`n") |
+        Out-File "$BinDocInfo\docinfo.html" -Encoding utf8
+    # Generate docinfo-footer.html (will go at end of document).
+    ("<script>`n" +
+     (Get-Content "$AdocDir\tocbot.min.js") +
+     "`n</script>`n" +
      (Get-Content "$AdocDir\docinfo-footer.in.html")) |
         Out-File "$BinDocInfo\docinfo-footer.html" -Encoding utf8
 }

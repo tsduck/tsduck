@@ -57,6 +57,7 @@ namespace ts::tlv {
 
     //!
     //! Exception raised by deserialization of messages
+    //! @ingroup libtscore tlv
     //!
     //! This exception should never been raised by correctly implemented message classes.
     //!

@@ -21,11 +21,13 @@ namespace ts {
 
     //!
     //! UTF-16 character.
+    //! @ingroup cpp
     //!
     using UChar = char16_t;
 
     //!
     //! Case sensitivity used on string operations.
+    //! @ingroup cpp
     //!
     enum CaseSensitivity {
         CASE_SENSITIVE,     //!< The operation is case-sensitive.
@@ -35,6 +37,7 @@ namespace ts {
     //!
     //! Characteristics of a character.
     //! Bitwise combinations are allowed.
+    //! @ingroup cpp
     //!
     enum : uint32_t {
         CCHAR_LETTER   = 0x0001,  //!< The character is a letter.
@@ -53,6 +56,7 @@ namespace ts {
 
     //!
     //! Get the characteristics of a character.
+    //! @ingroup cpp
     //! @param [in] c A character.
     //! @return Bitmask of the characteristics of @a c.
     //!
@@ -60,6 +64,7 @@ namespace ts {
 
     //!
     //! Check if a character is a space.
+    //! @ingroup cpp
     //! @param [in] c A character.
     //! @return True if @a c is a space, tab, new line character.
     //!
@@ -70,6 +75,7 @@ namespace ts {
 
     //!
     //! Check if a character is printable according to the current C locale.
+    //! @ingroup cpp
     //! @param [in] c A character.
     //! @return True if @a c is a printable character.
     //!
@@ -80,6 +86,7 @@ namespace ts {
 
     //!
     //! Check if a character is a letter.
+    //! @ingroup cpp
     //! @param [in] c A character.
     //! @return True if @a c is a letter.
     //!
@@ -90,6 +97,7 @@ namespace ts {
 
     //!
     //! Check if a character is a decimal digit.
+    //! @ingroup cpp
     //! @param [in] c A character.
     //! @return True if @a c is a decimal digit.
     //!
@@ -100,6 +108,7 @@ namespace ts {
 
     //!
     //! Check if a character is alphanumerical.
+    //! @ingroup cpp
     //! @param [in] c A character.
     //! @return True if @a c is alphanumerical.
     //!
@@ -110,6 +119,7 @@ namespace ts {
 
     //!
     //! Check if a character is an hexadecimal digit.
+    //! @ingroup cpp
     //! @param [in] c A character.
     //! @return True if @a c is an hexadecimal digit.
     //!
@@ -120,11 +130,10 @@ namespace ts {
 
     //!
     //! Convert a character representing a multi-base integer digit into the corresponding integer value.
-    //!
     //! Characters '0'..'9' are converted to 0..9.
     //! Characters 'a'..'z' and 'A'..'Z' are converted to 10..35.
     //! This function can be used to convert decimal digits, hexadecimal and any other base up to base 36.
-    //!
+    //! @ingroup cpp
     //! @param [in] c A character to convert.
     //! @param [in] base The base of the integer representation, must be in the range 2 to 36.
     //! @param [in] defaultValue The value to return on invalid character.
@@ -134,6 +143,7 @@ namespace ts {
 
     //!
     //! Check if a character is a lower case letter.
+    //! @ingroup cpp
     //! @param [in] c A character.
     //! @return True if @a c is a lower case letter.
     //!
@@ -141,6 +151,7 @@ namespace ts {
 
     //!
     //! Check if a character is an upper case letter.
+    //! @ingroup cpp
     //! @param [in] c A character.
     //! @return True if @a c is an upper case letter.
     //!
@@ -148,6 +159,7 @@ namespace ts {
 
     //!
     //! Convert a character to lowercase.
+    //! @ingroup cpp
     //! @param [in] c A character to convert to lowercase.
     //! @return @a c converted to lowercase.
     //!
@@ -155,6 +167,7 @@ namespace ts {
 
     //!
     //! Convert a character to uppercase.
+    //! @ingroup cpp
     //! @param [in] c A character to convert to uppercase.
     //! @return @a c converted to uppercase.
     //!
@@ -162,6 +175,7 @@ namespace ts {
 
     //!
     //! Check two characters match, case sensitive or insensitive.
+    //! @ingroup cpp
     //! @param [in] c1 First character.
     //! @param [in] c2 Second character.
     //! @param [in] cs Case sensitivity of the comparision.
@@ -171,6 +185,7 @@ namespace ts {
 
     //!
     //! Check if a character contains an accent.
+    //! @ingroup cpp
     //! @param [in] c A character.
     //! @return True if @a c contains an accent.
     //!
@@ -178,6 +193,7 @@ namespace ts {
 
     //!
     //! Remove all forms of accent or composition from a character.
+    //! @ingroup cpp
     //! @param [in] c A character.
     //! @return A string containing @a c without accent. This is a string and not a char
     //! since composed characters can be translated as two characters.
@@ -187,6 +203,7 @@ namespace ts {
     //!
     //! Check if a character is a combining diacritical character.
     //! Such a character, when printed, is combined with the preceding character.
+    //! @ingroup cpp
     //! @param [in] c A character.
     //! @return True if @a c is a combining diacritical character.
     //!
@@ -205,7 +222,7 @@ namespace ts {
     //! in an UTF-16 string. These two values are called a "surrogate pair". The first
     //! ("leading") and second ("trailing") value of a surrogate pair are specially
     //! coded and can be identified as such.
-    //!
+    //! @ingroup cpp
     //! @param [in] c A character.
     //! @return True if @a c is a "leading surrogate" value.
     //! @see IsTrailingSurrogate()
@@ -217,6 +234,7 @@ namespace ts {
 
     //!
     //! Check if a character is a "trailing surrogate" value.
+    //! @ingroup cpp
     //! @param [in] c A character.
     //! @return True if @a c is a "trailing surrogate" value.
     //! @see IsLeadingSurrogate()
@@ -228,6 +246,7 @@ namespace ts {
 
     //!
     //! Check if a 32-bit Unicode code point needs a surrogate pair in UTF-16 representation.
+    //! @ingroup cpp
     //! @param [in] cp A 32-bit Unicode code point.
     //! @return True if @a cp needs a surrogate pair.
     //!
@@ -238,6 +257,7 @@ namespace ts {
 
     //!
     //! Compute the first part of the surrogate pair of a 32-bit Unicode code point (which needs a surrogate pair).
+    //! @ingroup cpp
     //! @param [in] cp A 32-bit Unicode code point.
     //! @return The first part of its surrogate pair.
     //! @see NeedSurrogate()
@@ -249,6 +269,7 @@ namespace ts {
 
     //!
     //! Compute the second part of the surrogate pair of a 32-bit Unicode code point (which needs a surrogate pair).
+    //! @ingroup cpp
     //! @param [in] cp A 32-bit Unicode code point.
     //! @return The second part of its surrogate pair.
     //! @see NeedSurrogate()
@@ -260,6 +281,7 @@ namespace ts {
 
     //!
     //! Build a 32-bit Unicode code point from a surrogate pair.
+    //! @ingroup cpp
     //! @param [in] lead First part of the surrogate pair.
     //! @param [in] trail Second part of the surrogate pair.
     //! @return A 32-bit Unicode code point.
@@ -271,6 +293,7 @@ namespace ts {
 
     //!
     //! Convert a character into its corresponding HTML sequence.
+    //! @ingroup cpp
     //! @param [in] c A character.
     //! @return A string containing the html sequence for @a c.
     //!
@@ -278,6 +301,7 @@ namespace ts {
 
     //!
     //! Convert the body on an HTML entity into a character.
+    //! @ingroup cpp
     //! @param [in] entity The body on an HTML entity (e.g. "amp" for sequence "\&amp;").
     //! @return The corresponding character or CHAR_NULL if not found.
     //!
@@ -285,6 +309,7 @@ namespace ts {
 
     //!
     //! Build a precombined character from its base letter and non-spacing diacritical mark.
+    //! @ingroup cpp
     //! @param [in] letter The base letter.
     //! @param [in] mark The non-spacing diacritical mark.
     //! @return The precombined character or CHAR_NULL if the sequence does not have a precombined equivalent.
@@ -293,6 +318,7 @@ namespace ts {
 
     //!
     //! Decompose a precombined character into its base letter and non-spacing diacritical mark.
+    //! @ingroup cpp
     //! @param [in] c A character.
     //! @param [out] letter The base letter for @a c.
     //! @param [out] mark The non-spacing diacritical mark for @a c.

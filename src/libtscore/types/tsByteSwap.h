@@ -23,7 +23,7 @@
 namespace ts {
     //!
     //! Perform a sign extension on 24 bit integers.
-    //!
+    //! @ingroup cpp
     //! @param [in] x A 32-bit integer containing a signed 24-bit value to extend.
     //! @return A 32-bit signed integer containing the signed 24-bit value with proper sign extension on 32-bits.
     //!
@@ -38,7 +38,7 @@ namespace ts {
 
     //!
     //! Perform a sign extension on 40 bit integers.
-    //!
+    //! @ingroup cpp
     //! @param [in] x A 64-bit integer containing a signed 40-bit value to extend.
     //! @return A 64-bit signed integer containing the signed 40-bit value with proper sign extension on 64-bits.
     //!
@@ -53,7 +53,7 @@ namespace ts {
 
     //!
     //! Perform a sign extension on 48 bit integers.
-    //!
+    //! @ingroup cpp
     //! @param [in] x A 64-bit integer containing a signed 48-bit value to extend.
     //! @return A 64-bit signed integer containing the signed 48-bit value with proper sign extension on 64-bits.
     //!
@@ -68,10 +68,9 @@ namespace ts {
 
     //!
     //! Inlined function performing byte swap on 16-bit integer data.
-    //!
     //! This function unconditionally swaps bytes within an unsigned integer,
     //! regardless of the native endianness.
-    //!
+    //! @ingroup cpp
     //! @param [in] x A 16-bit unsigned integer to swap.
     //! @return The value of @a x where bytes were swapped.
     //!
@@ -92,10 +91,9 @@ namespace ts {
 
     //!
     //! Inlined function performing byte swap on 24-bit integer data.
-    //!
     //! This function unconditionally swaps bytes within an unsigned integer,
     //! regardless of the native endianness.
-    //!
+    //! @ingroup cpp
     //! @param [in] x A 32-bit unsigned integer containing a 24-bit value to swap.
     //! @return The value of @a x where the three least significant bytes were swapped.
     //!
@@ -114,10 +112,9 @@ namespace ts {
 
     //!
     //! Inlined function performing byte swap on 32-bit integer data.
-    //!
     //! This function unconditionally swaps bytes within an unsigned integer,
     //! regardless of the native endianness.
-    //!
+    //! @ingroup cpp
     //! @param [in] x A 32-bit unsigned integer to swap.
     //! @return The value of @a x where bytes were swapped.
     //!
@@ -138,10 +135,9 @@ namespace ts {
 
     //!
     //! Inlined function performing byte swap on 64-bit integer data.
-    //!
     //! This function unconditionally swaps bytes within an unsigned integer,
     //! regardless of the native endianness.
-    //!
+    //! @ingroup cpp
     //! @param [in] x A 64-bit unsigned integer to swap.
     //! @return The value of @a x where bytes were swapped.
     //!
@@ -171,7 +167,7 @@ namespace ts {
     //!
     //! Inlined function performing conditional byte swap on 16-bit integer data
     //! to obtain the data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] x A 16-bit unsigned integer to conditionally swap.
     //! @return On little-endian platforms, return the value of @a x where bytes were swapped.
     //! On big-endian platforms, return the value of @a x unmodified.
@@ -189,7 +185,7 @@ namespace ts {
     //!
     //! Inlined function performing conditional byte swap on 16-bit integer data
     //! to obtain the data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] x A 16-bit unsigned integer to conditionally swap.
     //! @return On little-endian platforms, return the value of @a x where bytes were swapped.
     //! On big-endian platforms, return the value of @a x unmodified.
@@ -202,7 +198,7 @@ namespace ts {
     //!
     //! Inlined function performing conditional byte swap on 24-bit integer data
     //! to obtain the data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] x A 32-bit unsigned integer containing a 24-bit value to conditionally swap.
     //! @return On little-endian platforms, return the value of @a x where the three least
     //! significant bytes were swapped. On big-endian platforms, return the value of @a x unmodified.
@@ -220,7 +216,7 @@ namespace ts {
     //!
     //! Inlined function performing conditional byte swap on 24-bit integer data
     //! to obtain the data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] x A 32-bit unsigned integer containing a 24-bit value to conditionally swap.
     //! @return On little-endian platforms, return the value of @a x where the three least
     //! significant bytes were swapped. On big-endian platforms, return the value of @a x unmodified.
@@ -233,7 +229,7 @@ namespace ts {
     //!
     //! Inlined function performing conditional byte swap on 32-bit integer data
     //! to obtain the data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] x A 32-bit unsigned integer to conditionally swap.
     //! @return On little-endian platforms, return the value of @a x where bytes were swapped.
     //! On big-endian platforms, return the value of @a x unmodified.
@@ -251,7 +247,7 @@ namespace ts {
     //!
     //! Inlined function performing conditional byte swap on 32-bit integer data
     //! to obtain the data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] x A 32-bit unsigned integer to conditionally swap.
     //! @return On little-endian platforms, return the value of @a x where bytes were swapped.
     //! On big-endian platforms, return the value of @a x unmodified.
@@ -264,7 +260,7 @@ namespace ts {
     //!
     //! Inlined function performing conditional byte swap on 64-bit integer data
     //! to obtain the data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] x A 64-bit unsigned integer to conditionally swap.
     //! @return On little-endian platforms, return the value of @a x where bytes were swapped.
     //! On big-endian platforms, return the value of @a x unmodified.
@@ -282,7 +278,7 @@ namespace ts {
     //!
     //! Inlined function performing conditional byte swap on 64-bit integer data
     //! to obtain the data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] x A 64-bit unsigned integer to conditionally swap.
     //! @return On little-endian platforms, return the value of @a x where bytes were swapped.
     //! On big-endian platforms, return the value of @a x unmodified.
@@ -295,7 +291,7 @@ namespace ts {
     //!
     //! Inlined function performing conditional byte swap on 16-bit integer data
     //! to obtain the data in little endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] x A 16-bit unsigned integer to conditionally swap.
     //! @return On big-endian platforms, return the value of @a x where bytes were swapped.
     //! On little-endian platforms, return the value of @a x unmodified.
@@ -313,7 +309,7 @@ namespace ts {
     //!
     //! Inlined function performing conditional byte swap on 24-bit integer data
     //! to obtain the data in little endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] x A 32-bit unsigned integer containing a 24-bit value to conditionally swap.
     //! @return On big-endian platforms, return the value of @a x where the three least
     //! significant bytes were swapped. On little-endian platforms, return the value of @a x unmodified.
@@ -331,7 +327,7 @@ namespace ts {
     //!
     //! Inlined function performing conditional byte swap on 32-bit integer data
     //! to obtain the data in little endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] x A 32-bit unsigned integer to conditionally swap.
     //! @return On big-endian platforms, return the value of @a x where bytes were swapped.
     //! On little-endian platforms, return the value of @a x unmodified.
@@ -349,7 +345,7 @@ namespace ts {
     //!
     //! Inlined function performing conditional byte swap on 64-bit integer data
     //! to obtain the data in little endian representation.
-    //!
+    //! @ingroup cpp
     //! @param [in] x A 64-bit unsigned integer to conditionally swap.
     //! @return On big-endian platforms, return the value of @a x where bytes were swapped.
     //! On little-endian platforms, return the value of @a x unmodified.
@@ -367,7 +363,7 @@ namespace ts {
     //!
     //! Template function performing conditional byte swap on integer data
     //! to obtain the data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @tparam INT Some integer type.
     //! @param [in] x An INT to conditionally swap.
     //! @return On little-endian platforms, return the value of @a x where bytes were swapped.
@@ -396,7 +392,7 @@ namespace ts {
     //!
     //! Template function performing conditional byte swap on integer data
     //! to obtain the data in little endian representation.
-    //!
+    //! @ingroup cpp
     //! @tparam INT Some integer type.
     //! @param [in] x An INT to conditionally swap.
     //! @return On big-endian platforms, return the value of @a x where bytes were swapped.
@@ -425,7 +421,7 @@ namespace ts {
     //!
     //! Template function performing conditional byte swap on integer data
     //! to obtain the data in big endian representation.
-    //!
+    //! @ingroup cpp
     //! @tparam INT Some integer type.
     //! @param [in] x An INT to conditionally swap.
     //! @return On little-endian platforms, return the value of @a x where bytes were swapped.

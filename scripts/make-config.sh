@@ -195,6 +195,8 @@ export LOCAL_OS LOCAL_ARCH
 [[ -z $XDGOPEN ]] && XDGOPEN=$(getcmd xdg-open open)
 [[ -z $PYTHON ]] && PYTHON=$(getcmd python3 python)
 [[ -z $SUDO && $(id -u) -ne 0 ]] && SUDO=sudo
+[[ -z $BASE64 && -n $LINUX ]] && BASE64="base64 -w0"
+[[ -z $BASE64 && -n $MACOS$BSD ]] && BASE64="base64 -i"
 
 # Commands which are sometimes installed with a version in the name.
 [[ -z $ASCIIDOCTOR ]] && ASCIIDOCTOR=$(findcmdvers asciidoctor)

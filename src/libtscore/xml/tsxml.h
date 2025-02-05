@@ -51,11 +51,13 @@ namespace ts {
 
         //!
         //! Vector of constant elements.
+        //! @ingroup xml
         //!
         using ElementVector = std::vector<const Element*>;
 
         //!
         //! Specify an unlimited number of elements.
+        //! @ingroup xml
         //!
         static constexpr size_t UNLIMITED = std::numeric_limits<size_t>::max();
 
@@ -63,6 +65,7 @@ namespace ts {
         //! How to process attributes when merging XML elements.
         //! In the merge process, there a main element and a secondary element which is merged into the main.
         //! These declarations describe what to do when merging two elements with same tag.
+        //! @ingroup xml
         //! @see Element::merge()
         //!
         enum class MergeAttributes {

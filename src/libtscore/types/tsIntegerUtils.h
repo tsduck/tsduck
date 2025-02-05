@@ -18,6 +18,7 @@
 namespace ts {
     //!
     //! A C++20 concept which requires a type to be an integer or an enumeration type.
+    //! @ingroup cpp
     //!
     template<typename T>
     concept int_enum = std::is_integral<T>::value || std::is_enum<T>::value;
@@ -33,6 +34,7 @@ namespace ts {
     //!
     //! The meta-type ts::underlying_type is a generalization of std::underlying_type which works on integral or floating-point types as well.
     //! The underlying type of any type other than enum is the type itself.
+    //! @ingroup cpp
     //! @tparam T An integral or enumeration type.
     //!
     template<typename T>
@@ -43,6 +45,7 @@ namespace ts {
 
     //!
     //! Helper type for ts::underlying_type.
+    //! @ingroup cpp
     //! @tparam T An integral or enumeration type.
     //!
     template<typename T>
@@ -64,6 +67,7 @@ namespace ts {
     //! The meta-type ts::make_signed is a generalization of std::make_signed which works on floating point-types as well.
     //! The signed type of a floating-point type or a signed integer type is the type itself.
     //! The signed type of an unsigned integer type is the signed type with the immediately larger size.
+    //! @ingroup cpp
     //! @tparam T An integral or floating-point type.
     //!
     template<typename T>
@@ -74,6 +78,7 @@ namespace ts {
 
     //!
     //! Helper type for ts::make_signed.
+    //! @ingroup cpp
     //! @tparam T An integral or floating-point type.
     //!
     template<typename T>
@@ -90,6 +95,7 @@ namespace ts {
 
     //!
     //! The meta-type ts::int_max selects the integer type with largest width and same signedness as another integer type.
+    //! @ingroup cpp
     //! @tparam INT An integer type, any size, signed or unsigned.
     //!
     template <typename INT> requires std::integral<INT>
@@ -101,6 +107,7 @@ namespace ts {
 
     //!
     //! Helper type for ts::int_max.
+    //! @ingroup cpp
     //! @tparam INT An integer type, any size, signed or unsigned.
     //!
     template <typename INT> requires std::integral<INT>
@@ -108,6 +115,7 @@ namespace ts {
 
     //!
     //! Statically check if a integral or enum value is negative.
+    //! @ingroup cpp
     //! @tparam T An integral or enumeration type.
     //! @param [in] x A value of type @a T.
     //! @return True if the underlying integral type of @a T is signed and @a x is negative.
@@ -126,6 +134,7 @@ namespace ts {
 
     //!
     //! Absolute value of integer types, also working on unsigned types.
+    //! @ingroup cpp
     //! @tparam INT An integer type, any size, signed or unsigned.
     //! @param [in] a An integer value.
     //! @return Ansolute value of @a a.
@@ -143,6 +152,7 @@ namespace ts {
 
     //!
     //! Integer cross-type bound check.
+    //! @ingroup cpp
     //! @tparam INT1 An integer type.
     //! @tparam INT2 An integer type.
     //! @param [in] x An integer value of type @a INT2.
@@ -191,6 +201,7 @@ namespace ts {
 
     //!
     //! Bounded integer cast.
+    //! @ingroup cpp
     //! @tparam INT1 An integer type.
     //! @tparam INT2 An integer type.
     //! @param [in] x An integer value of type @a INT2.
@@ -239,6 +250,7 @@ namespace ts {
 
     //!
     //! Throw an exception if an integer value does not fall into the range of another integer type.
+    //! @ingroup cpp
     //! @tparam INT1 An integer type.
     //! @tparam INT2 An integer type.
     //! @param [in] x An integer value of type @a INT2.
@@ -255,6 +267,7 @@ namespace ts {
     //!
     //! In debug mode, throw an exception if an integer value does not fall into the range of another integer type.
     //! If the macro @c DEBUG is not defined, this function does nothing.
+    //! @ingroup cpp
     //! @tparam INT1 An integer type.
     //! @tparam INT2 An integer type.
     //! @param [in] x An integer value of type @a INT2.
@@ -270,6 +283,7 @@ namespace ts {
 
     //!
     //! Check if an integer addition generates an overflow.
+    //! @ingroup cpp
     //! @tparam INT An integer type, any size, signed or unsigned.
     //! @param [in] a First integer.
     //! @param [in] b Second integer.
@@ -301,6 +315,7 @@ namespace ts {
 
     //!
     //! Check if an integer addition generates an overflow.
+    //! @ingroup cpp
     //! @tparam INT An integer type, any size, signed or unsigned.
     //! @param [in] a First integer.
     //! @param [in] b Second integer.
@@ -311,6 +326,7 @@ namespace ts {
 
     //!
     //! Check if an integer substraction generates an overflow.
+    //! @ingroup cpp
     //! @tparam INT An integer type, any size, signed or unsigned.
     //! @param [in] a First integer.
     //! @param [in] b Second integer.
@@ -333,6 +349,7 @@ namespace ts {
 
     //!
     //! Check if an integer substraction generates an overflow.
+    //! @ingroup cpp
     //! @tparam INT An integer type, any size, signed or unsigned.
     //! @param [in] a First integer.
     //! @param [in] b Second integer.
@@ -343,6 +360,7 @@ namespace ts {
 
     //!
     //! Check if the negation (opposite sign) of an integer generates an overflow.
+    //! @ingroup cpp
     //! @tparam INT An integer type, any size, signed or unsigned.
     //! @param [in] a An integer value.
     //! @return True if @a -a generates an overflow.
@@ -363,6 +381,7 @@ namespace ts {
 
     //!
     //! Check if an integer multiplication generates an overflow.
+    //! @ingroup cpp
     //! @tparam INT An integer type, any size, signed or unsigned.
     //! @param [in] a First integer.
     //! @param [in] b Second integer.
@@ -377,6 +396,7 @@ namespace ts {
 
     //!
     //! Check if an integer multiplication generates an overflow.
+    //! @ingroup cpp
     //! @tparam INT An integer type, any size, signed or unsigned.
     //! @param [in] a First integer.
     //! @param [in] b Second integer.
@@ -387,6 +407,7 @@ namespace ts {
 
     //!
     //! Throw an exception if an integer addition generates an overflow.
+    //! @ingroup cpp
     //! @tparam INT An integer type, any size, signed or unsigned.
     //! @param [in] a First integer.
     //! @param [in] b Second integer.
@@ -403,6 +424,7 @@ namespace ts {
 
     //!
     //! Throw an exception if an integer substraction generates an overflow.
+    //! @ingroup cpp
     //! @tparam INT An integer type, any size, signed or unsigned.
     //! @param [in] a First integer.
     //! @param [in] b Second integer.
@@ -419,6 +441,7 @@ namespace ts {
 
     //!
     //! Throw an exception if the negation (opposite sign) of an integer generates an overflow.
+    //! @ingroup cpp
     //! @tparam INT An integer type, any size, signed or unsigned.
     //! @param [in] a An integer value.
     //! @throw std::overflow_error When @a -a generates an overflow.
@@ -433,6 +456,7 @@ namespace ts {
 
     //!
     //! Throw an exception if an integer multiplication generates an overflow.
+    //! @ingroup cpp
     //! @tparam INT An integer type, any size, signed or unsigned.
     //! @param [in] a First integer.
     //! @param [in] b Second integer.
@@ -449,6 +473,7 @@ namespace ts {
 
     //!
     //! Throw an exception if the denominator of an integer division is zero.
+    //! @ingroup cpp
     //! @tparam INT An integer type, any size, signed or unsigned.
     //! @param [in] den The denominator of an integer division.
     //! @throw std::underflow_error When @a den is zero.
@@ -464,6 +489,7 @@ namespace ts {
     //!
     //! In debug mode, throw an exception if an integer addition generates an overflow.
     //! If the macro @c DEBUG is not defined, this function does nothing.
+    //! @ingroup cpp
     //! @tparam INT An integer type, any size, signed or unsigned.
     //! @param [in] a First integer.
     //! @param [in] b Second integer.
@@ -481,6 +507,7 @@ namespace ts {
     //!
     //! In debug mode, throw an exception if an integer substraction generates an overflow.
     //! If the macro @c DEBUG is not defined, this function does nothing.
+    //! @ingroup cpp
     //! @tparam INT An integer type, any size, signed or unsigned.
     //! @param [in] a First integer.
     //! @param [in] b Second integer.
@@ -498,6 +525,7 @@ namespace ts {
     //!
     //! In debug mode, throw an exception if the negation (opposite sign) of an integer generates an overflow.
     //! If the macro @c DEBUG is not defined, this function does nothing.
+    //! @ingroup cpp
     //! @tparam INT An integer type, any size, signed or unsigned.
     //! @param [in] a An integer value.
     //! @throw std::overflow_error When @a -a generates an overflow.
@@ -513,6 +541,7 @@ namespace ts {
     //!
     //! In debug mode, throw an exception if an integer multiplication generates an overflow.
     //! If the macro @c DEBUG is not defined, this function does nothing.
+    //! @ingroup cpp
     //! @tparam INT An integer type, any size, signed or unsigned.
     //! @param [in] a First integer.
     //! @param [in] b Second integer.
@@ -530,6 +559,7 @@ namespace ts {
     //!
     //! In debug mode, throw an exception if the denominator of an integer division is zero.
     //! If the macro @c DEBUG is not defined, this function does nothing.
+    //! @ingroup cpp
     //! @tparam INT An integer type, any size, signed or unsigned.
     //! @param [in] den The denominator of an integer division.
     //! @throw std::underflow_error When @a den is zero.
@@ -544,6 +574,7 @@ namespace ts {
 
     //!
     //! Integer division with rounding to closest value (instead of truncating).
+    //! @ingroup cpp
     //! @tparam INT An integer type, any size, signed or unsigned.
     //! @param [in] a An integer.
     //! @param [in] b An integer.
@@ -565,6 +596,7 @@ namespace ts {
 
     //!
     //! Perform a bounded addition without overflow.
+    //! @ingroup cpp
     //! @tparam INT An integer type, any size, signed or unsigned.
     //! @param [in] a First integer.
     //! @param [in] b Second integer.
@@ -577,6 +609,7 @@ namespace ts {
 
     //!
     //! Perform a bounded subtraction without overflow.
+    //! @ingroup cpp
     //! @tparam INT An integer type, any size, signed or unsigned.
     //! @param [in] a First integer.
     //! @param [in] b Second integer.
@@ -589,6 +622,7 @@ namespace ts {
 
     //!
     //! Round @a x down to previous multiple of a factor @a f.
+    //! @ingroup cpp
     //! @tparam INT An integer type.
     //! @param [in] x An integer value.
     //! @param [in] f A factor (its absolute value is used if negative).
@@ -599,6 +633,7 @@ namespace ts {
 
     //!
     //! Round @a x up to next multiple of a factor @a f.
+    //! @ingroup cpp
     //! @tparam INT An integer type.
     //! @param [in] x An integer value.
     //! @param [in] f A factor (its absolute value is used if negative).
@@ -610,6 +645,7 @@ namespace ts {
     //!
     //! Reduce the sign of an integer fraction.
     //! Make sure that only the numerator carries the sign. The denominator must remain positive.
+    //! @ingroup cpp
     //! @tparam INT An integer type.
     //! @param [in,out] num Fraction numerator.
     //! @param [in,out] den Fraction denominator.
@@ -633,7 +669,7 @@ namespace ts {
 
     //!
     //! Perform a sign extension on any subset of a signed integer.
-    //!
+    //! @ingroup cpp
     //! @tparam INT A signed integer type.
     //! @param [in] x An integer containing a signed value in some number of LSB.
     //! @param [in] bits Number of least significant bits containing a signed value.
@@ -644,6 +680,7 @@ namespace ts {
 
     //!
     //! Compute the maximum width of the decimal representation of an integer type.
+    //! @ingroup cpp
     //! @param [in] typeSize Size of the integer type in bytes (result of @c sizeof).
     //! @param [in] digitSeparatorSize Size in characters of the digit-grouping separator.
     //! @return The maximum width in characters.
@@ -652,6 +689,7 @@ namespace ts {
 
     //!
     //! Compute the maximum width of the hexadecimal representation of an integer type.
+    //! @ingroup cpp
     //! @param [in] typeSize Size of the integer type in bytes (result of @c sizeof).
     //! @param [in] digitSeparatorSize Size in characters of the digit-grouping separator.
     //! @return The maximum width in characters.
@@ -661,7 +699,7 @@ namespace ts {
     //!
     //! Get the size in bits of an integer value.
     //! This is the minimum number of bits to represent the value up to its most-significant '1' bit.
-    //!
+    //! @ingroup cpp
     //! @tparam INT An integer type.
     //! @param [in] x An integer containing a signed value in some number of LSB.
     //! @return The minimum number of bits to represent the value up to its most-significant '1' bit.
@@ -672,6 +710,7 @@ namespace ts {
 
     //!
     //! Get the mask to select a given number of least significant bits in an integer value.
+    //! @ingroup cpp
     //! @tparam INT An integer type.
     //! @param [in] bits Number of least significant bits to select. Zero means all bits.
     //! @return The corresponding mask.
@@ -681,7 +720,7 @@ namespace ts {
 
     //!
     //! Get the signed/unsigned qualifier of an integer type as a string.
-    //!
+    //! @ingroup cpp
     //! @tparam INT An integer type.
     //! @return Either u"signed" or u"unsigned".
     //!
@@ -701,7 +740,7 @@ namespace ts {
 
     //!
     //! Compute a greatest common denominator (GCD).
-    //!
+    //! @ingroup cpp
     //! @tparam INT An integer type.
     //! @param [in] x An integer.
     //! @param [in] y An integer.
@@ -713,12 +752,13 @@ namespace ts {
     //!
     //! Largest representable power of 10 in integer types.
     //! Assuming that no integer type is larger than 64 bits, 10^19 is the largest unsigned power of 10.
+    //! @ingroup cpp
     //!
     constexpr size_t MAX_POWER_10 = 19;
 
     //!
     //! Get a power of 10 using a fast lookup table.
-    //!
+    //! @ingroup cpp
     //! @param [in] pow The requested power of 10.
     //! @return The requested power of 10. If the value is larger than the largest integer on
     //! this platform, the result is undefined.
@@ -727,6 +767,7 @@ namespace ts {
 
     //!
     //! Static values of power of 10.
+    //! @ingroup libtscore cpp
     //! @tparam POW The exponent of 10.
     //! @tparam INT The integer type for the power of 10.
     //!
@@ -763,6 +804,7 @@ namespace ts {
 
     //!
     //! Define the smaller unsigned integer type with at least a given number of bits.
+    //! @ingroup libtscore cpp
     //! @tparam BITS Minimum number of bits. Must be in the range 0 to 64.
     //!
     template <const size_t BITS>
