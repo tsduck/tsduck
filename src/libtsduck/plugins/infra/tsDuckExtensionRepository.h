@@ -13,7 +13,7 @@
 
 #pragma once
 #include "tsReport.h"
-#include "tsVersionInfo.h"
+#include "tsLibTSDuckVersion.h"
 
 namespace ts {
     //!
@@ -127,5 +127,5 @@ namespace ts {
 //! @endcode
 //!
 #define TS_REGISTER_EXTENSION(name,...) \
-    TS_LIBCHECK(); \
+    TS_LIBTSDUCK_CHECK(); \
     static ts::DuckExtensionRepository::Register TS_UNIQUE_NAME(_RE)(name,ts::CallerLibraryFile(),__VA_ARGS__)

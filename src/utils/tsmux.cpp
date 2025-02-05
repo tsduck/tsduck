@@ -16,6 +16,7 @@
 #include "tsSystemMonitor.h"
 #include "tsAsyncReport.h"
 #include "tsCerrReport.h"
+#include "tsVersionInfo.h"
 TS_MAIN(MainCode);
 
 

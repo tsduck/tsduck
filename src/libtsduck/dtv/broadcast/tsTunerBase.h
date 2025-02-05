@@ -31,6 +31,7 @@ namespace ts {
 
     //!
     //! Vector of safe pointers to tuners (not thread-safe).
+    //! @ingroup hardware
     //!
     using TunerPtrVector = std::vector<TunerPtr>;
 

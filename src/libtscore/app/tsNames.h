@@ -712,7 +712,7 @@ namespace ts {
 //! @see SearchConfigurationFile()
 //!
 #define TS_REGISTER_NAMES_FILE(filename) \
-    TS_LIBCHECK(); \
+    TS_LIBTSCORE_CHECK(); \
     static ts::Names::RegisterExtensionFile TS_UNIQUE_NAME(_Registrar)(filename)
 
 

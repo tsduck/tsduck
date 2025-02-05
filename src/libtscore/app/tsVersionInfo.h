@@ -15,25 +15,7 @@
 #include "tsNames.h"
 #include "tsReport.h"
 #include "tsThread.h"
-#include "tsVersion.h"
-
-//!
-//! Define the TSDuck version as an 8-bit string literal.
-//! @ingroup app
-//!
-#define TS_VERSION_STRING TS_STRINGIFY(TS_VERSION_MAJOR) "." TS_STRINGIFY(TS_VERSION_MINOR) "-" TS_STRINGIFY(TS_COMMIT)
-
-//!
-//! Define the TSDuck version as a 16-bit string literal.
-//! @ingroup app
-//!
-#define TS_VERSION_USTRING TS_USTRINGIFY(TS_VERSION_MAJOR) u"." TS_USTRINGIFY(TS_VERSION_MINOR) u"-" TS_USTRINGIFY(TS_COMMIT)
-
-//!
-//! Define the TSDuck version as an integer, suitable for comparisons.
-//! @ingroup app
-//!
-#define TS_VERSION_INTEGER ((TS_VERSION_MAJOR * 10000000) + (TS_VERSION_MINOR * 100000) + TS_COMMIT)
+#include "tsLibTSCoreVersion.h"
 
 //!
 //! TSDuck namespace, containing all TSDuck classes and functions.
@@ -167,61 +149,6 @@ namespace ts {
     };
 }
 
-extern "C" {
-    //!
-    //! Major version of the TSDuck library as the int value of a symbol from the library.
-    //!
-    extern const int TSCOREDLL tsduckLibraryVersionMajor;
-    //!
-    //! Minor version of the TSDuck library as the int value of a symbol from the library.
-    //!
-    extern const int TSCOREDLL tsduckLibraryVersionMinor;
-    //!
-    //! Commit version of the TSDuck library as the int value of a symbol from the library.
-    //!
-    extern const int TSCOREDLL tsduckLibraryVersionCommit;
-
-    // Compute the name of a symbol which describe the TSDuck library version.
-    //! @cond nodoxygen
-    #define TS_SYM4(a,b,c,d) TS_SYM4a(a,b,c,d)
-    #define TS_SYM4a(a,b,c,d) a##_##b##_##c##_##d
-    #define TSDUCK_LIBRARY_VERSION_SYMBOL TS_SYM4(TSDUCK_LIBRARY_VERSION,TS_VERSION_MAJOR,TS_VERSION_MINOR,TS_COMMIT)
-    //! @endcond
-
-    //!
-    //! Full version of the TSDuck library in the name of a symbol from the library.
-    //!
-    //! Can be used to force an undefined reference at run-time in case of version mismatch.
-    //! The C++ application uses the name TSDUCK_LIBRARY_VERSION_SYMBOL but this
-    //! generates a reference to a symbol containing the actual version number.
-    //!
-    //! Example:
-    //! @code
-    //!   $ nm -C tsVersionInfo.o | grep TSDUCK_LIBRARY_VERSION
-    //!   00000000000008dc R TSDUCK_LIBRARY_VERSION_3_26_2289
-    //! @endcode
-    //!
-    extern const int TSCOREDLL TSDUCK_LIBRARY_VERSION_SYMBOL;
-}
-
-//!
-//! A macro to use in application code to enforce the TSDuck library version.
-//!
-//! When this macro is used in an executable or shared library which uses the
-//! TSDuck library, it generates an external reference to a symbol name which
-//! contains the TSDuck library version number, at the time of the compilation
-//! of the application code. If the application is run later on a system with
-//! a TSDuck library with a different version, the reference won't be resolved
-//! and the application won't run.
-//!
-//! If we don't do this, the initialization of application automatically calls
-//! complex "Register" constructors in the TSDuck library which may fail if the
-//! version of the library is different.
-//!
-//! @hideinitializer
-//!
-#define TS_LIBCHECK() TS_STATIC_REFERENCE(version, &TSDUCK_LIBRARY_VERSION_SYMBOL)
-
 #if defined(DOXYGEN)
 //!
 //! Macro to disable remote version checking on GitHub.
@@ -247,5 +174,5 @@ extern "C" {
 //! @hideinitializer
 //!
 #define TS_REGISTER_FEATURE(option, name, support, get_version) \
-    TS_LIBCHECK(); \
+    TS_LIBTSCORE_CHECK(); \
     static ts::VersionInfo::RegisterFeature TS_UNIQUE_NAME(_Registrar)((option), (name), ts::VersionInfo::RegisterFeature::support, (get_version))

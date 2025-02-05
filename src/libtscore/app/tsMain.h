@@ -13,7 +13,7 @@
 
 #pragma once
 #include "tsArgs.h"
-#include "tsVersionInfo.h"
+#include "tsLibTSCoreVersion.h"
 
 //!
 //! A function to wrap the entry point of an application.
@@ -44,7 +44,7 @@ int TSCOREDLL MainWrapper(int (*func)(int argc, char* argv[]), int argc, char* a
     static int func(int argc, char *argv[]);           \
     int main(int argc, char *argv[])                   \
     {                                                  \
-        TS_LIBCHECK();                                 \
+        TS_LIBTSCORE_CHECK();                          \
         return MainWrapper(func, argc, argv);          \
     }                                                  \
     /** @cond nodoxygen */                             \

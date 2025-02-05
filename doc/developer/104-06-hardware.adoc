@@ -1,0 +1,63 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2025, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+[#hwsupport]
+=== Hardware support
+
+This section describes some specificities of the various types of hardware devices
+which are supported by TSDuck and their impact on the code.
+
+The TSDuck User's Guide has a complete chapter on each of these classes of devices.
+It describes the devices, their naming, usage, supported platforms, required drivers, etc.
+In the Developer's Guide, we focus on the structure of the code, for TSDuck maintainers.
+
+==== Standard tuner receiver devices (DVB, ATSC, ISDB)
+
+The code for tuners is located in `libtsduck/dtv/broadcast`.
+
+===== Code structure
+
+The base class for all tuners is `TunerBase`.
+It exposes the common interface of all tuners.
+It is normally never directly used by an application.
+
+A tuner is accessed by an application using the subclass `Tuner`.
+
+When opening a `Tuner` instance, depending on the provided name, the tuner is either
+a physical device or a software emulator.
+The `Tuner` instance creates either an internal `TunerDevice` object or `TunerEmulator`
+object. These two classes are also subclasses of `TunerBase`.
+Once a `Tuner` is opened, all services are redirected to the internal `TunerDevice`
+or `TunerEmulator` object.
+
+The subclass `TunerEmulator` is a pure software implementation which is available
+on all systems. The name of such a device in a XML file which describes all the
+capabilities of the "tuner" and the available frequencies and corresponding
+modulation parameters. The content of the transport stream on each of these
+"frequencies" are TS files. These TS files are referenced in the XML file.
+Receiving from such a frequency means reading the corresponding TS file,
+looping back the beginning when the end of file is reached.
+
+The `TunerDevice` class is highly dependent on the operating system.
+The source files are different and placed in system-specific directories.
+The subdirectories `linux` and `windows` contain actual implementations
+for these operating systems. The subdirectories `mac` and `bsd` contain
+stub versions which report errors when used.
+
+===== Linux implementation
+
+===== Windows implementation
+
+.Usage of Windows DirectShow interfaces in TSDuck
+image::tsduck-directshow.png[align="center",alt="Usage of Windows DirectShow",width=500]
+
+==== Dektec devices
+
+==== HiDes devices
+
+==== VATek-based modulators

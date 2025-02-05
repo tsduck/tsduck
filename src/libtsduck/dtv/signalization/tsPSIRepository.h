@@ -15,9 +15,9 @@
 #include "tsEDID.h"
 #include "tsNames.h"
 #include "tsTablesPtr.h"
-#include "tsVersionInfo.h"
 #include "tsSectionContext.h"
 #include "tsDescriptorContext.h"
+#include "tsLibTSDuckVersion.h"
 
 namespace ts {
 
@@ -412,7 +412,7 @@ namespace ts {
 //! This macro is typically used in the .cpp file of a table.
 //!
 #define TS_REGISTER_TABLE(classname, ...) \
-    TS_LIBCHECK(); \
+    TS_LIBTSDUCK_CHECK(); \
     _TS_TABLE_FACTORY(classname) static ts::PSIRepository::RegisterTable _TS_REGISTRAR_NAME(_TS_FACTORY_NAME, std::type_index(typeid(classname)), __VA_ARGS__)
 
 //!
@@ -421,7 +421,7 @@ namespace ts {
 //! This macro is typically used in the .cpp file of a CAS-specific module or TSDuck extension.
 //!
 #define TS_REGISTER_SECTION(...) \
-    TS_LIBCHECK(); \
+    TS_LIBTSDUCK_CHECK(); \
     static ts::PSIRepository::RegisterTable _TS_REGISTRAR_NAME(__VA_ARGS__)
 
 //!
@@ -430,7 +430,7 @@ namespace ts {
 //! This macro is typically used in the .cpp file of a descriptor.
 //!
 #define TS_REGISTER_DESCRIPTOR(classname, ...) \
-    TS_LIBCHECK(); \
+    TS_LIBTSDUCK_CHECK(); \
     _TS_DESCRIPTOR_FACTORY(classname) static ts::PSIRepository::RegisterDescriptor _TS_REGISTRAR_NAME(_TS_FACTORY_NAME, std::type_index(typeid(classname)), __VA_ARGS__)
 
 //!
@@ -439,7 +439,7 @@ namespace ts {
 //! This macro is typically used in the .cpp file of a CAS-specific module or TSDuck extension.
 //!
 #define TS_REGISTER_CA_DESCRIPTOR(func, ...) \
-    TS_LIBCHECK(); \
+    TS_LIBTSDUCK_CHECK(); \
     static ts::PSIRepository::RegisterDescriptor _TS_REGISTRAR_NAME(func, __VA_ARGS__)
 
 //!
@@ -448,5 +448,5 @@ namespace ts {
 //! This macro is typically used in the .cpp file of a TSDuck extension.
 //!
 #define TS_REGISTER_XML_FILE(filename) \
-    TS_LIBCHECK(); \
+    TS_LIBTSDUCK_CHECK(); \
     static ts::PSIRepository::RegisterXML _TS_REGISTRAR_NAME(filename)
