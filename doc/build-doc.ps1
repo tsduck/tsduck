@@ -138,20 +138,20 @@ function Open-Doc($File)
 if ($Html) {
     # Load TSDuck as a string (SVG is XML text).
     $logo = [IO.File]::ReadAllText("$ImagesDir\tsduck-logo.svg")
+    $info = "$BinDocInfo\docinfo.html"
+    $footer = "$BinDocInfo\docinfo-footer.html"
     # Generate docinfo.html (will go into <head>).
-    ((Get-Content "$AdocDir\docinfo.in.html") +
-     "<style>`n" +
-     "img.tsduck-logo {content: url(data:image/svg+xml;base64," +
-     [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($logo)) +
-     ");}`n" +
-     "</style>`n") |
-        Out-File "$BinDocInfo\docinfo.html" -Encoding utf8
+    Get-Content "$AdocDir\docinfo.in.html" | Out-File $info -Encoding utf8
+    "<style>`n" +
+        "img.tsduck-logo {content: url(data:image/svg+xml;base64," +
+        [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($logo)) +
+        ");}`n" +
+        "</style>" | Out-File $info -Encoding utf8 -Append
     # Generate docinfo-footer.html (will go at end of document).
-    ("<script>`n" +
-     (Get-Content "$AdocDir\tocbot.min.js") +
-     "`n</script>`n" +
-     (Get-Content "$AdocDir\docinfo-footer.in.html")) |
-        Out-File "$BinDocInfo\docinfo-footer.html" -Encoding utf8
+    "<script>" | Out-File $footer -Encoding utf8
+    Get-Content "$AdocDir\tocbot.min.js" | Out-File $footer -Encoding utf8 -Append
+    "</script>" | Out-File $footer -Encoding utf8 -Append
+    Get-Content "$AdocDir\docinfo-footer.in.html" | Out-File $footer -Encoding utf8 -Append
 }
 
 # Generate a .adoc file which includes all .adoc in a given subdirectory.
