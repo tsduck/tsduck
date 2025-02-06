@@ -18,9 +18,7 @@ In the Developer's Guide, we focus on the structure of the code, for TSDuck main
 
 ==== Standard tuner receiver devices (DVB, ATSC, ISDB)
 
-The code for tuners is located in `libtsduck/dtv/broadcast`.
-
-===== Code structure
+The code for tuners is located in `src/libtsduck/dtv/broadcast`.
 
 The base class for all tuners is `TunerBase`.
 It exposes the common interface of all tuners.
@@ -30,18 +28,15 @@ A tuner is accessed by an application using the subclass `Tuner`.
 
 When opening a `Tuner` instance, depending on the provided name, the tuner is either
 a physical device or a software emulator.
-The `Tuner` instance creates either an internal `TunerDevice` object or `TunerEmulator`
-object. These two classes are also subclasses of `TunerBase`.
+The `Tuner` instance creates either an internal `TunerDevice` object or an internal
+`TunerEmulator` object. These two classes are also subclasses of `TunerBase`.
 Once a `Tuner` is opened, all services are redirected to the internal `TunerDevice`
 or `TunerEmulator` object.
 
 The subclass `TunerEmulator` is a pure software implementation which is available
 on all systems. The name of such a device in a XML file which describes all the
 capabilities of the "tuner" and the available frequencies and corresponding
-modulation parameters. The content of the transport stream on each of these
-"frequencies" are TS files. These TS files are referenced in the XML file.
-Receiving from such a frequency means reading the corresponding TS file,
-looping back the beginning when the end of file is reached.
+modulation parameters. The TSDuck User's Guide describes the tuner emulator in details.
 
 The `TunerDevice` class is highly dependent on the operating system.
 The source files are different and placed in system-specific directories.
@@ -49,12 +44,117 @@ The subdirectories `linux` and `windows` contain actual implementations
 for these operating systems. The subdirectories `mac` and `bsd` contain
 stub versions which report errors when used.
 
-===== Linux implementation
+[.usage]
+Linux
 
-===== Windows implementation
+The Linux implementation is relatively straightforward using the Linux TV API.
+This API evolves on a regular basis. New modulations are added.
+
+It is sometimes useful to review the evolutions of the Linux TV API to detect
+new modulations and new parameters. In the `broadcast/linux` subdirectory, there is a
+Bash script named `get-linux-tv-api-history.sh` which extracts from the Linux
+kernel repository a snapshot of each new version of the Linux TV, with a
+`diff` file of each version.
+
+[.usage]
+Windows
+
+The Windows implementation is more problematic. The tuner devices are managed by DirectShow,
+a Microsoft framework for multimedia. The specific subsystem of DirectShow for TV receiver
+devices is BDA (Broadcast Device Architecture). Most of the time, the hardware vendors
+provide BDA drivers for their receivers. Windows does not include any predefined BDA driver.
+
+The DirectShow framework is complex. It is based on the concept of "graphs of filters".
+Each DirectShow filter is a COM object which exposes standard interfaces. Media processing
+starts with building a graph with filters, and connecting these filters together using
+the standard interfaces they expose.
+
+Unlike Linux, there is no standard interface to the various BDA drivers. Each vendor
+defines its own interface. A vendor also provides its own DirectShow filters, typically
+a "Tuner Filter" and an optional "Receiver / Capture Filter". The proprietary tuner
+filter communicates with the proprietary BDA driver. An application can only use the
+standard interface of the DirectShow filters.
+
+However, a filter cannot be used alone. It must be part of a DirectShow graph. This graph
+must be complete and consistent, with no dangling interface. This is the condition to
+"start the graph". Starting the graph is required to read incoming packets from the
+tuner.
+
+To make things worse, there is no single way to build a tuner reception graph. It depends
+on the proprietary filters. Do they include a receiver / capture filter for instance?
+Some combinations of filters work, some others don't. Depending on the tuner device,
+various types of graphs shall be used, or different filters of the same types.
+
+When building a graph, the application "connects" filters together, by pairs.
+A filter can accept or reject the connection. Therefore, in the absence of deterministic
+method, TSDuck uses a flexible approach. Several "standard" types of graphs are tested.
+At each node of the graph, we search all available filters of the required type for
+that node. Normally, only one combination of filters can be built, with all connections
+being accepted by all filters. This is the method which is used by TSDuck, testing all
+possible graphs for the tuner until one is accepted.
+
+This looks complicated (and it is) but the standard use case for a tuner on Windows
+is simpler. When you purchase a tuner, it comes with all software: BDA driver,
+DirectShow filters, and TV watching application. Since the application is provided
+by the tuner vendor, for that tuner, there is only one way to build a graph for that
+tuner and it is well known by the tuner vendor. With TSDuck, we have a less common
+use case. The application is the same for all tuners and expects to uniformly read the
+transport stream from all of them. Simple on Linux, awfully complex on Windows.
+
+Another annoying property of DirectShow is the absence of data output filter.
+A DirectShow graph is designed to process media. Typically, it reads media from
+somewhere (a tuner in our case), processes them, filters them, and outputs the
+result on screen. In short, DirectShow is designed to watch TV...
+There is no way to do such a simple thing as reading TS packets from the tuner
+device. Therefore, we were obliged to develop our own DirectShow filter. This
+filter is inserted in the graph and collects the TS packets using the DirectShow
+standard interfaces. This custom DirectShow filter is implemented in the class
+`SinkFilter`, with its source code in the `broadcast/windows` subdirectory.
+
+Because everything is annoying in DirectShow, it uses a "push" model. This means
+that, once the graph is started, packets are pushed from the tuner all along the
+graph. The applications which needs packets, on the contrary, have a "pull" model.
+When packets are needed, it "reads" packets, like reading packets on the network,
+reading data from a pipe, etc. Therefore, the passing mechanism is asynchronous.
+When incoming TS packets are pushed up to our `SinkFilter`, the filter passes them
+through a message queue. The application, on the other hand, consumes packets in
+pull mode from the message queue. This is performed in the Windows version of the
+`TunerDevice` class.
+
+Because everything is _really_ annoying in DirectShow, there are other constraints.
+For instance, a tuner reception graph cannot work without a demux filter. In our
+case, we don't demux anything because TSDuck wants the complete transport stream.
+Anyway, DirectShow needs it or you won't get any packet. Additionally, even though
+it would be logical to insert the demux in the middle of the data flow, DirectShow
+wants it in a dead-end branch of the graph. Don't try to understand... To paraphrase
+a well-known cryptographer, it seems that DirectShow has been "designed by the
+E-commerce Department of the Ministry of Silly Walks".
+
+The following diagram represents a typical DirectShow reception graph for a tuner.
+It helps understanding the code. Given the complexity of this code, it is not
+recommended to modify it, unless completely and absolutely necessary.
 
 .Usage of Windows DirectShow interfaces in TSDuck
 image::tsduck-directshow.png[align="center",alt="Usage of Windows DirectShow",width=500]
+
+As a Grande Finale, let's note that DirectShow received no update, no improvement,
+no new features, for years. It looks like abandonware, without any new alternative.
+Recent modulations are not supported on Windows and will probably   never be.
+
+In short, if you want to receive broadcast transport streams from a tuner, use Linux...
+
+[.usage]
+ISDB-T 204-byte packets
+
+The ISDB-T and ISDB-Tb standards have a specific form of 204-byte packets.
+In other modulations, the standard 188-byte TS packet is followed by a 16-byte Reed-Solomon
+outer forward error correction code. These 16 bytes are not interesting and dropped by the
+demodulator. In ISDB-T and ISDB-Tb, the 16-byte trailer is split in two equal parts. The
+Reed-Solomon FEC is reduced to 8 bytes, at the end of the trailer. The first 8 bytes of the
+trailer contain ISDB information such as modulation layer, frame counters, system identification.
+This information can be analyzed by TSDuck, when available. However, neither the Linux TV
+nor the Windows DirectShow API's are able to return 204-byte packets. Therefore, it is
+not possible to analyze ISDB-T information from the `dvb` plugin.
 
 ==== Dektec devices
 

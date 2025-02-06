@@ -114,8 +114,8 @@ $ tslsdvb
 
 *DirectShow framework*
 
-Starting from Windows XP, the DVB devices are managed by DirectShow, a Microsoft framework for multimedia.
-The specific subsystem of DirectShow for DVB receiver devices is BDA (Broadcast Device Architecture).
+Starting from Windows XP, the tuner devices are managed by DirectShow, a Microsoft framework for multimedia.
+The specific subsystem of DirectShow for TV receiver devices is BDA (Broadcast Device Architecture).
 Most of the time, the hardware vendors provide BDA drivers for their receivers.
 Windows does not include any predefined BDA driver.
 
