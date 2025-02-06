@@ -38,7 +38,8 @@ Since there is one single code base for all OS, Linux also uses the same structu
 (although it is still technically possible to build a libdtapi.so on Linux and use it).
 
 On Windows, the Dektec SDK and drivers shall be installed first. This is automated
-in the PowerShell script `install-dektec.ps1` in the `scripts` directory.
+in the PowerShell script `install-dektec.ps1` in the `scripts/install-wintools` directory.
+It is automatically invoked by `scripts/install-prerequisites.ps1`.
 
 On Linux, the DTAPI is automatically downloaded from https://dektec.com before
 the build. This is handled in the makefiles. See also the script `dtapi-config.sh`

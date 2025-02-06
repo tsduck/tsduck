@@ -158,6 +158,81 @@ not possible to analyze ISDB-T information from the `dvb` plugin.
 
 ==== Dektec devices
 
+Using Dektec devices requires kernel-mode device drivers which must be separately installed.
+Building TSDuck code does not depend on the device drivers. They are only required to use Dektec devices.
+The TSDuck User's Guide describes how to install the Dektec drivers.
+
+Most of the TSDuck code for Dektec support is located in `src/libtsduck/dtv/dektec`.
+The `dektec` plugin is implemented in classes `DektecInputPlugin` and `DektecOutputPlugin`
+and is completely embedded inside the TSDuck library.
+The main code of the `tsdektec` utility is in `src/tstools` for technical reasons
+but this is a simple wrapper around the class `DektecControl` which is inside the TSDuck library as well.
+
+TSDuck does not call the device drivers directly. Dektec provides a user-mode API for {cpp} called "DTAPI".
+The DTAPI is well documented and well designed. Its interface is the same over all operating systems.
+The DTAPI is closed-source and is available in binary format only, for Windows and Linux on Intel
+architectures.
+
+On Windows, the DTAPI shall be installed first. This is automated in the PowerShell script
+`install-dektec.ps1`, which is also automatically invoked by `install-prerequisites.ps1`.
+The "Dektec Windows SDK" installs the device drivers and the DTAPI system-wise.
+
+On Linux, the DTAPI is not "installed". It is automatically downloaded from https://dektec.com
+during the build process of the TSDuck library. The DTAPI is locally installed in the `bin`
+build area of the TSDuck project. It is therefore deleted as part of `make clean`.
+
+The DTAPI binary code is delivered as a static library on Windows and an object file on Linux.
+Several versions are installed, depending on release vs. debug mode and, sometimes, the
+version of the compilers. The TSDuck build process automatically selects the appropriate version.
+
+A TSDuck application process typically contains an executable, several plugin shared libraries,
+the TSCore and TSDuck shared libraries. The DTAPI object code has to be somewhere, typically
+in a shared library. This is the way to ensure that only one copy of the DTAPI binary is
+present in each application process.
+
+On Windows, because of some silly import/export rules, the code in a DLL can be called
+from outside that DLL only if it was compiled with the right export attributes
+(see xref:windllcrap[xrefstyle=short] for more details).
+Because Dektec did not compile the DTAPI with there export attributes, the DTAPI can be called
+only from the same shared library it is in. This is the reason why the DTAPI and all {cpp}
+classes which directly reference it are in the same TSDuck library. Tools such as `tsdektec`
+never reference the DTAPI, they reference TSDuck classes. The DTAPI remains hidden inside the
+TSDuck library. For consistency, the same code structure is used on Linux, even though there
+is no technical reason which prevents the DTAPI from being called outside the `libtsduck`
+shared library.
+
 ==== HiDes devices
 
+Using HiDes devices requires kernel-mode device drivers which must be separately installed.
+The drivers are provided by ITE, the vendor of the main chip in HiDes modulators.
+Building TSDuck code does not depend on the device drivers. They are only required to use HiDes devices.
+The TSDuck User's Guide describes how to install the HiDes drivers.
+
+The ITE drivers for Linux and Windows are very different, there is no common structure,
+no common API or structure. There is also no stable common userland API above the drivers.
+TSDuck directly interfaces the ITE drivers, with different implementations on Linux
+and Windows. TSDuck recreates a stable intermediate layer which provides a system-independent
+API to access HiDes devices. This code is located in `src/libtsduck/dtv/hides`.
+The {cpp} class `HiDesDevice` provides a uniform access to HiDes devices. The subdirectories
+`linux`, `windows`, `mac`, `bsd` contain the system-specific variants of this class.
+Note that the macOS and BSD implementations simply return errors and error messages.
+
+The code for the `hides` output plugin and the `tshides` command is located in the standard
+locations `src/tsplugins` and `src/tstools` respectively. To access the HiDes devices, they
+call the classes `HiDesDevice` and `HiDesDeviceInfo` which are part of the TSDuck library.
+
 ==== VATek-based modulators
+
+VATek-based USB devices do not need a dedicated device driver. They are accessed through the
+portable `libusb` library which is available on all operating systems.
+At application level, VATek devices are accessed through an open-source user-mode library
+which is provided by Vision Advance Technology Inc. (VATek).
+
+Most of the TSDuck code for VATek support is located in `src/libtsduck/dtv/vatek`.
+The `vatek` plugin is implemented in the class `VatekOutputPlugin` and is completely embedded
+inside the TSDuck library. The main code of the `tsvatek` utility is in `src/tstools` but this is
+a simple wrapper around the class `VatekControl` which is inside the TSDuck library as well.
+
+All code in `src/libtsduck/dtv/vatek` is a free contrbution from Vision Advance Technology Inc. (VATek).
+In case of problem, before trying to modify the code, it is recommended to contact the author,
+Richie Chang from VATek, `a83912a` on GitHub.

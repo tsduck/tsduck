@@ -44,7 +44,7 @@ Classes in "DTV" can reference classes from "TSCore" but not from "Plugins", etc
 The TSDuck commands are separate executables and the plugins are separate shared libraries.
 They are independently built and may reference anything from the TSDuck library.
 
-[.srctree]
+[#srctree]
 ==== Source files structure
 
 The `src` directory is structured as follow:
@@ -84,7 +84,7 @@ There are some exceptions, based on the name of the subdirectories:
   on the corresponding operating system. The names `unix` and `bsd` are more generic and are
   included on all UNIX systems and all BSD systems, respectively.
 
-[.windllcrap]
+[#windllcrap]
 ==== Windows constraints
 
 All classes, functions, and objects in the TSDuck libraries are gathered into two shared libraries,
@@ -199,7 +199,7 @@ namespace ts {
 Template classes and functions do not need any `TSCOREDLL` or `TSDUCKDLL` attribute.
 Their instantiations are completely generated inside the application.
 
-[.selfreg]
+[#selfreg]
 ==== Self registration of modules
 
 The TSDuck code base is huge.
