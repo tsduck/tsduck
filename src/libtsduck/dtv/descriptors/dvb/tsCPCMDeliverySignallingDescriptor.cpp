@@ -78,7 +78,7 @@ void ts::CPCMDeliverySignallingDescriptor::CPCMv1Signalling::serializePayload(PS
     buf.putBits(copy_control, 3);
     buf.putBit(do_not_cpcm_scramble);
     buf.putBit(viewable);
-    buf.putBit(view_window_start.has_value() || view_window_end.has_value());
+    buf.putBit(view_window_start.has_value() && view_window_end.has_value());
     buf.putBit(view_period_from_first_playback.has_value());
     buf.putBit(simultaneous_view_count.has_value());
     buf.putBit(move_local);
@@ -95,7 +95,7 @@ void ts::CPCMDeliverySignallingDescriptor::CPCMv1Signalling::serializePayload(PS
     buf.putBit(disable_analogue_hd_export);
     buf.putBit(disable_analogue_hd_consumption);
     buf.putBit(image_constraint);
-    if (view_window_start.has_value() || view_window_end.has_value()) {
+    if (view_window_start.has_value() && view_window_end.has_value()) {
         buf.putMJD(view_window_start.value(), MJD_FULL);
         buf.putMJD(view_window_end.value(), MJD_FULL);
     }
@@ -362,6 +362,10 @@ bool ts::CPCMDeliverySignallingDescriptor::analyzeXML(DuckContext& duck, const x
             if (ok && children[i]->hasAttribute(u"view_window_end")) {
                 ok = children[i]->getDateTimeAttribute(tmpDate, u"view_window_end", true);
                 cpcm_v1_delivery_signalling.view_window_end = tmpDate;
+            }
+            if (ok && (children[i]->hasAttribute(u"view_window_start") + children[i]->hasAttribute(u"view_window_end") == 1)) {
+                element->report().error(u"both 'view_window_start' and 'view_window_end' must be specified or omitted in <%s>", element->name());
+                ok = false;
             }
             if (ok && children[i]->hasAttribute(u"remote_access_date")) {
                 ok = children[i]->getDateTimeAttribute(tmpDate, u"remote_access_date", true);
