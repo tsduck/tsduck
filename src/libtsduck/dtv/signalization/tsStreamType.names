@@ -105,6 +105,8 @@ Extended = true
 0x48444D56_A1 = HDMV AC-3+ Secondary Audio
 0x48444D56_A2 = DTS-HD Secondary Audio
 # These could be used in the context of an appropriate AVS registration id, but these values are currently unused in the industry
+0xD2 = AVS2 video
+0x41565356_D2 = AVS2 video
 0xD3 = AVS2 audio
 0x41565341_D3 = AVS2 audio
 0xD4 = AVS3 video

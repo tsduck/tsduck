@@ -42,6 +42,7 @@ const ts::Names& ts::CodecTypeEnum()
         {u"DTS-HD",        CodecType::DTSHD},
         {u"Teletext",      CodecType::TELETEXT},
         {u"DVB Subtitles", CodecType::DVB_SUBTITLES},
+        {u"AVS2 Video",    CodecType::AVS2_VIDEO},
         {u"AVS3 Video",    CodecType::AVS3_VIDEO},
         {u"AVS2 Audio",    CodecType::AVS2_AUDIO},
         {u"AVS3 Audio",    CodecType::AVS3_AUDIO},
@@ -86,6 +87,7 @@ const ts::Names& ts::CodecTypeArgEnum()
         {u"DTSHD",         CodecType::DTSHD},
         {u"Teletext",      CodecType::TELETEXT},
         {u"DVBSubtitles",  CodecType::DVB_SUBTITLES},
+        {u"AVS2Video",     CodecType::AVS2_VIDEO},
         {u"AVS3Video",     CodecType::AVS3_VIDEO},
         {u"AVS2Audio",     CodecType::AVS2_AUDIO},
         {u"AVS3Audio",     CodecType::AVS3_AUDIO},
@@ -134,6 +136,7 @@ bool ts::CodecTypeIsVideo(CodecType ct)
         CodecType::LCEVC,
         CodecType::VP9,
         CodecType::AV1,
+        CodecType::AVS2_VIDEO,
         CodecType::AVS3_VIDEO,
     };
 

@@ -56,6 +56,7 @@ bool ts::StreamTypeIsVideo(uint8_t st)
            st == ST_JPEG_XS_VIDEO ||
            st == ST_EVC_VIDEO     ||
            st == ST_LCEVC_VIDEO   ||
+           st == ST_AVS2_VIDEO    ||
            st == ST_AVS3_VIDEO;
 }
 

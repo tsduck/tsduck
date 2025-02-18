@@ -112,6 +112,7 @@ namespace ts {
 
         // Valid after an appropriate AVS registration descriptor.
 
+        ST_AVS2_VIDEO       = 0xD2, //!< AVS2 video
         ST_AVS2_AUDIO       = 0xD3, //!< AVS2 audio
         ST_AVS3_VIDEO       = 0xD4, //!< AVS3 video
         ST_AVS3_AUDIO       = 0xD5, //!< AVS3 audio
