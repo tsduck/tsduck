@@ -59,7 +59,7 @@ class filetype:
     # Display width of description.
     description_header = 'File type'
     description_width = len(description_header)
-    data_width = 9
+    data_width = 10
     percent_width = 9
 
     # Format a percentage.
@@ -85,16 +85,16 @@ class filetype:
 
     # Display lines of code on one line.
     def print_lines(self):
-        print('| %-*s | %*d | %*d | %*s | %*d | %*s | %*d | %*s | %*d |' %
+        print('| %-*s | %*s | %*s | %*s | %*s | %*s | %*s | %*s | %*s |' %
               (filetype.description_width, self.description,
-               filetype.data_width, self.files,
-               filetype.data_width, self.blank_lines,
+               filetype.data_width, f"{self.files:,}",
+               filetype.data_width, f"{self.blank_lines:,}",
                filetype.percent_width, filetype.percent(self.blank_lines, self.total_lines),
-               filetype.data_width, self.comment_lines,
+               filetype.data_width, f"{self.comment_lines:,}",
                filetype.percent_width, filetype.percent(self.comment_lines, self.total_lines),
-               filetype.data_width, self.code_lines,
+               filetype.data_width, f"{self.code_lines:,}",
                filetype.percent_width, filetype.percent(self.code_lines, self.total_lines),
-               filetype.data_width, self.total_lines))
+               filetype.data_width, f"{self.total_lines:,}"))
 
     # Display header for characters of code.
     def print_chars_header():
@@ -113,14 +113,14 @@ class filetype:
 
     # Display characters of code on one line.
     def print_chars(self):
-        print('| %-*s | %*d | %*d | %*s | %*d | %*s | %*d |' %
+        print('| %-*s | %*s | %*s | %*s | %*s | %*s | %*s |' %
               (filetype.description_width, self.description,
-               filetype.data_width, self.files,
-               filetype.data_width, self.comment_chars,
+               filetype.data_width, f"{self.files:,}",
+               filetype.data_width, f"{self.comment_chars:,}",
                filetype.percent_width, filetype.percent(self.comment_chars, self.total_chars),
-               filetype.data_width, self.code_chars,
+               filetype.data_width, f"{self.code_chars:,}",
                filetype.percent_width, filetype.percent(self.code_chars, self.total_chars),
-               filetype.data_width, self.total_chars))
+               filetype.data_width, f"{self.total_chars:,}"))
 
     # Process one source file.
     def process_file(self, path):
@@ -231,6 +231,7 @@ files_order = [
     filetype('Markdown',      '*.md'),
     filetype('Text',          '*.txt'),
     filetype('Web doc',       ['*.html', '*.css', '*.js']),
+    filetype(None,            '.*.adoc'),
     filetype('Asciidoc',      '*.adoc', '//'),
     filetype('Doxygen',       ['Doxyfile*', '*.dox'], '#'),
     filetype('Packaging',     ['*.nsi', '*.control', '*.spec', '*.perms', '*.rules', '*.pc', 'Dockerfile*'], '#'),
