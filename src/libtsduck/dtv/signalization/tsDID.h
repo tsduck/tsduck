@@ -432,6 +432,7 @@ namespace ts {
         DID_SPLICE_DTMF    = 0x01,  //!< DID for SCTE 35 SIT DTMF_descriptor
         DID_SPLICE_SEGMENT = 0x02,  //!< DID for SCTE 35 SIT segmentation_descriptor
         DID_SPLICE_TIME    = 0x03,  //!< DID for SCTE 35 SIT time_descriptor
+        DID_SPLICE_AUDIO   = 0x04,  //!< DID for SCTE 35 SIT audio_descriptor
 
         // Valid in ISDB context:
 

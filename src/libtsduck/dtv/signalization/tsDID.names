@@ -575,6 +575,7 @@ Extended = true
 0x0004_03_FFFFFF_FC_01 = SCTE 35 DTMF
 0x0004_03_FFFFFF_FC_02 = SCTE 35 Segmentation
 0x0004_03_FFFFFF_FC_03 = SCTE 35 Time
+0x0004_03_FFFFFF_FC_04 = SCTE 35 Audio
 #
 # ATSC-defined regular descriptors.
 #

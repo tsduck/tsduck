@@ -1,0 +1,16 @@
+==== splice_audio_descriptor
+
+Defined by ANSI/SCTE in <<SCTE-35>>.
+Must be in a Splice Information Table (table id 0xFC).
+
+[source,xml]
+----
+<splice_audio_descriptor identifier="uint32, default=0x43554549">
+  <!-- One per audio stream -->
+  <audio component_tag="uint8, required"
+         ISO_code="char3, required"
+         Bit_Stream_Mode="uint3, required"
+         Num_Channels="uint4, required"
+         Full_Srvc_Audio="bool, required"/>
+</splice_audio_descriptor>
+----
