@@ -21,9 +21,9 @@
 //! TSDuck minor version.
 //! @ingroup app
 //!
-#define TS_VERSION_MINOR 40
+#define TS_VERSION_MINOR 41
 //!
 //! TSDuck commit number (automatically updated by Git hooks).
 //! @ingroup app
 //!
-#define TS_COMMIT 4165
+#define TS_COMMIT 4166

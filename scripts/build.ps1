@@ -132,6 +132,18 @@ $VFields = ($MSBuildVersionString -split "[-\. ]") + @("0", "0", "0") | Select-S
 $MSBuildVersion = (10000 * [int]$VFields[0].ToString()) + (100 * [int]$VFields[1].ToString()) + [int]$VFields[2].ToString()
 Write-Output "MSBuild version $MSBuildVersionString ($MSBuildVersion)"
 
+# Visual Studio installs compilers for 3 architectures, each one in 3 native architectures.
+# A strange behaviour is observed on x64 build systems. When building on x64 for x64, the
+# x64 version of the x64 compiler is used. However, when building on x64 for arm64, the x86
+# version of the arm64 compiler is used, even though the x64 version is installed. Therefore,
+# we force the use of the native versions of the cross-compilers.
+if ($env:PROCESSOR_ARCHITECTURE -like 'arm64*') {
+    $env:PreferredToolArchitecture = "ARM64"
+}
+elseif ($env:PROCESSOR_ARCHITECTURE -like 'amd64*') {
+    $env:PreferredToolArchitecture = "x64"
+}
+
 # Update git repository if requested.
 if ($GitPull) {
     if ($git -eq $null) {

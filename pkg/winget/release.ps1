@@ -16,6 +16,11 @@
   Specify a Github token with "public_repo" access rights. By default, use
   environment variable GITHUB_TOKEN.
 
+ .PARAMETER Test
+
+  Test the new version and display the wingetcreate command, but don't submit
+  the pull request.
+
  .PARAMETER NoPause
 
   Do not wait for the user to press <enter> at end of execution. By default,
@@ -24,6 +29,7 @@
 #>
 param(
     [string]$Token = "",
+    [switch]$Test = $false,
     [switch]$NoPause = $false
 )
 
@@ -100,7 +106,8 @@ if (-not (Find-Executable 'wingetcreate.exe')) {
 $resp = Invoke-RestMethod -Headers $Headers https://api.github.com/repos/tsduck/tsduck/releases?per_page=1
 $tag = $resp.tag_name
 $version = $tag -replace '^v',''
-$installer = "https://github.com/tsduck/tsduck/releases/download/$tag/TSDuck-Win64-$version.exe"
+$installer_win64 = "https://github.com/tsduck/tsduck/releases/download/$tag/TSDuck-Win64-$version.exe"
+$installer_arm64 = "https://github.com/tsduck/tsduck/releases/download/$tag/TSDuck-Arm64-$version.exe"
 if (-not $version) {
     Exit-Script "Cannot find latest TSDuck release"
 }
@@ -112,13 +119,23 @@ if (Test-URL "https://github.com/microsoft/winget-pkgs/tree/master/manifests/t/T
 }
 
 # Check if the installer is available online.
-Write-Output "Checking $installer ..."
-if (-not (Test-URL "$installer")) {
-    Exit-Script "TSDuck $version installer not found"
+Write-Output "Checking $installer_win64 ..."
+if (-not (Test-URL "$installer_win64")) {
+    Exit-Script "TSDuck $version installer for Win64 not found"
+}
+Write-Output "Checking $installer_arm64 ..."
+if (-not (Test-URL "$installer_arm64")) {
+    Exit-Script "TSDuck $version installer for Arm64 not found"
 }
 
 # Create the pull request for the new version.
-Write-Output "Creating a pull request for TSDuck $version ..."
-wingetcreate update --submit --token $Token --urls $installer --version $version TSDuck.TSDuck
+if ($Test) {
+    Write-Output "Command will be:"
+    Write-Output "wingetcreate update TSDuck.TSDuck --version $version --submit --token $Token --urls `"$installer_win64|x64`" `"$installer_arm64|arm64`""
+}
+else {
+    Write-Output "Creating a pull request for TSDuck $version ..."
+    wingetcreate update TSDuck.TSDuck --version $version --submit --token $Token --urls "$installer_win64|x64" "$installer_arm64|arm64"
+}
 
 Exit-Script

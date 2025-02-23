@@ -75,9 +75,9 @@ then "Choose another app", select (simple click, don't double-click)
 - `install-wintools` : This directory contains scripts to install individual
   prerequisites. They are all invoked by `install-prerequisites.ps1`.
 
-- `WindowsCompileLowPriority.reg` : A registry file which add definitions to
-  force compilation and link processes to run with a lower priority to avoid
-  killing the system while compiling.
+- `adjust-compiler-performance.ps1` : Adjust the compilation performances on
+  Windows with Visual Studio or MSBuild. Alter priority and power throttling
+  options. See comments in the script.
 
 The following scripts are just conveniences to run the corresponding `.py`
 scripts from the Windows explorer:

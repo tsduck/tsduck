@@ -68,7 +68,7 @@ installers = [
     installer('tsduck_{VERSION}.ubuntu{OS}_arm64.deb',       False, False, 'Ubuntu (Arm, 64 bits)'),
     installer('tsduck_{VERSION}.ubuntu{OS}_s390x.deb',       False, False, 'Ubuntu (IBM s390x)'),
     installer('tsduck_{VERSION}.ubuntu{OS}_riscv64.deb',     False, False, 'Ubuntu (RISC-V, 64 bits)'),
-    installer('tsduck_{VERSION}.raspbian{OS}_armhf.deb',     False, True,  'Raspbian (Raspberry Pi, 32 bits)'),
+    installer('tsduck_{VERSION}.raspbian{OS}_armhf.deb',     False, False, 'Raspbian (Raspberry Pi, 32 bits)'),
     installer('tsduck-devel-{VERSION}.el{OS}.x86_64.rpm',    True,  True,  'RedHat and clones (Intel, 64 bits)'),
     installer('tsduck-devel-{VERSION}.el{OS}.aarch64.rpm',   True,  False, 'RedHat and clones (Arm, 64 bits)'),
     installer('tsduck-devel-{VERSION}.fc{OS}.x86_64.rpm',    True,  True,  'Fedora (Intel, 64 bits)'),
@@ -80,7 +80,7 @@ installers = [
     installer('tsduck-dev_{VERSION}.ubuntu{OS}_arm64.deb',   True,  False, 'Ubuntu (Arm, 64 bits)'),
     installer('tsduck-dev_{VERSION}.ubuntu{OS}_s390x.deb',   True,  False, 'Ubuntu (IBM s390x)'),
     installer('tsduck-dev_{VERSION}.ubuntu{OS}_riscv64.deb', True,  False, 'Ubuntu (RISC-V, 64 bits)'),
-    installer('tsduck-dev_{VERSION}.raspbian{OS}_armhf.deb', True,  True,  'Raspbian (Raspberry Pi, 32 bits)')
+    installer('tsduck-dev_{VERSION}.raspbian{OS}_armhf.deb', True,  False, 'Raspbian (Raspberry Pi, 32 bits)')
 ]
 
 # Get latest release and verify the format of its tag.
