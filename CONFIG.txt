@@ -219,6 +219,7 @@ STATIC_LIBTSDUCK    # Generated static library for TSDuck library.
 SHARED_LIBTSDUCK    # Generated shared library for TSDuck library.
 INSTALLERDIR        # Output directory for binary packages and installers.
 GET_TSDUCK_VERSION  # Shell command to get TSDuck version (see get-version-from-sources.py).
+ALL_INCLUDES        # List of all source directories with headers (excluding other OS).
 LIBTSCORE_INCLUDES  # List of source directories in libtscore with public headers.
 LIBTSDUCK_INCLUDES  # List of source directories in libtsduck with public headers.
 TSPLUGINS           # List of plugins to compile.

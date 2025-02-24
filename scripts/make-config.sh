@@ -127,15 +127,12 @@ done
 # Where are we? CURDIR is normally set by make.
 [[ -z $CURDIR ]] && CURDIR=$(pwd)
 
-# Check if we are building libtstuck.
-[[ $CURDIR == */src/libtsduck || $CURDIR == */src/libtsduck/* ]] && INLIBTSDUCK=1 || INLIBTSDUCK=
-debug "INLIBTSDUCK='$INLIBTSDUCK'"
-
 # Check if we need to download external libraries which are not installed at system level.
 # For maintenance or cleanup operations, we should not download stuff (we may even want
-# to delete them in the case of a cleanup operation).
+# to delete them in the case of a cleanup operation). These libraries are used only when
+# building libtsduck.
 NOEXTLIBS=1
-if [[ -n $INLIBTSDUCK ]]; then
+if [[ $CURDIR == */src/libtsduck || $CURDIR == */src/libtsduck/* ]]; then
     if [[ -z ${MAKECMDGOALS// /} ]]; then
         # Default build in libtsduck: use external libraries.
         NOEXTLIBS=
