@@ -131,6 +131,14 @@ Section "Tools & Plugins" SectionTools
     Delete "$INSTDIR\bin\tsmux.exe"
     Delete "$INSTDIR\bin\tsnet.exe"
 
+    ; Delete configuration files which were moved from libtsduck to libtscore.
+    Delete "$INSTDIR\bin\tsduck.ip.names"
+    Delete "$INSTDIR\bin\tsduck.keytable.model.xml"
+    Delete "$INSTDIR\bin\tsduck.monitor.model.xml"
+    Delete "$INSTDIR\bin\tsduck.monitor.xml"
+    Delete "$INSTDIR\bin\tsduck.time.model.xml"
+    Delete "$INSTDIR\bin\tsduck.time.xml"
+
     ; Delete obsolete plugins from previous versions.
     ; Maintenance: also update Makefile.inc
     Delete "$INSTDIR\bin\tsplugin_dektec.dll"
