@@ -300,6 +300,13 @@ elif [[ "$DISTRO" == "Linuxmint" ]]; then
 
 elif [[ "$DISTRO" = "Debian" || "$DISTRO" = "Raspbian" ]]; then
 
+    # Debian testing versions are insanely identified.
+    [[ -z $MAJOR ]] && lsb_release -d | grep -qi bookworm && MAJOR=12
+    [[ -z $MAJOR ]] && lsb_release -d | grep -qi trixie && MAJOR=13
+    [[ -z $MAJOR ]] && lsb_release -d | grep -qi forky && MAJOR=14
+    [[ -z $MAJOR ]] && lsb_release -d | grep -qi duke && MAJOR=15
+    [[ -z $MAJOR ]] && MAJOR=99
+
     PKGLIST+=(git g++ cmake flex bison dos2unix curl tar zip linux-libc-dev dpkg-dev python3)
     [[ -z $NOOPENSSL               ]] && PKGLIST+=(libssl-dev)
     [[ -z $NOEDITLINE              ]] && PKGLIST+=(libedit-dev)
