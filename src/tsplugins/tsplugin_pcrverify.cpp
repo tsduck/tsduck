@@ -83,7 +83,7 @@ ts::PCRVerifyPlugin::PCRVerifyPlugin(TSP* tsp_) :
     option<BitRate>(u"bitrate", 'b');
     help(u"bitrate",
          u"Verify the PCR's according to this transport bitrate. "
-         u"By default, use the input bitrate as reported by the input device.");
+         u"By default (or when zero), use the input bitrate as reported by the input device.");
 
     option(u"input-synchronous", 'i');
     help(u"input-synchronous",
