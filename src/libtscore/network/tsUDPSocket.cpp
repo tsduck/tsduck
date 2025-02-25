@@ -462,7 +462,7 @@ bool ts::UDPSocket::addMembershipImpl(const IPAddress& multicast_in, const IPAdd
 // Join one multicast group on all local interfaces.
 //----------------------------------------------------------------------------
 
-bool ts::UDPSocket::addMembershipAll(const IPAddress& multicast, const IPAddress& source, Report& report)
+bool ts::UDPSocket::addMembershipAll(const IPAddress& multicast, const IPAddress& source, bool link_local, Report& report)
 {
     // There is no implicit way to listen on all interfaces. If no local address is specified,
     // we must get the list of all local interfaces and send a multicast membership request on each of them.
@@ -481,14 +481,16 @@ bool ts::UDPSocket::addMembershipAll(const IPAddress& multicast, const IPAddress
     // Add all memberships
     bool ok = true;
     for (const auto& loc : locals) {
-        if (gen == IP::v4 || loc.index < 0) {
-            // On IPv4, use local IP address. Also on IPv6 if interface index is unknown.
-            ok = addMembershipImpl(multicast, loc.address, -1, source, report) && ok;
-        }
-        else if (!indexes.contains(loc.index)) {
-            // On IPv6, use interface index. Keep track of indexes to send only one request per interface.
-            indexes.insert(loc.index);
-            ok = addMembershipImpl(multicast, IPAddress(), loc.index, source, report) && ok;
+        if (link_local || !loc.address.isLinkLocal()) {
+            if (gen == IP::v4 || loc.index < 0) {
+                // On IPv4, use local IP address. Also on IPv6 if interface index is unknown.
+                ok = addMembershipImpl(multicast, loc.address, -1, source, report) && ok;
+            }
+            else if (!indexes.contains(loc.index)) {
+                // On IPv6, use interface index. Keep track of indexes to send only one request per interface.
+                indexes.insert(loc.index);
+                ok = addMembershipImpl(multicast, IPAddress(), loc.index, source, report) && ok;
+            }
         }
     }
     return ok;

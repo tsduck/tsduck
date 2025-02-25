@@ -18,6 +18,7 @@ void ts::UDPReceiverArgs::setUnicast(const IPSocketAddress& local, bool reuse, s
 {
     reuse_port = reuse;
     default_interface = false;
+    no_link_local = false;
     use_first_source = false;
     mc_loopback = false;
     use_ssm = false;
@@ -95,6 +96,11 @@ void ts::UDPReceiverArgs::DefineArgs(Args& args, bool with_short_options, bool d
     args.option(u"local-address", with_short_options ? 'l' : 0, Args::IPADDR, 0, max_count);
     args.help(u"local-address", help);
 
+    args.option(u"no-link-local");
+    args.help(u"no-link-local",
+              u"Do not join multicast groups from link-local addresses. "
+              u"By default, join from all local interfaces.");
+
     args.option(u"no-reuse-port");
     args.help(u"no-reuse-port",
               u"Disable the reuse port socket option. Do not use unless completely necessary.");
@@ -148,6 +154,7 @@ bool ts::UDPReceiverArgs::loadArgs(DuckContext& duck,
     // General UDP options.
     reuse_port = !args.present(u"no-reuse-port");
     default_interface = args.present(u"default-interface");
+    no_link_local = args.present(u"no-link-local");
     use_first_source = args.present(u"first-source");
     mc_loopback = !args.present(u"disable-multicast-loop");
     use_ssm = args.present(u"ssm");
@@ -170,6 +177,12 @@ bool ts::UDPReceiverArgs::loadArgs(DuckContext& duck,
     }
     if (local_count > dest_count) {
         args.error(u"too many --local-address options");
+        ok = false;
+    }
+
+    // Either specify a local address or let the system decide, but not both.
+    if (int(default_interface) + int(no_link_local) + int(local_count > 0) > 1) {
+        args.error(u"--default-interface, --no-link-local, and --local-address are mutually exclusive");
         ok = false;
     }
 
@@ -226,12 +239,6 @@ bool ts::UDPReceiverArgs::loadArgs(DuckContext& duck,
 
         // Get and resolve optional local address.
         args.getIPValue(local_address, u"local-address", default_local_address, dest_index);
-
-        // Either specify a local address or let the system decide, but not both.
-        if (default_interface && local_address.hasAddress()) {
-            args.error(u"--default-interface and --local-address are mutually exclusive");
-            ok = false;
-        }
 
         // If source is already set, it comes from source@destination SSM format and cannot be repeated through --source.
         if (source.hasAddress() && dest_index < source_count) {

@@ -2,6 +2,16 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
+VERSION 3.41-4168 (Feb 2025)
+
+[IMP] Improvements on existing commands and plugins:
+
+  * New options in existing commands and plugins:
+    - Option --no-link-local in "tsdump", "tstabdump" and plugins "ip" (input),
+      "cutoff", "mpeinject".
+
+-------------------------------------------------------------------------------
+
 VERSION 3.40-4165 (Feb 2025)
 
 [NEW] New commands and plugins:

@@ -99,7 +99,7 @@ bool ts::UDPReceiver::open(IP gen, Report& report)
         }
         else {
             // By default, listen on all interfaces.
-            ok = addMembershipAll(_args.destination, ssm_source, report);
+            ok = addMembershipAll(_args.destination, ssm_source, !_args.no_link_local, report);
         }
     }
 

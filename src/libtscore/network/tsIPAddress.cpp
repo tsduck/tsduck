@@ -398,7 +398,7 @@ bool ts::IPAddress::operator<(const IPAddress& other) const
 
 
 //----------------------------------------------------------------------------
-// Multicast addresses.
+// Multicast and link-local addresses.
 //----------------------------------------------------------------------------
 
 bool ts::IPAddress::isMulticast() const
@@ -420,7 +420,21 @@ bool ts::IPAddress::isSSM() const
     }
     else {
         // IPv4 SSM addresses are in the range 232.0.0.0/8.
-        return (_addr4 & 0xFF000000) == 0xE8000000;
+        return (_addr4 & 0xFF000000) == 0xE800'0000;
+    }
+}
+
+// Link-local address.
+bool ts::IPAddress::isLinkLocal() const
+{
+    if (_gen == IP::v6) {
+        // IPv6 link-local address are fe80::/10.
+        // See https://en.wikipedia.org/wiki/Link-local_address
+        return networkPrefix6() == 0xFE80'0000'0000'0000;
+    }
+    else {
+        // IPv4 link-local address are 169.254.0.0/16.
+        return (_addr4 & 0xFFFF0000) == 0xA9FE'0000;
     }
 }
 

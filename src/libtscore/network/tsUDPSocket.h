@@ -280,10 +280,11 @@ namespace ts {
         //!
         //! @param [in] multicast Multicast IP address to listen to.
         //! @param [in] source Source address for SSM.
+        //! @param [in] link_local If true, also add membership on link-local addresses, otherwise ignore them.
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool addMembershipAll(const IPAddress& multicast, const IPAddress& source = IPAddress(), Report& report = CERR);
+        bool addMembershipAll(const IPAddress& multicast, const IPAddress& source = IPAddress(), bool link_local = true, Report& report = CERR);
 
         //!
         //! Join a multicast group.

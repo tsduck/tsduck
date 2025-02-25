@@ -253,6 +253,12 @@ namespace ts {
         bool isSSM() const;
 
         //!
+        //! Check if the address is a link-local address, typically an auto-configured address.
+        //! @return True if the address is a link-local address, false otherwise.
+        //!
+        bool isLinkLocal() const;
+
+        //!
         //! Get the IPv4 address as a 32-bit integer value in host byte order.
         //! @return The IPv4 address as a 32-bit integer value in host byte order or zero if not an IPv4 address.
         //!
@@ -260,7 +266,7 @@ namespace ts {
 
         //!
         //! Get the IPv6 address as a byte block.
-        //! @return Byte block containing the IPv6 bytes.
+        //! @return Byte block containing the IPv6 bytes or an empty blcok if not an IPv6 address.
         //!
         ByteBlock address6() const;
 

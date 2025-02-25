@@ -64,8 +64,8 @@ in the developer's guide for more details.
 - On Windows, [use winget](https://learn.microsoft.com/en-us/windows/package-manager/winget/): `winget install tsduck`
 
 Pre-built [binary packages](https://github.com/tsduck/tsduck/releases) are available
-for Windows and the very latest versions of some Linux distros
-(Fedora, RedHat, CentOS, AlmaLinux, Ubuntu, Debian, Raspbian).
+for Windows and the very latest versions of some Linux distros (Fedora, RedHat and clones, Ubuntu, Debian),
+on Intel x64 and Arm64 architectures.
 
 The latest developments can be tested using [nightly builds](https://tsduck.io/download/prerelease/).
 

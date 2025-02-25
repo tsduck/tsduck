@@ -33,6 +33,7 @@ namespace ts {
 
         bool             reuse_port = true;          //!< Reuse port socket option (-\-no-reuse-port not present).
         bool             default_interface = false;  //!< Use default local interface only for multicast (-\-default-interface).
+        bool             no_link_local = false;      //!< Ignore link-local addresses (-\-no-link-local).
         bool             use_first_source = false;   //!< Use socket address of first received packet to filter subsequent packets (-\-first-source).
         bool             mc_loopback = true;         //!< Multicast loopback option (-\-disable-multicast-loop not present).
         bool             use_ssm = false;            //!< Use source-specific multicast (-\-ssm or SSM syntax used in destination).

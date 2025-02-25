@@ -146,6 +146,16 @@ With `--ip-udp`, receive the tables as raw binary messages in UDP packets.
 By default, the tables are formatted into TLV messages.
 
 [.opt]
+*--no-link-local*
+
+[.optdoc]
+Do not join multicast groups from link-local addresses, typically 169.254.xx.xx.
+These addresses are often auto-configured and may not be allowed to receive multicast, especially on Windows.
+
+[.optdoc]
+By default, join multicast groups from all local interfaces.
+
+[.opt]
 *--no-reuse-port*
 
 [.optdoc]
