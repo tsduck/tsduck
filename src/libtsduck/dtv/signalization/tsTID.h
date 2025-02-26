@@ -83,6 +83,8 @@ namespace ts {
         TID_MPE_FEC       = 0x78, //!< Table id for MPE-FEC Table (Data Broadcasting)
         TID_RNT           = 0x79, //!< Table id for Resolution Notification Table (TV-Anytime)
         TID_MPE_IFEC      = 0x7A, //!< Table id for MPE-IFEC Table
+        TID_PROT_MSG      = 0x7B, //!< Table id for Protection Message Table
+        TID_DFIT          = 0x7C, //!< Table id for Downloadable Font Info Table
         TID_DIT           = 0x7E, //!< Table id for Discontinuity Information Table
         TID_SIT           = 0x7F, //!< Table id for Selection Information Table
 

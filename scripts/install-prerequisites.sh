@@ -313,7 +313,7 @@ elif [[ "$DISTRO" = "Debian" || "$DISTRO" = "Raspbian" ]]; then
     [[ -z $NOZLIB                  ]] && PKGLIST+=(zlib1g-dev)
     [[ -z $NOPCSC                  ]] && PKGLIST+=(pcscd libpcsclite-dev)
     [[ -z $NOCURL && $MAJOR -le 9  ]] && PKGLIST+=(libcurl3 libcurl3-dev)
-    [[ -z $NOCURL && $MAJOR -gt 9  ]] && PKGLIST+=(libcurl4 libcurl4-openssl-dev)
+    [[ -z $NOCURL && $MAJOR -gt 9  ]] && PKGLIST+=(libcurl4-openssl-dev)
     [[ -z $NOSRT && $MAJOR -ge 11  ]] && PKGLIST+=(libsrt-openssl-dev)
     [[ -z $NORIST && $MAJOR -ge 12 ]] && PKGLIST+=(librist-dev)
     [[ -z $NOVATEK                 ]] && PKGLIST+=(libusb-1.0-0-dev)
