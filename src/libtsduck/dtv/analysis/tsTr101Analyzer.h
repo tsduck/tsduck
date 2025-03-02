@@ -45,7 +45,8 @@ namespace ts {
         TR101_Options() = default;
 
         json::OutputArgs json {};            //!< Options -\-json and -\-json-line
-        bool show_report = true;
+
+        bool show_report = true;               //!< Option -\-show-report
 
         //!
         //! Add command line option definitions in an Args.
@@ -215,14 +216,13 @@ namespace ts {
 
         void processPacket(ServiceContext& ctx, const TSPacket& pkt, const TSPacketMetadata& mdata) const;
         void processTimeouts(ServiceContext& ctx);
+        std::shared_ptr<ServiceContext> getService(PID pid);
 
     protected:
         // CALLBACKS
         void handleTable(SectionDemux& demux, const BinaryTable& table) override;
         void handleSection(SectionDemux& demux, const Section& section) override;
         void handleInvalidSection(SectionDemux& demux, const DemuxedData& data, Section::Status status) override;
-
-        std::shared_ptr<ServiceContext> getService(PID pid);
 
     public:
         //!
