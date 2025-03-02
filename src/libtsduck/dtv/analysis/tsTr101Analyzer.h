@@ -28,11 +28,24 @@
 
 namespace ts {
 
-    class TR101_Options {
+    //!
+    //! Report options for the class TR101_290Analyzer.
+    //! @ingroup libtsduck mpeg
+    //!
+    //! The default options are
+    //! -\-show-report
+    //!
+    class TSDUCKDLL TR101_Options {
+        TS_NOCOPY(TR101_Options);
 
     public:
+        //!
+        //! Constructor.
+        //!
+        TR101_Options() = default;
+
         json::OutputArgs json {};            //!< Options -\-json and -\-json-line
-        bool show_report;
+        bool show_report = true;
 
         //!
         //! Add command line option definitions in an Args.
@@ -50,16 +63,21 @@ namespace ts {
         bool loadArgs(DuckContext& duck, Args& args);
     };
 
-    class TR101_290Analyzer final:
+    //!
+    //! A class which analyzes a complete transport stream and produces a ETSI TR 101 290 report.
+    //! @ingroup libtsduck mpeg
+    //!
+    class TSDUCKDLL TR101_290Analyzer final:
         TableHandlerInterface,
         SectionHandlerInterface,
         InvalidSectionHandlerInterface
     {
         TS_NOBUILD_NOCOPY(TR101_290Analyzer);
 
-        public:
+        private:
 
-        struct IntMinMax
+        //! Helper tool to track the Min/Max of a value.
+        struct TSDUCKDLL IntMinMax
         {
             bool is_ms = true;
             long count = 0;
@@ -74,28 +92,61 @@ namespace ts {
             void clear();
         };
 
-        class Indicator {
+        //! An Indicator is a core component of a report.
+        //! Each row in a TR 101-290 report is backed by this Indicator, and tracks information about the Indicator itself.
+        class TSDUCKDLL Indicator {
             public:
-            UString name;
-            bool show_value;
+            UString  name;
+            bool     show_value;
+            bool     enabled = false;
             uint64_t value_timeout; ///< how long to wait before the data is no longer valid.
 
         public:
-            explicit Indicator(UString name, bool show_value, uint64_t value_timeout = 5 * SYSTEM_CLOCK_FREQ);
+            explicit Indicator(UString name, bool show_value, bool enabled=true, bool is_ms=true, uint64_t value_timeout = 5 * SYSTEM_CLOCK_FREQ);
 
             uint64_t prev_ts = INVALID_PCR; ///< The timestamp of the last element provided.
             IntMinMax minMax{}; ///< Value Min/Max
             bool in_timeout = false; /// < in a timeout state.
             int in_err_count = 0; ///< Number of times we faulted so far.
 
-            void timeout(bool timeout);
-            void timeoutAfter(uint64_t now, uint64_t max_val);
-            void update(uint64_t now, bool in_error);
-            void update(uint64_t now, bool in_error, int64_t value);
+            //! This Indicator has some kind of timeout condition that has been met.
+            //! Once the Indicator enters a timeout state, future calls to timeout will be a noop until the Indicator exits the timeout condition.
+            //! This offers a debouncer to prevent a repeated identification of a timeout to report as multiple timeouts.
+            //! @param [in] timeout When true, this Indicator has met its timeout condition.
+            bool timeout(bool timeout);
+
+            //! Compare how long since the last `update` call was made, and if it was more than max_val seconds ago, trigger a timeout.
+            //! @param [in] now The timestamp of the last received packet in PCR units.
+            //! @param [in] max_val Upper limit of the timeout for this condition. If the calculated timeout exceeds max_val, trigger a timeout.
+            //! @return true if a timeout occurred.
+            bool timeoutAfter(uint64_t now, uint64_t max_val);
+
+            //! Called when there was a recent measurement of this Indicator.
+            //! Internally, this clears any timeouts and updates the current error state.
+            //! @param [in] now The timestamp of the measurement in PCR units.
+            //! @param [in] in_error Did this measurement fail some kind of condition, triggering an error?
+            //! @return the value of in_error.
+            bool update(uint64_t now, bool in_error);
+
+            //! Some Indicators have a value associated with their measurements. This function can provide the last value reported.
+            //! Often times this may be either a direct measurement (i.e. a timestamp), or the amount of time since this report was measured.
+            //! This is functionally equivalent to the update command without a value, but records the current value for a future report.
+            //! @param [in] now The timestamp of the measurement in PCR units.
+            //! @param [in] in_error Did this measurement fail some kind of condition, triggering an error?
+            //! @param [in] value The current value, PCR units. This value is only used when printing a report.
+            //! @return the value of in_error.
+            bool update(uint64_t now, bool in_error, int64_t value);
+
+            //! Clear the Indicator for a new print of the report.
             void clear();
+
+            void setEnabled(bool enabled);
+            bool isEnabled() const;
+
+            bool isOutdated(uint64_t now) const;
         };
 
-        class ServiceContext
+        class TSDUCKDLL ServiceContext
         {
             TS_NOBUILD_NOCOPY(ServiceContext);
 
@@ -104,16 +155,18 @@ namespace ts {
             {
                 Pmt,
                 Pat,
+                Table,
                 Assigned,
                 Unassigned
             };
 
             ServiceContext(PID pid, ServiceContextType type);
             void clear();
+            void setType(ServiceContextType assignment);
 
-            PID                pid;
-            ServiceContextType type;
-            int                pmt_service_id = -1;
+            PID                 pid;
+            ServiceContextType  type;
+            uint16_t            pmt_service_id = -1;
 
             bool            last_repeat = false;
             bool            has_discontinuity = false;
@@ -149,11 +202,16 @@ namespace ts {
     private:
         DuckContext&  _duck;
         SectionDemux _demux {_duck, this, this};
-        PacketCounter         _lastCatIndex = INVALID_PACKET_COUNTER;
-        uint64_t     _currentTimestamp = INVALID_PTS;
+        PacketCounter         lastCatIndex = INVALID_PACKET_COUNTER;
+        uint64_t     currentTimestamp = INVALID_PTS;
         std::map<PID, std::shared_ptr<ServiceContext>> _services {};  ///< Services std::map<PMT_PID, ServiceContext>
-        BitRate _bitrate = 0;
-        PacketCounter _packetIndex = 0;
+        BitRate bitrate = 0;
+
+        template <class... Args>
+        void info(const ServiceContext& ctx, const Indicator& ind, const UChar* fmt, Args&&... args) const
+        {
+            _duck.report().info(u"PID %d: %s: %s", ctx.pid, ind.name, UString::Format(fmt, std::forward<ArgMixIn>(args)...));
+        }
 
         void processPacket(ServiceContext& ctx, const TSPacket& pkt, const TSPacketMetadata& mdata) const;
         void processTimeouts(ServiceContext& ctx);
@@ -167,6 +225,9 @@ namespace ts {
         std::shared_ptr<ServiceContext> getService(PID pid);
 
     public:
+        //!
+        //! Default constructor.
+        //! @param [in,out] duck TSDuck execution context. The reference is kept inside the analyzer.
         explicit TR101_290Analyzer(DuckContext& duck);
 
         //!
@@ -175,9 +236,8 @@ namespace ts {
         //! @param [in] packet One TS packet from the stream.
         //! @param [in] mdata Associated metadata.
         //! @param [in] bitrate The current bitrate of the TS (typically returned by tsp->bitrate()).
-        //! @param packetIndex The packetIndex of the current TSPacket (typically returned by tsp->pluginPackets()).
         //!
-        void feedPacket(const TSPacket& packet, const TSPacketMetadata& mdata, const BitRate& bitrate, PacketCounter packetIndex);
+        void feedPacket(const TSPacket& packet, const TSPacketMetadata& mdata, const BitRate& bitrate);
 
         //!
         //! General reporting method, using the specified options.
@@ -187,10 +247,23 @@ namespace ts {
         //!
         void report(std::ostream& strm, int& opt, Report& rep = NULLREP) const;
 
-        void reportJSON(TR101_Options& opt, std::ostream& stm, const UString& title, Report& rep) const;
+        //!
+        //! This methods displays a JSON report.
+        //! @param [in,out] opt Analysis options.
+        //! @param [in,out] strm Output text stream.
+        //! @param [in] title Title string.
+        //! @param [in,out] rep Where to report errors.
+        void reportJSON(TR101_Options& opt, std::ostream& strm, const UString& title, Report& rep) const;
 
         //! Reset the table to defaults, clearing any counters.
         void reset();
+
+    private:
+        void print(const char16_t* name, Indicator ServiceContext::*indicator,  std::ostream& stm, const std::map<PID, std::shared_ptr<ServiceContext>>& services) const;
+        static long count(Indicator ServiceContext::*indicator,  const std::map<ts::PID, std::shared_ptr<ServiceContext>>& services);
+        void print_real(const char16_t* name, Indicator ServiceContext::*indicator, std::ostream& stm, const std::map<PID, std::shared_ptr<ServiceContext>>& services) const;
+        static void json(const char16_t* name, Indicator ServiceContext::*indicator,  ts::json::Value& stm, json::Value& pids, const std::map<PID, std::shared_ptr<ServiceContext>>& _services);
+        static void json_real(const char* name, Indicator ServiceContext::*indicator, ts::json::Value& stm, const std::map<PID,  std::shared_ptr<ServiceContext>>& services);
     };
 }  // namespace ts
 

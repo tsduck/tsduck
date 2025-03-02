@@ -239,7 +239,7 @@ ts::ProcessorPlugin::Status ts::Tr101_290::processPacket(TSPacket& pkt, TSPacket
     if (bitrate == 0)
         bitrate = tsp->bitrate();
 
-    _analyzer.feedPacket(pkt, pkt_data, bitrate, tsp->pluginPackets());
+    _analyzer.feedPacket(pkt, pkt_data, bitrate);
 
     // With --interval, check if it is time to produce a report
     if (_output_interval > cn::nanoseconds::zero() && _metrics.processedPacket() && _metrics.sessionNanoSeconds() >= _next_report) {
