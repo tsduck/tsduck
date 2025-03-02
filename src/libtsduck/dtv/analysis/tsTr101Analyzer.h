@@ -89,7 +89,7 @@ namespace ts {
             UString to_string() const;
             void defineJson(json::Value& value) const;
             void pushNs(long val);
-            void pushSysClockFreq(long val);
+            void pushSysClockFreq(int64_t val);
             void clear();
         };
 
@@ -167,7 +167,7 @@ namespace ts {
 
             PID                 pid;
             ServiceContextType  type;
-            uint16_t            pmt_service_id = -1;
+            int32_t            pmt_service_id = -1;
 
             bool            last_repeat = false;
             bool            has_discontinuity = false;
