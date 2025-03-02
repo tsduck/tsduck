@@ -90,7 +90,7 @@ void ts::TR101_290Analyzer::IntMinMax::pushNs(long val)
         max = val;
 }
 
-void ts::TR101_290Analyzer::IntMinMax::pushSysClockFreq(long val)
+void ts::TR101_290Analyzer::IntMinMax::pushSysClockFreq(int64_t val)
 {
     const int ns = int(val * 1e9l / ts::SYSTEM_CLOCK_FREQ);
     pushNs(ns);
@@ -427,7 +427,7 @@ void ts::TR101_290Analyzer::processPacket(ServiceContext& ctx, const TSPacket& p
             if (ctx.last_pcr_ts != INVALID_PCR && !ctx.has_discontinuity) {
                 auto error = int64_t(currentTimestamp - ctx.last_pcr_ts);
                 if (ctx.PCR_error.update(currentTimestamp, error > PCR_DISCONTINUITY_LIMIT, error))
-                    info(ctx, ctx.PCR_error, u"PCR not present for %d (%f sec) -- max %d (%f sec)", error, error/(double)SYSTEM_CLOCK_FREQ, PCR_DISCONTINUITY_LIMIT, PCR_DISCONTINUITY_LIMIT/(double)SYSTEM_CLOCK_FREQ);
+                    info(ctx, ctx.PCR_error, u"PCR not present for %d (%f sec) -- max %d (%f sec)", error, error/double(SYSTEM_CLOCK_FREQ), PCR_DISCONTINUITY_LIMIT, PCR_DISCONTINUITY_LIMIT/(double)SYSTEM_CLOCK_FREQ);
             }
         }
 
