@@ -17,15 +17,20 @@
 #include <utility>
 #include <tsArgs.h>
 #include <tsBinaryTable.h>
+#include <tsCADescriptor.h>
+#include <tsCAT.h>
 #include <tsPAT.h>
 #include <tsPMT.h>
 #include <tsjsonObject.h>
 
 // Defined in TR 101 290 Section 5.2.1
-#define PAT_INTERVAL (500l * ts::SYSTEM_CLOCK_FREQ / 1000)
+#define PAT_INTERVAL (500 * ts::SYSTEM_CLOCK_FREQ / 1000)
 
 // Defined in TR 101 290 Section 5.2.1
 #define PMT_INTERVAL (500l * ts::SYSTEM_CLOCK_FREQ / 1000)
+
+// todo: PID error interval
+#define PID_ERROR_INTERVAL (500l * ts::SYSTEM_CLOCK_FREQ / 1000)
 
 // To the best of my knowledge, there is no specification that defines how frequently the CAT should be transmitted.
 #define CAT_VALID_INTERVAL (10l * ts::SYSTEM_CLOCK_FREQ)
@@ -36,6 +41,15 @@
 #define PCR_DISCONTINUITY_LIMIT long(100ul * ts::SYSTEM_CLOCK_FREQ /  1000)
 #define PCR_REPETITION_LIMIT (100l * ts::SYSTEM_CLOCK_FREQ /  1000)
 #define PCR_ACCURACY_LIMIT (500 * ts::SYSTEM_CLOCK_FREQ / int64_t(1e9))
+#define UNREF_PID_TIMEOUT (500 * ts::SYSTEM_CLOCK_FREQ / int64_t(1e9))
+#define NIT_MIN_FREQ (25 * ts::SYSTEM_CLOCK_FREQ / 1000)
+#define EIT_MIN_FREQ (25 * ts::SYSTEM_CLOCK_FREQ / 1000)
+#define NIT_MAX_FREQ (10 * ts::SYSTEM_CLOCK_FREQ)
+#define SDT_MAX_FREQ (2 * ts::SYSTEM_CLOCK_FREQ)
+#define TDT_MAX_FREQ (30 * ts::SYSTEM_CLOCK_FREQ)
+#define SDT_OTHER_MAX_FREQ (10 * ts::SYSTEM_CLOCK_FREQ)
+#define EIT_ERROR_TIMEOUT (2 * ts::SYSTEM_CLOCK_FREQ)
+#define EIT_OTHER_ERROR_TIMEOUT (10 * ts::SYSTEM_CLOCK_FREQ)
 
 ts::UString ts::TR101_290Analyzer::IntMinMax::to_string() const
 {
@@ -113,21 +127,44 @@ ts::TR101_290Analyzer::Indicator::Indicator(UString _name, bool _show_value, boo
     minMax.is_ms = is_ms;
 }
 
-bool ts::TR101_290Analyzer::Indicator::timeout(bool timeout)
+bool ts::TR101_290Analyzer::Indicator::timeout(uint64_t now, bool timeout)
 {
-    if (timeout && !in_timeout)
+    if (timeout && !in_timeout) {
+        in_timeout = true;
         in_err_count++;
 
-    in_timeout = timeout;
-    return timeout;
+        if (prev_timeout != INVALID_PCR) {
+            timeout_start = now - prev_timeout;
+        } else {
+            timeout_start = 0;
+        }
+
+        prev_timeout = now;
+        return isEnabled();
+    }
+
+    return false;
 }
 
 bool ts::TR101_290Analyzer::Indicator::timeoutAfter(uint64_t now, uint64_t max_val)
 {
-    if (prev_ts != ts::INVALID_PCR && now - prev_ts > max_val) {
-        return timeout(true);
+    if (prev_ts != INVALID_PCR && now - prev_timeout > max_val) {
+
+        if (!timeout(now, true)) {
+            // We have been timed-out for more than max_val units already.
+            // Display another error to the user.
+            in_err_count++;
+            prev_timeout = now;
+        }
+
+        return isEnabled();
     }
     return false;
+}
+
+void ts::TR101_290Analyzer::Indicator::resetTimeout(uint64_t now)
+{
+    timeout(now, false);
 }
 
 bool ts::TR101_290Analyzer::Indicator::update(uint64_t now, bool in_error)
@@ -137,10 +174,7 @@ bool ts::TR101_290Analyzer::Indicator::update(uint64_t now, bool in_error)
     if (in_error)
         in_err_count++;
 
-    if (in_timeout)
-        in_timeout = false;
-
-    return in_error;
+    return in_error && isEnabled();
 }
 
 bool ts::TR101_290Analyzer::Indicator::update(uint64_t now, bool in_error, int64_t value)
@@ -185,8 +219,27 @@ ts::TR101_290Analyzer::ServiceContext::ServiceContext(PID _pid, ServiceContextTy
     PCR_discontinuity_indicator_error(u"PCR_discontinuity_indicator_error", true, false),
     PCR_accuracy_error(u"PCR_accuracy_error", true, false, false),
     PTS_error(u"PTS_error", true),
-    CAT_error(u"CAT_error", false)
+    CAT_error(u"CAT_error", false),
+
+    // Priority 3 errors
+    NIT_error(u"NIT_error", true),
+    NIT_actual_error(u"NIT_actual_error", true),
+    NIT_other_error(u"NIT_other_error", true),
+    // SI_repetition_error(u"SI_repetition_error", true),
+    Unreferenced_PID(u"Unreferenced_PID", true),
+    SDT_error(u"SDT_error", true),
+    SDT_actual_error(u"SDT_actual_error", true),
+    SDT_other_error(u"SDT_other_error", true),
+    EIT_error(u"EIT_error", true),
+    EIT_actual_error(u"EIT_actual_error", true),
+    EIT_other_error(u"EIT_other_error", true),
+    EIT_PF_error(u"EIT_PF_error", false),
+    RST_error(u"RST_error", true),
+    TDT_error(u"TDT_error", true),
+    _EIT_actual_error_sec1(u"", false),
+    _EIT_other_error_sec1(u"", false)
 {
+    setType(type);
 }
 
 void ts::TR101_290Analyzer::ServiceContext::clear()
@@ -205,33 +258,55 @@ void ts::TR101_290Analyzer::ServiceContext::clear()
     PCR_accuracy_error.clear();
     PTS_error.clear();
     CAT_error.clear();
+
+    // Priority 3 errors
+    NIT_error.clear();
+    NIT_actual_error.clear();
+    NIT_other_error.clear();
+    // SI_repetition_error.clear();
+    Unreferenced_PID.clear();
+    SDT_error.clear();
+    SDT_actual_error.clear();
+    SDT_other_error.clear();
+    EIT_error.clear();
+    EIT_actual_error.clear();
+    EIT_other_error.clear();
+    EIT_PF_error.clear();
+    RST_error.clear();
+    TDT_error.clear();
 }
+
 void ts::TR101_290Analyzer::ServiceContext::setType(ServiceContextType assignment)
 {
+    assert(type != TableEnd);
     type = assignment;
 
-    if (assignment == Pat) {
-        PAT_error.setEnabled(true);
-        PAT_error_2.setEnabled(true);
+    PAT_error.setEnabled(type == Pat);
+    PAT_error_2.setEnabled(type == Pat);
 
-        PID_error.setEnabled(false);
-        CRC_error.setEnabled(true);
-    } else if (assignment == Pmt) {
-        PMT_error.setEnabled(true);
-        PMT_error_2.setEnabled(true);
+    PMT_error.setEnabled(type == Pmt);
+    PMT_error_2.setEnabled(type == Pmt);
 
-        PID_error.setEnabled(false);
-        CRC_error.setEnabled(true);
-    } else {
-        PAT_error.setEnabled(false);
-        PAT_error_2.setEnabled(false);
-        PMT_error.setEnabled(false);
-        PMT_error_2.setEnabled(false);
+    PID_error.setEnabled(type > TableEnd);
+    CRC_error.setEnabled(type < TableEnd);
 
-        PID_error.setEnabled(true);
-        CRC_error.setEnabled(type == Table);
-        PTS_error.setEnabled(type != Table);
-    }
+    PTS_error.setEnabled(type > TableEnd);
+
+    NIT_error.setEnabled(type == Nit);
+    NIT_actual_error.setEnabled(type == Nit);
+    NIT_other_error.setEnabled(type == Nit);
+
+    // SI_repetition_error.setEnabled(type < TableEnd);
+    Unreferenced_PID.setEnabled(type != Unassigned);
+    SDT_error.setEnabled(type == Sdt);
+    SDT_actual_error.setEnabled(type == Sdt);
+    SDT_other_error.setEnabled(type == Sdt);
+    EIT_error.setEnabled(type == Eit);
+    EIT_actual_error.setEnabled(type == Eit);
+    EIT_other_error.setEnabled(type == Eit);
+    EIT_PF_error.setEnabled(type == Eit);
+    RST_error.setEnabled(type == Rst);
+    TDT_error.setEnabled(type == Tdt);
 }
 
 ts::TR101_290Analyzer::TR101_290Analyzer(DuckContext& duck) :
@@ -248,19 +323,45 @@ ts::TR101_290Analyzer::TR101_290Analyzer(DuckContext& duck) :
     _demux.addPID(PID_TOT);
 }
 
+
+#define SYS_UNIT_FMT "%d units (%f sec)"
+#define SYS_UNIT_ARGS(x) (x), double(int64_t(x)) / double(ts::SYSTEM_CLOCK_FREQ)
+
+#define SYS_UNIT_FMT_MS "%d units (%f ms)"
+#define SYS_UNIT_ARGS_MS(x) (x), double(int64_t(x) * 1000) / double(ts::SYSTEM_CLOCK_FREQ)
+
 void ts::TR101_290Analyzer::handleTable(SectionDemux& demux, const BinaryTable& table)
 {
 
+    tableIdx++;
     auto service = getService(table.sourcePID());
     if (service->type == ServiceContext::Unassigned) {
         // Hack to ensure that the ServiceContext is a table if this is the first time we see it.
         // It is necessary to "enable" the PIDs added to the _demux set here, as their activation
         // is deferred.
-        service->setType(ServiceContext::Table);
+        switch (table.sourcePID()) {
+            case PID_TDT:
+                service->setType(ServiceContext::Tdt);
+            break;
+            case PID_NIT:
+                service->setType(ServiceContext::Nit);
+            break;
+            case PID_EIT:
+                service->setType(ServiceContext::Eit);
+            break;
+            case PID_SDT:
+                service->setType(ServiceContext::Sdt);
+            break;
+            default:
+                service->setType(ServiceContext::Table);
+        }
     }
 
     if (table.tableId() == TID_PAT && service->type == ServiceContext::Pat) {
         const auto pat = PAT(_duck, table);
+
+        service->PAT_error.resetTimeout(currentTimestamp);
+        service->PAT_error_2.resetTimeout(currentTimestamp);
 
         // Assign PMTs.
         for (auto [service_id, pid] : pat.pmts) {
@@ -280,11 +381,16 @@ void ts::TR101_290Analyzer::handleTable(SectionDemux& demux, const BinaryTable& 
     } else if (table.tableId() == TID_PMT && service->type == ServiceContext::Pmt) {
         const auto pmt = PMT(_duck, table);
 
+        service->PMT_error.resetTimeout(currentTimestamp);
+        service->PMT_error_2.resetTimeout(currentTimestamp);
+
         // Ensure all PIDs are assigned to this service.
         for (const auto & [pid, stream] : pmt.streams) {
             const auto s2 = getService(pid);
             s2->setType(ServiceContext::Assigned);
             s2->pmt_service_id = service->pmt_service_id;
+
+            s2->Unreferenced_PID.resetTimeout(currentTimestamp);
         }
 
         // Remove PIDs that are Assigned to this service ID.
@@ -295,28 +401,149 @@ void ts::TR101_290Analyzer::handleTable(SectionDemux& demux, const BinaryTable& 
                 }
             }
         }
+    } else if (service->type == ServiceContext::Nit) {
+        // Section with table_id other than 0x40 or 0x41 or 0x72 (i. e. not an NIT or ST) found on PID 0x0010
+        if (service->NIT_error.update(currentTimestamp, table.tableId() != TID_NIT_ACT && table.tableId() != TID_NIT_OTH && table.tableId() != TID_ST))
+            info(*service, service->NIT_error, u"invalid tableId for PID: %i", table.tableId());
+
+        // Section with table_id other than 0x40 or 0x41 or 0x72(i.e.not an NIT or ST) found on PID 0x0010
+        if (service->NIT_actual_error.update(currentTimestamp, table.tableId() != TID_NIT_ACT && table.tableId() != TID_NIT_OTH && table.tableId() != TID_ST))
+            info(*service, service->NIT_actual_error, u"invalid tableId for PID: %i", table.tableId());
+
+        if (table.tableId() == TID_NIT_ACT) {
+            service->NIT_actual_error.resetTimeout(currentTimestamp);
+
+            // Any two sections with table_id = 0x40 (NIT_actual) occur on PID 0x0010 within a specified value(25 ms or lower).
+            if (service->last_table_actual != INVALID_PCR && service->NIT_actual_error.update(currentTimestamp, currentTimestamp - service->last_table_actual <= NIT_MIN_FREQ))
+                info(*service, service->NIT_actual_error, u"two sections with table_id=0x40 (NIT_actual) occurred too frequently: %d", currentTimestamp - service->last_table_actual);
+
+            service->last_table_actual = currentTimestamp;
+            service->last_table = currentTimestamp;
+        }
+
+        if (table.tableId() == TID_NIT_OTH) {
+            service->NIT_other_error.resetTimeout(currentTimestamp);
+
+            service->last_table_other = currentTimestamp;
+            service->last_table = currentTimestamp;
+        }
+    } else if (service->type == ServiceContext::Sdt) {
+
+        // Sections with table_ids other than 0x42, 0x46, 0x4A or 0x72 found on PID 0x0011.
+        if (service->SDT_error.update(currentTimestamp, table.tableId() != TID_SDT_ACT && table.tableId() != TID_SDT_OTH && table.tableId() != TID_BAT && table.tableId() != TID_ST))
+            info(*service, service->SDT_error, u"invalid tableId for PID: %i", table.tableId());
+
+        // Sections with table_ids other than 0x42, 0x46, 0x4A or 0x72 found on PID 0x0011.
+        if (service->SDT_actual_error.update(currentTimestamp, table.tableId() != TID_SDT_ACT && table.tableId() != TID_SDT_OTH && table.tableId() != TID_BAT && table.tableId() != TID_ST))
+            info(*service, service->SDT_actual_error, u"invalid tableId for PID: %i", table.tableId());
+
+        if (table.tableId() == TID_SDT_ACT) {
+            service->SDT_actual_error.resetTimeout(currentTimestamp);
+
+            // Any two sections with table_id = 0x42 (SDT_actual) occur on PID 0x0011 within a specified value (25 ms or lower).
+            if (service->last_table_actual != INVALID_PCR && service->SDT_actual_error.update(currentTimestamp, currentTimestamp - service->last_table_actual <= NIT_MIN_FREQ))
+                info(*service, service->SDT_actual_error, u"two sections with table_id=0x42 (SDT_actual) occurred too frequently: %d", currentTimestamp - service->last_table_actual);
+
+            service->last_table_actual = currentTimestamp;
+            service->last_table = currentTimestamp;
+        } else if (table.tableId() == TID_SDT_OTH) {
+            service->SDT_actual_error.resetTimeout(currentTimestamp);
+            service->last_table_other = currentTimestamp;
+        }
+    } else if (service->type == ServiceContext::Rst) {
+
+        // Sections with table_ids other than 0x71 or 0x72 found on PID 0x0013.
+        if (service->RST_error.update(currentTimestamp, table.tableId() != TID_RST && table.tableId() != TID_ST))
+            info(*service, service->RST_error, u"invalid tableId for PID: %i", table.tableId());
+
+        if (table.tableId() == TID_RST) {
+            if (service->last_table_actual != INVALID_PCR && service->RST_error.update(currentTimestamp, currentTimestamp - service->last_table_actual <= NIT_MIN_FREQ))
+                info(*service, service->RST_error, u"two sections with table_id=0x71 (RST) occurred too frequently: %d", currentTimestamp - service->last_table_actual);
+
+            service->last_table_actual = currentTimestamp;
+            service->last_table = currentTimestamp;
+        }
+    } else if (service->type == ServiceContext::Tdt) {
+
+        // Sections with table_id other than 0x70, 0x72 (ST) or 0x73(TOT)found on PID 0x0014.
+        if (service->TDT_error.update(currentTimestamp, table.tableId() != TID_TDT &&  table.tableId() != TID_ST && table.tableId() != TID_TOT))
+            info(*service, service->TDT_error, u"invalid tableId for PID: %i", table.tableId());
+
+        if (table.tableId() == TID_TDT) {
+            service->TDT_error.resetTimeout(currentTimestamp);
+
+            // Any two sections with table_id = 0x70 (TDT) occur on PID 0x0014 within a specified value(25 ms or lower).
+            if (service->last_table_actual != INVALID_PCR && service->RST_error.update(currentTimestamp, currentTimestamp - service->last_table_actual <= NIT_MIN_FREQ))
+                info(*service, service->RST_error, u"two sections with table_id=0x70 (TDT) occurred too frequently: %d", currentTimestamp - service->last_table_actual);
+
+            service->last_table_actual = currentTimestamp;
+            service->last_table = currentTimestamp;
+        }
+    } else if (table.sourcePID() == TID_CAT) {
+        auto cat = CAT(_duck, table);
+
+        for (auto it = cat.descs.begin(); it != cat.descs.end(); ++it) {
+            auto ca = CADescriptor(_duck, *it);
+            getService(ca.ca_pid)->Unreferenced_PID.resetTimeout(currentTimestamp);
+        }
     }
 }
 
 void ts::TR101_290Analyzer::handleSection(SectionDemux& demux, const Section& section)
 {
+    auto service = getService(section.sourcePID());
+
+    if (service->type == ServiceContext::Eit) {
+
+        if (section.sectionNumber() == 0) {
+            // Sections with table_ids other than in the range 0x4E - 0x6F or 0x72 found on PID 0x0012.
+            if (service->EIT_error.update(currentTimestamp, section.tableId() < TID_EIT_PF_ACT && section.tableId() > TID_EIT_S_OTH_MAX && section.tableId() != TID_ST))
+                info(*service, service->EIT_error, u"Sections with table_id = %i not in range 0x4E - 0x6F or 0x72.", section.tableId());
+        }
+
+        if (section.tableId() == TID_EIT_PF_ACT) {
+            // EIT_actual_error: Any two sections with table_id = 0x4E (EIT-P/F, actual TS) occur on PID 0x0012 within a specified value (25 ms or lower).
+            if (service->EIT_error.update(currentTimestamp, currentTimestamp - service->last_table <= EIT_MIN_FREQ)) {
+                info(*service, service->EIT_error, u"two sections with table_id = 0x4E (EIT-P/F, actual TS) occurred within" SYS_UNIT_FMT_MS ".", SYS_UNIT_ARGS_MS(EIT_MIN_FREQ));
+            }
+
+            service->EIT_error.resetTimeout(currentTimestamp);
+
+            if (section.sectionNumber() == 0) {
+                service->EIT_actual_error.resetTimeout(currentTimestamp);
+            } else if (section.sectionNumber() == 1) {
+                service->_EIT_actual_error_sec1.resetTimeout(currentTimestamp);
+            }
+        } else if (section.tableId() == TID_EIT_PF_OTH) {
+            if (section.sectionNumber() == 0) {
+                service->EIT_other_error.resetTimeout(currentTimestamp);
+            } else if (section.sectionNumber() == 1) {
+                service->_EIT_other_error_sec1.resetTimeout(currentTimestamp);
+            }
+        }
+
+        // todo EIT_PF_error: If either section ('0' or '1') of each EIT P/F sub table is present both should exist. Otherwise EIT_PF_error should be   indicated.
+        service->last_table = currentTimestamp;
+    }
+
     if (section.sectionNumber() != 0) {
-        // we only care about the first packet that has arrived.
+        // for anything other than EIT we only care about the first section that arrived.
         return;
     }
 
-    auto service = getService(section.sourcePID());
-
     if (section.sourcePID() == PID_PAT) {
         // a PID 0x0000 does not contain a table_id 0x00 (i.e.a PAT)
-        service->PAT_error.update(currentTimestamp, section.tableId() != TID_PAT);
-        service->PAT_error_2.update(currentTimestamp, section.tableId() != TID_PAT);
+        if (service->PAT_error.update(currentTimestamp, section.tableId() != TID_PAT))
+            info(*service, service->PAT_error, u"PID 0x0000 does not contain a table_id 0x00 (PAT). Found: 0x%X", section.tableId());
+
+        if (service->PAT_error_2.update(currentTimestamp, section.tableId() != TID_PAT))
+            info(*service, service->PAT_error_2, u"PID 0x0000 does not contain a table_id 0x00 (PAT). Found: 0x%X", section.tableId());
 
         if (section.tableId() == TID_PAT) {
             if (service->last_table_ts != INVALID_PCR) {
                 // PID 0x0000 does not occur at least every 0,5 s
                 auto diff = long(currentTimestamp - service->last_table_ts);
-                service->PAT_error_2.update(currentTimestamp, false, diff);
+                service->PAT_error.update(currentTimestamp, false, diff);
                 service->PAT_error_2.update(currentTimestamp, false, diff);
             }
 
@@ -366,6 +593,8 @@ void ts::TR101_290Analyzer::processPacket(ServiceContext& ctx, const TSPacket& p
         info(ctx, ctx.PAT_error, u"Invalid scrambling bits (0b%d%d) on PAT pid.", pkt.getPID(), pkt.getScrambling() & 2, pkt.getScrambling() & 1);
     }
 
+    ctx.last_pid = pkt.getPID();
+
     // todo: Scrambling_control_field is not 00 for all PIDs containing sections with table_id 0x02
 
     // Process CC errors.
@@ -388,19 +617,18 @@ void ts::TR101_290Analyzer::processPacket(ServiceContext& ctx, const TSPacket& p
             }
         }
 
-        if (expected_cc != pkt.getCC()) {
-            ctx.CC_error.update(currentTimestamp, true);
-            info(ctx, ctx.CC_error, u"expected %d got %d on PAT pid.", expected_cc, pkt.getCC());
-        }
+        if (ctx.CC_error.update(currentTimestamp, expected_cc != pkt.getCC()))
+            info(ctx, ctx.CC_error, u"expected next continuity counter %d got %d instead.", expected_cc, pkt.getCC());
     }
     ctx.last_cc = pkt.getCC();
     ctx.last_repeat = repeat;
 
-    ctx.PID_error.update(currentTimestamp, false);
+    ctx.PID_error.resetTimeout(currentTimestamp);
 
     // Priority 2 Errors
     if (ctx.Transport_error.update(currentTimestamp, pkt.getTEI() == true))
-        info(ctx, ctx.Transport_error, u"Indicator was set.");
+        info(ctx, ctx.Transport_error, u"Transport error indicator was set.");
+
     // CRC_error in handleInvalidSection
 
     if (pkt.hasPCR()) {
@@ -420,13 +648,15 @@ void ts::TR101_290Analyzer::processPacket(ServiceContext& ctx, const TSPacket& p
             if (ctx.last_pcr_ts != INVALID_PCR && !ctx.has_discontinuity) {
                 auto error = int64_t(currentTimestamp - ctx.last_pcr_ts);
                 if (ctx.PCR_error.update(currentTimestamp, error > PCR_DISCONTINUITY_LIMIT, error))
-                    info(ctx, ctx.PCR_error, u"PCR not present for %d (%f sec) -- max %d (%f sec)", error, double(error)/double(SYSTEM_CLOCK_FREQ), PCR_DISCONTINUITY_LIMIT, double(PCR_DISCONTINUITY_LIMIT)/double(SYSTEM_CLOCK_FREQ));
+                    info(ctx, ctx.PCR_error, u"PCR PCR discontinuity exceeds " SYS_UNIT_FMT_MS ".", SYS_UNIT_ARGS_MS(PCR_DISCONTINUITY_LIMIT));
             }
         }
 
         // Time interval between two consecutive PCR
         // values more than 100 ms
-        ctx.PCR_repetition_error.update(currentTimestamp, false);
+        ctx.PCR_repetition_error.update(currentTimestamp, false, int64_t(currentTimestamp - ctx.last_pcr_ts));
+        ctx.PCR_repetition_error.resetTimeout(true);
+        ctx.PCR_error.resetTimeout(true);
 
         {
             // The difference between two consecutive PCR
@@ -434,7 +664,8 @@ void ts::TR101_290Analyzer::processPacket(ServiceContext& ctx, const TSPacket& p
             // without the discontinuity_indicator set
             if (ctx.last_pcr_val != INVALID_PCR && !ctx.has_discontinuity) {
                 auto error = int64_t(pcr_val) - int64_t(ctx.last_pcr_val);
-                ctx.PCR_discontinuity_indicator_error.update(currentTimestamp, error > PCR_DISCONTINUITY_LIMIT || error < 0, error);
+                if (ctx.PCR_discontinuity_indicator_error.update(currentTimestamp, error > PCR_DISCONTINUITY_LIMIT || error < 0, error))
+                    info(ctx, ctx.PCR_error, u"PCR PCR discontinuity exceeds " SYS_UNIT_FMT_MS ".", SYS_UNIT_ARGS_MS(PCR_DISCONTINUITY_LIMIT));
             }
         }
 
@@ -446,9 +677,8 @@ void ts::TR101_290Analyzer::processPacket(ServiceContext& ctx, const TSPacket& p
                 // Jitter = difference between actual and expected pcr2
                 const int64_t jitter = int64_t(pcr_val) - epcr2;
 
-                if (ctx.PCR_accuracy_error.update(currentTimestamp, jitter > PCR_ACCURACY_LIMIT, jitter)) {
-                    info(ctx, ctx.PCR_accuracy_error, u"PCR jitter %'d (%'d ns)", jitter, (int64_t(1e9)*jitter) / SYSTEM_CLOCK_FREQ);
-                }
+                if (ctx.PCR_accuracy_error.update(currentTimestamp, jitter > PCR_ACCURACY_LIMIT, jitter))
+                    info(ctx, ctx.PCR_accuracy_error, u"PCR jitter %'d units (%'d ns)", jitter, (int64_t(1e9)*jitter) / SYSTEM_CLOCK_FREQ);
             }
         }
 
@@ -459,49 +689,103 @@ void ts::TR101_290Analyzer::processPacket(ServiceContext& ctx, const TSPacket& p
 
     if (pkt.hasPTS()) {
         // PTS repetition period more than 700 ms
-        if (ctx.last_pts_ts != INVALID_PCR) {
-            auto error = int64_t(currentTimestamp - ctx.last_pts_ts);
-            // todo: The limitation to 700 ms should not be applied to still pictures.
-            ctx.PTS_error.update(currentTimestamp, error > PTS_REPETITION_INTERVAL, error);
-        }
-        ctx.last_pts_ts = currentTimestamp;
+        ctx.PTS_error.resetTimeout(true);
     }
 
     // Packets with transport_scrambling_control not 00
     // present, but no section with table_id = 0x01(i.e. a CAT) present
-    ctx.CAT_error.update(currentTimestamp, pkt.getScrambling() && currentTimestamp - lastCatIndex > CAT_VALID_INTERVAL);
+    if (ctx.CAT_error.update(currentTimestamp, pkt.getScrambling() && currentTimestamp - lastCatIndex > CAT_VALID_INTERVAL))
+        info(ctx, ctx.CAT_error, u"Packet with scrambling set but no CA table present.");
 }
 
 void ts::TR101_290Analyzer::processTimeouts(ServiceContext& ctx)
 {
     // PID 0x0000 does not occur at least every 0,5 s
-    ctx.PAT_error.timeoutAfter(currentTimestamp, PAT_INTERVAL);
+    if (ctx.PAT_error.timeoutAfter(currentTimestamp, PAT_INTERVAL))
+        info(*ctx, ctx.PAT_error, u"no table_id = 0x00 (PAT) in the last " SYS_UNIT_FMT ".", SYS_UNIT_ARGS(PAT_INTERVAL));
 
     // Sections with table_id 0x00 do not occur at least
     // every 0, 5 s on PID 0x0000.
-    ctx.PAT_error_2.timeoutAfter(currentTimestamp, PAT_INTERVAL);
+    if (ctx.PAT_error_2.timeoutAfter(currentTimestamp, PAT_INTERVAL))
+        info(*ctx, ctx.PAT_error_2, u"no table_id = 0x00 (PAT) in the last " SYS_UNIT_FMT ".", SYS_UNIT_ARGS(PAT_INTERVAL));
 
     // Sections with table_id 0x02, (i.e. a PMT), do not
     // occur at least every 0, 5 s on the PID which is
     // referred to in the PAT
-    ctx.PMT_error.timeoutAfter(currentTimestamp, PMT_INTERVAL);
-    ctx.PMT_error_2.timeoutAfter(currentTimestamp, PMT_INTERVAL);
+    if (ctx.PMT_error.timeoutAfter(currentTimestamp, PMT_INTERVAL))
+        info(*ctx, ctx.PMT_error, u"no table_id = 0x00 (PMT) in the last " SYS_UNIT_FMT ".", SYS_UNIT_ARGS(PMT_INTERVAL));
 
-    ctx.PID_error.timeoutAfter(currentTimestamp, PMT_INTERVAL);
+    if (ctx.PMT_error_2.timeoutAfter(currentTimestamp, PMT_INTERVAL))
+        info(*ctx, ctx.PMT_error_2, u"no table_id = 0x02 (PMT) in the last " SYS_UNIT_FMT ".", SYS_UNIT_ARGS(PMT_INTERVAL));
+
+    if (ctx.PID_error.timeoutAfter(currentTimestamp, PID_ERROR_INTERVAL))
+        info(*ctx, ctx.PID_error, u"no data on PID in the last " SYS_UNIT_FMT ".", SYS_UNIT_ARGS(PMT_INTERVAL));
 
     // PCR discontinuity of more than 100 ms occurring
     // without specific indication.
     if (!ctx.has_discontinuity) {
-        ctx.PCR_error.timeoutAfter(currentTimestamp, PCR_REPETITION_LIMIT);
+        if (ctx.PCR_error.timeoutAfter(currentTimestamp, PCR_REPETITION_LIMIT))
+            info(*ctx, ctx.PCR_error, u"no PCR present in the last " SYS_UNIT_FMT ".", SYS_UNIT_ARGS(PCR_REPETITION_LIMIT));
     }
 
     // Time interval between two consecutive PCR
     // values more than 100 ms
-    ctx.PCR_repetition_error.timeoutAfter(currentTimestamp, PCR_REPETITION_LIMIT);
+    if (ctx.PCR_repetition_error.timeoutAfter(currentTimestamp, PCR_REPETITION_LIMIT))
+        info(*ctx, ctx.PCR_repetition_error, u"no PCR present in the last " SYS_UNIT_FMT ".", SYS_UNIT_ARGS(PCR_REPETITION_LIMIT));
 
     // PTS repetition period more than 700 ms
     // todo: NOTE 3: The limitation to 700 ms should not be applied to still pictures.
-    ctx.PTS_error.timeoutAfter(currentTimestamp, PTS_REPETITION_INTERVAL);
+    if (ctx.PTS_error.timeoutAfter(currentTimestamp, PTS_REPETITION_INTERVAL))
+        info(*ctx, ctx.PTS_error, u"no PTS value present in the last " SYS_UNIT_FMT ".", SYS_UNIT_ARGS(PCR_REPETITION_LIMIT));
+
+    // Priority 3
+
+    // No section with table_id 0x40 (i.e. an NIT_actual) in PID value 0x0010 for more than 10 s.
+    if (ctx.NIT_actual_error.timeoutAfter(currentTimestamp, NIT_MAX_FREQ))
+        info(*ctx, ctx.NIT_actual_error, u"no table_id = 0x40 (NIT_actual) in the last " SYS_UNIT_FMT ".", SYS_UNIT_ARGS(NIT_MAX_FREQ));
+
+    // interval between sections with the same section_number and table_id = 0x41 (NIT_other) on PID 0x0010 longer than a specified value (10 s or higher).
+    if (ctx.NIT_other_error.timeoutAfter(currentTimestamp, NIT_MAX_FREQ))
+        info(*ctx, ctx.NIT_other_error, u"no table_id = 0x41 (NIT_other) in the last " SYS_UNIT_FMT ".", SYS_UNIT_ARGS(NIT_MAX_FREQ));
+
+    // PID (other than PAT, CAT, CAT_PIDs, PMT_PIDs, NIT_PID, SDT_PID, TDT_PID, EIT_PID, RST_PID, reserved_for_future_use PIDs, or PIDs
+    // PID (other than PMT_PIDs, PIDs with numbers between 0x00 and 0x1F or PIDs user defined as private data streams) not referred to by a PMT or a CAT within 0,5 s.
+    // user defined as private data streams) not referred to by a PMT within 0,5 s (note 1).
+    // NOTE: The resetTimeout for this is performed inside of handleSection and getService.
+    if (ctx.last_pid < 0x1F && ctx.Unreferenced_PID.timeoutAfter(currentTimestamp, UNREF_PID_TIMEOUT))
+        info(*ctx, ctx.EIT_other_error, u"PID not referred to by a PMT within " SYS_UNIT_FMT ".", SYS_UNIT_ARGS(EIT_OTHER_ERROR_TIMEOUT));
+
+    // Sections with table_id = 0x42 (SDT, actual TS) not present on PID 0x0011 for more than 2 s
+    if (ctx.SDT_actual_error.timeoutAfter(currentTimestamp, SDT_MAX_FREQ))
+        info(*ctx, ctx.SDT_actual_error, u"no table_id = 0x42 (SDT, actual TS) in the last " SYS_UNIT_FMT ".", SYS_UNIT_ARGS(SDT_MAX_FREQ));
+
+    // Interval between sections with the same section_number and table_id = 0x46(SDT, other TS)on PID 0x0011 longer than a specified value(10s or higher).
+    if (ctx.SDT_other_error.timeoutAfter(currentTimestamp, SDT_OTHER_MAX_FREQ))
+        info(*ctx, ctx.SDT_other_error, u"no table_id = 0x46 (SDT, other TS) in the last " SYS_UNIT_FMT ".", SYS_UNIT_ARGS(SDT_OTHER_MAX_FREQ));
+
+    // EIT_error: Sections with table_id = 0x4E (EIT-P/F, actual TS) not present on PID 0x0012 for more than 2 s
+    if (ctx.EIT_error.timeoutAfter(currentTimestamp, EIT_ERROR_TIMEOUT))
+        info(*ctx, ctx.EIT_error, u"no table_id = 0x4E (EIT-P/F, actual TS) in the last " SYS_UNIT_FMT ".", SYS_UNIT_ARGS(EIT_ERROR_TIMEOUT));
+
+    // EIT_actual_error: Section '0' with table_id = 0x4E (EIT-P, actual TS) not present on PID 0x0012 for more than 2 s
+    if (ctx.EIT_actual_error.timeoutAfter(currentTimestamp, EIT_ERROR_TIMEOUT))
+        info(*ctx, ctx.EIT_actual_error, u"no section = 0 and table_id = 0x4E (EIT-P, actual TS) in the last " SYS_UNIT_FMT ".", SYS_UNIT_ARGS(EIT_ERROR_TIMEOUT));
+
+    // EIT_actual_error: Section '1' with table_id = 0x4E (EIT-F, actual TS) not present on PID 0x0012 for more than 2 s
+    if (ctx._EIT_actual_error_sec1.timeoutAfter(currentTimestamp, EIT_ERROR_TIMEOUT))
+        info(*ctx, ctx.EIT_actual_error, u"no section = 1 and table_id = 0x4E (EIT-F, actual TS) in the last " SYS_UNIT_FMT ".", SYS_UNIT_ARGS(EIT_ERROR_TIMEOUT));
+
+    // EIT_other_error:  Interval between sections '0' with table_id = 0x4F (EIT - P, other TS) on PID 0x0012 longer than a specified value(10 s or higher);
+    if (ctx.EIT_other_error.timeoutAfter(currentTimestamp, EIT_OTHER_ERROR_TIMEOUT))
+        info(*ctx, ctx.EIT_other_error, u"no section = 0 and table_id = 0x4F (EIT-P, actual TS) in the last " SYS_UNIT_FMT ".", SYS_UNIT_ARGS(EIT_OTHER_ERROR_TIMEOUT));
+
+    // EIT_other_error:  Interval between sections '1' with table_id = 0x4F(EIT - F, other TS) on PID 0x0012 longer than a specified value(10 s or higher).
+    if (ctx._EIT_other_error_sec1.timeoutAfter(currentTimestamp, EIT_OTHER_ERROR_TIMEOUT))
+        info(*ctx, ctx.EIT_other_error, u"no section = 1 and table_id = 0x4F(EIT - F, other TS) in the last " SYS_UNIT_FMT ".", SYS_UNIT_ARGS(EIT_OTHER_ERROR_TIMEOUT));
+
+    // Sections with table_id = 0x70 (TDT) not present on PID 0x0014 for more than 30 s
+    if (ctx.TDT_error.timeoutAfter(currentTimestamp, TDT_MAX_FREQ))
+        info(*ctx, ctx.TDT_error, u"no table_id = 0x70 (TDT) in the last " SYS_UNIT_FMT ".", SYS_UNIT_ARGS(TDT_MAX_FREQ));
 }
 
 std::shared_ptr<ts::TR101_290Analyzer::ServiceContext> ts::TR101_290Analyzer::getService(PID pid)
@@ -510,6 +794,10 @@ std::shared_ptr<ts::TR101_290Analyzer::ServiceContext> ts::TR101_290Analyzer::ge
     if (it == _services.end()) {
         auto service = std::make_shared<ServiceContext>(pid, ServiceContext::ServiceContextType::Unassigned);
         _services.insert(std::make_pair(pid, service));
+
+        // Start this service as Unreferenced by default.
+        service->Unreferenced_PID.resetTimeout(currentTimestamp);
+
         return service;
     }
     return it->second;
