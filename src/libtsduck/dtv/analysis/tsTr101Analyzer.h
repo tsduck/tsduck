@@ -101,6 +101,8 @@ namespace ts {
             bool     show_value;
             bool     enabled = false;
             uint64_t value_timeout; ///< how long to wait before the data is no longer valid.
+            uint64_t prev_timeout; ///< The previous timeout to apply.
+            uint64_t timeout_start;
 
         public:
             explicit Indicator(UString name, bool show_value, bool enabled=true, bool is_ms=true, uint64_t value_timeout = 5 * SYSTEM_CLOCK_FREQ);
@@ -113,20 +115,27 @@ namespace ts {
             //! This Indicator has some kind of timeout condition that has been met.
             //! Once the Indicator enters a timeout state, future calls to timeout will be a noop until the Indicator exits the timeout condition.
             //! This offers a debouncer to prevent a repeated identification of a timeout to report as multiple timeouts.
+            //! @param [in] now The current time.
             //! @param [in] timeout When true, this Indicator has met its timeout condition.
-            bool timeout(bool timeout);
+            //! @return true if a timeout occurred and we should print an error message.
+            bool timeout(uint64_t now, bool timeout);
 
-            //! Compare how long since the last `update` call was made, and if it was more than max_val seconds ago, trigger a timeout.
+            //! Compare how long since the last call to `resetTimeout`, and if it was more than max_val seconds ago, trigger a timeout.
+            //! This will also reset and re-trigger every max_val seconds if the error is continuous.
             //! @param [in] now The timestamp of the last received packet in PCR units.
             //! @param [in] max_val Upper limit of the timeout for this condition. If the calculated timeout exceeds max_val, trigger a timeout.
-            //! @return true if a timeout occurred.
+            //! @return true if a timeout occurred and we should print an error message.
             bool timeoutAfter(uint64_t now, uint64_t max_val);
+
+            //! Reset the current timer for timeouts to the current time.
+            //! @param [in] now the timestamp that reset the timeout.
+            void resetTimeout(uint64_t now);
 
             //! Called when there was a recent measurement of this Indicator.
             //! Internally, this clears any timeouts and updates the current error state.
             //! @param [in] now The timestamp of the measurement in PCR units.
             //! @param [in] in_error Did this measurement fail some kind of condition, triggering an error?
-            //! @return the value of in_error.
+            //! @return true if an error occurred (in_error is true) and we should print an error message.
             bool update(uint64_t now, bool in_error);
 
             //! Some Indicators have a value associated with their measurements. This function can provide the last value reported.
@@ -135,7 +144,7 @@ namespace ts {
             //! @param [in] now The timestamp of the measurement in PCR units.
             //! @param [in] in_error Did this measurement fail some kind of condition, triggering an error?
             //! @param [in] value The current value, PCR units. This value is only used when printing a report.
-            //! @return the value of in_error.
+            //! @return true if an error occurred (in_error is true) and we should print an error message.
             bool update(uint64_t now, bool in_error, int64_t value);
 
             //! Clear the Indicator for a new print of the report.
@@ -154,9 +163,17 @@ namespace ts {
         public:
             enum ServiceContextType
             {
+                Table,
                 Pmt,
                 Pat,
-                Table,
+
+                Nit,
+                Sdt,
+                Eit,
+                Rst,
+                Tdt,
+                TableEnd,
+
                 Assigned,
                 Unassigned
             };
@@ -171,13 +188,14 @@ namespace ts {
 
             bool            last_repeat = false;
             bool            has_discontinuity = false;
-            uint64_t        last_pts_ts = INVALID_PTS;
             uint64_t        last_packet_ts = INVALID_PCR;
             uint64_t        last_pcr_ts = INVALID_PCR;
             uint64_t        last_pcr_val = INVALID_PCR;
-            PacketCounter   last_pcr_ctr = INVALID_PACKET_COUNTER;
             uint64_t        last_table_ts = INVALID_PCR;
             int             last_cc = -1;
+            uint64_t       last_table = INVALID_PCR;
+            uint64_t       last_table_actual = INVALID_PCR;
+            uint64_t       last_table_other = INVALID_PCR;
 
             // Priority 1 Errors
             // Indicator TS_sync_loss;
@@ -198,6 +216,29 @@ namespace ts {
             Indicator PCR_accuracy_error;
             Indicator PTS_error;
             Indicator CAT_error;
+
+            // Priority 3 Errors
+            Indicator NIT_error;
+            Indicator NIT_actual_error;
+            Indicator NIT_other_error;
+            // Indicator SI_repetition_error; // todo: Repetition rate of SI tables outside of specified limits.
+            // Indicator Buffer_error; // todo
+            Indicator Unreferenced_PID;
+            Indicator SDT_error;
+            Indicator SDT_actual_error;
+            Indicator SDT_other_error;
+            Indicator EIT_error;
+            Indicator EIT_actual_error;
+            Indicator EIT_other_error;
+            Indicator EIT_PF_error;
+            Indicator RST_error;
+            Indicator TDT_error;
+            // Indicator Empty_buffer_error; // todo
+            // Indicator Data_delay_error; // todo
+
+            Indicator _EIT_actual_error_sec1;  // ONLY USED FOR TIMEOUTS. NOT FOR USE OUTSIDE OF API.
+            Indicator _EIT_other_error_sec1; // ONLY USED FOR TIMEOUTS. NOT FOR USE OUTSIDE OF API.
+            int32_t       last_pid;
         };
 
     private:
@@ -206,7 +247,8 @@ namespace ts {
         PacketCounter         lastCatIndex = INVALID_PACKET_COUNTER;
         uint64_t     currentTimestamp = INVALID_PTS;
         std::map<PID, std::shared_ptr<ServiceContext>> _services {};  ///< Services std::map<PMT_PID, ServiceContext>
-        BitRate bitrate = 0;
+        BitRate                                        bitrate = 0;
+        int                                            tableIdx;
 
         template <class... Args>
         void info(const ServiceContext& ctx, const Indicator& ind, const UChar* fmt, Args&&... args) const
