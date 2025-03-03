@@ -240,21 +240,6 @@ ts::TR101_290Analyzer::TR101_290Analyzer(DuckContext& duck) :
     auto ptr = std::make_shared<ServiceContext>(PID_PAT, ServiceContext::ServiceContextType::Pat);
     _services.insert(std::make_pair(PID_PAT, ptr));
 
-    ptr = std::make_shared<ServiceContext>(PID_CAT, ServiceContext::ServiceContextType::Table);
-    _services.insert(std::make_pair(PID_CAT, ptr));
-
-    ptr = std::make_shared<ServiceContext>(PID_NIT, ServiceContext::ServiceContextType::Table);
-    _services.insert(std::make_pair(PID_NIT, ptr));
-
-    ptr = std::make_shared<ServiceContext>(PID_EIT, ServiceContext::ServiceContextType::Table);
-    _services.insert(std::make_pair(PID_EIT, ptr));
-
-    ptr = std::make_shared<ServiceContext>(PID_SDT, ServiceContext::ServiceContextType::Table);
-    _services.insert(std::make_pair(PID_SDT, ptr));
-
-    ptr = std::make_shared<ServiceContext>(PID_TOT, ServiceContext::ServiceContextType::Table);
-    _services.insert(std::make_pair(PID_TOT, ptr));
-
     _demux.addPID(PID_PAT);
     _demux.addPID(PID_CAT);
     _demux.addPID(PID_NIT);
@@ -266,7 +251,15 @@ ts::TR101_290Analyzer::TR101_290Analyzer(DuckContext& duck) :
 void ts::TR101_290Analyzer::handleTable(SectionDemux& demux, const BinaryTable& table)
 {
 
-    if (auto service = getService(table.sourcePID()); table.tableId() == TID_PAT && service->type == ServiceContext::Pat) {
+    auto service = getService(table.sourcePID());
+    if (service->type == ServiceContext::Unassigned) {
+        // Hack to ensure that the ServiceContext is a table if this is the first time we see it.
+        // It is necessary to "enable" the PIDs added to the _demux set here, as their activation
+        // is deferred.
+        service->setType(ServiceContext::Table);
+    }
+
+    if (table.tableId() == TID_PAT && service->type == ServiceContext::Pat) {
         const auto pat = PAT(_duck, table);
 
         // Assign PMTs.
