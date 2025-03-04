@@ -33,7 +33,7 @@
 // Defined in TR 101 290 Section 5.2.2
 #define PTS_REPETITION_INTERVAL (700l * ts::SYSTEM_CLOCK_FREQ / 1000)
 
-#define PCR_DISCONTINUITY_LIMIT (100l * ts::SYSTEM_CLOCK_FREQ /  1000)
+#define PCR_DISCONTINUITY_LIMIT long(100ul * ts::SYSTEM_CLOCK_FREQ /  1000)
 #define PCR_REPETITION_LIMIT (100l * ts::SYSTEM_CLOCK_FREQ /  1000)
 #define PCR_ACCURACY_LIMIT (500 * ts::SYSTEM_CLOCK_FREQ / int64_t(1e9))
 
@@ -92,7 +92,7 @@ void ts::TR101_290Analyzer::IntMinMax::pushNs(long val)
 
 void ts::TR101_290Analyzer::IntMinMax::pushSysClockFreq(int64_t val)
 {
-    const int ns = int(val * 1e9l / ts::SYSTEM_CLOCK_FREQ);
+    const long ns = long(val * int64_t(1e9) / int64_t(SYSTEM_CLOCK_FREQ));
     pushNs(ns);
 }
 
@@ -145,7 +145,7 @@ bool ts::TR101_290Analyzer::Indicator::update(uint64_t now, bool in_error)
 
 bool ts::TR101_290Analyzer::Indicator::update(uint64_t now, bool in_error, int64_t value)
 {
-    minMax.pushSysClockFreq(value);
+    minMax.pushSysClockFreq(long(value));
     return update(now, in_error);
 }
 
@@ -279,7 +279,7 @@ void ts::TR101_290Analyzer::handleTable(SectionDemux& demux, const BinaryTable& 
 
         // Remove PMT assignments.
         for (auto & _service : _services) {
-            if (_service.second->type == ServiceContext::Pmt && !pat.pmts.contains(_service.second->pmt_service_id)) {
+            if (_service.second->type == ServiceContext::Pmt && !pat.pmts.contains(uint16_t(_service.second->pmt_service_id))) {
                 _service.second->setType(ServiceContext::Unassigned);
                 demux.removePID(_service.first);
             }
@@ -427,7 +427,7 @@ void ts::TR101_290Analyzer::processPacket(ServiceContext& ctx, const TSPacket& p
             if (ctx.last_pcr_ts != INVALID_PCR && !ctx.has_discontinuity) {
                 auto error = int64_t(currentTimestamp - ctx.last_pcr_ts);
                 if (ctx.PCR_error.update(currentTimestamp, error > PCR_DISCONTINUITY_LIMIT, error))
-                    info(ctx, ctx.PCR_error, u"PCR not present for %d (%f sec) -- max %d (%f sec)", error, error/double(SYSTEM_CLOCK_FREQ), PCR_DISCONTINUITY_LIMIT, PCR_DISCONTINUITY_LIMIT/(double)SYSTEM_CLOCK_FREQ);
+                    info(ctx, ctx.PCR_error, u"PCR not present for %d (%f sec) -- max %d (%f sec)", error, double(error)/double(SYSTEM_CLOCK_FREQ), PCR_DISCONTINUITY_LIMIT, double(PCR_DISCONTINUITY_LIMIT)/double(SYSTEM_CLOCK_FREQ));
             }
         }
 
