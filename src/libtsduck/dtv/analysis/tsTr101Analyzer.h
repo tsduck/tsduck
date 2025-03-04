@@ -167,7 +167,7 @@ namespace ts {
 
             PID                 pid;
             ServiceContextType  type;
-            int32_t            pmt_service_id = -1;
+            int32_t             pmt_service_id = -1;
 
             bool            last_repeat = false;
             bool            has_discontinuity = false;
