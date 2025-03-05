@@ -623,7 +623,7 @@ void ts::PMTPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
         for (auto& smi : pmt.streams) {
             const DescriptorList& dlist(smi.second.descs);
             for (size_t i = dlist.search(DID_DVB_STREAM_ID); i < dlist.count(); i = dlist.search(DID_DVB_STREAM_ID, i + 1)) {
-                const StreamIdentifierDescriptor sid(duck, *dlist[i]);
+                const StreamIdentifierDescriptor sid(duck, dlist[i]);
                 if (sid.isValid()) {
                     ctags.set(sid.component_tag);
                 }

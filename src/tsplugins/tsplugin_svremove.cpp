@@ -443,7 +443,7 @@ void ts::SVRemovePlugin::addECMPID(const DescriptorList& dlist, PIDSet& pid_set)
 {
     // Loop on all CA descriptors
     for (size_t index = dlist.search(DID_MPEG_CA); index < dlist.count(); index = dlist.search(DID_MPEG_CA, index + 1)) {
-        CADescriptor ca(duck, *dlist[index]);
+        CADescriptor ca(duck, dlist[index]);
         if (!ca.isValid()) {
             // Cannot deserialize a valid CA descriptor, ignore it
         }
@@ -483,8 +483,8 @@ void ts::SVRemovePlugin::processNITBATDescriptorList(DescriptorList& dlist)
     // Process all service_list_descriptors
     for (size_t i = dlist.search (DID_DVB_SERVICE_LIST); i < dlist.count(); i = dlist.search (DID_DVB_SERVICE_LIST, i + 1)) {
 
-        uint8_t* base = dlist[i]->payload();
-        size_t size = dlist[i]->payloadSize();
+        uint8_t* base = dlist[i].payload();
+        size_t size = dlist[i].payloadSize();
         uint8_t* data = base;
         uint8_t* new_data = base;
 
@@ -499,7 +499,7 @@ void ts::SVRemovePlugin::processNITBATDescriptorList(DescriptorList& dlist)
             data += 3;
             size -= 3;
         }
-        dlist[i]->resizePayload (new_data - base);
+        dlist[i].resizePayload (new_data - base);
     }
 
     // Process all logical_channel_number_descriptors
@@ -507,8 +507,8 @@ void ts::SVRemovePlugin::processNITBATDescriptorList(DescriptorList& dlist)
          i < dlist.count();
          i = dlist.search (DID_EACEM_LCN, i + 1, PDS_EICTA)) {
 
-        uint8_t* base = dlist[i]->payload();
-        size_t size = dlist[i]->payloadSize();
+        uint8_t* base = dlist[i].payload();
+        size_t size = dlist[i].payloadSize();
         uint8_t* data = base;
         uint8_t* new_data = base;
 
@@ -524,7 +524,7 @@ void ts::SVRemovePlugin::processNITBATDescriptorList(DescriptorList& dlist)
             data += 4;
             size -= 4;
         }
-        dlist[i]->resizePayload(new_data - base);
+        dlist[i].resizePayload(new_data - base);
     }
 }
 

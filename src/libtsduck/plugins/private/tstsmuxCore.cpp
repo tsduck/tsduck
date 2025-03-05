@@ -683,7 +683,7 @@ void ts::tsmux::Core::Input::handleCAT(const CAT& cat)
 
     // Add all CA descriptors from input CAT into output CAT.
     for (size_t index = cat.descs.search(DID_MPEG_CA); index < cat.descs.count(); index = cat.descs.search(DID_MPEG_CA, index + 1)) {
-        const CADescriptor ca(_core._duck, *cat.descs[index]);
+        const CADescriptor ca(_core._duck, cat.descs[index]);
         if (ca.isValid()) {
             // Origin of the corresponding EMM PID.
             Origin& origin(_core._pid_origin[ca.ca_pid]);
@@ -699,7 +699,7 @@ void ts::tsmux::Core::Input::handleCAT(const CAT& cat)
             }
             else if (origin.plugin_index == _plugin_index) {
                 // Already found in same input, maybe same CA desc, modify if not the same.
-                modified = *cat.descs[index] != *_core._output_cat.descs[output_index];
+                modified = cat.descs[index] != _core._output_cat.descs[output_index];
                 if (modified) {
                     _core._output_cat.descs.removeByIndex(output_index);
                     _core._output_cat.descs.add(cat.descs[index]);

@@ -1080,19 +1080,19 @@ void ts::SignalizationDemux::handleDescriptors(const DescriptorList& dlist, PID 
 {
     // Loop on all descriptors
     for (size_t index = 0; index < dlist.size(); ++index) {
-        const DescriptorPtr& ptr(dlist[index]);
-        if (ptr != nullptr && ptr->isValid()) {
-            const DID did = ptr->tag();
+        const Descriptor& bindesc(dlist[index]);
+        if (bindesc.isValid()) {
+            const DID did = bindesc.tag();
 
             // Extract descriptor-dependent information.
             if (did == DID_MPEG_CA) {
-                const CADescriptor desc(_duck, *ptr);
+                const CADescriptor desc(_duck, bindesc);
                 if (desc.isValid()) {
                     getPIDContext(desc.ca_pid).setCAS(dlist.table(), desc.cas_id);
                 }
             }
             else if (bool(_duck.standards() & Standards::ISDB) && did == DID_ISDB_CA) {
-                const ISDBAccessControlDescriptor desc(_duck, *ptr);
+                const ISDBAccessControlDescriptor desc(_duck, bindesc);
                 if (desc.isValid()) {
                     getPIDContext(desc.pid).setCAS(dlist.table(), desc.CA_system_id);
                 }

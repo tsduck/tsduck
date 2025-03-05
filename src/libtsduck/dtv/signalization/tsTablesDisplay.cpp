@@ -712,14 +712,12 @@ void ts::TablesDisplay::displayDescriptorList(const DescriptorList& dlist, Descr
     std::ostream& strm(_duck.out());
 
     for (size_t i = 0; i < dlist.count(); ++i) {
-        const DescriptorPtr& desc(dlist[i]);
-        if (desc != nullptr) {
-            context.setCurrentDescriptorList(&dlist, i);
-            strm << margin << "- Descriptor " << i << ": "
-                 << DIDName(desc->tag(), context, NamesFlags::NAME_VALUE | NamesFlags::HEX_DEC) << ", "
-                 << desc->size() << " bytes" << std::endl;
-            displayDescriptor(*desc, context, margin + u"  ");
-        }
+        const Descriptor& desc(dlist[i]);
+        context.setCurrentDescriptorList(&dlist, i);
+        strm << margin << "- Descriptor " << i << ": "
+             << DIDName(desc.tag(), context, NamesFlags::NAME_VALUE | NamesFlags::HEX_DEC) << ", "
+             << desc.size() << " bytes" << std::endl;
+        displayDescriptor(desc, context, margin + u"  ");
     }
 }
 

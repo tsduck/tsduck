@@ -219,7 +219,7 @@ void DemuxTest::testTable(const char* name, const uint8_t* ref_packets, size_t r
                 case 0x0304: { // Planete
                     TSUNIT_ASSERT(pmt.pcr_pid == 0x00A3);
                     TSUNIT_ASSERT(pmt.descs.count() == 1);
-                    TSUNIT_ASSERT(pmt.descs[0]->tag() == ts::DID_MPEG_CA);
+                    TSUNIT_ASSERT(pmt.descs[0].tag() == ts::DID_MPEG_CA);
                     TSUNIT_ASSERT(pmt.streams.size() == 2);
                     TSUNIT_ASSERT(pmt.streams[0x00A3].stream_type == 0x1B);
                     TSUNIT_ASSERT(pmt.streams[0x00A3].descs.count() == 3);
@@ -233,7 +233,7 @@ void DemuxTest::testTable(const char* name, const uint8_t* ref_packets, size_t r
                     TSUNIT_ASSERT(pmt.streams.size() == 2);
                     TSUNIT_ASSERT(pmt.streams[0x01C9].stream_type == 0x24);
                     TSUNIT_ASSERT(pmt.streams[0x01C9].descs.count() == 1);
-                    TSUNIT_ASSERT(pmt.streams[0x01C9].descs[0]->tag() == ts::DID_MPEG_HEVC_VIDEO);
+                    TSUNIT_ASSERT(pmt.streams[0x01C9].descs[0].tag() == ts::DID_MPEG_HEVC_VIDEO);
                     TSUNIT_ASSERT(pmt.streams[0x01CA].stream_type == 0x0F);
                     TSUNIT_ASSERT(pmt.streams[0x01CA].descs.count() == 2);
                     break;
@@ -255,7 +255,7 @@ void DemuxTest::testTable(const char* name, const uint8_t* ref_packets, size_t r
             TSUNIT_ASSERT(sdt.services[0x0304].running_status == 4); // running
             TSUNIT_ASSERT(sdt.services[0x0304].CA_controlled);
             TSUNIT_ASSERT(sdt.services[0x0304].descs.count() == 1);
-            TSUNIT_ASSERT(sdt.services[0x0304].descs[0]->tag() == ts::DID_DVB_SERVICE);
+            TSUNIT_ASSERT(sdt.services[0x0304].descs[0].tag() == ts::DID_DVB_SERVICE);
             TSUNIT_ASSERT(sdt.services[0x0304].serviceType(duck) == 0x01);
             TSUNIT_ASSERT(sdt.services[0x0304].serviceName(duck) == u"PLANETE");
             TSUNIT_ASSERT(sdt.services[0x0304].providerName(duck) == u"CNH");
@@ -266,13 +266,13 @@ void DemuxTest::testTable(const char* name, const uint8_t* ref_packets, size_t r
             ts::NIT nit(duck, table1);
             TSUNIT_ASSERT(nit.network_id == 0x20FA);
             TSUNIT_ASSERT(nit.descs.count() == 8);
-            TSUNIT_ASSERT(nit.descs[0]->tag() == ts::DID_DVB_NETWORK_NAME);
-            TSUNIT_ASSERT(nit.descs[7]->tag() == ts::DID_DVB_LINKAGE);
+            TSUNIT_ASSERT(nit.descs[0].tag() == ts::DID_DVB_NETWORK_NAME);
+            TSUNIT_ASSERT(nit.descs[7].tag() == ts::DID_DVB_LINKAGE);
             TSUNIT_ASSERT(nit.transports.size() == 7);
             ts::TransportStreamId id(0x0004, 0x20FA); // TNT R4
             TSUNIT_ASSERT(nit.transports[id].descs.count() == 4);
-            TSUNIT_ASSERT(nit.transports[id].descs[0]->tag() == ts::DID_DVB_PRIV_DATA_SPECIF);
-            TSUNIT_ASSERT(nit.transports[id].descs[3]->tag() == ts::DID_DVB_TERREST_DELIVERY);
+            TSUNIT_ASSERT(nit.transports[id].descs[0].tag() == ts::DID_DVB_PRIV_DATA_SPECIF);
+            TSUNIT_ASSERT(nit.transports[id].descs[3].tag() == ts::DID_DVB_TERREST_DELIVERY);
             nit.serialize(duck, table2);
             break;
         }
@@ -281,22 +281,22 @@ void DemuxTest::testTable(const char* name, const uint8_t* ref_packets, size_t r
             switch (bat.bouquet_id) {
                 case 0x0086: { // Tv Numeric
                     TSUNIT_ASSERT(bat.descs.count() == 5);
-                    TSUNIT_ASSERT(bat.descs[0]->tag() == ts::DID_DVB_BOUQUET_NAME);
-                    TSUNIT_ASSERT(bat.descs[4]->tag() == ts::DID_LW_SUBSCRIPTION);
+                    TSUNIT_ASSERT(bat.descs[0].tag() == ts::DID_DVB_BOUQUET_NAME);
+                    TSUNIT_ASSERT(bat.descs[4].tag() == ts::DID_LW_SUBSCRIPTION);
                     TSUNIT_ASSERT(bat.transports.size() == 3);
                     ts::TransportStreamId id(0x0006, 0x20FA); // TNT R6
                     TSUNIT_ASSERT(bat.transports[id].descs.count() == 1);
-                    TSUNIT_ASSERT(bat.transports[id].descs[0]->tag() == ts::DID_DVB_SERVICE_LIST);
+                    TSUNIT_ASSERT(bat.transports[id].descs[0].tag() == ts::DID_DVB_SERVICE_LIST);
                     break;
                 }
                 case 0xC003: { // Canal+ TNT
                     TSUNIT_ASSERT(bat.descs.count() == 4);
-                    TSUNIT_ASSERT(bat.descs[0]->tag() == ts::DID_DVB_BOUQUET_NAME);
-                    TSUNIT_ASSERT(bat.descs[1]->tag() == ts::DID_DVB_LINKAGE);
+                    TSUNIT_ASSERT(bat.descs[0].tag() == ts::DID_DVB_BOUQUET_NAME);
+                    TSUNIT_ASSERT(bat.descs[1].tag() == ts::DID_DVB_LINKAGE);
                     TSUNIT_ASSERT(bat.transports.size() == 6);
                     ts::TransportStreamId id(0x0003, 0x20FA); // TNT R3
                     TSUNIT_ASSERT(bat.transports[id].descs.count() == 5);
-                    TSUNIT_ASSERT(bat.transports[id].descs[0]->tag() == ts::DID_DVB_SERVICE_LIST);
+                    TSUNIT_ASSERT(bat.transports[id].descs[0].tag() == ts::DID_DVB_SERVICE_LIST);
                     break;
                 }
                 default: {

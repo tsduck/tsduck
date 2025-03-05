@@ -848,11 +848,11 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
 {
     for (size_t di = 0; di < descs.count(); ++di) {
 
-        const Descriptor& bindesc(*descs[di]);
+        const Descriptor& bindesc(descs[di]);
         const uint8_t* data = bindesc.payload();
         size_t size = bindesc.payloadSize();
 
-        switch (descs[di]->tag()) {
+        switch (bindesc.tag()) {
             case DID_MPEG_CA: {
                 // MPEG standard CA descriptor.
                 analyzeCADescriptor(bindesc, svp, ps);

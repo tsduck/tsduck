@@ -86,8 +86,8 @@ void ts::PIDOperatorSet::addMediaGuardPMT(const DescriptorList& dlist)
     for (size_t index = dlist.search(DID_MPEG_CA); index < dlist.count(); index = dlist.search(DID_MPEG_CA, index + 1)) {
 
         // Descriptor payload
-        const uint8_t* desc = dlist[index]->payload();
-        size_t size = dlist[index]->payloadSize();
+        const uint8_t* desc = dlist[index].payload();
+        size_t size = dlist[index].payloadSize();
 
         // Ignore descriptor if too short
         if (size < 2) {
@@ -123,8 +123,8 @@ void ts::PIDOperatorSet::addMediaGuardCAT(const DescriptorList& dlist)
     for (size_t index = dlist.search(DID_MPEG_CA); index < dlist.count(); index = dlist.search(DID_MPEG_CA, index + 1)) {
 
         // Descriptor payload
-        const uint8_t* desc = dlist[index]->payload();
-        size_t size = dlist[index]->payloadSize();
+        const uint8_t* desc = dlist[index].payload();
+        size_t size = dlist[index].payloadSize();
 
         // Ignore descriptor if too short
         if (size < 4) {
@@ -176,8 +176,8 @@ void ts::PIDOperatorSet::addSafeAccessCAT(const DescriptorList& dlist)
     for (size_t index = dlist.search(DID_MPEG_CA); index < dlist.count(); index = dlist.search(DID_MPEG_CA, index + 1)) {
 
         // Descriptor payload
-        const uint8_t* desc = dlist[index]->payload();
-        size_t size = dlist[index]->payloadSize();
+        const uint8_t* desc = dlist[index].payload();
+        size_t size = dlist[index].payloadSize();
 
         // Ignore descriptor if too short
         if (size < 5) {
@@ -214,8 +214,8 @@ void ts::PIDOperatorSet::addViaccess(const DescriptorList& dlist, bool is_cat)
     for (size_t index = dlist.search(DID_MPEG_CA); index < dlist.count(); index = dlist.search(DID_MPEG_CA, index + 1)) {
 
         // Descriptor payload
-        const uint8_t* desc = dlist[index]->payload();
-        size_t size = dlist[index]->payloadSize();
+        const uint8_t* desc = dlist[index].payload();
+        size_t size = dlist[index].payloadSize();
 
         // Ignore descriptor if too short
         if (size < 4) {

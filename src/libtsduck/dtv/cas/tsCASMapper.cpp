@@ -91,9 +91,9 @@ void ts::CASMapper::handleTable(SectionDemux&, const BinaryTable& table)
 void ts::CASMapper::analyzeCADescriptors(const DescriptorList& descs, bool is_ecm)
 {
     for (size_t i = 0; i < descs.count(); ++i) {
-        const DescriptorPtr& desc(descs[i]);
-        if (desc != nullptr && desc->tag() == DID_MPEG_CA) {
-            const CADescriptorPtr cadesc(new CADescriptor(_duck, *desc));
+        const Descriptor& desc(descs[i]);
+        if (desc.tag() == DID_MPEG_CA) {
+            const CADescriptorPtr cadesc(new CADescriptor(_duck, desc));
             if (cadesc != nullptr && cadesc->isValid()) {
                 const std::string cas_name(CASIdName(_duck, cadesc->cas_id).toUTF8());
                 _pids[cadesc->ca_pid] = PIDDescription(cadesc->cas_id, is_ecm, cadesc);

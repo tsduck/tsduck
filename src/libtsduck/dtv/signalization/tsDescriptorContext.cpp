@@ -134,8 +134,8 @@ ts::PDS ts::DescriptorContext::getPDS()
             size_t index = std::min(_dlist_index + 1, _dlist->size());
             while (index-- > 0) {
                 const auto& desc((*_dlist)[index]);
-                if (desc != nullptr && desc->isValid() && desc->tag() == DID_DVB_PRIV_DATA_SPECIF && desc->payloadSize() >= 4) {
-                    _low_pds = GetUInt32(desc->payload());
+                if (desc.isValid() && desc.tag() == DID_DVB_PRIV_DATA_SPECIF && desc.payloadSize() >= 4) {
+                    _low_pds = GetUInt32(desc.payload());
                     break;
                 }
             }
@@ -231,14 +231,14 @@ void ts::DescriptorContext::updateREGIDs(REGIDVector& regids, const DescriptorLi
 {
     for (size_t index = 0; index < dlist.size() && index <= max_index; ++index) {
         const auto& desc(dlist[index]);
-        if (desc != nullptr && desc->isValid()) {
-            if (desc->tag() == DID_MPEG_REGISTRATION && desc->payloadSize() >= 4) {
+        if (desc.isValid()) {
+            if (desc.tag() == DID_MPEG_REGISTRATION && desc.payloadSize() >= 4) {
                 // Add a registration id.
-                regids.push_back(GetUInt32(desc->payload()));
+                regids.push_back(GetUInt32(desc.payload()));
             }
-            else if (is_low && desc->tag() == DID_DVB_PRIV_DATA_SPECIF && desc->payloadSize() >= 4) {
+            else if (is_low && desc.tag() == DID_DVB_PRIV_DATA_SPECIF && desc.payloadSize() >= 4) {
                 // Opportunistic collection of PDS...
-                _low_pds = GetUInt32(desc->payload());
+                _low_pds = GetUInt32(desc.payload());
                 _low_pds_valid = true;
             }
         }

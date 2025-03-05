@@ -383,20 +383,18 @@ void ts::T2MIDemux::processPMT(const PMT& pmt)
         const PID pid = it.first;
         const DescriptorList& dlist(it.second.descs);
         for (size_t index = dlist.search(DID_DVB_EXTENSION); index < dlist.count(); index = dlist.search(DID_DVB_EXTENSION, index + 1)) {
-            if (dlist[index] != nullptr) {
-                const T2MIDescriptor desc(_duck, *dlist[index]);
-                if (desc.isValid() && _handler != nullptr) {
-                    // Invoke the user-defined handler to signal the new PID.
-                    beforeCallingHandler(pid);
-                    try {
-                        _handler->handleT2MINewPID(*this, pmt, pid, desc);
-                    }
-                    catch (...) {
-                        afterCallingHandler(false);
-                        throw;
-                    }
-                    afterCallingHandler(true);
+            const T2MIDescriptor desc(_duck, dlist[index]);
+            if (desc.isValid() && _handler != nullptr) {
+                // Invoke the user-defined handler to signal the new PID.
+                beforeCallingHandler(pid);
+                try {
+                    _handler->handleT2MINewPID(*this, pmt, pid, desc);
                 }
+                catch (...) {
+                    afterCallingHandler(false);
+                    throw;
+                }
+                afterCallingHandler(true);
             }
         }
     }

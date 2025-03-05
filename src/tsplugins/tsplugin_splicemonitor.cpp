@@ -547,10 +547,10 @@ void ts::SpliceMonitorPlugin::handleTable(SectionDemux& demux, const BinaryTable
 
     if (sit.splice_command_type == SPLICE_TIME_SIGNAL && sit.time_signal.has_value()) {
         sit.adjustPTS();
-        for (size_t di = 0; di < sit.descs.count(); ++di) {
-            if (sit.descs[di]->tag() == DID_SPLICE_SEGMENT) {
+        for (const auto& bindesc : sit.descs) {
+            if (bindesc.tag() == DID_SPLICE_SEGMENT) {
                 // SCTE 35 SIT segmentation_descriptor.
-                const SpliceSegmentationDescriptor ssd(duck, *sit.descs[di]);
+                const SpliceSegmentationDescriptor ssd(duck, bindesc);
                 if (ssd.isValid() && (ssd.isIn() || ssd.isOut())) {
                     processEvent(table.sourcePID(), ssd.segmentation_event_id, sit.time_signal.value(), ssd.segmentation_event_cancel, false, ssd.isOut());
                 }

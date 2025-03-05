@@ -258,8 +258,7 @@ bool ts::SDT::ServiceEntry::locateServiceDescriptor(DuckContext& duck, ServiceDe
         return false;
     }
     else {
-        assert(descs[index] != nullptr);
-        desc.deserialize(duck, *descs[index]);
+        desc.deserialize(duck, descs[index]);
         return desc.isValid();
     }
 }
@@ -311,12 +310,11 @@ void ts::SDT::ServiceEntry::setString(DuckContext& duck, UString ServiceDescript
     }
     else {
         // Replace service name in existing descriptor
-        assert(descs[index] != nullptr);
         ServiceDescriptor sd;
-        sd.deserialize(duck, *descs[index]);
+        sd.deserialize(duck, descs[index]);
         if (sd.isValid()) {
             sd.*field = value;
-            sd.serialize(duck, *descs[index]);
+            sd.serialize(duck, descs[index]);
         }
     }
 }
@@ -331,7 +329,7 @@ void ts::SDT::ServiceEntry::setType(uint8_t service_type)
     // Locate the service descriptor
     const size_t index(descs.search(DID_DVB_SERVICE));
 
-    if (index >= descs.count() || descs[index]->payloadSize() < 2) {
+    if (index >= descs.count() || descs[index].payloadSize() < 2) {
         // No valid service_descriptor, add a new one.
         ByteBlock data(5);
         data[0] = DID_DVB_SERVICE;  // tag
@@ -341,9 +339,9 @@ void ts::SDT::ServiceEntry::setType(uint8_t service_type)
         data[4] = 0;            // service name length
         descs.add(std::make_shared<Descriptor>(data));
     }
-    else if (descs[index]->payloadSize() > 0) {
+    else if (descs[index].payloadSize() > 0) {
         // Replace service type in existing descriptor
-        uint8_t* payload = descs[index]->payload();
+        uint8_t* payload = descs[index].payload();
         payload[0] = service_type;
     }
 }

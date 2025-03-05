@@ -502,8 +502,8 @@ void ts::NITPlugin::processDescriptorList(DescriptorList& dlist)
     // Process all terrestrial_delivery_system_descriptors
     for (size_t i = dlist.search(DID_DVB_TERREST_DELIVERY); i < dlist.count(); i = dlist.search(DID_DVB_TERREST_DELIVERY, i + 1)) {
 
-        uint8_t* base = dlist[i]->payload();
-        size_t size = dlist[i]->payloadSize();
+        uint8_t* base = dlist[i].payload();
+        size_t size = dlist[i].payloadSize();
 
         if (size > 4) {
             if (_update_mpe_fec) {
@@ -518,8 +518,8 @@ void ts::NITPlugin::processDescriptorList(DescriptorList& dlist)
     // Process all linkage descriptors
     for (size_t i = dlist.search(DID_DVB_LINKAGE); i < dlist.count(); i = dlist.search(DID_DVB_LINKAGE, i + 1)) {
 
-        uint8_t* base = dlist[i]->payload();
-        size_t size = dlist[i]->payloadSize();
+        uint8_t* base = dlist[i].payload();
+        size_t size = dlist[i].payloadSize();
 
         // If the linkage descriptor points to a removed TS, remove the descriptor
         if (size >= 2 && _remove_ts.count(GetUInt16 (base)) != 0) {
@@ -537,8 +537,8 @@ void ts::NITPlugin::processDescriptorList(DescriptorList& dlist)
         // Modify all service_list_descriptors
         for (size_t i = dlist.search(DID_DVB_SERVICE_LIST); i < dlist.count(); i = dlist.search(DID_DVB_SERVICE_LIST, i + 1)) {
 
-            uint8_t* base = dlist[i]->payload();
-            size_t size = dlist[i]->payloadSize();
+            uint8_t* base = dlist[i].payload();
+            size_t size = dlist[i].payloadSize();
             uint8_t* data = base;
             uint8_t* new_data = base;
             bool keep = true;
@@ -574,7 +574,7 @@ void ts::NITPlugin::processDescriptorList(DescriptorList& dlist)
                 data += 3;
                 size -= 3;
             }
-            dlist[i]->resizePayload(new_data - base);
+            dlist[i].resizePayload(new_data - base);
         }
     }
 
@@ -589,8 +589,8 @@ void ts::NITPlugin::processDescriptorList(DescriptorList& dlist)
              i < dlist.count();
              i = dlist.search(DID_EACEM_LCN, i + 1, PDS_EICTA)) {
 
-            uint8_t* base = dlist[i]->payload();
-            size_t size = dlist[i]->payloadSize();
+            uint8_t* base = dlist[i].payload();
+            size_t size = dlist[i].payloadSize();
             uint8_t* data = base;
             uint8_t* new_data = base;
             bool keep = true;
@@ -642,7 +642,7 @@ void ts::NITPlugin::processDescriptorList(DescriptorList& dlist)
                 size -= 4;
             }
 
-            dlist[i]->resizePayload(new_data - base);
+            dlist[i].resizePayload(new_data - base);
         }
     }
 }
@@ -674,7 +674,7 @@ void ts::NITPlugin::updateServiceList(NIT& nit)
             }
             else {
                 // There is an existing service list descriptor, merge the collected data.
-                ServiceListDescriptor desc(duck, *ts.descs[sld_index]);
+                ServiceListDescriptor desc(duck, ts.descs[sld_index]);
                 if (desc.isValid()) {
                     // Merge the descriptors.
                     for (const auto& it2 : sld.entries) {

@@ -156,11 +156,10 @@ void ts::RemapPlugin::processDescriptors(DescriptorList& dlist, TID table_id)
 {
     // Process all CA descriptors in the list
     for (size_t i = dlist.search(DID_MPEG_CA); i < dlist.count(); i = dlist.search(DID_MPEG_CA, i + 1)) {
-        const DescriptorPtr& desc(dlist[i]);
-        CADescriptor cadesc(duck, *desc);
+        CADescriptor cadesc(duck, dlist[i]);
         if (cadesc.isValid()) {
             cadesc.ca_pid = remap(cadesc.ca_pid);
-            cadesc.serialize(duck, *desc);
+            cadesc.serialize(duck, dlist[i]);
         }
     }
 }

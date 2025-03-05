@@ -105,10 +105,20 @@ bool ts::DescriptorList::add(const DescriptorPtr& desc)
     }
 }
 
+bool ts::DescriptorList::add(const Descriptor& desc)
+{
+    if (!desc.isValid()) {
+        return false;
+    }
+    else {
+        _list.push_back(std::make_shared<Descriptor>(desc.content(), desc.size()));
+        return true;
+    }
+}
+
 bool ts::DescriptorList::add(DuckContext& duck, const AbstractDescriptor& desc)
 {
     DescriptorPtr pd = std::make_shared<Descriptor>();
-    CheckNonNull(pd.get());
     return desc.serialize(duck, *pd) && add(pd);
 }
 
@@ -119,6 +129,10 @@ bool ts::DescriptorList::add(DuckContext& duck, const AbstractDescriptor& desc)
 
 bool ts::DescriptorList::add(const void* data, size_t size)
 {
+    if (data == nullptr) {
+        return false;
+    }
+
     const uint8_t* desc = reinterpret_cast<const uint8_t*>(data);
     size_t length = 0;
     bool success = true;
@@ -130,6 +144,12 @@ bool ts::DescriptorList::add(const void* data, size_t size)
     }
 
     return success && size == 0;
+}
+
+bool ts::DescriptorList::add(const void* addr)
+{
+    const uint8_t* data(reinterpret_cast<const uint8_t*>(addr));
+    return data != nullptr && add(data, size_t(data[1]) + 2);
 }
 
 
@@ -216,7 +236,8 @@ void ts::DescriptorList::merge(DuckContext& duck, const DescriptorList& other)
         // Loop on all descriptors of the other list.
         for (size_t index = 0; index < other._list.size(); ++index) {
             const auto& bindesc(other._list[index]);
-            if (bindesc != nullptr && bindesc->isValid()) {
+            assert(bindesc != nullptr);
+            if (bindesc->isValid()) {
                 // The descriptor from the other list must be deserialized to be merged.
                 DescriptorContext context(duck, other, index);
                 const AbstractDescriptorPtr dp(bindesc->deserialize(duck, context));
@@ -239,10 +260,18 @@ void ts::DescriptorList::merge(DuckContext& duck, const DescriptorList& other)
 // Get a reference to the descriptor at a specified index.
 //----------------------------------------------------------------------------
 
-const ts::DescriptorPtr& ts::DescriptorList::operator[](size_t index) const
+ts::Descriptor& ts::DescriptorList::operator[](size_t index)
 {
     assert(index < _list.size());
-    return _list[index];
+    assert(_list[index] != nullptr);
+    return *_list[index];
+}
+
+const ts::Descriptor& ts::DescriptorList::operator[](size_t index) const
+{
+    assert(index < _list.size());
+    assert(_list[index] != nullptr);
+    return *_list[index];
 }
 
 
@@ -270,7 +299,8 @@ ts::EDID ts::DescriptorList::edid(const DuckContext& duck, size_t index) const
 bool ts::DescriptorList::containsRegistration(REGID regid) const
 {
     for (const auto& dp : _list) {
-        if (dp != nullptr && dp->isValid() && dp->tag() == DID_MPEG_REGISTRATION && dp->payloadSize() >= 4 && GetUInt32(dp->payload()) == regid) {
+        assert(dp != nullptr);
+        if (dp->isValid() && dp->tag() == DID_MPEG_REGISTRATION && dp->payloadSize() >= 4 && GetUInt32(dp->payload()) == regid) {
             return true;
         }
     }
@@ -291,7 +321,8 @@ void ts::DescriptorList::getAllRegistrations(const DuckContext& duck, REGIDVecto
 
     // Then add registration ids from the descriptor list.
     for (const auto& dp : _list) {
-        if (dp != nullptr && dp->isValid() && dp->tag() == DID_MPEG_REGISTRATION && dp->payloadSize() >= 4) {
+        assert(dp != nullptr);
+        if (dp->isValid() && dp->tag() == DID_MPEG_REGISTRATION && dp->payloadSize() >= 4) {
             regids.push_back(GetUInt32(dp->payload()));
         }
     }
@@ -372,18 +403,16 @@ bool ts::DescriptorList::canRemovePDS(std::vector<DescriptorPtr>::iterator it)
     // Search for private descriptors ahead.
     decltype(it) end;
     for (end = it + 1; end != _list.end(); ++end) {
-        if (*end != nullptr) {
-            const DID tag = (*end)->tag();
-            if (tag >= 0x80) {
-                // This is a private descriptor, the private_data_specifier descriptor
-                // is necessary and cannot be removed.
-                return false;
-            }
-            if (tag == DID_DVB_PRIV_DATA_SPECIF) {
-                // Found another private_data_specifier descriptor with no private
-                // descriptor between the two => the first one can be removed.
-                return true;
-            }
+        assert(*end != nullptr);
+        const DID tag = (*end)->tag();
+        if (tag >= 0x80) {
+            // This is a private descriptor, the private_data_specifier descriptor is necessary and cannot be removed.
+            return false;
+        }
+        if (tag == DID_DVB_PRIV_DATA_SPECIF) {
+            // Found another private_data_specifier descriptor with no private
+            // descriptor between the two => the first one can be removed.
+            return true;
         }
     }
 
@@ -440,7 +469,8 @@ size_t ts::DescriptorList::removeInvalidPrivateDescriptors()
     PDS pds = 0;
 
     for (auto it = _list.begin(); it != _list.end(); ) {
-        if (*it == nullptr || !(*it)->isValid()) {
+        assert(*it != nullptr);
+        if (!(*it)->isValid()) {
             // Invalid descriptor, remove it.
             it = _list.erase(it);
             count++;
@@ -476,7 +506,8 @@ bool ts::DescriptorList::removeByIndex(size_t index)
     }
 
     // Private_data_specifier descriptor can be removed under certain conditions only
-    if (_list[index] != nullptr && _list[index]->tag() == DID_DVB_PRIV_DATA_SPECIF && !canRemovePDS(_list.begin() + index)) {
+    assert(_list[index] != nullptr);
+    if (_list[index]->tag() == DID_DVB_PRIV_DATA_SPECIF && !canRemovePDS(_list.begin() + index)) {
         return false;
     }
 
@@ -497,18 +528,17 @@ size_t ts::DescriptorList::removeByTag(DID tag, PDS pds)
     size_t removed_count = 0;
 
     for (auto it = _list.begin(); it != _list.end(); ) {
-        if (*it != nullptr) {
-            const DID itag = (*it)->tag();
-            if (itag == tag && (!check_pds || current_pds == pds) && (itag != DID_DVB_PRIV_DATA_SPECIF || canRemovePDS(it))) {
-                it = _list.erase(it);
-                ++removed_count;
+        assert(*it != nullptr);
+        const DID itag = (*it)->tag();
+        if (itag == tag && (!check_pds || current_pds == pds) && (itag != DID_DVB_PRIV_DATA_SPECIF || canRemovePDS(it))) {
+            it = _list.erase(it);
+            ++removed_count;
+        }
+        else {
+            if (check_pds) {
+                UpdatePDS(current_pds, *it);
             }
-            else {
-                if (check_pds) {
-                    UpdatePDS(current_pds, *it);
-                }
-                ++it;
-            }
+            ++it;
         }
     }
 
@@ -646,7 +676,8 @@ size_t ts::DescriptorList::search(const ts::EDID& edid, size_t start_index) cons
         UpdateREGID(regid, _list[index]);
         UpdatePDS(pds, _list[index]);
         // First, filter on descriptor id (no need to search more if does not match).
-        if (_list[index] != nullptr && _list[index]->isValid() && _list[index]->tag() == did) {
+        assert(_list[index] != nullptr);
+        if (_list[index]->isValid() && _list[index]->tag() == did) {
             // Now, it's worth having a look.
             if (edid.isRegular() ||
                 edid.isTableSpecific() ||
@@ -682,7 +713,8 @@ size_t ts::DescriptorList::searchLanguage(const DuckContext& duck, const UString
     // Seach all known types of descriptors containing languages.
     for (size_t index = start_index; index < _list.size(); index++) {
         const DescriptorPtr& desc(_list[index]);
-        if (desc != nullptr && desc->isValid()) {
+        assert(desc != nullptr);
+        if (desc->isValid()) {
 
             const DID tag = desc->tag();
             const uint8_t* data = desc->payload();
@@ -794,7 +826,8 @@ size_t ts::DescriptorList::searchSubtitle(const DuckContext& duck, const UString
     // Seach all known types of descriptors containing subtitles.
     for (size_t index = start_index; index < _list.size(); index++) {
         const DescriptorPtr& desc(_list[index]);
-        if (desc != nullptr && desc->isValid()) {
+        assert(desc != nullptr);
+        if (desc->isValid()) {
 
             const DID tag = desc->tag();
             const uint8_t* data = desc->payload();
@@ -855,7 +888,8 @@ bool ts::DescriptorList::toXML(DuckContext& duck, xml::Element* parent) const
     bool success = true;
     for (size_t index = 0; index < _list.size(); ++index) {
         DescriptorContext context(duck, *this, index);
-        if (_list[index] == nullptr || _list[index]->toXML(duck, parent, context, false) == nullptr) {
+        assert(_list[index] != nullptr);
+        if (_list[index]->toXML(duck, parent, context, false) == nullptr) {
             success = false;
         }
     }

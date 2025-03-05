@@ -201,12 +201,11 @@ size_t ts::CADescriptor::SearchByPID(const DescriptorList& dlist, PID pid, size_
 {
     bool found = false;
     for (; !found && start_index < dlist.count(); start_index++) {
-        const DescriptorPtr& desc(dlist[start_index]);
-        found = desc != nullptr &&
-            desc->isValid() &&
-            desc->tag() == DID_MPEG_CA &&
-            desc->payloadSize() >= 4 &&
-            (GetUInt16(desc->payload() + 2) & 0x1FFF) == pid;
+        const Descriptor& desc(dlist[start_index]);
+        found = desc.isValid() &&
+                desc.tag() == DID_MPEG_CA &&
+                desc.payloadSize() >= 4 &&
+                (GetUInt16(desc.payload() + 2) & 0x1FFF) == pid;
     }
     return start_index;
 }
@@ -220,12 +219,11 @@ size_t ts::CADescriptor::SearchByCAS(const DescriptorList& dlist, CASID casid, s
 {
     bool found = false;
     for (; !found && start_index < dlist.count(); start_index++) {
-        const DescriptorPtr& desc(dlist[start_index]);
-        found = desc != nullptr &&
-            desc->isValid() &&
-            desc->tag() == DID_MPEG_CA &&
-            desc->payloadSize() >= 4 &&
-            GetUInt16(desc->payload()) == casid;
+        const Descriptor& desc(dlist[start_index]);
+        found = desc.isValid() &&
+                desc.tag() == DID_MPEG_CA &&
+                desc.payloadSize() >= 4 &&
+                GetUInt16(desc.payload()) == casid;
     }
     return start_index;
 }

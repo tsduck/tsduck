@@ -186,23 +186,21 @@ void ts::MPEDemux::processPMT(const PMT& pmt)
 
         // Loop on all data_broadcast_id_descriptors for the component.
         for (size_t i = stream.descs.search(DID_DVB_DATA_BROADCAST_ID); i < stream.descs.count(); i = stream.descs.search(DID_DVB_DATA_BROADCAST_ID, i + 1)) {
-            if (stream.descs[i] != nullptr) {
-                const DataBroadcastIdDescriptor desc(_duck, *stream.descs[i]);
-                if (desc.isValid()) {
-                    // Found a valid data_broadcast_id_descriptor.
-                    switch (desc.data_broadcast_id) {
-                        case DBID_IPMAC_NOTIFICATION:
-                            // This component carries INT tables.
-                            // We need to collect the INT.
-                            _psi_demux.addPID(pid);
-                            break;
-                        case DBID_MPE:
-                            // This component carries MPE sections.
-                            processMPEDiscovery(pmt, pid);
-                            break;
-                        default:
-                            break;
-                    }
+            const DataBroadcastIdDescriptor desc(_duck, stream.descs[i]);
+            if (desc.isValid()) {
+                // Found a valid data_broadcast_id_descriptor.
+                switch (desc.data_broadcast_id) {
+                    case DBID_IPMAC_NOTIFICATION:
+                        // This component carries INT tables.
+                        // We need to collect the INT.
+                        _psi_demux.addPID(pid);
+                        break;
+                    case DBID_MPE:
+                        // This component carries MPE sections.
+                        processMPEDiscovery(pmt, pid);
+                        break;
+                    default:
+                        break;
                 }
             }
         }
@@ -243,7 +241,7 @@ void ts::MPEDemux::processINTDescriptors(const DescriptorList& descs)
 {
     // Loop on all IP/MAC stream_location_descriptors.
     for (size_t i = descs.search(DID_INT_STREAM_LOC); i < descs.count(); i = descs.search(DID_INT_STREAM_LOC, i + 1)) {
-        const IPMACStreamLocationDescriptor desc(_duck, *descs[i]);
+        const IPMACStreamLocationDescriptor desc(_duck, descs[i]);
         if (desc.isValid() && desc.transport_stream_id == _ts_id) {
             // Found an MPE PID in this transport stream.
 

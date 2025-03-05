@@ -415,12 +415,12 @@ void ts::UNT::buildXML(DuckContext& duck, xml::Element* root) const
             e2->setIntAttribute(u"version", it2.version, true);
             // Loop on subdescriptors
             for (size_t i3 = 0; i3 < it2.subDescriptors.count(); ++i3) {
-                const DescriptorPtr& desc(it2.subDescriptors[i3]);
-                if (desc != nullptr && desc->isValid()) {
+                const Descriptor& desc(it2.subDescriptors[i3]);
+                if (desc.isValid()) {
                     xml::Element* e3 = e2->addElement(u"subDescriptor");
-                    e3->setIntAttribute(u"subDescriptorType", desc->tag(), true);
-                    if (desc->payloadSize() > 0) {
-                        e3->addHexaText(desc->payload(), desc->payloadSize());
+                    e3->setIntAttribute(u"subDescriptorType", desc.tag(), true);
+                    if (desc.payloadSize() > 0) {
+                        e3->addHexaText(desc.payload(), desc.payloadSize());
                     }
                 }
             }

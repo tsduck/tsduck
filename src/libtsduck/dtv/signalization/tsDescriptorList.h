@@ -126,7 +126,78 @@ namespace ts {
         //! @param [in] index Index in the list. Valid index are 0 to count()-1.
         //! @return A reference to the descriptor at @a index.
         //!
-        const DescriptorPtr& operator[](size_t index) const;
+        Descriptor& operator[](size_t index);
+
+        //!
+        //! Get a const reference to the descriptor at a specified index.
+        //! @param [in] index Index in the list. Valid index are 0 to count()-1.
+        //! @return A const reference to the descriptor at @a index.
+        //!
+        const Descriptor& operator[](size_t index) const;
+
+        //!
+        //! An iterator over binary descriptors in the list.
+        //! Dereferencing an iterator accesses a Descriptor instance.
+        //!
+        class TSDUCKDLL iterator : private std::vector<DescriptorPtr>::iterator
+        {
+        private:
+            using SuperClass = std::vector<DescriptorPtr>::iterator;
+            friend class DescriptorList;
+            iterator(const SuperClass& up) : SuperClass(up) {}
+        public:
+            //! @cond nodoxygen
+            iterator& operator--() { --*static_cast<SuperClass*>(this); return *this; }
+            iterator& operator++() { ++*static_cast<SuperClass*>(this); return *this; }
+            Descriptor& operator*() { return **static_cast<SuperClass>(*this); }
+            Descriptor* operator->() { return &**static_cast<SuperClass>(*this); }
+            bool operator==(const iterator& other) const { return static_cast<SuperClass>(*this) == static_cast<SuperClass>(other); }
+            //! @endcond
+        };
+
+        //!
+        //! A constant iterator over binary descriptors in the list.
+        //! Dereferencing an iterator accesses a constant Descriptor instance.
+        //!
+        class TSDUCKDLL const_iterator : private std::vector<DescriptorPtr>::const_iterator
+        {
+        private:
+            using SuperClass = std::vector<DescriptorPtr>::const_iterator;
+            friend class DescriptorList;
+            const_iterator(const SuperClass& up) : SuperClass(up) {}
+        public:
+            //! @cond nodoxygen
+            const_iterator& operator--() { --*static_cast<SuperClass*>(this); return *this; }
+            const_iterator& operator++() { ++*static_cast<SuperClass*>(this); return *this; }
+            const Descriptor& operator*() { return **static_cast<SuperClass>(*this); }
+            const Descriptor* operator->() { return &**static_cast<SuperClass>(*this); }
+            bool operator==(const iterator& other) const { return static_cast<SuperClass>(*this) == static_cast<SuperClass>(other); }
+            //! @endcond
+        };
+
+        //!
+        //! Get an iterator to the first descriptor in the list.
+        //! @return An iterator to the first descriptor in the list.
+        //!
+        iterator begin() { return iterator(_list.begin()); }
+
+        //!
+        //! Get an iterator after the last descriptor in the list.
+        //! @return An iterator after the last descriptor in the list.
+        //!
+        iterator end() { return iterator(_list.end()); }
+
+        //!
+        //! Get a constant iterator to the first descriptor in the list.
+        //! @return A constant iterator to the first descriptor in the list.
+        //!
+        const_iterator begin() const { return const_iterator(_list.begin()); }
+
+        //!
+        //! Get a constant iterator after the last descriptor in the list.
+        //! @return A constant iterator after the last descriptor in the list.
+        //!
+        const_iterator end() const { return const_iterator(_list.end()); }
 
         //!
         //! Get the extended descriptor id of a descriptor in the list.
@@ -151,11 +222,20 @@ namespace ts {
         PDS privateDataSpecifier(size_t index) const;
 
         //!
-        //! Add one descriptor at end of list
+        //! Add one descriptor at end of list.
+        //! The descriptor content is shared.
         //! @param [in] desc The binary descriptor to add.
         //! @return True in case of success, false if the descriptor is invalid.
         //!
         bool add(const DescriptorPtr& desc);
+
+        //!
+        //! Add one descriptor at end of list.
+        //! The descriptor content is copied.
+        //! @param [in] desc The binary descriptor to add.
+        //! @return True in case of success, false if the descriptor is invalid.
+        //!
+        bool add(const Descriptor& desc);
 
         //!
         //! Add one descriptor at end of list
@@ -189,11 +269,7 @@ namespace ts {
         //! @param [in] addr Address of the descriptor in memory.
         //! @return True in case of success, false if the descriptor is invalid.
         //!
-        bool add(const void* addr)
-        {
-            const uint8_t* data(reinterpret_cast<const uint8_t*>(addr));
-            return add(data, size_t(data[1]) + 2);
-        }
+        bool add(const void* addr);
 
         //!
         //! Add a MPEG registration_descriptor if necessary at end of list.

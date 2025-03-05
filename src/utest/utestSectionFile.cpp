@@ -486,7 +486,7 @@ TSUNIT_DEFINE_TEST(MultiSectionsCAT)
     for (size_t di = 0; di < 300; ++di) {
         cat1.descs.add(duck, ts::CAIdentifierDescriptor({counter, uint16_t(counter+1), uint16_t(counter+2), uint16_t(counter+3)}));
         TSUNIT_EQUAL(di + 1, cat1.descs.size());
-        TSUNIT_EQUAL(10, cat1.descs[di]->size());
+        TSUNIT_EQUAL(10, cat1.descs[di].size());
         counter += 4;
     }
 
@@ -514,7 +514,7 @@ TSUNIT_DEFINE_TEST(MultiSectionsCAT)
 
     counter = 0;
     for (size_t di = 0; di < cat2.descs.size(); ++di) {
-        ts::CAIdentifierDescriptor desc(duck, *cat2.descs[di]);
+        ts::CAIdentifierDescriptor desc(duck, cat2.descs[di]);
         TSUNIT_ASSERT(desc.isValid());
         TSUNIT_EQUAL(4, desc.casids.size());
         for (size_t ii = 0; ii < desc.casids.size(); ++ii) {
@@ -577,7 +577,7 @@ TSUNIT_DEFINE_TEST(MultiSectionsAtProgramLevelPMT)
 
     counter = 0;
     for (size_t di = 0; di < pmt2.descs.size(); ++di) {
-        ts::CAIdentifierDescriptor desc(duck, *pmt2.descs[di]);
+        ts::CAIdentifierDescriptor desc(duck, pmt2.descs[di]);
         TSUNIT_ASSERT(desc.isValid());
         TSUNIT_EQUAL(4, desc.casids.size());
         for (size_t ii = 0; ii < desc.casids.size(); ++ii) {
@@ -592,7 +592,7 @@ TSUNIT_DEFINE_TEST(MultiSectionsAtProgramLevelPMT)
     TSUNIT_EQUAL(0xAB, es.stream_type);
     TSUNIT_EQUAL(1, es.descs.size());
 
-    ts::CAIdentifierDescriptor desc(duck, *es.descs[0]);
+    ts::CAIdentifierDescriptor desc(duck, es.descs[0]);
     TSUNIT_ASSERT(desc.isValid());
     TSUNIT_EQUAL(4, desc.casids.size());
     for (size_t ii = 0; ii < desc.casids.size(); ++ii) {
@@ -668,7 +668,7 @@ TSUNIT_DEFINE_TEST(MultiSectionsAtStreamLevelPMT)
     stype = 0;
 
     for (size_t di = 0; di < pmt2.descs.size(); ++di) {
-        ts::CAIdentifierDescriptor desc(duck, *pmt2.descs[di]);
+        ts::CAIdentifierDescriptor desc(duck, pmt2.descs[di]);
         TSUNIT_ASSERT(desc.isValid());
         TSUNIT_EQUAL(4, desc.casids.size());
         for (size_t ii = 0; ii < desc.casids.size(); ++ii) {
@@ -685,7 +685,7 @@ TSUNIT_DEFINE_TEST(MultiSectionsAtStreamLevelPMT)
         stype++;
         TSUNIT_EQUAL(2, si.second.descs.size());
         for (size_t di = 0; di < si.second.descs.size(); ++di) {
-            ts::CAIdentifierDescriptor desc(duck, *si.second.descs[di]);
+            ts::CAIdentifierDescriptor desc(duck, si.second.descs[di]);
             TSUNIT_ASSERT(desc.isValid());
             TSUNIT_EQUAL(4, desc.casids.size());
             for (size_t ii = 0; ii < desc.casids.size(); ++ii) {

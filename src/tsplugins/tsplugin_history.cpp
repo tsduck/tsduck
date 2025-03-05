@@ -431,8 +431,8 @@ void ts::HistoryPlugin::analyzeCADescriptors(const DescriptorList& dlist, uint16
     for (size_t index = dlist.search(DID_MPEG_CA); index < dlist.count(); index = dlist.search(DID_MPEG_CA, index + 1)) {
 
         // Descriptor payload
-        const uint8_t* desc = dlist[index]->payload();
-        size_t size = dlist[index]->payloadSize();
+        const uint8_t* desc = dlist[index].payload();
+        size_t size = dlist[index].payloadSize();
 
         // The fixed part of a CA descriptor is 4 bytes long.
         if (size < 4) {

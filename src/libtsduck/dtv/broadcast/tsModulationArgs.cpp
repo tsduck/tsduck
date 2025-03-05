@@ -593,7 +593,7 @@ bool ts::ModulationArgs::fromDeliveryDescriptors(DuckContext& duck, const Descri
     // because some of them are incremental (eg. DVB-S2). We accumulate values from all of them.
     bool found = false;
     for (size_t i = 0; i < dlist.count(); ++i) {
-        found = fromDeliveryDescriptor(duck, *dlist[i], ts_id, delsys) || found;
+        found = fromDeliveryDescriptor(duck, dlist[i], ts_id, delsys) || found;
     }
     return found;
 }

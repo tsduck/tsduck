@@ -154,6 +154,6 @@ bool ts::AbstractDescriptor::deserialize(DuckContext& duck, const DescriptorList
         return false;
     }
     else {
-        return deserialize(duck, *dlist[index]);
+        return deserialize(duck, dlist[index]);
     }
 }

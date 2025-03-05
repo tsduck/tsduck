@@ -482,8 +482,8 @@ void ts::SVRenamePlugin::processNITBATDescriptorList(DescriptorList& dlist)
     // Process all service_list_descriptors
     for (size_t i = dlist.search(DID_DVB_SERVICE_LIST); i < dlist.count(); i = dlist.search(DID_DVB_SERVICE_LIST, i + 1)) {
 
-        uint8_t* data = dlist[i]->payload();
-        size_t size = dlist[i]->payloadSize();
+        uint8_t* data = dlist[i].payload();
+        size_t size = dlist[i].payloadSize();
 
         while (size >= 3) {
             uint16_t id = GetUInt16(data);
@@ -505,8 +505,8 @@ void ts::SVRenamePlugin::processNITBATDescriptorList(DescriptorList& dlist)
          i < dlist.count();
          i = dlist.search(DID_EACEM_LCN, i + 1, PDS_EICTA)) {
 
-        uint8_t* data = dlist[i]->payload();
-        size_t size = dlist[i]->payloadSize();
+        uint8_t* data = dlist[i].payload();
+        size_t size = dlist[i].payloadSize();
 
         while (size >= 4) {
             uint16_t id = GetUInt16 (data);
