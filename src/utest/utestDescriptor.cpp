@@ -63,6 +63,7 @@ TSUNIT_DEFINE_TEST(Iterator)
     ++it;
     TSUNIT_ASSERT(it->content() == dlist[1].content());
     TSUNIT_ASSERT(it->size() == dlist[1].size());
+    TSUNIT_ASSERT(&*it == &dlist[1]);
     TSUNIT_EQUAL(ts::DID_DVB_STREAM_ID, it->tag());
     TSUNIT_EQUAL(3, it->size());
     TSUNIT_EQUAL(1, it->payloadSize());
@@ -71,10 +72,15 @@ TSUNIT_DEFINE_TEST(Iterator)
     ++it;
     TSUNIT_ASSERT(it == dlist.end());
 
+    TSUNIT_ASSERT(&*--it == &dlist[1]);
+    TSUNIT_ASSERT(&*--it == &dlist[0]);
+    TSUNIT_ASSERT(it == dlist.begin());
+
     size_t index = 0;
     for (const auto& d : dlist) {
         TSUNIT_ASSERT(d.content() == dlist[index].content());
         TSUNIT_ASSERT(d.size() == dlist[index].size());
+        TSUNIT_ASSERT(&d == &dlist[index]);
         index++;
     }
 }
