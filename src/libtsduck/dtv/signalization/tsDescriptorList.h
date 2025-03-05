@@ -85,6 +85,11 @@ namespace ts {
         bool empty() const { return _list.empty(); }
 
         //!
+        //! Get the current list of Descriptors.
+        //! @return the current list of descriptors
+        const std::vector<DescriptorPtr>& list() const { return _list; }
+
+        //!
         //! Get the number of descriptors in the list (same as count()).
         //! @return The number of descriptors in the list.
         //!
