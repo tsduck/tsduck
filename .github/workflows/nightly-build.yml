@@ -54,16 +54,7 @@ jobs:
 
     - name: Install dependencies
       if: env.REBUILD == 'true'
-      run: |
-        scripts/install-wintools/winget-install.ps1
-        Write-Output "=== Path:"
-        $env:Path.Split(';')
-        foreach ($dir in $env:Path.Split(';')) {
-            if (Test-Path "$dir\winget.exe") {
-                Write-Output "=== Winget: $dir\winget.exe"
-            }
-        }
-        scripts/install-prerequisites.ps1 -GitHubActions -NoDoxygen -NoPause
+      run: scripts/install-prerequisites.ps1 -GitHubActions -NoDoxygen -NoPause
 
     - name: Build installers
       if: env.REBUILD == 'true'
