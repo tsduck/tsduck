@@ -333,7 +333,6 @@ ts::TR101_290Analyzer::TR101_290Analyzer(DuckContext& duck) :
 void ts::TR101_290Analyzer::handleTable(SectionDemux& demux, const BinaryTable& table)
 {
 
-    tableIdx++;
     auto service = getService(table.sourcePID());
     if (service->type == ServiceContext::Unassigned) {
         // Hack to ensure that the ServiceContext is a table if this is the first time we see it.
@@ -702,90 +701,90 @@ void ts::TR101_290Analyzer::processTimeouts(ServiceContext& ctx)
 {
     // PID 0x0000 does not occur at least every 0,5 s
     if (ctx.PAT_error.timeoutAfter(currentTimestamp, PAT_INTERVAL))
-        info(*ctx, ctx.PAT_error, u"no table_id = 0x00 (PAT) in the last " SYS_UNIT_FMT ".", SYS_UNIT_ARGS(PAT_INTERVAL));
+        info(ctx, ctx.PAT_error, u"no table_id = 0x00 (PAT) in the last " SYS_UNIT_FMT ".", SYS_UNIT_ARGS(PAT_INTERVAL));
 
     // Sections with table_id 0x00 do not occur at least
     // every 0, 5 s on PID 0x0000.
     if (ctx.PAT_error_2.timeoutAfter(currentTimestamp, PAT_INTERVAL))
-        info(*ctx, ctx.PAT_error_2, u"no table_id = 0x00 (PAT) in the last " SYS_UNIT_FMT ".", SYS_UNIT_ARGS(PAT_INTERVAL));
+        info(ctx, ctx.PAT_error_2, u"no table_id = 0x00 (PAT) in the last " SYS_UNIT_FMT ".", SYS_UNIT_ARGS(PAT_INTERVAL));
 
     // Sections with table_id 0x02, (i.e. a PMT), do not
     // occur at least every 0, 5 s on the PID which is
     // referred to in the PAT
     if (ctx.PMT_error.timeoutAfter(currentTimestamp, PMT_INTERVAL))
-        info(*ctx, ctx.PMT_error, u"no table_id = 0x00 (PMT) in the last " SYS_UNIT_FMT ".", SYS_UNIT_ARGS(PMT_INTERVAL));
+        info(ctx, ctx.PMT_error, u"no table_id = 0x00 (PMT) in the last " SYS_UNIT_FMT ".", SYS_UNIT_ARGS(PMT_INTERVAL));
 
     if (ctx.PMT_error_2.timeoutAfter(currentTimestamp, PMT_INTERVAL))
-        info(*ctx, ctx.PMT_error_2, u"no table_id = 0x02 (PMT) in the last " SYS_UNIT_FMT ".", SYS_UNIT_ARGS(PMT_INTERVAL));
+        info(ctx, ctx.PMT_error_2, u"no table_id = 0x02 (PMT) in the last " SYS_UNIT_FMT ".", SYS_UNIT_ARGS(PMT_INTERVAL));
 
     if (ctx.PID_error.timeoutAfter(currentTimestamp, PID_ERROR_INTERVAL))
-        info(*ctx, ctx.PID_error, u"no data on PID in the last " SYS_UNIT_FMT ".", SYS_UNIT_ARGS(PMT_INTERVAL));
+        info(ctx, ctx.PID_error, u"no data on PID in the last " SYS_UNIT_FMT ".", SYS_UNIT_ARGS(PMT_INTERVAL));
 
     // PCR discontinuity of more than 100 ms occurring
     // without specific indication.
     if (!ctx.has_discontinuity) {
         if (ctx.PCR_error.timeoutAfter(currentTimestamp, PCR_REPETITION_LIMIT))
-            info(*ctx, ctx.PCR_error, u"no PCR present in the last " SYS_UNIT_FMT ".", SYS_UNIT_ARGS(PCR_REPETITION_LIMIT));
+            info(ctx, ctx.PCR_error, u"no PCR present in the last " SYS_UNIT_FMT ".", SYS_UNIT_ARGS(PCR_REPETITION_LIMIT));
     }
 
     // Time interval between two consecutive PCR
     // values more than 100 ms
     if (ctx.PCR_repetition_error.timeoutAfter(currentTimestamp, PCR_REPETITION_LIMIT))
-        info(*ctx, ctx.PCR_repetition_error, u"no PCR present in the last " SYS_UNIT_FMT ".", SYS_UNIT_ARGS(PCR_REPETITION_LIMIT));
+        info(ctx, ctx.PCR_repetition_error, u"no PCR present in the last " SYS_UNIT_FMT ".", SYS_UNIT_ARGS(PCR_REPETITION_LIMIT));
 
     // PTS repetition period more than 700 ms
     // todo: NOTE 3: The limitation to 700 ms should not be applied to still pictures.
     if (ctx.PTS_error.timeoutAfter(currentTimestamp, PTS_REPETITION_INTERVAL))
-        info(*ctx, ctx.PTS_error, u"no PTS value present in the last " SYS_UNIT_FMT ".", SYS_UNIT_ARGS(PCR_REPETITION_LIMIT));
+        info(ctx, ctx.PTS_error, u"no PTS value present in the last " SYS_UNIT_FMT ".", SYS_UNIT_ARGS(PCR_REPETITION_LIMIT));
 
     // Priority 3
 
     // No section with table_id 0x40 (i.e. an NIT_actual) in PID value 0x0010 for more than 10 s.
     if (ctx.NIT_actual_error.timeoutAfter(currentTimestamp, NIT_MAX_FREQ))
-        info(*ctx, ctx.NIT_actual_error, u"no table_id = 0x40 (NIT_actual) in the last " SYS_UNIT_FMT ".", SYS_UNIT_ARGS(NIT_MAX_FREQ));
+        info(ctx, ctx.NIT_actual_error, u"no table_id = 0x40 (NIT_actual) in the last " SYS_UNIT_FMT ".", SYS_UNIT_ARGS(NIT_MAX_FREQ));
 
     // interval between sections with the same section_number and table_id = 0x41 (NIT_other) on PID 0x0010 longer than a specified value (10 s or higher).
     if (ctx.NIT_other_error.timeoutAfter(currentTimestamp, NIT_MAX_FREQ))
-        info(*ctx, ctx.NIT_other_error, u"no table_id = 0x41 (NIT_other) in the last " SYS_UNIT_FMT ".", SYS_UNIT_ARGS(NIT_MAX_FREQ));
+        info(ctx, ctx.NIT_other_error, u"no table_id = 0x41 (NIT_other) in the last " SYS_UNIT_FMT ".", SYS_UNIT_ARGS(NIT_MAX_FREQ));
 
     // PID (other than PAT, CAT, CAT_PIDs, PMT_PIDs, NIT_PID, SDT_PID, TDT_PID, EIT_PID, RST_PID, reserved_for_future_use PIDs, or PIDs
     // PID (other than PMT_PIDs, PIDs with numbers between 0x00 and 0x1F or PIDs user defined as private data streams) not referred to by a PMT or a CAT within 0,5 s.
     // user defined as private data streams) not referred to by a PMT within 0,5 s (note 1).
     // NOTE: The resetTimeout for this is performed inside of handleSection and getService.
     if (ctx.last_pid < 0x1F && ctx.Unreferenced_PID.timeoutAfter(currentTimestamp, UNREF_PID_TIMEOUT))
-        info(*ctx, ctx.EIT_other_error, u"PID not referred to by a PMT within " SYS_UNIT_FMT ".", SYS_UNIT_ARGS(EIT_OTHER_ERROR_TIMEOUT));
+        info(ctx, ctx.EIT_other_error, u"PID not referred to by a PMT within " SYS_UNIT_FMT ".", SYS_UNIT_ARGS(EIT_OTHER_ERROR_TIMEOUT));
 
     // Sections with table_id = 0x42 (SDT, actual TS) not present on PID 0x0011 for more than 2 s
     if (ctx.SDT_actual_error.timeoutAfter(currentTimestamp, SDT_MAX_FREQ))
-        info(*ctx, ctx.SDT_actual_error, u"no table_id = 0x42 (SDT, actual TS) in the last " SYS_UNIT_FMT ".", SYS_UNIT_ARGS(SDT_MAX_FREQ));
+        info(ctx, ctx.SDT_actual_error, u"no table_id = 0x42 (SDT, actual TS) in the last " SYS_UNIT_FMT ".", SYS_UNIT_ARGS(SDT_MAX_FREQ));
 
     // Interval between sections with the same section_number and table_id = 0x46(SDT, other TS)on PID 0x0011 longer than a specified value(10s or higher).
     if (ctx.SDT_other_error.timeoutAfter(currentTimestamp, SDT_OTHER_MAX_FREQ))
-        info(*ctx, ctx.SDT_other_error, u"no table_id = 0x46 (SDT, other TS) in the last " SYS_UNIT_FMT ".", SYS_UNIT_ARGS(SDT_OTHER_MAX_FREQ));
+        info(ctx, ctx.SDT_other_error, u"no table_id = 0x46 (SDT, other TS) in the last " SYS_UNIT_FMT ".", SYS_UNIT_ARGS(SDT_OTHER_MAX_FREQ));
 
     // EIT_error: Sections with table_id = 0x4E (EIT-P/F, actual TS) not present on PID 0x0012 for more than 2 s
     if (ctx.EIT_error.timeoutAfter(currentTimestamp, EIT_ERROR_TIMEOUT))
-        info(*ctx, ctx.EIT_error, u"no table_id = 0x4E (EIT-P/F, actual TS) in the last " SYS_UNIT_FMT ".", SYS_UNIT_ARGS(EIT_ERROR_TIMEOUT));
+        info(ctx, ctx.EIT_error, u"no table_id = 0x4E (EIT-P/F, actual TS) in the last " SYS_UNIT_FMT ".", SYS_UNIT_ARGS(EIT_ERROR_TIMEOUT));
 
     // EIT_actual_error: Section '0' with table_id = 0x4E (EIT-P, actual TS) not present on PID 0x0012 for more than 2 s
     if (ctx.EIT_actual_error.timeoutAfter(currentTimestamp, EIT_ERROR_TIMEOUT))
-        info(*ctx, ctx.EIT_actual_error, u"no section = 0 and table_id = 0x4E (EIT-P, actual TS) in the last " SYS_UNIT_FMT ".", SYS_UNIT_ARGS(EIT_ERROR_TIMEOUT));
+        info(ctx, ctx.EIT_actual_error, u"no section = 0 and table_id = 0x4E (EIT-P, actual TS) in the last " SYS_UNIT_FMT ".", SYS_UNIT_ARGS(EIT_ERROR_TIMEOUT));
 
     // EIT_actual_error: Section '1' with table_id = 0x4E (EIT-F, actual TS) not present on PID 0x0012 for more than 2 s
     if (ctx._EIT_actual_error_sec1.timeoutAfter(currentTimestamp, EIT_ERROR_TIMEOUT))
-        info(*ctx, ctx.EIT_actual_error, u"no section = 1 and table_id = 0x4E (EIT-F, actual TS) in the last " SYS_UNIT_FMT ".", SYS_UNIT_ARGS(EIT_ERROR_TIMEOUT));
+        info(ctx, ctx.EIT_actual_error, u"no section = 1 and table_id = 0x4E (EIT-F, actual TS) in the last " SYS_UNIT_FMT ".", SYS_UNIT_ARGS(EIT_ERROR_TIMEOUT));
 
     // EIT_other_error:  Interval between sections '0' with table_id = 0x4F (EIT - P, other TS) on PID 0x0012 longer than a specified value(10 s or higher);
     if (ctx.EIT_other_error.timeoutAfter(currentTimestamp, EIT_OTHER_ERROR_TIMEOUT))
-        info(*ctx, ctx.EIT_other_error, u"no section = 0 and table_id = 0x4F (EIT-P, actual TS) in the last " SYS_UNIT_FMT ".", SYS_UNIT_ARGS(EIT_OTHER_ERROR_TIMEOUT));
+        info(ctx, ctx.EIT_other_error, u"no section = 0 and table_id = 0x4F (EIT-P, actual TS) in the last " SYS_UNIT_FMT ".", SYS_UNIT_ARGS(EIT_OTHER_ERROR_TIMEOUT));
 
     // EIT_other_error:  Interval between sections '1' with table_id = 0x4F(EIT - F, other TS) on PID 0x0012 longer than a specified value(10 s or higher).
     if (ctx._EIT_other_error_sec1.timeoutAfter(currentTimestamp, EIT_OTHER_ERROR_TIMEOUT))
-        info(*ctx, ctx.EIT_other_error, u"no section = 1 and table_id = 0x4F(EIT - F, other TS) in the last " SYS_UNIT_FMT ".", SYS_UNIT_ARGS(EIT_OTHER_ERROR_TIMEOUT));
+        info(ctx, ctx.EIT_other_error, u"no section = 1 and table_id = 0x4F(EIT - F, other TS) in the last " SYS_UNIT_FMT ".", SYS_UNIT_ARGS(EIT_OTHER_ERROR_TIMEOUT));
 
     // Sections with table_id = 0x70 (TDT) not present on PID 0x0014 for more than 30 s
     if (ctx.TDT_error.timeoutAfter(currentTimestamp, TDT_MAX_FREQ))
-        info(*ctx, ctx.TDT_error, u"no table_id = 0x70 (TDT) in the last " SYS_UNIT_FMT ".", SYS_UNIT_ARGS(TDT_MAX_FREQ));
+        info(ctx, ctx.TDT_error, u"no table_id = 0x70 (TDT) in the last " SYS_UNIT_FMT ".", SYS_UNIT_ARGS(TDT_MAX_FREQ));
 }
 
 std::shared_ptr<ts::TR101_290Analyzer::ServiceContext> ts::TR101_290Analyzer::getService(PID pid)
