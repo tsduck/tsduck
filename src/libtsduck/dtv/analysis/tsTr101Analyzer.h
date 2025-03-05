@@ -100,9 +100,9 @@ namespace ts {
             UString  name;
             bool     show_value;
             bool     enabled = false;
-            uint64_t value_timeout; ///< how long to wait before the data is no longer valid.
-            uint64_t prev_timeout; ///< The previous timeout to apply.
-            uint64_t timeout_start;
+            uint64_t value_timeout = INVALID_PCR; ///< how long to wait before the data is no longer valid.
+            uint64_t prev_timeout = INVALID_PCR; ///< The previous timeout to apply.
+            uint64_t timeout_start = INVALID_PCR;
 
         public:
             explicit Indicator(UString name, bool show_value, bool enabled=true, bool is_ms=true, uint64_t value_timeout = 5 * SYSTEM_CLOCK_FREQ);
@@ -196,6 +196,7 @@ namespace ts {
             uint64_t       last_table = INVALID_PCR;
             uint64_t       last_table_actual = INVALID_PCR;
             uint64_t       last_table_other = INVALID_PCR;
+            int32_t       last_pid = -1;
 
             // Priority 1 Errors
             // Indicator TS_sync_loss;
@@ -238,7 +239,6 @@ namespace ts {
 
             Indicator _EIT_actual_error_sec1;  // ONLY USED FOR TIMEOUTS. NOT FOR USE OUTSIDE OF API.
             Indicator _EIT_other_error_sec1; // ONLY USED FOR TIMEOUTS. NOT FOR USE OUTSIDE OF API.
-            int32_t       last_pid;
         };
 
     private:
@@ -248,7 +248,6 @@ namespace ts {
         uint64_t     currentTimestamp = INVALID_PTS;
         std::map<PID, std::shared_ptr<ServiceContext>> _services {};  ///< Services std::map<PMT_PID, ServiceContext>
         BitRate                                        bitrate = 0;
-        int                                            tableIdx;
 
         template <class... Args>
         void info(const ServiceContext& ctx, const Indicator& ind, const UChar* fmt, Args&&... args) const
