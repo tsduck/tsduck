@@ -135,13 +135,9 @@ jobs:
     - name: Get TSDuck repo
       uses: actions/checkout@master
 
-    - name: Install dependencies
-      run: |
-        scripts/install-prerequisites.sh
-        sudo apt install -y jq
-
     - name: Check if rebuild is necessary
       run: |
+        sudo apt install -y jq
         remote_version=$(curl --retry 5 --retry-all-errors -sSL https://tsduck.io/download/prerelease/get-versions | jq -r '.latest?'; true)
         version=$(scripts/get-version-from-sources.py)
         fullversion=$(scripts/get-version-from-sources.py --full)
@@ -154,6 +150,10 @@ jobs:
     - name: Check same version
       if: env.REBUILD == 'false'
       run: echo "Same version as latest pre-release, not rebuilt"
+
+    - name: Install dependencies
+      if: env.REBUILD == 'true'
+      run: scripts/install-prerequisites.sh
 
     - name: Build TSDuck
       if: env.REBUILD == 'true'
@@ -231,9 +231,6 @@ jobs:
     - name: Get TSDuck repo
       uses: actions/checkout@master
 
-    - name: Install dependencies
-      run: scripts/install-prerequisites.sh
-
     - name: Check if rebuild is necessary
       run: |
         remote_version=$(curl --retry 5 --retry-all-errors -sSL https://tsduck.io/doxy/docversion.txt | grep '^[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*$'; true)
@@ -246,6 +243,10 @@ jobs:
     - name: Check same version
       if: env.REBUILD == 'false'
       run: echo "Same version as currently published documentation, not rebuilt"
+
+    - name: Install dependencies
+      if: env.REBUILD == 'true'
+      run: scripts/install-prerequisites.sh
 
     - name: Build documentation
       if: env.REBUILD == 'true'
