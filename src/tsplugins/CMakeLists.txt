@@ -1,0 +1,5 @@
+foreach(plugin_source ${TSPLUGINS})
+    string(REGEX REPLACE ".cpp$" "" plugin_name ${plugin_source})
+    add_library(${plugin_name} SHARED ${CMAKE_CURRENT_SOURCE_DIR}/${plugin_source})
+    target_link_libraries(${plugin_name} tsduck)
+endforeach()
