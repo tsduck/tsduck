@@ -19,6 +19,8 @@
 #include "tsTSDT.h"
 #include "tsEIT.h"
 #include "tsAIT.h"
+#include "tsContainerTable.h"
+#include "tsBinaryTable.h"
 #include "tsCADescriptor.h"
 #include "tsAVCVideoDescriptor.h"
 #include "tsDVBAC3Descriptor.h"
@@ -31,6 +33,7 @@
 #include "tsISO639LanguageDescriptor.h"
 #include "tsCueIdentifierDescriptor.h"
 #include "tsDuckContext.h"
+#include "tsZlib.h"
 #include "tsunit.h"
 
 
@@ -52,6 +55,7 @@ class TableTest: public tsunit::Test
     TSUNIT_DECLARE_TEST(TSDT);
     TSUNIT_DECLARE_TEST(CleanupPrivateDescriptors);
     TSUNIT_DECLARE_TEST(PrivateDescriptors);
+    TSUNIT_DECLARE_TEST(ContainerTable);
 };
 
 TSUNIT_REGISTER(TableTest);
@@ -404,4 +408,72 @@ TSUNIT_DEFINE_TEST(PrivateDescriptors)
     ts::EacemStreamIdentifierDescriptor* esi_desc = dynamic_cast<ts::EacemStreamIdentifierDescriptor*>(desc.get());
     TSUNIT_ASSERT(esi_desc != nullptr);
     TSUNIT_EQUAL(9, esi_desc->version);
+}
+
+
+TSUNIT_DEFINE_TEST(ContainerTable)
+{
+    ts::DuckContext duck;
+
+    // Build container data which can be easily compressed.
+    ts::ByteBlock container;
+    container.reserve(256 * 50);
+    for (int i = 10; i > 0; i--) {
+        for (int val = 0; val < 256; val++) {
+            for (int count = 5; count > 0; count--) {
+                container.push_back(uint8_t(val));
+            }
+        }
+    }
+    debug() << "TableTest::ContainerTable: container size: " << container.size() << std::endl;
+
+    ts::ContainerTable ct;
+    ct.container_id = 0x1234;
+    TSUNIT_ASSERT(ct.setContainer(container, false));
+    TSUNIT_EQUAL(ct.compression_wrapper.size(), container.size() + 1);
+    TSUNIT_EQUAL(0, ct.compression_wrapper[0]);
+    TSUNIT_ASSERT(ts::MemEqual(ct.compression_wrapper.data() + 1, container.data(), container.size()));
+
+    ts::ByteBlock out;
+    TSUNIT_ASSERT(ct.getContainer(out));
+    TSUNIT_ASSERT(out == container);
+
+    ts::ByteBlock compressed;
+    TSUNIT_ASSERT(ts::Zlib::Compress(compressed, container, 6));
+    debug() << "TableTest::ContainerTable: direct compressed size: " << compressed.size() << std::endl;
+    out.clear();
+    TSUNIT_ASSERT(ts::Zlib::Decompress(out, compressed));
+    debug() << "TableTest::ContainerTable: direct decompressed size: " << out.size() << std::endl;
+    TSUNIT_ASSERT(out == container);
+
+    ct.setContainer(container, true);
+    debug() << "TableTest::ContainerTable: serialized size: " << ct.compression_wrapper.size() << std::endl;
+    TSUNIT_ASSERT(ct.compression_wrapper.size() > 4);
+    TSUNIT_ASSERT(ct.compression_wrapper.size() < container.size() + 4);
+    TSUNIT_EQUAL(1, ct.compression_wrapper[0]);
+    TSUNIT_EQUAL(container.size(), ts::GetUInt24(ct.compression_wrapper.data() + 1));
+
+    out.clear();
+    TSUNIT_ASSERT(ts::Zlib::Decompress(out, ct.compression_wrapper.data() + 4, ct.compression_wrapper.size() - 4));
+    TSUNIT_EQUAL(container.size(), out.size());
+    TSUNIT_ASSERT(out == container);
+
+    out.clear();
+    TSUNIT_ASSERT(ct.getContainer(out));
+    TSUNIT_ASSERT(out == container);
+
+    debug() << "TableTest::ContainerTable: serialize" << std::endl;
+    ts::BinaryTable table;
+    TSUNIT_ASSERT(ct.serialize(duck, table));
+
+    debug() << "TableTest::ContainerTable: deserialize" << std::endl;
+    ts::ContainerTable ct2(duck, table);
+    TSUNIT_ASSERT(ct2.isValid());
+    TSUNIT_EQUAL(0x1234, ct2.container_id);
+    TSUNIT_ASSERT(!ct2.compression_wrapper.empty());
+    TSUNIT_EQUAL(1, ct2.compression_wrapper[0]);
+
+    out.clear();
+    TSUNIT_ASSERT(ct2.getContainer(out));
+    TSUNIT_ASSERT(out == container);
 }

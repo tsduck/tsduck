@@ -48,7 +48,11 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        static bool Compress(ByteBlock& out, const void* in, size_t in_size, int level, Report& report = NULLREP);
+        static bool Compress(ByteBlock& out, const void* in, size_t in_size, int level, Report& report = NULLREP)
+        {
+            out.clear();
+            return CompressAppend(out, in, in_size, level, report);
+        }
 
         //!
         //! Compress data according to the DEFLATE algorithm.
@@ -60,7 +64,32 @@ namespace ts {
         //!
         static bool Compress(ByteBlock& out, const ByteBlock& in, int level, Report& report = NULLREP)
         {
-            return Compress(out, in.data(), in.size(), level, report);
+            out.clear();
+            return CompressAppend(out, in.data(), in.size(), level, report);
+        }
+
+        //!
+        //! Compress data according to the DEFLATE algorithm.
+        //! @param [in,out] out Output compressed data is appended at the end of the existing content.
+        //! @param [in] in Address of input data.
+        //! @param [in] in_size Size in bytes of input data.
+        //! @param [in] level Requested compression level, from 0 to 9.
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //!
+        static bool CompressAppend(ByteBlock& out, const void* in, size_t in_size, int level, Report& report = NULLREP);
+
+        //!
+        //! Compress data according to the DEFLATE algorithm.
+        //! @param [in,out] out Output compressed data is appended at the end of the existing content.
+        //! @param [in] in Input data.
+        //! @param [in] level Requested compression level, from 0 to 9.
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //!
+        static bool CompressAppend(ByteBlock& out, const ByteBlock& in, int level, Report& report = NULLREP)
+        {
+            return CompressAppend(out, in.data(), in.size(), level, report);
         }
 
         //!

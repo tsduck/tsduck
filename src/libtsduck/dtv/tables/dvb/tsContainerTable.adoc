@@ -1,0 +1,17 @@
+==== Container Table
+
+Defined by DVB in <<ETSI-102-323>> (TV-Anytime).
+
+[source,xml]
+----
+<container_table version="uint5, default=0"
+     current="bool, default=true"
+     container_id="uint16, required">
+
+  <!-- Complete compression_wrapper (see ETSI TS 102 323, 7.3.1.5) -->
+  <compression_wrapper>
+    Hexadecimal content
+  </compression_wrapper>
+
+</container_table>
+----

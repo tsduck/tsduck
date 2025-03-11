@@ -106,8 +106,10 @@ bool ts::Zlib::checkZlibStatus(void* stream, int status, const UChar* func, Repo
 // Compress data according to the DEFLATE algorithm.
 //----------------------------------------------------------------------------
 
-bool ts::Zlib::Compress(ByteBlock& out, const void* in, size_t in_size, int level, Report& report)
+bool ts::Zlib::CompressAppend(ByteBlock& out, const void* in, size_t in_size, int level, Report& report)
 {
+    const size_t initial_out_size = out.size();
+
     // Level shall be in range 0-9.
     level = std::max(0, std::min(9, level));
 
@@ -119,32 +121,32 @@ bool ts::Zlib::Compress(ByteBlock& out, const void* in, size_t in_size, int leve
     // Resize the output buffer to this size. Since the API of sdefl does not get a maximum output buffer size,
     // we can only hope that no buffer overflow will occur. And since we are paranoid, we write a canary at the
     // end of buffer and we will check it later.
-    out.resize(max_out + 4);
+    out.resize(initial_out_size + max_out + 4);
     constexpr uint32_t canary = 0xDEADBEEF;
-    PutUInt32(out.data() + max_out, canary);
+    PutUInt32(out.data() + initial_out_size + max_out, canary);
 
     // Compress in one call.
     ::sdefl data;
     TS_ZERO(data);
-    const int len = ::zsdeflate(&data, out.data(), in, int(in_size), level);
+    const int len = ::zsdeflate(&data, out.data() + initial_out_size, in, int(in_size), level);
     if (len < 0) {
         report.error(u"sdefl error %d from zsdeflate", len);
         return false;
     }
-    else if (GetUInt32(out.data() + max_out) != canary) {
+    else if (GetUInt32(out.data() + initial_out_size + max_out) != canary) {
         report.fatal(u"buffer overflow in zsdeflate(), probable memory corruption, expect a crash or worse");
         return false;
     }
     else {
         // Final size of output.
-        out.resize(size_t(len));
+        out.resize(initial_out_size + size_t(len));
         return true;
     }
 
 #else
     // We compress, the output cannot be much larger than input.
     // In any case, we will resize if not large enough.
-    out.resize(256 + in_size);
+    out.resize(initial_out_size + 256 + in_size);
 
     ::z_stream strm;
     TS_ZERO(strm);
@@ -155,8 +157,8 @@ bool ts::Zlib::Compress(ByteBlock& out, const void* in, size_t in_size, int leve
 
     strm.next_in = reinterpret_cast<decltype(strm.next_in)>(in);
     strm.avail_in = static_cast<decltype(strm.avail_in)>(in_size);
-    strm.next_out = reinterpret_cast<decltype(strm.next_out)>(out.data());
-    strm.avail_out = static_cast<decltype(strm.avail_out)>(out.size());
+    strm.next_out = reinterpret_cast<decltype(strm.next_out)>(out.data() + initial_out_size);
+    strm.avail_out = static_cast<decltype(strm.avail_out)>(out.size() - initial_out_size);
 
     do {
         status = ::deflate(&strm, Z_FINISH);
@@ -166,14 +168,14 @@ bool ts::Zlib::Compress(ByteBlock& out, const void* in, size_t in_size, int leve
         if (status != Z_STREAM_END && strm.avail_out == 0) {
             // No enough space in output buffer, resize it.
             size_t previous = strm.total_out;
-            out.resize(previous + 10'000);
-            strm.next_out = reinterpret_cast<decltype(strm.next_out)>(out.data() + previous);
-            strm.avail_out = static_cast<decltype(strm.avail_out)>(out.size() - previous);
+            out.resize(initial_out_size + previous + 10'000);
+            strm.next_out = reinterpret_cast<decltype(strm.next_out)>(out.data() + initial_out_size + previous);
+            strm.avail_out = static_cast<decltype(strm.avail_out)>(out.size() - initial_out_size - previous);
         }
     } while (status != Z_STREAM_END);
 
     // Final size is now known.
-    out.resize(size_t(strm.total_out));
+    out.resize(initial_out_size + size_t(strm.total_out));
 
     status = ::deflateEnd(&strm);
     return checkZlibStatus(&strm, status, u"deflateEnd", report);

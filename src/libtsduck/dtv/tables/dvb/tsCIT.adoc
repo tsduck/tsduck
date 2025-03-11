@@ -1,6 +1,6 @@
 ==== Content Identifier Table (CIT)
 
-Defined by DVB in <<ETSI-102-323>>.
+Defined by DVB in <<ETSI-102-323>> (TV-Anytime).
 
 [source,xml]
 ----

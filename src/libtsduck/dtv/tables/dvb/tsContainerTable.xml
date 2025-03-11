@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_tables>
+
+    <!-- DVB Container Table (TV-Anytime) -->
+    <container_table version="uint5, default=0"
+         current="bool, default=true"
+         container_id="uint16, required">
+      <_any in="_metadata"/>
+      <compression_wrapper>
+        Hexadecimal content
+      </compression_wrapper>
+    </container_table>
+
+  </_tables>
+</tsduck>

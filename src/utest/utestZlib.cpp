@@ -329,5 +329,15 @@ TSUNIT_DEFINE_TEST(AllLevels)
         ts::ByteBlock out;
         TSUNIT_ASSERT(ts::Zlib::Decompress(out, compressed));
         TSUNIT_ASSERT(verify(out));
+
+        compressed.clear();
+        compressed.appendUInt32(0x12345678);
+        TSUNIT_ASSERT(ts::Zlib::CompressAppend(compressed, intext, intext_size, level));
+        TSUNIT_ASSERT(compressed.size() > 4);
+        TSUNIT_EQUAL(0x12345678, ts::GetUInt32(compressed.data()));
+
+        out.clear();
+        TSUNIT_ASSERT(ts::Zlib::Decompress(out, compressed.data() + 4, compressed.size() - 4));
+        TSUNIT_ASSERT(verify(out));
     }
 }
