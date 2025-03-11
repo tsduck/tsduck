@@ -157,11 +157,15 @@ fs::path ts::CallerLibraryFile()
     // All code is in the main executable.
     return ExecutableFile();
 
-#elif defined(TS_MSC)
+#elif defined(TS_WINDOWS)
 
     // Window implementation.
     // Get return address of current function (in caller code).
+#if defined(TS_GCC) || defined(TS_LLVM)
+    void* const ret = __builtin_return_address(0);
+#else
     void* const ret = _ReturnAddress();
+#endif
     // Get the module (DLL) into which this address can be found.
     ::HMODULE handle = nullptr;
     if (::GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, ::LPCWSTR(ret), &handle) == 0) {
