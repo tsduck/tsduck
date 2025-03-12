@@ -87,8 +87,7 @@ std::set<ts::TID> ts::EDID::tableIds() const
 
 bool ts::EDID::matchRegularStandards(Standards std) const
 {
-    // If the regular descriptor has declared no standard, then it matches by default.
-    return isRegular() && CompatibleStandards(std | standards());
+    return isRegular() && (bool(std & standards()) || CompatibleStandards(std | standards()));
 }
 
 

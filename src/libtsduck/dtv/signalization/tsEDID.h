@@ -341,6 +341,9 @@ namespace ts {
         //! @param [in] std Relevant standards to test.
         //! @return True if the descriptor is a regular one and matches at least one standard in @a std.
         //! If the regular descriptor has declared no standard, then it matches by default.
+        //! If the regular descriptor has declared standards but none of them are in @a std, return
+        //! true if all its standards are compatible with @a std. This is the way we discover new
+        //! standards in the transport stream.
         //!
         bool matchRegularStandards(Standards std) const;
 
