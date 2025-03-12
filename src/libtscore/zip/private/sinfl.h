@@ -173,8 +173,8 @@ sinfl_bsr(unsigned n) {
 #ifdef _MSC_VER
   unsigned long r = 0;
   _BitScanReverse(&r, n);
-  return int(r);
-#elif defined(__GNUC__) || defined(__clang__)
+  return (int)(r);
+#else // defined(__GNUC__) || defined(__clang__) || defined(__TINYC__)
   return 31 - __builtin_clz(n);
 #endif
 }
@@ -410,7 +410,7 @@ sinfl_decompress(unsigned char *out, int cap, const unsigned char *in, int size)
 
       if ((unsigned short)len != (unsigned short)~nlen)
         return (int)(out-o);
-      if (len > (e - s.bitptr) || !len)
+      if (len > (e - s.bitptr))
         return (int)(out-o);
 
       memcpy(out, s.bitptr, (size_t)len);
@@ -602,7 +602,7 @@ zsinflate(void *out, int cap, const void *mem, int size) {
   const unsigned char *in = (const unsigned char*)mem;
   if (size >= 6) {
     const unsigned char *eob = in + size - 4;
-    int n = sinfl_decompress((unsigned char*)out, cap, in + 2u, size);
+    int n = sinfl_decompress((unsigned char*)out, cap, in + 2, size - 6);
     unsigned a = sinfl_adler32(1u, (unsigned char*)out, n);
     unsigned h = eob[0] << 24 | eob[1] << 16 | eob[2] << 8 | eob[3] << 0;
     return a == h ? n : -1;

@@ -196,10 +196,15 @@ bool ts::Zlib::Decompress(ByteBlock& out, const void* in, size_t in_size, Report
     // decompressing if the buffer is too small. We adopt the following strategy: start with
     // some probable max size, then retry several times, doubling the buffer size each time.
     // It is hard to guess where to stop. Some very redundant data can be highly compressed.
-    out.resize(512 + in_size * 4);
+    // Additionally, zsinflate() does not check the end of its output buffer correctly. When
+    // the output buffer is too small, it slightly overflows and corrupts the memory before
+    // realizing it has gone too far. Therefore, we pass a smaller buffer size to zsinflate()
+    // to allow it overwrite the end of the buffer.
+    static constexpr size_t overflow_margin = 128;
+    out.resize(overflow_margin + 512 + in_size * 4);
     int len = 0;
     for (int count = 0; count < 20; count++) {
-        len = ::zsinflate(out.data(), int(out.size()), in, int(in_size));
+        len = ::zsinflate(out.data(), int(out.size() - overflow_margin), in, int(in_size));
         if (len >= 0) {
             // Success, final size of output.
             out.resize(size_t(len));
