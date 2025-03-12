@@ -324,6 +324,11 @@ TSUNIT_DEFINE_TEST(Reference1)
     ts::ByteBlock out;
     TSUNIT_ASSERT(ts::Zlib::Decompress(out, reference_1, report()));
     TSUNIT_ASSERT(verify(out));
+
+    if (!ts::Zlib::DefaultSdefl()) {
+        TSUNIT_ASSERT(ts::Zlib::Decompress(out, reference_1, report(), true));
+        TSUNIT_ASSERT(verify(out));
+    }
 }
 
 TSUNIT_DEFINE_TEST(Reference4)
@@ -331,6 +336,11 @@ TSUNIT_DEFINE_TEST(Reference4)
     ts::ByteBlock out;
     TSUNIT_ASSERT(ts::Zlib::Decompress(out, reference_4, report()));
     TSUNIT_ASSERT(verify(out));
+
+    if (!ts::Zlib::DefaultSdefl()) {
+        TSUNIT_ASSERT(ts::Zlib::Decompress(out, reference_4, report(), true));
+        TSUNIT_ASSERT(verify(out));
+    }
 }
 
 TSUNIT_DEFINE_TEST(Reference9)
@@ -338,6 +348,11 @@ TSUNIT_DEFINE_TEST(Reference9)
     ts::ByteBlock out;
     TSUNIT_ASSERT(ts::Zlib::Decompress(out, reference_9, report()));
     TSUNIT_ASSERT(verify(out));
+
+    if (!ts::Zlib::DefaultSdefl()) {
+        TSUNIT_ASSERT(ts::Zlib::Decompress(out, reference_9, report(), true));
+        TSUNIT_ASSERT(verify(out));
+    }
 }
 
 TSUNIT_DEFINE_TEST(AllLevels)
@@ -350,6 +365,12 @@ TSUNIT_DEFINE_TEST(AllLevels)
         TSUNIT_ASSERT(ts::Zlib::Decompress(out, compressed, report()));
         TSUNIT_ASSERT(verify(out));
 
+        if (!ts::Zlib::DefaultSdefl()) {
+            out.clear();
+            TSUNIT_ASSERT(ts::Zlib::Decompress(out, compressed, report(), true));
+            TSUNIT_ASSERT(verify(out));
+        }
+
         compressed.clear();
         compressed.appendUInt32(0x12345678);
         TSUNIT_ASSERT(ts::Zlib::CompressAppend(compressed, intext, intext_size, level, report()));
@@ -359,6 +380,19 @@ TSUNIT_DEFINE_TEST(AllLevels)
         out.clear();
         TSUNIT_ASSERT(ts::Zlib::Decompress(out, compressed.data() + 4, compressed.size() - 4, report()));
         TSUNIT_ASSERT(verify(out));
+
+        if (!ts::Zlib::DefaultSdefl()) {
+            compressed.clear();
+            TSUNIT_ASSERT(ts::Zlib::Compress(compressed, intext, intext_size, level, report(), true));
+
+            out.clear();
+            TSUNIT_ASSERT(ts::Zlib::Decompress(out, compressed, report(), true));
+            TSUNIT_ASSERT(verify(out));
+
+            out.clear();
+            TSUNIT_ASSERT(ts::Zlib::Decompress(out, compressed, report(), false));
+            TSUNIT_ASSERT(verify(out));
+        }
     }
 }
 
@@ -381,4 +415,25 @@ TSUNIT_DEFINE_TEST(Specific)
     TSUNIT_ASSERT(ts::Zlib::Decompress(decompressed, compressed, report()));
     debug() << "ZlibTest::Specific: decompressed size: " << decompressed.size() << std::endl;
     TSUNIT_ASSERT(decompressed == in);
+
+    if (!ts::Zlib::DefaultSdefl()) {
+        decompressed.clear();
+        TSUNIT_ASSERT(ts::Zlib::Decompress(decompressed, compressed, report(), true));
+        debug() << "ZlibTest::Specific: sdefl decompressed size: " << decompressed.size() << std::endl;
+        TSUNIT_ASSERT(decompressed == in);
+
+        compressed.clear();
+        TSUNIT_ASSERT(ts::Zlib::Compress(compressed, in, 1, report(), true));
+        debug() << "ZlibTest::Specific: sdefl compressed size: " << compressed.size() << std::endl;
+
+        decompressed.clear();
+        TSUNIT_ASSERT(ts::Zlib::Decompress(decompressed, compressed, report(), true));
+        debug() << "ZlibTest::Specific: sdefl decompressed size: " << decompressed.size() << std::endl;
+        TSUNIT_ASSERT(decompressed == in);
+
+        decompressed.clear();
+        TSUNIT_ASSERT(ts::Zlib::Decompress(decompressed, compressed, report(), false));
+        debug() << "ZlibTest::Specific: zlib decompressed size: " << decompressed.size() << std::endl;
+        TSUNIT_ASSERT(decompressed == in);
+    }
 }
