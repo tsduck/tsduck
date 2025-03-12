@@ -75,8 +75,14 @@
     #if !defined(TS_LLVM)
         #define TS_LLVM 1
     #endif
-    #if !defined(TS_GCC)
-        #define TS_GCC 1
+    #if defined(_MSC_VER)
+        #if !defined(TS_MSC)
+            #define TS_MSC 1
+        #endif
+    #else
+        #if !defined(TS_GCC)
+            #define TS_GCC 1
+        #endif
     #endif
 #elif defined(__GNUC__)
     #if !defined(TS_GCC)
