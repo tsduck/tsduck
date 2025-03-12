@@ -418,11 +418,9 @@ TSUNIT_DEFINE_TEST(ContainerTable)
     // Build container data which can be easily compressed.
     ts::ByteBlock container;
     container.reserve(256 * 50);
-    for (int i = 10; i > 0; i--) {
-        for (int val = 0; val < 256; val++) {
-            for (int count = 5; count > 0; count--) {
-                container.push_back(uint8_t(val));
-            }
+    for (int val = 0; val < 256; val++) {
+        for (int count = 50; count > 0; count--) {
+            container.push_back(uint8_t(val));
         }
     }
     debug() << "TableTest::ContainerTable: container size: " << container.size() << std::endl;

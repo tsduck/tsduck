@@ -194,19 +194,24 @@ bool ts::Zlib::Decompress(ByteBlock& out, const void* in, size_t in_size, Report
 
     // There is no way to know the decompressed size and there is also no way to continue
     // decompressing if the buffer is too small. We adopt the following strategy: start with
-    // some probable max size, then retry up to 3 times, doubling the buffer size each time.
+    // some probable max size, then retry several times, doubling the buffer size each time.
+    // It is hard to guess where to stop. Some very redundant data can be highly compressed.
     out.resize(512 + in_size * 4);
     int len = 0;
-    for (int count = 3; count > 0; --count) {
+    for (int count = 0; count < 20; count++) {
         len = ::zsinflate(out.data(), int(out.size()), in, int(in_size));
         if (len >= 0) {
             // Success, final size of output.
             out.resize(size_t(len));
             return true;
         }
+        if (out.size() > in_size + 1'000'000'000) {
+            // We are probably going crazy, stop here.
+            break;
+        }
         out.resize(2 * out.size());
     }
-    report.error(u"sdefl error %d from zsinflate", len);
+    report.error(u"cannot determine decompressed size, going too far, give up...");
     return false;
 
 #else

@@ -164,7 +164,7 @@ void ts::ContainerTable::buildXML(DuckContext& duck, xml::Element* root) const
     root->setIntAttribute(u"version", version);
     root->setBoolAttribute(u"current", is_current);
     root->setIntAttribute(u"container_id", container_id, true);
-    root->addHexaTextChild(u"compression_wrapper", compression_wrapper);
+    root->addHexaTextChild(u"compression_wrapper", compression_wrapper, true);
 }
 
 
@@ -177,5 +177,5 @@ bool ts::ContainerTable::analyzeXML(DuckContext& duck, const xml::Element* eleme
     return element->getIntAttribute(version, u"version", false, 0, 0, 31) &&
            element->getBoolAttribute(is_current, u"current", false, true) &&
            element->getIntAttribute(container_id, u"container_id", true) &&
-           element->getHexaTextChild(compression_wrapper, u"compression_wrapper", false, 1);
+           element->getHexaTextChild(compression_wrapper, u"compression_wrapper");
 }

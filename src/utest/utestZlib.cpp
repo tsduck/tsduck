@@ -11,6 +11,8 @@
 //----------------------------------------------------------------------------
 
 #include "tsZlib.h"
+#include "tsNullReport.h"
+#include "tsCerrReport.h"
 #include "tsunit.h"
 
 
@@ -24,9 +26,11 @@ class ZlibTest: public tsunit::Test
     TSUNIT_DECLARE_TEST(Reference4);
     TSUNIT_DECLARE_TEST(Reference9);
     TSUNIT_DECLARE_TEST(AllLevels);
+    TSUNIT_DECLARE_TEST(Specific);
 
 private:
     bool verify(const ts::ByteBlock& data);
+    ts::Report& report();
 };
 
 TSUNIT_REGISTER(ZlibTest);
@@ -275,6 +279,22 @@ namespace {
 
 
 //----------------------------------------------------------------------------
+// Debug report
+//----------------------------------------------------------------------------
+
+ts::Report& ZlibTest::report()
+{
+    if (tsunit::Test::debugMode()) {
+        CERR.setMaxSeverity(ts::Severity::Debug);
+        return CERR;
+    }
+    else {
+        return NULLREP;
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Verify decrypted data.
 //----------------------------------------------------------------------------
 
@@ -302,21 +322,21 @@ bool ZlibTest::verify(const ts::ByteBlock& data)
 TSUNIT_DEFINE_TEST(Reference1)
 {
     ts::ByteBlock out;
-    TSUNIT_ASSERT(ts::Zlib::Decompress(out, reference_1));
+    TSUNIT_ASSERT(ts::Zlib::Decompress(out, reference_1, report()));
     TSUNIT_ASSERT(verify(out));
 }
 
 TSUNIT_DEFINE_TEST(Reference4)
 {
     ts::ByteBlock out;
-    TSUNIT_ASSERT(ts::Zlib::Decompress(out, reference_4));
+    TSUNIT_ASSERT(ts::Zlib::Decompress(out, reference_4, report()));
     TSUNIT_ASSERT(verify(out));
 }
 
 TSUNIT_DEFINE_TEST(Reference9)
 {
     ts::ByteBlock out;
-    TSUNIT_ASSERT(ts::Zlib::Decompress(out, reference_9));
+    TSUNIT_ASSERT(ts::Zlib::Decompress(out, reference_9, report()));
     TSUNIT_ASSERT(verify(out));
 }
 
@@ -325,19 +345,40 @@ TSUNIT_DEFINE_TEST(AllLevels)
     for (int level = 0; level <= 9; level++) {
         debug() << "ZlibTest::AllLevels: testing level " << level << std::endl;
         ts::ByteBlock compressed;
-        TSUNIT_ASSERT(ts::Zlib::Compress(compressed, intext, intext_size, level));
+        TSUNIT_ASSERT(ts::Zlib::Compress(compressed, intext, intext_size, level, report()));
         ts::ByteBlock out;
-        TSUNIT_ASSERT(ts::Zlib::Decompress(out, compressed));
+        TSUNIT_ASSERT(ts::Zlib::Decompress(out, compressed, report()));
         TSUNIT_ASSERT(verify(out));
 
         compressed.clear();
         compressed.appendUInt32(0x12345678);
-        TSUNIT_ASSERT(ts::Zlib::CompressAppend(compressed, intext, intext_size, level));
+        TSUNIT_ASSERT(ts::Zlib::CompressAppend(compressed, intext, intext_size, level, report()));
         TSUNIT_ASSERT(compressed.size() > 4);
         TSUNIT_EQUAL(0x12345678, ts::GetUInt32(compressed.data()));
 
         out.clear();
-        TSUNIT_ASSERT(ts::Zlib::Decompress(out, compressed.data() + 4, compressed.size() - 4));
+        TSUNIT_ASSERT(ts::Zlib::Decompress(out, compressed.data() + 4, compressed.size() - 4, report()));
         TSUNIT_ASSERT(verify(out));
     }
+}
+
+TSUNIT_DEFINE_TEST(Specific)
+{
+    ts::ByteBlock in;
+    in.reserve(256 * 50);
+    for (int val = 0; val < 256; val++) {
+        for (int count = 50; count > 0; count--) {
+            in.push_back(uint8_t(val));
+        }
+    }
+    debug() << "ZlibTest::Specific: in size: " << in.size() << std::endl;
+
+    ts::ByteBlock compressed;
+    TSUNIT_ASSERT(ts::Zlib::Compress(compressed, in, 1, report()));
+    debug() << "ZlibTest::Specific: compressed size: " << compressed.size() << std::endl;
+
+    ts::ByteBlock decompressed;
+    TSUNIT_ASSERT(ts::Zlib::Decompress(decompressed, compressed, report()));
+    debug() << "ZlibTest::Specific: decompressed size: " << decompressed.size() << std::endl;
+    TSUNIT_ASSERT(decompressed == in);
 }
