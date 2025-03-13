@@ -27,7 +27,7 @@
 #include "tsWinUtils.h"
 
 #include "tsBeforeStandardHeaders.h"
-#include <WinInet.h>
+#include <wininet.h>
 #include "tsAfterStandardHeaders.h"
 
 // Required link libraries.

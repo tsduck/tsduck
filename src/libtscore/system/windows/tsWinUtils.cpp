@@ -17,7 +17,7 @@
 #include <errors.h>
 #include <shellapi.h>
 #include <setupapi.h>
-#include <WinInet.h>
+#include <wininet.h>
 #include <dshowasf.h>
 #include <ks.h>
 #include <ksproxy.h>

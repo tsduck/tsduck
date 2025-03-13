@@ -17,7 +17,7 @@
 
 #if defined(TS_WINDOWS)
     #include "tsBeforeStandardHeaders.h"
-    #include <Wincrypt.h>
+    #include <wincrypt.h>
     #include "tsAfterStandardHeaders.h"
 #endif
 
