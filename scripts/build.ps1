@@ -190,7 +190,7 @@ function Call-MSBuild ([string] $configuration, [string] $platform, [string] $ta
 $AllTargets = @(Select-String -Path "${ProjDir}\*.vcxproj" -Pattern '<RootNameSpace>' |
                 ForEach-Object { $_ -replace '.*<RootNameSpace> *','' -replace ' *</RootNameSpace>.*','' })
 $plugins = ($AllTargets | Select-String "tsplugin_*") -join ';'
-$commands = ($AllTargets | Select-String -NotMatch @("tsduck*", "tsplugin_*", "tsp_static", "setpath", "utest*", "tsmux", "tsnet", "tsprofiling")) -join ';'
+$commands = ($AllTargets | Select-String -NotMatch @("tsduck*", "tsplugin_*", "tsp_static", "setpath", "utest*", "tsmux", "tsnet", "tszlib", "tsprofiling")) -join ';'
 
 # Rebuild TSDuck.
 # We must build Intel targets first, then Arm64, see tsxml-wrapper.ps1 for explanations.

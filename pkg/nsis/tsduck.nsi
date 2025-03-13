@@ -130,6 +130,7 @@ Section "Tools & Plugins" SectionTools
     Delete "$INSTDIR\bin\tsprofiling.exe"
     Delete "$INSTDIR\bin\tsmux.exe"
     Delete "$INSTDIR\bin\tsnet.exe"
+    Delete "$INSTDIR\bin\tszlib.exe"
 
     ; Delete configuration files which were moved from libtsduck to libtscore.
     Delete "$INSTDIR\bin\tsduck.ip.names"
@@ -159,7 +160,7 @@ Section "Tools & Plugins" SectionTools
     ; Create folder for binaries
     CreateDirectory "$INSTDIR\bin"
     SetOutPath "$INSTDIR\bin"
-    File /x *_static.exe /x tsprofiling.exe /x tsmux.exe /x tsnet.exe "${BinDir}\ts*.exe"
+    File /x *_static.exe /x tsprofiling.exe /x tsmux.exe /x tsnet.exe /x tszlib.exe "${BinDir}\ts*.exe"
     File "${BinDir}\ts*.dll"
     File "${BinDir}\ts*.xml"
     File "${BinDir}\ts*.names"
