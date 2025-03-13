@@ -12,9 +12,22 @@
 # When loading shared libraries, dlopen() keeps a few memory blocks. Because we never unload
 # shared libraries, this is expected and not significant for the application memory management.
 {
-   Ignore dlopen bug.
+   Ignore dlopen allocated data.
    Memcheck:Leak
    ...
    fun:_dl_open
+   ...
+}
+
+# The "Small Deflate" or "sdefl" library reads input data to decompress using 8-byte chunks.
+# When the data buffer stops in the middle of a block, the end of the block is unused but
+# nonetheless read frome memory. Ignore that.
+{
+   Ignore Small Deflate read block overflow.
+   Memcheck:Addr8
+   fun:sinfl_read64
+   fun:sinfl_refill
+   fun:sinfl_decompress
+   fun:zsinflate
    ...
 }

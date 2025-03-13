@@ -142,6 +142,10 @@ extern int zsinflate(void *out, int cap, const void *in, int size);
 #include <string.h> /* memcpy, memset */
 #include <assert.h> /* assert */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #if defined(__GNUC__) || defined(__clang__)
 #define sinfl_likely(x)       __builtin_expect((x),1)
 #define sinfl_unlikely(x)     __builtin_expect((x),0)
@@ -610,5 +614,9 @@ zsinflate(void *out, int cap, const void *mem, int size) {
     return -1;
   }
 }
+
+#ifdef __cplusplus
+}
 #endif
 
+#endif /* SINFL_IMPLEMENTATION */

@@ -31,6 +31,8 @@ namespace ts {
         virtual ~ZlibOptions() override;
 
         bool    use_sdefl = false;
+        bool    hexa_input = false;
+        bool    hexa_output = false;
         bool    compress = false;
         bool    decompress = false;
         int     level = 0;
@@ -52,6 +54,12 @@ ts::ZlibOptions::ZlibOptions(int argc, char *argv[]) :
     option(u"decompress", 'd');
     help(u"decompress", u"Decompress the input file into output file.");
 
+    option(u"hexa-input");
+    help(u"hexa-input", u"Interpret input file as hexa dump. Decode to binary before compressing/decompressing.");
+
+    option(u"hexa-output", 'h');
+    help(u"hexa-output", u"Output an hexa dump of the compressed/decompressed data, instead of binary data.");
+
     option(u"input-file", 'i', STRING);
     help(u"input-file", u"Input file name. Default to the standard input.");
 
@@ -69,6 +77,8 @@ ts::ZlibOptions::ZlibOptions(int argc, char *argv[]) :
 
     // Load option values.
     use_sdefl = present(u"sdefl");
+    hexa_input = present(u"hexa-input");
+    hexa_output = present(u"hexa-output");
     compress = present(u"compress");
     decompress = present(u"decompress");
     getValue(input_file, u"input-file");
@@ -100,11 +110,32 @@ int MainCode(int argc, char *argv[])
 
         // Read input file.
         ts::ByteBlock input;
-        if (opt.input_file.empty()) {
-            ok = ts::SetBinaryModeStdin(opt) && input.read(std::cin);
+        if (opt.hexa_input) {
+            ts::UStringList hex;
+            if (opt.input_file.empty()) {
+                ts::UString::Load(hex, std::cin);
+            }
+            else {
+                ok = ts::UString::Load(hex, opt.input_file);
+                if (!ok) {
+                    opt.error(u"error reading %s", opt.input_file);
+                }
+            }
+            if (ok) {
+                ok = ts::UString().join(hex).hexaDecode(input);
+                if (!ok) {
+                    opt.error(u"invalid hexadecimal input data");
+                }
+            }
         }
         else {
-            ok = input.loadFromFile(opt.input_file, std::numeric_limits<size_t>::max(), &opt);
+            if (opt.input_file.empty()) {
+                ts::SetBinaryModeStdin(opt);
+                input.read(std::cin);
+            }
+            else {
+                ok = input.loadFromFile(opt.input_file, std::numeric_limits<size_t>::max(), &opt);
+            }
         }
 
         // Compress or decompress.
@@ -122,11 +153,22 @@ int MainCode(int argc, char *argv[])
         // Write output file.
         if (ok) {
             opt.verbose(u"output size: %d bytes", output.size());
-            if (opt.output_file.empty()) {
-                ok = ts::SetBinaryModeStdout(opt) && output.write(std::cout);
+            if (opt.hexa_output) {
+                const ts::UString hex(ts::UString::Dump(output, ts::UString::BPL, 0, 16));
+                if (opt.output_file.empty()) {
+                    std::cout << hex;
+                }
+                else {
+                    ok = hex.save(opt.output_file, false, true);
+                }
             }
             else {
-                ok = output.saveToFile(opt.output_file, &opt);
+                if (opt.output_file.empty()) {
+                    ok = ts::SetBinaryModeStdout(opt) && output.write(std::cout);
+                }
+                else {
+                    ok = output.saveToFile(opt.output_file, &opt);
+                }
             }
         }
     }

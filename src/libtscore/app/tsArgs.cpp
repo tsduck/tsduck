@@ -277,7 +277,7 @@ ts::UString ts::Args::IOption::optionNames(const UString& separator) const
         n.insert(0, 1, u'"');
         n.append(u'"');
     }
-    return UString::Join(names, separator);
+    return separator.join(names);
 }
 
 

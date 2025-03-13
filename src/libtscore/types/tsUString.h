@@ -1173,6 +1173,35 @@ namespace ts {
 
         //!
         //! Join a part of a container of strings into one big string.
+        //! This string is used as separator between the strings to join.
+        //! The strings are accessed through iterators in the container.
+        //! All strings are concatenated into one big string.
+        //! @tparam ITERATOR An iterator class over @c UString as defined by the C++ Standard Template Library (STL).
+        //! @param [in] begin An iterator pointing to the first string.
+        //! @param [in] end An iterator pointing @em after the last string.
+        //! @param [in] remove_empty If true, empty segments are ignored
+        //! @return The big string containing all segments and separators.
+        //!
+        template <class ITERATOR>
+        UString join(ITERATOR begin, ITERATOR end, bool remove_empty = false) const;
+
+        //!
+        //! Join a container of strings into one big string.
+        //! This string is used as separator between the strings to join.
+        //! All strings from the container are concatenated into one big string.
+        //! @tparam CONTAINER A container class of @c UString as defined by the C++ Standard Template Library (STL).
+        //! @param [in] container A container of @c UString containing all strings to concatenate.
+        //! @param [in] remove_empty If true, empty segments are ignored
+        //! @return The big string containing all segments and separators.
+        //!
+        template <class CONTAINER>
+        UString join(const CONTAINER& container, bool remove_empty = false) const
+        {
+            return join(container.begin(), container.end(), remove_empty);
+        }
+
+        //!
+        //! Join a part of a container of strings into one big string.
         //! The strings are accessed through iterators in the container.
         //! All strings are concatenated into one big string.
         //! @tparam ITERATOR An iterator class over @c UString as defined by the C++ Standard Template Library (STL).
@@ -1183,7 +1212,10 @@ namespace ts {
         //! @return The big string containing all segments and separators.
         //!
         template <class ITERATOR>
-        static UString Join(ITERATOR begin, ITERATOR end, const UString& separator = UString(u", "), bool remove_empty = false);
+        static UString Join(ITERATOR begin, ITERATOR end, const UString& separator = UString(u", "), bool remove_empty = false)
+        {
+            return separator.join(begin, end, remove_empty);
+        }
 
         //!
         //! Join a container of strings into one big string.
@@ -1197,7 +1229,7 @@ namespace ts {
         template <class CONTAINER>
         static UString Join(const CONTAINER& container, const UString& separator = UString(u", "), bool remove_empty = false)
         {
-            return Join(container.begin(), container.end(), separator, remove_empty);
+            return separator.join(container.begin(), container.end(), remove_empty);
         }
 
         //!
@@ -3143,13 +3175,13 @@ void ts::UString::splitLinesAppend(CONTAINER& lines, size_t max_width, const USt
 //----------------------------------------------------------------------------
 
 template <class ITERATOR>
-ts::UString ts::UString::Join(ITERATOR begin, ITERATOR end, const UString& separator, bool remove_empty)
+ts::UString ts::UString::join(ITERATOR begin, ITERATOR end, bool remove_empty) const
 {
     UString res;
     while (begin != end) {
         if (!remove_empty || !begin->empty()) {
             if (!res.empty()) {
-                res.append(separator);
+                res.append(*this);
             }
             res.append(*begin);
         }

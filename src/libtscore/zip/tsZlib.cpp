@@ -251,8 +251,8 @@ bool ts::Zlib::Decompress(ByteBlock& out, const void* in, size_t in_size, Report
     // the output buffer is too small, it slightly overflows and corrupts the memory before
     // realizing it has gone too far. Therefore, we pass a smaller buffer size to zsinflate()
     // to allow it overwrite the end of the buffer.
-    static constexpr size_t overflow_margin = 128;
-    out.resize(overflow_margin + 512 + in_size * 4);
+    static constexpr size_t overflow_margin = 1024;
+    out.resize(overflow_margin + 512 + in_size * 5);
     int len = 0;
     for (int count = 0; count < 20; count++) {
         len = ::zsinflate(out.data(), int(out.size() - overflow_margin), in, int(in_size));

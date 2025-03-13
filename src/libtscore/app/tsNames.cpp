@@ -539,7 +539,7 @@ ts::UString ts::Names::nameList(const UString& separator, const UString& in_quot
         sl.push_back(in_quote + it.second->name + out_quote);
     }
     std::sort(sl.begin(), sl.end());
-    return UString::Join(sl, separator);
+    return separator.join(sl);
 }
 
 

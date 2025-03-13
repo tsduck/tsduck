@@ -120,7 +120,7 @@ namespace ts {
     template <class CONTAINER>
     inline void SetEnvironmentPath(const UString& name, const CONTAINER& container)
     {
-        SetEnvironment(name, UString::Join(container, UString(1, SEARCH_PATH_SEPARATOR)));
+        SetEnvironment(name, UString(1, SEARCH_PATH_SEPARATOR).join(container));
     }
 
     //!
