@@ -20,7 +20,7 @@
     #include <mmsystem.h>  // Memory management
     #include <psapi.h>     // Process API
     #include <comutil.h>   // COM utilities
-    #include <Shellapi.h>
+    #include <shellapi.h>
     #include "tsAfterStandardHeaders.h"
 #else
     #include "tsBeforeStandardHeaders.h"

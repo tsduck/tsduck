@@ -16,7 +16,7 @@
 #include "tsWinUtils.h"
 
 #include "tsBeforeStandardHeaders.h"
-#include <ObjIdl.h>
+#include <objidl.h>
 #include "tsAfterStandardHeaders.h"
 
 #if defined(DOXYGEN)

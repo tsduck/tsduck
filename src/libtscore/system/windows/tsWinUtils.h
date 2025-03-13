@@ -18,7 +18,7 @@
 #include "tsComIds.h"
 
 #include "tsBeforeStandardHeaders.h"
-#include <ObjIdl.h>
+#include <objidl.h>
 #include "tsAfterStandardHeaders.h"
 
 namespace ts {
