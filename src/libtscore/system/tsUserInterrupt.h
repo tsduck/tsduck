@@ -91,6 +91,9 @@ namespace ts {
     private:
 #if defined(TS_WINDOWS)
 
+#ifndef __in
+    #define __in
+#endif
         static ::BOOL WINAPI sysHandler(__in ::DWORD dwCtrlType);
 
 #elif defined(TS_UNIX)
