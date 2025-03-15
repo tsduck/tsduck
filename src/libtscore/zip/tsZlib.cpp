@@ -69,7 +69,7 @@ TS_REGISTER_FEATURE(u"zlib", u"Deflate library", ALWAYS, ts::Zlib::GetLibraryVer
 ts::UString ts::Zlib::GetLibraryVersion()
 {
 #if defined(TS_NO_ZLIB)
-    return u"Small Deflate (sdefl) 1.00";
+    return u"Small Deflate (sdefl) + various fixes";
 #else
     return UString::Format(u"zlib version %s (compiled with %s)", zlibVersion(), ZLIB_VERSION);
 #endif
@@ -247,26 +247,29 @@ bool ts::Zlib::Decompress(ByteBlock& out, const void* in, size_t in_size, Report
     // decompressing if the buffer is too small. We adopt the following strategy: start with
     // some probable max size, then retry several times, doubling the buffer size each time.
     // It is hard to guess where to stop. Some very redundant data can be highly compressed.
-    // Additionally, zsinflate() does not check the end of its output buffer correctly. When
-    // the output buffer is too small, it slightly overflows and corrupts the memory before
-    // realizing it has gone too far. Therefore, we pass a smaller buffer size to zsinflate()
-    // to allow it overwrite the end of the buffer.
-    static constexpr size_t overflow_margin = 1024;
-    out.resize(overflow_margin + 512 + in_size * 5);
+    out.resize(512 + in_size * 5);
     int len = 0;
     for (int count = 0; count < 20; count++) {
-        len = ::zsinflate(out.data(), int(out.size() - overflow_margin), in, int(in_size));
+        len = ::zsinflate(out.data(), int(out.size()), in, int(in_size));
         if (len >= 0) {
             // Success, final size of output.
             out.resize(size_t(len));
             return true;
         }
-        if (out.size() > in_size + 1'000'000'000) {
-            // We are probably going crazy, stop here.
-            break;
+        if (len == -2) {
+            // Output buffer is too small.
+            if (out.size() > in_size + 1'000'000'000) {
+                // We are probably going crazy, stop here.
+                break;
+            }
+            out.resize(2 * out.size());
         }
-        out.resize(2 * out.size());
+        else {
+            // Invalid compressed data.
+            report.error(u"invalid compressed data");
+            return false;
+        }
     }
-    report.error(u"cannot determine decompressed size, going too far, give up...");
+    report.error(u"cannot determine decompressed size, going too far, give up");
     return false;
 }
