@@ -134,15 +134,15 @@ void ts::AMT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
         buf.pushWriteSequenceWithLeadingLength(10);
         if (it.second.src.generation() == IP::v4) {
             buf.putUInt32(it.second.src.address4());
-            buf.putUInt8(it.second.src.prefixSize());
+            buf.putUInt8(uint8_t(it.second.src.prefixSize()));
             buf.putUInt32(it.second.dst.address4());
-            buf.putUInt8(it.second.dst.prefixSize());
+            buf.putUInt8(uint8_t(it.second.dst.prefixSize()));
         }
         else {
             buf.putBytes(it.second.src.address6());
-            buf.putUInt8(it.second.src.prefixSize());
+            buf.putUInt8(uint8_t(it.second.src.prefixSize()));
             buf.putBytes(it.second.dst.address6());
-            buf.putUInt8(it.second.dst.prefixSize());
+            buf.putUInt8(uint8_t(it.second.dst.prefixSize()));
         }
         buf.putBytes(it.second.private_data);
         buf.popState();
