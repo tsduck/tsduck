@@ -97,7 +97,7 @@ ts::IPAddress ts::IPAddressMask::broadcastAddress() const
 
 
 //----------------------------------------------------------------------------
-// Convert to a string object in numeric format "a.b.c.d".
+// Convert between object and string.
 //----------------------------------------------------------------------------
 
 ts::UString ts::IPAddressMask::toString() const
@@ -108,6 +108,23 @@ ts::UString ts::IPAddressMask::toString() const
 ts::UString ts::IPAddressMask::toFullString() const
 {
     return IPAddress::toFullString() + UString::Format(u"/%d", prefixSize());
+}
+
+bool ts::IPAddressMask::resolve(const UString& name, Report& report)
+{
+    return resolve(name, report, IP::Any);
+}
+
+bool ts::IPAddressMask::resolve(const UString& name, Report& report, IP preferred)
+{
+    const size_t slash = name.find(u'/');
+    if (slash >= name.length() || !name.substr(slash + 1).toInteger(_prefix)) {
+        report.error(u"no address prefix in \"%s\"", name);
+        return false;
+    }
+    else {
+        return IPAddress::resolve(name.substr(0, slash), report, preferred);
+    }
 }
 
 

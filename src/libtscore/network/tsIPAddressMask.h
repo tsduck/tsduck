@@ -74,6 +74,8 @@ namespace ts {
         IPAddress broadcastAddress() const;
 
         // Inherited methods.
+        virtual bool resolve(const UString& name, Report& report) override;
+        virtual bool resolve(const UString& name, Report& report, IP preferred) override;
         virtual UString toFullString() const override;
         virtual UString toString() const override;
 

@@ -1,0 +1,21 @@
+==== Address Map Table (AMT)
+
+Defined by ARIB in <<ARIB-B10>>.
+
+[source,xml]
+----
+<AMT version="uint5, default=0" current="bool, default=true">
+
+  <!-- One per service -->
+  <service service_id="uint16, required"
+           src="ip-address/prefix, required"
+           dst="ip-address/prefix, required">
+    <private_data>
+      Hexadecimal content
+    </private_data>
+  </service>
+
+</AMT>
+----
+
+In each `<service>`, the `src` and `dst` addresses must have the same type, IPv4 or IPv6.
