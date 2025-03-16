@@ -42,9 +42,9 @@ if (-not (Find-WinGet)) {
         # See https://learn.microsoft.com/en-us/windows/package-manager/winget/
         # We noticed intermittent failures, retry up to 3 times.
         $retries = 3
+        Write-Output "PowerShell version: $($PSVersionTable.PSVersion.ToString())"
         while (-not (Find-WinGet) -and $retries -gt 0) {
             $retries--
-            Write-Output "PowerShell version: $($PSVersionTable.PSVersion.ToString())"
             if ($PSVersionTable.PSVersion.Major -lt 7) {
                 Write-Output "Installing NuGet ..."
                 Install-PackageProvider -Name "NuGet" -Force -ForceBootstrap -ErrorAction Continue
@@ -54,6 +54,13 @@ if (-not (Find-WinGet)) {
             Import-Module -Name Microsoft.WinGet.Client
             Write-Output "Installing WinGet ..."
             try { Repair-WinGetPackageManager -AllUsers } catch {}
+            # We noticed some spurious asynchronous activity after installation.
+            # Let this background activity complete.
+            $timeout = 5
+            while (-not (Find-WinGet) -and $timeout -gt 0) {
+                $timeout--
+                Start-Sleep -Seconds 1
+            }
         }
     }
 }
