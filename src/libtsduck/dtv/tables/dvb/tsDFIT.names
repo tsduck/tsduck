@@ -1,0 +1,27 @@
+[DFIT.font_info_type]
+Bits = 8
+0x00 = font style weight
+0x01 = font file URI
+0x02 = font size
+0x03 = font family
+
+[DFIT.font_style]
+Bits = 3
+0 = undefined
+1 = normal
+2 = italic
+3 = oblique
+4-7 = reserved
+
+[DFIT.font_weight]
+Bits = 4
+0 = undefined
+1 = normal
+2 = bold
+3-15 = reserved
+
+[DFIT.font_file_format]
+Bits = 4
+0 = Open Font Format (ISO/IEC 14496-22)
+1 = WOFF (Web Open Font Format)
+2-15 = reserved

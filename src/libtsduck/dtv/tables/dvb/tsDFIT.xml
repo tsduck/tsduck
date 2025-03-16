@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_tables>
+
+    <!-- Downloadable Font Information Table -->
+    <DFIT version="uint5, default=0"
+          current="bool, default=true"
+          font_id="uint7, required"
+          font_id_extension="uint9, default=0"
+          font_family="string, required">
+      <_any in="_metadata"/>
+      <font_style_weight font_style="uint3, required" font_weight="uint4, required"/>
+      <font_file_URI font_file_format="uint4, required" uri="string, required"/>
+      <font_size font_size="uint16, required"/>
+    </DFIT>
+
+  </_tables>
+</tsduck>
