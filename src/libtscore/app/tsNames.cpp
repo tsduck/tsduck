@@ -336,6 +336,11 @@ bool ts::Names::getValueImpl(uint_t& e, const UString& name, bool case_sensitive
     }
 }
 
+ts::NamesPtr ts::Names::GetSection(const UString& file_name, const UString& section_name, bool create)
+{
+    return AllInstances::Instance().get(section_name, file_name, create);
+}
+
 
 //----------------------------------------------------------------------------
 // Get the error message about a name failing to match a value.

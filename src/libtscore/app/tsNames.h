@@ -395,10 +395,7 @@ namespace ts {
         //! the section does not exist and @a create is false.
         //! @see MergeFile()
         //!
-        static NamesPtr GetSection(const UString& file_name, const UString& section_name, bool create)
-        {
-            return AllInstances::Instance().get(section_name, file_name, create);
-        }
+        static NamesPtr GetSection(const UString& file_name, const UString& section_name, bool create);
 
         //!
         //! Get the names from a bit-mask value.
