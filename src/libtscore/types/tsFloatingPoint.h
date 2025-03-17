@@ -319,6 +319,7 @@ bool ts::FloatingPoint<FLOAT_T,PREC>::fromString(const UString& str, UChar separ
     int len = 0;
     double d = 0.0;
     TS_PUSH_WARNING()
+    TS_GCC_NOWARNING(deprecated-declarations)
     TS_LLVM_NOWARNING(deprecated-declarations)
     TS_MSC_NOWARNING(4996) // 'sscanf': This function or variable may be unsafe. Consider using sscanf_s instead.
     const int count = std::sscanf(str8.c_str(), "%lf%n", &d, &len);
