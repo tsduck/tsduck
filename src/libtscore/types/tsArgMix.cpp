@@ -92,7 +92,7 @@ const char* ts::ArgMix::toCharPtr() const
                     return "";
                 }
                 else {
-                    return _value.path->c_str();
+                    return (const char*)_value.path->c_str();
                 }
             }
             else {
