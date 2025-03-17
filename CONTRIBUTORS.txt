@@ -23,6 +23,7 @@ Harald Jordan
 Thierry Lelégard (original author, current maintainer)
 Jérôme Lévèque
 Aaron Levinson
+Steve Lhomme
 Sergey Lobanov
 Christophe Massiot
 Athanasios Oikonomou
