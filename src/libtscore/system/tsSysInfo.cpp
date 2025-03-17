@@ -205,6 +205,7 @@ ts::SysInfo::SysInfo() :
 #elif defined(TS_WINDOWS)
 
     TS_PUSH_WARNING()
+    TS_LLVM_NOWARNING(deprecated-declarations)
     TS_MSC_NOWARNING(4996) // warning C4996: 'GetVersionExW': was declared deprecated
 
     // System version.
