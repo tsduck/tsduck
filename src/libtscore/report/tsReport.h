@@ -149,6 +149,7 @@ namespace ts {
         //! @cond nodoxygen
         TS_PUSH_WARNING()
         TS_GCC_NOWARNING(deprecated-declarations)
+        TS_LLVM_NOWARNING(deprecated-declarations)
         TS_MSC_NOWARNING(4996)
         TS_DEPRECATED void log(int severity, const UChar* fmt, std::initializer_list<ArgMixIn> args)
         {
