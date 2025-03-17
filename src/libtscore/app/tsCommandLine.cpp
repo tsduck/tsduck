@@ -19,6 +19,9 @@ ts::CommandLine::CommandLine(Report& report) :
 {
 }
 
+ts::CommandLine::~CommandLine()
+{
+}
 
 //----------------------------------------------------------------------------
 // Set command line redirection from files.

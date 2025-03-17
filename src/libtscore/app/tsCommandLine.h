@@ -35,6 +35,11 @@ namespace ts {
         CommandLine(Report& report = CERR);
 
         //!
+        //! Destructor.
+        //!
+        virtual ~CommandLine();
+
+        //!
         //! Set the "shell" string for all commands.
         //! @param [in] shell Shell name string.
         //! @see Args::setShell()
