@@ -91,9 +91,9 @@ namespace ts {
     private:
 #if defined(TS_WINDOWS)
 
-#ifndef __in
-    #define __in
-#endif
+    #ifndef __in
+        #define __in
+    #endif
         static ::BOOL WINAPI sysHandler(__in ::DWORD dwCtrlType);
 
 #elif defined(TS_UNIX)
@@ -103,12 +103,12 @@ namespace ts {
 
         volatile ::sig_atomic_t _terminate = 0;
         volatile ::sig_atomic_t _got_sigint = 0;
-#if defined(TS_MAC)
+    #if defined(TS_MAC)
         std::string             _sem_name {};
         ::sem_t*                _sem_address {SEM_FAILED};
-#else
+    #else
         ::sem_t                 _sem_instance {};
-#endif
+    #endif
 #endif
 
         InterruptHandler* _handler = nullptr;

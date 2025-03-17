@@ -411,7 +411,7 @@ ts::UString ts::NameGUID(const ::GUID& guid)
         const UChar*   name;
     };
     static const KnownValue knownValues[] = {
-#define _N_(g) {&g, TS_USTRINGIFY1(g)},
+#define _N_(g) {&g, TS_USTRINGIFY(g)},
         _N_(AM_INTERFACESETID_Standard)
         _N_(AM_KSCATEGORY_AUDIO)
         _N_(AM_KSCATEGORY_CAPTURE)

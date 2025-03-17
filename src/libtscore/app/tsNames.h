@@ -574,7 +574,7 @@ namespace ts {
 
     private:
         // Description of a range of values with same name.
-        class ValueRange
+        class TSCOREDLL ValueRange
         {
         public:
             uint_t  first = 0;  // First value in the range.
@@ -621,7 +621,7 @@ namespace ts {
         // This is typically the sections of all ".names" files.
         // Once a Names instance is in this repository, it stays there forever.
         // Therefore, when a reference to a Names is obtained, it can be safely used later.
-        class AllInstances
+        class TSCOREDLL AllInstances
         {
             TS_SINGLETON(AllInstances);
         public:

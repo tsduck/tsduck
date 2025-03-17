@@ -76,10 +76,12 @@
         #define TS_LLVM 1
     #endif
     #if defined(_MSC_VER)
+        // LLVM on Windows provides some compatibility with MSC.
         #if !defined(TS_MSC)
             #define TS_MSC 1
         #endif
     #else
+        // LLVM on UNIX provides some compatibility with GCC.
         #if !defined(TS_GCC)
             #define TS_GCC 1
         #endif

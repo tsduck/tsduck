@@ -92,7 +92,11 @@ const char* ts::ArgMix::toCharPtr() const
                     return "";
                 }
                 else {
-                    return (const char*)_value.path->c_str();
+                    // Should be a char* anyway, so this cast is useless. However, don't remove it.
+                    // On Windows, fs::path use 16-bit characters and this branch is not compiled
+                    // (the "if constexpr" is false). MSC is happy to ignore this line. However,
+                    // cross-compilation using clang or gcc fails.
+                    return reinterpret_cast<const char*>(_value.path->c_str());
                 }
             }
             else {

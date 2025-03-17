@@ -215,7 +215,7 @@ namespace ts {
 
     private:
         // Definition of a command.
-        class Cmd
+        class TSCOREDLL Cmd
         {
             TS_NOCOPY(Cmd);
         public:
@@ -228,7 +228,7 @@ namespace ts {
         };
 
         // Internal command handler for predefined commands.
-        class PredefinedCommands : public CommandLineHandler
+        class TSCOREDLL PredefinedCommands: public CommandLineHandler
         {
             TS_NOBUILD_NOCOPY(PredefinedCommands);
         public:

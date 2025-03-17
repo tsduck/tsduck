@@ -119,7 +119,7 @@ void* ts::SharedLibrary::getSymbol(const std::string& name) const
 #if defined(TSDUCK_STATIC)
         // Nothing to do, load() previously failed.
 #elif defined(TS_WINDOWS)
-        result = (void*)::GetProcAddress(_module, name.c_str());
+        result = reinterpret_cast<void*>(::GetProcAddress(_module, name.c_str()));
 #else
         result = ::dlsym(_dl, name.c_str());
 #endif
