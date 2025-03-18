@@ -49,8 +49,10 @@ if (-not (Find-WinGet)) {
                 Write-Output "Installing NuGet ..."
                 Install-PackageProvider -Name "NuGet" -Force -ForceBootstrap -ErrorAction Continue
             }
-            Write-Output "Installing Microsoft.WinGet.Client PowerShell module ..."
-            Install-Module -Name Microsoft.WinGet.Client -AcceptLicense -Force -AllowClobber -Repository PSGallery -ErrorAction Continue
+            if (-not (Get-Module -Name Microsoft.WinGet.Client -ListAvailable)) {
+                Write-Output "Installing Microsoft.WinGet.Client PowerShell module ..."
+                Install-Module -Name Microsoft.WinGet.Client -AcceptLicense -Force -AllowClobber -Repository PSGallery -ErrorAction Continue
+            }
             Import-Module -Name Microsoft.WinGet.Client
             Write-Output "Installing WinGet ..."
             try { Repair-WinGetPackageManager -AllUsers } catch {}
@@ -59,7 +61,8 @@ if (-not (Find-WinGet)) {
             $timeout = 5
             while (-not (Find-WinGet) -and $timeout -gt 0) {
                 $timeout--
-                Start-Sleep -Seconds 1
+                Write-Output "WinGet not found, retrying in two seconds..."
+                Start-Sleep -Seconds 2
             }
         }
     }
