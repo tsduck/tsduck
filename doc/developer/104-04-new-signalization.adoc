@@ -178,8 +178,8 @@ More details follow in the next sections.
 Your table or descriptor must have a 8-bit identifier.
 You need to add it in the TSDuck source code.
 
-Table ids and descriptor ids are defined in file `src/libtsduck/dtv/signalization/tsPSI.h`,
-in enum lists `TID` and `DID`, respectively.
+Table ids are defined in file `src/libtsduck/dtv/signalization/tsTID.h`, in enum list `TID`.
+Descriptor ids are defined in file `src/libtsduck/dtv/signalization/tsDID.h`, in enum list `DID`.
 The ids are grouped by standard, be sure to add it at the right place.
 
 In the case of a table, if that table is expected on some predefined PID, also add this PID
@@ -187,7 +187,7 @@ in file `src/libtsduck/dtv/transport/tsTS.h`, in the enum list `PID`.
 
 In the case of a private DVB descriptor, your descriptor is valid only after a _private_data_specifier_descriptor_
 which contains the _private_data_specifier_ (PDS) of the organization which defines the descriptor.
-Check if that PDS value is present in file `src/libtsduck/dtv/signalization/tsPSI.h`, in enum list `PDS`.
+Check if that PDS value is present in file `src/libtsduck/dtv/signalization/tsPDS.h`, in enum list `PDS`.
 Add it if not present.
 
 For TSDuck to display meaningful identifiers, the source tree contains _names files_, with a `.names` extensions.
@@ -195,24 +195,18 @@ These files associate a unique value with a name.
 There are several sections (for PID, TID, DID, for instance).
 In each section, a value can be present only once and values must be declared in ascending order.
 
-Add the table or descriptor name in the file `src/libtsduck/dtv/signalization/tsPSI.names`,
-in sections `TableId` or `DescriptorId`, respectively.
-Carefully read the comments at the beginning of each section.
-It explains the encoding of each unique value.
+Add the table, descriptor, or PDS name in the files `src/libtsduck/dtv/signalization/tsTID.names`,
+`tsDID.names`, or `tsPDS.names`. Carefully read the comments at the beginning of each section.
+They explain the encoding of each unique value.
 
 For table ids, the value includes the standard and the optional _CAS_id_ (useful for ECM and EMM only).
 
-For descriptor ids, the value includes the PDS for private descriptors or the _table_id_ for table-specific descriptors.
-Note that, for historical reasons, ATSC and ISDB descriptors are encoded with a "fake" dedicated PDS.
-
-If you have added a new PDS value, add its name in the `PrivateDataSpecifier` section of `tsPSI.names`.
+For descriptor ids, the value includes the standard, the PDS for private descriptors,
+or the _table_id_ for table-specific descriptors.
 
 If you implement a MPEG-defined or DVB-defined extended descriptor, add the corresponding
-_extended_descriptor_id_ in `src/libtsduck/dtv/signalization/tsPSI.h`,
-in enum lists with `MPEG_EDID_` and `EDID_` symbols.
-
-Also add the corresponding name in `src/libtsduck/dtv/signalization/tsPSI.names`,
-in sections `MPEGExtendedDescriptorId` or `DVBExtendedDescriptorId`, respectively.
+_extended_descriptor_id_ in `src/libtsduck/dtv/signalization/tsDID.h`,
+in enum lists with `XDID_MPEG_` and `XDID_DVB_` symbols.
 
 ==== XML definition
 

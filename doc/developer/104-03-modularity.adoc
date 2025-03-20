@@ -250,7 +250,7 @@ endif::[]
 |===
 
 |TS_REGISTER_FEATURE
-|Register a specific optional mandatory or optional feature, for instance a specific library
+|Register a specific mandatory or optional feature, for instance a specific library
  or hardware acceleration. Depending on the parameters which are provided to the macro, the
  feature will be added to options `--version` or `--support` (in command  `tsversion`).
  The user will be able to check if the feature is supported or not, and display the version.
@@ -341,8 +341,8 @@ endif::[]
 
 |TS_REGISTER_EXTENSION
 |Register a TSDuck extension. This macro is typically used in the `tslibext_XXX.so`
- shared library of an extension. This is an optional macro, an extension can work
- without it. However, it helps identifying which extensions are loaded.
+ shared library of the extension named `XXX`. This is an optional macro, an extension
+ can work without it. However, it helps identifying which extensions are loaded.
 
 |TS_REGISTER_XML_FILE
 |Register an extension XML model file for the PSI/SI tables and descriptors
@@ -350,7 +350,7 @@ endif::[]
  descriptors which are supported by TSDuck.
 
 |TS_REGISTER_NAMES_FILE
-|Registration of an extension `.names` file. All definitions are merged with the
+|Register an extension `.names` file. All definitions are merged with the
  definitions which are provided by TSDuck (table ids, descriptor ids, etc.)
 
 |TS_REGISTER_SECTION_FILTER

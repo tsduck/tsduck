@@ -9,30 +9,41 @@
 #   a standard (MPEG, DVB, ATSC, ISDB, etc.)
 #   - EDID = 0xssss_00_FFFFFFFF_tt
 #   - 0xssss = Standards, see section [Standards] in tsStandards.names.
+#   - 0x00 = Regular descriptor.
 #
 # - Private MPEG descriptor (unofficial name). Must be associated with a 32-bit
 #   registration id, or REGID, in a preceding MPEG registration_descriptor. This
 #   descriptor can be in the same descriptor list or a higher descriptor list.
 #   - EDID = 0x0001_01_rrrrrrrr_tt
+#   - 0x0001 = MPEG standards bitmask.
+#   - 0x01 = Private descriptor.
 #   - 0xrrrrrrrr = MPEG registration id value (REGID).
 #
 # - Private DVB descriptor (tag in the range 0x80-0xFF). Must be associated with
 #   a 32-bit private data specifier or PDS, in a preceding private_data_specifier
 #   descriptor in the same descriptor list.
 #   - EDID = 0x0002_01_rrrrrrrr_tt
+#   - 0x0002 = DVB standards bitmask.
+#   - 0x01 = Private descriptor.
 #   - 0xrrrrrrrr = DVB private data specifier value (PDS).
 #
 # - Dual private descriptor: Can be used either as private MPEG or private DVB
 #   descriptor. The same 32-bit value is used as MPEG REGID and DVB PDS.
 #   - EDID = 0x0003_01_rrrrrrrr_tt
+#   - 0x0003 = DVB + MPEG standards bitmask.
+#   - 0x01 = Private descriptor.
 #   - 0xrrrrrrrr = DVB private data specifier value (PDS).
 #
 # - MPEG extension descriptor (tag == 0x3F). Must be associated with a 8-bit tag extension.
 #   - EDID = 0x0001_02_FFFFFF_rr_3F
+#   - 0x0001 = MPEG standards bitmask.
+#   - 0x02 = Extension descriptor.
 #   - 0xrr = Extended descriptor tag
 #
 # - DVB extension descriptor (tag == 0x7F). Must be associated with a 8-bit tag extension.
 #   - EDID = 0x0002_02_FFFFFF_rr_7F
+#   - 0x0002 = DVB standards bitmask.
+#   - 0x02 = Extension descriptor.
 #   - 0xrr = Extended descriptor tag
 #
 # - Table-specific descriptor. Its tag reuses a tag which is otherwise used by some
@@ -46,6 +57,7 @@
 #   for more than 4 tables are not supported (in practice, the maximum is 2 tables).
 #   - EDID = 0xssss_03_rr_rr_rr_rr_tt
 #   - 0xssss = Standards, see section [Standards] (source file tsStandards.names).
+#   - 0x03 = Table-specific descriptor.
 #   - 0xrr = Table ids. Table ids must be stored in order of increasing values, from right
 #     to left. The left-most unused values are set to 0xFF.
 #
