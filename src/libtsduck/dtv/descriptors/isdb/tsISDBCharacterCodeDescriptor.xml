@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <ISDB_character_code_descriptor character_code="uint8, required"/>
+
+  </_descriptors>
+</tsduck>

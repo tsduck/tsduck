@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <material_information_descriptor
+        descriptor_number="uint4, required"
+        last_descriptor_number="uint4, required">
+
+      <!-- One per material -->
+      <material
+          material_type="uint8, required"
+          material_name="string, required"
+          material_code_type="uint8, required"
+          material_code="string, required"
+          material_period="hh:mm:ss, optional"
+          material_url_type="uint8, required"
+          material_url="string, required">
+        <reserved_future_use>
+          Hexadecimal content
+        </reserved_future_use>
+      </material>
+
+    </material_information_descriptor>
+
+  </_descriptors>
+</tsduck>

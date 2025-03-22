@@ -1,0 +1,5 @@
+[ISDB_character_code_descriptor.character_code]
+Bits = 8
+0x00 = 8-bit unit code
+0x01 = UTF-8
+0x02-0xFF = reserved

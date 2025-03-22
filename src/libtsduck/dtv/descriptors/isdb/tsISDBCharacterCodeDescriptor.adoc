@@ -1,0 +1,8 @@
+==== ISDB_character_code_descriptor
+
+Defined by ARIB in <<ARIB-B63>>.
+
+[source,xml]
+----
+<ISDB_character_code_descriptor character_code="uint8, required"/>
+----

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <hybrid_information_descriptor
+        format="uint4, required"
+        component_tag="uint8, optional"
+        module_id="uint16, optional"
+        URL="string, optional"/>
+
+  </_descriptors>
+</tsduck>

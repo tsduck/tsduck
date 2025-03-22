@@ -5,23 +5,6 @@
 // BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
-//
-// WARNING: This descriptor is currently not active (not registered).
-//
-// Its descriptor tag is 0x68, which conflicts with DVB allocation.
-// We have not yet implemented a way to implement concurrent DVB and ISDB
-// descriptor in the non-private range (below 0x80). The code is just here
-// for future reference. To be debugged, just in case.
-//
-// XML template to add, when implemented:
-//
-//    <hybrid_information_descriptor
-//        format="uint4, required"
-//        component_tag="uint8, optional"
-//        module_id="uint16, optional"
-//        URL="string, optional"/>
-//
-//----------------------------------------------------------------------------
 
 #include "tsHybridInformationDescriptor.h"
 #include "tsDescriptor.h"
@@ -32,8 +15,10 @@
 #include "tsxmlElement.h"
 
 #define MY_XML_NAME u"hybrid_information_descriptor"
-// #define MY_CLASS ts::HybridInformationDescriptor
+#define MY_CLASS    ts::HybridInformationDescriptor
 #define MY_EDID     ts::EDID::Regular(ts::DID_ISDB_HYBRID_INFO, ts::Standards::ISDB)
+
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------

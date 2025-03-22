@@ -212,6 +212,8 @@
   "Conditional Access System Specifications for Digital Broadcasting".
 * [[[ARIB-B31]]] ARIB STD-B31, V2.2, March 2014:
   "Transmission System for Digital Terrestrial Television Broadcasting".
+* [[[ARIB-B63]]] ARIB STD-B63, V1.10, October 2022:
+  "Receiver for Advanced Wide Band Digital Satellite Broadcasting".
 * [[[ATSC-A52]]] ATSC A52, January 2018,
   "Digital Audio Compression (AC-3, E-AC-3)".
 * [[[ATSC-A65]]] ATSC A65/2013, August 2013:

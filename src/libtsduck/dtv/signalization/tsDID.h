@@ -475,6 +475,7 @@ namespace ts {
         DID_ISDB_NETW_DOWNLOAD  = 0xE2,  //!< DID for ISDB Network download content descriptor
         DID_ISDB_DOWNLOAD_PROT  = 0xE3,  //!< DID for ISDB Download protection descriptor
         DID_ISDB_CA_ACTIVATION  = 0xE4,  //!< DID for ISDB CA activation descriptor
+        DID_ISDB_CHAR_CODE      = 0xE5,  //!< DID for ISDB character code descriptor
         DID_ISDB_WMCTDS         = 0xF3,  //!< DID for ISDB Wired multi-carrier transmission distribution system descriptor
         DID_ISDB_ADV_WDS        = 0xF4,  //!< DID for ISDB Advanced wired distribution system descriptor
         DID_ISDB_SCRAMBLE_METH  = 0xF5,  //!< DID for ISDB Scramble method descriptor

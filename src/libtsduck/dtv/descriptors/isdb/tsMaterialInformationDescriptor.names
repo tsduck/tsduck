@@ -1,0 +1,6 @@
+[material_information_descriptor.material_code_type]
+Bits = 8
+0x00 = Out of use
+0x01 = IEC 62227
+0x02-0x7F = Reserved for future use
+0x80-0xFF = Defined by service providers
