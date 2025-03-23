@@ -197,15 +197,17 @@ bool ts::Zlib::CompressAppend(ByteBlock& out, const void* in, size_t in_size, in
 // Decompress data according to the DEFLATE algorithm.
 //----------------------------------------------------------------------------
 
-bool ts::Zlib::Decompress(ByteBlock& out, const void* in, size_t in_size, Report& report, bool use_sdefl)
+bool ts::Zlib::DecompressAppend(ByteBlock& out, const void* in, size_t in_size, Report& report, bool use_sdefl)
 {
+    const size_t initial_out_size = out.size();
+
 #if !defined(TS_NO_ZLIB)
     if (!use_sdefl) {
 
         // Decompress using zlib.
         // Resize to some arbitrary larger size than input.
         // In any case, we will resize if not large enough.
-        out.resize(3 * in_size);
+        out.resize(initial_out_size + 3 * in_size);
 
         ::z_stream strm;
         TS_ZERO(strm);
@@ -217,8 +219,8 @@ bool ts::Zlib::Decompress(ByteBlock& out, const void* in, size_t in_size, Report
             return false;
         }
 
-        strm.next_out = reinterpret_cast<decltype(strm.next_out)>(out.data());
-        strm.avail_out = static_cast<decltype(strm.avail_out)>(out.size());
+        strm.next_out = reinterpret_cast<decltype(strm.next_out)>(out.data() + initial_out_size);
+        strm.avail_out = static_cast<decltype(strm.avail_out)>(out.size() - initial_out_size);
 
         do {
             status = ::inflate(&strm, Z_FINISH);
@@ -228,14 +230,14 @@ bool ts::Zlib::Decompress(ByteBlock& out, const void* in, size_t in_size, Report
             if (status != Z_STREAM_END && strm.avail_out == 0) {
                 // No enough space in output buffer, resize it.
                 size_t previous = strm.total_out;
-                out.resize(previous + 2 * in_size);
-                strm.next_out = reinterpret_cast<decltype(strm.next_out)>(out.data() + previous);
-                strm.avail_out = static_cast<decltype(strm.avail_out)>(out.size() - previous);
+                out.resize(initial_out_size + previous + 2 * in_size);
+                strm.next_out = reinterpret_cast<decltype(strm.next_out)>(out.data() + initial_out_size + previous);
+                strm.avail_out = static_cast<decltype(strm.avail_out)>(out.size() - initial_out_size - previous);
             }
         } while (status != Z_STREAM_END);
 
         // Final size is now known.
-        out.resize(size_t(strm.total_out));
+        out.resize(initial_out_size + size_t(strm.total_out));
 
         status = ::inflateEnd(&strm);
         return checkZlibStatus(&strm, status, u"deflateEnd", report);
@@ -247,18 +249,18 @@ bool ts::Zlib::Decompress(ByteBlock& out, const void* in, size_t in_size, Report
     // decompressing if the buffer is too small. We adopt the following strategy: start with
     // some probable max size, then retry several times, doubling the buffer size each time.
     // It is hard to guess where to stop. Some very redundant data can be highly compressed.
-    out.resize(512 + in_size * 5);
+    out.resize(initial_out_size + 512 + in_size * 5);
     int len = 0;
     for (int count = 0; count < 20; count++) {
-        len = ::zsinflate(out.data(), int(out.size()), in, int(in_size));
+        len = ::zsinflate(out.data() + initial_out_size, int(out.size()), in, int(in_size));
         if (len >= 0) {
             // Success, final size of output.
-            out.resize(size_t(len));
+            out.resize(initial_out_size + size_t(len));
             return true;
         }
         if (len == -2) {
             // Output buffer is too small.
-            if (out.size() > in_size + 1'000'000'000) {
+            if (out.size() > initial_out_size + in_size + 1'000'000'000) {
                 // We are probably going crazy, stop here.
                 break;
             }

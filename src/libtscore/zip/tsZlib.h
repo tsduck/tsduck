@@ -78,7 +78,7 @@ namespace ts {
 
         //!
         //! Compress data according to the DEFLATE algorithm.
-        //! @param [in,out] out Output compressed data is appended at the end of the existing content.
+        //! @param [in,out] out Output compressed data are appended at the end of the existing content.
         //! @param [in] in Address of input data.
         //! @param [in] in_size Size in bytes of input data.
         //! @param [in] level Requested compression level, from 0 to 9.
@@ -90,7 +90,7 @@ namespace ts {
 
         //!
         //! Compress data according to the DEFLATE algorithm.
-        //! @param [in,out] out Output compressed data is appended at the end of the existing content.
+        //! @param [in,out] out Output compressed data are appended at the end of the existing content.
         //! @param [in] in Input data.
         //! @param [in] level Requested compression level, from 0 to 9.
         //! @param [in,out] report Where to report errors.
@@ -111,7 +111,11 @@ namespace ts {
         //! @param [in] use_sdefl If true, force the usage of "sdefl" library. By default, use "zlib" on UNIX systems and "sdefl" on Windows.
         //! @return True on success, false on error.
         //!
-        static bool Decompress(ByteBlock& out, const void* in, size_t in_size, Report& report = NULLREP, bool use_sdefl = false);
+        static bool Decompress(ByteBlock& out, const void* in, size_t in_size, Report& report = NULLREP, bool use_sdefl = false)
+        {
+            out.clear();
+            return DecompressAppend(out, in, in_size, report, use_sdefl);
+        }
 
         //!
         //! Decompress data according to the DEFLATE algorithm.
@@ -123,7 +127,32 @@ namespace ts {
         //!
         static bool Decompress(ByteBlock& out, const ByteBlock& in, Report& report = NULLREP, bool use_sdefl = false)
         {
-            return Decompress(out, in.data(), in.size(), report, use_sdefl);
+            out.clear();
+            return DecompressAppend(out, in.data(), in.size(), report, use_sdefl);
+        }
+
+        //!
+        //! Decompress data according to the DEFLATE algorithm.
+        //! @param [out] out Output decompressed data are appended at the end of the existing content.
+        //! @param [in] in Address of input data.
+        //! @param [in] in_size Size in bytes of input data.
+        //! @param [in,out] report Where to report errors.
+        //! @param [in] use_sdefl If true, force the usage of "sdefl" library. By default, use "zlib" on UNIX systems and "sdefl" on Windows.
+        //! @return True on success, false on error.
+        //!
+        static bool DecompressAppend(ByteBlock& out, const void* in, size_t in_size, Report& report = NULLREP, bool use_sdefl = false);
+
+        //!
+        //! Decompress data according to the DEFLATE algorithm.
+        //! @param [out] out Output decompressed data are appended at the end of the existing content.
+        //! @param [in] in Input data.
+        //! @param [in,out] report Where to report errors.
+        //! @param [in] use_sdefl If true, force the usage of "sdefl" library. By default, use "zlib" on UNIX systems and "sdefl" on Windows.
+        //! @return True on success, false on error.
+        //!
+        static bool DecompressAppend(ByteBlock& out, const ByteBlock& in, Report& report = NULLREP, bool use_sdefl = false)
+        {
+            return DecompressAppend(out, in.data(), in.size(), report, use_sdefl);
         }
 
     private:
