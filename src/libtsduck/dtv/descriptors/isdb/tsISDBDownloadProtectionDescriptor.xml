@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <ISDB_download_protection_descriptor
+        DL_system_ID="uint8, required"
+        PID="uint13, required"
+        encrypt_protocol_number="uint8, required">
+
+      <encrypt_info>
+        Hexadecimal content
+      </encrypt_info>
+
+    </ISDB_download_protection_descriptor>
+
+  </_descriptors>
+</tsduck>

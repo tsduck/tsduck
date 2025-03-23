@@ -1,0 +1,17 @@
+==== ISDB_download_protection_descriptor
+
+Defined by ARIB in <<ARIB-B61>>.
+
+[source,xml]
+----
+<ISDB_download_protection_descriptor
+    DL_system_ID="uint8, required"
+    PID="uint13, required"
+    encrypt_protocol_number="uint8, required">
+
+  <encrypt_info>
+    Hexadecimal content
+  </encrypt_info>
+
+</ISDB_download_protection_descriptor>
+----

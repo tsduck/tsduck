@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <ISDB_CA_startup_descriptor
+        CA_system_ID="uint16, required"
+        CA_program_ID="uint13, required"
+        load_indicator="uint7, required"
+        second_CA_program_ID="uint13, optional"
+        second_load_indicator="uint7, optional">
+
+      <!-- One per exclusion_CA_program_ID -->
+      <exclusion CA_program_ID="uint13, required"/>
+
+      <load_security_info>
+        Hexadecimal content
+      </load_security_info>
+
+      <private_data>
+        Hexadecimal content
+      </private_data>
+
+    </ISDB_CA_startup_descriptor>
+
+  </_descriptors>
+</tsduck>
