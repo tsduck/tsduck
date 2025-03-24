@@ -480,13 +480,13 @@ TSDuck command line options or default configuration.
   The two branches diverged until a "harmonization committee" was created to limit the conflicts between the two.
 * ISDB reuses some parts of DVB but not all. Each iteration of the standard incorporates more
   DVB descriptors, making it hard to define a stable common subset between DVB and ISDB.
-* While ISDB reuses sections and descriptors ids and syntax, it sometimes redefines the
+* While ISDB reuses DVB table and descriptor ids and syntax, it sometimes redefines the
   semantics of some fields such as character sets or time reference.
 * The semantics of some DVB-defined fields even varies between the variants of ISDB.
   As an example, time values are defined as UTC in DVB. In Japan, ARIB-defined ISDB
   redefines the same fields as JST (Japan Standard Time). In South America, ABNT-defined ISDB-Tb
-  redefines it as UTC-3. In African countries, the field is loosely defined as local time,
-  without more details.
+  redefines it as UTC-3 (UTC minus 3 hours). In African countries, the field is loosely
+  defined as local time, without more details.
 * ISDB even redefines tiny details of the syntax of some DVB descriptors it reuses.
   This is the case for the `satellite_delivery_system_descriptor` for instance.
 
@@ -498,19 +498,23 @@ The problem is that, as this time, all information such as dates and time in TDT
 previously interpreted in the DVB semantics shall be retroactively reinterpreted in the ISDB semantics
 (or the multiple possible ISDB semantics in the case of date and time).
 
-TSDuck tries to dynamically guess the type of standard based on the sections and descriptors it progressively discovers in the stream.
+TSDuck tries to dynamically guess the type of standard based on the sections and descriptors
+it progressively discovers in the stream.
 The list of standards is consequently evolving along the packet processing.
-It usually starts with "MPEG" and may later evolve to "MPEG, DVB" or "MPEG, ATSC" or "MPEG, DVB, SCTE" or "MPEG, DVB, ISDB".
+It usually starts with "MPEG" and may later evolve to "MPEG, DVB" or "MPEG, ATSC" or
+"MPEG, DVB, SCTE" or "MPEG, DVB, ISDB".
 
 Because of this progressive discovery of the standards, it is possible that data structures
 are incorrectly interpreted in the initial phase, before a new standard becomes clear.
 This is especially critical in the case of ISDB where a transport stream is often initially interpreted as a DVB one.
 
-TSDuck defines a few command-line options which can be used to specify the right standards from the beginning (see xref:opt-default-std[xrefstyle=short]).
-Some default options are also available in the user's TSDuck configuration file (see xref:chap-userconfig[xrefstyle=short]).
+TSDuck defines a few command-line options which can be used to specify the right standards
+from the beginning (see xref:opt-default-std[xrefstyle=short]).
+Some default options are also available in the user's TSDuck configuration file
+(see xref:chap-userconfig[xrefstyle=short]).
 
-Also note that the xref:chap-sixmlref[xrefstyle=short] lists the XML format of all tables and descriptors, structured by original
-standards.
+Also note that the xref:chap-sixmlref[xrefstyle=short] lists the XML format of all tables and descriptors,
+structured by original standards.
 
 [#opt-default-std]
 ==== TSDuck options for default standard selection
@@ -737,7 +741,7 @@ Japan such as different semantics for component types.
 *--philippines*
 
 [.optdoc]
-A synonym for --isdb --abnt --time-reference UTC+8.
+A synonym for `--isdb --abnt --time-reference UTC+8`.
 This is a handy shortcut when working on Philippines transport streams.
 
 [.opt]
@@ -752,7 +756,7 @@ These standards reuse DVB-defined SI but change the semantics of the date and ti
 using another time reference.
 
 [.optdoc]
-The specified name can be either UTC (the DVB-defined default), JST (Japan Standard Time)
+The specified name can be either `UTC` (the DVB-defined default), `JST` (Japan Standard Time)
 or `UTC+|-hh[:mm]`.
 
 [.optdoc]
@@ -764,7 +768,7 @@ or `UTC+2:30` (if such reference should be used).
 *--usa*
 
 [.optdoc]
-A synonym for --atsc --hf-band-region usa.
+A synonym for `--atsc --hf-band-region usa`.
 
 [.optdoc]
 This is a handy shortcut when working on North American transport streams.
@@ -778,7 +782,7 @@ Each standard defines its own way of representing characters in tables and descr
 
 [cols="<15,<90",frame=none,grid=none,stripes=none,options="noheader"]
 |===
-|DVB:
+|DVB
 |Each string is encoded using one single character set.
  The default character set is a modified version of ISO-6937.
  For strings which cannot be encoded using ISO-6937, another character set can be selected
@@ -786,14 +790,14 @@ Each standard defines its own way of representing characters in tables and descr
  Since DVB character sets include UTF-8 and UTF-16, all Unicode characters can be eventually represented.
  See <<ETSI-300-468>>, annex A.
 
-|ISDB (ARIB):
+|ISDB (ARIB)
 |Each string is encoded using ARIB STD-B24 (see <<ARIB-B24>> part 2, chapter 7).
  A string may alternate between several character sets, typically Kanji, Hiragana, Katakana and alpha-numerical characters.
  The switching between character sets is performed using control binary sequences.
  While all Japanese characters can be encoded, many European accented character cannot be represented.
  There is no way to encode arbitrary Unicode character in ARIB STD-B24.
 
-|ISDB (ABNT):
+|ISDB (ABNT)
 |There is no standard ABNT-defined representation of strings.
  Each country which adopted the ABNT-defined variant of ISDB uses its own representation.
  For instance, Brazil and other South American countries use ISO-8859-15 while the Philippines use UTF-8.
@@ -801,14 +805,16 @@ Each standard defines its own way of representing characters in tables and descr
  these countries do not use the DVB-defined leading binary sequences which indicate the character set
  and do not allow switching to other character sets.
 
-|ATSC:
+|ATSC
 |Simple strings are encoded in 7-bit ASCII.
  But most strings are encoded using "multiple string structures" where all Unicode characters can be represented.
 
-|XML:
+|XML
 |TSDuck-defined XML files use some predefined non-ambiguous character set as indicated in the first directive.
- This is usually UTF-8. All XML strings are encoded in the same character set.
- It is the responsibility of TSDuck to convert them in the appropriate character set when serializing tables and descriptors.
+ This is usually UTF-8 (and TSDuck currently supports UTF-8 only in XML files).
+ All XML strings are encoded in the same character set.
+ It is the responsibility of TSDuck to convert these strings to the appropriate character set
+ when serializing tables and descriptors.
 
 |===
 
@@ -826,6 +832,22 @@ With DVB and ISDB, there are several types of ambiguities:
   However, some bogus signalization may assume that the default character set is different,
   typically the usual local character table for the region of the operator.
   The non-standard default character table must be specified using an option.
+
+There are also more tricky errors from broadcasters which cannot be easily fixed.
+For instance, when a descriptor is supposed to contain a "string", each binary descriptor
+is supposed to contain a well-formed binary-encoded string.
+To carry long texts, strings from several descriptors can be concatenated when displayed
+on the TV screen (e.g. several _extended_event_descriptor_ in an EIT for display in the EPG).
+Each binary descriptor shall contain a well-formed string and the final text is the
+concatenation of all properly decoded strings.
+
+However, some broadcasters do it the wrong way. They first encode the complete text into the
+appropriate character set and then slice the resulting binary blob into pieces which are stored
+in distinct descriptors. When special binary sequences are used to switch between character sets,
+it becomes possible to have that binary sequence in one descriptor and the end of the binary-encoded
+characters in a subsequent descriptor. The content of that latter descriptor is no longer
+a valid "string" on its own. This behavior has been observed, for instance, with ARIB STD-B24 strings
+in ISDB streams from NHK.
 
 [#opt-charsets]
 ==== TSDuck options for character sets
@@ -857,11 +879,12 @@ This is a handy shortcut when working on South American ISDB-Tb transport stream
 When reading binary sections, this option specifies the default character set to use when
 interpreting strings from tables and descriptors, when there is no initial DVB sequence for
 character table selection. This overrides the DVB defaults and should be used with invalid
-streams which omit the initial DVB sequence for character table selection when using a non-
-default character set.
+streams which omit the initial DVB sequence for character table selection when using a
+non-default character set.
 
 [.optdoc]
-By default, standard DVB encoding is used.
+By default, standard DVB encoding is used and ISO-6937 encoding is assumed in the absence of
+initial sequence for character set selection.
 
 [.optdoc]
 When generating binary sections (from XML or JSON files for instance), this option specifies
@@ -871,7 +894,7 @@ inserted.
 
 [.optdoc]
 By default, TSDuck tries several character sets until one is capable of encoding the string.
-The order of selection is ISO 6937 (DVB default character set), ISO 8859-15 (convenient with most European languages) and UTF-8.
+The order of selection is ISO-6937 (DVB default character set), ISO-8859-15 (convenient with most European languages) and UTF-8.
 Since UTF-8 can encode everything, the string will always be successfully encoded.
 
 [.optdoc]
@@ -922,7 +945,7 @@ This is a handy shortcut when working on Philippines transport streams.
 [#charset-names]
 ==== Character set names
 
-The available table names for option `--default-charset` are:
+The available table names for option `--default-charset` are listed below.
 
 * DVB character sets. The name specifies a standard DVB encoding with a different default character set.
   Without leading table code, the specified character set is used.
@@ -1404,6 +1427,7 @@ An application which needs to analyze the PSI/SI tables which are extracted by s
 can simply parse the extracted XML text.
 Although many tools and libraries exist to parse XML, some developers may prefer to parse JSON rather than XML.
 In that case, TSDuck provides an automated XML-to-JSON conversion.
+The conversion works in both directions and user-generated JSON can be converted to XML.
 
 ===== Conversion rules
 
@@ -1511,6 +1535,7 @@ By default, when there is no XML model, all element attributes are converted as 
 When an attribute in an element contains an integer value but there is no XML model file to tell if this is really an integer,
 force the creation of a JSON number.
 
+[.optdoc]
 By default, when there is no XML model, all element attributes are converted as JSON strings.
 
 [.opt]

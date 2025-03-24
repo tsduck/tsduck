@@ -296,7 +296,7 @@ endif::[]
 
 |integer
 |TSDuck version as one integer value which can be used in scripts to test against minimum required versions.
- Example: "32802466".
+ Example: "34004165" for version 3.40-4165.
 
 |long
 |TSDuck version in long string format. This is the default.
@@ -305,7 +305,7 @@ endif::[]
 |Version of the RIST library.
 
 |short
-|TSDuck version is short format. Example: "3.28-2466".
+|TSDuck version is short format. Example: "3.40-4165".
 
 |srt
 |Version of the SRT library.
@@ -326,22 +326,27 @@ endif::[]
 [source,shell]
 ----
 $ tsp --version=all
-tsp: TSDuck - The MPEG Transport Stream Toolkit - version 3.28-2466
-Built Aug 10 2021 - 23:09:27
-Using GCC 10.3.0, C++ std 2011.03
-System: Ubuntu (Ubuntu 21.04), on Intel x86-64, 64-bit, little-endian, page size:
-4096 bytes
-Bitrate: 64-bit fixed-point with 1 decimals
-Web library: libcurl: 7.74.0, ssl: OpenSSL/1.1.1j, libz: 1.2.11
-SRT library: libsrt version 1.4.2
-Dektec: DTAPI: 5.45.0.172
+tsp: TSDuck - The MPEG Transport Stream Toolkit - version 3.40-4165
+Built Feb 23 2025 - 18:19:04
+Acceleration: CRC32: no
+Bitrate: 64-bit floating-point value
+Compiler: GCC 14.2.0, C++ std 2020.02
+Cryptographic library: OpenSSL 3.3.1 (CPUINFO: OPENSSL_ia32cap=0xfefa3203478bffff:0x8c2529)
+Deflate library: zlib version 1.3.1 (compiled with 1.3.1)
+Dektec: DTAPI: 6.8.0.235
+RIST library: librist version 0.2.10, API version 4.4.0
+SRT library: libsrt version 1.5.3
+System: Ubuntu (Ubuntu 24.10), on Intel x86-64, 64-bit, little-endian, page size: 4096 bytes
+VATek: libvatek version 3.12.10
+Web library: libcurl: 8.9.1, ssl: OpenSSL/3.3.1, libz: 1.3.1
 ----
 
 [#pager-command]
 ==== Using a pager command
 
-Some commands which produce a very verbose output are automatically redirected to a _pager_ command such as `less` or `more`, whichever is available.
-The redirection is performed only when the standard output is a terminal.
+Some commands which produce a very verbose output are automatically redirected to a _pager_ command
+such as `less` or `more`, whichever is available.
+The redirection is performed only when the standard output or standard error is a terminal.
 
 The environment variable `PAGER` can be used to specify an alternate pager command with its parameters.
 
@@ -356,7 +361,7 @@ The syntax is `@filename` where `filename` is a text file containing options and
 
 In the text file, each line must contain exactly one item (option name, option value or parameter).
 
-Sample command:
+*Example*:
 
 [source,shell]
 ----
