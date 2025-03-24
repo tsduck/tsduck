@@ -88,7 +88,7 @@ void ts::ISDBCAStartupDescriptor::deserializePayload(PSIBuffer& buf)
     if (second_load_flag) {
         second_CA_program_ID = buf.getPID();
         buf.skipReservedBits(1);
-        second_load_indicator.emplace(0);
+        second_load_indicator.emplace(uint8_t(0));
         buf.getBits(second_load_indicator.value(), 7);
     }
     exclusion_CA_program_ID.resize(buf.getUInt8());
