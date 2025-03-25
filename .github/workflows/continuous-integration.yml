@@ -40,6 +40,15 @@ on:
   pull_request:
     branches: [master, main]
   workflow_dispatch:
+    inputs:
+      DEBUG:
+        description: 'DEBUG (make variable)'
+        type: string
+        default:
+      VERBOSE:
+        description: 'VERBOSE (make variable)'
+        type: string
+        default:
 
 jobs:
 
@@ -54,7 +63,7 @@ jobs:
         std: [20]
         include:
         - os: ubuntu-24.04
-          make: make
+          make: make DEBUG=${{ inputs.DEBUG }} VERBOSE=${{ inputs.VERBOSE }}
         - os: ubuntu-24.04
           compiler: clang
           llvm: true
@@ -63,7 +72,7 @@ jobs:
           # between steps or even the middle of a step. This breaks the naming scheme
           # of the build directory for binaries. As a consequence, we force BINDIR=bin.
           bindir: bin
-          make: gmake
+          make: gmake DEBUG=${{ inputs.DEBUG }} VERBOSE=${{ inputs.VERBOSE }}
         exclude:
         - os: macos-latest
           compiler: gcc

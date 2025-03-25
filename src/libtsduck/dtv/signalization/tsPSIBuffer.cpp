@@ -314,7 +314,7 @@ bool ts::PSIBuffer::putDescriptorList(const DescriptorList& descs, size_t start,
     }
     else {
         // Write all descriptors (they should fit).
-        const size_t next = putPartialDescriptorList(descs, start, count);
+        [[maybe_unused]] const size_t next = putPartialDescriptorList(descs, start, count);
         assert(next == start + count);
         return true;
     }
@@ -340,7 +340,7 @@ size_t ts::PSIBuffer::putPartialDescriptorList(const DescriptorList& descs, size
 
     // Serialize as many descriptors as we can.
     while (start < last && descs[start].size() <= remainingWriteBytes()) {
-        const size_t written = putBytes(descs[start].content(), descs[start].size());
+        [[maybe_unused]] const size_t written = putBytes(descs[start].content(), descs[start].size());
         assert(written == descs[start].size());
         start++;
     }

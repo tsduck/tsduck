@@ -618,7 +618,7 @@ void ts::SpliceInjectPlugin::provideSection(SectionCounter counter, SectionPtr& 
         // drop the command and loop on next command from the queue.
         if (cmd->last_pts != INVALID_PTS && SequencedPTS(cmd->last_pts, _last_pts)) {
             CommandPtr cmd2;
-            const bool dequeued = _queue.dequeue(cmd2, cn::milliseconds::zero());
+            [[maybe_unused]] const bool dequeued = _queue.dequeue(cmd2, cn::milliseconds::zero());
             assert(dequeued);
             assert(cmd2 == cmd);
             verbose(u"dropping %s, obsolete, current PTS: 0x%09X", *cmd2, _last_pts);
@@ -631,7 +631,7 @@ void ts::SpliceInjectPlugin::provideSection(SectionCounter counter, SectionPtr& 
 
             // We must process this command, remove it from the queue.
             CommandPtr cmd2;
-            const bool dequeued = _queue.dequeue(cmd2, cn::milliseconds::zero());
+            [[maybe_unused]] const bool dequeued = _queue.dequeue(cmd2, cn::milliseconds::zero());
             assert(dequeued);
             assert(cmd2 == cmd);
 
