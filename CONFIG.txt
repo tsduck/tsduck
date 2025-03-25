@@ -46,6 +46,7 @@ CPPFLAGS_EXTRA    # Additional user-specified preprocessor flags.
 LDFLAGS_EXTRA     # Additional user-specified linker flags.
 ARFLAGS_EXTRA     # Additional user-specified archiver flags.
 LDLIBS_EXTRA      # Additional user-specified libraries.
+ASSERTIONS        # Keep assertions in release mode (assertions are always on in debug mode).
 DEBUG             # Compile with debug information and no optimization.
 GPROF             # Compile with code profiling using gprof.
 GCOV              # Compile with code coverage using gcov.
