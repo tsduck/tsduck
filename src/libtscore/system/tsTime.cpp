@@ -40,13 +40,13 @@ const ts::Time ts::Time::UnixEpoch
 // This constant is: Julian epoch - Time epoch.
 // The Julian epoch is 17 Nov 1858 00:00:00.
 // If negative, the Julian epoch cannot be represented as a Time.
-const cn::milliseconds ts::Time::JulianEpochOffset =
+const cn::milliseconds ts::Time::JulianEpochOffset
 #if defined(TS_WINDOWS)
     // Windows epoch is 1 Jan 1601 00:00:00, 94187 days before Julian epoch.
-    cn::milliseconds(94187 * MS_PER_DAY);
+    (94187 * MS_PER_DAY);
 #elif defined(TS_UNIX)
     // UNIX epoch is 1 Jan 1970 00:00:00, 40587 days after Julian epoch
-    cn::milliseconds(-40587 * MS_PER_DAY);
+    (-40587 * MS_PER_DAY);
 #else
     #error "unsupported operating system"
 #endif
