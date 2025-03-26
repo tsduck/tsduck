@@ -725,6 +725,14 @@ namespace ts {
             1000;
 #endif
 
+        // Epoch year (assuming that all systems start time on Jan 1st that year).
+        static constexpr int EPOCH_YEAR =
+#if defined(TS_WINDOWS)
+            1601;
+#else
+            1970;
+#endif
+
         // Number of clock ticks per day.
         static constexpr int64_t MS_PER_DAY = 1000 * 3600 * 24;
         static constexpr int64_t TICKS_PER_DAY = TICKS_PER_MS * MS_PER_DAY;

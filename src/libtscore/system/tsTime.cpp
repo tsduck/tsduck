@@ -125,18 +125,17 @@ bool ts::Time::IsLeapYear(int year)
 
 bool ts::Time::Fields::isValid() const
 {
-    // Number of days per month.
+    // Number of days per month. Non-leap years are separately checked.
     static const int dpm[12] = {31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 
-    // We don't accept pre-UNIX years to make sure it works everywhere.
-    return year >= 1970 &&
-        month >= 1 && month <= 12 &&
-        day >= 1 && day <= dpm[month - 1] &&
-        (month != 2 || IsLeapYear(year) || day <= 28) &&
-        hour >= 0 && hour <= 23 &&
-        minute >= 0 && minute <= 59 &&
-        second >= 0 && second <= 59 &&
-        millisecond >= 0 && millisecond <= 999;
+    return year >= EPOCH_YEAR &&
+           month >= 1 && month <= 12 &&
+           day >= 1 && day <= dpm[month - 1] &&
+           (month != 2 || IsLeapYear(year) || day <= 28) &&
+           hour >= 0 && hour <= 23 &&
+           minute >= 0 && minute <= 59 &&
+           second >= 0 && second <= 59 &&
+           millisecond >= 0 && millisecond <= 999;
 }
 
 

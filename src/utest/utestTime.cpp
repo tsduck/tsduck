@@ -173,7 +173,7 @@ TSUNIT_DEFINE_TEST(FieldsValid)
     TSUNIT_ASSERT(ts::Time::Fields(1996, 2, 29, 0, 0, 0, 0).isValid());
     TSUNIT_ASSERT(ts::Time::Fields(2000, 2, 29, 0, 0, 0, 0).isValid());
     TSUNIT_ASSERT(!ts::Time::Fields(2100, 2, 29, 0, 0, 0, 0).isValid());
-    TSUNIT_ASSERT(!ts::Time::Fields(1960, 8, 24, 10, 25, 12, 100).isValid());
+    TSUNIT_ASSERT(!ts::Time::Fields(ts::Time::Fields(ts::Time::Epoch).year - 1, 1, 1, 10, 25, 12, 100).isValid());
     TSUNIT_ASSERT(!ts::Time::Fields(2012, 13, 24, 10, 25, 12, 100).isValid());
     TSUNIT_ASSERT(!ts::Time::Fields(2012, 4, 31, 10, 25, 12, 100).isValid());
     TSUNIT_ASSERT(!ts::Time::Fields(2012, 8, 24, 24, 25, 12, 100).isValid());
@@ -229,6 +229,11 @@ TSUNIT_DEFINE_TEST(Decode)
 TSUNIT_DEFINE_TEST(Epoch)
 {
     TSUNIT_EQUAL(u"1970/01/01 00:00:00.000", ts::Time::UnixEpoch.format());
+
+    debug() << "TimeTest: Epoch:            " << ts::Time::Epoch << std::endl;
+    debug() << "TimeTest: Epoch + 1ms:      " << (ts::Time::Epoch + cn::milliseconds(1)) << std::endl;
+    debug() << "TimeTest: Apocalypse - 1ms: " << (ts::Time::Apocalypse - cn::milliseconds(1)) << std::endl;
+    debug() << "TimeTest: Apocalypse:       " << ts::Time::Apocalypse << std::endl;
 }
 
 TSUNIT_DEFINE_TEST(UnixTime)
@@ -430,6 +435,8 @@ TSUNIT_DEFINE_TEST(MJD)
     // Limit values after March 2025 trick to extend dates after 2038.
     // UNIX systems cannot represent dates before 1970.
     if (ts::Time::JulianEpochOffset >= cn::milliseconds::zero()) {
+        debug() << "TimeTest::MJD: testing lower limit in 1948" << std::endl;
+
         ts::PutUInt40(mjd, 0x8000'000000);
         TSUNIT_ASSERT(ts::DecodeMJD(mjd, ts::MJD_FULL, time));
         TSUNIT_EQUAL(u"1948/08/05 00:00:00.000", time.format());
