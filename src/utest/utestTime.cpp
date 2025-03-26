@@ -12,6 +12,8 @@
 
 #include "tsTime.h"
 #include "tsCASDate.h"
+#include "tsMJD.h"
+#include "tsByteBlock.h"
 #include "tsunit.h"
 
 
@@ -33,6 +35,7 @@ class TimeTest: public tsunit::Test
     TSUNIT_DECLARE_TEST(UnixTime);
     TSUNIT_DECLARE_TEST(DaylightSavingTime);
     TSUNIT_DECLARE_TEST(CAS);
+    TSUNIT_DECLARE_TEST(MJD);
     TSUNIT_DECLARE_TEST(JST);
     TSUNIT_DECLARE_TEST(LeapSeconds);
 };
@@ -395,6 +398,78 @@ TSUNIT_DEFINE_TEST(CAS)
 
     md.invalidate();
     TSUNIT_ASSERT(!md.isValid());
+}
+
+TSUNIT_DEFINE_TEST(MJD)
+{
+    TSUNIT_EQUAL(5, ts::MJDSize(ts::MJD_FULL));
+    TSUNIT_EQUAL(2, ts::MJDSize(ts::MJD_DATE));
+
+    ts::Time time;
+    uint8_t mjd[5];
+    uint8_t out[6];
+
+    // Standard example from DVB specs.
+    ts::PutUInt40(mjd, 0xC079'124527);
+    TSUNIT_ASSERT(ts::DecodeMJD(mjd, ts::MJD_FULL, time));
+    TSUNIT_EQUAL(u"1993/10/13 12:45:27.000", time.format());
+
+    TSUNIT_ASSERT(ts::DecodeMJD(mjd, ts::MJD_DATE, time));
+    TSUNIT_EQUAL(u"1993/10/13 00:00:00.000", time.format());
+
+    ::memset(out, 0xA5, sizeof(out));
+    TSUNIT_ASSERT(ts::EncodeMJD(ts::Time(1993, 10, 13, 12, 45, 27), out, ts::MJD_FULL));
+    TSUNIT_EQUAL(0xC079'124527, ts::GetUInt40(out));
+    TSUNIT_EQUAL(0xA5, out[5]); // detect overflow
+
+    ::memset(out, 0xA5, sizeof(out));
+    TSUNIT_ASSERT(ts::EncodeMJD(ts::Time(1993, 10, 13, 12, 45, 27), out, ts::MJD_DATE));
+    TSUNIT_EQUAL(0xC079, ts::GetUInt16(out));
+    TSUNIT_EQUAL(0xA5, out[2]); // detect overflow
+
+    // Limit values after March 2025 trick to extend dates after 2038.
+    // UNIX systems cannot represent dates before 1970.
+    if (ts::Time::JulianEpochOffset >= cn::milliseconds::zero()) {
+        ts::PutUInt40(mjd, 0x8000'000000);
+        TSUNIT_ASSERT(ts::DecodeMJD(mjd, ts::MJD_FULL, time));
+        TSUNIT_EQUAL(u"1948/08/05 00:00:00.000", time.format());
+
+        TSUNIT_ASSERT(!ts::EncodeMJD(ts::Time(1948, 8, 4, 10, 11, 12), out, ts::MJD_FULL));
+
+        ::memset(out, 0xA5, sizeof(out));
+        TSUNIT_ASSERT(ts::EncodeMJD(ts::Time(1948, 8, 5, 10, 11, 12), out, ts::MJD_FULL));
+        TSUNIT_EQUAL(0x8000'101112, ts::GetUInt40(out));
+        TSUNIT_EQUAL(0xA5, out[5]); // detect overflow
+    }
+
+    ts::PutUInt40(mjd, 0xFFFF'000000);
+    TSUNIT_ASSERT(ts::DecodeMJD(mjd, ts::MJD_FULL, time));
+    TSUNIT_EQUAL(u"2038/04/22 00:00:00.000", time.format());
+
+    ::memset(out, 0xA5, sizeof(out));
+    TSUNIT_ASSERT(ts::EncodeMJD(ts::Time(2038, 4, 22, 10, 11, 12), out, ts::MJD_FULL));
+    TSUNIT_EQUAL(0xFFFF'101112, ts::GetUInt40(out));
+    TSUNIT_EQUAL(0xA5, out[5]); // detect overflow
+
+    ts::PutUInt40(mjd, 0x0000'000000);
+    TSUNIT_ASSERT(ts::DecodeMJD(mjd, ts::MJD_FULL, time));
+    TSUNIT_EQUAL(u"2038/04/23 00:00:00.000", time.format());
+
+    ::memset(out, 0xA5, sizeof(out));
+    TSUNIT_ASSERT(ts::EncodeMJD(ts::Time(2038, 4, 23, 10, 11, 12), out, ts::MJD_FULL));
+    TSUNIT_EQUAL(0x0000'101112, ts::GetUInt40(out));
+    TSUNIT_EQUAL(0xA5, out[5]); // detect overflow
+
+    ts::PutUInt40(mjd, 0x7FFF'000000);
+    TSUNIT_ASSERT(ts::DecodeMJD(mjd, ts::MJD_FULL, time));
+    TSUNIT_EQUAL(u"2128/01/09 00:00:00.000", time.format());
+
+    ::memset(out, 0xA5, sizeof(out));
+    TSUNIT_ASSERT(ts::EncodeMJD(ts::Time(2128, 1, 9, 10, 11, 12), out, ts::MJD_FULL));
+    TSUNIT_EQUAL(0x7FFF'101112, ts::GetUInt40(out));
+    TSUNIT_EQUAL(0xA5, out[5]); // detect overflow
+
+    TSUNIT_ASSERT(!ts::EncodeMJD(ts::Time(2128, 1, 10, 10, 11, 12), out, ts::MJD_FULL));
 }
 
 TSUNIT_DEFINE_TEST(JST)

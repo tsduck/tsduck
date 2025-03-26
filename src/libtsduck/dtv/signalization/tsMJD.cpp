@@ -5,6 +5,16 @@
 // BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
+//
+// The representation of a DVB date is a 16-bit number of days since the
+// origin of the Modified Julian Dates, 17 Nov 1858. The maximum value 0xFFFF
+// represents 22 Apr 2038. On March 2025, with this fatal date approaching,
+// it has been decided to extend the representation up to year 2128.
+//
+// If the most significant bit of the 16-bit value is zero, then the actual
+// MJD is wrapped after 0x10000.
+//
+//----------------------------------------------------------------------------
 
 #include "tsMJD.h"
 #include "tsBCD.h"
@@ -27,17 +37,24 @@ bool ts::DecodeMJD(const uint8_t* mjd, MJDFormat mjd_fmt, Time& time)
     }
 
     // Get day since MJD epoch.
-    const cn::days::rep day = cn::days::rep(GetUInt16(mjd));
-    bool valid = day != 0xFFFF; // Often used as invalid date.
+    cn::days::rep day = cn::days::rep(GetUInt16(mjd));
+
+    // Trick to use MJD dates after 22 Apr 2038.
+    if (day < 0x8000) {
+        day += 0x1'0000;
+    }
 
     // Compute milliseconds since MJD epoch
     cn::milliseconds mjd_ms = cn::duration_cast<cn::milliseconds>(cn::days(day));
-    if (valid && mjd_fmt == MJD_FULL) {
-        valid = IsValidBCD(mjd[2]) && IsValidBCD(mjd[3]) && IsValidBCD(mjd[4]);
-        mjd_ms += cn::hours(DecodeBCD(mjd[2])) + cn::minutes(DecodeBCD(mjd[3])) + cn::seconds(DecodeBCD(mjd[4]));
-    }
-    if (!valid) {
-        return false;
+    if (mjd_fmt == MJD_FULL) {
+        if (IsValidBCD(mjd[2]) && IsValidBCD(mjd[3]) && IsValidBCD(mjd[4])) {
+            mjd_ms += cn::hours(DecodeBCD(mjd[2])) + cn::minutes(DecodeBCD(mjd[3])) + cn::seconds(DecodeBCD(mjd[4]));
+        }
+        else {
+            // Invalid BCD representation of hh::mm:ss. The typical use case is a date
+            // field with all bits set to 1, meaning "unspecified date".
+            return false;
+        }
     }
 
     // Rebuild time depending on MJD and Time epoch
@@ -78,8 +95,9 @@ bool ts::EncodeMJD(const Time& time, uint8_t* mjd, MJDFormat mjd_fmt)
     const cn::seconds::rep secs = cn::duration_cast<cn::seconds>(time_sec - Time::JulianEpochOffset).count();
     const cn::seconds::rep days = secs / (24 * 3600);
 
-    // Cannot represent dates later than MJD max (day count on 16 bits).
-    if (days > 0xFFFF) {
+    // Trick to use MJD dates after 22 Apr 2038 : days must be in range 0x8000 to 0x17FFF.
+    // The actual 16-bit value is the 16 lsb of days.
+    if (days < 0x8000 || days > 0x1'7FFF) {
         MemZero(mjd, MJDSize(mjd_fmt));
         return false;
     }

@@ -30,12 +30,8 @@ namespace ts {
     //! and Binary Coded Decimal (BCD) for the time. The full version, date and time, uses
     //! 5 bytes. The short version, date only, uses 2 bytes.
     //!
-    //! Because the original DVB format reaches its upper limit in April 2038, it is
-    //! expected that future enhanced formats will be defined. Currently, only the
-    //! original full and short formats are defined.
-    //!
     //! Implementation guidelines: when new formats are defined, make sure to define
-    //! values which, modulo 10, are equel to the corresponding storage size. If new
+    //! values which, modulo 10, are equal to the corresponding storage size. If new
     //! formats introduce variable sizes, then reimplement the function MJDSize();
     //!
     enum MJDFormat {
@@ -64,7 +60,7 @@ namespace ts {
     //! @param [in] time Input time.
     //! @param [out] mjd Address of a writeable 2-to-5 bytes area.
     //! @param [in] fmt Format of the MJD in the @a mjd area.
-    //! @return True on success, false in case of error.
+    //! @return True on success, false in case of error (typically out of range date).
     //!
     TSDUCKDLL bool EncodeMJD(const Time& time, uint8_t* mjd, MJDFormat fmt);
 }
