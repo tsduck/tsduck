@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <ATSC_module_link_descriptor
+        position="uint8, required"
+        module_id="uint16, required"/>
+
+  </_descriptors>
+</tsduck>

@@ -1,0 +1,5 @@
+[ATSC_group_link_descriptor.position]
+Bits = 8
+0 = first group
+1 = intermediate group
+2 = last group

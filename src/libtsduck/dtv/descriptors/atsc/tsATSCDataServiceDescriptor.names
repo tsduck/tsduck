@@ -1,0 +1,20 @@
+[ATSC_data_service_descriptor.profile]
+Bits = 8
+0x00 = Reserved
+0x01 = ATSC Data Broadcast Service Profile G1
+0x02 = ATSC Data Broadcast Service Profile G2
+0x03 = ATSC Data Broadcast Service Profile G3
+0x04 = ATSC Data Broadcast Service Profile A1
+0x05-0xFF = Reserved
+
+[ATSC_data_service_descriptor.level]
+Bits = 8
+0x00 = No synchronized stream in service
+0x01 = Data Service Level 1, DBESn = 120120 bytes
+0x02-0x03 = Reserved
+0x04 = Data Service Level 4, DBESn = 480480 bytes
+0x05-0x0F = Reserved
+0x10 = Data Service Level 16, DBESn = 1921920 bytes
+0x11-0x3F = Reserved
+0x40 = Data Service Level 64, DBESn = 7687680 bytes
+0x41-0xFF = Reserved

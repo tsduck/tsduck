@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <ATSC_data_service_descriptor
+        data_service_profile="uint8, required"
+        data_service_level="uint8, required">
+      <private_data>
+        Hexadecimal content
+      </private_data>
+    </ATSC_data_service_descriptor>
+
+  </_descriptors>
+</tsduck>

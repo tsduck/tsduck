@@ -1,0 +1,12 @@
+==== ATSC_multiprotocol_encapsulation_descriptor
+
+Defined by ATSC in <<ATSC-A90>>.
+
+[source,xml]
+----
+<ATSC_multiprotocol_encapsulation_descriptor
+    deviceId_address_range="uint3, default=6"
+    deviceId_IP_mapping_flag="bool, default=true"
+    alignment_indicator="bool, default=false"
+    max_sections_per_datagram="uint8, default=1"/>
+----

@@ -1,4 +1,4 @@
-==== time_shifted_service_descriptor
+==== ATSC_time_shifted_service_descriptor
 
 Defined by ATSC in <<ATSC-A65>>.
 

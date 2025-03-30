@@ -1,0 +1,11 @@
+==== ATSC_download_descriptor
+
+Defined by ATSC in <<ATSC-A90>>.
+
+[source,xml]
+----
+<ATSC_download_descriptor
+    download_id="uint32, required"
+    carousel_period="uint32, default=0"
+    control_msg_time_out_value="uint32, default=0"/>
+----

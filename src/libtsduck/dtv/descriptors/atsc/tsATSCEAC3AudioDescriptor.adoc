@@ -1,4 +1,4 @@
-==== EAC3_audio_descriptor
+==== ATSC_EAC3_audio_descriptor
 
 Defined by ATSC in <<ATSC-A52>>.
 

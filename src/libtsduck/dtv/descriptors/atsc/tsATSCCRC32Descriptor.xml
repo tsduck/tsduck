@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <ATSC_CRC32_descriptor CRC_32="uint32, required"/>
+
+  </_descriptors>
+</tsduck>

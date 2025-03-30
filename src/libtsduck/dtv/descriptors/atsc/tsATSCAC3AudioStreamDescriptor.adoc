@@ -1,4 +1,4 @@
-==== AC3_audio_stream_descriptor
+==== ATSC_AC3_audio_stream_descriptor
 
 Defined by ATSC in <<ATSC-A52>>.
 

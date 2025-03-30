@@ -1,0 +1,10 @@
+==== ATSC_PID_count_descriptor
+
+Defined by ATSC in <<ATSC-A90>>.
+
+[source,xml]
+----
+<ATSC_PID_count_descriptor
+    total_number_of_PIDs="uint13, default=0"
+    min_number_of_PIDs="uint13, default=0"/>
+----

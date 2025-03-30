@@ -1,0 +1,10 @@
+==== ATSC_group_link_descriptor
+
+Defined by ATSC in <<ATSC-A90>>.
+
+[source,xml]
+----
+<ATSC_group_link_descriptor
+    position="uint8, required"
+    group_id="uint32, required"/>
+----

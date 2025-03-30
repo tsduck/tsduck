@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <ATSC_multiprotocol_encapsulation_descriptor
+        deviceId_address_range="uint3, default=6"
+        deviceId_IP_mapping_flag="bool, default=true"
+        alignment_indicator="bool, default=false"
+        max_sections_per_datagram="uint8, default=1"/>
+
+  </_descriptors>
+</tsduck>

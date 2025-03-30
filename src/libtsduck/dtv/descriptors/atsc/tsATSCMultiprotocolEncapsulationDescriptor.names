@@ -1,0 +1,10 @@
+[ATSC_multiprotocol_encapsulation_descriptor.address_range]
+Bits = 3
+0x00 = unspecified
+0x01 = deviceId[7..0]
+0x02 = deviceId[15..0]
+0x03 = deviceId[23..0]
+0x04 = deviceId[31..0]
+0x05 = deviceId[39..0]
+0x06 = deviceId[47..0]
+0x07 = reserved

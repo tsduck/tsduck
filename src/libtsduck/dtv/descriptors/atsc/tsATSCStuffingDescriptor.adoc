@@ -1,4 +1,4 @@
-==== stuffing_descriptor
+==== ATSC_stuffing_descriptor
 
 Defined by ATSC in <<ATSC-A65>>.
 

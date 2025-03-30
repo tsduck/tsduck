@@ -1,0 +1,5 @@
+[ATSC_module_link_descriptor.position]
+Bits = 8
+0 = first module
+1 = intermediate module
+2 = last module

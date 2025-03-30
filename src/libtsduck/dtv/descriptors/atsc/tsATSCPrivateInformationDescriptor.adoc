@@ -1,0 +1,12 @@
+==== ATSC_private_information_descriptor
+
+Defined by ATSC in <<ATSC-A53-3>>.
+
+[source,xml]
+----
+<ATSC_private_information_descriptor format_identifier="uint32, required">
+  <private_data>
+    Hexadecimal content (optional element)
+  </private_data>
+</ATSC_private_information_descriptor>
+----

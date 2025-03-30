@@ -1,0 +1,8 @@
+==== ATSC_CRC32_descriptor
+
+Defined by ATSC in <<ATSC-A90>>.
+
+[source,xml]
+----
+<ATSC_CRC32_descriptor CRC_32="uint32, required"/>
+----

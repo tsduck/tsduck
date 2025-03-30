@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <ATSC_PID_count_descriptor
+        total_number_of_PIDs="uint13, default=0"
+        min_number_of_PIDs="uint13, default=0"/>
+
+  </_descriptors>
+</tsduck>
