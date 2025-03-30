@@ -171,6 +171,9 @@ namespace ts {
         TID_LTST          = 0xD2, //!< Table id for Long Term Service Table (ATSC A/90)
         TID_DCCT          = 0xD3, //!< Table id for Directed Channel Change Table (ATSC)
         TID_DCCSCT        = 0xD4, //!< Table id for Directed Channel Change Selection Code Table (ATSC)
+        TID_AEIT          = 0xD6, //!< Table id for Aggregate Event Information Table (ATSC A/81)
+        TID_AETT          = 0xD7, //!< Table id for Aggregate Extended Text Table (ATSC A/81)
+        TID_SVCT          = 0xDA, //!< Table id for Satellite Virtual Channel Table (ATSC A/81)
 
         // Valid in SCTE context:
 

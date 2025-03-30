@@ -1,0 +1,12 @@
+==== ATSC_parameterized_service_descriptor
+
+Defined by ATSC in <<ATSC-A71>>.
+
+[source,xml]
+----
+<ATSC_parameterized_service_descriptor application_tag="uint8, required">
+  <application_data>
+    Hexadecimal content
+  </application_data>
+</ATSC_parameterized_service_descriptor>
+----

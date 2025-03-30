@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <ATSC_parameterized_service_descriptor application_tag="uint8, required">
+      <application_data>
+        Hexadecimal content
+      </application_data>
+    </ATSC_parameterized_service_descriptor>
+
+  </_descriptors>
+</tsduck>

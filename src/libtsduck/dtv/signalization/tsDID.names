@@ -596,6 +596,7 @@ Extended = true
 0x0008_00_FFFFFFFF_85 = ATSC Program Identifier
 0x0008_00_FFFFFFFF_86 = ATSC Caption Service
 0x0008_00_FFFFFFFF_87 = ATSC Content Advisory
+0x0008_00_FFFFFFFF_8D = ATSC Parameterized Service
 0x0008_00_FFFFFFFF_A0 = ATSC Extended Channel Name
 0x0008_00_FFFFFFFF_A1 = ATSC Service Location
 0x0008_00_FFFFFFFF_A2 = ATSC Time-Shifted Service
@@ -612,6 +613,7 @@ Extended = true
 0x0008_00_FFFFFFFF_B4 = ATSC Module Link
 0x0008_00_FFFFFFFF_B5 = ATSC CRC32
 0x0008_00_FFFFFFFF_B8 = ATSC Group Link
+0x0008_00_FFFFFFFF_BB = ATSC Component List
 0x0008_00_FFFFFFFF_CC = ATSC E-AC-3 Audio Stream
 #
 # ISDB-defined regular descriptors.

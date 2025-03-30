@@ -1,0 +1,17 @@
+==== ATSC_component_list_descriptor
+
+Defined by ATSC in <<ATSC-A71>>.
+
+[source,xml]
+----
+<ATSC_component_list_descriptor alternate="bool, required">
+
+  <!-- One per component -->
+  <component stream_type="uint8, required" format_identifier="uint32, required">
+    <stream_info>
+      Hexadecimal content
+    </stream_info>
+  </component>
+
+</ATSC_component_list_descriptor>
+----

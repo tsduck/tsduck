@@ -89,7 +89,10 @@ Extended = true
 0x0008_00_D2 = LTST (ATSC A/90)
 0x0008_00_D3 = DCCT (ATSC)
 0x0008_00_D4 = DCCSCT (ATSC)
+0x0008_00_D6 = AEIT (ATSC)
+0x0008_00_D7 = AETT (ATSC)
 0x0008_00_D8 = Cable Emergency Alert (ATSC)
+0x0008_00_DA = SVCT (ATSC)
 #
 # ISDB-defined tables:
 #

@@ -404,6 +404,7 @@ namespace ts {
         DID_ATSC_CAPTION        = 0x86,  //!< DID for ATSC caption_service_descriptor
         DID_ATSC_CONTENT_ADVIS  = 0x87,  //!< DID for ATSC content_advisory_descriptor
         DID_CUE_IDENTIFIER      = 0x8A,  //!< DID for SCTE 35 cue_identifier_descriptor
+        DID_ATSC_PARAM_SERVICE  = 0x8D,  //!< DID for ATSC parameterized_service_descriptor (A/71)
         DID_ATSC_EXT_CHAN_NAME  = 0xA0,  //!< DID for ATSC extended_channel_name_descriptor
         DID_ATSC_SERVICE_LOC    = 0xA1,  //!< DID for ATSC service_location_descriptor
         DID_ATSC_TIME_SHIFT     = 0xA2,  //!< DID for ATSC time_shifted_event_descriptor
@@ -420,6 +421,7 @@ namespace ts {
         DID_ATSC_MODULE_LINK    = 0xB4,  //!< DID for ATSC module_link_descriptor
         DID_ATSC_CRC32          = 0xB5,  //!< DID for ATSC CRC32_descriptor
         DID_ATSC_GROUP_LINK     = 0xB8,  //!< DID for ATSC group_link_descriptor
+        DID_ATSC_COMPONENT_LIST = 0xBB,  //!< DID for ATSC component_list_descriptor (A/71)
         DID_ATSC_ENHANCED_AC3   = 0xCC,  //!< DID for ATSC E-AC-3_audio_stream_descriptor
 
         // Valid in SCTE EAS (Emergency Alert System, SCTE 18).
