@@ -498,7 +498,7 @@ void ts::SpliceInformationTable::DisplaySection(TablesDisplay& disp, const ts::S
             }
 
             // Splice descriptors.
-            DescriptorContext context(disp.duck(), section.tableId(), section.definingStandards());
+            DescriptorContext context(disp.duck(), section.tableId(), section.definingStandards(disp.duck().standards()));
             disp.displayDescriptorListWithLength(section, context, true, buf, margin, UString(), UString(), 16);
         }
     }

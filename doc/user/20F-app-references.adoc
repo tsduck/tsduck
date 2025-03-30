@@ -218,10 +218,14 @@
   "Receiver for Advanced Wide Band Digital Satellite Broadcasting".
 * [[[ATSC-A52]]] ATSC A52, January 2018,
   "Digital Audio Compression (AC-3, E-AC-3)".
+* [[[ATSC-A53-3]]] ATSC A/53 Part 3, February 2023
+  "ATSC Standard: Service Multiplex and Transport Subsystem Characteristics".
 * [[[ATSC-A65]]] ATSC A65/2013, August 2013:
   "ATSC Standard: Program and System Information Protocol for Terrestrial Broadcast and Cable".
 * [[[ATSC-A69]]] ATSC A69/2009, December 2009:
   "ATSC Recommended Practice: Program and System Information Protocol Implementation Guidelines for Broadcasters".
+* [[[ATSC-A90]]] ATSC A/90, October 2013
+  "ATSC Data Broadcast Standard".
 * [[[AVS-TAI-109.6]]] Audio Video coding Standard Workgroup of China, T/AI 109.6-2022:
   "Information Technology - Intelligent Media Coding (AVS3) Part 6: Intelligent Media Format"
 * [[[AVS-TAI-109.7]]] Audio Video coding Standard Workgroup of China, T/AI 109.7:

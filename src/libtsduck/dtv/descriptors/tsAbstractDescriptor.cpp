@@ -33,7 +33,7 @@ ts::AbstractDescriptor::~AbstractDescriptor()
 // Inherited methods.
 //----------------------------------------------------------------------------
 
-ts::Standards ts::AbstractDescriptor::definingStandards() const
+ts::Standards ts::AbstractDescriptor::definingStandards(Standards current_standards) const
 {
     return _edid.standards();
 }

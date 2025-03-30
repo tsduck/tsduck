@@ -57,7 +57,7 @@ ts::AbstractSignalization::~AbstractSignalization()
 // Implementation of AbstractDefinedByStandards.
 //----------------------------------------------------------------------------
 
-ts::Standards ts::AbstractSignalization::definingStandards() const
+ts::Standards ts::AbstractSignalization::definingStandards(Standards current_standards) const
 {
     return _standards;
 }

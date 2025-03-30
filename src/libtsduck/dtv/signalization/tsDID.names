@@ -600,7 +600,7 @@ Extended = true
 0x0008_00_FFFFFFFF_A1 = ATSC Service Location
 0x0008_00_FFFFFFFF_A2 = ATSC Time-Shifted Service
 0x0008_00_FFFFFFFF_A3 = ATSC Component Name
-0x0008_00_FFFFFFFF_A4 = ATSC Data Broadcast
+0x0008_00_FFFFFFFF_A4 = ATSC Data Service
 0x0008_00_FFFFFFFF_A5 = ATSC PID Count
 0x0008_00_FFFFFFFF_A6 = ATSC Download
 0x0008_00_FFFFFFFF_A7 = ATSC Multiprotocol Encapsulation
@@ -609,6 +609,9 @@ Extended = true
 0x0008_00_FFFFFFFF_AA = ATSC Redistribution Control
 0x0008_00_FFFFFFFF_AB = ATSC Genre
 0x0008_00_FFFFFFFF_AD = ATSC Private Information
+0x0008_00_FFFFFFFF_B4 = ATSC Module Link
+0x0008_00_FFFFFFFF_B5 = ATSC CRC32
+0x0008_00_FFFFFFFF_B8 = ATSC Group Link
 0x0008_00_FFFFFFFF_CC = ATSC E-AC-3 Audio Stream
 #
 # ISDB-defined regular descriptors.

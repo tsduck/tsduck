@@ -575,7 +575,7 @@ void ts::TablesLogger::handleTable(SectionDemux& demux, const BinaryTable& table
     const CASID cas = _cas_mapper.casId(table.sourcePID());
 
     // Accumulate standards.
-    _duck.addStandards(table.definingStandards());
+    _duck.addStandards(table.definingStandards(_duck.standards()));
 
     // Ignore table if not to be filtered. Keep the table if at least one section shall be kept.
     bool keep = false;
@@ -713,7 +713,7 @@ void ts::TablesLogger::handleSection(SectionDemux& demux, const Section& section
     const CASID cas = _cas_mapper.casId(section.sourcePID());
 
     // Accumulate standards.
-    _duck.addStandards(section.definingStandards());
+    _duck.addStandards(section.definingStandards(_duck.standards()));
 
     // With option --all-once, track duplicate PID/TID/TDIext/secnum/version.
     if (_all_once) {

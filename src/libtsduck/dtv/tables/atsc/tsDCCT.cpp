@@ -232,7 +232,7 @@ void ts::DCCT::DisplaySection(TablesDisplay& disp, const ts::Section& section, P
         disp << margin << UString::Format(u"Protocol version: %d", buf.getUInt8());
         disp << UString::Format(u", number of DCC tests: %d", dcc_test_count = buf.getUInt8()) << std::endl;
 
-        DescriptorContext context(disp.duck(), section.tableId(), section.definingStandards());
+        DescriptorContext context(disp.duck(), section.tableId(), section.definingStandards(disp.duck().standards()));
 
         // Loop on all upper-level definitions.
         while (buf.canReadBytes(15) && dcc_test_count-- > 0) {

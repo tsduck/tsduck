@@ -109,7 +109,7 @@ void ts::ITT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 void ts::ITT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
     disp << margin << UString::Format(u"Event id: %n", section.tableIdExtension()) << std::endl;
-    DescriptorContext context(disp.duck(), section.tableId(), section.definingStandards());
+    DescriptorContext context(disp.duck(), section.tableId(), section.definingStandards(disp.duck().standards()));
     disp.displayDescriptorListWithLength(section, context, true, buf, margin);
 }
 

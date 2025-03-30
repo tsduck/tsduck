@@ -442,7 +442,7 @@ void ts::EIT::Fix(BinaryTable& table, FixMode mode)
 
 void ts::EIT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    DescriptorContext context(disp.duck(), section.tableId(), section.definingStandards());
+    DescriptorContext context(disp.duck(), section.tableId(), section.definingStandards(disp.duck().standards()));
 
     // The time reference is UTC as defined by DVB, but can be non-standard.
     const UString zone(disp.duck().timeReferenceName());

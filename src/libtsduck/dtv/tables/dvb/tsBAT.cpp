@@ -74,7 +74,7 @@ void ts::BAT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
 {
     // Display bouquet information
     disp << margin << UString::Format(u"Bouquet Id: %n", section.tableIdExtension()) << std::endl;
-    DescriptorContext context(disp.duck(), section.tableId(), section.definingStandards());
+    DescriptorContext context(disp.duck(), section.tableId(), section.definingStandards(disp.duck().standards()));
     disp.displayDescriptorListWithLength(section, context, true, buf, margin, u"Bouquet information:");
 
     // Transport stream loop

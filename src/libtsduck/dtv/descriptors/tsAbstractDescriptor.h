@@ -120,7 +120,7 @@ namespace ts {
         bool deserialize(DuckContext& duck, const DescriptorList& dlist, size_t index);
 
         // Inherited methods.
-        virtual Standards definingStandards() const override;
+        virtual Standards definingStandards(Standards current_standards = Standards::NONE) const override;
 
     protected:
         //!

@@ -646,7 +646,7 @@ void ts::TSAnalyzerReport::reportTables(Grid& grid, const UString& title)
 
             // Header line: TID
             grid.subSection();
-            grid.putLine(TIDName(_duck, tid, pc.cas_id, NamesFlags::HEX_DEC_VALUE_NAME) +
+            grid.putLine(TIDName(_duck, tid, pc.pid, pc.cas_id, NamesFlags::HEX_DEC_VALUE_NAME) +
                          (isShort ? u"" : UString::Format(u", TID ext: %n", etc.xtid.tidExt())));
 
             // 4-columns output, first column remains empty.

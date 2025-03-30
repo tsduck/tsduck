@@ -171,7 +171,7 @@ void ts::RRT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 
 void ts::RRT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    DescriptorContext context(disp.duck(), section.tableId(), section.definingStandards());
+    DescriptorContext context(disp.duck(), section.tableId(), section.definingStandards(disp.duck().standards()));
     disp << margin << UString::Format(u"Rating region: %n", uint8_t(section.tableIdExtension())) << std::endl;
 
     if (!buf.canReadBytes(2)) {

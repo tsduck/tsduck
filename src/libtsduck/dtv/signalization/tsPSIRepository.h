@@ -140,12 +140,14 @@ namespace ts {
         //!
         //! Get the list of standards which are defined for a given table id.
         //! @param [in] id Table id.
+        //! @param [in] pid PID on which the section is found.
+        //! @param [in] current_standards Current standards in the stream so far. Any
+        //! potential table which belongs to an incompatible standard is ignored.
         //! @return Corresponding list of standards. If multiple definitions exist for this
         //! table id, return the common subset of all definitions. This means that only
         //! standards which are used in all cases are returned.
-        //! @param [in] pid PID on which the section is found.
         //!
-        Standards getTableStandards(TID id, PID pid = PID_NULL) const;
+        Standards getTableStandards(TID id, PID pid = PID_NULL, Standards current_standards = Standards::NONE) const;
 
         //!
         //! Get the description of a descriptor class for a given EDID.

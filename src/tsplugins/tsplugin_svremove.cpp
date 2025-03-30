@@ -186,7 +186,7 @@ void ts::SVRemovePlugin::handleTable(SectionDemux& demux, const BinaryTable& tab
 {
     if (debug()) {
         debug(u"Got %s v%d, PID %n, TIDext %n",
-              TIDName(duck, table.tableId()), table.version(),
+              TIDName(duck, table.tableId(), table.sourcePID()), table.version(),
               table.sourcePID(), table.tableIdExtension());
     }
 

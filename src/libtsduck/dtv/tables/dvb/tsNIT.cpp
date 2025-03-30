@@ -83,7 +83,7 @@ void ts::NIT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
 {
     // Display bouquet information
     disp << margin << UString::Format(u"Network Id: %n", section.tableIdExtension()) << std::endl;
-    DescriptorContext context(disp.duck(), section.tableId(), section.definingStandards());
+    DescriptorContext context(disp.duck(), section.tableId(), section.definingStandards(disp.duck().standards()));
     disp.displayDescriptorListWithLength(section, context, true, buf, margin, u"Network information:");
 
     // Transport stream loop

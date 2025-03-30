@@ -214,7 +214,7 @@ void ts::PCAT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 
 void ts::PCAT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    DescriptorContext context(disp.duck(), section.tableId(), section.definingStandards());
+    DescriptorContext context(disp.duck(), section.tableId(), section.definingStandards(disp.duck().standards()));
     disp << margin << UString::Format(u"Service id: %n", section.tableIdExtension()) << std::endl;
 
     if (buf.canReadBytes(9)) {

@@ -353,10 +353,10 @@ ts::ByteBlock ts::Section::hash() const
 // Implementation of AbstractDefinedByStandards.
 //----------------------------------------------------------------------------
 
-ts::Standards ts::Section::definingStandards() const
+ts::Standards ts::Section::definingStandards(Standards current_standards) const
 {
     // The defining standard is taken from table id.
-    return PSIRepository::Instance().getTableStandards(tableId(), sourcePID());
+    return PSIRepository::Instance().getTableStandards(tableId(), sourcePID(), current_standards);
 }
 
 
@@ -631,7 +631,7 @@ std::ostream& ts::Section::dump(std::ostream& strm, int indent, CASID cas, bool 
     // If PID is the null PID, this means "unknown PID"
     if (!no_header) {
         strm << margin << ""
-             << UString::Format(u"* Section dump, PID %n, TID %s", sourcePID(), TIDName(duck, tid, cas, NamesFlags::HEX_DEC_VALUE_NAME))
+             << UString::Format(u"* Section dump, PID %n, TID %s", sourcePID(), TIDName(duck, tid, sourcePID(), cas, NamesFlags::HEX_DEC_VALUE_NAME))
              << std::endl
              << margin << "  Section size: " << size() << " bytes, header: " << (isLongSection() ? "long" : "short")
              << std::endl;

@@ -130,7 +130,7 @@ void ts::CDT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
     if (buf.canReadBytes(3)) {
         disp << margin << UString::Format(u"Original network id: %n", buf.getUInt16()) << std::endl;
         disp << margin << UString::Format(u"Data type: %n", buf.getUInt8()) << std::endl;
-        DescriptorContext context(disp.duck(), section.tableId(), section.definingStandards());
+        DescriptorContext context(disp.duck(), section.tableId(), section.definingStandards(disp.duck().standards()));
         disp.displayDescriptorListWithLength(section, context, true, buf, margin, u"Common descriptors:");
         if (buf.canRead()) {
             disp.displayPrivateData(u"Data module", buf, NPOS, margin);

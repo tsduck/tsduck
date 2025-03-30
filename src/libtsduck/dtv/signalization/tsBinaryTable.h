@@ -340,7 +340,7 @@ namespace ts {
         bool fromXML(DuckContext& duck, const xml::Element* node);
 
         // Implementation of AbstractDefinedByStandards
-        virtual Standards definingStandards() const override;
+        virtual Standards definingStandards(Standards current_standards = Standards::NONE) const override;
 
     private:
         BinaryTable(const BinaryTable& table) = delete;

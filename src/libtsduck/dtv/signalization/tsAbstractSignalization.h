@@ -93,7 +93,7 @@ namespace ts {
         virtual void fromXML(DuckContext& duck, const xml::Element* element);
 
         // Implementation of AbstractDefinedByStandards
-        virtual Standards definingStandards() const override;
+        virtual Standards definingStandards(Standards current_standards = Standards::NONE) const override;
 
         //!
         //! Virtual destructor

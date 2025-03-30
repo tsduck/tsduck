@@ -357,7 +357,7 @@ void ts::SDT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
     disp << margin << UString::Format(u"Original Network Id: %n", buf.getUInt16()) << std::endl;
     buf.skipReservedBits(8);
 
-    DescriptorContext context(disp.duck(), section.tableId(), section.definingStandards());
+    DescriptorContext context(disp.duck(), section.tableId(), section.definingStandards(disp.duck().standards()));
 
     // Services description
     while (buf.canRead()) {

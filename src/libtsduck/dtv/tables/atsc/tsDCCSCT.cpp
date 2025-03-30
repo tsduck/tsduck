@@ -232,7 +232,7 @@ const ts::Names& ts::DCCSCT::UpdateTypeNames()
 
 void ts::DCCSCT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    DescriptorContext context(disp.duck(), section.tableId(), section.definingStandards());
+    DescriptorContext context(disp.duck(), section.tableId(), section.definingStandards(disp.duck().standards()));
     uint16_t updates_defined = 0;
 
     if (!buf.canReadBytes(2)) {

@@ -158,6 +158,7 @@ ts::MGT::TableTypeNames::TableTypeNames() :
         {u"CVCT-next",    0x0003},
         {u"ETT",          0x0004},
         {u"DCCSCT",       0x0005},
+        {u"LTST",         0x0006},
     })
 {
     // 0x0100-0x017F EIT-0 to EIT-127
@@ -171,6 +172,10 @@ ts::MGT::TableTypeNames::TableTypeNames() :
     // 0x0301 - 0x03FF RRT with rating_region 1 - 255
     for (int val = 0x0301; val <= 0x03FF; ++val) {
         add(UString::Format(u"RRT-%d", val & 0x00FF), val);
+    }
+    // 0x1300 - 0x13FF DET
+    for (int val = 0x1300; val <= 0x13FF; ++val) {
+        add(UString::Format(u"DET-%d", val & 0x00FF), val);
     }
     // 0x1400 - 0x14FF DCCT with dcc_id 0x00 - 0xFF
     for (int val = 0x1400; val <= 0x14FF; ++val) {
@@ -191,7 +196,7 @@ const ts::Names& ts::MGT::TableTypeEnum()
 
 void ts::MGT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    DescriptorContext context(disp.duck(), section.tableId(), section.definingStandards());
+    DescriptorContext context(disp.duck(), section.tableId(), section.definingStandards(disp.duck().standards()));
     uint16_t table_count = 0;
 
     if (!buf.canReadBytes(2)) {

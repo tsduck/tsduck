@@ -369,9 +369,9 @@ void DemuxTest::testTable(const char* name, const uint8_t* ref_packets, size_t r
     if (table2 != table3) {
         debug() << "DemuxTest: " << name << ": rebuilt tables differ" << std::endl;
         debug() << "DemuxTest:   Re-serialized table: " << ts::TIDName(duck, table2.tableId())
-            << ", " << table2.sectionCount() << " sections" << std::endl
-            << "  Re-packetized table: " << ts::TIDName(duck, table3.tableId())
-            << ", " << table3.sectionCount() << " sections" << std::endl;
+                << ", " << table2.sectionCount() << " sections" << std::endl
+                << "  Re-packetized table: " << ts::TIDName(duck, table3.tableId())
+                << ", " << table3.sectionCount() << " sections" << std::endl;
     }
     TSUNIT_ASSERT(table2 == table3);
 }

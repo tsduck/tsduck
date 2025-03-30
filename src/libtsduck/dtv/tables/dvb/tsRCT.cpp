@@ -351,7 +351,7 @@ void ts::RCT::Link::serializePayload(PSIBuffer& buf) const
 
 void ts::RCT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    DescriptorContext context(disp.duck(), section.tableId(), section.definingStandards());
+    DescriptorContext context(disp.duck(), section.tableId(), section.definingStandards(disp.duck().standards()));
     disp << margin << UString::Format(u"Service id: %n", section.tableIdExtension()) << std::endl;
 
     if (buf.canReadBytes(3)) {

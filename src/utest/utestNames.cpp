@@ -294,14 +294,14 @@ TSUNIT_DEFINE_TEST(TID)
 {
     ts::DuckContext duck;
     TSUNIT_EQUAL(u"CAT", ts::TIDName(duck, ts::TID_CAT));
-    TSUNIT_EQUAL(u"CAT", ts::TIDName(duck, ts::TID_CAT, ts::CASID_NAGRA_MIN));
-    TSUNIT_EQUAL(u"PMT", ts::TIDName(duck, ts::TID_PMT, ts::CASID_VIACCESS_MIN));
-    TSUNIT_EQUAL(u"Viaccess EMM-U", ts::TIDName(duck, ts::TID_VIA_EMM_U, ts::CASID_VIACCESS_MIN));
+    TSUNIT_EQUAL(u"CAT", ts::TIDName(duck, ts::TID_CAT, ts::PID_NULL, ts::CASID_NAGRA_MIN));
+    TSUNIT_EQUAL(u"PMT", ts::TIDName(duck, ts::TID_PMT, ts::PID_NULL, ts::CASID_VIACCESS_MIN));
+    TSUNIT_EQUAL(u"Viaccess EMM-U", ts::TIDName(duck, ts::TID_VIA_EMM_U, ts::PID_NULL, ts::CASID_VIACCESS_MIN));
     TSUNIT_EQUAL(u"EIT schedule Actual", ts::TIDName(duck, ts::TID_EIT_S_ACT_MIN + 4));
     TSUNIT_EQUAL(u"ECM (odd)", ts::TIDName(duck, ts::TID_ECM_81));
-    TSUNIT_EQUAL(u"Nagravision ECM (odd)", ts::TIDName(duck, ts::TID_ECM_81, ts::CASID_NAGRA_MIN));
-    TSUNIT_EQUAL(u"SafeAccess EMM-A (0x86)", ts::TIDName(duck, ts::TID_SA_EMM_A, ts::CASID_SAFEACCESS, ts::NamesFlags::NAME_VALUE));
-    TSUNIT_EQUAL(u"Logiways DMT", ts::TIDName(duck, ts::TID_LW_DMT, ts::CASID_SAFEACCESS));
+    TSUNIT_EQUAL(u"Nagravision ECM (odd)", ts::TIDName(duck, ts::TID_ECM_81, ts::PID_NULL, ts::CASID_NAGRA_MIN));
+    TSUNIT_EQUAL(u"SafeAccess EMM-A (0x86)", ts::TIDName(duck, ts::TID_SA_EMM_A, ts::PID_NULL, ts::CASID_SAFEACCESS, ts::NamesFlags::NAME_VALUE));
+    TSUNIT_EQUAL(u"Logiways DMT", ts::TIDName(duck, ts::TID_LW_DMT, ts::PID_NULL, ts::CASID_SAFEACCESS));
     TSUNIT_EQUAL(u"unknown (0x90)", ts::TIDName(duck, ts::TID_LW_DMT));
 }
 

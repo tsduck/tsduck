@@ -190,7 +190,7 @@ void ts::TablesDisplay::displayTable(const BinaryTable& table, const UString& ma
     }
 
     // Accumulate standards.
-    _duck.addStandards(table.definingStandards());
+    _duck.addStandards(table.definingStandards(_duck.standards()));
 
     // Display hexa dump of each section in the table
     if (_raw_dump) {
@@ -202,6 +202,7 @@ void ts::TablesDisplay::displayTable(const BinaryTable& table, const UString& ma
     }
 
     const TID tid = table.tableId();
+    const PID pid = table.sourcePID();
     cas = _duck.casId(cas);
 
     // Compute total size of table
@@ -211,7 +212,7 @@ void ts::TablesDisplay::displayTable(const BinaryTable& table, const UString& ma
     }
 
     // Display common header lines.
-    strm << margin << UString::Format(u"* %s, TID %n", TIDName(_duck, tid, cas), table.tableId());
+    strm << margin << UString::Format(u"* %s, TID %n", TIDName(_duck, tid, pid, cas), table.tableId());
     if (table.sourcePID() != PID_NULL) {
         // If PID is the null PID, this means "unknown PID"
         strm << UString::Format(u", PID %n", table.sourcePID());
@@ -252,7 +253,7 @@ void ts::TablesDisplay::displaySection(const Section& section, const UString& ma
     }
 
     // Accumulate standards.
-    _duck.addStandards(section.definingStandards());
+    _duck.addStandards(section.definingStandards(_duck.standards()));
 
     // Display hexa dump of the section
     if (_raw_dump) {
@@ -261,12 +262,13 @@ void ts::TablesDisplay::displaySection(const Section& section, const UString& ma
     }
 
     const TID tid = section.tableId();
+    const PID pid = section.sourcePID();
     cas = _duck.casId(cas);
     UString extra_margin;
 
     // Display common header lines.
     if (!no_header) {
-        strm << margin << UString::Format(u"* %s, TID %n", TIDName(_duck, tid, cas), tid);
+        strm << margin << UString::Format(u"* %s, TID %n", TIDName(_duck, tid, pid, cas), tid);
         if (section.sourcePID() != PID_NULL) {
             // If PID is the null PID, this means "unknown PID"
             strm << UString::Format(u", PID %n", section.sourcePID());
@@ -296,7 +298,7 @@ void ts::TablesDisplay::displaySection(const Section& section, const UString& ma
     }
     // The private_indicator must be set in a DVB-defined table.
     // Other standards do not always follow the MPEG rules.
-    if (bool(section.definingStandards() & Standards::DVB) && (byte1 & 0x40) == 0) {
+    if (bool(section.definingStandards(_duck.standards()) & Standards::DVB) && (byte1 & 0x40) == 0) {
         errors.push_back((1 << 4) | (1 << 1) | 1);
     }
     // Two reserved bits.
@@ -419,6 +421,7 @@ void ts::TablesDisplay::displayInvalidSection(const DemuxedData& data, const USt
     }
 
     const TID tid = data.size() > 0 ? data.content()[0] : TID(TID_NULL);
+    const PID pid = data.sourcePID();
     cas = _duck.casId(cas);
 
     // Display common header lines.
@@ -429,7 +432,7 @@ void ts::TablesDisplay::displayInvalidSection(const DemuxedData& data, const USt
         }
         strm << std::endl << margin << "  ";
         if (tid != TID_NULL) {
-            strm << UString::Format(u"%s, TID %n, ", TIDName(_duck, tid, cas), tid);
+            strm << UString::Format(u"%s, TID %n, ", TIDName(_duck, tid, pid, cas), tid);
         }
         if (data.sourcePID() != PID_NULL) {
             strm << UString::Format(u"PID %n, ", data.sourcePID());

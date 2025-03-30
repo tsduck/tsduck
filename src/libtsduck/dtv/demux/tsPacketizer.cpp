@@ -185,6 +185,6 @@ std::ostream& ts::Packetizer::display(std::ostream& strm) const
         << UString::Format(u"  Output sections: %'d", _section_out_count) << std::endl
         << UString::Format(u"  Provided sections: %'d", _section_in_count) << std::endl
         << "  Current section: "
-        << (_section == nullptr ? UString(u"none") : UString::Format(u"%s, offset %d", TIDName(duck(), _section->tableId()), _next_byte))
+        << (_section == nullptr ? UString(u"none") : UString::Format(u"%s, offset %d", TIDName(duck(), _section->tableId(), _section->sourcePID()), _next_byte))
         << std::endl;
 }

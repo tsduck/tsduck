@@ -69,7 +69,7 @@ void ts::SectionFile::add(const BinaryTablePtr& table)
         if (table->isValid()) {
             // The table is added as a whole.
             // Add the standards from the table in the context.
-            _duck.addStandards(table->definingStandards());
+            _duck.addStandards(table->definingStandards(_duck.standards()));
             // Add the table as a whole.
             _tables.push_back(table);
             // Add all its sections (none of them is orphan).
@@ -102,7 +102,7 @@ void ts::SectionFile::add(const SectionPtr& section)
 {
     if (section != nullptr && section->isValid()) {
         // Add the standards from the section in the context.
-        _duck.addStandards(section->definingStandards());
+        _duck.addStandards(section->definingStandards(_duck.standards()));
         // Make the section part of the global list of sections.
         _sections.push_back(section);
         // Temporary push this section in the orphan list.

@@ -314,7 +314,7 @@ void ts::UNT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
     }
 
     // Display common descriptor loop.
-    DescriptorContext context(disp.duck(), section.tableId(), section.definingStandards());
+    DescriptorContext context(disp.duck(), section.tableId(), section.definingStandards(disp.duck().standards()));
     disp.displayDescriptorListWithLength(section, context, true, buf, margin, u"Common descriptors:", u"None");
 
     if (!buf.error()) {

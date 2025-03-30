@@ -222,7 +222,7 @@ void ts::RNT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
 
     if (buf.canReadBytes(3)) {
         disp << margin << "Context id type: " << DataName(MY_XML_NAME, u"ContextIdType", buf.getUInt8(), NamesFlags::HEX_VALUE_NAME) << std::endl;
-        DescriptorContext context(disp.duck(), section.tableId(), section.definingStandards());
+        DescriptorContext context(disp.duck(), section.tableId(), section.definingStandards(disp.duck().standards()));
         disp.displayDescriptorListWithLength(section, context, true, buf, margin, u"RNT top-level descriptors:", u"None");
 
         // Loop on resolution providers.

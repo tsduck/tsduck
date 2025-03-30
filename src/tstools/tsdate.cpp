@@ -169,7 +169,7 @@ void TableHandler::handleTable(ts::SectionDemux&, const ts::BinaryTable& table)
             if (_opt.verbose()) {
                 const ts::TID tid = table.tableId();
                 const ts::PID pid = table.sourcePID();
-                std::cout << ts::UString::Format(u"* Got unexpected %s, TID %n on PID %n", ts::TIDName(_opt.duck, tid), tid, pid) << std::endl;
+                std::cout << ts::UString::Format(u"* Got unexpected %s, TID %n on PID %n", ts::TIDName(_opt.duck, tid, pid), tid, pid) << std::endl;
             }
         }
     }

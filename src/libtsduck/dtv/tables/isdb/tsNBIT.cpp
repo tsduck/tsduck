@@ -170,7 +170,7 @@ void ts::NBIT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 
 void ts::NBIT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    DescriptorContext context(disp.duck(), section.tableId(), section.definingStandards());
+    DescriptorContext context(disp.duck(), section.tableId(), section.definingStandards(disp.duck().standards()));
     disp << margin << UString::Format(u"Original network id: %n", section.tableIdExtension()) << std::endl;
 
     while (buf.canReadBytes(5)) {

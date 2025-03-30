@@ -208,7 +208,7 @@ void ts::SDTT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 
 void ts::SDTT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    DescriptorContext context(disp.duck(), section.tableId(), section.definingStandards());
+    DescriptorContext context(disp.duck(), section.tableId(), section.definingStandards(disp.duck().standards()));
     const uint16_t tidext = section.tableIdExtension();
     const bool extended_maker_id = tidext >= 0xE000 && tidext <= 0xEFFF;
     disp << margin << UString::Format(u"Table extension id: %n", tidext) << std::endl;

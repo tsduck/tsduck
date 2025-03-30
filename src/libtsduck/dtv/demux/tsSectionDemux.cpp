@@ -437,7 +437,7 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
         if (section_ok) {
 
             // Get the list of standards which define this table id and add them in context.
-            _duck.addStandards(PSIRepository::Instance().getTableStandards(xtid.tid(), pid));
+            _duck.addStandards(PSIRepository::Instance().getTableStandards(xtid.tid(), pid, _duck.standards()));
 
             // Get reference to the XTID context for this PID.
             // The XTID context is created if did not exist.

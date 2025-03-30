@@ -408,7 +408,7 @@ namespace ts {
         DID_ATSC_SERVICE_LOC    = 0xA1,  //!< DID for ATSC service_location_descriptor
         DID_ATSC_TIME_SHIFT     = 0xA2,  //!< DID for ATSC time_shifted_event_descriptor
         DID_ATSC_COMPONENT_NAME = 0xA3,  //!< DID for ATSC component_name_descriptor
-        DID_ATSC_DATA_BRDCST    = 0xA4,  //!< DID for ATSC data_broadcast_descriptor
+        DID_ATSC_DATA_SERVICE   = 0xA4,  //!< DID for ATSC data_service_descriptor
         DID_ATSC_PID_COUNT      = 0xA5,  //!< DID for ATSC pid_count_descriptor
         DID_ATSC_DOWNLOAD       = 0xA6,  //!< DID for ATSC download_descriptor
         DID_ATSC_MPROTO_ENCAPS  = 0xA7,  //!< DID for ATSC multiprotocol_encapsulation_descriptor
@@ -417,6 +417,9 @@ namespace ts {
         DID_ATSC_REDIST_CONTROL = 0xAA,  //!< DID for ATSC redistribution_control_descriptor
         DID_ATSC_GENRE          = 0xAB,  //!< DID for ATSC genre_descriptor
         DID_ATSC_PRIVATE_INFO   = 0xAD,  //!< DID for ATSC private_information_descriptor
+        DID_ATSC_MODULE_LINK    = 0xB4,  //!< DID for ATSC module_link_descriptor
+        DID_ATSC_CRC32          = 0xB5,  //!< DID for ATSC CRC32_descriptor
+        DID_ATSC_GROUP_LINK     = 0xB8,  //!< DID for ATSC group_link_descriptor
         DID_ATSC_ENHANCED_AC3   = 0xCC,  //!< DID for ATSC E-AC-3_audio_stream_descriptor
 
         // Valid in SCTE EAS (Emergency Alert System, SCTE 18).

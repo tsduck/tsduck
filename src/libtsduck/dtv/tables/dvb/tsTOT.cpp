@@ -200,7 +200,7 @@ void ts::TOT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
     if (buf.canReadBytes(5)) {
         // Use TDT display routine for the beginning of the section (adjusted UTC time).
         TDT::DisplaySection(disp, section, buf, margin);
-        DescriptorContext context(disp.duck(), section.tableId(), section.definingStandards());
+        DescriptorContext context(disp.duck(), section.tableId(), section.definingStandards(disp.duck().standards()));
         disp.displayDescriptorListWithLength(section, context, true, buf, margin);
         disp.displayCRC32(section, buf, margin);
     }

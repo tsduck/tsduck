@@ -184,10 +184,10 @@ const ts::SectionPtr ts::BinaryTable::sectionAt(size_t index) const
 // Implementation of AbstractDefinedByStandards.
 //----------------------------------------------------------------------------
 
-ts::Standards ts::BinaryTable::definingStandards() const
+ts::Standards ts::BinaryTable::definingStandards(Standards current_standards) const
 {
     // The defining standard is taken from table id.
-    return PSIRepository::Instance().getTableStandards(tableId(), _source_pid);
+    return PSIRepository::Instance().getTableStandards(tableId(), _source_pid, current_standards);
 }
 
 
@@ -580,7 +580,7 @@ bool ts::BinaryTable::fromXML(DuckContext& duck, const xml::Element* node)
         }
         if (table != nullptr && table->isValid()) {
             // Accumulate standards in the context.
-            duck.addStandards(table->definingStandards());
+            duck.addStandards(table->definingStandards(duck.standards()));
             // Serialize the table.
             table->serialize(duck, *this);
             if (!isValid()) {

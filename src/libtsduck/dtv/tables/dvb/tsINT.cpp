@@ -208,7 +208,7 @@ void ts::INT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
              << UString::Format(u"Action type: 0x%X, processing order: 0x%X, id hash: 0x%X (%s)", action, order, id_hash, hash_status)
              << std::endl;
 
-        DescriptorContext context(disp.duck(), section.tableId(), section.definingStandards());
+        DescriptorContext context(disp.duck(), section.tableId(), section.definingStandards(disp.duck().standards()));
         disp.displayDescriptorListWithLength(section, context, true, buf, margin, u"Platform descriptors:");
 
         // Get device descriptions.

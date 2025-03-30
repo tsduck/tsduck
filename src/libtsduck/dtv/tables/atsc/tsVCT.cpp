@@ -353,7 +353,7 @@ void ts::VCT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 
 void ts::VCT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    DescriptorContext context(disp.duck(), section.tableId(), section.definingStandards());
+    DescriptorContext context(disp.duck(), section.tableId(), section.definingStandards(disp.duck().standards()));
     disp << margin << UString::Format(u"Transport stream id: %n", section.tableIdExtension()) << std::endl;
 
     uint16_t num_channels = 0;

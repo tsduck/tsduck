@@ -230,7 +230,7 @@ void ts::AIT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
     // Common information.
     const uint16_t tidext = section.tableIdExtension();
     disp << margin << UString::Format(u"Application type: %d (0x%<04X), Test application: %d", tidext & 0x7FFF, tidext >> 15) << std::endl;
-    DescriptorContext context(disp.duck(), section.tableId(), section.definingStandards());
+    DescriptorContext context(disp.duck(), section.tableId(), section.definingStandards(disp.duck().standards()));
     disp.displayDescriptorListWithLength(section, context, true, buf, margin, u"Common descriptor loop:");
 
     // Application loop

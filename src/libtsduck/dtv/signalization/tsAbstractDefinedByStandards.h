@@ -25,8 +25,11 @@ namespace ts {
     public:
         //!
         //! Get the list of standards which define this object.
+        //! @param [in] current_standards Current standards in the stream so far.
+        //! This is a hint which may help the object to determine to which standard it belongs.
+        //! This can be used by objects with slightly different semantics depending on the standard.
         //! @return A bit mask of standards.
         //!
-        virtual Standards definingStandards() const = 0;
+        virtual Standards definingStandards(Standards current_standards = Standards::NONE) const = 0;
     };
 }

@@ -284,7 +284,7 @@ void ts::HistoryPlugin::report(PacketCounter pkt, const UString& line)
 void ts::HistoryPlugin::handleSection(SectionDemux& demux, const Section& section)
 {
     if (_report_eit && EIT::IsEIT(section.tableId())) {
-        report(u"%s v%d, service %n", TIDName(duck, section.tableId()), section.version(), section.tableIdExtension());
+        report(u"%s v%d, service %n", TIDName(duck, section.tableId(), section.sourcePID()), section.version(), section.tableIdExtension());
     }
 }
 
@@ -365,7 +365,7 @@ void ts::HistoryPlugin::handleTable(SectionDemux& demux, const BinaryTable& tabl
         case TID_NIT_ACT:
         case TID_NIT_OTH: {
             if (table.sourcePID() == PID_NIT) {
-                report(u"%s v%d, network %n", TIDName(duck, table.tableId()), table.version(), table.tableIdExtension());
+                report(u"%s v%d, network %n", TIDName(duck, table.tableId(), table.sourcePID()), table.version(), table.tableIdExtension());
             }
             break;
         }
@@ -373,7 +373,7 @@ void ts::HistoryPlugin::handleTable(SectionDemux& demux, const BinaryTable& tabl
         case TID_SDT_ACT:
         case TID_SDT_OTH: {
             if (table.sourcePID() == PID_SDT) {
-                report(u"%s v%d, TS %n", TIDName(duck, table.tableId()), table.version(), table.tableIdExtension());
+                report(u"%s v%d, TS %n", TIDName(duck, table.tableId(), table.sourcePID()), table.version(), table.tableIdExtension());
             }
             break;
         }
@@ -388,7 +388,7 @@ void ts::HistoryPlugin::handleTable(SectionDemux& demux, const BinaryTable& tabl
         case TID_CAT:
         case TID_TSDT: {
             // Long sections without TID extension
-            report(u"%s v%d", TIDName(duck, table.tableId()), table.version());
+            report(u"%s v%d", TIDName(duck, table.tableId(), table.sourcePID()), table.version());
             break;
         }
 
@@ -404,7 +404,7 @@ void ts::HistoryPlugin::handleTable(SectionDemux& demux, const BinaryTable& tabl
 
         default: {
             if (!EIT::IsEIT(table.tableId())) {
-                const UString name(TIDName(duck, table.tableId()));
+                const UString name(TIDName(duck, table.tableId(), table.sourcePID()));
                 if (table.sectionCount() > 0 && table.sectionAt(0)->isLongSection()) {
                     report(u"%s v%d, TIDext %n", name, table.version(), table.tableIdExtension());
                 }

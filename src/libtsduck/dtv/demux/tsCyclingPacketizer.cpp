@@ -394,7 +394,7 @@ bool ts::CyclingPacketizer::atCycleBoundary() const
 
 std::ostream& ts::CyclingPacketizer::SectionDesc::display(const DuckContext& duck, std::ostream& strm) const
 {
-    return strm << "    - " << TIDName(duck, section->tableId()) << std::endl
+    return strm << "    - " << TIDName(duck, section->tableId(), section->sourcePID()) << std::endl
                 << "      Repetition rate: " << UString::Chrono(repetition, true) << std::endl
                 << "      Last provided at cycle: " << last_cycle << std::endl
                 << "      Last provided at packet: " << last_packet << std::endl

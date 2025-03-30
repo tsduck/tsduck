@@ -318,18 +318,21 @@ const ts::PSIRepository::TableClass& ts::PSIRepository::getTable(TID tid, const 
     for (auto it = bounds.first; it != bounds.second; ++it) {
         const auto& tc(it->second);
 
-        // If the table is in a standard PID, this is an exact match.
-        if (tc->pids.contains(pid)) {
-            return *tc;
-        }
-
         // Standard match: at least one standard of the table is current, or standard-agnostic table (Standards::NONE).
         const bool std_match = bool(standards & tc->standards) || tc->standards == Standards::NONE;
+
+        // Standard compatibility: already standard match or the table is compatible with the current standards
+        // (and will therefore add a new standard to the context).
+        const bool std_compat = std_match || CompatibleStandards(standards | tc->standards);
 
         // CAS match: either a CAS is specified and is in range, or no CAS specified and CAS-agnostic table (all CASID_NULL).
         const bool cas_match = cas >= tc->min_cas && cas <= tc->max_cas;
 
-        if (std_match && cas_match) {
+        if (tc->pids.contains(pid) && std_compat) {
+            // If the table is in a standard PID, this is an exact match.
+            return *tc;
+        }
+        else if (std_match && cas_match) {
             // Found an exact match, no need to search further.
             return *tc;
         }
@@ -536,31 +539,49 @@ ts::DisplayCADescriptorFunction ts::PSIRepository::getCADescriptorDisplay(CASID 
 // Get the list of standards which are defined for a given table id.
 //----------------------------------------------------------------------------
 
-ts::Standards ts::PSIRepository::getTableStandards(TID tid, PID pid) const
+ts::Standards ts::PSIRepository::getTableStandards(TID tid, PID pid, Standards current_standards) const
 {
     // Accumulate the common subset of all standards for this table id.
-    Standards standards = Standards::NONE;
+    std::optional<Standards> standards;
+
+    // Accumulate the common subset of all standards for this table id in incorrect PID's.
+    std::optional<Standards> standards_bad_pid;
+
+    // Accumulate the common subset of all standards for this table id with incompatible standards.
+    std::optional<Standards> standards_bad_std;
+
     const auto bounds(_tables_by_tid.equal_range(tid));
     for (auto it = bounds.first; it != bounds.second; ++it) {
         const auto& tc(*it->second);
-
         if (tc.pids.contains(pid)) {
             // We are in a standard PID for this table id, return the corresponding standards only.
             return tc.standards;
         }
-        else if (!tc.pids.empty() && pid != PID_NULL) {
-            // This is a table with dedicated PID's but we are not in one of them => ignore.
+        else if (!CompatibleStandards(current_standards | tc.standards)) {
+            // The candidate table is incompatible with the current standards.
+            standards_bad_std = standards_bad_std.has_value() ? (standards_bad_std.value() & tc.standards) : tc.standards;
         }
-        else if (standards == Standards::NONE) {
-            // No standard found yet, use all standards from first definition.
-            standards = tc.standards;
+        else if (!tc.pids.empty() && pid != PID_NULL) {
+            // This is a table with dedicated PID's but we are not in one of them => store separately.
+            standards_bad_pid = standards_bad_pid.has_value() ? (standards_bad_pid.value() & tc.standards) : tc.standards;
         }
         else {
-            // Some standards were already found, keep only the common subset.
-            standards &= tc.standards;
+            standards = standards.has_value() ? (standards.value() & tc.standards) : tc.standards;
         }
     }
-    return standards;
+
+    if (standards.has_value()) {
+        // Found one or more table ids with compatible standards in their correct PID. Keep them only.
+        return standards.value();
+    }
+    else if (standards_bad_pid.has_value()) {
+        // Otherwise, accept table ids with compatible standards but in a wrong PID.
+        return standards_bad_pid.value();
+    }
+    else {
+        // Finally, accept table ids with incompatible standards.
+        return standards_bad_std.value_or(Standards::NONE);
+    }
 }
 
 
@@ -602,7 +623,7 @@ ts::UString ts::PSIRepository::descriptorTables(const DuckContext& duck, const U
         if (!result.empty()) {
             result.append(u", ");
         }
-        result.append(TIDName(duck, it->second, CASID_NULL, NamesFlags::NAME | NamesFlags::HEXA));
+        result.append(TIDName(duck, it->second, PID_NULL, CASID_NULL, NamesFlags::NAME | NamesFlags::HEXA));
         ++it;
     }
 

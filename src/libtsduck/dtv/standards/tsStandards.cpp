@@ -40,15 +40,15 @@ bool ts::CompatibleStandards(Standards std)
     // The following set lists all pairs of incompatible standards
     // (thread-safe init-safe static data patterns).
     //
-    static const std::set<ts::Standards> incompatible_standards {
-        (ts::Standards::ATSC    | ts::Standards::DVB),
-        (ts::Standards::ATSC    | ts::Standards::ISDB),
-        (ts::Standards::ATSC    | ts::Standards::JAPAN),
-        (ts::Standards::ATSC    | ts::Standards::ABNT),
-        (ts::Standards::JAPAN   | ts::Standards::ABNT),
-        (ts::Standards::DVBONLY | ts::Standards::ISDB),
-        (ts::Standards::DVBONLY | ts::Standards::JAPAN),
-        (ts::Standards::DVBONLY | ts::Standards::ABNT)
+    static const std::set<Standards> incompatible_standards {
+        (Standards::ATSC    | Standards::DVB),
+        (Standards::ATSC    | Standards::ISDB),
+        (Standards::ATSC    | Standards::JAPAN),
+        (Standards::ATSC    | Standards::ABNT),
+        (Standards::JAPAN   | Standards::ABNT),
+        (Standards::DVBONLY | Standards::ISDB),
+        (Standards::DVBONLY | Standards::JAPAN),
+        (Standards::DVBONLY | Standards::ABNT)
     };
 
     for (auto forbidden : incompatible_standards) {

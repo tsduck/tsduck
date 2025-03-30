@@ -126,7 +126,7 @@ void ts::SelectionInformationTable::serializePayload(BinaryTable& table, PSIBuff
 
 void ts::SelectionInformationTable::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    DescriptorContext context(disp.duck(), section.tableId(), section.definingStandards());
+    DescriptorContext context(disp.duck(), section.tableId(), section.definingStandards(disp.duck().standards()));
     disp.displayDescriptorListWithLength(section, context, true, buf, margin, u"Global information:");
     while (buf.canReadBytes(4)) {
         disp << margin << UString::Format(u"Service id: %n", buf.getUInt16());
