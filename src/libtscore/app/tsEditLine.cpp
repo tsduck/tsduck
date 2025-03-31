@@ -40,8 +40,10 @@ ts::EditLine::EditLine(const UString& prompt, const UString& next_prompt, const 
     _is_a_tty(StdInIsTerminal()),
     _prompt(prompt),
     _next_prompt(next_prompt),
-    _history_file(history_file),
-    _history_size(history_size)
+    _history_file(history_file)
+#if !defined(TS_NO_EDITLINE)
+    ,_history_size(history_size)
+#endif
 {
 #if !defined(TS_NO_EDITLINE)
     if (_is_a_tty) {

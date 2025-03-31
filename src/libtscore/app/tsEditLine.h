@@ -113,12 +113,16 @@ namespace ts {
     private:
         bool    _is_a_tty = false;
         bool    _end_of_file = false;
+#if !defined(TS_NO_EDITLINE)
         bool    _update_history = false;
+#endif
         UString _prompt {};
         UString _next_prompt {};
         UString _previous_line {};
         UString _history_file {};
+#if !defined(TS_NO_EDITLINE)
         size_t  _history_size = 0;
+#endif
 
         static UString _default_prompt;
         static UString _default_next_prompt;
