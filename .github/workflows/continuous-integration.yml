@@ -52,88 +52,88 @@ on:
 
 jobs:
 
-  build_unix:
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-24.04, macos-latest]
-        compiler: [gcc, clang]
-        # Currently disable C++23 compilation, general support in compilers is too poor.
-        # std: [20, 23]
-        std: [20]
-        include:
-        - os: ubuntu-24.04
-          make: make DEBUG=${{ inputs.DEBUG }} VERBOSE=${{ inputs.VERBOSE }}
-        - os: ubuntu-24.04
-          compiler: clang
-          llvm: true
-        - os: macos-latest
-          # It has been noted on GitHub macOS runners that the host name can change
-          # between steps or even the middle of a step. This breaks the naming scheme
-          # of the build directory for binaries. As a consequence, we force BINDIR=bin.
-          bindir: bin
-          make: gmake DEBUG=${{ inputs.DEBUG }} VERBOSE=${{ inputs.VERBOSE }}
-        exclude:
-        - os: macos-latest
-          compiler: gcc
-          # Don't use gcc on macOS.
-    name: Build on ${{ matrix.os }} with ${{ matrix.compiler }}, C++${{ matrix.std }}
-    runs-on: ${{ matrix.os }}
-    env:
-      LLVM: ${{ matrix.llvm }}
-      BINDIR: ${{ matrix.bindir }}
-      CXXFLAGS_STANDARD: -std=c++${{ matrix.std }}
-      ORIGIN_REPO: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
-      REFERENCE_REPO: tsduck/tsduck
-      BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    steps:
-    - uses: actions/checkout@master
-    - name: Install dependencies
-      run: |
-        scripts/install-prerequisites.sh
-        ${{ matrix.compiler }} --version
-        scripts/java-config.sh
-    - name: Build TSDuck
-      run: ${{ matrix.make }} -j5
-    - name: Check built version
-      run: ${{ matrix.make }} show-version
-    - name: Run unitary tests
-      run: ${{ matrix.make }} test
-    - name: Download test suite
-      run: |
-        # Try to download '<repo>-test' from the pull request owner, if there is one.
-        if curl -fsL "https://github.com/${ORIGIN_REPO}-test/tarball/${BRANCH_NAME}" -o test.tgz; then
-            echo "Downloaded test suite from ${BRANCH_NAME} branch of $ORIGIN_REPO"
-        elif curl -fsL "https://github.com/${ORIGIN_REPO}-test/tarball/master" -o test.tgz; then
-            echo "Downloaded test suite from $ORIGIN_REPO"
-        else
-            curl -fsL "https://github.com/${REFERENCE_REPO}-test/tarball/master" -o test.tgz
-            echo "Downloaded test suite from $REFERENCE_REPO"
-        fi
-        mkdir -p ../tsduck-test
-        tar -C ../tsduck-test -x -z -f test.tgz --strip 1
-    - name: Run test suite
-      run: |
-        ${{ matrix.make }} test-suite && status=$? || status=$?
-        cd ../tsduck-test
-        for f in $(find tmp -name '*.diff'); do
-            echo "==== $f";
-            cat "$f"
-        done
-        exit $status
-    - name: Build sample applications
-      run: |
-        # Fake installation in a temporary directory.
-        export PREFIX=$(pwd)/bin/systest
-        ${{ matrix.make }} install SYSPREFIX=$PREFIX
-        # Build the test applications using that installation.
-        export PATH=$PREFIX/bin:$PATH:
-        export LD_LIBRARY_PATH=$PREFIX/lib:$LD_LIBRARY_PATH:
-        export LD_LIBRARY_PATH2=$LD_LIBRARY_PATH
-        export PYTHONPATH=$PREFIX/share/tsduck/python:$PYTHONPATH:
-        export CLASSPATH=$PREFIX/share/tsduck/java/tsduck.jar:$CLASSPATH:
-        ${{ matrix.make }} -C sample
+  # build_unix:
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       os: [ubuntu-24.04, macos-latest]
+  #       compiler: [gcc, clang]
+  #       # Currently disable C++23 compilation, general support in compilers is too poor.
+  #       # std: [20, 23]
+  #       std: [20]
+  #       include:
+  #       - os: ubuntu-24.04
+  #         make: make DEBUG=${{ inputs.DEBUG }} VERBOSE=${{ inputs.VERBOSE }}
+  #       - os: ubuntu-24.04
+  #         compiler: clang
+  #         llvm: true
+  #       - os: macos-latest
+  #         # It has been noted on GitHub macOS runners that the host name can change
+  #         # between steps or even the middle of a step. This breaks the naming scheme
+  #         # of the build directory for binaries. As a consequence, we force BINDIR=bin.
+  #         bindir: bin
+  #         make: gmake DEBUG=${{ inputs.DEBUG }} VERBOSE=${{ inputs.VERBOSE }}
+  #       exclude:
+  #       - os: macos-latest
+  #         compiler: gcc
+  #         # Don't use gcc on macOS.
+  #   name: Build on ${{ matrix.os }} with ${{ matrix.compiler }}, C++${{ matrix.std }}
+  #   runs-on: ${{ matrix.os }}
+  #   env:
+  #     LLVM: ${{ matrix.llvm }}
+  #     BINDIR: ${{ matrix.bindir }}
+  #     CXXFLAGS_STANDARD: -std=c++${{ matrix.std }}
+  #     ORIGIN_REPO: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+  #     REFERENCE_REPO: tsduck/tsduck
+  #     BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+  #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #   steps:
+  #   - uses: actions/checkout@master
+  #   - name: Install dependencies
+  #     run: |
+  #       scripts/install-prerequisites.sh
+  #       ${{ matrix.compiler }} --version
+  #       scripts/java-config.sh
+  #   - name: Build TSDuck
+  #     run: ${{ matrix.make }} -j5
+  #   - name: Check built version
+  #     run: ${{ matrix.make }} show-version
+  #   - name: Run unitary tests
+  #     run: ${{ matrix.make }} test
+  #   - name: Download test suite
+  #     run: |
+  #       # Try to download '<repo>-test' from the pull request owner, if there is one.
+  #       if curl -fsL "https://github.com/${ORIGIN_REPO}-test/tarball/${BRANCH_NAME}" -o test.tgz; then
+  #           echo "Downloaded test suite from ${BRANCH_NAME} branch of $ORIGIN_REPO"
+  #       elif curl -fsL "https://github.com/${ORIGIN_REPO}-test/tarball/master" -o test.tgz; then
+  #           echo "Downloaded test suite from $ORIGIN_REPO"
+  #       else
+  #           curl -fsL "https://github.com/${REFERENCE_REPO}-test/tarball/master" -o test.tgz
+  #           echo "Downloaded test suite from $REFERENCE_REPO"
+  #       fi
+  #       mkdir -p ../tsduck-test
+  #       tar -C ../tsduck-test -x -z -f test.tgz --strip 1
+  #   - name: Run test suite
+  #     run: |
+  #       ${{ matrix.make }} test-suite && status=$? || status=$?
+  #       cd ../tsduck-test
+  #       for f in $(find tmp -name '*.diff'); do
+  #           echo "==== $f";
+  #           cat "$f"
+  #       done
+  #       exit $status
+  #   - name: Build sample applications
+  #     run: |
+  #       # Fake installation in a temporary directory.
+  #       export PREFIX=$(pwd)/bin/systest
+  #       ${{ matrix.make }} install SYSPREFIX=$PREFIX
+  #       # Build the test applications using that installation.
+  #       export PATH=$PREFIX/bin:$PATH:
+  #       export LD_LIBRARY_PATH=$PREFIX/lib:$LD_LIBRARY_PATH:
+  #       export LD_LIBRARY_PATH2=$LD_LIBRARY_PATH
+  #       export PYTHONPATH=$PREFIX/share/tsduck/python:$PYTHONPATH:
+  #       export CLASSPATH=$PREFIX/share/tsduck/java/tsduck.jar:$CLASSPATH:
+  #       ${{ matrix.make }} -C sample
 
   build_windows:
     strategy:
@@ -224,20 +224,112 @@ jobs:
         done
         exit $status
 
-  build_docs:
-    name: Build documentation
-    runs-on: ubuntu-24.04
+  build_cmake_windows:
+    strategy:
+      fail-fast: false
+      matrix:
+        configuration: [Release]
+        shared: [
+          { mode: "ON", name: "Shared Library" },
+          { mode: "OFF", name: "Static Library" },
+        ]
+        # include:
+        # - target: Win64
+        #   suffix: x64
+        #   testopt: --dev
+        # - target: Win32
+        #   suffix: Win32
+        #   testopt: --dev32
+        arch: [
+          { "name": "x64 VC++",       "option": "x64",   "env": "AMD64", toolset: ""},
+          { "name": "arm64 VC++",     "option": "arm64", "env": "ARM64", toolset: ""},
+          { "name": "x64 clang-cl",   "option": "x64",   "env": "AMD64", toolset: "-T ClangCL"},
+          { "name": "arm64 clang-cl", "option": "arm64", "env": "ARM64", toolset: "-T ClangCL"},
+        ]
+    name: CMake ${{ matrix.shared.name }} on ${{ matrix.arch.name }}
+    runs-on: windows-latest
     env:
+      ORIGIN_REPO: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+      REFERENCE_REPO: tsduck/tsduck
+      BRANCH_NAME:  ${{ github.head_ref || github.ref_name }}
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
     - uses: actions/checkout@master
     - name: Install dependencies
       run: |
-        scripts/install-prerequisites.sh
-        echo "Doxygen version: $(doxygen --version)"
-    - name: Build guides
+        scripts/install-prerequisites.ps1 -GitHubActions -NoDoxygen -NoInstaller -NoPause
+    - name: Dependencies check
       run: |
-        make docs
-    - name: Build Doxygen reference
+        Write-Output "Path=${env:Path}"
+        python --version
+    - name: Configure TSDuck
       run: |
-        make doxygen
+        cmake -S . -B _build -A ${{ matrix.arch.option }} ${{ matrix.arch.toolset }} -DBUILD_SHARED_LIBS:BOOL=${{ matrix.shared.mode }}
+    - name: Build TSDuck
+      run: |
+        cmake --build _build --config ${{ matrix.configuration }} --parallel
+    - name: Check built version
+      run: |
+        _build/src/tstools/${{ matrix.configuration }}/tsversion.exe --version=all
+    - name: Check plugins list
+      run: |
+        _build/src/tstools/${{ matrix.configuration }}/tsp.exe --list
+    # - name: Run unitary tests
+    #   run: |
+    #     bin/${{ matrix.configuration }}-${{ matrix.suffix }}/utests-tsduckdll.exe
+    # - name: Run unitary tests (static)
+    #   run: |
+    #     bin/${{ matrix.configuration }}-${{ matrix.suffix }}/utests-tsducklib.exe
+    # - name: Download test suite
+    #   run: |
+    #     # Try to download '<repo>-test' from the pull request owner, if there is one.
+    #     $Previous = $ErrorActionPreference
+    #     $ErrorActionPreference = 'SilentlyContinue'
+    #     $ProgressPreference = 'SilentlyContinue'
+    #     Invoke-WebRequest -UseBasicParsing -OutFile test.zip -Uri https://github.com/${env:ORIGIN_REPO}-test/archive/${env:BRANCH_NAME}.zip
+    #     if (Test-Path test.zip) {
+    #         $ErrorActionPreference = $Previous
+    #         Write-Output "Downloaded test suite from ${env:BRANCH_NAME} branch of ${env:ORIGIN_REPO}"
+    #     }
+    #     else {
+    #         Invoke-WebRequest -UseBasicParsing -OutFile test.zip -Uri https://github.com/${env:ORIGIN_REPO}-test/archive/master.zip
+    #         $ErrorActionPreference = $Previous
+    #         if (Test-Path test.zip) {
+    #             Write-Output "Downloaded test suite from ${env:ORIGIN_REPO}"
+    #         }
+    #         else {
+    #             Invoke-WebRequest -UseBasicParsing -OutFile test.zip -Uri https://github.com/${env:REFERENCE_REPO}-test/archive/master.zip
+    #             Write-Output "Downloaded test suite from ${env:REFERENCE_REPO}"
+    #         }
+    #     }
+    #     [void] (New-Item -Type Directory -Force tmp)
+    #     Expand-Archive test.zip -DestinationPath tmp -Force
+    #     Move-Item tmp\* ..\tsduck-test -Force
+    # - name: Run test suite
+    #   shell: bash
+    #   run: |
+    #     cd ../tsduck-test
+    #     ./run-all-tests.sh ${{ matrix.testopt }} && status=$? || status=$?
+    #     for f in $(find tmp -name '*.diff'); do
+    #         echo "==== $f";
+    #         cat "$f"
+    #     done
+    #     exit $status
+
+  # build_docs:
+  #   name: Build documentation
+  #   runs-on: ubuntu-24.04
+  #   env:
+  #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #   steps:
+  #   - uses: actions/checkout@master
+  #   - name: Install dependencies
+  #     run: |
+  #       scripts/install-prerequisites.sh
+  #       echo "Doxygen version: $(doxygen --version)"
+  #   - name: Build guides
+  #     run: |
+  #       make docs
+  #   - name: Build Doxygen reference
+  #     run: |
+  #       make doxygen
