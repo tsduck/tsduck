@@ -18,7 +18,7 @@ void ts::FatalError(const char* message, size_t length)
 {
 #if defined(TS_WINDOWS)
     ::DWORD written = 0;
-    ::WriteFile(::GetStdHandle(STD_ERROR_HANDLE), message, ::DWORD(length), &written, 0);
+    ::WriteFile(::GetStdHandle(STD_ERROR_HANDLE), message, ::DWORD(length), &written, nullptr);
 #else
     [[maybe_unused]] ssize_t n = ::write(STDERR_FILENO, message, length);
 #endif

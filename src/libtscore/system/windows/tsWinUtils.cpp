@@ -69,7 +69,7 @@ ts::UString ts::WinErrorMessage(::DWORD code, const UString& moduleName, ::DWORD
         // Get a handle to the module. Fail if the module is not loaded in memory.
         // This kind of handle does not need to be closed.
         const ::HMODULE hmod = ::GetModuleHandleW(moduleName.wc_str());
-        if (hmod != 0) {
+        if (hmod != nullptr) {
             message.resize(1024);
             ::DWORD length = ::FormatMessageW(FORMAT_MESSAGE_FROM_HMODULE, hmod, code, 0, message.wc_str(), ::DWORD(message.size()), nullptr);
             message.trimLength(length, true);
@@ -88,7 +88,7 @@ ts::UString ts::WinErrorMessage(::DWORD code, const UString& moduleName, ::DWORD
         ::DWORD code2 = 0;
         ::DWORD length = 0;
         // First call without output buffer, to get the required size.
-        ::InternetGetLastResponseInfoW(&code2, 0, &length);
+        ::InternetGetLastResponseInfoW(&code2, nullptr, &length);
         if (length > 0) {
             // Now, we know the required size. Retry with a correctly-sized buffer.
             UString info(size_t(length), CHAR_NULL);
@@ -242,7 +242,7 @@ bool ts::ComSuccess(::HRESULT hr, const UChar* message, Report& report)
 bool ts::ComExpose(::IUnknown* object, const ::IID& iid)
 {
     ::IUnknown* iface;
-    if (object != 0 && SUCCEEDED(object->QueryInterface(iid, (void**)&iface))) {
+    if (object != nullptr && SUCCEEDED(object->QueryInterface(iid, (void**)&iface))) {
         iface->Release();
         return true;
     }
@@ -284,7 +284,7 @@ public:
     report.log(2, u"WinUtils.GetHandleFromObject: IKsObject found, calling KsGetObjectHandle");
     const ::HANDLE h = ks->KsGetObjectHandle();
     report.log(2, u"WinUtils.GetHandleFromObject: handle: 0x%X", uintptr_t(h));
-    return h == 0 ? INVALID_HANDLE_VALUE : h;
+    return h == nullptr ? INVALID_HANDLE_VALUE : h;
 }
 
 
@@ -297,8 +297,8 @@ ts::UString ts::GetStringPropertyBag(::IMoniker* object_moniker, const ::OLECHAR
 {
     // Bind to the object's storage, get the "property bag" interface
     ComPtr <::IPropertyBag> pbag;
-    ::HRESULT hr = object_moniker->BindToStorage(0,                       // No cached context
-                                                 0,                       // Not part of a composite
+    ::HRESULT hr = object_moniker->BindToStorage(nullptr,                 // No cached context
+                                                 nullptr,                 // Not part of a composite
                                                  ::IID_IPropertyBag,      // ID of requested interface
                                                  (void**)pbag.creator()); // Returned interface
     if (!ComSuccess(hr, u"IMoniker::BindToStorage", report)) {
@@ -309,7 +309,7 @@ ts::UString ts::GetStringPropertyBag(::IMoniker* object_moniker, const ::OLECHAR
     UString value;
     ::VARIANT var;
     ::VariantInit(&var);
-    hr = pbag->Read(property_name, &var, 0);
+    hr = pbag->Read(property_name, &var, nullptr);
     if (hr != ERROR_KEY_DOES_NOT_EXIST && ComSuccess(hr, u"IPropertyBag::Read", report)) {
         value = ToString(var);
     }
@@ -390,11 +390,11 @@ ts::UString ts::NameGUID(const ::GUID& guid)
         {u"HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Class\\", u"System.Class:"},
         {u"HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\MediaCategories\\", u"System.MediaCategory:"},
         {u"HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\MediaInterfaces\\", u"System.MediaInterfaces:"},
-        {0, 0}
+        {nullptr, nullptr}
     };
 
     // Check if the GUID is stored in the registry.
-    for (const RegistryLocation* p = registryLocations; p->key != 0; ++p) {
+    for (const RegistryLocation* p = registryLocations; p->key != nullptr; ++p) {
         UString name;
         if (!(name = Registry::GetValue(p->key + fmt)).empty() ||
             !(name = Registry::GetValue(p->key + fmt0)).empty() ||
@@ -822,10 +822,10 @@ ts::UString ts::NameGUID(const ::GUID& guid)
         _N_(TIME_FORMAT_NONE)
         _N_(TIME_FORMAT_SAMPLE)
 #undef  _N_
-        {0, 0}
+        {nullptr, nullptr}
     };
 
-    for (const KnownValue* p = knownValues; p->id != 0; ++p) {
+    for (const KnownValue* p = knownValues; p->id != nullptr; ++p) {
         if (*(p->id) == guid) {
             return p->name;
         }

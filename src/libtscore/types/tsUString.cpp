@@ -53,7 +53,7 @@ ts::UString::UString(const ::WCHAR* s, size_type count, const allocator_type& al
 
 // Constructor using a Windows Unicode string.
 ts::UString::UString(const ::WCHAR* s, const allocator_type& alloc) :
-    UString(s == 0 ? &CHAR_NULL : reinterpret_cast<const UChar*>(s), alloc)
+    UString(s == nullptr ? &CHAR_NULL : reinterpret_cast<const UChar*>(s), alloc)
 {
     assert(sizeof(::WCHAR) == sizeof(UChar));
 }

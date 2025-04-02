@@ -71,7 +71,7 @@ namespace ts {
         //! @param [in] hr An @c HRESULT value, typically the returned status of the system
         //! call which created @a p.
         //!
-        ComPtr(COMCLASS* p = 0, ::HRESULT hr = S_OK);
+        ComPtr(COMCLASS* p = nullptr, ::HRESULT hr = S_OK);
 
         //!
         //! Copy constructor.
@@ -410,7 +410,7 @@ void ts::ComPtr<COMCLASS>::release()
     if (_ptr != nullptr) {
         TRACE_RELEASE();
         _ptr->Release();
-        _ptr = 0;
+        _ptr = nullptr;
     }
 }
 
@@ -528,7 +528,7 @@ template <class COMCLASS>
 ts::ComPtr<COMCLASS>& ts::ComPtr<COMCLASS>::queryInterface(::IUnknown* obj, const IID& interface_id, Report& report)
 {
     release();
-    if (obj != 0) {
+    if (obj != nullptr) {
         ::HRESULT hr = obj->QueryInterface(interface_id, (void**)&_ptr);
         if (!ComSuccess(hr, u"IUnknown::QueryInterface", report)) {
             _ptr = nullptr;

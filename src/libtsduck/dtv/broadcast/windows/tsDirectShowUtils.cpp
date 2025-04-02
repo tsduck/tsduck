@@ -81,7 +81,7 @@ namespace {
 
 ts::UString ts::GetTuningSpaceFriendlyName(::ITuningSpace* tspace, Report& report)
 {
-    if (tspace == 0) {
+    if (tspace == nullptr) {
         return UString();
     }
     else {
@@ -92,7 +92,7 @@ ts::UString ts::GetTuningSpaceFriendlyName(::ITuningSpace* tspace, Report& repor
 
 ts::UString ts::GetTuningSpaceUniqueName(::ITuningSpace* tspace, Report& report)
 {
-    if (tspace == 0) {
+    if (tspace == nullptr) {
         return UString();
     }
     else {
@@ -103,7 +103,7 @@ ts::UString ts::GetTuningSpaceUniqueName(::ITuningSpace* tspace, Report& report)
 
 ts::UString ts::GetTuningSpaceClass(::ITuningSpace* tspace, Report& report)
 {
-    if (tspace == 0) {
+    if (tspace == nullptr) {
         return UString();
     }
     else {
@@ -114,7 +114,7 @@ ts::UString ts::GetTuningSpaceClass(::ITuningSpace* tspace, Report& report)
 
 ts::UString ts::GetTuningSpaceNetworkType(::ITuningSpace* tspace, Report& report)
 {
-    if (tspace == 0) {
+    if (tspace == nullptr) {
         return UString();
     }
 
@@ -136,7 +136,7 @@ ts::UString ts::GetTuningSpaceNetworkType(::ITuningSpace* tspace, Report& report
 
 ts::UString ts::GetTuningSpaceDescription(::ITuningSpace* tspace, Report& report)
 {
-    if (tspace == 0) {
+    if (tspace == nullptr) {
         return UString();
     }
 
@@ -224,7 +224,7 @@ ts::UString ts::DVBSystemTypeName(::DVBSystemType type)
 
 bool ts::CreateTuneRequest(DuckContext& duck, ComPtr<::ITuneRequest>& request, ::ITuningSpace* tuning_space, const ModulationArgs& params)
 {
-    if (tuning_space == 0) {
+    if (tuning_space == nullptr) {
         return false;
     }
 

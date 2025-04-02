@@ -98,7 +98,7 @@ namespace ts {
         SharedLibraryFlags _flags = SharedLibraryFlags::NONE;
 
 #if defined(TS_WINDOWS)
-        ::HMODULE _module = 0;
+        ::HMODULE _module = nullptr;
 #else
         void* _dl = nullptr; // dlopen/dlclose handle
 #endif

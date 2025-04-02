@@ -394,7 +394,7 @@ bool ts::DirectShowTest::displayTuningSpaces(const UString& margin)
 
 void ts::DirectShowTest::displayOneIKsPropertySet(::IKsPropertySet* ps, const ::GUID& psGuid, const char* psName, ::DWORD propId, const char* propName, const UString& margin)
 {
-    if (ps == 0) {
+    if (ps == nullptr) {
         return;
     }
 
@@ -419,7 +419,7 @@ void ts::DirectShowTest::displayOneIKsPropertySet(::IKsPropertySet* ps, const ::
 
 void ts::DirectShowTest::displayIKsPropertySet(::IUnknown* object, const UString& margin)
 {
-    if (object == 0) {
+    if (object == nullptr) {
         return;
     }
 
@@ -479,7 +479,7 @@ void ts::DirectShowTest::displayIKsPropertySet(::IUnknown* object, const UString
 
 void ts::DirectShowTest::displayOneIKsControl(::IKsControl* iks, const ::GUID& propSetGuid, const char* propSetName, ::ULONG propId, const char* propName, const UString& margin)
 {
-    if (iks == 0) {
+    if (iks == nullptr) {
         return;
     }
 
@@ -511,7 +511,7 @@ void ts::DirectShowTest::displayOneIKsControl(::IKsControl* iks, const ::GUID& p
 
 void ts::DirectShowTest::displayIKsControl(::IUnknown* object, const UString& margin)
 {
-    if (object == 0) {
+    if (object == nullptr) {
         return;
     }
 
@@ -571,7 +571,7 @@ void ts::DirectShowTest::displayIKsControl(::IUnknown* object, const UString& ma
 
 void ts::DirectShowTest::displayIKsTopologyInfo(::IUnknown* object, const UString& margin)
 {
-    if (object == 0) {
+    if (object == nullptr) {
         return;
     }
 
@@ -634,7 +634,7 @@ void ts::DirectShowTest::displayIKsTopologyInfo(::IUnknown* object, const UStrin
 
 void ts::DirectShowTest::displayBDATopology(::IUnknown* object, const UString& margin)
 {
-    if (object == 0) {
+    if (object == nullptr) {
         return;
     }
 
@@ -735,7 +735,7 @@ void ts::DirectShowTest::displayBDATopology(::IUnknown* object, const UString& m
 
 void ts::DirectShowTest::displayEnumerateTuningSpaces(::IEnumTuningSpaces* enum_tspace, const UString& margin)
 {
-    if (enum_tspace == 0) {
+    if (enum_tspace == nullptr) {
         return;
     }
 
@@ -755,7 +755,7 @@ void ts::DirectShowTest::displayEnumerateTuningSpaces(::IEnumTuningSpaces* enum_
 
 void ts::DirectShowTest::displayITuner(::IUnknown* object, const UString& margin)
 {
-    if (object == 0) {
+    if (object == nullptr) {
         return;
     }
 
@@ -1059,10 +1059,10 @@ void ts::DirectShowTest::displayInterfaces(::IUnknown* object, const UString& ma
         _I_(IVideoEncoder)
         _I_(IVideoFrameStep)
 #undef _I_
-        {0, 0}
+        {nullptr, nullptr}
     };
 
-    for (const Interface* p = interfaces; p->iid != 0; ++p) {
+    for (const Interface* p = interfaces; p->iid != nullptr; ++p) {
         if (ComExpose(object, *(p->iid))) {
             _output << margin << "interface " << p->name << std::endl;
         }

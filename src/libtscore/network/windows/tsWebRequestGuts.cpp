@@ -76,8 +76,8 @@ private:
 
 ts::WebRequest::SystemGuts::SystemGuts(WebRequest& request) :
     _request(request),
-    _inet(0),
-    _url(0),
+    _inet(nullptr),
+    _url(nullptr),
     _redirectCount(0)
 {
 }
@@ -154,10 +154,10 @@ void ts::WebRequest::SystemGuts::error(const UChar* message, ::DWORD code)
 void ts::WebRequest::SystemGuts::clear()
 {
     // Close Internet handles.
-    if (_url != 0 && !::InternetCloseHandle(_url)) {
+    if (_url != nullptr && !::InternetCloseHandle(_url)) {
         error(u"error closing URL handle");
     }
-    if (_inet != 0 && !::InternetCloseHandle(_inet)) {
+    if (_inet != nullptr && !::InternetCloseHandle(_inet)) {
         error(u"error closing main Internet handle");
     }
     _url = nullptr;
@@ -178,7 +178,7 @@ bool ts::WebRequest::SystemGuts::init()
     // Prepare proxy name.
     const bool useProxy = !_request.proxyHost().empty();
     ::DWORD access = INTERNET_OPEN_TYPE_PRECONFIG;
-    const ::WCHAR* proxy = 0;
+    const ::WCHAR* proxy = nullptr;
     UString proxyName(_request.proxyHost());
 
     if (useProxy) {
@@ -190,8 +190,8 @@ bool ts::WebRequest::SystemGuts::init()
     }
 
     // Open the main Internet handle.
-    _inet = ::InternetOpenW(_request._userAgent.wc_str(), access, proxy, 0, 0);
-    if (_inet == 0) {
+    _inet = ::InternetOpenW(_request._userAgent.wc_str(), access, proxy, nullptr, 0);
+    if (_inet == nullptr) {
         error(u"error accessing Internet handle");
         return false;
     }
@@ -267,7 +267,7 @@ bool ts::WebRequest::SystemGuts::init()
             headers.append(it.second);
         }
     }
-    ::WCHAR* headerAddress = 0;
+    ::WCHAR* headerAddress = nullptr;
     ::DWORD  headerLength = 0;
     if (!headers.empty()) {
         headerAddress = headers.wc_str();
@@ -281,7 +281,7 @@ bool ts::WebRequest::SystemGuts::init()
 
         // Now open the URL.
         _url = ::InternetOpenUrlW(_inet, _previousURL.wc_str(), headerAddress, headerLength, urlFlags, 0);
-        if (_url == 0) {
+        if (_url == nullptr) {
             error(u"error opening URL");
             clear();
             return false;
@@ -306,7 +306,7 @@ bool ts::WebRequest::SystemGuts::init()
 
         // Close this URL, we need to redirect to _finalURL.
         ::InternetCloseHandle(_url);
-        _url = 0;
+        _url = nullptr;
 
         // Limit the number of redirections to avoid "looping sites".
         if (++_redirectCount > 16) {

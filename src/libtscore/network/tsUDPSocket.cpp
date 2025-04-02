@@ -666,7 +666,7 @@ int ts::UDPSocket::receiveOne(void* data,
         if (sock == INVALID_SOCKET) {
             return LastSysErrorCode();
         }
-        if (::WSAIoctl(sock, SIO_GET_EXTENSION_FUNCTION_POINTER, &guid, sizeof(guid), &funcAddress, sizeof(funcAddress), &dwBytes, 0, 0) != 0) {
+        if (::WSAIoctl(sock, SIO_GET_EXTENSION_FUNCTION_POINTER, &guid, sizeof(guid), &funcAddress, sizeof(funcAddress), &dwBytes, nullptr, nullptr) != 0) {
             const int err = LastSysErrorCode();
             ::closesocket(sock);
             return err;
@@ -698,12 +698,12 @@ int ts::UDPSocket::receiveOne(void* data,
 
     // Wait for a message.
     ::DWORD insize = 0;
-    if (_wsaRevcMsg(getSocket(), &msg, &insize, 0, 0)  != 0) {
+    if (_wsaRevcMsg(getSocket(), &msg, &insize, nullptr, nullptr)  != 0) {
         return LastSysErrorCode();
     }
 
     // Browse returned ancillary data.
-    for (::WSACMSGHDR* cmsg = WSA_CMSG_FIRSTHDR(&msg); cmsg != 0; cmsg = WSA_CMSG_NXTHDR(&msg, cmsg)) {
+    for (::WSACMSGHDR* cmsg = WSA_CMSG_FIRSTHDR(&msg); cmsg != nullptr; cmsg = WSA_CMSG_NXTHDR(&msg, cmsg)) {
         if (cmsg->cmsg_level == IPPROTO_IP && cmsg->cmsg_type == IP_PKTINFO) {
             const ::IN_PKTINFO* info = reinterpret_cast<const ::IN_PKTINFO*>(WSA_CMSG_DATA(cmsg));
             destination = IPSocketAddress(info->ipi_addr, _local_address.port());

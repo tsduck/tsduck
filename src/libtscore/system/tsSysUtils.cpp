@@ -475,7 +475,7 @@ bool ts::SetBinaryModeStdin(Report& report)
     if (::_setmode(_fileno(stdin), _O_BINARY) < 0) {
         report.error(u"cannot set standard input to binary mode");
         Args* args = dynamic_cast<Args*>(&report);
-        if (args != 0) {
+        if (args != nullptr) {
             args->exitOnError();
         }
         return false;
@@ -491,7 +491,7 @@ bool ts::SetBinaryModeStdout(Report& report)
     if (::_setmode(_fileno(stdout), _O_BINARY) < 0) {
         report.error(u"cannot set standard output to binary mode");
         Args* args = dynamic_cast<Args*>(&report);
-        if (args != 0) {
+        if (args != nullptr) {
             args->exitOnError();
         }
         return false;

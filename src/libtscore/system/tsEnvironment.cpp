@@ -218,7 +218,7 @@ void ts::GetEnvironment(Environment& env)
 #if defined(TS_WINDOWS)
 
     const ::LPWCH strings = ::GetEnvironmentStringsW();
-    if (strings != 0) {
+    if (strings != nullptr) {
         size_t len;
         for (const ::WCHAR* p = strings; (len = ::wcslen(p)) != 0; p += len + 1) {
             assert(sizeof(::WCHAR) == sizeof(UChar));

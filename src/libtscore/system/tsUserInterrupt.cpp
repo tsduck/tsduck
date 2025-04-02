@@ -111,7 +111,7 @@ void ts::UserInterrupt::main()
                 ui->_interrupted = true;
 
                 // Notify the application handler
-                if (ui->_handler != 0) {
+                if (ui->_handler != nullptr) {
                     ui->_handler->handleInterrupt();
                 }
 

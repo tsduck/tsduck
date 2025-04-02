@@ -95,7 +95,7 @@ bool ts::DirectShowGraph::addFilter(::IBaseFilter* filter, const wchar_t* name, 
     report.debug(u"adding filter \"%s\", graph valid: %s, filter not null: %s", ToString(name), isValid(), filter != nullptr);
 
     if (isValid() && filter != nullptr) {
-        const ::HRESULT hr = _graph_builder->AddFilter(filter, name != 0 ? name : L"");
+        const ::HRESULT hr = _graph_builder->AddFilter(filter, name != nullptr ? name : L"");
         return ComSuccess(hr, u"IFilterGraph::AddFilter", report);
     }
     else {
@@ -163,7 +163,7 @@ bool ts::DirectShowGraph::stop(Report& report)
 
 bool ts::DirectShowGraph::connectFilters(::IBaseFilter* filter1, ::IBaseFilter* filter2, Report& report)
 {
-    if (isValid() && filter1 != 0 && filter2 != 0) {
+    if (isValid() && filter1 != nullptr && filter2 != nullptr) {
         // Get unconnected pins
         PinPtrVector pins1;
         PinPtrVector pins2;
@@ -193,7 +193,7 @@ bool ts::DirectShowGraph::connectFilters(::IBaseFilter* filter1, ::IBaseFilter* 
 bool ts::DirectShowGraph::cleanupDownstream(::IBaseFilter* filter, Report& report)
 {
     // Eliminate invalid parameters.
-    if (!isValid() || filter == 0) {
+    if (!isValid() || filter == nullptr) {
         return false;
     }
 

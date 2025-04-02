@@ -597,7 +597,7 @@ bool ts::TunerDevice::FindTuners(DuckContext& duck, TunerDevice* tuner, TunerPtr
         // Get physical device path.
         UString device_path;
         ::WCHAR* wstring = nullptr;
-        ::HRESULT hr = tuner_monikers[moniker_index]->GetDisplayName(0, 0, &wstring);
+        ::HRESULT hr = tuner_monikers[moniker_index]->GetDisplayName(nullptr, nullptr, &wstring);
         if (ComSuccess(hr, u"IMoniker::GetDisplayName", report)) {
             device_path = ToString(wstring);
             ::CoTaskMemFree(wstring);

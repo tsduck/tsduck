@@ -61,7 +61,7 @@ void ts::SharedLibrary::load(const fs::path& filename)
     _error = u"statically linked application";
 #elif defined(TS_WINDOWS)
     _module = ::LoadLibraryExW(_filename.c_str(), nullptr, 0);
-    _is_loaded = _module != 0;
+    _is_loaded = _module != nullptr;
     if (!_is_loaded) {
         _error.assignFromUTF8(SysErrorCodeMessage());
     }
