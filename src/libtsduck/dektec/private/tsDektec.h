@@ -47,6 +47,12 @@ TS_MSC_NOWARNING(4626)
 TS_MSC_NOWARNING(5026)
 TS_MSC_NOWARNING(5027)
 TS_MSC_NOWARNING(5204)
+TS_GCC_NOWARNING(non-virtual-dtor)
+TS_GCC_NOWARNING(overloaded-virtual)
+TS_GCC_NOWARNING(zero-as-null-pointer-constant)
+TS_LLVM_NOWARNING(non-virtual-dtor)
+TS_LLVM_NOWARNING(overloaded-virtual)
+TS_LLVM_NOWARNING(zero-as-null-pointer-constant)
 #define _NO_USING_NAMESPACE_DTAPI
 #include "DTAPI.h"
 TS_POP_WARNING()
