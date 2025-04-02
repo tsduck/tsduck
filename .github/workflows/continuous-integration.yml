@@ -56,7 +56,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-24.04, macos-latest]
+        os: [ubuntu-24.04, macos-15]
         compiler: [gcc, clang]
         # Currently disable C++23 compilation, general support in compilers is too poor.
         # std: [20, 23]
@@ -67,14 +67,14 @@ jobs:
         - os: ubuntu-24.04
           compiler: clang
           llvm: true
-        - os: macos-latest
+        - os: macos-15
           # It has been noted on GitHub macOS runners that the host name can change
           # between steps or even the middle of a step. This breaks the naming scheme
           # of the build directory for binaries. As a consequence, we force BINDIR=bin.
           bindir: bin
           make: gmake DEBUG=${{ inputs.DEBUG }} VERBOSE=${{ inputs.VERBOSE }}
         exclude:
-        - os: macos-latest
+        - os: macos-15
           compiler: gcc
           # Don't use gcc on macOS.
     name: Build on ${{ matrix.os }} with ${{ matrix.compiler }}, C++${{ matrix.std }}
