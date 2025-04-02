@@ -278,7 +278,7 @@ fs::path ts::UserHomeDirectory()
 {
 #if defined(TS_WINDOWS)
 
-    ::HANDLE process = 0;
+    ::HANDLE process = INVALID_HANDLE_VALUE;
     if (::OpenProcessToken(::GetCurrentProcess(), TOKEN_QUERY, &process) == 0) {
         throw ts::Exception(u"cannot open current process", ::GetLastError());
     }
