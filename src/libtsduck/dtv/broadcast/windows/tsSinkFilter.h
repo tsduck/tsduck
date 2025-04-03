@@ -25,6 +25,10 @@ namespace ts {
     class SinkEnumMediaTypes;
     class SinkEnumPins;
 
+    TS_PUSH_WARNING()
+    TS_GCC_NOWARNING(non-virtual-dtor)
+    TS_LLVM_NOWARNING(non-virtual-dtor)
+    
     //!
     //! The DirectShow sink filter (Windows-specific).
     //! @ingroup libtsduck windows
@@ -319,4 +323,6 @@ namespace ts {
         SinkFilter*      _filter;
         bool             _done;
     };
+
+    TS_POP_WARNING()
 }

@@ -256,6 +256,10 @@ bool ts::ComExpose(::IUnknown* object, const ::IID& iid)
 // Get the handle of a COM object.
 //-----------------------------------------------------------------------------
 
+TS_PUSH_WARNING()
+TS_GCC_NOWARNING(non-virtual-dtor)
+TS_LLVM_NOWARNING(non-virtual-dtor)
+
 // WARNING: We are doing something weird here...
 // The IKsObject interface is supposedly declared in ksproxy.h.
 // However, the declaraction is not inlined, unless the Windows driver
@@ -269,6 +273,8 @@ IKsObject : public IUnknown
 public:
     virtual HANDLE STDMETHODCALLTYPE KsGetObjectHandle();
 };
+
+TS_POP_WARNING()
 
 ::HANDLE ts::GetHandleFromObject(::IUnknown* obj, Report& report)
 {
