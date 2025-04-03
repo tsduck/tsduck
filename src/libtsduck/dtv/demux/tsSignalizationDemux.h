@@ -700,6 +700,7 @@ namespace ts {
         virtual void handleSection(SectionDemux&, const Section&) override;
 
         // Process specific tables.
+        void handleTSId(uint16_t, TID);
         void handlePAT(const PAT&, PID);
         void handleCAT(const CAT&, PID);
         void handlePMT(const PMT&, PID);

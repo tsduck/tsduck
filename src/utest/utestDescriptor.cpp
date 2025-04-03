@@ -83,4 +83,13 @@ TSUNIT_DEFINE_TEST(Iterator)
         TSUNIT_ASSERT(&d == &dlist[index]);
         index++;
     }
+
+    const ts::DescriptorList& dlist2(dlist);
+    index = 0;
+    for (const auto& d : dlist2) {
+        TSUNIT_ASSERT(d.content() == dlist[index].content());
+        TSUNIT_ASSERT(d.size() == dlist[index].size());
+        TSUNIT_ASSERT(&d == &dlist[index]);
+        index++;
+    }
 }

@@ -765,6 +765,21 @@ void ts::SignalizationDemux::handleSection(SectionDemux&, const Section& section
 
 
 //----------------------------------------------------------------------------
+// Process a TS id for the current TS.
+//----------------------------------------------------------------------------
+
+void ts::SignalizationDemux::handleTSId(uint16_t ts_id, TID tid)
+{
+    if (_ts_id == INVALID_TS_ID || _ts_id != ts_id) {
+        _ts_id = ts_id;
+        if (_handler != nullptr) {
+            _handler->handleTSId(ts_id, tid);
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Process a PAT.
 //----------------------------------------------------------------------------
 
@@ -785,10 +800,12 @@ void ts::SignalizationDemux::handlePAT(const PAT& pat, PID pid)
         }
     }
 
+    // Handle current TS id.
+    handleTSId(pat.ts_id, pat.tableId());
+
     // Remember the last PAT.
     _last_pat = pat;
     _last_pat_handled = false;
-    _ts_id = pat.ts_id;
 
     // Notify the PAT to the application.
     if (_handler != nullptr && isFilteredTableId(TID_PAT)) {
@@ -990,7 +1007,7 @@ void ts::SignalizationDemux::handleSDT(const SDT& sdt, PID pid)
     if (sdt.isActual()) {
 
         // Get transport stream identification.
-        _ts_id = sdt.ts_id;
+        handleTSId(sdt.ts_id, sdt.tableId());
         _orig_network_id = sdt.onetw_id;
 
         // Collect service information. Loop on all services in the SDT.
@@ -1036,6 +1053,9 @@ void ts::SignalizationDemux::handleMGT(const MGT& mgt, PID pid)
 template<class XVCT> requires std::derived_from<XVCT, ts::VCT>
 void ts::SignalizationDemux::handleVCT(const XVCT& vct, PID pid, void (SignalizationHandlerInterface::*handle)(const XVCT&, PID))
 {
+    // Handle current TS id.
+    handleTSId(vct.transport_stream_id, vct.tableId());
+
     // Call specific and generic form of VCT handler.
     if (_handler != nullptr && isFilteredTableId(vct.tableId())) {
         (_handler->*handle)(vct, pid);

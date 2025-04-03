@@ -14,13 +14,12 @@
 #include "tsPluginRepository.h"
 #include "tsBinaryTable.h"
 #include "tsSectionDemux.h"
+#include "tsSignalizationDemux.h"
+#include "tsShortEventDescriptor.h"
+#include "tsExtendedEventDescriptor.h"
 #include "tsService.h"
-#include "tsAlgorithm.h"
 #include "tsTime.h"
-#include "tsPAT.h"
-#include "tsTDT.h"
-#include "tsSDT.h"
-#include "tsMJD.h"
+#include "tsEIT.h"
 
 
 //----------------------------------------------------------------------------
@@ -28,7 +27,7 @@
 //----------------------------------------------------------------------------
 
 namespace ts {
-    class EITPlugin: public ProcessorPlugin, private TableHandlerInterface, private SectionHandlerInterface
+    class EITPlugin: public ProcessorPlugin, private SignalizationHandlerInterface, private SectionHandlerInterface
     {
         TS_PLUGIN_CONSTRUCTORS(EITPlugin);
     public:
@@ -39,18 +38,29 @@ namespace ts {
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
-        // Description of one service
-        class ServiceDesc: public Service
+        // Description of one event (for full EPG dump).
+        class EventDesc
         {
         public:
-            // Constructor, destructor.
-            ServiceDesc() = default;
-            ~ServiceDesc() override;
+            UString     title {};
+            UString     short_text {};     // from short_event_descriptor
+            UString     extended_text {};  // from extended_event_descriptor
+            Time        start_time {};
+            cn::seconds duration {0};
 
-            // Public fields
+            // Events are compared according to their start time.
+            bool operator<(const EventDesc& other) const { return this->start_time < other.start_time; }
+        };
+
+        // Description of one service.
+        class ServiceDesc
+        {
+        public:
+            Service          service {};
             SectionCounter   eitpf_count = 0;
             SectionCounter   eits_count = 0;
-            cn::milliseconds max_time {};   // Max time ahead of current time for EIT
+            cn::milliseconds max_time {};            // Max time ahead of current time for EIT
+            std::map<uint16_t,EventDesc> events {};  // Map of events, by event id.
         };
 
         // Combination of TS id / service id into one 32-bit index
@@ -58,11 +68,11 @@ namespace ts {
         static uint16_t GetTSId(uint32_t index) { return (index >> 16) & 0xFFFF; }
         static uint16_t GetServiceId(uint32_t index) { return index & 0xFFFF; }
 
-        // Map of services, indexed by combination of TS id / service id
-        using ServiceMap = std::map <uint32_t, ServiceDesc>;
-
         // Command line options.
-        fs::path           _outfile_name {};
+        fs::path _outfile_name {};
+        bool     _summary = false;
+        bool     _epg_dump = false;
+        bool     _detailed = false;
 
         // Working data.
         std::ofstream      _outfile {};
@@ -71,16 +81,23 @@ namespace ts {
         SectionCounter     _eitpf_oth_count = 0;
         SectionCounter     _eits_act_count = 0;
         SectionCounter     _eits_oth_count = 0;
-        SectionDemux       _demux {duck, this, this};
-        ServiceMap         _services {};
-        std::optional<uint16_t> _ts_id {};
+        SectionDemux       _sec_demux {duck, nullptr, this};
+        SignalizationDemux _sig_demux {duck, this};
+        uint16_t           _ts_id = INVALID_TS_ID;
+        std::map<uint32_t,ServiceDesc> _services {};  // Map of services, indexed by combination of TS id / service id
 
         // Return a reference to a service description
         ServiceDesc& getServiceDesc(uint16_t ts_id, uint16_t service_id);
 
-        // Hooks
-        virtual void handleTable(SectionDemux&, const BinaryTable&) override;
+        // Print the EPG reports.
+        void printEPG(std::ostream& out);
+        void printSummary(std::ostream& out);
+
+        // Inherited methods.
         virtual void handleSection(SectionDemux&, const Section&) override;
+        virtual void handleService(uint16_t ts_id, const Service& service, const PMT& pmt, bool removed) override;
+        virtual void handleTSId(uint16_t ts_id, TID tid) override;
+        virtual void handleUTC(const Time& utc, TID tid) override;
 
         // Number of days in a duration, used for EPG depth
         static cn::days::rep Days(cn::milliseconds ms) { return cn::duration_cast<cn::days>(ms).count(); }
@@ -97,36 +114,17 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"eit", ts::EITPlugin);
 ts::EITPlugin::EITPlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Analyze EIT sections", u"[options]")
 {
+    option(u"detailed", 'd');
+    help(u"detailed", u"With --epg-dump, display detailed information on events.");
+
+    option(u"epg-dump", 'e');
+    help(u"epg-dump", u"Display the content of the EPG, all events, per service.");
+
     option(u"output-file", 'o', FILENAME);
     help(u"output-file", u"Specify the output file for the report (default: standard output).");
-}
 
-ts::EITPlugin::ServiceDesc::~ServiceDesc()
-{
-}
-
-
-//----------------------------------------------------------------------------
-// Return a reference to a service description
-//----------------------------------------------------------------------------
-
-ts::EITPlugin::ServiceDesc& ts::EITPlugin::getServiceDesc(uint16_t ts_id, uint16_t service_id)
-{
-    uint32_t index = MakeIndex(ts_id, service_id);
-
-    if (!_services.contains(index)) {
-        verbose(u"new service %n, TS id %n", service_id, ts_id);
-        ServiceDesc& serv(_services[index]);
-        serv.setId(service_id);
-        serv.setTSId(ts_id);
-        return serv;
-    }
-    else {
-        ServiceDesc& serv(_services[index]);
-        assert(serv.hasId(service_id));
-        assert(serv.hasTSId(ts_id));
-        return serv;
-    }
+    option(u"summary", 's');
+    help(u"summary", u"Display a summary of EIT presence. This is the default if --epg-dump is not specified.");
 }
 
 
@@ -137,6 +135,9 @@ ts::EITPlugin::ServiceDesc& ts::EITPlugin::getServiceDesc(uint16_t ts_id, uint16
 bool ts::EITPlugin::getOptions()
 {
     getPathValue(_outfile_name, u"output-file");
+    _detailed = present(u"detailed");
+    _epg_dump = present(u"epg-dump");
+    _summary = present(u"summary") || !_epg_dump;
     return true;
 }
 
@@ -164,12 +165,11 @@ bool ts::EITPlugin::start()
     _eits_act_count = 0;
     _eits_oth_count = 0;
     _services.clear();
-    _ts_id.reset();
-    _demux.reset();
-    _demux.addPID(PID_PAT);
-    _demux.addPID(PID_SDT);
-    _demux.addPID(PID_EIT);
-    _demux.addPID(PID_TDT);
+    _ts_id = INVALID_TS_ID;
+    _sec_demux.reset();
+    _sec_demux.addPID(PID_EIT);
+    _sig_demux.reset();
+    _sig_demux.addFullFilters();
 
     return true;
 }
@@ -181,13 +181,79 @@ bool ts::EITPlugin::start()
 
 bool ts::EITPlugin::stop()
 {
-    std::ostream& out (_outfile.is_open() ? _outfile : std::cout);
+    std::ostream& out(_outfile.is_open() ? _outfile : std::cout);
+    if (_epg_dump) {
+        printEPG(out);
+    }
+    if (_epg_dump && _summary) {
+        out << std::endl;
+    }
+    if (_summary) {
+        printSummary(out);
+    }
+    if (_outfile.is_open()) {
+        _outfile.close();
+    }
+    return true;
+}
 
-    // Global summary
+
+//----------------------------------------------------------------------------
+// Packet processing method
+//----------------------------------------------------------------------------
+
+ts::ProcessorPlugin::Status ts::EITPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
+{
+    _sig_demux.feedPacket(pkt);
+    _sec_demux.feedPacket(pkt);
+    return TSP_OK;
+}
+
+
+//----------------------------------------------------------------------------
+// Return a reference to a service description
+//----------------------------------------------------------------------------
+
+ts::EITPlugin::ServiceDesc& ts::EITPlugin::getServiceDesc(uint16_t ts_id, uint16_t service_id)
+{
+    uint32_t index = MakeIndex(ts_id, service_id);
+
+    if (!_services.contains(index)) {
+        verbose(u"new service %n, TS id %n", service_id, ts_id);
+        ServiceDesc& serv(_services[index]);
+        serv.service.setId(service_id);
+        serv.service.setTSId(ts_id);
+        return serv;
+    }
+    else {
+        ServiceDesc& serv(_services[index]);
+        assert(serv.service.hasId(service_id));
+        assert(serv.service.hasTSId(ts_id));
+        return serv;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Print the EPG dump.
+//----------------------------------------------------------------------------
+
+void ts::EITPlugin::printEPG(std::ostream& out)
+{
+    // @@@@
+}
+
+
+//----------------------------------------------------------------------------
+// Print the EPG summary.
+//----------------------------------------------------------------------------
+
+void ts::EITPlugin::printSummary(std::ostream& out)
+{
     out << "Summary" << std::endl
         << "-------" << std::endl;
-    if (_ts_id.has_value()) {
-        out << UString::Format(u"TS id:         %d (0x%04X)", _ts_id.value(), _ts_id.value()) << std::endl;
+    if (_ts_id != INVALID_TS_ID) {
+        out << UString::Format(u"TS id:         %n", _ts_id) << std::endl;
     }
     if (_last_utc != Time::Epoch) {
         out << "Last UTC:      " << _last_utc.format(Time::DATETIME) << std::endl;
@@ -210,8 +276,8 @@ bool ts::EITPlugin::stop()
     size_t name_width = 0;
     for (const auto& it : _services) {
         const ServiceDesc& serv(it.second);
-        name_width = std::max(name_width, serv.getName().width());
-        if (_ts_id.has_value() && serv.hasTSId(_ts_id.value())) {
+        name_width = std::max(name_width, serv.service.getName().width());
+        if (_ts_id != INVALID_TS_ID && serv.service.hasTSId(_ts_id)) {
             // Actual TS
             scount_act++;
             if (serv.eitpf_count != 0) {
@@ -247,95 +313,45 @@ bool ts::EITPlugin::stop()
         << UString::Format(u"---  ------  ------  %s  ------  ----  --------", UString(name_width, u'-')) << std::endl;
     for (const auto& it : _services) {
         const ServiceDesc& serv(it.second);
-        const bool actual = _ts_id.has_value() && serv.hasTSId(_ts_id.value());
+        const bool actual = _ts_id != INVALID_TS_ID && serv.service.hasTSId(_ts_id);
         out << UString::Format(u"%s  0x%04X  0x%04X  %-*s  %-6s  %-4s  %8d",
                                actual ? u"Act" : u"Oth",
-                               serv.getTSId(), serv.getId(),
-                               name_width, serv.getName(),
+                               serv.service.getTSId(), serv.service.getId(),
+                               name_width, serv.service.getName(),
                                UString::YesNo(serv.eitpf_count != 0),
                                UString::YesNo(serv.eits_count != 0),
                                Days(serv.max_time))
             << std::endl;
     }
-
-    // Close output file
-    if (_outfile.is_open()) {
-        _outfile.close();
-    }
-
-    return true;
 }
 
 
 //----------------------------------------------------------------------------
-// Invoked by the demux when a complete table is available.
+// Invoked when a new TS id, UTC time, or service info is available.
 //----------------------------------------------------------------------------
 
-void ts::EITPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
+void ts::EITPlugin::handleTSId(uint16_t ts_id, TID tid)
 {
-    switch (table.tableId()) {
+    _ts_id = ts_id;
+}
 
-        case TID_PAT: {
-            if (table.sourcePID() == PID_PAT) {
-                PAT pat(duck, table);
-                if (pat.isValid()) {
-                    _ts_id = pat.ts_id;
-                    verbose(u"TS id is %n", pat.ts_id);
-                    // Register all services
-                    for (const auto& it : pat.pmts) {
-                        ServiceDesc& serv(getServiceDesc(pat.ts_id, it.first));
-                        serv.setPMTPID(it.second);
-                    }
-                }
-            }
-            break;
-        }
+void ts::EITPlugin::handleUTC(const Time& utc, TID tid)
+{
+    _last_utc = utc;
+}
 
-        case TID_SDT_ACT:
-        case TID_SDT_OTH: {
-            if (table.sourcePID() == PID_SDT) {
-                SDT sdt(duck, table);
-                if (sdt.isValid()) {
-                    // Register all services
-                    for (const auto& it : sdt.services) {
-                        ServiceDesc& serv(getServiceDesc(sdt.ts_id, it.first));
-                        serv.setONId(sdt.onetw_id);
-                        serv.setTypeDVB(it.second.serviceType(duck));
-                        serv.setName(it.second.serviceName(duck));
-                        serv.setProvider(it.second.providerName(duck));
-                        serv.setEITsPresent(it.second.EITs_present);
-                        serv.setEITpfPresent(it.second.EITpf_present);
-                        serv.setCAControlled(it.second.CA_controlled);
-                    }
-                }
-            }
-            break;
-        }
-
-        case TID_TDT: {
-            if (table.sourcePID() == PID_TDT) {
-                TDT tdt(duck, table);
-                if (tdt.isValid()) {
-                    _last_utc = tdt.utc_time;
-                }
-            }
-            break;
-        }
-
-        default: {
-            break;
-        }
-    }
+void ts::EITPlugin::handleService(uint16_t ts_id, const Service& service, const PMT& pmt, bool removed)
+{
+    getServiceDesc(ts_id, service.getId()).service.update(service);
 }
 
 
 //----------------------------------------------------------------------------
-// Invoked by the demux when a complete section is available.
-// Used for EIT sections only. Because EIT's are segmented subtables,
-// we analyse them by section.
+// Invoked by the demux when a complete EIT section is available.
+// Because EIT's are segmented subtables, we analyse them by section.
 //----------------------------------------------------------------------------
 
-void ts::EITPlugin::handleSection (SectionDemux& demux, const Section& sect)
+void ts::EITPlugin::handleSection(SectionDemux& demux, const Section& sect)
 {
     const TID tid = sect.tableId();
 
@@ -344,77 +360,96 @@ void ts::EITPlugin::handleSection (SectionDemux& demux, const Section& sect)
         return;
     }
 
-    // The payload of an EIT must be at least 6 bytes long
-    const uint8_t* data = sect.payload();
-    size_t size = sect.payloadSize();
-    if (size < 6) {
+    // Use the section as if it was a complete table, to deserialize it as an EIT.
+    SectionPtr newsec(new Section(sect, ShareMode::COPY));
+    newsec->setSectionNumber(0, false);
+    newsec->setLastSectionNumber(0, true);
+    BinaryTable table;
+    table.addSection(newsec);
+
+    // Deserialize the EIT section.
+    const EIT eit(duck, table);
+    if (!eit.isValid()) {
+        debug(u"received invalid EIT section, cannot be deserialized");
         return;
     }
 
-    // Get service characteristics
-    ServiceDesc& serv (getServiceDesc (GetUInt16 (data), sect.tableIdExtension()));
-    serv.setONId (GetUInt16 (data + 2));
-    data += 6; size -= 6;
+    // Get service characteristics.
+    ServiceDesc& serv(getServiceDesc(eit.ts_id, eit.service_id));
 
-    // Get EIT type
-    const bool actual = tid == TID_EIT_PF_ACT || (tid >= TID_EIT_S_ACT_MIN && tid <= TID_EIT_S_ACT_MAX);
-    const bool pf = tid == TID_EIT_PF_ACT || tid == TID_EIT_PF_OTH;
-
-    // Check other/actual TS
-    if (_ts_id.has_value()) {
-        if (actual && !serv.hasTSId (_ts_id.value())) {
-            verbose(u"EIT-Actual has wrong TS id %n", serv.getTSId());
+    // Check other/actual TS.
+    if (_ts_id != INVALID_TS_ID) {
+        if (eit.isActual() && !serv.service.hasTSId(_ts_id)) {
+            verbose(u"EIT-Actual has wrong TS id %n", serv.service.getTSId());
         }
-        else if (!actual && serv.hasId (_ts_id.value())) {
+        else if (!eit.isActual() && serv.service.hasId(_ts_id)) {
             verbose(u"EIT-Other has same TS id as current TS");
         }
     }
 
-    // Count EIT
-    if (pf) {
-        if (serv.eitpf_count++ == 0) {
-            verbose(u"service %n, TS id %n, has EITp/f", serv.getId(), serv.getTSId());
-        }
-        if (actual) {
-            _eitpf_act_count++;
-        }
-        else {
-            _eitpf_oth_count++;
-        }
-    }
-    else {
-        if (serv.eits_count++ == 0) {
-            verbose(u"service %n, TS id %n, has EITs", serv.getId(), serv.getTSId());
-        }
-        if (actual) {
-            _eits_act_count++;
+    // Count EIT's for summary.
+    if (_summary) {
+        if (eit.isPresentFollowing()) {
+            if (serv.eitpf_count++ == 0) {
+                verbose(u"service %n, TS id %n, has EITp/f", serv.service.getId(), serv.service.getTSId());
+            }
+            if (eit.isActual()) {
+                _eitpf_act_count++;
+            }
+            else {
+                _eitpf_oth_count++;
+            }
         }
         else {
-            _eits_oth_count++;
+            if (serv.eits_count++ == 0) {
+                verbose(u"service %n, TS id %n, has EITs", serv.service.getId(), serv.service.getTSId());
+            }
+            if (eit.isActual()) {
+                _eits_act_count++;
+            }
+            else {
+                _eits_oth_count++;
+            }
+        }
+
+        // Loop on all events in EIT schedule, compute time offset in the future
+        if (!eit.isPresentFollowing() && _last_utc != Time::Epoch) {
+            for (const auto& event : eit.events) {
+                serv.max_time = std::max(serv.max_time, event.second.start_time - _last_utc);
+            }
         }
     }
 
-    // Loop on all events in EIT schedule, compute time offset in the future
-    if (!pf && _last_utc != Time::Epoch) {
-        while (size >= 12) {
-            Time start_time;
-            DecodeMJD(data + 2, MJD_FULL, start_time);
-            serv.max_time = std::max(serv.max_time, start_time - _last_utc);
-            size_t loop_length = GetUInt16(data + 10) & 0x0FFF;
-            data += 12; size -= 12;
-            loop_length = std::min(loop_length, size);
-            data += loop_length; size -= loop_length;
+    // Store all events for later EPG dump.
+    if (_epg_dump) {
+        for (const auto& event : eit.events) {
+            // Get event description in the plugin.
+            EventDesc& ed(serv.events[event.second.event_id]);
+
+            ed.start_time = event.second.start_time;
+            ed.duration = event.second.duration;
+
+            // Search name and description in the descriptor list.
+            // The extended text is the concatenation of the texts in all extended_event_descriptor.
+            UString extended_text;
+            for (const auto& desc : event.second.descs) {
+                if (desc.tag() == DID_DVB_SHORT_EVENT) {
+                    ShortEventDescriptor sed(duck, desc);
+                    if (sed.isValid()) {
+                        ed.title = sed.event_name;
+                        ed.short_text = sed.text;
+                    }
+                }
+                else if (desc.tag() == DID_DVB_EXTENDED_EVENT) {
+                    ExtendedEventDescriptor eed(duck, desc);
+                    if (eed.isValid()) {
+                        extended_text.append(eed.text);
+                    }
+                }
+            }
+            if (!extended_text.empty()) {
+                ed.extended_text = extended_text;
+            }
         }
     }
-}
-
-
-//----------------------------------------------------------------------------
-// Packet processing method
-//----------------------------------------------------------------------------
-
-ts::ProcessorPlugin::Status ts::EITPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
-{
-    _demux.feedPacket(pkt);
-    return TSP_OK;
 }

@@ -171,7 +171,7 @@ namespace ts {
             const_iterator& operator++() { ++*static_cast<SuperClass*>(this); return *this; }
             const Descriptor& operator*() { return **static_cast<SuperClass>(*this); }
             const Descriptor* operator->() { return &**static_cast<SuperClass>(*this); }
-            bool operator==(const iterator& other) const { return static_cast<SuperClass>(*this) == static_cast<SuperClass>(other); }
+            bool operator==(const const_iterator& other) const { return static_cast<SuperClass>(*this) == static_cast<SuperClass>(other); }
             //! @endcond
         };
 
@@ -179,25 +179,25 @@ namespace ts {
         //! Get an iterator to the first descriptor in the list.
         //! @return An iterator to the first descriptor in the list.
         //!
-        iterator begin() { return iterator(_list.begin()); }
+        iterator begin() { return static_cast<iterator>(_list.begin()); }
 
         //!
         //! Get an iterator after the last descriptor in the list.
         //! @return An iterator after the last descriptor in the list.
         //!
-        iterator end() { return iterator(_list.end()); }
+        iterator end() { return static_cast<iterator>(_list.end()); }
 
         //!
         //! Get a constant iterator to the first descriptor in the list.
         //! @return A constant iterator to the first descriptor in the list.
         //!
-        const_iterator begin() const { return const_iterator(_list.begin()); }
+        const_iterator begin() const { return static_cast<const_iterator>(_list.begin()); }
 
         //!
         //! Get a constant iterator after the last descriptor in the list.
         //! @return A constant iterator after the last descriptor in the list.
         //!
-        const_iterator end() const { return const_iterator(_list.end()); }
+        const_iterator end() const { return static_cast<const_iterator>(_list.end()); }
 
         //!
         //! Get the extended descriptor id of a descriptor in the list.

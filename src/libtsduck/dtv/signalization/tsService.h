@@ -199,6 +199,13 @@ namespace ts {
         bool match(const UString& ident, bool exact_match = false) const;
 
         //!
+        //! Update fields of this Service object from fields of another Service object.
+        //! @param [in] other Other object to copy. Fields which are unset in are ignored.
+        //! @param [in] only_unset If true, update fields which are unset only.
+        //!
+        void update(const Service& other, bool only_unset = false);
+
+        //!
         //! Sorting criterion method, used by std::sort().
         //! Sort order: LCN, ONId, TSId, Id, name, provider, type, PMT PID.
         //!

@@ -67,6 +67,38 @@ bool ts::Service::match(const UString& ident, bool exact_match) const
 
 
 //----------------------------------------------------------------------------
+// Update fields of this Service object from fields of another Service object.
+//----------------------------------------------------------------------------
+
+void ts::Service::update(const Service& other, bool only_unset)
+{
+#define _UPDATE(suffix)                                            \
+    if (other.has##suffix() && (!only_unset || !has##suffix())) {  \
+        set##suffix(other.get##suffix());                          \
+    }
+
+    _UPDATE(Id)
+    _UPDATE(TSId)
+    _UPDATE(ONId)
+    _UPDATE(LCN)
+    _UPDATE(PMTPID)
+    _UPDATE(TypeDVB)
+    _UPDATE(TypeATSC)
+    _UPDATE(RunningStatus)
+    _UPDATE(EITsPresent)
+    _UPDATE(EITpfPresent)
+    _UPDATE(CAControlled)
+    _UPDATE(MajorIdATSC)
+    _UPDATE(MinorIdATSC)
+    _UPDATE(Hidden)
+    _UPDATE(Name)
+    _UPDATE(Provider)
+
+#undef _UPDATE
+}
+
+
+//----------------------------------------------------------------------------
 // Clear all fields
 //----------------------------------------------------------------------------
 
