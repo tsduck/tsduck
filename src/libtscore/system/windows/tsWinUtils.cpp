@@ -316,7 +316,7 @@ ts::UString ts::GetStringPropertyBag(::IMoniker* object_moniker, const ::OLECHAR
     ::VARIANT var;
     ::VariantInit(&var);
     hr = pbag->Read(property_name, &var, nullptr);
-    if (hr != ERROR_KEY_DOES_NOT_EXIST && ComSuccess(hr, u"IPropertyBag::Read", report)) {
+    if (hr != HRESULT_FROM_WIN32(ERROR_KEY_DOES_NOT_EXIST) && ComSuccess(hr, u"IPropertyBag::Read", report)) {
         value = ToString(var);
     }
     ::VariantClear(&var);
