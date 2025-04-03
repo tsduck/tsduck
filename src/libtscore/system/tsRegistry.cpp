@@ -179,6 +179,8 @@ ts::UString ts::Registry::GetValue(const UString& key, const UString& value_name
         case REG_DWORD_BIG_ENDIAN:
             value = UString::Format(u"%d", GetUInt32(buf));
             break;
+        default:
+            break;
     }
 
     // Return value
