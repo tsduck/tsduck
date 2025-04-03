@@ -285,7 +285,7 @@ fs::path ts::UserHomeDirectory()
     std::array<::WCHAR, 2048> name;
     ::DWORD length = ::DWORD(name.size());
     const ::BOOL status = ::GetUserProfileDirectoryW(process, name.data(), &length);
-    const ::DWORD error = ::GetLastError();
+    [[maybe_unused]] const ::DWORD error = ::GetLastError();
     ::CloseHandle(process);
     if (status == 0) {
         throw ts::Exception(u"error getting user profile directory", ::GetLastError());
