@@ -1,0 +1,26 @@
+==== ISDB_wired_multicarrier_transmission_descriptor
+
+Defined by JCTEA in <<JCTEA-003>>.
+
+This descriptor is also known under the following names:
+
+[.compact-list]
+* wired_multicarrier_transmission_distribution_system_descriptor (ARIB STD-B10)
+* channel_bonding_cable_delivery_system_descriptor (JCTEA STD-003)
+
+[source,xml]
+----
+<ISDB_wired_multicarrier_transmission_descriptor>
+
+  <!-- One per carrier -->
+  <carrier
+      frequency="uint, frequency in Hz, required"
+      frame_type="uint4, required"
+      FEC_outer="uint4, required"
+      modulation="uint8, required"
+      symbol_rate="uint, in symbols/second, required"
+      FEC_inner="uint4, default=15"
+      group_id="uint8, required"/>
+
+</ISDB_wired_multicarrier_transmission_descriptor>
+----

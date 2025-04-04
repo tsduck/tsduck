@@ -307,6 +307,9 @@
 * [[[ISO-23008-3]]] ISO/IEC 23008-3, August 2022:
   "Information technology — High efficiency coding and media delivery in heterogeneous environments; Part 3: 3D audio"
   (High efficiency 3D audio):
+* [[[JCTEA-003]]] JCTEA STD-003-6.1:
+  "Japan Cable Television Engineering Association Standard - Service Information for Digital Cable Television"
+  (Japanese version only).
 * [[[LinuxTV]]] Linux TV Wiki:
   "How to install DVB device drivers",
   http://linuxtv.org/wiki/index.php/How_to_install_DVB_device_drivers

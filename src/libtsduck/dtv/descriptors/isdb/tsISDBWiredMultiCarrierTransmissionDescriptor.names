@@ -1,0 +1,30 @@
+[ISDB_wired_multicarrier_transmission_descriptor.frame_type]
+Bits = 4
+# When multiplexing without using expansion information, or when multiplexing
+# a signal for splitting and transmitting a stream using multiple carriers using
+# expansion information and other signals
+1 = Multiplexing without using expansion information
+# When multiplexing only the signal for splitting and transmitting the stream using
+# multiple carriers using the extended information
+2 = Multiplexing only the signal for splitting and transmitting
+# When not using multiple frames
+15 = Not using multiple frames
+
+[ISDB_wired_multicarrier_transmission_descriptor.FEC_outer]
+Bits = 4
+0 = Undefined
+1 = No external sign
+2 = RS(204,188)
+3-15 = Reserved for future use
+
+[ISDB_wired_multicarrier_transmission_descriptor.modulation]
+Bits = 8
+0x00 = Undefined
+0x01 = 16-QAM
+0x02 = 32-QAM
+0x03 = 64-QAM
+0x04 = 128-QAM
+0x05 = 256-QAM
+0x06 = Reserved
+0x07 = 1024-QAM
+0x08-0xFF = Reserved
