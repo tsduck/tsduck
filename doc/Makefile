@@ -110,8 +110,10 @@ userguide-pdf: $(BINDOC)/tsduck.pdf
 
 open-userguide: open-userguide-html open-userguide-pdf
 open-userguide-html: $(BINDOC)/tsduck.html
+	$(call LOG,[OPEN] $<) \
 	$(XDGOPEN) $< $(POST_XDGOPEN)
 open-userguide-pdf: $(BINDOC)/tsduck.pdf
+	$(call LOG,[OPEN] $<) \
 	$(XDGOPEN) $< $(POST_XDGOPEN)
 
 # Each table and descriptor has a .adoc file in the source tree.
@@ -181,8 +183,10 @@ devguide-pdf: $(BINDOC)/tsduck-dev.pdf
 
 open-devguide: open-devguide-html open-devguide-pdf
 open-devguide-html: $(BINDOC)/tsduck-dev.html
+	$(call LOG,[OPEN] $<) \
 	$(XDGOPEN) $< $(POST_XDGOPEN)
 open-devguide-pdf: $(BINDOC)/tsduck-dev.pdf
+	$(call LOG,[OPEN] $<) \
 	$(XDGOPEN) $< $(POST_XDGOPEN)
 
 # Documentation generation.

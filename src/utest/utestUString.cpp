@@ -650,59 +650,78 @@ TSUNIT_DEFINE_TEST(Join)
 
 TSUNIT_DEFINE_TEST(BreakLines)
 {
-    ts::UStringVector v1;
-    ts::UString(u"aze arf erf r+oih zf").splitLines(v1, 8);
-    TSUNIT_ASSERT(v1.size() == 3);
-    TSUNIT_EQUAL(u"aze arf", v1[0]);
-    TSUNIT_EQUAL(u"erf", v1[1]);
-    TSUNIT_EQUAL(u"r+oih zf", v1[2]);
+    ts::UStringVector v;
+    ts::UString(u"aze arf erf r+oih zf").splitLines(v, 8);
+    TSUNIT_EQUAL(3, v.size());
+    TSUNIT_EQUAL(u"aze arf", v[0]);
+    TSUNIT_EQUAL(u"erf", v[1]);
+    TSUNIT_EQUAL(u"r+oih zf", v[2]);
 
-    ts::UStringVector v2;
-    ts::UString(u"aze arf erf r+oih zf").splitLines(v2, 8, u"+");
-    TSUNIT_ASSERT(v2.size() == 3);
-    TSUNIT_EQUAL(u"aze arf", v2[0]);
-    TSUNIT_EQUAL(u"erf r+", v2[1]);
-    TSUNIT_EQUAL(u"oih zf", v2[2]);
+    v.clear();
+    ts::UString(u"aze arf erf r+oih zf").splitLines(v, 8, u"+");
+    TSUNIT_EQUAL(3, v.size());
+    TSUNIT_EQUAL(u"aze arf", v[0]);
+    TSUNIT_EQUAL(u"erf r+", v[1]);
+    TSUNIT_EQUAL(u"oih zf", v[2]);
 
-    ts::UStringVector v3;
-    ts::UString(u"aze arf erf r+oih zf").splitLines(v3, 8, u"", u"==");
-    TSUNIT_ASSERT(v3.size() == 4);
-    TSUNIT_EQUAL(u"aze arf", v3[0]);
-    TSUNIT_EQUAL(u"==erf", v3[1]);
-    TSUNIT_EQUAL(u"==r+oih", v3[2]);
-    TSUNIT_EQUAL(u"==zf", v3[3]);
+    v.clear();
+    ts::UString(u"aze arf erf r+oih zf").splitLines(v, 8, u"", u"==");
+    TSUNIT_EQUAL(4, v.size());
+    TSUNIT_EQUAL(u"aze arf", v[0]);
+    TSUNIT_EQUAL(u"==erf", v[1]);
+    TSUNIT_EQUAL(u"==r+oih", v[2]);
+    TSUNIT_EQUAL(u"==zf", v[3]);
 
-    ts::UStringVector v4;
-    ts::UString(u"aze arf dkvyfngofnb ff").splitLines(v4, 8);
-    TSUNIT_ASSERT(v4.size() == 3);
-    TSUNIT_EQUAL(u"aze arf", v4[0]);
-    TSUNIT_EQUAL(u"dkvyfngofnb", v4[1]);
-    TSUNIT_EQUAL(u"ff", v4[2]);
+    v.clear();
+    ts::UString(u"aze arf dkvyfngofnb ff").splitLines(v, 8);
+    TSUNIT_EQUAL(3, v.size());
+    TSUNIT_EQUAL(u"aze arf", v[0]);
+    TSUNIT_EQUAL(u"dkvyfngofnb", v[1]);
+    TSUNIT_EQUAL(u"ff", v[2]);
 
-    ts::UStringVector v5;
-    ts::UString(u"aze arf dkvyfngofnb ff").splitLines(v5, 8, u"", u"", true);
-    TSUNIT_ASSERT(v5.size() == 3);
-    TSUNIT_EQUAL(u"aze arf", v5[0]);
-    TSUNIT_EQUAL(u"dkvyfngo", v5[1]);
-    TSUNIT_EQUAL(u"fnb ff", v5[2]);
+    v.clear();
+    ts::UString(u"aze arf dkvyfngofnb ff").splitLines(v, 8, u"", u"", true);
+    TSUNIT_EQUAL(3, v.size());
+    TSUNIT_EQUAL(u"aze arf", v[0]);
+    TSUNIT_EQUAL(u"dkvyfngo", v[1]);
+    TSUNIT_EQUAL(u"fnb ff", v[2]);
 
-    ts::UStringVector v6;
-    ts::UString(u"abc def ghi\nfoo bar tom").splitLines(v6, 8);
-    TSUNIT_ASSERT(v6.size() == 4);
-    TSUNIT_EQUAL(u"abc def", v6[0]);
-    TSUNIT_EQUAL(u"ghi", v6[1]);
-    TSUNIT_EQUAL(u"foo bar", v6[2]);
-    TSUNIT_EQUAL(u"tom", v6[3]);
+    v.clear();
+    ts::UString(u"abc def ghi\nfoo bar tom").splitLines(v, 8);
+    TSUNIT_EQUAL(4, v.size());
+    TSUNIT_EQUAL(u"abc def", v[0]);
+    TSUNIT_EQUAL(u"ghi", v[1]);
+    TSUNIT_EQUAL(u"foo bar", v[2]);
+    TSUNIT_EQUAL(u"tom", v[3]);
 
-    ts::UStringVector v7;
-    ts::UString(u"abc def ghi\n\n\nfoo bar tom").splitLines(v7, 8);
-    TSUNIT_ASSERT(v7.size() == 6);
-    TSUNIT_EQUAL(u"abc def", v7[0]);
-    TSUNIT_EQUAL(u"ghi", v7[1]);
-    TSUNIT_EQUAL(u"", v7[2]);
-    TSUNIT_EQUAL(u"", v7[3]);
-    TSUNIT_EQUAL(u"foo bar", v7[4]);
-    TSUNIT_EQUAL(u"tom", v7[5]);
+    v.clear();
+    ts::UString(u"abc def ghi\n\n\nfoo bar tom").splitLines(v, 8);
+    TSUNIT_EQUAL(6, v.size());
+    TSUNIT_EQUAL(u"abc def", v[0]);
+    TSUNIT_EQUAL(u"ghi", v[1]);
+    TSUNIT_EQUAL(u"", v[2]);
+    TSUNIT_EQUAL(u"", v[3]);
+    TSUNIT_EQUAL(u"foo bar", v[4]);
+    TSUNIT_EQUAL(u"tom", v[5]);
+
+    v.clear();
+    ts::UString(u"abc def ghi\nfoo bar tom").splitLines(v, 10, ts::UString(), u"  ");
+    TSUNIT_EQUAL(4, v.size());
+    TSUNIT_EQUAL(u"abc def", v[0]);
+    TSUNIT_EQUAL(u"  ghi", v[1]);
+    TSUNIT_EQUAL(u"  foo bar", v[2]);
+    TSUNIT_EQUAL(u"  tom", v[3]);
+
+    v.clear();
+    ts::UString(u"abc def ghi\nfoo bar tom").splitLines(v, 80, ts::UString(), u"  ");
+    TSUNIT_EQUAL(2, v.size());
+    TSUNIT_EQUAL(u"abc def ghi", v[0]);
+    TSUNIT_EQUAL(u"  foo bar tom", v[1]);
+
+    v.clear();
+    ts::UString(u"  --debug").splitLines(v, 80, ts::UString(), u"  ");
+    TSUNIT_EQUAL(1, v.size());
+    TSUNIT_EQUAL(u"  --debug", v[0]);
 }
 
 TSUNIT_DEFINE_TEST(RemovePrefix)
@@ -961,7 +980,7 @@ TSUNIT_DEFINE_TEST(LoadSave)
 
     ts::UStringList load1;
     TSUNIT_ASSERT(ts::UString::Load(load1, file1));
-    TSUNIT_ASSERT(load1.size() == 20);
+    TSUNIT_EQUAL(20, load1.size());
     TSUNIT_ASSERT(load1 == ref);
 
     const auto refFirst = ++(ref.begin());
@@ -971,22 +990,22 @@ TSUNIT_DEFINE_TEST(LoadSave)
     TSUNIT_ASSERT(ts::UString::Save(refFirst, refLast, file2));
 
     ts::UStringList ref2(refFirst, refLast);
-    TSUNIT_ASSERT(ref2.size() == 18);
+    TSUNIT_EQUAL(18, ref2.size());
 
     ts::UStringList load2;
     TSUNIT_ASSERT(ts::UString::Load(load2, file2));
-    TSUNIT_ASSERT(load2.size() == 18);
+    TSUNIT_EQUAL(18, load2.size());
     TSUNIT_ASSERT(load2 == ref2);
 
     ts::UStringList ref3;
     ref3.push_back(u"abcdef");
     ref3.insert(ref3.end(), refFirst, refLast);
-    TSUNIT_ASSERT(ref3.size() == 19);
+    TSUNIT_EQUAL(19, ref3.size());
 
     ts::UStringList load3;
     load3.push_back(u"abcdef");
     TSUNIT_ASSERT(ts::UString::LoadAppend(load3, file2));
-    TSUNIT_ASSERT(load3.size() == 19);
+    TSUNIT_EQUAL(19, load3.size());
     TSUNIT_ASSERT(load3 == ref3);
 }
 

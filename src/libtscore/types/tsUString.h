@@ -3109,16 +3109,17 @@ void ts::UString::splitBlocksAppend(CONTAINER& container, UChar starts_with, UCh
 template <class CONTAINER>
 void ts::UString::splitLinesAppend(CONTAINER& lines, size_t max_width, const UString& other_separators, const UString& next_margin, bool force_split) const
 {
-    // If line smaller than max size or next margin too wide, return one line
-    if (length() <= max_width || next_margin.length() >= max_width) {
+    // If next margin too wide, return one line.
+    // Note: if the string is smaller than max_width, process anyway because it may contain embedded new-lines.
+    if (next_margin.length() >= max_width) {
         lines.push_back(*this);
         return;
     }
 
-    size_t marginLength = 0; // No margin on first line (supposed to be in str)
-    size_t start = 0;        // Index in str of start of current line
-    size_t eol = 0;          // Index in str of last possible end-of-line
-    size_t cur = 0;          // Current index in str
+    size_t margin_length = 0; // No margin on first line (supposed to be in str)
+    size_t start = 0;         // Index in str of start of current line
+    size_t eol = 0;           // Index in str of last possible end-of-line
+    size_t cur = 0;           // Current index in str
 
     // Cut lines
     while (cur < length()) {
@@ -3129,7 +3130,7 @@ void ts::UString::splitLinesAppend(CONTAINER& lines, size_t max_width, const USt
         }
         // Determine if we need to cut here.
         bool cut = at(cur) == LINE_FEED;
-        if (!cut && marginLength + cur - start >= max_width) { // Reached max width
+        if (!cut && margin_length + cur - start >= max_width) { // Reached max width
             if (eol > start) {
                 // Found a previous possible end-of-line
                 cut = true;
@@ -3144,14 +3145,14 @@ void ts::UString::splitLinesAppend(CONTAINER& lines, size_t max_width, const USt
         if (cut) {
             // Add current line.
             UString line;
-            if (marginLength > 0) {
+            if (margin_length > 0) {
                 line.append(next_margin);
             }
             line.append(substr(start, eol - start));
             line.trim(false, true); // trim trailing spaces
             lines.push_back(line);
             // Start new line, skip leading spaces
-            marginLength = next_margin.length();
+            margin_length = next_margin.length();
             start = eol < length() && at(eol) == LINE_FEED ? eol + 1 : eol;
             while (start < length() && IsSpace(at(start)) && at(start) != LINE_FEED) {
                 start++;
@@ -3165,7 +3166,12 @@ void ts::UString::splitLinesAppend(CONTAINER& lines, size_t max_width, const USt
 
     // Rest of string on last line
     if (start < length()) {
-        lines.push_back(next_margin + substr(start));
+        if (margin_length == 0) {
+            lines.push_back(substr(start));
+        }
+        else {
+            lines.push_back(next_margin + substr(start));
+        }
     }
 }
 

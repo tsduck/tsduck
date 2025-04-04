@@ -17,6 +17,7 @@
 #include "tsServiceIdTriplet.h"
 #include "tsReplacement.h"
 #include "tsAbstractLogicalChannelDescriptor.h"
+#include "tsDVB.h"
 #include "tsNIT.h"
 
 namespace ts {
@@ -61,7 +62,7 @@ namespace ts {
         //! @param [in] lcn The logical channel number to add.
         //! @param [in] srv_id The service id.
         //! @param [in] ts_id The transport stream id.
-        //! @param [in] onet_id The original network id. Use 0xFFFF for "unspecified".
+        //! @param [in] onet_id The original network id. Use INVALID_NETWORK_ID for "unspecified".
         //! @param [in] visible The service LCN is visible.
         //!
         void addLCN(uint16_t lcn, uint16_t srv_id, uint16_t ts_id, uint16_t onet_id, bool visible = true);
@@ -69,31 +70,31 @@ namespace ts {
         //!
         //! Collect all LCN which are declared in a NIT.
         //! @param [in] nit The NIT to analyze.
-        //! @param [in] ts_id If not 0xFFFF, get services from that TS id only.
-        //! @param [in] onet_id If not 0xFFFF, get services from that original network id only.
+        //! @param [in] ts_id If not INVALID_TS_ID, get services from that TS id only.
+        //! @param [in] onet_id If not INVALID_NETWORK_ID, get services from that original network id only.
         //! @return The number of collected LCN.
         //!
-        size_t addFromNIT(const NIT& nit, uint16_t ts_id = 0xFFFF, uint16_t onet_id = 0xFFFF);
+        size_t addFromNIT(const NIT& nit, uint16_t ts_id = INVALID_TS_ID, uint16_t onet_id = INVALID_NETWORK_ID);
 
         //!
         //! Collect all LCN which are declared in a list of descriptors.
         //! @param [in] descs The list of descriptors to analyze.
         //! @param [in] ts_id The transport stream id of all services.
         //! @param [in] onet_id The original network id to use.
-        //! If set to 0xFFFF (the default), leave it unspecified.
+        //! If set to INVALID_NETWORK_ID (the default), leave it unspecified.
         //! @return The number of collected LCN.
         //!
-        size_t addFromDescriptors(const DescriptorList& descs, uint16_t ts_id, uint16_t onet_id = 0xFFFF);
+        size_t addFromDescriptors(const DescriptorList& descs, uint16_t ts_id, uint16_t onet_id = INVALID_NETWORK_ID);
 
         //!
         //! Get the logical channel number of a service.
         //! @param [in] srv_id The service id to search.
         //! @param [in] ts_id The transport stream id of the service.
         //! @param [in] onet_id The original network id of the service.
-        //! If set to 0xFFFF (the default), the first match service is used.
+        //! If set to INVALID_NETWORK_ID (the default), the first match service is used.
         //! @return The LCN of the service or 0xFFFF if not found.
         //!
-        uint16_t getLCN(uint16_t srv_id, uint16_t ts_id, uint16_t onet_id = 0xFFFF) const;
+        uint16_t getLCN(uint16_t srv_id, uint16_t ts_id, uint16_t onet_id = INVALID_NETWORK_ID) const;
 
         //!
         //! Get the logical channel number of a service.
@@ -107,10 +108,10 @@ namespace ts {
         //! @param [in] srv_id The service id to search.
         //! @param [in] ts_id The transport stream id of the service.
         //! @param [in] onet_id The original network id of the service.
-        //! If set to 0xFFFF (the default), the first match service is used.
+        //! If set to INVALID_NETWORK_ID (the default), the first match service is used.
         //! @return The visible flag of the service or true if not found.
         //!
-        bool getVisible(uint16_t srv_id, uint16_t ts_id, uint16_t onet_id = 0xFFFF) const;
+        bool getVisible(uint16_t srv_id, uint16_t ts_id, uint16_t onet_id = INVALID_NETWORK_ID) const;
 
         //!
         //! Get the visible flag of a service.
@@ -118,6 +119,18 @@ namespace ts {
         //! @return The visible flag of the service or true if not found.
         //!
         bool getVisible(const ServiceIdTriplet& srv) const;
+
+        //!
+        //! Get the set of all services in this object.
+        //! @param [out] services Set of services ids.
+        //!
+        void getServices(std::set<ServiceIdTriplet>& services) const { services.clear(); addServices(services); }
+
+        //!
+        //! Get the set of all services in this object.
+        //! @param [in,out] services Set of services. The services are added to the previous content.
+        //!
+        void addServices(std::set<ServiceIdTriplet>& services) const;
 
         //!
         //! Update a service description with its LCN.
@@ -145,7 +158,7 @@ namespace ts {
         public:
             uint16_t lcn;      // Logical channel number.
             uint16_t ts_id;    // Transport stream id.
-            uint16_t onet_id;  // Original network id, 0xFFFF means unspecified.
+            uint16_t onet_id;  // Original network id, INVALID_NETWORK_ID means unspecified.
             bool     visible;  // Channel is visible.
         };
 
@@ -186,7 +199,7 @@ void ts::LogicalChannelNumbers::updateServices(CONTAINER& services, Replacement 
             // Check if this service match the current LCN (onet id must match or be unspecified).
             if (srv.hasId(lcn_it->first) &&
                 srv.hasTSId(lcn_it->second.ts_id) &&
-                (lcn_it->second.onet_id == 0xFFFF || !srv.hasONId() || srv.hasONId(lcn_it->second.onet_id)))
+                (lcn_it->second.onet_id == INVALID_NETWORK_ID || !srv.hasONId() || srv.hasONId(lcn_it->second.onet_id)))
             {
                 found = true;
                 if (!(rep & (Replacement::UPDATE | Replacement::REPLACE))) {
@@ -218,7 +231,7 @@ void ts::LogicalChannelNumbers::updateServices(CONTAINER& services, Replacement 
             srv.setId(lcn_it.first);
             srv.setLCN(lcn_it.second.lcn);
             srv.setTSId(lcn_it.second.ts_id);
-            if (lcn_it.second.onet_id != 0xFFFF) {
+            if (lcn_it.second.onet_id != INVALID_NETWORK_ID) {
                 srv.setONId(lcn_it.second.onet_id);
             }
             srv.setHidden(!lcn_it.second.visible);

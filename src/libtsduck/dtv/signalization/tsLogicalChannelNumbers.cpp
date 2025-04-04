@@ -150,8 +150,8 @@ size_t ts::LogicalChannelNumbers::addFromNIT(const NIT& nit, uint16_t ts_id, uin
     size_t count = 0;
     if (nit.isValid()) {
         for (const auto& it : nit.transports) {
-            if ((ts_id == 0xFFFF || it.first.transport_stream_id == 0xFFFF || ts_id == it.first.transport_stream_id) &&
-                (onet_id == 0xFFFF || it.first.original_network_id == 0xFFFF || onet_id == it.first.original_network_id))
+            if ((ts_id == INVALID_TS_ID || it.first.transport_stream_id == INVALID_TS_ID || ts_id == it.first.transport_stream_id) &&
+                (onet_id == INVALID_NETWORK_ID || it.first.original_network_id == INVALID_NETWORK_ID || onet_id == it.first.original_network_id))
             {
                 count += addFromDescriptors(it.second.descs, it.first.transport_stream_id, it.first.original_network_id);
             }
@@ -193,10 +193,10 @@ ts::LogicalChannelNumbers::LCNMap::const_iterator ts::LogicalChannelNumbers::fin
     for (LCNMap::const_iterator it = _lcn_map.lower_bound(srv_id); it != _lcn_map.end() && it->first == srv_id; ++it) {
         if (it->second.ts_id == ts_id) {
             if (it->second.onet_id == onet_id) {
-                // Found an exact match, including if both are 0xFFFF, final value.
+                // Found an exact match, including if both are INVALID_NETWORK_ID, final value.
                 return it;
             }
-            else if (it->second.onet_id == 0xFFF) {
+            else if (it->second.onet_id == INVALID_NETWORK_ID || onet_id == INVALID_NETWORK_ID) {
                 // Possible match, keep it but continue to search an exact match.
                 result = it;
             }
@@ -207,13 +207,25 @@ ts::LogicalChannelNumbers::LCNMap::const_iterator ts::LogicalChannelNumbers::fin
 
 
 //----------------------------------------------------------------------------
+// Get the set of all services in this object.
+//----------------------------------------------------------------------------
+
+void ts::LogicalChannelNumbers::addServices(std::set<ServiceIdTriplet>& services) const
+{
+    for (const auto& it : _lcn_map) {
+        services.insert(ServiceIdTriplet(it.first, it.second.ts_id, it.second.onet_id));
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Update a service description with its LCN.
 //----------------------------------------------------------------------------
 
 bool ts::LogicalChannelNumbers::updateService(Service& srv, bool replace) const
 {
     if (srv.hasId() && srv.hasTSId() && (replace || !srv.hasLCN())) {
-        const uint16_t onid = srv.hasONId() ? srv.getONId() : 0xFFFF;
+        const uint16_t onid = srv.hasONId() ? srv.getONId() : INVALID_NETWORK_ID;
         const auto it = findLCN(srv.getId(), srv.getTSId(), onid);
         if (it != _lcn_map.end()) {
             srv.setLCN(it->second.lcn);

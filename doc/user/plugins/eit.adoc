@@ -12,9 +12,14 @@
 [.cmd-header]
 Analyze EIT sections
 
-This plugin analyzes EIT sections and produces a report of EIT present/following and EIT schedule by transport stream and by service.
-The EPG depth in days is also reported by service (number of days in advance an event is signaled by an EIT schedule).
+This plugin analyzes EIT sections and produces a summary of EIT present/following and
+EIT schedule by transport stream and by service.
+The EPG depth in days is also reported by service
+(number of days in advance an event is signaled by an EIT schedule).
 See xref:sample-epg-analysis[xrefstyle=short] for an example of report.
+
+This plugin can also produce a full dump of the EPG, as collected from EIT's.
+All events are listed per service, in chronological order.
 
 [.usage]
 Usage
@@ -28,10 +33,40 @@ $ tsp -P eit [options]
 Options
 
 [.opt]
+*-d* +
+*--detailed*
+
+[.optdoc]
+With `--epg-dump`, display detailed information on events.
+
+[.opt]
+*-e* +
+*--epg-dump*
+
+[.optdoc]
+Display the content of the EPG, all events, per service.
+
+[.opt]
 *-o* _file-name_ +
 *--output-file* _file-name_
 
 [.optdoc]
 Specify the output file for the report (default: standard output).
+
+[.opt]
+*-s* +
+*--summary*
+
+[.optdoc]
+Display a summary of EIT presence.
+This is the default if `--epg-dump` is not specified.
+If `--epg-dump` and `--summary` are both specified, the two reports are produced in that order.
+
+[.opt]
+*-w* _columns_ +
+*--width* _columns_
+
+[.optdoc]
+Maximum line width for EPG dump. The default is 80 columns. Zero means no line wrap.
 
 include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

@@ -17,9 +17,13 @@
 #include "tsSignalizationDemux.h"
 #include "tsShortEventDescriptor.h"
 #include "tsExtendedEventDescriptor.h"
+#include "tsLogicalChannelNumbers.h"
+#include "tsAlgorithm.h"
 #include "tsService.h"
 #include "tsTime.h"
 #include "tsEIT.h"
+#include "tsSDT.h"
+#include "tsNIT.h"
 
 
 //----------------------------------------------------------------------------
@@ -27,7 +31,10 @@
 //----------------------------------------------------------------------------
 
 namespace ts {
-    class EITPlugin: public ProcessorPlugin, private SignalizationHandlerInterface, private SectionHandlerInterface
+    class EITPlugin: public ProcessorPlugin,
+                     private SignalizationHandlerInterface,
+                     private TableHandlerInterface,
+                     private SectionHandlerInterface
     {
         TS_PLUGIN_CONSTRUCTORS(EITPlugin);
     public:
@@ -42,15 +49,17 @@ namespace ts {
         class EventDesc
         {
         public:
+            uint16_t    event_id = 0;
             UString     title {};
             UString     short_text {};     // from short_event_descriptor
             UString     extended_text {};  // from extended_event_descriptor
             Time        start_time {};
             cn::seconds duration {0};
-
-            // Events are compared according to their start time.
-            bool operator<(const EventDesc& other) const { return this->start_time < other.start_time; }
         };
+
+        // Map of events, by event id.
+        using EventDescPtr = std::shared_ptr<EventDesc>;
+        using EventDescMap = std::map<uint16_t, EventDescPtr>;
 
         // Description of one service.
         class ServiceDesc
@@ -59,9 +68,13 @@ namespace ts {
             Service          service {};
             SectionCounter   eitpf_count = 0;
             SectionCounter   eits_count = 0;
-            cn::milliseconds max_time {};            // Max time ahead of current time for EIT
-            std::map<uint16_t,EventDesc> events {};  // Map of events, by event id.
+            cn::milliseconds max_time {};  // Max time ahead of current time for EIT
+            EventDescMap     events {};
         };
+
+        // Map of services, indexed by combination of TS id / service id.
+        using ServiceDescPtr = std::shared_ptr<ServiceDesc>;
+        using ServiceDescMap = std::map<uint32_t, ServiceDescPtr>;
 
         // Combination of TS id / service id into one 32-bit index
         static uint32_t MakeIndex(uint16_t ts_id, uint16_t service_id) { return (uint32_t(ts_id) << 16) | service_id; }
@@ -73,6 +86,8 @@ namespace ts {
         bool     _summary = false;
         bool     _epg_dump = false;
         bool     _detailed = false;
+        size_t   _line_width = _default_line_width;
+        static constexpr size_t _default_line_width = 80;
 
         // Working data.
         std::ofstream      _outfile {};
@@ -81,19 +96,24 @@ namespace ts {
         SectionCounter     _eitpf_oth_count = 0;
         SectionCounter     _eits_act_count = 0;
         SectionCounter     _eits_oth_count = 0;
-        SectionDemux       _sec_demux {duck, nullptr, this};
+        SectionDemux       _sec_demux {duck, this, this};
         SignalizationDemux _sig_demux {duck, this};
         uint16_t           _ts_id = INVALID_TS_ID;
-        std::map<uint32_t,ServiceDesc> _services {};  // Map of services, indexed by combination of TS id / service id
+        ServiceDescMap     _services {};
 
-        // Return a reference to a service description
+        // Return a reference to a service or event description.
         ServiceDesc& getServiceDesc(uint16_t ts_id, uint16_t service_id);
+        EventDesc& getEventDesc(ServiceDesc&, uint16_t event_id);
 
         // Print the EPG reports.
         void printEPG(std::ostream& out);
         void printSummary(std::ostream& out);
 
+        // Format string with line wraps.
+        UString wrapped(const UString& text, const UString& next_margin = u"    ");
+
         // Inherited methods.
+        virtual void handleTable(SectionDemux& demux, const BinaryTable& table) override;
         virtual void handleSection(SectionDemux&, const Section&) override;
         virtual void handleService(uint16_t ts_id, const Service& service, const PMT& pmt, bool removed) override;
         virtual void handleTSId(uint16_t ts_id, TID tid) override;
@@ -125,6 +145,10 @@ ts::EITPlugin::EITPlugin(TSP* tsp_) :
 
     option(u"summary", 's');
     help(u"summary", u"Display a summary of EIT presence. This is the default if --epg-dump is not specified.");
+
+    option(u"width", 'w', UNSIGNED);
+    help(u"width", u"columns",
+         u"Maximum line width for EPG dump. The default is " + UString::Decimal(_default_line_width) + u" columns. Zero means no line wrap.");
 }
 
 
@@ -138,6 +162,7 @@ bool ts::EITPlugin::getOptions()
     _detailed = present(u"detailed");
     _epg_dump = present(u"epg-dump");
     _summary = present(u"summary") || !_epg_dump;
+    getIntValue(_line_width, u"width", _default_line_width);
     return true;
 }
 
@@ -168,6 +193,11 @@ bool ts::EITPlugin::start()
     _ts_id = INVALID_TS_ID;
     _sec_demux.reset();
     _sec_demux.addPID(PID_EIT);
+    if (_epg_dump) {
+        // Collect service names and LCN from other TS?
+        _sec_demux.addPID(PID_SDT);
+        _sec_demux.addPID(PID_NIT);
+    }
     _sig_demux.reset();
     _sig_demux.addFullFilters();
 
@@ -220,16 +250,45 @@ ts::EITPlugin::ServiceDesc& ts::EITPlugin::getServiceDesc(uint16_t ts_id, uint16
 
     if (!_services.contains(index)) {
         verbose(u"new service %n, TS id %n", service_id, ts_id);
-        ServiceDesc& serv(_services[index]);
+        ServiceDesc& serv(*(_services[index] = std::make_shared<ServiceDesc>()));
         serv.service.setId(service_id);
         serv.service.setTSId(ts_id);
         return serv;
     }
     else {
-        ServiceDesc& serv(_services[index]);
+        ServiceDesc& serv(*_services[index]);
         assert(serv.service.hasId(service_id));
         assert(serv.service.hasTSId(ts_id));
         return serv;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Return a reference to an event description.
+//----------------------------------------------------------------------------
+
+ts::EITPlugin::EventDesc& ts::EITPlugin::getEventDesc(ServiceDesc& serv, uint16_t event_id)
+{
+    if (!serv.events.contains(event_id)) {
+        serv.events[event_id] = std::make_shared<EventDesc>();
+        serv.events[event_id]->event_id = event_id;
+    }
+    return *serv.events[event_id];
+}
+
+
+//----------------------------------------------------------------------------
+// Format string with line wraps.
+//----------------------------------------------------------------------------
+
+ts::UString ts::EITPlugin::wrapped(const UString& text, const UString& next_margin)
+{
+    if (_line_width == 0) {
+        return text;
+    }
+    else {
+        return text.toSplitLines(_line_width, UString(), next_margin);
     }
 }
 
@@ -240,7 +299,87 @@ ts::EITPlugin::ServiceDesc& ts::EITPlugin::getServiceDesc(uint16_t ts_id, uint16
 
 void ts::EITPlugin::printEPG(std::ostream& out)
 {
-    // @@@@
+    // Build an ordered list of services. The order is based on LCN when available,
+    // then on service names, and last on service ids.
+    std::list<ServiceDescPtr> services(MapValuesList(_services));
+    services.sort([](const ServiceDescPtr& a, const ServiceDescPtr& b)
+    {
+        if (a->service.hasLCN() && b->service.hasLCN()) {
+            return a->service.getLCN() < b->service.getLCN();
+        }
+        else if (a->service.hasLCN() || b->service.hasLCN()) {
+            return a->service.hasLCN();
+        }
+        else if (a->service.hasName() && b->service.hasName()) {
+            return a->service.getName() < b->service.getName();
+        }
+        else if (a->service.hasName() || b->service.hasName()) {
+            return a->service.hasName();
+        }
+        else {
+            return a->service.getId() < b->service.getId();
+        }
+    });
+
+    // Display all services with events.
+    bool first = true;
+    for (const auto& serv : services) {
+        if (!serv->events.empty()) {
+
+            // Build an ordered list of events by time in that service.
+            std::list<EventDescPtr> events(MapValuesList(serv->events));
+            events.sort([](const EventDescPtr& a, const EventDescPtr& b) { return a->start_time < b->start_time; });
+
+            // Build service name.
+            UString sname;
+            if (serv->service.hasLCN()) {
+                sname.format(u"%d. ", serv->service.getLCN());
+            }
+            if (serv->service.hasName() && !serv->service.getName().empty()) {
+                sname.append(serv->service.getName());
+            }
+            else {
+                sname.format(u"Service 0x%X, TS 0x%X", serv->service.getId(), serv->service.getTSId());
+            }
+            if (!first) {
+                out << std::endl;
+            }
+            first = false;
+            out << sname << std::endl << UString(sname.width(), u'-') << std::endl;
+
+            // Display events.
+            Time current_day = Time::Epoch;
+            for (const auto& ev : events) {
+                const Time day = ev->start_time.thisDay();
+                if (day > current_day) {
+                    out << day.format(Time::DATE) << std::endl;
+                    current_day = day;
+                }
+                if (_detailed) {
+                    out << wrapped(UString::Format(u"  %s to %s (%d mn), event id: %n",
+                                                   ev->start_time.format(Time::TIME),
+                                                   (ev->start_time + ev->duration).format(Time::TIME),
+                                                   cn::duration_cast<cn::minutes>(ev->duration).count(),
+                                                   ev->event_id)) << std::endl;
+                    if (!ev->title.empty()) {
+                        out << wrapped(u"    Title: " + ev->title) << std::endl;
+                    }
+                    if (!ev->short_text.empty()) {
+                        out << wrapped(u"    Description: " + ev->short_text) << std::endl;
+                    }
+                    if (!ev->extended_text.empty()) {
+                        out << wrapped(u"    Extended description: " + ev->extended_text) << std::endl;
+                    }
+                }
+                else {
+                    out << wrapped(UString::Format(u"  %s, %d mn, %s",
+                                                   ev->start_time.format(Time::HOUR | Time::MINUTE),
+                                                   cn::duration_cast<cn::minutes>(ev->duration).count(),
+                                                   ev->title)) << std::endl;
+                }
+            }
+        }
+    }
 }
 
 
@@ -275,7 +414,7 @@ void ts::EITPlugin::printSummary(std::ostream& out)
     cn::milliseconds max_time_oth = cn::milliseconds::zero();
     size_t name_width = 0;
     for (const auto& it : _services) {
-        const ServiceDesc& serv(it.second);
+        const ServiceDesc& serv(*it.second);
         name_width = std::max(name_width, serv.service.getName().width());
         if (_ts_id != INVALID_TS_ID && serv.service.hasTSId(_ts_id)) {
             // Actual TS
@@ -312,7 +451,7 @@ void ts::EITPlugin::printSummary(std::ostream& out)
     out << UString::Format(u"A/O  TS Id   Srv Id  %-*s  EITp/f  EITs  EPG days", name_width, u"Name") << std::endl
         << UString::Format(u"---  ------  ------  %s  ------  ----  --------", UString(name_width, u'-')) << std::endl;
     for (const auto& it : _services) {
-        const ServiceDesc& serv(it.second);
+        const ServiceDesc& serv(*it.second);
         const bool actual = _ts_id != INVALID_TS_ID && serv.service.hasTSId(_ts_id);
         out << UString::Format(u"%s  0x%04X  0x%04X  %-*s  %-6s  %-4s  %8d",
                                actual ? u"Act" : u"Oth",
@@ -343,6 +482,50 @@ void ts::EITPlugin::handleUTC(const Time& utc, TID tid)
 void ts::EITPlugin::handleService(uint16_t ts_id, const Service& service, const PMT& pmt, bool removed)
 {
     getServiceDesc(ts_id, service.getId()).service.update(service);
+}
+
+
+//----------------------------------------------------------------------------
+// Invoked by the demux when a complete table is available.
+// Used to collect service names and LCN from other TS.
+// The SignalizationDemux collects them for the current TS only.
+//----------------------------------------------------------------------------
+
+void ts::EITPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
+{
+    switch (table.tableId()) {
+        case TID_NIT_ACT:
+        case TID_NIT_OTH: {
+            const NIT nit(duck, table);
+            if (nit.isValid()) {
+                // Get all LCN definitions from that NIT, all TS.
+                LogicalChannelNumbers lcn(duck);
+                lcn.addFromNIT(nit);
+                // Get the corresponding set of services.
+                std::set<ServiceIdTriplet> sids;
+                lcn.getServices(sids);
+                // Create/update known services.
+                for (const auto& sid : sids) {
+                    lcn.updateService(getServiceDesc(sid.transport_stream_id, sid.service_id).service, true);
+                }
+            }
+            break;
+        }
+        case TID_SDT_ACT:
+        case TID_SDT_OTH: {
+            const SDT sdt(duck, table);
+            if (sdt.isValid()) {
+                // Collect all service names from the SDT.
+                for (const auto& sv : sdt.services) {
+                    sv.second.updateService(duck, getServiceDesc(sdt.ts_id, sv.first).service);
+                }
+            }
+            break;
+        }
+        default: {
+            break;
+        }
+    }
 }
 
 
@@ -424,7 +607,7 @@ void ts::EITPlugin::handleSection(SectionDemux& demux, const Section& sect)
     if (_epg_dump) {
         for (const auto& event : eit.events) {
             // Get event description in the plugin.
-            EventDesc& ed(serv.events[event.second.event_id]);
+            EventDesc& ed(getEventDesc(serv, event.second.event_id));
 
             ed.start_time = event.second.start_time;
             ed.duration = event.second.duration;

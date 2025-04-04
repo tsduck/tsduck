@@ -569,7 +569,7 @@ ts::UString ts::Args::formatHelpOptions(size_t line_width) const
     // Set final text.
     if (!_tail.empty()) {
         text += LINE_FEED;
-        text.append(HelpLines(TITLE, _tail, line_width));
+        text += HelpLines(TITLE, _tail, line_width);
     }
     return text;
 }

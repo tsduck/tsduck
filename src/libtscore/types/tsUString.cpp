@@ -1010,7 +1010,7 @@ ts::UString ts::UString::toSplitLines(size_type max_width, const UString& other_
 {
     UStringList lines;
     splitLines(lines, max_width, other_separators, next_margin, force_split);
-    return Join(lines, lineSeparator);
+    return lineSeparator.join(lines);
 }
 
 
