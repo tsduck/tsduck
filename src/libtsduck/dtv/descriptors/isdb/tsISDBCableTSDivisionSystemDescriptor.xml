@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <ISDB_cable_TS_division_system_descriptor>
+
+      <!-- One per carrier -->
+      <carrier
+          frequency="uint, frequency in Hz, required"
+          frame_type="uint4, required"
+          FEC_outer="uint4, required"
+          modulation="uint8, required"
+          symbol_rate="uint, in symbols/second, required"
+          FEC_inner="uint4, default=15">
+        <future_use_data>
+          Hexadecimal content
+        </future_use_data>
+        <!-- One per service in the carrier -->
+        <service id="uint16, required"/>
+      </carrier>
+
+    </ISDB_cable_TS_division_system_descriptor>
+
+  </_descriptors>
+</tsduck>

@@ -15,7 +15,6 @@
 #include "tsAbstractDeliverySystemDescriptor.h"
 
 namespace ts {
-
     //!
     //! Representation of an ISDB terrestrial_delivery_system_descriptor.
     //! @see ARIB STD-B10, Part 2, 6.2.31

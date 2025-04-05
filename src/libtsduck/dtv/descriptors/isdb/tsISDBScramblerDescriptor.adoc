@@ -1,0 +1,12 @@
+==== ISDB_scrambler_descriptor
+
+Defined by ARIB in <<ARIB-B10>>.
+
+[source,xml]
+----
+<ISDB_scrambler_descriptor scrambler_identification="uint8, required">
+  <data>
+    Hexadecimal content
+  </data>
+</ISDB_scrambler_descriptor>
+----

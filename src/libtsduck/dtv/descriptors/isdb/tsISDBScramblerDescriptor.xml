@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <ISDB_scrambler_descriptor scrambler_identification="uint8, required">
+      <data>
+        Hexadecimal content
+      </data>
+    </ISDB_scrambler_descriptor>
+
+  </_descriptors>
+</tsduck>

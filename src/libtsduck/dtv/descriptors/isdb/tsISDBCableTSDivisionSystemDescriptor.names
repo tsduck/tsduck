@@ -1,0 +1,23 @@
+[ISDB_cable_TS_division_system_descriptor.frame_type]
+Bits = 4
+0 = Reserved
+1 = Uses multiplexed frames
+2-14 = Reserved
+15 = Does not use multiplexed frames
+
+[ISDB_cable_TS_division_system_descriptor.FEC_outer]
+Bits = 4
+0 = Undefined
+1 = No outer code
+2 = RS(204,188)
+3-15 = Reserved
+
+[ISDB_cable_TS_division_system_descriptor.modulation]
+Bits = 8
+0x00 = Undefined
+0x01 = 16-QAM
+0x02 = 32-QAM
+0x03 = 64-QAM
+0x04 = 128-QAM
+0x05 = 256-QAM
+0x06-0xFF = Reserved

@@ -1,0 +1,4 @@
+[ISDB_advanced_cable_delivery_system_descriptor.tag_extension]
+Bits = 8
+0 = normal data transmission
+1 = earthquake warning information transmission

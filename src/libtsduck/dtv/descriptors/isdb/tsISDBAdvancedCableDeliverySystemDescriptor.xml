@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <ISDB_advanced_cable_delivery_system_descriptor>
+      <!-- Exactly one of normal_data or other_data -->
+
+      <normal_data
+          plp_id="uint8, required"
+          effective_symbol_length="uint3, required"
+          guard_interval="uint3, required"
+          bundled_channel="uint8, required">
+        <!-- One per carrier -->
+        <carrier
+            data_slice_id="uint8, required"
+            frequency="uint, frequency in Hz, required"
+            frame_type="uint2, required"
+            FEC_outer="uint4, required"
+            modulation="uint8, required"
+            FEC_inner="uint4, required"/>
+      </normal_data>
+
+      <other_data descriptor_tag_extension="uint8, default=0x01">
+        Hexadecimal content
+      </other_data>
+
+    </ISDB_advanced_cable_delivery_system_descriptor>
+
+  </_descriptors>
+</tsduck>

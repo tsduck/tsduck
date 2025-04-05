@@ -1,0 +1,46 @@
+==== ISDB_advanced_cable_delivery_system_descriptor
+
+Defined by JCTEA in <<JCTEA-003>>.
+
+Unlike other ISDB descriptors, this one is not fully documented in <<JCTEA-003>>.
+It only appears in a block diagram.
+The following syntax has been rebuilt from this block diagram.
+
+Exactly one of `<normal_data>` or `<other_data>` shall be present.
+With `<normal_data>`, the _descriptor_tag_extension_ is implicitely 0x00.
+
+When `<other_data>` is used and _descriptor_tag_extension_ is 0x01,
+the hexadecimal data represent "earthquake warning information".
+The data must be 26 to 88 bytes long, structured as follow:
+
+[.compact-list]
+* _earthquake_warning_information_ : 204 bits, 25.5 bytes, mandatory.
+* _reserved_for_future_use_ : 500 bits, 62.5 bytes, missing bytes are padded using 0xFF.
+
+All other values of _descriptor_tag_extension_ are currently unspecified.
+
+[source,xml]
+----
+<ISDB_advanced_cable_delivery_system_descriptor>
+
+  <normal_data
+      plp_id="uint8, required"
+      effective_symbol_length="uint3, required"
+      guard_interval="uint3, required"
+      bundled_channel="uint8, required">
+    <!-- One per carrier -->
+    <carrier
+        data_slice_id="uint8, required"
+        frequency="uint, frequency in Hz, required"
+        frame_type="uint2, required"
+        FEC_outer="uint4, required"
+        modulation="uint8, required"
+        FEC_inner="uint4, required"/>
+  </normal_data>
+
+  <other_data descriptor_tag_extension="uint8, default=0x01">
+    Hexadecimal content
+  </other_data>
+
+</ISDB_advanced_cable_delivery_system_descriptor>
+----
