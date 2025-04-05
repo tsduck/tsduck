@@ -80,7 +80,7 @@ namespace ts {
         };
 
         // ISDBWiredMultiCarrierTransmissionDescriptor public members:
-        std::list<Carrier> carriers;  //!< List of carriers.
+        std::list<Carrier> carriers {};  //!< List of carriers.
 
         //!
         //! Default constructor.
