@@ -189,8 +189,8 @@ void ts::BIT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
 
 void ts::BIT::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    root->setIntAttribute(u"version", version);
-    root->setBoolAttribute(u"current", is_current);
+    root->setIntAttribute(u"version", _version);
+    root->setBoolAttribute(u"current", _is_current);
     root->setIntAttribute(u"original_network_id", original_network_id, true);
     root->setBoolAttribute(u"broadcast_view_propriety", broadcast_view_propriety);
     descs.toXML(duck, root);
@@ -211,8 +211,8 @@ bool ts::BIT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     xml::ElementVector xbroadcasters;
     bool ok =
-        element->getIntAttribute(version, u"version", false, 0, 0, 31) &&
-        element->getBoolAttribute(is_current, u"current", false, true) &&
+        element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
+        element->getBoolAttribute(_is_current, u"current", false, true) &&
         element->getIntAttribute(original_network_id, u"original_network_id", true) &&
         element->getBoolAttribute(broadcast_view_propriety, u"broadcast_view_propriety", true) &&
         descs.fromXML(duck, xbroadcasters, element, u"broadcaster");

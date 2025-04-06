@@ -120,8 +120,8 @@ void ts::ITT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
 
 void ts::ITT::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    root->setIntAttribute(u"version", version);
-    root->setBoolAttribute(u"current", is_current);
+    root->setIntAttribute(u"version", _version);
+    root->setBoolAttribute(u"current", _is_current);
     root->setIntAttribute(u"event_id", event_id, true);
     descs.toXML(duck, root);
 }
@@ -133,8 +133,8 @@ void ts::ITT::buildXML(DuckContext& duck, xml::Element* root) const
 
 bool ts::ITT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute(version, u"version", false, 0, 0, 31) &&
-           element->getBoolAttribute(is_current, u"current", false, true) &&
+    return element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
+           element->getBoolAttribute(_is_current, u"current", false, true) &&
            element->getIntAttribute(event_id, u"event_id", true) &&
            descs.fromXML(duck, element);
 }

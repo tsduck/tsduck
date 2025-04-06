@@ -163,8 +163,8 @@ void ts::LIT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
 
 void ts::LIT::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    root->setIntAttribute(u"version", version);
-    root->setBoolAttribute(u"current", is_current);
+    root->setIntAttribute(u"version", _version);
+    root->setBoolAttribute(u"current", _is_current);
     root->setIntAttribute(u"event_id", event_id, true);
     root->setIntAttribute(u"service_id", service_id, true);
     root->setIntAttribute(u"transport_stream_id", transport_stream_id, true);
@@ -186,8 +186,8 @@ bool ts::LIT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     xml::ElementVector xevent;
     bool ok =
-        element->getIntAttribute(version, u"version", false, 0, 0, 31) &&
-        element->getBoolAttribute(is_current, u"current", false, true) &&
+        element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
+        element->getBoolAttribute(_is_current, u"current", false, true) &&
         element->getIntAttribute(event_id, u"event_id", true) &&
         element->getIntAttribute(service_id, u"service_id", true) &&
         element->getIntAttribute(transport_stream_id, u"transport_stream_id", true) &&

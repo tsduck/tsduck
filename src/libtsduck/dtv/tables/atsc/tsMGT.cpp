@@ -235,7 +235,7 @@ void ts::MGT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
 
 void ts::MGT::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    root->setIntAttribute(u"version", version);
+    root->setIntAttribute(u"version", _version);
     root->setIntAttribute(u"protocol_version", protocol_version);
     descs.toXML(duck, root);
 
@@ -258,7 +258,7 @@ bool ts::MGT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     xml::ElementVector children;
     bool ok =
-        element->getIntAttribute(version, u"version", false, 0, 0, 31) &&
+        element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
         element->getIntAttribute(protocol_version, u"protocol_version", false, 0) &&
         descs.fromXML(duck, children, element, u"table");
 

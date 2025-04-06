@@ -194,7 +194,7 @@ void ts::ATSCEIT::DisplaySection(TablesDisplay& disp, const ts::Section& section
 
 void ts::ATSCEIT::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    root->setIntAttribute(u"version", version);
+    root->setIntAttribute(u"version", _version);
     root->setIntAttribute(u"source_id", source_id, true);
     root->setIntAttribute(u"protocol_version", protocol_version);
 
@@ -218,7 +218,7 @@ bool ts::ATSCEIT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     xml::ElementVector xevent;
     bool ok =
-        element->getIntAttribute(version, u"version", false, 0, 0, 31) &&
+        element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
         element->getIntAttribute(source_id, u"source_id", true) &&
         element->getIntAttribute(protocol_version, u"protocol_version", false, 0) &&
         element->getChildren(xevent, u"event");

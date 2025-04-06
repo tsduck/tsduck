@@ -258,8 +258,8 @@ void ts::RNT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
 
 void ts::RNT::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    root->setIntAttribute(u"version", version);
-    root->setBoolAttribute(u"current", is_current);
+    root->setIntAttribute(u"version", _version);
+    root->setBoolAttribute(u"current", _is_current);
     root->setIntAttribute(u"context_id", context_id, true);
     root->setIntAttribute(u"context_id_type", context_id_type, true);
     descs.toXML(duck, root);
@@ -285,8 +285,8 @@ bool ts::RNT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     xml::ElementVector xprov;
     bool ok =
-        element->getIntAttribute(version, u"version", false, 0, 0, 31) &&
-        element->getBoolAttribute(is_current, u"current", false, true) &&
+        element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
+        element->getBoolAttribute(_is_current, u"current", false, true) &&
         element->getIntAttribute(context_id, u"context_id", true) &&
         element->getIntAttribute(context_id_type, u"context_id_type", true) &&
         descs.fromXML(duck, xprov, element, u"resolution_provider");

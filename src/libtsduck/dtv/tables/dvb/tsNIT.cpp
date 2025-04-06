@@ -105,8 +105,8 @@ void ts::NIT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
 
 void ts::NIT::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    root->setIntAttribute(u"version", version);
-    root->setBoolAttribute(u"current", is_current);
+    root->setIntAttribute(u"version", _version);
+    root->setBoolAttribute(u"current", _is_current);
     root->setIntAttribute(u"network_id", network_id, true);
     root->setBoolAttribute(u"actual", isActual());
     descs.toXML(duck, root);
@@ -132,8 +132,8 @@ bool ts::NIT::analyzeXML(DuckContext& duck, const xml::Element* element)
     xml::ElementVector children;
     bool actual = true;
     bool ok =
-        element->getIntAttribute(version, u"version", false, 0, 0, 31) &&
-        element->getBoolAttribute(is_current, u"current", false, true) &&
+        element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
+        element->getBoolAttribute(_is_current, u"current", false, true) &&
         element->getIntAttribute(network_id, u"network_id", true, 0, 0x0000, 0xFFFF) &&
         element->getBoolAttribute(actual, u"actual", false, true) &&
         descs.fromXML(duck, children, element, u"transport_stream");

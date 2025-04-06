@@ -379,8 +379,8 @@ void ts::SDT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
 
 void ts::SDT::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    root->setIntAttribute(u"version", version);
-    root->setBoolAttribute(u"current", is_current);
+    root->setIntAttribute(u"version", _version);
+    root->setBoolAttribute(u"current", _is_current);
     root->setIntAttribute(u"transport_stream_id", ts_id, true);
     root->setIntAttribute(u"original_network_id", onetw_id, true);
     root->setBoolAttribute(u"actual", isActual());
@@ -406,8 +406,8 @@ bool ts::SDT::analyzeXML(DuckContext& duck, const xml::Element* element)
     xml::ElementVector children;
     bool actual = true;
     bool ok =
-        element->getIntAttribute(version, u"version", false, 0, 0, 31) &&
-        element->getBoolAttribute(is_current, u"current", false, true) &&
+        element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
+        element->getBoolAttribute(_is_current, u"current", false, true) &&
         element->getIntAttribute(ts_id, u"transport_stream_id", true, 0, 0x0000, 0xFFFF) &&
         element->getIntAttribute(onetw_id, u"original_network_id", true, 0, 0x0000, 0xFFFF) &&
         element->getBoolAttribute(actual, u"actual", false, true) &&

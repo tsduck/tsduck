@@ -8,7 +8,6 @@
 
 #include "tstsmuxCore.h"
 #include "tsFatal.h"
-#include "tsAlgorithm.h"
 #include "tsBinaryTable.h"
 #include "tsCADescriptor.h"
 #include "tsTDT.h"
@@ -666,7 +665,7 @@ void ts::tsmux::Core::Input::handlePAT(const PAT& pat)
 
     // If the output PAT was modified, increment its version and replace it in the packetizer.
     if (modified) {
-        _core._output_pat.version = (_core._output_pat.version + 1) & SVERSION_MASK;
+        _core._output_pat.incrementVersion();
         _core._pat_pzer.removeSections(TID_PAT);
         _core._pat_pzer.addTable(_core._duck, _core._output_pat);
     }
@@ -723,7 +722,7 @@ void ts::tsmux::Core::Input::handleCAT(const CAT& cat)
 
     // If the output CAT was modified, increment its version and replace it in the packetizer.
     if (modified) {
-        _core._output_cat.version = (_core._output_cat.version + 1) & SVERSION_MASK;
+        _core._output_cat.incrementVersion();
         _core._cat_pzer.removeSections(TID_CAT);
         _core._cat_pzer.addTable(_core._duck, _core._output_cat);
     }
@@ -762,7 +761,7 @@ void ts::tsmux::Core::Input::handleNIT(const NIT& nit)
 
     // If the output NIT was modified, increment its version and replace it in the packetizer.
     if (modified) {
-        _core._output_nit.version = (_core._output_nit.version + 1) & SVERSION_MASK;
+        _core._output_nit.incrementVersion();
         _core._nit_pzer.removeSections(TID_NIT_ACT);
         _core._nit_pzer.addTable(_core._duck, _core._output_nit);
     }
@@ -825,7 +824,7 @@ void ts::tsmux::Core::Input::handleSDT(const SDT& sdt)
 
     // If the output SDT was modified, increment its version and replace it in the packetizer.
     if (modified) {
-        _core._output_sdt.version = (_core._output_sdt.version + 1) & SVERSION_MASK;
+        _core._output_sdt.incrementVersion();
         _core._sdt_bat_pzer.removeSections(TID_SDT_ACT);
         _core._sdt_bat_pzer.addTable(_core._duck, _core._output_sdt);
     }

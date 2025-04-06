@@ -75,7 +75,10 @@ void ts::DSMCCUserToNetworkMessage::clearContent()
 
 bool ts::DSMCCUserToNetworkMessage::isPrivate() const
 {
-    return false;  // MPEG-defined
+    // According to ISO/IEC 13818-6, section 9.2.2, in all DSM-CC sections, "the private_indicator field
+    // shall be set to the complement of the section_syntax_indicator value". For long sections, the
+    // syntax indicator is always 1 and, therefore, the private indicator shall always be 0 ("non-private").
+    return false;
 }
 
 size_t ts::DSMCCUserToNetworkMessage::maxPayloadSize() const
@@ -648,8 +651,8 @@ void ts::DSMCCUserToNetworkMessage::DisplaySection(TablesDisplay& disp, const ts
 
 void ts::DSMCCUserToNetworkMessage::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    root->setIntAttribute(u"version", version);
-    root->setBoolAttribute(u"current", is_current);
+    root->setIntAttribute(u"version", _version);
+    root->setBoolAttribute(u"current", _is_current);
     root->setIntAttribute(u"protocol_discriminator", header.protocol_discriminator, true);
     root->setIntAttribute(u"dsmcc_type", header.dsmcc_type, true);
     root->setIntAttribute(u"message_id", header.message_id, true);
@@ -760,8 +763,8 @@ void ts::DSMCCUserToNetworkMessage::buildXML(DuckContext& duck, xml::Element* ro
 bool ts::DSMCCUserToNetworkMessage::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     bool ok =
-        element->getIntAttribute(version, u"version", false, 0, 0, 31) &&
-        element->getBoolAttribute(is_current, u"current", false, true) &&
+        element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
+        element->getBoolAttribute(_is_current, u"current", false, true) &&
         element->getIntAttribute(header.protocol_discriminator, u"protocol_discriminator", false, 0x11) &&
         element->getIntAttribute(header.dsmcc_type, u"dsmcc_type", true, 0x03) &&
         element->getIntAttribute(header.message_id, u"message_id", true) &&

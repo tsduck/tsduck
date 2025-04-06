@@ -307,7 +307,7 @@ void ts::DCCSCT::DisplaySection(TablesDisplay& disp, const ts::Section& section,
 
 void ts::DCCSCT::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    root->setIntAttribute(u"version", version);
+    root->setIntAttribute(u"version", _version);
     root->setIntAttribute(u"protocol_version", protocol_version);
     root->setIntAttribute(u"dccsct_type", dccsct_type, true);
     descs.toXML(duck, root);
@@ -349,7 +349,7 @@ bool ts::DCCSCT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     xml::ElementVector children;
     bool ok =
-        element->getIntAttribute(version, u"version", false, 0, 0, 31) &&
+        element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
         element->getIntAttribute(protocol_version, u"protocol_version", false, 0) &&
         element->getIntAttribute(dccsct_type, u"dccsct_type", false, 0) &&
         descs.fromXML(duck, children, element, u"update");

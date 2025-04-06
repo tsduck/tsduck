@@ -145,8 +145,8 @@ void ts::CDT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
 
 void ts::CDT::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    root->setIntAttribute(u"version", version);
-    root->setBoolAttribute(u"current", is_current);
+    root->setIntAttribute(u"version", _version);
+    root->setBoolAttribute(u"current", _is_current);
     root->setIntAttribute(u"download_data_id", download_data_id, true);
     root->setIntAttribute(u"original_network_id", original_network_id, true);
     root->setIntAttribute(u"data_type", data_type, true);
@@ -162,8 +162,8 @@ void ts::CDT::buildXML(DuckContext& duck, xml::Element* root) const
 bool ts::CDT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     xml::ElementVector xdata;
-    return element->getIntAttribute(version, u"version", false, 0, 0, 31) &&
-           element->getBoolAttribute(is_current, u"current", false, true) &&
+    return element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
+           element->getBoolAttribute(_is_current, u"current", false, true) &&
            element->getIntAttribute(download_data_id, u"download_data_id", true) &&
            element->getIntAttribute(original_network_id, u"original_network_id", true) &&
            element->getIntAttribute(data_type, u"data_type", true) &&

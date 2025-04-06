@@ -382,7 +382,7 @@ void ts::NITPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
             // The global service list has been modified and a valid NIT was already found.
             updateServiceList(_last_nit);
             // Make sure the updated NIT has a new version.
-            _last_nit.version = (_last_nit.version + 1) & SVERSION_MASK;
+            _last_nit.incrementVersion();
             // We need to force the modified NIT.
             BinaryTable bin;
             _last_nit.serialize(duck, bin);
@@ -438,7 +438,7 @@ void ts::NITPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
         return;
     }
 
-    debug(u"got a NIT, version %d, network Id: %n", nit.version, nit.network_id);
+    debug(u"got a NIT, version %d, network Id: %n", nit.version(), nit.network_id);
 
     // Remove the specified transport streams
     for (auto it = nit.transports.begin(); it != nit.transports.end(); ) {

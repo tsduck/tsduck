@@ -108,7 +108,7 @@ void ts::ETT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
 
 void ts::ETT::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    root->setIntAttribute(u"version", version);
+    root->setIntAttribute(u"version", _version);
     root->setIntAttribute(u"protocol_version", protocol_version);
     root->setIntAttribute(u"ETT_table_id_extension", ETT_table_id_extension, true);
     root->setIntAttribute(u"ETM_id", ETM_id, true);
@@ -122,7 +122,7 @@ void ts::ETT::buildXML(DuckContext& duck, xml::Element* root) const
 
 bool ts::ETT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute(version, u"version", false, 0, 0, 31) &&
+    return element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
            element->getIntAttribute(protocol_version, u"protocol_version", false, 0) &&
            element->getIntAttribute(ETT_table_id_extension, u"ETT_table_id_extension", true) &&
            element->getIntAttribute(ETM_id, u"ETM_id", true) &&

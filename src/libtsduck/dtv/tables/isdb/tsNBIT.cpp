@@ -193,8 +193,8 @@ void ts::NBIT::DisplaySection(TablesDisplay& disp, const ts::Section& section, P
 
 void ts::NBIT::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    root->setIntAttribute(u"version", version);
-    root->setBoolAttribute(u"current", is_current);
+    root->setIntAttribute(u"version", _version);
+    root->setBoolAttribute(u"current", _is_current);
     root->setIntAttribute(u"original_network_id", original_network_id, true);
     root->setBoolAttribute(u"body", isBody());
 
@@ -223,8 +223,8 @@ bool ts::NBIT::analyzeXML(DuckContext& duck, const xml::Element* element)
     xml::ElementVector xinfo;
     bool body = true;
     bool ok =
-        element->getIntAttribute(version, u"version", false, 0, 0, 31) &&
-        element->getBoolAttribute(is_current, u"current", false, true) &&
+        element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
+        element->getBoolAttribute(_is_current, u"current", false, true) &&
         element->getIntAttribute(original_network_id, u"original_network_id", true) &&
         element->getBoolAttribute(body, u"body", false, true) &&
         element->getChildren(xinfo, u"information");

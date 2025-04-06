@@ -203,8 +203,8 @@ void ts::AMT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
 
 void ts::AMT::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    root->setIntAttribute(u"version", version);
-    root->setBoolAttribute(u"current", is_current);
+    root->setIntAttribute(u"version", _version);
+    root->setBoolAttribute(u"current", _is_current);
     for (const auto& it : services) {
         xml::Element* e = root->addElement(u"service");
         e->setIntAttribute(u"service_id", it.first, true);
@@ -223,8 +223,8 @@ bool ts::AMT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     xml::ElementVector xsrv;
     bool ok =
-        element->getIntAttribute(version, u"version", false, 0, 0, 31) &&
-        element->getBoolAttribute(is_current, u"current", false, true) &&
+        element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
+        element->getBoolAttribute(_is_current, u"current", false, true) &&
         element->getChildren(xsrv, u"service");
 
     for (const auto& it : xsrv) {

@@ -187,8 +187,8 @@ void ts::DFIT::DisplaySection(TablesDisplay& disp, const ts::Section& section, P
 
 void ts::DFIT::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    root->setIntAttribute(u"version", version);
-    root->setBoolAttribute(u"current", is_current);
+    root->setIntAttribute(u"version", _version);
+    root->setBoolAttribute(u"current", _is_current);
     root->setIntAttribute(u"font_id", font_id, true);
     root->setIntAttribute(u"font_id_extension", font_id_extension, true);
     root->setAttribute(u"font_family", font_family);
@@ -216,8 +216,8 @@ bool ts::DFIT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     xml::ElementVector xstyle, xfile, xsize;
     bool ok =
-        element->getIntAttribute(version, u"version", false, 0, 0, 31) &&
-        element->getBoolAttribute(is_current, u"current", false, true) &&
+        element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
+        element->getBoolAttribute(_is_current, u"current", false, true) &&
         element->getIntAttribute(font_id, u"font_id", true, 0, 0, 0x7F) &&
         element->getIntAttribute(font_id_extension, u"font_id_extension", false, 0, 0, 0x01FF) &&
         element->getAttribute(font_family, u"font_family", true) &&

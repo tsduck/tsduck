@@ -18,8 +18,8 @@
 
 ts::AbstractLongTable::AbstractLongTable(TID tid, const UChar* xml_name, Standards standards, uint8_t version_, bool is_current_) :
     AbstractTable(tid, xml_name, standards),
-    version(version_),
-    is_current(is_current_)
+    _version(version_),
+    _is_current(is_current_)
 {
 }
 
@@ -29,23 +29,44 @@ ts::AbstractLongTable::~AbstractLongTable()
 
 
 //----------------------------------------------------------------------------
-// Get the maximum size in bytes of the payload of sections of this table.
+// Default implementations of simple virtual methods.
 //----------------------------------------------------------------------------
 
+// Get the maximum size in bytes of the payload of sections of this table.
 size_t ts::AbstractLongTable::maxPayloadSize() const
 {
     return isPrivate() ? MAX_PRIVATE_LONG_SECTION_PAYLOAD_SIZE : MAX_PSI_LONG_SECTION_PAYLOAD_SIZE;
 }
 
-
-//----------------------------------------------------------------------------
 // Check if the sections of this table have a trailing CRC32.
-//----------------------------------------------------------------------------
-
 bool ts::AbstractLongTable::useTrailingCRC32() const
 {
     // By default, all long sections have a CRC32.
     return true;
+}
+
+// Get the table version.
+uint8_t ts::AbstractLongTable::version() const
+{
+    return _version;
+}
+
+// Set the table version.
+void ts::AbstractLongTable::setVersion(uint8_t version)
+{
+    _version = version & SVERSION_MASK;
+}
+
+// Check if the table is current.
+bool ts::AbstractLongTable::isCurrent() const
+{
+    return _is_current;
+}
+
+// Set the current/next status of the table.
+void ts::AbstractLongTable::setCurrent(bool is_current)
+{
+    _is_current = is_current;
 }
 
 
@@ -59,8 +80,8 @@ void ts::AbstractLongTable::clear()
     AbstractTable::clear();
 
     // Clear fields of this class.
-    version = 0;
-    is_current = true;
+    setVersion(0);
+    setCurrent(true);
 }
 
 
@@ -71,8 +92,8 @@ void ts::AbstractLongTable::clear()
 void ts::AbstractLongTable::deserializePayloadWrapper(PSIBuffer& buf, const Section& section)
 {
     // Extract fields of this class.
-    version = section.version();
-    is_current = section.isCurrent();
+    setVersion(section.version());
+    setCurrent(section.isCurrent());
 
     // Deserialize using superclass, including call to deserializePayload().
     AbstractTable::deserializePayloadWrapper(buf, section);
@@ -92,8 +113,8 @@ void ts::AbstractLongTable::addOneSectionImpl(BinaryTable& table, PSIBuffer& pay
         table.addNewSection(tableId(),
                             isPrivate(),
                             tableIdExtension(),
-                            version,
-                            is_current,
+                            _version,
+                            _is_current,
                             section_number,
                             section_number, // last_section_number
                             payload.currentReadAddress(),

@@ -166,8 +166,8 @@ void ts::DCT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
 
 void ts::DCT::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    root->setIntAttribute(u"version", version);
-    root->setBoolAttribute(u"current", is_current);
+    root->setIntAttribute(u"version", _version);
+    root->setBoolAttribute(u"current", _is_current);
     root->setIntAttribute(u"network_id", network_id, true);
     root->setIntAttribute(u"transmission_rate", transmission_rate);
     for (const auto& str : streams) {
@@ -195,8 +195,8 @@ void ts::DCT::buildXML(DuckContext& duck, xml::Element* root) const
 bool ts::DCT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     xml::ElementVector xstr;
-    bool ok = element->getIntAttribute(version, u"version", false, 0, 0, 31) &&
-              element->getBoolAttribute(is_current, u"current", false, true) &&
+    bool ok = element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
+              element->getBoolAttribute(_is_current, u"current", false, true) &&
               element->getIntAttribute(network_id, u"network_id", true) &&
               element->getIntAttribute(transmission_rate, u"transmission_rate", true) &&
               element->getChildren(xstr, u"transport_stream");

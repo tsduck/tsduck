@@ -604,7 +604,7 @@ void ts::ZapPlugin::handleSDT(SDT& sdt)
 
     // Update a new SDT version. This is useful with --ignore-absent when the service comes and goes.
     _sdt_version = (_sdt_version + 1) & SVERSION_MASK;
-    sdt.version = _sdt_version;
+    sdt.setVersion(_sdt_version);
 
     // Build the list of TS packets containing the new SDT.
     // These packets will replace everything on the SDT/BAT PID.

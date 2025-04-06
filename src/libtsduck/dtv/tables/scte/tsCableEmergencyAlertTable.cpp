@@ -266,7 +266,7 @@ void ts::CableEmergencyAlertTable::serializePayload(BinaryTable& table, PSIBuffe
 
 void ts::CableEmergencyAlertTable::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    root->setIntAttribute(u"sequence_number", version, false);
+    root->setIntAttribute(u"sequence_number", _version, false);
     root->setIntAttribute(u"protocol_version", protocol_version, false);
     root->setIntAttribute(u"EAS_event_ID", EAS_event_ID, true);
     root->setAttribute(u"EAS_originator_code", EAS_originator_code);
@@ -326,7 +326,7 @@ bool ts::CableEmergencyAlertTable::analyzeXML(DuckContext& duck, const xml::Elem
     xml::ElementVector exceps;
 
     bool ok =
-        element->getIntAttribute(version, u"sequence_number", true, 0, 0, 31) &&
+        element->getIntAttribute(_version, u"sequence_number", true, 0, 0, 31) &&
         element->getIntAttribute(protocol_version, u"protocol_version", false, 0) &&
         element->getIntAttribute(EAS_event_ID, u"EAS_event_ID", true) &&
         element->getAttribute(EAS_originator_code, u"EAS_originator_code", true, UString(), 3, 3) &&

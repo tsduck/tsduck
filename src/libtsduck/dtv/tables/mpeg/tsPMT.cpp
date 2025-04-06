@@ -531,8 +531,8 @@ void ts::PMT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
 
 void ts::PMT::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    root->setIntAttribute(u"version", version);
-    root->setBoolAttribute(u"current", is_current);
+    root->setIntAttribute(u"version", _version);
+    root->setBoolAttribute(u"current", _is_current);
     root->setIntAttribute(u"service_id", service_id, true);
     if (pcr_pid != PID_NULL) {
         root->setIntAttribute(u"PCR_PID", pcr_pid, true);
@@ -562,8 +562,8 @@ bool ts::PMT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     xml::ElementVector children;
     bool ok =
-        element->getIntAttribute(version, u"version", false, 0, 0, 31) &&
-        element->getBoolAttribute(is_current, u"current", false, true) &&
+        element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
+        element->getBoolAttribute(_is_current, u"current", false, true) &&
         element->getIntAttribute(service_id, u"service_id", true, 0, 0x0000, 0xFFFF) &&
         element->getIntAttribute(pcr_pid, u"PCR_PID", false, PID_NULL, 0x0000, 0x1FFF) &&
         descs.fromXML(duck, children, element, u"component");

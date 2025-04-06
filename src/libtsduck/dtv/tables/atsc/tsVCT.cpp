@@ -442,8 +442,8 @@ const ts::Names& ts::VCT::ServiceTypeEnum()
 
 void ts::VCT::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    root->setIntAttribute(u"version", version);
-    root->setBoolAttribute(u"current", is_current);
+    root->setIntAttribute(u"version", _version);
+    root->setBoolAttribute(u"current", _is_current);
     root->setIntAttribute(u"transport_stream_id", transport_stream_id, true);
     root->setIntAttribute(u"protocol_version", protocol_version);
     descs.toXML(duck, root);
@@ -481,8 +481,8 @@ bool ts::VCT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     xml::ElementVector children;
     bool ok =
-        element->getIntAttribute(version, u"version", false, 0, 0, 31) &&
-        element->getBoolAttribute(is_current, u"current", false, true) &&
+        element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
+        element->getBoolAttribute(_is_current, u"current", false, true) &&
         element->getIntAttribute(protocol_version, u"protocol_version", false, 0) &&
         element->getIntAttribute(transport_stream_id, u"transport_stream_id", true) &&
         descs.fromXML(duck, children, element, u"channel");

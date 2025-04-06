@@ -552,7 +552,7 @@ void ts::PSIMerger::mergePAT()
 
     // Build a new PAT based on last main PAT with incremented version number.
     PAT pat(_main_pat);
-    pat.version = (pat.version + 1) & SVERSION_MASK;
+    pat.incrementVersion();
 
     // Add all services from merged stream into main PAT.
     for (const auto& merge : _merge_pat.pmts) {
@@ -571,7 +571,7 @@ void ts::PSIMerger::mergePAT()
     _pat_pzer.addTable(_duck, pat);
 
     // Save PAT version number for later increment.
-    _main_pat.version = pat.version;
+    _main_pat.setVersion(pat.version());
 }
 
 
@@ -590,7 +590,7 @@ void ts::PSIMerger::mergeCAT()
 
     // Build a new CAT based on last main CAT with incremented version number.
     CAT cat(_main_cat);
-    cat.version = (cat.version + 1) & SVERSION_MASK;
+    cat.incrementVersion();
 
     // Add all CA descriptors from merged stream into main CAT.
     for (size_t index = _merge_cat.descs.search(DID_MPEG_CA); index < _merge_cat.descs.count(); index = _merge_cat.descs.search(DID_MPEG_CA, index + 1)) {
@@ -610,7 +610,7 @@ void ts::PSIMerger::mergeCAT()
     _cat_pzer.addTable(_duck, cat);
 
     // Save CAT version number for later increment.
-    _main_cat.version = cat.version;
+    _main_cat.setVersion(cat.version());
 }
 
 
@@ -629,7 +629,7 @@ void ts::PSIMerger::mergeSDT()
 
     // Build a new SDT based on last main SDT with incremented version number.
     SDT sdt(_main_sdt);
-    sdt.version = (sdt.version + 1) & SVERSION_MASK;
+    sdt.incrementVersion();
 
     // Add all services from merged stream into main SDT.
     for (const auto& merge : _merge_sdt.services) {
@@ -648,7 +648,7 @@ void ts::PSIMerger::mergeSDT()
     _sdt_bat_pzer.addTable(_duck, sdt);
 
     // Save SDT version number for later increment.
-    _main_sdt.version = sdt.version;
+    _main_sdt.setVersion(sdt.version());
 }
 
 
@@ -670,7 +670,7 @@ void ts::PSIMerger::mergeNIT()
 
     // Build a new NIT based on last main NIT with incremented version number.
     NIT nit(_main_nit);
-    nit.version = (nit.version + 1) & SVERSION_MASK;
+    nit.incrementVersion();
 
     // If the two TS are from the same network and have distinct TS ids, remove the
     // description of the merged TS since it is now merged.
@@ -695,7 +695,7 @@ void ts::PSIMerger::mergeNIT()
     _nit_pzer.addTable(_duck, nit);
 
     // Save NIT version number for later increment.
-    _main_nit.version = nit.version;
+    _main_nit.setVersion(nit.version());
 }
 
 
@@ -721,7 +721,7 @@ void ts::PSIMerger::mergeBAT(uint16_t bouquet_id)
 
     // Build a new BAT based on last main BAT with incremented version number.
     BAT bat(main->second);
-    bat.version = (bat.version + 1) & SVERSION_MASK;
+    bat.incrementVersion();
 
     // If the two TS have distinct TS ids, remove the description of the merged TS since it is now merged.
     if (main_tsid != merge_tsid) {
@@ -745,5 +745,5 @@ void ts::PSIMerger::mergeBAT(uint16_t bouquet_id)
     _sdt_bat_pzer.addTable(_duck, bat);
 
     // Save NIT version number for later increment.
-    main->second.version = bat.version;
+    main->second.setVersion(bat.version());
 }

@@ -450,14 +450,14 @@ TSUNIT_DEFINE_TEST(BuildSections)
 
     ts::PAT binPAT(duck, *binFile.tables()[0]);
     TSUNIT_ASSERT(binPAT.isValid());
-    TSUNIT_EQUAL(7, binPAT.version);
+    TSUNIT_EQUAL(7, binPAT.version());
     TSUNIT_EQUAL(0x1234, binPAT.ts_id);
     TSUNIT_EQUAL(ts::PID_NIT, binPAT.nit_pid);
     TSUNIT_ASSERT(binPAT.pmts == pat.pmts);
 
     ts::PAT xmlPAT(duck, *xmlFile.tables()[0]);
     TSUNIT_ASSERT(xmlPAT.isValid());
-    TSUNIT_EQUAL(7, xmlPAT.version);
+    TSUNIT_EQUAL(7, xmlPAT.version());
     TSUNIT_EQUAL(0x1234, xmlPAT.ts_id);
     TSUNIT_EQUAL(ts::PID_NIT, xmlPAT.nit_pid);
     TSUNIT_ASSERT(xmlPAT.pmts == pat.pmts);

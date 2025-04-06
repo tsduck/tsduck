@@ -311,7 +311,7 @@ void ts::NITScanPlugin::processPAT(const PAT& pat)
 
 void ts::NITScanPlugin::processNIT(const NIT& nit)
 {
-    debug(u"got a NIT, version %d, network Id: %n", nit.version, nit.network_id);
+    debug(u"got a NIT, version %d, network Id: %n", nit.version(), nit.network_id);
 
     // Count the number of NIT's
     _nit_count++;
@@ -333,7 +333,7 @@ void ts::NITScanPlugin::processNIT(const NIT& nit)
                 if (_use_comment) {
                     *_output << _comment_prefix
                              << UString::Format(u"TS id: %n, original network id: %n, from NIT v%d on network id: %n",
-                                                tsid.transport_stream_id, tsid.original_network_id, nit.version, nit.network_id)
+                                                tsid.transport_stream_id, tsid.original_network_id, nit.version(), nit.network_id)
                              << std::endl;
                 }
                 // Output the tuning information, optionally in a variable definition.

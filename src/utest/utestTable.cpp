@@ -80,8 +80,8 @@ TSUNIT_DEFINE_TEST(AssignPMT)
 
     TSUNIT_ASSERT(pmt2.isValid());
     TSUNIT_EQUAL(ts::TID_PMT, pmt2.tableId());
-    TSUNIT_ASSERT(pmt2.is_current);
-    TSUNIT_EQUAL(1, pmt2.version);
+    TSUNIT_ASSERT(pmt2.isCurrent());
+    TSUNIT_EQUAL(1, pmt2.version());
     TSUNIT_EQUAL(27, pmt2.service_id);
     TSUNIT_EQUAL(1001, pmt2.pcr_pid);
 
@@ -123,8 +123,8 @@ TSUNIT_DEFINE_TEST(CopyPMT)
 
     TSUNIT_ASSERT(pmt2.isValid());
     TSUNIT_EQUAL(uint8_t(ts::TID_PMT), pmt2.tableId());
-    TSUNIT_ASSERT(pmt2.is_current);
-    TSUNIT_EQUAL(1, pmt2.version);
+    TSUNIT_ASSERT(pmt2.isCurrent());
+    TSUNIT_EQUAL(1, pmt2.version());
     TSUNIT_EQUAL(27, pmt2.service_id);
     TSUNIT_EQUAL(1001, pmt2.pcr_pid);
 

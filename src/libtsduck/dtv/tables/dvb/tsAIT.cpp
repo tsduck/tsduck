@@ -253,8 +253,8 @@ void ts::AIT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
 
 void ts::AIT::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    root->setIntAttribute(u"version", version);
-    root->setBoolAttribute(u"current", is_current);
+    root->setIntAttribute(u"version", _version);
+    root->setBoolAttribute(u"current", _is_current);
     root->setBoolAttribute(u"test_application_flag", test_application_flag);
     root->setIntAttribute(u"application_type", application_type, true);
     descs.toXML(duck, root);
@@ -278,8 +278,8 @@ bool ts::AIT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     xml::ElementVector children;
     bool ok =
-        element->getIntAttribute(version, u"version", false, 0, 0, 31) &&
-        element->getBoolAttribute(is_current, u"current", false, true) &&
+        element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
+        element->getBoolAttribute(_is_current, u"current", false, true) &&
         element->getBoolAttribute(test_application_flag, u"test_application_flag", false, true) &&
         element->getIntAttribute(application_type, u"application_type", true, 0, 0x0000, 0x7FFF) &&
         descs.fromXML(duck, children, element, u"application");

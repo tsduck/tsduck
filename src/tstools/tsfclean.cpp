@@ -372,7 +372,7 @@ void ts::FileCleaner::errorCleanup()
 
 void ts::FileCleaner::handlePAT(const PAT& pat, PID pid)
 {
-    _opt.debug(u"got PAT version %d", pat.version);
+    _opt.debug(u"got PAT version %d", pat.version());
     if (!_pat.isValid()) {
         // First PAT.
         _pat = pat;
@@ -380,7 +380,7 @@ void ts::FileCleaner::handlePAT(const PAT& pat, PID pid)
     }
     else {
         // Updated PAT, add new services, check inconsistencies.
-        _opt.verbose(u"got PAT update, version %d", pat.version);
+        _opt.verbose(u"got PAT update, version %d", pat.version());
         for (const auto& it : pat.pmts) {
             const auto cur = _pat.pmts.find(it.first);
             if (cur == _pat.pmts.end()) {
@@ -404,14 +404,14 @@ void ts::FileCleaner::handlePAT(const PAT& pat, PID pid)
 
 void ts::FileCleaner::handleCAT(const CAT& cat, PID pid)
 {
-    _opt.debug(u"got CAT version %d", cat.version);
+    _opt.debug(u"got CAT version %d", cat.version());
     if (!_cat.isValid()) {
         // First CAT.
         _cat = cat;
     }
     else {
         // Updated CAT, merge descriptors (don't duplicate existing ones).
-        _opt.verbose(u"got CAT update, version %d", cat.version);
+        _opt.verbose(u"got CAT update, version %d", cat.version());
         _cat.descs.merge(_opt.duck, cat.descs);
     }
 }
@@ -423,14 +423,14 @@ void ts::FileCleaner::handleCAT(const CAT& cat, PID pid)
 
 void ts::FileCleaner::handleSDT(const SDT& sdt, PID pid)
 {
-    _opt.debug(u"got SDT version %d", sdt.version);
+    _opt.debug(u"got SDT version %d", sdt.version());
     if (!_sdt.isValid()) {
         // First SDT.
         _sdt = sdt;
     }
     else {
         // Updated SDT, add new services, merge others.
-        _opt.verbose(u"got SDT update, version %d", sdt.version);
+        _opt.verbose(u"got SDT update, version %d", sdt.version());
         for (const auto& it : sdt.services) {
             const auto cur = _sdt.services.find(it.first);
             if (cur == _sdt.services.end()) {
@@ -453,7 +453,7 @@ void ts::FileCleaner::handleSDT(const SDT& sdt, PID pid)
 
 void ts::FileCleaner::handlePMT(const PMT& pmt, PID pid)
 {
-    _opt.debug(u"got PMT version %d, PID %n, service id %n", pmt.version, pid, pmt.service_id);
+    _opt.debug(u"got PMT version %d, PID %n, service id %n", pmt.version(), pid, pmt.service_id);
 
     // Get or create service context for this PMT.
     auto& ctx(getServiceContext(pid));
@@ -464,7 +464,7 @@ void ts::FileCleaner::handlePMT(const PMT& pmt, PID pid)
     }
     else {
         // Updated PMT, add new components, merge others.
-        _opt.verbose(u"got PMT update version %d, PID %n, service id %n", pmt.version, pid, pmt.service_id);
+        _opt.verbose(u"got PMT update version %d, PID %n, service id %n", pmt.version(), pid, pmt.service_id);
         for (const auto& it : pmt.streams) {
             const auto cur = ctx.pmt.streams.find(it.first);
             if (cur == ctx.pmt.streams.end()) {
@@ -510,8 +510,8 @@ ts::FileCleaner::ServiceContext& ts::FileCleaner::getServiceContext(PID pmt_pid)
 void ts::FileCleaner::initCycle(AbstractLongTable& table, CyclingPacketizer& pzer)
 {
     if (table.isValid()) {
-        table.version = 0;
-        table.is_current = true;
+        table.setVersion(0);
+        table.setCurrent(true);
         pzer.addTable(_opt.duck, table);
         do {
             writeFromPacketizer(pzer);

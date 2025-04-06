@@ -227,8 +227,8 @@ void ts::INT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
 
 void ts::INT::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    root->setIntAttribute(u"version", version);
-    root->setBoolAttribute(u"current", is_current);
+    root->setIntAttribute(u"version", _version);
+    root->setBoolAttribute(u"current", _is_current);
     root->setIntAttribute(u"action_type", action_type, true);
     root->setIntAttribute(u"processing_order", processing_order, true);
     root->setIntAttribute(u"platform_id", platform_id, true);
@@ -256,8 +256,8 @@ bool ts::INT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     xml::ElementVector children;
     bool ok =
-        element->getIntAttribute(version, u"version", false, 0, 0, 31) &&
-        element->getBoolAttribute(is_current, u"current", false, true) &&
+        element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
+        element->getBoolAttribute(_is_current, u"current", false, true) &&
         element->getIntAttribute(action_type, u"action_type", false, 0x01) &&
         element->getIntAttribute(processing_order, u"processing_order", false, 0x00) &&
         element->getIntAttribute(platform_id, u"platform_id", true, 0, 0x000000, 0xFFFFFF) &&

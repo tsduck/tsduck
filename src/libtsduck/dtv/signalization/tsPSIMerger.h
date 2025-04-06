@@ -172,10 +172,10 @@ namespace ts {
         void copyTableKeepVersion(TABLE& dest, const TABLE& src)
         {
             const bool was_valid = dest.isValid();
-            const uint8_t version = dest.version;
+            const uint8_t version = dest.version();
             dest = src;
             if (was_valid) {
-                dest.version = version;
+                dest.setVersion(version);
             }
         }
     };

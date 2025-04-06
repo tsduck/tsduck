@@ -1686,8 +1686,8 @@ void ts::SAT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
 
 void ts::SAT::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    root->setIntAttribute(u"version", version);
-    root->setBoolAttribute(u"current", is_current);
+    root->setIntAttribute(u"version", _version);
+    root->setBoolAttribute(u"current", _is_current);
     root->setIntAttribute(u"satellite_table_id", satellite_table_id);
     root->setIntAttribute(u"table_count", table_count);
 
@@ -1741,8 +1741,8 @@ void ts::SAT::buildXML(DuckContext& duck, xml::Element* root) const
 bool ts::SAT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     bool ok =
-        element->getIntAttribute(version, u"version", true, 0, 0, 31) &&
-        element->getBoolAttribute(is_current, u"current", true, true) &&
+        element->getIntAttribute(_version, u"version", true, 0, 0, 31) &&
+        element->getBoolAttribute(_is_current, u"current", true, true) &&
         element->getIntAttribute(satellite_table_id, u"satellite_table_id", true, 0, satellite_table_id_min, satellite_table_id_max) &&
         element->getIntAttribute(table_count, u"table_count", true, 0, 0x000, 0x03FF);
 

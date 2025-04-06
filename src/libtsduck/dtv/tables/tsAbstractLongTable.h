@@ -23,9 +23,35 @@ namespace ts {
     {
         TS_RULE_OF_FIVE(AbstractLongTable, override);
     public:
-        // Common public members:
-        uint8_t version = 0;        //!< Table version number.
-        bool    is_current = true;  //!< True if table is current, false if table is next.
+        //!
+        //! Get the table version.
+        //! @return The table version.
+        //!
+        virtual uint8_t version() const;
+
+        //!
+        //! Set the table version.
+        //! @param [in] version New version number. The value is reduced modulo 32.
+        //!
+        virtual void setVersion(uint8_t version);
+
+        //!
+        //! Increment the table version.
+        //! @param [in] increment Increment the version by this value, by default 1.
+        //!
+        void incrementVersion(uint8_t increment = 1) { setVersion(version() + increment); }
+
+        //!
+        //! Check if the table is current.
+        //! @return True if the table is current, false if the table is next.
+        //!
+        virtual bool isCurrent() const;
+
+        //!
+        //! Set the current/next status of the table.
+        //! @param [in] is_current True if the table is current, false if the table is next.
+        //!
+        virtual void setCurrent(bool is_current);
 
         //!
         //! Get the table id extension.
@@ -41,6 +67,18 @@ namespace ts {
         virtual void clear() override final;
 
     protected:
+        //!
+        //! The table version number field is directly accessible to subclasses only.
+        //! Some table subclasses may want to enforce specific behaviors.
+        //!
+        uint8_t _version = 0;
+
+        //!
+        //! The table current/next field is directly accessible to subclasses only.
+        //! Some table subclasses may want to enforce specific behaviors.
+        //!
+        bool _is_current = true;
+
         //!
         //! Constructor for subclasses.
         //! @param [in] tid Table id.

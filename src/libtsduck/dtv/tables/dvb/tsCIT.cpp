@@ -192,8 +192,8 @@ void ts::CIT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
 
 void ts::CIT::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    root->setIntAttribute(u"version", version);
-    root->setBoolAttribute(u"current", is_current);
+    root->setIntAttribute(u"version", _version);
+    root->setBoolAttribute(u"current", _is_current);
     root->setIntAttribute(u"service_id", service_id, true);
     root->setIntAttribute(u"transport_stream_id", transport_stream_id, true);
     root->setIntAttribute(u"original_network_id", original_network_id, true);
@@ -218,8 +218,8 @@ bool ts::CIT::analyzeXML(DuckContext& duck, const xml::Element* element)
     xml::ElementVector xprepend;
     xml::ElementVector xcrid;
     bool ok =
-        element->getIntAttribute(version, u"version", false, 0, 0, 31) &&
-        element->getBoolAttribute(is_current, u"current", false, true) &&
+        element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
+        element->getBoolAttribute(_is_current, u"current", false, true) &&
         element->getIntAttribute(service_id, u"service_id", true) &&
         element->getIntAttribute(transport_stream_id, u"transport_stream_id", true) &&
         element->getIntAttribute(original_network_id, u"original_network_id", true) &&

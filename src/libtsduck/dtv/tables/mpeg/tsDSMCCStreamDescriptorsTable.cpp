@@ -59,7 +59,10 @@ ts::DSMCCStreamDescriptorsTable& ts::DSMCCStreamDescriptorsTable::operator=(cons
 
 bool ts::DSMCCStreamDescriptorsTable::isPrivate() const
 {
-    return false; // MPEG-defined
+    // According to ISO/IEC 13818-6, section 9.2.2, in all DSM-CC sections, "the private_indicator field
+    // shall be set to the complement of the section_syntax_indicator value". For long sections, the
+    // syntax indicator is always 1 and, therefore, the private indicator shall always be 0 ("non-private").
+    return false;
 }
 
 

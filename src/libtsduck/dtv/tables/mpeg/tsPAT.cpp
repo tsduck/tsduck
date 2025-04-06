@@ -139,8 +139,8 @@ void ts::PAT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
 
 void ts::PAT::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    root->setIntAttribute(u"version", version);
-    root->setBoolAttribute(u"current", is_current);
+    root->setIntAttribute(u"version", _version);
+    root->setBoolAttribute(u"current", _is_current);
     root->setIntAttribute(u"transport_stream_id", ts_id, true);
     if (nit_pid != PID_NULL) {
         root->setIntAttribute(u"network_PID", nit_pid, true);
@@ -161,8 +161,8 @@ bool ts::PAT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     xml::ElementVector xservice;
     bool ok =
-        element->getIntAttribute(version, u"version", false, 0, 0, 31) &&
-        element->getBoolAttribute(is_current, u"current", false, true) &&
+        element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
+        element->getBoolAttribute(_is_current, u"current", false, true) &&
         element->getIntAttribute(ts_id, u"transport_stream_id", true, 0, 0x0000, 0xFFFF) &&
         element->getIntAttribute<PID>(nit_pid, u"network_PID", false, PID_NULL, 0x0000, 0x1FFF) &&
         element->getChildren(xservice, u"service", 0, 0x10000);

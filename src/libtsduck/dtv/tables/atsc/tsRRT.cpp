@@ -211,7 +211,7 @@ void ts::RRT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
 
 void ts::RRT::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    root->setIntAttribute(u"version", version);
+    root->setIntAttribute(u"version", _version);
     root->setIntAttribute(u"protocol_version", protocol_version);
     root->setIntAttribute(u"rating_region", rating_region, true);
     rating_region_name.toXML(duck, root, u"rating_region_name", true);
@@ -239,7 +239,7 @@ bool ts::RRT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     xml::ElementVector xdim;
     bool ok =
-        element->getIntAttribute(version, u"version", false, 0, 0, 31) &&
+        element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
         element->getIntAttribute(protocol_version, u"protocol_version", false, 0) &&
         element->getIntAttribute(rating_region, u"rating_region", true) &&
         rating_region_name.fromXML(duck, element, u"rating_region_name", false) &&
