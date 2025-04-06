@@ -253,6 +253,9 @@
   "Digital Video Broadcasting (DVB); Carriage and signalling of TV-Anytime information in DVB transport streams".
 * [[[ETSI-102-727]]] ETSI TS 102 727, V1.1.1, January 2010:
   "Digital Video Broadcasting (DVB); Multimedia Home Platform (MHP) Specification 1.2.2".
+* [[[ETSI-102-772]]] ETSI TS 102 772, V1.1.1, September 2010,
+  "Digital Video Broadcasting (DVB);
+  Specification of Multi-Protocol Encapsulation - inter-burst Forward Error Correction (MPE-iFEC)".
 * [[[ETSI-102-773]]] ETSI TS 102 773, V1.2.1, December 2010,
   "Modulator Interface (T2-MI) for a second-generation digital terrestrial television broadcasting system (DVB-T2)".
 * [[[ETSI-102-809]]] ETSI TS 102 809, V1.3.1, June 2017:
