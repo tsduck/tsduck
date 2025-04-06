@@ -128,8 +128,8 @@ void foo::FooTable::DisplaySection(ts::TablesDisplay& disp, const ts::Section& s
 
 void foo::FooTable::buildXML(ts::DuckContext& duck, ts::xml::Element* root) const
 {
-    root->setIntAttribute(u"version", version);
-    root->setBoolAttribute(u"current", is_current);
+    root->setIntAttribute(u"version", _version);
+    root->setBoolAttribute(u"current", _is_current);
     root->setIntAttribute(u"foo_id", foo_id, true);
     root->setAttribute(u"name", name, true);
     descs.toXML(duck, root);
@@ -142,8 +142,8 @@ void foo::FooTable::buildXML(ts::DuckContext& duck, ts::xml::Element* root) cons
 
 bool foo::FooTable::analyzeXML(ts::DuckContext& duck, const ts::xml::Element* element)
 {
-    return element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
-           element->getBoolAttribute(is_current, u"current", false, true) &&
+    return element->getIntAttribute<uint8_t>(_version, u"version", false, 0, 0, 31) &&
+           element->getBoolAttribute(_is_current, u"current", false, true) &&
            element->getIntAttribute<uint16_t>(foo_id, u"foo_id", true) &&
            element->getAttribute(name, u"name") &&
            descs.fromXML(duck, element);
