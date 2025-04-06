@@ -4,6 +4,5 @@ Defined by DVB in <<ETSI-102-006>>.
 
 [source,xml]
 ----
-<dsmcc_ssu_module_type_descriptor
-    SSU_module_type="uint8, required"/>
+<dsmcc_ssu_module_type_descriptor SSU_module_type="uint8, required"/>
 ----

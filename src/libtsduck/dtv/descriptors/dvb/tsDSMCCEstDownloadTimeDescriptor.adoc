@@ -4,6 +4,5 @@ Defined by DVB in <<ETSI-301-192>>.
 
 [source,xml]
 ----
-<dsmcc_est_download_time_descriptor
-    est_download_time="uint32, required"/>
+<dsmcc_est_download_time_descriptor est_download_time="uint32, required"/>
 ----

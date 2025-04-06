@@ -2,7 +2,7 @@
 <tsduck>
   <_descriptors>
 
-    <dsmcc_ssu_module_type_descriptor SSU_module_type ="uint8, required"/>
+    <dsmcc_content_type_descriptor content_type="string, required"/>
 
   </_descriptors>
 </tsduck>

@@ -1,6 +1,6 @@
 ==== dsmcc_caching_proiority_descriptor
 
-Defined by DVB in <<ETSI-102-727>>.
+Defined by DVB in <<ETSI-102-809>>.
 
 [source,xml]
 ----

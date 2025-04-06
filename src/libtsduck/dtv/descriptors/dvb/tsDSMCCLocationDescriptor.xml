@@ -2,9 +2,7 @@
 <tsduck>
   <_descriptors>
 
-    <dsmcc_location_descriptor
-      location_tag="uint8, required">
-    </dsmcc_location_descriptor>
+    <dsmcc_location_descriptor location_tag="uint8, required"/>
 
   </_descriptors>
 </tsduck>

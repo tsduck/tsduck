@@ -1,0 +1,8 @@
+==== dsmcc_content_type_descriptor
+
+Defined by DVB in <<ETSI-102-809>>.
+
+[source,xml]
+----
+<dsmcc_content_type_descriptor content_type="string, required"/>
+----

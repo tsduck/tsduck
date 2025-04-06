@@ -3,9 +3,8 @@
   <_descriptors>
 
     <dsmcc_group_link_descriptor
-      position="uint8, required"
-      group_id="uint32, required">
-    </dsmcc_group_link_descriptor>
+        position="uint8, required"
+        group_id="uint32, required"/>
 
   </_descriptors>
 </tsduck>

@@ -2,9 +2,7 @@
 <tsduck>
   <_descriptors>
 
-    <dsmcc_CRC32_descriptor
-      CRC_32="uint32, required">
-    </dsmcc_CRC32_descriptor>
+    <dsmcc_CRC32_descriptor CRC_32="uint32, required"/>
 
   </_descriptors>
 </tsduck>

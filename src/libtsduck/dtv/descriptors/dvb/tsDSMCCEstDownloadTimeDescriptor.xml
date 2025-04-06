@@ -2,9 +2,7 @@
 <tsduck>
   <_descriptors>
 
-    <dsmcc_est_download_time_descriptor
-      est_download_time="uint32, required">
-    </dsmcc_est_download_time_descriptor>
+    <dsmcc_est_download_time_descriptor est_download_time="uint32, required"/>
 
   </_descriptors>
 </tsduck>

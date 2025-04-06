@@ -3,9 +3,8 @@
   <_descriptors>
 
     <dsmcc_compressed_module_descriptor
-      compression_method="uint8, required"
-      original_size="uint32, required">
-    </dsmcc_compressed_module_descriptor>
+        compression_method="uint8, required"
+        original_size="uint32, required"/>
 
   </_descriptors>
 </tsduck>

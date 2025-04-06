@@ -4,8 +4,7 @@
 
     <dsmcc_info_descriptor
       language_code="char3, required"
-      info="string, required">
-    </dsmcc_info_descriptor>
+      info="string, required"/>
 
   </_descriptors>
 </tsduck>

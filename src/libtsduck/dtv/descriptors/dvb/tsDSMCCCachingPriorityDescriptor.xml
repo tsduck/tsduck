@@ -3,9 +3,8 @@
   <_descriptors>
 
     <dsmcc_caching_priority_descriptor
-      priority_value="uint8, required"
-      transparency_level="uint8, required">
-    </dsmcc_caching_priority_descriptor>
+        priority_value="uint8, required"
+        transparency_level="uint8, required"/>
 
   </_descriptors>
 </tsduck>

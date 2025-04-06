@@ -4,8 +4,7 @@
 
     <dsmcc_module_link_descriptor
       position="uint8, required"
-      module_id="uint16, required">
-    </dsmcc_module_link_descriptor>
+      module_id="uint16, required"/>
 
   </_descriptors>
 </tsduck>

@@ -15,7 +15,7 @@
 #include "tsxmlElement.h"
 #include "tsNames.h"
 
-#define MY_XML_NAME u"dsmcc_module_link_descriptor"
+#define MY_XML_NAME u"dsmcc_group_link_descriptor"
 #define MY_CLASS    ts::DSMCCGroupLinkDescriptor
 #define MY_EDID     ts::EDID::TableSpecific(ts::DID_DSMCC_GROUP_LINK, ts::Standards::DVB, ts::TID_DSMCC_UNM)
 

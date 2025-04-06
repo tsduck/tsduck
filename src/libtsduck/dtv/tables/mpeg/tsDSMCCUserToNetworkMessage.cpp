@@ -772,13 +772,19 @@ bool ts::DSMCCUserToNetworkMessage::analyzeXML(DuckContext& duck, const xml::Ele
 
     if (header.message_id == DSMCC_MESSAGE_ID_DSI) {
 
-        const xml::Element* dsi_element = element->findFirstChild(u"DSI", true);
+        const xml::Element* dsi_element = element->findFirstChild(u"DSI", false);
+        if (dsi_element == nullptr) {
+            return false;
+        }
 
         ok = dsi_element->getHexaTextChild(server_id, u"server_id");
 
-        const xml::Element* ior_element = dsi_element->findFirstChild(u"IOR", true);
-        xml::ElementVector  profile_elements;
+        const xml::Element* ior_element = dsi_element->findFirstChild(u"IOR", false);
+        if (ior_element == nullptr) {
+            return false;
+        }
 
+        xml::ElementVector profile_elements;
         ok = ior_element->getHexaTextChild(ior.type_id, u"type_id") &&
              ior_element->getChildren(profile_elements, u"tagged_profile");
 
@@ -789,9 +795,12 @@ bool ts::DSMCCUserToNetworkMessage::analyzeXML(DuckContext& duck, const xml::Ele
                  profile_elements[it]->getIntAttribute(tagged_profile.profile_data_byte_order, u"profile_data_byte_order", true);
 
             if (tagged_profile.profile_id_tag == DSMCC_TAG_BIOP_PROFILE) {  // TAG_BIOP (BIOP Profile Body)
-                const xml::Element* biop_profile_body_element = profile_elements[it]->findFirstChild(u"BIOP_profile_body", true);
-                xml::ElementVector  lite_component_elements;
+                const xml::Element* biop_profile_body_element = profile_elements[it]->findFirstChild(u"BIOP_profile_body", false);
+                if (biop_profile_body_element == nullptr) {
+                    return false;
+                }
 
+                xml::ElementVector lite_component_elements;
                 ok = biop_profile_body_element->getChildren(lite_component_elements, u"lite_component");
 
                 for (size_t it2 = 0; ok && it2 < lite_component_elements.size(); ++it2) {
@@ -801,7 +810,10 @@ bool ts::DSMCCUserToNetworkMessage::analyzeXML(DuckContext& duck, const xml::Ele
 
                     switch (liteComponent.component_id_tag) {
                         case DSMCC_TAG_OBJECT_LOCATION: {  // TAG_ObjectLocation
-                            const xml::Element* biop_object_location_element = lite_component_elements[it2]->findFirstChild(u"BIOP_object_location", true);
+                            const xml::Element* biop_object_location_element = lite_component_elements[it2]->findFirstChild(u"BIOP_object_location", false);
+                            if (biop_object_location_element == nullptr) {
+                                return false;
+                            }
 
                             ok = biop_object_location_element->getIntAttribute(liteComponent.carousel_id, u"carousel_id", true) &&
                                  biop_object_location_element->getIntAttribute(liteComponent.module_id, u"module_id", true) &&
@@ -818,7 +830,10 @@ bool ts::DSMCCUserToNetworkMessage::analyzeXML(DuckContext& duck, const xml::Ele
 
                         case DSMCC_TAG_CONN_BINDER: {  // TAG_ConnBinder
                             const xml::Element* dsm_conn_binder_element = lite_component_elements[it2]->findFirstChild(u"DSM_conn_binder", true);
-                            const xml::Element* biop_tap_element = dsm_conn_binder_element->findFirstChild(u"BIOP_tap", true);
+                            const xml::Element* biop_tap_element = dsm_conn_binder_element->findFirstChild(u"BIOP_tap", false);
+                            if (biop_tap_element == nullptr) {
+                                return false;
+                            }
 
                             ok = biop_tap_element->getIntAttribute(liteComponent.tap.id, u"id", true) &&
                                  biop_tap_element->getIntAttribute(liteComponent.tap.use, u"use", true) &&
@@ -845,7 +860,10 @@ bool ts::DSMCCUserToNetworkMessage::analyzeXML(DuckContext& duck, const xml::Ele
                 }
             }
             else if (tagged_profile.profile_id_tag == DSMCC_TAG_LITE_OPTIONS) {  // TODO: TAG_LITE_OPTIONS (Lite Options Profile Body)
-                const xml::Element* lite_options_profile_body_element = profile_elements[it]->findFirstChild(u"Lite_options_profile_body", true);
+                const xml::Element* lite_options_profile_body_element = profile_elements[it]->findFirstChild(u"Lite_options_profile_body", false);
+                if (lite_options_profile_body_element == nullptr) {
+                    return false;
+                }
 
                 ByteBlock bb;
                 if (lite_options_profile_body_element->getHexaTextChild(bb, u"profile_data")) {
@@ -853,7 +871,10 @@ bool ts::DSMCCUserToNetworkMessage::analyzeXML(DuckContext& duck, const xml::Ele
                 }
             }
             else {  // Any other Profile Type
-                const xml::Element* unknown_profile_body_element = profile_elements[it]->findFirstChild(u"Unknown_profile_body", true);
+                const xml::Element* unknown_profile_body_element = profile_elements[it]->findFirstChild(u"Unknown_profile_body", false);
+                if (unknown_profile_body_element == nullptr) {
+                    return false;
+                }
 
                 ByteBlock bb;
                 if (unknown_profile_body_element->getHexaTextChild(bb, u"profile_data")) {
@@ -867,9 +888,12 @@ bool ts::DSMCCUserToNetworkMessage::analyzeXML(DuckContext& duck, const xml::Ele
         }
     }
     else if (header.message_id == DSMCC_MESSAGE_ID_DII) {
-        const xml::Element* dii_element = element->findFirstChild(u"DII", true);
-        xml::ElementVector  module_elements;
+        const xml::Element* dii_element = element->findFirstChild(u"DII", false);
+        if (dii_element == nullptr) {
+            return false;
+        }
 
+        xml::ElementVector module_elements;
         ok = dii_element->getIntAttribute(download_id, u"download_id", true) &&
              dii_element->getIntAttribute(block_size, u"block_size", true) &&
              dii_element->getChildren(module_elements, u"module");

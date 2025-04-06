@@ -204,8 +204,9 @@ namespace ts {
 
         // Valid in DVB MHP/HbbTV object carousel context (ETSI TS 102 727, ETSI TS 102 809):
 
-        DID_DSMCC_LABEL             = 0x70, //!< DID for DSM-CC U-N Message DII label_descriptor.
-        DID_DSMCC_CACHING_PRIORITY  = 0x71, //!< DID for DSM-CC U-N Message DII caching_priority_descriptor.
+        DID_DSMCC_LABEL            = 0x70, //!< DID for DSM-CC U-N Message DII label_descriptor.
+        DID_DSMCC_CACHING_PRIORITY = 0x71, //!< DID for DSM-CC U-N Message DII caching_priority_descriptor.
+        DID_DSMCC_CONTENT_TYPE     = 0x72, //!< DID for DSM-CC U-N Message DII content_type_descriptor.
 
         // Valid only in a DVB INT (IP/MAC Notification Table, ETSI EN 301 192):
 
