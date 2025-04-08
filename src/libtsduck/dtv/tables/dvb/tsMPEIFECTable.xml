@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_tables>
+
+    <!-- MPE-IFEC Table, ETSI TS 102 772, section 5.2 -->
+    <MPE_IFEC burst_number="uint8, required" IFEC_burst_size="uint8, required">
+      <_any in="_metadata"/>
+      <!-- One per burst (one burst per section) -->
+      <burst>
+        <real_time_parameters
+            delta_t="uint12, required"
+            MPE_boundary="bool, required"
+            frame_boundary="bool, required"
+            prev_burst_size="uint18, required"/>
+        <IFEC_data>
+          Hexadecimal content
+        </IFEC_data>
+      </burst>
+    </MPE_IFEC>
+
+  </_tables>
+</tsduck>

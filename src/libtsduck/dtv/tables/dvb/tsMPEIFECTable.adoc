@@ -1,0 +1,22 @@
+==== MPE-IFEC Table
+
+Defined by DVB in <<ETSI-102-772>>.
+
+[source,xml]
+----
+<MPE_IFEC burst_number="uint8, required" IFEC_burst_size="uint8, required">
+
+  <!-- One per burst (one burst per section) -->
+  <burst>
+    <real_time_parameters
+        delta_t="uint12, required"
+        MPE_boundary="bool, required"
+        frame_boundary="bool, required"
+        prev_burst_size="uint18, required"/>
+    <IFEC_data>
+      Hexadecimal content
+    </IFEC_data>
+  </burst>
+
+</MPE_IFEC>
+----

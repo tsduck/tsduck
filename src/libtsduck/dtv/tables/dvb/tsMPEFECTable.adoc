@@ -1,0 +1,22 @@
+==== MPE-FEC Table
+
+Defined by DVB in <<ETSI-301-192>>.
+
+[source,xml]
+----
+<MPE_FEC padding_columns="uint8, required">
+
+  <!-- One per column (one column per section) -->
+  <column>
+    <real_time_parameters
+        delta_t="uint12, required"
+        table_boundary="bool, required"
+        frame_boundary="bool, required"
+        address="uint18, required"/>
+    <rs_data>
+      Hexadecimal content
+    </rs_data>
+  </column>
+
+</MPE_FEC>
+----

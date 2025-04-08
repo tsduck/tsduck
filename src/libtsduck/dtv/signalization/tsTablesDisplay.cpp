@@ -293,12 +293,13 @@ void ts::TablesDisplay::displaySection(const Section& section, const UString& ma
     std::vector<size_t> errors;
     const uint8_t byte1 = section.content()[1];
     // The private_indicator must be zero in an MPEG-defined table.
-    if (section.tableId() <= TID_MPEG_LAST && (byte1 & 0x40) != 0) {
+    if (tid <= TID_MPEG_LAST && (byte1 & 0x40) != 0) {
         errors.push_back((1 << 4) | (1 << 1) | 0);
     }
     // The private_indicator must be set in a DVB-defined table.
     // Other standards do not always follow the MPEG rules.
-    if (bool(section.definingStandards(_duck.standards()) & Standards::DVB) && (byte1 & 0x40) == 0) {
+    // Exclude MPE-FEC and MPE-IFEC tables which follow the DSM-CC conventions.
+    if (bool(section.definingStandards(_duck.standards()) & Standards::DVB) && (byte1 & 0x40) == 0 && tid != TID_MPE_FEC && tid != TID_MPE_IFEC) {
         errors.push_back((1 << 4) | (1 << 1) | 1);
     }
     // Two reserved bits.

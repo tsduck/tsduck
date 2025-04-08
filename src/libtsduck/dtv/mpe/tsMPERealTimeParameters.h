@@ -27,11 +27,11 @@ namespace ts {
     class TSDUCKDLL MPERealTimeParameters
     {
     public:
-        // MPERealTimeParameters public members:
-        uint16_t delta_t = 0;             //!< 12-bit delta t, semantics depends on the context.
-        bool     table_boundary = false;  //!< 1-bit, also named MPE_boundary in ETSI TS 102 772.
-        bool     frame_boundary = false;  //!< 1-bit.
-        uint32_t address = 0;             //!< 18-bit, also named prev_burst_size in ETSI TS 102 772.
+        MPERealTimeParameters() = default;  //!< Constructor.
+        uint16_t delta_t = 0;               //!< 12-bit delta t, semantics depends on the context.
+        bool     table_boundary = false;    //!< 1-bit, also named MPE_boundary in ETSI TS 102 772.
+        bool     frame_boundary = false;    //!< 1-bit.
+        uint32_t address = 0;               //!< 18-bit, also named prev_burst_size in ETSI TS 102 772.
 
         //!
         //! Access to the @a table_boundary field, with ETSI TS 102 772 naming.

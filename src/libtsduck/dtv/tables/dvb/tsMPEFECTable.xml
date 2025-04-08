@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_tables>
+
+    <!-- MPE-FEC Table, ETSI EN 301 192, section 9.9 -->
+    <MPE_FEC padding_columns="uint8, required">
+      <_any in="_metadata"/>
+      <!-- One per column (one column per section) -->
+      <column>
+        <real_time_parameters
+            delta_t="uint12, required"
+            table_boundary="bool, required"
+            frame_boundary="bool, required"
+            address="uint18, required"/>
+        <rs_data>
+          Hexadecimal content
+        </rs_data>
+      </column>
+    </MPE_FEC>
+
+  </_tables>
+</tsduck>
