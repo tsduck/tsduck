@@ -15,15 +15,6 @@
     #include "tsAfterStandardHeaders.h"
 #endif
 
-// Required link libraries under Windows.
-#if defined(TS_WINDOWS) && defined(TS_MSC)
-    #if defined(DEBUG)
-        #pragma comment(lib, "comsuppwd.lib") // COM utilities
-    #else
-        #pragma comment(lib, "comsuppw.lib")
-    #endif
-#endif
-
 // Constructor, initialize COM.
 ts::COM::COM(Report& report)
 {
