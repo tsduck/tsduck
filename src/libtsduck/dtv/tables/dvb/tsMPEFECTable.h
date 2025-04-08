@@ -44,7 +44,7 @@ namespace ts {
 
         // MPEFECTable public members:
         uint8_t padding_columns = 0;      //!< Number of full columns filled with padding bytes only (0 to 190).
-        std::vector<Column> columns;      //!< FEC columns. There is one column per section.
+        std::vector<Column> columns {};   //!< FEC columns. There is one column per section.
 
         //!
         //! Default constructor.
