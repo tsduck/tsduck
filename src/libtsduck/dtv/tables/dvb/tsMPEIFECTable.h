@@ -40,7 +40,7 @@ namespace ts {
         // MPEIFECTable public members:
         uint8_t            burst_number = 0;     //!< Burst number.
         uint8_t            IFEC_burst_size = 0;  //!< Burst size.
-        std::vector<Burst> bursts;               //!< FEC bursts. There is one burst per section.
+        std::vector<Burst> bursts {};            //!< FEC bursts. There is one burst per section.
 
         //!
         //! Default constructor.
