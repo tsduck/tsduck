@@ -42,7 +42,7 @@ memory footprint, these classes self-register themselves at the initialization o
 library, slowing down the application startup on small systems.
 
 For applications which only used the basic features of the TSDuck library, the Digital TV features
-became too bulky. Therefore, these basic features were extracted as a new "TSCore" library.
+became too bulky. Therefore, these basic features were extracted as a new TSCore library.
 
 The TSCore shared library file is named `libtscore.so`, `libtscore.dylib`, or `tscore.dll`,
 depending on the operating system. 
@@ -371,12 +371,17 @@ The TSDuck libraries contain a few cryptographic classes.
 These libraries are *not* cryptographic libraries and will never be.
 Cryptography is a serious matter which should be left to cryptographers.
 
-Some transport stream processing operations require some cryptography, essentially block ciphers and hash functions.
+Some transport stream processing operations require cryptographic operations, essentially block ciphers and hash functions.
 The TSCore library proposes an homogeneous API over them.
 Standard cryptographic primitives are implemented using the standard system libraries,
 _OpenSSL_ on {unix}, _BCrypt_ on Windows.
-Less standard primitives are directly implemented in the TSCore library.
+Most standard chaining modes are also implemented in the standard system libraries.
+The TSCore library implements more exotic chaining modes only.
+
 Specific algorithms which are defined by Digital TV standard bodies (DVB, SCTE or IDSA) are implemented in the TSDuck library.
+However, most of them are only specific modes over standard cryptographic primitives such as AES or DES.
+The TSDuck library implements the specific modes but the primitives are used from the system cryptographic libraries,
+except the very specific DVB-CSA2 algorithm which is directly implemented in the TSDuck library.
 
 The abstract class classref:BlockCipher[] is the root of a hierarchy of symmetric cryptography classes,
 including chaining modes.

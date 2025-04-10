@@ -469,6 +469,23 @@ the Java bindings are not built anyway, even without explicit `NOJAVA`.
 For a complete list of the variables which are used by `make`, see the file `CONFIG.txt`
 at the root of the TSDuck source tree.
 
+IMPORTANT: When a set of `make` variables are used to build TSDuck, the exact same set of variables shall be used in all `make` commands on this build. For instance, if TSDuck is built using `make NOSRT=1 NORIST=1`, the installation package shall be built using `make installer NOSRT=1 NORIST=1`. Failing to provide a consistent set of variables across successible `make` commands on the same build may produce unexpected results.
+
+You may create independent builds with distinct options.
+You simply need to redirect the produced binaries in distinct subdirectories.
+For instance, the following commands build two separate versions of TSDuck in two subdirectories,
+one without SRT support, the other without RIST support.
+
+[source,shell]
+----
+$ make -j10 NOSRT=1 BINDIR_SUFFIX=-nosrt
+$ make -j10 NORIST=1 BINDIR_SUFFIX=-norist
+$ make installer NORIST=1 BINDIR_SUFFIX=-norist
+----
+
+The last command builds a binary package for the version without RIST support.
+Note that the same set of variables shall be used to locate the right binaries and options.
+
 [#builddebug]
 ===== Building with specific debug capabilities
 
@@ -483,6 +500,13 @@ The following additional `make` variables can be defined to enable specific debu
 |ASAN |Compile with code sanitizing using AddressSanitizer with default optimization.
 |UBSAN |Compile with code sanitizing using UndefinedBehaviorSanitizer with default optimization.
 |===
+
+All these options produce binaries in distinct subdirectories.
+Therefore, they can be considered as independent builds which do not interfere with each other.
+
+Release builds are created in directories starting with `bin/release-...`.
+Debug builds (`DEBUG=1`) are created in directories starting with `bin/debug-...`.
+The other above-listed options redefine `BINDIR_SUFFIX` with a meaningful suffix.
 
 [#buildverbose]
 ===== Displaying full build commands

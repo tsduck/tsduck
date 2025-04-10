@@ -23,3 +23,7 @@ Building the programming reference:
 
 - UNIX systems: `make doxygen`
 - Windows: `.\doxy\build-doxygen.ps1`
+
+### Asciidoc hints and tips
+
+Admonition types:  `NOTE`, `TIP`, `IMPORTANT`, `CAUTION`, `WARNING`.

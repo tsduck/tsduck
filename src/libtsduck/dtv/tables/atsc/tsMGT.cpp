@@ -173,13 +173,29 @@ ts::MGT::TableTypeNames::TableTypeNames() :
     for (int val = 0x0301; val <= 0x03FF; ++val) {
         add(UString::Format(u"RRT-%d", val & 0x00FF), val);
     }
-    // 0x1300 - 0x13FF DET
-    for (int val = 0x1300; val <= 0x13FF; ++val) {
+    // 0x1000 - 0x10FF AEIT MGT_tag 0 to 255
+    for (int val = 0x1000; val <= 0x10FF; ++val) {
+        add(UString::Format(u"AEIT-%d", val & 0x00FF), val);
+    }
+    // 0x1100 - 0x11FF AETT with MGT_tag 0 to 255
+    for (int val = 0x1100; val <= 0x11FF; ++val) {
+        add(UString::Format(u"AETT-%d", val & 0x00FF), val);
+    }
+    // 0x1200 - 0x127F ETT associated with DET
+    for (int val = 0x1200; val <= 0x127F; ++val) {
+        add(UString::Format(u"EET-DET-%d", val & 0x00FF), val);
+    }
+    // 0x1300 - 0x137F DET
+    for (int val = 0x1300; val <= 0x137F; ++val) {
         add(UString::Format(u"DET-%d", val & 0x00FF), val);
     }
-    // 0x1400 - 0x14FF DCCT with dcc_id 0x00 - 0xFF
+    // 0x1400 - 0x14FF DCCT with dcc_id 0 to 255
     for (int val = 0x1400; val <= 0x14FF; ++val) {
         add(UString::Format(u"DCCT-%d", val & 0x00FF), val);
+    }
+    // 0x1600 - 0x16FF SVCT with SVCT_id 0 to 255
+    for (int val = 0x1600; val <= 0x16FF; ++val) {
+        add(UString::Format(u"SVCT-%d", val & 0x00FF), val);
     }
 }
 

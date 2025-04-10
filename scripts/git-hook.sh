@@ -86,9 +86,10 @@ case "$HOOK" in
         fi
         ;;
     post-merge)
-        export TS_GIT_COMMIT=$(($(max $(get-commit-count) $(get-src-commit)) + 1))
-        set-src-commit $TS_GIT_COMMIT
-        git commit -m "Updated commit count to $TS_GIT_COMMIT after merge"
+        # --> Disable forced commit count update after merge. Will see later if we need to restore this.
+        # export TS_GIT_COMMIT=$(($(max $(get-commit-count) $(get-src-commit)) + 1))
+        # set-src-commit $TS_GIT_COMMIT
+        # git commit -m "Updated commit count to $TS_GIT_COMMIT after merge"
         ;;
     *)
         ;;
