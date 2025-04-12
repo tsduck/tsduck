@@ -20,7 +20,7 @@
 namespace ts {
     //!
     //! Representation of an ATSC Data Event Table (DET).
-    //! @see ATSC A/95, section 11.3.1.
+    //! @see ATSC A/90, section 11.3.1.
     //! @ingroup libtsduck table
     //!
     class TSDUCKDLL DET : public AbstractLongTable
@@ -44,7 +44,7 @@ namespace ts {
 
             //!
             //! Constructor.
-            //! @param [in] table Parent EIT.
+            //! @param [in] table Parent DET.
             //!
             Data(const AbstractTable* table);
         };

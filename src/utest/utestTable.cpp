@@ -19,6 +19,7 @@
 #include "tsTSDT.h"
 #include "tsEIT.h"
 #include "tsAIT.h"
+#include "tsLTST.h"
 #include "tsContainerTable.h"
 #include "tsBinaryTable.h"
 #include "tsCADescriptor.h"
@@ -56,6 +57,7 @@ class TableTest: public tsunit::Test
     TSUNIT_DECLARE_TEST(CleanupPrivateDescriptors);
     TSUNIT_DECLARE_TEST(PrivateDescriptors);
     TSUNIT_DECLARE_TEST(ContainerTable);
+    TSUNIT_DECLARE_TEST(LTST);
 };
 
 TSUNIT_REGISTER(TableTest);
@@ -410,7 +412,6 @@ TSUNIT_DEFINE_TEST(PrivateDescriptors)
     TSUNIT_EQUAL(9, esi_desc->version);
 }
 
-
 TSUNIT_DEFINE_TEST(ContainerTable)
 {
     ts::DuckContext duck;
@@ -474,4 +475,60 @@ TSUNIT_DEFINE_TEST(ContainerTable)
     out.clear();
     TSUNIT_ASSERT(ct2.getContainer(out));
     TSUNIT_ASSERT(out == container);
+}
+
+TSUNIT_DEFINE_TEST(LTST)
+{
+    ts::DuckContext duck;
+    ts::LTST ltst(1, 2);
+
+    auto& src1(ltst.sources.emplace_back());
+    src1.source_id = 11;
+    auto& data11(src1.data.newEntry());
+    data11.data_id = 111;
+    data11.length_in_seconds = cn::seconds(1111);
+
+    auto& src2(ltst.sources.emplace_back());
+    src2.source_id = 22;
+    auto& data21(src2.data.newEntry());
+    data21.data_id = 211;
+    data21.length_in_seconds = cn::seconds(2111);
+    auto& data22(src2.data.newEntry());
+    data22.data_id = 221;
+    data22.length_in_seconds = cn::seconds(2211);
+
+    // Test copy constructor.
+    ts::LTST ltst2(ltst);
+    TSUNIT_EQUAL(1, ltst2.version());
+    TSUNIT_EQUAL(2, ltst2.table_id_extension);
+    TSUNIT_EQUAL(2, ltst2.tableIdExtension());
+    TSUNIT_EQUAL(2, ltst2.sources.size());
+    TSUNIT_EQUAL(11, ltst2.sources.front().source_id);
+    TSUNIT_EQUAL(1, ltst2.sources.front().data.size());
+    TSUNIT_EQUAL(111, ltst2.sources.front().data[0].data_id);
+    TSUNIT_EQUAL(1111, ltst2.sources.front().data[0].length_in_seconds.count());
+    TSUNIT_EQUAL(22, ltst2.sources.back().source_id);
+    TSUNIT_EQUAL(2, ltst2.sources.back().data.size());
+    TSUNIT_EQUAL(211, ltst2.sources.back().data[0].data_id);
+    TSUNIT_EQUAL(2111, ltst2.sources.back().data[0].length_in_seconds.count());
+    TSUNIT_EQUAL(221, ltst2.sources.back().data[1].data_id);
+    TSUNIT_EQUAL(2211, ltst2.sources.back().data[1].length_in_seconds.count());
+
+    // Test assignment.
+    ts::LTST ltst3;
+    ltst3 = ltst;
+    TSUNIT_EQUAL(1, ltst3.version());
+    TSUNIT_EQUAL(2, ltst3.table_id_extension);
+    TSUNIT_EQUAL(2, ltst3.tableIdExtension());
+    TSUNIT_EQUAL(2, ltst3.sources.size());
+    TSUNIT_EQUAL(11, ltst3.sources.front().source_id);
+    TSUNIT_EQUAL(1, ltst3.sources.front().data.size());
+    TSUNIT_EQUAL(111, ltst3.sources.front().data[0].data_id);
+    TSUNIT_EQUAL(1111, ltst3.sources.front().data[0].length_in_seconds.count());
+    TSUNIT_EQUAL(22, ltst3.sources.back().source_id);
+    TSUNIT_EQUAL(2, ltst3.sources.back().data.size());
+    TSUNIT_EQUAL(211, ltst3.sources.back().data[0].data_id);
+    TSUNIT_EQUAL(2111, ltst3.sources.back().data[0].length_in_seconds.count());
+    TSUNIT_EQUAL(221, ltst3.sources.back().data[1].data_id);
+    TSUNIT_EQUAL(2211, ltst3.sources.back().data[1].length_in_seconds.count());
 }

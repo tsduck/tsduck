@@ -12,7 +12,6 @@
 #include "tsDuckContext.h"
 #include "tsPSIRepository.h"
 #include "tsxmlElement.h"
-#include "tsFatal.h"
 
 
 //----------------------------------------------------------------------------
@@ -20,18 +19,18 @@
 //----------------------------------------------------------------------------
 
 ts::DescriptorList::DescriptorList(const AbstractTable* table) :
-    _table(table)
+    AbstractTableAttachment(table)
 {
 }
 
 ts::DescriptorList::DescriptorList(const AbstractTable* table, const DescriptorList& dl) :
-    _table(table),
+    AbstractTableAttachment(table),
     _list(dl._list)
 {
 }
 
 ts::DescriptorList::DescriptorList(const AbstractTable* table, DescriptorList&& dl) noexcept :
-    _table(table),
+    AbstractTableAttachment(table),
     _list(std::move(dl._list))
 {
 }
@@ -52,21 +51,6 @@ ts::DescriptorList& ts::DescriptorList::operator=(DescriptorList&& dl) noexcept
         _list = std::move(dl._list);
     }
     return *this;
-}
-
-
-//----------------------------------------------------------------------------
-// Get the characteristics of the parent table.
-//----------------------------------------------------------------------------
-
-ts::TID ts::DescriptorList::tableId() const
-{
-    return _table == nullptr ? TID(TID_NULL) : _table->tableId();
-}
-
-ts::Standards ts::DescriptorList::tableStandards() const
-{
-    return _table == nullptr ? Standards::NONE : _table->definingStandards();
 }
 
 
@@ -361,8 +345,8 @@ ts::REGID ts::DescriptorList::registrationId(size_t index) const
     while (index-- > 0 && regid == REGID_NULL) {
         UpdateREGID(regid, _list[index]);
     }
-    if (regid == REGID_NULL && _table != nullptr) {
-        const DescriptorList* dlist = _table->topLevelDescriptorList();
+    if (regid == REGID_NULL && hasTable()) {
+        const DescriptorList* dlist = table()->topLevelDescriptorList();
         if (dlist != nullptr && dlist != this) {
             index = dlist->_list.size();
             while (index-- > 0 && regid == REGID_NULL) {
@@ -662,7 +646,7 @@ size_t ts::DescriptorList::search(const ts::EDID& edid, size_t start_index) cons
 
     // If the EDID is table-specific, check that we are in the same table.
     // In the case the table of the descriptor list is unknown, assume that the table matches.
-    if (edid.isTableSpecific() && _table != nullptr && !edid.matchTableSpecific(_table->tableId(), _table->definingStandards())) {
+    if (edid.isTableSpecific() && hasTable() && !edid.matchTableSpecific(tableId(), tableStandards())) {
         // No the same table, cannot match.
         return _list.size();
     }
@@ -705,7 +689,7 @@ size_t ts::DescriptorList::searchLanguage(const DuckContext& duck, const UString
     }
 
     // Standards of the context and the parent table.
-    const Standards standards = duck.standards() | (_table == nullptr ? Standards::NONE : _table->definingStandards());
+    const Standards standards = duck.standards() | tableStandards();
     const bool dvb = bool(standards & Standards::DVB);
     const bool atsc = bool(standards & Standards::ATSC);
     const bool isdb = bool(standards & Standards::ISDB);
@@ -817,7 +801,7 @@ size_t ts::DescriptorList::searchLanguage(const DuckContext& duck, const UString
 size_t ts::DescriptorList::searchSubtitle(const DuckContext& duck, const UString& language, size_t start_index) const
 {
     // Standards of the context and the parent table.
-    const Standards standards = duck.standards() | (_table == nullptr ? Standards::NONE : _table->definingStandards());
+    const Standards standards = duck.standards() | tableStandards();
     const bool dvb = bool(standards & Standards::DVB);
 
     // Value to return if not found

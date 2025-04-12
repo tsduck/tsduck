@@ -1,0 +1,33 @@
+==== Long Term Service Table (LTST)
+
+Defined by ATSC in <<ATSC-A90>>.
+
+[source,xml]
+----
+<LTST version="uint5, default=0"
+      table_id_extension="uint16, required"
+      protocol_version="uint8, default=0">
+
+  <!-- One per data source -->
+  <source source_id="uint16, required">
+
+    <!-- One per data event -->
+    <data data_id="uint14, required"
+          start_time="YYYY-MM-DD hh:mm:ss, required"
+          ETM_location="uint2, required"
+          length_in_seconds="uint20, required">
+
+      <!-- Optional ATSC multiple_string_structure() containing one or more strings -->
+      <title_text>
+        <string language="char3, required" text="string, required"/>
+      </title_text>
+
+      <!-- Data event descriptors loop -->
+      <DESCRIPTOR_LIST>
+
+    </data>
+
+  </source>
+
+</LTST>
+----

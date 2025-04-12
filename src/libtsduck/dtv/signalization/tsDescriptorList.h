@@ -12,6 +12,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
+#include "tsAbstractTableAttachment.h"
 #include "tsDescriptor.h"
 #include "tsEDID.h"
 #include "tsDescriptorContext.h"
@@ -26,7 +27,7 @@ namespace ts {
     //! List of MPEG PSI/SI descriptors.
     //! @ingroup libtsduck mpeg
     //!
-    class TSDUCKDLL DescriptorList
+    class TSDUCKDLL DescriptorList : public AbstractTableAttachment
     {
         TS_NO_DEFAULT_CONSTRUCTORS(DescriptorList);
     public:
@@ -95,24 +96,6 @@ namespace ts {
         //! @return The number of descriptors in the list.
         //!
         size_t count() const { return _list.size(); }
-
-        //!
-        //! Get the table id of the parent table.
-        //! @return The table id of the parent table or TID_NULL if there is none.
-        //!
-        TID tableId() const;
-
-        //!
-        //! Get the standards of the parent table.
-        //! @return The standards of the parent table or NONE if there is none.
-        //!
-        Standards tableStandards() const;
-
-        //!
-        //! Get the parent table.
-        //! @return The parent table or zero if there is none.
-        //!
-        const AbstractTable* table() const { return _table; }
 
         //!
         //! Comparison operator.
@@ -517,9 +500,8 @@ namespace ts {
         bool fromXML(DuckContext& duck, const xml::Element* parent);
 
     private:
-        // Private members
-        const AbstractTable* const _table;    // Parent table (zero for descriptor list object outside a table).
-        std::vector<DescriptorPtr> _list {};  // Vector of safe pointers to descriptors.
+        // Vector of safe pointers to descriptors.
+        std::vector<DescriptorPtr> _list {};
 
         // Add a descriptor with a 32-bit payload at end of list.
         void add32BitDescriptor(DID did, uint32_t payload);

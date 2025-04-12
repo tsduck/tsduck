@@ -188,6 +188,7 @@ namespace ts {
         //!
         class TSDUCKDLL EntryWithDescriptors : public EntryBase
         {
+            TS_NO_DEFAULT_CONSTRUCTORS(EntryWithDescriptors);
         public:
             //!
             //! List of descriptors for this entry, publicly accessible.
@@ -229,12 +230,6 @@ namespace ts {
             //! @return A reference to this object.
             //!
             EntryWithDescriptors& operator=(EntryWithDescriptors&& other) noexcept;
-
-        private:
-            // Inaccessible operations.
-            EntryWithDescriptors() = delete;
-            EntryWithDescriptors(EntryWithDescriptors&&) = delete;
-            EntryWithDescriptors(const EntryWithDescriptors&) = delete;
         };
 
         //!
@@ -247,8 +242,9 @@ namespace ts {
         //!
         template<typename KEY, class ENTRY>
             requires std::derived_from<ENTRY, ts::AbstractTable::EntryBase>
-        class EntryWithDescriptorsMap : public std::map<KEY, ENTRY>
+        class EntryWithDescriptorsMap : public std::map<KEY, ENTRY>, public AbstractTableAttachment
         {
+            TS_NO_DEFAULT_CONSTRUCTORS(EntryWithDescriptorsMap);
         public:
             //!
             //! Explicit reference to the super class.
@@ -338,14 +334,7 @@ namespace ts {
             size_t nextOrder() const;
 
         private:
-            // Parent table (zero for descriptor list object outside a table).
-            const AbstractTable* const _table;
             bool _auto_ordering = false;
-
-            // Inaccessible operations.
-            EntryWithDescriptorsMap() = delete;
-            EntryWithDescriptorsMap(EntryWithDescriptorsMap&&) = delete;
-            EntryWithDescriptorsMap(const EntryWithDescriptorsMap&) = delete;
         };
 
         //!
@@ -358,6 +347,7 @@ namespace ts {
             requires std::derived_from<ENTRY, EntryBase>
         class EntryWithDescriptorsList : public EntryWithDescriptorsMap<size_t, ENTRY>
         {
+            TS_NO_DEFAULT_CONSTRUCTORS(EntryWithDescriptorsList);
         public:
             //!
             //! Explicit reference to the super class.
@@ -378,6 +368,29 @@ namespace ts {
             EntryWithDescriptorsList(const AbstractTable* table, const SuperClass& other) : SuperClass(table, other) {}
 
             //!
+            //! Basic move-like constructor.
+            //! @param [in] table Parent table. A descriptor list is always attached to a table.
+            //! @param [in,out] other Another instance to move.
+            //!
+            EntryWithDescriptorsList(const AbstractTable* table, EntryWithDescriptorsList&& other) : SuperClass(table, other) {}
+
+            //!
+            //! Assignment operator.
+            //! The parent table remains unchanged.
+            //! @param [in] other Another instance to copy.
+            //! @return A reference to this object.
+            //!
+            EntryWithDescriptorsList& operator=(const EntryWithDescriptorsList& other) { SuperClass::operator=(other); return *this; }
+
+            //!
+            //! Move assignment operator.
+            //! The parent table remains unchanged.
+            //! @param [in,out] other Another instance to move.
+            //! @return A reference to this object.
+            //!
+            EntryWithDescriptorsList& operator=(EntryWithDescriptorsList&& other) { SuperClass::operator=(other); return *this; }
+
+            //!
             //! Get a new unused index, greater than the greatest entry.
             //! @return A new unused index.
             //!
@@ -385,7 +398,7 @@ namespace ts {
 
             //!
             //! Create a new entry in the map.
-            //! @return A constant reference to the new entry.
+            //! @return A reference to the new entry.
             //!
             ENTRY& newEntry() { return (*this)[this->nextIndex()]; }
         };
@@ -513,7 +526,7 @@ namespace ts {
 template<typename KEY, class ENTRY> requires std::derived_from<ENTRY, ts::AbstractTable::EntryBase>
 ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY>::EntryWithDescriptorsMap(const AbstractTable* table, bool auto_ordering) :
     SuperClass(),
-    _table(table),
+    AbstractTableAttachment(table),
     _auto_ordering(auto_ordering)
 {
 }
@@ -521,7 +534,7 @@ ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY>::EntryWithDescriptorsMap(c
 template<typename KEY, class ENTRY> requires std::derived_from<ENTRY, ts::AbstractTable::EntryBase>
 ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY>::EntryWithDescriptorsMap(const AbstractTable* table, const EntryWithDescriptorsMap& other) :
     SuperClass(),
-    _table(table),
+    AbstractTableAttachment(table),
     _auto_ordering(other._auto_ordering)
 {
     // Copy each entry one by one to ensure that the copied entries actually point to the constructed table.
@@ -533,7 +546,7 @@ ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY>::EntryWithDescriptorsMap(c
 template<typename KEY, class ENTRY> requires std::derived_from<ENTRY, ts::AbstractTable::EntryBase>
 ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY>::EntryWithDescriptorsMap(const AbstractTable* table, EntryWithDescriptorsMap&& other) :
     SuperClass(),
-    _table(table),
+    AbstractTableAttachment(table),
     _auto_ordering(other._auto_ordering)
 {
     // Clear and move each entry one by one to ensure that the copied entries actually point to the target table.
@@ -610,7 +623,7 @@ ENTRY& ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY>::operator[](const K
     // This form is more complex but the simplest form of emplace (without the piecewise_construct and tuples)
     // does not compile with LLVM. Not sure if this is a problem with LLVM or if the other compilers are too
     // permissive.
-    ENTRY& entry(this->emplace(std::piecewise_construct, std::forward_as_tuple(key), std::forward_as_tuple(_table)).first->second);
+    ENTRY& entry(this->emplace(std::piecewise_construct, std::forward_as_tuple(key), std::forward_as_tuple(table())).first->second);
 
     // When not already specified otherwise, keep the order of entry creation.
     if (_auto_ordering && entry.order_hint == NPOS) {
