@@ -1,0 +1,37 @@
+==== Satellite Virtual Channel Table (SVCT)
+
+Defined by ATSC in <<ATSC-A81>>.
+
+[source,xml]
+----
+<SVCT version="uint5, default=0"
+      current="bool, default=true"
+      SVCT_subtype="uint8, default=0"
+      SVCT_id="uint8, required"
+      protocol_version="uint8, default=0">
+
+  <!-- One per channel -->
+  <channel short_name="string, required"
+           major_channel_number="uint10, required"
+           minor_channel_number="uint10, required"
+           modulation_mode="uint6, required"
+           carrier_frequency="uint, frequency in Hz, required"
+           carrier_symbol_rate="uint32, required"
+           polarization="uint2, required"
+           FEC_Inner="uint8, required"
+           channel_TSID="uint16, required"
+           program_number="uint16, required"
+           ETM_location="uint2, required"
+           hidden="bool, default=false"
+           hide_guide="bool, default=false"
+           service_type="analog|dtv|audio|data|software|uint6, default=dtv"
+           source_id="uint16, required"
+           feed_id="uint8, required">
+    <DESCRIPTOR_LIST>
+  </channel>
+
+  <!-- Additional descriptors loop -->
+  <DESCRIPTOR_LIST>
+
+</SVCT>
+----

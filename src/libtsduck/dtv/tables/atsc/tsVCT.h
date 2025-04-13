@@ -139,6 +139,18 @@ namespace ts {
         //!
         void updateServices(DuckContext& duck, ServiceList& services) const;
 
+        //!
+        //! Get a set of names for modulation mode values.
+        //! @return A constant reference to a set of names.
+        //!
+        static const Names& ModulationModeEnum();
+
+        //!
+        //! Get a set of names for service type values.
+        //! @return A constant reference to a set of names.
+        //!
+        static const Names& ServiceTypeEnum();
+
         // Inherited methods
         virtual uint16_t tableIdExtension() const override;
         virtual DescriptorList* topLevelDescriptorList() override;
@@ -165,10 +177,6 @@ namespace ts {
         virtual bool analyzeXML(DuckContext&, const xml::Element*) override;
 
     private:
-        // Thread-safe init-safe static data patterns.
-        static const Names& ModulationModeEnum();
-        static const Names& ServiceTypeEnum();
-
         // Internal version of find by Service class.
         ChannelList::const_iterator findServiceInternal(Service& service, bool exact_match, bool same_ts) const;
     };
