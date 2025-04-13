@@ -13,7 +13,7 @@
 import tsbuild, sys, os, fnmatch
 import xml.etree.ElementTree as ET
 
-# Process a .names file or a directory.
+# Process a .xml file or a directory.
 def process_file_or_dir(path, root):
     if os.path.isdir(path):
         # Recurse in all subdirectories and XML files.

@@ -17,7 +17,7 @@
     <Message Text="Building $(TablesModelXml)" Importance="high"/>
     <MakeDir Directories="$(OutDir)" Condition="!Exists('$(OutDir)')"/>
     <Exec ConsoleToMSBuild='true'
-          Command='python "$(TSDuckRootDir)scripts\build-tables-model.py" "$(TablesModelXml)" "$(DtvRoot)tables" "$(DtvRoot)descriptors"'>
+          Command='python "$(TSDuckRootDir)scripts\build-tables-model.py" "$(TablesModelXml)" "$(TablesSkeletonXml)" "$(DtvRoot)tables" "$(DtvRoot)descriptors"'>
       <Output TaskParameter="ConsoleOutput" PropertyName="OutputOfExec"/>
     </Exec>
   </Target>
