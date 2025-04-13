@@ -48,7 +48,7 @@ namespace ts {
         //!
         //! List of services, indexed by service id.
         //!
-        using ServiceMap = EntryWithDescriptorsMap<uint16_t,Service>;
+        using ServiceMap = AttachedEntryMap<uint16_t,Service>;
 
         // SelectionInformationTable public members:
         DescriptorList descs;     //!< Global descriptor list.

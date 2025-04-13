@@ -53,7 +53,7 @@ namespace ts {
         //!
         //! List of Transport's, indexed by TransportStreamId.
         //!
-        using TransportMap = EntryWithDescriptorsMap<TransportStreamId, Transport>;
+        using TransportMap = AttachedEntryMap<TransportStreamId, Transport>;
 
 
         // NIT/BAT common public members:

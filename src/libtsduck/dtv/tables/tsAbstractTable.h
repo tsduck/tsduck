@@ -158,9 +158,9 @@ namespace ts {
         static xml::Element* GetOrCreateMetadata(xml::Element* element);
 
         //!
-        //! Base inner class for table entries with one or more descriptor lists.
+        //! Base inner class for table entries which contain AbstractTableAttachment fields, such as descriptor lists.
         //!
-        class TSDUCKDLL EntryBase
+        class TSDUCKDLL AttachedEntry
         {
         public:
             //!
@@ -173,7 +173,7 @@ namespace ts {
             //! Default constructor.
             //! @param [in] order Ordering hint, unspecified by default.
             //!
-            explicit EntryBase(size_t order = NPOS) : order_hint(order) {}
+            explicit AttachedEntry(size_t order = NPOS) : order_hint(order) {}
         };
 
         //!
@@ -184,9 +184,9 @@ namespace ts {
         //! class DescriptorList needs to be constructed with a reference to a parent
         //! table. The inner class EntryWithDescriptorList can be used as base class
         //! for such entries, combined with the template container classes
-        //! EntryWithDescriptorsList and EntryWithDescriptorsMap.
+        //! AttachedEntryList and AttachedEntryMap.
         //!
-        class TSDUCKDLL EntryWithDescriptors : public EntryBase
+        class TSDUCKDLL EntryWithDescriptors : public AttachedEntry
         {
             TS_NO_DEFAULT_CONSTRUCTORS(EntryWithDescriptors);
         public:
@@ -233,18 +233,18 @@ namespace ts {
         };
 
         //!
-        //! Template map of subclasses of EntryBase.
+        //! Template map of subclasses of AttachedEntry.
         //! @tparam KEY A type which is used as key of the map.
-        //! @tparam ENTRY A subclass of EntryBase (enforced at compile-time).
+        //! @tparam ENTRY A subclass of AttachedEntry (enforced at compile-time).
         //!
-        //! Implementation note: Because of a bug in MSVC, the full path of EntryBase
+        //! Implementation note: Because of a bug in MSVC, the full path of AttachedEntry
         //! must be specified in the "requires" directive.
         //!
         template<typename KEY, class ENTRY>
-            requires std::derived_from<ENTRY, ts::AbstractTable::EntryBase>
-        class EntryWithDescriptorsMap : public std::map<KEY, ENTRY>, public AbstractTableAttachment
+            requires std::derived_from<ENTRY, ts::AbstractTable::AttachedEntry>
+        class AttachedEntryMap : public std::map<KEY, ENTRY>, public AbstractTableAttachment
         {
-            TS_NO_DEFAULT_CONSTRUCTORS(EntryWithDescriptorsMap);
+            TS_NO_DEFAULT_CONSTRUCTORS(AttachedEntryMap);
         public:
             //!
             //! Explicit reference to the super class.
@@ -259,21 +259,21 @@ namespace ts {
             //! that the order of insertion is preserved, at the expense of a small performance penalty
             //! each time an entry is added.
             //!
-            explicit EntryWithDescriptorsMap(const AbstractTable* table, bool auto_ordering = false);
+            explicit AttachedEntryMap(const AbstractTable* table, bool auto_ordering = false);
 
             //!
             //! Basic copy-like constructor.
             //! @param [in] table Parent table. A descriptor list is always attached to a table.
             //! @param [in] other Another instance to copy.
             //!
-            EntryWithDescriptorsMap(const AbstractTable* table, const EntryWithDescriptorsMap& other);
+            AttachedEntryMap(const AbstractTable* table, const AttachedEntryMap& other);
 
             //!
             //! Basic move-like constructor.
             //! @param [in] table Parent table. A descriptor list is always attached to a table.
             //! @param [in,out] other Another instance to move.
             //!
-            EntryWithDescriptorsMap(const AbstractTable* table, EntryWithDescriptorsMap&& other);
+            AttachedEntryMap(const AbstractTable* table, AttachedEntryMap&& other);
 
             //!
             //! Assignment operator.
@@ -281,7 +281,7 @@ namespace ts {
             //! @param [in] other Another instance to copy.
             //! @return A reference to this object.
             //!
-            EntryWithDescriptorsMap& operator=(const EntryWithDescriptorsMap& other);
+            AttachedEntryMap& operator=(const AttachedEntryMap& other);
 
             //!
             //! Move assignment operator.
@@ -289,13 +289,13 @@ namespace ts {
             //! @param [in,out] other Another instance to move.
             //! @return A reference to this object.
             //!
-            EntryWithDescriptorsMap& operator=(EntryWithDescriptorsMap&& other);
+            AttachedEntryMap& operator=(AttachedEntryMap&& other);
 
             //!
             //! Swap two instances (override of std::list).
             //! @param [in,out] other Another instance to swap with the current object.
             //!
-            void swap(EntryWithDescriptorsMap& other);
+            void swap(AttachedEntryMap& other);
 
             //!
             //! Access or create an entry.
@@ -314,14 +314,14 @@ namespace ts {
 
             //!
             //! Get the insertion order of entries in the table.
-            //! The result is based on the @a order_hint fields in the EntryBase structures.
+            //! The result is based on the @a order_hint fields in the AttachedEntry structures.
             //! @param [out] order Order of entries by key in the table.
             //!
             void getOrder(std::vector<KEY>& order) const;
 
             //!
             //! Define the insertion order of entries in the table.
-            //! This can be precisely set using the @a order_hint fields in the EntryBase structures.
+            //! This can be precisely set using the @a order_hint fields in the AttachedEntry structures.
             //! This method is a helper which sets these fields.
             //! @param [in] order Order of entries by key in the table.
             //!
@@ -338,41 +338,41 @@ namespace ts {
         };
 
         //!
-        //! Template map of subclasses of EntryBase, indexed by size_t.
+        //! Template map of subclasses of AttachedEntry, indexed by size_t.
         //! This is replacement for vectors and lists, which cannot be used by entries
         //! containing a descriptor list since it is not CopyAssignable or CopyConstructible.
-        //! @tparam ENTRY A subclass of EntryBase (enforced at compile-time).
+        //! @tparam ENTRY A subclass of AttachedEntry (enforced at compile-time).
         //!
         template<class ENTRY>
-            requires std::derived_from<ENTRY, EntryBase>
-        class EntryWithDescriptorsList : public EntryWithDescriptorsMap<size_t, ENTRY>
+            requires std::derived_from<ENTRY, AttachedEntry>
+        class AttachedEntryList : public AttachedEntryMap<size_t, ENTRY>
         {
-            TS_NO_DEFAULT_CONSTRUCTORS(EntryWithDescriptorsList);
+            TS_NO_DEFAULT_CONSTRUCTORS(AttachedEntryList);
         public:
             //!
             //! Explicit reference to the super class.
             //!
-            using SuperClass = EntryWithDescriptorsMap<size_t, ENTRY>;
+            using SuperClass = AttachedEntryMap<size_t, ENTRY>;
 
             //!
             //! Basic constructor.
             //! @param [in] table Parent table. A descriptor list is always attached to a table.
             //!
-            explicit EntryWithDescriptorsList(const AbstractTable* table) : SuperClass(table) {}
+            explicit AttachedEntryList(const AbstractTable* table) : SuperClass(table) {}
 
             //!
             //! Basic copy-like constructor.
             //! @param [in] table Parent table. A descriptor list is always attached to a table.
             //! @param [in] other Another instance to copy.
             //!
-            EntryWithDescriptorsList(const AbstractTable* table, const SuperClass& other) : SuperClass(table, other) {}
+            AttachedEntryList(const AbstractTable* table, const SuperClass& other) : SuperClass(table, other) {}
 
             //!
             //! Basic move-like constructor.
             //! @param [in] table Parent table. A descriptor list is always attached to a table.
             //! @param [in,out] other Another instance to move.
             //!
-            EntryWithDescriptorsList(const AbstractTable* table, EntryWithDescriptorsList&& other) : SuperClass(table, other) {}
+            AttachedEntryList(const AbstractTable* table, AttachedEntryList&& other) : SuperClass(table, other) {}
 
             //!
             //! Assignment operator.
@@ -380,7 +380,7 @@ namespace ts {
             //! @param [in] other Another instance to copy.
             //! @return A reference to this object.
             //!
-            EntryWithDescriptorsList& operator=(const EntryWithDescriptorsList& other) { SuperClass::operator=(other); return *this; }
+            AttachedEntryList& operator=(const AttachedEntryList& other) { SuperClass::operator=(other); return *this; }
 
             //!
             //! Move assignment operator.
@@ -388,7 +388,7 @@ namespace ts {
             //! @param [in,out] other Another instance to move.
             //! @return A reference to this object.
             //!
-            EntryWithDescriptorsList& operator=(EntryWithDescriptorsList&& other) { SuperClass::operator=(other); return *this; }
+            AttachedEntryList& operator=(AttachedEntryList&& other) { SuperClass::operator=(other); return *this; }
 
             //!
             //! Get a new unused index, greater than the greatest entry.
@@ -523,16 +523,16 @@ namespace ts {
 // Template definitions.
 //----------------------------------------------------------------------------
 
-template<typename KEY, class ENTRY> requires std::derived_from<ENTRY, ts::AbstractTable::EntryBase>
-ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY>::EntryWithDescriptorsMap(const AbstractTable* table, bool auto_ordering) :
+template<typename KEY, class ENTRY> requires std::derived_from<ENTRY, ts::AbstractTable::AttachedEntry>
+ts::AbstractTable::AttachedEntryMap<KEY,ENTRY>::AttachedEntryMap(const AbstractTable* table, bool auto_ordering) :
     SuperClass(),
     AbstractTableAttachment(table),
     _auto_ordering(auto_ordering)
 {
 }
 
-template<typename KEY, class ENTRY> requires std::derived_from<ENTRY, ts::AbstractTable::EntryBase>
-ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY>::EntryWithDescriptorsMap(const AbstractTable* table, const EntryWithDescriptorsMap& other) :
+template<typename KEY, class ENTRY> requires std::derived_from<ENTRY, ts::AbstractTable::AttachedEntry>
+ts::AbstractTable::AttachedEntryMap<KEY,ENTRY>::AttachedEntryMap(const AbstractTable* table, const AttachedEntryMap& other) :
     SuperClass(),
     AbstractTableAttachment(table),
     _auto_ordering(other._auto_ordering)
@@ -543,8 +543,8 @@ ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY>::EntryWithDescriptorsMap(c
     }
 }
 
-template<typename KEY, class ENTRY> requires std::derived_from<ENTRY, ts::AbstractTable::EntryBase>
-ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY>::EntryWithDescriptorsMap(const AbstractTable* table, EntryWithDescriptorsMap&& other) :
+template<typename KEY, class ENTRY> requires std::derived_from<ENTRY, ts::AbstractTable::AttachedEntry>
+ts::AbstractTable::AttachedEntryMap<KEY,ENTRY>::AttachedEntryMap(const AbstractTable* table, AttachedEntryMap&& other) :
     SuperClass(),
     AbstractTableAttachment(table),
     _auto_ordering(other._auto_ordering)
@@ -563,8 +563,8 @@ ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY>::EntryWithDescriptorsMap(c
 // Template list of subclasses of EntryWithDescriptors - Assignment.
 //----------------------------------------------------------------------------
 
-template<typename KEY, class ENTRY> requires std::derived_from<ENTRY, ts::AbstractTable::EntryBase>
-ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY>& ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY>::operator=(const EntryWithDescriptorsMap& other)
+template<typename KEY, class ENTRY> requires std::derived_from<ENTRY, ts::AbstractTable::AttachedEntry>
+ts::AbstractTable::AttachedEntryMap<KEY,ENTRY>& ts::AbstractTable::AttachedEntryMap<KEY,ENTRY>::operator=(const AttachedEntryMap& other)
 {
     if (&other != this) {
         // Use same auto ordering as copied map.
@@ -578,8 +578,8 @@ ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY>& ts::AbstractTable::EntryW
     return *this;
 }
 
-template<typename KEY, class ENTRY> requires std::derived_from<ENTRY, ts::AbstractTable::EntryBase>
-ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY>& ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY>::operator=(EntryWithDescriptorsMap&& other)
+template<typename KEY, class ENTRY> requires std::derived_from<ENTRY, ts::AbstractTable::AttachedEntry>
+ts::AbstractTable::AttachedEntryMap<KEY,ENTRY>& ts::AbstractTable::AttachedEntryMap<KEY,ENTRY>::operator=(AttachedEntryMap&& other)
 {
     if (&other != this) {
         // Use same auto ordering as copied map.
@@ -601,12 +601,12 @@ ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY>& ts::AbstractTable::EntryW
 // Template map of subclasses of EntryWithDescriptors - Swap.
 //----------------------------------------------------------------------------
 
-template<typename KEY, class ENTRY> requires std::derived_from<ENTRY, ts::AbstractTable::EntryBase>
-void ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY>::swap(EntryWithDescriptorsMap& other)
+template<typename KEY, class ENTRY> requires std::derived_from<ENTRY, ts::AbstractTable::AttachedEntry>
+void ts::AbstractTable::AttachedEntryMap<KEY,ENTRY>::swap(AttachedEntryMap& other)
 {
     if (&other != this) {
         // Unefficient but functionally correct.
-        const EntryWithDescriptorsMap tmp(nullptr, other);
+        const AttachedEntryMap tmp(nullptr, other);
         other = *this;
         *this = tmp;
     }
@@ -616,8 +616,8 @@ void ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY>::swap(EntryWithDescri
 // Template map of subclasses of EntryWithDescriptors - Subscripts.
 //----------------------------------------------------------------------------
 
-template<typename KEY, class ENTRY> requires std::derived_from<ENTRY, ts::AbstractTable::EntryBase>
-ENTRY& ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY>::operator[](const KEY& key)
+template<typename KEY, class ENTRY> requires std::derived_from<ENTRY, ts::AbstractTable::AttachedEntry>
+ENTRY& ts::AbstractTable::AttachedEntryMap<KEY,ENTRY>::operator[](const KEY& key)
 {
     // The emplace operation ensures that the object is constructed with the supplied arguments (and not copied).
     // This form is more complex but the simplest form of emplace (without the piecewise_construct and tuples)
@@ -632,14 +632,14 @@ ENTRY& ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY>::operator[](const K
     return entry;
 }
 
-template<typename KEY, class ENTRY> requires std::derived_from<ENTRY, ts::AbstractTable::EntryBase>
-const ENTRY& ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY>::operator[](const KEY& key) const
+template<typename KEY, class ENTRY> requires std::derived_from<ENTRY, ts::AbstractTable::AttachedEntry>
+const ENTRY& ts::AbstractTable::AttachedEntryMap<KEY,ENTRY>::operator[](const KEY& key) const
 {
     // Here, we must not create any element (the instance is read-only).
     const auto it = this->find(key);
     if (it == this->end()) {
         // Same exception as std::map::at().
-        throw std::out_of_range("unknown key in ts::AbstractTable::EntryWithDescriptorsMap");
+        throw std::out_of_range("unknown key in ts::AbstractTable::AttachedEntryMap");
     }
     return it->second;
 }
@@ -650,8 +650,8 @@ const ENTRY& ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY>::operator[](c
 // Get the insertion order of entrie in the table.
 //----------------------------------------------------------------------------
 
-template<typename KEY, class ENTRY> requires std::derived_from<ENTRY, ts::AbstractTable::EntryBase>
-void ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY>::getOrder(std::vector<KEY>& order) const
+template<typename KEY, class ENTRY> requires std::derived_from<ENTRY, ts::AbstractTable::AttachedEntry>
+void ts::AbstractTable::AttachedEntryMap<KEY,ENTRY>::getOrder(std::vector<KEY>& order) const
 {
     // Build a multimap of keys, indexed by order_hint.
     std::multimap<size_t, KEY> kmap;
@@ -673,8 +673,8 @@ void ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY>::getOrder(std::vector
 // Set the insertion order of entrie in the table.
 //----------------------------------------------------------------------------
 
-template<typename KEY, class ENTRY> requires std::derived_from<ENTRY, ts::AbstractTable::EntryBase>
-void ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY>::setOrder(const std::vector<KEY>& order)
+template<typename KEY, class ENTRY> requires std::derived_from<ENTRY, ts::AbstractTable::AttachedEntry>
+void ts::AbstractTable::AttachedEntryMap<KEY,ENTRY>::setOrder(const std::vector<KEY>& order)
 {
     // First pass: get initial ordering.
     std::vector<KEY> input;
@@ -705,8 +705,8 @@ void ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY>::setOrder(const std::
 // Get the next ordering hint to be used in an entry.
 //----------------------------------------------------------------------------
 
-template<typename KEY, class ENTRY> requires std::derived_from<ENTRY, ts::AbstractTable::EntryBase>
-size_t ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY>::nextOrder() const
+template<typename KEY, class ENTRY> requires std::derived_from<ENTRY, ts::AbstractTable::AttachedEntry>
+size_t ts::AbstractTable::AttachedEntryMap<KEY,ENTRY>::nextOrder() const
 {
     size_t next = 0;
     for (const auto& entry : *this) {

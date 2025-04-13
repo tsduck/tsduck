@@ -45,7 +45,7 @@ namespace ts {
         //!
         //! List of broadcasters, indexed by broadcaster_id.
         //!
-        using BroadcasterMap = EntryWithDescriptorsMap<uint8_t, Broadcaster>;
+        using BroadcasterMap = AttachedEntryMap<uint8_t, Broadcaster>;
 
         // BIT public members:
         uint16_t       original_network_id = 0;           //!< Original network id.

@@ -50,7 +50,7 @@ namespace ts {
         //!
         //! List of relations.
         //!
-        using RelationList = EntryWithDescriptorsList<Relation>;
+        using RelationList = AttachedEntryList<Relation>;
 
         // ERT public members:
         uint16_t     event_relation_id = 0;        //!< Event relation id.

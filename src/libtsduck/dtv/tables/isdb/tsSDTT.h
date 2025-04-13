@@ -71,7 +71,7 @@ namespace ts {
         //!
         //! List of download content entries.
         //!
-        using ContentList = EntryWithDescriptorsList<Content>;
+        using ContentList = AttachedEntryList<Content>;
 
         // SDTT public members:
         uint16_t    table_id_ext = 0;         //!< Table id extension, variable combination of maker and model ids.

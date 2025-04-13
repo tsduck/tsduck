@@ -117,7 +117,7 @@ namespace ts {
         //!
         //! List of link information entries.
         //!
-        using LinkList = EntryWithDescriptorsList<Link>;
+        using LinkList = AttachedEntryList<Link>;
 
         // RCT public members:
         uint16_t       service_id = 0;  //!< Service id.

@@ -27,7 +27,7 @@ namespace ts {
         //!
         //! Description of a device.
         //!
-        class TSDUCKDLL Device : public EntryBase
+        class TSDUCKDLL Device : public AttachedEntry
         {
         public:
             DescriptorList target_descs;       //!< Target descriptor loop, describes the target device.
@@ -63,7 +63,7 @@ namespace ts {
         //!
         //! List of devices.
         //!
-        using DeviceList = EntryWithDescriptorsList<Device>;
+        using DeviceList = AttachedEntryList<Device>;
 
         // INT public members:
         uint8_t        action_type = 0;        //!< Action type.

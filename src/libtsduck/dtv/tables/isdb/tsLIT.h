@@ -47,7 +47,7 @@ namespace ts {
         //!
         //! List of local events.
         //!
-        using EventList = EntryWithDescriptorsList<Event>;
+        using EventList = AttachedEntryList<Event>;
 
         // LIT public members:
         uint16_t  event_id = 0;             //!< Event id.

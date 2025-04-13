@@ -52,7 +52,7 @@ namespace ts {
         //!
         //! List of data events.
         //!
-        using DataList = EntryWithDescriptorsList<Data>;
+        using DataList = AttachedEntryList<Data>;
 
         // DET public members:
         uint16_t source_id = 0;         //!< Data source id.

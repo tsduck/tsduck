@@ -68,7 +68,7 @@ namespace ts {
         //!
         //! Description of a platform.
         //!
-        class TSDUCKDLL Platform : public EntryBase
+        class TSDUCKDLL Platform : public AttachedEntry
         {
         public:
             DescriptorList target_descs;       //!< Target descriptor loop, describes the target platform.
@@ -104,12 +104,12 @@ namespace ts {
         //!
         //! List of platforms.
         //!
-        using PlatformList = EntryWithDescriptorsList<Platform>;
+        using PlatformList = AttachedEntryList<Platform>;
 
         //!
         //! Description of a set of devices.
         //!
-        class TSDUCKDLL Devices : public EntryBase
+        class TSDUCKDLL Devices : public AttachedEntry
         {
         public:
             CompatibilityDescriptorList compatibilityDescriptor {};   //!< The entries of the compatibilityDescriptor.
@@ -145,7 +145,7 @@ namespace ts {
         //!
         //! List of devicess.
         //!
-        using DevicesList = EntryWithDescriptorsList<Devices>;
+        using DevicesList = AttachedEntryList<Devices>;
 
         // UNT public members:
         uint8_t        action_type = 0;       //!< Action type.

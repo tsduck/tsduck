@@ -43,14 +43,14 @@ ts::UNT::CompatibilityDescriptor::CompatibilityDescriptor(const CompatibilityDes
 //----------------------------------------------------------------------------
 
 ts::UNT::Platform::Platform(const AbstractTable* table) :
-    EntryBase(),
+    AttachedEntry(),
     target_descs(table),
     operational_descs(table)
 {
 }
 
 ts::UNT::Platform::Platform(const AbstractTable* table, const Platform& other) :
-    EntryBase(other),
+    AttachedEntry(other),
     target_descs(table, other.target_descs),
     operational_descs(table, other.operational_descs)
 {
@@ -67,7 +67,7 @@ ts::UNT::Devices::Devices(const AbstractTable* table) :
 }
 
 ts::UNT::Devices::Devices(const AbstractTable* table, const Devices& other) :
-    EntryBase(other),
+    AttachedEntry(other),
     compatibilityDescriptor(other.compatibilityDescriptor),
     platforms(table, other.platforms)
 {

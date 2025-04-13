@@ -64,7 +64,7 @@ namespace ts {
         //!
         //! List of table types.
         //!
-        using UpdateList = EntryWithDescriptorsList<Update>;
+        using UpdateList = AttachedEntryList<Update>;
 
         // DCCSCT public members:
         uint16_t       dccsct_type = 0;       //!< DCCSCT type (zero by default, the only valid value).

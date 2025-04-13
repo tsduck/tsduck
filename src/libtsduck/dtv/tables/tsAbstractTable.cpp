@@ -171,19 +171,19 @@ ts::xml::Element* ts::AbstractTable::GetOrCreateMetadata(xml::Element* element)
 //----------------------------------------------------------------------------
 
 ts::AbstractTable::EntryWithDescriptors::EntryWithDescriptors(const AbstractTable* table) :
-    EntryBase(NPOS),
+    AttachedEntry(NPOS),
     descs(table)
 {
 }
 
 ts::AbstractTable::EntryWithDescriptors::EntryWithDescriptors(const AbstractTable* table, const EntryWithDescriptors& other) :
-    EntryBase(NPOS),
+    AttachedEntry(NPOS),
     descs(table, other.descs)
 {
 }
 
 ts::AbstractTable::EntryWithDescriptors::EntryWithDescriptors(const AbstractTable* table, EntryWithDescriptors&& other) :
-    EntryBase(NPOS),
+    AttachedEntry(NPOS),
     descs(table, other.descs)
 {
 }

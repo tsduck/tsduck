@@ -48,7 +48,7 @@ namespace ts {
         //!
         //! List of applications, indexed by their identifier.
         //!
-        using ApplicationMap = EntryWithDescriptorsMap<ApplicationIdentifier, Application>;
+        using ApplicationMap = AttachedEntryMap<ApplicationIdentifier, Application>;
 
         // AIT public members:
         uint16_t       application_type = 0;           //!< Type of the application.

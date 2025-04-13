@@ -52,12 +52,12 @@ namespace ts {
         //!
         //! List of data events.
         //!
-        using DataList = EntryWithDescriptorsList<Data>;
+        using DataList = AttachedEntryList<Data>;
 
         //!
         //! Description of a data source.
         //!
-        class TSDUCKDLL Source
+        class TSDUCKDLL Source : public AttachedEntry
         {
             TS_NO_DEFAULT_CONSTRUCTORS(Source);
             TS_DEFAULT_ASSIGMENTS(Source);
@@ -90,49 +90,7 @@ namespace ts {
         //!
         //! List of data sources.
         //!
-        class TSDUCKDLL SourceList : public std::list<Source>, public AbstractTableAttachment
-        {
-        public:
-            TS_NO_DEFAULT_CONSTRUCTORS(SourceList);
-        public:
-            //!
-            //! Explicit reference to the super class.
-            //!
-            using SuperClass = std::list<Source>;
-
-            //!
-            //! Basic constructor.
-            //! @param [in] table Parent table.
-            //!
-            explicit SourceList(const AbstractTable* table) : SuperClass(), AbstractTableAttachment(table) {}
-
-            //!
-            //! Basic copy-like constructor.
-            //! @param [in] table Parent table.
-            //! @param [in] other Another instance to copy.
-            //!
-            SourceList(const AbstractTable* table, const SourceList& other);
-
-            //!
-            //! Assignment operator.
-            //! The parent table remains unchanged.
-            //! @param [in] other Another instance to copy.
-            //! @return A reference to this object.
-            //!
-            SourceList& operator=(const SourceList& other);
-
-            //!
-            //! Swap two instances (override of std::list).
-            //! @param [in,out] other Another instance to swap with the current object.
-            //!
-            void swap(SourceList& other) { SuperClass::swap(other); }
-
-            //!
-            //! Create a new element at the end of the list.
-            //! @return A reference to the new entry.
-            //!
-            Source& emplace_back() { SuperClass::emplace_back(table()); return back(); }
-        };
+        using SourceList = AttachedEntryList<Source>;
 
         // LTST public members:
         uint16_t   table_id_extension = 0;  //!< Identification of LTST instance.

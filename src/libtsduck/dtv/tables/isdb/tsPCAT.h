@@ -67,7 +67,7 @@ namespace ts {
         //!
         //! List of content versions.
         //!
-        using ContentVersionList = EntryWithDescriptorsList<ContentVersion>;
+        using ContentVersionList = AttachedEntryList<ContentVersion>;
 
         // PCAT public members:
         uint16_t           service_id = 0;           //!< Service id.

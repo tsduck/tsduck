@@ -52,7 +52,7 @@ namespace ts {
         //!
         //! List of events.
         //!
-        using EventList = EntryWithDescriptorsList<Event>;
+        using EventList = AttachedEntryList<Event>;
 
         // ATSCEIT public members:
         uint16_t  source_id = 0;         //!< EIT source id.

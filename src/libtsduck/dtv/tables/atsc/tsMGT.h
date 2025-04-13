@@ -50,7 +50,7 @@ namespace ts {
         //!
         //! List of table types.
         //!
-        using TableTypeList = EntryWithDescriptorsList<TableType>;
+        using TableTypeList = AttachedEntryList<TableType>;
 
         // MGT public members:
         uint8_t        protocol_version = 0;  //!< ATSC protocol version.

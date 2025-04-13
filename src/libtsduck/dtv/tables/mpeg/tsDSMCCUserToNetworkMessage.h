@@ -158,7 +158,7 @@ namespace ts {
         //!
         //! List of Modules
         //!
-        using ModuleList = EntryWithDescriptorsList<Module>;
+        using ModuleList = AttachedEntryList<Module>;
 
         uint32_t   download_id = 0;  //!< Same value as the downloadId field of the DownloadDataBlock() messages which carry the Blocks of the Module.
         uint16_t   block_size = 0;   //!< Block size of all the DownloadDataBlock() messages which convey the Blocks of the Modules.

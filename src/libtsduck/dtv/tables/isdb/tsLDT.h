@@ -45,7 +45,7 @@ namespace ts {
         //!
         //! List of descriptions, indexed by description_id.
         //!
-        using DescriptionMap = EntryWithDescriptorsMap<uint16_t, Description>;
+        using DescriptionMap = AttachedEntryMap<uint16_t, Description>;
 
         // LDT public members:
         uint16_t       original_service_id = 0;  //!< Original service id.

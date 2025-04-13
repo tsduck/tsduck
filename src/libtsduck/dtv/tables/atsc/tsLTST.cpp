@@ -60,28 +60,6 @@ ts::LTST::Source::Source(const AbstractTable* table, Source&& other) :
 {
 }
 
-ts::LTST::SourceList::SourceList(const AbstractTable* table, const SourceList& other) :
-    SuperClass(),
-    AbstractTableAttachment(table)
-{
-    // Copy each entry one by one to ensure that the copied entries actually point to the constructed table.
-    for (const auto& it : other) {
-        emplace_back() = it;
-    }
-}
-
-ts::LTST::SourceList& ts::LTST::SourceList::operator=(const SourceList& other)
-{
-    if (&other != this) {
-        // Copy each entry one by one to ensure that the copied entries actually point to the constructed table.
-        clear();
-        for (const auto& it : other) {
-            emplace_back() = it;
-        }
-    }
-    return *this;
-}
-
 
 //----------------------------------------------------------------------------
 // Inherited public methods
@@ -118,7 +96,7 @@ void ts::LTST::deserializePayload(PSIBuffer& buf, const Section& section)
 
     // Get data sources descriptions.
     while (!buf.error() && num_source_id_in_section-- > 0) {
-        Source& src(sources.emplace_back());
+        Source& src(sources.newEntry());
         src.source_id = buf.getUInt16();
         size_t num_data_events = buf.getUInt8();
 
@@ -155,7 +133,7 @@ void ts::LTST::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 
     // Loop on data sources.
     for (auto src_it = sources.begin(); !buf.error() && src_it != sources.end(); ++src_it) {
-        const Source& src(*src_it);
+        const Source& src(src_it->second);
 
         // We don't know the total size of the serialized data source and we don't know if it will fit in
         // the current section. So, we serialize the complete data source into one specific buffer first.
@@ -248,8 +226,8 @@ void ts::LTST::buildXML(DuckContext& duck, xml::Element* root) const
 
     for (const auto& src : sources) {
         xml::Element* xsrc = root->addElement(u"source");
-        xsrc->setIntAttribute(u"source_id", src.source_id, true);
-        for (const auto& it : src.data) {
+        xsrc->setIntAttribute(u"source_id", src.second.source_id, true);
+        for (const auto& it : src.second.data) {
             xml::Element* e = xsrc->addElement(u"data");
             e->setIntAttribute(u"data_id", it.second.data_id, true);
             e->setDateTimeAttribute(u"start_time", it.second.start_time);
@@ -276,7 +254,7 @@ bool ts::LTST::analyzeXML(DuckContext& duck, const xml::Element* element)
         element->getChildren(xsources, u"source");
 
     for (const auto& xsrc : xsources) {
-        Source& src(sources.emplace_back());
+        Source& src(sources.newEntry());
         xml::ElementVector xdata;
         ok = xsrc->getIntAttribute(src.source_id, u"source_id", true) &&
              xsrc->getChildren(xdata, u"data") &&

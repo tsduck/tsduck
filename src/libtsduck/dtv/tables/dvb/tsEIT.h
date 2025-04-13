@@ -158,7 +158,7 @@ namespace ts {
         //!
         //! List of events.
         //!
-        using EventList = EntryWithDescriptorsList<Event>;
+        using EventList = AttachedEntryList<Event>;
 
         // EIT public members:
         uint16_t  service_id = 0;            //!< Service_id.
