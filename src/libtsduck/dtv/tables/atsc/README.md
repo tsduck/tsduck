@@ -11,4 +11,3 @@ Missing tables from ATSC A/81, Jul 2003: "ATSC Direct-to-Home Satellite Broadcas
 
 - Section 9.9.1 : SVCT, Satellite Virtual Channel Table, table id 0xDA
 - Section 9.9.2 : AEIT, Aggregate Event Information Table, table id 0xD6
-- Section 9.9.3 : AETT, Aggregate Extended Text Table, table id 0xD7

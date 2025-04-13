@@ -1,0 +1,25 @@
+==== Aggregate Extended Text Table (AETT)
+
+Defined by ATSC in <<ATSC-A81>>.
+
+[source,xml]
+----
+<AETT version="uint5, default=0"
+      AETT_subtype="uint8, default=0"
+      MGT_tag="uint8, required">
+
+  <!-- When AETT_subtype == 0, any number of ETM_data -->
+  <ETM_data ETM_id="uint32, required">
+    <!-- Optional ATSC multiple_string_structure() containing one or more strings -->
+    <extended_text_message>
+      <string language="char3, required" text="string, required"/>
+    </extended_text_message>
+  </ETM_data>
+
+  <!-- When AETT_subtype != 0, at most one reserved -->
+  <reserved>
+    Hexadecimal content
+  </reserved>
+
+</AETT>
+----
