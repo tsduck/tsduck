@@ -26,7 +26,7 @@ $(BINDIR)/%: %
 
 # Install configuration files.
 
-.PHONY: install-tools install-post-build install-devel install-linux-config
+.PHONY: install-tools install-devel install-linux-config
 
 install-tools:
 	install -d -m 755 $(SYSROOT)$(SYSPREFIX)/share/tsduck

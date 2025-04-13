@@ -21,6 +21,7 @@
     <CallTarget Targets='BuildDektecNames'/>
     <CallTarget Targets='BuildTSCoreHeader'/>
     <CallTarget Targets='BuildTSDuckHeader'/>
+    <CallTarget Targets='BuildTablesModel'/>
     <CallTarget Targets='BuildTSDuckJar'/>
   </Target>
 
@@ -42,6 +43,7 @@
     <Import Project='msvc-build-dtv-names.props'/>
     <Import Project='msvc-build-dektec-names.props'/>
     <Import Project='msvc-build-tsduck-header.props'/>
+    <Import Project='msvc-build-tables-model.props'/>
     <Import Project='msvc-build-tsduck-jar.props'/>
     <Import Project="msvc-common-end.props"/>
   </ImportGroup>

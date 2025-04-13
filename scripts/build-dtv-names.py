@@ -6,7 +6,7 @@
 #  BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 #
 #  Build the file tsduck.dtv.names, containing names for Digital TV.
-#  Syntax: build-dtv-names-names.py out-file in-file-or-dir ...
+#  Syntax: build-dtv-names.py out-file in-file-or-dir ...
 #
 #-----------------------------------------------------------------------------
 

@@ -307,12 +307,6 @@ if [[ -z $CROSS$CROSS_TARGET ]]; then
     # No cross-compilation.
     CXXFLAGS_CROSS=
     LDFLAGS_CROSS=
-    # In last step of build, always use the version of tsxml which is built.
-    if [[ -n $MACOS ]]; then
-        TSXML='LD_LIBRARY_PATH="$(BINDIR):$(LD_LIBRARY_PATH)" DYLD_LIBRARY_PATH="$(BINDIR):$(DYLD_LIBRARY_PATH)" $(BINDIR)/tsxml'
-    else
-        TSXML='LD_LIBRARY_PATH="$(BINDIR):$(LD_LIBRARY_PATH)" $(BINDIR)/tsxml'
-    fi
 else
     # Perform cross-compilation.
     CROSS=1
@@ -346,11 +340,6 @@ else
     # Add options. The layout can be different, so use them all.
     CXXFLAGS_CROSS='-I$(CROSS_PREFIX)/$(CROSS_TARGET)/include -I$(CROSS_PREFIX)/$(CROSS_TARGET)/$(CROSS_TARGET)/include -I$(CROSS_PREFIX)/$(CROSS_TARGET)/$(CROSS_TARGET)/libc/include'
     LDFLAGS_CROSS='-L$(CROSS_PREFIX)/$(CROSS_TARGET)/lib -L$(CROSS_PREFIX)/$(CROSS_TARGET)/$(CROSS_TARGET)/lib -L$(CROSS_PREFIX)/$(CROSS_TARGET)/$(CROSS_TARGET)/libc/lib'
-    # In last step of build, use tsxml from 1) command line, 2) already installed, 3) previous native build.
-    [[ -z $TSXML ]] && TSXML=$(which tsxml 2>/dev/null)
-    [[ -z $TSXML && -x $NATIVEBINDIR/tsxml ]] && \
-        TSXML='LD_LIBRARY_PATH="$(NATIVEBINDIR):$(LD_LIBRARY_PATH)" DYLD_LIBRARY_PATH="$(NATIVEBINDIR):$(DYLD_LIBRARY_PATH)" $(NATIVEBINDIR)/tsxml'
-    [[ -z $TSXML ]] && error "no native TSDuck found for cross-compilation, check NATIVEBINDIR"
 fi
 
 #-----------------------------------------------------------------------------

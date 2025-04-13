@@ -14,16 +14,12 @@
   </ItemGroup>
 
   <Target Name="BuildTablesModel" Inputs="$(TablesSkeletonXml);@(DtvXmlFiles)" Outputs="$(TablesModelXml)">
-	<Message Text="Building $(TablesModelXml)" Importance="high"/>
-    <PropertyGroup>
-      <!-- Reduce the length of the list of files, will use the removed prefix as working directory -->
-      <!-- Without this, MSBuild fails with "command too long" -->
-      <DtvXmlFilesSpace>@(DtvXmlFiles,' ')</DtvXmlFilesSpace>
-      <DtvXmlFilesBase>$(DtvXmlFilesSpace.Replace('$(DtvRoot)',''))</DtvXmlFilesBase>
-    </PropertyGroup>
+    <Message Text="Building $(TablesModelXml)" Importance="high"/>
     <MakeDir Directories="$(OutDir)" Condition="!Exists('$(OutDir)')"/>
-    <Exec WorkingDirectory="$(DtvRoot)"
-          Command='PowerShell -NonInteractive "$(TSDuckRootDir)scripts\tsxml-wrapper.ps1" --merge "$(TablesSkeletonXml)" $(DtvXmlFilesBase) --sort _tables --sort _descriptors --uncomment -o "$(TablesModelXml)"'/>
+    <Exec ConsoleToMSBuild='true'
+          Command='python "$(TSDuckRootDir)scripts\build-tables-model.py" "$(TablesModelXml)" "$(DtvRoot)tables" "$(DtvRoot)descriptors"'>
+      <Output TaskParameter="ConsoleOutput" PropertyName="OutputOfExec"/>
+    </Exec>
   </Target>
 
 </Project>

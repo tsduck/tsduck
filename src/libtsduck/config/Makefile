@@ -21,13 +21,8 @@ NAMES_DEST   = $(BINDIR)/tsduck.dtv.names
 DEKTEC_DEST  = $(BINDIR)/tsduck.dektec.names
 
 # Main build targets.
-# The complete signalization model, tsduck.tables.model.xml, can be generated only when tsxml is generated.
 
-.PHONY: post-build
-
-default: $(CONFIGS_DEST) $(NAMES_DEST) $(DEKTEC_DEST)
-	@true
-post-build: $(TABLES_DEST)
+default: $(CONFIGS_DEST) $(NAMES_DEST) $(DEKTEC_DEST) $(TABLES_DEST)
 	@true
 
 # Copy TSDuck configuration files in output bin directory.
@@ -37,8 +32,8 @@ $(BINDIR)/%: %
 
 # Generate the complete configuration files from separate files.
 
-$(TABLES_DEST): $(TABLES_SRC) $(TABLES_SUBS) $(BINDIR)/tsxml
-	$(call LOG,[GEN] $(notdir $@)) $(TSXML) --merge $(TABLES_SRC) $(TABLES_SUBS) --sort _tables --sort _descriptors --uncomment -o $@
+$(TABLES_DEST): $(TABLES_SRC) $(TABLES_SUBS)
+	$(call LOG,[GEN] $(notdir $@)) $(PYTHON) $(SCRIPTSDIR)/build-tables-model.py $@ $^
 
 $(NAMES_DEST): $(NAMES_SRC)
 	$(call LOG,[GEN] $(notdir $@)) $(PYTHON) $(SCRIPTSDIR)/build-dtv-names.py $@ $^
@@ -48,15 +43,12 @@ $(DEKTEC_DEST): $(shell $(SCRIPTSDIR)/dtapi-config.sh --header)
 
 # Install configuration files.
 
-.PHONY: install-tools install-post-build install-devel install-linux-config
+.PHONY: install-tools install-devel install-linux-config
 
 install-tools: $(NAMES_DEST) $(DEKTEC_DEST) $(if $(MACOS),,install-linux-config)
 	install -d -m 755 $(SYSROOT)$(SYSPREFIX)/share/tsduck
-	install -m 644 $(CONFIGS_SRC) $(NAMES_DEST) $(DEKTEC_DEST) $(SYSROOT)$(SYSPREFIX)/share/tsduck
+	install -m 644 $(CONFIGS_SRC) $(NAMES_DEST) $(DEKTEC_DEST) $(TABLES_DEST) $(SYSROOT)$(SYSPREFIX)/share/tsduck
 	rm -f $(SYSROOT)$(SYSPREFIX)/share/tsduck/tsduck.names
-install-post-build: $(TABLES_DEST)
-	install -d -m 755 $(SYSROOT)$(SYSPREFIX)/share/tsduck
-	install -m 644 $(TABLES_DEST) $(SYSROOT)$(SYSPREFIX)/share/tsduck
 install-linux-config:
 	install -d -m 755 $(SYSROOT)$(UDEVDIR) $(SYSROOT)$(ETCDIR)/security/console.perms.d
 	install -m 644 80-tsduck.rules $(SYSROOT)$(UDEVDIR)

@@ -193,7 +193,6 @@ $plugins = ($AllTargets | Select-String "tsplugin_*") -join ';'
 $commands = ($AllTargets | Select-String -NotMatch @("tsduck*", "tsplugin_*", "tsp_static", "setpath", "utest*", "tsmux", "tsnet", "tszlib", "tsprofiling")) -join ';'
 
 # Rebuild TSDuck.
-# We must build Intel targets first, then Arm64, see tsxml-wrapper.ps1 for explanations.
 if ($Installer) {
     # We build everything except test programs for the "Release" configuration.
     # Then, we need the DLL for "Debug" configurations (development environment).

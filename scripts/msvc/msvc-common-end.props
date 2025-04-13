@@ -11,14 +11,4 @@
   </ImportGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets"/>
 
-  <!-- After building tsxml, we can generate the XML definitions for all tables and descriptors -->
-
-  <ImportGroup Label="PropertySheets">
-    <Import Project="msvc-build-tables-model.props"/>
-  </ImportGroup>
-
-  <Target Name='AfterBuildXml' AfterTargets='Build' Condition="'$(ProjectName)'=='tsxml'">
-    <CallTarget Targets='BuildTablesModel'/>
-  </Target>
-
 </Project>

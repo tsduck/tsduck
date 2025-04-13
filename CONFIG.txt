@@ -227,7 +227,6 @@ TSPLUGINS           # List of plugins to compile.
 TSTOOLS             # List of command line tools to compile.
 NO_TSPLUGINS        # List of obsolete plugins to remove.
 NO_TSTOOLS          # List of obsolete command line tools to remove.
-TSXML               # Command to run generated tsxml (to generate final XML files).
 
 # Make control
 # ------------

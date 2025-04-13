@@ -100,9 +100,11 @@ def distro_suffix():
     return '.' + suffix if suffix != '' else ''
 
 # Write a standard source header in an output file.
-def write_source_header(comment_prefix, description=None, file=sys.stdout):
+def write_source_header(comment_prefix, description=None, firstline=None, lastline=None, file=sys.stdout):
     with open(repo_root() + '/src/HEADER.txt') as input:
         last = ''
+        if firstline is not None:
+            print(firstline, file=file)
         for line in input:
             last = comment_prefix + line
             print(last, end='', file=file)
@@ -111,4 +113,6 @@ def write_source_header(comment_prefix, description=None, file=sys.stdout):
             print(comment_prefix + '  ' + description, file=file)
             print(comment_prefix, file=file)
             print(last, end='', file=file)
+        if lastline is not None:
+            print(lastline, file=file)
         print('', file=file)
