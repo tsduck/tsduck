@@ -9,6 +9,8 @@
          Lsection_number="uint16, required"
          last_Lsection_number="uint16, required">
 
+      <_any in="_metadata"/>
+
       <model_info>
         Hexadecimal content.
         Final block contains exactly 145 bytes.

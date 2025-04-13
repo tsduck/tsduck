@@ -8,6 +8,7 @@
          satellite_table_id="uint6, required"
          table_count="uint10, required">
 
+      <_any in="_metadata"/>
       <!-- satellite_table_id=0 -> satellite_position_v2_info -->
       <satellite_position_v2_info>
         <!-- 1 or more satellite_position required -->
