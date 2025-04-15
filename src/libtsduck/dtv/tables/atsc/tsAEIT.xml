@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_tables>
+
+    <!-- ATSC Aggregate Event Information Table -->
+    <AEIT version="uint5, default=0"
+          AEIT_subtype="uint, default=0"
+          MGT_tag="uint, required">
+      <_any in="_metadata"/>
+      <!-- When AEIT_subtype == 0, one per event source -->
+      <source source_id="uint16, required">
+        <!-- One per event -->
+        <event off_air="bool, required"
+               event_id="uint14, required"
+               start_time="YYYY-MM-DD hh:mm:ss, required"
+               duration="uint20, required">
+          <!-- Optional ATSC multiple_string_structure() containing one or more strings -->
+          <title_text>
+            <string language="char3, required" text="string, required"/>
+          </title_text>
+          <!-- Data event descriptors loop -->
+          <_any in="_descriptors"/>
+        </event>
+      </source>
+      <!-- When AEIT_subtype != 0, at most one reserved -->
+      <reserved>
+        Hexadecimal content
+      </reserved>
+    </AEIT>
+
+  </_tables>
+</tsduck>
