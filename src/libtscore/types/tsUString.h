@@ -3490,7 +3490,12 @@ bool ts::UString::toFloat(FLT& value, FLT min_value, FLT max_value) const
     // Use an additional dummy character to make sure there is nothing more to read.
     double flt = 0.0;
     char dummy = 0;
+    TS_PUSH_WARNING()
+    TS_GCC_NOWARNING(deprecated-declarations)
+    TS_LLVM_NOWARNING(deprecated-declarations)
+    TS_MSC_NOWARNING(4996) // 'sscanf': This function or variable may be unsafe. Consider using sscanf_s instead.
     const int count = ::sscanf(str.c_str(), "%lf%c", &flt, &dummy);
+    TS_POP_WARNING()
     value = FLT(flt);
     return count == 1 && value >= min_value && value <= max_value;
 }
