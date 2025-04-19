@@ -9,18 +9,11 @@
 #include "tsunit.h"
 #include <cstring>
 #include <cctype>
+#include <codecvt>
+#include <locale>
 
 #if (defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)) && !defined(WINDOWS)
     #define WINDOWS 1
-#endif
-
-#if defined(__GNUC__) && !defined(__llvm__) && __GNUC__ < 5
-    // Missing codecvt support in GCC 4.x
-    #define NOCODECVT
-    #include <iconv.h>
-#else
-    #include <codecvt>
-    #include <locale>
 #endif
 
 //---------------------------------------------------------------------------------
@@ -110,31 +103,20 @@ std::string tsunit::convertFromUTF16(const std::u16string& u16)
         #pragma warning(disable:4996)
         return std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>, wchar_t>{}.to_bytes(wstr);
         #pragma warning(pop)
-    #elif defined(NOCODECVT)
-        // With GCC 4.X, codecvt is not available, need to use iconv
-        iconv_t conv = iconv_open("UTF-8", "UTF-16");
-        if (conv == iconv_t(-1)) {
-            return std::string();
-        }
-        char* src = const_cast<char*>(reinterpret_cast<const char*>(u16.data()));
-        size_t srclen = u16.size() * sizeof(char16_t);
-        std::string u8;
-        u8.resize(u16.size() * 4);
-        char* dst = const_cast<char*>(u8.data());
-        size_t dstlen = u8.size();
-        iconv(conv, &src, &srclen, &dst, &dstlen);
-        iconv_close(conv);
-        u8.resize(u8.size() - std::min(dstlen, u8.size()));
-        return u8;
     #else
         // Normal C++ implementation.
         #if defined(__llvm__) || defined(__clang__)
            #pragma clang diagnostic push
            #pragma clang diagnostic ignored "-Wdeprecated-declarations"
+        #elif defined(__GNUC__)
+            #pragma GCC diagnostic push
+            #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
         #endif
         return std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t>{}.to_bytes(u16);
         #if defined(__llvm__) || defined(__clang__)
             #pragma clang diagnostic pop
+        #elif defined(__GNUC__)
+            #pragma GCC diagnostic pop
         #endif
     #endif
 }
