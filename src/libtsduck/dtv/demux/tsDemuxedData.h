@@ -13,21 +13,26 @@
 
 #pragma once
 #include "tsTS.h"
-#include "tsByteBlock.h"
+#include "tsDataBlock.h"
 
 namespace ts {
     //!
     //! Base class for all kinds of demuxed data.
     //! @ingroup libtsduck mpeg
     //!
-    class TSDUCKDLL DemuxedData
+    class TSDUCKDLL DemuxedData : public DataBlock<>
     {
     public:
+        //!
+        //! Explicit reference to superclass.
+        //!
+        using SuperClass = DataBlock<>;
+
         //!
         //! Default constructor.
         //! @param [in] source_pid PID from which the packet was read.
         //!
-        DemuxedData(PID source_pid = PID_NULL);
+        DemuxedData(PID source_pid = PID_NULL) : _source_pid(source_pid) {}
 
         //!
         //! Copy constructor.
@@ -70,7 +75,12 @@ namespace ts {
         //!
         //! Virtual destructor.
         //!
-        virtual ~DemuxedData();
+        virtual ~DemuxedData() override;
+
+        //!
+        //! Clear data content.
+        //!
+        virtual void clear() override;
 
         //!
         //! Reload from full binary content.
@@ -95,11 +105,6 @@ namespace ts {
         //! @param [in] source_pid PID from which the data were read.
         //!
         virtual void reload(const ByteBlockPtr& content_ptr, PID source_pid = PID_NULL);
-
-        //!
-        //! Clear data content.
-        //!
-        virtual void clear();
 
         //!
         //! Assignment operator.
@@ -185,61 +190,11 @@ namespace ts {
         //!
         const UString& attribute() const { return _attribute; }
 
-        //!
-        //! Access to the full binary content of the data.
-        //! Do not modify content.
-        //! @return Address of the full binary content of the data.
-        //! May be invalidated after modification.
-        //!
-        virtual const uint8_t* content() const;
-
-        //!
-        //! Size of the logical binary content of the data.
-        //! For subclasses of DemuxedData, this is the logical size of the data structure inside the DemuxedData blob.
-        //! @return Size of the logical binary content of the data.
-        //!
-        virtual size_t size() const;
-
-        //!
-        //! Size of the complete binary raw data containing the logical structure.
-        //! @return Size of the complete binary raw data.
-        //!
-        size_t rawDataSize() const;
-
-        //!
-        //! Check if the start of the data matches a given pattern.
-        //! @param [in] pattern A byte block to compare with the start of the data.
-        //! @param [in] mask Optional mask to select meaningful bits in @a pattern.
-        //! @return Size of the binary content of the data.
-        //!
-        bool matchContent(const ByteBlock& pattern, const ByteBlock& mask = ByteBlock()) const;
-
-    protected:
-        //!
-        //! Read/write access to the full binary content of the data for subclasses.
-        //! @return Address of the full binary content of the data.
-        //!
-        uint8_t* rwContent() { return _data == nullptr ? nullptr : _data->data(); }
-
-        //!
-        //! Resize the full binary content of the data for subclasses.
-        //! @param [in] s New size in bytes of the full binary content of the data.
-        //!
-        void rwResize(size_t s);
-
-        //!
-        //! Append raw data to the full binary content of the data for subclasses.
-        //! @param [in] data Address of the new area to append.
-        //! @param [in] dsize Size of the area to append.
-        //!
-        void rwAppend(const void* data, size_t dsize);
-
     private:
         // Private fields
         PID           _source_pid = PID_NULL;  // Source PID (informational)
         PacketCounter _first_pkt = 0;          // Index of first packet in stream
         PacketCounter _last_pkt = 0;           // Index of last packet in stream
-        ByteBlockPtr  _data {};                // Full binary content of the packet
         UString       _attribute {};           // Application-specific attribute
 
         // Inaccessible operations

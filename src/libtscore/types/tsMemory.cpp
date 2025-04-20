@@ -211,6 +211,32 @@ void ts::PutUInt48LE(void* p, uint64_t i)
     *(reinterpret_cast<uint16_t*>(static_cast<uint8_t*>(p) + 4)) = CondByteSwap16LE(static_cast<uint16_t>(i >> 32));
 }
 
+// 56 bits
+
+uint64_t ts::GetUInt56BE(const void* p)
+{
+    return (static_cast<uint64_t>(GetUInt32BE(p)) << 24) | GetUInt24BE(static_cast<const uint8_t*>(p) + 4);
+}
+
+uint64_t ts::GetUInt56LE(const void* p)
+{
+    return (static_cast<uint64_t>(GetUInt24LE(static_cast<const uint8_t*>(p) + 4)) << 32) | GetUInt32LE(p);
+}
+
+void ts::PutUInt56BE(void* p, uint64_t i)
+{
+    *(static_cast<uint8_t*>(p)) = static_cast<uint8_t>(i >> 48);
+    *(reinterpret_cast<uint16_t*>(static_cast<uint8_t*>(p) + 1)) = CondByteSwap16BE(static_cast<uint16_t>(i >> 32));
+    *(reinterpret_cast<uint32_t*>(static_cast<uint8_t*>(p) + 3)) = CondByteSwap32BE(static_cast<uint32_t>(i));
+}
+
+void ts::PutUInt56LE(void* p, uint64_t i)
+{
+    *(static_cast<uint32_t*>(p)) = CondByteSwap32LE(static_cast<uint32_t>(i));
+    *(reinterpret_cast<uint16_t*>(static_cast<uint8_t*>(p) + 4)) = CondByteSwap16LE(static_cast<uint16_t>(i >> 32));
+    *(static_cast<uint8_t*>(p) + 6) = static_cast<uint8_t>(i >> 48);
+}
+
 #endif
 
 
@@ -265,6 +291,18 @@ uint64_t ts::GetUInt48BE(const void* p)
     return value;
 }
 
+uint64_t ts::GetUInt56BE(const void* p)
+{
+    uint64_t value = static_cast<uint64_t>(*(static_cast<const uint8_t*>(p))) << 48;
+    value |= static_cast<uint64_t>(*(static_cast<const uint8_t*>(p) + 1)) << 40;
+    value |= static_cast<uint64_t>(*(static_cast<const uint8_t*>(p) + 2)) << 32;
+    value |= static_cast<uint64_t>(*(static_cast<const uint8_t*>(p) + 3)) << 24;
+    value |= static_cast<uint64_t>(*(static_cast<const uint8_t*>(p) + 4)) << 16;
+    value |= static_cast<uint64_t>(*(static_cast<const uint8_t*>(p) + 5)) << 8;
+    value |= static_cast<uint64_t>(*(static_cast<const uint8_t*>(p) + 6));
+    return value;
+}
+
 uint64_t ts::GetUInt64BE(const void* p)
 {
     uint64_t value = static_cast<uint64_t>(*(static_cast<const uint8_t*>(p))) << 56;
@@ -315,6 +353,18 @@ uint64_t ts::GetUInt40LE(const void* p)
 uint64_t ts::GetUInt48LE(const void* p)
 {
     uint64_t value = static_cast<uint64_t>(*(static_cast<const uint8_t*>(p) + 5)) << 40;
+    value |= static_cast<uint64_t>(*(static_cast<const uint8_t*>(p) + 4)) << 32;
+    value |= static_cast<uint64_t>(*(static_cast<const uint8_t*>(p) + 3)) << 24;
+    value |= static_cast<uint64_t>(*(static_cast<const uint8_t*>(p) + 2)) << 16;
+    value |= static_cast<uint64_t>(*(static_cast<const uint8_t*>(p) + 1)) << 8;
+    value |= static_cast<uint64_t>(*(static_cast<const uint8_t*>(p)));
+    return value;
+}
+
+uint64_t ts::GetUInt56LE(const void* p)
+{
+    uint64_t value = static_cast<uint64_t>(*(static_cast<const uint8_t*>(p) + 6)) << 48;
+    value |= static_cast<uint64_t>(*(static_cast<const uint8_t*>(p) + 5)) << 40;
     value |= static_cast<uint64_t>(*(static_cast<const uint8_t*>(p) + 4)) << 32;
     value |= static_cast<uint64_t>(*(static_cast<const uint8_t*>(p) + 3)) << 24;
     value |= static_cast<uint64_t>(*(static_cast<const uint8_t*>(p) + 2)) << 16;
@@ -381,6 +431,18 @@ void ts::PutUInt48BE(void* p, uint64_t i)
     data[5] = static_cast<uint8_t>(i);
 }
 
+void ts::PutUInt56BE(void* p, uint64_t i)
+{
+    uint8_t *data = static_cast<uint8_t*>(p);
+    data[0] = static_cast<uint8_t>(i >> 48);
+    data[1] = static_cast<uint8_t>(i >> 40);
+    data[2] = static_cast<uint8_t>(i >> 32);
+    data[3] = static_cast<uint8_t>(i >> 24);
+    data[4] = static_cast<uint8_t>(i >> 16);
+    data[5] = static_cast<uint8_t>(i >> 8);
+    data[6] = static_cast<uint8_t>(i);
+}
+
 void ts::PutUInt64BE(void* p, uint64_t i)
 {
     uint8_t *data = static_cast<uint8_t*>(p);
@@ -437,6 +499,18 @@ void ts::PutUInt48LE(void* p, uint64_t i)
     data[3] = static_cast<uint8_t>(i >> 24);
     data[4] = static_cast<uint8_t>(i >> 32);
     data[5] = static_cast<uint8_t>(i >> 40);
+}
+
+void ts::PutUInt56LE(void* p, uint64_t i)
+{
+    uint8_t *data = static_cast<uint8_t*>(p);
+    data[0] = static_cast<uint8_t>(i);
+    data[1] = static_cast<uint8_t>(i >> 8);
+    data[2] = static_cast<uint8_t>(i >> 16);
+    data[3] = static_cast<uint8_t>(i >> 24);
+    data[4] = static_cast<uint8_t>(i >> 32);
+    data[5] = static_cast<uint8_t>(i >> 40);
+    data[6] = static_cast<uint8_t>(i >> 48);
 }
 
 void ts::PutUInt64LE(void* p, uint64_t i)

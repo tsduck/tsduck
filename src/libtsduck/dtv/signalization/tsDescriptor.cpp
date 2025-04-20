@@ -9,109 +9,37 @@
 #include "tsDescriptor.h"
 #include "tsMemory.h"
 #include "tsAbstractDescriptor.h"
-#include "tsAbstractTable.h"
 #include "tsxmlElement.h"
 
 
 //----------------------------------------------------------------------------
-// Constructors for Descriptor
-// Note that the max size of a descriptor is 257 bytes: 2 (header) + 255
+// Constructors and destructors.
 //----------------------------------------------------------------------------
 
-ts::Descriptor::Descriptor(const void* addr, size_t size) :
-    _data(size >= 2 && size < 258 && (reinterpret_cast<const uint8_t*>(addr))[1] == size - 2 ? new ByteBlock(addr, size) : nullptr)
+ts::Descriptor::Descriptor(DID tag, const void* data, size_t size)
 {
-}
-
-ts::Descriptor::Descriptor(const ByteBlock& bb) :
-    _data(bb.size() >= 2 && bb.size() < 258 && bb[1] == bb.size() - 2 ? new ByteBlock(bb) : nullptr)
-{
-}
-
-ts::Descriptor::Descriptor(DID tag, const void* data, size_t size) :
-    _data(size < 256 ? new ByteBlock(size + 2) : nullptr)
-{
-    if (_data != nullptr) {
-        (*_data)[0] = tag;
-        (*_data)[1] = uint8_t(size);
-        MemCopy(_data->data() + 2, data, size);
+    if (data != nullptr && size < 256) {
+        ByteBlockPtr ptr(std::make_shared<ByteBlock>(size + 2));
+        (*ptr)[0] = tag;
+        (*ptr)[1] = uint8_t(size);
+        MemCopy(ptr->data() + 2, data, size);
+        SuperClass::reload(ptr); // reuse the pointer
     }
 }
 
-ts::Descriptor::Descriptor(DID tag, const ByteBlock& data) :
-    _data(data.size() < 256 ? new ByteBlock(2) : nullptr)
+ts::Descriptor::Descriptor(DID tag, const ByteBlock& data)
 {
-    if (_data != nullptr) {
-        (*_data)[0] = tag;
-        (*_data)[1] = uint8_t(data.size());
-        _data->append(data);
+    if (data.size() < 256) {
+        ByteBlockPtr ptr(std::make_shared<ByteBlock>(2));
+        (*ptr)[0] = tag;
+        (*ptr)[1] = uint8_t(data.size());
+        ptr->append(data);
+        SuperClass::reload(ptr); // reuse the pointer
     }
 }
 
-ts::Descriptor::Descriptor(const ByteBlockPtr& bbp, ShareMode mode)
+ts::Descriptor::~Descriptor()
 {
-    if (bbp != nullptr && bbp->size() >= 2 && bbp->size() < 258 && (*bbp)[1] == bbp->size() - 2) {
-        switch (mode) {
-            case ShareMode::SHARE:
-                _data = bbp;
-                break;
-            case ShareMode::COPY:
-                _data = std::make_shared<ByteBlock>(*bbp);
-                break;
-            default:
-                // should not get there
-                assert(false);
-        }
-    }
-}
-
-ts::Descriptor::Descriptor(const Descriptor& desc, ShareMode mode)
-{
-    switch (mode) {
-        case ShareMode::SHARE:
-            _data = desc._data;
-            break;
-        case ShareMode::COPY:
-            _data = std::make_shared<ByteBlock>(*desc._data);
-            break;
-        default:
-            // should not get there
-            assert(false);
-    }
-}
-
-ts::Descriptor::Descriptor(Descriptor&& desc) noexcept :
-    _data(std::move(desc._data))
-{
-}
-
-
-//----------------------------------------------------------------------------
-// Assignment operators.
-//----------------------------------------------------------------------------
-
-ts::Descriptor& ts::Descriptor::operator=(const Descriptor& desc)
-{
-    if (&desc != this) {
-        _data = desc._data;
-    }
-    return *this;
-}
-
-ts::Descriptor& ts::Descriptor::operator=(Descriptor&& desc) noexcept
-{
-    if (&desc != this) {
-        _data = std::move(desc._data);
-    }
-    return *this;
-}
-
-ts::Descriptor& ts::Descriptor::copy(const Descriptor& desc)
-{
-    if (&desc != this) {
-        _data = std::make_shared<ByteBlock>(*desc._data);
-    }
-    return *this;
 }
 
 
@@ -132,63 +60,42 @@ ts::XDID ts::Descriptor::xdid() const
 
 
 //----------------------------------------------------------------------------
-// Replace the payload of the descriptor. The tag is unchanged,
-// the size is adjusted.
+// Replace the payload of the descriptor.
 //----------------------------------------------------------------------------
 
 void ts::Descriptor::replacePayload(const void* addr, size_t size)
 {
     if (size > 255) {
         // Payload size too long, invalidate descriptor
-        _data.reset();
+        clear();
     }
-    else if (_data != nullptr) {
-        assert(_data->size() >= 2);
-        // Erase previous payload
-        _data->erase(2, _data->size() - 2);
+    else {
+        // Erase previous payload.
+        rwResize(2);
         // Add new payload
-        _data->append (addr, size);
+        rwAppend(addr, size);
         // Adjust descriptor size
-        (*_data)[1] = uint8_t (_data->size() - 2);
+        rwContent()[1] = uint8_t(size);
     }
 }
 
 
 //----------------------------------------------------------------------------
 // Resize (truncate or extend) the payload of the descriptor.
-// The tag is unchanged, the size is adjusted.
-// If the payload is extended, new bytes are zeroes.
 //----------------------------------------------------------------------------
 
 void ts::Descriptor::resizePayload(size_t new_size)
 {
     if (new_size > 255) {
         // Payload size too long, invalidate descriptor
-        _data.reset();
+        clear();
     }
-    else if (_data != nullptr) {
-        assert(_data->size() >= 2);
-        size_t old_size = _data->size() - 2;
-        _data->resize (new_size + 2);
-        // If payload extended, zero additional bytes
-        if (new_size > old_size) {
-            MemZero(_data->data() + 2 + old_size, new_size - old_size);
-        }
+    else {
+        // Resize and pas with zeroes if extended.
+        rwResize(new_size + 2);
         // Adjust descriptor size
-        (*_data)[1] = uint8_t (_data->size() - 2);
+        rwContent()[1] = uint8_t(new_size);
     }
-}
-
-
-//----------------------------------------------------------------------------
-// Comparison
-//----------------------------------------------------------------------------
-
-bool ts::Descriptor::operator== (const Descriptor& desc) const
-{
-    return _data == desc._data ||
-        (_data == nullptr && desc._data == nullptr) ||
-        (_data != nullptr && desc._data != nullptr && *_data == *desc._data);
 }
 
 
@@ -300,11 +207,12 @@ bool ts::Descriptor::fromXML(DuckContext& duck, const xml::Element* node, TID ti
         ByteBlock payload;
         if (node->getIntAttribute<DID>(tag, u"tag", true, 0xFF, 0x00, 0xFF) && node->getHexaText(payload, 0, 255)) {
             // Build descriptor.
-            _data = std::make_shared<ByteBlock>(2);
-            (*_data)[0] = tag;
-            (*_data)[1] = uint8_t(payload.size());
-            _data->append(payload);
-            return true;
+            ByteBlockPtr ptr(std::make_shared<ByteBlock>(2));
+            (*ptr)[0] = tag;
+            (*ptr)[1] = uint8_t(payload.size());
+            ptr->append(payload);
+            reload(ptr);
+            return isValid();
         }
     }
 

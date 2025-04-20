@@ -27,23 +27,23 @@ ts::PESPacket::PESPacket(PID source_pid) :
 {
 }
 
-ts::PESPacket::PESPacket(const PESPacket& pp, ShareMode mode) :
-    SuperClass(pp, mode),
-    _is_valid(pp._is_valid),
-    _header_size(pp._header_size),
-    _stream_type(pp._stream_type),
-    _codec(pp._codec),
-    _pcr(pp._pcr)
+ts::PESPacket::PESPacket(const PESPacket& other, ShareMode mode) :
+    SuperClass(other, mode),
+    _is_valid(other._is_valid),
+    _header_size(other._header_size),
+    _stream_type(other._stream_type),
+    _codec(other._codec),
+    _pcr(other._pcr)
 {
 }
 
-ts::PESPacket::PESPacket(PESPacket&& pp) noexcept :
-    SuperClass(std::move(pp)),
-    _is_valid(pp._is_valid),
-    _header_size(pp._header_size),
-    _stream_type(pp._stream_type),
-    _codec(pp._codec),
-    _pcr(pp._pcr)
+ts::PESPacket::PESPacket(PESPacket&& other) noexcept :
+    SuperClass(std::move(other)),
+    _is_valid(other._is_valid),
+    _header_size(other._header_size),
+    _stream_type(other._stream_type),
+    _codec(other._codec),
+    _pcr(other._pcr)
 {
 }
 
@@ -63,6 +63,16 @@ ts::PESPacket::PESPacket(const ByteBlockPtr& content_ptr, PID source_pid) :
     SuperClass(content_ptr, source_pid)
 {
     validate();
+}
+
+
+//----------------------------------------------------------------------------
+// Check if the packet has valid content.
+//----------------------------------------------------------------------------
+
+bool ts::PESPacket::isValid() const
+{
+    return _is_valid;
 }
 
 
@@ -113,7 +123,7 @@ void ts::PESPacket::validate()
     const size_t dsize = SuperClass::size();
     _header_size = HeaderSize(data, dsize);
     if (_header_size == 0) {
-        clear();
+        PESPacket::clear();
         return;
     }
 
@@ -121,7 +131,7 @@ void ts::PESPacket::validate()
     // This field indicates the packet length _after_ that field (ie. after offset 6).
     const size_t psize = 6 + size_t(GetUInt16(data + 4));
     if (psize != 6 && (psize < _header_size || psize > dsize)) {
-        clear();
+        PESPacket::clear();
         return;
     }
 
@@ -229,28 +239,28 @@ bool ts::PESPacket::hasLongHeader() const
 // Assignment.
 //----------------------------------------------------------------------------
 
-ts::PESPacket& ts::PESPacket::operator=(const PESPacket& pp)
+ts::PESPacket& ts::PESPacket::operator=(const PESPacket& other)
 {
-    if (&pp != this) {
-        SuperClass::operator=(pp);
-        _is_valid = pp._is_valid;
-        _header_size = pp._header_size;
-        _stream_type = pp._stream_type;
-        _codec = pp._codec;
-        _pcr = pp._pcr;
+    if (&other != this) {
+        SuperClass::operator=(other);
+        _is_valid = other._is_valid;
+        _header_size = other._header_size;
+        _stream_type = other._stream_type;
+        _codec = other._codec;
+        _pcr = other._pcr;
     }
     return *this;
 }
 
-ts::PESPacket& ts::PESPacket::operator=(PESPacket&& pp) noexcept
+ts::PESPacket& ts::PESPacket::operator=(PESPacket&& other) noexcept
 {
-    if (&pp != this) {
-        SuperClass::operator=(std::move(pp));
-        _is_valid = pp._is_valid;
-        _header_size = pp._header_size;
-        _stream_type = pp._stream_type;
-        _codec = pp._codec;
-        _pcr = pp._pcr;
+    if (&other != this) {
+        SuperClass::operator=(std::move(other));
+        _is_valid = other._is_valid;
+        _header_size = other._header_size;
+        _stream_type = other._stream_type;
+        _codec = other._codec;
+        _pcr = other._pcr;
     }
     return *this;
 }
@@ -260,15 +270,15 @@ ts::PESPacket& ts::PESPacket::operator=(PESPacket&& pp) noexcept
 // Duplication.
 //----------------------------------------------------------------------------
 
-ts::PESPacket& ts::PESPacket::copy(const PESPacket& pp)
+ts::PESPacket& ts::PESPacket::copy(const PESPacket& other)
 {
-    if (&pp != this) {
-        SuperClass::copy(pp);
-        _is_valid = pp._is_valid;
-        _header_size = pp._header_size;
-        _stream_type = pp._stream_type;
-        _codec = pp._codec;
-        _pcr = pp._pcr;
+    if (&other != this) {
+        SuperClass::copy(other);
+        _is_valid = other._is_valid;
+        _header_size = other._header_size;
+        _stream_type = other._stream_type;
+        _codec = other._codec;
+        _pcr = other._pcr;
     }
     return *this;
 }

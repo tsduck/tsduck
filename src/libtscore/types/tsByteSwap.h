@@ -67,6 +67,21 @@ namespace ts {
     }
 
     //!
+    //! Perform a sign extension on 56 bit integers.
+    //! @ingroup cpp
+    //! @param [in] x A 64-bit integer containing a signed 56-bit value to extend.
+    //! @return A 64-bit signed integer containing the signed 56-bit value with proper sign extension on 64-bits.
+    //!
+    TSCOREDLL inline int64_t SignExtend56(int64_t x)
+    {
+#if defined(TS_ASM_ARM64)
+        asm("sbfm %0, %0, #0, #55" : "+r" (x)); return x;
+#else
+        return (x & 0x0080000000000000) == 0 ? (x & 0x00FFFFFFFFFFFFFF) : int64_t(uint64_t(x) | 0xFF00000000000000);
+#endif
+    }
+
+    //!
     //! Inlined function performing byte swap on 16-bit integer data.
     //! This function unconditionally swaps bytes within an unsigned integer,
     //! regardless of the native endianness.

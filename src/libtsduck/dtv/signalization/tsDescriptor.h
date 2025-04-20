@@ -12,7 +12,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsByteBlock.h"
+#include "tsDataBlock.h"
 #include "tsTablesPtr.h"
 #include "tsEDID.h"
 #include "tsDescriptorContext.h"
@@ -27,9 +27,15 @@ namespace ts {
     //! Representation of a MPEG PSI/SI descriptors in binary format.
     //! @ingroup libtsduck mpeg
     //!
-    class TSDUCKDLL Descriptor
+    class TSDUCKDLL Descriptor : public DataBlock<8, 8>
     {
+        TS_DEFAULT_ASSIGMENTS(Descriptor);
     public:
+        //!
+        //! Explicit reference to superclass.
+        //!
+        using SuperClass = DataBlock<8, 8>;
+
         //!
         //! Default constructor.
         //!
@@ -41,13 +47,13 @@ namespace ts {
         //! @param [in] mode The descriptors' data are either shared (ShareMode::SHARE) between the
         //! two descriptors or duplicated (ShareMode::COPY).
         //!
-        Descriptor(const Descriptor& desc, ShareMode mode);
+        Descriptor(const Descriptor& desc, ShareMode mode) : SuperClass(desc, mode) {}
 
         //!
         //! Move constructor.
         //! @param [in,out] desc Another instance to move.
         //!
-        Descriptor(Descriptor&& desc) noexcept;
+        Descriptor(Descriptor&& desc) noexcept : SuperClass(std::move(desc)) {}
 
         //!
         //! Constructor from tag and payload.
@@ -72,63 +78,38 @@ namespace ts {
         //! @param [in] data Address of the descriptor data.
         //! @param [in] size Size in bytes of the descriptor data.
         //!
-        Descriptor(const void* data, size_t size);
+        Descriptor(const void* data, size_t size) : SuperClass(data, size) {}
 
         //!
         //! Constructor from full binary content.
         //! The content is copied into the section if valid.
         //! @param [in] bb Descriptor binary data.
         //!
-        Descriptor(const ByteBlock& bb);
+        Descriptor(const ByteBlock& bb) : SuperClass(bb) {}
 
         //!
         //! Constructor from full binary content.
-        //! The content is copied into the section if valid.
         //! @param [in] bb Descriptor binary data.
         //! @param [in] mode The data are either shared (ShareMode::SHARE) between the
         //! descriptor and @a bb or duplicated (ShareMode::COPY).
         //!
-        Descriptor(const ByteBlockPtr& bb, ShareMode mode);
+        Descriptor(const ByteBlockPtr& bb, ShareMode mode) : SuperClass(bb, mode) {}
 
         //!
-        //! Assignment operator.
-        //! The content is referenced, and thus shared between the two objects.
-        //! @param [in] desc Another instance to copy.
-        //! @return A reference to this object.
+        //! Virtual destructor.
         //!
-        Descriptor& operator=(const Descriptor& desc);
-
-        //!
-        //! Move assignment operator.
-        //! @param [in,out] desc Another instance to move.
-        //! @return A reference to this object.
-        //!
-        Descriptor& operator=(Descriptor&& desc) noexcept;
-
-        //!
-        //! Duplication.
-        //! Similar to assignment but the content is duplicated.
-        //! @param [in] desc Another instance to copy.
-        //! @return A reference to this object.
-        //!
-        Descriptor& copy(const Descriptor& desc);
-
-        //!
-        //! Check if a descriptor has valid content.
-        //! @return True if a descriptor has valid content.
-        //!
-        bool isValid() const { return _data != nullptr; }
+        virtual ~Descriptor() override;
 
         //!
         //! Invalidate descriptor content.
         //!
-        void invalidate() { _data.reset(); }
+        void invalidate() { clear(); }
 
         //!
         //! Get the descriptor tag.
         //! @return The descriptor tag or the reserved value 0 if the descriptor is invalid.
         //!
-        DID tag() const { return _data == nullptr ? 0 : _data->at(0); }
+        DID tag() const { return size() < 1 ? 0 : *content(); }
 
         //!
         //! Get the extension descriptor id.
@@ -139,34 +120,22 @@ namespace ts {
         XDID xdid() const;
 
         //!
-        //! Access to the full binary content of the descriptor.
-        //! @return Address of the full binary content of the descriptor.
+        //! Access to the payload of the descriptor.
+        //! @return Address of the payload of the descriptor.
         //!
-        const uint8_t* content() const { return _data == nullptr ? nullptr : _data->data(); }
-
-        //!
-        //! Size of the binary content of the descriptor.
-        //! @return Size of the binary content of the descriptor.
-        //!
-        size_t size() const { return _data == nullptr ? 0 : _data->size(); }
+        const uint8_t* payload() const { return size() < 2 ? nullptr : content() + 2; }
 
         //!
         //! Access to the payload of the descriptor.
         //! @return Address of the payload of the descriptor.
         //!
-        const uint8_t* payload() const { return _data == nullptr ? nullptr : _data->data() + 2; }
-
-        //!
-        //! Access to the payload of the descriptor.
-        //! @return Address of the payload of the descriptor.
-        //!
-        uint8_t* payload() { return _data == nullptr ? nullptr : _data->data() + 2; }
+        uint8_t* payload() { return size() < 2 ? nullptr : rwContent() + 2; }
 
         //!
         //! Size of the payload of the descriptor.
         //! @return Size in bytes of the payload of the descriptor.
         //!
-        size_t payloadSize() const { return _data == nullptr ? 0 : _data->size() - 2; }
+        size_t payloadSize() const { const size_t s = size(); return s < 2 ? 0 : s - 2; }
 
         //!
         //! Replace the payload of the descriptor.
@@ -193,10 +162,10 @@ namespace ts {
 
         //!
         //! Comparison operator.
-        //! @param [in] desc Another descriptor to compare.
+        //! @param [in] other Another descriptor to compare.
         //! @return True is the two descriptors are identical.
         //!
-        bool operator==(const Descriptor& desc) const;
+        bool operator==(const Descriptor& other) const { return SuperClass::operator==(other); }
 
         //!
         //! Deserialize the descriptor.
@@ -241,8 +210,6 @@ namespace ts {
         bool fromXML(DuckContext& duck, const xml::Element* node, TID tid = TID_NULL);
 
     private:
-        ByteBlockPtr _data {}; // full binary content of the descriptor
-
         // Common code for deserialize().
         AbstractDescriptorPtr deserializeImpl(DuckContext& duck, PSIRepository::DescriptorFactory fac) const;
 

@@ -13,54 +13,39 @@
 // Constructors and destructors.
 //----------------------------------------------------------------------------
 
-ts::DemuxedData::DemuxedData(PID source_pid) :
-    _source_pid(source_pid)
+ts::DemuxedData::DemuxedData(const DemuxedData& other, ShareMode mode) :
+    SuperClass(other, mode),
+    _source_pid(other._source_pid),
+    _first_pkt(other._first_pkt),
+    _last_pkt(other._last_pkt),
+    _attribute(other._attribute)
 {
 }
 
-ts::DemuxedData::DemuxedData(const DemuxedData& pp, ShareMode mode) :
-    _source_pid(pp._source_pid),
-    _first_pkt(pp._first_pkt),
-    _last_pkt(pp._last_pkt),
-    _attribute(pp._attribute)
-{
-    switch (mode) {
-        case ShareMode::SHARE:
-            _data = pp._data;
-            break;
-        case ShareMode::COPY:
-            _data = std::make_shared<ByteBlock>(*pp._data);
-            break;
-        default:
-            // should not get there
-            assert(false);
-    }
-}
-
-ts::DemuxedData::DemuxedData(DemuxedData&& pp) noexcept :
-    _source_pid(pp._source_pid),
-    _first_pkt(pp._first_pkt),
-    _last_pkt(pp._last_pkt),
-    _data(std::move(pp._data)),
-    _attribute(std::move(pp._attribute))
+ts::DemuxedData::DemuxedData(DemuxedData&& other) noexcept :
+    SuperClass(std::move(other)),
+    _source_pid(other._source_pid),
+    _first_pkt(other._first_pkt),
+    _last_pkt(other._last_pkt),
+    _attribute(std::move(other._attribute))
 {
 }
 
 ts::DemuxedData::DemuxedData(const void* content, size_t content_size, PID source_pid) :
-    _source_pid(source_pid),
-    _data(std::make_shared<ByteBlock>(content, content_size))
+    SuperClass(content, content_size),
+    _source_pid(source_pid)
 {
 }
 
 ts::DemuxedData::DemuxedData(const ByteBlock& content, PID source_pid) :
-    _source_pid(source_pid),
-    _data(std::make_shared<ByteBlock>(content))
+    SuperClass(content),
+    _source_pid(source_pid)
 {
 }
 
 ts::DemuxedData::DemuxedData(const ByteBlockPtr& content_ptr, PID source_pid) :
-    _source_pid(source_pid),
-    _data(content_ptr)
+    SuperClass(content_ptr, ShareMode::SHARE),
+    _source_pid(source_pid)
 {
 }
 
@@ -75,9 +60,9 @@ ts::DemuxedData::~DemuxedData()
 
 void ts::DemuxedData::clear()
 {
+    SuperClass::clear();
     _first_pkt = 0;
     _last_pkt = 0;
-    _data.reset();
     _attribute.clear();
 }
 
@@ -90,21 +75,21 @@ void ts::DemuxedData::reload(const void* content, size_t content_size, PID sourc
 {
     _source_pid = source_pid;
     _first_pkt = _last_pkt = 0;
-    _data = std::make_shared<ByteBlock>(content, content_size);
+    SuperClass::reload(content, content_size);
 }
 
 void ts::DemuxedData::reload(const ByteBlock& content, PID source_pid)
 {
     _source_pid = source_pid;
     _first_pkt = _last_pkt = 0;
-    _data = std::make_shared<ByteBlock>(content);
+    SuperClass::reload(content);
 }
 
 void ts::DemuxedData::reload(const ByteBlockPtr& content_ptr, PID source_pid)
 {
     _source_pid = source_pid;
     _first_pkt = _last_pkt = 0;
-    _data = content_ptr;
+    SuperClass::reload(content_ptr);
 }
 
 
@@ -112,26 +97,26 @@ void ts::DemuxedData::reload(const ByteBlockPtr& content_ptr, PID source_pid)
 // Assignment and duplication.
 //----------------------------------------------------------------------------
 
-ts::DemuxedData& ts::DemuxedData::operator=(const DemuxedData& pp)
+ts::DemuxedData& ts::DemuxedData::operator=(const DemuxedData& other)
 {
-    if (&pp != this) {
-        _source_pid = pp._source_pid;
-        _first_pkt = pp._first_pkt;
-        _last_pkt = pp._last_pkt;
-        _data = pp._data;
-        _attribute = pp._attribute;
+    if (&other != this) {
+        _source_pid = other._source_pid;
+        _first_pkt = other._first_pkt;
+        _last_pkt = other._last_pkt;
+        _attribute = other._attribute;
+        SuperClass::operator=(other);
     }
     return *this;
 }
 
-ts::DemuxedData& ts::DemuxedData::operator=(DemuxedData&& pp) noexcept
+ts::DemuxedData& ts::DemuxedData::operator=(DemuxedData&& other) noexcept
 {
-    if (&pp != this) {
-        _source_pid = pp._source_pid;
-        _first_pkt = pp._first_pkt;
-        _last_pkt = pp._last_pkt;
-        _data = std::move(pp._data);
-        _attribute = std::move(pp._attribute);
+    if (&other != this) {
+        _source_pid = other._source_pid;
+        _first_pkt = other._first_pkt;
+        _last_pkt = other._last_pkt;
+        _attribute = std::move(other._attribute);
+        SuperClass::operator=(std::move(other));
     }
     return *this;
 }
@@ -142,14 +127,14 @@ ts::DemuxedData& ts::DemuxedData::operator=(DemuxedData&& pp) noexcept
 // is duplicated.
 //----------------------------------------------------------------------------
 
-ts::DemuxedData& ts::DemuxedData::copy(const DemuxedData& pp)
+ts::DemuxedData& ts::DemuxedData::copy(const DemuxedData& other)
 {
-    if (&pp != this) {
-        _source_pid = pp._source_pid;
-        _first_pkt = pp._first_pkt;
-        _last_pkt = pp._last_pkt;
-        _attribute = pp._attribute;
-        _data = pp._data == nullptr ? nullptr : std::make_shared<ByteBlock>(*pp._data);
+    if (&other != this) {
+        _source_pid = other._source_pid;
+        _first_pkt = other._first_pkt;
+        _last_pkt = other._last_pkt;
+        _attribute = other._attribute;
+        SuperClass::copy(other);
     }
     return *this;
 }
@@ -159,70 +144,8 @@ ts::DemuxedData& ts::DemuxedData::copy(const DemuxedData& pp)
 // Comparison.
 //----------------------------------------------------------------------------
 
-bool ts::DemuxedData::operator==(const DemuxedData& pp) const
+bool ts::DemuxedData::operator==(const DemuxedData& other) const
 {
-    // Don't inclue attribute in the comparison, it is not "part" of the demuxed object.
-    return _data != nullptr && pp._data != nullptr && (_data == pp._data || *_data == *pp._data);
-}
-
-
-//----------------------------------------------------------------------------
-// Access to the full binary content of the data.
-//----------------------------------------------------------------------------
-
-const uint8_t* ts::DemuxedData::content() const
-{
-    return _data == nullptr ? nullptr : _data->data();
-}
-
-size_t ts::DemuxedData::size() const
-{
-    // Virtual method, typically overridden by subclasses.
-    return _data == nullptr ? 0 : _data->size();
-}
-
-size_t ts::DemuxedData::rawDataSize() const
-{
-    // Non-virtual method, always the same result.
-    return _data == nullptr ? 0 : _data->size();
-}
-
-void ts::DemuxedData::rwResize(size_t s)
-{
-    if (_data == nullptr) {
-        _data = std::make_shared<ByteBlock>(s);
-    }
-    else {
-        _data->resize(s);
-    }
-}
-
-void ts::DemuxedData::rwAppend(const void* data, size_t dsize)
-{
-    if (_data == nullptr) {
-        _data = std::make_shared<ByteBlock>(data, dsize);
-    }
-    else {
-        _data->append(data, dsize);
-    }
-}
-
-
-//----------------------------------------------------------------------------
-// Check if the start of the data matches a given pattern.
-//----------------------------------------------------------------------------
-
-bool ts::DemuxedData::matchContent(const ByteBlock& pattern, const ByteBlock& mask) const
-{
-    // Must be at least the same size.
-    if (_data == nullptr || _data->size() < pattern.size()) {
-        return false;
-    }
-    for (size_t i = 0; i < pattern.size(); ++i) {
-        const uint8_t m = i < mask.size() ? mask[i] : 0xFF;
-        if (((*_data)[i] & m) != (pattern[i] & m)) {
-            return false;
-        }
-    }
-    return true;
+    // Don't include attributes in the comparison, they are not "part" of the demuxed object.
+    return SuperClass::operator==(other);
 }

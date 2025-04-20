@@ -47,6 +47,16 @@ ts::T2MIPacket::T2MIPacket(const ByteBlockPtr& content_ptr, PID source_pid) :
 
 
 //----------------------------------------------------------------------------
+// Check if the packet has valid content.
+//----------------------------------------------------------------------------
+
+bool ts::T2MIPacket::isValid() const
+{
+    return _is_valid;
+}
+
+
+//----------------------------------------------------------------------------
 // Validate binary content.
 //----------------------------------------------------------------------------
 
@@ -56,14 +66,14 @@ void ts::T2MIPacket::validate()
     const uint8_t* const daddr = content();
     const size_t dsize = size();
     if (dsize < T2MI_HEADER_SIZE) {
-        clear();
+        T2MIPacket::clear();
         return;
     }
 
     // Check packet size.
     const uint16_t payload_bytes = (GetUInt16(daddr + 4) + 7) / 8;
     if (T2MI_HEADER_SIZE + payload_bytes + SECTION_CRC32_SIZE != dsize) {
-        clear();
+        T2MIPacket::clear();
         return;
     }
 
@@ -72,7 +82,7 @@ void ts::T2MIPacket::validate()
     const uint32_t compCRC = CRC32(daddr, T2MI_HEADER_SIZE + payload_bytes);
     if (pktCRC != compCRC) {
         // Invalid CRC in T2-MI packet.
-        clear();
+        T2MIPacket::clear();
         return;
     }
 

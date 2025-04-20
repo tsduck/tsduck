@@ -170,14 +170,6 @@ namespace ts {
     TSCOREDLL inline uint16_t GetUInt16BE(const void* p) { return CondByteSwap16BE(*(static_cast<const uint16_t*>(p))); }
 
     //!
-    //! Function getting a 32-bit unsigned integer from serialized data in big endian representation.
-    //! @ingroup cpp
-    //! @param [in] p An address pointing to a 32-bit unsigned integer in big endian representation.
-    //! @return The 32-bit unsigned integer in native byte order, deserialized from @a p.
-    //!
-    TSCOREDLL inline uint32_t GetUInt32BE(const void* p) { return CondByteSwap32BE(*(static_cast<const uint32_t*>(p))); }
-
-    //!
     //! Function getting a 24-bit unsigned integer from serialized data in big endian representation.
     //! @ingroup cpp
     //! @param [in] p An address pointing to a 24-bit unsigned integer in big endian representation.
@@ -186,12 +178,12 @@ namespace ts {
     TSCOREDLL uint32_t GetUInt24BE(const void* p);
 
     //!
-    //! Function getting a 64-bit unsigned integer from serialized data in big endian representation.
+    //! Function getting a 32-bit unsigned integer from serialized data in big endian representation.
     //! @ingroup cpp
-    //! @param [in] p An address pointing to a 64-bit unsigned integer in big endian representation.
-    //! @return The 64-bit unsigned integer in native byte order, deserialized from @a p.
+    //! @param [in] p An address pointing to a 32-bit unsigned integer in big endian representation.
+    //! @return The 32-bit unsigned integer in native byte order, deserialized from @a p.
     //!
-    TSCOREDLL inline uint64_t GetUInt64BE(const void* p) { return CondByteSwap64BE(*(static_cast<const uint64_t*>(p))); }
+    TSCOREDLL inline uint32_t GetUInt32BE(const void* p) { return CondByteSwap32BE(*(static_cast<const uint32_t*>(p))); }
 
     //!
     //! Function getting a 40-bit unsigned integer from serialized data in big endian representation.
@@ -210,20 +202,28 @@ namespace ts {
     TSCOREDLL uint64_t GetUInt48BE(const void* p);
 
     //!
+    //! Function getting a 56-bit unsigned integer from serialized data in big endian representation.
+    //! @ingroup cpp
+    //! @param [in] p An address pointing to a 56-bit unsigned integer in big endian representation.
+    //! @return The 56-bit unsigned integer in native byte order, deserialized from @a p.
+    //!
+    TSCOREDLL uint64_t GetUInt56BE(const void* p);
+
+    //!
+    //! Function getting a 64-bit unsigned integer from serialized data in big endian representation.
+    //! @ingroup cpp
+    //! @param [in] p An address pointing to a 64-bit unsigned integer in big endian representation.
+    //! @return The 64-bit unsigned integer in native byte order, deserialized from @a p.
+    //!
+    TSCOREDLL inline uint64_t GetUInt64BE(const void* p) { return CondByteSwap64BE(*(static_cast<const uint64_t*>(p))); }
+
+    //!
     //! Function getting a 16-bit unsigned integer from serialized data in little endian representation.
     //! @ingroup cpp
     //! @param [in] p An address pointing to a 16-bit unsigned integer in little endian representation.
     //! @return The 16-bit unsigned integer in native byte order, deserialized from @a p.
     //!
     TSCOREDLL inline uint16_t GetUInt16LE(const void* p) { return CondByteSwap16LE(*(static_cast<const uint16_t*>(p))); }
-
-    //!
-    //! Function getting a 32-bit unsigned integer from serialized data in little endian representation.
-    //! @ingroup cpp
-    //! @param [in] p An address pointing to a 32-bit unsigned integer in little endian representation.
-    //! @return The 32-bit unsigned integer in native byte order, deserialized from @a p.
-    //!
-    TSCOREDLL inline uint32_t GetUInt32LE(const void* p) { return CondByteSwap32LE(*(static_cast<const uint32_t*>(p))); }
 
     //!
     //! Function getting a 24-bit unsigned integer from serialized data in little endian representation.
@@ -234,12 +234,12 @@ namespace ts {
     TSCOREDLL uint32_t GetUInt24LE(const void* p);
 
     //!
-    //! Function getting a 64-bit unsigned integer from serialized data in little endian representation.
+    //! Function getting a 32-bit unsigned integer from serialized data in little endian representation.
     //! @ingroup cpp
-    //! @param [in] p An address pointing to a 64-bit unsigned integer in little endian representation.
-    //! @return The 64-bit unsigned integer in native byte order, deserialized from @a p.
+    //! @param [in] p An address pointing to a 32-bit unsigned integer in little endian representation.
+    //! @return The 32-bit unsigned integer in native byte order, deserialized from @a p.
     //!
-    TSCOREDLL inline uint64_t GetUInt64LE(const void* p) { return CondByteSwap64LE(*(static_cast<const uint64_t*>(p))); }
+    TSCOREDLL inline uint32_t GetUInt32LE(const void* p) { return CondByteSwap32LE(*(static_cast<const uint32_t*>(p))); }
 
     //!
     //! Function getting a 40-bit unsigned integer from serialized data in little endian representation.
@@ -258,6 +258,22 @@ namespace ts {
     TSCOREDLL uint64_t GetUInt48LE(const void* p);
 
     //!
+    //! Function getting a 56-bit unsigned integer from serialized data in little endian representation.
+    //! @ingroup cpp
+    //! @param [in] p An address pointing to a 56-bit unsigned integer in little endian representation.
+    //! @return The 56-bit unsigned integer in native byte order, deserialized from @a p.
+    //!
+    TSCOREDLL uint64_t GetUInt56LE(const void* p);
+
+    //!
+    //! Function getting a 64-bit unsigned integer from serialized data in little endian representation.
+    //! @ingroup cpp
+    //! @param [in] p An address pointing to a 64-bit unsigned integer in little endian representation.
+    //! @return The 64-bit unsigned integer in native byte order, deserialized from @a p.
+    //!
+    TSCOREDLL inline uint64_t GetUInt64LE(const void* p) { return CondByteSwap64LE(*(static_cast<const uint64_t*>(p))); }
+
+    //!
     //! Function serializing a 16-bit unsigned integer data in big endian representation.
     //! @ingroup cpp
     //! @param [out] p An address where to serialize the 16-bit unsigned integer.
@@ -266,12 +282,44 @@ namespace ts {
     TSCOREDLL inline void PutUInt16BE(void* p, uint16_t i) { *(static_cast<uint16_t*>(p)) = CondByteSwap16BE(i); }
 
     //!
+    //! Function serializing a 24-bit unsigned integer data in big endian representation.
+    //! @ingroup cpp
+    //! @param [out] p An address where to serialize the 24-bit unsigned integer.
+    //! @param [in]  i The 24-bit unsigned integer in native byte order to serialize in big endian representation.
+    //!
+    TSCOREDLL void PutUInt24BE(void* p, uint32_t i);
+
+    //!
     //! Function serializing a 32-bit unsigned integer data in big endian representation.
     //! @ingroup cpp
     //! @param [out] p An address where to serialize the 32-bit unsigned integer.
     //! @param [in]  i The 32-bit unsigned integer in native byte order to serialize in big endian representation.
     //!
     TSCOREDLL inline void PutUInt32BE(void* p, uint32_t i) { *(static_cast<uint32_t*>(p)) = CondByteSwap32BE(i); }
+
+    //!
+    //! Function serializing a 40-bit unsigned integer data in big endian representation.
+    //! @ingroup cpp
+    //! @param [out] p An address where to serialize the 40-bit unsigned integer.
+    //! @param [in]  i The 40-bit unsigned integer in native byte order to serialize in big endian representation.
+    //!
+    TSCOREDLL void PutUInt40BE(void* p, uint64_t i);
+
+    //!
+    //! Function serializing a 48-bit unsigned integer data in big endian representation.
+    //! @ingroup cpp
+    //! @param [out] p An address where to serialize the 48-bit unsigned integer.
+    //! @param [in]  i The 48-bit unsigned integer in native byte order to serialize in big endian representation.
+    //!
+    TSCOREDLL void PutUInt48BE(void* p, uint64_t i);
+
+    //!
+    //! Function serializing a 56-bit unsigned integer data in big endian representation.
+    //! @ingroup cpp
+    //! @param [out] p An address where to serialize the 56-bit unsigned integer.
+    //! @param [in]  i The 48-bit unsigned integer in native byte order to serialize in big endian representation.
+    //!
+    TSCOREDLL void PutUInt56BE(void* p, uint64_t i);
 
     //!
     //! Function serializing a 64-bit unsigned integer data in big endian representation.
@@ -290,30 +338,6 @@ namespace ts {
     TSCOREDLL inline void PutUInt16LE(void* p, uint16_t i) { *(static_cast<uint16_t*>(p)) = CondByteSwap16LE(i); }
 
     //!
-    //! Function serializing a 32-bit unsigned integer data in little endian representation.
-    //! @ingroup cpp
-    //! @param [out] p An address where to serialize the 32-bit unsigned integer.
-    //! @param [in]  i The 32-bit unsigned integer in native byte order to serialize in little endian representation.
-    //!
-    TSCOREDLL inline void PutUInt32LE(void* p, uint32_t i) { *(static_cast<uint32_t*>(p)) = CondByteSwap32LE(i); }
-
-    //!
-    //! Function serializing a 64-bit unsigned integer data in little endian representation.
-    //! @ingroup cpp
-    //! @param [out] p An address where to serialize the 64-bit unsigned integer.
-    //! @param [in]  i The 64-bit unsigned integer in native byte order to serialize in little endian representation.
-    //!
-    TSCOREDLL inline void PutUInt64LE(void* p, uint64_t i) { *(static_cast<uint64_t*>(p)) = CondByteSwap64LE(i); }
-
-    //!
-    //! Function serializing a 24-bit unsigned integer data in big endian representation.
-    //! @ingroup cpp
-    //! @param [out] p An address where to serialize the 24-bit unsigned integer.
-    //! @param [in]  i The 24-bit unsigned integer in native byte order to serialize in big endian representation.
-    //!
-    TSCOREDLL void PutUInt24BE(void* p, uint32_t i);
-
-    //!
     //! Function serializing a 24-bit unsigned integer data in little endian representation.
     //! @ingroup cpp
     //! @param [out] p An address where to serialize the 24-bit unsigned integer.
@@ -322,12 +346,12 @@ namespace ts {
     TSCOREDLL void PutUInt24LE(void* p, uint32_t i);
 
     //!
-    //! Function serializing a 40-bit unsigned integer data in big endian representation.
+    //! Function serializing a 32-bit unsigned integer data in little endian representation.
     //! @ingroup cpp
-    //! @param [out] p An address where to serialize the 40-bit unsigned integer.
-    //! @param [in]  i The 40-bit unsigned integer in native byte order to serialize in big endian representation.
+    //! @param [out] p An address where to serialize the 32-bit unsigned integer.
+    //! @param [in]  i The 32-bit unsigned integer in native byte order to serialize in little endian representation.
     //!
-    TSCOREDLL void PutUInt40BE(void* p, uint64_t i);
+    TSCOREDLL inline void PutUInt32LE(void* p, uint32_t i) { *(static_cast<uint32_t*>(p)) = CondByteSwap32LE(i); }
 
     //!
     //! Function serializing a 40-bit unsigned integer data in little endian representation.
@@ -338,20 +362,28 @@ namespace ts {
     TSCOREDLL void PutUInt40LE(void* p, uint64_t i);
 
     //!
-    //! Function serializing a 48-bit unsigned integer data in big endian representation.
-    //! @ingroup cpp
-    //! @param [out] p An address where to serialize the 48-bit unsigned integer.
-    //! @param [in]  i The 48-bit unsigned integer in native byte order to serialize in big endian representation.
-    //!
-    TSCOREDLL void PutUInt48BE(void* p, uint64_t i);
-
-    //!
     //! Function serializing a 48-bit unsigned integer data in little endian representation.
     //! @ingroup cpp
     //! @param [out] p An address where to serialize the 48-bit unsigned integer.
     //! @param [in]  i The 48-bit unsigned integer in native byte order to serialize in little endian representation.
     //!
     TSCOREDLL void PutUInt48LE(void* p, uint64_t i);
+
+    //!
+    //! Function serializing a 56-bit unsigned integer data in little endian representation.
+    //! @ingroup cpp
+    //! @param [out] p An address where to serialize the 56-bit unsigned integer.
+    //! @param [in]  i The 56-bit unsigned integer in native byte order to serialize in little endian representation.
+    //!
+    TSCOREDLL void PutUInt56LE(void* p, uint64_t i);
+
+    //!
+    //! Function serializing a 64-bit unsigned integer data in little endian representation.
+    //! @ingroup cpp
+    //! @param [out] p An address where to serialize the 64-bit unsigned integer.
+    //! @param [in]  i The 64-bit unsigned integer in native byte order to serialize in little endian representation.
+    //!
+    TSCOREDLL inline void PutUInt64LE(void* p, uint64_t i) { *(static_cast<uint64_t*>(p)) = CondByteSwap64LE(i); }
 
 #else
 
@@ -362,6 +394,7 @@ namespace ts {
     TSCOREDLL uint32_t GetUInt32BE(const void* p);
     TSCOREDLL uint64_t GetUInt40BE(const void* p);
     TSCOREDLL uint64_t GetUInt48BE(const void* p);
+    TSCOREDLL uint64_t GetUInt56BE(const void* p);
     TSCOREDLL uint64_t GetUInt64BE(const void* p);
 
     TSCOREDLL uint16_t GetUInt16LE(const void* p);
@@ -369,6 +402,7 @@ namespace ts {
     TSCOREDLL uint32_t GetUInt32LE(const void* p);
     TSCOREDLL uint64_t GetUInt40LE(const void* p);
     TSCOREDLL uint64_t GetUInt48LE(const void* p);
+    TSCOREDLL uint64_t GetUInt56LE(const void* p);
     TSCOREDLL uint64_t GetUInt64LE(const void* p);
 
     TSCOREDLL void PutUInt16BE(void* p, uint16_t i);
@@ -376,6 +410,7 @@ namespace ts {
     TSCOREDLL void PutUInt32BE(void* p, uint32_t i);
     TSCOREDLL void PutUInt40BE(void* p, uint64_t i);
     TSCOREDLL void PutUInt48BE(void* p, uint64_t i);
+    TSCOREDLL void PutUInt56BE(void* p, uint64_t i);
     TSCOREDLL void PutUInt64BE(void* p, uint64_t i);
 
     TSCOREDLL void PutUInt16LE(void* p, uint16_t i);
@@ -383,6 +418,7 @@ namespace ts {
     TSCOREDLL void PutUInt32LE(void* p, uint32_t i);
     TSCOREDLL void PutUInt40LE(void* p, uint64_t i);
     TSCOREDLL void PutUInt48LE(void* p, uint64_t i);
+    TSCOREDLL void PutUInt56LE(void* p, uint64_t i);
     TSCOREDLL void PutUInt64LE(void* p, uint64_t i);
 
 #endif
@@ -436,6 +472,14 @@ namespace ts {
     //! @return The 48-bit unsigned integer in native byte order, deserialized from @a p.
     //!
     TSCOREDLL inline uint64_t GetUInt48(const void* p) { return GetUInt48BE(p); }
+
+    //!
+    //! Function getting a 56-bit unsigned integer from serialized data in big endian representation.
+    //! @ingroup cpp
+    //! @param [in] p An address pointing to a 56-bit unsigned integer in big endian representation.
+    //! @return The 56-bit unsigned integer in native byte order, deserialized from @a p.
+    //!
+    TSCOREDLL inline uint64_t GetUInt56(const void* p) { return GetUInt56BE(p); }
 
     //!
     //! Function getting a 64-bit unsigned integer from serialized data in big endian representation.
@@ -528,6 +572,14 @@ namespace ts {
     TSCOREDLL inline int64_t GetInt48BE(const void* p) { return SignExtend48(static_cast<int64_t>(GetUInt48BE(p))); }
 
     //!
+    //! Function getting a 56-bit signed integer from serialized data in big endian representation.
+    //! @ingroup cpp
+    //! @param [in] p An address pointing to a 56-bit signed integer in big endian representation.
+    //! @return The 64-bit signed integer in native byte order, deserialized from @a p.
+    //!
+    TSCOREDLL inline int64_t GetInt56BE(const void* p) { return SignExtend56(static_cast<int64_t>(GetUInt56BE(p))); }
+
+    //!
     //! Function getting a 64-bit signed integer from serialized data in big endian representation.
     //! @ingroup cpp
     //! @param [in] p An address pointing to a 64-bit signed integer in big endian representation.
@@ -574,6 +626,14 @@ namespace ts {
     //! @return The 64-bit signed integer in native byte order, deserialized from @a p.
     //!
     TSCOREDLL inline int64_t GetInt48LE(const void* p) { return SignExtend48(static_cast<int64_t>(GetUInt48LE(p))); }
+
+    //!
+    //! Function getting a 56-bit signed integer from serialized data in little endian representation.
+    //! @ingroup cpp
+    //! @param [in] p An address pointing to a 56-bit signed integer in little endian representation.
+    //! @return The 64-bit signed integer in native byte order, deserialized from @a p.
+    //!
+    TSCOREDLL inline int64_t GetInt56LE(const void* p) { return SignExtend56(static_cast<int64_t>(GetUInt56LE(p))); }
 
     //!
     //! Function getting a 64-bit signed integer from serialized data in little endian representation.
@@ -633,6 +693,14 @@ namespace ts {
     //! @param [out] i The 64-bit unsigned integer in native byte order, deserialized from @a p.
     //!
     TSCOREDLL inline void GetUInt48(const void* p, uint64_t& i) { i = GetUInt48(p); }
+
+    //!
+    //! Function getting a 56-bit unsigned integer from serialized data in big endian representation.
+    //! @ingroup cpp
+    //! @param [in] p An address pointing to a 56-bit unsigned integer in big endian representation.
+    //! @param [out] i The 64-bit unsigned integer in native byte order, deserialized from @a p.
+    //!
+    TSCOREDLL inline void GetUInt56(const void* p, uint64_t& i) { i = GetUInt56(p); }
 
     //!
     //! Function getting a 64-bit unsigned integer from serialized data in big endian representation.
@@ -865,6 +933,14 @@ namespace ts {
     TSCOREDLL inline void PutUInt48(void* p, uint64_t i) { PutUInt48BE(p, i); }
 
     //!
+    //! Function serializing a 56-bit unsigned integer data in big endian representation.
+    //! @ingroup cpp
+    //! @param [out] p An address where to serialize the 56-bit unsigned integer.
+    //! @param [in]  i The 48-bit unsigned integer in native byte order to serialize in big endian representation.
+    //!
+    TSCOREDLL inline void PutUInt56(void* p, uint64_t i) { PutUInt56BE(p, i); }
+
+    //!
     //! Function serializing a 64-bit unsigned integer data in big endian representation.
     //! @ingroup cpp
     //! @param [out] p An address where to serialize the 64-bit unsigned integer.
@@ -956,6 +1032,14 @@ namespace ts {
     TSCOREDLL inline void PutInt48BE(void* p, int64_t i) { PutUInt48BE(p, static_cast<uint64_t>(i)); }
 
     //!
+    //! Function serializing a 56-bit signed integer data in big endian representation.
+    //! @ingroup cpp
+    //! @param [out] p An address where to serialize the 56-bit signed integer.
+    //! @param [in]  i The 64-bit signed integer in native byte order to serialize in big endian representation.
+    //!
+    TSCOREDLL inline void PutInt56BE(void* p, int64_t i) { PutUInt56BE(p, static_cast<uint64_t>(i)); }
+
+    //!
     //! Function serializing a 64-bit signed integer data in big endian representation.
     //! @ingroup cpp
     //! @param [out] p An address where to serialize the 64-bit signed integer.
@@ -1002,6 +1086,14 @@ namespace ts {
     //! @param [in]  i The 64-bit signed integer in native byte order to serialize in little endian representation.
     //!
     TSCOREDLL inline void PutInt48LE(void* p, int64_t i) { PutUInt48LE(p, static_cast<uint64_t>(i)); }
+
+    //!
+    //! Function serializing a 56-bit signed integer data in little endian representation.
+    //! @ingroup cpp
+    //! @param [out] p An address where to serialize the 56-bit signed integer.
+    //! @param [in]  i The 64-bit signed integer in native byte order to serialize in little endian representation.
+    //!
+    TSCOREDLL inline void PutInt56LE(void* p, int64_t i) { PutUInt56LE(p, static_cast<uint64_t>(i)); }
 
     //!
     //! Function serializing a 64-bit signed integer data in little endian representation.
@@ -1217,7 +1309,7 @@ namespace ts {
     //! @param [in] i The INT in native byte order to serialize in big endian representation.
     //!
     template <typename INT> requires std::integral<INT>
-    inline void PutIntVarBE(void* p, size_t size, INT i);
+    void PutIntVarBE(void* p, size_t size, INT i);
 
     //!
     //! Template function serializing a variable-length integer data in little endian representation.
@@ -1228,7 +1320,7 @@ namespace ts {
     //! @param [in] i The INT in native byte order to serialize in little endian representation.
     //!
     template <typename INT> requires std::integral<INT>
-    inline void PutIntVarLE(void* p, size_t size, INT i);
+    void PutIntVarLE(void* p, size_t size, INT i);
 
     //!
     //! Template function getting a variable-length integer from serialized data in big endian representation.
@@ -1270,6 +1362,336 @@ namespace ts {
     inline void PutIntVar(void* p, size_t size, INT i)
     {
         PutIntVarBE<INT>(p, size, i);
+    }
+
+    //!
+    //! Template function getting a template-fixed-length integer from serialized data in big endian representation.
+    //! @ingroup cpp
+    //! @tparam SIZE Size in bytes of the integer. Must be 1 to 8.
+    //! @tparam INT Some integer type.
+    //! @param [in] p An address pointing to an INT in big endian representation.
+    //! @return The INT value in native byte order, deserialized from @a p.
+    //!
+    template <const size_t SIZE, typename INT> requires std::integral<INT>
+    inline INT GetIntFixBE(const void* p)
+    {
+        // Compile-time selection of the right path with "if constexpr" -> trivial inline function.
+        if constexpr (SIZE == 1 && std::is_unsigned_v<INT>) {
+            return static_cast<INT>(GetUInt8(p));
+        }
+        else if constexpr (SIZE == 1 && std::is_signed_v<INT>) {
+            return static_cast<INT>(GetInt8(p));
+        }
+        else if constexpr (SIZE == 2 && std::is_unsigned_v<INT>) {
+            return static_cast<INT>(GetUInt16BE(p));
+        }
+        else if constexpr (SIZE == 2 && std::is_signed_v<INT>) {
+            return static_cast<INT>(GetInt16(p));
+        }
+        else if constexpr (SIZE == 3 && std::is_unsigned_v<INT>) {
+            return static_cast<INT>(GetUInt24BE(p));
+        }
+        else if constexpr (SIZE == 3 && std::is_signed_v<INT>) {
+            return static_cast<INT>(GetInt24BE(p));
+        }
+        else if constexpr (SIZE == 4 && std::is_unsigned_v<INT>) {
+            return static_cast<INT>(GetUInt32BE(p));
+        }
+        else if constexpr (SIZE == 4 && std::is_signed_v<INT>) {
+            return static_cast<INT>(GetInt32BE(p));
+        }
+        else if constexpr (SIZE == 5 && std::is_unsigned_v<INT>) {
+            return static_cast<INT>(GetUInt40BE(p));
+        }
+        else if constexpr (SIZE == 5 && std::is_signed_v<INT>) {
+            return static_cast<INT>(GetInt40BE(p));
+        }
+        else if constexpr (SIZE == 6 && std::is_unsigned_v<INT>) {
+            return static_cast<INT>(GetUInt48BE(p));
+        }
+        else if constexpr (SIZE == 6 && std::is_signed_v<INT>) {
+            return static_cast<INT>(GetInt48BE(p));
+        }
+        else if constexpr (SIZE == 7 && std::is_unsigned_v<INT>) {
+            return static_cast<INT>(GetUInt56BE(p));
+        }
+        else if constexpr (SIZE == 7 && std::is_signed_v<INT>) {
+            return static_cast<INT>(GetInt56BE(p));
+        }
+        else if constexpr (SIZE == 8 && std::is_unsigned_v<INT>) {
+            return static_cast<INT>(GetUInt64BE(p));
+        }
+        else if constexpr (SIZE == 8 && std::is_signed_v<INT>) {
+            return static_cast<INT>(GetInt64BE(p));
+        }
+        else {
+            static_assert(dependent_false<INT>, "invalid integer size");
+        }
+    }
+
+    //!
+    //! Template function getting a template-fixed-length integer from serialized data in little endian representation.
+    //! @ingroup cpp
+    //! @tparam SIZE Size in bytes of the integer. Must be 1 to 8.
+    //! @tparam INT Some integer type.
+    //! @param [in] p An address pointing to an INT in little endian representation.
+    //! @return The INT value in native byte order, deserialized from @a p.
+    //!
+    template <const size_t SIZE, typename INT> requires std::integral<INT>
+    inline INT GetIntFixLE(const void* p)
+    {
+        // Compile-time selection of the right path with "if constexpr" -> trivial inline function.
+        if constexpr (SIZE == 1 && std::is_unsigned_v<INT>) {
+            return static_cast<INT>(GetUInt8(p));
+        }
+        else if constexpr (SIZE == 1 && std::is_signed_v<INT>) {
+            return static_cast<INT>(GetInt8(p));
+        }
+        else if constexpr (SIZE == 2 && std::is_unsigned_v<INT>) {
+            return static_cast<INT>(GetUInt16LE(p));
+        }
+        else if constexpr (SIZE == 2 && std::is_signed_v<INT>) {
+            return static_cast<INT>(GetInt16(p));
+        }
+        else if constexpr (SIZE == 3 && std::is_unsigned_v<INT>) {
+            return static_cast<INT>(GetUInt24LE(p));
+        }
+        else if constexpr (SIZE == 3 && std::is_signed_v<INT>) {
+            return static_cast<INT>(GetInt24LE(p));
+        }
+        else if constexpr (SIZE == 4 && std::is_unsigned_v<INT>) {
+            return static_cast<INT>(GetUInt32LE(p));
+        }
+        else if constexpr (SIZE == 4 && std::is_signed_v<INT>) {
+            return static_cast<INT>(GetInt32LE(p));
+        }
+        else if constexpr (SIZE == 5 && std::is_unsigned_v<INT>) {
+            return static_cast<INT>(GetUInt40LE(p));
+        }
+        else if constexpr (SIZE == 5 && std::is_signed_v<INT>) {
+            return static_cast<INT>(GetInt40LE(p));
+        }
+        else if constexpr (SIZE == 6 && std::is_unsigned_v<INT>) {
+            return static_cast<INT>(GetUInt48LE(p));
+        }
+        else if constexpr (SIZE == 6 && std::is_signed_v<INT>) {
+            return static_cast<INT>(GetInt48LE(p));
+        }
+        else if constexpr (SIZE == 7 && std::is_unsigned_v<INT>) {
+            return static_cast<INT>(GetUInt56LE(p));
+        }
+        else if constexpr (SIZE == 7 && std::is_signed_v<INT>) {
+            return static_cast<INT>(GetInt56LE(p));
+        }
+        else if constexpr (SIZE == 8 && std::is_unsigned_v<INT>) {
+            return static_cast<INT>(GetUInt64LE(p));
+        }
+        else if constexpr (SIZE == 8 && std::is_signed_v<INT>) {
+            return static_cast<INT>(GetInt64LE(p));
+        }
+        else {
+            static_assert(dependent_false<INT>, "invalid integer size");
+        }
+    }
+
+    //!
+    //! Template function getting a template-fixed-length integer from serialized data in big endian representation.
+    //! @ingroup cpp
+    //! @tparam SIZE Size in bytes of the integer. Must be 1 to 8.
+    //! @tparam INT Some integer type.
+    //! @param [in] p An address pointing to an INT in big endian representation.
+    //! @param [out] i The INT value in native byte order, deserialized from @a p.
+    //!
+    template <const size_t SIZE, typename INT> requires std::integral<INT>
+    inline void GetIntFixBE(const void* p, INT& i)
+    {
+        i = GetIntFixBE<SIZE, INT>(p);
+    }
+
+    //!
+    //! Template function getting a template-fixed-length integer from serialized data in little endian representation.
+    //! @ingroup cpp
+    //! @tparam SIZE Size in bytes of the integer. Must be 1 to 8.
+    //! @tparam INT Some integer type.
+    //! @param [in] p An address pointing to an INT in little endian representation.
+    //! @param [out] i The INT value in native byte order, deserialized from @a p.
+    //!
+    template <const size_t SIZE, typename INT> requires std::integral<INT>
+    inline void GetIntFixLE(const void* p, INT& i)
+    {
+        i = GetIntFixLE<SIZE, INT>(p);
+    }
+
+    //!
+    //! Template function serializing a template-fixed-length integer data in big endian representation.
+    //! @ingroup cpp
+    //! @tparam SIZE Size in bytes of the integer. Must be 1 to 8.
+    //! @tparam INT Some integer type.
+    //! @param [out] p An address where to serialize the integer.
+    //! @param [in] i The INT in native byte order to serialize in big endian representation.
+    //!
+    template <const size_t SIZE, typename INT> requires std::integral<INT>
+    inline void PutIntFixBE(void* p, INT i)
+    {
+        // Compile-time selection of the right path with "if constexpr" -> trivial inline function.
+        if constexpr (SIZE == 1 && std::is_unsigned_v<INT>) {
+            PutUInt8(p, static_cast<uint8_t>(i));
+        }
+        else if constexpr (SIZE == 1 && std::is_signed_v<INT>) {
+            PutInt8(p, static_cast<int8_t>(i));
+        }
+        else if constexpr (SIZE == 2 && std::is_unsigned_v<INT>) {
+            PutUInt16BE(p, static_cast<uint16_t>(i));
+        }
+        else if constexpr (SIZE == 2 && std::is_signed_v<INT>) {
+            PutInt16BE(p, static_cast<int16_t>(i));
+        }
+        else if constexpr (SIZE == 3 && std::is_unsigned_v<INT>) {
+            PutUInt24BE(p, static_cast<uint32_t>(i));
+        }
+        else if constexpr (SIZE == 3 && std::is_signed_v<INT>) {
+            PutInt24BE(p, static_cast<int32_t>(i));
+        }
+        else if constexpr (SIZE == 4 && std::is_unsigned_v<INT>) {
+            PutUInt32BE(p, static_cast<uint32_t>(i));
+        }
+        else if constexpr (SIZE == 4 && std::is_signed_v<INT>) {
+            PutInt32BE(p, static_cast<int32_t>(i));
+        }
+        else if constexpr (SIZE == 5 && std::is_unsigned_v<INT>) {
+            PutUInt40BE(p, static_cast<uint64_t>(i));
+        }
+        else if constexpr (SIZE == 5 && std::is_signed_v<INT>) {
+            PutInt40BE(p, static_cast<int64_t>(i));
+        }
+        else if constexpr (SIZE == 6 && std::is_unsigned_v<INT>) {
+            PutUInt48BE(p, static_cast<uint64_t>(i));
+        }
+        else if constexpr (SIZE == 6 && std::is_signed_v<INT>) {
+            PutInt48BE(p, static_cast<int64_t>(i));
+        }
+        else if constexpr (SIZE == 7 && std::is_unsigned_v<INT>) {
+            PutUInt56BE(p, static_cast<uint64_t>(i));
+        }
+        else if constexpr (SIZE == 7 && std::is_signed_v<INT>) {
+            PutInt56BE(p, static_cast<int64_t>(i));
+        }
+        else if constexpr (SIZE == 8 && std::is_unsigned_v<INT>) {
+            PutUInt64BE(p, static_cast<uint64_t>(i));
+        }
+        else if constexpr (SIZE == 8 && std::is_signed_v<INT>) {
+            PutInt64BE(p, static_cast<int64_t>(i));
+        }
+        else {
+            static_assert(dependent_false<INT>, "invalid integer size");
+        }
+    }
+
+    //!
+    //! Template function serializing a template-fixed-length integer data in little endian representation.
+    //! @ingroup cpp
+    //! @tparam SIZE Size in bytes of the integer. Must be 1 to 8.
+    //! @tparam INT Some integer type.
+    //! @param [out] p An address where to serialize the integer.
+    //! @param [in] i The INT in native byte order to serialize in little endian representation.
+    //!
+    template <const size_t SIZE, typename INT> requires std::integral<INT>
+    inline void PutIntFixLE(void* p, INT i)
+    {
+        // Compile-time selection of the right path with "if constexpr" -> trivial inline function.
+        if constexpr (SIZE == 1 && std::is_unsigned_v<INT>) {
+            PutUInt8(p, static_cast<uint8_t>(i));
+        }
+        else if constexpr (SIZE == 1 && std::is_signed_v<INT>) {
+            PutInt8(p, static_cast<int8_t>(i));
+        }
+        else if constexpr (SIZE == 2 && std::is_unsigned_v<INT>) {
+            PutUInt16LE(p, static_cast<uint16_t>(i));
+        }
+        else if constexpr (SIZE == 2 && std::is_signed_v<INT>) {
+            PutInt16LE(p, static_cast<int16_t>(i));
+        }
+        else if constexpr (SIZE == 3 && std::is_unsigned_v<INT>) {
+            PutUInt24LE(p, static_cast<uint32_t>(i));
+        }
+        else if constexpr (SIZE == 3 && std::is_signed_v<INT>) {
+            PutInt24LE(p, static_cast<int32_t>(i));
+        }
+        else if constexpr (SIZE == 4 && std::is_unsigned_v<INT>) {
+            PutUInt32LE(p, static_cast<uint32_t>(i));
+        }
+        else if constexpr (SIZE == 4 && std::is_signed_v<INT>) {
+            PutInt32LE(p, static_cast<int32_t>(i));
+        }
+        else if constexpr (SIZE == 5 && std::is_unsigned_v<INT>) {
+            PutUInt40LE(p, static_cast<uint64_t>(i));
+        }
+        else if constexpr (SIZE == 5 && std::is_signed_v<INT>) {
+            PutInt40LE(p, static_cast<int64_t>(i));
+        }
+        else if constexpr (SIZE == 6 && std::is_unsigned_v<INT>) {
+            PutUInt48LE(p, static_cast<uint64_t>(i));
+        }
+        else if constexpr (SIZE == 6 && std::is_signed_v<INT>) {
+            PutInt48LE(p, static_cast<int64_t>(i));
+        }
+        else if constexpr (SIZE == 7 && std::is_unsigned_v<INT>) {
+            PutUInt56LE(p, static_cast<uint64_t>(i));
+        }
+        else if constexpr (SIZE == 7 && std::is_signed_v<INT>) {
+            PutInt56LE(p, static_cast<int64_t>(i));
+        }
+        else if constexpr (SIZE == 8 && std::is_unsigned_v<INT>) {
+            PutUInt64LE(p, static_cast<uint64_t>(i));
+        }
+        else if constexpr (SIZE == 8 && std::is_signed_v<INT>) {
+            PutInt64LE(p, static_cast<int64_t>(i));
+        }
+        else {
+            static_assert(dependent_false<INT>, "invalid integer size");
+        }
+    }
+
+    //!
+    //! Template function getting a template-fixed-length integer from serialized data in big endian representation.
+    //! @ingroup cpp
+    //! @tparam SIZE Size in bytes of the integer. Must be 1 to 8.
+    //! @tparam INT Some integer type.
+    //! @param [in] p An address pointing to an INT in big endian representation.
+    //! @return The INT value in native byte order, deserialized from @a p.
+    //!
+    template <const size_t SIZE, typename INT> requires std::integral<INT>
+    inline INT GetIntFix(const void* p)
+    {
+        return GetIntFixBE<SIZE, INT>(p);
+    }
+
+    //!
+    //! Template function getting a template-fixed-length integer from serialized data in big endian representation.
+    //! @ingroup cpp
+    //! @tparam SIZE Size in bytes of the integer. Must be 1 to 8.
+    //! @tparam INT Some integer type.
+    //! @param [in] p An address pointing to an INT in big endian representation.
+    //! @param [out] i The INT value in native byte order, deserialized from @a p.
+    //!
+    template <const size_t SIZE, typename INT> requires std::integral<INT>
+    inline void GetIntFix(const void* p, INT& i)
+    {
+        GetIntFixBE<SIZE, INT>(p, i);
+    }
+
+    //!
+    //! Template function serializing a template-fixed-length integer data in big endian representation.
+    //! @ingroup cpp
+    //! @tparam SIZE Size in bytes of the integer. Must be 1 to 8.
+    //! @tparam INT Some integer type.
+    //! @param [out] p An address where to serialize the integer.
+    //! @param [in] i The INT in native byte order to serialize in big endian representation.
+    //!
+    template <const size_t SIZE, typename INT> requires std::integral<INT>
+    inline void PutIntFix(void* p, INT i)
+    {
+        PutIntFixBE<SIZE, INT>(p, i);
     }
 }
 
@@ -1418,6 +1840,7 @@ INT ts::GetIntVarBE(const void* p, size_t size)
         case 4: return static_cast<INT>(GetUInt32BE(p));
         case 5: return static_cast<INT>(GetUInt40BE(p));
         case 6: return static_cast<INT>(GetUInt48BE(p));
+        case 7: return static_cast<INT>(GetUInt56BE(p));
         case 8: return static_cast<INT>(GetUInt64BE(p));
         default: return static_cast<INT>(0);
     }
@@ -1433,6 +1856,7 @@ INT ts::GetIntVarLE(const void* p, size_t size)
         case 4: return static_cast<INT>(GetUInt32LE(p));
         case 5: return static_cast<INT>(GetUInt40LE(p));
         case 6: return static_cast<INT>(GetUInt48LE(p));
+        case 7: return static_cast<INT>(GetUInt56LE(p));
         case 8: return static_cast<INT>(GetUInt64LE(p));
         default: return static_cast<INT>(0);
     }
@@ -1448,6 +1872,7 @@ void ts::PutIntVarBE(void* p, size_t size, INT i)
         case 4: PutUInt32BE(p, static_cast<uint32_t>(i)); break;
         case 5: PutUInt40BE(p, static_cast<uint64_t>(i)); break;
         case 6: PutUInt48BE(p, static_cast<uint64_t>(i)); break;
+        case 7: PutUInt56BE(p, static_cast<uint64_t>(i)); break;
         case 8: PutUInt64BE(p, static_cast<uint64_t>(i)); break;
         default: break;
     }
@@ -1463,6 +1888,7 @@ void ts::PutIntVarLE(void* p, size_t size, INT i)
         case 4: PutUInt32LE(p, static_cast<uint32_t>(i)); break;
         case 5: PutUInt40LE(p, static_cast<uint64_t>(i)); break;
         case 6: PutUInt48LE(p, static_cast<uint64_t>(i)); break;
+        case 7: PutUInt56LE(p, static_cast<uint64_t>(i)); break;
         case 8: PutUInt64LE(p, static_cast<uint64_t>(i)); break;
         default: break;
     }

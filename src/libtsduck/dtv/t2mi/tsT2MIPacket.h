@@ -123,7 +123,7 @@ namespace ts {
         //! Check if the packet has valid content.
         //! @return True if the packet has valid content.
         //!
-        bool isValid() const { return _is_valid; }
+        virtual bool isValid() const override;
 
         //!
         //! Equality operator.

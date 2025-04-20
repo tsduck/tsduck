@@ -125,7 +125,7 @@ namespace ts {
         //! Check if the packet has valid content.
         //! @return True if the packet has valid content.
         //!
-        bool isValid() const { return _is_valid; }
+        virtual bool isValid() const override;
 
         //!
         //! Equality operator.
@@ -366,9 +366,9 @@ namespace ts {
         // Private fields
         bool      _is_valid = false;              // Content of *_data is a valid packet
         size_t    _header_size = 0;               // PES header size in bytes
-        uint8_t   _stream_type {ST_NULL};         // Stream type from PMT (informational)
-        CodecType _codec {CodecType::UNDEFINED};  // Data format (informational)
-        uint64_t  _pcr {INVALID_PCR};             // PCR value from TS packets (informational)
+        uint8_t   _stream_type = ST_NULL;         // Stream type from PMT (informational)
+        CodecType _codec = CodecType::UNDEFINED;  // Data format (informational)
+        uint64_t  _pcr = INVALID_PCR;             // PCR value from TS packets (informational)
 
         // Validate binary content.
         void validate();

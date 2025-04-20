@@ -256,7 +256,7 @@ namespace ts {
         //! Check if the section has valid content.
         //! @return True if the section has valid content.
         //!
-        bool isValid() const { return _status == VALID; }
+        virtual bool isValid() const override;
 
         //!
         //! Get the section status.
