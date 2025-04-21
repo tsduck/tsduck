@@ -309,9 +309,12 @@ _TEMPLATE ts::_CLASSNAME::DataBlock(const ByteBlockPtr& content_ptr, ShareMode m
 }
 
 // Virtual destructor.
-_TEMPLATE ts::_CLASSNAME::~_CLASSNAME()
+TS_PUSH_WARNING()
+TS_LLVM_NOWARNING(dtor-name)
+_TEMPLATE ts::_CLASSNAME::~DataBlock()
 {
 }
+TS_POP_WARNING()
 
 // Check if the data structure has valid content (virtual).
 _TEMPLATE bool ts::_CLASSNAME::isValid() const
