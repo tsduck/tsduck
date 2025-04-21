@@ -257,6 +257,8 @@ namespace ts {
 // Template definitions.
 //----------------------------------------------------------------------------
 
+#if !defined(DOXYGEN)
+
 // Reduce silly verbosity of templates. Undefined at end of this header file.
 #define _TEMPLATE  template <const size_t LEN_OFFSET, const size_t LEN_SIZE, const bool UNBOUNDED_ALLOWED>
 #define _CLASSNAME DataBlock<LEN_OFFSET, LEN_SIZE, UNBOUNDED_ALLOWED>
@@ -504,3 +506,4 @@ _TEMPLATE bool ts::_CLASSNAME::ValidateLengthField(const void* content, size_t c
 
 #undef _TEMPLATE
 #undef _CLASSNAME
+#endif // DOXYGEN
