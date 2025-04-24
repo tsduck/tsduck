@@ -37,10 +37,10 @@ namespace ts::xml {
         explicit ModelDocument(Report& report = NULLREP);
 
         //!
-        //! Copy constructor from Document)..
+        //! Copy constructor.
         //! @param [in] other Other instance to copy.
         //!
-        ModelDocument(const Document& other) : Document(other) {}
+        ModelDocument(const ModelDocument& other) : Document(other) {}
 
         //!
         //! Destructor.

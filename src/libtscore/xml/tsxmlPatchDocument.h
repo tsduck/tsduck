@@ -34,10 +34,10 @@ namespace ts::xml {
         explicit PatchDocument(Report& report = NULLREP);
 
         //!
-        //! Copy constructor from Document)..
+        //! Copy constructor.
         //! @param [in] other Other instance to copy.
         //!
-        PatchDocument(const Document& other) : Document(other) {}
+        PatchDocument(const PatchDocument& other) : Document(other) {}
 
         //!
         //! Destructor.
