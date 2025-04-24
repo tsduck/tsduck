@@ -247,6 +247,13 @@ namespace ts::xml {
         void removeComments(bool recurse);
 
         //!
+        //! Expand all environment variables in the XML node.
+        //! Environment variables are referenced using '${varname}' in text, attributes, names.
+        //! @param [in] recurse If true, apply recursively to all children nodes.
+        //!
+        virtual void expandEnvironment(bool recurse);
+
+        //!
         //! Return a node type name, mainly for debug purpose.
         //! @return Node type name.
         //!

@@ -273,6 +273,11 @@ TSUNIT_DEFINE_TEST(Environment)
     TSUNIT_EQUAL(u"abc123456789", ts::ExpandEnvironment(u"abc$UTEST_A"));
     TSUNIT_EQUAL(u"abc123456789abcdefghijklm123456789/qsd", ts::ExpandEnvironment(u"abc$UTEST_A$UTEST_B$UTEST_D$UTEST_A/qsd"));
     TSUNIT_EQUAL(u"abc123456789aabcdefghijklm123456789/qsd", ts::ExpandEnvironment(u"abc${UTEST_A}a$UTEST_B$UTEST_D$UTEST_A/qsd"));
+
+    TSUNIT_EQUAL(u"a/${UTEST_A}/$UTEST_B/b", ts::ExpandEnvironment(u"a/${UTEST_A}/$UTEST_B/b", ts::ExpandOptions::NONE));
+    TSUNIT_EQUAL(u"a/${UTEST_A}/abcdefghijklm/b", ts::ExpandEnvironment(u"a/${UTEST_A}/$UTEST_B/b", ts::ExpandOptions::DOLLAR));
+    TSUNIT_EQUAL(u"a/123456789/$UTEST_B/b", ts::ExpandEnvironment(u"a/${UTEST_A}/$UTEST_B/b", ts::ExpandOptions::BRACES));
+    TSUNIT_EQUAL(u"a/123456789/abcdefghijklm/b", ts::ExpandEnvironment(u"a/${UTEST_A}/$UTEST_B/b", ts::ExpandOptions::ALL));
 }
 
 TSUNIT_DEFINE_TEST(Registry)

@@ -67,6 +67,22 @@ const ts::UString& ts::xml::Element::parentName() const
 
 
 //----------------------------------------------------------------------------
+// Expand all environment variables in the XML node.
+//----------------------------------------------------------------------------
+
+void ts::xml::Element::expandEnvironment(bool recurse)
+{
+    // Expand in attributes values.
+    for (auto& it : _attributes) {
+        it.second.expandEnvironment();
+    }
+
+    // Call superclass
+    Node::expandEnvironment(recurse);
+}
+
+
+//----------------------------------------------------------------------------
 // Find the first child element by name, case-insensitive.
 //----------------------------------------------------------------------------
 

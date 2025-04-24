@@ -32,6 +32,10 @@ ts::xml::ModelDocument::~ModelDocument()
 {
 }
 
+ts::xml::Node* ts::xml::ModelDocument::clone() const
+{
+    return new ModelDocument(*this);
+}
 
 
 //----------------------------------------------------------------------------

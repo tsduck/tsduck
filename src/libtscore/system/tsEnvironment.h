@@ -13,6 +13,7 @@
 
 #pragma once
 #include "tsUString.h"
+#include "tsEnumUtils.h"
 
 namespace ts {
     //!
@@ -133,6 +134,17 @@ namespace ts {
     TSCOREDLL bool DeleteEnvironment(const UString& name);
 
     //!
+    //! Options for expanding environment variables.
+    //! Can be used as bitmask.
+    //!
+    enum class ExpandOptions {
+        NONE   = 0,        //!< Don't expand environment variables.
+        DOLLAR = 0x0001,   //!< Expand @c $NAME
+        BRACES = 0x0002,   //!< Expand @c ${NAME}
+        ALL    = 0xFFFF    //!< Expand all forms of environment variables.
+    };
+
+    //!
     //! Expand environment variables inside a file path (or any string).
     //! Environment variable references '$name' or '${name}' are replaced
     //! by the corresponding values from the environment.
@@ -140,9 +152,10 @@ namespace ts {
     //! A combination \\$ is interpreted as a literal $, not an environment variable reference.
     //! @ingroup environment
     //! @param [in] path A path string containing references to environment variables.
+    //! @param [in] options Which form of environment variables references to expand.
     //! @return The expanded string.
     //!
-    TSCOREDLL UString ExpandEnvironment(const UString& path);
+    TSCOREDLL UString ExpandEnvironment(const UString& path, ExpandOptions options = ExpandOptions::ALL);
 
     //!
     //! Define a container type holding all environment variables.
@@ -177,3 +190,4 @@ namespace ts {
     //!
     TSCOREDLL bool LoadEnvironment(Environment& env, const UString& fileName);
 }
+TS_ENABLE_BITMASK_OPERATORS(ts::ExpandOptions);

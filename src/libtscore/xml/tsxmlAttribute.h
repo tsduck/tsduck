@@ -201,6 +201,12 @@ namespace ts::xml {
         static bool TimeFromString(cn::duration<Rep,Period>& value, const UString& str);
 
         //!
+        //! Expand all environment variables in the attribute value.
+        //! Environment variables are referenced using '${varname}' in text, attributes, names.
+        //!
+        void expandEnvironment();
+
+        //!
         //! A constant static invalid instance.
         //! Used as universal invalid attribute.
         //! @return A constant reference to the universal invalid attribute.

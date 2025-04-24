@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.41-4256 (Apr 2025)
+VERSION 3.41-425è (Apr 2025)
 
 [NEW] New commands and plugins:
 
@@ -15,6 +15,7 @@ VERSION 3.41-4256 (Apr 2025)
     - Option --no-link-local in "tsdump", "tstabdump" and plugins "ip" (input),
       "cutoff", "mpeinject".
     - Options --summary, --epg-dump, --detailed, --width in plugin "eit".
+    - Option --expand-environment in "tsxml".
 
 [BUG] Bug fixes:
 

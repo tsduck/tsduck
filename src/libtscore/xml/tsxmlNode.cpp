@@ -15,6 +15,7 @@
 #include "tsxmlUnknown.h"
 #include "tsTextFormatter.h"
 #include "tsNullReport.h"
+#include "tsEnvironment.h"
 
 
 //----------------------------------------------------------------------------
@@ -49,7 +50,7 @@ ts::xml::Node::Node(const Node& other) :
 
 ts::xml::Node::~Node()
 {
-    clear();
+    Node::clear();
     reparent(nullptr);
 }
 
@@ -191,6 +192,24 @@ void ts::xml::Node::removeComments(bool recurse)
             child->removeComments(true);
         }
         child = next;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Expand all environment variables in the XML node.
+//----------------------------------------------------------------------------
+
+void ts::xml::Node::expandEnvironment(bool recurse)
+{
+    static const UString intro(u"${");
+    if (_value.contains(intro)) {
+        _value = ExpandEnvironment(_value, ExpandOptions::BRACES);
+    }
+    if (recurse) {
+        for (Node* child = firstChild(); child != nullptr; child = child->nextSibling()) {
+            child->expandEnvironment(true);
+        }
     }
 }
 

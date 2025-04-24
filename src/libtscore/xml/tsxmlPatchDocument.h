@@ -26,13 +26,18 @@ namespace ts::xml {
     //!
     class TSCOREDLL PatchDocument: public Document
     {
-        TS_NOCOPY(PatchDocument);
     public:
         //!
         //! Constructor.
         //! @param [in,out] report Where to report errors.
         //!
         explicit PatchDocument(Report& report = NULLREP);
+
+        //!
+        //! Copy constructor from Document)..
+        //! @param [in] other Other instance to copy.
+        //!
+        PatchDocument(const Document& other) : Document(other) {}
 
         //!
         //! Destructor.
@@ -44,6 +49,9 @@ namespace ts::xml {
         //! @param [in,out] doc The document to patch.
         //!
         void patch(Document& doc) const;
+
+        // Inherited from xml::Node.
+        virtual Node* clone() const override;
 
     private:
         // Patch an XML tree of elements.

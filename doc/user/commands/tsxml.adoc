@@ -65,6 +65,14 @@ A shortcut for `--model tsduck.channels.model.xml`.
 This option verifies that the input files are valid channel configuration files.
 
 [.opt]
+*-e* +
+*--expand-environment*
+
+[.optdoc]
+Expand environment variables in the XML files.
+Environment variables must be referenced as `${name}`.
+
+[.opt]
 *-f* +
 *--from-json*
 

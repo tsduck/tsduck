@@ -7,6 +7,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsxmlAttribute.h"
+#include "tsEnvironment.h"
 
 // A non-thread-safe allocator for sequence numbers.
 std::atomic_size_t ts::xml::Attribute::_allocator(0);
@@ -40,6 +41,19 @@ ts::xml::Attribute::Attribute(const UString& name, const UString& value, size_t 
     _line(line),
     _sequence(++_allocator)
 {
+}
+
+
+//----------------------------------------------------------------------------
+// Expand all environment variables in the attribute value.
+//----------------------------------------------------------------------------
+
+void ts::xml::Attribute::expandEnvironment()
+{
+    static const UString intro(u"${");
+    if (_value.contains(intro)) {
+        _value = ExpandEnvironment(_value, ExpandOptions::BRACES);
+    }
 }
 
 

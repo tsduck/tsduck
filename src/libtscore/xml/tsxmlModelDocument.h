@@ -29,13 +29,18 @@ namespace ts::xml {
     //!
     class TSCOREDLL ModelDocument: public Document
     {
-        TS_NOCOPY(ModelDocument);
     public:
         //!
         //! Constructor.
         //! @param [in,out] report Where to report errors.
         //!
         explicit ModelDocument(Report& report = NULLREP);
+
+        //!
+        //! Copy constructor from Document)..
+        //! @param [in] other Other instance to copy.
+        //!
+        ModelDocument(const Document& other) : Document(other) {}
 
         //!
         //! Destructor.
@@ -48,6 +53,9 @@ namespace ts::xml {
         //! @return True if @a doc matches the model in this object, false if it does not.
         //!
         bool validate(const Document& doc) const;
+
+        // Inherited from xml::Node.
+        virtual Node* clone() const override;
 
     protected:
         //!

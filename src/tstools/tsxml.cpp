@@ -47,6 +47,7 @@ namespace {
         bool                     use_model = false;     // There is a model to use.
         bool                     from_json = false;     // Perform an automated JSON-to-XML conversion on input.
         bool                     merge_inputs = false;  // Merge all input XML files as one.
+        bool                     expand_env = false;    // Expand environment variables.
         bool                     need_output = false;   // An output file is needed.
         ts::UString              xml_prefix {};         // Prefix in XML line.
         size_t                   indent = 2;            // Output indentation.
@@ -80,6 +81,11 @@ Options::Options(int argc, char *argv[]) :
     help(u"channel",
          u"A shortcut for '--model tsduck.channels.model.xml'. "
          u"It verifies that the input files are valid channel configuration files.");
+
+    option(u"expand-environment", 'e');
+    help(u"expand-environment",
+         u"Expand environment variables in the XML files. "
+         u"Environment variables must be referenced as '${name}'.");
 
     option(u"from-json", 'f');
     help(u"from-json",
@@ -169,6 +175,7 @@ Options::Options(int argc, char *argv[]) :
     xml_line = present(u"xml-line");
     from_json = present(u"from-json");
     merge_inputs = present(u"merge");
+    expand_env = present(u"expand-environment");
     uncomment = present(u"uncomment");
 
     // Get model file.
@@ -196,7 +203,7 @@ Options::Options(int argc, char *argv[]) :
     }
 
     // An output file wil be produced.
-    need_output = reformat || uncomment || merge_inputs || json.useFile() || from_json;
+    need_output = reformat || uncomment || merge_inputs || json.useFile() || from_json || expand_env;
 
     exitOnError();
 }
@@ -251,6 +258,11 @@ namespace {
         // Remove comments.
         if (opt.uncomment) {
             doc.removeComments(true);
+        }
+
+        // Expand environment variables.
+        if (opt.expand_env) {
+            doc.expandEnvironment(true);
         }
 
         // Sort the content of the specified tags.

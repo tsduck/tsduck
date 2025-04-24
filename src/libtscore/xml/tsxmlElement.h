@@ -18,7 +18,6 @@
 #include "tsIPAddress.h"
 #include "tsMACAddress.h"
 #include "tsIntegerUtils.h"
-#include "tsEnumUtils.h"
 
 namespace ts::xml {
 
@@ -905,6 +904,7 @@ namespace ts::xml {
         // Inherited from xml::Node.
         virtual Node* clone() const override;
         virtual void clear() override;
+        virtual void expandEnvironment(bool recurse) override;
         virtual UString typeName() const override;
         virtual void print(TextFormatter& output, bool keepNodeOpen = false) const override;
         virtual void printClose(TextFormatter& output, size_t levels = std::numeric_limits<size_t>::max()) const override;
@@ -914,7 +914,7 @@ namespace ts::xml {
         virtual bool parseNode(TextParser& parser, const Node* parent) override;
 
     private:
-        CaseSensitivity _attributeCase {CASE_INSENSITIVE}; // For attribute names.
+        CaseSensitivity _attributeCase = CASE_INSENSITIVE; // For attribute names.
         AttributeMap _attributes {};
 
         // Compute the key in the attribute map.

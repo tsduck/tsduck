@@ -36,6 +36,11 @@ ts::xml::PatchDocument::~PatchDocument()
 {
 }
 
+ts::xml::Node* ts::xml::PatchDocument::clone() const
+{
+    return new PatchDocument(*this);
+}
+
 
 //----------------------------------------------------------------------------
 // Patch an XML document.
