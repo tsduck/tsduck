@@ -295,6 +295,15 @@ namespace ts {
         void getAllRegistrations(const DuckContext& duck, REGIDVector& regids) const;
 
         //!
+        //! Get a list of all language codes from all descriptors.
+        //! @param [in] duck TSDuck execution context.
+        //! @param [out] languages A list of all language codes, in their order of appearance.
+        //! The returned list can contain duplicates if the duplicates are present in the descriptor list.
+        //! @param [in] max_count The maximum number of languages to return. By default, return them all.
+        //!
+        void getAllLanguages(const DuckContext& duck, UStringVector& languages, size_t max_count = NPOS) const;
+
+        //!
         //! Merge one descriptor in the list.
         //! If a descriptor of the same type is already present in the list,
         //! the DescriptorDuplication mode of the descriptor class is applied.
@@ -513,6 +522,12 @@ namespace ts {
         // Prepare removal of a private_data_specifier descriptor at the specified position, it any.
         // Return true if can be removed, false if it cannot (private descriptors ahead).
         bool canRemovePDS(std::vector<DescriptorPtr>::iterator);
+
+        // Explore the descriptor and invoke a callback for each language which is found.
+        // Use: bool callback(size_t descriptor_index, const char* lang, size_t lang_size)
+        // The callback shall return true to continue, false to stop browsing languages in the descriptor list.
+        template <typename F>
+        void browseLanguages(const DuckContext& duck, size_t start_index, F callback) const;
     };
 }
 

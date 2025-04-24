@@ -2,7 +2,11 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.41-4255 (Apr 2025)
+VERSION 3.41-4256 (Apr 2025)
+
+[NEW] New commands and plugins:
+
+  * Added plugin "identify": Identify PID's based on various criteria.
 
 [IMP] Improvements on existing commands and plugins:
 

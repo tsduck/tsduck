@@ -247,6 +247,18 @@ bool ts::PMT::Stream::isSubtitles(const DuckContext& duck) const
 
 
 //----------------------------------------------------------------------------
+// Get the first language code in the elementary stream.
+//----------------------------------------------------------------------------
+
+ts::UString ts::PMT::Stream::language(DuckContext& duck) const
+{
+    UStringVector langs;
+    descs.getAllLanguages(duck, langs, 1);
+    return langs.empty() ? UString() : langs.front();
+}
+
+
+//----------------------------------------------------------------------------
 // Get the PID class of the stream.
 //----------------------------------------------------------------------------
 

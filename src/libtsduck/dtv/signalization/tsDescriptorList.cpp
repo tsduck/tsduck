@@ -678,56 +678,49 @@ size_t ts::DescriptorList::search(const ts::EDID& edid, size_t start_index) cons
 
 
 //----------------------------------------------------------------------------
-// Search a descriptor for the specified language.
+// Explore the descriptor and invoke a callback for each language.
+// The callback shall return true to continue, false to stop.
 //----------------------------------------------------------------------------
 
-size_t ts::DescriptorList::searchLanguage(const DuckContext& duck, const UString& language, size_t start_index) const
+template <typename F>
+void ts::DescriptorList::browseLanguages(const DuckContext& duck, size_t start_index, F callback) const
 {
-    // Check that an actual language code was provided.
-    if (language.size() != 3) {
-        return count(); // not found
-    }
-
-    // Standards of the context and the parent table.
+    // Standards of the context and the parent table. Used to interpret descriptors.
+    // DVB is assumed if ATSC is not specified. ISDB reuses some DVB descriptors.
     const Standards standards = duck.standards() | tableStandards();
-    const bool dvb = bool(standards & Standards::DVB);
     const bool atsc = bool(standards & Standards::ATSC);
     const bool isdb = bool(standards & Standards::ISDB);
+    const bool dvb = bool(standards & Standards::DVB) || !atsc;
 
     // Seach all known types of descriptors containing languages.
-    for (size_t index = start_index; index < _list.size(); index++) {
+    bool more = true;
+    for (size_t index = start_index; more && index < _list.size(); index++) {
         const DescriptorPtr& desc(_list[index]);
         assert(desc != nullptr);
         if (desc->isValid()) {
 
             const DID tag = desc->tag();
-            const uint8_t* data = desc->payload();
+            const char* data = reinterpret_cast<const char*>(desc->payload());
             size_t size = desc->payloadSize();
 
             if (tag == DID_MPEG_LANGUAGE) {
-                while (size >= 4) {
-                    if (language.similar(data, 3)) {
-                        return index;
-                    }
+                while (more && size >= 4) {
+                    more = callback(index, data, 3);
                     data += 4; size -= 4;
                 }
             }
-            else if (dvb && tag == DID_DVB_COMPONENT && size >= 6 && language.similar(data + 3, 3)) {
-                return index;
+            else if (dvb && tag == DID_DVB_COMPONENT && size >= 6) {
+                more = callback(index, data + 3, 3);
             }
             else if (dvb && tag == DID_DVB_SUBTITLING) {
-                while (size >= 8) {
-                    if (language.similar(data, 3)) {
-                        return index;
-                    }
+                while (more && size >= 8) {
+                    more = callback(index, data, 3);
                     data += 8; size -= 8;
                 }
             }
             else if (dvb && (tag == DID_DVB_TELETEXT || tag == DID_DVB_VBI_TELETEXT)) {
-                while (size >= 5) {
-                    if (language.similar(data, 3)) {
-                        return index;
-                    }
+                while (more && size >= 5) {
+                    more = callback(index, data, 3);
                     data += 5; size -= 5;
                 }
             }
@@ -736,61 +729,90 @@ size_t ts::DescriptorList::searchLanguage(const DuckContext& duck, const UString
                     // Skip leading component_tag in multilingual_component_descriptor.
                     data++; size--;
                 }
-                while (size >= 4) {
-                    if (language.similar(data, 3)) {
-                        return index;
-                    }
-                    const size_t len = std::min<size_t>(4 + data[3], size);
+                while (more && size >= 4) {
+                    more = callback(index, data, 3);
+                    const size_t len = std::min<size_t>(4 + uint8_t(data[3]), size);
                     data += len; size -= len;
                 }
             }
             else if (dvb && tag == DID_DVB_MLINGUAL_SERVICE) {
-                while (size >= 4) {
-                    if (language.similar(data, 3)) {
-                        return index;
-                    }
-                    size_t len = std::min<size_t>(4 + data[3], size);
+                while (more && size >= 4) {
+                    more = callback(index, data, 3);
+                    size_t len = std::min<size_t>(4 + uint8_t(data[3]), size);
                     if (len < size) {
-                        len = std::min<size_t>(len + 1 + data[len], size);
+                        len = std::min<size_t>(len + 1 + uint8_t(data[len]), size);
                     }
                     data += len; size -= len;
                 }
             }
-            else if (dvb && tag == DID_DVB_SHORT_EVENT && size >= 3 && language.similar(data, 3)) {
-                return index;
+            else if (dvb && tag == DID_DVB_SHORT_EVENT && size >= 3) {
+                more = callback(index, data, 3);
             }
-            else if (dvb && tag == DID_DVB_EXTENDED_EVENT && size >= 4 && language.similar(data + 1, 3)) {
-                return index;
+            else if (dvb && tag == DID_DVB_EXTENDED_EVENT && size >= 4) {
+                more = callback(index, data + 1, 3);
             }
             else if (atsc && tag == DID_ATSC_CAPTION && size > 0) {
                 data++; size--;
-                while (size >= 6) {
-                    if (language.similar(data, 3)) {
-                        return index;
-                    }
+                while (more && size >= 6) {
+                    more = callback(index, data, 3);
                     data += 6; size -= 6;
                 }
             }
             else if (isdb && tag == DID_ISDB_AUDIO_COMP) {
-                if (size >= 9 && language.similar(data + 6, 3)) {
-                    return index;
+                if (size >= 9) {
+                    more = callback(index, data + 6, 3);
                 }
-                if (size >= 12 && (data[5] & 0x80) != 0 && language.similar(data + 9, 3)) {
-                    return index;
+                if (more && size >= 12 && (data[5] & 0x80) != 0) {
+                    more = callback(index, data + 9, 3);
                 }
             }
             else if (isdb && tag == DID_ISDB_DATA_CONTENT && size >= 4) {
-                size_t len = std::min<size_t>(4 + data[3], size);
+                size_t len = std::min<size_t>(4 + uint8_t(data[3]), size);
                 if (len < size) {
-                    len = std::min<size_t>(len + 1 + data[len], size);
+                    len = std::min<size_t>(len + 1 + uint8_t(data[len]), size);
                 }
-                if (len + 3 <= size && language.similar(data + len, 3)) {
-                    return index;
+                if (len + 3 <= size) {
+                    more = callback(index, data + len, 3);
                 }
             }
         }
     }
-    return count(); // not found
+}
+
+
+//----------------------------------------------------------------------------
+// Search a descriptor for the specified language.
+//----------------------------------------------------------------------------
+
+size_t ts::DescriptorList::searchLanguage(const DuckContext& duck, const UString& language, size_t start_index) const
+{
+    size_t result = size(); // not found by default
+    browseLanguages(duck, start_index, [&](size_t index, const char* addr, size_t size) {
+        if (language.similar(addr, size)) {
+            result = index;
+            return false; // stop browsing languages
+        }
+        return true;
+    });
+    return result;
+}
+
+
+//----------------------------------------------------------------------------
+// Get a list of all language codes from all descriptors.
+//----------------------------------------------------------------------------
+
+void ts::DescriptorList::getAllLanguages(const DuckContext& duck, UStringVector& languages, size_t max_count) const
+{
+    languages.clear();
+    languages.reserve(_list.size());
+
+    if (max_count > 0) {
+        browseLanguages(duck, 0, [max_count, &languages](size_t index, const char* addr, size_t size) {
+            languages.push_back(UString::FromUTF8(addr, size));
+            return languages.size() < max_count;
+        });
+    }
 }
 
 

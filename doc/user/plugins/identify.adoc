@@ -1,0 +1,106 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2025, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== identify
+
+[.cmd-header]
+Identify PID's based on various criteria
+
+This plugin explores the signalization of the transport stream to identify all PID's which satisfy some selection criteria.
+
+By default, a log message is issued for each newly idenfied PID.
+It is also possible to set one or more labels on all packets of the identified PID's.
+Using labels, it is possible to identify these packets in other plugins, downstream the chain of processing.
+
+When several selection criteria are specified, all criteria must be satisfied to identify the PID
+(there is an "and" operator on all criteria).
+To identify PID's which satisfy any of the selection criteria ("or" operator), simply use successive `identify` plugins,
+one per criteria.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P identify [options]
+----
+
+[.usage]
+Options
+
+[.opt]
+*-a* +
+*--audio*
+
+[.optdoc]
+Identify all PID's carrying audio.
+
+[.opt]
+*-l* _language-code_ +
+*--language* _language-code_
+
+With `--audio` or `--subtitles`, identify PID's carrying the specified language.
+The specified name must be a 3-character ISO-639 language code.
+
+[.opt]
+*--log*
+
+[.optdoc]
+Log a message on each newly identified PID.
+
+[.optdoc]
+This is the default if `--set-label` is not specified.
+
+[.opt]
+*-p* +
+*--pmt*
+
+[.optdoc]
+Identify all PID's carrying PMT's.
+
+[.opt]
+*--scte-35*
+
+[.optdoc]
+Identify all PID's carrying SCTE-35 splice commands.
+
+[.opt]
+*-s* _name-or-id_ +
+*--service* _name-or-id_
+
+[.optdoc]
+Identify all PID's belonging to the specified service.
+include::{docdir}/opt/optdoc-service.adoc[tags=!*]
+
+[.opt]
+*--set-label* _label1[-label2]_
+
+[.optdoc]
+Set the specified labels on all packets of the identified PID's.
+
+[.optdoc]
+Several `--set-label` options may be specified, all labels are set on all identified PID's.
+
+[.opt]
+*--subtitles*
+
+[.optdoc]
+Identify all PID's carrying subtitles.
+
+[.opt]
+*-v* +
+*--video*
+
+[.optdoc]
+Identify all PID's carrying video.
+
+[.optdoc]
+Several `--set-label` options may be specified.
+
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

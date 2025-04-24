@@ -21,7 +21,6 @@
 #include "tsSDT.h"
 #include "tsCVCT.h"
 #include "tsTVCT.h"
-#include "tsAlgorithm.h"
 
 
 //----------------------------------------------------------------------------

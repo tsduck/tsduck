@@ -23,7 +23,6 @@
 #include "tsDVBAC3Descriptor.h"
 #include "tsDVBEnhancedAC3Descriptor.h"
 #include "tsCueIdentifierDescriptor.h"
-#include "tsAlgorithm.h"
 
 
 //----------------------------------------------------------------------------

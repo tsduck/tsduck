@@ -52,6 +52,7 @@
 |CVCT |Cable Virtual Channel Table (ATSC)
 |CW |Control Word (cryptography)
 |CWG |Control Word Generator (DVB SimulCrypt)
+|DASH |Dynamic Adaptive Streaming over HTTP (network protocol)
 |DCCT |Directed Channel Change Table (ATSC)
 |DCCSCT |Directed Channel Change Selection Code Table (ATSC)
 |DID |Descriptor Identifier (or descriptor _tag_)
@@ -132,6 +133,7 @@
 |OFCOM |Office of Communications (UK national regulator for TV)
 |OFDM |Orthogonal Frequency-Division Multiplexing (modulation)
 |OQPSK |Offset Quadrature Phase Shift Keying (modulation)
+|OTT |Over-The-Top (streaming strategy)
 |OUI |Organizationally Unique Identifier (IEEE assigned)
 |PAT |Program Association Table (MPEG)
 |PCAT |Partial Content Announcement Table (ISDB)
@@ -154,6 +156,7 @@
 |RS |Reed-Solomon FEC code
 |RST |Running Status Table (DVB)
 |RTP |Real-Time Protocol (networking)
+|RTSP |Real-Time Streaming Protocol (networking)
 |RTT |Rating Text Tavle (ATSC)
 |SCS |SimulCrypt Synchronizer (DVB SimulCrypt)
 |SCTE |Society of Cable Telecommunications Engineers
@@ -189,6 +192,8 @@
 |UWA |UHD World Association (China)
 |VBI |Vertical Blanking Interval
 |VCT |Virtual Channel Table (ATSC)
+|WHEP |WebRTC-HTTP Egress Protocol (video streaming)
+|WHIP |WebRTC-HTTP Ingestion Protocol (video streaming, RFC 9725)
 |===
 
 <<<

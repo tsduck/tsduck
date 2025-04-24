@@ -257,6 +257,15 @@ namespace ts {
         //!
         void getServices(ServiceList& services) const;
 
+        //!
+        //! Get the complete description of a service by id.
+        //! @param [in] id Service id.
+        //! @return A constant reference to the description of the service. If the service
+        //! was not yet found, return the reference to a Service instance where the service
+        //! id is set to INVALID_SERVICE_ID.
+        //!
+        const Service& getService(uint16_t id) const;
+
         //--------------------------------------------------------------------
         // Accessing PID information.
         //--------------------------------------------------------------------
@@ -695,6 +704,9 @@ namespace ts {
         // Get the context for a service. Create if not existent and known in the PAT.
         ServiceContextPtr getServiceContext(uint16_t service_id, CreateService create);
 
+        // Handle a service update.
+        void handleService(ServiceContext&, bool if_modified, bool removed);
+
         // Implementation of table and section interfaces.
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;
         virtual void handleSection(SectionDemux&, const Section&) override;
@@ -723,6 +735,9 @@ namespace ts {
         // Extract a field of a PIDPoint in a PIDContext.
         template<typename T>
         T getPIDPointField(PID pid, const T& no_value, PIDPoint PIDContext::* pp, T PIDPoint::* field) const;
+
+        // Get a constant reference to a service with invalid service id.
+        static const Service& InvalidService();
     };
 }
 

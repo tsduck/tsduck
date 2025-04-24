@@ -24,7 +24,7 @@ namespace ts {
     //! This class is a helper for commands and tools which manipulate
     //! languages in a PMT.
     //!
-    //! On a command line, the value of an audion option is "language-code[:audio-type[:location]]".
+    //! On a command line, the value of an audio option is "language-code[:audio-type[:location]]".
     //!
     //! The "language-code" is a 3-character string. The audio-type is optional,
     //! its default value is zero. The "location" indicates how to locate the

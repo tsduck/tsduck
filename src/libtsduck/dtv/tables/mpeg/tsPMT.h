@@ -48,7 +48,7 @@ namespace ts {
             explicit Stream(const AbstractTable* table, uint8_t type = 0);
 
             //!
-            //! Check if an elementary stream carries audio.
+            //! Check if the elementary stream carries audio.
             //! Does not just look at the stream type.
             //! Also analyzes the descriptor list for additional information.
             //! @param [in] duck TSDuck execution context.
@@ -57,7 +57,7 @@ namespace ts {
             bool isAudio(const DuckContext& duck) const;
 
             //!
-            //! Check if an elementary stream carries video.
+            //! Check if the elementary stream carries video.
             //! Does not just look at the stream type.
             //! Also analyzes the descriptor list for additional information.
             //! @param [in] duck TSDuck execution context.
@@ -66,7 +66,7 @@ namespace ts {
             bool isVideo(const DuckContext& duck) const;
 
             //!
-            //! Check if an elementary stream carries subtitles.
+            //! Check if the elementary stream carries subtitles.
             //! Does not just look at the stream type.
             //! Also analyzes the descriptor list for additional information.
             //! @param [in] duck TSDuck execution context.
@@ -75,7 +75,25 @@ namespace ts {
             bool isSubtitles(const DuckContext& duck) const;
 
             //!
-            //! Get the PID class of the stream.
+            //! Get the first language code in the elementary stream.
+            //! @param [in,out] duck TSDuck execution context.
+            //! @return The language code from the first language descriptor or an empty string if none is found.
+            //!
+            UString language(DuckContext& duck) const;
+
+            //!
+            //! Check if the elementary stream matches a specified language code.
+            //! @param [in,out] duck TSDuck execution context.
+            //! @param [in] language Language code to search (case insensitive, spaces are ignored).
+            //! @return True if the elementary stream contains a language descriptor with the specified language code.
+            //!
+            bool matchLanguage(DuckContext& duck, const UString& language) const
+            {
+                return descs.searchLanguage(duck, language) < descs.size();
+            }
+
+            //!
+            //! Get the PID class of the elementary stream.
             //! Look at the stream type and the descriptor list.
             //! @param [in] duck TSDuck execution context.
             //! @return The PID class (PIDClass::DATA if unknown component type).
@@ -83,7 +101,7 @@ namespace ts {
             PIDClass getClass(const DuckContext& duck) const;
 
             //!
-            //! Try to determine the codec which is used in the stream.
+            //! Try to determine the codec which is used in the elementary stream.
             //! Look at the stream type and the descriptor list.
             //! @param [in] duck TSDuck execution context.
             //! @return The codec type (CodecType::UNDEFINED if unknown).
