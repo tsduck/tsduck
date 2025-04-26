@@ -35,6 +35,22 @@ $ tsp -P identify [options]
 Options
 
 [.opt]
+*--all-set-label* _label1[-label2]_
+
+[.optdoc]
+Set the specified labels on all packets of all PID's in the TS after identifying the first PID.
+
+[.optdoc]
+This option is typically useful with `--set-environment-variable`.
+If another plugin, downstream the chain, uses this environment variable,
+using `--only-label NN` on that plugin ensures that the plugin only starts after the PID is identified
+and therefore after the environment variable is defined.
+As another more radical example, using `-P filter --negate --label NN` deletes all TS packets until the PID is idenfified.
+
+[.optdoc]
+See also the option `--set-label`.
+
+[.opt]
 *-a* +
 *--audio*
 
@@ -55,7 +71,8 @@ The specified name must be a 3-character ISO-639 language code.
 Log a message on each newly identified PID.
 
 [.optdoc]
-This is the default if `--set-label` is not specified.
+This is the default when nothing else is specified
+(none of `--set-label`, `--all-set-label`, `--set-environment-variable`).
 
 [.opt]
 *-p* +
@@ -77,6 +94,18 @@ Identify all PID's carrying SCTE-35 splice commands.
 [.optdoc]
 Identify all PID's belonging to the specified service.
 include::{docdir}/opt/optdoc-service.adoc[tags=!*]
+
+[.opt]
+*--set-environment-variable* _name_
+
+[.optdoc]
+When a PID is identified, define the specific environment variable with this PID value.
+This environment variable can be reused in a XML patch file in another plugin, downstream the chain, for instance.
+
+[.optdoc]
+It is recommended to use this option only when one PID will be identified.
+When several PID's are identified, the environment variable is redefined for each new identified PID
+and using the environment variable later produces different results.
 
 [.opt]
 *--set-label* _label1[-label2]_

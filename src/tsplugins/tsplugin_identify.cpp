@@ -13,6 +13,7 @@
 
 #include "tsPluginRepository.h"
 #include "tsSignalizationDemux.h"
+#include "tsEnvironment.h"
 
 
 //----------------------------------------------------------------------------
@@ -40,7 +41,9 @@ namespace ts {
         bool             _all_service_components = false;
         UString          _service_name {};
         UString          _language {};
+        UString          _env_variable {};
         TSPacketLabelSet _set_labels {};
+        TSPacketLabelSet _all_set_labels {};
 
         // Working data:
         uint16_t           _service_id = INVALID_SERVICE_ID;
@@ -78,6 +81,11 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"identify", ts::IdentifyPlugin);
 ts::IdentifyPlugin::IdentifyPlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Identify PID's based on various criteria", u"[options]")
 {
+    option(u"all-set-label", 0, INTEGER, 0, UNLIMITED_COUNT, 0, TSPacketLabelSet::MAX);
+    help(u"all-set-label", u"label1[-label2]",
+         u"Set the specified labels on all packets of all PID's in the TS after identifying the first PID. "
+         u"See also the option --set-label.");
+
     option(u"audio", 'a');
     help(u"audio", u"Identify all PID's carrying audio.");
 
@@ -89,7 +97,7 @@ ts::IdentifyPlugin::IdentifyPlugin(TSP* tsp_) :
     option(u"log");
     help(u"log",
          u"Log a message on each newly identified PID. "
-         u"This is the default if --set-label is not specified.");
+         u"This is the default when nothing else is specified (--set-label --all-set-label --set-environment-variable).");
 
     option(u"pmt", 'p');
     help(u"pmt", u"Identify all PID's carrying PMT's.");
@@ -103,6 +111,14 @@ ts::IdentifyPlugin::IdentifyPlugin(TSP* tsp_) :
          u"If the argument is an integer value (either decimal or hexadecimal), it is interpreted as a service id. "
          u"Otherwise, it is interpreted as a service name, as specified in the SDT. "
          u"The name is not case sensitive and blanks are ignored.");
+
+    option(u"set-environment-variable", 0, STRING);
+    help(u"set-environment-variable", u"name",
+         u"When a PID is identified, define the specific environment variable with this PID value. "
+         u"This environment variable can be reused in a XML patch file in another plugin, downstream the chain, for instance. "
+         u"It is recommended to use this option only when one PID will be identified. "
+         u"When several PID's are identified, the environment variable is redefined for each new identified PID "
+         u"and using the environment variable later produces different results.");
 
     option(u"set-label", 0, INTEGER, 0, UNLIMITED_COUNT, 0, TSPacketLabelSet::MAX);
     help(u"set-label", u"label1[-label2]",
@@ -123,8 +139,6 @@ ts::IdentifyPlugin::IdentifyPlugin(TSP* tsp_) :
 
 bool ts::IdentifyPlugin::getOptions()
 {
-    getIntValues(_set_labels, u"set-label");
-    _log = present(u"log") || _set_labels.none();
     _pmt = present(u"pmt");
     _audio = present(u"audio");
     _video = present(u"video");
@@ -132,6 +146,12 @@ bool ts::IdentifyPlugin::getOptions()
     _scte35 = present(u"scte-35");
     getValue(_service_name, u"service");
     getValue(_language, u"language");
+    getValue(_env_variable, u"set-environment-variable");
+    getIntValues(_set_labels, u"set-label");
+    getIntValues(_all_set_labels, u"all-set-label");
+
+    // The default operation is logging a message, if nothing else is specified.
+    _log = present(u"log") || (_set_labels.none() && _all_set_labels.none() && _env_variable.empty());
 
     // Identify all components in a specified service
     _all_service_components = !_audio && !_video && !_subtitles && !_scte35 && !_service_name.empty();
@@ -180,6 +200,11 @@ ts::ProcessorPlugin::Status ts::IdentifyPlugin::processPacket(TSPacket& pkt, TSP
     if (_identified_pids.test(pkt.getPID())) {
         pkt_data.setLabels(_set_labels);
     }
+
+    // Mask all packets in the TS after identifying the first PID.
+    if (_identified_pids.any()) {
+        pkt_data.setLabels(_all_set_labels);
+    }
     return TSP_OK;
 }
 
@@ -196,8 +221,14 @@ bool ts::IdentifyPlugin::identifyPID(PID pid)
     }
     else {
         // New identified PID.
+        if (!_env_variable.empty()) {
+            if (_identified_pids.any()) {
+                // At least one other PID has already been identified.
+                warning(u"redefining %s to \"%d\" (was \"%s\")", _env_variable, pid, GetEnvironment(_env_variable));
+            }
+            SetEnvironment(_env_variable, UString::Decimal(pid, 0, true, UString()));
+        }
         _identified_pids.set(pid);
-        // TODO: additional processing of identified PID's here
         return true;
     }
 }

@@ -88,6 +88,23 @@ namespace ts {
         void addPatchFileNames(const UStringList& filenames);
 
         //!
+        //! Set expansion of environment variables in patch files.
+        //! @param [in] expand If true, expand all environment variables in the patch files before patching.
+        //! More precisely, each patch file is internally duplicated first and then all environment variables
+        //! are expanded in that copy. Therefore, if this TablePatchXML instance is used several times and
+        //! the values of the environment variables changed in the meantime, the latest up-to-date values are
+        //! always used.
+        //!
+        void setExpandEnvironment(bool expand) { _expand_env = expand; }
+
+        //!
+        //! Check if expansion of environment variables is performed in patch files.
+        //! @return True if expansion of environment variables is performed in patch files.
+        //! @see setExpandEnvironment()
+        //!
+        bool getExpandEnvironment() const { return _expand_env; }
+
+        //!
         //! Load (or reload) the XML patch files.
         //! @param [in] tweaks XML tweaks to load in the documents.
         //! @return True on success, false some error occurred in the input files.
@@ -126,8 +143,9 @@ namespace ts {
         using PatchDocumentPtr = std::shared_ptr<ts::xml::PatchDocument>;
         using PatchDocumentVector = std::vector<PatchDocumentPtr>;
 
-        DuckContext&        _duck;           // TSDuck execution context.
-        UStringVector       _patchFiles {};  // XML patch file names.
-        PatchDocumentVector _patches {};     // XML patch files as loaded documents
+        DuckContext&        _duck;                // TSDuck execution context.
+        UStringVector       _patchFiles {};       // XML patch file names.
+        PatchDocumentVector _patches {};          // XML patch files as loaded documents
+        bool                _expand_env = false;  // Expand environment variables in patch files before patching.
     };
 }

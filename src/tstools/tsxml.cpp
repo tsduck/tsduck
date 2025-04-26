@@ -47,7 +47,8 @@ namespace {
         bool                     use_model = false;     // There is a model to use.
         bool                     from_json = false;     // Perform an automated JSON-to-XML conversion on input.
         bool                     merge_inputs = false;  // Merge all input XML files as one.
-        bool                     expand_env = false;    // Expand environment variables.
+        bool                     expand_input = false;    // Expand environment variables in input files.
+        bool                     expand_patch = false;  // Expand environment variables in patch files.
         bool                     need_output = false;   // An output file is needed.
         ts::UString              xml_prefix {};         // Prefix in XML line.
         size_t                   indent = 2;            // Output indentation.
@@ -84,8 +85,15 @@ Options::Options(int argc, char *argv[]) :
 
     option(u"expand-environment", 'e');
     help(u"expand-environment",
-         u"Expand environment variables in the XML files. "
-         u"Environment variables must be referenced as '${name}'.");
+         u"Expand environment variables in the input XML files. "
+         u"Environment variables must be referenced as '${name}'. "
+         u"See also option --expand-patch-xml for patch files.");
+
+    option(u"expand-patch-xml");
+    help(u"expand-patch-xml",
+         u"With --patch, expand all environment variables in the patch files before patching. "
+         u"Environment variables must be referenced as '${name}'. "
+         u"See also option --expand-environment for input XML files.");
 
     option(u"from-json", 'f');
     help(u"from-json",
@@ -175,7 +183,8 @@ Options::Options(int argc, char *argv[]) :
     xml_line = present(u"xml-line");
     from_json = present(u"from-json");
     merge_inputs = present(u"merge");
-    expand_env = present(u"expand-environment");
+    expand_input = present(u"expand-environment");
+    expand_patch = present(u"expand-patch-xml");
     uncomment = present(u"uncomment");
 
     // Get model file.
@@ -203,7 +212,7 @@ Options::Options(int argc, char *argv[]) :
     }
 
     // An output file wil be produced.
-    need_output = reformat || uncomment || merge_inputs || json.useFile() || from_json || expand_env;
+    need_output = reformat || uncomment || merge_inputs || json.useFile() || from_json || expand_input;
 
     exitOnError();
 }
@@ -252,17 +261,17 @@ namespace {
 namespace {
     void ProcessDocument(Options& opt, const ts::TablePatchXML& patch, ts::xml::Document& doc)
     {
+        // Expand environment variables.
+        if (opt.expand_input) {
+            doc.expandEnvironment(true);
+        }
+
         // Apply all patches one by one.
         patch.applyPatches(doc);
 
         // Remove comments.
         if (opt.uncomment) {
             doc.removeComments(true);
-        }
-
-        // Expand environment variables.
-        if (opt.expand_env) {
-            doc.expandEnvironment(true);
         }
 
         // Sort the content of the specified tags.
@@ -328,6 +337,7 @@ int MainCode(int argc, char *argv[])
 
     // Load patch files.
     ts::TablePatchXML patch(opt.duck);
+    patch.setExpandEnvironment(opt.expand_patch);
     patch.addPatchFileNames(opt.patches);
     patch.loadPatchFiles(opt.xml_tweaks);
     opt.exitOnError();

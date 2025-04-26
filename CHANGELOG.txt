@@ -11,11 +11,17 @@ VERSION 3.41-425è (Apr 2025)
 [IMP] Improvements on existing commands and plugins:
 
   * Added missing ATSC and ISDB tables and descriptors.
+  * Added optional expansion of  environment  variables  in  XML  patch  files.
+    Combined with the plugin "identify" which  defines  environement  variables
+    with PID values which were just identified, this opens the  possibility  to
+    define XML patch files without knowing precise PID values in advance.
   * New options in existing commands and plugins:
     - Option --no-link-local in "tsdump", "tstabdump" and plugins "ip" (input),
       "cutoff", "mpeinject".
     - Options --summary, --epg-dump, --detailed, --width in plugin "eit".
-    - Option --expand-environment in "tsxml".
+    - Options --expand-environment, --expand-patch-xml in "tsxml".
+    - Option --expand-patch-xml in plugins "bat, "cat",  "nit",  "pat",  "pmt",
+      "sdt", "section"
 
 [BUG] Bug fixes:
 

@@ -69,8 +69,21 @@ This option verifies that the input files are valid channel configuration files.
 *--expand-environment*
 
 [.optdoc]
-Expand environment variables in the XML files.
+Expand environment variables in the input XML files.
 Environment variables must be referenced as `${name}`.
+
+[.optdoc]
+See also option `--expand-patch-xml` to expand environment variables in patch files.
+
+[.opt]
+*--expand-patch-xml*
+
+[.optdoc]
+Expand environment variables in the XML patch files before patching.
+Environment variables must be referenced as `${name}`.
+
+[.optdoc]
+See also option `--expand-environment` to expand environment variables in input files.
 
 [.opt]
 *-f* +

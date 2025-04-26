@@ -242,8 +242,10 @@ namespace ts::xml {
         //! @param [in] attributeName Attribute name.
         //! @param [in] value Expected value.
         //! @param [in] similar If true, the comparison between the actual and expected
-        //! values is performed case-insensitive and ignoring blanks. If false, a strict
-        //! comparison is performed.
+        //! values is performed case-insensitive and ignoring blanks. Additioanlly,
+        //! if the values are integers, the integer values are compared (otherwise,
+        //! identical values in decimal and hexadecimal wouldn't match).
+        //! If @a similar is false, a strict comparison is performed.
         //! @return True if the attribute exists and has the expected value.
         //!
         bool hasAttribute(const UString& attributeName, const UString& value, bool similar = false) const;

@@ -1382,6 +1382,31 @@ node when a previous `<splice_insert>` was deleted. This type of descriptor
 is typically used with a `<splice_insert>` command but is useless with a
 `<splice_null>` command.
 
+[#xml-envexpand]
+==== Expansion of environment variables in XML files
+
+It is possible to expand the value of environment variables in XML files, typically in XML patch files.
+This is useful to reference a PID number, for instance, which is not known when the patch file is written.
+
+A reference to a an environment variable must be in the form `${NAME}` where `NAME` is the name of
+an environment variable.
+
+The basic form `$NAME`, as used in the shell, is not recognized as a reference because it would attempt to
+replace something each time a `$` symbol is used in a XML file, which is considered harmful.
+To use a literal string `${NAME}` without substitution, you need to escape the `$` sign as
+in `substituted: ${NAME}, not substituted: \${VIDEO}`.
+
+By default, to avoid accidental substitutions,
+the XML files are left unmodified and no reference to environment variables is processed.
+Use the option `--expand-patch-xml` to force the expansion of environment variables in patch files,
+in addition to the option `--patch-xml` which specifies the patch files.
+
+A reference to an environment variable is allowed in XML attribute values, in text nodes, in comments,
+and even in element names.
+
+See an example in xref:sample-envpatch[xrefstyle=short] which combines the plugin `identify`
+which define an environment variable and the plugin `pmt` which uses it in a patch file.
+
 === JSON and "normalized" report formats
 
 TSDuck uses various text formats for report files.

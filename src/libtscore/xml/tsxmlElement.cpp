@@ -426,15 +426,22 @@ const ts::xml::Attribute& ts::xml::Element::attribute(const UString& attributeNa
 bool ts::xml::Element::hasAttribute(const UString& name, const UString& value, bool similar) const
 {
     const Attribute& attr(attribute(name, true));
+    std::intmax_t a = 0, b = 0;
     if (!attr.isValid()) {
         // Attribute not present.
         return false;
     }
-    else if (similar) {
-        return value.similar(attr.value());
+    else if (!similar) {
+        // Strict comparison.
+        return value == attr.value();
+    }
+    else if (value.toInteger(a, UString::DEFAULT_THOUSANDS_SEPARATOR) && attr.value().toInteger(b, UString::DEFAULT_THOUSANDS_SEPARATOR)) {
+        // The two values are integer, compare the decoded integer values, not their string representation.
+        return a == b;
     }
     else {
-        return value == attr.value();
+        // Lousy string comparison.
+        return value.similar(attr.value());
     }
 }
 

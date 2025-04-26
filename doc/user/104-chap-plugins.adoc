@@ -149,6 +149,10 @@ endif::[]
 |input, output
 |Send / receive a transport stream as / from an HTTP server
 
+|identify
+|packet
+|Identify PID's based on various criteria
+
 |inject
 |packet
 |Inject a table into a transport stream

@@ -3465,3 +3465,116 @@ Maximum bitrate: 2000000
 
 NOTE: The same example can be used to monitor the global bitrate of the transport stream.
 Just remove the `--pid` option in the `bitrate_monitor` plugin.
+
+[#sample-envpatch]
+==== Using environment variables in XML patch files
+
+This example demonstrates how to use environment variables to dynamically update XML patch files.
+
+See xref:xml-envexpand[xrefstyle=short] for more details on expansion of environment variables in XML files.
+
+The objective of this example is to add a component tag value 0x03 on the video PID of the service named "France 2".
+We only know the service by name. We don't know it's service id, its PMT PID, its video PID.
+
+We use the plugin `identify` to find the video PID of that service.
+When the video PID is found, the plugin `identify` defines the environment variable `VIDEO_PID` with that PID value.
+In a XML patch file, we specify that a PMT shall be patched so that the component with PID `${VIDEO_PID}` shall
+receive a new _stream_identifier_descriptor_ with the given component tag.
+
+The XML patch file is the following:
+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <PMT>
+    <component elementary_PID="${VIDEO_PID}">
+      <stream_identifier_descriptor component_tag="0x03" x-node="add"/>
+    </component>
+  </PMT>
+</tsduck>
+----
+
+The patch will match any `<PMT>` structure, with a `<component>` substructure,
+into which the value of the attribute `elementary_PID` is the value of the environment variable `VIDEO_PID`.
+
+The `stream_identifier_descriptor` structure contains an attribute `x-node="add"`.
+As explained in xref:xml-patch[xrefstyle=short], this means that the `stream_identifier_descriptor` structure
+is not part of the structure to match.
+It means that the `stream_identifier_descriptor` structure is added into a matching parent structure.
+
+In practice, this means that whenever we get a `<PMT>` containing a `<component>` with attributes `elementary_PID`
+equal to the value of the environment variable `VIDEO_PID`, we add `<stream_identifier_descriptor component_tag="0x03"/>`
+into the `<component>`.
+This is exactly the objective of this example.
+
+The complete command is the following (input and output plugins are left to the user's choice).
+
+[source,shell]
+----
+$ tsp -I ... \
+      -P identify --service france2 --video --set-environment-variable VIDEO_PID --all-set-label 3 \
+      -P pmt --only-label 3 --service france2 --increment-version --patch-xml patch.xml --expand-patch-xml \
+      -O ...
+----
+
+The plugin `identify` locates the video PID of the service named "France 2"
+(remember that service names can be specified ignoring spaces and case-insensitive,
+which is more user-friendly on the command line).
+More precisely, the plugin `identify` locates all PID's which match criteria
+"belongs to service France 2" (`--service france2`) and "is a video PID" (`--video`),
+which usually results in one single PID.
+
+When that PID is identified, the environment variable `VIDEO_PID` is set to the value of that PID
+(`--set-environment-variable VIDEO_PID`).
+The environment variable is set inside the process `tsp` and becomes accessible to all threads of the process,
+meaning all plugins, including the next plugin `pmt` which is in charge of patching the PMT for the service.
+
+The XML patch file uses the value `${VIDEO_PID}` to reference the video PID.
+However, we have seen that the environment variable `VIDEO_PID` is defined only when the PID is identified,
+meaning after receiving the SDT (to known which service id has France 2), after receiving the PAT
+(to know on which PID is the PMT of the service), and after receiving the PMT
+(to know on which PID is the video).
+
+As explained in the description of option `--expand-patch-xml` of the various plugins which define it,
+_"it expands all environment variables in the patch files before patching.
+The expansion is performed each time a patch file is used.
+Therefore, if the values of the environment variables changed between two usages of the patch file,
+the latest up-to-date environment values are always used."_
+
+So, when `tsp` starts, the plugin `pmt` loads the XML patch file but the content of the attribute
+remains the literal string `${VIDEO_PID}`.
+The name is expanded each time the patch file used, meaning each time we process a PMT.
+For this reason, we must ensure that the plugin `pmt` remains idle as long as the
+environment variable `VIDEO_PID` is not defined.
+
+This is achieved using the option `--all-set-label 3` in plugin `identify`.
+It means that the plugin will set label number 3 (any other number between 0 and 31 would be ok)
+on all packets of the transport stream after the PID has been identified.
+Therefore, when any plugin downstream the chain processes a TS packet with label 3,
+it is guaranteed that the video of the service has been identified and that the
+environment variable `VIDEO_PID` has been defined.
+
+NOTE: With the plugin `identify`, the option `--all-set-label` shall not be confused with option `--set-label`.
+The latter sets a label on all packets of the identified PID's, while the former sets a label on all packets
+of the transport stream after identifying the PID.
+The latter is used to identify packets of the identified PID's, while the former is used to identify the point
+where it is guaranteed that the PID has been identified.
+
+This is why the plugin `pmt` uses the option `--only-label 3`.
+This is a generic option which is common to all packet processing plugins.
+It means that the plugin is called only on packets with label 3.
+All other packets are transparently passed to the next plugin, bypassing the plugin `pmt`.
+This is exactly what we wanted to achieve: start to process packets in the plugin after the video PID is identified, 
+and after the environment variable `VIDEO_PID` is defined.
+
+Also note the following points:
+
+* The option `--increment-version` increments the version of the PMT when patching it.
+  This is required because other unpatched instances of the PMT may have already flown
+  through the plugin (or bypassing it before label 3 is set on packets).
+  The receiver needs to differentiate the new patched PMT from the previous unpatched one.
+  This is achieved using a version change.
+* The options `--expand-patch-xml` is required to expand environment variables in the patch files.
+  Otherwise, by default, the content of the XML patch file is unmodified and expressions such as
+  `${VIDEO_PID}` remain unchanged.

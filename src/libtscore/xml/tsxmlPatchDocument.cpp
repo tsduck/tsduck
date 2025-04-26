@@ -81,16 +81,18 @@ bool ts::xml::PatchDocument::patchElement(const Element* patch, Element* doc, US
         }
         else if (!it.first.starts_with(X_ATTR, CASE_INSENSITIVE)) {
             // Standard attribute (not x-), check if the element matches the specified attribute value.
-            // If not, this element shall not be patched, return immediately.
+            // If not, this element shall not be patched, return immediately. Compare values in "similar"
+            // mode, case-insensitive, matching integer values.
+            static constexpr bool similar = true;
             if (it.second.starts_with(u"!")) {
                 // Need to match attribute not equal to specified value.
-                if (doc->hasAttribute(it.first, it.second.substr(1))) {
+                if (doc->hasAttribute(it.first, it.second.substr(1), similar)) {
                     return true; // attribute value found => don't patch
                 }
             }
             else {
                 // Need to match attribute equal to specified value.
-                if (!doc->hasAttribute(it.first, it.second)) {
+                if (!doc->hasAttribute(it.first, it.second, similar)) {
                     return true; // attribute value not found => don't patch
                 }
             }

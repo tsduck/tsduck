@@ -83,6 +83,19 @@ This can be useful to force the creation of a {opt-table} in a TS which has none
 endif::[]
 
 [.opt]
+*--expand-patch-xml*
+
+[.optdoc]
+With `--patch-xml`, expand all environment variables in the patch files before patching.
+The expansion is performed each time a patch file is used.
+Therefore, if the values of the environment variables changed between two usages of the patch file,
+the latest up-to-date environment values are always used.
+
+[.optdoc]
+In a XML patch file, environment variables are referenced using the syntax `${NAME}`.
+Such a reference is allowed anywhere in element names, attributes or text nodes.
+
+[.opt]
 ifdef::opt-short-increment[]
 *-i* +
 endif::[]
@@ -120,6 +133,7 @@ Patch files are sequentially applied on each table.
 
 [.optdoc]
 See xref:xml-patch[xrefstyle=short] for more details on XML patch files.
+See also option `--expand-patch-xml`.
 
 [.opt]
 *-v* _value_ +

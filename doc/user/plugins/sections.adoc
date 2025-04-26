@@ -46,6 +46,19 @@ and all sections with version 6 (any table id).
 On the other hand, `--and --tid 2 --version 6` remove only PMT sections with version 6.
 
 [.opt]
+*--expand-patch-xml*
+
+[.optdoc]
+With `--patch-xml`, expand all environment variables in the patch files before patching.
+The expansion is performed each time a patch file is used.
+Therefore, if the values of the environment variables changed between two usages of the patch file,
+the latest up-to-date environment values are always used.
+
+[.optdoc]
+In a XML patch file, environment variables are referenced using the syntax `${NAME}`.
+Such a reference is allowed anywhere in element names, attributes or text nodes.
+
+[.opt]
 *-k* +
 *--keep*
 
@@ -91,6 +104,7 @@ Patch files are sequentially applied on each section.
 
 [.optdoc]
 See xref:xml-patch[xrefstyle=short] for more details on XML patch files.
+See also option `--expand-patch-xml`.
 
 [.opt]
 *-o* _value_ +

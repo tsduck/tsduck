@@ -25,6 +25,7 @@ namespace ts {
     public:
         // Implementation of plugin API
         virtual bool getOptions() override;
+        virtual bool start() override;
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
@@ -36,5 +37,7 @@ namespace ts {
         bool          _exception = false;
         bool          _exit = false;
         int           _exit_code = EXIT_SUCCESS;
+        UString       _env_name {};
+        UString       _env_value {};
     };
 }

@@ -8,6 +8,7 @@
 
 #include "tsDebugPlugin.h"
 #include "tsPluginRepository.h"
+#include "tsEnvironment.h"
 
 TS_REGISTER_PROCESSOR_PLUGIN(u"debug", ts::DebugPlugin);
 
@@ -25,6 +26,9 @@ ts::DebugPlugin::DebugPlugin(TSP* tsp_) :
 
     option(u"bad-alloc");
     help(u"bad-alloc", u"Simulate a memory allocation failure on the first debugged packet.");
+
+    option(u"environment-variable", 0, STRING);
+    help(u"environment-variable", u"name", u"Monitor modification of the specified environment variable.");
 
     option(u"exception");
     help(u"exception", u"Throw an exception on the first debugged packet.");
@@ -46,7 +50,7 @@ ts::DebugPlugin::DebugPlugin(TSP* tsp_) :
 
 
 //----------------------------------------------------------------------------
-// Get options methods
+// Get options method
 //----------------------------------------------------------------------------
 
 bool ts::DebugPlugin::getOptions()
@@ -57,10 +61,22 @@ bool ts::DebugPlugin::getOptions()
     _exit = present(u"exit");
     getIntValue(_exit_code, u"exit", EXIT_SUCCESS);
     getIntValue(_packet, u"packet", 0);
+    getValue(_env_name, u"environment-variable");
     getValue(_tag, u"tag");
     if (!_tag.empty()) {
         _tag += u": ";
     }
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Start method
+//----------------------------------------------------------------------------
+
+bool ts::DebugPlugin::start()
+{
+    _env_value.clear();
     return true;
 }
 
@@ -73,6 +89,13 @@ ts::ProcessorPlugin::Status ts::DebugPlugin::processPacket(TSPacket& pkt, TSPack
 {
     if (tsp->pluginPackets() < _packet) {
         return TSP_OK; // not yet the first debugged packet
+    }
+    if (!_env_name.empty()) {
+        const UString value(GetEnvironment(_env_name));
+        if (value != _env_value) {
+            info(u"%spacket %'d: %s=\"%s\" (was \"%s\")", _tag, tsp->pluginPackets(), _env_name, value, _env_value);
+            _env_value = value;
+        }
     }
     if (_exception) {
         throw std::exception();

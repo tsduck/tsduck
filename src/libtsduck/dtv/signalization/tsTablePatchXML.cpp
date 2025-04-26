@@ -23,6 +23,7 @@ void ts::TablePatchXML::clear()
 {
     _patchFiles.clear();
     _patches.clear();
+    _expand_env = false;
 }
 
 
@@ -38,6 +39,13 @@ void ts::TablePatchXML::defineArgs(Args& args)
               u"If the name starts with \"<?xml\", it is considered as \"inline XML content\". "
               u"Several --patch-xml options can be specified. "
               u"Patch files are sequentially applied on each table.");
+
+    args.option(u"expand-patch-xml");
+    args.help(u"expand-patch-xml",
+              u"Expand all environment variables in the patch files before patching. "
+              u"The expansion is performed each time a patch file is used. "
+              u"Therefore, if the values of the environment variables changed between two usages of the patch file, "
+              u"the latest up-to-date environment values are always used.");
 }
 
 
@@ -48,6 +56,7 @@ void ts::TablePatchXML::defineArgs(Args& args)
 bool ts::TablePatchXML::loadArgs(DuckContext& duck, Args& args)
 {
     args.getValues(_patchFiles, u"patch-xml");
+    _expand_env = args.present(u"expand-patch-xml");
     return true;
 }
 
@@ -107,8 +116,16 @@ void ts::TablePatchXML::applyPatches(xml::Document& doc) const
     // be costly and useless if not in debug mode (I know some will complain...)
     doc.report().log(2, u"before patching table:\n%s", doc);
 
-    for (const auto& p : _patches) {
-        p->patch(doc);
+    for (const PatchDocumentPtr& p : _patches) {
+        if (_expand_env) {
+            xml::PatchDocument copy(*p);
+            copy.expandEnvironment(true);
+            doc.report().log(2, u"patch file after environment variable substitution:\n%s", copy);
+            copy.patch(doc);
+        }
+        else {
+            p->patch(doc);
+        }
     }
 
     doc.report().log(2, u"after patching table:\n%s", doc);
