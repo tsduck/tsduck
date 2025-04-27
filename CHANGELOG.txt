@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.41-425è (Apr 2025)
+VERSION 3.41-4260 (Apr 2025)
 
 [NEW] New commands and plugins:
 
@@ -21,7 +21,7 @@ VERSION 3.41-425è (Apr 2025)
     - Options --summary, --epg-dump, --detailed, --width in plugin "eit".
     - Options --expand-environment, --expand-patch-xml in "tsxml".
     - Option --expand-patch-xml in plugins "bat, "cat",  "nit",  "pat",  "pmt",
-      "sdt", "section"
+      "sdt", "sections".
 
 [BUG] Bug fixes:
 
