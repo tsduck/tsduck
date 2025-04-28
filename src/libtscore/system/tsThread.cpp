@@ -11,7 +11,6 @@
 #include "tsSysUtils.h"
 #include "tsSysInfo.h"
 #include "tsIntegerUtils.h"
-#include "tsSharedLibrary.h"
 
 #if defined(TS_LINUX)
     #include "tsBeforeStandardHeaders.h"
@@ -316,31 +315,44 @@ bool ts::Thread::waitForTermination()
 
 //----------------------------------------------------------------------------
 // Dynamically resolve SetThreadDescription() on Windows.
+// Implemented as a static function to allow "initialize once" later.
+//
+// On Windows, SetThreadDescription() is used to set the thread name.
+// This function in defined in Kernel32.dll on recent versions of Windows.
+// On older versions, referencing this symbol fails. According to
+// https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-setthreaddescription
+// on Windows Server 2016, Windows 10 LTSB 2016 and Windows 10 version 1607,
+// SetThreadDescription is only available by Run Time Dynamic Linking in
+// KernelBase.dll. So, we try Kernel32 first, then KernelBase. Eventually,
+// it may not be defined at all and we return a null pointer.
+//
+// Kernel32 and KernelBase are supposed to be already loaded in any user
+// process, so we directly use GetModuleHandle() instead of ts::SharedLibrary.
 //----------------------------------------------------------------------------
 
 #if defined(TS_WINDOWS)
-ts::Thread::SetThreadDescriptionProfile ts::Thread::GetSetThreadDescription()
-{
-    // On Windows, SetThreadDescription() is used to set the thread name.
-    // This function in defined in Kernel32.dll on recent versions of Windows.
-    // On older versions, referencing this symbol fails. According to
-    // https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-setthreaddescription
-    // on Windows Server 2016, Windows 10 LTSB 2016 and Windows 10 version 1607,
-    // SetThreadDescription is only available by Run Time Dynamic Linking in KernelBase.dll.
-    // So, we try Kernel32 first, then KernelBase. Eventually, it may not be defined
-    // at all and we return a null pointer.
-    void* addr = nullptr;
-    SharedLibrary kernel32(u"Kernel32.dll", SharedLibraryFlags::PERMANENT);
-    if (kernel32.isLoaded()) {
-        addr = kernel32.getSymbol("SetThreadDescription");
-    }
-    if (addr == nullptr) {
-        SharedLibrary kernelbase(u"KernelBase.dll", SharedLibraryFlags::PERMANENT);
-        if (kernelbase.isLoaded()) {
-            addr = kernelbase.getSymbol("SetThreadDescription");
+namespace {
+
+    // Profile for SetThreadDescription().
+    // Note: WINAPI is mandatory on Win32, otherwise calling the function crashes. This is the default with x64.
+    using SetThreadDescriptionProfile = ::HRESULT (WINAPI*)(::HANDLE hThread, ::PCWSTR lpThreadDescription);
+
+    // Dynamically resolve SetThreadDescription() on Windows.
+    SetThreadDescriptionProfile GetSetThreadDescription()
+    {
+        void* addr = nullptr;
+        const ::HMODULE k32 = ::GetModuleHandleA("Kernel32.dll");
+        if (k32 != nullptr) {
+            addr = ::GetProcAddress(k32, "SetThreadDescription");
         }
+        if (addr == nullptr) {
+            const ::HMODULE kbase = ::GetModuleHandleA("KernelBase.dll");
+            if (kbase != nullptr) {
+                addr = ::GetProcAddress(kbase, "SetThreadDescription");
+            }
+        }
+        return reinterpret_cast<SetThreadDescriptionProfile>(addr);
     }
-    return reinterpret_cast<SetThreadDescriptionProfile>(addr);
 }
 #endif
 
