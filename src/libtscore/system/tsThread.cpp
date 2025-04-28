@@ -340,7 +340,7 @@ void ts::Thread::mainWrapper()
         ::pthread_setname_np(name.toUTF8().c_str());
 #elif defined(TS_FREEBSD) || defined(TS_DRAGONFLYBSD)
         ::pthread_setname_np(_pthread, name.toUTF8().c_str());
-#elif defined(TS_WINDOWS)
+#elif defined(TS_WINDOWS) && (NTDDI_VERSION >= NTDDI_WIN10_RS1)
         ::SetThreadDescription(::GetCurrentThread(), name.wc_str());
 #endif
     }
