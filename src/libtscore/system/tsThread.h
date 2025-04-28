@@ -216,6 +216,10 @@ namespace ts {
             ::DWORD _thread_id = 0;
             // Actual starting point of thread. Parameter is "this".
             static ::DWORD WINAPI ThreadProc(::LPVOID parameter);
+            // Profile for SetThreadDescription().
+            using SetThreadDescriptionProfile = ::HRESULT (*)(::HANDLE hThread, ::PCWSTR lpThreadDescription);
+            // Dynamically resolve SetThreadDescription().
+            static SetThreadDescriptionProfile GetSetThreadDescription();
         #else
             #if defined(GPROF)
                 // When using gprof, we need to pass the ITIMER_PROF value to the thread.

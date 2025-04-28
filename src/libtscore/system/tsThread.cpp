@@ -11,6 +11,7 @@
 #include "tsSysUtils.h"
 #include "tsSysInfo.h"
 #include "tsIntegerUtils.h"
+#include "tsSharedLibrary.h"
 
 #if defined(TS_LINUX)
     #include "tsBeforeStandardHeaders.h"
@@ -314,6 +315,37 @@ bool ts::Thread::waitForTermination()
 
 
 //----------------------------------------------------------------------------
+// Dynamically resolve SetThreadDescription() on Windows.
+//----------------------------------------------------------------------------
+
+#if defined(TS_WINDOWS)
+ts::Thread::SetThreadDescriptionProfile ts::Thread::GetSetThreadDescription()
+{
+    // On Windows, SetThreadDescription() is used to set the thread name.
+    // This function in defined in Kernel32.dll on recent versions of Windows.
+    // On older versions, referencing this symbol fails. According to
+    // https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-setthreaddescription
+    // on Windows Server 2016, Windows 10 LTSB 2016 and Windows 10 version 1607,
+    // SetThreadDescription is only available by Run Time Dynamic Linking in KernelBase.dll.
+    // So, we try Kernel32 first, then KernelBase. Eventually, it may not be defined
+    // at all and we return a null pointer.
+    void* addr = nullptr;
+    SharedLibrary kernel32(u"Kernel32.dll", SharedLibraryFlags::PERMANENT);
+    if (kernel32.isLoaded()) {
+        addr = kernel32.getSymbol("SetThreadDescription");
+    }
+    if (addr == nullptr) {
+        SharedLibrary kernelbase(u"KernelBase.dll", SharedLibraryFlags::PERMANENT);
+        if (kernelbase.isLoaded()) {
+            addr = kernelbase.getSymbol("SetThreadDescription");
+        }
+    }
+    return reinterpret_cast<SetThreadDescriptionProfile>(addr);
+}
+#endif
+
+
+//----------------------------------------------------------------------------
 // Static method. Actual starting point of threads. Parameter is "this".
 //----------------------------------------------------------------------------
 
@@ -341,7 +373,11 @@ void ts::Thread::mainWrapper()
 #elif defined(TS_FREEBSD) || defined(TS_DRAGONFLYBSD)
         ::pthread_setname_np(_pthread, name.toUTF8().c_str());
 #elif defined(TS_WINDOWS)
-        ::SetThreadDescription(::GetCurrentThread(), name.wc_str());
+        // Thread-safe init-safe static data pattern:
+        static const SetThreadDescriptionProfile SetThreadDescriptionAddr = GetSetThreadDescription();
+        if (SetThreadDescriptionAddr != nullptr) {
+            SetThreadDescriptionAddr(::GetCurrentThread(), name.wc_str());
+        }
 #endif
     }
 
