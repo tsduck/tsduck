@@ -120,7 +120,7 @@ void ts::DSMCCUserToNetworkMessage::deserializePayload(PSIBuffer& buf, const Sec
         buf.skipBytes(adaptation_length);
     }
 
-    if (header.message_id == DSMCC_MESSAGE_ID_DSI) {
+    if (header.message_id == DSMCC_MSGID_DSI) {
         buf.getBytes(server_id, SERVER_ID_SIZE);
 
         buf.skipBytes(2);  // compatibility_descriptor_length
@@ -148,7 +148,7 @@ void ts::DSMCCUserToNetworkMessage::deserializePayload(PSIBuffer& buf, const Sec
 
             tagged_profile.profile_data_byte_order = buf.getUInt8();
 
-            if (tagged_profile.profile_id_tag == DSMCC_TAG_BIOP_PROFILE) {  // TAG_BIOP (BIOP Profile Body)
+            if (tagged_profile.profile_id_tag == DSMCC_TAG_BIOP) {  // TAG_BIOP (BIOP Profile Body)
                 const uint8_t lite_component_count = buf.getUInt8();
 
                 for (size_t j = 0; j < lite_component_count; j++) {
@@ -230,7 +230,7 @@ void ts::DSMCCUserToNetworkMessage::deserializePayload(PSIBuffer& buf, const Sec
 
         buf.skipBytes(4);  // download_taps_count + service_context_list_count + user_info_length
     }
-    else if (header.message_id == DSMCC_MESSAGE_ID_DII) {
+    else if (header.message_id == DSMCC_MSGID_DII) {
 
         download_id = buf.getUInt32();
         block_size = buf.getUInt16();
@@ -299,7 +299,7 @@ void ts::DSMCCUserToNetworkMessage::serializePayload(BinaryTable& table, PSIBuff
 
     buf.pushWriteSequenceWithLeadingLength(16);
 
-    if (header.message_id == DSMCC_MESSAGE_ID_DSI) {
+    if (header.message_id == DSMCC_MSGID_DSI) {
         buf.putBytes(server_id);
         buf.putUInt16(0x0000);  // compatibility_descriptor_length
 
@@ -318,7 +318,7 @@ void ts::DSMCCUserToNetworkMessage::serializePayload(BinaryTable& table, PSIBuff
 
             buf.putUInt8(tagged_profile.profile_data_byte_order);
 
-            if (tagged_profile.profile_id_tag == DSMCC_TAG_BIOP_PROFILE) {  // TAG_BIOP (BIOP Profile Body)
+            if (tagged_profile.profile_id_tag == DSMCC_TAG_BIOP) {  // TAG_BIOP (BIOP Profile Body)
 
                 buf.putUInt8(uint8_t(tagged_profile.liteComponents.size()));
 
@@ -381,7 +381,7 @@ void ts::DSMCCUserToNetworkMessage::serializePayload(BinaryTable& table, PSIBuff
 
         buf.popState();  // close private_data
     }
-    else if (header.message_id == DSMCC_MESSAGE_ID_DII) {
+    else if (header.message_id == DSMCC_MSGID_DII) {
 
         buf.putUInt32(download_id);
         buf.putUInt16(block_size);
@@ -469,7 +469,7 @@ void ts::DSMCCUserToNetworkMessage::DisplaySection(TablesDisplay& disp, const ts
         disp << margin << UString::Format(u"Transaction id: %n", transaction_id) << std::endl;
     }
 
-    if (message_id == DSMCC_MESSAGE_ID_DSI) {  // DSI
+    if (message_id == DSMCC_MSGID_DSI) {  // DSI
         disp.displayPrivateData(u"Server id", buf, SERVER_ID_SIZE, margin);
 
         buf.skipBytes(2);  // compatibility_descriptor_length shall be 0x0000
@@ -495,7 +495,7 @@ void ts::DSMCCUserToNetworkMessage::DisplaySection(TablesDisplay& disp, const ts
             disp << margin << "ProfileId Tag: " << DataName(MY_XML_NAME, u"tag", profile_id_tag, NamesFlags::HEX_VALUE_NAME) << std::endl;
             disp << margin << UString::Format(u"Profile Data Byte Order: %n", profile_data_byte_order) << std::endl;
 
-            if (profile_id_tag == DSMCC_TAG_BIOP_PROFILE) {  // TAG_BIOP (BIOP Profile Body)
+            if (profile_id_tag == DSMCC_TAG_BIOP) {  // TAG_BIOP (BIOP Profile Body)
                 uint8_t lite_component_count = buf.getUInt8();
                 disp << margin << UString::Format(u"Lite Component Count: %n", lite_component_count) << std::endl;
 
@@ -579,7 +579,7 @@ void ts::DSMCCUserToNetworkMessage::DisplaySection(TablesDisplay& disp, const ts
         disp << margin << UString::Format(u"Service context list count: %n", service_context_list_count) << std::endl;
         disp << margin << UString::Format(u"User info length: %n", user_info_length) << std::endl;
     }
-    else if (message_id == DSMCC_MESSAGE_ID_DII) {  //DII
+    else if (message_id == DSMCC_MSGID_DII) {  //DII
         disp << margin << UString::Format(u"Download id: %n", buf.getUInt32()) << std::endl;
         disp << margin << UString::Format(u"Block size: %n", buf.getUInt16()) << std::endl;
 
@@ -658,7 +658,7 @@ void ts::DSMCCUserToNetworkMessage::buildXML(DuckContext& duck, xml::Element* ro
     root->setIntAttribute(u"message_id", header.message_id, true);
     root->setIntAttribute(u"transaction_id", header.transaction_id, true);
 
-    if (header.message_id == DSMCC_MESSAGE_ID_DSI) {
+    if (header.message_id == DSMCC_MSGID_DSI) {
         xml::Element* dsi = root->addElement(u"DSI");
         dsi->addHexaTextChild(u"server_id", server_id, true);
 
@@ -672,7 +672,7 @@ void ts::DSMCCUserToNetworkMessage::buildXML(DuckContext& duck, xml::Element* ro
             tagged_profile_entry->setIntAttribute(u"profile_id_tag", profile.profile_id_tag, true);
             tagged_profile_entry->setIntAttribute(u"profile_data_byte_order", profile.profile_data_byte_order, true);
 
-            if (profile.profile_id_tag == DSMCC_TAG_BIOP_PROFILE) {
+            if (profile.profile_id_tag == DSMCC_TAG_BIOP) {
 
                 xml::Element* biop_profile_body_entry = tagged_profile_entry->addElement(u"BIOP_profile_body");
 
@@ -730,7 +730,7 @@ void ts::DSMCCUserToNetworkMessage::buildXML(DuckContext& duck, xml::Element* ro
             }
         }
     }
-    else if (header.message_id == DSMCC_MESSAGE_ID_DII) {
+    else if (header.message_id == DSMCC_MSGID_DII) {
 
         xml::Element* dii = root->addElement(u"DII");
         dii->setIntAttribute(u"download_id", download_id, true);
@@ -770,7 +770,7 @@ bool ts::DSMCCUserToNetworkMessage::analyzeXML(DuckContext& duck, const xml::Ele
         element->getIntAttribute(header.message_id, u"message_id", true) &&
         element->getIntAttribute(header.transaction_id, u"transaction_id", true);
 
-    if (header.message_id == DSMCC_MESSAGE_ID_DSI) {
+    if (header.message_id == DSMCC_MSGID_DSI) {
 
         const xml::Element* dsi_element = element->findFirstChild(u"DSI", false);
         if (dsi_element == nullptr) {
@@ -794,7 +794,7 @@ bool ts::DSMCCUserToNetworkMessage::analyzeXML(DuckContext& duck, const xml::Ele
             ok = profile_elements[it]->getIntAttribute(tagged_profile.profile_id_tag, u"profile_id_tag", true) &&
                  profile_elements[it]->getIntAttribute(tagged_profile.profile_data_byte_order, u"profile_data_byte_order", true);
 
-            if (tagged_profile.profile_id_tag == DSMCC_TAG_BIOP_PROFILE) {  // TAG_BIOP (BIOP Profile Body)
+            if (tagged_profile.profile_id_tag == DSMCC_TAG_BIOP) {  // TAG_BIOP (BIOP Profile Body)
                 const xml::Element* biop_profile_body_element = profile_elements[it]->findFirstChild(u"BIOP_profile_body", false);
                 if (biop_profile_body_element == nullptr) {
                     return false;
@@ -887,7 +887,7 @@ bool ts::DSMCCUserToNetworkMessage::analyzeXML(DuckContext& duck, const xml::Ele
             }
         }
     }
-    else if (header.message_id == DSMCC_MESSAGE_ID_DII) {
+    else if (header.message_id == DSMCC_MSGID_DII) {
         const xml::Element* dii_element = element->findFirstChild(u"DII", false);
         if (dii_element == nullptr) {
             return false;

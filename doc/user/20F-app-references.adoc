@@ -123,16 +123,20 @@
 |MAC |Media Access Control (networking)
 |MAC |Message Authentication Code (cryptography)
 |MGT |Master Guide Table (ATSC)
+|MHEG |Multimedia/Hypermedia Experts Group
 |MPE |Multi-Protocol Encapsulation (DVB)
 |MPEG |Moving Picture Experts Group
 |MUX |Multiplexer
 |NBIT |Network Board Information Table (ISDB)
 |NIST |National Institute of Standards and Technology
 |NIT |Network Information Table (DVB)
+|NPT |Normal Play Time
+|NSAP |Network Service Access Point (OSI networks)
 |NTSC |National Television Systems Committee
 |OFCOM |Office of Communications (UK national regulator for TV)
 |OFDM |Orthogonal Frequency-Division Multiplexing (modulation)
 |OQPSK |Offset Quadrature Phase Shift Keying (modulation)
+|OSI |Open Systems Interconnection (networking standards)
 |OTT |Over-The-Top (streaming strategy)
 |OUI |Organizationally Unique Identifier (IEEE assigned)
 |PAT |Program Association Table (MPEG)
@@ -184,10 +188,12 @@
 |TSP |Transport Stream Packet (ISDB)
 |TVCT |Terrestrial Virtual Channel Table (ATSC)
 |UDP |User Datagram Protocol (networking)
+|U-N |User-to-Network (DSM-CC)
 |UNT |Update Notification Table (DVB)
 |URI |Uniform Resource Identifier
 |URL |Uniform Resource Locator
 |UTC |Coordinated Universal Time
+|U-U |User-to-User (DSM-CC)
 |UUID |Universal Unique Identifier
 |UWA |UHD World Association (China)
 |VBI |Vertical Blanking Interval

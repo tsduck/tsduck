@@ -13,6 +13,7 @@
 
 #pragma once
 #include "tsAbstractLongTable.h"
+#include "tsDSMCC.h"
 
 namespace ts {
     //!
@@ -35,7 +36,7 @@ namespace ts {
             // DSMCCDownloadDataMessage public members:
             uint8_t  protocol_discriminator = DSMCC_PROTOCOL_DISCRIMINATOR;  //!< Indicates that the message is MPEG-2 DSM-CC message.
             uint8_t  dsmcc_type = DSMCC_TYPE_DOWNLOAD_MESSAGE;               //!< Indicates type of MPEG-2 DSM-CC message.
-            uint16_t message_id = DSMCC_MESSAGE_ID_DDB;                      //!< Indicates type of message which is being passed.
+            uint16_t message_id = DSMCC_MSGID_DDB;                      //!< Indicates type of message which is being passed.
             uint32_t download_id = 0;                                        //!< Used to associate the download data messages and the download control messages of a single instance of a download scenario.
 
             //!
@@ -85,9 +86,5 @@ namespace ts {
 
     private:
         static constexpr size_t DOWNLOAD_DATA_HEADER_SIZE = 12;  //!< DSM-CC Download Data Header size w/o adaptation header.
-
-        static constexpr uint8_t  DSMCC_PROTOCOL_DISCRIMINATOR = 0x11;  //!< Protocol Discriminator for DSM-CC.
-        static constexpr uint8_t  DSMCC_TYPE_DOWNLOAD_MESSAGE = 0x03;   //!< MPEG-2 DSM-CC Download Message.
-        static constexpr uint16_t DSMCC_MESSAGE_ID_DDB = 0x1003;        //!< DownloadDataMessage.
     };
-}  // namespace ts
+}
