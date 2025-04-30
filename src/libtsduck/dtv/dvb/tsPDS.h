@@ -25,6 +25,7 @@ namespace ts {
     //! Selected DVB-registered private data specifier (PDS) values.
     //!
     enum : PDS {
+        PDS_ASTRA     = 0x00000001,  //!< Private data specifier for SES Astra.
         PDS_BSKYB     = 0x00000002,  //!< Private data specifier for BskyB (1).
         PDS_BSKYB_2   = 0x00000003,  //!< Private data specifier for BskyB (2).
         PDS_BSKYB_3   = 0x00000004,  //!< Private data specifier for BskyB (3).

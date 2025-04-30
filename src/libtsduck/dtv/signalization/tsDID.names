@@ -403,6 +403,12 @@ Extended = true
 0x0002_03_FFFFFF_B0_B5 = Implementation type (ETSI EN 301 790)
 0x0002_03_FFFFFF_B0_B6 = LL FEC identifier (ETSI EN 301 790)
 #
+# DVB private descriptors with PDS for SES Astra.
+#
+0x0002_01_00000001_88 = Astra Service List Name
+0x0002_01_00000001_93 = Astra Bouquet List
+0x0002_01_00000001_D1 = Astra Virtual Service Id
+#
 # DVB private descriptors with PDS for BskyB.
 #
 0x0002_01_00000002_B1 = Sky Channel Number

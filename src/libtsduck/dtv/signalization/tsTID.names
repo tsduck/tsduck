@@ -70,6 +70,10 @@ Extended = true
 0x0002_00_B0 = TIM (Terminal Information Message, ETSI EN 301 790)
 0x0002_00_B1 = LL_FEC_parity_data_table (ETSI EN 301 790)
 #
+# SES Astra-defined tables (in DVB context):
+#
+0x0002_00_91 = SGT (Astra)
+#
 # SCTE-defined tables:
 #
 0x0004_00_FC = SCTE 35 Splice Information
@@ -158,10 +162,12 @@ Extended = true
 0x0000_05_8B = SafeAccess RECM (odd)
 0x0000_05_8C-0x0000_05_8E = SafeAccess unknown EMM
 0x0000_05_8F = SafeAccess EMM-T
-0x0000_05_90 = Logiways DMT
-0x0000_05_91 = Logiways BDT
-0x0000_05_92 = Logiways VIT
-0x0000_05_93 = Logiways VCT
+# Non-CAS Logiways-defined tables are commented out.
+# Probably no longer used and conflict with other table ids.
+# 0x0000_05_90 = Logiways DMT
+# 0x0000_05_91 = Logiways BDT
+# 0x0000_05_92 = Logiways VIT
+# 0x0000_05_93 = Logiways VCT
 0x0000_06_80 = Widevine ECM (even)
 0x0000_06_81 = Widevine ECM (odd)
 0x0000_06_82-0x0000_06_8F = Widevine EMM

@@ -1,6 +1,6 @@
 [PrivateDataSpecifier]
 Bits = 32
-0x00000001 = SES
+0x00000001 = SES Astra
 0x00000002-0x00000004 = BskyB
 0x00000005 = ARD, ZDF, ORF
 0x00000006 = Nokia Multimedia Network Terminals

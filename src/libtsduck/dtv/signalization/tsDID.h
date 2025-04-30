@@ -375,6 +375,12 @@ namespace ts {
         DID_CPLUS_DATA_COMPONENT_FD   = 0xFD,  //!< DID for Canal+ data_component_descriptor
         DID_CPLUS_SYSTEM_MGMT_FE      = 0xFE,  //!< DID for Canal+ system_management_descriptor
 
+        // Valid in DVB context after PDS_ASTRA private_data_specifier
+
+        DID_ASTRA_SERVICE_LIST_NAME   = 0x88,  //!< DID for SES Astra service_list_name_descriptor
+        DID_ASTRA_BOUQUET_LIST        = 0x93,  //!< DID for SES Astra bouquet_list_descriptor
+        DID_ASTRA_VIRTUAL_SERVICE_ID  = 0xD1,  //!< DID for SES Astra virtual_service_id_descriptor
+
         // Valid in DVB context after PDS_BSKYB private_data_specifier
 
         DID_SKY_LCN     = 0xB1,  //!< DID for BskyB logical_channel_number_by_region_descriptor

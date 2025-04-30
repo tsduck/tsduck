@@ -115,6 +115,10 @@ namespace ts {
         TID_CAS_FIRST     = 0x80, //!< Start of Table id range for CAS
         TID_CAS_LAST      = 0x8F, //!< End of Table id range for CAS
 
+        // Valid in SES Astra context:
+
+        TID_ASTRA_SGT     = 0x91, //!< Table id for SES Astra Service Guide Table
+
         // Valid in SafeAccess CAS context:
 
         TID_SA_CECM_82    = 0x82, //!< Table id for SafeAccess Complementary ECM

@@ -301,7 +301,7 @@ TSUNIT_DEFINE_TEST(TID)
     TSUNIT_EQUAL(u"ECM (odd)", ts::TIDName(duck, ts::TID_ECM_81));
     TSUNIT_EQUAL(u"Nagravision ECM (odd)", ts::TIDName(duck, ts::TID_ECM_81, ts::PID_NULL, ts::CASID_NAGRA_MIN));
     TSUNIT_EQUAL(u"SafeAccess EMM-A (0x86)", ts::TIDName(duck, ts::TID_SA_EMM_A, ts::PID_NULL, ts::CASID_SAFEACCESS, ts::NamesFlags::NAME_VALUE));
-    TSUNIT_EQUAL(u"Logiways DMT", ts::TIDName(duck, ts::TID_LW_DMT, ts::PID_NULL, ts::CASID_SAFEACCESS));
+    TSUNIT_EQUAL(u"SGT (Astra)", ts::TIDName(duck, ts::TID_ASTRA_SGT));
     TSUNIT_EQUAL(u"unknown (0x90)", ts::TIDName(duck, ts::TID_LW_DMT));
 }
 
