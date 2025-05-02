@@ -10,11 +10,19 @@ In practice, TSDuck is used for:
 
 - Transport stream acquisition or transmodulation, including DVB, ATSC, ISDB, ASI and IP multicast.
 - Analyze transport streams, PSI/SI signalization, bitrates, timestamps.
-- Monitor and report conditions on the stream (video and audio properties, bitrates, crypto-periods, signalization).
 - On-the-fly transformation or injection of content and signalization.
+  - Manipulation of tables and descriptors using XML, JSON or binary formats.
+  - Most standard tables and descriptors are supported, as defined by MPEG, DVB, ISDB, ATSC, SCTE.
 - Modify, remove, rename, extract services.
-- Work on live transport streams, DVB-S/C/T, ATSC, ISDB-T, ASI, UDP ("IP-TV"), HTTP, HLS, SRT, RIST or offline transport stream files or `pcap` network capture files.
-- Use specialized hardware such as cheap DVB, ATSC or ISDB tuners (USB, PCI), professional Dektec devices, cheap HiDes modulators, VATek-based modulators (e.g. Suntechtv U3, USB).
+- Monitor and report conditions on the stream (video and audio properties, bitrates, crypto-periods, signalization).
+- Work on live transport streams, DVB-S/C/T, ATSC, ISDB-S/T, ASI, UDP ("IP-TV"), HTTP, HLS, SRT, RIST or
+  offline transport stream files and `pcap` network capture files.
+- Receive from or send to specialized hardware such as:
+  - Cheap DVB, ATSC or ISDB tuners (USB, PCI).
+  - Professional [Dektec](https://www.dektec.com) devices, ASI, modulators (USB, PCI).
+  - [HiDes](http://www.hides.com.tw/product_cg74469_eng.html) modulators (USB).
+  - [VATek](https://www.vatek.com.tw/A%20series/)-based modulators (USB) such as the
+    [Suntechtv U3](https://www.suntechtv.com/web/Home/ProductDetail?key=e593s&productId=23673).
 - Re-route transport streams to other applications.
 - Extract or inject Multi-Protocol Encapsulation (MPE) between TS and UDP/IP.
 - Analyze and inject SCTE 35 splice information.
