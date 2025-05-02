@@ -13,3 +13,7 @@ Bits = 8
 0x0B = IP/MAC notification service
 0x0C = TS containing INT BAT or NIT
 0x0D = event linkage
+0x90 = Astra SGT (HD+ LCN)
+0x91 = Astra SGT (Austria LCN)
+0x93 = Astra SGT (International LCN)
+0xA2 = Astra SGT (White Label Platform LCN)

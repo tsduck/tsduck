@@ -1,0 +1,12 @@
+==== astra_virtual_service_id_descriptor
+
+Defined by SES Astra in <<Astra-LCN>>.
+
+[source,xml]
+----
+<astra_virtual_service_id_descriptor virtual_service_id="uint16, required">
+  <reserved>
+    Hexadecimal content
+  </reserved>
+</astra_virtual_service_id_descriptor>
+----

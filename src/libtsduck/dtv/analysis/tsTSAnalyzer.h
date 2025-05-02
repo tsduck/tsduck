@@ -30,6 +30,7 @@
 #include "tsVCT.h"
 #include "tsSTT.h"
 #include "tsDCT.h"
+#include "tsSGT.h"
 #include "tsTime.h"
 #include "tsUString.h"
 
@@ -527,6 +528,7 @@ namespace ts {
         void analyzeVCT(const VCT&);
         void analyzeSTT(const STT&);
         void analyzeDCT(const DCT&);
+        void analyzeSGT(const SGT&);
 
         // Analyse a list of descriptors.
         // If svp is not 0, we are in the PMT of the specified service.

@@ -15,6 +15,7 @@
 #include "tsSignalizationHandlerInterface.h"
 #include "tsService.h"
 #include "tsSectionDemux.h"
+#include "tsLogicalChannelNumbers.h"
 #include "tsCodecType.h"
 #include "tsTime.h"
 #include "tsStreamType.h"
@@ -720,6 +721,10 @@ namespace ts {
         void handleSDT(const SDT&, PID);
         void handleMGT(const MGT&, PID);
         void handleSAT(const SAT&, PID);
+        void handleSGT(const SGT&, PID);
+
+        // Process a set of logical channel numbers.
+        void processLCN(const LogicalChannelNumbers&);
 
         // Template common version for CVCT and TVCT.
         template<class XVCT> requires std::derived_from<XVCT, ts::VCT>

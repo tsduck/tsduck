@@ -19,6 +19,7 @@
 #include "tsAbstractLogicalChannelDescriptor.h"
 #include "tsDVB.h"
 #include "tsNIT.h"
+#include "tsSGT.h"
 
 namespace ts {
     //!
@@ -75,6 +76,15 @@ namespace ts {
         //! @return The number of collected LCN.
         //!
         size_t addFromNIT(const NIT& nit, uint16_t ts_id = INVALID_TS_ID, uint16_t onet_id = INVALID_NETWORK_ID);
+
+        //!
+        //! Collect all LCN which are declared in an Astra-defined SGT (Service Guide Table).
+        //! @param [in] sgt The SGT to analyze.
+        //! @param [in] ts_id If not INVALID_TS_ID, get services from that TS id only.
+        //! @param [in] onet_id If not INVALID_NETWORK_ID, get services from that original network id only.
+        //! @return The number of collected LCN.
+        //!
+        size_t addFromSGT(const SGT& sgt, uint16_t ts_id = INVALID_TS_ID, uint16_t onet_id = INVALID_NETWORK_ID);
 
         //!
         //! Collect all LCN which are declared in a list of descriptors.

@@ -31,6 +31,8 @@ namespace ts {
     class RST;
     class TDT;
     class TOT;
+    class SAT;
+    class SGT;
     // ATSC-defined tables:
     class MGT;
     class VCT;
@@ -38,7 +40,6 @@ namespace ts {
     class TVCT;
     class RRT;
     class STT;
-    class SAT;
 
     //!
     //! General-purpose signalization handler interface.

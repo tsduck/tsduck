@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <astra_service_list_name_descriptor language_code="char3, required" name="string, required"/>
+
+  </_descriptors>
+</tsduck>

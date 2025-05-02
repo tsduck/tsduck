@@ -33,6 +33,7 @@
 |AVC |Advanced Video Coding
 |AVS |Audio Video coding Standard Workgroup of China
 |BAT |Bouquet Association Table (DVB)
+|BCD |Binary Coded Decimal
 |BDA |Broadcast Device Architecture (Microsoft Windows)
 |BDT |Binary Data Table
 |BER |Bit Error Ratio
@@ -76,6 +77,7 @@
 |DVB-T |DVB Terrestrial modulation
 |DVB-T2 |DVB Terrestrial modulation, 2nd generation
 |EACEM |European Association of Consumer Electronics Manufacturers (now DIGITALEUROPE)
+|EBU |European Broadcasting Union
 |ECM |Entitlement Control Message
 |ECMG |ECM Generator (DVB SimulCrypt)
 |EICTA |European Information and Communications Technology Industry Association (now DIGITALEUROPE)
@@ -108,6 +110,7 @@
 |IP |Internet Protocol (networking)
 |IPTV |Internet Protocol Television (UDP multicast in operators network)
 |IPTV |Internet Protocol Television (piracy services)
+|IRD |Integrated Receiver Decoder
 |ISDB |Integrated Services Digital Broadcasting
 |ISDB-S |ISDB Satellite modulation (ARIB)
 |ISDB-T |ISDB Terrestrial modulation (ARIB)
@@ -124,6 +127,7 @@
 |MAC |Message Authentication Code (cryptography)
 |MGT |Master Guide Table (ATSC)
 |MHEG |Multimedia/Hypermedia Experts Group
+|MJD |Modified Julian Date
 |MPE |Multi-Protocol Encapsulation (DVB)
 |MPEG |Moving Picture Experts Group
 |MUX |Multiplexer
@@ -133,6 +137,7 @@
 |NPT |Normal Play Time
 |NSAP |Network Service Access Point (OSI networks)
 |NTSC |National Television Systems Committee
+|NVOD |Near Video On Demand
 |OFCOM |Office of Communications (UK national regulator for TV)
 |OFDM |Orthogonal Frequency-Division Multiplexing (modulation)
 |OQPSK |Offset Quadrature Phase Shift Keying (modulation)
@@ -157,7 +162,7 @@
 |RNG |Random Number Generator (cryptography)
 |RNT |Resolution provider Notification Table (DVB)
 |RRT |Rating Region Table (ATSC)
-|RS |Reed-Solomon FEC code
+|RS |Reed-Solomon (FEC code)
 |RST |Running Status Table (DVB)
 |RTP |Real-Time Protocol (networking)
 |RTSP |Real-Time Streaming Protocol (networking)
@@ -166,12 +171,14 @@
 |SCTE |Society of Cable Telecommunications Engineers
 |SDT |Service Description Table (DVB)
 |SFN |Single Frequency Network
+|SGT |Service Guide Table (SES Astra)
 |SHA |Secure Hash Algorithm, SHA-1, SHA-256, SHA-512, SHA-3 (cryptography)
 |SI |Service Information (DVB)
 |SIT |Selection Information Table (DVB)
 |SMPTE |Society of Motion Picture and Television Engineers
 |SRT |Secure Reliable Transport (network protocol)
 |SRT |SubRip Text (subtitles format)
+|ST |Stuffing Table (DVB)
 |STB |Set-Top Box
 |STD |System Target Decoder
 |STT |System Time Table (ATSC)
@@ -227,6 +234,8 @@
   "Conditional Access System (Second Generation) and CAS Program Download System Specifications for Digital Broadcasting".
 * [[[ARIB-B63]]] ARIB STD-B63, V1.10, October 2022:
   "Receiver for Advanced Wide Band Digital Satellite Broadcasting".
+* [[[Astra-LCN]]] SES Astra, July 2015:
+  "Logical Channel Numbering (LCN), Technical Specification v2.6"
 * [[[ATSC-A52]]] ATSC A/52, January 2018:
   "Digital Audio Compression (AC-3, E-AC-3)".
 * [[[ATSC-A53-3]]] ATSC A/53 Part 3, February 2023:

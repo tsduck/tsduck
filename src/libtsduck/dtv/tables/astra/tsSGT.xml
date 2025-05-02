@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_tables>
+
+    <!-- Service Guide Table (SES Astra) -->
+    <SGT version="uint5, default=0"
+         current="bool, default=true"
+         service_list_id="uint16, required">
+      <_any in="_metadata"/>
+      <!-- Main descriptors loop -->
+      <_any in="_descriptors"/>
+      <!-- One per service -->
+      <service service_id="uint16, required"
+               transport_stream_id="uint16, required"
+               original_network_id="uint16, required"
+               logical_channel_number="uint14, required"
+               visible_service_flag="bool, default=true"
+               new_service_flag="bool, default=false"
+               genre_code="uint16, default=0xFFFF">
+        <_any in="_descriptors"/>
+      </service>
+    </SGT>
+
+  </_tables>
+</tsduck>

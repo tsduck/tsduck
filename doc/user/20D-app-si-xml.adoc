@@ -94,6 +94,13 @@ include::.all.mpeg.tables.adoc[]
 
 include::.all.dvb.tables.adoc[]
 
+=== Astra-defined tables
+
+The European satellite operator SES Astra defines a few private tables.
+They are used in the context of the DVB standard.
+
+include::.all.astra.tables.adoc[]
+
 === SCTE-defined tables
 
 include::.all.scte.tables.adoc[]
@@ -127,6 +134,10 @@ include::.all.dtg.descriptors.adoc[]
 === EACEM-defined descriptors (DVB private descriptors)
 
 include::.all.eacem.descriptors.adoc[]
+
+=== Astra-defined descriptors (DVB private descriptors)
+
+include::.all.astra.descriptors.adoc[]
 
 === Eutelsat-defined descriptors (DVB private descriptors)
 

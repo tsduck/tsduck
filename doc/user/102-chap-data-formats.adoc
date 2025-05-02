@@ -592,6 +592,10 @@ endif::[]
 |0x414F4D53
 |Alliance for Open Media
 
+|Astra
+|0x00000001
+|SES Astra European satellite provider
+
 |Australia
 |0x00003200
 |Free TV Australia

@@ -162,6 +162,27 @@ size_t ts::LogicalChannelNumbers::addFromNIT(const NIT& nit, uint16_t ts_id, uin
 
 
 //----------------------------------------------------------------------------
+// Collect all LCN which are declared in an Astra-defined SGT.
+//----------------------------------------------------------------------------
+
+size_t ts::LogicalChannelNumbers::addFromSGT(const SGT& sgt, uint16_t ts_id, uint16_t onet_id)
+{
+    size_t count = 0;
+    if (sgt.isValid()) {
+        for (const auto& it : sgt.services) {
+            if ((ts_id == INVALID_TS_ID || it.first.transport_stream_id == INVALID_TS_ID || ts_id == it.first.transport_stream_id) &&
+                (onet_id == INVALID_NETWORK_ID || it.first.original_network_id == INVALID_NETWORK_ID || onet_id == it.first.original_network_id))
+            {
+                addLCN(it.second.logical_channel_number, it.first.service_id, it.first.transport_stream_id, it.first.original_network_id, it.second.visible_service_flag);
+                count++;
+            }
+        }
+    }
+    return count;
+}
+
+
+//----------------------------------------------------------------------------
 // Get the logical channel number of a service.
 //----------------------------------------------------------------------------
 

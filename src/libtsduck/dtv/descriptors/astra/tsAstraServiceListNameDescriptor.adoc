@@ -1,0 +1,8 @@
+==== astra_service_list_name_descriptor
+
+Defined by SES Astra in <<Astra-LCN>>.
+
+[source,xml]
+----
+<astra_service_list_name_descriptor language_code="char3, required" name="string, required"/>
+----

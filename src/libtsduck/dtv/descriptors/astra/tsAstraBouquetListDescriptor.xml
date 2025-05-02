@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <astra_bouquet_list_descriptor>
+      <!-- One per bouquet -->
+      <bouquet name="string, required"/>
+    </astra_bouquet_list_descriptor>
+
+  </_descriptors>
+</tsduck>

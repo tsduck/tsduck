@@ -1,0 +1,26 @@
+==== Service Guide Table (SGT)
+
+Defined by SES Astra in <<Astra-LCN>>.
+
+[source,xml]
+----
+<SGT version="uint5, default=0"
+     current="bool, default=true"
+     service_list_id="uint16, required">
+
+  <!-- Main descriptors loop -->
+  <DESCRIPTOR_LIST>
+
+  <!-- One per service -->
+  <service service_id="uint16, required"
+           transport_stream_id="uint16, required"
+           original_network_id="uint16, required"
+           logical_channel_number="uint14, required"
+           visible_service_flag="bool, default=true"
+           new_service_flag="bool, default=false"
+           genre_code="uint16, default=0xFFFF">
+    <DESCRIPTOR_LIST>
+  </service>
+
+</SGT>
+----

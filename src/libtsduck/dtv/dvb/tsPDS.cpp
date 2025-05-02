@@ -16,6 +16,7 @@
 const ts::Names& ts::PrivateDataSpecifierEnum()
 {
     static const Names data {
+        {u"Astra",     ts::PDS_ASTRA},
         {u"BskyB",     ts::PDS_BSKYB},
         {u"Nagra",     ts::PDS_NAGRA},
         {u"TPS",       ts::PDS_TPS},

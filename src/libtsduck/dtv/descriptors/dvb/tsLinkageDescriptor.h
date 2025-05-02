@@ -21,21 +21,25 @@ namespace ts {
     //! Linkage type values (in linkage_descriptor)
     //!
     enum : uint8_t {
-        LINKAGE_INFO            = 0x01, //!< Information service
-        LINKAGE_EPG             = 0x02, //!< EPG service
-        LINKAGE_CA_REPLACE      = 0x03, //!< CA replacement service
-        LINKAGE_TS_NIT_BAT      = 0x04, //!< TS containing complet network/bouquet SI
-        LINKAGE_SERVICE_REPLACE = 0x05, //!< Service replacement service
-        LINKAGE_DATA_BROADCAST  = 0x06, //!< Data broadcast service
-        LINKAGE_RCS_MAP         = 0x07, //!< RCS map
-        LINKAGE_HAND_OVER       = 0x08, //!< Mobile hand-over
-        LINKAGE_SSU             = 0x09, //!< System software update service
-        LINKAGE_SSU_TABLE       = 0x0A, //!< TS containing SSU BAT or NIT
-        LINKAGE_IP_NOTIFY       = 0x0B, //!< IP/MAC notification service
-        LINKAGE_INT_BAT_NIT     = 0x0C, //!< TS containing INT BAT or NIT
-        LINKAGE_EVENT           = 0x0D, //!< Event linkage
-        LINKAGE_EXT_EVENT_MIN   = 0x0E, //!< Extented event linkage, first value
-        LINKAGE_EXT_EVENT_MAX   = 0x1F, //!< Extented event linkage, last value
+        LINKAGE_INFO              = 0x01, //!< Information service
+        LINKAGE_EPG               = 0x02, //!< EPG service
+        LINKAGE_CA_REPLACE        = 0x03, //!< CA replacement service
+        LINKAGE_TS_NIT_BAT        = 0x04, //!< TS containing complet network/bouquet SI
+        LINKAGE_SERVICE_REPLACE   = 0x05, //!< Service replacement service
+        LINKAGE_DATA_BROADCAST    = 0x06, //!< Data broadcast service
+        LINKAGE_RCS_MAP           = 0x07, //!< RCS map
+        LINKAGE_HAND_OVER         = 0x08, //!< Mobile hand-over
+        LINKAGE_SSU               = 0x09, //!< System software update service
+        LINKAGE_SSU_TABLE         = 0x0A, //!< TS containing SSU BAT or NIT
+        LINKAGE_IP_NOTIFY         = 0x0B, //!< IP/MAC notification service
+        LINKAGE_INT_BAT_NIT       = 0x0C, //!< TS containing INT BAT or NIT
+        LINKAGE_EVENT             = 0x0D, //!< Event linkage
+        LINKAGE_EXT_EVENT_MIN     = 0x0E, //!< Extended event linkage, first value
+        LINKAGE_EXT_EVENT_MAX     = 0x1F, //!< Extended event linkage, last value
+        LINKAGE_ASTRA_SGT_HDPLUS  = 0x90, //!< Astra SGT (HD+ LCN)
+        LINKAGE_ASTRA_SGT_AUSTRIA = 0x91, //!< Astra SGT (Austria LCN)
+        LINKAGE_ASTRA_SGT_INTNL   = 0x93, //!< Astra SGT (International LCN)
+        LINKAGE_ASTRA_SGT_WLABEL  = 0xA2, //!< Astra SGT (White Label Platform LCN)
     };
 
     //!

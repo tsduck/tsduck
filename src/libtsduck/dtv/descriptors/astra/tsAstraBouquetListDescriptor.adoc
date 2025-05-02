@@ -1,0 +1,11 @@
+==== astra_bouquet_list_descriptor
+
+Defined by SES Astra in <<Astra-LCN>>.
+
+[source,xml]
+----
+<astra_bouquet_list_descriptor>
+  <!-- One per bouquet -->
+  <bouquet name="string, required"/>
+</astra_bouquet_list_descriptor>
+----

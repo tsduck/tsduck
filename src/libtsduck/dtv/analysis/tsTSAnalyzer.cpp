@@ -506,6 +506,13 @@ void ts::TSAnalyzer::handleTable(SectionDemux&, const BinaryTable& table)
             }
             break;
         }
+        case TID_ASTRA_SGT: {
+            const SGT sgt(_duck, table);
+            if (sgt.isValid()) {
+                analyzeSGT(sgt);
+            }
+            break;
+        }
         default: {
             break;
         }
@@ -812,6 +819,17 @@ void ts::TSAnalyzer::analyzeDCT(const DCT& dct)
 
 
 //----------------------------------------------------------------------------
+// Analyze an Astra-defined SGT (Service Guide Table).
+//----------------------------------------------------------------------------
+
+void ts::TSAnalyzer::analyzeSGT(const SGT& sgt)
+{
+    // The SGT defines Logical Channel Numbers (LCN).
+    _lcn.addFromSGT(sgt, _ts_id.value_or(0xFFFF));
+}
+
+
+//----------------------------------------------------------------------------
 // Return a full description, with comment and optionally attributes
 //----------------------------------------------------------------------------
 
@@ -839,9 +857,9 @@ ts::UString ts::TSAnalyzer::PIDContext::fullDescription(bool include_attributes)
 
 
 //----------------------------------------------------------------------------
-//  Analyse a list of descriptors.
-//  If svp is not 0, we are in the PMT of the specified service.
-//  If ps is not 0, we are in the description of this PID in a PMT.
+// Analyse a list of descriptors.
+// If svp is not 0, we are in the PMT of the specified service.
+// If ps is not 0, we are in the description of this PID in a PMT.
 //----------------------------------------------------------------------------
 
 void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceContext* svp, PIDContext* ps)

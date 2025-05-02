@@ -10,10 +10,10 @@
 #include "tsBinaryTable.h"
 #include "tsTime.h"
 #include "tsTSPacket.h"
+#include "tsPMT.h"
 #include "tsTVCT.h"
 #include "tsCVCT.h"
 #include "tsATSC.h"
-#include "tsLogicalChannelNumbers.h"
 
 #define BUFFER_PACKET_COUNT  10000 // packets
 
@@ -146,12 +146,8 @@ bool ts::TSScanner::getServices(ServiceList& services) const
         services.push_back(srv);
     }
 
-    // Logical channel numbers are extracted from the NIT.
-    if (_nit != nullptr) {
-        LogicalChannelNumbers lcn_store(_duck);
-        lcn_store.addFromNIT(*_nit);
-        lcn_store.updateServices(services, Replacement::UPDATE);
-    }
+    // Update logical channel numbers.
+    _lcn.updateServices(services, Replacement::UPDATE);
 
     return true;
 }
@@ -172,10 +168,29 @@ void ts::TSScanner::handleTable(SectionDemux&, const BinaryTable& table)
             std::shared_ptr<PAT> pat(new PAT(_duck, table));
             if (pat->isValid()) {
                 _pat = std::move(pat);
+                // Collect the NIT.
                 if (_pat->nit_pid != PID_NULL && _pat->nit_pid != PID_NIT) {
                     // Non standard NIT PID
                     _demux.removePID(PID_NIT);
                     _demux.addPID(_pat->nit_pid);
+                }
+                // Collect all PMT's (to later collect elementary streams carrying sections).
+                for (const auto& it : _pat->pmts) {
+                    _demux.addPID(it.second);
+                }
+            }
+            break;
+        }
+
+        case TID_PMT: {
+            const PMT pmt(_duck, table);
+            if (pmt.isValid()) {
+                // Collect tables on PID's carrying sections.
+                // In practice, this is required only for Astra SGT which contains LCN (stream type 0x05).
+                for (const auto& it : pmt.streams) {
+                    if (it.second.stream_type == ST_PRIV_SECT) {
+                        _demux.addPID(it.first);
+                    }
                 }
             }
             break;
@@ -193,6 +208,7 @@ void ts::TSScanner::handleTable(SectionDemux&, const BinaryTable& table)
             std::shared_ptr<NIT> nit(new NIT(_duck, table));
             if (nit->isValid()) {
                 _nit = std::move(nit);
+                _lcn.addFromNIT(*_nit);
             }
             break;
         }
@@ -228,6 +244,15 @@ void ts::TSScanner::handleTable(SectionDemux&, const BinaryTable& table)
             std::shared_ptr<VCT> vct(new CVCT(_duck, table));
             if (vct->isValid()) {
                 _vct = std::move(vct);
+            }
+            break;
+        }
+
+        case TID_ASTRA_SGT: {
+            const SGT sgt(_duck, table);
+            if (sgt.isValid()) {
+                // Collect logical channel numbers.
+                _lcn.addFromSGT(sgt);
             }
             break;
         }

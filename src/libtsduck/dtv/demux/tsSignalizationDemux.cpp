@@ -11,7 +11,6 @@
 #include "tsBinaryTable.h"
 #include "tsTSPacket.h"
 #include "tsPESPacket.h"
-#include "tsLogicalChannelNumbers.h"
 #include "tsCADescriptor.h"
 #include "tsISDBAccessControlDescriptor.h"
 #include "tsCAT.h"
@@ -27,6 +26,7 @@
 #include "tsRRT.h"
 #include "tsSTT.h"
 #include "tsSAT.h"
+#include "tsSGT.h"
 
 
 //----------------------------------------------------------------------------
@@ -753,6 +753,13 @@ void ts::SignalizationDemux::handleTable(SectionDemux&, const BinaryTable& table
             }
             break;
         }
+        case TID_ASTRA_SGT: {
+            const SGT sgt(_duck, table);
+            if (sgt.isValid()) {
+                handleSGT(sgt, pid);
+            }
+            break;
+        }
         default: {
             // Unsupported table id or processed elsewhere (STT).
             break;
@@ -969,6 +976,12 @@ void ts::SignalizationDemux::handlePMT(const PMT& pmt, PID pid)
 
         // Look for ECM PID's at component level.
         handleDescriptors(pmt.descs, pid);
+
+        // Collect tables on PID's carrying sections.
+        // In practice, this is required only for Astra SGT which contains LCN (stream type 0x05).
+        if (it.second.stream_type == ST_PRIV_SECT) {
+            _demux.addPID(it.first);
+        }
     }
 
     // Notify the PMT to the application.
@@ -1014,17 +1027,7 @@ void ts::SignalizationDemux::handleNIT(const NIT& nit, PID pid)
         // Collect all logical channel numbers from the NIT for the TS id.
         LogicalChannelNumbers lcn(_duck);
         lcn.addFromNIT(nit, _ts_id);
-
-        // Update LCN's in our services.
-        ServiceContextMapView services_view(_services, _ts_id, _orig_network_id);
-        lcn.updateServices(services_view, Replacement::UPDATE);
-
-        // Check which services were modified and notify application.
-        if (_handler != nullptr) {
-            for (auto& srv : _services) {
-                handleService(*srv.second, true, false);
-            }
-        }
+        processLCN(lcn);
     }
 }
 
@@ -1117,6 +1120,38 @@ void ts::SignalizationDemux::handleSAT(const SAT& sat, PID pid)
     // Notify the SAT to the application.
     if (_handler != nullptr && isFilteredTableId(TID_SAT)) {
         _handler->handleSAT(sat, pid);
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Process an Astra-define SGT.
+//----------------------------------------------------------------------------
+
+void ts::SignalizationDemux::handleSGT(const SGT& sgt, PID pid)
+{
+    // Collect all logical channel numbers from the SGT for the TS id.
+    LogicalChannelNumbers lcn(_duck);
+    lcn.addFromSGT(sgt, _ts_id);
+    processLCN(lcn);
+}
+
+
+//----------------------------------------------------------------------------
+// Process a set of logical channel numbers.
+//----------------------------------------------------------------------------
+
+void ts::SignalizationDemux::processLCN(const LogicalChannelNumbers& lcn)
+{
+    // Update LCN's in our services.
+    ServiceContextMapView services_view(_services, _ts_id, _orig_network_id);
+    lcn.updateServices(services_view, Replacement::UPDATE);
+
+    // Check which services were modified and notify application.
+    if (_handler != nullptr) {
+        for (auto& srv : _services) {
+            handleService(*srv.second, true, false);
+        }
     }
 }
 

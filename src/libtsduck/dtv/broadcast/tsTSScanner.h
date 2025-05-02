@@ -15,6 +15,7 @@
 #include "tsTableHandlerInterface.h"
 #include "tsTuner.h"
 #include "tsSectionDemux.h"
+#include "tsLogicalChannelNumbers.h"
 #include "tsPAT.h"
 #include "tsSDT.h"
 #include "tsNIT.h"
@@ -91,11 +92,12 @@ namespace ts {
         bool           _completed = false;
         SectionDemux   _demux {_duck, this};
         ModulationArgs _tparams {};
-        std::shared_ptr<PAT> _pat {};
-        std::shared_ptr<SDT> _sdt {};
-        std::shared_ptr<NIT> _nit {};
-        std::shared_ptr<MGT> _mgt {};
-        std::shared_ptr<VCT> _vct {};
+        LogicalChannelNumbers _lcn {_duck};
+        std::shared_ptr<PAT>  _pat {};
+        std::shared_ptr<SDT>  _sdt {};
+        std::shared_ptr<NIT>  _nit {};
+        std::shared_ptr<MGT>  _mgt {};
+        std::shared_ptr<VCT>  _vct {};
 
         // Implementation of TableHandlerInterface.
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;
