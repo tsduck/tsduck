@@ -509,7 +509,7 @@ void ts::TSAnalyzer::handleTable(SectionDemux&, const BinaryTable& table)
         case TID_ASTRA_SGT: {
             const SGT sgt(_duck, table);
             if (sgt.isValid()) {
-                analyzeSGT(sgt);
+                analyzeSGT(sgt, pid);
             }
             break;
         }
@@ -822,9 +822,11 @@ void ts::TSAnalyzer::analyzeDCT(const DCT& dct)
 // Analyze an Astra-defined SGT (Service Guide Table).
 //----------------------------------------------------------------------------
 
-void ts::TSAnalyzer::analyzeSGT(const SGT& sgt)
+void ts::TSAnalyzer::analyzeSGT(const SGT& sgt, PID pid)
 {
     // The SGT defines Logical Channel Numbers (LCN).
+    PIDContextPtr ps(getPID(pid));
+    ps->description = u"Astra SGT";
     _lcn.addFromSGT(sgt, _ts_id.value_or(0xFFFF));
 }
 

@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.41-4260 (Apr 2025)
+VERSION 3.41-4267 (May 2025)
 
 [NEW] New commands and plugins:
 
@@ -15,6 +15,7 @@ VERSION 3.41-4260 (Apr 2025)
     Combined with the plugin "identify" which  defines  environement  variables
     with PID values which were just identified, this opens the  possibility  to
     define XML patch files without knowing precise PID values in advance.
+  * Added handling of Astra-defined way of handling logical channel numbers.
   * New options in existing commands and plugins:
     - Option --no-link-local in "tsdump", "tstabdump" and plugins "ip" (input),
       "cutoff", "mpeinject".

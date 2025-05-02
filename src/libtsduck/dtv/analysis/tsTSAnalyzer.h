@@ -528,7 +528,7 @@ namespace ts {
         void analyzeVCT(const VCT&);
         void analyzeSTT(const STT&);
         void analyzeDCT(const DCT&);
-        void analyzeSGT(const SGT&);
+        void analyzeSGT(const SGT&, PID);
 
         // Analyse a list of descriptors.
         // If svp is not 0, we are in the PMT of the specified service.

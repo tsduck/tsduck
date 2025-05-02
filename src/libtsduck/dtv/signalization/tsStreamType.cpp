@@ -8,7 +8,6 @@
 
 #include "tsStreamType.h"
 #include "tsDescriptorList.h"
-#include "tsAlgorithm.h"
 
 
 //----------------------------------------------------------------------------
