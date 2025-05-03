@@ -103,7 +103,13 @@ bool ts::DescriptorList::add(const Descriptor& desc)
 bool ts::DescriptorList::add(DuckContext& duck, const AbstractDescriptor& desc)
 {
     DescriptorPtr pd = std::make_shared<Descriptor>();
-    return desc.serialize(duck, *pd) && add(pd);
+    if (!desc.serialize(duck, *pd)) {
+        return false;
+    }
+    if (duck.fixPDS()) {
+        addPrivateIdentifier(desc.edid());
+    }
+    return add(pd);
 }
 
 
@@ -925,6 +931,7 @@ bool ts::DescriptorList::fromXML(DuckContext& duck, xml::ElementVector& others, 
     bool success = true;
     clear();
     others.clear();
+    EDID edid;
 
     // Analyze all children nodes. Most of them are descriptors.
     for (const xml::Element* node = parent == nullptr ? nullptr : parent->firstChildElement(); node != nullptr; node = node->nextSiblingElement()) {
@@ -938,13 +945,16 @@ bool ts::DescriptorList::fromXML(DuckContext& duck, xml::ElementVector& others, 
         else if (node->name().similar(u"metadata")) {
             // Always ignore <metadata> nodes.
         }
-        else if (!bin->fromXML(duck, node, tableId())) {
+        else if (!bin->fromXML(duck, edid, node, tableId())) {
             // Failed to analyze the node as a descriptor.
             parent->report().error(u"Illegal <%s> at line %d", node->name(), node->lineNumber());
             success = false;
         }
         else if (bin->isValid()) {
             // The XML tag is a valid descriptor name.
+            if (duck.fixPDS()) {
+                addPrivateIdentifier(edid);
+            }
             add(bin);
         }
         else {

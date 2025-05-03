@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.41-4267 (May 2025)
+VERSION 3.41-4269 (May 2025)
 
 [NEW] New commands and plugins:
 
@@ -23,6 +23,10 @@ VERSION 3.41-4267 (May 2025)
     - Options --expand-environment, --expand-patch-xml in "tsxml".
     - Option --expand-patch-xml in plugins "bat, "cat",  "nit",  "pat",  "pmt",
       "sdt", "sections".
+    - Options --default-pds, --default-registration in "tstabcomp". Useful when
+      decompiling binary tables with missing PDS descriptors.
+    - Option --fix-missing-pds  in  "tsp",  "tstabcomp",  plugins  "eitinject",
+      "inject".
 
 [BUG] Bug fixes:
 

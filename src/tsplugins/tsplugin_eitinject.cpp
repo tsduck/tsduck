@@ -118,6 +118,7 @@ ts::EITInjectPlugin::EITInjectPlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Generate and inject EIT's in a transport stream", u"[options]")
 {
     duck.defineArgsForCharset(*this);
+    duck.defineArgsForFixingPDS(*this);
 
     option(u"actual");
     help(u"actual",

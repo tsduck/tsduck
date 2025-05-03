@@ -56,6 +56,7 @@ Options::Options(int argc, char *argv[]) :
     duck.defineArgsForCharset(*this);
     duck.defineArgsForHFBand(*this);
     duck.defineArgsForPDS(*this);
+    duck.defineArgsForFixingPDS(*this);
     duck.defineArgsForTimeReference(*this);
     duck.defineArgsForStandards(*this);
 

@@ -25,9 +25,9 @@ ts::DuckContext::DuckContext(Report* report, std::ostream* output) :
     _report(report != nullptr ? report : &CERR),
     _initial_out(output != nullptr ? output : &std::cout),
     _out(_initial_out),
-    _charsetIn(&DVBCharTableSingleByte::DVB_ISO_6937),  // default DVB charset
-    _charsetOut(&DVBCharTableSingleByte::DVB_ISO_6937),
-    _timeRefConfig(DuckConfigFile::Instance().value(u"default.time")),
+    _charset_in(&DVBCharTableSingleByte::DVB_ISO_6937),  // default DVB charset
+    _charset_out(&DVBCharTableSingleByte::DVB_ISO_6937),
+    _time_ref_config(DuckConfigFile::Instance().value(u"default.time")),
     _predefined_cas{{CASID_CONAX_MIN,      u"conax"},
                     {CASID_IRDETO_MIN,     u"irdeto"},
                     {CASID_MEDIAGUARD_MIN, u"mediaguard"},
@@ -38,14 +38,14 @@ ts::DuckContext::DuckContext(Report* report, std::ostream* output) :
                     {CASID_WIDEVINE_MIN,   u"widevine"}}
 {
     // Initialize time reference from configuration file. Ignore errors.
-    if (!_timeRefConfig.empty() && !setTimeReference(_timeRefConfig)) {
-        CERR.verbose(u"invalid default.time '%s' in %s", _timeRefConfig, DuckConfigFile::Instance().fileName());
+    if (!_time_ref_config.empty() && !setTimeReference(_time_ref_config)) {
+        CERR.verbose(u"invalid default.time '%s' in %s", _time_ref_config, DuckConfigFile::Instance().fileName());
     }
 
     // Get leap.seconds initial value from configuration file. Default value is true.
     const UString ls(DuckConfigFile::Instance().value(u"leap.seconds"));
-    if (!ls.empty() && !ls.toBool(_useLeapSeconds)) {
-        _useLeapSeconds = true;
+    if (!ls.empty() && !ls.toBool(_use_leap_seconds)) {
+        _use_leap_seconds = true;
         CERR.verbose(u"invalid leap.seconds '%s' in %s", ls, DuckConfigFile::Instance().fileName());
     }
 }
@@ -62,13 +62,14 @@ void ts::DuckContext::reset()
     }
 
     _out = _initial_out;
-    _charsetIn = _charsetOut = &DVBCharTableSingleByte::DVB_ISO_6937;
+    _charset_in = _charset_out = &DVBCharTableSingleByte::DVB_ISO_6937;
     _casId = CASID_NULL;
-    _defaultPDS = 0;
-    _defaultREGIDs.clear();
-    _cmdStandards = _accStandards = Standards::NONE;
-    _hfDefaultRegion.clear();
-    _timeReference = cn::milliseconds::zero();
+    _fix_pds = false;
+    _default_pds = 0;
+    _default_regids.clear();
+    _cmd_standards = _acc_standards = Standards::NONE;
+    _hf_default_region.clear();
+    _time_reference = cn::milliseconds::zero();
 }
 
 
@@ -88,12 +89,12 @@ void ts::DuckContext::setReport(Report* report)
 
 void ts::DuckContext::setDefaultCharsetIn(const Charset* charset)
 {
-    _charsetIn = charset != nullptr ? charset : &DVBCharTableSingleByte::DVB_ISO_6937;
+    _charset_in = charset != nullptr ? charset : &DVBCharTableSingleByte::DVB_ISO_6937;
 }
 
 void ts::DuckContext::setDefaultCharsetOut(const Charset* charset)
 {
-    _charsetOut = charset != nullptr ? charset : &DVBCharTableSingleByte::DVB_ISO_6937;
+    _charset_out = charset != nullptr ? charset : &DVBCharTableSingleByte::DVB_ISO_6937;
 }
 
 
@@ -103,18 +104,18 @@ void ts::DuckContext::setDefaultCharsetOut(const Charset* charset)
 
 void ts::DuckContext::addStandards(Standards mask)
 {
-    if (_report->debug() && (_accStandards | mask) != _accStandards) {
-        _report->debug(u"adding standards %s to %s", StandardsNames(mask), StandardsNames(_accStandards));
+    if (_report->debug() && (_acc_standards | mask) != _acc_standards) {
+        _report->debug(u"adding standards %s to %s", StandardsNames(mask), StandardsNames(_acc_standards));
     }
-    _accStandards |= mask;
+    _acc_standards |= mask;
 }
 
 void ts::DuckContext::resetStandards(Standards mask)
 {
-    _accStandards = _cmdStandards | mask;
+    _acc_standards = _cmd_standards | mask;
 
     if (_report->debug()) {
-        _report->debug(u"resetting standards to %s", StandardsNames(_accStandards));
+        _report->debug(u"resetting standards to %s", StandardsNames(_acc_standards));
     }
 }
 
@@ -129,9 +130,9 @@ ts::PDS ts::DuckContext::actualPDS(PDS pds) const
         // Explicit PDS already defined.
         return pds;
     }
-    else if (_defaultPDS != 0 && _defaultPDS != PDS_NULL) {
+    else if (_default_pds != 0 && _default_pds != PDS_NULL) {
         // A default PDS was specified.
-        return _defaultPDS;
+        return _default_pds;
     }
     else {
         // Really no PDS to use.
@@ -147,8 +148,8 @@ ts::PDS ts::DuckContext::actualPDS(PDS pds) const
 ts::UString ts::DuckContext::defaultHFRegion() const
 {
     // If the region is empty, get the one for the TSDuck configuration file.
-    if (!_hfDefaultRegion.empty()) {
-        return _hfDefaultRegion;
+    if (!_hf_default_region.empty()) {
+        return _hf_default_region;
     }
     else {
         return DuckConfigFile::Instance().value(u"default.region", u"europe");
@@ -183,11 +184,11 @@ bool ts::DuckContext::setTimeReference(const UString& name)
     str.remove(SPACE);
 
     if (str.similar(u"UTC")) {
-        _timeReference = cn::milliseconds::zero();
+        _time_reference = cn::milliseconds::zero();
         return true;
     }
     else if (str.similar(u"JST")) {
-        _timeReference = Time::JSTOffset;
+        _time_reference = Time::JSTOffset;
         return true;
     }
 
@@ -204,7 +205,7 @@ bool ts::DuckContext::setTimeReference(const UString& name)
         hours >= 0 && hours <= 12 &&
         minutes >= 0 && minutes <= 59)
     {
-        _timeReference = (sign == u'+' ? +1 : -1) * (cn::hours(hours) + cn::minutes(minutes));
+        _time_reference = (sign == u'+' ? +1 : -1) * (cn::hours(hours) + cn::minutes(minutes));
         return true;
     }
     else {
@@ -220,15 +221,15 @@ bool ts::DuckContext::setTimeReference(const UString& name)
 
 ts::UString ts::DuckContext::timeReferenceName() const
 {
-    if (_timeReference == cn::minutes::zero()) {
+    if (_time_reference == cn::minutes::zero()) {
         return u"UTC";  // no offset
     }
-    else if (_timeReference == Time::JSTOffset) {
+    else if (_time_reference == Time::JSTOffset) {
         return u"JST";
     }
     else {
-        const UChar sign = _timeReference < cn::minutes::zero() ? u'-' : u'+';
-        const cn::minutes::rep minutes = std::abs(cn::duration_cast<cn::minutes>(_timeReference).count());
+        const UChar sign = _time_reference < cn::minutes::zero() ? u'-' : u'+';
+        const cn::minutes::rep minutes = std::abs(cn::duration_cast<cn::minutes>(_time_reference).count());
         if (minutes % 60 == 0) {
             return UString::Format(u"UTC%c%d", sign, minutes / 60);
         }
@@ -309,7 +310,7 @@ bool ts::DuckContext::setOutput(const fs::path& fileName, bool override)
 void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
 {
     // Remember defined command line options.
-    _definedCmdOptions |= cmdOptionsMask;
+    _defined_cmd_options |= cmdOptionsMask;
 
     // Options relating to default PDS.
     if (cmdOptionsMask & CMD_PDS) {
@@ -331,6 +332,13 @@ void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
                   u"to interpret MPEG private descriptors or stream types.\n"
                   u"Several options --default-registration can be specified. "
                   u"Unlike DVB private data specifiers, several MPEG registration ids can be simultaneously defined.");
+    }
+    if (cmdOptionsMask & CMD_FIX_PDS) {
+
+        args.option(u"fix-missing-pds");
+        args.help(u"fix-missing-pds",
+                  u"When serializing XML MPEG or DVB private descriptors, automatically add missing "
+                  u"registration descriptors and private data specifier descriptors.");
     }
 
     // Options relating to default character sets.
@@ -428,10 +436,10 @@ void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
         // Use _definedCmdOptions instead of cmdOptionsMask to include previous options.
         UStringList options;
         UString other;
-        if (_definedCmdOptions & CMD_STANDARDS) {
+        if (_defined_cmd_options & CMD_STANDARDS) {
             options.push_back(u"--dvb");
         }
-        if (_definedCmdOptions & CMD_CHARSET) {
+        if (_defined_cmd_options & CMD_CHARSET) {
             options.push_back(u"--default-charset ISO-8859-15");
             other = u" This is a handy shortcut for commonly incorrect signalization on some European satellites. "
                     u"In that signalization, the character encoding is ISO-8859-15, "
@@ -452,16 +460,16 @@ void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
         // Build help text for --japan option. It depends on which set of options is requested.
         // Use _definedCmdOptions instead of cmdOptionsMask to include previous options.
         UStringList options;
-        if (_definedCmdOptions & CMD_STANDARDS) {
+        if (_defined_cmd_options & CMD_STANDARDS) {
             options.push_back(u"--isdb");
         }
-        if (_definedCmdOptions & CMD_CHARSET) {
+        if (_defined_cmd_options & CMD_CHARSET) {
             options.push_back(u"--default-charset ARIB-STD-B24");
         }
-        if (_definedCmdOptions & CMD_HF_REGION) {
+        if (_defined_cmd_options & CMD_HF_REGION) {
             options.push_back(u"--hf-band-region japan");
         }
-        if (_definedCmdOptions & CMD_TIMEREF) {
+        if (_defined_cmd_options & CMD_TIMEREF) {
             options.push_back(u"--time-reference JST");
         }
         args.option(u"japan");
@@ -475,17 +483,17 @@ void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
 
         // Build help text. Same principle as --japan.
         UStringList options;
-        if (_definedCmdOptions & CMD_STANDARDS) {
+        if (_defined_cmd_options & CMD_STANDARDS) {
             options.push_back(u"--isdb");
             options.push_back(u"--abnt");
         }
-        if (_definedCmdOptions & CMD_CHARSET) {
+        if (_defined_cmd_options & CMD_CHARSET) {
             options.push_back(u"--default-charset RAW-UTF-8");
         }
-        if (_definedCmdOptions & CMD_HF_REGION) {
+        if (_defined_cmd_options & CMD_HF_REGION) {
             options.push_back(u"--hf-band-region philippines");
         }
-        if (_definedCmdOptions & CMD_TIMEREF) {
+        if (_defined_cmd_options & CMD_TIMEREF) {
             options.push_back(u"--time-reference UTC+8");
         }
         args.option(u"philippines");
@@ -499,17 +507,17 @@ void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
 
         // Build help text. Same principle as --japan.
         UStringList options;
-        if (_definedCmdOptions & CMD_STANDARDS) {
+        if (_defined_cmd_options & CMD_STANDARDS) {
             options.push_back(u"--isdb");
             options.push_back(u"--abnt");
         }
-        if (_definedCmdOptions & CMD_CHARSET) {
+        if (_defined_cmd_options & CMD_CHARSET) {
             options.push_back(u"--default-charset RAW-ISO-8859-15");
         }
-        if (_definedCmdOptions & CMD_HF_REGION) {
+        if (_defined_cmd_options & CMD_HF_REGION) {
             options.push_back(u"--hf-band-region brazil");
         }
-        if (_definedCmdOptions & CMD_TIMEREF) {
+        if (_defined_cmd_options & CMD_TIMEREF) {
             options.push_back(u"--time-reference UTC-3");
         }
         args.option(u"brazil");
@@ -523,10 +531,10 @@ void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
 
         // Build help text. Same principle as --japan.
         UStringList options;
-        if (_definedCmdOptions & CMD_STANDARDS) {
+        if (_defined_cmd_options & CMD_STANDARDS) {
             options.push_back(u"--atsc");
         }
-        if (_definedCmdOptions & CMD_HF_REGION) {
+        if (_defined_cmd_options & CMD_HF_REGION) {
             options.push_back(u"--hf-band-region usa");
         }
         args.option(u"usa");
@@ -544,19 +552,25 @@ void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
 bool ts::DuckContext::loadArgs(Args& args)
 {
     // List of forced standards from the command line.
-    _cmdStandards = Standards::NONE;
+    _cmd_standards = Standards::NONE;
 
     // Options relating to default PDS.
-    if (_definedCmdOptions & CMD_PDS) {
+    if (_defined_cmd_options & CMD_PDS) {
         // Keep previous value unchanged if unspecified.
-        args.getIntValue(_defaultPDS, u"default-pds", _defaultPDS);
+        args.getIntValue(_default_pds, u"default-pds", _default_pds);
         if (args.present(u"default-registration")) {
-            args.getIntValues(_defaultREGIDs, u"default-registration");
+            args.getIntValues(_default_regids, u"default-registration");
+        }
+    }
+    if (_defined_cmd_options & CMD_FIX_PDS) {
+        // Keep previous value unchanged if unspecified.
+        if (args.present(u"fix-missing-pds")) {
+            _fix_pds = true;
         }
     }
 
     // Options relating to default DVB character sets.
-    if (_definedCmdOptions & CMD_CHARSET) {
+    if (_defined_cmd_options & CMD_CHARSET) {
         const UString name(args.value(u"default-charset"));
         if (!name.empty()) {
             const Charset* cset = DVBCharTable::GetCharset(name);
@@ -564,65 +578,65 @@ bool ts::DuckContext::loadArgs(Args& args)
                 args.error(u"invalid character set name '%s'", name);
             }
             else {
-                _charsetIn = _charsetOut = cset;
+                _charset_in = _charset_out = cset;
             }
         }
         else if (args.present(u"europe")) {
-            _charsetIn = _charsetOut = &DVBCharTableSingleByte::DVB_ISO_8859_15;
+            _charset_in = _charset_out = &DVBCharTableSingleByte::DVB_ISO_8859_15;
         }
         else if (args.present(u"brazil")) {
-            _charsetIn = _charsetOut = &DVBCharTableSingleByte::RAW_ISO_8859_15;
+            _charset_in = _charset_out = &DVBCharTableSingleByte::RAW_ISO_8859_15;
         }
         else if (args.present(u"philippines")) {
-            _charsetIn = _charsetOut = &DVBCharTableUTF8::RAW_UTF_8;
+            _charset_in = _charset_out = &DVBCharTableUTF8::RAW_UTF_8;
         }
         else if (args.present(u"japan")) {
-            _charsetIn = _charsetOut = &ARIBCharset::B24;
+            _charset_in = _charset_out = &ARIBCharset::B24;
         }
     }
 
     // Options relating to default UHF/VHF region.
-    if (_definedCmdOptions & CMD_HF_REGION) {
+    if (_defined_cmd_options & CMD_HF_REGION) {
         if (args.present(u"hf-band-region")) {
-            args.getValue(_hfDefaultRegion, u"hf-band-region", _hfDefaultRegion.c_str());
+            args.getValue(_hf_default_region, u"hf-band-region", _hf_default_region.c_str());
         }
         else if (args.present(u"japan")) {
-            _hfDefaultRegion = u"japan";
+            _hf_default_region = u"japan";
         }
         else if (args.present(u"brazil")) {
-            _hfDefaultRegion = u"brazil";
+            _hf_default_region = u"brazil";
         }
         else if (args.present(u"philippines")) {
-            _hfDefaultRegion = u"philippines";
+            _hf_default_region = u"philippines";
         }
         else if (args.present(u"usa")) {
-            _hfDefaultRegion = u"usa";
+            _hf_default_region = u"usa";
         }
     }
 
     // Options relating to default standards.
-    if (_definedCmdOptions & CMD_STANDARDS) {
+    if (_defined_cmd_options & CMD_STANDARDS) {
         if (args.present(u"dvb") || args.present(u"europe")) {
             // The additional flags DVBONLY means pure DVB, not compatible with ISDB.
-            _cmdStandards |= Standards::DVB | Standards::DVBONLY;
+            _cmd_standards |= Standards::DVB | Standards::DVBONLY;
         }
         if (args.present(u"atsc") || args.present(u"usa")) {
-            _cmdStandards |= Standards::ATSC;
+            _cmd_standards |= Standards::ATSC;
         }
         if (args.present(u"isdb") || args.present(u"japan")) {
-            _cmdStandards |= Standards::ISDB;
+            _cmd_standards |= Standards::ISDB;
         }
         if (args.present(u"abnt") || args.present(u"brazil") || args.present(u"philippines")) {
-            _cmdStandards |= Standards::ISDB | Standards::ABNT;
+            _cmd_standards |= Standards::ISDB | Standards::ABNT;
         }
-        _useLeapSeconds = !args.present(u"ignore-leap-seconds");
+        _use_leap_seconds = !args.present(u"ignore-leap-seconds");
     }
-    if ((_definedCmdOptions & (CMD_CHARSET | CMD_STANDARDS | CMD_HF_REGION | CMD_TIMEREF)) && args.present(u"japan")) {
-        _cmdStandards |= Standards::JAPAN;
+    if ((_defined_cmd_options & (CMD_CHARSET | CMD_STANDARDS | CMD_HF_REGION | CMD_TIMEREF)) && args.present(u"japan")) {
+        _cmd_standards |= Standards::JAPAN;
     }
 
     // Options relating to default CAS.
-    if (_definedCmdOptions & CMD_CAS) {
+    if (_defined_cmd_options & CMD_CAS) {
         int count = 0;
         if (args.present(u"default-cas-id")) {
             _casId = args.intValue<uint16_t>(u"default-cas-id");
@@ -641,7 +655,7 @@ bool ts::DuckContext::loadArgs(Args& args)
     }
 
     // Options relating to non-standard time reference.
-    if (_definedCmdOptions & CMD_TIMEREF) {
+    if (_defined_cmd_options & CMD_TIMEREF) {
         if (args.present(u"time-reference")) {
             const UString name(args.value(u"time-reference"));
             if (!setTimeReference(name)) {
@@ -649,18 +663,18 @@ bool ts::DuckContext::loadArgs(Args& args)
             }
         }
         else if (args.present(u"japan")) {
-            _timeReference = Time::JSTOffset;
+            _time_reference = Time::JSTOffset;
         }
         else if (args.present(u"brazil")) {
-            _timeReference = cn::hours(-3); // UTC-3
+            _time_reference = cn::hours(-3); // UTC-3
         }
         else if (args.present(u"philippines")) {
-            _timeReference = cn::hours(+8); // UTC+8
+            _time_reference = cn::hours(+8); // UTC+8
         }
     }
 
     // Preset forced standards from the command line.
-    _accStandards |= _cmdStandards;
+    _acc_standards |= _cmd_standards;
 
     return args.valid();
 }
@@ -672,44 +686,48 @@ bool ts::DuckContext::loadArgs(Args& args)
 
 void ts::DuckContext::saveArgs(SavedArgs& args) const
 {
-    args._definedCmdOptions = _definedCmdOptions;
-    args._cmdStandards = _cmdStandards;
-    args._charsetInName = _charsetIn->name();
-    args._charsetOutName = _charsetOut->name();
-    args._casId = _casId;
-    args._defaultPDS = _defaultPDS;
-    args._defaultREGIDs = _defaultREGIDs;
-    args._hfDefaultRegion = _hfDefaultRegion;
-    args._timeReference = _timeReference;
+    args._defined_cmd_options = _defined_cmd_options;
+    args._cmd_standards = _cmd_standards;
+    args._charset_in_name = _charset_in->name();
+    args._charset_out_name = _charset_out->name();
+    args._cas_id = _casId;
+    args._fix_pds = _fix_pds;
+    args._default_pds = _default_pds;
+    args._default_regids = _default_regids;
+    args._hf_default_region = _hf_default_region;
+    args._time_reference = _time_reference;
 }
 
 void ts::DuckContext::restoreArgs(const SavedArgs& args)
 {
-    if (args._definedCmdOptions & CMD_STANDARDS) {
+    if (args._defined_cmd_options & CMD_STANDARDS) {
         // Reset accumulated standards if a list of standards was saved.
-        _accStandards = _cmdStandards = args._cmdStandards;
+        _acc_standards = _cmd_standards = args._cmd_standards;
     }
-    if (args._definedCmdOptions & CMD_CHARSET) {
-        const Charset* in = DVBCharTable::GetCharset(args._charsetInName);
-        const Charset* out = DVBCharTable::GetCharset(args._charsetOutName);
+    if (args._defined_cmd_options & CMD_CHARSET) {
+        const Charset* in = DVBCharTable::GetCharset(args._charset_in_name);
+        const Charset* out = DVBCharTable::GetCharset(args._charset_out_name);
         if (in != nullptr) {
-            _charsetIn = in;
+            _charset_in = in;
         }
         if (out != nullptr) {
-            _charsetOut = out;
+            _charset_out = out;
         }
     }
-    if (_definedCmdOptions & CMD_CAS) {
-        _casId = args._casId;
+    if (_defined_cmd_options & CMD_CAS) {
+        _casId = args._cas_id;
     }
-    if (_definedCmdOptions & CMD_PDS) {
-        _defaultPDS = args._defaultPDS;
-        _defaultREGIDs = args._defaultREGIDs;
+    if (_defined_cmd_options & CMD_FIX_PDS) {
+        _fix_pds = args._fix_pds;
     }
-    if (_definedCmdOptions & CMD_HF_REGION) {
-        _hfDefaultRegion = args._hfDefaultRegion;
+    if (_defined_cmd_options & CMD_PDS) {
+        _default_pds = args._default_pds;
+        _default_regids = args._default_regids;
     }
-    if (_definedCmdOptions & CMD_TIMEREF) {
-        _timeReference = args._timeReference;
+    if (_defined_cmd_options & CMD_HF_REGION) {
+        _hf_default_region = args._hf_default_region;
+    }
+    if (_defined_cmd_options & CMD_TIMEREF) {
+        _time_reference = args._time_reference;
     }
 }

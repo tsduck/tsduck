@@ -142,5 +142,5 @@ Do not specify input files.
 
 include::{docdir}/opt/group-xml-tweaks.adoc[tags=!*]
 include::{docdir}/opt/group-section-file.adoc[tags=!*]
-include::{docdir}/opt/group-duck-context.adoc[tags=!*;std;timeref;charset]
+include::{docdir}/opt/group-duck-context.adoc[tags=!*;std;timeref;charset;pds;fixpds]
 include::{docdir}/opt/group-common-commands.adoc[tags=!*]

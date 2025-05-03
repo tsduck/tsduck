@@ -209,6 +209,17 @@ namespace ts {
         //!
         bool fromXML(DuckContext& duck, const xml::Element* node, TID tid = TID_NULL);
 
+        //!
+        //! This method converts an XML node as a binary descriptor.
+        //! @param [in,out] duck TSDuck execution context.
+        //! @param [out] edid Extended descriptor id of the XML descriptor.
+        //! @param [in] node The root of the XML descriptor.
+        //! @param [in] tid Optional table id of the table containing the descriptor.
+        //! @return True if the XML element name is a valid descriptor name, false otherwise.
+        //! If the name is valid but the content is incorrect, true is returned and this object is invalidated.
+        //!
+        bool fromXML(DuckContext& duck, EDID& edid, const xml::Element* node, TID tid = TID_NULL);
+
     private:
         // Common code for deserialize().
         AbstractDescriptorPtr deserializeImpl(DuckContext& duck, PSIRepository::DescriptorFactory fac) const;

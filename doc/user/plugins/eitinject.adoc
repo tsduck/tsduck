@@ -555,5 +555,5 @@ On the other hand, this option should not be used on live transport streams.
 In that case, the transport stream processing must be allowed to start without event to inject.
 The EIT's may be sent much later.
 
-include::{docdir}/opt/group-duck-context.adoc[tags=!*;charset]
+include::{docdir}/opt/group-duck-context.adoc[tags=!*;charset;fixpds]
 include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

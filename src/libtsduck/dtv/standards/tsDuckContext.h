@@ -125,14 +125,14 @@ namespace ts {
         //! @param [in] charset An optional specific character set to use instead of the default one.
         //! @return The default input character set (never null).
         //!
-        const Charset* charsetIn(const Charset* charset = nullptr) const { return charset != nullptr ? charset : _charsetIn; }
+        const Charset* charsetIn(const Charset* charset = nullptr) const { return charset != nullptr ? charset : _charset_in; }
 
         //!
         //! Get the preferred output character set for strings to insert in tables and descriptors.
         //! @param [in] charset An optional specific character set to use instead of the default one.
         //! @return The preferred output character set (never null).
         //!
-        const Charset* charsetOut(const Charset* charset = nullptr) const { return charset != nullptr ? charset : _charsetOut; }
+        const Charset* charsetOut(const Charset* charset = nullptr) const { return charset != nullptr ? charset : _charset_out; }
 
         //!
         //! Convert a signalization string into UTF-16 using the default input character set.
@@ -144,7 +144,7 @@ namespace ts {
         //!
         bool decode(UString& str, const uint8_t* data, size_t size) const
         {
-            return _charsetIn->decode(str, data, size);
+            return _charset_in->decode(str, data, size);
         }
 
         //!
@@ -156,7 +156,7 @@ namespace ts {
         //!
         UString decoded(const uint8_t* data, size_t size) const
         {
-            return _charsetIn->decoded(data, size);
+            return _charset_in->decoded(data, size);
         }
 
         //!
@@ -169,7 +169,7 @@ namespace ts {
         //!
         bool decodeWithByteLength(UString& str, const uint8_t*& data, size_t& size) const
         {
-            return _charsetIn->decodeWithByteLength(str, data, size);
+            return _charset_in->decodeWithByteLength(str, data, size);
         }
 
         //!
@@ -185,7 +185,7 @@ namespace ts {
         //!
         UString decodedWithByteLength(const uint8_t*& data, size_t& size) const
         {
-            return _charsetIn->decodedWithByteLength(data, size);
+            return _charset_in->decodedWithByteLength(data, size);
         }
 
         //!
@@ -201,7 +201,7 @@ namespace ts {
         //!
         size_t encode(uint8_t*& buffer, size_t& size, const UString& str, size_t start = 0, size_t count = NPOS) const
         {
-            return _charsetOut->encode(buffer, size, str, start, count);
+            return _charset_out->encode(buffer, size, str, start, count);
         }
 
         //!
@@ -213,7 +213,7 @@ namespace ts {
         //!
         ByteBlock encoded(const UString& str, size_t start = 0, size_t count = NPOS) const
         {
-            return _charsetOut->encoded(str, start, count);
+            return _charset_out->encoded(str, start, count);
         }
 
         //!
@@ -230,7 +230,7 @@ namespace ts {
         //!
         size_t encodeWithByteLength(uint8_t*& buffer, size_t& size, const UString& str, size_t start = 0, size_t count = NPOS) const
         {
-            return _charsetOut->encodeWithByteLength(buffer, size, str, start, count);
+            return _charset_out->encodeWithByteLength(buffer, size, str, start, count);
         }
 
         //!
@@ -242,7 +242,7 @@ namespace ts {
         //!
         ByteBlock encodedWithByteLength(const UString& str, size_t start = 0, size_t count = NPOS) const
         {
-            return _charsetOut->encodedWithByteLength(str, start, count);
+            return _charset_out->encodedWithByteLength(str, start, count);
         }
 
         //!
@@ -276,10 +276,23 @@ namespace ts {
         CASID casId(CASID cas = CASID_NULL) const { return cas == CASID_NULL ? _casId : cas; }
 
         //!
+        //! Set the fixing mode of missing PDS and REGID.
+        //! @param [in] fix If true, when serializing XML private MPEG and DVB descriptors in tables,
+        //! the required REGID or PDS is automatically added if missing.
+        //!
+        void setFixPDS(bool fix) { _fix_pds = fix; }
+
+        //!
+        //! Check if missing registration descriptors and private data specified descriptors are automatically added when serializing XML tables.
+        //! @return True if missing registration descriptors and private data specified descriptors are automatically added.
+        //!
+        bool fixPDS() const { return _fix_pds; }
+
+        //!
         //! Set the default private data specifier to use in the absence of explicit private_data_specifier_descriptor.
         //! @param [in] pds Default PDS. Use zero to revert to no default.
         //!
-        void setDefaultPDS(PDS pds) { _defaultPDS = pds; }
+        void setDefaultPDS(PDS pds) { _default_pds = pds; }
 
         //!
         //! The actual private data specifier to use.
@@ -292,13 +305,13 @@ namespace ts {
         //! Reset the list of default registration ids.
         //! All registration ids, including those coming from @c --default-registration options, are deleted.
         //!
-        void resetDefaultREGIDs() { _defaultREGIDs.clear(); }
+        void resetDefaultREGIDs() { _default_regids.clear(); }
 
         //!
         //! Add a new id at the end of the list of default registration ids.
         //! @param [in] regid A registration id to add.
         //!
-        void addDefaultREGID(REGID regid) { _defaultREGIDs.push_back(regid); }
+        void addDefaultREGID(REGID regid) { _default_regids.push_back(regid); }
 
         //!
         //! Update a list of registration ids (typically from a descriptor list) with the default registration ids.
@@ -306,13 +319,13 @@ namespace ts {
         //! They are inserted at the beginning of @a regids.
         //! @param [in,out] regids The list of registration ids to update.
         //!
-        void updateREGIDs(REGIDVector& regids) const { regids.insert(regids.begin(), _defaultREGIDs.begin(), _defaultREGIDs.end()); }
+        void updateREGIDs(REGIDVector& regids) const { regids.insert(regids.begin(), _default_regids.begin(), _default_regids.end()); }
 
         //!
         //! Get the list of standards which are present in the transport stream or context.
         //! @return A bit mask of standards.
         //!
-        Standards standards() const { return _accStandards; }
+        Standards standards() const { return _acc_standards; }
 
         //!
         //! Add a list of standards which are present in the transport stream or context.
@@ -330,7 +343,7 @@ namespace ts {
         //! Set the name of the default region for UVH and VHF band frequency layout.
         //! @param [in] region Name of the region. Use an empty string to revert to the default.
         //!
-        void setDefaultHFRegion(const UString& region) { _hfDefaultRegion = region; }
+        void setDefaultHFRegion(const UString& region) { _hf_default_region = region; }
 
         //!
         //! Get the name of the default region for UVH and VHF band frequency layout.
@@ -367,7 +380,7 @@ namespace ts {
         //! @param [in] offset Offset from UTC in milli-seconds. Can be positive or negative.
         //! The default offset is zero, meaning plain UTC time.
         //!
-        void setTimeReferenceOffset(cn::milliseconds offset) { _timeReference = offset; }
+        void setTimeReferenceOffset(cn::milliseconds offset) { _time_reference = offset; }
 
         //!
         //! Set a non-standard time reference offset using a name.
@@ -382,7 +395,7 @@ namespace ts {
         //! Get the non-standard time reference offset.
         //! @return The offset from UTC in milli-seconds. Can be positive or negative.
         //!
-        cn::milliseconds timeReferenceOffset() const { return _timeReference; }
+        cn::milliseconds timeReferenceOffset() const { return _time_reference; }
 
         //!
         //! Get the non-standard time reference offset as a string.
@@ -395,13 +408,13 @@ namespace ts {
         //! Currently, this applies to SCTE 35 splice_schedule() commands only.
         //! @param [in] on True if leap seconds shall be explicitly included (the default), false to ignore leap seconds.
         //!
-        void setUseLeapSeconds(bool on) { _useLeapSeconds = on; }
+        void setUseLeapSeconds(bool on) { _use_leap_seconds = on; }
 
         //!
         //! Check the explicit inclusion of leap seconds where it is needed.
         //! @return True if leap seconds shall be explicitly included, false to ignore leap seconds.
         //!
-        bool useLeapSeconds() const  { return _useLeapSeconds; }
+        bool useLeapSeconds() const  { return _use_leap_seconds; }
 
         //!
         //! Define character set command line options in an Args.
@@ -426,6 +439,14 @@ namespace ts {
         //! @param [in,out] args Command line arguments to update.
         //!
         void defineArgsForPDS(Args& args) { defineOptions(args, CMD_PDS); }
+
+        //!
+        //! Define command line options in an Args to automatically fix missing Private Data Specifier and Registration Id.
+        //! Defined options: @c -\-fix-missing-pds.
+        //! The context keeps track of defined options so that loadOptions() can parse the appropriate options.
+        //! @param [in,out] args Command line arguments to update.
+        //!
+        void defineArgsForFixingPDS(Args& args) { defineOptions(args, CMD_FIX_PDS); }
 
         //!
         //! Define contextual standards command line options in an Args.
@@ -469,15 +490,16 @@ namespace ts {
             SavedArgs() = default;
         private:
             friend class DuckContext;
-            int         _definedCmdOptions = 0;  // Defined command line options, indicate which fields are valid.
-            Standards   _cmdStandards = Standards::NONE;  // Forced standards from the command line.
-            UString     _charsetInName {};       // Character set to interpret strings without prefix code.
-            UString     _charsetOutName {};      // Preferred character set to generate strings.
-            CASID       _casId = CASID_NULL;     // Preferred CAS id.
-            PDS         _defaultPDS = 0;         // Default PDS value if undefined.
-            REGIDVector _defaultREGIDs {};       // Default registration id to initially set.
-            UString     _hfDefaultRegion {};     // Default region for UHF/VHF band.
-            cn::milliseconds _timeReference{};   // Time reference in milli-seconds from UTC (used in ISDB variants).
+            int         _defined_cmd_options = 0;  // Defined command line options, indicate which fields are valid.
+            Standards   _cmd_standards = Standards::NONE;  // Forced standards from the command line.
+            UString     _charset_in_name {};       // Character set to interpret strings without prefix code.
+            UString     _charset_out_name {};      // Preferred character set to generate strings.
+            CASID       _cas_id = CASID_NULL;      // Preferred CAS id.
+            bool        _fix_pds = false;          // Automatically fix missing PDS and REGID from XML tables.
+            PDS         _default_pds = 0;          // Default PDS value if undefined.
+            REGIDVector _default_regids {};        // Default registration id to initially set.
+            UString     _hf_default_region {};     // Default region for UHF/VHF band.
+            cn::milliseconds _time_reference{};    // Time reference in milli-seconds from UTC (used in ISDB variants).
         };
 
         //!
@@ -497,18 +519,19 @@ namespace ts {
         std::ostream*      _initial_out;   // Initial text output stream. Never null.
         std::ostream*      _out;           // Pointer to text output stream. Never null.
         std::ofstream      _outFile {};    // Open stream when redirected to a file by name.
-        const Charset*     _charsetIn;     // DVB character set to interpret strings without prefix code.
-        const Charset*     _charsetOut;    // Preferred DVB character set to generate strings.
-        CASID              _casId = CASID_NULL;              // Preferred CAS id.
-        PDS                _defaultPDS = 0;                  // Default PDS value if undefined.
-        REGIDVector        _defaultREGIDs {};                // Default registration id to initially set.
-        bool               _useLeapSeconds = true;           // Explicit use of leap seconds.
-        Standards          _cmdStandards = Standards::NONE;  // Forced standards from the command line.
-        Standards          _accStandards = Standards::NONE;  // Accumulated list of standards in the context.
-        UString            _hfDefaultRegion {};              // Default region for UHF/VHF band.
-        cn::milliseconds   _timeReference {};                // Time reference in milli-seconds from UTC (used in ISDB variants).
-        UString            _timeRefConfig {};                // Time reference name from TSDuck configuration file.
-        int                _definedCmdOptions = 0;           // Mask of defined command line options (CMD_xxx below).
+        const Charset*     _charset_in;    // DVB character set to interpret strings without prefix code.
+        const Charset*     _charset_out;   // Preferred DVB character set to generate strings.
+        CASID              _casId = CASID_NULL;               // Preferred CAS id.
+        bool               _fix_pds = false;                  // Automatically fix missing PDS and REGID from XML tables.
+        PDS                _default_pds = 0;                  // Default PDS value if undefined.
+        REGIDVector        _default_regids {};                // Default registration id to initially set.
+        bool               _use_leap_seconds = true;          // Explicit use of leap seconds.
+        Standards          _cmd_standards = Standards::NONE;  // Forced standards from the command line.
+        Standards          _acc_standards = Standards::NONE;  // Accumulated list of standards in the context.
+        UString            _hf_default_region {};             // Default region for UHF/VHF band.
+        cn::milliseconds   _time_reference {};                // Time reference in milli-seconds from UTC (used in ISDB variants).
+        UString            _time_ref_config {};               // Time reference name from TSDuck configuration file.
+        int                _defined_cmd_options = 0;          // Mask of defined command line options (CMD_xxx below).
         const std::map<uint16_t, const UChar*> _predefined_cas {};  // Predefined CAS names, index by CAS id (first in range).
 
         // List of command line options to define and analyze.
@@ -519,6 +542,7 @@ namespace ts {
             CMD_PDS       = 0x0008,
             CMD_CAS       = 0x0010,
             CMD_TIMEREF   = 0x0020,
+            CMD_FIX_PDS   = 0x0040,
         };
 
         // Define several classes of command line options in an Args.

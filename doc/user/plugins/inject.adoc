@@ -185,5 +185,5 @@ By default, when section insertion is complete, the transmission continues and t
 Specify that all input files are XML, regardless of their file name.
 
 include::{docdir}/opt/group-section-file.adoc[tags=!*]
-include::{docdir}/opt/group-duck-context.adoc[tags=!*;charset]
+include::{docdir}/opt/group-duck-context.adoc[tags=!*;charset;fixpds]
 include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

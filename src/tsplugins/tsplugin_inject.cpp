@@ -90,6 +90,7 @@ ts::InjectPlugin::InjectPlugin (TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Inject tables and sections in a TS", u"[options] input-file[=rate] ...")
 {
     duck.defineArgsForCharset(*this);
+    duck.defineArgsForFixingPDS(*this);
     _sections_opt.defineArgs(*this);
 
     option(u"", 0, FILENAME, 1, UNLIMITED_COUNT);

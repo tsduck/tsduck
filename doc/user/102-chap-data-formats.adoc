@@ -687,6 +687,21 @@ When a table or descriptor id is which is unused in DVB but valid with ISDB is f
 The option `--dvb` disables the switch to ISDB and such a table or descriptor is only reported as "unknown".
 
 [.opt]
+*--fix-missing-pds*
+
+[.optdoc]
+When serializing XML MPEG or DVB private descriptors, automatically add missing
+registration descriptors and private data specifier descriptors.
+
+[.optdoc]
+When a XML table is manually built, the private descriptors (MPEG or DVB) have their
+specific names and it is easy to forget that they are private descriptors and that
+they require a preceding `registration_descriptor` (MPEG private descriptors) or
+`private_data_specifier_descriptor` (DVB private descriptors).
+Using this option, the required preceding descriptors are automatically added when
+necessary.
+
+[.opt]
 *--ignore-leap-seconds*
 
 [.optdoc]

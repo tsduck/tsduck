@@ -6,7 +6,7 @@
 //
 // Documentation for options in class ts::DuckContext.
 //
-// tags: notitle, charset, hf, hf-short, std, pds, cas, timeref
+// tags: notitle, charset, hf, hf-short, std, pds, fixpds, cas, timeref
 //
 //----------------------------------------------------------------------------
 
@@ -132,6 +132,7 @@ endif::[]
 //----------------------------------------------------------------------------
 
 // tag::cas[]
+[.opt]
 *--conax*
 
 [.optdoc]
@@ -228,6 +229,32 @@ A synonym for
 .
 See xref:opt-default-std[xrefstyle=short] and xref:opt-charsets[xrefstyle=short] for more details.
 endif::[]
+
+//----------------------------------------------------------------------------
+// option --fix-missing-pds
+//----------------------------------------------------------------------------
+
+// tag::fixpds[]
+[.opt]
+*--fix-missing-pds*
+
+[.optdoc]
+When serializing XML MPEG or DVB private descriptors, automatically add missing
+registration descriptors and private data specifier descriptors.
+See xref:opt-default-std[xrefstyle=short] for more details.
+// end::fixpds[]
+
+
+//----------------------------------------------------------------------------
+
+// tag::pds[]
+[.opt]
+*--default-pds* _value_
+
+[.optdoc]
+Default DVB-defined private data specifier (PDS).
+See xref:opt-default-std[xrefstyle=short] for more details.
+// end::pds[]
 
 //----------------------------------------------------------------------------
 // option --hf-band-region (optionally -r)

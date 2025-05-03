@@ -575,7 +575,7 @@ They have have no effect on the `tsp` framework.
 They are only passed as initial default values for all plugins which accept the equivalent options.
 Explicit options at plugin level take precedence over these global defaults.
 
-include::{docdir}/opt/group-duck-context.adoc[tags=!*;notitle;cas;std;hf;charset;timeref;pds]
+include::{docdir}/opt/group-duck-context.adoc[tags=!*;notitle;cas;std;hf;charset;timeref;pds;fixpds]
 include::{docdir}/opt/group-common-commands.adoc[tags=!*]
 
 [.usage]

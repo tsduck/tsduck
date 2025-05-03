@@ -171,8 +171,15 @@ ts::xml::Element* ts::Descriptor::toXML(DuckContext& duck, xml::Element* parent,
 
 bool ts::Descriptor::fromXML(DuckContext& duck, const xml::Element* node, TID tid)
 {
+    EDID unused;
+    return fromXML(duck, unused, node, tid);
+}
+
+bool ts::Descriptor::fromXML(DuckContext& duck, EDID& edid, const xml::Element* node, TID tid)
+{
     // Filter invalid parameters.
     invalidate();
+    edid = EDID();
     if (node == nullptr) {
         // Not a valid XML name (not even an XML element).
         return false;
@@ -196,6 +203,7 @@ bool ts::Descriptor::fromXML(DuckContext& duck, const xml::Element* node, TID ti
             desc->fromXML(duck, node);
             if (desc->isValid() && desc->serialize(duck, *this)) {
                 // The descriptor was successfully serialized.
+                edid = desc->edid();
                 return true;
             }
         }
