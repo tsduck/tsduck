@@ -35,6 +35,7 @@ namespace ts {
     //!
     class TSDUCKDLL DTVProperties
     {
+        TS_NOCOPY(DTVProperties);
     public:
         //!
         //! Default constructor.

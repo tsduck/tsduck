@@ -762,7 +762,7 @@ ts::UString ts::ModulationArgs::shortDescription(DuckContext& duck) const
                 desc += u")";
             }
 
-            if (plp != PLP_DISABLE) {
+            if (plp.has_value() && plp != PLP_DISABLE) {
                 desc += UString::Format(u", PLP %d", plp.value());
             }
             break;
@@ -793,7 +793,7 @@ ts::UString ts::ModulationArgs::shortDescription(DuckContext& duck) const
             }
             if (delivery_system != DS_DVB_S && delivery_system != DS_ISDB_S) {
                 desc += u" (" + DeliverySystemEnum().name(delivery_system.value());
-                if (modulation != QAM_AUTO) {
+                if (modulation.has_value() && modulation != QAM_AUTO) {
                     desc += u", " + ModulationEnum().name(modulation.value());
                 }
                 desc += u")";
