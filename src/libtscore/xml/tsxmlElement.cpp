@@ -15,21 +15,21 @@
 // Constructor.
 //----------------------------------------------------------------------------
 
-ts::xml::Element::Element(Report& report, size_t line, CaseSensitivity attributeCase) :
+ts::xml::Element::Element(Report& report, size_t line, CaseSensitivity attribute_case) :
     Node(report, line),
-    _attributeCase(attributeCase)
+    _attribute_case(attribute_case)
 {
 }
 
-ts::xml::Element::Element(Node* parent, const UString& name, CaseSensitivity attributeCase, bool last) :
+ts::xml::Element::Element(Node* parent, const UString& name, CaseSensitivity attribute_case, bool last) :
     Node(parent, name, last), // the "value" of an element node is its name.
-    _attributeCase(attributeCase)
+    _attribute_case(attribute_case)
 {
 }
 
 ts::xml::Element::Element(const Element& other) :
     Node(other),
-    _attributeCase(other._attributeCase),
+    _attribute_case(other._attribute_case),
     _attributes(other._attributes)
 {
 }
@@ -107,32 +107,32 @@ ts::xml::Element* ts::xml::Element::findFirstChild(const UString& name, bool sil
 // Find all children elements in an XML element by name, case-insensitive.
 //----------------------------------------------------------------------------
 
-bool ts::xml::Element::getChildren(ElementVector& children, const UString& searchName, size_t minCount, size_t maxCount) const
+bool ts::xml::Element::getChildren(ElementVector& children, const UString& search_name, size_t min_count, size_t max_count) const
 {
     children.clear();
 
     // Filter invalid parameters.
-    if (searchName.empty()) {
+    if (search_name.empty()) {
         return false;
     }
 
     // Loop on all children.
     for (const Element* child = firstChildElement(); child != nullptr; child = child->nextSiblingElement()) {
-        if (searchName.similar(child->name())) {
+        if (search_name.similar(child->name())) {
             children.push_back(child);
         }
     }
 
     // Check cardinality.
-    if (children.size() >= minCount && children.size() <= maxCount) {
+    if (children.size() >= min_count && children.size() <= max_count) {
         return true;
     }
-    else if (maxCount == UNLIMITED) {
-        report().error(u"<%s>, line %d, contains %d <%s>, at least %d required", name(), lineNumber(), children.size(), searchName, minCount);
+    else if (max_count == UNLIMITED) {
+        report().error(u"<%s>, line %d, contains %d <%s>, at least %d required", name(), lineNumber(), children.size(), search_name, min_count);
         return false;
     }
     else {
-        report().error(u"<%s>, line %d, contains %d <%s>, allowed %d to %d", name(), lineNumber(), children.size(), searchName, minCount, maxCount);
+        report().error(u"<%s>, line %d, contains %d <%s>, allowed %d to %d", name(), lineNumber(), children.size(), search_name, min_count, max_count);
         return false;
     }
 }
@@ -141,13 +141,13 @@ bool ts::xml::Element::getChildren(ElementVector& children, const UString& searc
 // Check if named child elements are present in an XML element, case-insensitive.
 //-------------------------------------------------------------------------------
 
-bool ts::xml::Element::hasChildElement(const UString& searchName) const
+bool ts::xml::Element::hasChildElement(const UString& search_name) const
 {
     bool found = false;
 
     // Loop on all children.
     for (const Element* child = firstChildElement(); !found && (child != nullptr); child = child->nextSiblingElement()) {
-        if (searchName.similar(child->name())) {
+        if (search_name.similar(child->name())) {
             found = true;
         }
     }
@@ -159,27 +159,27 @@ bool ts::xml::Element::hasChildElement(const UString& searchName) const
 //----------------------------------------------------------------------------
 
 bool ts::xml::Element::getTextChild(UString& data,
-                                    const UString& searchName,
+                                    const UString& search_name,
                                     bool trim,
                                     bool required,
-                                    const UString& defValue,
-                                    size_t minSize,
-                                    size_t maxSize) const
+                                    const UString& def_value,
+                                    size_t min_size,
+                                    size_t max_size) const
 {
     // Get child node.
     ElementVector child;
-    if (!getChildren(child, searchName, required ? 1 : 0, 1)) {
+    if (!getChildren(child, search_name, required ? 1 : 0, 1)) {
         data.clear();
         return false;
     }
 
     // Get value in child node.
     if (child.empty()) {
-        data = defValue;
+        data = def_value;
         return true;
     }
     else {
-        return child[0]->getText(data, trim, minSize, maxSize);
+        return child[0]->getText(data, trim, min_size, max_size);
     }
 }
 
@@ -195,7 +195,7 @@ ts::UString ts::xml::Element::text(bool trim) const
     return str;
 }
 
-bool ts::xml::Element::getText(UString& data, const bool trim, size_t minSize, size_t maxSize) const
+bool ts::xml::Element::getText(UString& data, const bool trim, size_t min_size, size_t max_size) const
 {
     data.clear();
 
@@ -212,15 +212,15 @@ bool ts::xml::Element::getText(UString& data, const bool trim, size_t minSize, s
 
     // Check value size.
     const size_t len = data.length();
-    if (len >= minSize && len <= maxSize) {
+    if (len >= min_size && len <= max_size) {
         return true;
     }
-    else if (maxSize == UNLIMITED) {
-        report().error(u"Incorrect text in <%s>, line %d, contains %d characters, at least %d required", name(), lineNumber(), len, minSize);
+    else if (max_size == UNLIMITED) {
+        report().error(u"Incorrect text in <%s>, line %d, contains %d characters, at least %d required", name(), lineNumber(), len, min_size);
         return false;
     }
     else {
-        report().error(u"Incorrect text in <%s>, line %d, contains %d characters, allowed %d to %d", name(), lineNumber(), len, minSize, maxSize);
+        report().error(u"Incorrect text in <%s>, line %d, contains %d characters, allowed %d to %d", name(), lineNumber(), len, min_size, max_size);
         return false;
     }
 }
@@ -230,11 +230,11 @@ bool ts::xml::Element::getText(UString& data, const bool trim, size_t minSize, s
 // Get text in a child containing hexadecimal data.
 //----------------------------------------------------------------------------
 
-bool ts::xml::Element::getHexaTextChild(ByteBlock& data, const UString& searchName, bool required, size_t minSize, size_t maxSize) const
+bool ts::xml::Element::getHexaTextChild(ByteBlock& data, const UString& search_name, bool required, size_t min_size, size_t max_size) const
 {
     // Get child node.
     ElementVector child;
-    if (!getChildren(child, searchName, required ? 1 : 0, 1)) {
+    if (!getChildren(child, search_name, required ? 1 : 0, 1)) {
         data.clear();
         return false;
     }
@@ -245,7 +245,7 @@ bool ts::xml::Element::getHexaTextChild(ByteBlock& data, const UString& searchNa
         return true;
     }
     else {
-        return child[0]->getHexaText(data, minSize, maxSize);
+        return child[0]->getHexaText(data, min_size, max_size);
     }
 }
 
@@ -254,7 +254,7 @@ bool ts::xml::Element::getHexaTextChild(ByteBlock& data, const UString& searchNa
 // Get a text child of an element containing hexadecimal data).
 //----------------------------------------------------------------------------
 
-bool ts::xml::Element::getHexaText(ByteBlock& data, size_t minSize, size_t maxSize) const
+bool ts::xml::Element::getHexaText(ByteBlock& data, size_t min_size, size_t max_size) const
 {
     data.clear();
 
@@ -267,15 +267,15 @@ bool ts::xml::Element::getHexaText(ByteBlock& data, size_t minSize, size_t maxSi
 
     // Check value size.
     const size_t len = data.size();
-    if (len >= minSize && len <= maxSize) {
+    if (len >= min_size && len <= max_size) {
         return true;
     }
-    else if (maxSize == UNLIMITED) {
-        report().error(u"Incorrect hexa content in <%s>, line %d, contains %d bytes, at least %d required", name(), lineNumber(), len, minSize);
+    else if (max_size == UNLIMITED) {
+        report().error(u"Incorrect hexa content in <%s>, line %d, contains %d bytes, at least %d required", name(), lineNumber(), len, min_size);
         return false;
     }
     else {
-        report().error(u"Incorrect hexa content in <%s>, line %d, contains %d bytes, allowed %d to %d", name(), lineNumber(), len, minSize, maxSize);
+        report().error(u"Incorrect hexa content in <%s>, line %d, contains %d bytes, allowed %d to %d", name(), lineNumber(), len, min_size, max_size);
         return false;
     }
 }
@@ -297,9 +297,9 @@ ts::xml::Element* ts::xml::Element::addElement(const UString& childName)
 // Add a new text inside this node.
 //----------------------------------------------------------------------------
 
-ts::xml::Text* ts::xml::Element::addText(const UString& text, bool onlyNotEmpty)
+ts::xml::Text* ts::xml::Element::addText(const UString& text, bool only_not_empty)
 {
-    if (onlyNotEmpty && text.empty()) {
+    if (only_not_empty && text.empty()) {
         return nullptr;
     }
     else {
@@ -314,7 +314,7 @@ ts::xml::Text* ts::xml::Element::addText(const UString& text, bool onlyNotEmpty)
 // Add a new text containing hexadecimal data inside this node.
 //----------------------------------------------------------------------------
 
-ts::xml::Text* ts::xml::Element::addHexaText(const void* data, size_t size, bool onlyNotEmpty)
+ts::xml::Text* ts::xml::Element::addHexaText(const void* data, size_t size, bool only_not_empty)
 {
     // Filter incorrect parameters.
     if (data == nullptr) {
@@ -323,7 +323,7 @@ ts::xml::Text* ts::xml::Element::addHexaText(const void* data, size_t size, bool
     }
 
     // Do nothing if empty.
-    if (size == 0 && onlyNotEmpty) {
+    if (size == 0 && only_not_empty) {
         return nullptr;
     }
 
@@ -345,17 +345,17 @@ ts::xml::Text* ts::xml::Element::addHexaText(const void* data, size_t size, bool
 // Add a new child element containing an hexadecimal data text.
 //----------------------------------------------------------------------------
 
-ts::xml::Text* ts::xml::Element::addHexaTextChild(const UString& name, const void* data, size_t size, bool onlyNotEmpty)
+ts::xml::Text* ts::xml::Element::addHexaTextChild(const UString& name, const void* data, size_t size, bool only_not_empty)
 {
     if (data == nullptr) {
         size = 0;
     }
-    return size == 0 && onlyNotEmpty ? nullptr : addElement(name)->addHexaText(data, size);
+    return size == 0 && only_not_empty ? nullptr : addElement(name)->addHexaText(data, size);
 }
 
-ts::xml::Text* ts::xml::Element::addHexaTextChild(const UString& name, const ByteBlock& data, bool onlyNotEmpty)
+ts::xml::Text* ts::xml::Element::addHexaTextChild(const UString& name, const ByteBlock& data, bool only_not_empty)
 {
-    return data.empty() && onlyNotEmpty ? nullptr : addElement(name)->addHexaText(data.data(), data.size());
+    return data.empty() && only_not_empty ? nullptr : addElement(name)->addHexaText(data.data(), data.size());
 }
 
 
@@ -363,14 +363,14 @@ ts::xml::Text* ts::xml::Element::addHexaTextChild(const UString& name, const Byt
 // Attribute map management.
 //----------------------------------------------------------------------------
 
-ts::UString ts::xml::Element::attributeKey(const UString& attributeName) const
+ts::UString ts::xml::Element::attributeKey(const UString& attribute_name) const
 {
-    return _attributeCase == CASE_SENSITIVE ? attributeName : attributeName.toLower();
+    return _attribute_case == CASE_SENSITIVE ? attribute_name : attribute_name.toLower();
 }
 
-ts::xml::Element::AttributeMap::const_iterator ts::xml::Element::findAttribute(const UString& attributeName) const
+ts::xml::Element::AttributeMap::const_iterator ts::xml::Element::findAttribute(const UString& attribute_name) const
 {
-    return _attributes.find(attributeKey(attributeName));
+    return _attributes.find(attributeKey(attribute_name));
 }
 
 void ts::xml::Element::setAttribute(const UString& name, const UString& value, bool onlyIfNotEmpty)
@@ -404,15 +404,15 @@ ts::xml::Attribute& ts::xml::Element::refAttribute(const UString& name)
 // Get an attribute.
 //----------------------------------------------------------------------------
 
-const ts::xml::Attribute& ts::xml::Element::attribute(const UString& attributeName, bool silent) const
+const ts::xml::Attribute& ts::xml::Element::attribute(const UString& attribute_name, bool silent) const
 {
-    const auto it = findAttribute(attributeName);
+    const auto it = findAttribute(attribute_name);
     if (it != _attributes.end()) {
         // Found the real attribute.
         return it->second;
     }
     if (!silent) {
-        report().error(u"attribute '%s' not found in <%s>, line %d", attributeName, name(), lineNumber());
+        report().error(u"attribute '%s' not found in <%s>, line %d", attribute_name, name(), lineNumber());
     }
     // Return a reference to a static invalid attribute.
     return Attribute::INVALID();
@@ -453,32 +453,32 @@ bool ts::xml::Element::hasAttribute(const UString& name, const UString& value, b
 bool ts::xml::Element::getAttribute(UString& value,
                                     const UString& name,
                                     bool required,
-                                    const UString& defValue,
-                                    size_t minSize,
-                                    size_t maxSize) const
+                                    const UString& def_value,
+                                    size_t min_size,
+                                    size_t max_size) const
 {
     const Attribute& attr(attribute(name, !required));
     if (!attr.isValid()) {
         // Attribute not present.
-        value = defValue;
+        value = def_value;
         return !required;
     }
     else {
         // Attribute found, get its value.
         value = attr.value();
-        if (value.length() >= minSize && value.length() <= maxSize) {
+        if (value.length() >= min_size && value.length() <= max_size) {
             return true;
         }
 
         // Incorrect value size.
-        if (maxSize == UNLIMITED) {
+        if (max_size == UNLIMITED) {
             report().error(u"Incorrect value for attribute '%s' in <%s>, line %d, contains %d characters, at least %d required",
-                           name, this->name(), attr.lineNumber(), value.length(), minSize);
+                           name, this->name(), attr.lineNumber(), value.length(), min_size);
             return false;
         }
         else {
             report().error(u"Incorrect value for attribute '%s' in <%s>, line %d, contains %d characters, allowed %d to %d",
-                           name, this->name(), attr.lineNumber(), value.length(), minSize, maxSize);
+                           name, this->name(), attr.lineNumber(), value.length(), min_size, max_size);
             return false;
         }
     }
@@ -489,7 +489,7 @@ bool ts::xml::Element::getAttribute(UString& value,
 // Get an optional string attribute of an XML element.
 //----------------------------------------------------------------------------
 
-bool ts::xml::Element::getOptionalAttribute(std::optional<UString>& value, const UString& name, size_t minSize, size_t maxSize) const
+bool ts::xml::Element::getOptionalAttribute(std::optional<UString>& value, const UString& name, size_t min_size, size_t max_size) const
 {
     // Default: erase value.
     value.reset();
@@ -498,7 +498,7 @@ bool ts::xml::Element::getOptionalAttribute(std::optional<UString>& value, const
     if (hasAttribute(name)) {
         // Attribute present, value must be correct.
         UString val;
-        ok = getAttribute(val, name, true, UString(), minSize, maxSize);
+        ok = getAttribute(val, name, true, UString(), min_size, max_size);
         if (ok) {
             value = val;
         }
@@ -512,14 +512,14 @@ bool ts::xml::Element::getOptionalAttribute(std::optional<UString>& value, const
 // Get a boolean attribute of an XML element.
 //----------------------------------------------------------------------------
 
-bool ts::xml::Element::getBoolAttribute(bool& value, const UString& name, bool required, bool defValue) const
+bool ts::xml::Element::getBoolAttribute(bool& value, const UString& name, bool required, bool def_value) const
 {
     UString str;
     if (!getAttribute(str, name, required)) {
         return false;
     }
     else if (!required && str.empty()) {
-        value = defValue;
+        value = def_value;
         return true;
     }
     else if (str.similar(u"true") || str.similar(u"yes") || str.similar(u"1")) {
@@ -564,14 +564,14 @@ bool ts::xml::Element::getOptionalBoolAttribute(std::optional<bool>& value, cons
 // Get a date/time attribute of an XML element.
 //----------------------------------------------------------------------------
 
-bool ts::xml::Element::getDateTimeAttribute(Time& value, const UString& name, bool required, const Time& defValue) const
+bool ts::xml::Element::getDateTimeAttribute(Time& value, const UString& name, bool required, const Time& def_value) const
 {
     UString str;
     if (!getAttribute(str, name, required)) {
         return false;
     }
     if (!required && str.empty()) {
-        value = defValue;
+        value = def_value;
         return true;
     }
 
@@ -605,14 +605,14 @@ bool ts::xml::Element::getOptionalDateTimeAttribute(std::optional<Time>& value, 
 // Get a date attribute of an XML element.
 //----------------------------------------------------------------------------
 
-bool ts::xml::Element::getDateAttribute(Time& value, const UString& name, bool required, const Time& defValue) const
+bool ts::xml::Element::getDateAttribute(Time& value, const UString& name, bool required, const Time& def_value) const
 {
     UString str;
     if (!getAttribute(str, name, required)) {
         return false;
     }
     if (!required && str.empty()) {
-        value = defValue;
+        value = def_value;
         return true;
     }
 
@@ -646,14 +646,14 @@ bool ts::xml::Element::getOptionalDateAttribute(std::optional<Time>& value, cons
 // Get an IPv4/v6 or MAC address attribute of an XML element.
 //----------------------------------------------------------------------------
 
-bool ts::xml::Element::getIPAttribute(IPAddress& value, const UString& name, bool required, const IPAddress& defValue) const
+bool ts::xml::Element::getIPAttribute(IPAddress& value, const UString& name, bool required, const IPAddress& def_value) const
 {
     UString str;
     if (!getAttribute(str, name, required)) {
         return false;
     }
     if (!required && str.empty()) {
-        value = defValue;
+        value = def_value;
         return true;
     }
 
@@ -664,14 +664,14 @@ bool ts::xml::Element::getIPAttribute(IPAddress& value, const UString& name, boo
     return ok;
 }
 
-bool ts::xml::Element::getMACAttribute(MACAddress& value, const UString& name, bool required, const MACAddress& defValue) const
+bool ts::xml::Element::getMACAttribute(MACAddress& value, const UString& name, bool required, const MACAddress& def_value) const
 {
     UString str;
     if (!getAttribute(str, name, required)) {
         return false;
     }
     if (!required && str.empty()) {
-        value = defValue;
+        value = def_value;
         return true;
     }
 
@@ -736,7 +736,7 @@ void ts::xml::Element::getAttributesNamesInModificationOrder(UStringList& names)
 // Recursively merge another element into this one.
 //----------------------------------------------------------------------------
 
-bool ts::xml::Element::merge(Element* other, MergeAttributes attrOptions)
+bool ts::xml::Element::merge(Element* other, MergeAttributes attr_options)
 {
     // Ignore null or self merge.
     if (other == nullptr || other == this) {
@@ -750,9 +750,9 @@ bool ts::xml::Element::merge(Element* other, MergeAttributes attrOptions)
     }
 
     // Merge attributes.
-    if (attrOptions != MergeAttributes::NONE) {
+    if (attr_options != MergeAttributes::NONE) {
         for (const auto& attr : other->_attributes) {
-            if (attrOptions == MergeAttributes::REPLACE || !hasAttribute(attr.second.name())) {
+            if (attr_options == MergeAttributes::REPLACE || !hasAttribute(attr.second.name())) {
                 setAttribute(attr.second.name(), attr.second.value());
             }
         }
@@ -769,7 +769,7 @@ bool ts::xml::Element::merge(Element* other, MergeAttributes attrOptions)
         }
         else {
             // Move all content into the main topic.
-            main->merge(elem, attrOptions);
+            main->merge(elem, attr_options);
         }
     }
 

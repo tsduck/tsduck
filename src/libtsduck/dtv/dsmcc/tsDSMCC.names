@@ -63,3 +63,15 @@ Bits = 16
 0x80a2 = ServerSessionTransferIndication
 0x80a3 = ServerSessionTransferResponse
 0x80b0 = ServerSessionInProgressRequest
+
+[DSMCC.descriptorType]
+# ISO/IEC 13818-6, 6.1
+Bits = 8
+0x00 = Pad descriptor
+0x01 = System Hardware descriptor
+0x02 = System Software descriptor
+
+[DSMCC.specifierType]
+# ISO/IEC 13818-6, 6.1
+Bits = 8
+0x01 = IEEE OUI

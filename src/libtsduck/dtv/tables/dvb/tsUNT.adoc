@@ -16,18 +16,20 @@ Defined by DVB in <<ETSI-101-211>>.
   <!-- One per set of devices -->
   <devices>
 
-    <!-- More than one allowed, each one is an individual descriptor -->
-    <!-- inside compatibilityDescriptor() -->
-    <compatibilityDescriptor
-        descriptorType="uint8, required"
-        specifierType="uint8, default=0x01"
-        specifierData="uint24, required"
-        model="uint16, default=0x00"
-        version="uint16, default=0x00">
-      <!-- Several subdescriptors -->
-      <subDescriptor subDescriptorType="uint8, required">
-        Hexadecimal content
-      </subDescriptor>
+    <!-- DSM-CC compatibilityDescriptor() structure -->
+    <compatibilityDescriptor>
+      <!-- Zero or more descriptors -->
+      <descriptor
+          descriptorType="uint8, required"
+          specifierType="uint8, default=1"
+          specifierData="uint24, required"
+          model="uint16, default=0"
+          version="uint16, default=0">
+        <!-- Zero or more subdescriptors -->
+        <subDescriptor subDescriptorType="uint8, required">
+          Hexadecimal content
+        </subDescriptor>
+      </descriptor>
     </compatibilityDescriptor>
 
     <!-- One per platform -->

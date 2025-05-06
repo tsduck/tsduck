@@ -10,11 +10,14 @@
         dsmcc_type="uint8, required, default=0x03"
         message_id="uint16, required"
         transaction_id="uint32, required">
+
       <_any in="_metadata"/>
+
       <DSI>
         <server_id>
           Hexadecimal content
         </server_id>
+        <_any in="_dsmccCompatibilityDescriptor"/>
         <IOR>
           <type_id>
             Hexadecimal content
@@ -66,23 +69,24 @@
           </tagged_profile>
         </IOR>
       </DSI>
-      <DII
-        download_id="uint32, required"
-        block_size="uint16, required">
+
+      <DII download_id="uint32, required" block_size="uint16, required">
+        <_any in="_dsmccCompatibilityDescriptor"/>
         <module
-          module_id="uint16, required"
-          module_size="uint32, required"
-          module_version="uint8, required"
-          module_timeout="uint32, required"
-          block_timeout="uint32, required"
-          min_block_time="uint32, required">
+            module_id="uint16, required"
+            module_size="uint32, required"
+            module_version="uint8, required"
+            module_timeout="uint32, required"
+            block_timeout="uint32, required"
+            min_block_time="uint32, required">
           <tap
-            id="uint16, required"
-            use="uint16, required"
-            association_tag="uint16, required"/>
+              id="uint16, required"
+              use="uint16, required"
+              association_tag="uint16, required"/>
           <_any in="_descriptors"/>
         </module>
       </DII>
+
     </DSMCC_user_to_network_message>
 
   </_tables>

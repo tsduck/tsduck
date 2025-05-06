@@ -14,6 +14,7 @@
 #pragma once
 #include "tsAbstractLongTable.h"
 #include "tsDescriptorList.h"
+#include "tsDSMCCCompatibilityDescriptor.h"
 
 namespace ts {
     //!
@@ -24,47 +25,6 @@ namespace ts {
     class TSDUCKDLL UNT : public AbstractLongTable
     {
     public:
-        //!
-        //! Description of a compatibility descriptor.
-        //! This structure is in fact one entry in the compatibilityDescriptor()
-        //! structure as defined in ISO/IEC 13818-6 and ETSI TS 102 006.
-        //!
-        class TSDUCKDLL CompatibilityDescriptor
-        {
-        public:
-            uint8_t        descriptorType = 0xFF;     //!< Type of descriptor. Default: user defined.
-            uint8_t        specifierType = 0x01;      //!< Specified type, default is 1 (IEEE OUI). Default: IEEE OUI.
-            uint32_t       specifierData = 0;         //!< 24 bits, specified data, must be an IEEE OUI as described in IEEE 802.
-            uint16_t       model = 0;                 //!< Device model.
-            uint16_t       version = 0;               //!< Device version.
-            DescriptorList subDescriptors {nullptr};  //!< Device-specific descriptors, not real MPEG/DVB descriptors, no link to table.
-
-            //!
-            //! Default constructor.
-            //!
-            CompatibilityDescriptor() = default;
-
-            //!
-            //! Copy constructor.
-            //! @param [in] other Another instance to copy.
-            //!
-            CompatibilityDescriptor(const CompatibilityDescriptor& other);
-
-            //!
-            //! Assignment operator.
-            //! @param [in] other Another instance to copy.
-            //! @return A reference to this object.
-            //!
-            CompatibilityDescriptor& operator=(const CompatibilityDescriptor& other) = default;
-        };
-
-        //!
-        //! List of compatibility descriptors.
-        //! This list is equivalent to the compatibilityDescriptor()
-        //! structure as defined in ISO/IEC 13818-6 and ETSI TS 102 006.
-        //!
-        using CompatibilityDescriptorList = std::list<CompatibilityDescriptor>;
-
         //!
         //! Description of a platform.
         //!
@@ -112,8 +72,8 @@ namespace ts {
         class TSDUCKDLL Devices : public AttachedEntry
         {
         public:
-            CompatibilityDescriptorList compatibilityDescriptor {};   //!< The entries of the compatibilityDescriptor.
-            PlatformList                platforms;                    //!< The list of platforms.
+            DSMCCCompatibilityDescriptor compatibilityDescriptor {};   //!< The entries of the compatibilityDescriptor.
+            PlatformList                 platforms;                    //!< The list of platforms.
 
             //!
             //! Basic constructor.

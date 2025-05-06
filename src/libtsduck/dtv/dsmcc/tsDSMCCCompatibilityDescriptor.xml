@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_dsmccCompatibilityDescriptor>
+
+    <!-- DSM-CC compatibilityDescriptor() structure -->
+    <compatibilityDescriptor>
+      <!-- Zero or more descriptors -->
+      <descriptor
+          descriptorType="uint8, required"
+          specifierType="uint8, default=1"
+          specifierData="uint24, required"
+          model="uint16, default=0"
+          version="uint16, default=0">
+        <!-- Zero or more subdescriptors -->
+        <subDescriptor subDescriptorType="uint8, required">
+          Hexadecimal content
+        </subDescriptor>
+      </descriptor>
+    </compatibilityDescriptor>
+
+  </_dsmccCompatibilityDescriptor>
+</tsduck>

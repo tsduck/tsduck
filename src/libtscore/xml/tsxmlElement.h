@@ -38,19 +38,19 @@ namespace ts::xml {
         //! Constructor.
         //! @param [in,out] report Where to report errors.
         //! @param [in] line Line number in input document.
-        //! @param [in] attributeCase State if attribute names are stored with case sensitivity.
+        //! @param [in] attribute_case State if attribute names are stored with case sensitivity.
         //!
-        explicit Element(Report& report = NULLREP, size_t line = 0, CaseSensitivity attributeCase = CASE_INSENSITIVE);
+        explicit Element(Report& report = NULLREP, size_t line = 0, CaseSensitivity attribute_case = CASE_INSENSITIVE);
 
         //!
         //! Constructor.
         //! @param [in,out] parent The parent into which the element is added.
         //! @param [in] name Name of the element.
-        //! @param [in] attributeCase State if attribute names are stored wit case sensitivity.
+        //! @param [in] attribute_case State if attribute names are stored wit case sensitivity.
         //! @param [in] last If true, the child is added at the end of the list of children.
         //! If false, it is added at the beginning.
         //!
-        Element(Node* parent, const UString& name, CaseSensitivity attributeCase = CASE_INSENSITIVE, bool last = true);
+        Element(Node* parent, const UString& name, CaseSensitivity attribute_case = CASE_INSENSITIVE, bool last = true);
 
         //!
         //! Copy constructor.
@@ -99,11 +99,11 @@ namespace ts::xml {
         //! Find all children elements by name, case-insensitive.
         //! @param [out] children Returned vector of all children.
         //! @param [in] name Name of the child element to search.
-        //! @param [in] minCount Minimum required number of elements of that name.
-        //! @param [in] maxCount Maximum allowed number of elements of that name.
+        //! @param [in] min_count Minimum required number of elements of that name.
+        //! @param [in] max_count Maximum allowed number of elements of that name.
         //! @return True on success, false on error.
         //!
-        bool getChildren(ElementVector& children, const UString& name, size_t minCount = 0, size_t maxCount = UNLIMITED) const;
+        bool getChildren(ElementVector& children, const UString& name, size_t min_count = 0, size_t max_count = UNLIMITED) const;
 
         //!
         //! Check if the element contains at least 1 named child element, case-insensitive.
@@ -118,29 +118,29 @@ namespace ts::xml {
         //! @param [in] name Name of the child element to search.
         //! @param [in] trim If true, remove leading and trailing spaces.
         //! @param [in] required If true, generate an error if the child element is not found.
-        //! @param [in] defValue Default value to return if the child element is not present.
-        //! @param [in] minSize Minimum allowed size for the value string.
-        //! @param [in] maxSize Maximum allowed size for the value string.
+        //! @param [in] def_value Default value to return if the child element is not present.
+        //! @param [in] min_size Minimum allowed size for the value string.
+        //! @param [in] max_size Maximum allowed size for the value string.
         //! @return True on success, false on error.
         //!
         bool getTextChild(UString& data,
                           const UString& name,
                           bool trim = false,
                           bool required = false,
-                          const UString& defValue = UString(),
-                          size_t minSize = 0,
-                          size_t maxSize = UNLIMITED) const;
+                          const UString& def_value = UString(),
+                          size_t min_size = 0,
+                          size_t max_size = UNLIMITED) const;
 
         //!
         //! Get text inside an element.
         //! In practice, concatenate the content of all Text children inside the element.
         //! @param [out] data The content of the text children.
         //! @param [in] trim If true, remove leading and trailing spaces.
-        //! @param [in] minSize Minimum allowed size for the value string.
-        //! @param [in] maxSize Maximum allowed size for the value string.
+        //! @param [in] min_size Minimum allowed size for the value string.
+        //! @param [in] max_size Maximum allowed size for the value string.
         //! @return True on success, false on error.
         //!
-        bool getText(UString& data, bool trim = false, size_t minSize = 0, size_t maxSize = UNLIMITED) const;
+        bool getText(UString& data, bool trim = false, size_t min_size = 0, size_t max_size = UNLIMITED) const;
 
         //!
         //! Get text inside an element.
@@ -155,26 +155,26 @@ namespace ts::xml {
         //! @param [out] data The content of the text in the child element.
         //! @param [in] name Name of the child element to search.
         //! @param [in] required If true, generate an error if the child element is not found.
-        //! @param [in] minSize Minimum allowed size for the value string.
-        //! @param [in] maxSize Maximum allowed size for the value string.
+        //! @param [in] min_size Minimum allowed size for the value string.
+        //! @param [in] max_size Maximum allowed size for the value string.
         //! @return True on success, false on error.
         //!
         bool getHexaTextChild(ByteBlock& data,
                               const UString& name,
                               bool required = false,
-                              size_t minSize = 0,
-                              size_t maxSize = UNLIMITED) const;
+                              size_t min_size = 0,
+                              size_t max_size = UNLIMITED) const;
 
         //!
         //! Get and interpret the hexadecimal data inside the element.
         //! In practice, concatenate the content of all Text children inside the element
         //! and interpret the result as hexadecimal data.
         //! @param [out] data Buffer receiving the decoded hexadecimal data.
-        //! @param [in] minSize Minimum size of the returned data.
-        //! @param [in] maxSize Maximum size of the returned data.
+        //! @param [in] min_size Minimum size of the returned data.
+        //! @param [in] max_size Maximum size of the returned data.
         //! @return True on success, false on error.
         //!
-        bool getHexaText(ByteBlock& data, size_t minSize = 0, size_t maxSize = UNLIMITED) const;
+        bool getHexaText(ByteBlock& data, size_t min_size = 0, size_t max_size = UNLIMITED) const;
 
         //!
         //! Add a new child element at the end of children.
@@ -186,29 +186,29 @@ namespace ts::xml {
         //!
         //! Add a new text inside this node.
         //! @param [in] text Text string to add.
-        //! @param [in] onlyNotEmpty When true, do not add the text if the string is empty.
+        //! @param [in] only_not_empty When true, do not add the text if the string is empty.
         //! @return New child element or null on error.
         //!
-        Text* addText(const UString& text, bool onlyNotEmpty = false);
+        Text* addText(const UString& text, bool only_not_empty = false);
 
         //!
         //! Add a new text containing hexadecimal data inside this node.
         //! @param [in] data Address of binary data.
         //! @param [in] size Size in bytes of binary data.
-        //! @param [in] onlyNotEmpty When true, do not add the child element if the data is empty.
+        //! @param [in] only_not_empty When true, do not add the child element if the data is empty.
         //! @return New child element or null on error or empty data.
         //!
-        Text* addHexaText(const void* data, size_t size, bool onlyNotEmpty = false);
+        Text* addHexaText(const void* data, size_t size, bool only_not_empty = false);
 
         //!
         //! Add a new text containing hexadecimal data inside this node.
         //! @param [in] data Binary data.
-        //! @param [in] onlyNotEmpty When true, do not add the child element if the data is empty.
+        //! @param [in] only_not_empty When true, do not add the child element if the data is empty.
         //! @return New child element or null on error or empty data.
         //!
-        Text* addHexaText(const ByteBlock& data, bool onlyNotEmpty = false)
+        Text* addHexaText(const ByteBlock& data, bool only_not_empty = false)
         {
-            return addHexaText(data.data(), data.size(), onlyNotEmpty);
+            return addHexaText(data.data(), data.size(), only_not_empty);
         }
 
         //!
@@ -216,30 +216,30 @@ namespace ts::xml {
         //! @param [in] name Name of the child element to search.
         //! @param [in] data Address of binary data.
         //! @param [in] size Size in bytes of binary data.
-        //! @param [in] onlyNotEmpty When true, do not add the child element if the data is empty.
+        //! @param [in] only_not_empty When true, do not add the child element if the data is empty.
         //! @return New child element or null on error or empty data.
         //!
-        Text* addHexaTextChild(const UString& name, const void* data, size_t size, bool onlyNotEmpty = false);
+        Text* addHexaTextChild(const UString& name, const void* data, size_t size, bool only_not_empty = false);
 
         //!
         //! Add a new child element containing an hexadecimal data text.
         //! @param [in] name Name of the child element to search.
         //! @param [in] data Binary data.
-        //! @param [in] onlyNotEmpty When true, do not add the child element if the data is empty.
+        //! @param [in] only_not_empty When true, do not add the child element if the data is empty.
         //! @return New child element or null on error or empty data.
         //!
-        Text* addHexaTextChild(const UString& name, const ByteBlock& data, bool onlyNotEmpty = false);
+        Text* addHexaTextChild(const UString& name, const ByteBlock& data, bool only_not_empty = false);
 
         //!
         //! Check if an attribute exists in the element.
-        //! @param [in] attributeName Attribute name.
+        //! @param [in] attribute_name Attribute name.
         //! @return True if the attribute exists.
         //!
-        bool hasAttribute(const UString& attributeName) const;
+        bool hasAttribute(const UString& attribute_name) const;
 
         //!
         //! Check if an attribute exists in the element and has the specified value.
-        //! @param [in] attributeName Attribute name.
+        //! @param [in] attribute_name Attribute name.
         //! @param [in] value Expected value.
         //! @param [in] similar If true, the comparison between the actual and expected
         //! values is performed case-insensitive and ignoring blanks. Additioanlly,
@@ -248,17 +248,17 @@ namespace ts::xml {
         //! If @a similar is false, a strict comparison is performed.
         //! @return True if the attribute exists and has the expected value.
         //!
-        bool hasAttribute(const UString& attributeName, const UString& value, bool similar = false) const;
+        bool hasAttribute(const UString& attribute_name, const UString& value, bool similar = false) const;
 
         //!
         //! Get an attribute.
-        //! @param [in] attributeName Attribute name.
+        //! @param [in] attribute_name Attribute name.
         //! @param [in] silent If true, do not report error.
         //! @return A constant reference to an attribute.
         //! If the argument does not exist, the referenced object is marked invalid.
         //! The reference is valid as long as the Element object is not modified.
         //!
-        const Attribute& attribute(const UString& attributeName, bool silent = false) const;
+        const Attribute& attribute(const UString& attribute_name, bool silent = false) const;
 
         //!
         //! Delete an attribute.
@@ -501,30 +501,30 @@ namespace ts::xml {
         //! @param [out] value Returned value of the attribute.
         //! @param [in] name Name of the attribute.
         //! @param [in] required If true, generate an error if the attribute is not found.
-        //! @param [in] defValue Default value to return if the attribute is not present.
-        //! @param [in] minSize Minimum allowed size for the value string.
-        //! @param [in] maxSize Maximum allowed size for the value string.
+        //! @param [in] def_value Default value to return if the attribute is not present.
+        //! @param [in] min_size Minimum allowed size for the value string.
+        //! @param [in] max_size Maximum allowed size for the value string.
         //! @return True on success, false on error.
         //!
         bool getAttribute(UString& value,
                           const UString& name,
                           bool required = false,
-                          const UString& defValue = UString(),
-                          size_t minSize = 0,
-                          size_t maxSize = UNLIMITED) const;
+                          const UString& def_value = UString(),
+                          size_t min_size = 0,
+                          size_t max_size = UNLIMITED) const;
 
         //!
         //! Get an optional string attribute of an XML element.
         //! @param [out] value Returned value of the attribute. If the attribute is not present, the variable is reset.
         //! @param [in] name Name of the attribute.
-        //! @param [in] minSize Minimum allowed size for the value string.
-        //! @param [in] maxSize Maximum allowed size for the value string.
+        //! @param [in] min_size Minimum allowed size for the value string.
+        //! @param [in] max_size Maximum allowed size for the value string.
         //! @return True on success, false on error.
         //!
         bool getOptionalAttribute(std::optional<UString>& value,
                                   const UString& name,
-                                  size_t minSize = 0,
-                                  size_t maxSize = UNLIMITED) const;
+                                  size_t min_size = 0,
+                                  size_t max_size = UNLIMITED) const;
 
         //!
         //! Get an optional attribute of an XML element.
@@ -534,20 +534,20 @@ namespace ts::xml {
         //! @param [out] value Returned value of the attribute. If the attribute is not present, the variable is reset.
         //! @param [in] name Name of the attribute.
         //! @param [in] required If true, generate an error if the attribute is not found.
-        //! @param [in] defValue Default value to return if the attribute is not present.
-        //! @param [in] minSize Minimum allowed size for the value string.
-        //! @param [in] maxSize Maximum allowed size for the value string.
+        //! @param [in] def_value Default value to return if the attribute is not present.
+        //! @param [in] min_size Minimum allowed size for the value string.
+        //! @param [in] max_size Maximum allowed size for the value string.
         //! @return True on success, false on error.
         //!
         bool getVariableAttribute(std::optional<UString>& value,
                                   const UString& name,
                                   bool required = false,
-                                  const UString& defValue = UString(),
-                                  size_t minSize = 0,
-                                  size_t maxSize = UNLIMITED) const
+                                  const UString& def_value = UString(),
+                                  size_t min_size = 0,
+                                  size_t max_size = UNLIMITED) const
         {
-            set_default(value, defValue);
-            return getAttribute(value.value(), name, required, defValue, minSize, maxSize);
+            set_default(value, def_value);
+            return getAttribute(value.value(), name, required, def_value, min_size, max_size);
         }
 
         //!
@@ -555,10 +555,10 @@ namespace ts::xml {
         //! @param [out] value Returned value of the attribute.
         //! @param [in] name Name of the attribute.
         //! @param [in] required If true, generate an error if the attribute is not found.
-        //! @param [in] defValue Default value to return if the attribute is not present.
+        //! @param [in] def_value Default value to return if the attribute is not present.
         //! @return True on success, false on error.
         //!
-        bool getBoolAttribute(bool& value, const UString& name, bool required = false, bool defValue = false) const;
+        bool getBoolAttribute(bool& value, const UString& name, bool required = false, bool def_value = false) const;
 
         //!
         //! Get an optional boolean attribute of an XML element.
@@ -574,9 +574,9 @@ namespace ts::xml {
         //! @param [out] value Returned value of the attribute.
         //! @param [in] name Name of the attribute.
         //! @param [in] required If true, generate an error if the attribute is not found.
-        //! @param [in] defValue Default value to return if the attribute is not present.
-        //! @param [in] minValue Minimum allowed value for the attribute.
-        //! @param [in] maxValue Maximum allowed value for the attribute.
+        //! @param [in] def_value Default value to return if the attribute is not present.
+        //! @param [in] min_value Minimum allowed value for the attribute.
+        //! @param [in] max_value Maximum allowed value for the attribute.
         //! @return True on success, false on error.
         //!
         template <typename INT, typename INT1 = INT, typename INT2 = INT, typename INT3 = INT>
@@ -584,9 +584,9 @@ namespace ts::xml {
         bool getIntAttribute(INT& value,
                              const UString& name,
                              bool required = false,
-                             INT1 defValue = static_cast<INT>(0),
-                             INT2 minValue = std::numeric_limits<typename ts::underlying_type<INT>::type>::min(),
-                             INT3 maxValue = std::numeric_limits<typename ts::underlying_type<INT>::type>::max()) const;
+                             INT1 def_value = static_cast<INT>(0),
+                             INT2 min_value = std::numeric_limits<typename ts::underlying_type<INT>::type>::min(),
+                             INT3 max_value = std::numeric_limits<typename ts::underlying_type<INT>::type>::max()) const;
 
         //!
         //! Get an integer or enum attribute of an XML element.
@@ -594,9 +594,9 @@ namespace ts::xml {
         //! @param [out] value Returned value of the attribute. Always set, possibly to the default value.
         //! @param [in] name Name of the attribute.
         //! @param [in] required If true, generate an error if the attribute is not found.
-        //! @param [in] defValue Default value to return if the attribute is not present.
-        //! @param [in] minValue Minimum allowed value for the attribute.
-        //! @param [in] maxValue Maximum allowed value for the attribute.
+        //! @param [in] def_value Default value to return if the attribute is not present.
+        //! @param [in] min_value Minimum allowed value for the attribute.
+        //! @param [in] max_value Maximum allowed value for the attribute.
         //! @return True on success, false on error.
         //!
         template <typename INT, typename INT1 = INT, typename INT2 = INT, typename INT3 = INT>
@@ -604,12 +604,12 @@ namespace ts::xml {
         bool getIntAttribute(std::optional<INT>& value,
                              const UString& name,
                              bool required = false,
-                             INT1 defValue = static_cast<INT>(0),
-                             INT2 minValue = std::numeric_limits<typename ts::underlying_type<INT>::type>::min(),
-                             INT3 maxValue = std::numeric_limits<typename ts::underlying_type<INT>::type>::max()) const
+                             INT1 def_value = static_cast<INT>(0),
+                             INT2 min_value = std::numeric_limits<typename ts::underlying_type<INT>::type>::min(),
+                             INT3 max_value = std::numeric_limits<typename ts::underlying_type<INT>::type>::max()) const
         {
-            set_default(value, defValue);
-            return getIntAttribute(value.value(), name, required, defValue, minValue, maxValue);
+            set_default(value, def_value);
+            return getIntAttribute(value.value(), name, required, def_value, min_value, max_value);
         }
 
         //!
@@ -617,16 +617,16 @@ namespace ts::xml {
         //! @tparam INT An integer or enum type.
         //! @param [out] value Returned value of the attribute. If the attribute is not present, the variable is reset.
         //! @param [in] name Name of the attribute.
-        //! @param [in] minValue Minimum allowed value for the attribute.
-        //! @param [in] maxValue Maximum allowed value for the attribute.
+        //! @param [in] min_value Minimum allowed value for the attribute.
+        //! @param [in] max_value Maximum allowed value for the attribute.
         //! @return True on success, false on error.
         //!
         template <typename INT, typename INT1 = INT, typename INT2 = INT>
             requires ts::int_enum<INT> && ts::int_enum<INT1> && ts::int_enum<INT2>
         bool getOptionalIntAttribute(std::optional<INT>& value,
                                      const UString& name,
-                                     INT1 minValue = std::numeric_limits<typename ts::underlying_type<INT>::type>::min(),
-                                     INT2 maxValue = std::numeric_limits<typename ts::underlying_type<INT>::type>::max()) const;
+                                     INT1 min_value = std::numeric_limits<typename ts::underlying_type<INT>::type>::min(),
+                                     INT2 max_value = std::numeric_limits<typename ts::underlying_type<INT>::type>::max()) const;
 
         //!
         //! Get an integer or enum attribute of an XML element, based on a condition.
@@ -634,8 +634,8 @@ namespace ts::xml {
         //! @param [out] value Returned value of the attribute. If the attribute is not present, the variable is reset.
         //! @param [in] name Name of the attribute.
         //! @param [in] condition If true, the attribute must be present. If false, the attribute must nbot be present.
-        //! @param [in] minValue Minimum allowed value for the attribute.
-        //! @param [in] maxValue Maximum allowed value for the attribute.
+        //! @param [in] min_value Minimum allowed value for the attribute.
+        //! @param [in] max_value Maximum allowed value for the attribute.
         //! @return True on success, false on error.
         //!
         template <typename INT, typename INT1 = INT, typename INT2 = INT>
@@ -643,8 +643,8 @@ namespace ts::xml {
         bool getConditionalIntAttribute(std::optional<INT>& value,
                                         const UString& name,
                                         bool condition,
-                                        INT1 minValue = std::numeric_limits<typename ts::underlying_type<INT>::type>::min(),
-                                        INT2 maxValue = std::numeric_limits<typename ts::underlying_type<INT>::type>::max()) const;
+                                        INT1 min_value = std::numeric_limits<typename ts::underlying_type<INT>::type>::min(),
+                                        INT2 max_value = std::numeric_limits<typename ts::underlying_type<INT>::type>::max()) const;
 
         //!
         //! Get an enumeration attribute of an XML element.
@@ -654,12 +654,12 @@ namespace ts::xml {
         //! @param [in] definition The definition of enumeration values.
         //! @param [in] name Name of the attribute.
         //! @param [in] required If true, generate an error if the attribute is not found.
-        //! @param [in] defValue Default value to return if the attribute is not present.
+        //! @param [in] def_value Default value to return if the attribute is not present.
         //! @return True on success, false on error.
         //!
         template <typename INT, typename INT1 = INT>
             requires ts::int_enum<INT> && ts::int_enum<INT1>
-        bool getEnumAttribute(INT& value, const Names& definition, const UString& name, bool required = false, INT1 defValue = INT(0)) const;
+        bool getEnumAttribute(INT& value, const Names& definition, const UString& name, bool required = false, INT1 def_value = INT(0)) const;
 
         //!
         //! Get an enumeration attribute of an XML element.
@@ -668,15 +668,15 @@ namespace ts::xml {
         //! @param [in] definition The definition of enumeration values.
         //! @param [in] name Name of the attribute.
         //! @param [in] required If true, generate an error if the attribute is not found.
-        //! @param [in] defValue Default value to return if the attribute is not present.
+        //! @param [in] def_value Default value to return if the attribute is not present.
         //! @return True on success, false on error.
         //!
         template <typename INT, typename INT1 = INT>
             requires ts::int_enum<INT> && ts::int_enum<INT1>
-        bool getEnumAttribute(std::optional<INT>& value, const Names& definition, const UString& name, bool required = false, INT1 defValue = INT(0)) const
+        bool getEnumAttribute(std::optional<INT>& value, const Names& definition, const UString& name, bool required = false, INT1 def_value = INT(0)) const
         {
-            set_default(value, defValue);
-            return getEnumAttribute(value.value(), definition, name, required, defValue);
+            set_default(value, def_value);
+            return getEnumAttribute(value.value(), definition, name, required, def_value);
         }
 
         //!
@@ -698,9 +698,9 @@ namespace ts::xml {
         //! @param [out] value Returned value of the attribute.
         //! @param [in] name Name of the attribute.
         //! @param [in] required If true, generate an error if the attribute is not found.
-        //! @param [in] defValue Default value to return if the attribute is not present.
-        //! @param [in] minValue Minimum allowed value for the attribute.
-        //! @param [in] maxValue Maximum allowed value for the attribute.
+        //! @param [in] def_value Default value to return if the attribute is not present.
+        //! @param [in] min_value Minimum allowed value for the attribute.
+        //! @param [in] max_value Maximum allowed value for the attribute.
         //! @return True on success, false on error.
         //!
         template <typename FLT, typename FLT1 = FLT, typename FLT2 = FLT, typename FLT3 = FLT>
@@ -708,25 +708,25 @@ namespace ts::xml {
         bool getFloatAttribute(FLT& value,
                                const UString& name,
                                bool required = false,
-                               FLT1 defValue = static_cast<FLT>(0.0),
-                               FLT2 minValue = std::numeric_limits<FLT>::lowest(),
-                               FLT3 maxValue = std::numeric_limits<FLT>::max()) const;
+                               FLT1 def_value = static_cast<FLT>(0.0),
+                               FLT2 min_value = std::numeric_limits<FLT>::lowest(),
+                               FLT3 max_value = std::numeric_limits<FLT>::max()) const;
 
         //!
         //! Get an optional floating-point attribute of an XML element.
         //! @tparam FLT A floating-point type.
         //! @param [out] value Returned value of the attribute. If the attribute is not present, the variable is reset.
         //! @param [in] name Name of the attribute.
-        //! @param [in] minValue Minimum allowed value for the attribute.
-        //! @param [in] maxValue Maximum allowed value for the attribute.
+        //! @param [in] min_value Minimum allowed value for the attribute.
+        //! @param [in] max_value Maximum allowed value for the attribute.
         //! @return True on success, false on error.
         //!
         template <typename FLT, typename FLT1 = FLT, typename FLT2 = FLT>
             requires std::floating_point<FLT> && std::is_arithmetic_v<FLT1> && std::is_arithmetic_v<FLT2>
         bool getOptionalFloatAttribute(std::optional<FLT>& value,
                                        const UString& name,
-                                       FLT1 minValue = std::numeric_limits<FLT>::lowest(),
-                                       FLT2 maxValue = std::numeric_limits<FLT>::max()) const;
+                                       FLT1 min_value = std::numeric_limits<FLT>::lowest(),
+                                       FLT2 max_value = std::numeric_limits<FLT>::max()) const;
 
         //!
         //! Get an optional floating-point attribute of an XML element.
@@ -737,9 +737,9 @@ namespace ts::xml {
         //! @param [out] value Returned value of the attribute.
         //! @param [in] name Name of the attribute.
         //! @param [in] required If true, generate an error if the attribute is not found.
-        //! @param [in] defValue Default value to return if the attribute is not present.
-        //! @param [in] minValue Minimum allowed value for the attribute.
-        //! @param [in] maxValue Maximum allowed value for the attribute.
+        //! @param [in] def_value Default value to return if the attribute is not present.
+        //! @param [in] min_value Minimum allowed value for the attribute.
+        //! @param [in] max_value Maximum allowed value for the attribute.
         //! @return True on success, false on error.
         //!
         template <typename FLT, typename FLT1 = FLT, typename FLT2 = FLT, typename FLT3 = FLT>
@@ -747,12 +747,12 @@ namespace ts::xml {
         bool getVariableFloatAttribute(std::optional<FLT>& value,
                                        const UString& name,
                                        bool required = false,
-                                       FLT1 defValue = static_cast<FLT>(0),
-                                       FLT2 minValue = std::numeric_limits<FLT>::lowest(),
-                                       FLT3 maxValue = std::numeric_limits<FLT>::max()) const
+                                       FLT1 def_value = static_cast<FLT>(0),
+                                       FLT2 min_value = std::numeric_limits<FLT>::lowest(),
+                                       FLT3 max_value = std::numeric_limits<FLT>::max()) const
         {
-            set_default(value, defValue);
-            return getFloatAttribute(value.value(), name, required, defValue, minValue, maxValue);
+            set_default(value, def_value);
+            return getFloatAttribute(value.value(), name, required, def_value, min_value, max_value);
         }
 
         //!
@@ -760,28 +760,28 @@ namespace ts::xml {
         //! @param [out] value Returned value of the attribute.
         //! @param [in] name Name of the attribute.
         //! @param [in] required If true, generate an error if the attribute is not found.
-        //! @param [in] defValue Default value to return if the attribute is not present.
-        //! @param [in] minValue Minimum allowed value for the attribute.
-        //! @param [in] maxValue Maximum allowed value for the attribute.
+        //! @param [in] def_value Default value to return if the attribute is not present.
+        //! @param [in] min_value Minimum allowed value for the attribute.
+        //! @param [in] max_value Maximum allowed value for the attribute.
         //! @return True on success, false on error.
         //!
         template <class Rep, class Period>
         bool getChronoAttribute(cn::duration<Rep, Period>& value,
                                 const UString& name,
                                 bool required = false,
-                                const cn::duration<Rep, Period>& defValue = cn::duration<Rep, Period>::zero(),
-                                const cn::duration<Rep, Period>& minValue = cn::duration<Rep, Period>::min(),
-                                const cn::duration<Rep, Period>& maxValue = cn::duration<Rep, Period>::max()) const;
+                                const cn::duration<Rep, Period>& def_value = cn::duration<Rep, Period>::zero(),
+                                const cn::duration<Rep, Period>& min_value = cn::duration<Rep, Period>::min(),
+                                const cn::duration<Rep, Period>& max_value = cn::duration<Rep, Period>::max()) const;
 
         //!
         //! Get a date/time attribute of an XML element.
         //! @param [out] value Returned value of the attribute.
         //! @param [in] name Name of the attribute.
         //! @param [in] required If true, generate an error if the attribute is not found.
-        //! @param [in] defValue Default value to return if the attribute is not present.
+        //! @param [in] def_value Default value to return if the attribute is not present.
         //! @return True on success, false on error.
         //!
-        bool getDateTimeAttribute(Time& value, const UString& name, bool required = false, const Time& defValue = Time()) const;
+        bool getDateTimeAttribute(Time& value, const UString& name, bool required = false, const Time& def_value = Time()) const;
 
         //!
         //! Get an optional date/time attribute of an XML element.
@@ -796,10 +796,10 @@ namespace ts::xml {
         //! @param [out] value Returned value of the attribute.
         //! @param [in] name Name of the attribute.
         //! @param [in] required If true, generate an error if the attribute is not found.
-        //! @param [in] defValue Default value to return if the attribute is not present.
+        //! @param [in] def_value Default value to return if the attribute is not present.
         //! @return True on success, false on error.
         //!
-        bool getDateAttribute(Time& value, const UString& name, bool required = false, const Time& defValue = Time()) const;
+        bool getDateAttribute(Time& value, const UString& name, bool required = false, const Time& def_value = Time()) const;
 
         //!
         //! Get an optional date (without hours) attribute of an XML element.
@@ -827,11 +827,11 @@ namespace ts::xml {
         //! @param [out] value Returned value of the attribute.
         //! @param [in] name Name of the attribute.
         //! @param [in] required If true, generate an error if the attribute is not found.
-        //! @param [in] defValue Default value to return if the attribute is not present.
+        //! @param [in] def_value Default value to return if the attribute is not present.
         //! @return True on success, false on error.
         //!
         template <class Rep1, class Period1, class Rep2, class Period2>
-        bool getTimeAttribute(cn::duration<Rep1,Period1>& value, const UString& name, bool required, const cn::duration<Rep2,Period2>& defValue) const;
+        bool getTimeAttribute(cn::duration<Rep1,Period1>& value, const UString& name, bool required, const cn::duration<Rep2,Period2>& def_value) const;
 
         //!
         //! Get an optional time attribute of an XML element in "hh:mm:ss" format.
@@ -847,20 +847,20 @@ namespace ts::xml {
         //! @param [out] value Returned value of the attribute.
         //! @param [in] name Name of the attribute.
         //! @param [in] required If true, generate an error if the attribute is not found.
-        //! @param [in] defValue Default value to return if the attribute is not present.
+        //! @param [in] def_value Default value to return if the attribute is not present.
         //! @return True on success, false on error.
         //!
-        bool getIPAttribute(IPAddress& value, const UString& name, bool required = false, const IPAddress& defValue = IPAddress()) const;
+        bool getIPAttribute(IPAddress& value, const UString& name, bool required = false, const IPAddress& def_value = IPAddress()) const;
 
         //!
         //! Get a MAC address attribute of an XML element in "x:x:x:x:x:x" format.
         //! @param [out] value Returned value of the attribute.
         //! @param [in] name Name of the attribute.
         //! @param [in] required If true, generate an error if the attribute is not found.
-        //! @param [in] defValue Default value to return if the attribute is not present.
+        //! @param [in] def_value Default value to return if the attribute is not present.
         //! @return True on success, false on error.
         //!
-        bool getMACAttribute(MACAddress& value, const UString& name, bool required = false, const MACAddress& defValue = MACAddress()) const;
+        bool getMACAttribute(MACAddress& value, const UString& name, bool required = false, const MACAddress& def_value = MACAddress()) const;
 
         //!
         //! Get the list of all attribute names.
@@ -891,10 +891,10 @@ namespace ts::xml {
         //! Recursively merge another element into this one.
         //! @param [in,out] other Another element to merge. The @a other object is destroyed,
         //! some of its nodes are reparented into the main object.
-        //! @param [in] attrOptions What to do with attributes when merging nodes with identical tags.
+        //! @param [in] attr_options What to do with attributes when merging nodes with identical tags.
         //! @return True on success, false on error.
         //!
-        bool merge(Element* other, MergeAttributes attrOptions = MergeAttributes::ADD);
+        bool merge(Element* other, MergeAttributes attr_options = MergeAttributes::ADD);
 
         //!
         //! Sort children elements by alphabetical order of tag name.
@@ -916,17 +916,17 @@ namespace ts::xml {
         virtual bool parseNode(TextParser& parser, const Node* parent) override;
 
     private:
-        CaseSensitivity _attributeCase = CASE_INSENSITIVE; // For attribute names.
+        CaseSensitivity _attribute_case = CASE_INSENSITIVE; // For attribute names.
         AttributeMap _attributes {};
 
         // Compute the key in the attribute map.
-        UString attributeKey(const UString& attributeName) const;
+        UString attributeKey(const UString& attribute_name) const;
 
         // Find a key in the attribute map.
-        AttributeMap::const_iterator findAttribute(const UString& attributeName) const;
+        AttributeMap::const_iterator findAttribute(const UString& attribute_name) const;
 
         // Get a modifiable reference to an attribute, create if does not exist.
-        Attribute& refAttribute(const UString& attributeName);
+        Attribute& refAttribute(const UString& attribute_name);
     };
 }
 
@@ -938,12 +938,12 @@ namespace ts::xml {
 // Get an integer or enum attribute of an XML element.
 template <typename INT, typename INT1, typename INT2, typename INT3>
     requires ts::int_enum<INT> && ts::int_enum<INT1> && ts::int_enum<INT2> && ts::int_enum<INT3>
-bool ts::xml::Element::getIntAttribute(INT& value, const UString& name, bool required, INT1 defValue, INT2 minValue, INT3 maxValue) const
+bool ts::xml::Element::getIntAttribute(INT& value, const UString& name, bool required, INT1 def_value, INT2 min_value, INT3 max_value) const
 {
     const Attribute& attr(attribute(name, !required));
     if (!attr.isValid()) {
         // Attribute not present.
-        value = INT(defValue);
+        value = INT(def_value);
         return !required;
     }
 
@@ -955,8 +955,8 @@ bool ts::xml::Element::getIntAttribute(INT& value, const UString& name, bool req
         report().error(u"'%s' is not a valid integer value for attribute '%s' in <%s>, line %d", str, name, this->name(), lineNumber());
         return false;
     }
-    else if (val < INTMAX(minValue) || val > INTMAX(maxValue)) {
-        report().error(u"'%s' must be in range %'d to %'d for attribute '%s' in <%s>, line %d", str, minValue, maxValue, name, this->name(), lineNumber());
+    else if (val < INTMAX(min_value) || val > INTMAX(max_value)) {
+        report().error(u"'%s' must be in range %'d to %'d for attribute '%s' in <%s>, line %d", str, min_value, max_value, name, this->name(), lineNumber());
         return false;
     }
     else {
@@ -968,7 +968,7 @@ bool ts::xml::Element::getIntAttribute(INT& value, const UString& name, bool req
 // Get an optional integer attribute of an XML element.
 template <typename INT, typename INT1, typename INT2>
     requires ts::int_enum<INT> && ts::int_enum<INT1> && ts::int_enum<INT2>
-bool ts::xml::Element::getOptionalIntAttribute(std::optional<INT>& value, const UString& name, INT1 minValue, INT2 maxValue) const
+bool ts::xml::Element::getOptionalIntAttribute(std::optional<INT>& value, const UString& name, INT1 min_value, INT2 max_value) const
 {
     INT v = INT(0);
     if (!hasAttribute(name)) {
@@ -976,7 +976,7 @@ bool ts::xml::Element::getOptionalIntAttribute(std::optional<INT>& value, const 
         value.reset();
         return true;
     }
-    else if (getIntAttribute<INT>(v, name, false, INT(0), minValue, maxValue)) {
+    else if (getIntAttribute<INT>(v, name, false, INT(0), min_value, max_value)) {
         // Attribute present, correct value.
         value = v;
         return true;
@@ -991,7 +991,7 @@ bool ts::xml::Element::getOptionalIntAttribute(std::optional<INT>& value, const 
 // Get an integer attribute of an XML element, based on a condition.
 template <typename INT, typename INT1, typename INT2>
     requires ts::int_enum<INT> && ts::int_enum<INT1> && ts::int_enum<INT2>
-bool ts::xml::Element::getConditionalIntAttribute(std::optional<INT>& value, const UString& name, bool condition, INT1 minValue, INT2 maxValue) const
+bool ts::xml::Element::getConditionalIntAttribute(std::optional<INT>& value, const UString& name, bool condition, INT1 min_value, INT2 max_value) const
 {
     value.reset();
     INT v = INT(0);
@@ -1005,7 +1005,7 @@ bool ts::xml::Element::getConditionalIntAttribute(std::optional<INT>& value, con
         report().error(u"<%s>, line %d, attribute '%s' is forbidden in this context", this->name(), lineNumber(), name);
         return false;
     }
-    else if (getIntAttribute<INT>(v, name, true, INT(0), minValue, maxValue)) {
+    else if (getIntAttribute<INT>(v, name, true, INT(0), min_value, max_value)) {
         // Attribute present, correct value.
         value = v;
         return true;
@@ -1019,12 +1019,12 @@ bool ts::xml::Element::getConditionalIntAttribute(std::optional<INT>& value, con
 // Get an enumeration attribute of an XML element.
 template <typename INT, typename INT1>
     requires ts::int_enum<INT> && ts::int_enum<INT1>
-bool ts::xml::Element::getEnumAttribute(INT& value, const Names& definition, const UString& name, bool required, INT1 defValue) const
+bool ts::xml::Element::getEnumAttribute(INT& value, const Names& definition, const UString& name, bool required, INT1 def_value) const
 {
     const Attribute& attr(attribute(name, !required));
     if (!attr.isValid()) {
         // Attribute not present.
-        value = INT(defValue);
+        value = INT(def_value);
         return !required;
     }
     else {
@@ -1068,12 +1068,12 @@ bool ts::xml::Element::getOptionalEnumAttribute(std::optional<INT>& value, const
 // Get a floating-point attribute of an XML element.
 template <typename FLT, typename FLT1, typename FLT2, typename FLT3>
     requires std::floating_point<FLT> && std::is_arithmetic_v<FLT1> && std::is_arithmetic_v<FLT2> && std::is_arithmetic_v<FLT3>
-bool ts::xml::Element::getFloatAttribute(FLT& value, const UString& name, bool required, FLT1 defValue, FLT2 minValue, FLT3 maxValue) const
+bool ts::xml::Element::getFloatAttribute(FLT& value, const UString& name, bool required, FLT1 def_value, FLT2 min_value, FLT3 max_value) const
 {
     const Attribute& attr(attribute(name, !required));
     if (!attr.isValid()) {
         // Attribute not present.
-        value = FLT(defValue);
+        value = FLT(def_value);
         return !required;
     }
 
@@ -1084,8 +1084,8 @@ bool ts::xml::Element::getFloatAttribute(FLT& value, const UString& name, bool r
         report().error(u"'%s' is not a valid floating-point value for attribute '%s' in <%s>, line %d", str, name, this->name(), lineNumber());
         return false;
     }
-    else if (val < FLT(minValue) || val > FLT(maxValue)) {
-        report().error(u"'%s' must be in range %f to %f for attribute '%s' in <%s>, line %d", str, double(minValue), double(maxValue), name, this->name(), lineNumber());
+    else if (val < FLT(min_value) || val > FLT(max_value)) {
+        report().error(u"'%s' must be in range %f to %f for attribute '%s' in <%s>, line %d", str, double(min_value), double(max_value), name, this->name(), lineNumber());
         return false;
     }
     else {
@@ -1097,7 +1097,7 @@ bool ts::xml::Element::getFloatAttribute(FLT& value, const UString& name, bool r
 // Get an optional floating-point attribute of an XML element.
 template <typename FLT, typename FLT1, typename FLT2>
     requires std::floating_point<FLT> && std::is_arithmetic_v<FLT1> && std::is_arithmetic_v<FLT2>
-bool ts::xml::Element::getOptionalFloatAttribute(std::optional<FLT>& value, const UString& name, FLT1 minValue, FLT2 maxValue) const
+bool ts::xml::Element::getOptionalFloatAttribute(std::optional<FLT>& value, const UString& name, FLT1 min_value, FLT2 max_value) const
 {
     FLT v = FLT(0.0);
     if (!hasAttribute(name)) {
@@ -1105,7 +1105,7 @@ bool ts::xml::Element::getOptionalFloatAttribute(std::optional<FLT>& value, cons
         value.reset();
         return true;
     }
-    else if (getFloatAttribute<FLT>(v, name, false, FLT(0.0), minValue, maxValue)) {
+    else if (getFloatAttribute<FLT>(v, name, false, FLT(0.0), min_value, max_value)) {
         // Attribute present, correct value.
         value = v;
         return true;
@@ -1119,14 +1119,14 @@ bool ts::xml::Element::getOptionalFloatAttribute(std::optional<FLT>& value, cons
 
 // Get a time attribute of an XML element in "hh:mm:ss" format.
 template <class Rep1, class Period1, class Rep2, class Period2>
-bool ts::xml::Element::getTimeAttribute(cn::duration<Rep1,Period1>& value, const UString& name, bool required, const cn::duration<Rep2,Period2>& defValue) const
+bool ts::xml::Element::getTimeAttribute(cn::duration<Rep1,Period1>& value, const UString& name, bool required, const cn::duration<Rep2,Period2>& def_value) const
 {
     UString str;
     if (!getAttribute(str, name, required)) {
         return false;
     }
     if (!required && str.empty()) {
-        value = cn::duration_cast<cn::duration<Rep1,Period1>>(defValue);
+        value = cn::duration_cast<cn::duration<Rep1,Period1>>(def_value);
         return true;
     }
 
@@ -1162,13 +1162,13 @@ template <class Rep, class Period>
 bool ts::xml::Element::getChronoAttribute(cn::duration<Rep, Period>& value,
                                           const UString& name,
                                           bool required,
-                                          const cn::duration<Rep, Period>& defValue,
-                                          const cn::duration<Rep, Period>& minValue,
-                                          const cn::duration<Rep, Period>& maxValue) const
+                                          const cn::duration<Rep, Period>& def_value,
+                                          const cn::duration<Rep, Period>& min_value,
+                                          const cn::duration<Rep, Period>& max_value) const
 {
     using Duration = cn::duration<Rep, Period>;
     typename Duration::rep ivalue = 0;
-    const bool ok = getIntAttribute(ivalue, name, required, defValue.count(), minValue.count(), maxValue.count());
+    const bool ok = getIntAttribute(ivalue, name, required, def_value.count(), min_value.count(), max_value.count());
     value = Duration(ivalue);
     return ok;
 }

@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <DtvXmlFiles Include="$(DtvRoot)tables\**\*.xml;$(DtvRoot)descriptors\**\*.xml"/>
+    <DtvXmlFiles Include="$(DtvRoot)tables\**\*.xml;$(DtvRoot)descriptors\**\*.xml;$(DtvRoot)dsmcc\*.xml"/>
   </ItemGroup>
 
   <Target Name="BuildTablesModel" Inputs="$(TablesSkeletonXml);@(DtvXmlFiles)" Outputs="$(TablesModelXml)">

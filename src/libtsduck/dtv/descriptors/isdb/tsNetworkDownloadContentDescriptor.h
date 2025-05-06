@@ -13,6 +13,7 @@
 
 #pragma once
 #include "tsAbstractDownloadContentDescriptor.h"
+#include "tsDSMCCCompatibilityDescriptor.h"
 #include "tsIPSocketAddress.h"
 
 namespace ts {
@@ -34,7 +35,7 @@ namespace ts {
         uint32_t                       connect_timer = 0;           //!< 24 bits. See ARIB STD-B21, 12.2.1.1.
         std::optional<IPSocketAddress> ip {};                       //!< Exactly one of ip or url must be set.
         std::optional<UString>         url {};                      //!< Exactly one of ip or url must be set.
-        CompatibilityDescriptor        compatibility_descriptor {}; //!< Compatibility descriptor.
+        DSMCCCompatibilityDescriptor   compatibility_descriptor {}; //!< Compatibility descriptor.
         ByteBlock                      private_data {};             //!< Private data.
         std::optional<TextInfo>        text_info {};                //!< Optional text info.
 

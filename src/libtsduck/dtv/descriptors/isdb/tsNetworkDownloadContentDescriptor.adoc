@@ -18,24 +18,21 @@ Defined by ARIB in <<ARIB-B21>>.
   <ipv6 address="IPv6 address, required" port="uint16, required"/>
   <url url="string, required"/>
 
-  <!-- At most one compatibility_descriptor -->
-  <compatibility_descriptor>
-
-    <!-- Any number of descriptors -->
+  <!-- Optional DSM-CC compatibilityDescriptor() structure -->
+  <compatibilityDescriptor>
+    <!-- Zero or more descriptors -->
     <descriptor
-        descriptor_type="uint8, required"
-        specifier_type="uint8, required"
-        specifier_data="uint24, required"
-        model="uint16, required"
-        version="uint16, required">
-
-      <!-- Any number of subdescriptors -->
-      <subdescriptor type="uint8, required">
+        descriptorType="uint8, required"
+        specifierType="uint8, default=1"
+        specifierData="uint24, required"
+        model="uint16, default=0"
+        version="uint16, default=0">
+      <!-- Zero or more subdescriptors -->
+      <subDescriptor subDescriptorType="uint8, required">
         Hexadecimal content
-      </subdescriptor>
+      </subDescriptor>
     </descriptor>
-
-  </compatibility_descriptor>
+  </compatibilityDescriptor>
 
   <!-- At most one -->
   <private_data>

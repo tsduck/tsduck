@@ -7,19 +7,20 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Representation of an DSM-CC User-to-Network Message Table (DownloadServerInitiate, DownloadInfoIndication)
+//!  Representation of a DSM-CC User-to-Network Message Table.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
 #include "tsAbstractLongTable.h"
 #include "tsDSMCC.h"
+#include "tsDSMCCCompatibilityDescriptor.h"
 
 namespace ts {
     //!
-    //! Representation of an DSM-CC User-to-Network Message Table (DownloadServerInitiate, DownloadInfoIndication)
-    //!
-    //! @see ISO/IEC 13818-6, ITU-T Rec. 9.2.2 and 9.2.7. ETSI TR 101 202 V1.2.1 (2003-01), A.1, A.3, A.4, B.
+    //! Representation of a DSM-CC User-to-Network Message Table (DownloadServerInitiate, DownloadInfoIndication).
+    //! @see ISO/IEC 13818-6, 9.2.2, 7.3.2, 7.3.6
+    //! @see ETSI TR 101 202, A.1, A.3, A.4, B.
     //! @ingroup libtsduck table
     //!
     class TSDUCKDLL DSMCCUserToNetworkMessage: public AbstractLongTable
@@ -144,7 +145,7 @@ namespace ts {
             uint32_t       block_timeout = 0;   //!< Time out value in microseconds that may be used to time out the reception of the next Block after a Block has been acquired.
             uint32_t       min_block_time = 0;  //!< Indicates the minimum time period that exists between the delivery of two subsequent Blocks of the Module.
             std::list<Tap> taps {};             //!< List of Taps.
-                                                //
+
             //!
             //! Constructor.
             //! @param [in] table Parent DSMCCUserToNetworkMessage Table.
@@ -152,15 +153,21 @@ namespace ts {
             explicit Module(const AbstractTable* table);
         };
 
-        MessageHeader header {};     //!< DSM-CC Message Header.
-        ByteBlock     server_id {};  //!< Field shall be set to 20 bytes with the value 0xFF.
-        IOR           ior {};        //!< Interoperable Object Reference (IOR) structure.
-
         //!
         //! List of Modules
         //!
         using ModuleList = AttachedEntryList<Module>;
 
+        // Common fields for all DSMCCUserToNetworkMessage:
+
+        MessageHeader                header {};                     //!< DSM-CC Message Header.
+        DSMCCCompatibilityDescriptor compatibility_descriptor {};   //!< DSM-CC compatibilityDescriptor.
+
+        // These fields apply to DSI:
+        ByteBlock  server_id {};     //!< Field shall be set to 20 bytes with the value 0xFF.
+        IOR        ior {};           //!< Interoperable Object Reference (IOR) structure.
+
+        // These fields apply to DII:
         uint32_t   download_id = 0;  //!< Same value as the downloadId field of the DownloadDataBlock() messages which carry the Blocks of the Module.
         uint16_t   block_size = 0;   //!< Block size of all the DownloadDataBlock() messages which convey the Blocks of the Modules.
         ModuleList modules;          //!< List of modules structures.
@@ -195,6 +202,5 @@ namespace ts {
 
     private:
         static constexpr size_t MESSAGE_HEADER_SIZE = 12;  //!< DSM-CC Message Header size w/o adaptation header.
-        static constexpr size_t SERVER_ID_SIZE = 20;       //!< Fixed size in bytes of server_id.
     };
 }

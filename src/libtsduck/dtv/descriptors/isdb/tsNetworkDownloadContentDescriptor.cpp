@@ -92,7 +92,7 @@ void ts::NetworkDownloadContentDescriptor::serializePayload(PSIBuffer& buf) cons
     }
 
     if (!compatibility_descriptor.empty()) {
-        compatibility_descriptor.serializePayload(buf);
+        compatibility_descriptor.serialize(buf);
     }
     buf.putUInt8(uint8_t(private_data.size()));
     buf.putBytes(private_data);
@@ -135,7 +135,7 @@ void ts::NetworkDownloadContentDescriptor::deserializePayload(PSIBuffer& buf)
     }
 
     if (compatibility_flag) {
-        compatibility_descriptor.deserializePayload(buf);
+        compatibility_descriptor.deserialize(buf);
     }
     buf.getBytes(private_data, buf.getUInt8());
     if (text_info_flag) {
@@ -195,7 +195,8 @@ void ts::NetworkDownloadContentDescriptor::DisplayDescriptor(TablesDisplay& disp
         }
 
         if (ok && compatibility_flag) {
-            ok = CompatibilityDescriptor::Display(disp, buf, margin);
+            DSMCCCompatibilityDescriptor::Display(disp, buf, margin);
+            ok = !buf.error();
         }
         if (ok) {
             ok = buf.canReadBytes(1);
@@ -236,9 +237,7 @@ void ts::NetworkDownloadContentDescriptor::buildXML(DuckContext& duck, xml::Elem
         root->addElement(u"url")->setAttribute(u"url", url.value());
     }
 
-    if (!compatibility_descriptor.empty()) {
-        compatibility_descriptor.buildXML(duck, root);
-    }
+    compatibility_descriptor.toXML(duck, root, true);
     root->addHexaTextChild(u"private_data", private_data, true);
     if (text_info.has_value()) {
         text_info.value().buildXML(duck, root);
@@ -259,7 +258,7 @@ bool ts::NetworkDownloadContentDescriptor::analyzeXML(DuckContext& duck, const x
         element->getChildren(xipv4, u"ipv4", 0, 1) &&
         element->getChildren(xipv6, u"ipv6", 0, 1) &&
         element->getChildren(xurl, u"url", 0, 1) &&
-        compatibility_descriptor.analyzeXML(duck, element) &&
+        compatibility_descriptor.fromXML(duck, element, false) &&
         element->getHexaTextChild(private_data, u"private_data", false) &&
         element->getChildren(xtext, u"text_info", 0, 1);
 

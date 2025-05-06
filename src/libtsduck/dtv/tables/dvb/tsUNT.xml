@@ -13,18 +13,7 @@
       <_any in="_descriptors"/>
       <!-- One per set of devices -->
       <devices>
-        <!-- More than one allowed, individual descriptor inside compatibilityDescriptor() -->
-        <compatibilityDescriptor
-            descriptorType="uint8, required"
-            specifierType="uint8, default=0x01"
-            specifierData="uint24, required"
-            model="uint16, default=0x00"
-            version="uint16, default=0x00">
-          <!-- Several subdescriptors -->
-          <subDescriptor subDescriptorType="uint8, required">
-            Hexadecimal content
-          </subDescriptor>
-        </compatibilityDescriptor>
+        <_any in="_dsmccCompatibilityDescriptor"/>
         <!-- One per platform -->
         <platform>
           <target>

@@ -24,21 +24,6 @@ TS_REGISTER_TABLE(MY_CLASS, {MY_TID}, MY_STD, MY_XML_NAME, MY_CLASS::DisplaySect
 
 
 //----------------------------------------------------------------------------
-// Description of a compatibility descriptor.
-//----------------------------------------------------------------------------
-
-ts::UNT::CompatibilityDescriptor::CompatibilityDescriptor(const CompatibilityDescriptor& other) :
-    descriptorType(other.descriptorType),
-    specifierType(other.specifierType),
-    specifierData(other.specifierData),
-    model(other.model),
-    version(other.version),
-    subDescriptors(nullptr, other.subDescriptors)
-{
-}
-
-
-//----------------------------------------------------------------------------
 // Description of a platform.
 //----------------------------------------------------------------------------
 
@@ -158,35 +143,8 @@ void ts::UNT::deserializePayload(PSIBuffer& buf, const Section& section)
         // Create a new entry in the list of devices.
         Devices& devs(devices.newEntry());
 
-        // Get compatibilityDescriptor(), a list of compatibility descriptors.
-        // There is a leading 16-bit length field for compatibilityDescriptor().
-        buf.pushReadSizeFromLength(16);
-        size_t descriptorCount = buf.getUInt16();
-
-        // Get outer descriptor loop.
-        while (buf.canRead() && descriptorCount-- > 0) {
-            CompatibilityDescriptor cdesc;
-            cdesc.descriptorType = buf.getUInt8();
-
-            // Get current compatibility descriptor content, based on 8-bit length field.
-            buf.pushReadSizeFromLength(8);
-
-            cdesc.specifierType = buf.getUInt8();
-            cdesc.specifierData = buf.getUInt24();
-            cdesc.model = buf.getUInt16();
-            cdesc.version = buf.getUInt16();
-            buf.skipBits(8); // ignore subDescriptorCount, just read them all
-            buf.getDescriptorList(cdesc.subDescriptors);
-
-            // Close current compatibility descriptor.
-            buf.popState();
-
-            // Insert compatibilityDescriptor() entry.
-            devs.compatibilityDescriptor.push_back(cdesc);
-        }
-
-        // Close compatibilityDescriptor() list of compatibility descriptors.
-        buf.popState();
+        // Get compatibilityDescriptor().
+        devs.compatibilityDescriptor.deserialize(buf);
 
         // Open platform loop using 16-bit length field.
         buf.pushReadSizeFromLength(16);
@@ -237,26 +195,7 @@ void ts::UNT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
         // Try to serialize the current set of device in the current section.
         // Keep current position in case we cannot completely serialize it.
         buf.pushState();
-
-        // Start of compatibilityDescriptor(). It is a structure with a 16-bit length field.
-        buf.pushWriteSequenceWithLeadingLength(16);
-        buf.putUInt16(uint16_t(devs.compatibilityDescriptor.size()));
-
-        // Serialize all entries in the compatibilityDescriptor().
-        for (auto it2 = devs.compatibilityDescriptor.begin(); !buf.error() && it2 != devs.compatibilityDescriptor.end(); ++it2) {
-            buf.putUInt8(it2->descriptorType);
-            buf.pushWriteSequenceWithLeadingLength(8); // descriptorLength
-            buf.putUInt8(it2->specifierType);
-            buf.putUInt24(it2->specifierData);
-            buf.putUInt16(it2->model);
-            buf.putUInt16(it2->version);
-            buf.putUInt8(uint8_t(it2->subDescriptors.count()));
-            buf.putDescriptorList(it2->subDescriptors);
-            buf.popState(); // update descriptorLength
-        }
-
-        // End of compatibilityDescriptor(). The 16-bit length field is updated now.
-        buf.popState();
+        devs.compatibilityDescriptor.serialize(buf);
 
         // Start of platform_loop. It is a structure with a 16-bit length field.
         buf.pushWriteSequenceWithLeadingLength(16);
@@ -329,48 +268,7 @@ void ts::UNT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
         disp << margin << "- Devices " << dev_index << ":" << std::endl;
 
         // Display list of compatibility descriptor.
-        buf.pushReadSizeFromLength(16);
-        const size_t compatibilityDescriptorLength = buf.remainingReadBytes();
-        size_t descriptorCount = buf.getUInt16();
-        disp << margin << UString::Format(u"  Compatibility descriptor: %d bytes, %d descriptors", compatibilityDescriptorLength, descriptorCount) << std::endl;
-
-        // Display outer descriptor loop.
-        for (size_t desc_index = 0; buf.canRead() && descriptorCount-- > 0 && buf.canReadBytes(11); ++desc_index) {
-            disp << margin
-                 << "  - Descriptor " << desc_index
-                 << ", type " << DataName(MY_XML_NAME, u"CompatibilityDescriptorType", buf.getUInt8(), NamesFlags::HEX_VALUE_NAME)
-                 << std::endl;
-
-            // Get current compatibility descriptor content, based on 8-bit length field.
-            buf.pushReadSizeFromLength(8);
-
-            disp << margin << UString::Format(u"    Specifier type: 0x%X", buf.getUInt8());
-            disp << UString::Format(u", specifier data (OUI): %s", OUIName(buf.getUInt24(), NamesFlags::HEX_VALUE_NAME)) << std::endl;
-            disp << margin << UString::Format(u"    Model: %n", buf.getUInt16());
-            disp << UString::Format(u", version: %n", buf.getUInt16()) << std::endl;
-            const size_t subDescriptorCount = buf.getUInt8();
-            disp << margin << UString::Format(u"    Sub-descriptor count: %d", subDescriptorCount) << std::endl;
-
-            // Display sub-descriptors. They are not real descriptors, so we display them in hexa.
-            for (size_t subdesc_index = 0; buf.canRead() && subdesc_index < subDescriptorCount; ++subdesc_index) {
-                disp << margin << UString::Format(u"    - Sub-descriptor %d, type: %n", subdesc_index, buf.getUInt8());
-                size_t length = buf.getUInt8();
-                disp << UString::Format(u", %d bytes", length) << std::endl;
-                length = std::min(length, buf.remainingReadBytes());
-                if (length > 0) {
-                    disp << UString::Dump(buf.currentReadAddress(), length, UString::HEXA | UString::ASCII | UString::OFFSET, margin.size() + 6);
-                }
-                buf.skipBytes(length);
-            }
-
-            // Close current compatibility descriptor.
-            disp.displayPrivateData(u"Extraneous data in compatibility descriptor", buf, NPOS, margin + u"    ");
-            buf.popState();
-        }
-
-        // Close compatibilityDescriptor() list of compatibility descriptors.
-        disp.displayPrivateData(u"Extraneous data in compatibility descriptors list", buf, NPOS, margin + u"  ");
-        buf.popState();
+        DSMCCCompatibilityDescriptor::Display(disp, buf, margin + u"  ");
 
         // Open platform loop using 16-bit length field.
         buf.pushReadSizeFromLength(16);
@@ -405,26 +303,7 @@ void ts::UNT::buildXML(DuckContext& duck, xml::Element* root) const
     for (const auto& it1 : devices) {
         const Devices& devs(it1.second);
         xml::Element* e1 = root->addElement(u"devices");
-        // Loop on compatibilityDescriptor() entries.
-        for (const auto& it2 : devs.compatibilityDescriptor) {
-            xml::Element* e2 = e1->addElement(u"compatibilityDescriptor");
-            e2->setIntAttribute(u"descriptorType", it2.descriptorType, true);
-            e2->setIntAttribute(u"specifierType", it2.specifierType, true);
-            e2->setIntAttribute(u"specifierData", it2.specifierData, true);
-            e2->setIntAttribute(u"model", it2.model, true);
-            e2->setIntAttribute(u"version", it2.version, true);
-            // Loop on subdescriptors
-            for (size_t i3 = 0; i3 < it2.subDescriptors.count(); ++i3) {
-                const Descriptor& desc(it2.subDescriptors[i3]);
-                if (desc.isValid()) {
-                    xml::Element* e3 = e2->addElement(u"subDescriptor");
-                    e3->setIntAttribute(u"subDescriptorType", desc.tag(), true);
-                    if (desc.payloadSize() > 0) {
-                        e3->addHexaText(desc.payload(), desc.payloadSize());
-                    }
-                }
-            }
-        }
+        devs.compatibilityDescriptor.toXML(duck, e1);
         // Loop on platform descriptions.
         for (const auto& it2 : devs.platforms) {
             xml::Element* e2 = e1->addElement(u"platform");
@@ -456,34 +335,9 @@ bool ts::UNT::analyzeXML(DuckContext& duck, const xml::Element* element)
 
     for (size_t i1 = 0; ok && i1 < xdevices.size(); ++i1) {
         Devices& devs(devices.newEntry());
-        xml::ElementVector xcomdesc;
         xml::ElementVector xplatforms;
-        ok = xdevices[i1]->getChildren(xcomdesc, u"compatibilityDescriptor") &&
+        ok = devs.compatibilityDescriptor.fromXML(duck, xdevices[i1]) &&
              xdevices[i1]->getChildren(xplatforms, u"platform");
-
-        for (size_t i2 = 0; ok && i2 < xcomdesc.size(); ++i2) {
-            CompatibilityDescriptor comdesc;
-            xml::ElementVector xsubdesc;
-            ok = xcomdesc[i2]->getIntAttribute(comdesc.descriptorType, u"descriptorType", true) &&
-                 xcomdesc[i2]->getIntAttribute(comdesc.specifierType, u"specifierType", false, 0x01) &&
-                 xcomdesc[i2]->getIntAttribute(comdesc.specifierData, u"specifierData", true, 0, 0, 0xFFFFFF) &&
-                 xcomdesc[i2]->getIntAttribute(comdesc.model, u"model", false, 0) &&
-                 xcomdesc[i2]->getIntAttribute(comdesc.version, u"version", false, 0) &&
-                 xcomdesc[i2]->getChildren(xsubdesc, u"subDescriptor");
-            for (size_t i3 = 0; ok && i3 < xsubdesc.size(); ++i3) {
-                uint8_t type = 0;
-                ByteBlock content;
-                ok = xsubdesc[i3]->getIntAttribute(type, u"subDescriptorType", true) &&
-                     xsubdesc[i3]->getHexaText(content, 0, 255);
-                if (ok) {
-                    // Build complete descriptor.
-                    content.insert(content.begin(), uint8_t(content.size()));
-                    content.insert(content.begin(), type);
-                    comdesc.subDescriptors.add(content.data(), content.size());
-                }
-            }
-            devs.compatibilityDescriptor.push_back(comdesc);
-        }
 
         for (size_t i2 = 0; ok && i2 < xplatforms.size(); ++i2) {
             Platform& platform(devs.platforms.newEntry());

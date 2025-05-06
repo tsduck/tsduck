@@ -23,6 +23,11 @@ namespace ts {
     constexpr uint8_t DSMCC_PROTOCOL_DISCRIMINATOR = 0x11;
 
     //!
+    //! Fixed size in bytes of a DSM-CC serverId.
+    //!
+    constexpr size_t DSMCC_SERVER_ID_SIZE = 20;
+
+    //!
     //! DSM-CC types, in dsmccMessageHeader() structures.
     //! @see ISO/IEC 13818-6, table 2-2.
     //!
@@ -122,5 +127,57 @@ namespace ts {
         DSMCC_TAG_OBJECT_LOCATION     = 0x49534F50,  //!< TAG_ObjectLocation (BIOP::ObjectLocation).
         DSMCC_TAG_ObjectLocation      = 0x49534F50,  //!< TAG_ObjectLocation
         DSMCC_TAG_Intf                = 0x49534F58,  //!< TAG_Intf
+    };
+
+    //!
+    //! DSM-CC tap use.
+    //! @see ISO/IEC 13818-6, section 6.6.1.
+    //!
+    enum : uint16_t {
+        DSMCC_TAPUSE_UNKNOWN_USE = 0,                //!< Unknown use
+        DSMCC_TAPUSE_MPEG_TS_UP_USE = 1,             //!< MPEG transport upstream from Client
+        DSMCC_TAPUSE_MPEG_TS_DOWN_USE = 2,           //!< MPEG transport downstream to Client
+        DSMCC_TAPUSE_MPEG_ES_UP_USE = 3,             //!< MPEG elementary upstream from Client
+        DSMCC_TAPUSE_MPEG_ES_DOWN_USE = 4,           //!< MPEG elementary downstream to Client
+        DSMCC_TAPUSE_DOWNLOAD_CTRL_USE = 5,          //!< control request/response
+        DSMCC_TAPUSE_DOWNLOAD_CTRL_UP_USE = 6,       //!< control request from Client
+        DSMCC_TAPUSE_DOWNLOAD_CTRL_DOWN_USE = 7,     //!< control response to Client
+        DSMCC_TAPUSE_DOWNLOAD_DATA_USE = 8,          //!< data request/response
+        DSMCC_TAPUSE_DOWNLOAD_DATA_UP_USE = 9,       //!< data response upstream from Client
+        DSMCC_TAPUSE_DOWNLOAD_DATA_DOWN_USE = 10,    //!< data block downstream to Client
+        DSMCC_TAPUSE_STR_NPT_USE = 11,               //!< NPT Descriptors
+        DSMCC_TAPUSE_STR_STATUS_AND_EVENT_USE = 12,  //!< Stream Mode and Event Descriptors
+        DSMCC_TAPUSE_STR_EVENT_USE = 13,             //!< Stream Event Descriptor
+        DSMCC_TAPUSE_STR_STATUS_USE =14,             //!< Stream Mode Descriptor
+        DSMCC_TAPUSE_RPC_USE = 15,                   //!< RPC bi-directional
+        DSMCC_TAPUSE_IP_USE = 16,                    //!< IP bi-directional
+        DSMCC_TAPUSE_SDB_CTRL_USE = 17,              //!< control channel for Switched Digital Broadcast
+        DSMCC_TAPUSE_T120_TAP1 = 18,                 //!< reserved for use and definition by T.120
+        DSMCC_TAPUSE_T120_TAP2 = 19,                 //!< reserved for use and definition by T.120
+        DSMCC_TAPUSE_T120_TAP3 = 20,                 //!< reserved for use and definition by T.120
+        DSMCC_TAPUSE_T120_TAP4 = 21,                 //!< reserved for use and definition by T.120
+        DSMCC_TAPUSE_BIOP_DELIVERY_PARA_USE = 22,    //!< Module delivery parameters
+        DSMCC_TAPUSE_BIOP_OBJECT_USE = 23,           //!<  BIOP objects in Modules
+        DSMCC_TAPUSE_BIOP_ES_USE = 24,               //!< Elementary Stream
+        DSMCC_TAPUSE_BIOP_PROGRAM_USE = 25,          //!< Program
+        DSMCC_TAPUSE_BIOP_DNL_CTRL_USE = 26,         //!< Download control messages
+    };
+
+    //!
+    //! DSM-CC descriptorType in a compatibilityDescriptor().
+    //! @see ISO/IEC 13818-6, 6.1
+    //!
+    enum : uint8_t {
+        DSMCC_DTYPE_PAD      = 0x00,  //!< Pad descriptor.
+        DSMCC_DTYPE_HARDWARE = 0x01,  //!< System Hardware descriptor.
+        DSMCC_DTYPE_SOFTWARE = 0x02,  //!< System Software descriptor.
+    };
+
+    //!
+    //! DSM-CC specifierType in a compatibilityDescriptor().
+    //! @see ISO/IEC 13818-6, 6.1
+    //!
+    enum : uint8_t {
+        DSMCC_SPTYPE_OUI = 0x01,  //!< IEEE OUI.
     };
 }

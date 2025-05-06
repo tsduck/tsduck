@@ -1,8 +1,0 @@
-[UNT.CompatibilityDescriptorType]
-Bits = 8
-0x00 = pad descriptor
-0x01 = system hardware descriptor
-0x02 = system software descriptor
-0x03-0x3F = ISO/IEC 13818-6 reserved
-0x40-0x7F = reserved for future use
-0x80-0xFF = user defined

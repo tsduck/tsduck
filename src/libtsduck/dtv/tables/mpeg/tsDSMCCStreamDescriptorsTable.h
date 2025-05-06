@@ -17,7 +17,6 @@
 namespace ts {
     //!
     //! Representation of a DSM-CC Stream Descriptors table.
-    //!
     //! @see ISO/IEC 13818-6, 9.2.2 and 9.2.7
     //! @ingroup libtsduck table
     //!

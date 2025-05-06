@@ -43,6 +43,7 @@ ts::DSMCCUserToNetworkMessage::Module::Module(const AbstractTable* table) :
 {
 }
 
+
 //----------------------------------------------------------------------------
 // DSM-CC Message Header
 //----------------------------------------------------------------------------
@@ -59,15 +60,19 @@ void ts::DSMCCUserToNetworkMessage::clearContent()
 {
     // DSM-CC Message Header
     header.clear();
+    compatibility_descriptor.clear();
 
     // DSI
     server_id.clear();
+    ior.type_id.clear();
+    ior.tagged_profiles.clear();
 
     // DII
     download_id = 0;
     block_size = 0;
     modules.clear();
 }
+
 
 //----------------------------------------------------------------------------
 // Inherited public methods
@@ -97,6 +102,7 @@ uint16_t ts::DSMCCUserToNetworkMessage::tableIdExtension() const
     return uint16_t(header.transaction_id & 0xFFFF);
 }
 
+
 //----------------------------------------------------------------------------
 // Deserialization
 //----------------------------------------------------------------------------
@@ -121,10 +127,12 @@ void ts::DSMCCUserToNetworkMessage::deserializePayload(PSIBuffer& buf, const Sec
     }
 
     if (header.message_id == DSMCC_MSGID_DSI) {
-        buf.getBytes(server_id, SERVER_ID_SIZE);
 
-        buf.skipBytes(2);  // compatibility_descriptor_length
-        buf.skipBytes(2);  // private_data_length
+        buf.getBytes(server_id, DSMCC_SERVER_ID_SIZE);
+        compatibility_descriptor.deserialize(buf);
+
+        // Private_data_length should not be skipped, it should be handled.
+        buf.skipBytes(2);
 
         uint32_t type_id_length = buf.getUInt32();
 
@@ -132,7 +140,7 @@ void ts::DSMCCUserToNetworkMessage::deserializePayload(PSIBuffer& buf, const Sec
             ior.type_id.appendUInt8(buf.getUInt8());
         }
 
-        // CDR alligment rule
+        // CDR alignment rule
         if (type_id_length % 4 != 0) {
             buf.skipBytes(4 - (type_id_length % 4));
         }
@@ -236,7 +244,7 @@ void ts::DSMCCUserToNetworkMessage::deserializePayload(PSIBuffer& buf, const Sec
         block_size = buf.getUInt16();
 
         buf.skipBytes(10);  // windowSize + ackPeriod + tCDownloadWindow + tCDownloadScenario
-        buf.skipBytes(2);   // compatibility_descriptor_length
+        compatibility_descriptor.deserialize(buf);
 
         const uint16_t number_of_modules = buf.getUInt16();
 
@@ -277,15 +285,16 @@ void ts::DSMCCUserToNetworkMessage::deserializePayload(PSIBuffer& buf, const Sec
         buf.skipBytes(private_data_length);
     }
     else {
-
         buf.setUserError();
         buf.skipBytes(buf.remainingReadBytes());
     }
 }
 
+
 //----------------------------------------------------------------------------
 // Serialization
 //----------------------------------------------------------------------------
+
 void ts::DSMCCUserToNetworkMessage::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 {
     // DSMCC_UNM Table consist only one section so we do not need to worry about overflow
@@ -301,7 +310,7 @@ void ts::DSMCCUserToNetworkMessage::serializePayload(BinaryTable& table, PSIBuff
 
     if (header.message_id == DSMCC_MSGID_DSI) {
         buf.putBytes(server_id);
-        buf.putUInt16(0x0000);  // compatibility_descriptor_length
+        compatibility_descriptor.serialize(buf, true);
 
         buf.pushWriteSequenceWithLeadingLength(16);  // private_data
 
@@ -392,7 +401,7 @@ void ts::DSMCCUserToNetworkMessage::serializePayload(BinaryTable& table, PSIBuff
         buf.putUInt8(0x00);         // ackPeriod
         buf.putUInt32(0x00000000);  // tCDownloadWindow
         buf.putUInt32(0x00000000);  // tCDownloadScenario
-        buf.putUInt16(0x0000);      // compatibility_descriptor_length
+        compatibility_descriptor.serialize(buf, true);
 
         buf.putUInt16(uint16_t(modules.size()));
 
@@ -470,9 +479,9 @@ void ts::DSMCCUserToNetworkMessage::DisplaySection(TablesDisplay& disp, const ts
     }
 
     if (message_id == DSMCC_MSGID_DSI) {  // DSI
-        disp.displayPrivateData(u"Server id", buf, SERVER_ID_SIZE, margin);
+        disp.displayPrivateData(u"Server id", buf, DSMCC_SERVER_ID_SIZE, margin);
 
-        buf.skipBytes(2);  // compatibility_descriptor_length shall be 0x0000
+        DSMCCCompatibilityDescriptor::Display(disp, buf, margin);
         buf.skipBytes(2);  // private_data_length
 
         uint32_t  type_id_length = buf.getUInt32();
@@ -584,7 +593,7 @@ void ts::DSMCCUserToNetworkMessage::DisplaySection(TablesDisplay& disp, const ts
         disp << margin << UString::Format(u"Block size: %n", buf.getUInt16()) << std::endl;
 
         buf.skipBytes(10);  // windowSize + ackPeriod + tCDownloadWindow + tCDownloadScenario
-        buf.skipBytes(2);   // compatibility_descriptor_length
+        DSMCCCompatibilityDescriptor::Display(disp, buf, margin);
 
         uint16_t number_of_modules = buf.getUInt16();
 
@@ -645,6 +654,7 @@ void ts::DSMCCUserToNetworkMessage::DisplaySection(TablesDisplay& disp, const ts
     }
 }
 
+
 //----------------------------------------------------------------------------
 // XML serialization
 //----------------------------------------------------------------------------
@@ -661,6 +671,7 @@ void ts::DSMCCUserToNetworkMessage::buildXML(DuckContext& duck, xml::Element* ro
     if (header.message_id == DSMCC_MSGID_DSI) {
         xml::Element* dsi = root->addElement(u"DSI");
         dsi->addHexaTextChild(u"server_id", server_id, true);
+        compatibility_descriptor.toXML(duck, dsi, true);
 
         xml::Element* ior_entry = dsi->addElement(u"IOR");
         ior_entry->addHexaTextChild(u"type_id", ior.type_id, true);
@@ -735,6 +746,7 @@ void ts::DSMCCUserToNetworkMessage::buildXML(DuckContext& duck, xml::Element* ro
         xml::Element* dii = root->addElement(u"DII");
         dii->setIntAttribute(u"download_id", download_id, true);
         dii->setIntAttribute(u"block_size", block_size, true);
+        compatibility_descriptor.toXML(duck, dii, true);
 
         for (const auto& it : modules) {
             xml::Element* mod = dii->addElement(u"module");
@@ -755,6 +767,7 @@ void ts::DSMCCUserToNetworkMessage::buildXML(DuckContext& duck, xml::Element* ro
         }
     }
 }
+
 
 //----------------------------------------------------------------------------
 // XML deserialization
@@ -777,7 +790,8 @@ bool ts::DSMCCUserToNetworkMessage::analyzeXML(DuckContext& duck, const xml::Ele
             return false;
         }
 
-        ok = dsi_element->getHexaTextChild(server_id, u"server_id");
+        ok = dsi_element->getHexaTextChild(server_id, u"server_id") &&
+             compatibility_descriptor.fromXML(duck, dsi_element, false);
 
         const xml::Element* ior_element = dsi_element->findFirstChild(u"IOR", false);
         if (ior_element == nullptr) {
@@ -896,7 +910,8 @@ bool ts::DSMCCUserToNetworkMessage::analyzeXML(DuckContext& duck, const xml::Ele
         xml::ElementVector module_elements;
         ok = dii_element->getIntAttribute(download_id, u"download_id", true) &&
              dii_element->getIntAttribute(block_size, u"block_size", true) &&
-             dii_element->getChildren(module_elements, u"module");
+             dii_element->getChildren(module_elements, u"module") &&
+             compatibility_descriptor.fromXML(duck, dii_element, false);
 
         for (size_t it = 0; ok && it < module_elements.size(); ++it) {
             Module&            module(modules.newEntry());

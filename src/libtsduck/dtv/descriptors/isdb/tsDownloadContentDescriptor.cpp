@@ -71,7 +71,7 @@ void ts::DownloadContentDescriptor::serializePayload(PSIBuffer& buf) const
     buf.putReserved(2);
     buf.putUInt8(component_tag);
     if (!compatibility_descriptor.empty()) {
-        compatibility_descriptor.serializePayload(buf);
+        compatibility_descriptor.serialize(buf);
     }
     if (!module_info.empty()) {
         buf.putUInt16(uint16_t(module_info.size()));
@@ -101,7 +101,7 @@ void ts::DownloadContentDescriptor::deserializePayload(PSIBuffer& buf)
     buf.skipReservedBits(2);
     component_tag = buf.getUInt8();
     if (compatibility_flag) {
-        compatibility_descriptor.deserializePayload(buf);
+        compatibility_descriptor.deserialize(buf);
     }
     if (module_info_flag) {
         for (size_t count = buf.getUInt16(); count > 0; --count) {
@@ -138,7 +138,8 @@ void ts::DownloadContentDescriptor::DisplayDescriptor(TablesDisplay& disp, const
         disp << margin << UString::Format(u"Component tag: %n", buf.getUInt8()) << std::endl;
         bool ok = true;
         if (compatibility_flag) {
-            ok = CompatibilityDescriptor::Display(disp, buf, margin);
+            DSMCCCompatibilityDescriptor::Display(disp, buf, margin);
+            ok = !buf.error();
         }
         if (ok && module_info_flag) {
             ok = buf.canReadBytes(2);
@@ -180,9 +181,7 @@ void ts::DownloadContentDescriptor::buildXML(DuckContext& duck, xml::Element* ro
     root->setIntAttribute(u"time_out_value_DII", time_out_value_DII);
     root->setIntAttribute(u"leak_rate", leak_rate);
     root->setIntAttribute(u"component_tag", component_tag, true);
-    if (!compatibility_descriptor.empty()) {
-        compatibility_descriptor.buildXML(duck, root);
-    }
+    compatibility_descriptor.toXML(duck, root, true);
     for (const auto& module : module_info) {
         module.buildXML(duck, root);
     }
@@ -203,7 +202,7 @@ bool ts::DownloadContentDescriptor::analyzeXML(DuckContext& duck, const xml::Ele
         element->getIntAttribute(time_out_value_DII, u"time_out_value_DII", true) &&
         element->getIntAttribute(leak_rate, u"leak_rate", true, 0, 0, 0x003FFFFF) &&
         element->getIntAttribute(component_tag, u"component_tag", true) &&
-        compatibility_descriptor.analyzeXML(duck, element) &&
+        compatibility_descriptor.fromXML(duck, element, false) &&
         element->getChildren(xmods, u"module") &&
         element->getHexaTextChild(private_data, u"private_data", false) &&
         element->getChildren(xtext, u"text_info", 0, 1);

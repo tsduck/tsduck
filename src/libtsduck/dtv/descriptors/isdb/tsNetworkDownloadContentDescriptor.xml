@@ -16,21 +16,7 @@
       <ipv6 address="IPv6 address, required" port="uint16, required"/>
       <url url="string, required"/>
 
-      <!-- At most one compatibility_descriptor -->
-      <compatibility_descriptor>
-        <!-- Any number of descriptors -->
-        <descriptor
-            descriptor_type="uint8, required"
-            specifier_type="uint8, required"
-            specifier_data="uint24, required"
-            model="uint16, required"
-            version="uint16, required">
-          <!-- Any number of subdescriptors -->
-          <subdescriptor type="uint8, required">
-            Hexadecimal content
-          </subdescriptor>
-        </descriptor>
-      </compatibility_descriptor>
+      <_any in="_dsmccCompatibilityDescriptor"/>
 
       <!-- At most one -->
       <private_data>

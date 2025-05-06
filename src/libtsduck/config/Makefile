@@ -14,7 +14,7 @@ include ../../../Makefile.inc
 CONFIGS_SRC  = $(filter-out %.skeleton.xml,$(wildcard tsduck*.xml tsduck*.names))
 CONFIGS_DEST = $(addprefix $(BINDIR)/,$(CONFIGS_SRC))
 TABLES_SRC   = tsduck.tables.skeleton.xml
-TABLES_SUBS  = $(wildcard ../dtv/tables/*/*.xml ../dtv/descriptors/*/*.xml)
+TABLES_SUBS  = $(wildcard ../dtv/tables/*/*.xml ../dtv/descriptors/*/*.xml ../dtv/dsmcc/*.xml)
 TABLES_DEST  = $(BINDIR)/tsduck.tables.model.xml
 NAMES_SRC    = $(wildcard ../dtv/*/*.names ../dtv/*/*/*.names)
 NAMES_DEST   = $(BINDIR)/tsduck.dtv.names
