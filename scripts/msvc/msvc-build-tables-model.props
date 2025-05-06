@@ -10,14 +10,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <DtvXmlFiles Include="$(DtvRoot)tables\**\*.xml;$(DtvRoot)descriptors\**\*.xml;$(DtvRoot)dsmcc\*.xml"/>
+    <DtvXmlFiles Include="$(DtvRoot)**\*.xml"/>
   </ItemGroup>
 
   <Target Name="BuildTablesModel" Inputs="$(TablesSkeletonXml);@(DtvXmlFiles)" Outputs="$(TablesModelXml)">
     <Message Text="Building $(TablesModelXml)" Importance="high"/>
     <MakeDir Directories="$(OutDir)" Condition="!Exists('$(OutDir)')"/>
     <Exec ConsoleToMSBuild='true'
-          Command='python "$(TSDuckRootDir)scripts\build-tables-model.py" "$(TablesModelXml)" "$(TablesSkeletonXml)" "$(DtvRoot)tables" "$(DtvRoot)descriptors"'>
+          Command='python "$(TSDuckRootDir)scripts\build-tables-model.py" "$(TablesModelXml)" "$(TablesSkeletonXml)" "$(DtvRoot)tables" "$(DtvRoot)descriptors" "$(DtvRoot)dsmcc"'>
       <Output TaskParameter="ConsoleOutput" PropertyName="OutputOfExec"/>
     </Exec>
   </Target>
