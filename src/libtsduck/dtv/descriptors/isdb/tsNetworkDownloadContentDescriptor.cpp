@@ -195,8 +195,7 @@ void ts::NetworkDownloadContentDescriptor::DisplayDescriptor(TablesDisplay& disp
         }
 
         if (ok && compatibility_flag) {
-            DSMCCCompatibilityDescriptor::Display(disp, buf, margin);
-            ok = !buf.error();
+            ok = DSMCCCompatibilityDescriptor::Display(disp, buf, margin);
         }
         if (ok) {
             ok = buf.canReadBytes(1);

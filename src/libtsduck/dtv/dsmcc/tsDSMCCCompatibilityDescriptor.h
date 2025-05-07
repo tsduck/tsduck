@@ -99,8 +99,9 @@ namespace ts {
         //! @param [in,out] display Display engine.
         //! @param [in,out] buf A PSIBuffer over the compatibilityDescriptor().
         //! @param [in] margin Left margin content.
+        //! @return True on success, false on error.
         //!
-        static void Display(TablesDisplay& display, PSIBuffer& buf, const UString& margin);
+        static bool Display(TablesDisplay& display, PSIBuffer& buf, const UString& margin);
 
         //!
         //! Default XML name for a compatibilityDescriptor() structure.
@@ -121,9 +122,11 @@ namespace ts {
         //!
         //! This method decodes an XML compatibilityDescriptor().
         //! @param [in,out] duck TSDuck execution context.
-        //! @param [in] parent The XML element containing the compatibilityDescriptor().
+        //! @param [in] parent The XML element containing the compatibilityDescriptor() or the compatibilityDescriptor()
+        //! element itself if @a xml_name is null.
         //! @param [in] required If false, the compatibilityDescriptor element is optional.
         //! @param [in] xml_name Expected name of the XML compatibilityDescriptor() inside @a parent.
+        //! If null, @a parent is the compatibilityDescriptor() element.
         //! @return True on success, false on error.
         //!
         bool fromXML(DuckContext& duck, const xml::Element* parent, bool required = true, const UChar* xml_name = DEFAULT_XML_NAME);

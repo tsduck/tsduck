@@ -99,40 +99,42 @@ void ts::DSMCCCompatibilityDescriptor::deserialize(PSIBuffer& buf)
 // A static method to display a compatibilityDescriptor().
 //----------------------------------------------------------------------------
 
-void ts::DSMCCCompatibilityDescriptor::Display(TablesDisplay& disp, PSIBuffer& buf, const UString& margin)
+bool ts::DSMCCCompatibilityDescriptor::Display(TablesDisplay& disp, PSIBuffer& buf, const UString& margin)
 {
-    if (buf.canReadBytes(2)) {
-        buf.pushReadSizeFromLength(16);
-        if (buf.canReadBytes(2)) {
-            const size_t descriptorCount = buf.getUInt16();
-            disp << margin << "DSM-CC compatibility descriptor: " << descriptorCount << " descriptors" << std::endl;
-            for (size_t i = 0; i < descriptorCount && buf.canReadBytes(11); ++i) {
-                disp << margin << "- Descriptor #" << i << ", type: " << NameFromSection(u"dtv", u"DSMCC.descriptorType", buf.getUInt8(), NamesFlags::HEX_VALUE_NAME) << std::endl;
-                buf.pushReadSizeFromLength(8);
-                const uint8_t specifierType = buf.getUInt8();
-                disp << margin
-                     << "  Specifier type: " << NameFromSection(u"dtv", u"DSMCC.specifierType", specifierType, NamesFlags::HEX_VALUE_NAME)
-                     << ", specifier data: ";
-                if (specifierType == DSMCC_SPTYPE_OUI) {
-                    disp << OUIName(buf.getUInt24(), NamesFlags::HEX_VALUE_NAME);
-                }
-                else {
-                    disp << UString::Format(u"%n", buf.getUInt24());
-                }
-                disp << std::endl << margin << UString::Format(u"  Model: %n", buf.getUInt16());
-                disp << UString::Format(u", version: %n", buf.getUInt16()) << std::endl;
-                const size_t subDescriptorCount = buf.getUInt8();
-                disp << margin << "  Number of subdescriptors: " << subDescriptorCount << std::endl;
-                for (size_t subi = 0; subi < subDescriptorCount && buf.canReadBytes(2); ++subi) {
-                    disp << margin << UString::Format(u"  - Subdescriptor #%d, type: %n", subi, buf.getUInt8()) << std::endl;
-                    disp.displayPrivateData(u"Additional information", buf, buf.getUInt8(), margin + u"    ");
-                }
-                buf.popState();
-            }
-        }
-        disp.displayPrivateData(u"Extraneous data in compatibility descriptor", buf, NPOS, margin);
-        buf.popState();
+    if (!buf.canReadBytes(2)) {
+        return false;
     }
+    buf.pushReadSizeFromLength(16);
+    if (buf.canReadBytes(2)) {
+        const size_t descriptorCount = buf.getUInt16();
+        disp << margin << "DSM-CC compatibility descriptor: " << descriptorCount << " descriptors" << std::endl;
+        for (size_t i = 0; i < descriptorCount && buf.canReadBytes(11); ++i) {
+            disp << margin << "- Descriptor #" << i << ", type: " << NameFromSection(u"dtv", u"DSMCC.descriptorType", buf.getUInt8(), NamesFlags::HEX_VALUE_NAME) << std::endl;
+            buf.pushReadSizeFromLength(8);
+            const uint8_t specifierType = buf.getUInt8();
+            disp << margin
+                 << "  Specifier type: " << NameFromSection(u"dtv", u"DSMCC.specifierType", specifierType, NamesFlags::HEX_VALUE_NAME)
+                 << ", specifier data: ";
+            if (specifierType == DSMCC_SPTYPE_OUI) {
+                disp << OUIName(buf.getUInt24(), NamesFlags::HEX_VALUE_NAME);
+            }
+            else {
+                disp << UString::Format(u"%n", buf.getUInt24());
+            }
+            disp << std::endl << margin << UString::Format(u"  Model: %n", buf.getUInt16());
+            disp << UString::Format(u", version: %n", buf.getUInt16()) << std::endl;
+            const size_t subDescriptorCount = buf.getUInt8();
+            disp << margin << "  Number of subdescriptors: " << subDescriptorCount << std::endl;
+            for (size_t subi = 0; subi < subDescriptorCount && buf.canReadBytes(2); ++subi) {
+                disp << margin << UString::Format(u"  - Subdescriptor #%d, type: %n", subi, buf.getUInt8()) << std::endl;
+                disp.displayPrivateData(u"Additional information", buf, buf.getUInt8(), margin + u"    ");
+            }
+            buf.popState();
+        }
+    }
+    disp.displayPrivateData(u"Extraneous data in compatibility descriptor", buf, NPOS, margin);
+    buf.popState();
+    return !buf.error();
 }
 
 
@@ -170,9 +172,23 @@ ts::xml::Element* ts::DSMCCCompatibilityDescriptor::toXML(DuckContext& duck, xml
 bool ts::DSMCCCompatibilityDescriptor::fromXML(DuckContext& duck, const xml::Element* parent, bool required, const UChar* xml_name)
 {
     descs.clear();
-    xml::ElementVector xcompat, xdescs;
-    bool ok = parent->getChildren(xcompat, xml_name, required ? 1 : 0, 1) &&
-              (xcompat.empty() || xcompat[0]->getChildren(xdescs, u"descriptor"));
+
+    // Get the compatibilityDescriptor() element.
+    const xml::Element* e = parent;
+    if (xml_name != nullptr) {
+        xml::ElementVector children;
+        if (!parent->getChildren(children, xml_name, required ? 1 : 0, 1)) {
+            return false;
+        }
+        if (children.empty()) { // implies required == false
+            return true;
+        }
+        e = children[0];
+    }
+
+    // Analyze the compatibilityDescriptor() element.
+    xml::ElementVector xdescs;
+    bool ok = e->getChildren(xdescs, u"descriptor");
     for (size_t i1 = 0; ok && i1 < xdescs.size(); ++i1) {
         Descriptor& desc(descs.emplace_back());
         xml::ElementVector xsubdescs;

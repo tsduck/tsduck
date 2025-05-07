@@ -134,33 +134,42 @@ namespace ts {
     //! @see ISO/IEC 13818-6, section 6.6.1.
     //!
     enum : uint16_t {
-        DSMCC_TAPUSE_UNKNOWN_USE = 0,                //!< Unknown use
-        DSMCC_TAPUSE_MPEG_TS_UP_USE = 1,             //!< MPEG transport upstream from Client
-        DSMCC_TAPUSE_MPEG_TS_DOWN_USE = 2,           //!< MPEG transport downstream to Client
-        DSMCC_TAPUSE_MPEG_ES_UP_USE = 3,             //!< MPEG elementary upstream from Client
-        DSMCC_TAPUSE_MPEG_ES_DOWN_USE = 4,           //!< MPEG elementary downstream to Client
-        DSMCC_TAPUSE_DOWNLOAD_CTRL_USE = 5,          //!< control request/response
-        DSMCC_TAPUSE_DOWNLOAD_CTRL_UP_USE = 6,       //!< control request from Client
-        DSMCC_TAPUSE_DOWNLOAD_CTRL_DOWN_USE = 7,     //!< control response to Client
-        DSMCC_TAPUSE_DOWNLOAD_DATA_USE = 8,          //!< data request/response
-        DSMCC_TAPUSE_DOWNLOAD_DATA_UP_USE = 9,       //!< data response upstream from Client
-        DSMCC_TAPUSE_DOWNLOAD_DATA_DOWN_USE = 10,    //!< data block downstream to Client
-        DSMCC_TAPUSE_STR_NPT_USE = 11,               //!< NPT Descriptors
-        DSMCC_TAPUSE_STR_STATUS_AND_EVENT_USE = 12,  //!< Stream Mode and Event Descriptors
-        DSMCC_TAPUSE_STR_EVENT_USE = 13,             //!< Stream Event Descriptor
-        DSMCC_TAPUSE_STR_STATUS_USE =14,             //!< Stream Mode Descriptor
-        DSMCC_TAPUSE_RPC_USE = 15,                   //!< RPC bi-directional
-        DSMCC_TAPUSE_IP_USE = 16,                    //!< IP bi-directional
-        DSMCC_TAPUSE_SDB_CTRL_USE = 17,              //!< control channel for Switched Digital Broadcast
-        DSMCC_TAPUSE_T120_TAP1 = 18,                 //!< reserved for use and definition by T.120
-        DSMCC_TAPUSE_T120_TAP2 = 19,                 //!< reserved for use and definition by T.120
-        DSMCC_TAPUSE_T120_TAP3 = 20,                 //!< reserved for use and definition by T.120
-        DSMCC_TAPUSE_T120_TAP4 = 21,                 //!< reserved for use and definition by T.120
-        DSMCC_TAPUSE_BIOP_DELIVERY_PARA_USE = 22,    //!< Module delivery parameters
-        DSMCC_TAPUSE_BIOP_OBJECT_USE = 23,           //!<  BIOP objects in Modules
-        DSMCC_TAPUSE_BIOP_ES_USE = 24,               //!< Elementary Stream
-        DSMCC_TAPUSE_BIOP_PROGRAM_USE = 25,          //!< Program
-        DSMCC_TAPUSE_BIOP_DNL_CTRL_USE = 26,         //!< Download control messages
+        DSMCC_TAPUSE_UNKNOWN_USE               =  0,  //!< Unknown use
+        DSMCC_TAPUSE_MPEG_TS_UP_USE            =  1,  //!< MPEG transport upstream from Client
+        DSMCC_TAPUSE_MPEG_TS_DOWN_USE          =  2,  //!< MPEG transport downstream to Client
+        DSMCC_TAPUSE_MPEG_ES_UP_USE            =  3,  //!< MPEG elementary upstream from Client
+        DSMCC_TAPUSE_MPEG_ES_DOWN_USE          =  4,  //!< MPEG elementary downstream to Client
+        DSMCC_TAPUSE_DOWNLOAD_CTRL_USE         =  5,  //!< control request/response
+        DSMCC_TAPUSE_DOWNLOAD_CTRL_UP_USE      =  6,  //!< control request from Client
+        DSMCC_TAPUSE_DOWNLOAD_CTRL_DOWN_USE    =  7,  //!< control response to Client
+        DSMCC_TAPUSE_DOWNLOAD_DATA_USE         =  8,  //!< data request/response
+        DSMCC_TAPUSE_DOWNLOAD_DATA_UP_USE      =  9,  //!< data response upstream from Client
+        DSMCC_TAPUSE_DOWNLOAD_DATA_DOWN_USE    = 10,  //!< data block downstream to Client
+        DSMCC_TAPUSE_STR_NPT_USE               = 11,  //!< NPT Descriptors
+        DSMCC_TAPUSE_STR_STATUS_AND_EVENT_USE  = 12,  //!< Stream Mode and Event Descriptors
+        DSMCC_TAPUSE_STR_EVENT_USE             = 13,  //!< Stream Event Descriptor
+        DSMCC_TAPUSE_STR_STATUS_USE            = 14,  //!< Stream Mode Descriptor
+        DSMCC_TAPUSE_RPC_USE                   = 15,  //!< RPC bi-directional
+        DSMCC_TAPUSE_IP_USE                    = 16,  //!< IP bi-directional
+        DSMCC_TAPUSE_SDB_CTRL_USE              = 17,  //!< control channel for Switched Digital Broadcast
+        DSMCC_TAPUSE_T120_TAP1                 = 18,  //!< reserved for use and definition by T.120
+        DSMCC_TAPUSE_T120_TAP2                 = 19,  //!< reserved for use and definition by T.120
+        DSMCC_TAPUSE_T120_TAP3                 = 20,  //!< reserved for use and definition by T.120
+        DSMCC_TAPUSE_T120_TAP4                 = 21,  //!< reserved for use and definition by T.120
+        DSMCC_TAPUSE_BIOP_DELIVERY_PARA_USE    = 22,  //!< Module delivery parameters
+        DSMCC_TAPUSE_BIOP_OBJECT_USE           = 23,  //!< BIOP objects in Modules
+        DSMCC_TAPUSE_BIOP_ES_USE               = 24,  //!< Elementary Stream
+        DSMCC_TAPUSE_BIOP_PROGRAM_USE          = 25,  //!< Program
+        DSMCC_TAPUSE_BIOP_DNL_CTRL_USE         = 26,  //!< Download control messages
+    };
+
+    //!
+    //! DSM-CC Tap selector types.
+    //! @see ISO/IEC 13818-6, section 5.6.1.1.
+    //! @see ATSC A/90, section 12.2.2.1.
+    //!
+    enum : uint16_t {
+        DSMCC_TAPSELTYPE_MESSAGE = 1,  //!< Message selector, contains a transaction id and a timeout.
     };
 
     //!

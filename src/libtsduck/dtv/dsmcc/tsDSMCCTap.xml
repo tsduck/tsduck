@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_dsmccTap>
+
+    <!-- DSM-CC Tap() structure -->
+    <Tap id="uint16, required"
+         use="uint16, required"
+         association_tag="uint16, required"
+         selector_type="uint16, optional"
+         transaction_id="uint32, required if selector_type == 1"
+         timeout="uint32, required if selector_type == 1">
+
+      <!-- Selector bytes are allowed only if selector_type is present and != 1 -->
+      <selector_bytes>
+        Hexadecimal content
+      </selector_bytes>
+
+    </Tap>
+    
+  </_dsmccTap>
+</tsduck>

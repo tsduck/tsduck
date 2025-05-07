@@ -138,8 +138,7 @@ void ts::DownloadContentDescriptor::DisplayDescriptor(TablesDisplay& disp, const
         disp << margin << UString::Format(u"Component tag: %n", buf.getUInt8()) << std::endl;
         bool ok = true;
         if (compatibility_flag) {
-            DSMCCCompatibilityDescriptor::Display(disp, buf, margin);
-            ok = !buf.error();
+            ok = DSMCCCompatibilityDescriptor::Display(disp, buf, margin);
         }
         if (ok && module_info_flag) {
             ok = buf.canReadBytes(2);

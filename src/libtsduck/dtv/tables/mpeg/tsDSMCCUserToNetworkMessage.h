@@ -14,6 +14,7 @@
 #pragma once
 #include "tsAbstractLongTable.h"
 #include "tsDSMCC.h"
+#include "tsDSMCCTap.h"
 #include "tsDSMCCCompatibilityDescriptor.h"
 
 namespace ts {
@@ -51,22 +52,6 @@ namespace ts {
             void clear();
         };
 
-        //!
-        //! Representation of Tap structure
-        //! @see ETSI TR 101 202 V1.2.1 (2003-01), 4.7.2.5
-        //!
-        class TSDUCKDLL Tap
-        {
-        public:
-            Tap() = default;                    //!< Default constructor.
-            uint16_t id = 0x0000;               //!< This field is for private use (shall be set to zero if not used).
-            uint16_t use = 0x0016;              //!< Field indicating the usage of the Tap.
-            uint16_t association_tag = 0x0000;  //!< Field to associate the Tap with a particular (Elementary) Stream.
-            uint16_t selector_type = 0x0001;    //!< Optional selector, to select the associated data from the associated (Elementary) Stream.
-            uint32_t transaction_id = 0;        //!< Used for session integrity and error processing.
-            uint32_t timeout = 0;               //!< Defined in units of µs, specific to the construction of a particular carousel.
-        };
-
         //  *****************************************
         //  *** DownloadServerInitiate Structures ***
         //  *****************************************
@@ -89,7 +74,7 @@ namespace ts {
             ByteBlock object_key_data {};    //!< Identifies the object within the module in which it is broadcast.
 
             // DSMConnBinder context
-            Tap tap {};  //!< Tap structure
+            DSMCCTap tap {};                 //!< Tap structure
 
             // UnknownComponent context
             std::optional<ByteBlock> component_data {};  //!< Optional component data, for UnknownComponent.
@@ -138,13 +123,13 @@ namespace ts {
             TS_NO_DEFAULT_CONSTRUCTORS(Module);
             TS_DEFAULT_ASSIGMENTS(Module);
         public:
-            uint16_t       module_id = 0;       //!< Identifies the module.
-            uint32_t       module_size = 0;     //!< Length of the module in bytes.
-            uint8_t        module_version = 0;  //!< Identifies the version of the module.
-            uint32_t       module_timeout = 0;  //!< Time out value in microseconds that may be used to time out the acquisition of all Blocks of the Module.
-            uint32_t       block_timeout = 0;   //!< Time out value in microseconds that may be used to time out the reception of the next Block after a Block has been acquired.
-            uint32_t       min_block_time = 0;  //!< Indicates the minimum time period that exists between the delivery of two subsequent Blocks of the Module.
-            std::list<Tap> taps {};             //!< List of Taps.
+            uint16_t module_id = 0;       //!< Identifies the module.
+            uint32_t module_size = 0;     //!< Length of the module in bytes.
+            uint8_t  module_version = 0;  //!< Identifies the version of the module.
+            uint32_t module_timeout = 0;  //!< Time out value in microseconds that may be used to time out the acquisition of all Blocks of the Module.
+            uint32_t block_timeout = 0;   //!< Time out value in microseconds that may be used to time out the reception of the next Block after a Block has been acquired.
+            uint32_t min_block_time = 0;  //!< Indicates the minimum time period that exists between the delivery of two subsequent Blocks of the Module.
+            std::list<DSMCCTap> taps {};  //!< List of Taps.
 
             //!
             //! Constructor.

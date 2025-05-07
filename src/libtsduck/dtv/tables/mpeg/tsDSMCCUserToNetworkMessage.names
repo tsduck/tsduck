@@ -1,11 +1,13 @@
 [DSMCC_user_to_network_message.dsmcc_type]
 Inherit = DSMCC_download_data_message.dsmcc_type
+
 [DSMCC_user_to_network_message.message_id]
 # Valid only for dsmcc_type = 0x03 (Download message)
 Inherit = DSMCC_download_data_message.message_id
 [DSMCC_user_to_network_message.magic]
 Bits=32
 0x42494F50 = BIOP
+
 [DSMCC_user_to_network_message.type_id]
 Bits=32
 0x64697200 = DSM::Directory (dir)
@@ -13,6 +15,7 @@ Bits=32
 0x73726700 = DSM::ServiceGateway (srg)
 0x73746500 = DSM::StreamEvent (ste)
 0x73747200 = DSM::StreamEventMessage (str)
+
 [DSMCC_user_to_network_message.tag]
 Bits=32
 0x49534f00 = TAG_MIN
@@ -32,31 +35,3 @@ Bits=32
 0x49534f46 = TAG_ServiceLocation (DSM::ServiceLocation)
 0x49534F50 = TAG_ObjectLocation (BIOP::ObjectLocation)
 0x49534f58 = TAG_Intf
-[DSMCC_user_to_network_message.tap_use]
-Bits=16
-0x0000 = UNKNOWN
-0x0001 = MPEG_TS_UP_USE
-0x0002 = MPEG_TS_DOWN_USE
-0x0003 = MPEG_ES_UP_USE
-0x0004 = MPEG_ES_DOWN_USE
-0x0005 = DOWNLOAD_CTRL_USE
-0x0006 = DOWNLOAD_CTRL_UP_USE
-0x0007 = DOWNLOAD_CTRL_DOWN_USE
-0x0008 = DOWNLOAD_DATA_USE
-0x0009 = DOWNLOAD_DATA_UP_USE
-0x000A = DOWNLOAD_DATA_DOWN_USE
-0x000B = STR_NPT_USE (Stream NPT Descriptors)
-0x000C = STR_STATUS_AND_EVENT_USE (Both Stream Mode and Stream Event Descriptors)
-0x000D = STR_EVENT_USE (Stream Event Descriptors)
-0x000E = STR_STATUS_USE (Stream Mode Descriptors)
-0x000F = RPC_USE
-0x0010 = IP_USE
-0x0011 = SDB_CTRL_USE
-0x0015 = T120_TAP reserved
-0x0016 = BIOP_DELIVERY_PARA_USE (Module delivery parameters)
-0x0017 = BIOP_OBJECT_USE (BIOP objects in Modules)
-0x0018 = BIOP_ES_USE (Elementary Stream (Video/Audio))
-0x0019 = BIOP_PROGRAM_USE (Program (DVB Service) Reference)
-0x001A = BIOP_DNL_CTRL_USE
-0x8000 = STR_DVBTIMEL_USE (DVB broadcast_timeline_descriptor)
-0x8001 = STR_DVBEVENT_USE (DVB synchronised_event_descriptor)

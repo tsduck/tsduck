@@ -162,68 +162,47 @@ void ts::DSMCCUserToNetworkMessage::deserializePayload(PSIBuffer& buf, const Sec
                 for (size_t j = 0; j < lite_component_count; j++) {
 
                     const uint32_t component_id_tag = buf.getUInt32();
-                    const uint8_t  component_data_length = buf.getUInt8();
+                    buf.pushReadSizeFromLength(8);
 
                     switch (component_id_tag) {
                         case DSMCC_TAG_OBJECT_LOCATION: {  // TAG_ObjectLocation
 
-                            LiteComponent biopObjectLocation;
+                            LiteComponent& biopObjectLocation(tagged_profile.liteComponents.emplace_back());
 
                             biopObjectLocation.component_id_tag = component_id_tag;
                             biopObjectLocation.carousel_id = buf.getUInt32();
                             biopObjectLocation.module_id = buf.getUInt16();
                             biopObjectLocation.version_major = buf.getUInt8();
                             biopObjectLocation.version_minor = buf.getUInt8();
-                            const uint8_t object_key_length = buf.getUInt8();
-
-                            for (size_t k = 0; k < object_key_length; k++) {
-                                biopObjectLocation.object_key_data.appendUInt8(buf.getUInt8());
-                            }
-
-                            tagged_profile.liteComponents.push_back(biopObjectLocation);
+                            buf.getBytes(biopObjectLocation.object_key_data, buf.getUInt8());
 
                             break;
                         }
-
                         case DSMCC_TAG_CONN_BINDER: {  // TAG_ConnBinder
 
-                            LiteComponent dsmConnBinder;
+                            LiteComponent& dsmConnBinder(tagged_profile.liteComponents.emplace_back());
 
                             dsmConnBinder.component_id_tag = component_id_tag;
-
-                            buf.skipBytes(1);  // taps_count
-
-                            dsmConnBinder.tap.id = buf.getUInt16();
-                            dsmConnBinder.tap.use = buf.getUInt16();
-                            dsmConnBinder.tap.association_tag = buf.getUInt16();
-
-                            buf.skipBytes(1);  // selector_length
-
-                            dsmConnBinder.tap.selector_type = buf.getUInt16();
-                            dsmConnBinder.tap.transaction_id = buf.getUInt32();
-                            dsmConnBinder.tap.timeout = buf.getUInt32();
-
-                            for (int n = 0; n < component_data_length - 18; n++) {
-                                buf.skipBytes(1);  // selector_data
+                            const uint8_t taps_count = buf.getUInt8();
+                            for (size_t k = 0; k < taps_count; k++) {
+                                // taps_count is assumed to be 1, rewrite the same tap, need to be fixed
+                                dsmConnBinder.tap.deserialize(buf);
                             }
-
-                            tagged_profile.liteComponents.push_back(dsmConnBinder);
 
                             break;
                         }
-
                         default: {
-                            LiteComponent unknownComponent;
+                            LiteComponent unknownComponent(tagged_profile.liteComponents.emplace_back());
 
                             unknownComponent.component_id_tag = component_id_tag;
-
-                            buf.getBytes(unknownComponent.component_data.value(), component_data_length);
-
-                            tagged_profile.liteComponents.push_back(unknownComponent);
+                            unknownComponent.component_data.emplace();
+                            buf.getBytes(unknownComponent.component_data.value());
 
                             break;
                         }
                     }
+
+                    buf.popState();
                 }
             }
             else if (tagged_profile.profile_id_tag == DSMCC_TAG_LITE_OPTIONS) {  // TAG_LITE_OPTIONS (Lite Options Profile Body)
@@ -264,15 +243,8 @@ void ts::DSMCCUserToNetworkMessage::deserializePayload(PSIBuffer& buf, const Sec
             const uint8_t taps_count = buf.getUInt8();
 
             for (size_t j = 0; j < taps_count; j++) {
-                Tap tap;
-
-                tap.id = buf.getUInt16();
-                tap.use = buf.getUInt16();
-                tap.association_tag = buf.getUInt16();
-
-                buf.skipBytes(1);  // selector_length
-
-                module.taps.push_back(tap);
+                DSMCCTap& tap(module.taps.emplace_back());
+                tap.deserialize(buf);
             }
 
             uint8_t user_info_length = buf.getUInt8();
@@ -348,15 +320,8 @@ void ts::DSMCCUserToNetworkMessage::serializePayload(BinaryTable& table, PSIBuff
                         }
 
                         case DSMCC_TAG_CONN_BINDER: {  // TAG_ConnBinder
-                            buf.putUInt8(0x01);        // taps_count TODO: for now only one tap assumed but this needs to be
-                                                       // fixed
-                            buf.putUInt16(liteComponent.tap.id);
-                            buf.putUInt16(liteComponent.tap.use);
-                            buf.putUInt16(liteComponent.tap.association_tag);
-                            buf.putUInt8(0x0A);  // selector_length fixed
-                            buf.putUInt16(liteComponent.tap.selector_type);
-                            buf.putUInt32(liteComponent.tap.transaction_id);
-                            buf.putUInt32(liteComponent.tap.timeout);
+                            buf.putUInt8(0x01);        // taps_count TODO: for now only one tap assumed but this needs to be fixed
+                            liteComponent.tap.serialize(buf);
                             break;
                         }
 
@@ -422,10 +387,7 @@ void ts::DSMCCUserToNetworkMessage::serializePayload(BinaryTable& table, PSIBuff
             buf.putUInt8(uint8_t(module.second.taps.size()));  // taps_count
 
             for (const auto& tap : module.second.taps) {
-                buf.putUInt16(tap.id);
-                buf.putUInt16(tap.use);
-                buf.putUInt16(tap.association_tag);
-                buf.putUInt8(0x00);  // selector_length
+                tap.serialize(buf);
             }
 
             buf.pushWriteSequenceWithLeadingLength(8);  // user_info_length
@@ -444,6 +406,11 @@ void ts::DSMCCUserToNetworkMessage::serializePayload(BinaryTable& table, PSIBuff
     }
     buf.popState();  // close message_length
 }
+
+
+//----------------------------------------------------------------------------
+// Display one section
+//----------------------------------------------------------------------------
 
 void ts::DSMCCUserToNetworkMessage::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
@@ -511,7 +478,7 @@ void ts::DSMCCUserToNetworkMessage::DisplaySection(TablesDisplay& disp, const ts
                 for (size_t j = 0; j < lite_component_count; j++) {
 
                     uint32_t componentid_tag = buf.getUInt32();
-                    uint8_t  component_data_length = buf.getUInt8();
+                    buf.pushReadSizeFromLength(8);
 
                     disp << margin << "ComponentId Tag: " << DataName(MY_XML_NAME, u"tag", componentid_tag, NamesFlags::HEX_VALUE_NAME) << std::endl;
 
@@ -522,12 +489,8 @@ void ts::DSMCCUserToNetworkMessage::DisplaySection(TablesDisplay& disp, const ts
                             uint16_t  module_id = buf.getUInt16();
                             uint8_t   version_major = buf.getUInt8();
                             uint8_t   version_minor = buf.getUInt8();
-                            uint8_t   object_key_length = buf.getUInt8();
-                            ByteBlock object_key_data {};
-
-                            for (size_t k = 0; k < object_key_length; k++) {
-                                object_key_data.appendUInt8(buf.getUInt8());
-                            }
+                            ByteBlock object_key_data;
+                            buf.getBytes(object_key_data, buf.getUInt8());
 
                             disp << margin << UString::Format(u"Carousel Id: %n", carousel_id) << std::endl;
                             disp << margin << UString::Format(u"Module Id: %n", module_id) << std::endl;
@@ -541,35 +504,20 @@ void ts::DSMCCUserToNetworkMessage::DisplaySection(TablesDisplay& disp, const ts
 
                         case DSMCC_TAG_CONN_BINDER: {  // TAG_ConnBinder
 
-                            uint8_t taps_count = buf.getUInt8();
-
-                            for (size_t k = 0; k < taps_count; k++) {
-
-                                uint16_t id = buf.getUInt16();
-                                uint16_t use = buf.getUInt16();
-                                uint16_t association_tag = buf.getUInt16();
-
-                                buf.skipBytes(1);  // selector_length
-
-                                uint16_t selector_type = buf.getUInt16();
-                                uint32_t transaction_id = buf.getUInt32();
-                                uint32_t timeout = buf.getUInt32();
-
-                                disp << margin << UString::Format(u"Tap id: %n", id) << std::endl;
-                                disp << margin << "Tap use: " << DataName(MY_XML_NAME, u"tap_use", use, NamesFlags::HEX_VALUE_NAME) << std::endl;
-                                disp << margin << UString::Format(u"Tap association tag: %n", association_tag) << std::endl;
-                                disp << margin << UString::Format(u"Tap selector type: %n", selector_type) << std::endl;
-                                disp << margin << UString::Format(u"Tap transaction id: %n", transaction_id) << std::endl;
-                                disp << margin << UString::Format(u"Tap timeout: %n", timeout) << std::endl;
+                            const uint8_t taps_count = buf.getUInt8();
+                            bool ok = true;
+                            for (size_t k = 0; ok && k < taps_count; k++) {
+                                ok = DSMCCTap::Display(disp, buf, margin);
                             }
                             break;
                         }
 
                         default: {
-                            disp.displayPrivateData(u"Lite Component Data", buf, component_data_length, margin);
+                            disp.displayPrivateData(u"Lite Component Data", buf, NPOS, margin);
                             break;
                         }
                     }
+                    buf.popState();
                 }
             }
             else if (profile_id_tag == DSMCC_TAG_LITE_OPTIONS) {  // TAG_LITE_OPTIONS (Lite Options Profile Body)
@@ -619,24 +567,9 @@ void ts::DSMCCUserToNetworkMessage::DisplaySection(TablesDisplay& disp, const ts
             disp << margin << UString::Format(u"Min block time: %n", min_block_time) << std::endl;
             disp << margin << UString::Format(u"Taps count: %n", taps_count) << std::endl;
 
-            for (size_t k = 0; k < taps_count; k++) {
-
-                uint16_t  id = buf.getUInt16();
-                uint16_t  use = buf.getUInt16();
-                uint16_t  association_tag = buf.getUInt16();
-                uint8_t   selector_length = buf.getUInt8();
-                ByteBlock selector_type {};
-
-                for (size_t l = 0; l < selector_length; l++) {
-                    selector_type.appendUInt8(buf.getUInt8());
-                }
-
-                disp << margin << UString::Format(u"Tap id: %n", id) << std::endl;
-                disp << margin << "Tap use: " << DataName(MY_XML_NAME, u"tap_use", use, NamesFlags::HEX_VALUE_NAME) << std::endl;
-                disp << margin << UString::Format(u"Tap association tag: %n", association_tag) << std::endl;
-                if (selector_length > 0) {
-                    disp.displayVector(u"Selector type: ", selector_type, margin);
-                }
+            bool ok = true;
+            for (size_t k = 0; ok && k < taps_count; k++) {
+                ok = DSMCCTap::Display(disp, buf, margin);
             }
 
             uint8_t user_info_length = buf.getUInt8();
@@ -704,15 +637,7 @@ void ts::DSMCCUserToNetworkMessage::buildXML(DuckContext& duck, xml::Element* ro
                         }
 
                         case DSMCC_TAG_CONN_BINDER: {  // TAG_ConnBinder
-                            xml::Element* dsm_conn_binder_entry = lite_component_entry->addElement(u"DSM_conn_binder");
-
-                            xml::Element* tap_entry = dsm_conn_binder_entry->addElement(u"BIOP_tap");
-                            tap_entry->setIntAttribute(u"id", liteComponent.tap.id, true);
-                            tap_entry->setIntAttribute(u"use", liteComponent.tap.use, true);
-                            tap_entry->setIntAttribute(u"association_tag", liteComponent.tap.association_tag, true);
-                            tap_entry->setIntAttribute(u"selector_type", liteComponent.tap.selector_type, true);
-                            tap_entry->setIntAttribute(u"transaction_id", liteComponent.tap.transaction_id, true);
-                            tap_entry->setIntAttribute(u"timeout", liteComponent.tap.timeout, true);
+                            liteComponent.tap.toXML(duck, lite_component_entry->addElement(u"DSM_conn_binder"));
                             break;
                         }
 
@@ -758,10 +683,7 @@ void ts::DSMCCUserToNetworkMessage::buildXML(DuckContext& duck, xml::Element* ro
             mod->setIntAttribute(u"min_block_time", it.second.min_block_time, true);
 
             for (const auto& tap : it.second.taps) {
-                xml::Element* t = mod->addElement(u"tap");
-                t->setIntAttribute(u"id", tap.id, true);
-                t->setIntAttribute(u"use", tap.use, true);
-                t->setIntAttribute(u"association_tag", tap.association_tag, true);
+                tap.toXML(duck, mod);
             }
             it.second.descs.toXML(duck, mod);
         }
@@ -843,19 +765,8 @@ bool ts::DSMCCUserToNetworkMessage::analyzeXML(DuckContext& duck, const xml::Ele
                         }
 
                         case DSMCC_TAG_CONN_BINDER: {  // TAG_ConnBinder
-                            const xml::Element* dsm_conn_binder_element = lite_component_elements[it2]->findFirstChild(u"DSM_conn_binder", true);
-                            const xml::Element* biop_tap_element = dsm_conn_binder_element->findFirstChild(u"BIOP_tap", false);
-                            if (biop_tap_element == nullptr) {
-                                return false;
-                            }
-
-                            ok = biop_tap_element->getIntAttribute(liteComponent.tap.id, u"id", true) &&
-                                 biop_tap_element->getIntAttribute(liteComponent.tap.use, u"use", true) &&
-                                 biop_tap_element->getIntAttribute(liteComponent.tap.association_tag, u"association_tag", true) &&
-                                 biop_tap_element->getIntAttribute(liteComponent.tap.selector_type, u"selector_type", true) &&
-                                 biop_tap_element->getIntAttribute(liteComponent.tap.transaction_id, u"transaction_id", true) &&
-                                 biop_tap_element->getIntAttribute(liteComponent.tap.timeout, u"timeout", true);
-
+                            const xml::Element* dsm_conn_binder_element = lite_component_elements[it2]->findFirstChild(u"DSM_conn_binder");
+                            ok = dsm_conn_binder_element != nullptr && liteComponent.tap.fromXML(duck, dsm_conn_binder_element);
                             break;
                         }
 
@@ -915,7 +826,6 @@ bool ts::DSMCCUserToNetworkMessage::analyzeXML(DuckContext& duck, const xml::Ele
 
         for (size_t it = 0; ok && it < module_elements.size(); ++it) {
             Module&            module(modules.newEntry());
-            xml::ElementVector unused;
             xml::ElementVector tap_elements;
 
             ok = module_elements[it]->getIntAttribute(module.module_id, u"module_id", true) &&
@@ -924,18 +834,12 @@ bool ts::DSMCCUserToNetworkMessage::analyzeXML(DuckContext& duck, const xml::Ele
                  module_elements[it]->getIntAttribute(module.module_timeout, u"module_timeout", true) &&
                  module_elements[it]->getIntAttribute(module.block_timeout, u"block_timeout", true) &&
                  module_elements[it]->getIntAttribute(module.min_block_time, u"min_block_time", true) &&
-                 module_elements[it]->getChildren(tap_elements, u"tap");
+                 module.descs.fromXML(duck, tap_elements, module_elements[it], u"tap");
 
             for (size_t itt = 0; ok && itt < tap_elements.size(); ++itt) {
-                Tap tap;
-
-                ok = tap_elements[itt]->getIntAttribute(tap.id, u"id", true) &&
-                     tap_elements[itt]->getIntAttribute(tap.use, u"use", true) &&
-                     tap_elements[itt]->getIntAttribute(tap.association_tag, u"association_tag", true);
-
-                module.taps.push_back(tap);
+                DSMCCTap& tap(module.taps.emplace_back());
+                ok = tap.fromXML(duck, tap_elements[itt], nullptr);
             }
-            ok = module.descs.fromXML(duck, unused, module_elements[it], u"tap");
         }
     }
 
