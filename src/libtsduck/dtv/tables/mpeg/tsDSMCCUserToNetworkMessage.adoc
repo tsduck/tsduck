@@ -55,13 +55,18 @@ Defined by MPEG in <<ISO-13818-6>>.
             </BIOP_object_location>
             <!-- component_id_tag = 0x49534F40 (TAG_ConnBinder) -->
             <DSM_conn_binder>
-              <BIOP_tap
-                id="uint16, required"
-                use="uint16, required"
-                association_tag="uint16, required"
-                selector_type="uint16, required"
-                transaction_id="uint32, required"
-                timeout="uint32, required"/>
+              <!-- DSM-CC Tap() structure -->
+              <Tap id="uint16, required"
+                   use="uint16, required"
+                   association_tag="uint16, required"
+                   selector_type="uint16, optional"
+                   transaction_id="uint32, required if selector_type == 1"
+                   timeout="uint32, required if selector_type == 1">
+                <!-- Selector bytes are allowed only if selector_type is present and != 1 -->
+                <selector_bytes>
+                  Hexadecimal content
+                </selector_bytes>
+              </Tap>
             </DSM_conn_binder>
             <!-- component_id_tag = other (Unknown) -->
             <Unknown_component>
@@ -113,10 +118,18 @@ Defined by MPEG in <<ISO-13818-6>>.
         module_timeout="uint32, required"
         block_timeout="uint32, required"
         min_block_time="uint32, required">
-      <tap
-        id="uint16, required"
-        use="uint16, required"
-        association_tag="uint16, required"/>
+      <!-- DSM-CC Tap() structure -->
+      <Tap id="uint16, required"
+           use="uint16, required"
+           association_tag="uint16, required"
+           selector_type="uint16, optional"
+           transaction_id="uint32, required if selector_type == 1"
+           timeout="uint32, required if selector_type == 1">
+        <!-- Selector bytes are allowed only if selector_type is present and != 1 -->
+        <selector_bytes>
+          Hexadecimal content
+        </selector_bytes>
+      </Tap>
       <DESCRIPTOR_LIST>
     </module>
   </DII>
