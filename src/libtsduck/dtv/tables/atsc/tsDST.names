@@ -1,0 +1,22 @@
+[DST.protocol_encapsulation]
+Bits = 8
+0x00 = Not in a MPEG-2 Transport Stream
+0x01 = Asynchronous non-flow controlled scenario of the DSM-CC Download protocol encapsulated in DSM-CC sections
+0x02 = Non-streaming Synchronized Download protocol encapsulated in DSM-CC sections
+0x03 = Asynchronous multiprotocol datagrams in Addressable Sections using LLC/SNAP header
+0x04 = Asynchronous IP Datagrams in Addressable Sections
+0x05 = Synchronized streaming data encapsulated in PES
+0x06 = Synchronous streaming data encapsulated in PES
+0x07 = Synchronized streaming multiprotocol datagrams in PES using LLC/SNAP header
+0x08 = Synchronous streaming multiprotocol datagrams in PES using LLC/SNAP header
+0x09 = Synchronized streaming IP Datagrams in PES
+0x0A = Synchronous streaming IP Datagrams in PES
+0x0B = Proprietary Data Piping
+0x0C = SCTE 53 asynchronous protocol [10]
+0x0D = Asynchronous carousel scenario of the DSM-CC Download protocol encapsulated in DSM-CC sections
+0x0E = Reserved for harmonization with another standard body
+
+[DST.action_type]
+Bits = 7
+0x00 = Run-time data
+0x01 = Bootstrap data

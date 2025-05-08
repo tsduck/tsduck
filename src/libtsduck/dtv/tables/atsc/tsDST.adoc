@@ -1,0 +1,72 @@
+==== Data Service Table (DST)
+
+Defined by ATSC in <<ATSC-A90>>.
+
+[source,xml]
+----
+<DST version="uint5, default=0"
+     table_id_extension="uint16, default=0xFFFF"
+     sdf_protocol_version="uint8, default=1">
+
+  <!-- One per application -->
+  <application>
+
+    <!-- DSM-CC compatibilityDescriptor() structure -->
+    <compatibilityDescriptor>
+      <!-- Zero or more descriptors -->
+      <descriptor
+          descriptorType="uint8, required"
+          specifierType="uint8, default=1"
+          specifierData="uint24, required"
+          model="uint16, default=0"
+          version="uint16, default=0">
+        <!-- Zero or more subdescriptors -->
+        <subDescriptor subDescriptorType="uint8, required">
+          Hexadecimal content
+        </subDescriptor>
+      </descriptor>
+    </compatibilityDescriptor>
+
+    <!-- Optional application id -->
+    <app_id description="uint16, required">
+      Hexadecimal content
+    </app_id>
+
+    <!-- One per tap -->
+    <tap protocol_encapsulation="uint8, required"
+         action_type="uint7, required"
+         resource_location="bool, required">
+      <!-- DSM-CC Tap() structure -->
+      <Tap id="uint16, required"
+           use="uint16, required"
+           association_tag="uint16, required"
+           selector_type="uint16, optional"
+           transaction_id="uint32, required if selector_type == 1"
+           timeout="uint32, required if selector_type == 1">
+        <!-- Selector bytes are allowed only if selector_type is present and != 1 -->
+        <selector_bytes>
+          Hexadecimal content
+        </selector_bytes>
+      </Tap>
+      <!-- Tap descriptors loop -->
+      <DESCRIPTOR_LIST>
+    </tap>
+
+    <!-- Application descriptors loop -->
+    <DESCRIPTOR_LIST>
+
+    <app_data>
+      Hexadecimal content
+    </app_data>
+
+  </application>
+
+  <!-- Service information descriptors loop -->
+  <DESCRIPTOR_LIST>
+
+  <service_private_data>
+    Hexadecimal content
+  </service_private_data>
+
+</DST>
+----

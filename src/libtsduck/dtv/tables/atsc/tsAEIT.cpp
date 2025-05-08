@@ -178,7 +178,7 @@ void ts::AEIT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
         }
     }
     else {
-        // Assume only one section in that case.
+        // AEIT_subtype != 0: Assume only one section in that case.
         buf.putBytes(reserved);
     }
 }

@@ -39,7 +39,6 @@ ts::DET::DET(DuckContext& duck, const BinaryTable& table) :
     deserialize(duck, table);
 }
 
-
 ts::DET::DET(const DET& other) :
     AbstractLongTable(other),
     source_id(other.source_id),
