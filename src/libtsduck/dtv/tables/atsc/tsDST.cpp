@@ -392,7 +392,7 @@ bool ts::DST::analyzeXML(DuckContext& duck, const xml::Element* element)
              app.descs.fromXML(duck, unused, xapp, OTHER_TAGS) &&
              ok;
         if (ok && !xid.empty()) {
-            app.app_id_description = 0;
+            app.app_id_description = uint16_t(0); // uint16_t cast required by MSVC.
             ok = xid[0]->getIntAttribute(app.app_id_description.value(), u"description", true) &&
                  xid[0]->getHexaText(app.app_id);
         }
