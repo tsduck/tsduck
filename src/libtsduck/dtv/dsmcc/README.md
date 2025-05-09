@@ -11,4 +11,4 @@ Additional descriptors for DSM-CC tables are defined by ATSC in A/90. Their impl
 are defined in `libtsduck/dtv/tables/atsc`.
 
 Other DSM-CC data structures (other than tables and descriptors) are implemented in this
-directory (`libtsduck/dtv/tables/dsmcc`).
+directory (`libtsduck/dtv/dsmcc`).

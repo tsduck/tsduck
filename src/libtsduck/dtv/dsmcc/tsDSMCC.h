@@ -189,4 +189,34 @@ namespace ts {
     enum : uint8_t {
         DSMCC_SPTYPE_OUI = 0x01,  //!< IEEE OUI.
     };
+
+    //!
+    //! DSM-CC resourceDescriptorType in a commonDescriptorHeader().
+    //! @see ISO/IEC 13818-6, 4.7.5
+    //!
+    enum : uint16_t {
+        DSMCC_RDTYPE_RESERVED                = 0x0000,  //!< Reserved
+        DSMCC_RDTYPE_CONTINUOUS_FEED_SESSION = 0x0001,  //!< ContinuousFeedSession
+        DSMCC_RDTYPE_ATM_CONNECTION          = 0x0002,  //!< AtmConnection
+        DSMCC_RDTYPE_MPEG_PROGRAM            = 0x0003,  //!< MpegProgram
+        DSMCC_RDTYPE_PHYSICAL_CHANNEL        = 0x0004,  //!< PhysicalChannel
+        DSMCC_RDTYPE_TS_UPSTREAM_BANDWIDTH   = 0x0005,  //!< TSUpstreamBandwidth
+        DSMCC_RDTYPE_TS_DOWNSTREAM_BANDWIDTH = 0x0006,  //!< TSDownstreamBandwidth
+        DSMCC_RDTYPE_ATM_SVC_CONNECTION      = 0x0007,  //!< AtmSvcConnection
+        DSMCC_RDTYPE_CONNECTION_NOTIFY       = 0x0008,  //!< ConnectionNotify
+        DSMCC_RDTYPE_IP                      = 0x0009,  //!< IP
+        DSMCC_RDTYPE_CLIENT_TDMA_ASSIGNMENT  = 0x000A,  //!< ClientTDMAAssignment
+        DSMCC_RDTYPE_PSTN_SETUP              = 0x000B,  //!< PSTNSetup
+        DSMCC_RDTYPE_NISDN_SETUP             = 0x000C,  //!< NISDNSetup
+        DSMCC_RDTYPE_NISDN_CONNECTION        = 0x000D,  //!< NISDNConnection
+        DSMCC_RDTYPE_Q922_CONNECTIONS        = 0x000E,  //!< Q.922Connections
+        DSMCC_RDTYPE_HEADEND_LIST            = 0x000F,  //!< HeadEndList
+        DSMCC_RDTYPE_ATM_VC_CONNECTION       = 0x0010,  //!< AtmVcConnection
+        DSMCC_RDTYPE_SDB_CONTINUOUS_FEED     = 0x0011,  //!< SdbContinuousFeed
+        DSMCC_RDTYPE_SDB_ASSOCIATIONS        = 0x0012,  //!< SdbAssociations
+        DSMCC_RDTYPE_SDB_ENTITLEMENT         = 0x0013,  //!< SdbEntitlement
+        DSMCC_RDTYPE_SHARED_RESOURCE         = 0x7FFE,  //!< SharedResource
+        DSMCC_RDTYPE_SHARED_REQUEST_ID       = 0x7FFF,  //!< SharedRequestId
+        DSMCC_RDTYPE_TYPE_OWNER              = 0xFFFF,  //!< TypeOwner
+    };
 }

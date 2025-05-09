@@ -1,0 +1,53 @@
+==== Network Resources Table (NRT)
+
+Defined by ATSC in <<ATSC-A90>>.
+
+[source,xml]
+----
+<NRT version="uint5, default=0" table_id_extension="uint16, default=0xFFFF">
+
+  <!-- One per resource -->
+  <resource>
+
+    <!-- DSM-CC compatibilityDescriptor() structure -->
+    <compatibilityDescriptor>
+      <!-- Zero or more descriptors -->
+      <descriptor
+          descriptorType="uint8, required"
+          specifierType="uint8, default=1"
+          specifierData="uint24, required"
+          model="uint16, default=0"
+          version="uint16, default=0">
+        <!-- Zero or more subdescriptors -->
+        <subDescriptor subDescriptorType="uint8, required">
+          Hexadecimal content
+        </subDescriptor>
+      </descriptor>
+    </compatibilityDescriptor>
+
+    <!-- DSM-CC dsmccResourceDescriptor() structure -->
+    <dsmccResourceDescriptor
+        resourceRequestId="uint16, required"
+        resourceDescriptorType="uint16, required"
+        resourceNum="uint16, required"
+        associationTag="uint16, required"
+        resourceFlags="uint8, required"
+        resourceStatus="uint8, required"
+        resourceDataFieldCount="uint16, required"
+        typeOwnerId="uint24, required when resourceDescriptorType == 0xFFFF"
+        typeOwnerValue="uint24, required when resourceDescriptorType == 0xFFFF">
+      <!-- The structure of resourceDescriptorDataFields() is unclear, specify raw binary content -->
+      <resourceDescriptorDataFields>
+        Hexadecimal content
+      </resourceDescriptorDataFields>
+    </dsmccResourceDescriptor>
+
+  </resource>
+
+  <!-- Optional private data -->
+  <private_data>
+    Hexadecimal content
+  </private_data>
+
+</NRT>
+----

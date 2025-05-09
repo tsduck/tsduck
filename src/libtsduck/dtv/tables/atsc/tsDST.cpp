@@ -158,7 +158,7 @@ void ts::DST::serializePayload(BinaryTable& table, PSIBuffer& buf) const
     // Add fixed fields.
     buf.putUInt8(sdf_protocol_version);
 
-    // Save position before application_count_in_section. Will be updated at each event.
+    // Save position before application_count_in_section. Will be updated at each application.
     uint8_t application_count_in_section = 0;
     buf.pushState();
     buf.putUInt8(application_count_in_section);
