@@ -356,6 +356,18 @@ namespace ts {
         };
 
         //!
+        //! List all supported tables.
+        //! @param [in,out] out Output stream.
+        //!
+        void listTables(std::ostream& out) const;
+
+        //!
+        //! List all supported descriptors.
+        //! @param [in,out] out Output stream.
+        //!
+        void listDescriptors(std::ostream& out) const;
+
+        //!
         //! Dump the internal state of the PSI repository (for debug only).
         //! @param [in,out] out Output stream.
         //!

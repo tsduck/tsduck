@@ -52,7 +52,7 @@ endif::[]
 
 |PAGER
 |Defined to a pager command to output commands such as `tstables`, `tsdump` or `--help` option anywhere.
- The default is `less -QFX` or `more` when the `less` command is not available.
+ The default is `less -QFXS` or `more` when the `less` command is not available.
 
 |Path
 |On Windows systems, the system-defined search path of executables is also used to search `tsp` plugins,

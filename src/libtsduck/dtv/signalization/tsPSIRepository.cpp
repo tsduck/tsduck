@@ -673,6 +673,82 @@ void ts::PSIRepository::getRegisteredTablesModels(UStringList& names) const
 
 
 //----------------------------------------------------------------------------
+// List all supported tables.
+//----------------------------------------------------------------------------
+
+void ts::PSIRepository::listTables(std::ostream& out) const
+{
+    TextTable table;
+    table.addColumn(1, u"TID");
+    table.addColumn(2, u"XML");
+    table.addColumn(3, u"Standards");
+    table.addColumn(4, u"Name");
+
+    // Loop on all known tables.
+    for (const auto& it : _tables_by_tid) {
+        const auto& tc(*it.second);
+        if (!tc.xml_name.empty() && tc.index != NullIndex()) {
+            // This table is supported by TSDuck.
+            table.newLine();
+            table.setCell(1, UString::Format(u"%X", it.first));
+            table.setCell(2, u"<" + tc.xml_name + u">");
+            table.setCell(3, StandardsNames(tc.standards));
+            table.setCell(4, tc.display_name);
+        }
+    }
+    table.output(out, TextTable::Headers::UNDERLINED, false, UString(), u"  ");
+}
+
+
+//----------------------------------------------------------------------------
+// List all supported descriptors.
+//----------------------------------------------------------------------------
+
+void ts::PSIRepository::listDescriptors(std::ostream& out) const
+{
+    TextTable table;
+    table.addColumn(1, u"DID");
+    table.addColumn(2, u"XML");
+    table.addColumn(3, u"Standards");
+    table.addColumn(4, u"Name");
+    table.addColumn(5, u"Context");
+
+    // Loop on all known descriptors.
+    for (const auto& it : _descriptors_by_xdid) {
+        const auto& dc(*it.second);
+        if (!dc.xml_name.empty() && dc.index != NullIndex()) {
+            // This descriptor is supported by TSDuck.
+            table.newLine();
+            table.setCell(1, it.first.toString());
+            table.setCell(2, u"<" + dc.xml_name + u">");
+            table.setCell(3, StandardsNames(dc.edid.standards()));
+            table.setCell(4, dc.display_name);
+            if (dc.edid.isPrivateMPEG()) {
+                table.setCell(5, u"MPEG private (" + REGIDName(dc.edid.regid()) + u")");
+            }
+            else if (dc.edid.isPrivateDVB()) {
+                table.setCell(5, u"DVB private (" + PDSName(dc.edid.pds()) + u")");
+            }
+            else if (dc.edid.isTableSpecific()) {
+                const std::set<TID> tids(dc.edid.tableIds());
+                DuckContext duck;
+                duck.addStandards(dc.edid.standards());
+                UString name;
+                const UChar* prefix = u"Only in ";
+                for (TID tid : tids) {
+                    name += prefix;
+                    name += TIDName(duck, tid);
+                    prefix = u", ";
+                }
+                table.setCell(5, name);
+            }
+        }
+    }
+    table.output(out, TextTable::Headers::UNDERLINED, false, UString(), u"  ");
+}
+
+
+//----------------------------------------------------------------------------
 // Dump the internal state of the PSI repository (for debug only).
 //----------------------------------------------------------------------------
 
@@ -703,7 +779,7 @@ void ts::PSIRepository::dumpInternalState(std::ostream& out) const
         table.setCell(6, PIDsToString(tc.pids));
         table.setCell(7, CASToString(tc.min_cas, tc.max_cas));
     }
-    table.output(std::cout, TextTable::Headers::UNDERLINED);
+    table.output(out, TextTable::Headers::UNDERLINED);
 
     out << std::endl << "==== Table XML name to table class: " << _tables_by_xml_name.size() << std::endl << std::endl;
     table.clear();
@@ -715,7 +791,7 @@ void ts::PSIRepository::dumpInternalState(std::ostream& out) const
         table.setCell(1, NameToString(u"<", it.first, u">"));
         table.setCell(2, TypeIndexToString(it.second->index));
     }
-    table.output(std::cout, TextTable::Headers::UNDERLINED);
+    table.output(out, TextTable::Headers::UNDERLINED);
 
     out << std::endl << "==== XDID to descriptor class: " << _descriptors_by_xdid.size() << std::endl << std::endl;
     table.clear();
@@ -734,7 +810,7 @@ void ts::PSIRepository::dumpInternalState(std::ostream& out) const
         table.setCell(4, dc.edid.toString());
         table.setCell(5, TypeIndexToString(dc.index));
     }
-    table.output(std::cout, TextTable::Headers::UNDERLINED);
+    table.output(out, TextTable::Headers::UNDERLINED);
 
     out << std::endl << "==== Descriptor name to descriptor class: " << _descriptors_by_xml_name.size() << std::endl << std::endl;
     table.clear();
@@ -746,7 +822,7 @@ void ts::PSIRepository::dumpInternalState(std::ostream& out) const
         table.setCell(1, NameToString(u"<", it.first, u">"));
         table.setCell(2, TypeIndexToString(it.second->index));
     }
-    table.output(std::cout, TextTable::Headers::UNDERLINED);
+    table.output(out, TextTable::Headers::UNDERLINED);
 
     out << std::endl << "==== Descriptor RTTI index to descriptor class: " << _descriptors_by_type_index.size() << std::endl << std::endl;
     table.clear();
@@ -760,7 +836,7 @@ void ts::PSIRepository::dumpInternalState(std::ostream& out) const
         table.setCell(2, NameToString(u"'", it.second->display_name, u"'"));
         table.setCell(3, NameToString(u"<", it.second->xml_name, u">"));
     }
-    table.output(std::cout, TextTable::Headers::UNDERLINED);
+    table.output(out, TextTable::Headers::UNDERLINED);
 
     out << std::endl << "==== XML descriptor name to table id for table-specific descriptors: " << _descriptor_tids.size() << std::endl << std::endl;
     table.clear();
@@ -772,7 +848,7 @@ void ts::PSIRepository::dumpInternalState(std::ostream& out) const
         table.setCell(1, NameToString(u"<", it.first, u">"));
         table.setCell(2, UString::Format(u"%X", it.second));
     }
-    table.output(std::cout, TextTable::Headers::UNDERLINED);
+    table.output(out, TextTable::Headers::UNDERLINED);
 
     out << std::endl << "==== Display CA Descriptor functions: " << _casid_descriptor_displays.size() << std::endl << std::endl;
     table.clear();
@@ -784,7 +860,7 @@ void ts::PSIRepository::dumpInternalState(std::ostream& out) const
         table.setCell(1, UString::Format(u"%X", it.first));
         table.setCell(2, UString::Format(u"%X", size_t(it.second)));
     }
-    table.output(std::cout, TextTable::Headers::UNDERLINED);
+    table.output(out, TextTable::Headers::UNDERLINED);
 
     out << std::endl << "==== XML extension files: " << _xml_extension_files.size() << std::endl << std::endl;
     for (const auto& it : _xml_extension_files) {
@@ -792,6 +868,11 @@ void ts::PSIRepository::dumpInternalState(std::ostream& out) const
     }
     out << std::endl;
 }
+
+
+//----------------------------------------------------------------------------
+// Display utilities.
+//----------------------------------------------------------------------------
 
 ts::UString ts::PSIRepository::NameToString(const UString& prefix, const UString& name, const UString& suffix)
 {
@@ -803,8 +884,10 @@ ts::UString ts::PSIRepository::TypeIndexToString(std::type_index index)
     if (index == NullIndex()) {
         return u"-";
     }
-    const UString name(ClassName(index));
-    return name.empty() ? UString::Format(u"%X", index.hash_code()): name;
+    else {
+        const UString name(ClassName(index));
+        return name.empty() ? UString::Format(u"%X", index.hash_code()): name;
+    }
 }
 
 ts::UString ts::PSIRepository::StandardsToString(Standards std)

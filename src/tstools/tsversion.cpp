@@ -20,7 +20,6 @@
 #include "tsErrCodeReport.h"
 #include "tsNullReport.h"
 #include "tsForkPipe.h"
-#include "tsPSIRepository.h"
 #include "tsDuckExtensionRepository.h"
 #if defined(TS_WINDOWS)
 #include "tsWinUtils.h"
@@ -45,7 +44,6 @@ namespace {
         bool current = false;         // Display current version of TSDuck, this executable.
         bool integer = false;         // Display current version of TSDuck as integer value.
         bool extensions = false;      // List extensions.
-        bool xdump_psi_repo = false;  // Dump internal state of PSI repository.
 
         // The following options are used to detect, download and upgrade new versions of TSDuck.
         // They are disabled when TS_NO_GITHUB is defined. With this macro, TSDuck is unlinked
@@ -84,9 +82,6 @@ Options::Options(int argc, char *argv[]) :
          u"suitable for comparison in a script. Example: " +
          ts::VersionInfo::GetVersion(ts::VersionInfo::Format::INTEGER) + u" for " +
          ts::VersionInfo::GetVersion(ts::VersionInfo::Format::SHORT) + u".");
-
-    option(u"xdump-psi-repository");
-    help(u"xdump-psi-repository", u"Dump the internal state of the PSI repository. This is a debug function.");
 
     // Enumeration of support options. The values are 0 or 1, indicating support.
     // Add a negative value meaning list all.
@@ -163,7 +158,6 @@ Options::Options(int argc, char *argv[]) :
 
     extensions = present(u"extensions");
     integer = present(u"integer");
-    xdump_psi_repo = present(u"xdump-psi-repository");
 
     // Option --support is fully handled inside the constructor.
     // It exits the application with a specific status.
@@ -639,10 +633,6 @@ int MainCode(int argc, char *argv[])
         // Display list of available extensions.
         // The returned string is either empty or ends with a new-line.
         std::cout << ts::DuckExtensionRepository::Instance().listExtensions(opt);
-    }
-    else if (opt.xdump_psi_repo) {
-        // Dump internal state of PSI repository.
-        ts::PSIRepository::Instance().dumpInternalState(std::cout);
     }
     else if (opt.integer) {
         // Display current version in integer format.

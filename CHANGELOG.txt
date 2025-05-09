@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.41-4269 (May 2025)
+VERSION 3.41-4277 (May 2025)
 
 [NEW] New commands and plugins:
 
@@ -16,6 +16,8 @@ VERSION 3.41-4269 (May 2025)
     with PID values which were just identified, this opens the  possibility  to
     define XML patch files without knowing precise PID values in advance.
   * Added handling of Astra-defined way of handling logical channel numbers.
+  * When "less" is used as output pager command, the option -S is  added.  This
+    is convenient for wide output.
   * New options in existing commands and plugins:
     - Option --no-link-local in "tsdump", "tstabdump" and plugins "ip" (input),
       "cutoff", "mpeinject".
@@ -27,6 +29,8 @@ VERSION 3.41-4269 (May 2025)
       decompiling binary tables with missing PDS descriptors.
     - Option --fix-missing-pds  in  "tsp",  "tstabcomp",  plugins  "eitinject",
       "inject".
+    - Options   --dump-psi-repository,   --list-descriptors,  --list-tables  in
+      "tstables".
 
 [BUG] Bug fixes:
 

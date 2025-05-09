@@ -50,7 +50,7 @@ ts::OutputPager::OutputPager(const UString& envName, bool stdoutOnly)
             UString parameters;
         };
         const std::list<PredefinedPager> pagers({
-            {u"less", u"-QFX"},
+            {u"less", u"-QFXS"},
             {u"more", u""}
         });
 
