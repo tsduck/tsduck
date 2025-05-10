@@ -71,7 +71,7 @@ void ts::AVS2AudioDescriptor::serializePayload(PSIBuffer& buf) const
     buf.putBit(language.has_value());     // language_present_flag
     buf.putBits(0x00, 1);
     if (description.has_value()) {
-        buf.putStringWithByteLength(description.value(), 0, NPOS, &ts::DVBCharTableUTF16::RAW_UNICODE);
+        buf.putStringWithByteLength(description.value(), 0, NPOS, &ts::DVBCharTableUTF16::RAW_UTF_16);
     }
     if (language.has_value()) {
         buf.putLanguageCode(language.value());
@@ -111,7 +111,7 @@ void ts::AVS2AudioDescriptor::deserializePayload(PSIBuffer& buf)
     const bool language_present_flag = buf.getBool();
     buf.skipBits(1);
     if (text_present_flag) {
-        description = buf.getStringWithByteLength(&ts::DVBCharTableUTF16::RAW_UNICODE);
+        description = buf.getStringWithByteLength(&ts::DVBCharTableUTF16::RAW_UTF_16);
     }
     if (language_present_flag) {
         language = buf.getLanguageCode();
@@ -162,7 +162,7 @@ void ts::AVS2AudioDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::D
         const bool language_present_flag = buf.getBool();
         buf.skipReservedBits(1, 0);
         if (text_present_flag) {
-            disp << margin << "Description: " << buf.getStringWithByteLength(&ts::DVBCharTableUTF16::RAW_UNICODE) << std::endl;
+            disp << margin << "Description: " << buf.getStringWithByteLength(&ts::DVBCharTableUTF16::RAW_UTF_16) << std::endl;
         }
         if (language_present_flag) {
             disp << margin << "Language: " << buf.getLanguageCode() << std::endl;

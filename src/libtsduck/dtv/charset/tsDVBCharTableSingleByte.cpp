@@ -9,24 +9,6 @@
 #include "tsDVBCharTableSingleByte.h"
 #include "tsUString.h"
 
-// Static instances of corresponding DVB charsets.
-// The charset tables register themselves during initialization.
-const ts::DVBCharset ts::DVBCharTableSingleByte::DVB_ISO_6937(u"ISO-6937", &RAW_ISO_6937);
-const ts::DVBCharset ts::DVBCharTableSingleByte::DVB_ISO_8859_1(u"ISO-8859-1", &RAW_ISO_8859_1);
-const ts::DVBCharset ts::DVBCharTableSingleByte::DVB_ISO_8859_2(u"ISO-8859-2", &RAW_ISO_8859_2);
-const ts::DVBCharset ts::DVBCharTableSingleByte::DVB_ISO_8859_3(u"ISO-8859-3", &RAW_ISO_8859_3);
-const ts::DVBCharset ts::DVBCharTableSingleByte::DVB_ISO_8859_4(u"ISO-8859-4", &RAW_ISO_8859_4);
-const ts::DVBCharset ts::DVBCharTableSingleByte::DVB_ISO_8859_5(u"ISO-8859-5", &RAW_ISO_8859_5);
-const ts::DVBCharset ts::DVBCharTableSingleByte::DVB_ISO_8859_6(u"ISO-8859-6", &RAW_ISO_8859_6);
-const ts::DVBCharset ts::DVBCharTableSingleByte::DVB_ISO_8859_7(u"ISO-8859-7", &RAW_ISO_8859_7);
-const ts::DVBCharset ts::DVBCharTableSingleByte::DVB_ISO_8859_8(u"ISO-8859-8", &RAW_ISO_8859_8);
-const ts::DVBCharset ts::DVBCharTableSingleByte::DVB_ISO_8859_9(u"ISO-8859-9", &RAW_ISO_8859_9);
-const ts::DVBCharset ts::DVBCharTableSingleByte::DVB_ISO_8859_10(u"ISO-8859-10", &RAW_ISO_8859_10);
-const ts::DVBCharset ts::DVBCharTableSingleByte::DVB_ISO_8859_11(u"ISO-8859-11", &RAW_ISO_8859_11);
-const ts::DVBCharset ts::DVBCharTableSingleByte::DVB_ISO_8859_13(u"ISO-8859-13", &RAW_ISO_8859_13);
-const ts::DVBCharset ts::DVBCharTableSingleByte::DVB_ISO_8859_14(u"ISO-8859-14", &RAW_ISO_8859_14);
-const ts::DVBCharset ts::DVBCharTableSingleByte::DVB_ISO_8859_15(u"ISO-8859-15", &RAW_ISO_8859_15);
-
 
 //----------------------------------------------------------------------------
 // Constructor.
@@ -173,6 +155,7 @@ size_t ts::DVBCharTableSingleByte::encode(uint8_t*& buffer, size_t& size, const 
 
 //----------------------------------------------------------------------------
 // Character sets.
+// The charset tables register themselves during initialization.
 //----------------------------------------------------------------------------
 
 const ts::DVBCharTableSingleByte ts::DVBCharTableSingleByte::RAW_ISO_6937(u"RAW-ISO-6937", 0x00, {
@@ -403,3 +386,20 @@ const ts::DVBCharTableSingleByte ts::DVBCharTableSingleByte::RAW_ISO_8859_15(u"R
     0x00F0, 0x00F1, 0x00F2, 0x00F3, 0x00F4, 0x00F5, 0x00F6, 0x00F7,
     0x00F8, 0x00F9, 0x00FA, 0x00FB, 0x00FC, 0x00FD, 0x00FE, 0x00FF
 });
+
+
+// Static instances of corresponding DVB charsets.
+const ts::DVBCharset ts::DVBCharTableSingleByte::DVB_ISO_8859_1(u"ISO-8859-1", RAW_ISO_8859_1);
+const ts::DVBCharset ts::DVBCharTableSingleByte::DVB_ISO_8859_2(u"ISO-8859-2", RAW_ISO_8859_2);
+const ts::DVBCharset ts::DVBCharTableSingleByte::DVB_ISO_8859_3(u"ISO-8859-3", RAW_ISO_8859_3);
+const ts::DVBCharset ts::DVBCharTableSingleByte::DVB_ISO_8859_4(u"ISO-8859-4", RAW_ISO_8859_4);
+const ts::DVBCharset ts::DVBCharTableSingleByte::DVB_ISO_8859_5(u"ISO-8859-5", RAW_ISO_8859_5);
+const ts::DVBCharset ts::DVBCharTableSingleByte::DVB_ISO_8859_6(u"ISO-8859-6", RAW_ISO_8859_6);
+const ts::DVBCharset ts::DVBCharTableSingleByte::DVB_ISO_8859_7(u"ISO-8859-7", RAW_ISO_8859_7);
+const ts::DVBCharset ts::DVBCharTableSingleByte::DVB_ISO_8859_8(u"ISO-8859-8", RAW_ISO_8859_8);
+const ts::DVBCharset ts::DVBCharTableSingleByte::DVB_ISO_8859_9(u"ISO-8859-9", RAW_ISO_8859_9);
+const ts::DVBCharset ts::DVBCharTableSingleByte::DVB_ISO_8859_10(u"ISO-8859-10", RAW_ISO_8859_10);
+const ts::DVBCharset ts::DVBCharTableSingleByte::DVB_ISO_8859_11(u"ISO-8859-11", RAW_ISO_8859_11);
+const ts::DVBCharset ts::DVBCharTableSingleByte::DVB_ISO_8859_13(u"ISO-8859-13", RAW_ISO_8859_13);
+const ts::DVBCharset ts::DVBCharTableSingleByte::DVB_ISO_8859_14(u"ISO-8859-14", RAW_ISO_8859_14);
+const ts::DVBCharset ts::DVBCharTableSingleByte::DVB_ISO_8859_15(u"ISO-8859-15", RAW_ISO_8859_15);

@@ -25,8 +25,8 @@ ts::DuckContext::DuckContext(Report* report, std::ostream* output) :
     _report(report != nullptr ? report : &CERR),
     _initial_out(output != nullptr ? output : &std::cout),
     _out(_initial_out),
-    _charset_in(&DVBCharTableSingleByte::DVB_ISO_6937),  // default DVB charset
-    _charset_out(&DVBCharTableSingleByte::DVB_ISO_6937),
+    _charset_in(&DVBCharset::DVB),  // default DVB charset
+    _charset_out(&DVBCharset::DVB),
     _time_ref_config(DuckConfigFile::Instance().value(u"default.time")),
     _predefined_cas{{CASID_CONAX_MIN,      u"conax"},
                     {CASID_IRDETO_MIN,     u"irdeto"},
@@ -62,7 +62,7 @@ void ts::DuckContext::reset()
     }
 
     _out = _initial_out;
-    _charset_in = _charset_out = &DVBCharTableSingleByte::DVB_ISO_6937;
+    _charset_in = _charset_out = &DVBCharset::DVB;
     _casId = CASID_NULL;
     _fix_pds = false;
     _default_pds = 0;
@@ -89,12 +89,12 @@ void ts::DuckContext::setReport(Report* report)
 
 void ts::DuckContext::setDefaultCharsetIn(const Charset* charset)
 {
-    _charset_in = charset != nullptr ? charset : &DVBCharTableSingleByte::DVB_ISO_6937;
+    _charset_in = charset != nullptr ? charset : &DVBCharset::DVB;
 }
 
 void ts::DuckContext::setDefaultCharsetOut(const Charset* charset)
 {
-    _charset_out = charset != nullptr ? charset : &DVBCharTableSingleByte::DVB_ISO_6937;
+    _charset_out = charset != nullptr ? charset : &DVBCharset::DVB;
 }
 
 

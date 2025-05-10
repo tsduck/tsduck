@@ -28,8 +28,8 @@ namespace ts {
     {
         TS_NOCOPY(DVBCharTableUTF16);
     public:
-        static const DVBCharTableUTF16 RAW_UNICODE;  //!< Raw UNICODE (UTF-16) character set.
-        static const DVBCharset DVB_UNICODE;         //!< Non-standard DVB encoding using UNICODE (UTF-16) character set as default.
+        static const DVBCharTableUTF16 RAW_UTF_16;  //!< Raw UNICODE (UTF-16) character set.
+        static const DVBCharset DVB_UTF_16;         //!< Non-standard DVB encoding using UNICODE (UTF-16) character set as default.
 
         // Inherited methods.
         virtual bool decode(UString& str, const uint8_t* dvb, size_t dvbSize) const override;
@@ -38,7 +38,7 @@ namespace ts {
 
     private:
         // Private constructor since only local instances are available.
-        explicit DVBCharTableUTF16(const UChar* name = nullptr);
+        explicit DVBCharTableUTF16(std::initializer_list<const UChar*> names);
    };
 }
 

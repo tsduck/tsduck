@@ -87,7 +87,7 @@ void ts::ATSCAC3AudioStreamDescriptor::serializePayload(PSIBuffer& buf) const
     const bool latin1 = DVBCharTableSingleByte::RAW_ISO_8859_1.canEncode(text);
 
     // Encode the text. The resultant size must fit on 7 bits. The max size is then 127 characters with Latin-1 and 63 with UTF-16.
-    const ByteBlock bb(latin1 ? DVBCharTableSingleByte::RAW_ISO_8859_1.encoded(text, 0, 127) : DVBCharTableUTF16::RAW_UNICODE.encoded(text, 0, 63));
+    const ByteBlock bb(latin1 ? DVBCharTableSingleByte::RAW_ISO_8859_1.encoded(text, 0, 127) : DVBCharTableUTF16::RAW_UTF_16.encoded(text, 0, 63));
 
     // Serialize the text.
     buf.putBits(bb.size(), 7);
@@ -165,7 +165,7 @@ void ts::ATSCAC3AudioStreamDescriptor::deserializePayload(PSIBuffer& buf)
     // Deserialize text. Can be ISO Latin-1 or UTF-16.
     const size_t textlen = buf.getBits<size_t>(7);
     const bool latin1 = buf.getBool();
-    buf.getString(text, textlen, latin1 ? static_cast<const Charset*>(&DVBCharTableSingleByte::RAW_ISO_8859_1) : static_cast<const Charset*>(&DVBCharTableUTF16::RAW_UNICODE));
+    buf.getString(text, textlen, latin1 ? static_cast<const Charset*>(&DVBCharTableSingleByte::RAW_ISO_8859_1) : static_cast<const Charset*>(&DVBCharTableUTF16::RAW_UTF_16));
 
     // End of descriptor allowed here
     if (buf.endOfRead()) {
@@ -236,7 +236,7 @@ void ts::ATSCAC3AudioStreamDescriptor::DisplayDescriptor(TablesDisplay& disp, co
         if (buf.canRead()) {
             const size_t textlen = buf.getBits<size_t>(7);
             const bool latin1 = buf.getBool();
-            const Charset* charset = latin1 ? static_cast<const Charset*>(&DVBCharTableSingleByte::RAW_ISO_8859_1) : static_cast<const Charset*>(&DVBCharTableUTF16::RAW_UNICODE);
+            const Charset* charset = latin1 ? static_cast<const Charset*>(&DVBCharTableSingleByte::RAW_ISO_8859_1) : static_cast<const Charset*>(&DVBCharTableUTF16::RAW_UTF_16);
             disp << margin << "Text: \"" << buf.getString(textlen, charset) << "\"" << std::endl;
         }
 

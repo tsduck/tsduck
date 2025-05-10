@@ -13,16 +13,22 @@
 
 // Default predefined DVB character set (using ISO-6937 as default table).
 // The charset table registers itself during initialization.
-const ts::DVBCharset ts::DVBCharset::DVB(u"DVB");
+const ts::DVBCharset ts::DVBCharset::DVB({u"ISO-6937", u"DVB"}, DVBCharTableSingleByte::RAW_ISO_6937);
 
 
 //----------------------------------------------------------------------------
-// Constructor.
+// Constructors.
 //----------------------------------------------------------------------------
 
-ts::DVBCharset::DVBCharset(const UChar* name, const DVBCharTable* default_table) :
+ts::DVBCharset::DVBCharset(const UChar* name, const DVBCharTable& default_table) :
     Charset(name),
-    _default_table(default_table != nullptr ? default_table : &DVBCharTableSingleByte::RAW_ISO_6937)
+    _default_table(default_table)
+{
+}
+
+ts::DVBCharset::DVBCharset(std::initializer_list<const UChar*> names, const DVBCharTable& default_table) :
+    Charset(names),
+    _default_table(default_table)
 {
 }
 
@@ -67,7 +73,7 @@ bool ts::DVBCharset::decode(UString& str, const uint8_t* data, size_t size) cons
     size -= codeSize;
 
     // Get the character set for this DVB string.
-    const DVBCharTable* table = code == 0 ? _default_table : DVBCharTable::GetTableFromLeadingCode(code);
+    const DVBCharTable* table = code == 0 ? &_default_table : DVBCharTable::GetTableFromLeadingCode(code);
     if (table == nullptr) {
         // Unsupported character table. Collect all ANSI characters, replace others by '.'.
         for (size_t i = 0; i < size; i++) {
@@ -99,21 +105,16 @@ size_t ts::DVBCharset::encode(uint8_t*& buffer, size_t& size, const UString& str
         return 0;
     }
 
-    // Try to encode using these character tables in order
-    const DVBCharTable* const lookup_tables[] = {
-        _default_table,                                // default table for this charset
-        &ts::DVBCharTableSingleByte::RAW_ISO_6937,     // default DVB table, same as previous in most cases
-        &ts::DVBCharTableSingleByte::RAW_ISO_8859_15,  // most european characters and Euro currency sign
-        &ts::DVBCharTableUTF8::RAW_UTF_8,              // last chance, used when no other match
-        nullptr                                        // end of list
-    };
-
     // Look for a character set which can encode the string.
-    const DVBCharTable* table = nullptr;
-    for (size_t i = 0; lookup_tables[i] != nullptr; ++i) {
-        if ((i == 0 || lookup_tables[i] != _default_table) && lookup_tables[i]->canEncode(str, start, count)) {
+    // First, try using default table for this charset.
+    const DVBCharTable* table = _default_table.canEncode(str, start, count) ? &_default_table : nullptr;
+
+    // Then, try to encode using these character tables in order.
+    const auto& lookup_tables(GetPreferredCharsets());
+    for (size_t i = 0; table == nullptr && i < lookup_tables.size(); ++i) {
+        // Skip default table since it has been tried first.
+        if (lookup_tables[i] != &_default_table && lookup_tables[i]->canEncode(str, start, count)) {
             table = lookup_tables[i];
-            break;
         }
     }
     if (table == nullptr) {
@@ -126,4 +127,37 @@ size_t ts::DVBCharset::encode(uint8_t*& buffer, size_t& size, const UString& str
 
     // Encode the string.
     return table->encode(buffer, size, str, start, count);
+}
+
+
+//----------------------------------------------------------------------------
+// Get an ordered list of character sets which are used to encode DVB strings.
+//----------------------------------------------------------------------------
+
+const std::vector<const ts::DVBCharTable*>& ts::DVBCharset::GetPreferredCharsets()
+{
+    // Thread-safe init-safe static data pattern:
+    static const std::vector<const ts::DVBCharTable*> charsets {
+        // No leading character table code.
+        &DVBCharTableSingleByte::RAW_ISO_6937,     // Default DVB table, ISO-6937 with addition of the Euro symbol
+        // 1-byte leading character table code.
+        &DVBCharTableSingleByte::RAW_ISO_8859_15,  // Latin-9, Latin/Western European alphabet
+        &DVBCharTableSingleByte::RAW_ISO_8859_10,  // Latin-6, Latin/Nordic alphabet
+        &DVBCharTableSingleByte::RAW_ISO_8859_13,  // Latin-7, Latin/Baltic Rim alphabet
+        &DVBCharTableSingleByte::RAW_ISO_8859_14,  // Latin-8, Latin/Celtic alphabet
+        &DVBCharTableSingleByte::RAW_ISO_8859_5,   // Latin/Cyrillic alphabet
+        &DVBCharTableSingleByte::RAW_ISO_8859_7,   // Latin/Greek alphabet
+        &DVBCharTableSingleByte::RAW_ISO_8859_8,   // Latin/Hebrew alphabet
+        &DVBCharTableSingleByte::RAW_ISO_8859_9,   // Latin-5, Latin/Turkish alphabet
+        &DVBCharTableSingleByte::RAW_ISO_8859_6,   // Latin/Arabic alphabet
+        &DVBCharTableSingleByte::RAW_ISO_8859_11,  // Latin/Thai alphabet
+        // 2-byte leading character table code.
+        &DVBCharTableSingleByte::RAW_ISO_8859_1,   // West European alphabet
+        &DVBCharTableSingleByte::RAW_ISO_8859_2,   // East European alphabet
+        &DVBCharTableSingleByte::RAW_ISO_8859_3,   // South European alphabet
+        &DVBCharTableSingleByte::RAW_ISO_8859_4,   // North and North-East European alphabet
+        // 1-byte leading character table code.
+        &ts::DVBCharTableUTF8::RAW_UTF_8,          // Last chance, can encode any string, used when no other match
+    };
+    return charsets;
 }

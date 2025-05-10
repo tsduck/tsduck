@@ -22,10 +22,18 @@ ts::DVBCharTable::DVBCharTable(const UChar* name, uint32_t tableCode) :
     TableCodeRepository::Instance().add(_code, this);
 }
 
+ts::DVBCharTable::DVBCharTable(std::initializer_list<const UChar*> names, uint32_t tableCode) :
+    Charset(names),
+    _code(tableCode)
+{
+    // Register the character set.
+    TableCodeRepository::Instance().add(_code, this);
+}
+
 ts::DVBCharTable::~DVBCharTable()
 {
     // Automatically unregister character set on destruction.
-    unregister();
+    DVBCharTable::unregister();
 }
 
 

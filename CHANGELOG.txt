@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.41-4277 (May 2025)
+VERSION 3.41-4278 (May 2025)
 
 [NEW] New commands and plugins:
 
@@ -10,6 +10,9 @@ VERSION 3.41-4277 (May 2025)
 
 [IMP] Improvements on existing commands and plugins:
 
+  * When encoding DVB strings, try all supported DVB character sets  until  one
+    can encode the string. Previously, without --default-charset  option,  only
+    ISO-6937, ISO-8859-15, and UTF-8 were used in the encoding process.
   * Added missing ATSC and ISDB tables and descriptors.
   * Added optional expansion of  environment  variables  in  XML  patch  files.
     Combined with the plugin "identify" which  defines  environement  variables
@@ -29,8 +32,8 @@ VERSION 3.41-4277 (May 2025)
       decompiling binary tables with missing PDS descriptors.
     - Option --fix-missing-pds  in  "tsp",  "tstabcomp",  plugins  "eitinject",
       "inject".
-    - Options   --dump-psi-repository,   --list-descriptors,  --list-tables  in
-      "tstables".
+    - Options --dump-psi-repository,  --list-dvb-charset-order,  --list-tables,
+      --list-descriptors in "tstables".
 
 [BUG] Bug fixes:
 

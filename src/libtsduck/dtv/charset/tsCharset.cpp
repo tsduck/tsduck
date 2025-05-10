@@ -39,7 +39,7 @@ ts::Charset::Charset(std::initializer_list<const UChar*> names)
 ts::Charset::~Charset()
 {
     // Automatically unregister character set on destruction.
-    unregister();
+    Charset::unregister();
 }
 
 

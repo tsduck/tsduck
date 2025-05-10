@@ -844,10 +844,10 @@ With DVB and ISDB, there are several types of ambiguities:
 
 * The ISDB signalization reuses some DVB-defined tables and descriptors,
   but texts are represented with a non-DVB character encoding.
-  When analyzing or creating such structures, the context (DVB vs. ISDB)
+  When analyzing or creating such structures, the context (DVB vs. ISDB, and which ISDB variant)
   must be known to select the appropriate encoding method.
 * Invalid DVB encoding: According to <<ETSI-300-468>>, the default DVB character set
-  (without explicit character table code) is ISO-6937.
+  (without explicit leading character table code) is ISO-6937.
   However, some bogus signalization may assume that the default character set is different,
   typically the usual local character table for the region of the operator.
   The non-standard default character table must be specified using an option.
@@ -886,7 +886,7 @@ They are briefly repeated in the documentation of all commands to which they app
 A synonym for `--default-charset RAW-ISO-8859-15`.
 
 [.optdoc]
-All strings are interpreted and generated as ISO-8859-15 without explicit leading table code.
+All strings are interpreted and generated as ISO-8859-15 without explicit leading character table code.
 
 [.optdoc]
 This is a handy shortcut when working on South American ISDB-Tb transport streams.
@@ -895,29 +895,39 @@ This is a handy shortcut when working on South American ISDB-Tb transport stream
 *--default-charset* _name_
 
 [.optdoc]
+This option specifies the default character set to use when reading or generating binary sections.
+The usage is slightly different depending on whether a section is read (deserialized) or generated (serialized).
+
+[.optdoc]
+The default is ISO-6937, the default DVB character set.
+See xref:charset-names[xrefstyle=short] below for a list of available character set names.
+
+[.optdoc]
 When reading binary sections, this option specifies the default character set to use when
-interpreting strings from tables and descriptors, when there is no initial DVB sequence for
-character table selection. This overrides the DVB defaults and should be used with invalid
-streams which omit the initial DVB sequence for character table selection when using a
-non-default character set.
+interpreting strings from tables and descriptors,
+when there is no initial DVB binary sequence for character table selection.
+This overrides the DVB defaults and should be used either with non-DVB streams or
+with invalid DVB streams which omit the initial DVB binary sequence for character table selection
+when using a non-default character set.
 
 [.optdoc]
 By default, standard DVB encoding is used and ISO-6937 encoding is assumed in the absence of
-initial sequence for character set selection.
+initial DVB binary sequence for character set selection.
 
 [.optdoc]
-When generating binary sections (from XML or JSON files for instance), this option specifies
-the preferred character encoding. The DVB rules are applied : when a non-default DVB
-character set is selected, the appropriate initial DVB sequence for character table selection is
-inserted.
+When generating binary sections (from XML or JSON files for instance),
+this option specifies the preferred character encoding.
+When the character set is a DVB one (see xref:charset-names[xrefstyle=short]),
+the DVB rules are applied: when a non-default DVB character set is selected,
+the appropriate initial DVB binary sequence for character table selection is always inserted.
 
 [.optdoc]
-By default, TSDuck tries several character sets until one is capable of encoding the string.
-The order of selection is ISO-6937 (DVB default character set), ISO-8859-15 (convenient with most European languages) and UTF-8.
-Since UTF-8 can encode everything, the string will always be successfully encoded.
-
-[.optdoc]
-See xref:charset-names[xrefstyle=short] below for a list of available character set names.
+By default, TSDuck tries several DVB character sets until one is capable of encoding the string,
+starting with ISO-6937, the default DVB character set.
+The option specifies which character set is tried first.
+If the selected character set is a DVB one and is not able to encode a string,
+then the list of all other DVB character sets is used.
+See xref:charset-order[xrefstyle=short] below for the exact order in which the DVB character sets are tried.
 
 [.opt]
 *--europe*
@@ -926,14 +936,14 @@ See xref:charset-names[xrefstyle=short] below for a list of available character 
 A synonym for `--default-charset ISO-8859-15`.
 
 [.optdoc]
-Using this option, all DVB strings without explicit leading table code are assumed to use ISO-8859-15
+Using this option, all DVB strings without explicit leading character table code are assumed to use ISO-8859-15
 instead of the standard ISO-6937 encoding.
 
 [.optdoc]
 This is a handy shortcut for commonly incorrect DVB signalization on some European satellites.
-In that signalization, the default character encoding (without leading table code) is ISO-8859-15,
+In that signalization, the default character encoding (without leading character table code) is ISO-8859-15,
 the most common encoding for Latin & Western Europe languages.
-When an explicit leading table code is present, then the corresponding character set is used.
+When an explicit leading character table code is present, then the corresponding character set is used.
 
 [.opt]
 *--japan*
@@ -956,7 +966,7 @@ such as the use of JST time instead of UTC or different semantics for component 
 A synonym for `--default-charset RAW-UTF-8`.
 
 [.optdoc]
-All strings are interpreted and generated as UTF-8 without explicit leading table code.
+All strings are interpreted and generated as UTF-8 without explicit leading character table code.
 
 [.optdoc]
 This is a handy shortcut when working on Philippines transport streams.
@@ -964,11 +974,11 @@ This is a handy shortcut when working on Philippines transport streams.
 [#charset-names]
 ==== Character set names
 
-The available table names for option `--default-charset` are listed below.
+The available character table names for option `--default-charset` are listed below.
 
 * DVB character sets. The name specifies a standard DVB encoding with a different default character set.
-  Without leading table code, the specified character set is used.
-  But if a leading table code is present, the appropriate character set for that table code is used.
+  Without leading character table code, the specified character set is used.
+  But if a leading character table code is present, the appropriate character set for that character table code is used.
 [.compact-list]
 ** `ISO-6937`
 ** `DVB` (synonym for `ISO-6937`)
@@ -987,13 +997,14 @@ The available table names for option `--default-charset` are listed below.
 ** `ISO-8859-14`
 ** `ISO-8859-15`
 ** `UTF-8`
-** `UNICODE` (in fact `UTF-16`)
+** `UTF-16`
+** `UNICODE` (synonym for `UTF-16`)
 * ARIB character sets (Japan):
 [.compact-list]
 ** `ARIB-STD-B24`
 ** `ARIB` (synonym for `ARIB-STD-B24`)
 * Raw character sets.
-  They use the same encoding as their DVB-defined counterpart but without any leading table code.
+  They use the same encoding as their DVB-defined counterpart but without any leading character table code.
   No leading code is interpreted, the specified case is unconditionally used.
   Using these character sets shall be reserved to specific situations.
 [.compact-list]
@@ -1013,12 +1024,50 @@ The available table names for option `--default-charset` are listed below.
 ** `RAW-ISO-8859-14`
 ** `RAW-ISO-8859-15`
 ** `RAW-UTF-8`
-** `RAW-UNICODE` (in fact `UTF-16`)
+** `RAW-UTF-16`
+** `RAW-UNICODE` (synonym for `RAW-UTF-16`)
 * Debug character set.
 [.compact-list]
-** `DUMP`
+** `DUMP` (see xref:dump-charset[xrefstyle=short])
 
-The `DUMP` character set can be used for debugging.
+[#charset-order]
+===== DVB character sets encoding order
+
+When encoding a string and the default character set is a DVB one, this default character set is tried first.
+However, most DVB character sets are limited to a small subset of all Unicode characters.
+If the default character set cannot encode the string, several other DVB character sets are tried,
+until one can encode the string.
+
+The exact order is the following:
+
+[.compact-table]
+[cols="<1m,<1",frame=none,grid=none,stripes=none,options="autowidth,noheader"]
+|===
+|ISO-6937 |Default DVB table, ISO-6937 with addition of the Euro symbol
+|ISO-8859-15 |Latin-9, Latin/Western European alphabet
+|ISO-8859-10 |Latin-6, Latin/Nordic alphabet
+|ISO-8859-13 |Latin-7, Latin/Baltic Rim alphabet
+|ISO-8859-14 |Latin-8, Latin/Celtic alphabet
+|ISO-8859-5 |Latin/Cyrillic alphabet
+|ISO-8859-7 |Latin/Greek alphabet
+|ISO-8859-8 |Latin/Hebrew alphabet
+|ISO-8859-9 |Latin-5, Latin/Turkish alphabet
+|ISO-8859-6 |Latin/Arabic alphabet
+|ISO-8859-11 |Latin/Thai alphabet
+|ISO-8859-1 |West European alphabet
+|ISO-8859-2 |East European alphabet
+|ISO-8859-3 |South European alphabet
+|ISO-8859-4 |North and North-East European alphabet
+|UTF-8 |Last chance, full Unicode, can encode any string, used when no other match
+|===
+
+The first one, ISO-6937, is the DVB default character set.
+The last one, UTF-8, can encode everything and is used as a last-chance alternative.
+
+[#dump-charset]
+===== The DUMP pseudo-character set
+
+The DUMP character set can be used for debugging.
 This is not a real character set in the sense that it does not return a Unicode string from a binary representation.
 
 With this character set, _decoding_ binary data returns a string containing a hexadecimal dump of the binary data.

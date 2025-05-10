@@ -52,8 +52,7 @@ namespace ts {
         static const DVBCharTableSingleByte RAW_ISO_8859_14; //!< Raw ISO 8859-14 character set.
         static const DVBCharTableSingleByte RAW_ISO_8859_15; //!< Raw ISO 8859-15 character set.
 
-        static const DVBCharset DVB_ISO_6937;    //!< Standard DVB encoding using modified ISO 6937 character set as default.
-        static const DVBCharset DVB_ISO_8859_1;  //!< Non-standard DVB encoding using 8859-1 character set as default.
+        static const DVBCharset DVB_ISO_8859_1;  //!< Non-standard DVB encoding using ISO 8859-1 character set as default.
         static const DVBCharset DVB_ISO_8859_2;  //!< Non-standard DVB encoding using ISO 8859-2 character set as default.
         static const DVBCharset DVB_ISO_8859_3;  //!< Non-standard DVB encoding using ISO 8859-3 character set as default.
         static const DVBCharset DVB_ISO_8859_4;  //!< Non-standard DVB encoding using ISO 8859-4 character set as default.

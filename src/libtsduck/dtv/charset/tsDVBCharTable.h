@@ -124,7 +124,16 @@ namespace ts {
         //!
         DVBCharTable(const UChar* name, uint32_t tableCode);
 
+        //!
+        //! Protected constructor.
+        //! @param [in] names Character set names. The first one is the "main" name.
+        //! @param [in] tableCode DVB table code
+        //!
+        DVBCharTable(std::initializer_list<const UChar*> names, uint32_t tableCode);
+
     private:
+        uint32_t _code;  // Table code.
+
         // Repository of DVB character tables by table code.
         class TableCodeRepository
         {
@@ -136,7 +145,5 @@ namespace ts {
         private:
             std::map<uint32_t, const DVBCharTable*> _map;
         };
-
-        uint32_t _code;  // Table code.
     };
 }

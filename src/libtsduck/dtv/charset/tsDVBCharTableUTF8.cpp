@@ -17,7 +17,7 @@
 
 // UTF-8 character set singleton
 const ts::DVBCharTableUTF8 ts::DVBCharTableUTF8::RAW_UTF_8(u"RAW-UTF-8");
-const ts::DVBCharset ts::DVBCharTableUTF8::DVB_UTF_8(u"UTF-8", &RAW_UTF_8);
+const ts::DVBCharset ts::DVBCharTableUTF8::DVB_UTF_8(u"UTF-8", RAW_UTF_8);
 
 ts::DVBCharTableUTF8::DVBCharTableUTF8(const UChar* name) :
     DVBCharTable(name, 0x000015)

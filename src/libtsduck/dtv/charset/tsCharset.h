@@ -183,6 +183,8 @@ namespace ts {
         explicit Charset(std::initializer_list<const UChar*> names);
 
     private:
+        UString _name {};  // Character set name.
+
         // Repository of character sets.
         class Repository
         {
@@ -195,7 +197,5 @@ namespace ts {
         private:
             std::map<UString, const Charset*> _map {};
         };
-
-        UString _name {};  // Character set name.
     };
 }

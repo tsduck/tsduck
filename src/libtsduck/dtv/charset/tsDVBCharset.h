@@ -53,9 +53,22 @@ namespace ts {
         //! Constructor.
         //! @param [in] name Character set name.
         //! @param [in] default_table Default character table to use without leading "table code".
-        //! When null, the default modified ISO 6937 character table is used.
         //!
-        explicit DVBCharset(const UChar* name = nullptr, const DVBCharTable* default_table = nullptr);
+        DVBCharset(const UChar* name, const DVBCharTable& default_table);
+
+        //!
+        //! Constructor, registering the character set under any number of names.
+        //! @param [in] names Character set names. The first one is the "main" name.
+        //! @param [in] default_table Default character table to use without leading "table code".
+        //!
+        DVBCharset(std::initializer_list<const UChar*> names, const DVBCharTable& default_table);
+
+        //!
+        //! Get an ordered list of character sets which are used to encode DVB strings.
+        //! When encoding a DVB string, these character sets are used in order, until one can encode the string.
+        //! @return A constant reference to a vector of character sets addresses.
+        //!
+        static const std::vector<const DVBCharTable*>& GetPreferredCharsets();
 
         // Inherited methods.
         virtual bool decode(UString& str, const uint8_t* data, size_t size) const override;
@@ -63,6 +76,6 @@ namespace ts {
         virtual size_t encode(uint8_t*& buffer, size_t& size, const UString& str, size_t start = 0, size_t count = NPOS) const override;
 
     private:
-        const DVBCharTable* const _default_table; // Default character table, never null.
+        const DVBCharTable& _default_table; // Default character table.
     };
 }

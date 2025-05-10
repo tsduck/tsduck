@@ -15,11 +15,11 @@
 // Constructor and static instances.
 //----------------------------------------------------------------------------
 
-const ts::DVBCharTableUTF16 ts::DVBCharTableUTF16::RAW_UNICODE(u"RAW-UNICODE");
-const ts::DVBCharset ts::DVBCharTableUTF16::DVB_UNICODE(u"UNICODE", &RAW_UNICODE);
+const ts::DVBCharTableUTF16 ts::DVBCharTableUTF16::RAW_UTF_16({u"RAW-UTF-16", u"RAW-UNICODE"});
+const ts::DVBCharset ts::DVBCharTableUTF16::DVB_UTF_16({u"UTF-16", u"UNICODE"}, RAW_UTF_16);
 
-ts::DVBCharTableUTF16::DVBCharTableUTF16(const UChar* name) :
-    DVBCharTable(name, 0x000011)
+ts::DVBCharTableUTF16::DVBCharTableUTF16(std::initializer_list<const UChar*> names) :
+    DVBCharTable(names, 0x000011)
 {
 }
 

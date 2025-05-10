@@ -66,6 +66,18 @@ It can be helpful to troubleshoot TSDuck extensions which fail to correctly decl
 List all supported PSI/SI descriptors.
 
 [.opt]
+*--list-dvb-charset-order*
+
+[.optdoc]
+List all DVB character sets in their preferred order.
+Each time a DVB string is serialized in binary form, these character sets are tried in this order,
+until one is able to encode the string.
+
+[.optdoc]
+When the option `--default-charset` is used, the specified character set is tried first.
+If it cannot encode a string, then the list of DVB character sets in their preferred order is used.
+
+[.opt]
 *--list-tables*
 
 [.optdoc]

@@ -710,8 +710,7 @@ void ts::PSIRepository::listDescriptors(std::ostream& out) const
     table.addColumn(1, u"DID");
     table.addColumn(2, u"XML");
     table.addColumn(3, u"Standards");
-    table.addColumn(4, u"Name");
-    table.addColumn(5, u"Context");
+    table.addColumn(4, u"Name, context");
 
     // Loop on all known descriptors.
     for (const auto& it : _descriptors_by_xdid) {
@@ -722,26 +721,28 @@ void ts::PSIRepository::listDescriptors(std::ostream& out) const
             table.setCell(1, it.first.toString());
             table.setCell(2, u"<" + dc.xml_name + u">");
             table.setCell(3, StandardsNames(dc.edid.standards()));
-            table.setCell(4, dc.display_name);
-            if (dc.edid.isPrivateMPEG()) {
-                table.setCell(5, u"MPEG private (" + REGIDName(dc.edid.regid()) + u")");
+            UString name(dc.display_name);
+            if (dc.edid.isPrivateDual()) {
+                name += u", MPEG and DVB private (" + REGIDName(dc.edid.privateId()) + u")";
+            }
+            else if (dc.edid.isPrivateMPEG()) {
+                name += u", MPEG private (" + REGIDName(dc.edid.regid()) + u")";
             }
             else if (dc.edid.isPrivateDVB()) {
-                table.setCell(5, u"DVB private (" + PDSName(dc.edid.pds()) + u")");
+                name += u", DVB private (" + PDSName(dc.edid.pds()) + u")";
             }
             else if (dc.edid.isTableSpecific()) {
                 const std::set<TID> tids(dc.edid.tableIds());
                 DuckContext duck;
                 duck.addStandards(dc.edid.standards());
-                UString name;
-                const UChar* prefix = u"Only in ";
+                const UChar* prefix = u", only in ";
                 for (TID tid : tids) {
                     name += prefix;
                     name += TIDName(duck, tid);
                     prefix = u", ";
                 }
-                table.setCell(5, name);
             }
+            table.setCell(4, name);
         }
     }
     table.output(out, TextTable::Headers::UNDERLINED, false, UString(), u"  ");

@@ -16,6 +16,8 @@
 #include "tsTablesDisplay.h"
 #include "tsTablesLogger.h"
 #include "tsPSIRepository.h"
+#include "tsDVBCharset.h"
+#include "tsDVBCharTable.h"
 #include "tsPagerArgs.h"
 TS_MAIN(MainCode);
 
@@ -31,15 +33,17 @@ namespace {
     public:
         Options(int argc, char *argv[]);
 
-        ts::DuckContext    duck {this};               // TSDuck execution context.
-        ts::TablesDisplay  display {duck};            // Table formatting.
-        ts::TablesLogger   logger {display};          // Table logging.
-        ts::PagerArgs      pager {true, true};        // Output paging options.
-        fs::path           infile {};                 // Input file name.
+        ts::DuckContext    duck {this};                // TSDuck execution context.
+        ts::TablesDisplay  display {duck};             // Table formatting.
+        ts::TablesLogger   logger {display};           // Table logging.
+        ts::PagerArgs      pager {true, true};         // Output paging options.
+        fs::path           infile {};                  // Input file name.
         ts::TSPacketFormat format = ts::TSPacketFormat::AUTODETECT;
-        bool               dump_psi_repo = false;     // Dump internal state of PSI repository.
-        bool               list_tables = false;       // List all known tables.
-        bool               list_descriptors = false;  // List all known descriptors.
+        bool               psi_info = false;           // PSI/SI information only, no inut file.
+        bool               dump_psi_repo = false;      // Dump internal state of PSI repository.
+        bool               list_tables = false;        // List all known tables.
+        bool               list_descriptors = false;   // List all known descriptors.
+        bool               list_dvb_charsets = false;  // List order of DVB character sets.
     };
 }
 
@@ -63,6 +67,12 @@ Options::Options(int argc, char *argv[]) :
     option(u"dump-psi-repository");
     help(u"dump-psi-repository", u"Dump the internal state of the PSI repository. This is a debug function.");
 
+    option(u"list-dvb-charset-order");
+    help(u"list-dvb-charset-order",
+         u"List all DVB character sets in their preferred order. "
+         u"Each time a DVB string is serialized in binary form, these character sets are tried in this order, "
+         u"until one is able to encode the string.");
+
     option(u"list-descriptors");
     help(u"list-descriptors", u"List all supported PSI/SI descriptors.");
 
@@ -79,11 +89,13 @@ Options::Options(int argc, char *argv[]) :
     getPathValue(infile, u"");
     format = ts::LoadTSPacketFormatInputOption(*this);
 
+    list_dvb_charsets = present(u"list-dvb-charset-order");
     dump_psi_repo = present(u"dump-psi-repository");
     list_descriptors = present(u"list-descriptors");
     list_tables = present(u"list-tables");
+    psi_info = dump_psi_repo || list_dvb_charsets || list_descriptors || list_tables;
 
-    if ((dump_psi_repo || list_descriptors || list_tables) && !infile.empty()) {
+    if (psi_info && !infile.empty()) {
         error(u"no input file allowed with PSI/SI information options");
     }
 
@@ -104,9 +116,21 @@ int MainCode(int argc, char *argv[])
     opt.duck.setOutput(&opt.pager.output(opt), false);
 
     // Process PSI/SI information options.
-    if (opt.dump_psi_repo || opt.list_descriptors || opt.list_tables) {
+    if (opt.psi_info) {
         const ts::UChar* separator = u"";
+        if (opt.list_dvb_charsets) {
+            for (const auto& charset : ts::DVBCharset::GetPreferredCharsets()) {
+                // This is a list of raw character tables. We prefer to display the corresponding DVB-compliant name.
+                ts::UString name(charset->name());
+                if (name.starts_with(u"RAW-")) {
+                    name.erase(0, 4);
+                }
+                opt.duck.out() << name << std::endl;
+            }
+            separator = ts::UString::EOL;
+        }
         if (opt.list_tables) {
+            opt.duck.out() << separator;
             ts::PSIRepository::Instance().listTables(opt.duck.out());
             separator = ts::UString::EOL;
         }
