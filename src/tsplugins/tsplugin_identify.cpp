@@ -32,18 +32,19 @@ namespace ts {
 
     private:
         // Command line options:
-        bool             _log = false;
-        bool             _pmt = false;
-        bool             _audio = false;
-        bool             _video = false;
-        bool             _subtitles = false;
-        bool             _scte35 = false;
-        bool             _all_service_components = false;
-        UString          _service_name {};
-        UString          _language {};
-        UString          _env_variable {};
-        TSPacketLabelSet _set_labels {};
-        TSPacketLabelSet _all_set_labels {};
+        bool              _log = false;
+        bool              _pmt = false;
+        bool              _audio = false;
+        bool              _video = false;
+        bool              _subtitles = false;
+        bool              _scte35 = false;
+        bool              _all_service_components = false;
+        UString           _service_name {};
+        UString           _language {};
+        UString           _env_variable {};
+        std::set<uint8_t> _stream_types {};
+        TSPacketLabelSet  _set_labels {};
+        TSPacketLabelSet  _all_set_labels {};
 
         // Working data:
         uint16_t           _service_id = INVALID_SERVICE_ID;
@@ -125,6 +126,11 @@ ts::IdentifyPlugin::IdentifyPlugin(TSP* tsp_) :
          u"Set the specified labels on all packets of the identified PID's. "
          u"Several --set-label options may be specified, all labels are set on all identified PID's.");
 
+    option(u"stream-type", 0, UINT8, 0, UNLIMITED_COUNT);
+    help(u"stream-type",
+         u"Identify all PID's with any of the specified stream types in the PMT. "
+         u"Several options --stream-type are allowed.");
+
     option(u"subtitles");
     help(u"subtitles", u"Identify all PID's carrying subtitles.");
 
@@ -147,6 +153,7 @@ bool ts::IdentifyPlugin::getOptions()
     getValue(_service_name, u"service");
     getValue(_language, u"language");
     getValue(_env_variable, u"set-environment-variable");
+    getIntValues(_stream_types, u"stream-type");
     getIntValues(_set_labels, u"set-label");
     getIntValues(_all_set_labels, u"all-set-label");
 
@@ -154,11 +161,11 @@ bool ts::IdentifyPlugin::getOptions()
     _log = present(u"log") || (_set_labels.none() && _all_set_labels.none() && _env_variable.empty());
 
     // Identify all components in a specified service
-    _all_service_components = !_audio && !_video && !_subtitles && !_scte35 && !_service_name.empty();
+    _all_service_components = !_audio && !_video && !_subtitles && !_scte35 && _stream_types.empty() && !_service_name.empty();
 
     // Cannot specify incompatible PID content.
-    if (_audio + _video + _subtitles + _scte35 + _pmt > 1) {
-        error(u"--audio, --video, --subtitles, --scte-35, --pmt are mutually exclusive");
+    if (_audio + _video + _subtitles + _scte35 + !_stream_types.empty() + _pmt > 1) {
+        error(u"--audio, --video, --subtitles, --scte-35, --stream-type, --pmt are mutually exclusive");
         return false;
     }
     return true;
@@ -180,7 +187,7 @@ bool ts::IdentifyPlugin::start()
     else if (!_service_name.empty()) {
         _sig_demux.addFilteredService(_service_name);
     }
-    else if (_audio || _video || _subtitles || _scte35) {
+    else if (_audio || _video || _subtitles || _scte35 || !_stream_types.empty()) {
         _sig_demux.addFilteredTableId(TID_PMT);
     }
     return true;
@@ -281,6 +288,9 @@ void ts::IdentifyPlugin::handlePMT(const PMT& pmt, PID pid)
             }
             else if (_scte35 && it.second.stream_type == ST_SCTE35_SPLICE) {
                 identifyPID(it.first, u"SCTE-35 splice PID for service %s", _sig_demux.getService(pmt.service_id));
+            }
+            else if (!_stream_types.empty() && _stream_types.contains(it.second.stream_type)) {
+                identifyPID(it.first, u"PID with stream type %n for service %s", it.second.stream_type, _sig_demux.getService(pmt.service_id));
             }
         }
         if (_all_service_components && pmt.pcr_pid != PID_NULL) {

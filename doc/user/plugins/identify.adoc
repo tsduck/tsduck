@@ -117,6 +117,15 @@ Set the specified labels on all packets of the identified PID's.
 Several `--set-label` options may be specified, all labels are set on all identified PID's.
 
 [.opt]
+*--stream-type* _value_
+
+[.optdoc]
+Identify all PID's with any of the specified stream types in the PMT.
+
+[.optdoc]
+Several options --stream-type are allowed.
+
+[.opt]
 *--subtitles*
 
 [.optdoc]
