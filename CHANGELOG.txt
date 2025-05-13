@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.41-4278 (May 2025)
+VERSION 3.41-4280 (May 2025)
 
 [NEW] New commands and plugins:
 
@@ -34,6 +34,7 @@ VERSION 3.41-4278 (May 2025)
       "inject".
     - Options --dump-psi-repository,  --list-dvb-charset-order,  --list-tables,
       --list-descriptors in "tstables".
+    - Option --remove-with-registration in plugin "pmt".
 
 [BUG] Bug fixes:
 

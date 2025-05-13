@@ -176,13 +176,23 @@ Remove the component with the specified PID's from the PMT.
 Several `--remove-pid` options may be specified to remove several components.
 
 [.opt]
-*--remove-stream-type* _value[-value]_
+*--remove-stream-type* _value1[-value2]_
 
 [.optdoc]
 Remove all components with a stream type matching the specified values.
 
 [.optdoc]
 Several `--remove-stream-type` options may be specified.
+
+[.opt]
+*--remove-with-registration* _value1[-value2]_
+
+[.optdoc]
+Remove all components with a registration descriptor containing the specified value
+(or in the specified range of values).
+
+[.optdoc]
+Several --remove-with-registration options may be specified.
 
 [.opt]
 *-s* _name-or-id_ +

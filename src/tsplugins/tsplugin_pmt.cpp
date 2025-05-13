@@ -57,26 +57,27 @@ namespace ts {
         using DescriptorListByPID = std::map<PID, DescriptorListPtr>;
 
         // PMTPlugin instance fields
-        ServiceDiscovery     _service {duck, nullptr};   // Service of PMT to modify
-        std::vector<PID>     _removed_pids {};           // Set of PIDs to remove from PMT
-        std::vector<DID>     _removed_desc_tags {};      // Set of descriptor tags to remove
-        std::vector<uint8_t> _removed_stream_types {};   // Set of stream types to remove
-        std::list<NewPID>    _added_pids {};             // List of PID to add
-        std::map<PID,PID>    _moved_pids {};             // List of renamed PID's in PMT (key=old, value=new)
-        bool                 _set_servid = false;        // Set a new service id
-        uint16_t             _new_servid = 0;            // New service id
-        bool                 _set_pcrpid = false;        // Set a new PCR PID
-        PID                  _new_pcrpid = PID_NULL;     // New PCR PID
-        PDS                  _pds = 0;                   // Private data specifier for removed descriptors
-        bool                 _add_stream_id = false;     // Add stream_identifier_descriptor on all components
-        bool                 _ac3_atsc2dvb = false;      // Modify AC-3 signaling from ATSC to DVB method
-        bool                 _eac3_atsc2dvb = false;     // Modify Enhanced-AC-3 signaling from ATSC to DVB method
-        bool                 _cleanup_priv_desc = false; // Remove private desc without preceding PDS desc
-        DescriptorList       _add_descs {nullptr};       // List of descriptors to add at program level
-        DescriptorListByPID  _add_pid_descs {};          // Lists of descriptors to add by PID
+        ServiceDiscovery      _service {duck, nullptr};   // Service of PMT to modify
+        std::vector<PID>      _removed_pids {};           // Set of PIDs to remove from PMT
+        std::vector<DID>      _removed_desc_tags {};      // Set of descriptor tags to remove
+        std::vector<uint8_t>  _removed_stream_types {};   // Set of stream types to remove
+        std::vector<uint32_t> _removed_registrations {};  // Set of registrations for which PID's are removed
+        std::list<NewPID>     _added_pids {};             // List of PID to add
+        std::map<PID,PID>     _moved_pids {};             // List of renamed PID's in PMT (key=old, value=new)
+        bool                  _set_servid = false;        // Set a new service id
+        uint16_t              _new_servid = 0;            // New service id
+        bool                  _set_pcrpid = false;        // Set a new PCR PID
+        PID                   _new_pcrpid = PID_NULL;     // New PCR PID
+        PDS                   _pds = 0;                   // Private data specifier for removed descriptors
+        bool                  _add_stream_id = false;     // Add stream_identifier_descriptor on all components
+        bool                  _ac3_atsc2dvb = false;      // Modify AC-3 signaling from ATSC to DVB method
+        bool                  _eac3_atsc2dvb = false;     // Modify Enhanced-AC-3 signaling from ATSC to DVB method
+        bool                  _cleanup_priv_desc = false; // Remove private desc without preceding PDS desc
+        DescriptorList        _add_descs {nullptr};       // List of descriptors to add at program level
+        DescriptorListByPID   _add_pid_descs {};          // Lists of descriptors to add by PID
         AudioLanguageOptionsVector _languages {};        // Audio languages to set
-        std::vector<PID>     _sort_pids {};              // Sorting order of PIDs in PMT
-        UStringVector        _sort_languages {};         // Sorting order of audio and subtitles PIDs in PMT
+        std::vector<PID>      _sort_pids {};              // Sorting order of PIDs in PMT
+        UStringVector         _sort_languages {};         // Sorting order of audio and subtitles PIDs in PMT
 
         // Implementation of AbstractTablePlugin.
         virtual void createNewTable(BinaryTable& table) override;
@@ -201,9 +202,14 @@ ts::PMTPlugin::PMTPlugin(TSP* tsp_) :
          u"--remove-pid options may be specified to remove several components.");
 
     option(u"remove-stream-type", 0, UINT8, 0, UNLIMITED_COUNT);
-    help(u"remove-stream-type", u"value[-value]",
+    help(u"remove-stream-type", u"value1[-value2]",
          u"Remove all components with a stream type matching the specified value (or in the specified range of values). "
          u"Several --remove-stream-type options may be specified.");
+
+    option(u"remove-with-registration", 0, UINT32, 0, UNLIMITED_COUNT);
+    help(u"remove-with-registration", u"value1[-value2]",
+         u"Remove all components with a registration descriptor containing the specified value (or in the specified range of values). "
+         u"Several --remove-with-registration options may be specified.");
 
     option(u"service", 's', STRING);
     help(u"service", u"name-or-id",
@@ -363,6 +369,7 @@ bool ts::PMTPlugin::start()
     getIntValues(_removed_pids, u"remove-pid");
     getIntValues(_removed_desc_tags, u"remove-descriptor");
     getIntValues(_removed_stream_types, u"remove-stream-type");
+    getIntValues(_removed_registrations, u"remove-with-registration");
 
     // Get list of components to add
     size_t opt_count = count(u"add-pid");
@@ -536,6 +543,18 @@ void ts::PMTPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
     for (auto rtype : _removed_stream_types) {
         for (auto str = pmt.streams.begin(); str != pmt.streams.end(); ) {
             if (str->second.stream_type == rtype) {
+                str = pmt.streams.erase(str);
+            }
+            else {
+                ++str;
+            }
+        }
+    }
+
+    // Remove components containing specific registration descriptors.
+    for (auto regid : _removed_registrations) {
+        for (auto str = pmt.streams.begin(); str != pmt.streams.end(); ) {
+            if (str->second.descs.containsRegistration(regid)) {
                 str = pmt.streams.erase(str);
             }
             else {

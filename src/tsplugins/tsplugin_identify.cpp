@@ -127,7 +127,7 @@ ts::IdentifyPlugin::IdentifyPlugin(TSP* tsp_) :
          u"Several --set-label options may be specified, all labels are set on all identified PID's.");
 
     option(u"stream-type", 0, UINT8, 0, UNLIMITED_COUNT);
-    help(u"stream-type",
+    help(u"stream-type", u"value1[-value2]",
          u"Identify all PID's with any of the specified stream types in the PMT. "
          u"Several options --stream-type are allowed.");
 
