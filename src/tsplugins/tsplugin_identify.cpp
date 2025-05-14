@@ -43,6 +43,7 @@ namespace ts {
         UString           _language {};
         UString           _env_variable {};
         std::set<uint8_t> _stream_types {};
+        std::set<REGID>   _registrations {};
         TSPacketLabelSet  _set_labels {};
         TSPacketLabelSet  _all_set_labels {};
 
@@ -103,6 +104,11 @@ ts::IdentifyPlugin::IdentifyPlugin(TSP* tsp_) :
     option(u"pmt", 'p');
     help(u"pmt", u"Identify all PID's carrying PMT's.");
 
+    option(u"registration", 0, UINT32, 0, UNLIMITED_COUNT);
+    help(u"registration", u"value1[-value2]",
+         u"Identify all PID's with a registration descriptor in the PMT containing the specified value (or in the specified range of values). "
+         u"Several options --registration are allowed.");
+
     option(u"scte-35");
     help(u"scte-35", u"Identify all PID's carrying SCTE-35 splice commands.");
 
@@ -154,18 +160,19 @@ bool ts::IdentifyPlugin::getOptions()
     getValue(_language, u"language");
     getValue(_env_variable, u"set-environment-variable");
     getIntValues(_stream_types, u"stream-type");
+    getIntValues(_registrations, u"registration");
     getIntValues(_set_labels, u"set-label");
     getIntValues(_all_set_labels, u"all-set-label");
 
     // The default operation is logging a message, if nothing else is specified.
     _log = present(u"log") || (_set_labels.none() && _all_set_labels.none() && _env_variable.empty());
 
-    // Identify all components in a specified service
-    _all_service_components = !_audio && !_video && !_subtitles && !_scte35 && _stream_types.empty() && !_service_name.empty();
+    // Identify all components in a service if a service is specified but not more specific selection criteria.
+    _all_service_components = !_audio && !_video && !_subtitles && !_scte35 && _stream_types.empty() && _registrations.empty() && !_service_name.empty();
 
     // Cannot specify incompatible PID content.
-    if (_audio + _video + _subtitles + _scte35 + !_stream_types.empty() + _pmt > 1) {
-        error(u"--audio, --video, --subtitles, --scte-35, --stream-type, --pmt are mutually exclusive");
+    if (_audio + _video + _subtitles + _scte35 + !_stream_types.empty() + !_registrations.empty() + _pmt > 1) {
+        error(u"--audio, --video, --subtitles, --scte-35, --stream-type, --registration, --pmt are mutually exclusive");
         return false;
     }
     return true;
@@ -187,7 +194,7 @@ bool ts::IdentifyPlugin::start()
     else if (!_service_name.empty()) {
         _sig_demux.addFilteredService(_service_name);
     }
-    else if (_audio || _video || _subtitles || _scte35 || !_stream_types.empty()) {
+    else if (_audio || _video || _subtitles || _scte35 || !_stream_types.empty() || !_registrations.empty()) {
         _sig_demux.addFilteredTableId(TID_PMT);
     }
     return true;
@@ -274,23 +281,32 @@ void ts::IdentifyPlugin::handlePMT(const PMT& pmt, PID pid)
             identifyPID(pid, u"PMT PID for service %n", pmt.service_id);
         }
         for (const auto& it : pmt.streams) {
-            if (_all_service_components) {
-                identifyPID(it.first, u"elementary stream PID for service %s", _sig_demux.getService(pmt.service_id));
-            }
-            else if (_video && it.second.isVideo(duck)) {
-                identifyPID(it.first, u"video PID for service %s", _sig_demux.getService(pmt.service_id));
-            }
-            else if (_audio && it.second.isAudio(duck) && (_language.empty() || it.second.matchLanguage(duck, _language))) {
-                identifyPID(it.first, u"audio PID for service %s", _sig_demux.getService(pmt.service_id));
-            }
-            else if (_subtitles && it.second.isSubtitles(duck) && (_language.empty() || it.second.matchLanguage(duck, _language))) {
-                identifyPID(it.first, u"subtitles PID for service %s", _sig_demux.getService(pmt.service_id));
-            }
-            else if (_scte35 && it.second.stream_type == ST_SCTE35_SPLICE) {
-                identifyPID(it.first, u"SCTE-35 splice PID for service %s", _sig_demux.getService(pmt.service_id));
-            }
-            else if (!_stream_types.empty() && _stream_types.contains(it.second.stream_type)) {
-                identifyPID(it.first, u"PID with stream type %n for service %s", it.second.stream_type, _sig_demux.getService(pmt.service_id));
+            if (!_identified_pids.test(it.first)) {
+                if (_all_service_components) {
+                    identifyPID(it.first, u"elementary stream PID for service %s", _sig_demux.getService(pmt.service_id));
+                }
+                else if (_video && it.second.isVideo(duck)) {
+                    identifyPID(it.first, u"video PID for service %s", _sig_demux.getService(pmt.service_id));
+                }
+                else if (_audio && it.second.isAudio(duck) && (_language.empty() || it.second.matchLanguage(duck, _language))) {
+                    identifyPID(it.first, u"audio PID for service %s", _sig_demux.getService(pmt.service_id));
+                }
+                else if (_subtitles && it.second.isSubtitles(duck) && (_language.empty() || it.second.matchLanguage(duck, _language))) {
+                    identifyPID(it.first, u"subtitles PID for service %s", _sig_demux.getService(pmt.service_id));
+                }
+                else if (_scte35 && it.second.stream_type == ST_SCTE35_SPLICE) {
+                    identifyPID(it.first, u"SCTE-35 splice PID for service %s", _sig_demux.getService(pmt.service_id));
+                }
+                else if (!_stream_types.empty() && _stream_types.contains(it.second.stream_type)) {
+                    identifyPID(it.first, u"PID with stream type %n for service %s", it.second.stream_type, _sig_demux.getService(pmt.service_id));
+                }
+                if (!_registrations.empty()) {
+                    for (auto regid : _registrations) {
+                        if (it.second.descs.containsRegistration(regid)) {
+                            identifyPID(it.first, u"PID with registration %s for service %s", REGIDName(regid), _sig_demux.getService(pmt.service_id));
+                        }
+                    }
+                }
             }
         }
         if (_all_service_components && pmt.pcr_pid != PID_NULL) {

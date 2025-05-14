@@ -82,6 +82,16 @@ This is the default when nothing else is specified
 Identify all PID's carrying PMT's.
 
 [.opt]
+*--registration* _value1[-value2]_
+
+[.optdoc]
+Identify all PID's with a registration descriptor in the PMT containing the specified value
+(or in the specified range of values).
+
+[.optdoc]
+Several options --registration are allowed.
+
+[.opt]
 *--scte-35*
 
 [.optdoc]
