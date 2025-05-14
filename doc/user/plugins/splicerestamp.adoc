@@ -1,0 +1,97 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2025, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== splicerestamp
+
+[.cmd-header]
+Restamp PTS in SCTE 35 splice information
+
+This plugin restamps splice information sections, as defined by the <<SCTE-35>> standard.
+
+This plugin is useful when the reference clock of a service has changed, after transcoding for instance.
+In that case, all SCTE-35 sections which are associated with that service contain PTS timestamps which
+are based on the previous clock reference, not the new one.
+This plugin alters the field `pts_adjustment` in each splice information section in the selected PID.
+This is documented in <<SCTE-35>> as the preferred method for time restamping.
+
+There are two ways to compute the PTS adjustment to apply.
+
+* Specify a raw constant value, using option `--pts-adjustment`.
+* Specify two PID's containing PCR's, one containing the reference clock before restamping (`--old-pcr-pid`),
+  one containing the new reference clock after restamping (`--new-pcr-pid`),
+
+By default, the computed PTS adjustment value is _added_ to the previous value of the field `pts_adjustment`
+because the previous value, if any, was necessary in the context of the previous clock reference.
+The option `--replace` can be used to ignore the previous value of `pts_adjustment` and simply
+replace it with the computed value.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P splicerestamp [options]
+----
+
+[.usage]
+Options
+
+[.opt]
+*-c* +
+*--continuous*
+
+[.optdoc]
+With `--old-pcr-pid` and `--new-pcr-pid`, continuously recompute the PTS adjustment between the old and new clock references.
+
+[.optdoc]
+By default, the PTS adjustment is computed once only, using the first adjacent pair of old and new PCR values.
+This is the preferred method when transcoding introduces a drift in muxing the old and new PCR PID's.
+
+[.opt]
+*-n* _value_ +
+*--new-pcr-pid* _value_
+
+[.optdoc]
+Specify the PID carrying the PCR which must be used as the new reference clock by the splice commands on output.
+Must be used with `--old-pcr-pid`.
+
+[.opt]
+*-o* _value_ +
+*--old-pcr-pid* _value_
+
+[.optdoc]
+Specify the PID carrying the PCR which was used as reference clock by the splice commands on input.
+Must be used with `--new-pcr-pid`.
+
+[.opt]
+*-p* _value_ +
+*--pid* _value_
+
+[.optdoc]
+Specify the PID carrying SCTE-35 sections to restamp.
+
+[.optdoc]
+By default, the first SCTE-35 PID is selected.
+
+[.opt]
+*-a* _value_ +
+*--pts-adjustment* _value_
+
+[.optdoc]
+Add the specified value to the `pts_adjustment` field in the splice sections.
+
+[.opt]
+*-r* +
+*--replace*
+
+[.optdoc]
+Replace the value of the `pts_adjustment` field in the splice sections.
+Ignore the previous value instead of adding it.
+
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

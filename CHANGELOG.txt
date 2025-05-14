@@ -2,11 +2,12 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.41-4282 (May 2025)
+VERSION 3.41-4283 (May 2025)
 
 [NEW] New commands and plugins:
 
   * Added plugin "identify": Identify PID's based on various criteria.
+  * Added plugin "splicerestamp": Restamp PTS in SCTE 35 splice information.
   * Added plugin "pcrduplicate": Duplicate PCR values from a  PID  into  a  new
     PCR-only PID
 

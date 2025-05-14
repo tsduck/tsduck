@@ -15,7 +15,6 @@
 #include "tsTablePatchXML.h"
 #include "tsSectionDemux.h"
 #include "tsPacketizer.h"
-#include "tsAlgorithm.h"
 #include "tsBoolPredicate.h"
 #include "tsFatal.h"
 

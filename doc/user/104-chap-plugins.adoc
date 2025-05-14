@@ -321,6 +321,10 @@ endif::[]
 |packet
 |Monitor SCTE 35 splice information
 
+|splicerestamp
+|packet
+|Restamp PTS in SCTE 35 splice information
+
 |srt
 |input, output
 |Send / receive packets using Secure Reliable Transport (SRT)
