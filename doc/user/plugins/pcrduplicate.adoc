@@ -1,0 +1,62 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2025, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== pcrduplicate
+
+[.cmd-header]
+Duplicate PCR values from a PID into a new PCR-only PID
+
+This plugin uses a PID with exiting PCR's as time reference and creates a new PID which contains PCR's only.
+For each PCR value in the reference PID, a packet is created as soon as possible (when a null packet is found)
+for the new PID, with an adjusted PCR value.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P pcrduplicate [options]
+----
+
+[.usage]
+Options
+
+[.opt]
+*-n* _value_ +
+*--new-pid* _value_
+
+[.optdoc]
+New PID to create into which PCR's shall be duplicated.
+This option is required, there is no default value.
+
+[.opt]
+*-l* _value_ +
+*--reference-label* _value_
+
+[.optdoc]
+Packet label indicating the PID containing the reference PCR to duplicate.
+Each time a packet with a PCR and that label is encountered, the reference PID switches to the PID of this packet,
+if different from the previous reference PID.
+
+[.optdoc]
+At most one of `--reference-pid` and `--reference-label` shall be specified.
+By default, use the first PID containing a PCR.
+
+[.opt]
+*-r* _value_ +
+*--reference-pid* _value_
+
+[.optdoc]
+PID containing the reference PCR to duplicate.
+
+[.optdoc]
+At most one of `--reference-pid` and `--reference-label` shall be specified.
+By default, use the first PID containing a PCR.
+
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

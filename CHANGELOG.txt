@@ -2,11 +2,13 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.41-4280 (May 2025)
+VERSION 3.41-4282 (May 2025)
 
 [NEW] New commands and plugins:
 
   * Added plugin "identify": Identify PID's based on various criteria.
+  * Added plugin "pcrduplicate": Duplicate PCR values from a  PID  into  a  new
+    PCR-only PID
 
 [IMP] Improvements on existing commands and plugins:
 

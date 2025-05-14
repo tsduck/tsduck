@@ -225,6 +225,10 @@ endif::[]
 |packet
 |Copy and synchronize PCR's from one PID to another
 
+|pcrduplicate
+|packet
+|Duplicate PCR values from a PID into a new PCR-only PID
+
 |pcredit
 |packet
 |Edit PCR, PTS and DTS values in various ways
