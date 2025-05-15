@@ -30,9 +30,9 @@ namespace ts {
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
-        bool                _ignoreErrors;  // Ignore encapsulation errors.
-        PID                 _pid;           // Input PID.
-        PacketDecapsulation _decap;         // Decapsulation engine.
+        bool                _ignore_errors = false;  // Ignore encapsulation errors.
+        PID                 _pid = PID_NULL;         // Input PID.
+        PacketDecapsulation _decap {*this};          // Decapsulation engine.
     };
 }
 
@@ -44,10 +44,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"decap", ts::DecapPlugin);
 //----------------------------------------------------------------------------
 
 ts::DecapPlugin::DecapPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Decapsulate TS packets from a PID produced by encap plugin", u"[options]"),
-    _ignoreErrors(false),
-    _pid(PID_NULL),
-    _decap()
+    ProcessorPlugin(tsp_, u"Decapsulate TS packets from a PID produced by encap plugin", u"[options]")
 {
     option(u"ignore-errors", 'i');
     help(u"ignore-errors",
@@ -66,8 +63,8 @@ ts::DecapPlugin::DecapPlugin(TSP* tsp_) :
 
 bool ts::DecapPlugin::getOptions()
 {
-    _ignoreErrors = present(u"ignore-errors");
-    _pid = intValue<PID>(u"pid", PID_NULL);
+    _ignore_errors = present(u"ignore-errors");
+    getIntValue(_pid, u"pid", PID_NULL);
     return true;
 }
 
@@ -89,7 +86,7 @@ bool ts::DecapPlugin::start()
 
 ts::ProcessorPlugin::Status ts::DecapPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
-    if (_decap.processPacket(pkt) || _ignoreErrors || _decap.lastError().empty()) {
+    if (_decap.processPacket(pkt) || _ignore_errors || _decap.lastError().empty()) {
         return TSP_OK;
     }
     else {

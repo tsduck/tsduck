@@ -14,8 +14,9 @@
 // Constructor.
 //----------------------------------------------------------------------------
 
-ts::PacketDecapsulation::PacketDecapsulation(PID pid) :
-    _pid_input(pid)
+ts::PacketDecapsulation::PacketDecapsulation(Report& report, PID pid) :
+    _report(report),
+    _input_pid(pid)
 {
 }
 
@@ -26,7 +27,8 @@ ts::PacketDecapsulation::PacketDecapsulation(PID pid) :
 
 void ts::PacketDecapsulation::reset(PID pid)
 {
-    _pid_input = pid;
+    _packet_count = 0;
+    _input_pid = pid;
     _synchronized = false;
     _next_index = 1; // after sync byte
     _last_error.clear();
@@ -58,8 +60,11 @@ bool ts::PacketDecapsulation::lostSync(TSPacket& pkt, const UString& error)
 
 bool ts::PacketDecapsulation::processPacket(ts::TSPacket& pkt)
 {
+    // Count all processed packets, not only from the input PID.
+    _packet_count++;
+
     // Work on the input PID only.
-    if (_pid_input == PID_NULL || pkt.getPID() != _pid_input) {
+    if (_input_pid == PID_NULL || pkt.getPID() != _input_pid) {
         return true;
     }
 
@@ -235,6 +240,7 @@ bool ts::PacketDecapsulation::processPacket(ts::TSPacket& pkt)
     assert(_next_index <= PKT_SIZE);
     size_t size = std::min(PKT_SIZE - pkt_index, PKT_SIZE - _next_index);
     MemCopy(_next_packet.b + _next_index, pkt.b + pkt_index, size);
+    if (_next_index < 4 && _next_index + size >= 4) _report.debug(u"@@@@ start extracting packet on PID %d at packet index %'d", _next_packet.getPID(), _packet_count);
     pkt_index += size;
     _next_index += size;
 
@@ -242,6 +248,7 @@ bool ts::PacketDecapsulation::processPacket(ts::TSPacket& pkt)
         // Next packet is full, return it.
         const TSPacket tmp(pkt);
         pkt = _next_packet;
+        _report.debug(u"@@@@ return packet on PID %d at packet index %'d", pkt.getPID(), _packet_count);
         // Copy start of next packet.
         size = PKT_SIZE - pkt_index;
         MemCopy(_next_packet.b + 1, tmp.b + pkt_index, size);

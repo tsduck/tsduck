@@ -20,7 +20,7 @@ are based on the previous clock reference, not the new one.
 This plugin alters the field `pts_adjustment` in each splice information section in the selected PID.
 This is documented in <<SCTE-35>> as the preferred method for time restamping.
 
-There are two ways to compute the PTS adjustment to apply.
+There are several ways to compute the PTS adjustment to apply.
 
 * Specify a raw constant value, using option `--pts-adjustment`.
 * Specify two PID's containing PCR's, one containing the reference clock before restamping (`--old-pcr-pid`),
@@ -85,6 +85,19 @@ By default, the first SCTE-35 PID is selected.
 
 [.optdoc]
 Add the specified value to the `pts_adjustment` field in the splice sections.
+
+[.opt]
+*--rebase-pts* _value_
+
+[.optdoc]
+Adjust the `pts_adjustment` as if the first PTS in the stream was set to the specified value.
+
+[.optdoc]
+As an example, let's assume that the first PTS value is 100,000 in the service to which the splice PID belongs.
+Using `--rebase-pts 150,000` means that the stream will be somehow transcoded and the service will then start
+with a PTS value of 150,000.
+In practice, the plugin `splicerestamp` will set the `pts_adjustment` of all SCTE-35 sections to 50,000,
+meaning that 50,000 will be added to all events times.
 
 [.opt]
 *-r* +

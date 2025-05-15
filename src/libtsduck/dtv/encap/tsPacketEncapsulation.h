@@ -136,23 +136,30 @@ namespace ts {
         //!
         //! Constructor.
         //! @param [in,out] report Where to log error or debug messages.
-        //! @param [in] pid_output The output PID. When PID_NULL, no encapsulation is done.
-        //! @param [in] pid_input The initial set of PID's to encapsulate.
+        //! @param [in] output_pid The output PID. When PID_NULL, no encapsulation is done.
+        //! @param [in] input_pids The initial set of PID's to encapsulate.
+        //! @param [in] input_labels The initial set of packet labels to encapsulate.
         //! @param [in] pcr_reference_pid The PID with PCR's to use as reference to add PCR's in the encapsulating PID.
         //! When @a pcr_reference_pid is PID_NULL and @a pcr_reference_label is NPOS, do not add PCR.
         //! @param [in] pcr_reference_label The label for packets with PCR's to use as reference to add PCR's.
         //!
-        PacketEncapsulation(Report& report, PID pid_output = PID_NULL, const PIDSet& pid_input = NoPID(), PID pcr_reference_pid = PID_NULL, size_t pcr_reference_label = NPOS);
+        PacketEncapsulation(Report& report,
+                            PID output_pid = PID_NULL,
+                            const PIDSet& input_pids = NoPID(),
+                            const TSPacketLabelSet& input_labels = TSPacketLabelSet(),
+                            PID pcr_reference_pid = PID_NULL,
+                            size_t pcr_reference_label = NPOS);
 
         //!
         //! Reset the encapsulation.
-        //! @param [in] pid_output The new output PID. When PID_NULL, no encapsulation is done.
-        //! @param [in] pid_input The new set of PID's to encapsulate.
+        //! @param [in] output_pid The new output PID. When PID_NULL, no encapsulation is done.
+        //! @param [in] input_pids The new set of PID's to encapsulate.
+        //! @param [in] input_labels The initial set of packet labels to encapsulate.
         //! @param [in] pcr_reference_pid The PID with PCR's to use as reference to add PCR's in the encapsulating PID.
         //! When @a pcr_reference_pid is PID_NULL and @a pcr_reference_label is NPOS, do not add PCR.
         //! @param [in] pcr_reference_label The label for packets with PCR's to use as reference to add PCR's.
         //!
-        void reset(PID pid_output = PID_NULL, const PIDSet& pid_input = NoPID(), PID pcr_reference_pid = PID_NULL, size_t pcr_reference_label = NPOS);
+        void reset(PID output_pid, const PIDSet& input_pids, const TSPacketLabelSet& input_labels, PID pcr_reference_pid, size_t pcr_reference_label);
 
         //!
         //! Process a TS packet from the input stream.
@@ -187,7 +194,7 @@ namespace ts {
         //! Get the output PID.
         //! @return The output PID.
         //!
-        PID outputPID() const { return _pid_output; }
+        PID outputPID() const { return _output_pid; }
 
         //!
         //! Change the output PID.
@@ -199,19 +206,33 @@ namespace ts {
         //! Get the current set of input PID's.
         //! @return A constant reference to the set of input PID's.
         //!
-        const PIDSet& inputPIDs() const { return _pid_input; }
+        const PIDSet& inputPIDs() const { return _input_pids; }
 
         //!
         //! Get the current number of input PID's being encapsulated.
         //! @return The crrent number of PID's being encapsulated.
         //!
-        size_t pidCount() const { return _pid_input.count(); }
+        size_t pidCount() const { return _input_pids.count(); }
 
         //!
         //! Replace the set of input PID's.
-        //! @param [in] pid_input The new set of PID's to encapsulate.
+        //! The set of input packet labels is unchanged.
+        //! @param [in] input_pids The new set of PID's to encapsulate.
         //!
-        void setInputPIDs(const PIDSet& pid_input);
+        void setInputPIDs(const PIDSet& input_pids);
+
+        //!
+        //! Get the current set of input packet labels.
+        //! @return A constant reference to the set of input packet labels.
+        //!
+        const TSPacketLabelSet& inputLabels() const { return _input_labels; }
+
+        //!
+        //! Replace the set of input packet labels.
+        //! The set of input PID's is unchanged.
+        //! @param [in] input_labels The new set of packet labels to encapsulate.
+        //!
+        void setInputLabels(const TSPacketLabelSet& input_labels);
 
         //!
         //! Add one PID to encapsulate.
@@ -283,7 +304,7 @@ namespace ts {
         //! The offset value is used to compute the PTS of the encap stream based on the PCR.
         //! @param [in] offset value. Use 0 for Asynchronous PES mode (default).
         //!
-        void setPESOffset(size_t offset) { _pes_offset = offset; }
+        void setPESOffset(int32_t offset);
 
     private:
         using PIDCCMap = std::map<PID,uint8_t>;  // map of continuity counters, indexed by PID
@@ -293,9 +314,10 @@ namespace ts {
         bool             _packing = false;          // Packing mode.
         size_t           _pack_distance = NPOS;     // Maximum distance between inner packets.
         PESMode          _pes_mode = DISABLED;      // PES mode selected.
-        size_t           _pes_offset = 0;           // PES Offset used in the Synchronous mode.
-        PID              _pid_output = PID_NULL;    // Output PID.
-        PIDSet           _pid_input {};             // Input PID's to encapsulate.
+        uint64_t         _pes_offset = 0;           // PES Offset used in the Synchronous mode.
+        PID              _output_pid = PID_NULL;    // Output PID.
+        PIDSet           _input_pids {};            // Input PID's to encapsulate.
+        TSPacketLabelSet _input_labels {};          // Labels of input packets to encapsulate.
         PID              _pcr_ref_pid = PID_NULL;   // Insert PCR's based on this reference PID.
         size_t           _pcr_ref_label = NPOS;     // Insert PCR's based on packets with that labels.
         UString          _last_error {};            // Last error message.

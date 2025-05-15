@@ -17,6 +17,11 @@ This plugin encapsulates all packets from several PID's into one single PID.
 This unique output PID replaces all input PID's in the transport stream.
 The output PID is called the _tunnel_ or _outer_ PID through which all original or _inner_ PID's are conveyed.
 
+It is possible to encapsulate all packets from a list of PID's (option `--pid`)
+or all packets with a label (option `--label`).
+The two options can be used together to encapsulate all packets from any of the
+specified PID's and also all packets with any of the specified labels.
+
 The reverse operation, the decapsulation, is performed by the `decap` plugin.
 It replaces the tunnel PID by all original PID's.
 
@@ -28,7 +33,8 @@ the structure of the original stream or could damage its original structure.
 
 Because of the encapsulation overhead, the total volume of encapsulated packets is slightly greater
 (by approximately 2%) than the original PID's.
-The encapsulation operation consequently needs some null packets in the original transport stream in addition to the original packets.
+The encapsulation operation consequently needs some null packets in the original transport stream
+in addition to the original packets.
 The output tunnel PID replaces all original packets from the encapsulated PID's plus some null packets.
 If the original input stream has no stuffing at all,
 then the `tsp` option `--add-input-stuffing 1/50` is sufficient to reserve the additional overhead.
@@ -54,6 +60,16 @@ Ignore errors such as PID conflict or packet overflow.
 [.optdoc]
 By default, a PID conflict is reported when the output PID is already present on input but not encapsulated.
 A packet overflow is reported when the input stream does not contain enough null packets to absorb the encapsulation overhead.
+
+[.opt]
+*-l* _label1[-label2]_ +
+*--label* _label1[-label2]_
+
+[.optdoc]
+Encapsulate packets with the specified labels.
+
+[.optdoc]
+Several `--label` options may be specified.
 
 [.opt]
 *-m* _value_ +

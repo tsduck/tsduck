@@ -23,13 +23,14 @@ namespace ts {
     //!
     class TSDUCKDLL PacketDecapsulation
     {
-        TS_NOCOPY(PacketDecapsulation);
+        TS_NOBUILD_NOCOPY(PacketDecapsulation);
     public:
         //!
         //! Constructor.
+        //! @param [in,out] report Where to log error or debug messages.
         //! @param [in] pid The PID containing encapsulated packets. When PID_NULL, no decapsulation is done.
         //!
-        PacketDecapsulation(PID pid = PID_NULL);
+        PacketDecapsulation(Report& report, PID pid = PID_NULL);
 
         //!
         //! Reset the decapsulation.
@@ -68,15 +69,17 @@ namespace ts {
         //! Get the input PID.
         //! @return The input PID.
         //!
-        PID inputPID() const { return _pid_input; }
+        PID inputPID() const { return _input_pid; }
 
     private:
-        PID      _pid_input = PID_NULL;       // Input PID.
-        bool     _synchronized = false;       // Input PID fully synchronized.
-        uint8_t  _cc_input = 0;               // Continuity counter in input PID.
-        size_t   _next_index {1};             // Current size of _next_packet (not full yet), 1 points after sync byte.
-        TSPacket _next_packet {{SYNC_BYTE}};  // Next packet, partially decapsulated, sync byte is implicit.
-        UString  _last_error {};              // Last error message.
+        Report&       _report;
+        PacketCounter _packet_count = 0;      // Number of processed packets.
+        PID           _input_pid = PID_NULL;       // Input PID.
+        bool          _synchronized = false;       // Input PID fully synchronized.
+        uint8_t       _cc_input = 0;               // Continuity counter in input PID.
+        size_t        _next_index {1};             // Current size of _next_packet (not full yet), 1 points after sync byte.
+        TSPacket      _next_packet {{SYNC_BYTE}};  // Next packet, partially decapsulated, sync byte is implicit.
+        UString       _last_error {};              // Last error message.
 
         // Loose synchronization, return false.
         bool lostSync(const UString& error);

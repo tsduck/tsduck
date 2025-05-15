@@ -35,12 +35,13 @@ namespace ts {
         bool                         _pack = false;           // Outer packet packing option.
         size_t                       _pack_limit = 0;         // Max limit distance.
         size_t                       _max_buffered = 0;       // Max buffered packets.
-        PID                          _pid_output = PID_NULL;  // Output PID.
+        PID                          _output_pid = PID_NULL;  // Output PID.
         PID                          _pcr_pid = PID_NULL;     // PCR reference PID.
         size_t                       _pcr_label = NPOS;       // PCR reference label.
-        PIDSet                       _pids_input {};          // Input PID's.
+        PIDSet                       _input_pids {};          // Input PID's.
+        TSPacketLabelSet             _input_labels {};        // Input packet labels.
         PacketEncapsulation::PESMode _pes_mode = PacketEncapsulation::DISABLED;
-        size_t                       _pes_offset = 0;         // Offset value in PES Synchronous.
+        int32_t                      _pes_offset = 0;         // Offset value in PES Synchronous.
         PacketEncapsulation          _encap {*this};          // Encapsulation engine.
     };
 }
@@ -61,6 +62,11 @@ ts::EncapPlugin::EncapPlugin(TSP* tsp_) :
          u"reported when the output PID is already present on input but not encapsulated. "
          u"A packet overflow is reported when the input stream does not contain enough "
          u"null packets to absorb the encapsulation overhead.");
+
+    option(u"label", 'l', INTEGER, 0, UNLIMITED_COUNT, 0, TSPacketLabelSet::MAX);
+    help(u"label", u"label1[-label2]",
+         u"Encapsulate packets with the specified labels. "
+         u"Several --label options may be specified.");
 
     option(u"max-buffered-packets", 'm', UNSIGNED);
     help(u"max-buffered-packets",
@@ -114,7 +120,7 @@ ts::EncapPlugin::EncapPlugin(TSP* tsp_) :
          u"The value (positive or negative) is added to the current PCR to generate "
          u"the PTS timestamp inserted in the PES header. "
          u"The recommended values are between -90000 and +90000 (1 second). "
-         u"It requires to use the PCR option (--pcr-pid). "
+         u"It requires to use the PCR option (--pcr-pid or --pcr-label). "
          u"The value 0 is equivalent to use the Asynchronous PES encapsulation.");
 }
 
@@ -129,12 +135,13 @@ bool ts::EncapPlugin::getOptions()
     _pack = present(u"pack");
     getIntValue(_pack_limit, u"pack", 0);
     getIntValue(_max_buffered, u"max-buffered-packets", PacketEncapsulation::DEFAULT_MAX_BUFFERED_PACKETS);
-    getIntValue(_pid_output, u"output-pid", PID_NULL);
+    getIntValue(_output_pid, u"output-pid", PID_NULL);
     getIntValue(_pcr_pid, u"pcr-pid", PID_NULL);
     getIntValue(_pcr_label, u"pcr-label", NPOS);
     getIntValue(_pes_mode, u"pes-mode", PacketEncapsulation::DISABLED);
     getIntValue(_pes_offset, u"pes-offset", 0);
-    getIntValues(_pids_input, u"pid");
+    getIntValues(_input_pids, u"pid");
+    getIntValues(_input_labels, u"label");
 
     if (_pes_offset != 0 && _pes_mode == PacketEncapsulation::DISABLED) {
         error(u"invalid use of pes-offset, it's only valid when PES mode is enabled.");
@@ -155,7 +162,7 @@ bool ts::EncapPlugin::getOptions()
 
 bool ts::EncapPlugin::start()
 {
-    _encap.reset(_pid_output, _pids_input, _pcr_pid, _pcr_label);
+    _encap.reset(_output_pid, _input_pids, _input_labels, _pcr_pid, _pcr_label);
     _encap.setPacking(_pack, _pack_limit);
     _encap.setPES(_pes_mode);
     _encap.setPESOffset(_pes_offset);

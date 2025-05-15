@@ -14,10 +14,16 @@
 // Constructor.
 //----------------------------------------------------------------------------
 
-ts::PacketEncapsulation::PacketEncapsulation(Report& report, PID pid_output, const PIDSet& pid_input, PID pcr_reference_pid, size_t pcr_reference_label) :
+ts::PacketEncapsulation::PacketEncapsulation(Report& report,
+                                             PID output_pid,
+                                             const PIDSet& input_pids,
+                                             const TSPacketLabelSet& input_labels,
+                                             PID pcr_reference_pid,
+                                             size_t pcr_reference_label) :
     _report(report),
-    _pid_output(pid_output),
-    _pid_input(pid_input),
+    _output_pid(output_pid),
+    _input_pids(input_pids),
+    _input_labels(input_labels),
     _pcr_ref_pid(pcr_reference_pid),
     _pcr_ref_label(pcr_reference_label)
 {
@@ -28,14 +34,15 @@ ts::PacketEncapsulation::PacketEncapsulation(Report& report, PID pid_output, con
 // Reset the encapsulation.
 //----------------------------------------------------------------------------
 
-void ts::PacketEncapsulation::reset(PID pid_output, const PIDSet& pid_input, PID pcr_reference_pid, size_t pcr_reference_label)
+void ts::PacketEncapsulation::reset(PID output_pid, const PIDSet& input_pids, const TSPacketLabelSet& input_labels, PID pcr_reference_pid, size_t pcr_reference_label)
 {
     _packing = false;
     _pack_distance = NPOS;
     _pes_mode = DISABLED;
     _pes_offset = 0;
-    _pid_output = pid_output;
-    _pid_input = pid_input;
+    _output_pid = output_pid;
+    _input_pids = input_pids;
+    _input_labels = input_labels;
     _pcr_ref_pid = pcr_reference_pid;
     _pcr_ref_label = pcr_reference_label;
     _last_error.clear();
@@ -56,8 +63,8 @@ void ts::PacketEncapsulation::reset(PID pid_output, const PIDSet& pid_input, PID
 
 void ts::PacketEncapsulation::setOutputPID(PID pid)
 {
-    if (pid != _pid_output) {
-        _pid_output = pid;
+    if (pid != _output_pid) {
+        _output_pid = pid;
         // Reset encapsulation.
         _cc_output = 0;
         _cc_pes = 1;
@@ -66,6 +73,16 @@ void ts::PacketEncapsulation::setOutputPID(PID pid)
         _late_index = 0;
         _late_packets.clear();
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Set PES Offset.
+//----------------------------------------------------------------------------
+
+void ts::PacketEncapsulation::setPESOffset(int32_t offset)
+{
+    _pes_offset = offset >= 0 ? uint64_t(offset) : PTS_DTS_SCALE - std::abs(offset);
 }
 
 
@@ -108,26 +125,31 @@ void ts::PacketEncapsulation::resetPCR()
 
 
 //----------------------------------------------------------------------------
-// Replace the set of input PID's. The null PID can never be encapsulated.
+// Replace the set of input. The null PID can never be encapsulated.
 //----------------------------------------------------------------------------
 
-void ts::PacketEncapsulation::setInputPIDs(const PIDSet& pid_input)
+void ts::PacketEncapsulation::setInputPIDs(const PIDSet& input_pids)
 {
-    _pid_input = pid_input;
-    _pid_input.reset(PID_NULL);
+    _input_pids = input_pids;
+    _input_pids.reset(PID_NULL);
+}
+
+void ts::PacketEncapsulation::setInputLabels(const TSPacketLabelSet& input_labels)
+{
+    _input_labels = input_labels;
 }
 
 void ts::PacketEncapsulation::addInputPID(PID pid)
 {
     if (pid < PID_NULL) {
-        _pid_input.set(pid);
+        _input_pids.set(pid);
     }
 }
 
 void ts::PacketEncapsulation::removeInputPID(PID pid)
 {
     if (pid < PID_NULL) {
-        _pid_input.reset(pid);
+        _input_pids.reset(pid);
     }
 }
 
@@ -177,7 +199,7 @@ bool ts::PacketEncapsulation::processPacket(TSPacket& pkt, TSPacketMetadata& mda
     }
 
     // Detect PID conflicts (when the output PID is present on input but not encapsulated).
-    if (pid == _pid_output && !_pid_input.test(pid)) {
+    if (pid == _output_pid && !_input_pids.test(pid)) {
         _last_error.format(u"PID conflict, output PID %n is present but not encapsulated", pid);
         status = false;
     }
@@ -195,7 +217,7 @@ bool ts::PacketEncapsulation::processPacket(TSPacket& pkt, TSPacketMetadata& mda
     // Note that a packet always need to go into the queue, even if the queue
     // is empty because no input packet can fit into an output packet. At least
     // a few bytes need to be queued.
-    if (_pid_input.test(pid) && _pid_output != PID_NULL) {
+    if ((_input_pids.test(pid) || mdata.hasAnyLabel(_input_labels)) && _output_pid != PID_NULL) {
         if (_late_packets.size() > _late_max_packets) {
             _last_error.assign(u"buffered packets overflow, insufficient null packets in input stream");
             status = false;
@@ -244,7 +266,7 @@ bool ts::PacketEncapsulation::processPacket(TSPacket& pkt, TSPacketMetadata& mda
         if (packout || add_bytes >= PKT_SIZE - (add_pcr ? 12 : 4) - 1) {
 
             // Build the new packet.
-            pkt.init(_pid_output, _cc_output);
+            pkt.init(_output_pid, _cc_output);
 
             // Continuity counter of next output packet.
             _cc_output = (_cc_output + 1) & CC_MASK;

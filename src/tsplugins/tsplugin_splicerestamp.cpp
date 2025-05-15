@@ -18,6 +18,7 @@
 #include "tsSignalizationDemux.h"
 #include "tsSpliceInformationTable.h"
 #include "tsPacketizer.h"
+#include "tsAlgorithm.h"
 
 
 //----------------------------------------------------------------------------
@@ -40,12 +41,13 @@ namespace ts {
 
     private:
         // Command line options:
-        bool     _replace = false;         // Replace pts_adjustment field without adding previous value.
-        bool     _continuous = false;      // Continuously recompute the adjustment between the old and new PCR PID's.
-        PID      _pid_arg = PID_NULL;      // The splice PID to restamp.
-        PID      _old_pcr_pid = PID_NULL;  // Previous PCR reference.
-        PID      _new_pcr_pid = PID_NULL;  // New PCR reference.
-        uint64_t _pts_adjustment = 0;      // Raw PTS adjustment to apply.
+        bool     _replace = false;           // Replace pts_adjustment field without adding previous value.
+        bool     _continuous = false;        // Continuously recompute the adjustment between the old and new PCR PID's.
+        PID      _pid_arg = PID_NULL;        // The splice PID to restamp.
+        PID      _old_pcr_pid = PID_NULL;    // Previous PCR reference.
+        PID      _new_pcr_pid = PID_NULL;    // New PCR reference.
+        uint64_t _pts_adjustment = 0;        // Raw PTS adjustment to apply.
+        uint64_t _rebase_pts = INVALID_PTS;  // Assume that the first PTS in the stream will be set to this value.
 
         // Working data:
         PID                     _splice_pid = PID_NULL;              // The actual splice PID to restamp.
@@ -58,6 +60,8 @@ namespace ts {
         SignalizationDemux      _sig_demux {duck, this};             // Signalization demux to get PMT's.
         Packetizer              _packetizer {duck, PID_NULL, this};  // Regenerate modified splice sections.
         std::list<SectionPtr>   _sections {};                        // List of sections to inject.
+        std::map<PID,uint64_t>  _first_pts {};                       // First PTS in each PID.
+        std::set<PID>           _service_pids {};                    // Set of PID's in the same service as the splice PID.
 
         // Implementation of TableHandlerInterface.
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;
@@ -102,6 +106,10 @@ ts::SpliceRestampPlugin::SpliceRestampPlugin(TSP* tsp_) :
          u"Specify the PID carrying SCTE-35 sections to restamp. "
          u"By default, the first SCTE-35 PID is selected.");
 
+    option(u"rebase-pts", 0, UNSIGNED, 0, 1, 0, MAX_PTS_DTS);
+    help(u"rebase-pts",
+         u"Set pts_adjustment as if the first PTS in the stream was set to the specified value.");
+
     option(u"pts-adjustment", 'a', UNSIGNED, 0, 1, 0, MAX_PTS_DTS);
     help(u"pts-adjustment",
          u"Add the specified value to the pts_adjustment field in the splice sections.");
@@ -125,13 +133,14 @@ bool ts::SpliceRestampPlugin::getOptions()
     getIntValue(_old_pcr_pid, u"old-pcr-pid", PID_NULL);
     getIntValue(_new_pcr_pid, u"new-pcr-pid", PID_NULL);
     getIntValue(_pts_adjustment, u"pts-adjustment", 0);
+    getIntValue(_rebase_pts, u"rebase-pts", INVALID_PTS);
 
     if ((_old_pcr_pid == PID_NULL && _new_pcr_pid != PID_NULL) || (_old_pcr_pid != PID_NULL && _new_pcr_pid == PID_NULL)) {
         error(u"options --old-pcr-pid and --new-pcr-pid must be used together");
         return false;
     }
-    if (_old_pcr_pid != PID_NULL && _pts_adjustment != 0) {
-        error(u"--pts-adjustment is incompatible with --old-pcr-pid and --new-pcr-pid");
+    if ((_old_pcr_pid != PID_NULL) + (_pts_adjustment != 0) + (_rebase_pts != INVALID_PTS) > 1) {
+        error(u"--pts-adjustment, --rebase-ptr, --old-pcr-pid/--new-pcr-pid are mutually exclusive");
         return false;
     }
 
@@ -150,9 +159,11 @@ bool ts::SpliceRestampPlugin::start()
     _old_pcr_packet = 0;
     _new_pcr = INVALID_PCR;
     _new_pcr_packet = 0;
+    _first_pts.clear();
+    _service_pids.clear();
 
-    if (_old_pcr_pid != PID_NULL) {
-        // Don't know yet which adjustment to apply. Need to analyze PCR first.
+    if (_old_pcr_pid != PID_NULL || _rebase_pts != INVALID_PTS) {
+        // Don't know yet which adjustment to apply.
         _current_adjustment.reset();
     }
     else {
@@ -182,8 +193,8 @@ bool ts::SpliceRestampPlugin::start()
 
 void ts::SpliceRestampPlugin::handlePMT(const PMT& pmt, PID)
 {
+    // If the splice PID is unknown, analyze all components in the PMT, looking for a splice PID.
     if (_splice_pid == PID_NULL) {
-        // Analyze all components in the PMT, looking for splice PID's.
         for (const auto& it : pmt.streams) {
             if (it.second.stream_type == ST_SCTE35_SPLICE) {
                 // This is a PID carrying splice information.
@@ -194,6 +205,12 @@ void ts::SpliceRestampPlugin::handlePMT(const PMT& pmt, PID)
                 break;
             }
         }
+    }
+
+    // With --rebase-pts, get the set of PID in the same service as the splice PID.
+    if (_splice_pid != PID_NULL && pmt.streams.contains(_splice_pid)) {
+        _service_pids = MapKeysSet(pmt.streams);
+        debug(u"%d PID's in splice service", _service_pids.size());
     }
 }
 
@@ -207,6 +224,27 @@ void ts::SpliceRestampPlugin::handleTable(SectionDemux& demux, const BinaryTable
     // Convert to a Splice Information Table.
     SpliceInformationTable sit(duck, table);
     if (sit.isValid()) {
+        debug(u"@@@@ processing splice table, adjust value: %s, first PTS count: %d", _current_adjustment.has_value(), _first_pts.size());
+
+        // With --rebase-pts, compute the PTS adjustment at the first splice section.
+        if (_rebase_pts != INVALID_PTS && !_current_adjustment.has_value() && !_first_pts.empty()) {
+            // Get the lowest PTS value in the same service as the splice PID (or in the TS if the service is unknown).
+            uint64_t min_pts = INVALID_PTS;
+            for (const auto& it : _first_pts) {
+                if (_service_pids.empty() || _service_pids.contains(it.first)) {
+                    min_pts = std::min(min_pts, it.second);
+                }
+            }
+            // The idea of --rebase-pts is that the current PTS "min_pts" will be rebased as "_rebase_pts".
+            // Compute the required pts_adjustment.
+            if (min_pts != INVALID_PTS) {
+                _current_adjustment = min_pts > _rebase_pts ? PTS_DTS_SCALE - (min_pts - _rebase_pts) : _rebase_pts - min_pts;
+                verbose(u"initial PTS adjustment is %'d", _current_adjustment.value());
+                debug(u"lowest PTS is %n", min_pts);
+            }
+        }
+
+        // Now adjust the PTS in the splice section.
         if (_current_adjustment.has_value()) {
             // Update PTS adjustment.
             if (_replace) {
@@ -271,6 +309,11 @@ ts::ProcessorPlugin::Status ts::SpliceRestampPlugin::processPacket(TSPacket& pkt
 {
     const PID pid = pkt.getPID();
 
+    // With --rebase-pts, we need to track the first PTS in each PID as long as we don't know the PTS adjustment.
+    if (_rebase_pts != INVALID_PTS && !_current_adjustment.has_value() && pkt.hasPTS() && !_first_pts.contains(pid)) {
+        _first_pts[pid] = pkt.getPTS();
+    }
+
     // Collect PCR values in old and new clock references.
     if (pid != PID_NULL && _old_pcr_pid != PID_NULL && (_continuous || _old_pcr == INVALID_PCR || _new_pcr == INVALID_PCR) && pkt.hasPCR()) {
         bool got_pcr = false;
@@ -313,7 +356,8 @@ ts::ProcessorPlugin::Status ts::SpliceRestampPlugin::processPacket(TSPacket& pkt
     }
 
     // As long as the splice PID is unknown, look for PMT's.
-    if (_splice_pid == PID_NULL) {
+    // Also need the PMT with --rebase-pts as long as the PTS adjustment is unknown.
+    if (_splice_pid == PID_NULL || (_rebase_pts != INVALID_PTS && !_current_adjustment.has_value())) {
         _sig_demux.feedPacket(pkt);
     }
 
