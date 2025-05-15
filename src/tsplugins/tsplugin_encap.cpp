@@ -31,16 +31,17 @@ namespace ts {
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
-        bool                         _ignoreErrors = false;  // Ignore encapsulation errors.
-        bool                         _pack = false;          // Outer packet packing option.
-        size_t                       _packLimit = 0;         // Max limit distance.
-        size_t                       _maxBuffered = 0;       // Max buffered packets.
-        PID                          _pidOutput = PID_NULL;  // Output PID.
-        PID                          _pidPCR = PID_NULL;     // PCR reference PID.
-        PIDSet                       _pidsInput {};          // Input PID's.
-        PacketEncapsulation::PESMode _pesMode = PacketEncapsulation::DISABLED;
-        size_t                       _pesOffset = 0;         // Offset value in PES Synchronous.
-        PacketEncapsulation          _encap {};              // Encapsulation engine.
+        bool                         _ignore_errors = false;  // Ignore encapsulation errors.
+        bool                         _pack = false;           // Outer packet packing option.
+        size_t                       _pack_limit = 0;         // Max limit distance.
+        size_t                       _max_buffered = 0;       // Max buffered packets.
+        PID                          _pid_output = PID_NULL;  // Output PID.
+        PID                          _pcr_pid = PID_NULL;     // PCR reference PID.
+        size_t                       _pcr_label = NPOS;       // PCR reference label.
+        PIDSet                       _pids_input {};          // Input PID's.
+        PacketEncapsulation::PESMode _pes_mode = PacketEncapsulation::DISABLED;
+        size_t                       _pes_offset = 0;         // Offset value in PES Synchronous.
+        PacketEncapsulation          _encap {*this};          // Encapsulation engine.
     };
 }
 
@@ -73,6 +74,11 @@ ts::EncapPlugin::EncapPlugin(TSP* tsp_) :
          u"Specify the output PID containing all encapsulated PID's. "
          u"This is a mandatory parameter, there is no default. "
          u"The null PID 0x1FFF cannot be the output PID.");
+
+    option(u"pcr-label", 0, INTEGER, 0, 0, 0, TSPacketLabelSet::MAX);
+    help(u"pcr-label",
+         u"Specify a label for reference packets containing PCR's. The output PID will contain PCR's, "
+         u"based on the same clock. By default, the output PID does not contain any PCR.");
 
     option(u"pcr-pid", 0, PIDVAL);
     help(u"pcr-pid",
@@ -119,22 +125,23 @@ ts::EncapPlugin::EncapPlugin(TSP* tsp_) :
 
 bool ts::EncapPlugin::getOptions()
 {
-    _ignoreErrors = present(u"ignore-errors");
+    _ignore_errors = present(u"ignore-errors");
     _pack = present(u"pack");
-    getIntValue(_packLimit, u"pack", 0);
-    getIntValue(_maxBuffered, u"max-buffered-packets", PacketEncapsulation::DEFAULT_MAX_BUFFERED_PACKETS);
-    getIntValue(_pidOutput, u"output-pid", PID_NULL);
-    getIntValue(_pidPCR, u"pcr-pid", PID_NULL);
-    getIntValue(_pesMode, u"pes-mode", PacketEncapsulation::DISABLED);
-    getIntValue(_pesOffset, u"pes-offset", 0);
-    getIntValues(_pidsInput, u"pid");
+    getIntValue(_pack_limit, u"pack", 0);
+    getIntValue(_max_buffered, u"max-buffered-packets", PacketEncapsulation::DEFAULT_MAX_BUFFERED_PACKETS);
+    getIntValue(_pid_output, u"output-pid", PID_NULL);
+    getIntValue(_pcr_pid, u"pcr-pid", PID_NULL);
+    getIntValue(_pcr_label, u"pcr-label", NPOS);
+    getIntValue(_pes_mode, u"pes-mode", PacketEncapsulation::DISABLED);
+    getIntValue(_pes_offset, u"pes-offset", 0);
+    getIntValues(_pids_input, u"pid");
 
-    if (_pesOffset != 0 && _pesMode == PacketEncapsulation::DISABLED) {
+    if (_pes_offset != 0 && _pes_mode == PacketEncapsulation::DISABLED) {
         error(u"invalid use of pes-offset, it's only valid when PES mode is enabled.");
         return false;
     }
-    if (_pesOffset != 0 && _pidPCR == PID_NULL) {
-        error(u"invalid use of pes-offset, it's only valid when using pcr-pid.");
+    if (_pes_offset != 0 && _pcr_pid == PID_NULL && _pcr_label > TSPacketLabelSet::MAX) {
+        error(u"invalid use of pes-offset, it's only valid when using --pcr-pid or --pcr-label.");
         return false;
     }
 
@@ -148,11 +155,11 @@ bool ts::EncapPlugin::getOptions()
 
 bool ts::EncapPlugin::start()
 {
-    _encap.reset(_pidOutput, _pidsInput, _pidPCR);
-    _encap.setPacking(_pack, _packLimit);
-    _encap.setPES(_pesMode);
-    _encap.setPESOffset(_pesOffset);
-    _encap.setMaxBufferedPackets(_maxBuffered);
+    _encap.reset(_pid_output, _pids_input, _pcr_pid, _pcr_label);
+    _encap.setPacking(_pack, _pack_limit);
+    _encap.setPES(_pes_mode);
+    _encap.setPESOffset(_pes_offset);
+    _encap.setMaxBufferedPackets(_max_buffered);
     return true;
 }
 
@@ -163,7 +170,7 @@ bool ts::EncapPlugin::start()
 
 ts::ProcessorPlugin::Status ts::EncapPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
-    if (_encap.processPacket(pkt) || _ignoreErrors || _encap.lastError().empty()) {
+    if (_encap.processPacket(pkt, pkt_data) || _ignore_errors || _encap.lastError().empty()) {
         return TSP_OK;
     }
     else {

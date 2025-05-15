@@ -207,10 +207,6 @@ void ts::SpliceRestampPlugin::handleTable(SectionDemux& demux, const BinaryTable
     // Convert to a Splice Information Table.
     SpliceInformationTable sit(duck, table);
     if (sit.isValid()) {
-
-        // If the current PTS adjustment is not yet known, we prefer to drop the splice section.
-        // Otherwise, we could propagate a splice section with an incorrect PTS and create holes
-        // in the stream when the splice is processed.
         if (_current_adjustment.has_value()) {
             // Update PTS adjustment.
             if (_replace) {
@@ -229,6 +225,9 @@ void ts::SpliceRestampPlugin::handleTable(SectionDemux& demux, const BinaryTable
             }
         }
         else {
+            // If the current PTS adjustment is not yet known, we prefer to drop the splice section.
+            // Otherwise, we could propagate a splice section with an incorrect PTS and create holes
+            // in the stream when the splice is processed.
             warning(u"dropped SCTE-35 section, PTS adjustment not yet known");
         }
     }
@@ -302,9 +301,12 @@ ts::ProcessorPlugin::Status ts::SpliceRestampPlugin::processPacket(TSPacket& pkt
                     new_pcr += (((_old_pcr_packet - _new_pcr_packet) * PKT_SIZE_BITS * SYSTEM_CLOCK_FREQ) / bitrate).toInt() % PCR_SCALE;
                 }
             }
-            const uint64_t pts_adjust = ((new_pcr - old_pcr) % PCR_SCALE) / SYSTEM_CLOCK_SUBFACTOR;
+            const uint64_t pts_adjust = new_pcr >= old_pcr ?
+                ((new_pcr - old_pcr) % PCR_SCALE) / SYSTEM_CLOCK_SUBFACTOR :
+                PTS_DTS_SCALE - ((old_pcr - new_pcr) % PCR_SCALE) / SYSTEM_CLOCK_SUBFACTOR;
             if (!_current_adjustment.has_value()) {
                 verbose(u"initial PTS adjustment is %'d", pts_adjust);
+                debug(u"old PCR: %'d 0x%<012X, new PCR: %'d 0x%<012X", old_pcr, new_pcr);
             }
             _current_adjustment = pts_adjust;
         }

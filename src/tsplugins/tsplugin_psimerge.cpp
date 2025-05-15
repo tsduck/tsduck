@@ -30,9 +30,9 @@ namespace ts {
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
-        PSIMerger _psi_merger {duck, PSIMerger::NONE};      // Engine to merge PSI/SI.
-        size_t    _main_label = TSPacketLabelSet::MAX + 1;  // Label of packets from main stream or greater than LABEL_MAX if none.
-        size_t    _merge_label = TSPacketLabelSet::MAX + 1; // Label of packets from main stream or greater than LABEL_MAX if none.
+        PSIMerger _psi_merger {duck, PSIMerger::NONE};  // Engine to merge PSI/SI.
+        size_t    _main_label = NPOS;                   // Label of packets from main stream or greater than LABEL_MAX if none.
+        size_t    _merge_label = NPOS;                  // Label of packets from main stream or greater than LABEL_MAX if none.
     };
 }
 
@@ -97,8 +97,8 @@ ts::PSIMergePlugin::PSIMergePlugin(TSP* tsp_) :
 bool ts::PSIMergePlugin::getOptions()
 {
     // Identification of main and merge streams.
-    _main_label = intValue<size_t>(u"main-label", TSPacketLabelSet::MAX + 1);
-    _merge_label = intValue<size_t>(u"merge-label", TSPacketLabelSet::MAX + 1);
+    _main_label = intValue<size_t>(u"main-label", NPOS);
+    _merge_label = intValue<size_t>(u"merge-label", NPOS);
     if (_main_label == _merge_label) {
         error(u"at least one of --main-label and --merge-label must be specified and the labels must be different");
         return false;

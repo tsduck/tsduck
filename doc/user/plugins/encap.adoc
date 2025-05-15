@@ -99,6 +99,14 @@ With a zero value the distance is disabled (ie. the distance between input packe
 The value 1 is equivalent to not using the pack mode since outer packets are emitted after one TS packet.
 
 [.opt]
+*--pcr-label* _value_
+
+[.optdoc]
+Specify a label for reference packets containing PCR's.
+The output PID will contain PCR's, based on the same clock.
+By default, the output PID does not contain any PCR.
+
+[.opt]
 *--pcr-pid* _value_
 
 [.optdoc]
@@ -128,7 +136,7 @@ The recommended values are between -90000 and +90000 (1 second).
 The value 0 is equivalent to use the Asynchronous PES encapsulation.
 
 [.optdoc]
-It requires to use the PCR option `--pcr-pid`.
+It requires to use a PCR option, `--pcr-pid` or `--pcr-label`.
 
 [.opt]
 *-p* _pid1[-pid2]_ +

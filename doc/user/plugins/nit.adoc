@@ -83,6 +83,12 @@ Any existing _network_name_descriptor_ is removed.
 A new _network_name_descriptor_ is created with the new name.
 
 [.opt]
+*--original-network-id* _id_
+
+[.optdoc]
+Set the specified new value as original network id of all transport streams in the NIT.
+
+[.opt]
 *-o* _id_ +
 *--other* _id_
 
@@ -140,7 +146,7 @@ Several `--remove-service` options may be specified to remove several services.
 Remove from the NIT all references to the transport stream with the specified transport stream id value.
 
 [.optdoc]
-Several `--remove-ts` options may be specified to remove several TS.
+Several `--remove-ts` options may be specified to remove several transport streams.
 
 [.opt]
 *-s* _value_ +

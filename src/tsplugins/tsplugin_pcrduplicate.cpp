@@ -33,7 +33,7 @@ namespace ts {
     private:
         // Command line options.
         PID           _ref_pid_arg = PID_NULL;  // Reference PCR source.
-        size_t        _ref_label = TSPacketLabelSet::MAX + 1;  // Label which indicates the reference PID.
+        size_t        _ref_label = NPOS;        // Label which indicates the reference PID.
         PID           _new_pid = PID_NULL;      // New PID to create.
 
         // Working data.
@@ -68,7 +68,7 @@ ts::PCRDuplicatePlugin::PCRDuplicatePlugin(TSP* tsp_) :
          u"At most one of --reference-pid and --reference-label shall be specified. "
          u"By default, use the first PID containing a PCR.");
 
-    option(u"reference-label", 'l', PIDVAL);
+    option(u"reference-label", 'l', INTEGER, 0, 0, 0, TSPacketLabelSet::MAX);
     help(u"reference-label",
          u"Packet label indicating the PID containing the reference PCR to duplicate. "
          u"Each time a packet with that label is encountered, the reference PID switches "
@@ -86,7 +86,7 @@ bool ts::PCRDuplicatePlugin::getOptions()
 {
     getIntValue(_new_pid, u"new-pid", PID_NULL);
     getIntValue(_ref_pid_arg, u"reference-pid", PID_NULL);
-    getIntValue(_ref_label, u"reference-label", TSPacketLabelSet::MAX + 1);
+    getIntValue(_ref_label, u"reference-label", NPOS);
 
     if (_ref_pid_arg != PID_NULL && _ref_label > TSPacketLabelSet::MAX) {
         error(u"At most one of --reference-pid and --reference-label shall be specified.");

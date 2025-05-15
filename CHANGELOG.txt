@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.41-4283 (May 2025)
+VERSION 3.41-4284 (May 2025)
 
 [NEW] New commands and plugins:
 
@@ -38,6 +38,8 @@ VERSION 3.41-4283 (May 2025)
     - Options --dump-psi-repository,  --list-dvb-charset-order,  --list-tables,
       --list-descriptors in "tstables".
     - Option --remove-with-registration in plugin "pmt".
+    - Option --pcr-label in plugin "encap".
+    - Option --original-network-id in plugin "nit".
 
 [BUG] Bug fixes:
 

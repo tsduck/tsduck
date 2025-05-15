@@ -15,7 +15,7 @@
 //----------------------------------------------------------------------------
 
 ts::PacketDecapsulation::PacketDecapsulation(PID pid) :
-    _pidInput(pid)
+    _pid_input(pid)
 {
 }
 
@@ -26,10 +26,10 @@ ts::PacketDecapsulation::PacketDecapsulation(PID pid) :
 
 void ts::PacketDecapsulation::reset(PID pid)
 {
-    _pidInput = pid;
+    _pid_input = pid;
     _synchronized = false;
-    _nextIndex = 1; // after sync byte
-    _lastError.clear();
+    _next_index = 1; // after sync byte
+    _last_error.clear();
 }
 
 
@@ -40,8 +40,8 @@ void ts::PacketDecapsulation::reset(PID pid)
 bool ts::PacketDecapsulation::lostSync(const UString& error)
 {
     _synchronized = false;
-    _nextIndex = 1;  // after sync byte
-    _lastError = error;
+    _next_index = 1;  // after sync byte
+    _last_error = error;
     return false;
 }
 
@@ -59,52 +59,52 @@ bool ts::PacketDecapsulation::lostSync(TSPacket& pkt, const UString& error)
 bool ts::PacketDecapsulation::processPacket(ts::TSPacket& pkt)
 {
     // Work on the input PID only.
-    if (_pidInput == PID_NULL || pkt.getPID() != _pidInput) {
+    if (_pid_input == PID_NULL || pkt.getPID() != _pid_input) {
         return true;
     }
 
     // Where to look at in input packet. Start at beginning of payload.
-    size_t pktIndex = pkt.getHeaderSize();
+    size_t pkt_index = pkt.getHeaderSize();
 
     // when PLAIN encapsulation is used it corresponds to PUSI;
     // and when using the PES encapsulation it's an internal flag.
-    bool startMark = false;
+    bool start_mark = false;
 
     // A special case may arise when one original PES packet is fragmented
     // and the pointer to the next inernal packet points to a position in the
     // second part of the packet. This offset solves the problem.
     // However, it's good to overcome the fragmentation!
-    size_t pesFragment = 0;
+    size_t pes_fragment = 0;
 
     // Used to distinguish between ASYNC and SYNC PES encapsulation.
-    bool pesSync = false;
+    bool pes_sync = false;
 
     // Differentiate whether it's a plain encapsulation or a PES encapsulation
     if (!pkt.getTEI() && pkt.isClear() && pkt.hasPayload()) { // General checks
 
-        if (pkt.getPUSI() && pktIndex < (PKT_SIZE - 9) &&
-            pkt.b[pktIndex]   == 0x00 &&
-            pkt.b[pktIndex+1] == 0x00 &&
-            pkt.b[pktIndex+2] == 0x01)
+        if (pkt.getPUSI() && pkt_index < (PKT_SIZE - 9) &&
+            pkt.b[pkt_index]   == 0x00 &&
+            pkt.b[pkt_index+1] == 0x00 &&
+            pkt.b[pkt_index+2] == 0x01)
         {
             // PES header found, continue...
-            pktIndex += 3;
+            pkt_index += 3;
 
             // Check for correct Type Signature of the PES packet
-            if (pkt.b[pktIndex] != 0xBD && pkt.b[pktIndex] != 0xFC) {
+            if (pkt.b[pkt_index] != 0xBD && pkt.b[pkt_index] != 0xFC) {
                 return lostSync(pkt, u"invalid PES packet, type differs");
             }
-            else if (pkt.b[pktIndex] == 0xFC) {
-                pesSync = true;
+            else if (pkt.b[pkt_index] == 0xFC) {
+                pes_sync = true;
             }
             // (ASYNC=Private Stream 1 || SYNC=Metadata Stream) found, continue...
-            pktIndex++;
+            pkt_index++;
 
             // Check for PES Size (2 bytes)
-            if (pkt.b[pktIndex++] != 0x00) {
+            if (pkt.b[pkt_index++] != 0x00) {
                 return lostSync(pkt, u"invalid PES packet, size incompatible");
             }
-            const size_t pes_size = pkt.b[pktIndex++];
+            const size_t pes_size = pkt.b[pkt_index++];
             // 178 bytes is the maximum PES packet size in origin.
             // However, if an external processor splits the packet and inserts
             // some PES header data (like PTS marks), then the size increases.
@@ -114,58 +114,58 @@ bool ts::PacketDecapsulation::processPacket(ts::TSPacket& pkt)
             }
 
             // Check for valid flags
-            if ((pkt.b[pktIndex]   != 0x80 && pkt.b[pktIndex]   != 0x84) ||
-                (pkt.b[pktIndex+1] != 0x80 && pkt.b[pktIndex+1] != 0x00)) {
+            if ((pkt.b[pkt_index]   != 0x80 && pkt.b[pkt_index]   != 0x84) ||
+                (pkt.b[pkt_index+1] != 0x80 && pkt.b[pkt_index+1] != 0x00)) {
                 return lostSync(pkt, u"invalid PES packet, incorrect flags");
             }
-            pktIndex++; // Ignore these flags
-            pktIndex++; // Ignore these flags
+            pkt_index++; // Ignore these flags
+            pkt_index++; // Ignore these flags
 
             // Check remaining header
-            size_t header_size = pkt.b[pktIndex++]; // PES optional header size (1 byte)
+            size_t header_size = pkt.b[pkt_index++]; // PES optional header size (1 byte)
             if (header_size > 0) {
                 // Advance up to the end of the PES header
-                pktIndex += header_size;
-                pesFragment = header_size; // When fragmentation appears in the outer packet, this offset is added to checks.
+                pkt_index += header_size;
+                pes_fragment = header_size; // When fragmentation appears in the outer packet, this offset is added to checks.
             }
             // PES header OK!
 
             // Check Metadata AU Header (5 bytes), only in Synchronous mode.
-            if (pesSync) {
-               if (pkt.b[pktIndex] != 0x00 || pkt.b[pktIndex+2] != 0xDF) {
+            if (pes_sync) {
+               if (pkt.b[pkt_index] != 0x00 || pkt.b[pkt_index+2] != 0xDF) {
                    return lostSync(pkt, u"invalid PES packet, SYNC Metadata Header incorrect");
                }
-               if (pkt.b[pktIndex+3] != 0x00 || pkt.b[pktIndex+4] > 206) {
+               if (pkt.b[pkt_index+3] != 0x00 || pkt.b[pkt_index+4] > 206) {
                    return lostSync(pkt, u"invalid PES packet, SYNC AU cell data size incompatible");
                }
-               pktIndex += 5;
+               pkt_index += 5;
             }
 
             // Start reading KLVA data...
-            if (pktIndex > PKT_SIZE - 18) {
+            if (pkt_index > PKT_SIZE - 18) {
                 return lostSync(pkt, u"invalid PES packet, data unknown");
             }
             // Check for our KLV correct KEY
             // UL Used: 060E2B34.01010101.0F010800.0F0F0F0F
             // This is an Unique ID in the testing range.
-            if (pkt.b[pktIndex]    != 0x06 || pkt.b[pktIndex+1]  != 0x0E || pkt.b[pktIndex+2]  != 0x2B || pkt.b[pktIndex+3]  != 0x34 ||
-                pkt.b[pktIndex+4]  != 0x01 || pkt.b[pktIndex+5]  != 0x01 || pkt.b[pktIndex+6]  != 0x01 || pkt.b[pktIndex+7]  != 0x01 ||
-                pkt.b[pktIndex+8]  != 0x0F || pkt.b[pktIndex+9]  != 0x01 || pkt.b[pktIndex+10] != 0x08 || pkt.b[pktIndex+11] != 0x00 ||
-                pkt.b[pktIndex+12] != 0x0F || pkt.b[pktIndex+13] != 0x0F || pkt.b[pktIndex+14] != 0x0F || (pkt.b[pktIndex+15] != 0x0F && pkt.b[pktIndex+15] != 0x1F))
+            if (pkt.b[pkt_index]    != 0x06 || pkt.b[pkt_index+1]  != 0x0E || pkt.b[pkt_index+2]  != 0x2B || pkt.b[pkt_index+3]  != 0x34 ||
+                pkt.b[pkt_index+4]  != 0x01 || pkt.b[pkt_index+5]  != 0x01 || pkt.b[pkt_index+6]  != 0x01 || pkt.b[pkt_index+7]  != 0x01 ||
+                pkt.b[pkt_index+8]  != 0x0F || pkt.b[pkt_index+9]  != 0x01 || pkt.b[pkt_index+10] != 0x08 || pkt.b[pkt_index+11] != 0x00 ||
+                pkt.b[pkt_index+12] != 0x0F || pkt.b[pkt_index+13] != 0x0F || pkt.b[pkt_index+14] != 0x0F || (pkt.b[pkt_index+15] != 0x0F && pkt.b[pkt_index+15] != 0x1F))
             {
                 return lostSync(pkt, u"invalid PES packet, incorrect UL Signature");
             }
             // KLV KEY OK, continue...
-            pktIndex += 16;
-            startMark = pkt.b[pktIndex-1] & 0x10; // Get the equivalent PUSI flag from the last UL Key byte.
+            pkt_index += 16;
+            start_mark = pkt.b[pkt_index-1] & 0x10; // Get the equivalent PUSI flag from the last UL Key byte.
 
             // Check for KLV correct LENGTH
-            size_t readLength = pkt.b[pktIndex++];
-            if (readLength > 127 && readLength != 0x81) {
+            size_t read_length = pkt.b[pkt_index++];
+            if (read_length > 127 && read_length != 0x81) {
                 return lostSync(pkt, u"invalid PES packet, incorrect KLVA size");
             }
-            if (readLength > 127) {
-                readLength = pkt.b[pktIndex++]; // BER long mode with 2 bytes
+            if (read_length > 127) {
+                read_length = pkt.b[pkt_index++]; // BER long mode with 2 bytes
             }
             // KLV LENGTH OK, continue...
 
@@ -181,7 +181,7 @@ bool ts::PacketDecapsulation::processPacket(ts::TSPacket& pkt)
             //#if (readed_length + pktIndex != PKT_SIZE) {
             //#    return lostSync(pkt, u"invalid PES packet, KLVA payload doesn't match");
             //#}
-            if (readLength > 188) {
+            if (read_length > 188) {
                 return lostSync(pkt, u"invalid PES packet, KLVA payload doesn't match");
             }
 
@@ -191,7 +191,7 @@ bool ts::PacketDecapsulation::processPacket(ts::TSPacket& pkt)
         }
         else {
             // We assume it's a PLAIN encapsultation.
-            startMark = pkt.getPUSI();
+            start_mark = pkt.getPUSI();
         }
     }
     else {
@@ -202,25 +202,25 @@ bool ts::PacketDecapsulation::processPacket(ts::TSPacket& pkt)
     // We continue with the the PLAIN encapsulation.
 
     // Get pointer field when INIT MARK appears.
-    const size_t pointerField = startMark && pktIndex < PKT_SIZE ? pkt.b[pktIndex++] : 0;
-    if (startMark && pktIndex + pointerField > PKT_SIZE + pesFragment) {
+    const size_t pointer_field = start_mark && pkt_index < PKT_SIZE ? pkt.b[pkt_index++] : 0;
+    if (start_mark && pkt_index + pointer_field > PKT_SIZE + pes_fragment) {
         // "pes_fragment" offset solves pointer overflows in fragmented outer packets.
         return lostSync(pkt, u"invalid packet, adaptation field or pointer field out of range");
     }
 
     // Check continuity counter.
     const uint8_t cc = pkt.getCC();
-    if (_synchronized && cc != ((_ccInput + 1) & CC_MASK)) {
+    if (_synchronized && cc != ((_cc_input + 1) & CC_MASK)) {
         // Got a discontinuity, lose synchronization but will maybe resync later, do not return an error.
         lostSync(u"input PID discontinuity");
     }
-    _ccInput = cc;
+    _cc_input = cc;
 
     // If we previously lost synchronization, try to resync in current packet.
     if (!_synchronized) {
-        if (startMark) { // PUSI mark
+        if (start_mark) { // PUSI mark
             // There is a packet start here, we have a chance to resync.
-            pktIndex += pointerField;
+            pkt_index += pointer_field;
             _synchronized = true;
         }
         else {
@@ -231,26 +231,26 @@ bool ts::PacketDecapsulation::processPacket(ts::TSPacket& pkt)
     }
 
     // Copy data in next packet.
-    assert(pktIndex <= PKT_SIZE);
-    assert(_nextIndex <= PKT_SIZE);
-    size_t size = std::min(PKT_SIZE - pktIndex, PKT_SIZE - _nextIndex);
-    MemCopy(_nextPacket.b + _nextIndex, pkt.b + pktIndex, size);
-    pktIndex += size;
-    _nextIndex += size;
+    assert(pkt_index <= PKT_SIZE);
+    assert(_next_index <= PKT_SIZE);
+    size_t size = std::min(PKT_SIZE - pkt_index, PKT_SIZE - _next_index);
+    MemCopy(_next_packet.b + _next_index, pkt.b + pkt_index, size);
+    pkt_index += size;
+    _next_index += size;
 
-    if (_nextIndex == PKT_SIZE) {
+    if (_next_index == PKT_SIZE) {
         // Next packet is full, return it.
         const TSPacket tmp(pkt);
-        pkt = _nextPacket;
+        pkt = _next_packet;
         // Copy start of next packet.
-        size = PKT_SIZE - pktIndex;
-        MemCopy(_nextPacket.b + 1, tmp.b + pktIndex, size);
-        _nextIndex = 1 + size;
+        size = PKT_SIZE - pkt_index;
+        MemCopy(_next_packet.b + 1, tmp.b + pkt_index, size);
+        _next_index = 1 + size;
     }
     else {
         // Next packet not full, must have exhausted the input packet.
-        assert(pktIndex == PKT_SIZE);
-        assert(_nextIndex < PKT_SIZE);
+        assert(pkt_index == PKT_SIZE);
+        assert(_next_index < PKT_SIZE);
         // Replace input packet with a null packet since we cannot extract a packet now.
         pkt = NullPacket;
     }

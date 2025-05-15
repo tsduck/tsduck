@@ -33,8 +33,8 @@ namespace ts {
         // Command line options.
         PID           _ref_pid_arg = PID_NULL;     // Reference PCR source.
         PID           _target_pid_arg = PID_NULL;  // Target PID to alter.
-        size_t        _ref_label = TSPacketLabelSet::MAX + 1;    // Label which indicates the reference PID.
-        size_t        _target_label = TSPacketLabelSet::MAX + 1; // Label which indicates the target PID.
+        size_t        _ref_label = NPOS;           // Label which indicates the reference PID.
+        size_t        _target_label = NPOS;        // Label which indicates the target PID.
         PacketCounter _every = 0;                  // Insert a PCR every N packets (if not zero).
         size_t        _max_shift = 0;              // Maximum number of bytes to shift.
         bool          _pusi = false;               // Insert a PCR in PUSI packets.
@@ -72,7 +72,7 @@ ts::PCRCopyPlugin::PCRCopyPlugin(TSP* tsp_) :
          u"PID containing the reference PCR to copy. "
          u"Exactly one of --reference-pid and --reference-label shall be specified.");
 
-    option(u"reference-label", 0, PIDVAL);
+    option(u"reference-label", 0, INTEGER, 0, 0, 0, TSPacketLabelSet::MAX);
     help(u"reference-label",
          u"Packet label indicating the PID containing the reference PCR to copy. "
          u"Each time a packet with that label is encountered, the reference PID switches "
@@ -84,7 +84,7 @@ ts::PCRCopyPlugin::PCRCopyPlugin(TSP* tsp_) :
          u"PID into which PCR shall be created and copied. "
          u"Exactly one of --target-pid and --target-label shall be specified.");
 
-    option(u"target-label", 0, PIDVAL);
+    option(u"target-label", 0, INTEGER, 0, 0, 0, TSPacketLabelSet::MAX);
     help(u"target-label",
          u"Packet label indicating the PID containing the target PID into which PCR shall be created and copied. "
          u"Each time a packet with that label is encountered, the target PID switches "

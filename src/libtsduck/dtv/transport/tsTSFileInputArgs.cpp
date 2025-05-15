@@ -94,7 +94,7 @@ bool ts::TSFileInputArgs::loadArgs(DuckContext& duck, Args& args)
     _interleave = args.present(u"interleave");
     _first_terminate = args.present(u"first-terminate");
     args.getIntValue(_interleave_chunk, u"interleave", 1);
-    args.getIntValue(_base_label, u"label-base", TSPacketLabelSet::MAX + 1);
+    args.getIntValue(_base_label, u"label-base", NPOS);
     args.getIntValues(_start_stuffing, u"add-start-stuffing");
     args.getIntValues(_stop_stuffing, u"add-stop-stuffing");
     _file_format = LoadTSPacketFormatInputOption(args);

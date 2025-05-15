@@ -13,6 +13,7 @@
 
 #pragma once
 #include "tsTSPacket.h"
+#include "tsTSPacketMetadata.h"
 
 namespace ts {
     //!
@@ -130,59 +131,63 @@ namespace ts {
     //!
     class TSDUCKDLL PacketEncapsulation
     {
-        TS_NOCOPY(PacketEncapsulation);
+        TS_NOBUILD_NOCOPY(PacketEncapsulation);
     public:
         //!
         //! Constructor.
-        //! @param [in] pidOutput The output PID. When PID_NULL, no encapsulation is done.
-        //! @param [in] pidInput The initial set of PID's to encapsulate.
-        //! @param [in] pcrReference The PID with PCR's to use as reference to add PCR's in
-        //! the encapsulating PID. When PID_NULL, do not add PCR.
+        //! @param [in,out] report Where to log error or debug messages.
+        //! @param [in] pid_output The output PID. When PID_NULL, no encapsulation is done.
+        //! @param [in] pid_input The initial set of PID's to encapsulate.
+        //! @param [in] pcr_reference_pid The PID with PCR's to use as reference to add PCR's in the encapsulating PID.
+        //! When @a pcr_reference_pid is PID_NULL and @a pcr_reference_label is NPOS, do not add PCR.
+        //! @param [in] pcr_reference_label The label for packets with PCR's to use as reference to add PCR's.
         //!
-        PacketEncapsulation(PID pidOutput = PID_NULL, const PIDSet& pidInput = NoPID(), PID pcrReference = PID_NULL);
+        PacketEncapsulation(Report& report, PID pid_output = PID_NULL, const PIDSet& pid_input = NoPID(), PID pcr_reference_pid = PID_NULL, size_t pcr_reference_label = NPOS);
 
         //!
         //! Reset the encapsulation.
-        //! @param [in] pidOutput The new output PID. When PID_NULL, no encapsulation is done.
-        //! @param [in] pidInput The new set of PID's to encapsulate.
-        //! @param [in] pcrReference The PID with PCR's to use as reference to add PCR's in
-        //! the encapsulating PID. When PID_NULL, do not add PCR.
+        //! @param [in] pid_output The new output PID. When PID_NULL, no encapsulation is done.
+        //! @param [in] pid_input The new set of PID's to encapsulate.
+        //! @param [in] pcr_reference_pid The PID with PCR's to use as reference to add PCR's in the encapsulating PID.
+        //! When @a pcr_reference_pid is PID_NULL and @a pcr_reference_label is NPOS, do not add PCR.
+        //! @param [in] pcr_reference_label The label for packets with PCR's to use as reference to add PCR's.
         //!
-        void reset(PID pidOutput = PID_NULL, const PIDSet& pidInput = NoPID(), PID pcrReference = PID_NULL);
+        void reset(PID pid_output = PID_NULL, const PIDSet& pid_input = NoPID(), PID pcr_reference_pid = PID_NULL, size_t pcr_reference_label = NPOS);
 
         //!
         //! Process a TS packet from the input stream.
-        //! @param [in,out] pkt A TS packet. If the packet belongs to one of the input
-        //! PID's, it is replaced by an encapsulating packet in the output PID. Some
-        //! null packets are also replaced to absorb the encapsulation overhead.
+        //! @param [in,out] pkt A TS packet. If the packet belongs to one of the input PID's,
+        //! it is replaced by an encapsulating packet in the output PID. Some null packets are
+        //! also replaced to absorb the encapsulation overhead.
+        //! @param [in,out] mdata Corresponding packet metadata.
         //! @return True on success, false on error (PID conflict, output overflow).
         //! In case of error, use lastError().
         //!
-        bool processPacket(TSPacket& pkt);
+        bool processPacket(TSPacket& pkt, TSPacketMetadata& mdata);
 
         //!
         //! Get the last error message.
         //! @return The last error message.
         //!
-        const UString& lastError() const { return _lastError; }
+        const UString& lastError() const { return _last_error; }
 
         //!
         //! Check if a previous error is pending.
         //! @return True if a previous error is pending.
         //! @see resetError()
         //!
-        bool hasError() const { return !_lastError.empty(); }
+        bool hasError() const { return !_last_error.empty(); }
 
         //!
         //! Reset the last error.
         //!
-        void resetError() { _lastError.clear(); }
+        void resetError() { _last_error.clear(); }
 
         //!
         //! Get the output PID.
         //! @return The output PID.
         //!
-        PID outputPID() const { return _pidOutput; }
+        PID outputPID() const { return _pid_output; }
 
         //!
         //! Change the output PID.
@@ -194,19 +199,19 @@ namespace ts {
         //! Get the current set of input PID's.
         //! @return A constant reference to the set of input PID's.
         //!
-        const PIDSet& inputPIDs() const { return _pidInput; }
+        const PIDSet& inputPIDs() const { return _pid_input; }
 
         //!
         //! Get the current number of input PID's being encapsulated.
         //! @return The crrent number of PID's being encapsulated.
         //!
-        size_t pidCount() const { return _pidInput.count(); }
+        size_t pidCount() const { return _pid_input.count(); }
 
         //!
         //! Replace the set of input PID's.
-        //! @param [in] pidInput The new set of PID's to encapsulate.
+        //! @param [in] pid_input The new set of PID's to encapsulate.
         //!
-        void setInputPIDs(const PIDSet& pidInput);
+        void setInputPIDs(const PIDSet& pid_input);
 
         //!
         //! Add one PID to encapsulate.
@@ -224,7 +229,7 @@ namespace ts {
         //! Get the reference PID for PCR's.
         //! @return The reference PID for PCR's. PID_NULL if there is none.
         //!
-        PID referencePCR() const { return _pcrReference; }
+        PID referencePCR() const { return _pcr_ref_pid; }
 
         //!
         //! Change the reference PID for PCR's.
@@ -254,7 +259,7 @@ namespace ts {
         //! @param [in] on Packing mode.
         //! @param [in] limit Number of packets after which encapsulation is forced, even when packing is off.
         //!
-        void setPacking(bool on, size_t limit) { _packing = on; _packDistance = limit; }
+        void setPacking(bool on, size_t limit) { _packing = on; _pack_distance = limit; }
 
         //!
         //! Type of PES encapsulation mode.
@@ -270,7 +275,7 @@ namespace ts {
         //! Enables the PES mode encapsulation (disabled by default).
         //! @param [in] mode PES mode.
         //!
-        void setPES(PESMode mode) { _pesMode = mode; }
+        void setPES(PESMode mode) { _pes_mode = mode; }
 
         //!
         //! Set PES Offset.
@@ -278,41 +283,43 @@ namespace ts {
         //! The offset value is used to compute the PTS of the encap stream based on the PCR.
         //! @param [in] offset value. Use 0 for Asynchronous PES mode (default).
         //!
-        void setPESOffset(size_t offset) { _pesOffset = offset; }
+        void setPESOffset(size_t offset) { _pes_offset = offset; }
 
     private:
         using PIDCCMap = std::map<PID,uint8_t>;  // map of continuity counters, indexed by PID
         using TSPacketPtrQueue = std::deque<TSPacketPtr>;
 
-        bool             _packing = false;         // Packing mode.
-        size_t           _packDistance = NPOS;     // Maximum distance between inner packets.
-        PESMode          _pesMode = DISABLED;      // PES mode selected.
-        size_t           _pesOffset = 0;           // PES Offset used in the Synchronous mode.
-        PID              _pidOutput = PID_NULL;    // Output PID.
-        PIDSet           _pidInput {};             // Input PID's to encapsulate.
-        PID              _pcrReference = PID_NULL; // Insert PCR's based on this reference PID.
-        UString          _lastError {};            // Last error message.
-        PacketCounter    _currentPacket = 0;       // Total TS packets since last reset.
-        PacketCounter    _pcrLastPacket = INVALID_PACKET_COUNTER;   // Packet index of last PCR in reference PID.
-        uint64_t         _pcrLastValue = INVALID_PCR;               // Last PCR value in reference PID.
-        uint64_t         _ptsPrevious = INVALID_PTS;                // Previous PTS value in PES ASYNC mode.
-        BitRate          _bitrate = 0;             // Bitrate computed from last PCR.
-        bool             _insertPCR = false;       // Insert a PCR in next output packet.
-        uint8_t          _ccOutput = 0;            // Continuity counter in output PID.
-        uint8_t          _ccPES {1};               // Continuity counter in PES ASYNC mode.
-        PIDCCMap         _lastCC {};               // Continuity counter by PID.
-        size_t           _lateDistance = 0;        // Distance from the last packet.
-        size_t           _lateMaxPackets = DEFAULT_MAX_BUFFERED_PACKETS;  // Maximum number of packets in _latePackets.
-        size_t           _lateIndex = 0;           // Index in first late packet.
-        TSPacketPtrQueue _latePackets {};          // Packets to insert later.
+        Report&          _report;
+        bool             _packing = false;          // Packing mode.
+        size_t           _pack_distance = NPOS;     // Maximum distance between inner packets.
+        PESMode          _pes_mode = DISABLED;      // PES mode selected.
+        size_t           _pes_offset = 0;           // PES Offset used in the Synchronous mode.
+        PID              _pid_output = PID_NULL;    // Output PID.
+        PIDSet           _pid_input {};             // Input PID's to encapsulate.
+        PID              _pcr_ref_pid = PID_NULL;   // Insert PCR's based on this reference PID.
+        size_t           _pcr_ref_label = NPOS;     // Insert PCR's based on packets with that labels.
+        UString          _last_error {};            // Last error message.
+        PacketCounter    _current_packet = 0;       // Total TS packets since last reset.
+        PacketCounter    _pcr_last_packet = INVALID_PACKET_COUNTER;  // Packet index of last PCR in reference PID.
+        uint64_t         _pcr_last_value = INVALID_PCR;              // Last PCR value in reference PID.
+        uint64_t         _pts_previous = INVALID_PTS;                // Previous PTS value in PES ASYNC mode.
+        BitRate          _bitrate = 0;              // Bitrate computed from last PCR.
+        bool             _insert_pcr = false;       // Insert a PCR in next output packet.
+        uint8_t          _cc_output = 0;            // Continuity counter in output PID.
+        uint8_t          _cc_pes {1};               // Continuity counter in PES ASYNC mode.
+        PIDCCMap         _last_cc {};               // Continuity counter by PID.
+        size_t           _late_distance = 0;        // Distance from the last packet.
+        size_t           _late_max_packets = DEFAULT_MAX_BUFFERED_PACKETS;  // Maximum number of packets in _latePackets.
+        size_t           _late_index = 0;           // Index in first late packet.
+        TSPacketPtrQueue _late_packets {};          // Packets to insert later.
 
         // Reset PCR information, lost synchronization.
         void resetPCR();
 
         // Fill packet payload with data from the first queued packet.
-        void fillPacket(TSPacket& pkt, size_t& pktIndex);
+        void fillPacket(TSPacket& pkt, size_t& pkt_index);
 
         // Compute the PCR distance from this packet to last PCR.
-        uint64_t getPCRDistance() { return PacketInterval<PCR>(_bitrate, _currentPacket - _pcrLastPacket).count(); }
+        uint64_t getPCRDistance() { return PacketInterval<PCR>(_bitrate, _current_packet - _pcr_last_packet).count(); }
     };
 }

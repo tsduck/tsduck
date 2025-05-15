@@ -50,33 +50,33 @@ namespace ts {
         //! Get the last error message.
         //! @return The last error message.
         //!
-        const UString& lastError() const { return _lastError; }
+        const UString& lastError() const { return _last_error; }
 
         //!
         //! Check if a previous error is pending.
         //! @return True if a previous error is pending.
         //! @see resetError()
         //!
-        bool hasError() const { return !_lastError.empty(); }
+        bool hasError() const { return !_last_error.empty(); }
 
         //!
         //! Reset the last error.
         //!
-        void resetError() { _lastError.clear(); }
+        void resetError() { _last_error.clear(); }
 
         //!
         //! Get the input PID.
         //! @return The input PID.
         //!
-        PID inputPID() const { return _pidInput; }
+        PID inputPID() const { return _pid_input; }
 
     private:
-        PID      _pidInput = PID_NULL;       // Input PID.
-        bool     _synchronized = false;      // Input PID fully synchronized.
-        uint8_t  _ccInput = 0;               // Continuity counter in input PID.
-        size_t   _nextIndex {1};             // Current size of _nextPacket (not full yet), 1 points after sync byte.
-        TSPacket _nextPacket {{SYNC_BYTE}};  // Next packet, partially decapsulated, sync byte is implicit.
-        UString  _lastError {};              // Last error message.
+        PID      _pid_input = PID_NULL;       // Input PID.
+        bool     _synchronized = false;       // Input PID fully synchronized.
+        uint8_t  _cc_input = 0;               // Continuity counter in input PID.
+        size_t   _next_index {1};             // Current size of _next_packet (not full yet), 1 points after sync byte.
+        TSPacket _next_packet {{SYNC_BYTE}};  // Next packet, partially decapsulated, sync byte is implicit.
+        UString  _last_error {};              // Last error message.
 
         // Loose synchronization, return false.
         bool lostSync(const UString& error);

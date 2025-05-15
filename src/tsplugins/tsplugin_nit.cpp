@@ -50,6 +50,8 @@ namespace ts {
         UString            _new_netw_name {};             // New network name
         bool               _set_netw_id = false;          // Change network id
         uint16_t           _new_netw_id = 0;              // New network id
+        bool               _set_onetw_id = false;         // Change original network id of all TS
+        uint16_t           _new_onetw_id = 0;             // New original network id
         bool               _use_nit_other = false;        // Use a NIT Other, not the NIT Actual
         uint16_t           _nit_other_id = 0;             // Network id of the NIT Other to hack
         int                _lcn_oper = 0;                 // Operation on LCN descriptors
@@ -148,6 +150,10 @@ ts::NITPlugin::NITPlugin(TSP* tsp_) :
     help(u"nit-other", u"id",
          u"Same as --other (for compatibility).");
 
+    option(u"original-network-id", 0, UINT16);
+    help(u"original-network-id", u"id",
+         u"Set the specified new value as original network id of all TS in the NIT.");
+
     option(u"other", 'o', UINT16);
     help(u"other", u"id",
          u"Do not modify the NIT Actual. Modify the NIT Other with the specified network id.");
@@ -214,6 +220,8 @@ bool ts::NITPlugin::getOptions()
     _new_netw_name = value(u"network-name");
     _set_netw_id = present(u"network-id");
     getIntValue(_new_netw_id, u"network-id");
+    _set_onetw_id = present(u"original-network-id");
+    getIntValue(_new_onetw_id, u"original-network-id");
     _use_nit_other = present(u"other") || present(u"nit-other");
     getIntValue(_nit_other_id, u"other", intValue<uint16_t>(u"nit-other"));
     _build_sld = present(u"build-service-list-descriptors");
@@ -453,6 +461,25 @@ void ts::NITPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
     // Update the network id.
     if (_set_netw_id) {
         nit.network_id = _new_netw_id;
+    }
+
+    // Update the original network id of all TS.
+    if (_set_onetw_id) {
+        // The original network id is part of the map key (TransportStreamId).
+        // First, build a set of keys with a different original network id.
+        std::set<TransportStreamId> others;
+        for (const auto& it : nit.transports) {
+            if (it.first.original_network_id != _new_onetw_id) {
+                others.insert(it.first);
+            }
+        }
+        // Then, replace all keys.
+        for (const auto& id : others) {
+            auto newid(id);
+            newid.original_network_id = _new_onetw_id;
+            nit.transports[newid] = nit.transports[id];
+            nit.transports.erase(id);
+        }
     }
 
     // Update the network name.
