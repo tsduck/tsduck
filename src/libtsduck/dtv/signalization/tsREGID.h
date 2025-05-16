@@ -60,6 +60,7 @@ namespace ts {
         REGID_AOM      = MakeREGID("AV01"),  //!< Alliance for Open Media.
         REGID_AVSAudio = MakeREGID("AVSA"),  //!< Audio Video Coding Standard Working Group of China.
         REGID_AVSVideo = MakeREGID("AVSV"),  //!< Audio Video Coding Standard Working Group of China.
+        REGID_BSSD     = MakeREGID("BSSD"),  //!< Society of Motion Picture and Television Engineers
         REGID_CUEI     = MakeREGID("CUEI"),  //!< Society of Cable Telecommunications Engineers (SCTE-35 splice information).
         REGID_DTG1     = MakeREGID("DTG1"),  //!< Digital TV Group.
         REGID_EAC3     = MakeREGID("EAC3"),  //!< Dolby Laboratories, Inc.

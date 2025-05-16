@@ -72,8 +72,8 @@ namespace ts {
         PID inputPID() const { return _input_pid; }
 
     private:
-        Report&       _report;
-        PacketCounter _packet_count = 0;      // Number of processed packets.
+        [[maybe_unused]] Report& _report;
+        PacketCounter _packet_count = 0;           // Number of processed packets.
         PID           _input_pid = PID_NULL;       // Input PID.
         bool          _synchronized = false;       // Input PID fully synchronized.
         uint8_t       _cc_input = 0;               // Continuity counter in input PID.

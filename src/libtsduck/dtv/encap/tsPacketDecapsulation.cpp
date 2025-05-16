@@ -240,7 +240,6 @@ bool ts::PacketDecapsulation::processPacket(ts::TSPacket& pkt)
     assert(_next_index <= PKT_SIZE);
     size_t size = std::min(PKT_SIZE - pkt_index, PKT_SIZE - _next_index);
     MemCopy(_next_packet.b + _next_index, pkt.b + pkt_index, size);
-    if (_next_index < 4 && _next_index + size >= 4) _report.debug(u"@@@@ start extracting packet on PID %d at packet index %'d", _next_packet.getPID(), _packet_count);
     pkt_index += size;
     _next_index += size;
 
@@ -248,7 +247,6 @@ bool ts::PacketDecapsulation::processPacket(ts::TSPacket& pkt)
         // Next packet is full, return it.
         const TSPacket tmp(pkt);
         pkt = _next_packet;
-        _report.debug(u"@@@@ return packet on PID %d at packet index %'d", pkt.getPID(), _packet_count);
         // Copy start of next packet.
         size = PKT_SIZE - pkt_index;
         MemCopy(_next_packet.b + 1, tmp.b + pkt_index, size);

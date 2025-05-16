@@ -300,36 +300,47 @@ ts::CodecType ts::PMT::Stream::getCodec(const DuckContext& duck) const
 
     // Try specific values of stream type.
     switch (stream_type) {
-        case ST_MPEG1_AUDIO:
+        case ST_MPEG1_AUDIO: {
             return CodecType::MPEG1_AUDIO;
-        case ST_MPEG1_VIDEO:
+        }
+        case ST_MPEG1_VIDEO: {
             return CodecType::MPEG1_VIDEO;
-        case ST_MPEG2_AUDIO:
+        }
+        case ST_MPEG2_AUDIO: {
             return CodecType::MPEG2_AUDIO;
+        }
         case ST_MPEG2_VIDEO:
-        case ST_MPEG2_3D_VIEW:
+        case ST_MPEG2_3D_VIEW: {
             return CodecType::MPEG2_VIDEO;
+        }
         case ST_MPEG4_AUDIO:
-        case ST_MPEG4_AUDIO_RAW:
+        case ST_MPEG4_AUDIO_RAW: {
             return CodecType::HEAAC; // ISO 14496-3
-        case ST_MPEG4_VIDEO:
+        }
+        case ST_MPEG4_VIDEO: {
             return CodecType::MPEG4_VIDEO;
-        case ST_AAC_AUDIO:
+        }
+        case ST_AAC_AUDIO: {
             return CodecType::AAC;
-        case ST_J2K_VIDEO:
+        }
+        case ST_J2K_VIDEO: {
             return CodecType::J2K;
-        case ST_AC3_AUDIO:
+        }
+        case ST_AC3_AUDIO: {
             if (atsc) {
                 return CodecType::AC3;
             }
             break;
-        case ST_EAC3_AUDIO:
+        }
+        case ST_EAC3_AUDIO: {
             if (atsc) {
                 return CodecType::EAC3;
             }
             break;
-        default:
+        }
+        default: {
             break;
+        }
     }
 
     // Look up descriptors until one indicates something useful.
@@ -338,67 +349,98 @@ ts::CodecType ts::PMT::Stream::getCodec(const DuckContext& duck) const
         const Descriptor& dsc(descs[index]);
         if (dsc.isValid()) {
             switch (dsc.tag()) {
-                case DID_MPEG_AVC_VIDEO:
+                case DID_MPEG_AVC_VIDEO: {
                     return CodecType::AVC;
-                case DID_MPEG_HEVC_VIDEO:
+                }
+                case DID_MPEG_HEVC_VIDEO: {
                     return CodecType::HEVC;
-                case DID_MPEG_VVC_VIDEO:
+                }
+                case DID_MPEG_VVC_VIDEO: {
                     return CodecType::VVC;
-                case DID_MPEG_EVC_VIDEO:
+                }
+                case DID_MPEG_EVC_VIDEO: {
                     return CodecType::EVC;
-                case DID_MPEG_MPEG4_VIDEO:
+                }
+                case DID_MPEG_MPEG4_VIDEO: {
                     return CodecType::MPEG4_VIDEO;
-                case DID_MPEG_J2K_VIDEO:
+                }
+                case DID_MPEG_J2K_VIDEO: {
                     return CodecType::J2K;
-                case DID_DVB_DTS:
+                }
+                case DID_DVB_DTS: {
                     return CodecType::DTS;
-                case DID_DVB_AC3:
+                }
+                case DID_DVB_AC3: {
                     return CodecType::AC3;
-                case DID_DVB_ENHANCED_AC3:
+                }
+                case DID_DVB_ENHANCED_AC3: {
                     return CodecType::EAC3;
+                }
                 case DID_DVB_AAC:
-                case DID_MPEG_MPEG2_AAC_AUDIO:
+                case DID_MPEG_MPEG2_AAC_AUDIO: {
                     return CodecType::AAC;
+                }
                 case DID_MPEG_MPEG4_AUDIO:
-                case DID_MPEG_MPEG4_AUDIO_EXT:
+                case DID_MPEG_MPEG4_AUDIO_EXT: {
                     return CodecType::HEAAC; // ISO 14496-3
-                case DID_DVB_SUBTITLING:
+                }
+                case DID_DVB_SUBTITLING: {
                     return CodecType::DVB_SUBTITLES;
+                }
                 case DID_DVB_TELETEXT:
-                case DID_DVB_VBI_TELETEXT:
+                case DID_DVB_VBI_TELETEXT: {
                     return CodecType::TELETEXT;
-                case DID_AVS3_VIDEO:
+                }
+                case DID_AVS3_VIDEO: {
                     if (pds == PDS_AVSVideo) {
                         return CodecType::AVS3_VIDEO;
                     }
                     break;
-                case DID_AVS2_AUDIO:
+                }
+                case DID_AVS2_AUDIO: {
                     if (pds == PDS_AVSAudio) {
                         return CodecType::AVS2_AUDIO;
                     }
                     break;
-                case DID_AVS3_AUDIO:
+                }
+                case DID_AVS3_AUDIO: {
                     if (pds == PDS_AVSAudio) {
                         return CodecType::AVS3_AUDIO;
                     }
                     break;
+                }
+                case DID_MPEG_REGISTRATION: {
+                    // Check registration id.
+                    if (dsc.payloadSize() >= 4) {
+                        const REGID regid = GetUInt32(dsc.payload());
+                        if (regid == REGID_BSSD) {
+                            return CodecType::AES3_PCM;
+                        }
+                    }
+                    break;
+                }
                 case DID_MPEG_EXTENSION: {
                     // Lookup extended tag.
                     if (dsc.payloadSize() >= 1) {
                         switch (dsc.payload()[0]) {
                             case XDID_MPEG_HEVC_TIM_HRD:
                             case XDID_MPEG_HEVC_OP_POINT:
-                            case XDID_MPEG_HEVC_HIER_EXT:
+                            case XDID_MPEG_HEVC_HIER_EXT: {
                                 return CodecType::HEVC;
-                            case XDID_MPEG_VVC_TIM_HRD:
+                            }
+                            case XDID_MPEG_VVC_TIM_HRD: {
                                 return CodecType::VVC;
-                            case XDID_MPEG_EVC_TIM_HRD:
+                            }
+                            case XDID_MPEG_EVC_TIM_HRD: {
                                 return CodecType::EVC;
+                            }
                             case XDID_MPEG_LCEVC_VIDEO:
-                            case XDID_MPEG_LCEVC_LINKAGE:
+                            case XDID_MPEG_LCEVC_LINKAGE: {
                                 return CodecType::LCEVC;
-                            default:
+                            }
+                            default: {
                                 break;
+                            }
                         }
                     }
                     break;
@@ -407,22 +449,28 @@ ts::CodecType ts::PMT::Stream::getCodec(const DuckContext& duck) const
                     // Lookup extended tag.
                     if (dsc.payloadSize() >= 1) {
                         switch (dsc.payload()[0]) {
-                            case XDID_DVB_DTS_NEURAL:
+                            case XDID_DVB_DTS_NEURAL: {
                                 return CodecType::DTS;
-                            case XDID_DVB_DTS_HD_AUDIO:
+                            }
+                            case XDID_DVB_DTS_HD_AUDIO: {
                                 return CodecType::DTSHD;
-                            case XDID_DVB_AC4:
+                            }
+                            case XDID_DVB_AC4: {
                                 return CodecType::AC4;
-                            case XDID_DVB_VVC_SUBPICTURES:
+                            }
+                            case XDID_DVB_VVC_SUBPICTURES: {
                                 return CodecType::VVC;
-                            default:
+                            }
+                            default: {
                                 break;
+                            }
                         }
                     }
                     break;
                 }
-                default:
+                default: {
                     break;
+                }
             }
         }
     }

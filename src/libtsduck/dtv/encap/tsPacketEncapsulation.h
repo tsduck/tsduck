@@ -310,7 +310,7 @@ namespace ts {
         using PIDCCMap = std::map<PID,uint8_t>;  // map of continuity counters, indexed by PID
         using TSPacketPtrQueue = std::deque<TSPacketPtr>;
 
-        Report&          _report;
+        [[maybe_unused]] Report& _report;
         bool             _packing = false;          // Packing mode.
         size_t           _pack_distance = NPOS;     // Maximum distance between inner packets.
         PESMode          _pes_mode = DISABLED;      // PES mode selected.

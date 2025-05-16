@@ -17,6 +17,7 @@
 #include "tsAACDescriptor.h"
 #include "tsISO639LanguageDescriptor.h"
 #include "tsSubtitlingDescriptor.h"
+#include "tsRegistrationDescriptor.h"
 #include "tsTeletextDescriptor.h"
 #include "tsISDBTInformation.h"
 #include "tsBinaryTable.h"
@@ -976,6 +977,17 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
                 if (ps != nullptr) {
                     // The presence of this descriptor indicates a PID carrying an AIT.
                     ps->comment = u"AIT";
+                }
+                break;
+            }
+            case DID_MPEG_REGISTRATION: {
+                if (ps != nullptr) {
+                    const RegistrationDescriptor desc(_duck, bindesc);
+                    if (desc.format_identifier == REGID_BSSD) {
+                        // The presence of this registration id indicates an AES3 PCM audio track (SMPTE 302M).
+                        ps->description = u"AES3 PCM Audio";
+                        ps->carry_audio = true;
+                    }
                 }
                 break;
             }
