@@ -351,6 +351,8 @@
   "Data Encryption Standard - Cipher Block Chaining Packet Encryption Specification".
 * [[[SCTE-164]]] ANSI/SCTE 164 2019,
   "Emergency Alert Metadata Descriptor".
+* [[[SMPTE-2038]]] SMPTE ST 2038:2021, December 2020:
+  "SMPTE Standard; Carriage of Ancillary Data Packets in an MPEG-2 Transport Stream"
 * [[[SRT]]] SRT, libsrt site, https://github.com/Haivision/srt/
 * [[[Suntech]]] Suntechtv U3 USB modulator (VATek-based),
   https://www.suntechtv.com/web/Home/ProductDetail?key=e593s&productId=23673

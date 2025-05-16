@@ -403,6 +403,10 @@ namespace ts {
 
         DID_AOM_AV1_VIDEO = 0x80,  //!< DID for AV1 video descriptor, as defined in https://aomediacodec.github.io/av1-mpeg2-ts/
 
+        // Valid in MPEG context after REGID_VANC registration id / format identifier
+
+        DID_SMPTE_ANC_DATA = 0xC4,  //!< DID for SMPTE anc_data_descriptor
+
         // Valid in ATSC / SCTE context:
 
         DID_ATSC_STUFFING       = 0x80,  //!< DID for ATSC stuffing_descriptor

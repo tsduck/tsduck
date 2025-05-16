@@ -69,6 +69,7 @@ namespace ts {
         REGID_HEVC     = MakeREGID("HEVC"),  //!< "HEVC" registration identifier (unofficial, used in legacy streams).
         REGID_KLVA     = MakeREGID("KLVA"),  //!< Society of Motion Picture and Television Engineers.
         REGID_SCTE     = MakeREGID("SCTE"),  //!< Society of Cable Telecommunications Engineers.
+        REGID_VANC     = MakeREGID("VANC"),  //!< SMPTE ST 2038 Carriage of Ancillary Data Packets (unofficial)
         REGID_CUVV     = MakeREGID("cuvv"),  //!< UHD World Association ("cuvv") registration identifier (registration procedure in progress).
         REGID_NULL     = 0xFFFFFFFF,         //!< Unassigned registration identifier.
     };

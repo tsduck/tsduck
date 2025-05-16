@@ -183,6 +183,10 @@ Extended = true
 #
 0x0001_01_41565341_D3 = AVS2 Audio (T/AI 109.7)
 #
+# MPEG private descriptors with "VANC" registration id (SMPTE-defined).
+#
+0x0001_01_56414E43_C4 = Anc Data (SMPTE 2038)
+#
 # MPEG private descriptors with REGID/PDS for UHD World Association (UWA).
 # The registration process for the MPEG REGID is currently (2024) in progress.
 #

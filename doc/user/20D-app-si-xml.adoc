@@ -117,6 +117,10 @@ include::.all.isdb.tables.adoc[]
 
 include::.all.mpeg.descriptors.adoc[]
 
+=== SMPTE-defined descriptors (MPEG private descriptors)
+
+include::.all.smpte.descriptors.adoc[]
+
 === DVB-defined descriptors
 
 Note that a few descriptors are allowed in specific tables only since they reuse tag values which are

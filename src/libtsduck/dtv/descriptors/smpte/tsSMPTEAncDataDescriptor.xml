@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <smpte_anc_data_descriptor>
+      <!-- "additional information, optional and currently undefined" -->
+      Hexadecimal content
+    </smpte_anc_data_descriptor>
+
+  </_descriptors>
+</tsduck>

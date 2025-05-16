@@ -1,0 +1,11 @@
+==== smpte_anc_data_descriptor
+
+Defined by SMPTE in <<SMPTE-2038>>.
+
+[source,xml]
+----
+<smpte_anc_data_descriptor>
+  <!-- "additional information, optional and currently undefined" -->
+  Hexadecimal content
+</smpte_anc_data_descriptor>
+----
