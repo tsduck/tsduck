@@ -71,7 +71,7 @@ Equivalent to `--scrambling-control 0`.
 Select packets from PID's which were encoded with the specified codec format.
 
 [.optdoc]
-The name must be one of `AAC`, `AC3`, `AC4`, `AV1`, `AVC`,
+The name must be one of `AAC`, `AC3`, `AC4`, `AES3Audio`, `AV1`, `AVC`,
 `AVS2Audio`, `AVS3Audio`, `AVS3Video`, `DTS`, `DTSHD`, `DVBSubtitles`,
 `EAC3`, `EVC`, `H264`, `H265`, `H266`, `HEAAC`, `HEVC`, `JPEG2000`, `LCEVC`, `MP1Audio`, `MPEG-1-Audio`,
 `MP1Video`, `MPEG-1-Video`, `MP2Audio`, `MPEG-2-Audio`, `MP2Video`, `MPEG-2-Video`, `MP3`, `MP4Video`,
