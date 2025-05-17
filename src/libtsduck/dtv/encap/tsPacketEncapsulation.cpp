@@ -53,6 +53,7 @@ void ts::PacketEncapsulation::reset(PID output_pid, const PIDSet& input_pids, co
     _late_distance = 0;
     _late_index = 0;
     _late_packets.clear();
+    _delayed_initial = 0;
     resetPCR();
 }
 
@@ -72,6 +73,7 @@ void ts::PacketEncapsulation::setOutputPID(PID pid)
         _late_distance = 0;
         _late_index = 0;
         _late_packets.clear();
+        _delayed_initial = 0;
     }
 }
 
@@ -213,12 +215,46 @@ bool ts::PacketEncapsulation::processPacket(TSPacket& pkt, TSPacketMetadata& mda
         _late_index = 1;
     }
 
+    // Can we compute a PCR for the current packet?
+    const bool pcr_known = _bitrate != 0 && _pcr_last_packet != INVALID_PACKET_COUNTER && _pcr_last_value != INVALID_PCR;
+
+    // Check if we need to generate a PTS in the packet.
+    const bool need_pts = _pes_mode != DISABLED && _pes_offset != 0;
+
     // If this packet is part of the input set, place it in the "late" queue.
-    // Note that a packet always need to go into the queue, even if the queue
-    // is empty because no input packet can fit into an output packet. At least
-    // a few bytes need to be queued.
+    // Note that a packet always need to go into the queue, even if the queue is empty because
+    // no input packet can fit into an output packet. At least a few bytes need to be queued.
     if ((_input_pids.test(pid) || mdata.hasAnyLabel(_input_labels)) && _output_pid != PID_NULL) {
-        if (_late_packets.size() > _late_max_packets) {
+        if (need_pts && !pcr_known) {
+            // Synchronous PES mode, before getting a PCR. We can't compute a PTS.
+            // Delay packets until we can compute a PTS. Count and report delayed packets.
+            if (_drop_before_pts) {
+                // Drop initial packets.
+                if (_delayed_initial == 0) {
+                    _report.verbose(u"start dropping packets in PID %n, waiting for a PCR to compute PTS", _output_pid);
+                }
+            }
+            else {
+                // Delay initial packets.
+                if (_delayed_initial == 0) {
+                    _report.verbose(u"start delaying packets in PID %n, waiting for a PCR to compute PTS", _output_pid);
+                }
+                // In the initial phase of synchronous PES mode, delay packets before PTS can be computed.
+                if (_late_packets.size() > _late_max_packets) {
+                    // Delay queue is too long, drop initial packets.
+                    _late_packets.pop_front();
+                    _late_index = 1;
+                }
+                // Enqueue the packet.
+                _late_packets.push_back(std::make_shared<TSPacket>(pkt));
+                // If this is the first packet in the queue, point to the first byte after 0x47.
+                if (_late_packets.size() == 1) {
+                    _late_index = 1;
+                }
+            }
+            _delayed_initial++;
+        }
+        else if (_late_packets.size() > _late_max_packets) {
             _last_error.assign(u"buffered packets overflow, insufficient null packets in input stream");
             status = false;
         }
@@ -231,25 +267,33 @@ bool ts::PacketEncapsulation::processPacket(TSPacket& pkt, TSPacketMetadata& mda
             }
         }
         // Pretend that the input packet is a null one.
+        pkt = NullPacket;
         pid = PID_NULL;
     }
 
     // Check PES mode support
     if (_pes_mode > VARIABLE) {
-        _last_error.assign(u"PES mode %d not implemented!", _pes_mode);
+        _last_error.assign(u"PES mode %d is not implemented", _pes_mode);
         status = false;
     }
 
     // Replace input or null packets.
-    if (pid == PID_NULL && !_late_packets.empty()) {
+    if (pid == PID_NULL && !_late_packets.empty() && (pcr_known || !need_pts)) {
+
+        // Report end of packet delaying in PES synchronous mode.
+        if (_delayed_initial > 0) {
+            _report.verbose(u"stop %s packets in PID %n, can compute PTS now, %d packets were %s",
+                            _drop_before_pts ? u"dropping" : u"delaying", _output_pid, _delayed_initial,
+                            _drop_before_pts ? u"dropped" : u"delayed");
+            _delayed_initial = 0;
+        }
 
         // Do we need to add a PCR in this packet?
-        const bool add_pcr = _insert_pcr && _bitrate != 0 && _pcr_last_packet != INVALID_PACKET_COUNTER && _pcr_last_value != INVALID_PCR;
+        const bool add_pcr = _insert_pcr && pcr_known;
 
         // How many bytes do we have in the queue (at least).
         const size_t add_bytes = (PKT_SIZE - _late_index) + (_late_packets.size() > 1 ? PKT_SIZE : 0);
 
-        // Depending on packing option, we may decide to not insert an outer packet which is not full.
         // Available size in outer packet:
         //   PKT_SIZE
         //   -4 => TS header.
@@ -257,13 +301,15 @@ bool ts::PacketEncapsulation::processPacket(TSPacket& pkt, TSPacketMetadata& mda
         //   -1 => Pointer field, first byte of payload (not always, but very often).
         // -26|27 => PES size (when PES mode is enabled).
         //  -10 => PTS (5) + Metadata AU Header (5), in Synchronous PES mode (when PES mode is enabled).
+
+        // Depending on packing option, we may decide to not insert an outer packet which is not full.
         // We insert a packet all the time if packing is off.
         // Otherwise, we insert a packet when there is enough data to fill it.
-        bool packout = !_packing;
+        bool send_packet = !_packing;
         if (_packing && _pack_distance > 0 && _late_distance > _pack_distance) {
-            packout = true;
+            send_packet = true;
         }
-        if (packout || add_bytes >= PKT_SIZE - (add_pcr ? 12 : 4) - 1) {
+        if (send_packet || add_bytes >= PKT_SIZE - (add_pcr ? 12 : 4) - 1) {
 
             // Build the new packet.
             pkt.init(_output_pid, _cc_output);
@@ -355,7 +401,7 @@ bool ts::PacketEncapsulation::processPacket(TSPacket& pkt, TSPacketMetadata& mda
                     pkt.b[pkt_index++] = 0x01;
                     pkt.b[pkt_index++] = 0x00;
                     pkt.b[pkt_index++] = 0x01;
-                    // This is an empty PTS (00:00:00.0000), it will be rewrited at end (**)
+                    // This is an empty PTS (00:00:00.0000), it will be rewritten at end (**)
 
                     // Write the Metadata AU Header (5 Bytes).
                     pkt.b[pkt_index++] = 0x00; // Service_id

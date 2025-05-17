@@ -33,6 +33,7 @@ namespace ts {
     private:
         bool                         _ignore_errors = false;  // Ignore encapsulation errors.
         bool                         _pack = false;           // Outer packet packing option.
+        bool                         _drop_initial = false;   // Drop initial input packet before the first PCR.
         size_t                       _pack_limit = 0;         // Max limit distance.
         size_t                       _max_buffered = 0;       // Max buffered packets.
         PID                          _output_pid = PID_NULL;  // Output PID.
@@ -56,6 +57,14 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"encap", ts::EncapPlugin);
 ts::EncapPlugin::EncapPlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Encapsulate packets from several PID's into one single PID", u"[options]")
 {
+    option(u"drop-initial");
+    help(u"drop-initial",
+         u"In synchronous PES mode, all outer packets must contain a PTS. "
+         u"However, a PTS cannot be computed before getting the first PCR. "
+         u"If initial input packets arrive before the first PCR, they cannot be immediately encapsulated. "
+         u"By default, they are delayed until the first PCR is found, when PTS can be computed. "
+         u"Using this option, these initial input packets are dropped instead of being delayed.");
+
     option(u"ignore-errors", 'i');
     help(u"ignore-errors",
          u"Ignore errors such as PID conflict or packet overflow. By default, a PID conflict is "
@@ -133,6 +142,7 @@ bool ts::EncapPlugin::getOptions()
 {
     _ignore_errors = present(u"ignore-errors");
     _pack = present(u"pack");
+    _drop_initial = present(u"drop-initial");
     getIntValue(_pack_limit, u"pack", 0);
     getIntValue(_max_buffered, u"max-buffered-packets", PacketEncapsulation::DEFAULT_MAX_BUFFERED_PACKETS);
     getIntValue(_output_pid, u"output-pid", PID_NULL);
@@ -167,6 +177,7 @@ bool ts::EncapPlugin::start()
     _encap.setPES(_pes_mode);
     _encap.setPESOffset(_pes_offset);
     _encap.setMaxBufferedPackets(_max_buffered);
+    _encap.setInitialPacketDrop(_drop_initial);
     return true;
 }
 

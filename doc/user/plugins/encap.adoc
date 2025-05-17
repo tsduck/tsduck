@@ -51,6 +51,16 @@ $ tsp -P encap [options]
 Options
 
 [.opt]
+*--drop-initial*
+
+[.optdoc]
+In synchronous PES mode, all outer packets must contain a PTS.
+However, a PTS cannot be computed before getting the first PCR.
+If initial input packets arrive before the first PCR, they cannot be immediately encapsulated.
+By default, they are delayed until the first PCR is found, when PTS can be computed.
+Using this option, these initial input packets are dropped instead of being delayed.
+
+[.opt]
 *-i* +
 *--ignore-errors*
 

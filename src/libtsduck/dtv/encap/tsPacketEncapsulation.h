@@ -96,10 +96,11 @@ namespace ts {
     //!
     //! A warning about the Synchronous mode:
     //!  At start the PTS marks can't be in synch with the target pcr-pid.
-    //!  This is because the PCR value isn't readed at start. But the PTS
+    //!  This is because the PCR value isn't read at start. But the PTS
     //!  is required to be in all PES packets of the encapsulation.
-    //!  So, it's recommended to discard the outcoming stream until valid
-    //!  PTS values appear in the encapsulated stream.
+    //!  So, outer packets are delayed until valid PTS values can be computed.
+    //!  If too many initial packets need to be delayed, the first ones are
+    //!  discarded.
     //!
     //! In order to correctly identify the encapsulated PES stream, it is
     //! recommended to include in the PMT table a format identifier
@@ -306,12 +307,26 @@ namespace ts {
         //!
         void setPESOffset(int32_t offset);
 
+        //!
+        //! In synchronous PES mode, drop or delay initial packets before the first PCR.
+        //! In synchronous PES mode, all outer packets must contain a PTS. However, a PTS
+        //! cannot be computed before getting the first PCR. If initial input packets arrive
+        //! before the first PCR, they cannot be immediately encapsulated. By default, they
+        //! are delayed until the first PCR is found, when PTS can be computed. Using this
+        //! method, it is possible to drop these initial packets instead of delaying them.
+        //! @param [in] drop If true, initial input packets before a PCR are dropped. If false
+        //! (the default), the input packets are delayed and inserted in the outer PID after
+        //! the first PCR is found.
+        //!
+        void setInitialPacketDrop(bool drop) { _drop_before_pts = drop; }
+
     private:
         using PIDCCMap = std::map<PID,uint8_t>;  // map of continuity counters, indexed by PID
         using TSPacketPtrQueue = std::deque<TSPacketPtr>;
 
         [[maybe_unused]] Report& _report;
         bool             _packing = false;          // Packing mode.
+        bool             _drop_before_pts = false;  // In synchronous PES mode, drop packets before getting a PCR.
         size_t           _pack_distance = NPOS;     // Maximum distance between inner packets.
         PESMode          _pes_mode = DISABLED;      // PES mode selected.
         uint64_t         _pes_offset = 0;           // PES Offset used in the Synchronous mode.
@@ -330,10 +345,11 @@ namespace ts {
         uint8_t          _cc_output = 0;            // Continuity counter in output PID.
         uint8_t          _cc_pes {1};               // Continuity counter in PES ASYNC mode.
         PIDCCMap         _last_cc {};               // Continuity counter by PID.
-        size_t           _late_distance = 0;        // Distance from the last packet.
+        size_t           _late_distance = 0;        // Distance from the last packet in output PID.
         size_t           _late_max_packets = DEFAULT_MAX_BUFFERED_PACKETS;  // Maximum number of packets in _latePackets.
-        size_t           _late_index = 0;           // Index in first late packet.
+        size_t           _late_index = 0;           // Next index to read in first late packet.
         TSPacketPtrQueue _late_packets {};          // Packets to insert later.
+        size_t           _delayed_initial = 0;      // Number of initial delayed packets before computing PTS (synchronous PES mode).
 
         // Reset PCR information, lost synchronization.
         void resetPCR();
