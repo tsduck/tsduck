@@ -1,0 +1,51 @@
+#-----------------------------------------------------------------------------
+#
+#  TSDuck - The MPEG Transport Stream Toolkit
+#  Copyright (c) 2005-2025, Thierry Lelegard
+#  BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+#
+#  GitHub Actions configuration file : Build Ubuntu
+#
+#  Build installer for Ubuntu on request (workflow dispatch)
+#
+#-----------------------------------------------------------------------------
+
+name: Build Ubuntu
+
+on:
+  # Manual trigger only.
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-24.04
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+
+    - name: Get TSDuck repo
+      uses: actions/checkout@master
+
+    - name: Install dependencies
+      run: scripts/install-prerequisites.sh
+
+    - name: Build TSDuck
+      run: |
+        fullversion=$(scripts/get-version-from-sources.py --full)
+        echo "FULLVERSION=$fullversion" >>$GITHUB_ENV
+        make installer
+
+    - name: Upload Ubuntu package
+      uses: actions/upload-artifact@v4
+      with:
+        name: ubuntu-package
+        path: pkg/installers/tsduck_${{ env.FULLVERSION }}_amd64.deb
+        retention-days: 5
+
+    - name: Upload Ubuntu dev package
+      uses: actions/upload-artifact@v4
+      with:
+        name: ubuntu-dev-package
+        path: pkg/installers/tsduck-dev_${{ env.FULLVERSION }}_amd64.deb
+        retention-days: 5

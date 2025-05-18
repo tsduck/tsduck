@@ -30,9 +30,10 @@ namespace ts {
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
-        bool                _ignore_errors = false;  // Ignore encapsulation errors.
-        PID                 _pid = PID_NULL;         // Input PID.
-        PacketDecapsulation _decap {*this};          // Decapsulation engine.
+        bool _ignore_errors = false;
+        bool _mute_errors = false;
+        PID  _pid = PID_NULL;
+        PacketDecapsulation _decap {*this};
     };
 }
 
@@ -50,6 +51,10 @@ ts::DecapPlugin::DecapPlugin(TSP* tsp_) :
     help(u"ignore-errors",
          u"Ignore errors such malformed encapsulated stream.");
 
+    option(u"mute-errors", 'm');
+    help(u"mute-errors",
+         u"Same as --ignore-errors and also don't even display the error message.");
+
     option(u"pid", 'p', PIDVAL);
     help(u"pid",
          u"Specify the input PID containing all encapsulated PID's. "
@@ -63,7 +68,8 @@ ts::DecapPlugin::DecapPlugin(TSP* tsp_) :
 
 bool ts::DecapPlugin::getOptions()
 {
-    _ignore_errors = present(u"ignore-errors");
+    _mute_errors = present(u"mute-errors");
+    _ignore_errors = _mute_errors || present(u"ignore-errors");
     getIntValue(_pid, u"pid", PID_NULL);
     return true;
 }
@@ -86,7 +92,13 @@ bool ts::DecapPlugin::start()
 
 ts::ProcessorPlugin::Status ts::DecapPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
-    if (_decap.processPacket(pkt) || _ignore_errors || _decap.lastError().empty()) {
+    if (_decap.processPacket(pkt) || _ignore_errors || !_decap.hasError()) {
+        if (_decap.hasError()) {
+            if (!_mute_errors) {
+                error(_decap.lastError());
+            }
+            _decap.resetError();
+        }
         return TSP_OK;
     }
     else {

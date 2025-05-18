@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.41-4289 (May 2025)
+VERSION 3.41-4290 (May 2025)
 
 [NEW] New commands and plugins:
 
@@ -39,6 +39,7 @@ VERSION 3.41-4289 (May 2025)
       --list-descriptors in "tstables".
     - Option --remove-with-registration in plugin "pmt".
     - Options --label, --pcr-label, --drop-initial in plugin "encap".
+    - Option --mute-errors in plugin "decap".
     - Option --original-network-id in plugin "nit".
 
 [BUG] Bug fixes:

@@ -40,6 +40,13 @@ Options
 Ignore errors such as malformed encapsulated stream.
 
 [.opt]
+*-m* +
+*--mute-errors*
+
+[.optdoc]
+Same as `--ignore-errors` and also don't even display the error message.
+
+[.opt]
 *-p* _value_ +
 *--pid* _value_
 
