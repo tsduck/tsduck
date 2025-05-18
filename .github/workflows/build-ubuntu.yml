@@ -45,19 +45,21 @@ jobs:
     - name: Build TSDuck
       run: |
         fullversion=$(scripts/get-version-from-sources.py --full)
+        arch=$(dpkg-architecture -qDEB_BUILD_ARCH)
         echo "FULLVERSION=$fullversion" >>$GITHUB_ENV
+        echo "ARCH=$arch" >>$GITHUB_ENV
         make installer
 
     - name: Upload Ubuntu package
       uses: actions/upload-artifact@v4
       with:
         name: ubuntu-package
-        path: pkg/installers/tsduck_${{ env.FULLVERSION }}_amd64.deb
+        path: pkg/installers/tsduck_${{ env.FULLVERSION }}_${{ env.ARCH }}.deb
         retention-days: 5
 
     - name: Upload Ubuntu dev package
       uses: actions/upload-artifact@v4
       with:
         name: ubuntu-dev-package
-        path: pkg/installers/tsduck-dev_${{ env.FULLVERSION }}_amd64.deb
+        path: pkg/installers/tsduck-dev_${{ env.FULLVERSION }}_${{ env.ARCH }}.deb
         retention-days: 5
