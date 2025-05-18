@@ -10,16 +10,28 @@
 #
 #-----------------------------------------------------------------------------
 
-name: Build Ubuntu
+name: Build Ubuntu Package
 
 on:
-  # Manual trigger only.
+  # Manual trigger only, with target runner selection.
   workflow_dispatch:
+    inputs:
+      system:
+        type: choice
+        description: 'Target system'
+        required: true
+        default: 'ubuntu-latest'
+        options:
+        - ubuntu-latest
+        - ubuntu-24.04
+        - ubuntu-22.04
+        - ubuntu-24.04-arm
+        - ubuntu-22.04-arm
 
 jobs:
   build:
     name: Build
-    runs-on: ubuntu-24.04
+    runs-on: ${{ inputs.system }}
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
