@@ -39,7 +39,7 @@ endif
 install install-tools: $(EXECS) tsduck-completion.bash
 	install -d -m 755 $(SYSROOT)$(SYSPREFIX)/bin $(SYSROOT)$(BASHCOMP_DIR)
 	install -m 755 $(EXECS) $(SYSROOT)$(SYSPREFIX)/bin
-	strip $(addprefix $(SYSROOT)$(SYSPREFIX)/bin/,$(notdir $(EXECS)))
+	$(STRIP) $(addprefix $(SYSROOT)$(SYSPREFIX)/bin/,$(notdir $(EXECS)))
 	install -m 644 tsduck-completion.bash $(SYSROOT)$(BASHCOMP_DIR)/$(if $(BASHCOMP_AUTO),_tsduck,tsduck)
 	$(if $(BASHCOMP_AUTO),for cmd in $(ALLTOOLS); do ln -sf _tsduck $(SYSROOT)$(BASHCOMP_DIR)/$$cmd; done)
 	$(if $(NO_TSTOOLS),rm -rf $(addprefix $(SYSROOT)$(SYSPREFIX)/bin/,$(NO_TSTOOLS)))

@@ -462,6 +462,9 @@ ARFLAGS=
 # Use $(CXX) for compilation. Use $(GCC) to explicitly reference GCC.
 [[ -z $GCC ]] && GCC=gcc
 
+# The strip command tries to remove global symbols on macOS.
+[[ -n $MACOS ]] && STRIP="strip -x" || STRIP="strip"
+
 # Define compilation flags for 32-bit cross-compilation.
 if [[ -n $M32 ]]; then
     CXXFLAGS_TARGET="-march=i686"

@@ -97,7 +97,7 @@ $(STATIC_LIBTSCORE): $(OBJS_STATIC_LIB)
 install-tools: $(SHARED_LIBTSCORE)
 	install -d -m 755 $(SYSROOT)$(USRLIBDIR)
 	install -m 644 $(SHARED_LIBTSCORE) $(SYSROOT)$(USRLIBDIR)
-	strip $(SYSROOT)$(USRLIBDIR)/$(notdir $(SHARED_LIBTSCORE))
+	$(STRIP) $(SYSROOT)$(USRLIBDIR)/$(notdir $(SHARED_LIBTSCORE))
 	+@$(call RECURSE,config)
 
 PRECONFIG = $(SYSROOT)$(SYSPREFIX)/include/tscore/tsPreConfiguration.h

@@ -85,6 +85,7 @@ GCC                          # GCC command, even when CXX is not gcc.
 CPP                          # C/C++ preprocessor command.
 LD                           # Linker command.
 AR                           # Library archive command.
+STRIP                        # Binary strip command.
 CPPFLAGS                     # Complete preprocessor flags.
 CXXFLAGS                     # Complete C++ compilation flags.
 LDFLAGS                      # Complete C++ compilation flags.
