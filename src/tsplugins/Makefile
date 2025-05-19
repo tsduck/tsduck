@@ -28,6 +28,7 @@ install install-tools: $(SHLIBS)
 	$(if $(NO_TSPLUGINS),rm -rf $(addsuffix $(SO_SUFFIX),$(addprefix $(SYSROOT)$(USRLIBDIR)/tsduck/,$(NO_TSPLUGINS)),))
 	$(if $(MACOS),rm -rf $(SYSROOT)$(USRLIBDIR)/tsduck/*.so,)
 	install -m 644 $(SHLIBS) $(SYSROOT)$(USRLIBDIR)/tsduck
+	strip $(addprefix $(SYSROOT)$(USRLIBDIR)/tsduck/,$(notdir $(SHLIBS)))
 
 else
 

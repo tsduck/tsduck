@@ -130,6 +130,7 @@ install-tools: $(SHARED_LIBTSDUCK)
 	install -d -m 755 $(SYSROOT)$(USRLIBDIR)
 	$(if $(MACOS),rm -rf $(SYSROOT)$(USRLIBDIR)/libtsduck.so,)
 	install -m 644 $(SHARED_LIBTSDUCK) $(SYSROOT)$(USRLIBDIR)
+	strip $(SYSROOT)$(USRLIBDIR)/$(notdir $(SHARED_LIBTSDUCK))
 	+@$(call RECURSE,config $(if $(NOPYTHON),,python) $(if $(NOJAVA),,java))
 
 install-devel: $(if $(NOSTATIC),,$(STATIC_LIBTSDUCK)) $(TSDUCK_H)
