@@ -47,6 +47,8 @@ const ts::Names& ts::CodecTypeEnum()
         {u"AVS2 Audio",     CodecType::AVS2_AUDIO},
         {u"AVS3 Audio",     CodecType::AVS3_AUDIO},
         {u"AES3 PCM Audio", CodecType::AES3_PCM},
+        {u"VC-1",           CodecType::VC1},
+        {u"VC-4",           CodecType::VC4},
     });
     return data;
 }
@@ -93,6 +95,8 @@ const ts::Names& ts::CodecTypeArgEnum()
         {u"AVS2Audio",     CodecType::AVS2_AUDIO},
         {u"AVS3Audio",     CodecType::AVS3_AUDIO},
         {u"AES3Audio",     CodecType::AES3_PCM},
+        {u"VC1",           CodecType::VC1},
+        {u"VC4",           CodecType::VC4},
     });
     return data;
 }
@@ -141,6 +145,8 @@ bool ts::CodecTypeIsVideo(CodecType ct)
         CodecType::AV1,
         CodecType::AVS2_VIDEO,
         CodecType::AVS3_VIDEO,
+        CodecType::VC1,
+        CodecType::VC4,
     };
 
     return video_codecs.contains(ct);

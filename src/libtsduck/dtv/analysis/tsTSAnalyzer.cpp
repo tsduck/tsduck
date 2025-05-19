@@ -983,10 +983,26 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
             case DID_MPEG_REGISTRATION: {
                 if (ps != nullptr) {
                     const RegistrationDescriptor desc(_duck, bindesc);
-                    if (desc.format_identifier == REGID_BSSD) {
-                        // The presence of this registration id indicates an AES3 PCM audio track (SMPTE 302M).
-                        ps->description = u"AES3 PCM Audio";
-                        ps->carry_audio = true;
+                    switch (desc.format_identifier) {
+                        case REGID_BSSD: {
+                            // The presence of this registration id indicates an AES3 PCM audio track (SMPTE 302M).
+                            ps->description = u"AES3 PCM Audio";
+                            ps->carry_audio = true;
+                            break;
+                        }
+                        case REGID_VC1: {
+                            ps->description = u"VC-1 Video";
+                            ps->carry_video = true;
+                            break;
+                        }
+                        case REGID_VC4: {
+                            ps->description = u"VC-4 Video";
+                            ps->carry_video = true;
+                            break;
+                        }
+                        default: {
+                            break;
+                        }
                     }
                 }
                 break;

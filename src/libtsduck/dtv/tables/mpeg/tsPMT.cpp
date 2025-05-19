@@ -413,8 +413,11 @@ ts::CodecType ts::PMT::Stream::getCodec(const DuckContext& duck) const
                     // Check registration id.
                     if (dsc.payloadSize() >= 4) {
                         const REGID regid = GetUInt32(dsc.payload());
-                        if (regid == REGID_BSSD) {
-                            return CodecType::AES3_PCM;
+                        switch (regid) {
+                            case REGID_BSSD: return CodecType::AES3_PCM;
+                            case REGID_VC1: return CodecType::VC1;
+                            case REGID_VC4: return CodecType::VC4;
+                            default: break;
                         }
                     }
                     break;

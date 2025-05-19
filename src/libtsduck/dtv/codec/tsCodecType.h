@@ -58,6 +58,8 @@ namespace ts {
         AVS2_AUDIO,    //!< AVS2 audio (AVS is Audio Video Standards workgroup of China).
         AVS3_AUDIO,    //!< AVS3 audio (AVS is Audio Video Standards workgroup of China).
         AES3_PCM,      //!< AES3 PCM audio (SMPTE 302M).
+        VC1,           //!< VC-1 video coding (SMPTE 421, initially Microsoft's proprietary video format Windows Media Video 9).
+        VC4,           //!< VC-4 video coding (SMPTE 2058).
     };
     TS_POP_WARNING()
 
