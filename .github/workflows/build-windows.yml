@@ -47,7 +47,6 @@ jobs:
         pkg/nsis/build-installer.ps1 -${{ inputs.target }} -NoPause -NoLowPriority
 
     - name: Upload installer
-      if: env.REBUILD == 'true'
       uses: actions/upload-artifact@v4
       with:
         name: installer
@@ -55,7 +54,6 @@ jobs:
         retention-days: 5
 
     - name: Upload portable
-      if: env.REBUILD == 'true'
       uses: actions/upload-artifact@v4
       with:
         name: portable
