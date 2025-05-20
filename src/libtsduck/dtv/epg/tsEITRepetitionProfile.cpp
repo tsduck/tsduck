@@ -76,12 +76,12 @@ ts::Time ts::EITRepetitionProfile::laterPeriod(const Time& now) const
 
 ts::TID ts::EITRepetitionProfile::laterTableId(bool actual) const
 {
-    return EIT::SegmentToTableId(actual, prime_days.count() * EIT::SEGMENTS_PER_DAY);
+    return EIT::SegmentToTableId(actual, size_t(prime_days.count() * EIT::SEGMENTS_PER_DAY));
 }
 
 uint8_t ts::EITRepetitionProfile::laterSectionNumber() const
 {
-    return EIT::SegmentToSection(prime_days.count() * EIT::SEGMENTS_PER_DAY);
+    return EIT::SegmentToSection(size_t(prime_days.count() * EIT::SEGMENTS_PER_DAY));
 }
 
 
