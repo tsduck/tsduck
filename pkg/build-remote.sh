@@ -59,6 +59,7 @@ BOOT_TIMEOUT=500
 SHUTDOWN_TIMEOUT=200
 BACKUP_ROOT=
 INSPREREQ=false
+BUILDARGS=
 
 #-----------------------------------------------------------------------------
 # Display help text
@@ -73,6 +74,10 @@ Build the TSDuck installers on a remote system and get them back.
 Usage: $SCRIPT [options]
 
 Options:
+
+  --args "..."
+      Build arguments. Directly passed to "make installer" (UNIX systems) or
+      "build-installer.ps1" (Windows).
 
   --backup directory
       Specify a directory where all installers are copied. An intermediate
@@ -155,6 +160,10 @@ EOF
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
+        --args)
+            [[ $# -gt 1 ]] || usage; shift
+            BUILDARGS="$1"
+            ;;
         --backup)
             [[ $# -gt 1 ]] || usage; shift
             BACKUP_ROOT="$1"
@@ -533,13 +542,13 @@ LOGFILE="$ROOTDIR/pkg/installers/build-${NAME}-$(curdate).log"
                 powershell-cmd ". scripts/cleanup.ps1 -NoPause"
                 touch pkg/installers/timestamp.tmp
                 $INSPREREQ && PREREQ=-Prerequisites || PREREQ=
-                powershell-cmd ". pkg/nsis/build-installer.ps1 -GitPull $PREREQ -NoPause"
+                powershell-cmd ". pkg/nsis/build-installer.ps1 -GitPull $PREREQ -NoPause $BUILDARGS"
             else
                 make clean
                 git fetch origin && git checkout master && git pull origin master
                 $INSPREREQ && scripts/install-prerequisites.sh
                 touch pkg/installers/timestamp.tmp
-                make installer
+                make installer $BUILDARGS
             fi
         )
         # Get all files from installers directory which are newer than the time stamp.
@@ -562,7 +571,7 @@ LOGFILE="$ROOTDIR/pkg/installers/build-${NAME}-$(curdate).log"
         # Build installers after updating the repository.
         $INSPREREQ && PREREQ=-Prerequisites || PREREQ=
         ssh "${SSH_OPTS[@]}" $(ssh-name) \
-            ". '$REMOTE_DIR/pkg/nsis/build-installer.ps1' -GitPull $PREREQ -NoPause"
+            ". '$REMOTE_DIR/pkg/nsis/build-installer.ps1' -GitPull $PREREQ -NoPause $BUILDARGS"
 
         # Get all files from installers directory which are newer than the timestamp.
         files=$(ssh "${SSH_OPTS[@]}" $(ssh-name) \
@@ -594,7 +603,7 @@ LOGFILE="$ROOTDIR/pkg/installers/build-${NAME}-$(curdate).log"
             make clean ';' \
             $PREREQ ';' \
             touch "pkg/installers/timestamp.tmp" '&&' \
-            make installer
+            make installer $BUILDARGS
 
         # Get all files from installers directory which are newer than the time stamp.
         verbose "Fetching installers"

@@ -12,6 +12,11 @@
 #  --update: same as --verify, then update if incorrect.
 #  --create: create a new version from the latest commit in the repo.
 #
+#  Common options;
+#  --dry-run, -n: dry run, don't create anything.
+#  --verbose, -v: verbose mode.
+#  --debug: debug mode.
+#
 #-----------------------------------------------------------------------------
 
 import os, re, sys, glob, tsgithub
@@ -35,7 +40,7 @@ class installer:
         self.dev = dev
         self.required = required
         self.name = name
-        self.file = None
+        self.files = []
     def glob_pattern(self, version=None):
         return self.pattern \
                    .replace('{VERSION}', '*' if version is None else version) \
@@ -100,9 +105,9 @@ def get_tsduck_version():
     return None if match is None else '%s.%s-%s' % (match.group(1), match.group(2), match.group(3))
 
 # A function to locate all local installer packages.
-# Update the installers list with 'file' elements.
+# Update the installers list with 'files' elements.
 # Return True if all installers were found, False otherwise.
-def search_installers(version):
+def search_installers(version, silent):
     # Get directory where installation packages are located.
     dir = repo.scriptdir
     while True:
@@ -120,15 +125,15 @@ def search_installers(version):
         # Find files matching the pattern in the directory.
         pattern = installers[i].glob_pattern(version)
         files = [f for f in glob.glob(pkgdir + '/' + pattern)]
-        if len(files) == 1:
-            installers[i].file = files[0]
-        elif len(files) > 1:
-            repo.error('more than one package matching %s' % pattern)
-            success = False
+        if len(files) > 0:
+            installers[i].files = files
+            if len(files) > 1 and not silent:
+                repo.verbose('found %d packages matching %s' % (len(files), pattern))
         elif installers[i].required:
-            repo.error('no package matching %s' % pattern)
+            if not silent:
+                repo.error('no package matching %s' % pattern)
             success = False
-        else:
+        elif not silent:
             repo.verbose('optional package for "%s" not found, ignored' % installers[i].name)
     return success
 
@@ -140,36 +145,39 @@ class body_builder:
         self.assets = [a for a in release.get_assets()]
     def get_text(self):
         return self.text
-    def line(self, line):
+    def add_line(self, line):
         self.text += line + '\r\n'
-    def ref(self, prefix, name, url):
+    def add_ref(self, prefix, name, url):
         self.text += '* ' + prefix + ': [' + name + '](' + url + ')\r\n'
-    def url(self, prefix, pattern):
+    def add_all_urls(self, prefix, pattern):
         for a in self.assets:
             if re.fullmatch(pattern, a.name) is not None:
-                self.ref(prefix, a.name, a.browser_download_url)
-                break
+                self.add_ref(prefix, a.name, a.browser_download_url)
 
 # Build the body text of a release.
 def build_body_text(release):
     body = body_builder(release)
-    body.line('Binaries for command-line tools and plugins:')
+    body.add_line('Binaries for command-line tools and plugins:')
     for ins in installers:
         if not ins.dev:
-            body.url(ins.name, ins.re_pattern())
-    body.ref('macOS', 'use Homebrew', 'https://tsduck.io/download/docs/tsduck-dev.html#macinstall')
-    body.line('')
-    body.line('Binaries for development environment:')
-    body.line('* Windows: Included in installer (select option "Development")')
+            body.add_all_urls(ins.name, ins.re_pattern())
+    body.add_ref('macOS', 'use Homebrew', 'https://tsduck.io/download/docs/tsduck-dev.html#macinstall')
+    body.add_line('')
+    body.add_line('Binaries for development environment:')
+    body.add_line('* Windows: Included in installer (select option "Development")')
     for ins in installers:
         if ins.dev:
-            body.url(ins.name, ins.re_pattern())
-    body.line('* macOS: Included in Homebrew package')
+            body.add_all_urls(ins.name, ins.re_pattern())
+    body.add_line('* macOS: Included in Homebrew package')
     return body.get_text()
+
+# Get the version string "major.minor-commit" of a release.
+def release_to_version(release):
+    return release.tag_name[1:]
 
 # Build the title of a release.
 def build_title(release):
-    return 'Version %s' % release.tag_name[1:]
+    return 'Version %s' % release_to_version(release)
 
 # Main code.
 if not (opt_title or opt_text or opt_verify or opt_update or opt_create):
@@ -213,7 +221,7 @@ if opt_create:
     repo.info('TSDuck version: %s' % version)
 
     # Locate the installer packages to upload.
-    if not search_installers(version):
+    if not search_installers(version, False):
         repo.fatal('cannot create version, fix package files first')
 
     # Check if the tag already exists in the repository.
@@ -245,14 +253,14 @@ if opt_create:
     # Upload assets which are not yet uploaded.
     assets = [a for a in release.get_assets()]
     for ins in installers:
-        if ins.file is not None:
-            asset_name = os.path.basename(ins.file)
+        for file in ins.files:
+            asset_name = os.path.basename(file)
             if len([a for a in assets if a.name == asset_name]) > 0:
                 repo.info("File %s already uploaded" % asset_name)
             else:
-                repo.info("Uploading %s" % ins.file)
+                repo.info("Uploading %s" % file)
                 if not repo.dry_run:
-                    release.upload_asset(ins.file)
+                    release.upload_asset(file)
 
     # Finally publish the release.
     if not repo.dry_run:
