@@ -15,49 +15,67 @@
     #define TS_NO_ZLIB 1
 #endif
 
+// Disable "sdefl" on known big endian systems. The implementation is completely broken.
+#if (defined(TS_POWERPC) || defined(TS_POWERPC64) || defined(TS_SPARC) || defined(TS_S390X)) && !defined(TS_NO_SDEFL)
+    #define TS_NO_SDEFL 1
+#endif
+
+// Include zlib.
 #if !defined(TS_NO_ZLIB)
-    // Use zlib
     #if !defined(ZLIB_CONST)
         #define ZLIB_CONST 1
     #endif
     #include <zlib.h>
 #endif
 
-// Use "sdefl" in all cases, but not always as default..
-// Disable SIMD instructions on Arm32, the compilation of infl.h fails.
-#if defined(TS_ARM32) && !defined(SINFL_NO_SIMD)
-    #define SINFL_NO_SIMD 1
+// Include sdefl.
+#if !defined(TS_NO_SDEFL)
+    // Disable SIMD instructions on Arm32, the compilation of infl.h fails.
+    #if defined(TS_ARM32) && !defined(SINFL_NO_SIMD)
+        #define SINFL_NO_SIMD 1
+    #endif
+
+    // Force the implementation of functions inside defl.h and infl.h.
+    #define SINFL_IMPLEMENTATION 1
+    #define SDEFL_IMPLEMENTATION 1
+
+    // The header files defl.h and infl.h generates many compilation warnings.
+    TS_PUSH_WARNING()
+    TS_LLVM_NOWARNING(missing-field-initializers)
+    TS_LLVM_NOWARNING(old-style-cast)
+    TS_LLVM_NOWARNING(shorten-64-to-32)
+    TS_LLVM_NOWARNING(comma)
+    TS_LLVM_NOWARNING(padded)
+    TS_LLVM_NOWARNING(sign-conversion)
+    TS_LLVM_NOWARNING(sign-compare)
+    TS_LLVM_NOWARNING(unsafe-buffer-usage)
+    TS_LLVM_NOWARNING(switch-default)
+    TS_LLVM_NOWARNING(zero-as-null-pointer-constant)
+    TS_LLVM_NOWARNING(reserved-identifier)
+    TS_LLVM_NOWARNING(unused-function)
+    TS_GCC_NOWARNING(missing-field-initializers)
+    TS_GCC_NOWARNING(old-style-cast)
+    TS_GCC_NOWARNING(switch-default)
+    TS_GCC_NOWARNING(zero-as-null-pointer-constant)
+    TS_GCC_NOWARNING(unused-function)
+    TS_GCC_NOWARNING(sign-compare)
+    TS_MSC_NOWARNING(4018)
+    TS_MSC_NOWARNING(4505)
+    #include "sdefl.h"
+    #include "sinfl.h"
+    TS_POP_WARNING()
 #endif
 
-// Force the implementation of functions inside defl.h and infl.h.
-#define SINFL_IMPLEMENTATION 1
-#define SDEFL_IMPLEMENTATION 1
-
-// The header files defl.h and infl.h generates many compilation warnings.
-TS_PUSH_WARNING()
-TS_LLVM_NOWARNING(missing-field-initializers)
-TS_LLVM_NOWARNING(old-style-cast)
-TS_LLVM_NOWARNING(shorten-64-to-32)
-TS_LLVM_NOWARNING(comma)
-TS_LLVM_NOWARNING(padded)
-TS_LLVM_NOWARNING(sign-conversion)
-TS_LLVM_NOWARNING(sign-compare)
-TS_LLVM_NOWARNING(unsafe-buffer-usage)
-TS_LLVM_NOWARNING(switch-default)
-TS_LLVM_NOWARNING(zero-as-null-pointer-constant)
-TS_LLVM_NOWARNING(reserved-identifier)
-TS_LLVM_NOWARNING(unused-function)
-TS_GCC_NOWARNING(missing-field-initializers)
-TS_GCC_NOWARNING(old-style-cast)
-TS_GCC_NOWARNING(switch-default)
-TS_GCC_NOWARNING(zero-as-null-pointer-constant)
-TS_GCC_NOWARNING(unused-function)
-TS_GCC_NOWARNING(sign-compare)
-TS_MSC_NOWARNING(4018)
-TS_MSC_NOWARNING(4505)
-#include "sdefl.h"
-#include "sinfl.h"
-TS_POP_WARNING()
+// In case of absence of deflate support.
+#if defined(TS_NO_ZLIB) && defined(TS_NO_SDEFL)
+    #define NO_DEFLATE_SUPPORT u"This version of TSDuck was compiled without deflate support"
+#elif defined(TS_NO_ZLIB)
+    #define NO_DEFLATE_SUPPORT u"This version of TSDuck was compiled without zlib support, use sdefl"
+#elif defined(TS_NO_SDEFL)
+    #define NO_DEFLATE_SUPPORT u"This version of TSDuck was compiled without sdefl support, use zlib"
+#else
+    #define NO_DEFLATE_SUPPORT u""
+#endif
 
 
 //----------------------------------------------------------------------------
@@ -69,10 +87,12 @@ TS_REGISTER_FEATURE(u"zlib", u"Deflate library", ALWAYS, ts::Zlib::GetLibraryVer
 
 ts::UString ts::Zlib::GetLibraryVersion()
 {
-#if defined(TS_NO_ZLIB)
+#if !defined(TS_NO_ZLIB)
+    return UString::Format(u"zlib version %s (compiled with %s)", zlibVersion(), ZLIB_VERSION);
+#elif !defined(TS_NO_SDEFL)
     return u"Small Deflate (sdefl) + various fixes";
 #else
-    return UString::Format(u"zlib version %s (compiled with %s)", zlibVersion(), ZLIB_VERSION);
+    return NO_DEFLATE_SUPPORT;
 #endif
 }
 
@@ -82,6 +102,15 @@ bool ts::Zlib::DefaultSdefl()
     return true;
 #else
     return false;
+#endif
+}
+
+bool ts::Zlib::SdeflSupported()
+{
+#if defined(TS_NO_SDEFL)
+    return false;
+#else
+    return true;
 #endif
 }
 
@@ -116,7 +145,7 @@ bool ts::Zlib::checkZlibStatus(void* stream, int status, const UChar* func, Repo
 
 bool ts::Zlib::CompressAppend(ByteBlock& out, const void* in, size_t in_size, int level, Report& report, bool use_sdefl)
 {
-    const size_t initial_out_size = out.size();
+    [[maybe_unused]] const size_t initial_out_size = out.size();
 
     // Level shall be in range 0-9.
     level = std::max(0, std::min(9, level));
@@ -163,6 +192,7 @@ bool ts::Zlib::CompressAppend(ByteBlock& out, const void* in, size_t in_size, in
     }
 #endif
 
+#if !defined(TS_NO_SDEFL)
     // Fallback to sdefl library.
     // Maximum possible size of compressed data.
     const size_t max_out = size_t(::sdefl_bound(int(in_size)));
@@ -191,6 +221,10 @@ bool ts::Zlib::CompressAppend(ByteBlock& out, const void* in, size_t in_size, in
         out.resize(initial_out_size + size_t(len));
         return true;
     }
+#else
+    report.error(NO_DEFLATE_SUPPORT);
+    return false;
+#endif
 }
 
 
@@ -200,7 +234,7 @@ bool ts::Zlib::CompressAppend(ByteBlock& out, const void* in, size_t in_size, in
 
 bool ts::Zlib::DecompressAppend(ByteBlock& out, const void* in, size_t in_size, Report& report, bool use_sdefl)
 {
-    const size_t initial_out_size = out.size();
+    [[maybe_unused]] const size_t initial_out_size = out.size();
 
 #if !defined(TS_NO_ZLIB)
     if (!use_sdefl) {
@@ -245,6 +279,7 @@ bool ts::Zlib::DecompressAppend(ByteBlock& out, const void* in, size_t in_size, 
     }
 #endif
 
+#if !defined(TS_NO_SDEFL)
     // Fallback to sdefl library.
     // There is no way to know the decompressed size and there is also no way to continue
     // decompressing if the buffer is too small. We adopt the following strategy: start with
@@ -275,4 +310,8 @@ bool ts::Zlib::DecompressAppend(ByteBlock& out, const void* in, size_t in_size, 
     }
     report.error(u"cannot determine decompressed size, going too far, give up");
     return false;
+#else
+    report.error(NO_DEFLATE_SUPPORT);
+    return false;
+#endif
 }

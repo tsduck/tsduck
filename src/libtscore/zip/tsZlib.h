@@ -46,6 +46,12 @@ namespace ts {
         static bool DefaultSdefl();
 
         //!
+        //! Check if "Small Deflate" or "sdefl" is supported.
+        //! @return True if "Small Deflate" is supported, false if "zlib" is the only available option.
+        //!
+        static bool SdeflSupported();
+
+        //!
         //! Compress data according to the DEFLATE algorithm.
         //! @param [out] out Output compressed data.
         //! @param [in] in Address of input data.
