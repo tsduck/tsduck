@@ -73,8 +73,6 @@
     #define NO_DEFLATE_SUPPORT u"This version of TSDuck was compiled without zlib support, use sdefl"
 #elif defined(TS_NO_SDEFL)
     #define NO_DEFLATE_SUPPORT u"This version of TSDuck was compiled without sdefl support, use zlib"
-#else
-    #define NO_DEFLATE_SUPPORT u""
 #endif
 
 
