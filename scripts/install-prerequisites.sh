@@ -234,7 +234,7 @@ elif [[ "$SYSTEM" == "NetBSD" ]]; then
 
 elif [[ "$DISTRO" == "Ubuntu" ]]; then
 
-    PKGLIST+=(git g++ cmake flex bison dos2unix curl tar zip linux-libc-dev dpkg-dev python3)
+    PKGLIST+=(git g++ make cmake flex bison dos2unix curl tar zip linux-libc-dev dpkg-dev python3)
     [[ -z $NOOPENSSL                                       ]] && PKGLIST+=(libssl-dev)
     [[ -z $NOEDITLINE                                      ]] && PKGLIST+=(libedit-dev)
     [[ -z $NOPCSC                                          ]] && PKGLIST+=(pcscd libpcsclite-dev)
@@ -270,7 +270,7 @@ elif [[ "$DISTRO" == "Ubuntu" ]]; then
 
 elif [[ "$DISTRO" == "Linuxmint" ]]; then
 
-    PKGLIST+=(git g++ cmake flex bison dos2unix curl tar zip linux-libc-dev dpkg-dev python3)
+    PKGLIST+=(git g++ make cmake flex bison dos2unix curl tar zip linux-libc-dev dpkg-dev python3)
     [[ -z $NOOPENSSL                               ]] && PKGLIST+=(libssl-dev)
     [[ -z $NOEDITLINE                              ]] && PKGLIST+=(libedit-dev)
     [[ -z $NOZLIB                                  ]] && PKGLIST+=(zlib1g-dev)
@@ -307,7 +307,7 @@ elif [[ "$DISTRO" = "Debian" || "$DISTRO" = "Raspbian" ]]; then
     [[ -z $MAJOR ]] && lsb_release -d | grep -qi duke && MAJOR=15
     [[ -z $MAJOR ]] && MAJOR=99
 
-    PKGLIST+=(git g++ cmake flex bison dos2unix curl tar zip linux-libc-dev dpkg-dev python3)
+    PKGLIST+=(git g++ make cmake flex bison dos2unix curl tar zip linux-libc-dev dpkg-dev python3)
     [[ -z $NOOPENSSL               ]] && PKGLIST+=(libssl-dev)
     [[ -z $NOEDITLINE              ]] && PKGLIST+=(libedit-dev)
     [[ -z $NOZLIB                  ]] && PKGLIST+=(zlib1g-dev)
@@ -340,7 +340,7 @@ elif [[ -f /etc/fedora-release ]]; then
 
     FC=$(grep " release " /etc/fedora-release 2>/dev/null | sed -e 's/^.* release \([0-9\.]*\) .*$/\1/')
 
-    PKGLIST+=(git gcc-c++ cmake flex bison dos2unix curl tar zip kernel-headers libatomic rpmdevtools python3)
+    PKGLIST+=(git gcc-c++ make cmake flex bison dos2unix curl tar zip kernel-headers libatomic rpmdevtools python3)
     [[ -z $NOOPENSSL            ]] && PKGLIST+=(openssl-devel)
     [[ -z $NOEDITLINE           ]] && PKGLIST+=(libedit-devel)
     [[ -z $NOZLIB               ]] && PKGLIST+=(zlib-devel)
@@ -373,7 +373,7 @@ elif [[ -f /etc/redhat-release ]]; then
     EL=$(grep " release " /etc/redhat-release 2>/dev/null | sed -e 's/$/.99/' -e 's/^.* release \([0-9]*\.[0-9]*\).*$/\1/')
     EL=$(( ${EL/.*/} * 100 + ${EL/*./} ))
 
-    PKGLIST+=(git gcc-c++ cmake flex bison dos2unix curl tar zip kernel-headers libatomic rpmdevtools python3)
+    PKGLIST+=(git gcc-c++ make cmake which glibc-langpack-en flex bison dos2unix curl tar zip kernel-headers libatomic rpmdevtools python3)
     [[ -z $NOOPENSSL             ]] && PKGLIST+=(openssl-devel)
     [[ -z $NOEDITLINE            ]] && PKGLIST+=(libedit-devel)
     [[ -z $NOZLIB                ]] && PKGLIST+=(zlib-devel)
@@ -386,7 +386,7 @@ elif [[ -f /etc/redhat-release ]]; then
     [[ -z $NOJAVA && $EL -ge 900 ]] && PKGLIST+=(java-17-openjdk-devel)
     [[ -z $NODOXYGEN             ]] && PKGLIST+=(doxygen graphviz)
     [[ -n $STATIC                ]] && PKGLIST+=(glibc-static libstdc++-static)
-    [[ -z $NODOC                 ]] && PKGLIST+=(ruby-devel qpdf)
+    [[ -z $NODOC                 ]] && PKGLIST+=(ruby-devel rubygems qpdf)
     [[ -z $NODOC                 ]] && GEMLIST+=(asciidoctor asciidoctor-pdf rouge)
     [[ $EL -le 999               ]] && PKGLIST+=(gcc-toolset-13 gcc-toolset-13-gcc-c++ gcc-toolset-13-runtime gcc-toolset-13-binutils gcc-toolset-13-libatomic-devel)
 
@@ -397,14 +397,17 @@ elif [[ -f /etc/redhat-release ]]; then
         sudo yum -y install "${PKGOPTS[@]}" epel-release
         sudo yum -y install "${PKGOPTS[@]}" "${PKGLIST[@]}"
     elif [[ $EL -lt 803 ]]; then
+        sudo dnf -y install dnf-plugins-core
         sudo dnf -y config-manager --set-enabled PowerTools
         sudo dnf -y install "${PKGOPTS[@]}" epel-release
         sudo dnf -y install "${PKGOPTS[@]}" "${PKGLIST[@]}"
     elif [[ $EL -lt 900 ]]; then
+        sudo dnf -y install dnf-plugins-core
         sudo dnf -y config-manager --set-enabled powertools
         sudo dnf -y install "${PKGOPTS[@]}" epel-release
         sudo dnf -y install "${PKGOPTS[@]}" "${PKGLIST[@]}"
     else
+        sudo dnf -y install dnf-plugins-core
         sudo dnf -y config-manager --set-enabled plus
         sudo dnf -y config-manager --set-enabled crb
         sudo dnf -y install "${PKGOPTS[@]}" epel-release

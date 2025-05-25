@@ -76,7 +76,7 @@ findcmdvers() {
     local cmd=$(which "$name" 2>/dev/null)
     if [[ -z $cmd ]]; then
         # Not found, look for versioned names.
-        cmd=$(for dir in ${PATH//:/ }; do echo "$dir/$name"*; done | tr ' ' '\n' | grep -v '\*' | grep -e "/$name"'[-\.0-9]*$' | tail -1)
+        cmd=$(for dir in ${PATH//:/ } /usr/local/bin; do echo "$dir/$name"*; done | tr ' ' '\n' | grep -v '\*' | grep -e "/$name"'[-\.0-9]*$' | tail -1)
     fi
     [[ -n $cmd ]] && echo "$cmd"
 }
