@@ -166,6 +166,7 @@ However, if the binary transport stream is sent to the console, the screen is ga
 [.optdoc]
 *Solution*: If you don't need the output transport stream, use `-O drop` as output plugin.
 
+[#insert-nothing]
 *A plugin which is supposed to insert some data in the stream does not insert anything*
 
 [.optdoc]

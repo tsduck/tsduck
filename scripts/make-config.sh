@@ -403,6 +403,9 @@ fi
 # Subdirectory of $BINDIR where object files are stored; named from make's CURDIR.
 OBJDIR="$BINDIR/objs-\$(notdir \$(CURDIR))"
 
+# This directory can be created, used, and deleted by any rule.
+TEMPDIR="$BINDIR/tmp"
+
 # Output library files depend on $(BINDIR) in makefile.
 STATIC_LIBTSCORE="$BINDIR/libtscore.a"
 SHARED_LIBTSCORE="$BINDIR/libtscore$SO_SUFFIX"

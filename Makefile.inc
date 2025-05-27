@@ -124,8 +124,27 @@ ifeq ($(DONT_BUILD_DEPS),)
 endif
 
 #-----------------------------------------------------------------------------
-# Generic utilities, available as all levels of directory.
+# Generic utilities, available at all levels of directory.
 #-----------------------------------------------------------------------------
+
+# Build a tarbal of the source tree.
+
+ifeq ($(SOURCE_TARBALL),)
+    SOURCE_TARBALL = $(INSTALLERDIR)/tsduck-$(shell $(GET_TSDUCK_VERSION)).tgz
+endif
+TARNAME = $(notdir $(basename $(SOURCE_TARBALL)))
+
+PHONY: tarball
+tarball:
+	rm -rf $(TEMPDIR)
+	mkdir -p $(TEMPDIR)/$(TARNAME)
+	cd $(ROOTDIR); \
+	    $(TAR) -cpf - sample/sample-*/japanese-tables.bin \
+	    $(patsubst %,--exclude '%',.git $(shell cat $(ROOTDIR)/.gitignore)) \
+	    . | $(TAR) -C $(TEMPDIR)/$(TARNAME) -xpf -
+	$(MAKE) -C $(TEMPDIR)/$(TARNAME) clean
+	$(TAR) -C $(TEMPDIR) -czf $(SOURCE_TARBALL) -p --owner=0 --group=0 $(TARNAME)
+	rm -rf $(TEMPDIR)
 
 # Cleanup Windows oddities in source files.
 # Many IDE's indent with tabs, and tabs are 4 chars wide.

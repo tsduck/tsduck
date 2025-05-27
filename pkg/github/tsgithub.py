@@ -12,6 +12,14 @@
 
 import re, os, sys, base64, datetime, github
 
+# Get the scripts directory (directory of this module).
+def scripts_dir():
+    return os.path.dirname(os.path.abspath(sys.argv[0] if __name__ == '__main__' else __file__))
+
+# Get the root of the repository, two levels up.
+def repo_root():
+    return os.path.abspath(scripts_dir() + '/../..')
+
 # A class referencing the repository based on command line options.
 class repository:
 

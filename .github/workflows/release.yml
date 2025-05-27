@@ -1,0 +1,100 @@
+#-----------------------------------------------------------------------------
+#
+#  TSDuck - The MPEG Transport Stream Toolkit
+#  Copyright (c) 2005-2025, Thierry Lelegard
+#  BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+#
+#  GitHub Actions configuration file : Create a release.
+#
+#  Generate binaries for Ubuntu, Debian, Fedora, Red Hat, and Windows
+#  on Intel x64 and Arm64. The Linux binaries are built on Docker
+#  containers running a Ubunty GitHub runner host. All binaries are
+#  published as artifacts of the workflow.
+#
+#-----------------------------------------------------------------------------
+
+name: Release
+on: workflow_dispatch
+jobs:
+
+  linux:
+    strategy:
+      fail-fast: false
+      matrix:
+        image: [ubuntu:latest, debian:trixie, fedora:latest, almalinux:latest]
+        arch: [x64, arm64]
+        include:
+        - arch: x64
+          runner: ubuntu-latest
+        - arch: arm64
+          runner: ubuntu-24.04-arm
+    name: Build on ${{ matrix.image }} for ${{ matrix.arch }}
+    runs-on: ${{ matrix.runner }}
+    steps:
+    - name: Get TSDuck repo
+      uses: actions/checkout@master
+    - name: Build
+      run: pkg/build-docker.sh ${{ matrix.image }}
+    - name: List installers
+      run: |
+        ls -l pkg/installers
+        PACKS=($(ls pkg/installers | sort -d | grep -e '\.deb$' -e '\.rpm$'))
+        echo "TSTOOLS=${PACKS[0]}" >>$GITHUB_ENV
+        echo "TSDEV=${PACKS[1]}" >>$GITHUB_ENV
+        sed <<<"${{ matrix.image }}" -e 's/:.*//' -e 's/alma.*/redhat/' -e 's/rocky.*/redhat/' -e 's/^/DISTRO=/' >>$GITHUB_ENV
+        cat $GITHUB_ENV
+    - name: Publish tools package
+      uses: actions/upload-artifact@v4
+      with:
+        name: tsduck-${{ env.DISTRO }}-${{ matrix.arch }}
+        path: pkg/installers/${{ env.TSTOOLS }}
+        retention-days: 5
+    - name: Publish dev package
+      uses: actions/upload-artifact@v4
+      with:
+        name: tsduck-dev-${{ env.DISTRO }}-${{ matrix.arch }}
+        path: pkg/installers/${{ env.TSDEV }}
+        retention-days: 5
+
+  windows:
+    name: Build on windows for x64 and arm64
+    runs-on: windows-latest
+    steps:
+    - name: Get TSDuck repo
+      uses: actions/checkout@master
+    - name: Install dependencies
+      run: scripts/install-prerequisites.ps1 -GitHubActions -NoDoxygen -NoPause
+    - name: Build
+      run: pkg\nsis\build-installer.ps1 -Win64 -Arm64 -NoLowPriority -NoPause
+    - name: List installers
+      run: |
+        Get-ChildItem pkg\installers
+        Write-Output "TSW64=$((Get-ChildItem pkg\installers\TSDuck-Win64-*.exe).Name)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        Write-Output "TSW64P=$((Get-ChildItem pkg\installers\TSDuck-Win64-*-Portable.zip).Name)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        Write-Output "TSA64=$((Get-ChildItem pkg\installers\TSDuck-Arm64-*.exe).Name)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        Write-Output "TSA64P=$((Get-ChildItem pkg\installers\TSDuck-Arm64-*-Portable.zip).Name)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        Get-Content $env:GITHUB_ENV
+    - name: Publish Win64 package
+      uses: actions/upload-artifact@v4
+      with:
+        name: tsduck-windows-x64
+        path: pkg/installers/${{ env.TSW64 }}
+        retention-days: 5
+    - name: Publish Win64 portable package
+      uses: actions/upload-artifact@v4
+      with:
+        name: tsduck-windows-portable-x64
+        path: pkg/installers/${{ env.TSW64P }}
+        retention-days: 5
+    - name: Publish Arm64 package
+      uses: actions/upload-artifact@v4
+      with:
+        name: tsduck-windows-arm64
+        path: pkg/installers/${{ env.TSA64 }}
+        retention-days: 5
+    - name: Publish Arm64 portable package
+      uses: actions/upload-artifact@v4
+      with:
+        name: tsduck-windows-portable-arm64
+        path: pkg/installers/${{ env.TSA64P }}
+        retention-days: 5

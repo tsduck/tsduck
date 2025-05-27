@@ -14,6 +14,6 @@ include ../Makefile.inc
 SUBDIR := $(if $(wildcard /etc/*fedora* /etc/*redhat*),rpm,$(if $(wildcard /etc/*debian*),deb))
 $(if $(SUBDIR),,$(error unknown installer type on this operating system))
 
-.PHONY: default installer install-installer
-default installer install-installer:
+.PHONY: default installer install-installer installer-tarball
+default installer install-installer installer-tarball:
 	@$(MAKE) -C $(SUBDIR) $@

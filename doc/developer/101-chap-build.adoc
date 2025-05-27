@@ -542,6 +542,11 @@ For convenience and compatibility with some tradition, `V` can be used instead o
 
 Execute the command `make installer` at top level to build all packages.
 
+[source,shell]
+----
+$ make installer
+----
+
 Depending on the platform, the packages can be `.deb` or `.rpm` files.
 There is currently no support to build an installation package on other Linux distros and BSD systems.
 
@@ -551,6 +556,21 @@ Building the binaries, when necessary, is part of the installer build.
 All installation packages are dropped into the subdirectory `pkg/installers`.
 The packages are not deleted by the cleanup procedures.
 They are not pushed into the git repository either.
+
+After building the installation packages, it is possible to collect them into one single
+"tarball" archive using the command `make installer-tarball`.
+The resulting archive file is also dropped into `pkg/installers`.
+
+The name of the installation packages and the tarball archive depend on the package manager,
+the processor architecture, and the version of TSDuck.
+The name of the packages cannot be changed because they need to follow the rules of the
+corresponding package manager.
+However, the name of the tarball can be changed as follow:
+
+[source,shell]
+----
+$ make installer-tarball INSTALLER_TARBALL=/tmp/tsduck.tgz
+----
 
 NOTE: On macOS, there is no binary package for TSDuck on macOS.
 On this platform, TSDuck is installed using https://brew.sh[Homebrew],

@@ -234,7 +234,7 @@ elif [[ "$SYSTEM" == "NetBSD" ]]; then
 
 elif [[ "$DISTRO" == "Ubuntu" ]]; then
 
-    PKGLIST+=(git g++ make cmake flex bison dos2unix curl tar zip linux-libc-dev dpkg-dev python3)
+    PKGLIST+=(git g++ make cmake locales-all flex bison dos2unix curl tar zip linux-libc-dev dpkg-dev python3)
     [[ -z $NOOPENSSL                                       ]] && PKGLIST+=(libssl-dev)
     [[ -z $NOEDITLINE                                      ]] && PKGLIST+=(libedit-dev)
     [[ -z $NOPCSC                                          ]] && PKGLIST+=(pcscd libpcsclite-dev)
@@ -270,7 +270,7 @@ elif [[ "$DISTRO" == "Ubuntu" ]]; then
 
 elif [[ "$DISTRO" == "Linuxmint" ]]; then
 
-    PKGLIST+=(git g++ make cmake flex bison dos2unix curl tar zip linux-libc-dev dpkg-dev python3)
+    PKGLIST+=(git g++ make cmake locales-all flex bison dos2unix curl tar zip linux-libc-dev dpkg-dev python3)
     [[ -z $NOOPENSSL                               ]] && PKGLIST+=(libssl-dev)
     [[ -z $NOEDITLINE                              ]] && PKGLIST+=(libedit-dev)
     [[ -z $NOZLIB                                  ]] && PKGLIST+=(zlib1g-dev)
@@ -307,7 +307,7 @@ elif [[ "$DISTRO" = "Debian" || "$DISTRO" = "Raspbian" ]]; then
     [[ -z $MAJOR ]] && lsb_release -d | grep -qi duke && MAJOR=15
     [[ -z $MAJOR ]] && MAJOR=99
 
-    PKGLIST+=(git g++ make cmake flex bison dos2unix curl tar zip linux-libc-dev dpkg-dev python3)
+    PKGLIST+=(git g++ make cmake locales-all flex bison dos2unix curl tar zip linux-libc-dev dpkg-dev python3)
     [[ -z $NOOPENSSL               ]] && PKGLIST+=(libssl-dev)
     [[ -z $NOEDITLINE              ]] && PKGLIST+=(libedit-dev)
     [[ -z $NOZLIB                  ]] && PKGLIST+=(zlib1g-dev)
@@ -340,7 +340,7 @@ elif [[ -f /etc/fedora-release ]]; then
 
     FC=$(grep " release " /etc/fedora-release 2>/dev/null | sed -e 's/^.* release \([0-9\.]*\) .*$/\1/')
 
-    PKGLIST+=(git gcc-c++ make cmake flex bison dos2unix curl tar zip kernel-headers libatomic rpmdevtools python3)
+    PKGLIST+=(git gcc-c++ make cmake which glibc-langpack-en flex bison dos2unix curl tar zip kernel-headers libatomic rpmdevtools python3)
     [[ -z $NOOPENSSL            ]] && PKGLIST+=(openssl-devel)
     [[ -z $NOEDITLINE           ]] && PKGLIST+=(libedit-devel)
     [[ -z $NOZLIB               ]] && PKGLIST+=(zlib-devel)

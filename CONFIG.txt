@@ -212,6 +212,7 @@ OTHER_OS            # List of subdirectory for other operating systems (don't us
 BINROOT             # Root of all generated files.
 BINDIR              # Directory for all binary files; include architecture and host name.
 BINDIR_SUFFIX       # Fixed suffix to add to BINDIR; ignored if BINDIR is defined as input variable.
+TEMPDIR             # To be created, used and deleted as temporary directory.
 OBJDIR              # Subdirectory of BINDIR where object files are stored;
                     # named objs-$(CURDIR) for each source directory where make is executed.
 TOPLEVEL_CURDIR     # Value of CURDIR at the top-level invocation of make.
@@ -221,6 +222,8 @@ SHARED_LIBTSCORE    # Generated shared library for TSCore library.
 STATIC_LIBTSDUCK    # Generated static library for TSDuck library.
 SHARED_LIBTSDUCK    # Generated shared library for TSDuck library.
 INSTALLERDIR        # Output directory for binary packages and installers.
+INSTALLER_TARBALL   # Tarball file receiving the installers with target installer-tarball.
+SOURCE_TARBALL      # Tarball file receiving the source tree with target tarball.
 GET_TSDUCK_VERSION  # Shell command to get TSDuck version (see get-version-from-sources.py).
 ALL_INCLUDES        # List of all source directories with headers (excluding other OS).
 LIBTSCORE_INCLUDES  # List of source directories in libtscore with public headers.

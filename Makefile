@@ -132,8 +132,8 @@ install install-tools install-devel:
 
 # Build installer packages.
 
-.PHONY: installer install-installer
-installer install-installer:
+.PHONY: installer install-installer installer-tarball
+installer install-installer installer-tarball:
 	@$(MAKE) -C pkg $@
 
 # Count lines of code: Run cloc on the source code tree starting at current directory.
