@@ -90,7 +90,10 @@ installers = [
 
 # Get latest release and verify the format of its tag.
 def get_latest_release():
-    release = repo.repo.get_latest_release()
+    try:
+        release = repo.repo.get_latest_release()
+    except:
+        repo.fatal('no release found')
     if re.fullmatch('v' + pattern_version, release.tag_name) is None:
         repo.fatal('invalid tag "%s"' % release.tag_name)
     return release
