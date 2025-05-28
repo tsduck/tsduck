@@ -40,9 +40,9 @@ case "$IMAGE" in
 esac
 
 # Build a source tarball of TSDuck.
-TEMPDIR="$ROOTDIR/bin/tmp"
-SOURCES="$TEMPDIR/tsduck.tgz"
-mkdir -p "$TEMPDIR"
+TMPROOT="$ROOTDIR/bin/tmp"
+SOURCES="$TMPROOT/tsduck.tgz"
+mkdir -p "$TMPROOT"
 make -C "$ROOTDIR" tarball SOURCE_TARBALL="$SOURCES" || exit
 
 # Use that name for the container.
@@ -100,8 +100,8 @@ docker exec $CONT tsversion --version=all
 
 # Collect the installer files.
 docker exec $CONT make -C tsduck installer-tarball INSTALLER_TARBALL=/tmp/tsduck-$DISTRO.tgz
-docker cp $CONT:/tmp/tsduck-$DISTRO.tgz "$TEMPDIR/tsduck-$DISTRO.tgz"
-tar -xvzf "$TEMPDIR/tsduck-$DISTRO.tgz" -C "$ROOTDIR/pkg/installers"
+docker cp $CONT:/tmp/tsduck-$DISTRO.tgz "$TMPROOT/tsduck-$DISTRO.tgz"
+tar -xvzf "$TMPROOT/tsduck-$DISTRO.tgz" -C "$ROOTDIR/pkg/installers"
 
 # Cleanup the container.
 docker stop -t0 $CONT

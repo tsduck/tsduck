@@ -136,15 +136,15 @@ TARNAME = $(notdir $(basename $(SOURCE_TARBALL)))
 
 PHONY: tarball
 tarball:
-	rm -rf $(TEMPDIR)
-	mkdir -p $(TEMPDIR)/$(TARNAME)
+	rm -rf $(TMPROOT)
+	mkdir -p $(TMPROOT)/$(TARNAME)
 	cd $(ROOTDIR); \
 	    $(TAR) -cpf - sample/sample-*/japanese-tables.bin \
 	    $(patsubst %,--exclude '%',.git $(shell cat $(ROOTDIR)/.gitignore)) \
-	    . | $(TAR) -C $(TEMPDIR)/$(TARNAME) -xpf -
-	$(MAKE) -C $(TEMPDIR)/$(TARNAME) clean
-	$(TAR) -C $(TEMPDIR) -czf $(SOURCE_TARBALL) -p --owner=0 --group=0 $(TARNAME)
-	rm -rf $(TEMPDIR)
+	    . | $(TAR) -C $(TMPROOT)/$(TARNAME) -xpf -
+	$(MAKE) -C $(TMPROOT)/$(TARNAME) clean
+	$(TAR) -C $(TMPROOT) -czf $(SOURCE_TARBALL) -p --owner=0 --group=0 $(TARNAME)
+	rm -rf $(TMPROOT)
 
 # Cleanup Windows oddities in source files.
 # Many IDE's indent with tabs, and tabs are 4 chars wide.

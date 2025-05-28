@@ -212,7 +212,7 @@ OTHER_OS            # List of subdirectory for other operating systems (don't us
 BINROOT             # Root of all generated files.
 BINDIR              # Directory for all binary files; include architecture and host name.
 BINDIR_SUFFIX       # Fixed suffix to add to BINDIR; ignored if BINDIR is defined as input variable.
-TEMPDIR             # To be created, used and deleted as temporary directory.
+TMPROOT             # To be created, used and deleted as temporary directory.
 OBJDIR              # Subdirectory of BINDIR where object files are stored;
                     # named objs-$(CURDIR) for each source directory where make is executed.
 TOPLEVEL_CURDIR     # Value of CURDIR at the top-level invocation of make.

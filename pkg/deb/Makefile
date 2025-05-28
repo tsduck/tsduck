@@ -19,20 +19,20 @@ default: installer
 installer: deb-tools deb-dev
 
 deb-tools:
-	rm -rf $(TEMPDIR)
+	rm -rf $(TMPROOT)
 	$(MAKE) -C $(ROOTDIR) $(MAKEFLAGS_SMP) NOTEST=true
-	$(MAKE) -C $(ROOTDIR) NOTEST=true install-tools SYSROOT=$(TEMPDIR)
+	$(MAKE) -C $(ROOTDIR) NOTEST=true install-tools SYSROOT=$(TMPROOT)
 	$(MAKE) NOTEST=true deb-tools-control
-	dpkg-deb --build --root-owner-group $(TEMPDIR) $(INSTALLERDIR)
-	rm -rf $(TEMPDIR)
+	dpkg-deb --build --root-owner-group $(TMPROOT) $(INSTALLERDIR)
+	rm -rf $(TMPROOT)
 
 deb-dev: deb-tools
-	rm -rf $(TEMPDIR)
+	rm -rf $(TMPROOT)
 	$(MAKE) -C $(ROOTDIR) $(MAKEFLAGS_SMP) NOTEST=true
-	$(MAKE) -C $(ROOTDIR) NOTEST=true install-devel SYSROOT=$(TEMPDIR)
+	$(MAKE) -C $(ROOTDIR) NOTEST=true install-devel SYSROOT=$(TMPROOT)
 	$(MAKE) NOTEST=true deb-dev-control
-	dpkg-deb --build --root-owner-group $(TEMPDIR) $(INSTALLERDIR)
-	rm -rf $(TEMPDIR)
+	dpkg-deb --build --root-owner-group $(TMPROOT) $(INSTALLERDIR)
+	rm -rf $(TMPROOT)
 
 INSTALLERS = $(INSTALLERDIR)/tsduck_$(VERSION)$(DISTRO)_$(DEB_ARCH).deb \
              $(INSTALLERDIR)/tsduck-dev_$(VERSION)$(DISTRO)_$(DEB_ARCH).deb
@@ -64,7 +64,7 @@ F_GETSO     = $(shell ldd $(SHARED_LIBTSDUCK) \
 F_GETSODPKG = $(call F_GETDPKG,$(call F_GETSO,$(1) $(2) $(3) $(4) $(5) $(6) $(7) $(8) $(9)))
 
 deb-tools-control:
-	mkdir -p $(TEMPDIR)/DEBIAN
+	mkdir -p $(TMPROOT)/DEBIAN
 	sed -e 's/{{VERSION}}/$(VERSION)$(DISTRO)/g' \
 	    -e 's/{{ARCH}}/$(DEB_ARCH)/g' \
 	    $(if $(NOOPENSSL),-e '/libssl/d',-e 's/ libssl,/ $(call F_GETSODPKG,libcrypto)/') \
@@ -76,10 +76,10 @@ deb-tools-control:
 	    $(if $(NOPCSC),-e '/libpcsc/d',-e 's/ libpcsc,/ $(call F_GETSODPKG,libpcsc)/') \
 	    $(if $(NOCURL),-e '/libcurl/d',-e 's/ libcurl,/ $(call F_GETSODPKG,libcurl)/') \
 	    -e '/^ *$$/d' \
-	    tsduck.control >$(TEMPDIR)/DEBIAN/control
+	    tsduck.control >$(TMPROOT)/DEBIAN/control
 
 deb-dev-control:
-	mkdir -p $(TEMPDIR)/DEBIAN
+	mkdir -p $(TMPROOT)/DEBIAN
 	sed -e 's/{{VERSION}}/$(VERSION)$(DISTRO)/g' \
 	    -e 's/{{ARCH}}/$(shell dpkg-architecture -qDEB_BUILD_ARCH)/g' \
 	    $(if $(NOOPENSSL),-e '/libssl-dev/d') \
@@ -91,4 +91,4 @@ deb-dev-control:
 	    $(if $(NOPCSC),-e '/libpcsc/d',-e 's/ libpcsc-dev,/ $(call F_GETDPKG,PCSC/reader.h)/') \
 	    $(if $(NOCURL),-e '/libcurl/d',-e 's/ libcurl-dev,/ $(call F_GETDPKG,curl/curl.h)/') \
 	    -e '/^ *$$/d' \
-	    tsduck-dev.control >$(TEMPDIR)/DEBIAN/control
+	    tsduck-dev.control >$(TMPROOT)/DEBIAN/control

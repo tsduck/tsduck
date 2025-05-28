@@ -27,14 +27,14 @@ curl -sL "$TAR_URL" -o "$TAR_FILE"
 [[ -f "$TAR_FILE" ]] || error "error downloading $TAR_URL"
 
 # Extract to a temporary directory.
-TEMPDIR="$SCRIPTDIR/temp"
-rm -rf "$TEMPDIR"
-mkdir -p "$TEMPDIR"
+TMPROOT="$SCRIPTDIR/temp"
+rm -rf "$TMPROOT"
+mkdir -p "$TMPROOT"
 echo "Expanding $TAR_FILE ..."
-tar xzf "$TAR_FILE" -C "$TEMPDIR"
+tar xzf "$TAR_FILE" -C "$TMPROOT"
 
 # Find the final source directory (all classes are in org.json).
-DEEP_SRC_JSON=$(find "$TEMPDIR" -type d -path '*/src/main/java/org/json' | head -1)
+DEEP_SRC_JSON=$(find "$TMPROOT" -type d -path '*/src/main/java/org/json' | head -1)
 echo "Found source code in $DEEP_SRC_JSON"
 DEEP_SRC_ORG=$(dirname $DEEP_SRC_JSON)
 ROOT_SRC_ORG="$SCRIPTDIR/org"
@@ -53,4 +53,4 @@ jar cf "$JAR_FILE" org/json/*.class
 echo "Final jar: $JAR_FILE"
 
 # Cleanup.
-rm -rf  "$TEMPDIR" "$ROOT_SRC_ORG" "$TAR_FILE"
+rm -rf  "$TMPROOT" "$ROOT_SRC_ORG" "$TAR_FILE"

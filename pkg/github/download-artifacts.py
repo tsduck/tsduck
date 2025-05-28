@@ -22,7 +22,7 @@
 #
 #-----------------------------------------------------------------------------
 
-import sys, os, urllib, tsgithub
+import sys, os, urllib.request, tsgithub
 
 # Get command line options.
 repo = tsgithub.repository(sys.argv)
@@ -80,7 +80,11 @@ for arti in artifacts:
     if arti.expired:
         print('Artifact "%s" has expired, cannot be downloaded' % arti.name)
     else:
-        print('Artifact "%s", %d bytes' % (arti.name, arti.size_in_bytes))
         zipfile = '%s/%s.zip' % (output_dir, arti.name)
+        print('Artifact "%s", %d bytes -> %s' % (arti.name, arti.size_in_bytes, zipfile))
         print(arti.archive_download_url)
-        urllib.request.urlretrieve(arti.archive_download_url, zipfile)
+        req = urllib.request.Request(arti.archive_download_url)
+        req.add_header('Authorization', 'Bearer ' + repo.token)
+        with urllib.request.urlopen(req) as input:
+            with open(zipfile, 'wb') as output:
+                output.write(input.read())
