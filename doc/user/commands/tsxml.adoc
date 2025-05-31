@@ -158,7 +158,7 @@ The file is automatically searched in the directories for TSDuck configuration f
 *--monitor*
 
 [.optdoc]
-A shortcut for `--model tsduck.monitor.model.xml`.
+A shortcut for `--model tscore.monitor.model.xml`.
 
 [.optdoc]
 This option verifies that the input files are valid resource monitoring configuration files.

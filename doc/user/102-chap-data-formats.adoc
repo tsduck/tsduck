@@ -1103,7 +1103,7 @@ They describe the characteristics of UHF and VHF frequency bands by region
 (`tsduck.hfbands.xml`, see xref:chap-userconfig[xrefstyle=short], xref:hfband-config[xrefstyle=short]),
 the technical specifications of various models of LNB's for satellite dishes
 (`tsduck.lnbs.xml`, see xref:chap-userconfig[xrefstyle=short], xref:lnb-config[xrefstyle=short])
-or resource monitoring configurations (`tsduck.monitor.xml`, see xref:chap-monconfig[xrefstyle=short]).
+or resource monitoring configurations (`tscore.monitor.xml`, see xref:chap-monconfig[xrefstyle=short]).
 These configuration files are augmented when new information is available.
 Do not hesitate to request enhancement of these files through the TSDuck issue tracker (see <<TSDuck-Issues>>).
 

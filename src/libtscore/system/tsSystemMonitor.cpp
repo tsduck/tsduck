@@ -266,7 +266,7 @@ bool ts::SystemMonitor::loadConfig(Config& config, const xml::Element* elem, con
 {
     // Without default config, all fields are required.
     const bool required = defconfig == nullptr;
-    bool ok = elem->getIntAttribute(config.max_cpu, u"max_cpu", required, required ? 0 : defconfig->max_cpu, 0, 100) &&
+    bool ok = elem->getIntAttribute(config.max_cpu, u"max_cpu", required, required ? 0 : defconfig->max_cpu, 0) &&
               elem->getBoolAttribute(config.stable_memory, u"stable_memory", required, required ? false : defconfig->stable_memory) &&
               elem->getBoolAttribute(config.log_messages, u"log", required, required ? false : defconfig->log_messages) &&
               elem->getTextChild(config.alarm_command, u"alarm", true, false, required ? UString() : defconfig->alarm_command);

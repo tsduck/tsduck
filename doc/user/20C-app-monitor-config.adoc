@@ -126,18 +126,18 @@ The alarm command automatically receives three additional parameters:
 
 === Default resource monitoring configuration
 
-The default resource monitoring configuration can be found in the file named `tsduck.monitor.xml`
+The default resource monitoring configuration can be found in the file named `tscore.monitor.xml`
 the location of which depends on the operating system.
 
 [.compact-table]
 [cols="<1,<1m",frame=none,grid=none,stripes=none,options="autowidth,noheader"]
 |===
-|Linux: |/usr/share/tsduck/tsduck.monitor.xml
-|macOS (Intel): |/usr/local/share/tsduck/tsduck.monitor.xml
-|macOS (Arm): |/opt/hombrew/share/tsduck/tsduck.monitor.xml
-|Windows: |%TSDUCK%\bin\tsduck.monitor.xml
-|NetBSD: |/usr/pkg/share/tsduck/tsduck.monitor.xml
-|Other BSD: |/usr/local/share/tsduck/tsduck.monitor.xml
+|Linux: |/usr/share/tsduck/tscore.monitor.xml
+|macOS (Intel): |/usr/local/share/tsduck/tscore.monitor.xml
+|macOS (Arm): |/opt/hombrew/share/tsduck/tscore.monitor.xml
+|Windows: |%TSDUCK%\bin\tscore.monitor.xml
+|NetBSD: |/usr/pkg/share/tsduck/tscore.monitor.xml
+|Other BSD: |/usr/local/share/tsduck/tscore.monitor.xml
 |===
 
 It is recommended to never modify this default file.

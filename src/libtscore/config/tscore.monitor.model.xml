@@ -6,13 +6,13 @@
  BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 
  Template for TSDuck XML configuration files for resource monitoring.
- See the TSDuck user's guide, section 2.5.3, "XML model files".
+ See the TSDuck user's guide, section 2.6.3, "XML model files".
 
 -->
 <tsduck>
 
   <!-- Default behaviour -->
-  <defaults max_cpu="uint, 0-100, required"
+  <defaults max_cpu="uint, required"
             stable_memory="bool, required"
             log="bool, required">
     <alarm>shell command (optional)</alarm>
