@@ -19,13 +19,15 @@ cmd_help() {
 
 Syntax: $SCRIPT [options]
 
-  --bin     Directory for JDK executables
-  --cflags  C++ pre-processor and compiler flags for JNI code
-  --help    Display this help and exit
-  --home    Jave home directory (typically for \$JAVA_HOME)
-  --jar     JAR file manipulation command
-  --java    Java execution command
-  --javac   Java compiler command
+  --bin      Directory for JDK executables
+  --cflags   C++ pre-processor and compiler flags for JNI code
+  --help     Display this help and exit
+  --home     Jave home directory (typically for \$JAVA_HOME)
+  --jar      JAR file manipulation command
+  --java     Java execution command
+  --javac    Java compiler command
+  --jflags   Java command flags to allow JNI code
+  --version  Get Java major version
 
 EOF
     exit
@@ -92,27 +94,38 @@ cmd_home() {
 
 # Process individual commands
 cmd_bin() {
-    home=$(cmd_home)
+    local home=$(cmd_home)
     [[ -n "$home" && -d "$home/bin" ]] && echo "$home/bin"
 }
 
 cmd_jar() {
-    home=$(cmd_home)
+    local home=$(cmd_home)
     [[ -n "$home" && -x "$home/bin/jar" ]] && echo "$home/bin/jar"
 }
 
 cmd_java() {
-    home=$(cmd_home)
+    local home=$(cmd_home)
     [[ -n "$home" && -x "$home/bin/java" ]] && echo "$home/bin/java"
 }
 
+cmd_version() {
+    local java=$(cmd_java)
+    [[ -n "$java" ]] && $java --version 2>/dev/null| sed -e '2,$d' -e 's/^[^0-9]*//' -e 's/[^0-9].*$//'
+}
+
+cmd_jflags() {
+    # Starting with Java 24, access to native function through JNI is restricted.
+    local version=$(cmd_version)
+    [[ -n "$version" && "$version" -ge 24 ]] && echo "--enable-native-access=ALL-UNNAMED"
+}
+
 cmd_javac() {
-    home=$(cmd_home)
+    local home=$(cmd_home)
     [[ -n "$home" && -x "$home/bin/javac" ]] && echo "$home/bin/javac"
 }
 
 cmd_cflags() {
-    home=$(cmd_home)
+    local home=$(cmd_home)
     if [[ -n "$home" && -d "$home/include" ]]; then
         # JNI headers exist
         echo "-I$home/include$(dirname $(ls $home/include/*/jni_md.h 2>/dev/null) | sed -e 's/^/ -I/' | tr '\n' ' ')"
@@ -126,9 +139,11 @@ if [ $# -eq 0 ]; then
     # No option, display everything.
     echo "home: $(cmd_home)"
     echo "bin: $(cmd_bin)"
+    echo "version: $(cmd_version)"
     echo "java: $(cmd_java)"
     echo "javac: $(cmd_javac)"
     echo "jar: $(cmd_jar)"
+    echo "jflags: $(cmd_jflags)"
     echo "cflags: $(cmd_cflags)"
 else
     # Display options one by one.
@@ -141,6 +156,8 @@ else
             --jar) cmd_jar ;;
             --java) cmd_java ;;
             --javac) cmd_javac ;;
+            --jflags) cmd_jflags ;;
+            --version) cmd_version ;;
             *) usage "$arg" ;;
         esac
         shift

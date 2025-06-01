@@ -340,7 +340,7 @@ elif [[ -f /etc/fedora-release ]]; then
 
     FC=$(grep " release " /etc/fedora-release 2>/dev/null | sed -e 's/^.* release \([0-9\.]*\) .*$/\1/')
 
-    PKGLIST+=(git gcc-c++ make cmake which glibc-langpack-en flex bison dos2unix curl tar zip kernel-headers libatomic rpmdevtools python3)
+    PKGLIST+=(git gcc-c++ make cmake which hostname glibc-langpack-en flex bison dos2unix curl tar zip kernel-headers libatomic rpmdevtools python3)
     [[ -z $NOOPENSSL            ]] && PKGLIST+=(openssl-devel)
     [[ -z $NOEDITLINE           ]] && PKGLIST+=(libedit-devel)
     [[ -z $NOZLIB               ]] && PKGLIST+=(zlib-devel)
@@ -373,7 +373,7 @@ elif [[ -f /etc/redhat-release ]]; then
     EL=$(grep " release " /etc/redhat-release 2>/dev/null | sed -e 's/$/.99/' -e 's/^.* release \([0-9]*\.[0-9]*\).*$/\1/')
     EL=$(( ${EL/.*/} * 100 + ${EL/*./} ))
 
-    PKGLIST+=(git gcc-c++ make cmake which glibc-langpack-en flex bison dos2unix curl tar zip kernel-headers libatomic rpmdevtools python3)
+    PKGLIST+=(git gcc-c++ make cmake which hostname glibc-langpack-en flex bison dos2unix curl tar zip kernel-headers libatomic rpmdevtools python3)
     [[ -z $NOOPENSSL             ]] && PKGLIST+=(openssl-devel)
     [[ -z $NOEDITLINE            ]] && PKGLIST+=(libedit-devel)
     [[ -z $NOZLIB                ]] && PKGLIST+=(zlib-devel)

@@ -122,15 +122,12 @@ jobs:
     - name: Identify installed version
       run: |
         tsversion --version=all
-    - name: Run test suite on installed version
-      run: |
-        echo "Will do later..."
     - name: Download test suite
       run: |
         curl -fsL "https://github.com/${{ github.repository }}-test/tarball/master" -o test.tgz
         mkdir -p ../tsduck-test
         tar -C ../tsduck-test -x -z -f test.tgz --strip 1
-    - name: Run test suite
+    - name: Run test suite on installed version
       run: |
         cd ../tsduck-test
         ./run-all-tests.sh && status=$? || status=$?
