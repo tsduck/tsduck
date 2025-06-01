@@ -149,7 +149,7 @@ bool ts::CTR<CIPHER>::encryptImpl(const void* plain, size_t plain_length, void* 
     uint8_t* work1 = this->work.data();
     uint8_t* work2 = this->work.data() + bsize;
 
-    if (plain_length % bsize != 0 || this->currentIV().size() != bsize || cipher_maxsize < plain_length) {
+    if (this->currentIV().size() != bsize || cipher_maxsize < plain_length) {
         return false;
     }
     if (cipher_length != nullptr) {

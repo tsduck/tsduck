@@ -2,7 +2,17 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.41-4290 (May 2025)
+VERSION 3.42-4311 (June 2025)
+
+[BUG] Bug fixes:
+
+  * Fixed issue #1637: Encryption using CTR mode incorrectly  failed  when  the
+    plain text size was not a multiple of the block size. The typical use  case
+    is the non-standard AES-CTR TS scrambling on 184-byte packet payload.
+
+-------------------------------------------------------------------------------
+
+VERSION 3.41-4299 (May 2025)
 
 [NEW] New commands and plugins:
 
