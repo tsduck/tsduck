@@ -98,8 +98,6 @@ jobs:
     permissions:
       # Required to get draft releases
       contents: write
-    env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
     - name: Install prerequisites
       if: ${{ inputs.release_type == 'update-last' }}
@@ -110,7 +108,7 @@ jobs:
         if [[ ${{ inputs.release_type }} == update-last ]]; then
             # Get most recent release, including draft and pre-release.
             # Note using "release/latest" would return the latest release, excluding draft and pre-release.
-            tag=$(curl -sSL -H "Authorization: Bearer $GITHUB_TOKEN" \
+            tag=$(curl -sSL -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
                        "https://api.github.com/repos/${{ github.repository }}/releases?per_page=1" | \
                   jq -r '.[].tag_name')
             tag=${tag/#null/}
@@ -158,11 +156,11 @@ jobs:
           package_options: --allowerasing
     name: Build on ${{ matrix.distro }} for ${{ matrix.arch }}
     # Complicated structure using one sub-workflow because "matrix" cannot be referenced from "jobs.job.if".
-    # See https://github.com/orgs/community/discussions/37883
+    # However, "matrix" is accepted in "jobs.job.with" and it is possible to run a subworkflow with an "if:"
+    # referencing it inputs. See https://github.com/orgs/community/discussions/37883
     uses: ./.github/workflows/release-one.yml
     with:
       build: ${{ matrix.build_arch && matrix.build_distro }}
-      continue_on_error: ${{ inputs.release_type != 'none' }}
       tag: ${{ needs.identify.outputs.tag }}
       arch: ${{ matrix.arch }}
       distro: ${{ matrix.distro }}
@@ -182,15 +180,12 @@ jobs:
     if: ${{ inputs.windows_runner != 'none' && (inputs.build_x64 || inputs.build_arm64) }}
     needs: [identify]
     runs-on: ${{ inputs.windows_runner }}
-    continue-on-error: ${{ inputs.release_type != 'none' }}
-    env:
-      TAG: ${{ needs.identify.outputs.tag }}
     steps:
     - name: Get TSDuck repo
       uses: actions/checkout@master
       with:
-        # Checkout $TAG. If empty, use the default branch.
-        ref: ${{ env.TAG }}
+        # Checkout tag. If empty, use the default branch.
+        ref: ${{ needs.identify.outputs.tag }}
     - name: Install dependencies
       run: |
         Write-Output "ARCH=${env:PROCESSOR_ARCHITECTURE}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
@@ -244,8 +239,7 @@ jobs:
     - name: Identify installed version
       if: ${{ env.INSTALLED }}
       run: |
-        Write-Output "Will do later..."
-        # tsversion --version=all
+        tsversion --version=all
     - name: Download test suite
       run: |
         # Try to download '<repo>-test' from the pull request owner, if there is one.
@@ -304,8 +298,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    env:
-      TAG: ${{ needs.identify.outputs.tag }}
     steps:
     - name: Get TSDuck repo
       uses: actions/checkout@master
@@ -327,15 +319,13 @@ jobs:
         done
         ls -lR
     - name: Create or update release
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         echo "Using repository ${{ github.repository }}"
         case ${{ inputs.release_type }} in
-            update-last) opt="--update --tag $TAG" ;;
+            update-last) opt="--update --tag ${{ needs.identify.outputs.tag }}" ;;
             draft)       opt="--create --missing --draft" ;;
             pre-release) opt="--create --missing --pre" ;;
             official)    opt="--create --missing" ;;
             *) echo "Invalid release_type: ${{ inputs.release_type }}"; exit 1 ;;
         esac
-        pkg/github/release.py --repo ${{ github.repository }} $opt
+        pkg/github/release.py --repo ${{ github.repository }} --token ${{ secrets.GITHUB_TOKEN }} $opt

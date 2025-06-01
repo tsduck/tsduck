@@ -23,11 +23,6 @@ on:
         type: boolean
         required: false
         default: false
-      continue_on_error:
-        description: 'Mark the job as continue-on-error'
-        type: boolean
-        required: false
-        default: false
       tag:
         description: 'Tag to rebuild, empty to build latest commit'
         type: string
@@ -64,15 +59,12 @@ jobs:
   build:
     if: inputs.build
     name: Build in container
-    continue-on-error: ${{ inputs.continue_on_error }}
     runs-on: ${{ inputs.runner }}
     container: ${{ inputs.image }}
     defaults:
       run:
         # Currently, GitHub containers use "sh" as default shell.
         shell: bash
-    env:
-      TAG: ${{ inputs.tag }}
     steps:
     - name: Container setup
       if: ${{ inputs.setup_command != '' }}
@@ -80,8 +72,8 @@ jobs:
     - name: Get TSDuck repo
       uses: actions/checkout@master
       with:
-        # Checkout $TAG. If empty, use the default branch.
-        ref: ${{ env.TAG }}
+        # Checkout tag. If empty, use the default branch.
+        ref: ${{ inputs.tag }}
     - name: Install prerequisites
       run: |
         scripts/install-prerequisites.sh ${{ inputs.package_options }}
