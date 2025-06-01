@@ -9,92 +9,333 @@
 #  Generate binaries for Ubuntu, Debian, Fedora, Red Hat, and Windows
 #  on Intel x64 and Arm64. The Linux binaries are built on Docker
 #  containers running a Ubunty GitHub runner host. All binaries are
-#  published as artifacts of the workflow.
+#  published as artifacts of the workflow. These binaries can be used
+#  to create a new release or update the latest one.
 #
 #-----------------------------------------------------------------------------
 
 name: Release
-on: workflow_dispatch
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: 'Create release after build'
+        type: choice
+        required: true
+        default: 'none'
+        options:
+        - none
+        - update-last
+        - draft
+        - pre-release
+        - official
+      build_x64:
+        description: 'Build Intel x64 packages'
+        type: boolean
+        required: true
+        default: true
+      build_arm64:
+        description: 'Build Arm64 packages'
+        type: boolean
+        required: true
+        default: true
+      ubuntu_image:
+        description: 'Ubuntu docker image'
+        type: choice
+        required: true
+        default: 'ubuntu:latest'
+        options:
+        - none
+        - ubuntu:latest
+        - ubuntu:25.04
+      debian_image:
+        description: 'Debian docker image'
+        type: choice
+        required: true
+        default: 'debian:trixie'
+        options:
+        - none
+        - debian:latest
+        - debian:trixie
+      fedora_image:
+        description: 'Fedora docker image'
+        type: choice
+        required: true
+        default: 'fedora:latest'
+        options:
+        - none
+        - fedora:latest
+        - fedora:42
+      redhat_image:
+        description: 'Red Hat docker image'
+        type: choice
+        required: true
+        default: 'almalinux:latest'
+        options:
+        - none
+        - almalinux:latest
+        - rockylinux:9
+      windows_runner:
+        description: 'Windows runner'
+        type: choice
+        required: true
+        default: 'windows-latest'
+        options:
+        - none
+        - windows-latest
+        - windows-11-arm
+
 jobs:
+  # Identify target tag if release_type is "update-last".
+  # We cannot simply skip the job with "if:", we need to run it to set outputs.tag.
+  identify:
+    name: Identify last version
+    runs-on: ubuntu-latest
+    outputs:
+      # Will be empty if release_type is not "update-last".
+      tag: ${{ steps.get_tag.outputs.tag }}
+    permissions:
+      # Required to get draft releases
+      contents: write
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+    - name: Install prerequisites
+      if: ${{ inputs.release_type == 'update-last' }}
+      run: sudo apt install -y curl jq
+    - name: Get latest version tag
+      id: get_tag
+      run: |
+        if [[ ${{ inputs.release_type }} == update-last ]]; then
+            # Get most recent release, including draft and pre-release.
+            # Note using "release/latest" would return the latest release, excluding draft and pre-release.
+            tag=$(curl -sSL -H "Authorization: Bearer $GITHUB_TOKEN" \
+                       "https://api.github.com/repos/${{ github.repository }}/releases?per_page=1" | \
+                  jq -r '.[].tag_name')
+            tag=${tag/#null/}
+            echo "Tag to build: $tag"
+        else
+            tag=
+            echo "Build the latest commit"
+        fi
+        echo "tag=$tag" >>$GITHUB_OUTPUT
 
   linux:
+    needs: [identify]
     strategy:
+      # If a job fails, do not abort others.
       fail-fast: false
       matrix:
-        image: [ubuntu:latest, debian:trixie, fedora:latest, almalinux:latest]
+        distro: [ubuntu, debian, fedora, redhat]
         arch: [x64, arm64]
         include:
         - arch: x64
+          build_arch: ${{ inputs.build_x64 }}
           runner: ubuntu-latest
         - arch: arm64
+          build_arch: ${{ inputs.build_arm64 }}
           runner: ubuntu-24.04-arm
-    name: Build on ${{ matrix.image }} for ${{ matrix.arch }}
-    runs-on: ${{ matrix.runner }}
+        - distro: ubuntu
+          build_distro: ${{ inputs.ubuntu_image != 'none' }}
+          image: ${{ inputs.ubuntu_image }}
+          setup_command: apt update; apt install -y sudo git lsb-release
+          package_options:
+        - distro: debian
+          build_distro: ${{ inputs.debian_image != 'none' }}
+          image: ${{ inputs.debian_image }}
+          setup_command: apt update; apt install -y sudo git lsb-release
+          package_options:
+        - distro: fedora
+          build_distro: ${{ inputs.fedora_image != 'none' }}
+          image: ${{ inputs.fedora_image }}
+          setup_command: dnf install -y sudo git
+          package_options: --allowerasing
+        - distro: redhat
+          build_distro: ${{ inputs.redhat_image != 'none' }}
+          image: ${{ inputs.redhat_image }}
+          setup_command: dnf install -y sudo git
+          package_options: --allowerasing
+    name: Build on ${{ matrix.distro }} for ${{ matrix.arch }}
+    # Complicated structure using one sub-workflow because "matrix" cannot be referenced from "jobs.job.if".
+    # See https://github.com/orgs/community/discussions/37883
+    uses: ./.github/workflows/release-one.yml
+    with:
+      build: ${{ matrix.build_arch && matrix.build_distro }}
+      continue_on_error: ${{ inputs.release_type != 'none' }}
+      tag: ${{ needs.identify.outputs.tag }}
+      arch: ${{ matrix.arch }}
+      distro: ${{ matrix.distro }}
+      runner: ${{ matrix.runner }}
+      image: ${{ matrix.image }}
+      setup_command: ${{ matrix.setup_command }}
+      package_options: ${{ matrix.package_options }}
+    secrets: inherit
+    permissions:
+      id-token: write
+      contents: read
+
+  # Build Win64 and Arm64 packages in one pass to get the two sets of libraries in the installers.
+  # The runner in a x64 system which can only test the Win64 installer.
+  windows:
+    name: Build on Windows
+    if: ${{ inputs.windows_runner != 'none' && (inputs.build_x64 || inputs.build_arm64) }}
+    needs: [identify]
+    runs-on: ${{ inputs.windows_runner }}
+    continue-on-error: ${{ inputs.release_type != 'none' }}
+    env:
+      TAG: ${{ needs.identify.outputs.tag }}
     steps:
     - name: Get TSDuck repo
       uses: actions/checkout@master
+      with:
+        # Checkout $TAG. If empty, use the default branch.
+        ref: ${{ env.TAG }}
+    - name: Install dependencies
+      run: |
+        Write-Output "ARCH=${env:PROCESSOR_ARCHITECTURE}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        scripts\install-prerequisites.ps1 -GitHubActions -NoDoxygen -NoPause
     - name: Build
-      run: pkg/build-docker.sh ${{ matrix.image }}
+      run: |
+        pkg\nsis\build-installer.ps1 -Win64:$${{ inputs.build_x64 }} -Arm64:$${{ inputs.build_arm64 }} -NoLowPriority -NoPause
     - name: List installers
       run: |
-        ls -l pkg/installers
-        PACKS=($(ls pkg/installers | sort -d | grep -e '\.deb$' -e '\.rpm$'))
-        echo "TSTOOLS=${PACKS[0]}" >>$GITHUB_ENV
-        echo "TSDEV=${PACKS[1]}" >>$GITHUB_ENV
-        sed <<<"${{ matrix.image }}" -e 's/:.*//' -e 's/alma.*/redhat/' -e 's/rocky.*/redhat/' -e 's/^/DISTRO=/' >>$GITHUB_ENV
-        cat $GITHUB_ENV
-    - name: Publish tools package
+        Get-ChildItem pkg\installers
+        Write-Output ""
+        if ($${{ inputs.build_x64 }}) {
+            $TSWin64 = (Get-ChildItem pkg\installers\TSDuck-Win64-*.exe).Name
+            $TSWin64P = (Get-ChildItem pkg\installers\TSDuck-Win64-*-Portable.zip).Name
+            Write-Output "Win64 installer: $TSWin64"
+            Write-Output "Win64 portable: $TSWin64P"
+            Write-Output "TSWin64=$TSWin64"   | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+            Write-Output "TSWin64P=$TSWin64P" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        }
+        if ($${{ inputs.build_arm64 }}) {
+            $TSArm64 = (Get-ChildItem pkg\installers\TSDuck-Arm64-*.exe).Name
+            $TSArm64P = (Get-ChildItem pkg\installers\TSDuck-Arm64-*-Portable.zip).Name
+            Write-Output "Arm64 installer: $TSArm64"
+            Write-Output "Arm64 portable: $TSArm64P"
+            Write-Output "TSArm64=$TSArm64"   | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+            Write-Output "TSArm64P=$TSArm64P" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        }
+        # Will check later if installation is possible, false by default.
+        Write-Output "INSTALLED=false" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+    - name: Install Win64 installers
+      if: ${{ inputs.build_x64 && env.ARCH == 'AMD64' }}
+      run: |
+        Start-Process -Wait -FilePath pkg/installers/${{ env.TSWin64 }} -ArgumentList @("/S", "/all=true")
+        Write-Output "INSTALLED=true" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+    - name: Install Arm64 installers
+      if: ${{ inputs.build_arm64 && env.ARCH == 'ARM64' }}
+      run: |
+        Start-Process -Wait -FilePath pkg/installers/${{ env.TSArm64 }} -ArgumentList @("/S", "/all=true")
+        Write-Output "INSTALLED=true" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+    - name: Propagate environment
+      if: ${{ env.INSTALLED }}
+      run: |
+        $tsduck     = [System.Environment]::GetEnvironmentVariable("TSDUCK",     [System.EnvironmentVariableTarget]::Machine)
+        $path       = [System.Environment]::GetEnvironmentVariable("Path",       [System.EnvironmentVariableTarget]::Machine)
+        $pythonpath = [System.Environment]::GetEnvironmentVariable("PYTHONPATH", [System.EnvironmentVariableTarget]::Machine)
+        $classpath  = [System.Environment]::GetEnvironmentVariable("CLASSPATH",  [System.EnvironmentVariableTarget]::Machine)
+        Write-Output "TSDUCK=$tsduck"         | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        Write-Output "Path=$path"             | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        Write-Output "PYTHONPATH=$pythonpath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        Write-Output "CLASSPATH=$classpath"   | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+    - name: Identify installed version
+      if: ${{ env.INSTALLED }}
+      run: |
+        Write-Output "Will do later..."
+        # tsversion --version=all
+    - name: Download test suite
+      run: |
+        # Try to download '<repo>-test' from the pull request owner, if there is one.
+        $ErrorActionPreference = 'SilentlyContinue'
+        $ProgressPreference = 'SilentlyContinue'
+        Invoke-WebRequest -UseBasicParsing -OutFile test.zip -Uri https://github.com/${{ github.repository }}-test/archive/master.zip
+        [void] (New-Item -Type Directory -Force tmp)
+        Expand-Archive test.zip -DestinationPath tmp -Force
+        Move-Item tmp\* ..\tsduck-test -Force
+    - name: Run test suite on installed version
+      shell: bash
+      run: |
+        cd ../tsduck-test
+        ./run-all-tests.sh && status=$? || status=$?
+        for f in $(find tmp -name '*.diff'); do
+            echo "==== $f";
+            cat "$f"
+        done
+        exit $status
+    - name: Publish Win64 package
+      if: ${{ inputs.build_x64 }}
       uses: actions/upload-artifact@v4
       with:
-        name: tsduck-${{ env.DISTRO }}-${{ matrix.arch }}
-        path: pkg/installers/${{ env.TSTOOLS }}
-        retention-days: 5
-    - name: Publish dev package
+        name: tsduck-windows-x64
+        path: pkg/installers/${{ env.TSWin64 }}
+        retention-days: 10
+    - name: Publish Win64 portable package
+      if: ${{ inputs.build_x64 }}
       uses: actions/upload-artifact@v4
       with:
-        name: tsduck-dev-${{ env.DISTRO }}-${{ matrix.arch }}
-        path: pkg/installers/${{ env.TSDEV }}
-        retention-days: 5
+        name: tsduck-windows-portable-x64
+        path: pkg/installers/${{ env.TSWin64P }}
+        retention-days: 10
+    - name: Publish Arm64 package
+      if: ${{ inputs.build_arm64 }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: tsduck-windows-arm64
+        path: pkg/installers/${{ env.TSArm64 }}
+        retention-days: 10
+    - name: Publish Arm64 portable package
+      if: ${{ inputs.build_arm64 }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: tsduck-windows-portable-arm64
+        path: pkg/installers/${{ env.TSArm64P }}
+        retention-days: 10
 
-  windows:
-    name: Build on windows for x64 and arm64
-    runs-on: windows-latest
+  # Final job: create or update release (if release_type is not 'none').
+  # Do it even if a previous build fails. This way, we include everything that was build
+  # so far and we can restart later only with missing packages and 'update-last' release.
+  release:
+    name: Create or update release
+    if: ${{ always() && inputs.release_type != 'none' }}
+    needs: [identify, linux, windows]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      TAG: ${{ needs.identify.outputs.tag }}
     steps:
     - name: Get TSDuck repo
       uses: actions/checkout@master
     - name: Install dependencies
-      run: scripts/install-prerequisites.ps1 -GitHubActions -NoDoxygen -NoPause
-    - name: Build
-      run: pkg\nsis\build-installer.ps1 -Win64 -Arm64 -NoLowPriority -NoPause
-    - name: List installers
+      run: sudo apt install -y python3-github
+    - name: Download artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: pkg/installers
+    - name: Extract artifacts
       run: |
-        Get-ChildItem pkg\installers
-        Write-Output "TSW64=$((Get-ChildItem pkg\installers\TSDuck-Win64-*.exe).Name)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-        Write-Output "TSW64P=$((Get-ChildItem pkg\installers\TSDuck-Win64-*-Portable.zip).Name)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-        Write-Output "TSA64=$((Get-ChildItem pkg\installers\TSDuck-Arm64-*.exe).Name)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-        Write-Output "TSA64P=$((Get-ChildItem pkg\installers\TSDuck-Arm64-*-Portable.zip).Name)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-        Get-Content $env:GITHUB_ENV
-    - name: Publish Win64 package
-      uses: actions/upload-artifact@v4
-      with:
-        name: tsduck-windows-x64
-        path: pkg/installers/${{ env.TSW64 }}
-        retention-days: 5
-    - name: Publish Win64 portable package
-      uses: actions/upload-artifact@v4
-      with:
-        name: tsduck-windows-portable-x64
-        path: pkg/installers/${{ env.TSW64P }}
-        retention-days: 5
-    - name: Publish Arm64 package
-      uses: actions/upload-artifact@v4
-      with:
-        name: tsduck-windows-arm64
-        path: pkg/installers/${{ env.TSA64 }}
-        retention-days: 5
-    - name: Publish Arm64 portable package
-      uses: actions/upload-artifact@v4
-      with:
-        name: tsduck-windows-portable-arm64
-        path: pkg/installers/${{ env.TSA64P }}
-        retention-days: 5
+        # Each artifact has been downloaded as a directory containing the actual file.
+        cd pkg/installers
+        for f in $(ls -d tsduck-*-x64 tsduck-*-arm64 2>/dev/null || true); do
+            if [[ -d $f ]]; then
+                mv $f/* .
+                rmdir $f
+            fi
+        done
+        ls -lR
+    - name: Create or update release
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        echo "Using repository ${{ github.repository }}"
+        case ${{ inputs.release_type }} in
+            update-last) opt="--update --tag $TAG" ;;
+            draft)       opt="--create --missing --draft" ;;
+            pre-release) opt="--create --missing --pre" ;;
+            official)    opt="--create --missing" ;;
+            *) echo "Invalid release_type: ${{ inputs.release_type }}"; exit 1 ;;
+        esac
+        pkg/github/release.py --repo ${{ github.repository }} $opt

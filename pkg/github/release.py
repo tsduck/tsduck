@@ -5,14 +5,26 @@
 #  Copyright (c) 2005-2025, Thierry Lelegard
 #  BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 #
-#  Manage TSDuck release on GitHub:
-#  --title: display the expected title of the latest release.
-#  --text: display the expected body text of the latest release.
-#  --verify: verify that the title and body text are correct.
-#  --update: same as --verify, then update if incorrect.
-#  --create: create a new version from the latest commit in the repo.
+#  Manage TSDuck release on GitHub.
+#  The default action is to list all releases.
 #
-#  Common options;
+#  Options:
+#  --title : display the expected title of the latest release.
+#  --text : display the expected body text of the latest release.
+#  --verify : verify that the title and body text are correct.
+#  --update : same as --verify, then update if incorrect, upload missing
+#      packages if present in pkg/installers.
+#  --create : create a new version from the latest commit in the repo.
+#  --missing, -m : with --create, allow the creation of the release, even if
+#      mandatory packages are missing.
+#  --draft, -d : with --create, create a draft (unfinished) release.
+#  --pre, -p : with --create, create a pre-release.
+#  --tag name : with --title, --text, --verify, --update, release to check.
+#
+#  Common options:
+#  --repo owner/repo : GitHub repository, default: tsduck/tsduck.
+#  --token string : GitHub authentication token, default: $GITHUB_TOKEN.
+#  --branch name : git branch in the repository, default: master.
 #  --dry-run, -n: dry run, don't create anything.
 #  --verbose, -v: verbose mode.
 #  --debug: debug mode.
@@ -23,11 +35,16 @@ import os, re, sys, glob, tsgithub
 
 # Get command line options.
 repo = tsgithub.repository(sys.argv)
-opt_title  = repo.has_opt('--title')
-opt_text   = repo.has_opt('--text')
-opt_verify = repo.has_opt('--verify')
-opt_update = repo.has_opt('--update')
-opt_create = repo.has_opt('--create')
+opt_title   = repo.has_opt('--title')
+opt_text    = repo.has_opt('--text')
+opt_verify  = repo.has_opt('--verify')
+opt_update  = repo.has_opt('--update')
+opt_create  = repo.has_opt('--create')
+opt_list    = not (opt_title or opt_text or opt_verify or opt_update or opt_create)
+opt_missing = repo.has_opt(['-m', '--missing'])
+opt_draft   = repo.has_opt(['-d', '--draft'])
+opt_prerel  = repo.has_opt(['-p', '--pre'])
+opt_tag     = repo.get_opt('--tag', None)
 repo.check_opt_final()
 
 # A regular expression matching a version number.
@@ -88,12 +105,22 @@ installers = [
     installer('tsduck-dev_{VERSION}.raspbian{OS}_armhf.deb', True,  False, 'Raspbian (Raspberry Pi, 32 bits)')
 ]
 
-# Get latest release and verify the format of its tag.
-def get_latest_release():
+# Get most recent release and verify the format of its tag.
+# The most recent can be a draft or pre-release, not always the one with "latest" attribute.
+def get_release(tag):
+    release = None
     try:
-        release = repo.repo.get_latest_release()
+        for rel in repo.repo.get_releases():
+            if tag is None or rel.tag_name == tag:
+                release = rel
+                break
     except:
-        repo.fatal('no release found')
+        pass
+    if release is None:
+        if tag is None:
+            repo.fatal('no release found')
+        else:
+            repo.fatal('no release found for tag %s' % tag)
     if re.fullmatch('v' + pattern_version, release.tag_name) is None:
         repo.fatal('invalid tag "%s"' % release.tag_name)
     return release
@@ -110,7 +137,7 @@ def get_tsduck_version():
 # A function to locate all local installer packages.
 # Update the installers list with 'files' elements.
 # Return True if all installers were found, False otherwise.
-def search_installers(version, silent):
+def search_installers(version, silent, allow_missing):
     # Get directory where installation packages are located.
     dir = repo.scriptdir
     while True:
@@ -132,11 +159,11 @@ def search_installers(version, silent):
             installers[i].files = files
             if len(files) > 1 and not silent:
                 repo.verbose('found %d packages matching %s' % (len(files), pattern))
-        elif installers[i].required:
+        elif installers[i].required and not allow_missing:
             if not silent:
                 repo.error('no package matching %s' % pattern)
             success = False
-        elif not silent:
+        elif not silent and not allow_missing:
             repo.verbose('optional package for "%s" not found, ignored' % installers[i].name)
     return success
 
@@ -182,15 +209,55 @@ def release_to_version(release):
 def build_title(release):
     return 'Version %s' % release_to_version(release)
 
-# Main code.
-if not (opt_title or opt_text or opt_verify or opt_update or opt_create):
-    repo.fatal('specify one of --title --text --verify --update --create')
+# Upload missing installers in the release.
+def upload_assets(release):
+    assets = [a for a in release.get_assets()]
+    for ins in installers:
+        for file in ins.files:
+            asset_name = os.path.basename(file)
+            if len([a for a in assets if a.name == asset_name]) == 0:
+                repo.info("Uploading %s" % file)
+                if not repo.dry_run:
+                    release.upload_asset(file)
 
+# List all releases.
+def list_releases():
+    latest = repo.repo.get_latest_release()
+    text = [['Tag', 'Type', 'Date', 'Title']]
+    for rel in repo.repo.get_releases():
+        date = '%04d-%02d-%02d' % (rel.created_at.year, rel.created_at.month, rel.created_at.day)
+        type = 'draft' if rel.draft else ('prerelease' if rel.prerelease else ('latest' if rel.id == latest.id else ''))
+        text.append([rel.tag_name, type, date, rel.title])
+    width = [0] * len(text[0])
+    for line in text:
+        for i in range(len(line)):
+            width[i] = max(width[i], len(line[i]))
+    print()
+    first = True
+    for line in text:
+        sep = ''
+        for c in range(len(line)):
+            print('%s%-*s' % (sep, width[c], line[c]), end='')
+            sep = '  '
+        print()
+        if first:
+            first = False
+            sep = ''
+            for c in range(len(line)):
+                print('%s%s' % (sep, '-' * width[c]), end='')
+                sep = '  '
+            print()
+    print()
+
+# Main code.
+if opt_list:
+    list_releases()
+    
 if opt_title:
-    print(build_title(get_latest_release()))
+    repo.info(build_title(get_release(opt_tag)))
 
 if opt_text:
-    print(build_body_text(get_latest_release()), end='')
+    repo.info(build_body_text(get_release(opt_tag)), end='')
 
 if opt_verify:
     # Same as --update --dry-run
@@ -198,10 +265,18 @@ if opt_verify:
     repo.dry_run = True
 
 if opt_update:
-    release = get_latest_release()
+    release = get_release(opt_tag)
+    version = release.tag_name[1:]
+    repo.info('Release: %s' % release.title)
+    repo.info('Version: %s' % version)
+
+    # Locate packages for that version and upload missing ones.
+    search_installers(version, True, True)
+    upload_assets(release)
+
+    # Update title and body.
     title = build_title(release)
     body = build_body_text(release)
-    repo.info('Release: %s' % release.title)
     if title == release.title:
         repo.info('Release title is already set')
     if body == release.body:
@@ -215,7 +290,7 @@ if opt_update:
         else:
             # Actually perform the update.
             repo.info('Updating release title and body text')
-            release.update_release(title, body)
+            release.update_release(title, body, draft=release.draft, prerelease=release.prerelease)
 
 if opt_create:
     # Get the version from tsVersion.h in the repo.
@@ -224,7 +299,7 @@ if opt_create:
     repo.info('TSDuck version: %s' % version)
 
     # Locate the installer packages to upload.
-    if not search_installers(version, False):
+    if not search_installers(version, False, opt_missing):
         repo.fatal('cannot create version, fix package files first')
 
     # Check if the tag already exists in the repository.
@@ -251,20 +326,11 @@ if opt_create:
         if repo.dry_run:
             # In case of dry run, we cannot do anything else.
             exit(0)
-        release = repo.repo.create_git_release(tag_name, title, '')
+        release = repo.repo.create_git_release(tag_name, title, message='', draft=opt_draft, prerelease=opt_prerel)
 
     # Upload assets which are not yet uploaded.
-    assets = [a for a in release.get_assets()]
-    for ins in installers:
-        for file in ins.files:
-            asset_name = os.path.basename(file)
-            if len([a for a in assets if a.name == asset_name]) > 0:
-                repo.info("File %s already uploaded" % asset_name)
-            else:
-                repo.info("Uploading %s" % file)
-                if not repo.dry_run:
-                    release.upload_asset(file)
+    upload_assets(release)
 
     # Finally publish the release.
     if not repo.dry_run:
-        release.update_release(title, build_body_text(release))
+        release.update_release(title, build_body_text(release), draft=release.draft, prerelease=release.prerelease)

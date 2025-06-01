@@ -8,17 +8,21 @@
 #  Download all artifacts of a workflow run.
 #
 #  Options:
-#    -w name | --workflow name
-#        Workflow name or file name (ie. "release.yml"). If omitted, list the
-#        known workflows in the repository.
-#    -r id | --run id
-#        Run id. Default: most recent run.
-#    -o path | --output-directory path
-#        Where to download files. Default: pkg/installers in the work area.
-#    -l | --list
-#        List workflow runs. Do not download artifacts.
-#    -u | --unzip
-#        Unzip the downloaded artifacts and delete the .zip file.
+#  -w name | --workflow name : Workflow name or file name (ie. "release.yml").
+#      If omitted, list the known workflows in the repository.
+#  -r id | --run id : Run id. Default: most recent run.
+#  -o path | --output-directory path : Where to download files.
+#      Default: pkg/installers in the work area.
+#  -l | --list : List workflow runs. Do not download artifacts.
+#  -u | --unzip : Unzip the downloaded artifacts and delete the .zip file.
+#
+#  Common options:
+#  --repo owner/repo : GitHub repository, default: tsduck/tsduck.
+#  --token string : GitHub authentication token, default: $GITHUB_TOKEN.
+#  --branch name : git branch in the repository, default: master.
+#  --dry-run, -n: dry run, don't create anything.
+#  --verbose, -v: verbose mode.
+#  --debug: debug mode.
 #
 #-----------------------------------------------------------------------------
 
@@ -35,19 +39,28 @@ repo.check_opt_final()
 
 # List workflows only.
 if workflow_name is None:
+    col1 = 'Workflow'
+    col2 = 'File name'
+    width1 = len(col1)
+    width2 = len(col2)
     workflows = {}
-    width = 0
     for w in repo.repo.get_workflows():
         workflows[w.name] = w.path if os.path.dirname(w.path) != '.github/workflows' else os.path.basename(w.path)
-        width = max(width, len(w.name))
+        width1 = max(width1, len(w.name))
+        width2 = max(width2, len(workflows[w.name]))
+    print()
+    print('%-*s  %s' % (width1, col1, col2))
+    print('%s  %s' % (width1 * '-', width2 * '-'))
     for name in workflows:
-        print('%-*s  %s' % (width, name, workflows[name]))
+        print('%-*s  %s' % (width1, name, workflows[name]))
+    print()
     exit(0)
 
 # Search the workflow in the repo.
 workflow = None
 for w in repo.repo.get_workflows():
-    if w.name == workflow_name or os.path.basename(w.path) == workflow_name:
+    fname = os.path.basename(w.path)
+    if w.name == workflow_name or fname == workflow_name or fname == workflow_name + '.yml':
         workflow = w
         break
 if workflow is None:
