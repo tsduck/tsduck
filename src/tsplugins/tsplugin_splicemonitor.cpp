@@ -77,6 +77,7 @@ namespace ts {
         PID              _pts_pid = PID_NULL;     // The only PTS PID to use.
         fs::path         _output_file {};         // Output file name.
         UString          _alarm_command {};       // Alarm command name.
+        UString          _tag {};                 // Message tag.
         size_t           _min_repetition = 0;     // Minimum number of occurrences per command.
         size_t           _max_repetition = 0;     // Maximum number of occurrences per command.
         cn::milliseconds _min_preroll {};         // Minimum pre-roll time in milliseconds.
@@ -208,6 +209,11 @@ ts::SpliceMonitorPlugin::SpliceMonitorPlugin(TSP* tsp_) :
          u"Specify one PID carrying SCTE-35 sections to monitor. "
          u"By default, all SCTE-35 PID's are monitored.");
 
+    option(u"tag", 0, STRING);
+    help(u"tag", u"'string'",
+         u"Leading tag to be displayed with each message. "
+         u"Useful when the plugin is used several times in the same process.");
+
     option(u"time-pid", 't', PIDVAL);
     help(u"time-pid",
          u"Specify one video or audio PID containing PTS time stamps to link with SCTE-35 sections to monitor. "
@@ -234,6 +240,7 @@ bool ts::SpliceMonitorPlugin::getOptions()
     getIntValue(_splice_pid, u"splice-pid", PID_NULL);
     getIntValue(_pts_pid, u"time-pid", PID_NULL);
     getPathValue(_output_file, u"output-file");
+    getValue(_tag, u"tag");
     getValue(_alarm_command, u"alarm-command");
     getChronoValue(_min_preroll, u"min-pre-roll-time");
     getChronoValue(_max_preroll, u"max-pre-roll-time");
@@ -358,6 +365,9 @@ void ts::SpliceMonitorPlugin::setSplicePID(const PMT& pmt, PID splice_pid)
 ts::UString ts::SpliceMonitorPlugin::header(PID splice_pid, uint32_t event_id)
 {
     UString line;
+    if (!_tag.empty()) {
+        line.format(u"%s: ", _tag);
+    }
     if (_packet_index) {
         line.format(u"packet %'d, ", tsp->pluginPackets());
     }
@@ -400,6 +410,7 @@ void ts::SpliceMonitorPlugin::initJSON(json::Object& obj, PID splice_pid, uint32
 {
     const Time now(Time::CurrentLocalTime());
     obj.add(u"#name", u"event");
+    obj.add(u"tag", _tag);
     obj.add(u"packet-index", int64_t(tsp->pluginPackets()));
     obj.add(u"progress", progress);
     if (_time_stamp) {

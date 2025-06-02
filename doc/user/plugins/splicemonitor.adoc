@@ -164,6 +164,13 @@ Specify one single PID carrying SCTE-35 sections to monitor.
 By default, all SCTE-35 PID's are monitored, based in their signalization in the PMT's.
 
 [.opt]
+*--tag* _'string'_
+
+[.optdoc]
+Leading tag to be displayed with each message.
+Useful when the plugin is used several times in the same process.
+
+[.opt]
 *-t* _value_ +
 *--time-pid* _value_
 
