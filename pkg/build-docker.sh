@@ -17,6 +17,7 @@
 #  - debian:trixie
 #  - fedora:latest
 #  - almalinux:latest
+#  - almalinux:10
 #  - rockylinux:9 (no :latest available)
 #
 #  Full list of available containers images here:

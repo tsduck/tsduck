@@ -374,21 +374,22 @@ elif [[ -f /etc/redhat-release ]]; then
     EL=$(( ${EL/.*/} * 100 + ${EL/*./} ))
 
     PKGLIST+=(git gcc-c++ make cmake which hostname glibc-langpack-en flex bison dos2unix curl tar zip kernel-headers libatomic rpmdevtools python3)
-    [[ -z $NOOPENSSL             ]] && PKGLIST+=(openssl-devel)
-    [[ -z $NOEDITLINE            ]] && PKGLIST+=(libedit-devel)
-    [[ -z $NOZLIB                ]] && PKGLIST+=(zlib-devel)
-    [[ -z $NOPCSC                ]] && PKGLIST+=(pcsc-lite pcsc-lite-devel)
-    [[ -z $NORIST && $EL -ge 902 ]] && PKGLIST+=(librist-devel)
-    [[ -z $NOSRT && $EL -ge 802  ]] && PKGLIST+=(srt-devel)
-    [[ -z $NOCURL                ]] && PKGLIST+=(libcurl libcurl-devel)
-    [[ -z $NOVATEK               ]] && PKGLIST+=(libusbx-devel)
-    [[ -z $NOJAVA && $EL -lt 900 ]] && PKGLIST+=(java-latest-openjdk-devel)
-    [[ -z $NOJAVA && $EL -ge 900 ]] && PKGLIST+=(java-17-openjdk-devel)
-    [[ -z $NODOXYGEN             ]] && PKGLIST+=(doxygen graphviz)
-    [[ -n $STATIC                ]] && PKGLIST+=(glibc-static libstdc++-static)
-    [[ -z $NODOC                 ]] && PKGLIST+=(ruby-devel rubygems qpdf)
-    [[ -z $NODOC                 ]] && GEMLIST+=(asciidoctor asciidoctor-pdf rouge)
-    [[ $EL -le 999               ]] && PKGLIST+=(gcc-toolset-13 gcc-toolset-13-gcc-c++ gcc-toolset-13-runtime gcc-toolset-13-binutils gcc-toolset-13-libatomic-devel)
+    [[ -z $NOOPENSSL              ]] && PKGLIST+=(openssl-devel)
+    [[ -z $NOEDITLINE             ]] && PKGLIST+=(libedit-devel)
+    [[ -z $NOZLIB                 ]] && PKGLIST+=(zlib-devel)
+    [[ -z $NOPCSC                 ]] && PKGLIST+=(pcsc-lite pcsc-lite-devel)
+    [[ -z $NORIST && $EL -ge 902  ]] && PKGLIST+=(librist-devel)
+    [[ -z $NOSRT && $EL -ge 802   ]] && PKGLIST+=(srt-devel)
+    [[ -z $NOCURL                 ]] && PKGLIST+=(libcurl libcurl-devel)
+    [[ -z $NOVATEK                ]] && PKGLIST+=(libusbx-devel)
+    [[ -z $NOJAVA && $EL -lt 900  ]] && PKGLIST+=(java-latest-openjdk-devel)
+    [[ -z $NOJAVA && $EL -lt 1000 ]] && PKGLIST+=(java-17-openjdk-devel)
+    [[ -z $NOJAVA && $EL -ge 1000 ]] && PKGLIST+=(java-21-openjdk-devel)
+    [[ -z $NODOXYGEN              ]] && PKGLIST+=(doxygen graphviz)
+    [[ -n $STATIC                 ]] && PKGLIST+=(glibc-static libstdc++-static)
+    [[ -z $NODOC                  ]] && PKGLIST+=(ruby-devel rubygems qpdf)
+    [[ -z $NODOC                  ]] && GEMLIST+=(asciidoctor asciidoctor-pdf rouge)
+    [[ $EL -lt 1000               ]] && PKGLIST+=(gcc-toolset-13 gcc-toolset-13-gcc-c++ gcc-toolset-13-runtime gcc-toolset-13-binutils gcc-toolset-13-libatomic-devel)
 
     echo "Packages: ${PKGLIST[*]}"
     $DRYRUN && exit 0
@@ -406,9 +407,14 @@ elif [[ -f /etc/redhat-release ]]; then
         sudo dnf -y config-manager --set-enabled powertools
         sudo dnf -y install "${PKGOPTS[@]}" epel-release
         sudo dnf -y install "${PKGOPTS[@]}" "${PKGLIST[@]}"
-    else
+    elif [[ $EL -lt 1000 ]]; then
         sudo dnf -y install dnf-plugins-core
         sudo dnf -y config-manager --set-enabled plus
+        sudo dnf -y config-manager --set-enabled crb
+        sudo dnf -y install "${PKGOPTS[@]}" epel-release
+        sudo dnf -y install "${PKGOPTS[@]}" "${PKGLIST[@]}"
+    else
+        sudo dnf -y install dnf-plugins-core
         sudo dnf -y config-manager --set-enabled crb
         sudo dnf -y install "${PKGOPTS[@]}" epel-release
         sudo dnf -y install "${PKGOPTS[@]}" "${PKGLIST[@]}"
