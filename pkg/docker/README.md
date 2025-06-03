@@ -47,6 +47,7 @@ summarized in the following table.
 |          | fedora:42         |             | x64, arm64
 |          | fedora:41         |             | x64, arm64
 | Red Hat  | almalinux:latest  | 9           | x64, arm64
+|          | almalinux:10      |             | x64, arm64
 |          | almalinux:9       |             | x64, arm64
 |          | rockylinux:9      | (no latest) | x64, arm64
 | Alpine   | alpine:latest     |             | x64, arm64

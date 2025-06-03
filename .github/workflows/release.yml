@@ -75,6 +75,8 @@ on:
         options:
         - none
         - almalinux:latest
+        - almalinux:10
+        - almalinux:9
         - rockylinux:9
       windows_runner:
         description: 'Windows runner'
