@@ -378,11 +378,11 @@
     #if !defined(TS_SPARC)
         #define TS_SPARC 1
     #endif
-#elif defined(__powerpc64__)
+#elif defined(__powerpc64__) || defined(__ppc64__)
     #if !defined(TS_POWERPC64)
         #define TS_POWERPC64 1
     #endif
-#elif defined(__powerpc__)
+#elif defined(__powerpc__) || defined(__ppc__)
     #if !defined(TS_POWERPC)
         #define TS_POWERPC 1
     #endif
