@@ -150,6 +150,13 @@ By default, if no packet is found in a PID during 60 seconds (according to the T
 the PID is considered as suspended.
 
 [.opt]
+*--tag* _'string'_
+
+[.optdoc]
+Leading tag to be displayed with each message.
+Useful when the plugin is used several times in the same process.
+
+[.opt]
 *-t* +
 *--time-all*
 

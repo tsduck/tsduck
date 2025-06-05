@@ -149,8 +149,8 @@ int MainCode(int argc, char *argv[])
             std::cout << "File           : " << opt.infile << std::endl;
         }
         std::cout << "TS packets     : " << ts::UString::Decimal(status.packet_count) << std::endl
-                  << opt.pcr_name << "            : " << ts::UString::Decimal(status.pcr_count) << std::endl
-                  << "PIDs with " << opt.pcr_name << "  : " << ts::UString::Decimal(status.pcr_pids) << std::endl;
+                  << opt.pcr_name << "            : " << ts::UString::Decimal(status.clock_count) << std::endl
+                  << "PIDs with " << opt.pcr_name << "  : " << ts::UString::Decimal(status.clock_pids) << std::endl;
     }
 
     std::cout << "TS bitrate" << (opt.full ? "     " : "") << ": "

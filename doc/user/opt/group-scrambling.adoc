@@ -49,6 +49,18 @@ See the option `--ctr-counter-bits` for the size of the counter part in the IV.
 Note that this is a non-standard TS scrambling mode.
 The only standard AES-based scrambling modes are ATIS-IDSA and DVB-CISSA.
 
+WARNING: AES-CTR shall be used for experimentation only because it is completely *unsafe*
+in the context of transport stream scrambling.
+The CTR ("counter") mode is equivalent to a stream cipher and, therefore,
+the initialization vector shall *never* be reused between messages.
+This means that each message shall use its own IV, which therefore must be transmitted with the message.
+In the context of TS scrambling, the message size is always fixed (the TS packet payload),
+there is no room to transmit an IV with every packet and all packets are scrambled with the same IV.
+With CBC-based algorithms such as DVB-CSA2, DVB-CISSA, and ATIS-IDSA, using the same IV in all packets is not ideal.
+However, the risk is understood and mitigated by frequent updates of the control word.
+On the other hand, with CTR-base algorithms, using the same IV for several messages
+(all TS packets in a crypto-period in the TS scrambling case) is a security non-sense.
+
 [.optdoc]
 With the plugin `scrambler`, a _scrambling_descriptor_ is automatically added to the PMT of the service
 to indicate the use of AES-CTR scrambling.

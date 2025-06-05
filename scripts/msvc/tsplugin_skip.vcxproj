@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- Automatically generated file, see build-project-files.py -->
+  <ImportGroup Label="PropertySheets">
+    <Import Project="msvc-common-begin.props"/>
+  </ImportGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_skip.cpp"/>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{507284B8-CA7B-5B43-A221-5B297B98DDEC}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>tsplugin_skip</RootNamespace>
+  </PropertyGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="msvc-target-dll.props"/>
+    <Import Project="msvc-use-tsduckdll.props"/>
+    <Import Project="msvc-common-end.props"/>
+  </ImportGroup>
+</Project>

@@ -12,8 +12,7 @@
 [.cmd-header]
 Skip leading packets in a TS
 
-The plugin skips leading TS packets of a stream.
-The specified number of initial TS packets are dropped and not transmitted to the next plugin in the chain.
+This plugin skips leading TS packets of a stream, until a specific condition is met.
 After that, all packets are transparently passed.
 
 [.usage]
@@ -21,20 +20,64 @@ Usage
 
 [source,shell]
 ----
-$ tsp -P skip [options] count
+$ tsp -P skip [options]
 ----
 
 [.usage]
-Parameters
+Options
 
 [.opt]
-_count_
+*-b* _value_ +
+*--bytes* _value_
 
 [.optdoc]
-Number of leading TS packets to skip.
+Number of leading bytes to skip (rounded up to the next TS packet).
 
-[.usage]
-Options
+[.opt]
+*-m* _value_ +
+*--milli-seconds* _value_
+
+[.optdoc]
+Skip the specified number of leading milli-seconds.
+
+[.optdoc]
+By default, this is wall-clock time (real time). See also option `--pcr-based`.
+
+[.opt]
+*-n* _value_ +
+*--null-sequence-count* _value_
+
+[.optdoc]
+Skip packets until the specified number of sequences of consecutive null packets is encountered.
+
+[.opt]
+*-p* _value_ +
+*--packets* _value_
+
+[.optdoc]
+Number of leading packets to skip.
+
+[.optdoc]
+Note: In previous versions of TSDuck, the number of packets to skip was the only criteria
+and its value was passed as parameter, not as an option.
+For compatibility with previous versions, the parameter is still accepted as packet count.
+However, this is a legacy parameter and new commands should use the option `--packets`.
+
+[.opt]
+*--pcr-based*
+
+[.optdoc]
+With `--seconds` or `--milli-seconds`, use playout time based on PCR values.
+By default, the time is based on the wall-clock time (real time).
+
+[.opt]
+*--seconds* _value_
+
+[.optdoc]
+Skip the specified number of leading seconds.
+
+[.optdoc]
+By default, this is wall-clock time (real time). See also option `--pcr-based`.
 
 [.opt]
 *-s* +
@@ -42,5 +85,12 @@ Options
 
 [.optdoc]
 Replace excluded leading packets with stuffing (null packets) instead of removing them.
+
+[.opt]
+*-u* _value_ +
+*--unit-start-count* _value_
+
+[.optdoc]
+Skip packets until the specified number of packets containing a payload unit start indicator is encountered.
 
 include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

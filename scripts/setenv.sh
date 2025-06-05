@@ -52,7 +52,7 @@ done
 ROOTDIR=$(cd $(dirname "${BASH_SOURCE[0]}")/..; pwd)
 TSPYDIR="$ROOTDIR/src/libtsduck/python"
 if [[ -z "$BINDIR" ]]; then
-    ARCH=$(uname -m | sed -e 's/i.86/i386/' -e 's/^arm.*$/arm/')
+    ARCH=$(uname -m | sed -e 's/i.86/i386/' -e 's/^arm.*$/arm/' -e 's/ /-/g')
     HOST=$(hostname | sed -e 's/\..*//')
     BINDIR="$ROOTDIR/bin/$TARGET-$ARCH-$HOST"
 fi

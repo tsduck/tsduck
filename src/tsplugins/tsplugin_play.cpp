@@ -37,6 +37,7 @@ namespace ts {
 
     private:
         bool       _use_mplayer = false;
+        bool       _use_ffplay = false;
         bool       _use_xine = false;
         TSForkPipe _pipe {};
 
@@ -59,13 +60,18 @@ ts::PlayPlugin::PlayPlugin(TSP* tsp_) :
 
     option(u"mplayer", 'm');
     help(u"mplayer",
-         u"Use mplayer for rendering. The default is to look for vlc, mplayer and "
-         u"xine, in this order, and use the first available one.");
+         u"Use mplayer for rendering. "
+         u"The default is to look for vlc, mplayer, ffplay, xine, in this order, and use the first available one.");
+
+    option(u"ffplay", 'f');
+    help(u"ffplay",
+         u"Use ffplay (part of ffmpeg) for rendering. "
+         u"The default is to look for vlc, mplayer, ffplay, xine, in this order, and use the first available one.");
 
     option(u"xine", 'x');
     help(u"xine",
-         u"Use xine for rendering. The default is to look for vlc, mplayer and "
-         u"xine, in this order, and use the first available one.");
+         u"Use xine for rendering. "
+         u"The default is to look for vlc, mplayer, ffplay, xine, in this order, and use the first available one.");
 
 #endif
 }
@@ -119,9 +125,10 @@ bool ts::PlayPlugin::start()
     // Get option values
 #if !defined(TS_WINDOWS)
     _use_mplayer = present(u"mplayer");
+    _use_ffplay = present(u"ffplay");
     _use_xine = present(u"xine");
-    if (_use_mplayer && _use_xine) {
-        error(u"--mplayer (-m) and --xine (-x) are mutually exclusive");
+    if (_use_mplayer + _use_xine + _use_ffplay > 1) {
+        error(u"--mplayer, --ffplay and --xine are mutually exclusive");
         return false;
     }
 #endif
@@ -177,6 +184,7 @@ bool ts::PlayPlugin::start()
     // Executable names for various players
     static const UChar vlc_exec[] = u"vlc";
     static const UChar mplayer_exec[] = u"mplayer";
+    static const UChar ffplay_exec[] = u"ffplay";
     static const UChar xine_exec[] = u"xine";
 
     // On macOS, the applications are installed elsewhere.
@@ -187,6 +195,7 @@ bool ts::PlayPlugin::start()
     // Options to read TS on stdin for various players
     static const UChar vlc_opts[] = u"- --play-and-exit";
     static const UChar mplayer_opts[] = u"-demuxer +mpegts -";
+    static const UChar ffplay_opts[] = u"-loglevel error -autoexit -f mpegts -";
     static const UChar xine_opts[] = u"stdin:/#demux:mpeg-ts";
 
     // Search known media players
@@ -197,6 +206,13 @@ bool ts::PlayPlugin::start()
         opts = mplayer_opts;
         if (!searchInPath(exec, search_path, mplayer_exec)) {
             error(u"mplayer not found in PATH");
+            return false;
+        }
+    }
+    else if (_use_ffplay) {
+        opts = ffplay_opts;
+        if (!searchInPath(exec, search_path, xine_exec)) {
+            error(u"ffplay not found in PATH");
             return false;
         }
     }
@@ -218,6 +234,9 @@ bool ts::PlayPlugin::start()
     }
     else if (searchInPath(exec, search_path, mplayer_exec)) {
         opts = mplayer_opts;
+    }
+    else if (searchInPath(exec, search_path, ffplay_exec)) {
+        opts = ffplay_opts;
     }
     else if (searchInPath(exec, search_path, xine_exec)) {
         opts = xine_opts;

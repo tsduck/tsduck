@@ -69,6 +69,7 @@ namespace ts {
         bool          _use_milliseconds = false;  // Report playback time instead of packet number
         PacketCounter _suspend_threshold = 0;     // Number of missing packets after which a PID is considered as suspended
         fs::path      _outfile_name {};           // Output file name
+        UString       _tag {};                    // Message tag.
 
         // Working data
         std::ofstream _outfile {};                // User-specified output file
@@ -160,6 +161,11 @@ ts::HistoryPlugin::HistoryPlugin(TSP* tsp_) :
          u"By default, if no packet is found in a PID during 60 seconds, the PID "
          u"is considered as suspended.");
 
+    option(u"tag", 0, STRING);
+    help(u"tag", u"'string'",
+         u"Leading tag to be displayed with each message. "
+         u"Useful when the plugin is used several times in the same process.");
+
     option(u"time-all", 't');
     help(u"time-all", u"Report all TDT and TOT. By default, only report TDT preceeding another event.");
 }
@@ -179,6 +185,12 @@ bool ts::HistoryPlugin::getOptions()
     _use_milliseconds = present(u"milli-seconds");
     getIntValue(_suspend_threshold, u"suspend-packet-threshold");
     getPathValue(_outfile_name, u"output-file");
+    getValue(_tag, u"tag");
+
+    // Message header.
+    if (!_tag.empty()) {
+        _tag.append(u": ");
+    }
     return true;
 }
 
@@ -269,10 +281,10 @@ void ts::HistoryPlugin::report(PacketCounter pkt, const UString& line)
 
     // Then report the message.
     if (_outfile.is_open()) {
-        _outfile << UString::Format(u"%d: ", pkt) << line << std::endl;
+        _outfile << _tag << UString::Format(u"%d: ", pkt) << line << std::endl;
     }
     else {
-        info(u"%d: %s", pkt, line);
+        info(u"%s%d: %s", _tag, pkt, line);
     }
 }
 

@@ -2,12 +2,18 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.42-4314 (June 2025)
+VERSION 3.42-4316 (June 2025)
 
 [IMP] Improvements on existing commands and plugins:
 
   * New options in existing commands and plugins:
-    - Option --tag in plugin "splicemonitor".
+    - Option --tag in plugins "history", "splicemonitor".
+    - Option --pcr-based in plugin "until".
+    - Options  --bytes,  --milli-seconds,   --null-sequence-count,   --packets,
+      --pcr-based, --seconds, --unit-start-count in plugin "skip". The previous
+      parameter is replaced  with  option  --packets  but  still  accepted  for
+      compatibility.
+    - Option --ffplay in output plugin "play".
 
 [BUG] Bug fixes:
 

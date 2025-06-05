@@ -12,6 +12,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsPluginRepository.h"
+#include "tsPCRAnalyzer.h"
 #include "tsTime.h"
 
 
@@ -32,10 +33,12 @@ namespace ts {
     private:
         // Command line options:
         bool             _exclude_last = false;  // Exclude packet which triggers the condition
+        bool             _pcr_based = false;     // Count time based on PCR units, not real-time clock
         PacketCounter    _pack_max = 0;          // Stop at Nth packet
         PacketCounter    _unit_start_max = 0;    // Stop at Nth packet with payload unit start
         PacketCounter    _null_seq_max = 0;      // Stop at Nth sequence of null packets
         cn::milliseconds _msec_max {};           // Stop after N milli-seconds
+        PCR              _pcr_max {};            // Stop after N PCR units.
 
         // Working data:
         PacketCounter _unit_start_cnt = 0;       // Payload unit start counter
@@ -44,6 +47,7 @@ namespace ts {
         PID           _previous_pid = PID_NULL;  // PID of previous packet
         bool          _terminated = false;       // Final condition is met
         bool          _transparent = false;      // Pass all packets, no longer check conditions
+        PCRAnalyzer   _pcr_analyzer {1, 1};      // Compute playout time based on PCR
     };
 }
 
@@ -70,7 +74,9 @@ ts::UntilPlugin::UntilPlugin (TSP* tsp_) :
 
     option<cn::milliseconds>(u"milli-seconds", 'm');
     help(u"milli-seconds",
-         u"Stop the specified number of milli-seconds after receiving the first packet.");
+         u"Stop the specified number of milli-seconds after receiving the first packet. "
+         u"By default, this is wall-clock time (real time). "
+         u"See also option --pcr-based.");
 
     option(u"null-sequence-count", 'n', UNSIGNED);
     help(u"null-sequence-count",
@@ -79,8 +85,16 @@ ts::UntilPlugin::UntilPlugin (TSP* tsp_) :
     option(u"packets", 'p', UNSIGNED);
     help(u"packets", u"Stop after the specified number of packets.");
 
+    option(u"pcr-based");
+    help(u"pcr-based",
+         u"With --seconds or --milli-seconds, use playout time based on PCR values. "
+         u"By default, the time is based on the wall-clock time (real time).");
+
     option<cn::seconds>(u"seconds", 's');
-    help(u"seconds", u"Stop the specified number of seconds after receiving the first packet.");
+    help(u"seconds",
+         u"Stop the specified number of seconds after receiving the first packet. "
+         u"By default, this is wall-clock time (real time). "
+         u"See also option --pcr-based.");
 
     option(u"unit-start-count", 'u', UNSIGNED);
     help(u"unit-start-count",
@@ -95,13 +109,15 @@ ts::UntilPlugin::UntilPlugin (TSP* tsp_) :
 bool ts::UntilPlugin::getOptions()
 {
     _exclude_last = present(u"exclude-last");
-    getIntValue(_unit_start_max,u"unit-start-count");
+    _pcr_based = present(u"pcr-based");
+    getIntValue(_unit_start_max, u"unit-start-count");
     getIntValue(_null_seq_max, u"null-sequence-count");
     getIntValue(_pack_max, u"packets", (intValue<PacketCounter>(u"bytes") + PKT_SIZE - 1) / PKT_SIZE);
     cn::milliseconds sec, msec;
     getChronoValue(sec, u"seconds");
     getChronoValue(msec, u"milli-seconds");
     _msec_max = std::max(sec, msec);
+    _pcr_max = cn::duration_cast<PCR>(_msec_max);
     tsp->useJointTermination(present(u"joint-termination"));
     return true;
 }
@@ -118,6 +134,7 @@ bool ts::UntilPlugin::start()
     _previous_pid = PID_MAX; // Invalid value
     _terminated = false;
     _transparent = false;
+    _pcr_analyzer.reset();
     return true;
 }
 
@@ -145,8 +162,11 @@ ts::ProcessorPlugin::Status ts::UntilPlugin::processPacket(TSPacket& pkt, TSPack
         }
     }
 
-    // Record time of first packet.
-    if (tsp->pluginPackets() == 0) {
+    // Compute PCR-based time. Record time of first packet.
+    if (_pcr_based) {
+        _pcr_analyzer.feedPacket(pkt);
+    }
+    else if (tsp->pluginPackets() == 0) {
         _start_time = Time::CurrentUTC();
     }
 
@@ -161,8 +181,16 @@ ts::ProcessorPlugin::Status ts::UntilPlugin::processPacket(TSPacket& pkt, TSPack
     // Check if the packet matches one of the selected conditions.
     _terminated = (_pack_max > 0 && tsp->pluginPackets() + 1 >= _pack_max) ||
                   (_null_seq_max > 0 && _null_seq_cnt >= _null_seq_max) ||
-                  (_unit_start_max > 0 && _unit_start_cnt >= _unit_start_max) ||
-                  (_msec_max > cn::milliseconds::zero() && Time::CurrentUTC() >= _start_time + _msec_max);
+                  (_unit_start_max > 0 && _unit_start_cnt >= _unit_start_max);
+
+    if (!_terminated && _msec_max > cn::milliseconds::zero()) {
+        if (_pcr_based) {
+            _terminated = _pcr_analyzer.duration() >= _pcr_max;
+        }
+        else {
+            _terminated = Time::CurrentUTC() >= _start_time + _msec_max;
+        }
+    }
 
     // Update context information for next packet.
     _previous_pid = pkt.getPID();

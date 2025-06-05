@@ -49,6 +49,7 @@ on:
         - none
         - ubuntu:latest
         - ubuntu:25.04
+        - ubuntu:24.04
       debian_image:
         description: 'Debian docker image'
         type: choice
@@ -67,6 +68,7 @@ on:
         - none
         - fedora:latest
         - fedora:42
+        - fedora:41
       redhat_image:
         description: 'Red Hat docker image'
         type: choice
@@ -78,6 +80,7 @@ on:
         - almalinux:10
         - almalinux:9
         - rockylinux:9
+        - oraclelinux:9
       windows_runner:
         description: 'Windows runner'
         type: choice
@@ -102,9 +105,15 @@ jobs:
       contents: write
     steps:
     - name: Install prerequisites
+      # Getting the tag of the last release requires curl and jq.
       if: ${{ inputs.release_type == 'update-last' }}
       run: sudo apt install -y curl jq
+    - name: Get TSDuck repo
+      # Getting the current version needs the content of the repo.
+      if: ${{ inputs.release_type != 'update-last' }}
+      uses: actions/checkout@master
     - name: Get latest version tag
+      # The two alternatives must be executed in the same step because the output is identified as steps.get_tag.outputs.tag.
       id: get_tag
       run: |
         if [[ ${{ inputs.release_type }} == update-last ]]; then
@@ -114,12 +123,22 @@ jobs:
                        "https://api.github.com/repos/${{ github.repository }}/releases?per_page=1" | \
                   jq -r '.[].tag_name')
             tag=${tag/#null/}
+            version=${tag/#v/}
             echo "Tag to build: $tag"
         else
             tag=
+            version=$(scripts/get-version-from-sources.py)
             echo "Build the latest commit"
         fi
         echo "tag=$tag" >>$GITHUB_OUTPUT
+        echo "VERSION=$version" >>$GITHUB_ENV
+        echo "${{ env.VERSION }}" >version.txt
+    - name: Upload version
+      uses: actions/upload-artifact@v4
+      with:
+        name: version
+        path: version.txt
+        retention-days: 10
 
   linux:
     needs: [identify]
@@ -158,8 +177,9 @@ jobs:
           package_options: --allowerasing
     name: Build on ${{ matrix.distro }} for ${{ matrix.arch }}
     # Complicated structure using one sub-workflow because "matrix" cannot be referenced from "jobs.job.if".
-    # However, "matrix" is accepted in "jobs.job.with" and it is possible to run a subworkflow with an "if:"
-    # referencing it inputs. See https://github.com/orgs/community/discussions/37883
+    # Therefore "if: ${{ matrix.build_arch && matrix.build_distro }}" is not allowed here. However, "matrix"
+    # is accepted in "jobs.job.with" and it is possible to run a subworkflow with an "if:" referencing it inputs.
+    # See https://github.com/orgs/community/discussions/37883 for a discussion on the subject.
     uses: ./.github/workflows/release-one.yml
     with:
       build: ${{ matrix.build_arch && matrix.build_distro }}
@@ -176,7 +196,10 @@ jobs:
       contents: read
 
   # Build Win64 and Arm64 packages in one pass to get the two sets of libraries in the installers.
-  # The runner in a x64 system which can only test the Win64 installer.
+  # The runner can be a x64 or arm64 system. Even though one single runner can build the two packages,
+  # there is only one package which can be tested, the one with the same architecture as the runner.
+  # If only one package is built, it is recommended to select a runner of the same architecture.
+  # Otherwise, the package won't be tested after build.
   windows:
     name: Build on Windows
     if: ${{ inputs.windows_runner != 'none' && (inputs.build_x64 || inputs.build_arm64) }}

@@ -38,12 +38,20 @@ $ tsp -O play [options]
 UNIX specific options (Linux, macOS, BSD)
 
 [.opt]
+*-f* +
+*--ffplay*
+
+[.optdoc]
+Use `ffplay` (part of FFmpeg tools suite) for rendering.
+The default is to look for `vlc`, `mplayer`, `ffplay` and `xine`, in this order, and use the first available one.
+
+[.opt]
 *-m* +
 *--mplayer*
 
 [.optdoc]
 Use `mplayer` for rendering.
-The default is to look for `vlc`, `mplayer` and `xine`, in this order, and use the first available one.
+The default is to look for `vlc`, `mplayer`, `ffplay` and `xine`, in this order, and use the first available one.
 
 [.opt]
 *-x* +
@@ -51,14 +59,15 @@ The default is to look for `vlc`, `mplayer` and `xine`, in this order, and use t
 
 [.optdoc]
 Use `xine` for rendering.
-The default is to look for `vlc`, `mplayer` and `xine`, in this order, and use the first available one.
+The default is to look for `vlc`, `mplayer`, `ffplay` and `xine`, in this order, and use the first available one.
 
 include::{docdir}/opt/group-common-outputs.adoc[tags=!*]
 
 [.usage]
 Supported media players
 
-* Linux: Look for VLC, `mplayer` and `xine`. Use the `PATH` environment variable to locate the applications.
+* Linux: Look for VLC, `mplayer`, `ffplay`, and `xine`.
+  Use the `PATH` environment variable to locate the applications.
 * macOS: Same a Linux but also search into `/usr/local/bin` (`/opt/homebrew/bin` on Arm) and `/Applications`.
 * Windows: Look for VLC using the `Path` environment variable and various information
   that is normally filled in the registry by the VLC installation procedure.

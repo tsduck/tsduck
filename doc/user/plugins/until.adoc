@@ -57,6 +57,9 @@ See the xref:tsp-reference[`tsp` reference documentation] for more details on xr
 [.optdoc]
 Stop the specified number of milli-seconds after receiving the first packet.
 
+[.optdoc]
+By default, this is wall-clock time (real time). See also option `--pcr-based`.
+
 [.opt]
 *-n* _value_ +
 *--null-sequence-count* _value_
@@ -72,11 +75,21 @@ Stop when the specified number of sequences of consecutive null packets is encou
 Stop after the specified number of packets.
 
 [.opt]
+*--pcr-based*
+
+[.optdoc]
+With `--seconds` or `--milli-seconds`, use playout time based on PCR values.
+By default, the time is based on the wall-clock time (real time).
+
+[.opt]
 *-s* _value_ +
 *--seconds* _value_
 
 [.optdoc]
 Stop the specified number of seconds after receiving the first packet.
+
+[.optdoc]
+By default, this is wall-clock time (real time). See also option `--pcr-based`.
 
 [.opt]
 *-u* _value_ +

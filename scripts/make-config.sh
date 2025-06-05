@@ -159,7 +159,10 @@ LC_ALL=en_US.UTF-8
 LANG=en_US.UTF-8
 
 [[ -z $LOCAL_OS ]] && LOCAL_OS=$(uname -s | tr A-Z a-z)
-[[ -z $LOCAL_ARCH ]] && LOCAL_ARCH=$(uname -m)
+if [[ -z $LOCAL_ARCH ]]; then
+    LOCAL_ARCH=$(uname -m)
+    LOCAL_ARCH=${LOCAL_ARCH// /-}
+fi
 if [[ -n $M32 ]]; then
     # 32-bit cross-compilation
     MAIN_ARCH=i386
@@ -894,7 +897,7 @@ done
 
 # Obsolete plugins, were in separate shared libraries, now in libtsduck.so.
 # Maintenance: also update pkg/nsis/tsduck.nsi (Windows).
-NO_TSPLUGINS="tsplugin_dektec tsplugin_drop tsplugin_file tsplugin_fork tsplugin_hls tsplugin_http tsplugin_ip tsplugin_null tsplugin_psi tsplugin_rist tsplugin_skip tsplugin_srt tsplugin_table tsplugin_teletext"
+NO_TSPLUGINS="tsplugin_dektec tsplugin_drop tsplugin_file tsplugin_fork tsplugin_hls tsplugin_http tsplugin_ip tsplugin_null tsplugin_psi tsplugin_rist tsplugin_srt tsplugin_table tsplugin_teletext"
 
 # Build a list of tools and plugins to not build or deinstall from the system tree.
 NO_TSTOOLS=

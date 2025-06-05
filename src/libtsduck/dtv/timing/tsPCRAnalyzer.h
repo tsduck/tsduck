@@ -33,11 +33,6 @@ namespace ts {
         PCRAnalyzer(size_t min_pid = 1, size_t min_pcr = 64);
 
         //!
-        //! Destructor.
-        //!
-        ~PCRAnalyzer();
-
-        //!
         //! Reset all collected information.
         //!
         void reset();
@@ -123,13 +118,26 @@ namespace ts {
         //! Get the evaluated TS bitrate in bits/second based on 188-byte packets for the last second.
         //! @return The evaluated TS bitrate in bits/second based on 188-byte packets.
         //!
-        BitRate instantaneousBitrate188() const;
+        BitRate instantaneousBitrate188() const { return _inst_ts_bitrate_188; }
 
         //!
         //! Get the evaluated TS bitrate in bits/second based on 204-byte packets for the last second.
         //! @return The evaluated TS bitrate in bits/second based on 204-byte packets.
         //!
-        BitRate instantaneousBitrate204() const;
+        BitRate instantaneousBitrate204() const { return _inst_ts_bitrate_204; }
+
+        //!
+        //! Get the estimated playout duration in PCR units.
+        //! @return The estimated playout duration in PCR units.
+        //!
+        PCR duration() const { return _duration; }
+
+        //!
+        //! Get the estimated playout duration in PCR units, based on the clock of a given PID.
+        //! @param [in] pid The PID to evaluate.
+        //! @return The estimated playout duration in PCR units.
+        //!
+        PCR duration(PID pid) const;
 
         //!
         //! Get the number of TS packets on a PID.
@@ -147,8 +155,8 @@ namespace ts {
             BitRate       bitrate_188 = 0;        //!< The evaluated TS bitrate in bits/second based on 188-byte packets.
             BitRate       bitrate_204 = 0;        //!< The evaluated TS bitrate in bits/second based on 204-byte packets.
             PacketCounter packet_count = 0;       //!< The total number of analyzed TS packets.
-            PacketCounter pcr_count = 0;          //!< The number of analyzed PCR's.
-            size_t        pcr_pids = 0;           //!< The number of PID's with PCR's.
+            PacketCounter clock_count = 0;        //!< The number of analyzed clock values (PCR or DTS).
+            size_t        clock_pids = 0;         //!< The number of PID's with PCR or DTS.
             size_t        discontinuities = 0;    //!< The number of discontinuities.
             BitRate       instantaneous_bitrate_188 = 0;  //!< The evaluated TS bitrate in bits/second based on 188-byte packets for the last second.
             BitRate       instantaneous_bitrate_204 = 0;  //!< The evaluated TS bitrate in bits/second based on 204-byte packets for the last second.
@@ -181,32 +189,35 @@ namespace ts {
         // Analysis of one PID
         struct PIDAnalysis
         {
-            uint64_t ts_pkt_cnt = 0;       // Count of TS packets
-            uint8_t  cur_continuity = 0;   // Current continuity counter
-            uint64_t last_pcr_value = INVALID_PCR; // Last PCR/DTS value in this PID
-            uint64_t last_pcr_packet = 0;  // Packet index containing last PCR/DTS
-            BitRate  ts_bitrate_188 = 0;   // Sum of all computed TS bitrates (188-byte)
-            BitRate  ts_bitrate_204 = 0;   // Sum of all computed TS bitrates (204-byte)
-            uint64_t ts_bitrate_cnt = 0;   // Count of computed TS bitrates
+            uint64_t ts_pkt_cnt = 0;           // Count of TS packets
+            uint8_t  cur_continuity = 0;       // Current continuity counter
+            uint64_t last_pcr_dts_value = INVALID_PCR;  // Last PCR/DTS value in this PID
+            uint64_t last_pcr_dts_packet = 0;  // Packet index containing this PCR/DTS
+            bool     last_is_valid = false;    // Last valid PCR/DTS value in this PID (invalidated on discontinuity
+            BitRate  ts_bitrate_188 = 0;       // Sum of all computed TS bitrates (188-byte)
+            BitRate  ts_bitrate_204 = 0;       // Sum of all computed TS bitrates (204-byte)
+            uint64_t ts_bitrate_cnt = 0;       // Count of computed TS bitrates
+            PCR      duration = PCR::zero();   // Accumulated PCR ticks in this PID
         };
 
         // Private members:
         bool     _use_dts = false;         // Use DTS instead of PCR
-        bool     _ignore_errors = false;   // Ignore TS errors such as discontinuities.
-        size_t   _min_pid {1};             // Min # of PID
-        size_t   _min_pcr {1};             // Min # of PCR per PID
+        bool     _ignore_errors = false;   // Ignore TS errors such as discontinuities
+        size_t   _min_pid = 1;             // Min number of PID's with PCR/DTS
+        size_t   _min_values = 1;          // Min number of PCR/DTS values per PID
         bool     _bitrate_valid = false;   // Bitrate evaluation is valid
         uint64_t _ts_pkt_cnt = 0;          // Total TS packets count
         BitRate  _ts_bitrate_188 = 0;      // Sum of all computed TS bitrates (188-byte)
         BitRate  _ts_bitrate_204 = 0;      // Sum of all computed TS bitrates (204-byte)
         uint64_t _ts_bitrate_cnt = 0;      // Count of computed bitrates
-        BitRate  _inst_ts_bitrate_188 = 0; // Sum of all computed TS bitrates (188-byte) for last second
-        BitRate  _inst_ts_bitrate_204 = 0; // Sum of all computed TS bitrates (204-byte) for last second
-        size_t   _completed_pids = 0;      // Number of PIDs with enough PCRs
-        size_t   _pcr_pids = 0;            // Number of PIDs with PCRs
+        BitRate  _inst_ts_bitrate_188 = 0; // Computed TS bitrate (188-byte) for last second
+        BitRate  _inst_ts_bitrate_204 = 0; // Computed TS bitrate (204-byte) for last second
+        size_t   _completed_pids = 0;      // Number of PIDs with enough PCR or DTS values
+        size_t   _clock_pids_count = 0;    // Number of PIDs with PCR or DTS
         size_t   _discontinuities = 0;     // Number of discontinuities
-        PIDAnalysis* _pid[PID_MAX] {};     // Per-PID stats
-        std::map<uint64_t, uint64_t> _packet_pcr_index_map {}; // Map of PCR/DTS to packet index across entire TS
-        static constexpr size_t FOOLPROOF_MAP_LIMIT = 1000;    // Max number of entries in the PCR map
+        PCR      _duration = PCR::zero();  // Global accumulated PCR ticks in the stream
+        std::map<PID, PIDAnalysis> _pids {};                      // Per-PID stats
+        std::map<uint64_t, uint64_t> _packet_clock_index_map {};  // Map of PCR/DTS to packet index across entire TS
+        static constexpr size_t FOOLPROOF_MAP_LIMIT = 1000;       // Max number of entries in the PCR map
     };
 }
