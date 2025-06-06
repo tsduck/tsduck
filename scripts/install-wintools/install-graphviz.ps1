@@ -18,8 +18,13 @@ param(
 )
 
 Write-Output "==== Graphviz download and installation procedure"
+
 . "$PSScriptRoot\install-common.ps1"
 
-winget install Graphviz.Graphviz --accept-source-agreements
+Install-Standard-Exe `
+    "http://graphviz.org/download/" `
+    "*stable_windows*Release*win64.exe*" `
+    "https://gitlab.com/graphviz/graphviz/-/package_files/9574245/download" `
+    @("/S")
 
 Exit-Script

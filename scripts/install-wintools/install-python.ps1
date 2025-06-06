@@ -30,5 +30,4 @@ Install-Standard-Exe `
     @("/quiet", "InstallAllUsers=1", "CompileAll=1", "PrependPath=1", "Include_test=0")
 
 Propagate-Environment "Path"
-
 Exit-Script

@@ -18,8 +18,9 @@ param(
 )
 
 Write-Output "==== Doxygen download and installation procedure"
+
 . "$PSScriptRoot\install-common.ps1"
 
-winget install DimitriVanHeesch.Doxygen --accept-source-agreements
+Install-GitHub-Exe 'doxygen/doxygen' '/doxygen-.*-setup\.exe$' @("/verysilent", "/suppressmsgboxes", "/norestart") -Latest
 
 Exit-Script

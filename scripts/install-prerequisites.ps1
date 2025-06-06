@@ -47,7 +47,6 @@ param(
 
 $InsDir = "$PSScriptRoot\install-wintools"
 
-& "$InsDir\install-winget.ps1" -NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions
 if (-not $NoDoxygen) {
     & "$InsDir\install-graphviz.ps1" -NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions
     & "$InsDir\install-doxygen.ps1"  -NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions

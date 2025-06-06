@@ -18,9 +18,9 @@ param(
 )
 
 Write-Output "==== Git download and installation procedure"
+
 . "$PSScriptRoot\install-common.ps1"
 
-winget install Git.Git --accept-source-agreements
+Install-GitHub-Exe 'git-for-windows/git' '/Git-.*-64-bit\.exe$' @("/verysilent", "/suppressmsgboxes", "/norestart") -Latest
 
-Propagate-Environment "Path"
 Exit-Script
