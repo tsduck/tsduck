@@ -153,7 +153,7 @@ ts::BitRate ts::PCRAnalyzer::bitrate204(PID pid) const
 ts::PCR ts::PCRAnalyzer::duration(PID pid) const
 {
     const auto it = _pids.find(pid);
-    return it == _pids.end() ? PCR::zero() : it->second.duration;                                                                             BitRate((_ts_bitrate_188 * it->second.ts_pkt_cnt) / (_ts_bitrate_cnt * _ts_pkt_cnt));
+    return it == _pids.end() ? PCR::zero() : it->second.duration;
 }
 
 
