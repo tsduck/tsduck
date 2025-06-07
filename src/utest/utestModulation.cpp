@@ -15,7 +15,7 @@
 
 // In case of static link, for inclusion of ATSC object.
 #include "tsATSC.h"
-[[maybe_unused]] auto ref_atsc = ts::GetBitRateATSC;
+[[maybe_unused]] static auto ref_atsc = ts::GetBitRateATSC;
 
 
 //----------------------------------------------------------------------------
