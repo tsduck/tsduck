@@ -14,8 +14,13 @@
 
 #pragma once
 #include "tsNames.h"
+#include "tsBitRate.h"
+#include "tsModulation.h"
 
 namespace ts {
+
+    class ModulationArgs;
+
     //!
     //! Safe size in bytes of the FIFO of DTA devices.
     //! This is a legacy value, recent devices can report dynamically.
@@ -34,9 +39,30 @@ namespace ts {
     //! Maximum number of "hardware functions" per Dektec device.
     //! A hardware function is one input or output channel for instance.
     //! @ingroup hardware
-   //! @see DTAPI documentation
+    //! @see DTAPI documentation
     //!
     const size_t DTA_MAX_HW_FUNC = 75;
+
+    //!
+    //! Check if this version of TSDuck was built with Dektec support.
+    //! @ingroup hardware
+    //! @return True is Dektec devices are supported. Always false on macOS or on Windows/Linux on non-Intel platforms.
+    //!
+    TSDUCKDLL bool HasDektecSupport();
+
+    //!
+    //! Get the versions of Dektec API and drivers in one single string.
+    //! @ingroup hardware
+    //! @return A string describing the Dektec versions (or the lack of Dektec support).
+    //!
+    TSDUCKDLL UString GetDektecVersions();
+
+    //!
+    //! Get the versions of Dektec API and drivers.
+    //! @ingroup hardware
+    //! @param [out] versions All versions. The map index is the driver or API name and the map value is its version.
+    //!
+    TSDUCKDLL void GetDektecVersions(std::map<UString,UString>& versions);
 
     //!
     //! Enumeration (names/values) for Dektec modulation constants (DTAPI_MOD_DVBS_QPSK, etc).
@@ -81,23 +107,45 @@ namespace ts {
     TSDUCKDLL const Names& DektecPowerMode();
 
     //!
-    //! Check if this version of TSDuck was built with Dektec support.
-    //! @ingroup hardware
-    //! @return True is Dektec devices are supported. Always false on macOS or on Windows/Linux on non-Intel platforms.
+    //! Convert a InnerFEC value into a "FEC type" for Dektec modulator cards.
+    //! @param [out] out Returned FEC type (DTAPI_MOD_* value). Unchanged in case of error.
+    //! @param [out] in Input FEC type (enum type).
+    //! @return True on success, false on error (includes unsupported operation).
     //!
-    TSDUCKDLL bool HasDektecSupport();
+    TSDUCKDLL bool ToDektecCodeRate(int& out, InnerFEC in);
 
     //!
-    //! Get the versions of Dektec API and drivers in one single string.
-    //! @ingroup hardware
-    //! @return A string describing the Dektec versions (or the lack of Dektec support).
+    //! Attempt to get a "FEC type" for Dektec modulator cards from a ModulationArgs.
+    //! @param [out] fec FEC type (DTAPI_MOD_* value). Unchanged in case of error.
+    //! @param [in] args Modulation arguments.
+    //! @return True on success, false on error (includes unsupported operation).
     //!
-    TSDUCKDLL UString GetDektecVersions();
+    TSDUCKDLL bool GetDektecCodeRate(int& fec, const ModulationArgs& args);
 
     //!
-    //! Get the versions of Dektec API and drivers.
-    //! @ingroup hardware
-    //! @param [out] versions All versions. The map index is the driver or API name and the map value is its version.
+    //! Attempt to get a "modulation type" for Dektec modulator cards from a ModulationArgs.
+    //! @param [out] type Modulation type (DTAPI_MOD_* value). Unchanged in case of error.
+    //! @param [in] args Modulation arguments.
+    //! @return True on success, false on error (includes unsupported operation).
     //!
-    TSDUCKDLL void GetDektecVersions(std::map<UString,UString>& versions);
+    TSDUCKDLL bool GetDektecModulationType(int& type, const ModulationArgs& args);
+
+    //!
+    //! Attempt to convert the tuning parameters in modulation parameters for Dektec modulator cards.
+    //! @param [out] modulation_type Modulation type (DTAPI_MOD_* value).
+    //! @param [out] param0 Modulation-specific parameter 0.
+    //! @param [out] param1 Modulation-specific parameter 1.
+    //! @param [out] param2 Modulation-specific parameter 2.
+    //! @param [in] args Modulation arguments.
+    //! @return True on success, false on error (includes unsupported operation).
+    //!
+    TSDUCKDLL bool GetDektecModulation(int& modulation_type, int& param0, int& param1, int& param2, const ModulationArgs& args);
+
+    //!
+    //! Attempt to compute a bitrate from a ModulationArgs using the Dektec DTAPI library.
+    //! @param [out] bitrate Computed bitrate.
+    //! @param [in] args Modulation arguments.
+    //! @return True on success, false on error (includes unsupported operation).
+    //!
+    TSDUCKDLL bool GetDektecBitRate(BitRate& bitrate, const ModulationArgs& args);
 }

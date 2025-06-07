@@ -1166,7 +1166,7 @@ bool ts::DektecOutputPlugin::setModulation(int& modulation_type)
         tsp->debug(u"found input modulator parameters: %s", input->toPluginOptions());
         // Get corresponding Dektec modulation type.
         // The variable is unchanged if no valid value is found.
-        input->getDektecModulationType(modulation_type);
+        GetDektecModulationType(modulation_type, *input);
     }
 
     // Get user-specified modulation
@@ -1238,7 +1238,7 @@ bool ts::DektecOutputPlugin::setModulation(int& modulation_type)
             int fec = DTAPI_MOD_3_4;
             if (input != nullptr) {
                 // fec is unmodified if no valid value is found.
-                input->getDektecCodeRate(fec);
+                GetDektecCodeRate(fec, *input);
             }
             fec = intValue<int>(u"convolutional-rate", fec);
             tsp->verbose(u"using DVB-S FEC " + DektecFEC().name(fec));
@@ -1263,7 +1263,7 @@ bool ts::DektecOutputPlugin::setModulation(int& modulation_type)
             int pilots = present(u"pilots") ? DTAPI_MOD_S2_PILOTS : DTAPI_MOD_S2_NOPILOTS;
             if (input != nullptr) {
                 // fec is unmodified if no valid value is found.
-                input->getDektecCodeRate(fec);
+                GetDektecCodeRate(fec, *input);
                 switch (input->pilots.value_or(PILOT_AUTO)) {
                     case PILOT_ON:  pilots = DTAPI_MOD_S2_PILOTS; break;
                     case PILOT_OFF: pilots = DTAPI_MOD_S2_NOPILOTS; break;
@@ -1338,7 +1338,7 @@ bool ts::DektecOutputPlugin::setModulation(int& modulation_type)
                 }
             }
             if (input != nullptr) {
-                ModulationArgs::ToDektecCodeRate(fec, input->fec_hp.value_or(FEC_NONE));
+                ToDektecCodeRate(fec, input->fec_hp.value_or(FEC_NONE));
                 if (input->bandwidth.has_value()) {
                     switch (input->bandwidth.value()) {
                         case 8000000: bw = DTAPI_MOD_DVBT_8MHZ; break;
@@ -1931,7 +1931,7 @@ bool ts::DektecOutputPlugin::ParamsMatchUserOverrides(const ts::BitrateDifferenc
     if (present(u"convolutional-rate")) {
         auto preferred_convolutional_rate = intValue<int>(u"convolutional-rate", 0);
         int calculated_convolutional_rate = 0;
-        ModulationArgs::ToDektecCodeRate(calculated_convolutional_rate, params.tune.fec_hp.value_or(FEC_NONE));
+        ToDektecCodeRate(calculated_convolutional_rate, params.tune.fec_hp.value_or(FEC_NONE));
         if (calculated_convolutional_rate != preferred_convolutional_rate) {
             return false;
         }

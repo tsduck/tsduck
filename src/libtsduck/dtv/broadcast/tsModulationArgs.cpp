@@ -13,7 +13,6 @@
 #include "tsHFBand.h"
 #include "tsArgs.h"
 #include "tsNullReport.h"
-#include "tsDektec.h"
 #include "tsjsonObject.h"
 #include "tsCableDeliverySystemDescriptor.h"
 #include "tsSatelliteDeliverySystemDescriptor.h"
@@ -285,20 +284,146 @@ bool ts::ModulationArgs::resolveDeliverySystem(const DeliverySystemSet& systems,
 
 
 //----------------------------------------------------------------------------
-// This protected method computes the theoretical useful bitrate of a
-// transponder, based on 188-bytes packets, for QPSK or QAM modulation.
+// Registration of BitRateCalculator functions.
 //----------------------------------------------------------------------------
 
-ts::BitRate ts::ModulationArgs::TheoreticalBitrateForModulation(Modulation modulation, InnerFEC fec, uint32_t symbol_rate)
+// Generic bitrate calculators, for all types of delivery systems.
+ts::ModulationArgs::GenericCalculatorsData& ts::ModulationArgs::GenericCalculators()
 {
+    // Thread-safe init-safe static data pattern:
+    static GenericCalculatorsData data;
+    return data;
+}
+
+// Specialized bitrate calculators, for given types of delivery systems.
+ts::ModulationArgs::SpecializedCalculatorsData& ts::ModulationArgs::SpecializedCalculators()
+{
+    // Thread-safe init-safe static data pattern:
+    static SpecializedCalculatorsData data;
+    return data;
+}
+
+// The constructor registers a new BitRateCalculator function.
+ts::ModulationArgs::RegisterBitRateCalculator::RegisterBitRateCalculator(BitRateCalculator func, std::initializer_list<DeliverySystem> systems)
+{
+    if (systems.size() == 0) {
+        GenericCalculators().insert(func);
+    }
+    else {
+        for (auto ds : systems) {
+            SpecializedCalculators().insert(std::make_pair(ds, func));
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Bitrate calculator for QPSK or QAM modulations.
+//----------------------------------------------------------------------------
+
+// This is a private method, we cannot use the macro TS_REGISTER_BITRATE_CALCULATOR.
+const ts::ModulationArgs::RegisterBitRateCalculator ts::ModulationArgs::_GetBitRateQAM(GetBitRateDVBT, {DS_DVB_C_ANNEX_A, DS_DVB_C_ANNEX_C, DS_DVB_S, DS_ISDB_S});
+
+bool ts::ModulationArgs::GetBitRateQAM(BitRate& bitrate, const ModulationArgs& args)
+{
+    Modulation modulation = QAM_AUTO;
+    InnerFEC fec = FEC_AUTO;
+    uint32_t symbol_rate = 0;
+
+    if (args.delivery_system == DS_DVB_C_ANNEX_A || args.delivery_system == DS_DVB_C_ANNEX_C) {
+        modulation = args.modulation.value_or(DEFAULT_MODULATION_DVBC);
+        fec = args.inner_fec.value_or(DEFAULT_INNER_FEC);
+        symbol_rate = args.symbol_rate.value_or(DEFAULT_SYMBOL_RATE_DVBC);
+    }
+    else if (args.delivery_system == DS_DVB_S) {
+        modulation = args.modulation.value_or(DEFAULT_MODULATION_DVBS);
+        fec = args.inner_fec.value_or(DEFAULT_INNER_FEC);
+        symbol_rate = args.symbol_rate.value_or(DEFAULT_SYMBOL_RATE_DVBS);
+    }
+    else if (args.delivery_system == DS_ISDB_S) {
+        // ISDB-S uses the Trellis coded 8-phase shift keying modulation.
+        // For the sake of bitrate computation, this is the same as 8PSK.
+        modulation = PSK_8;
+        fec = args.inner_fec.value_or(DEFAULT_INNER_FEC);
+        symbol_rate = args.symbol_rate.value_or(DEFAULT_SYMBOL_RATE_DVBS);
+    }
+    else {
+        return false;
+    }
+
     const uint64_t bitpersym = BitsPerSymbol(modulation);
     const uint64_t fec_mul = FECMultiplier(fec);
     const uint64_t fec_div = FECDivider(fec);
 
     // Compute bitrate. The estimated bitrate is based on 204-bit packets (include 16-bit Reed-Solomon code).
     // We return a bitrate based on 188-bit packets.
+    bitrate = fec_div == 0 ? 0 : BitRate(symbol_rate * bitpersym * fec_mul * 188) / BitRate(fec_div * 204);
+    return bitrate > 0;
+}
 
-    return fec_div == 0 ? 0 : BitRate(symbol_rate * bitpersym * fec_mul * 188) / BitRate(fec_div * 204);
+
+//----------------------------------------------------------------------------
+// Bitrate calculator for DVB-T and DVB-T2.
+//----------------------------------------------------------------------------
+
+// This is a private method, we cannot use the macro TS_REGISTER_BITRATE_CALCULATOR.
+const ts::ModulationArgs::RegisterBitRateCalculator ts::ModulationArgs::_GetBitRateDVBT(GetBitRateDVBT, {DS_DVB_T, DS_DVB_T2});
+
+bool ts::ModulationArgs::GetBitRateDVBT(BitRate& bitrate, const ModulationArgs& args)
+{
+    if (args.delivery_system != DS_DVB_T && args.delivery_system != DS_DVB_T2) {
+        return false;
+    }
+
+    // DVB-T2 and DVB-T common options.
+    const uint64_t bitpersym = BitsPerSymbol(args.modulation.value_or(DEFAULT_MODULATION_DVBT));
+    const uint64_t fec_mul = FECMultiplier(args.fec_hp.value_or(DEFAULT_FEC_HP));
+    const uint64_t fec_div = FECDivider(args.fec_hp.value_or(DEFAULT_FEC_HP));
+    const uint64_t guard_mul = GuardIntervalMultiplier(args.guard_interval.value_or(DEFAULT_GUARD_INTERVAL_DVBT));
+    const uint64_t guard_div = GuardIntervalDivider(args.guard_interval.value_or(DEFAULT_GUARD_INTERVAL_DVBT));
+    const uint64_t bw = args.bandwidth.value_or(DEFAULT_BANDWIDTH_DVBT);
+
+    if (args.hierarchy.value_or(DEFAULT_HIERARCHY) != HIERARCHY_NONE || fec_div == 0 || guard_div == 0) {
+        return false; // unknown bitrate
+    }
+
+    // Compute symbol rate, then bitrate
+    // Reference: ETSI EN 300 744 V1.5.1
+    // (DVB; Framing structure, channel coding and modulation for digital terrestrial television).
+    //
+    //  BW = bandwidth in Hz
+    //  BM = bandwidth in MHz = BW / 1000000
+    //  TM = transmission mode in K
+    //  GI = guard interval = GIM/GID
+    //  T  = OFDM elementary period = 7 / (8*BM) micro-seconds
+    //  TU = useful symbol duration = TM * 1024 * T
+    //  TG = guard duration = TU * GI
+    //  TS = symbol duration = TG + TU = TU * (1 + GI) = (TU * (GID + GIM)) / GID
+    //  K  = number of _active_ carriers = TM * 756
+    //  SR = symbol rate
+    //     = K / TS  symbols/micro-second
+    //     = 1000000 * K / TS  symbols/second
+    //     = (1000000 * TM * 756 * GID) / (TU * (GID + GIM))
+    //     = (1000000 * TM * 756 * GID) / (TM * 1024 * T * (GID + GIM))
+    //     = (1000000 * 756 * GID) / (1024 * T * (GID + GIM))
+    //     = (1000000 * 756 * GID * 8 * BM) / (1024 * 7 * (GID + GIM))
+    //     = (6048 * GID * BW) / (7168 * (GID + GIM))
+    //
+    // Compute bitrate. The estimated bitrate is based on 204-bit packets
+    // (include 16-bit Reed-Solomon code). We return a bitrate based on
+    // 188-bit packets.
+    //
+    // BPS = bits/symbol
+    // FEC = forward error correction = FECM/FECD
+    // BR = useful bit rate
+    //    = SR * BPS * FEC * 188/204
+    //    = (SR * BPS * FECM * 188) / (FECD * 204)
+    //    = (6048 * GID * BW * BPS * FECM * 188) / (7168 * (GID + GIM) * FECD * 204)
+    //    = (1137024 * GID * BW * BPS * FECM) / (1462272 * (GID + GIM) * FECD)
+    // And 1137024 / 1462272 = 423 / 544
+
+    bitrate = BitRate(423 * guard_div * bw * bitpersym * fec_mul) / BitRate(544 * (guard_div + guard_mul) * fec_div);
+    return true;
 }
 
 
@@ -309,282 +434,29 @@ ts::BitRate ts::ModulationArgs::TheoreticalBitrateForModulation(Modulation modul
 ts::BitRate ts::ModulationArgs::theoreticalBitrate() const
 {
     BitRate bitrate = 0;
-    const DeliverySystem delsys = delivery_system.value_or(DS_UNDEFINED);
 
-    switch (delsys) {
-        case DS_ATSC: {
-            // Only two modulation values are available for ATSC.
-            const Modulation mod = modulation.value_or(DEFAULT_MODULATION_ATSC);
-            if (mod == VSB_8) {
-                bitrate = 19392658;
-            }
-            else if (mod == VSB_16) {
-                bitrate = 38785317;
-            }
-            break;
-        }
-        case DS_DVB_C_ANNEX_A:
-        case DS_DVB_C_ANNEX_C: {
-            // Applies only to annex A and C, not B.
-            bitrate = TheoreticalBitrateForModulation(modulation.value_or(DEFAULT_MODULATION_DVBC), inner_fec.value_or(DEFAULT_INNER_FEC), symbol_rate.value_or(DEFAULT_SYMBOL_RATE_DVBC));
-            break;
-        }
-        case DS_DVB_S:
-        case DS_DVB_S_TURBO:
-        case DS_DVB_S2: {
-            const uint32_t symrate = symbol_rate.value_or(DEFAULT_SYMBOL_RATE_DVBS);
-            // Let the Dektec API compute the TS rate if we have a Dektec library.
-            #if !defined(TS_NO_DTAPI)
-                int mod = 0, param0 = 0, param1 = 0, param2 = 0, irate = 0;
-                Dtapi::DtFractionInt frate;
-                if (convertToDektecModulation(mod, param0, param1, param2)) {
-                    // Successfully found Dektec modulation parameters. Compute the bitrate in fractional form first.
-                    // It has been observed that the values from the DtFractionInt are sometimes negative.
-                    // This is a DTAPI bug, probably due to some internal integer overflow.
-                    if (Dtapi::DtapiModPars2TsRate(frate, mod, param0, param1, param2, int(symrate)) == DTAPI_OK && frate.m_Num > 0 && frate.m_Den > 0) {
-                        FromDektecFractionInt(bitrate, frate);
-                    }
-                    else if (Dtapi::DtapiModPars2TsRate(irate, mod, param0, param1, param2, int(symrate)) == DTAPI_OK && irate > 0) {
-                        // The fractional version failed or returned a negative value. Used the int version.
-                        bitrate = irate;
-                    }
-                }
-            #endif
-            // Otherwise, don't know how to compute DVB-S2 bitrate...
-            if (bitrate == 0 && delsys == DS_DVB_S) {
-                bitrate = TheoreticalBitrateForModulation(modulation.value_or(DEFAULT_MODULATION_DVBS), inner_fec.value_or(DEFAULT_INNER_FEC), symrate);
-            }
-            break;
-        }
-        case DS_DVB_T:
-        case DS_DVB_T2: {
-            // DVB-T2 and DVB-T common options.
-            const uint64_t bitpersym = BitsPerSymbol(modulation.value_or(DEFAULT_MODULATION_DVBT));
-            const uint64_t fec_mul = FECMultiplier(fec_hp.value_or(DEFAULT_FEC_HP));
-            const uint64_t fec_div = FECDivider(fec_hp.value_or(DEFAULT_FEC_HP));
-            const uint64_t guard_mul = GuardIntervalMultiplier(guard_interval.value_or(DEFAULT_GUARD_INTERVAL_DVBT));
-            const uint64_t guard_div = GuardIntervalDivider(guard_interval.value_or(DEFAULT_GUARD_INTERVAL_DVBT));
-            const uint64_t bw = bandwidth.value_or(DEFAULT_BANDWIDTH_DVBT);
-
-            if (hierarchy.value_or(DEFAULT_HIERARCHY) != HIERARCHY_NONE || fec_div == 0 || guard_div == 0) {
-                return 0; // unknown bitrate
-            }
-
-            // Compute symbol rate, then bitrate
-            // Reference: ETSI EN 300 744 V1.5.1
-            // (DVB; Framing structure, channel coding and modulation for digital terrestrial television).
-            //
-            //  BW = bandwidth in Hz
-            //  BM = bandwidth in MHz = BW / 1000000
-            //  TM = transmission mode in K
-            //  GI = guard interval = GIM/GID
-            //  T  = OFDM elementary period = 7 / (8*BM) micro-seconds
-            //  TU = useful symbol duration = TM * 1024 * T
-            //  TG = guard duration = TU * GI
-            //  TS = symbol duration = TG + TU = TU * (1 + GI) = (TU * (GID + GIM)) / GID
-            //  K  = number of _active_ carriers = TM * 756
-            //  SR = symbol rate
-            //     = K / TS  symbols/micro-second
-            //     = 1000000 * K / TS  symbols/second
-            //     = (1000000 * TM * 756 * GID) / (TU * (GID + GIM))
-            //     = (1000000 * TM * 756 * GID) / (TM * 1024 * T * (GID + GIM))
-            //     = (1000000 * 756 * GID) / (1024 * T * (GID + GIM))
-            //     = (1000000 * 756 * GID * 8 * BM) / (1024 * 7 * (GID + GIM))
-            //     = (6048 * GID * BW) / (7168 * (GID + GIM))
-            //
-            // Compute bitrate. The estimated bitrate is based on 204-bit packets
-            // (include 16-bit Reed-Solomon code). We return a bitrate based on
-            // 188-bit packets.
-            //
-            // BPS = bits/symbol
-            // FEC = forward error correction = FECM/FECD
-            // BR = useful bit rate
-            //    = SR * BPS * FEC * 188/204
-            //    = (SR * BPS * FECM * 188) / (FECD * 204)
-            //    = (6048 * GID * BW * BPS * FECM * 188) / (7168 * (GID + GIM) * FECD * 204)
-            //    = (1137024 * GID * BW * BPS * FECM) / (1462272 * (GID + GIM) * FECD)
-            // And 1137024 / 1462272 = 423 / 544
-
-            bitrate = BitRate(423 * guard_div * bw * bitpersym * fec_mul) / BitRate(544 * (guard_div + guard_mul) * fec_div);
-            break;
-        }
-        case DS_ISDB_S: {
-            // ISDB-S uses the Trellis coded 8-phase shift keying modulation.
-            // For the sake of bitrate computation, this is the same as 8PSK.
-            bitrate = TheoreticalBitrateForModulation(PSK_8, inner_fec.value_or(DEFAULT_INNER_FEC), symbol_rate.value_or(DEFAULT_SYMBOL_RATE_ISDBS));
-            break;
-        }
-        case DS_ISDB_T:
-        case DS_ISDB_C:
-        case DS_DVB_C_ANNEX_B:
-        case DS_DVB_C2:
-        case DS_DVB_H:
-        case DS_ATSC_MH:
-        case DS_DTMB:
-        case DS_CMMB:
-        case DS_DAB:
-        case DS_DSS:
-        case DS_UNDEFINED:
-        default: {
-            // Unknown bitrate or unsupported so far.
-            break;
+    // Try specialized calculators first.
+    const auto bounds(SpecializedCalculators().equal_range(delivery_system.value_or(DS_UNDEFINED)));
+    for (auto it = bounds.first; it != bounds.second; ++it) {
+        if (it->second(bitrate, *this)) {
+            return bitrate;
         }
     }
 
-    return bitrate;
-}
+    // Then try generic calculators.
+    for (auto func : GenericCalculators()) {
+        if (func(bitrate, *this)) {
+            return bitrate;
+        }
+    }
 
-
-//----------------------------------------------------------------------------
-// Attempt to get a "modulation type" for Dektec modulator cards.
-//----------------------------------------------------------------------------
-
-bool ts::ModulationArgs::getDektecModulationType(int& type) const
-{
-#if defined(TS_NO_DTAPI)
-    // No Dektec library.
+    // Don't know how to compute for that modulation.
     return false;
-#else
-    // Not all enum values used in switch, intentionally.
-    TS_PUSH_WARNING()
-    TS_GCC_NOWARNING(switch-default)
-    TS_LLVM_NOWARNING(switch-enum)
-    TS_MSC_NOWARNING(4061)
-
-    // Determine modulation type.
-    bool supported = true;
-    switch (delivery_system.value_or(DS_UNDEFINED)) {
-        case DS_DVB_S:   type = DTAPI_MOD_DVBS_QPSK; break;
-        case DS_DVB_T:   type = DTAPI_MOD_DVBT; break;
-        case DS_DVB_T2:  type = DTAPI_MOD_DVBT2; break;
-        case DS_ATSC:    type = DTAPI_MOD_ATSC; break;
-        case DS_ATSC_MH: type = DTAPI_MOD_ATSC_MH; break;
-        case DS_ISDB_S:  type = DTAPI_MOD_ISDBS; break;
-        case DS_ISDB_T:  type = DTAPI_MOD_ISDBT; break;
-        case DS_DVB_C2:  type = DTAPI_MOD_DVBC2; break;
-        case DS_DAB:     type = DTAPI_MOD_DAB; break;
-        case DS_CMMB:    type = DTAPI_MOD_CMMB; break;
-        case DS_DVB_S2:
-            switch (modulation.value_or(DEFAULT_MODULATION_DVBS)) {
-                case QPSK:    type = DTAPI_MOD_DVBS2_QPSK; break;
-                case PSK_8:   type = DTAPI_MOD_DVBS2_8PSK; break;
-                case APSK_16: type = DTAPI_MOD_DVBS2_16APSK; break;
-                case APSK_32: type = DTAPI_MOD_DVBS2_32APSK; break;
-                default:      type = DTAPI_MOD_DVBS2; break;
-            }
-            break;
-        case DS_DVB_C_ANNEX_A:
-        case DS_DVB_C_ANNEX_B:
-        case DS_DVB_C_ANNEX_C:
-            switch (modulation.value_or(QAM_AUTO)) {
-                case QAM_16:  type = DTAPI_MOD_QAM16;  break;
-                case QAM_32:  type = DTAPI_MOD_QAM32;  break;
-                case QAM_64:  type = DTAPI_MOD_QAM64;  break;
-                case QAM_128: type = DTAPI_MOD_QAM128; break;
-                case QAM_256: type = DTAPI_MOD_QAM256; break;
-                default: supported = false; break;
-            }
-            break;
-        default:
-            supported = false;
-            break;
-    }
-    return supported;
-
-    TS_POP_WARNING()
-#endif // TS_NO_DTAPI
 }
 
 
 //----------------------------------------------------------------------------
-// Attempt to get a "FEC type" for Dektec modulator cards.
-//----------------------------------------------------------------------------
-
-bool ts::ModulationArgs::getDektecCodeRate(int& fec) const
-{
-    return ToDektecCodeRate(fec, inner_fec.value_or(DEFAULT_INNER_FEC));
-}
-
-bool ts::ModulationArgs::ToDektecCodeRate(int& fec, InnerFEC in_enum)
-{
-#if defined(TS_NO_DTAPI)
-    // No Dektec library.
-    return false;
-#else
-    // Not all enum values used in switch, intentionally.
-    TS_PUSH_WARNING()
-    TS_GCC_NOWARNING(switch-default)
-    TS_LLVM_NOWARNING(switch-enum)
-    TS_MSC_NOWARNING(4061)
-
-    bool supported = true;
-    switch (in_enum) {
-        case FEC_1_2:  fec = DTAPI_MOD_1_2; break;
-        case FEC_1_3:  fec = DTAPI_MOD_1_3; break;
-        case FEC_1_4:  fec = DTAPI_MOD_1_4; break;
-        case FEC_2_3:  fec = DTAPI_MOD_2_3; break;
-        case FEC_2_5:  fec = DTAPI_MOD_2_5; break;
-        case FEC_3_4:  fec = DTAPI_MOD_3_4; break;
-        case FEC_3_5:  fec = DTAPI_MOD_3_5; break;
-        case FEC_4_5:  fec = DTAPI_MOD_4_5; break;
-        case FEC_5_6:  fec = DTAPI_MOD_5_6; break;
-        case FEC_6_7:  fec = DTAPI_MOD_6_7; break;
-        case FEC_7_8:  fec = DTAPI_MOD_7_8; break;
-        case FEC_8_9:  fec = DTAPI_MOD_8_9; break;
-        case FEC_9_10: fec = DTAPI_MOD_9_10; break;
-        default: supported = false; break;
-    }
-    return supported;
-
-    TS_POP_WARNING()
-#endif // TS_NO_DTAPI
-}
-
-
-//----------------------------------------------------------------------------
-// Attempt to convert the tuning parameters for Dektec modulator cards.
-//----------------------------------------------------------------------------
-
-bool ts::ModulationArgs::convertToDektecModulation(int& modulation_type, int& param0, int& param1, int& param2) const
-{
-#if defined(TS_NO_DTAPI)
-    // No Dektec library.
-    return false;
-#else
-    // Get known parameters.
-    if (!getDektecModulationType(modulation_type) || !getDektecCodeRate(param0)) {
-        return false;
-    }
-
-    // Additional parameters param1 and param2
-    param1 = param2 = 0;
-    if (delivery_system == DS_DVB_S2) {
-        param1 = pilots.value_or(DEFAULT_PILOTS) == PILOT_ON ? DTAPI_MOD_S2_PILOTS : DTAPI_MOD_S2_NOPILOTS;
-        // Assume long FEC frame for broadcast service (should be updated by caller if necessary).
-        param1 |= DTAPI_MOD_S2_LONGFRM;
-        // Roll-off
-        switch (roll_off.value_or(DEFAULT_ROLL_OFF)) {
-            case ROLLOFF_AUTO: param1 |= DTAPI_MOD_ROLLOFF_AUTO; break;
-            case ROLLOFF_20:   param1 |= DTAPI_MOD_ROLLOFF_20; break;
-            case ROLLOFF_25:   param1 |= DTAPI_MOD_ROLLOFF_25; break;
-            case ROLLOFF_35:   param1 |= DTAPI_MOD_ROLLOFF_35; break;
-            case ROLLOFF_15:   param1 |= DTAPI_MOD_ROLLOFF_15; break;
-            case ROLLOFF_10:   param1 |= DTAPI_MOD_ROLLOFF_10; break;
-            case ROLLOFF_5:    param1 |= DTAPI_MOD_ROLLOFF_5; break;
-            default: break;
-        }
-        // Physical layer scrambling initialization sequence
-        param2 = int(pls_code.value_or(DEFAULT_PLS_CODE));
-    }
-
-    return true;
-
-#endif // TS_NO_DTAPI
-}
-
-
-//----------------------------------------------------------------------------
-// Fill modulation parameters from delivery system descriptors in a descriptor list.
+// Get parameters from delivery system descriptors in a descriptor list.
 //----------------------------------------------------------------------------
 
 bool ts::ModulationArgs::fromDeliveryDescriptors(DuckContext& duck, const DescriptorList& dlist, uint16_t ts_id, DeliverySystem delsys)

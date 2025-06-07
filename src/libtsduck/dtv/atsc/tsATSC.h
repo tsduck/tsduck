@@ -13,9 +13,12 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsPlatform.h"
+#include "tsBitRate.h"
 
 namespace ts {
+
+    class ModulationArgs;
+
     //!
     //! Table type in ATSC Master Guide Table (MGT)
     //!
@@ -46,4 +49,12 @@ namespace ts {
         ATSC_STYPE_DATA      = 0x04,  //!< ATSC Data Only Service
         ATSC_STYPE_SOFTWARE  = 0x05,  //!< ATSC Software Download Service
     };
+
+    //!
+    //! Compute a bitrate from a ModulationArgs for ATSC.
+    //! @param [out] bitrate Computed bitrate.
+    //! @param [in] args Modulation arguments.
+    //! @return True on success, false on error (includes unsupported operation).
+    //!
+    TSDUCKDLL bool GetBitRateATSC(BitRate& bitrate, const ModulationArgs& args);
 }

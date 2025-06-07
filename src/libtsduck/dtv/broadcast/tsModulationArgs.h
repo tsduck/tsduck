@@ -476,9 +476,11 @@ namespace ts {
 
         //!
         //! Theoretical bitrate computation.
+        //! All registered BitRateCalculator functions are called until one can compute the bitrate.
         //! @return The theoretical useful bitrate of a transponder, based on 188-bytes packets,
         //! in bits/second. If the characteristics of the transponder are not sufficient to compute
         //! the bitrate, return 0.
+        //! @see BitRateCalculator
         //!
         BitRate theoreticalBitrate() const;
 
@@ -510,38 +512,6 @@ namespace ts {
         bool fromDeliveryDescriptors(DuckContext& duck, const DescriptorList& dlist, uint16_t ts_id, DeliverySystem delsys = DS_UNDEFINED);
 
         //!
-        //! Attempt to get a "modulation type" for Dektec modulator cards.
-        //! @param [out] type Modulation type (DTAPI_MOD_* value). Unchanged in case of error.
-        //! @return True on success, false on error (includes unsupported operation).
-        //!
-        bool getDektecModulationType(int& type) const;
-
-        //!
-        //! Attempt to get a "FEC type" for Dektec modulator cards.
-        //! @param [out] fec FEC type (DTAPI_MOD_* value). Unchanged in case of error.
-        //! @return True on success, false on error (includes unsupported operation).
-        //!
-        bool getDektecCodeRate(int& fec) const;
-
-        //!
-        //! Convert a InnerFEC value into a "FEC type" for Dektec modulator cards.
-        //! @param [out] out Returned FEC type (DTAPI_MOD_* value). Unchanged in case of error.
-        //! @param [out] in Input FEC type (enum type).
-        //! @return True on success, false on error (includes unsupported operation).
-        //!
-        static bool ToDektecCodeRate(int& out, InnerFEC in);
-
-        //!
-        //! Attempt to convert the tuning parameters in modulation parameters for Dektec modulator cards.
-        //! @param [out] modulation_type Modulation type (DTAPI_MOD_* value).
-        //! @param [out] param0 Modulation-specific parameter 0.
-        //! @param [out] param1 Modulation-specific parameter 1.
-        //! @param [out] param2 Modulation-specific parameter 2.
-        //! @return True on success, false on error (includes unsupported operation).
-        //!
-        bool convertToDektecModulation(int& modulation_type, int& param0, int& param1, int& param2) const;
-
-        //!
         //! Format a short description (frequency and essential parameters).
         //! @param [out] duck TSDuck execution context.
         //! @return A description string.
@@ -563,16 +533,60 @@ namespace ts {
         //!
         void toJSON(json::Object& obj) const;
 
-    protected:
         //!
-        //! Theoretical useful bitrate for QPSK or QAM modulation.
-        //! This protected static method computes the theoretical useful bitrate of a
-        //! transponder, based on 188-bytes packets, for QPSK or QAM modulation.
-        //! @param [in] mod Modulation type.
-        //! @param [in] fec Inner FEC.
-        //! @param [in] symbol_rate Symbol rate.
-        //! @return Theoretical useful bitrate in bits/second or zero on error.
+        //! Function profile to calculate a bitrate from a set modulation arguments.
+        //! Calculating a bitrate can be complicated and delegated to another library.
+        //! Therefore, it is possible to register various BitRateCalculator functions.
+        //! @param [out] bitrate Computed bitrate.
+        //! @param [in] args Modulation arguments.
+        //! @return True on success, false if the function doesn't know how to calculate the bitrate.
         //!
-        static BitRate TheoreticalBitrateForModulation(Modulation mod, InnerFEC fec, uint32_t symbol_rate);
+        using BitRateCalculator = bool (*)(BitRate& bitrate, const ModulationArgs& args);
+
+        //!
+        //! A class to register BitRateCalculator functions.
+        //! The registration is performed using constructors.
+        //! Thus, it is possible to perform a registration in a source file, outside any code.
+        //! @see TS_REGISTER_BITRATE_CALCULATOR
+        //!
+        class TSCOREDLL RegisterBitRateCalculator
+        {
+            TS_NOBUILD_NOCOPY(RegisterBitRateCalculator);
+        public:
+            //!
+            //! The constructor registers a new BitRateCalculator function.
+            //! @param [in] func The function to calculate bitrates.
+            //! @param [in] systems Delivery systems for which this function can calculate bitrates.
+            //! If empty, the function is called for all delivery systems.
+            //!
+            RegisterBitRateCalculator(BitRateCalculator func, std::initializer_list<DeliverySystem> systems);
+        };
+
+    private:
+        // Bitrate calculator for QPSK or QAM modulations.
+        static bool GetBitRateQAM(BitRate& bitrate, const ModulationArgs& args);
+        static const RegisterBitRateCalculator _GetBitRateQAM;
+
+        // Bitrate calculator for DVB-T and DVB-T2.
+        static bool GetBitRateDVBT(BitRate& bitrate, const ModulationArgs& args);
+        static const RegisterBitRateCalculator _GetBitRateDVBT;
+
+        // Generic bitrate calculators, for all types of delivery systems.
+        using GenericCalculatorsData = std::set<BitRateCalculator>;
+        static GenericCalculatorsData& GenericCalculators();
+
+        // Specialized bitrate calculators, for given types of delivery systems.
+        using SpecializedCalculatorsData = std::multimap<DeliverySystem, BitRateCalculator>;
+        static SpecializedCalculatorsData& SpecializedCalculators();
     };
 }
+
+//!
+//! @hideinitializer
+//! Registration of a new BitRateCalculator function.
+//! @ingroup hardware
+//! @param [in] func The function to calculate bitrates.
+//! @param [in] systems Delivery systems for which this function can calculate bitrates.
+//!
+#define TS_REGISTER_BITRATE_CALCULATOR(func, systems) \
+    static ts::ModulationArgs::RegisterBitRateCalculator TS_UNIQUE_NAME(_Registrar)(func, systems)

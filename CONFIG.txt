@@ -15,6 +15,7 @@
 # Configuration of optional components in the project
 # ---------------------------------------------------
 NODEKTEC          # No Dektec device support, remove dependency to DTAPI.
+NODTAPI           # A synonym for NODEKTEC.
 NOHIDES           # No HiDes device support.
 NOVATEK           # No Vatek-based device support.
 NOCURL            # No HTTP support, remove dependency to libcurl.

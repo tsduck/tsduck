@@ -245,7 +245,7 @@ ifndef::backend-pdf[]
 [cols="<1m,<1",frame=none,grid=none,stripes=none,options="autowidth,noheader"]
 endif::[]
 ifdef::backend-pdf[]
-[cols="<25m,<75",frame=none,grid=none,stripes=none]
+[cols="<32m,<68",frame=none,grid=none,stripes=none]
 endif::[]
 |===
 
@@ -262,6 +262,9 @@ endif::[]
  which are used in the DTV domain. In the base class `UString`, several methods format durations
  with the appropriate units. The macro `TS_REGISTER_CHRONO_UNIT` registers a new duration unit
  and how to format it.
+
+|TS_REGISTER_BITRATE_CALCULATOR
+|Register a {cpp} function which computes theoretical bitrates for a given type of modulation.
 
 |===
 
