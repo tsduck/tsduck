@@ -19,6 +19,7 @@
 #include "tsS2SatelliteDeliverySystemDescriptor.h"
 #include "tsTerrestrialDeliverySystemDescriptor.h"
 #include "tsISDBTerrestrialDeliverySystemDescriptor.h"
+#include "tsCerrReport.h"
 
 
 //----------------------------------------------------------------------------
@@ -304,8 +305,9 @@ ts::ModulationArgs::SpecializedCalculatorsData& ts::ModulationArgs::SpecializedC
 }
 
 // The constructor registers a new BitRateCalculator function.
-ts::ModulationArgs::RegisterBitRateCalculator::RegisterBitRateCalculator(BitRateCalculator func, std::initializer_list<DeliverySystem> systems)
+ts::ModulationArgs::RegisterBitRateCalculator::RegisterBitRateCalculator(BitRateCalculator func, const DeliverySystemSet& systems)
 {
+    CERR.debug(u"registering bitrate calculator 0x%X for %d systems (%s)", uintptr_t(func), systems.size(), systems);
     if (systems.size() == 0) {
         GenericCalculators().insert(func);
     }
@@ -322,7 +324,7 @@ ts::ModulationArgs::RegisterBitRateCalculator::RegisterBitRateCalculator(BitRate
 //----------------------------------------------------------------------------
 
 // This is a private method, we cannot use the macro TS_REGISTER_BITRATE_CALCULATOR.
-const ts::ModulationArgs::RegisterBitRateCalculator ts::ModulationArgs::_GetBitRateQAM(GetBitRateDVBT, {DS_DVB_C_ANNEX_A, DS_DVB_C_ANNEX_C, DS_DVB_S, DS_ISDB_S});
+const ts::ModulationArgs::RegisterBitRateCalculator ts::ModulationArgs::_GetBitRateQAM(GetBitRateQAM, {DS_DVB_C_ANNEX_A, DS_DVB_C_ANNEX_C, DS_DVB_S, DS_ISDB_S});
 
 bool ts::ModulationArgs::GetBitRateQAM(BitRate& bitrate, const ModulationArgs& args)
 {
@@ -424,6 +426,31 @@ bool ts::ModulationArgs::GetBitRateDVBT(BitRate& bitrate, const ModulationArgs& 
 
     bitrate = BitRate(423 * guard_div * bw * bitpersym * fec_mul) / BitRate(544 * (guard_div + guard_mul) * fec_div);
     return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Bitrate calculator for ATSC.
+//----------------------------------------------------------------------------
+
+// This is a private method, we cannot use the macro TS_REGISTER_BITRATE_CALCULATOR.
+const ts::ModulationArgs::RegisterBitRateCalculator ts::ModulationArgs::_GetBitRateATSC(GetBitRateATSC, {DS_ATSC});
+
+bool ts::ModulationArgs::GetBitRateATSC(BitRate& bitrate, const ModulationArgs& args)
+{
+    if (args.delivery_system == DS_ATSC) {
+        // Only two modulation values are available for ATSC.
+        const Modulation mod = args.modulation.value_or(DEFAULT_MODULATION_ATSC);
+        if (mod == VSB_8) {
+            bitrate = 19'392'658;
+            return true;
+        }
+        else if (mod == VSB_16) {
+            bitrate = 38'785'317;
+            return true;
+        }
+    }
+    return false;
 }
 
 

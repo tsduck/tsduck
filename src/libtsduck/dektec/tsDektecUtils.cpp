@@ -375,7 +375,9 @@ bool ts::GetDektecModulation(int& modulation_type, int& param0, int& param1, int
 //----------------------------------------------------------------------------
 
 // This function can be used to compute any type of bitrate, if supported by the DTAPI library.
+#if !defined(TS_NO_DTAPI)
 TS_REGISTER_BITRATE_CALCULATOR(ts::GetDektecBitRate, {});
+#endif
 
 bool ts::GetDektecBitRate(BitRate& bitrate, const ModulationArgs& args)
 {

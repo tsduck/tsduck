@@ -559,7 +559,7 @@ namespace ts {
             //! @param [in] systems Delivery systems for which this function can calculate bitrates.
             //! If empty, the function is called for all delivery systems.
             //!
-            RegisterBitRateCalculator(BitRateCalculator func, std::initializer_list<DeliverySystem> systems);
+            RegisterBitRateCalculator(BitRateCalculator func, const DeliverySystemSet& systems);
         };
 
     private:
@@ -570,6 +570,10 @@ namespace ts {
         // Bitrate calculator for DVB-T and DVB-T2.
         static bool GetBitRateDVBT(BitRate& bitrate, const ModulationArgs& args);
         static const RegisterBitRateCalculator _GetBitRateDVBT;
+
+        // Bitrate calculator for ATSC.
+        static bool GetBitRateATSC(BitRate& bitrate, const ModulationArgs& args);
+        static const RegisterBitRateCalculator _GetBitRateATSC;
 
         // Generic bitrate calculators, for all types of delivery systems.
         using GenericCalculatorsData = std::set<BitRateCalculator>;
@@ -589,4 +593,4 @@ namespace ts {
 //! @param [in] systems Delivery systems for which this function can calculate bitrates.
 //!
 #define TS_REGISTER_BITRATE_CALCULATOR(func, systems) \
-    static ts::ModulationArgs::RegisterBitRateCalculator TS_UNIQUE_NAME(_Registrar)(func, systems)
+    [[maybe_unused]] static ts::ModulationArgs::RegisterBitRateCalculator TS_UNIQUE_NAME(_Registrar)(func, systems)

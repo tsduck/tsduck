@@ -13,10 +13,6 @@
 #include "tsModulationArgs.h"
 #include "tsunit.h"
 
-// In case of static link, for inclusion of ATSC object.
-#include "tsATSC.h"
-[[maybe_unused]] static auto ref_atsc = ts::GetBitRateATSC;
-
 
 //----------------------------------------------------------------------------
 // The test fixture
