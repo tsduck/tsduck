@@ -57,11 +57,11 @@ namespace ts {
         //! Types of version formatting, for predefined option -\-version.
         //!
         enum class Format {
-            ALL,          //!< Multi-line output with full details.
-            SHORT,        //!< Short format X.Y-R.
-            LONG,         //!< Full explanatory format.
-            INTEGER,      //!< Integer format XXYYRRRRR.
-            DATE,         //!< Build date.
+            ALL     = -1,  //!< Multi-line output with full details.
+            SHORT   = -2,  //!< Short format X.Y-R.
+            LONG    = -3,  //!< Full explanatory format.
+            INTEGER = -4,  //!< Integer format XXYYRRRRR.
+            DATE    = -5,  //!< Build date.
         };
 
         //!
@@ -69,15 +69,7 @@ namespace ts {
         //! Typically used to implement the -\-version command line option.
         //! @return A constant reference to the enumeration description.
         //!
-        static const Names& FormatEnum() { return FormatEnumNames(); }
-
-        //!
-        //! Enumeration of supported features.
-        //! Typically used to implement the -\-support command line option.
-        //! For each name, the value is 1 if the feature is supported and 0 if it is not.
-        //! @return A constant reference to the enumeration description.
-        //!
-        static const Names& SupportEnum() { return SupportEnumNames(); }
+        static const Names& FormatEnum();
 
         //!
         //! Get the TSDuck formatted version number.
@@ -95,39 +87,6 @@ namespace ts {
         //!
         static int CompareVersions(const UString& v1, const UString& v2);
 
-        //!
-        //! A class to register a feature of the application.
-        //! The registration is performed using constructors.
-        //! Thus, it is possible to perform a registration in the declaration of a static object.
-        //!
-        class TSCOREDLL RegisterFeature
-        {
-            TS_NOBUILD_NOCOPY(RegisterFeature);
-        public:
-            //!
-            //! Describe the level of support for a feature.
-            //!
-            enum Support {
-                ALWAYS,      //!< Feature is always supported, may ask version but no need to ask if supported.
-                SUPPORTED,   //!< Optional feature, currently supported.
-                UNSUPPORTED  //!< Optional feature, not supported.
-            };
-
-            //!
-            //! Profile of a function return a version string.
-            //!
-            using GetVersionFunc = UString (*)();
-
-            //!
-            //! Register a feature.
-            //! @param [in] option Feature name as used in command line options.
-            //! @param [in] name Feature name as used on display.
-            //! @param [in] support Level of support.
-            //! @param [in] get_version Function returning the version of the feature. Can be null (no identified version).
-            //!
-            RegisterFeature(const UString& option, const UString& name, Support support, GetVersionFunc get_version);
-        };
-
     private:
         Report& _report;
         Report& _debug;
@@ -138,14 +97,6 @@ namespace ts {
 
         // Convert a version string into a vector of integers.
         static void VersionToInts(std::vector<int>& ints, const ts::UString& version);
-
-        // Non-constant versions are for internal use only.
-        static Names& FormatEnumNames();
-        static Names& SupportEnumNames();
-
-        // A map of options with versions.
-        using VersionOptionMap = std::map<Names::int_t, std::pair<UString, RegisterFeature::GetVersionFunc>>;
-        static VersionOptionMap& VersionOptions();
     };
 }
 
@@ -164,15 +115,3 @@ namespace ts {
 //!
 #define TS_NO_GITHUB 1
 #endif
-
-//!
-//! Registration of a feature for which commands may check support level and version.
-//! @param option Feature name as used in command line options.
-//! @param name Feature name as used on display.
-//! @param support Level of support. Use only the enum name, without prefix.
-//! @param get_version Function returning the version of the feature. Can be null (no identified version).
-//! @hideinitializer
-//!
-#define TS_REGISTER_FEATURE(option, name, support, get_version) \
-    TS_LIBTSCORE_CHECK(); \
-    static ts::VersionInfo::RegisterFeature TS_UNIQUE_NAME(_Registrar)((option), (name), ts::VersionInfo::RegisterFeature::support, (get_version))

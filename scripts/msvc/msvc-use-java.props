@@ -3,16 +3,20 @@
 
   <!-- Must be included in .vcxproj files to implement JNI (Java Native Interface) -->
 
-  <ItemDefinitionGroup Condition="Exists('$(JAVA_HOME)\include\jni.h')">
+  <ItemDefinitionGroup Condition="'$(TS_NO_JAVA)' == '' AND Exists('$(JAVA_HOME)\include\jni.h')">
     <ClCompile>
       <AdditionalIncludeDirectories>$(JAVA_HOME)\include;$(JAVA_HOME)\include\win32;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
 
-  <ItemDefinitionGroup Condition="!Exists('$(JAVA_HOME)\include\jni.h')">
+  <ItemDefinitionGroup Condition="'$(TS_NO_JAVA)' != '' OR !Exists('$(JAVA_HOME)\include\jni.h')">
     <ClCompile>
       <PreprocessorDefinitions>TS_NO_JAVA=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
+
+  <PropertyGroup Label="UserMacros" Condition="!Exists('$(JAVA_HOME)\include\jni.h')">
+    <TS_NO_JAVA>1</TS_NO_JAVA>
+  </PropertyGroup>
 
 </Project>

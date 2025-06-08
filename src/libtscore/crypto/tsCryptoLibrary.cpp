@@ -8,7 +8,7 @@
 
 #include "tsCryptoLibrary.h"
 #include "tsInitCryptoLibrary.h"
-#include "tsVersionInfo.h"
+#include "tsFeatures.h"
 
 
 //----------------------------------------------------------------------------
@@ -16,9 +16,9 @@
 //----------------------------------------------------------------------------
 
 #if !defined(TS_WINDOWS) && defined(TS_NO_OPENSSL)
-#define SUPPORT UNSUPPORTED
+    #define SUPPORT ts::Features::UNSUPPORTED
 #else
-#define SUPPORT SUPPORTED
+    #define SUPPORT ts::Features::SUPPORTED
 #endif
 
 TS_REGISTER_FEATURE(u"crypto", u"Cryptographic library", SUPPORT, ts::GetCryptographicLibraryVersion);

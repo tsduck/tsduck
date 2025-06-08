@@ -7,7 +7,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsHiDesDeviceInfo.h"
-#include "tsVersionInfo.h"
+#include "tsFeatures.h"
 
 
 //----------------------------------------------------------------------------
@@ -16,9 +16,9 @@
 //----------------------------------------------------------------------------
 
 #if defined(TS_NO_HIDES)
-    #define SUPPORT UNSUPPORTED
+    #define SUPPORT ts::Features::UNSUPPORTED
 #else
-    #define SUPPORT SUPPORTED
+    #define SUPPORT ts::Features::SUPPORTED
 #endif
 
 TS_REGISTER_FEATURE(u"hides", u"HiDes", SUPPORT, nullptr);

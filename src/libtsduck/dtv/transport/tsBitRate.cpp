@@ -7,7 +7,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsBitRate.h"
-#include "tsVersionInfo.h"
+#include "tsFeatures.h"
 
 // Exported symbol, the name of which depends on the BitRate implementation.
 // When an executable or shared library references these symbols, it is guaranteed that a
@@ -20,7 +20,7 @@ const int TSDUCK_LIBRARY_BITRATE_SYMBOL = 0;
 // Register a description of bitrates for the --version options
 //----------------------------------------------------------------------------
 
-TS_REGISTER_FEATURE(u"bitrate", u"Bitrate", ALWAYS, ts::GetBitRateDescription);
+TS_REGISTER_FEATURE(u"bitrate", u"Bitrate", ts::Features::ALWAYS, ts::GetBitRateDescription);
 
 ts::UString ts::GetBitRateDescription()
 {

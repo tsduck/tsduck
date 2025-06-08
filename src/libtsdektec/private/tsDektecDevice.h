@@ -12,8 +12,6 @@
 //-----------------------------------------------------------------------------
 
 #pragma once
-#if !defined(TS_NO_DTAPI) || defined(DOXYGEN)
-
 #include "tsDektec.h"
 #include "tsCerrReport.h"
 #include "tsNames.h"
@@ -106,5 +104,3 @@ namespace ts {
         static void OneCap(UString& str, Dtapi::DtCaps cap, const UString& name);
     };
 }
-
-#endif // TS_NO_DTAPI

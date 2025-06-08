@@ -16,7 +16,7 @@
 #include "tsFileUtils.h"
 #include "tsErrCodeReport.h"
 #include "tsURL.h"
-#include "tsVersionInfo.h"
+#include "tsFeatures.h"
 
 
 //----------------------------------------------------------------------------
@@ -24,9 +24,9 @@
 //----------------------------------------------------------------------------
 
 #if defined(TS_NO_CURL) && !defined(TS_WINDOWS)
-    #define SUPPORT UNSUPPORTED
+    #define SUPPORT ts::Features::UNSUPPORTED
 #else
-    #define SUPPORT SUPPORTED
+    #define SUPPORT ts::Features::SUPPORTED
 #endif
 
 TS_REGISTER_FEATURE(u"http", u"Web library", SUPPORT, ts::WebRequest::GetLibraryVersion);

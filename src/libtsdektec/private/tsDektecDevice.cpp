@@ -10,11 +10,6 @@
 #include "tsDektecUtils.h"
 #include "tsNames.h"
 
-#if defined(TS_NO_DTAPI)
-TS_LLVM_NOWARNING(missing-variable-declarations)
-bool tsDektecDeviceIsEmpty = true; // Avoid warning about empty module.
-#else
-
 
 //-----------------------------------------------------------------------------
 // Return the error message corresponding to a DTAPI error code
@@ -487,5 +482,3 @@ void ts::DektecDevice::ReportIpPars(const Dtapi::DtIpPars2& pars, Report& report
         report.log(severity, u"%sm_IpProfile.m_VideoStandard = %d", margin, pars.m_IpProfile.m_VideoStandard);
     }
 }
-
-#endif // TS_NO_DTAPI

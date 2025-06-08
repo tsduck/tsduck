@@ -6,12 +6,6 @@
 //
 //----------------------------------------------------------------------------
 
-#if defined(TS_NO_DTAPI)
-#include "tsPlatform.h"
-TS_LLVM_NOWARNING(missing-variable-declarations)
-bool tsDektecOutputPluginIsEmpty = true; // Avoid warning about empty module.
-#else
-
 #include "tsDektecOutputPlugin.h"
 #include "tsObjectRepository.h"
 #include "tsDektecUtils.h"
@@ -1986,5 +1980,3 @@ bool ts::DektecOutputPlugin::ParamsMatchUserOverrides(const ts::BitrateDifferenc
     }
     return true;
 }
-
-#endif // TS_NO_DTAPI

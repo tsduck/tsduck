@@ -6,12 +6,6 @@
 //
 //----------------------------------------------------------------------------
 
-#if defined(TS_NO_DTAPI)
-#include "tsPlatform.h"
-TS_LLVM_NOWARNING(missing-variable-declarations)
-bool tsDVBT2ParamsEvaluatorIsEmpty = true; // Avoid warning about empty module.
-#else
-
 #include "tsDVBT2ParamsEvaluator.h"
 
 namespace {
@@ -96,5 +90,3 @@ void ts::EvaluateDvbT2ParsForBitrate(Dtapi::DtDvbT2Pars& pars, const ts::BitRate
     }
     pars = std::move(best_params);
 }
-
-#endif // TS_NO_DTAPI

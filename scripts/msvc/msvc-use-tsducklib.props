@@ -3,9 +3,13 @@
 
   <!-- Must be included in .vcxproj files to use the TSDuck static library -->
 
+  <!-- Flag to import only once. -->
+  <PropertyGroup Label="UserMacros">
+    <UseTSDuckLibImported>true</UseTSDuckLibImported>
+  </PropertyGroup>
+
   <ImportGroup Label="PropertySheets">
     <Import Project="msvc-use-tscorelib.props"/>
-    <Import Project="msvc-use-dtapi.props"/>
     <Import Project="msvc-use-vatek.props"/>
   </ImportGroup>
 

@@ -7,7 +7,7 @@
     <Import Project="msvc-use-tsduckdll.props"/>
   </ImportGroup>
 
-  <ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(TS_NO_DTAPI)' == ''">
     <ClCompile>
       <AdditionalIncludeDirectories>$(TSDektecLibDirs);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_TSDEKTECDLL_USE;%(PreprocessorDefinitions)</PreprocessorDefinitions>

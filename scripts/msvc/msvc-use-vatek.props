@@ -9,20 +9,23 @@
   </PropertyGroup>
 
   <!-- Check that the Vatek property file exists and not disabled (env var TS_NO_VATEK) -->
-  <PropertyGroup Label="UserMacros" Condition="'$(TS_NO_VATEK)'=='' And Exists('$(DefaultVatekProps)') And ('$(Platform)'=='x64' Or '$(Platform)'=='Win64')">
+  <PropertyGroup Label="UserMacros" Condition="'$(TS_NO_VATEK)' == '' AND Exists('$(DefaultVatekProps)') AND ('$(Platform)' == 'x64' OR '$(Platform)' == 'Win64')">
     <VatekProps>$(DefaultVatekProps)</VatekProps>
   </PropertyGroup>
 
   <!-- Activate the Vatek property file when available -->
-  <ImportGroup Label="PropertySheets" Condition="'$(VatekProps)'!=''">
+  <ImportGroup Label="PropertySheets" Condition="'$(TS_NO_VATEK)' == '' AND '$(VatekProps)' != ''">
     <Import Project="$(VatekProps)"/>
   </ImportGroup>
 
   <!-- Disable Vatek code in TSDuck when Vatek library is not available -->
-  <ItemDefinitionGroup Condition="'$(VatekProps)'==''">
+  <ItemDefinitionGroup Condition="'$(TS_NO_VATEK)' != '' OR '$(VatekProps)' == ''">
     <ClCompile>
       <PreprocessorDefinitions>TS_NO_VATEK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
+  <PropertyGroup Label="UserMacros" Condition="'$(VatekProps)' == ''">
+    <TS_NO_VATEK>1</TS_NO_VATEK>
+  </PropertyGroup>
 
 </Project>

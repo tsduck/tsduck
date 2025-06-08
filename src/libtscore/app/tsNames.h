@@ -203,6 +203,13 @@ namespace ts {
         Names(std::initializer_list<NameValue> values);
 
         //!
+        //! Copy constructor with additional values.
+        //! @param [in] other Other instance to copy.
+        //! @param [in] values Variable list of name/value pairs.
+        //!
+        Names(const Names& other, std::initializer_list<NameValue> values);
+
+        //!
         //! Copy assignment.
         //! @param [in] other Other instance to copy.
         //! @return A reference to this object.

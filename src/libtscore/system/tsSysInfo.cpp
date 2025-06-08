@@ -10,7 +10,7 @@
 #include "tsEnvironment.h"
 #include "tsMemory.h"
 #include "tsCryptoAcceleration.h"
-#include "tsVersionInfo.h"
+#include "tsFeatures.h"
 
 #if defined(TS_LINUX)
     #include <sys/auxv.h>
@@ -305,7 +305,7 @@ ts::SysInfo::SysInfo() :
 // Build a string representing the system on which the application runs.
 //----------------------------------------------------------------------------
 
-TS_REGISTER_FEATURE(u"system", u"System", ALWAYS, ts::SysInfo::GetSystemVersion);
+TS_REGISTER_FEATURE(u"system", u"System", ts::Features::ALWAYS, ts::SysInfo::GetSystemVersion);
 
 ts::UString ts::SysInfo::GetSystemVersion()
 {
@@ -333,7 +333,7 @@ ts::UString ts::SysInfo::GetSystemVersion()
 // Build a string describing the hardware accelerations on the system on which the application runs.
 //----------------------------------------------------------------------------
 
-TS_REGISTER_FEATURE(u"acceleration", u"Acceleration", ALWAYS, ts::SysInfo::GetAccelerations);
+TS_REGISTER_FEATURE(u"acceleration", u"Acceleration", ts::Features::ALWAYS, ts::SysInfo::GetAccelerations);
 
 ts::UString ts::SysInfo::GetAccelerations()
 {
@@ -345,7 +345,7 @@ ts::UString ts::SysInfo::GetAccelerations()
 // Build a string representing the compiler which was used to build TSDuck.
 //----------------------------------------------------------------------------
 
-TS_REGISTER_FEATURE(u"compiler", u"Compiler", ALWAYS, ts::SysInfo::GetCompilerVersion);
+TS_REGISTER_FEATURE(u"compiler", u"Compiler", ts::Features::ALWAYS, ts::SysInfo::GetCompilerVersion);
 
 ts::UString ts::SysInfo::GetCompilerVersion()
 {

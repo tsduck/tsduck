@@ -8,46 +8,19 @@
 
 #include "tsDektecUtils.h"
 #include "tsDektec.h"
-#include "tsVersionInfo.h"
+#include "tsFeatures.h"
 #include "tsModulationArgs.h"
-
-
-//----------------------------------------------------------------------------
-// Register for options --version and --support.
-//----------------------------------------------------------------------------
-
-#if defined(TS_NO_DTAPI)
-    #define SUPPORT UNSUPPORTED
-#else
-    #define SUPPORT SUPPORTED
-#endif
-
-TS_REGISTER_FEATURE(u"dektec", u"Dektec", SUPPORT, ts::GetDektecVersions);
-
-
-//-----------------------------------------------------------------------------
-// Check if this version of TSDuck was build with Dektec support.
-//-----------------------------------------------------------------------------
-
-bool ts::HasDektecSupport()
-{
-#if defined(TS_NO_DTAPI)
-    return false;
-#else
-    return true;
-#endif
-}
 
 
 //-----------------------------------------------------------------------------
 // Get the versions of Dektec API and drivers in one single string.
 //-----------------------------------------------------------------------------
 
+// Register for options --version and --support.
+TS_REGISTER_FEATURE(u"dektec", u"Dektec", ts::Features::SUPPORTED, ts::GetDektecVersions);
+
 ts::UString ts::GetDektecVersions()
 {
-#if defined(TS_NO_DTAPI)
-    return TS_NO_DTAPI_MESSAGE;
-#else
     std::map<UString,UString> versions;
     GetDektecVersions(versions);
 
@@ -61,7 +34,6 @@ ts::UString ts::GetDektecVersions()
         result.append(it.second);
     }
     return result;
-#endif
 }
 
 
@@ -72,8 +44,6 @@ ts::UString ts::GetDektecVersions()
 void ts::GetDektecVersions(std::map<UString,UString>& versions)
 {
     versions.clear();
-
-#if !defined(TS_NO_DTAPI)
 
     int major = 0;
     int minor = 0;
@@ -97,7 +67,6 @@ void ts::GetDektecVersions(std::map<UString,UString>& versions)
             versions[UString::FromWChar(it.m_Name)].format(u"%d.%d.%d.%d", it.m_Major, it.m_Minor, it.m_BugFix, it.m_Build);
         }
     }
-#endif
 }
 
 
@@ -108,7 +77,6 @@ void ts::GetDektecVersions(std::map<UString,UString>& versions)
 const ts::Names& ts::DektecModulationTypes()
 {
     static const Names data {
-    #if !defined(TS_NO_DTAPI)
         {u"DVBS-QPSK",    DTAPI_MOD_DVBS_QPSK},
         {u"DVBS-BPSK",    DTAPI_MOD_DVBS_BPSK},
         {u"4-QAM",        DTAPI_MOD_QAM4},
@@ -131,7 +99,6 @@ const ts::Names& ts::DektecModulationTypes()
         {u"CMMB",         DTAPI_MOD_CMMB},
         {u"T2MI",         DTAPI_MOD_T2MI},
         {u"DVBC2",        DTAPI_MOD_DVBC2}
-    #endif
     };
     return data;
 }
@@ -139,10 +106,8 @@ const ts::Names& ts::DektecModulationTypes()
 const ts::Names& ts::DektecVSB()
 {
     static const Names data {
-    #if !defined(TS_NO_DTAPI)
         {u"8-VSB",  DTAPI_MOD_ATSC_VSB8},
         {u"16-VSB", DTAPI_MOD_ATSC_VSB16},
-    #endif
     };
     return data;
 }
@@ -150,7 +115,6 @@ const ts::Names& ts::DektecVSB()
 const ts::Names& ts::DektecFEC()
 {
     static const Names data {
-    #if !defined(TS_NO_DTAPI)
         {u"1/2",         DTAPI_MOD_1_2},
         {u"2/3",         DTAPI_MOD_2_3},
         {u"3/4",         DTAPI_MOD_3_4},
@@ -165,7 +129,6 @@ const ts::Names& ts::DektecFEC()
         {u"8/9",         DTAPI_MOD_8_9},
         {u"9/10",        DTAPI_MOD_9_10},
         {u"unknown-FEC", DTAPI_MOD_CR_UNK},
-    #endif
     };
     return data;
 }
@@ -173,10 +136,8 @@ const ts::Names& ts::DektecFEC()
 const ts::Names& ts::DektecInversion()
 {
     static const Names data {
-    #if !defined(TS_NO_DTAPI)
         {u"non-inverted", DTAPI_MOD_S_S2_SPECNONINV},
         {u"inverted",     DTAPI_MOD_S_S2_SPECINV},
-    #endif
     };
     return data;
 }
@@ -184,7 +145,6 @@ const ts::Names& ts::DektecInversion()
 const ts::Names& ts::DektecDVBTProperty()
 {
     static const Names data {
-    #if !defined(TS_NO_DTAPI)
         {u"5-MHz",                     DTAPI_MOD_DVBT_5MHZ},
         {u"6-MHz",                     DTAPI_MOD_DVBT_6MHZ},
         {u"7-MHz",                     DTAPI_MOD_DVBT_7MHZ},
@@ -205,7 +165,6 @@ const ts::Names& ts::DektecDVBTProperty()
         {u"4K",                        DTAPI_MOD_DVBT_4K},
         {u"8K",                        DTAPI_MOD_DVBT_8K},
         {u"unknown-transmission-mode", DTAPI_MOD_DVBT_MD_UNK},
-    #endif
     };
     return data;
 }
@@ -213,10 +172,8 @@ const ts::Names& ts::DektecDVBTProperty()
 const ts::Names& ts::DektecPowerMode()
 {
     static const Names data {
-    #if !defined(TS_NO_DTAPI)
         {u"high-quality", DTAPI_IOCONFIG_MODHQ},
         {u"low-power",    DTAPI_IOCONFIG_LOWPWR},
-    #endif
     };
     return data;
 }
@@ -233,10 +190,6 @@ bool ts::GetDektecCodeRate(int& fec, const ModulationArgs& args)
 
 bool ts::ToDektecCodeRate(int& fec, InnerFEC in_enum)
 {
-#if defined(TS_NO_DTAPI)
-    // No Dektec library.
-    return false;
-#else
     // Not all enum values used in switch, intentionally.
     TS_PUSH_WARNING()
     TS_GCC_NOWARNING(switch-default)
@@ -263,7 +216,6 @@ bool ts::ToDektecCodeRate(int& fec, InnerFEC in_enum)
     return supported;
 
     TS_POP_WARNING()
-#endif // TS_NO_DTAPI
 }
 
 
@@ -273,10 +225,6 @@ bool ts::ToDektecCodeRate(int& fec, InnerFEC in_enum)
 
 bool ts::GetDektecModulationType(int& type, const ModulationArgs& args)
 {
-#if defined(TS_NO_DTAPI)
-    // No Dektec library.
-    return false;
-#else
     // Not all enum values used in switch, intentionally.
     TS_PUSH_WARNING()
     TS_GCC_NOWARNING(switch-default)
@@ -324,7 +272,6 @@ bool ts::GetDektecModulationType(int& type, const ModulationArgs& args)
     return supported;
 
     TS_POP_WARNING()
-#endif // TS_NO_DTAPI
 }
 
 
@@ -334,10 +281,6 @@ bool ts::GetDektecModulationType(int& type, const ModulationArgs& args)
 
 bool ts::GetDektecModulation(int& modulation_type, int& param0, int& param1, int& param2, const ModulationArgs& args)
 {
-#if defined(TS_NO_DTAPI)
-    // No Dektec library.
-    return false;
-#else
     // Get known parameters.
     if (!GetDektecModulationType(modulation_type, args) || !GetDektecCodeRate(param0, args)) {
         return false;
@@ -365,8 +308,6 @@ bool ts::GetDektecModulation(int& modulation_type, int& param0, int& param1, int
     }
 
     return true;
-
-#endif // TS_NO_DTAPI
 }
 
 
@@ -375,13 +316,10 @@ bool ts::GetDektecModulation(int& modulation_type, int& param0, int& param1, int
 //----------------------------------------------------------------------------
 
 // This function can be used to compute any type of bitrate, if supported by the DTAPI library.
-#if !defined(TS_NO_DTAPI)
 TS_REGISTER_BITRATE_CALCULATOR(ts::GetDektecBitRate, {});
-#endif
 
 bool ts::GetDektecBitRate(BitRate& bitrate, const ModulationArgs& args)
 {
-#if !defined(TS_NO_DTAPI)
     int mod = 0, param0 = 0, param1 = 0, param2 = 0, irate = 0;
     const uint32_t symrate = args.symbol_rate.value_or(ModulationArgs::DEFAULT_SYMBOL_RATE_DVBS);
     Dtapi::DtFractionInt frate;
@@ -398,6 +336,5 @@ bool ts::GetDektecBitRate(BitRate& bitrate, const ModulationArgs& args)
         }
         return bitrate > 0;
     }
-#endif
     return false;
 }

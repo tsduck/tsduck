@@ -44,13 +44,6 @@ namespace ts {
     const size_t DTA_MAX_HW_FUNC = 75;
 
     //!
-    //! Check if this version of TSDuck was built with Dektec support.
-    //! @ingroup hardware
-    //! @return True is Dektec devices are supported. Always false on macOS or on Windows/Linux on non-Intel platforms.
-    //!
-    TSDEKTECDLL bool HasDektecSupport();
-
-    //!
     //! Get the versions of Dektec API and drivers in one single string.
     //! @ingroup hardware
     //! @return A string describing the Dektec versions (or the lack of Dektec support).

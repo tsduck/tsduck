@@ -13,6 +13,7 @@
 
 #include "tsMain.h"
 #include "tsVersionInfo.h"
+#include "tsFeatures.h"
 #include "tsGitHubRelease.h"
 #include "tsWebRequest.h"
 #include "tsSysUtils.h"
@@ -85,10 +86,7 @@ Options::Options(int argc, char *argv[]) :
 
     // Enumeration of support options. The values are 0 or 1, indicating support.
     // Add a negative value meaning list all.
-    ts::Names support(ts::VersionInfo::SupportEnum());
-    support.add(u"all", -1);
-
-    option(u"support", 0, support);
+    option(u"support", 0, ts::Names(ts::Features::Instance().supportEnum(), {{u"all", -1}}));
     help(u"support",
          u"Check support for a specific feature. Using 'all' displays all features. "
          u"Other options simply exit with a success or failure status, depending if the corresponding feature is implemented or not.");
@@ -166,13 +164,10 @@ Options::Options(int argc, char *argv[]) :
         if (feature < 0) {
             // Display all features.
             ts::UStringList names;
-            support.getAllNames(names);
+            ts::Features::Instance().supportEnum().getAllNames(names);
             names.sort();
             for (const auto& fname : names) {
-                const auto value = support.value(fname);
-                if (value >= 0) {
-                    std::cout << fname << ": " << ts::UString::YesNo(value != 0) << std::endl;
-                }
+                std::cout << fname << ": " << ts::UString::YesNo(ts::Features::Instance().isSupported(fname)) << std::endl;
             }
         }
         std::exit(feature ? EXIT_SUCCESS : EXIT_FAILURE);

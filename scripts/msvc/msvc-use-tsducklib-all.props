@@ -4,7 +4,7 @@
   <!-- Must be included in .vcxproj files to use the TSDuck static library -->
   <!-- Enforce inclusion of ALL modules (many of them use self-registration) -->
 
-  <ImportGroup Label="PropertySheets">
+  <ImportGroup Label="PropertySheets" Condition="'$(UseTSDuckLibImported)' == ''">
     <Import Project="msvc-use-tsducklib.props"/>
   </ImportGroup>
 

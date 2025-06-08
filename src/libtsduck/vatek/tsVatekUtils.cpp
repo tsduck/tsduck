@@ -7,7 +7,7 @@
 //-----------------------------------------------------------------------------
 
 #include "tsVatekUtils.h"
-#include "tsVersionInfo.h"
+#include "tsFeatures.h"
 
 #if !defined(TS_NO_VATEK)
 #include "tsBeforeStandardHeaders.h"
@@ -21,9 +21,9 @@
 //----------------------------------------------------------------------------
 
 #if defined(TS_NO_VATEK)
-    #define SUPPORT UNSUPPORTED
+    #define SUPPORT ts::Features::UNSUPPORTED
 #else
-    #define SUPPORT SUPPORTED
+    #define SUPPORT ts::Features::SUPPORTED
 #endif
 
 TS_REGISTER_FEATURE(u"vatek", u"VATek", SUPPORT, ts::GetVatekVersion);

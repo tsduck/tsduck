@@ -3,7 +3,6 @@
 
   <ImportGroup Label="PropertySheets">
     <Import Project="msvc-common-begin.props"/>
-    <Import Project="msvc-find-dtapi.props"/>
   </ImportGroup>
 
   <PropertyGroup Label="Globals">
@@ -11,6 +10,10 @@
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>tsdekteclib</RootNamespace>
   </PropertyGroup>
+
+  <ImportGroup Label="PropertySheets">
+    <Import Project="msvc-use-dtapi.props"/>
+  </ImportGroup>
 
   <!-- When DTAPI is not supported -->
 

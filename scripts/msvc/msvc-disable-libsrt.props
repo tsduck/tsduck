@@ -3,6 +3,10 @@
 
   <!-- Must be included in .vcxproj files to disable SRT code -->
 
+  <PropertyGroup Label="UserMacros">
+    <TS_NO_SRT>1</TS_NO_SRT>
+  </PropertyGroup>
+
   <ItemDefinitionGroup>
     <ClCompile>
       <PreprocessorDefinitions>TS_NO_SRT=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>

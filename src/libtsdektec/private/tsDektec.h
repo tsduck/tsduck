@@ -12,25 +12,6 @@
 //-----------------------------------------------------------------------------
 
 #pragma once
-
-#if defined(DOXYGEN)
-
-//!
-//! Externally defined when the DTAPI is not available.
-//!
-#define TS_NO_DTAPI
-
-#elif defined(TS_NO_DTAPI)
-
-// An error message to display.
-#define TS_NO_DTAPI_MESSAGE u"This version of TSDuck was compiled without Dektec support"
-
-// Replacement for DTAPI versions.
-#define DTAPI_VERSION_MAJOR 0
-#define DTAPI_VERSION_MINOR 0
-
-#else // Dektec devices are supported.
-
 #include "tsInteger.h"
 #include "tsFraction.h"
 #include "tsFixedPoint.h"
@@ -202,8 +183,6 @@ namespace ts {
         result = FPOINT(FLOAT_T(value.m_Num) / FLOAT_T(value.m_Den));
     }
 }
-
-#endif // TS_NO_DTAPI
 
 //!
 //! Define a synthetic major/minor version number for DTAPI

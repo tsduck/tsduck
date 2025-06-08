@@ -3,12 +3,12 @@
 
   <!-- A target to build tsduck.dektec.names from DTAPI -->
 
-  <PropertyGroup Condition="'$(DtapiIncludePath)'!=''">
-    <DektecInput>$(DtapiIncludePath)\DTAPI.h</DektecInput>
+  <PropertyGroup Condition="'$(DtapiHeaderDir)'!=''">
+    <DektecInput>$(DtapiHeaderDir)\DTAPI.h</DektecInput>
     <DektecDep>$(DektecInput)</DektecDep>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(DtapiIncludePath)'==''">
+  <PropertyGroup Condition="'$(DtapiHeaderDir)'==''">
     <!-- Fake but existing dependency is required -->
     <DektecInput>NUL:</DektecInput>
     <DektecDep>$(TSDuckRootDir)scripts\build-dektec-names.py</DektecDep>

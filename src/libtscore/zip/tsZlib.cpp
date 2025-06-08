@@ -8,7 +8,7 @@
 
 #include "tsZlib.h"
 #include "tsMemory.h"
-#include "tsVersionInfo.h"
+#include "tsFeatures.h"
 
 // We use "sdefl" on Windows and when TS_NO_ZLIB is defined.
 #if defined(TS_WINDOWS) && !defined(TS_NO_ZLIB)
@@ -40,15 +40,15 @@
     #define SDEFL_IMPLEMENTATION 1
 
     // The header files defl.h and infl.h generates many compilation warnings.
-    TS_PUSH_WARNING()
-    TS_LLVM_NOWARNING(missing-field-initializers)
-    TS_LLVM_NOWARNING(old-style-cast)
-    TS_LLVM_NOWARNING(shorten-64-to-32)
-    TS_LLVM_NOWARNING(comma)
-    TS_LLVM_NOWARNING(padded)
-    TS_LLVM_NOWARNING(sign-conversion)
-    TS_LLVM_NOWARNING(sign-compare)
-    TS_LLVM_NOWARNING(unsafe-buffer-usage)
+TS_PUSH_WARNING()
+TS_LLVM_NOWARNING(missing - field - initializers)
+TS_LLVM_NOWARNING(old - style - cast)
+TS_LLVM_NOWARNING(shorten - 64 - to - 32)
+TS_LLVM_NOWARNING(comma)
+TS_LLVM_NOWARNING(padded)
+TS_LLVM_NOWARNING(sign - conversion)
+TS_LLVM_NOWARNING(sign - compare)
+TS_LLVM_NOWARNING(unsafe - buffer - usage)
     TS_LLVM_NOWARNING(switch-default)
     TS_LLVM_NOWARNING(zero-as-null-pointer-constant)
     TS_LLVM_NOWARNING(reserved-identifier)
@@ -81,7 +81,7 @@
 //----------------------------------------------------------------------------
 
 // Register for options --version.
-TS_REGISTER_FEATURE(u"zlib", u"Deflate library", ALWAYS, ts::Zlib::GetLibraryVersion);
+TS_REGISTER_FEATURE(u"zlib", u"Deflate library", ts::Features::ALWAYS, ts::Zlib::GetLibraryVersion);
 
 ts::UString ts::Zlib::GetLibraryVersion()
 {

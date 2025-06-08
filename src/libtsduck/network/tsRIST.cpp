@@ -8,7 +8,7 @@
 
 #include "tsRIST.h"
 #include "tsLibRIST.h"
-#include "tsVersionInfo.h"
+#include "tsFeatures.h"
 
 
 //----------------------------------------------------------------------------
@@ -30,9 +30,9 @@ ts::UString ts::GetRISTLibraryVersion()
 //----------------------------------------------------------------------------
 
 #if defined(TS_NO_RIST)
-    #define SUPPORT UNSUPPORTED
+    #define SUPPORT ts::Features::UNSUPPORTED
 #else
-    #define SUPPORT SUPPORTED
+    #define SUPPORT ts::Features::SUPPORTED
 #endif
 
 TS_REGISTER_FEATURE(u"rist", u"RIST library", SUPPORT, ts::GetRISTLibraryVersion);

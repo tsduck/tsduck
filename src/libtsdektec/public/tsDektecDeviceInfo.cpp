@@ -18,8 +18,6 @@ bool ts::DektecDeviceInfo::GetAllDevices(DektecDeviceInfoVector& info, Report& r
 {
     info.clear();
 
-#if !defined(TS_NO_DTAPI)
-
     // Get all devices.
     DektecDeviceVector devlist;
     if (!DektecDevice::GetAllDevices(devlist, report)) {
@@ -51,8 +49,5 @@ bool ts::DektecDeviceInfo::GetAllDevices(DektecDeviceInfoVector& info, Report& r
             inf.outputPorts[n].description = DektecDevice::GetPortDescription(dev.output[n]);
         }
     }
-
-#endif // TS_NO_DTAPI
-
     return true;
 }

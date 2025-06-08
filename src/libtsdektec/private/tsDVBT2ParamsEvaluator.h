@@ -12,13 +12,9 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#if !defined(TS_NO_DTAPI) || defined(DOXYGEN)
-
 #include "tsDektec.h"
 #include "tsBitRate.h"
 
 namespace ts {
     void EvaluateDvbT2ParsForBitrate(Dtapi::DtDvbT2Pars& params, const ts::BitRate& bitrate);
 }
-
-#endif // TS_NO_DTAPI

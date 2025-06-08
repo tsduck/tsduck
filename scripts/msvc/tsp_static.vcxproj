@@ -5,8 +5,16 @@
     <Import Project="msvc-common-begin.props"/>
   </ImportGroup>
 
+  <ItemGroup Condition="'$(TS_NO_DTAPI)' == ''">
+    <Plugins Include="$(TSDuckRootDir)src\tsplugins\tsplugin_*.cpp"/>
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TS_NO_DTAPI)' != ''">
+    <Plugins Include="$(TSDuckRootDir)src\tsplugins\tsplugin_*.cpp"
+             Exclude="$(TSDuckRootDir)src\tsplugins\tsplugin_dektec.cpp"/>
+  </ItemGroup>
+
   <ItemGroup>
-    <Plugins   Include="$(TSDuckRootDir)src\tsplugins\tsplugin_*.cpp"/>
     <ClCompile Include="..\..\src\tstools\tsp.cpp"/>
     <ClCompile Include="@(Plugins)"/>
   </ItemGroup>
@@ -16,6 +24,10 @@
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>tsp_static</RootNamespace>
   </PropertyGroup>
+
+  <ImportGroup Label="PropertySheets" Condition="'$(TS_NO_DTAPI)' == ''">
+    <Import Project="msvc-use-tsdekteclib.props"/>
+  </ImportGroup>
 
   <ImportGroup Label="PropertySheets">
     <Import Project="msvc-target-exe.props"/>

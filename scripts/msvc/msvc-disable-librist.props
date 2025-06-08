@@ -3,6 +3,10 @@
 
   <!-- Must be included in .vcxproj files to disable RIST code -->
 
+  <PropertyGroup Label="UserMacros">
+    <TS_NO_RIST>1</TS_NO_RIST>
+  </PropertyGroup>
+
   <ItemDefinitionGroup>
     <ClCompile>
       <PreprocessorDefinitions>TS_NO_RIST=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>

@@ -21,7 +21,7 @@
 #include "tsVersion.h"
 #include "tsBitRate.h"
 #include "tsCryptoLibrary.h"
-#include "tsDektecUtils.h"
+#include "tsDektecSupport.h"
 #include "tsVatekUtils.h"
 #include "tsRIST.h"
 #include "tsSRTSocket.h"

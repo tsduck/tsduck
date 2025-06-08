@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!-- Project file to list the MSBuidl variables -->
+
+  <ImportGroup>
+    <Import Project='msvc-common-begin.props'/>
+  </ImportGroup>
+
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{C932660E-56D0-40FD-9A90-0123456789AB}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>listvariables</RootNamespace>
+  </PropertyGroup>
+
+  <Target Name='ListVariables'>
+    <Message Text="==" Importance="high"/>
+    <Message Text="========== $(Configuration)-$(Platform) ==========" Importance="high"/>
+    <Message Text="== TSDuckRootDir = '$(TSDuckRootDir)'" Importance="high"/>
+    <Message Text="== BinRootDir = '$(BinRootDir)'" Importance="high"/>
+    <Message Text="== OutDir = '$(OutDir)'" Importance="high"/>
+    <Message Text="== IntDir = '$(IntDir)'" Importance="high"/>
+    <Message Text="== MSBuildToolsVersion = '$(MSBuildToolsVersion)'" Importance="high"/>
+    <Message Text="== MSBuildAssemblyVersion = '$(MSBuildAssemblyVersion)'" Importance="high"/>
+    <Message Text="== TS_NO_DTAPI = '$(TS_NO_DTAPI)'" Importance="high"/>
+    <Message Text="== DtapiHeaderDir = '$(DtapiHeaderDir)'" Importance="high"/>
+    <Message Text="== DtapiVC = '$(DtapiVC)'" Importance="high"/>
+    <Message Text="== DtapiLibDir = '$(DtapiLibDir)'" Importance="high"/>
+    <Message Text="== DtapiLibName = '$(DtapiLibName)'" Importance="high"/>
+    <Message Text="== TS_NO_JAVA = '$(TS_NO_JAVA)'" Importance="high"/>
+    <Message Text="== JAVA_HOME = '$(JAVA_HOME)'" Importance="high"/>
+    <Message Text="== TS_NO_RIST = '$(TS_NO_RIST)'" Importance="high"/>
+    <Message Text="== LIBRIST = '$(LIBRIST)'" Importance="high"/>
+    <Message Text="== TS_NO_SRT = '$(TS_NO_SRT)'" Importance="high"/>
+    <Message Text="== LIBSRT = '$(LIBSRT)'" Importance="high"/>
+    <Message Text="== TS_NO_VATEK = '$(TS_NO_VATEK)'" Importance="high"/>
+    <Message Text="== DefaultVatekProps = '$(DefaultVatekProps)'" Importance="high"/>
+    <Message Text="== VatekProps = '$(VatekProps)'" Importance="high"/>
+    <Message Text="== TSCoreLibDirs = '$(TSCoreLibDirs)'" Importance="high"/>
+    <Message Text="== TSCoreLibDirsInternal = '$(TSCoreLibDirsInternal)'" Importance="high"/>
+    <Message Text="== TSDuckLibDirs = '$(TSDuckLibDirs)'" Importance="high"/>
+    <Message Text="== TSDuckLibDirsInternal = '$(TSDuckLibDirsInternal)'" Importance="high"/>
+    <Message Text="== TSDektecLibDirs = '$(TSDektecLibDirs)'" Importance="high"/>
+    <Message Text="== TSDektecLibDirsInternal = '$(TSDektecLibDirsInternal)'" Importance="high"/>
+    <Message Text="==" Importance="high"/>
+  </Target>
+
+  <ImportGroup>
+    <Import Project='msvc-common-base.props' />
+    <Import Project='msvc-use-dtapi.props'/>
+    <Import Project='msvc-use-vatek.props'/>
+    <Import Project='msvc-use-java.props'/>
+    <Import Project='msvc-use-librist.props'/>
+    <Import Project='msvc-use-libsrt.props'/>
+    <Import Project="msvc-common-end.props"/>
+  </ImportGroup>
+
+</Project>

@@ -4,9 +4,9 @@
   <!-- Must be included in .vcxproj files to find the Dektec DTAPI library.
        Outputs:
          - TS_NO_DTAPI -> defined if DTAPI not found or not supported
-         - DtapiIncludePath -> directory of include file
-         - DtapiLibraryPath -> directory of library files
-         - DtapiLibraryName -> library file name (no directory)
+         - DtapiHeaderDir -> directory of include file
+         - DtapiLibDir -> directory of library files
+         - DtapiLibName -> library file name (no directory)
   -->
 
   <!-- Flag to import only once. -->
@@ -19,103 +19,100 @@
     <TS_NO_DTAPI>1</TS_NO_DTAPI>
   </PropertyGroup>
 
-  <!-- Define DtapiIncludePath if DTAPI.h found in some predefined locations -->
+  <!-- Define DtapiHeaderDir if DTAPI.h found in some predefined locations -->
   <Choose>
-    <When Condition="'$(DtapiIncludePath)' != ''">
+    <When Condition="'$(DtapiHeaderDir)' != ''">
       <!-- Already externally defined, nothing to do -->
     </When>
     <When Condition="Exists('C:\Program Files (x86)\DekTec\SDKs\WinSDK\DTAPI\Include\DTAPI.h')">
       <PropertyGroup Label="UserMacros">
-        <DtapiIncludePath>C:\Program Files (x86)\DekTec\SDKs\WinSDK\DTAPI\Include\</DtapiIncludePath>
+        <DtapiHeaderDir>C:\Program Files (x86)\DekTec\SDKs\WinSDK\DTAPI\Include\</DtapiHeaderDir>
       </PropertyGroup>
     </When>
     <When Condition="Exists('C:\Program Files\DekTec\SDKs\WinSDK\DTAPI\Include\DTAPI.h')">
       <PropertyGroup Label="UserMacros">
-        <DtapiIncludePath>C:\Program Files\DekTec\SDKs\WinSDK\DTAPI\Include\</DtapiIncludePath>
+        <DtapiHeaderDir>C:\Program Files\DekTec\SDKs\WinSDK\DTAPI\Include\</DtapiHeaderDir>
       </PropertyGroup>
     </When>
   </Choose>
 
-  <!-- Define DtapiLibraryPath if DTAPI found in some predefined locations -->
+  <!-- Define DtapiVC based on build tools version -->
   <Choose>
-    <When Condition="'$(DtapiLibraryPath)' != ''">
+    <When Condition="'$(DtapiVC)' != ''">
       <!-- Already externally defined, nothing to do -->
     </When>
-    <!-- Visual Studio 2015 -->
-    <When Condition="'$(MSBuildToolsVersion)' == '14.0' AND Exists('C:\Program Files (x86)\DekTec\SDKs\WinSDK\DTAPI\Lib\VC14')">
+    <!-- Visual Studio 2022 -->
+    <When Condition="'$(MSBuildToolsVersion)' == '17.0' OR '$(MSBuildAssemblyVersion)' == '17.0'">
       <PropertyGroup Label="UserMacros">
-        <DtapiLibraryPath>C:\Program Files (x86)\DekTec\SDKs\WinSDK\DTAPI\Lib\VC14\</DtapiLibraryPath>
-      </PropertyGroup>
-    </When>
-    <When Condition="'$(MSBuildToolsVersion)' == '14.0' AND Exists('C:\Program Files\DekTec\SDKs\WinSDK\DTAPI\Lib\VC14')">
-      <PropertyGroup Label="UserMacros">
-        <DtapiLibraryPath>C:\Program Files\DekTec\SDKs\WinSDK\DTAPI\Lib\VC14\</DtapiLibraryPath>
-      </PropertyGroup>
-    </When>
-    <!-- Visual Studio 2017 -->
-    <When Condition="'$(MSBuildToolsVersion)' == '15.0' AND Exists('C:\Program Files (x86)\DekTec\SDKs\WinSDK\DTAPI\Lib\VC15')">
-      <PropertyGroup Label="UserMacros">
-        <DtapiLibraryPath>C:\Program Files (x86)\DekTec\SDKs\WinSDK\DTAPI\Lib\VC15\</DtapiLibraryPath>
-      </PropertyGroup>
-    </When>
-    <When Condition="'$(MSBuildToolsVersion)' == '15.0' AND Exists('C:\Program Files\DekTec\SDKs\WinSDK\DTAPI\Lib\VC15')">
-      <PropertyGroup Label="UserMacros">
-        <DtapiLibraryPath>C:\Program Files\DekTec\SDKs\WinSDK\DTAPI\Lib\VC15\</DtapiLibraryPath>
+        <DtapiVC>VC17</DtapiVC>
       </PropertyGroup>
     </When>
     <!-- Visual Studio 2019 -->
-    <When Condition="'$(MSBuildAssemblyVersion)' == '16.0' AND Exists('C:\Program Files (x86)\DekTec\SDKs\WinSDK\DTAPI\Lib\VC16')">
+    <When Condition="'$(MSBuildToolsVersion)' == '16.0' OR '$(MSBuildAssemblyVersion)' == '16.0'">
       <PropertyGroup Label="UserMacros">
-        <DtapiLibraryPath>C:\Program Files (x86)\DekTec\SDKs\WinSDK\DTAPI\Lib\VC16\</DtapiLibraryPath>
+        <DtapiVC>VC16</DtapiVC>
       </PropertyGroup>
     </When>
-    <When Condition="'$(MSBuildAssemblyVersion)' == '16.0' AND Exists('C:\Program Files\DekTec\SDKs\WinSDK\DTAPI\Lib\VC16')">
+    <!-- Visual Studio 2017 -->
+    <When Condition="'$(MSBuildToolsVersion)' == '15.0' OR '$(MSBuildAssemblyVersion)' == '15.0'">
       <PropertyGroup Label="UserMacros">
-        <DtapiLibraryPath>C:\Program Files\DekTec\SDKs\WinSDK\DTAPI\Lib\VC16\</DtapiLibraryPath>
+        <DtapiVC>VC15</DtapiVC>
       </PropertyGroup>
     </When>
-    <!-- Visual Studio 2022 -->
-    <When Condition="'$(MSBuildAssemblyVersion)' == '17.0' AND Exists('C:\Program Files (x86)\DekTec\SDKs\WinSDK\DTAPI\Lib\VC17')">
+    <!-- Visual Studio 2015 -->
+    <When Condition="'$(MSBuildToolsVersion)' == '14.0' OR '$(MSBuildAssemblyVersion)' == '14.0'">
       <PropertyGroup Label="UserMacros">
-        <DtapiLibraryPath>C:\Program Files (x86)\DekTec\SDKs\WinSDK\DTAPI\Lib\VC17\</DtapiLibraryPath>
+        <DtapiVC>VC14</DtapiVC>
       </PropertyGroup>
     </When>
-    <When Condition="'$(MSBuildAssemblyVersion)' == '17.0' AND Exists('C:\Program Files\DekTec\SDKs\WinSDK\DTAPI\Lib\VC17')">
+  </Choose>
+
+  <!-- Define DtapiLibDir if DTAPI found in some predefined locations -->
+  <Choose>
+    <When Condition="'$(DtapiLibDir)' != ''">
+      <!-- Already externally defined, nothing to do -->
+    </When>
+    <When Condition="Exists('C:\Program Files (x86)\DekTec\SDKs\WinSDK\DTAPI\Lib\$(DtapiVC)')">
       <PropertyGroup Label="UserMacros">
-        <DtapiLibraryPath>C:\Program Files\DekTec\SDKs\WinSDK\DTAPI\Lib\VC17\</DtapiLibraryPath>
+        <DtapiLibDir>C:\Program Files (x86)\DekTec\SDKs\WinSDK\DTAPI\Lib\$(DtapiVC)\</DtapiLibDir>
+      </PropertyGroup>
+    </When>
+    <When Condition="Exists('C:\Program Files\DekTec\SDKs\WinSDK\DTAPI\Lib\$(DtapiVC)')">
+      <PropertyGroup Label="UserMacros">
+        <DtapiLibDir>C:\Program Files\DekTec\SDKs\WinSDK\DTAPI\Lib\$(DtapiVC)\</DtapiLibDir>
       </PropertyGroup>
     </When>
   </Choose>
 
   <!-- Find library file name -->
   <Choose>
-    <When Condition="'$(DtapiLibraryName)' != ''">
+    <When Condition="'$(DtapiLibName)' != ''">
       <!-- Already externally defined, nothing to do -->
     </When>
-    <When Condition="'$(Configuration)|$(Platform)'=='Release|Win32' AND Exists('$(DtapiLibraryPath)DTAPIMD.lib')">
+    <When Condition="'$(Configuration)|$(Platform)'=='Release|Win32' AND Exists('$(DtapiLibDir)DTAPIMD.lib')">
       <PropertyGroup Label="UserMacros">
-        <DtapiLibraryName>DTAPIMD.lib</DtapiLibraryName>
+        <DtapiLibName>DTAPIMD.lib</DtapiLibName>
       </PropertyGroup>
     </When>
-    <When Condition="'$(Configuration)|$(Platform)'=='Release|x64' AND Exists('$(DtapiLibraryPath)DTAPI64MD.lib')">
+    <When Condition="'$(Configuration)|$(Platform)'=='Release|x64' AND Exists('$(DtapiLibDir)DTAPI64MD.lib')">
       <PropertyGroup Label="UserMacros">
-        <DtapiLibraryName>DTAPI64MD.lib</DtapiLibraryName>
+        <DtapiLibName>DTAPI64MD.lib</DtapiLibName>
       </PropertyGroup>
     </When>
-    <When Condition="'$(Configuration)|$(Platform)'=='Debug|Win32' AND Exists('$(DtapiLibraryPath)DTAPIMDd.lib')">
+    <When Condition="'$(Configuration)|$(Platform)'=='Debug|Win32' AND Exists('$(DtapiLibDir)DTAPIMDd.lib')">
       <PropertyGroup Label="UserMacros">
-        <DtapiLibraryName>DTAPIMDd.lib</DtapiLibraryName>
+        <DtapiLibName>DTAPIMDd.lib</DtapiLibName>
       </PropertyGroup>
     </When>
-    <When Condition="'$(Configuration)|$(Platform)'=='Debug|x64' AND Exists('$(DtapiLibraryPath)DTAPI64MDd.lib')">
+    <When Condition="'$(Configuration)|$(Platform)'=='Debug|x64' AND Exists('$(DtapiLibDir)DTAPI64MDd.lib')">
       <PropertyGroup Label="UserMacros">
-        <DtapiLibraryName>DTAPI64MDd.lib</DtapiLibraryName>
+        <DtapiLibName>DTAPI64MDd.lib</DtapiLibName>
       </PropertyGroup>
     </When>
   </Choose>
 
   <!-- Disable DTAPI if header or library not found -->
-  <PropertyGroup Label="UserMacros" Condition="'$(DtapiIncludePath)' == '' OR '$(DtapiLibraryPath)' == '' OR '$(DtapiLibraryName)' == ''">
+  <PropertyGroup Label="UserMacros" Condition="'$(DtapiHeaderDir)' == '' OR '$(DtapiLibDir)' == '' OR '$(DtapiLibName)' == ''">
     <TS_NO_DTAPI>1</TS_NO_DTAPI>
   </PropertyGroup>
 

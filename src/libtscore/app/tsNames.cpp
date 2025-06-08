@@ -31,6 +31,15 @@ ts::Names::Names(std::initializer_list<NameValue> values)
     }
 }
 
+// Copy constructor with additional values.
+ts::Names::Names(const Names& other, std::initializer_list<NameValue> values) :
+    Names(other)
+{
+    for (const auto& it : values) {
+        addValueImplLocked(it);
+    }
+}
+
 // Copy constructor.
 ts::Names::Names(const Names& other)
 {
@@ -52,7 +61,7 @@ ts::Names::Names(const Names& other)
     _short_entries = other._short_entries;
 }
 
-// Copy constructor.
+// Move constructor.
 ts::Names::Names(Names&& other)
 {
     // Read lock (shared) on the other instance.

@@ -7,6 +7,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsVersionInfo.h"
+#include "tsFeatures.h"
 #include "tsGitHubRelease.h"
 #include "tsNullReport.h"
 #include "tsErrCodeReport.h"
@@ -18,48 +19,16 @@
 //----------------------------------------------------------------------------
 
 // Enumeration description of ts::VersionFormat.
-ts::Names& ts::VersionInfo::FormatEnumNames()
+const ts::Names& ts::VersionInfo::FormatEnum()
 {
-    static Names data {
+    static Names data(Features::Instance().versionEnum(), {
         {u"all",     Format::ALL},
         {u"short",   Format::SHORT},
         {u"long",    Format::LONG},
         {u"integer", Format::INTEGER},
         {u"date",    Format::DATE},
-    };
+    });
     return data;
-}
-
-// Enumeration of supported features.
-ts::Names& ts::VersionInfo::SupportEnumNames()
-{
-    static Names data;
-    return data;
-}
-
-// A map of options with versions.
-ts::VersionInfo::VersionOptionMap& ts::VersionInfo::VersionOptions()
-{
-    static VersionOptionMap data;
-    return data;
-}
-
-
-//----------------------------------------------------------------------------
-// Register a feature.
-//----------------------------------------------------------------------------
-
-ts::VersionInfo::RegisterFeature::RegisterFeature(const UString& option, const UString& name, Support support, GetVersionFunc get_version)
-{
-    // Add an option for --version when the feature has a version function.
-    if (get_version != nullptr) {
-        VersionOptions().insert(std::make_pair(FormatEnumNames().addNewValue(option), std::make_pair(name, get_version)));
-    }
-
-    // Add an option for --support when the feature is optional.
-    if (support != ALWAYS) {
-        SupportEnumNames().add(option, int(support == SUPPORTED));
-    }
 }
 
 
@@ -167,14 +136,14 @@ ts::UString ts::VersionInfo::GetVersion(Format format, const UString& applicatio
             UString version = GetVersion(Format::LONG, applicationName) + LINE_FEED + u"Built " + GetVersion(Format::DATE);
             // Add all dynamically added features.
             UStringList features;
-            for (const auto& it : VersionOptions()) {
-                features.push_back(it.second.first + u": " + it.second.second());
+            for (const auto& it : Features::Instance().getAllVersions()) {
+                features.push_back(it.first + u": " + it.second);
             }
             features.sort();
             if (!features.empty()) {
-                version += UString::EOL;
+                version += LINE_FEED;
             }
-            return version + UString::Join(features, UString::EOL);
+            return version + UString::Join(features, LINE_FEED);
         }
         case Format::SHORT: {
             // The simplest version.
@@ -201,8 +170,7 @@ ts::UString ts::VersionInfo::GetVersion(Format format, const UString& applicatio
         }
         default: {
             // Look for a dynamically added feature.
-            const auto it = VersionOptions().find(Names::int_t(format));
-            return it == VersionOptions().end() ? UString() : it->second.second();
+            return Features::Instance().getVersion(Features::index_t(format));
         }
     }
 }

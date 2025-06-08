@@ -1218,6 +1218,23 @@ namespace ts {
         }
 
         //!
+        //! Join a part of a container of strings into one big string.
+        //! The strings are accessed through iterators in the container.
+        //! All strings are concatenated into one big string.
+        //! @tparam ITERATOR An iterator class over @c UString as defined by the C++ Standard Template Library (STL).
+        //! @param [in] begin An iterator pointing to the first string.
+        //! @param [in] end An iterator pointing @em after the last string.
+        //! @param [in] separator A character to insert between all segments.
+        //! @param [in] remove_empty If true, empty segments are ignored
+        //! @return The big string containing all segments and separators.
+        //!
+        template <class ITERATOR>
+        static UString Join(ITERATOR begin, ITERATOR end, UChar separator, bool remove_empty = false)
+        {
+            return UString(1, separator).join(begin, end, remove_empty);
+        }
+
+        //!
         //! Join a container of strings into one big string.
         //! All strings from the container are concatenated into one big string.
         //! @tparam CONTAINER A container class of @c UString as defined by the C++ Standard Template Library (STL).
@@ -1230,6 +1247,21 @@ namespace ts {
         static UString Join(const CONTAINER& container, const UString& separator = UString(u", "), bool remove_empty = false)
         {
             return separator.join(container.begin(), container.end(), remove_empty);
+        }
+
+        //!
+        //! Join a container of strings into one big string.
+        //! All strings from the container are concatenated into one big string.
+        //! @tparam CONTAINER A container class of @c UString as defined by the C++ Standard Template Library (STL).
+        //! @param [in] container A container of @c UString containing all strings to concatenate.
+        //! @param [in] separator A character to insert between all segments.
+        //! @param [in] remove_empty If true, empty segments are ignored
+        //! @return The big string containing all segments and separators.
+        //!
+        template <class CONTAINER>
+        static UString Join(const CONTAINER& container, UChar separator, bool remove_empty = false)
+        {
+            return UString(1, separator).join(container.begin(), container.end(), remove_empty);
         }
 
         //!

@@ -8,14 +8,14 @@
     <Import Project="msvc-find-dtapi.props"/>
   </ImportGroup>
 
-  <ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(TS_NO_DTAPI)' == ''">
     <ClCompile>
       <PreprocessorDefinitions>TSDEKTEC_STATIC_LIBRARY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(TSDektecLibDirs);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link Condition="'$(TS_NO_DTAPI)' == ''">
-      <AdditionalLibraryDirectories>$(DtapiLibraryPath);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>$(DtapiLibraryName);%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(DtapiLibDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>$(DtapiLibName);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Link>
       <AdditionalLibraryDirectories>$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>

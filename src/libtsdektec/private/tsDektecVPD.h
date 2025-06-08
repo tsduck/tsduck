@@ -12,8 +12,6 @@
 //-----------------------------------------------------------------------------
 
 #pragma once
-#if !defined(TS_NO_DTAPI) || defined(DOXYGEN)
-
 #include "tsPlatform.h"
 #include "tsDektec.h"
 
@@ -58,5 +56,3 @@ namespace ts {
         void getOneVPD(Dtapi::DtDevice& dev, const char* keyword, char* data);
     };
 }
-
-#endif // TS_NO_DTAPI

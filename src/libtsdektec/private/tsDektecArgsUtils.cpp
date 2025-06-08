@@ -6,12 +6,6 @@
 //
 //-----------------------------------------------------------------------------
 
-#if defined(TS_NO_DTAPI)
-#include "tsPlatform.h"
-TS_LLVM_NOWARNING(missing-variable-declarations)
-bool tsDektecArgsUtilsIsEmpty = true; // Avoid warning about empty module.
-#else
-
 #include "tsDektecArgsUtils.h"
 #include "tsIPSocketAddress.h"
 #include "tsMemory.h"
@@ -437,5 +431,3 @@ bool ts::CheckDektecIPArgs(bool receive, const Dtapi::DtIpPars2& dtpars, Report&
     }
     return true;
 }
-
-#endif // TS_NO_DTAPI

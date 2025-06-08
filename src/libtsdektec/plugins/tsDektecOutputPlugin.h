@@ -12,8 +12,6 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#if !defined(TS_NO_DTAPI) || defined(DOXYGEN)
-
 #include "tsOutputPlugin.h"
 #include "tsBitrateDifferenceDVBT.h"
 
@@ -66,5 +64,3 @@ namespace ts {
         bool ParamsMatchUserOverrides(const ts::BitrateDifferenceDVBT& params);
     };
 }
-
-#endif // TS_NO_DTAPI

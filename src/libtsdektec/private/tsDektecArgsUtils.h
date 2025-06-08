@@ -18,8 +18,6 @@
 //-----------------------------------------------------------------------------
 
 #pragma once
-#if !defined(TS_NO_DTAPI) || defined(DOXYGEN)
-
 #include "tsDektec.h"
 #include "tsArgs.h"
 
@@ -66,5 +64,3 @@ namespace ts {
     //!
     bool CheckDektecIPArgs(bool receive, const Dtapi::DtIpPars2& dtpars, Report& report);
 }
-
-#endif // TS_NO_DTAPI

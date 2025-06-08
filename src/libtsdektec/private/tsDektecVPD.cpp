@@ -9,11 +9,6 @@
 #include "tsDektecVPD.h"
 #include "tsMemory.h"
 
-#if defined(TS_NO_DTAPI)
-TS_LLVM_NOWARNING(missing-variable-declarations)
-bool tsDektecVPDIsEmpty = true; // Avoid warning about empty module.
-#else
-
 
 //-----------------------------------------------------------------------------
 // Clear one entry from Vital Product Data.
@@ -94,5 +89,3 @@ void ts::DektecVPD::get(Dtapi::DtDevice& dev)
     getOneVPD(dev, "XT", xt);
     getOneVPD(dev, "BO", bo);
 }
-
-#endif // TS_NO_DTAPI

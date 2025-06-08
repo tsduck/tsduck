@@ -4,11 +4,11 @@
   <!-- Must be included in .vcxproj files to use the RIST library -->
 
   <!-- Previous versions of librist installers had no Arm64 libraries -->
-  <ImportGroup Label="PropertySheets" Condition="'$(LIBRIST)' != '' AND ('$(Platform)' != 'ARM64' OR Exists('$(LIBRIST)\lib\Release-ARM64'))">
+  <ImportGroup Label="PropertySheets" Condition="'$(TS_NO_RIST)' == '' AND '$(LIBRIST)' != '' AND ('$(Platform)' != 'ARM64' OR Exists('$(LIBRIST)\lib\Release-ARM64'))">
     <Import Project="$(LIBRIST)\librist-static.props"/>
   </ImportGroup>
 
-  <ImportGroup Label="PropertySheets" Condition="'$(LIBRIST)' == '' OR ('$(Platform)' == 'ARM64' AND !Exists('$(LIBRIST)\lib\Release-ARM64'))">
+  <ImportGroup Label="PropertySheets" Condition="'$(TS_NO_RIST)' != '' OR '$(LIBRIST)' == '' OR ('$(Platform)' == 'ARM64' AND !Exists('$(LIBRIST)\lib\Release-ARM64'))">
     <Import Project="msvc-disable-librist.props"/>
   </ImportGroup>
 

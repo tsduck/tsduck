@@ -8,36 +8,6 @@
 
 #include "tsDektecControl.h"
 #include "tsDektec.h"
-
-
-//----------------------------------------------------------------------------
-// Stubs when DTAPI is not supported
-//----------------------------------------------------------------------------
-
-#if defined(TS_NO_DTAPI)
-
-ts::DektecControl::DektecControl(int argc, char *argv[]) :
-    Args(u"Control Dektec devices (unimplemented)")
-{
-}
-
-ts::DektecControl::~DektecControl()
-{
-}
-
-int ts::DektecControl::execute()
-{
-    error(TS_NO_DTAPI_MESSAGE);
-    return EXIT_FAILURE;
-}
-
-#else
-
-
-//----------------------------------------------------------------------------
-// Start of real implementation using DTAPI.
-//----------------------------------------------------------------------------
-
 #include "tsDuckContext.h"
 #include "tsSysUtils.h"
 #include "tsDektecUtils.h"
@@ -749,5 +719,3 @@ int ts::DektecControl::Guts::oneDevice(const DektecDevice& device)
 
     return EXIT_SUCCESS;
 }
-
-#endif // TS_NO_DTAPI
