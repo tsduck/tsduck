@@ -549,7 +549,7 @@ namespace ts {
         //! Thus, it is possible to perform a registration in a source file, outside any code.
         //! @see TS_REGISTER_BITRATE_CALCULATOR
         //!
-        class TSCOREDLL RegisterBitRateCalculator
+        class TSDUCKDLL RegisterBitRateCalculator
         {
             TS_NOBUILD_NOCOPY(RegisterBitRateCalculator);
         public:

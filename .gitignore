@@ -16,7 +16,7 @@ core
 core.*
 cov-int
 cov-int.*
-Debug-*
+Debug-*/
 *.deb
 *.dep
 *.dll
@@ -44,7 +44,7 @@ ipch
 *.pyc
 __pycache__
 *.rpm
-Release-*
+Release-*/
 *.sdf
 *.so
 *.stackdump

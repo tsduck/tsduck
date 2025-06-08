@@ -9,9 +9,18 @@
 #  The directory tree is traversed, the .gitignore files are read and all
 #  files and directories which should be ignored by git are deleted.
 #
+#  With options -n, display files to delete but don't delete.
+#
 #-----------------------------------------------------------------------------
 
 import sys, os, shutil, fnmatch
+
+# Check if an option is present and remove it.
+def has_option(argv, name):
+    present = name in argv
+    if present:
+        argv.remove(name)
+    return present
 
 # Sort a list, remove duplicates and empty strings.
 def cleanup_list(l):
@@ -33,7 +42,7 @@ def rmtree_error(func, file_path, excinfo):
     print('**** error removing %s' % file_path)
 
 # Cleanup a directory tree.
-def cleanup_directory(root, keep, remove, norecurse):
+def cleanup_directory(root, keep, remove, norecurse, dry_run):
     # Load .gitignore file if there is one.
     gitignore = root + os.sep + '.gitignore'
     if os.path.isfile(gitignore):
@@ -57,20 +66,22 @@ def cleanup_directory(root, keep, remove, norecurse):
         is_dir = os.path.isdir(file_path)
         if not match_any(file_name, keep) and match_any(file_name, remove):
             print('---- removing %s' % file_path)
-            if is_dir:
-                shutil.rmtree(file_path, onerror = rmtree_error)
-            else:
-                os.remove(file_path)
+            if not dry_run:
+                if is_dir:
+                    shutil.rmtree(file_path, onerror = rmtree_error)
+                else:
+                    os.remove(file_path)
         elif is_dir and not match_any(file_name, norecurse):
-            cleanup_directory(file_path, keep, remove, norecurse)
+            cleanup_directory(file_path, keep, remove, norecurse, dry_run)
 
 # Main program
 if __name__ == "__main__":
+    opt_dry_run = has_option(sys.argv, '-n')
     keep = ['.git']
     remove = []
     norecurse = ['.git', 'installers']
     if len(sys.argv) < 2:
-        cleanup_directory('.', keep, remove, norecurse)
+        cleanup_directory('.', keep, remove, norecurse, opt_dry_run)
     else:
         for i in range(1, len(sys.argv)):
-            cleanup_directory(sys.argv[i], keep, remove, norecurse)
+            cleanup_directory(sys.argv[i], keep, remove, norecurse, opt_dry_run)
