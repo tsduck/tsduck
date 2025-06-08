@@ -13,15 +13,12 @@ bool tsDektecInputPluginIsEmpty = true; // Avoid warning about empty module.
 #else
 
 #include "tsDektecInputPlugin.h"
-#include "tsPluginRepository.h"
 #include "tsDektecUtils.h"
 #include "tsDektecArgsUtils.h"
 #include "tsDektecDevice.h"
 #include "tsModulation.h"
 #include "tsFatal.h"
 #include "tsLNB.h"
-
-TS_REGISTER_INPUT_PLUGIN(u"dektec", ts::DektecInputPlugin);
 
 // Consider that the first 5 receive() are "initialization". If a full input FIFO is
 // observed here, ignore it. Later, a full FIFO indicates a potential packet loss.

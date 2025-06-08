@@ -10,7 +10,7 @@
     <IntDir>$(OutDir)$(ProjectName)\</IntDir>
   </PropertyGroup>
 
-  <!-- Locate all directories in libtscore and libtsduck (for inclusion of header files) -->
+  <!-- Locate all directories in sublibraries (for inclusion of header files) -->
 
   <ItemGroup>
     <LibCorePublicHeaders  Include="$(TSDuckRootDir)src\libtscore\**\*.h"
@@ -74,6 +74,22 @@
   <PropertyGroup Label="Configuration">
     <TSDuckLibDirs>@(LibDuckPublicDirs)</TSDuckLibDirs>
     <TSDuckLibDirsInternal>@(LibDuckPrivateDirs)</TSDuckLibDirsInternal>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <LibDektecPublicHeaders  Include="$(TSDuckRootDir)src\libtsdektec\**\*.h"
+                             Exclude="$(TSDuckRootDir)src\libtsdektec\**\private\**;
+                                      $(TSDuckRootDir)src\libtsdektec\**\__pycache__\**"/>
+    <LibDektecPrivateHeaders Include="$(TSDuckRootDir)src\libtsdektec\**\private\**\*.h"/>
+    <LibDektecSources        Include="$(TSDuckRootDir)src\libtsdektec\**\*.cpp"
+                             Exclude="$(TSDuckRootDir)src\libtsdektec\**\__pycache__\**"/>
+    <LibDektecPublicDirs     Include="@(LibDektecPublicHeaders->'%(RootDir)%(Directory)'->Distinct())"/>
+    <LibDektecPrivateDirs    Include="@(LibDektecPrivateHeaders->'%(RootDir)%(Directory)'->Distinct())"/>
+  </ItemGroup>
+
+  <PropertyGroup Label="Configuration">
+    <TSDektecLibDirs>@(LibDektecPublicDirs)</TSDektecLibDirs>
+    <TSDektecLibDirsInternal>@(LibDektecPrivateDirs)</TSDektecLibDirsInternal>
   </PropertyGroup>
 
   <!-- Common build options -->

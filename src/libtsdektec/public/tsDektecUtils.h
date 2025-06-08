@@ -48,63 +48,63 @@ namespace ts {
     //! @ingroup hardware
     //! @return True is Dektec devices are supported. Always false on macOS or on Windows/Linux on non-Intel platforms.
     //!
-    TSDUCKDLL bool HasDektecSupport();
+    TSDEKTECDLL bool HasDektecSupport();
 
     //!
     //! Get the versions of Dektec API and drivers in one single string.
     //! @ingroup hardware
     //! @return A string describing the Dektec versions (or the lack of Dektec support).
     //!
-    TSDUCKDLL UString GetDektecVersions();
+    TSDEKTECDLL UString GetDektecVersions();
 
     //!
     //! Get the versions of Dektec API and drivers.
     //! @ingroup hardware
     //! @param [out] versions All versions. The map index is the driver or API name and the map value is its version.
     //!
-    TSDUCKDLL void GetDektecVersions(std::map<UString,UString>& versions);
+    TSDEKTECDLL void GetDektecVersions(std::map<UString,UString>& versions);
 
     //!
     //! Enumeration (names/values) for Dektec modulation constants (DTAPI_MOD_DVBS_QPSK, etc).
     //! @ingroup hardware
     //! @return A constant reference to the enumeration description.
     //!
-    TSDUCKDLL const Names& DektecModulationTypes();
+    TSDEKTECDLL const Names& DektecModulationTypes();
 
     //!
     //! Enumeration (names/values) for Dektec VSB constants (DTAPI_MOD_ATSC_VSB8, etc).
     //! @ingroup hardware
     //! @return A constant reference to the enumeration description.
     //!
-    TSDUCKDLL const Names& DektecVSB();
+    TSDEKTECDLL const Names& DektecVSB();
 
     //!
     //! Enumeration (names/values) for Dektec FEC constants (DTAPI_MOD_1_2, etc).
     //! @ingroup hardware
     //! @return A constant reference to the enumeration description.
     //!
-    TSDUCKDLL const Names& DektecFEC();
+    TSDEKTECDLL const Names& DektecFEC();
 
     //!
     //! Enumeration (names/values) for Dektec spectral inversion constants (DTAPI_MOD_SPECNONINV, etc).
     //! @ingroup hardware
     //! @return A constant reference to the enumeration description.
     //!
-    TSDUCKDLL const Names& DektecInversion();
+    TSDEKTECDLL const Names& DektecInversion();
 
     //!
     //! Enumeration (names/values) for Dektec DVB-T properties constants (DTAPI_MOD_DVBT_*, etc).
     //! @ingroup hardware
     //! @return A constant reference to the enumeration description.
     //!
-    TSDUCKDLL const Names& DektecDVBTProperty();
+    TSDEKTECDLL const Names& DektecDVBTProperty();
 
     //!
     //! Enumeration (names/values) for Dektec DTU-315 modulator power modes.
     //! @ingroup hardware
     //! @return A constant reference to the enumeration description.
     //!
-    TSDUCKDLL const Names& DektecPowerMode();
+    TSDEKTECDLL const Names& DektecPowerMode();
 
     //!
     //! Convert a InnerFEC value into a "FEC type" for Dektec modulator cards.
@@ -112,7 +112,7 @@ namespace ts {
     //! @param [out] in Input FEC type (enum type).
     //! @return True on success, false on error (includes unsupported operation).
     //!
-    TSDUCKDLL bool ToDektecCodeRate(int& out, InnerFEC in);
+    TSDEKTECDLL bool ToDektecCodeRate(int& out, InnerFEC in);
 
     //!
     //! Attempt to get a "FEC type" for Dektec modulator cards from a ModulationArgs.
@@ -120,7 +120,7 @@ namespace ts {
     //! @param [in] args Modulation arguments.
     //! @return True on success, false on error (includes unsupported operation).
     //!
-    TSDUCKDLL bool GetDektecCodeRate(int& fec, const ModulationArgs& args);
+    TSDEKTECDLL bool GetDektecCodeRate(int& fec, const ModulationArgs& args);
 
     //!
     //! Attempt to get a "modulation type" for Dektec modulator cards from a ModulationArgs.
@@ -128,7 +128,7 @@ namespace ts {
     //! @param [in] args Modulation arguments.
     //! @return True on success, false on error (includes unsupported operation).
     //!
-    TSDUCKDLL bool GetDektecModulationType(int& type, const ModulationArgs& args);
+    TSDEKTECDLL bool GetDektecModulationType(int& type, const ModulationArgs& args);
 
     //!
     //! Attempt to convert the tuning parameters in modulation parameters for Dektec modulator cards.
@@ -139,7 +139,7 @@ namespace ts {
     //! @param [in] args Modulation arguments.
     //! @return True on success, false on error (includes unsupported operation).
     //!
-    TSDUCKDLL bool GetDektecModulation(int& modulation_type, int& param0, int& param1, int& param2, const ModulationArgs& args);
+    TSDEKTECDLL bool GetDektecModulation(int& modulation_type, int& param0, int& param1, int& param2, const ModulationArgs& args);
 
     //!
     //! Attempt to compute a bitrate from a ModulationArgs using the Dektec DTAPI library.
@@ -147,5 +147,5 @@ namespace ts {
     //! @param [in] args Modulation arguments.
     //! @return True on success, false on error (includes unsupported operation).
     //!
-    TSDUCKDLL bool GetDektecBitRate(BitRate& bitrate, const ModulationArgs& args);
+    TSDEKTECDLL bool GetDektecBitRate(BitRate& bitrate, const ModulationArgs& args);
 }

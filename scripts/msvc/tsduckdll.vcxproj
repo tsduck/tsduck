@@ -14,14 +14,12 @@
   <ImportGroup Label="PropertySheets">
     <Import Project="msvc-target-dll.props"/>
     <Import Project="msvc-use-tscoredll.props"/>
-    <Import Project="msvc-use-dtapi.props"/>
     <Import Project="msvc-use-vatek.props"/>
     <Import Project="msvc-use-librist.props"/>
     <Import Project="msvc-use-libsrt.props"/>
     <Import Project="msvc-use-java.props"/>
     <Import Project="msvc-build-config-files.props"/>
     <Import Project="msvc-build-dtv-names.props"/>
-    <Import Project="msvc-build-dektec-names.props"/>
     <Import Project="msvc-build-tsduck-jar.props"/>
     <Import Project="msvc-build-tsduck-header.props"/>
   </ImportGroup>

@@ -141,8 +141,7 @@ Section "Tools & Plugins" SectionTools
     Delete "$INSTDIR\bin\tsduck.time.xml"
 
     ; Delete obsolete plugins from previous versions.
-    ; Maintenance: also update Makefile.inc
-    Delete "$INSTDIR\bin\tsplugin_dektec.dll"
+    ; Maintenance: also update scripts/make-config.sh
     Delete "$INSTDIR\bin\tsplugin_drop.dll"
     Delete "$INSTDIR\bin\tsplugin_file.dll"
     Delete "$INSTDIR\bin\tsplugin_fork.dll"
@@ -154,7 +153,6 @@ Section "Tools & Plugins" SectionTools
     Delete "$INSTDIR\bin\tsplugin_rist.dll"
     Delete "$INSTDIR\bin\tsplugin_srt.dll"
     Delete "$INSTDIR\bin\tsplugin_tables.dll"
-    Delete "$INSTDIR\bin\tsplugin_teletext.dll"
 
     ; Create folder for binaries
     CreateDirectory "$INSTDIR\bin"

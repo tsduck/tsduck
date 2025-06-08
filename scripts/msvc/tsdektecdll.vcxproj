@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <ImportGroup Label="PropertySheets">
+    <Import Project="msvc-common-begin.props"/>
+  </ImportGroup>
+
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{1AD31049-26B0-1234-89CF-778040DFC51E}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>tsdektecdll</RootNamespace>
+  </PropertyGroup>
+
+  <ImportGroup Label="PropertySheets">
+    <Import Project="msvc-use-dtapi.props"/>
+  </ImportGroup>
+
+  <!-- When DTAPI is not supported -->
+
+  <!-- When DTAPI is supported -->
+  <ImportGroup Label="PropertySheets" Condition="'$(TS_NO_DTAPI)' == ''">
+    <Import Project="msvc-target-dll.props"/>
+    <Import Project="msvc-use-tsduckdll.props"/>
+    <Import Project="msvc-build-dektec-names.props"/>
+    <Import Project="msvc-build-tsduck-header.props"/>
+  </ImportGroup>
+
+  <PropertyGroup Condition="'$(TS_NO_DTAPI)' == ''">
+    <TargetName>tsdektec</TargetName>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(TS_NO_DTAPI)' == ''">
+    <ClInclude Include="@(LibDektecPublicHeaders);@(LibDektecPrivateHeaders)"/>
+    <ClCompile Include="@(LibDektecSources)"/>
+  </ItemGroup>
+
+  <ItemDefinitionGroup Condition="'$(TS_NO_DTAPI)' == ''">
+    <ClCompile>
+      <PreprocessorDefinitions>_TSDEKTECDLL_IMPL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(TSDektecLibDirs);$(TSDektecLibDirsInternal);$(BinRootDir)include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+
+  <ImportGroup Label="PropertySheets">
+    <Import Project="msvc-common-end.props"/>
+  </ImportGroup>
+
+</Project>

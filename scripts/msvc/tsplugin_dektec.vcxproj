@@ -5,15 +5,15 @@
     <Import Project="msvc-common-begin.props"/>
   </ImportGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\src\tstools\tsdektec.cpp"/>
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_dektec.cpp"/>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{144A4F77-13B9-4D39-A1E2-EEE1EBAC45DF}</ProjectGuid>
+    <ProjectGuid>{0043061D-D4FF-0256-B1D5-E205DF2CC561}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>tsdektec</RootNamespace>
+    <RootNamespace>tsplugin_dektec</RootNamespace>
   </PropertyGroup>
   <ImportGroup Label="PropertySheets">
-    <Import Project="msvc-target-exe.props"/>
+    <Import Project="msvc-target-dll.props"/>
     <Import Project="msvc-use-tsdektecdll.props"/>
     <Import Project="msvc-common-end.props"/>
   </ImportGroup>

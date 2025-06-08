@@ -34,13 +34,13 @@ namespace ts {
     //! command or the @c dektec plugin.
     //! @ingroup libtsduck hardware
     //!
-    class TSDUCKDLL DektecDeviceInfo
+    class TSDEKTECDLL DektecDeviceInfo
     {
     public:
         //!
         //! Information on an input or output port in a Dektec device.
         //!
-        class TSDUCKDLL PortInfo
+        class TSDEKTECDLL PortInfo
         {
         public:
             PortInfo() = default;    //!< Constructor.

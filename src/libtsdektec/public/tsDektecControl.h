@@ -22,7 +22,7 @@ namespace ts {
     //! The binary DTAPI is privately isolated inside the TSDuck library.
     //! @ingroup libtsduck hardware
     //!
-    class TSDUCKDLL DektecControl: private Args
+    class TSDEKTECDLL DektecControl: private Args
     {
         TS_NOBUILD_NOCOPY(DektecControl);
     public:

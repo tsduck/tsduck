@@ -13,7 +13,6 @@ bool tsDektecOutputPluginIsEmpty = true; // Avoid warning about empty module.
 #else
 
 #include "tsDektecOutputPlugin.h"
-#include "tsPluginRepository.h"
 #include "tsObjectRepository.h"
 #include "tsDektecUtils.h"
 #include "tsDektecDevice.h"
@@ -24,8 +23,6 @@ bool tsDektecOutputPluginIsEmpty = true; // Avoid warning about empty module.
 #include "tsModulation.h"
 #include "tsIntegerUtils.h"
 #include "tsFatal.h"
-
-TS_REGISTER_OUTPUT_PLUGIN(u"dektec", ts::DektecOutputPlugin);
 
 #define DEFAULT_PRELOAD_FIFO_PERCENTAGE 80
 #define DEFAULT_MAINTAIN_PRELOAD_THRESHOLD_SIZE 20116 // a little over 20k in packets, byte size for exactly 107 packets

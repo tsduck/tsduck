@@ -897,12 +897,13 @@ done
 
 # Obsolete plugins, were in separate shared libraries, now in libtsduck.so.
 # Maintenance: also update pkg/nsis/tsduck.nsi (Windows).
-NO_TSPLUGINS="tsplugin_dektec tsplugin_drop tsplugin_file tsplugin_fork tsplugin_hls tsplugin_http tsplugin_ip tsplugin_null tsplugin_psi tsplugin_rist tsplugin_srt tsplugin_table tsplugin_teletext"
+NO_TSPLUGINS="tsplugin_drop tsplugin_file tsplugin_fork tsplugin_hls tsplugin_http tsplugin_ip tsplugin_null tsplugin_psi tsplugin_rist tsplugin_srt tsplugin_table"
 
 # Build a list of tools and plugins to not build or deinstall from the system tree.
 NO_TSTOOLS=
 [[ -n $NOOPENSSL ]] && NO_TSPLUGINS="$NO_TSPLUGINS tsplugin_aes tsplugin_descrambler tsplugin_scrambler"
 [[ -n $NODTAPI ]] && NO_TSTOOLS="$NO_TSTOOLS tsdektec"
+[[ -n $NODTAPI ]] && NO_TSPLUGINS="$NO_TSPLUGINS tsplugin_dektec"
 [[ -n $NOHIDES ]] && NO_TSTOOLS="$NO_TSTOOLS tshides"
 [[ -n $NOHIDES ]] && NO_TSPLUGINS="$NO_TSPLUGINS tsplugin_hides"
 [[ -n $NOVATEK ]] && NO_TSTOOLS="$NO_TSTOOLS tsvatek"

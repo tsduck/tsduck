@@ -865,6 +865,27 @@ TS_MSC_NOWARNING(5045)  // Compiler will insert Spectre mitigation for memory lo
 #endif
 
 //!
+//! @hideinitializer
+//! Attribute to declare a class or function from tsdektec.dll on Windows.
+//! @ingroup windows
+//!
+//! When building tsdektec.dll on Windows, define _TSDEKTECDLL_IMPL in the project options.
+//! When building a project which references tsdektec.dll, define _TSDEKTECDLL_USE.
+//! All API located inside tsdektec.dll shall be prefixed by TSDEKTECDLL in headers.
+//! This prefix exports the API when building the DLL and imports the API
+//! when used in an application.
+//! @see TSCOREDLL
+//! @see TSDUCKDLL
+//!
+#if defined(TS_WINDOWS) && defined(_TSDEKTECDLL_IMPL)
+    #define TSDEKTECDLL __declspec(dllexport)
+#elif defined(TS_WINDOWS) && defined(_TSDEKTECDLL_USE)
+    #define TSDEKTECDLL __declspec(dllimport)
+#else
+    #define TSDEKTECDLL
+#endif
+
+//!
 //! A macro to disable object copy in the declaration of a class.
 //! The copy and move constructors and assignments are explicitly deleted.
 //! @ingroup cpp

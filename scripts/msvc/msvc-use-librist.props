@@ -9,7 +9,7 @@
   </ImportGroup>
 
   <ImportGroup Label="PropertySheets" Condition="'$(LIBRIST)' == '' OR ('$(Platform)' == 'ARM64' AND !Exists('$(LIBRIST)\lib\Release-ARM64'))">
-    <Import Project="msvc-disable-rist.props"/>
+    <Import Project="msvc-disable-librist.props"/>
   </ImportGroup>
 
 </Project>

@@ -9,7 +9,7 @@
   </ImportGroup>
 
   <ImportGroup Label="PropertySheets" Condition="'$(LIBSRT)' == '' OR ('$(Platform)' == 'ARM64' AND !Exists('$(LIBSRT)\lib\Release-Arm64'))">
-    <Import Project="msvc-disable-srt.props"/>
+    <Import Project="msvc-disable-libsrt.props"/>
   </ImportGroup>
 
 </Project>

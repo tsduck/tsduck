@@ -33,9 +33,9 @@ import xml.etree.ElementTree as xmlet
 
 # Get the project directories.
 script_name = os.path.basename(__file__)
-src_dir = tsbuild.repo_root() + os.sep + 'src'
-qt_dir = tsbuild.scripts_dir() + os.sep + 'qtcreator'
-ms_dir = tsbuild.scripts_dir() + os.sep + 'msvc'
+src_dir = tsbuild.repo_root() + '/src'
+qt_dir = tsbuild.scripts_dir() + '/qtcreator'
+ms_dir = tsbuild.scripts_dir() + '/msvc'
 
 # Get the list of .cpp files in a directory, without .cpp extension.
 def get_cpp(dirname):
@@ -48,11 +48,13 @@ def get_cpp(dirname):
     return sources
 
 # Get the list of all tools and plugins.
-tools = get_cpp(src_dir + os.sep + 'tstools')
-plugins = get_cpp(src_dir + os.sep + 'tsplugins')
+tools = get_cpp(src_dir + '/tstools')
+plugins = get_cpp(src_dir + '/tsplugins')
 
 # "Other" MSBuild projects (ie. not tools, not plugins).
-others = ['config', 'utests-tsduckdll', 'utests-tsducklib', 'tscoredll', 'tscorelib', 'tsduckdll', 'tsducklib', 'tsp_static', 'tsprofiling', 'tsmux', 'tsnet', 'tszlib', 'setpath']
+others = ['config', 'utests-tsduckdll', 'utests-tsducklib',
+          'tscoredll', 'tscorelib', 'tsduckdll', 'tsducklib', 'tsdektecdll', 'tsdekteclib',
+          'tsp_static', 'tsprofiling', 'tsmux', 'tsnet', 'tszlib', 'setpath']
 
 # MSBuild / Visual Studio solution description.
 cxx_project_guid = '8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942'
@@ -67,8 +69,12 @@ ms_deps = {
     'tscorelib': {'deps': ['config']},
     'tsduckdll': {'deps': ['tscoredll', 'config']},
     'tsducklib': {'deps': ['tscorelib', 'config']},
+    'tsdektecdll': {'deps': ['tsduckdll', 'config']},
+    'tsdekteclib': {'deps': ['tsducklib', 'config']},
     'utests-tsduckdll': {'deps': ['tsduckdll', 'tsplugin_merge']},
     'utests-tsducklib': {'deps': ['tsducklib']},
+    'tsdektec': {'deps': ['tsdektecdll']},
+    'tsplugin_dektec': {'deps': ['tsdektecdll']},
     'tsp_static': {'deps': ['tsducklib']},
     'tsprofiling': {'deps': ['tsduckdll']},
     'tsmux': {'deps': ['tsduckdll'] + plugins},
@@ -94,8 +100,8 @@ for name in tools + plugins:
 # Build a set of Qt Creator project files.
 def build_qt_files(names, config):
     for name in names:
-        os.makedirs(qt_dir + os.sep + name, 0o755, True)
-        with open(qt_dir + os.sep + name + os.sep + name + '.pro', 'w') as f:
+        os.makedirs(qt_dir + '/' + name, 0o755, True)
+        with open(qt_dir + '/' + name + '/' + name + '.pro', 'w') as f:
             f.write('# Automatically generated file, see %s\n' % script_name)
             f.write('CONFIG += %s\n' % config)
             f.write('TARGET = %s\n' % name)
@@ -115,7 +121,7 @@ def random_guid():
 
 # Build the name of an MSBuild project file.
 def ms_file(name):
-    return ms_dir + os.sep + name + '.vcxproj'
+    return ms_dir + '/' + name + '.vcxproj'
 
 # Get the GUID of an MSBuild project.
 def get_guid(name):
@@ -131,7 +137,9 @@ def build_ms_files(names, srcdir, props):
         if guid is None:
             guid = random_guid()
         all_props = [props]
-        if 'tsduckdll' in ms_deps[name]['deps']:
+        if 'tsdektecdll' in ms_deps[name]['deps']:
+            all_props.append('msvc-use-tsdektecdll')
+        elif 'tsduckdll' in ms_deps[name]['deps']:
             all_props.append('msvc-use-tsduckdll')
         elif 'tsducklib' in ms_deps[name]['deps']:
             all_props.append('msvc-use-tsducklib')
@@ -163,7 +171,7 @@ build_ms_files(tools, 'tstools', 'msvc-target-exe')
 build_ms_files(plugins, 'tsplugins', 'msvc-target-dll')
 
 # Build MSBuild solution file.
-with open(ms_dir + os.sep + 'tsduck.sln', 'w', encoding = 'utf-8-sig', newline = '\r\n') as f:
+with open(ms_dir + '/tsduck.sln', 'w', encoding = 'utf-8-sig', newline = '\r\n') as f:
     f.write('\n')
     f.write('Microsoft Visual Studio Solution File, Format Version 12.00\n')
     f.write('# Visual Studio Version 16\n')
