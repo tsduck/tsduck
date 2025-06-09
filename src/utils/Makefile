@@ -17,28 +17,27 @@ default: execs
 	@true
 
 # One source file per executable (setpath is Windows-only, tsprofiling is a test program).
-
 EXECS := $(addprefix $(BINDIR)/,$(filter-out setpath $(if $(NOTEST)$(NOSTATIC),tsprofiling,),$(sort $(notdir $(basename $(wildcard *.cpp))))))
 
 .PHONY: execs
 execs: $(EXECS)
 
+# We always build tsprofiling with the static libraries and plugin objects.
+TSPLUGINS_OBJS = $(addprefix $(BINDIR)/objs-tsplugins/,$(addsuffix .o,$(TSPLUGINS)))
+STATIC_LIBS = $(STATIC_LIBTSDUCK) $(STATIC_LIBTSCORE)
+$(BINDIR)/tsprofiling: $(TSPLUGINS_OBJS) $(if $(NODTAPI),,$(STATIC_LIBTSDEKTEC)) $(STATIC_LIBS)
+OTHERS_EXECS = $(filter-out $(BINDIR)/tsprofiling,$(EXECS))
 CXXFLAGS_INCLUDES += $(APPS_CXXFLAGS_INCLUDES)
 
-# We always build tsprofiling with the static library.
-
-STATIC_DEPS = $(addprefix $(BINDIR)/objs-tsplugins/,$(addsuffix .o,$(TSPLUGINS))) $(STATIC_LIBTSDUCK) $(STATIC_LIBTSCORE)
 ifeq ($(STATIC),)
-    $(BINDIR)/tsprofiling: $(STATIC_DEPS)
     $(BINDIR)/tsprofiling: LDLIBS_EXTRA += $(LIBTSDUCK_LDLIBS) $(LIBTSCORE_LDLIBS)
-    $(filter-out $(BINDIR)/tsprofiling,$(EXECS)): $(SHARED_LIBTSDUCK) $(SHARED_LIBTSCORE)
+    $(OTHERS_EXECS): $(SHARED_LIBTSDUCK) $(SHARED_LIBTSCORE)
 else
     LDFLAGS_EXTRA = -static
-    $(EXECS): $(STATIC_DEPS)
+    $(OTHERS_EXECS): $(STATIC_LIBS)
 endif
 
 # The tsconfig shell script is part of the installation.
-
 .PHONY: install install-tools
 install install-tools:
 	sed -e 's| *{{STDCPP}} *| $(if $(NOPCSTD),,$(CXXFLAGS_STANDARD))|g' \

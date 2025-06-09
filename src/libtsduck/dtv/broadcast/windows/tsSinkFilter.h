@@ -28,7 +28,7 @@ namespace ts {
     TS_PUSH_WARNING()
     TS_GCC_NOWARNING(non-virtual-dtor)
     TS_LLVM_NOWARNING(non-virtual-dtor)
-    
+
     //!
     //! The DirectShow sink filter (Windows-specific).
     //! @ingroup libtsduck windows

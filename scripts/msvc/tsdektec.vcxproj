@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
+  <!-- Manual setup because of DTAPI, not overwritten by build-project-files.py -->
+
   <ImportGroup Label="PropertySheets">
     <Import Project="msvc-common-begin.props"/>
   </ImportGroup>
@@ -11,20 +13,20 @@
     <RootNamespace>tsdektec</RootNamespace>
   </PropertyGroup>
 
+  <!-- Check if DTAPI is supported -->
   <ImportGroup Label="PropertySheets">
     <Import Project="msvc-use-dtapi.props"/>
   </ImportGroup>
 
-  <!-- When DTAPI is not supported -->
+  <!-- When DTAPI is not supported, build nothing -->
   <ImportGroup Label="PropertySheets" Condition="'$(TS_NO_DTAPI)' != ''">
     <Import Project="msvc-common-base.props"/>
   </ImportGroup>
 
-  <!-- When DTAPI is supported -->
+  <!-- When DTAPI is supported, build the exe -->
   <ItemGroup Condition="'$(TS_NO_DTAPI)' == ''">
     <ClCompile Include="..\..\src\tstools\tsdektec.cpp"/>
   </ItemGroup>
-
   <ImportGroup Label="PropertySheets" Condition="'$(TS_NO_DTAPI)' == ''">
     <Import Project="msvc-target-exe.props"/>
     <Import Project="msvc-use-tsdektecdll.props"/>

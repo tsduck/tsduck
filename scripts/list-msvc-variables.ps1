@@ -9,7 +9,7 @@
 <#
  .SYNOPSIS
 
-  Invoke MSBuild to display all MSVC variables, on all configurations.
+  Invoke MSBuild to display all MSVC variables, in all configurations.
 
  .PARAMETER NoPause
 

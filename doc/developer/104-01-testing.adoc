@@ -66,11 +66,11 @@ $ make -j10 test
   [CXX] utestZlib.cpp
   [LD] /home/tsduck/bin/release-x86_64-vmubuntu/utest
   [LD] /home/tsduck/bin/release-x86_64-vmubuntu/utest_static
-  [UTEST] /home/tsduck/bin/release-x86_64-vmubuntu/utest 
+  [UTEST] /home/tsduck/bin/release-x86_64-vmubuntu/utest
 
 OK (666 tests, 32317 assertions)
 
-  [UTEST] /home/tsduck/bin/release-x86_64-vmubuntu/utest_static 
+  [UTEST] /home/tsduck/bin/release-x86_64-vmubuntu/utest_static
 
 OK (663 tests, 32294 assertions)
 

@@ -14,33 +14,27 @@ NODEPS_SRC = tsduck.cpp
 include ../../Makefile.inc
 
 # Most source files are located in subdirectories but should be considered as part of libtsduck.
-
 VPATH := $(filter-out $(OTHER_OS) $(addprefix %/,$(OTHER_OS)) $(if $(NOJAVA),java/% %/java) $(if $(NOPYTHON),python/% %/python), \
            $(patsubst %/,%,$(sort $(dir $(wildcard */*.cpp */*/*.cpp */*/*/*.cpp)))))
 VPATH_SOURCES := $(sort $(notdir $(wildcard $(addsuffix /*.cpp,$(VPATH)))))
 
 # Implicit search directives.
-
 vpath %.cpp $(VPATH)
 
 # Add dependency files for sources in VPATH.
-
 ifeq ($(DONT_BUILD_DEPS),)
     -include $(addprefix $(OBJDIR)/,$(addsuffix .dep,$(notdir $(basename $(VPATH_SOURCES)))))
 endif
 
 # All sources and objects in libtsduck.
-
 SOURCES := $(VPATH_SOURCES) $(sort $(notdir $(wildcard *.cpp)))
 OBJS = $(addprefix $(OBJDIR)/,$(addsuffix .o,$(basename $(SOURCES))))
 
 # Building the TSDuck library.
-
 default: headers libs
 	+@$(call RECURSE,config $(if $(NOPYTHON),,python) $(if $(NOJAVA),,java))
 
 # The tsduck.h header is automatically generated from all headers.
-
 TSDUCK_H = $(BINDIR)/include/tsduck.h
 
 .PHONY: headers
@@ -53,25 +47,21 @@ $(OBJDIR)/tsduck.o: $(TSDUCK_H)
 $(OBJDIR)/tsduck.o: CXXFLAGS_INCLUDES += -I$(dir $(TSDUCK_H))
 
 # Specific compilation options:
-
 CXXFLAGS_INCLUDES += $(LIBTSDUCK_CXXFLAGS_INCLUDES)
 $(OBJDIR)/tsDVBCSA2.o: CXXFLAGS_OPTIMIZE = $(CXXFLAGS_FULLSPEED)
 
 # By default, both static and dynamic libraries are created but only use
 # the dynamic one when building tools and plugins. In case of static build,
 # only build the static library.
-
 .PHONY: libs
 libs: $(if $(NOSTATIC),,$(STATIC_LIBTSDUCK)) $(if $(STATIC),,$(SHARED_LIBTSDUCK))
 
 # The shared library contains all modules.
 # We change the current directory to OBJDIR and use object file names without directory,
 # otherwise the command line is too long when the directory path is long.
-
-$(SHARED_LIBTSDUCK): $(OBJS) $(DTAPI_OBJECT) $(SHARED_LIBTSCORE)
-	@echo '  [DTAPI] $(if $(DTAPI_OBJECT),using $(DTAPI_OBJECT),no DTAPI available)'
+$(SHARED_LIBTSDUCK): $(OBJS) $(SHARED_LIBTSCORE)
 	$(call LOG,[LD] $@) cd $(OBJDIR); \
-	$(CXX) $(SOFLAGS) $(LDFLAGS) $(notdir $(OBJS)) $(DTAPI_OBJECT) -L$(dir $(SHARED_LIBTSCORE)) -ltscore \
+	$(CXX) $(SOFLAGS) $(LDFLAGS) $(notdir $(OBJS)) -L$(dir $(SHARED_LIBTSCORE)) -ltscore \
 	    $(LIBTSDUCK_LDLIBS) $(LDLIBS_EXTRA) $(LDLIBS) -shared -o $@
 
 # The static library is build differently. There are four specific categories:
@@ -81,7 +71,6 @@ $(SHARED_LIBTSDUCK): $(OBJS) $(DTAPI_OBJECT) $(SHARED_LIBTSCORE)
 # partial link is performed to pre-link all members in a big object file.
 # If NOSTATICBLOB is defined, this phase is skipped and all object files are
 # individually archived without grouping.
-
 ifneq ($(NOSTATICBLOB),)
 
 OBJS_STATIC_LIB = $(filter-out $(OBJDIR)/tsduck.o,$(OBJS))
@@ -117,13 +106,11 @@ endif
 # that this is much faster than individual 'ar' commands per object module.
 # We change the current directory to OBJDIR and use object file names without directory,
 # otherwise the command line is too long when the directory path is long.
-
-$(STATIC_LIBTSDUCK): $(OBJS_STATIC_LIB) $(DTAPI_OBJECT)
+$(STATIC_LIBTSDUCK): $(OBJS_STATIC_LIB)
 	$(call LOG,[AR] $@) cd $(OBJDIR); \
-	$(AR) $(ARFLAGS) $@ $(notdir $(OBJS_STATIC_LIB)) $(DTAPI_OBJECT)
+	$(AR) $(ARFLAGS) $@ $(notdir $(OBJS_STATIC_LIB))
 
 # Installation targets.
-
 .PHONY: install-tools install-devel
 
 install-tools: $(SHARED_LIBTSDUCK)

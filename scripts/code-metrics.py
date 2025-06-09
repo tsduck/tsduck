@@ -208,7 +208,7 @@ class filetype:
                 else:
                     self.comment_lines += 1
                     self.comment_chars += end - start
-                        
+
 # Results by type appear in this order.
 # Files and directories with None as description are ignored.
 files_order = [

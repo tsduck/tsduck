@@ -28,7 +28,7 @@ make -C "$FOO_TSDUCK" install SYSPREFIX="$FOO_SYSROOT"
 # Prepend the temporary system root.
 # Duplicate LD_LIBRARY_PATH in LD_LIBRARY_PATH2 for macOS
 # (LD_LIBRARY_PATH is not passed to scripts for security reasons).
-foo_pathmunge PATH "$FOO_SYSROOT/bin" 
+foo_pathmunge PATH "$FOO_SYSROOT/bin"
 foo_pathmunge LD_LIBRARY_PATH "$FOO_SYSROOT/lib"
 export LD_LIBRARY_PATH2="$LD_LIBRARY_PATH"
 

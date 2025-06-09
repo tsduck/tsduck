@@ -10,7 +10,7 @@
 #
 #-----------------------------------------------------------------------------
 
-require 'asciidoctor/extensions'  
+require 'asciidoctor/extensions'
 include ::Asciidoctor
 
 # Macro to create a link to a TSDuck C++ class in the programming reference.

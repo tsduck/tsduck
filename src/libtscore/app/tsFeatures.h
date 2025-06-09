@@ -39,7 +39,7 @@ namespace ts {
         //!
         using index_t = Names::int_t;
 
-        //! 
+        //!
         //! Profile of a function return a version string for a feature.
         //!
         using GetVersionFunc = UString (*)();
@@ -50,6 +50,7 @@ namespace ts {
         //! @param [in] name Feature name as used on display.
         //! @param [in] support Level of support.
         //! @param [in] get_version Function returning the version of the feature. Can be null (no identified version).
+        //! @return An index for the feature, as used in isSupported() or getVersion().
         //!
         index_t registerFeature(const UString& option, const UString& name, Support support, GetVersionFunc get_version);
 
@@ -63,6 +64,7 @@ namespace ts {
         //! unsupported.
         //! @param [in] option Feature name as used in command line options.
         //! @param [in] library Name of a shared image (typically without directory).
+        //! @return An index for the feature, as used in isSupported() or getVersion().
         //!
         index_t registerFeature(const UString& option, const fs::path& library);
 
@@ -128,7 +130,7 @@ namespace ts {
         //! Check if a feature is supported.
         //! @param [in] index Index of the feature as returned in supportEnum().
         //! @return True if the feature is supported.
-        //! 
+        //!
         bool isSupported(index_t index);
 
         //!

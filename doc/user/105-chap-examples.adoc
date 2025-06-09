@@ -3565,7 +3565,7 @@ This is why the plugin `pmt` uses the option `--only-label 3`.
 This is a generic option which is common to all packet processing plugins.
 It means that the plugin is called only on packets with label 3.
 All other packets are transparently passed to the next plugin, bypassing the plugin `pmt`.
-This is exactly what we wanted to achieve: start to process packets in the plugin after the video PID is identified, 
+This is exactly what we wanted to achieve: start to process packets in the plugin after the video PID is identified,
 and after the environment variable `VIDEO_PID` is defined.
 
 Also note the following points:

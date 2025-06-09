@@ -130,22 +130,20 @@ done
 # Check if we need to download external libraries which are not installed at system level.
 # For maintenance or cleanup operations, we should not download stuff (we may even want
 # to delete them in the case of a cleanup operation). These libraries are used only when
-# building libtsduck.
+# building libtsduck (libvatek) or libtsdektec (dtapi).
 NOEXTLIBS=1
-if [[ $CURDIR == */src/libtsduck || $CURDIR == */src/libtsduck/* ]]; then
-    if [[ -z ${MAKECMDGOALS// /} ]]; then
-        # Default build in libtsduck: use external libraries.
-        NOEXTLIBS=
-    else
-        # Each of these targets need the external libraries:
-        for target_prefix in default headers libs listvars install; do
-            if [[ ' '$MAKECMDGOALS == *' '${target_prefix}* ]]; then
-                # This is a target which needs the libraries.
-                NOEXTLIBS=
-                break
-            fi
-        done
-    fi
+if [[ -z ${MAKECMDGOALS// /} ]]; then
+    # Default build: use external libraries when in the right directory.
+    NOEXTLIBS=
+else
+    # Each of these targets need the external libraries:
+    for target_prefix in default headers libs listvars install; do
+        if [[ ' '$MAKECMDGOALS == *' '${target_prefix}* ]]; then
+            # This is a target which needs the libraries.
+            NOEXTLIBS=
+            break
+        fi
+    done
 fi
 debug "NOEXTLIBS='$NOEXTLIBS'"
 
@@ -368,6 +366,7 @@ SCRIPTSDIR="$ROOTDIR/scripts"
 SRCROOT="$ROOTDIR/src"
 LIBTSCOREDIR="$SRCROOT/libtscore"
 LIBTSDUCKDIR="$SRCROOT/libtsduck"
+LIBTSDEKTECDIR="$SRCROOT/libtsdektec"
 TSTOOLSDIR="$SRCROOT/tstools"
 TSPLUGINSDIR="$SRCROOT/tsplugins"
 BINROOT="$ROOTDIR/bin"
@@ -414,6 +413,8 @@ STATIC_LIBTSCORE="$BINDIR/libtscore.a"
 SHARED_LIBTSCORE="$BINDIR/libtscore$SO_SUFFIX"
 STATIC_LIBTSDUCK="$BINDIR/libtsduck.a"
 SHARED_LIBTSDUCK="$BINDIR/libtsduck$SO_SUFFIX"
+STATIC_LIBTSDEKTEC="$BINDIR/libtsdektec.a"
+SHARED_LIBTSDEKTEC="$BINDIR/libtsdektec$SO_SUFFIX"
 
 #-----------------------------------------------------------------------------
 # Preload configuration variables: exclude some dependencies.
@@ -456,7 +457,11 @@ LIBTSCORE_LDLIBS=
 LIBTSDUCK_CXXFLAGS_INCLUDES=
 LIBTSDUCK_INCLUDES=
 LIBTSDUCK_LDLIBS=
+LIBTSDEKTEC_CXXFLAGS_INCLUDES=
+LIBTSDEKTEC_INCLUDES=
+LIBTSDEKTEC_LDLIBS=
 APPS_CXXFLAGS_INCLUDES=
+DTAPPS_CXXFLAGS_INCLUDES=
 CXXFLAGS_INCLUDES=
 CXXFLAGS_WARNINGS=
 CXXFLAGS_NO_WARNINGS=
@@ -721,19 +726,19 @@ if [[ -z $NOPCSC$MACOS$PCSC_DONE ]]; then
 fi
 
 # Download Dektec library (DTAPI) if required.
-if [[ -z $NODTAPI$NOEXTLIBS ]]; then
+if [[ -z $NODTAPI$NOEXTLIBS && ($CURDIR == */src/libtsdektec || $CURDIR == */src/libtsdektec/*) ]]; then
     [[ $M32 ]] && m32=--m32 || m32=
     [[ -z $DTAPI_OBJECT ]] && DTAPI_OBJECT=$($SCRIPTSDIR/dtapi-config.sh --object --download $m32)
     [[ -z $DTAPI_HEADER ]] && DTAPI_HEADER=$($SCRIPTSDIR/dtapi-config.sh --header)
     if [[ -z $DTAPI_OBJECT || -z $DTAPI_HEADER ]]; then
         NODTAPI=1
     else
-        LIBTSDUCK_CXXFLAGS_INCLUDES="$LIBTSDUCK_CXXFLAGS_INCLUDES -isystem $(dirname $DTAPI_HEADER)"
+        LIBTSDEKTEC_CXXFLAGS_INCLUDES="$LIBTSDEKTEC_CXXFLAGS_INCLUDES -isystem $(dirname $DTAPI_HEADER)"
     fi
 fi
 
 # Download VATek library if required.
-if [[ -z $NOVATEK$NOEXTLIBS ]]; then
+if [[ -z $NOVATEK$NOEXTLIBS && ($CURDIR == */src/libtsduck || $CURDIR == */src/libtsduck/*) ]]; then
     if [[ -z $VATEK_CFLAGS ]]; then
         # Eliminate all our variables from the environment. Compilation options
         # would interfere with VATek build if we need to recompile the library.
@@ -798,7 +803,6 @@ LIBTSDUCK_LDLIBS="$LIBTSDUCK_LDLIBS $LDLIBS_PCSC"
 [[ -n $OPENBSD$NETBSD$DRAGONFLYBSD ]] && LIBTSCORE_LDLIBS="$LIBTSCORE_LDLIBS -lkvm"
 [[ -n $LINUX ]] && LIBTSCORE_LDLIBS="$LIBTSCORE_LDLIBS -latomic"
 [[ -z $NOOPENSSL ]] && LIBTSCORE_LDLIBS="$LIBTSCORE_LDLIBS -lcrypto"
-[[ -n $NODTAPI ]] && LIBTSDUCK_CXXFLAGS_INCLUDES="$LIBTSDUCK_CXXFLAGS_INCLUDES -DTS_NO_DTAPI=1"
 [[ -n $NOHIDES ]] && LIBTSDUCK_CXXFLAGS_INCLUDES="$LIBTSDUCK_CXXFLAGS_INCLUDES -DTS_NO_HIDES=1"
 [[ -n $NOVATEK ]] && LIBTSDUCK_CXXFLAGS_INCLUDES="$LIBTSDUCK_CXXFLAGS_INCLUDES -DTS_NO_VATEK=1"
 if [[ -n $NOEDITLINE ]]; then
@@ -859,7 +863,8 @@ fi
 # List of libtsduck directories containing header files.
 # Done once only because it accesses the file system.
 if [[ -z $ALL_INCLUDES ]]; then
-    for dir in $(find $LIBTSCOREDIR $LIBTSDUCKDIR -type d); do
+    [[ -z $NODTAPI ]] && others="$LIBTSDEKTECDIR" || others=
+    for dir in $(find $LIBTSCOREDIR $LIBTSDUCKDIR $others -type d); do
         if [[ " $OTHER_OS " != *" $(fbasename $dir) "* && -n $(exist-wildcard $dir/*.h) ]]; then
             # This is a directory containing headers, not specific to another operating system.
             ALL_INCLUDES="$ALL_INCLUDES $dir"
@@ -879,18 +884,30 @@ for dir in $ALL_INCLUDES; do
             # Private directory in libtsduck. Only used when compiling libtsduck.
             LIBTSDUCK_CXXFLAGS_INCLUDES="$LIBTSDUCK_CXXFLAGS_INCLUDES -I$dir"
             ;;
+        */libtsdektec/*/private|*/libtsdektec/private)
+            # Private directory in libtsdektec. Only used when compiling libtsdektec.
+            LIBTSDEKTEC_CXXFLAGS_INCLUDES="$LIBTSDEKTEC_CXXFLAGS_INCLUDES -I$dir"
+            ;;
         */libtscore/*|*/libtscore)
             # Public directory in libtscore. Used everywhere.
             LIBTSCORE_INCLUDES="$LIBTSCORE_INCLUDES $dir"
             LIBTSCORE_CXXFLAGS_INCLUDES="$LIBTSCORE_CXXFLAGS_INCLUDES -I$dir"
             LIBTSDUCK_CXXFLAGS_INCLUDES="$LIBTSDUCK_CXXFLAGS_INCLUDES -I$dir"
+            LIBTSDEKTEC_CXXFLAGS_INCLUDES="$LIBTSDEKTEC_CXXFLAGS_INCLUDES -I$dir"
             APPS_CXXFLAGS_INCLUDES="$APPS_CXXFLAGS_INCLUDES -I$dir"
             ;;
         */libtsduck/*|*/libtsduck)
             # Public directory in libtsduck. Used everywhere, except when compiling libtscore.
             LIBTSDUCK_INCLUDES="$LIBTSDUCK_INCLUDES $dir"
             LIBTSDUCK_CXXFLAGS_INCLUDES="$LIBTSDUCK_CXXFLAGS_INCLUDES -I$dir"
+            LIBTSDEKTEC_CXXFLAGS_INCLUDES="$LIBTSDEKTEC_CXXFLAGS_INCLUDES -I$dir"
             APPS_CXXFLAGS_INCLUDES="$APPS_CXXFLAGS_INCLUDES -I$dir"
+            ;;
+        */libtsdektec/*|*/libtsdektec)
+            # Public directory in libtsdektec. Used everywhere, except when compiling libtscore.
+            LIBTSDEKTEC_INCLUDES="$LIBTSDEKTEC_INCLUDES $dir"
+            LIBTSDEKTEC_CXXFLAGS_INCLUDES="$LIBTSDEKTEC_CXXFLAGS_INCLUDES -I$dir"
+            DTAPPS_CXXFLAGS_INCLUDES="$DTAPPS_CXXFLAGS_INCLUDES -I$dir"
             ;;
     esac
 done

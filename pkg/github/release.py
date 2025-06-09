@@ -252,7 +252,7 @@ def list_releases():
 # Main code.
 if opt_list:
     list_releases()
-    
+
 if opt_title:
     repo.info(build_title(get_release(opt_tag)))
 

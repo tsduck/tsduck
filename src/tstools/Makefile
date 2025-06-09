@@ -12,8 +12,11 @@ include ../../Makefile.inc
 
 EXECS := $(addprefix $(BINDIR)/,$(TSTOOLS))
 ALLTOOLS := $(sort $(basename $(wildcard ts*.cpp)))
-
 CXXFLAGS_INCLUDES += $(APPS_CXXFLAGS_INCLUDES)
+
+# Some sources reference the libtsdektec.
+$(OBJDIR)/tsdektec.dep: CPPFLAGS += $(DTAPPS_CXXFLAGS_INCLUDES)
+$(OBJDIR)/tsdektec.o: CXXFLAGS_INCLUDES += $(DTAPPS_CXXFLAGS_INCLUDES)
 
 default: $(EXECS) tsduck-completion.bash
 	@true
@@ -27,12 +30,14 @@ $(BINDIR)/tssmartcard: LDLIBS_EXTRA = $(LDLIBS_PCSC)
 ifeq ($(STATIC),)
     # With dynamic link (the default), we use the shareable library.
     $(EXECS): $(SHARED_LIBTSDUCK) $(SHARED_LIBTSCORE)
+    $(BINDIR)/tsdektec: $(SHARED_LIBTSDEKTEC)
 else
     # With static link, we compile in a specific directory and we link tsp with all plugins.
     LDFLAGS_EXTRA += -static
     LDLIBS_EXTRA += $(LIBTSDUCK_LDLIBS)
     $(BINDIR)/tsp: $(addprefix $(BINDIR)/objs-tsplugins/,$(addsuffix .o,$(TSPLUGINS)))
     $(EXECS): $(STATIC_LIBTSDUCK) $(STATIC_LIBTSCORE)
+    $(BINDIR)/tsdektec: $(STATIC_LIBTSDEKTEC)
 endif
 
 .PHONY: install install-tools

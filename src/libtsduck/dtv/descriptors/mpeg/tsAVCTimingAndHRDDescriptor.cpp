@@ -60,7 +60,7 @@ void ts::AVCTimingAndHRDDescriptor::serializePayload(PSIBuffer& buf) const
     buf.putBits(0xFF, 6);
     buf.putBit(info_present);
     if (info_present) {
-        buf.putBit(is_90kHz); 
+        buf.putBit(is_90kHz);
         buf.putBits(0xFF, 7);
         if (!is_90kHz) {
             buf.putUInt32(N.value());

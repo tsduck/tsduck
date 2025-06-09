@@ -139,22 +139,25 @@ LDLIBS_PCSC                  # Libraries for PCSC.
 # Partial archiver flags (included in LDFLAGS):
 ARFLAGS_ADD                  # ar flags to add a module in the archive.
 
-# Additional flags when building libtscore and libtsduck (or using the static libraries):
-LIBTSCORE_CXXFLAGS_INCLUDES  # C++ compilation flags for libtscore.
-LIBTSCORE_LDLIBS             # Additional libraries for libtscore.
-LIBTSDUCK_CXXFLAGS_INCLUDES  # C++ compilation flags for libtsduck.
-LIBTSDUCK_LDLIBS             # Additional libraries for libtsduck.
-APPS_CXXFLAGS_INCLUDES       # C++ compilation flags for applications and plugins.
+# Additional flags when building libtscore, libtsduck, libtsdektec (or using the static libraries):
+LIBTSCORE_CXXFLAGS_INCLUDES   # C++ compilation flags for libtscore.
+LIBTSCORE_LDLIBS              # Additional libraries for libtscore.
+LIBTSDUCK_CXXFLAGS_INCLUDES   # C++ compilation flags for libtsduck.
+LIBTSDUCK_LDLIBS              # Additional libraries for libtsduck.
+LIBTSDEKTEC_CXXFLAGS_INCLUDES # C++ compilation flags for libtsdektec.
+LIBTSDEKTEC_LDLIBS            # Additional libraries for libtsdektec.
+APPS_CXXFLAGS_INCLUDES        # C++ compilation flags for applications and plugins.
+DTAPPS_CXXFLAGS_INCLUDES      # C++ compilation flags for applications and plugins using libtsdektec.
 
 # Partial flags (included in LIBTSDUCK_*):
-CXXFLAGS_CURL                # Compilation options for libcurl.
-LDLIBS_CURL                  # Libraries for libcurl.
+CXXFLAGS_CURL                 # Compilation options for libcurl.
+LDLIBS_CURL                   # Libraries for libcurl.
 
 # Third-party libraries (if not installed at system level):
-DTAPI_OBJECT                 # Dektec API object file (precompiled by Dektec).
-DTAPI_HEADER                 # Dektec API header file.
-VATEK_CFLAGS                 # C++ compilation flags for VATek library.
-VATEK_LDLIBS                 # Linker flags for VATek library.
+DTAPI_OBJECT                  # Dektec API object file (precompiled by Dektec).
+DTAPI_HEADER                  # Dektec API header file.
+VATEK_CFLAGS                  # C++ compilation flags for VATek library.
+VATEK_LDLIBS                  # Linker flags for VATek library.
 
 # Operating system description
 # ----------------------------
@@ -185,65 +188,69 @@ USRLIBDIR      # Library directory; $(SYSPREFIX)/lib or $(SYSPREFIX)/lib64.
 
 # Common shell commands which may need alternatives
 # -------------------------------------------------
-SED                 # sed (or GNU sed if different).
-GREP                # grep (or GNU grep if different).
-FGREP               # fgrep (or GNU fgrep if different).
-CHMOD               # chmod (or GNU chmod if different).
-DATE                # date (or GNU date if different).
-REALPATH            # realpath (or GNU realpath if different).
-TAR                 # tar (or GNU tar if different).
-BASE64              # base64 with options specifying continuous stream and input file.
-XDGOPEN             # open (or xdg-open if not set as alternative)
-SUDO                # sudo or empty if already running as root.
-PYTHON              # Python command, at least Python 3.
-PYTHON_VERSION      # Full Python version.
-PYTHON_MAJOR        # Python major version.
+SED                  # sed (or GNU sed if different).
+GREP                 # grep (or GNU grep if different).
+FGREP                # fgrep (or GNU fgrep if different).
+CHMOD                # chmod (or GNU chmod if different).
+DATE                 # date (or GNU date if different).
+REALPATH             # realpath (or GNU realpath if different).
+TAR                  # tar (or GNU tar if different).
+BASE64               # base64 with options specifying continuous stream and input file.
+XDGOPEN              # open (or xdg-open if not set as alternative)
+SUDO                 # sudo or empty if already running as root.
+PYTHON               # Python command, at least Python 3.
+PYTHON_VERSION       # Full Python version.
+PYTHON_MAJOR         # Python major version.
 
 # Structure of the TSDuck project directory tree
 # ----------------------------------------------
-ROOTDIR             # Root directory of the project.
-SCRIPTSDIR          # Directory containing build scripts.
-SRCROOT             # Root of all source files.
-LIBTSCOREDIR        # Source directory for the TSCore library.
-LIBTSDUCKDIR        # Source directory for the TSDuck library.
-TSTOOLSDIR          # Source directory for all command line tools.
-TSPLUGINSDIR        # Source directory for all external plugins.
-LOCAL_OSDIR         # Name of subdirectory which contains system specific code in source tree.
-OTHER_OS            # List of subdirectory for other operating systems (don't use here).
-BINROOT             # Root of all generated files.
-BINDIR              # Directory for all binary files; include architecture and host name.
-BINDIR_SUFFIX       # Fixed suffix to add to BINDIR; ignored if BINDIR is defined as input variable.
-TMPROOT             # To be created, used and deleted as temporary directory.
-OBJDIR              # Subdirectory of BINDIR where object files are stored;
-                    # named objs-$(CURDIR) for each source directory where make is executed.
-TOPLEVEL_CURDIR     # Value of CURDIR at the top-level invocation of make.
-TOPLEVEL_BINDIR     # Value of BINDIR at the top-level invocation of make (typically on command line).
-STATIC_LIBTSCORE    # Generated static library for TSCore library.
-SHARED_LIBTSCORE    # Generated shared library for TSCore library.
-STATIC_LIBTSDUCK    # Generated static library for TSDuck library.
-SHARED_LIBTSDUCK    # Generated shared library for TSDuck library.
-INSTALLERDIR        # Output directory for binary packages and installers.
-INSTALLER_TARBALL   # Tarball file receiving the installers with target installer-tarball.
-SOURCE_TARBALL      # Tarball file receiving the source tree with target tarball.
-GET_TSDUCK_VERSION  # Shell command to get TSDuck version (see get-version-from-sources.py).
-ALL_INCLUDES        # List of all source directories with headers (excluding other OS).
-LIBTSCORE_INCLUDES  # List of source directories in libtscore with public headers.
-LIBTSDUCK_INCLUDES  # List of source directories in libtsduck with public headers.
-TSPLUGINS           # List of plugins to compile.
-TSTOOLS             # List of command line tools to compile.
-NO_TSPLUGINS        # List of obsolete plugins to remove.
-NO_TSTOOLS          # List of obsolete command line tools to remove.
+ROOTDIR              # Root directory of the project.
+SCRIPTSDIR           # Directory containing build scripts.
+SRCROOT              # Root of all source files.
+LIBTSCOREDIR         # Source directory for the TSCore library.
+LIBTSDUCKDIR         # Source directory for the TSDuck library.
+LIBTSDEKTECDIR       # Source directory for the TSDektec library.
+TSTOOLSDIR           # Source directory for all command line tools.
+TSPLUGINSDIR         # Source directory for all external plugins.
+LOCAL_OSDIR          # Name of subdirectory which contains system specific code in source tree.
+OTHER_OS             # List of subdirectory for other operating systems (don't use here).
+BINROOT              # Root of all generated files.
+BINDIR               # Directory for all binary files; include architecture and host name.
+BINDIR_SUFFIX        # Fixed suffix to add to BINDIR; ignored if BINDIR is defined as input variable.
+TMPROOT              # To be created, used and deleted as temporary directory.
+OBJDIR               # Subdirectory of BINDIR where object files are stored;
+                     # named objs-$(CURDIR) for each source directory where make is executed.
+TOPLEVEL_CURDIR      # Value of CURDIR at the top-level invocation of make.
+TOPLEVEL_BINDIR      # Value of BINDIR at the top-level invocation of make (typically on command line).
+STATIC_LIBTSCORE     # Generated static library for TSCore library.
+SHARED_LIBTSCORE     # Generated shared library for TSCore library.
+STATIC_LIBTSDUCK     # Generated static library for TSDuck library.
+SHARED_LIBTSDUCK     # Generated shared library for TSDuck library.
+STATIC_LIBTSDEKTEC   # Generated static library for TSDektec library.
+SHARED_LIBTSDEKTEC   # Generated shared library for TSDektec library.
+INSTALLERDIR         # Output directory for binary packages and installers.
+INSTALLER_TARBALL    # Tarball file receiving the installers with target installer-tarball.
+SOURCE_TARBALL       # Tarball file receiving the source tree with target tarball.
+GET_TSDUCK_VERSION   # Shell command to get TSDuck version (see get-version-from-sources.py).
+ALL_INCLUDES         # List of all source directories with headers (excluding other OS).
+LIBTSCORE_INCLUDES   # List of source directories in libtscore with public headers.
+LIBTSDUCK_INCLUDES   # List of source directories in libtsduck with public headers.
+LIBTSDEKTEC_INCLUDES # List of source directories in libtsdektec with public headers.
+TSPLUGINS            # List of plugins to compile.
+TSTOOLS              # List of command line tools to compile.
+NO_TSPLUGINS         # List of obsolete plugins to remove.
+NO_TSTOOLS           # List of obsolete command line tools to remove.
 
 # Make control
 # ------------
-LOG                 # Command prefix, e.g. "$(call LOG,[CXX] $<) $(CXX) ...".
-MAKEFLAGS           # Make options, as generated by make, do not override on command line.
-MAKEOVERRIDES       # List of overridden make variables.
-MAKEFLAGS_SMP       # Explicit make parallel options, e.g. "-j8" for 8 processors.
-JAVA_DONE           # Java options already set, don't do it again.
-PRECONFIG_DONE      # Parsing of tsPreConfiguration.h already done, don't do it again.
-CURL_DONE           # Libcurl options already set, don't do it again.
-SRT_DONE            # SRT options already set, don't do it again.
-RIST_DONE           # RIST options already set, don't do it again.
-DTAPI_DONE          # Dektec DTAPI options already set, don't do it again.
-PCSC_DONE           # PCSC options already set, don't do it again.
+LOG                  # Command prefix, e.g. "$(call LOG,[CXX] $<) $(CXX) ...".
+MAKEFLAGS            # Make options, as generated by make, do not override on command line.
+MAKEOVERRIDES        # List of overridden make variables.
+MAKEFLAGS_SMP        # Explicit make parallel options, e.g. "-j8" for 8 processors.
+JAVA_DONE            # Java options already set, don't do it again.
+PRECONFIG_DONE       # Parsing of tsPreConfiguration.h already done, don't do it again.
+CURL_DONE            # Libcurl options already set, don't do it again.
+SRT_DONE             # SRT options already set, don't do it again.
+RIST_DONE            # RIST options already set, don't do it again.
+DTAPI_DONE           # Dektec DTAPI options already set, don't do it again.
+PCSC_DONE            # PCSC options already set, don't do it again.

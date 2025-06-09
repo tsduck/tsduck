@@ -45,7 +45,7 @@ For applications which only used the basic features of the TSDuck library, the D
 became too bulky. Therefore, these basic features were extracted as a new TSCore library.
 
 The TSCore shared library file is named `libtscore.so`, `libtscore.dylib`, or `tscore.dll`,
-depending on the operating system. 
+depending on the operating system.
 The TSDuck shared library file is named `libtsduck.so`, `libtsduck.dylib`, or `tsduck.dll`,
 
 Their respective header files are installed in directories `include/tscore` and `include/tsduck`
@@ -58,6 +58,11 @@ Since the TSDuck library uses the TSCore library, any application which uses the
 has implicit access to the latter.
 Specifically, applications which already used the monolythic TSDuck library before
 version 3.40 can be built without any change.
+
+NOTE: Starting with version 3.42, TSDuck installs a third common shared library named `libtsdektec`.
+This library contains the common code to access the Dektec devices, as well as the Dektec-provided DTAPI proprietary code.
+It is only designed to provide common code for the `tsdektec` command and the two `dektec` plugins, input and output.
+This library is not accessible to third-party applications.
 
 [#usinglibrary]
 === Building an application with the TSDuck libraries

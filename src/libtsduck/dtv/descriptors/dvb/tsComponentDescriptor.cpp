@@ -188,7 +188,7 @@ ts::UString ts::ComponentDescriptor::ComponentTypeName(const DuckContext& duck, 
     // Value to use for name lookup:
     const uint16_t nType = uint16_t((uint16_t(stream_content) << 12) | (uint16_t(lookup_stream_content_ext) << 8) | component_type);
 
-    // Value to display, we use the real binary value for stream_content_ext 
+    // Value to display, we use the real binary value for stream_content_ext
     const uint16_t dType = uint16_t((uint16_t(stream_content_ext) << 12) | (uint16_t(stream_content) << 8) | component_type);
 
     if (bool(duck.standards() & Standards::JAPAN)) {

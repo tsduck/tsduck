@@ -14,33 +14,27 @@ NODEPS_SRC = tscore.cpp
 include ../../Makefile.inc
 
 # Most source files are located in subdirectories but should be considered as part of libtscore.
-
 VPATH := $(filter-out $(OTHER_OS) $(addprefix %/,$(OTHER_OS)), \
            $(patsubst %/,%,$(sort $(dir $(wildcard */*.cpp */*/*.cpp */*/*/*.cpp)))))
 VPATH_SOURCES := $(sort $(notdir $(wildcard $(addsuffix /*.cpp,$(VPATH)))))
 
 # Implicit search directives.
-
 vpath %.cpp $(VPATH)
 
 # Add dependency files for sources in VPATH.
-
 ifeq ($(DONT_BUILD_DEPS),)
     -include $(addprefix $(OBJDIR)/,$(addsuffix .dep,$(notdir $(basename $(VPATH_SOURCES)))))
 endif
 
 # All sources and objects in libtscore.
-
 SOURCES := $(VPATH_SOURCES) $(sort $(notdir $(wildcard *.cpp)))
 OBJS = $(addprefix $(OBJDIR)/,$(addsuffix .o,$(basename $(SOURCES))))
 
 # Building the TSCore library.
-
 default: headers libs
 	+@$(call RECURSE,config $(if $(NOPYTHON),,python) $(if $(NOJAVA),,java))
 
 # The tscore.h header is automatically generated from all headers.
-
 TSCORE_H = $(BINDIR)/include/tscore.h
 
 .PHONY: headers
@@ -53,7 +47,6 @@ $(OBJDIR)/tscore.o: $(TSCORE_H)
 $(OBJDIR)/tscore.o: CXXFLAGS_INCLUDES += -I$(dir $(TSCORE_H))
 
 # Specific compilation options:
-
 CXXFLAGS_INCLUDES += $(LIBTSCORE_CXXFLAGS_INCLUDES)
 
 ifeq ($(LOCAL_OS)-$(subst aarch64,arm64,$(LOCAL_ARCH)),linux-arm64)
@@ -67,14 +60,12 @@ endif
 # By default, both static and dynamic libraries are created but only use
 # the dynamic one when building tools and plugins. In case of static build,
 # only build the static library.
-
 .PHONY: libs
 libs: $(if $(NOSTATIC),,$(STATIC_LIBTSCORE)) $(if $(STATIC),,$(SHARED_LIBTSCORE))
 
 # The shared library contains all modules.
 # We change the current directory to OBJDIR and use object file names without directory,
 # otherwise the command line is too long when the directory path is long.
-
 $(SHARED_LIBTSCORE): $(OBJS)
 	$(call LOG,[LD] $@) cd $(OBJDIR); \
 	$(CXX) $(SOFLAGS) $(LDFLAGS) $(notdir $(OBJS)) $(LIBTSCORE_LDLIBS) $(LDLIBS_EXTRA) $(LDLIBS) -shared -o $@
@@ -83,7 +74,6 @@ $(SHARED_LIBTSCORE): $(OBJS)
 # that this is much faster than individual 'ar' commands per object module.
 # We change the current directory to OBJDIR and use object file names without directory,
 # otherwise the command line is too long when the directory path is long.
-
 OBJS_STATIC_LIB = $(filter-out $(OBJDIR)/tscore.o,$(OBJS))
 
 $(STATIC_LIBTSCORE): $(OBJS_STATIC_LIB)
@@ -91,7 +81,6 @@ $(STATIC_LIBTSCORE): $(OBJS_STATIC_LIB)
 	$(AR) $(ARFLAGS) $@ $(notdir $(OBJS_STATIC_LIB))
 
 # Installation targets.
-
 .PHONY: install-tools install-devel
 
 install-tools: $(SHARED_LIBTSCORE)

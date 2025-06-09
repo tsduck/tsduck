@@ -42,7 +42,18 @@ Classes in "TSCore" cannot reference classes in the next layers.
 Classes in "DTV" can reference classes from "TSCore" but not from "Plugins", etc.
 
 The TSDuck commands are separate executables and the plugins are separate shared libraries.
-They are independently built and may reference anything from the TSDuck library.
+They are independently built and may reference anything from the TSDuck shared libraries.
+
+A third common shared library is built on systems where Dektec devices are supported:
+
+* *TSDektec*: A collections of {cpp} classes to manipulate Dektec devices.
+  Dektec provides a library named DTAPI to access their devices.
+  It is available in binary form only and its source code is proprietary.
+  The binary for DTAPI is also included in `libtsdektec`.
+  Because DTAPI was compiled by Dektec without dllexport directives on Windows,
+  it cannot be used outside `libtsdektec`.
+  The `tsdektec` command and the two `dektec` plugins only use the TSDuck {cpp} classes
+  from `libtsdektec`, which act as proxies to DTAPI.
 
 [#srctree]
 ==== Source files structure
@@ -53,6 +64,9 @@ The `src` directory is structured as follow:
   Any new source file inside this directory tree is automatically built as part of the TSCore library.
 * `libtsduck` contains all source files for the TSDuck library.
   Any new source file inside this directory tree is automatically built as part of the TSDuck library.
+* `libtsdektec` contains all source files for the TSDektec library.
+  This is the code which is specific to Dektec devices.
+  This shared library is not built on systems where Dektec devices are not supported.
 * `tsplugins` contains all plugins.
   Any new source file inside this directory tree is automatically built as one separate shared library.
   This means that a plugin must be inside one single source file.
@@ -64,7 +78,7 @@ The `src` directory is structured as follow:
 The additional subdirectories `utest` and `utils` contain the source code of unitary tests
 and packaging utilities which are not part of the TSDuck product itself.
 
-There are several thousands of source files inside `libtscore` and `libtsduck`.
+There are several thousands of source files inside `libtscore`, `libtsduck`, and `libtsdektec`.
 They are organized according to logical and technical constraints.
 
 On a technical perspective, there are several strict rules based on the name of the subdirectories.
@@ -110,6 +124,8 @@ or to use the library from an application ("import").
 All that dirt is hidden in TSDuck using the macros `TSCOREDLL` and `TSDUCKDLL` which translate
 to an export directive when building the corresponding DLL, an import directive when using the DLL,
 and nothing on non-Windows system.
+
+A similar macro `TSDEKTECDLL` exists for the `libtsdektec` library.
 
 As a consequence, under `src/libtscore` and `src/libtsduck` (with the exception of `private`
 subdirectories), all public declarations in header files must have a `TSCOREDLL` or `TSDUCKDLL`

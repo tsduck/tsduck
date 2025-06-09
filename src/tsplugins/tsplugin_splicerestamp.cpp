@@ -224,7 +224,7 @@ void ts::SpliceRestampPlugin::handleTable(SectionDemux& demux, const BinaryTable
     // Convert to a Splice Information Table.
     SpliceInformationTable sit(duck, table);
     if (sit.isValid()) {
-        debug(u"@@@@ processing splice table, adjust value: %s, first PTS count: %d", _current_adjustment.has_value(), _first_pts.size());
+        debug(u"processing splice table, adjust value: %s, first PTS count: %d", _current_adjustment.has_value(), _first_pts.size());
 
         // With --rebase-pts, compute the PTS adjustment at the first splice section.
         if (_rebase_pts != INVALID_PTS && !_current_adjustment.has_value() && !_first_pts.empty()) {

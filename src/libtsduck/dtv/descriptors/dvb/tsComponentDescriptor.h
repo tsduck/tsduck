@@ -63,7 +63,7 @@ namespace ts {
         //! @param [in,out] disp Display engine.
         //! @param [in] margin Left margin content.
         //! @param [in] component_type The component_type value for the component descriptor
-        //! 
+        //!
         static void DisplayNGAComponentFeatures(TablesDisplay& disp, const UString& margin, uint8_t component_type);
 
     protected:
