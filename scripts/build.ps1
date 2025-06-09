@@ -189,8 +189,8 @@ function Call-MSBuild ([string] $configuration, [string] $platform, [string] $ta
 # Build targets
 $AllTargets = @(Select-String -Path "${ProjDir}\*.vcxproj" -Pattern '<RootNameSpace>' |
                 ForEach-Object { $_ -replace '.*<RootNameSpace> *','' -replace ' *</RootNameSpace>.*','' })
-$plugins = ($AllTargets | Select-String "tsplugin_*") -join ';'
-$commands = ($AllTargets | Select-String -NotMatch @("tsduck*", "tsplugin_*", "tsp_static", "setpath", "utest*", "tsmux", "tsnet", "tszlib", "tsprofiling")) -join ';'
+$plugins = ($AllTargets | Select-String "^tsplugin_") -join ';'
+$commands = ($AllTargets | Select-String "^ts" | Select-String -NotMatch @("dll$", "lib$", "^tsplugin_", "^tsp_static$", "^tsmux$", "^tsnet$", "^tszlib$", "^tsprofiling$")) -join ';'
 
 # Rebuild TSDuck.
 if ($Installer) {

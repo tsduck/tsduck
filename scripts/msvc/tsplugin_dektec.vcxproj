@@ -1,20 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <!-- Automatically generated file, see build-project-files.py -->
+
   <ImportGroup Label="PropertySheets">
     <Import Project="msvc-common-begin.props"/>
   </ImportGroup>
-  <ItemGroup>
-    <ClCompile Include="..\..\src\tsplugins\tsplugin_dektec.cpp"/>
-  </ItemGroup>
+
   <PropertyGroup Label="Globals">
     <ProjectGuid>{0043061D-D4FF-0256-B1D5-E205DF2CC561}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>tsplugin_dektec</RootNamespace>
   </PropertyGroup>
+
   <ImportGroup Label="PropertySheets">
+    <Import Project="msvc-use-dtapi.props"/>
+  </ImportGroup>
+
+  <!-- When DTAPI is not supported -->
+  <ImportGroup Label="PropertySheets" Condition="'$(TS_NO_DTAPI)' != ''">
+    <Import Project="msvc-common-base.props"/>
+  </ImportGroup>
+
+  <!-- When DTAPI is supported -->
+  <ItemGroup Condition="'$(TS_NO_DTAPI)' == ''">
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_dektec.cpp"/>
+  </ItemGroup>
+
+  <ImportGroup Label="PropertySheets" Condition="'$(TS_NO_DTAPI)' == ''">
     <Import Project="msvc-target-dll.props"/>
     <Import Project="msvc-use-tsdektecdll.props"/>
+  </ImportGroup>
+
+  <ImportGroup Label="PropertySheets">
     <Import Project="msvc-common-end.props"/>
   </ImportGroup>
+
 </Project>

@@ -51,6 +51,9 @@ def get_cpp(dirname):
 tools = get_cpp(src_dir + '/tstools')
 plugins = get_cpp(src_dir + '/tsplugins')
 
+# Projects with manual setup, do not overwrite project files.
+manual_setup = ['tsdektec', 'tsplugin_dektec']
+
 # "Other" MSBuild projects (ie. not tools, not plugins).
 others = ['config', 'utests-tsduckdll', 'utests-tsducklib',
           'tscoredll', 'tscorelib', 'tsduckdll', 'tsducklib', 'tsdektecdll', 'tsdekteclib',

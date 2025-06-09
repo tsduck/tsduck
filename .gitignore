@@ -43,8 +43,9 @@ ipch
 *.pro.user.*
 *.pyc
 __pycache__
-*.rpm
+*.recipe
 Release-*/
+*.rpm
 *.sdf
 *.so
 *.stackdump

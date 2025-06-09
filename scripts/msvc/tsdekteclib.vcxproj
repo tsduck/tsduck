@@ -16,6 +16,9 @@
   </ImportGroup>
 
   <!-- When DTAPI is not supported -->
+  <ImportGroup Label="PropertySheets" Condition="'$(TS_NO_DTAPI)' != ''">
+    <Import Project="msvc-common-base.props"/>
+  </ImportGroup>
 
   <!-- When DTAPI is supported -->
   <ImportGroup Label="PropertySheets" Condition="'$(TS_NO_DTAPI)' == ''">
