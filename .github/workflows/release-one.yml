@@ -113,7 +113,12 @@ jobs:
         make install-installer
     - name: Identify installed version
       run: |
+        echo "==== TSDuck version"
         tsversion --version=all
+        echo "==== TSDuck supported features"
+        tsversion --support all
+        echo "==== TSDuck plugins"
+        tsp --list-plugins
     - name: Download test suite
       run: |
         curl -fsL "https://github.com/${{ github.repository }}-test/tarball/master" -o test.tgz

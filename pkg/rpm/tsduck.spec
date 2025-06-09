@@ -112,6 +112,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/ts*
 %{_libdir}/libtscore.so
 %{_libdir}/libtsduck.so
+%if 0%{!?nodektec:1}
+%{_libdir}/libtsdektec.so
+%endif
 %{_libdir}/tsduck
 %{_datadir}/tsduck
 %{_datadir}/bash-completion/completions/ts*
@@ -130,6 +133,9 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-,root,root,-)
 %{_libdir}/libtscore.a
 %{_libdir}/libtsduck.a
+%if 0%{!?nodektec:1}
+%{_libdir}/libtsdektec.a
+%endif
 %{_includedir}/tscore
 %{_includedir}/tsduck
 %{_datadir}/pkgconfig/tscore.pc

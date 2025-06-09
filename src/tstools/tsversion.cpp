@@ -161,6 +161,7 @@ Options::Options(int argc, char *argv[]) :
     // It exits the application with a specific status.
     if (present(u"support")) {
         const int feature = intValue<int>(u"support");
+        bool success = true;
         if (feature < 0) {
             // Display all features.
             ts::UStringList names;
@@ -170,7 +171,10 @@ Options::Options(int argc, char *argv[]) :
                 std::cout << fname << ": " << ts::UString::YesNo(ts::Features::Instance().isSupported(fname)) << std::endl;
             }
         }
-        std::exit(feature ? EXIT_SUCCESS : EXIT_FAILURE);
+        else {
+            success = ts::Features::Instance().isSupported(feature);
+        }
+        std::exit(success ? EXIT_SUCCESS : EXIT_FAILURE);
     }
 
 #if !defined(TS_NO_GITHUB)

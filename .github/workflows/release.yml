@@ -264,7 +264,12 @@ jobs:
     - name: Identify installed version
       if: ${{ env.INSTALLED }}
       run: |
+        Write-Output "==== TSDuck version"
         tsversion --version=all
+        Write-Output "==== TSDuck supported features"
+        tsversion --support all
+        Write-Output "==== TSDuck plugins"
+        tsp --list-plugins
     - name: Download test suite
       run: |
         # Try to download '<repo>-test' from the pull request owner, if there is one.

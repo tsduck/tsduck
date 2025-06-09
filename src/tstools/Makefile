@@ -8,6 +8,9 @@
 #
 #-----------------------------------------------------------------------------
 
+# Don't recompute dependencies on Dektec modules when Dektec is not supported.
+NODEPS_SRC = $(if $(NODTAPI),tsdektec.cpp)
+
 include ../../Makefile.inc
 
 EXECS := $(addprefix $(BINDIR)/,$(TSTOOLS))

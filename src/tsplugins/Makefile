@@ -8,6 +8,9 @@
 #
 #-----------------------------------------------------------------------------
 
+# Don't recompute dependencies on Dektec modules when Dektec is not supported.
+NODEPS_SRC = $(if $(NODTAPI),tsplugin_dektec.cpp)
+
 include ../../Makefile.inc
 
 .PHONY: shlibs install install-tools
