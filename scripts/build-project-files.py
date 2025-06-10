@@ -78,7 +78,7 @@ ms_deps = {
     'utests-tsducklib': {'deps': ['tsducklib']},
     'tsdektec': {'deps': ['tsdektecdll']},
     'tsplugin_dektec': {'deps': ['tsdektecdll']},
-    'tsp_static': {'deps': ['tsducklib']},
+    'tsp_static': {'deps': ['tsdekteclib', 'tsducklib', 'tscorelib']},
     'tsprofiling': {'deps': ['tsduckdll']},
     'tsmux': {'deps': ['tsduckdll'] + plugins},
     'tsnet': {'deps': ['tscoredll']},
