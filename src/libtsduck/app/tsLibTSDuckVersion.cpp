@@ -7,6 +7,9 @@
 //----------------------------------------------------------------------------
 
 #include "tsLibTSDuckVersion.h"
+#include "tsCerrReport.h"
+
+TS_CERR_DEBUG(u"libtsduck loaded");
 
 // Exported version of the TSDuck library.
 // The names of these symbols are constant, their values are not.

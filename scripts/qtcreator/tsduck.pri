@@ -116,7 +116,6 @@ tstool {
 util {
     # TSDuck utils shall use "CONFIG += util"
     CONFIG += libtscore libtsduck config_files
-    PRE_TARGETDEPS += ../tsxml/tsxml
     TEMPLATE = app
     SOURCES += $$SRCROOT/utils/$${TARGET}.cpp
 }
@@ -147,6 +146,15 @@ libtsduck {
     DEPENDPATH += ../libtsduck
     INCLUDEPATH += $$system("find $$SRCROOT/libtsduck -type d ! -name windows ! -name \\*bsd ! -name $$NOSYSDIR ! -name private ! -name __pycache__")
 }
+libtsdektec {
+    # Applications using libtsdektec shall use "CONFIG += libtsdektec".
+    CONFIG += libtsduck
+    linux:QMAKE_LFLAGS += -Wl,--rpath=\'\$\$ORIGIN/../libtsdektec\'
+    LIBS = ../libtsdektec/libtsdektec$$SO $$LIBS
+    PRE_TARGETDEPS += ../libtsdektec/libtsdektec$$SO
+    DEPENDPATH += ../libtsdektec
+    INCLUDEPATH += $$system("find $$SRCROOT/libtsdektec -type d ! -name windows ! -name $$NOSYSDIR ! -name private ! -name __pycache__")
+}
 config_files {
     QMAKE_POST_LINK += cp $$SRCROOT/libtscore/config/*.names $$SRCROOT/libtscore/config/*.xml . $$escape_expand(\\n\\t)
     QMAKE_POST_LINK += cp $$SRCROOT/libtsduck/config/*.names $$SRCROOT/libtsduck/config/*.xml . $$escape_expand(\\n\\t)
@@ -158,10 +166,10 @@ config_files {
                        tsduck.dtv.names \
                        $$SRCROOT/libtsduck/dtv \
                        $$escape_expand(\\n\\t)
-    QMAKE_POST_LINK += ../tsxml/tsxml --merge --sort _tables --sort _descriptors --uncomment \
-                       -o tsduck.tables.model.xml \
+    QMAKE_POST_LINK += $$PYTHON $$PROJROOT/scripts/build-tables-model.py tsduck.tables.model.xml \
                        $$SRCROOT/libtsduck/config/tsduck.tables.skeleton.xml \
                        $$SRCROOT/libtsduck/dtv/tables/*/*.xml \
                        $$SRCROOT/libtsduck/dtv/descriptors/*/*.xml \
+                       $$SRCROOT/libtsduck/dtv/dsmcc/*.xml \
                        $$escape_expand(\\n\\t)
 }

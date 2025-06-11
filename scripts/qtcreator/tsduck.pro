@@ -12,6 +12,5 @@ TEMPLATE = subdirs
 CONFIG += ordered
 TSDIRS = $$system(cd $$_PRO_FILE_PWD_; find . -maxdepth 1 -type d -name ts\\*)
 TSDIRS = $$replace(TSDIRS,./,)
-TSDIRS = $$replace(TSDIRS,tsxml,)
 TSDIRS = $$sorted(TSDIRS)
-SUBDIRS += libtscore libtsduck tsxml $$TSDIRS utest
+SUBDIRS += libtscore libtsduck libtsdektec $$TSDIRS utest

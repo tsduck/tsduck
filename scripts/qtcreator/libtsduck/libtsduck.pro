@@ -8,11 +8,6 @@ linux|mac {
     LIBS += $$system("$$PROJROOT/scripts/vatek-config.sh --ldlibs")
 }
 
-linux {
-    QMAKE_CXXFLAGS += -isystem $$system("$$PROJROOT/scripts/dtapi-config.sh --include")
-    OBJECTS += $$system("$$PROJROOT/scripts/dtapi-config.sh --object")
-}
-
 mac {
     QMAKE_POST_LINK += install_name_tool -id $$OUT_PWD/libtsduck$$SO $$OUT_PWD/libtsduck$$SO $$escape_expand(\\n\\t)
 }

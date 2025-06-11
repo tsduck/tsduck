@@ -10,6 +10,9 @@
 #include "tsDektec.h"
 #include "tsFeatures.h"
 #include "tsModulationArgs.h"
+#include "tsCerrReport.h"
+
+TS_CERR_DEBUG(u"libtsdektec loaded");
 
 
 //-----------------------------------------------------------------------------

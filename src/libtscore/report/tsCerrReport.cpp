@@ -10,6 +10,7 @@
 #include "tsEnvironment.h"
 
 TS_DEFINE_SINGLETON(ts::CerrReport);
+TS_CERR_DEBUG(u"libtscore loaded");
 
 // Constructor.
 ts::CerrReport::CerrReport()

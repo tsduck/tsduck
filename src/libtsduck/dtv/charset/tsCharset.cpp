@@ -9,6 +9,7 @@
 #include "tsCharset.h"
 #include "tsByteBlock.h"
 #include "tsAlgorithm.h"
+#include "tsCerrReport.h"
 
 
 //----------------------------------------------------------------------------
@@ -66,6 +67,7 @@ ts::UStringList ts::Charset::Repository::getAllNames() const
 
 void ts::Charset::Repository::add(const UString& name, const Charset* charset)
 {
+    CERR.debug(u"registering character set %s", name);
     const auto it = _map.find(name);
     if (it == _map.end()) {
         // Charset not yet registered.

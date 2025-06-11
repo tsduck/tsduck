@@ -103,12 +103,13 @@ for name in tools + plugins:
 # Build a set of Qt Creator project files.
 def build_qt_files(names, config):
     for name in names:
-        os.makedirs(qt_dir + '/' + name, 0o755, True)
-        with open(qt_dir + '/' + name + '/' + name + '.pro', 'w') as f:
-            f.write('# Automatically generated file, see %s\n' % script_name)
-            f.write('CONFIG += %s\n' % config)
-            f.write('TARGET = %s\n' % name)
-            f.write('include(../tsduck.pri)\n')
+        if name not in manual_setup:
+            os.makedirs(qt_dir + '/' + name, 0o755, True)
+            with open(qt_dir + '/' + name + '/' + name + '.pro', 'w') as f:
+                f.write('# Automatically generated file, see %s\n' % script_name)
+                f.write('CONFIG += %s\n' % config)
+                f.write('TARGET = %s\n' % name)
+                f.write('include(../tsduck.pri)\n')
 
 # Build QT Creator project files.
 build_qt_files(tools, 'tstool')
