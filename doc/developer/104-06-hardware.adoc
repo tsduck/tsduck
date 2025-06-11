@@ -159,47 +159,66 @@ not possible to analyze ISDB-T information from the `dvb` plugin.
 ==== Dektec devices
 
 Using Dektec devices requires kernel-mode device drivers which must be separately installed.
-Building TSDuck code does not depend on the device drivers. They are only required to use Dektec devices.
+Building TSDuck code does not depend on the device drivers.
+They are only required to use Dektec devices.
 The TSDuck User's Guide describes how to install the Dektec drivers.
 
-Most of the TSDuck code for Dektec support is located in `src/libtsduck/dtv/dektec`.
-The `dektec` plugin is implemented in classes `DektecInputPlugin` and `DektecOutputPlugin`
-and is completely embedded inside the TSDuck library.
-The main code of the `tsdektec` utility is in `src/tstools` for technical reasons
-but this is a simple wrapper around the class `DektecControl` which is inside the TSDuck library as well.
+TSDuck does not call the device drivers directly.
+Dektec provides a user-mode API for {cpp} called "DTAPI".
+The DTAPI is well documented and well designed.
+Its interface is the same over all operating systems.
+This library is provided for free by Dektec in binary format only.
+The source code is proprietary and not publicly available.
 
-TSDuck does not call the device drivers directly. Dektec provides a user-mode API for {cpp} called "DTAPI".
-The DTAPI is well documented and well designed. Its interface is the same over all operating systems.
-The DTAPI is closed-source and is available in binary format only, for Windows and Linux on Intel
-architectures.
+On Windows, the DTAPI shall be installed first.
+This is automated in the PowerShell script `install-dektec.ps1`,
+which is also automatically invoked by `install-prerequisites.ps1`.
+The "Dektec Windows SDK" installs the device drivers and the DTAPI system-wide.
 
-On Windows, the DTAPI shall be installed first. This is automated in the PowerShell script
-`install-dektec.ps1`, which is also automatically invoked by `install-prerequisites.ps1`.
-The "Dektec Windows SDK" installs the device drivers and the DTAPI system-wise.
+On Linux, the DTAPI is not "installed".
+It is automatically downloaded from https://dektec.com during the build process of the shared library `libtsdektec`.
+The DTAPI is locally installed in the `bin` build area of the TSDuck project.
+It is therefore deleted as part of `make clean`.
 
-On Linux, the DTAPI is not "installed". It is automatically downloaded from https://dektec.com
-during the build process of the TSDuck library. The DTAPI is locally installed in the `bin`
-build area of the TSDuck project. It is therefore deleted as part of `make clean`.
+Several versions of the DTAPI binaries are installed, depending on release vs. debug mode and,
+sometimes, the version of the compilers.
+The TSDuck build process automatically selects the appropriate version.
 
-The DTAPI binary code is delivered as a static library on Windows and an object file on Linux.
-Several versions are installed, depending on release vs. debug mode and, sometimes, the
-version of the compilers. The TSDuck build process automatically selects the appropriate version.
+On Linux, the DTAPI is provided as one big pre-linked object file (`.o`).
+On Windows, the DTAPI is provided as one static library (`.lib`).
+The only supported architectures are Intel x86 and x64.
+No binary for other architectures are available.
 
-A TSDuck application process typically contains an executable, several plugin shared libraries,
-the TSCore and TSDuck shared libraries. The DTAPI object code has to be somewhere, typically
-in a shared library. This is the way to ensure that only one copy of the DTAPI binary is
-present in each application process.
+On Linux, the DTAPI references symbols from `glibc` and distros such as Alpine Linux,
+which uses the `musl` libc instead of `glibc`, are not supported.
 
 On Windows, because of some silly import/export rules, the code in a DLL can be called
 from outside that DLL only if it was compiled with the right export attributes
 (see xref:windllcrap[xrefstyle=short] for more details).
-Because Dektec did not compile the DTAPI with there export attributes, the DTAPI can be called
-only from the same shared library it is in. This is the reason why the DTAPI and all {cpp}
-classes which directly reference it are in the same TSDuck library. Tools such as `tsdektec`
-never reference the DTAPI, they reference TSDuck classes. The DTAPI remains hidden inside the
-TSDuck library. For consistency, the same code structure is used on Linux, even though there
-is no technical reason which prevents the DTAPI from being called outside the `libtsduck`
-shared library.
+Because Dektec did not compile the DTAPI with these export attributes,
+the DTAPI can be called only from the same shared library it is in.
+This is the reason why the DTAPI and all {cpp} classes which directly reference it
+are in the same shared library `libtsdektec`.
+Tools such as `tsdektec` never reference the DTAPI, they reference TSDuck classes.
+The DTAPI remains hidden inside the shared library `libtsdektec`.
+For consistency, the same code structure is used on Linux, even though there is no technical reason
+which prevents the DTAPI from being called outside the shared library `libtsdektec`.
+
+The {cpp} classes for the two `dektec` plugins, input and output, are in `libtsdektec`.
+The shared library `tsplugin_dektec` does nothing but registering these {cpp} classes as plugins.
+Similarly, the `tsdektec` command just calls a {cpp} class named `ts::DektecControl` which is inside `libtsdektec`.
+
+The shared library `tsplugin_dektec` and the executable `tsdektec` are the
+only binaries which reference `libtsdektec`. These three components form the Dektec
+subsystem of TSDuck. The shared library `libtsdektec` is the only component in
+TSDuck which contains proprietary code (the DTAPI library). If, for some reason,
+it is not possible to include proprietary code in some distribution of TSDuck,
+it is possible to remove `libtsdektec`, `tsplugin_dektec`, and `tsdektec`, and ship
+them separately, through more permissive channels.
+
+The TSDuck programming environment, which is used by third-party applications
+for Digital TV, has interfaces for `libtscore` and `libtsduck`, but not for
+`libtsdektec`. This shared library is specific to `tsplugin_dektec` and `tsdektec`.
 
 ==== HiDes devices
 

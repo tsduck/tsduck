@@ -57,7 +57,7 @@ only binaries which reference `libtsdektec`. These three components form the Dek
 subsystem of TSDuck. The shared library `libtsdektec` is the only component in
 TSDuck which contains proprietary code (the DTAPI library). If, for some reason,
 it is not possible to include proprietary code in some distribution of TSDuck,
-it is possible to remove `libtsdektec`, `tsplugin_dektec`, and `tsdektec, and ship
+it is possible to remove `libtsdektec`, `tsplugin_dektec`, and `tsdektec`, and ship
 them separately, through more permissive channels.
 
 The TSDuck programming environment, which is used by third-party applications
