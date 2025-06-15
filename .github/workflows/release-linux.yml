@@ -4,16 +4,14 @@
 #  Copyright (c) 2005-2025, Thierry Lelegard
 #  BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 #
-#  GitHub Actions configuration file : Release subworkflow.
-#
+#  GitHub Actions configuration file : Release subworkflow for Linux.
+#  Build, install and test TSDuck in a Linux container (any distro).
+#  Upload installation packages as workflow artifacts.
 #  Do not start this workflow manually, this is a subworkflow of release.yml.
-#  This subworkflow must be technically separated from release.yml because of
-#  a limitation in GitHub Actions: "matrix" cannot be used from "jobs.job.if".
-#  See https://github.com/orgs/community/discussions/37883
 #
 #-----------------------------------------------------------------------------
 
-name: Release subworkflow
+name: Release (Linux)
 
 on:
   workflow_call:
@@ -54,6 +52,11 @@ on:
         type: string
         required: false
         default: ''
+      command_list_artifact:
+        description: 'If true, generate an artifact with command lists'
+        type: boolean
+        required: false
+        default: false
 
 jobs:
   build:
@@ -66,17 +69,21 @@ jobs:
         # Currently, GitHub containers use "sh" as default shell.
         shell: bash
     steps:
+
     - name: Container setup
-      if: ${{ inputs.setup_command != '' }}
+      if: inputs.setup_command != ''
       run: ${{ inputs.setup_command }}
+
     - name: Get TSDuck repo
       uses: actions/checkout@master
       with:
         # Checkout tag. If empty, use the default branch.
         ref: ${{ inputs.tag }}
+
     - name: Install prerequisites
       run: |
         scripts/install-prerequisites.sh ${{ inputs.package_options }}
+
     - name: Check compiler version
       run: |
         # Red Hat 9 has obsolete gcc 11. Enable at least gcc 13.
@@ -93,10 +100,12 @@ jobs:
             gcc --version
         fi
         echo "ENABLE_SCRIPT=$ENABLE_SCRIPT" >>$GITHUB_ENV
+
     - name: Build
       run: |
         [[ -n $ENABLE_SCRIPT ]] && source "$ENABLE_SCRIPT" || true
         make installer
+
     - name: List installers
       run: |
         # In ordered list in pkg/installers, the tools package comes first, then the dev package.
@@ -107,10 +116,12 @@ jobs:
         echo "Dev package: ${PACKS[1]}"
         echo "TSTOOLS=${PACKS[0]}" >>$GITHUB_ENV
         echo "TSDEV=${PACKS[1]}" >>$GITHUB_ENV
+
     - name: Install installers
       run: |
         [[ -n $ENABLE_SCRIPT ]] && source "$ENABLE_SCRIPT" || true
         make install-installer
+
     - name: Identify installed version
       run: |
         echo "==== TSDuck version"
@@ -119,12 +130,32 @@ jobs:
         tsversion --support all
         echo "==== TSDuck plugins"
         tsp --list-plugins
+
+    - name: Generate command lists
+      if: inputs.command_list_artifact
+      run: |
+        tsp --version=short &>tsp.version.txt
+        tsp --list=input &>tsp.input.txt
+        tsp --list=output &>tsp.output.txt
+        tsp --list=packet &>tsp.packet.txt
+        for file in src/tstools/*.cpp; do
+            name=$(basename $file .cpp)
+            if [[ -n $(which $name) ]]; then
+                echo -n $name:
+                $name --help=description 2>&1
+            fi
+        done >tsduck.commands.txt
+        zip -q9 tsduck.commands.zip tsp.version.txt tsp.input.txt tsp.output.txt tsp.packet.txt tsduck.commands.txt
+
     - name: Download test suite
+      if: github.repository == 'tsduck/tsduck'
       run: |
         curl -fsL "https://github.com/${{ github.repository }}-test/tarball/master" -o test.tgz
         mkdir -p ../tsduck-test
         tar -C ../tsduck-test -x -z -f test.tgz --strip 1
+
     - name: Run test suite on installed version
+      if: github.repository == 'tsduck/tsduck'
       run: |
         cd ../tsduck-test
         ./run-all-tests.sh && status=$? || status=$?
@@ -133,19 +164,31 @@ jobs:
             cat "$f"
         done
         exit $status
+
     - name: Build sample applications
+      if: github.repository == 'tsduck/tsduck'
       run: |
         [[ -n $ENABLE_SCRIPT ]] && source "$ENABLE_SCRIPT" || true
         make -C sample
+
     - name: Publish tools package
       uses: actions/upload-artifact@v4
       with:
         name: tsduck-${{ inputs.distro }}-${{ inputs.arch }}
         path: pkg/installers/${{ env.TSTOOLS }}
-        retention-days: 10
+        retention-days: 30
+
     - name: Publish dev package
       uses: actions/upload-artifact@v4
       with:
         name: tsduck-dev-${{ inputs.distro }}-${{ inputs.arch }}
         path: pkg/installers/${{ env.TSDEV }}
-        retention-days: 10
+        retention-days: 30
+
+    - name: Publish command lists
+      if: inputs.command_list_artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: command-lists
+        path: tsduck.commands.zip
+        retention-days: 30

@@ -1,0 +1,98 @@
+#-----------------------------------------------------------------------------
+#
+#  TSDuck - The MPEG Transport Stream Toolkit
+#  Copyright (c) 2005-2025, Thierry Lelegard
+#  BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+#
+#  GitHub Actions configuration file : Release subworkflow for documentation.
+#  Upload documentation archives as workflow artifacts.
+#  Do not start this workflow manually, this is a subworkflow of release.yml.
+#
+#-----------------------------------------------------------------------------
+
+name: Release (Docs)
+
+on:
+  workflow_call:
+    inputs:
+      build:
+        description: 'If false, do not build anything, skip that subworkflow'
+        type: boolean
+        required: false
+        default: false
+      tag:
+        description: 'Tag to rebuild, empty to build latest commit'
+        type: string
+        required: false
+        default: ''
+      build_guides:
+        description: 'Build TSDuck User and Developer Guides'
+        type: boolean
+        required: false
+        default: true
+      build_doxy:
+        description: 'Build TSDuck Programming Reference (doxygen)'
+        type: boolean
+        required: false
+        default: true
+
+jobs:
+  build:
+    if: inputs.build && (inputs.build_guides || inputs.build_doxy)
+    name: Build documentation
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Get TSDuck repo
+      uses: actions/checkout@master
+      with:
+        # Checkout tag. If empty, use the default branch.
+        ref: ${{ inputs.tag }}
+
+    - name: Install dependencies
+      run: |
+        scripts/install-prerequisites.sh NOJAVA=1
+
+    - name: Get TSDuck version
+      run: |
+        if [[ -z "${{ inputs.tag }}" ]]; then
+            version=$(scripts/get-version-from-sources.py)
+        else
+            version=${{ inputs.tag }}
+            version=${version/#v/}
+        fi
+        echo "VERSION=$version" >>$GITHUB_ENV
+        echo "Building doc version $version"
+
+    - name: Build user and developer guides
+      if: inputs.build_guides
+      run: |
+        make docs
+        rm -f bin/doc/*.bigpdf
+        # Legacy docs:
+        cp doc/presentations/*.pdf bin/doc || true
+        echo "${{ env.VERSION }}" >bin/doc/docversion.txt
+        (cd bin; zip -qr9 ../doc.zip doc)
+
+    - name: Build programming reference (doxygen)
+      if: inputs.build_doxy
+      run: |
+        make doxygen || true # don't fail on undocumented features here
+        echo "${{ env.VERSION }}" >bin/doxy/docversion.txt
+        (cd bin; zip -qr9 ../doxy.zip doxy)
+
+    - name: Upload doc package
+      if: inputs.build_guides
+      uses: actions/upload-artifact@v4
+      with:
+        name: doc-package
+        path: doc.zip
+        retention-days: 30
+
+    - name: Upload doxygen package
+      if: inputs.build_doxy
+      uses: actions/upload-artifact@v4
+      with:
+        name: doxy-package
+        path: doxy.zip
+        retention-days: 30

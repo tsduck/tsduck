@@ -21,268 +21,88 @@ on:
   workflow_dispatch:
 
 jobs:
-  windows:
-    name: Windows build
-    if: github.repository == 'tsduck/tsduck'
-    runs-on: windows-latest
-    env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  # Get current TSDuck version in the repo and latest nightly builds on tsduck.io.
+  check_version:
+    name: Check version
+    runs-on: ubuntu-latest
+    outputs:
+      rebuild: ${{ steps.check.outputs.rebuild }}
     steps:
-
+    - name: Install prerequisites
+      run: sudo apt install -y curl jq
     - name: Get TSDuck repo
       uses: actions/checkout@master
-
     - name: Check if rebuild is necessary
+      id: check
       run: |
-        try {
-            $response = Invoke-RestMethod https://tsduck.io/download/prerelease/get-versions
-            $remote_version = $response.latest
-        }
-        catch {
-            $remote_version = ""
-        }
-        $version = (python scripts\get-version-from-sources.py)
-        $rebuild = ($version -ne $remote_version).ToString().ToLower()
-        $version | Out-File version.txt
-        Write-Output "Current version: $version, latest on tsduck.io: $remote_version"
-        Write-Output "VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-        Write-Output "REBUILD=$rebuild" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-
-    - name: Check same version
-      if: env.REBUILD == 'false'
-      run: Write-Output "Same version as latest pre-release, not rebuilt"
-
-    - name: Install dependencies
-      if: env.REBUILD == 'true'
-      run: scripts/install-prerequisites.ps1 -GitHubActions -NoDoxygen -NoPause
-
-    - name: Build installers
-      if: env.REBUILD == 'true'
-      run: pkg/nsis/build-installer.ps1 -NoPause -NoLowPriority
-
-    - name: Check built version (64-bit)
-      if: env.REBUILD == 'true'
-      run: bin/Release-x64/tsversion.exe --version=all
-
-    - name: Test installation (64-bit)
-      if: env.REBUILD == 'true'
-      run: |
-        Start-Process -Wait -FilePath pkg/installers/TSDuck-Win64-${{ env.VERSION }}.exe -ArgumentList @("/S", "/all=true")
-        # View installed files.
-        Get-ChildItem -Recurse $env:ProgramFiles\TSDuck
-        # Propagate environment variables to next steps.
-        $tsduck     = [System.Environment]::GetEnvironmentVariable("TSDUCK",     [System.EnvironmentVariableTarget]::Machine)
-        $path       = [System.Environment]::GetEnvironmentVariable("Path",       [System.EnvironmentVariableTarget]::Machine)
-        $pythonpath = [System.Environment]::GetEnvironmentVariable("PYTHONPATH", [System.EnvironmentVariableTarget]::Machine)
-        $classpath  = [System.Environment]::GetEnvironmentVariable("CLASSPATH",  [System.EnvironmentVariableTarget]::Machine)
-        Write-Output "TSDUCK=$tsduck"         | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-        Write-Output "Path=$path"             | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-        Write-Output "PYTHONPATH=$pythonpath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-        Write-Output "CLASSPATH=$classpath"   | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-
-    - name: Download test suite
-      if: env.REBUILD == 'true'
-      run: |
-        $ProgressPreference = 'SilentlyContinue'
-        Invoke-WebRequest -UseBasicParsing -Uri https://github.com/tsduck/tsduck-test/archive/master.zip -OutFile test.zip
-        Expand-Archive test.zip -DestinationPath . -Force
-        Move-Item tsduck-test-master ../tsduck-test -Force
-
-    - name: Run test suite on installed version
-      if: env.REBUILD == 'true'
-      shell: bash
-      run: |
-        cd ../tsduck-test
-        ./run-all-tests.sh && status=$? || status=$?
-        for f in $(find tmp -name '*.diff'); do
-            echo "==== $f";
-            cat "$f"
-        done
-        exit $status
-
+        remote_version=$(curl --retry 5 --retry-all-errors -sSL https://tsduck.io/download/prerelease/get-versions | jq -r '.latest?'; true)
+        version=$(scripts/get-version-from-sources.py)
+        [[ "$version" == "$remote_version" ]] && rebuild=false || rebuild=true
+        echo "Current version: $version, latest on tsduck.io: $remote_version, rebuild: $rebuild"
+        echo "rebuild=$rebuild" >>$GITHUB_OUTPUT
+        echo "$version" >version.txt
     - name: Upload version
-      if: env.REBUILD == 'true'
+      if: steps.check.outputs.rebuild
       uses: actions/upload-artifact@v4
       with:
         name: version
         path: version.txt
         retention-days: 5
 
-    - name: Upload 64-bit installer
-      if: env.REBUILD == 'true'
-      uses: actions/upload-artifact@v4
-      with:
-        name: installer-64
-        path: pkg/installers/TSDuck-Win64-${{ env.VERSION }}.exe
-        retention-days: 5
+  # Build on Windows.
+  windows:
+    name: Windows build
+    if: github.repository == 'tsduck/tsduck'
+    needs: [check_version]
+    uses: ./.github/workflows/release-windows.yml
+    with:
+      build: ${{ needs.check_version.outputs.rebuild }}
+      build_x64: true
+      build_arm64: false
+      runner: windows-latest
+    secrets: inherit
+    permissions:
+      id-token: write
+      contents: read
 
-    - name: Upload 64-bit portable
-      if: env.REBUILD == 'true'
-      uses: actions/upload-artifact@v4
-      with:
-        name: portable-64
-        path: pkg/installers/TSDuck-Win64-${{ env.VERSION }}-Portable.zip
-        retention-days: 5
-
+  # Build on Linux.
   linux:
     name: Linux build
     if: github.repository == 'tsduck/tsduck'
-    runs-on: ubuntu-24.04
-    env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    steps:
+    needs: [check_version]
+    uses: ./.github/workflows/release-linux.yml
+    with:
+      build: ${{ needs.check_version.outputs.rebuild }}
+      arch: x64
+      distro: ubuntu
+      runner: ubuntu-latest
+      image: ubuntu:latest
+      setup_command: apt update; apt install -y sudo git lsb-release
+      command_list_artifact: true
+    secrets: inherit
+    permissions:
+      id-token: write
+      contents: read
 
-    - name: Get TSDuck repo
-      uses: actions/checkout@master
-
-    - name: Check if rebuild is necessary
-      run: |
-        sudo apt install -y jq
-        remote_version=$(curl --retry 5 --retry-all-errors -sSL https://tsduck.io/download/prerelease/get-versions | jq -r '.latest?'; true)
-        version=$(scripts/get-version-from-sources.py)
-        fullversion=$(scripts/get-version-from-sources.py --full)
-        [[ "$version" == "$remote_version" ]] && rebuild=false || rebuild=true
-        echo "Current version: $version, latest on tsduck.io: $remote_version"
-        echo "VERSION=$version" >>$GITHUB_ENV
-        echo "FULLVERSION=$fullversion" >>$GITHUB_ENV
-        echo "REBUILD=$rebuild" >>$GITHUB_ENV
-
-    - name: Check same version
-      if: env.REBUILD == 'false'
-      run: echo "Same version as latest pre-release, not rebuilt"
-
-    - name: Install dependencies
-      if: env.REBUILD == 'true'
-      run: scripts/install-prerequisites.sh
-
-    - name: Build TSDuck
-      if: env.REBUILD == 'true'
-      run: make -j5 && make installer
-
-    - name: Check built version
-      if: env.REBUILD == 'true'
-      run: source scripts/setenv.sh && tsversion --version=all
-
-    - name: Test installation
-      if: env.REBUILD == 'true'
-      run: make install-installer
-
-    - name: Run test suite on installed version
-      if: env.REBUILD == 'true'
-      run: |
-        mkdir -p ../tsduck-test
-        cd ../tsduck-test
-        curl -sSL https://github.com/tsduck/tsduck-test/tarball/master | tar xz --strip 1
-        ./run-all-tests.sh && status=$? || status=$?
-        for f in $(find tmp -name '*.diff'); do
-            echo "==== $f";
-            cat "$f"
-        done
-        exit $status
-
-    - name: Prepare upload package
-      if: env.REBUILD == 'true'
-      run: |
-        tsp --version=short &>tsp.version.txt
-        tsp --list=input &>tsp.input.txt
-        tsp --list=output &>tsp.output.txt
-        tsp --list=packet &>tsp.packet.txt
-        for file in src/tstools/*.cpp; do
-            name=$(basename $file .cpp)
-            if [[ -n $(which $name) ]]; then
-                echo -n $name:
-                $name --help=description 2>&1
-            fi
-        done >tsduck.commands.txt
-        zip -q9 tsduck.commands.zip tsp.version.txt tsp.input.txt tsp.output.txt tsp.packet.txt tsduck.commands.txt
-
-    - name: Upload command lists
-      if: env.REBUILD == 'true'
-      uses: actions/upload-artifact@v4
-      with:
-        name: command-lists
-        path: tsduck.commands.zip
-        retention-days: 5
-
-    - name: Upload Ubuntu package
-      if: env.REBUILD == 'true'
-      uses: actions/upload-artifact@v4
-      with:
-        name: ubuntu-package
-        path: pkg/installers/tsduck_${{ env.FULLVERSION }}_amd64.deb
-        retention-days: 5
-
-    - name: Upload Ubuntu dev package
-      if: env.REBUILD == 'true'
-      uses: actions/upload-artifact@v4
-      with:
-        name: ubuntu-dev-package
-        path: pkg/installers/tsduck-dev_${{ env.FULLVERSION }}_amd64.deb
-        retention-days: 5
-
+  # Build documentation.
   doc:
     name: Documentation build
     if: github.repository == 'tsduck/tsduck'
-    runs-on: ubuntu-24.04
-    env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    steps:
+    needs: [check_version]
+    uses: ./.github/workflows/release-docs.yml
+    with:
+      build: ${{ needs.check_version.outputs.rebuild }}
+      build_guides: true
+      build_doxy: true
+    secrets: inherit
+    permissions:
+      id-token: write
+      contents: read
 
-    - name: Get TSDuck repo
-      uses: actions/checkout@master
-
-    - name: Check if rebuild is necessary
-      run: |
-        remote_version=$(curl --retry 5 --retry-all-errors -sSL https://tsduck.io/doxy/docversion.txt | grep '^[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*$'; true)
-        version=$(scripts/get-version-from-sources.py)
-        [[ "$version" == "$remote_version" ]] && rebuild=false || rebuild=true
-        echo "Current version: $version, latest on tsduck.io: $remote_version"
-        echo "VERSION=$version" >>$GITHUB_ENV
-        echo "REBUILD=$rebuild" >>$GITHUB_ENV
-
-    - name: Check same version
-      if: env.REBUILD == 'false'
-      run: echo "Same version as currently published documentation, not rebuilt"
-
-    - name: Install dependencies
-      if: env.REBUILD == 'true'
-      run: scripts/install-prerequisites.sh
-
-    - name: Build documentation
-      if: env.REBUILD == 'true'
-      run: |
-        make docs
-        make doxygen || true # don't fail on undocumented features here
-        rm -f bin/doc/*.bigpdf
-        cp doc/presentations/*.pdf bin/doc || true
-        echo "${{ env.VERSION }}" >bin/doxy/docversion.txt
-        echo "${{ env.VERSION }}" >bin/doc/docversion.txt
-        (cd bin; zip -qr9 ../doxy.zip doxy)
-        (cd bin; zip -qr9 ../doc.zip doc)
-
-    - name: Upload doc package
-      if: env.REBUILD == 'true'
-      uses: actions/upload-artifact@v4
-      with:
-        name: doc-package
-        path: doc.zip
-        retention-days: 5
-
-    - name: Upload doxygen package
-      if: env.REBUILD == 'true'
-      uses: actions/upload-artifact@v4
-      with:
-        name: doxy-package
-        path: doxy.zip
-        retention-days: 5
-
+  # Trigger the update on tsduck.io.
   update:
     name: Update nightly builds on tsduck.io
-    # Starting with upload-artifact@v4, it is guaranteed that the artifacts are
-    # available when the step completes. Therefore, it is no longer necessary to
-    # have a separate workflow to update the website. We just need to wait for
-    # the completion of the build jobs.
-    if: github.repository == 'tsduck/tsduck'
+    if: github.repository == 'tsduck/tsduck' && needs.check_version.outputs.rebuild
     needs: [linux, windows, doc]
     runs-on: ubuntu-latest
     steps:
