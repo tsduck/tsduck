@@ -100,6 +100,7 @@ exist-wildcard () {
 extract-version() {
     "$1" --version 2>/dev/null |
         head -1 |
+        sed -E 's/(\.[0-9]*)(a|b|rc)[0-9]*/\1/' |
         sed -e 's/([^(]*)//g' |
         tr ' ' '\n' |
         grep '^[0-9][0-9]*\.[0-9\.]*$' |
