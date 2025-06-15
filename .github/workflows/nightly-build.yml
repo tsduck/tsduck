@@ -38,7 +38,9 @@ jobs:
         remote_version=$(curl --retry 5 --retry-all-errors -sSL https://tsduck.io/download/prerelease/get-versions | jq -r '.latest?'; true)
         version=$(scripts/get-version-from-sources.py)
         [[ "$version" == "$remote_version" ]] && rebuild=false || rebuild=true
-        echo "Current version: $version, latest on tsduck.io: $remote_version, rebuild: $rebuild"
+        echo "Repository: ${{ github.repository }}"
+        echo "Current version: $version, latest on tsduck.io: $remote_version"
+        echo "Rebuild: $rebuild"
         echo "rebuild=$rebuild" >>$GITHUB_OUTPUT
         echo "$version" >version.txt
     - name: Upload version
@@ -56,7 +58,7 @@ jobs:
     needs: [check_version]
     uses: ./.github/workflows/release-windows.yml
     with:
-      build: ${{ needs.check_version.outputs.rebuild }}
+      build: ${{ needs.check_version.outputs.rebuild == 'true' }}
       build_x64: true
       build_arm64: false
       runner: windows-latest
@@ -72,7 +74,7 @@ jobs:
     needs: [check_version]
     uses: ./.github/workflows/release-linux.yml
     with:
-      build: ${{ needs.check_version.outputs.rebuild }}
+      build: ${{ needs.check_version.outputs.rebuild == 'true' }}
       arch: x64
       distro: ubuntu
       runner: ubuntu-latest
@@ -91,7 +93,7 @@ jobs:
     needs: [check_version]
     uses: ./.github/workflows/release-docs.yml
     with:
-      build: ${{ needs.check_version.outputs.rebuild }}
+      build: ${{ needs.check_version.outputs.rebuild == 'true' }}
       build_guides: true
       build_doxy: true
     secrets: inherit
