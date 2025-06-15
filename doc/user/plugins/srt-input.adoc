@@ -29,7 +29,7 @@ Typically, this plugin is available on macOS, Windows, Fedora 31 onwards, Ubuntu
 [.usage]
 Acknowledgement
 
-This plugin is a contribution from Anthony Delannoy.
+The original version of this plugin is a contribution from Anthony Delannoy.
 
 [.usage]
 Input timestamps
@@ -65,6 +65,19 @@ Specify that the real-time input bitrate shall be evaluated on a regular basis.
 The value specifies the number of seconds between two evaluations.
 By default, the real-time input bitrate is never evaluated and
 the input bitrate is evaluated from the PCR in the input packets.
+
+[.opt]
+*-m* +
+*--multiple*
+
+[.optdoc]
+When the sender peer disconnects, wait for another one and continue.
+
+[.opt]
+*--restart-delay* _milliseconds_
+
+[.optdoc]
+With `--multiple`, wait the specified number of milliseconds before restarting.
 
 [.opt]
 *--rs204*

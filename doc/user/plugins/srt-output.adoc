@@ -26,7 +26,7 @@ Typically, this plugin is available on macOS, Windows, Fedora 31 onwards, Ubuntu
 [.usage]
 Acknowledgement
 
-This plugin is a contribution from Anthony Delannoy.
+The original version of this plugin is a contribution from Anthony Delannoy.
 
 [.usage]
 Usage

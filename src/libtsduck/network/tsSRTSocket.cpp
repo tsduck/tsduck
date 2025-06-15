@@ -66,12 +66,12 @@ void ts::SRTSocket::defineArgs(ts::Args& args)
               u"This option is incompatible with --listener.");
 
     args.option(u"conn-timeout", 0, Args::INTEGER, 0, 1, 0, (1 << 20));
-    args.help(u"conn-timeout",
-              u"Connect timeout. SRT cannot connect for RTT > 1500 msec (2 handshake exchanges) "
-              u"with the default connect timeout of 3 seconds. This option applies to the caller "
-              u"and rendezvous connection modes. The connect timeout is 10 times the value set "
-              u"for the rendezvous mode (which can be used as a workaround for this connection "
-              u"problem with earlier versions).");
+    args.help(u"conn-timeout", u"milliseconds",
+              u"Connect timeout, in milliseconds. "
+              u"SRT cannot connect for RTT > 1500 msec (2 handshake exchanges) with the default connect timeout of 3 seconds. "
+              u"This option applies to the caller and rendezvous connection modes. "
+              u"The connect timeout is 10 times the value set for the rendezvous mode "
+              u"(which can be used as a workaround for this connection problem with earlier versions).");
 
     args.option(u"ffs", 0, Args::POSITIVE);
     args.help(u"ffs",
@@ -301,6 +301,7 @@ bool ts::SRTSocket::reportStatistics(SRTStatMode, Report& report) NOSRT_ERROR
 bool ts::SRTSocket::getSockOpt(int, const char*, void*, int&, Report& report) const NOSRT_ERROR
 int  ts::SRTSocket::getSocket() const { return -1; }
 bool ts::SRTSocket::getMessageApi() const { return false; }
+bool ts::SRTSocket::getPeers(IPSocketAddress& local, IPSocketAddress& remote, Report& report) NOSRT_ERROR
 ts::UString ts::SRTSocket::GetLibraryVersion() { return NOSRT_ERROR_MSG; }
 bool ts::SRTSocket::setAddressesInternal(const IPSocketAddress&, const IPSocketAddress&, const IPAddress&, bool, Report& report) NOSRT_ERROR
 size_t ts::SRTSocket::totalSentBytes() const { return 0; }
@@ -627,6 +628,35 @@ bool ts::SRTSocket::close(Report& report)
 
 
 //----------------------------------------------------------------------------
+// Get the socket peers, local and remote.
+//----------------------------------------------------------------------------
+
+bool ts::SRTSocket::getPeers(IPSocketAddress& local, IPSocketAddress& remote, Report& report)
+{
+    ::sockaddr_storage addr;
+    int addr_len = sizeof(addr);
+
+    // Get local socket.
+    report.debug(u"calling srt_getsockname()");
+    if (::srt_getsockname(_guts->sock, reinterpret_cast<::sockaddr*>(&addr), &addr_len) < 0) {
+        report.error(u"error during srt_getsockname(): %s", ::srt_getlasterror_str());
+        return false;
+    }
+    local.set(addr);
+
+    // Get remote socket.
+    addr_len = sizeof(addr);
+    report.debug(u"calling srt_getpeername()");
+    if (::srt_getpeername(_guts->sock, reinterpret_cast<::sockaddr*>(&addr), &addr_len) < 0) {
+        report.error(u"error during srt_getpeername(): %s", ::srt_getlasterror_str());
+        return false;
+    }
+    remote.set(addr);
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
 // Report statistics when necessary.
 //----------------------------------------------------------------------------
 
@@ -913,10 +943,10 @@ bool ts::SRTSocket::Guts::srtListen(const IPSocketAddress& addr, Report& report)
     }
 
     // The original SRT socket becomes the listener SRT socket.
-    ::sockaddr peer_addr;
+    ::sockaddr_storage peer_addr;
     int peer_addr_len = sizeof(peer_addr);
     report.debug(u"calling srt_accept()");
-    const int data_sock = ::srt_accept(sock, &peer_addr, &peer_addr_len);
+    const int data_sock = ::srt_accept(sock, reinterpret_cast<::sockaddr*>(&peer_addr), &peer_addr_len);
     if (data_sock == SRT_INVALID_SOCK) {
         report.error(u"error during srt_accept(): %s", ::srt_getlasterror_str());
         return false;

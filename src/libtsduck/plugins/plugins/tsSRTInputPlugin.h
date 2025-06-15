@@ -35,6 +35,8 @@ namespace ts {
         virtual bool receiveDatagram(uint8_t* buffer, size_t buffer_size, size_t& ret_size, cn::microseconds& timestamp, TimeSource& timesource) override;
 
     private:
-        SRTSocket _sock {};
+        bool             _multiple = false;  // Accept multiple (sequential) connections.
+        cn::milliseconds _restart_delay {};  // If _multiple, wait before reconnecting.
+        SRTSocket        _sock {};           // Incoming SRT socket.
     };
 }

@@ -41,10 +41,11 @@ The parameter specifies the IP remote address (or host name) and UDP port.
 If `--listener` is also specified, the SRT socket works in rendezvous mode.
 
 [.opt]
-*--conn-timeout* _value_
+*--conn-timeout* _milliseconds_
 
 [.optdoc]
-Connect timeout. SRT cannot connect for RTT > 1500 msec (2 handshake exchanges) with the default connect timeout of 3 seconds.
+Connect timeout in milliseconds.
+SRT cannot connect for RTT > 1500 msec (2 handshake exchanges) with the default connect timeout of 3 seconds.
 This option applies to the caller and rendezvous connection modes.
 The connect timeout is 10 times the value set for the rendezvous mode
 (which can be used as a workaround for this connection problem with earlier versions).

@@ -27,6 +27,12 @@ ts::SRTInputPlugin::SRTInputPlugin(TSP* tsp_) :
 {
     _sock.defineArgs(*this);
 
+    option(u"multiple", 'm');
+    help(u"multiple", u"When the sender peer disconnects, wait for another one and continue.");
+
+    option<cn::milliseconds>(u"restart-delay");
+    help(u"restart-delay", u"With --multiple, wait the specified delay before restarting.");
+
     // These options are legacy, now use --listener and/or --caller.
     option(u"", 0, IPSOCKADDR, 0, 1);
     help(u"", u"Remote address:port. This is a legacy parameter, now use --caller.");
@@ -47,6 +53,8 @@ bool ts::SRTInputPlugin::getOptions()
     IPSocketAddress rendezvous;
     getSocketValue(remote, u"");
     getSocketValue(rendezvous, u"rendezvous");
+    _multiple = present(u"multiple");
+    getChronoValue(_restart_delay, u"restart-delay");
 
     // Get command line arguments for superclass and socket.
     return AbstractDatagramInputPlugin::getOptions() &&
@@ -62,7 +70,12 @@ bool ts::SRTInputPlugin::getOptions()
 bool ts::SRTInputPlugin::start()
 {
     // Initialize superclass and UDP socket.
-    return AbstractDatagramInputPlugin::start() && _sock.open(NPOS, *this);
+    const bool success = AbstractDatagramInputPlugin::start() && _sock.open(NPOS, *this);
+    IPSocketAddress local, remote;
+    if (success && _sock.getPeers(local, remote, *this)) {
+        verbose(u"connected from %s (local: %s)", remote, local);
+    }
+    return success;
 }
 
 
@@ -72,8 +85,9 @@ bool ts::SRTInputPlugin::start()
 
 bool ts::SRTInputPlugin::stop()
 {
+    AbstractDatagramInputPlugin::stop();
     _sock.close(*this);
-    return AbstractDatagramInputPlugin::stop();
+    return true;
 }
 
 
@@ -95,5 +109,30 @@ bool ts::SRTInputPlugin::abortInput()
 bool ts::SRTInputPlugin::receiveDatagram(uint8_t* buffer, size_t buffer_size, size_t& ret_size, cn::microseconds& timestamp, TimeSource& timesource)
 {
     timesource = TimeSource::SRT;
-    return _sock.receive(buffer, buffer_size, ret_size, timestamp, *this);
+
+    // Loop on restart with multiple sessions.
+    for (;;) {
+        // Receive packets.
+        if (_sock.receive(buffer, buffer_size, ret_size, timestamp, *this)) {
+            return true;
+        }
+        // Receive error.
+        if (!_sock.peerDisconnected()) {
+            // Actual error, not a clean disconnection from the sender, do not retry, even with --multiple.
+            return false;
+        }
+        verbose(u"sender disconnected%s", _multiple ? u", waiting for another one" : u"");
+        if (!_multiple) {
+            // No multiple sessions, terminate here.
+            return false;
+        }
+        // Multiple sessions, close socket and re-open to acquire another receiver.
+        stop();
+        if (_restart_delay > cn::milliseconds::zero()) {
+            std::this_thread::sleep_for(_restart_delay);
+        }
+        if (!start()) {
+            return false;
+        }
+    }
 }

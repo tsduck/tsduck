@@ -135,6 +135,15 @@ namespace ts {
         }
 
         //!
+        //! Get the socket peers, local and remote.
+        //! @param [out] local Local socket address.
+        //! @param [out] remote Remote socket address.
+        //! @param [in,out] report Where to report error.
+        //! @return True on success, false on error.
+        //!
+        bool getPeers(IPSocketAddress& local, IPSocketAddress& remote, Report& report = CERR);
+
+        //!
         //! Send a message to the default destination address and port.
         //! @param [in] data Address of the message to send.
         //! @param [in] size Size in bytes of the message to send.

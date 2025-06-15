@@ -75,10 +75,14 @@ bool ts::SRTOutputPlugin::getOptions()
 bool ts::SRTOutputPlugin::start()
 {
     bool success = _datagram.open(*this);
+    IPSocketAddress local, remote;
     if (success) {
         success = _sock.open(_datagram.maxPayloadSize(), *this);
         if (!success) {
             _datagram.close(0, true, *this);
+        }
+        else if (_sock.getPeers(local, remote, *this)) {
+            verbose(u"connected to %s (local: %s)", remote, local);
         }
     }
     return success;
