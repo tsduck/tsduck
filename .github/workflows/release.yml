@@ -95,21 +95,16 @@ on:
         - none
         - windows-latest
         - windows-11-arm
-      retention_days:
-        description: 'Artifacts retention days'
-        type: number
-        required: false
-        default: ${{ vars.ARTIFACT_RETENTION_DAYS || 5 }}
 
 jobs:
   # Identify target tag if release_type is "update-last".
-  # We cannot simply skip the job with "if:", we need to run it to set outputs.tag.
-  identify:
-    name: Identify last version
+  init:
+    name: Initialization
     runs-on: ubuntu-latest
     outputs:
-      # Will be empty if release_type is not "update-last".
-      tag: ${{ steps.get_tag.outputs.tag }}
+      # Tag of last version, empty if release_type is not "update-last".
+      tag: ${{ steps.get_vars.outputs.tag }}
+      retention_days: ${{ steps.get_vars.outputs.retention }}
     permissions:
       # Required to get draft releases
       contents: write
@@ -122,9 +117,8 @@ jobs:
       # Getting the current version needs the content of the repo.
       if: inputs.release_type != 'update-last'
       uses: actions/checkout@master
-    - name: Get latest version tag
-      # The two alternatives must be executed in the same step because the output is identified as steps.get_tag.outputs.tag.
-      id: get_tag
+    - name: Get version
+      id: get_vars
       run: |
         if [[ ${{ inputs.release_type }} == update-last ]]; then
             # Get most recent release, including draft and pre-release.
@@ -140,19 +134,21 @@ jobs:
             version=$(scripts/get-version-from-sources.py)
             echo "Build the latest commit (version $version)"
         fi
+        retention=${{ vars.ARTIFACT_RETENTION_DAYS || 5 }}
+        echo "Artifacts retention days: $retention"
+        echo "retention=$retention" >>$GITHUB_OUTPUT
         echo "tag=$tag" >>$GITHUB_OUTPUT
-        echo "VERSION=$version" >>$GITHUB_ENV
         echo "$version" >version.txt
     - name: Upload version
       uses: actions/upload-artifact@v4
       with:
         name: version
         path: version.txt
-        retention-days: ${{ inputs.retention_days }}
+        retention-days: ${{ fromJSON(steps.get_vars.outputs.retention) }}
 
   # Build on Linux, several distros and architectures, using containers.
   linux:
-    needs: [identify]
+    needs: [init]
     strategy:
       # If a job fails, do not abort others.
       fail-fast: false
@@ -193,17 +189,14 @@ jobs:
     uses: ./.github/workflows/release-linux.yml
     with:
       build: ${{ matrix.build_arch && matrix.build_distro }}
-      tag: ${{ needs.identify.outputs.tag }}
+      tag: ${{ needs.init.outputs.tag }}
       arch: ${{ matrix.arch }}
       distro: ${{ matrix.distro }}
       runner: ${{ matrix.runner }}
       image: ${{ matrix.image }}
       setup_command: ${{ matrix.setup_command }}
       package_options: ${{ matrix.package_options }}
-    secrets: inherit
-    permissions:
-      id-token: write
-      contents: read
+      retention_days: ${{ fromJSON(needs.init.outputs.retention_days) }}
 
   # Build Win64 and Arm64 packages in one pass to get the two sets of libraries in the installers.
   # The runner can be a x64 or arm64 system. Even though one single runner can build the two packages,
@@ -212,33 +205,27 @@ jobs:
   # Otherwise, the package won't be tested after build.
   windows:
     name: Build on Windows
-    needs: [identify]
+    needs: [init]
     uses: ./.github/workflows/release-windows.yml
     with:
       build: ${{ inputs.windows_runner != 'none' && (inputs.build_x64 || inputs.build_arm64) }}
-      tag: ${{ needs.identify.outputs.tag }}
+      tag: ${{ needs.init.outputs.tag }}
       build_x64: ${{ inputs.build_x64 }}
       build_arm64: ${{ inputs.build_arm64 }}
       runner: ${{ inputs.windows_runner }}
-    secrets: inherit
-    permissions:
-      id-token: write
-      contents: read
+      retention_days: ${{ fromJSON(needs.init.outputs.retention_days) }}
 
   # Build documentation.
   docs:
     name: Build documentation
-    needs: [identify]
+    needs: [init]
     uses: ./.github/workflows/release-docs.yml
     with:
       build: ${{ inputs.build_docs }}
-      tag: ${{ needs.identify.outputs.tag }}
+      tag: ${{ needs.init.outputs.tag }}
       build_guides: true
       build_doxy: true
-    secrets: inherit
-    permissions:
-      id-token: write
-      contents: read
+      retention_days: ${{ fromJSON(needs.init.outputs.retention_days) }}
 
   # Final job: create or update release (if release_type is not 'none').
   # Do it even if a previous build fails. This way, we include everything that was build
@@ -246,7 +233,7 @@ jobs:
   release:
     name: Create or update release
     if: always() && inputs.release_type != 'none'
-    needs: [identify, linux, windows, docs]
+    needs: [init, linux, windows, docs]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -274,7 +261,7 @@ jobs:
       run: |
         echo "Using repository ${{ github.repository }}"
         case ${{ inputs.release_type }} in
-            update-last) opt="--update --tag ${{ needs.identify.outputs.tag }}" ;;
+            update-last) opt="--update --tag ${{ needs.init.outputs.tag }}" ;;
             draft)       opt="--create --missing --draft" ;;
             pre-release) opt="--create --missing --pre" ;;
             official)    opt="--create --missing" ;;

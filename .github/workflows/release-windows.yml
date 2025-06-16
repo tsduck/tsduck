@@ -45,7 +45,7 @@ on:
         description: 'Artifacts retention days'
         type: number
         required: false
-        default: ${{ vars.ARTIFACT_RETENTION_DAYS || 5 }}
+        default: ${{ fromJSON(vars.ARTIFACT_RETENTION_DAYS || 5) }}
 
 jobs:
   build:

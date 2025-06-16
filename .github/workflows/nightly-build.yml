@@ -22,13 +22,12 @@ on:
 
 jobs:
   # Get current TSDuck version in the repo and latest nightly builds on tsduck.io.
-  check_version:
-    name: Check version
+  init:
+    name: Initialization
     runs-on: ubuntu-latest
     outputs:
-      # Warning: this output is a string "true" or "false", not a boolean.
-      # Use fromJSON() to convert it to a boolean.
       rebuild: ${{ steps.check.outputs.rebuild }}
+      retention_days: ${{ steps.check.outputs.retention }}
     steps:
     - name: Install prerequisites
       run: sudo apt install -y curl jq
@@ -40,10 +39,13 @@ jobs:
         remote_version=$(curl --retry 5 --retry-all-errors -sSL https://tsduck.io/download/prerelease/get-versions | jq -r '.latest?'; true)
         version=$(scripts/get-version-from-sources.py)
         [[ "$version" == "$remote_version" ]] && rebuild=false || rebuild=true
+        retention=${{ vars.ARTIFACT_RETENTION_DAYS || 5 }}
         echo "Repository: ${{ github.repository }}"
         echo "Current version: $version, latest on tsduck.io: $remote_version"
         echo "Rebuild: $rebuild"
+        echo "Artifacts retention days: $retention"
         echo "rebuild=$rebuild" >>$GITHUB_OUTPUT
+        echo "retention=$retention" >>$GITHUB_OUTPUT
         echo "$version" >version.txt
     - name: Upload version
       if: fromJSON(steps.check.outputs.rebuild)
@@ -51,62 +53,53 @@ jobs:
       with:
         name: version
         path: version.txt
-        retention-days: ${{ vars.ARTIFACT_RETENTION_DAYS || 5 }}
+        retention-days: ${{ fromJSON(steps.check.outputs.retention) }}
 
   # Build on Windows.
   windows:
     name: Windows build
     if: github.repository == 'tsduck/tsduck'
-    needs: [check_version]
+    needs: [init]
     uses: ./.github/workflows/release-windows.yml
     with:
-      build: ${{ fromJSON(needs.check_version.outputs.rebuild) }}
+      build: ${{ fromJSON(needs.init.outputs.rebuild) }}
       build_x64: true
       build_arm64: false
       runner: windows-latest
-    secrets: inherit
-    permissions:
-      id-token: write
-      contents: read
+      retention_days: ${{ fromJSON(needs.init.outputs.retention_days) }}
 
   # Build on Linux.
   linux:
     name: Linux build
     if: github.repository == 'tsduck/tsduck'
-    needs: [check_version]
+    needs: [init]
     uses: ./.github/workflows/release-linux.yml
     with:
-      build: ${{ fromJSON(needs.check_version.outputs.rebuild) }}
+      build: ${{ fromJSON(needs.init.outputs.rebuild) }}
       arch: x64
       distro: ubuntu
       runner: ubuntu-latest
       image: ubuntu:latest
       setup_command: apt update; apt install -y sudo git lsb-release
       command_list_artifact: true
-    secrets: inherit
-    permissions:
-      id-token: write
-      contents: read
+      retention_days: ${{ fromJSON(needs.init.outputs.retention_days) }}
 
   # Build documentation.
   doc:
     name: Documentation build
     if: github.repository == 'tsduck/tsduck'
-    needs: [check_version]
+    needs: [init]
     uses: ./.github/workflows/release-docs.yml
     with:
-      build: ${{ fromJSON(needs.check_version.outputs.rebuild) }}
+      build: ${{ fromJSON(needs.init.outputs.rebuild) }}
       build_guides: true
       build_doxy: true
-    secrets: inherit
-    permissions:
-      id-token: write
-      contents: read
+      retention_days: ${{ fromJSON(needs.init.outputs.retention_days) }}
 
   # Trigger the update on tsduck.io.
   update:
     name: Update nightly builds on tsduck.io
-    if: github.repository == 'tsduck/tsduck' && fromJSON(needs.check_version.outputs.rebuild)
+    if: github.repository == 'tsduck/tsduck' && fromJSON(needs.init.outputs.rebuild)
     needs: [linux, windows, doc]
     runs-on: ubuntu-latest
     steps:
