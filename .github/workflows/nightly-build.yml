@@ -51,7 +51,7 @@ jobs:
       with:
         name: version
         path: version.txt
-        retention-days: 5
+        retention-days: ${{ vars.ARTIFACT_RETENTION_DAYS || 5 }}
 
   # Build on Windows.
   windows:

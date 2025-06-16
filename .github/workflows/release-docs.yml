@@ -35,11 +35,16 @@ on:
         type: boolean
         required: false
         default: true
+      retention_days:
+        description: 'Artifacts retention days'
+        type: number
+        required: false
+        default: ${{ vars.ARTIFACT_RETENTION_DAYS || 5 }}
 
 jobs:
   build:
-    if: inputs.build && (inputs.build_guides || inputs.build_doxy)
     name: Build documentation
+    if: inputs.build && (inputs.build_guides || inputs.build_doxy)
     runs-on: ubuntu-latest
     steps:
 
@@ -87,7 +92,7 @@ jobs:
       with:
         name: doc-package
         path: doc.zip
-        retention-days: 30
+        retention-days: ${{ inputs.retention_days }}
 
     - name: Upload doxygen package
       if: inputs.build_doxy
@@ -95,4 +100,4 @@ jobs:
       with:
         name: doxy-package
         path: doxy.zip
-        retention-days: 30
+        retention-days: ${{ inputs.retention_days }}

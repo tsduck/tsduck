@@ -57,11 +57,16 @@ on:
         type: boolean
         required: false
         default: false
+      retention_days:
+        description: 'Artifacts retention days'
+        type: number
+        required: false
+        default: ${{ vars.ARTIFACT_RETENTION_DAYS || 5 }}
 
 jobs:
   build:
-    if: inputs.build
     name: Build in container
+    if: inputs.build
     runs-on: ${{ inputs.runner }}
     container: ${{ inputs.image }}
     defaults:
@@ -176,14 +181,14 @@ jobs:
       with:
         name: tsduck-${{ inputs.distro }}-${{ inputs.arch }}
         path: pkg/installers/${{ env.TSTOOLS }}
-        retention-days: 30
+        retention-days: ${{ inputs.retention_days }}
 
     - name: Publish dev package
       uses: actions/upload-artifact@v4
       with:
         name: tsduck-dev-${{ inputs.distro }}-${{ inputs.arch }}
         path: pkg/installers/${{ env.TSDEV }}
-        retention-days: 30
+        retention-days: ${{ inputs.retention_days }}
 
     - name: Publish command lists
       if: inputs.command_list_artifact
@@ -191,4 +196,4 @@ jobs:
       with:
         name: command-lists
         path: tsduck.commands.zip
-        retention-days: 30
+        retention-days: ${{ inputs.retention_days }}

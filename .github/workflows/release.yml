@@ -95,6 +95,11 @@ on:
         - none
         - windows-latest
         - windows-11-arm
+      retention_days:
+        description: 'Artifacts retention days'
+        type: number
+        required: false
+        default: ${{ vars.ARTIFACT_RETENTION_DAYS || 5 }}
 
 jobs:
   # Identify target tag if release_type is "update-last".
@@ -143,7 +148,7 @@ jobs:
       with:
         name: version
         path: version.txt
-        retention-days: 30
+        retention-days: ${{ inputs.retention_days }}
 
   # Build on Linux, several distros and architectures, using containers.
   linux:
