@@ -26,6 +26,8 @@ jobs:
     name: Check version
     runs-on: ubuntu-latest
     outputs:
+      # Warning: this output is a string "true" or "false", not a boolean.
+      # Use fromJSON() to convert it to a boolean.
       rebuild: ${{ steps.check.outputs.rebuild }}
     steps:
     - name: Install prerequisites
@@ -44,7 +46,7 @@ jobs:
         echo "rebuild=$rebuild" >>$GITHUB_OUTPUT
         echo "$version" >version.txt
     - name: Upload version
-      if: steps.check.outputs.rebuild
+      if: fromJSON(steps.check.outputs.rebuild)
       uses: actions/upload-artifact@v4
       with:
         name: version
@@ -58,7 +60,7 @@ jobs:
     needs: [check_version]
     uses: ./.github/workflows/release-windows.yml
     with:
-      build: ${{ needs.check_version.outputs.rebuild == 'true' }}
+      build: ${{ fromJSON(needs.check_version.outputs.rebuild) }}
       build_x64: true
       build_arm64: false
       runner: windows-latest
@@ -74,7 +76,7 @@ jobs:
     needs: [check_version]
     uses: ./.github/workflows/release-linux.yml
     with:
-      build: ${{ needs.check_version.outputs.rebuild == 'true' }}
+      build: ${{ fromJSON(needs.check_version.outputs.rebuild) }}
       arch: x64
       distro: ubuntu
       runner: ubuntu-latest
@@ -93,7 +95,7 @@ jobs:
     needs: [check_version]
     uses: ./.github/workflows/release-docs.yml
     with:
-      build: ${{ needs.check_version.outputs.rebuild == 'true' }}
+      build: ${{ fromJSON(needs.check_version.outputs.rebuild) }}
       build_guides: true
       build_doxy: true
     secrets: inherit
@@ -104,7 +106,7 @@ jobs:
   # Trigger the update on tsduck.io.
   update:
     name: Update nightly builds on tsduck.io
-    if: github.repository == 'tsduck/tsduck' && needs.check_version.outputs.rebuild
+    if: github.repository == 'tsduck/tsduck' && fromJSON(needs.check_version.outputs.rebuild)
     needs: [linux, windows, doc]
     runs-on: ubuntu-latest
     steps:
