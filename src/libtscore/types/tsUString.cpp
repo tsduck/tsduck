@@ -346,13 +346,26 @@ ts::UString& ts::UString::assignFromUTF8(const char* utf8, size_type count)
 // Convert this UTF-16 string into UTF-8.
 //----------------------------------------------------------------------------
 
+void ts::UString::toUTF8(ByteBlock& utf8) const
+{
+    // The maximum number of UTF-8 bytes is 3 times the number of UTF-16 codes.
+    utf8.resize(3 * size());
+
+    const UChar* in_start = data();
+    char* const utf8_start = reinterpret_cast<char*>(utf8.data());
+    char* out_start = utf8_start;
+    ConvertUTF16ToUTF8(in_start, in_start + size(), out_start, out_start + utf8.size());
+
+    utf8.resize(out_start - utf8_start);
+}
+
 void ts::UString::toUTF8(std::string& utf8) const
 {
     // The maximum number of UTF-8 bytes is 3 times the number of UTF-16 codes.
     utf8.resize(3 * size());
 
     const UChar* in_start = data();
-    char* out_start = const_cast<char*>(utf8.data());
+    char* out_start = utf8.data();
     ConvertUTF16ToUTF8(in_start, in_start + size(), out_start, out_start + utf8.size());
 
     utf8.resize(out_start - utf8.data());

@@ -483,6 +483,12 @@ namespace ts {
         void toUTF8(std::string& utf8) const;
 
         //!
+        //! Convert this UTF-16 string into UTF-8 data.
+        //! @param [out] utf8 The equivalent UTF-8 data.
+        //!
+        void toUTF8(ByteBlock& utf8) const;
+
+        //!
         //! General routine to convert from UTF-16 to UTF-8.
         //! Stop when the input buffer is empty or the output buffer is full, whichever comes first.
         //! Invalid input values are silently ignored and skipped.

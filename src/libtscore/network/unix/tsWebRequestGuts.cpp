@@ -300,7 +300,7 @@ bool ts::WebRequest::startTransfer()
 
 bool ts::WebRequest::receive(void* buffer, size_t maxSize, size_t& retSize)
 {
-    if (_isOpen) {
+    if (_is_open) {
         return _guts->receive(buffer, maxSize, &retSize, nullptr);
     }
     else {
@@ -311,9 +311,9 @@ bool ts::WebRequest::receive(void* buffer, size_t maxSize, size_t& retSize)
 
 bool ts::WebRequest::close()
 {
-    bool success = _isOpen;
+    bool success = _is_open;
     _guts->clear();
-    _isOpen = false;
+    _is_open = false;
     return success;
 }
 
@@ -339,7 +339,7 @@ bool ts::WebRequest::SystemGuts::startTransfer(CertState certState)
     // Get retry scheme for that URL.
     size_t retries = 0;
     cn::milliseconds retryInterval;
-    LibCurlInit::Instance().getRetry(_request._originalURL, retries, retryInterval);
+    LibCurlInit::Instance().getRetry(_request._original_url, retries, retryInterval);
     _request._report.debug(u"curl retries: %d, interval: %!s", retries, retryInterval);
 
     // Loop until all retries are exhausted.
@@ -368,10 +368,10 @@ bool ts::WebRequest::SystemGuts::startTransfer(CertState certState)
 
             WebRequest certRequest(_request._report);
             certRequest.setAutoRedirect(true);
-            certRequest.setProxyHost(_request._proxyHost, _request._proxyPort);
-            certRequest.setProxyUser(_request._proxyUser, _request._proxyPassword);
-            certRequest.setReceiveTimeout(_request._receiveTimeout);
-            certRequest.setConnectionTimeout(_request._connectionTimeout);
+            certRequest.setProxyHost(_request._proxy_host, _request._proxy_port);
+            certRequest.setProxyUser(_request._proxy_user, _request._proxy_password);
+            certRequest.setReceiveTimeout(_request._receive_timeout);
+            certRequest.setConnectionTimeout(_request._connection_timeout);
             certRequest._guts->_certFile.clear(); // don't recurse in case of cert issue!
 
             if (!certRequest.downloadFile(FRESH_CACERT_URL, _certFile) || !fs::exists(_certFile)) {
@@ -414,12 +414,12 @@ bool ts::WebRequest::SystemGuts::startTransfer(CertState certState)
         ::CURLcode status = ::curl_easy_setopt(_curl, CURLOPT_ERRORBUFFER, _error);
 
         // Set the user agent.
-        if (status == ::CURLE_OK && !_request._userAgent.empty()) {
-            status = ::curl_easy_setopt(_curl, CURLOPT_USERAGENT, _request._userAgent.toUTF8().c_str());
+        if (status == ::CURLE_OK && !_request._user_agent.empty()) {
+            status = ::curl_easy_setopt(_curl, CURLOPT_USERAGENT, _request._user_agent.toUTF8().c_str());
         }
 
         // Set compression.
-        if (status == ::CURLE_OK && _request._useCompression) {
+        if (status == ::CURLE_OK && _request._use_compression) {
             // From https://curl.se/libcurl/c/CURLOPT_ACCEPT_ENCODING.html :
             // "To aid applications not having to bother about what specific algorithms this particular libcurl build
             // supports, libcurl allows a zero-length string to be set ("") to ask for an Accept-Encoding: header to
@@ -429,7 +429,7 @@ bool ts::WebRequest::SystemGuts::startTransfer(CertState certState)
 
         // Set the starting URL.
         if (status == ::CURLE_OK) {
-            status = ::curl_easy_setopt(_curl, CURLOPT_URL, _request._originalURL.toUTF8().c_str());
+            status = ::curl_easy_setopt(_curl, CURLOPT_URL, _request._original_url.toUTF8().c_str());
         }
 
         // Set the CA certificate file.
@@ -438,15 +438,15 @@ bool ts::WebRequest::SystemGuts::startTransfer(CertState certState)
         }
 
         // Set the connection timeout.
-        if (status == ::CURLE_OK && _request._connectionTimeout > cn::milliseconds::zero()) {
-            status = ::curl_easy_setopt(_curl, CURLOPT_CONNECTTIMEOUT_MS, long(_request._connectionTimeout.count()));
+        if (status == ::CURLE_OK && _request._connection_timeout > cn::milliseconds::zero()) {
+            status = ::curl_easy_setopt(_curl, CURLOPT_CONNECTTIMEOUT_MS, long(_request._connection_timeout.count()));
         }
 
         // Set the receive timeout. There is no such parameter in libcurl.
         // We set this timeout to the max duration of low speed = 1 B/s.
-        if (status == ::CURLE_OK && _request._receiveTimeout > cn::milliseconds::zero()) {
+        if (status == ::CURLE_OK && _request._receive_timeout > cn::milliseconds::zero()) {
             // The LOW_SPEED_TIME option is in seconds. Round to higher.
-            const long timeout = long((_request._receiveTimeout.count() + 999) / 1000);
+            const long timeout = long((_request._receive_timeout.count() + 999) / 1000);
             status = ::curl_easy_setopt(_curl, CURLOPT_LOW_SPEED_TIME, timeout);
             if (status == ::CURLE_OK) {
                 status = ::curl_easy_setopt(_curl, CURLOPT_LOW_SPEED_LIMIT, long(1)); // bytes/second
@@ -469,7 +469,7 @@ bool ts::WebRequest::SystemGuts::startTransfer(CertState certState)
 
         // Always follow redirections.
         if (status == ::CURLE_OK) {
-            status = ::curl_easy_setopt(_curl, CURLOPT_FOLLOWLOCATION, _request._autoRedirect ? 1L : 0L);
+            status = ::curl_easy_setopt(_curl, CURLOPT_FOLLOWLOCATION, _request._auto_redirect ? 1L : 0L);
         }
 
         // Set the proxy settings.
@@ -490,22 +490,30 @@ bool ts::WebRequest::SystemGuts::startTransfer(CertState certState)
         }
 
         // Set the cookie file.
-        if (status == ::CURLE_OK && _request._useCookies) {
+        if (status == ::CURLE_OK && _request._use_cookies) {
             // COOKIEFILE can be empty.
-            status = ::curl_easy_setopt(_curl, CURLOPT_COOKIEFILE, _request._cookiesFileName.c_str());
+            status = ::curl_easy_setopt(_curl, CURLOPT_COOKIEFILE, _request._cookies_file_name.c_str());
         }
-        if (status == ::CURLE_OK && _request._useCookies && !_request._cookiesFileName.empty()) {
+        if (status == ::CURLE_OK && _request._use_cookies && !_request._cookies_file_name.empty()) {
             // COOKIEJAR cannot be empty.
-            status = ::curl_easy_setopt(_curl, CURLOPT_COOKIEJAR, _request._cookiesFileName.c_str());
+            status = ::curl_easy_setopt(_curl, CURLOPT_COOKIEJAR, _request._cookies_file_name.c_str());
         }
 
         // Set the request headers.
-        if (status == ::CURLE_OK && !_request._requestHeaders.empty()) {
-            for (const auto& it : _request._requestHeaders) {
+        if (status == ::CURLE_OK && !_request._request_headers.empty()) {
+            for (const auto& it : _request._request_headers) {
                 const UString header(it.first + u": " + it.second);
                 _headers = ::curl_slist_append(_headers, header.toUTF8().c_str());
             }
             status = ::curl_easy_setopt(_curl, CURLOPT_HTTPHEADER, _headers);
+        }
+
+        // Set the POST data.
+        if (status == ::CURLE_OK && !_request._post_data.empty()) {
+            status = ::curl_easy_setopt(_curl, CURLOPT_POSTFIELDS, _request._post_data.data());
+            if (status == ::CURLE_OK) {
+                status = ::curl_easy_setopt(_curl, CURLOPT_POSTFIELDSIZE, _request._post_data.size());
+            }
         }
 
         // End of curl_easy_setopt() sequence.

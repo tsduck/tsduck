@@ -53,13 +53,13 @@ namespace ts {
         //! Set the connection timeout for this request.
         //! @param [in] timeout Connection timeout in milliseconds.
         //!
-        void setConnectionTimeout(cn::milliseconds timeout) { _connectionTimeout = timeout; }
+        void setConnectionTimeout(cn::milliseconds timeout) { _connection_timeout = timeout; }
 
         //!
         //! Set the timeout for each receive operation.
         //! @param [in] timeout Reception timeout in milliseconds.
         //!
-        void setReceiveTimeout(cn::milliseconds timeout) { _receiveTimeout = timeout; }
+        void setReceiveTimeout(cn::milliseconds timeout) { _receive_timeout = timeout; }
 
         //!
         //! Set the optional proxy host and port for this request.
@@ -153,27 +153,27 @@ namespace ts {
         //! Set the user agent name to use in HTTP headers.
         //! @param [in] name The user agent name. If empty, DEFAULT_USER_AGENT is used.
         //!
-        void setUserAgent(const UString& name = UString()) { _userAgent = name.empty() ? DEFAULT_USER_AGENT : name; }
+        void setUserAgent(const UString& name = UString()) { _user_agent = name.empty() ? DEFAULT_USER_AGENT : name; }
 
         //!
         //! Enable compression.
         //! Compression is disabled by default.
         //! @param [in] on Boolean setting compression on or off.
         //!
-        void enableCompression(bool on = true) { _useCompression = on; }
+        void enableCompression(bool on = true) { _use_compression = on; }
 
         //!
         //! Get the current user agent name to use in HTTP headers.
         //! @return A constant reference to the user agent name to use in HTTP headers.
         //!
-        const UString& userAgent() const { return _userAgent; }
+        const UString& userAgent() const { return _user_agent; }
 
         //!
         //! Enable or disable the automatic redirection of HTTP requests.
         //! This option is active by default.
         //! @param [in] on If true, allow automatic redirection of HTTP requests.
         //!
-        void setAutoRedirect(bool on) { _autoRedirect = on; }
+        void setAutoRedirect(bool on) { _auto_redirect = on; }
 
         //!
         //! Set various arguments from command line.
@@ -183,15 +183,45 @@ namespace ts {
 
         //!
         //! Set a header which will be sent with the request.
+        //! If the same header already exists with another value, a new header is added.
         //! @param [in] name The header name.
         //! @param [in] value The header value.
         //!
         void setRequestHeader(const UString& name, const UString& value);
 
         //!
+        //! Delete all headers with a given name.
+        //! @param [in] name The header name.
+        //!
+        void deleteRequestHeader(const UString& name);
+
+        //!
         //! Clear all headers which will be sent with the request.
         //!
         void clearRequestHeaders();
+
+        //!
+        //! Set data to POST.
+        //! The request will be a POST one.
+        //! @param [in] data Text POST data. The text will be sent in UTF-8 format.
+        //! @param [in] content_type The content type to set in the request headers.
+        //! The default "Content-Type" header is "text/plain; charset=utf-8", which is usually appropriate.
+        //! When set to the empty string, no header is set.
+        //!
+        void setPostData(const UString& data, const UString content_type = u"text/plain; charset=utf-8");
+
+        //!
+        //! Set data to POST.
+        //! The request will be a POST one.
+        //! @param [in] data Binary POST data.
+        //!
+        void setPostData(const ByteBlock& data);
+
+        //!
+        //! Clear previous POST data.
+        //! The request will be a GET one.
+        //!
+        void clearPostData();
 
         //!
         //! Open an URL and start the transfer.
@@ -205,13 +235,13 @@ namespace ts {
         //! Check if a transfer is open.
         //! @return True if a transfer is open, false otherwise.
         //!
-        bool isOpen() const { return _isOpen; }
+        bool isOpen() const { return _is_open; }
 
         //!
         //! Get the HTTP status code (200, 404, etc).
         //! @return The HTTP status code.
         //!
-        int httpStatus() const { return _httpStatus; }
+        int httpStatus() const { return _http_status; }
 
         //!
         //! Get the announced content size in bytes.
@@ -219,7 +249,7 @@ namespace ts {
         //! This mat  be zero, this may not be the actual size of the content to download.
         //! @return Announced content size in bytes.
         //!
-        size_t announdedContentSize() const { return _headerContentSize; }
+        size_t announdedContentSize() const { return _header_content_size; }
 
         //!
         //! Representation of request or reponse headers.
@@ -253,7 +283,7 @@ namespace ts {
         //! Get the original URL, as set by setURL().
         //! @return The original URL.
         //!
-        UString originalURL() const { return _originalURL; }
+        UString originalURL() const { return _original_url; }
 
         //!
         //! Get the final URL of the actual download operation.
@@ -266,7 +296,7 @@ namespace ts {
         //!
         //! @return The final / redirected URL.
         //!
-        UString finalURL() const { return _finalURL; }
+        UString finalURL() const { return _final_url; }
 
         //!
         //! Receive data.
@@ -296,7 +326,7 @@ namespace ts {
         //! Get the size in bytes of the downloaded content.
         //! @return Size in bytes of the downloaded content.
         //!
-        size_t contentSize() const { return _contentSize; }
+        size_t contentSize() const { return _content_size; }
 
         //!
         //! Default download chunk size for bulk transfers.
@@ -348,33 +378,34 @@ namespace ts {
         class SystemGuts;
 
         Report&          _report;
-        UString          _userAgent {DEFAULT_USER_AGENT};
-        bool             _autoRedirect = true;
-        UString          _originalURL {};
-        UString          _finalURL {};
-        cn::milliseconds _connectionTimeout {};
-        cn::milliseconds _receiveTimeout {};
-        UString          _proxyHost {};
-        uint16_t         _proxyPort = 0;
-        UString          _proxyUser {};
-        UString          _proxyPassword {};
-        bool             _useCompression = false;
-        fs::path         _cookiesFileName {};
-        bool             _useCookies = false;
-        bool             _deleteCookiesFile = false; // delete the cookies file on close
-        HeadersMap       _requestHeaders {};         // all request headers (to send)
-        HeadersMap       _responseHeaders {};        // all response headers (received)
-        int              _httpStatus = 0;            // 200, 404, etc.
-        size_t           _contentSize = 0;           // actually downloaded size
-        size_t           _headerContentSize = 0;     // content size, as announced in response header
-        volatile bool    _isOpen = false;            // the transfer is open/started.
-        volatile bool    _interrupted = false;       // interrupted by application-defined handler
-        SystemGuts*      _guts = nullptr;            // system-specific data
+        UString          _user_agent {DEFAULT_USER_AGENT};
+        bool             _auto_redirect = true;
+        UString          _original_url {};
+        UString          _final_url {};
+        cn::milliseconds _connection_timeout {};
+        cn::milliseconds _receive_timeout {};
+        UString          _proxy_host {};
+        uint16_t         _proxy_port = 0;
+        UString          _proxy_user {};
+        UString          _proxy_password {};
+        bool             _use_compression = false;
+        fs::path         _cookies_file_name {};
+        bool             _use_cookies = false;
+        bool             _delete_cookies_file = false; // delete the cookies file on close
+        HeadersMap       _request_headers {};          // all request headers (to send)
+        HeadersMap       _response_headers {};         // all response headers (received)
+        ByteBlock        _post_data {};                // if non empty, use a POST request
+        int              _http_status = 0;             // 200, 404, etc.
+        size_t           _content_size = 0;            // actually downloaded size
+        size_t           _header_content_size = 0;     // content size, as announced in response header
+        volatile bool    _is_open = false;             // the transfer is open/started.
+        volatile bool    _interrupted = false;         // interrupted by application-defined handler
+        SystemGuts*      _guts = nullptr;              // system-specific data
 
-        static UString   _defaultProxyHost;
-        static uint16_t  _defaultProxyPort;
-        static UString   _defaultProxyUser;
-        static UString   _defaultProxyPassword;
+        static UString   _default_proxy_host;
+        static uint16_t  _default_proxy_port;
+        static UString   _default_proxy_user;
+        static UString   _default_proxy_assword;
 
         // Allocate and deallocate guts (depend on implementations).
         void allocateGuts();

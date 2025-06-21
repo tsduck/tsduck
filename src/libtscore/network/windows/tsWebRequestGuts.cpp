@@ -56,11 +56,11 @@ public:
     void clear();
 
 private:
-    WebRequest& _request;        // Parent request.
-    volatile ::HINTERNET _inet;  // Handle to all Internet operations.
-    volatile ::HINTERNET _url;   // Handle to URL operations.
-    int         _redirectCount;  // Current number of redirections.
-    UString     _previousURL;    // Previous URL, before getting a redirection.
+    WebRequest&          _request;             // Parent request.
+    volatile ::HINTERNET _inet = nullptr;      // Handle to all Internet operations.
+    volatile ::HINTERNET _url = nullptr;       // Handle to URL operations.
+    int                  _redirect_count = 0;  // Current number of redirections.
+    UString              _previous_url {};     // Previous URL, before getting a redirection.
 
     // Report an error message.
     void error(const UChar* message, ::DWORD code = ::GetLastError());
@@ -75,10 +75,7 @@ private:
 //----------------------------------------------------------------------------
 
 ts::WebRequest::SystemGuts::SystemGuts(WebRequest& request) :
-    _request(request),
-    _inet(nullptr),
-    _url(nullptr),
-    _redirectCount(0)
+    _request(request)
 {
 }
 
@@ -109,7 +106,7 @@ bool ts::WebRequest::startTransfer()
 
 bool ts::WebRequest::receive(void* buffer, size_t maxSize, size_t& retSize)
 {
-    if (_isOpen) {
+    if (_is_open) {
         return _guts->receive(buffer, maxSize, retSize);
     }
     else {
@@ -120,9 +117,9 @@ bool ts::WebRequest::receive(void* buffer, size_t maxSize, size_t& retSize)
 
 bool ts::WebRequest::close()
 {
-    bool success = _isOpen;
+    bool success = _is_open;
     _guts->clear();
-    _isOpen = false;
+    _is_open = false;
     return success;
 }
 
@@ -173,7 +170,7 @@ bool ts::WebRequest::SystemGuts::init()
 {
     // Make sure we start from a clean state.
     clear();
-    _redirectCount = 0;
+    _redirect_count = 0;
 
     // Prepare proxy name.
     const bool useProxy = !_request.proxyHost().empty();
@@ -190,7 +187,7 @@ bool ts::WebRequest::SystemGuts::init()
     }
 
     // Open the main Internet handle.
-    _inet = ::InternetOpenW(_request._userAgent.wc_str(), access, proxy, nullptr, 0);
+    _inet = ::InternetOpenW(_request._user_agent.wc_str(), access, proxy, nullptr, 0);
     if (_inet == nullptr) {
         error(u"error accessing Internet handle");
         return false;
@@ -216,7 +213,7 @@ bool ts::WebRequest::SystemGuts::init()
     UString headers;
 
     // Set compression.
-    if (_request._useCompression) {
+    if (_request._use_compression) {
         // We must separately set the Accept-Encoding header and configure automatic decompression.
         headers = u"Accept-Encoding: deflate, gzip";
         ::BOOL mode = TRUE;
@@ -228,16 +225,16 @@ bool ts::WebRequest::SystemGuts::init()
     }
 
     // Specify the various timeouts.
-    if (_request._connectionTimeout.count() > 0) {
-        ::DWORD timeout = ::DWORD(_request._connectionTimeout.count());
+    if (_request._connection_timeout.count() > 0) {
+        ::DWORD timeout = ::DWORD(_request._connection_timeout.count());
         if (!::InternetSetOptionW(_inet, INTERNET_OPTION_CONNECT_TIMEOUT, &timeout, ::DWORD(sizeof(timeout)))) {
             error(u"error setting connection timeout");
             clear();
             return false;
         }
     }
-    if (_request._receiveTimeout.count() > 0) {
-        ::DWORD timeout = ::DWORD(_request._receiveTimeout.count());
+    if (_request._receive_timeout.count() > 0) {
+        ::DWORD timeout = ::DWORD(_request._receive_timeout.count());
         if (!::InternetSetOptionW(_inet, INTERNET_OPTION_RECEIVE_TIMEOUT, &timeout, ::DWORD(sizeof(timeout))) ||
             !::InternetSetOptionW(_inet, INTERNET_OPTION_DATA_RECEIVE_TIMEOUT, &timeout, ::DWORD(sizeof(timeout))))
         {
@@ -251,14 +248,14 @@ bool ts::WebRequest::SystemGuts::init()
     const ::DWORD urlFlags =
         INTERNET_FLAG_KEEP_CONNECTION |   // Use keep-alive.
         INTERNET_FLAG_NO_UI |             // Disable popup windows.
-        (_request._useCookies ? 0 : INTERNET_FLAG_NO_COOKIES) | // Don't store cookies, don't send stored cookies.
+        (_request._use_cookies ? 0 : INTERNET_FLAG_NO_COOKIES) | // Don't store cookies, don't send stored cookies.
         INTERNET_FLAG_PASSIVE |           // Use passive mode with FTP (less NAT issues).
         INTERNET_FLAG_NO_AUTO_REDIRECT |  // Disable redirections (see comment on top of file).
         INTERNET_FLAG_NO_CACHE_WRITE;     // Don't save downloaded data to local disk cache.
 
     // Build the list of request headers.
-    if (!_request._requestHeaders.empty()) {
-        for (const auto& it : _request._requestHeaders) {
+    if (!_request._request_headers.empty()) {
+        for (const auto& it : _request._request_headers) {
             if (!headers.empty()) {
                 headers.append(u"\r\n");
             }
@@ -277,10 +274,10 @@ bool ts::WebRequest::SystemGuts::init()
     // Loop on redirections.
     for (;;) {
         // Keep track of current URL to fetch.
-        _previousURL = _request._finalURL;
+        _previous_url = _request._final_url;
 
         // Now open the URL.
-        _url = ::InternetOpenUrlW(_inet, _previousURL.wc_str(), headerAddress, headerLength, urlFlags, 0);
+        _url = ::InternetOpenUrlW(_inet, _previous_url.wc_str(), headerAddress, headerLength, urlFlags, 0);
         if (_url == nullptr) {
             error(u"error opening URL");
             clear();
@@ -289,7 +286,7 @@ bool ts::WebRequest::SystemGuts::init()
 
         // Send the response headers to the WebRequest object.
         // Do not expect any response header from file: URL.
-        if (_previousURL.starts_with(u"file:")) {
+        if (_previous_url.starts_with(u"file:")) {
             // Pass empty headers to the WebRequest.
             _request.processReponseHeaders(u"");
         }
@@ -300,16 +297,16 @@ bool ts::WebRequest::SystemGuts::init()
 
         // If redirections are not allowed or no redirection occured, stop now.
         // Redirection codes are 3xx (eg. "HTTP/1.1 301 Moved Permanently").
-        if (!_request._autoRedirect || _request._httpStatus / 100 != 3 || _request._finalURL == _previousURL) {
+        if (!_request._auto_redirect || _request._httpStatus / 100 != 3 || _request._final_url == _previous_url) {
             break;
         }
 
-        // Close this URL, we need to redirect to _finalURL.
+        // Close this URL, we need to redirect to _final_url.
         ::InternetCloseHandle(_url);
         _url = nullptr;
 
         // Limit the number of redirections to avoid "looping sites".
-        if (++_redirectCount > 16) {
+        if (++_redirect_count > 16) {
             error(u"too many HTTP redirections");
             clear();
             return false;

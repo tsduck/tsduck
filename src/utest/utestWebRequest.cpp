@@ -19,6 +19,8 @@
 #include "tsReportBuffer.h"
 #include "tsFileUtils.h"
 #include "tsErrCodeReport.h"
+#include "tsjson.h"
+#include "tsjsonValue.h"
 #include "tsunit.h"
 
 
@@ -34,6 +36,7 @@ class WebRequestTest: public tsunit::Test
     TSUNIT_DECLARE_TEST(NoRedirection);
     TSUNIT_DECLARE_TEST(NonExistentHost);
     TSUNIT_DECLARE_TEST(InvalidURL);
+    TSUNIT_DECLARE_TEST(Post);
 
 public:
     virtual void beforeTest() override;
@@ -221,4 +224,33 @@ TSUNIT_DEFINE_TEST(InvalidURL)
     TSUNIT_ASSERT(!request.downloadBinaryContent(u"pouette://tagada/tsoin/tsoin", data));
 
     debug() << "WebRequestTest::testInvalidURL: " << rep.messages() << std::endl;
+}
+
+TSUNIT_DEFINE_TEST(Post)
+{
+    // These servers are known to return POST data into a JSON string.
+    // 1. https://httpbin.org/post
+    // 2. https://postman-echo.com/post
+    const ts::UString url(u"https://httpbin.org/post");
+    const ts::UString post(u"foo bar\nqsdf=tif,dft=ty ryhrh=12,af\nfoo bar");
+
+    ts::WebRequest request(report());
+    request.setPostData(post);
+
+    ts::UString response;
+    TSUNIT_ASSERT(request.downloadTextContent(url, response));
+
+    debug() << "WebRequestTest::testPost:" << std::endl
+            << "    Original URL: " << request.originalURL() << std::endl
+            << "    Final URL: " << request.finalURL() << std::endl
+            << "    HTTP status: " << request.httpStatus() << std::endl
+            << "    Content size: " << request.contentSize() << std::endl
+            << "    Content text: \"" << response << "\"" << std::endl;
+
+    ts::json::ValuePtr jv;
+    TSUNIT_ASSERT(ts::json::Parse(jv, response, CERR));
+    TSUNIT_ASSERT(jv != nullptr);
+    TSUNIT_ASSERT(jv->isObject());
+    TSUNIT_ASSERT(jv->value(u"data").isString());
+    TSUNIT_EQUAL(post, jv->value(u"data").toString());
 }
