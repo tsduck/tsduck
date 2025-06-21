@@ -25,6 +25,7 @@
 #include "tsWebRequest.h"
 #include "tsSysUtils.h"
 #include "tsWinUtils.h"
+#include "tsURL.h"
 
 #include "tsBeforeStandardHeaders.h"
 #include <wininet.h>
@@ -56,14 +57,15 @@ public:
     void clear();
 
 private:
-    WebRequest&          _request;             // Parent request.
-    volatile ::HINTERNET _inet = nullptr;      // Handle to all Internet operations.
-    volatile ::HINTERNET _url = nullptr;       // Handle to URL operations.
-    int                  _redirect_count = 0;  // Current number of redirections.
-    UString              _previous_url {};     // Previous URL, before getting a redirection.
+    WebRequest&          _request;                 // Parent request.
+    volatile ::HINTERNET _inet = nullptr;          // Handle to all Internet operations.
+    volatile ::HINTERNET _inet_connect = nullptr;  // Handle to connection operations (POST request only).
+    volatile ::HINTERNET _inet_request = nullptr;  // Handle to URL request operations.
+    int                  _redirect_count = 0;      // Current number of redirections.
+    UString              _previous_url {};         // Previous URL, before getting a redirection.
 
     // Report an error message.
-    void error(const UChar* message, ::DWORD code = ::GetLastError());
+    void error(const UString& message, ::DWORD code = ::GetLastError());
 
     // Transmit response headers to the WebRequest.
     void transmitResponseHeaders();
@@ -133,7 +135,7 @@ void ts::WebRequest::abort()
 // Report an error message.
 //----------------------------------------------------------------------------
 
-void ts::WebRequest::SystemGuts::error(const UChar* message, ::DWORD code)
+void ts::WebRequest::SystemGuts::error(const UString& message, ::DWORD code)
 {
     if (code == ERROR_SUCCESS) {
         _request._report.error(u"Web error: %s", message);
@@ -151,13 +153,17 @@ void ts::WebRequest::SystemGuts::error(const UChar* message, ::DWORD code)
 void ts::WebRequest::SystemGuts::clear()
 {
     // Close Internet handles.
-    if (_url != nullptr && !::InternetCloseHandle(_url)) {
-        error(u"error closing URL handle");
+    if (_inet_request != nullptr && !::InternetCloseHandle(_inet_request)) {
+        error(u"error closing URL request handle");
+    }
+    if (_inet_connect != nullptr && !::InternetCloseHandle(_inet_connect)) {
+        error(u"error closing connection handle");
     }
     if (_inet != nullptr && !::InternetCloseHandle(_inet)) {
         error(u"error closing main Internet handle");
     }
-    _url = nullptr;
+    _inet_request = nullptr;
+    _inet_connect = nullptr;
     _inet = nullptr;
 }
 
@@ -173,17 +179,17 @@ bool ts::WebRequest::SystemGuts::init()
     _redirect_count = 0;
 
     // Prepare proxy name.
-    const bool useProxy = !_request.proxyHost().empty();
+    const bool use_proxy = !_request.proxyHost().empty();
     ::DWORD access = INTERNET_OPEN_TYPE_PRECONFIG;
     const ::WCHAR* proxy = nullptr;
-    UString proxyName(_request.proxyHost());
+    UString proxy_name(_request.proxyHost());
 
-    if (useProxy) {
+    if (use_proxy) {
         access = INTERNET_OPEN_TYPE_PROXY;
         if (_request.proxyPort() != 0) {
-            proxyName += UString::Format(u":%d", _request.proxyPort());
+            proxy_name += UString::Format(u":%d", _request.proxyPort());
         }
-        proxy = proxyName.wc_str();
+        proxy = proxy_name.wc_str();
     }
 
     // Open the main Internet handle.
@@ -194,7 +200,7 @@ bool ts::WebRequest::SystemGuts::init()
     }
 
     // Specify the proxy authentication, if provided.
-    if (useProxy) {
+    if (use_proxy) {
         UString user(_request.proxyUser());
         UString pass(_request.proxyPassword());
         if (!user.empty() && !::InternetSetOptionW(_inet, INTERNET_OPTION_PROXY_USERNAME, &user[0], ::DWORD(user.size()))) {
@@ -245,7 +251,7 @@ bool ts::WebRequest::SystemGuts::init()
     }
 
     // URL connection flags.
-    const ::DWORD urlFlags =
+    const ::DWORD url_flags =
         INTERNET_FLAG_KEEP_CONNECTION |   // Use keep-alive.
         INTERNET_FLAG_NO_UI |             // Disable popup windows.
         (_request._use_cookies ? 0 : INTERNET_FLAG_NO_COOKIES) | // Don't store cookies, don't send stored cookies.
@@ -264,11 +270,11 @@ bool ts::WebRequest::SystemGuts::init()
             headers.append(it.second);
         }
     }
-    ::WCHAR* headerAddress = nullptr;
-    ::DWORD  headerLength = 0;
+    ::WCHAR* header_address = nullptr;
+    ::DWORD  header_length = 0;
     if (!headers.empty()) {
-        headerAddress = headers.wc_str();
-        headerLength = ::DWORD(headers.size());
+        header_address = headers.wc_str();
+        header_length = ::DWORD(headers.size());
     }
 
     // Loop on redirections.
@@ -276,12 +282,74 @@ bool ts::WebRequest::SystemGuts::init()
         // Keep track of current URL to fetch.
         _previous_url = _request._final_url;
 
+        // Flags for HTTPS.
+        const bool use_https = _previous_url.starts_with(u"https:");
+        ::DWORD flags = url_flags;
+        if (use_https) {
+            flags |= INTERNET_FLAG_SECURE;
+        }
+
         // Now open the URL.
-        _url = ::InternetOpenUrlW(_inet, _previous_url.wc_str(), headerAddress, headerLength, urlFlags, 0);
-        if (_url == nullptr) {
-            error(u"error opening URL");
+        // In the case of a POST request, we cannot use InternetOpenUrl() which can only handle GET requests.
+        // On the other hand, we prefer to use InternetOpenUrl() in the general case because it can handle all
+        // types of URL. In the case of a POST request, we only support http: and https: schemes.
+        if (_request._post_data.empty()) {
+            _inet_request = ::InternetOpenUrlW(_inet, _previous_url.wc_str(), header_address, header_length, flags, 0);
+            if (_inet_request == nullptr) {
+                error(u"error opening URL: " + _previous_url);
+                clear();
+                return false;
+            }
+        }
+        else if (!_previous_url.starts_with(u"http:") && !_previous_url.starts_with(u"https:")) {
+            error(u"POST requests are only allowed on HTTP URL: " + _previous_url);
             clear();
             return false;
+        }
+        else {
+            // This is a POST request. Split the URL.
+            URL url(_previous_url);
+            UString host(url.getHost());
+            UString user(url.getUserName());
+            UString pass(url.getPassword());
+            uint16_t port = url.getPort();
+            if (port == 0) {
+                // Use default port.
+                port = use_https ? INTERNET_DEFAULT_HTTPS_PORT : INTERNET_DEFAULT_HTTP_PORT;
+            }
+
+            // Connect to the host.
+            _inet_connect = ::InternetConnectW(_inet, host.wc_str(), port,
+                                               user.empty() ? nullptr : user.wc_str(),
+                                               pass.empty() ? nullptr : pass.wc_str(),
+                                               INTERNET_SERVICE_HTTP, flags, 0);
+            if (_inet_connect == nullptr) {
+                error(u"error connecting to host " + host);
+                clear();
+                return false;
+            }
+
+            // Build the request.
+            const wchar_t* accept_types[] = {L"*/*", nullptr};
+            UString path(url.getPath());
+            UString query(url.getPath());
+            if (!query.empty()) {
+                path.append(u'?');
+                path.append(query);
+            }
+            _inet_request = ::HttpOpenRequestW(_inet_connect, L"POST", path.wc_str(), nullptr, nullptr, accept_types, flags | INTERNET_FLAG_RELOAD, 0);
+            if (_inet_request == nullptr) {
+                error(u"error opening request to " + _previous_url);
+                clear();
+                return false;
+            }
+
+            // Send the request.
+            if (!::HttpSendRequestW(_inet_request, header_address, header_length, _request._post_data.data(), ::DWORD(_request._post_data.size()))) {
+                error(u"error sending request to " + _previous_url);
+                clear();
+                return false;
+            }
         }
 
         // Send the response headers to the WebRequest object.
@@ -297,13 +365,18 @@ bool ts::WebRequest::SystemGuts::init()
 
         // If redirections are not allowed or no redirection occured, stop now.
         // Redirection codes are 3xx (eg. "HTTP/1.1 301 Moved Permanently").
-        if (!_request._auto_redirect || _request._httpStatus / 100 != 3 || _request._final_url == _previous_url) {
+        if (!_request._auto_redirect || _request._http_status / 100 != 3 || _request._final_url == _previous_url) {
             break;
         }
 
         // Close this URL, we need to redirect to _final_url.
-        ::InternetCloseHandle(_url);
-        _url = nullptr;
+        if (_inet_connect != nullptr) {
+            // This is a POST request using an intermediate connection.
+            ::InternetCloseHandle(_inet_connect);
+            _inet_connect = nullptr;
+        }
+        ::InternetCloseHandle(_inet_request);
+        _inet_request = nullptr;
 
         // Limit the number of redirections to avoid "looping sites".
         if (++_redirect_count > 16) {
@@ -324,7 +397,7 @@ bool ts::WebRequest::SystemGuts::init()
 bool ts::WebRequest::SystemGuts::receive(void* buffer, size_t maxSize, size_t& retSize)
 {
     ::DWORD thisSize = 0;
-    const bool success = ::InternetReadFile(_url, buffer, ::DWORD(maxSize), &thisSize);
+    const bool success = ::InternetReadFile(_inet_request, buffer, ::DWORD(maxSize), &thisSize);
 
     if (!success) {
         error(u"download error");
@@ -346,7 +419,7 @@ void ts::WebRequest::SystemGuts::transmitResponseHeaders()
     UString headers(1024, CHAR_NULL);
     ::DWORD headersSize = ::DWORD(headers.size());
     ::DWORD index = 0;
-    if (!::HttpQueryInfoW(_url, HTTP_QUERY_RAW_HEADERS_CRLF, &headers[0], &headersSize, &index)) {
+    if (!::HttpQueryInfoW(_inet_request, HTTP_QUERY_RAW_HEADERS_CRLF, &headers[0], &headersSize, &index)) {
 
         // Process actual error.
         if (::GetLastError() != ERROR_INSUFFICIENT_BUFFER) {
@@ -358,7 +431,7 @@ void ts::WebRequest::SystemGuts::transmitResponseHeaders()
         headers.resize(size_t(headersSize));
         headersSize = ::DWORD(headers.size());
         index = 0;
-        if (!::HttpQueryInfoW(_url, HTTP_QUERY_RAW_HEADERS_CRLF, &headers[0], &headersSize, &index)) {
+        if (!::HttpQueryInfoW(_inet_request, HTTP_QUERY_RAW_HEADERS_CRLF, &headers[0], &headersSize, &index)) {
             error(u"error getting HTTP response headers");
             return;
         }
