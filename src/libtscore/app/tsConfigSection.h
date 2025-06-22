@@ -34,18 +34,15 @@ namespace ts {
         ConfigSection() = default;
 
         //!
-        //! Reset content of the section
+        //! Clear content of the section
         //!
-        void reset();
+        void clear() { _entries.clear(); }
 
         //!
         //! Get the number of entries in the section.
         //! @return The number of entries in the section.
         //!
-        size_t entryCount() const
-        {
-            return _entries.size();
-        }
+        size_t size() const { return _entries.size(); }
 
         //!
         //! Get the names of all entries in the section.

@@ -153,6 +153,10 @@ endif::[]
 |packet
 |Identify PID's based on various criteria
 
+|influx
+|packet
+|Send live TS metrics to InfluxDB, a data source for Grafana
+
 |inject
 |packet
 |Inject a table into a transport stream

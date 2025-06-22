@@ -50,6 +50,12 @@ namespace ts {
         virtual ~WebRequest();
 
         //!
+        //! Use the Report object of this instance.
+        //! @return A reference to the Report object of this instance.
+        //!
+        Report& report() { return _report; }
+
+        //!
         //! Set the connection timeout for this request.
         //! @param [in] timeout Connection timeout in milliseconds.
         //!
@@ -242,6 +248,18 @@ namespace ts {
         //! @return The HTTP status code.
         //!
         int httpStatus() const { return _http_status; }
+
+        //!
+        //! Check if the HTTP status code indicates success.
+        //! The HTTP status codes are classified as follow (Wikipedia):
+        //! - 1xx informational response – the request was received, continuing process
+        //! - 2xx successful – the request was successfully received, understood, and accepted
+        //! - 3xx redirection – further action needs to be taken in order to complete the request
+        //! - 4xx client error – the request contains bad syntax or cannot be fulfilled
+        //! - 5xx server error – the server failed to fulfil an apparently valid request
+        //! @return True if the HTTP status code indicates success.
+        //!
+        int httpSuccess() const { return _http_status < 400; }
 
         //!
         //! Get the announced content size in bytes.

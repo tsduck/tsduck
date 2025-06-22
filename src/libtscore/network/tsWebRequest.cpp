@@ -337,6 +337,9 @@ void ts::WebRequest::processReponseHeaders(const UString& text)
             if (fields.size() < 2 || !fields[1].toInteger(_http_status)) {
                 _report.warning(u"no HTTP status found in header: %s", line);
             }
+
+            // Create a pseudo header for status line.
+            _response_headers.insert(std::make_pair(u"Status", line));
         }
         else if (colon != NPOS) {
             // Found a real header.

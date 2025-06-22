@@ -1,0 +1,67 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2025, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== influx
+
+[.cmd-header]
+Send live TS metrics to InfluxDB, a data source for Grafana
+
+NOTE: This plugin is currently experimental.
+More features will come from users' feedback.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P influx [options]
+----
+
+[.usage]
+Timing options
+
+[.opt]
+*-i* _seconds_ +
+*--interval* _seconds_
+
+[.optdoc]
+Interval in seconds between metrics reports to InfluxDB.
+
+[.optdoc]
+The default is one second.
+
+[.opt]
+*--local-time*
+
+[.optdoc]
+Transmit timestamps as local time, based on the current system configuration.
+
+[.optdoc]
+By default, timestamps are transmitted as UTC time.
+
+[.opt]
+*--pcr-based*
+
+[.optdoc]
+Use playout time based on PCR values.
+
+[.optdoc]
+By default, the time is based on the wall-clock time (real time).
+
+[.opt]
+*--start-time* _year/month/day:hour:minute:second_
+
+[.optdoc]
+With `--pcr-based`, specify the initial date and time reference.
+
+[.optdoc]
+By default, with `--pcr-based`, the activity starts at the first UTC time which is found in a DVB TDT or ATSC STT.
+
+include::{docdir}/opt/group-influx.adoc[tags=!*]
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

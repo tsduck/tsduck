@@ -1194,6 +1194,43 @@ void ts::UString::quoted(UChar quote_character, const UString& special_character
 
 
 //----------------------------------------------------------------------------
+// Remove matching pairs of quotes at beginning and end of string.
+//----------------------------------------------------------------------------
+
+void ts::UString::unquoted(const UString& quote_characters)
+{
+    if (length() > 1) {
+        size_type first = 0;
+        size_type last = length() - 1;
+        while (first < last && (*this)[first] == (*this)[last] && quote_characters.contains((*this)[first])) {
+            first++;
+            last--;
+        }
+        if (first > 0) {
+            erase(last + 1);
+            erase(0, first);
+        }
+    }
+}
+
+ts::UString ts::UString::toUnquoted(const UString& quote_characters) const
+{
+    if (length() < 2) {
+        return *this;
+    }
+    else {
+        size_type first = 0;
+        size_type last = length() - 1;
+        while (first < last && (*this)[first] == (*this)[last] && quote_characters.contains((*this)[first])) {
+            first++;
+            last--;
+        }
+        return substr(first, last + 1 - first);
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Convert HTML representation. For performance reasons convertToHTML() and
 // convertFromHTML() are implemented in tsUChar.cpp.
 //----------------------------------------------------------------------------

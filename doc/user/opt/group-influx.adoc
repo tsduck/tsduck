@@ -1,0 +1,116 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2025, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+// Documentation for options in class ts::InfluxArgs.
+//
+// tags: <none>
+//
+//----------------------------------------------------------------------------
+
+[.usage]
+InfluxDB connection options
+
+The InfluxDB server is identified with the same options as the `influx` command, the InfluxDB CLI,
+as documented at https://docs.influxdata.com/influxdb/v2/reference/cli/influx/[docs.influxdata.com].
+
+When retrieving credentials for InfluxDB, the following precedence apply:
+
+[.compact-list]
+. Command line flags (`--host`, `--org` `-o`, `--token` `-t`)
+. Environment variables (`INFLUX_HOST`, `INFLUX_ORG`, `INFLUX_TOKEN`)
+. CLI configuration file
+
+[.opt]
+*-c* _name_ +
+*--active-config* _name_
+
+[.optdoc]
+Config name to use in the InfluxDB CLI configurations file.
+
+[.optdoc]
+By default, use the environment variable `INFLUX_ACTIVE_CONFIG`,
+then look for the "active" configuration in the configuration file,
+or the first configuration if none is marked as active.
+
+[.opt]
+*--configs-path* _filename_
+
+[.optdoc]
+Path to the InfluxDB CLI configurations file.
+
+[.optdoc]
+By default, use the environment variable `INFLUX_CONFIGS_PATH`, then `$HOME/.influxdbv2/configs`.
+
+[.opt]
+*-b* _name_ +
+*--bucket* _name_
+
+[.optdoc]
+Name of the InfluxDB bucket.
+
+[.optdoc]
+By default, use the environment variable `INFLUX_BUCKET_NAME`.
+
+[.opt]
+*--bucket-id* _id_
+
+[.optdoc]
+Identifier of the InfluxDB bucket.
+The _id_ must be a 16-character value.
+
+[.optdoc]
+By default, use the environment variable `INFLUX_BUCKET_ID`.
+
+[.optdoc]
+Only one of `--bucket` and `--bucket-id` shall be specified.
+If none is specified, the environment variables are searched.
+If the two values are specified in environment variables, the bucket id is used.
+
+[.opt]
+*-h* _name_ +
+*--host-url* _name_
+
+[.optdoc]
+Host name or URL of the InfluxDB server.
+If a host name is used instead of a URL, `http:` is assumed.
+
+[.optdoc]
+By default, use the environment variable `INFLUX_HOST`, then the InfluxDB CLI configuration file.
+
+[.opt]
+*-o* _name_ +
+*--org* _name_
+
+[.optdoc]
+Name of the InfluxDB organization.
+
+[.optdoc]
+By default, use the environment variable `INFLUX_ORG`, then the InfluxDB CLI configuration file.
+
+[.opt]
+*--org-id* _id_
+
+[.optdoc]
+Identifier of the InfluxDB organization.
+The _id_ must be a 16-character value.
+
+[.optdoc]
+By default, use the environment variable `INFLUX_ORG_ID`.
+
+[.optdoc]
+Only one of `--org` and `--org-id` shall be specified.
+If none is specified, the environment variables are searched first, then the InfluxDB CLI configuration file.
+If the two values are specified in a category of default values, the organization id is used.
+
+[.opt]
+*-t* _string_ +
+*--token* _string_
+
+[.optdoc]
+Token to authenticate InfluxDB requests.
+
+[.optdoc]
+By default, use the environment variable `INFLUX_TOKEN`, then the InfluxDB CLI configuration file.

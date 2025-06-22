@@ -1450,6 +1450,19 @@ namespace ts {
         void fromQuotedLine(CONTAINER& container, const UString& quote_characters = DEFAULT_QUOTE_CHARACTERS, const UString& special_characters = DEFAULT_SPECIAL_CHARACTERS) const;
 
         //!
+        //! Remove matching pairs of quotes at beginning and end of string.
+        //! This is done recursively (e.g. "'"abcd"'" -> abcd).
+        //! @param [in] quote_characters All characters which are recognized as quote.
+        //!
+        void unquoted(const UString& quote_characters = DEFAULT_QUOTE_CHARACTERS);
+
+        //!
+        //! Return a version of the string with matching pairs of quotes at beginning and end removed.
+        //! @param [in] quote_characters All characters which are recognized as quote.
+        //!
+        UString toUnquoted(const UString& quote_characters = DEFAULT_QUOTE_CHARACTERS) const;
+
+        //!
         //! Convert the string into a suitable HTML representation.
         //! @param [in] convert A string containing all characters to convert into
         //! their corresponding HTML entities. If empty, all characters are converted.

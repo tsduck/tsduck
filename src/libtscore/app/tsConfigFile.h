@@ -78,6 +78,12 @@ namespace ts {
         fs::path fileName() const { return _filename; }
 
         //!
+        //! Check if the last load operation succeeded (including in the constructor).
+        //! @return True if the last load operation succeeded (including in the constructor).
+        //!
+        bool isLoaded() const { return _is_loaded; }
+
+        //!
         //! Reload the configuration from a file.
         //! @param [in] filename A file name to read.
         //! @param [in,out] report Where to report errors.
@@ -118,15 +124,22 @@ namespace ts {
         std::ostream& save(std::ostream& strm) const;
 
         //!
-        //! Reset the content of the configuration.
+        //! Clear the content of the configuration.
         //!
-        void reset();
+        void clear() { _sections.clear(); }
 
         //!
         //! Get the number of sections in the file.
         //! @return The number of sections in the file.
         //!
-        size_t sectionCount() const { return _sections.size(); }
+        size_t size() const { return _sections.size(); }
+
+        //!
+        //! Check if a section exists.
+        //! @param [in] name The section name.
+        //! @return True if the section exists.
+        //!
+        bool hasSection(const UString& name) const { return _sections.contains(name); }
 
         //!
         //! Get the names of all sections.
@@ -152,17 +165,17 @@ namespace ts {
 
         //!
         //! Get a reference to a section inside the configuration file instance.
-        //! Create the section if it does not exist.
         //! @param [in] name The section name.
         //! @return A read-only reference to the section.
+        //! If the section does not exist, return a reference to an empty section.
         //!
         const ConfigSection& section(const UString& name) const;
 
         //!
         //! Index operator: get a reference to a section inside the configuration file instance.
-        //! Create the section if it does not exist.
         //! @param [in] name The section name.
         //! @return A read-only reference to the section.
+        //! If the section does not exist, return a reference to an empty section.
         //!
         const ConfigSection& operator[](const UString& name) const { return section(name); }
 
@@ -178,11 +191,9 @@ namespace ts {
         using SectionMap = std::map <UString, ConfigSection>;
 
         // Private members:
+        bool             _is_loaded = false;
         mutable fs::path _filename {};
         SectionMap       _sections {};
-
-        // Used to return a constant reference.
-        static const ConfigSection _empty;
     };
 }
 

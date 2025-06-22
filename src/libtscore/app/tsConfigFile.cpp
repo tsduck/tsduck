@@ -10,9 +10,6 @@
 #include "tsFileUtils.h"
 #include "tsSysUtils.h"
 
-// Used to return a constant reference.
-const ts::ConfigSection ts::ConfigFile::_empty;
-
 
 //----------------------------------------------------------------------------
 // Constructor
@@ -33,7 +30,7 @@ ts::ConfigFile::ConfigFile(const fs::path& filename1, const fs::path& filename2,
             load(filename1, report);
         }
         // If nothing was loaded from first file, try second file.
-        if (!filename2.empty() && _sections.empty()) {
+        if (!_is_loaded && !filename2.empty()) {
             load(filename2, report);
         }
     }
@@ -83,23 +80,13 @@ fs::path ts::ConfigFile::DefaultFileName(FileStyle style, const UString& app_nam
 
 
 //----------------------------------------------------------------------------
-// Reset content of the configuration
-//----------------------------------------------------------------------------
-
-void ts::ConfigFile::reset()
-{
-    _sections.clear();
-}
-
-
-//----------------------------------------------------------------------------
 // Reload configuration from a file
 //----------------------------------------------------------------------------
 
 bool ts::ConfigFile::load(const fs::path& filename, Report& report)
 {
-    reset();
-    return merge(filename, report);
+    clear();
+    return _is_loaded = merge(filename, report);
 }
 
 
@@ -118,7 +105,7 @@ bool ts::ConfigFile::merge(const fs::path& filename, Report& report)
     // Non-existent file means empty configuration.
     // Report a warning.
     if (!file) {
-        report.error(u"Cannot open configuration file %s", _filename);
+        report.error(u"cannot open configuration file %s", _filename);
         return false;
     }
 
@@ -178,7 +165,6 @@ void ts::ConfigFile::merge(std::istream& strm)
 
 //----------------------------------------------------------------------------
 // Save a configuration file.
-// If no file name is specified, use name from constructor or load()
 //----------------------------------------------------------------------------
 
 bool ts::ConfigFile::save(const fs::path& filename, Report& report) const
@@ -244,11 +230,11 @@ void ts::ConfigFile::getSectionNames(UStringVector& names) const
 
 //----------------------------------------------------------------------------
 // Get a reference to a section.
-// Return a reference to an empty section if does not exist.
 //----------------------------------------------------------------------------
 
 const ts::ConfigSection& ts::ConfigFile::section(const UString& name) const
 {
+    static const ConfigSection empty;
     const auto sec = _sections.find(name);
-    return sec == _sections.end() ? _empty : sec->second;
+    return sec == _sections.end() ? empty : sec->second;
 }

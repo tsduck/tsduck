@@ -60,7 +60,6 @@ void ts::WebRequestArgs::defineArgs(Args& args)
 
 //----------------------------------------------------------------------------
 // Load arguments from command line.
-// Args error indicator is set in case of incorrect arguments
 //----------------------------------------------------------------------------
 
 bool ts::WebRequestArgs::loadArgs(DuckContext& duck, Args& args)

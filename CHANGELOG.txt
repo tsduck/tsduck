@@ -2,7 +2,12 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.42-4332 (June 2025)
+VERSION 3.42-4342 (June 2025)
+
+[NEW] New commands and plugins:
+
+  * Added plugin "influx": Send live TS metrics to InfluxDB, a data source  for
+    Grafana.
 
 [IMP] Improvements on existing commands and plugins:
 

@@ -10,7 +10,18 @@
 
 TEMPLATE = subdirs
 CONFIG += ordered
-TSDIRS = $$system(cd $$_PRO_FILE_PWD_; find . -maxdepth 1 -type d -name ts\\*)
+
+equals($$system($$_PRO_FILE_PWD_/../dtapi-config.sh --support), '') {
+    # No Dektec support
+    LIBSDIR = libtscore libtsduck
+    TSDIRS = $$system(cd $$_PRO_FILE_PWD_ ; find . -maxdepth 1 -type d -name ts\\* ! -name \\*dektec\\*)
+}
+else {
+    # Dektec support
+    LIBSDIR = libtscore libtsduck libtsdektec
+    TSDIRS = $$system(cd $$_PRO_FILE_PWD_ ; find . -maxdepth 1 -type d -name ts\\*)
+}
+
 TSDIRS = $$replace(TSDIRS,./,)
 TSDIRS = $$sorted(TSDIRS)
-SUBDIRS += libtscore libtsduck libtsdektec $$TSDIRS utest
+SUBDIRS += $$LIBSDIR $$TSDIRS utest

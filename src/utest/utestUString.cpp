@@ -77,6 +77,7 @@ class UStringTest: public tsunit::Test
     TSUNIT_DECLARE_TEST(CommonSuffix);
     TSUNIT_DECLARE_TEST(Precombined);
     TSUNIT_DECLARE_TEST(Quoted);
+    TSUNIT_DECLARE_TEST(Unquoted);
     TSUNIT_DECLARE_TEST(ToQuotedLine);
     TSUNIT_DECLARE_TEST(FromQuotedLine);
     TSUNIT_DECLARE_TEST(Indent);
@@ -2341,6 +2342,14 @@ TSUNIT_DEFINE_TEST(Quoted)
     TSUNIT_EQUAL(u"'a?b'", ts::UString(u"a?b").toQuoted());
     TSUNIT_EQUAL(u"'a\\nb'", ts::UString(u"a\nb").toQuoted());
     TSUNIT_EQUAL(u"'a\\\\b'", ts::UString(u"a\\b").toQuoted());
+}
+
+TSUNIT_DEFINE_TEST(Unquoted)
+{
+    TSUNIT_EQUAL(u"", ts::UString().toUnquoted());
+    TSUNIT_EQUAL(u"abcd", ts::UString("abcd").toUnquoted());
+    TSUNIT_EQUAL(u"abcd", ts::UString("'abcd'").toUnquoted());
+    TSUNIT_EQUAL(u"abcd", ts::UString("''\"abcd\"''").toUnquoted());
 }
 
 TSUNIT_DEFINE_TEST(ToQuotedLine)

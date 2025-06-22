@@ -35,7 +35,7 @@ namespace {
     void displayConfig(const ts::ConfigFile& config, const std::string& title)
     {
         tsunit::Test::debug() << "*** " << title << " ***" << std::endl
-            << "Section count: " << config.sectionCount() << std::endl;
+            << "Section count: " << config.size() << std::endl;
 
         ts::UStringVector secnames;
         config.getSectionNames(secnames);
@@ -43,7 +43,7 @@ namespace {
         for (size_t sec = 0; sec < secnames.size(); ++sec) {
 
             const ts::ConfigSection& section(config.section(secnames[sec]));
-            tsunit::Test::debug() << "   Section \"" << secnames[sec] << "\", entryCount() = " << section.entryCount() << std::endl;
+            tsunit::Test::debug() << "   Section \"" << secnames[sec] << "\", entryCount() = " << section.size() << std::endl;
 
             ts::UStringVector entnames;
             section.getEntryNames(entnames);
@@ -108,7 +108,7 @@ TSUNIT_DEFINE_TEST(File)
     ts::ConfigFile config(input);
     displayConfig(config, "Default config file content");
 
-    TSUNIT_EQUAL(4, config.sectionCount());
+    TSUNIT_EQUAL(4, config.size());
 
     ts::UStringVector names1;
     config.getSectionNames(names1);
@@ -118,11 +118,11 @@ TSUNIT_DEFINE_TEST(File)
     ts::UString(u", Section222, Section333, SectionBoo").split(names2);
     TSUNIT_ASSERT(names1 == names2);
 
-    TSUNIT_EQUAL(2, config[u""].entryCount());
-    TSUNIT_EQUAL(0, config[u"Section222"].entryCount());
-    TSUNIT_EQUAL(1, config[u"Section333"].entryCount());
-    TSUNIT_EQUAL(0, config[u"Section444"].entryCount());
-    TSUNIT_EQUAL(5, config[u"SectionBoo"].entryCount());
+    TSUNIT_EQUAL(2, config[u""].size());
+    TSUNIT_EQUAL(0, config[u"Section222"].size());
+    TSUNIT_EQUAL(1, config[u"Section333"].size());
+    TSUNIT_EQUAL(0, config[u"Section444"].size());
+    TSUNIT_EQUAL(5, config[u"SectionBoo"].size());
 
     TSUNIT_EQUAL(1, config[u""].valueCount(u"foo"));
     TSUNIT_EQUAL(4, config[u""].valueCount(u"azerty"));
@@ -140,9 +140,9 @@ TSUNIT_DEFINE_TEST(File)
     TSUNIT_EQUAL(23, config[u""].value<int>(u"azerty", 2));
     TSUNIT_EQUAL(0,  config[u""].value<int>(u"azerty", 1));
 
-    config.reset();
+    config.clear();
     displayConfig(config, "Config after Reset()");
 
-    TSUNIT_EQUAL(0, config.sectionCount());
-    TSUNIT_EQUAL(0, config[u""].entryCount());
+    TSUNIT_EQUAL(0, config.size());
+    TSUNIT_EQUAL(0, config[u""].size());
 }

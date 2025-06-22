@@ -10,16 +10,6 @@
 
 
 //----------------------------------------------------------------------------
-// Reset content of the configuration section
-//----------------------------------------------------------------------------
-
-void ts::ConfigSection::reset()
-{
-    _entries.clear();
-}
-
-
-//----------------------------------------------------------------------------
 // Get the names of all entries in a section
 //----------------------------------------------------------------------------
 
@@ -63,7 +53,7 @@ ts::UString ts::ConfigSection::value(const UString& entry, size_t index, const U
 bool ts::ConfigSection::boolValue(const UString& entry, size_t index, bool defvalue) const
 {
     bool val = false;
-    return value(entry, index).toBool(val) ? val : defvalue;
+    return value(entry, index).toUnquoted().toBool(val) ? val : defvalue;
 }
 
 
