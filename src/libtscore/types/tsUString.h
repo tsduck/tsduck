@@ -1459,6 +1459,7 @@ namespace ts {
         //!
         //! Return a version of the string with matching pairs of quotes at beginning and end removed.
         //! @param [in] quote_characters All characters which are recognized as quote.
+        //! @return A version of the string with matching pairs of quotes at beginning and end removed.
         //!
         UString toUnquoted(const UString& quote_characters = DEFAULT_QUOTE_CHARACTERS) const;
 
