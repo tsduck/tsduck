@@ -1,0 +1,35 @@
+#
+# Grafana demo environment using Docker containers.
+#
+services:
+  influxdb:
+    image: influxdb:2.7
+    container_name: influxdb
+    restart: unless-stopped
+    ports:
+      - "8086:8086"
+    volumes:
+      - ./data/influxdb:/var/lib/influxdb2
+    environment:
+      # Password is permanent, change is not required on first login.
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=admin
+      - DOCKER_INFLUXDB_INIT_PASSWORD=pomerol123
+      - DOCKER_INFLUXDB_INIT_ORG=demo-org
+      - DOCKER_INFLUXDB_INIT_BUCKET=demo-bucket
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=demo-token
+
+  grafana:
+    image: grafana/grafana-oss:latest
+    container_name: grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./data/grafana:/var/lib/grafana
+    environment:
+      # Password is temporary, change is required on first login.
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=fronsac123
+    depends_on:
+      - influxdb

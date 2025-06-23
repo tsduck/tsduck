@@ -28,8 +28,5 @@ test-python:
 	@echo "==== Python version"
 	./sample-memory-plugins.py
 
-clean:
-	@rm -rf *.o *.class *.ts
-
-distclean: clean
-	@rm -rf sample-memory-plugins
+clean distclean:
+	@rm -rf *.o *.class *.ts sample-memory-plugins

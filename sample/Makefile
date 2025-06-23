@@ -8,6 +8,6 @@
 #
 #-----------------------------------------------------------------------------
 
-.PHONY: default
-default:
-	@for dir in $(wildcard sample-*/); do $(MAKE) -C $$dir || exit $$?; done
+.PHONY: default clean
+default clean:
+	@for dir in grafana $(wildcard sample-*/); do $(MAKE) $@ -C $$dir || exit $$?; done

@@ -6,7 +6,5 @@ LDLIBS += $(shell tsconfig --libs)
 
 default: myexec
 
-clean:
-	@rm -rf *.o *.ts
-distclean: clean
-	@rm -rf myexec
+clean distclean:
+	@rm -rf *.o *.ts myexec
