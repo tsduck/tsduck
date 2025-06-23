@@ -237,8 +237,9 @@ TSUNIT_DEFINE_TEST(Post)
     ts::WebRequest request(report());
     request.setPostData(post);
 
+    // Use assumption instead of assertion because we do not fully trust the reliability to that site.
     ts::UString response;
-    TSUNIT_ASSERT(request.downloadTextContent(url, response));
+    TSUNIT_ASSUME(request.downloadTextContent(url, response));
 
     debug() << "WebRequestTest::testPost:" << std::endl
             << "    Original URL: " << request.originalURL() << std::endl
@@ -248,9 +249,12 @@ TSUNIT_DEFINE_TEST(Post)
             << "    Content text: \"" << response << "\"" << std::endl;
 
     ts::json::ValuePtr jv;
-    TSUNIT_ASSERT(ts::json::Parse(jv, response, CERR));
-    TSUNIT_ASSERT(jv != nullptr);
-    TSUNIT_ASSERT(jv->isObject());
-    TSUNIT_ASSERT(jv->value(u"data").isString());
-    TSUNIT_EQUAL(post, jv->value(u"data").toString());
+    bool success = true;
+    TSUNIT_ASSUME(success = ts::json::Parse(jv, response, CERR));
+    if (success) {
+        TSUNIT_ASSERT(jv != nullptr);
+        TSUNIT_ASSERT(jv->isObject());
+        TSUNIT_ASSERT(jv->value(u"data").isString());
+        TSUNIT_EQUAL(post, jv->value(u"data").toString());
+    }
 }
