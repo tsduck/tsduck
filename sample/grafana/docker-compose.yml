@@ -11,7 +11,6 @@ services:
     volumes:
       - ./data/influxdb:/var/lib/influxdb2
     environment:
-      # Password is permanent, change is not required on first login.
       - DOCKER_INFLUXDB_INIT_MODE=setup
       - DOCKER_INFLUXDB_INIT_USERNAME=admin
       - DOCKER_INFLUXDB_INIT_PASSWORD=pomerol123
@@ -28,7 +27,6 @@ services:
     volumes:
       - ./data/grafana:/var/lib/grafana
     environment:
-      # Password is temporary, change is required on first login.
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=fronsac123
     depends_on:

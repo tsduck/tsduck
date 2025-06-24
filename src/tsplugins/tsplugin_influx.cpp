@@ -256,11 +256,10 @@ void ts::InfluxPlugin::reportMetrics(Time timestamp, cn::milliseconds duration)
 
     // Build data to post.
     UString data;
-    data.format(u"bitrate,tsid=%d ts=%d,null=%d %d",
-                _ts_id,
-                PacketBitRate(_ts_packets, duration),
-                PacketBitRate(_null_packets, duration),
-                timestamp_ms);
+    data.format(u"bitrate,scope=ts,tsid=%d value=%d %d\n"
+                u"bitrate,scope=pid,pid=%d value=%d %d",
+                _ts_id, PacketBitRate(_ts_packets, duration), timestamp_ms,
+                PID_NULL, PacketBitRate(_null_packets, duration), timestamp_ms);
 
     // Send the data to the InfluxDB server.
     debug(u"report at %s, for last %s, data: \"%s\"", timestamp, duration, data);
