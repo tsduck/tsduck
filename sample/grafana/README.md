@@ -9,7 +9,7 @@ the plugin `influx`.
   * [Demo installation](#demo-installation)
   * [Testing InfluxDB](#testing-influxdb)
   * [Configuring InfluxDB as data source for Grafana](#configuring-influxdb-as-data-source-for-grafana)
-  * [Creating Grafana dasboards](#creating-grafana-dasboards)
+  * [Creating Grafana dashboards](#creating-grafana-dashboards)
 * [InfluxDB CLI](#influxdb-cli)
 * [Docker on macOS](#docker-on-macos)
 * [References](#references)
@@ -47,6 +47,9 @@ Setup files:
 - `grafana-cleanup.sh`: Cleanup and delete the demo environment.
 - `setenv.sh`: A script to source in bash, which defines the environment
   variables to access the InfluxDB instance from the `tsp` plugin `influx`.
+  Defining these environment variables is not mandatory. It is just an easy
+  way to avoid retyping all access parameters to access the InfluxDB server
+  in each command.
 
 After setup, Grafana and InfluxDB can be managed from a browser at:
 
@@ -61,7 +64,7 @@ the file `docker-compose.yml`.
 This step is optional. It is just a test. It requires the presence of the
 InfluxDB CLI command `influx` ([see below](#influxdb-cli)).
 
-First run a `tsp` command which logs metrics in InfluxDB. Note that sourcing
+First, run a `tsp` command which logs metrics in InfluxDB. Note that sourcing
 `setenv.sh` defines the environment variables which equally apply to the `tsp`
 plugin `influx` and the InfluxBD CLI command `influx`.
 ~~~
@@ -107,7 +110,9 @@ version, the UI may vary. Adapt the following procedure if necessary.
 
 Grafana can now pull data to display from InfluxDB.
 
-### Creating Grafana dasboards
+### Creating Grafana dashboards
+
+Let's create a visualization of the global transport stream bitrate.
 
 Still in the Grafana panel at `http://localhost:3000`:
 
@@ -118,12 +123,16 @@ Still in the Grafana panel at `http://localhost:3000`:
 - In the "Queries" tab, enter a Flux query such as:
 ~~~
 from(bucket: "demo-bucket")
-  |> range(start: -5m)
-  |> filter(fn: (r) => r._measurement == "bitrate")
+  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
+  |> filter(fn: (r) => r["_measurement"] == "bitrate")
   |> filter(fn: (r) => r.scope == "ts")
-  |> filter(fn: (r) => r.tsid == "4")
-  |> mean()
+  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)
+  |> yield(name: "mean")
 ~~~
+- Select the duration of visualization (top right), for instance "Last 15 minutes".
+- Click on "Refresh" (top right) to get an snapshot of data.
+- Select "Auto" in the refresh option, as well as a refresh rate.
+  The lowest value is 5s and is appropriate to transport stream monitoring.
 
 ## InfluxDB CLI
 

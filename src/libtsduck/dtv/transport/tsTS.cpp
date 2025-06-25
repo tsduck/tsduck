@@ -33,7 +33,7 @@ const ts::PIDSet& ts::AllPIDs()
 
 
 //----------------------------------------------------------------------------
-// Enumeration description of ts::PIDClass.
+// Enumeration descriptions of ts::PIDClass.
 //----------------------------------------------------------------------------
 
 const ts::Names& ts::PIDClassEnum()
@@ -48,6 +48,23 @@ const ts::Names& ts::PIDClassEnum()
         {u"subtitles", PIDClass::SUBTITLES},
         {u"data",      PIDClass::DATA},
         {u"PCR",       PIDClass::PCR_ONLY},
+        {u"stuffing",  PIDClass::STUFFING},
+    };
+    return data;
+}
+
+const ts::Names& ts::PIDClassIdentifier()
+{
+    static const Names data {
+        {u"undefined", PIDClass::UNDEFINED},
+        {u"psi",       PIDClass::PSI},
+        {u"emm",       PIDClass::EMM},
+        {u"ecm",       PIDClass::ECM},
+        {u"video",     PIDClass::VIDEO},
+        {u"audio",     PIDClass::AUDIO},
+        {u"subtitles", PIDClass::SUBTITLES},
+        {u"data",      PIDClass::DATA},
+        {u"pcr",       PIDClass::PCR_ONLY},
         {u"stuffing",  PIDClass::STUFFING},
     };
     return data;

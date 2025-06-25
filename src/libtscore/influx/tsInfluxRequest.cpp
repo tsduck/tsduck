@@ -88,3 +88,21 @@ bool ts::InfluxRequest::write(const InfluxArgs& args, const UString& data, const
         return true;
     }
 }
+
+
+//----------------------------------------------------------------------------
+// Escape characters in a string to be used as measurement, key or value.
+//----------------------------------------------------------------------------
+
+ts::UString ts::InfluxRequest::Escape(const UString& name, const UString& specials)
+{
+    UString result;
+    result.reserve(name.length() + 10);
+    for (UChar c : name) {
+        if (specials.contains(c)) {
+            result.append(u'\\');
+        }
+        result.append(c);
+    }
+    return result;
+}

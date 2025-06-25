@@ -393,10 +393,16 @@ namespace ts {
     };
 
     //!
-    //! Enumeration description of ts::PIDClass.
+    //! Enumeration description of ts::PIDClass with meaningful names.
     //! @return A constant reference to the enumeration description.
     //!
     TSDUCKDLL const Names& PIDClassEnum();
+
+    //!
+    //! Enumeration description of ts::PIDClass with simple lowercase identifiers.
+    //! @return A constant reference to the enumeration description.
+    //!
+    TSDUCKDLL const Names& PIDClassIdentifier();
 
     //---------------------------------------------------------------------
     // MPEG clock representation:

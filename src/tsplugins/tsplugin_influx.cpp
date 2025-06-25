@@ -18,6 +18,8 @@
 #include "tsPCRAnalyzer.h"
 #include "tsTime.h"
 
+#define DEFAULT_INTERVAL 5  // seconds
+
 
 //----------------------------------------------------------------------------
 // Plugin definition
@@ -31,36 +33,48 @@ namespace ts {
         // Implementation of plugin API
         virtual bool getOptions() override;
         virtual bool start() override;
-        virtual bool stop() override;
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
         // Command line options.
+        bool        _log_types = false;
+        bool        _log_services = false;
+        bool        _log_names = false;
         bool        _pcr_based = false;
         bool        _use_local_time = false;
         Time        _start_time {};
         cn::seconds _log_interval {};
+        PIDSet      _log_pids {};
         InfluxArgs  _influx_args {};
 
+        // Description of a service. Not reset in each period.
+        class ServiceContext
+        {
+        public:
+            ServiceContext() = default;
+            UString name {};
+            std::set<PID> pids {};
+        };
+
         // Working data.
-        Time               _first_time {};         // UTC time of first packet.
-        Time               _due_time {};           // Next UTC time to report (without --pcr-based).
-        Time               _last_time {};          // UTC time of last report.
-        PCR                _due_pcr {};            // Next PCR to report (with --pcr-based).
-        PCR                _last_pcr {};           // PCR of last report.
-        SignalizationDemux _demux {duck};          // Analyze the stream.
-        PCRAnalyzer        _pcr_analyzer {1, 1};   // Compute playout time based on PCR.
-        InfluxRequest      _request {*this};       // Web request to InfluxDB server.
-        PacketCounter      _ts_packets = 0;        // All TS packets in period.
-        PacketCounter      _null_packets = 0;      // Null packets in period.
-        uint16_t           _ts_id = INVALID_TS_ID; // Transport stream id.
+        Time               _first_time {};              // UTC time of first packet.
+        Time               _due_time {};                // Next UTC time to report (without --pcr-based).
+        Time               _last_time {};               // UTC time of last report.
+        PCR                _due_pcr {};                 // Next PCR to report (with --pcr-based).
+        PCR                _last_pcr {};                // PCR of last report.
+        SignalizationDemux _demux {duck};               // Analyze the stream.
+        PCRAnalyzer        _pcr_analyzer {1, 1};        // Compute playout time based on PCR.
+        InfluxRequest      _request {*this};            // Web request to InfluxDB server.
+        PacketCounter      _ts_packets = 0;             // All TS packets in period.
+        std::map<PID,PacketCounter> _pids_packets {};   // Packets per PID in period.
+        std::map<uint16_t,ServiceContext> _services {}; // Service descriptions.
 
         // Report metrics to InfluxDB.
         void reportMetrics(Time timestamp, cn::milliseconds duration);
 
         // Implementation of SignalizationHandlerInterface.
-        virtual void handlePAT(const PAT&, PID) override;
         virtual void handleUTC(const Time&, TID) override;
+        virtual void handleService(uint16_t, const Service&, const PMT&, bool) override;
     };
 }
 
@@ -74,12 +88,41 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"influx", ts::InfluxPlugin);
 ts::InfluxPlugin::InfluxPlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Send live TS metrics to InfluxDB, a data source for Grafana", u"[options]")
 {
+    // InfluxDB connection options.
     _influx_args.defineArgs(*this);
 
+    // Types of monitoring.
+    option(u"all-pids", 'a');
+    help(u"all-pids",
+         u"Send bitrate monitoring data for all PID's. Equivalent to --pid 0-8191.");
+
+    option(u"pid", 'p', PIDVAL, 0, UNLIMITED_COUNT);
+    help(u"pid", u"pid1[-pid2]",
+         u"Send bitrate monitoring data for the specified PID's. "
+         u"The PID's are identified in InfluxDB by their value in decimal. "
+         u"Several -p or --pid options may be specified.");
+
+    option(u"services", 's');
+    help(u"services",
+         u"Send bitrate monitoring data for services. "
+         u"The services are identified in InfluxDB by their id in decimal.");
+
+    option(u"names", 'n');
+    help(u"names",
+         u"With --services, the services are identified in InfluxDB by their name, when available.");
+
+    option(u"type");
+    help(u"type",
+         u"Send bitrate monitoring for types of PID's. "
+         u"The types are identified in InfluxDB as " +
+         PIDClassIdentifier().nameList(u", ", u"\"", u"\"") +
+         u".");
+
+    // Timing options.
     option<cn::seconds>(u"interval", 'i');
     help(u"interval",
          u"Interval in seconds between metrics reports to InfluxDB. "
-         u"The default is one second.");
+         u"The default is " TS_USTRINGIFY(DEFAULT_INTERVAL) u" seconds.");
 
     option(u"local-time");
     help(u"local-time",
@@ -105,9 +148,18 @@ ts::InfluxPlugin::InfluxPlugin(TSP* tsp_) :
 bool ts::InfluxPlugin::getOptions()
 {
     bool success = _influx_args.loadArgs(duck, *this, true);
-    getChronoValue(_log_interval, u"interval", cn::seconds(1));
+    _log_types = present(u"type");
+    _log_services = present(u"services");
+    _log_names = present(u"names");
     _pcr_based = present(u"pcr-based");
     _use_local_time = present(u"local-time");
+    getChronoValue(_log_interval, u"interval", cn::seconds(DEFAULT_INTERVAL));
+    if (present(u"all-pids")) {
+        _log_pids = AllPIDs();
+    }
+    else {
+        getIntValues(_log_pids, u"pid");
+    }
     _start_time = Time::Epoch;
 
     if (present(u"start-time")) {
@@ -136,18 +188,9 @@ bool ts::InfluxPlugin::start()
     _demux.reset();
     _demux.setHandler(this);
     _pcr_analyzer.reset();
-    _ts_packets = _null_packets = 0;
-    _ts_id = INVALID_TS_ID;
-    return true;
-}
-
-
-//----------------------------------------------------------------------------
-// Stop method
-//----------------------------------------------------------------------------
-
-bool ts::InfluxPlugin::stop()
-{
+    _ts_packets = 0;
+    _pids_packets.clear();
+    _services.clear();
     return true;
 }
 
@@ -158,7 +201,7 @@ bool ts::InfluxPlugin::stop()
 
 ts::ProcessorPlugin::Status ts::InfluxPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
-    // Start time on first packet.
+    // Start time is set on first packet.
     if (tsp->pluginPackets() == 0) {
         if (!_pcr_based) {
             // Use wall clock time as reference.
@@ -166,7 +209,8 @@ ts::ProcessorPlugin::Status ts::InfluxPlugin::processPacket(TSPacket& pkt, TSPac
             _due_time = _first_time + _log_interval;
         }
         else if (_start_time != Time::Epoch) {
-            // Use PCR time reference with a given base.
+            // Use PCR time reference with a given start time.
+            // Without a given start time, delay the reports until a UTC time is found in the stream.
             _first_time = _start_time;
             _due_pcr = cn::duration_cast<PCR>(_log_interval);
         }
@@ -181,8 +225,8 @@ ts::ProcessorPlugin::Status ts::InfluxPlugin::processPacket(TSPacket& pkt, TSPac
 
     // Accumulate metrics.
     _ts_packets++;
-    if (pkt.getPID() == PID_NULL) {
-        _null_packets++;
+    if (_log_types || _log_services || _log_pids.any()) {
+        _pids_packets[pkt.getPID()]++;
     }
 
     // Is it time to report metrics?
@@ -233,12 +277,31 @@ void ts::InfluxPlugin::handleUTC(const Time& utc, TID tid)
 
 
 //----------------------------------------------------------------------------
-// Receive a PAT from the TS.
+// Receive a service update.
 //----------------------------------------------------------------------------
 
-void ts::InfluxPlugin::handlePAT(const PAT& pat, PID pid)
+void ts::InfluxPlugin::handleService(uint16_t ts_id, const Service& service, const PMT& pmt, bool removed)
 {
-    _ts_id = pat.ts_id;
+    debug(u"got service \"%s\", id %n, removed: %s", service.getName(), service.getId(), removed);
+    if (_log_services) {
+        if (removed) {
+            _services.erase(service.getId());
+        }
+        else {
+            auto& srv(_services[service.getId()]);
+            if (_log_names) {
+                const UString name(service.getName());
+                if (!name.empty()) {
+                    srv.name = name;
+                }
+            }
+            if (pmt.isValid()) {
+                for (const auto& it : pmt.streams) {
+                    srv.pids.insert(it.first);
+                }
+            }
+        }
+    }
 }
 
 
@@ -256,15 +319,53 @@ void ts::InfluxPlugin::reportMetrics(Time timestamp, cn::milliseconds duration)
 
     // Build data to post.
     UString data;
-    data.format(u"bitrate,scope=ts,tsid=%d value=%d %d\n"
-                u"bitrate,scope=pid,pid=%d value=%d %d",
-                _ts_id, PacketBitRate(_ts_packets, duration), timestamp_ms,
-                PID_NULL, PacketBitRate(_null_packets, duration), timestamp_ms);
+    data.format(u"bitrate,scope=ts,tsid=%d value=%d %d", _demux.transportStreamId(), PacketBitRate(_ts_packets, duration), timestamp_ms);
+    if (_log_services) {
+        for (const auto& it : _services) {
+            // Count packets in this service.
+            PacketCounter packets = 0;
+            for (PID pid : it.second.pids) {
+                packets += _pids_packets[pid];
+            }
+            // Display by name or id.
+            if (packets > 0) {
+                if (_log_names && !it.second.name.empty()) {
+                    const UString name(InfluxRequest::ToKey(it.second.name));
+                    data.format(u"\nbitrate,scope=service,service=%s value=%d %d", name, PacketBitRate(packets, duration), timestamp_ms);
+                }
+                else {
+                    data.format(u"\nbitrate,scope=service,service=%d value=%d %d", it.first, PacketBitRate(packets, duration), timestamp_ms);
+                }
+            }
+        }
+    }
+    if (_log_types) {
+        // Build a map of packet count per PID type (all PID's have a type).
+        std::map<PIDClass,PacketCounter> by_type;
+        for (const auto& it : _pids_packets) {
+            by_type[_demux.pidClass(it.first)] += it.second;
+        }
+        // Send bitrate info for each type of PID.
+        for (const auto& it : by_type) {
+            if (it.second > 0) {
+                const UString name(InfluxRequest::ToKey(PIDClassIdentifier().name(it.first)));
+                data.format(u"\nbitrate,scope=type,type=%s value=%d %d", name, PacketBitRate(it.second, duration), timestamp_ms);
+            }
+        }
+    }
+    if (_log_pids.any()) {
+        for (const auto& it : _pids_packets) {
+            if (_log_pids.test(it.first) && it.second > 0) {
+                data.format(u"\nbitrate,scope=pid,pid=%d value=%d %d", it.first, PacketBitRate(it.second, duration), timestamp_ms);
+            }
+        }
+    }
 
     // Send the data to the InfluxDB server.
     debug(u"report at %s, for last %s, data: \"%s\"", timestamp, duration, data);
     _request.write(_influx_args, data, u"ms");
 
     // Reset metrics.
-    _ts_packets = _null_packets = 0;
+    _ts_packets = 0;
+    _pids_packets.clear();
 }

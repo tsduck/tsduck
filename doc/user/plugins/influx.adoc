@@ -10,10 +10,15 @@
 === influx
 
 [.cmd-header]
-Send live TS metrics to InfluxDB, a data source for Grafana
+Send live bitrate metrics to InfluxDB, a data source for Grafana
 
-NOTE: This plugin is currently experimental.
-More features will come from users' feedback.
+By default, the plugin sends the global transport stream bitrate only.
+Using options, other bitrate information are sent: by PID, by type of PID
+(audio, video, etc.), by service.
+
+Be careful to send the required information for your graph only.
+Sending bitrate information for all PID's, all types of PID's, and all services,
+every second, may overload the InfluxDB database. Do some benchmarking first.
 
 [.usage]
 Usage
@@ -34,7 +39,7 @@ Timing options
 Interval in seconds between metrics reports to InfluxDB.
 
 [.optdoc]
-The default is one second.
+The default is 5 seconds. This is usually the minimal update interval in Grafana.
 
 [.opt]
 *--local-time*
@@ -62,6 +67,55 @@ With `--pcr-based`, specify the initial date and time reference.
 
 [.optdoc]
 By default, with `--pcr-based`, the activity starts at the first UTC time which is found in a DVB TDT or ATSC STT.
+
+[.usage]
+Monitored information options
+
+[.opt]
+*-a* +
+*--all-pids*
+
+[.optdoc]
+Send bitrate monitoring data for all PID's.
+Equivalent to `--pid 0-8191`.
+
+[.opt]
+*-n* +
+*--names*
+
+[.optdoc]
+With `--services`, the services are identified in InfluxDB by their name, when available.
+Services without name are identified by their id in decimal.
+
+[.opt]
+*-p* _pid1[-pid2]_ +
+*--pid* _pid1[-pid2]_
+
+[.optdoc]
+Send bitrate monitoring data for the specified PID's.
+The PID's are identified in InfluxDB by their value in decimal.
+
+[.optdoc]
+Several `--pid` options may be specified.
+To save bandwidth and database space, PID's with no packets during an interval are not reported for that interval.
+
+[.opt]
+*-s* +
+*--services*
+
+[.optdoc]
+Send bitrate monitoring data for services.
+The services are identified in InfluxDB by their id in decimal.
+
+[.opt]
+*--type*
+
+[.optdoc]
+Send bitrate monitoring for types of PID's.
+
+[.optdoc]
+The types are identified in InfluxDB as
+`audio`, `data`, `ecm`, `emm`, `pcr`, `psi`, `stuffing`, `subtitles`, `undefined`, `video`.
 
 include::{docdir}/opt/group-influx.adoc[tags=!*]
 include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

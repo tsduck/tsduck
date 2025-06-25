@@ -46,5 +46,33 @@ namespace ts {
         //! @see https://docs.influxdata.com/influxdb/v2/api/v2/#operation/PostWrite
         //!
         bool write(const InfluxArgs& args, const UString& data, const UString& precision);
+
+        //!
+        //! Escape characters in a string to be used as measurement.
+        //! @param [in] name The name to transform.
+        //! @return The transformed string with escaped special characters.
+        //! @see https://docs.influxdata.com/influxdb/v2/reference/syntax/line-protocol/
+        //!
+        static UString ToMeasurement(const UString& name) { return Escape(name, u", \\"); }
+
+        //!
+        //! Escape characters in a string to be used as tag key, tag value, or field key.
+        //! @param [in] name The name to transform.
+        //! @return The transformed string with escaped special characters.
+        //! @see https://docs.influxdata.com/influxdb/v2/reference/syntax/line-protocol/
+        //!
+        static UString ToKey(const UString& name) { return Escape(name, u",= \\"); }
+
+        //!
+        //! Escape characters in a string to be used as field value of type string.
+        //! Do not use for numerical field values. This function adds surrounding quotes.
+        //! @param [in] name The name to transform.
+        //! @return The transformed string with escaped special characters and surrounding quotes.
+        //! @see https://docs.influxdata.com/influxdb/v2/reference/syntax/line-protocol/
+        //!
+        static UString ToStringValue(const UString& name) { return Escape(name, u"\"\\"); }
+
+    private:
+        static UString Escape(const UString& name, const UString& specials);
     };
 }
