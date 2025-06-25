@@ -321,13 +321,17 @@ void ts::InfluxPlugin::reportMetrics(Time timestamp, cn::milliseconds duration)
     UString data;
     data.format(u"bitrate,scope=ts,tsid=%d value=%d %d", _demux.transportStreamId(), PacketBitRate(_ts_packets, duration), timestamp_ms);
     if (_log_services) {
+        // PID's which belong to services.
+        PIDSet allocated;
+        // Send bitrate info for services.
         for (const auto& it : _services) {
             // Count packets in this service.
             PacketCounter packets = 0;
             for (PID pid : it.second.pids) {
                 packets += _pids_packets[pid];
+                allocated.set(pid);
             }
-            // Display by name or id.
+            // Send bitrate info by name or id.
             if (packets > 0) {
                 if (_log_names && !it.second.name.empty()) {
                     const UString name(InfluxRequest::ToKey(it.second.name));
@@ -337,6 +341,16 @@ void ts::InfluxPlugin::reportMetrics(Time timestamp, cn::milliseconds duration)
                     data.format(u"\nbitrate,scope=service,service=%d value=%d %d", it.first, PacketBitRate(packets, duration), timestamp_ms);
                 }
             }
+        }
+        // Send bitrate info for "global" PID's (unallocated to any service).
+        PacketCounter globals = 0;
+        for (const auto& it : _pids_packets) {
+            if (!allocated.test(it.first)) {
+                globals += it.second;
+            }
+        }
+        if (globals > 0) {
+            data.format(u"\nbitrate,scope=service,service=global value=%d %d", PacketBitRate(globals, duration), timestamp_ms);
         }
     }
     if (_log_types) {

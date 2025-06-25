@@ -111,11 +111,59 @@ The services are identified in InfluxDB by their id in decimal.
 *--type*
 
 [.optdoc]
-Send bitrate monitoring for types of PID's.
-
-[.optdoc]
-The types are identified in InfluxDB as
-`audio`, `data`, `ecm`, `emm`, `pcr`, `psi`, `stuffing`, `subtitles`, `undefined`, `video`.
+Send bitrate monitoring by type of PID's (audio, video, subtitles, PSI, etc.)
+See more details below.
 
 include::{docdir}/opt/group-influx.adoc[tags=!*]
 include::{docdir}/opt/group-common-plugins.adoc[tags=!*]
+
+[.usage]
+Building Flux queries for Grafana
+
+This plugin sends bitrate data to InfluxDB.
+On top of that, the user has to build Flux requests in Grafana to extract the appropriate data to visualize.
+
+In each data entry, the `_measurement` is the string `bitrate` and the `_value` is a bitrate in bits/second
+of type `float` (in practice, an integer value is provided).
+
+A time stamp is always provided with each entry.
+Depending on the plugin options, this can be a local time or a UTC time,
+a wall-clock time or a time which is extracted from the stream.
+
+In each data entry, the tag `scope` indicate the type of entry.
+Depending on its value, a second tag is provided.
+The following table lists the possible `scope` values and the corresponding second tag.
+
+.InfluxDB received data
+[cols="<1m,<1m,<1,<1",stripes=none,options="autowidth"]
+|===
+|`scope` |Tag 2 |Tag 2 value |Bitrate value
+
+|ts
+|tsid
+|TS id in decimal.
+|Full TS bitrate.
+
+|pid
+|pid
+|PID in decimal.
+|With `--pid`, bitrate of that PID.
+
+|service
+|service
+|Service id in decimal, or service name, or `global` for all global PID's.
+|With `--service`, cumulated bitrate of all PID's of that service.
+
+|type
+|type
+|One of `audio`, `data`, `ecm`, `emm`, `pcr`, `psi`, `stuffing`, `subtitles`, `undefined`, `video`.
+|With `--type`, cumulated bitrate of all PID's of that type.
+
+|===
+
+Note that if a PID is shared between several services,
+its bitrate is included in the bitrate of all services it belongs to.
+In that case, the sum of the bitrate of all services is greater than the global TS bitrate.
+
+To reduce the amount of logged data, bitrates with value zero are not sent.
+For instance, using option `--all-pids`, a `pid` record is sent only for PID's with a non-zero bitrate during that interval.
