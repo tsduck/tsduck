@@ -95,10 +95,7 @@ namespace ts {
         /** @return True if the fullname is present.            */  \
         bool has##suffix() const { return field.has_value(); }      \
         /** Clear the fullname.                                 */  \
-        void clear##suffix() { _modified = _modified || bool(field); field.reset(); } \
-        /** Get the fullname.                                   */  \
-        /** @return The fullname or defvalue if unset.          */  \
-        type get##suffix() const { return field.value_or(defvalue); }
+        void clear##suffix() { _modified = _modified || bool(field); field.reset(); }
 
         //!
         //! Define an integer service property accessors, class internal use only.
@@ -114,6 +111,9 @@ namespace ts {
         /** Set the fullname.                                      */  \
         /** @param [in] value The fullname.                        */  \
         void set##suffix(type value) { _modified = _modified || field != value; field = value; } \
+        /** Get the fullname.                                      */  \
+        /** @return The fullname or defvalue if unset.             */  \
+        type get##suffix() const { return field.value_or(defvalue); }  \
         /** Check if the fullname has a given value.               */  \
         /** @param [in] value The fullname to check.               */  \
         /** @return True if the fullname is equal to @a value.     */  \
@@ -131,6 +131,9 @@ namespace ts {
         /** Set the fullname.                                      */  \
         /** @param [in] value The fullname.                        */  \
         void set##suffix(const UString& value) { _modified = _modified || field != value; field = value; } \
+        /** Get the fullname.                                      */  \
+        /** @return A constant reference to the fullname or an empty string if unset. */ \
+        const UString& get##suffix() const { return field.has_value() ? field.value() : UString::EMPTY(); } \
         /** Check if the fullname has a given value.               */  \
         /** @param [in] value The fullname to check.               */  \
         /** @return True if the fullname is similar to @a value,   */  \
