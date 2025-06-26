@@ -16,9 +16,12 @@
 #include "tsInfluxRequest.h"
 #include "tsSignalizationDemux.h"
 #include "tsPCRAnalyzer.h"
+#include "tsMessageQueue.h"
+#include "tsThread.h"
 #include "tsTime.h"
 
-#define DEFAULT_INTERVAL 5  // seconds
+#define DEFAULT_INTERVAL  5  // default logging interval in seconds
+#define MAX_QUEUE_SIZE   10  // maximum queued metrics messages
 
 
 //----------------------------------------------------------------------------
@@ -26,13 +29,14 @@
 //----------------------------------------------------------------------------
 
 namespace ts {
-    class InfluxPlugin: public ProcessorPlugin, private SignalizationHandlerInterface
+    class InfluxPlugin: public ProcessorPlugin, private SignalizationHandlerInterface, private Thread
     {
         TS_PLUGIN_CONSTRUCTORS(InfluxPlugin);
     public:
         // Implementation of plugin API
         virtual bool getOptions() override;
         virtual bool start() override;
+        virtual bool stop() override;
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
@@ -57,17 +61,18 @@ namespace ts {
         };
 
         // Working data.
-        Time               _first_time {};              // UTC time of first packet.
-        Time               _due_time {};                // Next UTC time to report (without --pcr-based).
-        Time               _last_time {};               // UTC time of last report.
-        PCR                _due_pcr {};                 // Next PCR to report (with --pcr-based).
-        PCR                _last_pcr {};                // PCR of last report.
-        SignalizationDemux _demux {duck};               // Analyze the stream.
-        PCRAnalyzer        _pcr_analyzer {1, 1};        // Compute playout time based on PCR.
-        InfluxRequest      _request {*this};            // Web request to InfluxDB server.
-        PacketCounter      _ts_packets = 0;             // All TS packets in period.
-        std::map<PID,PacketCounter> _pids_packets {};   // Packets per PID in period.
-        std::map<uint16_t,ServiceContext> _services {}; // Service descriptions.
+        Time                  _first_time {};            // UTC time of first packet.
+        Time                  _due_time {};              // Next UTC time to report (without --pcr-based).
+        Time                  _last_time {};             // UTC time of last report.
+        PCR                   _due_pcr {};               // Next PCR to report (with --pcr-based).
+        PCR                   _last_pcr {};              // PCR of last report.
+        SignalizationDemux    _demux {duck};             // Analyze the stream.
+        PCRAnalyzer           _pcr_analyzer {1, 1};      // Compute playout time based on PCR.
+        InfluxRequest         _request {*this};          // Web request to InfluxDB server.
+        MessageQueue<UString> _metrics_queue {};         // Queue of metrics to send.
+        PacketCounter         _ts_packets = 0;           // All TS packets in period.
+        std::map<PID,PacketCounter> _pids_packets {};    // Packets per PID in period.
+        std::map<uint16_t,ServiceContext> _services {};  // Service descriptions.
 
         // Report metrics to InfluxDB.
         void reportMetrics(Time timestamp, cn::milliseconds duration);
@@ -75,6 +80,11 @@ namespace ts {
         // Implementation of SignalizationHandlerInterface.
         virtual void handleUTC(const Time&, TID) override;
         virtual void handleService(uint16_t, const Service&, const PMT&, bool) override;
+
+        // There is one thread which asynchronously sends the metrics data to the InfluxDB server.
+        // We cannot anticipate the response time of the server. Using a thread avoid slowing down
+        // the packet transmission. The following method is the thread main code.
+        virtual void main() override;
     };
 }
 
@@ -191,9 +201,27 @@ bool ts::InfluxPlugin::start()
     _ts_packets = 0;
     _pids_packets.clear();
     _services.clear();
-    return true;
+
+    // Resize the inter-thread queue.
+    _metrics_queue.clear();
+    _metrics_queue.setMaxMessages(MAX_QUEUE_SIZE);
+
+    // Start the internal thread which sends the metrics data.
+    return Thread::start();
 }
 
+
+//----------------------------------------------------------------------------
+// Stop method
+//----------------------------------------------------------------------------
+
+bool ts::InfluxPlugin::stop()
+{
+    // Send a termination message and wait for actual thread termination.
+    _metrics_queue.forceEnqueue(nullptr);
+    Thread::waitForTermination();
+    return true;
+}
 
 //----------------------------------------------------------------------------
 // Packet processing method
@@ -374,12 +402,38 @@ void ts::InfluxPlugin::reportMetrics(Time timestamp, cn::milliseconds duration)
             }
         }
     }
-
-    // Send the data to the InfluxDB server.
     debug(u"report at %s, for last %s, data: \"%s\"", timestamp, duration, data);
-    _request.write(_influx_args, data, u"ms");
+
+    // Send the data to the outgoing thread. Use a zero timeout.
+    // It the thread is so slow that the queue is full, just drop the metrics for this interval.
+    auto msg = std::make_shared<UString>(data);
+    _metrics_queue.enqueue(msg, cn::milliseconds::zero());
 
     // Reset metrics.
     _ts_packets = 0;
     _pids_packets.clear();
+}
+
+
+//----------------------------------------------------------------------------
+// Thread which asynchronously sends the metrics data to the InfluxDB server.
+//----------------------------------------------------------------------------
+
+void ts::InfluxPlugin::main()
+{
+    debug(u"metrics output thread started");
+
+    for (;;) {
+        // Wait for one message, stop on null pointer.
+        decltype(_metrics_queue)::MessagePtr msg;
+        _metrics_queue.dequeue(msg);
+        if (msg == nullptr) {
+            break;
+        }
+
+        // Send the data to the InfluxDB server.
+        _request.write(_influx_args, *msg, u"ms");
+    }
+
+    debug(u"metrics output thread terminated");
 }
