@@ -56,7 +56,7 @@
         {
           "id": "renameByRegex",
           "options": {
-            "regex": "/bitrate value {scope=\"type\", type=\"([^\"]+)\"\\}/",
+            "regex": "/value {scope=\"type\", type=\"([^\"]+)\"\\}/",
             "renamePattern": "$1"
           }
         }
@@ -72,6 +72,7 @@
             "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
+            "axisSoftMin": 0,
             "barAlignment": 0,
             "barWidthFactor": 0.6,
             "drawStyle": "line",

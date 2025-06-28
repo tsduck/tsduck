@@ -3578,3 +3578,113 @@ Also note the following points:
 * The options `--expand-patch-xml` is required to expand environment variables in the patch files.
   Otherwise, by default, the content of the XML patch file is unmodified and expressions such as
   `${VIDEO_PID}` remain unchanged.
+
+[#sample-grafana]
+==== Creating Grafana dashboards with the plugin influx
+
+Grafana is a generic visualization framework which is now a de-facto standard.
+Grafana pulls the data to visualize from various "data sources".
+For real-time monitoring, the most common data source is "InfluxDB".
+These real-time metrics are named "timeseries" in InfluxDB and Grafana.
+
+Applications send data to InfluxDB using a Web API.
+These data are stored in InfluxDB, with a given retention duration.
+Grafana polls new information from InfluxDB for display.
+
+TSDuck can send real-time bitrate monitoring metrics to InfluxDB using the plugin `influx`.
+This information can be used to build various monitoring graphs using Grafana.
+
+Currently, the plugin `influx` can send bitrate metrics for:
+
+[.compact-list]
+* The global transport stream.
+* Selected PID's (or all of them).
+* Services, by name or service id.
+* Data types (audio, video, subtitles, etc.)
+
+See the reference documentation for the plugin `influx` in xref:_influx[xrefstyle=short] for more details.
+
+A sample live display of the stacked bandwidths of the various data types in a transport stream is shown in the diagram below.
+
+.Grafana sample dashboard with TS data types
+image::grafanademo.png[align="center",alt="Grafana sample dashboard"]
+
+To reproduce this, you need to setup Grafana and InfluxDB.
+If you don't have such an environment already, the directory
+https://github.com/tsduck/tsduck/tree/master/sample/grafana[`sample/grafana`]
+in the TSDuck source code provides explanations and scripts to setup
+a basic Grafana demo environment.
+
+The first step is to send live bitrate metrics to InfluxDB.
+The following command receives a broadcast stream from a tuner and sends bitrate metrics
+about data types (option `--type`) to InfluxDB.
+All other options identify the InfluxDB server and the required credentials.
+
+[source,shell]
+----
+tsp -I dvb ... \
+    -P influx --type -h http://localhost:8086/ -o demo-org -t demo-token -b demo-bucket \
+    -O drop
+----
+
+There is no need to provide all InfluxDB information with each command.
+The plugin `influx` accepts the same environment variables as <<InfluxDB-CLI>>,
+the command line interface to InfluxDB.
+The following definitions, for instance, provide the same information:
+
+[source,shell]
+----
+export INFLUX_HOST=http://localhost:8086/
+export INFLUX_ORG=demo-org
+export INFLUX_TOKEN=demo-token
+export INFLUX_BUCKET_NAME=demo-bucket
+----
+
+With these environment variables, the identification of the InfluxDB server is implicit.
+The following command plays a TS file in real time (`-P regulate`) and sends the bitrate
+metrics about data types.
+
+[source,shell]
+----
+tsp -I file input.ts -P regulate -P influx --type -O drop
+----
+
+Now, we need to tell Grafana to pull data from InfluxDB.
+Use the browser to connect to Grafana.
+Depending on the version, the UI may vary.
+Adapt the following procedure if necessary.
+Here, we use the same sample InfluxDB credentials.
+
+[.compact-list]
+* In left panel, under "Connections", select "Data sources".
+* Select "Add data source".
+* Select "InfluxDB".
+* Configure InfluxDB:
+** Query language: "Flux", instead of the default "InfluxQL".
+** HTTP URL: "http://influxdb:8086" (important: specify "influxdb", literally, not "localhost")
+** Auth: Keep "Basic Auth", which should be already selected.
+** Scroll down to InfluxDB Details.
+** Organization: "demo-org".
+** Token: "demo-token".
+** Default Bucket: "demo-bucket".
+** Click on the blue button "Save & test".
+** You should see a message similar to "datasource is working. 3 buckets found".
+
+Grafana can now extract data from InfluxDB.
+We need to create various dashboards to display these data in real-time.
+
+A dashboard can be manually created or imported from a "JSON Model".
+The directory https://github.com/tsduck/tsduck/tree/master/sample/grafana[`sample/grafana`]
+in the TSDuck source code contains the model of the dashboard above, presenting data types,
+in file `sample-graph.json`.
+
+In the Grafana user interface:
+
+[.compact-list]
+* Select "Dashboards" on the top line (in "Home > Dashboards").
+* On the top right corner, select "New", then "Import".
+* Select "Upload dashboard JSON file" or drag an drop `sample-graph.json` into that tab.
+* Select "Import".
+* Possibly set auto-refresh to 5s in top right corner.
+
+Then, you should see the same display as above.

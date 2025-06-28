@@ -316,6 +316,8 @@
 * [[[Impleo-KLV]]] Impleo TV Systems Ltd, February 2017,
   "KLV encoded metadata in STANAG 4609 streams",
   https://impleotv.com/2017/02/17/klv-encoded-metadata-in-stanag-4609-streams/
+* [[[InfluxDB-CLI]]], InfluxDB CLI, the `influx` command to query and InfluxDB server,
+  https://docs.influxdata.com/influxdb/v2/reference/cli/influx/
 * [[[ISO-13818-1]]] ISO/IEC 13818-1:2018 | ITU-T Recommendation H.222 (2017):
   "Generic coding of moving pictures and associated audio information: Systems" (also known as "MPEG-2 System Layer").
 * [[[ISO-13818-6]]] ISO/IEC 13818-6, July 1998:
