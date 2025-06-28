@@ -1,0 +1,225 @@
+{
+  "title": "TS data types",
+  "description": "Bitrate of various data type (audio, video, subtitles, etc) in the transport stream.",
+  "uid": "201571a5-1315-44f7-8eb8-b1e36ad0f6a4",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 1,
+  "timepicker": {},
+  "timezone": "browser",
+  "preload": true,
+  "schemaVersion": 41,
+  "version": 12,
+  "links": [],
+  "tags": [],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-5m",
+    "to": "now"
+  },
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "title": "Data types (audio, video, etc.)",
+      "type": "timeseries",
+      "id": 1,
+      "pluginVersion": "12.0.2",
+      "gridPos": {
+        "h": 18,
+        "w": 20,
+        "x": 0,
+        "y": 0
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "beq02ir7yof0gf"
+      },
+      "transformations": [
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/bitrate value {scope=\"type\", type=\"([^\"]+)\"\\}/",
+            "renamePattern": "$1"
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 21,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "beq02ir7yof0gf"
+          },
+          "hide": false,
+          "query": "from(bucket: \"demo-bucket\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"bitrate\")\n  |> filter(fn: (r) => r.scope == \"type\")\n  |> filter(fn: (r) => r.type == \"video\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"mean\")",
+          "refId": "Video"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "beq02ir7yof0gf"
+          },
+          "hide": false,
+          "query": "from(bucket: \"demo-bucket\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"bitrate\")\n  |> filter(fn: (r) => r.scope == \"type\")\n  |> filter(fn: (r) => r.type == \"audio\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"mean\")",
+          "refId": "Audio"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "beq02ir7yof0gf"
+          },
+          "hide": false,
+          "query": "from(bucket: \"demo-bucket\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"bitrate\")\n  |> filter(fn: (r) => r.scope == \"type\")\n  |> filter(fn: (r) => r.type == \"subtitles\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"mean\")",
+          "refId": "Subtitles"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "beq02ir7yof0gf"
+          },
+          "hide": false,
+          "query": "from(bucket: \"demo-bucket\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"bitrate\")\n  |> filter(fn: (r) => r.scope == \"type\")\n  |> filter(fn: (r) => r.type == \"data\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"mean\")",
+          "refId": "Data"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "beq02ir7yof0gf"
+          },
+          "hide": false,
+          "query": "from(bucket: \"demo-bucket\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"bitrate\")\n  |> filter(fn: (r) => r.scope == \"type\")\n  |> filter(fn: (r) => r.type == \"psi\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"mean\")",
+          "refId": "PSI"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "beq02ir7yof0gf"
+          },
+          "hide": false,
+          "query": "from(bucket: \"demo-bucket\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"bitrate\")\n  |> filter(fn: (r) => r.scope == \"type\")\n  |> filter(fn: (r) => r.type == \"pcr\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"mean\")",
+          "refId": "PCR"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "beq02ir7yof0gf"
+          },
+          "hide": false,
+          "query": "from(bucket: \"demo-bucket\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"bitrate\")\n  |> filter(fn: (r) => r.scope == \"type\")\n  |> filter(fn: (r) => r.type == \"ecm\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"mean\")",
+          "refId": "ECM"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "beq02ir7yof0gf"
+          },
+          "hide": false,
+          "query": "from(bucket: \"demo-bucket\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"bitrate\")\n  |> filter(fn: (r) => r.scope == \"type\")\n  |> filter(fn: (r) => r.type == \"emm\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"mean\")",
+          "refId": "EMM"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "beq02ir7yof0gf"
+          },
+          "hide": false,
+          "query": "from(bucket: \"demo-bucket\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"bitrate\")\n  |> filter(fn: (r) => r.scope == \"type\")\n  |> filter(fn: (r) => r.type == \"undefined\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"mean\")",
+          "refId": "Undefined"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "beq02ir7yof0gf"
+          },
+          "hide": false,
+          "query": "from(bucket: \"demo-bucket\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"bitrate\")\n  |> filter(fn: (r) => r.scope == \"type\")\n  |> filter(fn: (r) => r.type == \"stuffing\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"mean\")",
+          "refId": "Stuffing"
+        }
+      ]
+    }
+  ]
+}

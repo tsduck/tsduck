@@ -235,8 +235,8 @@ files_order = [
     filetype('Asciidoc',      '*.adoc', '//'),
     filetype('Doxygen',       ['Doxyfile*', '*.dox'], '#'),
     filetype('Packaging',     ['*.nsi', '*.control', '*.spec', '*.perms', '*.rules', '*.pc', 'Dockerfile*'], '#'),
-    filetype(None,            ['.git', '__pycache__', 'bin', 'installers', 'build', '*.arch-*', '*.user']),
-    filetype(None,            ['*.xlsx', '*.pptx', '*.pdf', '*.bin', '*.ts', '*.xcf', '*.png', '*.svg', '*.ico'])
+    filetype(None,            ['.git', '__pycache__', 'bin', 'data', 'installers', 'build', '*.arch-*', '*.user']),
+    filetype(None,            ['.DS_Store', '*.xlsx', '*.pptx', '*.pdf', '*.bin', '*.ts', '*.xcf', '*.png', '*.svg', '*.ico'])
 ]
 
 # Process all files in a directory of the project.

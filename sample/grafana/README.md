@@ -10,6 +10,7 @@ the plugin `influx`.
   * [Testing InfluxDB](#testing-influxdb)
   * [Configuring InfluxDB as data source for Grafana](#configuring-influxdb-as-data-source-for-grafana)
   * [Creating Grafana dashboards](#creating-grafana-dashboards)
+  * [Importing the sample dashboard](#importing-the-sample-dashboard)
 * [InfluxDB CLI](#influxdb-cli)
 * [Docker on macOS](#docker-on-macos)
 * [References](#references)
@@ -133,6 +134,27 @@ from(bucket: "demo-bucket")
 - Click on "Refresh" (top right) to get an snapshot of data.
 - Select "Auto" in the refresh option, as well as a refresh rate.
   The lowest value is 5s and is appropriate to transport stream monitoring.
+
+### Importing the sample dashboard
+
+A Grafana dashboard can be exported and imported as a "JSON Model".
+
+This directory contains a sample dashboard model in the JSON file `sample-graph.json`.
+To import it in Grafana, from the Grafana panel at `http://localhost:3000`:
+
+- Select "Dashboards" on the top line (in "Home > Dashboards").
+- On the top right corner, select "New", then "Import".
+- Select "Upload dashboard JSON file" or drag an drop `sample-graph.json` into that tab.
+- Select "Import".
+- Possibly set auto-refresh to 5s in top right corner.
+
+This sample graph displays a stacked view of the bitrates of the various data types
+in a transport stream (audio, video, subtitles, etc). To inject the corresponding
+metrics data in InfluxDB from a sample TS file, use this command:
+
+~~~
+tsp -I file -i input.ts -P regulate -P influx --type -O drop
+~~~
 
 ## InfluxDB CLI
 

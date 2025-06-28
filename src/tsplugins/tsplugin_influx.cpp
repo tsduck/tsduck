@@ -20,8 +20,8 @@
 #include "tsThread.h"
 #include "tsTime.h"
 
-#define DEFAULT_INTERVAL  5  // default logging interval in seconds
-#define MAX_QUEUE_SIZE   10  // maximum queued metrics messages
+#define DEFAULT_INTERVAL    5  // default logging interval in seconds
+#define DEFAULT_QUEUE_SIZE 10  // default maximum queued metrics messages
 
 
 //----------------------------------------------------------------------------
@@ -47,6 +47,7 @@ namespace ts {
         bool        _pcr_based = false;
         bool        _use_local_time = false;
         Time        _start_time {};
+        size_t      _queue_size = DEFAULT_QUEUE_SIZE;
         cn::seconds _log_interval {};
         PIDSet      _log_pids {};
         InfluxArgs  _influx_args {};
@@ -148,6 +149,12 @@ ts::InfluxPlugin::InfluxPlugin(TSP* tsp_) :
     help(u"start-time", u"year/month/day:hour:minute:second",
          u"With --pcr-based, specify the initial date & time reference. "
          u"By default, with --pcr-based, the activity starts at the first UTC time which is found in a DVB TDT or ATSC STT.");
+
+    option(u"queue-size", 0, POSITIVE);
+    help(u"queue-size", u"count",
+         u"Maximum number of queued metrics between the plugin thread and the communication thread with InfluxDB. "
+         u"With --pcr-based, on off-line streams which are processed at high speed, increase this value if some metrics are lost. "
+         u"The default queue size is " TS_USTRINGIFY(DEFAULT_QUEUE_SIZE) u" messages.");
 }
 
 
@@ -163,6 +170,7 @@ bool ts::InfluxPlugin::getOptions()
     _log_names = present(u"names");
     _pcr_based = present(u"pcr-based");
     _use_local_time = present(u"local-time");
+    getIntValue(_queue_size, u"queue-size", DEFAULT_QUEUE_SIZE);
     getChronoValue(_log_interval, u"interval", cn::seconds(DEFAULT_INTERVAL));
     if (present(u"all-pids")) {
         _log_pids = AllPIDs();
@@ -204,7 +212,7 @@ bool ts::InfluxPlugin::start()
 
     // Resize the inter-thread queue.
     _metrics_queue.clear();
-    _metrics_queue.setMaxMessages(MAX_QUEUE_SIZE);
+    _metrics_queue.setMaxMessages(_queue_size);
 
     // Start the internal thread which sends the metrics data.
     return Thread::start();
@@ -407,7 +415,9 @@ void ts::InfluxPlugin::reportMetrics(Time timestamp, cn::milliseconds duration)
     // Send the data to the outgoing thread. Use a zero timeout.
     // It the thread is so slow that the queue is full, just drop the metrics for this interval.
     auto msg = std::make_shared<UString>(data);
-    _metrics_queue.enqueue(msg, cn::milliseconds::zero());
+    if (!_metrics_queue.enqueue(msg, cn::milliseconds::zero())) {
+        warning(u"lost metrics, consider increasing --queue-size (current: %d)", _queue_size);
+    }
 
     // Reset metrics.
     _ts_packets = 0;
