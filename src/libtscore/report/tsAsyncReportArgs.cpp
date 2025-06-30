@@ -45,7 +45,7 @@ void ts::AsyncReportArgs::defineArgs(Args& args)
 // Load arguments from command line.
 //----------------------------------------------------------------------------
 
-bool ts::AsyncReportArgs::loadArgs(DuckContext& duck, Args& args)
+bool ts::AsyncReportArgs::loadArgs(Args& args)
 {
     args.getIntValue(log_msg_count, u"log-message-count", MAX_LOG_MESSAGES);
     sync_log = args.present(u"synchronous-log");

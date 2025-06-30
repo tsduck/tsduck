@@ -97,7 +97,7 @@ bool ts::DVBInputPlugin::getOptions()
     // Get common tuning options from command line
     duck.loadArgs(*this);
     _tuner_args.loadArgs(duck, *this);
-    _json_args.loadArgs(duck, *this);
+    _json_args.loadArgs(*this);
     getChronoValue(_json_interval, u"json-interval", DEFAULT_JSON_INTERVAL);
     return Args::valid();
 }

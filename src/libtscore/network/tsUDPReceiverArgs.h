@@ -17,7 +17,6 @@
 namespace ts {
 
     class Args;
-    class DuckContext;
 
     //!
     //! Command line arguments for the class UDPReceiver.
@@ -82,14 +81,13 @@ namespace ts {
         //!
         //! Load arguments from command line.
         //! Args error indicator is set in case of incorrect arguments.
-        //! @param [in,out] duck TSDuck execution context.
         //! @param [in,out] args Command line arguments from which to load the parameters.
         //! @param [in] default_receive_timeout Default receive timeout in milliseconds. No timeout if zero or negative.
         //! @return True on success, false on error in argument line.
         //!
-        bool loadArgs(DuckContext& duck, Args& args, cn::milliseconds default_receive_timeout = cn::milliseconds(-1))
+        bool loadArgs(Args& args, cn::milliseconds default_receive_timeout = cn::milliseconds(-1))
         {
-            return loadArgs(duck, args, _dest_is_parameter, 0, default_receive_timeout, IPAddress(), IPSocketAddress());
+            return loadArgs(args, _dest_is_parameter, 0, default_receive_timeout, IPAddress(), IPSocketAddress());
         }
 
     private:
@@ -101,8 +99,7 @@ namespace ts {
         // Support for multiple destination addresses.
         friend class UDPReceiverArgsList;
         static void DefineArgs(Args& args, bool with_short_options, bool destination_is_parameter, bool multiple_receivers);
-        bool loadArgs(DuckContext& duck,
-                      Args& args,
+        bool loadArgs(Args& args,
                       bool destination_is_parameter,
                       size_t dest_index,
                       cn::milliseconds default_receive_timeout,

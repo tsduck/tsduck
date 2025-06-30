@@ -55,7 +55,7 @@ void ts::PagerArgs::defineArgs(Args& args)
 // Args error indicator is set in case of incorrect arguments
 //----------------------------------------------------------------------------
 
-bool ts::PagerArgs::loadArgs(DuckContext& duck, Args& args)
+bool ts::PagerArgs::loadArgs(Args& args)
 {
     if (page_by_default) {
         use_pager = !args.present(u"no-pager");

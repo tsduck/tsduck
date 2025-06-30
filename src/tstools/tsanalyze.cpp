@@ -64,7 +64,7 @@ Options::Options(int argc, char *argv[]) :
 
     // Define all standard analysis options.
     duck.loadArgs(*this);
-    pager.loadArgs(duck, *this);
+    pager.loadArgs(*this);
     analysis.loadArgs(duck, *this);
 
     getPathValue(infile, u"");

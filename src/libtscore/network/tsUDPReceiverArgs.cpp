@@ -141,8 +141,7 @@ void ts::UDPReceiverArgs::DefineArgs(Args& args, bool with_short_options, bool d
 // Load arguments from command line.
 //----------------------------------------------------------------------------
 
-bool ts::UDPReceiverArgs::loadArgs(DuckContext& duck,
-                                   Args& args,
+bool ts::UDPReceiverArgs::loadArgs(Args& args,
                                    bool destination_is_parameter,
                                    size_t dest_index,
                                    cn::milliseconds default_receive_timeout,

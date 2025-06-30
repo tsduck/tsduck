@@ -76,7 +76,7 @@ TSSwitchOptions::TSSwitchOptions(int argc, char *argv[]) :
     // Load option values.
     monitor = present(u"monitor");
     getValue(monitor_config, u"monitor");
-    log_args.loadArgs(duck, *this);
+    log_args.loadArgs(*this);
     switch_args.loadArgs(duck, *this);
 
     // Final checking

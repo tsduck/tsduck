@@ -83,9 +83,9 @@ Options::Options(int argc, char *argv[]) :
     analyze(argc, argv);
 
     duck.loadArgs(*this);
-    udp.loadArgs(duck, *this);
+    udp.loadArgs(*this);
     dump.loadArgs(duck, *this);
-    pager.loadArgs(duck, *this);
+    pager.loadArgs(*this);
 
     getValues(infiles);
     raw_file = present(u"raw-file");

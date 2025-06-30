@@ -90,7 +90,7 @@ bool ts::CutoffPlugin::getOptions()
     _max_queued = intValue<size_t>(u"max-queue", DEFAULT_MAX_QUEUED_COMMANDS);
 
     // Get UDP options.
-    bool ok = _sock_args.loadArgs(duck, *this, _sock.parameters().receive_timeout);
+    bool ok = _sock_args.loadArgs(*this, _sock.parameters().receive_timeout);
     _sock.setParameters(_sock_args);
 
     // Resolve all allowed remote.

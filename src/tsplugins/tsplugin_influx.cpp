@@ -164,7 +164,7 @@ ts::InfluxPlugin::InfluxPlugin(TSP* tsp_) :
 
 bool ts::InfluxPlugin::getOptions()
 {
-    bool success = _influx_args.loadArgs(duck, *this, true);
+    bool success = _influx_args.loadArgs(*this, true);
     _log_types = present(u"type");
     _log_services = present(u"services");
     _log_names = present(u"names");

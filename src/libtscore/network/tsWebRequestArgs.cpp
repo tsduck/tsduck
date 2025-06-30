@@ -62,7 +62,7 @@ void ts::WebRequestArgs::defineArgs(Args& args)
 // Load arguments from command line.
 //----------------------------------------------------------------------------
 
-bool ts::WebRequestArgs::loadArgs(DuckContext& duck, Args& args)
+bool ts::WebRequestArgs::loadArgs(Args& args)
 {
     // Preserve previous timeout values
     args.getChronoValue(connectionTimeout, u"connection-timeout", connectionTimeout);

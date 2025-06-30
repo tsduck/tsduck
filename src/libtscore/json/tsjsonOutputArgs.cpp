@@ -106,7 +106,7 @@ void ts::json::OutputArgs::defineArgs(Args& args, bool use_short_opt, const UStr
 // Args error indicator is set in case of incorrect arguments
 //----------------------------------------------------------------------------
 
-bool ts::json::OutputArgs::loadArgs(DuckContext& duck, Args& args)
+bool ts::json::OutputArgs::loadArgs(Args& args)
 {
     _json_opt = _allow_file && args.present(u"json");
     _json_line = args.present(u"json-line");

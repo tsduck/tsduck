@@ -161,7 +161,7 @@ ECMGOptions::ECMGOptions(int argc, char *argv[]) :
 
     analyze(argc, argv);
 
-    logArgs.loadArgs(duck, *this);
+    logArgs.loadArgs(*this);
     serverAddress.setPort(intValue<uint16_t>(u"port", DEFAULT_SERVER_PORT));
     once = present(u"once");
     reusePort = !present(u"no-reuse-port");

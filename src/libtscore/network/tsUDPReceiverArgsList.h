@@ -51,12 +51,11 @@ namespace ts {
         //! | false                       | true                  | 0 or more
         //! | false                       | false                 | 0 or 1
         //!
-        //! @param [in,out] duck TSDuck execution context.
         //! @param [in,out] args Command line arguments.
         //! @param [in] default_receive_timeout Default receive timeout in milliseconds. No timeout if zero or negative.
         //! @return True on success, false on error in argument line.
         //!
-        bool loadArgs(DuckContext& duck, Args& args, cn::milliseconds default_receive_timeout = cn::milliseconds(-1));
+        bool loadArgs(Args& args, cn::milliseconds default_receive_timeout = cn::milliseconds(-1));
 
     private:
         bool _dest_is_parameter = true;

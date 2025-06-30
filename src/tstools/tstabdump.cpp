@@ -85,9 +85,9 @@ Options::Options(int argc, char *argv[]) :
     analyze(argc, argv);
 
     duck.loadArgs(*this);
-    pager.loadArgs(duck, *this);
+    pager.loadArgs(*this);
     display.loadArgs(duck, *this);
-    udp.loadArgs(duck, *this);
+    udp.loadArgs(*this);
 
     getPathValues(infiles, u"");
     max_tables = intValue<size_t>(u"max-tables", std::numeric_limits<size_t>::max());

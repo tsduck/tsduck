@@ -146,7 +146,7 @@ bool ts::PSILogger::loadArgs(DuckContext& duck, Args& args)
     _use_next = args.present(u"include-next");
 
     // Load XML options.
-    return _xml_tweaks.loadArgs(duck, args);
+    return _xml_tweaks.loadArgs(args);
 }
 
 

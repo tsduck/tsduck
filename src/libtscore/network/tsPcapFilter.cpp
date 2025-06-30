@@ -83,7 +83,7 @@ cn::microseconds ts::PcapFilter::getDate(Args& args, const ts::UChar* arg_name, 
 // Load command line filtering options.
 //----------------------------------------------------------------------------
 
-bool ts::PcapFilter::loadArgs(DuckContext& duck, Args& args)
+bool ts::PcapFilter::loadArgs(Args& args)
 {
     args.getIntValue(_opt_first_packet, u"first-packet", 0);
     args.getIntValue(_opt_last_packet, u"last-packet", std::numeric_limits<size_t>::max());

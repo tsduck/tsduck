@@ -70,7 +70,7 @@ void ts::InfluxArgs::defineArgs(Args& args)
 // Load arguments from command line.
 //----------------------------------------------------------------------------
 
-bool ts::InfluxArgs::loadArgs(DuckContext& duck, Args& args, bool required)
+bool ts::InfluxArgs::loadArgs(Args& args, bool required)
 {
     bool success = true;
 

@@ -353,7 +353,7 @@ bool ts::TablesLogger::loadArgs(DuckContext& duck, Args& args)
     _xml_options.setLocalTime = _time_stamp;
     _xml_options.setPackets = _packet_index;
     _xml_options.setSections = _meta_sections;
-    return _xml_tweaks.loadArgs(duck, args);
+    return _xml_tweaks.loadArgs(args);
 }
 
 

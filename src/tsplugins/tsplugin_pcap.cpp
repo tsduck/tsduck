@@ -182,7 +182,7 @@ bool ts::PcapInputPlugin::getOptions()
     }
 
     // Get command line arguments for superclass and file filtering options.
-    return AbstractDatagramInputPlugin::getOptions() && _pcap_udp.loadArgs(duck, *this) && _pcap_tcp.loadArgs(duck, *this);
+    return AbstractDatagramInputPlugin::getOptions() && _pcap_udp.loadArgs(*this) && _pcap_tcp.loadArgs(*this);
 }
 
 

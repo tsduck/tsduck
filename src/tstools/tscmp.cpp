@@ -150,7 +150,7 @@ ts::TSCompareOptions::TSCompareOptions(int argc, char *argv[]) :
     format = ts::LoadTSPacketFormatInputOption(*this);
 
     if (!quiet) {
-        json.loadArgs(duck, *this);
+        json.loadArgs(*this);
     }
     if (json.useFile() && normalized) {
         error(u"options --json and --normalized are mutually exclusive");

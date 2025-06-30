@@ -124,7 +124,7 @@ Options::Options(int argc, char *argv[]) :
     analyze(argc, argv);
 
     // Load option values.
-    pager.loadArgs(duck, *this);
+    pager.loadArgs(*this);
     getValue(input_file, u"");
     getValue(output_file, u"output-tcp-stream");
     save_tcp = present(u"output-tcp-stream");
@@ -348,7 +348,7 @@ namespace {
 bool FileAnalysis::analyze(std::ostream& out)
 {
     // Open the pcap file.
-    if (!_file.loadArgs(_opt.duck, _opt) || !_file.open(_opt.input_file, _opt)) {
+    if (!_file.loadArgs(_opt) || !_file.open(_opt.input_file, _opt)) {
         return false;
     }
 
@@ -562,7 +562,7 @@ namespace {
 bool UDPSimulCryptDump::dump(std::ostream& out)
 {
     // Open the pcap file.
-    if (!_file.loadArgs(_opt.duck, _opt) || !_file.open(_opt.input_file, _opt)) {
+    if (!_file.loadArgs(_opt) || !_file.open(_opt.input_file, _opt)) {
         return false;
     }
 
@@ -608,7 +608,7 @@ namespace {
 bool TCPSimulCryptDump::dump(std::ostream& out)
 {
     // Open the pcap file.
-    if (!_file.loadArgs(_opt.duck, _opt) || !_file.open(_opt.input_file, _opt)) {
+    if (!_file.loadArgs(_opt) || !_file.open(_opt.input_file, _opt)) {
         return false;
     }
 
@@ -694,7 +694,7 @@ void TCPSessionDump::dumpMessage(std::ostream& out, const ts::ByteBlock& data, c
 bool TCPSessionDump::dump(std::ostream& out)
 {
     // Open the pcap file.
-    if (!_file.loadArgs(_opt.duck, _opt) || !_file.open(_opt.input_file, _opt)) {
+    if (!_file.loadArgs(_opt) || !_file.open(_opt.input_file, _opt)) {
         return false;
     }
 
@@ -744,7 +744,7 @@ bool TCPSessionDump::dump(std::ostream& out)
 bool TCPSessionDump::save()
 {
     // Open the pcap file.
-    if (!_file.loadArgs(_opt.duck, _opt) || !_file.open(_opt.input_file, _opt)) {
+    if (!_file.loadArgs(_opt) || !_file.open(_opt.input_file, _opt)) {
         return false;
     }
 

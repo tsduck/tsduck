@@ -231,7 +231,7 @@ ts::SpliceMonitorPlugin::SpliceMonitorPlugin(TSP* tsp_) :
 
 bool ts::SpliceMonitorPlugin::getOptions()
 {
-    _json_args.loadArgs(duck, *this);
+    _json_args.loadArgs(*this);
     _xml_options.setPID = true;
     _xml_options.setPackets = _packet_index = present(u"packet-index");
     _xml_options.setLocalTime = _time_stamp = present(u"time-stamp");

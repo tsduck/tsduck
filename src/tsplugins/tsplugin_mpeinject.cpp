@@ -172,7 +172,7 @@ bool ts::MPEInjectPlugin::getOptions()
     if (!mac_address.empty() && !_default_mac.resolve(mac_address, *this)) {
         return false;
     }
-    if (!_recv_args.loadArgs(duck, *this)) {
+    if (!_recv_args.loadArgs(*this)) {
         return false;
     }
 

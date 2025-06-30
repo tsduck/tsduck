@@ -34,7 +34,7 @@ ts::IPInputPlugin::IPInputPlugin(TSP* tsp_) :
 bool ts::IPInputPlugin::getOptions()
 {
     // Get command line arguments for superclass and socket.
-    const bool ok = AbstractDatagramInputPlugin::getOptions() && _sock_args.loadArgs(duck, *this, _sock.parameters().receive_timeout);
+    const bool ok = AbstractDatagramInputPlugin::getOptions() && _sock_args.loadArgs(*this, _sock.parameters().receive_timeout);
     _sock.setParameters(_sock_args);
     return ok;
 }

@@ -135,7 +135,7 @@ ts::DektecControl::DektecControl(int argc, char *argv[]) :
     getIntValue(_guts->_set_output, u"output", -1);
     getIntValue(_guts->_power_mode,u"power-mode", -1);
     getChronoValue(_guts->_wait_sec, u"wait", cn::seconds(_guts->_set_led ? 5 : 0));
-    _guts->_json.loadArgs(_duck, *this);
+    _guts->_json.loadArgs(*this);
 
     if (_guts->_json.useFile() && _guts->_normalized) {
         error(u"options --json and --normalized are mutually exclusive");

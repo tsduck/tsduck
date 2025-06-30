@@ -29,7 +29,7 @@ ts::AbstractHTTPInputPlugin::AbstractHTTPInputPlugin(TSP* tsp_, const UString& d
 
 bool ts::AbstractHTTPInputPlugin::getOptions()
 {
-    return webArgs.loadArgs(duck, *this);
+    return webArgs.loadArgs(*this);
 }
 
 

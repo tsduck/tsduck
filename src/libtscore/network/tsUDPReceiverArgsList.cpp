@@ -14,7 +14,7 @@
 // Load arguments from command line.
 //----------------------------------------------------------------------------
 
-bool ts::UDPReceiverArgsList::loadArgs(DuckContext& duck, Args& args, cn::milliseconds receive_timeout)
+bool ts::UDPReceiverArgsList::loadArgs(Args& args, cn::milliseconds receive_timeout)
 {
     bool ok = true;
 
@@ -28,7 +28,7 @@ bool ts::UDPReceiverArgsList::loadArgs(DuckContext& duck, Args& args, cn::millis
     // Get all addresses.
     for (size_t index = 0; index < size(); ++index) {
         UDPReceiverArgs& rec(at(index));
-        ok = rec.loadArgs(duck, args, _dest_is_parameter, index, receive_timeout, previous_local_address, previous_source) && ok;
+        ok = rec.loadArgs(args, _dest_is_parameter, index, receive_timeout, previous_local_address, previous_source) && ok;
         previous_local_address = rec.local_address;
         previous_source = rec.source;
     }

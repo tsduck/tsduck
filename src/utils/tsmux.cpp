@@ -58,7 +58,7 @@ TSMuxOptions::TSMuxOptions(int argc, char *argv[]) :
     // Load option values.
     monitor = present(u"monitor");
     getValue(monitor_config, u"monitor");
-    log_args.loadArgs(duck, *this);
+    log_args.loadArgs(*this);
     mux_args.loadArgs(duck, *this);
 
     // Final checking

@@ -262,7 +262,7 @@ function Build-Portable([string]$BinSuffix, [string]$InstallerSuffix, [string]$V
         Copy-Item "${RootDir}\OTHERS.txt" -Destination $TempRoot
 
         $TempBin = (New-Directory "${TempRoot}\bin")
-        Copy-Item "${BinDir}\ts*.exe" -Exclude @("*_static.exe", "tsprofiling.exe", "tsmux.exe", "tsnet.exe") -Destination $TempBin
+        Copy-Item "${BinDir}\ts*.exe" -Exclude @("*_static.exe", "tsprofiling.exe", "tsmux.exe") -Destination $TempBin
         Copy-Item "${BinDir}\ts*.dll" -Destination $TempBin
         Copy-Item "${BinDir}\ts*.xml" -Destination $TempBin
         Copy-Item "${BinDir}\ts*.names" -Destination $TempBin

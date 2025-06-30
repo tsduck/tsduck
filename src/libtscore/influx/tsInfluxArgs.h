@@ -17,7 +17,6 @@
 namespace ts {
 
     class Args;
-    class DuckContext;
 
     //!
     //! Command line arguments for InfluxDB connection.
@@ -54,12 +53,11 @@ namespace ts {
         //! Load arguments from command line.
         //! Apply defaultss from environment variables and Influx configurations file.
         //! Args error indicator is set in case of incorrect arguments.
-        //! @param [in,out] duck TSDuck execution context.
         //! @param [in,out] args Command line arguments.
         //! @param [in] required If true, all arguments to connect to InfluuxDB are required.
         //! When false, the arguments are optional.
         //! @return True on success, false on error in argument line.
         //!
-        bool loadArgs(DuckContext& duck, Args& args, bool required);
+        bool loadArgs(Args& args, bool required);
     };
 }

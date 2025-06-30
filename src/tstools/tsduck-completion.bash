@@ -9,7 +9,7 @@
 #-----------------------------------------------------------------------------
 
 # All TSDuck commands (automatically updated by makefile).
-__ts_cmds=(tsanalyze tsbitrate tscharset tscmp tscrc32 tsdate tsdektec tsdump tsecmg tseit tsemmg tsfclean tsfixcc tsftrunc tsfuzz tsgenecm tshides tslatencymonitor tslsdvb tsp tspacketize tspcap tspcontrol tspsi tsresync tsscan tssmartcard tsstuff tsswitch tstabcomp tstabdump tstables tsterinfo tstestecmg tsvatek tsversion tsxml)
+__ts_cmds=(tsanalyze tsbitrate tscharset tscmp tscrc32 tsdate tsdebug tsdektec tsdump tsecmg tseit tsemmg tsfclean tsfixcc tsftrunc tsfuzz tsgenecm tshides tslatencymonitor tslsdvb tsp tspacketize tspcap tspcontrol tspsi tsresync tsscan tssmartcard tsstuff tsswitch tstabcomp tstabdump tstables tsterinfo tstestecmg tsvatek tsversion tsxml)
 
 # A filter to remove CR on Windows.
 [[ $OSTYPE == cygwin || $OSTYPE == msys ]] && __ts_lines() { dos2unix; } || __ts_lines() { cat; }

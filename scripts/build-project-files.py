@@ -57,7 +57,7 @@ manual_setup = ['tsdektec', 'tsplugin_dektec']
 # "Other" MSBuild projects (ie. not tools, not plugins).
 others = ['config', 'utests-tsduckdll', 'utests-tsducklib',
           'tscoredll', 'tscorelib', 'tsduckdll', 'tsducklib', 'tsdektecdll', 'tsdekteclib',
-          'tsp_static', 'tsprofiling', 'tsmux', 'tsnet', 'tszlib', 'setpath']
+          'tsp_static', 'tsprofiling', 'tsmux', 'setpath']
 
 # MSBuild / Visual Studio solution description.
 cxx_project_guid = '8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942'
@@ -81,8 +81,6 @@ ms_deps = {
     'tsp_static': {'deps': ['tsdekteclib', 'tsducklib', 'tscorelib']},
     'tsprofiling': {'deps': ['tsduckdll']},
     'tsmux': {'deps': ['tsduckdll'] + plugins},
-    'tsnet': {'deps': ['tscoredll']},
-    'tszlib': {'deps': ['tscoredll']},
     'setpath': {'deps': ['tscorelib']}
 }
 

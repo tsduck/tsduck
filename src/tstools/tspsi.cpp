@@ -59,7 +59,7 @@ Options::Options(int argc, char *argv[]) :
     analyze(argc, argv);
 
     duck.loadArgs(*this);
-    pager.loadArgs(duck, *this);
+    pager.loadArgs(*this);
     logger.loadArgs(duck, *this);
     display.loadArgs(duck, *this);
 

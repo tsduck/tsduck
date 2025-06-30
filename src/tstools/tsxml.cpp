@@ -169,8 +169,8 @@ Options::Options(int argc, char *argv[]) :
 
     analyze(argc, argv);
 
-    json.loadArgs(duck, *this);
-    xml_tweaks.loadArgs(duck, *this);
+    json.loadArgs(*this);
+    xml_tweaks.loadArgs(*this);
 
     getValues(infiles, u"");
     getValues(patches, u"patch");

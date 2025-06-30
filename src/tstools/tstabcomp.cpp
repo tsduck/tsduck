@@ -116,7 +116,7 @@ Options::Options(int argc, char *argv[]) :
 
     duck.loadArgs(*this);
     sectionOptions.loadArgs(duck, *this);
-    xmlTweaks.loadArgs(duck, *this);
+    xmlTweaks.loadArgs(*this);
 
     getValues(inFiles, u"");
     getPathValue(outFile, u"output");

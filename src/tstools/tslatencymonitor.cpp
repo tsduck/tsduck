@@ -53,7 +53,7 @@ Options::Options(int argc, char *argv[]) :
     analyze(argc, argv);
 
     // Load option values.
-    log_args.loadArgs(duck, *this);
+    log_args.loadArgs(*this);
     latency_monitor_args.loadArgs(*this);
 
     // Final checking

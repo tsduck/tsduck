@@ -147,7 +147,7 @@ bool ts::TSAnalyzerOptions::loadArgs(DuckContext& duck, Args& args)
     args.getIntValue(suspect_min_error_count, u"suspect-min-error-count", 1);
     args.getIntValue(suspect_max_consecutive, u"suspect-max-consecutive", 1);
 
-    bool ok = json.loadArgs(duck, args);
+    bool ok = json.loadArgs(args);
 
     // Default: --ts-analysis --service-analysis --pid-analysis
     if (!ts_analysis &&

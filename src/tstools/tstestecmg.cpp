@@ -152,7 +152,7 @@ CmdOptions::CmdOptions(int argc, char *argv[]) :
     analyze(argc, argv);
 
     // Analyze parameters.
-    log_args.loadArgs(duck, *this);
+    log_args.loadArgs(*this);
     getSocketValue(ecmg_address, u"");
     getIntValue(channel_count, u"channels", 10);
     getIntValue(streams_per_channel, u"streams-per-channel", 10);
