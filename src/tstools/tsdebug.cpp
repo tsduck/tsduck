@@ -198,11 +198,59 @@ ts::CommandStatus ts::ZlibCommands::decompress(const UString& command, Args& arg
 
 
 //----------------------------------------------------------------------------
+// Base class for network commands, defining coommon IP options.
+//----------------------------------------------------------------------------
+
+namespace ts {
+    class NetworkBase
+    {
+    protected:
+        // Common parameters.
+        IP ip_gen = IP::Any;
+
+        // Common arguments.
+        void defineIPGenArgs(Args& args);
+        void loadIPGenArgs(Args& args);
+
+        // Full image of an IP address.
+        static UString Format(const IPAddress& addr);
+    };
+}
+
+void ts::NetworkBase::defineIPGenArgs(Args& args)
+{
+    args.option(u"ipv4", '4');
+    args.help(u"ipv4", u"Use only IPv4 addresses.");
+
+    args.option(u"ipv6", '6');
+    args.help(u"ipv6", u"Use only IPv6 addresses.");
+}
+
+void ts::NetworkBase::loadIPGenArgs(Args& args)
+{
+    if (args.present(u"ipv4")) {
+        ip_gen = IP::v4;
+    }
+    else if (args.present(u"ipv6")) {
+        ip_gen = IP::v6;
+    }
+    else {
+        ip_gen = IP::Any;
+    }
+}
+
+ts::UString ts::NetworkBase::Format(const IPAddress& addr)
+{
+    return UString::Format(u"%s: %s (full: \"%s\")", addr.familyName(), addr, addr.toFullString());
+}
+
+
+//----------------------------------------------------------------------------
 // Implementation of network commands.
 //----------------------------------------------------------------------------
 
 namespace ts {
-    class NetworkCommands : public CommandLineHandler
+    class NetworkCommands : public CommandLineHandler, protected NetworkBase
     {
         TS_NOBUILD_NOCOPY(NetworkCommands);
     public:
@@ -210,16 +258,6 @@ namespace ts {
         virtual ~NetworkCommands() override;
 
     private:
-        // Common parameters.
-        IP gen = IP::Any;
-
-        // Common arguments.
-        void defineArgs(Args& args);
-        void loadArgs(Args& args);
-
-        // Full image of an IP address.
-        static UString Format(const IPAddress& addr);
-
         // Command handlers.
         CommandStatus iflist(const UString&, Args&);
         CommandStatus resolve(const UString&, Args&);
@@ -238,14 +276,14 @@ ts::NetworkCommands::NetworkCommands(CommandLine& cmdline, int flags)
     Args* cmd = cmdline.command(u"iflist", u"List local network interfaces", u"[options]", flags);
     cmd->option(u"no-loopback", 'n');
     cmd->help(u"no-loopback", u"Exclude loopback interfaces.");
-    defineArgs(*cmd);
+    defineIPGenArgs(*cmd);
 
     cmd = cmdline.command(u"resolve", u"Resolve a network name, as in applications", u"[options] name ...", flags);
     cmd->option(u"");
     cmd->help(u"", u"Names to resolve.");
     cmd->option(u"all", 'a');
     cmd->help(u"all", u"Resolve all addresses for that name, as in nslookup.");
-    defineArgs(*cmd);
+    defineIPGenArgs(*cmd);
 
     cmd = cmdline.command(u"send", u"Send a UDP or TCP message and wait for a response", u"[options] 'message-string'", flags);
     cmd->option(u"", 0, Args::STRING, 1, 1);
@@ -254,14 +292,14 @@ ts::NetworkCommands::NetworkCommands(CommandLine& cmdline, int flags)
     cmd->help(u"udp", u"Send the 'message-string' to the specified UDP socket and wait for a response.");
     cmd->option(u"tcp", 't', Args::IPSOCKADDR);
     cmd->help(u"tcp", u"Connect to the specified TCP server, send the 'message-string' and wait for a response.");
-    defineArgs(*cmd);
+    defineIPGenArgs(*cmd);
 
     cmd = cmdline.command(u"receive", u"Receive a UDP or TCP message and send a response", u"[options]", flags);
     cmd->option(u"udp", 'u', Args::IPSOCKADDR_OA);
     cmd->help(u"udp", u"Wait for a message on the specified UDP socket and send a response.");
     cmd->option(u"tcp", 't', Args::IPSOCKADDR_OA);
     cmd->help(u"tcp", u"Create a TCP server, wait for a message and send a response.");
-    defineArgs(*cmd);
+    defineIPGenArgs(*cmd);
 
     // Connect this object as command handler for all commands.
     cmdline.setCommandLineHandler(this, &NetworkCommands::iflist, u"iflist");
@@ -276,48 +314,16 @@ ts::NetworkCommands::~NetworkCommands()
 
 
 //----------------------------------------------------------------------------
-// Network commands common options.
-//----------------------------------------------------------------------------
-
-void ts::NetworkCommands::defineArgs(Args& args)
-{
-    args.option(u"ipv4", '4');
-    args.help(u"ipv4", u"Use only IPv4 addresses.");
-
-    args.option(u"ipv6", '6');
-    args.help(u"ipv6", u"Use only IPv6 addresses.");
-}
-
-void ts::NetworkCommands::loadArgs(Args& args)
-{
-    if (args.present(u"ipv4")) {
-        gen = IP::v4;
-    }
-    else if (args.present(u"ipv6")) {
-        gen = IP::v6;
-    }
-    else {
-        gen = IP::Any;
-    }
-}
-
-ts::UString ts::NetworkCommands::Format(const IPAddress& addr)
-{
-    return UString::Format(u"%s: %s (full: \"%s\")", addr.familyName(), addr, addr.toFullString());
-}
-
-
-//----------------------------------------------------------------------------
 // List local network interfaces.
 //----------------------------------------------------------------------------
 
 ts::CommandStatus ts::NetworkCommands::iflist(const UString& command, Args& args)
 {
-    loadArgs(args);
+    loadIPGenArgs(args);
     const bool no_loopback = args.present(u"no-loopback");
 
     NetworkInterfaceVector net;
-    if (!NetworkInterface::GetAll(net, !no_loopback, gen, false, args)) {
+    if (!NetworkInterface::GetAll(net, !no_loopback, ip_gen, false, args)) {
         return CommandStatus::ERROR;
     }
 
@@ -335,7 +341,7 @@ ts::CommandStatus ts::NetworkCommands::iflist(const UString& command, Args& args
 
 ts::CommandStatus ts::NetworkCommands::resolve(const UString& command, Args& args)
 {
-    loadArgs(args);
+    loadIPGenArgs(args);
     const bool all = args.present(u"all");
     UStringVector names;
     args.getValues(names, u"");
@@ -345,7 +351,7 @@ ts::CommandStatus ts::NetworkCommands::resolve(const UString& command, Args& arg
         // Resolve all addresses for one host name.
         for (const auto& name : names) {
             IPAddressVector addr;
-            if (IPAddress::ResolveAllAddresses(addr, name, args, gen)) {
+            if (IPAddress::ResolveAllAddresses(addr, name, args, ip_gen)) {
                 std::cout << "Resolve \"" << name << "\":" << std::endl;
                 for (const auto& a : addr) {
                     std::cout << "  " << Format(a) << std::endl;
@@ -360,7 +366,7 @@ ts::CommandStatus ts::NetworkCommands::resolve(const UString& command, Args& arg
         // Resolve one host name.
         for (const auto& name : names) {
             IPAddress addr;
-            if (addr.resolve(name, args, gen)) {
+            if (addr.resolve(name, args, ip_gen)) {
                 std::cout << "Resolve \"" << name << "\":" << std::endl;
                 std::cout << "  " << Format(addr) << std::endl;
             }
@@ -379,7 +385,7 @@ ts::CommandStatus ts::NetworkCommands::resolve(const UString& command, Args& arg
 
 ts::CommandStatus ts::NetworkCommands::send(const UString& command, Args& args)
 {
-    loadArgs(args);
+    loadIPGenArgs(args);
     const UString message(args.value(u""));
     const IPSocketAddress destination(args.socketValue(u"tcp", args.socketValue(u"udp")));
 
@@ -392,12 +398,12 @@ ts::CommandStatus ts::NetworkCommands::send(const UString& command, Args& args)
     if (args.present(u"udp")) {
         // Send a UDP message.
         UDPSocket sock;
-        if (!sock.open(gen, args)) {
+        if (!sock.open(ip_gen, args)) {
             return CommandStatus::ERROR;
         }
         args.info(u"Sending to UDP socket %s ...", destination);
         std::string msg(message.toUTF8());
-        if (sock.bind(IPSocketAddress::AnySocketAddress(gen), args) &&
+        if (sock.bind(IPSocketAddress::AnySocketAddress(ip_gen), args) &&
             sock.send(msg.data(), msg.size(), destination, args))
         {
             size_t ret_size = 0;
@@ -417,13 +423,13 @@ ts::CommandStatus ts::NetworkCommands::send(const UString& command, Args& args)
     else {
         // Send a TCP message.
         TelnetConnection client;
-        if (!client.open(gen, args)) {
+        if (!client.open(ip_gen, args)) {
             return CommandStatus::ERROR;
         }
         args.info(u"Sending to TCP server %s ...", destination);
         std::string msg(message.toUTF8());
         ts::IPSocketAddress addr;
-        if (client.bind(IPSocketAddress::AnySocketAddress(gen), args) &&
+        if (client.bind(IPSocketAddress::AnySocketAddress(ip_gen), args) &&
             client.connect(destination, args) &&
             client.getLocalAddress(addr, args) &&
             client.sendLine(msg, args) &&
@@ -447,7 +453,7 @@ ts::CommandStatus ts::NetworkCommands::send(const UString& command, Args& args)
 
 ts::CommandStatus ts::NetworkCommands::receive(const UString& command, Args& args)
 {
-    loadArgs(args);
+    loadIPGenArgs(args);
     const IPSocketAddress local(args.socketValue(u"tcp", args.socketValue(u"udp")));
 
     if (args.present(u"udp") + args.present(u"tcp") != 1 || !local.hasPort()) {
@@ -459,7 +465,7 @@ ts::CommandStatus ts::NetworkCommands::receive(const UString& command, Args& arg
     if (args.present(u"udp")) {
         // Receive a UDP message, send a response.
         UDPSocket sock;
-        if (!sock.open(gen, args)) {
+        if (!sock.open(ip_gen, args)) {
             return CommandStatus::ERROR;
         }
         args.info(u"Waiting on UDP socket %s ...", local);
@@ -485,7 +491,7 @@ ts::CommandStatus ts::NetworkCommands::receive(const UString& command, Args& arg
     else {
         // TCP server, wait for a client, wait for a message, send a response.
         TCPServer server;
-        if (!server.open(gen, args) ||
+        if (!server.open(ip_gen, args) ||
             !server.reusePort(true, args) ||
             !server.bind(local, args) ||
             !server.listen(1, args))
@@ -504,7 +510,8 @@ ts::CommandStatus ts::NetworkCommands::receive(const UString& command, Args& arg
                 msg.append("]");
                 client.sendLine(msg, args);
             }
-            client.close();
+            client.disconnect(args);
+            client.close(args);
         }
         else {
             status = CommandStatus::ERROR;
@@ -512,6 +519,169 @@ ts::CommandStatus ts::NetworkCommands::receive(const UString& command, Args& arg
         server.close(args);
     }
     return status;
+}
+
+
+//----------------------------------------------------------------------------
+// HTTP server commands.
+//----------------------------------------------------------------------------
+
+namespace ts {
+    class ServerCommands : public CommandLineHandler, protected NetworkBase
+    {
+        TS_NOBUILD_NOCOPY(ServerCommands);
+    public:
+        ServerCommands(CommandLine& cmdline, int flags);
+        virtual ~ServerCommands() override;
+
+    private:
+        // Command handlers.
+        CommandStatus server(const UString&, Args&);
+    };
+}
+
+
+//----------------------------------------------------------------------------
+// HTTP server commands constructor and destructor.
+//----------------------------------------------------------------------------
+
+ts::ServerCommands::ServerCommands(CommandLine& cmdline, int flags)
+{
+    Args* cmd = cmdline.command(u"server", u"Basic HTTP server which dumps its requests", u"[options] [ip-address:]port", flags);
+    cmd->option(u"", 0, Args::IPSOCKADDR_OA, 1, 1);
+    cmd->help(u"", u"TCP server local address.");
+    cmd->option(u"max-clients", 'm', Args::UNSIGNED);
+    cmd->help(u"max-clients", u"Exit after this number of client sessions. By default, never exit.");
+    defineIPGenArgs(*cmd);
+
+    // Connect this object as command handler for all commands.
+    cmdline.setCommandLineHandler(this, &ServerCommands::server, u"server");
+}
+
+ts::ServerCommands::~ServerCommands()
+{
+}
+
+
+//----------------------------------------------------------------------------
+// Basic HTTP server which dumps its requests.
+//----------------------------------------------------------------------------
+
+ts::CommandStatus ts::ServerCommands::server(const UString& command, Args& args)
+{
+    loadIPGenArgs(args);
+    size_t max_clients = args.intValue<size_t>(u"max-clients", std::numeric_limits<size_t>::max());
+    const IPSocketAddress local(args.socketValue(u""));
+
+    TCPServer server;
+    if (!server.open(ip_gen, args) ||
+        !server.reusePort(true, args) ||
+        !server.bind(local, args) ||
+        !server.listen(16, args))
+    {
+        return CommandStatus::ERROR;
+    }
+
+    while (max_clients-- > 0) {
+        args.verbose(u"Waiting on TCP server %s ...", local);
+        TelnetConnection client;
+        IPSocketAddress addr;
+        if (!server.accept(client, addr, args)) {
+            return CommandStatus::ERROR;
+        }
+        args.verbose(u"Client connected from %s ...", addr);
+
+        // Loop on request headers.
+        UString line;
+        bool success = true;
+        bool first_line = true;
+        bool expect_data = false;
+        bool is_text = false;
+        size_t content_size = 0;
+        args.info(u"==== Request headers:");
+        do {
+            success = client.receiveLine(line, nullptr, args);
+            if (!line.empty()) {
+                args.info(line);
+            }
+            // Analyze the header line.
+            if (first_line) {
+                expect_data = line.starts_with(u"POST") || line.starts_with(u"PUT") || line.starts_with(u"PATCH");
+                first_line = false;
+            }
+            else {
+                UStringVector fields;
+                line.split(fields, u':', true, true);
+                if (fields.size() >= 2) {
+                    // This is a true header.
+                    size_t value = 0;
+                    if (fields[0].similar(u"Content-Length") && fields[1].toInteger(value)) {
+                        content_size = value;
+                    }
+                    else if (fields[0].similar(u"Content-Type")) {
+                        is_text = fields[1].contains(u"text", CASE_INSENSITIVE) ||
+                                  fields[1].contains(u"json", CASE_INSENSITIVE) ||
+                                  fields[1].contains(u"xml", CASE_INSENSITIVE);
+                    }
+                }
+            }
+        } while (success && !line.empty());
+
+        if (success) {
+            // All headers are read, including final empty line.
+            // Try to get PUT or POST data.
+            ByteBlock data;
+            client.getAndFlush(data);
+            TCPConnection* tcp = &client;
+            if (content_size > data.size()) {
+                // We known how much more data we need.
+                const size_t previous_size = data.size();
+                data.resize(content_size);
+                success = tcp->receive(&data[previous_size], content_size - previous_size, nullptr, args);
+            }
+            else if (content_size == 0 && expect_data) {
+                // Unknown content size but there must be some. This is an old client which disconnects at end of request.
+                for (;;) {
+                    const size_t previous_size = data.size();
+                    constexpr size_t more_size = 4096;
+                    size_t ret_size = 0;
+                    data.resize(previous_size + more_size);
+                    if (tcp->receive(&data[previous_size], more_size, ret_size, nullptr, args)) {
+                        data.resize(previous_size + ret_size);
+                    }
+                    else {
+                        data.resize(previous_size);
+                        break;
+                    }
+                }
+            }
+
+            // Display request data.
+            if (!data.empty())  {
+                args.info(u"==== Request data (%d bytes):", data.size());
+                if (is_text) {
+                    args.info(UString::FromUTF8(reinterpret_cast<const char*>(data.data()), data.size()));
+                }
+                else {
+                    UString dump(UString::Dump(data, UString::HEXA | UString::ASCII | UString::BPL, 0, 16));
+                    dump.trim(false, true, false);
+                    args.info(dump);
+                }
+            }
+
+            // Send a "no data" response.
+            client.sendLine(u"HTTP/1.1 204 No Content", args);
+            client.sendLine("Server: TSDuck", args);
+            client.sendLine("Connection: close", args);
+            client.sendLine(u"", args);
+        }
+
+        client.disconnect(args);
+        client.close(args);
+    }
+
+    server.close(args);
+    return CommandStatus::SUCCESS;
 }
 
 
@@ -536,6 +706,7 @@ namespace ts {
         static constexpr int flags = Args::NO_VERBOSE;
         ZlibCommands zlib {cmdline, flags};
         NetworkCommands net {cmdline, flags};
+        ServerCommands server {cmdline, flags};
 
         // Inherited methods.
         virtual UString getHelpText(HelpFormat format, size_t line_width = DEFAULT_LINE_WIDTH) const override;

@@ -139,6 +139,15 @@ namespace ts {
         bool waitForPrompt(const AbortInterface* abort, Report& report);
 
         //!
+        //! Get currently buffered input data and flush that buffer.
+        //! This method is useful when TCP connection switches from text mode (telnet protocol)
+        //! to binary mode. The returned data are the start of the input binary data. The remaining
+        //! data can be received using methods from the parent class TCPConnection.
+        //! @param [out] data Currently buffered data.
+        //!
+        void getAndFlush(ByteBlock& data);
+
+        //!
         //! A telnet end-of-line sequence.
         //!
         static const std::string EOL;

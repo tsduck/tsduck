@@ -65,6 +65,17 @@ void ts::TelnetConnection::writeLog(int severity, const UString& msg)
 
 
 //----------------------------------------------------------------------------
+// Get currently buffered input data and flush that buffer.
+//----------------------------------------------------------------------------
+
+void ts::TelnetConnection::getAndFlush(ByteBlock& data)
+{
+    data.copy(_buffer.data(), _buffer.size());
+    _buffer.clear();
+}
+
+
+//----------------------------------------------------------------------------
 // Receive all characters until a delimitor has been received.
 //----------------------------------------------------------------------------
 

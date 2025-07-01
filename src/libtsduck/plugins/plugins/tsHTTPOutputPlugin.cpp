@@ -8,7 +8,7 @@
 
 #include "tsHTTPOutputPlugin.h"
 #include "tsPluginRepository.h"
-#include "tsVersionInfo.h"
+#include "tsLibTSCoreVersion.h"
 
 TS_REGISTER_OUTPUT_PLUGIN(u"http", ts::HTTPOutputPlugin);
 
@@ -212,11 +212,10 @@ bool ts::HTTPOutputPlugin::startSession()
 
     // Expected request: "GET / HTTP/1.1"
     UStringVector fields;
-    const UString empty;
     request.split(fields, ' ', true, true);
     const bool is_get = fields.size() >= 1 && fields[0] == u"GET";
-    const UString& resource(fields.size() >= 2 ? fields[1] : empty);
-    const UString& protocol(fields.size() >= 3 ? fields[2] : empty);
+    const UString& resource(fields.size() >= 2 ? fields[1] : UString::EMPTY());
+    const UString& protocol(fields.size() >= 3 ? fields[2] : UString::EMPTY());
     const bool valid = is_get && resource == u"/" && protocol.starts_with(u"HTTP/");
 
     if (!valid && !_ignore_bad_request) {

@@ -25,28 +25,28 @@
 
 namespace {
     // Default maximum number of sections in queue.
-    const size_t DEFAULT_SECTION_QUEUE_SIZE = 100;
+    constexpr size_t DEFAULT_SECTION_QUEUE_SIZE = 100;
 
     // Default interval between two poll operations.
-    const cn::milliseconds DEFAULT_POLL_INTERVAL = cn::milliseconds(500);
+    constexpr cn::milliseconds DEFAULT_POLL_INTERVAL = cn::milliseconds(500);
 
     // Default minimum file stability delay.
-    const cn::milliseconds DEFAULT_MIN_STABLE_DELAY = cn::milliseconds(500);
+    constexpr cn::milliseconds DEFAULT_MIN_STABLE_DELAY = cn::milliseconds(500);
 
     // Default start delay for non-immediate splice_insert() and time_signal() commands.
-    const cn::milliseconds DEFAULT_START_DELAY = cn::milliseconds(2000);
+    constexpr cn::milliseconds DEFAULT_START_DELAY = cn::milliseconds(2000);
 
     // Default inject interval for non-immediate splice_insert() and time_signal() commands.
-    const cn::milliseconds DEFAULT_INJECT_INTERVAL = cn::milliseconds(800);
+    constexpr cn::milliseconds DEFAULT_INJECT_INTERVAL = cn::milliseconds(800);
 
     // Default inject count for non-immediate splice_insert() and time_signal() commands.
-    const size_t DEFAULT_INJECT_COUNT = 2;
+    constexpr size_t DEFAULT_INJECT_COUNT = 2;
 
     // Default max size for files.
-    const std::uintmax_t DEFAULT_MAX_FILE_SIZE = 2048;
+    constexpr std::uintmax_t DEFAULT_MAX_FILE_SIZE = 2048;
 
     // Stack size of listener threads.
-    const size_t SERVER_THREAD_STACK_SIZE = 128 * 1024;
+    constexpr size_t SERVER_THREAD_STACK_SIZE = 128 * 1024;
 }
 
 
@@ -70,28 +70,28 @@ namespace ts {
 
     private:
         // Command line options:
-        bool              _use_files = false;         // Use file polling input.
-        bool              _use_udp = false;           // Use UDP input.
-        bool              _delete_files = false;
-        bool              _reuse_port = false;
-        bool              _wait_first_batch = false;  // Option --wait-first-batch (wfb).
-        PID               _inject_pid_opt = PID_NULL; // PID for injection, as specified in cmmand line.
-        PID               _pcr_pid_opt = PID_NULL;    // PID containing PCR's, as specified in cmmand line.
-        PID               _pts_pid_opt = PID_NULL;    // PID containing PTS's, as specified in cmmand line.
-        BitRate           _min_bitrate = 0;
-        PacketCounter     _min_inter_packet = 0;
-        UString           _files {};
-        UString           _service_ref {};            // Service name or id.
-        IPSocketAddress   _server_address {};
-        size_t            _sock_buf_size = 0;
-        size_t            _inject_count = 0;
-        cn::milliseconds  _inject_interval {};
-        cn::milliseconds  _start_delay = {};
-        cn::milliseconds  _poll_interval {};
-        cn::milliseconds  _min_stable_delay {};
-        std::uintmax_t    _max_file_size = 0;
-        size_t            _queue_size = 0;
-        SectionPtr        _null_splice {};            // A null splice section to maintain PID bitrate.
+        bool             _use_files = false;         // Use file polling input.
+        bool             _use_udp = false;           // Use UDP input.
+        bool             _delete_files = false;
+        bool             _reuse_port = false;
+        bool             _wait_first_batch = false;  // Option --wait-first-batch (wfb).
+        PID              _inject_pid_opt = PID_NULL; // PID for injection, as specified in cmmand line.
+        PID              _pcr_pid_opt = PID_NULL;    // PID containing PCR's, as specified in cmmand line.
+        PID              _pts_pid_opt = PID_NULL;    // PID containing PTS's, as specified in cmmand line.
+        BitRate          _min_bitrate = 0;
+        PacketCounter    _min_inter_packet = 0;
+        UString          _files {};
+        UString          _service_ref {};            // Service name or id.
+        IPSocketAddress  _server_address {};
+        size_t           _sock_buf_size = 0;
+        size_t           _inject_count = 0;
+        cn::milliseconds _inject_interval {};
+        cn::milliseconds _start_delay = {};
+        cn::milliseconds _poll_interval {};
+        cn::milliseconds _min_stable_delay {};
+        std::uintmax_t   _max_file_size = 0;
+        size_t           _queue_size = 0;
+        SectionPtr       _null_splice {};            // A null splice section to maintain PID bitrate.
 
         // The plugin contains two internal threads in addition to the packet processing thread.
         // One thread polls input files and another thread receives UDP messages.
@@ -143,8 +143,8 @@ namespace ts {
 
         private:
             SpliceInjectPlugin* const _plugin;
-            PollFiles                 _poller {UString(), this, PollFiles::DEFAULT_POLL_INTERVAL, PollFiles::DEFAULT_MIN_STABLE_DELAY, *_plugin};
-            volatile bool             _terminate = false;
+            volatile bool _terminate = false;
+            PollFiles _poller {UString(), this, PollFiles::DEFAULT_POLL_INTERVAL, PollFiles::DEFAULT_MIN_STABLE_DELAY, *_plugin};
 
             // Implementation of Thread.
             virtual void main() override;
@@ -168,8 +168,8 @@ namespace ts {
 
         private:
             SpliceInjectPlugin* const _plugin;
-            UDPReceiver               _client {*_plugin};
-            volatile bool             _terminate = false;
+            volatile bool _terminate = false;
+            UDPReceiver _client {*_plugin};
 
             // Implementation of Thread.
             virtual void main() override;

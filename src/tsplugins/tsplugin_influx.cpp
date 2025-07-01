@@ -48,6 +48,7 @@ namespace ts {
         bool        _use_local_time = false;
         Time        _start_time {};
         size_t      _queue_size = DEFAULT_QUEUE_SIZE;
+        size_t      _max_metrics = std::numeric_limits<size_t>::max();
         cn::seconds _log_interval {};
         PIDSet      _log_pids {};
         InfluxArgs  _influx_args {};
@@ -67,6 +68,7 @@ namespace ts {
         Time                  _last_time {};             // UTC time of last report.
         PCR                   _due_pcr {};               // Next PCR to report (with --pcr-based).
         PCR                   _last_pcr {};              // PCR of last report.
+        size_t                _sent_metrics = 0;         // Number of sent metrics.
         SignalizationDemux    _demux {duck};             // Analyze the stream.
         PCRAnalyzer           _pcr_analyzer {1, 1};      // Compute playout time based on PCR.
         InfluxRequest         _request {*this};          // Web request to InfluxDB server.
@@ -76,6 +78,7 @@ namespace ts {
         std::map<uint16_t,ServiceContext> _services {};  // Service descriptions.
 
         // Report metrics to InfluxDB.
+        void reportMetrics(bool force);
         void reportMetrics(Time timestamp, cn::milliseconds duration);
 
         // Implementation of SignalizationHandlerInterface.
@@ -150,6 +153,11 @@ ts::InfluxPlugin::InfluxPlugin(TSP* tsp_) :
          u"With --pcr-based, specify the initial date & time reference. "
          u"By default, with --pcr-based, the activity starts at the first UTC time which is found in a DVB TDT or ATSC STT.");
 
+    option(u"max-metrics", 0, UNSIGNED);
+    help(u"max-metrics", u"count",
+         u"Stop after sending that number of metrics. "
+         u"This is a test option. Never stop by default.");
+
     option(u"queue-size", 0, POSITIVE);
     help(u"queue-size", u"count",
          u"Maximum number of queued metrics between the plugin thread and the communication thread with InfluxDB. "
@@ -170,6 +178,7 @@ bool ts::InfluxPlugin::getOptions()
     _log_names = present(u"names");
     _pcr_based = present(u"pcr-based");
     _use_local_time = present(u"local-time");
+    getIntValue(_max_metrics, u"max-metrics", std::numeric_limits<size_t>::max());
     getIntValue(_queue_size, u"queue-size", DEFAULT_QUEUE_SIZE);
     getChronoValue(_log_interval, u"interval", cn::seconds(DEFAULT_INTERVAL));
     if (present(u"all-pids")) {
@@ -225,11 +234,15 @@ bool ts::InfluxPlugin::start()
 
 bool ts::InfluxPlugin::stop()
 {
+    // Force a last set of metrics.
+    reportMetrics(true);
+
     // Send a termination message and wait for actual thread termination.
     _metrics_queue.forceEnqueue(nullptr);
     Thread::waitForTermination();
     return true;
 }
+
 
 //----------------------------------------------------------------------------
 // Packet processing method
@@ -266,34 +279,8 @@ ts::ProcessorPlugin::Status ts::InfluxPlugin::processPacket(TSPacket& pkt, TSPac
     }
 
     // Is it time to report metrics?
-    if (_pcr_based) {
-        const PCR current = _pcr_analyzer.duration();
-        if (_due_pcr > PCR::zero() && current >= _due_pcr) {
-            reportMetrics(_first_time + current, cn::duration_cast<cn::milliseconds>(current - _last_pcr));
-            _last_pcr = current;
-            _due_pcr += cn::duration_cast<PCR>(_log_interval);
-            // Enforce monotonic time increase if late.
-            if (_due_pcr <= current) {
-                // We are late, wait one second before next metrics.
-                _due_pcr = current + cn::duration_cast<PCR>(cn::seconds(1));
-            }
-        }
-    }
-    else {
-        const Time current = Time::CurrentUTC();
-        if (current >= _due_time) {
-            reportMetrics(current, current - _last_time);
-            _last_time = current;
-            _due_time += _log_interval;
-            // Enforce monotonic time increase if late.
-            if (_due_time <= current) {
-                // We are late, wait one second before next metrics.
-                _due_time = current + cn::seconds(1);
-            }
-        }
-    }
-
-    return TSP_OK;
+    reportMetrics(false);
+    return _sent_metrics < _max_metrics ? TSP_OK : TSP_END;
 }
 
 
@@ -340,9 +327,45 @@ void ts::InfluxPlugin::handleService(uint16_t ts_id, const Service& service, con
     }
 }
 
+//----------------------------------------------------------------------------
+// Report metrics to InfluxDB if time to do so.
+//----------------------------------------------------------------------------
+
+void ts::InfluxPlugin::reportMetrics(bool force)
+{
+    if (_sent_metrics < _max_metrics) {
+        if (_pcr_based) {
+            const PCR current = _pcr_analyzer.duration();
+            if (force || (_due_pcr > PCR::zero() && current >= _due_pcr)) {
+                reportMetrics(_first_time + current, cn::duration_cast<cn::milliseconds>(current - _last_pcr));
+                _last_pcr = current;
+                _due_pcr += cn::duration_cast<PCR>(_log_interval);
+                // Enforce monotonic time increase if late.
+                if (_due_pcr <= current) {
+                    // We are late, wait one second before next metrics.
+                    _due_pcr = current + cn::duration_cast<PCR>(cn::seconds(1));
+                }
+            }
+        }
+        else {
+            const Time current = Time::CurrentUTC();
+            if (force || current >= _due_time) {
+                reportMetrics(current, current - _last_time);
+                _last_time = current;
+                _due_time += _log_interval;
+                // Enforce monotonic time increase if late.
+                if (_due_time <= current) {
+                    // We are late, wait one second before next metrics.
+                    _due_time = current + cn::seconds(1);
+                }
+            }
+        }
+    }
+}
+
 
 //----------------------------------------------------------------------------
-// Report metrics to InfluxDB.
+// Report metrics to InfluxDB using known timestamp and duration.
 //----------------------------------------------------------------------------
 
 void ts::InfluxPlugin::reportMetrics(Time timestamp, cn::milliseconds duration)
@@ -415,7 +438,10 @@ void ts::InfluxPlugin::reportMetrics(Time timestamp, cn::milliseconds duration)
     // Send the data to the outgoing thread. Use a zero timeout.
     // It the thread is so slow that the queue is full, just drop the metrics for this interval.
     auto msg = std::make_shared<UString>(data);
-    if (!_metrics_queue.enqueue(msg, cn::milliseconds::zero())) {
+    if (_metrics_queue.enqueue(msg, cn::milliseconds::zero())) {
+        _sent_metrics++;
+    }
+    else {
         warning(u"lost metrics, consider increasing --queue-size (current: %d)", _queue_size);
     }
 
