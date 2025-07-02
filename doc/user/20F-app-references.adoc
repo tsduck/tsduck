@@ -265,6 +265,8 @@
   "Digital Video Broadcasting (DVB); Allocation of Service Information (SI) and data broadcasting codes for DVB systems".
 * [[[ETSI-101-211]]] ETSI TS 101 211 V1.13.1, May 2021:
   "Digital Video Broadcasting (DVB); Guidelines on implementation and usage of Service Information (SI)".
+* [[[ETSI-101-290]]] ETSI TR 101 290 V1.4.1, June 2020:
+  "Digital Video Broadcasting(DVB); Measurement guidelines for DVB systems".
 * [[[ETSI-101-812]]] ETSI TS 101 812, V1.3.2, August 2006:
   "Digital Video Broadcasting (DVB); Multimedia Home Platform (MHP) Specification 1.0.3".
 * [[[ETSI-102-006]]] ETSI TS 102 006, V1.4.1, June 2015:

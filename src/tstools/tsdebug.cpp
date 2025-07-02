@@ -8,7 +8,7 @@
 //
 //  TSDuck debug utility. This application is not offically part of the suite
 //  of TSDuck commands. It is shipped with TSDuck for troubleshooting issues
-//  and as suppoort for the test suite.
+//  and as support for the test suite.
 //
 //----------------------------------------------------------------------------
 
@@ -749,7 +749,7 @@ ts::DebugCommandOptions::DebugCommandOptions(int argc, char *argv[]) :
     Args(u"TSDuck troubleshooting utility", u"[options] [command args ...]", GATHER_PARAMETERS)
 {
     setIntro(u"This application is not offically part of the suite of TSDuck commands. "
-             u"It is shipped with TSDuck for troubleshooting issues and as suppoort for the test suite.");
+             u"It is shipped with TSDuck for troubleshooting issues and as support for the test suite.");
 
     // Command line options.
     option(u"");

@@ -2,11 +2,11 @@
 ---
 AccessModifierOffset: '-4'
 AlignAfterOpenBracket: Align
-AlignConsecutiveMacros: 'true'
+AlignConsecutiveMacros: 'false'
 AlignConsecutiveAssignments: 'false'
-AlignConsecutiveDeclarations: 'true'
+AlignConsecutiveDeclarations: 'false'
 AlignEscapedNewlines: Left
-AlignOperands: 'true'
+AlignOperands: 'false'
 AlignTrailingComments: 'true'
 AllowAllArgumentsOnNextLine: 'true'
 AllowAllConstructorInitializersOnNextLine: 'true'
@@ -20,7 +20,20 @@ AllowShortLoopsOnASingleLine: 'true'
 AlwaysBreakBeforeMultilineStrings: 'false'
 AlwaysBreakTemplateDeclarations: 'Yes'
 BreakBeforeBinaryOperators: None
-BreakBeforeBraces: Stroustrup
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterClass: 'true'
+  AfterStruct: 'false'
+  AfterControlStatement: 'false'
+  AfterEnum: 'false'
+  AfterFunction: 'true'
+  AfterNamespace: 'false'
+  AfterUnion: 'false'
+  AfterExternBlock: 'false'
+  BeforeCatch: 'true'
+  BeforeElse: 'true'
+  BeforeLambdaBody: 'false'
+  BeforeWhile: 'false'
 BreakBeforeTernaryOperators: 'false'
 BreakConstructorInitializers: AfterColon
 BreakInheritanceList: AfterColon
