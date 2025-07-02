@@ -332,7 +332,7 @@ bool ts::WebRequest::SystemGuts::init()
             // Build the request.
             const wchar_t* accept_types[] = {L"*/*", nullptr};
             UString path(url.getPath());
-            UString query(url.getPath());
+            UString query(url.getQuery());
             if (!query.empty()) {
                 path.append(u'?');
                 path.append(query);
