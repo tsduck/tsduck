@@ -105,14 +105,15 @@ namespace ts {
             size_t PID_error = 0;               //!< No 1.6 (TODO)
 
             // Section 5.2.2 - Second priority: recommended for continuous or periodic monitoring
-            size_t Transport_error = 0;         //!< No 2.1 (TODO)
-            size_t CRC_error = 0;               //!< No 2.2 (TODO)
+            size_t Transport_error = 0;         //!< No 2.1
+            size_t CRC_error = 0;               //!< No 2.2
+            size_t CRC_error_2 = 0;             //!< CRC error in all other cases than CRC_error.
             size_t PCR_error = 0;               //!< No 2.3 (TODO)
             size_t PCR_repetition_error = 0;    //!< No 2.3a (TODO)
             size_t PCR_discontinuity_indicator_error = 0; //!< No 2.3b (TODO)
             size_t PCR_accuracy_error = 0;      //!< No 2.4 (TODO)
             size_t PTS_error = 0;               //!< No 2.5 (TODO)
-            size_t CAT_error = 0;               //!< No 2.6 (TODO)
+            size_t CAT_error = 0;               //!< No 2.6
 
             // Section 5.2.3 - Third priority: application dependant monitoring
             size_t NIT_error = 0;               //!< No 3.1 (TODO)
@@ -128,7 +129,7 @@ namespace ts {
             size_t EIT_actual_error = 0;        //!< No 3.6a (TODO)
             size_t EIT_other_error = 0;         //!< No 3.6b (TODO)
             size_t EIT_PF_error = 0;            //!< No 3.6c (TODO)
-            size_t RST_error = 0;               //!< No 3.7 (TODO)
+            size_t RST_error = 0;               //!< No 3.7
             size_t TDT_error = 0;               //!< No 3.8 (TODO)
             size_t Empty_buffer_error = 0;      //!< No 3.9 (unimplemented)
             size_t Data_delay_error = 0;        //!< No 3.10 (unimplemented)
@@ -152,6 +153,19 @@ namespace ts {
         //! Maximum interval between two PAT's.
         //!
         static constexpr cn::milliseconds MAX_PAT_INTERVAL = cn::milliseconds(500);
+
+        //!
+        //! Minimum interval between two RST's.
+        //!
+        static constexpr cn::milliseconds MIN_RST_INTERVAL = cn::milliseconds(25);
+
+        //!
+        //! Maximum interval between the first packet of a PID and the time it is referenced.
+        //! When jumping into a transport stream, we get audio, video, etc. packets possibly
+        //! before the corresponding PMT. The PID is initially unreferenced but we need to
+        //! find the reference (in the PMT) within that interval.
+        //!
+        static constexpr cn::milliseconds MAX_PID_REFERENCE_INTERVAL = cn::milliseconds(500);
 
         //!
         //! Default number of consecutive invalid TS sync bytes before declaring TS sync loss.
@@ -179,6 +193,12 @@ namespace ts {
 
             bool PAT_error = false;
             bool PAT_error_2 = false;
+            bool PMT_error = false;
+            bool PMT_error_2 = false;
+            bool CAT_error = false;
+            bool CRC_error = false;
+            bool CRC_error_2 = false;
+            bool RST_error = false;
         };
 
         // One such structure is maintained per PID.
@@ -186,8 +206,10 @@ namespace ts {
         {
         public:
             PIDContext() = default;
-            PCR _last_pcr = PCR(-1);      // Timestamp of last packet in that PID.
-            PCR _max_interval = PCR(-1);  //
+            PIDClass type = PIDClass::UNDEFINED;  // Type of data in that PID.
+            PCR      first_pcr = PCR(-1);         // Timestamp of first packet in that PID.
+            PCR      last_pcr = PCR(-1);          // Timestamp of last packet in that PID.
+            std::set<uint16_t> services {};       // Set of services which reference that PID.
         };
 
         // One such structure is maintained per TID/TIDext (XTID).
@@ -195,7 +217,7 @@ namespace ts {
         {
         public:
             XTIDContext() = default;
-            PCR _last_pcr = PCR(-1);  // Timestamp of last packet of a section with that XTID.
+            PCR last_pcr = PCR(-1);  // Timestamp of last packet of a section with that XTID.
         };
 
         // TR101290Analyzer private data.
@@ -204,6 +226,8 @@ namespace ts {
         size_t             _bad_sync_count = 0;     // Last consecutive corrupted sync bytes.
         size_t             _bad_sync_max = DEFAULT_TS_SYNC_LOST;
         PCR                _max_pat_interval = cn::duration_cast<PCR>(MAX_PAT_INTERVAL);
+        PCR                _min_rst_interval = cn::duration_cast<PCR>(MIN_RST_INTERVAL);
+        PCR                _max_pid_reference_interval = cn::duration_cast<PCR>(MAX_PID_REFERENCE_INTERVAL);
         PCR                _last_pcr = PCR(-1);     // PCR of last packet, negative means none.
         PCR                _current_pcr = PCR(-1);  // PCR of current packet, negative means none.
         Counters           _counters {};
@@ -217,5 +241,8 @@ namespace ts {
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;
         virtual void handleSection(SectionDemux&, const Section&) override;
         virtual void handleInvalidSection(SectionDemux&, const DemuxedData&, Section::Status) override;
+
+        // Declare ECM PID's in a descriptor list as part of a service.
+        void searchECMPIDs(const DescriptorList& descs, uint16_t service_id);
     };
 }
