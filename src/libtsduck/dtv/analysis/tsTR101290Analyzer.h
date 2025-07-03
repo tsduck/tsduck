@@ -12,8 +12,6 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsTableHandlerInterface.h"
-#include "tsSectionHandlerInterface.h"
 #include "tsTSPacket.h"
 #include "tsSectionDemux.h"
 #include "tsContinuityAnalyzer.h"
@@ -45,7 +43,10 @@ namespace ts {
     //! Therefore, with these input plugins, corrupted sync bytes are filtered upstream and never reach
     //! the analyzer classes.
     //!
-    class TSDUCKDLL TR101290Analyzer: private SectionHandlerInterface, private TableHandlerInterface
+    class TSDUCKDLL TR101290Analyzer:
+        private SectionHandlerInterface,
+        private TableHandlerInterface,
+        private InvalidSectionHandlerInterface
     {
         TS_NOBUILD_NOCOPY(TR101290Analyzer);
     public:
@@ -96,8 +97,8 @@ namespace ts {
             // Section 5.2.1 - First priority: necessary for de-codability (basic monitoring)
             size_t TS_sync_loss = 0;            //!< No 1.1 (mostly unreliable)
             size_t Sync_byte_error = 0;         //!< No 1.2 (mostly unreliable)
-            size_t PAT_error = 0;               //!< No 1.3 (TODO)
-            size_t PAT_error_2 = 0;             //!< No 1.3.a (TODO)
+            size_t PAT_error = 0;               //!< No 1.3
+            size_t PAT_error_2 = 0;             //!< No 1.3.a
             size_t Continuity_count_error = 0;  //!< No 1.4
             size_t PMT_error = 0;               //!< No 1.5 (TODO)
             size_t PMT_error_2 = 0;             //!< No 1.5.a (TODO)
@@ -148,6 +149,11 @@ namespace ts {
         void getCountersRestart(Counters& counters);
 
         //!
+        //! Maximum interval between two PAT's.
+        //!
+        static constexpr cn::milliseconds MAX_PAT_INTERVAL = cn::milliseconds(500);
+
+        //!
         //! Default number of consecutive invalid TS sync bytes before declaring TS sync loss.
         //!
         static constexpr size_t DEFAULT_TS_SYNC_LOST = 5;
@@ -156,22 +162,60 @@ namespace ts {
         //! Set the number of consecutive invalid TS sync bytes before declaring TS sync loss.
         //! @param [in] count When that number of consecutive TS packets have a corrupted sync byte
         //! (the initial 0x47 value), we declare a TS synchronization loss.
-        //! 
+        //!
         void setTSSyncLostCount(size_t count) { _bad_sync_max = count; }
 
     private:
+        // Some counters can be incremented for a number of reasons but we want to count
+        // at most one error of each kind per packet. The errors could be set in feedPacket()
+        // or in a handler. We use a structure with error flags that can be set many times
+        // during the processing one packet but we count at most one error per flag.
+        class TSDUCKDLL CounterFlags
+        {
+        public:
+            CounterFlags() = default;
+            void clear() { *this = CounterFlags(); }
+            void update(Counters&);
+
+            bool PAT_error = false;
+            bool PAT_error_2 = false;
+        };
+
+        // One such structure is maintained per PID.
+        class TSDUCKDLL PIDContext
+        {
+        public:
+            PIDContext() = default;
+            PCR _last_pcr = PCR(-1);      // Timestamp of last packet in that PID.
+            PCR _max_interval = PCR(-1);  //
+        };
+
+        // One such structure is maintained per TID/TIDext (XTID).
+        class TSDUCKDLL XTIDContext
+        {
+        public:
+            XTIDContext() = default;
+            PCR _last_pcr = PCR(-1);  // Timestamp of last packet of a section with that XTID.
+        };
+
+        // TR101290Analyzer private data.
         DuckContext&       _duck;
         PacketCounter      _current_pkt = 0;        // Index of current packet in stream.
         size_t             _bad_sync_count = 0;     // Last consecutive corrupted sync bytes.
         size_t             _bad_sync_max = DEFAULT_TS_SYNC_LOST;
+        PCR                _max_pat_interval = cn::duration_cast<PCR>(MAX_PAT_INTERVAL);
         PCR                _last_pcr = PCR(-1);     // PCR of last packet, negative means none.
         PCR                _current_pcr = PCR(-1);  // PCR of current packet, negative means none.
         Counters           _counters {};
+        CounterFlags       _counters_flags {};
         SectionDemux       _demux {_duck, this, this};
         ContinuityAnalyzer _continuity {AllPIDs()};
+        std::map<PID,PIDContext>   _pids {};
+        std::map<XTID,XTIDContext> _xtids {};
 
         // Implementation of interfaces.
-        virtual void handleTable(SectionDemux& demux, const BinaryTable& table) override;
-        virtual void handleSection(SectionDemux& demux, const Section& section) override;
+        virtual void handleTable(SectionDemux&, const BinaryTable&) override;
+        virtual void handleSection(SectionDemux&, const Section&) override;
+        virtual void handleInvalidSection(SectionDemux&, const DemuxedData&, Section::Status) override;
     };
 }
