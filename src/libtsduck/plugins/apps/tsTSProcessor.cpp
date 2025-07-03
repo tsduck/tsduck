@@ -261,7 +261,8 @@ void ts::TSProcessor::waitForTermination()
         } while ((proc = proc->ringNext<tsp::PluginExecutor>()) != _input);
 
         // Make sure the control server thread is terminated before deleting plugins.
-        _control->close();
+        if (_control)
+            _control->close();
 
         // Deallocate all plugins and plugin executor
         cleanupInternal();
