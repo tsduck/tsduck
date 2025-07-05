@@ -141,11 +141,21 @@ namespace ts {
         };
 
         //!
-        //! Get a list of lowercase names for all counters in a Counters instance.
-        //! These names are suitable to report to some logging or monitoring system.
-        //! @return A constant reference to a set of associations between pointer to Counters and names.
+        //! Description of one counter value in a Counters instance.
         //!
-        static const std::vector<std::pair<size_t Counters::*, UString>>& CounterNames();
+        class TSDUCKDLL CounterDescription
+        {
+        public:
+            int                severity;  //!< Severity: 1, 2, 3, same as in ETSI TR 101 290.
+            size_t Counters::* counter;   //!< Pointer to member inside Counters.
+            UString            name;      //!< Counter name, same as in ETSI TR 101 290.
+        };
+
+        //!
+        //! Get a list of descriptions for all counters in a Counters instance.
+        //! @return A constant reference to a vector of CounterDescription.
+        //!
+        static const std::vector<CounterDescription>& CounterDescriptions();
 
         //!
         //! Get the error counters since start or the last getCountersRestart().

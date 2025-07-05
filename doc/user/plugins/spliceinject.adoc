@@ -24,8 +24,7 @@ JSON files are first translated to XML using the "automated XML-to-JSON conversi
 
 All sections or tables shall be _splice information sections_ (table id 0xFC).
 
-[.usage]
-Injection principles
+==== Injection principles
 
 The whole point about splice information is synchronization with video.
 There are roughly two classes of splice events:
@@ -46,8 +45,7 @@ Otherwise, the command is placed in a waiting queue until the event time minus s
 At this time, the command is sent for the first time.
 It is later re-sent zero or more times. When the event time occurs, the command is no longer needed and is dropped.
 
-[.usage]
-Providing splice information tables
+==== Providing splice information tables
 
 There are two possible mechanisms to provide the sections: files or UDP.
 The two options may be used simultaneously.
@@ -93,6 +91,8 @@ $ cp splice_12.xml /path/to/dir
 
 Note that the redirection at `/dev/udp/__address__/__port__` is a feature of `bash`, not a Linux feature.
 It is available on all platforms, including macOS and Cygwin or Msys on Windows.
+
+==== Command line syntax
 
 [.usage]
 Usage

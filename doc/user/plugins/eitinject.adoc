@@ -34,8 +34,7 @@ It is possible to inject EIT's in a transport stream file at the speed of file r
 The "current time" of a packet (for EIT generation and insertion) is based on the last reference
 (typically from a TDT or TOT), the transport stream bitrate and the number of packets since the last reference.
 
-[.usage]
-Electronic Program Guide (EPG) database
+==== Electronic Program Guide (EPG) database
 
 The events are loaded in an EPG database in memory.
 There are several sources for events: files and incoming EIT's (from the TS upstream).
@@ -115,8 +114,7 @@ If some of these events become present or following in the service, they are imm
 If the transport stream id of the TS is 4, the events are included in an EIT Actual.
 Otherwise, they are included in an EIT Other.
 
-[.usage]
-Deleting events from the EPG database
+==== Deleting events from the EPG database
 
 Events are automatically removed from the EPG database when they become obsolete
 (the current transport stream time goes beyong the end time of the event).
@@ -155,8 +153,7 @@ Here, the event with id 1001 is deleted.
 Note that the start time and duration attributes are here only because they are required by the syntax of the EIT.
 They are ignored and their values do not need to match the actual schedule for the event.
 
-[.usage]
-Injection profiles
+==== Injection profiles
 
 The EIT's are injected and cycled according to ETSI TS 101 211 section 4.4 (see <<ETSI-101-211>>).
 Several cycle profiles can be used.
@@ -210,6 +207,8 @@ The following table lists the details of the two standard EIT profiles as define
 |300 seconds
 
 |===
+
+==== Command line syntax
 
 [.usage]
 Usage

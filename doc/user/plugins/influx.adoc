@@ -13,8 +13,9 @@
 Send live bitrate metrics to InfluxDB, a data source for Grafana
 
 By default, the plugin sends the global transport stream bitrate only.
-Using options, other bitrate information are sent: by PID, by type of PID
-(audio, video, etc.), by service.
+Using options, other bitrate information are sent: by PID, by type of PID (audio, video, etc.), by service.
+
+It is also possible to send most error counters which are defined in <<ETSI-101-290>>.
 
 Be careful to send the required information for your graph only.
 Sending bitrate information for all PID's, all types of PID's, and all services,
@@ -114,6 +115,15 @@ Send bitrate monitoring data for services.
 The services are identified in InfluxDB by their id in decimal.
 
 [.opt]
+*--tr-101-290*
+
+[.optdoc]
+Send error counters as defined in <<ETSI-101-290>>.
+This plugin can detect a subset of ETSI TR 101 290 only:
+all transport stream logical checks are performed but physical checks on modulation cannot be reported.
+See more details below.
+
+[.opt]
 *--type*
 
 [.optdoc]
@@ -157,8 +167,7 @@ The default queue size is 10 messages.
 
 include::{docdir}/opt/group-common-plugins.adoc[tags=!*]
 
-[.usage]
-Building Flux queries for Grafana
+==== Building Flux queries for Grafana
 
 This plugin sends bitrate data to InfluxDB.
 On top of that, the user has to build Flux requests in Grafana to extract the appropriate data to visualize.

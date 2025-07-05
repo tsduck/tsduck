@@ -97,8 +97,7 @@ This is equivalent to option `--input-directory`, applied to output files.
 
 include::{docdir}/opt/group-common-commands.adoc[tags=!*]
 
-[.usage]
-List of EIT manipulation commands
+==== List of EIT manipulation commands
 
 [cols="<10m,<22,<68",frame=none,grid=none,stripes=none,options="noheader"]
 |===

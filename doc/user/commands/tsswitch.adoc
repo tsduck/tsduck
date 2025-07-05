@@ -25,8 +25,7 @@ in which case it is possible to insert specific processing between the input plu
 
 See a sample usage with a system diagram in xref:tsswitch-examples[xrefstyle=short].
 
-[.usage]
-Cycling through input plugins
+==== Cycling through input plugins
 
 The list of input plugins is ordered by index on the command line, from 0 to n-1.
 By default, the input plugin 0 is started when the command starts.
@@ -43,8 +42,7 @@ In this case, without remote control, `tsswitch` only executes the first plugin.
 If the remote control was used to switch to another input,
 `tsswitch` terminates when the current plugin terminates, whichever it is.
 
-[.usage]
-Input switching modes
+==== Input switching modes
 
 There are three different modes when switching from an input plugin to another one.
 
@@ -75,8 +73,7 @@ the output plugin immediately jumps into the next plugin buffer where the latest
 This mode guarantees a smooth and immediate switch.
 It is appropriate for live streams only.
 
-[.usage]
-Remote control
+==== Remote control
 
 Using the option `--remote`, `tsswitch` listens to UDP datagrams on a given port.
 Each datagram contains one switch command.
@@ -106,8 +103,7 @@ This is the easiest way to use the `tsswitch` remote control.
 Note that this is a feature of `bash`, not a Linux feature.
 It is available on all platforms, including macOS and Cygwin or Msys on Windows.
 
-[.usage]
-Event notification
+==== Event notification
 
 It is possible to notify some external system of switching events, typically when a new input is selected.
 This can be done in two ways.
@@ -173,6 +169,8 @@ $ while true; do nc -u -l -w 0 4444 | jq; done
 }
 ...
 ----
+
+==== Command line syntax
 
 [.usage]
 Usage

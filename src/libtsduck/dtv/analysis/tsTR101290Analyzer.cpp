@@ -143,43 +143,45 @@ size_t ts::TR101290Analyzer::Counters::errorCount() const
 // Get a list of lowercase names for all counters in a Counters instance.
 //----------------------------------------------------------------------------
 
-const std::vector<std::pair<size_t ts::TR101290Analyzer::Counters::*, ts::UString>>& ts::TR101290Analyzer::CounterNames()
+const std::vector<ts::TR101290Analyzer::CounterDescription>& ts::TR101290Analyzer::CounterDescriptions()
 {
-    static const std::vector<std::pair<size_t Counters::*, UString>> data {
-        {&Counters::TS_sync_loss,            u"ts_sync_loss"},
-        {&Counters::Sync_byte_error,         u"sync_byte_error"},
-        {&Counters::PAT_error,               u"pat_error"},
-        {&Counters::PAT_error_2,             u"pat_error_2"},
-        {&Counters::Continuity_count_error,  u"continuity_count_error"},
-        {&Counters::PMT_error,               u"pmt_error"},
-        {&Counters::PMT_error_2,             u"pmt_error_2"},
-        {&Counters::PID_error,               u"pid_error"},
-        {&Counters::Transport_error,         u"transport_error"},
-        {&Counters::CRC_error,               u"crc_error"},
-        {&Counters::CRC_error_2,             u"crc_error_2"},
-        {&Counters::PCR_error,               u"pcr_error"},
-        {&Counters::PCR_repetition_error,    u"pcr_repetition_error"},
-        {&Counters::PCR_discontinuity_indicator_error, u"pcr_discontinuity_indicator_error"},
-        {&Counters::PCR_accuracy_error,      u"pcr_accuracy_error"},
-        {&Counters::PTS_error,               u"pts_error"},
-        {&Counters::CAT_error,               u"cat_error"},
-        {&Counters::NIT_error,               u"nit_error"},
-        {&Counters::NIT_actual_error,        u"nit_actual_error"},
-        {&Counters::NIT_other_error,         u"nit_other_error"},
-        {&Counters::SI_repetition_error,     u"si_repetition_error"},
-        {&Counters::Buffer_error,            u"buffer_error"},
-        {&Counters::Unreferenced_PID,        u"unreferenced_pid"},
-        {&Counters::SDT_error,               u"sdt_error"},
-        {&Counters::SDT_actual_error,        u"sdt_actual_error"},
-        {&Counters::SDT_other_error,         u"sdt_other_error"},
-        {&Counters::EIT_error,               u"eit_error"},
-        {&Counters::EIT_actual_error,        u"eit_actual_error"},
-        {&Counters::EIT_other_error,         u"eit_other_error"},
-        {&Counters::EIT_PF_error,            u"eit_pf_error"},
-        {&Counters::RST_error,               u"rst_error"},
-        {&Counters::TDT_error,               u"tdt_error"},
-        {&Counters::Empty_buffer_error,      u"empty_buffer_error"},
-        {&Counters::Data_delay_error,        u"data_delay_error"},
+    static const std::vector<CounterDescription> data {
+        {1, &Counters::TS_sync_loss,            u"TS_sync_loss"},
+        {1, &Counters::Sync_byte_error,         u"Sync_byte_error"},
+        {1, &Counters::PAT_error,               u"PAT_error"},
+        {1, &Counters::PAT_error_2,             u"PAT_error_2"},
+        {1, &Counters::Continuity_count_error,  u"Continuity_count_error"},
+        {1, &Counters::PMT_error,               u"PMT_error"},
+        {1, &Counters::PMT_error_2,             u"pmt_error_2"},
+        {1, &Counters::PID_error,               u"PID_error"},
+
+        {2, &Counters::Transport_error,         u"Transport_error"},
+        {2, &Counters::CRC_error,               u"CRC_error"},
+        {2, &Counters::CRC_error_2,             u"CRC_error_2"},
+        {2, &Counters::PCR_error,               u"PCR_error"},
+        {2, &Counters::PCR_repetition_error,    u"PCR_repetition_error"},
+        {2, &Counters::PCR_discontinuity_indicator_error, u"PCR_discontinuity_indicator_error"},
+        {2, &Counters::PCR_accuracy_error,      u"PCR_accuracy_error"},
+        {2, &Counters::PTS_error,               u"PTS_error"},
+        {2, &Counters::CAT_error,               u"CAT_error"},
+
+        {3, &Counters::NIT_error,               u"NIT_error"},
+        {3, &Counters::NIT_actual_error,        u"NIT_actual_error"},
+        {3, &Counters::NIT_other_error,         u"NIT_other_error"},
+        {3, &Counters::SI_repetition_error,     u"SI_repetition_error"},
+        {3, &Counters::Buffer_error,            u"Buffer_error"},
+        {3, &Counters::Unreferenced_PID,        u"Unreferenced_PID"},
+        {3, &Counters::SDT_error,               u"SDT_error"},
+        {3, &Counters::SDT_actual_error,        u"SDT_actual_error"},
+        {3, &Counters::SDT_other_error,         u"SDT_other_error"},
+        {3, &Counters::EIT_error,               u"EIT_error"},
+        {3, &Counters::EIT_actual_error,        u"EIT_actual_error"},
+        {3, &Counters::EIT_other_error,         u"EIT_other_error"},
+        {3, &Counters::EIT_PF_error,            u"EIT_PF_error"},
+        {3, &Counters::RST_error,               u"RST_error"},
+        {3, &Counters::TDT_error,               u"TDT_error"},
+        {3, &Counters::Empty_buffer_error,      u"Empty_buffer_error"},
+        {3, &Counters::Data_delay_error,        u"Data_delay_error"},
     };
     return data;
 }
@@ -568,7 +570,7 @@ void ts::TR101290Analyzer::handleSection(SectionDemux& demux, const Section& sec
 void ts::TR101290Analyzer::handleInvalidSection(SectionDemux& demux, const DemuxedData& data, Section::Status status)
 {
     if (status == Section::INV_CRC32) {
-        const TID tid = data.size() < 1 ? TID_NULL : TID(*data.content());
+        const TID tid = data.size() < 1 ? TID(TID_NULL) : *data.content();
         static const std::set<TID> check_tids {
             TID_CAT, TID_PAT, TID_PMT, TID_NIT_ACT, TID_NIT_OTH,
             TID_EIT_PF_ACT, TID_EIT_PF_OTH,

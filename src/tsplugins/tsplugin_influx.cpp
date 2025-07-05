@@ -16,6 +16,7 @@
 #include "tsInfluxRequest.h"
 #include "tsSignalizationDemux.h"
 #include "tsDurationAnalyzer.h"
+#include "tsTR101290Analyzer.h"
 #include "tsMessageQueue.h"
 #include "tsThread.h"
 #include "tsTime.h"
@@ -44,6 +45,7 @@ namespace ts {
         bool        _log_types = false;
         bool        _log_services = false;
         bool        _log_names = false;
+        bool        _log_tr_101_290 = false;
         bool        _pcr_based = false;
         bool        _timestamp_based = false;
         bool        _use_local_time = false;
@@ -71,7 +73,8 @@ namespace ts {
         PCR                   _last_pcr {};              // PCR of last report.
         size_t                _sent_metrics = 0;         // Number of sent metrics.
         SignalizationDemux    _demux {duck};             // Analyze the stream.
-        DurationAnalyzer      _ts_clock {*this};         // Compute playout time based on PCR.
+        DurationAnalyzer      _ts_clock {*this};         // Compute playout time based on PCR or input timestamps.
+        TR101290Analyzer      _tr_101_290 {duck};        // ETSI TR 101 290 analyzer.
         InfluxRequest         _request {*this};          // Web request to InfluxDB server.
         MessageQueue<UString> _metrics_queue {};         // Queue of metrics to send.
         PacketCounter         _ts_packets = 0;           // All TS packets in period.
@@ -125,6 +128,12 @@ ts::InfluxPlugin::InfluxPlugin(TSP* tsp_) :
     option(u"names", 'n');
     help(u"names",
          u"With --services, the services are identified in InfluxDB by their name, when available.");
+
+    option(u"tr-101-290");
+    help(u"tr-101-290",
+         u"Send error counters as defined by ETSI TR 101 290. "
+         u"This plugin can detect a subset of ETSI TR 101 290 only: "
+         u"all transport stream logical checks are performed but physical checks on modulation cannot be reported.");
 
     option(u"type");
     help(u"type",
@@ -183,6 +192,7 @@ bool ts::InfluxPlugin::getOptions()
     _log_types = present(u"type");
     _log_services = present(u"services");
     _log_names = present(u"names");
+    _log_tr_101_290 = present(u"tr-101-290");
     _pcr_based = present(u"pcr-based");
     _timestamp_based = present(u"timestamp-based");
     _use_local_time = present(u"local-time");
@@ -224,6 +234,7 @@ bool ts::InfluxPlugin::start()
     _demux.setHandler(this);
     _ts_clock.reset();
     _ts_clock.useInputTimestamps(_timestamp_based);
+    _tr_101_290.reset();
     _ts_packets = 0;
     _pids_packets.clear();
     _services.clear();
@@ -276,9 +287,12 @@ ts::ProcessorPlugin::Status ts::InfluxPlugin::processPacket(TSPacket& pkt, TSPac
 
     // Feed the various analyzers.
     _demux.feedPacket(pkt);
-    if (_pcr_based || _timestamp_based) {
+    if (_pcr_based || _timestamp_based || _log_tr_101_290) {
         // Compute PCR-based time instead of real-time.
         _ts_clock.feedPacket(pkt, pkt_data);
+    }
+    if (_log_tr_101_290) {
+        _tr_101_290.feedPacket(_ts_clock.duration(), pkt);
     }
 
     // Accumulate metrics.
@@ -440,6 +454,13 @@ void ts::InfluxPlugin::reportMetrics(Time timestamp, cn::milliseconds duration)
             if (_log_pids.test(it.first) && it.second > 0) {
                 data.format(u"\nbitrate,scope=pid,pid=%d value=%d %d", it.first, PacketBitRate(it.second, duration), timestamp_ms);
             }
+        }
+    }
+    if (_log_tr_101_290) {
+        TR101290Analyzer::Counters counters;
+        _tr_101_290.getCountersRestart(counters);
+        for (const auto& it : TR101290Analyzer::CounterDescriptions()) {
+            data.format(u"\ncounter,name=%s,severity=%d value=%d %d", it.name.toLower(), it.severity, counters.*(it.counter), timestamp_ms);
         }
     }
     debug(u"report at %s, for last %s, data: \"%s\"", timestamp, duration, data);

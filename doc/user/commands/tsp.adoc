@@ -53,8 +53,7 @@ the TS packets are passed from one processor to the other in this order.
 The input and output plugin, however, can be located anywhere on the command line.
 They are implicitly used as first and last plugin in the chain, respectively.
 
-[.usage]
-Offline and real-time defaults
+==== Offline and real-time defaults
 
 There are two main classes of usage for `tsp`, offline and real-time processing.
 Offline processing works on static data such as transport stream files without specific timing constraints.
@@ -95,8 +94,7 @@ Their simple presence in the `tsp` command is sufficient to trigger the use of r
 It is still possible to force the use of offline defaults using the `tsp` option `--realtime=off`,
 even if a real-time plugin is present.
 
-[.usage]
-Rendering speed and transmission speed
+==== Rendering speed and transmission speed
 
 With `tsp`, a stream has a _rendering speed_ (the speed of the audio / video) and a _transmission speed_
 (the speed at which packets go through `tsp`).
@@ -140,8 +138,7 @@ using `regulate` is not necessary because the same role is played here by the pi
 The difference with the previous example is that UDP/IP is not a regulated communication channel,
 unlike pipes and TCP/IP.
 
-[.usage]
-Bitrate propagation
+==== Bitrate propagation
 
 At any point in the chain, all plugins have some knowledge of the transport stream bitrate or rendering speed.
 Some plugins use that bitrate information, some others don't.
@@ -166,8 +163,7 @@ But if we use the bitrate information in `-P regulate -O ip` for instance,
 we will regulate at 36 Mb/s a stream which should be played at 4 Mb/s.
 This is why, in specific situations like this, we need to recompute the bitrate using `-P pcrbitrate` before `-P regulate`.
 
-[.usage]
-Input timestamps
+==== Input timestamps
 
 For each input packet, an _input timestamp_ is collected.
 When the source can provide its own timestamps (RTP, SRT, M2TS file), this value is used.
@@ -182,8 +178,7 @@ For instance:
 * The output plugin `file` uses them to create files in M2TS format.
 
 [#inserting-packets]
-[.usage]
-Modifying, inserting and deleting packets
+==== Modifying, inserting and deleting packets
 
 In the complete chain of processing, between the input and the output plugin, each TS packet goes through
 all packet processing plugins, one after the other, in the order of the command line.
@@ -238,8 +233,7 @@ Do not be afraid of inserting too much stuffing.
 It is always possible to remove the stuffing in excess using `-P filter -n -p 0x1FFF` at the end of the chain,
 after all injection plugins.
 
-[.usage]
-Merging and forking
+==== Merging and forking
 
 As indicated above, `tsp` processes one single transport stream.
 However, specific plugins such as `merge` and `fork` respectively combine and duplicate transport streams.
@@ -252,8 +246,7 @@ This is illustrated in the diagram below.
 image::mergefork.png[align="center",alt="Merging and forking TS"]
 
 [#joint-termination]
-[.usage]
-Joint termination
+==== Joint termination
 
 Some plugins have termination conditions.
 
@@ -275,8 +268,7 @@ Additionally, the `tsp` option `--ignore-joint-termination` disables this behavi
 When this options is used,
 all plugins continue to pass packets as if some additional joint termination condition was still pending.
 
-[.usage]
-Packet labelling
+==== Packet labelling
 
 Transport streams packets may receive one or more _label_ from any packet processing plugin.
 A label is an integer value from 0 to 31, inclusive.
@@ -312,6 +304,8 @@ $ tsp -I ... \
 * count: scr2: total: counted 8,378 packets out of 8,378
 * count: scr3: total: counted 7,439 packets out of 7,439
 ----
+
+==== Command line options
 
 [.usage]
 Global tsp options

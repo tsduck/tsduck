@@ -55,8 +55,7 @@ This is a required parameter, there is no default.
 
 include::{docdir}/opt/group-common-commands.adoc[tags=!*]
 
-[.usage]
-List of control commands
+==== List of control commands
 
 [cols="<10m,<12,<78",frame=none,grid=none,stripes=none,options="noheader"]
 |===

@@ -177,8 +177,7 @@ The null PID 0x1FFF cannot be encapsulated.
 
 include::{docdir}/opt/group-common-plugins.adoc[tags=!*]
 
-[.usage]
-Encapsulation format
+==== Encapsulation format
 
 This section describes the private encapsulation format.
 It is informative only.
@@ -192,8 +191,7 @@ The plain mode is more compact but its structure is specific to TSDuck.
 The PES mode uses more overhead but it encapsulates the TS packets into PES packets,
 which may be easier to process in some cases.
 
-[.usage]
-Plain encapsulation format
+==== Plain encapsulation format
 
 We define the output elementary stream (ES) as the concatenation of all payloads of all TS packets in the output tunnel PID.
 In this ES, all input TS packets are contiguous, without encapsulation.
@@ -205,8 +203,7 @@ When the PUSI bit is set, the first byte of the payload is a _pointer field_ to 
 This packetization method is directly adapted from the standard packetization process for sections,
 with 187-byte packets instead of sections.
 
-[.usage]
-PES encapsulation format
+==== PES encapsulation format
 
 The same plain elementary stream is used, but with a PES envelope.
 This reduces the payload size for encapsulated packets but this makes the outer encapsulation more transparent.
@@ -265,8 +262,7 @@ This PID component shall be described as follow in the PMT of the service:
 * Descriptors:
 ** Add a registration descriptor for "KLVA" (0x4B4C5641)
 
-[.usage]
-Example
+==== Example
 
 We encapsulate several PID's in outer PID 7777.
 We attach this outer PID to service id 100.
