@@ -8,6 +8,23 @@
 
 #include "tsTimeSource.h"
 
+
+//----------------------------------------------------------------------------
+// Check if a ts::TimeSource value is a monotonic clock.
+//----------------------------------------------------------------------------
+
+bool ts::MonotonicTimeSource(TimeSource source)
+{
+    using enum TimeSource;
+    static const std::set<TimeSource> mono {HARDWARE, KERNEL, TSP, SRT, RIST, PCAP};
+    return mono.contains(source);
+}
+
+
+//----------------------------------------------------------------------------
+// Enumeration description of ts::TimeSource.
+//----------------------------------------------------------------------------
+
 const ts::Names& ts::TimeSourceEnum()
 {
     static const Names data {

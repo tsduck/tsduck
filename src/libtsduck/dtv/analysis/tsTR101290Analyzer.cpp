@@ -25,12 +25,12 @@
 //     [[1.3.a/U4]] PAT_error_2: A PAT section is present on PID other than 0x0000.
 //     [[1.3.a/U5]] PAT_error_2: A PAT table is syntactically incorrect.
 //     [[1.4]] Continuity_count_error: Incorrect packet order, a packet occurs more than twice, lost packet.
-// (x) [[1.5/1]] PMT_error: Sections with table_id 0x02, (i.e. a PMT), do not occur at least every 0,5 s on the PID which is referred to in the PAT.
-// (x) [[1.5/2]] PMT_error: Scrambling_control_field is not 00 for all PIDs containing sections with table_id 0x02 (i.e. a PMT).
-// (x) [[1.5.a/1]] PMT_error_2: Sections with table_id 0x02, (i.e. a PMT), do not occur at least every 0,5 s on each program_map_PID which is referred to in the PAT.
-// (x) [[1.5.a/2]] PMT_error_2: Scrambling_control_field is not 00 for all packets containing information of sections with table_id 0x02 (i.e. a PMT) on each program_map_PID which is referred to in the PAT.
+//     [[1.5/1]] PMT_error: Sections with table_id 0x02, (i.e. a PMT), do not occur at least every 0,5 s on the PID which is referred to in the PAT.
+//     [[1.5/2]] PMT_error: Scrambling_control_field is not 00 for all PIDs containing sections with table_id 0x02 (i.e. a PMT).
+//     [[1.5.a/1]] PMT_error_2: Sections with table_id 0x02, (i.e. a PMT), do not occur at least every 0,5 s on each program_map_PID which is referred to in the PAT.
+//     [[1.5.a/2]] PMT_error_2: Scrambling_control_field is not 00 for all packets containing information of sections with table_id 0x02 (i.e. a PMT) on each program_map_PID which is referred to in the PAT.
 //     [[1.5.a/U3]] PMT_error_2: A PMT table is syntactically incorrect.
-// (x) [[1.6]] PID_error: Referred PID does not occur for a user specified period.
+//     [[1.6]] PID_error: Referred PID does not occur for a user specified period.
 //     [[2.1]] Transport_error: Transport_error_indicator in the TS-Header is set to "1".
 //     [[2.2/1]] CRC_error: CRC error occurred in CAT, PAT, PMT, NIT, EIT, BAT, SDT or TOT table.
 //     [[2.2/U2]] CRC_error_2: CRC error occurred in other table id than specified in CRC_error.
@@ -39,7 +39,7 @@
 // (x) [[2.3.a]] PCR_repetition_error: Time interval between two consecutive PCR values more than 100 ms.
 // (x) [[2.3.b]] PCR_discontinuity_indicator_error: The difference between two consecutive PCR values (PCRi+1 – PCRi) is outside the range of 0...100 ms without the discontinuity_indicator set.
 // (x) [[2.4]] PCR_accuracy_error: PCR accuracy of selected programme is not within +/- 500 ns.
-// (x) [[2.5]] PTS_error: PTS repetition period more than 700 ms.
+//     [[2.5]] PTS_error: PTS repetition period more than 700 ms.
 //     [[2.6/1]] CAT_error: Packets with transport_scrambling_control not 00 present, but no section with table_id = 0x01 (i.e. a CAT) present.
 //     [[2.6/2]] CAT_error: Section with table_id other than 0x01 (i.e. not a CAT) found on PID 0x0001.
 //     [[2.6/U3]] CAT_error: A CAT section is present on PID other than 0x0001.
@@ -73,13 +73,14 @@
 // (x) [[3.6.a/4]] EIT_actual_error: Any two sections with table_id = 0x4E (EIT-P/F, actual TS) occur on PID 0x0012 within a specified value (25 ms or lower).
 // (x) [[3.6.b/1]] EIT_other_error: Interval between sections '0' with table_id = 0x4F (EIT-P, other TS) on PID 0x0012 longer than a specified value (10 s or higher).
 // (x) [[3.6.b/2]] EIT_other_error: Interval between sections '1' with table_id = 0x4F (EIT-F, other TS) on PID 0x0012 longer than a specified value (10 s or higher).
-// (x) [[3.6.c]] EIT_PF_error: If either section ('0' or '1') of each EIT P/F sub table is present both should exist. Otherwise EIT_PF_error should be indicated.
+// (x) [[3.6.c]] EIT_PF_error: If either section ('0' or '1') of each EIT P/F sub table is present both should exist.
 //     [[3.7/1]] RST_error: Sections with table_id other than 0x71 or 0x72 found on PID 0x0013.
 //     [[3.7/2]] RST_error: Any two sections with table_id = 0x71 (RST) occur on PID 0x0013 within a specified value (25 ms or lower).
 //     [[3.7/U3]] RST_error: A RST section is present on PID other than 0x0013.
-// (x) [[3.8/1]] TDT_error: Sections with table_id = 0x70 (TDT) not present on PID 0x0014 for more than 30 s.
-// (x) [[3.8/2]] TDT_error: Sections with table_id other than 0x70, 0x72 (ST) or 0x73 (TOT) found on PID 0x0014.
-// (x) [[3.8/3]] TDT_error: Any two sections with table_id = 0x70 (TDT) occur on PID 0x0014 within a specified value (25 ms or lower).
+//     [[3.8/1]] TDT_error: Sections with table_id = 0x70 (TDT) not present on PID 0x0014 for more than 30 s.
+//     [[3.8/2]] TDT_error: Sections with table_id other than 0x70, 0x72 (ST) or 0x73 (TOT) found on PID 0x0014.
+//     [[3.8/3]] TDT_error: Any two sections with table_id = 0x70 (TDT) occur on PID 0x0014 within a specified value (25 ms or lower).
+//     [[3.8/U4]] TDT_error: A TDT section is present on PID other than 0x0014.
 // (x) [[3.9]] Empty_buffer_error: Transport buffer (TBn) not empty at least once per second or transport buffer for system information (TBsys) not empty at least once per second or if the leak method is used multiplexing buffer (MBn) not empty at least once per second.
 // (x) [[3.10/1]] Data_delay_error: Delay of data (except still picture video data) through the TSTD buffers superior to 1 second.
 // (x) [[3.10/2]] Data_delay_error: Delay of still picture video data through the TSTD buffers superior to 60 s.
@@ -87,7 +88,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsTR101290Analyzer.h"
-#include "tsAlgorithm.h"
 #include "tsBinaryTable.h"
 #include "tsPAT.h"
 #include "tsCAT.h"
@@ -115,7 +115,7 @@ void ts::TR101290Analyzer::reset()
 {
     _current_pkt = 0;
     _bad_sync_count = 0;
-    _current_pcr = _last_pcr = PCR(-1);
+    _current_timestamp = _last_timestamp = PCR(-1);
     _counters.clear();
     _demux.reset();
     _demux.setPIDFilter(AllPIDs());
@@ -140,6 +140,52 @@ size_t ts::TR101290Analyzer::Counters::errorCount() const
 
 
 //----------------------------------------------------------------------------
+// Get a list of lowercase names for all counters in a Counters instance.
+//----------------------------------------------------------------------------
+
+const std::vector<std::pair<size_t ts::TR101290Analyzer::Counters::*, ts::UString>>& ts::TR101290Analyzer::CounterNames()
+{
+    static const std::vector<std::pair<size_t Counters::*, UString>> data {
+        {&Counters::TS_sync_loss,            u"ts_sync_loss"},
+        {&Counters::Sync_byte_error,         u"sync_byte_error"},
+        {&Counters::PAT_error,               u"pat_error"},
+        {&Counters::PAT_error_2,             u"pat_error_2"},
+        {&Counters::Continuity_count_error,  u"continuity_count_error"},
+        {&Counters::PMT_error,               u"pmt_error"},
+        {&Counters::PMT_error_2,             u"pmt_error_2"},
+        {&Counters::PID_error,               u"pid_error"},
+        {&Counters::Transport_error,         u"transport_error"},
+        {&Counters::CRC_error,               u"crc_error"},
+        {&Counters::CRC_error_2,             u"crc_error_2"},
+        {&Counters::PCR_error,               u"pcr_error"},
+        {&Counters::PCR_repetition_error,    u"pcr_repetition_error"},
+        {&Counters::PCR_discontinuity_indicator_error, u"pcr_discontinuity_indicator_error"},
+        {&Counters::PCR_accuracy_error,      u"pcr_accuracy_error"},
+        {&Counters::PTS_error,               u"pts_error"},
+        {&Counters::CAT_error,               u"cat_error"},
+        {&Counters::NIT_error,               u"nit_error"},
+        {&Counters::NIT_actual_error,        u"nit_actual_error"},
+        {&Counters::NIT_other_error,         u"nit_other_error"},
+        {&Counters::SI_repetition_error,     u"si_repetition_error"},
+        {&Counters::Buffer_error,            u"buffer_error"},
+        {&Counters::Unreferenced_PID,        u"unreferenced_pid"},
+        {&Counters::SDT_error,               u"sdt_error"},
+        {&Counters::SDT_actual_error,        u"sdt_actual_error"},
+        {&Counters::SDT_other_error,         u"sdt_other_error"},
+        {&Counters::EIT_error,               u"eit_error"},
+        {&Counters::EIT_actual_error,        u"eit_actual_error"},
+        {&Counters::EIT_other_error,         u"eit_other_error"},
+        {&Counters::EIT_PF_error,            u"eit_pf_error"},
+        {&Counters::RST_error,               u"rst_error"},
+        {&Counters::TDT_error,               u"tdt_error"},
+        {&Counters::Empty_buffer_error,      u"empty_buffer_error"},
+        {&Counters::Data_delay_error,        u"data_delay_error"},
+    };
+    return data;
+}
+
+
+//----------------------------------------------------------------------------
 // Update error counters at most once per TS packet.
 //----------------------------------------------------------------------------
 
@@ -151,12 +197,16 @@ void ts::TR101290Analyzer::CounterFlags::update(Counters& counters)
         {&CounterFlags::PAT_error_2, &Counters::PAT_error_2},
         {&CounterFlags::PMT_error,   &Counters::PMT_error},
         {&CounterFlags::PMT_error_2, &Counters::PMT_error_2},
+        {&CounterFlags::PID_error,   &Counters::PID_error},
+        {&CounterFlags::PTS_error,   &Counters::PTS_error},
         {&CounterFlags::CAT_error,   &Counters::CAT_error},
         {&CounterFlags::CRC_error,   &Counters::CRC_error},
         {&CounterFlags::CRC_error_2, &Counters::CRC_error_2},
         {&CounterFlags::RST_error,   &Counters::RST_error},
+        {&CounterFlags::TDT_error,   &Counters::TDT_error},
     };
 
+    // Update counters.
     for (const auto& it : _counter_pairs) {
         if (this->*it.first) {
             (counters.*it.second)++;
@@ -173,7 +223,7 @@ void ts::TR101290Analyzer::feedPacket(const PCR& timestamp, const TSPacket& pkt)
 {
     // Must be set first. During execution of the various handlers, synchronously called from here,
     // _last_pcr < _current_pcr. Upon return from feedPacket(), _last_pcr == _current_pcr.
-    _current_pcr = timestamp;
+    _current_timestamp = timestamp;
 
     // Clear flags which indicate errors during the processing of this packet.
     _counters_flags.clear();
@@ -181,9 +231,9 @@ void ts::TR101290Analyzer::feedPacket(const PCR& timestamp, const TSPacket& pkt)
     // Get/initialize PID context for that packet.
     const PID pid = pkt.getPID();
     auto& pidctx(_pids[pid]);
-    if (pidctx.first_pcr < PCR::zero()) {
+    if (pidctx.first_timestamp < PCR::zero()) {
         // This is the first packet in that PID.
-        pidctx.first_pcr = _current_pcr;
+        pidctx.first_timestamp = _current_timestamp;
     }
 
     // Check sync bytes errors.
@@ -210,6 +260,15 @@ void ts::TR101290Analyzer::feedPacket(const PCR& timestamp, const TSPacket& pkt)
         _counters.Continuity_count_error++;
     }
 
+    // Check PTS repetition.
+    if (pkt.hasPTS()) {
+        if (pidctx.last_pts_timestamp >= PCR::zero() && (_current_timestamp - pidctx.last_timestamp) > _max_pts_interval) {
+            // [[2.5]] PTS_error: PTS repetition period more than 700 ms.
+            _counters_flags.PTS_error = true;
+        }
+        pidctx.last_pts_timestamp = _current_timestamp;
+    }
+
     // Check PID's that shouldn't be scrambled.
     if (pkt.isScrambled()) {
         if (pid == PID_PAT) {
@@ -221,25 +280,34 @@ void ts::TR101290Analyzer::feedPacket(const PCR& timestamp, const TSPacket& pkt)
             // [[2.6/1]] CAT_error: Packets with transport_scrambling_control not 00 present, but no section with table_id = 0x01 (i.e. a CAT) present.
             _counters_flags.CAT_error = true;
         }
+        if (pidctx.is_pmt) {
+            // [[1.5/2]] PMT_error: Scrambling_control_field is not 00 for all PIDs containing sections with table_id 0x02 (i.e. a PMT).
+            // [[1.5.a/2]] PMT_error_2: Scrambling_control_field is not 00 for all packets containing information of sections with table_id 0x02 (i.e. a PMT) on each program_map_PID which is referred to in the PAT.
+            _counters_flags.PMT_error = _counters_flags.PMT_error_2 = true;
+        }
     }
 
     // Check max interval between packets of a PID.
-    if (pidctx.last_pcr >= PCR::zero() && (_current_pcr - pidctx.last_pcr) > _max_pat_interval) {
-        // [[1.3/1]] PAT_error: PID 0x0000 does not occur at least every 0,5 s
-        _counters_flags.PAT_error = true;
+    if (pidctx.last_timestamp >= PCR::zero()) {
+        if (pid == PID_PAT && (_current_timestamp - pidctx.last_timestamp) > _max_pat_interval) {
+            // [[1.3/1]] PAT_error: PID 0x0000 does not occur at least every 0,5 s
+            _counters_flags.PAT_error = true;
+        }
+        else if (pidctx.user_pid && (_current_timestamp - pidctx.last_timestamp) > _max_pid_interval) {
+            // [[1.6]] PID_error: Referred PID does not occur for a user specified period.
+            _counters_flags.PID_error = true;
+        }
     }
 
     // Check PSI/SI validity.
     _demux.feedPacket(pkt);
 
-    //@@@ TODO
-
     // Increment each error at most once per packet.
     _counters_flags.update(_counters);
 
     // Must be set last.
-    pidctx.last_pcr = timestamp;
-    _last_pcr = timestamp;
+    pidctx.last_timestamp = timestamp;
+    _last_timestamp = timestamp;
     _current_pkt++;
 }
 
@@ -257,25 +325,7 @@ void ts::TR101290Analyzer::handleTable(SectionDemux& demux, const BinaryTable& t
             if (pid == PID_PAT) {
                 const PAT pat(_duck, table);
                 if (pat.isValid()) {
-                    std::set<uint16_t> services;
-                    // Declare all PMT PID's as part of their service.
-                    for (const auto& it : pat.pmts) {
-                        auto& ctx(_pids[it.second]);
-                        services.insert(it.first);
-                        ctx.services.insert(it.first);
-                        ctx.type = PIDClass::PSI;
-                    }
-                    // Remove all references to undefined services in all PID's.
-                    for (auto& it1 : _pids) {
-                        for (auto it2 = it1.second.services.begin(); it2 != it1.second.services.end(); ) {
-                            if (services.contains(*it2)) {
-                                it2++;
-                            }
-                            else {
-                                it2 = it1.second.services.erase(it2);
-                            }
-                        }
-                    }
+                    handlePAT(pat, pid);
                 }
                 else {
                     // [[1.3.a/U5]] PAT_error_2: A PAT table is syntactically incorrect.
@@ -288,14 +338,7 @@ void ts::TR101290Analyzer::handleTable(SectionDemux& demux, const BinaryTable& t
             if (pid == PID_CAT) {
                 const CAT cat(_duck, table);
                 if (cat.isValid()) {
-                    // Look for EMM PID to reference.
-                    for (const auto& desc : cat.descs) {
-                        // If the descriptor is not a CA_descriptor, isValid() will be false.
-                        const CADescriptor ca(_duck, desc);
-                        if (ca.isValid()) {
-                            _pids[ca.ca_pid].type = PIDClass::ECM;
-                        }
-                    }
+                    handleCAT(cat, pid);
                 }
                 else {
                     // [[2.6/U4]] CAT_error: A CAT table is syntactically incorrect.
@@ -307,24 +350,7 @@ void ts::TR101290Analyzer::handleTable(SectionDemux& demux, const BinaryTable& t
         case TID_PMT: {
             const PMT pmt(_duck, table);
             if (pmt.isValid()) {
-                // Type of the PMT PID.
-                _pids[pid].type = PIDClass::PSI;
-                // Declare the PCR PID as part of the service, in case it is not otherwise referenced (eg. not the video PID).
-                if (pmt.pcr_pid != PID_NULL) {
-                    auto& ctx(_pids[pmt.pcr_pid]);
-                    ctx.services.insert(pmt.service_id);
-                    if (ctx.type == PIDClass::UNDEFINED) {
-                        ctx.type = PIDClass::PCR_ONLY;
-                    }
-                }
-                // Declare all components of the service.
-                searchECMPIDs(pmt.descs, pmt.service_id);
-                for (const auto& it : pmt.streams) {
-                    auto& ctx(_pids[it.first]);
-                    ctx.type = it.second.getClass(_duck);
-                    ctx.services.insert(pmt.service_id);
-                    searchECMPIDs(it.second.descs, pmt.service_id);
-                }
+                handlePMT(pmt, pid);
             }
             else {
                 // [[1.5.a/U3]] PMT_error_2: A PMT table is syntactically incorrect.
@@ -335,6 +361,87 @@ void ts::TR101290Analyzer::handleTable(SectionDemux& demux, const BinaryTable& t
         default: {
             break;
         }
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Process a new PAT.
+//----------------------------------------------------------------------------
+
+void ts::TR101290Analyzer::handlePAT(const PAT& pat, PID pid)
+{
+    std::set<uint16_t> services;
+
+    // Declare all PMT PID's as part of their service.
+    // Also build a set of all service ids in the PAT.
+    for (const auto& it : pat.pmts) {
+        auto& ctx(_pids[it.second]);
+        services.insert(it.first);
+        ctx.services.insert(it.first);
+        ctx.type = PIDClass::PSI;
+        ctx.is_pmt = true;
+    }
+
+    // Remove all references to undefined services in all PID's.
+    for (auto& it1 : _pids) {
+        for (auto it2 = it1.second.services.begin(); it2 != it1.second.services.end(); ) {
+            if (services.contains(*it2)) {
+                it2++;
+            }
+            else {
+                it2 = it1.second.services.erase(it2);
+            }
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Process a new CAT.
+//----------------------------------------------------------------------------
+
+void ts::TR101290Analyzer::handleCAT(const CAT& cat, PID pid)
+{
+    // Look for EMM PID to reference.
+    for (const auto& desc : cat.descs) {
+        // If the descriptor is not a CA_descriptor, isValid() will be false.
+        const CADescriptor ca(_duck, desc);
+        if (ca.isValid()) {
+            _pids[ca.ca_pid].type = PIDClass::EMM;
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Process a new PMT.
+//----------------------------------------------------------------------------
+
+void ts::TR101290Analyzer::handlePMT(const PMT& pmt, PID pid)
+{
+    // Type of the PMT PID.
+    _pids[pid].type = PIDClass::PSI;
+    _pids[pid].is_pmt = true;
+
+    // Declare the PCR PID as part of the service, in case it is not otherwise referenced (eg. not the video PID).
+    if (pmt.pcr_pid != PID_NULL) {
+        auto& ctx(_pids[pmt.pcr_pid]);
+        ctx.services.insert(pmt.service_id);
+        if (ctx.type == PIDClass::UNDEFINED) {
+            ctx.type = PIDClass::PCR_ONLY;
+        }
+    }
+
+    // Declare all components of the service.
+    searchECMPIDs(pmt.descs, pmt.service_id);
+    for (const auto& it : pmt.streams) {
+        auto& ctx(_pids[it.first]);
+        ctx.type = it.second.getClass(_duck);
+        ctx.services.insert(pmt.service_id);
+        searchECMPIDs(it.second.descs, pmt.service_id);
+        // PID_error check currently applies to video and audio PID's only.
+        ctx.user_pid = ctx.user_pid || ctx.type == PIDClass::VIDEO || ctx.type == PIDClass::AUDIO;
     }
 }
 
@@ -379,18 +486,32 @@ void ts::TR101290Analyzer::handleSection(SectionDemux& demux, const Section& sec
         // [[3.7/1]] RST_error: Sections with table_id other than 0x71 or 0x72 found on PID 0x0013.
         _counters_flags.RST_error = true;
     }
+    else if (pid == PID_TDT && tid != TID_TDT && tid != TID_TOT && tid != TID_ST) {
+        // [[3.8/2]] TDT_error: Sections with table_id other than 0x70, 0x72 (ST) or 0x73 (TOT) found on PID 0x0014.
+        _counters_flags.TDT_error = true;
+    }
 
     switch (section.tableId()) {
         case TID_PAT: {
             auto& ctx(_xtids[section.xtid()]);
-            if (pid != PID_PAT || (ctx.last_pcr >= PCR::zero() && (_current_pcr - ctx.last_pcr) > _max_pat_interval)) {
+            if (pid != PID_PAT || (ctx.last_timestamp >= PCR::zero() && (_current_timestamp - ctx.last_timestamp) > _max_pat_interval)) {
                 // [[1.3.a/U4]] a PAT section is present on PID other than 0x0000.
                 // [[1.3.a/1]] PAT_error_2: Sections with table_id 0x00 do not occur at least every 0,5 s on PID 0x0000.
                 _counters_flags.PAT_error_2 = true;
             }
             if (pid == PID_PAT) {
-                ctx.last_pcr = _current_pcr;
+                ctx.last_timestamp = _current_timestamp;
             }
+            break;
+        }
+        case TID_PMT: {
+            auto& ctx(_xtids[section.xtid()]);
+            if (ctx.last_timestamp >= PCR::zero() && (_current_timestamp - ctx.last_timestamp) > _max_pmt_interval) {
+                // [[1.5/1]] PMT_error: Sections with table_id 0x02, (i.e. a PMT), do not occur at least every 0,5 s on the PID which is referred to in the PAT.
+                // [[1.5.a/1]] PMT_error_2: Sections with table_id 0x02, (i.e. a PMT), do not occur at least every 0,5 s on each program_map_PID which is referred to in the PAT.
+                _counters_flags.PMT_error = _counters_flags.PMT_error_2 = true;
+            }
+            ctx.last_timestamp = _current_timestamp;
             break;
         }
         case TID_CAT: {
@@ -402,13 +523,26 @@ void ts::TR101290Analyzer::handleSection(SectionDemux& demux, const Section& sec
         }
         case TID_RST: {
             auto& ctx(_xtids[section.xtid()]);
-            if (pid != PID_RST || (ctx.last_pcr >= PCR::zero() && (_current_pcr - ctx.last_pcr) < _min_rst_interval)) {
+            if (pid != PID_RST || (ctx.last_timestamp >= PCR::zero() && (_current_timestamp - ctx.last_timestamp) < _min_rst_interval)) {
                 // [[3.7/U3]] RST_error: A RST section is present on PID other than 0x0013.
                 // [[3.7/2]] RST_error: Any two sections with table_id = 0x71 (RST) occur on PID 0x0013 within a specified value (25 ms or lower).
                 _counters_flags.PAT_error_2 = true;
             }
             if (pid == PID_RST) {
-                ctx.last_pcr = _current_pcr;
+                ctx.last_timestamp = _current_timestamp;
+            }
+            break;
+        }
+        case TID_TDT: {
+            auto& ctx(_xtids[section.xtid()]);
+            if (pid != PID_TDT || (ctx.last_timestamp >= PCR::zero() && ((_current_timestamp - ctx.last_timestamp) < _min_tdt_interval || (_current_timestamp - ctx.last_timestamp) > _max_tdt_interval))) {
+                // [[3.8/U4]] TDT_error: A TDT section is present on PID other than 0x0014.
+                // [[3.8/3]] TDT_error: Any two sections with table_id = 0x70 (TDT) occur on PID 0x0014 within a specified value (25 ms or lower).
+                // [[3.8/1]] TDT_error: Sections with table_id = 0x70 (TDT) not present on PID 0x0014 for more than 30 s.
+                _counters_flags.TDT_error = true;
+            }
+            if (pid == PID_TDT) {
+                ctx.last_timestamp = _current_timestamp;
             }
             break;
         }
@@ -434,7 +568,7 @@ void ts::TR101290Analyzer::handleSection(SectionDemux& demux, const Section& sec
 void ts::TR101290Analyzer::handleInvalidSection(SectionDemux& demux, const DemuxedData& data, Section::Status status)
 {
     if (status == Section::INV_CRC32) {
-        const TID tid = data.size() < 1 ? TID_NULL : *data.content();
+        const TID tid = data.size() < 1 ? TID_NULL : TID(*data.content());
         static const std::set<TID> check_tids {
             TID_CAT, TID_PAT, TID_PMT, TID_NIT_ACT, TID_NIT_OTH,
             TID_EIT_PF_ACT, TID_EIT_PF_OTH,
@@ -476,7 +610,7 @@ void ts::TR101290Analyzer::getCounters(Counters& counters)
     counters = _counters;
 
     // Detection of errors which are based on time, for which we need the time of last packet.
-    if (_last_pcr >= PCR::zero()) {
+    if (_last_timestamp >= PCR::zero()) {
         // Unreferenced PID's are detected here. The error can be persistent over cycles
         // of getCountersRestart() and should not be reset.
         counters.Unreferenced_PID = 0;
@@ -486,8 +620,8 @@ void ts::TR101290Analyzer::getCounters(Counters& counters)
                 it.first < PID_NULL &&
                 it.second.type != PIDClass::EMM &&
                 it.second.services.empty() &&
-                it.second.first_pcr >= PCR::zero() &&
-                (_last_pcr - it.second.first_pcr) > _max_pid_reference_interval)
+                it.second.first_timestamp >= PCR::zero() &&
+                (_last_timestamp - it.second.first_timestamp) > _max_pid_reference_interval)
             {
                 // [[3.4]] Unreferenced_PID: PID (other than PAT, CAT, CAT_PIDs, PMT_PIDs, NIT_PID, SDT_PID, TDT_PID, EIT_PID, RST_PID, reserved_for_future_use PIDs, or PIDs user defined as private data streams) not referred to by a PMT within 0,5 s.
                 // [[3.4.a]] Unreferenced_PID: PID (other than PMT_PIDs, PIDs with numbers between 0x00 and 0x1F or PIDs user defined as private data streams) not referred to by a PMT or a CAT within 0,5 s.
@@ -501,9 +635,15 @@ void ts::TR101290Analyzer::getCounters(Counters& counters)
         // and we do not want to count the error twice.
         for (const auto& it : _xtids) {
             const TID tid = it.first.tid();
-            if (tid == TID_PAT && it.second.last_pcr >= PCR::zero() && (_last_pcr - it.second.last_pcr) > _max_pat_interval) {
+            if (tid == TID_PAT && it.second.last_timestamp >= PCR::zero() && (_last_timestamp - it.second.last_timestamp) > _max_pat_interval) {
                 // [[1.3.a/1]] PAT_error_2: Sections with table_id 0x00 do not occur at least every 0,5 s on PID 0x0000.
                 counters.PAT_error_2++;
+            }
+            if (tid == TID_PMT && it.second.last_timestamp >= PCR::zero() && (_last_timestamp - it.second.last_timestamp) > _max_pmt_interval) {
+                // [[1.5/1]] PMT_error: Sections with table_id 0x02, (i.e. a PMT), do not occur at least every 0,5 s on the PID which is referred to in the PAT.
+                // [[1.5.a/1]] PMT_error_2: Sections with table_id 0x02, (i.e. a PMT), do not occur at least every 0,5 s on each program_map_PID which is referred to in the PAT.
+                counters.PMT_error++;
+                counters.PMT_error_2++;
             }
         }
     }

@@ -15,7 +15,7 @@
 #include "tsInfluxArgs.h"
 #include "tsInfluxRequest.h"
 #include "tsSignalizationDemux.h"
-#include "tsPCRAnalyzer.h"
+#include "tsDurationAnalyzer.h"
 #include "tsMessageQueue.h"
 #include "tsThread.h"
 #include "tsTime.h"
@@ -45,6 +45,7 @@ namespace ts {
         bool        _log_services = false;
         bool        _log_names = false;
         bool        _pcr_based = false;
+        bool        _timestamp_based = false;
         bool        _use_local_time = false;
         Time        _start_time {};
         size_t      _queue_size = DEFAULT_QUEUE_SIZE;
@@ -66,11 +67,11 @@ namespace ts {
         Time                  _first_time {};            // UTC time of first packet.
         Time                  _due_time {};              // Next UTC time to report (without --pcr-based).
         Time                  _last_time {};             // UTC time of last report.
-        PCR                   _due_pcr {};               // Next PCR to report (with --pcr-based).
+        PCR                   _due_pcr {};               // Next PCR to report (with --pcr-based or --time-stamp based).
         PCR                   _last_pcr {};              // PCR of last report.
         size_t                _sent_metrics = 0;         // Number of sent metrics.
         SignalizationDemux    _demux {duck};             // Analyze the stream.
-        PCRAnalyzer           _pcr_analyzer {1, 1};      // Compute playout time based on PCR.
+        DurationAnalyzer      _ts_clock {*this};         // Compute playout time based on PCR.
         InfluxRequest         _request {*this};          // Web request to InfluxDB server.
         MessageQueue<UString> _metrics_queue {};         // Queue of metrics to send.
         PacketCounter         _ts_packets = 0;           // All TS packets in period.
@@ -148,10 +149,16 @@ ts::InfluxPlugin::InfluxPlugin(TSP* tsp_) :
          u"Use playout time based on PCR values. "
          u"By default, the time is based on the wall-clock time (real time).");
 
+    option(u"timestamp-based");
+    help(u"timestamp-based",
+         u"Use playout time based on timestamp values from the input plugin. "
+         u"When input timestamps are not available or not monotonic, fallback to --pcr-based. "
+         u"By default, the time is based on the wall-clock time (real time).");
+
     option(u"start-time", 0, STRING);
     help(u"start-time", u"year/month/day:hour:minute:second",
-         u"With --pcr-based, specify the initial date & time reference. "
-         u"By default, with --pcr-based, the activity starts at the first UTC time which is found in a DVB TDT or ATSC STT.");
+         u"With --pcr-based or --timestamp-based, specify the initial date & time reference. "
+         u"By default, with --pcr-based or --timestamp-based, the activity starts at the first UTC time which is found in a DVB TDT or ATSC STT.");
 
     option(u"max-metrics", 0, UNSIGNED);
     help(u"max-metrics", u"count",
@@ -161,7 +168,7 @@ ts::InfluxPlugin::InfluxPlugin(TSP* tsp_) :
     option(u"queue-size", 0, POSITIVE);
     help(u"queue-size", u"count",
          u"Maximum number of queued metrics between the plugin thread and the communication thread with InfluxDB. "
-         u"With --pcr-based, on off-line streams which are processed at high speed, increase this value if some metrics are lost. "
+         u"With --pcr-based or --timestamp-based, on off-line streams which are processed at high speed, increase this value if some metrics are lost. "
          u"The default queue size is " TS_USTRINGIFY(DEFAULT_QUEUE_SIZE) u" messages.");
 }
 
@@ -177,6 +184,7 @@ bool ts::InfluxPlugin::getOptions()
     _log_services = present(u"services");
     _log_names = present(u"names");
     _pcr_based = present(u"pcr-based");
+    _timestamp_based = present(u"timestamp-based");
     _use_local_time = present(u"local-time");
     getIntValue(_max_metrics, u"max-metrics", std::numeric_limits<size_t>::max());
     getIntValue(_queue_size, u"queue-size", DEFAULT_QUEUE_SIZE);
@@ -214,7 +222,8 @@ bool ts::InfluxPlugin::start()
     _due_pcr = _last_pcr = PCR::zero();
     _demux.reset();
     _demux.setHandler(this);
-    _pcr_analyzer.reset();
+    _ts_clock.reset();
+    _ts_clock.useInputTimestamps(_timestamp_based);
     _ts_packets = 0;
     _pids_packets.clear();
     _services.clear();
@@ -252,13 +261,13 @@ ts::ProcessorPlugin::Status ts::InfluxPlugin::processPacket(TSPacket& pkt, TSPac
 {
     // Start time is set on first packet.
     if (tsp->pluginPackets() == 0) {
-        if (!_pcr_based) {
+        if (!_pcr_based && !_timestamp_based) {
             // Use wall clock time as reference.
             _first_time = _last_time = Time::CurrentUTC();
             _due_time = _first_time + _log_interval;
         }
         else if (_start_time != Time::Epoch) {
-            // Use PCR time reference with a given start time.
+            // Use PCR or timestamp reference with a given start time.
             // Without a given start time, delay the reports until a UTC time is found in the stream.
             _first_time = _start_time;
             _due_pcr = cn::duration_cast<PCR>(_log_interval);
@@ -267,9 +276,9 @@ ts::ProcessorPlugin::Status ts::InfluxPlugin::processPacket(TSPacket& pkt, TSPac
 
     // Feed the various analyzers.
     _demux.feedPacket(pkt);
-    if (_pcr_based) {
+    if (_pcr_based || _timestamp_based) {
         // Compute PCR-based time instead of real-time.
-        _pcr_analyzer.feedPacket(pkt);
+        _ts_clock.feedPacket(pkt, pkt_data);
     }
 
     // Accumulate metrics.
@@ -290,10 +299,10 @@ ts::ProcessorPlugin::Status ts::InfluxPlugin::processPacket(TSPacket& pkt, TSPac
 
 void ts::InfluxPlugin::handleUTC(const Time& utc, TID tid)
 {
-    if (_pcr_based && _first_time == Time::Epoch) {
+    if ((_pcr_based || _timestamp_based) && _first_time == Time::Epoch) {
         // Use PCR time as reference and first TDT/TOT/STT as base.
         debug(u"first UTC time from stream: %s", utc);
-        _first_time = utc - _pcr_analyzer.duration();
+        _first_time = utc - _ts_clock.duration();
         _due_pcr = cn::duration_cast<PCR>(_log_interval);
     }
 }
@@ -334,8 +343,8 @@ void ts::InfluxPlugin::handleService(uint16_t ts_id, const Service& service, con
 void ts::InfluxPlugin::reportMetrics(bool force)
 {
     if (_sent_metrics < _max_metrics) {
-        if (_pcr_based) {
-            const PCR current = _pcr_analyzer.duration();
+        if (_pcr_based || _timestamp_based) {
+            const PCR current = _ts_clock.duration();
             if (force || (_due_pcr > PCR::zero() && current >= _due_pcr)) {
                 reportMetrics(_first_time + current, cn::duration_cast<cn::milliseconds>(current - _last_pcr));
                 _last_pcr = current;

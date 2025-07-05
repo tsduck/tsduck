@@ -43,6 +43,14 @@ namespace ts {
     TS_POP_WARNING()
 
     //!
+    //! Check if a ts::TimeSource value is a monotonic clock.
+    //! A monotonic clock always increases and never wraps up.
+    //! @param [in] source The time source to check.
+    //! @return True if @a source is a monotonic clock.
+    //!
+    TSDUCKDLL bool MonotonicTimeSource(TimeSource source);
+
+    //!
     //! Enumeration description of ts::TimeSource.
     //! @return A constant reference to the enumeration description.
     //!

@@ -12,7 +12,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsPluginRepository.h"
-#include "tsPCRAnalyzer.h"
+#include "tsDurationAnalyzer.h"
 #include "tsTime.h"
 
 
@@ -34,6 +34,7 @@ namespace ts {
         // Command line options:
         bool             _use_stuffing = false;
         bool             _pcr_based = false;
+        bool             _timestamp_based = false;
         PacketCounter    _skip_packets = 0;
         PacketCounter    _skip_unit_start = 0;
         PacketCounter    _skip_null_seq = 0;
@@ -41,12 +42,12 @@ namespace ts {
         PCR              _skip_pcr {};
 
         // Working data:
-        bool          _started = false;          // Condition is met, pass packets
-        PID           _previous_pid = PID_NULL;  // PID of previous packet
-        PacketCounter _unit_start_cnt = 0;       // Payload unit start counter
-        PacketCounter _null_seq_cnt = 0;         // Sequence of null packets counter
-        Time          _start_time {};            // Time of first packet reception
-        PCRAnalyzer   _pcr_analyzer {1, 1};      // Compute playout time based on PCR
+        bool             _started = false;          // Condition is met, pass packets
+        PID              _previous_pid = PID_NULL;  // PID of previous packet
+        PacketCounter    _unit_start_cnt = 0;       // Payload unit start counter
+        PacketCounter    _null_seq_cnt = 0;         // Sequence of null packets counter
+        Time             _start_time {};            // Time of first packet reception
+        DurationAnalyzer _ts_clock {*this};         // Compute playout time based on PCR
     };
 }
 
@@ -84,6 +85,12 @@ ts::SkipPlugin::SkipPlugin(TSP* tsp_) :
          u"With --seconds or --milli-seconds, use playout time based on PCR values. "
          u"By default, the time is based on the wall-clock time (real time).");
 
+    option(u"timestamp-based");
+    help(u"timestamp-based",
+         u"With --seconds or --milli-seconds, use playout time based on timestamp values from the input plugin. "
+         u"When input timestamps are not available or not monotonic, fallback to --pcr-based. "
+         u"By default, the time is based on the wall-clock time (real time).");
+
     option<cn::seconds>(u"seconds");
     help(u"seconds",
          u"Skip the specified number of leading seconds. "
@@ -107,6 +114,7 @@ bool ts::SkipPlugin::getOptions()
 {
     _use_stuffing = present(u"stuffing");
     _pcr_based = present(u"pcr-based");
+    _timestamp_based = present(u"timestamp-based");
     getIntValue(_skip_unit_start, u"unit-start-count");
     getIntValue(_skip_null_seq, u"null-sequence-count");
     getIntValue(_skip_packets, u"packets", intValue<PacketCounter>(u"", (intValue<PacketCounter>(u"bytes") + PKT_SIZE - 1) / PKT_SIZE));
@@ -130,7 +138,8 @@ bool ts::SkipPlugin::start()
     _unit_start_cnt = 0;
     _null_seq_cnt = 0;
     _previous_pid = PID_MAX; // Invalid value
-    _pcr_analyzer.reset();
+    _ts_clock.reset();
+    _ts_clock.useInputTimestamps(_timestamp_based);
     return true;
 }
 
@@ -145,8 +154,8 @@ ts::ProcessorPlugin::Status ts::SkipPlugin::processPacket(TSPacket& pkt, TSPacke
     if (!_started) {
 
         // Compute PCR-based time. Record time of first packet.
-        if (_pcr_based) {
-            _pcr_analyzer.feedPacket(pkt);
+        if (_pcr_based || _timestamp_based) {
+            _ts_clock.feedPacket(pkt, pkt_data);
         }
         else if (tsp->pluginPackets() == 0) {
             _start_time = Time::CurrentUTC();
@@ -166,8 +175,8 @@ ts::ProcessorPlugin::Status ts::SkipPlugin::processPacket(TSPacket& pkt, TSPacke
                    (_skip_unit_start > 0 && _unit_start_cnt >= _skip_unit_start);
 
         if (!_started && _skip_msec > cn::milliseconds::zero()) {
-            if (_pcr_based) {
-                _started = _pcr_analyzer.duration() >= _skip_pcr;
+            if (_pcr_based || _timestamp_based) {
+                _started = _ts_clock.duration() >= _skip_pcr;
             }
             else {
                 _started = Time::CurrentUTC() >= _start_time + _skip_msec;

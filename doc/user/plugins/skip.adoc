@@ -87,6 +87,14 @@ By default, this is wall-clock time (real time). See also option `--pcr-based`.
 Replace excluded leading packets with stuffing (null packets) instead of removing them.
 
 [.opt]
+*--timestamp-based*
+
+[.optdoc]
+With `--seconds` or `--milli-seconds`, use playout time based on timestamp values from the input plugin.
+When input timestamps are not available or not monotonic, fallback to `--pcr-based`.
+By default, the time is based on the wall-clock time (real time).
+
+[.opt]
 *-u* _value_ +
 *--unit-start-count* _value_
 

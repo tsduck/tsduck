@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.42-4342 (June 2025)
+VERSION 3.42-4359 (June 2025)
 
 [NEW] New commands and plugins:
 
@@ -13,11 +13,11 @@ VERSION 3.42-4342 (June 2025)
 
   * New options in existing commands and plugins:
     - Option --tag in plugins "history", "splicemonitor".
-    - Option --pcr-based in plugin "until".
+    - Option --pcr-based, --timestamp-based in plugin "until".
     - Options  --bytes,  --milli-seconds,   --null-sequence-count,   --packets,
-      --pcr-based, --seconds, --unit-start-count in plugin "skip". The previous
-      parameter is replaced  with  option  --packets  but  still  accepted  for
-      compatibility.
+      --pcr-based, --timestamp-based, --seconds, --unit-start-count  in  plugin
+      "skip". The previous parameter is  replaced  with  option  --packets  but
+      still accepted for compatibility.
     - Option --ffplay in output plugin "play".
     - Options --multiple and  --restart-delay  in  input  plugin  "srt".  These
       options already existed in the corresponding output plugin.

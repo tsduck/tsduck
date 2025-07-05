@@ -17,6 +17,11 @@
 #include "tsContinuityAnalyzer.h"
 
 namespace ts {
+
+    class PAT;
+    class CAT;
+    class PMT;
+
     //!
     //! A class which analyzes a transport stream according to ETSI TR 101 290.
     //! @ingroup libtsduck mpeg
@@ -95,45 +100,52 @@ namespace ts {
             size_t errorCount() const;
 
             // Section 5.2.1 - First priority: necessary for de-codability (basic monitoring)
-            size_t TS_sync_loss = 0;            //!< No 1.1 (mostly unreliable)
-            size_t Sync_byte_error = 0;         //!< No 1.2 (mostly unreliable)
+            size_t TS_sync_loss = 0;            //!< No 1.1 (maybe unreliable, depending on input plugin)
+            size_t Sync_byte_error = 0;         //!< No 1.2 (maybe unreliable, depending on input plugin)
             size_t PAT_error = 0;               //!< No 1.3
             size_t PAT_error_2 = 0;             //!< No 1.3.a
             size_t Continuity_count_error = 0;  //!< No 1.4
-            size_t PMT_error = 0;               //!< No 1.5 (TODO)
-            size_t PMT_error_2 = 0;             //!< No 1.5.a (TODO)
-            size_t PID_error = 0;               //!< No 1.6 (TODO)
+            size_t PMT_error = 0;               //!< No 1.5
+            size_t PMT_error_2 = 0;             //!< No 1.5.a
+            size_t PID_error = 0;               //!< No 1.6
 
             // Section 5.2.2 - Second priority: recommended for continuous or periodic monitoring
             size_t Transport_error = 0;         //!< No 2.1
             size_t CRC_error = 0;               //!< No 2.2
             size_t CRC_error_2 = 0;             //!< CRC error in all other cases than CRC_error.
             size_t PCR_error = 0;               //!< No 2.3 (TODO)
-            size_t PCR_repetition_error = 0;    //!< No 2.3a (TODO)
+            size_t PCR_repetition_error = 0;    //!< No 2.3.a (TODO)
             size_t PCR_discontinuity_indicator_error = 0; //!< No 2.3b (TODO)
             size_t PCR_accuracy_error = 0;      //!< No 2.4 (TODO)
-            size_t PTS_error = 0;               //!< No 2.5 (TODO)
+            size_t PTS_error = 0;               //!< No 2.5
             size_t CAT_error = 0;               //!< No 2.6
 
             // Section 5.2.3 - Third priority: application dependant monitoring
             size_t NIT_error = 0;               //!< No 3.1 (TODO)
-            size_t NIT_actual_error = 0;        //!< No 3.1a (TODO)
-            size_t NIT_other_error = 0;         //!< No 3.1b (TODO)
+            size_t NIT_actual_error = 0;        //!< No 3.1.a (TODO)
+            size_t NIT_other_error = 0;         //!< No 3.1.b (TODO)
             size_t SI_repetition_error = 0;     //!< No 3.2 (TODO)
             size_t Buffer_error = 0;            //!< No 3.3 (unimplemented)
-            size_t Unreferenced_PID = 0;        //!< No 3.4 (TODO)
+            size_t Unreferenced_PID = 0;        //!< No 3.4
             size_t SDT_error = 0;               //!< No 3.5 (TODO)
-            size_t SDT_actual_error = 0;        //!< No 3.5a (TODO)
-            size_t SDT_other_error = 0;         //!< No 3.5b (TODO)
+            size_t SDT_actual_error = 0;        //!< No 3.5.a (TODO)
+            size_t SDT_other_error = 0;         //!< No 3.5.b (TODO)
             size_t EIT_error = 0;               //!< No 3.6 (TODO)
-            size_t EIT_actual_error = 0;        //!< No 3.6a (TODO)
-            size_t EIT_other_error = 0;         //!< No 3.6b (TODO)
-            size_t EIT_PF_error = 0;            //!< No 3.6c (TODO)
+            size_t EIT_actual_error = 0;        //!< No 3.6.a (TODO)
+            size_t EIT_other_error = 0;         //!< No 3.6.b (TODO)
+            size_t EIT_PF_error = 0;            //!< No 3.6.c (TODO)
             size_t RST_error = 0;               //!< No 3.7
-            size_t TDT_error = 0;               //!< No 3.8 (TODO)
+            size_t TDT_error = 0;               //!< No 3.8
             size_t Empty_buffer_error = 0;      //!< No 3.9 (unimplemented)
             size_t Data_delay_error = 0;        //!< No 3.10 (unimplemented)
         };
+
+        //!
+        //! Get a list of lowercase names for all counters in a Counters instance.
+        //! These names are suitable to report to some logging or monitoring system.
+        //! @return A constant reference to a set of associations between pointer to Counters and names.
+        //!
+        static const std::vector<std::pair<size_t Counters::*, UString>>& CounterNames();
 
         //!
         //! Get the error counters since start or the last getCountersRestart().
@@ -150,14 +162,34 @@ namespace ts {
         void getCountersRestart(Counters& counters);
 
         //!
-        //! Maximum interval between two PAT's.
+        //! Maximum interval between two PAT.
         //!
         static constexpr cn::milliseconds MAX_PAT_INTERVAL = cn::milliseconds(500);
 
         //!
-        //! Minimum interval between two RST's.
+        //! Maximum interval between two PMT.
+        //!
+        static constexpr cn::milliseconds MAX_PMT_INTERVAL = cn::milliseconds(500);
+
+        //!
+        //! Minimum interval between two RST.
         //!
         static constexpr cn::milliseconds MIN_RST_INTERVAL = cn::milliseconds(25);
+
+        //!
+        //! Minimum interval between two TDT.
+        //!
+        static constexpr cn::milliseconds MIN_TDT_INTERVAL = cn::milliseconds(25);
+
+        //!
+        //! Maximum interval between two TDT.
+        //!
+        static constexpr cn::seconds MAX_TDT_INTERVAL = cn::seconds(30);
+
+        //!
+        //! Maximum interval between two PTS in the same PID.
+        //!
+        static constexpr cn::milliseconds MAX_PTS_INTERVAL = cn::milliseconds(700);
 
         //!
         //! Maximum interval between the first packet of a PID and the time it is referenced.
@@ -166,6 +198,19 @@ namespace ts {
         //! find the reference (in the PMT) within that interval.
         //!
         static constexpr cn::milliseconds MAX_PID_REFERENCE_INTERVAL = cn::milliseconds(500);
+
+        //!
+        //! Default maximum packet interval in "user PID's" as defined by PID_error.
+        //!
+        static constexpr cn::seconds DEFAULT_MAX_PID_INTERVAL = cn::seconds(5);
+
+        //!
+        //! Set the maximum packet interval in "user PID's" before declaring PID_error.
+        //! This value currently applies to video and audio PID's only.
+        //! @param [in] interval The maximum interval as a duration value.
+        //!
+        template <class Rep, class Period>
+        void setMaxPIDInterval(cn::duration<Rep, Period> interval) { _max_pid_interval = cn::duration_cast<PCR>(interval); }
 
         //!
         //! Default number of consecutive invalid TS sync bytes before declaring TS sync loss.
@@ -195,10 +240,13 @@ namespace ts {
             bool PAT_error_2 = false;
             bool PMT_error = false;
             bool PMT_error_2 = false;
+            bool PID_error = false;
+            bool PTS_error = false;
             bool CAT_error = false;
             bool CRC_error = false;
             bool CRC_error_2 = false;
             bool RST_error = false;
+            bool TDT_error = false;
         };
 
         // One such structure is maintained per PID.
@@ -206,10 +254,15 @@ namespace ts {
         {
         public:
             PIDContext() = default;
-            PIDClass type = PIDClass::UNDEFINED;  // Type of data in that PID.
-            PCR      first_pcr = PCR(-1);         // Timestamp of first packet in that PID.
-            PCR      last_pcr = PCR(-1);          // Timestamp of last packet in that PID.
-            std::set<uint16_t> services {};       // Set of services which reference that PID.
+            bool     is_pmt = false;                // This PID contains a PMT.
+            bool     user_pid = false;              // This PID is subject to PID_error check.
+            PIDClass type = PIDClass::UNDEFINED;    // Type of data in that PID.
+            PCR      first_timestamp = PCR(-1);     // Timestamp of first packet in that PID.
+            PCR      last_timestamp = PCR(-1);      // Timestamp of last packet in that PID.
+            PCR      last_pts_timestamp = PCR(-1);  // Timestamp of last packet with a PTS in that PID.
+            PCR      last_pcr_timestamp = PCR(-1);  // Timestamp of last packet with a PCR in that PID.
+            uint64_t last_pcr_value = INVALID_PCR;  // Last PCR value in that PID.
+            std::set<uint16_t> services {};         // Set of services which reference that PID.
         };
 
         // One such structure is maintained per TID/TIDext (XTID).
@@ -217,7 +270,7 @@ namespace ts {
         {
         public:
             XTIDContext() = default;
-            PCR last_pcr = PCR(-1);  // Timestamp of last packet of a section with that XTID.
+            PCR last_timestamp = PCR(-1);  // Timestamp of last packet of a section with that XTID.
         };
 
         // TR101290Analyzer private data.
@@ -226,10 +279,15 @@ namespace ts {
         size_t             _bad_sync_count = 0;     // Last consecutive corrupted sync bytes.
         size_t             _bad_sync_max = DEFAULT_TS_SYNC_LOST;
         PCR                _max_pat_interval = cn::duration_cast<PCR>(MAX_PAT_INTERVAL);
+        PCR                _max_pmt_interval = cn::duration_cast<PCR>(MAX_PMT_INTERVAL);
         PCR                _min_rst_interval = cn::duration_cast<PCR>(MIN_RST_INTERVAL);
+        PCR                _min_tdt_interval = cn::duration_cast<PCR>(MIN_TDT_INTERVAL);
+        PCR                _max_tdt_interval = cn::duration_cast<PCR>(MAX_TDT_INTERVAL);
+        PCR                _max_pts_interval = cn::duration_cast<PCR>(MAX_PTS_INTERVAL);
         PCR                _max_pid_reference_interval = cn::duration_cast<PCR>(MAX_PID_REFERENCE_INTERVAL);
-        PCR                _last_pcr = PCR(-1);     // PCR of last packet, negative means none.
-        PCR                _current_pcr = PCR(-1);  // PCR of current packet, negative means none.
+        PCR                _max_pid_interval = cn::duration_cast<PCR>(DEFAULT_MAX_PID_INTERVAL);
+        PCR                _last_timestamp = PCR(-1);     // Timestamp of last packet, negative means none.
+        PCR                _current_timestamp = PCR(-1);  // Timestamp of current packet, negative means none.
         Counters           _counters {};
         CounterFlags       _counters_flags {};
         SectionDemux       _demux {_duck, this, this};
@@ -241,6 +299,11 @@ namespace ts {
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;
         virtual void handleSection(SectionDemux&, const Section&) override;
         virtual void handleInvalidSection(SectionDemux&, const DemuxedData&, Section::Status) override;
+
+        // Table processing.
+        void handlePAT(const PAT&, PID);
+        void handleCAT(const CAT&, PID);
+        void handlePMT(const PMT&, PID);
 
         // Declare ECM PID's in a descriptor list as part of a service.
         void searchECMPIDs(const DescriptorList& descs, uint16_t service_id);

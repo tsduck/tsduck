@@ -55,18 +55,24 @@ By default, timestamps are transmitted as UTC time.
 
 [.optdoc]
 Use playout time based on PCR values.
-
-[.optdoc]
 By default, the time is based on the wall-clock time (real time).
 
 [.opt]
 *--start-time* _year/month/day:hour:minute:second_
 
 [.optdoc]
-With `--pcr-based`, specify the initial date and time reference.
+With `--pcr-based` or `--timestamp-based`, specify the initial date and time reference.
 
 [.optdoc]
-By default, with `--pcr-based`, the activity starts at the first UTC time which is found in a DVB TDT or ATSC STT.
+By default, with `--pcr-based` or `--timestamp-based`, the activity starts at the first UTC time which is found in a DVB TDT or ATSC STT.
+
+[.opt]
+*--timestamp-based*
+
+[.optdoc]
+Use playout time based on timestamp values from the input plugin.
+When input timestamps are not available or not monotonic, fallback to `--pcr-based`.
+By default, the time is based on the wall-clock time (real time).
 
 [.usage]
 Monitored information options
@@ -142,7 +148,7 @@ When the queue becomes full, additional metrics are dropped.
 
 [.optdoc]
 On real-time streams, where metrics data are sent every few seconds, there is never more than one message in that queue.
-However, with `--pcr-based`, on off-line streams which are processed at high speed (files for instance),
+However, with `--pcr-based` or `--timestamp-based`, on off-line streams which are processed at high speed (files for instance),
 the metrics may be generated faster than they can be sent and the queue may grow.
 Increase the queue size if some metrics are lost.
 
