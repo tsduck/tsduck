@@ -300,124 +300,124 @@ The descriptions of the rule are directly copied from <<ETSI-101-290>>.
 
 |X
 |1.1
-|TS_sync_loss
+|ts_sync_loss
 |Loss of synchronization with consideration of hysteresis parameters.
 
 |X
 |1.2
-|Sync_byte_error
+|sync_byte_error
 |Sync_byte not equal 0x47.
 
 |X
 |1.3/1
-|PAT_error
+|pat_error
 |PID 0x0000 does not occur at least every 0,5 s.
 
 |X
 |1.3/2
-|PAT_error
+|pat_error
 |a PID 0x0000 does not contain a table_id 0x00 (i.e. a PAT).
 
 |X
 |1.3/3
-|PAT_error
+|pat_error
 |Scrambling_control_field is not 00 for PID 0x0000
 
 |X
 |1.3.a/1
-|PAT_error_2
+|pat_error_2
 |Sections with table_id 0x00 do not occur at least every 0,5 s on PID 0x0000.
 
 |X
 |1.3.a/2
-|PAT_error_2
+|pat_error_2
 |Section with table_id other than 0x00 found on PID 0x0000.
 
 |X
 |1.3.a/3
-|PAT_error_2
+|pat_error_2
 |Scrambling_control_field is not 00 for PID 0x0000.
 
 |X
 |1.3.a/4U
-|PAT_error_2
+|pat_error_2
 |A PAT section is present on PID other than 0x0000.
 
 |X
 |1.3.a/5U
-|PAT_error_2
+|pat_error_2
 |A PAT table is syntactically incorrect.
 
 |X
 |1.4
-|Continuity_count_error
+|continuity_count_error
 |Incorrect packet order, a packet occurs more than twice, lost packet.
 
 |X
 |1.5/1
-|PMT_error
+|pmt_error
 |Sections with table_id 0x02, (i.e. a PMT), do not occur at least every 0,5 s on the PID which is referred to in the PAT.
 
 |X
 |1.5/2
-|PMT_error
+|pmt_error
 |Scrambling_control_field is not 00 for all PIDs containing sections with table_id 0x02 (i.e. a PMT).
 
 |X
 |1.5.a/1
-|PMT_error_2
+|pmt_error_2
 |Sections with table_id 0x02, (i.e. a PMT), do not occur at least every 0,5 s
  on each program_map_PID which is referred to in the PAT.
 
 |X
 |1.5.a/2
-|PMT_error_2
+|pmt_error_2
 |Scrambling_control_field is not 00 for all packets containing information of sections with
  table_id 0x02 (i.e. a PMT) on each program_map_PID which is referred to in the PAT.
 
 |X
 |1.5.a/3U
-|PMT_error_2
+|pmt_error_2
 |A PMT table is syntactically incorrect.
 
 |X
 |1.6
-|PID_error
+|pid_error
 |Referred PID does not occur for a user specified period.
 
 |X
 |2.1
-|Transport_error
+|transport_error
 |Transport_error_indicator in the TS-Header is set to "1".
 
 |X
 |2.2/1
-|CRC_error
+|crc_error
 |CRC error occurred in CAT, PAT, PMT, NIT, EIT, BAT, SDT or TOT table.
 
 |X
 |2.2/2U
-|CRC_error_2
+|crc_error_2
 |CRC error occurred in other table id than specified in CRC_error.
 
 |X
 |2.3/1
-|PCR_error
+|pcr_error
 |PCR discontinuity of more than 100 ms occurring without specific indication.
 
 |X
 |2.3/2
-|PCR_error
+|pcr_error
 |Time interval between two consecutive PCR values more than 100 ms.
 
 |X
 |2.3.a
-|PCR_repetition_error
+|pcr_repetition_error
 |Time interval between two consecutive PCR values more than 100 ms.
 
 |X
 |2.3.b
-|PCR_discontinuity_indicator_error
+|pcr_discontinuity_indicator_error
 |The difference between two consecutive PCR values (PCRi+1 – PCRi) is outside the range
  of 0...100 ms without the discontinuity_indicator set.
 
@@ -438,37 +438,37 @@ The descriptions of the rule are directly copied from <<ETSI-101-290>>.
 
 |X
 |2.6/2
-|CAT_error
+|cat_error
 |Section with table_id other than 0x01 (i.e. not a CAT) found on PID 0x0001.
 
 |X
 |2.6/3U
-|CAT_error
+|cat_error
 |A CAT section is present on PID other than 0x0001.
 
 |X
 |2.6/4U
-|CAT_error
+|cat_error
 |A CAT table is syntactically incorrect.
 
 |X
 |3.1/1
-|NIT_error
+|nit_error
 |Section with table_id other than 0x40 or 0x41 or 0x72 (i. e. not an NIT or ST) found on PID 0x0010.
 
 |X
 |3.1/2
-|NIT_error
+|nit_error
 |No section with table_id 0x40 or 0x41 (i.e. an NIT) in PID value 0x0010 for more than 10 s.
 
 |X
 |3.1.a/1
-|NIT_actual_error
+|nit_actual_error
 |Section with table_id other than 0x40 or 0x41 or 0x72 (i.e. not an NIT or ST) found on PID 0x0010.
 
 |X
 |3.1.a/2
-|NIT_actual_error
+|nit_actual_error
 |No section with table_id 0x40 (i.e. an NIT_actual) in PID value 0x0010 for more than 10 s.
 
 |X
@@ -478,221 +478,221 @@ The descriptions of the rule are directly copied from <<ETSI-101-290>>.
 
 |X
 |3.1.a/4U
-|NIT_actual_error
+|nit_actual_error
 |A NIT_actual section is present on PID other than 0x0010.
 
 |X
 |3.1.b/1
-|NIT_other_error
+|nit_other_error
 |Interval between sections with the same section_number and table_id = 0x41 (NIT_other)
  on PID 0x0010 longer than a specified value (10 s or higher).
 
 |X
 |3.1.b/2U
-|NIT_other_error
+|nit_other_error
 |A NIT_other section is present on PID other than 0x0010.
 
 |X
 |3.2/1
-|SI_repetition_error
+|si_repetition_error
 |Repetition rate of SI tables outside of specified limits.
 
 |X
 |3.2/2U
-|SI_PID_error
+|si_pid_error
 |A SI sections is present on PID other than its allocated PID.
 
 |-
 |3.3/1
-|Buffer_error
+|buffer_error
 |TB_buffering_error: overflow of transport buffer (TBn).
 
 |-
 |3.3/2
-|Buffer_error
+|buffer_error
 |TBsys_buffering_error: overflow of transport buffer for system information (Tbsys).
 
 |-
 |3.3/3
-|Buffer_error
+|buffer_error
 |MB_buffering_error: overflow of multiplexing buffer (MBn) or if the vbv_delay method is used: underflow of multiplexing buffer (Mbn).
 
 |-
 |3.3/4
-|Buffer_error
+|buffer_error
 |EB_buffering_error: overflow of elementary stream buffer (EBn) or if the leak method is used:
  underflow of elementary stream buffer (EBn) though low_delay_flag and DSM_trick_mode_flag are
  set to 0 else (vbv_delay method) underflow of elementary stream buffer (EBn).
 
 |-
 |3.3/5
-|Buffer_error
+|buffer_error
 |B_buffering_error: overflow or underflow of main buffer (Bn).
 
 |-
 |3.3/6
-|Buffer_error
-|Bsys_buffering_error: overflow of PSI input buffer (Bsys).
+|buffer_error
+|bsys_buffering_error: overflow of PSI input buffer (Bsys).
 
 |X
 |3.4
-|Unreferenced_PID
+|unreferenced_pid
 |PID (other than PAT, CAT, CAT_PIDs, PMT_PIDs, NIT_PID, SDT_PID, TDT_PID, EIT_PID, RST_PID,
  reserved_for_future_use PIDs, or PIDs user defined as private data streams) not referred to
  by a PMT within 0,5 s.
 
 |X
 |3.4.a
-|Unreferenced_PID
+|unreferenced_pid
 |PID (other than PMT_PIDs, PIDs with numbers between 0x00 and 0x1F or PIDs user defined as private data streams)
  not referred to by a PMT or a CAT within 0,5 s.
 
 |X
 |3.5/1
-|SDT_error
+|sdt_error
 |Sections with table_id = 0x42 (SDT, actual TS) not present on PID 0x0011 for more than 2 s.
 
 |X
 |3.5/2
-|SDT_error
+|sdt_error
 |Sections with table_ids other than 0x42, 0x46, 0x4A or 0x72 found on PID 0x0011.
 
 |X
 |3.5.a/1
-|SDT_actual_error
+|sdt_actual_error
 |Sections with table_id = 0x42 (SDT, actual TS) not present on PID 0x0011 for more than 2 s.
 
 |X
 |3.5.a/2
-|SDT_actual_error
+|sdt_actual_error
 |Sections with table_ids other than 0x42, 0x46, 0x4A or 0x72 found on PID 0x0011.
 
 |X
 |3.5.a/3
-|SDT_actual_error
+|sdt_actual_error
 |Any two sections  table_id = 0x42 (SDT_actual) occur on PID 0x0011 within a specified value (25 ms or lower).
 
 |X
 |3.5.a/4U
-|SDT_actual_error
+|sdt_actual_error
 |A SDT_actual section is present on PID other than 0x0011.
 
 |X
 |3.5.b/1
-|SDT_other_error
+|sdt_other_error
 |Interval between sections with the same section_number and table_id = 0x46 (SDT, other TS)
  on PID 0x0011 longer than a specified value (10s or higher).
 
 |X
 |3.5.b/2U
-|SDT_other_error
+|sdt_other_error
 |A SDT_other section is present on PID other than 0x0011.
 
 |X
 |3.6/1
-|EIT_error
+|eit_error
 |Sections with table_id = 0x4E (EIT-P/F, actual TS) not present on PID 0x0012 for more than 2 s.
 
 |X
 |3.6/2
-|EIT_error
+|eit_error
 |Sections with table_ids other than in the range 0x4E - 0x6F or 0x72 found on PID 0x0012.
 
 |X
 |3.6/3U
-|EIT_error
+|eit_error
 |An EIT section is present on PID other than 0x0012.
 
 |X
 |3.6.a/1
-|EIT_actual_error
+|eit_actual_error
 |Section '0' with table_id = 0x4E (EIT-P, actual TS) not present on PID 0x0012 for more than 2 s.
 
 |X
 |3.6.a/2
-|EIT_actual_error
+|eit_actual_error
 |Section '1' with table_id = 0x4E (EIT-F, actual TS) not present on PID 0x0012 for more than 2 s.
 
 |X
 |3.6.a/3
-|EIT_actual_error
+|eit_actual_error
 |Sections with table_ids other than in the range 0x4E - 0x6F or 0x72 found on PID 0x0012.
 
 |X
 |3.6.a/4
-|EIT_actual_error
+|eit_actual_error
 |Any two sections with table_id = 0x4E (EIT-P/F, actual TS) occur on PID 0x0012 within a specified value (25 ms or lower).
 
 |X
 |3.6.b/1
-|EIT_other_error
+|eit_other_error
 |Interval between sections '0' with table_id = 0x4F (EIT-P, other TS) on PID 0x0012 longer than a specified value (10 s or higher).
 
 |X
 |3.6.b/2
-|EIT_other_error
+|eit_other_error
 |Interval between sections '1' with table_id = 0x4F (EIT-F, other TS) on PID 0x0012 longer than a specified value (10 s or higher).
 
 |X
 |3.6.c/1
-|EIT_PF_error
+|eit_pf_error
 |If either section ('0' or '1') of each EIT P/F sub table is present both should exist.
 
 |X
 |3.6.c/2U
-|EIT_PF_error
+|eit_pf_error
 |An EIT P/F section has section number greater that 1.
 
 |X
 |3.7/1
-|RST_error
+|rst_error
 |Sections with table_id other than 0x71 or 0x72 found on PID 0x0013.
 
 |X
 |3.7/2
-|RST_error
+|rst_error
 |Any two sections with table_id = 0x71 (RST) occur on PID 0x0013 within a specified value (25 ms or lower).
 
 |X
 |3.7/3U
-|RST_error
+|rst_error
 |A RST section is present on PID other than 0x0013.
 
 |X
 |3.8/1
-|TDT_error
+|tdt_error
 |Sections with table_id = 0x70 (TDT) not present on PID 0x0014 for more than 30 s.
 
 |X
 |3.8/2
-|TDT_error
+|tdt_error
 |Sections with table_id other than 0x70, 0x72 (ST) or 0x73 (TOT) found on PID 0x0014.
 
 |X
 |3.8/3
-|TDT_error
+|tdt_error
 |Any two sections with table_id = 0x70 (TDT) occur on PID 0x0014 within a specified value (25 ms or lower).
 
 |X
 |3.8/4U
-|TDT_error
+|tdt_error
 |A TDT section is present on PID other than 0x0014.
 
 |-
 |3.9
-|Empty_buffer_error
+|empty_buffer_error
 |Transport buffer (TBn) not empty at least once per second or transport buffer for system information
  (TBsys) not empty at least once per second or if the leak method is used multiplexing buffer (MBn)
  not empty at least once per second.
 
 |-
 |3.10/1
-|Data_delay_error
+|data_delay_error
 |Delay of data (except still picture video data) through the TSTD buffers superior to 1 second.
 
 |-
 |3.10/2
-|Data_delay_error
+|data_delay_error
 |Delay of still picture video data through the TSTD buffers superior to 60 s.
 
 |X
