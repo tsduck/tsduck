@@ -51,9 +51,9 @@ namespace ts {
             Transport_error,         //!< No 2.1
             CRC_error,               //!< No 2.2
             CRC_error_2,             //!< CRC error in all other cases than CRC_error.
-            PCR_error,               //!< No 2.3 (TODO)
-            PCR_repetition_error,    //!< No 2.3.a (TODO)
-            PCR_discontinuity_indicator_error, //!< No 2.3b (TODO)
+            PCR_error,               //!< No 2.3
+            PCR_repetition_error,    //!< No 2.3.a
+            PCR_discontinuity_indicator_error, //!< No 2.3b
             PCR_accuracy_error,      //!< No 2.4 (TODO)
             PTS_error,               //!< No 2.5
             CAT_error,               //!< No 2.6
@@ -62,7 +62,8 @@ namespace ts {
             NIT_error,               //!< No 3.1
             NIT_actual_error,        //!< No 3.1.a
             NIT_other_error,         //!< No 3.1.b
-            SI_repetition_error,     //!< No 3.2 (TODO)
+            SI_repetition_error,     //!< No 3.2
+            SI_PID_error,            //!< No 3.2/2U (added)
             Buffer_error,            //!< No 3.3 (unimplemented)
             Unreferenced_PID,        //!< No 3.4
             SDT_error,               //!< No 3.5
@@ -190,6 +191,10 @@ namespace ts {
         //!
         constexpr cn::seconds MAX_SDT_OTHER_INTERVAL = cn::seconds(10);
         //!
+        //! Maximum interval between two BAT.
+        //!
+        constexpr cn::seconds MAX_BAT_INTERVAL = cn::seconds(10);
+        //!
         //! Minimum interval between two EIT p/f Actual.
         //!
         constexpr cn::milliseconds MIN_EIT_PF_ACTUAL_INTERVAL = cn::milliseconds(25);
@@ -209,6 +214,10 @@ namespace ts {
         //! Maximum interval between two TDT.
         //!
         constexpr cn::seconds MAX_TDT_INTERVAL = cn::seconds(30);
+        //!
+        //! Maximum interval between two TDT.
+        //!
+        constexpr cn::seconds MAX_TOT_INTERVAL = cn::seconds(30);
         //!
         //! Maximum interval between two PTS in the same PID.
         //!

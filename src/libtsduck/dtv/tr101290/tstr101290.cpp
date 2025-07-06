@@ -50,6 +50,7 @@ const std::array<ts::tr101290::CounterDescription, ts::tr101290::COUNTER_COUNT>&
         {3, u"NIT_actual_error"},
         {3, u"NIT_other_error"},
         {3, u"SI_repetition_error"},
+        {3, u"SI_PID_error"},
         {3, u"Buffer_error"},
         {3, u"Unreferenced_PID"},
         {3, u"SDT_error"},
@@ -66,9 +67,11 @@ const std::array<ts::tr101290::CounterDescription, ts::tr101290::COUNTER_COUNT>&
 
         {4, u"packet_count"},
     };
+
     // Verify that all members are initialized.
     // The right order cannot be enforced, just take care when adding new values...
     assert(data[data.size()-1].severity == INFO_SEVERITY);
+
     return data;
 }
 
@@ -80,23 +83,39 @@ const std::array<ts::tr101290::CounterDescription, ts::tr101290::COUNTER_COUNT>&
 size_t ts::tr101290::Counters::errorCount() const
 {
     // Warning: carefully select the relevant counters because an error can be included in several counters.
-    return (*this)[Sync_byte_error] +
+    // The result won't be precisely exact, but still better than the sum of all of them.
+    return
+        // (*this)[TS_sync_loss] +
+           (*this)[Sync_byte_error] +
+        // (*this)[PAT_error] +
            (*this)[PAT_error_2] +
            (*this)[Continuity_count_error] +
+        // (*this)[PMT_error] +
            (*this)[PMT_error_2] +
            (*this)[PID_error] +
            (*this)[Transport_error] +
            (*this)[CRC_error] +
            (*this)[CRC_error_2] +
-           (*this)[PCR_error] +
+        // (*this)[PCR_error] +
+           (*this)[PCR_repetition_error] +
+           (*this)[PCR_discontinuity_indicator_error] +
+           (*this)[PCR_accuracy_error] +
            (*this)[PTS_error] +
            (*this)[CAT_error] +
-           (*this)[NIT_error] +
+        // (*this)[NIT_error] +
+           (*this)[NIT_actual_error] +
+           (*this)[NIT_other_error] +
            (*this)[SI_repetition_error] +
+           (*this)[SI_PID_error] +
            (*this)[Buffer_error] +
            (*this)[Unreferenced_PID] +
-           (*this)[SDT_error] +
-           (*this)[EIT_error] +
+        // (*this)[SDT_error] +
+           (*this)[SDT_actual_error] +
+           (*this)[SDT_other_error] +
+        // (*this)[EIT_error] +
+           (*this)[EIT_actual_error] +
+           (*this)[EIT_other_error] +
+           (*this)[EIT_PF_error] +
            (*this)[RST_error] +
            (*this)[TDT_error] +
            (*this)[Empty_buffer_error] +

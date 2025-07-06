@@ -13,6 +13,7 @@
 
 #pragma once
 #include "tstr101290.h"
+#include "tstr101290ErrorHandlerInterface.h"
 #include "tsTSPacket.h"
 #include "tsSectionDemux.h"
 #include "tsContinuityAnalyzer.h"
@@ -56,13 +57,20 @@ namespace ts::tr101290 {
         //!
         //! Constructor.
         //! @param [in,out] duck TSDuck execution context. The reference is kept inside this instance.
+        //! @param [in] handler Optional error handler.
         //!
-        explicit Analyzer(DuckContext& duck);
+        explicit Analyzer(DuckContext& duck, ErrorHandlerInterface* handler = nullptr);
 
         //!
         //! Reset the analyzer.
         //!
         void reset();
+
+        //!
+        //! Set a new error handler.
+        //! @param [in] handler New error handler. Can be null (no handler).
+        //!
+        void setErrorHandler(ErrorHandlerInterface* handler) { _error_handler = handler; }
 
         //!
         //! The following method feeds the analyzer with a TS packet.
@@ -140,16 +148,17 @@ namespace ts::tr101290 {
         };
 
         // Analyzer private data.
-        DuckContext&       _duck;
-        size_t             _bad_sync_max = DEFAULT_TS_SYNC_LOST;
-        size_t             _bad_sync_count = 0;           // Last consecutive corrupted sync bytes.
-        PCR                _last_timestamp = PCR(-1);     // Timestamp of last packet, negative means none.
-        PCR                _current_timestamp = PCR(-1);  // Timestamp of current packet, negative means none.
-        PCR                _last_nit_timestamp = PCR(-1); // Timestamp of last NIT section in NIT PID, regardless of network_id.
-        Counters           _counters {};
-        CounterFlags       _counters_flags {};
-        SectionDemux       _demux {_duck, this, this};
-        ContinuityAnalyzer _continuity {AllPIDs()};
+        DuckContext&           _duck;
+        ErrorHandlerInterface* _error_handler = nullptr;
+        size_t                 _bad_sync_max = DEFAULT_TS_SYNC_LOST;
+        size_t                 _bad_sync_count = 0;           // Last consecutive corrupted sync bytes.
+        PCR                    _last_timestamp = PCR(-1);     // Timestamp of last packet, negative means none.
+        PCR                    _current_timestamp = PCR(-1);  // Timestamp of current packet, negative means none.
+        PCR                    _last_nit_timestamp = PCR(-1); // Timestamp of last NIT section in NIT PID, regardless of network_id.
+        Counters               _counters {};
+        CounterFlags           _counters_flags {};
+        SectionDemux           _demux {_duck, this, this};
+        ContinuityAnalyzer     _continuity {AllPIDs()};
         std::map<PID,PIDContext>   _pids {};
         std::map<XTID,XTIDContext> _xtids {};
 
@@ -164,11 +173,13 @@ namespace ts::tr101290 {
         PCR _min_sdt_actual_interval    = cn::duration_cast<PCR>(MIN_SDT_ACTUAL_INTERVAL);
         PCR _max_sdt_actual_interval    = cn::duration_cast<PCR>(MAX_SDT_ACTUAL_INTERVAL);
         PCR _max_sdt_other_interval     = cn::duration_cast<PCR>(MAX_SDT_OTHER_INTERVAL);
+        PCR _max_bat_interval           = cn::duration_cast<PCR>(MAX_BAT_INTERVAL);
         PCR _min_eitpf_actual_interval  = cn::duration_cast<PCR>(MIN_EIT_PF_ACTUAL_INTERVAL);
         PCR _max_eitpf_actual_interval  = cn::duration_cast<PCR>(MAX_EIT_PF_ACTUAL_INTERVAL);
         PCR _max_eitpf_other_interval   = cn::duration_cast<PCR>(MAX_EIT_PF_OTHER_INTERVAL);
         PCR _min_tdt_interval           = cn::duration_cast<PCR>(MIN_TDT_INTERVAL);
         PCR _max_tdt_interval           = cn::duration_cast<PCR>(MAX_TDT_INTERVAL);
+        PCR _max_tot_interval           = cn::duration_cast<PCR>(MAX_TOT_INTERVAL);
         PCR _max_pts_interval           = cn::duration_cast<PCR>(MAX_PTS_INTERVAL);
         PCR _max_pcr_interval           = cn::duration_cast<PCR>(MAX_PCR_INTERVAL);
         PCR _max_pcr_difference         = cn::duration_cast<PCR>(MAX_PCR_DIFFERENCE);
@@ -189,8 +200,11 @@ namespace ts::tr101290 {
         void searchECMPIDs(const DescriptorList& descs, uint16_t service_id);
 
         // Processing of detected errors.
-        void logError(const UChar* reference, ErrorCounter error);
-        void setError(const UChar* reference, ErrorCounter error);
-        void addError(const UChar* reference, ErrorCounter error, Counters& counters);
+        void logError(const UString& reference, ErrorCounter error, const UString& context);
+        void setError(const UString& reference, ErrorCounter error, const UString& context);
+        void addError(const UString& reference, ErrorCounter error, const UString& context, Counters& counters);
+        void logError(const UString& reference, ErrorCounter error, PID context);
+        void setError(const UString& reference, ErrorCounter error, PID context);
+        void addError(const UString& reference, ErrorCounter error, PID context, Counters& counters);
     };
 }

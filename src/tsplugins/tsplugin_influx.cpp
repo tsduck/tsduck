@@ -49,6 +49,7 @@ namespace ts {
         bool        _pcr_based = false;
         bool        _timestamp_based = false;
         bool        _use_local_time = false;
+        int         _max_severity = std::numeric_limits<int>::max();
         Time        _start_time {};
         size_t      _queue_size = DEFAULT_QUEUE_SIZE;
         size_t      _max_metrics = std::numeric_limits<size_t>::max();
@@ -135,6 +136,13 @@ ts::InfluxPlugin::InfluxPlugin(TSP* tsp_) :
          u"This plugin can detect a subset of ETSI TR 101 290 only: "
          u"all transport stream logical checks are performed but physical checks on modulation cannot be reported.");
 
+    option(u"max-severity", 0, INTEGER, 0, 0, 1, tr101290::INFO_SEVERITY);
+    help(u"max-severity",
+         u"With --tr-101-290, specify the maximum severity of error counters to send. "
+         u"ETSI TR 101 290 defines severity from 1 (most severe) to 3 (less severe). "
+         u"TSDuck adds informational counters at severity 4. "
+         u"By default, all error counters are sent.");
+
     option(u"type");
     help(u"type",
          u"Send bitrate monitoring for types of PID's. "
@@ -196,6 +204,7 @@ bool ts::InfluxPlugin::getOptions()
     _pcr_based = present(u"pcr-based");
     _timestamp_based = present(u"timestamp-based");
     _use_local_time = present(u"local-time");
+    getIntValue(_max_severity, u"max-severity", std::numeric_limits<int>::max());
     getIntValue(_max_metrics, u"max-metrics", std::numeric_limits<size_t>::max());
     getIntValue(_queue_size, u"queue-size", DEFAULT_QUEUE_SIZE);
     getChronoValue(_log_interval, u"interval", cn::seconds(DEFAULT_INTERVAL));
@@ -461,9 +470,13 @@ void ts::InfluxPlugin::reportMetrics(Time timestamp, cn::milliseconds duration)
         _tr_101_290.getCountersRestart(counters);
         const auto& desc(tr101290::GetCounterDescriptions());
         for (size_t i = 0; i < counters.size(); i++) {
-            data->format(u"\ncounter,name=%s,severity=%d value=%d %d", desc[i].name.toLower(), desc[i].severity, counters[i], timestamp_ms);
+            if (desc[i].severity <= _max_severity) {
+                data->format(u"\ncounter,name=%s,severity=%d value=%d %d", desc[i].name.toLower(), desc[i].severity, counters[i], timestamp_ms);
+            }
         }
-        data->format(u"\ncounter,name=error_count,severity=%d value=%d %d", tr101290::INFO_SEVERITY, counters.errorCount(), timestamp_ms);
+        if (tr101290::INFO_SEVERITY <= _max_severity) {
+            data->format(u"\ncounter,name=error_count,severity=%d value=%d %d", tr101290::INFO_SEVERITY, counters.errorCount(), timestamp_ms);
+        }
     }
     debug(u"report at %s, for last %s, data: \"%s\"", timestamp, duration, *data);
 

@@ -87,6 +87,17 @@ Send bitrate monitoring data for all PID's.
 Equivalent to `--pid 0-8191`.
 
 [.opt]
+*--max-severity* _value_
+
+[.optdoc]
+With `--tr-101-290`, specify the maximum severity of error counters to send.
+<<ETSI-101-290>> defines severity from 1 (most severe) to 3 (less severe).
+TSDuck adds informational counters at severity 4.
+
+[.optdoc]
+By default, all error counters are sent.
+
+[.opt]
 *-n* +
 *--names*
 
