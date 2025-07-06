@@ -8,89 +8,18 @@
 //
 // ETSI TR 101 290 rules to implement
 // ----------------------------------
+// All rules are listed in the reference documentation for the influx plugin.
+// See the Asciidoctor source file tsduck/doc/user/plugins/influx.adoc.
+// Each rule has a reference "[[x.y/z]]" which is copied from ETSI TR 101 290
+// section 5.2.
+//
 // Notes:
 // - In [[x.y]], "x.y" is the rule number in ETSI TR 101 290 section 5.2.
 // - In [[x.y/z]], "z" is a sequence number when the same rule includes distinct checks.
 // - In [[x.y/zU]], "U" means unreferenced in ETSI TR 101 290, a new rule which seems necessary.
 // - The prefix "(x)" means that the rule is not yet implemented.
 //
-//     [[1.1]] TS_sync_loss: Loss of synchronization with consideration of hysteresis parameters.
-//     [[1.2]] Sync_byte_error: Sync_byte not equal 0x47.
-//     [[1.3/1]] PAT_error: PID 0x0000 does not occur at least every 0,5 s
-//     [[1.3/2]] PAT_error: a PID 0x0000 does not contain a table_id 0x00 (i.e. a PAT).
-//     [[1.3/3]] PAT_error: Scrambling_control_field is not 00 for PID 0x0000
-//     [[1.3.a/1]] PAT_error_2: Sections with table_id 0x00 do not occur at least every 0,5 s on PID 0x0000.
-//     [[1.3.a/2]] PAT_error_2: Section with table_id other than 0x00 found on PID 0x0000.
-//     [[1.3.a/3]] PAT_error_2: Scrambling_control_field is not 00 for PID 0x0000.
-//     [[1.3.a/4U]] PAT_error_2: A PAT section is present on PID other than 0x0000.
-//     [[1.3.a/5U]] PAT_error_2: A PAT table is syntactically incorrect.
-//     [[1.4]] Continuity_count_error: Incorrect packet order, a packet occurs more than twice, lost packet.
-//     [[1.5/1]] PMT_error: Sections with table_id 0x02, (i.e. a PMT), do not occur at least every 0,5 s on the PID which is referred to in the PAT.
-//     [[1.5/2]] PMT_error: Scrambling_control_field is not 00 for all PIDs containing sections with table_id 0x02 (i.e. a PMT).
-//     [[1.5.a/1]] PMT_error_2: Sections with table_id 0x02, (i.e. a PMT), do not occur at least every 0,5 s on each program_map_PID which is referred to in the PAT.
-//     [[1.5.a/2]] PMT_error_2: Scrambling_control_field is not 00 for all packets containing information of sections with table_id 0x02 (i.e. a PMT) on each program_map_PID which is referred to in the PAT.
-//     [[1.5.a/3U]] PMT_error_2: A PMT table is syntactically incorrect.
-//     [[1.6]] PID_error: Referred PID does not occur for a user specified period.
-//     [[2.1]] Transport_error: Transport_error_indicator in the TS-Header is set to "1".
-//     [[2.2/1]] CRC_error: CRC error occurred in CAT, PAT, PMT, NIT, EIT, BAT, SDT or TOT table.
-//     [[2.2/2U]] CRC_error_2: CRC error occurred in other table id than specified in CRC_error.
-//     [[2.3/1]] PCR_error: PCR discontinuity of more than 100 ms occurring without specific indication.
-//     [[2.3/2]] PCR_error: Time interval between two consecutive PCR values more than 100 ms.
-//     [[2.3.a]] PCR_repetition_error: Time interval between two consecutive PCR values more than 100 ms.
-//     [[2.3.b]] PCR_discontinuity_indicator_error: The difference between two consecutive PCR values (PCRi+1 – PCRi) is outside the range of 0...100 ms without the discontinuity_indicator set.
-// (x) [[2.4]] PCR_accuracy_error: PCR accuracy of selected programme is not within +/- 500 ns.
-//     [[2.5]] PTS_error: PTS repetition period more than 700 ms.
-//     [[2.6/1]] CAT_error: Packets with transport_scrambling_control not 00 present, but no section with table_id = 0x01 (i.e. a CAT) present.
-//     [[2.6/2]] CAT_error: Section with table_id other than 0x01 (i.e. not a CAT) found on PID 0x0001.
-//     [[2.6/3U]] CAT_error: A CAT section is present on PID other than 0x0001.
-//     [[2.6/4U]] CAT_error: A CAT table is syntactically incorrect.
-//     [[3.1/1]] NIT_error: Section with table_id other than 0x40 or 0x41 or 0x72 (i. e. not an NIT or ST) found on PID 0x0010.
-//     [[3.1/2]] NIT_error: No section with table_id 0x40 or 0x41 (i.e. an NIT) in PID value 0x0010 for more than 10 s.
-//     [[3.1.a/1]] NIT_actual_error: Section with table_id other than 0x40 or 0x41 or 0x72 (i.e. not an NIT or ST) found on PID 0x0010.
-//     [[3.1.a/2]] NIT_actual_error: No section with table_id 0x40 (i.e. an NIT_actual) in PID value 0x0010 for more than 10 s.
-//     [[3.1.a/3]] NIT_actual_error: Any two sections with table_id = 0x40 (NIT_actual) occur on PID 0x0010 within a specified value (25 ms or lower).
-//     [[3.1.a/4U]] NIT_actual_error: A NIT_actual section is present on PID other than 0x0010.
-//     [[3.1.b/1]] NIT_other_error: Interval between sections with the same section_number and table_id = 0x41 (NIT_other) on PID 0x0010 longer than a specified value (10 s or higher).
-//     [[3.1.b/2U]] NIT_other_error: A NIT_other section is present on PID other than 0x0010.
-//     [[3.2/1]] SI_repetition_error: Repetition rate of SI tables outside of specified limits.
-//     [[3.2/2U]] SI_PID_error: A SI sections is present on PID other than its allocated PID.
-// (x) [[3.3/1]] Buffer_error: TB_buffering_error: overflow of transport buffer (TBn).
-// (x) [[3.3/2]] Buffer_error: TBsys_buffering_error: overflow of transport buffer for system information (Tbsys).
-// (x) [[3.3/3]] Buffer_error: MB_buffering_error: overflow of multiplexing buffer (MBn) or if the vbv_delay method is used: underflow of multiplexing buffer (Mbn).
-// (x) [[3.3/4]] Buffer_error: EB_buffering_error: overflow of elementary stream buffer (EBn) or if the leak method is used: underflow of elementary stream buffer (EBn) though low_delay_flag and DSM_trick_mode_flag are set to 0 else (vbv_delay method) underflow of elementary stream buffer (EBn).
-// (x) [[3.3/5]] Buffer_error: B_buffering_error: overflow or underflow of main buffer (Bn).
-// (x) [[3.3/6]] Buffer_error: Bsys_buffering_error: overflow of PSI input buffer (Bsys).
-//     [[3.4]] Unreferenced_PID: PID (other than PAT, CAT, CAT_PIDs, PMT_PIDs, NIT_PID, SDT_PID, TDT_PID, EIT_PID, RST_PID, reserved_for_future_use PIDs, or PIDs user defined as private data streams) not referred to by a PMT within 0,5 s.
-//     [[3.4.a]] Unreferenced_PID: PID (other than PMT_PIDs, PIDs with numbers between 0x00 and 0x1F or PIDs user defined as private data streams) not referred to by a PMT or a CAT within 0,5 s.
-//     [[3.5/1]] SDT_error: Sections with table_id = 0x42 (SDT, actual TS) not present on PID 0x0011 for more than 2 s.
-//     [[3.5/2]] SDT_error: Sections with table_ids other than 0x42, 0x46, 0x4A or 0x72 found on PID 0x0011.
-//     [[3.5.a/1]] SDT_actual_error: Sections with table_id = 0x42 (SDT, actual TS) not present on PID 0x0011 for more than 2 s.
-//     [[3.5.a/2]] SDT_actual_error: Sections with table_ids other than 0x42, 0x46, 0x4A or 0x72 found on PID 0x0011.
-//     [[3.5.a/3]] SDT_actual_error: Any two sections with table_id = 0x42 (SDT_actual) occur on PID 0x0011 within a specified value (25 ms or lower).
-//     [[3.5.a/4U]] SDT_actual_error: A SDT_actual section is present on PID other than 0x0011.
-//     [[3.5.b/1]] SDT_other_error: Interval between sections with the same section_number and table_id = 0x46 (SDT, other TS) on PID 0x0011 longer than a specified value (10s or higher).
-//     [[3.5.b/2U]] SDT_other_error: A SDT_other section is present on PID other than 0x0011.
-//     [[3.6/1]] EIT_error: Sections with table_id = 0x4E (EIT-P/F, actual TS) not present on PID 0x0012 for more than 2 s.
-//     [[3.6/2]] EIT_error: Sections with table_ids other than in the range 0x4E - 0x6F or 0x72 found on PID 0x0012.
-//     [[3.6/3U]] EIT_error: An EIT section is present on PID other than 0x0012.
-//     [[3.6.a/1]] EIT_actual_error: Section '0' with table_id = 0x4E (EIT-P, actual TS) not present on PID 0x0012 for more than 2 s.
-//     [[3.6.a/2]] EIT_actual_error: Section '1' with table_id = 0x4E (EIT-F, actual TS) not present on PID 0x0012 for more than 2 s.
-//     [[3.6.a/3]] EIT_actual_error: Sections with table_ids other than in the range 0x4E - 0x6F or 0x72 found on PID 0x0012.
-//     [[3.6.a/4]] EIT_actual_error: Any two sections with table_id = 0x4E (EIT-P/F, actual TS) occur on PID 0x0012 within a specified value (25 ms or lower).
-//     [[3.6.b/1]] EIT_other_error: Interval between sections '0' with table_id = 0x4F (EIT-P, other TS) on PID 0x0012 longer than a specified value (10 s or higher).
-//     [[3.6.b/2]] EIT_other_error: Interval between sections '1' with table_id = 0x4F (EIT-F, other TS) on PID 0x0012 longer than a specified value (10 s or higher).
-//     [[3.6.c/1]] EIT_PF_error: If either section ('0' or '1') of each EIT P/F sub table is present both should exist.
-//     [[3.6.c/2U]] EIT_PF_error: An EIT P/F section has section number greater that 1.
-//     [[3.7/1]] RST_error: Sections with table_id other than 0x71 or 0x72 found on PID 0x0013.
-//     [[3.7/2]] RST_error: Any two sections with table_id = 0x71 (RST) occur on PID 0x0013 within a specified value (25 ms or lower).
-//     [[3.7/3U]] RST_error: A RST section is present on PID other than 0x0013.
-//     [[3.8/1]] TDT_error: Sections with table_id = 0x70 (TDT) not present on PID 0x0014 for more than 30 s.
-//     [[3.8/2]] TDT_error: Sections with table_id other than 0x70, 0x72 (ST) or 0x73 (TOT) found on PID 0x0014.
-//     [[3.8/3]] TDT_error: Any two sections with table_id = 0x70 (TDT) occur on PID 0x0014 within a specified value (25 ms or lower).
-//     [[3.8/4U]] TDT_error: A TDT section is present on PID other than 0x0014.
-// (x) [[3.9]] Empty_buffer_error: Transport buffer (TBn) not empty at least once per second or transport buffer for system information (TBsys) not empty at least once per second or if the leak method is used multiplexing buffer (MBn) not empty at least once per second.
-// (x) [[3.10/1]] Data_delay_error: Delay of data (except still picture video data) through the TSTD buffers superior to 1 second.
-// (x) [[3.10/2]] Data_delay_error: Delay of still picture video data through the TSTD buffers superior to 60 s.
+// Example: [[1.2]] Sync_byte_error: Sync_byte not equal 0x47.
 //
 //----------------------------------------------------------------------------
 
