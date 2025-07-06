@@ -99,13 +99,13 @@ namespace ts {
         //! @param [in] counter The counter to search.
         //! @return A constant reference to the counter's description.
         //!
-        const CounterDescription& GetCounterDescription(ErrorCounter counter);
+        TSDUCKDLL const CounterDescription& GetCounterDescription(ErrorCounter counter);
 
         //!
         //! Get the description of all ETSI TR 101 290 error counters.
         //! @return A constant reference to an array of descriptions, indexed by ErrorCounter value.
         //!
-        const std::array<CounterDescription, COUNTER_COUNT>& GetCounterDescriptions();
+        TSDUCKDLL const std::array<CounterDescription, COUNTER_COUNT>& GetCounterDescriptions();
 
         //!
         //! Array of flags for counters as defined in ETSI TR 101 290.
