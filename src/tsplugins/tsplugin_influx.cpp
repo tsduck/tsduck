@@ -399,9 +399,9 @@ void ts::InfluxPlugin::reportMetrics(Time timestamp, cn::milliseconds duration)
     }
     cn::milliseconds::rep timestamp_ms = (timestamp - Time::UnixEpoch).count();
 
-    // Build data to post.
-    UString data;
-    data.format(u"bitrate,scope=ts,tsid=%d value=%d %d", _demux.transportStreamId(), PacketBitRate(_ts_packets, duration), timestamp_ms);
+    // Build data to post. Use a shared pointer to send to the message queue.
+    auto data = std::make_shared<UString>();
+    data->format(u"bitrate,scope=ts,tsid=%d value=%d %d", _demux.transportStreamId(), PacketBitRate(_ts_packets, duration), timestamp_ms);
     if (_log_services) {
         // PID's which belong to services.
         PIDSet allocated;
@@ -417,10 +417,10 @@ void ts::InfluxPlugin::reportMetrics(Time timestamp, cn::milliseconds duration)
             if (packets > 0) {
                 if (_log_names && !it.second.name.empty()) {
                     const UString name(InfluxRequest::ToKey(it.second.name));
-                    data.format(u"\nbitrate,scope=service,service=%s value=%d %d", name, PacketBitRate(packets, duration), timestamp_ms);
+                    data->format(u"\nbitrate,scope=service,service=%s value=%d %d", name, PacketBitRate(packets, duration), timestamp_ms);
                 }
                 else {
-                    data.format(u"\nbitrate,scope=service,service=%d value=%d %d", it.first, PacketBitRate(packets, duration), timestamp_ms);
+                    data->format(u"\nbitrate,scope=service,service=%d value=%d %d", it.first, PacketBitRate(packets, duration), timestamp_ms);
                 }
             }
         }
@@ -432,7 +432,7 @@ void ts::InfluxPlugin::reportMetrics(Time timestamp, cn::milliseconds duration)
             }
         }
         if (globals > 0) {
-            data.format(u"\nbitrate,scope=service,service=global value=%d %d", PacketBitRate(globals, duration), timestamp_ms);
+            data->format(u"\nbitrate,scope=service,service=global value=%d %d", PacketBitRate(globals, duration), timestamp_ms);
         }
     }
     if (_log_types) {
@@ -445,14 +445,14 @@ void ts::InfluxPlugin::reportMetrics(Time timestamp, cn::milliseconds duration)
         for (const auto& it : by_type) {
             if (it.second > 0) {
                 const UString name(InfluxRequest::ToKey(PIDClassIdentifier().name(it.first)));
-                data.format(u"\nbitrate,scope=type,type=%s value=%d %d", name, PacketBitRate(it.second, duration), timestamp_ms);
+                data->format(u"\nbitrate,scope=type,type=%s value=%d %d", name, PacketBitRate(it.second, duration), timestamp_ms);
             }
         }
     }
     if (_log_pids.any()) {
         for (const auto& it : _pids_packets) {
             if (_log_pids.test(it.first) && it.second > 0) {
-                data.format(u"\nbitrate,scope=pid,pid=%d value=%d %d", it.first, PacketBitRate(it.second, duration), timestamp_ms);
+                data->format(u"\nbitrate,scope=pid,pid=%d value=%d %d", it.first, PacketBitRate(it.second, duration), timestamp_ms);
             }
         }
     }
@@ -460,15 +460,15 @@ void ts::InfluxPlugin::reportMetrics(Time timestamp, cn::milliseconds duration)
         TR101290Analyzer::Counters counters;
         _tr_101_290.getCountersRestart(counters);
         for (const auto& it : TR101290Analyzer::CounterDescriptions()) {
-            data.format(u"\ncounter,name=%s,severity=%d value=%d %d", it.name.toLower(), it.severity, counters.*(it.counter), timestamp_ms);
+            data->format(u"\ncounter,name=%s,severity=%d value=%d %d", it.name.toLower(), it.severity, counters.*it.counter, timestamp_ms);
         }
+        data->format(u"\ncounter,name=error_count,severity=%d value=%d %d", TR101290Analyzer::Counters::INFO_SEVERITY, counters.errorCount(), timestamp_ms);
     }
-    debug(u"report at %s, for last %s, data: \"%s\"", timestamp, duration, data);
+    debug(u"report at %s, for last %s, data: \"%s\"", timestamp, duration, *data);
 
     // Send the data to the outgoing thread. Use a zero timeout.
     // It the thread is so slow that the queue is full, just drop the metrics for this interval.
-    auto msg = std::make_shared<UString>(data);
-    if (_metrics_queue.enqueue(msg, cn::milliseconds::zero())) {
+    if (_metrics_queue.enqueue(data, cn::milliseconds::zero())) {
         _sent_metrics++;
     }
     else {

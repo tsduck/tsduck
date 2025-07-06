@@ -121,23 +121,29 @@ namespace ts {
             size_t CAT_error = 0;               //!< No 2.6
 
             // Section 5.2.3 - Third priority: application dependant monitoring
-            size_t NIT_error = 0;               //!< No 3.1 (TODO)
-            size_t NIT_actual_error = 0;        //!< No 3.1.a (TODO)
-            size_t NIT_other_error = 0;         //!< No 3.1.b (TODO)
+            size_t NIT_error = 0;               //!< No 3.1
+            size_t NIT_actual_error = 0;        //!< No 3.1.a
+            size_t NIT_other_error = 0;         //!< No 3.1.b
             size_t SI_repetition_error = 0;     //!< No 3.2 (TODO)
             size_t Buffer_error = 0;            //!< No 3.3 (unimplemented)
             size_t Unreferenced_PID = 0;        //!< No 3.4
-            size_t SDT_error = 0;               //!< No 3.5 (TODO)
-            size_t SDT_actual_error = 0;        //!< No 3.5.a (TODO)
-            size_t SDT_other_error = 0;         //!< No 3.5.b (TODO)
-            size_t EIT_error = 0;               //!< No 3.6 (TODO)
-            size_t EIT_actual_error = 0;        //!< No 3.6.a (TODO)
-            size_t EIT_other_error = 0;         //!< No 3.6.b (TODO)
-            size_t EIT_PF_error = 0;            //!< No 3.6.c (TODO)
+            size_t SDT_error = 0;               //!< No 3.5
+            size_t SDT_actual_error = 0;        //!< No 3.5.a
+            size_t SDT_other_error = 0;         //!< No 3.5.b
+            size_t EIT_error = 0;               //!< No 3.6
+            size_t EIT_actual_error = 0;        //!< No 3.6.a
+            size_t EIT_other_error = 0;         //!< No 3.6.b
+            size_t EIT_PF_error = 0;            //!< No 3.6.c
             size_t RST_error = 0;               //!< No 3.7
             size_t TDT_error = 0;               //!< No 3.8
             size_t Empty_buffer_error = 0;      //!< No 3.9 (unimplemented)
             size_t Data_delay_error = 0;        //!< No 3.10 (unimplemented)
+
+            // Informational, not in ETSI TR 101 290.
+            size_t packet_count = 0;            //!< Number of TS packets during measurement interval.
+
+            //! Pseudo-severity for informational (non-error) data.
+            static constexpr int INFO_SEVERITY = 4;
         };
 
         //!
@@ -185,6 +191,56 @@ namespace ts {
         //! Minimum interval between two RST.
         //!
         static constexpr cn::milliseconds MIN_RST_INTERVAL = cn::milliseconds(25);
+
+        //!
+        //! Maximum interval between two NIT sections, regardless of type.
+        //!
+        static constexpr cn::seconds MAX_NIT_INTERVAL = cn::seconds(10);
+
+        //!
+        //! Minimum interval between two NIT Actual.
+        //!
+        static constexpr cn::milliseconds MIN_NIT_ACTUAL_INTERVAL = cn::milliseconds(25);
+
+        //!
+        //! Maximum interval between two NIT Actual.
+        //!
+        static constexpr cn::seconds MAX_NIT_ACTUAL_INTERVAL = cn::seconds(10);
+
+        //!
+        //! Maximum interval between two NIT Other.
+        //!
+        static constexpr cn::seconds MAX_NIT_OTHER_INTERVAL = cn::seconds(10);
+
+        //!
+        //! Minimum interval between two SDT Actual.
+        //!
+        static constexpr cn::milliseconds MIN_SDT_ACTUAL_INTERVAL = cn::milliseconds(25);
+
+        //!
+        //! Maximum interval between two SDT Actual.
+        //!
+        static constexpr cn::seconds MAX_SDT_ACTUAL_INTERVAL = cn::seconds(2);
+
+        //!
+        //! Maximum interval between two SDT Other.
+        //!
+        static constexpr cn::seconds MAX_SDT_OTHER_INTERVAL = cn::seconds(10);
+
+        //!
+        //! Minimum interval between two EIT p/f Actual.
+        //!
+        static constexpr cn::milliseconds MIN_EIT_PF_ACTUAL_INTERVAL = cn::milliseconds(25);
+
+        //!
+        //! Maximum interval between two EIT p/f Actual.
+        //!
+        static constexpr cn::seconds MAX_EIT_PF_ACTUAL_INTERVAL = cn::seconds(2);
+
+        //!
+        //! Maximum interval between two EIT p/f Other.
+        //!
+        static constexpr cn::seconds MAX_EIT_PF_OTHER_INTERVAL = cn::seconds(10);
 
         //!
         //! Minimum interval between two TDT.
@@ -253,8 +309,18 @@ namespace ts {
             bool PID_error = false;
             bool PTS_error = false;
             bool CAT_error = false;
+            bool NIT_error = false;
+            bool NIT_actual_error = false;
+            bool NIT_other_error = false;
             bool CRC_error = false;
             bool CRC_error_2 = false;
+            bool SDT_error = false;
+            bool SDT_actual_error = false;
+            bool SDT_other_error = false;
+            bool EIT_error = false;
+            bool EIT_actual_error = false;
+            bool EIT_other_error = false;
+            bool EIT_PF_error = false;
             bool RST_error = false;
             bool TDT_error = false;
         };
@@ -280,30 +346,48 @@ namespace ts {
         {
         public:
             XTIDContext() = default;
-            PCR last_timestamp = PCR(-1);  // Timestamp of last packet of a section with that XTID.
+
+            // Check if current timestamp is at an invalid distance from last_timestamp.
+            bool invMin(PCR current, PCR min) const;
+            bool invMax(PCR current, PCR max) const;
+
+            PCR last_timestamp = PCR(-1);            // Timestamp of last packet of a section with that XTID.
+            PCR last_time_01[2] {PCR(-1), PCR(-1)};  // Same as last_timestamp for sections #0 and #1 (when needed).
         };
 
         // TR101290Analyzer private data.
         DuckContext&       _duck;
-        PacketCounter      _current_pkt = 0;        // Index of current packet in stream.
-        size_t             _bad_sync_count = 0;     // Last consecutive corrupted sync bytes.
         size_t             _bad_sync_max = DEFAULT_TS_SYNC_LOST;
-        PCR                _max_pat_interval = cn::duration_cast<PCR>(MAX_PAT_INTERVAL);
-        PCR                _max_pmt_interval = cn::duration_cast<PCR>(MAX_PMT_INTERVAL);
-        PCR                _min_rst_interval = cn::duration_cast<PCR>(MIN_RST_INTERVAL);
-        PCR                _min_tdt_interval = cn::duration_cast<PCR>(MIN_TDT_INTERVAL);
-        PCR                _max_tdt_interval = cn::duration_cast<PCR>(MAX_TDT_INTERVAL);
-        PCR                _max_pts_interval = cn::duration_cast<PCR>(MAX_PTS_INTERVAL);
-        PCR                _max_pid_reference_interval = cn::duration_cast<PCR>(MAX_PID_REFERENCE_INTERVAL);
-        PCR                _max_pid_interval = cn::duration_cast<PCR>(DEFAULT_MAX_PID_INTERVAL);
+        size_t             _bad_sync_count = 0;           // Last consecutive corrupted sync bytes.
         PCR                _last_timestamp = PCR(-1);     // Timestamp of last packet, negative means none.
         PCR                _current_timestamp = PCR(-1);  // Timestamp of current packet, negative means none.
+        PCR                _last_nit_timestamp = PCR(-1); // Timestamp of last NIT section in NIT PID, regardless of network_id.
         Counters           _counters {};
         CounterFlags       _counters_flags {};
         SectionDemux       _demux {_duck, this, this};
         ContinuityAnalyzer _continuity {AllPIDs()};
         std::map<PID,PIDContext>   _pids {};
         std::map<XTID,XTIDContext> _xtids {};
+
+        // These min / max intervals can be made configurable if necessary.
+        PCR _max_pat_interval           = cn::duration_cast<PCR>(MAX_PAT_INTERVAL);
+        PCR _max_pmt_interval           = cn::duration_cast<PCR>(MAX_PMT_INTERVAL);
+        PCR _min_rst_interval           = cn::duration_cast<PCR>(MIN_RST_INTERVAL);
+        PCR _max_nit_interval           = cn::duration_cast<PCR>(MAX_NIT_INTERVAL);
+        PCR _min_nit_actual_interval    = cn::duration_cast<PCR>(MIN_NIT_ACTUAL_INTERVAL);
+        PCR _max_nit_actual_interval    = cn::duration_cast<PCR>(MAX_NIT_ACTUAL_INTERVAL);
+        PCR _max_nit_other_interval     = cn::duration_cast<PCR>(MAX_NIT_OTHER_INTERVAL);
+        PCR _min_sdt_actual_interval    = cn::duration_cast<PCR>(MIN_SDT_ACTUAL_INTERVAL);
+        PCR _max_sdt_actual_interval    = cn::duration_cast<PCR>(MAX_SDT_ACTUAL_INTERVAL);
+        PCR _max_sdt_other_interval     = cn::duration_cast<PCR>(MAX_SDT_OTHER_INTERVAL);
+        PCR _min_eitpf_actual_interval  = cn::duration_cast<PCR>(MIN_EIT_PF_ACTUAL_INTERVAL);
+        PCR _max_eitpf_actual_interval  = cn::duration_cast<PCR>(MAX_EIT_PF_ACTUAL_INTERVAL);
+        PCR _max_eitpf_other_interval   = cn::duration_cast<PCR>(MAX_EIT_PF_OTHER_INTERVAL);
+        PCR _min_tdt_interval           = cn::duration_cast<PCR>(MIN_TDT_INTERVAL);
+        PCR _max_tdt_interval           = cn::duration_cast<PCR>(MAX_TDT_INTERVAL);
+        PCR _max_pts_interval           = cn::duration_cast<PCR>(MAX_PTS_INTERVAL);
+        PCR _max_pid_reference_interval = cn::duration_cast<PCR>(MAX_PID_REFERENCE_INTERVAL);
+        PCR _max_pid_interval           = cn::duration_cast<PCR>(DEFAULT_MAX_PID_INTERVAL);
 
         // Implementation of interfaces.
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;
@@ -317,5 +401,10 @@ namespace ts {
 
         // Declare ECM PID's in a descriptor list as part of a service.
         void searchECMPIDs(const DescriptorList& descs, uint16_t service_id);
+
+        // Processing of detected errors.
+        void logError(const UChar* reference, const char* error);
+        void setError(const UChar* reference, const char* error, bool CounterFlags::* field);
+        void addError(const UChar* reference, const char* error, size_t Counters::* field, Counters& block);
     };
 }
