@@ -34,10 +34,10 @@
 //     [[2.1]] Transport_error: Transport_error_indicator in the TS-Header is set to "1".
 //     [[2.2/1]] CRC_error: CRC error occurred in CAT, PAT, PMT, NIT, EIT, BAT, SDT or TOT table.
 //     [[2.2/2U]] CRC_error_2: CRC error occurred in other table id than specified in CRC_error.
-// (x) [[2.3/1]] PCR_error: PCR discontinuity of more than 100 ms occurring without specific indication.
-// (x) [[2.3/2]] PCR_error: Time interval between two consecutive PCR values more than 100 ms.
-// (x) [[2.3.a]] PCR_repetition_error: Time interval between two consecutive PCR values more than 100 ms.
-// (x) [[2.3.b]] PCR_discontinuity_indicator_error: The difference between two consecutive PCR values (PCRi+1 – PCRi) is outside the range of 0...100 ms without the discontinuity_indicator set.
+//     [[2.3/1]] PCR_error: PCR discontinuity of more than 100 ms occurring without specific indication.
+//     [[2.3/2]] PCR_error: Time interval between two consecutive PCR values more than 100 ms.
+//     [[2.3.a]] PCR_repetition_error: Time interval between two consecutive PCR values more than 100 ms.
+//     [[2.3.b]] PCR_discontinuity_indicator_error: The difference between two consecutive PCR values (PCRi+1 – PCRi) is outside the range of 0...100 ms without the discontinuity_indicator set.
 // (x) [[2.4]] PCR_accuracy_error: PCR accuracy of selected programme is not within +/- 500 ns.
 //     [[2.5]] PTS_error: PTS repetition period more than 700 ms.
 //     [[2.6/1]] CAT_error: Packets with transport_scrambling_control not 00 present, but no section with table_id = 0x01 (i.e. a CAT) present.
@@ -93,7 +93,7 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsTR101290Analyzer.h"
+#include "tstr101290Analyzer.h"
 #include "tsDuckContext.h"
 #include "tsBinaryTable.h"
 #include "tsPAT.h"
@@ -102,17 +102,12 @@
 #include "tsEIT.h"
 #include "tsCADescriptor.h"
 
-// Macros to report and/or set an error. Used to wrap the error as string and field name.
-#define LOG_ERROR(reference, error) logError(reference, #error)
-#define SET_ERROR(reference, error) setError(reference, #error, &CounterFlags::error)
-#define ADD_ERROR(reference, error, block) addError(reference, #error, &Counters::error, (block))
-
 
 //----------------------------------------------------------------------------
 // Constructor.
 //----------------------------------------------------------------------------
 
-ts::TR101290Analyzer::TR101290Analyzer(DuckContext& duck) :
+ts::tr101290::Analyzer::Analyzer(DuckContext& duck) :
     _duck(duck)
 {
     _demux.setInvalidSectionHandler(this);
@@ -124,7 +119,7 @@ ts::TR101290Analyzer::TR101290Analyzer(DuckContext& duck) :
 // Reset the analyzer.
 //----------------------------------------------------------------------------
 
-void ts::TR101290Analyzer::reset()
+void ts::tr101290::Analyzer::reset()
 {
     _bad_sync_count = 0;
     _current_timestamp = _last_timestamp = _last_nit_timestamp = PCR(-1);
@@ -138,129 +133,31 @@ void ts::TR101290Analyzer::reset()
 
 
 //----------------------------------------------------------------------------
-// Get the total number of errors in a Counters instance.
-//----------------------------------------------------------------------------
-
-size_t ts::TR101290Analyzer::Counters::errorCount() const
-{
-    // Warning: carefully select the relevant counters because an error can be included in several counters.
-    return Sync_byte_error + PAT_error_2 + Continuity_count_error + PMT_error_2 + PID_error +
-           Transport_error + CRC_error + CRC_error_2 + PCR_error + PTS_error + CAT_error + NIT_error +
-           SI_repetition_error + Buffer_error + Unreferenced_PID + SDT_error + EIT_error + RST_error +
-           TDT_error + Empty_buffer_error + Data_delay_error;
-}
-
-
-//----------------------------------------------------------------------------
-// Get a list of descriptions for all counters in a Counters instance.
-//----------------------------------------------------------------------------
-
-const std::vector<ts::TR101290Analyzer::CounterDescription>& ts::TR101290Analyzer::CounterDescriptions()
-{
-    static const std::vector<CounterDescription> data {
-        {1, &Counters::TS_sync_loss,            u"TS_sync_loss"},
-        {1, &Counters::Sync_byte_error,         u"Sync_byte_error"},
-        {1, &Counters::PAT_error,               u"PAT_error"},
-        {1, &Counters::PAT_error_2,             u"PAT_error_2"},
-        {1, &Counters::Continuity_count_error,  u"Continuity_count_error"},
-        {1, &Counters::PMT_error,               u"PMT_error"},
-        {1, &Counters::PMT_error_2,             u"pmt_error_2"},
-        {1, &Counters::PID_error,               u"PID_error"},
-
-        {2, &Counters::Transport_error,         u"Transport_error"},
-        {2, &Counters::CRC_error,               u"CRC_error"},
-        {2, &Counters::CRC_error_2,             u"CRC_error_2"},
-        {2, &Counters::PCR_error,               u"PCR_error"},
-        {2, &Counters::PCR_repetition_error,    u"PCR_repetition_error"},
-        {2, &Counters::PCR_discontinuity_indicator_error, u"PCR_discontinuity_indicator_error"},
-        {2, &Counters::PCR_accuracy_error,      u"PCR_accuracy_error"},
-        {2, &Counters::PTS_error,               u"PTS_error"},
-        {2, &Counters::CAT_error,               u"CAT_error"},
-
-        {3, &Counters::NIT_error,               u"NIT_error"},
-        {3, &Counters::NIT_actual_error,        u"NIT_actual_error"},
-        {3, &Counters::NIT_other_error,         u"NIT_other_error"},
-        {3, &Counters::SI_repetition_error,     u"SI_repetition_error"},
-        {3, &Counters::Buffer_error,            u"Buffer_error"},
-        {3, &Counters::Unreferenced_PID,        u"Unreferenced_PID"},
-        {3, &Counters::SDT_error,               u"SDT_error"},
-        {3, &Counters::SDT_actual_error,        u"SDT_actual_error"},
-        {3, &Counters::SDT_other_error,         u"SDT_other_error"},
-        {3, &Counters::EIT_error,               u"EIT_error"},
-        {3, &Counters::EIT_actual_error,        u"EIT_actual_error"},
-        {3, &Counters::EIT_other_error,         u"EIT_other_error"},
-        {3, &Counters::EIT_PF_error,            u"EIT_PF_error"},
-        {3, &Counters::RST_error,               u"RST_error"},
-        {3, &Counters::TDT_error,               u"TDT_error"},
-        {3, &Counters::Empty_buffer_error,      u"Empty_buffer_error"},
-        {3, &Counters::Data_delay_error,        u"Data_delay_error"},
-
-        {4, &Counters::packet_count,            u"packet_count"},
-    };
-    return data;
-}
-
-
-//----------------------------------------------------------------------------
-// Update error counters at most once per TS packet.
-//----------------------------------------------------------------------------
-
-void ts::TR101290Analyzer::CounterFlags::update(Counters& counters)
-{
-    // Equivalence between CounterFlags booleans and Counters integers (using pointers to members).
-    static const std::vector<std::pair<bool CounterFlags::*, size_t Counters::*>> _counter_pairs {
-        {&CounterFlags::PAT_error,        &Counters::PAT_error},
-        {&CounterFlags::PAT_error_2,      &Counters::PAT_error_2},
-        {&CounterFlags::PMT_error,        &Counters::PMT_error},
-        {&CounterFlags::PMT_error_2,      &Counters::PMT_error_2},
-        {&CounterFlags::PID_error,        &Counters::PID_error},
-        {&CounterFlags::PTS_error,        &Counters::PTS_error},
-        {&CounterFlags::CAT_error,        &Counters::CAT_error},
-        {&CounterFlags::NIT_error,        &Counters::NIT_error},
-        {&CounterFlags::NIT_actual_error, &Counters::NIT_actual_error},
-        {&CounterFlags::NIT_other_error,  &Counters::NIT_other_error},
-        {&CounterFlags::CRC_error,        &Counters::CRC_error},
-        {&CounterFlags::CRC_error_2,      &Counters::CRC_error_2},
-        {&CounterFlags::SDT_error,        &Counters::SDT_error},
-        {&CounterFlags::SDT_actual_error, &Counters::SDT_actual_error},
-        {&CounterFlags::SDT_other_error,  &Counters::SDT_other_error},
-        {&CounterFlags::EIT_error,        &Counters::EIT_error},
-        {&CounterFlags::EIT_actual_error, &Counters::EIT_actual_error},
-        {&CounterFlags::EIT_other_error,  &Counters::EIT_other_error},
-        {&CounterFlags::EIT_PF_error,     &Counters::EIT_PF_error},
-        {&CounterFlags::RST_error,        &Counters::RST_error},
-        {&CounterFlags::TDT_error,        &Counters::TDT_error},
-    };
-
-    // Update counters.
-    for (const auto& it : _counter_pairs) {
-        if (this->*it.first) {
-            (counters.*it.second)++;
-        }
-    }
-}
-
-
-//----------------------------------------------------------------------------
 // Processing of detected errors.
 //----------------------------------------------------------------------------
 
-void ts::TR101290Analyzer::logError(const UChar* reference, const char* error)
+void ts::tr101290::Analyzer::logError(const UChar* reference, ErrorCounter error)
 {
-    _duck.report().debug(u"raise %s (%s)", error, reference);
+    _duck.report().debug(u"raise %s (%s)", GetCounterDescription(error).name, reference);
     // TODO: call optional application-specified handler.
 }
 
-void ts::TR101290Analyzer::setError(const UChar* reference, const char* error, bool CounterFlags::* field)
+void ts::tr101290::Analyzer::setError(const UChar* reference, ErrorCounter error)
 {
+    assert(int(error) >= 0);
+    assert(error < COUNTER_COUNT);
+
     logError(reference, error);
-    _counters_flags.*field = true;
+    _counters_flags[error] = true;
 }
 
-void ts::TR101290Analyzer::addError(const UChar* reference, const char* error, size_t Counters::* field, Counters& block)
+void ts::tr101290::Analyzer::addError(const UChar* reference, ErrorCounter error, Counters& counters)
 {
+    assert(int(error) >= 0);
+    assert(error < COUNTER_COUNT);
+
     logError(reference, error);
-    (block.*field)++;
+    counters[error]++;
 }
 
 
@@ -268,7 +165,7 @@ void ts::TR101290Analyzer::addError(const UChar* reference, const char* error, s
 // The following method feeds the analyzer with a TS packet.
 //----------------------------------------------------------------------------
 
-void ts::TR101290Analyzer::feedPacket(const PCR& timestamp, const TSPacket& pkt)
+void ts::tr101290::Analyzer::feedPacket(const PCR& timestamp, const TSPacket& pkt)
 {
     // Must be set first. During execution of the various handlers, synchronously called from here,
     // _last_pcr < _current_pcr. Upon return from feedPacket(), _last_pcr == _current_pcr.
@@ -291,50 +188,77 @@ void ts::TR101290Analyzer::feedPacket(const PCR& timestamp, const TSPacket& pkt)
     }
     else {
         // [[1.2]] Sync_byte_error: Sync_byte not equal 0x47.
-        ADD_ERROR(u"1.2", Sync_byte_error, _counters);
+        addError(u"1.2", Sync_byte_error, _counters);
         // Count TS_sync_loss exactly once per sequence of sync byte errors.
         if (++_bad_sync_count == _bad_sync_max) {
             // [[1.1]] TS_sync_loss: Loss of synchronization with consideration of hysteresis parameters.
-            ADD_ERROR(u"1.1", TS_sync_loss, _counters);
+            addError(u"1.1", TS_sync_loss, _counters);
         }
     }
 
     // [[2.1]] Transport_error: Transport_error_indicator in the TS-Header is set to "1".
     if (pkt.getTEI()) {
-        ADD_ERROR(u"2.1", Transport_error, _counters);
+        addError(u"2.1", Transport_error, _counters);
     }
 
     // [[1.4]] Continuity_count_error: Incorrect packet order, a packet occurs more than twice, lost packet.
     if (!_continuity.feedPacket(pkt)) {
-        ADD_ERROR(u"1,4", Continuity_count_error, _counters);
+        addError(u"1,4", Continuity_count_error, _counters);
+    }
+
+    // Track explicit discontinuity indicator which invalidates the PCR.
+    if (pkt.getDiscontinuityIndicator()) {
+        pidctx.last_disc_timestamp = _current_timestamp;
     }
 
     // Check PTS repetition.
     if (pkt.hasPTS()) {
         if (pidctx.last_pts_timestamp >= PCR::zero() && (_current_timestamp - pidctx.last_pts_timestamp) > _max_pts_interval) {
             // [[2.5]] PTS_error: PTS repetition period more than 700 ms.
-            SET_ERROR(u"2.5", PTS_error);
+            setError(u"2.5", PTS_error);
         }
         pidctx.last_pts_timestamp = _current_timestamp;
+    }
+
+    // Check PCR repetition and continuity.
+    if (pkt.hasPCR()) {
+        if (pidctx.last_pcr_timestamp >= PCR::zero() && (_current_timestamp - pidctx.last_pcr_timestamp) > _max_pcr_interval) {
+            // [[2.3/2]] PCR_error: Time interval between two consecutive PCR values more than 100 ms.
+            setError(u"2.3/2", PCR_error);
+            // [[2.3.a]] PCR_repetition_error: Time interval between two consecutive PCR values more than 100 ms.
+            setError(u"2.3.a", PCR_repetition_error);
+        }
+        // Explicit PCR discontinuity since last PCR:
+        const bool exp_disc = pidctx.last_disc_timestamp >= PCR::zero() && (pidctx.last_pcr_timestamp < PCR::zero() || pidctx.last_disc_timestamp > pidctx.last_pcr_timestamp);
+        const uint64_t pcr = pkt.getPCR();
+        if (!exp_disc && pidctx.last_pcr_value != INVALID_PCR && PCR(DiffPCR(pidctx.last_pcr_value, pcr)) > _max_pcr_difference) {
+            // [[2.3/1]] PCR_error: PCR discontinuity of more than 100 ms occurring without specific indication.
+            setError(u"2.3/1", PCR_error);
+            // [[2.3.b]] PCR_discontinuity_indicator_error: The difference between two consecutive PCR values (PCRi+1 – PCRi) is outside the range of 0...100 ms without the discontinuity_indicator set.
+            setError(u"2.3.b", PCR_discontinuity_indicator_error);
+        }
+
+        pidctx.last_pcr_timestamp = _current_timestamp;
+        pidctx.last_pcr_value = pcr;
     }
 
     // Check PID's that shouldn't be scrambled.
     if (pkt.isScrambled()) {
         if (pid == PID_PAT) {
             // [[1.3/3]] PAT_error: Scrambling_control_field is not 00 for PID 0x0000
-            SET_ERROR(u"1.3/3", PAT_error);
+            setError(u"1.3/3", PAT_error);
             // [[1.3.a/3]] PAT_error_2: Scrambling_control_field is not 00 for PID 0x0000.
-            SET_ERROR(u"1.3.a/3", PAT_error_2);
+            setError(u"1.3.a/3", PAT_error_2);
         }
         if (pid == PID_CAT) {
             // [[2.6/1]] CAT_error: Packets with transport_scrambling_control not 00 present, but no section with table_id = 0x01 (i.e. a CAT) present.
-            SET_ERROR(u"2.6/1", CAT_error);
+            setError(u"2.6/1", CAT_error);
         }
         if (pidctx.is_pmt) {
             // [[1.5/2]] PMT_error: Scrambling_control_field is not 00 for all PIDs containing sections with table_id 0x02 (i.e. a PMT).
-            SET_ERROR(u"1.5/2", PMT_error);
+            setError(u"1.5/2", PMT_error);
             // [[1.5.a/2]] PMT_error_2: Scrambling_control_field is not 00 for all packets containing information of sections with table_id 0x02 (i.e. a PMT) on each program_map_PID which is referred to in the PAT.
-            SET_ERROR(u"1.5.a/2", PMT_error_2);
+            setError(u"1.5.a/2", PMT_error_2);
         }
     }
 
@@ -342,11 +266,11 @@ void ts::TR101290Analyzer::feedPacket(const PCR& timestamp, const TSPacket& pkt)
     if (pidctx.last_timestamp >= PCR::zero()) {
         if (pid == PID_PAT && (_current_timestamp - pidctx.last_timestamp) > _max_pat_interval) {
             // [[1.3/1]] PAT_error: PID 0x0000 does not occur at least every 0,5 s
-            SET_ERROR(u"1.3/1", PAT_error);
+            setError(u"1.3/1", PAT_error);
         }
         else if (pidctx.user_pid && (_current_timestamp - pidctx.last_timestamp) > _max_pid_interval) {
             // [[1.6]] PID_error: Referred PID does not occur for a user specified period.
-            SET_ERROR(u"1.6", PID_error);
+            setError(u"1.6", PID_error);
         }
     }
 
@@ -354,8 +278,8 @@ void ts::TR101290Analyzer::feedPacket(const PCR& timestamp, const TSPacket& pkt)
     _demux.feedPacket(pkt);
 
     // Increment each error at most once per packet.
-    _counters_flags.update(_counters);
-    _counters.packet_count++;
+    _counters.increment(_counters_flags);
+    _counters[packet_count]++;
 
     // Must be set last.
     pidctx.last_timestamp = timestamp;
@@ -367,7 +291,7 @@ void ts::TR101290Analyzer::feedPacket(const PCR& timestamp, const TSPacket& pkt)
 // Invoked by the SectionDemux when a complete table is available.
 //----------------------------------------------------------------------------
 
-void ts::TR101290Analyzer::handleTable(SectionDemux& demux, const BinaryTable& table)
+void ts::tr101290::Analyzer::handleTable(SectionDemux& demux, const BinaryTable& table)
 {
     const PID pid = table.sourcePID();
 
@@ -380,7 +304,7 @@ void ts::TR101290Analyzer::handleTable(SectionDemux& demux, const BinaryTable& t
                 }
                 else {
                     // [[1.3.a/5U]] PAT_error_2: A PAT table is syntactically incorrect.
-                    SET_ERROR(u"1.3.a/5U", PAT_error_2);
+                    setError(u"1.3.a/5U", PAT_error_2);
                 }
             }
             break;
@@ -393,7 +317,7 @@ void ts::TR101290Analyzer::handleTable(SectionDemux& demux, const BinaryTable& t
                 }
                 else {
                     // [[2.6/4U]] CAT_error: A CAT table is syntactically incorrect.
-                    SET_ERROR(u"2.6/4U", CAT_error);
+                    setError(u"2.6/4U", CAT_error);
                 }
             }
             break;
@@ -405,7 +329,7 @@ void ts::TR101290Analyzer::handleTable(SectionDemux& demux, const BinaryTable& t
             }
             else {
                 // [[1.5.a/3U]] PMT_error_2: A PMT table is syntactically incorrect.
-                SET_ERROR(u"1.5.a/3U", PMT_error_2);
+                setError(u"1.5.a/3U", PMT_error_2);
             }
             break;
         }
@@ -420,7 +344,7 @@ void ts::TR101290Analyzer::handleTable(SectionDemux& demux, const BinaryTable& t
 // Process a new PAT.
 //----------------------------------------------------------------------------
 
-void ts::TR101290Analyzer::handlePAT(const PAT& pat, PID pid)
+void ts::tr101290::Analyzer::handlePAT(const PAT& pat, PID pid)
 {
     std::set<uint16_t> services;
 
@@ -452,7 +376,7 @@ void ts::TR101290Analyzer::handlePAT(const PAT& pat, PID pid)
 // Process a new CAT.
 //----------------------------------------------------------------------------
 
-void ts::TR101290Analyzer::handleCAT(const CAT& cat, PID pid)
+void ts::tr101290::Analyzer::handleCAT(const CAT& cat, PID pid)
 {
     // Look for EMM PID to reference.
     for (const auto& desc : cat.descs) {
@@ -469,7 +393,7 @@ void ts::TR101290Analyzer::handleCAT(const CAT& cat, PID pid)
 // Process a new PMT.
 //----------------------------------------------------------------------------
 
-void ts::TR101290Analyzer::handlePMT(const PMT& pmt, PID pid)
+void ts::tr101290::Analyzer::handlePMT(const PMT& pmt, PID pid)
 {
     // Type of the PMT PID.
     _pids[pid].type = PIDClass::PSI;
@@ -501,7 +425,7 @@ void ts::TR101290Analyzer::handlePMT(const PMT& pmt, PID pid)
 // Declare ECM PID's in a descriptor list as part of a service.
 //----------------------------------------------------------------------------
 
-void ts::TR101290Analyzer::searchECMPIDs(const DescriptorList& descs, uint16_t service_id)
+void ts::tr101290::Analyzer::searchECMPIDs(const DescriptorList& descs, uint16_t service_id)
 {
     for (const auto& desc : descs) {
         // If the descriptor is not a CA_descriptor, isValid() will be false.
@@ -519,12 +443,12 @@ void ts::TR101290Analyzer::searchECMPIDs(const DescriptorList& descs, uint16_t s
 // Check if current timestamp is at an invalid distance from last_timestamp.
 //----------------------------------------------------------------------------
 
-bool ts::TR101290Analyzer::XTIDContext::invMin(PCR current, PCR min) const
+bool ts::tr101290::Analyzer::XTIDContext::invMin(PCR current, PCR min) const
 {
     return current >= PCR::zero() && last_timestamp >= PCR::zero() && (current - last_timestamp) < min;
 }
 
-bool ts::TR101290Analyzer::XTIDContext::invMax(PCR current, PCR max) const
+bool ts::tr101290::Analyzer::XTIDContext::invMax(PCR current, PCR max) const
 {
     return current >= PCR::zero() && last_timestamp >= PCR::zero() && (current - last_timestamp) > max;
 }
@@ -534,7 +458,7 @@ bool ts::TR101290Analyzer::XTIDContext::invMax(PCR current, PCR max) const
 // Invoked by the SectionDemux when a complete section is available.
 //----------------------------------------------------------------------------
 
-void ts::TR101290Analyzer::handleSection(SectionDemux& demux, const Section& section)
+void ts::tr101290::Analyzer::handleSection(SectionDemux& demux, const Section& section)
 {
     const TID tid = section.tableId();
     const PID pid = section.sourcePID();
@@ -542,39 +466,39 @@ void ts::TR101290Analyzer::handleSection(SectionDemux& demux, const Section& sec
     // Section rules by PID.
     if (pid == PID_PAT && tid != TID_PAT) {
         // [[1.3/2]] PAT_error: a PID 0x0000 does not contain a table_id 0x00 (i.e. a PAT).
-        SET_ERROR(u"1.3/2", PAT_error);
+        setError(u"1.3/2", PAT_error);
         // [[1.3.a/2]] PAT_error_2: Section with table_id other than 0x00 found on PID 0x0000.
-        SET_ERROR(u"1.3.a/2", PAT_error_2);
+        setError(u"1.3.a/2", PAT_error_2);
     }
     else if (pid == PID_CAT && tid != TID_CAT) {
         // [[2.6/2]] CAT_error: Section with table_id other than 0x01 (i.e. not a CAT) found on PID 0x0001.
-        SET_ERROR(u"2.6/2", CAT_error);
+        setError(u"2.6/2", CAT_error);
     }
     else if (pid == PID_RST && tid != TID_RST && tid != TID_ST) {
         // [[3.7/1]] RST_error: Sections with table_id other than 0x71 or 0x72 found on PID 0x0013.
-        SET_ERROR(u"3.7/1", RST_error);
+        setError(u"3.7/1", RST_error);
     }
     else if (pid == PID_TDT && tid != TID_TDT && tid != TID_TOT && tid != TID_ST) {
         // [[3.8/2]] TDT_error: Sections with table_id other than 0x70, 0x72 (ST) or 0x73 (TOT) found on PID 0x0014.
-        SET_ERROR(u"3.8/2", TDT_error);
+        setError(u"3.8/2", TDT_error);
     }
     else if (pid == PID_NIT && tid != TID_NIT_ACT && tid != TID_NIT_OTH && tid != TID_ST) {
         // [[3.1/1]] NIT_error: Section with table_id other than 0x40 or 0x41 or 0x72 (i. e. not an NIT or ST) found on PID 0x0010.
-        SET_ERROR(u"3.1/1", NIT_error);
+        setError(u"3.1/1", NIT_error);
         // [[3.1.a/1]] NIT_actual_error: Section with table_id other than 0x40 or 0x41 or 0x72 (i.e. not an NIT or ST) found on PID 0x0010.
-        SET_ERROR(u"[3.1.a/1", NIT_actual_error);
+        setError(u"[3.1.a/1", NIT_actual_error);
     }
     else if (pid == PID_SDT && tid != TID_SDT_ACT && tid != TID_SDT_OTH && tid != TID_BAT && tid != TID_ST) {
         // [[3.5/2]] SDT_error: Sections with table_ids other than 0x42, 0x46, 0x4A or 0x72 found on PID 0x0011.
-        SET_ERROR(u"3.5/2", SDT_error);
+        setError(u"3.5/2", SDT_error);
         // [[3.5.a/2]] SDT_actual_error: Sections with table_ids other than 0x42, 0x46, 0x4A or 0x72 found on PID 0x0011.
-        SET_ERROR(u"3.5.a/2", SDT_actual_error);
+        setError(u"3.5.a/2", SDT_actual_error);
     }
     else if (pid == PID_EIT && !EIT::IsEIT(tid) && tid != TID_ST) {
         // [[3.6/2]] EIT_error: Sections with table_ids other than in the range 0x4E - 0x6F or 0x72 found on PID 0x0012.
-        SET_ERROR(u"3.6/2", EIT_error);
+        setError(u"3.6/2", EIT_error);
         // [[3.6.a/3]] EIT_actual_error: Sections with table_ids other than in the range 0x4E - 0x6F or 0x72 found on PID 0x0012.
-        SET_ERROR(u"3.6.a/3", EIT_actual_error);
+        setError(u"3.6.a/3", EIT_actual_error);
     }
 
     // Section rules by table id.
@@ -582,11 +506,11 @@ void ts::TR101290Analyzer::handleSection(SectionDemux& demux, const Section& sec
         auto& ctx(_xtids[section.xtid()]);
         if (pid != PID_PAT) {
             // [[1.3.a/4U]] PAT_error_2: a PAT section is present on PID other than 0x0000.
-            SET_ERROR(u"1.3.a/4U", PAT_error_2);
+            setError(u"1.3.a/4U", PAT_error_2);
         }
         else if (ctx.invMax(_current_timestamp, _max_pat_interval)) {
             // [[1.3.a/1]] PAT_error_2: Sections with table_id 0x00 do not occur at least every 0,5 s on PID 0x0000.
-            SET_ERROR(u"1.3.a/1", PAT_error_2);
+            setError(u"1.3.a/1", PAT_error_2);
         }
         if (pid == PID_PAT) {
             ctx.last_timestamp = _current_timestamp;
@@ -596,25 +520,25 @@ void ts::TR101290Analyzer::handleSection(SectionDemux& demux, const Section& sec
         auto& ctx(_xtids[section.xtid()]);
         if (ctx.invMax(_current_timestamp, _max_pmt_interval)) {
             // [[1.5/1]] PMT_error: Sections with table_id 0x02, (i.e. a PMT), do not occur at least every 0,5 s on the PID which is referred to in the PAT.
-            SET_ERROR(u"1.5/1", PMT_error);
+            setError(u"1.5/1", PMT_error);
             // [[1.5.a/1]] PMT_error_2: Sections with table_id 0x02, (i.e. a PMT), do not occur at least every 0,5 s on each program_map_PID which is referred to in the PAT.
-            SET_ERROR(u"1.5.a/1", PMT_error_2);
+            setError(u"1.5.a/1", PMT_error_2);
         }
         ctx.last_timestamp = _current_timestamp;
     }
     else if (tid == TID_CAT && pid != PID_CAT) {
         // [[2.6/3U]] CAT_error: A CAT section is present on PID other than 0x0001.
-        SET_ERROR(u"2.6/3U", CAT_error);
+        setError(u"2.6/3U", CAT_error);
     }
     else if (tid == TID_RST) {
         auto& ctx(_xtids[section.xtid()]);
         if (pid != PID_RST) {
             // [[3.7/3U]] RST_error: A RST section is present on PID other than 0x0013.
-            SET_ERROR(u"3.7/3U", RST_error);
+            setError(u"3.7/3U", RST_error);
         }
         else if (ctx.invMin(_current_timestamp, _min_rst_interval)) {
             // [[3.7/2]] RST_error: Any two sections with table_id = 0x71 (RST) occur on PID 0x0013 within a specified value (25 ms or lower).
-            SET_ERROR(u"3.7/2", RST_error);
+            setError(u"3.7/2", RST_error);
         }
         if (pid == PID_RST) {
             ctx.last_timestamp = _current_timestamp;
@@ -624,15 +548,15 @@ void ts::TR101290Analyzer::handleSection(SectionDemux& demux, const Section& sec
         auto& ctx(_xtids[section.xtid()]);
         if (pid != PID_TDT) {
             // [[3.8/4U]] TDT_error: A TDT section is present on PID other than 0x0014.
-            SET_ERROR(u"3.8/4U", TDT_error);
+            setError(u"3.8/4U", TDT_error);
         }
         else if (ctx.invMin(_current_timestamp, _min_tdt_interval)) {
             // [[3.8/3]] TDT_error: Any two sections with table_id = 0x70 (TDT) occur on PID 0x0014 within a specified value (25 ms or lower).
-            SET_ERROR(u"3.8/3", TDT_error);
+            setError(u"3.8/3", TDT_error);
         }
         else if (ctx.invMax(_current_timestamp, _max_tdt_interval)) {
             // [[3.8/1]] TDT_error: Sections with table_id = 0x70 (TDT) not present on PID 0x0014 for more than 30 s.
-            SET_ERROR(u"[3.8/1", TDT_error);
+            setError(u"[3.8/1", TDT_error);
         }
         if (pid == PID_TDT) {
             ctx.last_timestamp = _current_timestamp;
@@ -642,22 +566,22 @@ void ts::TR101290Analyzer::handleSection(SectionDemux& demux, const Section& sec
         // The CRC32 of the TOT shall be manually computed because it is a short section.
         if (section.size() >= 4 && CRC32(section.content(), section.size() - 4) != GetUInt32(section.content() + section.size() - 4)) {
             // [[2.2/1]] CRC_error: CRC error occurred in CAT, PAT, PMT, NIT, EIT, BAT, SDT or TOT table.
-            SET_ERROR(u"2.2/1", CRC_error);
+            setError(u"2.2/1", CRC_error);
         }
     }
     else if (tid == TID_NIT_ACT) {
         auto& ctx(_xtids[section.xtid()]);
         if (pid != PID_NIT) {
             // [[3.1.a/4U]] NIT_actual_error: A NIT_actual section is present on PID other than 0x0010.
-            SET_ERROR(u"3.1.a/4U", NIT_actual_error);
+            setError(u"3.1.a/4U", NIT_actual_error);
         }
         else if (ctx.invMin(_current_timestamp, _min_nit_actual_interval)) {
             // [[3.1.a/3]] NIT_actual_error: Any two sections with table_id = 0x40 (NIT_actual) occur on PID 0x0010 within a specified value (25 ms or lower).
-            SET_ERROR(u"3.1.a/3", NIT_actual_error);
+            setError(u"3.1.a/3", NIT_actual_error);
         }
         else if (ctx.invMax(_current_timestamp, _max_nit_actual_interval)) {
             // [[3.1.a/2]] NIT_actual_error: No section with table_id 0x40 (i.e. an NIT_actual) in PID value 0x0010 for more than 10 s.
-            SET_ERROR(u"3.1.a/2", NIT_actual_error);
+            setError(u"3.1.a/2", NIT_actual_error);
         }
         if (pid == PID_NIT) {
             ctx.last_timestamp = _current_timestamp;
@@ -667,12 +591,12 @@ void ts::TR101290Analyzer::handleSection(SectionDemux& demux, const Section& sec
         auto& ctx(_xtids[section.xtid()]);
         if (pid != PID_NIT) {
             // [[3.1.b/2U]] NIT_other_error: A NIT_other section is present on PID other than 0x0010.
-            SET_ERROR(u"3.1.b/2U", NIT_other_error);
+            setError(u"3.1.b/2U", NIT_other_error);
         }
         else if (ctx.invMax(_current_timestamp, _max_nit_other_interval)) {
             // [[3.1.b/1]] NIT_other_error: Interval between sections with the same section_number and table_id = 0x41 (NIT_other) on PID 0x0010 longer than a specified value (10 s or higher).
             // Note: [[3.1.b/1]] is not exactly implemented. We test the interval between two NIT_other sections, regardless of section number, but with the same network_id (tid-ext).
-            SET_ERROR(u"3.1.b/1", NIT_other_error);
+            setError(u"3.1.b/1", NIT_other_error);
         }
         if (pid == PID_NIT) {
             ctx.last_timestamp = _current_timestamp;
@@ -682,17 +606,17 @@ void ts::TR101290Analyzer::handleSection(SectionDemux& demux, const Section& sec
         auto& ctx(_xtids[section.xtid()]);
         if (pid != PID_SDT) {
             // [[3.5.a/4U]] SDT_actual_error: A SDT_actual section is present on PID other than 0x0011.
-            SET_ERROR(u"3.5.a/4U", SDT_actual_error);
+            setError(u"3.5.a/4U", SDT_actual_error);
         }
         else if (ctx.invMin(_current_timestamp, _min_sdt_actual_interval)) {
             // [[3.5.a/3]] SDT_actual_error: Any two sections with table_id = 0x42 (SDT_actual) occur on PID 0x0011 within a specified value (25 ms or lower).
-            SET_ERROR(u"3.5.a/3", SDT_actual_error);
+            setError(u"3.5.a/3", SDT_actual_error);
         }
         else if (ctx.invMax(_current_timestamp, _max_sdt_actual_interval)) {
             // [[3.5.a/1]] SDT_actual_error: Sections with table_id = 0x42 (SDT, actual TS) not present on PID 0x0011 for more than 2 s.
-            SET_ERROR(u"3.5.a/1", SDT_actual_error);
+            setError(u"3.5.a/1", SDT_actual_error);
             // [[3.5/1]] SDT_error: Sections with table_id = 0x42 (SDT, actual TS) not present on PID 0x0011 for more than 2 s.
-            SET_ERROR(u"3.5/1", SDT_error);
+            setError(u"3.5/1", SDT_error);
         }
         if (pid == PID_SDT) {
             ctx.last_timestamp = _current_timestamp;
@@ -702,12 +626,12 @@ void ts::TR101290Analyzer::handleSection(SectionDemux& demux, const Section& sec
         auto& ctx(_xtids[section.xtid()]);
         if (pid != PID_SDT) {
             // [[3.5.b/2U]] SDT_other_error: A SDT_other section is present on PID other than 0x0011.
-            SET_ERROR(u"3.5.b/2U", SDT_other_error);
+            setError(u"3.5.b/2U", SDT_other_error);
         }
         else if (ctx.invMax(_current_timestamp, _max_sdt_other_interval)) {
             // [[3.5.b/1]] SDT_other_error: Interval between sections with the same section_number and table_id = 0x46 (SDT, other TS) on PID 0x0011 longer than a specified value (10s or higher).
             // Note: [[3.5.b/1]] is not exactly implemented. We test the interval between two SDT_other sections, regardless of section number, but with the same ts_id (tid-ext).
-            SET_ERROR(u"3.5.b/1", SDT_other_error);
+            setError(u"3.5.b/1", SDT_other_error);
         }
         if (pid == PID_SDT) {
             ctx.last_timestamp = _current_timestamp;
@@ -718,7 +642,7 @@ void ts::TR101290Analyzer::handleSection(SectionDemux& demux, const Section& sec
     if ((tid == TID_NIT_ACT || tid == TID_NIT_OTH) && pid == PID_NIT) {
         if (_last_nit_timestamp >= PCR::zero() && (_current_timestamp - _last_nit_timestamp) > _max_nit_interval) {
             // [[3.1/2]] NIT_error: No section with table_id 0x40 or 0x41 (i.e. an NIT) in PID value 0x0010 for more than 10 s.
-            SET_ERROR(u"3.1/2", NIT_error);
+            setError(u"3.1/2", NIT_error);
         }
         _last_nit_timestamp = _current_timestamp;
     }
@@ -728,24 +652,24 @@ void ts::TR101290Analyzer::handleSection(SectionDemux& demux, const Section& sec
         auto& ctx(_xtids[XTID(tid)]); // ignore tid-ext
         if (ctx.invMin(_current_timestamp, _min_eitpf_actual_interval)) {
             // [[3.6.a/4]] EIT_actual_error: Any two sections with table_id = 0x4E (EIT-P/F, actual TS) occur on PID 0x0012 within a specified value (25 ms or lower).
-            SET_ERROR(u"3.6.a/4", EIT_actual_error);
+            setError(u"3.6.a/4", EIT_actual_error);
         }
         else if (ctx.invMax(_current_timestamp, _max_eitpf_actual_interval)) {
             // [[3.6/1]] EIT_error: Sections with table_id = 0x4E (EIT-P/F, actual TS) not present on PID 0x0012 for more than 2 s.
-            SET_ERROR(u"3.6/1", EIT_error);
+            setError(u"3.6/1", EIT_error);
         }
         ctx.last_timestamp = _current_timestamp;
     }
     if (EIT::IsEIT(tid) && pid != PID_EIT) {
         // [[3.6/3U]] EIT_error: An EIT section is present on PID other than 0x0012.
-        SET_ERROR(u"3.6/3U", EIT_error);
+        setError(u"3.6/3U", EIT_error);
     }
     if (EIT::IsPresentFollowing(tid) && pid == PID_EIT) {
         auto& ctx(_xtids[section.xtid()]); // include tid-ext
         const uint8_t secnum = section.sectionNumber();
         if (secnum > 1) {
             // [[3.6.c/2U]] EIT_PF_error: An EIT P/F section has section number greater that 1.
-            SET_ERROR(u"3.6.c/2U", EIT_PF_error);
+            setError(u"3.6.c/2U", EIT_PF_error);
         }
         else {
             // [[3.6.c/1]] EIT_PF_error: If either section ('0' or '1') of each EIT P/F sub table is present both should exist.
@@ -754,17 +678,17 @@ void ts::TR101290Analyzer::handleSection(SectionDemux& demux, const Section& sec
             // ==> we test if the other is within the allowed range.
             const PCR last_other = ctx.last_time_01[~secnum & 0x01];
             if (last_other >= PCR::zero() && (_current_timestamp - last_other) > _max_eitpf_actual_interval) {
-                SET_ERROR(u"3.6.c/1", EIT_PF_error);
+                setError(u"3.6.c/1", EIT_PF_error);
             }
             if (tid == TID_EIT_PF_ACT && ctx.last_time_01[secnum] >= PCR::zero() && (_current_timestamp - ctx.last_time_01[secnum]) > _max_eitpf_actual_interval) {
                 // [[3.6.a/1]] EIT_actual_error: Section '0' with table_id = 0x4E (EIT-P, actual TS) not present on PID 0x0012 for more than 2 s.
                 // [[3.6.a/2]] EIT_actual_error: Section '1' with table_id = 0x4E (EIT-F, actual TS) not present on PID 0x0012 for more than 2 s.
-                SET_ERROR(secnum == 0 ? u"3.6.a/1]]" : u"3.6.a/2", EIT_actual_error);
+                setError(secnum == 0 ? u"3.6.a/1]]" : u"3.6.a/2", EIT_actual_error);
             }
             if (tid == TID_EIT_PF_OTH && ctx.last_time_01[secnum] >= PCR::zero() && (_current_timestamp - ctx.last_time_01[secnum]) > _max_eitpf_other_interval) {
                 // [[3.6.b/1]] EIT_other_error: Interval between sections '0' with table_id = 0x4F (EIT-P, other TS) on PID 0x0012 longer than a specified value (10 s or higher).
                 // [[3.6.b/2]] EIT_other_error: Interval between sections '1' with table_id = 0x4F (EIT-F, other TS) on PID 0x0012 longer than a specified value (10 s or higher).
-                SET_ERROR(secnum == 0 ? u"3.6.b/1]]" : u"3.6.b/2", EIT_other_error);
+                setError(secnum == 0 ? u"3.6.b/1]]" : u"3.6.b/2", EIT_other_error);
             }
             ctx.last_time_01[secnum] = ctx.last_timestamp = _current_timestamp;
         }
@@ -776,7 +700,7 @@ void ts::TR101290Analyzer::handleSection(SectionDemux& demux, const Section& sec
 // Invoked by the SectionDemux when an invalid section is detected.
 //----------------------------------------------------------------------------
 
-void ts::TR101290Analyzer::handleInvalidSection(SectionDemux& demux, const DemuxedData& data, Section::Status status)
+void ts::tr101290::Analyzer::handleInvalidSection(SectionDemux& demux, const DemuxedData& data, Section::Status status)
 {
     if (status == Section::INV_CRC32) {
         const TID tid = data.size() < 1 ? TID(TID_NULL) : *data.content();
@@ -796,11 +720,11 @@ void ts::TR101290Analyzer::handleInvalidSection(SectionDemux& demux, const Demux
         if (check_tids.contains(tid)) {
             // [[2.2/1]] CRC_error: CRC error occurred in CAT, PAT, PMT, NIT, EIT, BAT, SDT or TOT table.
             // Note: TOT is separately tested because it is a short section.
-            SET_ERROR(u"2.2/1", CRC_error);
+            setError(u"2.2/1", CRC_error);
         }
         else {
             // [[2.2/2U]] CRC_error_2: CRC error occurred in other table id than specified in CRC_error.
-            SET_ERROR(u"2.2/2U", CRC_error_2);
+            setError(u"2.2/2U", CRC_error_2);
         }
     }
 }
@@ -810,13 +734,13 @@ void ts::TR101290Analyzer::handleInvalidSection(SectionDemux& demux, const Demux
 // Get the error counters since start or the last getCountersRestart().
 //----------------------------------------------------------------------------
 
-void ts::TR101290Analyzer::getCountersRestart(Counters& counters)
+void ts::tr101290::Analyzer::getCountersRestart(Counters& counters)
 {
     getCounters(counters);
     _counters.clear();
 }
 
-void ts::TR101290Analyzer::getCounters(Counters& counters)
+void ts::tr101290::Analyzer::getCounters(Counters& counters)
 {
     counters = _counters;
 
@@ -824,7 +748,7 @@ void ts::TR101290Analyzer::getCounters(Counters& counters)
     if (_last_timestamp >= PCR::zero()) {
         // Unreferenced PID's are detected here. The error can be persistent over cycles
         // of getCountersRestart() and should not be reset.
-        counters.Unreferenced_PID = 0;
+        counters[Unreferenced_PID] = 0;
         for (const auto& it : _pids) {
             // Check if PID is unreferenced and present for more than the max time.
             if (it.first > PID_DVB_LAST &&
@@ -835,10 +759,10 @@ void ts::TR101290Analyzer::getCounters(Counters& counters)
                 (_last_timestamp - it.second.first_timestamp) > _max_pid_reference_interval)
             {
                 // [[3.4]] Unreferenced_PID: PID (other than PAT, CAT, CAT_PIDs, PMT_PIDs, NIT_PID, SDT_PID, TDT_PID, EIT_PID, RST_PID, reserved_for_future_use PIDs, or PIDs user defined as private data streams) not referred to by a PMT within 0,5 s.
-                ADD_ERROR(u"3.4", Unreferenced_PID, counters);
+                addError(u"3.4", Unreferenced_PID, counters);
                 // [[3.4.a]] Unreferenced_PID: PID (other than PMT_PIDs, PIDs with numbers between 0x00 and 0x1F or PIDs user defined as private data streams) not referred to by a PMT or a CAT within 0,5 s.
                 // Note: 3.4.a is a superset of 3.4 but they both refer to the same error Unreferenced_PID, so don't increment again.
-                LOG_ERROR(u"3.4.a", Unreferenced_PID);
+                logError(u"3.4.a", Unreferenced_PID);
             }
         }
 
@@ -849,14 +773,14 @@ void ts::TR101290Analyzer::getCounters(Counters& counters)
         // Check PAT PID repetition.
         if (_pids[PID_PAT].last_timestamp >= PCR::zero() && (_last_timestamp - _pids[PID_PAT].last_timestamp) > _max_pat_interval) {
             // [[1.3/1]] PAT_error: PID 0x0000 does not occur at least every 0,5 s
-            ADD_ERROR(u"1.3/1", PAT_error, counters);
+            addError(u"1.3/1", PAT_error, counters);
         }
 
         // Check user PID's (audio, video, etc.) repetition.
         for (const auto& it : _pids) {
             if (it.second.user_pid && it.second.last_timestamp >= PCR::zero() && (_last_timestamp - it.second.last_timestamp) > _max_pid_interval) {
                 // [[1.6]] PID_error: Referred PID does not occur for a user specified period.
-                ADD_ERROR(u"1.6", PID_error, counters);
+                addError(u"1.6", PID_error, counters);
             }
         }
 
@@ -865,60 +789,60 @@ void ts::TR101290Analyzer::getCounters(Counters& counters)
             const TID tid = it.first.tid();
             if (tid == TID_PAT && it.second.invMax(_last_timestamp, _max_pat_interval)) {
                 // [[1.3.a/1]] PAT_error_2: Sections with table_id 0x00 do not occur at least every 0,5 s on PID 0x0000.
-                ADD_ERROR(u"1.3.a/1", PAT_error_2, counters);
+                addError(u"1.3.a/1", PAT_error_2, counters);
             }
             else if (tid == TID_PMT && it.second.invMax(_last_timestamp, _max_pmt_interval)) {
                 // [[1.5/1]] PMT_error: Sections with table_id 0x02, (i.e. a PMT), do not occur at least every 0,5 s on the PID which is referred to in the PAT.
-                ADD_ERROR(u"1.5/1", PMT_error, counters);
+                addError(u"1.5/1", PMT_error, counters);
                 // [[1.5.a/1]] PMT_error_2: Sections with table_id 0x02, (i.e. a PMT), do not occur at least every 0,5 s on each program_map_PID which is referred to in the PAT.
-                ADD_ERROR(u"1.5.a/1", PMT_error_2, counters);
+                addError(u"1.5.a/1", PMT_error_2, counters);
             }
             else if (tid == TID_TDT && it.second.invMax(_last_timestamp, _max_tdt_interval)) {
                 // [[3.8/1]] TDT_error: Sections with table_id = 0x70 (TDT) not present on PID 0x0014 for more than 30 s.
-                ADD_ERROR(u"[3.8/1", TDT_error, counters);
+                addError(u"[3.8/1", TDT_error, counters);
             }
             else if (tid == TID_NIT_ACT && it.second.invMax(_last_timestamp, _max_nit_actual_interval)) {
                 // [[3.1.a/2]] NIT_actual_error: No section with table_id 0x40 (i.e. an NIT_actual) in PID value 0x0010 for more than 10 s.
-                ADD_ERROR(u"3.1.a/2", NIT_actual_error, counters);
+                addError(u"3.1.a/2", NIT_actual_error, counters);
             }
             else if (tid == TID_NIT_OTH && it.second.invMax(_last_timestamp, _max_nit_other_interval)) {
                 // [[3.1.b/1]] NIT_other_error: Interval between sections with the same section_number and table_id = 0x41 (NIT_other) on PID 0x0010 longer than a specified value (10 s or higher).
                 // Note: [[3.1.b/1]] is not exactly implemented. We test the interval between two NIT_other sections, regardless of section number, but with the same network_id (tid-ext).
-                ADD_ERROR(u"3.1.b/1", NIT_other_error, counters);
+                addError(u"3.1.b/1", NIT_other_error, counters);
             }
             else if (tid == TID_SDT_ACT && it.second.invMax(_last_timestamp, _max_sdt_actual_interval)) {
                 // [[3.5.a/1]] SDT_actual_error: Sections with table_id = 0x42 (SDT, actual TS) not present on PID 0x0011 for more than 2 s.
-                ADD_ERROR(u"3.5.a/1", SDT_actual_error, counters);
+                addError(u"3.5.a/1", SDT_actual_error, counters);
                 // [[3.5/1]] SDT_error: Sections with table_id = 0x42 (SDT, actual TS) not present on PID 0x0011 for more than 2 s.
-                ADD_ERROR(u"3.5/1", SDT_error, counters);
+                addError(u"3.5/1", SDT_error, counters);
             }
             else if (tid == TID_SDT_OTH && it.second.invMax(_last_timestamp, _max_sdt_other_interval)) {
                 // [[3.5.b/1]] SDT_other_error: Interval between sections with the same section_number and table_id = 0x46 (SDT, other TS) on PID 0x0011 longer than a specified value (10s or higher).
                 // Note: [[3.5.b/1]] is not exactly implemented. We test the interval between two SDT_other sections, regardless of section number, but with the same ts_id (tid-ext).
-                ADD_ERROR(u"3.5.b/1", SDT_other_error, counters);
+                addError(u"3.5.b/1", SDT_other_error, counters);
             }
             else if (tid == TID_EIT_PF_ACT) {
                 if (it.second.invMax(_last_timestamp, _max_eitpf_actual_interval)) {
                     // [[3.6/1]] EIT_error: Sections with table_id = 0x4E (EIT-P/F, actual TS) not present on PID 0x0012 for more than 2 s.
-                    ADD_ERROR(u"3.6/1", EIT_error, counters);
+                    addError(u"3.6/1", EIT_error, counters);
                 }
                 if (it.second.last_time_01[0] >= PCR::zero() && (_last_timestamp - it.second.last_time_01[0]) > _max_eitpf_actual_interval) {
                     // [[3.6.a/1]] EIT_actual_error: Section '0' with table_id = 0x4E (EIT-P, actual TS) not present on PID 0x0012 for more than 2 s.
-                    ADD_ERROR(u"3.6.a/1]]", EIT_actual_error, counters);
+                    addError(u"3.6.a/1]]", EIT_actual_error, counters);
                 }
                 if (it.second.last_time_01[1] >= PCR::zero() && (_last_timestamp - it.second.last_time_01[1]) > _max_eitpf_actual_interval) {
                     // [[3.6.a/2]] EIT_actual_error: Section '1' with table_id = 0x4E (EIT-F, actual TS) not present on PID 0x0012 for more than 2 s.
-                    ADD_ERROR(u"3.6.a/2", EIT_actual_error, counters);
+                    addError(u"3.6.a/2", EIT_actual_error, counters);
                 }
             }
             else if (tid == TID_EIT_PF_OTH) {
                 if (it.second.last_time_01[0] >= PCR::zero() && (_last_timestamp - it.second.last_time_01[0]) > _max_eitpf_other_interval) {
                     // [[3.6.b/1]] EIT_other_error: Interval between sections '0' with table_id = 0x4F (EIT-P, other TS) on PID 0x0012 longer than a specified value (10 s or higher).
-                    ADD_ERROR(u"3.6.b/1]]", EIT_other_error, counters);
+                    addError(u"3.6.b/1]]", EIT_other_error, counters);
                 }
                 if (it.second.last_time_01[1] >= PCR::zero() && (_last_timestamp - it.second.last_time_01[1]) > _max_eitpf_other_interval) {
                     // [[3.6.b/2]] EIT_other_error: Interval between sections '1' with table_id = 0x4F (EIT-F, other TS) on PID 0x0012 longer than a specified value (10 s or higher).
-                    ADD_ERROR(u"3.6.b/2", EIT_other_error, counters);
+                    addError(u"3.6.b/2", EIT_other_error, counters);
                 }
             }
         }
@@ -926,7 +850,7 @@ void ts::TR101290Analyzer::getCounters(Counters& counters)
         // These shall be separately treated.
         if (_last_nit_timestamp >= PCR::zero() && (_last_timestamp - _last_nit_timestamp) > _max_nit_interval) {
             // [[3.1/2]] NIT_error: No section with table_id 0x40 or 0x41 (i.e. an NIT) in PID value 0x0010 for more than 10 s.
-            ADD_ERROR(u"3.1/2", NIT_error, counters);
+            addError(u"3.1/2", NIT_error, counters);
         }
     }
 }

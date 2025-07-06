@@ -16,7 +16,7 @@
 #include "tsInfluxRequest.h"
 #include "tsSignalizationDemux.h"
 #include "tsDurationAnalyzer.h"
-#include "tsTR101290Analyzer.h"
+#include "tstr101290Analyzer.h"
 #include "tsMessageQueue.h"
 #include "tsThread.h"
 #include "tsTime.h"
@@ -74,7 +74,7 @@ namespace ts {
         size_t                _sent_metrics = 0;         // Number of sent metrics.
         SignalizationDemux    _demux {duck};             // Analyze the stream.
         DurationAnalyzer      _ts_clock {*this};         // Compute playout time based on PCR or input timestamps.
-        TR101290Analyzer      _tr_101_290 {duck};        // ETSI TR 101 290 analyzer.
+        tr101290::Analyzer    _tr_101_290 {duck};        // ETSI TR 101 290 analyzer.
         InfluxRequest         _request {*this};          // Web request to InfluxDB server.
         MessageQueue<UString> _metrics_queue {};         // Queue of metrics to send.
         PacketCounter         _ts_packets = 0;           // All TS packets in period.
@@ -457,12 +457,13 @@ void ts::InfluxPlugin::reportMetrics(Time timestamp, cn::milliseconds duration)
         }
     }
     if (_log_tr_101_290) {
-        TR101290Analyzer::Counters counters;
+        tr101290::Counters counters;
         _tr_101_290.getCountersRestart(counters);
-        for (const auto& it : TR101290Analyzer::CounterDescriptions()) {
-            data->format(u"\ncounter,name=%s,severity=%d value=%d %d", it.name.toLower(), it.severity, counters.*it.counter, timestamp_ms);
+        const auto& desc(tr101290::GetCounterDescriptions());
+        for (size_t i = 0; i < counters.size(); i++) {
+            data->format(u"\ncounter,name=%s,severity=%d value=%d %d", desc[i].name.toLower(), desc[i].severity, counters[i], timestamp_ms);
         }
-        data->format(u"\ncounter,name=error_count,severity=%d value=%d %d", TR101290Analyzer::Counters::INFO_SEVERITY, counters.errorCount(), timestamp_ms);
+        data->format(u"\ncounter,name=error_count,severity=%d value=%d %d", tr101290::INFO_SEVERITY, counters.errorCount(), timestamp_ms);
     }
     debug(u"report at %s, for last %s, data: \"%s\"", timestamp, duration, *data);
 

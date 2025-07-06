@@ -532,7 +532,7 @@ namespace ts {
     TSDUCKDLL uint64_t AddPCR(uint64_t pcr, int64_t offset);
 
     //!
-    //! Compute the difference between PCR2 and PCR1.
+    //! Compute the difference between PCR2 and PCR1 (PCR2 - PCR1).
     //! @param [in] pcr1 First PCR.
     //! @param [in] pcr2 Second PCR.
     //! @return The difference between the two values or INVALID_PCR if a parameter is incorrect.
