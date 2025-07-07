@@ -202,10 +202,16 @@ Depending on the value value of `scope`, a second tag is provided.
 
 The following table lists the possible `scope` values and the corresponding second tag.
 
+// PDF backend does not correctly process "autowidth" tables.
 .InfluxDB bitrate metrics
+ifndef::backend-pdf[]
 [cols="<1m,<1m,<1,<1",stripes=none,options="autowidth"]
+endif::[]
+ifdef::backend-pdf[]
+[cols="<8m,<8m,<37,<37",stripes=none]
+endif::[]
 |===
-|`scope` |Tag 2 |Tag 2 value |Bitrate value
+|scope |Tag 2 |Tag 2 value |Bitrate value
 
 |ts
 |tsid
@@ -293,10 +299,16 @@ The first colum of the table indicates which rules are implemented (X) and which
 The severity is the first digit "x" in "x.y/z".
 The descriptions of the rule are directly copied from <<ETSI-101-290>>.
 
+// PDF backend does not correctly process "autowidth" tables.
 .InfluxDB ETSI TR 101 290 error counter metrics
+ifndef::backend-pdf[]
 [cols="^1,<1,<1m,<1",stripes=none,options="autowidth"]
+endif::[]
+ifdef::backend-pdf[]
+[cols="^7,<10,<20m,<63",stripes=none]
+endif::[]
 |===
-|Imp. |Ref. |`name` |Description
+|Imp. |Ref. |name |Description
 
 |X
 |1.1
@@ -423,17 +435,17 @@ The descriptions of the rule are directly copied from <<ETSI-101-290>>.
 
 |-
 |2.4
-|PCR_accuracy_error
+|pcr_accuracy_error
 |PCR accuracy of selected programme is not within +/- 500 ns.
 
 |X
 |2.5
-|PTS_error
+|pts_error
 |PTS repetition period more than 700 ms.
 
 |X
 |2.6/1
-|CAT_error
+|cat_error
 |Packets with transport_scrambling_control not 00 present, but no section with table_id = 0x01 (i.e. a CAT) present.
 
 |X
@@ -473,7 +485,7 @@ The descriptions of the rule are directly copied from <<ETSI-101-290>>.
 
 |X
 |3.1.a/3
-|NIT_actual_error
+|nit_actual_error
 |Any two sections with table_id = 0x40 (NIT_actual) occur on PID 0x0010 within a specified value (25 ms or lower).
 
 |X
