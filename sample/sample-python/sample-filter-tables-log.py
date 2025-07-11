@@ -9,7 +9,7 @@
 #
 #----------------------------------------------------------------------------
 
-import tsduck
+import tsduck, sys
 
 # This string is a user-defined marker to locate the hexa line in the log.
 LOG_PREFIX = "#TABLE#"
@@ -21,8 +21,12 @@ class Logger(tsduck.AbstractAsyncReport):
         # Filter, locate, extract and parse the hexa output from plugin "tables".
         pos = message.find(LOG_PREFIX)
         if pos >= 0:
+            # This is a log line containing an hexa dump.
             hexa = message[pos+len(LOG_PREFIX):]
             print("Table: %s" % (hexa))
+        else:
+            # This is a real log message, just display it.
+            print(tsduck.Report.header(severity) + message, file=sys.stderr)
 
 # Create an asynchronous report to log multi-threaded messages.
 rep = Logger()

@@ -39,7 +39,11 @@ class Logger(tsduck.AbstractAsyncReport):
         # Filter, locate, extract and parse the JSON output from plugin "tables".
         pos = message.find(sdt_json_marker)
         if pos >= 0:
+            # This is a log line containing a JSON structure.
             process_json(json.loads(message[pos+len(sdt_json_marker):]))
+        else:
+            # This is a real log message, just display it.
+            print(tsduck.Report.header(severity) + message, file=sys.stderr)
 
 # Get input file from command line, default to file.ts.
 input_file = sys.argv[1] if len(sys.argv) > 1 else 'file.ts'
