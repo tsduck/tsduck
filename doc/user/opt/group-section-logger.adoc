@@ -282,9 +282,12 @@ Useful to monitor the content if the output has been redirected to a disk file.
 [.optdoc]
 Save the tables in JSON format in the specified file.
 To output the JSON text on the standard output, explicitly specify this option with `-` as output file name.
-The tables are initially formatted as XML and an automated XML-to-JSON conversion is applied.
 
 [.optdoc]
+See also option `--multiple-files`.
+
+[.optdoc]
+The tables are initially formatted as XML and an automated XML-to-JSON conversion is applied.
 See xref:xml-json-conv[xrefstyle=short] for more details on XML-to-JSON conversion.
 
 [.opt]
@@ -345,14 +348,16 @@ Add an hexadecimal dump of each section in the XML and JSON metadata.
 *--multiple-files*
 
 [.optdoc]
-Create multiple binary output files, one per section.
-A binary output file name must be specified (option `--binary-output`).
+Create multiple output files, one per table for XML and JSON files, one per section for binary files.
+An output file name must be specified using options `--binary-output`, `--json-output`, or `--xml-output`.
 
 [.optdoc]
 Assuming that the specified file name has the form `base.ext`,
-each file is created with the name `base_pXXXX_tXX.ext` for short sections and
-`base_pXXXX_tXX_eXXXX_vXX_sXX.ext` for long sections, where the `XX` respectively specify
-the hexadecimal values of the PID, TID (table id), TIDext (table id extension), version and section index.
+each file is created with the name `base_pXXXX_tXX.ext` for short sections.
+For binary long sections, the name is `base_pXXXX_tXX_eXXXX_vXX_sXX.ext`,
+where the `XX` respectively specify the hexadecimal values of the PID, TID (table id),
+TIDext (table id extension), version and section index.
+The file name is `base_pXXXX_tXX_eXXXX_vXX.ext` for XML or JSON files for tables with long sections.
 
 // tag::pager[]
 include::{docdir}/opt/opt-no-pager.adoc[tags=!*]
@@ -410,6 +415,9 @@ Display a time stamp (current local time) with each table.
 [.optdoc]
 Save the tables in XML format in the specified file.
 To output the XML text on the standard output, explicitly specify this option with `-` as output file name.
+
+[.optdoc]
+See also option `--multiple-files`.
 
 [.usage]
 UDP/IP logging options

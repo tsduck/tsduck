@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.42-4359 (June 2025)
+VERSION 3.42-4368 (July 2025)
 
 [NEW] New commands and plugins:
 
@@ -11,6 +11,8 @@ VERSION 3.42-4359 (June 2025)
 
 [IMP] Improvements on existing commands and plugins:
 
+  * With "tstables" and plugin "tables", the option --multiple-files  now  also
+    applies to XML and JSON files. Previously, it applied to binary files only.
   * New options in existing commands and plugins:
     - Option --tag in plugins "history", "splicemonitor".
     - Option --pcr-based, --timestamp-based in plugin "until".

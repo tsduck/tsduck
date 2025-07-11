@@ -135,6 +135,7 @@ TSUNIT_DEFINE_TEST(PackSections)
     table.packSections();
 
     TSUNIT_ASSERT(table.isValid());
+    TSUNIT_ASSERT(table.isLongSection());
     TSUNIT_ASSERT(!table.isShortSection());
     TSUNIT_EQUAL(150, table.tableId());
     TSUNIT_EQUAL(102, table.tableIdExtension());

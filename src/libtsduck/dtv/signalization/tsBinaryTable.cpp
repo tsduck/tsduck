@@ -459,12 +459,23 @@ bool ts::BinaryTable::packSections()
 
 
 //----------------------------------------------------------------------------
-// Check if this is a table with one short section.
+// Check if this is a table with short or long sections.
 //----------------------------------------------------------------------------
 
 bool ts::BinaryTable::isShortSection() const
 {
     return _sections.size() == 1 && _sections[0] != nullptr && _sections[0]->isShortSection();
+}
+
+bool ts::BinaryTable::isLongSection() const
+{
+    // Some sections may not be populated, so look them all.
+    for (const auto& sec : _sections) {
+        if (sec != nullptr) {
+            return sec->isLongSection();
+        }
+    }
+    return false;
 }
 
 

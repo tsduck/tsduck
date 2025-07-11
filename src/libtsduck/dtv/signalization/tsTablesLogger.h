@@ -164,7 +164,7 @@ namespace ts {
         fs::path                 _json_destination {};       // JSON output file name.
         fs::path                 _bin_destination {};        // Binary output file name.
         UString                  _udp_destination {};        // UDP/IP destination address:port.
-        bool                     _bin_multi_files = false;   // Multiple binary output files (one per section).
+        bool                     _multiple_files = false;    // Multiple output files (one per section if binary).
         bool                     _bin_stdout = false;        // Output binary sections on stdout.
         bool                     _flush = false;             // Flush output file.
         bool                     _rewrite_xml = false;       // Rewrite a new XML file for each table.
@@ -228,6 +228,9 @@ namespace ts {
 
         // Create a binary file. On error, set _abort and return false.
         bool createBinaryFile(const fs::path& name);
+
+        // Build an output file name from a table or section (with --multiple-files).
+        static fs::path BuildFileName(const fs::path& pattern, const BinaryTable*, const Section*);
 
         // Save a section in a binary file
         void saveBinarySection(const Section&);

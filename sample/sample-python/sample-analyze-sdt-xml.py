@@ -5,10 +5,11 @@
 # A TSProcessor is used, using plugin "tables" and XML output.
 # The XML output is intercepted and parsed in a Python class.
 # When found, various information are extracted from the XML structure.
+# The file sample-analyze-sdt-json.py does the same thing using JSON output.
 #
 #----------------------------------------------------------------------------
 
-import tsduck
+import tsduck, sys
 import xml.etree.ElementTree as xmlet
 
 # This string is a user-defined marker to locate the XML line in the log.
@@ -44,11 +45,14 @@ class Logger(tsduck.AbstractAsyncReport):
         if pos >= 0:
             process_xml(xmlet.fromstring(message[pos+len(sdt_xml_marker):]))
 
+# Get input file from command line, default to file.ts.
+input_file = sys.argv[1] if len(sys.argv) > 1 else 'file.ts'
+
 # Main program: see details in "sample-tsp.py" or "sample-message-handling.py".
 rep = Logger()
 tsp = tsduck.TSProcessor(rep)
 
-tsp.input = ['file', 'file.ts']
+tsp.input = ['file', input_file]
 tsp.plugins = [ ['tables', '--pid', '0x11', '--tid', '0x42', '--max-tables', '1', '--log-xml-line=' + sdt_xml_marker] ]
 tsp.output = ['drop']
 

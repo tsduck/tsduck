@@ -155,12 +155,12 @@ void ts::TablesLogger::defineArgs(Args& args)
 
     args.option(u"multiple-files", 'm');
     args.help(u"multiple-files",
-              u"Create multiple binary output files, one per section. "
-              u"A binary output file name must be specified (option -b or --binary-output). "
+              u"Create multiple output files, one per table for XML and JSON files, one per section for binary files. "
               u"Assuming that the specified file name has the form 'base.ext', "
               u"each file is created with the name 'base_pXXXX_tXX.ext' for short sections and "
-              u"'base_pXXXX_tXX_eXXXX_vXX_sXX.ext' for long sections, where the XX specify the hexadecimal "
-              u"values of the PID, TID (table id), TIDext (table id extension), version and section index.");
+              u"'base_pXXXX_tXX_eXXXX_vXX_sXX.ext' for binary long sections, where the XX specify the hexadecimal "
+              u"values of the PID, TID (table id), TIDext (table id extension), version and section index. "
+              u"The file name is 'base_pXXXX_tXX_eXXXX_vXX.ext' for XML or JSON long sections.");
 
     args.option(u"no-deep-duplicate");
     args.help(u"no-deep-duplicate",
@@ -297,7 +297,7 @@ bool ts::TablesLogger::loadArgs(DuckContext& duck, Args& args)
     args.getValue(_udp_destination, u"ip-udp");
 
     _bin_stdout = _use_binary && (_bin_destination.empty() || _bin_destination == u"-");
-    _bin_multi_files = !_bin_stdout && args.present(u"multiple-files");
+    _multiple_files = args.present(u"multiple-files");
     _rewrite_binary = !_bin_stdout && args.present(u"rewrite-binary");
     _rewrite_xml = args.present(u"rewrite-xml");
     _rewrite_json = args.present(u"rewrite-json");
@@ -329,8 +329,8 @@ bool ts::TablesLogger::loadArgs(DuckContext& duck, Args& args)
     _use_next = args.present(u"include-next");
 
     // Check consistency of options.
-    if (_rewrite_binary && _bin_multi_files) {
-        args.error(u"options --rewrite-binary and --multiple-files are incompatible");
+    if ((_rewrite_binary || _rewrite_json || _rewrite_xml) && _multiple_files) {
+        args.error(u"--rewrite options and --multiple-files are incompatible");
         return false;
     }
     if ((_use_xml || _use_json || _log_xml_line || _log_json_line || _udp_format != SectionFormat::BINARY) && (_all_sections && !_pack_all_sections)) {
@@ -426,13 +426,13 @@ bool ts::TablesLogger::open()
     _x2j_conv.setTweaks(_xml_tweaks);
 
     // Open/create the XML output.
-    if (_use_xml && !_rewrite_xml && _xml_doc.open(u"tsduck", u"", _xml_destination, std::cout) == nullptr) {
+    if (_use_xml && !_multiple_files && !_rewrite_xml && _xml_doc.open(u"tsduck", u"", _xml_destination, std::cout) == nullptr) {
         _abort = true;
         return false;
     }
 
     // Open/create the JSON output.
-    if (_use_json && !_rewrite_json) {
+    if (_use_json && !_multiple_files && !_rewrite_json) {
         json::ValuePtr root;
         if (_xml_tweaks.x2jIncludeRoot) {
             root = std::make_shared<json::Object>();
@@ -446,7 +446,7 @@ bool ts::TablesLogger::open()
     }
 
     // Open/create the binary output.
-    if (_use_binary && !_bin_multi_files && !_rewrite_binary && !createBinaryFile(_bin_destination)) {
+    if (_use_binary && !_multiple_files && !_rewrite_binary && !createBinaryFile(_bin_destination)) {
         _abort = true;
         return false;
     }
@@ -617,12 +617,17 @@ void ts::TablesLogger::handleTable(SectionDemux& demux, const BinaryTable& table
 
     // Save table in XML format.
     if (_use_xml) {
-        if (_rewrite_xml) {
+        if (_rewrite_xml || _multiple_files) {
             // Build and save a new document each time.
             xml::Document doc(_report);
             doc.initialize(u"tsduck");
             table.toXML(_duck, doc.rootElement(), _xml_options);
-            doc.save(_xml_destination, 2);
+            if (_multiple_files) {
+                doc.save(BuildFileName(_xml_destination, &table, nullptr), 2);
+            }
+            else {
+                doc.save(_xml_destination, 2);
+            }
         }
         else {
             // Just add the table in the running doc.
@@ -638,8 +643,12 @@ void ts::TablesLogger::handleTable(SectionDemux& demux, const BinaryTable& table
         xml::Document doc(_report);
         doc.initialize(u"tsduck");
         table.toXML(_duck, doc.rootElement(), _xml_options);
-        if (_rewrite_json) {
-            // Convert to JSON and save a new document each time.
+        if (_multiple_files) {
+            // Convert to JSON and save a new document each time in a new file.
+            _x2j_conv.convertToJSON(doc)->save(BuildFileName(_json_destination, &table, nullptr), 2, true, _report);
+        }
+        else if (_rewrite_json) {
+            // Convert to JSON and save a new document each time in the same file.
             _x2j_conv.convertToJSON(doc)->save(_json_destination, 2, true, _report);
         }
         else {
@@ -1083,25 +1092,47 @@ bool ts::TablesLogger::createBinaryFile(const fs::path& name)
 
 
 //----------------------------------------------------------------------------
+// Build an output file name from a table or section (with --multiple-files).
+//----------------------------------------------------------------------------
+
+fs::path ts::TablesLogger::BuildFileName(const fs::path& pattern, const BinaryTable* table, const Section* section)
+{
+    // If pattern is "" or "-", this means use standard output. Don't use multiple files.
+    if (pattern.empty() || pattern == u"-") {
+        return pattern;
+    }
+
+    // Build the suffix with table or section parameters.
+    UString suffix;
+    if (section != nullptr) {
+        suffix.format(u"_p%04X_t%02X", section->sourcePID(), section->tableId());
+        if (section->isLongSection()) {
+            suffix.format(u"_e%04X_v%02X_s%02X", section->tableIdExtension(), section->version(), section->sectionNumber());
+        }
+    }
+    else if (table != nullptr) {
+        suffix.format(u"_p%04X_t%02X", table->sourcePID(), table->tableId());
+        if (table->isLongSection()) {
+            suffix.format(u"_e%04X_v%02X", table->tableIdExtension(), table->version());
+        }
+    }
+
+    // Insert the suffix in the file name.
+    fs::path outname(pattern);
+    outname.replace_filename(pattern.stem() + suffix + pattern.extension());
+    return outname;
+}
+
+
+//----------------------------------------------------------------------------
 // Save a section in a binary file
 //----------------------------------------------------------------------------
 
 void ts::TablesLogger::saveBinarySection(const Section& sect)
 {
     // Create individual file for this section if required.
-    if (_bin_multi_files) {
-        // Build a unique file name for this section
-        UString suffix;
-        suffix.format(u"_p%04X_t%02X", sect.sourcePID(), sect.tableId());
-        if (sect.isLongSection()) {
-            suffix.format(u"_e%04X_v%02X_s%02X", sect.tableIdExtension(), sect.version(), sect.sectionNumber());
-        }
-        fs::path outname(_bin_destination);
-        outname.replace_filename(_bin_destination.stem() + suffix + _bin_destination.extension());
-        // Create the output file
-        if (!createBinaryFile(outname)) {
-            return;
-        }
+    if (_multiple_files && !createBinaryFile(BuildFileName(_bin_destination, nullptr, &sect))) {
+        return;
     }
 
     // Write the section to the file
@@ -1109,7 +1140,7 @@ void ts::TablesLogger::saveBinarySection(const Section& sect)
     _abort = _abort || !success;
 
     // Close individual files
-    if (_bin_multi_files && _bin_file.is_open()) {
+    if (_multiple_files && _bin_file.is_open()) {
         _bin_file.close();
     }
 }
