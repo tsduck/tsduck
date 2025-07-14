@@ -13,11 +13,14 @@
 
 #pragma once
 #include "tsCryptoLibrary.h"
+#include "tsSeverity.h"
 
 // Private header, not accessible to applications.
 //! @cond nodoxygen
 
 namespace ts {
+
+    class Report;
 
 #if defined(TS_WINDOWS)
 
@@ -161,6 +164,7 @@ namespace ts {
 
     //!
     //! Internal function to display errors from the underlying cryptographic library on standard error.
+    //! Do nothing if not in debug mode (environment variable TS_DEBUG_OPENSSL not defined).
     //!
     inline void PrintCryptographicLibraryErrors()
     {
@@ -170,6 +174,19 @@ namespace ts {
         }
     #endif
     }
+
+    //!
+    //! Internal function to report errors from the underlying cryptographic library.
+    //! @param [out] report Where to report error messages.
+    //! @param [in] severity Severity level.
+    //!
+    void ReportCryptographicLibraryErrors(Report& report, int severity = Severity::Error);
+
+    //!
+    //! Internal function to get errors from the underlying cryptographic library.
+    //! @param [out] errors List of error messages.
+    //!
+    void GetCryptographicLibraryErrors(UStringList& errors);
 }
 
 //! @endcond

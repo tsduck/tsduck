@@ -8,6 +8,7 @@
 
 #include "tsInitCryptoLibrary.h"
 #include "tsEnvironment.h"
+#include "tsCerrReport.h"
 
 
 //----------------------------------------------------------------------------
@@ -278,3 +279,53 @@ void ts::FetchCipherAlgorithm::terminate()
 TS_LLVM_NOWARNING(missing-variable-declarations)
 bool tsInitCryptoLibraryIsEmpty = true; // Avoid warning about empty module.
 #endif
+
+
+//----------------------------------------------------------------------------
+// Internal function to report errors from the underlying cryptographic library.
+//----------------------------------------------------------------------------
+
+void ts::ReportCryptographicLibraryErrors(Report& report, int severity)
+{
+    UStringList errors;
+    GetCryptographicLibraryErrors(errors);
+    for (const auto& line : errors) {
+        report.log(severity, line);
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Internal function to get errors from the underlying cryptographic library.
+//----------------------------------------------------------------------------
+
+// Callback function for OpenSSL
+#if !defined(TS_WINDOWS) && !defined(TS_NO_OPENSSL)
+namespace {
+    int GetErrorCallback(const char* str, size_t len, void* u)
+    {
+        ts::UStringList* list = reinterpret_cast<ts::UStringList*>(u);
+        if (list != nullptr) {
+            list->push_back(ts::UString::FromUTF8(str, len));
+        }
+        return 0; // undocumented in OpenSSL man pages...
+    }
+}
+#endif
+
+void ts::GetCryptographicLibraryErrors(UStringList& errors)
+{
+    errors.clear();
+
+#if !defined(TS_WINDOWS) && !defined(TS_NO_OPENSSL)
+    // Get error messages in a list of strings.
+    ERR_print_errors_cb(GetErrorCallback, &errors);
+
+    // The error messages are removed from the queue, explicitly apply debug display.
+    if (InitCryptoLibrary::Instance().debug()) {
+        for (const auto& line : errors) {
+            CERR.error(line);
+        }
+    }
+#endif
+}

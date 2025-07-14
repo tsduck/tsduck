@@ -162,9 +162,13 @@ bool ts::TCPConnection::receive(void* data,             // Buffers address
             declareDisconnected(report);
             return false;
         }
+        else if (abort != nullptr && abort->aborting()) {
+            // User-interrupt, end of processing but no error message
+            return false;
+        }
 #if defined(TS_UNIX)
         else if (errcode == EINTR) {
-            // Ignore signal, retry
+            // Ignore signal, retry.
             report.debug(u"recv() interrupted by signal, retrying");
         }
 #endif
