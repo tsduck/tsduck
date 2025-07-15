@@ -103,7 +103,7 @@ namespace ts {
         //!
         static constexpr InnerFEC DEFAULT_INNER_FEC = FEC_AUTO;
         //!
-        //! Satellite index for DiSeqC switches.
+        //! Satellite index for DiSeqC/Unicable switches.
         //! Applies to: DVB-S/S2, ISDB-S.
         //!
         std::optional<size_t> satellite_number {};
@@ -111,6 +111,12 @@ namespace ts {
         //! Default value for satellite_number.
         //!
         static constexpr size_t DEFAULT_SATELLITE_NUMBER = 0;
+        //!
+        //! Unicable parameters for a unicable multiswitch
+        //! Applies to: DVB-S/S2
+        //! See EN50494, EN50607.
+        //!
+        std::optional<UString> unicable {};
         //!
         //! Constellation or modulation type.
         //! Applies to: DVB-T/T2, DVB-S2/Turbo, DVB-C (A,B,C), ATSC.

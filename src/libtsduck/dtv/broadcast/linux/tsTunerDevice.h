@@ -106,8 +106,14 @@ namespace ts {
         // Hard close of the tuner, report can be null.
         void hardClose(Report*);
 
-        // Setup the dish for satellite tuners.
+        // Setup (optional DisEqC 1.0 switches) and the voltage/frequency
+        // to control the LNB.
+        // Includes sending DiSEqC 1.0 commands.
         bool dishControl(const ModulationArgs&, const LNB::Transposition&);
+
+        // Setup the Unicable multiswitch for satellite
+        // On failure returns 0, otherwise returns the user-band frequency in MHz.
+        uint32_t configUnicableSwitch(const ModulationArgs&);
 
         // Extract DTV_STAT_* properties and store it into a SignalState.
         static void GetStat(SignalState& state, std::optional<SignalState::Value> SignalState::* field, const DTVProperties& props, uint32_t cmd);

@@ -68,6 +68,7 @@ void ts::ModulationArgs::clear()
     layer_c_segment_count.reset();
     layer_c_time_interleaving.reset();
     stream_id.reset();
+    unicable.reset();
 }
 
 
@@ -138,7 +139,8 @@ bool ts::ModulationArgs::hasModulationArgs() const
         layer_c_modulation.has_value() ||
         layer_c_segment_count.has_value() ||
         layer_c_time_interleaving.has_value() ||
-        stream_id.has_value();
+        stream_id.has_value() ||
+        unicable.has_value();
 }
 
 
@@ -795,6 +797,9 @@ std::ostream& ts::ModulationArgs::display(std::ostream& strm, const ts::UString&
             if (verbose) {
                 strm << margin << "Satellite number: " << satellite_number.value_or(DEFAULT_SATELLITE_NUMBER) << std::endl;
             }
+            if (unicable.has_value()) {
+                strm << margin << "Unicable params: " << unicable.value() << std::endl;
+            }
             break;
         }
         case TT_ISDB_S: {
@@ -974,6 +979,9 @@ ts::UString ts::ModulationArgs::toPluginOptions(bool no_local) const
             if (!no_local && satellite_number.has_value()) {
                 opt += UString::Format(u" --satellite-number %d", satellite_number.value());
             }
+            if (!no_local && unicable.has_value()) {
+                opt += UString::Format(u" --unicable %s", unicable.value());
+            }
             break;
         }
         case TT_ISDB_S: {
@@ -1124,6 +1132,9 @@ void ts::ModulationArgs::toJSON(json::Object& obj) const
     if (stream_id.has_value() && stream_id != DEFAULT_STREAM_ID) {
         obj.add(u"stream-id", stream_id.value());
     }
+    if (unicable.has_value()) {
+        obj.add(u"unicable", unicable.value());
+    }
     if (inversion.has_value() && inversion != DEFAULT_INVERSION) {
         obj.add(u"spectral-inversion", SpectralInversionEnum().name(inversion.value()));
     }
@@ -1215,6 +1226,7 @@ bool ts::ModulationArgs::loadArgs(DuckContext& duck, Args& args)
         }
     }
     args.getOptionalIntValue(satellite_number, u"satellite-number");
+    args.getOptionalValue(unicable, u"unicable");
 
     // Mark arguments as invalid is some errors were found.
     if (!status) {
@@ -1250,6 +1262,15 @@ void ts::ModulationArgs::defineArgs(Args& args, bool allow_short_options)
               u"For compatibility, the legacy format 'low_freq[,high_freq,switch_freq]' is also accepted "
               u"(all frequencies are in MHz). The default is a universal extended LNB.");
 
+    args.option(u"unicable", 0, Args::STRING);
+    args.help(u"unicable",
+              u"Use this option to indicate that the receiver is connected to "
+              u"the satellite dish(es) via a Unicable multiswitch,"
+              u"and provide the necessary parameters."
+              u"Where value is of the form: <version>,<userband slot>,<userband frequency in MHz>. "
+              u"version = 1 indicates EN50494, "
+              u"version = 2 indicates EN50607.");
+
     args.option(u"spectral-inversion", 0, SpectralInversionEnum());
     args.help(u"spectral-inversion",
               u"Spectral inversion. The default is \"auto\".");
@@ -1269,8 +1290,12 @@ void ts::ModulationArgs::defineArgs(Args& args, bool allow_short_options)
 
     args.option(u"satellite-number", 0, Args::INTEGER, 0, 1, 0, 3);
     args.help(u"satellite-number",
-              u"Used for satellite tuners only. Satellite/dish number. "
-              u"Must be 0 to 3 with DiSEqC switches and 0 to 1 fornon-DiSEqC switches. The default is 0.");
+              u"Used for satellite tuners only, defaults to 0. Satellite/dish number. "
+              u"Must be: "
+              u"0 to 3 for DiSEqC 1.0 switches; "
+              u"0 to 1 for DiSEqC tone-burst switches."
+              u"0 to 1 for Unicable v1 switches; "
+              u"0 to 63 for Unicable v2 switches.");
 
     args.option(u"modulation", allow_short_options ? 'm' : 0, ModulationEnum());
     args.help(u"modulation",
