@@ -174,6 +174,7 @@ bool ts::json::OutputArgs::tcpConnect(Report& rep)
              _tcp_sock.bind(IPSocketAddress::AnySocketAddress4, rep) &&
              _tcp_sock.connect(_tcp_destination, rep))
     {
+        _telnet_sock.reset();
         return true;
     }
     else {
@@ -253,12 +254,12 @@ bool ts::json::OutputArgs::report(const json::Value& root, Report& rep)
         if (_json_tcp) {
             tcp_ok = tcpConnect(rep);
             if (tcp_ok) {
-                tcp_ok = _tcp_sock.sendLine(line8, rep);
+                tcp_ok = _telnet_sock.sendLine(line8, rep);
                 // In case of send error, retry opening the socket once.
                 // This is useful when the session is kept open and the server disconnected since last time.
                 if (!tcp_ok) {
                     tcpDisconnect(true, rep);
-                    tcp_ok = tcpConnect(rep) && _tcp_sock.sendLine(line8, rep);
+                    tcp_ok = tcpConnect(rep) && _telnet_sock.sendLine(line8, rep);
                 }
                 // Disconnect on error or when the connection shall not be kept open.
                 tcpDisconnect(!tcp_ok, rep);

@@ -585,7 +585,7 @@ void ts::DataInjectPlugin::TCPListener::main()
         tlv::MessagePtr msg;
 
         // Loop on message reception from the client
-        while (ok && _client.receive(msg, _plugin->tsp, _plugin->_logger)) {
+        while (ok && _client.receiveMessage(msg, _plugin->tsp, _plugin->_logger)) {
 
             // Message handling.
             // We do not send errors back to client, we just disconnect
@@ -617,7 +617,7 @@ void ts::DataInjectPlugin::TCPListener::main()
                         }
                     }
                     if (send_status) {
-                        ok = _client.send(channel_status, _plugin->_logger);
+                        ok = _client.sendMessage(channel_status, _plugin->_logger);
                     }
                     break;
                 }
@@ -636,7 +636,7 @@ void ts::DataInjectPlugin::TCPListener::main()
                         }
                     }
                     if (send_status) {
-                        ok = _client.send(channel_status, _plugin->_logger);
+                        ok = _client.sendMessage(channel_status, _plugin->_logger);
                     }
                     break;
                 }
@@ -676,7 +676,7 @@ void ts::DataInjectPlugin::TCPListener::main()
                         }
                     }
                     if (send_status) {
-                        ok = _client.send(stream_status, _plugin->_logger);
+                        ok = _client.sendMessage(stream_status, _plugin->_logger);
                     }
                     break;
                 }
@@ -695,7 +695,7 @@ void ts::DataInjectPlugin::TCPListener::main()
                         }
                     }
                     if (send_status) {
-                        ok = _client.send(stream_status, _plugin->_logger);
+                        ok = _client.sendMessage(stream_status, _plugin->_logger);
                     }
                     break;
                 }
@@ -722,14 +722,14 @@ void ts::DataInjectPlugin::TCPListener::main()
                         }
                     }
                     if (send_resp) {
-                        ok = _client.send(resp, _plugin->_logger);
+                        ok = _client.sendMessage(resp, _plugin->_logger);
                     }
                     break;
                 }
 
                 case emmgmux::Tags::stream_BW_request: {
                     emmgmux::StreamBWAllocation response(_plugin->_protocol);
-                    ok = _plugin->processBandwidthRequest(msg, response) && _client.send(response, _plugin->_logger);
+                    ok = _plugin->processBandwidthRequest(msg, response) && _client.sendMessage(response, _plugin->_logger);
                     break;
                 }
 

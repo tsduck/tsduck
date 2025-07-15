@@ -51,7 +51,7 @@ namespace ts {
 
         //!
         //! Load arguments from command line.
-        //! Apply defaultss from environment variables and Influx configurations file.
+        //! Apply defaults from environment variables and Influx configurations file.
         //! Args error indicator is set in case of incorrect arguments.
         //! @param [in,out] args Command line arguments.
         //! @param [in] required If true, all arguments to connect to InfluuxDB are required.

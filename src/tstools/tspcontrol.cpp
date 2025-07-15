@@ -95,21 +95,22 @@ int MainCode(int argc, char *argv[])
     Options opt(argc, argv);
 
     // Open a text connection to the tsp server.
-    ts::TelnetConnection conn;
+    ts::TCPConnection client;
+    ts::TelnetConnection telnet(client);
     ts::IPSocketAddress addr;
     ts::UString resp;
 
-    if (conn.open(opt.tsp_address.generation(), opt) &&
-        conn.bind(addr, opt) &&
-        conn.connect(opt.tsp_address, opt) &&
-        conn.sendLine(opt.command, opt) &&
-        conn.closeWriter(opt))
+    if (client.open(opt.tsp_address.generation(), opt) &&
+        client.bind(addr, opt) &&
+        client.connect(opt.tsp_address, opt) &&
+        telnet.sendLine(opt.command, opt) &&
+        client.closeWriter(opt))
     {
         // Request successfully sent, read the responses.
-        while (conn.receiveLine(resp, nullptr, opt)) {
+        while (telnet.receiveLine(resp, nullptr, opt)) {
             std::cout << resp << std::endl;
         }
-        conn.close(opt);
+        client.close(opt);
     }
 
     return opt.valid() ? EXIT_SUCCESS : EXIT_FAILURE;

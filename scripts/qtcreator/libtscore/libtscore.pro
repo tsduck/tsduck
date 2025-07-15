@@ -7,7 +7,7 @@ INCLUDEPATH += $$system("find $$SRCROOT/libtscore -type d ! -name windows ! -nam
 linux|mac {
     QMAKE_CXXFLAGS += $$system("curl-config --cflags")
     LIBS += $$system("curl-config --libs")
-    LIBS += -lcrypto
+    LIBS += -lssl -lcrypto
 }
 
 mac {

@@ -138,9 +138,9 @@ bool ts::TCPConnection::send(const void* buffer, size_t size, Report& report)
 // (in case of user-interrupt, return, otherwise retry).
 //----------------------------------------------------------------------------
 
-bool ts::TCPConnection::receive(void* data,             // Buffers address
-                                size_t max_size,        // Buffer size
-                                size_t& ret_size,       // Received message size
+bool ts::TCPConnection::receive(void* data,
+                                size_t max_size,
+                                size_t& ret_size,
                                 const AbortInterface* abort,
                                 Report& report)
 {
@@ -182,7 +182,6 @@ bool ts::TCPConnection::receive(void* data,             // Buffers address
         }
     }
 }
-
 
 
 //----------------------------------------------------------------------------

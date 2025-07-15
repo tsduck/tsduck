@@ -7,7 +7,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsSHA512.h"
-#include "tsInitCryptoLibrary.h"
+#include "tsFetchAlgorithm.h"
 
 ts::SHA512::~SHA512()
 {

@@ -98,6 +98,15 @@ endif::[]
 |When defined to any non-empty value, do not check new versions.
  By default, `tsp` checks the availability of a new version at most once a day (unless TSDuck was built without version check).
 
+|TSDUCK_TLS_CERTIFICATE
+|Default value for option `--certificate-path`.
+
+|TSDUCK_TLS_KEY
+|Default value for option `--key-path`.
+
+|TSDUCK_TLS_USER
+|When defined to any non-empty value, this is equivalent to option `--user-certificate`.
+
 |TSLIBEXT_IGNORE
 |A comma-separated list of extension names to ignore.
  This can be used to prevent loading a specific list of extensions.

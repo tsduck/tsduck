@@ -61,7 +61,7 @@ ts::UString ts::WebRequest::_default_proxy_assword(DefaultProxy::Instance().url.
 
 
 //----------------------------------------------------------------------------
-// Constructor.
+// Constructors and destructor.
 //----------------------------------------------------------------------------
 
 ts::WebRequest::WebRequest(Report& report) :
@@ -70,11 +70,6 @@ ts::WebRequest::WebRequest(Report& report) :
     allocateGuts();
     CheckNonNull(_guts);
 }
-
-
-//----------------------------------------------------------------------------
-// Destructor.
-//----------------------------------------------------------------------------
 
 ts::WebRequest::~WebRequest()
 {

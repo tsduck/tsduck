@@ -9,7 +9,6 @@
 #include "tsEMMGClient.h"
 #include "tsOneShotPacketizer.h"
 #include "tstlvSerializer.h"
-#include "tsSection.h"
 #include "tsTSPacket.h"
 #include "tsNullReport.h"
 
@@ -169,7 +168,7 @@ bool ts::EMMGClient::connect(const IPSocketAddress& mux,
     channel_setup.channel_id = data_channel_id;
     channel_setup.client_id = client_id;
     channel_setup.section_TSpkt_flag = !section_format;
-    if (!_connection.send(channel_setup, _logger)) {
+    if (!_connection.sendMessage(channel_setup, _logger)) {
         return abortConnection();
     }
 
@@ -199,7 +198,7 @@ bool ts::EMMGClient::connect(const IPSocketAddress& mux,
     stream_setup.client_id = client_id;
     stream_setup.data_id = data_id;
     stream_setup.data_type = data_type;
-    if (!_connection.send(stream_setup, _logger)) {
+    if (!_connection.sendMessage(stream_setup, _logger)) {
         return abortConnection();
     }
 
@@ -261,14 +260,14 @@ bool ts::EMMGClient::disconnect()
         req.channel_id = _stream_status.channel_id;
         req.stream_id = _stream_status.stream_id;
         req.client_id = _stream_status.client_id;
-        ok = _connection.send(req, _logger) && waitResponse() == emmgmux::Tags::stream_close_response;
+        ok = _connection.sendMessage(req, _logger) && waitResponse() == emmgmux::Tags::stream_close_response;
 
         // If we get a polite reply, send a channel_close
         if (ok) {
             emmgmux::ChannelClose cc(_protocol);
             cc.channel_id = _channel_status.channel_id;
             cc.client_id = _channel_status.client_id;
-            ok = _connection.send(cc, _logger);
+            ok = _connection.sendMessage(cc, _logger);
         }
     }
 
@@ -307,7 +306,7 @@ bool ts::EMMGClient::requestBandwidth(uint16_t bandwidth, bool synchronous)
     request.client_id = _stream_status.client_id;
     request.has_bandwidth = true;
     request.bandwidth = bandwidth;
-    if (!_connection.send(request, _logger)) {
+    if (!_connection.sendMessage(request, _logger)) {
         return false;
     }
 
@@ -401,7 +400,7 @@ bool ts::EMMGClient::dataProvision(const std::vector<ByteBlockPtr>& data)
     else {
         // Send data_provision messages using TCP.
         // The data_provision message is automatically serialized by the tlv::Connection object.
-        return _connection.send(request, _logger);
+        return _connection.sendMessage(request, _logger);
     }
 }
 
@@ -478,7 +477,7 @@ void ts::EMMGClient::main()
         // Loop on message reception
         tlv::MessagePtr msg;
         bool ok = true;
-        while (ok && _connection.receive(msg, abort, _logger)) {
+        while (ok && _connection.receiveMessage(msg, abort, _logger)) {
             // Is this kind of response worth reporting to the application?
             bool reportResponse = true;
 
@@ -486,13 +485,13 @@ void ts::EMMGClient::main()
                 case emmgmux::Tags::channel_test: {
                     // Automatic reply to channel_test
                     reportResponse = false;
-                    ok = _connection.send(_channel_status, _logger);
+                    ok = _connection.sendMessage(_channel_status, _logger);
                     break;
                 }
                 case emmgmux::Tags::stream_test: {
                     // Automatic reply to stream_test
                     reportResponse = false;
-                    ok = _connection.send(_stream_status, _logger);
+                    ok = _connection.sendMessage(_stream_status, _logger);
                     break;
                 }
                 case emmgmux::Tags::stream_BW_allocation: {
