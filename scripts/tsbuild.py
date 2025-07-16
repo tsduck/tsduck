@@ -66,6 +66,10 @@ def version():
     else:
         return match.group(1), match.group(2), match.group(3)
 
+# Get Python version.
+def python_version():
+    return '%d.%d.%d' % (sys.version_info.major, sys.version_info.minor, sys.version_info.micro)
+
 # Get a description of the operating system and distro.
 def distro():
     if os.name == 'nt':
