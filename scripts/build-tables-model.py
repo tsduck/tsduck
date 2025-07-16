@@ -47,7 +47,10 @@ if __name__ == '__main__':
     for topic in root:
         topic[:] = sorted(topic, key=lambda e: e.tag.lower() if isinstance(e.tag, str) else '')
     # Pretty print the XML file.
-    ET.indent(root)
+    if hasattr(ET, 'ident'):
+        ET.indent(root)
+    else:
+        print('Not pretty printing XML (not supported by Python<3.9)')
     # Generate the output file, remove empty lines.
     with open(sys.argv[1], 'w', encoding='utf-8') as output:
         print('<?xml version="1.0" encoding="UTF-8"?>', file=output)
