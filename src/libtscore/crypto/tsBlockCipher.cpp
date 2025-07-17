@@ -8,7 +8,6 @@
 
 #include "tsBlockCipher.h"
 #include "tsBlockCipherAlertInterface.h"
-#include "tsInitCryptoLibrary.h"
 #include "tsFatal.h"
 
 
@@ -20,7 +19,6 @@ ts::BlockCipher::BlockCipher(const BlockCipherProperties& props) :
     properties(props),
     work(props.work_blocks * props.block_size)
 {
-    InitCryptographicLibrary();
     if (props.fixed_iv != nullptr) {
         _current_iv.copy(props.fixed_iv, props.fixed_iv_size);
 #if defined(TS_WINDOWS)
@@ -402,7 +400,7 @@ bool ts::BlockCipher::encryptImpl(const void* plain, size_t plain_length, void* 
     // Initialize key encryption context the first time.
     if (_encrypt == nullptr) {
         if ((_encrypt = EVP_CIPHER_CTX_new()) == nullptr) {
-            PrintCryptographicLibraryErrors();
+            OpenSSL::DebugErrors();
             return false;
         }
         if (EVP_EncryptInit_ex(_encrypt, _algo, nullptr, _current_key.data(), nullptr) <= 0 ||
@@ -410,7 +408,7 @@ bool ts::BlockCipher::encryptImpl(const void* plain, size_t plain_length, void* 
         {
             EVP_CIPHER_CTX_free(_encrypt);
             _encrypt = nullptr;
-            PrintCryptographicLibraryErrors();
+            OpenSSL::DebugErrors();
             return false;
         }
     }
@@ -427,7 +425,7 @@ bool ts::BlockCipher::encryptImpl(const void* plain, size_t plain_length, void* 
     if (EVP_EncryptUpdate(_encrypt, output, &output_len, input, int(plain_length)) <= 0 ||
         EVP_EncryptFinal_ex(_encrypt, output + output_len, &final_len) <= 0)
     {
-        PrintCryptographicLibraryErrors();
+        OpenSSL::DebugErrors();
         return false;
     }
     output_len += final_len;
@@ -484,7 +482,7 @@ bool ts::BlockCipher::decryptImpl(const void* cipher, size_t cipher_length, void
     // Initialize key decryption context the first time.
     if (_decrypt == nullptr) {
         if ((_decrypt = EVP_CIPHER_CTX_new()) == nullptr) {
-            PrintCryptographicLibraryErrors();
+            OpenSSL::DebugErrors();
             return false;
         }
         if (EVP_DecryptInit_ex(_decrypt, _algo, nullptr, _current_key.data(), nullptr) <= 0 ||
@@ -492,7 +490,7 @@ bool ts::BlockCipher::decryptImpl(const void* cipher, size_t cipher_length, void
         {
             EVP_CIPHER_CTX_free(_decrypt);
             _decrypt = nullptr;
-            PrintCryptographicLibraryErrors();
+            OpenSSL::DebugErrors();
             return false;
         }
     }
@@ -509,7 +507,7 @@ bool ts::BlockCipher::decryptImpl(const void* cipher, size_t cipher_length, void
     if (EVP_DecryptUpdate(_decrypt, output, &output_len, input, int(cipher_length)) <= 0 ||
         EVP_DecryptFinal_ex(_decrypt, output + output_len, &final_len) <= 0)
     {
-        PrintCryptographicLibraryErrors();
+        OpenSSL::DebugErrors();
         return false;
     }
     output_len += final_len;

@@ -510,7 +510,7 @@ ECMGConnection::ECMGConnection(const CmdOptions& opt, CmdStatistics& stat, Event
     ts::ecmgscs::ChannelSetup channel_setup(_opt.ecmgscs);
     channel_setup.channel_id = _channel_id;
     channel_setup.Super_CAS_id = _opt.super_cas_id;
-    if (!_conn.send(channel_setup, _logger)) {
+    if (!_conn.sendMessage(channel_setup, _logger)) {
         abort();
         return;
     }
@@ -570,7 +570,7 @@ void ECMGConnection::terminate()
                 ts::ecmgscs::StreamCloseRequest msg(_opt.ecmgscs);
                 msg.channel_id = _channel_id;
                 msg.stream_id = uint16_t(_first_stream_id + i);
-                _conn.send(msg, _logger);
+                _conn.sendMessage(msg, _logger);
                 _streams[i].ready = false;
                 _streams[i].closing = true;
             }
@@ -597,7 +597,7 @@ void ECMGConnection::terminate()
         // Send a final channel_close.
         ts::ecmgscs::ChannelClose msg(_opt.ecmgscs);
         msg.channel_id = _channel_id;
-        _conn.send(msg, _logger);
+        _conn.sendMessage(msg, _logger);
     }
 
     // Close the session.
@@ -628,7 +628,7 @@ bool ECMGConnection::sendStreamSetup(uint16_t stream_id)
         msg.stream_id = stream_id;
         msg.ECM_id = uint16_t(_first_ecm_id + index);
         msg.nominal_CP_duration = uint16_t(_opt.cp_duration.count()); // unit is 100 ms
-        return _conn.send(msg, _logger);
+        return _conn.sendMessage(msg, _logger);
     }
 }
 
@@ -661,7 +661,7 @@ bool ECMGConnection::sendRequest(uint16_t stream_id)
         _stat.oneRequest();
 
         // Send the message.
-        return _conn.send(msg, _logger);
+        return _conn.sendMessage(msg, _logger);
     }
 }
 
@@ -679,7 +679,7 @@ void ECMGConnection::main()
     ts::ecmgscs::ChannelStatus channel_status(_opt.ecmgscs);
     channel_status.channel_id = _channel_id;
 
-    while (ok && _conn.receive(msg, nullptr, _logger)) {
+    while (ok && _conn.receiveMessage(msg, nullptr, _logger)) {
         switch (msg->tag()) {
 
             case ts::ecmgscs::Tags::channel_status: {
@@ -700,7 +700,7 @@ void ECMGConnection::main()
                 ts::ecmgscs::ChannelTest* const mp = dynamic_cast<ts::ecmgscs::ChannelTest*>(msg.get());
                 if (checkChannelMessage(mp, u"channel_test")) {
                     // Automatic reply to channel_test
-                    ok = _conn.send(channel_status, _logger);
+                    ok = _conn.sendMessage(channel_status, _logger);
                 }
                 break;
             }
@@ -732,7 +732,7 @@ void ECMGConnection::main()
                     resp.channel_id = _channel_id;
                     resp.stream_id = mp->stream_id;
                     resp.ECM_id = _first_ecm_id + mp->stream_id - _first_stream_id;
-                    ok = _conn.send(resp, _logger);
+                    ok = _conn.sendMessage(resp, _logger);
                 }
                 break;
             }

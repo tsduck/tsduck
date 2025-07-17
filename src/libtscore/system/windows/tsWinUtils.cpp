@@ -16,6 +16,7 @@
 #include "tsBeforeStandardHeaders.h"
 #include <errors.h>
 #include <shellapi.h>
+#include <psapi.h>
 #include <setupapi.h>
 #include <wininet.h>
 #include <dshowasf.h>
@@ -60,33 +61,31 @@ ts::UString ts::ToString(const ::WCHAR* str)
 // Format a Windows error message (Windows-specific).
 //-----------------------------------------------------------------------------
 
-ts::UString ts::WinErrorMessage(::DWORD code, const UString& moduleName, ::DWORD minModuleCode, ::DWORD maxModuleCode)
+ts::UString ts::WinErrorMessage(::DWORD code)
 {
-    UString message;
+    // Try system message first.
+    UString message(2048, CHAR_NULL);
+    ::DWORD length = ::FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM, nullptr, code, 0, message.wc_str(), DWORD(message.size()), nullptr);
 
-    // Start with module-specific error codes.
-    if (!moduleName.empty() && code >= minModuleCode && code <= maxModuleCode) {
-        // Get a handle to the module. Fail if the module is not loaded in memory.
-        // This kind of handle does not need to be closed.
-        const ::HMODULE hmod = ::GetModuleHandleW(moduleName.wc_str());
-        if (hmod != nullptr) {
-            message.resize(1024);
-            ::DWORD length = ::FormatMessageW(FORMAT_MESSAGE_FROM_HMODULE, hmod, code, 0, message.wc_str(), ::DWORD(message.size()), nullptr);
-            message.trimLength(length, true);
+    // If message is empty, try all loaded modules in the process.
+    if (length <= 0) {
+        // Get a list of handles for all loaded modules. These handles shall not be closed here.
+        ::DWORD retsize = 0;
+        std::vector<::HMODULE> hmods(512);
+        if (::EnumProcessModules(::GetCurrentProcess(), hmods.data(), ::DWORD(hmods.size() * sizeof(::HMODULE)), &retsize)) {
+            hmods.resize(std::min<size_t>(hmods.size(), retsize / sizeof(::HMODULE)));
+            // Try all all modules, one by one, until a non-empty message is returned.
+            for (size_t i = 0; length <= 0 && i < hmods.size(); ++i) {
+                length = ::FormatMessageW(FORMAT_MESSAGE_FROM_HMODULE, hmods[i], code, 0, message.wc_str(), DWORD(message.size()), nullptr);
+            }
         }
     }
-
-    // If no message was found from a specific module, search in the system base.
-    if (message.empty()) {
-        message.resize(1024);
-        ::DWORD length = ::FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM, nullptr, code, 0, message.wc_str(), ::DWORD(message.size()), nullptr);
-        message.trimLength(length, true);
-    }
+    message.trimLength(length);
 
     // Get additional information for some special code.
     if (code == ERROR_INTERNET_EXTENDED_ERROR) {
         ::DWORD code2 = 0;
-        ::DWORD length = 0;
+        length = 0;
         // First call without output buffer, to get the required size.
         ::InternetGetLastResponseInfoW(&code2, nullptr, &length);
         if (length > 0) {

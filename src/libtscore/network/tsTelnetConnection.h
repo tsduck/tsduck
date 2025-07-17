@@ -32,20 +32,17 @@ namespace ts {
     //! This class is also a subclass of Report, allowing it to be used to end
     //! log messages.
     //!
-    class TSCOREDLL TelnetConnection: public TCPConnection, public Report
+    class TSCOREDLL TelnetConnection: public Report
     {
-        TS_NOCOPY(TelnetConnection);
+        TS_NOBUILD_NOCOPY(TelnetConnection);
     public:
         //!
-        //! Reference to the superclass.
-        //!
-        using SuperClass = TCPConnection;
-
-        //!
         //! Constructor.
+        //! @param [in,out] connection The underlying connection.
+        //! A reference is kept in this instance.
         //! @param [in] prompt Prompt string to send to the client.
         //!
-        TelnetConnection(const std::string& prompt = std::string());
+        TelnetConnection(TCPConnection& connection, const std::string& prompt = std::string());
 
         //!
         //! Virtual destructor
@@ -53,20 +50,36 @@ namespace ts {
         virtual ~TelnetConnection() override;
 
         //!
-        //! Send a string to the server.
-        //! @param [in] str The string to send to the server.
-        //! @param [in,out] report Where to report errors.
-        //! @return True on success, false on error.
+        //! Get a reference to the associated TCPConnection.
+        //! @return A reference to the associated TCPConnection.
         //!
-        bool send(const std::string& str, Report& report);
+        TCPConnection& connection() { return _connection; }
+
+        //!
+        //! Reset the internal buffer.
+        //! If the underlying TCPConnection is reused for several connections,
+        //! reset() should be called each time a new connection is established.
+        //! Otherwise, the new connection would reuse unread bytes from the
+        //! previous connection.
+        //! @return Always true.
+        //!
+        bool reset();
 
         //!
         //! Send a string to the server.
-        //! @param [in] str The string to send to the server.
+        //! @param [in] str The string to sendText to the server.
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool send(const UString& str, Report& report);
+        bool sendText(const std::string& str, Report& report);
+
+        //!
+        //! Send a string to the server.
+        //! @param [in] str The string to sendText to the server.
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //!
+        bool sendText(const UString& str, Report& report);
 
         //!
         //! Send a text line to the server.
@@ -93,7 +106,7 @@ namespace ts {
         //! @return True on success, false on error.
         //! Return true until the last line of the replies has been received.
         //!
-        bool receive(std::string& data, const AbortInterface* abort, Report& report);
+        bool receiveText(std::string& data, const AbortInterface* abort, Report& report);
 
         //!
         //! Receive character data.
@@ -104,7 +117,7 @@ namespace ts {
         //! @return True on success, false on error.
         //! Return true until the last line of the replies has been received.
         //!
-        bool receive(UString& data, const AbortInterface* abort, Report& report);
+        bool receiveText(UString& data, const AbortInterface* abort, Report& report);
 
         //!
         //! Receive a line.
@@ -157,8 +170,9 @@ namespace ts {
         virtual void writeLog(int severity, const UString& msg) override;
 
     private:
-        std::string _buffer {};
-        std::string _prompt {};
+        TCPConnection& _connection;
+        std::string    _buffer {};
+        std::string    _prompt {};
 
         // Receive all characters until a delimitor has been received.
         bool waitForChunk(const std::string& eol, std::string& data, const AbortInterface*, Report&);

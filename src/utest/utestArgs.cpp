@@ -25,6 +25,7 @@
 #include "tsVatekUtils.h"
 #include "tsRIST.h"
 #include "tsSRTSocket.h"
+#include "tsTLSConnection.h"
 #include "tsunit.h"
 
 // Force inclusion of some modules if statically linked.
@@ -33,6 +34,7 @@ TS_STATIC_REFERENCE(Ref, reinterpret_cast<const void*>(ts::GetCryptographicLibra
 TS_STATIC_REFERENCE(Ref, reinterpret_cast<const void*>(ts::HasDektecSupport));
 TS_STATIC_REFERENCE(Ref, reinterpret_cast<const void*>(ts::SRTSocket::GetLibraryVersion));
 TS_STATIC_REFERENCE(Ref, reinterpret_cast<const void*>(ts::GetRISTLibraryVersion));
+TS_STATIC_REFERENCE(Ref, reinterpret_cast<const void*>(&ts::TLSConnection::FEATURE));
 TS_STATIC_REFERENCE(Ref, reinterpret_cast<const void*>(ts::GetVatekVersion));
 
 
@@ -162,7 +164,7 @@ TSUNIT_DEFINE_TEST(HelpDefault)
                  u"      Display the TSDuck version number.\n"
                  u"      The 'name' must be one of \"acceleration\", \"all\", \"bitrate\", \"compiler\",\n"
                  u"      \"crypto\", \"date\", \"dektec\", \"http\", \"integer\", \"long\", \"rist\", \"short\",\n"
-                 u"      \"srt\", \"system\", \"vatek\", \"zlib\".\n",
+                 u"      \"srt\", \"system\", \"tls\", \"vatek\", \"zlib\".\n",
                  log.messages());
 
     args.setShell(u"{shell}");
@@ -191,7 +193,7 @@ TSUNIT_DEFINE_TEST(HelpDefault)
                  u"      Display the TSDuck version number.\n"
                  u"      The 'name' must be one of \"acceleration\", \"all\", \"bitrate\", \"compiler\",\n"
                  u"      \"crypto\", \"date\", \"dektec\", \"http\", \"integer\", \"long\", \"rist\", \"short\",\n"
-                 u"      \"srt\", \"system\", \"vatek\", \"zlib\".\n",
+                 u"      \"srt\", \"system\", \"tls\", \"vatek\", \"zlib\".\n",
                  log.messages());
 
     log.clear();
@@ -340,7 +342,7 @@ TSUNIT_DEFINE_TEST(HelpCustom)
                  u"      Display the TSDuck version number.\n"
                  u"      The 'name' must be one of \"acceleration\", \"all\", \"bitrate\", \"compiler\",\n"
                  u"      \"crypto\", \"date\", \"dektec\", \"http\", \"integer\", \"long\", \"rist\", \"short\",\n"
-                 u"      \"srt\", \"system\", \"vatek\", \"zlib\".\n",
+                 u"      \"srt\", \"system\", \"tls\", \"vatek\", \"zlib\".\n",
                  log.messages());
 }
 

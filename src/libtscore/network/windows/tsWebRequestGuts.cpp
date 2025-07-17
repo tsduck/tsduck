@@ -141,7 +141,7 @@ void ts::WebRequest::SystemGuts::error(const UString& message, ::DWORD code)
         _request._report.error(u"Web error: %s", message);
     }
     else {
-        _request._report.error(u"Web error: %s (%s)", message, WinErrorMessage(code, u"Wininet.dll", INTERNET_ERROR_BASE, INTERNET_ERROR_LAST));
+        _request._report.error(u"Web error: %s (%s)", message, WinErrorMessage(code));
     }
 }
 

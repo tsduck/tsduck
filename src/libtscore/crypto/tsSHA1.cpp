@@ -7,7 +7,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsSHA1.h"
-#include "tsInitCryptoLibrary.h"
+#include "tsFetchAlgorithm.h"
 
 ts::SHA1::~SHA1()
 {

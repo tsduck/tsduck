@@ -7,7 +7,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsSHA256.h"
-#include "tsInitCryptoLibrary.h"
+#include "tsFetchAlgorithm.h"
 
 ts::SHA256::~SHA256()
 {

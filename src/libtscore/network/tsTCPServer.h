@@ -72,7 +72,7 @@ namespace ts {
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool listen(int backlog, Report& report = CERR);
+        virtual bool listen(int backlog, Report& report = CERR);
 
         //!
         //! Wait for an incoming client connection.
@@ -88,9 +88,9 @@ namespace ts {
         //! @return True on success, false on error.
         //! @see listen()
         //!
-        bool accept(TCPConnection& client, IPSocketAddress& addr, Report& report = CERR);
+        virtual bool accept(TCPConnection& client, IPSocketAddress& addr, Report& report = CERR);
 
-        // Inherited and overridden
+        // Inherited methods.
         virtual bool close(Report& report = CERR) override;
     };
 }

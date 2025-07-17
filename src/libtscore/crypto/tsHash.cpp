@@ -8,7 +8,6 @@
 
 #include "tsHash.h"
 #include "tsByteBlock.h"
-#include "tsInitCryptoLibrary.h"
 
 
 //----------------------------------------------------------------------------
@@ -19,7 +18,6 @@ ts::Hash::Hash(const UChar* name, size_t hash_size) :
     _name(name),
     _hash_size(hash_size)
 {
-    InitCryptographicLibrary();
 }
 
 ts::Hash::~Hash()
@@ -101,12 +99,12 @@ bool ts::Hash::init()
 
     // Create the hash context the first time.
     if (_context == nullptr && (_context = EVP_MD_CTX_new()) == nullptr) {
-        PrintCryptographicLibraryErrors();
+        OpenSSL::DebugErrors();
         return false;
     }
     // Copy the content of the reference context. This is much faster than fetching the algo again.
     if (!EVP_MD_CTX_copy_ex(_context, referenceContext())) {
-        PrintCryptographicLibraryErrors();
+        OpenSSL::DebugErrors();
         return false;
     }
     return true;
@@ -138,7 +136,7 @@ bool ts::Hash::add(const void* data, size_t size)
 #elif !defined(TS_NO_OPENSSL)
 
     const bool ok = _context != nullptr && EVP_DigestUpdate(_context, data, size);
-    PrintCryptographicLibraryErrors();
+    OpenSSL::DebugErrors();
     return ok;
 
 #else
@@ -179,7 +177,7 @@ bool ts::Hash::getHash(void* hash, size_t bufsize, size_t* retsize)
 #elif !defined(TS_NO_OPENSSL)
 
     const bool ok = _context != nullptr && EVP_DigestFinal_ex(_context, reinterpret_cast<unsigned char*>(hash), nullptr);
-    PrintCryptographicLibraryErrors();
+    OpenSSL::DebugErrors();
     return ok;
 
 #else

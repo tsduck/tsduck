@@ -313,6 +313,9 @@ endif::[]
 |system
 |Description of the running system.
 
+|tls
+|Version of the SSL/TLS library.
+
 |vatek
 |Version of the VATek library (for VATek-based modulators).
 

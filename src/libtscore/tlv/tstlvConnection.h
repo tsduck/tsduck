@@ -53,20 +53,20 @@ namespace ts::tlv {
         explicit Connection(const Protocol& protocol, bool auto_error_response = true, size_t max_invalid_msg = 0);
 
         //!
-        //! Serialize and send a TLV message.
-        //! @param [in] msg The message to send.
+        //! Serialize and sendMessage a TLV message.
+        //! @param [in] msg The message to sendMessage.
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool send(const Message& msg, Report& report);
+        bool sendMessage(const Message& msg, Report& report);
 
         //!
-        //! Serialize and send a TLV message.
-        //! @param [in] msg The message to send.
+        //! Serialize and sendMessage a TLV message.
+        //! @param [in] msg The message to sendMessage.
         //! @param [in,out] logger Where to report errors and messages.
         //! @return True on success, false on error.
         //!
-        bool send(const Message& msg, Logger& logger);
+        bool sendMessage(const Message& msg, Logger& logger);
 
         //!
         //! Receive a TLV message.
@@ -78,7 +78,7 @@ namespace ts::tlv {
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool receive(MessagePtr& msg, const AbortInterface* abort, Report& report);
+        bool receiveMessage(MessagePtr& msg, const AbortInterface* abort, Report& report);
 
         //!
         //! Receive a TLV message.
@@ -90,7 +90,7 @@ namespace ts::tlv {
         //! @param [in,out] logger Where to report errors and messages.
         //! @return True on success, false on error.
         //!
-        bool receive(MessagePtr& msg, const AbortInterface* abort, Logger& logger);
+        bool receiveMessage(MessagePtr& msg, const AbortInterface* abort, Logger& logger);
 
         //!
         //! Get invalid incoming messages processing.
@@ -162,17 +162,17 @@ void ts::tlv::Connection<SAFETY>::handleConnected(Report& report)
 }
 TS_POP_WARNING()
 
-// Serialize and send a TLV message.
+// Serialize and sendMessage a TLV message.
 template <ts::ThreadSafety SAFETY>
-bool ts::tlv::Connection<SAFETY>::send(const Message& msg, Report& report)
+bool ts::tlv::Connection<SAFETY>::sendMessage(const Message& msg, Report& report)
 {
     tlv::Logger logger(Severity::Debug, &report);
-    return send(msg, logger);
+    return sendMessage(msg, logger);
 }
 
-// Serialize and send a TLV message.
+// Serialize and sendMessage a TLV message.
 template <ts::ThreadSafety SAFETY>
-bool ts::tlv::Connection<SAFETY>::send(const Message& msg, Logger& logger)
+bool ts::tlv::Connection<SAFETY>::sendMessage(const Message& msg, Logger& logger)
 {
     logger.log(msg, u"sending message to " + peerName());
 
@@ -186,15 +186,15 @@ bool ts::tlv::Connection<SAFETY>::send(const Message& msg, Logger& logger)
 
 // Receive a TLV message (wait for the message, deserialize it and validate it)
 template <ts::ThreadSafety SAFETY>
-bool ts::tlv::Connection<SAFETY>::receive(MessagePtr& msg, const AbortInterface* abort, Report& report)
+bool ts::tlv::Connection<SAFETY>::receiveMessage(MessagePtr& msg, const AbortInterface* abort, Report& report)
 {
     tlv::Logger logger(Severity::Debug, &report);
-    return receive(msg, abort, logger);
+    return receiveMessage(msg, abort, logger);
 }
 
 // Receive a TLV message (wait for the message, deserialize it and validate it)
 template <ts::ThreadSafety SAFETY>
-bool ts::tlv::Connection<SAFETY>::receive(MessagePtr& msg, const AbortInterface* abort, Logger& logger)
+bool ts::tlv::Connection<SAFETY>::receiveMessage(MessagePtr& msg, const AbortInterface* abort, Logger& logger)
 {
     const bool has_version(_protocol.hasVersion());
     const size_t header_size(has_version ? 5 : 4);
@@ -239,7 +239,7 @@ bool ts::tlv::Connection<SAFETY>::receive(MessagePtr& msg, const AbortInterface*
         if (_auto_error_response) {
             MessagePtr resp;
             mf.buildErrorResponse(resp);
-            if (!send(*resp, logger.report())) {
+            if (!sendMessage(*resp, logger.report())) {
                 return false;
             }
         }

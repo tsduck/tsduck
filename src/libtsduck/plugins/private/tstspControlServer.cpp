@@ -119,34 +119,36 @@ void ts::tsp::ControlServer::main()
 
     // Client address and connection.
     IPSocketAddress source;
-    TelnetConnection conn;
+    TCPConnection client;
     UString line;
 
     // Loop on incoming connections.
     // Since the commands are expected to be short, treat only one at a time.
-    while (_server.accept(conn, source, error)) {
+    while (_server.accept(client, source, error)) {
+
+        TelnetConnection telnet(client);
 
         // Filter allowed sources.
         // Set receive timeout on the connection and read one line.
         if (std::find(_options.control_sources.begin(), _options.control_sources.end(), IPAddress(source)) == _options.control_sources.end()) {
             _log.warning(u"connection attempt from unauthorized source %s (ignored)", source);
-            conn.sendLine("error: client address is not authorized", _log);
+            telnet.sendLine("error: client address is not authorized", _log);
         }
-        else if (conn.setReceiveTimeout(_options.control_timeout, _log) && conn.receiveLine(line, nullptr, _log)) {
+        else if (client.setReceiveTimeout(_options.control_timeout, _log) && telnet.receiveLine(line, nullptr, _log)) {
             _log.verbose(u"received from %s: %s", source, line);
 
             // Reset the severity of the connection before analysing the line.
             // A previous analysis may have used --verbose or --debug.
-            conn.setMaxSeverity(Severity::Info);
+            telnet.setMaxSeverity(Severity::Info);
 
             // Analyze the command, return errors on the client connection.
-            if (_reference.processCommand(line, &conn) != CommandStatus::SUCCESS) {
-                conn.error(u"invalid tsp control command: %s", line);
+            if (_reference.processCommand(line, &telnet) != CommandStatus::SUCCESS) {
+                telnet.error(u"invalid tsp control command: %s", line);
             }
         }
 
-        conn.closeWriter(_log);
-        conn.close(_log);
+        client.closeWriter(_log);
+        client.close(_log);
     }
 
     // If termination was requested, receive error is not an error.

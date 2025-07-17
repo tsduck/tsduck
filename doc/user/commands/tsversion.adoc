@@ -77,7 +77,7 @@ However, it may be compiled with specific `make` options such as `NODEKTEC=1` or
 The option `--support` can be used to test if a feature is available.
 
 [.optdoc]
-The feature name must be one of `all`, `dektec`, `hides`, `http`, `pcsc`, `rist`, `srt`, `vatek`.
+The feature name must be one of `all`, `crypto`, `dektec`, `hides`, `http`, `pcsc`, `rist`, `srt`, `tls`, `vatek`.
 
 [.optdoc]
 Using `all` displays all features.

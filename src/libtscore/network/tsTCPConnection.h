@@ -83,7 +83,7 @@ namespace ts {
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool connect(const IPSocketAddress& addr, Report& report = CERR);
+        virtual bool connect(const IPSocketAddress& addr, Report& report = CERR);
 
         //!
         //! Check if the socket is connected.
@@ -115,14 +115,14 @@ namespace ts {
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool closeWriter(Report& report = CERR);
+        virtual bool closeWriter(Report& report = CERR);
 
         //!
         //! Disconnect from remote partner.
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool disconnect(Report& report = CERR);
+        virtual bool disconnect(Report& report = CERR);
 
         //!
         //! Send data.
@@ -131,12 +131,12 @@ namespace ts {
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool send(const void* data, size_t size, Report& report = CERR);
+        virtual bool send(const void* data, size_t size, Report& report = CERR);
 
         //!
         //! Receive data.
         //!
-        //! This version of receive() returns when "some" data are received into
+        //! This version of receiveMessage() returns when "some" data are received into
         //! the user buffer. The actual received data may be shorter than the
         //! user buffer size.
         //!
@@ -153,21 +153,24 @@ namespace ts {
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool receive(void* buffer,
-                     size_t max_size,
-                     size_t& ret_size,
-                     const AbortInterface* abort = nullptr,
-                     Report& report = CERR);
+        virtual bool receive(void* buffer,
+                             size_t max_size,
+                             size_t& ret_size,
+                             const AbortInterface* abort = nullptr,
+                             Report& report = CERR);
 
         //!
         //! Receive data until buffer is full.
         //!
-        //! This version of receive() returns only when sufficient data are
+        //! This version of receiveMessage() returns only when sufficient data are
         //! received to completely fill the user buffer. The size of the actual
         //! received data is identical to the user buffer size.
         //!
         //! The version is typically useful when the application knows that
         //! a certain amount of data is expected and must wait for them.
+        //!
+        //! This base implementation uses the variable-length version of receiveMessage().
+        //! Therefore, a subclass may only override the variable-length version.
         //!
         //! @param [out] buffer Address of the buffer for the received data.
         //! @param [in] size Size in bytes of the buffer.
@@ -176,10 +179,10 @@ namespace ts {
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool receive(void* buffer,
-                     size_t size,
-                     const AbortInterface* abort = nullptr,
-                     Report& report = CERR);
+        virtual bool receive(void* buffer,
+                             size_t size,
+                             const AbortInterface* abort = nullptr,
+                             Report& report = CERR);
 
     protected:
         //!

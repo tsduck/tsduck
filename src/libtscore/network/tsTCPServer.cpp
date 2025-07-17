@@ -67,7 +67,7 @@ bool ts::TCPServer::accept(TCPConnection& client, IPSocketAddress& client_addres
 
 
 //----------------------------------------------------------------------------
-// Inherited and overridden
+// Close the server resources.
 //----------------------------------------------------------------------------
 
 bool ts::TCPServer::close(Report& report)

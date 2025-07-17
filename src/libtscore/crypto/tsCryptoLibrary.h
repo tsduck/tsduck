@@ -21,34 +21,8 @@
     #if defined(TS_MSC)
         #pragma comment(lib, "bcrypt.lib")
     #endif
-#elif !defined(TS_NO_OPENSSL)
-    #include "tsBeforeStandardHeaders.h"
-    #include <openssl/opensslv.h>
-    #include <openssl/evp.h>
-    #include <openssl/err.h>
-    #if !defined(OPENSSL_VERSION_MAJOR) // before v3
-        #define OPENSSL_VERSION_MAJOR (OPENSSL_VERSION_NUMBER >> 28)
-    #endif
-    #if !defined(OPENSSL_VERSION_MINOR) // before v3
-        #define OPENSSL_VERSION_MINOR ((OPENSSL_VERSION_NUMBER >> 20) & 0xFF)
-    #endif
-    #if OPENSSL_VERSION_MAJOR >= 3
-        // Starting with OpenSSL 3.0, algorithms are stored in providers.
-        #define TS_OPENSSL_PROVIDERS 1
-        #include <openssl/core_names.h>
-        #include <openssl/provider.h>
-    #elif !defined(OPENSSL_atexit)
-        // OpenBSD uses LibreSSL 4.0.0 which says it is OpenSSL 2.0.0 but
-        // emulates OpenSSL v3, except that OPENSSL_atexit is not available.
-        #define OPENSSL_atexit atexit
-    #endif
-    #include "tsAfterStandardHeaders.h"
-
-#elif !defined(TS_NO_CRYPTO_LIBRARY)
-
-    // No support for external library
-    #define TS_NO_CRYPTO_LIBRARY 1
-
+#else
+    #include "tsOpenSSL.h"
 #endif
 
 namespace ts {

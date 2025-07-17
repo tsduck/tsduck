@@ -106,7 +106,7 @@ bool ts::ECMGClient::connect(const ECMGClientArgs& args,
     ecmgscs::ChannelSetup channel_setup(_protocol);
     channel_setup.channel_id = args.ecm_channel_id;
     channel_setup.Super_CAS_id = args.super_cas_id;
-    if (!_connection.send(channel_setup, _logger)) {
+    if (!_connection.sendMessage(channel_setup, _logger)) {
         return abortConnection();
     }
 
@@ -135,7 +135,7 @@ bool ts::ECMGClient::connect(const ECMGClientArgs& args,
     stream_setup.stream_id = args.ecm_stream_id;
     stream_setup.ECM_id = args.ecm_id;
     stream_setup.nominal_CP_duration = uint16_t(args.cp_duration.count()); // unit is 1/10 second
-    if (!_connection.send(stream_setup, _logger)) {
+    if (!_connection.sendMessage(stream_setup, _logger)) {
         return abortConnection();
     }
 
@@ -197,14 +197,14 @@ bool ts::ECMGClient::disconnect()
         tlv::MessagePtr resp;
         // Politely send a stream_close_request
         // and wait for a stream_close_response
-        ok = _connection.send(req, _logger) &&
+        ok = _connection.sendMessage(req, _logger) &&
             _response_queue.dequeue(resp, RESPONSE_TIMEOUT) &&
             resp->tag() == ecmgscs::Tags::stream_close_response;
         // If we get a polite reply, send a channel_close
         if (ok) {
             ecmgscs::ChannelClose cc(_protocol);
             cc.channel_id = _channel_status.channel_id;
-            ok = _connection.send(cc, _logger);
+            ok = _connection.sendMessage(cc, _logger);
         }
     }
 
@@ -267,7 +267,7 @@ bool ts::ECMGClient::generateECM(uint16_t cp_number,
     buildCWProvision(msg, cp_number, current_cw, next_cw, ac, cp_duration);
 
     // Send the CW_provision message
-    if (!_connection.send(msg, _logger)) {
+    if (!_connection.sendMessage(msg, _logger)) {
         return false;
     }
 
@@ -324,7 +324,7 @@ bool ts::ECMGClient::submitECM(uint16_t cp_number,
     }
 
     // Send the CW_provision message
-    bool ok = _connection.send(msg, _logger);
+    bool ok = _connection.sendMessage(msg, _logger);
 
     // Clear asynchronous request on error
     if (!ok) {
@@ -368,16 +368,16 @@ void ts::ECMGClient::main()
         // Loop on message reception
         tlv::MessagePtr msg;
         bool ok = true;
-        while (ok && _connection.receive(msg, abort, _logger)) {
+        while (ok && _connection.receiveMessage(msg, abort, _logger)) {
             switch (msg->tag()) {
                 case ecmgscs::Tags::channel_test: {
                     // Automatic reply to channel_test
-                    ok = _connection.send(_channel_status, _logger);
+                    ok = _connection.sendMessage(_channel_status, _logger);
                     break;
                 }
                 case ecmgscs::Tags::stream_test: {
                     // Automatic reply to stream_test
-                    ok = _connection.send(_stream_status, _logger);
+                    ok = _connection.sendMessage(_stream_status, _logger);
                     break;
                 }
                 case ecmgscs::Tags::ECM_response: {

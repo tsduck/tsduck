@@ -25,17 +25,9 @@ namespace ts {
     //!
     //! Format a Windows error message (Windows-specific).
     //! @param [in] code An error status code.
-    //! @param [in] moduleName Optional module name (ie. "Wininet.dll") to search for additional messages.
-    //! If not empty and @a code is in the range @a minModuleCode to @a maxModuleCode,
-    //! the message is formatted from this module.
-    //! @param [in] minModuleCode Lower bound of error codes in @a module.
-    //! @param [in] maxModuleCode Upper bound of error codes in @a module.
     //! @return The corresponding message string.
     //!
-    TSCOREDLL UString WinErrorMessage(::DWORD code,
-                                      const UString& moduleName = UString(),
-                                      ::DWORD minModuleCode = std::numeric_limits<::DWORD>::min(),
-                                      ::DWORD maxModuleCode = std::numeric_limits<::DWORD>::max());
+    TSCOREDLL UString WinErrorMessage(::DWORD code);
 
     //!
     //! Format the message for a COM status (Windows-specific).
