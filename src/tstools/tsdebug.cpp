@@ -23,6 +23,7 @@
 #include "tsTLSServer.h"
 #include "tsTelnetConnection.h"
 #include "tsSysUtils.h"
+#include "tsIPUtils.h"
 #if defined(TS_WINDOWS)
     #include "tsWinUtils.h"
 #endif
@@ -30,48 +31,82 @@ TS_MAIN(MainCode);
 
 
 //----------------------------------------------------------------------------
-// Windows utility commands.
+// Error message commands.
 //----------------------------------------------------------------------------
 
-#if defined(TS_WINDOWS)
-
 namespace ts {
-    class WinCommands: public CommandLineHandler
+    class ErrorCommands: public CommandLineHandler
     {
-        TS_NOBUILD_NOCOPY(WinCommands);
+        TS_NOBUILD_NOCOPY(ErrorCommands);
     public:
-        WinCommands(CommandLine& cmdline, int flags);
-        virtual ~WinCommands() override;
+        ErrorCommands(CommandLine& cmdline, int flags);
+        virtual ~ErrorCommands() override;
 
     private:
+        // Command line parameters for --category.
+        enum Category {SYSTEM, GETADDRINFO};
+        const Names _category_names {
+            {u"system",      SYSTEM},
+            {u"getaddrinfo", GETADDRINFO},
+        };
+        const std::map<Category, const std::error_category*> _categories {
+            {SYSTEM,      &std::system_category()},
+            {GETADDRINFO, &ts::getaddrinfo_category()},
+        };
+
         // Command handlers.
-        CommandStatus winerror(const UString&, Args&);
+        CommandStatus error(const UString&, Args&);
     };
 }
 
-ts::WinCommands::WinCommands(CommandLine& cmdline, int flags)
+ts::ErrorCommands::ErrorCommands(CommandLine& cmdline, int flags)
 {
-    Args* cmd = cmdline.command(u"winerror", u"Interpret Windows error code", u"[options] code", flags);
-    cmdline.setCommandLineHandler(this, &WinCommands::winerror, u"winerror");
+    Args* cmd = cmdline.command(u"error", u"Interpret system error code", u"[options] code", flags);
+    cmdline.setCommandLineHandler(this, &ErrorCommands::error, u"error");
     cmd->option(u"", 0, Args::UINT32);
-    cmd->help(u"", u"Windows error codes.");
+    cmd->help(u"", u"Error code values.");
+    cmd->option(u"category", 'c', _category_names);
+    cmd->help(u"category", u"C++ category (std::error_category).");
+    cmd->option(u"windows", 'w');
+    cmd->help(u"windows", u"On Windwos, use Win32 functions instead of C++ standard functions.");
 }
 
-ts::WinCommands::~WinCommands()
+ts::ErrorCommands::~ErrorCommands()
 {
 }
 
-ts::CommandStatus ts::WinCommands::winerror(const UString& command, Args& args)
+ts::CommandStatus ts::ErrorCommands::error(const UString& command, Args& args)
 {
-    std::vector<::DWORD> codes;
+    std::vector<int> codes;
     args.getIntValues(codes, u"");
-    for (auto code : codes) {
-        std::cout << UString::Format(u"%X: \"%s\"", code, WinErrorMessage(code)) << std::endl;
+
+    const auto category = _categories.find(args.intValue<Category>(u"category", SYSTEM));
+    if (category == _categories.end()) {
+        args.error(u"invalid category");
+        return CommandStatus::ERROR;
     }
+
+#if defined(TS_WINDOWS)
+    const bool win = args.present(u"windows");
+#else
+    constexpr bool win = false;
+#endif
+
+    for (auto code : codes) {
+        UString message;
+        if (win) {
+#if defined(TS_WINDOWS)
+            message = WinErrorMessage(code);
+#endif
+        }
+        else {
+            message = UString(SysErrorCodeMessage(code, *category->second));
+        }
+        std::cout << UString::Format(u"%X: \"%s\"", code, message) << std::endl;
+    }
+
     return CommandStatus::SUCCESS;
 }
-
-#endif // TS_WINDOWS
 
 
 //----------------------------------------------------------------------------
@@ -819,13 +854,11 @@ namespace ts {
     private:
         // Internal subcommands.
         static constexpr int flags = Args::NO_VERBOSE;
+        ErrorCommands        err {cmdline, flags};
         ZlibCommands         zlib {cmdline, flags};
         NetworkCommands      net {cmdline, flags};
         SendRecvCommands     sendrecv {cmdline, flags};
         ServerCommands       server {cmdline, flags};
-    #if defined(TS_WINDOWS)
-        WinCommands          win {cmdline, flags};
-    #endif
 
         // Inherited methods.
         virtual UString getHelpText(HelpFormat format, size_t line_width = DEFAULT_LINE_WIDTH) const override;
