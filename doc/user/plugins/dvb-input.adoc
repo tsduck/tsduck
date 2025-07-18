@@ -533,7 +533,13 @@ Used for satellite tuners only.
 
 [.optdoc]
 Satellite/dish number.
-Must be 0 to 3 with DiSEqC switches and 0 to 1 for non-DiSEqC switches.
+Valid range is:
+
+* DiSEqC tone burst switch: 0 to 1;
+* DiSEqC 1.0 switch: 0 to 3;
+* Unicable I switch: 0 to 1;
+* Unicable II switch: 0 to 63;
+
 The default is zero.
 
 [.opt]
