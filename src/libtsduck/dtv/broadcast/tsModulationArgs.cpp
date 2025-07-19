@@ -19,6 +19,7 @@
 #include "tsS2SatelliteDeliverySystemDescriptor.h"
 #include "tsTerrestrialDeliverySystemDescriptor.h"
 #include "tsISDBTerrestrialDeliverySystemDescriptor.h"
+#include "tsDektecSupport.h"
 #include "tsCerrReport.h"
 
 
@@ -460,6 +461,18 @@ bool ts::ModulationArgs::GetBitRateATSC(BitRate& bitrate, const ModulationArgs& 
 
 ts::BitRate ts::ModulationArgs::theoreticalBitrate() const
 {
+    // Warning: This is a hack...
+    // We implement a few bitrate calculators in this library. Some more complicated
+    // modulations such as DVB-S2 are not supported here. However, the Dektec DTAPI
+    // library contains more powerful ways of computing bitrates, including DVB-S2.
+    // Because the DTAPI is not open-source, it has been included in an optional shared
+    // library "libtsdektec" that open-source zealots may want to delete. Therefore,
+    // unless you use the "dektec" plugin, this "libtsdektec", if present, is not loaded
+    // inside the process space. By explicitly checking once if Dektec is supported, we
+    // force the load of "libtsdektec". During the load, its initialization registers
+    // its own generic bitrate calculator, which may support additional modulations.
+    [[maybe_unused]] static const bool has_dektec = HasDektecSupport();
+
     BitRate bitrate = 0;
 
     // Try specialized calculators first.
@@ -478,7 +491,7 @@ ts::BitRate ts::ModulationArgs::theoreticalBitrate() const
     }
 
     // Don't know how to compute for that modulation.
-    return false;
+    return 0;
 }
 
 
