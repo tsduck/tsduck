@@ -836,6 +836,113 @@ ts::CommandStatus ts::ServerCommands::server(const UString& command, Args& args)
 
 
 //----------------------------------------------------------------------------
+// HTTP client commands.
+//----------------------------------------------------------------------------
+
+namespace ts {
+    class ClientCommands: public CommandLineHandler, protected NetworkBase
+    {
+        TS_NOBUILD_NOCOPY(ClientCommands);
+
+    public:
+        ClientCommands(CommandLine& cmdline, int flags);
+        virtual ~ClientCommands() override;
+
+    private:
+        // Command handlers.
+        CommandStatus client(const UString&, Args&);
+    };
+}
+
+
+//----------------------------------------------------------------------------
+// HTTP client commands constructor and destructor.
+//----------------------------------------------------------------------------
+
+ts::ClientCommands::ClientCommands(CommandLine& cmdline, int flags)
+{
+    Args* cmd = cmdline.command(u"client", u"Basic HTTP client which dumps its text reponse", u"[options] ip-address:port", flags);
+    cmdline.setCommandLineHandler(this, &ClientCommands::client, u"client");
+    defineIPGenArgs(*cmd);
+    cmd->option(u"", 0, Args::STRING, 1, 1);
+    cmd->help(u"", u"host:port", u"TCP server address.");
+    cmd->option(u"header", 'h', Args::STRING, 0, Args::UNLIMITED_COUNT);
+    cmd->help(u"header", u"Add this request header.");
+    cmd->option(u"request", 'r', Args::STRING);
+    cmd->help(u"request", u"Request line. Default: \"GET /\"");
+    cmd->option(u"tls");
+    cmd->help(u"tls", u"Use SSL/TLS in connections with the TCP server.");
+    cmd->option(u"insecure");
+    cmd->help(u"insecure", u"With --tls, do not verify the certificate of the server.");
+}
+
+ts::ClientCommands::~ClientCommands()
+{
+}
+
+
+//----------------------------------------------------------------------------
+// Basic HTTP client which dumps its response.
+//----------------------------------------------------------------------------
+
+ts::CommandStatus ts::ClientCommands::client(const UString& command, Args& args)
+{
+    loadIPGenArgs(args);
+    const UString destination(args.value(u""));
+    const bool tls = args.present(u"tls");
+    const bool insecure = args.present(u"insecure");
+    const UString request(args.value(u"request", u"GET /"));
+    UStringList headers;
+    args.getValues(headers, u"header");
+
+    // Resolve server socket (we need the full string for the header).
+    const IPSocketAddress addr(destination, args);
+    if (!addr.hasAddress() || !addr.hasPort()) {
+        args.error(u"specify server name and port");
+        return CommandStatus::ERROR;
+    }
+
+    // Build full input lines.
+    headers.push_front(u"Accept: */*");
+    headers.push_front(u"Connection: close");
+    headers.push_front(u"User-Agent: TSDuck");
+    headers.push_front(u"Host: " + destination);
+    headers.push_front(request + u" HTTP/1.1");
+    headers.push_back(u"");
+
+    auto status = CommandStatus::SUCCESS;
+    TCPConnection tcp_client;
+    TLSConnection tls_client;
+    tls_client.setVerifyServer(!insecure);
+    TCPConnection* const client = tls ? &tls_client : &tcp_client;
+    TelnetConnection telnet(*client);
+
+    // Connect to the server.
+    if (!client->open(ip_gen, args) ||
+        !client->bind(IPSocketAddress::AnySocketAddress(ip_gen), args) ||
+        !client->connect(addr, args))
+    {
+        return CommandStatus::ERROR;
+    }
+
+    // Send all input lines.
+    for (const auto& line : headers) {
+        if (!telnet.sendLine(line, args)) {
+            return CommandStatus::ERROR;
+        }
+    }
+
+    // Receive responses.
+    UString response;
+    while (telnet.receiveLine(response, nullptr, args)) {
+        args.info(response);
+    }
+    client->close(args);
+    return status;
+}
+
+
+//----------------------------------------------------------------------------
 // Main command line options.
 //----------------------------------------------------------------------------
 
@@ -859,6 +966,7 @@ namespace ts {
         NetworkCommands      net {cmdline, flags};
         SendRecvCommands     sendrecv {cmdline, flags};
         ServerCommands       server {cmdline, flags};
+        ClientCommands       client {cmdline, flags};
 
         // Inherited methods.
         virtual UString getHelpText(HelpFormat format, size_t line_width = DEFAULT_LINE_WIDTH) const override;

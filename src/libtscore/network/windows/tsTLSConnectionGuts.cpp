@@ -11,6 +11,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsTLSConnection.h"
+#include "tsWinTLS.h"
 
 
 //----------------------------------------------------------------------------
@@ -63,7 +64,15 @@ ts::TLSConnection::SystemGuts::~SystemGuts()
 
 bool ts::TLSConnection::connect(const IPSocketAddress&, Report& report)
 {
+    // Acquire credentials.
+    ::CredHandle cred;
+    if (!GetCredentials(cred, false, _verify_server, nullptr, report)) {
+        return false;
+    }
+
     //@@@@ TO BE CONTINUED
+    ::FreeCredentialsHandle(&cred);
+
     report.error(u"not yet implemented");
     return false;
 }
