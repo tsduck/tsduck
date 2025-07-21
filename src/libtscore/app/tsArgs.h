@@ -1094,8 +1094,9 @@ namespace ts {
         //! is not present in the command line or with fewer occurences than @a index.
         //! @param [in] index The occurence of the option to return. Zero designates the
         //! first occurence.
+        //! @param [in] preferred Preferred IP generation of the resolved address.
         //!
-        void getIPValue(IPAddress& value, const UChar* name = nullptr, const IPAddress& def_value = IPAddress(), size_t index = 0) const;
+        void getIPValue(IPAddress& value, const UChar* name = nullptr, const IPAddress& def_value = IPAddress(), size_t index = 0, IP preferred = IP::Any) const;
 
         //!
         //! Get the value of an option as an IP address in the last analyzed command line.
@@ -1108,9 +1109,10 @@ namespace ts {
         //! is not present in the command line or with fewer occurences than @a index.
         //! @param [in] index The occurence of the option to return. Zero designates the
         //! first occurence.
+        //! @param [in] preferred Preferred IP generation of the resolved address.
         //! @return The resolved IP address value of the option or parameter.
         //!
-        IPAddress ipValue(const UChar* name = nullptr, const IPAddress& def_value = IPAddress(), size_t index = 0) const;
+        IPAddress ipValue(const UChar* name = nullptr, const IPAddress& def_value = IPAddress(), size_t index = 0, IP preferred = IP::Any) const;
 
         //!
         //! Get the value of an option as an IP socket address in the last analyzed command line.
@@ -1126,8 +1128,9 @@ namespace ts {
         //! is copied from @a def_value.
         //! @param [in] index The occurence of the option to return. Zero designates the
         //! first occurence.
+        //! @param [in] preferred Preferred IP generation of the resolved address.
         //!
-        void getSocketValue(IPSocketAddress& value, const UChar* name = nullptr, const IPSocketAddress& def_value = IPSocketAddress(), size_t index = 0) const;
+        void getSocketValue(IPSocketAddress& value, const UChar* name = nullptr, const IPSocketAddress& def_value = IPSocketAddress(), size_t index = 0, IP preferred = IP::Any) const;
 
         //!
         //! Get the value of an option as an IP socket address in the last analyzed command line.
@@ -1142,9 +1145,10 @@ namespace ts {
         //! is not present in the command line or with fewer occurences than @a index.
         //! @param [in] index The occurence of the option to return. Zero designates the
         //! first occurence.
+        //! @param [in] preferred Preferred IP generation of the resolved address.
         //! @return The resolved IP socket address value of the option or parameter.
         //!
-        IPSocketAddress socketValue(const UChar* name = nullptr, const IPSocketAddress& def_value = IPSocketAddress(), size_t index = 0) const;
+        IPSocketAddress socketValue(const UChar* name = nullptr, const IPSocketAddress& def_value = IPSocketAddress(), size_t index = 0, IP preferred = IP::Any) const;
 
         //!
         //! Get the value of an AbstractNumber option in the last analyzed command line.

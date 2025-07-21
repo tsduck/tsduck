@@ -491,7 +491,7 @@ ts::CommandStatus ts::SendRecvCommands::send(const UString& command, Args& args)
     const bool tls = args.present(u"tls");
     const bool insecure = args.present(u"insecure");
     const UString message(args.value(u""));
-    const IPSocketAddress destination(args.socketValue(u"tcp", args.socketValue(u"udp")));
+    const IPSocketAddress destination(args.socketValue(u"tcp", args.socketValue(u"udp", IPSocketAddress(), 0, ip_gen), 0, ip_gen));
 
     if (args.present(u"udp") + args.present(u"tcp") != 1 || !destination.hasAddress()) {
         args.error(u"specify exactly one of --tcp and --udp");
@@ -896,10 +896,14 @@ ts::CommandStatus ts::ClientCommands::client(const UString& command, Args& args)
     args.getValues(headers, u"header");
 
     // Resolve server socket (we need the full string for the header).
-    const IPSocketAddress addr(destination, args);
-    if (!addr.hasAddress() || !addr.hasPort()) {
-        args.error(u"specify server name and port");
+    IPSocketAddress addr(destination, args, ip_gen);
+    if (!addr.hasAddress()) {
+        args.error(u"specify server name");
         return CommandStatus::ERROR;
+    }
+    if (!addr.hasPort()) {
+        // Use default port for http or https.
+        addr.setPort(tls ? 443 : 80);
     }
 
     // Build full input lines.

@@ -105,15 +105,11 @@ bool ts::TLSServer::listen(int backlog, Report& report)
     }
 
     // Create SSL server context.
-    _guts->ssl_ctx = SSL_CTX_new(TLS_server_method());
-    if (_guts->ssl_ctx == nullptr) {
+    if ((_guts->ssl_ctx = OpenSSL::CreateContext(true, false, report)) == nullptr) {
         report.error(u"error creating TLS server context");
         OpenSSL::ReportErrors(report);
         return false;
     }
-
-    // Accept only TLS 1.2 and 1.3, others are obsolete.
-    SSL_CTX_set_min_proto_version(_guts->ssl_ctx, TLS1_2_VERSION);
 
     // Load certificate file (public key).
     if (SSL_CTX_use_certificate_file(_guts->ssl_ctx, certificate_path.toUTF8().c_str(), SSL_FILETYPE_PEM) <= 0) {

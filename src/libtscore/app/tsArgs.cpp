@@ -7,6 +7,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsArgs.h"
+#include "tsNullReport.h"
 #include "tsIntegerUtils.h"
 #include "tsFileUtils.h"
 #include "tsEnvironment.h"
@@ -904,46 +905,64 @@ ts::ByteBlock ts::Args::hexaValue(const UChar* name, const ByteBlock& def_value,
 // Get the value of an option as an IP address or socket address.
 //----------------------------------------------------------------------------
 
-void ts::Args::getIPValue(IPAddress& value, const UChar* name, const IPAddress& def_value, size_t index) const
+void ts::Args::getIPValue(IPAddress& value, const UChar* name, const IPAddress& def_value, size_t index, IP preferred) const
 {
     const IOption& opt(getIOption(name));
     if (opt.type != IPADDR && opt.type != IPSOCKADDR && opt.type != IPSOCKADDR_OA && opt.type != IPSOCKADDR_OP && opt.type != IPSOCKADDR_OAP) {
         fatalArgError(opt.name, u"is not declared as IP address");
     }
-    if (index >= opt.values.size() || !opt.values[index].address.hasAddress()) {
+    else if (index >= opt.values.size() || !opt.values[index].address.hasAddress()) {
         value.setAddress(def_value);
     }
+    else if (preferred != IP::Any && opt.values[index].address.generation() != preferred) {
+        // The parameter was initially resolved with another IP generation.
+        // Try to resolve it again with the preferred generation.
+        if (!value.resolve(opt.values[index].string.value(), NULLREP, preferred)) {
+            // Could not resolve, use initial address, even if not the same generation.
+            value.setAddress(opt.values[index].address);
+        }
+    }
     else {
+        // Use the initially resolved address.
         value.setAddress(opt.values[index].address);
     }
 }
 
-ts::IPAddress ts::Args::ipValue(const UChar* name, const IPAddress& def_value, size_t index) const
+ts::IPAddress ts::Args::ipValue(const UChar* name, const IPAddress& def_value, size_t index, IP preferred) const
 {
     IPAddress value;
-    getIPValue(value, name, def_value, index);
+    getIPValue(value, name, def_value, index, preferred);
     return value;
 }
 
-void ts::Args::getSocketValue(IPSocketAddress& value, const UChar* name, const IPSocketAddress& def_value, size_t index) const
+void ts::Args::getSocketValue(IPSocketAddress& value, const UChar* name, const IPSocketAddress& def_value, size_t index, IP preferred) const
 {
     const IOption& opt(getIOption(name));
     if (opt.type != IPSOCKADDR && opt.type != IPSOCKADDR_OA && opt.type != IPSOCKADDR_OP && opt.type != IPSOCKADDR_OAP) {
         fatalArgError(opt.name, u"is not declared as IP socket address");
     }
-    value = index >= opt.values.size() ? def_value : opt.values[index].address;
-    if (!value.hasAddress() && def_value.hasAddress()) {
-        value.setAddress(def_value);
+    else if (index >= opt.values.size()) {
+        value = def_value;
     }
-    if (!value.hasPort() && def_value.hasPort()) {
-        value.setPort(def_value.port());
+    else {
+        // If there is a prefered IP generation and the parameter was initially resolved with another IP generation, try to
+        // resolve it again with the preferred generation. If it fails, use initial address, even if not the same generation.
+        if (preferred == IP::Any || opt.values[index].address.generation() == preferred || !value.resolve(opt.values[index].string.value(), NULLREP, preferred)) {
+            value = opt.values[index].address;
+        }
+        if (!value.hasAddress() && def_value.hasAddress()) {
+            value.setAddress(def_value);
+        }
+        if (!value.hasPort() && def_value.hasPort()) {
+            value.setPort(def_value.port());
+        }
     }
 }
 
-ts::IPSocketAddress ts::Args::socketValue(const UChar* name, const IPSocketAddress& def_value, size_t index) const
+ts::IPSocketAddress ts::Args::socketValue(const UChar* name, const IPSocketAddress& def_value, size_t index, IP preferred) const
 {
     IPSocketAddress value;
-    getSocketValue(value, name, def_value, index);
+    getSocketValue(value, name, def_value, index, preferred);
     return value;
 }
 

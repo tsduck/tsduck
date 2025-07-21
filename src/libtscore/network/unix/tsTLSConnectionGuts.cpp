@@ -130,21 +130,12 @@ bool ts::TLSConnection::connect(const IPSocketAddress& addr, Report& report)
     }
 
     // Create SSL client context.
-    _guts->ssl_ctx = SSL_CTX_new(TLS_client_method());
-    if (_guts->ssl_ctx == nullptr) {
-        report.error(u"error creating TLS client context");
-        OpenSSL::ReportErrors(report);
+    if ((_guts->ssl_ctx = OpenSSL::CreateContext(false, _verify_server, report)) == nullptr) {
         SuperClass::disconnect(NULLREP);
         return false;
     }
 
-    // Accept only TLS 1.2 and 1.3, others are obsolete.
-    SSL_CTX_set_min_proto_version(_guts->ssl_ctx, TLS1_2_VERSION);
-
-    // Check if the peer shall be verified.
-    SSL_CTX_set_verify(_guts->ssl_ctx, _verify_server ? SSL_VERIFY_PEER : SSL_VERIFY_NONE, nullptr);
-
-    // Create an SSL context for that connection.
+    // Create an SSL session for that connection.
     const UChar* error = nullptr;
     _guts->ssl = SSL_new(_guts->ssl_ctx);
     if (_guts->ssl == nullptr) {

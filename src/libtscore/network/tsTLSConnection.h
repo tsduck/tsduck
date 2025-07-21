@@ -26,6 +26,15 @@ namespace ts {
     //! - A TLS server creates a TLSServer instance and @e waits for clients. For each
     //!   client session, a TLSConnection instance is created.
     //!
+    //! Possible public servers to test various invalid certificates:
+    //! - https://expired.badssl.com/
+    //! - https://wrong.host.badssl.com/
+    //! - https://self-signed.badssl.com/
+    //! - https://untrusted-root.badssl.com/
+    //! - https://revoked.badssl.com/
+    //! - https://pinning-test.badssl.com/
+    //! - see more details at https://badssl.com/
+    //!
     class TSCOREDLL TLSConnection: public TCPConnection
     {
         TS_NOCOPY(TLSConnection);

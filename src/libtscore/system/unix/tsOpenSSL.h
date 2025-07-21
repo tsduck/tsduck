@@ -52,6 +52,10 @@
     // Generic error message.
     #define TS_NO_OPENSSL_MESSAGE u"This version of TSDuck was compiled without OpenSSL"
 
+    // Placeholders for OpenSSL types.
+    struct SSL_CTX;
+    struct SSL;
+
 #endif
 //! @endcond
 
@@ -80,11 +84,6 @@ namespace ts {
         //!
         static void GetErrors(UStringList& errors);
 
-    private:
-        // Callback function for ERR_print_errors_cb().
-        [[maybe_unused]] static int GetErrorsCallback(const char* str, size_t len, void* u);
-
-    public:
         //!
         //! Report last errors from the OpenSSL library.
         //! The error messages are removed from the OpenSSL error message queue.
@@ -103,6 +102,15 @@ namespace ts {
         //! @return True if environment variable TS_DEBUG_OPENSSL is defined.
         //!
         static bool Debug();
+
+        //!
+        //! Create and configure a SSL_CTX context.
+        //! @param [in] server True for server side, false for client side.
+        //! @param [in] verify_peer Verify the certificate of the peer.
+        //! @param [in,out] report Where to report errors.
+        //! @return The new SSL_CTX, nullptr on error.
+        //!
+        static SSL_CTX* CreateContext(bool server, bool verify_peer, Report& report);
 
         //!
         //! Base class for objects which must be terminated with OpenSSL.
@@ -190,5 +198,9 @@ namespace ts {
             std::map<std::string,OSSL_PROVIDER*> _providers {};
         #endif
         };
+
+    private:
+        // Callback function for ERR_print_errors_cb().
+        [[maybe_unused]] static int GetErrorsCallback(const char* str, size_t len, void* u);
     };
 }
