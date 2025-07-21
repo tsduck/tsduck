@@ -348,7 +348,7 @@ bool ts::ModulationArgs::GetBitRateQAM(BitRate& bitrate, const ModulationArgs& a
         // For the sake of bitrate computation, this is the same as 8PSK.
         modulation = PSK_8;
         fec = args.inner_fec.value_or(DEFAULT_INNER_FEC);
-        symbol_rate = args.symbol_rate.value_or(DEFAULT_SYMBOL_RATE_DVBS);
+        symbol_rate = args.symbol_rate.value_or(DEFAULT_SYMBOL_RATE_ISDBS);
     }
     else {
         return false;
@@ -791,7 +791,7 @@ std::ostream& ts::ModulationArgs::display(std::ostream& strm, const ts::UString&
             if (inner_fec.has_value() && inner_fec != ts::FEC_AUTO) {
                 strm << margin << "FEC inner: " << InnerFECEnum().name(inner_fec.value()) << std::endl;
             }
-            if (isi.has_value() && isi != ISI_DISABLE) {
+            if ((verbose || delivery_system != DS_DVB_S) && isi.has_value() && isi != ISI_DISABLE) {
                 strm << margin << "Input stream id: " << isi.value() << std::endl
                      << margin << "PLS code: " << pls_code.value_or(DEFAULT_PLS_CODE) << std::endl
                      << margin << "PLS mode: "<< PLSModeEnum().name(pls_mode.value_or(DEFAULT_PLS_MODE)) << std::endl;
@@ -971,15 +971,15 @@ ts::UString ts::ModulationArgs::toPluginOptions(bool no_local) const
                 opt += UString::Format(u" --pilots %s --roll-off %s",
                                        PilotEnum().name(pilots.value_or(DEFAULT_PILOTS)),
                                        RollOffEnum().name(roll_off.value_or(DEFAULT_ROLL_OFF)));
-            }
-            if (isi.has_value() && isi != DEFAULT_ISI) {
-                opt += UString::Format(u" --isi %d", isi.value());
-            }
-            if (pls_code.has_value() && pls_code != DEFAULT_PLS_CODE) {
-                opt += UString::Format(u" --pls-code %d", pls_code.value());
-            }
-            if (pls_mode.has_value() && pls_mode != DEFAULT_PLS_MODE) {
-                opt += UString::Format(u" --pls-mode %s", PLSModeEnum().name(pls_mode.value()));
+                if (isi.has_value() && isi != DEFAULT_ISI) {
+                    opt += UString::Format(u" --isi %d", isi.value());
+                }
+                if (pls_code.has_value() && pls_code != DEFAULT_PLS_CODE) {
+                    opt += UString::Format(u" --pls-code %d", pls_code.value());
+                }
+                if (pls_mode.has_value() && pls_mode != DEFAULT_PLS_MODE) {
+                    opt += UString::Format(u" --pls-mode %s", PLSModeEnum().name(pls_mode.value()));
+                }
             }
             if (!no_local && lnb.has_value()) {
                 opt += UString::Format(u" --lnb %s", lnb.value());
@@ -991,7 +991,7 @@ ts::UString ts::ModulationArgs::toPluginOptions(bool no_local) const
         }
         case TT_ISDB_S: {
             opt += UString::Format(u" --symbol-rate %'d --fec-inner %s --polarity %s",
-                                   symbol_rate.value_or(DEFAULT_SYMBOL_RATE_DVBS),
+                                   symbol_rate.value_or(DEFAULT_SYMBOL_RATE_ISDBS),
                                    InnerFECEnum().name(inner_fec.value_or(DEFAULT_INNER_FEC)),
                                    PolarizationEnum().name(polarity.value_or(DEFAULT_POLARITY)));
             if (stream_id.has_value() && stream_id != DEFAULT_STREAM_ID) {
