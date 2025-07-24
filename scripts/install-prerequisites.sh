@@ -501,7 +501,7 @@ elif [[ -f /etc/alpine-release ]]; then
     PKGLIST+=(bash coreutils diffutils procps util-linux linux-headers git make cmake flex bison g++ dos2unix curl tar zip dpkg python3)
     [[ -z $NOOPENSSL             ]] && PKGLIST+=(openssl-dev)
     [[ -z $NOEDITLINE            ]] && PKGLIST+=(libedit-dev)
-    [[ -z $NOZLIB                ]] && PKGLIST+=(zlib-dev)
+    [[ -z $NOZLIB                ]] && PKGLIST+=(zlib-dev zlib-static)
     [[ -z $NOPCSC                ]] && PKGLIST+=(pcsc-lite-dev)
     [[ -z $NORIST && $AL -ge 316 ]] && PKGLIST+=(librist-dev)
     [[ -z $NOSRT                 ]] && PKGLIST+=(libsrt-dev)

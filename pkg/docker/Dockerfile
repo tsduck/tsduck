@@ -16,7 +16,7 @@ RUN apk update && \
     apk add --no-interactive --no-progress \
         bash coreutils diffutils procps util-linux linux-headers \
         git make g++ dos2unix curl tar zip python3 \
-        openssl-dev libedit-dev librist-dev libsrt-dev curl-dev \
+        openssl-dev libedit-dev zlib-dev librist-dev libsrt-dev curl-dev \
         asciidoctor qpdf && \
     gem install asciidoctor-pdf rouge
 
