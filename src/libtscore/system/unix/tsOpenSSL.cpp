@@ -10,6 +10,10 @@
 #include "tsCerrReport.h"
 #include "tsEnvironment.h"
 
+// Some OpenSSL macros use C-style casts and we need to disable warnings.
+TS_LLVM_NOWARNING(old-style-cast)
+TS_GCC_NOWARNING(old-style-cast)
+
 
 //----------------------------------------------------------------------------
 // Get a full version string for the OpenSSL library.
@@ -119,12 +123,7 @@ SSL_CTX* ts::OpenSSL::CreateContext(bool server, bool verify_peer, Report& repor
 
     // Ignore unexpected EOF when the peer does not send close-notify.
     // Well-known servers such as google.com do this, so let's ignore it.
-    // Note that the SSL_OP macros use C-style casts and we need to disable warnings.
-    TS_PUSH_WARNING()
-    TS_LLVM_NOWARNING(old-style-cast)
-    TS_GCC_NOWARNING(old-style-cast)
     ::SSL_CTX_set_options(ssl_ctx, SSL_OP_IGNORE_UNEXPECTED_EOF);
-    TS_POP_WARNING()
 
     // Accept only TLS 1.2 and 1.3, others are obsolete.
     ::SSL_CTX_set_min_proto_version(ssl_ctx, TLS1_2_VERSION);

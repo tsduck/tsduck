@@ -14,6 +14,10 @@
 #include "tsOpenSSL.h"
 #include "tsNullReport.h"
 
+// Some OpenSSL macros use C-style casts and we need to disable warnings.
+TS_LLVM_NOWARNING(old-style-cast)
+TS_GCC_NOWARNING(old-style-cast)
+
 
 //----------------------------------------------------------------------------
 // Stubs when OpenSSL is not available.
