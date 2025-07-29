@@ -618,6 +618,7 @@ ts::CommandStatus ts::SendRecvCommands::receive(const UString& command, Args& ar
         args.info(u"Waiting on TCP server %s ...", local);
         TCPConnection tcp_client;
         TLSConnection tls_client;
+        tls_client.setVerifyPeer(false);
         TCPConnection* const client = tls ? &tls_client : &tcp_client;
         TelnetConnection telnet(*client);
         IPSocketAddress addr;
