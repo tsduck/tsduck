@@ -110,7 +110,7 @@ SSL_CTX* ts::OpenSSL::CreateContext(bool server, bool verify_peer, Report& repor
 
 #if !defined(TS_NO_OPENSSL)
 
-    ssl_ctx = SSL_CTX_new(server ? TLS_server_method() : TLS_client_method());
+    ssl_ctx = ::SSL_CTX_new(server ? TLS_server_method() : TLS_client_method());
     if (ssl_ctx == nullptr) {
         report.error(u"error creating TLS %s context", server ? u"server" : u"client");
         OpenSSL::ReportErrors(report);
@@ -119,24 +119,24 @@ SSL_CTX* ts::OpenSSL::CreateContext(bool server, bool verify_peer, Report& repor
 
     // Ignore unexpected EOF when the peer does not send close-notify.
     // Well-known servers such as google.com do this, so let's ignore it.
-    // Note that the SSL_OP macros use C-style casts.
+    // Note that the SSL_OP macros use C-style casts and we need to disable warnings.
     TS_PUSH_WARNING()
     TS_LLVM_NOWARNING(old-style-cast)
     TS_GCC_NOWARNING(old-style-cast)
-    SSL_CTX_set_options(ssl_ctx, SSL_OP_IGNORE_UNEXPECTED_EOF);
+    ::SSL_CTX_set_options(ssl_ctx, SSL_OP_IGNORE_UNEXPECTED_EOF);
     TS_POP_WARNING()
 
     // Accept only TLS 1.2 and 1.3, others are obsolete.
-    SSL_CTX_set_min_proto_version(ssl_ctx, TLS1_2_VERSION);
+    ::SSL_CTX_set_min_proto_version(ssl_ctx, TLS1_2_VERSION);
 
     // Check if the peer shall be verified.
-    SSL_CTX_set_verify(ssl_ctx, verify_peer ? SSL_VERIFY_PEER : SSL_VERIFY_NONE, nullptr);
+    ::SSL_CTX_set_verify(ssl_ctx, verify_peer ? SSL_VERIFY_PEER : SSL_VERIFY_NONE, nullptr);
 
     // Use the default trusted certificate store.
-    if (verify_peer && !SSL_CTX_set_default_verify_paths(ssl_ctx)) {
+    if (verify_peer && !::SSL_CTX_set_default_verify_paths(ssl_ctx)) {
         report.error(u"Failed to set the default trusted certificate store");
         OpenSSL::ReportErrors(report);
-        SSL_CTX_free(ssl_ctx);
+        ::SSL_CTX_free(ssl_ctx);
         return nullptr;
     }
 

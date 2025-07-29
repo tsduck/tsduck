@@ -491,9 +491,10 @@ ts::CommandStatus ts::SendRecvCommands::send(const UString& command, Args& args)
     const bool tls = args.present(u"tls");
     const bool insecure = args.present(u"insecure");
     const UString message(args.value(u""));
-    const IPSocketAddress destination(args.socketValue(u"tcp", args.socketValue(u"udp", IPSocketAddress(), 0, ip_gen), 0, ip_gen));
+    const IPSocketAddress dest_addr(args.socketValue(u"tcp", args.socketValue(u"udp", IPSocketAddress(), 0, ip_gen), 0, ip_gen));
+    const UString dest_name(args.value(u"tcp", args.value(u"udp").c_str()));
 
-    if (args.present(u"udp") + args.present(u"tcp") != 1 || !destination.hasAddress()) {
+    if (args.present(u"udp") + args.present(u"tcp") != 1 || !dest_addr.hasAddress()) {
         args.error(u"specify exactly one of --tcp and --udp");
         return CommandStatus::ERROR;
     }
@@ -505,10 +506,10 @@ ts::CommandStatus ts::SendRecvCommands::send(const UString& command, Args& args)
         if (!sock.open(ip_gen, args)) {
             return CommandStatus::ERROR;
         }
-        args.info(u"Sending to UDP socket %s ...", destination);
+        args.info(u"Sending to UDP socket %s ...", dest_addr);
         std::string msg(message.toUTF8());
         if (sock.bind(IPSocketAddress::AnySocketAddress(ip_gen), args) &&
-            sock.send(msg.data(), msg.size(), destination, args))
+            sock.send(msg.data(), msg.size(), dest_addr, args))
         {
             size_t ret_size = 0;
             IPSocketAddress source, dest;
@@ -528,18 +529,19 @@ ts::CommandStatus ts::SendRecvCommands::send(const UString& command, Args& args)
         // Send a TCP message.
         TCPConnection tcp_client;
         TLSConnection tls_client;
-        tls_client.setVerifyServer(!insecure);
+        tls_client.setVerifyPeer(!insecure);
+        tls_client.setServerName(dest_name);
         TCPConnection* const client = tls ? &tls_client : &tcp_client;
         TelnetConnection telnet(*client);
 
         if (!client->open(ip_gen, args)) {
             return CommandStatus::ERROR;
         }
-        args.info(u"Sending to TCP server %s ...", destination);
+        args.info(u"Sending to TCP server %s ...", dest_addr);
         std::string msg(message.toUTF8());
         ts::IPSocketAddress addr;
         if (client->bind(IPSocketAddress::AnySocketAddress(ip_gen), args) &&
-            client->connect(destination, args) &&
+            client->connect(dest_addr, args) &&
             client->getLocalAddress(addr, args) &&
             telnet.sendLine(msg, args) &&
             telnet.receiveLine(msg, nullptr, args))
@@ -718,6 +720,7 @@ ts::CommandStatus ts::ServerCommands::server(const UString& command, Args& args)
 
         TCPConnection tcp_client;
         TLSConnection tls_client;
+        tls_client.setVerifyPeer(false);
         TCPConnection* const client = tls ? &tls_client : &tcp_client;
         TelnetConnection telnet(*client);
 
@@ -864,8 +867,8 @@ ts::ClientCommands::ClientCommands(CommandLine& cmdline, int flags)
     Args* cmd = cmdline.command(u"client", u"Basic HTTP client which dumps its text reponse", u"[options] ip-address:port", flags);
     cmdline.setCommandLineHandler(this, &ClientCommands::client, u"client");
     defineIPGenArgs(*cmd);
-    cmd->option(u"", 0, Args::STRING, 1, 1);
-    cmd->help(u"", u"host:port", u"TCP server address.");
+    cmd->option(u"", 0, Args::IPSOCKADDR_OP, 1, 1);
+    cmd->help(u"", u"TCP server address and port.");
     cmd->option(u"header", 'h', Args::STRING, 0, Args::UNLIMITED_COUNT);
     cmd->help(u"header", u"Add this request header.");
     cmd->option(u"request", 'r', Args::STRING);
@@ -895,12 +898,7 @@ ts::CommandStatus ts::ClientCommands::client(const UString& command, Args& args)
     UStringList headers;
     args.getValues(headers, u"header");
 
-    // Resolve server socket (we need the full string for the header).
-    IPSocketAddress addr(destination, args, ip_gen);
-    if (!addr.hasAddress()) {
-        args.error(u"specify server name");
-        return CommandStatus::ERROR;
-    }
+    IPSocketAddress addr(args.socketValue(u"", IPSocketAddress(), 0, ip_gen));
     if (!addr.hasPort()) {
         // Use default port for http or https.
         addr.setPort(tls ? 443 : 80);
@@ -917,7 +915,8 @@ ts::CommandStatus ts::ClientCommands::client(const UString& command, Args& args)
     auto status = CommandStatus::SUCCESS;
     TCPConnection tcp_client;
     TLSConnection tls_client;
-    tls_client.setVerifyServer(!insecure);
+    tls_client.setVerifyPeer(!insecure);
+    tls_client.setServerName(destination);
     TCPConnection* const client = tls ? &tls_client : &tcp_client;
     TelnetConnection telnet(*client);
 

@@ -66,7 +66,7 @@ bool ts::TLSConnection::connect(const IPSocketAddress&, Report& report)
 {
     // Acquire credentials.
     ::CredHandle cred;
-    if (!GetCredentials(cred, false, _verify_server, nullptr, report)) {
+    if (!GetCredentials(cred, false, _verify_peer, nullptr, report)) {
         return false;
     }
 

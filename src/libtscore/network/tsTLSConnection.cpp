@@ -47,6 +47,28 @@ ts::TLSConnection::~TLSConnection()
 
 
 //----------------------------------------------------------------------------
+// For a client connection, specify the server names.
+//----------------------------------------------------------------------------
+
+void ts::TLSConnection::setServerName(const UString& server_name)
+{
+    _server_name = server_name;
+    _additional_names.clear();
+
+    // Remove ":port" if any.
+    const size_t colon = _server_name.find(':');
+    if (colon != NPOS) {
+        _server_name.resize(colon);
+    }
+}
+
+void ts::TLSConnection::addVerifyServer(const UString& name)
+{
+    _additional_names.push_back(name);
+}
+
+
+//----------------------------------------------------------------------------
 // Receive data until buffer is full.
 //----------------------------------------------------------------------------
 

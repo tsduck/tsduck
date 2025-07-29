@@ -50,23 +50,25 @@ namespace ts {
         TLSConnection();
 
         //!
-        //! For a client connection, specify if the server's certificate is verified during connect().
-        //! @param [in] verify If true (the default), the server's certificate is verified during
-        //! connact() and the connection fails if the certificate is invalid (e.g. auto-signed or
-        //! not issued by a trusted CA).
+        //! Check if the peer's certificate shall be verified.
+        //! @param [in] on If true, the peer's certificate will be verified.
         //!
-        //! LIMITATION: Currently, only the validity of the server certificate is verified.
-        //! The server name is not verified yet. To be implemented later. Currently, TLS is
-        //! only a way to encrypt TCP sessions in TSDuck. It does not prevent MitM attacks.
-        //!
-        void setVerifyServer(bool verify) { _verify_server = verify; }
+        void setVerifyPeer(bool on) { _verify_peer = on; }
 
         //!
-        //! For a client connection, check if the server's certificate is verified during connect().
-        //! @return True if the server's certificate is verified during connact().
+        //! For a client connection, specify the server name to be used in SNI (Server Name Indication).
+        //! @param [in] server_name Main server name, as specified in SNI (Server Name Indication).
+        //! Also used to verify the server's certificate when setVerifyPeer() is true.
+        //!
+        void setServerName(const UString& server_name);
+
+        //!
+        //! For a client connection, add another accepted host name for the server's certificate verification during connect().
+        //! The list is reset by setVerifyServer().
+        //! @param [in] name Additional accepted host name used to verify the server's certificate.
         //! @see setVerifyServer()
         //!
-        bool getVerifyServer() const { return _verify_server; }
+        void addVerifyServer(const UString& name);
 
         // Inherited methods.
         virtual ~TLSConnection() override;
@@ -95,7 +97,9 @@ namespace ts {
         SystemGuts* _guts = nullptr;
 
         // Common properties.
-        bool _verify_server = true;
+        bool        _verify_peer = false;
+        UString     _server_name {};
+        UStringList _additional_names {};
 
         // Allocate and deallocate guts (depend on implementations).
         void allocateGuts();
