@@ -1057,9 +1057,9 @@ bool ts::TunerDevice::dishControl(const ModulationArgs& params, const LNB::Trans
 
     // Send tone burst: A for satellite 0, B for satellite 1.
     // Notes:
-    //   1) DiSEqC switches may address up to 4 dishes (satellite number 0 to 3)
-    //      while non-DiSEqC switches can address only 2 (satellite number 0 to 1).
-    //      This is why the DiSEqC command has space for 2 bits (4 states) while
+    //   1) DiSEqC 1.0 switches may address up to 4 dishes (satellite number 0 to 3)
+    //      while tone-burst switches can address only 2 (satellite number 0 to 1).
+    //      This is why the DiSEqC 1.0 command has space for 2 bits (4 states) while
     //      the "send tone burst" command is binary (A or B).
     //   2) The Linux DVB API is not specific about FE_DISEQC_SEND_BURST. Reading
     //      szap or szap-s2 source code, the code would be (satellite_number & 0x04) ? SEC_MINI_B : SEC_MINI_A.
@@ -1067,6 +1067,13 @@ bool ts::TunerDevice::dishControl(const ModulationArgs& params, const LNB::Trans
     //      mailing list suggests that the szap code should be (satellite_number & 0x01).
     //      In reply to this report, the answer was "thanks, committed" but it does
     //      not appear to be committed. Here, we use the "probably correct" code.
+    // Not implemented: DiSEqC 1.1 commands added another four bits of control.
+    //      By stacking DisEqC 1.0 and 1.1 switches it is therefore theoretically possible
+    //      to tune to up to 63 satellite positions.
+    // Note: Larger installations may have "DiSEqC multiswitches". These attach
+    //      to a number of satellites via quattro LNBs, and use the DiSEqC command to
+    //      switch the "correct quarter" of a satellite to the receiver. The LNBs are
+    //      typically always powered.
     if (ioctl_fe_diseqc_send_burst(_frontend_fd, params.satellite_number == 0 ? SEC_MINI_A : SEC_MINI_B) < 0) {
         _duck.report().error(u"DVB frontend FE_DISEQC_SEND_BURST error on %s: %s", _frontend_name, SysErrorCodeMessage());
         return false;
@@ -1105,6 +1112,250 @@ bool ts::TunerDevice::dishControl(const ModulationArgs& params, const LNB::Trans
     return true;
 }
 
+namespace { // anonymous
+
+void splitUnicableParams(const char *unicable_params,
+        const char **version, const char **userband_slot, const char **userband_frequency_mhz)
+{
+    *version = unicable_params;
+    *userband_slot = strchr(*version, ',');
+    if (!*userband_slot) {
+        fprintf(stderr, "Missing two commas in unicable params '%s'.\n", unicable_params);
+        exit(-1);
+    }
+    (*userband_slot)++;
+
+    *userband_frequency_mhz = strchr(*userband_slot, ',');
+    if (!*userband_frequency_mhz) {
+        fprintf(stderr, "Missing comma in unicable params '%s'.\n", unicable_params);
+        exit(-1);
+    }
+    (*userband_frequency_mhz)++;
+}
+
+typedef struct {
+    uint8_t version;
+    uint8_t user_band;
+    uint32_t user_band_frequency;
+} UnicableParams;
+
+UnicableParams getUnicableParams(const char *unicable_params)
+{
+    const char *version_str, *user_band_str, *user_band_freq_str;
+    splitUnicableParams(unicable_params, &version_str, &user_band_str, &user_band_freq_str);
+
+    unsigned long version = strtoul(version_str, nullptr, 10);
+    unsigned long user_band = strtoul(user_band_str, nullptr, 10);
+    unsigned long user_band_freq = strtoul(user_band_freq_str, nullptr, 10); // in MHz
+
+    if (user_band_freq < 900 || user_band_freq > 2200) {
+        fprintf(stderr, "Userband frequency out-of-range (900-2200) in unicable params.\n");
+        exit(-1);
+    }
+
+    switch(version) {
+        case 1: // EN50494
+            if (user_band < 1 || user_band > 8) {
+                fprintf(stderr, "Userband slot ('%s') is out-of-range in unicable params (1-8).\n",
+                    user_band_str);
+                exit(-1);
+            }
+            return {1, (uint8_t )user_band, (uint32_t)user_band_freq};
+        case 2: // EN50607
+            if (user_band < 1 || user_band > 32) {
+                fprintf(stderr, "Userband slot ('%s') is out-of-range in unicable params (1-32).\n",
+                    user_band_str);
+                exit(-1);
+            }
+            return {2, (uint8_t )user_band, (uint32_t)user_band_freq};
+            break;
+        default:
+            fprintf(stderr, "Invalid unicable version specified in unicable params (1,2).\n");
+            exit(-1);
+    }
+}
+
+} // anonymous
+
+// return:
+// 0 - not successful
+// 900-2200 - user_band_frequency in MHz.
+uint32_t ts::TunerDevice::configUnicableSwitch(const ModulationArgs& params)
+{
+    // There are two unicable specifications:
+    //
+    // * EN50494 (Unicable I); and
+    // * EN50607 (Unicable II)
+    //
+    // Sadly these are not free.
+    //
+    // These use the DiSEqC hardware-level interface, while permitting several
+    // receivers to share the same COAXial cable.
+    //
+    // This massively reduces the cabling in multiple-dwelling units such as
+    // Hotels, apartments and large offices.
+    //
+    // The standard supports both unidirectional (bus specification 1.x) and
+    // bidirectional (bus specification 2.x) commands.
+    //
+    // In normal use, receivers need only to use unidirectional commands.
+    //
+    // To achieve this, each receiver is attached to the bus via a power-passing
+    // combiner (so that the LNB controllers do not attempt to back-power each other),
+    // and the passive "watching a channel" state is to send a low voltage and no tone.
+    //
+    // To send a command, you:
+    //
+    // 1. assert the high voltage;
+    // 2. wait for a settling time;
+    // 3. send the command;
+    // 4. If it is a bidirectional command await a reply (not supported);
+    // 5. wait for a "clear channel" time;
+    // 6. assert the low voltage.
+    // 7. wait for a settling time;
+    //
+    // It is possible for the commands from two or more receivers to collide,
+    // In which case they will probably both not be actioned.
+    // The specifications suggest a detection and a random-backoff and
+    // retransmit mechanism, which is not implemented here.
+    //
+    // Each receiver is assigned a "user band" and a "user band frequency"
+    // 1. The specification does NOT assign bands to frequencies - switches
+    //    come with a table.
+    // 2. The receiver sends commands for its user-band, and only ever tunes to
+    //    its user-band-frequency.
+    // 3. The switch interprets commands, and frequency-shifts the required
+    //    signal to the receiver's user-band-frequency.
+    // 4. Both versions of the specification have extended versions of the
+    //    "channel change" command which includes a PIN code, the idea being
+    //    that the switch should ignore commands where the PIN is incorrect.
+    //    This is intended to stop the neighbour from hijacking "your"
+    //    user-band. This version of the command is not used here.
+    //
+    // The channel-change command contains the following parameters:
+    // 1. The user-band assigned to the receiver;
+    // 2. The satellite position to be tuned to;
+    // 3. The polarity to be tuned to;
+    // 4. The frequency range to be tuned to;
+    // 5. A "tuning word"
+    //
+    // The specifications combines 2,3 and 4 into a "bank", and somewhat confusingly
+    // (and unnecessarily) tries to compare the bank to DiSEqC uncommitted (1.1), and
+    // committed (1.0) switch positions.
+    //
+    // Unicable I supports up to 8 user-bands on a single piece of COAX, and two
+    // satellite positions. The calculation of the tuning word also uses the
+    // user-band frequency.
+    //
+    // Unicable II supports up to 32 user-bands on a single piece of COAX,
+    // and up to 64 satellite positions. The calculation of the tuning word
+    // does not include the user-band frequency.
+    //
+    // Experience of various switches on the market suggest that it is common
+    // for the switches to support a power-of-two number of satellites, and
+    // ignore unsupported satellite-position bits in commands, therefore for
+    // a switch supporting four satellite positions 0,4,8,...,60 all alias to
+    // the same satellite.
+    //
+    std::string unicable_params_str = params.unicable.value().toUTF8();
+    const UnicableParams unicable_params = getUnicableParams(unicable_params_str.c_str());
+
+    // Setup structure for 15ms
+    ::timespec delay;
+    delay.tv_sec = 0;
+    delay.tv_nsec = 15000000;
+
+    // Stop 22 kHz continuous tone (should not be on for Unicable)
+    if (ioctl_fe_set_tone(_frontend_fd, SEC_TONE_OFF) < 0) {
+        _duck.report().error(u"DVB frontend FE_SET_TONE error: %s", SysErrorCodeMessage());
+        return 0;
+    }
+
+    // Set output voltage to 18V to signal that we're going to send a command.
+    // When not sending commands, but interested in receiving should be 13V,
+    // to indicate the receiver is on.
+    if (ioctl_fe_set_voltage(_frontend_fd, SEC_VOLTAGE_18) < 0) {
+        _duck.report().error(u"DVB frontend FE_SET_VOLTAGE error: %s", SysErrorCodeMessage());
+        return 0;
+    }
+
+    // Wait at least 15ms.
+    ::nanosleep(&delay, nullptr);
+
+    const int channel_frequency_mhz = params.frequency.value() / 1000000;
+
+    _duck.report().debug(u"channel_frequency: %d MHz", channel_frequency_mhz);
+
+    const bool is_horizontal = (params.polarity == POL_HORIZONTAL);
+
+    bool is_high_band = false;
+    unsigned oscillator_frequency_mhz = 9750;
+    if (channel_frequency_mhz >= 11700) {
+        is_high_band = true;
+        oscillator_frequency_mhz = 10600;
+    }
+    const unsigned intermediate_frequency_mhz = channel_frequency_mhz - oscillator_frequency_mhz;
+
+    // Build Unicable command.
+    ::dvb_diseqc_master_cmd cmd;
+    switch (unicable_params.version) {
+        case 1: {
+            // EN50494 defines the tuning word T as:
+            // T = round((abs(Ft-Fo)+Fub)/S)-350
+            // where:
+            // Ft is transponder frequency in MHz
+            // Fo is oscillator frequency in Mhz
+            // Fub is user-band-frequency in Mhz
+            // S is step-size in MHz (4)
+#define EN50494_STEP_SIZE 4
+            const unsigned tuning_word = (((EN50494_STEP_SIZE/2) + // rounds
+              + intermediate_frequency_mhz // always +ve for a universal LNB
+              + unicable_params.user_band_frequency) / EN50494_STEP_SIZE) - 350;
+            cmd.msg_len = 5;    // Message size (meaningful bytes in msg)
+            cmd.msg[0] = 0xE0;  // Framing
+            cmd.msg[1] = 0x00;  // Address: Master to any
+            cmd.msg[2] = 0x5a;  // Channel change message ID.
+            cmd.msg[3] = (((unicable_params.user_band - 1) & 0x07) << 5) |
+                         ((params.satellite_number.value_or(0) & 1) << 4) |
+                         (is_horizontal ? 0x08 : 0) |
+                         (is_high_band ? 0x04 : 0) |
+                         (tuning_word & 0x0300 >> 8);
+            cmd.msg[4] = tuning_word & 0xff;
+            } break;
+        case 2: {
+            const unsigned tuning_word_mhz = intermediate_frequency_mhz - 100;
+            cmd.msg_len = 4;    // Message size (meaningful bytes in msg)
+            // EN50607 does not send framing or address octets
+            cmd.msg[0] = 0x70;  // Channel change message ID.
+            cmd.msg[1] = (((unicable_params.user_band - 1) & 0x1f) << 3) |
+                         ((tuning_word_mhz >> 8) & 0x7);
+            cmd.msg[2] = tuning_word_mhz & 0xff;
+            cmd.msg[3] = (((params.satellite_number.value_or(0) & 0x3f) << 2) & 0xFC)
+                    | (is_horizontal ? 0x02 : 0x00)
+                    | (is_high_band ? 0x01 : 0x00);
+        } break;
+        default:
+            fprintf(stderr, "Unexpected unicable version\n");
+            exit(-1);
+    }
+
+    if (::ioctl(_frontend_fd, ioctl_request_t(FE_DISEQC_SEND_MASTER_CMD), &cmd) < 0) {
+        _duck.report().error(u"DVB frontend FE_DISEQC_SEND_MASTER_CMD error: %s", SysErrorCodeMessage());
+        return 0;
+    }
+
+    // Wait 15ms
+    ::nanosleep(&delay, nullptr);
+
+    // Set output voltage to 13V and leave it that way, to signal we continue
+    // to want our userband to be generated.
+    if (ioctl_fe_set_voltage(_frontend_fd, SEC_VOLTAGE_13) < 0) {
+        _duck.report().error(u"DVB frontend FE_SET_VOLTAGE error: %s", SysErrorCodeMessage());
+        return 0;
+    }
+
+    return unicable_params.user_band_frequency;
+}
 
 //-----------------------------------------------------------------------------
 // Tune to the specified parameters and start receiving.
@@ -1133,7 +1384,24 @@ bool ts::TunerDevice::tune(ModulationArgs& params)
 
     // In case of satellite delivery, we need to control the dish.
     if (IsSatelliteDelivery(params.delivery_system.value())) {
-        if (!params.lnb.has_value()) {
+        if (params.unicable.has_value()) {
+            _duck.report().debug(u"using Unicable %s", params.unicable.value());
+            // Unicable needs the receiver to tune to the user-band frequency
+            // In this way multiple receivers can share the same coax,
+            // by each having their own frequency band.
+            //
+            // configUnicableSwitch() returns user-band-frequency in MHz,
+            // This is in the intermediate frequency range.
+            // For satellite, Linux DVB API uses an intermediate frequency in kHz
+            freq = uint32_t(configUnicableSwitch(params) * 1000);
+            if (freq == 0) {
+                return false;
+            }
+
+            // Clear tuner state again.
+            discardFrontendEvents();
+        }
+        else if (!params.lnb.has_value()) {
             _duck.report().warning(u"no LNB set for satellite delivery %s", DeliverySystemEnum().name(params.delivery_system.value()));
         }
         else {
@@ -1150,7 +1418,8 @@ bool ts::TunerDevice::tune(ModulationArgs& params)
                 _duck.report().debug(u"LNB uses stacked transposition, no dish control required");
             }
             else {
-                // Setup the dish (polarity, band).
+                // Setup (optional DiSEqC switches) and
+                // the dish (polarity, band).
                 if (!dishControl(params, trans)) {
                     return false;
                 }
