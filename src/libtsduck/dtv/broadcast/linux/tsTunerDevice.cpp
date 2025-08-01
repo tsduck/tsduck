@@ -423,6 +423,9 @@ void ts::TunerDevice::hardClose(Report* report)
         _demux_fd = -1;
     }
     if (_frontend_fd >= 0) {
+        // Attempt to turn off the LNB power
+        ioctl_fe_set_voltage(_frontend_fd, SEC_VOLTAGE_OFF);
+
         ::close(_frontend_fd);
         _frontend_fd = -1;
     }
