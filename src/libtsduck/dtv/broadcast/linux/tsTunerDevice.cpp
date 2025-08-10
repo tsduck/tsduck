@@ -423,6 +423,9 @@ void ts::TunerDevice::hardClose(Report* report)
         _demux_fd = -1;
     }
     if (_frontend_fd >= 0) {
+        // Attempt to turn off the LNB power
+        ioctl_fe_set_voltage(_frontend_fd, SEC_VOLTAGE_OFF);
+
         ::close(_frontend_fd);
         _frontend_fd = -1;
     }
@@ -1018,7 +1021,7 @@ bool ts::TunerDevice::dishControl(const ModulationArgs& params, const LNB::Trans
     // Extracted from DVB/doc/HOWTO-use-the-frontend-api:
     //
     // Before you set the frontend parameters you have to setup DiSEqC switches
-    // and the LNB. Modern LNB's switch their polarisation depending of the DC
+    // and the LNB. Modern LNB's switch their polarisation depending on the DC
     // component of their input (13V for vertical polarisation, 18V for
     // horizontal). When they see a 22kHz signal at their input they switch
     // into the high band and use a somewhat higher intermediate frequency
@@ -1026,14 +1029,14 @@ bool ts::TunerDevice::dishControl(const ModulationArgs& params, const LNB::Trans
     //
     // When your satellite equipment contains a DiSEqC switch device to switch
     // between different satellites you have to send the according DiSEqC
-    // commands, usually command 0x38. Take a look into the DiSEqC spec
-    // available at http://www.eutelsat.org/ for the complete list of commands.
+    // command(s). Take a look into the DiSEqC spec available at:
+    // http://www.eutelsat.org/ for the complete list of commands.
     //
     // The burst signal is used in old equipments and by cheap satellite A/B
     // switches.
     //
-    // Voltage, burst and 22kHz tone have to be consistent to the values
-    // encoded in the DiSEqC commands.
+    // Voltage burst and 22kHz tone have to be consistent to the values
+    // encoded in the DiSEqC 1.0 commands (EN61319-1 table ZB.1).
 
     // Setup structure for precise 15ms
     ::timespec delay;
@@ -1055,29 +1058,56 @@ bool ts::TunerDevice::dishControl(const ModulationArgs& params, const LNB::Trans
     // Wait at least 15ms.
     ::nanosleep(&delay, nullptr);
 
-    // Send tone burst: A for satellite 0, B for satellite 1.
-    // Notes:
-    //   1) DiSEqC switches may address up to 4 dishes (satellite number 0 to 3)
-    //      while non-DiSEqC switches can address only 2 (satellite number 0 to 1).
-    //      This is why the DiSEqC command has space for 2 bits (4 states) while
-    //      the "send tone burst" command is binary (A or B).
-    //   2) The Linux DVB API is not specific about FE_DISEQC_SEND_BURST. Reading
-    //      szap or szap-s2 source code, the code would be (satellite_number & 0x04) ? SEC_MINI_B : SEC_MINI_A.
-    //      However, this does not seem logical. Secondly, a report from 2007 in linux-dvb
-    //      mailing list suggests that the szap code should be (satellite_number & 0x01).
-    //      In reply to this report, the answer was "thanks, committed" but it does
-    //      not appear to be committed. Here, we use the "probably correct" code.
-    if (ioctl_fe_diseqc_send_burst(_frontend_fd, params.satellite_number == 0 ? SEC_MINI_A : SEC_MINI_B) < 0) {
-        _duck.report().error(u"DVB frontend FE_DISEQC_SEND_BURST error on %s: %s", _frontend_name, SysErrorCodeMessage());
+    // The following code will set up:
+    // * A DiSEqC 1.1 switch using satellite-number & 0x3c, for 16 available ports
+    // * A DiSEqC 1.0 switch using satellite-number & 0x03, for 4 available ports
+    // * A DiSEqC tone-burst switch, using satellite-number 0x01, for two
+    //   available ports.
+    // Note:
+    // 1. All of these are optional.
+    // 2. If you have an installation with cascading switches, it is assumed that
+    //    the DisEqC 1.1 switch will be installed nearest to the receiver.
+    // 3. It is possible to select between 64 dishes, by cascade a 16-port
+    //    DiSEqC 1.1 switch and then 16 4 port DiSEqC 1.0 switches.
+    // 4. As they overlap in terms of the bits of satellite-number they use,
+    //    there is no point cascading a tone-burst switch and a DiSEqC 1.0
+    //    switch.
+
+    // Send a DiSEqC 1.1 command to setup uncommitted switch ports.
+    // Use satellite-number & 0x3c, so that if you cascade DiSEqC 1.0
+    // switches after the DisEqC 1.1 switch you can achieve
+    // selecting between 64 dishes.
+    // Note: The use of (satellite_number & 0x3c) aliases:
+    //       0,1,2,3 to port 0;
+    //       4,5,6,7 to port 1;
+    //       ...
+    //       60, 61, 62, 63 to port 15.
+    // This permits seamless cascading of following DiSEqC 1.0 switches.
+    ::dvb_diseqc_master_cmd cmd;
+    cmd.msg_len = 4;    // Message size (meaningful bytes in msg)
+    cmd.msg[0] = 0xE0;  // Command from master, no reply expected, first transmission
+    cmd.msg[1] = 0x10;  // Any LNB or switcher (master to all)
+    cmd.msg[2] = 0x39;  // Write to port group 1
+    cmd.msg[3] = 0xF0 | // Clear all 4 flags first, then set according to next 4 bits
+        ((uint8_t(params.satellite_number.value()) >> 2) & 0x0F);
+    cmd.msg[4] = 0x00;  // Unused
+    cmd.msg[5] = 0x00;  // Unused
+
+    if (::ioctl(_frontend_fd, ioctl_request_t(FE_DISEQC_SEND_MASTER_CMD), &cmd) < 0) {
+        _duck.report().error(u"DVB frontend FE_DISEQC_SEND_MASTER_CMD error on %s: %s", _frontend_name, SysErrorCodeMessage());
         return false;
     }
 
-    // Wait 15ms
+    // Wait 100ms: This give any cascaded bus powered DiSEqC 1.0 switches a
+    // chance to power on  (DiSEqC spec v4.2 §5.4).
+    delay.tv_nsec = 100000000; // 100 ms
     ::nanosleep(&delay, nullptr);
 
-    // Send DiSEqC commands. See DiSEqC spec ...
+    // Reset the delay to 15ms.
+    delay.tv_nsec = 15000000; // 15 ms
+
+    // Send DiSEqC 1.0 command.
     const bool high_band = trans.band_index > 0;
-    ::dvb_diseqc_master_cmd cmd;
     cmd.msg_len = 4;    // Message size (meaningful bytes in msg)
     cmd.msg[0] = 0xE0;  // Command from master, no reply expected, first transmission
     cmd.msg[1] = 0x10;  // Any LNB or switcher (master to all)
@@ -1091,6 +1121,22 @@ bool ts::TunerDevice::dishControl(const ModulationArgs& params, const LNB::Trans
 
     if (::ioctl(_frontend_fd, ioctl_request_t(FE_DISEQC_SEND_MASTER_CMD), &cmd) < 0) {
         _duck.report().error(u"DVB frontend FE_DISEQC_SEND_MASTER_CMD error on %s: %s", _frontend_name, SysErrorCodeMessage());
+        return false;
+    }
+
+    // Wait 15ms
+    ::nanosleep(&delay, nullptr);
+
+    // Send tone burst: A for satellite 0, B for satellite 1.
+    // Notes:
+    //   1) The DiSEqC bus specification v4.2, in §5.3 explicitly sends the tone burst
+    //      after the DisEqC commands.
+    //   2) There are two tone burst commands, "A" and "B", giving one bit of selection.
+    //   3) The DiSEqC specification says little about how to number combinations of
+    //      DiSEqC switches, however CEI EN 61319-1:1999 in table ZB.1 recommends
+    //      (satellite-number & 0x01).
+    if (ioctl_fe_diseqc_send_burst(_frontend_fd, params.satellite_number == 0 ? SEC_MINI_A : SEC_MINI_B) < 0) {
+        _duck.report().error(u"DVB frontend FE_DISEQC_SEND_BURST error on %s: %s", _frontend_name, SysErrorCodeMessage());
         return false;
     }
 
