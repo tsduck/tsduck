@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.42-4368 (July 2025)
+VERSION 3.42-4389 (August 2025)
 
 [NEW] New commands and plugins:
 
@@ -23,6 +23,7 @@ VERSION 3.42-4368 (July 2025)
     - Option --ffplay in output plugin "play".
     - Options --multiple and  --restart-delay  in  input  plugin  "srt".  These
       options already existed in the corresponding output plugin.
+    - Option --unicable in "tsscan" and input plugin "dvb".
 
 [BUG] Bug fixes:
 

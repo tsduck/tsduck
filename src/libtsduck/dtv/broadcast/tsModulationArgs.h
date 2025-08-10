@@ -19,6 +19,7 @@
 #include "tsModulation.h"
 #include "tsBitRate.h"
 #include "tsLNB.h"
+#include "tsUnicable.h"
 #include "tsjson.h"
 
 namespace ts {
@@ -67,6 +68,11 @@ namespace ts {
         //! Applies to: DVB-S/S2, ISDB-S.
         //!
         std::optional<LNB> lnb {};
+        //!
+        //! Unicable switch description (for Unicable satellite distribution).
+        //! Applies to: DVB-S/S2.
+        //!
+        std::optional<Unicable> unicable {};
         //!
         //! Spectral inversion.
         //! Applies to: DVB-T/T2, DVB-S/S2, DVB-C (A,B,C), ATSC, ISDB-T, ISDB-S.

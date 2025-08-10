@@ -33,6 +33,7 @@ void ts::ModulationArgs::clear()
     frequency.reset();
     polarity.reset();
     lnb.reset();
+    unicable.reset();
     inversion.reset();
     symbol_rate.reset();
     inner_fec.reset();
@@ -79,6 +80,7 @@ void ts::ModulationArgs::clear()
 void ts::ModulationArgs::resetLocalReceptionParameters()
 {
     lnb.reset();
+    unicable.reset();
     satellite_number.reset();
 }
 
@@ -86,6 +88,9 @@ void ts::ModulationArgs::copyLocalReceptionParameters(const ModulationArgs& othe
 {
     if (other.lnb.has_value()) {
         lnb = other.lnb;
+    }
+    if (other.unicable.has_value()) {
+        unicable = other.unicable;
     }
     if (other.satellite_number.has_value()) {
         satellite_number = other.satellite_number;
@@ -104,6 +109,7 @@ bool ts::ModulationArgs::hasModulationArgs() const
         frequency.has_value() ||
         polarity.has_value() ||
         lnb.has_value() ||
+        unicable.has_value() ||
         inversion.has_value() ||
         symbol_rate.has_value() ||
         inner_fec.has_value() ||
@@ -805,6 +811,9 @@ std::ostream& ts::ModulationArgs::display(std::ostream& strm, const ts::UString&
             if (verbose && lnb.has_value()) {
                 strm << margin << "LNB: " << lnb.value() << std::endl;
             }
+            if (verbose && unicable.has_value()) {
+                strm << margin << "Unicable: " << unicable.value() << std::endl;
+            }
             if (verbose) {
                 strm << margin << "Satellite number: " << satellite_number.value_or(DEFAULT_SATELLITE_NUMBER) << std::endl;
             }
@@ -983,6 +992,9 @@ ts::UString ts::ModulationArgs::toPluginOptions(bool no_local) const
             }
             if (!no_local && lnb.has_value()) {
                 opt += UString::Format(u" --lnb %s", lnb.value());
+            }
+            if (!no_local && unicable.has_value()) {
+                opt += UString::Format(u" --unicable %s", unicable.value());
             }
             if (!no_local && satellite_number.has_value()) {
                 opt += UString::Format(u" --satellite-number %d", satellite_number.value());
@@ -1227,6 +1239,15 @@ bool ts::ModulationArgs::loadArgs(DuckContext& duck, Args& args)
             lnb = l;
         }
     }
+    if (args.present(u"unicable")) {
+        Unicable uc;
+        if (uc.decode(args.value(u"unicable"), duck.report())) {
+            unicable = uc;
+        }
+        else {
+            status = false;
+        }
+    }
     args.getOptionalIntValue(satellite_number, u"satellite-number");
 
     // Mark arguments as invalid is some errors were found.
@@ -1262,6 +1283,11 @@ void ts::ModulationArgs::defineArgs(Args& args, bool allow_short_options)
               u"of a preconfigured LNB in the configuration file tsduck.lnbs.xml. "
               u"For compatibility, the legacy format 'low_freq[,high_freq,switch_freq]' is also accepted "
               u"(all frequencies are in MHz). The default is a universal extended LNB.");
+
+    args.option(u"unicable", 0, Args::STRING);
+    args.help(u"unicable",
+              u"Used for satellite tuners only, in local Unicable distribution networks. "
+              u"Description of the Unicable switch. " + Unicable::StringFormat());
 
     args.option(u"spectral-inversion", 0, SpectralInversionEnum());
     args.help(u"spectral-inversion",

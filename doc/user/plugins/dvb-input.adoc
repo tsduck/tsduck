@@ -87,6 +87,30 @@ If no signal is detected within this timeout, the command aborts.
 To disable the timeout and wait indefinitely for the signal, specify zero.
 The default is 5 seconds.
 
+[.opt]
+*--unicable* _string_
+
+[.optdoc]
+For satellite reception in local Unicable distribution networks, specifies the description of the Unicable switch.
+
+[.optdoc]
+The value is of the form: `version,slot,frequency-in-MHz`.
+
+[.optdoc]
+The version must be 1 or 2.
+Version 1 indicates EN50494 (Unicable I), version 2 indicates EN50607 (Unicable II).
+
+[.optdoc]
+The slot indicate the user band slot.
+It must be in the range 1-8 for version 1 and 1-32 for version 2.
+
+[.optdoc]
+The frequency indicates the user band frequency which has been statically assigned to the receiver.
+It must be in the range 900-2200 MHz.
+
+WARNING: By convention, the user band frequency in the `--unicable` option is in MHz,
+not in Hz as other frequency parameters.
+
 [.usage]
 Linux-specific options
 
@@ -634,6 +658,7 @@ Specify the UHF channel number of the carrier.
 Can be used in replacement to `--frequency`.
 Can be combined with an `--offset-count` option.
 The UHF frequency layout depends on the region, see `--hf-band-region` option.
+
 
 [.opt]
 *--vhf-channel* _value_
