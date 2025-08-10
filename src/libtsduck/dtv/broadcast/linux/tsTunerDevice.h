@@ -90,6 +90,7 @@ namespace ts {
         int                 _rt_signal = -1;          // Receive timeout signal number
         ::timer_t           _rt_timer = nullptr;      // Receive timeout timer
         bool                _rt_timer_valid = false;  // Receive timeout timer was created
+        bool                _voltage_on = false;      // Satellite tuner voltage was turned on
 
         // Clear tuner, return true on success, false on error
         bool dtvClear();

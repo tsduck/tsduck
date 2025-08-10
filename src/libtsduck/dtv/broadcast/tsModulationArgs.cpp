@@ -1283,12 +1283,8 @@ void ts::ModulationArgs::defineArgs(Args& args, bool allow_short_options)
     args.option(u"satellite-number", 0, Args::INTEGER, 0, 1, 0, 63);
     args.help(u"satellite-number",
               u"Used for satellite tuners only. Satellite/dish number. "
-              u"Must be 0 to 63. "
-	      u" a DiSEqC 1.1 switch will use ((satellite-number & 0x3C) >> 2),"
-	      u" A DiSEqC 1.0 switch will use ((satellite-number & 0x03) >> 2),"
-	      u" A DiSEqC tone-burst switch will use (satellite-number & 1)."
-	      u" If you have cascaded switches, it is assumed that the DiSEqC 1.1 switch"
-	      u" will be nearest to the receiver.");
+              u"Must be 0 to 63 with DiSEqC switches and 0 to 1 for non-DiSEqC switches. The default is 0. "
+              u"If you have cascaded switches, it is assumed that the DiSEqC 1.1 switch is nearest to the receiver.");
 
     args.option(u"modulation", allow_short_options ? 'm' : 0, ModulationEnum());
     args.help(u"modulation",

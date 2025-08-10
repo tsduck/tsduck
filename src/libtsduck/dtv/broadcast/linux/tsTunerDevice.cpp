@@ -216,6 +216,7 @@ bool ts::TunerDevice::open(const UString& device_name, bool info_only)
     }
 
     _info_only = info_only;
+    _voltage_on = false;
 
     // Check if this system uses flat or directory DVB naming.
     // Old flat naming: /dev/dvb0.frontend0
@@ -423,9 +424,11 @@ void ts::TunerDevice::hardClose(Report* report)
         _demux_fd = -1;
     }
     if (_frontend_fd >= 0) {
-        // Attempt to turn off the LNB power
-        ioctl_fe_set_voltage(_frontend_fd, SEC_VOLTAGE_OFF);
-
+        // Attempt to turn off the LNB power. Do this on satellite tuners only.
+        if (_voltage_on) {
+            ioctl_fe_set_voltage(_frontend_fd, SEC_VOLTAGE_OFF);
+            _voltage_on = false;
+        }
         ::close(_frontend_fd);
         _frontend_fd = -1;
     }
@@ -1028,12 +1031,11 @@ bool ts::TunerDevice::dishControl(const ModulationArgs& params, const LNB::Trans
     // to downconvert the signal.
     //
     // When your satellite equipment contains a DiSEqC switch device to switch
-    // between different satellites you have to send the according DiSEqC
-    // command(s). Take a look into the DiSEqC spec available at:
-    // http://www.eutelsat.org/ for the complete list of commands.
+    // between different satellites you have to send the according DiSEqC command(s).
+    // For the complete list of commands, take a look into the DiSEqC spec at:
+    // https://www.eutelsat.com/files/PDF/DiSEqC-documentation.zip
     //
-    // The burst signal is used in old equipments and by cheap satellite A/B
-    // switches.
+    // The burst signal is used in old equipments and by cheap satellite A/B switches.
     //
     // Voltage burst and 22kHz tone have to be consistent to the values
     // encoded in the DiSEqC 1.0 commands (EN61319-1 table ZB.1).
@@ -1054,6 +1056,9 @@ bool ts::TunerDevice::dishControl(const ModulationArgs& params, const LNB::Trans
         _duck.report().error(u"DVB frontend FE_SET_VOLTAGE error on %s: %s", _frontend_name, SysErrorCodeMessage());
         return false;
     }
+
+    // Remember to turn it off later.
+    _voltage_on = true;
 
     // Wait at least 15ms.
     ::nanosleep(&delay, nullptr);
@@ -1099,7 +1104,7 @@ bool ts::TunerDevice::dishControl(const ModulationArgs& params, const LNB::Trans
     }
 
     // Wait 100ms: This give any cascaded bus powered DiSEqC 1.0 switches a
-    // chance to power on  (DiSEqC spec v4.2 §5.4).
+    // chance to power on (DiSEqC spec v4.2 section 5.4).
     delay.tv_nsec = 100000000; // 100 ms
     ::nanosleep(&delay, nullptr);
 
@@ -1129,7 +1134,7 @@ bool ts::TunerDevice::dishControl(const ModulationArgs& params, const LNB::Trans
 
     // Send tone burst: A for satellite 0, B for satellite 1.
     // Notes:
-    //   1) The DiSEqC bus specification v4.2, in §5.3 explicitly sends the tone burst
+    //   1) The DiSEqC bus specification v4.2, in section 5.3 explicitly sends the tone burst
     //      after the DisEqC commands.
     //   2) There are two tone burst commands, "A" and "B", giving one bit of selection.
     //   3) The DiSEqC specification says little about how to number combinations of
