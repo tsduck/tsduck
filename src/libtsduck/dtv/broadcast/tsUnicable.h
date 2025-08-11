@@ -133,8 +133,9 @@ namespace ts {
         //!
         //! Decode a string containing a Unicable representation.
         //! @param [in] str String containing the Unicable representation.
-        //! Format: <version>,<userband slot>,<userband frequency in MHz>.
+        //! Format: \<version>,\<userband slot>,\<userband frequency in MHz>.
         //! @param [in,out] report Where to log errors.
+        //! @return True on success, false on error.
         //!
         bool decode(const UString& str, Report& report = CERR);
 
