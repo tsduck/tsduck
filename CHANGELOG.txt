@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.42-4389 (August 2025)
+VERSION 3.42-4391 (August 2025)
 
 [NEW] New commands and plugins:
 
@@ -13,6 +13,7 @@ VERSION 3.42-4389 (August 2025)
 
   * With "tstables" and plugin "tables", the option --multiple-files  now  also
     applies to XML and JSON files. Previously, it applied to binary files only.
+  * Satellite reception: added support for DiSEqC 1.1 and Unicable on Linux.
   * New options in existing commands and plugins:
     - Option --tag in plugins "history", "splicemonitor".
     - Option --pcr-based, --timestamp-based in plugin "until".

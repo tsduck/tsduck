@@ -15,8 +15,8 @@
 #pragma once
 #include "tsStringifyInterface.h"
 #include "tsUString.h"
-#include "tsCerrReport.h"
 #include "tsReport.h"
+#include "tsLNB.h"
 
 namespace ts {
     //!
@@ -130,6 +130,9 @@ namespace ts {
         //!
         bool isValid() const;
 
+        // Implementation of StringifyInterface
+        virtual UString toString() const override;
+
         //!
         //! Decode a string containing a Unicable representation.
         //! @param [in] str String containing the Unicable representation.
@@ -137,7 +140,7 @@ namespace ts {
         //! @param [in,out] report Where to log errors.
         //! @return True on success, false on error.
         //!
-        bool decode(const UString& str, Report& report = CERR);
+        bool decode(const UString& str, Report& report);
 
         //!
         //! Get a string describing the format of Unicable strings.
@@ -146,7 +149,17 @@ namespace ts {
         //!
         static const UString& StringFormat();
 
-        // Implementation of StringifyInterface
-        virtual UString toString() const override;
+        //!
+        //! Get the default LNB for Unicable switches.
+        //! @param [out] lnb The returned LNB.
+        //! @param [in,out] report Where to log errors.
+        //! @return True on success, false on error.
+        //!
+        static bool GetDefaultLNB(LNB& lnb, Report& report);
+
+        //!
+        //! Unicable 1 step-size in MHz.
+        //!
+        static constexpr uint32_t EN50494_STEP_SIZE = 4;
     };
 }

@@ -110,6 +110,9 @@ namespace ts {
         // Setup the dish for satellite tuners.
         bool dishControl(const ModulationArgs&, const LNB::Transposition&);
 
+        // Setup the Unicable multiswitch for satellite
+        bool configUnicableSwitch(const ModulationArgs&);
+
         // Extract DTV_STAT_* properties and store it into a SignalState.
         static void GetStat(SignalState& state, std::optional<SignalState::Value> SignalState::* field, const DTVProperties& props, uint32_t cmd);
         static void GetStatRatio(SignalState& state, std::optional<SignalState::Value> SignalState::* field, const DTVProperties& props, uint32_t cmd1, uint32_t cmd2);

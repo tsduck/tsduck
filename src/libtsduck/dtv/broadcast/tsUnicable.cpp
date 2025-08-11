@@ -79,3 +79,23 @@ const ts::UString& ts::Unicable::StringFormat()
         u"Version 1 indicates EN50494 (Unicable I), version 2 indicates EN50607 (Unicable II).";
     return desc;
 }
+
+
+//----------------------------------------------------------------------------
+// Get the default LNB for Unicable switches.
+//----------------------------------------------------------------------------
+
+bool ts::Unicable::GetDefaultLNB(LNB& lnb, Report& report)
+{
+    // Unicable switches assume a "European Universal Ku (extended)" LNB.
+    static const UChar lnb_name[] = u"Extended";
+
+    if (lnb.set(lnb_name, report)) {
+        report.debug(u"loaded LNB \"%s\" for Unicable", lnb);
+        return true;
+    }
+    else {
+        report.error(u"LNB \"%s\" not found for Unicable", lnb_name);
+        return false;
+    }
+}
