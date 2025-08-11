@@ -19,12 +19,6 @@
     <RootNamespace>utests-tsducklib</RootNamespace>
   </PropertyGroup>
 
-  <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
-    <Link>
-      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
-    </Link>
-  </ItemDefinitionGroup>
-
   <ImportGroup Label="PropertySheets">
     <Import Project="msvc-target-exe.props"/>
     <Import Project="msvc-use-tsducklib-all.props"/>

@@ -162,6 +162,8 @@
       <PreprocessorDefinitions>DEBUG;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
+      <!-- Required with LinkIncremental == false -->
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>TS_WINVER_FILEFLAGS=VS_FF_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>

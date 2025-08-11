@@ -18,12 +18,23 @@
     <Import Project="$(VatekProps)"/>
   </ImportGroup>
 
+  <ItemDefinitionGroup Condition="'$(TS_NO_VATEK)' == '' AND '$(VatekProps)' != ''">
+    <Link>
+      <!-- The Vatek static library explicitly references LIBCMT while standard builds use MSVCRT -->
+      <AdditionalOptions Condition="'$(Configuration)' == 'Release'">/NODEFAULTLIB:LIBCMT %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)' == 'Debug'">/NODEFAULTLIB:LIBCMTD %(AdditionalOptions)</AdditionalOptions>
+      <!-- There is no PDB coming with the Vatek static library, ignore corresponding warning LNK4099 -->
+      <AdditionalOptions Condition="'$(Configuration)' == 'Debug'">/IGNORE:4099 %(AdditionalOptions)</AdditionalOptions>
+    </Link>
+  </ItemDefinitionGroup>
+
   <!-- Disable Vatek code in TSDuck when Vatek library is not available -->
   <ItemDefinitionGroup Condition="'$(TS_NO_VATEK)' != '' OR '$(VatekProps)' == ''">
     <ClCompile>
       <PreprocessorDefinitions>TS_NO_VATEK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
+
   <PropertyGroup Label="UserMacros" Condition="'$(VatekProps)' == ''">
     <TS_NO_VATEK>1</TS_NO_VATEK>
   </PropertyGroup>
