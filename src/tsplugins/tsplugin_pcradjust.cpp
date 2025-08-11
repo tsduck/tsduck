@@ -262,9 +262,9 @@ uint64_t ts::PCRAdjustPlugin::PIDContext::updatedPDTS(PacketCounter packet_index
     if (sync_pdts) {
         // Difference between the PTS/DTS and the PCR, in PTS units.
         const uint64_t diff = std::abs(int64_t(original_pdts) - int64_t(updated_pcr / SYSTEM_CLOCK_SUBFACTOR));
-        // If the difference between the PTS/DTS and the PCR is less than 1/2 second, we are still sync.
+        // If the difference between the PTS/DTS and the PCR is less than 10 second, we are still sync.
         // Take in account the case where there is a wrapup at PTS_DTS_SCALE.
-        const uint64_t max_diff = SYSTEM_CLOCK_SUBFREQ / 2;
+        const uint64_t max_diff = SYSTEM_CLOCK_SUBFREQ * 10;
         sync_pdts = diff < max_diff || diff > PTS_DTS_SCALE - max_diff;
     }
 
