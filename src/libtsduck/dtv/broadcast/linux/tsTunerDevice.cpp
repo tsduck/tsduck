@@ -1225,8 +1225,8 @@ bool ts::TunerDevice::configUnicableSwitch(const ModulationArgs& params)
             cmd.msg[0] = 0xE0;  // Framing
             cmd.msg[1] = 0x00;  // Address: Master to any
             cmd.msg[2] = 0x5a;  // Channel change message ID.
-            cmd.msg[3] = (((params.unicable->user_band_slot - 1) & 0x07) << 5) |
-                ((params.satellite_number.value_or(0) & 1) << 4) |
+            cmd.msg[3] = uint8_t(((params.unicable->user_band_slot - 1) & 0x07) << 5) |
+                uint8_t((params.satellite_number.value_or(0) & 1) << 4) |
                 (is_horizontal ? 0x08 : 0) |
                 (is_high_band ? 0x04 : 0) |
                 (tuning_word & 0x0300 >> 8);
@@ -1238,12 +1238,12 @@ bool ts::TunerDevice::configUnicableSwitch(const ModulationArgs& params)
             cmd.msg_len = 4;    // Message size (meaningful bytes in msg)
             // EN50607 does not send framing or address octets
             cmd.msg[0] = 0x70;  // Channel change message ID.
-            cmd.msg[1] = (((params.unicable->user_band_slot - 1) & 0x1F) << 3) |
-                ((tuning_word_mhz >> 8) & 0x7);
+            cmd.msg[1] = uint8_t(((params.unicable->user_band_slot - 1) & 0x1F) << 3) |
+                uint8_t((tuning_word_mhz >> 8) & 0x7);
             cmd.msg[2] = tuning_word_mhz & 0xff;
-            cmd.msg[3] = (((params.satellite_number.value_or(0) & 0x3F) << 2) & 0xFC)
-                | (is_horizontal ? 0x02 : 0x00)
-                | (is_high_band ? 0x01 : 0x00);
+            cmd.msg[3] = uint8_t(((params.satellite_number.value_or(0) & 0x3F) << 2) & 0xFC) |
+                (is_horizontal ? 0x02 : 0x00) |
+                (is_high_band ? 0x01 : 0x00);
             break;
         }
         default: {
