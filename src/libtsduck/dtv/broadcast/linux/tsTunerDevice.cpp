@@ -1189,6 +1189,9 @@ bool ts::TunerDevice::configUnicableSwitch(const ModulationArgs& params)
         return false;
     }
 
+    // Remember to turn it off later.
+    _voltage_on = true;
+
     // Wait at least 15ms.
     ::nanosleep(&delay, nullptr);
 
@@ -1254,16 +1257,17 @@ bool ts::TunerDevice::configUnicableSwitch(const ModulationArgs& params)
 
     if (::ioctl(_frontend_fd, ioctl_request_t(FE_DISEQC_SEND_MASTER_CMD), &cmd) < 0) {
         _duck.report().error(u"DVB frontend FE_DISEQC_SEND_MASTER_CMD error: %s", SysErrorCodeMessage());
-        return 0;
+        return false;
     }
 
     // Wait 15ms
     ::nanosleep(&delay, nullptr);
 
     // Set output voltage to 13V and leave it that way, to signal we continue to want our userband to be generated.
+    // (_voltage_on was already set)
     if (ioctl_fe_set_voltage(_frontend_fd, SEC_VOLTAGE_13) < 0) {
         _duck.report().error(u"DVB frontend FE_SET_VOLTAGE error: %s", SysErrorCodeMessage());
-        return 0;
+        return false;
     }
     return true;
 }
