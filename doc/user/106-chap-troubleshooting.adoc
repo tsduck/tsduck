@@ -47,6 +47,30 @@ endif::[]
 |https_proxy
 |Same as `http_proxy`.
 
+|INFLUX_ACTIVE_CONFIG
+|With plugin `influx`, default value for option `--active-config`.
+
+|INFLUX_BUCKET_ID
+|With plugin `influx`, default value for option `--bucket-id`.
+
+|INFLUX_BUCKET_NAME
+|With plugin `influx`, default value for option `--bucket`.
+
+|INFLUX_CONFIGS_PATH
+|With plugin `influx`, default value for option `--configs-path`.
+
+|INFLUX_HOST
+|With plugin `influx`, default value for option `--host-url`.
+
+|INFLUX_ORG
+|With plugin `influx`, default value for option `--org`.
+
+|INFLUX_ORG_ID
+|With plugin `influx`, default value for option `--org-id`.
+
+|INFLUX_TOKEN
+|With plugin `influx`, default value for option `--token`.
+
 |LD_LIBRARY_PATH
 |On {unix}, used to locate shareable libraries such as `tsp` plugins or TSDuck extensions.
 

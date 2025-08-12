@@ -17,6 +17,7 @@
 #include "tsSignalizationDemux.h"
 #include "tsDurationAnalyzer.h"
 #include "tstr101290Analyzer.h"
+#include "tsCADescriptor.h"
 #include "tsMessageQueue.h"
 #include "tsThread.h"
 #include "tsTime.h"
@@ -42,10 +43,14 @@ namespace ts {
 
     private:
         // Command line options.
+        bool        _log_bitrate = false;
+        bool        _log_pcr = false;
+        bool        _log_pts = false;
+        bool        _log_dts = false;
+        bool        _log_tr_101_290 = false;
         bool        _log_types = false;
         bool        _log_services = false;
         bool        _log_names = false;
-        bool        _log_tr_101_290 = false;
         bool        _pcr_based = false;
         bool        _timestamp_based = false;
         bool        _use_local_time = false;
@@ -62,8 +67,22 @@ namespace ts {
         {
         public:
             ServiceContext() = default;
-            UString name {};
-            std::set<PID> pids {};
+            PID           pcr_pid = PID_NULL;  // Declared PCR PID or video PID.
+            PID           pts_pid = PID_NULL;  // First PID where we expect PTS and DTS.
+            UString       name {};             // Service name.
+            UString       inf_name {};         // Service name with escaped characters, compatible with InfluxDB message.
+            std::set<PID> pids {};             // Set of PID's in this service.
+        };
+
+        // Description of a PID. Reset in each period.
+        class PIDContext
+        {
+        public:
+            PIDContext() = default;
+            PacketCounter packets = 0;         // Number of TS packets in period.
+            uint64_t      pcr = INVALID_PCR;   // Last PCR found in period.
+            uint64_t      pts = INVALID_PTS;   // Last PTS found in period.
+            uint64_t      dts = INVALID_DTS;   // Last DTS found in period.
         };
 
         // Working data.
@@ -79,16 +98,22 @@ namespace ts {
         InfluxRequest         _request {*this};          // Web request to InfluxDB server.
         MessageQueue<UString> _metrics_queue {};         // Queue of metrics to send.
         PacketCounter         _ts_packets = 0;           // All TS packets in period.
-        std::map<PID,PacketCounter> _pids_packets {};    // Packets per PID in period.
-        std::map<uint16_t,ServiceContext> _services {};  // Service descriptions.
+        std::map<PID,PIDContext> _pids {};               // PID's description in period.
+        std::map<uint16_t,ServiceContext> _services {};  // Services descriptions.
 
         // Report metrics to InfluxDB.
         void reportMetrics(bool force);
         void reportMetrics(Time timestamp, cn::milliseconds duration);
 
+        // Build metrics string for a given type of timestamp.
+        void addMetrics(UString& data, const UChar* measurement, PID ServiceContext::* refpid, uint64_t PIDContext::* value, cn::milliseconds::rep timestamp_ms);
+
         // Implementation of SignalizationHandlerInterface.
         virtual void handleUTC(const Time&, TID) override;
         virtual void handleService(uint16_t, const Service&, const PMT&, bool) override;
+
+        // Search PID's in a descriptor list.
+        void searchPIDs(std::set<PID>&, const DescriptorList&);
 
         // There is one thread which asynchronously sends the metrics data to the InfluxDB server.
         // We cannot anticipate the response time of the server. Using a thread avoid slowing down
@@ -111,30 +136,51 @@ ts::InfluxPlugin::InfluxPlugin(TSP* tsp_) :
     _influx_args.defineArgs(*this);
 
     // Types of monitoring.
-    option(u"all-pids", 'a');
-    help(u"all-pids",
-         u"Send bitrate monitoring data for all PID's. Equivalent to --pid 0-8191.");
+    option(u"bitrate");
+    help(u"bitrate",
+         u"Send bitrate monitoring data. This is the default. "
+         u"This option is only useful when any of --pcr, --pts, --dts, --tr-101-290 are also set.");
 
-    option(u"pid", 'p', PIDVAL, 0, UNLIMITED_COUNT);
-    help(u"pid", u"pid1[-pid2]",
-         u"Send bitrate monitoring data for the specified PID's. "
-         u"The PID's are identified in InfluxDB by their value in decimal. "
-         u"Several -p or --pid options may be specified.");
+    option(u"pcr");
+    help(u"pcr",
+         u"Send the last PCR value in a set of PID and/or services. "
+         u"Also specify at least one of --pid, --all-pids, --services.");
 
-    option(u"services", 's');
-    help(u"services",
-         u"Send bitrate monitoring data for services. "
-         u"The services are identified in InfluxDB by their id in decimal.");
+    option(u"pts");
+    help(u"pts",
+         u"Send the last PTS value in a set of PID and/or services. "
+         u"Also specify at least one of --pid, --all-pids, --services.");
 
-    option(u"names", 'n');
-    help(u"names",
-         u"With --services, the services are identified in InfluxDB by their name, when available.");
+    option(u"dts");
+    help(u"dts",
+         u"Send the last DTS value in a set of PID and/or services. "
+         u"Also specify at least one of --pid, --all-pids, --services.");
 
     option(u"tr-101-290");
     help(u"tr-101-290",
          u"Send error counters as defined by ETSI TR 101 290. "
          u"This plugin can detect a subset of ETSI TR 101 290 only: "
          u"all transport stream logical checks are performed but physical checks on modulation cannot be reported.");
+
+    // Subselection of types of monitoring.
+    option(u"all-pids", 'a');
+    help(u"all-pids",
+         u"Send bitrate or PCR/PTS/DTS monitoring data for all PID's. Equivalent to --pid 0-8191.");
+
+    option(u"pid", 'p', PIDVAL, 0, UNLIMITED_COUNT);
+    help(u"pid", u"pid1[-pid2]",
+         u"Send bitrate or PCR/PTS/DTS monitoring data for the specified PID's. "
+         u"The PID's are identified in InfluxDB by their value in decimal. "
+         u"Several -p or --pid options may be specified.");
+
+    option(u"services", 's');
+    help(u"services",
+         u"Send bitrate or PCR/PTS/DTS monitoring data for services. "
+         u"The services are identified in InfluxDB by their id in decimal.");
+
+    option(u"names", 'n');
+    help(u"names",
+         u"With --services, the services are identified in InfluxDB by their name, when available.");
 
     option(u"max-severity", 0, INTEGER, 0, 0, 1, tr101290::INFO_SEVERITY);
     help(u"max-severity",
@@ -197,10 +243,14 @@ ts::InfluxPlugin::InfluxPlugin(TSP* tsp_) :
 bool ts::InfluxPlugin::getOptions()
 {
     bool success = _influx_args.loadArgs(*this, true);
+    _log_pcr = present(u"pcr");
+    _log_pts = present(u"pts");
+    _log_dts = present(u"dts");
+    _log_tr_101_290 = present(u"tr-101-290");
+    _log_bitrate = present(u"bitrate") || (!_log_pcr && !_log_pts && !_log_dts && !_log_tr_101_290);
     _log_types = present(u"type");
     _log_services = present(u"services");
     _log_names = present(u"names");
-    _log_tr_101_290 = present(u"tr-101-290");
     _pcr_based = present(u"pcr-based");
     _timestamp_based = present(u"timestamp-based");
     _use_local_time = present(u"local-time");
@@ -208,14 +258,17 @@ bool ts::InfluxPlugin::getOptions()
     getIntValue(_max_metrics, u"max-metrics", std::numeric_limits<size_t>::max());
     getIntValue(_queue_size, u"queue-size", DEFAULT_QUEUE_SIZE);
     getChronoValue(_log_interval, u"interval", cn::seconds(DEFAULT_INTERVAL));
+    getIntValues(_log_pids, u"pid");
     if (present(u"all-pids")) {
         _log_pids = AllPIDs();
     }
-    else {
-        getIntValues(_log_pids, u"pid");
-    }
-    _start_time = Time::Epoch;
 
+    if ((_log_pcr || _log_pts || _log_dts) && (_log_pids.none() && !_log_services)) {
+        error(u"with any of --pcr --pts --dts, at least one of --pid --all-pids --services is required");
+        success = false;
+    }
+
+    _start_time = Time::Epoch;
     if (present(u"start-time")) {
         if (!_start_time.decode(value(u"start-time"))) {
             error(u"invalid --start-time value \"%s\" (use \"year/month/day:hour:minute:second\")", value(u"start-time"));
@@ -245,7 +298,7 @@ bool ts::InfluxPlugin::start()
     _ts_clock.useInputTimestamps(_timestamp_based);
     _tr_101_290.reset();
     _ts_packets = 0;
-    _pids_packets.clear();
+    _pids.clear();
     _services.clear();
 
     // Resize the inter-thread queue.
@@ -306,8 +359,16 @@ ts::ProcessorPlugin::Status ts::InfluxPlugin::processPacket(TSPacket& pkt, TSPac
 
     // Accumulate metrics.
     _ts_packets++;
-    if (_log_types || _log_services || _log_pids.any()) {
-        _pids_packets[pkt.getPID()]++;
+    auto& ctx(_pids[pkt.getPID()]);
+    ctx.packets++;
+    if (_log_pcr && pkt.hasPCR()) {
+        ctx.pcr = pkt.getPCR();
+    }
+    if (_log_pts && pkt.hasPTS()) {
+        ctx.pts = pkt.getPTS();
+    }
+    if (_log_dts && pkt.hasDTS()) {
+        ctx.dts = pkt.getDTS();
     }
 
     // Is it time to report metrics?
@@ -337,27 +398,56 @@ void ts::InfluxPlugin::handleUTC(const Time& utc, TID tid)
 
 void ts::InfluxPlugin::handleService(uint16_t ts_id, const Service& service, const PMT& pmt, bool removed)
 {
-    debug(u"got service \"%s\", id %n, removed: %s", service.getName(), service.getId(), removed);
+    debug(u"got service \"%s\", id %n, pmt valid: %s, removed: %s", service.getName(), service.getId(), pmt.isValid(), removed);
     if (_log_services) {
         if (removed) {
             _services.erase(service.getId());
         }
         else {
             auto& srv(_services[service.getId()]);
-            if (_log_names) {
-                const UString name(service.getName());
-                if (!name.empty()) {
-                    srv.name = name;
-                }
+            const UString name(service.getName());
+            if (!name.empty()) {
+                srv.name = name;
+                srv.inf_name = InfluxRequest::ToKey(name);
             }
             if (pmt.isValid()) {
+                searchPIDs(srv.pids, pmt.descs);
+                PID first_video_pid = PID_NULL;
+                PID first_audio_pid = PID_NULL;
                 for (const auto& it : pmt.streams) {
                     srv.pids.insert(it.first);
+                    searchPIDs(srv.pids, it.second.descs);
+                    if (first_video_pid == PID_NULL && it.second.isVideo(duck)) {
+                        first_video_pid = it.first;
+                    }
+                    else if (first_audio_pid == PID_NULL && it.second.isAudio(duck)) {
+                        first_audio_pid = it.first;
+                    }
                 }
+                srv.pts_pid = first_video_pid != PID_NULL ? first_video_pid : first_audio_pid;
+                srv.pcr_pid = pmt.pcr_pid != PID_NULL ? pmt.pcr_pid : srv.pts_pid;
             }
+            debug(u"service \"%s\", id %n, PCR PID: %n, PTS PID: %n", srv.name, service.getId(), srv.pcr_pid, srv.pts_pid);
         }
     }
 }
+
+
+//----------------------------------------------------------------------------
+// Search service PID's in a descriptor list.
+//----------------------------------------------------------------------------
+
+void ts::InfluxPlugin::searchPIDs(std::set<PID>& pids, const DescriptorList& dlist)
+{
+    // Search CA_descriptor only at this time.
+    for (const auto& desc : dlist) {
+        const CADescriptor ca(duck, desc);
+        if (ca.isValid()) {
+            pids.insert(ca.ca_pid);
+        }
+    }
+}
+
 
 //----------------------------------------------------------------------------
 // Report metrics to InfluxDB if time to do so.
@@ -410,8 +500,12 @@ void ts::InfluxPlugin::reportMetrics(Time timestamp, cn::milliseconds duration)
 
     // Build data to post. Use a shared pointer to send to the message queue.
     auto data = std::make_shared<UString>();
+
+    // The total TS bitrate is also present.
     data->format(u"bitrate,scope=ts,tsid=%d value=%d %d", _demux.transportStreamId(), PacketBitRate(_ts_packets, duration), timestamp_ms);
-    if (_log_services) {
+
+    // Log bitrate per service.
+    if (_log_bitrate && _log_services) {
         // PID's which belong to services.
         PIDSet allocated;
         // Send bitrate info for services.
@@ -419,14 +513,13 @@ void ts::InfluxPlugin::reportMetrics(Time timestamp, cn::milliseconds duration)
             // Count packets in this service.
             PacketCounter packets = 0;
             for (PID pid : it.second.pids) {
-                packets += _pids_packets[pid];
+                packets += _pids[pid].packets;
                 allocated.set(pid);
             }
             // Send bitrate info by name or id.
             if (packets > 0) {
-                if (_log_names && !it.second.name.empty()) {
-                    const UString name(InfluxRequest::ToKey(it.second.name));
-                    data->format(u"\nbitrate,scope=service,service=%s value=%d %d", name, PacketBitRate(packets, duration), timestamp_ms);
+                if (_log_names && !it.second.inf_name.empty()) {
+                    data->format(u"\nbitrate,scope=service,service=%s value=%d %d", it.second.inf_name, PacketBitRate(packets, duration), timestamp_ms);
                 }
                 else {
                     data->format(u"\nbitrate,scope=service,service=%d value=%d %d", it.first, PacketBitRate(packets, duration), timestamp_ms);
@@ -435,20 +528,22 @@ void ts::InfluxPlugin::reportMetrics(Time timestamp, cn::milliseconds duration)
         }
         // Send bitrate info for "global" PID's (unallocated to any service).
         PacketCounter globals = 0;
-        for (const auto& it : _pids_packets) {
+        for (const auto& it : _pids) {
             if (!allocated.test(it.first)) {
-                globals += it.second;
+                globals += it.second.packets;
             }
         }
         if (globals > 0) {
             data->format(u"\nbitrate,scope=service,service=global value=%d %d", PacketBitRate(globals, duration), timestamp_ms);
         }
     }
-    if (_log_types) {
+
+    // Log bitrate per PID type.
+    if (_log_bitrate && _log_types) {
         // Build a map of packet count per PID type (all PID's have a type).
         std::map<PIDClass,PacketCounter> by_type;
-        for (const auto& it : _pids_packets) {
-            by_type[_demux.pidClass(it.first)] += it.second;
+        for (const auto& it : _pids) {
+            by_type[_demux.pidClass(it.first)] += it.second.packets;
         }
         // Send bitrate info for each type of PID.
         for (const auto& it : by_type) {
@@ -458,13 +553,28 @@ void ts::InfluxPlugin::reportMetrics(Time timestamp, cn::milliseconds duration)
             }
         }
     }
-    if (_log_pids.any()) {
-        for (const auto& it : _pids_packets) {
-            if (_log_pids.test(it.first) && it.second > 0) {
-                data->format(u"\nbitrate,scope=pid,pid=%d value=%d %d", it.first, PacketBitRate(it.second, duration), timestamp_ms);
+
+    // Log bitrate per PID.
+    if (_log_bitrate && _log_pids.any()) {
+        for (const auto& it : _pids) {
+            if (_log_pids.test(it.first) && it.second.packets > 0) {
+                data->format(u"\nbitrate,scope=pid,pid=%d value=%d %d", it.first, PacketBitRate(it.second.packets, duration), timestamp_ms);
             }
         }
     }
+
+    // Log PCR/PTS/DTS values.
+    if (_log_pcr) {
+        addMetrics(*data, u"pcr", &ServiceContext::pcr_pid, &PIDContext::pcr, timestamp_ms);
+    }
+    if (_log_pts) {
+        addMetrics(*data, u"pts", &ServiceContext::pts_pid, &PIDContext::pts, timestamp_ms);
+    }
+    if (_log_dts) {
+        addMetrics(*data, u"dts", &ServiceContext::pts_pid, &PIDContext::dts, timestamp_ms);
+    }
+
+    // Log ETSI TR 101 290 error counters.
     if (_log_tr_101_290) {
         tr101290::Counters counters;
         _tr_101_290.getCountersRestart(counters);
@@ -478,6 +588,8 @@ void ts::InfluxPlugin::reportMetrics(Time timestamp, cn::milliseconds duration)
             data->format(u"\ncounter,name=error_count,severity=%d value=%d %d", tr101290::INFO_SEVERITY, counters.errorCount(), timestamp_ms);
         }
     }
+
+    // Debug output of the complete message to InfluxDB.
     debug(u"report at %s, for last %s, data: \"%s\"", timestamp, duration, *data);
 
     // Send the data to the outgoing thread. Use a zero timeout.
@@ -491,7 +603,41 @@ void ts::InfluxPlugin::reportMetrics(Time timestamp, cn::milliseconds duration)
 
     // Reset metrics.
     _ts_packets = 0;
-    _pids_packets.clear();
+    _pids.clear();
+}
+
+
+//----------------------------------------------------------------------------
+// Build metrics string for a given type of timestamp.
+//----------------------------------------------------------------------------
+
+void ts::InfluxPlugin::addMetrics(UString& data, const UChar* measurement, PID ServiceContext::* refpid, uint64_t PIDContext::* value, cn::milliseconds::rep timestamp_ms)
+{
+    // Log timestamp per service.
+    if (_log_services) {
+        for (const auto& it : _services) {
+            if (it.second.*refpid != PID_NULL) {
+                auto& ctx(_pids[it.second.*refpid]);
+                if (ctx.*value != INVALID_PCR) {
+                    if (_log_names && !it.second.inf_name.empty()) {
+                        data.format(u"\n%s,scope=service,service=%s value=%d %d", measurement, it.second.inf_name, ctx.*value, timestamp_ms);
+                    }
+                    else {
+                        data.format(u"\n%s,scope=service,service=%d value=%d %d", measurement, it.first, ctx.*value, timestamp_ms);
+                    }
+                }
+            }
+        }
+    }
+
+    // Log timestamp per PID.
+    if (_log_pids.any()) {
+        for (const auto& it : _pids) {
+            if (_log_pids.test(it.first) && it.second.*value != INVALID_PCR) {
+                data.format(u"\n%s,scope=pid,pid=%d value=%d %d", measurement, it.first, it.second.*value, timestamp_ms);
+            }
+        }
+    }
 }
 
 

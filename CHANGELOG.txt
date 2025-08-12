@@ -7,7 +7,7 @@ VERSION 3.42-4391 (August 2025)
 [NEW] New commands and plugins:
 
   * Added plugin "influx": Send live TS metrics to InfluxDB, a data source  for
-    Grafana.
+    Grafana and other analytics applications.
 
 [IMP] Improvements on existing commands and plugins:
 

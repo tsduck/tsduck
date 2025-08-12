@@ -12,14 +12,21 @@
 [.cmd-header]
 Send live metrics to InfluxDB, a data source for Grafana
 
-By default, the plugin sends the global transport stream bitrate only.
-Using options, other bitrate information are sent: by PID, by type of PID (audio, video, etc.), by service.
+By default, the plugin sends the global transport stream bitrate at regular intervals (5 seconds by default).
 
-It is also possible to send most error counters which are defined in <<ETSI-101-290>>.
+Other options include:
+
+[.compact-list]
+* Bitrate information by PID, by type of PID (audio, video, etc.), by service.
+* Last PCR/PTS/DTS timestamp values by PID, by service.
+* Error counters as defined in <<ETSI-101-290>>.
 
 Be careful to send the required information for your graph only.
 Sending bitrate information for all PID's, all types of PID's, and all services,
 every second, may overload the InfluxDB database. Do some benchmarking first.
+
+Even though InfluxDB is typically used as a Grafana data source,
+the collected data can be used by other applications for analytics, monitoring, etc.
 
 [.usage]
 Usage
@@ -83,8 +90,25 @@ Monitored information options
 *--all-pids*
 
 [.optdoc]
-Send bitrate monitoring data for all PID's.
+Send bitrate or PCR/PTS/DTS monitoring data for all PID's.
 Equivalent to `--pid 0-8191`.
+
+[.opt]
+*--bitrate*
+
+[.optdoc]
+Send bitrate monitoring data.
+
+[.optdoc]
+This option is only useful in addition to `--pcr`, `--pts`, `--dts`, `--tr-101-290`.
+Otherwise, this is the default.
+
+[.opt]
+*--dts*
+
+[.optdoc]
+Send the last DTS value in a set of PID and/or services.
+Also specify at least one of `--pid`, `--all-pids`, `--services`.
 
 [.opt]
 *--max-severity* _value_
@@ -106,11 +130,18 @@ With `--services`, the services are identified in InfluxDB by their name, when a
 Services without name are identified by their id in decimal.
 
 [.opt]
+*--pcr*
+
+[.optdoc]
+Send the last PCR value in a set of PID and/or services.
+Also specify at least one of `--pid`, `--all-pids`, `--services`.
+
+[.opt]
 *-p* _pid1[-pid2]_ +
 *--pid* _pid1[-pid2]_
 
 [.optdoc]
-Send bitrate monitoring data for the specified PID's.
+Send bitrate or PCR/PTS/DTS monitoring data for the specified PID's.
 The PID's are identified in InfluxDB by their value in decimal.
 
 [.optdoc]
@@ -118,11 +149,18 @@ Several `--pid` options may be specified.
 To save bandwidth and database space, PID's with no packets during an interval are not reported for that interval.
 
 [.opt]
+*--pts*
+
+[.optdoc]
+Send the last PTS value in a set of PID and/or services.
+Also specify at least one of `--pid`, `--all-pids`, `--services`.
+
+[.opt]
 *-s* +
 *--services*
 
 [.optdoc]
-Send bitrate monitoring data for services.
+Send bitrate or PCR/PTS/DTS monitoring data for services.
 The services are identified in InfluxDB by their id in decimal.
 
 [.opt]
@@ -191,13 +229,44 @@ A time stamp is always provided with each data entry.
 Depending on the plugin options, this can be a local time or a UTC time,
 a wall-clock time or a time which is extracted from the stream.
 
-In each data entry, the `_measurement` is the either the string `bitrate` or the string `counter`.
-The field `_value` is either a bitrate in bits/second or a number of errors (with `counter`).
+The following table lists the possible types of the field `_measurement` and the semantics of the corresponding field `_value`.
 The `_value` type is `float` (in practice, an integer value is provided).
 
-===== Bitrate metrics
+.InfluxDB measurements and values
+[cols="<1m,<1,<1m,<1m",stripes=none,options="autowidth"]
+|===
+|_measurement |_value |Tags |Secondary tags
 
-In each bitrate entry, the field `_measurement` is `bitrate` and the tag `scope` indicate the type of entry.
+|bitrate
+|bitrate in bits/second
+|scope
+|tsid pid service type
+
+|counter
+|number of errors
+|name severity
+|
+
+|dts
+|DTS value in 90 kHz units
+|scope
+|pid service
+
+|pcr
+|PCR value in 27 MHz units
+|scope
+|pid service
+
+|pts
+|PTS value in 90 kHz units
+|scope
+|pid service
+
+|===
+
+==== Bitrate metrics
+
+In each bitrate entry, the field `_measurement` is `bitrate` and the tag `scope` indicates the type of entry.
 Depending on the value value of `scope`, a second tag is provided.
 
 The following table lists the possible `scope` values and the corresponding second tag.
@@ -277,7 +346,55 @@ bitrate,scope=service,service=6ter value=5694397 1548161530912
 bitrate,scope=service,service=global value=231915 1548161530912
 ----
 
-===== ETSI TR 101 290 error counter metrics
+==== Timestamp metrics (PCR, PTS, DTS)
+
+In each entry, the field `_measurement` is one of `pcr`, `pts`, `dts`, depending on the type of timestamp.
+The tag `scope` indicates the type of entry.
+Depending on the value value of `scope`, a second tag is provided.
+
+The field `_value` contains the raw value of the last timestamp of that type in the measurement period.
+
+The following table lists the possible `scope` values and the corresponding second tag.
+
+// PDF backend does not correctly process "autowidth" tables.
+.InfluxDB timestamp metrics
+ifndef::backend-pdf[]
+[cols="<1m,<1m,<1,<1",stripes=none,options="autowidth"]
+endif::[]
+ifdef::backend-pdf[]
+[cols="<8m,<8m,<37,<37",stripes=none]
+endif::[]
+|===
+|scope |Tag 2 |Tag 2 value |Condition
+
+|pid
+|pid
+|PID in decimal.
+|With `--pid` or `--all-pids`
+
+|service
+|service
+|Service id in decimal, or service name.
+|With `--service`
+
+|===
+
+[.usage]
+Examples
+
+With options `--pcr --services --names`, InfluxDB receives the following data:
+
+[source,text]
+----
+bitrate,scope=ts,tsid=4 value=23178552 1548161473059
+pcr,scope=service,service=M6 value=1781951280555 1548161473059
+pcr,scope=service,service=W9 value=1780346511814 1548161473059
+pcr,scope=service,service=Arte value=1780520269610 1548161473059
+pcr,scope=service,service=France\ 5 value=1782323879195 1548161473059
+pcr,scope=service,service=6ter value=1788684323646 1548161473059
+----
+
+==== ETSI TR 101 290 error counter metrics
 
 With option `--tr-101-290`, each metrics entry contains one error counter for the last measurement interval.
 
