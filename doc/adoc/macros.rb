@@ -14,7 +14,8 @@ require 'asciidoctor/extensions'
 include ::Asciidoctor
 
 # Macro to create a link to a TSDuck C++ class in the programming reference.
-# Example for class "ts::FooBar": classref:FooBar[]
+# Top-level example: class "ts::FooBar" -> classref:FooBar[]
+# Nested example: class "ts::foo::Bar" -> classref:foo/Bar[]
 class ClassRefMacro < Asciidoctor::Extensions::InlineMacroProcessor
   use_dsl
   named :classref
@@ -23,11 +24,11 @@ class ClassRefMacro < Asciidoctor::Extensions::InlineMacroProcessor
   def process parent, target, attrs
     doc = parent.document
     # TSDuck home page is extracted from '{home}' attribute in document.
-    home = (doc.attr? 'home') ? (doc.attr 'home') : 'http:'
+    home = (doc.attr? 'home') ? (doc.attr 'home') : 'http://'
     # Target URL.
-    url = %(#{home}doxy/class/#{target}.html)
+    url = %(#{home}doxy/class/#{target.gsub('/','__')}.html)
     # Create the asciidoctor content to be reprocessed.
-    create_inline_pass parent, %(`#{url}[ts::#{target}]`), attributes: { 'subs' => :normal }
+    create_inline_pass parent, %(`#{url}[ts::#{target.gsub('/','::')}]`), attributes: { 'subs' => :normal }
   end
 end
 

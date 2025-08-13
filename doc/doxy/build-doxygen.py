@@ -19,6 +19,9 @@ import re, os, sys, glob, shutil, subprocess
 # With option -e or --enforce-groups, update all "@ingroup" directives.
 update_groups = '-e' in sys.argv or '--enforce-groups' in sys.argv
 
+# With option -s or --skip-doxygen, do not call doxygen, assume already built.
+skip_doxygen = '-s' in sys.argv or '--skip-doxygen' in sys.argv
+
 # Calling script name, project root.
 SCRIPT     = os.path.basename(sys.argv[0])
 SCRIPTDIR  = os.path.dirname(os.path.abspath(sys.argv[0]))
@@ -134,8 +137,12 @@ else:
     env['DOT_PATH'] = dot
 
 # Run doxygen in same directory as this script (where Doxyfile is).
-print('Running doxygen version: %s ...' % doxy_version)
-status = subprocess.run([doxygen], env=env, cwd=SCRIPTDIR)
+if skip_doxygen:
+    doxy_status = 0
+else:
+    print('Running doxygen version: %s ...' % doxy_version)
+    status = subprocess.run([doxygen], env=env, cwd=SCRIPTDIR)
+    doxy_status = status.returncode
 
 # Collect all 'group_*.html' files. Count files and directories.
 # Delete empty subdirectories (older versions of doxygen created many for nothing in case of hierachical output).
@@ -163,10 +170,10 @@ for f in groups:
         redirect_html(GROUPDIR, match.group(1), f)
         file_count += 1
 
-# Create permanent links in a 'class' subdirectory for all top-level classes in namespace 'ts'.
+# Create permanent links in a 'class' subdirectory for all classes in namespace 'ts'.
 os.makedirs(CLASSDIR, exist_ok=True)
 file_pattern = re.compile(r'href="([^"]*/classts_1_1[^"/]*\.html)"')
-title_pattern = re.compile(r'>ts::([A-Za-z0-9_]+) +[Cc]lass +[Re]eference')
+title_pattern = re.compile(r'>ts::([A-Za-z0-9_:]+) +[Cc]lass +[Re]eference')
 with open(os.path.join(HTMLDIR, 'classes.html')) as input:
     for line in input:
         # Grab all href to "classts_1_1*.html" files.
@@ -182,11 +189,11 @@ with open(os.path.join(HTMLDIR, 'classes.html')) as input:
                             classname = match.group(1)
                         break
             if classname is not None:
-                redirect_html(CLASSDIR, classname + '.html', hfile)
+                redirect_html(CLASSDIR, classname.replace(':', '_') + '.html', hfile)
                 file_count += 1
 
 print('Generated %d files in %d directories' % (file_count, dir_count))
 if missing_group_names > 0:
     print('Missing %d libtscore or libtsduck group names' % missing_group_names)
 
-exit(min(1, missing_group_names + status.returncode))
+exit(min(1, missing_group_names + doxy_status))

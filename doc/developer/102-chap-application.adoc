@@ -207,7 +207,7 @@ The usage of `std::string` with the TSDuck libraries is discouraged in favor of 
 [#unicodestring]
 ===== Unicode strings
 
-The class `{home}doxy/class/UString.html[ts::UString]` implements Java-like Unicode strings.
+The class classref:UString[] implements Java-like Unicode strings.
 Each character uses 16 bits of storage.
 Formally, classref:UString[] uses UTF-16 representation.
 This means that all characters from all modern languages can be represented as one single character.
@@ -360,14 +360,14 @@ Enumeration values are handled through classref:Enumeration[].
 
 The TSCore library embeds an XML parser and several classes to handle a DOM structure.
 
-See the class `ts::xml::Node`, the abstract base class of the DOM hierarchy.
+See the class classref:xml/Node[], the abstract base class of the DOM hierarchy.
 
 [#json]
 ===== JSON data
 
 The TSCore library embeds a JSON parser and several classes to handle JSON values.
 
-See the class `ts::json::Value`, the abstract base class of the JSON hierarchy.
+See the class classref:json/Value[], the abstract base class of the JSON hierarchy.
 
 [#crypto]
 ==== Cryptography
@@ -533,7 +533,7 @@ It accepts incoming client connections and initiates a classref:TCPConnection[] 
 On the client side, the class classref:TCPConnection[] is directly used to connect to the server.
 
 Subclasses of classref:TCPConnection[] are used to implement specific protocols on top of TCP/IP.
-Currently, the available subclasses are classref:TelnetConnection[] and `ts::tlv::Connection`.
+Currently, the available subclasses are classref:TelnetConnection[] and classref:tlv/Connection[].
 The latter is used to handle communications using the "DVB SimulCrypt head-end protocols".
 See xref:dvbprotocols[xrefstyle=short] for more details.
 
@@ -820,11 +820,11 @@ They use binary TLV (Tag/Length/Value) messages, asynchronous communications,
 concepts of _channels_, _streams_, status and error messages.
 
 The generic handling of these messages is implemented by classes in the namespace `ts::tlv`.
-All TLV messages inherit from `ts::tlv::Message`.
-Channel-level messages inherit from `ts::tlv::ChannelMessage` and
-stream-level messages inherit from `ts::tlv::StreamMessage`.
+All TLV messages inherit from classref:tlv/Message[].
+Channel-level messages inherit from classref:tlv/ChannelMessage[] and
+stream-level messages inherit from classref:tlv/StreamMessage[].
 
-The syntax of a given protocol is defined by subclassing `ts::tlv::Protocol`.
+The syntax of a given protocol is defined by subclassing classref:tlv/Protocol[].
 
 Currently, the TSDuck library implements the following protocols:
 
@@ -1081,7 +1081,7 @@ An application can register _event handlers_ in the classref:TSProcessor[] insta
 is a subclass of classref:PluginEventHandlerRegistry[]).
 The event handler registration can include various _selection criteria_ such as
 event code value or originating plugin
-(see the inner class `ts::PluginEventHandlerRegistry::Criteria`).
+(see the inner class classref:PluginEventHandlerRegistry/Criteria[]).
 
 {cpp} developers who create their own plugins can signal any kind of event that they later handle in their application.
 This is illustrated in a
@@ -1646,7 +1646,7 @@ class FooDescriptor : public ts::AbstractDescriptor { ... };
 
 In the implementation of the descriptor, we register hooks for the various features.
 Since this is a non-DVB descriptor with descriptor tag `0xE8`, greater than `0x80`,
-we must set the private data specifier to zero in the ts::EDID ("extended descriptor id").
+we must set the private data specifier to zero in the classref:EDID[] ("extended descriptor id").
 
 [source,c++]
 ----
