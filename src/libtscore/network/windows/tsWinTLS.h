@@ -21,6 +21,13 @@
 
 namespace ts {
     //!
+    //! Maximum size of a TLS packet.
+    //! Max TLS message size is 2^14 (16384).
+    //! Extra overhead includes header/mac/padding (overestimated at 512).
+    //! 
+    constexpr size_t TLS_MAX_PACKET_SIZE = 16384 + 512;
+
+    //!
     //! Get a certificate.
     //! @param [in] store_name Name of certificate store. One of "system", "user".
     //! @param [in] cert_name Name of the certificate (friendly name or subject name or DNS name).
@@ -40,7 +47,7 @@ namespace ts {
 
     //!
     //! Acquire TLS credentials.
-    //! @param [out] cred Returned credentials. Must be freeed using FreeCredentialsHandle().
+    //! @param [out] cred Returned credentials. Must be freeed using SafeFreeCredentials().
     //! @param [in] server True for server side, false for client side.
     //! @param [in] verify_peer Verify the certificate of the peer.
     //! @param [in] cert Optional certicate. Typically nullptr on clients.
@@ -48,6 +55,18 @@ namespace ts {
     //! @return True on success, false on error.
     //!
     TSCOREDLL bool GetCredentials(::CredHandle& cred, bool server, bool verify_peer, ::PCCERT_CONTEXT cert, Report& report);
+
+    //!
+    //! Properly free and clear TLS credentials.
+    //! @param [in,out] cred Credentials. Properly reset to zero after freeing the credentials.
+    //!
+    TSCOREDLL void SafeFreeCredentials(::CredHandle& cred);
+
+    //!
+    //! Properly free and clear TLS security context.
+    //! @param [in,out] ctx Security context. Properly reset to zero after freeing the context.
+    //!
+    TSCOREDLL void SafeDeleteSecurityContext(::CtxtHandle& ctx);
 
     //!
     //! Repository of Windows certificate stores.

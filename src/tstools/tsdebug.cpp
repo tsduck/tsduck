@@ -892,24 +892,32 @@ ts::ClientCommands::~ClientCommands()
 ts::CommandStatus ts::ClientCommands::client(const UString& command, Args& args)
 {
     loadIPGenArgs(args);
-    const UString destination(args.value(u""));
     const bool tls = args.present(u"tls");
     const bool insecure = args.present(u"insecure");
     const UString request(args.value(u"request", u"GET /"));
     UStringList headers;
     args.getValues(headers, u"header");
 
-    IPSocketAddress addr(args.socketValue(u"", IPSocketAddress(), 0, ip_gen));
-    if (!addr.hasPort()) {
+    // Get server as name string (without port).
+    // This is necessary for "Host:" header, not for setServerName().
+    UString server_name(args.value(u""));
+    const size_t colon = server_name.find(u':');
+    if (colon != NPOS) {
+        server_name.resize(colon);
+    }
+
+    // Get server as socket address.
+    IPSocketAddress server_addr(args.socketValue(u"", IPSocketAddress(), 0, ip_gen));
+    if (!server_addr.hasPort()) {
         // Use default port for http or https.
-        addr.setPort(tls ? 443 : 80);
+        server_addr.setPort(tls ? 443 : 80);
     }
 
     // Build full input lines.
     headers.push_front(u"Accept: */*");
     headers.push_front(u"Connection: close");
     headers.push_front(u"User-Agent: TSDuck");
-    headers.push_front(u"Host: " + destination);
+    headers.push_front(u"Host: " + server_name);
     headers.push_front(request + u" HTTP/1.1");
     headers.push_back(u"");
 
@@ -917,14 +925,14 @@ ts::CommandStatus ts::ClientCommands::client(const UString& command, Args& args)
     TCPConnection tcp_client;
     TLSConnection tls_client;
     tls_client.setVerifyPeer(!insecure);
-    tls_client.setServerName(destination);
+    tls_client.setServerName(server_name);
     TCPConnection* const client = tls ? &tls_client : &tcp_client;
     TelnetConnection telnet(*client);
 
     // Connect to the server.
     if (!client->open(ip_gen, args) ||
         !client->bind(IPSocketAddress::AnySocketAddress(ip_gen), args) ||
-        !client->connect(addr, args))
+        !client->connect(server_addr, args))
     {
         return CommandStatus::ERROR;
     }

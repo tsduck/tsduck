@@ -129,7 +129,8 @@ bool ts::GetCredentials(::CredHandle& cred, bool server, bool verify_peer, ::PCC
 
     // TLS parameters: disallow everything that is not TLS 1.2, 1.3 or higher.
     ::TLS_PARAMETERS tls_params {
-        .grbitDisabledProtocols = ::DWORD(~(SP_PROT_TLS1_2 | SP_PROT_TLS1_3PLUS)),
+        //@@@ .grbitDisabledProtocols = ::DWORD(~(SP_PROT_TLS1_2 | SP_PROT_TLS1_3PLUS)),
+        .grbitDisabledProtocols = ::DWORD(~(SP_PROT_TLS1_2)),
     };
 
     const ::ULONG use = server ? SECPKG_CRED_INBOUND : SECPKG_CRED_OUTBOUND;
@@ -154,4 +155,25 @@ bool ts::GetCredentials(::CredHandle& cred, bool server, bool verify_peer, ::PCC
     }
     report.debug(u"AcquireCredentialsHandle successful");
     return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Properly free and clear various types of handle.
+//----------------------------------------------------------------------------
+
+void ts::SafeFreeCredentials(::CredHandle& cred)
+{
+    if (cred.dwLower != 0 || cred.dwUpper != 0) {
+        ::FreeCredentialsHandle(&cred);
+        cred.dwLower = cred.dwUpper = 0;
+    }
+}
+
+void ts::SafeDeleteSecurityContext(::CtxtHandle& ctx)
+{
+    if (ctx.dwLower != 0 || ctx.dwUpper != 0) {
+        ::DeleteSecurityContext(&ctx);
+        ctx.dwLower = ctx.dwUpper = 0;
+    }
 }
