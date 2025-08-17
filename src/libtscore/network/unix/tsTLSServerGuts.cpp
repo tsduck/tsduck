@@ -175,8 +175,7 @@ bool ts::TLSServer::acceptTLS(TLSConnection& client, IPSocketAddress& addr, Repo
     else {
         // The SSL context is passed to the TLSConnection object.
         report.debug(u"TLS connection established with %s, protocol: %s", addr, SSL_get_cipher_version(ssl));
-        client.setServerContext(ssl);
-        return true;
+        return client.setServerContext(ssl);
     }
 }
 

@@ -123,13 +123,16 @@ endif::[]
  By default, `tsp` checks the availability of a new version at most once a day (unless TSDuck was built without version check).
 
 |TSDUCK_TLS_CERTIFICATE
-|Default value for option `--certificate-path`.
+|Default value for option `--certificate-path`. See xref:opt-tls[xrefstyle=short].
 
 |TSDUCK_TLS_KEY
-|Default value for option `--key-path`.
+|Default value for option `--key-path`. Private key path on {unix}, unused on Windows. See xref:opt-tls[xrefstyle=short].
 
-|TSDUCK_TLS_USER
-|When defined to any non-empty value, this is equivalent to option `--user-certificate`.
+|TSDUCK_TLS_STORE
+|Default value for option `--store`. Certificate store on Windows, unused on {unix}. See xref:opt-tls[xrefstyle=short].
+
+|TSDUCK_TOKEN
+|Default value for option `--token`, the authentication token for TLS Web API. See xref:opt-tls[xrefstyle=short].
 
 |TSLIBEXT_IGNORE
 |A comma-separated list of extension names to ignore.

@@ -20,3 +20,6 @@ if ($cert -eq $null) {
 
 # Display the certificate.
 $cert | Format-List
+
+# Define environment variables for default values.
+$env:TSDUCK_TLS_CERTIFICATE = $KeyName

@@ -39,7 +39,9 @@ public:
     ::CredHandle cred {0, 0};
     ::CtxtHandle context {0, 0};
     ::SecPkgContext_StreamSizes stream_sizes {};
-    bool     shutdown_sent = false;  // TLS shutdown message was sent. 
+    bool     server = false;         // Server-side connection with a remote client.
+    bool     shutdown_sent = false;  // TLS shutdown message was sent.
+    bool     end_session = false;    // Peer terminated the session, no more data to read.
     ::ULONG  ctxreq = 0;             // Context requirements/attributes (security flags).
     size_t   incoming_size = 0;      // Data size in incoming buffer (ciphertext).
     size_t   used_size = 0;          // Data size used from incoming buffer to decrypt current packet.
@@ -78,7 +80,7 @@ void ts::TLSConnection::deleteGuts()
 
 void ts::TLSConnection::SystemGuts::clear()
 {
-    shutdown_sent = false;
+    server = shutdown_sent = end_session = false;
     ctxreq = 0;
     incoming_size = used_size = decrypted_size = 0;
     decrypted = nullptr;
@@ -167,7 +169,7 @@ ts::UString ts::TLSConnection::SystemGuts::debugName(const void* p)
 
 
 //----------------------------------------------------------------------------
-// Initial handshake.
+// Initial handshake (client side only).
 //----------------------------------------------------------------------------
 
 bool ts::TLSConnection::SystemGuts::negotiate(TLSConnection* conn, Report& report)
@@ -207,7 +209,7 @@ bool ts::TLSConnection::SystemGuts::negotiate(TLSConnection* conn, Report& repor
     if (outbuffers[0].cbBuffer > 0) {
         report.debug(u"sending %d bytes of initial handshake data", outbuffers[0].cbBuffer);
         success = conn->SuperClass::send(outbuffers[0].pvBuffer, outbuffers[0].cbBuffer, report);
-        ::FreeContextBuffer(outbuffers[0].pvBuffer);
+        SafeFreeSecBuffer(outdesc);
     }
 
     if (sstatus != SEC_I_CONTINUE_NEEDED) {
@@ -220,26 +222,12 @@ bool ts::TLSConnection::SystemGuts::negotiate(TLSConnection* conn, Report& repor
         success = renegotiate(conn, report);
     }
 
-    if (success) {
-        // Get the variours message sizes for the session.
-        TS_ZERO(stream_sizes);
-        ::QueryContextAttributesW(&context, SECPKG_ATTR_STREAM_SIZES, &stream_sizes);
-        // In debug mode, display the characteristics of the connection.
-        if (report.debug()) {
-            ::SecPkgContext_ConnectionInfo info;
-            TS_ZERO(info);
-            if (::QueryContextAttributesW(&context, SECPKG_ATTR_CONNECTION_INFO, &info) == SEC_E_OK) {
-                report.debug(u"TLS connection uses %s", SChannelProtocolToString(info.dwProtocol));
-            }
-        }
-    }
-
     return success;
 }
 
 
 //----------------------------------------------------------------------------
-// Renegotiation (in initial handshake and on SEC_I_RENEGOTIATE).
+// Renegotiation (in initial handshake and on RENEGOTIATE, client or server).
 //----------------------------------------------------------------------------
 
 bool ts::TLSConnection::SystemGuts::renegotiate(TLSConnection* conn, Report& report)
@@ -266,10 +254,21 @@ bool ts::TLSConnection::SystemGuts::renegotiate(TLSConnection* conn, Report& rep
         outbuffers[0].BufferType = SECBUFFER_TOKEN;
 
         // Update the security context in each iteration.
-        report.debug(u"calling InitializeSecurityContextW()");
-        ::SECURITY_STATUS sstatus = ::InitializeSecurityContextW(&cred, &context, conn->_server_name.wc_str(), ctxreq,
-                                                                 0, 0, &indesc, 0, &context, &outdesc, &ctxreq, nullptr);
-        debug2(report, u"Other InitializeSecurityContext", &outdesc);
+        ::SECURITY_STATUS sstatus = SEC_E_OK;
+        if (server) {
+            // Server side.
+            report.debug(u"calling AcceptSecurityContextW()");
+            // On initial call, the context is not initialized yet.
+            const bool first = context.dwLower == 0 && context.dwUpper == 0;
+            sstatus = ::AcceptSecurityContext(&cred, first ? nullptr : &context, &indesc, ctxreq, 0, &context, &outdesc, &ctxreq, nullptr);
+            debug2(report, u"AcceptSecurityContext", &outdesc);
+        }
+        else {
+            // Client size.
+            report.debug(u"calling InitializeSecurityContextW()");
+            sstatus = ::InitializeSecurityContextW(&cred, &context, conn->_server_name.wc_str(), ctxreq, 0, 0, &indesc, 0, &context, &outdesc, &ctxreq, nullptr);
+            debug2(report, u"InitializeSecurityContext", &outdesc);
+        }
 
         // If not all input data have been consumed, handle the extra data.
         ::SecBuffer* extra = GetSecBufferByType(indesc, SECBUFFER_EXTRA);
@@ -287,31 +286,25 @@ bool ts::TLSConnection::SystemGuts::renegotiate(TLSConnection* conn, Report& rep
         if (outbuffers[0].cbBuffer > 0) {
             report.debug(u"sending %d bytes of handshake data", outbuffers[0].cbBuffer);
             success = conn->SuperClass::send(outbuffers[0].pvBuffer, outbuffers[0].cbBuffer, report);
-            ::FreeContextBuffer(outbuffers[0].pvBuffer);
+            SafeFreeSecBuffer(outdesc);
             if (!success) {
                 break;
             }
         }
 
+        // Process status from InitializeSecurityContext / AcceptSecurityContext.
         if (sstatus == SEC_E_OK) {
             report.debug(u"TLS handshake complete");
             break;
         }
-        else if (sstatus == SEC_I_INCOMPLETE_CREDENTIALS) {
-            // Server asked for client certificate. We don't support this for now.
+        else if (!server && sstatus == SEC_I_INCOMPLETE_CREDENTIALS) {
+            // In a client, server asked for client certificate. We don't support this for now.
             report.error(u"TLS error: %s", WinErrorMessage(sstatus));
             success = false;
             break;
         }
-        else if (sstatus == SEC_I_CONTINUE_NEEDED) {
-            // We need to send data to the server. Already done.
-        }
-        else if (sstatus == SEC_E_INCOMPLETE_MESSAGE) {
-            // We need to send data to the server. Already done.
-            // We need more data, so 
-        }
-        else {
-            // Handshake error, typically an error while validating the server certificate.
+        else if (sstatus != SEC_I_CONTINUE_NEEDED && sstatus != SEC_E_INCOMPLETE_MESSAGE) {
+            // SEC_I_CONTINUE_NEEDED and SEC_E_INCOMPLETE_MESSAGE demand to continue, others are errors.
             report.error(u"TLS error: %s", WinErrorMessage(sstatus));
             success = false;
             break;
@@ -320,7 +313,7 @@ bool ts::TLSConnection::SystemGuts::renegotiate(TLSConnection* conn, Report& rep
         // Read more data from server when possible.
         if (incoming_size >= sizeof(incoming)) {
             // Incoming buffer is full, more than the max TLS message size.
-            report.error(u"TLS handshake error, server sent to much data");
+            report.error(u"TLS handshake error, the peer sent to much data");
             success = false;
             break;
         }
@@ -329,18 +322,58 @@ bool ts::TLSConnection::SystemGuts::renegotiate(TLSConnection* conn, Report& rep
         size_t retsize = 0;
         success = conn->SuperClass::receive(incoming + incoming_size, sizeof(incoming) - incoming_size, retsize, nullptr, report);
         if (!success) {
-            report.error(u"TLS server closed the connection during handshake");
+            report.error(u"TLS peer closed the connection during handshake");
             break;
         }
         report.debug(u"received %d bytes of handshake data", retsize);
         incoming_size += retsize;
     }
+
+    // Get the various message sizes for the session.
+    if (success) {
+        TS_ZERO(stream_sizes);
+        ::QueryContextAttributesW(&context, SECPKG_ATTR_STREAM_SIZES, &stream_sizes);
+        // In debug mode, display the characteristics of the connection.
+        if (report.debug()) {
+            ::SecPkgContext_ConnectionInfo info;
+            TS_ZERO(info);
+            if (::QueryContextAttributesW(&context, SECPKG_ATTR_CONNECTION_INFO, &info) == SEC_E_OK) {
+                report.debug(u"TLS connection uses %s", SChannelProtocolToString(info.dwProtocol));
+            }
+        }
+    }
+
     return success;
 }
 
 
 //----------------------------------------------------------------------------
-// Connect to a remote address and port.
+// Pass information from server accepting new clients.
+//----------------------------------------------------------------------------
+
+bool ts::TLSConnection::setServerContext(const void* vcred, Report& report)
+{
+    report.debug(u"starting TLS client session on server");
+    _guts->clear();
+    _guts->server = true;
+
+    // Acquire session's credentials from server's certificate.
+    ::PCCERT_CONTEXT cert = reinterpret_cast<::PCCERT_CONTEXT>(vcred);
+    if (!GetCredentials(_guts->cred, true, false, cert, report)) {
+        return false;
+    }
+
+    // Context requirements (security flags).
+    _guts->ctxreq = ASC_REQ_SEQUENCE_DETECT | ASC_REQ_REPLAY_DETECT | ASC_REQ_CONFIDENTIALITY |
+        ASC_REQ_EXTENDED_ERROR | ASC_REQ_ALLOCATE_MEMORY | ASC_REQ_STREAM;
+
+    // Start the handshake with the client, waiting for a client message.
+    return _guts->renegotiate(this, report);
+}
+
+
+//----------------------------------------------------------------------------
+// Connect a client to a remote server address and port.
 //----------------------------------------------------------------------------
 
 bool ts::TLSConnection::connect(const IPSocketAddress& addr, Report& report)
@@ -391,18 +424,28 @@ bool ts::TLSConnection::closeWriter(Report& report)
     TS_ZERO(outbuffers);
     outbuffers[0].BufferType = SECBUFFER_TOKEN;
 
-    ::DWORD flags = ISC_REQ_ALLOCATE_MEMORY | ISC_REQ_CONFIDENTIALITY | ISC_REQ_REPLAY_DETECT | ISC_REQ_SEQUENCE_DETECT | ISC_REQ_STREAM;
-    report.debug(u"TLS disconnect, calling InitializeSecurityContextW()");
-    bool success = ::InitializeSecurityContextW(&_guts->cred, &_guts->context, nullptr, flags, 0, 0, &outdesc, 0, nullptr, &outdesc, &flags, nullptr) == SEC_E_OK;
-
-    // Send the shutdown message.
-    if (success) {
-        report.debug(u"TLS disconnect, sending %d bytes of shutdown message", outbuffers[0].cbBuffer);
-        success = SuperClass::send(outbuffers[0].pvBuffer, outbuffers[0].cbBuffer, report);
-        ::FreeContextBuffer(outbuffers[0].pvBuffer);
-        _guts->shutdown_sent = true;
+    bool success = true;
+    if (_guts->server) {
+        // Server side.
+        ::DWORD flags = ASC_REQ_ALLOCATE_MEMORY | ASC_REQ_CONFIDENTIALITY | ASC_REQ_REPLAY_DETECT | ASC_REQ_SEQUENCE_DETECT | ASC_REQ_STREAM | ASC_REQ_EXTENDED_ERROR;
+        report.debug(u"TLS disconnect, calling AcceptSecurityContext()");
+        success = ::AcceptSecurityContext(&_guts->cred, &_guts->context, nullptr, flags, 0, nullptr, &outdesc, &flags, nullptr) == SEC_E_OK;
+    }
+    else {
+        // Client side.
+        ::DWORD flags = ISC_REQ_ALLOCATE_MEMORY | ISC_REQ_CONFIDENTIALITY | ISC_REQ_REPLAY_DETECT | ISC_REQ_SEQUENCE_DETECT | ISC_REQ_STREAM | ISC_REQ_EXTENDED_ERROR;
+        report.debug(u"TLS disconnect, calling InitializeSecurityContextW()");
+        success = ::InitializeSecurityContextW(&_guts->cred, &_guts->context, nullptr, flags, 0, 0, &outdesc, 0, nullptr, &outdesc, &flags, nullptr) == SEC_E_OK;
     }
 
+    // Send the shutdown message.
+    if (success && outbuffers[0].cbBuffer > 0) {
+        report.debug(u"TLS disconnect, sending %d bytes of shutdown message", outbuffers[0].cbBuffer);
+        success = SuperClass::send(outbuffers[0].pvBuffer, outbuffers[0].cbBuffer, report);
+        SafeFreeSecBuffer(outdesc);
+    }
+
+    _guts->shutdown_sent = success;
     return success;
 }
 
@@ -507,6 +550,10 @@ bool ts::TLSConnection::receive(void* buffer, size_t max_size, size_t& ret_size,
         report.error(u"user receive buffer is null");
         return false;
     }
+    if (_guts->end_session) {
+        // No more data to read, do not display error, just an EOF.
+        return false;
+    }
 
     uint8_t* ubuffer = reinterpret_cast<uint8_t*>(buffer);
     while (max_size > 0) {
@@ -565,8 +612,9 @@ bool ts::TLSConnection::receive(void* buffer, size_t max_size, size_t& ret_size,
                     continue;
                 }
                 else if (sstatus == SEC_I_CONTEXT_EXPIRED) {
-                    // The server closed the TLS connection. Keep the last TLS message in the incoming buffer
-                    // so that subsequent calls to receive() will return the same end-of-session status.
+                    // The server closed the TLS connection.
+                    _guts->incoming_size = 0;
+                    _guts->end_session = true;
                     // Not an error if some data were already extracted.
                     return ret_size > 0;
                 }

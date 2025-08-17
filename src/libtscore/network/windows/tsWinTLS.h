@@ -69,6 +69,12 @@ namespace ts {
     TSCOREDLL void SafeDeleteSecurityContext(::CtxtHandle& ctx);
 
     //!
+    //! Properly free and clear TLS SecBuffer, when allocated by InitializeSecurityContext or AcceptSecurityContext.
+    //! @param [in,out] desc Buffer descriptor.
+    //!
+    TSCOREDLL void SafeFreeSecBuffer(::SecBufferDesc& desc);
+
+    //!
     //! Format a description string for a SChannel protocol.
     //! @param [in] protocol The protocol code (can be a bit mask).
     //! @return The description string.

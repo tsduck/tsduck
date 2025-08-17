@@ -1,0 +1,159 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2025, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+[#chap-security]
+== Security considerations
+
+=== Where cybersecurity matters
+
+There are several sources of cybersecurity issues:
+
+[compact-list]
+* Software bugs, when they are turned into security vulnerabilities by attackers.
+* Careless and dangerous features.
+* Lousy user configurations.
+
+TSDuck is a large project, with about half a million lines of codes.
+On a cybersecurity perspective, the surface of attack of a product grows with the code size.
+To mitigate the risks, a strict discipline is applied in the development of TSDuck.
+All efforts are made to prevent, detect, and fix security vulnerabilities and bugs in general.
+Specifically, most (if not all) forms or input are carefully checked.
+
+That being said, TSDuck is a free open-source project with no commercial revenue and limited resources.
+Production environments and commercial products integrating TSDuck shall be aware of the risks.
+Specifically, see xref:cra[xrefstyle=short] for legal responsibilities in the European Union.
+
+=== Secure control features
+
+Initially, TSDuck was designed as an experimental toolbox for debug, integration, and other lab activities.
+It was supposed to be used in a safe and isolated environment.
+
+For the ease of use, some TSDuck utilities and plugins can be remotely controlled.
+They open network ports to receive instructions.
+This control is never active by default and must be explicitly activated using command line options.
+
+Examples are:
+
+[compact-list]
+* `tsp` control of plugins (view, suspend, restart plugins).
+* `tswsitch` control of inputs.
+
+Initially, these features were implemented using simple UDP or TCP incoming connections
+using commands in the clear.
+
+The only provided filtering mechanism was an optional "white list" of IP addresses which
+were allowed to connect and send instructions. This filtering is highly recommended in
+open environments.
+
+This model is sufficient within the boundaries of a lab, for experimentations.
+As TSDuck was used in production environments, with open networks, these features created
+opportunities for security issues. Even the while lists of IP addresses are not sufficient
+to mitigate IP-spoofing attacks.
+
+Therefore, starting with version 3.42, new and more secure mechanisms were introduced.
+The previous features remain for compatibility with existing scripts and workflows.
+However, it is now recommended to avoid using them.
+
+The new mechanisms use REST API's over protected connections.
+The advantages are:
+
+* Use TLS-encrypted connections for confidentiality and integrity.
+* Use tokens for authentication. The clients must provide the right authentication token or they are rejected.
+* Use standard mechanisms which are accessible from the command line using `curl`
+  or any standard Web or REST library.
+
+[#tls-cert]
+==== TLS certificates
+
+Because there is no such thing as a free lunch, these improvements come at a price.
+Specifically, using TLS on the server side requires a X.509 certificate on each server.
+The server must also handle the corresponding asymmetric private key.
+
+There are typically three ways to setup a server certificate.
+In increasing order of ease of use:
+
+1. Use an official certificate that you received from a public Certification Authority (CA).
+   This is possible if you run your own public Web servers.
+2. Implement you own private CA and generate your certificates. Although not trivial, this
+   is feasible for tech savvy administrators. There are multiple online examples using
+   OpenSSL commands. Do not forget to add the root certificate of your own CA in the trust
+   store of the client machines.
+3. Generate self-signed certificates. This solution is not fully secure. On the client side,
+   the identity of the server cannot be enforced and the connections are vulnerable to
+   "Man-in-the-Middle attacks" (MitM). Additionally, the option `--insecure` shall be specified
+   in the client commands to avoid the validation of the server certificate.
+
+The first two solutions shall be used by experienced administrators.
+
+Let's review the ways to implement the third solution.
+
+[#sscert-unix]
+==== Generating self-signed certificates on UNIX systems
+
+TO BE CONTINUED.
+
+[#sscert-win]
+==== Generating self-signed certificates on Windows
+
+TO BE CONTINUED.
+
+[#opt-tls]
+==== TSDuck options for TLS-based control features
+
+TO BE CONTINUED.
+
+[#cra]
+=== European Cyber Resilience Act (CRA)
+
+The European Union Cyber Resilience Act from October 2024 introduces cybersecurity responsibilities
+for the manufacturers of digital products. See <<EU-CRA>> for a complete reference.
+
+The application of the CRA on open-source products shall be clearly understood.
+The Open Source Security Foundation provides some guidance on the matter. See <<OSSF-CRA>>.
+
+First, there is a clear distinction between open-source developers who make no commercial
+profit from their products and commercial manufacturers of products which integrate these
+open-source components:
+
+[quote,CRA introduction (18)]
+there is a clear distinction between the development
+and supply phases, the provision of products with digital elements qualifying as free and
+open-source software that are not monetised by their manufacturers should not be considered
+to be a commercial activity.
+
+Therefore, TSDuck is considered as a non-commercial product.
+The publication of regular releases with proper packaging is not considered as a commercial activity:
+
+[quote,CRA introduction (18)]
+the mere presence of regular releases should not in itself lead to the conclusion
+that a product with digital elements is supplied in the course of a commercial activity. 
+
+Receiving some rare donations from users is not considered as a commercial activity either:
+
+[quote,CRA introduction (18)]
+the mere fact that an open-source software product with digital elements receives
+financial support from manufacturers or that manufacturers contribute to the development of
+such a product should not in itself determine that the activity is of commercial nature.
+
+On the other hand, manufacturers of commercial products which integrate TSDuck enter
+into the scope of the CRA:
+
+[quote,CRA introduction (19)]
+The regulatory regime [...] should only cover products with digital elements qualifying as
+free and open-source software that are ultimately intended for commercial activities,
+such as for integration into commercial services or into monetised products with digital elements
+
+More precisely, the cybersecurity of a commercial product which integrates TSDuck
+is under the responsibility of the manufacturer of that commercial product:
+
+[quote,CRA Chapter II - article 13 - section 5]
+manufacturers shall exercise due diligence
+when integrating components sourced from third parties so that those components do not
+compromise the cybersecurity of the product with digital elements, including when integrating
+components of free and open-source software that have not been made available on the market
+in the course of a commercial activity.

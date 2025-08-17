@@ -1137,8 +1137,8 @@ pre.pygments span.linenos {
 }
 .quoteblock blockquote, .quoteblock p {
     color: rgba(0,0,0,.85);
-    font-size: 1rem;
-    line-height: 1.75;
+    /* font-size: 1rem; */
+    /* line-height: 1.75; */
     word-spacing: .1em;
     letter-spacing: 0;
     font-style: italic;

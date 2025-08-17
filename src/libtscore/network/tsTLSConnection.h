@@ -106,12 +106,10 @@ namespace ts {
         void deleteGuts();
 
         // Pass information from server accepting new clients.
+        // The parameter is:
+        // - On UNIX systems with OpenSSL, a pointer to ::SSL.
+        // - On Windows systems whith SChannel, a pointer to ::CERT_CONTEXT.
         friend class TLSServer;
-    #if defined(TS_WINDOWS)
-        //@@@
-    #else
-        // The parameter is an SSL*.
-        void setServerContext(void* ssl);
-    #endif
+        bool setServerContext(const void* param, Report& report);
     };
 }

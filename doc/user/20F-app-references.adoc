@@ -16,6 +16,7 @@
 [.compact-table]
 [cols="<1,<1",frame=none,grid=none,stripes=none,options="autowidth,noheader"]
 |===
+|ABI |Application Binary Interface
 |ABNT |_Associação Brasileira de Normas Técnicas_ (Brazilian standardization committee)
 |AC |Auxiliary Channel (ISDB)
 |AC-3 |Audio Compression Standard 3 (Dolby)
@@ -23,6 +24,7 @@
 |AES |Advanced Encryption Standard (cryptography)
 |AIT |Application Information Table (DVB)
 |ANSI |American National Standards Institute
+|API |Application Programming Interface
 |AOM |Alliance for Open Media
 |ARCOM |_Autorité de régulation de la communication audiovisuelle et numérique_ (French national regulator for TV)
 |ARIB |Association of Radio Industries and Businesses (Japan)
@@ -48,6 +50,7 @@
 |CMT |CA Message Table
 |COFDM |Coded Orthogonal Frequency-Division Multiplexing (modulation)
 |CP |Crypto-Period
+|CRA |Cyber Resilience Act (European Union)
 |CRC |Cyclic Redundancy Check
 |CSA |_Conseil Supérieur de l'Audiovisuel_ (French national regulator for TV, now ARCOM)
 |CVCT |Cable Virtual Channel Table (ATSC)
@@ -158,6 +161,7 @@
 |PTS |Presentation Time Stamp
 |QPSK |Quadrature Phase Shift Keying (modulation)
 |QAM |Quadrature Amplitude Modulation (modulation)
+|REST |Representational State Transfer (network API style)
 |RIST |Reliable Internet Stream Transport (network protocol)
 |RNG |Random Number Generator (cryptography)
 |RNT |Resolution provider Notification Table (DVB)
@@ -306,6 +310,8 @@
   "Digital Video Broadcasting (DVB); TTML subtitling systems".
 * [[[ETSI-Ids]]] DVB Services; DVB Identifiers,
   https://www.dvbservices.com/identifiers/
+* [[[EU-CRA]]] Cyber Resilience Act; Regulation (EU) 2024/2847 of the European Parliament, October 2024,
+  https://eur-lex.europa.eu/eli/reg/2024/2847/oj
 * [[[Fransat]]] Via Eutelsat Fransat:
   "Set-Top-Box Specification DVB MPEG-4 HD", V0.0.7, October 2009.
 * [[[FTV-AUS]]] Free TV Australia:
@@ -343,6 +349,8 @@
 * [[[NorDig]]] NorDig:
   "Unified Requirements for Integrated Receiver Decoders for use in cable,
   satellite, terrestrial and managed IPTV based networks", V3.1.1, September 2019.
+* [[[OSSF-CRA]]] Open Source Security Foundation, EU Cyber Resilience Act (CRA) resources,
+https://openssf.org/public-policy/eu-cyber-resilience-act/
 * [[[RIST]]] RIST, librist documentation,
   https://code.videolan.org/rist/librist/-/wikis/LibRIST%20Documentation
 * [[[RIST-URL]]] RIST, URL syntax,

@@ -182,6 +182,21 @@ void ts::SafeDeleteSecurityContext(::CtxtHandle& ctx)
     }
 }
 
+void ts::SafeFreeSecBuffer(::SecBufferDesc& desc)
+{
+    if (desc.pBuffers != nullptr) {
+        for (unsigned long i = 0; i < desc.cBuffers; ++i) {
+            auto& buf(desc.pBuffers[i]);
+            if (buf.pvBuffer != nullptr) {
+                ::FreeContextBuffer(buf.pvBuffer);
+                buf.BufferType = SECBUFFER_EMPTY;
+                buf.pvBuffer = nullptr;
+                buf.cbBuffer = 0;
+            }
+        }
+    }
+}
+
 
 //----------------------------------------------------------------------------
 // Format a description string for a SChannel protocol.

@@ -31,6 +31,7 @@ class ts::TLSConnection::SystemGuts {};
 void ts::TLSConnection::allocateGuts() { _guts = new SystemGuts; }
 void ts::TLSConnection::deleteGuts() { delete _guts; }
 bool ts::TLSConnection::connect(const IPSocketAddress&, Report& report) TS_NOT_IMPL
+bool ts::TLSConnection::setServerContext(const void*, Report& report) TS_NOT_IMPL
 bool ts::TLSConnection::closeWriter(Report& report) TS_NOT_IMPL
 bool ts::TLSConnection::disconnect(Report& report) TS_NOT_IMPL
 bool ts::TLSConnection::send(const void*, size_t, Report& report) TS_NOT_IMPL
@@ -206,10 +207,11 @@ bool ts::TLSConnection::connect(const IPSocketAddress& addr, Report& report)
 // Receive an SSL* context from a server, as a new client connection.
 //----------------------------------------------------------------------------
 
-void ts::TLSConnection::setServerContext(void* ssl)
+bool ts::TLSConnection::setServerContext(const void* ssl, Report& report)
 {
     _guts->terminate();
-    _guts->ssl = reinterpret_cast<SSL*>(ssl);
+    _guts->ssl = const_cast<SSL*>(reinterpret_cast<const SSL*>(ssl));
+    return true;
 }
 
 
