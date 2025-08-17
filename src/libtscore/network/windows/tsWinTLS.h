@@ -69,6 +69,21 @@ namespace ts {
     TSCOREDLL void SafeDeleteSecurityContext(::CtxtHandle& ctx);
 
     //!
+    //! Format a description string for a SChannel protocol.
+    //! @param [in] protocol The protocol code (can be a bit mask).
+    //! @return The description string.
+    //!
+    TSCOREDLL UString SChannelProtocolToString(::DWORD protocol);
+
+    //!
+    //! Search the first buffer of a given type in set of SChannel SecBuffer.
+    //! @param [in] desc Buffer descriptor.
+    //! @param [in] type The channel type to search.
+    //! @return Address of the first buffer of type @a type or the null pointer if there is none.
+    //! 
+    TSCOREDLL ::SecBuffer* GetSecBufferByType(const ::SecBufferDesc& desc, unsigned long type);
+
+    //!
     //! Repository of Windows certificate stores.
     //! The certificate stores must remain open all the time, once open.
     //! They are closed on termination of the singleton.

@@ -7,6 +7,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsWinTLS.h"
+#include "tsEnvironment.h"
 
 
 //----------------------------------------------------------------------------
@@ -128,9 +129,12 @@ bool ts::GetCredentials(::CredHandle& cred, bool server, bool verify_peer, ::PCC
     static UString unisp_name(UNISP_NAME_W);
 
     // TLS parameters: disallow everything that is not TLS 1.2, 1.3 or higher.
+    // As a debug tool, if the environment variable TS_FORCE_TLS12 or TS_FORCE_TLS13 is defined, force a single value.
+    static const bool force_tls12 = !GetEnvironment(u"TS_FORCE_TLS12").empty();
+    static const bool force_tls13 = !GetEnvironment(u"TS_FORCE_TLS13").empty();
+    static const ::DWORD protocols = force_tls12 ? SP_PROT_TLS1_2 : (force_tls13 ? SP_PROT_TLS1_3 : (SP_PROT_TLS1_2 | SP_PROT_TLS1_3PLUS));
     ::TLS_PARAMETERS tls_params {
-        //@@@ .grbitDisabledProtocols = ::DWORD(~(SP_PROT_TLS1_2 | SP_PROT_TLS1_3PLUS)),
-        .grbitDisabledProtocols = ::DWORD(~(SP_PROT_TLS1_2)),
+        .grbitDisabledProtocols = ~protocols,
     };
 
     const ::ULONG use = server ? SECPKG_CRED_INBOUND : SECPKG_CRED_OUTBOUND;
@@ -176,4 +180,65 @@ void ts::SafeDeleteSecurityContext(::CtxtHandle& ctx)
         ::DeleteSecurityContext(&ctx);
         ctx.dwLower = ctx.dwUpper = 0;
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Format a description string for a SChannel protocol.
+//----------------------------------------------------------------------------
+
+namespace {
+    void SChannelProtocolToStringHelper(ts::UString& str, ::DWORD& protocol, const ts::UChar* name, ::DWORD client, ::DWORD server)
+    {
+        const ::DWORD proto = protocol & (client | server);
+        if (proto != 0)
+        {
+            if (!str.empty()) {
+                str.append(u", ");
+            }
+            str.append(name);
+            if (proto == client) {
+                str.append(u" client");
+            }
+            else if (proto == server) {
+                str.append(u" server");
+            }
+            protocol &= ~(client | server);
+        }
+    }
+}
+
+ts::UString ts::SChannelProtocolToString(::DWORD protocol)
+{
+    UString str;
+    SChannelProtocolToStringHelper(str, protocol, u"PCT 1.0", SP_PROT_PCT1_CLIENT, SP_PROT_PCT1_SERVER);
+    SChannelProtocolToStringHelper(str, protocol, u"SSL 2.0", SP_PROT_SSL2_CLIENT, SP_PROT_SSL2_SERVER);
+    SChannelProtocolToStringHelper(str, protocol, u"SSL 3.0", SP_PROT_SSL3_CLIENT, SP_PROT_SSL3_SERVER);
+    SChannelProtocolToStringHelper(str, protocol, u"TLS 1.0", SP_PROT_TLS1_0_CLIENT, SP_PROT_TLS1_0_SERVER);
+    SChannelProtocolToStringHelper(str, protocol, u"TLS 1.1", SP_PROT_TLS1_1_CLIENT, SP_PROT_TLS1_1_SERVER);
+    SChannelProtocolToStringHelper(str, protocol, u"TLS 1.2", SP_PROT_TLS1_2_CLIENT, SP_PROT_TLS1_2_SERVER);
+    SChannelProtocolToStringHelper(str, protocol, u"TLS 1.3", SP_PROT_TLS1_3_CLIENT, SP_PROT_TLS1_3_SERVER);
+    SChannelProtocolToStringHelper(str, protocol, u"DTLS 1.0", SP_PROT_DTLS1_0_CLIENT, SP_PROT_DTLS1_0_SERVER);
+    SChannelProtocolToStringHelper(str, protocol, u"DTLS 1.2", SP_PROT_DTLS1_2_CLIENT,SP_PROT_DTLS1_2_SERVER );
+    if (protocol != 0) {
+        str.format(u"%sprotocols 0x%X", str.empty() ? u"" : u", additional ", protocol);
+    }
+    return str;
+}
+
+
+//----------------------------------------------------------------------------
+// Search the first buffer of a given type in set of SChannel SecBuffer.
+//----------------------------------------------------------------------------
+
+::SecBuffer* ts::GetSecBufferByType(const ::SecBufferDesc& desc, unsigned long type)
+{
+    if (desc.pBuffers != nullptr) {
+        for (unsigned long i = 0; i < desc.cBuffers; ++i) {
+            if (desc.pBuffers[i].BufferType == type) {
+                return &desc.pBuffers[i];
+            }
+        }
+    }
+    return nullptr;
 }
