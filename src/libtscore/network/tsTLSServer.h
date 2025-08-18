@@ -16,9 +16,6 @@
 #include "tsTLSConnection.h"
 
 namespace ts {
-
-    class Args;
-
     //!
     //! Implementation of a SSL/TLS server.
     //! @ingroup libtscore net
@@ -69,24 +66,6 @@ namespace ts {
         //! Constructor
         //!
         TLSServer();
-
-        //!
-        //! Add command line options for a TLS server in an Args.
-        //! These options set the certificate path, the private key path, the user option.
-        //! @param [in,out] args Command line arguments to update.
-        //! @see setCertificatePath()
-        //! @see setKeyPath()
-        //! @see setUserCertificate()
-        //!
-        static void DefineArgs(Args& args);
-
-        //!
-        //! Load arguments from command line.
-        //! Args error indicator is set in case of incorrect arguments.
-        //! @param [in,out] args Command line arguments.
-        //! @return True on success, false on error in argument line.
-        //!
-        bool loadArgs(Args& args);
 
         //!
         //! Set the certificate path for the server.

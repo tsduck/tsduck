@@ -56,6 +56,16 @@ namespace ts {
         Report& report() { return _report; }
 
         //!
+        //! Default TCP port for HTTP.
+        //!
+        static constexpr uint16_t DEFAULT_HTTP_PORT = 80;
+
+        //!
+        //! Default TCP port for HTTPS.
+        //!
+        static constexpr uint16_t DEFAULT_HTTPS_PORT = 443;
+
+        //!
         //! Set the connection timeout for this request.
         //! @param [in] timeout Connection timeout in milliseconds.
         //!
@@ -162,6 +172,12 @@ namespace ts {
         void setUserAgent(const UString& name = UString()) { _user_agent = name.empty() ? DEFAULT_USER_AGENT : name; }
 
         //!
+        //! Get the current user agent name to use in HTTP headers.
+        //! @return A constant reference to the user agent name to use in HTTP headers.
+        //!
+        const UString& userAgent() const { return _user_agent; }
+
+        //!
         //! Enable compression.
         //! Compression is disabled by default.
         //! @param [in] on Boolean setting compression on or off.
@@ -174,12 +190,6 @@ namespace ts {
         //! @param [in] on If true, disable certificate validation.
         //!
         void setInsecure(bool on = true) { _insecure = on; }
-
-        //!
-        //! Get the current user agent name to use in HTTP headers.
-        //! @return A constant reference to the user agent name to use in HTTP headers.
-        //!
-        const UString& userAgent() const { return _user_agent; }
 
         //!
         //! Enable or disable the automatic redirection of HTTP requests.
@@ -277,22 +287,16 @@ namespace ts {
         size_t announdedContentSize() const { return _header_content_size; }
 
         //!
-        //! Representation of request or reponse headers.
-        //! The keys of the map are the header names.
-        //!
-        using HeadersMap = std::multimap<UString,UString>;
-
-        //!
         //! Get all response headers.
         //! @param [out] headers A multimap of all response headers.
         //!
-        void getResponseHeaders(HeadersMap& headers) const { headers = _response_headers; }
+        void getResponseHeaders(UStringToUStringMultiMap& headers) const { headers = _response_headers; }
 
         //!
         //! Get all response headers.
         //! @return A constant reference to a map of response headers.
         //!
-        const HeadersMap& responseHeaders() const { return _response_headers; }
+        const UStringToUStringMultiMap& responseHeaders() const { return _response_headers; }
 
         //!
         //! Get the value of one header.
@@ -424,8 +428,8 @@ namespace ts {
         bool             _insecure = false;
         bool             _delete_cookies_file = false; // delete the cookies file on close
         fs::path         _cookies_file_name {};
-        HeadersMap       _request_headers {};          // all request headers (to send)
-        HeadersMap       _response_headers {};         // all response headers (received)
+        UStringToUStringMultiMap _request_headers {};  // all request headers (to send)
+        UStringToUStringMultiMap _response_headers {}; // all response headers (received)
         ByteBlock        _post_data {};                // if non empty, use a POST request
         int              _http_status = 0;             // 200, 404, etc.
         size_t           _content_size = 0;            // actually downloaded size

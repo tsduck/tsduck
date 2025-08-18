@@ -58,16 +58,28 @@ namespace ts {
     };
 
     //!
-    //! Vector of strings
+    //! Vector of strings.
     //! @ingroup cpp
     //!
     using UStringVector = std::vector<UString>;
 
     //!
-    //! List of strings
+    //! List of strings.
     //! @ingroup cpp
     //!
     using UStringList = std::list<UString>;
+
+    //!
+    //! Map of strings, indexed by string.
+    //! @ingroup cpp
+    //!
+    using UStringToUStringMap = std::map<UString, UString>;
+
+    //!
+    //! Multi-map of strings, indexed by string.
+    //! @ingroup cpp
+    //!
+    using UStringToUStringMultiMap = std::multimap<UString, UString>;
 
     //!
     //! An implementation of UTF-16 strings.
