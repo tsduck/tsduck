@@ -437,6 +437,17 @@ bool ts::WebRequest::SystemGuts::startTransfer(CertState certState)
             status = ::curl_easy_setopt(_curl, CURLOPT_CAINFO, _certFile.toUTF8().c_str());
         }
 
+        // Set HTTPS insecure mode.
+        if (status == ::CURLE_OK && _request._insecure) {
+            status = ::curl_easy_setopt(_curl, CURLOPT_SSL_VERIFYPEER, 0L);
+            if (status == ::CURLE_OK) {
+                status = ::curl_easy_setopt(_curl, CURLOPT_SSL_VERIFYHOST, 0L);
+            }
+            if (status == ::CURLE_OK) {
+                status = ::curl_easy_setopt(_curl, CURLOPT_SSL_VERIFYSTATUS, 0L);
+            }
+        }
+
         // Set the connection timeout.
         if (status == ::CURLE_OK && _request._connection_timeout > cn::milliseconds::zero()) {
             status = ::curl_easy_setopt(_curl, CURLOPT_CONNECTTIMEOUT_MS, long(_request._connection_timeout.count()));
