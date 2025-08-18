@@ -258,13 +258,8 @@ void ts::WebRequest::clearRequestHeaders()
 
 
 //----------------------------------------------------------------------------
-// Get the value of one or all headers.
+// Get the value of response headers.
 //----------------------------------------------------------------------------
-
-void ts::WebRequest::getResponseHeaders(HeadersMap& headers) const
-{
-    headers = _response_headers;
-}
 
 ts::UString ts::WebRequest::reponseHeader(const UString& name) const
 {

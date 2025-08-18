@@ -281,19 +281,31 @@ bool ts::WebRequest::SystemGuts::init()
     for (;;) {
         // Keep track of current URL to fetch.
         _previous_url = _request._final_url;
+        const bool use_http = _previous_url.starts_with(u"http:");
+        const bool use_https = _previous_url.starts_with(u"https:");
+        const bool use_post = !_request._post_data.empty();
 
         // Flags for HTTPS.
-        const bool use_https = _previous_url.starts_with(u"https:");
         ::DWORD flags = url_flags;
         if (use_https) {
             flags |= INTERNET_FLAG_SECURE;
         }
 
-        // Now open the URL.
-        // In the case of a POST request, we cannot use InternetOpenUrl() which can only handle GET requests.
-        // On the other hand, we prefer to use InternetOpenUrl() in the general case because it can handle all
-        // types of URL. In the case of a POST request, we only support http: and https: schemes.
-        if (_request._post_data.empty()) {
+        // POST requests are supported in http: and https: schemes only.
+        if (use_post && !use_http && !use_https) {
+            error(u"POST requests are only allowed on HTTP URL: " + _previous_url);
+            clear();
+            return false;
+        }
+
+        // Now open the URL. We have the choice between:
+        // - InternetOpenUrl()
+        // - InternetConnect() + HttpOpenRequest() + HttpSendRequest()
+        // InternetOpenUrl() is easier, more general, and can handle all types of URL. However, in the case of
+        // HTTP(S), it can handle GET requests only (not POST) and cannot disable all security options. Therefore,
+        // we use InternetOpenUrl() when possible and fallback to the complex scenario otherwise.
+        if (!use_post && !_request._insecure) {
+            // This can be handled by InternetOpenUrl() in one call.
             _inet_request = ::InternetOpenUrlW(_inet, _previous_url.wc_str(), header_address, header_length, flags, 0);
             if (_inet_request == nullptr) {
                 error(u"error opening URL: " + _previous_url);
@@ -301,13 +313,9 @@ bool ts::WebRequest::SystemGuts::init()
                 return false;
             }
         }
-        else if (!_previous_url.starts_with(u"http:") && !_previous_url.starts_with(u"https:")) {
-            error(u"POST requests are only allowed on HTTP URL: " + _previous_url);
-            clear();
-            return false;
-        }
         else {
-            // This is a POST request. Split the URL.
+            // This is an HTTP(S) case that InternetOpenUrl() cannot handle.
+            // We need to split the URL.
             URL url(_previous_url);
             UString host(url.getHost());
             UString user(url.getUserName());
@@ -316,6 +324,10 @@ bool ts::WebRequest::SystemGuts::init()
             if (port == 0) {
                 // Use default port.
                 port = use_https ? INTERNET_DEFAULT_HTTPS_PORT : INTERNET_DEFAULT_HTTP_PORT;
+            }
+            if (use_https && _request._insecure) {
+                // In secure mode, only some flags can be set to InternetConnect(). Others must be added later.
+                flags |= INTERNET_FLAG_IGNORE_CERT_CN_INVALID;
             }
 
             // Connect to the host.
@@ -337,11 +349,30 @@ bool ts::WebRequest::SystemGuts::init()
                 path.append(u'?');
                 path.append(query);
             }
-            _inet_request = ::HttpOpenRequestW(_inet_connect, L"POST", path.wc_str(), nullptr, nullptr, accept_types, flags | INTERNET_FLAG_RELOAD, 0);
+            _inet_request = ::HttpOpenRequestW(_inet_connect, use_post ? L"POST" : L"GET", path.wc_str(), nullptr, nullptr, accept_types, flags | INTERNET_FLAG_RELOAD, 0);
             if (_inet_request == nullptr) {
                 error(u"error opening request to " + _previous_url);
                 clear();
                 return false;
+            }
+
+            // Set additional insecure flags after HttpOpenRequest() and before HttpSendRequest().
+            if (use_https && _request._insecure) {
+                // Get current security flags.
+                ::DWORD cur_flags = 0;
+                ::DWORD ret_size = ::DWORD(sizeof(cur_flags));
+                if (!::InternetQueryOptionW(_inet_request, INTERNET_OPTION_SECURITY_FLAGS, &cur_flags, &ret_size)) {
+                    error(u"error getting security flags on HTTP request");
+                    clear();
+                    return false;
+                }
+                // Now add other insecure flags.
+                cur_flags |= INTERNET_FLAG_IGNORE_CERT_CN_INVALID | SECURITY_FLAG_IGNORE_CERT_DATE_INVALID | SECURITY_FLAG_IGNORE_REVOCATION | SECURITY_FLAG_IGNORE_UNKNOWN_CA;
+                if (!::InternetSetOptionW(_inet_request, INTERNET_OPTION_SECURITY_FLAGS, &cur_flags, ::DWORD(sizeof(cur_flags)))) {
+                    error(u"error setting insecure mode");
+                    clear();
+                    return false;
+                }
             }
 
             // Send the request.

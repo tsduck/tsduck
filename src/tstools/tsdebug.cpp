@@ -22,6 +22,7 @@
 #include "tsTCPServer.h"
 #include "tsTLSServer.h"
 #include "tsTelnetConnection.h"
+#include "tsWebRequest.h"
 #include "tsSysUtils.h"
 #include "tsIPUtils.h"
 #if defined(TS_WINDOWS)
@@ -840,14 +841,13 @@ ts::CommandStatus ts::ServerCommands::server(const UString& command, Args& args)
 
 
 //----------------------------------------------------------------------------
-// HTTP client commands.
+// HTTP client command, using explicit TCPConnection or TLSConnection.
 //----------------------------------------------------------------------------
 
 namespace ts {
     class ClientCommands: public CommandLineHandler, protected NetworkBase
     {
         TS_NOBUILD_NOCOPY(ClientCommands);
-
     public:
         ClientCommands(CommandLine& cmdline, int flags);
         virtual ~ClientCommands() override;
@@ -955,6 +955,99 @@ ts::CommandStatus ts::ClientCommands::client(const UString& command, Args& args)
 
 
 //----------------------------------------------------------------------------
+// HTTP client command using WebRequest on URL.
+//----------------------------------------------------------------------------
+
+namespace ts {
+    class URLCommands: public CommandLineHandler
+    {
+        TS_NOBUILD_NOCOPY(URLCommands);
+    public:
+        URLCommands(CommandLine& cmdline, int flags);
+        virtual ~URLCommands() override;
+
+    private:
+        // Command handlers.
+        CommandStatus geturl(const UString&, Args&);
+    };
+}
+
+
+//----------------------------------------------------------------------------
+// URL commands constructor and destructor.
+//----------------------------------------------------------------------------
+
+ts::URLCommands::URLCommands(CommandLine& cmdline, int flags)
+{
+    Args* cmd = cmdline.command(u"geturl", u"Get a URL and dump its text reponse", u"[options] url", flags);
+    cmdline.setCommandLineHandler(this, &URLCommands::geturl, u"geturl");
+    cmd->option(u"", 0, Args::STRING, 1, 1);
+    cmd->help(u"", u"URL to get.");
+    cmd->option(u"header", 'h', Args::STRING, 0, Args::UNLIMITED_COUNT);
+    cmd->help(u"header", u"'name: value'", u"Add this request header.");
+    cmd->option(u"insecure");
+    cmd->help(u"insecure", u"With https, do not verify the certificate of the server.");
+    cmd->option(u"output", 'o', Args::FILENAME);
+    cmd->help(u"output", u"Save response in the specified file.");
+}
+
+ts::URLCommands::~URLCommands()
+{
+}
+
+
+//----------------------------------------------------------------------------
+// Get URL and dump its text response.
+//----------------------------------------------------------------------------
+
+ts::CommandStatus ts::URLCommands::geturl(const UString& command, Args& args)
+{
+    const bool insecure = args.present(u"insecure");
+    const UString url(args.value(u""));
+    fs::path output;
+    UStringList headers;
+    args.getPathValue(output, u"output");
+    args.getValues(headers, u"header");
+
+    WebRequest request(args);
+    request.setInsecure(insecure);
+    for (const auto& h : headers) {
+        const size_t colon = h.find(':');
+        request.setRequestHeader(h.substr(0, colon).toTrimmed(), colon == NPOS ? u"" : h.substr(colon+1).toTrimmed());
+    }
+
+    UString response;
+    if (output.empty()) {
+        // Display text response.
+        if (!request.downloadTextContent(url, response)) {
+            return CommandStatus::ERROR;
+        }
+    }
+    else {
+        // Save output in a file.
+        if (!request.downloadFile(url, output)) {
+            return CommandStatus::ERROR;
+        }
+    }
+
+    args.info(u"==== Request");
+    args.info(u"HTTP status: %d", request.httpStatus());
+    args.info(u"Original URL: %d", request.originalURL());
+    args.info(u"Final URL: %d", request.finalURL());
+    args.info(u"==== Response headers");
+    for (const auto& h : request.responseHeaders()) {
+        args.info(u"%s: %s", h.first, h.second);
+    }
+    if (output.empty()) {
+        args.info(u"==== Response content");
+        response.trim(false, true);
+        args.info(response);
+    }
+    return CommandStatus::SUCCESS;
+}
+
+
+//----------------------------------------------------------------------------
 // Main command line options.
 //----------------------------------------------------------------------------
 
@@ -979,6 +1072,7 @@ namespace ts {
         SendRecvCommands     sendrecv {cmdline, flags};
         ServerCommands       server {cmdline, flags};
         ClientCommands       client {cmdline, flags};
+        URLCommands          url {cmdline, flags};
 
         // Inherited methods.
         virtual UString getHelpText(HelpFormat format, size_t line_width = DEFAULT_LINE_WIDTH) const override;
