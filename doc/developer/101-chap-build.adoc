@@ -27,6 +27,8 @@ The packaging of installers, when available, is also "native":
 `.deb` packages on Ubuntu, Debian and the like,
 Homebrew distribution on macOS,
 NSIS-based executable installers on Windows.
+TSDuck also provides native support for https://nixos.org[Nix], Linux and macOS.
+
 
 [#building]
 === Building TSDuck
@@ -705,6 +707,75 @@ $ scripts/setenv.sh --display
 
 Use `scripts/setenv.sh --help` for other options.
 
+[#nixbuild]
+==== Building with Nix
+
+TSDuck provides native https://nixos.org[Nix] flakes for Linux and macOS.
+
+[.usage]
+You must have Nix Flakes enabled:
+
+[source,shell]
+----
+$ nix build github:tsduck/tsduck?dir=pkg/nix              # latest on master
+$ nix build github:tsduck/tsduck/<tag|branch>?dir=pkg/nix # specific tag or branch
+$ nix build github:tsduck/tsduck?dir=pkg/nix#tsduck-min   # minimal, no hardware
+----
+
+Or for local development:
+
+[source,shell]
+----
+$ git clone https://github.com/tsduck/tsduck.git
+$ nix build ./pkg/nix
+$ nix develop ./pkg/nix
+----
+
+===== Pre-requisites
+
+Nix must be installed on your system with Flakes support enabled.
+
+===== Building TSDuck with Nix
+
+To build the default TSDuck package:
+
+[source,shell]
+----
+$ nix build ./pkg/nix
+----
+
+To build a specific variant, use the `#` fragment to select the package name:
+
+[source,shell]
+----
+$ nix build ./pkg/nix#tsduck-min           # no hardware support
+$ nix build ./pkg/nix#python-tsduck       # Python bindings (against tsduck)
+$ nix build ./pkg/nix#python-tsduck-min   # Python bindings (against tsduck-min)
+$ nix build ./pkg/nix#java-tsduck         # Java bindings (against tsduck)
+$ nix build ./pkg/nix#java-tsduck-min     # Java bindings (against tsduck-min)
+----
+
+The build result will be available in the `./result` symlink.
+
+===== Development environment
+
+Nix provides development shells with all build dependencies pre-configured:
+
+[source,shell]
+----
+$ nix develop ./pkg/nix          # Main development shell with all tools
+$ nix develop ./pkg/nix#python   # Python environment with TSDuck bindings
+----
+
+Within the development shell, you can use traditional build commands:
+
+[source,shell]
+----
+$ nix develop ./pkg/nix
+[nix-shell]$ make
+[nix-shell]$ make test
+----
+
 [#winbuild]
 ==== Building on Windows systems
 
@@ -1172,3 +1243,77 @@ $ sudo gmake install
 ----
 
 Note that GNU Make (`gmake`) shall be used instead of the standard BSD `make`.
+
+[#nixinstall]
+==== Installing TSDuck with Nix
+
+TSDuck can be installed using the https://nixos.org[Nix package manager] on Linux, macOS, and BSD systems.
+Nix provides reproducible, declarative package management with automatic dependency resolution.
+
+===== Installing TSDuck
+
+Install TSDuck into your user profile:
+
+[source,shell]
+----
+$ nix profile install github:tsduck/tsduck?dir=pkg/nix
+----
+
+===== Run TSDuck without Install
+Or run TSDuck commands without installation:
+
+[source,shell]
+----
+$ nix run github:tsduck/tsduck?dir=pkg/nix
+$ nix run github:tsduck/tsduck?dir=pkg/nix#tsp -- --help
+----
+
+Launch a Python REPL with TSDuck bindings:
+
+[source,shell]
+----
+$ nix run ./pkg/nix#python
+>>> import tsduck
+>>> print(tsduck.version())
+----
+
+===== Installing a specific version
+
+A git ref (tag or branch) can be placed between the repository name and the
+`?dir=pkg/nix` parameter to install an exact version:
+
+[source,shell]
+----
+$ nix profile install github:tsduck/tsduck/v3.40?dir=pkg/nix            # a tagged release
+$ nix profile install github:tsduck/tsduck/develop?dir=pkg/nix          # a branch
+$ nix profile install github:tsduck/tsduck/v3.40?dir=pkg/nix#tsduck-min # tag + variant
+----
+
+When no ref is given, Nix defaults to the repository's default branch (typically `master`).
+
+===== Installing specific variants
+
+Install the minimal build (no hardware device support):
+
+[source,shell]
+----
+$ nix profile install github:tsduck/tsduck?dir=pkg/nix#tsduck-min
+----
+
+Install Python bindings.  Each variant has a matching Python package so that
+the baked `libtsduck` path is consistent:
+
+[source,shell]
+----
+$ nix profile install github:tsduck/tsduck?dir=pkg/nix#python-tsduck       # against tsduck
+$ nix profile install github:tsduck/tsduck?dir=pkg/nix#python-tsduck-min   # against tsduck-min
+----
+
+Install Java bindings.  As with Python, each tsduck variant has a matching
+Java package:
+
+[source,shell]
+----
+$ nix profile install github:tsduck/tsduck?dir=pkg/nix#java-tsduck       # against tsduck
+$ nix profile install github:tsduck/tsduck?dir=pkg/nix#java-tsduck-min   # against tsduck-min
+----
