@@ -151,14 +151,14 @@ namespace ts {
 
         //!
         //! Store the data to be sent with the response.
-        //! @param [in] data Returned data in text format.
+        //! @param [in] text Returned data in text format.
         //! @param [in] mime_type Optional MIME type for these data.
         //!
         void setResponse(const UString& text, const UString& mime_type = u"text/plain; charset=utf-8");
 
         //!
         //! Store the data to be sent with the response.
-        //! @param [in] data Returned data in JSON format.
+        //! @param [in] value Returned data in JSON format.
         //! @param [in] mime_type Optional MIME type for these data.
         //!
         void setResponse(const json::Value& value, const UString& mime_type = u"application/json");
