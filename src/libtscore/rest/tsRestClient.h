@@ -88,7 +88,7 @@ namespace ts {
         //!
         //! Get the response in JSON form.
         //! Valid after call().
-        //! @param [out] response Response in JSON form.
+        //! @param [out] value Response in JSON form.
         //! @return True on success, false on error (typically when the returned data are not valid JSON).
         //!
         bool getResponseJSON(json::ValuePtr& value) const;
