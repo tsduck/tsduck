@@ -28,6 +28,10 @@ The packaging of installers, when available, is also "native":
 Homebrew distribution on macOS,
 NSIS-based executable installers on Windows.
 
+TSDuck also provides native support for https://nixos.org[Nix],
+a declarative package manager that works across Linux, macOS, and BSD systems,
+offering reproducible builds and automatic dependency management.
+
 [#building]
 === Building TSDuck
 
@@ -699,6 +703,109 @@ $ scripts/setenv.sh --display
 
 Use `scripts/setenv.sh --help` for other options.
 
+[#nixbuild]
+==== Building with Nix
+
+TSDuck provides native https://nixos.org[Nix] flake support for reproducible builds across Linux, macOS, and BSD systems.
+Nix provides hermetic, reproducible builds with automatic dependency management.
+
+[.usage]
+TL;DR
+
+If you have Nix with flakes enabled:
+
+[source,shell]
+----
+$ nix build github:tsduck/tsduck
+$ nix run github:tsduck/tsduck
+$ nix develop github:tsduck/tsduck
+----
+
+Or for local development:
+
+[source,shell]
+----
+$ git clone https://github.com/tsduck/tsduck.git
+$ cd tsduck
+$ nix build
+$ nix develop
+----
+
+===== Pre-requisites
+
+Nix must be installed on your system with flakes support enabled.
+
+===== Available packages
+
+The flake provides several package variants:
+
+[.compact-table]
+[cols="<1m,<1",frame=none,grid=none,stripes=none,options="autowidth,noheader"]
+|===
+|tsduck |Full build (default)
+|python-tsduck |Python bindings for TSDuck
+|java-tsduck |Java bindings with JDK runtime dependency
+|===
+
+===== Building TSDuck with Nix
+
+To build the full TSDuck package:
+
+[source,shell]
+----
+$ nix build
+----
+
+To build a specific variant:
+
+[source,shell]
+----
+$ nix build .#tsduck
+$ nix build .#python-tsduck
+$ nix build .#java-tsduck
+----
+
+The build result will be available in the `./result` symlink.
+
+===== Development environment
+
+Nix provides development shells with all build dependencies pre-configured:
+
+[source,shell]
+----
+$ nix develop           # Main development shell with all tools
+$ nix develop .#python  # Python environment with TSDuck bindings
+----
+
+Within the development shell, you can use traditional build commands:
+
+[source,shell]
+----
+$ nix develop
+[nix-shell]$ make
+[nix-shell]$ make test
+----
+
+===== Running TSDuck commands
+
+Run TSDuck commands directly without installation:
+
+[source,shell]
+----
+$ nix run .#default -- --version
+$ nix run .#tsp -- --help
+$ nix run .#tsanalyze -- input.ts
+----
+
+Launch a Python REPL with TSDuck bindings:
+
+[source,shell]
+----
+$ nix run .#python
+>>> import tsduck
+>>> print(tsduck.version())
+----
+
 [#winbuild]
 ==== Building on Windows systems
 
@@ -1152,6 +1259,45 @@ $ sudo pkg install tsduck
 
 NOTE: TSDuck is supposed to be included the April 2026 "Quarterly" branch of FreeBSD Ports.
 Before that date, use the "Latest" branch to get the `tsduck` package.
+
+[#nixinstall]
+==== Installing TSDuck with Nix
+
+TSDuck can be installed using the https://nixos.org[Nix package manager] on Linux, macOS, and BSD systems.
+Nix provides reproducible, declarative package management with automatic dependency resolution.
+
+===== Installing TSDuck
+
+Install TSDuck into your user profile:
+
+[source,shell]
+----
+$ nix profile install github:tsduck/tsduck
+----
+
+Or run TSDuck commands without installation:
+
+[source,shell]
+----
+$ nix run github:tsduck/tsduck
+$ nix run github:tsduck/tsduck#tsp -- --help
+----
+
+===== Installing specific variants
+
+Install Python bindings:
+
+[source,shell]
+----
+$ nix profile install github:tsduck/tsduck#python-tsduck
+----
+
+Install Java bindings with JDK:
+
+[source,shell]
+----
+$ nix profile install github:tsduck/tsduck#java-tsduck
+----
 
 [#bsdinstall]
 ==== Installing on other BSD systems

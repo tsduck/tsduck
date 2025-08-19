@@ -20,9 +20,11 @@
 
 class HLSTest: public tsunit::Test
 {
+#if !defined(TS_NO_EXTERNAL_TESTS)
     TSUNIT_DECLARE_TEST(MasterPlaylist);
     TSUNIT_DECLARE_TEST(MasterPlaylistWithAlternate);
     TSUNIT_DECLARE_TEST(MediaPlaylist);
+#endif
     TSUNIT_DECLARE_TEST(BuildMasterPlaylist);
     TSUNIT_DECLARE_TEST(BuildMediaPlaylist);
 
@@ -61,6 +63,7 @@ void HLSTest::afterTest()
 // Unitary tests.
 //----------------------------------------------------------------------------
 
+#if !defined(TS_NO_EXTERNAL_TESTS)
 TSUNIT_DEFINE_TEST(MasterPlaylist)
 {
     // Test file downloaded from TSDuck web site.
@@ -230,6 +233,7 @@ TSUNIT_DEFINE_TEST(MediaPlaylist)
     TSUNIT_EQUAL(6000, seg.duration.count());
     TSUNIT_ASSERT(!seg.gap);
 }
+#endif // TS_NO_EXTERNAL_TESTS
 
 TSUNIT_DEFINE_TEST(BuildMasterPlaylist)
 {

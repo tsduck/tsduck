@@ -19,6 +19,7 @@ cov-int.*
 Debug-*/
 *.deb
 *.dep
+.direnv/
 *.dll
 .DS_Store
 *.dylib
@@ -45,6 +46,7 @@ ipch
 __pycache__
 *.recipe
 Release-*/
+result
 *.rpm
 *.sdf
 *.so

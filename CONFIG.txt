@@ -29,6 +29,7 @@ NOJAVA            # No Java bindings.
 NOPYTHON          # No Python bindings.
 NOEDITLINE        # No interactive line editing, remove dependency to libedit.
 NOGITHUB          # No version check, no download, no upgrade from GitHub (for distro packaging).
+NOEXTERNALTESTS   # Do not build tests that require external access (network, home directory).
 NOHWACCEL         # Disable hardware acceleration such as crypto instructions.
 NOPCSTD           # Remove the std=c++17 flag from libtsduck's pkg-config file.
 NODOC             # Do not build the documentation, install TSDuck without documentation.
