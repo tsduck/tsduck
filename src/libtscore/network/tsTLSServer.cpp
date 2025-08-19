@@ -32,8 +32,15 @@ ts::TLSServer::~TLSServer()
 
 
 //----------------------------------------------------------------------------
-// Get server properties.
+// Server properties.
 //----------------------------------------------------------------------------
+
+void ts::TLSServer::setArgs(const TLSArgs& args)
+{
+    _certificate_store = args.certificate_store;
+    _certificate_path = args.certificate_path;
+    _key_path = args.key_path;
+}
 
 ts::UString ts::TLSServer::getCertificatePath() const
 {

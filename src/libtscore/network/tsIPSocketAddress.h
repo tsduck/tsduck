@@ -200,6 +200,12 @@ namespace ts {
         virtual UString toString() const override;
 
         //!
+        //! Remove the port number from a "addr[:port]" or "[addr:]port" string.
+        //! @param [in,out] name A string where the port number is removed.
+        //! 
+        static void RemovePort(UString& name);
+
+        //!
         //! Set the IP address and port from a system "struct sockaddr" structure (IPv4 or IPv6).
         //! @param [in] a A system "struct sockaddr" structure.
         //! Note: the structure "sockaddr" is deprecated because it cannot hold an IPv6 socket address.

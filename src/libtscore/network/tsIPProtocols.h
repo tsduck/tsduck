@@ -98,7 +98,6 @@ namespace ts {
     //!
     TSCOREDLL UString IPProtocolName(uint8_t protocol, bool long_format = false);
 
-
     //------------------------------------------------------------------------
     // User Datagram Protocol (UDP)
     //------------------------------------------------------------------------
@@ -155,6 +154,17 @@ namespace ts {
     //! @ingroup net
     //!
     using rtp_units = cn::duration<std::intmax_t, std::ratio<1, RTP_RATE_MP2T>>;
+
+    //------------------------------------------------------------------------
+    // Hyper-Text Transfer Protocol (HTTP)
+    //------------------------------------------------------------------------
+
+    //!
+    //! Get the standard text for a HTTP status code.
+    //! @param [in] status HTTP status code.
+    //! @return The status text.
+    //!
+    TSCOREDLL UString HTTPStatusText(int status);
 
     //------------------------------------------------------------------------
     // VLAN encapsulation.

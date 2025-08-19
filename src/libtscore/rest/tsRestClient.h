@@ -7,7 +7,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Basic REST API client.
+//!  Basic helper for REST API clients.
 //!
 //----------------------------------------------------------------------------
 
@@ -18,7 +18,7 @@
 
 namespace ts {
     //!
-    //! Basic REST API client.
+    //! Basic helper for REST API clients.
     //! @ingroup libtscore app
     //!
     class TSCOREDLL RestClient
@@ -27,7 +27,7 @@ namespace ts {
     public:
         //!
         //! Constructor.
-        //! @param [in] args Initial REST operation arguments. This instance will keep a copy ot it.
+        //! @param [in] args Initial REST operation arguments. This instance will keep a copy of it.
         //! @param [in,out] report Where to report errors. This instance will keep a reference to it.
         //!
         RestClient(const RestArgs& args, Report& report);

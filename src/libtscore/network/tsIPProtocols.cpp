@@ -28,6 +28,16 @@ ts::UString ts::IPProtocolName(uint8_t protocol, bool long_format)
 }
 
 
+//------------------------------------------------------------------------
+// Get the standard text for a HTTP status code.
+//------------------------------------------------------------------------
+
+ts::UString ts::HTTPStatusText(int status)
+{
+    return NameFromSection(u"ip", u"HTTP.status", status);
+}
+
+
 //----------------------------------------------------------------------------
 // TCP sequence numbers.
 //----------------------------------------------------------------------------

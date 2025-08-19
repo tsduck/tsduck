@@ -76,6 +76,32 @@ bool ts::IPSocketAddress::set(const ::sockaddr& s)
 
 
 //----------------------------------------------------------------------------
+// Remove the port number from a "addr[:port]" or "[addr:]port" string.
+//----------------------------------------------------------------------------
+
+void ts::IPSocketAddress::RemovePort(UString& name)
+{
+    const size_t colon = name.rfind(':');
+    const size_t br2 = name.rfind(']');
+
+    if (colon == NPOS && br2 == NPOS) {
+        // No colon. If the string is only digits, this is a port alone. Otherwise this is a host name alone.
+        for (UChar c : name) {
+            if (!IsDigit(c)) {
+                return;
+            }
+        }
+        // Only digits => port alone.
+        name.clear();
+    }
+    else if (colon != NPOS && (br2 == NPOS || br2 < colon)) {
+        // There is a port.
+        name.resize(colon);
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Decode a string "addr[:port]" or "[addr:]port".
 //----------------------------------------------------------------------------
 

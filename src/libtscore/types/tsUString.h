@@ -501,6 +501,18 @@ namespace ts {
         void toUTF8(ByteBlock& utf8) const;
 
         //!
+        //! Convert this UTF-16 string into UTF-8 and append in a 8-bit string.
+        //! @param [in,out] utf8 Where to append the equivalent UTF-8 string.
+        //!
+        void appendUTF8(std::string& utf8) const;
+
+        //!
+        //! Convert this UTF-16 string into UTF-8 data and append in a byte block.
+        //! @param [in,out] utf8 Where to append the equivalent UTF-8 data.
+        //!
+        void appendUTF8(ByteBlock& utf8) const;
+
+        //!
         //! General routine to convert from UTF-16 to UTF-8.
         //! Stop when the input buffer is empty or the output buffer is full, whichever comes first.
         //! Invalid input values are silently ignored and skipped.

@@ -482,6 +482,10 @@ bool ts::TLSConnection::send(const void* data, size_t size, Report& report)
         report.error(u"not connected");
         return false;
     }
+    if (size == 0) {
+        // Writing zero-length TLS data creates issue.
+        return true;
+    }
     if (data == nullptr) {
         report.error(u"user send data address is null");
         return false;

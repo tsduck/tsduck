@@ -106,7 +106,7 @@ ts::UString ts::TCPConnection::peerName() const
 
 bool ts::TCPConnection::send(const void* buffer, size_t size, Report& report)
 {
-    const char* data = reinterpret_cast <const char*>(buffer);
+    const char* data = reinterpret_cast<const char*>(buffer);
     size_t remain = size;
 
     while (remain > 0) {

@@ -13,6 +13,7 @@
 
 #pragma once
 #include "tsTCPServer.h"
+#include "tsTLSArgs.h"
 #include "tsTLSConnection.h"
 
 namespace ts {
@@ -63,9 +64,21 @@ namespace ts {
         using SuperClass = TCPServer;
 
         //!
-        //! Constructor
+        //! Constructor.
         //!
         TLSServer();
+
+        //!
+        //! Constructor with initial arguments.
+        //! @param [in] args Initial TLS arguments.
+        //!
+        TLSServer(const TLSArgs& args) : TLSServer() { setArgs(args); }
+
+        //!
+        //! Set command line arguments for the server.
+        //! @param [in] args TLS arguments.
+        //!
+        void setArgs(const TLSArgs& args);
 
         //!
         //! Set the certificate path for the server.

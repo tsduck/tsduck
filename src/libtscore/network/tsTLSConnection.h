@@ -15,6 +15,7 @@
 
 #pragma once
 #include "tsTCPConnection.h"
+#include "tsTLSArgs.h"
 
 namespace ts {
     //!
@@ -45,9 +46,21 @@ namespace ts {
         using SuperClass = TCPConnection;
 
         //!
-        //! Constructor
+        //! Constructor.
         //!
         TLSConnection();
+
+        //!
+        //! Constructor with initial client arguments.
+        //! @param [in] args Initial TLS client arguments.
+        //!
+        TLSConnection(const TLSArgs& args) : TLSConnection() { setArgs(args); }
+
+        //!
+        //! Set command line arguments for the client.
+        //! @param [in] args TLS arguments.
+        //!
+        void setArgs(const TLSArgs& args);
 
         //!
         //! Check if the peer's certificate shall be verified.

@@ -21,11 +21,13 @@
 #include "tsUDPSocket.h"
 #include "tsTCPServer.h"
 #include "tsTLSServer.h"
+#include "tsRestServer.h"
 #include "tsTelnetConnection.h"
 #include "tsWebRequest.h"
-#include "tsRestArgs.h"
+#include "tsTLSArgs.h"
 #include "tsSysUtils.h"
 #include "tsIPUtils.h"
+#include "tsjsonValue.h"
 #if defined(TS_WINDOWS)
     #include "tsWinUtils.h"
 #endif
@@ -444,7 +446,7 @@ namespace ts {
         virtual ~SendRecvCommands() override;
 
     private:
-        RestArgs _rest_args;
+        TLSArgs _tls_args;
         // Command handlers.
         CommandStatus receive(const UString&, Args&);
         CommandStatus send(const UString&, Args&);
@@ -462,7 +464,7 @@ ts::SendRecvCommands::SendRecvCommands(CommandLine& cmdline, int flags)
     cmd->help(u"udp", u"Send the 'message-string' to the specified UDP socket and wait for a response.");
     cmd->option(u"tcp", 't', Args::IPSOCKADDR);
     cmd->help(u"tcp", u"Connect to the specified TCP server, send the 'message-string' and wait for a response.");
-    _rest_args.defineClientArgs(*cmd, false);
+    _tls_args.defineClientArgs(*cmd);
 
     cmd = cmdline.command(u"receive", u"Receive a UDP or TCP message and send a response", u"[options]", flags);
     cmdline.setCommandLineHandler(this, &SendRecvCommands::receive, u"receive");
@@ -471,7 +473,7 @@ ts::SendRecvCommands::SendRecvCommands(CommandLine& cmdline, int flags)
     cmd->help(u"udp", u"Wait for a message on the specified UDP socket and send a response.");
     cmd->option(u"tcp", 't', Args::IPSOCKADDR_OA);
     cmd->help(u"tcp", u"Create a TCP server, wait for a message and send a response.");
-    _rest_args.defineServerArgs(*cmd, false);
+    _tls_args.defineServerArgs(*cmd);
 }
 
 ts::SendRecvCommands::~SendRecvCommands()
@@ -486,12 +488,10 @@ ts::SendRecvCommands::~SendRecvCommands()
 ts::CommandStatus ts::SendRecvCommands::send(const UString& command, Args& args)
 {
     loadIPGenArgs(args);
-    _rest_args.loadClientArgs(args, false);
+    _tls_args.loadClientArgs(args, u"tcp");
     const UString message(args.value(u""));
-    const IPSocketAddress dest_addr(args.socketValue(u"tcp", args.socketValue(u"udp", IPSocketAddress(), 0, ip_gen), 0, ip_gen));
-    const UString dest_name(args.value(u"tcp", args.value(u"udp").c_str()));
 
-    if (args.present(u"udp") + args.present(u"tcp") != 1 || !dest_addr.hasAddress()) {
+    if (args.present(u"udp") + args.present(u"tcp") != 1 || !_tls_args.server_addr.hasAddress()) {
         args.error(u"specify exactly one of --tcp and --udp");
         return CommandStatus::ERROR;
     }
@@ -503,10 +503,10 @@ ts::CommandStatus ts::SendRecvCommands::send(const UString& command, Args& args)
         if (!sock.open(ip_gen, args)) {
             return CommandStatus::ERROR;
         }
-        args.info(u"Sending to UDP socket %s ...", dest_addr);
+        args.info(u"Sending to UDP socket %s ...", _tls_args.server_addr);
         std::string msg(message.toUTF8());
         if (sock.bind(IPSocketAddress::AnySocketAddress(ip_gen), args) &&
-            sock.send(msg.data(), msg.size(), dest_addr, args))
+            sock.send(msg.data(), msg.size(), _tls_args.server_addr, args))
         {
             size_t ret_size = 0;
             IPSocketAddress source, dest;
@@ -525,20 +525,18 @@ ts::CommandStatus ts::SendRecvCommands::send(const UString& command, Args& args)
     else {
         // Send a TCP message.
         TCPConnection tcp_client;
-        TLSConnection tls_client;
-        tls_client.setVerifyPeer(!_rest_args.insecure);
-        tls_client.setServerName(dest_name);
-        TCPConnection* const client = _rest_args.use_tls ? &tls_client : &tcp_client;
+        TLSConnection tls_client(_tls_args);
+        TCPConnection* const client = _tls_args.use_tls ? &tls_client : &tcp_client;
         TelnetConnection telnet(*client);
 
         if (!client->open(ip_gen, args)) {
             return CommandStatus::ERROR;
         }
-        args.info(u"Sending to TCP server %s ...", dest_addr);
+        args.info(u"Sending to TCP server %s ...", _tls_args.server_addr);
         std::string msg(message.toUTF8());
         ts::IPSocketAddress addr;
         if (client->bind(IPSocketAddress::AnySocketAddress(ip_gen), args) &&
-            client->connect(dest_addr, args) &&
+            client->connect(_tls_args.server_addr, args) &&
             client->getLocalAddress(addr, args) &&
             telnet.sendLine(msg, args) &&
             telnet.receiveLine(msg, nullptr, args))
@@ -562,7 +560,7 @@ ts::CommandStatus ts::SendRecvCommands::send(const UString& command, Args& args)
 ts::CommandStatus ts::SendRecvCommands::receive(const UString& command, Args& args)
 {
     loadIPGenArgs(args);
-    _rest_args.loadServerArgs(args, false);
+    _tls_args.loadServerArgs(args);
     const IPSocketAddress local(args.socketValue(u"tcp", args.socketValue(u"udp")));
 
     if (args.present(u"udp") + args.present(u"tcp") != 1 || !local.hasPort()) {
@@ -600,11 +598,8 @@ ts::CommandStatus ts::SendRecvCommands::receive(const UString& command, Args& ar
     else {
         // TCP server, wait for a client, wait for a message, send a response.
         TCPServer tcp_server;
-        TLSServer tls_server;
-        tls_server.setCertificateStore(_rest_args.certificate_store);
-        tls_server.setCertificatePath(_rest_args.certificate_path);
-        tls_server.setKeyPath(_rest_args.key_path);
-        TCPServer* const server = _rest_args.use_tls ? &tls_server : &tcp_server;
+        TLSServer tls_server(_tls_args);
+        TCPServer* const server = _tls_args.use_tls ? &tls_server : &tcp_server;
 
         if (!server->open(ip_gen, args) ||
             !server->reusePort(true, args) ||
@@ -618,7 +613,7 @@ ts::CommandStatus ts::SendRecvCommands::receive(const UString& command, Args& ar
         TCPConnection tcp_client;
         TLSConnection tls_client;
         tls_client.setVerifyPeer(false);
-        TCPConnection* const client = _rest_args.use_tls ? &tls_client : &tcp_client;
+        TCPConnection* const client = _tls_args.use_tls ? &tls_client : &tcp_client;
         TelnetConnection telnet(*client);
         IPSocketAddress addr;
         if (server->accept(*client, addr, args)) {
@@ -655,7 +650,7 @@ namespace ts {
         virtual ~ServerCommands() override;
 
     private:
-        RestArgs _rest_args;
+        TLSArgs _tls_args;
         // Command handlers.
         CommandStatus server(const UString&, Args&);
     };
@@ -679,7 +674,7 @@ ts::ServerCommands::ServerCommands(CommandLine& cmdline, int flags)
     cmd->help(u"sort-headers", u"Sort request headers before displaying them. For reproducibility of tests.");
     cmd->option(u"hide-header", 'h', Args::STRING, 0, Args::UNLIMITED_COUNT);
     cmd->help(u"hide-header", u"Hide this request header from display. For reproducibility of tests.");
-    _rest_args.defineServerArgs(*cmd, false);
+    _tls_args.defineServerArgs(*cmd);
 }
 
 ts::ServerCommands::~ServerCommands()
@@ -694,7 +689,7 @@ ts::ServerCommands::~ServerCommands()
 ts::CommandStatus ts::ServerCommands::server(const UString& command, Args& args)
 {
     loadIPGenArgs(args);
-    _rest_args.loadServerArgs(args, false);
+    _tls_args.loadServerArgs(args);
     const bool sort_headers = args.present(u"sort-headers");
     size_t max_clients = args.intValue<size_t>(u"max-clients", std::numeric_limits<size_t>::max());
     const IPSocketAddress local(args.socketValue(u""));
@@ -702,11 +697,8 @@ ts::CommandStatus ts::ServerCommands::server(const UString& command, Args& args)
     args.getValues(hidden, u"hide-header");
 
     TCPServer tcp_server;
-    TLSServer tls_server;
-    tls_server.setCertificateStore(_rest_args.certificate_store);
-    tls_server.setCertificatePath(_rest_args.certificate_path);
-    tls_server.setKeyPath(_rest_args.key_path);
-    TCPServer* const server = _rest_args.use_tls ? &tls_server : &tcp_server;
+    TLSServer tls_server(_tls_args);
+    TCPServer* const server = _tls_args.use_tls ? &tls_server : &tcp_server;
 
     if (!server->open(ip_gen, args) ||
         !server->reusePort(true, args) ||
@@ -722,7 +714,7 @@ ts::CommandStatus ts::ServerCommands::server(const UString& command, Args& args)
         TCPConnection tcp_client;
         TLSConnection tls_client;
         tls_client.setVerifyPeer(false);
-        TCPConnection* const client = _rest_args.use_tls ? &tls_client : &tcp_client;
+        TCPConnection* const client = _tls_args.use_tls ? &tls_client : &tcp_client;
         TelnetConnection telnet(*client);
 
         IPSocketAddress addr;
@@ -852,7 +844,7 @@ namespace ts {
         virtual ~ClientCommands() override;
 
     private:
-        RestArgs _rest_args;
+        TLSArgs _tls_args;
         // Command handlers.
         CommandStatus client(const UString&, Args&);
     };
@@ -874,7 +866,7 @@ ts::ClientCommands::ClientCommands(CommandLine& cmdline, int flags)
     cmd->help(u"header", u"Add this request header.");
     cmd->option(u"request", 'r', Args::STRING);
     cmd->help(u"request", u"Request line. Default: \"GET /\"");
-    _rest_args.defineClientArgs(*cmd, false);
+    _tls_args.defineClientArgs(*cmd);
 }
 
 ts::ClientCommands::~ClientCommands()
@@ -889,46 +881,29 @@ ts::ClientCommands::~ClientCommands()
 ts::CommandStatus ts::ClientCommands::client(const UString& command, Args& args)
 {
     loadIPGenArgs(args);
-    _rest_args.loadClientArgs(args, false);
+    _tls_args.loadClientArgs(args, u"");
     const UString request(args.value(u"request", u"GET /"));
     UStringList headers;
     args.getValues(headers, u"header");
-
-    // Get server as name string (without port).
-    // This is necessary for "Host:" header, not for setServerName().
-    UString server_name(args.value(u""));
-    const size_t colon = server_name.find(u':');
-    if (colon != NPOS) {
-        server_name.resize(colon);
-    }
-
-    // Get server as socket address.
-    IPSocketAddress server_addr(args.socketValue(u"", IPSocketAddress(), 0, ip_gen));
-    if (!server_addr.hasPort()) {
-        // Use default port for http or https.
-        server_addr.setPort(_rest_args.use_tls ? 443 : 80);
-    }
 
     // Build full input lines.
     headers.push_front(u"Accept: */*");
     headers.push_front(u"Connection: close");
     headers.push_front(u"User-Agent: TSDuck");
-    headers.push_front(u"Host: " + server_name);
+    headers.push_front(u"Host: " + _tls_args.server_name);
     headers.push_front(request + u" HTTP/1.1");
     headers.push_back(u"");
 
     auto status = CommandStatus::SUCCESS;
     TCPConnection tcp_client;
-    TLSConnection tls_client;
-    tls_client.setVerifyPeer(!_rest_args.insecure);
-    tls_client.setServerName(server_name);
-    TCPConnection* const client = _rest_args.use_tls ? &tls_client : &tcp_client;
+    TLSConnection tls_client(_tls_args);
+    TCPConnection* const client = _tls_args.use_tls ? &tls_client : &tcp_client;
     TelnetConnection telnet(*client);
 
     // Connect to the server.
     if (!client->open(ip_gen, args) ||
         !client->bind(IPSocketAddress::AnySocketAddress(ip_gen), args) ||
-        !client->connect(server_addr, args))
+        !client->connect(_tls_args.server_addr, args))
     {
         return CommandStatus::ERROR;
     }
@@ -1044,6 +1019,140 @@ ts::CommandStatus ts::URLCommands::geturl(const UString& command, Args& args)
 
 
 //----------------------------------------------------------------------------
+// HTTP REST server commands.
+//----------------------------------------------------------------------------
+
+// Possible client command to test:
+// curl -sikSL 'https://localhost:12345/path/to/api?p1=ab&p2=cd&p3=ef'
+//      -H 'Authorization: token boobar'
+//      -d 'this is post data' -H 'Content-Type: text/plain'
+
+namespace ts {
+    class RESTServerCommands: public CommandLineHandler, protected NetworkBase
+    {
+        TS_NOBUILD_NOCOPY(RESTServerCommands);
+    public:
+        RESTServerCommands(CommandLine& cmdline, int flags);
+        virtual ~RESTServerCommands() override;
+
+    private:
+        RestArgs _rest_args;
+        // Command handlers.
+        CommandStatus restServer(const UString&, Args&);
+    };
+}
+
+
+//----------------------------------------------------------------------------
+// HTTP REST server commands constructor and destructor.
+//----------------------------------------------------------------------------
+
+ts::RESTServerCommands::RESTServerCommands(CommandLine& cmdline, int flags)
+{
+    Args* cmd = cmdline.command(u"rest", u"Basic HTTP REST server which dumps its requests", u"[options] [ip-address:]port", flags);
+    cmdline.setCommandLineHandler(this, &RESTServerCommands::restServer, u"rest");
+    defineIPGenArgs(*cmd);
+    cmd->option(u"", 0, Args::IPSOCKADDR_OA, 1, 1);
+    cmd->help(u"", u"TCP server local address.");
+    cmd->option(u"max-clients", 'm', Args::UNSIGNED);
+    cmd->help(u"max-clients", u"Exit after this number of client sessions. By default, never exit.");
+    _rest_args.defineServerArgs(*cmd);
+}
+
+ts::RESTServerCommands::~RESTServerCommands()
+{
+}
+
+
+//----------------------------------------------------------------------------
+// Basic HTTP server which dumps its requests.
+//----------------------------------------------------------------------------
+
+ts::CommandStatus ts::RESTServerCommands::restServer(const UString& command, Args& args)
+{
+    loadIPGenArgs(args);
+    _rest_args.loadServerArgs(args);
+    size_t max_clients = args.intValue<size_t>(u"max-clients", std::numeric_limits<size_t>::max());
+    const IPSocketAddress local(args.socketValue(u""));
+
+    TCPServer tcp_server;
+    TLSServer tls_server(_rest_args);
+    TCPServer* const server = _rest_args.use_tls ? &tls_server : &tcp_server;
+
+    if (!server->open(ip_gen, args) ||
+        !server->reusePort(true, args) ||
+        !server->bind(local, args) ||
+        !server->listen(16, args)) {
+        return CommandStatus::ERROR;
+    }
+
+    while (max_clients-- > 0) {
+        args.verbose(u"Waiting on TCP server %s ...", local);
+
+        TCPConnection tcp_client;
+        TLSConnection tls_client;
+        tls_client.setVerifyPeer(false);
+        TCPConnection* const client = _rest_args.use_tls ? &tls_client : &tcp_client;
+        TelnetConnection telnet(*client);
+
+        IPSocketAddress addr;
+        if (!server->accept(*client, addr, args)) {
+            // Failed to accept a client, try a new one.
+            continue;
+        }
+        args.verbose(u"Client connected from %s ...", addr);
+
+        // Process a request.
+        RestServer rest(_rest_args, args);
+        if (!rest.getRequest(*client)) {
+            continue; // to next client
+        }
+
+        // Request information.
+        args.info(u"==== Request:");
+        args.info(u"Method: %s, path: %s", rest.method(), rest.path());
+        args.info(u"Query parameters: %d", rest.parameters().size());
+        for (const auto& it : rest.parameters()) {
+            args.info(u" '%s' -> '%s'", it.first, it.second);
+        }
+        args.info(u"Request headers: %d", rest.headers().size());
+        for (const auto& it : rest.headers()) {
+            args.info(u" '%s' -> '%s'", it.first, it.second);
+        }
+        args.info(u"Token: '%s'", rest.token());
+        args.info(u"POST data: %d bytes, type '%s'", rest.postData().size(), rest.postContentType());
+        if (!rest.postData().empty()) {
+            args.info(u"==== POST data content:");
+            if (rest.postContentType().contains(u"text/", CASE_INSENSITIVE)) {
+                UString data;
+                rest.getPostText(data);
+                args.info(data);
+            }
+            else if (rest.postContentType().contains(u"application/json", CASE_INSENSITIVE)) {
+                json::ValuePtr value;
+                if (rest.getPostJSON(value) && value != nullptr) {
+                    args.info(value->printed(2, args));
+                }
+            }
+            else {
+                args.info(u"  %s", UString::Dump(rest.postData(), UString::BPL | UString::HEXA | UString::ASCII, 2, 16).toTrimmed());
+            }
+            args.info(u"==== End of POST data");
+        }             
+
+        // Send some funky response.
+        rest.addResponseHeader(u"X-Foo", u"Bar");
+        rest.addResponseHeader(u"X-Foo", u"Bar again");
+        rest.setResponse(u"This is my response, whether you like it or not.\r\n");
+        rest.sendResponse(*client, 200, true);
+    }
+
+    server->close(args);
+    return CommandStatus::SUCCESS;
+}
+
+
+//----------------------------------------------------------------------------
 // Main command line options.
 //----------------------------------------------------------------------------
 
@@ -1069,6 +1178,7 @@ namespace ts {
         ServerCommands       server {cmdline, flags};
         ClientCommands       client {cmdline, flags};
         URLCommands          url {cmdline, flags};
+        RESTServerCommands   rest {cmdline, flags};
 
         // Inherited methods.
         virtual UString getHelpText(HelpFormat format, size_t line_width = DEFAULT_LINE_WIDTH) const override;

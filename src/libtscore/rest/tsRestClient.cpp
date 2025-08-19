@@ -7,8 +7,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsRestClient.h"
-#include "tsjson.h"
-#include "tsWebRequest.h"
 
 
 //----------------------------------------------------------------------------
@@ -35,8 +33,8 @@ bool ts::RestClient::call(const UString& api, const UString& post_data)
     }
     url.append(u"://");
     url.append(_args.server_name);
-    if (_args.server_port != 0) {
-        url.format(u":%d", _args.server_port);
+    if (_args.server_addr.hasPort()) {
+        url.format(u":%d", _args.server_addr.port());
     }
     if (!_args.api_root.empty()) {
         if (_args.api_root.front() != '/') {
