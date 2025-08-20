@@ -178,7 +178,7 @@ namespace ts {
         UString _request_method {};
         UString _request_path {};
         UString _request_token {};
-        UString _post_content_type;
+        UString _post_content_type {};
         ByteBlock _post_data {};
         ByteBlock _response_data {};
         UStringToUStringMultiMap _request_parameters {};
