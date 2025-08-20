@@ -19,9 +19,9 @@
 ts::tsswitch::EventDispatcher::EventDispatcher(const InputSwitcherArgs& opt, Report& log) :
     _opt(opt),
     _log(log),
-    _sendCommand(!_opt.eventCommand.empty()),
-    _sendUDP(_opt.eventUDP.hasAddress() && _opt.eventUDP.hasPort()),
-    _userData(_opt.eventUserData),
+    _sendCommand(!_opt.event_command.empty()),
+    _sendUDP(_opt.event_udp.hasAddress() && _opt.event_udp.hasPort()),
+    _userData(_opt.event_user_data),
     _socket()
 {
 }
@@ -32,7 +32,7 @@ ts::tsswitch::EventDispatcher::EventDispatcher(const InputSwitcherArgs& opt, Rep
 
 bool ts::tsswitch::EventDispatcher::sendCommand(const UString& eventName, const UString& otherParameters)
 {
-    UString command(_opt.eventCommand);
+    UString command(_opt.event_command);
     command.append(u" ");
     command.append(eventName);
     if (!otherParameters.empty()) {
@@ -55,11 +55,11 @@ bool ts::tsswitch::EventDispatcher::sendUDP(const UString& eventName, json::Obje
 {
     // Open socket the first time.
     if (!_socket.isOpen()) {
-        if (!_socket.open(_opt.eventUDP.generation(), _log) ||
-            !_socket.setDefaultDestination(_opt.eventUDP, _log) ||
-            (_opt.sockBuffer > 0 && !_socket.setSendBufferSize(_opt.sockBuffer, _log)) ||
-            (_opt.eventLocalAddress.hasAddress() && !_socket.setOutgoingMulticast(_opt.eventLocalAddress, _log)) ||
-            (_opt.eventTTL > 0 && !_socket.setTTL(_opt.eventTTL, _log)))
+        if (!_socket.open(_opt.event_udp.generation(), _log) ||
+            !_socket.setDefaultDestination(_opt.event_udp, _log) ||
+            (_opt.sock_buffer_size > 0 && !_socket.setSendBufferSize(_opt.sock_buffer_size, _log)) ||
+            (_opt.event_local_address.hasAddress() && !_socket.setOutgoingMulticast(_opt.event_local_address, _log)) ||
+            (_opt.event_ttl > 0 && !_socket.setTTL(_opt.event_ttl, _log)))
         {
             _socket.close(_log);
             return false;

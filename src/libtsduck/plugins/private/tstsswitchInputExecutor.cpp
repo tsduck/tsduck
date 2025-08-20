@@ -24,8 +24,8 @@ ts::tsswitch::InputExecutor::InputExecutor(const InputSwitcherArgs& opt,
     PluginExecutor(opt, handlers, PluginType::INPUT, opt.inputs[index], ThreadAttributes().setPriority(ThreadAttributes::GetHighPriority()), core, log),
     _input(dynamic_cast<InputPlugin*>(PluginThread::plugin())),
     _pluginIndex(index),
-    _buffer(opt.bufferedPackets),
-    _metadata(opt.bufferedPackets)
+    _buffer(opt.buffered_packets),
+    _metadata(opt.buffered_packets)
 {
     // Make sure that the input plugins display their index.
     setLogName(UString::Format(u"%s[%d]", pluginName(), _pluginIndex));
@@ -201,7 +201,7 @@ void ts::tsswitch::InputExecutor::main()
                 // Wait for free buffer or stop.
                 std::unique_lock<std::recursive_mutex> lock(_mutex);
                 while (_outCount >= _buffer.size() && !_stopRequest && !_terminated) {
-                    if (_isCurrent || !_opt.fastSwitch) {
+                    if (_isCurrent || !_opt.fast_switch) {
                         // This is the current input, we must not lose packet.
                         // Wait for the output thread to free some packets.
                         _todo.wait(lock);
@@ -210,7 +210,7 @@ void ts::tsswitch::InputExecutor::main()
                         // Not the current input plugin in --fast-switch mode.
                         // Drop older packets, free at most --max-input-packets.
                         assert(_outFirst < _buffer.size());
-                        const size_t freeCount = std::min(_opt.maxInputPackets, _buffer.size() - _outFirst);
+                        const size_t freeCount = std::min(_opt.max_input_packets, _buffer.size() - _outFirst);
                         assert(freeCount <= _outCount);
                         _outFirst = (_outFirst + freeCount) % _buffer.size();
                         _outCount -= freeCount;
@@ -224,7 +224,7 @@ void ts::tsswitch::InputExecutor::main()
                 // There is some free buffer, compute first index and size of receive area.
                 // The receive area is limited by end of buffer and max input size.
                 inFirst = (_outFirst + _outCount) % _buffer.size();
-                inCount = std::min(_opt.maxInputPackets, std::min(_buffer.size() - _outCount, _buffer.size() - inFirst));
+                inCount = std::min(_opt.max_input_packets, std::min(_buffer.size() - _outCount, _buffer.size() - inFirst));
             }
 
             assert(inFirst < _buffer.size());

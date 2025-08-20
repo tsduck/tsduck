@@ -20,7 +20,7 @@ ts::tslatencymonitor::InputExecutor::InputExecutor(const LatencyMonitorArgs& opt
                                                    Report& log) :
 
     // Input threads have a high priority to be always ready to load incoming packets in the buffer.
-    PluginThread(&log, opt.appName, PluginType::INPUT, opt.inputs[index], ThreadAttributes().setPriority(ThreadAttributes::GetHighPriority())),
+    PluginThread(&log, opt.app_name, PluginType::INPUT, opt.inputs[index], ThreadAttributes().setPriority(ThreadAttributes::GetHighPriority())),
     _monitor(monitor),
     _input(dynamic_cast<InputPlugin*>(PluginThread::plugin())),
     _pluginIndex(index),

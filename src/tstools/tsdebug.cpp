@@ -488,7 +488,8 @@ ts::SendRecvCommands::~SendRecvCommands()
 ts::CommandStatus ts::SendRecvCommands::send(const UString& command, Args& args)
 {
     loadIPGenArgs(args);
-    _tls_args.loadClientArgs(args, u"tcp");
+    const bool use_udp = args.present(u"udp");
+    _tls_args.loadClientArgs(args, use_udp ? u"udp" : u"tcp");
     const UString message(args.value(u""));
 
     if (args.present(u"udp") + args.present(u"tcp") != 1 || !_tls_args.server_addr.hasAddress()) {
@@ -497,7 +498,7 @@ ts::CommandStatus ts::SendRecvCommands::send(const UString& command, Args& args)
     }
 
     auto status = CommandStatus::SUCCESS;
-    if (args.present(u"udp")) {
+    if (use_udp) {
         // Send a UDP message.
         UDPSocket sock;
         if (!sock.open(ip_gen, args)) {
@@ -560,27 +561,27 @@ ts::CommandStatus ts::SendRecvCommands::send(const UString& command, Args& args)
 ts::CommandStatus ts::SendRecvCommands::receive(const UString& command, Args& args)
 {
     loadIPGenArgs(args);
-    _tls_args.loadServerArgs(args);
-    const IPSocketAddress local(args.socketValue(u"tcp", args.socketValue(u"udp")));
+    const bool use_udp = args.present(u"udp");
+    _tls_args.loadServerArgs(args, use_udp ? u"udp" : u"tcp");
 
-    if (args.present(u"udp") + args.present(u"tcp") != 1 || !local.hasPort()) {
+    if (args.present(u"udp") + args.present(u"tcp") != 1 || !_tls_args.server_addr.hasPort()) {
         args.error(u"specify exactly one of --tcp and --udp");
         return CommandStatus::ERROR;
     }
 
     auto status = CommandStatus::SUCCESS;
-    if (args.present(u"udp")) {
+    if (use_udp) {
         // Receive a UDP message, send a response.
         UDPSocket sock;
         if (!sock.open(ip_gen, args)) {
             return CommandStatus::ERROR;
         }
-        args.info(u"Waiting on UDP socket %s ...", local);
+        args.info(u"Waiting on UDP socket %s ...", _tls_args.server_addr);
         std::string msg(8192, '\0');
         size_t ret_size = 0;
         IPSocketAddress source, dest;
         if (sock.reusePort(true, args) &&
-            sock.bind(local, args) &&
+            sock.bind(_tls_args.server_addr, args) &&
             sock.receive(msg.data(), msg.size(), ret_size, source, dest, nullptr, args))
         {
             msg.resize(ret_size);
@@ -603,13 +604,13 @@ ts::CommandStatus ts::SendRecvCommands::receive(const UString& command, Args& ar
 
         if (!server->open(ip_gen, args) ||
             !server->reusePort(true, args) ||
-            !server->bind(local, args) ||
+            !server->bind(_tls_args.server_addr, args) ||
             !server->listen(1, args))
         {
             return CommandStatus::ERROR;
         }
 
-        args.info(u"Waiting on TCP server %s ...", local);
+        args.info(u"Waiting on TCP server %s ...", _tls_args.server_addr);
         TCPConnection tcp_client;
         TLSConnection tls_client;
         tls_client.setVerifyPeer(false);
@@ -689,10 +690,9 @@ ts::ServerCommands::~ServerCommands()
 ts::CommandStatus ts::ServerCommands::server(const UString& command, Args& args)
 {
     loadIPGenArgs(args);
-    _tls_args.loadServerArgs(args);
+    _tls_args.loadServerArgs(args, u"");
     const bool sort_headers = args.present(u"sort-headers");
     size_t max_clients = args.intValue<size_t>(u"max-clients", std::numeric_limits<size_t>::max());
-    const IPSocketAddress local(args.socketValue(u""));
     UStringVector hidden;
     args.getValues(hidden, u"hide-header");
 
@@ -702,14 +702,14 @@ ts::CommandStatus ts::ServerCommands::server(const UString& command, Args& args)
 
     if (!server->open(ip_gen, args) ||
         !server->reusePort(true, args) ||
-        !server->bind(local, args) ||
+        !server->bind(_tls_args.server_addr, args) ||
         !server->listen(16, args))
     {
         return CommandStatus::ERROR;
     }
 
     while (max_clients-- > 0) {
-        args.verbose(u"Waiting on TCP server %s ...", local);
+        args.verbose(u"Waiting on TCP server %s ...", _tls_args.server_addr);
 
         TCPConnection tcp_client;
         TLSConnection tls_client;
@@ -1071,9 +1071,8 @@ ts::RESTServerCommands::~RESTServerCommands()
 ts::CommandStatus ts::RESTServerCommands::restServer(const UString& command, Args& args)
 {
     loadIPGenArgs(args);
-    _rest_args.loadServerArgs(args);
+    _rest_args.loadServerArgs(args, u"");
     size_t max_clients = args.intValue<size_t>(u"max-clients", std::numeric_limits<size_t>::max());
-    const IPSocketAddress local(args.socketValue(u""));
 
     TCPServer tcp_server;
     TLSServer tls_server(_rest_args);
@@ -1081,19 +1080,19 @@ ts::CommandStatus ts::RESTServerCommands::restServer(const UString& command, Arg
 
     if (!server->open(ip_gen, args) ||
         !server->reusePort(true, args) ||
-        !server->bind(local, args) ||
-        !server->listen(16, args)) {
+        !server->bind(_rest_args.server_addr, args) ||
+        !server->listen(16, args))
+    {
         return CommandStatus::ERROR;
     }
 
     while (max_clients-- > 0) {
-        args.verbose(u"Waiting on TCP server %s ...", local);
+        args.verbose(u"Waiting on TCP server %s ...", _rest_args.server_addr);
 
         TCPConnection tcp_client;
         TLSConnection tls_client;
         tls_client.setVerifyPeer(false);
         TCPConnection* const client = _rest_args.use_tls ? &tls_client : &tcp_client;
-        TelnetConnection telnet(*client);
 
         IPSocketAddress addr;
         if (!server->accept(*client, addr, args)) {

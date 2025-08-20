@@ -153,12 +153,22 @@ bool ts::RestServer::getRequest(TCPConnection& conn)
         _request_token = auth.substr(auth.find(' ')).toTrimmed();
     }
 
+    // Check if the client address is authorized.
+    IPSocketAddress client_address;
+    conn.getPeer(client_address, _report);
+    bool authorized = _args.isAllowed(client_address);
+
     // If the server requires an autorization content, check it or reject the client.
-    if (!_args.auth_token.empty() && _request_token != _args.auth_token) {
+    if (authorized && !_args.auth_token.empty() && _request_token != _args.auth_token) {
         // Vade retro Satanas !
-        IPSocketAddress peer;
-        conn.getPeer(peer, _report);
-        _report.error(u"invalid authorization token '%s' from client at %s", _request_token, peer);
+        authorized = false;
+        _report.error(u"invalid authorization token '%s' from client at %s", _request_token, client_address);
+    }
+
+    // Reject unauthorized client.
+    if (!authorized) {
+        _report.error(u"client %s rejected", client_address);
+        setResponse(u"Unauthorized\r\n");
         sendResponse(conn, 401, true);
         return false;
     }

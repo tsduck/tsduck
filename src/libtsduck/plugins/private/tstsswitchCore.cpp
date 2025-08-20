@@ -21,8 +21,8 @@ ts::tsswitch::Core::Core(const InputSwitcherArgs& opt, const PluginEventHandlerR
     _inputs(_opt.inputs.size(), nullptr),
     _output(_opt, handlers, *this, _log), // load output plugin and analyze options
     _eventDispatcher(_opt, _log),
-    _receiveWatchDog(this, _opt.receiveTimeout, 0, _log),
-    _curPlugin(_opt.firstInput)
+    _receiveWatchDog(this, _opt.receive_timeout, 0, _log),
+    _curPlugin(_opt.first_input)
 {
     // Load all input plugins, analyze their options.
     for (size_t i = 0; i < _inputs.size(); ++i) {
@@ -71,8 +71,8 @@ bool ts::tsswitch::Core::start()
     }
 
     // Start with the designated first input plugin.
-    assert(_opt.firstInput < _inputs.size());
-    _curPlugin = _opt.firstInput;
+    assert(_opt.first_input < _inputs.size());
+    _curPlugin = _opt.first_input;
 
     // Start all input threads (but do not open the input "devices").
     bool success = true;
@@ -85,7 +85,7 @@ bool ts::tsswitch::Core::start()
         // If one input thread could not start, abort all started threads.
         stop(false);
     }
-    else if (_opt.fastSwitch) {
+    else if (_opt.fast_switch) {
         // Option --fast-switch, start all plugins, they continue to receive in parallel.
         for (size_t i = 0; i < _inputs.size(); ++i) {
             _inputs[i]->startInput(i == _curPlugin);
@@ -96,8 +96,8 @@ bool ts::tsswitch::Core::start()
         _inputs[_curPlugin]->startInput(true);
 
         // If there is a primary input which is not the first one, start it as well.
-        if (_opt.primaryInput < _inputs.size() && _opt.primaryInput != _curPlugin) {
-            _inputs[_opt.primaryInput]->startInput(false);
+        if (_opt.primary_input < _inputs.size() && _opt.primary_input != _curPlugin) {
+            _inputs[_opt.primary_input]->startInput(false);
         }
     }
 
@@ -173,22 +173,22 @@ void ts::tsswitch::Core::setInputLocked(size_t index, bool abortCurrent)
         _log.debug(u"switch input %d to %d", _curPlugin, index);
 
         // The processing depends on the switching mode.
-        if (_opt.delayedSwitch) {
+        if (_opt.delayed_switch) {
             // With --delayed-switch, first start the next plugin.
             // The current plugin will be stopped when the first packet is received in the next plugin.
             // The primary input is never stopped (and consequently never restarted).
             enqueue(Action(SUSPEND_TIMEOUT));
-            if (index != _opt.primaryInput) {
+            if (index != _opt.primary_input) {
                 enqueue(Action(START, index, false));
             }
             enqueue(Action(WAIT_INPUT, index));
-            if (_curPlugin == _opt.primaryInput) {
+            if (_curPlugin == _opt.primary_input) {
                 enqueue(Action(NOTIF_CURRENT, _curPlugin, false));
             }
             enqueue(Action(SET_CURRENT, index));
             enqueue(Action(NOTIF_CURRENT, index, true));
             enqueue(Action(RESTART_TIMEOUT));
-            if (_curPlugin != _opt.primaryInput) {
+            if (_curPlugin != _opt.primary_input) {
                 enqueue(Action(ABORT_INPUT, _curPlugin, abortCurrent));
                 enqueue(Action(STOP, _curPlugin));
                 enqueue(Action(WAIT_STOPPED, _curPlugin));
@@ -199,7 +199,7 @@ void ts::tsswitch::Core::setInputLocked(size_t index, bool abortCurrent)
             // With --fast-switch, don't start/stop plugins. Just inform the plugin that it is current.
             // The primary input is never stopped (and consequently never restarted).
             enqueue(Action(SUSPEND_TIMEOUT));
-            if (_opt.fastSwitch || _curPlugin == _opt.primaryInput) {
+            if (_opt.fast_switch || _curPlugin == _opt.primary_input) {
                 enqueue(Action(NOTIF_CURRENT, _curPlugin, false));
             }
             else {
@@ -208,7 +208,7 @@ void ts::tsswitch::Core::setInputLocked(size_t index, bool abortCurrent)
                 enqueue(Action(WAIT_STOPPED, _curPlugin));
             }
             enqueue(Action(SET_CURRENT, index));
-            if (_opt.fastSwitch || index == _opt.primaryInput) {
+            if (_opt.fast_switch || index == _opt.primary_input) {
                 enqueue(Action(NOTIF_CURRENT, index, true));
             }
             else {
@@ -501,17 +501,17 @@ bool ts::tsswitch::Core::inputReceived(size_t pluginIndex)
 
     // If input is detected on the primary input and the current plugin is not this one
     // after executing all actions, then automatically switch to it.
-    if (pluginIndex == _opt.primaryInput && _curPlugin != _opt.primaryInput) {
-        _log.verbose(u"received data, switching back to primary input plugin (#%d to #%d)", _curPlugin, _opt.primaryInput);
+    if (pluginIndex == _opt.primary_input && _curPlugin != _opt.primary_input) {
+        _log.verbose(u"received data, switching back to primary input plugin (#%d to #%d)", _curPlugin, _opt.primary_input);
         // Remove all pending actions.
         _log.debug(u"clearing action queue, %s events canceled", _actions.size());
         _actions.clear();
         // Define a new set of actions.
         enqueue(Action(SUSPEND_TIMEOUT));
         enqueue(Action(NOTIF_CURRENT, _curPlugin, false));
-        enqueue(Action(SET_CURRENT, _opt.primaryInput));
-        enqueue(Action(NOTIF_CURRENT, _opt.primaryInput, true));
-        if (!_opt.fastSwitch) {
+        enqueue(Action(SET_CURRENT, _opt.primary_input));
+        enqueue(Action(NOTIF_CURRENT, _opt.primary_input, true));
+        if (!_opt.fast_switch) {
             enqueue(Action(ABORT_INPUT, _curPlugin, true));
             enqueue(Action(STOP, _curPlugin));
             enqueue(Action(WAIT_STOPPED, _curPlugin));
@@ -519,7 +519,7 @@ bool ts::tsswitch::Core::inputReceived(size_t pluginIndex)
         enqueue(Action(RESTART_TIMEOUT));
         // Execute actions.
         execute();
-        assert(_curPlugin == _opt.primaryInput);
+        assert(_curPlugin == _opt.primary_input);
     }
 
     if (pluginIndex == _curPlugin) {
@@ -551,7 +551,7 @@ bool ts::tsswitch::Core::inputStopped(size_t pluginIndex, bool success)
         }
 
         // Check if the complete processing is terminated.
-        stopRequest = _opt.terminate || (_opt.cycleCount > 0 && _curCycle >= _opt.cycleCount);
+        stopRequest = _opt.terminate || (_opt.cycle_count > 0 && _curCycle >= _opt.cycle_count);
 
         if (stopRequest) {
             // Need to stop now. Remove any further action, except waiting for termination.
@@ -564,7 +564,7 @@ bool ts::tsswitch::Core::inputStopped(size_t pluginIndex, bool success)
             const size_t next = (_curPlugin + 1) % _inputs.size();
             enqueue(Action(SUSPEND_TIMEOUT));
             enqueue(Action(SET_CURRENT, next));
-            if (_opt.fastSwitch) {
+            if (_opt.fast_switch) {
                 // Already started, never stop, simply notify.
                 enqueue(Action(NOTIF_CURRENT, next, true));
             }

@@ -21,7 +21,7 @@ ts::tsswitch::PluginExecutor::PluginExecutor(const InputSwitcherArgs& opt,
                                              Core& core,
                                              Report& log) :
 
-    PluginThread(&log, opt.appName, type, pl_options, attributes),
+    PluginThread(&log, opt.app_name, type, pl_options, attributes),
     _opt(opt),
     _core(core),
     _handlers(handlers)

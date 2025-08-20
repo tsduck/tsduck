@@ -28,7 +28,63 @@ That being said, TSDuck is a free open-source project with no commercial revenue
 Production environments and commercial products integrating TSDuck shall be aware of the risks.
 Specifically, see xref:cra[xrefstyle=short] for legal responsibilities in the European Union.
 
-=== Secure control features
+[#cra]
+=== European Cyber Resilience Act (CRA)
+
+The European Union Cyber Resilience Act from October 2024 introduces cybersecurity responsibilities
+for the manufacturers of digital products. See <<EU-CRA>> for a complete reference.
+
+The application of the CRA to open-source products shall be clearly understood.
+The Open Source Security Foundation (OSSF) provides some guidance on the matter. See <<OSSF-CRA>>.
+
+First, there is a clear distinction between open-source developers who make no commercial
+profit from their products and commercial manufacturers of products which integrate these
+open-source components:
+
+[quote,CRA introduction (18)]
+there is a clear distinction between the development
+and supply phases, the provision of products with digital elements qualifying as free and
+open-source software that are not monetised by their manufacturers should not be considered
+to be a commercial activity.
+
+In open-source projects, the publication of regular releases with proper packaging is
+not considered as a commercial activity:
+
+[quote,CRA introduction (18)]
+the mere presence of regular releases should not in itself lead to the conclusion
+that a product with digital elements is supplied in the course of a commercial activity. 
+
+Receiving some rare donations from users is not considered as a commercial activity either:
+
+[quote,CRA introduction (18)]
+the mere fact that an open-source software product with digital elements receives
+financial support from manufacturers or that manufacturers contribute to the development of
+such a product should not in itself determine that the activity is of commercial nature.
+
+Therefore, TSDuck shall be considered as a non-commercial product.
+
+On the other hand, manufacturers of commercial products which integrate TSDuck enter
+into the scope of the CRA:
+
+[quote,CRA introduction (19)]
+The regulatory regime [...] should only cover products with digital elements qualifying as
+free and open-source software that are ultimately intended for commercial activities,
+such as for integration into commercial services or into monetised products with digital elements
+
+More precisely, the cybersecurity of a commercial product which integrates TSDuck
+is under the responsibility of the manufacturer of that commercial product,
+not under the responsibility of the TSDuck maintainers:
+
+[quote,CRA Chapter II - article 13 - section 5]
+manufacturers shall exercise due diligence
+when integrating components sourced from third parties so that those components do not
+compromise the cybersecurity of the product with digital elements, including when integrating
+components of free and open-source software that have not been made available on the market
+in the course of a commercial activity.
+
+=== TSDuck security
+
+==== TSDuck secure control features
 
 Initially, TSDuck was designed as an experimental toolbox for debug, integration, and other lab activities.
 It was supposed to be used in a safe and isolated environment.
@@ -105,8 +161,8 @@ openssl req -quiet -newkey rsa:3072 -new -noenc -x509 -subj="/CN=$(hostname)" -d
 
 The private key is stored in file `test_key.pem`.
 This file is stored in the clear (option `-noenc`) to avoid having to decrypt it in the server.
-Because the private key is a sensitive information, do not make accessible to other systems or users
-(the `openssl` command creates the file with restricted permissions).
+Because the private key is a sensitive information, do not make that file accessible to other systems or users
+(the `openssl` command creates it with restricted permissions).
 The corresponding self-signed certificate is stored in file `test_cert.pem`.
 The certificate has an extended validity duration of 10 years (3650 days).
 
@@ -147,7 +203,7 @@ These environments are accessible from PowerShell using the following virtual lo
 * System: `Cert:\LocalMachine\My`
 
 The following PowerShell command generates a RSA-3072 private key and the corresponding self-signed certificate
-with "friendly name" `test_key` in the user certificate store.
+with _friendly name_ `"test_key"` in the user certificate store.
 
 [source,powershell]
 ----
@@ -183,6 +239,14 @@ $env:TSDUCK_TLS_STORE = "user"
 The following command line options are defined by TSDuck commands and plugins which act as TLS server or client.
 They are briefly repeated in the documentation of all commands to which they apply.
 
+Sometimes, these options are prefixed, for instance `--control-tls` and `--control-token`
+instead of `--tls` and `--token`. This is done on purpose to differentiate several client
+or server functions which may use different types of communications in the same application.
+In the documentation of the various commands and plugins, the exact options are documented.
+When the expression _"See xref:opt-tls[xrefstyle=short] for more details"_ is mentioned
+(this section), see the description of the corresponding option below, without prefix,
+for instance `--tls` instead of `--remote-tls`.
+
 [.usage]
 Common options for clients and servers
 
@@ -190,11 +254,16 @@ Common options for clients and servers
 *--tls*
 
 [.optdoc]
-The client or server uses SSL/TLS encrypted communications.
-By default, it uses unencrypted communications.
+Specify that the client or server must use SSL/TLS encrypted communications.
 
 [.optdoc]
 In the case of a server, a certificate is required.
+
+[.optdoc]
+By default, without this option, the client and server use unencrypted communications.
+Note that, for legacy reasons, without `--tls`, the communication protocol may be different.
+For instance, `tsswitch` uses simple UDP datagrams to receive switch commands in the clear.
+With `--tls`, the same commands are sent using a Web API over TCP.
 
 [.opt]
 *--token* _'string'_
@@ -205,10 +274,11 @@ The default value is the value of environment variable `TSDUCK_TOKEN`.
 
 [.optdoc]
 In a server, this the authentication token that a client is required to provide.
-When a client failed to provide this token, the connection is immediately interrupted.
+When a client fails to provide this token, the connection is immediately interrupted.
 
 [.optdoc]
 In a client, this the authentication token which will be sent to the server.
+The token is sent in a request header of the form `"Authorization: Token xxx"`.
 
 [.optdoc]
 For security reasons, use an authentication token with `--tls` only.
@@ -240,7 +310,7 @@ With `--tls`, specifies the path to the certificate for the server.
 The default path is the value of environment variable `TSDUCK_TLS_CERTIFICATE`.
 
 [.optdoc]
-On UNIX systems, this is the path name of the certificate file in PEM format.
+On {unix}, this is the path name of the certificate file in PEM format.
 
 [.optdoc]
 On Windows, this is the "friendly name" or "DNS name" of a certificate in the user or system store.
@@ -253,7 +323,7 @@ With `--tls`, specifies the path to the private key for the server.
 The default path is the value of environment variable `TSDUCK_TLS_KEY`.
 
 [.optdoc]
-On UNIX systems, this is the path name of the private key file in PEM format.
+On {unix}, this is the path name of the private key file in PEM format.
 This file must not be encrypted.
 
 [.optdoc]
@@ -272,58 +342,4 @@ and `"user"` (`Cert:\CurrentUser\My`).
 The default is `"user"`.
 
 [.optdoc]
-On UNIX systems, this parameter is unused.
-
-[#cra]
-=== European Cyber Resilience Act (CRA)
-
-The European Union Cyber Resilience Act from October 2024 introduces cybersecurity responsibilities
-for the manufacturers of digital products. See <<EU-CRA>> for a complete reference.
-
-The application of the CRA to open-source products shall be clearly understood.
-The Open Source Security Foundation (OSSF) provides some guidance on the matter. See <<OSSF-CRA>>.
-
-First, there is a clear distinction between open-source developers who make no commercial
-profit from their products and commercial manufacturers of products which integrate these
-open-source components:
-
-[quote,CRA introduction (18)]
-there is a clear distinction between the development
-and supply phases, the provision of products with digital elements qualifying as free and
-open-source software that are not monetised by their manufacturers should not be considered
-to be a commercial activity.
-
-In open-source projects, the publication of regular releases with proper packaging is
-not considered as a commercial activity:
-
-[quote,CRA introduction (18)]
-the mere presence of regular releases should not in itself lead to the conclusion
-that a product with digital elements is supplied in the course of a commercial activity. 
-
-Receiving some rare donations from users is not considered as a commercial activity either:
-
-[quote,CRA introduction (18)]
-the mere fact that an open-source software product with digital elements receives
-financial support from manufacturers or that manufacturers contribute to the development of
-such a product should not in itself determine that the activity is of commercial nature.
-
-Therefore, TSDuck shall be considered as a non-commercial product.
-
-On the other hand, manufacturers of commercial products which integrate TSDuck enter
-into the scope of the CRA:
-
-[quote,CRA introduction (19)]
-The regulatory regime [...] should only cover products with digital elements qualifying as
-free and open-source software that are ultimately intended for commercial activities,
-such as for integration into commercial services or into monetised products with digital elements
-
-More precisely, the cybersecurity of a commercial product which integrates TSDuck
-is under the responsibility of the manufacturer of that commercial product,
-not under the responsibility of the TSDuck maintainers:
-
-[quote,CRA Chapter II - article 13 - section 5]
-manufacturers shall exercise due diligence
-when integrating components sourced from third parties so that those components do not
-compromise the cybersecurity of the product with digital elements, including when integrating
-components of free and open-source software that have not been made available on the market
-in the course of a commercial activity.
+On {unix}, this parameter is unused.

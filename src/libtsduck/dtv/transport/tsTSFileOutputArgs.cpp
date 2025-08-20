@@ -185,7 +185,9 @@ bool ts::TSFileOutputArgs::openAndRetry(bool initial_wait, size_t& retry_allowed
 
         // Try to open the file.
         const fs::path name(_multiple_files ? _name_gen.newFileName() : _name);
-        report.verbose(u"creating file %s", name);
+        if (!name.empty()) { // stdout otherwise
+            report.verbose(u"creating file %s", name);
+        }
         const bool success = _file.open(name, _flags, report, _file_format);
 
         // Remember the list of created files if we need to limit their number.

@@ -48,15 +48,15 @@ namespace ts {
 
         //!
         //! Return the request method of the previous getRequest().
-        //! @return The request method, typically "GET" or "POST".
+        //! @return A constant reference to the request method, typically "GET" or "POST".
         //!
-        UString method() const { return _request_method; }
+        const UString& method() const { return _request_method; }
 
         //!
         //! Get the path of the last received request.
-        //! @return The path of the last received request.
+        //! @return A constant reference to the path of the last received request.
         //!
-        UString path() const { return _request_path; }
+        const UString& path() const { return _request_path; }
 
         //!
         //! Get a multimap of all request's query parameters.
@@ -97,15 +97,15 @@ namespace ts {
         //! Get the authentication token of the last received request, if any.
         //! Note that if the RestArgs contains a non-empty authentication token, this token was already checked
         //! by getRequest() and the request was rejected it the token didn't match.
-        //! @return The authentication token of the last received request.
+        //! @return A constant reference to the authentication token of the last received request.
         //!
-        UString token() const { return _request_token; }
+        const UString& token() const { return _request_token; }
 
         //!
         //! Get the MIME type of the POST data, if specified.
-        //! @return The MIME type of the POST data or the empty string if unspecified.
+        //! @return A constant reference to the MIME type of the POST data or the empty string if unspecified.
         //!
-        UString postContentType() const { return _post_content_type; }
+        const UString& postContentType() const { return _post_content_type; }
 
         //!
         //! Get the POST data from the request.
@@ -173,12 +173,12 @@ namespace ts {
         bool sendResponse(TCPConnection& conn, int http_status, bool close);
 
     private:
-        RestArgs _args;
-        Report& _report;
-        UString _request_method {};
-        UString _request_path {};
-        UString _request_token {};
-        UString _post_content_type {};
+        RestArgs  _args;
+        Report&   _report;
+        UString   _request_method {};
+        UString   _request_path {};
+        UString   _request_token {};
+        UString   _post_content_type {};
         ByteBlock _post_data {};
         ByteBlock _response_data {};
         UStringToUStringMultiMap _request_parameters {};

@@ -15,6 +15,7 @@
 #include "tsInputSwitcherArgs.h"
 #include "tsThread.h"
 #include "tsUDPReceiver.h"
+#include "tsTLSServer.h"
 
 namespace ts {
     namespace tsswitch {
@@ -58,11 +59,16 @@ namespace ts {
             Report&       _log;
             Core&         _core;
             const InputSwitcherArgs& _opt;
-            UDPReceiver   _sock;
-            volatile bool _terminate;
+            UDPReceiver   _udp_server {_log};
+            TLSServer     _tls_server {_opt.remote_control};
+            TLSConnection _tls_client {_opt.remote_control};
+            volatile bool _terminate = false;
 
             // Implementation of Thread.
             virtual void main() override;
+
+            // Execute a remote command.
+            bool execute(const IPSocketAddress& source, const UString& command);
         };
     }
 }

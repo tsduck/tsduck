@@ -127,38 +127,38 @@ TSDUCKJNI jboolean JNICALL Java_io_tsduck_InputSwitcher_start(JNIEnv* env, jobje
 
     // Build InputSwitcher arguments.
     ts::InputSwitcherArgs args;
-    args.appName = ts::jni::GetStringField(env, obj, "appName");
+    args.app_name = ts::jni::GetStringField(env, obj, "appName");
     args.terminate = ts::jni::GetBoolField(env, obj, "terminate");
-    args.fastSwitch = ts::jni::GetBoolField(env, obj, "fastSwitch");
-    args.delayedSwitch = ts::jni::GetBoolField(env, obj, "delayedSwitch");
-    args.reusePort = ts::jni::GetBoolField(env, obj, "reusePort");
-    args.firstInput = size_t(std::max<jint>(0, ts::jni::GetIntField(env, obj, "firstInput")));
+    args.fast_switch = ts::jni::GetBoolField(env, obj, "fastSwitch");
+    args.delayed_switch = ts::jni::GetBoolField(env, obj, "delayedSwitch");
+    args.reuse_port = ts::jni::GetBoolField(env, obj, "reusePort");
+    args.first_input = size_t(std::max<jint>(0, ts::jni::GetIntField(env, obj, "firstInput")));
     const jint primaryInput = ts::jni::GetIntField(env, obj, "firstInput");
-    args.primaryInput = primaryInput < 0 ? ts::NPOS : size_t(primaryInput);
-    args.cycleCount = size_t(std::max<jint>(0, ts::jni::GetIntField(env, obj, "cycleCount")));
-    args.bufferedPackets = size_t(std::max<jint>(0, ts::jni::GetIntField(env, obj, "bufferedPackets")));
-    args.maxInputPackets = size_t(std::max<jint>(0, ts::jni::GetIntField(env, obj, "maxInputPackets")));
-    args.maxOutputPackets = size_t(std::max<jint>(0, ts::jni::GetIntField(env, obj, "maxOutputPackets")));
-    args.sockBuffer = size_t(std::max<jint>(0, ts::jni::GetIntField(env, obj, "sockBuffer")));
-    args.receiveTimeout = cn::milliseconds(cn::milliseconds::rep(std::max<jint>(0, ts::jni::GetIntField(env, obj, "receiveTimeout"))));
+    args.primary_input = primaryInput < 0 ? ts::NPOS : size_t(primaryInput);
+    args.cycle_count = size_t(std::max<jint>(0, ts::jni::GetIntField(env, obj, "cycleCount")));
+    args.buffered_packets = size_t(std::max<jint>(0, ts::jni::GetIntField(env, obj, "bufferedPackets")));
+    args.max_input_packets = size_t(std::max<jint>(0, ts::jni::GetIntField(env, obj, "maxInputPackets")));
+    args.max_output_packets = size_t(std::max<jint>(0, ts::jni::GetIntField(env, obj, "maxOutputPackets")));
+    args.sock_buffer_size = size_t(std::max<jint>(0, ts::jni::GetIntField(env, obj, "sockBuffer")));
+    args.receive_timeout = cn::milliseconds(cn::milliseconds::rep(std::max<jint>(0, ts::jni::GetIntField(env, obj, "receiveTimeout"))));
     jint port = ts::jni::GetIntField(env, obj, "remoteServerPort");
     if (port > 0 && port < 0xFFFF) {
-        args.remoteServer.setPort(uint16_t(port));
+        args.remote_control.server_addr.setPort(uint16_t(port));
     }
-    args.eventCommand = ts::jni::GetStringField(env, obj, "eventCommand");
+    args.event_command = ts::jni::GetStringField(env, obj, "eventCommand");
     ts::UString addr(ts::jni::GetStringField(env, obj, "eventUDPAddress"));
-    if (!addr.empty() && !args.eventUDP.resolve(addr, isw->report())) {
+    if (!addr.empty() && !args.event_udp.resolve(addr, isw->report())) {
         return false;
     }
     port = ts::jni::GetIntField(env, obj, "eventUDPPort");
     if (port > 0 && port < 0xFFFF) {
-        args.eventUDP.setPort(uint16_t(port));
+        args.event_udp.setPort(uint16_t(port));
     }
     addr = ts::jni::GetStringField(env, obj, "eventLocalAddress");
-    if (!addr.empty() && !args.eventLocalAddress.resolve(addr, isw->report())) {
+    if (!addr.empty() && !args.event_local_address.resolve(addr, isw->report())) {
         return false;
     }
-    args.eventTTL = int(ts::jni::GetIntField(env, obj, "eventTTL"));
+    args.event_ttl = int(ts::jni::GetIntField(env, obj, "eventTTL"));
 
     // Get plugins description and start the input switcher.
     return ts::jni::GetPluginOptions(env, jobjectArray(ts::jni::GetObjectField(env, obj, "output", JCS_ARRAY(JCS_STRING))), args.output) &&

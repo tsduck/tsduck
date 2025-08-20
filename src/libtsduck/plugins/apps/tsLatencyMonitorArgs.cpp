@@ -38,10 +38,10 @@ void ts::LatencyMonitorArgs::defineArgs(Args& args)
 
 bool ts::LatencyMonitorArgs::loadArgs(Args& args)
 {
-    appName = args.appName();
-    args.getPathValue(outputName, u"output-file");
-    args.getChronoValue(bufferTime, u"buffer-time", cn::seconds(1));
-    args.getChronoValue(outputInterval, u"output-interval", cn::seconds(1));
+    app_name = args.appName();
+    args.getPathValue(output_name, u"output-file");
+    args.getChronoValue(buffer_time, u"buffer-time", cn::seconds(1));
+    args.getChronoValue(output_interval, u"output-interval", cn::seconds(1));
 
     // Load all plugin descriptions. Default output is the standard output file.
     ArgsWithPlugins* pargs = dynamic_cast<ArgsWithPlugins*>(&args);

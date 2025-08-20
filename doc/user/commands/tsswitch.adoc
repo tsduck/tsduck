@@ -57,7 +57,7 @@ The downside is that there could be a transmission hole in the output during the
 
 With option `--delayed-switch`, the switching operation is slightly different.
 The next plugin is started first.
-In the meantime, output packets continue to be fetched from the previous input plugin.
+In the meantime, packets continue to be fetched from the previous input plugin.
 When the next plugin starts to receive packets, the switch is performed:
 output packets are now read from the next plugin.
 Finally, the previous input plugin is stopped.
@@ -376,6 +376,42 @@ If an optional address is specified, it must be a local IP address of the system
 By default, there is no remote control.
 
 [.opt]
+*--remote-certificate-path* _name_
+
+[.optdoc]
+With `--remote-tls`, path to the certificate for the remote control.
+See xref:opt-tls[xrefstyle=short] for more details
+
+[.opt]
+*--remote-key-path* _name_
+
+[.optdoc]
+With `--remote-tls`, path to the private key for the remote control.
+See xref:opt-tls[xrefstyle=short] for more details
+
+[.opt]
+*--remote-store* _name_
+
+[.optdoc]
+With `--remote-tls`, path to the certificate store for the remote control.
+See xref:opt-tls[xrefstyle=short] for more details
+
+[.opt]
+*--remote-tls*
+
+[.optdoc]
+The remote control uses a SSL/TLS TCP Web API instead of UDP datagrams.
+By default, the remote control accepts clear commands in UDP datagrams.
+See xref:opt-tls[xrefstyle=short] for more details
+
+[.opt]
+*--remote-token* _'string'_
+
+[.optdoc]
+With `--remote-tls`, optional authentication token that clients are required to provide to the remote control.
+See xref:opt-tls[xrefstyle=short] for more details
+
+[.opt]
 *--udp-buffer-size* _value_
 
 [.optdoc]
@@ -436,7 +472,7 @@ It can be also a host name that translates to an IP address.
 The port specifies the destination UDP port.
 
 [.opt]
-*--event-user-data* _'string '_
+*--event-user-data* _'string'_
 
 [.optdoc]
 A user-defined string which is passed to the event processing.

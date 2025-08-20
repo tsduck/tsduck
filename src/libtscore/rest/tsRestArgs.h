@@ -65,9 +65,10 @@ namespace ts {
         //! Load arguments for a REST server from a command line.
         //! Args error indicator is set in case of incorrect arguments.
         //! @param [in,out] args Command line arguments.
+        //! @param [in] server_option Optional name of an option which defines the server port and optional address.
         //! @return True on success, false on error in argument line.
         //!
-        bool loadServerArgs(Args& args);
+        bool loadServerArgs(Args& args, const UChar* server_option = nullptr);
 
         //!
         //! Load arguments for a REST client from a command line.

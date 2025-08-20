@@ -122,33 +122,33 @@ TSDUCKPY bool tspyStartInputSwitcher(void* pyobj, const tspyInputSwitcherArgs* p
     // Build InputSwitcher arguments.
     ts::InputSwitcherArgs args;
     args.terminate = bool(pyargs->terminate);
-    args.fastSwitch = bool(pyargs->fast_switch);
-    args.delayedSwitch = bool(pyargs->delayed_switch);
-    args.reusePort = bool(pyargs->reuse_port);
-    args.firstInput = size_t(std::max<long>(0, pyargs->first_input));
-    args.primaryInput = pyargs->primary_input < 0 ? ts::NPOS : size_t(pyargs->primary_input);
-    args.cycleCount = size_t(std::max<long>(0, pyargs->cycle_count));
-    args.bufferedPackets = size_t(std::max<long>(0, pyargs->buffered_packets));
-    args.maxInputPackets = size_t(std::max<long>(0, pyargs->max_input_packets));
-    args.maxOutputPackets = size_t(std::max<long>(0, pyargs->max_output_packets));
-    args.sockBuffer = size_t(std::max<long>(0, pyargs->sock_buffer));
-    args.receiveTimeout = cn::milliseconds(cn::milliseconds::rep(std::max<long>(0, pyargs->receive_timeout)));
+    args.fast_switch = bool(pyargs->fast_switch);
+    args.delayed_switch = bool(pyargs->delayed_switch);
+    args.reuse_port = bool(pyargs->reuse_port);
+    args.first_input = size_t(std::max<long>(0, pyargs->first_input));
+    args.primary_input = pyargs->primary_input < 0 ? ts::NPOS : size_t(pyargs->primary_input);
+    args.cycle_count = size_t(std::max<long>(0, pyargs->cycle_count));
+    args.buffered_packets = size_t(std::max<long>(0, pyargs->buffered_packets));
+    args.max_input_packets = size_t(std::max<long>(0, pyargs->max_input_packets));
+    args.max_output_packets = size_t(std::max<long>(0, pyargs->max_output_packets));
+    args.sock_buffer_size = size_t(std::max<long>(0, pyargs->sock_buffer));
+    args.receive_timeout = cn::milliseconds(cn::milliseconds::rep(std::max<long>(0, pyargs->receive_timeout)));
     if (pyargs->remote_server_port > 0 && pyargs->remote_server_port < 0xFFFF) {
-        args.remoteServer.setPort(uint16_t(pyargs->remote_server_port));
+        args.remote_control.server_addr.setPort(uint16_t(pyargs->remote_server_port));
     }
-    args.eventCommand = ts::py::ToString(pyargs->event_command, pyargs->event_command_size);
+    args.event_command = ts::py::ToString(pyargs->event_command, pyargs->event_command_size);
     ts::UString addr(ts::py::ToString(pyargs->event_udp_addr, pyargs->event_udp_addr_size));
-    if (!addr.empty() && !args.eventUDP.resolve(addr, isw->report())) {
+    if (!addr.empty() && !args.event_udp.resolve(addr, isw->report())) {
         return false;
     }
     if (pyargs->event_udp_port > 0 && pyargs->event_udp_port < 0xFFFF) {
-        args.eventUDP.setPort(uint16_t(pyargs->event_udp_port));
+        args.event_udp.setPort(uint16_t(pyargs->event_udp_port));
     }
     addr = ts::py::ToString(pyargs->local_addr, pyargs->local_addr_size);
-    if (!addr.empty() && !args.eventLocalAddress.resolve(addr, isw->report())) {
+    if (!addr.empty() && !args.event_local_address.resolve(addr, isw->report())) {
         return false;
     }
-    args.eventTTL = int(pyargs->event_ttl);
+    args.event_ttl = int(pyargs->event_ttl);
 
     // Default output plugins.
     args.output.set(u"drop");
@@ -160,7 +160,7 @@ TSDUCKPY bool tspyStartInputSwitcher(void* pyobj, const tspyInputSwitcherArgs* p
     auto it = fields.begin();
     if (it != fields.end() && !it->starts_with(u"-")) {
         // First element is application name.
-        args.appName = *it++;
+        args.app_name = *it++;
     }
     ts::PluginOptions* current = nullptr;
     for (; it != fields.end(); ++it) {

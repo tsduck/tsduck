@@ -53,7 +53,7 @@ bool ts::InputSwitcher::start(const InputSwitcherArgs& args)
 
     // Debug message.
     if (_report.debug()) {
-        UString cmd(args.appName);
+        UString cmd(args.app_name);
         cmd.append(u" ");
         for (const auto& it : args.inputs) {
             cmd.append(u" ");
@@ -73,7 +73,7 @@ bool ts::InputSwitcher::start(const InputSwitcherArgs& args)
     _success = !_report.gotErrors();
 
     // If a remote control is specified, start a UDP listener thread.
-    if (_success && _args.remoteServer.hasPort()) {
+    if (_success && _args.remote_control.server_addr.hasPort()) {
         _remote = new tsswitch::CommandListener(*_core, _args, _report);
         CheckNonNull(_remote);
         _success = _remote->open();

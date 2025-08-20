@@ -21,7 +21,7 @@ ts::LatencyMonitor::LatencyMonitor(const LatencyMonitorArgs& args, Report& repor
 {
     // Debug message.
     if (_report.debug()) {
-        UString cmd(args.appName);
+        UString cmd(args.app_name);
         cmd.append(u" ");
         for (const auto& input : args.inputs) {
             cmd.append(u" ");
@@ -57,12 +57,12 @@ bool ts::LatencyMonitor::start()
     }
 
     // Create the output file if there is one
-    if (_args.outputName.empty()) {
+    if (_args.output_name.empty()) {
         _output_file = &std::cerr;
     }
     else {
         _output_file = &_output_stream;
-        _output_stream.open(_args.outputName);
+        _output_stream.open(_args.output_name);
         if (!_output_stream) {
             return false;
         }
@@ -103,7 +103,7 @@ void ts::LatencyMonitor::processPacket(const TSPacketVector& pkt, const TSPacket
         if (has_pcr) {
             const PCR timestamp = metadata[i].getInputTimeStamp();
             // Checking to see if the buffer time has been reached, and pop back element (oldest element) if the buffer time has been reached
-            while (!timingDataList.empty() && (timestamp - timingDataList.back().timestamp) >= _args.bufferTime) {
+            while (!timingDataList.empty() && (timestamp - timingDataList.back().timestamp) >= _args.buffer_time) {
                 timingDataList.pop_back();
             }
             timingDataList.push_front(TimingData{pcr, timestamp});
@@ -112,7 +112,7 @@ void ts::LatencyMonitor::processPacket(const TSPacketVector& pkt, const TSPacket
 
     // Check whether the elapsed time since the last output exceeds the output interval.
     const cn::milliseconds timeDiff = cn::milliseconds(Time::CurrentUTC() - _last_output_time);
-    if (timeDiff >= _args.outputInterval) {
+    if (timeDiff >= _args.output_interval) {
         // Set output timer to current time
         _last_output_time = Time::CurrentUTC();
         calculatePCRDelta(_inputs);

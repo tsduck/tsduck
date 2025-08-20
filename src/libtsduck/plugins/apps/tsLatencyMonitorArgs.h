@@ -25,11 +25,11 @@ namespace ts {
     class TSDUCKDLL LatencyMonitorArgs
     {
     public:
-        UString             appName {};         //!< Application name, for help messages.
-        PluginOptionsVector inputs {};          //!< Input plugins descriptions.
-        fs::path            outputName {};      //!< Output file name (empty means stderr).
-        cn::seconds         bufferTime {1};     //!< Buffer time of timing data list.
-        cn::seconds         outputInterval {};  //!< Waiting time between every output.
+        UString             app_name {};          //!< Application name, for help messages.
+        PluginOptionsVector inputs {};            //!< Input plugins descriptions.
+        fs::path            output_name {};       //!< Output file name (empty means stderr).
+        cn::seconds         buffer_time {1};      //!< Buffer time of timing data list.
+        cn::seconds         output_interval {0};  //!< Waiting time between every output.
 
         //!
         //! Constructor.

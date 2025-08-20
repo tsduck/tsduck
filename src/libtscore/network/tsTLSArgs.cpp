@@ -61,7 +61,12 @@ void ts::TLSArgs::defineServerArgs(Args& args)
               u"On UNIX systems, this parameter is unused.");
 }
 
-bool ts::TLSArgs::loadServerArgs(Args& args)
+
+//----------------------------------------------------------------------------
+// Load command line options for a TLS server.
+//----------------------------------------------------------------------------
+
+bool ts::TLSArgs::loadServerArgs(Args& args, const UChar* server_option)
 {
     static constexpr const UChar* default_store =
 #if defined(TS_WINDOWS)
@@ -69,11 +74,22 @@ bool ts::TLSArgs::loadServerArgs(Args& args)
 #else
         u"";
 #endif
+
+    bool status = true;
     use_tls = args.present(_opt_tls.c_str());
     args.getValue(certificate_path, _opt_certificate_path.c_str(), GetEnvironment(u"TSDUCK_TLS_CERTIFICATE").c_str());
     args.getValue(key_path, _opt_key_path.c_str(), GetEnvironment(u"TSDUCK_TLS_KEY").c_str());
     args.getValue(certificate_store, _opt_certificate_store.c_str(), GetEnvironment(u"TSDUCK_TLS_STORE", default_store).c_str());
-    return true;
+
+    // Get server port and optional address.
+    if (server_option != nullptr) {
+        status = server_addr.resolve(args.value(server_option), args);
+        if (status && !server_addr.hasPort()) {
+            args.error(u"missing server port in --%s", server_option);
+            status = false;
+        }
+    }
+    return status;
 }
 
 
@@ -94,13 +110,18 @@ void ts::TLSArgs::defineClientArgs(Args& args)
               u"Use with care because it opens the door the man-in-the-middle attacks.");
 }
 
+
+//----------------------------------------------------------------------------
+// Load command line options for a TLS client.
+//----------------------------------------------------------------------------
+
 bool ts::TLSArgs::loadClientArgs(Args& args, const UChar* server_option)
 {
     bool status = true;
     use_tls = args.present(_opt_tls.c_str());
     insecure = args.present(_opt_insecure.c_str());
 
-    // Get optional server name and address.
+    // Get server name and address.
     if (server_option != nullptr) {
         args.getValue(server_name, server_option);
         if (server_name.empty()) {
@@ -111,10 +132,47 @@ bool ts::TLSArgs::loadClientArgs(Args& args, const UChar* server_option)
             // Resolve address and port.
             status = server_addr.resolve(server_name, args);
             if (status) {
+                if (!server_addr.hasAddress() || !server_addr.hasPort()) {
+                    args.error(u"missing server address or port in --%s", server_option);
+                    status = false;
+                }
                 // The server name is used for SNI in TLS, we need the server name without port.
                 IPSocketAddress::RemovePort(server_name);
             }
         }
     }
     return status;
+}
+
+
+//----------------------------------------------------------------------------
+// Common code for loadAllowedClients() and loadDeniedClients().
+//----------------------------------------------------------------------------
+
+bool ts::TLSArgs::loadAddressesArgs(IPAddressSet TLSArgs::* field, Args& args, const UChar* option)
+{
+    bool success = true;
+    const size_t count = args.count(u"allow");
+    (this->*field).clear();
+    for (size_t i = 0; i < count; ++i) {
+        IPAddress addr;
+        if (!addr.resolve(args.value(option, u"", i), args)) {
+            success = false;
+        }
+        else if (addr.hasAddress()) {
+            (this->*field).insert(addr);
+        }
+    }
+    return success;
+}
+
+
+//----------------------------------------------------------------------------
+// On the server side, check if a client address is allowed.
+//----------------------------------------------------------------------------
+
+bool ts::TLSArgs::isAllowed(const IPAddress& client) const
+{
+    return (allowed_clients.empty() || allowed_clients.contains(client)) &&
+           (denied_clients.empty() || !denied_clients.contains(client));
 }

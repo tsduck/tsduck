@@ -36,10 +36,10 @@ void ts::RestArgs::defineServerArgs(Args& args)
               u"For security reasons, use only with --" + _opt_tls + u".");
 }
 
-bool ts::RestArgs::loadServerArgs(Args& args)
+bool ts::RestArgs::loadServerArgs(Args& args, const UChar* server_option)
 {
     args.getValue(auth_token, _opt_token.c_str(), GetEnvironment(u"TSDUCK_TOKEN").c_str());
-    return SuperClass::loadServerArgs(args);
+    return SuperClass::loadServerArgs(args, server_option);
 }
 
 

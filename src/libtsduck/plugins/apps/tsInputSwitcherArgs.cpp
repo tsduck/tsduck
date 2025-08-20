@@ -23,14 +23,14 @@ void ts::InputSwitcherArgs::enforceDefaults()
     if (output.name.empty()) {
         output.set(u"file");
     }
-    if (receiveTimeout.count() <= 0 && primaryInput != NPOS) {
-        receiveTimeout = DEFAULT_RECEIVE_TIMEOUT;
+    if (receive_timeout.count() <= 0 && primary_input != NPOS) {
+        receive_timeout = DEFAULT_RECEIVE_TIMEOUT;
     }
 
-    firstInput = std::min(firstInput, inputs.size() - 1);
-    bufferedPackets = std::max(bufferedPackets, MIN_BUFFERED_PACKETS);
-    maxInputPackets = std::max(maxInputPackets, MIN_INPUT_PACKETS);
-    maxOutputPackets = std::max(maxOutputPackets, MIN_OUTPUT_PACKETS);
+    first_input = std::min(first_input, inputs.size() - 1);
+    buffered_packets = std::max(buffered_packets, MIN_BUFFERED_PACKETS);
+    max_input_packets = std::max(max_input_packets, MIN_INPUT_PACKETS);
+    max_output_packets = std::max(max_output_packets, MIN_OUTPUT_PACKETS);
 }
 
 
@@ -40,6 +40,8 @@ void ts::InputSwitcherArgs::enforceDefaults()
 
 void ts::InputSwitcherArgs::defineArgs(Args& args)
 {
+    remote_control.defineServerArgs(args);
+
     args.option(u"allow", 'a', Args::IPADDR);
     args.help(u"allow",
               u"Specify an IP address or host name which is allowed to send remote commands. "
@@ -173,41 +175,38 @@ void ts::InputSwitcherArgs::defineArgs(Args& args)
 
 bool ts::InputSwitcherArgs::loadArgs(DuckContext& duck, Args& args)
 {
-    appName = args.appName();
-    fastSwitch = args.present(u"fast-switch");
-    delayedSwitch = args.present(u"delayed-switch");
+    bool success =
+        remote_control.loadServerArgs(args, u"remote") &&
+        remote_control.loadAllowedClients(args, u"allow");
+    app_name = args.appName();
+    fast_switch = args.present(u"fast-switch");
+    delayed_switch = args.present(u"delayed-switch");
     terminate = args.present(u"terminate");
-    args.getIntValue(cycleCount, u"cycle", args.present(u"infinite") ? 0 : 1);
-    args.getIntValue(bufferedPackets, u"buffer-packets", DEFAULT_BUFFERED_PACKETS);
-    maxInputPackets = std::min(args.intValue<size_t>(u"max-input-packets", DEFAULT_MAX_INPUT_PACKETS), bufferedPackets / 2);
-    args.getIntValue(maxOutputPackets, u"max-output-packets", DEFAULT_MAX_OUTPUT_PACKETS);
-    args.getSocketValue(remoteServer, u"remote");
-    reusePort = !args.present(u"no-reuse-port");
-    args.getIntValue(sockBuffer, u"udp-buffer-size");
-    args.getIntValue(firstInput, u"first-input", 0);
-    args.getIntValue(primaryInput, u"primary-input", NPOS);
-    args.getChronoValue(receiveTimeout, u"receive-timeout", primaryInput >= inputs.size() ? cn::milliseconds::zero() : DEFAULT_RECEIVE_TIMEOUT);
+    args.getIntValue(cycle_count, u"cycle", args.present(u"infinite") ? 0 : 1);
+    args.getIntValue(buffered_packets, u"buffer-packets", DEFAULT_BUFFERED_PACKETS);
+    max_input_packets = std::min(args.intValue<size_t>(u"max-input-packets", DEFAULT_MAX_INPUT_PACKETS), buffered_packets / 2);
+    args.getIntValue(max_output_packets, u"max-output-packets", DEFAULT_MAX_OUTPUT_PACKETS);
+    reuse_port = !args.present(u"no-reuse-port");
+    args.getIntValue(sock_buffer_size, u"udp-buffer-size");
+    args.getIntValue(first_input, u"first-input", 0);
+    args.getIntValue(primary_input, u"primary-input", NPOS);
+    args.getChronoValue(receive_timeout, u"receive-timeout", primary_input >= inputs.size() ? cn::milliseconds::zero() : DEFAULT_RECEIVE_TIMEOUT);
 
     // Event reporting.
-    args.getValue(eventCommand, u"event-command");
-    args.getSocketValue(eventUDP, u"event-udp");
-    args.getIPValue(eventLocalAddress, u"event-local-address");
-    args.getIntValue(eventTTL, u"event-ttl", 0);
-    args.getValue(eventUserData, u"event-user-data");
+    args.getValue(event_command, u"event-command");
+    args.getSocketValue(event_udp, u"event-udp");
+    args.getIPValue(event_local_address, u"event-local-address");
+    args.getIntValue(event_ttl, u"event-ttl", 0);
+    args.getValue(event_user_data, u"event-user-data");
 
     // Check conflicting modes.
     if (args.present(u"cycle") + args.present(u"infinite") + args.present(u"terminate") > 1) {
         args.error(u"options --cycle, --infinite and --terminate are mutually exclusive");
+        success = false;
     }
-    if (fastSwitch && delayedSwitch) {
+    if (fast_switch && delayed_switch) {
         args.error(u"options --delayed-switch and --fast-switch are mutually exclusive");
-    }
-
-    // Resolve all allowed remote.
-    const size_t allow_count = args.count(u"allow");
-    allowedRemote.clear();
-    for (size_t i = 0; i < allow_count; ++i) {
-        allowedRemote.insert(args.ipValue(u"allow", IPAddress(), i));
+        success = false;
     }
 
     // Load all plugin descriptions. Default output is the standard output file.
@@ -226,13 +225,15 @@ bool ts::InputSwitcherArgs::loadArgs(DuckContext& duck, Args& args)
     }
 
     // Check validity of input indexes.
-    if (firstInput >= inputs.size()) {
-        args.error(u"invalid input index for --first-input %d", firstInput);
+    if (first_input >= inputs.size()) {
+        args.error(u"invalid input index for --first-input %d", first_input);
+        success = false;
     }
 
-    if (primaryInput != NPOS && primaryInput >= inputs.size()) {
-        args.error(u"invalid input index for --primary-input %d", primaryInput);
+    if (primary_input != NPOS && primary_input >= inputs.size()) {
+        args.error(u"invalid input index for --primary-input %d", primary_input);
+        success = false;
     }
 
-    return args.valid();
+    return success;
 }
