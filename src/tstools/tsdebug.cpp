@@ -446,7 +446,7 @@ namespace ts {
         virtual ~SendRecvCommands() override;
 
     private:
-        TLSArgs _tls_args;
+        TLSArgs _tls_args {};
         // Command handlers.
         CommandStatus receive(const UString&, Args&);
         CommandStatus send(const UString&, Args&);
@@ -650,7 +650,7 @@ namespace ts {
         virtual ~ServerCommands() override;
 
     private:
-        TLSArgs _tls_args;
+        TLSArgs _tls_args {};
         // Command handlers.
         CommandStatus server(const UString&, Args&);
     };
@@ -844,7 +844,7 @@ namespace ts {
         virtual ~ClientCommands() override;
 
     private:
-        TLSArgs _tls_args;
+        TLSArgs _tls_args {};
         // Command handlers.
         CommandStatus client(const UString&, Args&);
     };
@@ -1036,7 +1036,7 @@ namespace ts {
         virtual ~RESTServerCommands() override;
 
     private:
-        RestArgs _rest_args;
+        RestArgs _rest_args {};
         // Command handlers.
         CommandStatus restServer(const UString&, Args&);
     };
