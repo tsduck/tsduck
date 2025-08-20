@@ -82,7 +82,6 @@ namespace ts {
 
         //!
         //! Set the certificate path for the server.
-        //! If undefined, the default value is set from the environment variable TSDUCK_TLS_CERTIFICATE.
         //! @param [in] path Path to the certificate.
         //! - On UNIX systems (with OpenSSL), this is the path name of the certificate file in PEM format.
         //! - On Windows, this is the name of a certificate, either its "friendly name", its subject name (without "CN="), its DNS name.
@@ -91,14 +90,13 @@ namespace ts {
 
         //!
         //! Get the certificate path for the server.
-        //! @return Path to the certificate, including default value resolution.
+        //! @return A constant reference to the path to the certificate.
         //! @see setCertificatePath()
         //!
-        UString getCertificatePath() const;
+        const UString& getCertificatePath() const { return _certificate_path; }
 
         //!
         //! Set the private key path for the server.
-        //! If undefined, the default value is set from the environment variable TSDUCK_TLS_KEY.
         //! @param [in] path Path to the private key.
         //! - On UNIX systems (with OpenSSL), this is the path name of the private key file in PEM format.
         //! - On Windows, the private key is retrieved with the certificate and this parameter is unused.
@@ -107,14 +105,13 @@ namespace ts {
 
         //!
         //! Get the private key path for the server.
-        //! @return Path to the private key, including default value resolution.
+        //! @return A constant reference to the path to the private key.
         //! @see setKeyPath()
         //!
-        UString getKeyPath() const;
+        const UString& getKeyPath() const { return _key_path; }
 
         //!
         //! Set the certificate store.
-        //! If undefined, the default value is set from the environment variable TSDUCK_TLS_STORE.
         //! @param [in] name
         //! - On UNIX systems (with OpenSSL), this parameter is unused.
         //! - On Windows, the possible values are "system" (<code>Cert:\\LocalMachine\\My</code>)
@@ -124,10 +121,10 @@ namespace ts {
 
         //!
         //! Get the certificate store.
-        //! @return Name of the certificate store, including default value resolution.
+        //! @return A constant reference to the name of the certificate store.
         //! @see setCertificateStore()
         //!
-        UString getCertificateStore() const;
+        const UString& getCertificateStore() const { return _certificate_store; }
 
         // Inherited methods.
         virtual ~TLSServer() override;

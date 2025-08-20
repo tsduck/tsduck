@@ -42,6 +42,7 @@
 |BIT |Broadcaster Information Table (ISDB)
 |BPSK |Binary Phase Shift Keying (modulation)
 |BTS |Broadcast Transport Stream (ISDB)
+|CA |Certificate Authority
 |CA |Conditional Access
 |CAM |Conditional Access Module
 |CAS |Conditional Access System

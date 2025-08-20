@@ -39,11 +39,10 @@ This control is never active by default and must be explicitly activated using c
 
 Examples are:
 
-[compact-list]
 * `tsp` control of plugins (view, suspend, restart plugins).
 * `tswsitch` control of inputs.
 
-Initially, these features were implemented using simple UDP or TCP incoming connections
+Initially, these features were implemented using simple UDP or TCP unauthenticated incoming connections
 using commands in the clear.
 
 The only provided filtering mechanism was an optional "white list" of IP addresses which
@@ -52,14 +51,14 @@ open environments.
 
 This model is sufficient within the boundaries of a lab, for experimentations.
 As TSDuck was used in production environments, with open networks, these features created
-opportunities for security issues. Even the while lists of IP addresses are not sufficient
-to mitigate IP-spoofing attacks.
+opportunities for security issues.
+Even the white lists of IP addresses are not sufficient to mitigate IP-spoofing attacks.
 
 Therefore, starting with version 3.42, new and more secure mechanisms were introduced.
 The previous features remain for compatibility with existing scripts and workflows.
 However, it is now recommended to avoid using them.
 
-The new mechanisms use REST API's over protected connections.
+The new mechanisms use authenticated REST API's over protected connections.
 The advantages are:
 
 * Use TLS-encrypted connections for confidentiality and integrity.
@@ -80,12 +79,12 @@ In increasing order of ease of use:
 1. Use an official certificate that you received from a public Certification Authority (CA).
    This is possible if you run your own public Web servers.
 2. Implement you own private CA and generate your certificates. Although not trivial, this
-   is feasible for tech savvy administrators. There are multiple online examples using
+   is feasible for tech-savvy administrators. There are multiple online examples using
    OpenSSL commands. Do not forget to add the root certificate of your own CA in the trust
    store of the client machines.
 3. Generate self-signed certificates. This solution is not fully secure. On the client side,
    the identity of the server cannot be enforced and the connections are vulnerable to
-   "Man-in-the-Middle attacks" (MitM). Additionally, the option `--insecure` shall be specified
+   "Man-in-the-Middle attacks" (MitM). The option `--insecure` shall be specified
    in the client commands to avoid the validation of the server certificate.
 
 The first two solutions shall be used by experienced administrators.
@@ -95,17 +94,185 @@ Let's review the ways to implement the third solution.
 [#sscert-unix]
 ==== Generating self-signed certificates on UNIX systems
 
-TO BE CONTINUED.
+The simplest way to generate a self-signed certificate for the local host is the `openssl` command.
+The following command generates a RSA-3072 private key and the corresponding self-signed certificate.
+
+[source,shell]
+----
+openssl req -quiet -newkey rsa:3072 -new -noenc -x509 -subj="/CN=$(hostname)" -days 3650 \
+    -keyout test_key.pem -out test_cert.pem
+----
+
+The private key is stored in file `test_key.pem`.
+This file is stored in the clear (option `-noenc`) to avoid having to decrypt it in the server.
+Because the private key is a sensitive information, do not make accessible to other systems or users
+(the `openssl` command creates the file with restricted permissions).
+The corresponding self-signed certificate is stored in file `test_cert.pem`.
+The certificate has an extended validity duration of 10 years (3650 days).
+
+To display the properties of the certificate:
+
+[source,shell]
+----
+openssl x509 -in test_cert.pem -noout -text
+----
+
+To avoid specifying options `--certificate-path` and `--key-path` in all TSDuck commands which need them,
+define the following environment variables:
+
+[source,shell]
+----
+export TSDUCK_TLS_CERTIFICATE=/path/to/test_cert.pem
+export TSDUCK_TLS_KEY=/path/to/test_key.pem
+----
+
+Note: From a client system system, it is possible to inspect the certificate of a remote TLS
+server at, for instance, `google.com`, port 443 (the default HTTPS port) using the following command.
+
+[source,shell]
+----
+openssl s_client -showcerts -servername google.com -connect google.com:443 </dev/null |
+    openssl x509 -noout -text
+----
 
 [#sscert-win]
 ==== Generating self-signed certificates on Windows
 
-TO BE CONTINUED.
+On Windows, the self-signed certificates are stored either in the current user environment
+or in a system-wide environment.
+These environments are accessible from PowerShell using the following virtual locations:
+
+[compact-list]
+* User: `Cert:\CurrentUser\My`
+* System: `Cert:\LocalMachine\My`
+
+The following PowerShell command generates a RSA-3072 private key and the corresponding self-signed certificate
+with "friendly name" `test_key` in the user certificate store.
+
+[source,powershell]
+----
+New-SelfSignedCertificate -FriendlyName "test_key" -Type SSLServerAuthentication `
+    -DnsName @([System.Net.Dns]::GetHostName(), "localhost") `
+    -CertStoreLocation Cert:\CurrentUser\My `
+    -KeyAlgorithm "RSA" -KeyLength 3072 `
+    -NotAfter ((Get-Date).AddYears(5))
+----
+
+The private key is stored along with the certificate and there is no need to provide separate paths for the two.
+The certificate has an extended validity duration of 5 years.
+
+To display the properties of the certificate:
+
+[source,powershell]
+----
+Get-ChildItem Cert:\CurrentUser\My | Where-Object -Property FriendlyName -eq "test_key" | Format-List
+----
+
+To avoid specifying options `--certificate-path` and `--store` in all TSDuck commands which need them,
+define the following environment variables:
+
+[source,shell]
+----
+$env:TSDUCK_TLS_CERTIFICATE = "test_key"
+$env:TSDUCK_TLS_STORE = "user"
+----
 
 [#opt-tls]
 ==== TSDuck options for TLS-based control features
 
-TO BE CONTINUED.
+The following command line options are defined by TSDuck commands and plugins which act as TLS server or client.
+They are briefly repeated in the documentation of all commands to which they apply.
+
+[.usage]
+Common options for clients and servers
+
+[.opt]
+*--tls*
+
+[.optdoc]
+The client or server uses SSL/TLS encrypted communications.
+By default, it uses unencrypted communications.
+
+[.optdoc]
+In the case of a server, a certificate is required.
+
+[.opt]
+*--token* _'string'_
+
+[.optdoc]
+Optional authentication token.
+The default value is the value of environment variable `TSDUCK_TOKEN`.
+
+[.optdoc]
+In a server, this the authentication token that a client is required to provide.
+When a client failed to provide this token, the connection is immediately interrupted.
+
+[.optdoc]
+In a client, this the authentication token which will be sent to the server.
+
+[.optdoc]
+For security reasons, use an authentication token with `--tls` only.
+Otherwise, sniffing the traffic would reveal the authentication tokens.
+
+[.optdoc]
+By default, there is no authentication.
+
+[.usage]
+Client specific options
+
+[.opt]
+*--insecure*
+
+[.optdoc]
+With `--tls`, do not verify the TLS server's certificate.
+This is typically required when the server uses a self-signed certificate,
+a kind of certificate which is not signed by a trusted Certificate Authority (CA).
+Use with care because it opens the door the man-in-the-middle attacks.
+
+[.usage]
+Server specific options
+
+[.opt]
+*--certificate-path* _name_
+
+[.optdoc]
+With `--tls`, specifies the path to the certificate for the server.
+The default path is the value of environment variable `TSDUCK_TLS_CERTIFICATE`.
+
+[.optdoc]
+On UNIX systems, this is the path name of the certificate file in PEM format.
+
+[.optdoc]
+On Windows, this is the "friendly name" or "DNS name" of a certificate in the user or system store.
+
+[.opt]
+*--key-path* _name_
+
+[.optdoc]
+With `--tls`, specifies the path to the private key for the server.
+The default path is the value of environment variable `TSDUCK_TLS_KEY`.
+
+[.optdoc]
+On UNIX systems, this is the path name of the private key file in PEM format.
+This file must not be encrypted.
+
+[.optdoc]
+On Windows, the private key is retrieved with the certificate and this parameter is unused.
+
+[.opt]
+*--store* _name_
+
+[.optdoc]
+With `--tls`, specifies the name of the certificate store for the server.
+The default name is the value of environment variable `TSDUCK_TLS_STORE`.
+
+[.optdoc]
+On Windows, the possible values are `"system"` (`Cert:\LocalMachine\My`)
+and `"user"` (`Cert:\CurrentUser\My`).
+The default is `"user"`.
+
+[.optdoc]
+On UNIX systems, this parameter is unused.
 
 [#cra]
 === European Cyber Resilience Act (CRA)
@@ -113,8 +280,8 @@ TO BE CONTINUED.
 The European Union Cyber Resilience Act from October 2024 introduces cybersecurity responsibilities
 for the manufacturers of digital products. See <<EU-CRA>> for a complete reference.
 
-The application of the CRA on open-source products shall be clearly understood.
-The Open Source Security Foundation provides some guidance on the matter. See <<OSSF-CRA>>.
+The application of the CRA to open-source products shall be clearly understood.
+The Open Source Security Foundation (OSSF) provides some guidance on the matter. See <<OSSF-CRA>>.
 
 First, there is a clear distinction between open-source developers who make no commercial
 profit from their products and commercial manufacturers of products which integrate these
@@ -126,8 +293,8 @@ and supply phases, the provision of products with digital elements qualifying as
 open-source software that are not monetised by their manufacturers should not be considered
 to be a commercial activity.
 
-Therefore, TSDuck is considered as a non-commercial product.
-The publication of regular releases with proper packaging is not considered as a commercial activity:
+In open-source projects, the publication of regular releases with proper packaging is
+not considered as a commercial activity:
 
 [quote,CRA introduction (18)]
 the mere presence of regular releases should not in itself lead to the conclusion
@@ -140,6 +307,8 @@ the mere fact that an open-source software product with digital elements receive
 financial support from manufacturers or that manufacturers contribute to the development of
 such a product should not in itself determine that the activity is of commercial nature.
 
+Therefore, TSDuck shall be considered as a non-commercial product.
+
 On the other hand, manufacturers of commercial products which integrate TSDuck enter
 into the scope of the CRA:
 
@@ -149,7 +318,8 @@ free and open-source software that are ultimately intended for commercial activi
 such as for integration into commercial services or into monetised products with digital elements
 
 More precisely, the cybersecurity of a commercial product which integrates TSDuck
-is under the responsibility of the manufacturer of that commercial product:
+is under the responsibility of the manufacturer of that commercial product,
+not under the responsibility of the TSDuck maintainers:
 
 [quote,CRA Chapter II - article 13 - section 5]
 manufacturers shall exercise due diligence

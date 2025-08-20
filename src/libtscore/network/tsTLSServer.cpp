@@ -7,8 +7,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsTLSServer.h"
-#include "tsEnvironment.h"
-#include "tsArgs.h"
 #include "tsFatal.h"
 
 
@@ -40,21 +38,6 @@ void ts::TLSServer::setArgs(const TLSArgs& args)
     _certificate_store = args.certificate_store;
     _certificate_path = args.certificate_path;
     _key_path = args.key_path;
-}
-
-ts::UString ts::TLSServer::getCertificatePath() const
-{
-    return _certificate_path.empty() ? GetEnvironment(u"TSDUCK_TLS_CERTIFICATE") : _certificate_path;
-}
-
-ts::UString ts::TLSServer::getKeyPath() const
-{
-    return _key_path.empty() ? GetEnvironment(u"TSDUCK_TLS_KEY") : _key_path;
-}
-
-ts::UString ts::TLSServer::getCertificateStore() const
-{
-    return _certificate_store.empty() ? GetEnvironment(u"TSDUCK_TLS_STORE", u"user") : _certificate_store;
 }
 
 
