@@ -10,7 +10,6 @@
 #include "tstsswitchCore.h"
 #include "tsRestServer.h"
 #include "tsReportBuffer.h"
-#include "tsAlgorithm.h"
 #include "tsFatal.h"
 
 
@@ -44,7 +43,7 @@ bool ts::tsswitch::CommandListener::open()
         // Initialize TCP server.
         // The server will accept and process one client at a time.
         // Therefore, be generous with the backlog.
-        if (!_tls_server.open(IP::Any, _log) ||
+        if (!_tls_server.open(_opt.remote_control.server_addr.generation(), _log) ||
             !_tls_server.reusePort(_opt.reuse_port, _log) ||
             !_tls_server.bind(_opt.remote_control.server_addr, _log) ||
             !_tls_server.listen(16, _log))
@@ -89,7 +88,7 @@ void ts::tsswitch::CommandListener::close()
 
 void ts::tsswitch::CommandListener::main()
 {
-    _log.debug(u"UDP server thread started");
+    _log.debug(u"remote control server thread started");
 
     char inbuf[1024];
     size_t insize = 0;
@@ -143,12 +142,12 @@ void ts::tsswitch::CommandListener::main()
             execute(sender, UString::FromUTF8(inbuf, len).toLower().toTrimmed());
         }
     }
-    
+
     // If termination was requested, receive error is not an error.
     if (!_terminate && !error.empty()) {
         _log.info(error.messages());
     }
-    _log.debug(u"UDP server thread completed");
+    _log.debug(u"remote control server thread completed");
 }
 
 //----------------------------------------------------------------------------

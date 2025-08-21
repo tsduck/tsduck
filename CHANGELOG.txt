@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.42-4391 (August 2025)
+VERSION 3.42-4415 (August 2025)
 
 [NEW] New commands and plugins:
 
@@ -14,6 +14,9 @@ VERSION 3.42-4391 (August 2025)
   * With "tstables" and plugin "tables", the option --multiple-files  now  also
     applies to XML and JSON files. Previously, it applied to binary files only.
   * Satellite reception: added support for DiSEqC 1.1 and Unicable on Linux.
+  * Added secure control input. Replaced insecure TCP or UDP ports  to  control
+    "tsp", "tsswitch" and others with TLS-protected Web API with authentication
+    token.
   * New options in existing commands and plugins:
     - Option --tag in plugins "history", "splicemonitor".
     - Option --pcr-based, --timestamp-based in plugin "until".
@@ -25,6 +28,8 @@ VERSION 3.42-4391 (August 2025)
     - Options --multiple and  --restart-delay  in  input  plugin  "srt".  These
       options already existed in the corresponding output plugin.
     - Option --unicable in "tsscan" and input plugin "dvb".
+    - Options   --remote-tls,   --remote-certificate-path,   --remote-key-path,
+      --remote-store, --remote-token in "tsswitch".
 
 [BUG] Bug fixes:
 

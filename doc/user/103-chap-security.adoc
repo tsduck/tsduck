@@ -84,6 +84,7 @@ in the course of a commercial activity.
 
 === TSDuck security
 
+[#secure-control]
 ==== TSDuck secure control features
 
 Initially, TSDuck was designed as an experimental toolbox for debug, integration, and other lab activities.

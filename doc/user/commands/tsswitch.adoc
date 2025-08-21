@@ -75,18 +75,27 @@ It is appropriate for live streams only.
 
 ==== Remote control
 
-Using the option `--remote`, `tsswitch` listens to UDP datagrams on a given port.
-Each datagram contains one switch command.
+Using the option `--remote`, `tsswitch` listens to remote commands from the network.
 A command is an ASCII string.
-Any trailing control characters such as CR or LF is ignored.
 
 The command string can be one of:
 
+[compact-list]
 * An input index (e.g. `0`, `1`, `2`, etc.)
-  Upon reception, tsswitch immediately switches to the selected input plugin.
+  Upon reception, `tsswitch` immediately switches to the selected input plugin.
 * Strings `next` and `previous` (or `prev`) to switch to the next and previous input, respectively.
 * Strings `exit` or `quit` to properly terminate `tsswitch`.
 * Strings `halt` or `abort` to immediately abort the `tsswitch` process.
+
+By default, `tsswitch` does not accept remote commands.
+The option `--remote [address:]port` opens a UDP or TCP server port.
+The optional `address` must be a local address and restricts incoming remote commands on that local address.
+
+There are two ways to send commands.
+
+The first and default method is receiving UDP datagrams on the specified port.
+Each datagram contains one switch command.
+Any trailing control characters such as CR or LF is ignored.
 
 The `bash` shell provides an easy way to redirect output to a UDP message.
 The following sample commands send UDP messages on port 4444 to system 127.0.0.1 (the local host).
@@ -102,6 +111,38 @@ $ echo >/dev/udp/127.0.0.1/4444 exit
 This is the easiest way to use the `tsswitch` remote control.
 Note that this is a feature of `bash`, not a Linux feature.
 It is available on all platforms, including macOS and Cygwin or Msys on Windows.
+
+The problem with that method is that it is insecure in open networks.
+Anyone can send a UDP datagram and stop the `tsswitch` process.
+It is possible to restrict the reception of commands to a given list of sender IP addresses,
+using the option `--allow`.
+However, IP address spoofing is relatively simple, especially with UDP, and this protection can be bypassed.
+
+The second method for receiving control commands is more secure.
+It uses a TCP server accepting HTTP requests on SSL/TLS-protected connections.
+An authorization token may be requested if necessary.
+This method is similar to the authentication of most Web API's in modern distributed systems.
+See xref:secure-control[xrefstyle=short] for more details.
+
+The remote command is passed in the URL path as `/cmd` where `cmd` is the remote command.
+
+With that method, the easiest way to send a remote command is the `curl` command.
+A basic example to send the `next` command is the following:
+
+[source,shell]
+----
+$ curl -s -S https://localhost:4444/next
+----
+
+If your `tsswitch` command uses a self-signed certificate (see xref:tls-cert[xrefstyle=short]),
+add the option `-k` (`--insecure`) to ignore the verification of the certificate.
+
+If your `tsswitch` command specifies an authorization token, use a command like this one:
+
+[source,shell]
+----
+$ curl -s -S -k -H 'Authorization: Token my-token' https://localhost:4444/next
+----
 
 ==== Event notification
 
@@ -380,21 +421,21 @@ By default, there is no remote control.
 
 [.optdoc]
 With `--remote-tls`, path to the certificate for the remote control.
-See xref:opt-tls[xrefstyle=short] for more details
+See xref:opt-tls[xrefstyle=short] for more details.
 
 [.opt]
 *--remote-key-path* _name_
 
 [.optdoc]
 With `--remote-tls`, path to the private key for the remote control.
-See xref:opt-tls[xrefstyle=short] for more details
+See xref:opt-tls[xrefstyle=short] for more details.
 
 [.opt]
 *--remote-store* _name_
 
 [.optdoc]
 With `--remote-tls`, path to the certificate store for the remote control.
-See xref:opt-tls[xrefstyle=short] for more details
+See xref:opt-tls[xrefstyle=short] for more details.
 
 [.opt]
 *--remote-tls*
@@ -402,14 +443,14 @@ See xref:opt-tls[xrefstyle=short] for more details
 [.optdoc]
 The remote control uses a SSL/TLS TCP Web API instead of UDP datagrams.
 By default, the remote control accepts clear commands in UDP datagrams.
-See xref:opt-tls[xrefstyle=short] for more details
+See xref:opt-tls[xrefstyle=short] for more details.
 
 [.opt]
 *--remote-token* _'string'_
 
 [.optdoc]
 With `--remote-tls`, optional authentication token that clients are required to provide to the remote control.
-See xref:opt-tls[xrefstyle=short] for more details
+See xref:opt-tls[xrefstyle=short] for more details.
 
 [.opt]
 *--udp-buffer-size* _value_
