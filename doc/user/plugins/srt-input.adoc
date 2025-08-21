@@ -29,7 +29,7 @@ Typically, this plugin is available on macOS, Windows, Fedora 31 onwards, Ubuntu
 [.usage]
 Acknowledgement
 
-The original version of this plugin is a contribution from Anthony Delannoy.
+The original version of this plugin is a contribution from Lola Delannoy.
 
 [.usage]
 Input timestamps

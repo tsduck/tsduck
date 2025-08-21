@@ -934,7 +934,7 @@ VERSION 3.20-1689 (Mar 2020)
 
   * Added command "tspcontrol" to send control commands to a running "tsp".
   * Added  input  and  output plugins "srt" for Secure Reliable Transport (code
-    contribution  from  Anthony  Delannoy).  This plugin is not compiled on all
+    contribution  from  Lola  Delannoy).  This plugin is not compiled on all
     platforms (subject to availability of libsrt).
   * For  developers,  the  features  of  "tsp"  and  "tsswitch"  are now easily
     accessible  from  the  TSDuck  library.  See  classes  ts::TSProcessor  and
