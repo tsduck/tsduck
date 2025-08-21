@@ -83,10 +83,16 @@ bool ts::TLSArgs::loadServerArgs(Args& args, const UChar* server_option)
 
     // Get server port and optional address.
     if (server_option != nullptr) {
-        status = server_addr.resolve(args.value(server_option), args);
-        if (status && !server_addr.hasPort()) {
-            args.error(u"missing server port in --%s", server_option);
-            status = false;
+        if (!args.present(server_option)) {
+            server_addr.clear();
+        }
+        else {
+            // Resolve address and port.
+            status = server_addr.resolve(args.value(server_option), args);
+            if (status && !server_addr.hasPort()) {
+                args.error(u"missing server port in --%s", server_option);
+                status = false;
+            }
         }
     }
     return status;
