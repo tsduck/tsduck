@@ -131,7 +131,7 @@ TSDUCKJNI jboolean JNICALL Java_io_tsduck_InputSwitcher_start(JNIEnv* env, jobje
     args.terminate = ts::jni::GetBoolField(env, obj, "terminate");
     args.fast_switch = ts::jni::GetBoolField(env, obj, "fastSwitch");
     args.delayed_switch = ts::jni::GetBoolField(env, obj, "delayedSwitch");
-    args.reuse_port = ts::jni::GetBoolField(env, obj, "reusePort");
+    args.remote_control.reuse_port = ts::jni::GetBoolField(env, obj, "reusePort");
     args.first_input = size_t(std::max<jint>(0, ts::jni::GetIntField(env, obj, "firstInput")));
     const jint primaryInput = ts::jni::GetIntField(env, obj, "firstInput");
     args.primary_input = primaryInput < 0 ? ts::NPOS : size_t(primaryInput);

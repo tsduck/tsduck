@@ -412,7 +412,7 @@ Disable the reuse port socket option. Do not use unless completely necessary.
 *--remote* _[address:]port_
 
 [.optdoc]
-Specify the local UDP port which is used to receive remote commands.
+Specify the local UDP or TCP port which is used to receive remote commands.
 If an optional address is specified, it must be a local IP address of the system.
 By default, there is no remote control.
 

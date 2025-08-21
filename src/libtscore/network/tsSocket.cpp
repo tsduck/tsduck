@@ -154,6 +154,12 @@ bool ts::Socket::setReceiveTimeout(cn::milliseconds timeout, Report& report)
 {
     report.debug(u"setting socket receive timeout to %s", timeout);
 
+    // If negative or zero, receive timeout is not used, reception waits forever.
+    // However, setsockopt() requires a non-negative value and zero means no timeout.
+    if (timeout < cn::milliseconds::zero()) {
+        timeout = cn::milliseconds::zero();
+    }
+
 #if defined(TS_WINDOWS)
     ::DWORD param = ::DWORD(timeout.count());
 #else

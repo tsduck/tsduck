@@ -22,6 +22,7 @@ namespace ts {
     //!
     class TSCOREDLL RestArgs: public TLSArgs
     {
+        TS_RULE_OF_FIVE(RestArgs, override);
     public:
         //!
         //! Explicit definition of the superclass.
@@ -43,42 +44,16 @@ namespace ts {
         UString api_root {};    //!< Optional root path for api (e.g. "/serve/api").
 
         // Server-specific options.
-        // No additional option from TLSArgs.
+        // (None at this level)
 
         // Client-specific options.
-        cn::milliseconds connection_timeout {};  //!< Connection timeout in milliseconds (zero means none).
-        cn::milliseconds receive_timeout {};     //!< Reception timeout in milliseconds (zero means none).
+        // (None at this level)
 
-        //!
-        //! Add command line options for a REST server in an Args.
-        //! @param [in,out] args Command line arguments to update.
-        //!
-        void defineServerArgs(Args& args);
-
-        //!
-        //! Add some command line options for a REST client in an Args.
-        //! @param [in,out] args Command line arguments to update.
-        //!
-        void defineClientArgs(Args& args);
-
-        //!
-        //! Load arguments for a REST server from a command line.
-        //! Args error indicator is set in case of incorrect arguments.
-        //! @param [in,out] args Command line arguments.
-        //! @param [in] server_option Optional name of an option which defines the server port and optional address.
-        //! @return True on success, false on error in argument line.
-        //!
-        bool loadServerArgs(Args& args, const UChar* server_option = nullptr);
-
-        //!
-        //! Load arguments for a REST client from a command line.
-        //! Args error indicator is set in case of incorrect arguments.
-        //! @param [in,out] args Command line arguments.
-        //! @param [in] server_option Optional name of an option which defines the server name and address.
-        //! Resolve server_addr and server_name.
-        //! @return True on success, false on error in argument line.
-        //!
-        bool loadClientArgs(Args& args, const UChar* server_option = nullptr);
+        // Inherited methods.
+        virtual void defineServerArgs(Args& args) override;
+        virtual void defineClientArgs(Args& args) override;
+        virtual bool loadServerArgs(Args& args, const UChar* server_option = nullptr) override;
+        virtual bool loadClientArgs(Args& args, const UChar* server_option = nullptr) override;
 
     protected:
         UString _opt_token;  //!< Option name for --[prefix-]token.

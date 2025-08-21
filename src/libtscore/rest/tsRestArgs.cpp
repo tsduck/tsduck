@@ -11,12 +11,16 @@
 
 
 //----------------------------------------------------------------------------
-// Constructor.
+// Constructors and destructor.
 //----------------------------------------------------------------------------
 
 ts::RestArgs::RestArgs(const UString& description, const UString& prefix) :
     SuperClass(description, prefix),
     _opt_token(_prefix + u"token")
+{
+}
+
+ts::RestArgs::~RestArgs()
 {
 }
 

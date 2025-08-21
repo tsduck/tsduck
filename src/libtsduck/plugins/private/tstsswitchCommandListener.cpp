@@ -44,7 +44,7 @@ bool ts::tsswitch::CommandListener::open()
         // The server will accept and process one client at a time.
         // Therefore, be generous with the backlog.
         if (!_tls_server.open(_opt.remote_control.server_addr.generation(), _log) ||
-            !_tls_server.reusePort(_opt.reuse_port, _log) ||
+            !_tls_server.reusePort(_opt.remote_control.reuse_port, _log) ||
             !_tls_server.bind(_opt.remote_control.server_addr, _log) ||
             !_tls_server.listen(16, _log))
         {
@@ -57,7 +57,7 @@ bool ts::tsswitch::CommandListener::open()
     else {
         // Initialize a UDP reception socket.
         UDPReceiverArgs sock_args;
-        sock_args.setUnicast(_opt.remote_control.server_addr, _opt.reuse_port, _opt.sock_buffer_size);
+        sock_args.setUnicast(_opt.remote_control.server_addr, _opt.remote_control.reuse_port, _opt.sock_buffer_size);
         _udp_server.setParameters(sock_args);
         if (!_udp_server.open(_log)) {
             return false;
@@ -115,7 +115,7 @@ void ts::tsswitch::CommandListener::main()
                         rest.sendResponse(_tls_client, 204, true); // 204 = No Content
                     }
                     else {
-                        rest.setResponse(u"Invalid command\r\n");
+                        rest.setResponse(u"Invalid command\n");
                         rest.sendResponse(_tls_client, 400, true); // 400 = Bad Request
                     }
                 }

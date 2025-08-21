@@ -11,17 +11,20 @@
 
 
 //----------------------------------------------------------------------------
-// Constructor.
+// Constructors and destructor.
 //----------------------------------------------------------------------------
 
 ts::TLSArgs::TLSArgs(const UString& description, const UString& prefix) :
-    _description(description),
-    _prefix(prefix + (prefix.empty() || prefix.ends_with('-') ? u"" : u"-")),
+    SuperClass(description, prefix),
     _opt_tls(_prefix + u"tls"),
     _opt_insecure(_prefix + u"insecure"),
     _opt_certificate_store(_prefix + u"store"),
     _opt_certificate_path(_prefix + u"certificate-path"),
     _opt_key_path(_prefix + u"key-path")
+{
+}
+
+ts::TLSArgs::~TLSArgs()
 {
 }
 
@@ -32,6 +35,8 @@ ts::TLSArgs::TLSArgs(const UString& description, const UString& prefix) :
 
 void ts::TLSArgs::defineServerArgs(Args& args)
 {
+    SuperClass::defineServerArgs(args);
+
     args.option(_opt_tls.c_str());
     args.help(_opt_tls.c_str(),
               u"The " + _description + " uses SSL/TLS. "
@@ -75,27 +80,11 @@ bool ts::TLSArgs::loadServerArgs(Args& args, const UChar* server_option)
         u"";
 #endif
 
-    bool status = true;
     use_tls = args.present(_opt_tls.c_str());
     args.getValue(certificate_path, _opt_certificate_path.c_str(), GetEnvironment(u"TSDUCK_TLS_CERTIFICATE").c_str());
     args.getValue(key_path, _opt_key_path.c_str(), GetEnvironment(u"TSDUCK_TLS_KEY").c_str());
     args.getValue(certificate_store, _opt_certificate_store.c_str(), GetEnvironment(u"TSDUCK_TLS_STORE", default_store).c_str());
-
-    // Get server port and optional address.
-    if (server_option != nullptr) {
-        if (!args.present(server_option)) {
-            server_addr.clear();
-        }
-        else {
-            // Resolve address and port.
-            status = server_addr.resolve(args.value(server_option), args);
-            if (status && !server_addr.hasPort()) {
-                args.error(u"missing server port in --%s", server_option);
-                status = false;
-            }
-        }
-    }
-    return status;
+    return SuperClass::loadServerArgs(args, server_option);
 }
 
 
@@ -105,6 +94,8 @@ bool ts::TLSArgs::loadServerArgs(Args& args, const UChar* server_option)
 
 void ts::TLSArgs::defineClientArgs(Args& args)
 {
+    SuperClass::defineClientArgs(args);
+
     args.option(_opt_tls.c_str());
     args.help(_opt_tls.c_str(),
               u"Connect to the " + _description + " using SSL/TLS. "
@@ -123,62 +114,7 @@ void ts::TLSArgs::defineClientArgs(Args& args)
 
 bool ts::TLSArgs::loadClientArgs(Args& args, const UChar* server_option)
 {
-    bool status = true;
     use_tls = args.present(_opt_tls.c_str());
     insecure = args.present(_opt_insecure.c_str());
-
-    // Get server name and address.
-    if (server_option != nullptr) {
-        args.getValue(server_name, server_option);
-        if (server_name.empty()) {
-            // No server name => no server address.
-            server_addr.clear();
-        }
-        else {
-            // Resolve address and port.
-            status = server_addr.resolve(server_name, args);
-            if (status) {
-                if (!server_addr.hasAddress() || !server_addr.hasPort()) {
-                    args.error(u"missing server address or port in --%s", server_option);
-                    status = false;
-                }
-                // The server name is used for SNI in TLS, we need the server name without port.
-                IPSocketAddress::RemovePort(server_name);
-            }
-        }
-    }
-    return status;
-}
-
-
-//----------------------------------------------------------------------------
-// Common code for loadAllowedClients() and loadDeniedClients().
-//----------------------------------------------------------------------------
-
-bool ts::TLSArgs::loadAddressesArgs(IPAddressSet TLSArgs::* field, Args& args, const UChar* option)
-{
-    bool success = true;
-    const size_t count = args.count(u"allow");
-    (this->*field).clear();
-    for (size_t i = 0; i < count; ++i) {
-        IPAddress addr;
-        if (!addr.resolve(args.value(option, u"", i), args)) {
-            success = false;
-        }
-        else if (addr.hasAddress()) {
-            (this->*field).insert(addr);
-        }
-    }
-    return success;
-}
-
-
-//----------------------------------------------------------------------------
-// On the server side, check if a client address is allowed.
-//----------------------------------------------------------------------------
-
-bool ts::TLSArgs::isAllowed(const IPAddress& client) const
-{
-    return (allowed_clients.empty() || allowed_clients.contains(client)) &&
-           (denied_clients.empty() || !denied_clients.contains(client));
+    return SuperClass::loadClientArgs(args, server_option);
 }

@@ -81,7 +81,7 @@ namespace ts {
         //!
         //! Set the receive timeout.
         //! @param [in] timeout Receive timeout in milliseconds.
-        //! If negative, receive timeout is not used.
+        //! If negative or zero, receive timeout is not used, reception waits forever.
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!

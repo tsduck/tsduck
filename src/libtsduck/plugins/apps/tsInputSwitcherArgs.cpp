@@ -178,6 +178,7 @@ bool ts::InputSwitcherArgs::loadArgs(DuckContext& duck, Args& args)
     bool success =
         remote_control.loadServerArgs(args, u"remote") &&
         remote_control.loadAllowedClients(args, u"allow");
+
     app_name = args.appName();
     fast_switch = args.present(u"fast-switch");
     delayed_switch = args.present(u"delayed-switch");
@@ -186,7 +187,7 @@ bool ts::InputSwitcherArgs::loadArgs(DuckContext& duck, Args& args)
     args.getIntValue(buffered_packets, u"buffer-packets", DEFAULT_BUFFERED_PACKETS);
     max_input_packets = std::min(args.intValue<size_t>(u"max-input-packets", DEFAULT_MAX_INPUT_PACKETS), buffered_packets / 2);
     args.getIntValue(max_output_packets, u"max-output-packets", DEFAULT_MAX_OUTPUT_PACKETS);
-    reuse_port = !args.present(u"no-reuse-port");
+    remote_control.reuse_port = !args.present(u"no-reuse-port");
     args.getIntValue(sock_buffer_size, u"udp-buffer-size");
     args.getIntValue(first_input, u"first-input", 0);
     args.getIntValue(primary_input, u"primary-input", NPOS);

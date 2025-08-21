@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.42-4415 (August 2025)
+VERSION 3.42-4418 (August 2025)
 
 [NEW] New commands and plugins:
 
@@ -30,6 +30,10 @@ VERSION 3.42-4415 (August 2025)
     - Option --unicable in "tsscan" and input plugin "dvb".
     - Options   --remote-tls,   --remote-certificate-path,   --remote-key-path,
       --remote-store, --remote-token in "tsswitch".
+    - Options --control, --control-tls, --control-certificate-path,  --control-
+      key-path, --control-store, --control-token in "tsp".  Options  --control-
+      local and --control-port are now legacy and superseded by --control.
+    - Options --tls, --insecure, --token in "tspcontrol".
 
 [BUG] Bug fixes:
 

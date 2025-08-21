@@ -16,11 +16,25 @@
 
 
 //----------------------------------------------------------------------------
+// Constructor.
+//----------------------------------------------------------------------------
+
+ts::TSProcessorArgs::TSProcessorArgs()
+{
+    // Non-standard defaults.
+    control.receive_timeout = DEFAULT_CONTROL_TIMEOUT;
+    control.reuse_port = false;
+}
+
+
+//----------------------------------------------------------------------------
 // Define command line options in an Args.
 //----------------------------------------------------------------------------
 
 void ts::TSProcessorArgs::defineArgs(Args& args)
 {
+    control.defineServerArgs(args);
+
     args.option(u"add-input-stuffing", 'a', Args::STRING);
     args.help(u"add-input-stuffing", u"nullpkt/inpkt",
               u"Specify that <nullpkt> null TS packets must be automatically inserted "
@@ -61,16 +75,19 @@ void ts::TSProcessorArgs::defineArgs(Args& args)
               u"the buffer between the input and output devices. The default "
               u"is " + UString::Decimal(DEFAULT_BUFFER_SIZE / 1000000) + u" MB.");
 
+    args.option(u"control", 0, Args::IPSOCKADDR_OA);
+    args.help(u"control",
+              u"Specify the TCP port on which tsp listens for control commands. "
+              u"The optional address must be a local interface address to restrict the reception of control commands on this interface only. "
+              u"If unspecified, no control commands are expected.");
+
     args.option(u"control-port", 0, Args::UINT16);
     args.help(u"control-port",
-              u"Specify the TCP port on which tsp listens for control commands. "
-              u"If unspecified, no control commands are expected.");
+              u"Legacy option, superseded by --control.");
 
     args.option(u"control-local", 0, Args::IPADDR);
     args.help(u"control-local",
-              u"Specify the IP address of the local interface on which to listen for control commands. "
-              u"It can be also a host name that translates to a local address. "
-              u"By default, listen on all local interfaces.");
+              u"Legacy option, superseded by --control.");
 
     args.option(u"control-reuse-port");
     args.help(u"control-reuse-port",
@@ -81,7 +98,7 @@ void ts::TSProcessorArgs::defineArgs(Args& args)
     args.option(u"control-source", 0, Args::IPADDR);
     args.help(u"control-source",
               u"Specify a remote IP address which is allowed to send control commands. "
-              u"By default, as a security precaution, only the local host is allowed to connect. "
+              u"By default, as a security precaution, without --control-tls and --control-token, only the local host is allowed to connect. "
               u"Several --control-source options are allowed.");
 
     args.option<cn::milliseconds>(u"control-timeout");
@@ -166,6 +183,18 @@ void ts::TSProcessorArgs::defineArgs(Args& args)
 
 bool ts::TSProcessorArgs::loadArgs(DuckContext& duck, Args& args)
 {
+    bool success = control.loadServerArgs(args, u"control");
+
+    // Legacy options when --control is not specified.
+    if (!args.present(u"control")) {
+        args.getIPValue(control.server_addr, u"control-local");
+        control.server_addr.setPort(args.intValue<uint16_t>(u"control-port", 0));
+    }
+    else if (args.present(u"control-local") || args.present(u"control-port")) {
+        args.error(u"--control-local and --control-port are legacy options, do not use with --control");
+        success = false;
+    }
+
     app_name = args.appName();
     log_plugin_index = args.present(u"log-plugin-index");
     ts_buffer_size = args.intValue<size_t>(u"buffer-size-mb", DEFAULT_BUFFER_SIZE);
@@ -181,31 +210,25 @@ bool ts::TSProcessorArgs::loadArgs(DuckContext& duck, Args& args)
     args.getTristateValue(realtime, u"realtime");
     args.getChronoValue(receive_timeout, u"receive-timeout");
     args.getChronoValue(final_wait, u"final-wait", cn::milliseconds(-1));
-    args.getIPValue(control_local, u"control-local");
-    args.getIntValue(control_port, u"control-port", 0);
-    args.getChronoValue(control_timeout, u"control-timeout", DEFAULT_CONTROL_TIMEOUT);
-    control_reuse = args.present(u"control-reuse-port");
+    args.getChronoValue(control.receive_timeout, u"control-timeout", DEFAULT_CONTROL_TIMEOUT);
+    control.reuse_port = args.present(u"control-reuse-port");
 
     // Convert MB in MiB for buffer size for compatibility with original versions.
     ts_buffer_size = size_t((uint64_t(ts_buffer_size) * 1024 * 1024) / 1000000);
 
-    // Get and resolve optional allowed remote addresses.
-    control_sources.clear();
-    if (!args.present(u"control-source")) {
-        // By default, the local host is the only allowed address.
-        control_sources.push_back(IPAddress::LocalHost4);
-        control_sources.push_back(IPAddress::LocalHost6);
-    }
-    else {
-        for (size_t i = 0; i < args.count(u"control-source"); ++i) {
-            control_sources.push_back(args.ipValue(u"control-source", IPAddress(), i));
-        }
+    // Get optional allowed remote addresses.
+    success = control.loadAllowedClients(args, u"control-source") && success;
+    if (control.allowed_clients.empty() && (!control.use_tls || control.auth_token.empty())) {
+        // By default, without proper authenticatio, the local host is the only allowed address.
+        control.allowed_clients.insert(IPAddress::LocalHost4);
+        control.allowed_clients.insert(IPAddress::LocalHost6);
     }
 
     // Decode --add-input-stuffing nullpkt/inpkt.
     instuff_nullpkt = instuff_inpkt = 0;
     if (args.present(u"add-input-stuffing") && !args.value(u"add-input-stuffing").scan(u"%d/%d", &instuff_nullpkt, &instuff_inpkt)) {
         args.error(u"invalid value for --add-input-stuffing, use \"nullpkt/inpkt\" format");
+        success = false;
     }
 
     // Load all plugin descriptions.
@@ -225,7 +248,7 @@ bool ts::TSProcessorArgs::loadArgs(DuckContext& duck, Args& args)
     // Get default options for TSDuck contexts in each plugin.
     duck.saveArgs(duck_args);
 
-    return args.valid();
+    return success;
 }
 
 

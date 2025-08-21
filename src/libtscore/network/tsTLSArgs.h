@@ -12,7 +12,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsArgs.h"
+#include "tsIPArgs.h"
 
 namespace ts {
     //!
@@ -20,9 +20,15 @@ namespace ts {
     //! Can be set by fields or using command line options.
     //! @ingroup libtscore app
     //!
-    class TSCOREDLL TLSArgs
+    class TSCOREDLL TLSArgs: public IPArgs
     {
+        TS_RULE_OF_FIVE(TLSArgs, override);
     public:
+        //!
+        //! Explicit definition of the superclass.
+        //!
+        using SuperClass = IPArgs;
+
         //!
         //! Constructor.
         //! @param [in] description Short description of the TLS service.
@@ -34,88 +40,27 @@ namespace ts {
         TLSArgs(const UString& description = u"server", const UString& prefix = UString());
 
         // Common client and server options.
-        bool use_tls = false;             //!< Use SSL/TLS.
-        IPSocketAddress server_addr {};   //!< Server address and port. The address is optional on server side.
+        bool use_tls = false;          //!< Use SSL/TLS.
 
         // Server-specific options.
-        IPAddressSet allowed_clients {};  //!< White-list of allowed incoming clients.
-        IPAddressSet denied_clients {};   //!< Black-list of denied incoming clients.
-        UString certificate_store {};     //!< TLS server certificate store. @see TLSServer::setCertificateStore()
-        UString certificate_path {};      //!< TLS server certificate path. @see TLSServer::setCertificatePath()
-        UString key_path {};              //!< TLS server private key path. @see TLSServer::setKeyPath()
+        UString certificate_store {};  //!< TLS server certificate store. @see TLSServer::setCertificateStore()
+        UString certificate_path {};   //!< TLS server certificate path. @see TLSServer::setCertificatePath()
+        UString key_path {};           //!< TLS server private key path. @see TLSServer::setKeyPath()
 
         // Client-specific options.
-        bool insecure = false;            //!< Do not verify TLS server's certificate.
-        UString server_name {};           //!< Server host name (required in addition to server address for TLS).
+        bool insecure = false;         //!< Do not verify TLS server's certificate.
 
-        //!
-        //! Add command line options for a TLS server in an Args.
-        //! No options is defined for server [addr:]port because the description is probably too specific.
-        //! Same for lists of allowed and denied clients.
-        //! @param [in,out] args Command line arguments to update.
-        //!
-        void defineServerArgs(Args& args);
-
-        //!
-        //! Add some command line options for a TLS client in an Args.
-        //! No options is defined for server addr:port because the description is probably too specific.
-        //! @param [in,out] args Command line arguments to update.
-        //!
-        void defineClientArgs(Args& args);
-
-        //!
-        //! Load arguments for a TLS server from a command line.
-        //! Args error indicator is set in case of incorrect arguments.
-        //! @param [in,out] args Command line arguments.
-        //! @param [in] server_option Optional name of an option which defines the server port and optional address.
-        //! @return True on success, false on error in argument line.
-        //!
-        bool loadServerArgs(Args& args, const UChar* server_option = nullptr);
-
-        //!
-        //! Load arguments for a TLS client from a command line.
-        //! Args error indicator is set in case of incorrect arguments.
-        //! @param [in,out] args Command line arguments.
-        //! @param [in] server_option Optional name of an option which defines the server name and address.
-        //! Resolve server_addr and server_name.
-        //! @return True on success, false on error in argument line.
-        //!
-        bool loadClientArgs(Args& args, const UChar* server_option = nullptr);
-
-        //!
-        //! Load the set of allowed clients from a command line (server side).
-        //! @param [in,out] args Command line arguments.
-        //! @param [in] option Option which defines the client addresses.
-        //! @return True on success, false on error in argument line.
-        //!
-        bool loadAllowedClients(Args& args, const UChar* option) { return loadAddressesArgs(&TLSArgs::allowed_clients, args, option); }
-
-        //!
-        //! Load the set of denied clients from a command line (server side).
-        //! @param [in,out] args Command line arguments.
-        //! @param [in] option Option which defines the client addresses.
-        //! @return True on success, false on error in argument line.
-        //!
-        bool loadDeniedClients(Args& args, const UChar* option) { return loadAddressesArgs(&TLSArgs::denied_clients, args, option); }
-
-        //!
-        //! On the server side, check if a client address is allowed, based on sets of allowed and denied clients.
-        //! @param [in] client Incoming client address.
-        //! @return True if the client is allowed, false if it is denied.
-        //! 
-        bool isAllowed(const IPAddress& client) const;
+        // Inherited methods.
+        virtual void defineServerArgs(Args& args) override;
+        virtual void defineClientArgs(Args& args) override;
+        virtual bool loadServerArgs(Args& args, const UChar* server_option = nullptr) override;
+        virtual bool loadClientArgs(Args& args, const UChar* server_option = nullptr) override;
 
     protected:
-        UString _description;            //!< Short description of the TLS service.
-        UString _prefix;                 //!< Option prefix, ready to use in other option names.
         UString _opt_tls;                //!< Option name for --[prefix-]tls.
         UString _opt_insecure;           //!< Option name for --[prefix-]insecure.
         UString _opt_certificate_store;  //!< Option name for --[prefix-]store.
         UString _opt_certificate_path;   //!< Option name for --[prefix-]certificate-path.
         UString _opt_key_path;           //!< Option name for --[prefix-]key-path.
-
-    private:
-        // Common code for loadAllowedClients() and loadDeniedClients().
-        bool loadAddressesArgs(IPAddressSet TLSArgs::*, Args&, const UChar* option);
     };
 }

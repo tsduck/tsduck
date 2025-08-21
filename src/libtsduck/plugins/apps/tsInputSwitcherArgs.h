@@ -32,7 +32,6 @@ namespace ts {
         bool                fast_switch = false;    //!< Fast switch between input plugins.
         bool                delayed_switch = false; //!< Delayed switch between input plugins.
         bool                terminate = false;      //!< Terminate when one input plugin completes.
-        bool                reuse_port = false;     //!< Reuse-port socket option.
         size_t              first_input = 0;        //!< Index of first input plugin.
         size_t              primary_input = NPOS;   //!< Index of primary input plugin, NPOS if there is none.
         size_t              cycle_count = 1;        //!< Number of input cycles to execute (0 = infinite).

@@ -18,7 +18,7 @@
 #include "tstspOutputExecutor.h"
 #include "tsTSPControlCommand.h"
 #include "tsThread.h"
-#include "tsTCPServer.h"
+#include "tsTLSServer.h"
 
 namespace ts {
     namespace tsp {
@@ -62,7 +62,9 @@ namespace ts {
             TSProcessorArgs&      _options;
             Report                _log;
             TSPControlCommand     _reference {_log};
-            TCPServer             _server {};
+            TCPServer             _telnet_server {};
+            TLSServer             _tls_server {_options.control};
+            TLSConnection         _tls_client {_options.control};
             std::recursive_mutex& _global_mutex;
             InputExecutor*        _input = nullptr;
             OutputExecutor*       _output = nullptr;

@@ -13,7 +13,7 @@
 Send control commands to a running tsp process
 
 This utility controls the execution of a running `tsp` process.
-The target `tsp` command shall listen to control commands using the option `--control-port`
+The target `tsp` command shall listen to control commands using the option `--control`
 (see the documentation of `tsp`).
 
 [.usage]
@@ -42,13 +42,34 @@ The options of `tspcontrol` must be placed before the control command name.
 Options
 
 [.opt]
-*-t* _[address:]port_ +
-*--tsp* _[address:]port_
+*--insecure*
+
+[.optdoc]
+With `--tls`, do not verify the TLS server's certificate in the `tsp` process.
+See xref:opt-tls[xrefstyle=short] for more details.
+
+[.opt]
+*--tls*
+
+[.optdoc]
+Connect to the `tsp` process using SSL/TLS.
+By default, use unencrypted communications.
+See xref:opt-tls[xrefstyle=short] for more details.
+
+[.opt]
+*--token* _'string'_
+
+[.optdoc]
+With `--tls`, optional authentication token which is sent to the `tsp` process.
+See xref:opt-tls[xrefstyle=short] for more details.
+
+[.opt]
+*-t* _address:port_ +
+*--tsp* _address:port_
 
 [.optdoc]
 Specify the IP address (or host name) and port where the target `tsp` process expects control commands
-(`tsp` option `--control-port`).
-If the IP address is omitted, the local host is used.
+(`tsp` option `--control`).
 
 [.optdoc]
 This is a required parameter, there is no default.
@@ -155,3 +176,81 @@ m|*-v* +
 |Produce verbose output.
 
 |===
+
+[#tspcontrol-protocol]
+==== Protocol description
+
+By default, the communication between `tspcontrol` and `tsp` uses unencrypted communications.
+The protocol is based on Telnet, text lines using CR-LF as end-of-line marker.
+
+The command is sent and the response is read on the same channel, as in a good old Telnet session.
+
+Consider the following basic `tsp` command.
+The process accepts control commands on TCP port 5555.
+
+[source,shell]
+----
+$ tsp --control 5555 -b 1,000,000 -I null -P regulate -O drop
+----
+
+The following two commands list the plugins in the `tsp` process,
+once using `tspcontrol`, once using `telnet`.
+
+[source,shell]
+----
+$ tspcontrol --tsp localhost:5555 list
+ 0: -I null
+ 1: -P regulate
+ 2: -O drop
+$
+$ telnet localhost 5555
+Trying ::1...
+Connected to localhost.
+Escape character is '^]'.
+list
+ 0: -I null
+ 1: -P regulate
+ 2: -O drop
+Connection closed by foreign host.
+$
+----
+
+With option `--tls`, the communication uses an HTTP Web API in an encrypted SSL/TLS connection
+with an optional authorization token.
+The HTTP method shall be `POST` and the control command is passed as request data.
+The output of the command is returned as the response of the HTTP request.
+
+See xref:secure-control[xrefstyle=short] for more details.
+
+Consider the modified `tsp` which follows.
+It uses the TLS method and requires an authorization token to execute the command.
+Note that the appropriate environment variables were previously set to specify
+the server's private key and certificate.
+
+[source,shell]
+----
+$ tsp --control 5555 --control-tls --control-token My-Token -b 1,000,000 -I null -P regulate -O drop
+----
+
+The `tspcontrol` command now requires to specify `--tls` and the correct authorization token.
+
+The same result can be achieved, in a more complicated way, using the `curl` command
+to post the request.
+
+[source,shell]
+----
+$ tspcontrol --tsp localhost:5555 --tls --insecure --token My-Token list
+ 0: -I null
+ 1: -P regulate
+ 2: -O drop
+$ 
+$ curl -s -S -k -H 'Authorization: Token My-Token' https://localhost:5555/ -d 'list'
+ 0: -I null
+ 1: -P regulate
+ 2: -O drop
+$ 
+----
+
+Note that the option `--insecure` is required when `tsp` uses a self-signed certificate.
+Such a certificate is considered invalid and this option bypasses its verification.
+Similarly, the `curl` option `-k` means `--insecure`.

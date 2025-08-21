@@ -14,6 +14,7 @@
 #include "tsArgs.h"
 #include "tsTelnetConnection.h"
 #include "tsTSPControlCommand.h"
+#include "tsRestClient.h"
 TS_MAIN(MainCode);
 
 
@@ -30,7 +31,7 @@ namespace {
 
         ts::TSPControlCommand cmdline {*this};
         ts::UString           command {};
-        ts::IPSocketAddress   tsp_address {};
+        ts::RestArgs          rest {u"tsp process"};
 
         // Inherited methods.
         virtual ts::UString getHelpText(HelpFormat format, size_t line_width = DEFAULT_LINE_WIDTH) const override;
@@ -42,22 +43,23 @@ Options::Options(int argc, char *argv[]) :
 {
     cmdline.setShell(ts::Args::GetAppName(argc, argv));
 
+    rest.defineClientArgs(*this);
+
     option(u"", 0, STRING, 1, UNLIMITED_COUNT);
     help(u"", u"The control command to send to tsp.");
 
-    option(u"tsp", 't', IPSOCKADDR_OA, 1, 1);
+    option(u"tsp", 't', IPSOCKADDR, 1, 1);
     help(u"tsp",
          u"Specify the IP address (or host name) and port where the tsp process "
-         u"expects control commands (tsp option --control-port). "
-         u"If the IP address is omitted, the local host is used. "
+         u"expects control commands (tsp option --control). "
          u"This is a required parameter, there is no default.");
 
     analyze(argc, argv);
 
     // Build command line.
     ts::UStringVector args;
+    rest.loadClientArgs(*this, u"tsp");
     getValues(args, u"");
-    getSocketValue(tsp_address, u"tsp", ts::IPSocketAddress(ts::IPAddress::LocalHost4, ts::IPAddress::AnyPort));
     command.quotedLine(args);
 
     // Validate the control command. It will be validated inside tsp anyway
@@ -100,9 +102,9 @@ int MainCode(int argc, char *argv[])
     ts::IPSocketAddress addr;
     ts::UString resp;
 
-    if (client.open(opt.tsp_address.generation(), opt) &&
+    if (client.open(opt.rest.server_addr.generation(), opt) &&
         client.bind(addr, opt) &&
-        client.connect(opt.tsp_address, opt) &&
+        client.connect(opt.rest.server_addr, opt) &&
         telnet.sendLine(opt.command, opt) &&
         client.closeWriter(opt))
     {

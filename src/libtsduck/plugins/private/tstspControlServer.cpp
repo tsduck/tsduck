@@ -11,6 +11,7 @@
 #include "tsNullReport.h"
 #include "tsReportBuffer.h"
 #include "tsTelnetConnection.h"
+#include "tsRestServer.h"
 #include "tsSysUtils.h"
 
 
@@ -65,39 +66,59 @@ ts::tsp::ControlServer::~ControlServer()
 
 bool ts::tsp::ControlServer::open()
 {
-    if (_options.control_port == 0) {
+    if (!_options.control.server_addr.hasPort()) {
         // No control server, do nothing.
         return true;
     }
     else if (_is_open) {
-        _log.error(u"tsp control command server alread started");
+        _log.error(u"tsp control command server already started");
         return false;
     }
-    else {
-        // Open the TCP server.
-        const IPSocketAddress addr(_options.control_local, _options.control_port);
-        if (!_server.open(_options.control_local.generation(), _log) ||
-            !_server.reusePort(_options.control_reuse, _log) ||
-            !_server.bind(addr, _log) ||
-            !_server.listen(5, _log))
+    else if (_options.control.use_tls) {
+        // Open the TCP/TLS server.
+        if (!_tls_server.open(_options.control.server_addr.generation(), _log) ||
+            !_tls_server.reusePort(_options.control.reuse_port, _log) ||
+            !_tls_server.bind(_options.control.server_addr, _log) ||
+            !_tls_server.listen(16, _log))
         {
-            _server.close(NULLREP);
+            _tls_server.close(NULLREP);
+            return false;
+        }
+        // Do not request client certificate (this is the default anyway).
+        _tls_client.setVerifyPeer(false);
+    }
+    else {
+        // Open the TCP/Telnet server.
+        // The server will accept and process one client at a time.
+        // Therefore, be generous with the backlog.
+        if (!_telnet_server.open(_options.control.server_addr.generation(), _log) ||
+            !_telnet_server.reusePort(_options.control.reuse_port, _log) ||
+            !_telnet_server.bind(_options.control.server_addr, _log) ||
+            !_telnet_server.listen(16, _log))
+        {
+            _telnet_server.close(NULLREP);
             _log.error(u"error starting TCP server for control commands.");
             return false;
         }
-
-        // Start the thread.
-        _is_open = true;
-        return start();
     }
+
+    // Start the thread.
+    _is_open = true;
+    return start();
 }
 
 void ts::tsp::ControlServer::close()
 {
     if (_is_open) {
-        // Close the TCP server. This will force the server thread to terminate.
+        // Close the server. This will force the server thread to terminate.
         _terminate = true;
-        _server.close(NULLREP);
+        if (_options.control.use_tls) {
+            _tls_client.close(NULLREP);
+            _tls_server.close(NULLREP);
+        }
+        else {
+            _telnet_server.close(NULLREP);
+        }
 
         // Wait for the termination of the thread.
         waitForTermination();
@@ -118,37 +139,83 @@ void ts::tsp::ControlServer::main()
     ReportBuffer<ThreadSafety::None> error(_log.maxSeverity());
 
     // Client address and connection.
-    IPSocketAddress source;
+    IPSocketAddress client_addr;
     TCPConnection client;
-    UString line;
+    UString command_line;
 
     // Loop on incoming connections.
     // Since the commands are expected to be short, treat only one at a time.
-    while (_server.accept(client, source, error)) {
+    if (_options.control.use_tls) {
+        // Loop on incoming TLS/TCP clients.
+        while (!_terminate) {
 
-        TelnetConnection telnet(client);
+            // Do not terminate on accept() failure, this may be a client which fails the TLS handshake.
+            if (_tls_server.accept(_tls_client, client_addr, error)) {
 
-        // Filter allowed sources.
-        // Set receive timeout on the connection and read one line.
-        if (std::find(_options.control_sources.begin(), _options.control_sources.end(), IPAddress(source)) == _options.control_sources.end()) {
-            _log.warning(u"connection attempt from unauthorized source %s (ignored)", source);
-            telnet.sendLine("error: client address is not authorized", _log);
-        }
-        else if (client.setReceiveTimeout(_options.control_timeout, _log) && telnet.receiveLine(line, nullptr, _log)) {
-            _log.verbose(u"received from %s: %s", source, line);
+                // Process a request. In case of error, getRequest() closes the connection
+                RestServer rest(_options.control, _log);
+                if (rest.getRequest(_tls_client)) {
 
-            // Reset the severity of the connection before analysing the line.
-            // A previous analysis may have used --verbose or --debug.
-            telnet.setMaxSeverity(Severity::Info);
+                    // The command is in the POST data.
+                    rest.getPostText(command_line);
+                    command_line.trim();
+                    _log.verbose(u"received from %s: %s", client_addr, command_line);
 
-            // Analyze the command, return errors on the client connection.
-            if (_reference.processCommand(line, &telnet) != CommandStatus::SUCCESS) {
-                telnet.error(u"invalid tsp control command: %s", line);
+                    if (rest.method() != u"POST") {
+                        rest.setResponse(u"Invalid method\n");
+                        rest.sendResponse(_tls_client, 405, true); // 405 = Method Not Allowed
+                    }
+                    else if (command_line.empty()) {
+                        rest.setResponse(u"Empty command\n");
+                        rest.sendResponse(_tls_client, 400, true); // 400 = Bad Request
+                    }
+                    else {
+                        // Analyze and execute the command.
+                        ReportBuffer<ThreadSafety::None> command_log;
+                        if (_reference.processCommand(command_line, &command_log) != CommandStatus::SUCCESS) {
+                            command_log.error(u"invalid tsp control command: %s", command_line);
+                        }
+                        // Extract command output as a string. Add a final line feed if not empty.
+                        UString response(command_log.messages());
+                        if (!response.empty() && !response.ends_with('\n')) {
+                            response.append('\n');
+                        }
+                        // Send the command output to the client.
+                        rest.setResponse(response);
+                        rest.sendResponse(_tls_client, 200, true); // 200 = OK
+                    }
+                }
             }
         }
 
-        client.closeWriter(_log);
-        client.close(_log);
+    }
+    else {
+        // Loop on incoming clear TCP connections.
+        while (!_terminate && _telnet_server.accept(client, client_addr, error)) {
+
+            TelnetConnection telnet(client);
+
+            // Filter allowed sources. Set receive timeout on the connection and read one line.
+            if (!_options.control.isAllowed(IPAddress(client_addr))) {
+                _log.warning(u"connection attempt from unauthorized source %s (ignored)", client_addr);
+                telnet.sendLine("error: client address is not authorized", _log);
+            }
+            else if (client.setReceiveTimeout(_options.control.receive_timeout, _log) && telnet.receiveLine(command_line, nullptr, _log)) {
+                _log.verbose(u"received from %s: %s", client_addr, command_line);
+
+                // Reset the severity of the connection before analysing the line.
+                // A previous analysis may have used --verbose or --debug.
+                telnet.setMaxSeverity(Severity::Info);
+
+                // Analyze the command, return errors on the client connection.
+                if (_reference.processCommand(command_line, &telnet) != CommandStatus::SUCCESS) {
+                    telnet.error(u"invalid tsp control command: %s", command_line);
+                }
+            }
+
+            client.closeWriter(_log);
+            client.close(_log);
+        }
     }
 
     // If termination was requested, receive error is not an error.

@@ -124,7 +124,7 @@ TSDUCKPY bool tspyStartInputSwitcher(void* pyobj, const tspyInputSwitcherArgs* p
     args.terminate = bool(pyargs->terminate);
     args.fast_switch = bool(pyargs->fast_switch);
     args.delayed_switch = bool(pyargs->delayed_switch);
-    args.reuse_port = bool(pyargs->reuse_port);
+    args.remote_control.reuse_port = bool(pyargs->reuse_port);
     args.first_input = size_t(std::max<long>(0, pyargs->first_input));
     args.primary_input = pyargs->primary_input < 0 ? ts::NPOS : size_t(pyargs->primary_input);
     args.cycle_count = size_t(std::max<long>(0, pyargs->cycle_count));

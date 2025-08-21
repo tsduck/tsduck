@@ -509,29 +509,36 @@ By default, there is no input timeout.
 Control commands options
 
 It is possible to send commands to a running `tsp` process using the command `tspcontrol`.
-See the documentation of this command for more details on control commands.
+See the documentation of `tspcontrol` for more details on control commands.
 The following options control how these control commands are received.
 
 [.opt]
-*--control-local* _address_
-
-[.optdoc]
-With `--control-port`, specify the IP address of the local interface on which to listen for control commands.
-It can be also a host name that translates to a local address.
-By default, listen on all local interfaces.
-
-[.opt]
-*--control-port* _value_
+*--control* _[address:]port_
 
 [.optdoc]
 Specify the TCP port on which `tsp` listens for control commands.
+If an optional address is specified, it must be a local IP address of the system.
 If unspecified, no control commands are expected.
+
+[.opt]
+*--control-certificate-path* _name_
+
+[.optdoc]
+With `--control-tls`, path to the certificate for the control commands.
+See xref:opt-tls[xrefstyle=short] for more details.
+
+[.opt]
+*--control-key-path* _name_
+
+[.optdoc]
+With `--control-tls`, path to the private key for the control commands.
+See xref:opt-tls[xrefstyle=short] for more details.
 
 [.opt]
 *--control-reuse-port*
 
 [.optdoc]
-With `--control-port`, set the reuse port socket option on the control TCP server port.
+With `--control`, set the reuse port socket option on the control TCP server port.
 
 [.optdoc]
 This option is not enabled by default to avoid accidentally running two identical `tsp` commands with the same control port.
@@ -540,20 +547,43 @@ This option is not enabled by default to avoid accidentally running two identica
 *--control-source* _address_
 
 [.optdoc]
-With `--control-port`, specify a remote IP address which is allowed to send control commands.
+With `--control`, specify a remote IP address which is allowed to send control commands.
 
 [.optdoc]
-By default, as a security precaution, only the local host is allowed to connect.
+By default, as a security precaution, without both `--control-tls` and `--control-token`,
+only the local host is allowed to send control commands.
 
 [.optdoc]
 Several `--control-source` options are allowed.
 
 [.opt]
+*--control-store* _name_
+
+[.optdoc]
+With `--control-tls`, path to the certificate store for the control commands.
+See xref:opt-tls[xrefstyle=short] for more details.
+
+[.opt]
 *--control-timeout* _milliseconds_
 
 [.optdoc]
-With `--control-port`, specify the reception timeout in milliseconds for control commands.
+With `--control`, specify the reception timeout in milliseconds for control commands.
 The default timeout is 5000 ms.
+
+[.opt]
+*--control-tls*
+
+[.optdoc]
+The control commands use a SSL/TLS TCP Web API instead of a clear TCP connection.
+By default, the control commands accepts clear commands using a clear TCP connection.
+See xref:opt-tls[xrefstyle=short] for more details.
+
+[.opt]
+*--control-token* _'string'_
+
+[.optdoc]
+With `--control-tls`, optional authentication token that clients are required to provide with the control commands.
+See xref:opt-tls[xrefstyle=short] for more details.
 
 include::{docdir}/opt/group-monitor.adoc[tags=!*]
 include::{docdir}/opt/group-asynchronous-log.adoc[tags=!*;short-t]

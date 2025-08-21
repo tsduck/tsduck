@@ -13,7 +13,7 @@
 
 #pragma once
 #include "tsPluginOptions.h"
-#include "tsIPAddress.h"
+#include "tsRestArgs.h"
 
 namespace ts {
 
@@ -43,13 +43,9 @@ namespace ts {
         cn::milliseconds  bitrate_adj = DEFAULT_BITRATE_INTERVAL; //!< Bitrate adjust interval.
         PacketCounter     init_bitrate_adj = DEFAULT_INIT_BITRATE_PKT_INTERVAL; //!< As long as input bitrate is unknown, reevaluate periodically.
         Tristate          realtime = Tristate::Maybe; //!< Use real-time options.
-        cn::milliseconds  receive_timeout {}; //!< Timeout on input operations.
-        cn::milliseconds  final_wait = cn::milliseconds(-1); //!< Time to wait after last input packet. Zero means infinite, negative means none.
-        uint16_t          control_port = 0;         //!< TCP server port for control commands.
-        IPAddress         control_local {};         //!< Local interface on which to listen for control commands.
-        bool              control_reuse = false;    //!< Set the 'reuse port' socket option on the control TCP server port.
-        IPAddressVector   control_sources {};       //!< Remote IP addresses which are allowed to send control commands.
-        cn::milliseconds  control_timeout = DEFAULT_CONTROL_TIMEOUT; //!< Reception timeout in milliseconds for control commands.
+        cn::milliseconds  receive_timeout {};       //!< Timeout on input operations.
+        cn::milliseconds  final_wait = cn::milliseconds(-1);     //!< Time to wait after last input packet. Zero means infinite, negative means none.
+        RestArgs          control {u"control port", u"control"}; //!< Options for remote control (TCP/Telnet or TCP/TLS).
         DuckContext::SavedArgs duck_args {};        //!< Default TSDuck context options for all plugins. Each plugin can override them in its context.
         PluginOptions          input {};            //!< Input plugin description.
         PluginOptionsVector    plugins {};          //!< Packet processor plugins descriptions.
@@ -64,7 +60,7 @@ namespace ts {
         //!
         //! Constructor.
         //!
-        TSProcessorArgs() = default;
+        TSProcessorArgs();
 
         //!
         //! Add command line option definitions in an Args.
