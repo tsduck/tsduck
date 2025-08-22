@@ -33,7 +33,8 @@ bool ts::RestClient::call(const UString& api, const UString& post_data)
     }
     url.append(u"://");
     url.append(_args.server_name);
-    if (_args.server_addr.hasPort()) {
+    if (_args.server_addr.hasPort() && (!_args.server_name.contains(':') || _args.server_name.ends_with(']'))) {
+        // The port is not not in server name, add it now.
         url.format(u":%d", _args.server_addr.port());
     }
     if (!_args.api_root.empty()) {

@@ -64,12 +64,13 @@ With `--tls`, optional authentication token which is sent to the `tsp` process.
 See xref:opt-tls[xrefstyle=short] for more details.
 
 [.opt]
-*-t* _address:port_ +
-*--tsp* _address:port_
+*-t* [_address:]port_ +
+*--tsp* [_address:]port_
 
 [.optdoc]
 Specify the IP address (or host name) and port where the target `tsp` process expects control commands
 (`tsp` option `--control`).
+If the IP address is omitted, the local host is used.
 
 [.optdoc]
 This is a required parameter, there is no default.
@@ -198,7 +199,7 @@ once using `tspcontrol`, once using `telnet`.
 
 [source,shell]
 ----
-$ tspcontrol --tsp localhost:5555 list
+$ tspcontrol --tsp 5555 list
  0: -I null
  1: -P regulate
  2: -O drop
@@ -233,17 +234,21 @@ $ tsp --control 5555 --control-tls --control-token My-Token -b 1,000,000 -I null
 ----
 
 The `tspcontrol` command now requires to specify `--tls` and the correct authorization token.
+We can see that the next command, using an incorrect authorization token, receives an error status from `tsp`.
 
 The same result can be achieved, in a more complicated way, using the `curl` command
 to post the request.
 
 [source,shell]
 ----
-$ tspcontrol --tsp localhost:5555 --tls --insecure --token My-Token list
+$ tspcontrol --tsp 5555 --tls --insecure --token My-Token list
  0: -I null
  1: -P regulate
  2: -O drop
-$ 
+$
+$ tspcontrol --tsp 5555 --tls --insecure --token Wrong-Token list
+Unauthorized
+$
 $ curl -s -S -k -H 'Authorization: Token My-Token' https://localhost:5555/ -d 'list'
  0: -I null
  1: -P regulate
@@ -254,3 +259,6 @@ $
 Note that the option `--insecure` is required when `tsp` uses a self-signed certificate.
 Such a certificate is considered invalid and this option bypasses its verification.
 Similarly, the `curl` option `-k` means `--insecure`.
+
+To be clear, the option `--insecure` only bypasses the security checks on the TLS server.
+The authorization checks based on the token remain.

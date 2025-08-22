@@ -42,7 +42,8 @@ bool ts::IPArgs::loadServerArgs(Args& args, const UChar* server_option)
 {
     bool status = loadServerAddress(args, server_option);
 
-    // On a server, the port is mandatory, the address is optional (if bound to a local interface).
+    // On a server, the port is mandatory, the address is optional
+    // (used if the server is bound to a local interface).
     if (status && !server_name.empty() && !server_addr.hasPort()) {
         args.error(u"missing server port in --%s", server_option);
         status = false;
@@ -70,10 +71,21 @@ bool ts::IPArgs::loadClientArgs(Args& args, const UChar* server_option)
 {
     bool status = loadServerAddress(args, server_option);
 
-    // On a client, address and port are mandatory.
-    if (status && !server_name.empty() && (!server_addr.hasAddress() || !server_addr.hasPort())) {
-        args.error(u"missing server address or port in --%s", server_option);
-        status = false;
+    // On a client, server address and port are mandatory. However, this check is
+    // already done upstream when the option has been declared with type IPSOCKADDR
+    // for instance. If the option was declared as IPSOCKADDR_OA (optional address),
+    // omitting the address is explicitly allowed by the application and we must not
+    // be more restrictive here. However, for the client to connect to a server, we
+    // need an address. In that case, the only sensible default is localhost.
+    if (status && !server_name.empty()) {
+        if (!server_addr.hasAddress()) {
+            server_addr.setAddress(IPAddress::LocalHost4);
+            server_name = server_addr.toString();
+        }
+        if (!server_addr.hasPort()) {
+            args.error(u"missing server address or port in --%s", server_option);
+            status = false;
+        }
     }
 
     return status;
