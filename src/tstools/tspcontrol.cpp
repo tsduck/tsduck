@@ -104,7 +104,9 @@ int MainCode(int argc, char *argv[])
         if (api.call(u"/", opt.command)) {
             ts::UString resp;
             api.getResponseText(resp);
-            std::cout << resp << std::endl;
+            if (!resp.empty()) {
+                std::cout << resp << std::endl;
+            }
         }
     }
     else {
