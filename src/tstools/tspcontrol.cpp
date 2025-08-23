@@ -126,7 +126,7 @@ int MainCode(int argc, char *argv[])
             while (telnet.receiveLine(resp, nullptr, opt)) {
                 std::cout << resp << std::endl;
             }
-            client.close(opt);
+            client.close(NULLREP);
         }
     }
     return opt.valid() ? EXIT_SUCCESS : EXIT_FAILURE;

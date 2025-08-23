@@ -341,8 +341,8 @@ bool ts::RestServer::sendResponse(TCPConnection& conn, int http_status, bool clo
 
     // Close connection on error or on demand.
     if (close) {
-        conn.disconnect(_report);
-        conn.close(_report);
+        conn.disconnect(NULLREP);
+        conn.close(NULLREP);
     }
     else if (!success) {
         conn.close(NULLREP);
