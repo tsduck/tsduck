@@ -23,6 +23,11 @@
 
 namespace ts {
     //!
+    //! Standard Windows language code for US-English.
+    //!
+    constexpr ::DWORD US_ENGLISH_CODE = 0x0409;
+
+    //!
     //! Format a Windows error message (Windows-specific).
     //! @param [in] code An error status code.
     //! @return The corresponding message string.

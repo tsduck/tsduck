@@ -8,6 +8,9 @@
 
 #include "tsCryptoLibrary.h"
 #include "tsFeatures.h"
+#if defined(TS_WINDOWS)
+    #include "tsWinModuleInfo.h"
+#endif
 
 
 //----------------------------------------------------------------------------
@@ -30,8 +33,7 @@ TS_REGISTER_FEATURE(u"crypto", u"Cryptographic library", SUPPORT, ts::GetCryptog
 ts::UString ts::GetCryptographicLibraryVersion()
 {
 #if defined(TS_WINDOWS)
-    // Don't know how to get the version of BCrypt library.
-    return u"Microsoft BCrypt";
+    return WinModuleInfo(u"bcrypt.dll").summary();
 #else
     return OpenSSL::Version();
 #endif

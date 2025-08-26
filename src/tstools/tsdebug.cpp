@@ -30,6 +30,7 @@
 #include "tsjsonValue.h"
 #if defined(TS_WINDOWS)
     #include "tsWinUtils.h"
+    #include "tsWinModuleInfo.h"
 #endif
 TS_MAIN(MainCode);
 
@@ -111,6 +112,91 @@ ts::CommandStatus ts::ErrorCommands::error(const UString& command, Args& args)
 
     return CommandStatus::SUCCESS;
 }
+
+
+//----------------------------------------------------------------------------
+// Windows module information commands.
+//----------------------------------------------------------------------------
+
+#if defined(TS_WINDOWS)
+namespace ts {
+    class WinModuleCommands: public CommandLineHandler
+    {
+        TS_NOBUILD_NOCOPY(WinModuleCommands);
+    public:
+        WinModuleCommands(CommandLine& cmdline, int flags);
+        virtual ~WinModuleCommands() override;
+
+    private:
+        void displayInt(const UString& name, size_t width, uint64_t value);
+        // Command handlers.
+        CommandStatus moduleInfo(const UString&, Args&);
+    };
+}
+#endif
+
+
+//----------------------------------------------------------------------------
+// Windows module information commands constructor and destructor.
+//----------------------------------------------------------------------------
+
+#if defined(TS_WINDOWS)
+ts::WinModuleCommands::WinModuleCommands(CommandLine& cmdline, int flags)
+{
+    Args* cmd = cmdline.command(u"module", u"Display information of a Windows module file", u"[options] file", flags);
+    cmdline.setCommandLineHandler(this, &WinModuleCommands::moduleInfo, u"module");
+    cmd->option(u"", 0, Args::FILENAME, 1, 1);
+    cmd->help(u"", u"Module file name (DLL or executable).");
+}
+
+ts::WinModuleCommands::~WinModuleCommands()
+{
+}
+#endif
+
+
+//----------------------------------------------------------------------------
+// Windows module information command.
+//----------------------------------------------------------------------------
+
+#if defined(TS_WINDOWS)
+ts::CommandStatus ts::WinModuleCommands::moduleInfo(const UString& command, Args& args)
+{
+    WinModuleInfo info(args.value(u""));
+    if (info.isValid()) {
+        static const UString file_header(u"File version");
+        static const UString product_header(u"Product version");
+
+        // Max display size of names.
+        size_t max_width = std::max(file_header.size(), product_header.size());
+        for (const auto& it : WinModuleInfo::GetNames()) {
+            max_width = std::max(max_width, it.second.size());
+        }
+
+        // Display values.
+        displayInt(file_header, max_width, info.file_version_int);
+        displayInt(product_header, max_width, info.product_version_int);
+        for (const auto& it : WinModuleInfo::GetNames()) {
+            std::cout << UString::Format(u"%-*s  \"%s\"", max_width, it.second, info.*(it.first)) << std::endl;
+        }
+        std::cout << UString::Format(u"%-*s  \"%s\"", max_width, u"Summary", info.summary()) << std::endl;
+
+        return CommandStatus::SUCCESS;
+    }
+    else {
+        args.error(info.lastError());
+        return CommandStatus::ERROR;
+    }
+}
+
+void ts::WinModuleCommands::displayInt(const UString& name, size_t width, uint64_t value)
+{
+    std::cout << UString::Format(u"%-*s  0x%X (%d.%d.%d.%d)",
+                                 width, name, value,
+                                 value >> 48, (value >> 32) & 0xFFFF, (value >> 16) & 0xFFFF, value & 0xFFFF) 
+              << std::endl;
+}
+#endif
 
 
 //----------------------------------------------------------------------------
@@ -1178,6 +1264,9 @@ namespace ts {
         ClientCommands       client {cmdline, flags};
         URLCommands          url {cmdline, flags};
         RESTServerCommands   rest {cmdline, flags};
+#if defined(TS_WINDOWS)
+        WinModuleCommands    win_module {cmdline, flags};
+#endif
 
         // Inherited methods.
         virtual UString getHelpText(HelpFormat format, size_t line_width = DEFAULT_LINE_WIDTH) const override;

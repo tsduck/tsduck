@@ -12,6 +12,7 @@
 
 #include "tsTLSConnection.h"
 #include "tsWinTLS.h"
+#include "tsWinModuleInfo.h"
 #include "tsNullReport.h"
 #include "tsMemory.h"
 #include "tsNames.h"
@@ -23,8 +24,7 @@
 
 ts::UString ts::TLSConnection::GetLibraryVersion()
 {
-    // Don't know how to get the version of SChannel library.
-    return u"Microsoft SChannel";
+    return WinModuleInfo(u"schannel.dll").summary();
 }
 
 

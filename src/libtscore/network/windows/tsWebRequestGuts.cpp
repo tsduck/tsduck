@@ -25,6 +25,7 @@
 #include "tsWebRequest.h"
 #include "tsSysUtils.h"
 #include "tsWinUtils.h"
+#include "tsWinModuleInfo.h"
 #include "tsURL.h"
 
 #include "tsBeforeStandardHeaders.h"
@@ -35,6 +36,16 @@
 #if defined(TS_MSC)
     #pragma comment(lib, "Wininet.lib")
 #endif
+
+
+//----------------------------------------------------------------------------
+// Get the version of the underlying HTTP library.
+//----------------------------------------------------------------------------
+
+ts::UString ts::WebRequest::GetLibraryVersion()
+{
+    return WinModuleInfo(::InternetOpenW, nullptr).summary();
+}
 
 
 //----------------------------------------------------------------------------
@@ -473,15 +484,4 @@ void ts::WebRequest::SystemGuts::transmitResponseHeaders()
 
     // Pass the headers to the WebRequest.
     _request.processReponseHeaders(headers);
-}
-
-
-//----------------------------------------------------------------------------
-// Get the version of the underlying HTTP library.
-//----------------------------------------------------------------------------
-
-ts::UString ts::WebRequest::GetLibraryVersion()
-{
-    // Do not know which version...
-    return u"WinInet";
 }
