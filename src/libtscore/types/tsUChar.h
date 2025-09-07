@@ -52,6 +52,7 @@ namespace ts {
         CCHAR_CDIACRIT = 0x0200,  //!< The character is combining diacritical.
         CCHAR_SPACE    = 0x0400,  //!< The character is space.
         CCHAR_PRINT    = 0x0800,  //!< The character is printable.
+        CCHAR_BASE64   = 0x1000,  //!< The character is Base64.
     };
 
     //!
@@ -182,6 +183,17 @@ namespace ts {
     //! @return True if the two characters match.
     //!
     TSCOREDLL bool Match(UChar c1, UChar c2, CaseSensitivity cs);
+
+    //!
+    //! Check if a character is a valid Base64 character (excluding the padding character '=').
+    //! @ingroup cpp
+    //! @param [in] c A character.
+    //! @return True if @a c is a valid Base64 character.
+    //!
+    TSCOREDLL inline bool IsBase64(UChar c)
+    {
+        return (UCharacteristics(c) & CCHAR_BASE64) != 0;
+    }
 
     //!
     //! Check if a character contains an accent.
