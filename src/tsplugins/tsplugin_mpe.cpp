@@ -35,43 +35,64 @@ namespace ts {
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
+        // Identification of a UDP stream.
+        class StreamId
+        {
+        public:
+            StreamId() = default;
+            bool operator<(const StreamId&) const;
+            PID             mpe_pid = PID_NULL;
+            IPSocketAddress source {};
+            IPSocketAddress destination {};
+        };
+
+        // Characteristics of a UDP string.
+        class StreamData
+        {
+        public:
+            StreamData() = default;
+            uint64_t total_bytes = 0;
+            uint64_t datagram_count = 0;
+        };
+
         // Command line options.
-        bool          _log = false;             // Log MPE datagrams.
-        bool          _sync_layout = false;     // Display a layout of 0x47 sync bytes.
-        bool          _dump_datagram = false;   // Dump complete network datagrams.
-        bool          _dump_udp = false;        // Dump UDP payloads.
-        bool          _send_udp = false;        // Send all datagrams through UDP.
-        bool          _log_hexa_line = false;   // Log datagrams as one hexa line in the system message log.
-        bool          _signal_event = false;    // Signal a plugin event on MPE packet.
-        bool          _all_mpe_pids = false;    // Extract all MPE PID's.
-        bool          _outfile_append = false;  // Append file.
-        fs::path      _outfile_name {};         // Output file name.
-        UString       _log_hexa_prefix {};      // Prefix before hexa log line.
-        PacketCounter _max_datagram = 0;        // Maximum number of datagrams to extract.
-        size_t        _min_net_size = 0;        // Minimum size of network datagrams.
-        size_t        _max_net_size = 0;        // Maximum size of network datagrams.
-        size_t        _min_udp_size = 0;        // Minimum size of UDP datagrams.
-        size_t        _max_udp_size = 0;        // Maximum size of UDP datagrams.
-        size_t        _dump_max = 0;            // Max dump size in bytes.
-        size_t        _skip_size = 0;           // Initial bytes to skip for --dump and --output-file.
-        uint32_t      _event_code = 0;          // Event code to signal.
-        int           _ttl = 0;                 // Time to live option.
-        PIDSet        _pids {};                 // Explicitly specified PID's to extract.
-        IPSocketAddress _ip_source {};          // IP source filter.
-        IPSocketAddress _ip_dest {};            // IP destination filter.
-        IPSocketAddress _ip_forward {};         // Forwarded socket address.
-        IPAddress       _local_address {};      // Local IP address for UDP forwarding.
+        bool          _log = false;              // Log MPE datagrams.
+        bool          _sync_layout = false;      // Display a layout of 0x47 sync bytes.
+        bool          _dump_datagram = false;    // Dump complete network datagrams.
+        bool          _dump_udp = false;         // Dump UDP payloads.
+        bool          _send_udp = false;         // Send all datagrams through UDP.
+        bool          _log_hexa_line = false;    // Log datagrams as one hexa line in the system message log.
+        bool          _signal_event = false;     // Signal a plugin event on MPE packet.
+        bool          _all_mpe_pids = false;     // Extract all MPE PID's.
+        bool          _summary = false;          // Display a final summary.
+        bool          _outfile_append = false;   // Append file.
+        fs::path      _outfile_name {};          // Output file name.
+        UString       _log_hexa_prefix {};       // Prefix before hexa log line.
+        PacketCounter _max_datagram = 0;         // Maximum number of datagrams to extract.
+        size_t        _min_net_size = 0;         // Minimum size of network datagrams.
+        size_t        _max_net_size = 0;         // Maximum size of network datagrams.
+        size_t        _min_udp_size = 0;         // Minimum size of UDP datagrams.
+        size_t        _max_udp_size = 0;         // Maximum size of UDP datagrams.
+        size_t        _dump_max = 0;             // Max dump size in bytes.
+        size_t        _skip_size = 0;            // Initial bytes to skip for --dump and --output-file.
+        uint32_t      _event_code = 0;           // Event code to signal.
+        int           _ttl = 0;                  // Time to live option.
+        PIDSet        _pids {};                  // Explicitly specified PID's to extract.
+        IPSocketAddress _ip_source {};           // IP source filter.
+        IPSocketAddress _ip_dest {};             // IP destination filter.
+        IPSocketAddress _ip_forward {};          // Forwarded socket address.
+        IPAddress       _local_address {};       // Local IP address for UDP forwarding.
         uint16_t        _local_port = IPAddress::AnyPort; // Local UDP source port for UDP forwarding.
 
         // Plugin private fields.
-        bool          _abort = false;           // Error, abort asap.
+        bool          _abort = false;            // Error, abort asap.
         UDPSocket     _sock {false, IP::Any, *this};  // Outgoing UDP socket (forwarded datagrams).
-        int           _previous_uc_ttl = 0;     // Previous unicast TTL which was set.
-        int           _previous_mc_ttl = 0;     // Previous multicast TTL which was set.
-        PacketCounter _datagram_count = 0;      // Number of extracted datagrams.
-        std::ofstream _outfile {};              // Output file for extracted datagrams.
-        MPEDemux      _demux {duck, this};      // MPE demux to extract MPE datagrams.
-
+        int           _previous_uc_ttl = 0;      // Previous unicast TTL which was set.
+        int           _previous_mc_ttl = 0;      // Previous multicast TTL which was set.
+        PacketCounter _datagram_count = 0;       // Number of extracted datagrams.
+        std::ofstream _outfile {};               // Output file for extracted datagrams.
+        MPEDemux      _demux {duck, this};       // MPE demux to extract MPE datagrams.
+        std::map<StreamId, StreamData> _streams; // Collected data on UDP streams.
         // Inherited methods.
         virtual void handleMPENewPID(MPEDemux&, const PMT&, PID) override;
         virtual void handleMPEPacket(MPEDemux&, const MPEPacket&) override;
@@ -184,6 +205,10 @@ ts::MPEPlugin::MPEPlugin(TSP* tsp_) :
     help(u"source",
          u"Filter MPE UDP datagrams based on the specified source IP address.");
 
+    option(u"summary");
+    help(u"summary",
+         u"Display a final summary of all extracted UDP streams.");
+
     option(u"sync-layout");
     help(u"sync-layout",
          u"With --log, display the layout of 0x47 sync bytes in the UDP payload.");
@@ -227,6 +252,7 @@ bool ts::MPEPlugin::getOptions()
     _dump_udp = present(u"dump-udp");
     _log_hexa_line = present(u"log-hexa-line");
     _signal_event = present(u"event-code");
+    _summary = present(u"summary");
     _log = _sync_layout || (_dump_udp && !_signal_event) || _dump_datagram || _log_hexa_line || present(u"log");
     _send_udp = present(u"udp-forward");
     _outfile_append = present(u"append");
@@ -321,6 +347,7 @@ bool ts::MPEPlugin::start()
     }
 
     // Other states.
+    _streams.clear();
     _datagram_count = 0;
     _previous_uc_ttl = _previous_mc_ttl = 0;
 
@@ -344,7 +371,46 @@ bool ts::MPEPlugin::stop()
         _sock.close(*this);
     }
 
+    // Report final summary.
+    if (_summary) {
+        info(u"found %d UDP streams", _streams.size());
+        for (const auto& it : _streams) {
+            info(u"PID %n, src: %s, dest: %s, %'d datagrams, %'d bytes",
+                 it.first.mpe_pid, it.first.source, it.first.destination, it.second.datagram_count, it.second.total_bytes);
+        }
+    }
+
     return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Packet processing method
+//----------------------------------------------------------------------------
+
+ts::ProcessorPlugin::Status ts::MPEPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
+{
+    // Feed the MPE demux.
+    _demux.feedPacket(pkt);
+    return _abort ? TSP_END : TSP_OK;
+}
+
+
+//----------------------------------------------------------------------------
+// Comparison operator for StreamId (used as map index).
+//----------------------------------------------------------------------------
+
+bool ts::MPEPlugin::StreamId::operator<(const StreamId& other) const
+{
+    if (mpe_pid != other.mpe_pid) {
+        return mpe_pid < other.mpe_pid;
+    }
+    else if (source != other.source) {
+        return source < other.source;
+    }
+    else {
+        return destination < other.destination;
+    }
 }
 
 
@@ -409,34 +475,43 @@ void ts::MPEPlugin::handleMPEPacket(MPEDemux& demux, const MPEPacket& mpe)
     // Maximum dump size.
     dump_size = std::min(dump_size, _dump_max);
 
+    // Stream identification.
+    StreamId sid;
+    sid.mpe_pid = mpe.sourcePID();
+    sid.source = mpe.sourceSocket();
+    sid.destination = mpe.destinationSocket();
+
+    if (_summary) {
+        StreamData& sdata(_streams[sid]);
+        sdata.datagram_count++;
+        sdata.total_bytes += net_size;
+    }
+
     // Log MPE packets.
     if (_log_hexa_line) {
         info(_log_hexa_prefix + UString::Dump(dump_data, dump_size, UString::COMPACT));
     }
     else if (_log) {
         // Get destination IP and MAC address.
-        const IPAddress destIP(mpe.destinationIPAddress());
-        const MACAddress destMAC(mpe.destinationMACAddress());
+        const MACAddress dest_mac(mpe.destinationMACAddress());
 
         // If the destination IP address is a multicast one, check that the
         // destination MAC address is the correct one.
-        MACAddress mcMAC;
-        UString macComment;
-        if (mcMAC.toMulticast(destIP) && destMAC != mcMAC) {
-            macComment = u", should be " + mcMAC.toString();
+        MACAddress mc_mac;
+        UString mac_comment;
+        if (mc_mac.toMulticast(sid.destination) && dest_mac != mc_mac) {
+            mac_comment = u", should be " + mc_mac.toString();
         }
 
         // Finally log the complete message.
         UString dump;
-        if (dump_size > 0) {
+        if (dump_size > 0 && (_dump_udp || _dump_datagram)) {
             dump.append(u"\n");
             dump.appendDump(dump_data, dump_size, UString::HEXA | UString::ASCII | UString::OFFSET | UString::BPL, 2, 16);
         }
-        info(u"PID %n, src: %s:%d, dest: %s:%d (%s%s), %d bytes, fragment: 0x%X%s%s",
-             mpe.sourcePID(), mpe.sourceIPAddress(), mpe.sourceUDPPort(),
-             destIP, mpe.destinationUDPPort(), destMAC, macComment, udp_size,
-             GetUInt16(mpe.datagram() + 6), syncLayoutString(udp_data, udp_size),
-             dump);
+        info(u"PID %n, src: %s, dest: %s (%s%s), %d bytes, fragment: 0x%X%s%s",
+             sid.mpe_pid, sid.source, sid.destination, dest_mac, mac_comment, udp_size, GetUInt16(mpe.datagram() + 6),
+             syncLayoutString(udp_data, udp_size), dump);
     }
 
     // Save UDP messages in binary file.
@@ -559,16 +634,4 @@ ts::UString ts::MPEPlugin::syncLayoutString(const uint8_t* udp, size_t udp_size)
     }
 
     return result;
-}
-
-
-//----------------------------------------------------------------------------
-// Packet processing method
-//----------------------------------------------------------------------------
-
-ts::ProcessorPlugin::Status ts::MPEPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
-{
-    // Feed the MPE demux.
-    _demux.feedPacket(pkt);
-    return _abort ? TSP_END : TSP_OK;
 }

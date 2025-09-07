@@ -2,6 +2,21 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
+VERSION 3.43-4423 (September 2025)
+
+[IMP] Improvements on existing commands and plugins:
+
+  * New options in existing commands and plugins:
+    - Option --summary in plugin "mpe".
+
+[BUG] Bug fixes:
+
+  * With plugin "mpe",  with  option  --log  but  without  --dump-datagram  and
+    --dump-udp, the content of the extracted datagram with displayed instead of
+    the expected one-line description of the datagram.
+
+-------------------------------------------------------------------------------
+
 VERSION 3.42-4421 (August 2025)
 
 [NEW] New commands and plugins:

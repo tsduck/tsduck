@@ -160,6 +160,12 @@ With `--output-file`, `--dump-datagram`, `--dump-udp` or `--log-hexa-line`, spec
 By default, save or dump from the beginning.
 
 [.opt]
+*--summary*
+
+[.optdoc]
+Display a final summary of all extracted UDP streams.
+
+[.opt]
 *--sync-layout*
 
 [.optdoc]
