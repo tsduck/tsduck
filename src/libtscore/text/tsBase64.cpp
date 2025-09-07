@@ -83,9 +83,9 @@ void ts::Base64::encodeBlock(UString& b64, const uint8_t* data, size_t size)
     // Encode input data: encode first byte, then shift buffer and loop.
     for (size_t i = 0; i < b64_size[size]; ++i) {
         encodeOne(b64, alphabet[in[0] >> 2]);
-        in[0] = (in[0] << 6) | (in[1] >> 2);
-        in[1] = (in[1] << 6) | (in[2] >> 2);
-        in[2] = (in[2] << 6);
+        in[0] = uint8_t(in[0] << 6) | (in[1] >> 2);
+        in[1] = uint8_t(in[1] << 6) | (in[2] >> 2);
+        in[2] = uint8_t(in[2] << 6);
     }
 
     // Add optional padding.
@@ -184,11 +184,11 @@ bool ts::Base64::decodeBlock(ByteBlock& bin, const UChar* b64, size_t size)
     const size_t out_size = bin_size[char_count];
     uint8_t* out = bin.enlarge(out_size);
     if (out_size > 0) {
-        out[0] = (dec[0] << 2) | (dec[1] >> 4);
+        out[0] = uint8_t(dec[0] << 2) | (dec[1] >> 4);
         if (out_size > 1) {
-            out[1] = (dec[1] << 4) | (dec[2] >> 2);
+            out[1] = uint8_t(dec[1] << 4) | (dec[2] >> 2);
             if (out_size > 2) {
-                out[2] = (dec[2] << 6) | dec[3];
+                out[2] = uint8_t(dec[2] << 6) | dec[3];
             }
         }
     }
