@@ -41,7 +41,7 @@ namespace ts {
 
         //!
         //! All DVB-defined tags (commands and parameters).
-        //! Tags is defined as struct instead of namespace to be used as traits/
+        //! Tags is defined as struct instead of namespace to be used as traits.
         //!
         struct TSDUCKDLL Tags {
             //!

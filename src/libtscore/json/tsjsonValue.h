@@ -117,32 +117,32 @@ namespace ts::json {
         virtual bool isArray() const;
         //!
         //! Convert this instance to a boolean.
-        //! @param [in] defaultValue Default value to return when no conversion is possible.
-        //! @return The boolean value of this instance or @a defaultValue if no conversion is possible.
+        //! @param [in] default_value Default value to return when no conversion is possible.
+        //! @return The boolean value of this instance or @a default_value if no conversion is possible.
         //! For numbers, zero is false, all other values are true. For string, "yes", "true", "on" and
         //! non-zero integers are true; "no", "false", "off" and zero integers are false.
         //!
-        virtual bool toBoolean(bool defaultValue = false) const;
+        virtual bool toBoolean(bool default_value = false) const;
         //!
         //! Convert this instance to an integer.
-        //! @param [in] defaultValue Default value to return when no conversion is possible.
-        //! @return The integer value of this instance or @a defaultValue if no conversion is possible.
+        //! @param [in] default_value Default value to return when no conversion is possible.
+        //! @return The integer value of this instance or @a default_value if no conversion is possible.
         //! Strings containing integers are converted.
         //!
-        virtual int64_t toInteger(int64_t defaultValue = 0) const;
+        virtual int64_t toInteger(int64_t default_value = 0) const;
         //!
         //! Convert this instance to a double-precision float.
-        //! @param [in] defaultValue Default value to return when no conversion is possible.
-        //! @return The floating-point value of this instance or @a defaultValue if no conversion is possible.
+        //! @param [in] default_value Default value to return when no conversion is possible.
+        //! @return The floating-point value of this instance or @a default_value if no conversion is possible.
         //! Strings containing floats are converted.
         //!
-        virtual double toFloat(double defaultValue = 0.0) const;
+        virtual double toFloat(double default_value = 0.0) const;
         //!
         //! Convert this instance to a string.
-        //! @param [in] defaultValue Default value to return when no conversion is possible.
-        //! @return The string value of this instance or @a defaultValue if no conversion is possible.
+        //! @param [in] default_value Default value to return when no conversion is possible.
+        //! @return The string value of this instance or @a default_value if no conversion is possible.
         //!
-        virtual UString toString(const UString& defaultValue = UString()) const;
+        virtual UString toString(const UString& default_value = UString()) const;
         //!
         //! Clear the content of the value;
         //!

@@ -29,22 +29,22 @@ void ts::json::False::print(TextFormatter& output) const
     output << "false";
 }
 
-bool ts::json::False::toBoolean(bool defaultValue) const
+bool ts::json::False::toBoolean(bool default_value) const
 {
     return false;
 }
 
-int64_t ts::json::False::toInteger(int64_t defaultValue) const
+int64_t ts::json::False::toInteger(int64_t default_value) const
 {
     return 0;
 }
 
-double ts::json::False::toFloat(double defaultValue) const
+double ts::json::False::toFloat(double default_value) const
 {
     return 0.0;
 }
 
-ts::UString ts::json::False::toString(const UString& defaultValue) const
+ts::UString ts::json::False::toString(const UString& default_value) const
 {
     return u"false";
 }

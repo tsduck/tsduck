@@ -30,17 +30,17 @@ void ts::json::Number::print(TextFormatter& output) const
     output << toString();
 }
 
-bool ts::json::Number::toBoolean(bool defaultValue) const
+bool ts::json::Number::toBoolean(bool default_value) const
 {
     return false;
 }
 
-int64_t ts::json::Number::toInteger(int64_t defaultValue) const
+int64_t ts::json::Number::toInteger(int64_t default_value) const
 {
     return _integer;
 }
 
-double ts::json::Number::toFloat(double defaultValue) const
+double ts::json::Number::toFloat(double default_value) const
 {
     return _float;
 }
@@ -50,7 +50,7 @@ bool ts::json::Number::isInteger() const
     return equal_float(double(_integer), _float);
 }
 
-ts::UString ts::json::Number::toString(const UString& defaultValue) const
+ts::UString ts::json::Number::toString(const UString& default_value) const
 {
     return isInteger() ? UString::Decimal(_integer, 0, true, UString()) : UString::Float(_float);
 }

@@ -17,7 +17,7 @@
 ts::TextFormatter::TextFormatter(Report& report) :
     AbstractOutputStream(),
     _report(report),
-    _out(&_outFile)  // _out is never null, points by default to a closed file (discard output)
+    _out(&_out_file)  // _out is never null, points by default to a closed file (discard output)
 {
 }
 
@@ -47,13 +47,13 @@ bool ts::TextFormatter::setFile(const fs::path& fileName)
 {
     close();
     _report.debug(u"creating file %s", fileName);
-    _outFile.open(fileName, std::ios::out);
-    if (!_outFile) {
+    _out_file.open(fileName, std::ios::out);
+    if (!_out_file) {
         _report.error(u"cannot create file %s", fileName);
         return false;
     }
     else {
-        _out = &_outFile;
+        _out = &_out_file;
         return true;
     }
 }
@@ -66,7 +66,7 @@ bool ts::TextFormatter::setFile(const fs::path& fileName)
 ts::TextFormatter& ts::TextFormatter::setString()
 {
     close();
-    _out = &_outString;
+    _out = &_out_string;
     return *this;
 }
 
@@ -77,7 +77,7 @@ ts::TextFormatter& ts::TextFormatter::setString()
 
 bool ts::TextFormatter::getString(UString& str)
 {
-    if (_out != &_outString) {
+    if (_out != &_out_string) {
         // Output is not set to string.
         str.clear();
         return false;
@@ -85,7 +85,7 @@ bool ts::TextFormatter::getString(UString& str)
     else {
         // Get internal buffer, do not reset it.
         flush();
-        str.assignFromUTF8(_outString.str());
+        str.assignFromUTF8(_out_string.str());
         // Cleanup end of lines.
         str.substitute(UString(1, CARRIAGE_RETURN), UString());
         return true;
@@ -106,7 +106,7 @@ ts::UString ts::TextFormatter::toString()
 
 bool ts::TextFormatter::isOpen() const
 {
-    return _out != &_outFile || _outFile.is_open();
+    return _out != &_out_file || _out_file.is_open();
 }
 
 
@@ -120,22 +120,22 @@ void ts::TextFormatter::close()
     flush();
 
     // Close resources.
-    if (_out == &_outString) {
+    if (_out == &_out_string) {
         // Output is set to string. Reset internal buffer.
-        _outString.str(std::string());
+        _out_string.str(std::string());
     }
-    if (_outFile.is_open()) {
-        _outFile.close();
+    if (_out_file.is_open()) {
+        _out_file.close();
     }
 
     // Set output to a closed file. Thus, _out is never null, it is safe to
     // output to *_out, but output is discarded (closed file).
-    _out = &_outFile;
+    _out = &_out_file;
 
     // Reset margin.
     _column = 0;
-    _afterSpace = false;
-    _curMargin = _margin;
+    _after_space = false;
+    _cur_margin = _margin;
 }
 
 
@@ -147,10 +147,10 @@ ts::TextFormatter& ts::TextFormatter::setMarginSize(size_t margin)
 {
     // Try to adjust current margin by the same amount.
     if (margin > _margin) {
-        _curMargin += margin - _margin;
+        _cur_margin += margin - _margin;
     }
     else if (margin < _margin) {
-        _curMargin -= std::min(_curMargin, _margin - margin);
+        _cur_margin -= std::min(_cur_margin, _margin - margin);
     }
 
     // Set the new margin.
@@ -172,18 +172,18 @@ bool ts::TextFormatter::writeStreamBuffer(const void* addr, size_t size)
             // Without formatting, a tabulation is just one space.
             do {
                 *_out << ' ';
-            } while (++_column % _tabSize != 0 && _formatting);
+            } while (++_column % _tab_size != 0 && _formatting);
         }
         else if (*p == '\r' || *p == '\n') {
             // CR and LF indifferently move back to begining of current/next line.
             *_out << *p;
             _column = 0;
-            _afterSpace = false;
+            _after_space = false;
         }
         else {
             *_out << *p;
             ++_column;
-            _afterSpace = _afterSpace || *p != ' ';
+            _after_space = _after_space || *p != ' ';
         }
     }
     return !_out->fail();
@@ -196,12 +196,12 @@ bool ts::TextFormatter::writeStreamBuffer(const void* addr, size_t size)
 
 ts::TextFormatter& ts::TextFormatter::setEndOfLineMode(EndOfLineMode mode)
 {
-    if (mode != _eolMode) {
+    if (mode != _eol_mode) {
         // Flush to apply previous format to pending output.
         flush();
         // Then switch format.
-        _eolMode = mode;
-        _formatting = _eolMode != EndOfLineMode::SPACING && _eolMode != EndOfLineMode::NONE;
+        _eol_mode = mode;
+        _formatting = _eol_mode != EndOfLineMode::SPACING && _eol_mode != EndOfLineMode::NONE;
     }
     return *this;
 }
@@ -217,31 +217,31 @@ ts::TextFormatter& ts::TextFormatter::endl()
     flush();
 
     // Different types of end-of-line.
-    switch (_eolMode) {
+    switch (_eol_mode) {
         case EndOfLineMode::NATIVE:
             *_out << std::endl;
             _column = 0;
-            _afterSpace = false;
+            _after_space = false;
             break;
         case EndOfLineMode::CR:
             *_out << CARRIAGE_RETURN;
             _column = 0;
-            _afterSpace = false;
+            _after_space = false;
             break;
         case EndOfLineMode::LF:
             *_out << LINE_FEED;
             _column = 0;
-            _afterSpace = false;
+            _after_space = false;
             break;
         case EndOfLineMode::CRLF:
             *_out << CARRIAGE_RETURN << LINE_FEED;
             _column = 0;
-            _afterSpace = false;
+            _after_space = false;
             break;
         case EndOfLineMode::SPACING:
             *_out << SPACE;
             _column++;
-            _afterSpace = false;
+            _after_space = false;
             break;
         case EndOfLineMode::NONE:
         default:
@@ -265,13 +265,13 @@ ts::TextFormatter& ts::TextFormatter::margin()
 
         // New line if we are farther than the margin. Also new line when we are no longer
         // in the margin ("after space") even if we do not exceed the margin size.
-        if (_column > _curMargin || _afterSpace) {
+        if (_column > _cur_margin || _after_space) {
             endl();
         }
 
         // Move to the margin.
-        *_out << std::string(_curMargin - _column, ' ');
-        _column = _curMargin;
+        *_out << std::string(_cur_margin - _column, ' ');
+        _column = _cur_margin;
     }
     return *this;
 }

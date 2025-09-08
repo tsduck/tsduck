@@ -248,7 +248,7 @@ void ts::SectionFile::reorganizeEITs(const ts::Time& reftime, EITOptions options
 
 void ts::SectionFile::rebuildTables()
 {
-    // Restart from scratch/
+    // Restart from scratch.
     _tables.clear();
     _orphanSections.clear();
 

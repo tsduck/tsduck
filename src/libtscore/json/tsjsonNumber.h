@@ -40,10 +40,10 @@ namespace ts::json {
         virtual bool isNumber() const override;
         virtual bool isInteger() const override;
         virtual void print(TextFormatter& output) const override;
-        virtual bool toBoolean(bool defaultValue = false) const override;
-        virtual int64_t toInteger(int64_t defaultValue = 0) const override;
-        virtual double toFloat(double defaultValue = 0.0) const override;
-        virtual UString toString(const UString& defaultValue = UString()) const override;
+        virtual bool toBoolean(bool default_value = false) const override;
+        virtual int64_t toInteger(int64_t default_value = 0) const override;
+        virtual double toFloat(double default_value = 0.0) const override;
+        virtual UString toString(const UString& default_value = UString()) const override;
         virtual void clear() override;
 
     private:

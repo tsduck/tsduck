@@ -29,19 +29,19 @@ void ts::json::String::print(TextFormatter& output) const
     output << '"' << _value.toJSON() << '"';
 }
 
-int64_t ts::json::String::toInteger(int64_t defaultValue) const
+int64_t ts::json::String::toInteger(int64_t default_value) const
 {
     int64_t i = 0;
-    return _value.toInteger(i) ? i : defaultValue;
+    return _value.toInteger(i) ? i : default_value;
 }
 
-double ts::json::String::toFloat(double defaultValue) const
+double ts::json::String::toFloat(double default_value) const
 {
     double f = 0.0;
-    return _value.toFloat(f) ? f : defaultValue;
+    return _value.toFloat(f) ? f : default_value;
 }
 
-bool ts::json::String::toBoolean(bool defaultValue) const
+bool ts::json::String::toBoolean(bool default_value) const
 {
     int i = 0;
     if (_value.similar(u"true") || _value.similar(u"yes") || _value.similar(u"on") || (_value.toInteger(i) && i != 0)) {
@@ -51,11 +51,11 @@ bool ts::json::String::toBoolean(bool defaultValue) const
         return false;
     }
     else {
-        return defaultValue;
+        return default_value;
     }
 }
 
-ts::UString ts::json::String::toString(const UString& defaultValue) const
+ts::UString ts::json::String::toString(const UString& default_value) const
 {
     return _value;
 }

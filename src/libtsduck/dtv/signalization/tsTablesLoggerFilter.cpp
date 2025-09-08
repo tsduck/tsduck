@@ -117,7 +117,7 @@ bool ts::TablesLoggerFilter::loadFilterOptions(DuckContext& duck, Args& args, PI
         _pids.flip();
     }
 
-    // With --psi-si, accumulate all PSI/SI PID's/
+    // With --psi-si, accumulate all PSI/SI PID's.
     // Build the list of PID's to filter (--pid and/or --psi-si).
     if (_psi_si) {
         _pids.set(PID_PAT);

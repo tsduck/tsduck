@@ -24,10 +24,10 @@ bool ts::json::Value::isString()  const { return false; }
 bool ts::json::Value::isObject()  const { return false; }
 bool ts::json::Value::isArray()   const { return false; }
 
-bool ts::json::Value::toBoolean(bool defaultValue) const { return defaultValue; }
-int64_t ts::json::Value::toInteger(int64_t defaultValue) const { return defaultValue; }
-double ts::json::Value::toFloat(double defaultValue) const { return defaultValue; }
-ts::UString ts::json::Value::toString(const UString& defaultValue) const { return defaultValue; }
+bool ts::json::Value::toBoolean(bool default_value) const { return default_value; }
+int64_t ts::json::Value::toInteger(int64_t default_value) const { return default_value; }
+double ts::json::Value::toFloat(double default_value) const { return default_value; }
+ts::UString ts::json::Value::toString(const UString& default_value) const { return default_value; }
 
 void ts::json::Value::clear() {}
 void ts::json::Value::erase(size_t index, size_t count) {}
