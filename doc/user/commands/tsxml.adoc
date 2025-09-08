@@ -171,7 +171,7 @@ This option verifies that the input files are valid resource monitoring configur
 Specify the name of the output file (standard output by default).
 
 [.optdoc]
-An output file is produced only if `--patch`, `--reformat` or `--json` are specified.
+An output file is produced only if at least one of `--patch`, `--reformat`, `--json`, `--yaml` is specified.
 
 [.opt]
 *-p* _filename_ +
@@ -236,6 +236,12 @@ Output each transformed input XML file as one single XML line in the message log
 [.optdoc]
 The optional string parameter specifies a prefix to prepend on the log line before the XML text
 to facilitate the filtering of the appropriate line in the logs.
+
+[.opt]
+*--yaml*
+
+[.optdoc]
+Convert the XML content to YAML (experimental).
 
 include::{docdir}/opt/group-xml-tweaks.adoc[tags=!*]
 include::{docdir}/opt/group-json-output.adoc[tags=!*]
