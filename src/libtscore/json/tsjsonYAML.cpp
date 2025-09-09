@@ -130,15 +130,19 @@ void ts::json::YAML::PrintLiteralBlock(TextFormatter& out, const UString& str)
     // Print line by line. Assume that the string does not need to be quoted.
     const size_t length = str.length();
     for (size_t i = 0; i < length; ++i) {
-        const UChar c = str[i];
-        if (c != '\r') {
-            if (c != '\n') {
-                out << c;
-            }
-            else if (i < length - 1) {
-                // Do not print the last EOL.
-                out << ts::endl << ts::margin;
-            }
+        // Find next CR or LF.
+        const size_t crlf = str.find_first_of(u"\r\n", i);
+        if (crlf == NPOS) {
+            out << str.substr(i);
+            break;
+        }
+        else if (crlf > i) {
+            out << str.substr(i, crlf - i);
+            i = crlf - 1;
+        }
+        else if (str[i] == '\n' && i < length - 1) {
+            // Do not print the last EOL.
+            out << ts::endl << ts::margin;
         }
     }
 
@@ -215,12 +219,10 @@ void ts::json::YAML::PrintValueAsYAML(TextFormatter& out, const json::Value& val
             else {
                 UStringList keys;
                 value.getNames(keys);
-                bool started = false;
                 for (auto& k : keys) {
-                    if (started) {
+                    if (out.currentColumn() > out.currentMargin()) {
                         out << ts::endl << ts::margin;
                     }
-                    started = true;
                     const Value& v(value.value(k));
                     k.remove('\r');
                     if (GetStringType(k) == StringType::KEY) {
@@ -242,7 +244,10 @@ void ts::json::YAML::PrintValueAsYAML(TextFormatter& out, const json::Value& val
             }
             else {
                 for (size_t i = 0; i < max_index; i++) {
-                    out << ts::endl << ts::margin << "- " << ts::indent;
+                    if (out.currentColumn() > out.currentMargin()) {
+                        out << ts::endl << ts::margin;
+                    }
+                    out << "- " << ts::indent;
                     PrintValueAsYAML(out, value.at(i));
                     out << ts::unindent;
                 }

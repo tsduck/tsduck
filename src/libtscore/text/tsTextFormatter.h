@@ -162,6 +162,19 @@ namespace ts {
         void close();
 
         //!
+        //! Get the current margin, at current level of indentation.
+        //! @return The current margin.
+        //!
+        size_t currentMargin() const { return _cur_margin; }
+
+        //!
+        //! Get the current column.
+        //! A flush is forced to update the column.
+        //! @return The current column.
+        //!
+        size_t currentColumn();
+
+        //!
         //! Insert all necessary new-lines and spaces to move to the current margin.
         //! @return A reference to this object.
         //! @see I/O manipulator ts::margin()

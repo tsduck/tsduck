@@ -251,6 +251,19 @@ ts::TextFormatter& ts::TextFormatter::endl()
     return *this;
 }
 
+
+//----------------------------------------------------------------------------
+// Get the current column.
+//----------------------------------------------------------------------------
+
+size_t ts::TextFormatter::currentColumn()
+{
+    // Force a flsuh to make sure writeStreamBuffer() is invoked and updates _column.
+    flush();
+    return _column;
+}
+
+
 //----------------------------------------------------------------------------
 // Insert all necessary new-lines and spaces to move to the current margin.
 //----------------------------------------------------------------------------

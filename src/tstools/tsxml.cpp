@@ -51,6 +51,7 @@ namespace {
         bool                     expand_input = false;  // Expand environment variables in input files.
         bool                     expand_patch = false;  // Expand environment variables in patch files.
         bool                     yaml_output = false;   // Generate an output in YAML format.
+        bool                     no_yaml_head = false;  // No YAML header and trailer.
         bool                     need_output = false;   // An output file is needed.
         ts::UString              xml_prefix {};         // Prefix in XML line.
         size_t                   indent = 2;            // Output indentation.
@@ -173,6 +174,10 @@ Options::Options(int argc, char *argv[]) :
     help(u"yaml",
          u"Convert the XML content to YAML (experimental).");
 
+    option(u"no-yaml-header");
+    help(u"no-yaml-header",
+         u"With --yaml, do not add the standard YAML header and trailer.");
+
     analyze(argc, argv);
 
     json.loadArgs(*this);
@@ -189,6 +194,7 @@ Options::Options(int argc, char *argv[]) :
     xml_line = present(u"xml-line");
     from_json = present(u"from-json");
     yaml_output = present(u"yaml");
+    no_yaml_head = present(u"no-yaml-header");
     merge_inputs = present(u"merge");
     expand_input = present(u"expand-environment");
     expand_patch = present(u"expand-patch-xml");
@@ -219,7 +225,7 @@ Options::Options(int argc, char *argv[]) :
     }
 
     // An output file wil be produced.
-    need_output = reformat || uncomment || merge_inputs || json.useFile() || from_json || expand_input;
+    need_output = reformat || uncomment || merge_inputs || json.useFile() || yaml_output || from_json || expand_input;
 
     exitOnError();
 }
@@ -313,7 +319,7 @@ namespace {
             if (opt.yaml_output) {
                 ts::TextFormatter text(opt);
                 text.setStream(std::cout);
-                ts::json::YAML::PrintAsYAML(text, *jobj, true);                  
+                ts::json::YAML::PrintAsYAML(text, *jobj, !opt.no_yaml_head);
             }
         }
         else if (opt.need_output) {

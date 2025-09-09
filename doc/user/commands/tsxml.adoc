@@ -164,6 +164,12 @@ A shortcut for `--model tscore.monitor.model.xml`.
 This option verifies that the input files are valid resource monitoring configuration files.
 
 [.opt]
+*--no-yaml-header*
+
+[.optdoc]
+With `--yaml`, do not add the standard YAML header and trailer.
+
+[.opt]
 *-o* _filename_ +
 *--output* _filename_
 

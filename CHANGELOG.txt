@@ -2,13 +2,13 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.43-4428 (September 2025)
+VERSION 3.43-4429 (September 2025)
 
 [IMP] Improvements on existing commands and plugins:
 
   * New options in existing commands and plugins:
     - Option --summary in plugin "mpe".
-    - Option --yaml in "tsxml" (experimental).
+    - Options --yaml, --no-yaml-header in "tsxml" (experimental).
 
 [BUG] Bug fixes:
 
