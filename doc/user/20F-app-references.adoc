@@ -18,6 +18,7 @@
 |===
 |ABI |Application Binary Interface
 |ABNT |_Associação Brasileira de Normas Técnicas_ (Brazilian standardization committee)
+|ABR |Adaptive Bit Rate
 |AC |Auxiliary Channel (ISDB)
 |AC-3 |Audio Compression Standard 3 (Dolby)
 |ACG |Access Criteria Generator (DVB SimulCrypt)
@@ -30,8 +31,8 @@
 |ARIB |Association of Radio Industries and Businesses (Japan)
 |ASI |Asynchronous Serial Interface
 |ATIS |Alliance for Telecommunications Industry Solutions
-|ATSC |Advanced Television Systems Committee
 |ATR |Answer To Reset (smartcard)
+|ATSC |Advanced Television Systems Committee
 |AVC |Advanced Video Coding
 |AVS |Audio Video coding Standard Workgroup of China
 |BAT |Bouquet Association Table (DVB)
@@ -76,6 +77,8 @@
 |DVB-C2 |DVB Cable modulation, 2nd generation
 |DVB-CISSA |DVB Common IPTV Software-oriented Scrambling Algorithm
 |DVB-CSA |DVB Common Scrambling Algorithm
+|DVB-I |DVB transmission over Internet
+|DVB-NIP |DVB Native IP broadcasting
 |DVB-S |DVB Satellite modulation
 |DVB-S2 |DVB Satellite modulation, 2nd generation
 |DVB-T |DVB Terrestrial modulation
@@ -98,7 +101,9 @@
 |FIPS |Federal Information Processing Standard
 |FLUTE |File Delivery over Unidirectional Transport (RFC 3926)
 |FTA |Free To Air
-|GOP |Group Of Pictures
+|GOP |Group Of Pictures (MPEG)
+|GS |Generic Stream
+|GSE |Generic Stream Encapsulation (DVB)
 |HbbTV |Hybrid broadcast/broadband Television
 |HE-AAC |High Efficiency Advanced Audio Coding
 |HLS |HTTP Live Streaming (networking)
@@ -119,14 +124,17 @@
 |ISDB-S |ISDB Satellite modulation (ARIB)
 |ISDB-T |ISDB Terrestrial modulation (ARIB)
 |ISDB-Tb |ISDB Terrestrial modulation (ABNT-defined Brazilian version)
-|ISO |International Standardization Organization
+|ISO |International Standard Organization
 |ITT |Index Transmission information Table (ISDB)
 |ITU |International Telecommunication Union
 |IV |Initialization Vector (cryptography)
+|JSON |JavaScript Object Notation (data representation)
+|LAN |Local Area Network
 |LCN |Logical Channel Number (a.k.a. TV channel number)
 |LDT |Linked Description Table (ISDB)
 |LIT |Local event Information Table (ISDB)
 |LNB |Low-Noise Block down-converter (satellite)
+|MABR |Multicast Adaptive Bit Rate
 |MAC |Media Access Control (networking)
 |MAC |Message Authentication Code (cryptography)
 |MGT |Master Guide Table (ATSC)
@@ -134,6 +142,7 @@
 |MJD |Modified Julian Date
 |MPE |Multi-Protocol Encapsulation (DVB)
 |MPEG |Moving Picture Experts Group
+|MTU |Maximum Transmission Unit
 |MUX |Multiplexer
 |NBIT |Network Board Information Table (ISDB)
 |NIST |National Institute of Standards and Technology
@@ -162,6 +171,7 @@
 |PTS |Presentation Time Stamp
 |QPSK |Quadrature Phase Shift Keying (modulation)
 |QAM |Quadrature Amplitude Modulation (modulation)
+|QoS |Quality of Service
 |REST |Representational State Transfer (network API style)
 |RIST |Reliable Internet Stream Transport (network protocol)
 |RNG |Random Number Generator (cryptography)
@@ -169,6 +179,7 @@
 |RRT |Rating Region Table (ATSC)
 |RS |Reed-Solomon (FEC code)
 |RST |Running Status Table (DVB)
+|RTCP |RTP Control Protocol (networking)
 |RTP |Real-Time Protocol (networking)
 |RTSP |Real-Time Streaming Protocol (networking)
 |RTT |Rating Text Tavle (ATSC)
@@ -210,8 +221,11 @@
 |UWA |UHD World Association (China)
 |VBI |Vertical Blanking Interval
 |VCT |Virtual Channel Table (ATSC)
+|VLAN |Virtual Local Area Network
 |WHEP |WebRTC-HTTP Egress Protocol (video streaming)
 |WHIP |WebRTC-HTTP Ingestion Protocol (video streaming, RFC 9725)
+|XML |eXtensible Markup Language (data representation)
+|YAML |YAML Ain't Markup Language (data representation)
 |===
 
 <<<
@@ -219,6 +233,8 @@
 [bibliography]
 === Bibliography
 
+* [[[ABNT-Docs]]] ABNT technical standards, Brazilian digital terrestrial television system,
+  https://forumsbtvd.org.br/legislacao-e-normas-tecnicas/normas-tecnicas-da-tv-digital/english/
 * [[[AOM-AV1]]] Alliance for Open Media (AOM):
   "Carriage of AV1 in MPEG-2 TS", October 2021, https://aomediacodec.github.io/av1-mpeg2-ts/
 * [[[ARIB-B10]]] ARIB STD-B10, V4.6, June 2008:
@@ -239,6 +255,8 @@
   "Conditional Access System (Second Generation) and CAS Program Download System Specifications for Digital Broadcasting".
 * [[[ARIB-B63]]] ARIB STD-B63, V1.10, October 2022:
   "Receiver for Advanced Wide Band Digital Satellite Broadcasting".
+* [[[ARIB-Docs]]] ARIB standards and technical reports,
+  https://www.arib.or.jp/english/std_tr/
 * [[[Astra-LCN]]] SES Astra, July 2015:
   "Logical Channel Numbering (LCN), Technical Specification v2.6"
 * [[[ATSC-A52]]] ATSC A/52, January 2018:
@@ -255,6 +273,8 @@
   "ATSC Direct-to-Home Satellite Broadcast Standard".
 * [[[ATSC-A90]]] ATSC A/90, October 2013:
   "ATSC Data Broadcast Standard".
+* [[[ATSC-Docs]]] ATSC documents repository,
+  https://www.atsc.org/documents/
 * [[[AVS-TAI-109.6]]] Audio Video coding Standard Workgroup of China, T/AI 109.6-2022:
   "Information Technology - Intelligent Media Coding (AVS3) Part 6: Intelligent Media Format"
 * [[[AVS-TAI-109.7]]] Audio Video coding Standard Workgroup of China, T/AI 109.7:
@@ -296,6 +316,12 @@
   "Digital Video Broadcasting (DVB); Content Scrambling Algorithms for DVB-IPTV Services using MPEG2 Transport Streams".
 * [[[ETSI-103-197]]] ETSI TS 103 197, V1.4.1, September 2004:
   "Digital Video Broadcasting (DVB); Head-end implementation of DVB SimulCrypt".
+* [[[ETSI-103-769]]] ETSI TS 103 769, V1.2.1, November 2024:
+  "Digital Video Broadcasting (DVB); Adaptive media streaming over IP multicast" (DVB-MABR).
+* [[[ETSI-103-770]]] ETSI TS 103 770, V1.2.1, September 2024:
+  "Digital Video Broadcasting (DVB); Service Discovery and Programme Metadata for DVB-I".
+* [[[ETSI-103-876]]] ETSI TS 103 876, V1.1.1, September 2024:
+  "Digital Video Broadcasting (DVB); Native IP Broadcasting".
 * [[[ETSI-289]]] ETSI, ETR 289, October 1996:
   "Digital Video Broadcasting (DVB); Support for use of scrambling and Conditional Access (CA) within digital broadcasting systems".
 * [[[ETSI-300-468]]] ETSI EN 300 468, V1.16.1, August 2019:
@@ -309,8 +335,12 @@
   "Frame structure channel coding and modulation for a second-generation digital terrestrial television broadcasting system (DVB-T2)".
 * [[[ETSI-303-560]]] ETSI EN 303 560, V1.1.1, May 2018;
   "Digital Video Broadcasting (DVB); TTML subtitling systems".
+* [[[ETSI-Del]]] On-line delivery area for ETSI documents,
+  https://www.etsi.org/deliver/
 * [[[ETSI-Ids]]] DVB Services; DVB Identifiers,
   https://www.dvbservices.com/identifiers/
+* [[[ETSI-Standards]]] ETSI standards search engine,
+  https://www.etsi.org/standards-search
 * [[[EU-CRA]]] Cyber Resilience Act; Regulation (EU) 2024/2847 of the European Parliament, October 2024,
   https://eur-lex.europa.eu/eli/reg/2024/2847/oj
 * [[[Fransat]]] Via Eutelsat Fransat:
