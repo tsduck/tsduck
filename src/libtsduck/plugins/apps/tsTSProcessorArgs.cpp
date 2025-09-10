@@ -9,11 +9,6 @@
 #include "tsTSProcessorArgs.h"
 #include "tsArgsWithPlugins.h"
 
-#define DEF_MAX_FLUSH_PKT_OFL  10000  // packets
-#define DEF_MAX_FLUSH_PKT_RT    1000  // packets
-#define DEF_MAX_INPUT_PKT_OFL      0  // packets
-#define DEF_MAX_INPUT_PKT_RT    1000  // packets
-
 
 //----------------------------------------------------------------------------
 // Constructor.
@@ -148,15 +143,15 @@ void ts::TSProcessorArgs::defineArgs(Args& args)
               u"Specify the maximum number of packets to be processed before flushing "
               u"them to the next processor or the output. When the processing time "
               u"is high and some packets are lost, try decreasing this value. The default "
-              u"is " + UString::Decimal(DEF_MAX_FLUSH_PKT_OFL) + u" packets in offline mode and " +
-              UString::Decimal(DEF_MAX_FLUSH_PKT_RT) + u" in real-time mode.");
+              u"is " + UString::Decimal(DEFAULT_MAX_FLUSH_PKT_OFFLINE) + u" packets in offline mode and " +
+              UString::Decimal(DEFAULT_MAX_FLUSH_PKT_RT) + u" in real-time mode.");
 
     args.option(u"max-input-packets", 0, Args::POSITIVE);
     args.help(u"max-input-packets",
               u"Specify the maximum number of packets to be received at a time from "
               u"the input plug-in. By default, in offline mode, tsp reads as many packets "
               u"as it can, depending on the free space in the buffer. In real-time mode, "
-              u"the default is " + UString::Decimal(DEF_MAX_INPUT_PKT_RT) + u" packets.");
+              u"the default is " + UString::Decimal(DEFAULT_MAX_INPUT_PKT_RT) + u" packets.");
 
     args.option(u"max-output-packets", 0, Args::POSITIVE);
     args.help(u"max-output-packets",
@@ -219,7 +214,7 @@ bool ts::TSProcessorArgs::loadArgs(DuckContext& duck, Args& args)
     // Get optional allowed remote addresses.
     success = control.loadAllowedClients(args, u"control-source") && success;
     if (control.allowed_clients.empty() && (!control.use_tls || control.auth_token.empty())) {
-        // By default, without proper authenticatio, the local host is the only allowed address.
+        // By default, without proper authentication, the local host is the only allowed address.
         control.allowed_clients.insert(IPAddress::LocalHost4);
         control.allowed_clients.insert(IPAddress::LocalHost6);
     }
@@ -259,9 +254,9 @@ bool ts::TSProcessorArgs::loadArgs(DuckContext& duck, Args& args)
 void ts::TSProcessorArgs::applyDefaults(bool rt)
 {
     if (max_flush_pkt == 0) {
-        max_flush_pkt = rt ? DEF_MAX_FLUSH_PKT_RT : DEF_MAX_FLUSH_PKT_OFL;
+        max_flush_pkt = rt ? DEFAULT_MAX_FLUSH_PKT_RT : DEFAULT_MAX_FLUSH_PKT_OFFLINE;
     }
     if (max_input_pkt == 0) {
-        max_input_pkt = rt ? DEF_MAX_INPUT_PKT_RT: DEF_MAX_INPUT_PKT_OFL;
+        max_input_pkt = rt ? DEFAULT_MAX_INPUT_PKT_RT: DEFAULT_MAX_INPUT_PKT_OFFLINE;
     }
 }

@@ -2,10 +2,13 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.43-4429 (September 2025)
+VERSION 3.43-4430 (September 2025)
 
 [IMP] Improvements on existing commands and plugins:
 
+  * With  "tsp", in real-time mode, the default values are now set to 7 packets
+    for  options  --max-input-packets  and  --max-flushed-packets. This is more
+    consistent with UDP/IP and streaming modes.
   * New options in existing commands and plugins:
     - Option --summary in plugin "mpe".
     - Options --yaml, --no-yaml-header in "tsxml" (experimental).
@@ -13,7 +16,7 @@ VERSION 3.43-4429 (September 2025)
 [BUG] Bug fixes:
 
   * With plugin "mpe",  with  option  --log  but  without  --dump-datagram  and
-    --dump-udp, the content of the extracted datagram with displayed instead of
+    --dump-udp,  the content of the extracted datagram was displayed instead of
     the expected one-line description of the datagram.
 
 -------------------------------------------------------------------------------
@@ -959,7 +962,7 @@ VERSION 3.20-1689 (Mar 2020)
 
   * Added command "tspcontrol" to send control commands to a running "tsp".
   * Added  input  and  output plugins "srt" for Secure Reliable Transport (code
-    contribution  from  Lola  Delannoy).  This plugin is not compiled on all
+    contribution  from  Lola  Delannoy).  This  plugin  is  not compiled on all
     platforms (subject to availability of libsrt).
   * For  developers,  the  features  of  "tsp"  and  "tsswitch"  are now easily
     accessible  from  the  TSDuck  library.  See  classes  ts::TSProcessor  and

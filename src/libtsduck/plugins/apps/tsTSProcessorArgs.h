@@ -51,11 +51,16 @@ namespace ts {
         PluginOptionsVector    plugins {};          //!< Packet processor plugins descriptions.
         PluginOptions          output {};           //!< Output plugin description.
 
-        static constexpr size_t DEFAULT_BUFFER_SIZE = 16 * 1000000;               //!< Default size in bytes of global TS buffer.
-        static constexpr size_t MIN_BUFFER_SIZE = 18800;                          //!< Minimum size in bytes of global TS buffer.
-        static constexpr PacketCounter DEFAULT_INIT_BITRATE_PKT_INTERVAL = 1000;  //!< Default initial bitrate reevaluation interval, in packets.
+        static constexpr size_t DEFAULT_BUFFER_SIZE = 16 * 1000000;     //!< Default size in bytes of global TS buffer.
+        static constexpr size_t MIN_BUFFER_SIZE = 18800;                //!< Minimum size in bytes of global TS buffer.
+        static constexpr size_t DEFAULT_MAX_INPUT_PKT_OFFLINE = 0;      //!< Default max packets per input operation in offline mode (unlimited).
+        static constexpr size_t DEFAULT_MAX_FLUSH_PKT_OFFLINE = 10000;  //!< Default max packets per flush operation in offline mode.
+        static constexpr size_t DEFAULT_MAX_INPUT_PKT_RT = 7;           //!< Default max packets per input operation in offline mode (typical UDP/IP size).
+        static constexpr size_t DEFAULT_MAX_FLUSH_PKT_RT = 7;           //!< Default max packets per flush operation in real-time mode (typical UDP/IP size).
+        static constexpr PacketCounter DEFAULT_INIT_BITRATE_PKT_INTERVAL = 1000;              //!< Default initial bitrate reevaluation interval, in packets.
         static constexpr cn::milliseconds DEFAULT_BITRATE_INTERVAL = cn::milliseconds(5000);  //!< Default bitrate adjustment interval, in milliseconds.
         static constexpr cn::milliseconds DEFAULT_CONTROL_TIMEOUT = cn::milliseconds(5000);   //!< Default control command reception timeout, in milliseconds.
+
 
         //!
         //! Constructor.
