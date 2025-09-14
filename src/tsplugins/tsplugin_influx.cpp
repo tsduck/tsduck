@@ -22,9 +22,6 @@
 #include "tsThread.h"
 #include "tsTime.h"
 
-#define DEFAULT_INTERVAL    5  // default logging interval in seconds
-#define DEFAULT_QUEUE_SIZE 10  // default maximum queued metrics messages
-
 
 //----------------------------------------------------------------------------
 // Plugin definition
@@ -42,6 +39,10 @@ namespace ts {
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
+        // Default values.
+        static constexpr cn::seconds DEFAULT_INTERVAL = cn::seconds(5);  // Default logging interval in seconds.
+        static constexpr size_t      DEFAULT_QUEUE_SIZE = 10;            // Default maximum queued metrics messages.
+
         // Command line options.
         bool        _log_bitrate = false;
         bool        _log_pcr = false;
@@ -61,6 +62,7 @@ namespace ts {
         cn::seconds _log_interval {};
         PIDSet      _log_pids {};
         InfluxArgs  _influx_args {};
+        UString     _additional_tags {};
 
         // Description of a service. Not reset in each period.
         class ServiceContext
@@ -189,6 +191,12 @@ ts::InfluxPlugin::InfluxPlugin(TSP* tsp_) :
          u"TSDuck adds informational counters at severity 4. "
          u"By default, all error counters are sent.");
 
+    option(u"tag", 0, STRING, 0, UNLIMITED_COUNT);
+    help(u"tag", u"name=value",
+         u"Add the specified tag, with the specified value, to all metrics which are sent to InfluxDB. "
+         u"This can be used to identify a source of metrics and filter it using InfluxDB queries. "
+         u"Several --tag options may be specified.");
+
     option(u"type");
     help(u"type",
          u"Send bitrate monitoring for types of PID's. "
@@ -200,7 +208,7 @@ ts::InfluxPlugin::InfluxPlugin(TSP* tsp_) :
     option<cn::seconds>(u"interval", 'i');
     help(u"interval",
          u"Interval in seconds between metrics reports to InfluxDB. "
-         u"The default is " TS_USTRINGIFY(DEFAULT_INTERVAL) u" seconds.");
+         u"The default is " + UString::Chrono(DEFAULT_INTERVAL) + u".");
 
     option(u"local-time");
     help(u"local-time",
@@ -232,7 +240,7 @@ ts::InfluxPlugin::InfluxPlugin(TSP* tsp_) :
     help(u"queue-size", u"count",
          u"Maximum number of queued metrics between the plugin thread and the communication thread with InfluxDB. "
          u"With --pcr-based or --timestamp-based, on off-line streams which are processed at high speed, increase this value if some metrics are lost. "
-         u"The default queue size is " TS_USTRINGIFY(DEFAULT_QUEUE_SIZE) u" messages.");
+         u"The default queue size is " + UString::Decimal(DEFAULT_QUEUE_SIZE) + u" messages.");
 }
 
 
@@ -257,7 +265,7 @@ bool ts::InfluxPlugin::getOptions()
     getIntValue(_max_severity, u"max-severity", std::numeric_limits<int>::max());
     getIntValue(_max_metrics, u"max-metrics", std::numeric_limits<size_t>::max());
     getIntValue(_queue_size, u"queue-size", DEFAULT_QUEUE_SIZE);
-    getChronoValue(_log_interval, u"interval", cn::seconds(DEFAULT_INTERVAL));
+    getChronoValue(_log_interval, u"interval", DEFAULT_INTERVAL);
     getIntValues(_log_pids, u"pid");
     if (present(u"all-pids")) {
         _log_pids = AllPIDs();
@@ -277,6 +285,21 @@ bool ts::InfluxPlugin::getOptions()
         else if (_use_local_time) {
             // The specified time is local but we use UTC internally.
             _start_time = _start_time.localToUTC();
+        }
+    }
+
+    // Get and preformat additional tags.
+    UStringList tags;
+    getValues(tags, u"tag");
+    _additional_tags.clear();
+    for (auto& tv : tags) {
+        const size_t equal = tv.find(u'=');
+        if (equal == NPOS) {
+            error(u"invalid --tag definition '%s', use name=value", tv);
+            success = false;
+        }
+        else {
+            _additional_tags.format(u",%s=%s", InfluxRequest::ToKey(tv.substr(0, equal)), InfluxRequest::ToKey(tv.substr(equal + 1)));
         }
     }
 
@@ -502,7 +525,8 @@ void ts::InfluxPlugin::reportMetrics(Time timestamp, cn::milliseconds duration)
     auto data = std::make_shared<UString>();
 
     // The total TS bitrate is also present.
-    data->format(u"bitrate,scope=ts,tsid=%d value=%d %d", _demux.transportStreamId(), PacketBitRate(_ts_packets, duration), timestamp_ms);
+    const uint16_t tsid = _demux.transportStreamId();
+    data->format(u"bitrate,scope=ts,tsid=%d%s value=%d %d", tsid, _additional_tags, PacketBitRate(_ts_packets, duration), timestamp_ms);
 
     // Log bitrate per service.
     if (_log_bitrate && _log_services) {
@@ -519,10 +543,10 @@ void ts::InfluxPlugin::reportMetrics(Time timestamp, cn::milliseconds duration)
             // Send bitrate info by name or id.
             if (packets > 0) {
                 if (_log_names && !it.second.inf_name.empty()) {
-                    data->format(u"\nbitrate,scope=service,service=%s value=%d %d", it.second.inf_name, PacketBitRate(packets, duration), timestamp_ms);
+                    data->format(u"\nbitrate,scope=service,service=%s%s value=%d %d", it.second.inf_name, _additional_tags, PacketBitRate(packets, duration), timestamp_ms);
                 }
                 else {
-                    data->format(u"\nbitrate,scope=service,service=%d value=%d %d", it.first, PacketBitRate(packets, duration), timestamp_ms);
+                    data->format(u"\nbitrate,scope=service,service=%d%s value=%d %d", it.first, _additional_tags, PacketBitRate(packets, duration), timestamp_ms);
                 }
             }
         }
@@ -534,7 +558,7 @@ void ts::InfluxPlugin::reportMetrics(Time timestamp, cn::milliseconds duration)
             }
         }
         if (globals > 0) {
-            data->format(u"\nbitrate,scope=service,service=global value=%d %d", PacketBitRate(globals, duration), timestamp_ms);
+            data->format(u"\nbitrate,scope=service,service=global%s value=%d %d", _additional_tags, PacketBitRate(globals, duration), timestamp_ms);
         }
     }
 
@@ -549,7 +573,7 @@ void ts::InfluxPlugin::reportMetrics(Time timestamp, cn::milliseconds duration)
         for (const auto& it : by_type) {
             if (it.second > 0) {
                 const UString name(InfluxRequest::ToKey(PIDClassIdentifier().name(it.first)));
-                data->format(u"\nbitrate,scope=type,type=%s value=%d %d", name, PacketBitRate(it.second, duration), timestamp_ms);
+                data->format(u"\nbitrate,scope=type,type=%s%s value=%d %d", name, _additional_tags, PacketBitRate(it.second, duration), timestamp_ms);
             }
         }
     }
@@ -558,7 +582,7 @@ void ts::InfluxPlugin::reportMetrics(Time timestamp, cn::milliseconds duration)
     if (_log_bitrate && _log_pids.any()) {
         for (const auto& it : _pids) {
             if (_log_pids.test(it.first) && it.second.packets > 0) {
-                data->format(u"\nbitrate,scope=pid,pid=%d value=%d %d", it.first, PacketBitRate(it.second.packets, duration), timestamp_ms);
+                data->format(u"\nbitrate,scope=pid,pid=%d%s value=%d %d", it.first, _additional_tags, PacketBitRate(it.second.packets, duration), timestamp_ms);
             }
         }
     }
@@ -581,11 +605,11 @@ void ts::InfluxPlugin::reportMetrics(Time timestamp, cn::milliseconds duration)
         const auto& desc(tr101290::GetCounterDescriptions());
         for (size_t i = 0; i < counters.size(); i++) {
             if (desc[i].severity <= _max_severity) {
-                data->format(u"\ncounter,name=%s,severity=%d value=%d %d", desc[i].name.toLower(), desc[i].severity, counters[i], timestamp_ms);
+                data->format(u"\ncounter,name=%s,severity=%d,scope=ts,tsid=%d%s value=%d %d", desc[i].name.toLower(), desc[i].severity, tsid, _additional_tags, counters[i], timestamp_ms);
             }
         }
         if (tr101290::INFO_SEVERITY <= _max_severity) {
-            data->format(u"\ncounter,name=error_count,severity=%d value=%d %d", tr101290::INFO_SEVERITY, counters.errorCount(), timestamp_ms);
+            data->format(u"\ncounter,name=error_count,severity=%d,scope=ts,tsid=%d%s value=%d %d", tr101290::INFO_SEVERITY, tsid, _additional_tags, counters.errorCount(), timestamp_ms);
         }
     }
 
@@ -620,10 +644,10 @@ void ts::InfluxPlugin::addMetrics(UString& data, const UChar* measurement, PID S
                 auto& ctx(_pids[it.second.*refpid]);
                 if (ctx.*value != INVALID_PCR) {
                     if (_log_names && !it.second.inf_name.empty()) {
-                        data.format(u"\n%s,scope=service,service=%s value=%d %d", measurement, it.second.inf_name, ctx.*value, timestamp_ms);
+                        data.format(u"\n%s,scope=service,service=%s%s value=%d %d", measurement, it.second.inf_name, _additional_tags, ctx.*value, timestamp_ms);
                     }
                     else {
-                        data.format(u"\n%s,scope=service,service=%d value=%d %d", measurement, it.first, ctx.*value, timestamp_ms);
+                        data.format(u"\n%s,scope=service,service=%d%s value=%d %d", measurement, it.first, _additional_tags, ctx.*value, timestamp_ms);
                     }
                 }
             }
@@ -634,7 +658,7 @@ void ts::InfluxPlugin::addMetrics(UString& data, const UChar* measurement, PID S
     if (_log_pids.any()) {
         for (const auto& it : _pids) {
             if (_log_pids.test(it.first) && it.second.*value != INVALID_PCR) {
-                data.format(u"\n%s,scope=pid,pid=%d value=%d %d", measurement, it.first, it.second.*value, timestamp_ms);
+                data.format(u"\n%s,scope=pid,pid=%d%s value=%d %d", measurement, it.first, _additional_tags, it.second.*value, timestamp_ms);
             }
         }
     }

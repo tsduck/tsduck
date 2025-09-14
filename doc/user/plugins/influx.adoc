@@ -164,6 +164,16 @@ Send bitrate or PCR/PTS/DTS monitoring data for services.
 The services are identified in InfluxDB by their id in decimal.
 
 [.opt]
+*--tag* _name=value_
+
+[.optdoc]
+Add the specified tag `name`, with the specified `value`, to all metrics which are sent to InfluxDB.
+This can be used to identify a source of metrics and filter it using Flux queries.
+
+[.optdoc]
+Several `--tag` options may be specified.
+
+[.opt]
 *--tr-101-290*
 
 [.optdoc]
@@ -244,8 +254,8 @@ The `_value` type is `float` (in practice, an integer value is provided).
 
 |counter
 |number of errors
-|name severity
-|
+|name severity scope
+|tsid
 
 |dts
 |DTS value in 90 kHz units
@@ -263,6 +273,29 @@ The `_value` type is `float` (in practice, an integer value is provided).
 |pid service
 
 |===
+
+==== Custom identification of metrics
+
+It is possible to add user-defined tags to build a custom identification.
+This can be useful if several instances of the plugin `influx` send metrics to the same bucket.
+
+Consider the following defaut metrics, sending the global bitrate of the TS:
+
+[source,text]
+----
+bitrate,scope=ts,tsid=4 value=22936796 1548161530912
+----
+
+Using `-P influx --tag operator=tvsat --tag satellite=sat1`, the two user-specified tags are added to all metrics.
+The previous metrics become:
+
+[source,text]
+----
+bitrate,scope=ts,tsid=4,operator=tvsat,satellite=sat1 value=22936796 1548161530912
+----
+
+Using that kind of custom identification, it is possible to build complex Flux queries to select metrics
+from specific user-identified sources.
 
 ==== Bitrate metrics
 
@@ -406,6 +439,9 @@ Each entry contains the following information:
 * Tag `severity`: an integer value from 1 to 4, defining the severity of the error.
   The severity 1 (most severe) to 3 (less severe) are defined by <<ETSI-101-290>>
   in sections 5.2.1 to 5.2.3. The severity 4 (informational) is added by TSDuck.
+* Tag `scope`: an identifier defining the scope of the counter.
+  Currently, the only defined value is `ts`, meaning that the counter includes all errors in the TS.
+* Tag `tsid`: when `scope=ts` (currently the only defined value), this is the transport stream id as an integer.
 
 The following table lists all rules which are implemented in this plugin and which
 error counter is incremented. The reference "x.y" is the rule number in <<ETSI-101-290>> section 5.2.
@@ -846,41 +882,41 @@ With option `--tr-101-290`, InfluxDB receives the following data:
 [source,text]
 ----
 bitrate,scope=ts,tsid=4 value=22936796 1548161530912
-counter,name=ts_sync_loss,severity=1 value=0 1548161530912
-counter,name=sync_byte_error,severity=1 value=0 1548161530912
-counter,name=pat_error,severity=1 value=0 1548161530912
-counter,name=pat_error_2,severity=1 value=0 1548161530912
-counter,name=continuity_count_error,severity=1 value=220 1548161530912
-counter,name=pmt_error,severity=1 value=0 1548161530912
-counter,name=pmt_error_2,severity=1 value=0 1548161530912
-counter,name=pid_error,severity=1 value=0 1548161530912
-counter,name=transport_error,severity=2 value=0 1548161530912
-counter,name=crc_error,severity=2 value=0 1548161530912
-counter,name=crc_error_2,severity=2 value=0 1548161530912
-counter,name=pcr_error,severity=2 value=0 1548161530912
-counter,name=pcr_repetition_error,severity=2 value=0 1548161530912
-counter,name=pcr_discontinuity_indicator_error,severity=2 value=0 1548161530912
-counter,name=pcr_accuracy_error,severity=2 value=0 1548161530912
-counter,name=pts_error,severity=2 value=10 1548161530912
-counter,name=cat_error,severity=2 value=0 1548161530912
-counter,name=nit_error,severity=3 value=0 1548161530912
-counter,name=nit_actual_error,severity=3 value=0 1548161530912
-counter,name=nit_other_error,severity=3 value=0 1548161530912
-counter,name=si_repetition_error,severity=3 value=0 1548161530912
-counter,name=si_pid_error,severity=3 value=0 1548161530912
-counter,name=buffer_error,severity=3 value=0 1548161530912
-counter,name=unreferenced_pid,severity=3 value=0 1548161530912
-counter,name=sdt_error,severity=3 value=0 1548161530912
-counter,name=sdt_actual_error,severity=3 value=0 1548161530912
-counter,name=sdt_other_error,severity=3 value=0 1548161530912
-counter,name=eit_error,severity=3 value=0 1548161530912
-counter,name=eit_actual_error,severity=3 value=0 1548161530912
-counter,name=eit_other_error,severity=3 value=1 1548161530912
-counter,name=eit_pf_error,severity=3 value=31 1548161530912
-counter,name=rst_error,severity=3 value=0 1548161530912
-counter,name=tdt_error,severity=3 value=0 1548161530912
-counter,name=empty_buffer_error,severity=3 value=0 1548161530912
-counter,name=data_delay_error,severity=3 value=0 1548161530912
-counter,name=packet_count,severity=4 value=43220 1548161530912
-counter,name=error_count,severity=4 value=262 1548161530912
+counter,name=ts_sync_loss,severity=1,scope=ts,tsid=4 value=0 1548161530912
+counter,name=sync_byte_error,severity=1,scope=ts,tsid=4 value=0 1548161530912
+counter,name=pat_error,severity=1,scope=ts,tsid=4 value=0 1548161530912
+counter,name=pat_error_2,severity=1,scope=ts,tsid=4 value=0 1548161530912
+counter,name=continuity_count_error,severity=1,scope=ts,tsid=4 value=220 1548161530912
+counter,name=pmt_error,severity=1,scope=ts,tsid=4 value=0 1548161530912
+counter,name=pmt_error_2,severity=1,scope=ts,tsid=4 value=0 1548161530912
+counter,name=pid_error,severity=1,scope=ts,tsid=4 value=0 1548161530912
+counter,name=transport_error,severity=2,scope=ts,tsid=4 value=0 1548161530912
+counter,name=crc_error,severity=2,scope=ts,tsid=4 value=0 1548161530912
+counter,name=crc_error_2,severity=2,scope=ts,tsid=4 value=0 1548161530912
+counter,name=pcr_error,severity=2,scope=ts,tsid=4 value=0 1548161530912
+counter,name=pcr_repetition_error,severity=2,scope=ts,tsid=4 value=0 1548161530912
+counter,name=pcr_discontinuity_indicator_error,severity=2,scope=ts,tsid=4 value=0 1548161530912
+counter,name=pcr_accuracy_error,severity=2,scope=ts,tsid=4 value=0 1548161530912
+counter,name=pts_error,severity=2,scope=ts,tsid=4 value=10 1548161530912
+counter,name=cat_error,severity=2,scope=ts,tsid=4 value=0 1548161530912
+counter,name=nit_error,severity=3,scope=ts,tsid=4 value=0 1548161530912
+counter,name=nit_actual_error,severity=3,scope=ts,tsid=4 value=0 1548161530912
+counter,name=nit_other_error,severity=3,scope=ts,tsid=4 value=0 1548161530912
+counter,name=si_repetition_error,severity=3,scope=ts,tsid=4 value=0 1548161530912
+counter,name=si_pid_error,severity=3,scope=ts,tsid=4 value=0 1548161530912
+counter,name=buffer_error,severity=3,scope=ts,tsid=4 value=0 1548161530912
+counter,name=unreferenced_pid,severity=3,scope=ts,tsid=4 value=0 1548161530912
+counter,name=sdt_error,severity=3,scope=ts,tsid=4 value=0 1548161530912
+counter,name=sdt_actual_error,severity=3,scope=ts,tsid=4 value=0 1548161530912
+counter,name=sdt_other_error,severity=3,scope=ts,tsid=4 value=0 1548161530912
+counter,name=eit_error,severity=3,scope=ts,tsid=4 value=0 1548161530912
+counter,name=eit_actual_error,severity=3,scope=ts,tsid=4 value=0 1548161530912
+counter,name=eit_other_error,severity=3,scope=ts,tsid=4 value=1 1548161530912
+counter,name=eit_pf_error,severity=3,scope=ts,tsid=4 value=31 1548161530912
+counter,name=rst_error,severity=3,scope=ts,tsid=4 value=0 1548161530912
+counter,name=tdt_error,severity=3,scope=ts,tsid=4 value=0 1548161530912
+counter,name=empty_buffer_error,severity=3,scope=ts,tsid=4 value=0 1548161530912
+counter,name=data_delay_error,severity=3,scope=ts,tsid=4 value=0 1548161530912
+counter,name=packet_count,severity=4,scope=ts,tsid=4 value=43220 1548161530912
+counter,name=error_count,severity=4,scope=ts,tsid=4 value=262 1548161530912
 ----

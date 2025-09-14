@@ -2,15 +2,17 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.43-4430 (September 2025)
+VERSION 3.43-4432 (September 2025)
 
 [IMP] Improvements on existing commands and plugins:
 
   * With  "tsp", in real-time mode, the default values are now set to 7 packets
     for  options  --max-input-packets  and  --max-flushed-packets. This is more
     consistent with UDP/IP and streaming modes.
+  * Enhanced and custom identification of sources in plugin "influx".
   * New options in existing commands and plugins:
     - Option --summary in plugin "mpe".
+    - Option --tag in plugin "influx".
     - Options --yaml, --no-yaml-header in "tsxml" (experimental).
 
 [BUG] Bug fixes:

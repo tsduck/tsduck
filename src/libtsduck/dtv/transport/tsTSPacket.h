@@ -15,7 +15,6 @@
 #include "tsTS.h"
 #include "tsMemory.h"
 #include "tsCerrReport.h"
-#include "tsException.h"
 #include "tsResidentBuffer.h"
 
 namespace ts {

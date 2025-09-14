@@ -26,4 +26,4 @@
 //! TSDuck commit number (automatically updated by Git hooks).
 //! @ingroup app
 //!
-#define TS_COMMIT 4431
+#define TS_COMMIT 4432
