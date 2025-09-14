@@ -121,17 +121,3 @@ size_t ts::tr101290::Counters::errorCount() const
            (*this)[Empty_buffer_error] +
            (*this)[Data_delay_error];
 }
-
-
-//----------------------------------------------------------------------------
-// Increment each counter which is indicated by a flag.
-//----------------------------------------------------------------------------
-
-void ts::tr101290::Counters::increment(const CounterFlags& flags)
-{
-    for (size_t i = 0; i < size(); i++) {
-        if (flags[i]) {
-            (*this)[i]++;
-        }
-    }
-}

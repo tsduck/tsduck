@@ -13,6 +13,7 @@
 
 #pragma once
 #include "tstr101290.h"
+#include "tsTS.h"
 
 namespace ts::tr101290 {
 
@@ -36,8 +37,9 @@ namespace ts::tr101290 {
         //! Use ts::tr101290::GetCounterDescription() if more details are needed.
         //! @param [in] reference A reference string which indicates the rule which triggered the error.
         //! @param [in] context The context of the error, for instance a table name or PID number.
+        //! @param [in] pid The PID on which the error occurred, PID_NULL if not PID is relevant.
         //! @see ts::tr101290::GetCounterDescription()
         //!
-        virtual void handleTR101290Error(Analyzer& analyzer, ErrorCounter error, const UString& reference, const UString& context) = 0;
+        virtual void handleTR101290Error(Analyzer& analyzer, ErrorCounter error, const UString& reference, const UString& context, PID pid) = 0;
     };
 }

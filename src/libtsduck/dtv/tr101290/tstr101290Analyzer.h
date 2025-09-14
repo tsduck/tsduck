@@ -73,6 +73,14 @@ namespace ts::tr101290 {
         void setErrorHandler(ErrorHandlerInterface* handler) { _error_handler = handler; }
 
         //!
+        //! Enable or disable the detailed collection of error counters by PID.
+        //! By default, error counters are collected at global TS level. Enabling the detailed collection of error
+        //! counters by PID uses more resources. Use only when necessary.
+        //! @param [in] on If true, detailed counters are collected by PID. If false, only collect the global counters.
+        //!
+        void setCollectByPID(bool on) { _collect_by_pid = on; }
+
+        //!
         //! The following method feeds the analyzer with a TS packet.
         //! @param [in] timestamp A timestamp for the packet, in PCR units.
         //! There is no specific relation with the PCR values in the stream.
@@ -82,18 +90,36 @@ namespace ts::tr101290 {
         void feedPacket(const PCR& timestamp, const TSPacket& pkt);
 
         //!
-        //! Get the error counters since start or the last getCountersRestart().
+        //! Get the global error counters since start or the last getCountersRestart().
         //! This is just a snapshot. Counters will continue to increment.
         //! @param [out] counters Returned error counters.
         //!
         void getCounters(Counters& counters);
 
         //!
-        //! Get and restart the error counters since start or the last getCountersRestart().
+        //! Get the global and detailed error counters since start or the last getCountersRestart().
+        //! This is just a snapshot. Counters will continue to increment.
+        //! @param [out] global Returned global error counters, at TS level.
+        //! @param [out] by_pid Returned error counters. If setCollectByPID() was not called,
+        //! the error counters are empty.
+        //!
+        void getCounters(Counters& global, CountersByPID& by_pid);
+
+        //!
+        //! Get and restart the global error counters since start or the last getCountersRestart().
         //! Error counters are reset and a new measurement period starts.
         //! @param [out] counters Returned error counters.
         //!
         void getCountersRestart(Counters& counters);
+
+        //!
+        //! Get and restart the global and detailed error counters since start or the last getCountersRestart().
+        //! Error counters are reset and a new measurement period starts.
+        //! @param [out] global Returned global error counters, at TS level.
+        //! @param [out] by_pid Returned error counters. If setCollectByPID() was not called,
+        //! the error counters are empty.
+        //!
+        void getCountersRestart(Counters& global, CountersByPID& by_pid);
 
         //!
         //! Set the maximum packet interval in "user PID's" before declaring PID_error.
@@ -143,6 +169,7 @@ namespace ts::tr101290 {
             bool invMin(PCR current, PCR min) const;
             bool invMax(PCR current, PCR max) const;
 
+            PID last_pid = PID_NULL;                 // Last PID on which a section with that XTID was found.
             PCR last_timestamp = PCR(-1);            // Timestamp of last packet of a section with that XTID.
             PCR last_time_01[2] {PCR(-1), PCR(-1)};  // Same as last_timestamp for sections #0 and #1 (when needed).
         };
@@ -151,16 +178,18 @@ namespace ts::tr101290 {
         DuckContext&           _duck;
         ErrorHandlerInterface* _error_handler = nullptr;
         size_t                 _bad_sync_max = DEFAULT_TS_SYNC_LOST;
-        size_t                 _bad_sync_count = 0;           // Last consecutive corrupted sync bytes.
-        PCR                    _last_timestamp = PCR(-1);     // Timestamp of last packet, negative means none.
-        PCR                    _current_timestamp = PCR(-1);  // Timestamp of current packet, negative means none.
-        PCR                    _last_nit_timestamp = PCR(-1); // Timestamp of last NIT section in NIT PID, regardless of network_id.
-        Counters               _counters {};
-        CounterFlags           _counters_flags {};
-        SectionDemux           _demux {_duck, this, this};
-        ContinuityAnalyzer     _continuity {AllPIDs()};
-        std::map<PID,PIDContext>   _pids {};
-        std::map<XTID,XTIDContext> _xtids {};
+        size_t                 _bad_sync_count = 0;            // Last consecutive corrupted sync bytes.
+        PCR                    _last_timestamp = PCR(-1);      // Timestamp of last packet, negative means none.
+        PCR                    _current_timestamp = PCR(-1);   // Timestamp of current packet, negative means none.
+        PCR                    _last_nit_timestamp = PCR(-1);  // Timestamp of last NIT section in NIT PID, regardless of network_id.
+        bool                   _collect_by_pid = false;        // Collect detailed counters per PID.
+        Counters                        _counters {};          // Global error counters.
+        std::array<bool, COUNTER_COUNT> _counters_flags {};    // Mark which errors were detected in a packet, reset at each packet.
+        std::map<PID, Counters>         _counters_by_pid {};   // Error counters by PID.
+        SectionDemux                    _demux {_duck, this, this};
+        ContinuityAnalyzer              _continuity {AllPIDs()};
+        std::map<PID,PIDContext>        _pids {};
+        std::map<XTID,XTIDContext>      _xtids {};
 
         // These min / max intervals can be made configurable if necessary.
         PCR _max_pat_interval           = cn::duration_cast<PCR>(MAX_PAT_INTERVAL);
@@ -199,12 +228,15 @@ namespace ts::tr101290 {
         // Declare ECM PID's in a descriptor list as part of a service.
         void searchECMPIDs(const DescriptorList& descs, uint16_t service_id);
 
-        // Processing of detected errors.
-        void logError(const UString& reference, ErrorCounter error, const UString& context);
-        void setError(const UString& reference, ErrorCounter error, const UString& context);
-        void addError(const UString& reference, ErrorCounter error, const UString& context, Counters& counters);
-        void logError(const UString& reference, ErrorCounter error, PID context);
-        void setError(const UString& reference, ErrorCounter error, PID context);
-        void addError(const UString& reference, ErrorCounter error, PID context, Counters& counters);
+        // Increment an error counter in _counters, only if not yet set in _counters_flags, then log error.
+        void addErrorOnce(const UString& reference, ErrorCounter error, PID pid);
+        void addErrorOnce(const UString& reference, ErrorCounter error, PID pid, const UString& context);
+
+        // Unconditionally increment an error counter, then log error.
+        void addError(Counters& global, CountersByPID& by_pid, const UString& reference, ErrorCounter error, PID pid);
+        void addError(Counters& global, CountersByPID& by_pid, const UString& reference, ErrorCounter error, PID pid, const UString& context);
+
+        // Common code to get counters.
+        void getCountersImpl(Counters& global, CountersByPID& by_pid, bool collect_by_pid);
     };
 }

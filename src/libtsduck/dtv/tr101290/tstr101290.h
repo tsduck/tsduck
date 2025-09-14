@@ -13,6 +13,7 @@
 
 #pragma once
 #include "tsUString.h"
+#include "tsTS.h"
 
 namespace ts {
     //!
@@ -108,22 +109,6 @@ namespace ts {
         TSDUCKDLL const std::array<CounterDescription, COUNTER_COUNT>& GetCounterDescriptions();
 
         //!
-        //! Array of flags for counters as defined in ETSI TR 101 290.
-        //!
-        class TSDUCKDLL CounterFlags: public std::array<bool, COUNTER_COUNT>
-        {
-        public:
-            //!
-            //! Default contructor.
-            //!
-            CounterFlags() { clear(); }
-            //!
-            //! Reset all counters.
-            //!
-            void clear() { fill(false); }
-        };
-
-        //!
         //! Array of error counters as defined in ETSI TR 101 290.
         //!
         class TSDUCKDLL Counters: public std::array<size_t, COUNTER_COUNT>
@@ -143,12 +128,12 @@ namespace ts {
             //! an error can be included in several counters.
             //!
             size_t errorCount() const;
-            //!
-            //! Increment each counter which is indicated by a flag.
-            //! @param [in] flags Counters to increment.
-            //!
-            void increment(const CounterFlags& flags);
         };
+
+        //!
+        //! A map of error counters, as defined in ETSI TR 101 290, indexed by PID.
+        //!
+        using CountersByPID = std::map<PID, Counters>;
 
         //!
         //! Maximum interval between two PAT.
