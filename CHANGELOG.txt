@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.43-4432 (September 2025)
+VERSION 3.43-4433 (September 2025)
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -10,6 +10,8 @@ VERSION 3.43-4432 (September 2025)
     for  options  --max-input-packets  and  --max-flushed-packets. This is more
     consistent with UDP/IP and streaming modes.
   * Enhanced and custom identification of sources in plugin "influx".
+  * In  plugin  "influx",  TR 101 290 error counters are now also available per
+    PID or per service.
   * New options in existing commands and plugins:
     - Option --summary in plugin "mpe".
     - Option --tag in plugin "influx".

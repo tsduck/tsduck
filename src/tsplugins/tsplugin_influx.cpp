@@ -48,6 +48,7 @@ namespace ts {
         bool        _log_pcr = false;
         bool        _log_pts = false;
         bool        _log_dts = false;
+        bool        _log_timestamps = false;  // any of --pcr --pts --dts
         bool        _log_tr_101_290 = false;
         bool        _log_types = false;
         bool        _log_services = false;
@@ -75,6 +76,7 @@ namespace ts {
             UString       inf_name {};         // Service name with escaped characters, compatible with InfluxDB message.
             std::set<PID> pids {};             // Set of PID's in this service.
         };
+        using ServiceContextMap = std::map<uint16_t,ServiceContext>;
 
         // Description of a PID. Reset in each period.
         class PIDContext
@@ -86,29 +88,33 @@ namespace ts {
             uint64_t      pts = INVALID_PTS;   // Last PTS found in period.
             uint64_t      dts = INVALID_DTS;   // Last DTS found in period.
         };
+        using PIDContextMap = std::map<PID,PIDContext>;
 
         // Working data.
-        Time                  _first_time {};            // UTC time of first packet.
-        Time                  _due_time {};              // Next UTC time to report (without --pcr-based).
-        Time                  _last_time {};             // UTC time of last report.
-        PCR                   _due_pcr {};               // Next PCR to report (with --pcr-based or --time-stamp based).
-        PCR                   _last_pcr {};              // PCR of last report.
-        size_t                _sent_metrics = 0;         // Number of sent metrics.
-        SignalizationDemux    _demux {duck};             // Analyze the stream.
-        DurationAnalyzer      _ts_clock {*this};         // Compute playout time based on PCR or input timestamps.
-        tr101290::Analyzer    _tr_101_290 {duck};        // ETSI TR 101 290 analyzer.
-        InfluxRequest         _request {*this};          // Web request to InfluxDB server.
-        MessageQueue<UString> _metrics_queue {};         // Queue of metrics to send.
-        PacketCounter         _ts_packets = 0;           // All TS packets in period.
-        std::map<PID,PIDContext> _pids {};               // PID's description in period.
-        std::map<uint16_t,ServiceContext> _services {};  // Services descriptions.
+        Time                  _first_time {};      // UTC time of first packet.
+        Time                  _due_time {};        // Next UTC time to report (without --pcr-based).
+        Time                  _last_time {};       // UTC time of last report.
+        PCR                   _due_pcr {};         // Next PCR to report (with --pcr-based or --time-stamp based).
+        PCR                   _last_pcr {};        // PCR of last report.
+        size_t                _sent_metrics = 0;   // Number of sent metrics.
+        SignalizationDemux    _demux {duck};       // Analyze the stream.
+        DurationAnalyzer      _ts_clock {*this};   // Compute playout time based on PCR or input timestamps.
+        tr101290::Analyzer    _tr_101_290 {duck};  // ETSI TR 101 290 analyzer.
+        InfluxRequest         _request {*this};    // Web request to InfluxDB server.
+        MessageQueue<UString> _metrics_queue {};   // Queue of metrics to send.
+        PacketCounter         _ts_packets = 0;     // All TS packets in period.
+        PIDContextMap         _pids {};            // PID's description in period.
+        ServiceContextMap     _services {};        // Services descriptions.
+
+        // Get the representable name of a service, from an iterator in _service.
+        UString serviceName(const ServiceContextMap::value_type&) const;
 
         // Report metrics to InfluxDB.
         void reportMetrics(bool force);
         void reportMetrics(Time timestamp, cn::milliseconds duration);
 
         // Build metrics string for a given type of timestamp.
-        void addMetrics(UString& data, const UChar* measurement, PID ServiceContext::* refpid, uint64_t PIDContext::* value, cn::milliseconds::rep timestamp_ms);
+        void addTimestampMetrics(UString& data, const UChar* measurement, PID ServiceContext::* refpid, uint64_t PIDContext::* value, uint16_t tsid, cn::milliseconds::rep timestamp_ms);
 
         // Implementation of SignalizationHandlerInterface.
         virtual void handleUTC(const Time&, TID) override;
@@ -167,17 +173,17 @@ ts::InfluxPlugin::InfluxPlugin(TSP* tsp_) :
     // Subselection of types of monitoring.
     option(u"all-pids", 'a');
     help(u"all-pids",
-         u"Send bitrate or PCR/PTS/DTS monitoring data for all PID's. Equivalent to --pid 0-8191.");
+         u"Send metrics data for all PID's. Equivalent to --pid 0-8191.");
 
     option(u"pid", 'p', PIDVAL, 0, UNLIMITED_COUNT);
     help(u"pid", u"pid1[-pid2]",
-         u"Send bitrate or PCR/PTS/DTS monitoring data for the specified PID's. "
+         u"Send metrics data for the specified PID's. "
          u"The PID's are identified in InfluxDB by their value in decimal. "
          u"Several -p or --pid options may be specified.");
 
     option(u"services", 's');
     help(u"services",
-         u"Send bitrate or PCR/PTS/DTS monitoring data for services. "
+         u"Send metrics data for services. "
          u"The services are identified in InfluxDB by their id in decimal.");
 
     option(u"names", 'n');
@@ -199,7 +205,7 @@ ts::InfluxPlugin::InfluxPlugin(TSP* tsp_) :
 
     option(u"type");
     help(u"type",
-         u"Send bitrate monitoring for types of PID's. "
+         u"Send bitrate metrics for types of PID's. "
          u"The types are identified in InfluxDB as " +
          PIDClassIdentifier().nameList(u", ", u"\"", u"\"") +
          u".");
@@ -254,8 +260,9 @@ bool ts::InfluxPlugin::getOptions()
     _log_pcr = present(u"pcr");
     _log_pts = present(u"pts");
     _log_dts = present(u"dts");
+    _log_timestamps = _log_pcr || _log_pts || _log_dts;
     _log_tr_101_290 = present(u"tr-101-290");
-    _log_bitrate = present(u"bitrate") || (!_log_pcr && !_log_pts && !_log_dts && !_log_tr_101_290);
+    _log_bitrate = present(u"bitrate") || (!_log_timestamps && !_log_tr_101_290);
     _log_types = present(u"type");
     _log_services = present(u"services");
     _log_names = present(u"names");
@@ -271,7 +278,7 @@ bool ts::InfluxPlugin::getOptions()
         _log_pids = AllPIDs();
     }
 
-    if ((_log_pcr || _log_pts || _log_dts) && (_log_pids.none() && !_log_services)) {
+    if (_log_timestamps && (_log_pids.none() && !_log_services)) {
         error(u"with any of --pcr --pts --dts, at least one of --pid --all-pids --services is required");
         success = false;
     }
@@ -319,10 +326,15 @@ bool ts::InfluxPlugin::start()
     _demux.setHandler(this);
     _ts_clock.reset();
     _ts_clock.useInputTimestamps(_timestamp_based);
-    _tr_101_290.reset();
     _ts_packets = 0;
     _pids.clear();
     _services.clear();
+
+    // Reset the TR 101 290 analyzer.
+    if (_log_tr_101_290) {
+        _tr_101_290.reset();
+        _tr_101_290.setCollectByPID(_log_services || _log_pids.any());
+    }
 
     // Resize the inter-thread queue.
     _metrics_queue.clear();
@@ -473,6 +485,16 @@ void ts::InfluxPlugin::searchPIDs(std::set<PID>& pids, const DescriptorList& dli
 
 
 //----------------------------------------------------------------------------
+// Get the representable name of a service, from an iterator in _service.
+//----------------------------------------------------------------------------
+
+ts::UString ts::InfluxPlugin::serviceName(const ServiceContextMap::value_type& it) const
+{
+    return _log_names && !it.second.inf_name.empty() ? it.second.inf_name : UString::Decimal(it.first, 0, 0, UString());
+}
+
+
+//----------------------------------------------------------------------------
 // Report metrics to InfluxDB if time to do so.
 //----------------------------------------------------------------------------
 
@@ -524,41 +546,44 @@ void ts::InfluxPlugin::reportMetrics(Time timestamp, cn::milliseconds duration)
     // Build data to post. Use a shared pointer to send to the message queue.
     auto data = std::make_shared<UString>();
 
-    // The total TS bitrate is also present.
+    // The total TS bitrate is always present and first.
     const uint16_t tsid = _demux.transportStreamId();
     data->format(u"bitrate,scope=ts,tsid=%d%s value=%d %d", tsid, _additional_tags, PacketBitRate(_ts_packets, duration), timestamp_ms);
 
+    // If we need to report metrics per service, determine the set of PID's which belong to a service.
+    // All other PID's are "global".
+    PIDSet allocated_pids;
+    if (_log_services && (_log_bitrate || _log_tr_101_290)) {
+        for (const auto& it : _services) {
+            for (PID pid : it.second.pids) {
+                allocated_pids.set(pid);
+            }
+        }
+    }
+
     // Log bitrate per service.
     if (_log_bitrate && _log_services) {
-        // PID's which belong to services.
-        PIDSet allocated;
         // Send bitrate info for services.
         for (const auto& it : _services) {
             // Count packets in this service.
             PacketCounter packets = 0;
             for (PID pid : it.second.pids) {
                 packets += _pids[pid].packets;
-                allocated.set(pid);
             }
             // Send bitrate info by name or id.
             if (packets > 0) {
-                if (_log_names && !it.second.inf_name.empty()) {
-                    data->format(u"\nbitrate,scope=service,service=%s%s value=%d %d", it.second.inf_name, _additional_tags, PacketBitRate(packets, duration), timestamp_ms);
-                }
-                else {
-                    data->format(u"\nbitrate,scope=service,service=%d%s value=%d %d", it.first, _additional_tags, PacketBitRate(packets, duration), timestamp_ms);
-                }
+                data->format(u"\nbitrate,scope=service,tsid=%d,service=%s%s value=%d %d", tsid, serviceName(it), _additional_tags, PacketBitRate(packets, duration), timestamp_ms);
             }
         }
         // Send bitrate info for "global" PID's (unallocated to any service).
         PacketCounter globals = 0;
         for (const auto& it : _pids) {
-            if (!allocated.test(it.first)) {
+            if (!allocated_pids.test(it.first)) {
                 globals += it.second.packets;
             }
         }
         if (globals > 0) {
-            data->format(u"\nbitrate,scope=service,service=global%s value=%d %d", _additional_tags, PacketBitRate(globals, duration), timestamp_ms);
+            data->format(u"\nbitrate,scope=service,tsid=%d,service=global%s value=%d %d", tsid, _additional_tags, PacketBitRate(globals, duration), timestamp_ms);
         }
     }
 
@@ -573,7 +598,7 @@ void ts::InfluxPlugin::reportMetrics(Time timestamp, cn::milliseconds duration)
         for (const auto& it : by_type) {
             if (it.second > 0) {
                 const UString name(InfluxRequest::ToKey(PIDClassIdentifier().name(it.first)));
-                data->format(u"\nbitrate,scope=type,type=%s%s value=%d %d", name, _additional_tags, PacketBitRate(it.second, duration), timestamp_ms);
+                data->format(u"\nbitrate,scope=type,tsid=%d,type=%s%s value=%d %d", tsid, name, _additional_tags, PacketBitRate(it.second, duration), timestamp_ms);
             }
         }
     }
@@ -582,32 +607,84 @@ void ts::InfluxPlugin::reportMetrics(Time timestamp, cn::milliseconds duration)
     if (_log_bitrate && _log_pids.any()) {
         for (const auto& it : _pids) {
             if (_log_pids.test(it.first) && it.second.packets > 0) {
-                data->format(u"\nbitrate,scope=pid,pid=%d%s value=%d %d", it.first, _additional_tags, PacketBitRate(it.second.packets, duration), timestamp_ms);
+                data->format(u"\nbitrate,scope=pid,tsid=%d,pid=%d%s value=%d %d", tsid, it.first, _additional_tags, PacketBitRate(it.second.packets, duration), timestamp_ms);
             }
         }
     }
 
     // Log PCR/PTS/DTS values.
     if (_log_pcr) {
-        addMetrics(*data, u"pcr", &ServiceContext::pcr_pid, &PIDContext::pcr, timestamp_ms);
+        addTimestampMetrics(*data, u"pcr", &ServiceContext::pcr_pid, &PIDContext::pcr, tsid, timestamp_ms);
     }
     if (_log_pts) {
-        addMetrics(*data, u"pts", &ServiceContext::pts_pid, &PIDContext::pts, timestamp_ms);
+        addTimestampMetrics(*data, u"pts", &ServiceContext::pts_pid, &PIDContext::pts, tsid, timestamp_ms);
     }
     if (_log_dts) {
-        addMetrics(*data, u"dts", &ServiceContext::pts_pid, &PIDContext::dts, timestamp_ms);
+        addTimestampMetrics(*data, u"dts", &ServiceContext::pts_pid, &PIDContext::dts, tsid, timestamp_ms);
     }
 
     // Log ETSI TR 101 290 error counters.
     if (_log_tr_101_290) {
+        // Get the error counters, global and by PID when necessary.
         tr101290::Counters counters;
-        _tr_101_290.getCountersRestart(counters);
-        const auto& desc(tr101290::GetCounterDescriptions());
-        for (size_t i = 0; i < counters.size(); i++) {
-            if (desc[i].severity <= _max_severity) {
-                data->format(u"\ncounter,name=%s,severity=%d,scope=ts,tsid=%d%s value=%d %d", desc[i].name.toLower(), desc[i].severity, tsid, _additional_tags, counters[i], timestamp_ms);
+        tr101290::CountersByPID counters_by_pid;
+        _tr_101_290.getCountersRestart(counters, counters_by_pid);
+
+        // Send metrics for each standard error counter.
+        const auto& counter_descriptions(tr101290::GetCounterDescriptions());
+        for (size_t cindex = 0; cindex < counters.size(); cindex++) {
+
+            // Description of that error counter.
+            const auto& desc(counter_descriptions[cindex]);
+            if (desc.severity <= _max_severity) {
+
+                // Name of that error counter, as InfluxDB tag.
+                const UString name(desc.name.toLower());
+
+                // Always log global counter, even if zero.
+                data->format(u"\ncounter,name=%s,severity=%d,scope=ts,tsid=%d%s value=%d %d", name, desc.severity, tsid, _additional_tags, counters[cindex], timestamp_ms);
+
+                // Log the counter by service, if not zero.
+                if (_log_services) {
+                    // Loop on all known services.
+                    for (const auto& it : _services) {
+                        // Accumulate that counter for all PID's in this service.
+                        size_t errcount = 0;
+                        for (PID pid : it.second.pids) {
+                            const auto xx = counters_by_pid.find(pid);
+                            if (xx != counters_by_pid.end()) {
+                                errcount += xx->second[cindex];
+                            }
+                        }
+                        // Send counter for that service.
+                        if (errcount > 0) {
+                            data->format(u"\ncounter,name=%s,severity=%d,scope=service,tsid=%d,service=%s%s value=%d %d", name, desc.severity, tsid, serviceName(it), _additional_tags, errcount, timestamp_ms);
+                        }
+                    }
+                    // Send the error counter for "global" PID's (unallocated to any service).
+                    size_t errcount = 0;
+                    for (const auto& it : counters_by_pid) {
+                        if (!allocated_pids.test(it.first)) {
+                            errcount += it.second[cindex];
+                        }
+                    }
+                    if (errcount > 0) {
+                        data->format(u"\ncounter,name=%s,severity=%d,scope=service,tsid=%d,service=global%s value=%d %d", name, desc.severity, tsid, _additional_tags, errcount, timestamp_ms);
+                    }
+                }
+
+                // Log the counter by selected PID, if not zero.
+                if (_log_pids.any()) {
+                    for (const auto& it : counters_by_pid) {
+                        if (_log_pids.test(it.first) && it.second[cindex] > 0) {
+                            data->format(u"\ncounter,name=%s,severity=%d,scope=pid,tsid=%d,pid=%d%s value=%d %d", name, desc.severity, tsid, it.first, _additional_tags, it.second[cindex], timestamp_ms);
+                        }
+                    }
+                }
             }
         }
+
+        // Final synthetic error_count.
         if (tr101290::INFO_SEVERITY <= _max_severity) {
             data->format(u"\ncounter,name=error_count,severity=%d,scope=ts,tsid=%d%s value=%d %d", tr101290::INFO_SEVERITY, tsid, _additional_tags, counters.errorCount(), timestamp_ms);
         }
@@ -635,7 +712,7 @@ void ts::InfluxPlugin::reportMetrics(Time timestamp, cn::milliseconds duration)
 // Build metrics string for a given type of timestamp.
 //----------------------------------------------------------------------------
 
-void ts::InfluxPlugin::addMetrics(UString& data, const UChar* measurement, PID ServiceContext::* refpid, uint64_t PIDContext::* value, cn::milliseconds::rep timestamp_ms)
+void ts::InfluxPlugin::addTimestampMetrics(UString& data, const UChar* measurement, PID ServiceContext::* refpid, uint64_t PIDContext::* value, uint16_t tsid, cn::milliseconds::rep timestamp_ms)
 {
     // Log timestamp per service.
     if (_log_services) {
@@ -643,12 +720,7 @@ void ts::InfluxPlugin::addMetrics(UString& data, const UChar* measurement, PID S
             if (it.second.*refpid != PID_NULL) {
                 auto& ctx(_pids[it.second.*refpid]);
                 if (ctx.*value != INVALID_PCR) {
-                    if (_log_names && !it.second.inf_name.empty()) {
-                        data.format(u"\n%s,scope=service,service=%s%s value=%d %d", measurement, it.second.inf_name, _additional_tags, ctx.*value, timestamp_ms);
-                    }
-                    else {
-                        data.format(u"\n%s,scope=service,service=%d%s value=%d %d", measurement, it.first, _additional_tags, ctx.*value, timestamp_ms);
-                    }
+                    data.format(u"\n%s,scope=service,tsid=%d,service=%s%s value=%d %d", measurement, tsid, serviceName(it), _additional_tags, ctx.*value, timestamp_ms);
                 }
             }
         }
@@ -658,7 +730,7 @@ void ts::InfluxPlugin::addMetrics(UString& data, const UChar* measurement, PID S
     if (_log_pids.any()) {
         for (const auto& it : _pids) {
             if (_log_pids.test(it.first) && it.second.*value != INVALID_PCR) {
-                data.format(u"\n%s,scope=pid,pid=%d%s value=%d %d", measurement, it.first, _additional_tags, it.second.*value, timestamp_ms);
+                data.format(u"\n%s,scope=pid,tsid=%d,pid=%d%s value=%d %d", measurement, tsid, it.first, _additional_tags, it.second.*value, timestamp_ms);
             }
         }
     }
