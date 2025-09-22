@@ -518,46 +518,59 @@ TSUNIT_DEFINE_TEST(FileTime)
 
 TSUNIT_DEFINE_TEST(Wildcard)
 {
-    const ts::UString dirName(ts::TempFile(u""));
-    const ts::UString filePrefix(dirName + fs::path::preferred_separator + u"foo.");
-    const size_t count = 10;
+    const ts::UString dir_name(ts::TempFile(u""));
+    const ts::UString file_prefix(dir_name + fs::path::preferred_separator + u"foo.");
+    static constexpr size_t count = 10;
 
     // Create temporary directory
-    TSUNIT_ASSERT(fs::create_directory(dirName));
-    TSUNIT_ASSERT(fs::is_directory(dirName));
+    TSUNIT_ASSERT(fs::create_directory(dir_name));
+    TSUNIT_ASSERT(fs::is_directory(dir_name));
 
     // Create one file with unique pattern
-    const ts::UString spuriousFileName(dirName + fs::path::preferred_separator + u"tagada");
-    TSUNIT_ASSERT(_CreateFile(spuriousFileName, 0));
-    TSUNIT_ASSERT(fs::exists(spuriousFileName));
+    const ts::UString spurious_file_name(dir_name + fs::path::preferred_separator + u"tagada");
+    TSUNIT_ASSERT(_CreateFile(spurious_file_name, 0));
+    TSUNIT_ASSERT(fs::exists(spurious_file_name));
 
     // Create many files
-    ts::UStringVector fileNames;
-    fileNames.reserve(count);
+    ts::UStringVector file_names;
+    file_names.reserve(count);
     for (size_t i = 0; i < count; ++i) {
-        const ts::UString fileName(filePrefix + ts::UString::Format(u"%03d", i));
-        TSUNIT_ASSERT(_CreateFile(fileName, 0));
-        TSUNIT_ASSERT(fs::exists(fileName));
-        fileNames.push_back(fileName);
+        const ts::UString file_name(file_prefix + ts::UString::Format(u"%03d", i));
+        TSUNIT_ASSERT(_CreateFile(file_name, 0));
+        TSUNIT_ASSERT(fs::exists(file_name));
+        file_names.push_back(file_name);
     }
-    Display(u"created files:", u"file: ", fileNames);
+    Display(u"created files:", u"file: ", file_names);
 
     // Get wildcard
     ts::UStringVector expanded;
-    TSUNIT_ASSERT(ts::ExpandWildcard(expanded, filePrefix + u"*"));
+    TSUNIT_ASSERT(ts::ExpandWildcard(expanded, file_prefix + u"*"));
     std::sort(expanded.begin(), expanded.end());
     Display(u"expanded wildcard:", u"expanded: ", expanded);
-    TSUNIT_ASSERT(expanded == fileNames);
+    TSUNIT_ASSERT(expanded == file_names);
+
+#if defined(TS_WINDOWS)
+    // On Windows, make sure it works with '/' instead of '\' (fs::path::preferred_separator)
+    ts::UStringVector file_names_2;
+    file_names_2.reserve(file_names.size());
+    for (const auto& fn : file_names) {
+        file_names_2.push_back(fn.toSubstituted(fs::path::preferred_separator, u'/'));
+    }
+    TSUNIT_ASSERT(ts::ExpandWildcard(expanded, file_prefix.toSubstituted(fs::path::preferred_separator, u'/') + u"*"));
+    std::sort(expanded.begin(), expanded.end());
+    Display(u"expanded wildcard 2:", u"expanded: ", expanded);
+    TSUNIT_ASSERT(expanded == file_names_2);
+#endif
 
     // Final cleanup
-    for (const auto& file : fileNames) {
+    for (const auto& file : file_names) {
         TSUNIT_ASSERT(fs::remove(file, &ts::ErrCodeReport(CERR, u"error deleting", file)));
         TSUNIT_ASSERT(!fs::exists(file));
     }
-    TSUNIT_ASSERT(fs::remove(spuriousFileName, &ts::ErrCodeReport(CERR, u"error deleting", spuriousFileName)));
-    TSUNIT_ASSERT(!fs::exists(spuriousFileName));
-    TSUNIT_ASSERT(fs::remove(dirName, &ts::ErrCodeReport(CERR, u"error deleting", dirName)));
-    TSUNIT_ASSERT(!fs::exists(dirName));
+    TSUNIT_ASSERT(fs::remove(spurious_file_name, &ts::ErrCodeReport(CERR, u"error deleting", spurious_file_name)));
+    TSUNIT_ASSERT(!fs::exists(spurious_file_name));
+    TSUNIT_ASSERT(fs::remove(dir_name, &ts::ErrCodeReport(CERR, u"error deleting", dir_name)));
+    TSUNIT_ASSERT(!fs::exists(dir_name));
 }
 
 TSUNIT_DEFINE_TEST(SearchWildcard)
