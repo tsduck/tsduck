@@ -106,6 +106,19 @@ $ tsp -P spliceinject [options]
 General options
 
 [.opt]
+*--ignore-pid-conflict*
+
+[.optdoc]
+Ignore conflicts between the PID carrying the splice information tables (option `--pid`) and an existing identical PID.
+
+[.optdoc]
+By default, this is an error if existing input packets have the same PID as the splice PID.
+
+[.optdoc]
+Using this option may lead to incorrect streams, use with care.
+A verbose-level message is still displayed the first time a PID conflict is detected.
+
+[.opt]
 *--inject-count* _value_
 
 [.optdoc]
