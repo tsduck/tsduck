@@ -27,6 +27,7 @@ namespace ts {
         UString          file_name {};        //!< File name.
         UString          display_name {};     //!< File name in display form.
         bool             inline_xml = false;  //!< File name contains inline XML text (not a real file name).
+        bool             inline_json = false; //!< File name contains inline JSON text (not a real file name).
         Time             file_date {};        //!< Last modification date of file.
         cn::milliseconds repetition {};       //!< Repetition rate in milliseconds.
         size_t           retry_count = 1;     //!< Number of allowed retry in case of error when using the file.

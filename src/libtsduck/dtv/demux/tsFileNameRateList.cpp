@@ -8,6 +8,7 @@
 
 #include "tsFileNameRateList.h"
 #include "tsxmlDocument.h"
+#include "tsjson.h"
 
 
 //----------------------------------------------------------------------------
@@ -42,12 +43,13 @@ bool ts::FileNameRateList::getArgs(Args& args, const UChar* option_name, cn::mil
     bool success = true;
 
     for (size_t i = 0; i < strings.size(); ++i) {
-        const UString::size_type eq = strings[i].find('=');
         FileNameRate file;
         file.repetition = default_rate;
         file.inline_xml = xml::Document::IsInlineXML(strings[i]);
-        if (file.inline_xml || eq == UString::npos) {
-            // No '=' found, no repetition rate specified.
+        file.inline_json = json::IsInlineJSON(strings[i]);
+        const UString::size_type eq = strings[i].find('=');
+        if (file.inline_xml || file.inline_json || eq == UString::npos) {
+            // No '=' found after file name, no repetition rate specified.
             file.file_name = strings[i];
         }
         else {

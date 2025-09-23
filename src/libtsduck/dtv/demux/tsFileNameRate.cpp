@@ -9,6 +9,7 @@
 #include "tsFileNameRate.h"
 #include "tsxmlDocument.h"
 #include "tsFileUtils.h"
+#include "tsjson.h"
 
 
 //----------------------------------------------------------------------------
@@ -19,6 +20,7 @@ ts::FileNameRate::FileNameRate(const UString& name, cn::milliseconds rep) :
     file_name(name),
     display_name(xml::Document::DisplayFileName(file_name)),
     inline_xml(xml::Document::IsInlineXML(file_name)),
+    inline_json(json::IsInlineJSON(file_name)),
     repetition(rep)
 {
 }
@@ -45,7 +47,7 @@ bool ts::FileNameRate::operator<(const FileNameRate& other) const
 
 bool ts::FileNameRate::scanFile(size_t retry, Report& report)
 {
-    if (file_name.empty() || inline_xml) {
+    if (file_name.empty() || inline_xml || inline_json) {
         // No file, no change...
         return false;
     }
