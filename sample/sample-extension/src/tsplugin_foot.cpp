@@ -25,7 +25,7 @@ namespace foo {
     protected:
         // Implementation of AbstractTablePlugin.
         virtual void createNewTable(ts::BinaryTable& table) override;
-        virtual void modifyTable(ts::BinaryTable& table, bool& is_target, bool& reinsert) override;
+        virtual void modifyTable(ts::BinaryTable& table, bool& is_target, bool& reinsert, bool& replace_all) override;
 
     private:
         ts::PID     _pid;       // PID for the table to process.
@@ -109,7 +109,7 @@ void foo::FootPlugin::createNewTable(ts::BinaryTable& table)
 // Invoked by the superclass when a table is found in the target PID.
 //----------------------------------------------------------------------------
 
-void foo::FootPlugin::modifyTable(ts::BinaryTable& table, bool& is_target, bool& reinsert)
+void foo::FootPlugin::modifyTable(ts::BinaryTable& table, bool& is_target, bool& reinsert, bool& replace_all)
 {
     // If not a FOOT, reinsert without modification.
     is_target = table.tableId() == foo::TID_FOOT;
