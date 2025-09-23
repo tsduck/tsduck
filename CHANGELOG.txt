@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.43-4437 (September 2025)
+VERSION 3.43-4440 (September 2025)
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -26,6 +26,10 @@ VERSION 3.43-4437 (September 2025)
   * Fixed issue #1667:  In plugin "spliceinject", PID conflicts between the new
     splice  information PID and existing input PID's were not detected. Now, an
     an  error is generated, unless the new option --ignore-pid-conflict is set.
+  * Fixed issue #1668:  In  plugin "pat", when a new input PAT with a new TS id
+    was  found,  two occurrences of the PAT were passed, one with the old TS id
+    and  one  with  the new TS id. The same problem existed with SDT Actual and
+    NIT Actual. The plugins "sdt" and "nit" were fixed accordingly.
 
 -------------------------------------------------------------------------------
 

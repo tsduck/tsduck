@@ -30,7 +30,7 @@ namespace ts {
 
         // Implementation of AbstractTablePlugin.
         virtual void createNewTable(BinaryTable& table) override;
-        virtual void modifyTable(BinaryTable& table, bool& is_target, bool& reinsert) override;
+        virtual void modifyTable(BinaryTable& table, bool& is_target, bool& reinsert, bool& replace_all) override;
 
     private:
         // Command line options:
@@ -131,7 +131,7 @@ void ts::BATPlugin::createNewTable(BinaryTable& table)
 // Invoked by the superclass when a table is found in the target PID.
 //----------------------------------------------------------------------------
 
-void ts::BATPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reinsert)
+void ts::BATPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reinsert, bool& replace_all)
 {
     // If not a BAT (typically an SDT) or not the BAT we are looking for, reinsert without modification.
     if (table.tableId() != TID_BAT || (_single_bat && table.tableIdExtension() != _bouquet_id)) {

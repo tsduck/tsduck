@@ -72,8 +72,13 @@ namespace ts {
         //! @param [in,out] reinsert Indicate that the modified @a table shall be reinserted in the
         //! PID. Initially true. Can be set to false by handleTable() to indicate that this table
         //! shall be removed from the PID.
+        //! @param [in,out] replace_all When @a reinsert is true, indicate that the modified @a table
+        //! shall replace all previous tables with the same table id, regardless of the table id extension.
+        //! Initially false. This is useful when a given table id shall be unique in a PID (e.g. PAT, SDT Actual,
+        //! NIT Actual). In that case, getting a new table with a new table id extension means replace any
+        //! previous table.
         //!
-        virtual void modifyTable(BinaryTable& table, bool& is_target, bool& reinsert) = 0;
+        virtual void modifyTable(BinaryTable& table, bool& is_target, bool& reinsert, bool& replace_all) = 0;
 
         //!
         //! Create a new empty table when none is found in the PID.
@@ -87,8 +92,10 @@ namespace ts {
         //! Most subclasses will not need to call this.
         //! @param [in,out] table The new updated table.
         //! Modified when common modification options are specified.
+        //! @param [in,out] replace_all Indicate that @a table shall replace all previous tables with the same table id,
+        //! regardless of the table id extension.
         //!
-        void forceTableUpdate(BinaryTable& table);
+        void forceTableUpdate(BinaryTable& table, bool replace_all);
 
         //!
         //! Set the error flag to terminate the processing asap.
@@ -125,6 +132,6 @@ namespace ts {
         TablePatchXML     _patch_xml;             // Table patcher using XML patch files.
 
         // Reinsert a table in the target PID.
-        void reinsertTable(BinaryTable& table, bool is_target_table);
+        void reinsertTable(BinaryTable& table, TID initial_tid, uint16_t initial_tidext, bool is_target_table, bool replace_all);
     };
 }

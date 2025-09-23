@@ -15,7 +15,6 @@
 #include "tsPluginRepository.h"
 #include "tsServiceDescriptor.h"
 #include "tsService.h"
-#include "tsAlgorithm.h"
 #include "tsSDT.h"
 
 
@@ -41,7 +40,7 @@ namespace ts {
 
         // Implementation of AbstractTablePlugin.
         virtual void createNewTable(BinaryTable& table) override;
-        virtual void modifyTable(BinaryTable& table, bool& is_target, bool& reinsert) override;
+        virtual void modifyTable(BinaryTable& table, bool& is_target, bool& reinsert, bool& replace_all) override;
     };
 }
 
@@ -207,7 +206,7 @@ void ts::SDTPlugin::createNewTable(BinaryTable& table)
 // Invoked by the superclass when a table is found in the target PID.
 //----------------------------------------------------------------------------
 
-void ts::SDTPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reinsert)
+void ts::SDTPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reinsert, bool& replace_all)
 {
     // If not an SDT (typically a BAT) or not the SDT we are looking for, reinsert without modification.
     is_target = (!_use_other && table.tableId() == TID_SDT_ACT) ||
@@ -223,6 +222,9 @@ void ts::SDTPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
         reinsert = false;
         return;
     }
+
+    // Replace all sections if SDT Actual (only one instance possible).
+    replace_all = sdt.isActual();
 
     // Modify global values.
     if (_service.hasTSId()) {

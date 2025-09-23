@@ -31,7 +31,7 @@ namespace ts {
 
         // Implementation of AbstractTablePlugin.
         virtual void createNewTable(BinaryTable& table) override;
-        virtual void modifyTable(BinaryTable& table, bool& is_target, bool& reinsert) override;
+        virtual void modifyTable(BinaryTable& table, bool& is_target, bool& reinsert, bool& replace_all) override;
 
     private:
         // Command line options:
@@ -114,7 +114,7 @@ void ts::CATPlugin::createNewTable(BinaryTable& table)
 // Invoked by the superclass when a table is found in the target PID.
 //----------------------------------------------------------------------------
 
-void ts::CATPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reinsert)
+void ts::CATPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reinsert, bool& replace_all)
 {
     // Warn about non-CAT tables in the CAT PID but keep them.
     if (table.tableId() != TID_CAT) {
@@ -130,6 +130,9 @@ void ts::CATPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
         reinsert = false;
         return;
     }
+
+    // A CAT has no table id extension, but clean them all anyway.
+    replace_all = true;
 
     // Remove descriptors
     for (size_t index = cat.descs.search(DID_MPEG_CA); index < cat.descs.count(); index = cat.descs.search(DID_MPEG_CA, index)) {

@@ -39,7 +39,7 @@ namespace ts {
 
         // Implementation of AbstractTablePlugin.
         virtual void createNewTable(BinaryTable& table) override;
-        virtual void modifyTable(BinaryTable& table, bool& is_target, bool& reinsert) override;
+        virtual void modifyTable(BinaryTable& table, bool& is_target, bool& reinsert, bool& replace_all) override;
     };
 }
 
@@ -132,7 +132,7 @@ void ts::PATPlugin::createNewTable(BinaryTable& table)
 // Invoked by the superclass when a table is found in the target PID.
 //----------------------------------------------------------------------------
 
-void ts::PATPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reinsert)
+void ts::PATPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reinsert, bool& replace_all)
 {
     // Warn about non-PAT tables in the PAT PID but keep them.
     if (table.tableId() != TID_PAT) {
@@ -148,6 +148,9 @@ void ts::PATPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
         reinsert = false;
         return;
     }
+
+    // Replace all sections, only one instance of PAT on PID 0.
+    replace_all = true;
 
     // Modify the PAT
     if (_set_tsid) {

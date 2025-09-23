@@ -139,8 +139,8 @@ void ts::AbstractTablePlugin::handleTable(SectionDemux& demux, const BinaryTable
 
     // Save table characteritics.
     const bool is_short = intable.isShortSection();
-    const TID tid = intable.tableId();
-    const uint16_t etid = intable.tableIdExtension();
+    const TID initial_tid = intable.tableId();
+    const uint16_t initial_tidext = intable.tableIdExtension();
 
     // Build a modifiable version of the table.
     BinaryTable table(intable, ShareMode::SHARE);
@@ -153,10 +153,10 @@ void ts::AbstractTablePlugin::handleTable(SectionDemux& demux, const BinaryTable
     // If the patch file deleted the table, remove it from the packetizer.
     if (!table.isValid()) {
         if (is_short) {
-            _pzer.removeSections(tid);
+            _pzer.removeSections(initial_tid);
         }
         else {
-            _pzer.removeSections(tid, etid);
+            _pzer.removeSections(initial_tid, initial_tidext);
         }
         return;
     }
@@ -164,11 +164,12 @@ void ts::AbstractTablePlugin::handleTable(SectionDemux& demux, const BinaryTable
     // Call subclass to process the table.
     bool is_target = true;
     bool reinsert = true;
-    modifyTable(table, is_target, reinsert);
+    bool replace_all = false;
+    modifyTable(table, is_target, reinsert, replace_all);
 
     // Place modified table in the packetizer.
     if (reinsert) {
-        reinsertTable(table, is_target);
+        reinsertTable(table, initial_tid, initial_tidext, is_target, replace_all);
     }
 }
 
@@ -177,10 +178,10 @@ void ts::AbstractTablePlugin::handleTable(SectionDemux& demux, const BinaryTable
 // Called by the subclass when some external event forces an update of the table.
 //----------------------------------------------------------------------------
 
-void ts::AbstractTablePlugin::forceTableUpdate(BinaryTable& table)
+void ts::AbstractTablePlugin::forceTableUpdate(BinaryTable& table, bool replace_all)
 {
     // Common processing of target table.
-    reinsertTable(table, true);
+    reinsertTable(table, table.tableId(), table.tableIdExtension(), true, replace_all);
 
     // Insert first packet as soon as possible when the target PID is not present.
     _pkt_insert = tsp->pluginPackets();
@@ -191,7 +192,7 @@ void ts::AbstractTablePlugin::forceTableUpdate(BinaryTable& table)
 // Reinsert a table in the target PID.
 //----------------------------------------------------------------------------
 
-void ts::AbstractTablePlugin::reinsertTable(BinaryTable& table, bool is_target_table)
+void ts::AbstractTablePlugin::reinsertTable(BinaryTable& table, TID initial_tid, uint16_t initial_tidext, bool is_target_table, bool replace_all)
 {
     // Make common modifications on target table.
     if (is_target_table) {
@@ -210,13 +211,15 @@ void ts::AbstractTablePlugin::reinsertTable(BinaryTable& table, bool is_target_t
         }
     }
 
-    // Reinsert the table in the packetizer.
-    if (table.isShortSection()) {
-        _pzer.removeSections(table.tableId());
+    // Remove previous instances of the table.
+    if (table.isShortSection() || replace_all) {
+        _pzer.removeSections(initial_tid);
     }
     else {
-        _pzer.removeSections(table.tableId(), table.tableIdExtension());
+        _pzer.removeSections(initial_tid, initial_tidext);
     }
+
+    // Reinsert the table in the packetizer.
     _pzer.addTable(table);
 }
 

@@ -36,7 +36,7 @@ namespace ts {
 
         // Implementation of AbstractTablePlugin.
         virtual void createNewTable(BinaryTable& table) override;
-        virtual void modifyTable(BinaryTable& table, bool& is_target, bool& reinsert) override;
+        virtual void modifyTable(BinaryTable& table, bool& is_target, bool& reinsert, bool& replace_all) override;
 
     protected:
         // Implementation of TableHandlerInterface.
@@ -391,10 +391,10 @@ void ts::NITPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
             updateServiceList(_last_nit);
             // Make sure the updated NIT has a new version.
             _last_nit.incrementVersion();
-            // We need to force the modified NIT.
+            // We need to force the modified NIT. Replace all if NIT Actual (only one instance possible).
             BinaryTable bin;
             _last_nit.serialize(duck, bin);
-            forceTableUpdate(bin);
+            forceTableUpdate(bin, _last_nit.isActual());
         }
     }
 
@@ -428,7 +428,7 @@ void ts::NITPlugin::createNewTable(BinaryTable& table)
 // Invoked by the superclass when a table is found in the target PID.
 //----------------------------------------------------------------------------
 
-void ts::NITPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reinsert)
+void ts::NITPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reinsert, bool& replace_all)
 {
     // If not the NIT we are looking for, reinsert without modification.
     is_target =
@@ -447,6 +447,9 @@ void ts::NITPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
     }
 
     debug(u"got a NIT, version %d, network Id: %n", nit.version(), nit.network_id);
+
+    // Replace all sections if NIT Actual (only one instance possible).
+    replace_all = nit.isActual();
 
     // Remove the specified transport streams
     for (auto it = nit.transports.begin(); it != nit.transports.end(); ) {

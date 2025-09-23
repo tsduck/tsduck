@@ -81,7 +81,7 @@ namespace ts {
 
         // Implementation of AbstractTablePlugin.
         virtual void createNewTable(BinaryTable& table) override;
-        virtual void modifyTable(BinaryTable& table, bool& is_target, bool& reinsert) override;
+        virtual void modifyTable(BinaryTable& table, bool& is_target, bool& reinsert, bool& replace_all) override;
 
         // Add a descriptor for a given PID in _add_pid_descs.
         void addComponentDescriptor(PID pid, const AbstractDescriptor& desc);
@@ -504,7 +504,7 @@ void ts::PMTPlugin::createNewTable(BinaryTable& table)
 // Invoked by the superclass when a table is found in the target PID.
 //----------------------------------------------------------------------------
 
-void ts::PMTPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reinsert)
+void ts::PMTPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reinsert, bool& replace_all)
 {
     // If not the PMT we are looking for, reinsert without modification.
     is_target = table.tableId() == TID_PMT && (!_service.hasId() || table.tableIdExtension() == _service.getId());
