@@ -109,7 +109,7 @@ void ts::UWAVideoStreamDescriptor::DisplayDescriptor(TablesDisplay& disp, const 
             disp << margin << "No versions specified" << std::endl;
         }
         else {
-            disp.displayVector(u"Verson Map:", versions, margin, true, 8);
+            disp.displayVector(u"Version Map:", versions, margin, true, 8);
         }
     }
 }
