@@ -1,11 +1,20 @@
 [VVC_video_descriptor.profile_idc]
 Bits = 7
 1  = Main 10
+2  = Main 12
+10 = Main 12 Intra
 17 = Multilayer Main 10
 33 = Main 10 4:4:4
+34 = Main 12 4:4:4
+35 = Main 16 4:4:4
+42 = Main 12 4:4:4 Intra
+43 = Main 16 4:4:4 Intra
 49 = Multilayer Main 10 4:4:4
 65 = Main 10 Still Picture
+66 = Main 12 Still Picture
 97 = Main 10 4:4:4 Still Picture
+98 = Main 12 4:4:4 Still Picture
+99 = Main 16 4:4:4 Still Picture
 
 [VVC_video_descriptor.tier]
 Bits = 1
