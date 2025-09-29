@@ -475,7 +475,9 @@ ARFLAGS=
 [[ -z $GCC ]] && GCC=gcc
 
 # The strip command tries to remove global symbols on macOS.
-[[ -n $MACOS ]] && STRIP="strip -x" || STRIP="strip"
+if [[ -z $STRIP ]]; then
+    [[ -n $MACOS ]] && STRIP="strip -x" || STRIP="strip"
+fi
 
 # Define compilation flags for 32-bit cross-compilation.
 if [[ -n $M32 ]]; then
