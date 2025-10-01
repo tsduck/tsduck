@@ -42,4 +42,4 @@ Enrico Vittorini
 Fei Wong
 Marwan Yassin
 
-If you wish to contribute, please see the [contribution guidelines](https://tsduck.io/download/docs/tsduck-dev.html#chap-contribution).
+If you wish to contribute, please see the [contribution guidelines](https://tsduck.io/docs/tsduck-dev.html#chap-contribution).

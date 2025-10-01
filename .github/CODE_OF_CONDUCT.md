@@ -6,7 +6,7 @@ any other kind of experimentation.
 
 ## Openness on contributions and discussion
 
-TSDuck is [open for contributions](https://tsduck.io/download/docs/tsduck-dev.html#chap-contribution).
+TSDuck is [open for contributions](https://tsduck.io/docs/tsduck-dev.html#chap-contribution).
 
 The [issues](https://github.com/tsduck/tsduck/issues) area on GitHub can be
 freely used for questions or discussions about TSDuck or digital television

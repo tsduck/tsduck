@@ -68,17 +68,17 @@ TSUNIT_DEFINE_TEST(MasterPlaylist)
     // https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_ts/master.m3u8
 
     ts::hls::PlayList pl;
-    TSUNIT_ASSERT(pl.loadURL(u"https://tsduck.io/download/test/hls/img_bipbop_adv_example_ts/master.m3u8", true));
+    TSUNIT_ASSERT(pl.loadURL(u"https://tsduck.io/teststreams/hls/img_bipbop_adv_example_ts/master.m3u8", true));
     TSUNIT_ASSERT(pl.isValid());
     TSUNIT_EQUAL(ts::hls::PlayListType::MASTER, pl.type());
     TSUNIT_EQUAL(6, pl.version());
-    TSUNIT_EQUAL(u"https://tsduck.io/download/test/hls/img_bipbop_adv_example_ts/master.m3u8", pl.url());
+    TSUNIT_EQUAL(u"https://tsduck.io/teststreams/hls/img_bipbop_adv_example_ts/master.m3u8", pl.url());
     ts::hls::MediaElement media;
     pl.buildURL(media, u"foo.bar");
     TSUNIT_EQUAL(u"foo.bar", media.relative_uri);
-    TSUNIT_EQUAL(u"/download/test/hls/img_bipbop_adv_example_ts/foo.bar", media.file_path);
-    TSUNIT_EQUAL(u"https://tsduck.io/download/test/hls/img_bipbop_adv_example_ts/foo.bar", media.url.toString());
-    TSUNIT_EQUAL(u"https://tsduck.io/download/test/hls/img_bipbop_adv_example_ts/foo.bar", media.urlString());
+    TSUNIT_EQUAL(u"/teststreams/hls/img_bipbop_adv_example_ts/foo.bar", media.file_path);
+    TSUNIT_EQUAL(u"https://tsduck.io/teststreams/hls/img_bipbop_adv_example_ts/foo.bar", media.url.toString());
+    TSUNIT_EQUAL(u"https://tsduck.io/teststreams/hls/img_bipbop_adv_example_ts/foo.bar", media.urlString());
     TSUNIT_EQUAL(0, pl.segmentCount());
     TSUNIT_EQUAL(24, pl.playListCount());
     TSUNIT_EQUAL(5, pl.altPlayListCount());
@@ -130,11 +130,11 @@ TSUNIT_DEFINE_TEST(MasterPlaylistWithAlternate)
     // Test file downloaded from TSDuck web site.
 
     ts::hls::PlayList pl;
-    TSUNIT_ASSERT(pl.loadURL(u"https://tsduck.io/download/test/hls/alternative/index_hd.m3u8", true));
+    TSUNIT_ASSERT(pl.loadURL(u"https://tsduck.io/teststreams/hls/alternative/index_hd.m3u8", true));
     TSUNIT_ASSERT(pl.isValid());
     TSUNIT_EQUAL(ts::hls::PlayListType::MASTER, pl.type());
     TSUNIT_EQUAL(4, pl.version());
-    TSUNIT_EQUAL(u"https://tsduck.io/download/test/hls/alternative/index_hd.m3u8", pl.url());
+    TSUNIT_EQUAL(u"https://tsduck.io/teststreams/hls/alternative/index_hd.m3u8", pl.url());
     TSUNIT_EQUAL(0, pl.segmentCount());
     TSUNIT_EQUAL(7, pl.playListCount());
     TSUNIT_EQUAL(2, pl.altPlayListCount());
@@ -193,14 +193,14 @@ TSUNIT_DEFINE_TEST(MediaPlaylist)
     // https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_ts/v5/prog_index.m3u8
 
     ts::hls::PlayList pl;
-    TSUNIT_ASSERT(pl.loadURL(u"https://tsduck.io/download/test/hls/img_bipbop_adv_example_ts/v5/prog_index.m3u8", true));
+    TSUNIT_ASSERT(pl.loadURL(u"https://tsduck.io/teststreams/hls/img_bipbop_adv_example_ts/v5/prog_index.m3u8", true));
     TSUNIT_ASSERT(pl.isValid());
     TSUNIT_EQUAL(ts::hls::PlayListType::VOD, pl.type());
     TSUNIT_EQUAL(3, pl.version());
-    TSUNIT_EQUAL(u"https://tsduck.io/download/test/hls/img_bipbop_adv_example_ts/v5/prog_index.m3u8", pl.url());
+    TSUNIT_EQUAL(u"https://tsduck.io/teststreams/hls/img_bipbop_adv_example_ts/v5/prog_index.m3u8", pl.url());
     ts::hls::MediaElement media;
     pl.buildURL(media, u"foo.bar");
-    TSUNIT_EQUAL(u"https://tsduck.io/download/test/hls/img_bipbop_adv_example_ts/v5/foo.bar", media.urlString());
+    TSUNIT_EQUAL(u"https://tsduck.io/teststreams/hls/img_bipbop_adv_example_ts/v5/foo.bar", media.urlString());
     TSUNIT_EQUAL(100, pl.segmentCount());
     TSUNIT_EQUAL(0, pl.playListCount());
     TSUNIT_EQUAL(0, pl.altPlayListCount());

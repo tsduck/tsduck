@@ -299,7 +299,7 @@ bool ts::HiDesDevice::Guts::open(int index, const UString& name, Report& report)
             report.warning(u"obsolete HiDes/it950x driver, "
                            u"this version uses polling, "
                            u"risk of performance hit, "
-                           u"use version from https://tsduck.io/download/hides/");
+                           u"use version from https://tsduck.io/hides/");
         }
     }
 

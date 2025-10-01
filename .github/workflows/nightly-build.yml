@@ -36,7 +36,7 @@ jobs:
     - name: Check if rebuild is necessary
       id: check
       run: |
-        remote_version=$(curl --retry 5 --retry-all-errors -sSL https://tsduck.io/download/prerelease/get-versions | jq -r '.latest?'; true)
+        remote_version=$(curl --retry 5 --retry-all-errors -sSL https://tsduck.io/get-versions | jq -r '.latest?'; true)
         version=$(scripts/get-version-from-sources.py)
         [[ "$version" == "$remote_version" ]] && rebuild=false || rebuild=true
         retention=${{ vars.ARTIFACT_RETENTION_DAYS || 5 }}
@@ -107,5 +107,5 @@ jobs:
       run: sudo apt install -y curl jq
     - name: Trigger download
       run: |
-        curl --retry 5 --retry-all-errors -sL -H 'X-Upload-Credentials: ${{ secrets.UPLOAD_CREDENTIALS }}' https://tsduck.io/download/prerelease/get-nightly-builds -o update.log
+        curl --retry 5 --retry-all-errors -sL -H 'X-Upload-Credentials: ${{ secrets.UPLOAD_CREDENTIALS }}' https://tsduck.io/get-nightly-builds -o update.log
         jq . update.log || cat update.log

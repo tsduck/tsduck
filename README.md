@@ -2,7 +2,7 @@
 
 ### Abstract
 
-[TSDuck](https://tsduck.io/) is an extensible toolkit for MPEG transport streams.
+[TSDuck](https://tsduck.io/) is the free and open-source reference framework for MPEG transport streams.
 
 TSDuck is used in digital television systems for test, monitoring, integration, debug, lab or demo.
 
@@ -15,7 +15,7 @@ In practice, TSDuck is used for:
   - Most standard tables and descriptors are supported, as defined by MPEG, DVB, ISDB, ATSC, SCTE.
 - Modify, remove, rename, extract services.
 - Monitor and report conditions on the stream (video and audio properties, bitrates, crypto-periods, signalization).
-- Send bitrate and ETSI TR 101 290 metrics to Grafana for system monitoring.
+- Send bitrate and ETSI TR 101 290 metrics to InfluxDB and Grafana for system monitoring.
 - Work on live transport streams, DVB-S/C/T, ATSC, ISDB-S/T, ASI, UDP ("IP-TV"), HTTP, HLS, SRT, RIST or
   offline transport stream files and `pcap` network capture files.
 - Receive from or send to specialized hardware such as:
@@ -45,7 +45,7 @@ enhanced and new plugins can be developed using a library of C++ classes.
 
 ### Usage
 
-TSDuck comes with a comprehensive [User's Guide](https://tsduck.io/download/docs/tsduck.html).
+TSDuck comes with a comprehensive [User's Guide](https://tsduck.io/docs/tsduck.html).
 
 All utilities and plugins accept the option `--help` to display their syntax.
 
@@ -53,7 +53,7 @@ TSDuck is developed in C++, using modern C++20 coding practices.
 For programmers, TSDuck provides a large collection of C++ classes in one single library.
 These classes manipulate, in a completely portable way, MPEG transport streams, MPEG/DVB/ATSC/ISDB
 signalization and many other features.
-See the [Developer's Guide](https://tsduck.io/download/docs/tsduck-dev.html)
+See the [Developer's Guide](https://tsduck.io/docs/tsduck-dev.html)
 and the [Programming Reference](https://tsduck.io/doxy/).
 
 Python and Java bindings exist to allow running transport stream processing pipelines from
@@ -64,19 +64,19 @@ Python or Java applications.
 TSDuck can be built on Windows, Linux, macOS and BSD systems.
 The primary target architectures are Intel x86_64 and Arm64 but
 TSDuck is regularly built and tested on x86, Arm32, RISC-V, PowerPC or IBM s390x.
-See the [building section](https://tsduck.io/download/docs/tsduck-dev.html#building)
+See the [building section](https://tsduck.io/docs/tsduck-dev.html#building)
 in the developer's guide for more details.
 
 ### Download
 
-- On macOS, [use the Homebrew packager](https://tsduck.io/download/docs/tsduck-dev.html#macinstall): `brew install tsduck`
+- On macOS, [use the Homebrew packager](https://tsduck.io/docs/tsduck-dev.html#macinstall): `brew install tsduck`
 - On Windows, [use winget](https://learn.microsoft.com/en-us/windows/package-manager/winget/): `winget install tsduck`
 
 Pre-built [binary packages](https://github.com/tsduck/tsduck/releases) are available
 for Windows and the very latest versions of some Linux distros (Fedora, RedHat and clones, Ubuntu, Debian),
 on Intel x64 and Arm64 architectures.
 
-The latest developments can be tested using [nightly builds](https://tsduck.io/download/prerelease/).
+The latest developments can be tested using [nightly builds](https://tsduck.io/prerelease/).
 
 The command `tsversion --check` can be used to check if a new version of TSDuck is available
 online. The command `tsversion --upgrade` downloads the latest binaries for the current
@@ -86,7 +86,7 @@ operating system and upgrades TSDuck.
 
 TSDuck is maintained by one single developer on spare time and on personal expenses.
 You may consider [contributing](https://tsduck.io/donate/) to the hardware and Web hosting costs
-using [![Donate](https://tsduck.io/images/donate-paypal.svg)](https://tsduck.io/donate/)
+using [PayPal](https://tsduck.io/donate/)
 
 ### License
 

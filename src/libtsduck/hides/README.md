@@ -16,5 +16,5 @@ contain the system-specific variants of this class. Note that the macOS implemen
 simply returns errors and error messages.
 
 See also:
-- https://tsduck.io/download/hides
+- https://tsduck.io/hides
 - https://github.com/tsduck/hides-drivers

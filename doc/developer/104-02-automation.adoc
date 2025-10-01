@@ -14,7 +14,7 @@ TSDuck is a free open-source project which is maintained on spare time by very f
 As a consequence, the maintenance of the project is driven by the lack of time and resource.
 To face these constraints, automation is essential.
 
-This is briefly explained in {home}download/docs/tsduck-project.pdf[this presentation].
+This is briefly explained in {home}docs/tsduck-project.pdf[this presentation].
 
 For future maintainers or contributors, this page lists a few automation procedures which are used by the project.
 
@@ -40,7 +40,7 @@ that the project can be built on most supported platforms and contains no regres
 ==== Nightly builds
 
 Every night, if there were any modification in the TSDuck repo during the last day,
-"nightly builds" are automatically produced and published on the {home}download/prerelease/[TSDuck web site].
+"nightly builds" are automatically produced and published on the {home}prerelease/[TSDuck web site].
 No manual action is required, everything is automated.
 
 The workflow `.github/workflows/nightly-build.yml` is automatically run every day at 00:40 UTC.
@@ -61,7 +61,7 @@ The workflow `.github/workflows/nightly-build.yml` is automatically run every da
 At the end of the `nightly-build.yml` workflow, when all build jobs are completed,
 the update job triggers a signal on the {home}[TSDuck web site].
 A PHP script is automatically run on the web site to retrieve, download and publish the
-latest {home}download/prerelease/[nighly binaries] and documentation.
+latest {home}prerelease/[nighly binaries] and documentation.
 
 [#auto_release]
 ==== Release creation
@@ -77,7 +77,7 @@ as long as there is no issue in the CI process and no major development or fix i
 
 As a rule of thumb, a new release is produced every 3 to 6 months, when enough
 new features or fixes are available, based on the
-{home}download/changelog/[CHANGELOG file].
+{home}changelog/[CHANGELOG file].
 
 ===== Building the various binaries
 

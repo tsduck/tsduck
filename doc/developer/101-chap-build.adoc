@@ -987,7 +987,7 @@ PS C:\> winget install tsduck
 [#windownload]
 ===== Download an installer
 
-{home}download/tsduck[Executable binary installers for the latest TSDuck version]
+{home}tsduck-binaries[Executable binary installers for the latest TSDuck version]
 are available for 64-bit Windows on Intel systems.
 
 All tools, plugins and development environments are in the same installer.
@@ -1002,7 +1002,7 @@ Running the installer provides several options:
 
 {repo}releases[Older versions of TSDuck] remain available on GitHub.
 
-{home}download/prerelease[Nightly builds and pre-releases] can be found on the TSDuck Web site.
+{home}prerelease[Nightly builds and pre-releases] can be found on the TSDuck Web site.
 
 To automate the installation, the executable binary installer can be run from the command line or a script.
 
@@ -1070,7 +1070,7 @@ $ brew install --HEAD tsduck
 [#linuxinstall]
 ==== Installing on Linux
 
-{home}download/tsduck[Pre-build packages for the latest TSDuck version]
+{home}tsduck-binaries[Pre-build packages for the latest TSDuck version]
 are available for the following configurations:
 
 [.compact-list]
@@ -1088,7 +1088,7 @@ the `tsduck` package installs the TSDuck commands, plugins, Java and Python bind
 the `tsduck-devel` or `tsduck-dev` package installs the development environment for {cpp} programmers.
 
 {repo}releases[Older versions of TSDuck] remain available on GitHub.
-{home}download/prerelease[Nightly builds and pre-releases] for Ubuntu can be found on the TSDuck Web site.
+{home}prerelease[Nightly builds and pre-releases] for Ubuntu can be found on the TSDuck Web site.
 
 To use older versions of the above distros, rebuilding the packages is easy:
 

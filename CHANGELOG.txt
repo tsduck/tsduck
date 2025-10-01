@@ -1292,7 +1292,7 @@ VERSION 3.13-834 (Jul 2018)
   * Added input plugin "http" to receive a transport stream using a URL.
   * Added  support  for  HiDes UT-100C modulator device using utility "tshides"
     and output plugin "hides". Be sure to install the right device drivers from
-    https://tsduck.io/download/hides/
+    https://tsduck.io/hides/
 
 [IMP] Improvements on existing commands and plugins:
 

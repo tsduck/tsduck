@@ -191,7 +191,7 @@ def build_body_text(release):
     for ins in installers:
         if not ins.dev:
             body.add_all_urls(ins.name, ins.re_pattern())
-    body.add_ref('macOS', 'use Homebrew', 'https://tsduck.io/download/docs/tsduck-dev.html#macinstall')
+    body.add_ref('macOS', 'use Homebrew', 'https://tsduck.io/docs/tsduck-dev.html#macinstall')
     body.add_line('')
     body.add_line('Binaries for development environment:')
     body.add_line('* Windows: Included in installer (select option "Development")')
