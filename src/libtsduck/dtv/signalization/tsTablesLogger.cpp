@@ -72,6 +72,12 @@ void ts::TablesLogger::defineArgs(Args& args)
               u"If empty or '-', the binary sections are written to the standard output. "
               u"See also option -m, --multiple-files.");
 
+    args.option(u"duration");
+    args.help(u"duration",
+              u"Display the time offset from the beginning of the stream with each table. "
+              u"This duration is based on PCR and other time stamps in the stream. "
+              u"See also option --time-stamp.");
+
     args.option(u"fill-eit");
     args.help(u"fill-eit",
               u"Before exiting, add missing empty sections in EIT's and flush them. "
@@ -236,7 +242,9 @@ void ts::TablesLogger::defineArgs(Args& args)
     args.help(u"text-output", u"A synonym for --output-file.");
 
     args.option(u"time-stamp");
-    args.help(u"time-stamp", u"Display a time stamp (current local time) with each table.");
+    args.help(u"time-stamp",
+              u"Display a time stamp (current local time) with each table. "
+              u"See also option --duration.");
 
     args.option(u"ttl", 0, Args::POSITIVE);
     args.help(u"ttl",
@@ -318,6 +326,7 @@ bool ts::TablesLogger::loadArgs(DuckContext& duck, Args& args)
     _invalid_versions = args.present(u"invalid-versions");
     args.getIntValue(_max_tables, u"max-tables", 0);
     _time_stamp = args.present(u"time-stamp");
+    _duration = args.present(u"duration");
     _packet_index = args.present(u"packet-index");
     _meta_sections = args.present(u"meta-sections");
     _logger = args.present(u"log");
@@ -369,6 +378,7 @@ bool ts::TablesLogger::open()
     _packet_count = 0;
     _demux.reset();
     _cas_mapper.reset();
+    _pcr_analyzer.reset();
     _xml_doc.clear();
     _json_doc.close();
     _short_sections.clear();
@@ -510,8 +520,11 @@ void ts::TablesLogger::close()
 void ts::TablesLogger::feedPacket(const TSPacket& pkt)
 {
     if (!completed()) {
-        _demux.feedPacket(pkt);
+        if (_duration) {
+            _pcr_analyzer.feedPacket(pkt);
+        }
         _cas_mapper.feedPacket(pkt);
+        _demux.feedPacket(pkt);
         _packet_count++;
     }
 }
@@ -1156,6 +1169,9 @@ ts::UString ts::TablesLogger::logHeader(const DemuxedData& data)
     if (_time_stamp) {
         header.format(u"%s: ", Time::CurrentLocalTime());
     }
+    if (_duration) {
+        header.format(u"%s: ", UString::Duration(_pcr_analyzer.duration()));
+    }
     if (_packet_index) {
         header.format(u"Packet %'d to %'d, ", data.firstTSPacketIndex(), data.lastTSPacketIndex());
     }
@@ -1240,13 +1256,22 @@ void ts::TablesLogger::preDisplay(PacketCounter first, PacketCounter last)
     // Display time stamp if required
     if ((_time_stamp || _packet_index) && !_logger) {
         strm << "* ";
+        bool has_text = false;
         if (_time_stamp) {
             strm << "At " << Time::CurrentLocalTime();
+            has_text = true;
         }
-        if (_packet_index && _time_stamp) {
-            strm << ", ";
+        if (_duration) {
+            if (has_text) {
+                strm << ", ";
+            }
+            strm << UString::Duration(_pcr_analyzer.duration());
+            has_text = true;
         }
         if (_packet_index) {
+            if (has_text) {
+                strm << ", ";
+            }
             strm << UString::Format(u"First TS packet: %'d, last: %'d", first, last);
         }
         strm << std::endl;

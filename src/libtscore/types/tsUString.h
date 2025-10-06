@@ -2004,6 +2004,7 @@ namespace ts {
                              size_type width = 0,
                              size_type precision = 0,
                              bool force_sign = false);
+
         //!
         //! Convert a string into a std::chrono::duration value.
         //! No suffix is decoded. The string shall contain an integer value which
@@ -2026,12 +2027,15 @@ namespace ts {
 
         //!
         //! Format a string containing a std::chrono::duration value, with units.
+        //! This function returns one single value, e.g. "12345 ms".
+        //! Use Duration() for a string with hours, minutes, seconds, milliseconds.
         //! @param [in] value The chrono value to format.
         //! @param [in] short_format When true, use short unit format (e.g. "ms").
         //! By default, use a full unit name (e.g. "millisecond").
         //! @param [in] separator Separator string for groups of thousands, a comma by default.
         //! @param [in] force_sign If true, force a '+' sign for positive values.
         //! @return The formatted string.
+        //! @see Duration()
         //!
         template <class Rep, class Period>
         static UString Chrono(const cn::duration<Rep, Period>& value,
@@ -2040,6 +2044,19 @@ namespace ts {
                               bool force_sign = false)
         {
             return Decimal(value.count(), 0, true, separator, force_sign) + u" " + ChronoUnit(Period::num, Period::den, short_format, value.count() > 1);
+        }
+
+        //!
+        //! Format a string representing a std::chrono::duration value, with hours, minutes, seconds, milliseconds.
+        //! @param [in] value The chrono value to format.
+        //! @param [in] with_days When true, add a number of days when necessary. By default, use number of hours above 24.
+        //! @return The formatted string.
+        //! @see Chrono()
+        //!
+        template <class Rep, class Period>
+        static UString Duration(const cn::duration<Rep, Period>& value, bool with_days = false)
+        {
+            return DurationHelper(cn::duration_cast<cn::milliseconds>(value).count(), with_days);
         }
 
         //!
@@ -2695,6 +2712,9 @@ namespace ts {
 
         template<typename INT> requires std::signed_integral<INT> && (sizeof(INT) < 8)
         static void DecimalMostNegative(UString& result, const UString& separator);
+
+        // Internal helper for Duration().
+        static UString DurationHelper(cn::milliseconds::rep value, bool with_days);
 
         // Internal helpers for string formatting.
         void formatHelper(const UChar* fmt, std::initializer_list<ArgMixIn> args);

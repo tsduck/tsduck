@@ -1757,6 +1757,30 @@ bool ts::UString::toTristate(Tristate& value) const
 
 
 //----------------------------------------------------------------------------
+// Internal helper for Duration().
+//----------------------------------------------------------------------------
+
+ts::UString ts::UString::DurationHelper(cn::milliseconds::rep value, bool with_days)
+{
+    constexpr cn::milliseconds::rep one_hour = 3'600'000;
+    constexpr cn::milliseconds::rep one_day = 24 * one_hour;
+    UString s;
+    if (value < 0) {
+        s.append(u'-');
+        value = -value;
+    }
+    if (with_days && value >= one_day) {
+        s.format(u"%dd ", value / one_day);
+        value %= one_day;
+    }
+    const cn::milliseconds::rep hours = value / one_hour;
+    value %= one_hour;
+    s.format(u"%02d:%02d:%02d.%03d", hours, value / 60'000, (value / 1000) % 60, value % 1000);
+    return s;
+}
+
+
+//----------------------------------------------------------------------------
 // Interpret this string as a sequence of hexadecimal digits (ignore blanks).
 //----------------------------------------------------------------------------
 

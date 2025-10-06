@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.43-4440 (September 2025)
+VERSION 3.43-4445 (October 2025)
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -17,6 +17,7 @@ VERSION 3.43-4440 (September 2025)
     - Option --tag in plugin "influx".
     - Options --yaml, --no-yaml-header in "tsxml" (experimental).
     - Option --ignore-pid-conflict in plugin "spliceinject".
+    - Option --duration in "tstables" and plugin "tables".
 
 [BUG] Bug fixes:
 

@@ -85,6 +85,7 @@ class UStringTest: public tsunit::Test
     TSUNIT_DECLARE_TEST(SuperCompare);
     TSUNIT_DECLARE_TEST(ChronoUnit);
     TSUNIT_DECLARE_TEST(Chrono);
+    TSUNIT_DECLARE_TEST(Duration);
     TSUNIT_DECLARE_TEST(Percentage);
 
 public:
@@ -2469,6 +2470,18 @@ TSUNIT_DEFINE_TEST(Chrono)
     TSUNIT_EQUAL(u"8,512 PCR", ts::UString::Chrono(ts::PCR(8512), true));
     TSUNIT_EQUAL(u"25 PTS/DTS", ts::UString::Chrono(ts::PTS(25)));
     TSUNIT_EQUAL(u"25 PTS/DTS", ts::UString::Chrono(ts::DTS(25)));
+}
+
+TSUNIT_DEFINE_TEST(Duration)
+{
+    TSUNIT_EQUAL(u"00:00:00.000", ts::UString::Duration(cn::hours::zero()));
+    TSUNIT_EQUAL(u"00:00:00.000", ts::UString::Duration(cn::hours::zero(), true));
+    TSUNIT_EQUAL(u"51:00:00.000", ts::UString::Duration(cn::hours(51)));
+    TSUNIT_EQUAL(u"2d 03:00:00.000", ts::UString::Duration(cn::hours(51), true));
+    TSUNIT_EQUAL(u"373:24:57.123", ts::UString::Duration(cn::milliseconds(1'344'297'123)));
+    TSUNIT_EQUAL(u"15d 13:24:57.123", ts::UString::Duration(cn::milliseconds(1'344'297'123), true));
+    TSUNIT_EQUAL(u"-373:24:57.123", ts::UString::Duration(cn::milliseconds(-1'344'297'123)));
+    TSUNIT_EQUAL(u"-15d 13:24:57.123", ts::UString::Duration(cn::milliseconds(-1'344'297'123), true));
 }
 
 TSUNIT_DEFINE_TEST(Percentage)
