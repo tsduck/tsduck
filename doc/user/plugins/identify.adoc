@@ -61,6 +61,7 @@ Identify all PID's carrying audio.
 *-l* _language-code_ +
 *--language* _language-code_
 
+[.optdoc]
 With `--audio` or `--subtitles`, identify PID's carrying the specified language.
 The specified name must be a 3-character ISO-639 language code.
 

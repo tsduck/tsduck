@@ -149,6 +149,10 @@ endif::[]
 |input, output
 |Send / receive a transport stream as / from an HTTP server
 
+|iat
+|packet
+|Analyze Inter-packet Arrival Time (IAT) for datagram-based inputs
+
 |identify
 |packet
 |Identify PID's based on various criteria

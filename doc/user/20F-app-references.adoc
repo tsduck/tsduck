@@ -145,6 +145,7 @@
 |MTU |Maximum Transmission Unit
 |MUX |Multiplexer
 |NBIT |Network Board Information Table (ISDB)
+|NIC |Network Interface Card
 |NIST |National Institute of Standards and Technology
 |NIT |Network Information Table (DVB)
 |NPT |Normal Play Time

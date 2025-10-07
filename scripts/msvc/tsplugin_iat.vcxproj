@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- Automatically generated file, see build-project-files.py -->
+  <ImportGroup Label="PropertySheets">
+    <Import Project="msvc-common-begin.props"/>
+  </ImportGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_iat.cpp"/>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{A50FD534-A619-4646-1E15-2257AF50D839}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>tsplugin_iat</RootNamespace>
+  </PropertyGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="msvc-target-dll.props"/>
+    <Import Project="msvc-use-tsduckdll.props"/>
+    <Import Project="msvc-common-end.props"/>
+  </ImportGroup>
+</Project>

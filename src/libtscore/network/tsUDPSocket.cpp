@@ -13,7 +13,11 @@
 
 // Network timestampting feature in Linux.
 #if defined(TS_LINUX)
+    #include "tsBeforeStandardHeaders.h"
+    #include <linux/errqueue.h>
     #include <linux/net_tstamp.h>
+    #include <linux/sockios.h>
+    #include "tsAfterStandardHeaders.h"
 #endif
 
 // Furiously idiotic Windows feature, see comment in receiveOne()
@@ -785,6 +789,7 @@ int ts::UDPSocket::receiveOne(void* data,
                 *timestamp = cn::duration_cast<cn::microseconds>(cn::nanoseconds(nano));
             }
         }
+        //@@@@ use scm_timestamping for hardware timestamps
 #endif
     }
 

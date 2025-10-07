@@ -1,0 +1,60 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2025, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== iat
+
+[.cmd-header]
+Analyze Inter-packet Arrival Time (IAT) for datagram-based inputs
+
+The IAT is a common metrics for network datagrams.
+This is the interval between the receptions of two consecutive datagrams.
+In the context of `tsp`, the IAT is meaningful only when the TS packets originally
+come from a datagram-based input plugin.
+
+Important: the IAT is _not_ the interval between TS packets.
+It is the interval between datagrams, where each datagram usually contains several TS packets.
+
+Currently, the input plugin must be one of:
+
+* `ip`: The reference timestamps depend on the operating system and the capabilities
+  of the network interface card (NIC). On Linux, the kernel returns more precise reception
+  timestamps for incoming packets. If the NIC is able to report hardware timestamps, they
+  are used as reference.
+* `pcap`: Only when the transport stream is extracted from a UDP session.
+  The reference timestamps are the capture timestamps from the `pcap` file.
+* `srt`: The reference timestamps are the SRT timestamps, when available.
+  Using them as "arrival time" is therefore questionable.
+* `rist`: The reference timestamps are the RIST timestamps, when available.
+  Using them as "arrival time" is therefore questionable.
+
+In all other cases, analysing IAT is not possible.
+An error message is reported when `tsp` starts and the plugin transparently passes packets without doing anything.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P iat [options]
+----
+
+[.usage]
+Options
+
+[.opt]
+*-i* _seconds_ +
+*--interval* _seconds_
+
+[.optdoc]
+Interval in seconds between evaluations of the intra-packet arrival time.
+
+[.optdoc]
+The default is 5 seconds.
+
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

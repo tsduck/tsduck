@@ -2,7 +2,12 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.43-4445 (October 2025)
+VERSION 3.43-4447 (October 2025)
+
+[NEW] New commands and plugins:
+
+  * Added plugin "iat":  Analyze  Inter-packet Arrival Time (IAT) for datagram-
+    based input plugins.
 
 [IMP] Improvements on existing commands and plugins:
 
