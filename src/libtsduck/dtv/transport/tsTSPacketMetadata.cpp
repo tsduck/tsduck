@@ -21,6 +21,7 @@ ts::TSPacketMetadata::TSPacketMetadata() :
     _bitrate_changed(false),
     _input_stuffing(false),
     _nullified(false),
+    _datagram(false),
     _pad1(0),
     _pad2(0),
     _aux_data_size(0)
@@ -41,6 +42,7 @@ void ts::TSPacketMetadata::reset()
     _bitrate_changed = false;
     _input_stuffing = false;
     _nullified = false;
+    _datagram = false;
     _aux_data_size = 0;
 }
 
@@ -133,7 +135,7 @@ size_t ts::TSPacketMetadata::serialize(void* bin, size_t size) const
         data[0] = SERIALIZATION_MAGIC;
         PutUInt64(data + 1, _input_time);
         PutUInt32(data + 9, _labels.toInt());
-        data[13] = (_input_stuffing ? 0x80 : 0x00) | (_nullified ? 0x40 : 0x00) | (static_cast<uint8_t>(_time_source) & 0x0F);
+        data[13] = (_input_stuffing ? 0x80 : 0x00) | (_nullified ? 0x40 : 0x00) | (_datagram ? 0x20 : 0x00) | (static_cast<uint8_t>(_time_source) & 0x0F);
         return SERIALIZATION_SIZE;
     }
 }
@@ -158,6 +160,7 @@ bool ts::TSPacketMetadata::deserialize(const void* bin, size_t size)
     _bitrate_changed = false;
     _input_stuffing = size > 13 && (data[13] & 0x80) != 0;
     _nullified = size > 13 && (data[13] & 0x40) != 0;
+    _datagram = size > 13 && (data[13] & 0x20) != 0;
     _time_source = size > 13 ? static_cast<TimeSource>(data[13] & 0x0F) : TimeSource::UNDEFINED;
 
     return size >= 14;

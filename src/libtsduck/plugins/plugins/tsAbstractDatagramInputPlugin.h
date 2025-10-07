@@ -83,6 +83,12 @@ namespace ts {
         //!
         virtual bool receiveDatagram(uint8_t* buffer, size_t buffer_size, size_t& ret_size, cn::microseconds& timestamp, TimeSource& timesource) = 0;
 
+        //!
+        //! Specify if the input is made of datagrams of several TS packets (true by default).
+        //! @param [in] on When true, the input is made of datagrams of several TS packets.
+        //!
+        void setDatagram(bool on) { _datagram = on; }
+
     private:
         // Order of priority for input timestamps. SYSTEM means lower layer from subclass (UDP, SRT, etc).
         enum TimePriority {RTP_SYSTEM_TSP, SYSTEM_RTP_TSP, RTP_TSP, SYSTEM_TSP, TSP_ONLY};
@@ -97,6 +103,7 @@ namespace ts {
         bool             _rs204_format = false;            // Input packets are always 204-byte format.
 
         // Working data.
+        bool          _datagram = true;     // The input is made of UDP datagrams.
         Time          _next_display {};     // Next bitrate display time
         Time          _start {};            // UTC date of first received packet
         PacketCounter _packets = 0;         // Number of received packets since _start

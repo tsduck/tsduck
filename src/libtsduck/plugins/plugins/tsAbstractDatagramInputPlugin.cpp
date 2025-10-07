@@ -216,6 +216,7 @@ size_t ts::AbstractDatagramInputPlugin::receive(TSPacket* buffer, TSPacketMetada
             for (size_t i = 0; i < _inbuf_count; ++i) {
                 TSPacketMetadata& md(_mdata[i]);
                 md.reset();
+                md.setDatagram(_datagram);
                 if (use_rtp) {
                     md.setInputTimeStamp(rtp_timestamp, TimeSource::RTP);
                 }

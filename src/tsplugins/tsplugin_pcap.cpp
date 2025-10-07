@@ -203,12 +203,15 @@ bool ts::PcapInputPlugin::start()
     // Select the right receive method.
     if (_http) {
         _receive = &PcapInputPlugin::receiveHTTP;
+        setDatagram(false);
     }
     else if (_tcp_emmg_mux) {
         _receive = &PcapInputPlugin::receiveEMMG;
+        setDatagram(false);
     }
     else {
         _receive = &PcapInputPlugin::receiveUDP;
+        setDatagram(true);
     }
 
     // Initialize superclass and pcap file.

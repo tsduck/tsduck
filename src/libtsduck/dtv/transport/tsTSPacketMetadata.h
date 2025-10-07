@@ -86,6 +86,18 @@ namespace ts {
         bool getNullified() const { return _nullified; }
 
         //!
+        //! Specify if the packet was originally extracted from a datagram of several TS packets.
+        //! @param [in] on When true, the packet was originally extracted from a datagram of several TS packets.
+        //!
+        void setDatagram(bool on) { _datagram = on; }
+
+        //!
+        //! Check if the packet was originally extracted from a datagram of several TS packets.
+        //! @return True when the packet was originally extracted from a datagram of several TS packets.
+        //!
+        bool getDatagram() const { return _datagram; }
+
+        //!
         //! Specify if the packet chain shall be flushed by tsp as soon as possible.
         //! This is typically called by a packet processing plugin.
         //! @param [in] on When set to true by a packet processing plugin, the packet and all previously
@@ -366,9 +378,10 @@ namespace ts {
         bool             _bitrate_changed : 1;  // Call getBitrate() callback as soon as possible.
         bool             _input_stuffing : 1;   // Packet was artificially inserted as input stuffing.
         bool             _nullified : 1;        // Packet was explicitly turned into a null packet by a plugin.
+        bool             _datagram : 1;         // Packet was originally extracted from a datagram of several TS packets.
         TS_PUSH_WARNING()
         TS_LLVM_NOWARNING(unused-private-field)
-        unsigned int     _pad1 : 4;             // Padding to next byte.
+        unsigned int     _pad1 : 3;             // Padding to next byte.
         unsigned int     _pad2 : 8;             // Padding to next multiple of 4 bytes -1.
         TS_POP_WARNING()
         uint8_t          _aux_data_size;        // Number of used bytes in _aux_data.
