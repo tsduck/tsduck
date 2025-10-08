@@ -36,6 +36,15 @@ Currently, the input plugin must be one of:
 In all other cases, analysing IAT is not possible.
 An error message is reported when `tsp` starts and the plugin transparently passes packets without doing anything.
 
+Linux is the only operating system which is able to report precise hardware receive timestamps from the NIC.
+However, not all NIC support that feature.
+Use the command `ethtool -T eth0` (or corresponding interface name) to check support for hardware timestamps.
+If hardware timestamps are supported, they must be enabled on the interface using a command such as
+`hwstamp_ctl -i eth0 -r 1`.
+
+Note: On Ubuntu systems, the command `hwstamp_ctl` comes with package `linuxptp` (Precision Time Protocol).
+Other distros may use slightly different names.
+
 [.usage]
 Usage
 

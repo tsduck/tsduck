@@ -65,7 +65,8 @@ namespace ts {
                              IPSocketAddress& destination,
                              const AbortInterface* abort = nullptr,
                              Report& report = CERR,
-                             cn::microseconds* timestamp = nullptr) override;
+                             cn::microseconds* timestamp = nullptr,
+                             TimeStampType* timestamp_type = nullptr) override;
 
     private:
         UDPReceiverArgs    _args {};          // Reception parameters (typically from the command line).

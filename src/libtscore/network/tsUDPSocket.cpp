@@ -18,6 +18,13 @@
     #include <linux/net_tstamp.h>
     #include <linux/sockios.h>
     #include "tsAfterStandardHeaders.h"
+    #if defined(SO_TIMESTAMPING_NEW)
+        #define TS_SO_TIMESTAMPING SO_TIMESTAMPING_NEW
+        #define TS_SCM_TIMESTAMPING ::scm_timestamping64
+    #elif defined(SO_TIMESTAMPING)
+        #define TS_SO_TIMESTAMPING SO_TIMESTAMPING
+        #define TS_SCM_TIMESTAMPING ::scm_timestamping
+    #endif
 #endif
 
 // Furiously idiotic Windows feature, see comment in receiveOne()
@@ -315,6 +322,16 @@ bool ts::UDPSocket::setReceiveTimestamps(bool on, Report& report)
         report.error(u"socket option SO_TIMESTAMPNS: %s", SysErrorCodeMessage());
         return false;
     }
+#if defined(TS_SO_TIMESTAMPING)
+    // Set SO_TIMESTAMPING to request hardware timestamps, when available.
+    int val = SOF_TIMESTAMPING_RX_HARDWARE | SOF_TIMESTAMPING_RX_SOFTWARE |
+              SOF_TIMESTAMPING_SOFTWARE | SOF_TIMESTAMPING_RAW_HARDWARE;
+    report.debug(u"setting socket SO_TIMESTAMPING to %d", val);
+    if (::setsockopt(getSocket(), SOL_SOCKET, TS_SO_TIMESTAMPING, &val, sizeof(val)) != 0) {
+        report.error(u"socket option SO_TIMESTAMPING: %s", SysErrorCodeMessage());
+        return false;
+    }
+#endif
 #endif
     return true;
 }
@@ -584,7 +601,8 @@ bool ts::UDPSocket::receive(void* data,
                             IPSocketAddress& destination,
                             const AbortInterface* abort,
                             Report& report,
-                            cn::microseconds* timestamp)
+                            cn::microseconds* timestamp,
+                            TimeStampType* timestamp_type)
 {
     // Clear timestamp if specified.
     if (timestamp != nullptr) {
@@ -595,7 +613,7 @@ bool ts::UDPSocket::receive(void* data,
     for (;;) {
 
         // Wait for a message.
-        const int err = receiveOne(data, max_size, ret_size, sender, destination, report, timestamp);
+        const int err = receiveOne(data, max_size, ret_size, sender, destination, report, timestamp, timestamp_type);
 
         if (abort != nullptr && abort->aborting()) {
             // Aborting, no error message.
@@ -639,12 +657,19 @@ int ts::UDPSocket::receiveOne(void* data,
                               IPSocketAddress& sender,
                               IPSocketAddress& destination,
                               Report& report,
-                              cn::microseconds* timestamp)
+                              cn::microseconds* timestamp,
+                              TimeStampType* timestamp_type)
 {
     // Clear returned values
     ret_size = 0;
     sender.clear();
     destination.clear();
+    if (timestamp != nullptr) {
+        *timestamp = cn::microseconds(-1);
+    }
+    if (timestamp_type != nullptr) {
+        *timestamp_type = TimeStampType::NONE;
+    }
 
     // Reserve a socket address to receive the sender address.
     ::sockaddr_storage sender_sock;
@@ -748,6 +773,11 @@ int ts::UDPSocket::receiveOne(void* data,
         return LastSysErrorCode();
     }
 
+    // On Linux, keep timestamp from SO_TIMESTAMPING over SO_TIMESTAMPNS when both are available.
+#if defined(TS_LINUX)
+    bool got_timestamp = false;
+#endif
+
     TS_PUSH_WARNING()
     TS_GCC_NOWARNING(zero-as-null-pointer-constant) // invalid definition of CMSG_NXTHDR in musl libc (Alpine Linux)
 #if defined(TS_OPENBSD)
@@ -780,16 +810,47 @@ int ts::UDPSocket::receiveOne(void* data,
 
         // On Linux, look for receive timestamp.
 #if defined(TS_LINUX)
-        if (timestamp != nullptr && cmsg->cmsg_level == SOL_SOCKET && cmsg->cmsg_type == SO_TIMESTAMPNS && cmsg->cmsg_len >= sizeof(::timespec)) {
-            // System time stamp in nanosecond.
-            const ::timespec* ts = reinterpret_cast<const ::timespec*>(CMSG_DATA(cmsg));
-            const cn::nanoseconds::rep nano = cn::nanoseconds::rep(ts->tv_sec) * 1'000'000'000 + cn::nanoseconds::rep(ts->tv_nsec);
-            // System time stamp is valid when not zero, convert it to micro-seconds.
-            if (nano != 0) {
-                *timestamp = cn::duration_cast<cn::microseconds>(cn::nanoseconds(nano));
+        if (timestamp != nullptr && !got_timestamp && cmsg->cmsg_level == SOL_SOCKET) {
+            if (cmsg->cmsg_type == SO_TIMESTAMPNS && cmsg->cmsg_len >= sizeof(::timespec)) {
+                // System time stamp in nanosecond.
+                const ::timespec* ts = reinterpret_cast<const ::timespec*>(CMSG_DATA(cmsg));
+                const cn::nanoseconds::rep nano = cn::nanoseconds::rep(ts->tv_sec) * 1'000'000'000 + cn::nanoseconds::rep(ts->tv_nsec);
+                // System time stamp is valid when not zero, convert it to micro-seconds.
+                if (nano != 0) {
+                    *timestamp = cn::duration_cast<cn::microseconds>(cn::nanoseconds(nano));
+                    if (timestamp_type != nullptr) {
+                        *timestamp_type = TimeStampType::SOFTWARE;
+                    }
+                }
             }
+#if defined(TS_SO_TIMESTAMPING)
+            else if (cmsg->cmsg_type == TS_SO_TIMESTAMPING && cmsg->cmsg_len >= sizeof(TS_SCM_TIMESTAMPING)) {
+                const TS_SCM_TIMESTAMPING* ts = reinterpret_cast<const TS_SCM_TIMESTAMPING*>(CMSG_DATA(cmsg));
+                // Try hardware timestamp at index 2.
+                cn::nanoseconds::rep nano = cn::nanoseconds::rep(ts->ts[2].tv_sec) * 1'000'000'000 + cn::nanoseconds::rep(ts->ts[2].tv_nsec);
+                if (nano != 0) {
+                    // Got a hardware timestamp.
+                    got_timestamp = true;
+                    *timestamp = cn::duration_cast<cn::microseconds>(cn::nanoseconds(nano));
+                    if (timestamp_type != nullptr) {
+                        *timestamp_type = TimeStampType::HARDWARE;
+                    }
+                }
+                else {
+                    // Try software timestamp at index 0.
+                    nano = cn::nanoseconds::rep(ts->ts[0].tv_sec) * 1'000'000'000 + cn::nanoseconds::rep(ts->ts[0].tv_nsec);
+                    if (nano != 0) {
+                        // Got a software timestamp.
+                        got_timestamp = true;
+                        *timestamp = cn::duration_cast<cn::microseconds>(cn::nanoseconds(nano));
+                        if (timestamp_type != nullptr) {
+                            *timestamp_type = TimeStampType::SOFTWARE;
+                        }
+                    }
+                }
+            }
+#endif
         }
-        //@@@@ use scm_timestamping for hardware timestamps
 #endif
     }
 
