@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.43-4447 (October 2025)
+VERSION 3.43-4449 (October 2025)
 
 [NEW] New commands and plugins:
 
@@ -17,9 +17,11 @@ VERSION 3.43-4447 (October 2025)
   * Enhanced and custom identification of sources in plugin "influx".
   * In  plugin  "influx",  TR 101 290 error counters are now also available per
     PID or per service.
+  * In  plugin  "influx",  Inter-packet  Arrival  Time (IAT) for datagram-based
+    inputs are available for InfluxDB.
   * New options in existing commands and plugins:
     - Option --summary in plugin "mpe".
-    - Option --tag in plugin "influx".
+    - Options --iat, --tag in plugin "influx".
     - Options --yaml, --no-yaml-header in "tsxml" (experimental).
     - Option --ignore-pid-conflict in plugin "spliceinject".
     - Option --duration in "tstables" and plugin "tables".

@@ -20,6 +20,7 @@ Other options include:
 * Bitrate information by PID, by type of PID (audio, video, etc.), by service.
 * Last PCR/PTS/DTS timestamp values by PID, by service.
 * Error counters as defined in <<ETSI-101-290>>.
+* Inter-packet Arrival Time (IAT) for datagram-based inputs.
 
 Be careful to send the required information for your graph only.
 Sending bitrate information for all PID's, all types of PID's, and all services,
@@ -109,6 +110,16 @@ Otherwise, this is the default.
 [.optdoc]
 Send the last DTS value in a set of PID and/or services.
 Also specify at least one of `--pid`, `--all-pids`, `--services`.
+
+[.opt]
+*--iat*
+
+[.optdoc]
+Send metrics on Inter-packet Arrival Time (IAT) for datagram-based inputs (`ip`, `pcap`, `srt`, `rist`).
+Ignored if the input is not datagram-based.
+
+[.optdoc]
+See xref:_iat[xrefstyle=short] the documentation of plugin `iat` for more details on inter-packet arrival times.
 
 [.opt]
 *--max-severity* _value_
@@ -272,6 +283,11 @@ The presence of the secondary tags depend on the `scope` tag.
 |scope tsid
 |pid service
 
+|iat
+|inter-packet arrival time in microseconds
+|type
+|
+
 |pcr
 |PCR value in 27 MHz units
 |scope tsid
@@ -401,6 +417,28 @@ pcr,scope=service,tsid=4,service=W9 value=1781908554388 1548161530912
 pcr,scope=service,tsid=4,service=Arte value=1782082319070 1548161530912
 pcr,scope=service,tsid=4,service=France\ 5 value=1783885926024 1548161530912
 pcr,scope=service,tsid=4,service=6ter value=1790246369026 1548161530912
+----
+
+==== IAT metrics
+
+Each entry contains the following information:
+
+[.compact-list]
+* Field `_measurement`: `iat`.
+* Field `_value`: the value of the inter-packet arrival time in microseconds.
+* Tag `type`: one of `mean`, `min` or `max`, indicating the type of metrics.
+
+[.usage]
+Examples
+
+With options `--iat`, InfluxDB receives the following data:
+
+[source,text]
+----
+bitrate,scope=ts,tsid=1 value=1009504 1760132351779
+iat,type=mean value=10436 1760132351779
+iat,type=min value=9547 1760132351779
+iat,type=max value=13487 1760132351779
 ----
 
 ==== ETSI TR 101 290 error counter metrics

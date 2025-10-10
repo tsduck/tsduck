@@ -17,6 +17,7 @@
 #include "tsSignalizationDemux.h"
 #include "tsDurationAnalyzer.h"
 #include "tstr101290Analyzer.h"
+#include "tsIATAnalyzer.h"
 #include "tsCADescriptor.h"
 #include "tsMessageQueue.h"
 #include "tsThread.h"
@@ -50,6 +51,7 @@ namespace ts {
         bool        _log_dts = false;
         bool        _log_timestamps = false;  // any of --pcr --pts --dts
         bool        _log_tr_101_290 = false;
+        bool        _log_iat = false;
         bool        _log_types = false;
         bool        _log_services = false;
         bool        _log_names = false;
@@ -100,6 +102,7 @@ namespace ts {
         SignalizationDemux    _demux {duck};       // Analyze the stream.
         DurationAnalyzer      _ts_clock {*this};   // Compute playout time based on PCR or input timestamps.
         tr101290::Analyzer    _tr_101_290 {duck};  // ETSI TR 101 290 analyzer.
+        IATAnalyzer           _iat {*this};        // Inter-packet Arrival Time (IAT) analyzer.
         InfluxRequest         _request {*this};    // Web request to InfluxDB server.
         MessageQueue<UString> _metrics_queue {};   // Queue of metrics to send.
         PacketCounter         _ts_packets = 0;     // All TS packets in period.
@@ -169,6 +172,11 @@ ts::InfluxPlugin::InfluxPlugin(TSP* tsp_) :
          u"Send error counters as defined by ETSI TR 101 290. "
          u"This plugin can detect a subset of ETSI TR 101 290 only: "
          u"all transport stream logical checks are performed but physical checks on modulation cannot be reported.");
+
+    option(u"iat");
+    help(u"iat",
+         u"Send metrics on Inter-packet Arrival Time (IAT) for datagram-based inputs (ip, pcap, srt, rist). "
+         u"Ignored if the input is not datagram-based.");
 
     // Subselection of types of monitoring.
     option(u"all-pids", 'a');
@@ -262,6 +270,7 @@ bool ts::InfluxPlugin::getOptions()
     _log_dts = present(u"dts");
     _log_timestamps = _log_pcr || _log_pts || _log_dts;
     _log_tr_101_290 = present(u"tr-101-290");
+    _log_iat = present(u"iat");
     _log_bitrate = present(u"bitrate") || (!_log_timestamps && !_log_tr_101_290);
     _log_types = present(u"type");
     _log_services = present(u"services");
@@ -329,6 +338,7 @@ bool ts::InfluxPlugin::start()
     _ts_packets = 0;
     _pids.clear();
     _services.clear();
+    _iat.reset();
 
     // Reset the TR 101 290 analyzer.
     if (_log_tr_101_290) {
@@ -390,6 +400,9 @@ ts::ProcessorPlugin::Status ts::InfluxPlugin::processPacket(TSPacket& pkt, TSPac
     }
     if (_log_tr_101_290) {
         _tr_101_290.feedPacket(_ts_clock.duration(), pkt);
+    }
+    if (_log_iat) {
+        _iat.feedPacket(pkt, pkt_data);
     }
 
     // Accumulate metrics.
@@ -687,6 +700,16 @@ void ts::InfluxPlugin::reportMetrics(Time timestamp, cn::milliseconds duration)
         // Final synthetic error_count.
         if (tr101290::INFO_SEVERITY <= _max_severity) {
             data->format(u"\ncounter,name=error_count,severity=%d,scope=ts,tsid=%d%s value=%d %d", tr101290::INFO_SEVERITY, tsid, _additional_tags, counters.errorCount(), timestamp_ms);
+        }
+    }
+
+    // Log inter-packet arrival time.
+    if (_log_iat && _iat.isValid()) {
+        IATAnalyzer::Status status;
+        if (_iat.getStatusRestart(status)) {
+            data->format(u"\niat,type=mean%s value=%d %d", _additional_tags, status.mean_iat.count(), timestamp_ms);
+            data->format(u"\niat,type=min%s value=%d %d", _additional_tags, status.min_iat.count(), timestamp_ms);
+            data->format(u"\niat,type=max%s value=%d %d", _additional_tags, status.max_iat.count(), timestamp_ms);
         }
     }
 
