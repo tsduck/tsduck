@@ -313,8 +313,7 @@ bool ts::UDPSocket::setMulticastLoop(bool on, Report& report)
 
 bool ts::UDPSocket::setReceiveTimestamps(bool on, Report& report)
 {
-    // The option exists only on Linux and is silently ignored on other systems.
-#if defined(TS_LINUX)
+#if defined(TS_LINUX) && defined(SO_TIMESTAMPNS)
     // Set SO_TIMESTAMPNS option which reports timestamps in nanoseconds (struct timespec).
     int enable = int(on);
     report.debug(u"setting socket SO_TIMESTAMPNS to %d", enable);
@@ -322,6 +321,16 @@ bool ts::UDPSocket::setReceiveTimestamps(bool on, Report& report)
         report.error(u"socket option SO_TIMESTAMPNS: %s", SysErrorCodeMessage());
         return false;
     }
+#elif defined(SO_TIMESTAMP)
+    // Set SO_TIMESTAMP option which reports timestamps in microseconds (struct timeval).
+    int enable = int(on);
+    report.debug(u"setting socket SO_TIMESTAMP to %d", enable);
+    if (::setsockopt(getSocket(), SOL_SOCKET, SO_TIMESTAMP, &enable, sizeof(enable)) != 0) {
+        report.error(u"socket option SO_TIMESTAMP: %s", SysErrorCodeMessage());
+        return false;
+    }
+#endif
+
 #if defined(TS_SO_TIMESTAMPING)
     // Set SO_TIMESTAMPING to request hardware timestamps, when available.
     int val = SOF_TIMESTAMPING_RX_HARDWARE | SOF_TIMESTAMPING_RX_SOFTWARE |
@@ -332,7 +341,7 @@ bool ts::UDPSocket::setReceiveTimestamps(bool on, Report& report)
         return false;
     }
 #endif
-#endif
+
     return true;
 }
 
@@ -774,9 +783,7 @@ int ts::UDPSocket::receiveOne(void* data,
     }
 
     // On Linux, keep timestamp from SO_TIMESTAMPING over SO_TIMESTAMPNS when both are available.
-#if defined(TS_LINUX)
-    bool got_timestamp = false;
-#endif
+    [[maybe_unused]] bool got_timestamp = false;
 
     TS_PUSH_WARNING()
     TS_GCC_NOWARNING(zero-as-null-pointer-constant) // invalid definition of CMSG_NXTHDR in musl libc (Alpine Linux)
@@ -808,11 +815,32 @@ int ts::UDPSocket::receiveOne(void* data,
         }
 #endif
 
-        // On Linux, look for receive timestamp.
-#if defined(TS_LINUX)
+        // Look for receive timestamp.
         if (timestamp != nullptr && !got_timestamp && cmsg->cmsg_level == SOL_SOCKET) {
+
+#if defined(SO_TIMESTAMP)
+            if ((cmsg->cmsg_type == SO_TIMESTAMP
+        #if defined(TS_MAC)
+                 // There is a bug in macOS, found in macOS 15.6.1: the type is 2 (SO_ACCEPTCONN) instead of SO_TIMESTAMP.
+                 || cmsg->cmsg_type == 2
+        #endif
+                 ) && cmsg->cmsg_len >= sizeof(::timeval)) {
+                // System timestamp in microseconds.
+                const ::timeval* ts = reinterpret_cast<const ::timeval*>(CMSG_DATA(cmsg));
+                const cn::microseconds::rep micro = cn::microseconds::rep(ts->tv_sec) * 1'000'000 + cn::microseconds::rep(ts->tv_usec);
+                // System time stamp is valid when not zero.
+                if (micro != 0) {
+                    *timestamp = cn::microseconds(micro);
+                    if (timestamp_type != nullptr) {
+                        *timestamp_type = TimeStampType::SOFTWARE;
+                    }
+                }
+            }
+#endif
+
+#if defined(SO_TIMESTAMPNS)
             if (cmsg->cmsg_type == SO_TIMESTAMPNS && cmsg->cmsg_len >= sizeof(::timespec)) {
-                // System time stamp in nanosecond.
+                // System timestamp in nanoseconds.
                 const ::timespec* ts = reinterpret_cast<const ::timespec*>(CMSG_DATA(cmsg));
                 const cn::nanoseconds::rep nano = cn::nanoseconds::rep(ts->tv_sec) * 1'000'000'000 + cn::nanoseconds::rep(ts->tv_nsec);
                 // System time stamp is valid when not zero, convert it to micro-seconds.
@@ -823,8 +851,10 @@ int ts::UDPSocket::receiveOne(void* data,
                     }
                 }
             }
+#endif
+
 #if defined(TS_SO_TIMESTAMPING)
-            else if (cmsg->cmsg_type == TS_SO_TIMESTAMPING && cmsg->cmsg_len >= sizeof(TS_SCM_TIMESTAMPING)) {
+            if (cmsg->cmsg_type == TS_SO_TIMESTAMPING && cmsg->cmsg_len >= sizeof(TS_SCM_TIMESTAMPING)) {
                 const TS_SCM_TIMESTAMPING* ts = reinterpret_cast<const TS_SCM_TIMESTAMPING*>(CMSG_DATA(cmsg));
                 // Try hardware timestamp at index 2.
                 cn::nanoseconds::rep nano = cn::nanoseconds::rep(ts->ts[2].tv_sec) * 1'000'000'000 + cn::nanoseconds::rep(ts->ts[2].tv_nsec);
@@ -851,7 +881,6 @@ int ts::UDPSocket::receiveOne(void* data,
             }
 #endif
         }
-#endif
     }
 
     TS_POP_WARNING()

@@ -81,11 +81,17 @@ void ts::IATAnalyzer::feedPacket(const TSPacket& pkt, const TSPacketMetadata& md
     // Initialize on first packet.
     if (!_started) {
         _started = true;
+
         _packets_since_last = 0;
         _last_timestamp = timestamp;
         _source = source;
         _stats_packets.reset();
         _stats_iat.reset();
+
+        _report.verbose(u"using %s as timestamp source", TimeSourceEnum().name(source));
+        if (source == TimeSource::RTP) {
+            _report.warning(u"using %s timestamps, not appropriate for IAT, consider using '-I ip --timestamp-priority kernel-tsp'", TimeSourceEnum().name(source));
+        }
     }
 
     // Detect invalidating conditions. Non recoverable.
