@@ -441,6 +441,9 @@ iat,type=min value=9547 1760132351779
 iat,type=max value=13487 1760132351779
 ----
 
+NOTE: There are some operating system specificities in measuring IAT.
+See xref:_iat[xrefstyle=short] the documentation of plugin `iat` for more details.
+
 ==== ETSI TR 101 290 error counter metrics
 
 With option `--tr-101-290`, each metrics entry contains one error counter for the last measurement interval.

@@ -11,8 +11,11 @@
 #include "tsNullReport.h"
 #include "tsSysUtils.h"
 
-// Network timestampting feature in Linux.
-#if defined(TS_LINUX)
+#if defined(TS_WINDOWS)
+    #include "tsBeforeStandardHeaders.h"
+    #include <mstcpip.h>
+    #include "tsAfterStandardHeaders.h"
+#elif defined(TS_LINUX)
     #include "tsBeforeStandardHeaders.h"
     #include <linux/errqueue.h>
     #include <linux/net_tstamp.h>
@@ -27,11 +30,6 @@
         #define TS_SCM_TIMESTAMPING SCM_TIMESTAMPING
         #define TS_STRUCT_SCM_TIMESTAMPING ::scm_timestamping
     #endif
-#endif
-
-// Furiously idiotic Windows feature, see comment in receiveOne()
-#if defined(TS_WINDOWS)
-    volatile ::LPFN_WSARECVMSG ts::UDPSocket::_wsaRevcMsg = nullptr;
 #endif
 
 
@@ -315,6 +313,19 @@ bool ts::UDPSocket::setMulticastLoop(bool on, Report& report)
 
 bool ts::UDPSocket::setReceiveTimestamps(bool on, Report& report)
 {
+#if defined(TS_WINDOWS)
+
+    ::TIMESTAMPING_CONFIG config;
+    TS_ZERO(config);
+    config.Flags = TIMESTAMPING_FLAG_RX;
+    ::DWORD bytes = 0;
+    if (::WSAIoctl(getSocket(), SIO_TIMESTAMPING, &config, sizeof(config), nullptr, 0, &bytes, nullptr, nullptr) != 0) {
+        report.error(u"socket option SIO_TIMESTAMPING: %s", SysErrorCodeMessage(::WSAGetLastError()));
+        return false;
+    }
+
+#else
+
 #if defined(SO_TIMESTAMPNS)
     // Set SO_TIMESTAMPNS option which reports timestamps in nanoseconds (struct timespec).
     int enable = int(on);
@@ -343,6 +354,8 @@ bool ts::UDPSocket::setReceiveTimestamps(bool on, Report& report)
         return false;
     }
 #endif
+
+#endif // Windows vs. UNIX
 
     return true;
 }
@@ -659,6 +672,43 @@ bool ts::UDPSocket::receive(void* data,
 
 
 //----------------------------------------------------------------------------
+// Dynamically resolve WSARecvMsg() on Windows.
+// Implemented as a static function to allow "initialize once" later.
+//
+// On all operating systems, recvmsg() is used to receive a UDP message with
+// additional information such as sender address, timestamps and other info.
+// On Windows, all socket operations are smoothly emulated, including recvfrom,
+// allowing a reasonable portability. However, in the specific case of recvmsg,
+// there is no equivalent but a similar - and carefully incompatible - function
+// named WSARecvMsg. Not only this function is different from recvmsg, but it
+// is also not exported from any DLL. Its address must be queried dynamically
+// using WSAIoctl(). The stupid idiot who had this pervert idea at Microsoft
+// deserves to burn in hell (twice) !!
+//----------------------------------------------------------------------------
+
+#if defined(TS_WINDOWS)
+namespace {
+    // Get the address of a WSA extension function.
+    ::LPFN_WSARECVMSG GetWSAFunction(::GUID& guid, int& error)
+    {
+        ::LPFN_WSARECVMSG func_address = nullptr;
+        ::DWORD bytes = 0;
+        const ::SOCKET sock = ::socket(AF_INET, SOCK_DGRAM, 0);
+        if (sock == INVALID_SOCKET) {
+            error = ::WSAGetLastError();
+            return nullptr;
+        }
+        if (::WSAIoctl(sock, SIO_GET_EXTENSION_FUNCTION_POINTER, &guid, sizeof(guid), &func_address, sizeof(func_address), &bytes, nullptr, nullptr) != 0) {
+            error = ::WSAGetLastError();
+        }
+        ::closesocket(sock);
+        return func_address;
+    }
+}
+#endif
+
+
+//----------------------------------------------------------------------------
 // Perform one receive operation. Hide the system mud.
 //----------------------------------------------------------------------------
 
@@ -686,34 +736,15 @@ int ts::UDPSocket::receiveOne(void* data,
     ::sockaddr_storage sender_sock;
     TS_ZERO(sender_sock);
 
-    // Normally, this operation should be done quite easily using recvmsg.
-    // On Windows, all socket operations are smoothly emulated, including
-    // recvfrom, allowing a reasonable portability. However, in the specific
-    // case of recvmsg, there is no equivalent but a similar - and carefully
-    // incompatible - function named WSARecvMsg. Not only this function is
-    // different from recvmsg, but it is also not exported from any DLL.
-    // Its address must be queried dynamically. The stupid idiot who had
-    // this pervert idea at Microsoft deserves to burn in hell (twice) !!
-
 #if defined(TS_WINDOWS)
 
-    // First, get the address of WSARecvMsg the first time we use it.
-    if (_wsaRevcMsg == nullptr) {
-        ::LPFN_WSARECVMSG funcAddress = nullptr;
-        ::GUID guid = WSAID_WSARECVMSG;
-        ::DWORD dwBytes = 0;
-        const ::SOCKET sock = ::socket(AF_INET, SOCK_DGRAM, 0);
-        if (sock == INVALID_SOCKET) {
-            return LastSysErrorCode();
-        }
-        if (::WSAIoctl(sock, SIO_GET_EXTENSION_FUNCTION_POINTER, &guid, sizeof(guid), &funcAddress, sizeof(funcAddress), &dwBytes, nullptr, nullptr) != 0) {
-            const int err = LastSysErrorCode();
-            ::closesocket(sock);
-            return err;
-        }
-        ::closesocket(sock);
-        // Now update the volatile value.
-        _wsaRevcMsg = funcAddress;
+    // Get the address of WSARecvMsg the first time we use it.
+    // Thread-safe init-safe static data pattern:
+    static ::GUID wsa_recvmsg_guid = WSAID_WSARECVMSG;
+    static int wsa_recvmsg_error = 0;
+    static const ::LPFN_WSARECVMSG wsa_recvmsg = GetWSAFunction(wsa_recvmsg_guid, wsa_recvmsg_error);
+    if (wsa_recvmsg == nullptr) {
+        return wsa_recvmsg_error;
     }
 
     // Build an WSABUF pointing to the message.
@@ -738,19 +769,33 @@ int ts::UDPSocket::receiveOne(void* data,
 
     // Wait for a message.
     ::DWORD insize = 0;
-    if (_wsaRevcMsg(getSocket(), &msg, &insize, nullptr, nullptr)  != 0) {
+    if (wsa_recvmsg(getSocket(), &msg, &insize, nullptr, nullptr) != 0) {
         return LastSysErrorCode();
     }
 
     // Browse returned ancillary data.
     for (::WSACMSGHDR* cmsg = WSA_CMSG_FIRSTHDR(&msg); cmsg != nullptr; cmsg = WSA_CMSG_NXTHDR(&msg, cmsg)) {
-        if (cmsg->cmsg_level == IPPROTO_IP && cmsg->cmsg_type == IP_PKTINFO) {
+        if (cmsg->cmsg_level == IPPROTO_IP && cmsg->cmsg_type == IP_PKTINFO && cmsg->cmsg_len >= sizeof(::IN_PKTINFO)) {
             const ::IN_PKTINFO* info = reinterpret_cast<const ::IN_PKTINFO*>(WSA_CMSG_DATA(cmsg));
             destination = IPSocketAddress(info->ipi_addr, _local_address.port());
         }
-        else if (cmsg->cmsg_level == IPPROTO_IPV6 && cmsg->cmsg_type == IPV6_PKTINFO) {
+        else if (cmsg->cmsg_level == IPPROTO_IPV6 && cmsg->cmsg_type == IPV6_PKTINFO && cmsg->cmsg_len >= sizeof(::IN6_PKTINFO)) {
             const ::IN6_PKTINFO* info = reinterpret_cast<const ::IN6_PKTINFO*>(WSA_CMSG_DATA(cmsg));
             destination = IPSocketAddress(info->ipi6_addr, _local_address.port());
+        }
+        else if (timestamp != nullptr && cmsg->cmsg_level == SOL_SOCKET && cmsg->cmsg_type == SO_TIMESTAMP && cmsg->cmsg_len >= sizeof(uint64_t)) {
+            const uint64_t* ts = reinterpret_cast<const uint64_t*>(WSA_CMSG_DATA(cmsg));
+            if (ts != nullptr && *ts != 0) {
+                // Got a timestamp. Its frequency is returned by QueryPerformanceFrequency().
+                ::LARGE_INTEGER freq;
+                TS_ZERO(freq);
+                if (QueryPerformanceFrequency(&freq) && freq.QuadPart != 0) {
+                    *timestamp = cn::microseconds((*ts * 1'000'000) / freq.QuadPart);
+                    if (timestamp_type != nullptr) {
+                        *timestamp_type = TimeStampType::SOFTWARE;
+                    }
+                }
+            }
         }
     }
 

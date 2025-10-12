@@ -20,85 +20,8 @@ come from a datagram-based input plugin.
 Important: the IAT is _not_ the interval between TS packets.
 It is the interval between datagrams, where each datagram usually contains several TS packets.
 
-Currently, the input plugin must be one of:
-
-* `ip`: The reference timestamps depend on the operating system and the capabilities
-  of the network interface card (NIC). On Linux, the kernel returns more precise reception
-  timestamps for incoming packets. If the NIC is able to report hardware timestamps, they
-  are used as reference.
-* `pcap`: Only when the transport stream is extracted from a UDP session.
-  The reference timestamps are the capture timestamps from the `pcap` file.
-* `srt`: The reference timestamps are the SRT timestamps, when available.
-  Using them as "arrival time" is therefore questionable.
-* `rist`: The reference timestamps are the RIST timestamps, when available.
-  Using them as "arrival time" is therefore questionable.
-
-In all other cases, analyzing IAT is not possible.
-An error message is reported when `tsp` starts and the plugin transparently passes packets without doing anything.
-
 Note that the plugin `influx` (see xref:_influx[xrefstyle=short]) can also report IAT metrics to InfluxDB,
 either for Grafana display or monitoring and alert.
-
-[.usage]
-Accuracy of IAT measurement
-
-The IAT is measured as the interval of time between the arrival of two UDP datagrams.
-Getting accurate IAT requires a very precise measurement of the arrival time of each UDP datagram.
-
-In the case of the input plugin `ip`, there are several ways to measure the arrival time of each datagram.
-By default, without better solution, the timestamp of a datagram is the system time when the `tsp` process
-reads the datagram. This is better than nothing but not quite precise. We get the time when the `tsp` process
-was scheduled _after_ receiving the packet, not the arrival time of the packet.
-
-On Windows, this is the only solution (translation: do not use a Windows system to measure IAT).
-
-On Linux and macOS, the kernel keeps a timestamp of the precise moment when the IP packet was
-processed by the kernel and queued for later processing. This is much more precise than the
-system time of the `tsp` process.
-
-Additionally, on Linux, we can sometimes get an even better timestamp. Some NIC's can report a
-hardware timestamp of the moment when the packet was received by the controller.
-However, not all NIC support that feature.
-
-Use the command `ethtool -T eth0` (or corresponding interface name) to check support for hardware
-timestamps on the specified NIC.
-If hardware timestamps are supported, they are usually not enabled by default.
-they must be enabled on the interface using a command such as `hwstamp_ctl -i eth0 -r 1`.
-
-Note: On Ubuntu systems, the command `hwstamp_ctl` comes with package `linuxptp` (Precision Time Protocol).
-Other distros may use slightly different names.
-
-However, if the NIC supports hardware timestamps, its device driver must also support that feature.
-There are reported cases where `ethtool` says that hardware timestamps are supported by the NIC
-but `hwstamp_ctl` reports the error _"Device driver does not have support for non-destructive
-`SIOCHWTSTAMP`. `SIOCSHWTSTAMP` failed: Operation not supported"_.
-
-So, to get hardware timestamps, the feature must be supported by the hardware NIC _and_
-its driver.
-
-NOTE: Most virtualized NIC's, on virtual machines, do not support hardware timestamps.
-Be sure to use a physical machine with the appropriate hardware NIC and device driver
-to be sure to get hardware timestamps.
-
-[.usage]
-Timestamp priorities
-
-As described in xref:_ip_input[xrefstyle=short], the input plugin `ip` has various ways
-of computing the input timestamp of a packet.
-This is configurable using the option `--timestamp-priority`.
-
-Specifically, if the UDP datagram contains a RTP header, the RTP timestamp is used by default.
-This is the right choice for most transport stream processing operations.
-However, in the case of IAT measurement, this is an incorrect choice because the RTP timestamp
-is the theoretical time when the packet is supposed to arrive.
-With IAT measurement, we need the _real_ arrival time, precisely to evaluate the jitter between
-the theoretical and actual arrival times.
-
-Therefore, in the presence of the plugin `iat` in a `tsp` command, using `ip` as input plugin,
-it is recommended to use the option `-I ip --timestamp-priority kernel-tsp`.
-This option eliminates RTP as a source of timestamps and uses timestamps in the following
-order of priority: kernel timestamp (hardware if present, software otherwise), and then
-the system time of the `tsp` process.
 
 [.usage]
 Usage
@@ -122,3 +45,161 @@ Interval in seconds between evaluations of the intra-packet arrival time.
 The default is 5 seconds.
 
 include::{docdir}/opt/group-common-plugins.adoc[tags=!*]
+
+==== Supported input plugins
+
+Because IAT is the interval between the receptions of two consecutive datagrams,
+it can be measured only with datagram-based input plugins.
+
+Currently, the input plugin must be one of:
+
+* `ip`: The reference timestamps depend on the operating system and the capabilities
+  of the network interface card (NIC). On some operating systems, the kernel returns
+  more precise reception timestamps for incoming packets. If the NIC is able to report
+  hardware timestamps, they are used as reference.
+* `pcap`: Only when the transport stream is extracted from a UDP session.
+  The reference timestamps are the capture timestamps from the `pcap` file.
+* `srt`: The reference timestamps are the SRT timestamps, when available.
+  Using them as "arrival time" is therefore questionable.
+* `rist`: The reference timestamps are the RIST timestamps, when available.
+  Using them as "arrival time" is therefore questionable.
+
+In all other cases, analyzing IAT is not possible.
+An error message is reported when `tsp` starts and the plugin transparently passes packets without doing anything.
+
+==== Accuracy of IAT measurement
+
+The IAT is measured as the interval of time between the arrival of two UDP datagrams.
+Getting accurate IAT requires a very precise measurement of the arrival time of each UDP datagram.
+
+In the case of the input plugin `ip`, there are several ways to measure the arrival time of each datagram.
+
+* Timestamp source "tsp":
+  By default, without better solution, the timestamp of a datagram is the system
+  time when the `tsp` process reads the datagram. This is better than nothing but
+  not quite precise. We get the time when the `tsp` process was scheduled _after_
+  receiving the packet, not the arrival time of the packet.
+
+* Timestamp source "kernel":
+  On Linux, macOS and FreeBSD, the kernel keeps a timestamp of the precise moment
+  when the IP packet was processed by the kernel and queued for later processing.
+  This is much more precise than the system time of the `tsp` process.
+  On Windows, it is possible to get kernel timestamps on some network interfaces but
+  this is not active by default (see xref:iat-windows[xrefstyle=short] for more details).
+
+* Timestamp source "hardware":
+  On Linux, it is sometimes possible to get hardware timestamps from the NIC.
+  See xref:iat-linux[xrefstyle=short] for more details.
+
+* Timestamp source "rtp":
+  If you see this in the output of plugin `iat`, you need to change the timestamp priorities.
+  See xref:iat-priorities[xrefstyle=short] for more details.
+
+[#iat-linux]
+===== Hardware timestamps on Linux
+
+In addition to kernel timestamps, on Linux, we can sometimes get an even better timestamp.
+Some NIC's can report a hardware timestamp of the moment when the packet was received by the controller.
+However, not all NIC support that feature.
+
+Use the command `ethtool -T eth0` (or corresponding interface name) to check support for hardware
+timestamps on the specified NIC.
+If hardware timestamps are supported, they are usually not enabled by default.
+They must be enabled on the interface using a command such as `hwstamp_ctl -i eth0 -r 1`.
+
+NOTE: On Ubuntu systems, the command `hwstamp_ctl` comes with package `linuxptp` (Precision Time Protocol).
+Other distros may use slightly different names.
+
+However, if the NIC supports hardware timestamps, its device driver must also support that feature.
+There are reported cases where `ethtool` says that hardware timestamps are supported by the NIC
+but `hwstamp_ctl` reports the error _"Device driver does not have support for non-destructive
+`SIOCHWTSTAMP`. `SIOCSHWTSTAMP` failed: Operation not supported"_.
+
+So, to get hardware timestamps, the feature must be supported by the hardware NIC _and_ its driver.
+
+NOTE: Most virtualized NIC's, on virtual machines, do not support hardware timestamps.
+Be sure to use a physical machine with the appropriate hardware NIC and device driver
+to get hardware timestamps.
+
+[#iat-windows]
+===== Kernel timestamps on Windows
+
+Unlike Linux or macOS, Windows does not report kernel timestamps by default.
+The feature must be enabled on each network adapter.
+It is possible that some network driver do not allow kernel timestamps.
+
+There is no easy pre-installed method to enable kernel timestamps on Windows
+(they are called "software timestamps" on Windows).
+First, install the module `SoftwareTimestamping` from NuGet.
+From an administrator PowerShell session, type the following command to install the module:
+
+[source,powershell]
+----
+C:\> Install-Module -Name SoftwareTimestamping
+----
+
+Then, the software timestamps must be enabled on the network adapter
+which is used to measure IAT.
+
+To get a list of all network adapters, use the PowerShell command `Get-NetAdapter`.
+You can also use the traditional Windows command `ipconfig`.
+TSDuck also provides a simple way to display the list of local IP addresses with their
+interface name: `tsdebug iflist` (the command `tsdebug` is not officially documented
+in this user's guide and is used for debug purposes only).
+
+Let's assume here that we work on the network interface named "Ethernet 3".
+
+To enable software timestamps on this interface, type the following commands
+from an administrator PowerShell session:
+
+[source,powershell]
+----
+C:\> Import-Module SoftwareTimestamping
+C:\> Enable-SWTimestamping -NetAdapterName "Ethernet 3"
+C:\> Restart-NetAdapter -Name "Ethernet 3"
+----
+
+Do not forget the last command to restart the network adapter.
+Otherwise, the new settings are not activated.
+
+To verify that software timestamps are enabled:
+
+[source,powershell]
+--------
+C:\> Get-SWTimestamping -NetAdapterName "Ethernet 3"
+
+Name       RegistryKeyword           RegistryValue
+----       ---------------           -------------
+Ethernet 3 SoftwareTimestampSettings {5}
+--------
+
+The value 5 means that all software timestamps are enabled.
+The value 0 (or an error message) indicates that they are disabled.
+
+To disable software timestamps:
+
+[source,powershell]
+----
+C:\> Disable-SWTimestamping -NetAdapterName "Ethernet 3"
+C:\> Restart-NetAdapter -Name "Ethernet 3"
+----
+
+[#iat-priorities]
+==== Timestamp priorities
+
+As described in xref:_ip_input[xrefstyle=short], the input plugin `ip` has various ways
+of computing the input timestamp of a packet.
+This is configurable using the option `--timestamp-priority`.
+
+Specifically, if the UDP datagram contains a RTP header, the RTP timestamp is used by default.
+This is the right choice for most transport stream processing operations.
+However, in the case of IAT measurement, this is an incorrect choice because the RTP timestamp
+is the theoretical time when the packet is supposed to arrive.
+With IAT measurement, we need the _real_ arrival time, precisely to evaluate the jitter between
+the theoretical and actual arrival times.
+
+Therefore, in the presence of the plugin `iat` in a `tsp` command, using `ip` as input plugin,
+it is recommended to use the option `-I ip --timestamp-priority kernel-tsp`.
+This option eliminates RTP as a source of timestamps and uses timestamps in the following
+order of priority: kernel timestamp (hardware if present, software otherwise), and then
+the system time of the `tsp` process.

@@ -456,10 +456,5 @@ namespace ts {
 
         // Add multicast membership common code, local interface by index or by address.
         bool addMembershipImpl(const IPAddress& multicast, const IPAddress& local, int interface_index, const IPAddress& source, Report& report);
-
-        // Furiously idiotic Windows feature, see comment in receiveOne()
-#if defined(TS_WINDOWS)
-        static volatile ::LPFN_WSARECVMSG _wsaRevcMsg;
-#endif
     };
 }
