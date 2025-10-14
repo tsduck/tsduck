@@ -34,14 +34,18 @@ namespace ts {
         InfluxArgs() = default;
 
         // Public fields, by options.
-        UString  host_url {};      //!< -\-host-url (-h) [INFLUX_HOST], URL or host name
-        UString  token {};         //!< -\-token (-t) [INFLUX_TOKEN]
-        UString  org {};           //!< -\-org (-o) [INFLUX_ORG]
-        UString  org_id {};        //!< -\-org-id [INFLUX_ORG_ID]
-        UString  bucket {};        //!< -\-bucket (-b) [INFLUX_BUCKET_NAME]
-        UString  bucket_id {};     //!< -\-bucket-id [INFLUX_BUCKET_ID]
-        UString  config_name {};   //!< -\-active-config (-c) [INFLUX_ACTIVE_CONFIG]
-        fs::path config_file {};   //!< -\-configs-path [INFLUX_CONFIGS_PATH]
+        UString       host_url {};         //!< -\-host-url (-h) [INFLUX_HOST], URL or host name
+        UString       token {};            //!< -\-token (-t) [INFLUX_TOKEN]
+        UString       org {};              //!< -\-org (-o) [INFLUX_ORG]
+        UString       org_id {};           //!< -\-org-id [INFLUX_ORG_ID]
+        UString       bucket {};           //!< -\-bucket (-b) [INFLUX_BUCKET_NAME]
+        UString       bucket_id {};        //!< -\-bucket-id [INFLUX_BUCKET_ID]
+        UString       config_name {};      //!< -\-active-config (-c) [INFLUX_ACTIVE_CONFIG]
+        fs::path      config_file {};      //!< -\-configs-path [INFLUX_CONFIGS_PATH]
+        UStringVector additional_tags {};  //!< -\-tag
+        size_t        queue_size = DEFAULT_QUEUE_SIZE;  //!< -\-queue-size
+
+        static constexpr size_t DEFAULT_QUEUE_SIZE = 10;  //!< Default maximum queued metrics messages.
 
         //!
         //! Add command line option definitions in an Args.

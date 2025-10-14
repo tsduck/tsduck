@@ -13,9 +13,20 @@
 // Constructors and destructor.
 //----------------------------------------------------------------------------
 
-ts::InfluxRequest::InfluxRequest(Report& report) :
-    WebRequest(report)
+ts::InfluxRequest::InfluxRequest(Report& report, const InfluxArgs& args) :
+    WebRequest(report),
+    _args(args)
 {
+    // Preformat additional tags.
+    for (auto& tv : _args.additional_tags) {
+        const size_t equal = tv.find(u'=');
+        if (equal == NPOS) {
+            report.error(u"invalid --tag definition '%s', use name=value", tv);
+        }
+        else {
+            _additional_tags.format(u",%s=%s", ToKey(tv.substr(0, equal)), ToKey(tv.substr(equal + 1)));
+        }
+    }
 }
 
 ts::InfluxRequest::~InfluxRequest()
@@ -24,52 +35,86 @@ ts::InfluxRequest::~InfluxRequest()
 
 
 //----------------------------------------------------------------------------
-// Send a write request to the InfluxDB server.
+// Start building a request to the InfluxDB server.
 //----------------------------------------------------------------------------
 
-bool ts::InfluxRequest::write(const InfluxArgs& args, const UString& data, const UString& precision)
+void ts::InfluxRequest::start(std::intmax_t timestamp, const UString& precision)
 {
+    _timestamp = timestamp;
+    _precision = precision;
+    _builder.clear();
+}
+
+
+//----------------------------------------------------------------------------
+// Add a line in the request being built.
+//----------------------------------------------------------------------------
+
+void ts::InfluxRequest::addLine(const UString& measurement, const UString& tags, const UString& value)
+{
+    if (!_builder.empty()) {
+        _builder.append(u'\n');
+    }
+    _builder.append(ToMeasurement(measurement));
+    if (!tags.empty() && !tags.starts_with(u',')) {
+        _builder.append(u',');
+    }
+    _builder.format(u"%s%s value=%s %d", tags, _additional_tags, value, _timestamp);
+}
+
+
+//----------------------------------------------------------------------------
+// Send the request to the InfluxDB server.
+//----------------------------------------------------------------------------
+
+bool ts::InfluxRequest::send()
+{
+    if (_builder.empty()) {
+        report().error(u"empty request to InfluxDB");
+        return false;
+    }
+
     // Build the URL.
-    UString url(args.host_url);
+    UString url(_args.host_url);
     if (!url.ends_with(u'/')) {
-        report().error(u"not a valid base URL: %s",  args.host_url);
+        report().error(u"not a valid base URL: %s", _args.host_url);
         return false;
     }
     url.append(u"api/v2/write?bucket=");
-    if (!args.bucket_id.empty()) {
-        url.append(args.bucket_id);
+    if (!_args.bucket_id.empty()) {
+        url.append(_args.bucket_id);
     }
-    else if (!args.bucket.empty()) {
-        url.append(args.bucket);
+    else if (!_args.bucket.empty()) {
+        url.append(_args.bucket);
     }
     else {
         report().error(u"no InfluxDB bucket specified");
         return false;
     }
-    if (!args.org_id.empty()) {
-        url.format(u"&orgID=%s", args.org_id);
+    if (!_args.org_id.empty()) {
+        url.format(u"&orgID=%s", _args.org_id);
     }
-    else if (!args.org.empty()) {
-        url.format(u"&org=%s", args.org);
+    else if (!_args.org.empty()) {
+        url.format(u"&org=%s", _args.org);
     }
     else {
         report().error(u"no InfluxDB organization specified");
         return false;
     }
-    if (!precision.empty()) {
-        url.format(u"&precision=%s", precision);
+    if (!_precision.empty()) {
+        url.format(u"&precision=%s", _precision);
     }
     report().debug(u"InfluxDB URL: %s", url);
 
     // Set headers and POST data.
-    if (args.token.empty()) {
+    if (_args.token.empty()) {
         report().error(u"no InfluxDB token specified");
         return false;
     }
     clearRequestHeaders();
-    setRequestHeader(u"Authorization", u"Token " + args.token);
+    setRequestHeader(u"Authorization", u"Token " + _args.token);
     setRequestHeader(u"Accept", u"application/json");
-    setPostData(data, u"text/plain; charset=utf-8");
+    setPostData(_builder, u"text/plain; charset=utf-8");
 
     // Send the request.
     UString response;
@@ -94,15 +139,21 @@ bool ts::InfluxRequest::write(const InfluxArgs& args, const UString& data, const
 // Escape characters in a string to be used as measurement, key or value.
 //----------------------------------------------------------------------------
 
-ts::UString ts::InfluxRequest::Escape(const UString& name, const UString& specials)
+ts::UString ts::InfluxRequest::Escape(const UString& name, const UString& specials, bool add_quotes)
 {
     UString result;
     result.reserve(name.length() + 10);
+    if (add_quotes) {
+        result.append(u'"');
+    }
     for (UChar c : name) {
         if (specials.contains(c)) {
             result.append(u'\\');
         }
         result.append(c);
+    }
+    if (add_quotes) {
+        result.append(u'"');
     }
     return result;
 }

@@ -7,23 +7,13 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Asynchronously send requests to an InfluxDB server.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//! @ingroup app
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//! @ingroup app
-//!
-#define TS_VERSION_MINOR 43
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//! @ingroup app
-//!
-#define TS_COMMIT 4453
+#include "tsInfluxArgs.h"
+
+namespace ts {
+
+}

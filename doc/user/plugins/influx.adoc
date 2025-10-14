@@ -60,6 +60,13 @@ Transmit timestamps as local time, based on the current system configuration.
 By default, timestamps are transmitted as UTC time.
 
 [.opt]
+*--max-metrics* _count_
+
+[.optdoc]
+Terminate `tsp` after sending the specified number of metrics.
+This is a test option. The processing is never stopped by default.
+
+[.opt]
 *--pcr-based*
 
 [.optdoc]
@@ -175,16 +182,6 @@ Send metrics data for services.
 The services are identified in InfluxDB by their id in decimal.
 
 [.opt]
-*--tag* _name=value_
-
-[.optdoc]
-Add the specified tag `name`, with the specified `value`, to all metrics which are sent to InfluxDB.
-This can be used to identify a source of metrics and filter it using Flux queries.
-
-[.optdoc]
-Several `--tag` options may be specified.
-
-[.opt]
 *--tr-101-290*
 
 [.optdoc]
@@ -209,40 +206,6 @@ Send bitrate metrics data by type of PID's (audio, video, subtitles, PSI, etc.)
 See more details below.
 
 include::{docdir}/opt/group-influx.adoc[tags=!*]
-
-[.usage]
-Tuning options
-
-[.opt]
-*--max-metrics* _count_
-
-[.optdoc]
-Terminate `tsp` after sending the specified number of metrics.
-This is a test option. The processing is never stopped by default.
-
-[.opt]
-*--queue-size* _count_
-
-[.optdoc]
-Maximum number of queued metrics between the plugin thread and the communication thread with InfluxDB.
-
-[.optdoc]
-Sending metrics data to the InfluxDB server means calling the Web API of the server and posting data through HTTP.
-Depending on the response time of the server, this may introduce some delay in real-time streams.
-To avoid this, the communication with the InfluxDB server is asynchronously performed in an independent thread.
-The metrics data are queued between the plugin thread and the communication thread, without delaying the plugin thread.
-The number of messages in that queue is limited to avoid memory exhaustion in case of communication problem.
-When the queue becomes full, additional metrics are dropped.
-
-[.optdoc]
-On real-time streams, where metrics data are sent every few seconds, there is never more than one message in that queue.
-However, with `--pcr-based` or `--timestamp-based`, on off-line streams which are processed at high speed (files for instance),
-the metrics may be generated faster than they can be sent and the queue may grow.
-Increase the queue size if some metrics are lost.
-
-[.optdoc]
-The default queue size is 10 messages.
-
 include::{docdir}/opt/group-common-plugins.adoc[tags=!*]
 
 ==== Building Flux queries for Grafana

@@ -42,7 +42,6 @@ namespace ts {
     private:
         // Default values.
         static constexpr cn::seconds DEFAULT_INTERVAL = cn::seconds(5);  // Default logging interval in seconds.
-        static constexpr size_t      DEFAULT_QUEUE_SIZE = 10;            // Default maximum queued metrics messages.
 
         // Command line options.
         bool        _log_bitrate = false;
@@ -60,12 +59,10 @@ namespace ts {
         bool        _use_local_time = false;
         int         _max_severity = std::numeric_limits<int>::max();
         Time        _start_time {};
-        size_t      _queue_size = DEFAULT_QUEUE_SIZE;
         size_t      _max_metrics = std::numeric_limits<size_t>::max();
         cn::seconds _log_interval {};
         PIDSet      _log_pids {};
         InfluxArgs  _influx_args {};
-        UString     _additional_tags {};
 
         // Description of a service. Not reset in each period.
         class ServiceContext
@@ -93,21 +90,20 @@ namespace ts {
         using PIDContextMap = std::map<PID,PIDContext>;
 
         // Working data.
-        Time                  _first_time {};      // UTC time of first packet.
-        Time                  _due_time {};        // Next UTC time to report (without --pcr-based).
-        Time                  _last_time {};       // UTC time of last report.
-        PCR                   _due_pcr {};         // Next PCR to report (with --pcr-based or --time-stamp based).
-        PCR                   _last_pcr {};        // PCR of last report.
-        size_t                _sent_metrics = 0;   // Number of sent metrics.
-        SignalizationDemux    _demux {duck};       // Analyze the stream.
-        DurationAnalyzer      _ts_clock {*this};   // Compute playout time based on PCR or input timestamps.
-        tr101290::Analyzer    _tr_101_290 {duck};  // ETSI TR 101 290 analyzer.
-        IATAnalyzer           _iat {*this};        // Inter-packet Arrival Time (IAT) analyzer.
-        InfluxRequest         _request {*this};    // Web request to InfluxDB server.
-        MessageQueue<UString> _metrics_queue {};   // Queue of metrics to send.
-        PacketCounter         _ts_packets = 0;     // All TS packets in period.
-        PIDContextMap         _pids {};            // PID's description in period.
-        ServiceContextMap     _services {};        // Services descriptions.
+        Time               _first_time {};      // UTC time of first packet.
+        Time               _due_time {};        // Next UTC time to report (without --pcr-based).
+        Time               _last_time {};       // UTC time of last report.
+        PCR                _due_pcr {};         // Next PCR to report (with --pcr-based or --time-stamp based).
+        PCR                _last_pcr {};        // PCR of last report.
+        size_t             _sent_metrics = 0;   // Number of sent metrics.
+        SignalizationDemux _demux {duck};       // Analyze the stream.
+        DurationAnalyzer   _ts_clock {*this};   // Compute playout time based on PCR or input timestamps.
+        tr101290::Analyzer _tr_101_290 {duck};  // ETSI TR 101 290 analyzer.
+        IATAnalyzer        _iat {*this};        // Inter-packet Arrival Time (IAT) analyzer.
+        PacketCounter      _ts_packets = 0;     // All TS packets in period.
+        PIDContextMap      _pids {};            // PID's description in period.
+        ServiceContextMap  _services {};        // Services descriptions.
+        MessageQueue<InfluxRequest> _metrics_queue {}; // Queue of metrics to send.
 
         // Get the representable name of a service, from an iterator in _service.
         UString serviceName(const ServiceContextMap::value_type&) const;
@@ -117,7 +113,7 @@ namespace ts {
         void reportMetrics(Time timestamp, cn::milliseconds duration);
 
         // Build metrics string for a given type of timestamp.
-        void addTimestampMetrics(UString& data, const UChar* measurement, PID ServiceContext::* refpid, uint64_t PIDContext::* value, uint16_t tsid, cn::milliseconds::rep timestamp_ms);
+        void addTimestampMetrics(InfluxRequest& req, const UChar* measurement, PID ServiceContext::* refpid, uint64_t PIDContext::* value, uint16_t tsid);
 
         // Implementation of SignalizationHandlerInterface.
         virtual void handleUTC(const Time&, TID) override;
@@ -205,12 +201,6 @@ ts::InfluxPlugin::InfluxPlugin(TSP* tsp_) :
          u"TSDuck adds informational counters at severity 4. "
          u"By default, all error counters are sent.");
 
-    option(u"tag", 0, STRING, 0, UNLIMITED_COUNT);
-    help(u"tag", u"name=value",
-         u"Add the specified tag, with the specified value, to all metrics which are sent to InfluxDB. "
-         u"This can be used to identify a source of metrics and filter it using InfluxDB queries. "
-         u"Several --tag options may be specified.");
-
     option(u"type");
     help(u"type",
          u"Send bitrate metrics for types of PID's. "
@@ -249,12 +239,6 @@ ts::InfluxPlugin::InfluxPlugin(TSP* tsp_) :
     help(u"max-metrics", u"count",
          u"Stop after sending that number of metrics. "
          u"This is a test option. Never stop by default.");
-
-    option(u"queue-size", 0, POSITIVE);
-    help(u"queue-size", u"count",
-         u"Maximum number of queued metrics between the plugin thread and the communication thread with InfluxDB. "
-         u"With --pcr-based or --timestamp-based, on off-line streams which are processed at high speed, increase this value if some metrics are lost. "
-         u"The default queue size is " + UString::Decimal(DEFAULT_QUEUE_SIZE) + u" messages.");
 }
 
 
@@ -280,7 +264,6 @@ bool ts::InfluxPlugin::getOptions()
     _use_local_time = present(u"local-time");
     getIntValue(_max_severity, u"max-severity", std::numeric_limits<int>::max());
     getIntValue(_max_metrics, u"max-metrics", std::numeric_limits<size_t>::max());
-    getIntValue(_queue_size, u"queue-size", DEFAULT_QUEUE_SIZE);
     getChronoValue(_log_interval, u"interval", DEFAULT_INTERVAL);
     getIntValues(_log_pids, u"pid");
     if (present(u"all-pids")) {
@@ -301,21 +284,6 @@ bool ts::InfluxPlugin::getOptions()
         else if (_use_local_time) {
             // The specified time is local but we use UTC internally.
             _start_time = _start_time.localToUTC();
-        }
-    }
-
-    // Get and preformat additional tags.
-    UStringList tags;
-    getValues(tags, u"tag");
-    _additional_tags.clear();
-    for (auto& tv : tags) {
-        const size_t equal = tv.find(u'=');
-        if (equal == NPOS) {
-            error(u"invalid --tag definition '%s', use name=value", tv);
-            success = false;
-        }
-        else {
-            _additional_tags.format(u",%s=%s", InfluxRequest::ToKey(tv.substr(0, equal)), InfluxRequest::ToKey(tv.substr(equal + 1)));
         }
     }
 
@@ -348,7 +316,7 @@ bool ts::InfluxPlugin::start()
 
     // Resize the inter-thread queue.
     _metrics_queue.clear();
-    _metrics_queue.setMaxMessages(_queue_size);
+    _metrics_queue.setMaxMessages(_influx_args.queue_size);
 
     // Start the internal thread which sends the metrics data.
     return Thread::start();
@@ -503,7 +471,7 @@ void ts::InfluxPlugin::searchPIDs(std::set<PID>& pids, const DescriptorList& dli
 
 ts::UString ts::InfluxPlugin::serviceName(const ServiceContextMap::value_type& it) const
 {
-    return _log_names && !it.second.inf_name.empty() ? it.second.inf_name : UString::Decimal(it.first, 0, 0, UString());
+    return _log_names && !it.second.inf_name.empty() ? it.second.inf_name : UString::Decimal(it.first, 0, true, UString());
 }
 
 
@@ -554,14 +522,14 @@ void ts::InfluxPlugin::reportMetrics(Time timestamp, cn::milliseconds duration)
     if (_use_local_time) {
         timestamp = timestamp.UTCToLocal();
     }
-    cn::milliseconds::rep timestamp_ms = (timestamp - Time::UnixEpoch).count();
 
     // Build data to post. Use a shared pointer to send to the message queue.
-    auto data = std::make_shared<UString>();
+    auto req = std::make_shared<InfluxRequest>(*this, _influx_args);
+    req->start(timestamp - Time::UnixEpoch);
 
     // The total TS bitrate is always present and first.
     const uint16_t tsid = _demux.transportStreamId();
-    data->format(u"bitrate,scope=ts,tsid=%d%s value=%d %d", tsid, _additional_tags, PacketBitRate(_ts_packets, duration), timestamp_ms);
+    req->add(u"bitrate", UString::Format(u"scope=ts,tsid=%d", tsid), PacketBitRate(_ts_packets, duration).toInt());
 
     // If we need to report metrics per service, determine the set of PID's which belong to a service.
     // All other PID's are "global".
@@ -585,7 +553,7 @@ void ts::InfluxPlugin::reportMetrics(Time timestamp, cn::milliseconds duration)
             }
             // Send bitrate info by name or id.
             if (packets > 0) {
-                data->format(u"\nbitrate,scope=service,tsid=%d,service=%s%s value=%d %d", tsid, serviceName(it), _additional_tags, PacketBitRate(packets, duration), timestamp_ms);
+                req->add(u"bitrate", UString::Format(u"scope=service,tsid=%d,service=%s", tsid, serviceName(it)), PacketBitRate(packets, duration).toInt());
             }
         }
         // Send bitrate info for "global" PID's (unallocated to any service).
@@ -596,7 +564,7 @@ void ts::InfluxPlugin::reportMetrics(Time timestamp, cn::milliseconds duration)
             }
         }
         if (globals > 0) {
-            data->format(u"\nbitrate,scope=service,tsid=%d,service=global%s value=%d %d", tsid, _additional_tags, PacketBitRate(globals, duration), timestamp_ms);
+            req->add(u"bitrate", UString::Format(u"scope=service,tsid=%d,service=global", tsid), PacketBitRate(globals, duration).toInt());
         }
     }
 
@@ -611,7 +579,7 @@ void ts::InfluxPlugin::reportMetrics(Time timestamp, cn::milliseconds duration)
         for (const auto& it : by_type) {
             if (it.second > 0) {
                 const UString name(InfluxRequest::ToKey(PIDClassIdentifier().name(it.first)));
-                data->format(u"\nbitrate,scope=type,tsid=%d,type=%s%s value=%d %d", tsid, name, _additional_tags, PacketBitRate(it.second, duration), timestamp_ms);
+                req->add(u"bitrate", UString::Format(u"scope=type,tsid=%d,type=%s", tsid, name), PacketBitRate(it.second, duration).toInt());
             }
         }
     }
@@ -620,20 +588,20 @@ void ts::InfluxPlugin::reportMetrics(Time timestamp, cn::milliseconds duration)
     if (_log_bitrate && _log_pids.any()) {
         for (const auto& it : _pids) {
             if (_log_pids.test(it.first) && it.second.packets > 0) {
-                data->format(u"\nbitrate,scope=pid,tsid=%d,pid=%d%s value=%d %d", tsid, it.first, _additional_tags, PacketBitRate(it.second.packets, duration), timestamp_ms);
+                req->add(u"bitrate", UString::Format(u"scope=pid,tsid=%d,pid=%d", tsid, it.first), PacketBitRate(it.second.packets, duration).toInt());
             }
         }
     }
 
     // Log PCR/PTS/DTS values.
     if (_log_pcr) {
-        addTimestampMetrics(*data, u"pcr", &ServiceContext::pcr_pid, &PIDContext::pcr, tsid, timestamp_ms);
+        addTimestampMetrics(*req, u"pcr", &ServiceContext::pcr_pid, &PIDContext::pcr, tsid);
     }
     if (_log_pts) {
-        addTimestampMetrics(*data, u"pts", &ServiceContext::pts_pid, &PIDContext::pts, tsid, timestamp_ms);
+        addTimestampMetrics(*req, u"pts", &ServiceContext::pts_pid, &PIDContext::pts, tsid);
     }
     if (_log_dts) {
-        addTimestampMetrics(*data, u"dts", &ServiceContext::pts_pid, &PIDContext::dts, tsid, timestamp_ms);
+        addTimestampMetrics(*req, u"dts", &ServiceContext::pts_pid, &PIDContext::dts, tsid);
     }
 
     // Log ETSI TR 101 290 error counters.
@@ -655,7 +623,7 @@ void ts::InfluxPlugin::reportMetrics(Time timestamp, cn::milliseconds duration)
                 const UString name(desc.name.toLower());
 
                 // Always log global counter, even if zero.
-                data->format(u"\ncounter,name=%s,severity=%d,scope=ts,tsid=%d%s value=%d %d", name, desc.severity, tsid, _additional_tags, counters[cindex], timestamp_ms);
+                req->add(u"counter", UString::Format(u"name=%s,severity=%d,scope=ts,tsid=%d", name, desc.severity, tsid), counters[cindex]);
 
                 // Log the counter by service, if not zero.
                 if (_log_services) {
@@ -671,7 +639,7 @@ void ts::InfluxPlugin::reportMetrics(Time timestamp, cn::milliseconds duration)
                         }
                         // Send counter for that service.
                         if (errcount > 0) {
-                            data->format(u"\ncounter,name=%s,severity=%d,scope=service,tsid=%d,service=%s%s value=%d %d", name, desc.severity, tsid, serviceName(it), _additional_tags, errcount, timestamp_ms);
+                            req->add(u"counter", UString::Format(u"name=%s,severity=%d,scope=service,tsid=%d,service=%s", name, desc.severity, tsid, serviceName(it)), errcount);
                         }
                     }
                     // Send the error counter for "global" PID's (unallocated to any service).
@@ -682,7 +650,7 @@ void ts::InfluxPlugin::reportMetrics(Time timestamp, cn::milliseconds duration)
                         }
                     }
                     if (errcount > 0) {
-                        data->format(u"\ncounter,name=%s,severity=%d,scope=service,tsid=%d,service=global%s value=%d %d", name, desc.severity, tsid, _additional_tags, errcount, timestamp_ms);
+                        req->add(u"counter", UString::Format(u"name=%s,severity=%d,scope=service,tsid=%d,service=global", name, desc.severity, tsid), errcount);
                     }
                 }
 
@@ -690,7 +658,7 @@ void ts::InfluxPlugin::reportMetrics(Time timestamp, cn::milliseconds duration)
                 if (_log_pids.any()) {
                     for (const auto& it : counters_by_pid) {
                         if (_log_pids.test(it.first) && it.second[cindex] > 0) {
-                            data->format(u"\ncounter,name=%s,severity=%d,scope=pid,tsid=%d,pid=%d%s value=%d %d", name, desc.severity, tsid, it.first, _additional_tags, it.second[cindex], timestamp_ms);
+                            req->add(u"counter", UString::Format(u"name=%s,severity=%d,scope=pid,tsid=%d,pid=%d", name, desc.severity, tsid, it.first), it.second[cindex]);
                         }
                     }
                 }
@@ -699,7 +667,7 @@ void ts::InfluxPlugin::reportMetrics(Time timestamp, cn::milliseconds duration)
 
         // Final synthetic error_count.
         if (tr101290::INFO_SEVERITY <= _max_severity) {
-            data->format(u"\ncounter,name=error_count,severity=%d,scope=ts,tsid=%d%s value=%d %d", tr101290::INFO_SEVERITY, tsid, _additional_tags, counters.errorCount(), timestamp_ms);
+            req->add(u"counter", UString::Format(u"name=error_count,severity=%d,scope=ts,tsid=%d", tr101290::INFO_SEVERITY, tsid), counters.errorCount());
         }
     }
 
@@ -707,22 +675,22 @@ void ts::InfluxPlugin::reportMetrics(Time timestamp, cn::milliseconds duration)
     if (_log_iat && _iat.isValid()) {
         IATAnalyzer::Status status;
         if (_iat.getStatusRestart(status)) {
-            data->format(u"\niat,type=mean%s value=%d %d", _additional_tags, status.mean_iat.count(), timestamp_ms);
-            data->format(u"\niat,type=min%s value=%d %d", _additional_tags, status.min_iat.count(), timestamp_ms);
-            data->format(u"\niat,type=max%s value=%d %d", _additional_tags, status.max_iat.count(), timestamp_ms);
+            req->add(u"iat", u"type=mean", status.mean_iat.count());
+            req->add(u"iat", u"type=min", status.min_iat.count());
+            req->add(u"iat", u"type=max", status.max_iat.count());
         }
     }
 
     // Debug output of the complete message to InfluxDB.
-    debug(u"report at %s, for last %s, data: \"%s\"", timestamp, duration, *data);
+    debug(u"report at %s, for last %s, data: \"%s\"", timestamp, duration, req->currentContent());
 
     // Send the data to the outgoing thread. Use a zero timeout.
     // It the thread is so slow that the queue is full, just drop the metrics for this interval.
-    if (_metrics_queue.enqueue(data, cn::milliseconds::zero())) {
+    if (_metrics_queue.enqueue(req, cn::milliseconds::zero())) {
         _sent_metrics++;
     }
     else {
-        warning(u"lost metrics, consider increasing --queue-size (current: %d)", _queue_size);
+        warning(u"lost metrics, consider increasing --queue-size (current: %d)", _influx_args.queue_size);
     }
 
     // Reset metrics.
@@ -735,7 +703,7 @@ void ts::InfluxPlugin::reportMetrics(Time timestamp, cn::milliseconds duration)
 // Build metrics string for a given type of timestamp.
 //----------------------------------------------------------------------------
 
-void ts::InfluxPlugin::addTimestampMetrics(UString& data, const UChar* measurement, PID ServiceContext::* refpid, uint64_t PIDContext::* value, uint16_t tsid, cn::milliseconds::rep timestamp_ms)
+void ts::InfluxPlugin::addTimestampMetrics(InfluxRequest& req, const UChar* measurement, PID ServiceContext::* refpid, uint64_t PIDContext::* value, uint16_t tsid)
 {
     // Log timestamp per service.
     if (_log_services) {
@@ -743,7 +711,7 @@ void ts::InfluxPlugin::addTimestampMetrics(UString& data, const UChar* measureme
             if (it.second.*refpid != PID_NULL) {
                 auto& ctx(_pids[it.second.*refpid]);
                 if (ctx.*value != INVALID_PCR) {
-                    data.format(u"\n%s,scope=service,tsid=%d,service=%s%s value=%d %d", measurement, tsid, serviceName(it), _additional_tags, ctx.*value, timestamp_ms);
+                    req.add(measurement, UString::Format(u"scope=service,tsid=%d,service=%s", tsid, serviceName(it)), ctx.*value);
                 }
             }
         }
@@ -753,7 +721,7 @@ void ts::InfluxPlugin::addTimestampMetrics(UString& data, const UChar* measureme
     if (_log_pids.any()) {
         for (const auto& it : _pids) {
             if (_log_pids.test(it.first) && it.second.*value != INVALID_PCR) {
-                data.format(u"\n%s,scope=pid,tsid=%d,pid=%d%s value=%d %d", measurement, tsid, it.first, _additional_tags, it.second.*value, timestamp_ms);
+                req.add(measurement, UString::Format(u"scope=pid,tsid=%d,pid=%d", tsid, it.first), it.second.*value);
             }
         }
     }
@@ -777,7 +745,7 @@ void ts::InfluxPlugin::main()
         }
 
         // Send the data to the InfluxDB server.
-        _request.write(_influx_args, *msg, u"ms");
+        msg->send();
     }
 
     debug(u"metrics output thread terminated");

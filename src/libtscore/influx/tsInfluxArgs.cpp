@@ -59,6 +59,18 @@ void ts::InfluxArgs::defineArgs(Args& args)
               u"By default, use the environment variable INFLUX_ORG_ID. "
               u"Only one of --org and --org-id shall be specified.");
 
+    args.option(u"queue-size", 0, Args::POSITIVE);
+    args.help(u"queue-size", u"count",
+              u"Maximum number of queued metrics between the plugin thread and the communication thread with InfluxDB. "
+              u"On off-line streams which are processed at high speed, increase this value if some metrics are lost. "
+              u"The default queue size is " + UString::Decimal(DEFAULT_QUEUE_SIZE) + u" messages.");
+
+    args.option(u"tag", 0, Args::STRING, 0, Args::UNLIMITED_COUNT);
+    args.help(u"tag", u"name=value",
+              u"Add the specified tag, with the specified value, to all metrics which are sent to InfluxDB. "
+              u"This can be used to identify a source of metrics and filter it using InfluxDB queries. "
+              u"Several --tag options may be specified.");
+
     args.option(u"token", 't', Args::STRING);
     args.help(u"token", u"string",
               u"Token to authenticate InfluxDB requests. "
@@ -83,7 +95,15 @@ bool ts::InfluxArgs::loadArgs(Args& args, bool required)
     args.getValue(bucket, u"bucket");
     args.getValue(bucket_id, u"bucket-id");
     args.getValue(token, u"token");
+    args.getValues(additional_tags, u"tag");
+    args.getIntValue(queue_size, u"queue-size", DEFAULT_QUEUE_SIZE);
 
+    for (auto& tv : additional_tags) {
+        if (!tv.contains(u'=')) {
+            args.error(u"invalid --tag definition '%s', use name=value", tv);
+            success = false;
+        }
+    }
     if (!org.empty() && !org_id.empty()) {
         args.error(u"only one of --org and --org-id shall be specified");
         success = false;
