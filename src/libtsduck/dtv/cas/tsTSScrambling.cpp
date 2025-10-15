@@ -39,18 +39,6 @@ ts::TSScrambling::TSScrambling(const TSScrambling& other) :
     _aesctr[1].setIV(other._aesctr[1].currentIV());
 }
 
-ts::TSScrambling::TSScrambling(TSScrambling&& other) :
-    _report(other._report),
-    _scrambling_type(other._scrambling_type),
-    _explicit_type(other._explicit_type),
-    _cw_list(other._cw_list),
-    _next_cw(_cw_list.end())
-{
-    setScramblingType(_scrambling_type);
-    _dvbcsa[0].setEntropyMode(other._dvbcsa[0].entropyMode());
-    _dvbcsa[1].setEntropyMode(other._dvbcsa[1].entropyMode());
-}
-
 
 //----------------------------------------------------------------------------
 // Force the usage of a specific algorithm.

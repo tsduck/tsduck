@@ -63,13 +63,6 @@ namespace ts {
         TSScrambling(const TSScrambling& other);
 
         //!
-        //! Move constructor.
-        //! @param [in,out] other Other instance to copy. Unmodified. Only the configuration parameters, typically
-        //! from the command line, are copied. The state of @a other is not copied.
-        //!
-        TSScrambling(TSScrambling&& other);
-
-        //!
         //! Add command line option definitions in an Args.
         //! @param [in,out] args Command line arguments to update.
         //!
