@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.43-4449 (October 2025)
+VERSION 3.43-4454 (October 2025)
 
 [NEW] New commands and plugins:
 
@@ -38,6 +38,9 @@ VERSION 3.43-4449 (October 2025)
     was  found,  two occurrences of the PAT were passed, one with the old TS id
     and  one  with  the new TS id. The same problem existed with SDT Actual and
     NIT Actual. The plugins "sdt" and "nit" were fixed accordingly.
+  * Fixed issue #1677:  In plugin "descrambler", using the fake ECM's for test,
+    and  scrambling  modes  AES-CBC  or AES-CTR, the descrambling failed due to
+    improper initialization of the IV.
 
 -------------------------------------------------------------------------------
 

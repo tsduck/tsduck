@@ -108,7 +108,7 @@ namespace ts {
         //! Schedule a new key and optional initialization vector.
         //! @param [in] key Address of key value.
         //! @param [in] key_length Key length in bytes.
-        //! @param [in] iv Address of IV value (for chaining mode only).
+        //! @param [in] iv Address of IV value (for chaining mode only). If null and an IV is already set, continue to use it.
         //! @param [in] iv_length IV length in bytes (for chaining mode only).
         //! @return True on success, false on error.
         //!
