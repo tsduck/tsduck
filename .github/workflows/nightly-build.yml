@@ -55,6 +55,20 @@ jobs:
         path: version.txt
         retention-days: ${{ fromJSON(steps.check.outputs.retention) }}
 
+  # Static code analysis using flawfinder.
+  flawfinder:
+    name: Flawfinder static analysis
+    if: fromJSON(needs.init.outputs.rebuild)
+    runs-on: ubuntu-latest
+    steps:
+    - name: Install prerequisites
+      run: sudo apt install -y flawfinder
+    - name: Get TSDuck repo
+      uses: actions/checkout@master
+    - name: Run flawfinder
+      run: make flawfinder
+      continue-on-error: true
+
   # Build on Windows.
   windows:
     name: Windows build
