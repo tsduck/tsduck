@@ -58,8 +58,9 @@ jobs:
   # Static code analysis using flawfinder.
   flawfinder:
     name: Flawfinder static analysis
-    if: fromJSON(needs.init.outputs.rebuild)
+    needs: [init]
     runs-on: ubuntu-latest
+    if: fromJSON(needs.init.outputs.rebuild)
     steps:
     - name: Install prerequisites
       run: sudo apt install -y flawfinder
