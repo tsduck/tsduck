@@ -26,6 +26,7 @@ namespace ts {
     //!
     class TSCOREDLL InfluxSender : private Thread
     {
+        TS_NOBUILD_NOCOPY(InfluxSender);
     public:
         //!
         //! Constructor.
