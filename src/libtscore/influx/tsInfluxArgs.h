@@ -30,8 +30,10 @@ namespace ts {
     public:
         //!
         //! Constructor.
+        //! @param [in] use_prefix Use a prefix for all long option (e.g. '--influx-token' for '--token').
+        //! @param [in] use_short_options Define short options (eg.g. '-t' for '--token').
         //!
-        InfluxArgs() = default;
+        InfluxArgs(bool use_prefix = false, bool use_short_options = false);
 
         // Public fields, by options.
         UString       host_url {};         //!< -\-host-url (-h) [INFLUX_HOST], URL or host name
@@ -63,5 +65,9 @@ namespace ts {
         //! @return True on success, false on error in argument line.
         //!
         bool loadArgs(Args& args, bool required);
+
+    private:
+        bool    _use_short_options = false;
+        UString _prefix {};
     };
 }

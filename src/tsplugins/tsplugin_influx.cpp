@@ -14,13 +14,12 @@
 #include "tsPluginRepository.h"
 #include "tsInfluxArgs.h"
 #include "tsInfluxRequest.h"
+#include "tsInfluxSender.h"
 #include "tsSignalizationDemux.h"
 #include "tsDurationAnalyzer.h"
 #include "tstr101290Analyzer.h"
 #include "tsIATAnalyzer.h"
 #include "tsCADescriptor.h"
-#include "tsMessageQueue.h"
-#include "tsThread.h"
 #include "tsTime.h"
 
 
@@ -29,7 +28,7 @@
 //----------------------------------------------------------------------------
 
 namespace ts {
-    class InfluxPlugin: public ProcessorPlugin, private SignalizationHandlerInterface, private Thread
+    class InfluxPlugin: public ProcessorPlugin, private SignalizationHandlerInterface
     {
         TS_PLUGIN_CONSTRUCTORS(InfluxPlugin);
     public:
@@ -62,7 +61,7 @@ namespace ts {
         size_t      _max_metrics = std::numeric_limits<size_t>::max();
         cn::seconds _log_interval {};
         PIDSet      _log_pids {};
-        InfluxArgs  _influx_args {};
+        InfluxArgs  _influx_args {false, true};
 
         // Description of a service. Not reset in each period.
         class ServiceContext
@@ -103,7 +102,7 @@ namespace ts {
         PacketCounter      _ts_packets = 0;     // All TS packets in period.
         PIDContextMap      _pids {};            // PID's description in period.
         ServiceContextMap  _services {};        // Services descriptions.
-        MessageQueue<InfluxRequest> _metrics_queue {}; // Queue of metrics to send.
+        InfluxSender       _server {*this};     // Send requests to InfluxDB server.
 
         // Get the representable name of a service, from an iterator in _service.
         UString serviceName(const ServiceContextMap::value_type&) const;
@@ -121,11 +120,6 @@ namespace ts {
 
         // Search PID's in a descriptor list.
         void searchPIDs(std::set<PID>&, const DescriptorList&);
-
-        // There is one thread which asynchronously sends the metrics data to the InfluxDB server.
-        // We cannot anticipate the response time of the server. Using a thread avoid slowing down
-        // the packet transmission. The following method is the thread main code.
-        virtual void main() override;
     };
 }
 
@@ -314,12 +308,8 @@ bool ts::InfluxPlugin::start()
         _tr_101_290.setCollectByPID(_log_services || _log_pids.any());
     }
 
-    // Resize the inter-thread queue.
-    _metrics_queue.clear();
-    _metrics_queue.setMaxMessages(_influx_args.queue_size);
-
-    // Start the internal thread which sends the metrics data.
-    return Thread::start();
+    // Start the asynchronous thread which sends the metrics data.
+    return _server.start(_influx_args);
 }
 
 
@@ -332,9 +322,8 @@ bool ts::InfluxPlugin::stop()
     // Force a last set of metrics.
     reportMetrics(true);
 
-    // Send a termination message and wait for actual thread termination.
-    _metrics_queue.forceEnqueue(nullptr);
-    Thread::waitForTermination();
+    // Terminate the asynchronous thread which sends the metrics data and wait for it.
+    _server.stop();
     return true;
 }
 
@@ -686,7 +675,7 @@ void ts::InfluxPlugin::reportMetrics(Time timestamp, cn::milliseconds duration)
 
     // Send the data to the outgoing thread. Use a zero timeout.
     // It the thread is so slow that the queue is full, just drop the metrics for this interval.
-    if (_metrics_queue.enqueue(req, cn::milliseconds::zero())) {
+    if (_server.send(req)) {
         _sent_metrics++;
     }
     else {
@@ -725,28 +714,4 @@ void ts::InfluxPlugin::addTimestampMetrics(InfluxRequest& req, const UChar* meas
             }
         }
     }
-}
-
-
-//----------------------------------------------------------------------------
-// Thread which asynchronously sends the metrics data to the InfluxDB server.
-//----------------------------------------------------------------------------
-
-void ts::InfluxPlugin::main()
-{
-    debug(u"metrics output thread started");
-
-    for (;;) {
-        // Wait for one message, stop on null pointer.
-        decltype(_metrics_queue)::MessagePtr msg;
-        _metrics_queue.dequeue(msg);
-        if (msg == nullptr) {
-            break;
-        }
-
-        // Send the data to the InfluxDB server.
-        msg->send();
-    }
-
-    debug(u"metrics output thread terminated");
 }

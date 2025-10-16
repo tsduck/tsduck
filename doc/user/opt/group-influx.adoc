@@ -6,26 +6,39 @@
 //
 // Documentation for options in class ts::InfluxArgs.
 //
-// tags: <none>
+// tags: short, prefix
 //
 //----------------------------------------------------------------------------
+
+//---- ugly tag tricks ----
+
+:opt-prefix:
+// tag::prefix[]
+:opt-prefix: influx-
+// end::prefix[]
 
 [.usage]
 InfluxDB connection options
 
-The InfluxDB server is identified with the same options as the `influx` command, the InfluxDB CLI,
-as documented at https://docs.influxdata.com/influxdb/v2/reference/cli/influx/[docs.influxdata.com].
+The InfluxDB server is identified with the same options
+// tag::prefix[]
+(with prefix `--{opt-prefix}`)
+// end::prefix[]
+as the `influx` command, the InfluxDB CLI, as documented at
+https://docs.influxdata.com/influxdb/v2/reference/cli/influx/[docs.influxdata.com].
 
 When retrieving credentials for InfluxDB, the following precedence apply:
 
 [.compact-list]
-. Command line flags (`--host`, `--org` `-o`, `--token` `-t`)
+. Command line flags (`--{opt-prefix}host`, `--{opt-prefix}org`, `--{opt-prefix}token`)
 . Environment variables (`INFLUX_HOST`, `INFLUX_ORG`, `INFLUX_TOKEN`)
 . CLI configuration file
 
 [.opt]
+// tag::short[]
 *-c* _name_ +
-*--active-config* _name_
+// end::short[]
+*--{opt-prefix}active-config* _name_
 
 [.optdoc]
 Config name to use in the InfluxDB CLI configurations file.
@@ -36,7 +49,7 @@ then look for the "active" configuration in the configuration file,
 or the first configuration if none is marked as active.
 
 [.opt]
-*--configs-path* _filename_
+*--{opt-prefix}configs-path* _filename_
 
 [.optdoc]
 Path to the InfluxDB CLI configurations file.
@@ -45,8 +58,10 @@ Path to the InfluxDB CLI configurations file.
 By default, use the environment variable `INFLUX_CONFIGS_PATH`, then `$HOME/.influxdbv2/configs`.
 
 [.opt]
+// tag::short[]
 *-b* _name_ +
-*--bucket* _name_
+// end::short[]
+*--{opt-prefix}bucket* _name_
 
 [.optdoc]
 Name of the InfluxDB bucket.
@@ -55,7 +70,7 @@ Name of the InfluxDB bucket.
 By default, use the environment variable `INFLUX_BUCKET_NAME`.
 
 [.opt]
-*--bucket-id* _id_
+*--{opt-prefix}bucket-id* _id_
 
 [.optdoc]
 Identifier of the InfluxDB bucket.
@@ -65,13 +80,15 @@ The _id_ must be a 16-character value.
 By default, use the environment variable `INFLUX_BUCKET_ID`.
 
 [.optdoc]
-Only one of `--bucket` and `--bucket-id` shall be specified.
+Only one of `--{opt-prefix}bucket` and `--{opt-prefix}bucket-id` shall be specified.
 If none is specified, the environment variables are searched.
 If the two values are specified in environment variables, the bucket id is used.
 
 [.opt]
+// tag::short[]
 *-h* _name_ +
-*--host-url* _name_
+// end::short[]
+*--{opt-prefix}host-url* _name_
 
 [.optdoc]
 Host name or URL of the InfluxDB server.
@@ -81,8 +98,10 @@ If a host name is used instead of a URL, `http:` is assumed.
 By default, use the environment variable `INFLUX_HOST`, then the InfluxDB CLI configuration file.
 
 [.opt]
+// tag::short[]
 *-o* _name_ +
-*--org* _name_
+// end::short[]
+*--{opt-prefix}org* _name_
 
 [.optdoc]
 Name of the InfluxDB organization.
@@ -91,7 +110,7 @@ Name of the InfluxDB organization.
 By default, use the environment variable `INFLUX_ORG`, then the InfluxDB CLI configuration file.
 
 [.opt]
-*--org-id* _id_
+*--{opt-prefix}org-id* _id_
 
 [.optdoc]
 Identifier of the InfluxDB organization.
@@ -101,13 +120,15 @@ The _id_ must be a 16-character value.
 By default, use the environment variable `INFLUX_ORG_ID`.
 
 [.optdoc]
-Only one of `--org` and `--org-id` shall be specified.
+Only one of `--{opt-prefix}org` and `--{opt-prefix}org-id` shall be specified.
 If none is specified, the environment variables are searched first, then the InfluxDB CLI configuration file.
 If the two values are specified in a category of default values, the organization id is used.
 
 [.opt]
+// tag::short[]
 *-t* _string_ +
-*--token* _string_
+// end::short[]
+*--{opt-prefix}token* _string_
 
 [.optdoc]
 Token to authenticate InfluxDB requests.
@@ -119,7 +140,7 @@ By default, use the environment variable `INFLUX_TOKEN`, then the InfluxDB CLI c
 InfluxDB additional options
 
 [.opt]
-*--queue-size* _count_
+*--{opt-prefix}queue-size* _count_
 
 [.optdoc]
 Maximum number of queued metrics between the plugin thread and the communication thread with InfluxDB.
@@ -142,11 +163,11 @@ Increase the queue size if some metrics are lost.
 The default queue size is 10 messages.
 
 [.opt]
-*--tag* _name=value_
+*--{opt-prefix}tag* _name=value_
 
 [.optdoc]
 Add the specified tag `name`, with the specified `value`, to all metrics which are sent to InfluxDB.
 This can be used to identify a source of metrics and filter it using Flux queries.
 
 [.optdoc]
-Several `--tag` options may be specified.
+Several `--{opt-prefix}tag` options may be specified.

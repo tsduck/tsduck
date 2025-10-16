@@ -205,7 +205,7 @@ See more details below.
 Send bitrate metrics data by type of PID's (audio, video, subtitles, PSI, etc.)
 See more details below.
 
-include::{docdir}/opt/group-influx.adoc[tags=!*]
+include::{docdir}/opt/group-influx.adoc[tags=!*;short]
 include::{docdir}/opt/group-common-plugins.adoc[tags=!*]
 
 ==== Building Flux queries for Grafana

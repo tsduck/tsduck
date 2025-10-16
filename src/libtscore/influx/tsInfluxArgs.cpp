@@ -14,64 +14,75 @@
 
 
 //----------------------------------------------------------------------------
+// Constructor.
+//----------------------------------------------------------------------------
+
+ts::InfluxArgs::InfluxArgs(bool use_prefix, bool use_short_options) :
+    _use_short_options(use_short_options),
+    _prefix(use_prefix ? u"influx-" : u"")
+{
+}
+
+
+//----------------------------------------------------------------------------
 // Define command line options in an Args.
 //----------------------------------------------------------------------------
 
 void ts::InfluxArgs::defineArgs(Args& args)
 {
-    args.option(u"active-config", 'c', Args::STRING);
+    args.option((_prefix + u"active-config").c_str(), _use_short_options ? 'c' : 0, Args::STRING);
     args.help(u"active-config",
               u"Config name to use in the InfluxDB CLI configurations file. "
               u"By default, use the environment variable INFLUX_ACTIVE_CONFIG, "
               u"then look for the active configuration in the configuration file, "
               u"or the first configuration if none is marked as active.");
 
-    args.option(u"bucket", 'b', Args::STRING);
+    args.option((_prefix + u"bucket").c_str(), _use_short_options ? 'b' : 0, Args::STRING);
     args.help(u"bucket", u"name",
               u"Name of the InfluxDB bucket. "
               u"By default, use the environment variable INFLUX_BUCKET_NAME.");
 
-    args.option(u"bucket-id", 0, Args::STRING);
+    args.option((_prefix + u"bucket-id").c_str(), 0, Args::STRING);
     args.help(u"bucket-id", u"id",
               u"Identifier of the InfluxDB bucket. The 'id' must be a 16-character value. "
               u"By default, use the environment variable INFLUX_BUCKET_ID. "
-              u"Only one of --bucket and --bucket-id shall be specified.");
+              u"Only one of --" + _prefix + u"bucket and --" + _prefix + u"bucket-id shall be specified.");
 
-    args.option(u"configs-path", 0, Args::FILENAME);
+    args.option((_prefix + u"configs-path").c_str(), 0, Args::FILENAME);
     args.help(u"configs-path",
               u"Path to the InfluxDB CLI configurations file. "
               u"By default, use the environment variable INFLUX_CONFIGS_PATH, then $HOME/.influxdbv2/configs.");
 
-    args.option(u"host-url", 'h', Args::STRING);
+    args.option((_prefix + u"host-url").c_str(), _use_short_options ? 'h' : 0, Args::STRING);
     args.help(u"host-url", u"name",
               u"Host name or URL of the InfluxDB server. "
               u"If a host name is used instead of a URL, http: is assumed. "
               u"By default, use the environment variable INFLUX_HOST, then the InfluxDB CLI configuration file.");
 
-    args.option(u"org", 'o', Args::STRING);
+    args.option((_prefix + u"org").c_str(), _use_short_options ? 'o' : 0, Args::STRING);
     args.help(u"org", u"name",
               u"Name of the InfluxDB organization. "
               u"By default, use the environment variable INFLUX_ORG, then the InfluxDB CLI configuration file.");
 
-    args.option(u"org-id", 0, Args::STRING);
+    args.option((_prefix + u"org-id").c_str(), 0, Args::STRING);
     args.help(u"org-id", u"id",
               u"Identifier of the InfluxDB organization. The 'id' must be a 16-character value. "
               u"By default, use the environment variable INFLUX_ORG_ID. "
-              u"Only one of --org and --org-id shall be specified.");
+              u"Only one of --" + _prefix + u"org and --" + _prefix + u"org-id shall be specified.");
 
-    args.option(u"queue-size", 0, Args::POSITIVE);
+    args.option((_prefix + u"queue-size").c_str(), 0, Args::POSITIVE);
     args.help(u"queue-size", u"count",
               u"Maximum number of queued metrics between the plugin thread and the communication thread with InfluxDB. "
               u"On off-line streams which are processed at high speed, increase this value if some metrics are lost. "
               u"The default queue size is " + UString::Decimal(DEFAULT_QUEUE_SIZE) + u" messages.");
 
-    args.option(u"tag", 0, Args::STRING, 0, Args::UNLIMITED_COUNT);
+    args.option((_prefix + u"tag").c_str(), 0, Args::STRING, 0, Args::UNLIMITED_COUNT);
     args.help(u"tag", u"name=value",
               u"Add the specified tag, with the specified value, to all metrics which are sent to InfluxDB. "
               u"This can be used to identify a source of metrics and filter it using InfluxDB queries. "
-              u"Several --tag options may be specified.");
+              u"Several --" + _prefix + u"tag options may be specified.");
 
-    args.option(u"token", 't', Args::STRING);
+    args.option((_prefix + u"token").c_str(), _use_short_options ? 't' : 0, Args::STRING);
     args.help(u"token", u"string",
               u"Token to authenticate InfluxDB requests. "
               u"By default, use the environment variable INFLUX_TOKEN, then the InfluxDB CLI configuration file.");
@@ -87,29 +98,29 @@ bool ts::InfluxArgs::loadArgs(Args& args, bool required)
     bool success = true;
 
     // Get values from the command line.
-    args.getPathValue(config_file, u"configs-path");
-    args.getValue(config_name, u"active-config");
-    args.getValue(host_url, u"host-url");
-    args.getValue(org, u"org");
-    args.getValue(org_id, u"org-id");
-    args.getValue(bucket, u"bucket");
-    args.getValue(bucket_id, u"bucket-id");
-    args.getValue(token, u"token");
-    args.getValues(additional_tags, u"tag");
-    args.getIntValue(queue_size, u"queue-size", DEFAULT_QUEUE_SIZE);
+    args.getPathValue(config_file, (_prefix + u"configs-path").c_str());
+    args.getValue(config_name, (_prefix + u"active-config").c_str());
+    args.getValue(host_url, (_prefix + u"host-url").c_str());
+    args.getValue(org, (_prefix + u"org").c_str());
+    args.getValue(org_id, (_prefix + u"org-id").c_str());
+    args.getValue(bucket, (_prefix + u"bucket").c_str());
+    args.getValue(bucket_id, (_prefix + u"bucket-id").c_str());
+    args.getValue(token, (_prefix + u"token").c_str());
+    args.getValues(additional_tags, (_prefix + u"tag").c_str());
+    args.getIntValue(queue_size, (_prefix + u"queue-size").c_str(), DEFAULT_QUEUE_SIZE);
 
     for (auto& tv : additional_tags) {
         if (!tv.contains(u'=')) {
-            args.error(u"invalid --tag definition '%s', use name=value", tv);
+            args.error(u"invalid --%stag definition '%s', use name=value", _prefix, tv);
             success = false;
         }
     }
     if (!org.empty() && !org_id.empty()) {
-        args.error(u"only one of --org and --org-id shall be specified");
+        args.error(u"only one of --%sorg and --%<sorg-id shall be specified", _prefix);
         success = false;
     }
     if (!bucket.empty() && !bucket_id.empty()) {
-        args.error(u"only one of --bucket and --bucket-id shall be specified");
+        args.error(u"only one of --%sbucket and --%<sbucket-id shall be specified", _prefix);
         success = false;
     }
 
