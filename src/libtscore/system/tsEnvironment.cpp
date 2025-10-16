@@ -28,6 +28,7 @@ bool ts::EnvironmentExists(const UString& name)
     std::array<::WCHAR, 2> unused;
     return ::GetEnvironmentVariableW(name.wc_str(), unused.data(), ::DWORD(unused.size())) != 0;
 #else
+    // Flawfinder: ignore: we get environment on purpose.
     return ::getenv(name.toUTF8().c_str()) != nullptr;
 #endif
 }
@@ -52,6 +53,7 @@ ts::UString ts::GetEnvironment(const UString& name, const UString& def)
     }
     return size <= 0 ? def : UString(value, size);
 #else
+    // Flawfinder: ignore: we get environment on purpose.
     const char* value = ::getenv(name.toUTF8().c_str());
     return value != nullptr ? UString::FromUTF8(value) : def;
 #endif

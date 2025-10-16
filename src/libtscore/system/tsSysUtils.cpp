@@ -126,6 +126,7 @@ fs::path ts::ExecutableFile()
     }
     if (::strchr(exe, '/') != nullptr) {
         // A path is provided, resolve it.
+        // Flawfinder: ignore: false positive, nullptr means allocated by realpath().
         char* path8 = ::realpath(exe, nullptr);
         if (path8 != nullptr) {
             path.assignFromUTF8(path8);

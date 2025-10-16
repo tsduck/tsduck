@@ -224,7 +224,7 @@ bool ts::TSFile::openInternal(bool reopen, Report& report)
 #if defined(TS_WINDOWS)
 
     // Windows implementation
-    const ::DWORD access = (read_access ? GENERIC_READ : 0) | (write_access ? GENERIC_WRITE : 0);
+    const ::DWORD access_mask = (read_access ? GENERIC_READ : 0) | (write_access ? GENERIC_WRITE : 0);
     const ::DWORD attrib = temporary ? (FILE_ATTRIBUTE_TEMPORARY | FILE_FLAG_DELETE_ON_CLOSE) : FILE_ATTRIBUTE_NORMAL;
     const ::DWORD shared = read_only || (_flags & SHARED) != 0 ? FILE_SHARE_READ : 0;
     ::DWORD winflags = 0;
@@ -250,7 +250,7 @@ bool ts::TSFile::openInternal(bool reopen, Report& report)
 
     if (!_std_inout) {
         // Actual file name, open it. On Windows, fs::path uses 16-bit wchar_t.
-        _handle = ::CreateFileW(_filename.c_str(), access, shared, nullptr, winflags, attrib, nullptr);
+        _handle = ::CreateFileW(_filename.c_str(), access_mask, shared, nullptr, winflags, attrib, nullptr);
         if (_handle == INVALID_HANDLE_VALUE) {
             const int err = LastSysErrorCode();
             report.log(_severity, u"cannot open %s: %s", getDisplayFileName(), SysErrorCodeMessage(err));

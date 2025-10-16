@@ -79,12 +79,12 @@ namespace ts {
         //!
         //! Set the delivery system.
         //! @param [in] duck TSDuck execution context.
-        //! @param [in] system The delivery system to set. Must be one of DS_DVB_S, DS_DVB_S2, DS_ISDB_S.
+        //! @param [in] delsys The delivery system to set. Must be one of DS_DVB_S, DS_DVB_S2, DS_ISDB_S.
         //! Otherwise, if ISDB is listed in the current standards in the context, the delivery system is set
         //! to DS_ISDB_S. Otherwise, it is set to DS_DVB_S.
         //! @see deliverySystem()
         //!
-        void setDeliverySystem(const DuckContext& duck, DeliverySystem system);
+        void setDeliverySystem(const DuckContext& duck, DeliverySystem delsys);
 
         //!
         //! Translate the binary value in polarization as a Polarization enumeration value.

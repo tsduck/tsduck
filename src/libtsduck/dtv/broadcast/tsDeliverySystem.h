@@ -121,33 +121,33 @@ namespace ts {
 
     //!
     //! Get the tuner type of a delivery system.
-    //! @param [in] system Delivery system.
+    //! @param [in] delsys Delivery system.
     //! @return Corresponding tuner type or DS_UNDEFINED if there is no corresponding tuner type.
     //!
-    TSDUCKDLL TunerType TunerTypeOf(DeliverySystem system);
+    TSDUCKDLL TunerType TunerTypeOf(DeliverySystem delsys);
 
     //!
     //! Get the list of standards for a delivery system.
-    //! @param [in] system Delivery system.
+    //! @param [in] delsys Delivery system.
     //! @return Corresponding standards.
     //!
-    TSDUCKDLL Standards StandardsOf(DeliverySystem system);
+    TSDUCKDLL Standards StandardsOf(DeliverySystem delsys);
 
     //!
     //! Check if a delivery system is a satellite one.
     //! This can be used to check if dish manipulations are required.
-    //! @param [in] sys The delivery system to check.
+    //! @param [in] delsys The delivery system to check.
     //! @return True if @a sys is a satellite system, false otherwise.
     //!
-    TSDUCKDLL bool IsSatelliteDelivery(DeliverySystem sys);
+    TSDUCKDLL bool IsSatelliteDelivery(DeliverySystem delsys);
 
     //!
     //! Check if a delivery system is a terrestrial one.
     //! This can be used to validate the use of UHD and VHF bands.
-    //! @param [in] sys The delivery system to check.
+    //! @param [in] delsys The delivery system to check.
     //! @return True if @a sys is a terrestrial system, false otherwise.
     //!
-    TSDUCKDLL bool IsTerrestrialDelivery(DeliverySystem sys);
+    TSDUCKDLL bool IsTerrestrialDelivery(DeliverySystem delsys);
 
     //!
     //! An ordered list of delivery system values (ts::DeliverySystem).

@@ -610,6 +610,7 @@ std::istream& ts::Section::read(std::istream& strm, CRC32::Validation crc_op, Re
         // Section fully read
         reload(secdata, PID_NULL, crc_op);
         if (!isValid()) {
+            // Flawfinder: ignore: completely fooled here, std::ostream::setstate has nothing to do with PRNG.
             strm.setstate(std::ios::failbit);
             report.error(u"invalid section%s", UString::AfterBytes(position));
         }

@@ -422,6 +422,7 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
 
         // Execute the command if there was no prior error.
         if (message == nullptr) {
+            // Flawfinder: ignore: we create a process on purpose.
             ::execl(TS_SHELL_STRING, TS_SHELL_STRING, "-c", command.toUTF8().c_str(), nullptr);
             // Should not return, so this is an error if we get there.
             error = errno;

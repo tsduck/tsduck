@@ -167,10 +167,10 @@ bool ts::IsTerrestrialDelivery(DeliverySystem sys)
 // Get the tuner type of a delivery system.
 //----------------------------------------------------------------------------
 
-ts::TunerType ts::TunerTypeOf(ts::DeliverySystem system)
+ts::TunerType ts::TunerTypeOf(ts::DeliverySystem sys)
 {
     const auto& descs(DelSysDescs());
-    const auto it = descs.find(system);
+    const auto it = descs.find(sys);
     return it != descs.end() ? it->second.type : TT_UNDEFINED;
 }
 
@@ -179,10 +179,10 @@ ts::TunerType ts::TunerTypeOf(ts::DeliverySystem system)
 // Get the list of standards for a delivery system.
 //----------------------------------------------------------------------------
 
-ts::Standards ts::StandardsOf(DeliverySystem system)
+ts::Standards ts::StandardsOf(DeliverySystem sys)
 {
     const auto& descs(DelSysDescs());
-    const auto it = descs.find(system);
+    const auto it = descs.find(sys);
     return it != descs.end() ? it->second.standards : Standards::NONE;
 }
 

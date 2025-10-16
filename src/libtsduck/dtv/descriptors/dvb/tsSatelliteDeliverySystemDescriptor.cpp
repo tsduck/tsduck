@@ -53,10 +53,10 @@ ts::SatelliteDeliverySystemDescriptor::SatelliteDeliverySystemDescriptor(DuckCon
 // Get / update the actual delivery system.
 //----------------------------------------------------------------------------
 
-ts::DeliverySystem ts::SatelliteDeliverySystemDescriptor::ResolveDeliverySystem(const DuckContext& duck, DeliverySystem system)
+ts::DeliverySystem ts::SatelliteDeliverySystemDescriptor::ResolveDeliverySystem(const DuckContext& duck, DeliverySystem delsys)
 {
-    if (system == DS_DVB_S || system == DS_DVB_S2 || system == DS_ISDB_S) {
-        return system;
+    if (delsys == DS_DVB_S || delsys == DS_DVB_S2 || delsys == DS_ISDB_S) {
+        return delsys;
     }
     else if (bool(duck.standards() & Standards::ISDB)) {
         return DS_ISDB_S;

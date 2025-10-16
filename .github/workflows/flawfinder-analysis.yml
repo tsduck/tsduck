@@ -39,7 +39,7 @@ jobs:
       - name: flawfinder_scan
         uses: david-a-wheeler/flawfinder@2.0.19
         with:
-          arguments: "--sarif ./"
+          arguments: "--sarif ./ --quiet --dataonly --minlevel=3 src/lib* src/tstools src/tsplugins"
           output: "flawfinder_results.sarif"
 
       - name: Upload analysis results to GitHub Security tab

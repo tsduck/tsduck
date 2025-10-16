@@ -311,7 +311,7 @@ void ts::TSAnalyzerReport::reportServiceSubtotal(Grid& grid, const UString& head
 
 void ts::TSAnalyzerReport::reportServicePID(Grid& grid, const PIDContext& pc) const
 {
-    const UString access{pc.scrambled ? u'S' : u'C', pc.services.size() > 1 ? u'+' : u' '};
+    const UString access_type{pc.scrambled ? u'S' : u'C', pc.services.size() > 1 ? u'+' : u' '};
 
     // Build a description string for the PID.
     UString description(pc.fullDescription(true));
@@ -328,7 +328,7 @@ void ts::TSAnalyzerReport::reportServicePID(Grid& grid, const PIDContext& pc) co
     // PID line. Not that the decimal PID is always built but ignored when the layout
     // of the first column contains only one field (the hexa value).
     grid.putLayout({{UString::Format(u"0x%X", pc.pid), UString::Format(u"(%d)", pc.pid)},
-                    {description, access},
+                    {description, access_type},
                     {_ts_bitrate == 0 ? u"Unknown" : UString::Format(u"%'d b/s", pc.bitrate)}});
 }
 

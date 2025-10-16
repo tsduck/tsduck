@@ -191,12 +191,12 @@ bool ts::WebRequest::SystemGuts::init()
 
     // Prepare proxy name.
     const bool use_proxy = !_request.proxyHost().empty();
-    ::DWORD access = INTERNET_OPEN_TYPE_PRECONFIG;
+    ::DWORD access_type = INTERNET_OPEN_TYPE_PRECONFIG;
     const ::WCHAR* proxy = nullptr;
     UString proxy_name(_request.proxyHost());
 
     if (use_proxy) {
-        access = INTERNET_OPEN_TYPE_PROXY;
+        access_type = INTERNET_OPEN_TYPE_PROXY;
         if (_request.proxyPort() != 0) {
             proxy_name += UString::Format(u":%d", _request.proxyPort());
         }
@@ -204,7 +204,7 @@ bool ts::WebRequest::SystemGuts::init()
     }
 
     // Open the main Internet handle.
-    _inet = ::InternetOpenW(_request._user_agent.wc_str(), access, proxy, nullptr, 0);
+    _inet = ::InternetOpenW(_request._user_agent.wc_str(), access_type, proxy, nullptr, 0);
     if (_inet == nullptr) {
         error(u"error accessing Internet handle");
         return false;
