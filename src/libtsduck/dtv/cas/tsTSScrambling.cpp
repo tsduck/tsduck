@@ -79,6 +79,14 @@ bool ts::TSScrambling::setScramblingType(uint8_t scrambling, bool overrideExplic
                 _scrambler[0] = &_aesctr[0];
                 _scrambler[1] = &_aesctr[1];
                 break;
+            case SCRAMBLING_DUCK_SM4_ECB:
+                _scrambler[0] = &_sm4ecb[0];
+                _scrambler[1] = &_sm4ecb[1];
+                break;
+            case SCRAMBLING_DUCK_SM4_CBC:
+                _scrambler[0] = &_sm4cbc[0];
+                _scrambler[1] = &_sm4cbc[1];
+                break;
             default:
                 // Fallback to DVB-CSA2 if no scrambler was previously defined.
                 if (_scrambler[0] == nullptr || _scrambler[1] == nullptr) {
@@ -125,6 +133,26 @@ ts::DVBCSA2::EntropyMode ts::TSScrambling::entropyMode() const
 
 void ts::TSScrambling::defineArgs(Args &args)
 {
+    args.option(u"sm4-cbc");
+    args.help(u"sm4-cbc",
+              u"Use SM4-CBC scrambling instead of DVB-CSA2 (the default). "
+              u"The control words are 16-byte long instead of 8-byte. "
+              u"The residue is left clear. "
+              u"Specify a fixed initialization vector using the --iv option.\n\n"
+              u"Note that this is a non-standard TS scrambling mode. "
+              u"The TSDuck scrambler automatically sets the scrambling_descriptor with "
+              u"user-defined value " + UString::Hexa(uint8_t(SCRAMBLING_DUCK_SM4_CBC)) + u".");
+
+    args.option(u"sm4-ecb");
+    args.help(u"sm4-ecb",
+              u"Use SM4-ECB scrambling instead of DVB-CSA2 (the default). "
+              u"The control words are 16-byte long instead of 8-byte. "
+              u"The residue is left clear. "
+              u"Specify a fixed initialization vector using the --iv option.\n\n"
+              u"Note that this is a non-standard TS scrambling mode. "
+              u"The TSDuck scrambler automatically sets the scrambling_descriptor with "
+              u"user-defined value " + UString::Hexa(uint8_t(SCRAMBLING_DUCK_SM4_ECB)) + u".");
+
     args.option(u"aes-cbc");
     args.help(u"aes-cbc",
               u"Use AES-CBC scrambling instead of DVB-CSA2 (the default). "
@@ -215,11 +243,13 @@ bool ts::TSScrambling::loadArgs(DuckContext& duck, Args& args)
         args.present(u"dvb-cissa") +
         args.present(u"dvb-csa2") +
         args.present(u"aes-cbc") +
-        args.present(u"aes-ctr");
+        args.present(u"aes-ctr") +
+        args.present(u"sm4-ecb") +
+        args.present(u"sm4-cbc");
 
     // Set the scrambler to use.
     if (algo_count > 1) {
-        args.error(u"--atis-idsa, --dvb-cissa, --dvb-csa2, --aes-cbc, --aes-ctr are mutually exclusive");
+        args.error(u"--atis-idsa, --dvb-cissa, --dvb-csa2, --aes-cbc, --aes-ctr, --sm4-ecb, --sm4-cbc are mutually exclusive");
     }
     else if (args.present(u"atis-idsa")) {
         setScramblingType(SCRAMBLING_ATIS_IIF_IDSA);
@@ -232,6 +262,12 @@ bool ts::TSScrambling::loadArgs(DuckContext& duck, Args& args)
     }
     else if (args.present(u"aes-ctr")) {
         setScramblingType(SCRAMBLING_DUCK_AES_CTR);
+    }
+    else if (args.present(u"sm4-ecb")) {
+        setScramblingType(SCRAMBLING_DUCK_SM4_ECB);
+    }
+    else if (args.present(u"sm4-cbc")) {
+        setScramblingType(SCRAMBLING_DUCK_SM4_CBC);
     }
     else {
         setScramblingType(SCRAMBLING_DVB_CSA2);
@@ -249,7 +285,9 @@ bool ts::TSScrambling::loadArgs(DuckContext& duck, Args& args)
     if (!_aescbc[0].setIV(iv.data(), iv.size()) ||
         !_aescbc[1].setIV(iv.data(), iv.size()) ||
         !_aesctr[0].setIV(iv.data(), iv.size()) ||
-        !_aesctr[1].setIV(iv.data(), iv.size()))
+        !_aesctr[1].setIV(iv.data(), iv.size()) ||
+        !_sm4cbc[0].setIV(iv.data(), iv.size()) ||
+        !_sm4cbc[1].setIV(iv.data(), iv.size()))
     {
         args.error(u"error setting AES initialization vector");
     }

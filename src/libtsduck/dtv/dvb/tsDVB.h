@@ -106,6 +106,8 @@ namespace ts {
         SCRAMBLING_USER_MIN      = 0x80, //!< First user-defined value.
         SCRAMBLING_DUCK_AES_CBC  = 0xF0, //!< TSDuck-defined value, AES-128-CBC (with externally-defined IV).
         SCRAMBLING_DUCK_AES_CTR  = 0xF1, //!< TSDuck-defined value, AES-128-CTR (with externally-defined IV).
+        SCRAMBLING_DUCK_SM4_ECB  = 0xF2, //!< TSDuck-defined value, SM4-128-ECB (without externally-defined IV).
+        SCRAMBLING_DUCK_SM4_CBC  = 0xF3, //!< TSDuck-defined value, SM4-128-CBC (with externally-defined IV).
         SCRAMBLING_USER_MAX      = 0xFE, //!< Last user-defined value.
         SCRAMBLING_RESERVED      = 0xFF, //!< Reserved value.
     };
