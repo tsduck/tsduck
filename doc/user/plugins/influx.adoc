@@ -38,7 +38,7 @@ $ tsp -P influx [options]
 ----
 
 [.usage]
-Timing options
+General options
 
 [.opt]
 *-i* _seconds_ +
@@ -51,44 +51,11 @@ Interval in seconds between metrics reports to InfluxDB.
 The default is 5 seconds. This is usually the minimal update interval in Grafana.
 
 [.opt]
-*--local-time*
-
-[.optdoc]
-Transmit timestamps as local time, based on the current system configuration.
-
-[.optdoc]
-By default, timestamps are transmitted as UTC time.
-
-[.opt]
 *--max-metrics* _count_
 
 [.optdoc]
 Terminate `tsp` after sending the specified number of metrics.
 This is a test option. The processing is never stopped by default.
-
-[.opt]
-*--pcr-based*
-
-[.optdoc]
-Use playout time based on PCR values.
-By default, the time is based on the wall-clock time (real time).
-
-[.opt]
-*--start-time* _year/month/day:hour:minute:second_
-
-[.optdoc]
-With `--pcr-based` or `--timestamp-based`, specify the initial date and time reference.
-
-[.optdoc]
-By default, with `--pcr-based` or `--timestamp-based`, the activity starts at the first UTC time which is found in a DVB TDT or ATSC STT.
-
-[.opt]
-*--timestamp-based*
-
-[.optdoc]
-Use playout time based on timestamp values from the input plugin.
-When input timestamps are not available or not monotonic, fallback to `--pcr-based`.
-By default, the time is based on the wall-clock time (real time).
 
 [.usage]
 Monitored information options
@@ -205,6 +172,7 @@ See more details below.
 Send bitrate metrics data by type of PID's (audio, video, subtitles, PSI, etc.)
 See more details below.
 
+include::{docdir}/opt/group-clock.adoc[tags=!*]
 include::{docdir}/opt/group-influx.adoc[tags=!*;short]
 include::{docdir}/opt/group-common-plugins.adoc[tags=!*]
 

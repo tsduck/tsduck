@@ -31,59 +31,59 @@ ts::InfluxArgs::InfluxArgs(bool use_prefix, bool use_short_options) :
 void ts::InfluxArgs::defineArgs(Args& args)
 {
     args.option((_prefix + u"active-config").c_str(), _use_short_options ? 'c' : 0, Args::STRING);
-    args.help(u"active-config",
+    args.help((_prefix + u"active-config").c_str(),
               u"Config name to use in the InfluxDB CLI configurations file. "
               u"By default, use the environment variable INFLUX_ACTIVE_CONFIG, "
               u"then look for the active configuration in the configuration file, "
               u"or the first configuration if none is marked as active.");
 
     args.option((_prefix + u"bucket").c_str(), _use_short_options ? 'b' : 0, Args::STRING);
-    args.help(u"bucket", u"name",
+    args.help((_prefix + u"bucket").c_str(), u"name",
               u"Name of the InfluxDB bucket. "
               u"By default, use the environment variable INFLUX_BUCKET_NAME.");
 
     args.option((_prefix + u"bucket-id").c_str(), 0, Args::STRING);
-    args.help(u"bucket-id", u"id",
+    args.help((_prefix + u"bucket-id").c_str(), u"id",
               u"Identifier of the InfluxDB bucket. The 'id' must be a 16-character value. "
               u"By default, use the environment variable INFLUX_BUCKET_ID. "
               u"Only one of --" + _prefix + u"bucket and --" + _prefix + u"bucket-id shall be specified.");
 
     args.option((_prefix + u"configs-path").c_str(), 0, Args::FILENAME);
-    args.help(u"configs-path",
+    args.help((_prefix + u"configs-path").c_str(),
               u"Path to the InfluxDB CLI configurations file. "
               u"By default, use the environment variable INFLUX_CONFIGS_PATH, then $HOME/.influxdbv2/configs.");
 
     args.option((_prefix + u"host-url").c_str(), _use_short_options ? 'h' : 0, Args::STRING);
-    args.help(u"host-url", u"name",
+    args.help((_prefix + u"host-url").c_str(), u"name",
               u"Host name or URL of the InfluxDB server. "
               u"If a host name is used instead of a URL, http: is assumed. "
               u"By default, use the environment variable INFLUX_HOST, then the InfluxDB CLI configuration file.");
 
     args.option((_prefix + u"org").c_str(), _use_short_options ? 'o' : 0, Args::STRING);
-    args.help(u"org", u"name",
+    args.help((_prefix + u"org").c_str(), u"name",
               u"Name of the InfluxDB organization. "
               u"By default, use the environment variable INFLUX_ORG, then the InfluxDB CLI configuration file.");
 
     args.option((_prefix + u"org-id").c_str(), 0, Args::STRING);
-    args.help(u"org-id", u"id",
+    args.help((_prefix + u"org-id").c_str(), u"id",
               u"Identifier of the InfluxDB organization. The 'id' must be a 16-character value. "
               u"By default, use the environment variable INFLUX_ORG_ID. "
               u"Only one of --" + _prefix + u"org and --" + _prefix + u"org-id shall be specified.");
 
     args.option((_prefix + u"queue-size").c_str(), 0, Args::POSITIVE);
-    args.help(u"queue-size", u"count",
+    args.help((_prefix + u"queue-size").c_str(), u"count",
               u"Maximum number of queued metrics between the plugin thread and the communication thread with InfluxDB. "
               u"On off-line streams which are processed at high speed, increase this value if some metrics are lost. "
               u"The default queue size is " + UString::Decimal(DEFAULT_QUEUE_SIZE) + u" messages.");
 
     args.option((_prefix + u"tag").c_str(), 0, Args::STRING, 0, Args::UNLIMITED_COUNT);
-    args.help(u"tag", u"name=value",
+    args.help((_prefix + u"tag").c_str(), u"name=value",
               u"Add the specified tag, with the specified value, to all metrics which are sent to InfluxDB. "
               u"This can be used to identify a source of metrics and filter it using InfluxDB queries. "
               u"Several --" + _prefix + u"tag options may be specified.");
 
     args.option((_prefix + u"token").c_str(), _use_short_options ? 't' : 0, Args::STRING);
-    args.help(u"token", u"string",
+    args.help((_prefix + u"token").c_str(), u"string",
               u"Token to authenticate InfluxDB requests. "
               u"By default, use the environment variable INFLUX_TOKEN, then the InfluxDB CLI configuration file.");
 }

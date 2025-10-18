@@ -13,7 +13,7 @@
 
 There are several sources of cybersecurity issues:
 
-[compact-list]
+[.compact-list]
 * Software bugs, when they are turned into security vulnerabilities by attackers.
 * Careless and dangerous features.
 * Lousy user configurations.
@@ -199,7 +199,7 @@ On Windows, the self-signed certificates are stored either in the current user e
 or in a system-wide environment.
 These environments are accessible from PowerShell using the following virtual locations:
 
-[compact-list]
+[.compact-list]
 * User: `Cert:\CurrentUser\My`
 * System: `Cert:\LocalMachine\My`
 

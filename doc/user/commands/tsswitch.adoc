@@ -80,7 +80,7 @@ A command is an ASCII string.
 
 The command string can be one of:
 
-[compact-list]
+[.compact-list]
 * An input index (e.g. `0`, `1`, `2`, etc.)
   Upon reception, `tsswitch` immediately switches to the selected input plugin.
 * Strings `next` and `previous` (or `prev`) to switch to the next and previous input, respectively.

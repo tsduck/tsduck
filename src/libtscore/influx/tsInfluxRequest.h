@@ -14,6 +14,7 @@
 #pragma once
 #include "tsWebRequest.h"
 #include "tsInfluxArgs.h"
+#include "tsTime.h"
 
 namespace ts {
     //!
@@ -42,20 +43,9 @@ namespace ts {
 
         //!
         //! Start building a request to the InfluxDB server.
-        //! @param [in] timestamp Value of the timestamp for that request, in cn::duration format.
-        //!
-        template <class Rep, class Period>
-        void start(const cn::duration<Rep, Period>& timestamp)
-        {
-            start(timestamp.count(), UString::ChronoUnit<cn::duration<Rep, Period>>(true));
-        }
-
-        //!
-        //! Start building a request to the InfluxDB server.
         //! @param [in] timestamp Value of the timestamp for that request.
-        //! @param [in] precision Precision of timestamps. Must be one of "s", "ms", "us", "ns".
         //!
-        void start(std::intmax_t timestamp, const UString& precision);
+        void start(Time timestamp);
 
         //!
         //! Add a line in the request being built.

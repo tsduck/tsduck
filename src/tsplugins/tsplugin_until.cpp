@@ -12,7 +12,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsPluginRepository.h"
-#include "tsDurationAnalyzer.h"
+#include "tsTSClock.h"
 #include "tsTime.h"
 
 
@@ -33,22 +33,19 @@ namespace ts {
     private:
         // Command line options:
         bool             _exclude_last = false;
-        bool             _pcr_based = false;
-        bool             _timestamp_based = false;
         PacketCounter    _packet_max = 0;
         PacketCounter    _unit_start_max = 0;
         PacketCounter    _null_seq_max = 0;
         cn::milliseconds _msec_max {};
-        PCR              _pcr_max {};
+        TSClockArgs      _ts_clock_args {};
 
         // Working data:
         PacketCounter    _unit_start_cnt = 0;       // Payload unit start counter
         PacketCounter    _null_seq_cnt = 0;         // Sequence of null packets counter
-        Time             _start_time {};            // Time of first packet reception
         PID              _previous_pid = PID_NULL;  // PID of previous packet
         bool             _terminated = false;       // Final condition is met
         bool             _transparent = false;      // Pass all packets, no longer check conditions
-        DurationAnalyzer _ts_clock {*this};         // Compute playout time based on PCR
+        TSClock          _ts_clock {duck};          // Compute playout time
     };
 }
 
@@ -116,8 +113,8 @@ ts::UntilPlugin::UntilPlugin (TSP* tsp_) :
 bool ts::UntilPlugin::getOptions()
 {
     _exclude_last = present(u"exclude-last");
-    _pcr_based = present(u"pcr-based");
-    _timestamp_based = present(u"timestamp-based");
+    _ts_clock_args.pcr_based = present(u"pcr-based");
+    _ts_clock_args.timestamp_based = present(u"timestamp-based");
     getIntValue(_unit_start_max, u"unit-start-count");
     getIntValue(_null_seq_max, u"null-sequence-count");
     getIntValue(_packet_max, u"packets", (intValue<PacketCounter>(u"bytes") + PKT_SIZE - 1) / PKT_SIZE);
@@ -125,7 +122,6 @@ bool ts::UntilPlugin::getOptions()
     getChronoValue(sec, u"seconds");
     getChronoValue(msec, u"milli-seconds");
     _msec_max = std::max(sec, msec);
-    _pcr_max = cn::duration_cast<PCR>(_msec_max);
     tsp->useJointTermination(present(u"joint-termination"));
     return true;
 }
@@ -142,8 +138,7 @@ bool ts::UntilPlugin::start()
     _previous_pid = PID_MAX; // Invalid value
     _terminated = false;
     _transparent = false;
-    _ts_clock.reset();
-    _ts_clock.useInputTimestamps(_timestamp_based);
+    _ts_clock.reset(_ts_clock_args);
     return true;
 }
 
@@ -171,13 +166,8 @@ ts::ProcessorPlugin::Status ts::UntilPlugin::processPacket(TSPacket& pkt, TSPack
         }
     }
 
-    // Compute PCR-based time. Record time of first packet.
-    if (_pcr_based || _timestamp_based) {
-        _ts_clock.feedPacket(pkt, pkt_data);
-    }
-    else if (tsp->pluginPackets() == 0) {
-        _start_time = Time::CurrentUTC();
-    }
+    // Compute time.
+    _ts_clock.feedPacket(pkt, pkt_data);
 
     // Update context information.
     if (pkt.getPID() == PID_NULL && _previous_pid != PID_NULL) {
@@ -190,16 +180,8 @@ ts::ProcessorPlugin::Status ts::UntilPlugin::processPacket(TSPacket& pkt, TSPack
     // Check if the packet matches one of the selected conditions.
     _terminated = (_packet_max > 0 && tsp->pluginPackets() + 1 >= _packet_max) ||
                   (_null_seq_max > 0 && _null_seq_cnt >= _null_seq_max) ||
-                  (_unit_start_max > 0 && _unit_start_cnt >= _unit_start_max);
-
-    if (!_terminated && _msec_max > cn::milliseconds::zero()) {
-        if (_pcr_based || _timestamp_based) {
-            _terminated = _ts_clock.duration() >= _pcr_max;
-        }
-        else {
-            _terminated = Time::CurrentUTC() >= _start_time + _msec_max;
-        }
-    }
+                  (_unit_start_max > 0 && _unit_start_cnt >= _unit_start_max) ||
+                  (_msec_max > cn::milliseconds::zero() && _ts_clock.durationMS() >= _msec_max);
 
     // Update context information for next packet.
     _previous_pid = pkt.getPID();

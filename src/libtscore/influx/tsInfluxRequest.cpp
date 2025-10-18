@@ -38,10 +38,12 @@ ts::InfluxRequest::~InfluxRequest()
 // Start building a request to the InfluxDB server.
 //----------------------------------------------------------------------------
 
-void ts::InfluxRequest::start(std::intmax_t timestamp, const UString& precision)
+void ts::InfluxRequest::start(Time timestamp)
 {
-    _timestamp = timestamp;
-    _precision = precision;
+    // Convert timestamp in milliseconds since Unix Epoch for InfluxDB server.
+    const auto duration = timestamp - Time::UnixEpoch;
+    _timestamp = duration.count();
+    _precision = UString::ChronoUnit<decltype(duration)>(true);
     _builder.clear();
 }
 
