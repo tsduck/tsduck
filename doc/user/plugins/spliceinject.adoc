@@ -31,7 +31,7 @@ There are roughly two classes of splice events:
 
 * Non-immediate `splice_insert()` and `time_signal()` commands.
   These commands contain a specific PTS value for the event.
-  This PTS refers to a time stamp in the video and audio PID's of the service.
+  This PTS refers to a timestamp in the video and audio PID's of the service.
 * Everything else.
 
 Any splice command in the "everything else" category is injected as soon as possible after reception.

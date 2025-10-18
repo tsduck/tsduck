@@ -19,7 +19,7 @@ TS_REGISTER_INPUT_PLUGIN(u"ip", ts::IPInputPlugin);
 
 ts::IPInputPlugin::IPInputPlugin(TSP* tsp_) :
     AbstractDatagramInputPlugin(tsp_, IP_MAX_PACKET_SIZE, u"Receive TS packets from UDP/IP, multicast or unicast", u"[options] [address:]port",
-                                u"kernel", u"A kernel-provided time-stamp for the packet, when available (Linux only)",
+                                u"kernel", u"A kernel-provided timestamp for the packet, when available (Linux only)",
                                 TSDatagramInputOptions::REAL_TIME | TSDatagramInputOptions::ALLOW_RS204)
 {
     // Add UDP receiver common options.

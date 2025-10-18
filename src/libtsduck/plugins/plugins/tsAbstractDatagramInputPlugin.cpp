@@ -65,13 +65,13 @@ ts::AbstractDatagramInputPlugin::AbstractDatagramInputPlugin(TSP* tsp_,
 
     option(u"timestamp-priority", 0, _time_priority_enum);
     help(u"timestamp-priority", u"name",
-         u"Specify how the input time-stamp of each packet is computed. "
-         u"The name specifies an ordered list. The first available time-stamp value is used as input time-stamp. "
-         u"The possible time-stamp sources are:\n"
+         u"Specify how the input timestamp of each packet is computed. "
+         u"The name specifies an ordered list. The first available timestamp value is used as input timestamp. "
+         u"The possible timestamp sources are:\n"
          u"- rtp : The RTP time stamp, when the UDP packet is an RTP packet.\n" +
          system_help +
-         u"- tsp : A software time-stamp, provided by tsp when the input plugin returns a chunk of packets.\n"
-         u"The tsp-provided time-stamp is always available, always comes last and is less precise. "
+         u"- tsp : A software timestamp, provided by tsp when the input plugin returns a chunk of packets.\n"
+         u"The tsp-provided timestamp is always available, always comes last and is less precise. "
          u"The default is " + _time_priority_enum.name(_default_time_priority) + u".");
 }
 

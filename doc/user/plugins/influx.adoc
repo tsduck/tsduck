@@ -185,7 +185,7 @@ The provided information shall be used to build Flux queries.
 
 At each specified interval (option `--interval`), this plugin sends a list of metrics entries.
 
-A time stamp is always provided with each data entry.
+A timestamp is always provided with each data entry.
 Depending on the plugin options, this can be a local time or a UTC time,
 a wall-clock time or a time which is extracted from the stream.
 

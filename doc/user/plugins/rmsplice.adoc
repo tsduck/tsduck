@@ -70,7 +70,7 @@ Options
 *--adjust-time*
 
 [.optdoc]
-Adjust all time stamps (PCR, OPCR, PTS and DTS) after removing splice-out / splice-in sequences.
+Adjust all timestamps (PCR, OPCR, PTS and DTS) after removing splice-out / splice-in sequences.
 This can be necessary to improve the video transition.
 
 [.opt]

@@ -12,7 +12,7 @@
 [.cmd-header]
 Resynchronize the clock of a service based on another service
 
-This plugin resynchronizes time stamps (PCR, PTS, DTS) of a target service based on the reference clock of another service.
+This plugin resynchronizes timestamps (PCR, PTS, DTS) of a target service based on the reference clock of another service.
 The two services then share the same time reference and it is possible, for instance,
 to migrate a component from one service to the other using subsequent manipulations of the two PMT's.
 

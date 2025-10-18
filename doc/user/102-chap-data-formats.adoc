@@ -90,17 +90,17 @@ endif::[]
 
 |M2TS
 |Blu-ray compatible format. Also found in recording files from some DVR devices.
- This is the same as TS format, except that each 188-byte TS packet is preceded by a 4-byte time stamp.
+ This is the same as TS format, except that each 188-byte TS packet is preceded by a 4-byte timestamp.
  The 2 most significant bits are copy control indicators and are ignored.
- The 30 least significant bits represent a time stamp in 27 MHz unit (same unit as PCR values).
- Note that those time stamps wrap up every 39 seconds approximately since they use only 30 bits
+ The 30 least significant bits represent a timestamp in 27 MHz unit (same unit as PCR values).
+ Note that those timestamps wrap up every 39 seconds approximately since they use only 30 bits
  while full PCR values use 42 bits.
 
 |duck
 |This is a TSDuck proprietary format.
  It is similar to M2TS except that the header before each TS packet uses 14 bytes and contains all packet metada.
  Since this is a TSDuck proprietary format, it can be used only in pipes between instances of tsp.
- The only advantage of this format is to transport complete original time stamps,
+ The only advantage of this format is to transport complete original timestamps,
  packet labels and other metadata between instances of `tsp`.
  Note that 16-byte trailers from `RS204` input files are lost.
 |===

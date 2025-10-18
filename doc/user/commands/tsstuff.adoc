@@ -14,7 +14,7 @@ Add stuffing to a TS file to reach a target bitrate
 
 This utility adds stuffing packets to a TS file to reach a target bitrate.
 Time stamps (PCR or DTS) are extracted from one reference PID in the input file and
-stuffing packets are added so that the time stamps are approximately synchronized with the TS target bitrate.
+stuffing packets are added so that the timestamps are approximately synchronized with the TS target bitrate.
 
 [.usage]
 Usage
@@ -57,7 +57,7 @@ This is mandatory parameter, there is no default.
 
 [.optdoc]
 Input buffer size, in bytes.
-Must be large enough to always contain two time stamps in the reference PID.
+Must be large enough to always contain two timestamps in the reference PID.
 The default is 4,194,304 bytes (4 MB).
 
 [.opt]
@@ -73,16 +73,16 @@ The default is to use Program Clock References (PCR) instead of DTS.
 *--final-inter-packet* _value_
 
 [.optdoc]
-Number of stuffing packets to add between input packets after the last time stamp (PCR or DTS).
-By default, use the same number as in the previous segment, between the last two time stamps.
+Number of stuffing packets to add between input packets after the last timestamp (PCR or DTS).
+By default, use the same number as in the previous segment, between the last two timestamps.
 
 [.opt]
 *-i* _value_ +
 *--initial-inter-packet* _value_
 
 [.optdoc]
-Number of stuffing packets to add between input packets before the first time stamp (PCR or DTS).
-By default, use the same number as in the first segment, between the first two time stamps.
+Number of stuffing packets to add between input packets before the first timestamp (PCR or DTS).
+By default, use the same number as in the first segment, between the first two timestamps.
 
 [.opt]
 *--input-format* _name_
@@ -128,8 +128,8 @@ By default, the format is a standard TS file.
 *--reference-pid* _value_
 
 [.optdoc]
-PID in which to collect time stamps (PCR or DTS) to use as reference for the insertion of stuffing packets.
-By default, use the first PID containing the specified type of time stamps (PCR or DTS).
+PID in which to collect timestamps (PCR or DTS) to use as reference for the insertion of stuffing packets.
+By default, use the first PID containing the specified type of timestamps (PCR or DTS).
 
 [.opt]
 *-t* _value_ +

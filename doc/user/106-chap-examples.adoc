@@ -2873,7 +2873,7 @@ In case of conflict, we use the plugin `remap` to modify PID's or the plugin `sv
 
 SCTE 35 cue information are single-section tables which are sent in one dedicated PID in a service.
 These commands are used to signal video splicing points where alternate content (typically ads) can replace the original video content.
-The video splicing points are defined by PTS (presentation time stamp) values in the video PID of the service.
+The video splicing points are defined by PTS (presentation timestamp) values in the video PID of the service.
 
 Inserting SCTE 35 cue information is consequently different from traditional signalization.
 Each section defines one specific splicing event.

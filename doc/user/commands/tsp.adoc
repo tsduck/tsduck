@@ -111,7 +111,7 @@ Files, on the other hand, have a very high transmission speed, typically the I/O
 maybe 1 Gb/s or more on SSD.
 
 Some plugins explicitly manipulate the rendering or transmission speed.
-The plugin `pcrbitrate`, for instance, is designed to evaluate the rendering speed based on embedded time stamps in the stream.
+The plugin `pcrbitrate`, for instance, is designed to evaluate the rendering speed based on embedded timestamps in the stream.
 The plugin `regulate`, on the other hand, is designed to alter the transmission speed.
 
 Let's review some examples of where these plugins should be used.

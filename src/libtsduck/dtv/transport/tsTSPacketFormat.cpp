@@ -59,7 +59,7 @@ void ts::DefineTSPacketFormatInputOption(Args& args, UChar short_name, const UCh
     args.option(name, short_name, TSPacketFormatInputEnum());
     args.help(name, u"name",
               u"Specify the format of the input TS file. By default, the format is automatically detected. "
-              u"But the auto-detection may fail in some cases (for instance when the first time-stamp of an M2TS file starts with 0x47). "
+              u"But the auto-detection may fail in some cases (for instance when the first timestamp of an M2TS file starts with 0x47). "
               u"Using this option forces a specific format.");
 }
 

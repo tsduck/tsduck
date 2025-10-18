@@ -175,16 +175,16 @@ Useful when the plugin is used several times in the same process.
 *--time-pid* _value_
 
 [.optdoc]
-Specify one video or audio PID containing PTS time stamps to link with SCTE-35 sections to monitor.
+Specify one video or audio PID containing PTS timestamps to link with SCTE-35 sections to monitor.
 
 [.optdoc]
 By default, the PMT's are used to link between PTS PID's and SCTE-35 PID's.
 
 [.opt]
-*--time-stamp*
+*--timestamp*
 
 [.optdoc]
-Add a time stamp (current local time) inside each JSON structure (tables and events).
+Add a timestamp (current local time) inside each JSON structure (tables and events).
 
 [.usage]
 JSON logging options

@@ -72,7 +72,7 @@ Report the statistics in the common transport stream logger, not in a file.
 When used with `--interval` and `--output-file`,
 create a new file for each statistics report instead of rewriting the previous file.
 Assuming that the specified output file name has the form `base.ext`,
-each file is created with a time stamp in its name as `base-YYYYMMDD-hhmmss.ext`.
+each file is created with a timestamp in its name as `base-YYYYMMDD-hhmmss.ext`.
 
 [.opt]
 *-n* +

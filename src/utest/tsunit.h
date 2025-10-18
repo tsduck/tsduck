@@ -764,7 +764,7 @@ void tsunit::Assertions::equalString(const std::basic_string<CHAR>& expected, co
         const std::string details2("actual:   \"" + toUTF8(actual) + "\"");
         std::string details3;
         if (diff < expected.size() && diff < actual.size()) {
-            details3 = "differ at index " + toString(diff) +
+            details3 = "differ at index " + toString(diff) + "/" + toString(actual.size()) +
                 ", expected '" + toUTF8(expected.substr(diff, 1)) +
                 "', actual: '" + toUTF8(actual.substr(diff, 1)) + "'";
         }

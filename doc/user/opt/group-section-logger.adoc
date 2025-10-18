@@ -273,10 +273,10 @@ See also option `--multiple-files`.
 
 [.optdoc]
 Display the time offset from the beginning of the stream with each table.
-This duration is based on PCR and other time stamps in the stream.
+This duration is based on PCR and other timestamps in the stream.
 
 [.optdoc]
-See also option `--time-stamp`.
+See also option `--timestamp`.
 
 [.opt]
 *-f* +
@@ -414,10 +414,10 @@ With `--xml-output`, rewrite the same file with each table.
 The specified file always contains one single table, the latest one.
 
 [.opt]
-*--time-stamp*
+*--timestamp*
 
 [.optdoc]
-Display a time stamp (current local time) with each table.
+Display a timestamp (current local time) with each table.
 
 [.optdoc]
 See also option `--duration`.

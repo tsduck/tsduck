@@ -219,8 +219,9 @@ ts::SpliceMonitorPlugin::SpliceMonitorPlugin(TSP* tsp_) :
          u"Specify one video or audio PID containing PTS time stamps to link with SCTE-35 sections to monitor. "
          u"By default, the PMT's are used to link between PTS PID's and SCTE-35 PID's.");
 
-    option(u"time-stamp");
-    help(u"time-stamp",
+    option(u"timestamp");
+    legacyOption(u"time-stamp", u"timestamp");
+    help(u"timestamp",
          u"Add a time stamp (current local time) inside each JSON structure (tables and events).");
 }
 
@@ -234,7 +235,7 @@ bool ts::SpliceMonitorPlugin::getOptions()
     _json_args.loadArgs(*this);
     _xml_options.setPID = true;
     _xml_options.setPackets = _packet_index = present(u"packet-index");
-    _xml_options.setLocalTime = _time_stamp = present(u"time-stamp");
+    _xml_options.setLocalTime = _time_stamp = present(u"timestamp");
     _xml_options.setSections = present(u"meta-sections");
     _no_adjustment = present(u"no-adjustment");
     getIntValue(_splice_pid, u"splice-pid", PID_NULL);

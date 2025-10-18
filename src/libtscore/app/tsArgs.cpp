@@ -26,12 +26,12 @@
 const ts::Names& ts::Args::HelpFormatEnum()
 {
     static const Names data({
-        {u"name", ts::Args::HELP_NAME},
+        {u"name",        ts::Args::HELP_NAME},
         {u"description", ts::Args::HELP_DESCRIPTION},
-        {u"usage", ts::Args::HELP_USAGE},
-        {u"syntax", ts::Args::HELP_SYNTAX},
-        {u"full", ts::Args::HELP_FULL},
-        {u"options", ts::Args::HELP_OPTIONS},
+        {u"usage",       ts::Args::HELP_USAGE},
+        {u"syntax",      ts::Args::HELP_SYNTAX},
+        {u"full",        ts::Args::HELP_FULL},
+        {u"options",     ts::Args::HELP_OPTIONS},
     });
     return data;
 }
@@ -171,6 +171,7 @@ ts::Args::IOption::IOption(Args*           parent,
     }
 }
 
+// Constructor, enumeration values.
 ts::Args::IOption::IOption(Args*        parent,
                            const UChar* name_,
                            UChar        short_name_,
@@ -196,6 +197,18 @@ ts::Args::IOption::IOption(Args*        parent,
     // Handle invalid values
     if (max_occur < min_occur) {
         parent->fatalArgError(u"invalid occurences for " + display());
+    }
+}
+
+// Constructor, legacy option.
+ts::Args::IOption::IOption(Args* parent, const UChar* name_, const UChar* new_name_) :
+    name(name_ == nullptr ? UString() : name_),
+    new_name(new_name_ == nullptr ? UString() : new_name_),
+    flags(IOPT_NOHELP | IOPT_LEGACY)
+{
+    // Check that the new name exists.
+    if (!parent->_iopts.contains(new_name)) {
+        parent->fatalArgError(u"new name '" + new_name + u"' not found for legacy " + display());
     }
 }
 
@@ -555,16 +568,18 @@ ts::UString ts::Args::formatHelpOptions(size_t line_width) const
     bool titleDone = false;
     for (auto& it : _iopts) {
         const IOption& opt(it.second);
-        if (!text.empty()) {
-            text += LINE_FEED;
+        if ((opt.flags & IOPT_NOHELP) == 0) {
+            if (!text.empty()) {
+                text += LINE_FEED;
+            }
+            // When this is an option, add 'Options:' the first time.
+            if (!titleDone && !opt.name.empty()) {
+                titleDone = true;
+                text += HelpLines(TITLE, u"Options:", line_width);
+                text += LINE_FEED;
+            }
+            text += opt.helpText(line_width);
         }
-        // When this is an option, add 'Options:' the first time.
-        if (!titleDone && !opt.name.empty()) {
-            titleDone = true;
-            text += HelpLines(TITLE, u"Options:", line_width);
-            text += LINE_FEED;
-        }
-        text += opt.helpText(line_width);
     }
 
     // Set final text.
@@ -749,11 +764,14 @@ ts::Args::IOption& ts::Args::getIOption(const UChar* name)
 {
     const UString name1(name == nullptr ? u"" : name);
     auto it = _iopts.find(name1);
-    if (it != _iopts.end()) {
-        return it->second;
+    if (it == _iopts.end()) {
+        fatalArgError(name1, u"undefined");
+    }
+    else if (it->second.flags & IOPT_LEGACY) {
+        return getIOption(it->second.new_name.c_str());
     }
     else {
-        fatalArgError(name1, u"undefined");
+        return it->second;
     }
 }
 
@@ -1118,6 +1136,16 @@ bool ts::Args::analyze(const UString& app_name, const UStringVector& arguments, 
 
         // If IOption found...
         if (opt != nullptr) {
+
+            // Resolve new name for legacy options.
+            while (opt->flags & IOPT_LEGACY) {
+                auto it = _iopts.find(opt->new_name);
+                if (it == _iopts.end()) {
+                    fatalArgError(u"new name '" + opt->new_name + u"' not found for legacy " + opt->display());
+                }
+                opt = &it->second;
+            }
+
             // Get the value string from short option, if present
             if (short_opt_arg != NPOS && opt->type != NONE) {
                 assert(!val.has_value());

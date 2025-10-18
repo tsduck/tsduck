@@ -51,7 +51,7 @@ namespace ts {
         bool           _report_all = false;      // Report packet index and PID of each packet
         bool           _report_summary = false;  // Report summary
         bool           _report_total = false;    // Report total of all PIDs
-        PacketCounter  _report_interval = 0;     // If non-zero, report time-stamp at this packet interval
+        PacketCounter  _report_interval = 0;     // If non-zero, report timestamp at this packet interval
         fs::path       _outfile_name {};         // Output file name.
 
         // Working data:
@@ -94,7 +94,7 @@ ts::CountPlugin::CountPlugin(TSP* tsp_) :
 
     option(u"interval", 'i', UINT32);
     help(u"interval",
-         u"Report a time-stamp and global packet count at regular intervals. The "
+         u"Report a timestamp and global packet count at regular intervals. The "
          u"specified value is a number of packets.");
 
     option(u"negate", 'n');

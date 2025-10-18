@@ -443,6 +443,22 @@ namespace ts {
         }
 
         //!
+        //! Add the definition of a legacy option which has been replaced by a new one.
+        //! The legacy option is accepted on the command line and is equivalent to the new one.
+        //! The legacy option is not documented in the help.
+        //!
+        //! This method is typically invoked in the constructor of a subclass of Args.
+        //! @param [in] name Long name of the legacy option. 0 or "" means a parameter, not an option.
+        //! @param [in] new_name Name of the new option which replaces it.
+        //! @return A reference to this instance.
+        //!
+        Args& legacyOption(const UChar* name, const UChar* new_name)
+        {
+            addOption(IOption(this, name, new_name));
+            return *this;
+        }
+
+        //!
         //! Add the help text of an existing option.
         //!
         //! @param [in] name Long name of option. 0 or "" means a parameter, not an option.
@@ -1261,6 +1277,8 @@ namespace ts {
             IOPT_PREDEFINED    = 0x0001,  // This is a predefined option.
             IOPT_OPTVALUE      = 0x0002,  // Value is optional.
             IOPT_OPTVAL_NOHELP = 0x0004,  // Do not document value in help if it is optional.
+            IOPT_NOHELP        = 0x0008,  // Do not document this option.
+            IOPT_LEGACY        = 0x0010,  // Legacy option, points to a new one.
         };
 
         // For AbstractNumber options, we keep one dummy instance of the actual type as a safe pointer.
@@ -1273,6 +1291,7 @@ namespace ts {
         public:
             UString           name {};         // Long name (u"verbose" for --verbose)
             UChar             short_name = 0;  // Short option name (u'v' for -v), 0 if unused
+            UString           new_name {};     // When non-empty, this option is legacy, equivalent to this new one
             ArgType           type = NONE;     // Argument type
             size_t            min_occur = 0;   // Minimum occurence
             size_t            max_occur = 0;   // Maximum occurence
@@ -1289,7 +1308,7 @@ namespace ts {
             std::intmax_t     num = 0;         // Numerator of ratio (with CHRONO)
             std::intmax_t     den = 0;         // Denominator of ratio (with CHRONO)
 
-            // Constructor:
+            // Constructor, general case.
             IOption(Args*           parent,
                     const UChar*    name,
                     UChar           short_name,
@@ -1304,7 +1323,7 @@ namespace ts {
                     std::intmax_t   num = 0,
                     std::intmax_t   den = 0);
 
-            // Constructor:
+            // Constructor, enumeration values.
             IOption(Args*        parent,
                     const UChar* name,
                     UChar        short_name,
@@ -1312,6 +1331,11 @@ namespace ts {
                     size_t       min_occur,
                     size_t       max_occur,
                     uint32_t     flags);
+
+            // Constructor, legacy option.
+            IOption(Args*        parent,
+                    const UChar* name,
+                    const UChar* new_name);
 
             // Displayable name
             UString display() const;

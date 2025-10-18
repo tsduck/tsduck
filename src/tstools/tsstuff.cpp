@@ -76,14 +76,14 @@ Options::Options(int argc, char *argv[]) :
     option(u"final-inter-packet", 'f', UNSIGNED);
     help(u"final-inter-packet",
          u"Number of stuffing packets to add between input packets after the last "
-         u"time stamp (PCR or DTS). By default, use the same number as in the "
+         u"timestamp (PCR or DTS). By default, use the same number as in the "
          u"previous segment, between the last two time stamps.");
 
     option(u"initial-inter-packet", 'i', UNSIGNED);
     help(u"initial-inter-packet",
          u"Number of stuffing packets to add between input packets before the first "
-         u"time stamp (PCR or DTS). By default, use the same number as in the "
-         u"first segment, between the first two time stamps.");
+         u"timestamp (PCR or DTS). By default, use the same number as in the "
+         u"first segment, between the first two timestamps.");
 
     option(u"leading-packets", 'l', UNSIGNED);
     help(u"leading-packets",
@@ -93,7 +93,7 @@ Options::Options(int argc, char *argv[]) :
     option(u"min-interval", 'm', POSITIVE);
     help(u"min-interval",
          u"Minimum interval, in milli-seconds, between two recomputations of the "
-         u"amount of stuffing to insert. This duration is based on time-stamps, "
+         u"amount of stuffing to insert. This duration is based on timestamps, "
          u"not real time. The default is " + ts::UString::Decimal(DEFAULT_MIN_INTERVAL) + u" ms.");
 
     option(u"output-file", 'o', FILENAME);
@@ -180,8 +180,8 @@ private:
     Options&                 _opt;                         // Command-line options.
     ts::TSFileInputBuffered  _input;                       // Input file, including seek buffer for at least one segment.
     ts::TSFile               _output {};                   // Output file.
-    std::optional<TimeStamp> _tstamp1 {};                  // First time-stamp in current segment.
-    std::optional<TimeStamp> _tstamp2 {};                  // Second time-stamp in current segment.
+    std::optional<TimeStamp> _tstamp1 {};                  // First timestamp in current segment.
+    std::optional<TimeStamp> _tstamp2 {};                  // Second timestamp in current segment.
     uint64_t                 _current_inter_packet = 0;    // Number of null packets to add between all input packets in segment.
     uint64_t                 _current_residue_packets = 0; // Packets to add to inter_packets.
     uint64_t                 _remaining_stuff_count = 0;   // Remaining number of stuffing packets to add before end of segment.

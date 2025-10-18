@@ -76,7 +76,7 @@ void ts::TablesLogger::defineArgs(Args& args)
     args.help(u"duration",
               u"Display the time offset from the beginning of the stream with each table. "
               u"This duration is based on PCR and other time stamps in the stream. "
-              u"See also option --time-stamp.");
+              u"See also option --timestamp.");
 
     args.option(u"fill-eit");
     args.help(u"fill-eit",
@@ -241,9 +241,10 @@ void ts::TablesLogger::defineArgs(Args& args)
     args.option(u"text-output", 0, Args::FILENAME);
     args.help(u"text-output", u"A synonym for --output-file.");
 
-    args.option(u"time-stamp");
-    args.help(u"time-stamp",
-              u"Display a time stamp (current local time) with each table. "
+    args.option(u"timestamp");
+    args.legacyOption(u"time-stamp", u"timestamp");
+    args.help(u"timestamp",
+              u"Display a timestamp (current local time) with each table. "
               u"See also option --duration.");
 
     args.option(u"ttl", 0, Args::POSITIVE);
@@ -325,7 +326,7 @@ bool ts::TablesLogger::loadArgs(DuckContext& duck, Args& args)
     _invalid_sections = _invalid_only || args.present(u"invalid-sections");
     _invalid_versions = args.present(u"invalid-versions");
     args.getIntValue(_max_tables, u"max-tables", 0);
-    _time_stamp = args.present(u"time-stamp");
+    _time_stamp = args.present(u"timestamp");
     _duration = args.present(u"duration");
     _packet_index = args.present(u"packet-index");
     _meta_sections = args.present(u"meta-sections");

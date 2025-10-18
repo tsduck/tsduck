@@ -36,11 +36,11 @@ Forward vs. backward
 
 To avoid any confusion between the terms "forward" and "backward",
 please note that moving the packets of a PID forward in the transport stream
-makes the time stamps of that PID moving backward relatively to the transport stream.
+makes the timestamps of that PID moving backward relatively to the transport stream.
 So, depending on your standpoint, you may find the terms "forward" and "backward" either natural or counter-intuitive.
 
 To illustrate this paradox, consider an audio PID which is shifted forward 1000 packets in the transport stream.
-The audio packets numbered 10, 20, 30 and 40 in the PID have a presentation time stamp (PTS).
+The audio packets numbered 10, 20, 30 and 40 in the PID have a presentation timestamp (PTS).
 These packets are initially at positions 1000, 2000, 3000 and 4000 in the transport stream.
 The following table illustrates the forward vs. backward paradox
 after moving the PID 1000 packets forward in the transport stream.

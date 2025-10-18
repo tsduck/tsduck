@@ -115,8 +115,9 @@ ts::PCRVerifyPlugin::PCRVerifyPlugin(TSP* tsp_) :
          u"Several -p or --pid options may be specified. "
          u"Without -p or --pid option, PCR's from all PID's are used.");
 
-    option(u"time-stamp", 't');
-    help(u"time-stamp", u"Display time of each event.");
+    option(u"timestamp", 't');
+    legacyOption(u"time-stamp", u"timestamp");
+    help(u"timestamp", u"Display time of each event.");
 }
 
 
@@ -131,7 +132,7 @@ bool ts::PCRVerifyPlugin::getOptions()
     getIntValue(_jitter_max, u"jitter-max", _absolute ? DEFAULT_JITTER_MAX : DEFAULT_JITTER_MAX_US);
     getIntValue(_jitter_unreal, u"jitter-unreal", _absolute ? DEFAULT_JITTER_UNREAL : DEFAULT_JITTER_UNREAL_US);
     getValue(_bitrate, u"bitrate", 0);
-    _time_stamp = present(u"time-stamp");
+    _time_stamp = present(u"timestamp");
     getIntValues(_pid_list, u"pid", true); // all PID's set by default
 
     if (!_absolute) {

@@ -50,7 +50,7 @@ By default, use the input bitrate as reported by the input device or a previous 
 *--ignore-dts*
 
 [.optdoc]
-Do not modify DTS (decoding time stamps) values.
+Do not modify DTS (decoding timestamps) values.
 
 [.optdoc]
 By default, the DTS are modified according to the PCR adjustment.
@@ -59,7 +59,7 @@ By default, the DTS are modified according to the PCR adjustment.
 *--ignore-pts*
 
 [.optdoc]
-Do not modify PTS (presentation time stamps) values.
+Do not modify PTS (presentation timestamps) values.
 
 [.optdoc]
 By default, the PTS are modified according to the PCR adjustment.

@@ -92,11 +92,11 @@ By default, all PID's are modified.
 
 [.optdoc]
 The absolute values of `--add-pcr`, `--add-dts`, `--add-pts` are used as maximum values.
-For each time stamp to modify, the added value is a new random number in the range _-n_ to _+n_
+For each timestamp to modify, the added value is a new random number in the range _-n_ to _+n_
 where _n_ is the absolute value of the corresponding parameter.
 
 [.optdoc]
-This option is typically used to intentionally corrupt time stamps.
+This option is typically used to intentionally corrupt timestamps.
 
 [.opt]
 *-u* _name_ +

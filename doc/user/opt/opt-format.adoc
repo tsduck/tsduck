@@ -36,5 +36,5 @@ When the option `--format` is specified, all input files must have the same form
 // tag::output[]
 [.optdoc]
 By default, the output format is a standard TS file.
-If the format is M2TS, the inserted time stamp is identical to the input time stamp for each packet.
+If the format is M2TS, the inserted timestamp is identical to the input timestamp for each packet.
 // end::output[]

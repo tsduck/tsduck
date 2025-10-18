@@ -81,7 +81,7 @@ ts::PCREditPlugin::PCREditPlugin(TSP* tsp_) :
     option(u"negate-pids", 'n');
     help(u"negate-pids",
          u"Negate the selection of --pid options. "
-         u"All PID's except the specified ones will have their time-stamps edited.");
+         u"All PID's except the specified ones will have their timestamps edited.");
 
     option(u"pid", 'p', PIDVAL, 0, UNLIMITED_COUNT);
     help(u"pid", u"pid1[-pid2]",

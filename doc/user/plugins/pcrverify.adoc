@@ -107,7 +107,7 @@ Without `--pid` option, PCR's from all PID's are used.
 
 [.opt]
 *-t* +
-*--time-stamp*
+*--timestamp*
 
 [.optdoc]
 Display time of each event.

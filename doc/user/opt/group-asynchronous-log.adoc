@@ -43,4 +43,4 @@ The downside is that an application thread may be blocked for a short while when
 *--timed-log*
 
 [.optdoc]
-Each logged message contains a time stamp.
+Each logged message contains a timestamp.

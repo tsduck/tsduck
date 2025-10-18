@@ -215,7 +215,7 @@ The name must be one of `rtp-kernel-tsp`, `kernel-rtp-tsp`, `kernel-tsp`, `rtp-t
 The possible timestamp sources are:
 
 [.optdoc]
-* `rtp`: The RTP time stamp, when the UDP packet is an RTP packet.
+* `rtp`: The RTP timestamp, when the UDP packet is an RTP packet.
 * `kernel`: A kernel-provided timestamp for the packet, when available (Linux only).
 * `tsp`: A software timestamp, provided by `tsp` when the input plugin returns a chunk of packets.
   The `tsp`-provided timestamp is always available, always comes last and is less precise.

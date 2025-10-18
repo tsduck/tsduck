@@ -23,7 +23,7 @@ namespace ts {
     //! Command line arguments for TSClock.
     //! @ingroup libtsduck mpeg
     //!
-    class TSCOREDLL TSClockArgs
+    class TSDUCKDLL TSClockArgs
     {
     public:
         //!
