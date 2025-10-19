@@ -749,7 +749,7 @@ ts::ProcessorPlugin::Status ts::SpliceMonitorPlugin::processPacket(TSPacket& pkt
 
     // Is this a video/audio PID which is associated to a splicing PID?
     const bool has_splice = _splice_pids.contains(pid);
-    const PID splice_pid = has_splice ? _splice_pids[pid] : PID_NULL;
+    const PID splice_pid = has_splice ? _splice_pids[pid] : PID(PID_NULL);
     SpliceContext* ctx = has_splice ? &_splice_contexts[splice_pid] : nullptr;
 
     // Process a PCR in a video/audio PID which is associated to a splicing PID.
