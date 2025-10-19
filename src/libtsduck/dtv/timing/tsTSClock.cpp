@@ -95,44 +95,41 @@ cn::milliseconds ts::TSClock::durationMS() const
 
 
 //----------------------------------------------------------------------------
-// Invoked for each new table.
+// Handle UTC time from the stream.
 //----------------------------------------------------------------------------
+
+void ts::TSClock::handleUTC(const Time& time)
+{
+    _duck.report().debug(u"first UTC time from stream: %s", time);
+    _first_time = time - _total_duration;
+
+}
 
 void ts::TSClock::handleTable(SectionDemux& demux, const BinaryTable& table)
 {
-    Time utc;
-
-    switch (table.tableId()) {
-        case TID_TDT: {
-            const TDT tdt(_duck, table);
-            if (tdt.isValid()) {
-                utc = tdt.utc_time;
-            }
-            break;
-        }
-        case TID_TOT: {
-            const TOT tot(_duck, table);
-            if (tot.isValid()) {
-                utc = tot.utc_time;
-            }
-            break;
-        }
-        case TID_STT: {
-            const STT stt(_duck, table);
-            if (stt.isValid()) {
-                utc = stt.utcTime();
-            }
-            break;
-        }
-        default: {
-            break;
+    if (table.tableId() == TID_TDT) {
+        const TDT tdt(_duck, table);
+        if (tdt.isValid()) {
+            handleUTC(tdt.utc_time);
         }
     }
+    else if (table.tableId() == TID_TOT) {
+        const TOT tot(_duck, table);
+        if (tot.isValid()) {
+            handleUTC(tot.utc_time);
+        }
+    }
+}
 
-    if (utc != Time::Epoch) {
-        // Use PCR time as reference and first TDT/TOT/STT as base.
-        _duck.report().debug(u"first UTC time from stream: %s", utc);
-        _first_time = utc - _total_duration;
+void ts::TSClock::handleSection(SectionDemux& demux, const Section& section)
+{
+    // We use the section handler for ATSC System Time Table (STT) only.
+    // This table violates the common usage rules of MPEG sections, see file tsSTT.h.
+    if (section.tableId() == TID_STT) {
+        const STT stt(_duck, section);
+        if (stt.isValid()) {
+            handleUTC(stt.utcTime());
+        }
     }
 }
 

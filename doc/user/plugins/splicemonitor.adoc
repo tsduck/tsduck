@@ -25,7 +25,7 @@ $ tsp -P splicemonitor [options]
 ----
 
 [.usage]
-Options
+General options
 
 [.opt]
 *--alarm-command* _"command"_
@@ -201,4 +201,67 @@ When `--all-commands` is specified, each SCTE-35 table is initially formatted as
 See xref:xml-json-conv[xrefstyle=short] for more details on XML-to-JSON conversion.
 
 include::{docdir}/opt/group-json-output.adoc[tags=!*;notitle]
+
+[.usage]
+InfluxDB options
+
+[.opt]
+*--influx* _value_
+
+[.optdoc]
+When this option is specified, all splice events of the specified types are sent to an InfluxDB server.
+Sending to an InfluxDB server can be used in monitoring or alerting systems, such as Grafana.
+See also other `--influx-*` options below for more details on InfluxDB.
+
+[.optdoc]
+The _value_ must be one of `immediate`, `signalled`, `cancelled`, `occurred`, `all`, or `none`.
+The default is `none`, meaning no connection to an InfluxDB server.
+Use `all` to specify all types of events.
+Several options `--influx` are allowed.
+
+[.usage]
+InfluxDB information
+
+The plugin `influx` describes the interactions with InfluxDB in more details (see xref:_influx[xrefstyle=short]).
+However, the two plugins have distinct dynamics.
+The plugin `influx` sends various metrics at regular intervals.
+The plugin `splicemonitor` sends information only, and immediately, when a splice event is encountered.
+
+A message is sent to InfluxDB for any type of event which is selected by the option `--influx`.
+Each message contains exactly one entry, with the following information:
+
+[.compact-list]
+* Field `_measurement`: `splice`.
+* All the following tags are always present:
+** Tag `pid`: This is the PID carrying the splice section, as an integer.
+** Tag `event`: This is the event id, as an integer.
+** Tag `direction`: Either `out` or `in`, indicating if the event is out of network (start of an event)
+   or back in network (end of the event).
+** Tag `state`: One of `immediate`, `signalled`, `cancelled`, `occurred`, see option `--influx`.
+* Several value fields can be provided, depending on the event. The field `start` is always present.
+  All other fields are optional, subject to availability.
+** Field `start`: This is the estimated start time of the event, as an integer, in milliseconds
+   since the UNIX Epoch. Note that actual SCTE-35 splice events use PTS values, not actual times.
+   The provided value is an estimation of the actual time which corresponds to the PTS of the event.
+   The time is UTC by default, or local time if option `--influx-local-time` is used.
+** Field `duration`: This is the announced duration of the event, in milliseconds.
+** Field `preroll`: This is the preroll time of the event, in milliseconds.
+   This value is present only for events of type `occurred`.
+** Field `count`: This is the number of times the event was signalled so far.
+   This is the number of times a splice command is repeated.
+
+Sample entry:
+
+[source,text]
+----
+splice,pid=1055,event=18,direction=out,state=occurred
+   start=1515756561249,duration=75000,preroll=9557,count=3 1515756561249
+----
+
+include::{docdir}/opt/group-influx.adoc[tags=!*;prefix]
+
+:opt-clock-prefix: influx
+:opt-clock-context: for InfluxDB connections
+include::{docdir}/opt/group-clock.adoc[tags=!*;prefix;context]
+
 include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

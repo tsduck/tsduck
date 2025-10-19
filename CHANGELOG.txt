@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.43-4454 (October 2025)
+VERSION 3.43-4465 (October 2025)
 
 [NEW] New commands and plugins:
 
@@ -19,12 +19,15 @@ VERSION 3.43-4454 (October 2025)
     PID or per service.
   * In  plugin  "influx",  Inter-packet  Arrival  Time (IAT) for datagram-based
     inputs are available for InfluxDB.
+  * In plugin "splicemonitor",  it is now possible to send all detected SCTE-35
+    splice events to an InfluxDB server.
   * New options in existing commands and plugins:
     - Option --summary in plugin "mpe".
     - Options --iat, --tag in plugin "influx".
     - Options --yaml, --no-yaml-header in "tsxml" (experimental).
     - Option --ignore-pid-conflict in plugin "spliceinject".
     - Option --duration in "tstables" and plugin "tables".
+    - Options --influx* in plugin "splicemonitor".
 
 [BUG] Bug fixes:
 

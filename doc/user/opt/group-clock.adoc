@@ -10,6 +10,7 @@
 // attributes: opt-clock-prefix opt-clock-context
 //
 // Example:
+//   ____required_empty_line____
 //   :opt-clock-prefix: influx
 //   :opt-clock-context: for InfluxDB connections
 //   include::{docdir}/opt/group-clock.adoc[tags=!*;prefix;context]

@@ -16,6 +16,7 @@ In practice, TSDuck is used for:
 - Modify, remove, rename, extract services.
 - Monitor and report conditions on the stream (video and audio properties, bitrates, crypto-periods, signalization).
 - Send bitrate and ETSI TR 101 290 metrics to InfluxDB and Grafana for system monitoring.
+- Monitor Inter-packet Arrival Time (IAT) on datagram-based networks.
 - Work on live transport streams, DVB-S/C/T, ATSC, ISDB-S/T, ASI, UDP ("IP-TV"), HTTP, HLS, SRT, RIST or
   offline transport stream files and `pcap` network capture files.
 - Receive from or send to specialized hardware such as:

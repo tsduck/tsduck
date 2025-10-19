@@ -49,10 +49,10 @@ void ts::InfluxRequest::start(Time timestamp)
 
 
 //----------------------------------------------------------------------------
-// Add a line in the request being built.
+// Add a line in the request being built, with generic value fields.
 //----------------------------------------------------------------------------
 
-void ts::InfluxRequest::addLine(const UString& measurement, const UString& tags, const UString& value)
+void ts::InfluxRequest::add(const UString& measurement, const UString& tags, const UString& fields)
 {
     if (!_builder.empty()) {
         _builder.append(u'\n');
@@ -61,7 +61,7 @@ void ts::InfluxRequest::addLine(const UString& measurement, const UString& tags,
     if (!tags.empty() && !tags.starts_with(u',')) {
         _builder.append(u',');
     }
-    _builder.format(u"%s%s value=%s %d", tags, _additional_tags, value, _timestamp);
+    _builder.format(u"%s%s %s %d", tags, _additional_tags, fields.empty() ? u"value=0" : fields, _timestamp);
 }
 
 

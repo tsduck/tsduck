@@ -49,7 +49,13 @@ void ts::InfluxSender::stop()
 
 bool ts::InfluxSender::send(InfluxRequestPtr& request)
 {
-    return _queue.enqueue(request, cn::milliseconds::zero());
+    if (_queue.enqueue(request, cn::milliseconds::zero())) {
+        return true;
+    }
+    else {
+        _report.warning(u"lost metrics, consider increasing --queue-size (current: %d)", _queue.getMaxMessages());
+        return false;
+    }
 }
 
 

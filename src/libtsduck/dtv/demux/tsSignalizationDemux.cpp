@@ -774,7 +774,7 @@ void ts::SignalizationDemux::handleTable(SectionDemux&, const BinaryTable& table
 
 void ts::SignalizationDemux::handleSection(SectionDemux&, const Section& section)
 {
-    // We use this handler for ATSC System Time Table (STT) only.
+    // We use the section handler for ATSC System Time Table (STT) only.
     // This table violates the common usage rules of MPEG sections, see file tsSTT.h.
     if (section.tableId() == TID_STT && section.sourcePID() == PID_PSIP) {
         const STT stt(_duck, section);

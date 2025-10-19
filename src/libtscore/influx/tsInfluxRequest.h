@@ -48,29 +48,27 @@ namespace ts {
         void start(Time timestamp);
 
         //!
-        //! Add a line in the request being built.
+        //! Add a line in the request being built, with one single integer value.
         //! @param [in] measurement The name of the measurement.
         //! @param [in] tags Comma-separated list of tags "name=value". The names and values
         //! must be compatible with the InfluxDB line protocol (use ToKey() if necessary.
-        //! @param [in] value The measurement value.
+        //! @param [in] value The measurement value. The field name is implicitly "value".
         //!
         template <typename INT_T> requires std::integral<INT_T>
         void add(const UString& measurement, const UString& tags, INT_T value)
         {
-            addLine(measurement, tags, UString::Decimal(value, 0, true, UString()));
+            add(measurement, tags, UString::Format(u"value=%d", value));
         }
 
         //!
-        //! Add a line in the request being built.
+        //! Add a line in the request being built, with generic value fields.
         //! @param [in] measurement The name of the measurement.
         //! @param [in] tags Comma-separated list of tags "name=value". The names and values
         //! must be compatible with the InfluxDB line protocol (use ToKey() if necessary.
-        //! @param [in] value The measurement value.
+        //! @param [in] fields The measurement fields. The field names and values must be
+        //! compatible with the InfluxDB line protocol.
         //!
-        void add(const UString& measurement, const UString& tags, const UString& value)
-        {
-            addLine(measurement, tags, ToStringValue(value));
-        }
+        void add(const UString& measurement, const UString& tags, const UString& fields);
 
         //!
         //! Get the current content of the request being built.
@@ -116,9 +114,6 @@ namespace ts {
         UString           _precision {};
         UString           _additional_tags {};
         UString           _builder {};
-
-        // Helper for add().
-        void addLine(const UString& measurement, const UString& tags, const UString& value);
 
         // Helper for escape strings.
         static UString Escape(const UString& name, const UString& specials, bool add_quotes);

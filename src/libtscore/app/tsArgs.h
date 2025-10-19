@@ -959,7 +959,7 @@ namespace ts {
         //! and each value is a bit mask. When specifying several values, the result of this
         //! method is a mask of all specified options.
         //!
-        //! @tparam INT An integer type for the result.
+        //! @tparam INT An integer or enumeration type for the result.
         //! @param [in] name The full name of the option. If the parameter is a null pointer or
         //! an empty string, this specifies a parameter, not an option. If the specified option
         //! was not declared in the syntax of the command or declared as a non-string type,
@@ -968,7 +968,7 @@ namespace ts {
         //! is not present in the command line.
         //! @return The OR'ed values of the integer option.
         //!
-        template <typename INT> requires std::integral<INT>
+        template <typename INT> requires ts::int_enum<INT>
         INT bitMaskValue(const UChar* name = nullptr, const INT& def_value = static_cast<INT>(0)) const;
 
         //!
@@ -978,7 +978,7 @@ namespace ts {
         //! and each value is a bit mask. When specifying several values, the result of this
         //! method is a mask of all specified options.
         //!
-        //! @tparam INT An integer type for the result.
+        //! @tparam INT An integer or enumeration type for the result.
         //! @param [out] value A variable receiving the OR'ed values of the integer option.
         //! @param [in] name The full name of the option. If the parameter is a null pointer or
         //! an empty string, this specifies a parameter, not an option. If the specified option
@@ -987,7 +987,7 @@ namespace ts {
         //! @param [in] def_value The value to return in @a value if the option or parameter
         //! is not present in the command line.
         //!
-        template <typename INT> requires std::integral<INT>
+        template <typename INT> requires ts::int_enum<INT>
         void getBitMaskValue(INT& value, const UChar* name = nullptr, const INT& def_value = static_cast<INT>(0)) const;
 
         //!
@@ -1659,7 +1659,7 @@ void ts::Args::getIntValues(CompactBitSet<N>& values, const UChar* name, bool de
 // Get an OR'ed of all values of an integer option.
 //----------------------------------------------------------------------------
 
-template <typename INT> requires std::integral<INT>
+template <typename INT> requires ts::int_enum<INT>
 void ts::Args::getBitMaskValue(INT& value, const UChar* name, const INT& def_value) const
 {
     const IOption& opt(getIOption(name));
@@ -1671,14 +1671,14 @@ void ts::Args::getBitMaskValue(INT& value, const UChar* name, const INT& def_val
         for (const auto& it : opt.values) {
             for (int64_t v = it.int_base; v < it.int_base + int64_t(it.int_count); ++v) {
                 if (opt.inRange<int64_t>(v)) {
-                    value |= static_cast<INT>(v);
+                    value = static_cast<INT>(int64_t(value) | v);
                 }
             }
         }
     }
 }
 
-template <typename INT> requires std::integral<INT>
+template <typename INT> requires ts::int_enum<INT>
 INT ts::Args::bitMaskValue(const UChar* name, const INT& def_value) const
 {
     INT value(def_value);

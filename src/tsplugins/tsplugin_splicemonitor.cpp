@@ -19,6 +19,8 @@
 #include "tsSignalizationDemux.h"
 #include "tsSpliceInformationTable.h"
 #include "tsSpliceSegmentationDescriptor.h"
+#include "tsTSClock.h"
+#include "tsInfluxSender.h"
 #include "tsForkPipe.h"
 #include "tsjsonObject.h"
 #include "tsjsonOutputArgs.h"
@@ -50,12 +52,13 @@ namespace ts {
         class SpliceEvent
         {
         public:
-            SpliceEvent() = default;                // Constructor.
-            PacketCounter first_cmd_packet = 0;     // Packet index of first occurence of splice command for signaled event.
+            SpliceEvent() = default;                   // Constructor.
+            PacketCounter first_cmd_packet = 0;        // Packet index of first occurence of splice command for signaled event.
             uint32_t      event_id = SpliceInsert::INVALID_EVENT_ID;  // Signaled event id.
-            uint64_t      event_pts = INVALID_PTS;  // Signaled PTS (lowest PTS value in command).
-            bool          event_out = false;        // Copy of splice_out for this event.
-            size_t        event_count = 0;          // Number of occurences of same insert commands for this event.
+            uint64_t      event_pts = INVALID_PTS;     // Signaled PTS (lowest PTS value in command).
+            uint64_t      duration_pts = INVALID_PTS;  // Event duration in PTS units.
+            size_t        event_count = 0;             // Number of occurences of same insert commands for this event.
+            bool          event_out = false;           // Copy of splice_out for this event.
         };
 
         // Context of a PID containing SCTE-35 splice commands.
@@ -65,26 +68,49 @@ namespace ts {
             SpliceContext() = default;                        // Constructor.
             uint64_t      last_pts = INVALID_PTS;             // Last PTS value in audio/video PID's for that splice PID.
             PacketCounter last_pts_packet = 0;                // Packet index of last PTS.
+            uint64_t      last_pcr = INVALID_PTS;             // Last PCR value in audio/video PID's for that splice PID.
+            Time          last_pcr_clock {};                  // TSClock value of last PCR.
             std::map<uint32_t,SpliceEvent> splice_events {};  // Map event id to splice event.
         };
 
+        // State of an event, can be used as a bitmask to select several of them.
+        enum EventState {
+            EV_NONE      = 0x0000,
+            EV_SIGNALLED = 0x0001,
+            EV_IMMEDIATE = 0x0002,
+            EV_CANCELLED = 0x0004,
+            EV_OCCURRED  = 0x0008,
+            EV_ALL       = 0x000F
+        };
+        const Names _eventStateEnum{
+            {u"none",      EV_NONE},
+            {u"signalled", EV_SIGNALLED},
+            {u"immediate", EV_IMMEDIATE},
+            {u"cancelled", EV_CANCELLED},
+            {u"occurred",  EV_OCCURRED},
+            {u"all",       EV_ALL},
+        };
+
         // Command line options:
-        bool             _packet_index = false;   // Show packet index.
-        bool             _use_log = false;        // Use tsp logger for messages.
-        bool             _no_adjustment = false;  // Do not adjust PTS of splice command reception time.
-        bool             _time_stamp = false;     // Display time stamps with each table and JSON structure.
-        PID              _splice_pid = PID_NULL;  // The only splice PID to monitor.
-        PID              _pts_pid = PID_NULL;     // The only PTS PID to use.
-        fs::path         _output_file {};         // Output file name.
-        UString          _alarm_command {};       // Alarm command name.
-        UString          _tag {};                 // Message tag.
-        size_t           _min_repetition = 0;     // Minimum number of occurrences per command.
-        size_t           _max_repetition = 0;     // Maximum number of occurrences per command.
-        cn::milliseconds _min_preroll {};         // Minimum pre-roll time in milliseconds.
-        cn::milliseconds _max_preroll {};         // Maximum pre-roll time in milliseconds.
-        json::OutputArgs _json_args {};           // JSON output.
-        std::bitset<256> _log_cmds {};            // List of splice commands to display.
-        BinaryTable::XMLOptions _xml_options {};  // Options to format XML and JSON tables.
+        bool             _packet_index = false;    // Show packet index.
+        bool             _use_log = false;         // Use tsp logger for messages.
+        bool             _no_adjustment = false;   // Do not adjust PTS of splice command reception time.
+        bool             _time_stamp = false;      // Display time stamps with each table and JSON structure.
+        PID              _splice_pid = PID_NULL;   // The only splice PID to monitor.
+        PID              _pts_pid = PID_NULL;      // The only PTS PID to use.
+        fs::path         _output_file {};          // Output file name.
+        UString          _alarm_command {};        // Alarm command name.
+        UString          _tag {};                  // Message tag.
+        EventState       _influx_states = EV_NONE; // Send to InfluxDB the specified states (bitmask).
+        size_t           _min_repetition = 0;      // Minimum number of occurrences per command.
+        size_t           _max_repetition = 0;      // Maximum number of occurrences per command.
+        cn::milliseconds _min_preroll {};          // Minimum pre-roll time in milliseconds.
+        cn::milliseconds _max_preroll {};          // Maximum pre-roll time in milliseconds.
+        json::OutputArgs _json_args {};            // JSON output.
+        std::bitset<256> _log_cmds {};             // List of splice commands to display.
+        TSClockArgs      _ts_clock_args {u"influx"};
+        InfluxArgs       _influx_args {true, false};
+        BinaryTable::XMLOptions _xml_options {};   // Options to format XML and JSON tables.
 
         // Working data:
         TablesDisplay               _display {duck};             // Display engine for splice information tables.
@@ -93,6 +119,8 @@ namespace ts {
         std::map<PID,PID>           _splice_pids {};             // Map audio/video PID to splice PID.
         SectionDemux                _section_demux {duck, this}; // Section filter for splice information.
         SignalizationDemux          _sig_demux {duck, this};     // Signalization demux to get PMT's.
+        TSClock                     _ts_clock {duck};            // Compute playout time based on real time, PCR or input timestamps.
+        InfluxSender                _influx_server {*this};      // Send requests to InfluxDB server.
         xml::JSONConverter          _x2j_conv {*this};           // XML-to-JSON converter.
         json::RunningDocument       _json_doc {*this};           // JSON document, built on-the-fly.
 
@@ -100,7 +128,10 @@ namespace ts {
         void setSplicePID(const PMT&, PID);
 
         // Process an event.
-        void processEvent(PID splice_pid, uint32_t event_id, uint64_t event_pts, bool canceled, bool immediate, bool splice_out);
+        void processEvent(PID splice_pid, uint32_t event_id, uint64_t event_pts, uint64_t duration_pts, bool canceled, bool immediate, bool splice_out);
+
+        // Report an event to InfluxDB if necessary.
+        void sendInflux(PID splice_pid, const SpliceEvent& event, EventState state, cn::milliseconds preroll);
 
         // Build and report a one-line message or JSON structure.
         void display(const UString& line);
@@ -134,6 +165,8 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"splicemonitor", ts::SpliceMonitorPlugin);
 ts::SpliceMonitorPlugin::SpliceMonitorPlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Monitor SCTE 35 splice information", u"[options]")
 {
+    _influx_args.defineArgs(*this);
+    _ts_clock_args.defineArgs(*this);
     _json_args.defineArgs(*this, true, u"Build a JSON description of splice events.");
 
     option(u"alarm-command", 0, STRING);
@@ -158,6 +191,14 @@ ts::SpliceMonitorPlugin::SpliceMonitorPlugin(TSP* tsp_) :
     help(u"display-commands",
          u"Display the content of SCTE-35 splice insert commands. "
          u"By default, only log a short event description.");
+
+    option(u"influx", 0, _eventStateEnum, 0, UNLIMITED_COUNT);
+    help(u"influx",
+         u"Send to an InfluxDB server all events of the specified types. "
+         u"See all other --influx-* options for more details. "
+         u"The default is 'none', meaning no connection to an InfluxDB server. "
+         u"Use 'all' to specify all types of events. "
+         u"Several options --influx are allowed.");
 
     option(u"no-adjustment", 'n');
     help(u"no-adjustment",
@@ -232,7 +273,6 @@ ts::SpliceMonitorPlugin::SpliceMonitorPlugin(TSP* tsp_) :
 
 bool ts::SpliceMonitorPlugin::getOptions()
 {
-    _json_args.loadArgs(*this);
     _xml_options.setPID = true;
     _xml_options.setPackets = _packet_index = present(u"packet-index");
     _xml_options.setLocalTime = _time_stamp = present(u"timestamp");
@@ -247,6 +287,7 @@ bool ts::SpliceMonitorPlugin::getOptions()
     getChronoValue(_max_preroll, u"max-pre-roll-time");
     getIntValue(_min_repetition, u"min-repetition");
     getIntValue(_max_repetition, u"max-repetition");
+    getBitMaskValue(_influx_states, u"influx", EV_NONE);
     getIntValues(_log_cmds, u"select-commands");
     if (present(u"all-commands")) {
         _log_cmds.set(); // Display all splice commands
@@ -255,7 +296,12 @@ bool ts::SpliceMonitorPlugin::getOptions()
         _log_cmds.set(SPLICE_INSERT); // Display splice insert commands
     }
     _use_log = _log_cmds.none() && _output_file.empty();
-    return true;
+
+    bool success = _influx_args.loadArgs(*this, _influx_states != EV_NONE);
+    success = _ts_clock_args.loadArgs(*this) && success;
+    success = _json_args.loadArgs(*this) && success;
+
+    return success;
 }
 
 
@@ -265,6 +311,8 @@ bool ts::SpliceMonitorPlugin::getOptions()
 
 bool ts::SpliceMonitorPlugin::start()
 {
+    bool success = true;
+
     // Cleanup state.
     _splice_contexts.clear();
     _splice_pids.clear();
@@ -273,6 +321,7 @@ bool ts::SpliceMonitorPlugin::start()
     _section_demux.reset();
     _section_demux.setPIDFilter(NoPID());
     _displayed_table = false;
+    _ts_clock.reset(_ts_clock_args);
 
     // Starting demuxing on the splice PID if specified on the command line.
     if (_splice_pid != PID_NULL) {
@@ -290,11 +339,18 @@ bool ts::SpliceMonitorPlugin::start()
     // Open the output file when required.
     if (_json_args.useFile()) {
         json::ValuePtr root;
-        return _json_doc.open(root, _output_file, std::cout);
+        success = _json_doc.open(root, _output_file, std::cout);
     }
     else {
-        return duck.setOutput(_output_file);
+        success = duck.setOutput(_output_file);
     }
+
+    // Start the asynchronous thread which sends the metrics data to Influx.
+    if (success && _influx_states != EV_NONE) {
+        success = _influx_server.start(_influx_args);
+    }
+
+    return success;
 }
 
 
@@ -304,6 +360,11 @@ bool ts::SpliceMonitorPlugin::start()
 
 bool ts::SpliceMonitorPlugin::stop()
 {
+    // Stop the asynchronous thread which sends the metrics data to Influx.
+    if (_influx_states != EV_NONE) {
+        _influx_server.stop();
+    }
+
     // Close the output file when required and return to stdout.
     _json_doc.close();
     return duck.setOutput(u"");
@@ -469,7 +530,7 @@ bool ts::SpliceMonitorPlugin::timeToEvent(cn::milliseconds& tte, uint64_t event_
 // Process an event.
 //----------------------------------------------------------------------------
 
-void ts::SpliceMonitorPlugin::processEvent(PID splice_pid, uint32_t event_id, uint64_t event_pts, bool canceled, bool immediate, bool splice_out)
+void ts::SpliceMonitorPlugin::processEvent(PID splice_pid, uint32_t event_id, uint64_t event_pts, uint64_t duration_pts, bool canceled, bool immediate, bool splice_out)
 {
     // Locate PID context and event description (if it exists).
     SpliceContext& ctx(_splice_contexts[splice_pid]);
@@ -487,6 +548,8 @@ void ts::SpliceMonitorPlugin::processEvent(PID splice_pid, uint32_t event_id, ui
             display(message(splice_pid, event_id, u"canceled"));
         }
         if (known_event) {
+            // Send to InfluxDB when necessary.
+            sendInflux(splice_pid, evt->second, EV_CANCELLED, cn::milliseconds::zero());
             // Canceled event -> remove it.
             ctx.splice_events.erase(evt);
         }
@@ -501,8 +564,22 @@ void ts::SpliceMonitorPlugin::processEvent(PID splice_pid, uint32_t event_id, ui
         else {
             display(message(splice_pid, event_id, u"immediately %s", splice_out ? "OUT" : "IN"));
         }
+        // Send to InfluxDB when necessary.
+        if (_influx_states & EV_IMMEDIATE) {
+            SpliceEvent se;
+            if (known_event) {
+                se = evt->second;
+            }
+            else {
+                se.event_id = event_id;
+                se.event_pts = event_pts;
+                se.duration_pts = duration_pts;
+                se.event_out = splice_out;
+            }
+            sendInflux(splice_pid, se, EV_IMMEDIATE, cn::milliseconds::zero());
+        }
+        // Immediate event, won't reference it later if known -> remove it.
         if (known_event) {
-            // Immediate event, won't reference it later -> remove it.
             ctx.splice_events.erase(evt);
         }
     }
@@ -517,6 +594,7 @@ void ts::SpliceMonitorPlugin::processEvent(PID splice_pid, uint32_t event_id, ui
             ctx.splice_events[event_id].event_id = event_id;
             evt = ctx.splice_events.find(event_id);
             evt->second.event_pts = event_pts;
+            evt->second.duration_pts = duration_pts;
             evt->second.event_out = splice_out;
             evt->second.event_count = 1;
             evt->second.first_cmd_packet = tsp->pluginPackets();
@@ -539,6 +617,62 @@ void ts::SpliceMonitorPlugin::processEvent(PID splice_pid, uint32_t event_id, ui
                 }
             }
             display(message(splice_pid, event_id, u"occurrence #%d%s", evt->second.event_count, time));
+        }
+        // Send to InfluxDB when necessary.
+        sendInflux(splice_pid, evt->second, EV_SIGNALLED, cn::milliseconds::zero());
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Report an event to InfluxDB.
+//----------------------------------------------------------------------------
+
+void ts::SpliceMonitorPlugin::sendInflux(PID splice_pid, const SpliceEvent& event, EventState state, cn::milliseconds preroll)
+{
+    // Only if we track this event state with InfluxDB.
+    if (_influx_states & state) {
+
+        const SpliceContext& ctx(_splice_contexts[splice_pid]);
+
+        // Try to build a clock for the event PTS, based on the last difference between the clock and PCR.
+        // For immediate and occured events, use the current clock.
+        const Time current_clock = _ts_clock.clock();
+        Time event_clock;
+        if (state & (EV_IMMEDIATE | EV_OCCURRED)) {
+            event_clock = current_clock;
+        }
+        else if (ctx.last_pcr != INVALID_PCR && ctx.last_pcr_clock != Time::Epoch) {
+            event_clock = ctx.last_pcr_clock + PCR(event.event_pts * SYSTEM_CLOCK_SUBFACTOR - ctx.last_pcr);
+        }
+
+        if (event_clock != Time::Epoch) {
+            debug(u"current stream clock: %s, event clock: %s", current_clock, event_clock);
+
+            // Build data to post. Use a shared pointer to send to the message queue.
+            auto req = std::make_shared<InfluxRequest>(*this, _influx_args);
+            req->start(current_clock);
+
+            // Event tags.
+            UString tags;
+            tags.format(u"pid=%d,event=%d,direction=%s,state=%s", splice_pid, event.event_id, event.event_out ? u"out" : u"in", _eventStateEnum.name(state));
+
+            // Event fields. Mandatory field: start = event start timestamps in milliseconds since UNIX Epoch.
+            UString fields;
+            fields.format(u"start=%d", (event_clock - Time::UnixEpoch).count());
+            if (event.duration_pts > 0 && event.duration_pts != INVALID_PTS) {
+                fields.format(u",duration=%d", cn::duration_cast<cn::milliseconds>(PTS(event.duration_pts)).count());
+            }
+            if (preroll > cn::milliseconds::zero()) {
+                fields.format(u",preroll=%d", preroll.count());
+            }
+            if (event.event_count > 0) {
+                fields.format(u",count=%d", event.event_count);
+            }
+
+            // Send the data to the outgoing thread.
+            req->add(u"splice", tags, fields);
+            _influx_server.send(req);
         }
     }
 }
@@ -564,7 +698,9 @@ void ts::SpliceMonitorPlugin::handleTable(SectionDemux& demux, const BinaryTable
                 // SCTE 35 SIT segmentation_descriptor.
                 const SpliceSegmentationDescriptor ssd(duck, bindesc);
                 if (ssd.isValid() && (ssd.isIn() || ssd.isOut())) {
-                    processEvent(table.sourcePID(), ssd.segmentation_event_id, sit.time_signal.value(), ssd.segmentation_event_cancel, false, ssd.isOut());
+                    processEvent(table.sourcePID(), ssd.segmentation_event_id, sit.time_signal.value(),
+                                 ssd.segmentation_duration.value_or(INVALID_PTS), ssd.segmentation_event_cancel,
+                                 false, ssd.isOut());
                 }
             }
         }
@@ -573,7 +709,7 @@ void ts::SpliceMonitorPlugin::handleTable(SectionDemux& demux, const BinaryTable
         // Get a copy of the splice insert command and adjust all PTS to actual time value.
         SpliceInsert si(sit.splice_insert);
         si.adjustPTS(sit.pts_adjustment);
-        processEvent(table.sourcePID(), si.event_id, si.lowestPTS(), si.canceled, si.immediate, si.splice_out);
+        processEvent(table.sourcePID(), si.event_id, si.lowestPTS(), si.duration_pts, si.canceled, si.immediate, si.splice_out);
     }
 
     // Finally, display the SCTE-35 table.
@@ -607,23 +743,38 @@ ts::ProcessorPlugin::Status ts::SpliceMonitorPlugin::processPacket(TSPacket& pkt
     const PID pid = pkt.getPID();
 
     // Feed the various analyzers with the packet.
+    _ts_clock.feedPacket(pkt, pkt_data);
     _section_demux.feedPacket(pkt);
     _sig_demux.feedPacket(pkt);
 
     // Is this a video/audio PID which is associated to a splicing PID?
-    if (pkt.hasPTS() && _splice_pids.find(pid) != _splice_pids.end()) {
+    const bool has_splice = _splice_pids.contains(pid);
+    const PID splice_pid = has_splice ? _splice_pids[pid] : PID_NULL;
+    SpliceContext* ctx = has_splice ? &_splice_contexts[splice_pid] : nullptr;
+
+    // Process a PCR in a video/audio PID which is associated to a splicing PID.
+    if (has_splice && pkt.hasPCR()) {
+
+        // Remember the clock for the latest PCR value for this splice PID.
+        const Time clock = _ts_clock.clock();
+        if (clock != Time::Epoch) {
+            ctx->last_pcr = pkt.getPCR();
+            ctx->last_pcr_clock = clock;
+        }
+    }
+
+    // Process a PYS in a video/audio PID which is associated to a splicing PID.
+    if (has_splice && pkt.hasPTS()) {
 
         // Remember the latest PTS value for this splice PID.
-        const PID spid = _splice_pids[pid];
-        SpliceContext& ctx(_splice_contexts[spid]);
-        ctx.last_pts = pkt.getPTS();
-        ctx.last_pts_packet = tsp->pluginPackets();
+        ctx->last_pts = pkt.getPTS();
+        ctx->last_pts_packet = tsp->pluginPackets();
 
-        for (auto it = ctx.splice_events.begin(); it != ctx.splice_events.end(); ) {
+        for (auto it = ctx->splice_events.begin(); it != ctx->splice_events.end(); ) {
             SpliceEvent& evt(it->second);
 
             // Look for event occurrence.
-            if (evt.event_id != SpliceInsert::INVALID_EVENT_ID && evt.event_pts != INVALID_PTS && ctx.last_pts >= evt.event_pts) {
+            if (evt.event_id != SpliceInsert::INVALID_EVENT_ID && evt.event_pts != INVALID_PTS && ctx->last_pts >= evt.event_pts) {
 
                 // Evaluate time since first command. Assume constant bitrate since then.
                 const cn::milliseconds preroll = PacketInterval(tsp->bitrate(), tsp->pluginPackets() - evt.first_cmd_packet);
@@ -636,7 +787,7 @@ ts::ProcessorPlugin::Status ts::SpliceMonitorPlugin::processPacket(TSPacket& pkt
                     (_max_repetition != 0 && evt.event_count > _max_repetition);
 
                 // Build a one-line message.
-                UString line(message(spid, evt.event_id, u"occurred"));
+                UString line(message(splice_pid, evt.event_id, u"occurred"));
                 if (preroll > cn::milliseconds::zero()) {
                     line.format(u", actual pre-roll time: %'!s", preroll);
                 }
@@ -644,7 +795,7 @@ ts::ProcessorPlugin::Status ts::SpliceMonitorPlugin::processPacket(TSPacket& pkt
                 // Display the event.
                 if (_json_args.useJSON()) {
                     json::Object obj;
-                    initJSON(obj, spid, evt.event_id, u"occurred", ctx, &evt);
+                    initJSON(obj, splice_pid, evt.event_id, u"occurred", *ctx, &evt);
                     obj.add(u"status", alarm ? u"alarm" : u"normal");
                     obj.add(u"pre-roll-ms", preroll.count());
                     _json_args.report(obj, _json_doc, *this);
@@ -653,18 +804,21 @@ ts::ProcessorPlugin::Status ts::SpliceMonitorPlugin::processPacket(TSPacket& pkt
                     display(line);
                 }
 
+                // Send to InfluxDB when necessary.
+                sendInflux(splice_pid, evt, EV_OCCURRED, preroll);
+
                 // Raise alarm if outside nominal range.
                 if (!_alarm_command.empty() && alarm) {
                     UString command;
                     command.format(u"%s \"%s\" %d %d %s %d %d %d",
-                                   _alarm_command, line, spid, evt.event_id,
+                                   _alarm_command, line, splice_pid, evt.event_id,
                                    evt.event_out ? u"out" : u"in",
                                    evt.event_pts, preroll.count(), evt.event_count);
                     ForkPipe::Launch(command, *this, ForkPipe::STDERR_ONLY, ForkPipe::STDIN_NONE);
                 }
 
                 // Forget about this event, it is now in the past.
-                it = ctx.splice_events.erase(it);
+                it = ctx->splice_events.erase(it);
             }
             else {
                 // This is still a future event, move to next event.

@@ -588,13 +588,9 @@ void ts::InfluxPlugin::reportMetrics(Time timestamp, cn::milliseconds duration)
     // Debug output of the complete message to InfluxDB.
     debug(u"report at %s, for last %s, data: \"%s\"", timestamp, duration, req->currentContent());
 
-    // Send the data to the outgoing thread. Use a zero timeout.
-    // It the thread is so slow that the queue is full, just drop the metrics for this interval.
+    // Send the data to the outgoing thread.
     if (_server.send(req)) {
         _sent_metrics++;
-    }
-    else {
-        warning(u"lost metrics, consider increasing --queue-size (current: %d)", _influx_args.queue_size);
     }
 
     // Reset metrics.

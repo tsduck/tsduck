@@ -29,7 +29,7 @@ namespace ts {
     //! By default, the clock is based on real UTC time and TS packets are unused.
     //! @ingroup libtsduck mpeg
     //!
-    class TSDUCKDLL TSClock : private TableHandlerInterface
+    class TSDUCKDLL TSClock : private TableHandlerInterface, SectionHandlerInterface
     {
         TS_NOBUILD_NOCOPY(TSClock);
     public:
@@ -112,9 +112,11 @@ namespace ts {
         PCR          _switch_timestamp {};        // PCR or input timestamp at last source switch.
         TimeSource   _last_source = TimeSource::UNDEFINED;
         PCRAnalyzer  _pcr_analyzer {1, 1};
-        SectionDemux _demux {_duck, this};
+        SectionDemux _demux {_duck, this, this};
 
-        // Implementation of TableHandlerInterface
+        // Implementation of interfaces to handle UTC time from the stream.
         virtual void handleTable(SectionDemux& demux, const BinaryTable& table) override;
+        virtual void handleSection(SectionDemux& demux, const Section& section) override;
+        void handleUTC(const Time& time);
     };
 }

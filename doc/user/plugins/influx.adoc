@@ -189,15 +189,15 @@ A timestamp is always provided with each data entry.
 Depending on the plugin options, this can be a local time or a UTC time,
 a wall-clock time or a time which is extracted from the stream.
 
-The following table lists the possible types of the field `_measurement` and the semantics of the corresponding field `_value`.
-The `_value` type is `float` (in practice, an integer value is provided).
+The following table lists the possible types of the field `_measurement` and the semantics of the corresponding field `value`.
+The `value` type is `float` (in practice, an integer value is provided).
 The tags are present for all occurrences of the corresponding `_measurement`.
 The presence of the secondary tags depend on the `scope` tag.
 
 .InfluxDB measurements and values
 [cols="<1m,<1,<1m,<1m",stripes=none,options="autowidth"]
 |===
-|_measurement |_value |Tags |Secondary tags
+|_measurement |value |Tags |Secondary tags
 
 |bitrate
 |bitrate in bits/second
@@ -268,7 +268,7 @@ Each entry contains the following information:
 
 [.compact-list]
 * Field `_measurement`: `bitrate`.
-* Field `_value`: the bitrate in bits/second during the measurement period.
+* Field `value`: the bitrate in bits/second during the measurement period.
 * Tag `scope`: an identifier defining the scope of the bitrate value.
   The possible values are `ts` (total bitrate of the transport stream),
   `service` (accumulated bitrate of all PID's in a service), `pid` (bitrate of one PID),
@@ -328,7 +328,7 @@ Each entry contains the following information:
 
 [.compact-list]
 * Field `_measurement`: one of `pcr`, `pts`, `dts`, depending on the type of timestamp.
-* Field `_value`: the raw value of the last timestamp of that type in the measurement period.
+* Field `value`: the raw value of the last timestamp of that type in the measurement period.
 * Tag `scope`: an identifier defining the scope of the bitrate value.
   The possible values are `service` (last timestamp in any PID of a service), `pid` (last timestamp in one PID).
 * Tag `tsid`: this is the transport stream id as an integer.
