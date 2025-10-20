@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.43-4465 (October 2025)
+VERSION 3.43-4467 (October 2025)
 
 [NEW] New commands and plugins:
 
@@ -44,6 +44,10 @@ VERSION 3.43-4465 (October 2025)
   * Fixed issue #1677:  In plugin "descrambler", using the fake ECM's for test,
     and  scrambling  modes  AES-CBC  or AES-CTR, the descrambling failed due to
     improper initialization of the IV.
+  * Fixed issue #1680: On Windows, when non-ASCII characters were passed on the
+    command line  to any TSDuck command, they were converted by Windows to '?'.
+    A workaround  has been applied to get all exact characters from the command
+    line.
 
 -------------------------------------------------------------------------------
 
