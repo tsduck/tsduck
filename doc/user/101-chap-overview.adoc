@@ -18,7 +18,7 @@ Here is a brief summary of pros and cons of using TSDuck on the various operatin
 ** Availability of a powerful shell environment. TSDuck is a lightweight toolkit with elementary
    tools and plugins which can be combined in an infinite number of ways.
    The user can obtain even more flexibility when combining them with the bash shell and all standard
-   UNIX utilities (`grep`, `sed`, `awk`, etc.) See some complex examples in section 5.2.
+   UNIX utilities (`grep`, `sed`, `awk`, etc.) See some complex examples in xref:tsp-examples[xrefstyle=short].
 * Linux cons:
 ** When used in a mobile environment, a laptop PC with Linux is required.
 ** Some DVB tuners are not supported on Linux.
@@ -57,8 +57,9 @@ The provided services include low-level features such as manipulating TS packets
 features such as demuxing and packetizing tables and high-level features such as running TS
 processing pipelines inside your application (which means something like including `tsp` in your application).
 
-See <<TSDuck-Dev>> and <<TSDuck-Prog>> for more details on the TSDuck library.
-This is a set of doxygen-generated pages with tutorials and reference documentation for all {cpp} classes in the library.
+See the Developer's Guide <<TSDuck-Dev>> and the Programming Reference <<TSDuck-Prog>>
+for more details on the TSDuck library. The latter is a set of doxygen-generated pages with
+reference documentation for all {cpp} classes in the library.
 
 Some high-level features of the TSDuck library can also be used from Python or Java, typically running
 TS processing pipelines or manipulating tables and sections inside Python or Java applications.
@@ -83,10 +84,15 @@ Winget is now the preferred package manager for open source and third-party prod
 It is documented and supported by Microsoft.
 It should be pre-installed on all recent Windows 10 and Windows 11 systems.
 
-The TSDuck installation command is simply `winget install tsduck`.
+The TSDuck installation command is simply:
 
-If you prefer the traditional method, binary executable installers are provided for 64-bit Windows platforms.
-Simply run the executable to install TSDuck.
+[source,powershell]
+----
+C:\> winget install tsduck
+----
+
+If you prefer the traditional method, binary executable installers are provided for 64-bit Windows platforms,
+Intel and Arm. Simply run the executable to install TSDuck.
 
 The directory containing the command-line tools is automatically added to the Path.
 The TSDuck development environment is included in the installer but it is not installed by default.
@@ -110,8 +116,8 @@ See the chapter xref:tsduck-dev.html#chap-build["building and installing TSDuck"
 
 Two flavors of pre-built packages are available: `.rpm` for Fedora or Red Hat systems
 and `.deb` for Ubuntu or Debian systems.
-Currently, packages are available for Intel x64 platforms.
-Some packages are also available for Arm64.
+Currently, packages are available for Intel x64 and Arm64 platforms.
+Some packages are also available for RISC-V and IBM s390x.
 
 All tools are in `/usr/bin`.
 There is a separate package for the TSDuck development environment.
@@ -124,7 +130,12 @@ See the chapter xref:tsduck-dev.html#chap-build["building and installing TSDuck"
 
 On macOS, TSDuck is installed using the Homebrew packaging and delivery system (see <<HomeBrew>>).
 
-The TSDuck installation command is simply `brew install tsduck`.
+The TSDuck installation command is simply:
+
+[source,shell]
+----
+$ brew install tsduck
+----
 
 All tools are accessible from `/usr/local/bin` (Intel Mac) or `/opt/homebrew/bin` (Arm Apple Silicon Mac).
 This is the standard installation structure for Homebrew.

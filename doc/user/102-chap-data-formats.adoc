@@ -58,7 +58,7 @@ But the auto-detection may fail in some cases (for instance when the first times
 starts with `0x47` in which case the file would be incorrectly identified as TS).
 Using the option `--format` forces a specific format to avoid ambiguities.
 
-On output, the default format is a standard TS file.
+On output, the default format is a standard TS file. Use an explicit option `--format` to generate other formats.
 
 The table below lists all possible format names as used with the option `--format`.
 
@@ -390,7 +390,8 @@ The sections are packetized or injected in their order of appearance in the file
 
 Finally, binary section files can also be decompiled by `tstabcomp` to recreate the corresponding XML files from the binary tables.
 But note that XML files contain complete tables only.
-This means that tables can be recreated only when their sections are contiguous and in increasing order of section number in the binary file.
+This means that tables can be recreated only when their sections are contiguous
+and in increasing order of section number in the binary file.
 
 [#psi-xml-format]
 ==== PSI/SI XML format
@@ -400,6 +401,8 @@ The root node contains any number of tables.
 
 Unlike binary files which may contain individual sections, XML files can only contain complete tables.
 The XML format represents a higher-level view of a table, regardless of the binary implementation in one or more sections.
+
+The complete definition of the XML model can be found in xref:chap-sixmlref[xrefstyle=short].
 
 The following sample XML file contains the definition for simple (and incomplete) PAT and PMT.
 
@@ -430,7 +433,6 @@ The following sample XML file contains the definition for simple (and incomplete
 All XML files shall be encoded in UTF-8 format to allow
 international character sets in service names or event descriptions for instance.
 The initial declaration line `<?xml version="1.0" encoding="UTF-8"?>` is optional but recommended.
-The complete definition of the XML model can be found in xref:chap-sixmlref[xrefstyle=short].
 
 [#compat-standards]
 === Compatibility and conflicts between standards
@@ -459,13 +461,15 @@ Note that these standards are also used in other parts of the world, in addition
 The third layer is made of ANSI/SCTE standards.
 They are application-level standards such as emergency alerts <<SCTE-18>>,
 splice signalization for advertisement <<SCTE-35>> or encryption <<SCTE-52>>.
-These standards were originally designed to complement ATSC in the USA but they are sometimes used in conjunction with DVB (especially <<SCTE-35>>).
+These standards were originally designed to complement ATSC in the USA
+but they are sometimes used in conjunction with DVB (especially <<SCTE-35>>).
 Parts of the <<SCTE-52>> standard were also reused in ATIS-defined standards for IP-TV encryption.
 
 DVB and ATSC are independent and mutually exclusive standards.
 They are never used together in the same transport stream.
 Most of their table ids and descriptor tags use distinct ranges.
-It is consequently easy to "guess" the second layer of standard of a transport stream, when one of their specific sections or descriptors is used.
+It is consequently easy to "guess" the second layer of standard of a transport stream,
+when one of their specific sections or descriptors is used.
 
 DVB adds a non-ambiguous concept of _private descriptors_ where properly registered entities,
 operators or industries may define their own privately defined descriptors.
@@ -473,7 +477,7 @@ operators or industries may define their own privately defined descriptors.
 ISDB is the troublemaker which makes things complicated and often requires manual setup using
 TSDuck command line options or default configuration.
 
-* ISDB was originally defined in Japan by ARIB in two flavors, ISDB-T and ISDB-S.
+* ISDB was originally defined in Japan by ARIB in two flavors, ISDB-T for terrestrial TV and ISDB-S for satellite.
 * ISDB was later adopted by other countries, starting with Brazil, for terrestrial TV.
   At this time, the standards were redefined by ABNT (Brazil) under the name ISDB-Tb,
   to amend features which were too Japanese-specific, creating two branches of ISDB.

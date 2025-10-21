@@ -10,8 +10,9 @@
 [preface]
 == Preface
 
-TSDuck is a free and open-source MPEG Transport Stream Toolkit.
+TSDuck is a free and open-source toolkit to manipulate MPEG Transport Streams.
 It contains a set of simple but flexible command-line utilities that run on Linux, Windows, macOS and BSD systems.
+These commands are designed for scripting and automation in lab or production environments.
 
 Through `tsp`, the "transport stream processor", many types of analysis and
 transformation can be applied on live or recorded transport streams.
@@ -23,12 +24,18 @@ It explains the basic concepts of TSDuck and contains reference sections for all
 
 Structure of this guide:
 
-* The xref:chap-data[xrefstyle=short] describes the data formats (transport stream, binary sections files, XML files).
+* The xref:chap-overview[xrefstyle=short] provides an overview of TSDuck and
+  how to install it on the various operating systems.
+* The xref:chap-data[xrefstyle=short] describes the data formats
+  (transport stream, binary sections files, character sets, XML and JSON files).
+* The xref:chap-security[xrefstyle=short] provides some information on how TSDuck addresses cybersecurity.
 * The xref:chap-commands[xrefstyle=short] describes all TSDuck commands.
 * The xref:chap-plugins[xrefstyle=short] describes all `tsp` plugins.
 * The xref:chap-examples[xrefstyle=short] provides some concrete examples of TSDuck usage.
-* The xref:chap-hardware[xrefstyle=short] describes the level of test and support for some hardware devices, mainly
-  DVB receivers and Dektec, HiDes or VATek devices.
+* The xref:chap-troubleshooting[xrefstyle=short] provides some troubleshooting guidelines
+  when encountering problems when using TSDuck.
+* The xref:chap-hardware[xrefstyle=short] describes the level of test and support for some hardware devices,
+  mainly DVB receivers and Dektec, HiDes or VATek devices.
 
 The world of Digital Television is built on top of a set of robust standards from various bodies.
 Understanding these standards and how they interact is essential to use TSDuck.

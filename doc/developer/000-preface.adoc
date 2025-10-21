@@ -10,7 +10,7 @@
 [preface]
 == Preface
 
-TSDuck is a toolkit which manipulates MPEG Transport Streams (TS).
+TSDuck is a free and open-source toolkit to manipulate MPEG Transport Streams.
 
 As a product, TSDuck provides many different command-line tools and plugins.
 Internally, the architecture of TSDuck is made of a large shareable library
@@ -41,6 +41,8 @@ Structure of this guide:
 * The xref:chap-maintenance[xrefstyle=short] is a reference section for TSDuck maintainers.
   It describes how the code is organized, the test and delivery processes, the automation
   of the project.
+* The xref:coding[xrefstyle=short] lists the coding guidelines which are used in the development of TSDuck.
+  All maintainers and contributors are required to follow these guidelines.
 
 In addition to this developer's guide, a comprehensive
 {home}doxy/[reference programming documentation] is available online.
