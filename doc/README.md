@@ -2,13 +2,13 @@
 
 Subdirectories:
 
-- `user`: TSDuck User's Guide (asciidoc).
-- `developer`: TSDuck Developer's Guide (asciidoc).
+- `user`: TSDuck User Guide (asciidoc).
+- `developer`: TSDuck Developer Guide (asciidoc).
 - `doxy`: TSDuck Programming Reference (doxygen, from source files).
 - `adoc`: Common files for Asciidoctor (CSS, docinfo, PDF theme).
 - `presentations`: Various presentations on TSDuck (Microsoft Office).
 
-Building the user and developer's guides:
+Building the user and developer guides:
 
 - UNIX systems: `make`
 - Windows: `.\build-doc.ps1`

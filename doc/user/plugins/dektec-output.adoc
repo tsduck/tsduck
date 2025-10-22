@@ -206,7 +206,7 @@ Preload FIFO (hardware buffer) before starting transmission.
 [.optdoc]
 Preloading the FIFO will introduce a variable delay to the start of transmission,
 if the delivery of packets to the plug-in is pre-regulated, based on the size of the FIFO,
-the TS bit rate, and the size of the FIFO to preload,
+the TS bitrate, and the size of the FIFO to preload,
 as controlled by the `--preload-fifo-percentage` or `--preload-fifo-delay` options.
 
 [.optdoc]
@@ -222,7 +222,7 @@ This option is implicitly set when using a modulator for output.
 
 [.optdoc]
 The use of this option indicates that the size of the FIFO to preload prior to starting transmission
-should be calculated based on the specified delay, in milliseconds, and the configured bit rate.
+should be calculated based on the specified delay, in milliseconds, and the configured bitrate.
 That is, transmission will start after the specified delay worth of media has been preloaded.
 
 [.optdoc]

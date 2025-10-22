@@ -32,9 +32,9 @@ This set of documentation is the programming reference for the TSDuck library.
 
 Other reference documents:
 
-- <a href="https://tsduck.io/docs/tsduck.html">TSDuck User's Guide</a>
+- <a href="https://tsduck.io/docs/tsduck.html">TSDuck User Guide</a>
   (<a href="https://tsduck.io/docs/tsduck.pdf">PDF</a>)
-- <a href="https://tsduck.io/docs/tsduck-dev.html">TSDuck Developer's Guide</a>
+- <a href="https://tsduck.io/docs/tsduck-dev.html">TSDuck Developer Guide</a>
   (<a href="https://tsduck.io/docs/tsduck-dev.pdf">PDF</a>)
 
 */

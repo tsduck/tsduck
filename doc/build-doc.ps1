@@ -19,11 +19,11 @@
 
  .PARAMETER User
 
-  Generate the user's guide only. By default, generate all documents.
+  Generate the user guide only. By default, generate all documents.
 
  .PARAMETER Developer
 
-  Generate the developer's guide only. By default, generate all documents.
+  Generate the developer guide only. By default, generate all documents.
 
  .PARAMETER Html
 
@@ -163,7 +163,7 @@ function Build-IncludeAll($OutFile, $DocDir, $SubDir)
         Out-File $OutFile -Encoding utf8
 }
 
-# Generate subdoc files for all commands and all plugins in user's guide.
+# Generate subdoc files for all commands and all plugins in user guide.
 if ($User) {
     Build-IncludeAll "$UserGuideDir\.all.commands.adoc" $UserGuideDir "commands"
     Build-IncludeAll "$UserGuideDir\.all.plugins.adoc" $UserGuideDir "plugins"
@@ -176,7 +176,7 @@ if ($User) {
         foreach ($Std in $Standards) {
             $OutName = ".all.$Std.$Type.adoc"
             $OutFile = "$UserGuideDir\$OutName"
-            # Check that this file is correctly referenced in the user's guide.
+            # Check that this file is correctly referenced in the user guide.
             # If someone adds a new standard, created a new directory, and forgot to update the main document.
             if (-not (Select-String -Path $UserSiXml -Pattern “^include::$OutName\[]” -Quiet)) {
                 Write-Error "File $OutName not included in $UserSiXml"
@@ -197,7 +197,7 @@ if ($User) {
     }
 }
 
-# Generate subdoc files for all tables and all descriptors in developer's guide.
+# Generate subdoc files for all tables and all descriptors in developer guide.
 if ($Developer) {
     python "$DevGuideDir\build-sigref.py" tables "$DevGuideDir\.all.tables.adoc"
     python "$DevGuideDir\build-sigref.py" descriptors "$DevGuideDir\.all.descriptors.adoc"

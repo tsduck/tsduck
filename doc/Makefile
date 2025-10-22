@@ -96,7 +96,7 @@ $(BINDOCINFO)/docinfo-footer.html: $(ADOCDIR)/docinfo-footer.in.html $(ADOCDIR)/
 	cat $(ADOCDIR)/docinfo-footer.in.html >>$@
 
 #-----------------------------------------------------------------------------
-# User's guide
+# User guide
 #-----------------------------------------------------------------------------
 
 .PHONY: userguide userguide-html userguide-pdf open-userguide open-userguide-html open-userguide-pdf
@@ -169,7 +169,7 @@ $(BINDOC)/tsduck.bigpdf: $(USERGUIDE_INPUTS) $(COMMON_INPUTS_PDF)
 	$(ASCIIDOCTOR_PDF) $(ADOCFLAGS_PDF) $(USERDOCDIR)/tsduck.adoc -D $(dir $@) -o $(notdir $@)
 
 #-----------------------------------------------------------------------------
-# Developer's guide
+# Developer guide
 #-----------------------------------------------------------------------------
 
 .PHONY: devguide devguide-html devguide-pdf open-devguide open-devguide-html open-devguide-pdf

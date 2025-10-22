@@ -12,9 +12,9 @@
 This section describes some specificities of the various types of hardware devices
 which are supported by TSDuck and their impact on the code.
 
-The TSDuck User's Guide has a complete chapter on each of these classes of devices.
+The TSDuck user guide has a complete chapter on each of these classes of devices.
 It describes the devices, their naming, usage, supported platforms, required drivers, etc.
-In the Developer's Guide, we focus on the structure of the code, for TSDuck maintainers.
+In the Developer Guide, we focus on the structure of the code, for TSDuck maintainers.
 
 ==== Standard tuner receiver devices (DVB, ATSC, ISDB)
 
@@ -36,7 +36,7 @@ or `TunerEmulator` object.
 The subclass `TunerEmulator` is a pure software implementation which is available
 on all systems. The name of such a device in a XML file which describes all the
 capabilities of the "tuner" and the available frequencies and corresponding
-modulation parameters. The TSDuck User's Guide describes the tuner emulator in details.
+modulation parameters. The TSDuck user guide describes the tuner emulator in details.
 
 The `TunerDevice` class is highly dependent on the operating system.
 The source files are different and placed in system-specific directories.
@@ -161,7 +161,7 @@ not possible to analyze ISDB-T information from the `dvb` plugin.
 Using Dektec devices requires kernel-mode device drivers which must be separately installed.
 Building TSDuck code does not depend on the device drivers.
 They are only required to use Dektec devices.
-The TSDuck User's Guide describes how to install the Dektec drivers.
+The TSDuck user guide describes how to install the Dektec drivers.
 
 TSDuck does not call the device drivers directly.
 Dektec provides a user-mode API for {cpp} called "DTAPI".
@@ -225,7 +225,7 @@ for Digital TV, has interfaces for `libtscore` and `libtsduck`, but not for
 Using HiDes devices requires kernel-mode device drivers which must be separately installed.
 The drivers are provided by ITE, the vendor of the main chip in HiDes modulators.
 Building TSDuck code does not depend on the device drivers. They are only required to use HiDes devices.
-The TSDuck User's Guide describes how to install the HiDes drivers.
+The TSDuck user guide describes how to install the HiDes drivers.
 
 The ITE drivers for Linux and Windows are very different, there is no common structure,
 no common API or structure. There is also no stable common userland API above the drivers.

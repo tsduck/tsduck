@@ -37,7 +37,7 @@ namespace ts {
         public:
             uint8_t  audio_codec_id = 0;       //!< 4 bits. the audio coding method (common or lossless)
             uint8_t  coding_profile = 0;       //!< 3 bits.  basic framework or object metadata based framework
-            uint8_t  bitrate_index = 0;        //!< 4 bits. index to bit rate tables (A.11~A.13) in GB/T33475.3
+            uint8_t  bitrate_index = 0;        //!< 4 bits. index to bitrate tables (A.11~A.13) in GB/T33475.3
             int      bitstream_type = 0;       //!< 1 bit.  the bitsream type : 0 = uniform, 1 = variable
             uint16_t raw_frame_length = 0;     //!< according to Appendix A.2 of GB/T33475.3
             uint8_t  resolution = 0;           //!< 2 bits. the number of bits per sample 0=8, 1=16, 3=24

@@ -129,8 +129,8 @@ $ git checkout newfeature
 
 Then, do your coding work.
 
-If the contribution brings new features, be sure to document them in the TSDuck user's guide.
-The user's guide is made of text files in Asciidoc format in the directory `doc/user`.
+If the contribution brings new features, be sure to document them in the TSDuck user guide.
+The user guide is made of text files in Asciidoc format in the directory `doc/user`.
 
 New features and bug fixes should also be documented in the file `CHANGELOG.txt`.
 
@@ -282,7 +282,7 @@ However, in the context of the TSDuck repository, this method creates problems a
 
 With this configuration in `.git/config`, the command `git fetch` always fetches _all_ pull requests from the
 beginning. In the general case, this is not a problem. However, the TSDuck repository went through a history
-rewrite in August 2024. The original user's and developer's guides were maintained in Microsoft Word files.
+rewrite in August 2024. The original user's and developer guides were maintained in Microsoft Word files.
 They are binary files which are badly managed by git. The TSDuck repository accumulated 2 GB of history.
 Each `git clone` command triggered 2 GB of data transfer. Each local repository had 2 GB of disk space in
 the `.git` subdirectory. To solve this, the documentation was migrated to Asciidoc, a text format.

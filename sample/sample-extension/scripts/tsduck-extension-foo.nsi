@@ -20,7 +20,7 @@
 !define FullName "TSDuck Foo Extension"
 !define ShortName "TSDuck-Extension-Foo"
 !define AuthorName "Foo Company"
-!define DocLinkName "TSDuck Foo Extension User's Guide"
+!define DocLinkName "TSDuck Foo Extension User Guide"
 
 Name "${ShortName}"
 Caption "${FullName} Installer"

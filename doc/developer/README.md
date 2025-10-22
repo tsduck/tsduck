@@ -1,3 +1,3 @@
-## TSDuck Developer's Guide
+## TSDuck Developer Guide
 
 In asciidoc format.

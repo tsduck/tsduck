@@ -12,37 +12,47 @@
 === Operating system selection guidelines
 
 TSDuck runs on Linux, Windows, macOS and BSD systems.
-Here is a brief summary of pros and cons of using TSDuck on the various operating systems.
+The following table summaries the pros and cons of using TSDuck on the various operating systems.
 
-* Linux pros:
-** Availability of a powerful shell environment. TSDuck is a lightweight toolkit with elementary
-   tools and plugins which can be combined in an infinite number of ways.
-   The user can obtain even more flexibility when combining them with the bash shell and all standard
-   UNIX utilities (`grep`, `sed`, `awk`, etc.) See some complex examples in xref:tsp-examples[xrefstyle=short].
-* Linux cons:
-** When used in a mobile environment, a laptop PC with Linux is required.
-** Some DVB tuners are not supported on Linux.
-   Some supported tuners do not work well on Linux.
-   Make sure to get fully supported DVB hardware.
-* Windows pros:
-** Available on all "average user" laptop PC. Useful for transport stream capture and analysis in the field.
-* Windows cons:
-** No or limited shell environment.
-** Some limitations in the support of hardware DVB/ATSC/ISDB tuner devices
-   (see xref:tuners-windows[xrefstyle=short], for more details).
-   The development of the DirectShow framework which supports these tuners seems stopped.
-   Recent modulation schemes are not supported.
-* macOS pros:
-** Availability of a powerful shell environment, just another UNIX system, just like Linux.
-   Powerful user-friendly system.
-* macOS cons:
-** Currently no support for hardware tuners and Dektec devices.
-   So, macOS is recommended only when dealing with transport stream files, IP networking or VATek-based modulators.
-* BSD systems: For aficionados only.
+.Operating systems selection
+[cols="<10,<45,<45",stripes=none]
+|===
+|System |Pros |Cons
 
-*Summary*: Use Linux if you can.
-Use Windows when you do not have Linux (typically a Windows laptop in the field).
-Use macOS if you have a Mac and do not need DVB or Dektec hardware.
+|Linux
+|Availability of a powerful shell environment. TSDuck is a lightweight toolkit with elementary
+ tools and plugins which can be combined in an infinite number of ways.
+ The user can obtain even more flexibility when combining them with the bash shell and all standard
+ UNIX utilities (`grep`, `sed`, `awk`, etc.) See some complex examples in xref:tsp-examples[xrefstyle=short].
+|When used in a mobile environment, a laptop PC with Linux is required. +
+ Some DVB tuners are not supported on Linux.
+ Some supported tuners do not work well on Linux.
+ Make sure to get fully supported DVB hardware.
+
+|Windows
+|Available on all "average user" laptop PC. Useful for transport stream capture and analysis in the field.
+|No or limited shell environment. +
+ Some limitations in the support of hardware DVB/ATSC/ISDB tuner devices
+ (see xref:tuners-windows[xrefstyle=short], for more details).
+ The development of the DirectShow framework which supports these tuners seems stopped.
+ Recent modulation schemes are not supported.
+
+|macOS
+|Availability of a powerful shell environment, just another UNIX system, just like Linux.
+ Powerful user-friendly system.
+|Currently no support for hardware tuners and Dektec devices.
+ Recommended only when dealing with transport stream files, IP networking or VATek-based modulators.
+
+|BSD
+|For aficionados only.
+|For aficionados only.
+|===
+
+*Summary*:
+[.compact-list]
+* Use Linux if you can.
+* Use Windows when you do not have Linux (typically a Windows laptop in the field).
+* Use macOS if you have a Mac and do not need DVB or Dektec hardware.
 
 === Developing applications using the TSDuck library
 
@@ -50,14 +60,18 @@ TSDuck is mainly a large {cpp} library for Digital TV applications.
 All TSDuck commands and plugins are thin wrappers on top of {cpp} classes from this library.
 
 This library can be used by third-party applications, outside the TSDuck tools and plugins.
-To do that, you must install the "TSDuck development environment".
+First, install the _TSDuck development environment_.
+This environment contains the {cpp} header files and static libraries
+(the dynamic libraries are already installed with TSDuck).
+See the chapter xref:tsduck-dev.html#installing["installing TSDuck"] section in <<TSDuck-Dev>>
+for more information on the installation of TSDuck and its development environment.
 
 Using the TSDuck library, you can develop independent Digital TV applications or TSDuck plugins.
 The provided services include low-level features such as manipulating TS packets, intermediate
 features such as demuxing and packetizing tables and high-level features such as running TS
 processing pipelines inside your application (which means something like including `tsp` in your application).
 
-See the Developer's Guide <<TSDuck-Dev>> and the Programming Reference <<TSDuck-Prog>>
+See the Developer Guide <<TSDuck-Dev>> and the Programming Reference <<TSDuck-Prog>>
 for more details on the TSDuck library. The latter is a set of doxygen-generated pages with
 reference documentation for all {cpp} classes in the library.
 

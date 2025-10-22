@@ -236,7 +236,7 @@ void ts::TunerArgs::defineArgs(Args& args, bool allow_short_options)
         args.option(u"tuning-file", 0, Args::FILENAME);
         args.help(u"tuning-file",
                   u"Tuning configuration file to use for option -c or --channel-transponder. "
-                  u"This is an XML file. See the TSDuck user's guide for more details. "
+                  u"This is an XML file. See the TSDuck user guide for more details. "
                   u"Tuning configuration files can be created using the tsscan utility or the nitscan plugin. "
                   u"The location of the default tuning configuration file depends on the system."
 #if defined(TS_LINUX)

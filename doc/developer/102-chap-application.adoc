@@ -82,7 +82,7 @@ you must install the TSDuck development environment first.
 ==== Building applications on {unix}
 
 The command `tsconfig` generates the appropriate build options for the current operating system.
-See the TSDuck user's guide for more details on `tsconfig`.
+See the TSDuck user guide for more details on `tsconfig`.
 
 The following sample makefile illustrates the creation of a simple
 application named `myexec` using one single source file `myexec.cpp`.
@@ -104,7 +104,7 @@ Just run `make` to build the application.
 $ make
 ----
 
-As explained in the user's guide, use the `tsconfig` option `--tscore` if you want to
+As explained in the user guide, use the `tsconfig` option `--tscore` if you want to
 use the TSCore library only, not the full TSDuck library for Digital TV.
 For instance:
 

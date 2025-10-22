@@ -572,7 +572,7 @@ ts::DektecOutputPlugin::DektecOutputPlugin(TSP* tsp_) :
     help(u"preload-fifo-delay",
          u"The use of this option indicates that the size of the FIFO to preload prior to "
          u"starting transmission should be calculated based on the specified delay, in "
-         u"milliseconds, and the configured bit rate. That is, transmission will start after "
+         u"milliseconds, and the configured bitrate. That is, transmission will start after "
          u"the specified delay worth of media has been preloaded. This option takes precedence "
          u"over the --preload-fifo-percentage option. There is no default value, and the valid "
          u"range is 100-100000.");
@@ -971,11 +971,11 @@ bool ts::DektecOutputPlugin::start()
     if (present(u"preload-fifo-delay")) {
         getIntValue(_guts->preload_fifo_delay, u"preload-fifo-delay");
         if (_guts->preload_fifo_delay && !setPreloadFIFOSizeBasedOnDelay()) {
-            // Can't set _guts->preload_fifo_size yet based on delay, because the bit rate hasn't been set yet.
+            // Can't set _guts->preload_fifo_size yet based on delay, because the bitrate hasn't been set yet.
             // for now, fall through to --preload-fifo-percentage, with expectation that it will
-            // be calculated later when the caller sets the bit rate on the TSP object (and potentially
-            // multiple times later if the bit rate changes multiple times during a session)
-            tsp->verbose(u"For --preload-fifo-delay, no bit rate currently set, so will use --preload-fifo-percentage settings until a bit rate has been set.");
+            // be calculated later when the caller sets the bitrate on the TSP object (and potentially
+            // multiple times later if the bitrate changes multiple times during a session)
+            tsp->verbose(u"For --preload-fifo-delay, no bitrate currently set, so will use --preload-fifo-percentage settings until a bitrate has been set.");
         }
     }
 
@@ -987,7 +987,7 @@ bool ts::DektecOutputPlugin::start()
             if ((_guts->preload_fifo_size + _guts->maintain_threshold) > _guts->fifo_size) {
                 // Want at least the DEFAULT_MAINTAIN_PRELOAD_THRESHOLD_SIZE threshold when using a percentage of
                 // the FIFO and wanting to drop packets.  Note that the preload-fifo-delay approach is preferable
-                // when preloading the fifo because it takes the bit rate into question.
+                // when preloading the fifo because it takes the bitrate into question.
                 int new_preload_size = round_down(_guts->fifo_size - _guts->maintain_threshold, int(PKT_SIZE));
                 tsp->verbose(u"For --preload-fifo-percentage (%d), reducing calculated preload size from %'d bytes to %'d bytes to account for %'d byte threshold "
                     u"because both maintaining preload and dropping packets to maintain preload as necessary.",
@@ -1652,9 +1652,9 @@ bool ts::DektecOutputPlugin::send(const TSPacket* buffer, const TSPacketMetadata
         tsp->verbose(u"new output bitrate: %'d b/s", _guts->cur_bitrate);
 
         if (setPreloadFIFOSizeBasedOnDelay()) {
-            tsp->verbose(u"Due to new bit rate and specified delay of %d ms, preload FIFO size adjusted: %'d bytes.", _guts->preload_fifo_delay, _guts->preload_fifo_size);
+            tsp->verbose(u"Due to new bitrate and specified delay of %d ms, preload FIFO size adjusted: %'d bytes.", _guts->preload_fifo_delay, _guts->preload_fifo_size);
             if (_guts->maintain_threshold) {
-                tsp->verbose(u"Further, maintain preload threshold for dropping packets set to %'d bytes based on bit rate.", _guts->maintain_threshold);
+                tsp->verbose(u"Further, maintain preload threshold for dropping packets set to %'d bytes based on bitrate.", _guts->maintain_threshold);
             }
         }
     }
@@ -1744,7 +1744,7 @@ bool ts::DektecOutputPlugin::send(const TSPacket* buffer, const TSPacketMetadata
                         // playback.  Because the various preload options would only be used for real-time packet delivery, there is no
                         // need to consider the case that send() is called with a huge buffer, as that can't realistically happen when
                         // dealing with real-time packet delivery.  That is, with real-time packet delivery, you can only deliver packets
-                        // to the output plug-in no faster than the TS bit rate.
+                        // to the output plug-in no faster than the TS bitrate.
                         // In that case, how could you ever get to the drop code?  The only realistic situation when this could occur is
                         // if the real-time packets are being received over the network, network connectivity is lost temporarily, and
                         // then restored and delivers all the packets that should have been received during the lost connectivity all at
@@ -1843,10 +1843,10 @@ bool ts::DektecOutputPlugin::send(const TSPacket* buffer, const TSPacketMetadata
 bool ts::DektecOutputPlugin::setPreloadFIFOSizeBasedOnDelay()
 {
     if (_guts->preload_fifo_delay && _guts->cur_bitrate != 0) {
-        // calculate new preload FIFO size based on new bit rate
-        // to calculate the size, in bytes, based on the bit rate and the requested delay, it is:
-        // <bit rate (in bits/s)> / <8 bytes / bit> * <delay (in ms)> / <1000 ms / s>
-        // converting to uint64_t because multiplying the current bit rate by the delay may exceed the max value for a uint32_t
+        // calculate new preload FIFO size based on new bitrate
+        // to calculate the size, in bytes, based on the bitrate and the requested delay, it is:
+        // <bitrate (in bits/s)> / <8 bytes / bit> * <delay (in ms)> / <1000 ms / s>
+        // converting to uint64_t because multiplying the current bitrate by the delay may exceed the max value for a uint32_t
         uint64_t prelimPreloadFifoSize = round_down<uint64_t>(((_guts->cur_bitrate * _guts->preload_fifo_delay) / 8000).toInt(), PKT_SIZE);
 
         _guts->maintain_threshold = 0;
@@ -1858,7 +1858,7 @@ bool ts::DektecOutputPlugin::setPreloadFIFOSizeBasedOnDelay()
         if ((prelimPreloadFifoSize + uint64_t(_guts->maintain_threshold)) > uint64_t(_guts->fifo_size)) {
             _guts->preload_fifo_size = round_down(_guts->fifo_size - _guts->maintain_threshold, int(PKT_SIZE));
             if (_guts->maintain_threshold) {
-                tsp->verbose(u"For --preload-fifo-delay, delay (%d ms) too large (%'d bytes), based on bit rate (%'d b/s) and FIFO size (%'d bytes). "
+                tsp->verbose(u"For --preload-fifo-delay, delay (%d ms) too large (%'d bytes), based on bitrate (%'d b/s) and FIFO size (%'d bytes). "
                              u"Using FIFO size - 10 ms maintain preload threshold for preload size instead (%'d bytes).",
                              _guts->preload_fifo_delay,
                              prelimPreloadFifoSize,
@@ -1867,7 +1867,7 @@ bool ts::DektecOutputPlugin::setPreloadFIFOSizeBasedOnDelay()
                              _guts->preload_fifo_size);
             }
             else {
-                tsp->verbose(u"For --preload-fifo-delay, delay (%d ms) too large (%'d bytes), based on bit rate (%'d b/s) and FIFO size (%'d bytes). "
+                tsp->verbose(u"For --preload-fifo-delay, delay (%d ms) too large (%'d bytes), based on bitrate (%'d b/s) and FIFO size (%'d bytes). "
                              u"Using FIFO size for preload size instead.",
                              _guts->preload_fifo_delay,
                              prelimPreloadFifoSize,

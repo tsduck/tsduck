@@ -146,7 +146,7 @@ VERSION 3.40-4165 (Feb 2025)
   * Added plugin "isdbinfo": Extract ISDB-T information from the stream.
   * For third-party application developers, the TSDuck library has  been  split
     into TSCore and TSDuck. The former is a subset for applications  not  using
-    Digital TV features. See the developer's guide for more details.
+    Digital TV features. See the developer guide for more details.
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -252,7 +252,7 @@ VERSION 3.38-3822 (Aug 2024)
 [IMP] Improvements on existing commands and plugins:
 
   * The  documentation  has  been  reorganized  and  is now built from asciidoc
-    format.  The  user guide is now installed in HTML format. A new developer's
+    format.  The  user  guide  is now installed in HTML format. A new developer
     guide  is  also available in HTML format and installed with the development
     environment. The PDF versions are available online.
   * New options in existing commands and plugins:
@@ -1158,7 +1158,7 @@ VERSION 3.17-1189 (Apr 2019)
       now accepts ATSC channel ids (major.minor).
     - The  old  "zap" format which was inherited from some Linux scanning tools
       is  no  longer  supported by TSDuck. Instead, a more generic and portable
-      XML format is used. See the user's guide for more details. Impact:
+      XML format is used. See the user guide for more details. Impact:
       . In  plugin  "dvb"  and  command  "tsscan":  Added option --tuning-file,
         removed options --tune and --zap-config-file.
       . In plugin "nitscan" and command "tsscan", added options --save-channels
@@ -1355,7 +1355,7 @@ VERSION 3.12-781 (Jun 2018)
   * Added  options  --log-protocol  and  --log-data  to  "tsecmg", "tsemmg" and
     plugins "scrambler", "datainject".
   * Added options --udp and --unregulated to plugin "datainject".
-  * Many more descriptors are supported. See the user's guide.
+  * Many more descriptors are supported. See the user guide.
   * In  "tsemmg",  sending UDP data to a broadcast address was not allowed. Now
     it  is  possible  to  send  data to a local broadcast address. Using routed
     broadcast remains not possible (because this is usually not a good thing to
@@ -1455,7 +1455,7 @@ VERSION 3.9-619 (Mar 2018)
   * Precompiled binaries are now provided for Raspbian on Raspberry Pi.
   * Added  plugins "mpe" and "mpeinject" to respectively extract and inject MPE
     (Multi-Protocol Encapsulation) datagrams to/from UDP/IP. A complete example
-    is provided in the user's guide.
+    is provided in the user guide.
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -1470,7 +1470,7 @@ VERSION 3.9-619 (Mar 2018)
   * Added signalization for data broadcast and MPE.
   * Improved display of Dektec devices capabilities.
   * In all TSDuck commands, parameters can be read from a file using the syntax
-    "@filename" anywhere in the command line. See the user's guide for details.
+    "@filename" anywhere in the command line. See the user guide for details.
   * Added  possibility  to specify a GitHub authentication token in "tsversion"
     to avoid "API rate limit exceeded" errors.
 

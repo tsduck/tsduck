@@ -26,7 +26,7 @@ The following figure illustrates the TSDuck software architecture and how it int
 .TSDuck software architecture
 image::tsduck-soft-arch.png[align="center",alt="TSDuck software architecture"]
 
-This document is the TSDuck Developer's Guide.
+This document is the TSDuck Developer Guide.
 It can be equally used by TSDuck maintainers and developers of third-party applications.
 
 Structure of this guide:
@@ -44,7 +44,7 @@ Structure of this guide:
 * The xref:coding[xrefstyle=short] lists the coding guidelines which are used in the development of TSDuck.
   All maintainers and contributors are required to follow these guidelines.
 
-In addition to this developer's guide, a comprehensive
+In addition to this developer guide, a comprehensive
 {home}doxy/[reference programming documentation] is available online.
 It documents all TSDuck public {cpp} classes, as well as the Python and Java API's.
 This is a reference documentation which is automatically generated from the source files
@@ -61,7 +61,7 @@ See the xref:chap-license[xrefstyle=short] for more details.
 [.usage]
 Documentation format
 
-The TSDuck developer's guide is built using https://asciidoctor.org[asciidoctor],
+The TSDuck developer guide is built using https://asciidoctor.org[asciidoctor],
 from a set of text files which are maintained alongside the source code, in the same `git` repository.
 
 This guide is formatted for HTML.
@@ -77,8 +77,8 @@ Documentation set
 The TSDuck documentation set is made of:
 
 [.compact-list]
-1. xref:tsduck.html[TSDuck User's Guide]
+1. xref:tsduck.html[TSDuck User Guide]
    (also from {home}docs/tsduck.html[tsduck.io] and in {home}docs/tsduck.pdf[PDF] format)
-2. xref:tsduck-dev.html[TSDuck Developer's Guide]
+2. xref:tsduck-dev.html[TSDuck Developer Guide]
    (also from {home}docs/tsduck-dev.html[tsduck.io] and in {home}docs/tsduck-dev.pdf[PDF] format)
 3. {home}doxy/[TSDuck Programming Reference]

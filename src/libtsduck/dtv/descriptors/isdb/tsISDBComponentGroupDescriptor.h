@@ -76,9 +76,10 @@ namespace ts {
             //! @param [in,out] buf Deserialization buffer. Read the descriptor payload from
             //! @a buf. The end of read is the end of the binary payload. If any kind of error is reported in
             //! the buffer or if the payload is not completely read, the deserialization is considered as invalid.
-            //! @param [in] total_bit_rate_flag Indicates the description status of the total bit rate in the component group in the event.When this bit is "0", the total bit rate
-            //! field in the component group does not exist in the corresponding descriptor. When this bit is "1", the total bit rate field in the
-            //! component group exists in the corresponding descriptor.
+            //! @param [in] total_bit_rate_flag Indicates the description status of the total bitrate in the component
+            //! group in the event.When this bit is "0", the total bitrate field in the component group does not exist
+            //! in the corresponding descriptor. When this bit is "1", the total bitrate field in the component group
+            //! exists in the corresponding descriptor.
             //!
             ComponentGroup(PSIBuffer& buf, bool total_bit_rate_flag) :
                 ComponentGroup() { deserialize(buf, total_bit_rate_flag); }

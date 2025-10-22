@@ -236,7 +236,7 @@ void ts::J2KVideoDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::De
         disp << std::endl;
         disp << margin << UString::Format(u"Horizontal size: %n", buf.getUInt32()) << std::endl;
         disp << margin << UString::Format(u"Vertical size: %n", buf.getUInt32()) << std::endl;
-        disp << margin << UString::Format(u"Max bit rate: %n", buf.getUInt32()) << std::endl;
+        disp << margin << UString::Format(u"Max bitrate: %n", buf.getUInt32()) << std::endl;
         disp << margin << UString::Format(u"Max buffer size: %n", buf.getUInt32()) << std::endl;
         const uint16_t DEN_frame_rate = buf.getUInt16();
         disp << margin << UString::Format(u"Frame rate: %d/%d", buf.getUInt16(), DEN_frame_rate) << std::endl;

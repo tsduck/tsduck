@@ -5,8 +5,8 @@
 // BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
-= TSDuck Developer's Guide
-:description: TSDuck Developer's Guide
+= TSDuck Developer Guide
+:description: TSDuck Developer Guide
 include::{includedir}/attributes.adoc[]
 
 include::000-preface.adoc[]

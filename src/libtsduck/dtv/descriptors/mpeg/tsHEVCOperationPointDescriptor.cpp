@@ -198,7 +198,7 @@ void ts::HEVCOperationPointDescriptor::DisplayDescriptor(TablesDisplay& disp, co
                 else {
                     disp << ", ";
                 }
-                disp << "Avg. bit rate: " << buf.getUInt24();
+                disp << "Avg. bitrate: " << buf.getUInt24();
                 shown = true;
             }
             if (max_bit_rate_info_flag) {
@@ -208,7 +208,7 @@ void ts::HEVCOperationPointDescriptor::DisplayDescriptor(TablesDisplay& disp, co
                 else {
                     disp << ", ";
                 }
-                disp << "Max. bit rate: " << buf.getUInt24();
+                disp << "Max. bitrate: " << buf.getUInt24();
                 shown = true;
             }
             if (shown) {

@@ -151,7 +151,7 @@ namespace ts {
         uint8_t  _cf_code = 0;     // Chroma format code (CHROMA_* from tsMPEG.h)
         size_t   _fr_num = 0;      // Frame rate numerator
         size_t   _fr_div = 0;      // Frame rate divider
-        uint32_t _bitrate = 0;     // Maximum bit rate
+        uint32_t _bitrate = 0;     // Maximum bitrate
         size_t   _vbv_size = 0;    // Video Buffering Verifier size in bits
 
         // Temporary values from a "sequence header" unit
@@ -160,7 +160,7 @@ namespace ts {
         size_t   _sh_vsize = 0;    // Vertical size in pixel
         uint8_t  _sh_ar_code = 0;  // Aspect ratio code (AR_* from tsMPEG.h)
         size_t   _sh_fr_code = 0;  // Frame rate code
-        uint32_t _sh_bitrate = 0;  // Maximum bit rate
+        uint32_t _sh_bitrate = 0;  // Maximum bitrate
         size_t   _sh_vbv_size = 0; // Video Buffering Verifier size in bits
 
         // Extract frame rate fields from frame rate code

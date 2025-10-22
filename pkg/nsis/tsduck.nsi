@@ -184,8 +184,8 @@ Section "Documentation" SectionDocumentation
 
     ; Create shortcuts in start menu.
     CreateDirectory "$SMPROGRAMS\TSDuck"
-    CreateShortCut "$SMPROGRAMS\TSDuck\TSDuck User's Guide.lnk" "$INSTDIR\doc\tsduck.html"
-    CreateShortCut "$SMPROGRAMS\TSDuck\TSDuck Developer's Guide.lnk" "$INSTDIR\doc\tsduck-dev.html"
+    CreateShortCut "$SMPROGRAMS\TSDuck\TSDuck User Guide.lnk" "$INSTDIR\doc\tsduck.html"
+    CreateShortCut "$SMPROGRAMS\TSDuck\TSDuck Developer Guide.lnk" "$INSTDIR\doc\tsduck-dev.html"
     CreateShortCut "$SMPROGRAMS\TSDuck\TSDuck Release Notes.lnk" "$INSTDIR\doc\CHANGELOG.txt"
 
 SectionEnd
@@ -428,7 +428,7 @@ SectionEnd
     !insertmacro MUI_DESCRIPTION_TEXT ${SectionTools} \
         "TSDuck command-line tools and plugins."
     !insertmacro MUI_DESCRIPTION_TEXT ${SectionDocumentation} \
-        "TSDuck user's guide."
+        "TSDuck user guide."
     !insertmacro MUI_DESCRIPTION_TEXT ${SectionPython} \
         "TSDuck Python bindings."
 !ifdef JarFile

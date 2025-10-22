@@ -21,7 +21,7 @@ The docinfo files for asciidoctor are built in the binary area.
 ### HTML table of contents
 
 Using `asciidoctor`, the table of contents in the sidebar of the HTML is flat.
-All entries are listed, sequentially. In the case of the TSDuck User's Guide,
+All entries are listed, sequentially. In the case of the TSDuck User Guide,
 the table contains hundredths of lines and becomes difficult to use.
 
 This directory contains scripts to make it expandable.

@@ -26,8 +26,9 @@ Live transport streams can be read by TSDuck from:
 * HLS (HTTP Live Streaming) with transport stream segments (not fMP4).
 * SRT and RIST transport protocols.
 
-See the documentation of the plugins `dvb`, `dektec`, `ip`, `http`, `hls`, `srt`, `rist` for
-more details on the reception of live transport streams.
+See the documentation of the plugins xref:dvb-plugin[`dvb`], xref:dektec-input[`dektec`], xref:ip-input[`ip`],
+xref:http-input[`http`], xref:hls-input[`hls`], xref:srt-input[`srt`], xref:rist-input[`rist`]
+in xref:chap-plugins[xrefstyle=short] for more details on the reception of live transport streams.
 
 The same plugins can also transmit live streams on Dektec devices, on UDP/IP streams (multicast or
 unicast), SRT and RIST transport protocols.
@@ -53,12 +54,11 @@ The supported formats are listed in the table below.
 
 The command line option `--format _name_` can be used to specify a precise file format.
 
-On input, the file format is automatically detected for each file.
-But the auto-detection may fail in some cases (for instance when the first timestamp of an M2TS file
-starts with `0x47` in which case the file would be incorrectly identified as TS).
-Using the option `--format` forces a specific format to avoid ambiguities.
-
-On output, the default format is a standard TS file. Use an explicit option `--format` to generate other formats.
+* On input, the file format is automatically detected for each file.
+  But the auto-detection may fail in some cases (for instance when the first timestamp of an M2TS file
+  starts with `0x47` in which case the file would be incorrectly identified as TS).
+  Using the option `--format` forces a specific format to avoid ambiguities.
+* On output, the default format is a standard TS file. Use an explicit option `--format` to generate other formats.
 
 The table below lists all possible format names as used with the option `--format`.
 
@@ -135,14 +135,14 @@ modulation information later, typically to reinject the stream in a modulator.
 
 Starting with version 3.39, TSDuck extracts the 16-byte trailers, when present, from various input formats.
 The 16-byte trailer is propagated all along the plugin chain in a `tsp` command.
-The trailer is not not part of its packet.
+The trailer is not part of its packet.
 It is stored in the _packet metadata_, which also store the input timestamp and
 the packet labels (see the documentation of the `tsp` command).
 Then, output plugins can reinject the trailer after each packet when necessary.
 
 The following table lists all `tsp` plugins which manipulate the 16-byte trailer of 204-byte packets.
 The default behavior is described as well as how to enforce 204-byte packet support.
-Read the reference documentation section of each plugin for more details.
+Read the reference documentation section of each plugin in xref:chap-plugins[xrefstyle=short] for more details.
 
 .Plugins with 204-byte packet support
 [cols="<1m,^1,<1,<1",stripes=none,options="autowidth"]
@@ -242,7 +242,7 @@ Read the reference documentation section of each plugin for more details.
 |===
 
 [#bitrates]
-=== Bit rates
+=== Bitrates
 
 ==== Interpretation
 
@@ -310,7 +310,9 @@ Special symbols and linker dependencies are generated to prevent mixing binaries
 To select a different representation of bitrates, simply define the corresponding {cpp} macro in the build system.
 See the source file `src/libtsduck/base/types/tsBitRate.h` for the various macros.
 
-On Linux and macOS, the `make` command accepts direct parameters, one of the following:
+On Linux and macOS, the `make` command accepts direct parameters.
+Each of the following commands rebuilds TSDuck with a specific representation for bitrates.
+Use the appropriate one for your needs.
 
 [source,shell]
 ----
@@ -320,7 +322,8 @@ make -j10 BITRATE_INTEGER=1
 make -j10 BITRATE_FIXED=1 BITRATE_DECIMALS=3
 ----
 
-The last command rebuilds with fixed-point and three decimal digits instead of one.
+When using a fixed-point representation for bitrates, it is possible to specify the number of decimal digits.
+As an example, the last command rebuilds with fixed-point and three decimal digits instead of one.
 
 [#psisi-sig]
 === PSI/SI signalization
@@ -329,24 +332,33 @@ TSDuck can manipulate PSI/SI sections and tables outside of transport streams.
 Sections and tables can be extracted from a transport stream, saved and manipulated
 in various file formats and injected in other transport streams.
 
-There are two main file formats for PSI/SI: binary section files and XML text files.
+There are three main file formats for PSI/SI: binary section files, XML and JSON text files.
 
-These two formats are documented in the next sections.
+These formats are documented in the next sections.
 In the general case, tools which extract PSI/SI sections and tables can save in any format
 and tools which use PSI/SI can read them from any format as well.
-The utility `tstabcomp`, the table compiler, can translate between the two formats.
+The utility `tstabcomp`, the table compiler, can translate between the various formats.
 
-Some key differences between the two formats are:
+Some key differences between the formats are summarized in the following table.
 
-* Binary section files contain collections of individual sections in any order, not necessarily complete tables.
-  XML files contain complete tables only.
-* Binary section files contain the exact representation, byte by byte, of sections which were extracted from a transport stream.
-  XML files contain a higher-level representation.
-* Binary section files are not easily modifiable.
-  XML files contain text which can be manually edited using any text editor or XML tool.
+.Differences between binary, XML, and JSON formats
 
-There is a third possible format: JSON.
-This format is formally equivalent to XML.
+[cols="<1,<1",stripes=none]
+|===
+|Binary section format |XML and JSON format
+
+|Collections of individual sections in any order, not necessarily complete tables.
+|Complete tables only.
+
+|Exact representation, byte by byte, of sections which were extracted from a transport stream.
+|High-level representation of tables.
+
+|Not easily modifiable.
+|Text which can be manually edited using any text editor or XML/JSON edition tool.
+
+|===
+
+Note that the JSON format is formally equivalent to XML.
 In practice, TSDuck uses XML as internal representation and performs an automated conversion between XML and JSON when necessary.
 See xref:xml-json-conv[xrefstyle=short] for more details on this conversion process.
 In this document, the only documented format for tables and descriptors is XML.

@@ -869,8 +869,8 @@ On macOS systems, the Homebrew package `tsduck` installs all components.
 There are three sets of TSDuck documents:
 
 [.compact-list]
-1. TSDuck User's Guide (HTML and PDF)
-2. TSDuck Developer's Guide (HTML and PDF)
+1. TSDuck User Guide (HTML and PDF)
+2. TSDuck Developer Guide (HTML and PDF)
 3. TSDuck Programming Reference (HTML only)
 
 The first two documents are written in https://asciidoc.org[Asciidoc] format.
@@ -895,7 +895,7 @@ Every night, a fresh copy is generated and published online at {home}doxy[].
 
 ==== Building on {unix}
 
-The user's guide and the developer's guide are built using the target `docs`.
+The user guide and the developer guide are built using the target `docs`.
 The HTML and PDF files are built in subdirectory `bin/doc`.
 
 [source,shell]
@@ -911,21 +911,21 @@ The following targets are also available to build a subset of the guides:
 [.compact-table]
 [cols="<1m,<1",frame=none,grid=none,stripes=none,options="autowidth,noheader"]
 |===
-|userguide-html |Build the user's guide HTML version
-|userguide-pdf |Build the user's guide PDF version
-|userguide |Build the user's guide HTML and PDF versions
-|open-userguide-html |Build the user's guide HTML version and opens it with the default HTML viewer
-|open-userguide-pdf |Build the user's guide PDF version and opens it with the default PDF viewer
-|open-userguide |Build the user's guide HTML and PDF versions and opens them with their default viewers
-|devguide-html |Build the developer's guide HTML version
-|devguide-pdf |Build the developer's guide PDF version
-|devguide |Build the developer's guide HTML and PDF versions
-|open-devguide-html |Build the developer's guide HTML version and opens it with the default HTML viewer
-|open-devguide-pdf |Build the developer's guide PDF version and opens it with the default PDF viewer
-|open-devguide |Build the developer's guide HTML and PDF versions and opens them with their default viewers
+|userguide-html |Build the user guide HTML version
+|userguide-pdf |Build the user guide PDF version
+|userguide |Build the user guide HTML and PDF versions
+|open-userguide-html |Build the user guide HTML version and opens it with the default HTML viewer
+|open-userguide-pdf |Build the user guide PDF version and opens it with the default PDF viewer
+|open-userguide |Build the user guide HTML and PDF versions and opens them with their default viewers
+|devguide-html |Build the developer guide HTML version
+|devguide-pdf |Build the developer guide PDF version
+|devguide |Build the developer guide HTML and PDF versions
+|open-devguide-html |Build the developer guide HTML version and opens it with the default HTML viewer
+|open-devguide-pdf |Build the developer guide PDF version and opens it with the default PDF viewer
+|open-devguide |Build the developer guide HTML and PDF versions and opens them with their default viewers
 |docs |Build the four document, user and developer, HTML and PDF
-|docs-html |Build the user and developer's guide in HTML format
-|docs-pdf |Build the user and developer's guide in PDF format
+|docs-html |Build the user and developer guide in HTML format
+|docs-pdf |Build the user and developer guide in PDF format
 |===
 
 The programming reference is built using the target `doxygen`.
@@ -939,7 +939,7 @@ The set of files is built in subdirectory `bin/doxy/html`.
 
 ==== Building on Windows
 
-The user's guide and the developer's guide are built using the PowerShell script `doc\build-doc.ps1`.
+The user guide and the developer guide are built using the PowerShell script `doc\build-doc.ps1`.
 The HTML and PDF files are built in subdirectory `bin\doc`.
 By default, they are automatically opened using the default HTML and PDF viewers of the system.
 
@@ -1117,7 +1117,7 @@ $ sudo make install NOSRT=1 NORIST=1
 ----
 
 When building an installer package (`.rpm`, `.deb`) or when directly installing TSDuck,
-the HTML version of the user's guide and developer's guide are included.
+the HTML version of the user guide and developer guide are included.
 
 If the documentation was not built yet, the command `make install` rebuilds the HTML files first.
 To avoid running Asciidoc under the superuser account, the examples above use `make default docs-html` first.

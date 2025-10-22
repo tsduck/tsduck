@@ -424,7 +424,7 @@ bool ts::ModulationArgs::GetBitRateDVBT(BitRate& bitrate, const ModulationArgs& 
     //
     // BPS = bits/symbol
     // FEC = forward error correction = FECM/FECD
-    // BR = useful bit rate
+    // BR = useful bitrate
     //    = SR * BPS * FEC * 188/204
     //    = (SR * BPS * FECM * 188) / (FECD * 204)
     //    = (6048 * GID * BW * BPS * FECM * 188) / (7168 * (GID + GIM) * FECD * 204)

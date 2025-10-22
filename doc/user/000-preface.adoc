@@ -14,12 +14,12 @@ TSDuck is a free and open-source toolkit to manipulate MPEG Transport Streams.
 It contains a set of simple but flexible command-line utilities that run on Linux, Windows, macOS and BSD systems.
 These commands are designed for scripting and automation in lab or production environments.
 
-Through `tsp`, the "transport stream processor", many types of analysis and
+Through `tsp`, the _transport stream processor_, many types of analysis and
 transformation can be applied on live or recorded transport streams.
-This utility can be extended through "plugins".
+This utility can be extended through _plugins_.
 Existing plugins can be enhanced, and new plugins can be developed using a library of {cpp} classes.
 
-This document is the user's guide for TSDuck.
+This document is the user guide for TSDuck.
 It explains the basic concepts of TSDuck and contains reference sections for all commands and plugins.
 
 Structure of this guide:
@@ -60,18 +60,18 @@ See the xref:chap-license[xrefstyle=short] or <<BSD-2C>> for more details.
 [.usage]
 Documentation format
 
-The TSDuck user's guide is now formatted for HTML.
+The TSDuck user guide is now formatted for HTML.
 The file xref:tsduck.html[] is monolithic and self-sufficient, without reference to external images.
 Therefore, this HTML file can be downloaded, saved, and copied, as long as the license and content are not modified.
 
-The TSDuck user's guide is now built using https://asciidoctor.org[asciidoctor],
+The TSDuck user guide is now built using https://asciidoctor.org[asciidoctor],
 from a set of text files which are maintained alongside the source code,
 in the same `git` repository.
-Up to TSDuck version 3.37, the user's guide was a Microsoft Word document.
+Up to TSDuck version 3.37, the user guide was a Microsoft Word document.
 The document was distributed and available online as a PDF file only.
 
 PDF files are primarily designed as page-oriented documents for printing.
-The TSDuck user's guide is now too large to be printed and a PDF file is no longer
+The TSDuck user guide is now too large to be printed and a PDF file is no longer
 necessary because the HTML version proposes the same navigation features
 as the previous PDF file (expandable table of contents in a left-side panel).
 
@@ -85,8 +85,8 @@ Documentation set
 The TSDuck documentation set is made of:
 
 [.compact-list]
-1. xref:tsduck.html[TSDuck User's Guide]
+1. xref:tsduck.html[TSDuck User Guide]
    (also from {home}docs/tsduck.html[tsduck.io] and in {home}docs/tsduck.pdf[PDF] format)
-2. xref:tsduck-dev.html[TSDuck Developer's Guide]
+2. xref:tsduck-dev.html[TSDuck Developer Guide]
    (also from {home}docs/tsduck-dev.html[tsduck.io] and in {home}docs/tsduck-dev.pdf[PDF] format)
 3. {home}doxy/[TSDuck Programming Reference]

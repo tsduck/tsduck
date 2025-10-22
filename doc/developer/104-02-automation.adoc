@@ -33,7 +33,7 @@ that the project can be built on most supported platforms and contains no regres
 ** The unitary tests are run.
 ** The full test-suite is downloaded and run.
 ** The sample programs are built using a typical TSDuck installation of the binaries which were just built (Linux and macOS only).
-* The documentation is rebuilt: user's guide, developer's guide, programming reference using doxygen.
+* The documentation is rebuilt: user guide, developer guide, programming reference using doxygen.
   Missing documentation for new features can be found in the log. This is done on Ubuntu only.
 
 [#auto_nightly]
@@ -49,7 +49,7 @@ The workflow `.github/workflows/nightly-build.yml` is automatically run every da
   for the current state of the master branch in the repository.
 * The produced binaries are installed on the CI/CD system.
 * The full test-suite is downloaded and run.
-* The complete set documentation (user's guide, developer's guide, programming reference)
+* The complete set documentation (user guide, developer guide, programming reference)
   is built and packaged in an archive. If the installed version of doxygen is known
   to contain bugs in the generation of the TSDuck documentation (many were found),
   the source code for a known good version of doxygen is downloaded and rebuilt first.

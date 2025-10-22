@@ -318,7 +318,7 @@ bool ts::PCRAnalyzer::feedPacket(const TSPacket& pkt)
             _ts_bitrate_cnt++;
 
             // Transport stream instantaneous statistics.
-            // For instantaneous bit rates, these are the actual bit rates, and it doesn't use the "count" approach.
+            // For instantaneous bitrates, these are the actual bitrates, and it doesn't use the "count" approach.
             if (!_packet_clock_index_map.empty()) {
                 diff_values = _use_dts ?
                     DiffPTS(_packet_clock_index_map.begin()->first, pcr_dts) * SYSTEM_CLOCK_SUBFACTOR :
@@ -342,7 +342,7 @@ bool ts::PCRAnalyzer::feedPacket(const TSPacket& pkt)
             ps.last_pcr_dts_packet = _ts_pkt_cnt;
             ps.last_is_valid = true;
 
-            // Also add PCR (or DTS)/packet index combo to map for use in instantaneous bit rate calculations.
+            // Also add PCR (or DTS)/packet index combo to map for use in instantaneous bitrate calculations.
             _packet_clock_index_map[pcr_dts] = _ts_pkt_cnt;
 
             // Make sure that some crazy TS does not accumulate thousands of PCR values in the same second range.

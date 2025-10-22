@@ -6,7 +6,7 @@
  BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 
  Template for TSDuck XML files describing TV channels and networks.
- See the TSDuck user's guide, section 2.6.3, "XML model files".
+ See the TSDuck user guide, section "XML model files".
 
 -->
 <tsduck>

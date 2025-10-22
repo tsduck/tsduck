@@ -103,7 +103,7 @@ namespace ts {
             std::optional<uint8_t> channel_num_index {};   //!< 7 bits. Index to the channel configuration table (A.*) in T/AI 109.3
             std::optional<uint8_t> num_objects {};         //!< 7 bits. The number of audio objects used in the audio sequence
             std::optional<uint8_t> hoa_order {};           //!< 4 bits. The HOA signal order (value + 1)
-            uint16_t               total_bitrate = 0;      //!< The total bit rate, in kbit/s, according to the value of content_type
+            uint16_t               total_bitrate = 0;      //!< The total bitrate, in kbit/s, according to the value of content_type
 
             //!
             //! Default constructor.

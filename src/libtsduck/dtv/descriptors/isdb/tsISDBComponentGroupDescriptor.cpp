@@ -186,7 +186,7 @@ void ts::ISDBComponentGroupDescriptor::ComponentGroup::display(TablesDisplay& di
     if (total_bit_rate_flag) {
         const uint8_t tbr = buf.getUInt8();
         disp << margin << "  "
-             << UString::Format(u"Total bit rate: %7.2fMbps (%d)", double(float(tbr) / 4), tbr) << std::endl;
+             << UString::Format(u"Total bitrate: %7.2fMbps (%d)", double(float(tbr) / 4), tbr) << std::endl;
     }
     disp << margin << "  "
          << "Explanation: \"" << buf.getStringWithByteLength() << "\"" << std::endl;

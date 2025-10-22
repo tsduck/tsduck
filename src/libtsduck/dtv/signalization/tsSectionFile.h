@@ -60,7 +60,7 @@ namespace ts {
     //! XML section file format
     //! -----------------------
     //!
-    //! The format of XML section files is documented in the TSDuck user's guide.
+    //! The format of XML section files is documented in the TSDuck user guide.
     //! An informal template is given in file <code>tsduck.tables.model.xml</code>. This file
     //! is used to validate the content of XML section files.
     //!

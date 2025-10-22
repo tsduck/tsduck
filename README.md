@@ -14,6 +14,9 @@ In practice, TSDuck is used for:
   - Manipulation of tables and descriptors using XML, JSON or binary formats.
   - Most standard tables and descriptors are supported, as defined by MPEG, DVB, ISDB, ATSC, SCTE.
 - Modify, remove, rename, extract services.
+- Analyze and inject SCTE 35 splice information.
+- Extract or inject Multi-Protocol Encapsulation (MPE) between TS and UDP/IP.
+- Generate Electronic Program Guide (EPG), inject EIT according to ETSI TS 101 211.
 - Monitor and report conditions on the stream (video and audio properties, bitrates, crypto-periods, signalization).
 - Send bitrate and ETSI TR 101 290 metrics to InfluxDB and Grafana for system monitoring.
 - Monitor Inter-packet Arrival Time (IAT) on datagram-based networks.
@@ -26,8 +29,6 @@ In practice, TSDuck is used for:
   - [VATek](https://www.vatek.com.tw/A%20series/)-based modulators (USB) such as the
     [Suntechtv U3](https://www.suntechtv.com/web/Home/ProductDetail?key=e593s&productId=23673).
 - Re-route transport streams to other applications.
-- Extract or inject Multi-Protocol Encapsulation (MPE) between TS and UDP/IP.
-- Analyze and inject SCTE 35 splice information.
 - Extract specific encapsulated data (Teletext, T2-MI).
 - Emulate a CAS head-end using DVB SimulCrypt interfaces to and from ECMG or EMMG.
 - And more...
@@ -46,7 +47,7 @@ enhanced and new plugins can be developed using a library of C++ classes.
 
 ### Usage
 
-TSDuck comes with a comprehensive [User's Guide](https://tsduck.io/docs/tsduck.html).
+TSDuck comes with a comprehensive [User Guide](https://tsduck.io/docs/tsduck.html).
 
 All utilities and plugins accept the option `--help` to display their syntax.
 
@@ -54,7 +55,7 @@ TSDuck is developed in C++, using modern C++20 coding practices.
 For programmers, TSDuck provides a large collection of C++ classes in one single library.
 These classes manipulate, in a completely portable way, MPEG transport streams, MPEG/DVB/ATSC/ISDB
 signalization and many other features.
-See the [Developer's Guide](https://tsduck.io/docs/tsduck-dev.html)
+See the [Developer Guide](https://tsduck.io/docs/tsduck-dev.html)
 and the [Programming Reference](https://tsduck.io/doxy/).
 
 Python and Java bindings exist to allow running transport stream processing pipelines from
@@ -66,7 +67,7 @@ TSDuck can be built on Windows, Linux, macOS and BSD systems.
 The primary target architectures are Intel x86_64 and Arm64 but
 TSDuck is regularly built and tested on x86, Arm32, RISC-V, PowerPC or IBM s390x.
 See the [building section](https://tsduck.io/docs/tsduck-dev.html#building)
-in the developer's guide for more details.
+in the developer guide for more details.
 
 ### Download
 

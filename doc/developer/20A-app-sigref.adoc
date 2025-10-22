@@ -11,7 +11,7 @@
 == PSI/SI Signalization Reference
 
 All signalization tables and descriptors which are supported by TSDuck are
-documented in the TSDuck user's guide, appendix D "PSI/SI XML Reference Model".
+documented in the TSDuck user guide, appendix D "PSI/SI XML Reference Model".
 
 === PSI/SI tables
 

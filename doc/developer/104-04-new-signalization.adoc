@@ -213,7 +213,7 @@ in enum lists with `XDID_MPEG_` and `XDID_DVB_` symbols.
 You must define an XML representation for your table or descriptor in a `.xml` file.
 Use the selected code base as reference.
 
-This XML file is an _XML model file_, as defined in the TSDuck User's Guide.
+This XML file is an _XML model file_, as defined in the TSDuck user guide.
 
 A table shall be defined as one XML element inside the following envelope:
 
@@ -273,7 +273,7 @@ into the final configuration files.
 You must describe the documentation for your table or descriptor in
 https://asciidoctor.org[asciidoc] format in a `.adoc` file.
 This file will be automatically grabbed by the TSDuck build system and integrated
-into the TSDuck User's Guide, in HTML and PDF format.
+into the TSDuck user guide, in HTML and PDF format.
 
 Even if you do not know this format, this is pretty simple.
 All `.adoc` files for the signalization use the same pattern.
@@ -295,7 +295,7 @@ Defined by MPEG in <<ISO-13818-1>>.
 ------
 
 The first line starts with `====` and contains the table or descriptor name.
-This is the section title in the user's guide.
+This is the section title in the user guide.
 
 The sentence _"Defined by XXX in \<<YYY>>"_ is mandatory and indicates where to
 find the reference documentation for the structure.

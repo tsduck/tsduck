@@ -401,11 +401,11 @@ https://openssf.org/public-policy/eu-cyber-resilience-act/
 * [[[Suntech]]] Suntechtv U3 USB modulator (VATek-based),
   https://www.suntechtv.com/web/Home/ProductDetail?key=e593s&productId=23673
 * [[[TSDuck]]] TSDuck Web site, {home}
-* [[[TSDuck-Dev]]] TSDuck Developer's Guide, {home}docs/tsduck-dev.html
+* [[[TSDuck-Dev]]] TSDuck Developer Guide, {home}docs/tsduck-dev.html
 * [[[TSDuck-Issues]]] TSDuck issues tracker and discussion forum, {repo}issues
 * [[[TSDuck-Prog]]] TSDuck Programming Reference, {home}doxy/
 * [[[TSDuck-Streams]]] Repository of sample real-life transport streams, {home}streams
-* [[[TSDuck-User]]] TSDuck User's Guide, {home}docs/tsduck.html
+* [[[TSDuck-User]]] TSDuck User Guide, {home}docs/tsduck.html
 * [[[UWA]]] UHD World Association, T/UWA 005.2-1-2022
   "HDR Video Technology Part 2-1 Application Guide to System Integration".
 * [[[VATek]]] Vision Advance Technology Inc (VATek) corporate home page: https://www.vatek.com.tw/

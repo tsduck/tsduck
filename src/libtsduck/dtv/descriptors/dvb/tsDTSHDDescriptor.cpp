@@ -221,7 +221,7 @@ void ts::DTSHDDescriptor::DisplaySubstreamInfo(TablesDisplay& disp, bool present
             const uint16_t bit_rate = buf.getBits<uint16_t>(13);
             buf.skipBits(2);
 
-            disp << margin << "    Bit rate: ";
+            disp << margin << "    Bitrate: ";
             if (bit_rate == 0) {
                 disp << "unknown";
             }

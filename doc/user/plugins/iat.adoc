@@ -145,7 +145,7 @@ To get a list of all network adapters, use the PowerShell command `Get-NetAdapte
 You can also use the traditional Windows command `ipconfig`.
 TSDuck also provides a simple way to display the list of local IP addresses with their
 interface name: `tsdebug iflist` (the command `tsdebug` is not officially documented
-in this user's guide and is used for debug purposes only).
+in this user guide and is used for debug purposes only).
 
 Let's assume here that we work on the network interface named "Ethernet 3".
 
@@ -187,7 +187,7 @@ C:\> Restart-NetAdapter -Name "Ethernet 3"
 [#iat-priorities]
 ==== Timestamp priorities
 
-As described in xref:_ip_input[xrefstyle=short], the input plugin `ip` has various ways
+As described in xref:ip-input[xrefstyle=short], the input plugin `ip` has various ways
 of computing the input timestamp of a packet.
 This is configurable using the option `--timestamp-priority`.
 

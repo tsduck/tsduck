@@ -9,4 +9,4 @@ using [pull requests on GitHub](https://github.com/tsduck/tsduck/pulls)
 exclusively.
 
 For more details, see the [contribution guidelines](https://tsduck.io/docs/tsduck-dev.html#chap-contribution)
-in the [TSDuck developer's guide](https://tsduck.io/docs/tsduck-dev.html).
+in the [TSDuck developer guide](https://tsduck.io/docs/tsduck-dev.html).
