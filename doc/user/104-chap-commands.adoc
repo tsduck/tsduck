@@ -21,7 +21,7 @@ With the help of `tsp` and its input and output plugins, the TS packets can be p
 The following table lists all transport stream utilities:
 
 // PDF backend does not correctly process "autowidth" tables.
-.TSDuck utilities
+.Transport stream utilities
 ifndef::backend-pdf[]
 [cols="<1m,<1",stripes=none,options="autowidth"]
 endif::[]

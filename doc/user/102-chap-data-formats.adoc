@@ -408,7 +408,11 @@ and in increasing order of section number in the binary file.
 [#psi-xml-format]
 ==== PSI/SI XML format
 
-An XML file containing PSI/SI tables for TSDuck uses `<tsduck>` as root node.
+An XML file containing PSI/SI tables for TSDuck shall be encoded in UTF-8 format to allow
+international character sets in service names or event descriptions for instance.
+The initial declaration line `<?xml version="1.0" encoding="UTF-8"?>` is optional but recommended.
+
+All XML files use `<tsduck>` as root node.
 The root node contains any number of tables.
 
 Unlike binary files which may contain individual sections, XML files can only contain complete tables.
@@ -441,10 +445,6 @@ The following sample XML file contains the definition for simple (and incomplete
 
 </tsduck>
 ----
-
-All XML files shall be encoded in UTF-8 format to allow
-international character sets in service names or event descriptions for instance.
-The initial declaration line `<?xml version="1.0" encoding="UTF-8"?>` is optional but recommended.
 
 [#compat-standards]
 === Compatibility and conflicts between standards
@@ -1286,7 +1286,7 @@ However, `!="400"` is not a valid XML syntax.
 
 ===== Special attributes
 
-In the XML structure, _special attributes_ have a name starting with `"x-"`.
+In the XML structure, _special attributes_ have a name starting with `x-`.
 They have a special interpretation; they are not used for attribute matching.
 
 The following table summarizes the special attributes.
@@ -1453,7 +1453,7 @@ when the splice is an "out of network" command.
 In [1], the symbol `NULLIFY` is undefined. This is a cleanup operation in the case
 it was defined during the processing of a previous table.
 
-In [2], a `<splice_insert>` element is deleted when its attribute `out_of_network=` is `true`.
+In [2], a `<splice_insert>` element is deleted when its attribute `out_of_network` is `true`.
 This is a regular attribute matching, as defined earlier.
 Additionally, the symbol `NULLIFY` is defined when such an element is found.
 
@@ -1491,12 +1491,12 @@ and even in element names.
 See an example in xref:sample-envpatch[xrefstyle=short] which combines the plugin `identify`
 which define an environment variable and the plugin `pmt` which uses it in a patch file.
 
-=== JSON and "normalized" report formats
+=== JSON and normalized report formats
 
 TSDuck uses various text formats for report files.
 They are briefly described here.
 
-==== "Normalized" reports
+==== Normalized reports
 
 The name _normalized report_ refers to a predictable text format which can be easily parsed using scripts to automate operations.
 This is an alternative output format for tools which otherwise produce reports in a human-friendly readable format
