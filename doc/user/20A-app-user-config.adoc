@@ -8,16 +8,16 @@
 
 [#chap-userconfig]
 [appendix]
-== User's Configuration File
+== User Configuration File
 
-The TSDuck user's configuration file is used to specify default command line options or
+The TSDuck user configuration file is used to specify default command line options or
 alternate options for all or selected TSDuck commands.
 This configuration file is specific per user.
 
 If the environment variable `TSDUCK_NO_USER_CONFIG` is defined to some non-empty value,
 the configuration file is ignored.
 This can be useful to bypass the defaults from this file or
-to troubleshoot problems and test if they come from the user's configuration file.
+to troubleshoot problems and test if they come from the user configuration file.
 
 [#conf-file-loc]
 === Configuration file location

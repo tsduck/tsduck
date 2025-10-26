@@ -43,20 +43,44 @@ The way they appear on a system depends on the vendor driver.
 For instance, the same device may appear as one single tuner supporting DVB-T/T2/C on Linux
 and two distincts tuners on Windows (one for DVB-T/T2 and one for DVB-C).
 
-==== Operating system integration
+[#tuner-naming]
+==== Device naming
 
-===== Linux platforms
+All TSDuck commands and plugins using tuners use a device name to designate a receiver device.
+The syntax of the device name depends on the operating system.
+
+Use the command `tslsdvb` to list all available receiver devices.
+
+By default, when no device name is specified, the TSDuck commands and plugins use the _first_ receiver device,
+that is the say the device which appears first when the command `tslsdvb` is invoked.
+
+In all cases (`tslsdvb`, `tsscan`, `dvb` plugin), the option `--adapter` (or `-a`)
+can be used to simply designate the Nth receiver device in the system, the first index being zero.
+When the system has several receiver devices, `tslsdvb` also displays the corresponding device index.
+
+The system-specific naming of tuner devices is described in details in the next sections.
+
+NOTE: Some TSDuck commands (`tslsdvb`) or plugins (`dvd`) use the acronym "DVB" in their names
+while they also support ATSC and ISDB tuners.
+This is an unfortunate historical reason.
+The first versions of TSDuck worked on DVB standards only.
+When TSDuck included support for ATSC and ISDB, the command and plugin names were not changed for compatibility reasons.
+
+[#tuners-linux]
+==== Using tuners on Linux
 
 The tuner receiver devices are managed by Linux under the common "LinuxTV" framework which is part of V4L ("Video for Linux").
 
-*Drivers*
+[.usage]
+Drivers
 
-The drivers for the DVB receiver devices come with the Linux kernel.
+The drivers for the tuner devices come with the Linux kernel.
 
 The drivers for recent devices may not be integrated yet into the mainstream Linux kernel,
-see <<LinuxTV>> for details on how to install the latest Linux drivers for DVB devices.
+see <<LinuxTV>> for details on how to install the latest Linux drivers for tuner devices.
 
-*Firmware*
+[.usage]
+Firmware
 
 Some devices need a firmware file in `/lib/firmware` which is loaded by the driver when the system boots or
 when the device is plugged-in (USB device for instance).
@@ -66,20 +90,25 @@ Most firmware files are extracted from the proprietary Windows drivers of the de
 Consequently, they are not included in the kernel distributions.
 Such proprietary firmware files must be fetched from various sites all over the Web.
 Some distros provide a package named `linux-firmware` which contains firmware for many devices,
-including some DVB devices.
+including some tuner devices.
 The OpenELEC community has collected a large number of tuner firmware files which can be downloaded as an archive.
 
 To simplify the firmware downloading and installation, the command `tsconfig --install-dvb-firmware`
-collects all known DVB firmware online and installs them in `/lib/firmware`.
+collects all known tuner firmware online and installs them in `/lib/firmware`.
 
 See the documentation of the `tsconfig` command in xref:tsconfig-ref[xrefstyle=short].
 
-*Device naming*
+[.usage]
+Linux device naming
 
-The DVB devices are identified as `/dev/dvb/adapter__N__`,
-where `_N_` is a number between 0 and the number of DVB adapters in the system.
+On Linux systems, the tuner devices are identified as `/dev/dvb/adapter__N__`,
+where `_N_` is a number between 0 and the number of tuner adapters in the system.
 
-When several DVB devices are present in the system,
+NOTE: Linux has the same legacy naming issue as TSDuck.
+All tuner devices are under the root directory `/dev/dvb`,
+even when the devices are ATSC or ISDB tuners.
+
+When several tuner devices are present in the system,
 the allocation of the adapter numbers depends on the kernel initialization sequence,
 the PCI slots, the way the USB devices are plugged and unplugged.
 It is possible to assign a specific adapter number to each device using the `adapter_nr` parameter
@@ -109,59 +138,13 @@ $ tslsdvb
 /dev/dvb/adapter2 (Conexant CX24116/CX24118, DVB-S)
 ----
 
-[#tuners-windows]
-===== Microsoft Windows platforms
+[.usage]
+TSDuck tuner naming on Linux
 
-*DirectShow framework*
+On Linux, TSDuck uses an extended way to name tuner devices.
+This naming applies to all TSDuck commands and plugins.
 
-Starting from Windows XP, the tuner devices are managed by DirectShow, a Microsoft framework for multimedia.
-The specific subsystem of DirectShow for TV receiver devices is BDA (Broadcast Device Architecture).
-Most of the time, the hardware vendors provide BDA drivers for their receivers.
-Windows does not include any predefined BDA driver.
-
-On all Windows platforms, TSDuck uses basic DirectShow features to access the BDA drivers of the receiver devices.
-
-*Retrieving actual modulation parameters*
-
-On Windows, it is not possible to retrieve the actual tuning parameters of a transport stream as detected by the tuner device.
-
-This can be annoying in a DVB-T environment where many transmission parameters may be inaccurate
-but the tuner device will detect the actual parameters.
-For instance, you may tune on a transport specifying a FEC 2/3 and a guard interval 1/32.
-If the actual signal uses different values, for instance a FEC 3/4 and a guard interval 1/8,
-the tuner device will automatically adjust the parameters.
-On Linux, the command `tslsdvb -v` displays the actual parameters, as reported by the tuner device.
-Moreover, the `dvb` plugin can compute the exact theoretical bitrate of the transport stream based on the actual transmission parameters.
-On Windows, it is not possible to query the tuner device for the actual parameters.
-It is not possible to display the actual transmission parameters.
-The `dvb` plugin must use the analysis of PCR's to evaluate the bitrate.
-
-===== macOS platforms
-
-There is no uniform or standard software framework to support tuners on macOS.
-Some tuners are officially supported on macOS but they are shipped with proprietary drivers and proprietary TV-watching applications.
-The driver API's are not documented.
-
-Therefore, TSDuck provides no support for hardware tuner devices on macOS.
-
-[#tuner-naming]
-==== Device naming
-
-All TSDuck modules using DVB receivers (`tslsdvb`, `tsscan`, `dvb` plugin) use a device name to designate a receiver device.
-The syntax of the device name depends on the operating system.
-
-Use the command `tslsdvb` to list all available receiver devices.
-
-By default, when no device name is specified, the TSDuck commands and plugins use the _first_ receiver device,
-that is the say the device which appears first when the command `tslsdvb` is invoked.
-
-In all cases (`tslsdvb`, `tsscan`, `dvb` plugin), the option `--adapter` (or `-a`)
-can be used to simply designate the Nth receiver device in the system, the first index being zero.
-When the system has several receiver devices, `tslsdvb` also displays the corresponding device index.
-
-===== Linux platforms
-
-On Linux, a receiver device is named as `/dev/dvb/adapterA[:F[:M[:V]]]` where:
+A receiver device is named as `/dev/dvb/adapterA[:F[:M[:V]]]` where:
 
 [.compact-list]
 * `A` = adapter number
@@ -208,13 +191,47 @@ USB devices have no fixed `/dev/dvb/adapter__N__` identification.
 After unplugging and replugging the device or after rebooting the system, the tuner ordering can change.
 Using a complete identification, including a unique serial number, provides a way to address a specific physical tuner without ambiguity.
 
-===== Microsoft Windows platforms
+[#tuners-windows]
+==== Using tuners on Windows
+
+[.usage]
+DirectShow framework
+
+Starting from Windows XP, the tuner devices are managed by DirectShow, a Microsoft framework for multimedia.
+The specific subsystem of DirectShow for TV receiver devices is BDA (Broadcast Device Architecture).
+Most of the time, the hardware vendors provide BDA drivers for their receivers.
+Windows does not include any predefined BDA driver.
+
+On all Windows platforms, TSDuck uses basic DirectShow features to access the BDA drivers of the receiver devices.
+
+[.usage]
+Retrieving actual modulation parameters
+
+On Windows, it is not possible to retrieve the actual tuning parameters of a transport stream
+as detected by the tuner device.
+
+This can be annoying in a DVB-T environment where many transmission parameters may be inaccurate
+but the tuner device will detect the actual parameters.
+For instance, you may tune on a transport specifying a FEC 2/3 and a guard interval 1/32.
+If the actual signal uses different values, for instance a FEC 3/4 and a guard interval 1/8,
+the tuner device will automatically adjust the parameters.
+On Linux, the command `tslsdvb -v` displays the actual parameters, as reported by the tuner device.
+Moreover, the `dvb` plugin can compute the exact theoretical bitrate of the transport stream
+based on the actual transmission parameters.
+On Windows, it is not possible to query the tuner device for the actual parameters.
+It is not possible to display the actual transmission parameters.
+The `dvb` plugin must use the analysis of PCR's to evaluate the bitrate.
+
+[.usage]
+TSDuck tuner naming on Windows
 
 On Windows, a receiver device name is the name of a DirectShow tuner filter.
-Since these names are usually complicated, with spaces and mixed cases ("Nova-T Stick DVB-T Tuner (Dev1 Path0)" for instance),
+Since these names are usually complicated, with spaces and mixed cases
+("Nova-T Stick DVB-T Tuner (Dev1 Path0)" for instance),
 the specified name is not case sensitive and spaces are ignored.
 
-As an alternative, the name `:__N__` can be used to designate the __N__^th^ receiver device in the system, the first index being zero.
+As an alternative, the name `:__N__` can be used to designate the __N__^th^ receiver device in the system,
+the first index being zero.
 So, the following commands are equivalent:
 
 [source,powershell]
@@ -258,6 +275,16 @@ C:\> tsp -I dvb -a 1 ...
 Note that, when the device path starts with `@`,
 we must double it (`@@`) to avoid the interpretation as partial command line redirection
 (see xref:cmd-redirection[xrefstyle=short] for more details).
+
+[#tuners-macos]
+==== Using tuners on macOS
+
+There is no uniform or standard software framework to support tuners on macOS.
+Some tuners are officially supported on macOS but they are shipped with proprietary drivers
+and proprietary TV-watching applications.
+The driver API's are not documented.
+
+Therefore, TSDuck provides no support for hardware tuner devices on macOS.
 
 [#tuner-emulator]
 ==== Tuner emulator
@@ -373,7 +400,7 @@ Typically, if the device comes with a "DVB Network Tuner" DirectShow filter and
 an optional "BDA Receiver Component" DirectShow filter, it should work with TSDuck.
 At least one device (one from TechniSat) has exhibited different software architecture and could not be used by TSDuck.
 
-The following table summarizes the DVB receiver devices which have been tested with TSDuck.
+The following table summarizes the tuner receiver devices which have been tested with TSDuck.
 
 Please note that this table is informational only.
 It was built from various users' feedback at some point in time.

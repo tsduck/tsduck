@@ -15,7 +15,7 @@ This appendix describes the XML reference format for all tables and descriptors.
 === PSI/SI file format
 
 The format which is used here is informal.
-See xref:xml-models[xrefstyle=short] about XML model files.
+See xref:xml-models[xrefstyle=short] for more details on XML model files.
 
 Additionally:
 
@@ -30,6 +30,10 @@ Additionally:
   See tags `<generic_short_table>`, `<generic_long_table>` and `<generic_descriptor>` in xref:xml-generic[xrefstyle=short].
 
 ==== XML file structure
+
+All TSDuck XML files use `<tsduck>` as root node.
+They shall be encoded in UTF-8 format.
+The initial declaration line `<?xml version="1.0" encoding="UTF-8"?>` is optional but recommended.
 
 The `<tsduck>` root node contains any number of tables:
 

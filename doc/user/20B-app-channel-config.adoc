@@ -10,12 +10,12 @@
 [appendix]
 == Channels Configuration File
 
-This appendix describes the XML reference format for the channel configuration file.
+This appendix describes the XML reference format for the channels configuration file.
 
 [#chan-usage]
 === File usage
 
-A channel configuration file is an XML file containing the description of TV channels
+A channels configuration file is an XML file containing the description of TV channels
 (networks, transport streams, services).
 This file is typically used to simplify the specification of tuning parameters on the command line.
 Instead of specifying all tuning parameters, use the option `--channel-transponder` followed by a service name.
@@ -35,14 +35,14 @@ The location of the user's default file depends on the operating system.
 |Windows: |%APPDATA%\tsduck\channels.xml
 |===
 
-=== Channel configuration file format
+=== Channels configuration file format
 
 The format which is used here is informal.
-See the xref:[xrefstyle=short] 2.6.3, page 37, about XML model files.
+See xref:xml-models[xrefstyle=short] for more details on XML model files.
 
 The `<tsduck>` root node contains any number of networks which, in turn contain transport streams and services.
 
-The global structure of the XML channel configuration file is the following:
+The global structure of the XML channels configuration file is the following:
 
 [source,xml]
 ----
