@@ -107,7 +107,7 @@ jobs:
     name: Flawfinder static analysis
     needs: [init]
     runs-on: ubuntu-latest
-    if: fromJSON(needs.init.outputs.rebuild_ubuntu)
+    if: fromJSON(needs.init.outputs.rebuild_linux)
     steps:
     - name: Install prerequisites
       run: sudo apt install -y flawfinder
