@@ -1059,7 +1059,8 @@ To uninstall TSDuck:
 $ brew uninstall tsduck
 ----
 
-If you would like to install the lastest test version (HEAD version) use the following command.
+If you would like to install the latest test version from the source repository
+(HEAD version) use the following command.
 Be aware that it takes time since TSDuck is locally recompiled.
 
 [source,shell]

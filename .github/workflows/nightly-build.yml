@@ -16,7 +16,7 @@ name: Nightly build
 on:
   # Trigger the workflow every day at 00:40 UTC.
   schedule:
-    - cron: '40 0 * * *'
+  - cron: '40 0 * * *'
   # Allow manual trigger.
   workflow_dispatch:
 
@@ -26,8 +26,12 @@ jobs:
     name: Initialization
     runs-on: ubuntu-latest
     outputs:
-      rebuild: ${{ steps.check.outputs.rebuild }}
-      retention_days: ${{ steps.check.outputs.retention }}
+      rebuild:         ${{ steps.check.outputs.rebuild }}
+      rebuild_linux:   ${{ steps.check.outputs.rebuild_linux }}
+      rebuild_windows: ${{ steps.check.outputs.rebuild_windows }}
+      rebuild_doc:     ${{ steps.check.outputs.rebuild_doc }}
+      rebuild_doxy:    ${{ steps.check.outputs.rebuild_doxy }}
+      retention_days:  ${{ steps.check.outputs.retention }}
     steps:
     - name: Install prerequisites
       run: sudo apt install -y curl jq
@@ -36,17 +40,60 @@ jobs:
     - name: Check if rebuild is necessary
       id: check
       run: |
-        remote_version=$(curl --retry 5 --retry-all-errors -sSL https://tsduck.io/get-versions | jq -r '.latest?'; true)
+        #-- Get TSDuck version in the repository.
         version=$(scripts/get-version-from-sources.py)
-        [[ "$version" == "$remote_version" ]] && rebuild=false || rebuild=true
+        #-- Collect latest versions of nightly builds on tsduck.io.
+        status=$(curl --retry 5 --retry-all-errors -sSL https://tsduck.io/get-versions; true)
+        #-- Rebuild nothing by default.
+        rebuild=false
+        rebuild_linux=false
+        rebuild_windows=false
+        rebuild_doc=false
+        rebuild_doxy=false
+        #-- Get version of latest Ubuntu package.
+        version_linux=$(jq <<<$status -r '.ubuntu_amd64?'; true)
+        if [[ "$version" != "$version_linux" ]]; then
+            rebuild_linux=true
+            rebuild=true
+        fi
+        #-- Get version of latest Windows package.
+        version_windows=$(jq <<<$status -r '.windows_win64?'; true)
+        if [[ "$version" != "$version_windows" ]]; then
+            rebuild_windows=true
+            rebuild=true
+        fi
+        #-- Get version of latest doc package.
+        version_doc=$(jq <<<$status -r '.doc?'; true)
+        if [[ "$version" != "$version_doc" ]]; then
+            rebuild_doc=true
+            rebuild=true
+        fi
+        #-- Get version of latest doxy package.
+        version_doxy=$(jq <<<$status -r '.doxy?'; true)
+        if [[ "$version" != "$version_doxy" ]]; then
+            rebuild_doxy=true
+            rebuild=true
+        fi
+        #-- Generate outputs.
         retention=${{ vars.ARTIFACT_RETENTION_DAYS || 5 }}
-        echo "Repository: ${{ github.repository }}"
-        echo "Current version: $version, latest on tsduck.io: $remote_version"
-        echo "Rebuild: $rebuild"
-        echo "Artifacts retention days: $retention"
-        echo "rebuild=$rebuild" >>$GITHUB_OUTPUT
         echo "retention=$retention" >>$GITHUB_OUTPUT
+        echo "rebuild=$rebuild" >>$GITHUB_OUTPUT
+        echo "rebuild_linux=$rebuild_linux" >>$GITHUB_OUTPUT
+        echo "rebuild_windows=$rebuild_windows" >>$GITHUB_OUTPUT
+        echo "rebuild_doc=$rebuild_doc" >>$GITHUB_OUTPUT
+        echo "rebuild_doxy=$rebuild_doxy" >>$GITHUB_OUTPUT
+        #-- Generate version artifact.
         echo "$version" >version.txt
+        #-- Display info in the logs, for debug purpose.
+        echo "Repository: ${{ github.repository }}"
+        echo "Current repository version: $version"
+        echo "Linux on tsduck.io: $version_linux"
+        echo "Windows on tsduck.io: $version_windows"
+        echo "Doc on tsduck.io: $version_doc"
+        echo "Doxy on tsduck.io: $version_doxy"
+        echo "Artifacts retention days: $retention"
+        echo "Outputs:"
+        cat $GITHUB_OUTPUT
     - name: Upload version
       if: fromJSON(steps.check.outputs.rebuild)
       uses: actions/upload-artifact@v4
@@ -60,7 +107,7 @@ jobs:
     name: Flawfinder static analysis
     needs: [init]
     runs-on: ubuntu-latest
-    if: fromJSON(needs.init.outputs.rebuild)
+    if: fromJSON(needs.init.outputs.rebuild_ubuntu)
     steps:
     - name: Install prerequisites
       run: sudo apt install -y flawfinder
@@ -73,11 +120,11 @@ jobs:
   # Build on Windows.
   windows:
     name: Windows build
-    if: github.repository == 'tsduck/tsduck'
+    if: github.repository == 'tsduck/tsduck' && fromJSON(needs.init.outputs.rebuild_windows)
     needs: [init]
-    uses: ./.github/workflows/release-windows.yml
+    uses: .github/workflows/release-windows.yml
     with:
-      build: ${{ fromJSON(needs.init.outputs.rebuild) }}
+      build: ${{ fromJSON(needs.init.outputs.rebuild_windows) }}
       build_x64: true
       build_arm64: false
       runner: windows-latest
@@ -86,11 +133,11 @@ jobs:
   # Build on Linux.
   linux:
     name: Linux build
-    if: github.repository == 'tsduck/tsduck'
+    if: github.repository == 'tsduck/tsduck' && fromJSON(needs.init.outputs.rebuild_linux)
     needs: [init]
-    uses: ./.github/workflows/release-linux.yml
+    uses: .github/workflows/release-linux.yml
     with:
-      build: ${{ fromJSON(needs.init.outputs.rebuild) }}
+      build: ${{ fromJSON(needs.init.outputs.rebuild_linux) }}
       arch: x64
       distro: ubuntu
       runner: ubuntu-latest
@@ -102,19 +149,19 @@ jobs:
   # Build documentation.
   doc:
     name: Documentation build
-    if: github.repository == 'tsduck/tsduck'
+    if: github.repository == 'tsduck/tsduck' && (fromJSON(needs.init.outputs.rebuild_doc) || fromJSON(needs.init.outputs.rebuild_doxy))
     needs: [init]
-    uses: ./.github/workflows/release-docs.yml
+    uses: .github/workflows/release-docs.yml
     with:
-      build: ${{ fromJSON(needs.init.outputs.rebuild) }}
-      build_guides: true
-      build_doxy: true
+      build: ${{ fromJSON(needs.init.outputs.rebuild_doc) || fromJSON(needs.init.outputs.rebuild_doxy) }}
+      build_guides: ${{ fromJSON(needs.init.outputs.rebuild_doc) }}
+      build_doxy: ${{ fromJSON(needs.init.outputs.rebuild_doxy) }}
       retention_days: ${{ fromJSON(needs.init.outputs.retention_days) }}
 
   # Trigger the update on tsduck.io.
   update:
     name: Update nightly builds on tsduck.io
-    if: github.repository == 'tsduck/tsduck' && fromJSON(needs.init.outputs.rebuild)
+    if: always() && github.repository == 'tsduck/tsduck' && fromJSON(needs.init.outputs.rebuild)
     needs: [linux, windows, doc]
     runs-on: ubuntu-latest
     steps:
