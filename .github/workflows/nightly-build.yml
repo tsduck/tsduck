@@ -122,7 +122,7 @@ jobs:
     name: Windows build
     if: github.repository == 'tsduck/tsduck' && fromJSON(needs.init.outputs.rebuild_windows)
     needs: [init]
-    uses: .github/workflows/release-windows.yml
+    uses: ./.github/workflows/release-windows.yml
     with:
       build: ${{ fromJSON(needs.init.outputs.rebuild_windows) }}
       build_x64: true
@@ -135,7 +135,7 @@ jobs:
     name: Linux build
     if: github.repository == 'tsduck/tsduck' && fromJSON(needs.init.outputs.rebuild_linux)
     needs: [init]
-    uses: .github/workflows/release-linux.yml
+    uses: ./.github/workflows/release-linux.yml
     with:
       build: ${{ fromJSON(needs.init.outputs.rebuild_linux) }}
       arch: x64
@@ -151,7 +151,7 @@ jobs:
     name: Documentation build
     if: github.repository == 'tsduck/tsduck' && (fromJSON(needs.init.outputs.rebuild_doc) || fromJSON(needs.init.outputs.rebuild_doxy))
     needs: [init]
-    uses: .github/workflows/release-docs.yml
+    uses: ./.github/workflows/release-docs.yml
     with:
       build: ${{ fromJSON(needs.init.outputs.rebuild_doc) || fromJSON(needs.init.outputs.rebuild_doxy) }}
       build_guides: ${{ fromJSON(needs.init.outputs.rebuild_doc) }}
