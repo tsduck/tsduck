@@ -74,8 +74,6 @@ jobs:
       run: |
         make docs
         rm -f bin/doc/*.bigpdf
-        # Legacy docs:
-        cp doc/presentations/*.pdf bin/doc || true
         echo "${{ env.VERSION }}" >bin/doc/docversion.txt
         (cd bin; zip -qr9 ../doc.zip doc)
 
