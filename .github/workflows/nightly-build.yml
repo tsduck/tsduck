@@ -32,7 +32,18 @@ jobs:
       rebuild_doc:     ${{ steps.check.outputs.rebuild_doc }}
       rebuild_doxy:    ${{ steps.check.outputs.rebuild_doxy }}
       retention_days:  ${{ steps.check.outputs.retention }}
+      workflow:        ${{ steps.identify.outputs.workflow }}
     steps:
+    - name: Identify workflow run
+      id: identify
+      run: |
+        WF="${{ github.workflow_ref }}"
+        WF=$(basename ${WF/@*/} .yml)
+        echo "workflow=$WF" >>$GITHUB_OUTPUT
+        echo "Workflow: $WF'
+        echo "Workflow run id: ${{ github.run_id }}'
+        echo "Workflow run number: ${{ github.run_number }}'
+        echo "Workflow run attempt: ${{ github.run_attempt }}'
     - name: Install prerequisites
       run: sudo apt install -y curl jq
     - name: Get TSDuck repo
@@ -162,12 +173,12 @@ jobs:
   update:
     name: Update nightly builds on tsduck.io
     if: always() && github.repository == 'tsduck/tsduck' && fromJSON(needs.init.outputs.rebuild)
-    needs: [linux, windows, doc]
+    needs: [init, linux, windows, doc]
     runs-on: ubuntu-latest
     steps:
     - name: Install dependencies
       run: sudo apt install -y curl jq
     - name: Trigger download
       run: |
-        curl --retry 5 --retry-all-errors -sL -H 'X-Upload-Credentials: ${{ secrets.UPLOAD_CREDENTIALS }}' https://tsduck.io/get-nightly-builds -o update.log
+        curl --retry 5 --retry-all-errors -sL -H 'X-Upload-Credentials: ${{ secrets.UPLOAD_CREDENTIALS }}' 'https://tsduck.io/get-nightly-builds?workflow=${{ needs.init.outputs.workflow }}&run_id=${{ github.run_id }}' -o update.log
         jq . update.log || cat update.log
