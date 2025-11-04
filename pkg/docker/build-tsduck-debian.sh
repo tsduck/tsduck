@@ -12,7 +12,7 @@
 # Note: We use Debian trixie (future Debian 13) because Debian 12 contains
 # obsolete compilers only, which are not C++20 conformant.
 
-docker create --name tsbuilder -it debian:trixie
+docker create --name tsbuilder -it debian:latest
 docker start tsbuilder
 docker exec tsbuilder apt update
 docker exec tsbuilder apt upgrade -y

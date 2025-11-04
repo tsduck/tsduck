@@ -53,17 +53,17 @@ on:
         options:
         - none
         - ubuntu:latest
-        - ubuntu:25.04
+        - ubuntu:25.10
         - ubuntu:24.04
       debian_image:
         description: 'Debian docker image'
         type: choice
         required: false
-        default: 'debian:trixie'
+        default: 'debian:latest'
         options:
         - none
         - debian:latest
-        - debian:trixie
+        - debian:13
       fedora_image:
         description: 'Fedora docker image'
         type: choice
@@ -72,8 +72,8 @@ on:
         options:
         - none
         - fedora:latest
+        - fedora:43
         - fedora:42
-        - fedora:41
       redhat_image:
         description: 'Red Hat docker image'
         type: choice
@@ -85,6 +85,7 @@ on:
         - almalinux:10
         - almalinux:9
         - rockylinux:9
+        - oraclelinux:10
         - oraclelinux:9
       windows_runner:
         description: 'Windows runner'
@@ -109,6 +110,11 @@ jobs:
       # Required to get draft releases
       contents: write
     steps:
+    - name: Identify workflow run
+      run: |
+        echo "Workflow run id: ${{ github.run_id }}'
+        echo "Workflow run number: ${{ github.run_number }}'
+        echo "Workflow run attempt: ${{ github.run_attempt }}'
     - name: Install prerequisites
       # Getting the tag of the last release requires curl and jq.
       if: inputs.release_type == 'update-last'
@@ -238,6 +244,11 @@ jobs:
     permissions:
       contents: write
     steps:
+    - name: Identify workflow run
+      run: |
+        echo "Workflow run id: ${{ github.run_id }}'
+        echo "Workflow run number: ${{ github.run_number }}'
+        echo "Workflow run attempt: ${{ github.run_attempt }}'
     - name: Get TSDuck repo
       uses: actions/checkout@master
     - name: Install dependencies
