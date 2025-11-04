@@ -117,10 +117,10 @@ jobs:
         WF="${{ github.workflow_ref }}"
         WF=$(basename ${WF/@*/} .yml)
         echo "workflow=$WF" >>$GITHUB_OUTPUT
-        echo "Workflow: $WF'
-        echo "Workflow run id: ${{ github.run_id }}'
-        echo "Workflow run number: ${{ github.run_number }}'
-        echo "Workflow run attempt: ${{ github.run_attempt }}'
+        echo "Workflow: $WF"
+        echo "Workflow run id: ${{ github.run_id }}"
+        echo "Workflow run number: ${{ github.run_number }}"
+        echo "Workflow run attempt: ${{ github.run_attempt }}"
     - name: Install prerequisites
       # Getting the tag of the last release requires curl and jq.
       if: inputs.release_type == 'update-last'
