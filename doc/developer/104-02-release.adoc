@@ -1,0 +1,192 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2025, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+[#release_process]
+=== Publishing new releases
+
+Since TSDuck is maintained with little resource and time,
+there is no predefined roadmap and no product management cycle.
+Thanks to the continuous integration process (see xref:auto_ci[xrefstyle=short]),
+any state of the repository can be used as a release candidate,
+as long as there is no issue in the CI process and no major development or fix is in progress.
+
+As a rule of thumb, a new release is produced every 3 to 6 months, when enough
+new features or fixes are available, based on the {home}changelog/[CHANGELOG file].
+
+Publishing a release is roughly divided in two steps:
+
+* Create and identify the release on GitHub:
+** Create a tag in the Git repository.
+** Build binary installers for Linux (Ubuntu, Debian, Fedora, Red Hat) and Windows on Intel x64 and Arm64 platforms.
+** Create the GitHub "release" with a descriptive text and publish the binaries.
+* Post-release tasks (see xref:post_release[xrefstyle=short]):
+** Publish the release on HomeBrew (for macOS) and WinGet (for Windows).
+** Update the source code with the next release number.
+
+[#auto_release]
+==== Automated release creation
+
+The workflow `release.yml` is the preferred way to create a release.
+This is a versatile workflow which can build and publish binaries and documentation for TSDuck in several ways.
+Creating a release is only one of its features.
+
+The workflow `release.yml` is run manually when the project is ready for a new release.
+
+It has several inputs parameters which describe what to do:
+
+* Build on Intel x64 and/or Arm64 targets. Both are created by default.
+* Build on which Linux distros (Ubuntu, Debian, Fedora, Red Hat), using which container version.
+  The container names are selected from https://hub.docker.com/, in the category "Operating Systems".
+  The corresponding container is used to build the binary.
+  By default, TSDuck is built on all distros, using the containers which are flagged as `latest`.
+  Selecting `none` as container name inhibits the build on the corresponding distro.
+* Build on Windows. Only one runner is used, either an Intel or an Arm one.
+  This single runner is used to build all targets. So, it does not make any difference for the build.
+  The difference is in the tests. The test suite is run on the selected runner, testing the binary
+  installer for this target. If you want to build only one target, it is better to use a runner of
+  the same target to be able to run the test suite.
+* Build the documentation set. This is disabled by default. This is typically used to immediately
+  publish an update of the documentation on {home} without waiting for the the next "Nightly build".
+  Use `nightly-builds` as indicated below.
+* Create which type of release. The proposed types are:
+** `none`: No release is created. This is the default.
+   All binaries are left as artifacts of the workflow run and can be manually downloaded if necessary.
+** `nightly-builds`: No new release is created. Instead, the binaries and documentation
+   are publised on {home} in the "Nightly builds" download section.
+** `update-last`: No new release is created. The build binaries are added to the last
+   published release. This can be useful to add variants of an operating system.
+   For instance, you can create a new release with the Ubuntu packages being built for
+   Ubuntu 24. Then, afterwards, you may re-run the workflow, building for Ubuntu 25
+   (and no other distro) and update the release with the new packages.
+** `draft`: Create a new GitHub release in "draft" state. This is the recommended procedure.
+   When the workflow is completed and the draft release is published, you may review it
+   and manually remove the "draft" state from the release. At this point, the release
+   will become official.
+** `pre-release`: Create a new GitHub pre-release. This option is currently not used with TSDuck.
+   This is typically used in projects with "release candidates".
+** `official`: Create an official and final release.
+
+[#manual_release]
+==== Manual release creation
+
+Although the workflow `release.yml` is now the preferred way of creating a new release,
+it is still possible to manually create a release, with the support of several scripts.
+
+Manually creating a TSDuck release is relatively easy.
+Although the build time for all binaries can be long, everything is automated and
+run in the background without requiring the maintainer's attention.
+
+===== Building the various binaries
+
+Binaries must be built for Windows (64 bits only) and a few major Linux distros
+(Fedora, RedHat, Ubuntu, Debian, and 32-bit Raspian).
+Additional binaries are now built for some Arm64 Linux distros.
+
+The idea is to have a central system (Linux, macOS or Windows) from which the builds are orchestrated.
+The script `pkg/build-remote.sh` can be used to build TSDuck binaries on various remote systems and
+collect the resulting installers.
+
+The remote systems can be physical systems or virtual machines running on the central system.
+When a virtual machines is not active, it is automatically booted,
+the binaries are built and collected, and then the virtual machines is shut down.
+The currently supported hypervisors to managed virtual machines are VirtualBox, VMware and Parallels Desktop (macOS).
+All systems shall be preconfigured so that the central user is authorized to connect on each of them using `ssh`
+without password (use public key authentication, not passwordless accounts!)
+
+The maintainer shall typically have a personal script, outside the repository,
+which calls `build-remote.sh` on all systems.
+
+Typical example of such a script, with one physical remote system (a Raspberry Pi)
+and 5 virtual machines on the local host:
+
+[source,shell]
+----
+$HOME/tsduck/pkg/build-remote.sh --host raspberry
+$HOME/tsduck/pkg/build-remote.sh --host vmfedora --parallels Fedora
+$HOME/tsduck/pkg/build-remote.sh --host vmredhat --parallels RedHat
+$HOME/tsduck/pkg/build-remote.sh --host vmubuntu --parallels Ubuntu
+$HOME/tsduck/pkg/build-remote.sh --host vmdebian --parallels Debian
+$HOME/tsduck/pkg/build-remote.sh --host vmwindows --parallels Windows --windows --directory Documents/tsduck --timeout 20
+----
+
+So, building a release is as simple as running that script.
+After "some time", all binaries and build log files are available in the `pkg/installers` subdirectory.
+
+Be sure to check that all binaries are present.
+Check the log files if some of them are missing.
+
+===== Creating the GitHub release
+
+Once the binary installers are collected, simply run this command to
+create and publish the release on GitHub:
+
+[source,shell]
+----
+$ pkg/github/release.py --create
+----
+
+The current state of the repo on GitHub is used as base for the release.
+A tag is created with the version number.
+The release is created with a explanatory description.
+All binaries are published as assets of that release.
+
+[#post_release]
+==== Post-release tasks
+
+===== Creating the HomeBrew release
+
+The GitHub release contains binaries for Linux and Windows.
+On macOS, TSDuck is distributed through https://brew.sh/[HomeBrew].
+The binaries for all macOS versions, Intel and Arm platforms, are built inside the HomeBrew CI/CD pipeline
+when an updated formula is pushed in a pull request.
+
+Recently, TSDuck has been placed by the Homebrew maintainers in the
+https://github.com/Homebrew/homebrew-core/blob/master/.github/autobump.txt["autobump" list of packages].
+The original projects for the 2600+ packages in this list are regularly monitored by a Homebrew workflow.
+Whenever one of these projects publishes a new version, the update of the formula is automatically done.
+
+This means that a new official TSDuck release on GitHub is automatically detected by
+HomeBrew and the macOS versions are automatically published.
+
+So, there is nothing specific to do to publish a new TSDuck release on HomeBrew.
+
+In case of problem, if HomeBrew does not detect the new release, it is still possible
+to trigger its creation using the manual procedure which was used before TSDuck was
+included in the list of "auto-bumped" projects: create the pull request
+for the new TSDuck version in HomeBrew using the following command:
+
+[source,shell]
+----
+$ pkg/homebrew/brew-bump-formula-pr.sh -f
+----
+
+The option `-f` forces the creation of the pull request.
+Without it, it works in "dry run" mode.
+It can be safe to start with a dry run, as a test.
+
+When the HomeBrew CI/CD pipeline has finished to process the pull request,
+the new version of TSDuck is available for all flavors of macOS.
+
+===== Creating the WinGet release
+
+WinGet is somewhat similar to HomeBrew, for the Windows world.
+Because WinGet manages binary packages only, the NSIS installer for TSDuck shall be
+built first and published on GitHub as a release. Then, the WinGet manifest for TSDuck
+will point to that release on GitHub.
+
+The PowerShell script `pkg/winget/release.ps1` is used to create and publish a new
+TSDuck release on winget. It must be run from a Windows system, after the creation
+of the GitHub release. The Windows binaries on GitHub are declared in WinGet.
+
+===== Updating the version number
+
+Once a release is published, the minor version number of TSDuck `TS_VERSION_MINOR`
+must be updated in the source file `src/libtscore/tsVersion.h`.
+
+This is currently not automated and shall be manually updated before
+the first commit following the publication of a new release.

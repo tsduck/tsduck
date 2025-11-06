@@ -22,6 +22,7 @@ As usual, remember that "the answer is in the code".
 
 include::104-01-testing.adoc[]
 include::104-02-automation.adoc[]
+include::104-02-release.adoc[]
 include::104-03-modularity.adoc[]
 include::104-04-new-signalization.adoc[]
 include::104-05-tsp-design.adoc[]

@@ -19,6 +19,7 @@
 |ABI |Application Binary Interface
 |API |Application Programming Interface
 |BOM |Byte Order Mark (a feature of UTF-16 and UTF-32)
+|CI/CD |Continuous Integration/Continuous Deployment
 |DRY |Don't Repeat Yourself (a good practice)
 |FOSS |Free and Open Source Software
 |GCC |GNU Compiler Collection
@@ -49,9 +50,10 @@
   Software Engineering Institute, Carnegie Mellon University, 2016 Edition.
 * [[[CERT-CPP]]] "SEI CERT C++ Coding Standard, Rules for Developing Safe, Reliable and Secure Systems in C++",
   Aaron Ballman, Software Engineering Institute, Carnegie Mellon University, 2016 Edition.
-* [[[CPPREF]]] http://en.cppreference.com/, Online reference of the C++ language and standard library.
+* [[[CPPREF]]] Online reference of the C++ language and standard library, http://en.cppreference.com/
 * [[[GAMMA]]] "Design Patterns, Elements of Reusable Object-Oriented Software",
   Erich Gamma, Richard Helm, Ralph Johnson, John Vlissides, Addison-Wesley, 1995.
+* [[[GITHUB-CI]]] GitHub Actions documentation, https://docs.github.com/en/actions
 * [[[ISO-14882]]] ISO/IEC 14882, "Programming Languages - C++", 1998 (the C++98 standard).
 * [[[ISO-14882-11]]] ISO/IEC 14882:2011, "Programming Languages - C++", 2011 (the C++11 standard).
 * [[[ISO-14882-14]]] ISO/IEC 14882:2014, "Programming Languages - C++", 2014 (the C++14 standard).
