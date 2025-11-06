@@ -26,6 +26,7 @@ on:
         default: 'none'
         options:
         - none
+        - nightly-builds
         - update-last
         - draft
         - pre-release
@@ -253,12 +254,19 @@ jobs:
     - name: Get TSDuck repo
       uses: actions/checkout@master
     - name: Install dependencies
-      run: sudo apt install -y python3-github
+      run: sudo apt install -y python3-github curl jq
+    - name: Update nightly builds
+      if: github.repository == 'tsduck/tsduck' && inputs.release_type == 'nightly-builds'
+      run: |
+        curl --retry 5 --retry-all-errors -sL -H 'X-Upload-Credentials: ${{ secrets.UPLOAD_CREDENTIALS }}' 'https://tsduck.io/get-nightly-builds?workflow=${{ needs.init.outputs.workflow }}&run_id=${{ github.run_id }}' -o update.log
+        jq . update.log || cat update.log
     - name: Download artifacts
+      if: inputs.release_type != 'nightly-builds'
       uses: actions/download-artifact@v4
       with:
         path: pkg/installers
     - name: Extract artifacts
+      if: inputs.release_type != 'nightly-builds'
       run: |
         # Each artifact has been downloaded as a directory containing the actual file.
         cd pkg/installers
@@ -270,6 +278,7 @@ jobs:
         done
         ls -lR
     - name: Create or update release
+      if: inputs.release_type != 'nightly-builds'
       run: |
         echo "Using repository ${{ github.repository }}"
         case ${{ inputs.release_type }} in
