@@ -1,0 +1,14 @@
+[ITU_DRM_descriptor.video_formt]
+Bits = 4
+0x0 = IEEE Standard for Advanced Audio and Video Coding (specified in IEEE 1857-2023)
+0x1 = IEEE Standard for Second-Generation IEEE 1857 Video Coding (specified in IEEE 1857.4-2018)
+
+[ITU_DRM_descriptor.video_encryption_method]
+Bits = 4
+# see Table 7-5 of ITU J.1041
+0x0 = NONE (Not encrypted)
+0x1 = SAMPLE-SM4 (Partial encryption mode using SM4-CBC)
+0x2 = SM4-CBC (Full encryption mode using SM4-CBC)
+0x3 = SAMPLE-SM4-CTR (Partial encryption mode using SM4-CTR)
+0x4 = SM4-CTR (Full encryption mode using SM4-CTR)
+

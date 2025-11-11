@@ -168,6 +168,10 @@ Extended = true
 0x0001_02_FFFFFF_18_3F = LCEVC linkage
 0x0001_02_FFFFFF_19_3F = Media Service Kind
 #
+# MPEG user private descriptors
+#
+0x0001_00_FFFFFFFF_C0 = ITU DRM Descriptor
+#
 # MPEG private descriptors with "CUEI" registration id (SCTE-defined).
 #
 0x0001_01_43554549_8A = Cue Identifier (SCTE 35)

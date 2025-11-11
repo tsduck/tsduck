@@ -1,0 +1,16 @@
+==== CUVV_video_stream_descriptor
+
+Defined by ITU in <<J.1041>>.
+
+[source,xml]
+----
+<ITU_DRM_descriptor
+    video_format="uint4, required"
+    video_encryption_method="uint4, required"
+    audio_format="uint4, required"
+    audio_encryption_method="uint4, required">
+  <DRM_data_bytes>
+    Hexadecimal content
+  </DRM_data_bytes>
+</ITU_DRM_descriptor>
+----
