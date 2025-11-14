@@ -16,7 +16,7 @@
 
 #define MY_XML_NAME u"ITU_DRM_descriptor"
 #define MY_CLASS    ts::ITUDRMDescriptor
-#define MY_EDID     ts::EDID::Regular(ts::UDID_ITU_DRM, ts::Standards::MPEG)
+#define MY_EDID     ts::EDID::Regular(ts::DID_DTMB_DRM, ts::Standards::DTMB)
 
 TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 

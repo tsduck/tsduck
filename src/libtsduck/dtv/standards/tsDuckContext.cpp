@@ -388,6 +388,10 @@ void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
         args.help(u"ignore-leap-seconds",
                   u"Do not include explicit leap seconds in some UTC computations. "
                   u"Currently, this applies to SCTE 35 splice_schedule() commands only.");
+
+        args.option(u"dtmb");
+        args.help(u"dtmb",
+                  u"Assume that the transport stream is a DTMB one.");
     }
 
     // Options relating to default UHF/VHF region.
@@ -542,6 +546,21 @@ void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
                   u"A synonym for '" + UString::Join(options, u" ") + u"'. "
                   u"This is a handy shortcut when working on North American transport streams.");
     }
+
+    // Option --china triggers different options in different sets of options.
+    if (cmdOptionsMask & (CMD_CHARSET | CMD_STANDARDS)) {
+
+        // Build help text for --china option. It depends on which set of options is requested.
+        // Use _definedCmdOptions instead of cmdOptionsMask to include previous options.
+        UStringList options;
+        if (_defined_cmd_options & CMD_STANDARDS) {
+            options.push_back(u"--dtmb");
+        }
+        args.option(u"china");
+        args.help(u"china",
+                  u"A synonym for '" + UString::Join(options, u" ") + u"'. "
+                                                                      u"This is a handy shortcut when working on Chinese transport streams.");
+    }
 }
 
 
@@ -628,6 +647,9 @@ bool ts::DuckContext::loadArgs(Args& args)
         }
         if (args.present(u"abnt") || args.present(u"brazil") || args.present(u"philippines")) {
             _cmd_standards |= Standards::ISDB | Standards::ABNT;
+        }
+        if (args.present(u"dtmb") || args.present(u"china")) {
+            _cmd_standards |= Standards::DTMB;
         }
         _use_leap_seconds = !args.present(u"ignore-leap-seconds");
     }

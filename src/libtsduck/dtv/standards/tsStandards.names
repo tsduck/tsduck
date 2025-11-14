@@ -10,3 +10,4 @@ Bits = 16
 0x0010 = ISDB
 0x0020 = Japan
 0x0040 = ABNT
+0x0080 = DTMB

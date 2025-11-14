@@ -76,6 +76,7 @@
 # - SCTE table-specific descriptors
 # - ATSC regular descriptors
 # - ISDB regular descriptors
+# - DTMB regular descriptors
 #
 Bits = 8
 Extended = true
@@ -167,10 +168,6 @@ Extended = true
 0x0001_02_FFFFFF_17_3F = LCEVC video
 0x0001_02_FFFFFF_18_3F = LCEVC linkage
 0x0001_02_FFFFFF_19_3F = Media Service Kind
-#
-# MPEG user private descriptors
-#
-0x0001_00_FFFFFFFF_C0 = ITU DRM Descriptor
 #
 # MPEG private descriptors with "CUEI" registration id (SCTE-defined).
 #
@@ -684,3 +681,7 @@ Extended = true
 0x0010_00_FFFFFFFF_FC = ISDB Emergency Information
 0x0010_00_FFFFFFFF_FD = ISDB Data Component
 0x0010_00_FFFFFFFF_FE = ISDB System Management
+#
+# DTMB descriptors
+#
+0x0080_00_FFFFFFFF_C0 = ITU DRM Descriptor

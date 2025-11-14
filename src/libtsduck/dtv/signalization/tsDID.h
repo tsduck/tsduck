@@ -505,6 +505,10 @@ namespace ts {
         DID_ISDB_EMERGENCY_INFO = 0xFC,  //!< DID for ISDB Emergency information descriptor
         DID_ISDB_DATA_COMP = 0xFD,       //!< DID for ISDB Data component descriptor
         DID_ISDB_SYSTEM_MGMT = 0xFE,     //!< DID for ISDB System management descriptor
+
+        // Valid in DTMB context:
+
+        DID_DTMB_DRM = 0xC0,        //!< DID for ITU J.1041 DRM_descriptor, ex DTMB
     };
 
     //!
@@ -573,13 +577,6 @@ namespace ts {
         XDID_DVB_SERVICE_PROMINENCE = 0x22,  //!< Ext.DID for service_prominence_descriptor
         XDID_DVB_VVC_SUBPICTURES = 0x23,     //!< Ext.DID for vvc_subpictures_descriptor
         XDID_DVB_S2XV2_DELIVERY = 0x24,      //!< Ext.DID for S2Xv2_satellite_delivery_system_descriptor
-    };
-
-    //!
-    //! MPEG User Defined descriptors
-    //! 
-    enum : DID {
-        UDID_ITU_DRM = 0xC0,  //!< DID for ITU J.1041 DRM_descriptor
     };
 
     //!
