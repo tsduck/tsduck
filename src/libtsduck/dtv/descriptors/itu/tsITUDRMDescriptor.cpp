@@ -81,10 +81,10 @@ void ts::ITUDRMDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::ITUDRMDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(2)) {
-        disp << margin << "Video format: " << DataName(MY_XML_NAME, u"video_fomat", buf.getBits<uint8_t>(4), NamesFlags::NAME_VALUE | NamesFlags::HEXA) << std::endl;
-        disp << margin << "Video encyption method: " << DataName(MY_XML_NAME, u"video_encryption_methid", buf.getBits<uint8_t>(4), NamesFlags::NAME_VALUE | NamesFlags::HEXA) << std::endl;
-        disp << margin << "Audio format: " << UString::Format(u"0x%x", buf.getBits<uint8_t>(4));
-        disp << margin << ", Audio encyption method: " << UString::Format(u"0x%x", buf.getBits<uint8_t>(4)) << std::endl;
+        disp << margin << "Video format: " << DataName(MY_XML_NAME, u"video_format", buf.getBits<uint8_t>(4), NamesFlags::NAME_VALUE | NamesFlags::HEXA) << std::endl;
+        disp << margin << "Video encryption method: " << DataName(MY_XML_NAME, u"video_encryption_method", buf.getBits<uint8_t>(4), NamesFlags::NAME_VALUE | NamesFlags::HEXA) << std::endl;
+        disp << margin << "Audio format: " << UString::Format(u"0x%1X", buf.getBits<uint8_t>(4));
+        disp << ", Audio encryption method: " << UString::Format(u"0x%1X", buf.getBits<uint8_t>(4)) << std::endl;
         disp.displayPrivateData(u"DRM data types", buf, NPOS, margin);
     }
 }

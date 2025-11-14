@@ -1,4 +1,4 @@
-[ITU_DRM_descriptor.video_formt]
+[ITU_DRM_descriptor.video_format]
 Bits = 4
 0x0 = IEEE Standard for Advanced Audio and Video Coding (specified in IEEE 1857-2023)
 0x1 = IEEE Standard for Second-Generation IEEE 1857 Video Coding (specified in IEEE 1857.4-2018)

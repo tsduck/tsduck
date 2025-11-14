@@ -19,15 +19,16 @@ bool ts::CompatibleStandards(Standards std)
     //
     // Compatibility matrix, one by one:
     //
-    //           NONE  MPEG  DVB   SCTE  ATSC  ISDB JAPAN  ABNT
-    //   NONE           X     X     X     X     X     X     X
-    //   MPEG                 X     X     X     X     X     X
+    //           NONE  MPEG  DVB   SCTE  ATSC  ISDB JAPAN  ABNT  DTMB
+    //   NONE           X     X     X     X     X     X     X     X
+    //   MPEG                 X     X     X     X     X     X     X
     //   DVB                        X     -    (X)   (X)   (X)
     //   SCTE                             X     X     X     X
     //   ATSC                                   -     -     -
     //   ISDB                                         X     X
     //   JAPAN                                              -
     //   ABNT
+    //   DTMB
     //
     //  X  : Compatible.
     // (X) : Mixed compatibility. ISDB is based on a subset of DVB and adds other
@@ -48,7 +49,14 @@ bool ts::CompatibleStandards(Standards std)
         (Standards::JAPAN   | Standards::ABNT),
         (Standards::DVBONLY | Standards::ISDB),
         (Standards::DVBONLY | Standards::JAPAN),
-        (Standards::DVBONLY | Standards::ABNT)
+        (Standards::DVBONLY | Standards::ABNT),
+        (Standards::DTMB    | Standards::DVB),
+        (Standards::DTMB    | Standards::DVBONLY),
+        (Standards::DTMB    | Standards::SCTE),
+        (Standards::DTMB    | Standards::ATSC),
+        (Standards::DTMB    | Standards::ISDB),
+        (Standards::DTMB    | Standards::JAPAN),
+        (Standards::DTMB    | Standards::ABNT), 
     };
 
     for (auto forbidden : incompatible_standards) {
