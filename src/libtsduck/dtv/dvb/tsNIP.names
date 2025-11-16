@@ -1,0 +1,20 @@
+[lct_het]
+# Layered Coding Transport Header Extension Type
+Bits = 8
+0   = NOP
+1   = AUTH
+2   = TIME
+64  = FTI
+68  = NACI
+192 = FDT
+193 = CENC
+
+[lct_het_desc]
+Bits = 8
+0   = NOP, No-Operation extension
+1   = AUTH, Packet authentication extension
+2   = TIME, Time extension
+64  = FTI, FEC Object Transmission Information extension (ALC, RFC 5775)
+68  = NACI, NIP Actual Carrier Information (DVB-NIP, ETSI TS 103 876)
+192 = FDT, FDT Instance Header (FLUTE, RFC 3926)
+193 = CENC, FDT Instance Content Encoding extension (FLUTE, RFC 3926)

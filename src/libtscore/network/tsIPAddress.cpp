@@ -411,6 +411,21 @@ bool ts::IPAddress::isMulticast() const
     }
 }
 
+// Check if two IPv6 multicast addresses are identical, excluding the "scope" bits.
+bool ts::IPAddress::sameMulticast6(const IPAddress& mc) const
+{
+    return _gen == IP::v6 && mc._gen == IP::v6 &&
+           _bytes6[0] == 0xFF && mc._bytes6[0] == 0xFF &&
+           (_bytes6[1] & 0xF0) == (mc._bytes6[1] & 0xF0) &&
+           MemCompare(_bytes6 + 2, mc._bytes6 + 2, BYTES6 - 2) == 0;
+}
+
+// Get the IPv6 multicast "scope" bits of this address.
+uint8_t ts::IPAddress::scopeMulticast6() const
+{
+    return _gen == IP::v6 && _bytes6[0] == 0xFF ? (_bytes6[1] & 0x0F) : 0xFF;
+}
+
 // SSM: source specific multicast.
 bool ts::IPAddress::isSSM() const
 {
