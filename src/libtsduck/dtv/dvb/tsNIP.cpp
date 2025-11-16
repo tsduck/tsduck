@@ -154,7 +154,7 @@ void ts::NIPActualCarrierInformation::clear()
 bool ts::NIPActualCarrierInformation::deserialize(const uint8_t* addr, size_t size)
 {
     clear();
-    if (size >= 10 && size >= 10 + addr[9]) {
+    if (size >= 10 && size >= 10 + size_t(addr[9])) {
         nip_network_id = GetUInt16(addr);
         nip_carrier_id = GetUInt16(addr + 2);
         nip_link_id    = GetUInt16(addr + 4);
