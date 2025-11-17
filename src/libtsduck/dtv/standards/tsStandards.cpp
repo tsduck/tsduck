@@ -22,7 +22,7 @@ bool ts::CompatibleStandards(Standards std)
     //           NONE  MPEG  DVB   SCTE  ATSC  ISDB JAPAN  ABNT  DTMB
     //   NONE           X     X     X     X     X     X     X     X
     //   MPEG                 X     X     X     X     X     X     X
-    //   DVB                        X     -    (X)   (X)   (X)
+    //   DVB                        X     -    (X)   (X)   (X)    X
     //   SCTE                             X     X     X     X
     //   ATSC                                   -     -     -
     //   ISDB                                         X     X
@@ -50,7 +50,6 @@ bool ts::CompatibleStandards(Standards std)
         (Standards::DVBONLY | Standards::ISDB),
         (Standards::DVBONLY | Standards::JAPAN),
         (Standards::DVBONLY | Standards::ABNT),
-        (Standards::DTMB    | Standards::DVB),
         (Standards::DTMB    | Standards::DVBONLY),
         (Standards::DTMB    | Standards::SCTE),
         (Standards::DTMB    | Standards::ATSC),
