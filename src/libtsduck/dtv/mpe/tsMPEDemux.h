@@ -62,10 +62,7 @@ namespace ts {
         //! Replace the MPE handler.
         //! @param [in] h The new handler.
         //!
-        void setHandler(MPEHandlerInterface* h)
-        {
-            _handler = h;
-        }
+        void setHandler(MPEHandlerInterface* h) { _handler = h; }
 
     protected:
         // Inherited methods from AbstractDemux.

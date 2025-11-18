@@ -11,11 +11,11 @@
 //----------------------------------------------------------------------------
 
 #include "tsPluginRepository.h"
+#include "tsFluteDemux.h"
 #include "tsServiceDiscovery.h"
-#include "tsNames.h"
-#include "tsNIP.h"
 #include "tsMPEDemux.h"
 #include "tsMPEPacket.h"
+#include "tsNIP.h"
 
 
 //----------------------------------------------------------------------------
@@ -23,7 +23,10 @@
 //----------------------------------------------------------------------------
 
 namespace ts {
-    class NIPPlugin: public ProcessorPlugin, private MPEHandlerInterface
+    class NIPPlugin:
+        public ProcessorPlugin,
+        private MPEHandlerInterface,
+        private FluteHandlerInterface
     {
         TS_PLUGIN_CONSTRUCTORS(NIPPlugin);
     public:
@@ -39,15 +42,17 @@ namespace ts {
         UString _opt_service {};
 
         // Plugin private fields.
-        bool             _abort = false;            // Error, abort asap.
-        bool             _wait_for_service = false; // Wait for MPE service id to be identified.
-        PID              _mpe_pid = PID_NULL;       // Actual MPE PID.
-        ServiceDiscovery _service {duck, nullptr};  // Service containing the MPE PID.
-        MPEDemux         _demux {duck, this};       // MPE demux to extract MPE datagrams.
+        bool             _abort = false;             // Error, abort asap.
+        bool             _wait_for_service = false;  // Wait for MPE service id to be identified.
+        PID              _mpe_pid = PID_NULL;        // Actual MPE PID.
+        ServiceDiscovery _service {duck, nullptr};   // Service containing the MPE PID.
+        MPEDemux         _mpe_demux {duck, this};    // MPE demux to extract MPE datagrams.
+        FluteDemux       _flute_demux {duck, this};  // FLUTE demux to extract broadcasted files.
 
         // Inherited methods.
         virtual void handleMPENewPID(MPEDemux&, const PMT&, PID) override;
         virtual void handleMPEPacket(MPEDemux&, const MPEPacket&) override;
+        virtual void handleFluteFile(FluteDemux& demux, const FluteFile& file) override;
     };
 }
 
@@ -109,11 +114,12 @@ bool ts::NIPPlugin::start()
     _wait_for_service = false;
     _mpe_pid = _opt_pid;
     _service.clear();
-    _demux.reset();
+    _mpe_demux.reset();
+    _flute_demux.reset();
 
     if (_mpe_pid != PID_NULL) {
         // MPE PID already known.
-        _demux.addPID(_mpe_pid);
+        _mpe_demux.addPID(_mpe_pid);
     }
     else if (!_opt_service.empty()) {
         // MPE service is specified.
@@ -148,7 +154,7 @@ ts::ProcessorPlugin::Status ts::NIPPlugin::processPacket(TSPacket& pkt, TSPacket
     }
     else {
         // Feed the MPE demux.
-        _demux.feedPacket(pkt);
+        _mpe_demux.feedPacket(pkt);
     }
     return _abort ? TSP_END : TSP_OK;
 }
@@ -166,7 +172,7 @@ void ts::NIPPlugin::handleMPENewPID(MPEDemux& demux, const PMT& pmt, PID pid)
     if (_mpe_pid == PID_NULL && (!_service.hasId() || _service.hasId(pmt.service_id))) {
         verbose(u"using MPE PID %n, service %n", pid, pmt.service_id);
         _mpe_pid = pid;
-        _demux.addPID(pid);
+        _mpe_demux.addPID(pid);
     }
 }
 
@@ -180,72 +186,19 @@ void ts::NIPPlugin::handleMPEPacket(MPEDemux& demux, const MPEPacket& mpe)
     const IPSocketAddress destination(mpe.destinationSocket());
     debug(u"MPE packet on PID %n, for address %s, %d bytes", mpe.sourcePID(), destination, mpe.datagramSize());
 
-    if (_abort || mpe.sourcePID() != _mpe_pid) {
-        return;
+    if (!_abort && mpe.sourcePID() == _mpe_pid) {
+        // Experimental code.
+        if (mpe.destinationSocket() == NIPSignallingAddress4() || mpe.destinationSocket().sameMulticast6(NIPSignallingAddress6())) {
+            _flute_demux.feedPacket(mpe.sourceSocket(), mpe.destinationSocket(), mpe.udpMessage(), mpe.udpMessageSize());
+        }
     }
+}
 
-    // Experimental code.
-    if (destination == NIPSignallingAddress4() || destination.sameMulticast6(NIPSignallingAddress6())) {
 
-        // UDP payload.
-        const uint8_t* data = mpe.udpMessage();
-        size_t size = mpe.udpMessageSize();
+//----------------------------------------------------------------------------
+// Process a FLUTE file.
+//----------------------------------------------------------------------------
 
-        // Get LCT header.
-        LCTHeader lct;
-        if (!lct.deserialize(data, size)) {
-            error(u"invalid LCT header from %s", mpe.sourceSocket());
-            return;
-        }
-
-        // The FEC Encoding ID is stored in codepoint (RFC 3926, section 5.1).
-        // We currently only support the default one, value 0.
-        if (lct.codepoint != FEI_COMPACT_NOCODE) {
-            error(u"unsupported FEC Encoding ID %d from %s", lct.codepoint, mpe.sourceSocket());
-            return;
-        }
-
-        // The LCT header is followed by the FEC Payload Id (RFC 5775, section 2).
-        // The FEC Payload ID for FEC Encoding IDs 0 and 130 (RFC 3695, section 2.1) is made of 2 16-bit integers.
-        if (size < 4) {
-            error(u"truncated FED Payload ID from %s, %d bytes", mpe.sourceSocket(), size);
-            return;
-        }
-        const uint16_t source_block_number = GetUInt16(data);
-        const uint16_t encoding_symbol_id = GetUInt16(data + 2);
-        data += 4;
-        size -= 4;
-
-        // Display debug message on packet format.
-        UString line;
-        line.format(u"PID %n, src: %s, dst: %s, version: %d, psi: %d, cci: %d bytes, tsi: %d (%d bytes), toi: %d (%d bytes)\n"
-                    u"    codepoint: %d, close sess: %s, close obj: %s, extensions: ",
-                    mpe.sourcePID(), mpe.sourceSocket(), mpe.destinationSocket(),
-                    lct.lct_version, lct.psi, lct.cci.size(), lct.tsi, lct.tsi_length, lct.toi, lct.toi_length,
-                    lct.codepoint, lct.close_session, lct.close_object);
-        bool got_ext = false;
-        for (const auto& e : lct.ext) {
-            if (got_ext) {
-                line += u", ";
-            }
-            got_ext = true;
-            line.format(u"%d (%s, %d bytes)", e.first, NameFromSection(u"dtv", u"lct_het", e.first), e.second.size());
-        }
-        if (!got_ext) {
-            line += u"none";
-        }
-        line.format(u"\n    source block number: %d, encoding symbol id: %d", source_block_number, encoding_symbol_id);
-        NIPActualCarrierInformation naci;
-        if (naci.deserialize(lct)) {
-            line.format(u"\n    naci: network: %n, carrier: %n, link: %n, service: %n, provider: \"%s\"",
-                        naci.nip_network_id, naci.nip_carrier_id, naci.nip_link_id, naci.nip_service_id, naci.nip_stream_provider_name);
-        }
-        line.format(u"\n    payload: %d bytes", size);
-        if (size > 0) {
-            line += u'\n';
-            line.appendDump(data, size, UString::ASCII | UString::HEXA | UString::BPL, 4, 16);
-            line.trim(false, true);
-        }
-        info(line);
-    }
+void ts::NIPPlugin::handleFluteFile(FluteDemux& demux, const FluteFile& file)
+{
 }

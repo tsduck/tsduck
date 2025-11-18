@@ -24,6 +24,7 @@
 |ACG |Access Criteria Generator (DVB SimulCrypt)
 |AES |Advanced Encryption Standard (cryptography)
 |AIT |Application Information Table (DVB)
+|ALC |Asynchronous Layered Coding (DVB-NIP)
 |ANSI |American National Standards Institute
 |API |Application Programming Interface
 |AOM |Alliance for Open Media
@@ -97,9 +98,10 @@
 |ES |Elementary Stream
 |ETSI |European Telecommunications Standards Institute
 |ETT |Extended Text Table (ATSC)
+|FDT |File Delivery Table (DVB-NIP)
 |FEC |Forward Error Correction
 |FIPS |Federal Information Processing Standard
-|FLUTE |File Delivery over Unidirectional Transport (RFC 3926)
+|FLUTE |File Delivery over Unidirectional Transport (DVB-NIP)
 |FTA |Free To Air
 |GOP |Group Of Pictures (MPEG)
 |GS |Generic Stream
@@ -131,6 +133,7 @@
 |JSON |JavaScript Object Notation (data representation)
 |LAN |Local Area Network
 |LCN |Logical Channel Number (a.k.a. TV channel number)
+|LCT |Layered Coding Transport (DVB-NIP)
 |LDT |Linked Description Table (ISDB)
 |LIT |Local event Information Table (ISDB)
 |LNB |Low-Noise Block down-converter (satellite)
@@ -177,6 +180,7 @@
 |RIST |Reliable Internet Stream Transport (network protocol)
 |RNG |Random Number Generator (cryptography)
 |RNT |Resolution provider Notification Table (DVB)
+|ROUTE |Real-Time Transport Object Delivery over Unidirectional Transport (ATSC 3.0, DVB-NIP)
 |RRT |Rating Region Table (ATSC)
 |RS |Reed-Solomon (FEC code)
 |RST |Running Status Table (DVB)
@@ -204,11 +208,13 @@
 |TID |Table Identifier
 |TMCC |Transmission and Multiplexing Configuration Control (ISDB)
 |TNT |_Télévision Numérique Terrestre_ (French DTTV network)
+|TOI |Transport Object Identifier (DVB-NIP)
 |TOT |Time Offset Table (DVB)
 |TPS |Transmission Parameter Signalling (modulation)
 |TRNG |True Random Number Generator (cryptography)
 |TS |Transport Stream
 |TSDT |Transport Stream Description Table (MPEG)
+|TSI |Transport Session Identifier (DVB-NIP)
 |TSP |Transport Stream Packet (ISDB)
 |TVCT |Terrestrial Virtual Channel Table (ATSC)
 |UDP |User Datagram Protocol (networking)

@@ -254,6 +254,7 @@ namespace ts {
 
         //!
         //! Check if two IPv6 multicast addresses are identical, excluding the "scope" bits.
+        //! If this address or @a mc are socket addresses, they must also have the same port.
         //! @param [in] mc Another IPv6 multicast address.
         //! @return True if this address and @a mc are two IPv6 multicast addresses and are
         //! identical, excluding the "scope" bits in the comparison. False otherwise.

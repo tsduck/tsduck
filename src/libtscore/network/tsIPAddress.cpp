@@ -415,6 +415,7 @@ bool ts::IPAddress::isMulticast() const
 bool ts::IPAddress::sameMulticast6(const IPAddress& mc) const
 {
     return _gen == IP::v6 && mc._gen == IP::v6 &&
+           port() == mc.port() &&
            _bytes6[0] == 0xFF && mc._bytes6[0] == 0xFF &&
            (_bytes6[1] & 0xF0) == (mc._bytes6[1] & 0xF0) &&
            MemCompare(_bytes6 + 2, mc._bytes6 + 2, BYTES6 - 2) == 0;

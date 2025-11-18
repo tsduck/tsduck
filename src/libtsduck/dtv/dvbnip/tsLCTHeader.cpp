@@ -6,26 +6,9 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsNIP.h"
-
-
-//----------------------------------------------------------------------------
-// Get the DVB-NIP signalling IPv4 address.
-//----------------------------------------------------------------------------
-
-const ts::IPSocketAddress& ts::NIPSignallingAddress4()
-{
-    // IPv4: 224.0.23.14, UDP port: 3937, see ETSI TS 103 876, section 8.2.2
-    static const IPSocketAddress data {224, 0, 23, 14, NIP_SIGNALLING_PORT};
-    return data;
-}
-
-const ts::IPSocketAddress& ts::NIPSignallingAddress6()
-{
-    // IPv6: FF0X:0:0:0:0:0:0:12D, UDP port: 3937, see ETSI TS 103 876, section 8.2.2
-    static const IPSocketAddress data {0xFF00, 0, 0, 0, 0, 0, 0, 0x012D, NIP_SIGNALLING_PORT};
-    return data;
-}
+#include "tsLCTHeader.h"
+#include "tsFlute.h"
+#include "tsNames.h"
 
 
 //----------------------------------------------------------------------------
@@ -39,6 +22,10 @@ void ts::LCTHeader::clear()
     tsi = toi = toi_high = 0;
     cci.clear();
     ext.clear();
+    naci.clear();
+    fdt.clear();
+    fti.clear();
+    fpi.clear();
 }
 
 
@@ -124,60 +111,63 @@ bool ts::LCTHeader::deserialize(const uint8_t*& addr, size_t& size)
         }
     }
 
+    // Check that HDR_LEN matches the header length.
     if (hdr_len > 0) {
         addr += hdr_len;
         size -= hdr_len;
         return false;
     }
 
+    // Decode optional headers.
     valid = true;
+    fti.deserialize(*this);
+    fdt.deserialize(*this);
+    naci.deserialize(*this);
+
+    // Decode FEC Payload ID following the header.
+    // The FEC Encoding ID is stored in LCT header codepoint (RFC 3926, section 5.1).
+    valid = fpi.deserialize(codepoint, addr, size);
     return valid;
 }
 
 
 //----------------------------------------------------------------------------
-// Clear the content of a DVB-NIP Actual Carrier Information.
+// Convert to string. Implementation of StringifyInterface.
 //----------------------------------------------------------------------------
 
-void ts::NIPActualCarrierInformation::clear()
+ts::UString ts::LCTHeader::toString() const
 {
-    valid = false;
-    nip_network_id = nip_carrier_id = nip_link_id = nip_service_id = 0;
-    nip_stream_provider_name.clear();
-}
+    UString str;
+    if (valid) {
+        // Fixed part.
+        str.format(u"version: %d, psi: %d, cci: %d bytes, tsi: %d (%d bytes), toi: %d (%d bytes), codepoint: %d\n"
+                    u"    close sess: %s, close obj: %s, extensions: ",
+                    lct_version, psi, cci.size(), tsi, tsi_length, toi, toi_length, codepoint, close_session, close_object);
 
-
-//----------------------------------------------------------------------------
-// Deserialize a DVB-NIP Actual Carrier Information from a binary area.
-//----------------------------------------------------------------------------
-
-bool ts::NIPActualCarrierInformation::deserialize(const uint8_t* addr, size_t size)
-{
-    clear();
-    if (size >= 10 && size >= 10 + size_t(addr[9])) {
-        nip_network_id = GetUInt16(addr);
-        nip_carrier_id = GetUInt16(addr + 2);
-        nip_link_id    = GetUInt16(addr + 4);
-        nip_service_id = GetUInt16(addr + 6);
-        nip_stream_provider_name.assignFromUTF8(reinterpret_cast<const char*>(addr + 10), addr[9]);
-        valid = true;
+        // List of extensions.
+        bool got_ext = false;
+        for (const auto& e : ext) {
+            if (got_ext) {
+                str += u", ";
+            }
+            got_ext = true;
+            str.format(u"%d (%s, %d bytes)", e.first, NameFromSection(u"dtv", u"lct_het", e.first), e.second.size());
+        }
+        if (!got_ext) {
+            str += u"none";
+        }
+        if (fdt.valid) {
+            str.format(u"\n    fdt: %s", fdt);
+        }
+        if (fti.valid) {
+            str.format(u"\n    fti: %s", fti);
+        }
+        if (fpi.valid) {
+            str.format(u"\n    fpi: %s", fpi);
+        }
+        if (naci.valid) {
+            str.format(u"\n    naci: %s", naci);
+        }
     }
-    return valid;
-}
-
-
-//----------------------------------------------------------------------------
-// Deserialize a DVB-NIP Actual Carrier Information from a HET_NACI.
-//----------------------------------------------------------------------------
-
-bool ts::NIPActualCarrierInformation::deserialize(const LCTHeader& lct)
-{
-    const auto it = lct.ext.find(HET_NACI);
-    if (!lct.valid || it == lct.ext.end()) {
-        clear();
-        return false;
-    }
-    else {
-        return deserialize(it->second.data(), it->second.size());
-    }
+    return str;
 }

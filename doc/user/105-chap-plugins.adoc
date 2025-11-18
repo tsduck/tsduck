@@ -197,6 +197,10 @@ endif::[]
 |packet
 |Inject TS packets from a file into the transport
 
+|nip
+|packet
+|Experimental DVB-NIP (Native IP) analyzer
+
 |nit
 |packet
 |Perform various transformations on the NIT

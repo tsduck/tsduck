@@ -5,25 +5,15 @@
 // BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  Version identification of TSDuck.
-//!
+
+#include "tsFluteFile.h"
+
+
+//----------------------------------------------------------------------------
+// Clear the content of this object.
 //----------------------------------------------------------------------------
 
-#pragma once
-//!
-//! TSDuck major version.
-//! @ingroup app
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//! @ingroup app
-//!
-#define TS_VERSION_MINOR 43
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//! @ingroup app
-//!
-#define TS_COMMIT 4487
+void ts::FluteFile::clear()
+{
+    _data.clear();
+}
