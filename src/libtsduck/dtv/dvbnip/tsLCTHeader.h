@@ -18,6 +18,7 @@
 #include "tsFECPayloadId.h"
 #include "tsFDTInstanceHeader.h"
 #include "tsByteBlock.h"
+#include "tsTime.h"
 
 namespace ts {
     //!
@@ -43,7 +44,7 @@ namespace ts {
         size_t    tsi_length = 0;             //!< Length in bytes of TSI field.
         size_t    toi_length = 0;             //!< Length in bytes of TOI field.
         std::map<uint8_t, ByteBlock> ext {};  //!< Header extensions, indexed by type (HET).
-
+        Time      sender_current_time {};     //!< Optional sender current time from header HET_TIME. Time::Epoch if unset.
         NIPActualCarrierInformation naci {};  //!< Optional DVB-NIP carrier information from header HET_NACI.
         FDTInstanceHeader           fdt {};   //!< Optional FDT instance from header HET_FDT.
         FECTransmissionInformation  fti {};   //!< Optional FEC transmission information from header HET_FTI.

@@ -22,6 +22,7 @@ void ts::LCTHeader::clear()
     tsi = toi = toi_high = 0;
     cci.clear();
     ext.clear();
+    sender_current_time.clear();
     naci.clear();
     fdt.clear();
     fti.clear();
@@ -124,6 +125,14 @@ bool ts::LCTHeader::deserialize(const uint8_t*& addr, size_t& size)
     fdt.deserialize(*this);
     naci.deserialize(*this);
 
+    // Decode optional HET_TIME header.
+    const auto etime = ext.find(HET_TIME);
+    if (etime != ext.end() && etime->second.size() >= 6 && (GetUInt16(etime->second.data()) & 0x8000) != 0) {
+        // The "SCT-High" bit is set in the "Use" field (RFC 5651, section 5.2.2).
+        static const Time origin(1900, 1, 1, 0, 0);
+        sender_current_time = origin + cn::seconds(GetUInt32(etime->second.data() + 2));
+    }
+
     // Decode FEC Payload ID following the header.
     // The FEC Encoding ID is stored in LCT header codepoint (RFC 3926, section 5.1).
     valid = fpi.deserialize(codepoint, addr, size);
@@ -155,6 +164,9 @@ ts::UString ts::LCTHeader::toString() const
         }
         if (!got_ext) {
             str += u"none";
+        }
+        if (sender_current_time != Time::Epoch) {
+            str.format(u"\n    sender time: %s", sender_current_time);
         }
         if (fdt.valid) {
             str.format(u"\n    fdt: %s", fdt);

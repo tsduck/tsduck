@@ -24,11 +24,23 @@ $ tsp -P nip [options]
 Options
 
 [.opt]
+*--dump-flute-payload*
+
+[.optdoc]
+Same as `--log-flute-packets` and also dump the payload of each FLUTE packet.
+
+[.opt]
+*--log-flute-packets*
+
+[.optdoc]
+Log a message describing the structure of each FLUTE packet.
+
+[.opt]
 *-p* _value_ +
 *--pid* _value_
 
 [.optdoc]
-Specify the MPE containing the DVB-NIP stream.
+Specify the MPE PID containing the DVB-NIP stream.
 
 [.optdoc]
 By default, if neither `--pid` nor `--service` is specified, use the first MPE PID which is found.

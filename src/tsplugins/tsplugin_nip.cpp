@@ -12,6 +12,7 @@
 
 #include "tsPluginRepository.h"
 #include "tsFluteDemux.h"
+#include "tsFluteFile.h"
 #include "tsServiceDiscovery.h"
 #include "tsMPEDemux.h"
 #include "tsMPEPacket.h"
@@ -38,6 +39,8 @@ namespace ts {
 
     private:
         // Command line options.
+        bool    _log_flute_packets = false;
+        bool    _dump_flute_payload = false;
         PID     _opt_pid = PID_NULL;
         UString _opt_service {};
 
@@ -66,9 +69,17 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"nip", ts::NIPPlugin);
 ts::NIPPlugin::NIPPlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Experimental DVB-NIP (Native IP) analyzer", u"[options]")
 {
+    option(u"dump-flute-payload");
+    help(u"dump-flute-payload",
+         u"Same as --log-flute-packets and also dump the payload of each FLUTE packet.");
+
+    option(u"log-flute-packets");
+    help(u"log-flute-packets",
+         u"Log a message describing the structure of each FLUTE packet.");
+
     option(u"pid", 'p', PIDVAL);
     help(u"pid",
-         u"Specify the MPE containing the DVB-NIP stream. "
+         u"Specify the MPE PID containing the DVB-NIP stream. "
          u"By default, if neither --pid nor --service is specified, use the first MPE PID which is found."
          u"Options --pid and --service are mutually exclusive.");
 
@@ -91,6 +102,8 @@ ts::NIPPlugin::NIPPlugin(TSP* tsp_) :
 bool ts::NIPPlugin::getOptions()
 {
     // Get command line arguments
+    _dump_flute_payload = present(u"dump-flute-payload");
+    _log_flute_packets = _dump_flute_payload || present(u"log-flute-packets");
     getIntValue(_opt_pid, u"pid", PID_NULL);
     getValue(_opt_service, u"service");
 
@@ -116,6 +129,8 @@ bool ts::NIPPlugin::start()
     _service.clear();
     _mpe_demux.reset();
     _flute_demux.reset();
+    _flute_demux.setPacketLogLevel(_log_flute_packets ? Severity::Info : Severity::Debug);
+    _flute_demux.logPacketContent(_dump_flute_payload);
 
     if (_mpe_pid != PID_NULL) {
         // MPE PID already known.
@@ -201,4 +216,7 @@ void ts::NIPPlugin::handleMPEPacket(MPEDemux& demux, const MPEPacket& mpe)
 
 void ts::NIPPlugin::handleFluteFile(FluteDemux& demux, const FluteFile& file)
 {
+    // To be completed.
+    info(u"received file \"%s\", %'d bytes, TOI: %d, TSI: %d, source: %s, destination: %s",
+         file.name(), file.size(), file.toi(), file.tsi(), file.source(), file.destination());
 }
