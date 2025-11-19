@@ -12,7 +12,7 @@
 
 #include "tsPluginRepository.h"
 #include "tsFluteDemux.h"
-#include "tsFluteFile.h"
+#include "tsFluteFDT.h"
 #include "tsServiceDiscovery.h"
 #include "tsMPEDemux.h"
 #include "tsMPEPacket.h"
@@ -55,7 +55,8 @@ namespace ts {
         // Inherited methods.
         virtual void handleMPENewPID(MPEDemux&, const PMT&, PID) override;
         virtual void handleMPEPacket(MPEDemux&, const MPEPacket&) override;
-        virtual void handleFluteFile(FluteDemux& demux, const FluteFile& file) override;
+        virtual void handleFluteFile(FluteDemux&, const FluteFile&) override;
+        virtual void handleFluteFDT(FluteDemux&, const FluteFDT&) override;
     };
 }
 
@@ -207,6 +208,18 @@ void ts::NIPPlugin::handleMPEPacket(MPEDemux& demux, const MPEPacket& mpe)
             _flute_demux.feedPacket(mpe.sourceSocket(), mpe.destinationSocket(), mpe.udpMessage(), mpe.udpMessageSize());
         }
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Process a FLUTE file.
+//----------------------------------------------------------------------------
+
+void ts::NIPPlugin::handleFluteFDT(FluteDemux& demux, const FluteFDT& fdt)
+{
+    // To be completed.
+    info(u"received FDT, instance: %d, TSI: %d, source: %s, destination: %s",
+         fdt.instanceId(), fdt.tsi(), fdt.source(), fdt.destination());
 }
 
 

@@ -27,7 +27,7 @@ namespace ts {
     class TSDUCKDLL FDTInstanceHeader : public StringifyInterface
     {
     public:
-        bool     valid = false;        //!< The informatios was successfully parsed.
+        bool     valid = false;        //!< The information was successfully parsed.
         uint8_t  flute_version = 0;    //!< Version of the FLUTE protocol (4 bits).
         uint32_t fdt_instance_id = 0;  //!< FDT Instance ID (20 bits).
 

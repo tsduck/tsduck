@@ -22,6 +22,7 @@ namespace ts {
     //!
     class TSDUCKDLL FluteFile
     {
+        TS_NOBUILD_NOCOPY(FluteFile);
     public:
         //!
         //! Constructor.
@@ -53,13 +54,13 @@ namespace ts {
 
         //!
         //! Get the Transport Session Identifier (TSI) of the file.
-        //! @return The Transport Session Identifier
+        //! @return The Transport Session Identifier.
         //!
         uint64_t tsi() const { return _tsi; }
 
         //!
         //! Get the Transport Object Identifier (TOI) of the file.
-        //! @return The Transport Object Identifier
+        //! @return The Transport Object Identifier.
         //!
         uint64_t toi() const { return _toi; }
 

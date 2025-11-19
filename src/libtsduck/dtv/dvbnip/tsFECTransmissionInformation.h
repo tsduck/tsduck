@@ -29,7 +29,7 @@ namespace ts {
     class TSDUCKDLL FECTransmissionInformation : public StringifyInterface
     {
     public:
-        bool     valid = false;                //!< The informatios was successfully parsed.
+        bool     valid = false;                //!< The information was successfully parsed.
         uint8_t  fec_encoding_id = 0;          //!< FEC Encoding ID which was used to parse the structure (not part of the structore).
         uint64_t transfer_length = 0;          //!< The length of the transport object that carries the file in bytes.
         uint16_t fec_instance_id = 0;          //!< FEC Instance ID (FEC Encoding ID 128-255).

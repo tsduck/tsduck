@@ -27,7 +27,7 @@ namespace ts {
     class TSDUCKDLL NIPActualCarrierInformation : public StringifyInterface
     {
     public:
-        bool     valid = false;                //!< The informatios was successfully parsed.
+        bool     valid = false;                //!< The informatio was successfully parsed.
         uint16_t nip_network_id = 0;           //!< NIPNetworkID
         uint16_t nip_carrier_id = 0;           //!< NIPCarrierID
         uint16_t nip_link_id = 0;              //!< NIPLinkID

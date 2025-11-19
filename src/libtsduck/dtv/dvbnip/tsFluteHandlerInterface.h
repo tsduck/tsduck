@@ -18,6 +18,7 @@ namespace ts {
 
     class FluteDemux;
     class FluteFile;
+    class FluteFDT;
 
     //!
     //! FLUTE demux handler interface.
@@ -32,9 +33,18 @@ namespace ts {
     public:
         //!
         //! This hook is invoked when a new file is available.
+        //! The default implementation does nothing.
         //! @param [in,out] demux A reference to the FLUTE demux.
         //! @param [in] file The received file.
         //!
-        virtual void handleFluteFile(FluteDemux& demux, const FluteFile& file) = 0;
+        virtual void handleFluteFile(FluteDemux& demux, const FluteFile& file);
+
+        //!
+        //! This hook is invoked when a new File Delivery Table (FDT) is available.
+        //! The default implementation does nothing.
+        //! @param [in,out] demux A reference to the FLUTE demux.
+        //! @param [in] fdt The received FDT.
+        //!
+        virtual void handleFluteFDT(FluteDemux& demux, const FluteFDT& fdt);
     };
 }

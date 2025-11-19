@@ -11,3 +11,11 @@
 ts::FluteHandlerInterface::~FluteHandlerInterface()
 {
 }
+
+void ts::FluteHandlerInterface::handleFluteFile(FluteDemux&, const FluteFile&)
+{
+}
+
+void ts::FluteHandlerInterface::handleFluteFDT(FluteDemux&, const FluteFDT&)
+{
+}

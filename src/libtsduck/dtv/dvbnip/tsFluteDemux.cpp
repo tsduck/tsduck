@@ -12,7 +12,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsFluteDemux.h"
-#include "tsFluteFile.h"
+#include "tsFluteFDT.h"
 #include "tsFlute.h"
 #include "tsIPSocketAddress.h"
 #include "tsIPPacket.h"
@@ -153,7 +153,6 @@ void ts::FluteDemux::feedPacket(const IPSocketAddress& source, const IPSocketAdd
             _report.debug(u"new FDT instance %n, TSI %n from %s", lct.fdt.fdt_instance_id, lct.tsi, source);
             file.clear();
             file.instance = lct.fdt.fdt_instance_id;
-            file.name = u"FDT"; // no specific name for FDT
         }
     }
 
@@ -220,14 +219,18 @@ void ts::FluteDemux::feedPacket(const IPSocketAddress& source, const IPSocketAdd
     // Important: we currently support FEC Encoding ID zero, meaning no encoding,
     // therefore the raw transport data are identical to the file content.
 
-    // Process a new FDT.
     if (lct.toi == FLUTE_FDT_TOI) {
-        // The content of the FDT must be XML text.
-        session.processFDT(file.instance, UString::FromUTF8(reinterpret_cast<const char*>(data->data()), data->size()));
+        // Process a new FDT.
+        const FluteFDT fdt(_report, sid.source, sid.destination, sid.tsi, file.instance, data);
+        if (fdt.isValid()) {
+            processFDT(fdt, session);
+            if (_handler != nullptr) {
+                _handler->handleFluteFDT(*this, fdt);
+            }
+        }
     }
-
-    // Notify the application.
-    if (_handler != nullptr) {
+    else if (_handler != nullptr) {
+        // Process a normal file.
         const FluteFile ff(sid.source, sid.destination, sid.tsi, lct.toi, file.name, data);
         _handler->handleFluteFile(*this, ff);
     }
@@ -242,7 +245,7 @@ void ts::FluteDemux::feedPacket(const IPSocketAddress& source, const IPSocketAdd
 // Process a new FDT in a session.
 //----------------------------------------------------------------------------
 
-void ts::FluteDemux::SessionContext::processFDT(uint32_t instance, const UString& xml)
+void ts::FluteDemux::processFDT(const FluteFDT& fdt, SessionContext& session)
 {
     //@@@
 }

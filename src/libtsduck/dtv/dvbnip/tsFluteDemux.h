@@ -20,6 +20,7 @@ namespace ts {
 
     class IPPacket;
     class IPSocketAddress;
+    class FluteFDT;
 
     //!
     //! This class extract files from FLUTE streams in UDP datagrams.
@@ -132,9 +133,6 @@ namespace ts {
         public:
             uint32_t fdt_instance = 0;                 // Current FDT instance.
             std::map<uint64_t, FileContext> files {};  // Files contexts, indexes by TOI (Transport Object Identifier).
-
-            // Process a new FDT.
-            void processFDT(uint32_t instance, const UString& xml);
         };
 
         // FluteDemux private fields.
@@ -145,5 +143,8 @@ namespace ts {
         bool                   _log_packet_content = false;
         std::set<uint64_t>     _tsi_filter {};
         std::map<SessionId, SessionContext> _sessions {};
+
+        // Process a new FDT.
+        void processFDT(const FluteFDT& fdt, SessionContext& session);
     };
 }
