@@ -14,6 +14,7 @@
 #pragma once
 #include "tsFluteFile.h"
 #include "tsReport.h"
+#include "tsTime.h"
 
 namespace ts {
     //!
@@ -52,6 +53,39 @@ namespace ts {
         //! @return The FDT Instance ID.
         //!
         uint32_t instanceId() const { return _instance_id; }
+
+        //!
+        //! Description of one file of the FDT.
+        //!
+        class TSDUCKDLL File
+        {
+        public:
+            File() = default;                       //!< Constructor.
+            UString   content_location {};          //!< Content-Location attribute.
+            uint64_t  toi = 0;                      //!< Transport object identifier.
+            uint64_t  content_length = 0;           //!< The length of  the file in bytes.
+            uint64_t  transfer_length = 0;          //!< The length of the transport object that carries the file in bytes.
+            UString   content_type {};              //!< MIME type.
+            UString   content_encoding {};          //!< Encoding type.
+            ByteBlock content_md5 {};               //!< MD5 checksum of file content.
+            uint32_t  fec_encoding_id = 0;          //!< FEC Encoding ID which was used to parse the structure (not part of the structore).
+            uint32_t  fec_instance_id = 0;          //!< FEC Instance ID (FEC Encoding ID 128-255).
+            uint32_t  max_source_block_length = 0;  //!< Max number of source symbols per source block (FEC Encoding ID 0, 128, 129, 130).
+            uint32_t  encoding_symbol_length = 0;   //!< Length of Encoding Symbol in bytes (FEC Encoding ID 0, 128, 129, 130).
+            uint32_t  max_encoding_symbols = 0;     //!< Max number of encoding symbols (FEC Encoding ID 129).
+        };
+
+        // The content of the FDT is in public fields:
+        Time      expires {};                   //!< FDT expiration date.
+        bool      complete = false;             //!< FDT is complete, no new data in future FDT instances.
+        UString   content_type {};              //!< MIME type.
+        UString   content_encoding {};          //!< Encoding type.
+        uint32_t  fec_encoding_id = 0;          //!< FEC Encoding ID which was used to parse the structure (not part of the structore).
+        uint32_t  fec_instance_id = 0;          //!< FEC Instance ID (FEC Encoding ID 128-255).
+        uint32_t  max_source_block_length = 0;  //!< Max number of source symbols per source block (FEC Encoding ID 0, 128, 129, 130).
+        uint32_t  encoding_symbol_length = 0;   //!< Length of Encoding Symbol in bytes (FEC Encoding ID 0, 128, 129, 130).
+        uint32_t  max_encoding_symbols = 0;     //!< Max number of encoding symbols (FEC Encoding ID 129).
+        std::list<File> files {};               //!< List of files in this FDT.
 
     private:
         bool     _valid = false;

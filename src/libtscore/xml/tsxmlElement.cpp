@@ -104,6 +104,27 @@ ts::xml::Element* ts::xml::Element::findFirstChild(const UString& name, bool sil
 
 
 //----------------------------------------------------------------------------
+// Find the next sibling element by name, case-insensitive.
+//----------------------------------------------------------------------------
+
+ts::xml::Element* ts::xml::Element::findNextSibling(const UString& name, bool silent)
+{
+    // Loop on all sibling.
+    for (Element* child = nextSiblingElement(); child != nullptr; child = child->nextSiblingElement()) {
+        if (name.empty() || name.similar(child->name())) {
+            return child;
+        }
+    }
+
+    // Sibling node not found.
+    if (!silent) {
+        report().error(u"Next node <%s> not found, line %d", name, lineNumber());
+    }
+    return nullptr;
+}
+
+
+//----------------------------------------------------------------------------
 // Find all children elements in an XML element by name, case-insensitive.
 //----------------------------------------------------------------------------
 

@@ -30,6 +30,12 @@ Options
 Same as `--log-flute-packets` and also dump the payload of each FLUTE packet.
 
 [.opt]
+*--log-fdt*
+
+[.optdoc]
+Log a message describing each FLUTE File Delivery Table (FDT).
+
+[.opt]
 *--log-flute-packets*
 
 [.optdoc]

@@ -185,22 +185,35 @@ void ts::FluteDemux::feedPacket(const IPSocketAddress& source, const IPSocketAdd
     if (chunk_index >= file.chunks.size()) {
         file.chunks.resize(chunk_index + 1);
     }
-    if (file.chunks[chunk_index] != nullptr) {
-        // Already got that chunk.
-        if (udp_size != file.chunks[chunk_index]->size()) {
-            _report.error(u"size of file chunk #%n changed in the middle of transmission, was %'d, now %'d, TOI %d, TSI %d from %s",
-                          chunk_index, file.chunks[chunk_index]->size(), udp_size, lct.toi, lct.tsi, source);
-        }
-        return;
+    if (file.chunks[chunk_index] == nullptr) {
+        // New chunk.
+        file.chunks[chunk_index] = std::make_shared<ByteBlock>(udp, udp_size);
+        file.current_length += udp_size;
     }
-    file.chunks[chunk_index] = std::make_shared<ByteBlock>(udp, udp_size);
-    file.current_length += udp_size;
-
-    // If file is not complete (or its size is unknown), nothing more to do.
-    if (file.transfer_length == 0 || file.current_length < file.transfer_length) {
+    else if (udp_size != file.chunks[chunk_index]->size()) {
+        // Chunk already there with a different size.
+        _report.error(u"size of file chunk #%n changed in the middle of transmission, was %'d, now %'d, TOI %d, TSI %d from %s",
+                      chunk_index, file.chunks[chunk_index]->size(), udp_size, lct.toi, lct.tsi, source);
         return;
     }
 
+    // If file is complete (and its size is known), process the file.
+    // Do not process files before receiving the FDT, if the file name is empty.
+    if (file.transfer_length > 0 &&
+        file.current_length >= file.transfer_length &&
+        (lct.toi == FLUTE_FDT_TOI || !file.name.empty() || session.fdt_instance.has_value()))
+    {
+        processCompleteFile(sid, session, lct.toi, file);
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Process a complete file.
+//----------------------------------------------------------------------------
+
+void ts::FluteDemux::processCompleteFile(const SessionId& sid, SessionContext& session, uint64_t toi, FileContext& file)
+{
     // Rebuild the content of the file.
     ByteBlockPtr data(std::make_shared<ByteBlock>(file.transfer_length));
     size_t next_index = 0;
@@ -209,43 +222,50 @@ void ts::FluteDemux::feedPacket(const IPSocketAddress& source, const IPSocketAdd
             if (next_index + bb->size() > data->size()) {
                 // Should not happen, but let's be conservative.
                 _report.debug(u"need to increase size of file buffer, was %'d, now %'d, TOI %d, TSI %d from %s",
-                              data->size(), next_index + bb->size(), lct.toi, lct.tsi, source);
+                              data->size(), next_index + bb->size(), toi, sid.tsi, sid.source);
                 data->resize(next_index + bb->size());
             }
             MemCopy(data->data() + next_index, bb->data(), bb->size());
             next_index += bb->size();
         }
     }
+    data->resize(next_index);
+
     // Important: we currently support FEC Encoding ID zero, meaning no encoding,
     // therefore the raw transport data are identical to the file content.
 
-    if (lct.toi == FLUTE_FDT_TOI) {
+    if (toi == FLUTE_FDT_TOI) {
         // Process a new FDT.
         const FluteFDT fdt(_report, sid.source, sid.destination, sid.tsi, file.instance, data);
         if (fdt.isValid()) {
-            processFDT(fdt, session);
+            // Remember last valid FDT instance.
+            session.fdt_instance = file.instance;
+            // Register file information.
+            for (const auto& f : fdt.files) {
+                FileContext& sf(session.files[f.toi]);
+                sf.transfer_length = f.transfer_length;
+                sf.name = f.content_location;
+                sf.type = f.content_type;
+            }
+            // Notify the application.
             if (_handler != nullptr) {
                 _handler->handleFluteFDT(*this, fdt);
+                // Process all complete files which were not processed yet because of an absence of FDT.
+                for (auto& f : session.files) {
+                    if (f.first != FLUTE_FDT_TOI && !f.second.processed && f.second.transfer_length > 0 && f.second.current_length >= f.second.transfer_length) {
+                        processCompleteFile(sid, session, f.first, f.second);
+                    }
+                }
             }
         }
     }
     else if (_handler != nullptr) {
         // Process a normal file.
-        const FluteFile ff(sid.source, sid.destination, sid.tsi, lct.toi, file.name, data);
+        const FluteFile ff(sid.source, sid.destination, sid.tsi, toi, file.name, file.type, data);
         _handler->handleFluteFile(*this, ff);
     }
 
     // Now forget about this file.
     file.processed = true;
     file.chunks.clear();
-}
-
-
-//----------------------------------------------------------------------------
-// Process a new FDT in a session.
-//----------------------------------------------------------------------------
-
-void ts::FluteDemux::processFDT(const FluteFDT& fdt, SessionContext& session)
-{
-    //@@@
 }

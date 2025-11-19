@@ -41,6 +41,7 @@ namespace ts {
         // Command line options.
         bool    _log_flute_packets = false;
         bool    _dump_flute_payload = false;
+        bool    _log_fdt = false;
         PID     _opt_pid = PID_NULL;
         UString _opt_service {};
 
@@ -74,6 +75,10 @@ ts::NIPPlugin::NIPPlugin(TSP* tsp_) :
     help(u"dump-flute-payload",
          u"Same as --log-flute-packets and also dump the payload of each FLUTE packet.");
 
+    option(u"log-fdt");
+    help(u"log-fdt",
+         u"Log a message describing each FLUTE File Delivery Table (FDT).");
+
     option(u"log-flute-packets");
     help(u"log-flute-packets",
          u"Log a message describing the structure of each FLUTE packet.");
@@ -105,6 +110,7 @@ bool ts::NIPPlugin::getOptions()
     // Get command line arguments
     _dump_flute_payload = present(u"dump-flute-payload");
     _log_flute_packets = _dump_flute_payload || present(u"log-flute-packets");
+    _log_fdt = present(u"log-fdt");
     getIntValue(_opt_pid, u"pid", PID_NULL);
     getValue(_opt_service, u"service");
 
@@ -217,9 +223,15 @@ void ts::NIPPlugin::handleMPEPacket(MPEDemux& demux, const MPEPacket& mpe)
 
 void ts::NIPPlugin::handleFluteFDT(FluteDemux& demux, const FluteFDT& fdt)
 {
-    // To be completed.
-    info(u"received FDT, instance: %d, TSI: %d, source: %s, destination: %s",
-         fdt.instanceId(), fdt.tsi(), fdt.source(), fdt.destination());
+    if (_log_fdt) {
+        UString line;
+        line.format(u"FDT instance: %d, TSI: %d, source: %s, destination: %s, %d files, expires: %s",
+                    fdt.instanceId(), fdt.tsi(), fdt.source(), fdt.destination(), fdt.files.size(), fdt.expires);
+        for (const auto& f : fdt.files) {
+            line.format(u"\n    TOI: %d, name: %s, %'d bytes, type: %s", f.toi, f.content_location, f.content_length, f.content_type);
+        }
+        info(line);
+    }
 }
 
 
@@ -230,6 +242,6 @@ void ts::NIPPlugin::handleFluteFDT(FluteDemux& demux, const FluteFDT& fdt)
 void ts::NIPPlugin::handleFluteFile(FluteDemux& demux, const FluteFile& file)
 {
     // To be completed.
-    info(u"received file \"%s\", %'d bytes, TOI: %d, TSI: %d, source: %s, destination: %s",
-         file.name(), file.size(), file.toi(), file.tsi(), file.source(), file.destination());
+    info(u"received file \"%s\", %'d bytes, type: %s, TOI: %d, TSI: %d, source: %s, destination: %s",
+         file.name(), file.size(), file.type(), file.toi(), file.tsi(), file.source(), file.destination());
 }

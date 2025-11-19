@@ -121,6 +121,7 @@ namespace ts {
             uint64_t  transfer_length = 0;        // The expected length of the transport object (same as in FTI header).
             uint64_t  current_length = 0;         // The number of currently received bytes.
             UString   name {};                    // File name or URN.
+            UString   type {};                    // File MIME type.
             std::vector<ByteBlockPtr> chunks {};  // Chunks of the file being received. Erased when processed to save storage.
 
             // Reset the content.
@@ -131,8 +132,8 @@ namespace ts {
         class TSDUCKDLL SessionContext
         {
         public:
-            uint32_t fdt_instance = 0;                 // Current FDT instance.
-            std::map<uint64_t, FileContext> files {};  // Files contexts, indexes by TOI (Transport Object Identifier).
+            std::optional<uint32_t>         fdt_instance {};  // Current FDT instance.
+            std::map<uint64_t, FileContext> files {};         // Files contexts, indexes by TOI (Transport Object Identifier).
         };
 
         // FluteDemux private fields.
@@ -144,7 +145,7 @@ namespace ts {
         std::set<uint64_t>     _tsi_filter {};
         std::map<SessionId, SessionContext> _sessions {};
 
-        // Process a new FDT.
-        void processFDT(const FluteFDT& fdt, SessionContext& session);
+        // Process a complete file.
+        void processCompleteFile(const SessionId& sid, SessionContext& session, uint64_t toi, FileContext& file);
     };
 }

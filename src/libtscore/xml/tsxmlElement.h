@@ -82,7 +82,7 @@ namespace ts::xml {
         //!
         //! Find the first child element by name, case-insensitive.
         //! @param [in] name Name of the child element to search. If empty, get the first element.
-        //! @param [in] silent If true, do not report error.
+        //! @param [in] silent If true, do not report error if the element does not exist.
         //! @return Child element address or zero if not found.
         //!
         const Element* findFirstChild(const UString& name, bool silent = false) const { return (const_cast<Element*>(this))->findFirstChild(name, silent); }
@@ -90,10 +90,26 @@ namespace ts::xml {
         //!
         //! Find the first child element by name, case-insensitive.
         //! @param [in] name Name of the child element to search. If empty, get the first element.
-        //! @param [in] silent If true, do not report error.
+        //! @param [in] silent If true, do not report error if the element does not exist.
         //! @return Child element address or zero if not found.
         //!
         Element* findFirstChild(const UString& name, bool silent = false);
+
+        //!
+        //! Find the next sibling element by name, case-insensitive.
+        //! @param [in] name Name of the sibling element to search. If empty, get the next element.
+        //! @param [in] silent If true, do not report error if the element does not exist.
+        //! @return Child element address or zero if not found.
+        //!
+        const Element* findNextSibling(const UString& name, bool silent = false) const { return (const_cast<Element*>(this))->findNextSibling(name, silent); }
+
+        //!
+        //! Find the next sibling element by name, case-insensitive.
+        //! @param [in] name Name of the sibling element to search. If empty, get the next element.
+        //! @param [in] silent If true, do not report error if the element does not exist.
+        //! @return Child element address or zero if not found.
+        //!
+        Element* findNextSibling(const UString& name, bool silent = false);
 
         //!
         //! Find all children elements by name, case-insensitive.

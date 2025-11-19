@@ -31,6 +31,7 @@ namespace ts {
         //! @param [in] tsi Transport Session Identifier.
         //! @param [in] toi Transport Object Identifier.
         //! @param [in] name File name or URN.
+        //! @param [in] type File MIME type.
         //! @param [in] content File content.
         //!
         FluteFile(const IPAddress&       source,
@@ -38,6 +39,7 @@ namespace ts {
                   uint64_t               tsi,
                   uint64_t               toi,
                   const UString&         name,
+                  const UString&         type,
                   const ByteBlockPtr&    content);
 
         //!
@@ -71,6 +73,12 @@ namespace ts {
         const UString& name() const { return _name; }
 
         //!
+        //! Get the MIME type of the file.
+        //! @return A constant reference to the type string in the object.
+        //!
+        const UString& type() const { return _type; }
+
+        //!
         //! Get the size of the file.
         //! @return The size of the file in bytes.
         //!
@@ -88,12 +96,19 @@ namespace ts {
         //!
         const ByteBlock& content() const { return *_content; }
 
+        //!
+        //! Get a character string version of the file, if it is a text file.
+        //! @return A string resulting from the conversion of the file content from UTF-8.
+        //!
+        UString toText() const;
+
     private:
         IPAddress       _source;
         IPSocketAddress _destination;
         uint64_t        _tsi;
         uint64_t        _toi;
         UString         _name;
+        UString         _type;
         ByteBlockPtr    _content;
     };
 }
