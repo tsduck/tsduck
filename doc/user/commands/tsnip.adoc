@@ -1,0 +1,37 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2025, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== tsnip
+
+[.cmd-header]
+Analyze a DVB-NIP stream from a pcap or pcap-ng file
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsnip [options] [input-file]
+----
+
+[.usage]
+Parameters
+
+[.opt]
+_input-file_
+
+[.optdoc]
+Input file in pcap or pcap-ng format, typically as saved by Wireshark.
+
+[.optdoc]
+Use the standard input if no file name is specified.
+
+include::{docdir}/opt/group-nip-analyzer.adoc[tags=!*]
+include::{docdir}/opt/group-pcap-filter.adoc[tags=!*]
+include::{docdir}/opt/group-common-commands.adoc[tags=!*]

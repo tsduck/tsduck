@@ -12,7 +12,7 @@
 
 #include "tsMain.h"
 #include "tsTSAnalyzerReport.h"
-#include "tsTSAnalyzerOptions.h"
+#include "tsTSAnalyzerArgs.h"
 #include "tsTSFile.h"
 #include "tsPagerArgs.h"
 #include "tsDuckContext.h"
@@ -30,12 +30,12 @@ namespace {
     public:
         Options(int argc, char *argv[]);
 
-        ts::DuckContext       duck {this};         // TSDuck execution context.
-        ts::BitRate           bitrate = 0;         // Expected bitrate (188-byte packets)
-        fs::path              infile {};           // Input file name
-        ts::TSPacketFormat    format = ts::TSPacketFormat::AUTODETECT; // Input file format.
-        ts::TSAnalyzerOptions analysis {};         // Analysis options.
-        ts::PagerArgs         pager {true, true};  // Output paging options.
+        ts::DuckContext    duck {this};         // TSDuck execution context.
+        ts::BitRate        bitrate = 0;         // Expected bitrate (188-byte packets)
+        fs::path           infile {};           // Input file name
+        ts::TSPacketFormat format = ts::TSPacketFormat::AUTODETECT; // Input file format.
+        ts::TSAnalyzerArgs analysis {};         // Analysis options.
+        ts::PagerArgs      pager {true, true};  // Output paging options.
     };
 }
 

@@ -27,7 +27,7 @@ endif::[]
 
 |aes
 |packet
-|Experimental AES scrambling
+|AES scrambling (experimental)
 
 |analyze
 |packet
@@ -199,7 +199,7 @@ endif::[]
 
 |nip
 |packet
-|Experimental DVB-NIP (Native IP) analyzer
+|DVB-NIP (Native IP) analyzer
 
 |nit
 |packet

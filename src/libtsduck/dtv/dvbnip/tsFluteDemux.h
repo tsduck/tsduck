@@ -19,7 +19,6 @@
 namespace ts {
 
     class IPPacket;
-    class IPSocketAddress;
     class FluteFDT;
 
     //!

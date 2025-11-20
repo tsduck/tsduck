@@ -91,6 +91,9 @@ endif::[]
 |tslsdvb
 |List DVB receiver devices.
 
+|tsnip
+|Analyze a DVB-NIP stream from a pcap or pcap-ng file.
+
 |tsp
 |General-purpose TS processor: receive a TS from a user-specified input plugin,
  apply MPEG packet processing through several user-specified packet processor plugins

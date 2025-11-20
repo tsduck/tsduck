@@ -11,13 +11,10 @@
 //----------------------------------------------------------------------------
 
 #include "tsPluginRepository.h"
-#include "tsFluteDemux.h"
-#include "tsFluteFDT.h"
+#include "tsNIPAnalyzer.h"
 #include "tsServiceDiscovery.h"
 #include "tsMPEDemux.h"
 #include "tsMPEPacket.h"
-#include "tsNIP.h"
-#include "tsxmlDocument.h"
 
 
 //----------------------------------------------------------------------------
@@ -25,40 +22,32 @@
 //----------------------------------------------------------------------------
 
 namespace ts {
-    class NIPPlugin:
-        public ProcessorPlugin,
-        private MPEHandlerInterface,
-        private FluteHandlerInterface
+    class NIPPlugin: public ProcessorPlugin, private MPEHandlerInterface
     {
         TS_PLUGIN_CONSTRUCTORS(NIPPlugin);
     public:
         // Implementation of plugin API
         virtual bool getOptions() override;
         virtual bool start() override;
-        virtual bool stop() override;
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
         // Command line options.
-        bool    _log_flute_packets = false;
-        bool    _dump_flute_payload = false;
-        bool    _log_fdt = false;
-        PID     _opt_pid = PID_NULL;
-        UString _opt_service {};
+        NIPAnalyzerArgs  _opt_nip {};
+        PID              _opt_pid = PID_NULL;
+        UString          _opt_service {};
 
         // Plugin private fields.
         bool             _abort = false;             // Error, abort asap.
         bool             _wait_for_service = false;  // Wait for MPE service id to be identified.
         PID              _mpe_pid = PID_NULL;        // Actual MPE PID.
         ServiceDiscovery _service {duck, nullptr};   // Service containing the MPE PID.
-        MPEDemux         _mpe_demux {duck, this};    // MPE demux to extract MPE datagrams.
-        FluteDemux       _flute_demux {duck, this};  // FLUTE demux to extract broadcasted files.
+        MPEDemux         _demux {duck, this};        // MPE demux to extract MPE datagrams.
+        NIPAnalyzer      _analyzer {duck};           // DVB-NIP analyzer.
 
         // Inherited methods.
         virtual void handleMPENewPID(MPEDemux&, const PMT&, PID) override;
         virtual void handleMPEPacket(MPEDemux&, const MPEPacket&) override;
-        virtual void handleFluteFile(FluteDemux&, const FluteFile&) override;
-        virtual void handleFluteFDT(FluteDemux&, const FluteFDT&) override;
     };
 }
 
@@ -70,19 +59,9 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"nip", ts::NIPPlugin);
 //----------------------------------------------------------------------------
 
 ts::NIPPlugin::NIPPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Experimental DVB-NIP (Native IP) analyzer", u"[options]")
+    ProcessorPlugin(tsp_, u"DVB-NIP (Native IP) analyzer", u"[options]")
 {
-    option(u"dump-flute-payload");
-    help(u"dump-flute-payload",
-         u"Same as --log-flute-packets and also dump the payload of each FLUTE packet.");
-
-    option(u"log-fdt");
-    help(u"log-fdt",
-         u"Log a message describing each FLUTE File Delivery Table (FDT).");
-
-    option(u"log-flute-packets");
-    help(u"log-flute-packets",
-         u"Log a message describing the structure of each FLUTE packet.");
+    _opt_nip.defineArgs(*this);
 
     option(u"pid", 'p', PIDVAL);
     help(u"pid",
@@ -109,19 +88,17 @@ ts::NIPPlugin::NIPPlugin(TSP* tsp_) :
 bool ts::NIPPlugin::getOptions()
 {
     // Get command line arguments
-    _dump_flute_payload = present(u"dump-flute-payload");
-    _log_flute_packets = _dump_flute_payload || present(u"log-flute-packets");
-    _log_fdt = present(u"log-fdt");
+    bool ok = _opt_nip.loadArgs(duck, *this);
     getIntValue(_opt_pid, u"pid", PID_NULL);
     getValue(_opt_service, u"service");
 
     // Check parameter consistency.
     if (_opt_pid != PID_NULL && !_opt_service.empty()) {
         error(u"--pid and --service are mutually exclusive");
-        return false;
+        ok = false;
     }
 
-    return true;
+    return ok;
 }
 
 
@@ -135,14 +112,12 @@ bool ts::NIPPlugin::start()
     _wait_for_service = false;
     _mpe_pid = _opt_pid;
     _service.clear();
-    _mpe_demux.reset();
-    _flute_demux.reset();
-    _flute_demux.setPacketLogLevel(_log_flute_packets ? Severity::Info : Severity::Debug);
-    _flute_demux.logPacketContent(_dump_flute_payload);
+    _demux.reset();
+    _analyzer.reset(_opt_nip);
 
     if (_mpe_pid != PID_NULL) {
         // MPE PID already known.
-        _mpe_demux.addPID(_mpe_pid);
+        _demux.addPID(_mpe_pid);
     }
     else if (!_opt_service.empty()) {
         // MPE service is specified.
@@ -150,16 +125,6 @@ bool ts::NIPPlugin::start()
         // Wait for service id if identified by name.
         _wait_for_service = !_service.hasId();
     }
-    return true;
-}
-
-
-//----------------------------------------------------------------------------
-// Stop method
-//----------------------------------------------------------------------------
-
-bool ts::NIPPlugin::stop()
-{
     return true;
 }
 
@@ -177,7 +142,7 @@ ts::ProcessorPlugin::Status ts::NIPPlugin::processPacket(TSPacket& pkt, TSPacket
     }
     else {
         // Feed the MPE demux.
-        _mpe_demux.feedPacket(pkt);
+        _demux.feedPacket(pkt);
     }
     return _abort ? TSP_END : TSP_OK;
 }
@@ -195,7 +160,7 @@ void ts::NIPPlugin::handleMPENewPID(MPEDemux& demux, const PMT& pmt, PID pid)
     if (_mpe_pid == PID_NULL && (!_service.hasId() || _service.hasId(pmt.service_id))) {
         verbose(u"using MPE PID %n, service %n", pid, pmt.service_id);
         _mpe_pid = pid;
-        _mpe_demux.addPID(pid);
+        _demux.addPID(pid);
     }
 }
 
@@ -210,51 +175,6 @@ void ts::NIPPlugin::handleMPEPacket(MPEDemux& demux, const MPEPacket& mpe)
     debug(u"MPE packet on PID %n, for address %s, %d bytes", mpe.sourcePID(), destination, mpe.datagramSize());
 
     if (!_abort && mpe.sourcePID() == _mpe_pid) {
-        // Experimental code.
-        if (mpe.destinationSocket() == NIPSignallingAddress4() || mpe.destinationSocket().sameMulticast6(NIPSignallingAddress6())) {
-            _flute_demux.feedPacket(mpe.sourceSocket(), mpe.destinationSocket(), mpe.udpMessage(), mpe.udpMessageSize());
-        }
+        _analyzer.feedPacket(mpe.sourceSocket(), mpe.destinationSocket(), mpe.udpMessage(), mpe.udpMessageSize());
     }
-}
-
-
-//----------------------------------------------------------------------------
-// Process a FLUTE File Delivery Table (FDT).
-//----------------------------------------------------------------------------
-
-void ts::NIPPlugin::handleFluteFDT(FluteDemux& demux, const FluteFDT& fdt)
-{
-    if (_log_fdt) {
-        UString line;
-        line.format(u"FDT instance: %d, TSI: %d, source: %s, destination: %s, %d files, expires: %s",
-                    fdt.instanceId(), fdt.tsi(), fdt.source(), fdt.destination(), fdt.files.size(), fdt.expires);
-        for (const auto& f : fdt.files) {
-            line.format(u"\n    TOI: %d, name: %s, %'d bytes, type: %s", f.toi, f.content_location, f.content_length, f.content_type);
-        }
-        info(line);
-    }
-}
-
-
-//----------------------------------------------------------------------------
-// Process a FLUTE file.
-//----------------------------------------------------------------------------
-
-void ts::NIPPlugin::handleFluteFile(FluteDemux& demux, const FluteFile& file)
-{
-    // Experimental code.
-
-    UString line;
-    line.format(u"received file \"%s\", %'d bytes, type: %s, TOI: %d, TSI: %d, source: %s, destination: %s",
-                file.name(), file.size(), file.type(), file.toi(), file.tsi(), file.source(), file.destination());
-    if (file.type().contains(u"xml")) {
-        // Parse and reformat to get an indented XML text.
-        xml::Document doc(*this);
-        if (doc.parse(file.toText())) {
-            line += u'\n';
-            line += doc.toString();
-            line.trim(false, true);
-        }
-    }
-    info(line);
 }

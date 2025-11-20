@@ -6,7 +6,7 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsTSAnalyzerOptions.h"
+#include "tsTSAnalyzerArgs.h"
 #include "tsArgs.h"
 
 
@@ -14,7 +14,7 @@
 // Define command line options in an Args.
 //----------------------------------------------------------------------------
 
-void ts::TSAnalyzerOptions::defineArgs(Args& args)
+void ts::TSAnalyzerArgs::defineArgs(Args& args)
 {
     args.option(u"ts-analysis");
     args.help(u"ts-analysis",
@@ -125,7 +125,7 @@ void ts::TSAnalyzerOptions::defineArgs(Args& args)
 // Load arguments from command line.
 //----------------------------------------------------------------------------
 
-bool ts::TSAnalyzerOptions::loadArgs(DuckContext& duck, Args& args)
+bool ts::TSAnalyzerArgs::loadArgs(DuckContext& duck, Args& args)
 {
     ts_analysis = args.present(u"ts-analysis");
     service_analysis = args.present(u"service-analysis");

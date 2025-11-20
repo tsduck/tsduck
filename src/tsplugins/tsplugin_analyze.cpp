@@ -38,7 +38,7 @@ namespace ts {
         cn::nanoseconds   _output_interval {};
         bool              _multiple_output = false;
         bool              _cumulative = false;
-        TSAnalyzerOptions _analyzer_options {};
+        TSAnalyzerArgs    _analyzer_options {};
 
         // Working data:
         std::ofstream     _output_stream {};

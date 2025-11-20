@@ -55,7 +55,7 @@ ts::TSAnalyzerReport::~TSAnalyzerReport()
 // Set analysis options. Must be set before feeding the first packet.
 //----------------------------------------------------------------------------
 
-void ts::TSAnalyzerReport::setAnalysisOptions(const TSAnalyzerOptions& opt)
+void ts::TSAnalyzerReport::setAnalysisOptions(const TSAnalyzerArgs& opt)
 {
     setMinErrorCountBeforeSuspect(opt.suspect_min_error_count);
     setMaxConsecutiveSuspectCount(opt.suspect_max_consecutive);
@@ -66,7 +66,7 @@ void ts::TSAnalyzerReport::setAnalysisOptions(const TSAnalyzerOptions& opt)
 // General reporting method, using options
 //----------------------------------------------------------------------------
 
-void ts::TSAnalyzerReport::report(std::ostream& stm, TSAnalyzerOptions& opt, Report& rep)
+void ts::TSAnalyzerReport::report(std::ostream& stm, TSAnalyzerArgs& opt, Report& rep)
 {
     // Start with one-line reports
     size_t count = 0;
@@ -167,7 +167,7 @@ void ts::TSAnalyzerReport::report(std::ostream& stm, TSAnalyzerOptions& opt, Rep
 // General reporting method, using the specified options.
 //----------------------------------------------------------------------------
 
-ts::UString ts::TSAnalyzerReport::reportToString(TSAnalyzerOptions& opt, Report& rep)
+ts::UString ts::TSAnalyzerReport::reportToString(TSAnalyzerArgs& opt, Report& rep)
 {
     std::stringstream stm(std::ios::out);
     report(stm, opt, rep);
@@ -797,7 +797,7 @@ void ts::TSAnalyzerReport::reportErrors(std::ostream& stm, const UString& title)
 // This method displays a normalized report.
 //----------------------------------------------------------------------------
 
-void ts::TSAnalyzerReport::reportNormalized(TSAnalyzerOptions& opt, std::ostream& stm, const UString& title)
+void ts::TSAnalyzerReport::reportNormalized(TSAnalyzerArgs& opt, std::ostream& stm, const UString& title)
 {
     // Update the global statistics value if internal data were modified.
     recomputeStatistics();
@@ -1097,7 +1097,7 @@ void ts::TSAnalyzerReport::reportNormalized(TSAnalyzerOptions& opt, std::ostream
 // This method displays a JSON report.
 //----------------------------------------------------------------------------
 
-void ts::TSAnalyzerReport::reportJSON(TSAnalyzerOptions& opt, std::ostream& stm, const UString& title, Report& rep)
+void ts::TSAnalyzerReport::reportJSON(TSAnalyzerArgs& opt, std::ostream& stm, const UString& title, Report& rep)
 {
     // Update the global statistics value if internal data were modified.
     recomputeStatistics();

@@ -1,0 +1,32 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2025, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+// Documentation for options in class ts::NIPAnalyzerArgs.
+//
+// tags: <none>
+//
+//----------------------------------------------------------------------------
+
+[.usage]
+DVB-NIP analysis options
+
+[.opt]
+*--dump-flute-payload*
+
+[.optdoc]
+Same as `--log-flute-packets` and also dump the payload of each FLUTE packet.
+
+[.opt]
+*--log-fdt*
+
+[.optdoc]
+Log a message describing each FLUTE File Delivery Table (FDT).
+
+[.opt]
+*--log-flute-packets*
+
+[.optdoc]
+Log a message describing the structure of each FLUTE packet.

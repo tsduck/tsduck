@@ -10,7 +10,9 @@
 === nip
 
 [.cmd-header]
-Experimental DVB-NIP (Native IP) analyzer
+DVB-NIP (Native IP) analyzer
+
+This plugin analyzes one DVB-NIP stream from one MPE PID in the transport stream.
 
 [.usage]
 Usage
@@ -21,25 +23,7 @@ $ tsp -P nip [options]
 ----
 
 [.usage]
-Options
-
-[.opt]
-*--dump-flute-payload*
-
-[.optdoc]
-Same as `--log-flute-packets` and also dump the payload of each FLUTE packet.
-
-[.opt]
-*--log-fdt*
-
-[.optdoc]
-Log a message describing each FLUTE File Delivery Table (FDT).
-
-[.opt]
-*--log-flute-packets*
-
-[.optdoc]
-Log a message describing the structure of each FLUTE packet.
+Transport stream options
 
 [.opt]
 *-p* _value_ +
@@ -66,4 +50,5 @@ The name is not case sensitive and blanks are ignored.
 By default, if neither `--pid` nor `--service` is specified, use the first MPE PID which is found.
 Options `--pid` and `--service` are mutually exclusive.
 
+include::{docdir}/opt/group-nip-analyzer.adoc[tags=!*]
 include::{docdir}/opt/group-common-plugins.adoc[tags=!*]
