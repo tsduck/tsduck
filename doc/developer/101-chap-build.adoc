@@ -211,7 +211,7 @@ To force a build with LLVM/Clang instead of GCC, defined the `make` variable `LL
 
 The minimum required version for Clang is 17.0.
 {cpp}20 support in Clang was gradually included from versions 8 to 16.
-However, just like GCC 11, the initial versions are buggy and TSDuck can be built only woth Clang 17 onwards.
+However, just like GCC 11, the initial versions are buggy and TSDuck can be built only with Clang 17 onwards.
 
 [source,shell]
 ----
