@@ -17,6 +17,7 @@
 #include "tsMPEDemux.h"
 #include "tsMPEPacket.h"
 #include "tsNIP.h"
+#include "tsxmlDocument.h"
 
 
 //----------------------------------------------------------------------------
@@ -218,7 +219,7 @@ void ts::NIPPlugin::handleMPEPacket(MPEDemux& demux, const MPEPacket& mpe)
 
 
 //----------------------------------------------------------------------------
-// Process a FLUTE file.
+// Process a FLUTE File Delivery Table (FDT).
 //----------------------------------------------------------------------------
 
 void ts::NIPPlugin::handleFluteFDT(FluteDemux& demux, const FluteFDT& fdt)
@@ -241,7 +242,19 @@ void ts::NIPPlugin::handleFluteFDT(FluteDemux& demux, const FluteFDT& fdt)
 
 void ts::NIPPlugin::handleFluteFile(FluteDemux& demux, const FluteFile& file)
 {
-    // To be completed.
-    info(u"received file \"%s\", %'d bytes, type: %s, TOI: %d, TSI: %d, source: %s, destination: %s",
-         file.name(), file.size(), file.type(), file.toi(), file.tsi(), file.source(), file.destination());
+    // Experimental code.
+
+    UString line;
+    line.format(u"received file \"%s\", %'d bytes, type: %s, TOI: %d, TSI: %d, source: %s, destination: %s",
+                file.name(), file.size(), file.type(), file.toi(), file.tsi(), file.source(), file.destination());
+    if (file.type().contains(u"xml")) {
+        // Parse and reformat to get an indented XML text.
+        xml::Document doc(*this);
+        if (doc.parse(file.toText())) {
+            line += u'\n';
+            line += doc.toString();
+            line.trim(false, true);
+        }
+    }
+    info(line);
 }
