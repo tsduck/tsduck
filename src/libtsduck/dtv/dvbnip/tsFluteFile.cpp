@@ -7,6 +7,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsFluteFile.h"
+#include "tsxmlDocument.h"
 
 
 //----------------------------------------------------------------------------
@@ -38,4 +39,20 @@ ts::FluteFile::FluteFile(const IPAddress&       source,
 ts::UString ts::FluteFile::toText() const
 {
     return UString::FromUTF8(reinterpret_cast<const char*>(_content->data()), _content->size());
+}
+
+
+//----------------------------------------------------------------------------
+// Get an indented XML character string version of the file.
+//----------------------------------------------------------------------------
+
+ts::UString ts::FluteFile::toXML() const
+{
+    UString text(toText());
+    xml::Document doc;
+    if (doc.parse(text)) {
+        text = doc.toString();
+    }
+    text.trim(false, true);
+    return text;
 }

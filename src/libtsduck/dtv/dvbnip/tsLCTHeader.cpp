@@ -22,7 +22,8 @@ void ts::LCTHeader::clear()
     tsi = toi = toi_high = 0;
     cci.clear();
     ext.clear();
-    sender_current_time.clear();
+    time.reset();
+    cenc.reset();
     naci.clear();
     fdt.clear();
     fti.clear();
@@ -130,7 +131,13 @@ bool ts::LCTHeader::deserialize(const uint8_t*& addr, size_t& size)
     if (etime != ext.end() && etime->second.size() >= 6 && (GetUInt16(etime->second.data()) & 0x8000) != 0) {
         // The "SCT-High" bit is set in the "Use" field (RFC 5651, section 5.2.2).
         static const Time origin(1900, 1, 1, 0, 0);
-        sender_current_time = origin + cn::seconds(GetUInt32(etime->second.data() + 2));
+        time = origin + cn::seconds(GetUInt32(etime->second.data() + 2));
+    }
+
+    // Decode optional HET_CENC header.
+    const auto ecenc = ext.find(HET_CENC);
+    if (ecenc != ext.end() && ecenc->second.size() >= 1) {
+        cenc = ecenc->second[0];
     }
 
     // Decode FEC Payload ID following the header.
@@ -165,8 +172,11 @@ ts::UString ts::LCTHeader::toString() const
         if (!got_ext) {
             str += u"none";
         }
-        if (sender_current_time != Time::Epoch) {
-            str.format(u"\n    sender time: %s", sender_current_time);
+        if (time.has_value()) {
+            str.format(u"\n    sender time: %s", time.value());
+        }
+        if (cenc.has_value()) {
+            str.format(u"\n    cenc: content encoding: %d", cenc.value());
         }
         if (fdt.valid) {
             str.format(u"\n    fdt: %s", fdt);

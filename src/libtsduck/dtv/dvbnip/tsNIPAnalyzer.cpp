@@ -8,7 +8,6 @@
 
 #include "tsNIPAnalyzer.h"
 #include "tsNIP.h"
-#include "tsxmlDocument.h"
 
 
 //----------------------------------------------------------------------------
@@ -65,6 +64,7 @@ void ts::NIPAnalyzer::feedPacket(const IPSocketAddress& source, const IPSocketAd
 
 void ts::NIPAnalyzer::handleFluteFDT(FluteDemux& demux, const FluteFDT& fdt)
 {
+    // Log the content of the FDT.
     if (_args.log_fdt) {
         UString line;
         line.format(u"FDT instance: %d, TSI: %d, source: %s, destination: %s, %d files, expires: %s",
@@ -74,6 +74,9 @@ void ts::NIPAnalyzer::handleFluteFDT(FluteDemux& demux, const FluteFDT& fdt)
         }
         _report.info(line);
     }
+
+    // Save the content of the FDT.
+    saveXML(fdt, _args.save_fdt, fdt.instanceId());
 }
 
 
@@ -83,19 +86,55 @@ void ts::NIPAnalyzer::handleFluteFDT(FluteDemux& demux, const FluteFDT& fdt)
 
 void ts::NIPAnalyzer::handleFluteFile(FluteDemux& demux, const FluteFile& file)
 {
-    // Experimental code.
+    const UString name(file.name());
+    const bool is_xml = file.type().contains(u"xml");
 
-    UString line;
-    line.format(u"received file \"%s\", %'d bytes, type: %s, TOI: %d, TSI: %d, source: %s, destination: %s",
-                file.name(), file.size(), file.type(), file.toi(), file.tsi(), file.source(), file.destination());
-    if (file.type().contains(u"xml")) {
-        // Parse and reformat to get an indented XML text.
-        xml::Document doc(_report);
-        if (doc.parse(file.toText())) {
-            line += u'\n';
-            line += doc.toString();
-            line.trim(false, true);
+    // Log a description of the file when requested.
+    if (_args.log_files || (is_xml && _args.dump_xml_files)) {
+        UString line;
+        line.format(u"received file \"%s\" (%'d bytes)\n    type: %s\n    source: %s, destination: %s, TOI: %d, TSI: %d",
+                    name, file.size(), file.type(), file.source(), file.destination(), file.toi(), file.tsi());
+
+        // Dump XML content when requested.
+        if (is_xml && _args.dump_xml_files) {
+            line += u"\n    XML content:\n";
+            line += file.toXML();
+        }
+        _report.info(line);
+    }
+
+    // Save the content of various files.
+    if (name.similar(u"urn:dvb:metadata:nativeip:NetworkInformationFile")) {
+        saveXML(file, _args.save_nif);
+    }
+    else if (name.similar(u"urn:dvb:metadata:nativeip:ServiceInformationFile")) {
+        saveXML(file, _args.save_sif);
+    }
+    else if (name.similar(u"urn:dvb:metadata:nativeip:dvb-i-slep")) {
+        saveXML(file, _args.save_slep);
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Save a XML file (if the file name is not empty).
+//----------------------------------------------------------------------------
+
+void ts::NIPAnalyzer::saveXML(const FluteFile& file, const fs::path& path, const std::optional<uint32_t> instance)
+{
+    // Don't save the file if the path is empty.
+    if (!path.empty()) {
+        // Build the path.
+        fs::path actual_path(path);
+        if (instance.has_value()) {
+            actual_path.replace_extension();
+            actual_path += UString::Format(u"-%d", instance.value());
+            actual_path += path.extension();
+        }
+
+        // Save the file.
+        if (!file.toXML().save(actual_path, false, true)) {
+            _report.error(u"error creating file %s", actual_path);
         }
     }
-    _report.info(line);
 }

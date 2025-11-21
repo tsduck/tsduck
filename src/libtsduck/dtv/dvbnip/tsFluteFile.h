@@ -102,6 +102,13 @@ namespace ts {
         //!
         UString toText() const;
 
+        //!
+        //! Get an indented XML character string version of the file, if it is a text file.
+        //! @return A string resulting from the conversion of the file content from UTF-8 and XML reindentation.
+        //! If the text is not XML, the original text is returned.
+        //!
+        UString toXML() const;
+
     private:
         IPAddress       _source;
         IPSocketAddress _destination;

@@ -14,6 +14,9 @@ DVB-NIP (Native IP) analyzer
 
 This plugin analyzes one DVB-NIP stream from one MPE PID in the transport stream.
 
+NOTE: To analyze a DVB-NIP stream which is transported using GSE or natively on an IP network,
+use the command `tsnip`. See xref:_tsnip[xrefstyle=short] for more details.
+
 [.usage]
 Usage
 

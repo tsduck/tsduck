@@ -2,11 +2,12 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.43-4487 (November 2025)
+VERSION 3.43-4493 (November 2025)
 
 [NEW] New commands and plugins:
 
-  * Added plugin "nip": Experimental DVB-NIP (Native IP) analyzer.
+  * Added command "tsnip": DVB-NIP (Native IP) analyzer in pcap files.
+  * Added plugin "nip": DVB-NIP (Native IP) analyzer in MPE streams.
   * Added plugin "iat":  Analyze  Inter-packet Arrival Time (IAT) for datagram-
     based input plugins.
 

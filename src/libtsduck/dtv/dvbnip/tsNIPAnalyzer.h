@@ -65,5 +65,8 @@ namespace ts {
         // Inherited methods.
         virtual void handleFluteFile(FluteDemux&, const FluteFile&) override;
         virtual void handleFluteFDT(FluteDemux&, const FluteFDT&) override;
+
+        // Save a XML file (if the file name is not empty).
+        void saveXML(const FluteFile& file, const fs::path& path, const std::optional<uint32_t> instance = std::optional<uint32_t>());
     };
 }

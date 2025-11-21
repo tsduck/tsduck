@@ -31,10 +31,16 @@ namespace ts {
         //!
         NIPAnalyzerArgs() = default;
 
-        // Full analysis options:
-        bool log_flute_packets = false;   //!< Option -\-log-flute-packets
-        bool dump_flute_payload = false;  //!< Option -\-dump-flute-payload
-        bool log_fdt = false;             //!< Option -\-log-fdt
+        // Analysis options:
+        bool     log_flute_packets = false;   //!< Option -\-log-flute-packets
+        bool     dump_flute_payload = false;  //!< Option -\-dump-flute-payload
+        bool     log_fdt = false;             //!< Option -\-log-fdt
+        bool     log_files = false;           //!< Option -\-log-files
+        bool     dump_xml_files = false;      //!< Option -\-dump-xml-files
+        fs::path save_fdt {};                 //!< Option -\-save-fdt
+        fs::path save_nif {};                 //!< Option -\-save-nif
+        fs::path save_sif {};                 //!< Option -\-save-sif
+        fs::path save_slep {};                //!< Option -\-save-slep
 
         //!
         //! Add command line option definitions in an Args.

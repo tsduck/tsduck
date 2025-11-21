@@ -44,7 +44,8 @@ namespace ts {
         size_t    tsi_length = 0;             //!< Length in bytes of TSI field.
         size_t    toi_length = 0;             //!< Length in bytes of TOI field.
         std::map<uint8_t, ByteBlock> ext {};  //!< Header extensions, indexed by type (HET).
-        Time      sender_current_time {};     //!< Optional sender current time from header HET_TIME. Time::Epoch if unset.
+        std::optional<Time>         time {};  //!< Optional sender current time from header HET_TIME.
+        std::optional<uint8_t>      cenc {};  //!< Optional content encoding algorithm from header HET_CENC.
         NIPActualCarrierInformation naci {};  //!< Optional DVB-NIP carrier information from header HET_NACI.
         FDTInstanceHeader           fdt {};   //!< Optional FDT instance from header HET_FDT.
         FECTransmissionInformation  fti {};   //!< Optional FEC transmission information from header HET_FTI.

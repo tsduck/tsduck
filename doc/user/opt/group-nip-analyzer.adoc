@@ -13,11 +13,19 @@
 [.usage]
 DVB-NIP analysis options
 
+These options are identical in the command `tsnip` and the `tsp` plugin `nip`.
+
 [.opt]
 *--dump-flute-payload*
 
 [.optdoc]
 Same as `--log-flute-packets` and also dump the payload of each FLUTE packet.
+
+[.opt]
+*--dump-xml-files*
+
+[.optdoc]
+Dump the content of XML files when they are received.
 
 [.opt]
 *--log-fdt*
@@ -26,7 +34,42 @@ Same as `--log-flute-packets` and also dump the payload of each FLUTE packet.
 Log a message describing each FLUTE File Delivery Table (FDT).
 
 [.opt]
+*--log-files*
+
+[.optdoc]
+Log a message describing each received file.
+
+[.opt]
 *--log-flute-packets*
 
 [.optdoc]
 Log a message describing the structure of each FLUTE packet.
+
+[.opt]
+*--save-fdt* _file-name_
+
+[.optdoc]
+Save each FLUTE File Delivery Table (FDT) in a file.
+Each FDT instance is saved in a separate file.
+If the specified path is `dir/fdt.xml` for instance, the FDT with instance `N` is saved in file `dir/fdt-N.xml`.
+
+[.opt]
+*--save-nif* _file-name_
+
+[.optdoc]
+Save the DVB-NIP Network Information File (NIF) in the specified file.
+This is a XML file.
+
+[.opt]
+*--save-sif* _file-name_
+
+[.optdoc]
+Save the DVB-NIP Service Information File (SIF) in the specified file.
+This is a XML file.
+
+[.opt]
+*--save-slep* _file-name_
+
+[.optdoc]
+Save the DVB-I Service List Entry Points (SLEP) in the specified file.
+This is a XML file.

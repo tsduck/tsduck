@@ -12,6 +12,8 @@
 
 #include "tsMain.h"
 #include "tsDuckContext.h"
+#include "tsPagerArgs.h"
+#include "tsReportFile.h"
 #include "tsNIPAnalyzer.h"
 #include "tsIPPacket.h"
 #include "tsIPProtocols.h"
@@ -33,6 +35,7 @@ namespace {
         ts::DuckContext     duck {this};
         ts::UString         input_file {};
         ts::PcapFilter      file {};
+        ts::PagerArgs       pager {true, true};
         ts::NIPAnalyzerArgs nip {};
     };
 }
@@ -42,6 +45,7 @@ Options::Options(int argc, char *argv[]) :
     ts::Args(u"Analyze a DVB-NIP stream from a pcap or pcap-ng file", u"[options] [input-file]")
 {
     file.defineArgs(*this);
+    pager.defineArgs(*this);
     nip.defineArgs(*this);
 
     option(u"", 0, FILENAME, 0, 1);
@@ -54,6 +58,7 @@ Options::Options(int argc, char *argv[]) :
 
     // Load option values.
     file.loadArgs(*this);
+    pager.loadArgs(*this);
     nip.loadArgs(duck, *this);
     getValue(input_file, u"");
     exitOnError();
@@ -77,8 +82,14 @@ int MainCode(int argc, char *argv[])
     // Read UDP packets only.
     opt.file.setProtocolFilterUDP();
 
+    // Setup an output pager if necessary.
+    std::ostream& out(opt.pager.output(opt));
+    ts::ReportFile<ts::ThreadSafety::None> report(out, opt.maxSeverity());
+    report.setReportPrefix(u"\n* ");
+    opt.duck.setReport(&report);
+
     // Initialize a DVB-NIP analyzer.
-    ts::NIPAnalyzer analyzer {opt.duck};
+    ts::NIPAnalyzer analyzer(opt.duck);
     analyzer.reset(opt.nip);
 
     // Read all IP packets from the file.
