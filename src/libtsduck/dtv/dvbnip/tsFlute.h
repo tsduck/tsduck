@@ -50,4 +50,14 @@ namespace ts {
         HET_CENC           = 193,  //!< FDT Instance Content Encoding extension (FLUTE, RFC 3926).
         HET_MAX_FIXED_SIZE = 255,  //!< Max type value for fixed-size header extensions (24-bit payload).
     };
+
+    //!
+    //! Content encoding values in HET_CENC header of Layered Coding Transport (LCT).
+    //!
+    enum : uint8_t {
+        CENC_NULL    = 0,  //!< No encoding, raw data.
+        CENC_ZLIB    = 1,  //!< ZLib encoding [RFC1950].
+        CENC_DEFLATE = 2,  //!< Deflate encoding [RFC1951].
+        CENC_GZIP    = 3,  //!< GZip encoding [RFC1952].
+    };
 }

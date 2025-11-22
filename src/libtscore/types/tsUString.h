@@ -365,6 +365,14 @@ namespace ts {
         UString(std::initializer_list<UChar> init, const allocator_type& alloc = allocator_type()) :
             SuperClass(init, alloc) {}
 
+        //!
+        //! Build a string containing a range of characters.
+        //! @param [in] first First character in range.
+        //! @param [in] last Last character in range.
+        //! @return A string containing all characters from @a first to @a last.
+        //!
+        static UString Range(UChar first, UChar last);
+
         //--------------------------------------------------------------------
         // Extensions to Windows wide characters
         //--------------------------------------------------------------------

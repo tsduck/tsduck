@@ -39,6 +39,26 @@ const std::string& ts::UString::EMPTY8()
 
 
 //----------------------------------------------------------------------------
+// Build a string containing a range of characters.
+//----------------------------------------------------------------------------
+
+ts::UString ts::UString::Range(UChar first, UChar last)
+{
+    if (last < first) {
+        return UString();
+    }
+    else {
+        UString str;
+        str.resize(size_t(last - first) + 1);
+        for (size_t i = 0; i < str.size(); ++i) {
+            str[i] = UChar(first + i);
+        }
+        return str;
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Conversions with Windows Unicode strings (Windows-specific).
 //----------------------------------------------------------------------------
 

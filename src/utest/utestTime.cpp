@@ -38,6 +38,8 @@ class TimeTest: public tsunit::Test
     TSUNIT_DECLARE_TEST(MJD);
     TSUNIT_DECLARE_TEST(JST);
     TSUNIT_DECLARE_TEST(LeapSeconds);
+    TSUNIT_DECLARE_TEST(ToISO);
+    TSUNIT_DECLARE_TEST(FromISO);
 };
 
 TSUNIT_REGISTER(TimeTest);
@@ -506,4 +508,32 @@ TSUNIT_DEFINE_TEST(LeapSeconds)
     TSUNIT_ASSERT(year == ts::Time(1990, 1, 1, 0, 0) - ts::Time(1989, 1, 1, 0, 0));
     TSUNIT_ASSERT(year == ts::Time(1991, 1, 1, 0, 0) - ts::Time(1990, 1, 1, 0, 0));
     TSUNIT_ASSERT(year == ts::Time(1992, 1, 1, 0, 0) - ts::Time(1991, 1, 1, 0, 0));
+}
+
+TSUNIT_DEFINE_TEST(ToISO)
+{
+    TSUNIT_EQUAL(u"2025-11-03T12:46:57.845Z", ts::Time(2025, 11, 3, 12, 46, 57, 845).toISO());
+    TSUNIT_EQUAL(u"2025-11-03T12:46:57Z", ts::Time(2025, 11, 3, 12, 46, 57).toISO());
+    TSUNIT_EQUAL(u"2025-11-03T12:46:57.845Z", ts::Time(2025, 11, 3, 12, 46, 57, 845).toISO(cn::seconds(0)));
+    TSUNIT_EQUAL(u"2025-11-03T12:46:57.845+02:04", ts::Time(2025, 11, 3, 12, 46, 57, 845).toISO(cn::seconds(7445)));
+    TSUNIT_EQUAL(u"2025-11-03T12:46:57.845-02:04", ts::Time(2025, 11, 3, 12, 46, 57, 845).toISO(cn::seconds(-7445)));
+}
+
+TSUNIT_DEFINE_TEST(FromISO)
+{
+    ts::Time time;
+    TSUNIT_ASSERT(time.fromISO(u"2007-03-01T13:45:56Z"));
+    TSUNIT_EQUAL(u"2007/03/01 13:45:56.000", time.toString());
+
+    TSUNIT_ASSERT(time.fromISO(u"20340728T134556.5Z"));
+    TSUNIT_EQUAL(u"2034/07/28 13:45:56.500", time.toString());
+
+    TSUNIT_ASSERT(time.fromISO(u"1998 3 4"));
+    TSUNIT_EQUAL(u"1998/03/04 00:00:00.000", time.toString());
+
+    TSUNIT_ASSERT(time.fromISO(u"2007-03-01T13:45:56-01:02"));
+    TSUNIT_EQUAL(u"2007/03/01 12:43:56.000", time.toString());
+
+    TSUNIT_ASSERT(time.fromISO(u"2025-01-10T11:36:58Z"));
+    TSUNIT_EQUAL(u"2025/01/10 11:36:58.000", time.toString());
 }

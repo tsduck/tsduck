@@ -87,6 +87,7 @@ class UStringTest: public tsunit::Test
     TSUNIT_DECLARE_TEST(Chrono);
     TSUNIT_DECLARE_TEST(Duration);
     TSUNIT_DECLARE_TEST(Percentage);
+    TSUNIT_DECLARE_TEST(Range);
 
 public:
     virtual void beforeTest() override;
@@ -2491,4 +2492,11 @@ TSUNIT_DEFINE_TEST(Percentage)
     TSUNIT_EQUAL(u"0.00%", ts::UString::Percentage(0, 34));
     TSUNIT_EQUAL(u"50.00%", ts::UString::Percentage(200, 400));
     TSUNIT_EQUAL(u"50.00%", ts::UString::Percentage(cn::milliseconds(500), cn::seconds(1)));
+}
+
+TSUNIT_DEFINE_TEST(Range)
+{
+    TSUNIT_EQUAL(u"A", ts::UString::Range('A', 'A'));
+    TSUNIT_EQUAL(u"ABCDEF", ts::UString::Range('A', 'F'));
+    TSUNIT_EQUAL(u"", ts::UString::Range('G', 'A'));
 }

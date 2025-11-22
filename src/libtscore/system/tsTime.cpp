@@ -56,7 +56,7 @@ const ts::Time ts::Time::GPSEpoch(1980, 1, 6, 0, 0);
 
 
 //----------------------------------------------------------------------------
-// Constructor
+// Constructors and time set.
 //----------------------------------------------------------------------------
 
 ts::Time::Time(int year, int month, int day, int hour, int minute, int second, int millisecond) :
@@ -64,20 +64,20 @@ ts::Time::Time(int year, int month, int day, int hour, int minute, int second, i
 {
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor
-//----------------------------------------------------------------------------
+void ts::Time::set(int year, int month, int day, int hour, int minute, int second, int millisecond)
+{
+    _value = ToInt64(year, month, day, hour, minute, second, millisecond);
+}
 
 ts::Time::Time(const ts::Time::Fields& f) :
     _value(ToInt64(f.year, f.month, f.day, f.hour, f.minute, f.second, f.millisecond))
 {
 }
 
-
-//----------------------------------------------------------------------------
-// Fields constructor
-//----------------------------------------------------------------------------
+void ts::Time::set(const ts::Time::Fields& f)
+{
+    _value = ToInt64(f.year, f.month, f.day, f.hour, f.minute, f.second, f.millisecond);
+}
 
 ts::Time::Fields::Fields(int year_, int month_, int day_, int hour_, int minute_, int second_, int millisecond_) :
     year(year_),
@@ -203,6 +203,24 @@ ts::UString ts::Time::format(int fields) const
 
 
 //----------------------------------------------------------------------------
+// Normalize a string. All non-digit characters are converted to space.
+// Space sequences are reduced.
+//----------------------------------------------------------------------------
+
+namespace {
+    void ReduceSpaces(ts::UString& s)
+    {
+        for (size_t i = 0; i < s.size(); ++i) {
+            if (!ts::IsDigit(s[i])) {
+                s[i] = u' ';
+            }
+        }
+        s.trim(true, true, true);
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Decode a time from a string.
 //----------------------------------------------------------------------------
 
@@ -210,14 +228,7 @@ bool ts::Time::decode(const ts::UString& str, int fields)
 {
     // Replace all non-digit character by spaces.
     UString s(str);
-    for (size_t i = 0; i < s.size(); ++i) {
-        if (!IsDigit(s[i])) {
-            s[i] = u' ';
-        }
-    }
-
-    // Trim spaces to normalize the string.
-    s.trim(true, true, true);
+    ReduceSpaces(s);
 
     // Decode up to 7 integer fields.
     int f[7];
@@ -278,12 +289,153 @@ bool ts::Time::decode(const ts::UString& str, int fields)
 
     // Build the time value.
     try {
-        *this = Time(t);
+        set(t);
+        return true;
     }
-    catch (TimeError&) {
+    catch (...) {
+        clear();
         return false;
     }
-    return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Find an integer in a string at given 'pos' (update pos).
+// - Skip non digits.
+// - Stop on any character from 'delimiters'.
+// - Consume at most 'char_count' digits and return the result in 'value'.
+// - Return true if ok, false if no value found.
+// - Also update the 'width' of the integer field.
+//----------------------------------------------------------------------------
+
+namespace {
+    bool IntFromString(const ts::UString& str, size_t& pos, const ts::UString& delimiters, size_t char_count, int& value, size_t& width)
+    {
+        while (pos < str.size() && !ts::IsDigit(str[pos])) {
+            if (delimiters.contains(str[pos])) {
+                return false;  // reached end of allowed string
+            }
+            pos++;
+        }
+        const size_t start = pos;
+        while (pos < str.size() && (pos - start) < char_count && ts::IsDigit(str[pos])) {
+            pos++;
+        }
+        width = pos - start;
+        return str.substr(start, width).toInteger(value);
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Decode a time from an ISO 8601 representation.
+//----------------------------------------------------------------------------
+
+bool ts::Time::fromISO(const UString& str)
+{
+    // Elements to collect.
+    Fields fields;
+
+    // Collect date fields.
+    static const UString end_date(u"tT");
+    size_t count = 0;
+    size_t pos = 0;
+    size_t width = 0;
+    if (IntFromString(str, pos, end_date, 4, fields.year, width)) {
+        count++;
+        if (IntFromString(str, pos, end_date, 2, fields.month, width)) {
+            count++;
+            if (IntFromString(str, pos, end_date, 2, fields.day, width)) {
+                count++;
+            }
+        }
+    }
+
+    // Fill missing date fields with current UTC time.
+    if (count < 3) {
+        // Fetch current UTC *only* if some fields are missing.
+        const Fields now(CurrentUTC());
+        fields.day = now.day;
+        if (count < 2) {
+            fields.month = now.month;
+            if (count < 1) {
+                fields.year = now.year;
+            }
+        }
+    }
+
+    // Move after the time delimiter.
+    pos = std::min(str.find_first_of(end_date, pos), str.size()) + 1;
+
+    // Analyze the time part.
+    cn::minutes utc_offset = cn::minutes::zero();
+    if (pos < str.length()) {
+        static const UString end_time(u".,+-" + UString::Range('A', 'Z') + UString::Range('a', 'z'));
+        if (IntFromString(str, pos, end_time, 2, fields.hour, width) && IntFromString(str, pos, end_time, 2, fields.minute, width)) {
+            IntFromString(str, pos, end_time, 2, fields.second, width);
+        }
+        if (pos < str.length() && (str[pos] == '.' || str[pos] == ',')) {
+            pos++;
+            if (IntFromString(str, pos, end_time, 3, fields.millisecond, width)) {
+                while (width++ < 3) {
+                    fields.millisecond *= 10;
+                }
+            }
+        }
+        if (pos < str.length() && (str[pos] == '+' || str[pos] == '-')) {
+            int sign = str[pos++] == '-' ? -1 : 1;
+            int off_hour = 0;
+            int off_minute = 0;
+            IntFromString(str, pos, end_time, 2, off_hour, width);
+            IntFromString(str, pos, end_time, 2, off_minute, width);
+            utc_offset = cn::minutes(sign * ((60 * off_hour) + off_minute));
+        }
+    }
+
+    // Check that all provided fields are correct.
+    if (!fields.isValid()) {
+        return false;
+    }
+
+    // Build the time value.
+    try {
+        set(fields);
+        *this += utc_offset;
+        return true;
+    }
+    catch (...) {
+        clear();
+        return false;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Format the time in ISO 8601 representation, including offset from UTC time.
+//----------------------------------------------------------------------------
+
+ts::UString ts::Time::toIsoWithMinutes(intmax_t utc_offset) const
+{
+    const Fields f(*this);
+    UString s;
+    s.format(u"%04d-%02d-%02dT%02d:%02d:%02d", f.year, f.month, f.day, f.hour, f.minute, f.second);
+    if (f.millisecond > 0) {
+        s.format(u".%03d", f.millisecond);
+    }
+    if (utc_offset == 0) {
+        s += u'Z';
+    }
+    else {
+        s += utc_offset < 0 ? u'-' : u'+';
+        utc_offset = std::abs(utc_offset) % (24 * 60);
+        if (utc_offset % 60 == 0) {
+            s.format(u"%02d", utc_offset / 60);
+        }
+        else {
+            s.format(u"%02d:%02d", utc_offset / 60, utc_offset % 60);
+        }
+    }
+    return s;
 }
 
 
