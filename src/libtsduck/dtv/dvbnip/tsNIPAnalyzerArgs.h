@@ -41,6 +41,7 @@ namespace ts {
         fs::path save_nif {};                 //!< Option -\-save-nif
         fs::path save_sif {};                 //!< Option -\-save-sif
         fs::path save_slep {};                //!< Option -\-save-slep
+        fs::path save_bootstrap {};           //!< Option -\-save-bootstrap
 
         //!
         //! Add command line option definitions in an Args.

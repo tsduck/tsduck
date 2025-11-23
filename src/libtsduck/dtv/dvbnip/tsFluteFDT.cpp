@@ -17,13 +17,11 @@
 // Constructor.
 //----------------------------------------------------------------------------
 
-ts::FluteFDT::FluteFDT(Report&                report,
-                       const IPAddress&       source,
-                       const IPSocketAddress& destination,
-                       uint64_t               tsi,
-                       uint32_t               instance_id,
-                       const ByteBlockPtr&    content_ptr) :
-    FluteFile(source, destination, tsi, FLUTE_FDT_TOI, u"FDT", u"", content_ptr),
+ts::FluteFDT::FluteFDT(Report&               report,
+                       const FluteSessionId& sid,
+                       uint32_t              instance_id,
+                       const ByteBlockPtr&   content_ptr) :
+    FluteFile(sid, FLUTE_FDT_TOI, u"FDT", u"", content_ptr),
     _valid(true),
     _instance_id(instance_id)
 {
@@ -70,6 +68,6 @@ ts::FluteFDT::FluteFDT(Report&                report,
     }
 
     if (!_valid) {
-        report.error(u"received an invalid FDT in TSI %d from %s: %s ...", tsi, source, xml_text.substr(0, 64));
+        report.error(u"received an invalid FDT in %s: %s ...", sid, xml_text.substr(0, 64));
     }
 }

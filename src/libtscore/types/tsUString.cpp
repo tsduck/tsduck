@@ -1583,8 +1583,8 @@ int ts::UString::SuperCompare(const UChar* s1, const UChar* s2, uint32_t flags)
         }
         else {
             // Character comparison, including surrogate pairs.
-            char32_t c1 = *s1++;
-            char32_t c2 = *s2++;
+            char32_t c1 = char32_t(*s1++);
+            char32_t c2 = char32_t(*s2++);
             if (IsLeadingSurrogate(UChar(c1)) && IsTrailingSurrogate(*s1)) {
                 c1 = FromSurrogatePair(UChar(c1), *s1++);
             }
@@ -1615,22 +1615,29 @@ bool ts::UString::similar(const void* addr, size_type size) const
 
 bool ts::UString::save(const fs::path& file_name, bool append, bool enforce_last_line_feed) const
 {
-    std::ofstream file(file_name, append ? (std::ios::out | std::ios::app) : std::ios::out);
-    file << *this;
+    const bool to_cout = file_name.empty() || file_name == u"-";
+    std::ofstream file;
+    std::ostream& out(to_cout ? std::cout : file);
+    if (!to_cout) {
+        file.open(file_name, append ? (std::ios::out | std::ios::app) : std::ios::out);
+    }
+    out << *this;
     if (enforce_last_line_feed && !empty() && back() != LINE_FEED) {
         // Check if the first end of line is a LF or CR/LF.
         // Use the same eol sequence for the last one, regardless of the system.
         const size_type lf = find(LINE_FEED);
         if (lf != NPOS && lf > 0 && (*this)[lf-1] == CARRIAGE_RETURN) {
             // The first eol is a CR/LF.
-            file << "\r\n";
+            out << "\r\n";
         }
         else {
-            file << '\n';
+            out << '\n';
         }
     }
-    file.close();
-    return !file.fail();
+    if (!to_cout) {
+        file.close();
+    }
+    return !out.fail();
 }
 
 

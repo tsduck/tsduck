@@ -46,24 +46,6 @@ void ts::FluteDemux::reset()
 
 
 //----------------------------------------------------------------------------
-// SessionId: Identification of a session.
-//----------------------------------------------------------------------------
-
-bool ts::FluteDemux::SessionId::operator<(const SessionId& other) const
-{
-    if (tsi != other.tsi) {
-        return tsi < other.tsi;
-    }
-    else if (source != other.source) {
-        return source < other.source;
-    }
-    else {
-        return destination < other.destination;
-    }
-}
-
-
-//----------------------------------------------------------------------------
 // FileContext: Description of a file being received.
 //----------------------------------------------------------------------------
 
@@ -135,22 +117,22 @@ void ts::FluteDemux::feedPacket(const IPSocketAddress& source, const IPSocketAdd
     }
 
     // Get/create transport session and file.
-    const SessionId sid{source, destination, lct.tsi};
+    const FluteSessionId sid(source, destination, lct.tsi);
     SessionContext& session(_sessions[sid]);
     FileContext& file(session.files[lct.toi]);
 
     // If the file is the FDT of the session, it must have FDT and FTI headers.
     if (lct.toi == FLUTE_FDT_TOI) {
         if (!lct.fdt.valid) {
-            _report.error(u"FDT in FLUTE packet without EXT_FDT header, TSI %n from %s", lct.tsi, source);
+            _report.error(u"FDT in FLUTE packet without EXT_FDT header, %s", sid);
             return;
         }
         if (!lct.fti.valid) {
-            _report.error(u"FDT in FLUTE packet without EXT_FTI header, TSI %n from %s", lct.tsi, source);
+            _report.error(u"FDT in FLUTE packet without EXT_FTI header, %s", sid);
             return;
         }
         if (file.instance != lct.fdt.fdt_instance_id) {
-            _report.debug(u"new FDT instance %n, TSI %n from %s", lct.fdt.fdt_instance_id, lct.tsi, source);
+            _report.debug(u"new FDT instance %n, %s", lct.fdt.fdt_instance_id, sid);
             file.clear();
             file.instance = lct.fdt.fdt_instance_id;
         }
@@ -164,19 +146,19 @@ void ts::FluteDemux::feedPacket(const IPSocketAddress& source, const IPSocketAdd
     // Update/check transfer length coming from FTI header.
     if (lct.fti.valid) {
         if (file.transfer_length > 0 && file.transfer_length != lct.fti.transfer_length) {
-            _report.error(u"file transfer length changed in the middle of transmission, was %'d, now %'d, TOI %d, TSI %d from %s",
-                          file.transfer_length, lct.fti.transfer_length, lct.toi, lct.tsi, source);
+            _report.error(u"file transfer length changed in the middle of transmission, was %'d, now %'d, TOI %d, %s",
+                          file.transfer_length, lct.fti.transfer_length, lct.toi, sid);
         }
         file.transfer_length = lct.fti.transfer_length;
     }
 
     // Check the FEC payload ID. We don't currently support non-zero SBN (to be studied).
     if (!lct.fpi.valid) {
-        _report.error(u"FEC payload ID not found in FLUTE packet, TSI %n from %s", lct.tsi, source);
+        _report.error(u"FEC payload ID not found in FLUTE packet, %s", sid);
         return;
     }
     if (lct.fpi.source_block_number > 0) {
-        _report.error(u"Source block number is %n in FEC payload ID, not supported yet, TOI %d, TSI %d from %s", lct.fpi.source_block_number, lct.toi, lct.tsi, source);
+        _report.error(u"Source block number is %n in FEC payload ID, not supported yet, TOI %d, %s", lct.fpi.source_block_number, lct.toi, sid);
         return;
     }
 
@@ -192,8 +174,8 @@ void ts::FluteDemux::feedPacket(const IPSocketAddress& source, const IPSocketAdd
     }
     else if (udp_size != file.chunks[chunk_index]->size()) {
         // Chunk already there with a different size.
-        _report.error(u"size of file chunk #%n changed in the middle of transmission, was %'d, now %'d, TOI %d, TSI %d from %s",
-                      chunk_index, file.chunks[chunk_index]->size(), udp_size, lct.toi, lct.tsi, source);
+        _report.error(u"size of file chunk #%n changed in the middle of transmission, was %'d, now %'d, TOI %d, %s",
+                      chunk_index, file.chunks[chunk_index]->size(), udp_size, lct.toi, sid);
         return;
     }
 
@@ -212,7 +194,7 @@ void ts::FluteDemux::feedPacket(const IPSocketAddress& source, const IPSocketAdd
 // Process a complete file.
 //----------------------------------------------------------------------------
 
-void ts::FluteDemux::processCompleteFile(const SessionId& sid, SessionContext& session, uint64_t toi, FileContext& file)
+void ts::FluteDemux::processCompleteFile(const FluteSessionId& sid, SessionContext& session, uint64_t toi, FileContext& file)
 {
     // Rebuild the content of the file.
     ByteBlockPtr data(std::make_shared<ByteBlock>(file.transfer_length));
@@ -221,8 +203,7 @@ void ts::FluteDemux::processCompleteFile(const SessionId& sid, SessionContext& s
         if (bb != nullptr) {
             if (next_index + bb->size() > data->size()) {
                 // Should not happen, but let's be conservative.
-                _report.debug(u"need to increase size of file buffer, was %'d, now %'d, TOI %d, TSI %d from %s",
-                              data->size(), next_index + bb->size(), toi, sid.tsi, sid.source);
+                _report.debug(u"need to increase size of file buffer, was %'d, now %'d, TOI %d, %s", data->size(), next_index + bb->size(), toi, sid);
                 data->resize(next_index + bb->size());
             }
             MemCopy(data->data() + next_index, bb->data(), bb->size());
@@ -236,7 +217,7 @@ void ts::FluteDemux::processCompleteFile(const SessionId& sid, SessionContext& s
 
     if (toi == FLUTE_FDT_TOI) {
         // Process a new FDT.
-        const FluteFDT fdt(_report, sid.source, sid.destination, sid.tsi, file.instance, data);
+        const FluteFDT fdt(_report, sid, file.instance, data);
         if (fdt.isValid()) {
             // Remember last valid FDT instance.
             session.fdt_instance = file.instance;
@@ -261,7 +242,7 @@ void ts::FluteDemux::processCompleteFile(const SessionId& sid, SessionContext& s
     }
     else if (_handler != nullptr) {
         // Process a normal file.
-        const FluteFile ff(sid.source, sid.destination, sid.tsi, toi, file.name, file.type, data);
+        const FluteFile ff(sid, toi, file.name, file.type, data);
         _handler->handleFluteFile(*this, ff);
     }
 

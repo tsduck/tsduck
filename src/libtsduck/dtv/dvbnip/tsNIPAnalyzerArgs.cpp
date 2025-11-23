@@ -36,26 +36,36 @@ void ts::NIPAnalyzerArgs::defineArgs(Args& args)
     args.help(u"log-flute-packets",
               u"Log a message describing the structure of each FLUTE packet.");
 
+    args.option(u"save-bootstrap", 0, Args::FILENAME);
+    args.help(u"save-bootstrap",
+              u"Save the bootstrap multicast gateway configuration in the specified file. "
+              u"This is a XML file. "
+              u"If the specified path is '-', the file is written to standard output.");
+
     args.option(u"save-fdt", 0, Args::FILENAME);
     args.help(u"save-fdt",
               u"Save each FLUTE File Delivery Table (FDT) in a file. "
               u"Each FDT instance is saved in a separate file. "
-              u"If the specified path is 'dir/fdt.xml' for instance, the FDT with instance N is saved in file 'dir/fdt-N.xml'.");
+              u"If the specified path is 'dir/fdt.xml' for instance, the FDT with instance N is saved in file 'dir/fdt-N.xml'. "
+              u"If the specified path is '-', the file is written to standard output.");
 
     args.option(u"save-nif", 0, Args::FILENAME);
     args.help(u"save-nif",
               u"Save the DVB-NIP Network Information File (NIF) in the specified file. "
-              u"This is a XML file.");
+              u"This is a XML file. "
+              u"If the specified path is '-', the file is written to standard output.");
 
     args.option(u"save-sif", 0, Args::FILENAME);
     args.help(u"save-sif",
               u"Save the DVB-NIP Service Information File (SIF) in the specified file. "
-              u"This is a XML file.");
+              u"This is a XML file. "
+              u"If the specified path is '-', the file is written to standard output.");
 
     args.option(u"save-slep", 0, Args::FILENAME);
     args.help(u"save-slep",
               u"Save the DVB-I Service List Entry Points (SLEP) in the specified file. "
-              u"This is a XML file.");
+              u"This is a XML file. "
+              u"If the specified path is '-', the file is written to standard output.");
 }
 
 
@@ -74,5 +84,6 @@ bool ts::NIPAnalyzerArgs::loadArgs(DuckContext& duck, Args& args)
     args.getPathValue(save_nif, u"save-nif");
     args.getPathValue(save_sif, u"save-sif");
     args.getPathValue(save_slep, u"save-slep");
+    args.getPathValue(save_bootstrap, u"save-bootstrap");
     return true;
 }

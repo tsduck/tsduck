@@ -1703,6 +1703,7 @@ namespace ts {
         //!
         //! Save this string into a file, in UTF-8 format.
         //! @param [in] file_name The name of the text file where to save this string.
+        //! If the file path is empty or "-", write to the standard output.
         //! @param [in] append If true, append this string at the end of the file.
         //! If false (the default), overwrite the file if it already existed.
         //! @param [in] enforce_last_line_feed If true and this string does not end with a line feed, force a final line feed.
@@ -1717,6 +1718,7 @@ namespace ts {
         //! @param [in] begin An iterator pointing to the first string.
         //! @param [in] end An iterator pointing @em after the last string.
         //! @param [in] file_name The name of the text file where to save the strings.
+        //! If the file path is empty or "-", write to the standard output.
         //! @param [in] append If true, append the strings at the end of the file.
         //! If false (the default), overwrite the file if it already existed.
         //! @return True on success, false on error (mostly file errors).
@@ -1729,6 +1731,7 @@ namespace ts {
         //! @tparam CONTAINER A container class of UString as defined by the C++ Standard Template Library (STL).
         //! @param [in] container A container of UString containing all strings to save.
         //! @param [in] file_name The name of the text file where to save the strings.
+        //! If the file path is empty or "-", write to the standard output.
         //! @param [in] append If true, append the strings at the end of the file.
         //! If false (the default), overwrite the file if it already existed.
         //! @return True on success, false on error (mostly file errors).
@@ -3339,10 +3342,15 @@ typename CONTAINER::const_iterator ts::UString::findSimilar(const CONTAINER& con
 template <class ITERATOR>
 bool ts::UString::Save(ITERATOR begin, ITERATOR end, const fs::path& file_name, bool append)
 {
-    std::ofstream file(file_name, append ? (std::ios::out | std::ios::app) : std::ios::out);
-    Save(begin, end, file);
-    file.close();
-    return !file.fail();
+    if (file_name.empty() || file_name == u"-") {
+        return Save(begin, end, std::cout);
+    }
+    else {
+        std::ofstream file(file_name, append ? (std::ios::out | std::ios::app) : std::ios::out);
+        Save(begin, end, file);
+        file.close();
+        return !file.fail();
+    }
 }
 
 template <class ITERATOR>

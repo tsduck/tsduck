@@ -13,7 +13,7 @@
 
 #pragma once
 #include "tsFluteHandlerInterface.h"
-#include "tsIPSocketAddress.h"
+#include "tsFluteSessionId.h"
 #include "tsDuckContext.h"
 
 namespace ts {
@@ -99,18 +99,6 @@ namespace ts {
         void logPacketContent(bool on) { _log_packet_content = on; }
 
     private:
-        // A "session" is defined by source address (not port), destination address and port, TSI.
-        class TSDUCKDLL SessionId
-        {
-        public:
-            IPAddress       source {};
-            IPSocketAddress destination {};
-            uint64_t        tsi = 0;
-
-            // Comparison operator for use as index in maps.
-            bool operator<(const SessionId& other) const;
-        };
-
         // Description of a file being received.
         class TSDUCKDLL FileContext
         {
@@ -142,9 +130,9 @@ namespace ts {
         int                    _packet_log_level = Severity::Debug;
         bool                   _log_packet_content = false;
         std::set<uint64_t>     _tsi_filter {};
-        std::map<SessionId, SessionContext> _sessions {};
+        std::map<FluteSessionId, SessionContext> _sessions {};
 
         // Process a complete file.
-        void processCompleteFile(const SessionId& sid, SessionContext& session, uint64_t toi, FileContext& file);
+        void processCompleteFile(const FluteSessionId& sid, SessionContext& session, uint64_t toi, FileContext& file);
     };
 }

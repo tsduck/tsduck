@@ -14,16 +14,12 @@
 // Constructor.
 //----------------------------------------------------------------------------
 
-ts::FluteFile::FluteFile(const IPAddress&       source,
-                         const IPSocketAddress& destination,
-                         uint64_t               tsi,
-                         uint64_t               toi,
-                         const UString&         name,
-                         const UString&         type,
-                         const ByteBlockPtr&    content) :
-    _source(source),
-    _destination(destination),
-    _tsi(tsi),
+ts::FluteFile::FluteFile(const FluteSessionId& sid,
+                         uint64_t              toi,
+                         const UString&        name,
+                         const UString&        type,
+                         const ByteBlockPtr&   content) :
+    _sid(sid),
     _toi(toi),
     _name(name),
     _type(type),

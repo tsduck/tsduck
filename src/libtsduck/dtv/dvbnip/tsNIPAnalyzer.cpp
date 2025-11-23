@@ -67,8 +67,7 @@ void ts::NIPAnalyzer::handleFluteFDT(FluteDemux& demux, const FluteFDT& fdt)
     // Log the content of the FDT.
     if (_args.log_fdt) {
         UString line;
-        line.format(u"FDT instance: %d, TSI: %d, source: %s, destination: %s, %d files, expires: %s",
-                    fdt.instanceId(), fdt.tsi(), fdt.source(), fdt.destination(), fdt.files.size(), fdt.expires);
+        line.format(u"FDT instance: %d, %s, %d files, expires: %s", fdt.instanceId(), fdt.sessionId(), fdt.files.size(), fdt.expires);
         for (const auto& f : fdt.files) {
             line.format(u"\n    TOI: %d, name: %s, %'d bytes, type: %s", f.toi, f.content_location, f.content_length, f.content_type);
         }
@@ -92,8 +91,7 @@ void ts::NIPAnalyzer::handleFluteFile(FluteDemux& demux, const FluteFile& file)
     // Log a description of the file when requested.
     if (_args.log_files || (is_xml && _args.dump_xml_files)) {
         UString line;
-        line.format(u"received file \"%s\" (%'d bytes)\n    type: %s\n    source: %s, destination: %s, TOI: %d, TSI: %d",
-                    name, file.size(), file.type(), file.source(), file.destination(), file.toi(), file.tsi());
+        line.format(u"received file \"%s\" (%'d bytes)\n    type: %s\n    %s, TOI: %d", name, file.size(), file.type(), file.sessionId(), file.toi());
 
         // Dump XML content when requested.
         if (is_xml && _args.dump_xml_files) {
@@ -113,6 +111,9 @@ void ts::NIPAnalyzer::handleFluteFile(FluteDemux& demux, const FluteFile& file)
     else if (name.similar(u"urn:dvb:metadata:nativeip:dvb-i-slep")) {
         saveXML(file, _args.save_slep);
     }
+    else if (name.similar(u"urn:dvb:metadata:cs:NativeIPMulticastTransportObjectTypeCS:2023:bootstrap")) {
+        saveXML(file, _args.save_bootstrap);
+    }
 }
 
 
@@ -126,7 +127,7 @@ void ts::NIPAnalyzer::saveXML(const FluteFile& file, const fs::path& path, const
     if (!path.empty()) {
         // Build the path.
         fs::path actual_path(path);
-        if (instance.has_value()) {
+        if (path != u"-" && instance.has_value()) {
             actual_path.replace_extension();
             actual_path += UString::Format(u"-%d", instance.value());
             actual_path += path.extension();

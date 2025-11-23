@@ -13,7 +13,7 @@
 
 #pragma once
 #include "tsByteBlock.h"
-#include "tsIPSocketAddress.h"
+#include "tsFluteSessionId.h"
 
 namespace ts {
     //!
@@ -26,39 +26,23 @@ namespace ts {
     public:
         //!
         //! Constructor.
-        //! @param [in] source Source IP address.
-        //! @param [in] destination Destination socket address.
-        //! @param [in] tsi Transport Session Identifier.
+        //! @param [in] sid Session id.
         //! @param [in] toi Transport Object Identifier.
         //! @param [in] name File name or URN.
         //! @param [in] type File MIME type.
         //! @param [in] content File content.
         //!
-        FluteFile(const IPAddress&       source,
-                  const IPSocketAddress& destination,
-                  uint64_t               tsi,
-                  uint64_t               toi,
-                  const UString&         name,
-                  const UString&         type,
-                  const ByteBlockPtr&    content);
+        FluteFile(const FluteSessionId& sid,
+                  uint64_t              toi,
+                  const UString&        name,
+                  const UString&        type,
+                  const ByteBlockPtr&   content);
 
         //!
-        //! Get the source IP address which sent the file.
-        //! @return A constant reference to the IP address in the object.
+        //! Get the session id of the file.
+        //! @return A constant reference to the ssession in the object.
         //!
-        const IPAddress& source() const { return _source; }
-
-        //!
-        //! Get the destination IP address and UDP port to which the file was sent.
-        //! @return A constant reference to the IP socket address in the object.
-        //!
-        const IPSocketAddress& destination() const { return _destination; }
-
-        //!
-        //! Get the Transport Session Identifier (TSI) of the file.
-        //! @return The Transport Session Identifier.
-        //!
-        uint64_t tsi() const { return _tsi; }
+        const FluteSessionId& sessionId() const { return _sid; }
 
         //!
         //! Get the Transport Object Identifier (TOI) of the file.
@@ -110,12 +94,10 @@ namespace ts {
         UString toXML() const;
 
     private:
-        IPAddress       _source;
-        IPSocketAddress _destination;
-        uint64_t        _tsi;
-        uint64_t        _toi;
-        UString         _name;
-        UString         _type;
-        ByteBlockPtr    _content;
+        FluteSessionId _sid;
+        uint64_t       _toi;
+        UString        _name;
+        UString        _type;
+        ByteBlockPtr   _content;
     };
 }

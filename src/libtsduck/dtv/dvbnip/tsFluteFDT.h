@@ -29,18 +29,14 @@ namespace ts {
         //!
         //! Constructor.
         //! @param [in] report Where to report errors.
-        //! @param [in] source Source IP address.
-        //! @param [in] destination Destination socket address.
-        //! @param [in] tsi Transport Session Identifier.
+        //! @param [in] sid Session id.
         //! @param [in] instance_id FDT Instance ID.
         //! @param [in] content File content (XML text in UTF-8 representation).
         //!
-        FluteFDT(Report&                report,
-                 const IPAddress&       source,
-                 const IPSocketAddress& destination,
-                 uint64_t               tsi,
-                 uint32_t               instance_id,
-                 const ByteBlockPtr&    content);
+        FluteFDT(Report&               report,
+                 const FluteSessionId& sid,
+                 uint32_t              instance_id,
+                 const ByteBlockPtr&   content);
 
         //!
         //! Check if the FDT was successfully parsed.

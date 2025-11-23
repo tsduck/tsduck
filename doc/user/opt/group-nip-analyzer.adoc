@@ -46,12 +46,21 @@ Log a message describing each received file.
 Log a message describing the structure of each FLUTE packet.
 
 [.opt]
+*--save-bootstrap* _file-name_
+
+[.optdoc]
+Save the bootstrap multicast gateway configuration in the specified file.
+This is a XML file.
+If the specified path is '-', the file is written to standard output.
+
+[.opt]
 *--save-fdt* _file-name_
 
 [.optdoc]
 Save each FLUTE File Delivery Table (FDT) in a file.
 Each FDT instance is saved in a separate file.
 If the specified path is `dir/fdt.xml` for instance, the FDT with instance `N` is saved in file `dir/fdt-N.xml`.
+If the specified path is '-', the file is written to standard output.
 
 [.opt]
 *--save-nif* _file-name_
@@ -59,6 +68,7 @@ If the specified path is `dir/fdt.xml` for instance, the FDT with instance `N` i
 [.optdoc]
 Save the DVB-NIP Network Information File (NIF) in the specified file.
 This is a XML file.
+If the specified path is '-', the file is written to standard output.
 
 [.opt]
 *--save-sif* _file-name_
@@ -66,6 +76,7 @@ This is a XML file.
 [.optdoc]
 Save the DVB-NIP Service Information File (SIF) in the specified file.
 This is a XML file.
+If the specified path is '-', the file is written to standard output.
 
 [.opt]
 *--save-slep* _file-name_
@@ -73,3 +84,4 @@ This is a XML file.
 [.optdoc]
 Save the DVB-I Service List Entry Points (SLEP) in the specified file.
 This is a XML file.
+If the specified path is '-', the file is written to standard output.
