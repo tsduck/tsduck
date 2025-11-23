@@ -328,7 +328,7 @@
 * [[[ETSI-103-770]]] ETSI TS 103 770, V1.2.1, September 2024:
   "Digital Video Broadcasting (DVB); Service Discovery and Programme Metadata for DVB-I".
 * [[[ETSI-103-876]]] ETSI TS 103 876, V1.1.1, September 2024:
-  "Digital Video Broadcasting (DVB); Native IP Broadcasting".
+  "Digital Video Broadcasting (DVB); Native IP Broadcasting" (DVB-NIP).
 * [[[ETSI-289]]] ETSI, ETR 289, October 1996:
   "Digital Video Broadcasting (DVB); Support for use of scrambling and Conditional Access (CA) within digital broadcasting systems".
 * [[[ETSI-300-468]]] ETSI EN 300 468, V1.16.1, August 2019:

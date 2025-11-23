@@ -67,7 +67,7 @@ void ts::NIPAnalyzer::handleFluteFDT(FluteDemux& demux, const FluteFDT& fdt)
     // Log the content of the FDT.
     if (_args.log_fdt) {
         UString line;
-        line.format(u"FDT instance: %d, %s, %d files, expires: %s", fdt.instanceId(), fdt.sessionId(), fdt.files.size(), fdt.expires);
+        line.format(u"FDT instance: %d, %s, %d files, expires: %s", fdt.instance_id, fdt.sessionId(), fdt.files.size(), fdt.expires);
         for (const auto& f : fdt.files) {
             line.format(u"\n    TOI: %d, name: %s, %'d bytes, type: %s", f.toi, f.content_location, f.content_length, f.content_type);
         }
@@ -75,7 +75,7 @@ void ts::NIPAnalyzer::handleFluteFDT(FluteDemux& demux, const FluteFDT& fdt)
     }
 
     // Save the content of the FDT.
-    saveXML(fdt, _args.save_fdt, fdt.instanceId());
+    saveXML(fdt, _args.save_fdt, fdt.instance_id);
 }
 
 

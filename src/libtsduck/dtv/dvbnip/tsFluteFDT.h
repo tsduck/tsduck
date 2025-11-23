@@ -24,8 +24,12 @@ namespace ts {
     //!
     class TSDUCKDLL FluteFDT : public FluteFile
     {
-        TS_NOBUILD_NOCOPY(FluteFDT);
     public:
+        //!
+        //! Default constructor.
+        //!
+        FluteFDT() = default;
+
         //!
         //! Constructor.
         //! @param [in] report Where to report errors.
@@ -37,18 +41,6 @@ namespace ts {
                  const FluteSessionId& sid,
                  uint32_t              instance_id,
                  const ByteBlockPtr&   content);
-
-        //!
-        //! Check if the FDT was successfully parsed.
-        //! @return True if the FDT was successfully parsed. False otherwise.
-        //!
-        bool isValid() const { return _valid; }
-
-        //!
-        //! Get the FDT Instance ID.
-        //! @return The FDT Instance ID.
-        //!
-        uint32_t instanceId() const { return _instance_id; }
 
         //!
         //! Description of one file of the FDT.
@@ -72,6 +64,7 @@ namespace ts {
         };
 
         // The content of the FDT is in public fields:
+        uint32_t  instance_id = 0;              //!< FDT instance id.
         Time      expires {};                   //!< FDT expiration date.
         bool      complete = false;             //!< FDT is complete, no new data in future FDT instances.
         UString   content_type {};              //!< MIME type.
@@ -82,9 +75,5 @@ namespace ts {
         uint32_t  encoding_symbol_length = 0;   //!< Length of Encoding Symbol in bytes (FEC Encoding ID 0, 128, 129, 130).
         uint32_t  max_encoding_symbols = 0;     //!< Max number of encoding symbols (FEC Encoding ID 129).
         std::list<File> files {};               //!< List of files in this FDT.
-
-    private:
-        bool     _valid = false;
-        uint32_t _instance_id = 0;
     };
 }

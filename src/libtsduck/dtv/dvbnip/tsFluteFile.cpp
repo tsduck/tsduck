@@ -8,10 +8,11 @@
 
 #include "tsFluteFile.h"
 #include "tsxmlDocument.h"
+#include "tsxmlElement.h"
 
 
 //----------------------------------------------------------------------------
-// Constructor.
+// Constructors.
 //----------------------------------------------------------------------------
 
 ts::FluteFile::FluteFile(const FluteSessionId& sid,
@@ -51,4 +52,30 @@ ts::UString ts::FluteFile::toXML() const
     }
     text.trim(false, true);
     return text;
+}
+
+
+//----------------------------------------------------------------------------
+// Parse the document using XML format.
+//----------------------------------------------------------------------------
+
+bool ts::FluteFile::parseXML(xml::Document& xml_doc, const UChar* expected_root, bool ignore_namespace)
+{
+    // Parse the XML document.
+    _valid = xml_doc.parse(toText());
+    xml_doc.setIignoreNamespace(ignore_namespace);
+
+    if (_valid && expected_root != nullptr && *expected_root != CHAR_NULL) {
+        const xml::Element* root = xml_doc.rootElement();
+        if (root == nullptr) {
+            _valid = false;
+            xml_doc.report().error(u"XML root element not found in %s, %s", _name, _sid);
+        }
+        else if (!root->nameMatch(expected_root)) {
+            _valid = false;
+            xml_doc.report().error(u"invalid XML root element <%s>, expected <%s>, in %s, %s", root->name(), expected_root, _name, _sid);
+        }
+    }
+
+    return _valid;
 }

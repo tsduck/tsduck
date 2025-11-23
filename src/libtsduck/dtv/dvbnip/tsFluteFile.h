@@ -14,6 +14,7 @@
 #pragma once
 #include "tsByteBlock.h"
 #include "tsFluteSessionId.h"
+#include "tsxml.h"
 
 namespace ts {
     //!
@@ -22,8 +23,12 @@ namespace ts {
     //!
     class TSDUCKDLL FluteFile
     {
-        TS_NOBUILD_NOCOPY(FluteFile);
     public:
+        //!
+        //! Default constructor.
+        //!
+        FluteFile() = default;
+
         //!
         //! Constructor.
         //! @param [in] sid Session id.
@@ -39,8 +44,14 @@ namespace ts {
                   const ByteBlockPtr&   content);
 
         //!
+        //! Check if the fiel is valid (for instance is XML content was successfully parsed).
+        //! @return True if the file is valid. False otherwise.
+        //!
+        bool isValid() const { return _valid; }
+
+        //!
         //! Get the session id of the file.
-        //! @return A constant reference to the ssession in the object.
+        //! @return A constant reference to the session in the object.
         //!
         const FluteSessionId& sessionId() const { return _sid; }
 
@@ -93,11 +104,23 @@ namespace ts {
         //!
         UString toXML() const;
 
+    protected:
+        bool _valid = true;  //!< The validity field can be updated by subclasses.
+
+        //!
+        //! Parse the document using XML format.
+        //! @param [in,out] xml_doc XML document to parse.
+        //! @param [in] expected_root Expected root name in XML text. Ignored if null or empty.
+        //! @param [in] ignore_namespace Specify if XML namespace is ignored by default in this document.
+        //! @return True on success, false on error.
+        //!
+        bool parseXML(xml::Document& xml_doc, const UChar* expected_root = nullptr, bool ignore_namespace = false);
+
     private:
-        FluteSessionId _sid;
-        uint64_t       _toi;
-        UString        _name;
-        UString        _type;
-        ByteBlockPtr   _content;
+        FluteSessionId _sid {};
+        uint64_t       _toi = 0;
+        UString        _name {};
+        UString        _type {};
+        ByteBlockPtr   _content {};
     };
 }
