@@ -1526,11 +1526,21 @@ ts::UString ts::UString::ChronoUnit(std::intmax_t num, std::intmax_t den, bool s
 // Compare two strings using various comparison options.
 //----------------------------------------------------------------------------
 
-int ts::UString::SuperCompare(const UChar* s1, const UChar* s2, uint32_t flags)
+int ts::UString::SuperCompare(const UChar* s1, const UChar* s2, uint32_t flags, size_t s1_pos, size_t s2_pos)
 {
     // Eliminate trivial cases with null pointers.
     if (s1 == nullptr || s2 == nullptr) {
         return (s1 == nullptr && s2 == nullptr) ? 0 : (s1 == nullptr ? -1 : 1);
+    }
+
+    // Move to starting character of both strings.
+    while (s1_pos > 0 && *s1 != CHAR_NULL) {
+        s1++;
+        s1_pos--;
+    }
+    while (s2_pos > 0 && *s2 != CHAR_NULL) {
+        s2++;
+        s2_pos--;
     }
 
     // Loop on characters in both strings.
@@ -1603,9 +1613,36 @@ int ts::UString::SuperCompare(const UChar* s1, const UChar* s2, uint32_t flags)
 // Check if two strings are identical, case-insensitive and ignoring blanks
 //----------------------------------------------------------------------------
 
-bool ts::UString::similar(const void* addr, size_type size) const
+bool ts::UString::similar(const void* addr, size_type size, size_t this_pos, size_t other_pos) const
 {
-    return addr != nullptr && similar(FromUTF8(reinterpret_cast<const char*>(addr), size));
+    return addr != nullptr && similar(FromUTF8(reinterpret_cast<const char*>(addr), size), this_pos, other_pos);
+}
+
+
+//----------------------------------------------------------------------------
+// Check if two strings are similar, after a delimiter character.
+//----------------------------------------------------------------------------
+
+bool ts::UString::similarAfterLast(const UChar* other, UChar separator) const
+{
+    // Find starting point in this string.
+    size_t this_pos = rfind(separator);
+    this_pos = this_pos >= size() ? 0 : this_pos + 1;
+
+    // Find starting point in other string.
+    for (const UChar* o = other; *o != CHAR_NULL; o++) {
+        if (*o == separator) {
+            other = o + 1;
+        }
+    }
+
+    // Perform the comparison.
+    return similar(other, this_pos);
+}
+
+bool ts::UString::similarAfterLast(const void* addr, size_type size, UChar separator) const
+{
+    return addr != nullptr && similarAfterLast(FromUTF8(reinterpret_cast<const char*>(addr), size), separator);
 }
 
 

@@ -29,28 +29,22 @@ namespace ts::xml {
     //!
     class TSCOREDLL Element: public Node
     {
-    private:
-        // Attributes are stored indexed by case-(in)sensitive name.
-        using AttributeMap = std::map<UString, Attribute>;
-
     public:
         //!
         //! Constructor.
         //! @param [in,out] report Where to report errors.
         //! @param [in] line Line number in input document.
-        //! @param [in] attribute_case State if attribute names are stored with case sensitivity.
         //!
-        explicit Element(Report& report = NULLREP, size_t line = 0, CaseSensitivity attribute_case = CASE_INSENSITIVE);
+        explicit Element(Report& report = NULLREP, size_t line = 0);
 
         //!
         //! Constructor.
         //! @param [in,out] parent The parent into which the element is added.
         //! @param [in] name Name of the element.
-        //! @param [in] attribute_case State if attribute names are stored wit case sensitivity.
         //! @param [in] last If true, the child is added at the end of the list of children.
         //! If false, it is added at the beginning.
         //!
-        Element(Node* parent, const UString& name, CaseSensitivity attribute_case = CASE_INSENSITIVE, bool last = true);
+        Element(Node* parent, const UString& name, bool last = true);
 
         //!
         //! Copy constructor.
@@ -73,11 +67,49 @@ namespace ts::xml {
         const UString& parentName() const;
 
         //!
+        //! Check if the name of the element matches a given value, case-insensitive.
+        //! @param [in] str The string value to compare.
+        //! @return True is the name of this object matches @a str.
+        //!
+        bool nameMatch(const UChar* str) const { return nameMatch(str, ignoreNamespace()); }
+
+        //!
+        //! Check if the name of the element matches a given value, case-insensitive.
+        //! @param [in] str The string value to compare.
+        //! @return True is the name of this object matches @a str.
+        //!
+        bool nameMatch(const UString& str) const { return nameMatch(str.c_str(), ignoreNamespace()); }
+
+        //!
         //! Check if two XML elements have the same name, case-insensitive.
         //! @param [in] other Another XML element.
         //! @return True is this object and @a other have identical names.
         //!
-        bool haveSameName(const Element* other) const { return other != nullptr && value().similar(other->value()); }
+        bool nameMatch(const Element* other) const { return other != nullptr && nameMatch(other->name(), ignoreNamespace()); }
+
+        //!
+        //! Check if the name of the element matches a given value, case-insensitive.
+        //! @param [in] str The string value to compare.
+        //! @param [in] ignore_namespace If true, ignore namespaces in the comparison.
+        //! @return True is the name of this object matches @a str.
+        //!
+        bool nameMatch(const UChar* str, bool ignore_namespace) const;
+
+        //!
+        //! Check if the name of the element matches a given value, case-insensitive.
+        //! @param [in] str The string value to compare.
+        //! @param [in] ignore_namespace If true, ignore namespaces in the comparison.
+        //! @return True is the name of this object matches @a str.
+        //!
+        bool nameMatch(const UString& str, bool ignore_namespace) const { return nameMatch(str.c_str(), ignore_namespace); }
+
+        //!
+        //! Check if two XML elements have the same name, case-insensitive.
+        //! @param [in] other Another XML element.
+        //! @param [in] ignore_namespace If true, ignore namespaces in the comparison.
+        //! @return True is this object and @a other have identical names.
+        //!
+        bool nameMatch(const Element* other, bool ignore_namespace) const { return other != nullptr && nameMatch(other->name(), ignore_namespace); }
 
         //!
         //! Find the first child element by name, case-insensitive.
@@ -258,7 +290,7 @@ namespace ts::xml {
         //! @param [in] attribute_name Attribute name.
         //! @param [in] value Expected value.
         //! @param [in] similar If true, the comparison between the actual and expected
-        //! values is performed case-insensitive and ignoring blanks. Additioanlly,
+        //! values is performed case-insensitive and ignoring blanks. Additionally,
         //! if the values are integers, the integer values are compared (otherwise,
         //! identical values in decimal and hexadecimal wouldn't match).
         //! If @a similar is false, a strict comparison is performed.
@@ -286,9 +318,9 @@ namespace ts::xml {
         //! Set an attribute.
         //! @param [in] name Attribute name.
         //! @param [in] value Attribute value.
-        //! @param [in] onlyIfNotEmpty When true, do not insert the attribute if @a value is empty.
+        //! @param [in] only_if_not_empty When true, do not insert the attribute if @a value is empty.
         //!
-        void setAttribute(const UString& name, const UString& value, bool onlyIfNotEmpty = false);
+        void setAttribute(const UString& name, const UString& value, bool only_if_not_empty = false);
 
         //!
         //! Set an optional attribute to a node.
@@ -924,7 +956,8 @@ namespace ts::xml {
         virtual void clear() override;
         virtual void expandEnvironment(bool recurse) override;
         virtual UString typeName() const override;
-        virtual void print(TextFormatter& output, bool keepNodeOpen = false) const override;
+        virtual void setIignoreNamespace(bool ignore) override;
+        virtual void print(TextFormatter& output, bool keep_node_open = false) const override;
         virtual void printClose(TextFormatter& output, size_t levels = std::numeric_limits<size_t>::max()) const override;
 
     protected:
@@ -932,14 +965,14 @@ namespace ts::xml {
         virtual bool parseNode(TextParser& parser, const Node* parent) override;
 
     private:
-        CaseSensitivity _attribute_case = CASE_INSENSITIVE; // For attribute names.
+    private:
+        // Attributes are stored indexed by name.
+        using AttributeMap = std::map<UString, Attribute>;
         AttributeMap _attributes {};
-
-        // Compute the key in the attribute map.
-        UString attributeKey(const UString& attribute_name) const;
 
         // Find a key in the attribute map.
         AttributeMap::const_iterator findAttribute(const UString& attribute_name) const;
+        AttributeMap::iterator findAttribute(const UString& attribute_name);
 
         // Get a modifiable reference to an attribute, create if does not exist.
         Attribute& refAttribute(const UString& attribute_name);

@@ -389,7 +389,7 @@ bool ts::ChannelFile::parseDocument(const xml::Document& doc)
 
                 // Loop on all children elements. Exactly one should be tuner parameters, others must be <service>.
                 for (const xml::Element* e = itts->firstChildElement(); e != nullptr; e = e->nextSiblingElement()) {
-                    if (e->name().similar(u"service")) {
+                    if (e->nameMatch(u"service")) {
                         // Get a service description.
                         const ServicePtr srv(new Service);
                         CheckNonNull(srv.get());
@@ -528,7 +528,7 @@ bool ts::ChannelFile::fromXML(ModulationArgs& mod, const xml::Element* elem, Tun
     if (elem == nullptr) {
         return false;
     }
-    else if (elem->name().similar(u"dvbs")) {
+    else if (elem->nameMatch(u"dvbs")) {
         mod.delivery_system = DS_DVB_S;
         return elem->getOptionalIntAttribute(mod.satellite_number, u"satellite", 0, 3) &&
                elem->getIntAttribute(mod.frequency, u"frequency", true) &&
@@ -544,7 +544,7 @@ bool ts::ChannelFile::fromXML(ModulationArgs& mod, const xml::Element* elem, Tun
                (mod.delivery_system == DS_DVB_S || elem->getOptionalIntAttribute<uint32_t>(mod.pls_code, u"PLS_code")) &&
                (mod.delivery_system == DS_DVB_S || elem->getOptionalEnumAttribute(mod.pls_mode, PLSModeEnum(), u"PLS_mode"));
     }
-    else if (elem->name().similar(u"dvbt")) {
+    else if (elem->nameMatch(u"dvbt")) {
         mod.delivery_system = DS_DVB_T;
         return elem->getIntAttribute(mod.frequency, u"frequency", true) &&
                elem->getEnumAttribute(mod.modulation, ModulationEnum(), u"modulation", false, QAM_64) &&
@@ -557,7 +557,7 @@ bool ts::ChannelFile::fromXML(ModulationArgs& mod, const xml::Element* elem, Tun
                elem->getOptionalEnumAttribute(mod.hierarchy, HierarchyEnum(), u"hierarchy") &&
                elem->getOptionalIntAttribute(mod.plp, u"PLP", 0, 255);
     }
-    else if (elem->name().similar(u"dvbc")) {
+    else if (elem->nameMatch(u"dvbc")) {
         mod.delivery_system = DS_DVB_C;
         return elem->getIntAttribute(mod.frequency, u"frequency", true) &&
                elem->getIntAttribute(mod.symbol_rate, u"symbolrate", false, 6900000) &&
@@ -566,13 +566,13 @@ bool ts::ChannelFile::fromXML(ModulationArgs& mod, const xml::Element* elem, Tun
                elem->getOptionalEnumAttribute(mod.inner_fec, InnerFECEnum(), u"FEC") &&
                elem->getOptionalEnumAttribute(mod.inversion, SpectralInversionEnum(), u"inversion");
     }
-    else if (elem->name().similar(u"atsc")) {
+    else if (elem->nameMatch(u"atsc")) {
         mod.delivery_system = DS_ATSC;
         return elem->getIntAttribute(mod.frequency, u"frequency", true) &&
                elem->getEnumAttribute(mod.modulation, ModulationEnum(), u"modulation", false, VSB_8) &&
                elem->getOptionalEnumAttribute(mod.inversion, SpectralInversionEnum(), u"inversion");
     }
-    else if (elem->name().similar(u"isdbt")) {
+    else if (elem->nameMatch(u"isdbt")) {
         mod.delivery_system = DS_ISDB_T;
         return elem->getIntAttribute(mod.frequency, u"frequency", true) &&
                GetLegacyBandWidth(mod.bandwidth, elem, u"bandwidth") &&
@@ -580,7 +580,7 @@ bool ts::ChannelFile::fromXML(ModulationArgs& mod, const xml::Element* elem, Tun
                elem->getOptionalEnumAttribute(mod.guard_interval, GuardIntervalEnum(), u"guard") &&
                elem->getOptionalEnumAttribute(mod.inversion, SpectralInversionEnum(), u"inversion");
     }
-    else if (elem->name().similar(u"isdbs")) {
+    else if (elem->nameMatch(u"isdbs")) {
         mod.delivery_system = DS_ISDB_S;
         mod.stream_id = ts_id;
         return elem->getOptionalIntAttribute(mod.satellite_number, u"satellite", 0, 3) &&

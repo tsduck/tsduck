@@ -159,7 +159,7 @@ ts::xml::Element* ts::AbstractTable::GetOrCreateMetadata(xml::Element* element)
         meta = element->findFirstChild(u"metadata", true);
         if (meta == nullptr) {
             // Make sure that the <metadata> is always in first position in the XML structure.
-            meta = new xml::Element(element, u"metadata", CASE_INSENSITIVE, false);
+            meta = new xml::Element(element, u"metadata", false);
         }
     }
     return meta;

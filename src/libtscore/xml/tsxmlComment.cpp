@@ -43,7 +43,7 @@ ts::UString ts::xml::Comment::typeName() const
 // Print the node.
 //----------------------------------------------------------------------------
 
-void ts::xml::Comment::print(TextFormatter& output, bool keepNodeOpen) const
+void ts::xml::Comment::print(TextFormatter& output, bool keep_node_open) const
 {
     output << "<!--" << value() << "-->";
 }

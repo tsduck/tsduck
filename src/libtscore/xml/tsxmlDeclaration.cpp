@@ -48,7 +48,7 @@ ts::UString ts::xml::Declaration::typeName() const
 // Print the node.
 //----------------------------------------------------------------------------
 
-void ts::xml::Declaration::print(TextFormatter& output, bool keepNodeOpen) const
+void ts::xml::Declaration::print(TextFormatter& output, bool keep_node_open) const
 {
     output << "<?" << value() << "?>";
 }

@@ -62,7 +62,7 @@ void ts::xml::PatchDocument::patch(Document& doc) const
 bool ts::xml::PatchDocument::patchElement(const Element* patch, Element* doc, UStringList& parents, UString& parent_to_delete, Expressions& expr) const
 {
     // If the node name do not match, no need to go further.
-    if (doc == nullptr || !doc->haveSameName(patch)) {
+    if (doc == nullptr || !doc->nameMatch(patch)) {
         return true;
     }
 

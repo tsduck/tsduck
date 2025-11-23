@@ -605,7 +605,7 @@ bool ts::BinaryTable::fromXML(DuckContext& duck, const xml::Element* node)
     }
 
     // There are two possible forms of generic tables.
-    if (node->name().similar(AbstractTable::XML_GENERIC_SHORT_TABLE)) {
+    if (node->nameMatch(AbstractTable::XML_GENERIC_SHORT_TABLE)) {
         TID tid = 0xFF;
         bool priv = true;
         ByteBlock payload;
@@ -619,7 +619,7 @@ bool ts::BinaryTable::fromXML(DuckContext& duck, const xml::Element* node)
         return true;
     }
 
-    if (node->name().similar(AbstractTable::XML_GENERIC_LONG_TABLE)) {
+    if (node->nameMatch(AbstractTable::XML_GENERIC_LONG_TABLE)) {
         TID tid = 0xFF;
         uint16_t tidExt = 0xFFFF;
         uint8_t version = 0;

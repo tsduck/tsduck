@@ -35,7 +35,7 @@ ts::FluteFDT::FluteFDT(Report&               report,
 
     _valid = doc.parse(xml_text) &&
              (root = doc.rootElement()) != nullptr &&
-             root->name().similar(u"FDT-Instance") &&
+             root->nameMatch(u"FDT-Instance") &&
              root->getIntAttribute(expires_int, u"Expires", true) &&
              root->getBoolAttribute(complete, u"Complete") &&
              root->getAttribute(content_type, u"Content-Type") &&

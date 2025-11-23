@@ -57,6 +57,7 @@ class UStringTest: public tsunit::Test
     TSUNIT_DECLARE_TEST(TrueFalse);
     TSUNIT_DECLARE_TEST(OnOff);
     TSUNIT_DECLARE_TEST(SimilarStrings);
+    TSUNIT_DECLARE_TEST(SimilarAfterLast);
     TSUNIT_DECLARE_TEST(LoadSave);
     TSUNIT_DECLARE_TEST(ToDigit);
     TSUNIT_DECLARE_TEST(ToInteger);
@@ -966,6 +967,14 @@ TSUNIT_DEFINE_TEST(SimilarStrings)
     TSUNIT_ASSERT(ts::UString(u"  AZE R T Y    ").similar(u"aZer tY"));
     TSUNIT_ASSERT(!ts::UString(u"").similar(u"az"));
     TSUNIT_ASSERT(!ts::UString(u"az").similar(u""));
+}
+
+TSUNIT_DEFINE_TEST(SimilarAfterLast)
+{
+    TSUNIT_ASSERT(ts::UString(u"").similarAfterLast(u"", u':'));
+    TSUNIT_ASSERT(ts::UString(u"zaa gzg : ").similarAfterLast(u"rg f : ", u':'));
+    TSUNIT_ASSERT(ts::UString(u"zaa gzg : rty ").similarAfterLast(u"zae v zgX : rt y ", u':'));
+    TSUNIT_ASSERT(!ts::UString(u"zaa gzg : rty ").similarAfterLast(u"zaa gzg : rtyX ", u':'));
 }
 
 TSUNIT_DEFINE_TEST(LoadSave)

@@ -45,7 +45,7 @@ namespace ts::xml {
         // Inherited from xml::Node.
         virtual Node* clone() const override;
         virtual UString typeName() const override;
-        virtual void print(TextFormatter& output, bool keepNodeOpen = false) const override;
+        virtual void print(TextFormatter& output, bool keep_node_open = false) const override;
 
     protected:
         // Inherited from xml::Node.

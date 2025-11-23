@@ -16,21 +16,21 @@
 
 ts::xml::Text::Text(Report& report, size_t line, bool cdata, bool trimmable) :
     Node(report, line),
-    _isCData(cdata),
+    _is_cdata(cdata),
     _trimmable(trimmable)
 {
 }
 
 ts::xml::Text::Text(Element* parent, const UString& text, bool cdata, bool trimmable) :
     Node(parent, text),
-    _isCData(cdata),
+    _is_cdata(cdata),
     _trimmable(trimmable)
 {
 }
 
 ts::xml::Text::Text(const Text& other) :
     Node(other),
-    _isCData(other._isCData),
+    _is_cdata(other._is_cdata),
     _trimmable(other._trimmable)
 {
 }
@@ -47,7 +47,7 @@ ts::UString ts::xml::Text::typeName() const
 
 bool ts::xml::Text::stickyOutput() const
 {
-    return !_isCData;
+    return !_is_cdata;
 }
 
 
@@ -55,9 +55,9 @@ bool ts::xml::Text::stickyOutput() const
 // Print the node.
 //----------------------------------------------------------------------------
 
-void ts::xml::Text::print(TextFormatter& output, bool keepNodeOpen) const
+void ts::xml::Text::print(TextFormatter& output, bool keep_node_open) const
 {
-    if (_isCData) {
+    if (_is_cdata) {
         output << "<![CDATA[" << value() << "]]>";
     }
     else {
@@ -85,7 +85,7 @@ bool ts::xml::Text::parseNode(TextParser& parser, const Node* parent)
     UString content;
 
     // The current point of parsing is the first character of the text.
-    if (_isCData) {
+    if (_is_cdata) {
         // In the case of CDATA, we are right after the "<![CDATA[". Parse up to "]]>".
         ok = parser.parseText(content, u"]]>", true, false);
         if (ok) {

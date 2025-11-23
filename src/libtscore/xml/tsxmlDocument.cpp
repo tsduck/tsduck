@@ -128,13 +128,13 @@ bool ts::xml::Document::load(const UString& fileName, bool search)
 // Print the node.
 //----------------------------------------------------------------------------
 
-void ts::xml::Document::print(TextFormatter& output, bool keepNodeOpen) const
+void ts::xml::Document::print(TextFormatter& output, bool keep_node_open) const
 {
     // Simply print all children one by one without encapsulation.
-    // If keepNodeOpen is true, leave the last child open.
+    // If keep_node_open is true, leave the last child open.
     const Node* last = lastChild();
     for (const Node* node = firstChild(); node != nullptr; node = node->nextSibling()) {
-        const bool keep = keepNodeOpen && node == last;
+        const bool keep = keep_node_open && node == last;
         node->print(output, keep);
         if (!keep) {
             output << ts::endl;

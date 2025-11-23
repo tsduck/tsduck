@@ -1632,69 +1632,126 @@ namespace ts {
         //! Compare two strings using various comparison options.
         //! @param [in] other Other string to compare.
         //! @param [in] flags A bitmask of StringComparison values. By default, use a strict comparison.
+        //! @param [in] this_pos Starting position in this string. If it points beyond the end of string, consider the string as empty.
+        //! @param [in] other_pos Starting position in string @a other. If it points beyond the end of string, consider the string as empty.
         //! @return -1, 0, or 1, if this string is respectively before, equal to, or after @a other according to @a flags.
         //!
-        int superCompare(const UString& other, uint32_t flags = SCOMP_DEFAULT) const { return SuperCompare(c_str(), other.c_str(), flags); }
+        int superCompare(const UString& other, uint32_t flags = SCOMP_DEFAULT, size_t this_pos = 0, size_t other_pos = 0) const
+        {
+            return SuperCompare(c_str(), other.c_str(), flags, this_pos, other_pos);
+        }
 
         //!
         //! Compare two strings using various comparison options.
-        //! @param [in] other Address of a nul-terminated UTF-16 string..
+        //! @param [in] other Address of a nul-terminated UTF-16 string.
         //! @param [in] flags A bitmask of StringComparison values. By default, use a strict comparison.
+        //! @param [in] this_pos Starting position in this string. If it points beyond the end of string, consider the string as empty.
+        //! @param [in] other_pos Starting position in string @a other. If it points beyond the end of string, consider the string as empty.
         //! @return -1, 0, or 1, if this string is respectively before, equal to, or after @a other according to @a flags.
         //!
-        int superCompare(const UChar* other, uint32_t flags = SCOMP_DEFAULT) const { return SuperCompare(c_str(), other, flags); }
+        int superCompare(const UChar* other, uint32_t flags = SCOMP_DEFAULT, size_t this_pos = 0, size_t other_pos = 0) const
+        {
+            return SuperCompare(c_str(), other, flags, this_pos, other_pos);
+        }
 
         //!
         //! Compare two strings using various comparison options.
-        //! @param [in] s1 Address of a nul-terminated UTF-16 string..
-        //! @param [in] s2 Address of a nul-terminated UTF-16 string..
+        //! @param [in] s1 Address of a nul-terminated UTF-16 string.
+        //! @param [in] s2 Address of a nul-terminated UTF-16 string.
         //! @param [in] flags A bitmask of StringComparison values. By default, use a strict comparison.
+        //! @param [in] s1_pos Starting position in string @a s1. If it points beyond the end of @a s1, consider @a s1 as an empty string.
+        //! @param [in] s2_pos Starting position in string @a s2. If it points beyond the end of @a s2, consider @a s2 as an empty string.
         //! @return -1, 0, or 1, if @a s1 is respectively before, equal to, or after @a s2 according to @a flags.
         //!
-        static int SuperCompare(const UChar* s1, const UChar* s2, uint32_t flags = SCOMP_DEFAULT);
+        static int SuperCompare(const UChar* s1, const UChar* s2, uint32_t flags = SCOMP_DEFAULT, size_t s1_pos = 0, size_t s2_pos = 0);
 
         //!
-        //! Check if two strings are identical, case-insensitive and ignoring blanks
+        //! Check if two strings are identical, case-insensitive and ignoring blanks.
         //! @param [in] other Other string to compare.
+        //! @param [in] this_pos Starting position in this string. If it points beyond the end of string, consider the string as empty.
+        //! @param [in] other_pos Starting position in string @a other. If it points beyond the end of string, consider the string as empty.
         //! @return True if this string and @a other are "similar", ie. identical, case-insensitive and ignoring blanks.
         //!
-        bool similar(const UString& other) const { return superCompare(other, SCOMP_CASE_INSENSITIVE | SCOMP_IGNORE_BLANKS) == 0; }
+        bool similar(const UString& other, size_t this_pos = 0, size_t other_pos = 0) const
+        {
+            return superCompare(other, SCOMP_CASE_INSENSITIVE | SCOMP_IGNORE_BLANKS, this_pos, other_pos) == 0;
+        }
 
         //!
-        //! Check if two strings are identical, case-insensitive and ignoring blanks
+        //! Check if two strings are identical, case-insensitive and ignoring blanks.
         //! @param [in] other Other string to compare.
+        //! @param [in] this_pos Starting position in this string. If it points beyond the end of string, consider the string as empty.
+        //! @param [in] other_pos Starting position in string @a other. If it points beyond the end of string, consider the string as empty.
         //! @return True if this string and @a other are "similar", ie. identical, case-insensitive and ignoring blanks.
         //!
-        bool similar(const UChar* other) const { return superCompare(other, SCOMP_CASE_INSENSITIVE | SCOMP_IGNORE_BLANKS) == 0; }
+        bool similar(const UChar* other, size_t this_pos = 0, size_t other_pos = 0) const
+        {
+            return superCompare(other, SCOMP_CASE_INSENSITIVE | SCOMP_IGNORE_BLANKS, this_pos, other_pos) == 0;
+        }
 
         //!
-        //! Check if two strings are identical, case-insensitive and ignoring blanks
+        //! Check if two strings are identical, case-insensitive and ignoring blanks.
         //! @param [in] addr Address of second string in UTF-8 representation.
         //! @param [in] size Size in bytes of second string.
+        //! @param [in] this_pos Starting position in this string. If it points beyond the end of string, consider the string as empty.
+        //! @param [in] other_pos Starting position in string @a other. If it points beyond the end of string, consider the string as empty.
         //! @return True if the strings are "similar", ie. identical, case-insensitive and ignoring blanks
         //!
-        bool similar(const void* addr, size_type size) const;
+        bool similar(const void* addr, size_type size, size_t this_pos = 0, size_t other_pos = 0) const;
+
+        //!
+        //! Check if two strings are identical, case-insensitive and ignoring blanks, after a delimiter character.
+        //! @param [in] other Other string to compare.
+        //! @param [in] separator Compare the part of the strings after the last occurrence of that character.
+        //! If @a separator is not found in a string, use the complete string.
+        //! @return True if this string and @a other are "similar", ie. identical, case-insensitive and ignoring blanks.
+        //!
+        bool similarAfterLast(const UString& other, UChar separator) const
+        {
+            return similarAfterLast(other.c_str(), separator);
+        }
+
+        //!
+        //! Check if two strings are identical, case-insensitive and ignoring blanks, after a delimiter character.
+        //! @param [in] other Other string to compare.
+        //! @param [in] separator Compare the part of the strings after the last occurrence of that character.
+        //! If @a separator is not found in a string, use the complete string.
+        //! @return True if this string and @a other are "similar", ie. identical, case-insensitive and ignoring blanks.
+        //!
+        bool similarAfterLast(const UChar* other, UChar separator) const;
+
+        //!
+        //! Check if two strings are identical, case-insensitive and ignoring blanks, after a delimiter character.
+        //! @param [in] addr Address of second string in UTF-8 representation.
+        //! @param [in] size Size in bytes of second string.
+        //! @param [in] separator Compare the part of the strings after the last occurrence of that character.
+        //! If @a separator is not found in a string, use the complete string.
+        //! @return True if the strings are "similar", ie. identical, case-insensitive and ignoring blanks
+        //!
+        bool similarAfterLast(const void* addr, size_type size, UChar separator) const;
 
         //!
         //! Check if a container of strings contains something similar to this string.
         //! @tparam CONTAINER A container class of UString as defined by the C++ Standard Template Library (STL).
         //! @param [in] container A container of UString.
+        //! @param [in] this_pos Starting position in this string. If it points beyond the end of string, consider the string as empty.
         //! @return True if @a container contains a string similar to this string.
         //! @see similar()
         //!
         template <class CONTAINER>
-        bool isContainedSimilarIn(const CONTAINER& container) const;
+        bool isContainedSimilarIn(const CONTAINER& container, size_t this_pos = 0) const;
 
         //!
         //! Locate into a map or multimap an element with a similar string.
         //! @tparam CONTAINER A map container class using UString as key.
         //! @param [in] container A map container with UString keys.
+        //! @param [in] this_pos Starting position in this string. If it points beyond the end of string, consider the string as empty.
         //! @return An iterator to the first element of @a container with a key value which is
         //! similar to this string according to similar(). Return @a container.end() if not found.
         //! @see similar()
         //!
         template <class CONTAINER>
-        typename CONTAINER::const_iterator findSimilar(const CONTAINER& container) const;
+        typename CONTAINER::const_iterator findSimilar(const CONTAINER& container, size_t this_pos = 0) const;
 
         //--------------------------------------------------------------------
         // Operations on text files
@@ -3309,10 +3366,10 @@ ts::UString ts::UString::join(ITERATOR begin, ITERATOR end, bool remove_empty) c
 //----------------------------------------------------------------------------
 
 template <class CONTAINER>
-bool ts::UString::isContainedSimilarIn(const CONTAINER& container) const
+bool ts::UString::isContainedSimilarIn(const CONTAINER& container, size_t this_pos) const
 {
     for (const auto& it : container) {
-        if (similar(it)) {
+        if (similar(it, this_pos)) {
             return true;
         }
     }
@@ -3325,10 +3382,10 @@ bool ts::UString::isContainedSimilarIn(const CONTAINER& container) const
 //----------------------------------------------------------------------------
 
 template <class CONTAINER>
-typename CONTAINER::const_iterator ts::UString::findSimilar(const CONTAINER& container) const
+typename CONTAINER::const_iterator ts::UString::findSimilar(const CONTAINER& container, size_t this_pos) const
 {
     typename CONTAINER::const_iterator it = container.begin();
-    while (it != container.end() && !similar(it->first)) {
+    while (it != container.end() && !similar(it->first, this_pos)) {
         ++it;
     }
     return it;

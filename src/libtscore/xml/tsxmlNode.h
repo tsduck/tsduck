@@ -35,7 +35,7 @@ namespace ts::xml {
         //! Get the line number in input document.
         //! @return The line number in input document, zero if the node was built programmatically.
         //!
-        size_t lineNumber() const { return _inputLineNum; }
+        size_t lineNumber() const { return _input_line_num; }
 
         //!
         //! Clear the content of the node.
@@ -53,31 +53,31 @@ namespace ts::xml {
         //!
         //! Attach the node to a new parent.
         //! The node is first detached from its previous parent.
-        //! @param [in,out] newParent New parent. If zero, the node becomes orphan. In that
+        //! @param [in,out] new_parent New parent. If zero, the node becomes orphan. In that
         //! case, the node will no longer be freed by its parent and must be explicitly deleted.
         //! @param [in] last If true, the child is added at the end of the list of children.
         //! If false, it is added at the beginning.
         //!
-        void reparent(Node* newParent, bool last = true);
+        void reparent(Node* new_parent, bool last = true);
 
         //!
         //! Move the node before another node, potentially to a new parent.
-        //! @param [in,out] newSibling A new sibling. The node will be moved before this one.
+        //! @param [in,out] new_sibling A new sibling. The node will be moved before this one.
         //!
-        void moveBefore(Node* newSibling) { move(newSibling, true); }
+        void moveBefore(Node* new_sibling) { move(new_sibling, true); }
 
         //!
         //! Move the node after another node, potentially to a new parent.
-        //! @param [in,out] newSibling A new sibling. The node will be moved after this one.
+        //! @param [in,out] new_sibling A new sibling. The node will be moved after this one.
         //!
-        void moveAfter(Node* newSibling) { move(newSibling, false); }
+        void moveAfter(Node* new_sibling) { move(new_sibling, false); }
 
         //!
         //! Move the node before or after another node, potentially to a new parent.
-        //! @param [in,out] newSibling A new sibling. The node will be moved before or after this one.
-        //! @param [in] before If true, move the node before @a newSibling, after it otherwise.
+        //! @param [in,out] new_sibling A new sibling. The node will be moved before or after this one.
+        //! @param [in] before If true, move the node before @a new_sibling, after it otherwise.
         //!
-        void move(Node* newSibling, bool before);
+        void move(Node* new_sibling, bool before);
 
         //!
         //! Get the parent's node.
@@ -123,40 +123,52 @@ namespace ts::xml {
         bool preserveSpace() const;
 
         //!
+        //! Check if namespace is ignored by default when comparing element and attribute names in this node's hierarchy.
+        //! @return True if namespace is ignored by default.
+        //!
+        bool ignoreNamespace() const { return _ignore_namespace; }
+
+        //!
+        //! Specify if namespace is ignored by default when comparing element and attribute names in this node's hierarchy.
+        //! @param [in] ignore It true, namespace is ignored by default.
+        //!
+        virtual void setIignoreNamespace(bool ignore);
+
+        //!
         //! Check if the node has children.
         //! @return True if the node has children.
         //!
-        bool hasChildren() const { return _firstChild != nullptr; }
+        bool hasChildren() const { return _first_child != nullptr; }
 
         //!
         //! Get the number of children.
         //! @return The number of children.
         //!
-        size_t childrenCount() const { return _firstChild == nullptr ? 0 : _firstChild->ringSize(); }
+        size_t childrenCount() const { return _first_child == nullptr ? 0 : _first_child->ringSize(); }
 
         //!
         //! Get the first child of a node.
         //! @return The first child of the node or zero if there is no children.
         //!
-        const Node* firstChild() const { return _firstChild; }
+        const Node* firstChild() const { return _first_child; }
 
         //!
         //! Get the first child of a node.
         //! @return The first child of the node or zero if there is no children.
         //!
-        Node* firstChild() { return _firstChild; }
+        Node* firstChild() { return _first_child; }
 
         //!
         //! Get the last child.
         //! @return The last child or zero if there is none.
         //!
-        const Node* lastChild() const { return _firstChild == nullptr ? nullptr : _firstChild->ringPrevious<Node>(); }
+        const Node* lastChild() const { return _first_child == nullptr ? nullptr : _first_child->ringPrevious<Node>(); }
 
         //!
         //! Get the last child.
         //! @return The last child or nullptr if there is none.
         //!
-        Node* lastChild() { return _firstChild == nullptr ? nullptr : _firstChild->ringPrevious<Node>(); }
+        Node* lastChild() { return _first_child == nullptr ? nullptr : _first_child->ringPrevious<Node>(); }
 
         //!
         //! Get the next sibling node.
@@ -262,13 +274,13 @@ namespace ts::xml {
         //!
         //! Format the node for an output XML document.
         //! @param [in,out] output The output object to format the XML document.
-        //! @param [in] keepNodeOpen If true, keep the node open so that children may be printed later.
+        //! @param [in] keep_node_open If true, keep the node open so that children may be printed later.
         //!
-        virtual void print(TextFormatter& output, bool keepNodeOpen = false) const = 0;
+        virtual void print(TextFormatter& output, bool keep_node_open = false) const = 0;
 
         //!
         //! Print the closing tags for the node.
-        //! Typically used after print() when @a keepNodeOpen was @e true.
+        //! Typically used after print() when @a keep_node_open was @e true.
         //! The default implementation is to do nothing. Subclasses may replace this.
         //! @param [in,out] output The output object to format the XML document.
         //! @param [in] levels Number of levels to close. By default, close the complete document.
@@ -362,18 +374,16 @@ namespace ts::xml {
         //! Typically called when xml:space="preserve" is encountered.
         //! @param [in] on True is spaces shall be preserved.
         //!
-        void setPreserveSpace(bool on) { _preserveSpace = on; }
+        void setPreserveSpace(bool on) { _preserve_space = on; }
 
     private:
-        Report& _report;                // Where to report errors.
-        UString _value {};              // Value of the node, depend on the node type.
-        Node*   _parent = nullptr;      // Parent node, null for a document.
-        Node*   _firstChild = nullptr;  // First child, can be null, other children are linked through the RingNode.
-        size_t  _inputLineNum = 0;      // Line number in input document, zero if build programmatically.
-        bool    _preserveSpace = false; // Has attribute xml:space="preserve".
-
-        // Default XML tweaks for orphan nodes.
-        static const Tweaks defaultTweaks;
+        Report& _report;                    // Where to report errors.
+        UString _value {};                  // Value of the node, depend on the node type.
+        Node*   _parent = nullptr;          // Parent node, null for a document.
+        Node*   _first_child = nullptr;     // First child, can be null, other children are linked through the RingNode.
+        size_t  _input_line_num = 0;        // Line number in input document, zero if build programmatically.
+        bool    _preserve_space = false;    // Has attribute xml:space="preserve".
+        bool    _ignore_namespace = false;  // Ignore namespace by default when comparing element and attribute names.
 
         // No default constructor or assignment.
         Node() = delete;

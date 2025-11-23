@@ -135,7 +135,7 @@ namespace ts::xml {
         // Inherited from xml::Node.
         virtual Node* clone() const override;
         virtual UString typeName() const override;
-        virtual void print(TextFormatter& output, bool keepNodeOpen = false) const override;
+        virtual void print(TextFormatter& output, bool keep_node_open = false) const override;
         virtual void printClose(TextFormatter& output, size_t levels = std::numeric_limits<size_t>::max()) const override;
 
     protected:

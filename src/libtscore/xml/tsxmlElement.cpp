@@ -15,21 +15,18 @@
 // Constructor.
 //----------------------------------------------------------------------------
 
-ts::xml::Element::Element(Report& report, size_t line, CaseSensitivity attribute_case) :
-    Node(report, line),
-    _attribute_case(attribute_case)
+ts::xml::Element::Element(Report& report, size_t line) :
+    Node(report, line)
 {
 }
 
-ts::xml::Element::Element(Node* parent, const UString& name, CaseSensitivity attribute_case, bool last) :
-    Node(parent, name, last), // the "value" of an element node is its name.
-    _attribute_case(attribute_case)
+ts::xml::Element::Element(Node* parent, const UString& name, bool last) :
+    Node(parent, name, last) // the "value" of an element node is its name.
 {
 }
 
 ts::xml::Element::Element(const Element& other) :
     Node(other),
-    _attribute_case(other._attribute_case),
     _attributes(other._attributes)
 {
 }
@@ -67,6 +64,36 @@ const ts::UString& ts::xml::Element::parentName() const
 
 
 //----------------------------------------------------------------------------
+// Specify if namespace is ignored by default when comparing names.
+//----------------------------------------------------------------------------
+
+void ts::xml::Element::setIignoreNamespace(bool ignore)
+{
+    // Costly recursive operation, do it only when necessary.
+    if (ignoreNamespace() != ignore) {
+
+        // Call the superclass to set the node's property.
+        Node::setIignoreNamespace(ignore);
+
+        // Set the property on all XML attributes.
+        for (auto& it : _attributes) {
+            it.second.setIignoreNamespace(ignore);
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Check if the name of the element matches a given value, case-insensitive.
+//----------------------------------------------------------------------------
+
+bool ts::xml::Element::nameMatch(const UChar* str, bool ignore_namespace) const
+{
+    return str != nullptr && (ignore_namespace ? name().similarAfterLast(str, u':') : name().similar(str));
+}
+
+
+//----------------------------------------------------------------------------
 // Expand all environment variables in the XML node.
 //----------------------------------------------------------------------------
 
@@ -90,7 +117,7 @@ ts::xml::Element* ts::xml::Element::findFirstChild(const UString& name, bool sil
 {
     // Loop on all children.
     for (Element* child = firstChildElement(); child != nullptr; child = child->nextSiblingElement()) {
-        if (name.empty() || name.similar(child->name())) {
+        if (name.empty() || child->nameMatch(name)) {
             return child;
         }
     }
@@ -111,7 +138,7 @@ ts::xml::Element* ts::xml::Element::findNextSibling(const UString& name, bool si
 {
     // Loop on all sibling.
     for (Element* child = nextSiblingElement(); child != nullptr; child = child->nextSiblingElement()) {
-        if (name.empty() || name.similar(child->name())) {
+        if (name.empty() || child->nameMatch(name)) {
             return child;
         }
     }
@@ -139,7 +166,7 @@ bool ts::xml::Element::getChildren(ElementVector& children, const UString& searc
 
     // Loop on all children.
     for (const Element* child = firstChildElement(); child != nullptr; child = child->nextSiblingElement()) {
-        if (search_name.similar(child->name())) {
+        if (child->nameMatch(search_name)) {
             children.push_back(child);
         }
     }
@@ -168,7 +195,7 @@ bool ts::xml::Element::hasChildElement(const UString& search_name) const
 
     // Loop on all children.
     for (const Element* child = firstChildElement(); !found && (child != nullptr); child = child->nextSiblingElement()) {
-        if (search_name.similar(child->name())) {
+        if (child->nameMatch(search_name)) {
             found = true;
         }
     }
@@ -384,26 +411,40 @@ ts::xml::Text* ts::xml::Element::addHexaTextChild(const UString& name, const Byt
 // Attribute map management.
 //----------------------------------------------------------------------------
 
-ts::UString ts::xml::Element::attributeKey(const UString& attribute_name) const
-{
-    return _attribute_case == CASE_SENSITIVE ? attribute_name : attribute_name.toLower();
-}
-
 ts::xml::Element::AttributeMap::const_iterator ts::xml::Element::findAttribute(const UString& attribute_name) const
 {
-    return _attributes.find(attributeKey(attribute_name));
+    AttributeMap::const_iterator it = _attributes.begin();
+    while (it != _attributes.end() && !it->second.nameMatch(attribute_name)) {
+        ++it;
+    }
+    return it;
 }
 
-void ts::xml::Element::setAttribute(const UString& name, const UString& value, bool onlyIfNotEmpty)
+ts::xml::Element::AttributeMap::iterator ts::xml::Element::findAttribute(const UString& attribute_name)
 {
-    if (!onlyIfNotEmpty || !value.empty()) {
-        _attributes[attributeKey(name)] = Attribute(name, value);
+    AttributeMap::iterator it = _attributes.begin();
+    while (it != _attributes.end() && !it->second.nameMatch(attribute_name)) {
+        ++it;
+    }
+    return it;
+}
+
+void ts::xml::Element::setAttribute(const UString& name, const UString& value, bool only_if_not_empty)
+{
+    if (!only_if_not_empty || !value.empty()) {
+        const auto it = findAttribute(name);
+        if (it == _attributes.end()) {
+            _attributes[name] = Attribute(name, value);
+        }
+        else {
+            it->second.setString(value);
+        }
     }
 }
 
 void ts::xml::Element::deleteAttribute(const UString& name)
 {
-    const auto it = _attributes.find(attributeKey(name));
+    const auto it = findAttribute(name);
     if (it != _attributes.end()) {
         _attributes.erase(it);
     }
@@ -416,8 +457,8 @@ bool ts::xml::Element::hasAttribute(const UString& name) const
 
 ts::xml::Attribute& ts::xml::Element::refAttribute(const UString& name)
 {
-    const auto it = _attributes.find(attributeKey(name));
-    return it == _attributes.end() ? (_attributes[attributeKey(name)] = Attribute(name, u"")) : it->second;
+    const auto it = findAttribute(name);
+    return it == _attributes.end() ? (_attributes[name] = Attribute(name, u"")) : it->second;
 }
 
 
@@ -765,7 +806,7 @@ bool ts::xml::Element::merge(Element* other, MergeAttributes attr_options)
     }
 
     // Check that the elements have identical tags.
-    if (!name().similar(other->name())) {
+    if (!nameMatch(other)) {
         report().error(u"Cannot merge XML element <%s>, line %d, with <%s>, line %d", name(), lineNumber(), other->name(), other->lineNumber());
         return false;
     }
@@ -839,7 +880,7 @@ void ts::xml::Element::sort(const UString& tagName)
 // Print the node.
 //----------------------------------------------------------------------------
 
-void ts::xml::Element::print(TextFormatter& output, bool keepNodeOpen) const
+void ts::xml::Element::print(TextFormatter& output, bool keep_node_open) const
 {
     // Output element name.
     output << "<" << name();
@@ -855,7 +896,7 @@ void ts::xml::Element::print(TextFormatter& output, bool keepNodeOpen) const
     }
 
     // Close the tag and return if nothing else to output.
-    if (!hasChildren() && !keepNodeOpen) {
+    if (!hasChildren() && !keep_node_open) {
         output << "/>";
         return;
     }
@@ -877,10 +918,10 @@ void ts::xml::Element::print(TextFormatter& output, bool keepNodeOpen) const
     }
 
     // Close the element if required.
-    if (!sticky || keepNodeOpen) {
+    if (!sticky || keep_node_open) {
         output << ts::endl;
     }
-    if (!keepNodeOpen) {
+    if (!keep_node_open) {
         output << ts::unindent;
         if (!sticky) {
             output << ts::margin;
@@ -909,21 +950,21 @@ void ts::xml::Element::printClose(TextFormatter& output, size_t levels) const
 bool ts::xml::Element::parseNode(TextParser& parser, const Node* parent)
 {
     // We just read the "<". Skip spaces and read the tag name.
-    UString nodeName;
+    UString node_name;
     parser.skipWhiteSpace();
-    if (!parser.parseXMLName(nodeName)) {
+    if (!parser.parseXMLName(node_name)) {
         report().error(u"line %d: parsing error, tag name expected", parser.lineNumber());
         return false;
     }
 
     // The "value" of an element is its tag name.
-    setValue(nodeName);
+    setValue(node_name);
 
     // Read the list of attributes.
     bool ok = true;
     while (ok) {
-        UString attrName;
-        UString attrValue;
+        UString attr_name;
+        UString attr_value;
         const UChar* quote = nullptr;
 
         parser.skipWhiteSpace();
@@ -936,7 +977,7 @@ bool ts::xml::Element::parseNode(TextParser& parser, const Node* parent)
             // Found end of standalone tag, without children.
             return true;
         }
-        else if (parser.parseXMLName(attrName)) {
+        else if (parser.parseXMLName(attr_name)) {
             // Found a name, probably an attribute.
             const size_t line = parser.lineNumber();
 
@@ -959,20 +1000,20 @@ bool ts::xml::Element::parseNode(TextParser& parser, const Node* parent)
             }
 
             // Read attribute value.
-            ok = ok && parser.parseText(attrValue, quote, true, true);
+            ok = ok && parser.parseText(attr_value, quote, true, true);
 
             // Store the attribute.
             if (!ok) {
-                report().error(u"line %d: error parsing attribute '%s' in tag <%s>", line, attrName, value());
+                report().error(u"line %d: error parsing attribute '%s' in tag <%s>", line, attr_name, value());
             }
-            else if (hasAttribute(attrName)) {
-                report().error(u"line %d: duplicate attribute '%s' in tag <%s>", line, attrName, value());
+            else if (hasAttribute(attr_name)) {
+                report().error(u"line %d: duplicate attribute '%s' in tag <%s>", line, attr_name, value());
                 ok = false;
             }
             else {
-                _attributes[attributeKey(attrName)] = Attribute(attrName, attrValue, line);
+                _attributes[attr_name] = Attribute(attr_name, attr_value, line);
                 // When attribute is xml:space="preserve", spaces shall be preserved in that hierarchy.
-                if (attrName == u"xml:space" && attrValue == u"preserve") {
+                if (attr_name == u"xml:space" && attr_value == u"preserve") {
                     setPreserveSpace(true);
                 }
             }
