@@ -44,6 +44,11 @@ namespace ts {
                   const ByteBlockPtr&   content);
 
         //!
+        //! Virtual destructor.
+        //!
+        virtual ~FluteFile();
+
+        //!
         //! Check if the fiel is valid (for instance is XML content was successfully parsed).
         //! @return True if the file is valid. False otherwise.
         //!

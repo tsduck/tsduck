@@ -12,7 +12,7 @@
 
 
 //----------------------------------------------------------------------------
-// Constructors.
+// Constructors and destructor.
 //----------------------------------------------------------------------------
 
 ts::FluteFile::FluteFile(const FluteSessionId& sid,
@@ -25,6 +25,10 @@ ts::FluteFile::FluteFile(const FluteSessionId& sid,
     _name(name),
     _type(type),
     _content(content != nullptr ? content : std::make_shared<ByteBlock>())
+{
+}
+
+ts::FluteFile::~FluteFile()
 {
 }
 

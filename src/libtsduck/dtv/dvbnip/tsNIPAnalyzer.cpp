@@ -8,6 +8,7 @@
 
 #include "tsNIPAnalyzer.h"
 #include "tsNIP.h"
+#include "tsMulticastGatewayConfiguration.h"
 
 
 //----------------------------------------------------------------------------
@@ -101,18 +102,24 @@ void ts::NIPAnalyzer::handleFluteFile(FluteDemux& demux, const FluteFile& file)
         _report.info(line);
     }
 
-    // Save the content of various files.
-    if (name.similar(u"urn:dvb:metadata:nativeip:NetworkInformationFile")) {
-        saveXML(file, _args.save_nif);
-    }
-    else if (name.similar(u"urn:dvb:metadata:nativeip:ServiceInformationFile")) {
-        saveXML(file, _args.save_sif);
-    }
-    else if (name.similar(u"urn:dvb:metadata:nativeip:dvb-i-slep")) {
-        saveXML(file, _args.save_slep);
-    }
-    else if (name.similar(u"urn:dvb:metadata:cs:NativeIPMulticastTransportObjectTypeCS:2023:bootstrap")) {
-        saveXML(file, _args.save_bootstrap);
+    // Process some known files in the announcement channel.
+    if (file.sessionId().nipAnnouncementChannel()) {
+        if (name.similar(u"urn:dvb:metadata:nativeip:NetworkInformationFile")) {
+            saveXML(file, _args.save_nif);
+        }
+        else if (name.similar(u"urn:dvb:metadata:nativeip:ServiceInformationFile")) {
+            saveXML(file, _args.save_sif);
+        }
+        else if (name.similar(u"urn:dvb:metadata:nativeip:dvb-i-slep")) {
+            saveXML(file, _args.save_slep);
+        }
+        else if (name.similar(u"urn:dvb:metadata:cs:NativeIPMulticastTransportObjectTypeCS:2023:bootstrap")) {
+            saveXML(file, _args.save_bootstrap);
+            MulticastGatewayConfiguration mgc(_report, file);
+            if (mgc.isValid()) {
+                mgc.display(std::cout, u"  "); //@@ debug purpose
+            }
+        }
     }
 }
 
@@ -134,6 +141,7 @@ void ts::NIPAnalyzer::saveXML(const FluteFile& file, const fs::path& path, const
         }
 
         // Save the file.
+        _report.debug(u"saving %s", actual_path);
         if (!file.toXML().save(actual_path, false, true)) {
             _report.error(u"error creating file %s", actual_path);
         }

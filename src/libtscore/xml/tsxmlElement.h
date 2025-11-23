@@ -144,6 +144,20 @@ namespace ts::xml {
         Element* findNextSibling(const UString& name, bool silent = false);
 
         //!
+        //! Find the next sibling element with same name as this element.
+        //! @param [in] silent If true, do not report error if the element does not exist.
+        //! @return Child element address or zero if not found.
+        //!
+        const Element* findNextSibling(bool silent = false) const { return findNextSibling(name(), silent); }
+
+        //!
+        //! Find the next sibling element by name, case-insensitive.
+        //! @param [in] silent If true, do not report error if the element does not exist.
+        //! @return Child element address or zero if not found.
+        //!
+        Element* findNextSibling(bool silent = false) { return findNextSibling(name(), silent); }
+
+        //!
         //! Find all children elements by name, case-insensitive.
         //! @param [out] children Returned vector of all children.
         //! @param [in] name Name of the child element to search.
@@ -161,7 +175,7 @@ namespace ts::xml {
         bool hasChildElement(const UString& name) const;
 
         //!
-        //! Get text in a child of an element.
+        //! Get text in a child of the element.
         //! @param [out] data The content of the text in the child element.
         //! @param [in] name Name of the child element to search.
         //! @param [in] trim If true, remove leading and trailing spaces.
@@ -637,6 +651,26 @@ namespace ts::xml {
                              INT3 max_value = std::numeric_limits<typename ts::underlying_type<INT>::type>::max()) const;
 
         //!
+        //! Get an integer or enum in a child of the element.
+        //! @tparam INT An integer or enum type.
+        //! @param [out] value Returned value of the attribute.
+        //! @param [in] name Name of the child to search.
+        //! @param [in] required If true, generate an error if the child is not found.
+        //! @param [in] def_value Default value to return if the attribute is not present.
+        //! @param [in] min_value Minimum allowed value for the attribute.
+        //! @param [in] max_value Maximum allowed value for the attribute.
+        //! @return True on success, false on error.
+        //!
+        template <typename INT, typename INT1 = INT, typename INT2 = INT, typename INT3 = INT>
+            requires ts::int_enum<INT> && ts::int_enum<INT1> && ts::int_enum<INT2> && ts::int_enum<INT3>
+        bool getIntChild(INT& value,
+                         const UString& name,
+                         bool required = false,
+                         INT1 def_value = static_cast<INT>(0),
+                         INT2 min_value = std::numeric_limits<typename ts::underlying_type<INT>::type>::min(),
+                         INT3 max_value = std::numeric_limits<typename ts::underlying_type<INT>::type>::max()) const;
+
+        //!
         //! Get an integer or enum attribute of an XML element.
         //! @tparam INT An integer type.
         //! @param [out] value Returned value of the attribute. Always set, possibly to the default value.
@@ -901,6 +935,16 @@ namespace ts::xml {
         bool getIPAttribute(IPAddress& value, const UString& name, bool required = false, const IPAddress& def_value = IPAddress()) const;
 
         //!
+        //! Get an IPv4 or IPv6 address in a child of the element, in numerical format or host name.
+        //! @param [out] value Returned value of the child elements.
+        //! @param [in] name Name of the child element to search.
+        //! @param [in] required If true, generate an error if the attribute is not found.
+        //! @param [in] def_value Default value to return if the attribute is not present.
+        //! @return True on success, false on error.
+        //!
+        bool getIPChild(IPAddress& value, const UString& name, bool required = false, const IPAddress& def_value = IPAddress()) const;
+
+        //!
         //! Get a MAC address attribute of an XML element in "x:x:x:x:x:x" format.
         //! @param [out] value Returned value of the attribute.
         //! @param [in] name Name of the attribute.
@@ -1006,6 +1050,34 @@ bool ts::xml::Element::getIntAttribute(INT& value, const UString& name, bool req
     }
     else if (val < INTMAX(min_value) || val > INTMAX(max_value)) {
         report().error(u"'%s' must be in range %'d to %'d for attribute '%s' in <%s>, line %d", str, min_value, max_value, name, this->name(), lineNumber());
+        return false;
+    }
+    else {
+        value = INT(val);
+        return true;
+    }
+}
+
+// Get an integer or enum in a child element..
+template <typename INT, typename INT1, typename INT2, typename INT3>
+    requires ts::int_enum<INT> && ts::int_enum<INT1> && ts::int_enum<INT2> && ts::int_enum<INT3>
+bool ts::xml::Element::getIntChild(INT& value, const UString& name, bool required, INT1 def_value, INT2 min_value, INT3 max_value) const
+{
+    UString str;
+    if (!getTextChild(str, name, true, required) || str.empty()) {
+        value = INT(def_value);
+        return !required;
+    }
+
+    // Child text found, get its value.
+    using INTMAX = typename ts::int_max<INT>::type;
+    INTMAX val = 0;
+    if (!str.toInteger(val, u",")) {
+        report().error(u"'%s' is not a valid integer value in <%s><%s>, line %d", str, this->name(), name, lineNumber());
+        return false;
+    }
+    else if (val < INTMAX(min_value) || val > INTMAX(max_value)) {
+        report().error(u"'%s' must be in range %'d to %'d in <%s><%s>, line %d", str, min_value, max_value, this->name(), name, lineNumber());
         return false;
     }
     else {

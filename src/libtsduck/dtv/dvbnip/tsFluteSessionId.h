@@ -14,6 +14,7 @@
 #pragma once
 #include "tsStringifyInterface.h"
 #include "tsIPSocketAddress.h"
+#include "tsxml.h"
 
 namespace ts {
     //!
@@ -48,12 +49,30 @@ namespace ts {
         bool operator<(const FluteSessionId& other) const;
 
         //!
+        //! Clear the content of this object.
+        //!
+        void clear();
+
+        //!
         //! Check if this session id "matches" another one.
         //! @param [in] other Another instance to compare.
         //! @return False if this and @a other addresses and porsts are both specified and are different.
         //! True otherwise.
         //!
         bool match(const FluteSessionId& other) const;
+
+        //!
+        //! Check if this session is in the DVB-NIP Announcement Channel.
+        //! @return True if this session is in the DVB-NIP Announcement Channel.
+        //!
+        bool nipAnnouncementChannel() const;
+
+        //!
+        //! Reinitialize the structure from a XML element.
+        //! @param [in] element Root XML element to analyze.
+        //! @return True on success, false on error.
+        //!
+        bool parseXML(const xml::Element* element);
 
         // Implementation of StringifyInterface.
         virtual UString toString() const override;

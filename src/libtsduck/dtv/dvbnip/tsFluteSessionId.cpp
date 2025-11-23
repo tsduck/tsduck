@@ -7,6 +7,8 @@
 //----------------------------------------------------------------------------
 
 #include "tsFluteSessionId.h"
+#include "tsNIP.h"
+#include "tsxmlElement.h"
 
 
 //----------------------------------------------------------------------------
@@ -18,6 +20,18 @@ ts::FluteSessionId::FluteSessionId(const IPAddress& source_, const IPSocketAddre
     destination(destination_),
     tsi(tsi_)
 {
+}
+
+
+//----------------------------------------------------------------------------
+// Clear the content of this object.
+//----------------------------------------------------------------------------
+
+void ts::FluteSessionId::clear()
+{
+    source.clear();
+    destination.clear();
+    tsi = 0;
 }
 
 
@@ -50,10 +64,37 @@ bool ts::FluteSessionId::match(const FluteSessionId& other) const
 
 
 //----------------------------------------------------------------------------
+// Check if this session is in the DVB-NIP Announcement Channel.
+//----------------------------------------------------------------------------
+
+bool ts::FluteSessionId::nipAnnouncementChannel() const
+{
+    return destination == NIPSignallingAddress4() || destination.sameMulticast6(NIPSignallingAddress6());
+}
+
+//----------------------------------------------------------------------------
 // Implementation of StringifyInterface.
 //----------------------------------------------------------------------------
 
 ts::UString ts::FluteSessionId::toString() const
 {
     return UString::Format(u"source: %s, destination: %s, TSI: %d", source, destination, tsi);
+}
+
+
+//----------------------------------------------------------------------------
+// Reinitialize the structure from a XML element.
+//----------------------------------------------------------------------------
+
+bool ts::FluteSessionId::parseXML(const xml::Element* element)
+{
+    clear();
+    uint16_t port = 0;
+    bool ok = element != nullptr &&
+              element->getIPChild(source, u"NetworkSourceAddress", false) &&
+              element->getIPChild(destination, u"NetworkDestinationGroupAddress", true) &&
+              element->getIntChild(port, u"TransportDestinationPort", true) &&
+              element->getIntChild(tsi, u"MediaTransportSessionIdentifier", true);
+    destination.setPort(port);
+    return ok;
 }

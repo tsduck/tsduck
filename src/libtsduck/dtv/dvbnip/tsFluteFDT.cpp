@@ -43,7 +43,7 @@ ts::FluteFDT::FluteFDT(Report&               report,
         static const Time origin(1900, 1, 1, 0, 0);
         expires = origin + cn::seconds(expires_int);
 
-        for (const xml::Element* e = root->findFirstChild(u"File", true); _valid && e != nullptr; e = e->findNextSibling(u"File", true)) {
+        for (const xml::Element* e = root->findFirstChild(u"File", true); _valid && e != nullptr; e = e->findNextSibling(true)) {
             File& file(files.emplace_back());
             UString md5_base64;
             _valid = e->getAttribute(file.content_location, u"Content-Location", true) &&

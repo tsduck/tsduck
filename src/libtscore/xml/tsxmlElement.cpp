@@ -726,6 +726,24 @@ bool ts::xml::Element::getIPAttribute(IPAddress& value, const UString& name, boo
     return ok;
 }
 
+bool ts::xml::Element::getIPChild(IPAddress& value, const UString& name, bool required, const IPAddress& def_value) const
+{
+    UString str;
+    if (!getTextChild(str, name, true, required)) {
+        return false;
+    }
+    if (!required && str.empty()) {
+        value = def_value;
+        return true;
+    }
+
+    const bool ok = value.resolve(str, report());
+    if (!ok) {
+        report().error(u"'%s' is not a valid IP address in <%s><%s>, line %d", str, this->name(), name, lineNumber());
+    }
+    return ok;
+}
+
 bool ts::xml::Element::getMACAttribute(MACAddress& value, const UString& name, bool required, const MACAddress& def_value) const
 {
     UString str;
