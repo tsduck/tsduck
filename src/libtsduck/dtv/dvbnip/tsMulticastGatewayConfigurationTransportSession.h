@@ -61,7 +61,7 @@ namespace ts {
         };
 
         //!
-        //! An entry of <ForwardErrorCorrectionParameters>.
+        //! An entry of \<ForwardErrorCorrectionParameters>.
         //!
         class TSDUCKDLL ForwardErrorCorrectionParametersType
         {
@@ -69,11 +69,11 @@ namespace ts {
             ForwardErrorCorrectionParametersType() = default;  //!< Constructor.
             UString  scheme_identifier {};                     //!< SchemeIdentifier
             uint32_t overhead_percentage = 0;                  //!< OverheadPercentage.
-            std::list<FluteSessionId> endpoints {};            //!< list of <EndpointAddress>.
+            std::list<FluteSessionId> endpoints {};            //!< list of \<EndpointAddress>.
         };
 
         //!
-        //! An entry of <PresentationManifests> or <InitSegments> in <ObjectCarousel>.
+        //! An entry of \<PresentationManifests> or \<InitSegments> in \<ObjectCarousel>.
         //!
         class TSDUCKDLL ReferencingCarouselMediaPresentationResourceType
         {
@@ -91,13 +91,13 @@ namespace ts {
         };
 
         //!
-        //! An entry of <ResourceLocator> in <ObjectCarousel>.
+        //! An entry of \<ResourceLocator> in \<ObjectCarousel>.
         //!
         class TSDUCKDLL CarouselResourceLocatorType
         {
         public:
             CarouselResourceLocatorType() = default; //!< Constructor.
-            UString uri {};                          //!< text of <ResourceLocator>
+            UString uri {};                          //!< text of \<ResourceLocator>
             bool    compression_preferred = false;   //!< attribute compressionPreferred
             UString target_acquisition_latency {};   //!< attribute targetAcquisitionLatency
             UString revalidation_period {};          //!< attribute revalidationPeriod
@@ -107,22 +107,22 @@ namespace ts {
         UString          service_class {};             //!< attribute serviceClass.
         UString          transport_security {};        //!< attribute transportSecurity
         UStringList      tags {};                      //!< attribute tags
-        UString          trans_proto_id {};            //!< attribute protocolIdentifier in <TransportProtocol>.
-        uint32_t         trans_proto_version = 0;      //!< attribute protocolVersion in <TransportProtocol>.
-        uint32_t         bitrate_average = 0;          //!< attribute average in <BitRate>.
-        uint32_t         bitrate_maximum = 0;          //!< attribute maximum in <BitRate>.
-        std::list<WeightedURIType> repair_base_url {}; //!< elements <BaseURL> in <UnicastRepairParameters>.
-        UString          repair_obj_base_uri {};       //!< attribute transportObjectBaseURI in <UnicastRepairParameters>.
-        cn::milliseconds repair_recv_timeout {};       //!< attribute transportObjectReceptionTimeout in <UnicastRepairParameters>.
-        cn::milliseconds repair_fixed_backoff {};      //!< attribute fixedBackOffPeriod in <UnicastRepairParameters>.
-        cn::milliseconds repair_rand_backoff {};       //!< attribute randomBackOffPeriod in <UnicastRepairParameters>.
-        std::list<FluteSessionId> endpoints {};        //!< list of <EndpointAddress>.
-        UStringToUStringMap       macros {};           //!< map of <MulticastGatewayConfigurationMacro>, indexed by attribute key.
-        std::list<ForwardErrorCorrectionParametersType> fec {}; //!< list of <ForwardErrorCorrectionParameters>.
-        uint32_t         carousel_transport_size = 0;  //!< attribute aggregateTransportSize in <ObjectCarousel>.
-        uint32_t         carousel_content_size = 0;    //!< attribute aggregateContentSize in <ObjectCarousel>.
-        std::list<CarouselResourceLocatorType> resource_locator {}; //!< all <ResourceLocator> in <ObjectCarousel>.
-        std::list<ReferencingCarouselMediaPresentationResourceType> carousel_manifests {};  //!< all <PresentationManifests> in <ObjectCarousel>.
-        std::list<ReferencingCarouselMediaPresentationResourceType> carousel_segment {};    //!< all <InitSegments> in <ObjectCarousel>.
+        UString          trans_proto_id {};            //!< attribute protocolIdentifier in \<TransportProtocol>.
+        uint32_t         trans_proto_version = 0;      //!< attribute protocolVersion in \<TransportProtocol>.
+        uint32_t         bitrate_average = 0;          //!< attribute average in \<BitRate>.
+        uint32_t         bitrate_maximum = 0;          //!< attribute maximum in \<BitRate>.
+        std::list<WeightedURIType> repair_base_url {}; //!< elements \<BaseURL> in \<UnicastRepairParameters>.
+        UString          repair_obj_base_uri {};       //!< attribute transportObjectBaseURI in \<UnicastRepairParameters>.
+        cn::milliseconds repair_recv_timeout {};       //!< attribute transportObjectReceptionTimeout in \<UnicastRepairParameters>.
+        cn::milliseconds repair_fixed_backoff {};      //!< attribute fixedBackOffPeriod in \<UnicastRepairParameters>.
+        cn::milliseconds repair_rand_backoff {};       //!< attribute randomBackOffPeriod in \<UnicastRepairParameters>.
+        std::list<FluteSessionId> endpoints {};        //!< list of \<EndpointAddress>.
+        UStringToUStringMap       macros {};           //!< map of \<MulticastGatewayConfigurationMacro>, indexed by attribute key.
+        std::list<ForwardErrorCorrectionParametersType> fec {}; //!< list of \<ForwardErrorCorrectionParameters>.
+        uint32_t         carousel_transport_size = 0;  //!< attribute aggregateTransportSize in \<ObjectCarousel>.
+        uint32_t         carousel_content_size = 0;    //!< attribute aggregateContentSize in \<ObjectCarousel>.
+        std::list<CarouselResourceLocatorType> resource_locator {}; //!< all \<ResourceLocator> in \<ObjectCarousel>.
+        std::list<ReferencingCarouselMediaPresentationResourceType> carousel_manifests {};  //!< all \<PresentationManifests> in \<ObjectCarousel>.
+        std::list<ReferencingCarouselMediaPresentationResourceType> carousel_segment {};    //!< all \<InitSegments> in \<ObjectCarousel>.
     };
 }
