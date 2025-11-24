@@ -12,7 +12,7 @@
 
 
 //----------------------------------------------------------------------------
-// Constructor.
+// Constructor and destructor.
 //----------------------------------------------------------------------------
 
 ts::MulticastGatewayConfiguration::MulticastGatewayConfiguration(Report& report, const FluteFile& file) :
@@ -31,6 +31,10 @@ ts::MulticastGatewayConfiguration::MulticastGatewayConfiguration(Report& report,
 
         // Other elements of the <MulticastGatewayConfiguration> are not parsed (so far).
     }
+}
+
+ts::MulticastGatewayConfiguration::~MulticastGatewayConfiguration()
+{
 }
 
 

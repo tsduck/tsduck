@@ -25,6 +25,7 @@ namespace ts {
     //!
     class TSDUCKDLL MulticastGatewayConfiguration : public FluteFile, public DisplayInterface
     {
+        TS_RULE_OF_FIVE(MulticastGatewayConfiguration, override);
     public:
         //!
         //! Default constructor.

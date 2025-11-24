@@ -24,6 +24,7 @@ namespace ts {
     //!
     class TSDUCKDLL FluteFDT : public FluteFile
     {
+        TS_RULE_OF_FIVE(FluteFDT, override);
     public:
         //!
         //! Default constructor.

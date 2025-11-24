@@ -23,6 +23,7 @@ namespace ts {
     //!
     class TSDUCKDLL FluteFile
     {
+        TS_RULE_OF_FIVE(FluteFile, );
     public:
         //!
         //! Default constructor.
@@ -42,11 +43,6 @@ namespace ts {
                   const UString&        name,
                   const UString&        type,
                   const ByteBlockPtr&   content);
-
-        //!
-        //! Virtual destructor.
-        //!
-        virtual ~FluteFile();
 
         //!
         //! Check if the fiel is valid (for instance is XML content was successfully parsed).

@@ -27,6 +27,7 @@ namespace ts {
     //!
     class TSDUCKDLL MulticastGatewayConfigurationTransportSession : public DisplayInterface
     {
+        TS_RULE_OF_FIVE(MulticastGatewayConfigurationTransportSession, override);
     public:
         //!
         //! Default constructor.

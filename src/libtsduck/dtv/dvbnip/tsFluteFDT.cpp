@@ -14,7 +14,7 @@
 
 
 //----------------------------------------------------------------------------
-// Constructor.
+// Constructors and destructor.
 //----------------------------------------------------------------------------
 
 ts::FluteFDT::FluteFDT(Report&               report,
@@ -65,4 +65,8 @@ ts::FluteFDT::FluteFDT(Report&               report,
     if (!_valid) {
         report.error(u"received an invalid FDT in %s", sid);
     }
+}
+
+ts::FluteFDT::~FluteFDT()
+{
 }
