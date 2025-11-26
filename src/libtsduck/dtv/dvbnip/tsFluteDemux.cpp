@@ -243,33 +243,113 @@ void ts::FluteDemux::processCompleteFile(const FluteSessionId& sid, SessionConte
         // Process a new FDT.
         const FluteFDT fdt(_report, sid, file.instance, data);
         if (fdt.isValid()) {
-            // Remember last valid FDT instance.
-            session.fdt_instance = file.instance;
-            // Register file information.
-            for (const auto& f : fdt.files) {
-                FileContext& sf(session.files[f.toi]);
-                sf.transfer_length = f.transfer_length;
-                sf.name = f.content_location;
-                sf.type = f.content_type;
-            }
-            // Notify the application.
-            if (_handler != nullptr) {
-                _handler->handleFluteFDT(*this, fdt);
-                // Process all complete files which were not processed yet because of an absence of FDT.
-                for (auto& f : session.files) {
-                    if (f.first != FLUTE_FDT_TOI && !f.second.processed && f.second.transfer_length > 0 && f.second.current_length >= f.second.transfer_length) {
-                        processCompleteFile(sid, session, f.first, f.second);
-                    }
-                }
-            }
+            processFDT(session, fdt);
         }
     }
-    else if (_handler != nullptr) {
+    else {
         // Process a normal file.
         const FluteFile ff(sid, toi, file.name, file.type, data);
-        _handler->handleFluteFile(*this, ff);
+        const bool is_xml = file.type.contains(u"xml");
+
+        // Log a description of the file when requested.
+        if (_args.log_files || (is_xml && _args.dump_xml_files)) {
+            UString line;
+            line.format(u"received file \"%s\" (%'d bytes)\n    type: %s\n    %s, TOI: %d", file.name, ff.size(), file.type, sid, toi);
+
+            // Dump XML content when requested.
+            if (is_xml && _args.dump_xml_files) {
+                line += u"\n    XML content:\n";
+                line += ff.toXML();
+            }
+            _report.info(line);
+        }
+
+        // Notify the application.
+        if (_handler != nullptr) {
+            _handler->handleFluteFile(*this, ff);
+        }
     }
 
     // Now forget about this file.
     file.processed = true;
+}
+
+
+//----------------------------------------------------------------------------
+// Process a File Delivery Table (FDT).
+//----------------------------------------------------------------------------
+
+void ts::FluteDemux::processFDT(SessionContext& session, const FluteFDT& fdt)
+{
+    // Remember last valid FDT instance.
+    session.fdt_instance = fdt.instance_id;
+
+    // Log the content of the FDT.
+    if (_args.log_fdt) {
+        UString line;
+        line.format(u"FDT instance: %d, %s, %d files, expires: %s", fdt.instance_id, fdt.sessionId(), fdt.files.size(), fdt.expires);
+        for (const auto& f : fdt.files) {
+            line.format(u"\n    TOI: %d, name: %s, %'d bytes, type: %s", f.toi, f.content_location, f.content_length, f.content_type);
+        }
+        _report.info(line);
+    }
+
+    // Save the content of the FDT.
+    if (!_args.save_fdt.empty()) {
+        // Build the path with instance value.
+        fs::path path(_args.save_fdt);
+        if (path != u"-") {
+            path.replace_extension();
+            path += UString::Format(u"-%d", fdt.instance_id);
+            path += _args.save_fdt.extension();
+        }
+
+        // Save the file.
+        _report.debug(u"saving %s", path);
+        if (!fdt.toXML().save(path, false, true)) {
+            _report.error(u"error creating file %s", path);
+        }
+    }
+
+    // Register information for other files in the session, as described in the FDT.
+    for (const auto& f : fdt.files) {
+        FileContext& sf(session.files[f.toi]);
+        sf.name = f.content_location;
+        sf.type = f.content_type;
+        updateFileSize(fdt.sessionId(), session, f.toi, sf, f.transfer_length);
+    }
+
+    // Notify the application.
+    if (_handler != nullptr) {
+        _handler->handleFluteFDT(*this, fdt);
+    }
+
+    // Process all complete files which were not processed yet because of an absence of FDT.
+    for (auto& f : session.files) {
+        if (f.first != FLUTE_FDT_TOI && !f.second.processed && f.second.transfer_length > 0 && f.second.current_length >= f.second.transfer_length) {
+            processCompleteFile(fdt.sessionId(), session, f.first, f.second);
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Get the current status of all file transfers.
+//----------------------------------------------------------------------------
+
+void ts::FluteDemux::getFilesStatus()
+{
+    if (_handler != nullptr) {
+        for (const auto& sess : _sessions) {
+            for (const auto& file : sess.second.files) {
+                _handler->handleFluteStatus(*this,
+                                            sess.first,
+                                            file.second.name,
+                                            file.second.type,
+                                            file.first,
+                                            file.second.transfer_length,
+                                            file.second.processed ? file.second.transfer_length : file.second.current_length);
+            }
+        }
+    }
 }

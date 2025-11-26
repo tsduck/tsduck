@@ -19,3 +19,7 @@ void ts::FluteHandlerInterface::handleFluteFile(FluteDemux&, const FluteFile&)
 void ts::FluteHandlerInterface::handleFluteFDT(FluteDemux&, const FluteFDT&)
 {
 }
+
+void ts::FluteHandlerInterface::handleFluteStatus(FluteDemux&, const FluteSessionId&, const UString&, const UString&, uint64_t, uint64_t, uint64_t)
+{
+}

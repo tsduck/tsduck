@@ -34,7 +34,17 @@ namespace ts {
         // Analysis options:
         bool     log_flute_packets = false;   //!< Option -\-log-flute-packets
         bool     dump_flute_payload = false;  //!< Option -\-dump-flute-payload
+        bool     log_fdt = false;             //!< Option -\-log-fdt
+        bool     log_files = false;           //!< Option -\-log-files
+        bool     dump_xml_files = false;      //!< Option -\-dump-xml-files
+        fs::path save_fdt {};                 //!< Option -\-save-fdt
         uint64_t max_file_size = 0;           //!< Option -\-max-file-size
+
+        //!
+        //! Check if something specific was required.
+        //! @return True if there is something to do, log or display.
+        //!
+        bool none() const;
 
         //!
         //! Add command line option definitions in an Args.

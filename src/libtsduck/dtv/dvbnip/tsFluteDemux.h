@@ -70,6 +70,13 @@ namespace ts {
         //!
         void feedPacket(const IPSocketAddress& source, const IPSocketAddress& destination, const uint8_t* udp, size_t udp_size);
 
+        //!
+        //! Get the current status of all file transfers.
+        //! The current handler is invoked on method @a handleFluteStatus() for each file,
+        //! either completely or partially transfered.
+        //!
+        void getFilesStatus();
+
     private:
         // Description of a file being received.
         class TSDUCKDLL FileContext
@@ -112,5 +119,8 @@ namespace ts {
 
         // Process a complete file.
         void processCompleteFile(const FluteSessionId& sid, SessionContext& session, uint64_t toi, FileContext& file);
+
+        // Process a File Delivery Table (FDT).
+        void processFDT(SessionContext& session, const FluteFDT& fdt);
     };
 }

@@ -15,7 +15,6 @@
 #include "tsNIPAnalyzerArgs.h"
 #include "tsDuckContext.h"
 #include "tsFluteDemux.h"
-#include "tsFluteFDT.h"
 #include "tsIPSocketAddress.h"
 #include "tsIPPacket.h"
 
@@ -37,8 +36,9 @@ namespace ts {
         //!
         //! Reset the analysis.
         //! @param [in] args Analysis arguments.
+        //! @return True on success, false on error.
         //!
-        void reset(const NIPAnalyzerArgs& args);
+        bool reset(const NIPAnalyzerArgs& args);
 
         //!
         //! The following method feeds the analyzer with an IP packet.
@@ -65,22 +65,52 @@ namespace ts {
         //!
         void addSession(const FluteSessionId& session);
 
+        //!
+        //! Print a summary of the DVB-NIP session.
+        //! Print nothing of option @a summary was not specified.
+        //! @param out Where to print the summary.
+        //!
+        void printSummary(std::ostream& out);
+
     private:
+        // Description of a file.
+        class TSDUCKDLL FileContext
+        {
+        public:
+            bool     complete = false;  // The file has been received in this object.
+            uint64_t size = 0;          // File size in bytes.
+            uint64_t received = 0;      // Received size in bytes.
+            uint64_t toi = 0;           // Transport object identifier.
+            UString  type {};           // File type.
+        };
+
+        // Description of a session.
+        class TSDUCKDLL SessionContext
+        {
+        public:
+            std::map<UString, FileContext> files {};  // Description of files, indexed by name.
+        };
+
+        // NIPAnalyzer private fields.
         DuckContext&    _duck;
         Report&         _report {_duck.report()};
         NIPAnalyzerArgs _args {};
         FluteDemux      _flute_demux {_duck, this};
         std::set<FluteSessionId> _session_filter {};
+        std::map<FluteSessionId, SessionContext> _sessions {};
 
         // Inherited methods.
         virtual void handleFluteFile(FluteDemux&, const FluteFile&) override;
-        virtual void handleFluteFDT(FluteDemux&, const FluteFDT&) override;
+        virtual void handleFluteStatus(FluteDemux&, const FluteSessionId&, const UString&, const UString&, uint64_t, uint64_t, uint64_t) override;
 
         // Check if a UDP packet or FLUTE file is part of a filtered session.
         bool isFiltered(const IPAddress& source, const IPSocketAddress& destination) const;
         bool isFiltered(const FluteSessionId& session) const;
 
         // Save a XML file (if the file name is not empty).
-        void saveXML(const FluteFile& file, const fs::path& path, const std::optional<uint32_t> instance = std::optional<uint32_t>());
+        void saveXML(const FluteFile& file, const fs::path& path);
+
+        // Save a carousel file.
+        void saveFile(const FluteFile& file, const fs::path& root_dir, const UString& path);
     };
 }

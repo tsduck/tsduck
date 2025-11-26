@@ -28,15 +28,18 @@ namespace ts {
         NIPAnalyzerArgs() = default;
 
         // Analysis options:
-        bool     log_fdt = false;         //!< Option -\-log-fdt
-        bool     log_files = false;       //!< Option -\-log-files
-        bool     dump_xml_files = false;  //!< Option -\-dump-xml-files
-        fs::path save_fdt {};             //!< Option -\-save-fdt
+        bool     summary = false;         //!< Option -\-summary
         fs::path save_nif {};             //!< Option -\-save-nif
         fs::path save_sif {};             //!< Option -\-save-sif
         fs::path save_slep {};            //!< Option -\-save-slep
         fs::path save_bootstrap {};       //!< Option -\-save-bootstrap
         fs::path save_dvbgw_dir {};       //!< Option -\-save-dvb-gw
+
+        //!
+        //! Check if something specific was required.
+        //! @return True if there is something to do, log or display.
+        //!
+        bool none() const;
 
         //!
         //! Add command line option definitions in an Args.

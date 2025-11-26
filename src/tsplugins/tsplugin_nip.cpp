@@ -29,6 +29,7 @@ namespace ts {
         // Implementation of plugin API
         virtual bool getOptions() override;
         virtual bool start() override;
+        virtual bool stop() override;
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
@@ -42,8 +43,8 @@ namespace ts {
         bool             _wait_for_service = false;  // Wait for MPE service id to be identified.
         PID              _mpe_pid = PID_NULL;        // Actual MPE PID.
         ServiceDiscovery _service {duck, nullptr};   // Service containing the MPE PID.
-        MPEDemux         _demux {duck, this};        // MPE demux to extract MPE datagrams.
-        NIPAnalyzer      _analyzer {duck};           // DVB-NIP analyzer.
+        MPEDemux         _mpe_demux {duck, this};    // MPE demux to extract MPE datagrams.
+        NIPAnalyzer      _nip_analyzer {duck};       // DVB-NIP analyzer.
 
         // Inherited methods.
         virtual void handleMPENewPID(MPEDemux&, const PMT&, PID) override;
@@ -112,18 +113,34 @@ bool ts::NIPPlugin::start()
     _wait_for_service = false;
     _mpe_pid = _opt_pid;
     _service.clear();
-    _demux.reset();
-    _analyzer.reset(_opt_nip);
+    _mpe_demux.reset();
+
+    if (!_nip_analyzer.reset(_opt_nip)) {
+        return false;
+    }
 
     if (_mpe_pid != PID_NULL) {
         // MPE PID already known.
-        _demux.addPID(_mpe_pid);
+        _mpe_demux.addPID(_mpe_pid);
     }
     else if (!_opt_service.empty()) {
         // MPE service is specified.
         _service.set(_opt_service);
         // Wait for service id if identified by name.
         _wait_for_service = !_service.hasId();
+    }
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Stop method
+//----------------------------------------------------------------------------
+
+bool ts::NIPPlugin::stop()
+{
+    if (_opt_nip.summary) {
+        _nip_analyzer.printSummary(std::cout);
     }
     return true;
 }
@@ -142,7 +159,7 @@ ts::ProcessorPlugin::Status ts::NIPPlugin::processPacket(TSPacket& pkt, TSPacket
     }
     else {
         // Feed the MPE demux.
-        _demux.feedPacket(pkt);
+        _mpe_demux.feedPacket(pkt);
     }
     return _abort ? TSP_END : TSP_OK;
 }
@@ -160,7 +177,7 @@ void ts::NIPPlugin::handleMPENewPID(MPEDemux& demux, const PMT& pmt, PID pid)
     if (_mpe_pid == PID_NULL && (!_service.hasId() || _service.hasId(pmt.service_id))) {
         verbose(u"using MPE PID %n, service %n", pid, pmt.service_id);
         _mpe_pid = pid;
-        _demux.addPID(pid);
+        _mpe_demux.addPID(pid);
     }
 }
 
@@ -175,6 +192,6 @@ void ts::NIPPlugin::handleMPEPacket(MPEDemux& demux, const MPEPacket& mpe)
     debug(u"MPE packet on PID %n, for address %s, %d bytes", mpe.sourcePID(), destination, mpe.datagramSize());
 
     if (!_abort && mpe.sourcePID() == _mpe_pid) {
-        _analyzer.feedPacket(mpe.sourceSocket(), mpe.destinationSocket(), mpe.udpMessage(), mpe.udpMessageSize());
+        _nip_analyzer.feedPacket(mpe.sourceSocket(), mpe.destinationSocket(), mpe.udpMessage(), mpe.udpMessageSize());
     }
 }

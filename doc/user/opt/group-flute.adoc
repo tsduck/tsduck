@@ -4,16 +4,35 @@
 // Copyright (c) 2005-2025, Thierry Lelegard
 // BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
-// Documentation for options in class ts::NIPAnalyzerArgs.
+// Documentation for options in class ts::FluteDemuxArgs and subclasses.
 //
-// tags: <none>
+// tags: dvbnip
 //
 //----------------------------------------------------------------------------
 
+//---- ugly tag tricks ----
+
+:opt-flute: true
+:!opt-dvbnip:
+
+// tag::dvbnip[]
+:!opt-flute:
+:opt-dvbnip: true
+// end::dvbnip[]
+
+//---- end of tag tricks ----
+
+ifdef::opt-flute[]
+[.usage]
+FLUTE protocol options
+endif::[]
+
+ifdef::opt-dvbnip[]
 [.usage]
 DVB-NIP analysis options
 
 These options are identical in the command `tsnip` and the `tsp` plugin `nip`.
+endif::[]
 
 [.opt]
 *--dump-flute-payload*
@@ -49,7 +68,7 @@ Log a message describing the structure of each FLUTE packet.
 *--max-file-size* _value_
 
 [.optdoc]
-Maximum size of files in the DVB-NIP carousel to analyze or extract.
+Maximum size of files in the FLUTE carousel to analyze or extract.
 Each received file is accumulated in memory, chunk by chunk, until the file is complete.
 After processing the file, all chunks are freeed.
 This option is useful when the stream contains many large files which clutter the memory during their reception.
@@ -58,14 +77,25 @@ All files which are announced as larger than the specified size are ignored.
 [.optdoc]
 By default, all files are received and analyzed or saved.
 
+//----------------------------------------------------------------------------
+// option --save-bootstrap
+//----------------------------------------------------------------------------
+
+ifdef::opt-dvbnip[]
 [.opt]
 *--save-bootstrap* _file-name_
 
 [.optdoc]
 Save the bootstrap multicast gateway configuration in the specified file.
 This is a XML file.
-If the specified path is '-', the file is written to standard output.
+If the specified path is '`-`', the file is written to standard output.
+endif::[]
 
+//----------------------------------------------------------------------------
+// option --save-bootstrap
+//----------------------------------------------------------------------------
+
+ifdef::opt-dvbnip[]
 [.opt]
 *--save-dvb-gw* _directory-name_
 
@@ -77,6 +107,11 @@ The file hierarchy is recreated from this directory.
 [.optdoc]
 Example: with `--save-dvb-gw /save/to`, the file `http://dvb.gw/operator.com/materials/f.jpg`
 is saved as `/save/to/operator.com/materials/f.jpg`.
+endif::[]
+
+//----------------------------------------------------------------------------
+// option --save-fdt
+//----------------------------------------------------------------------------
 
 [.opt]
 *--save-fdt* _file-name_
@@ -85,28 +120,59 @@ is saved as `/save/to/operator.com/materials/f.jpg`.
 Save each FLUTE File Delivery Table (FDT) in a file.
 Each FDT instance is saved in a separate file.
 If the specified path is `dir/fdt.xml` for instance, the FDT with instance `N` is saved in file `dir/fdt-N.xml`.
-If the specified path is '-', the file is written to standard output.
+If the specified path is '`-`', the file is written to standard output.
 
+//----------------------------------------------------------------------------
+// option --save-nif
+//----------------------------------------------------------------------------
+
+ifdef::opt-dvbnip[]
 [.opt]
 *--save-nif* _file-name_
 
 [.optdoc]
 Save the DVB-NIP Network Information File (NIF) in the specified file.
 This is a XML file.
-If the specified path is '-', the file is written to standard output.
+If the specified path is '`-`', the file is written to standard output.
+endif::[]
 
+//----------------------------------------------------------------------------
+// option --save-nip
+//----------------------------------------------------------------------------
+
+ifdef::opt-dvbnip[]
 [.opt]
 *--save-sif* _file-name_
 
 [.optdoc]
 Save the DVB-NIP Service Information File (SIF) in the specified file.
 This is a XML file.
-If the specified path is '-', the file is written to standard output.
+If the specified path is '`-`', the file is written to standard output.
+endif::[]
 
+//----------------------------------------------------------------------------
+// option --save-slep
+//----------------------------------------------------------------------------
+
+ifdef::opt-dvbnip[]
 [.opt]
 *--save-slep* _file-name_
 
 [.optdoc]
 Save the DVB-I Service List Entry Points (SLEP) in the specified file.
 This is a XML file.
-If the specified path is '-', the file is written to standard output.
+If the specified path is '`-`', the file is written to standard output.
+endif::[]
+
+//----------------------------------------------------------------------------
+// option --summary
+//----------------------------------------------------------------------------
+
+ifdef::opt-dvbnip[]
+[.opt]
+*--summary*
+
+[.optdoc]
+Display a summary of the DVB-NIP session.
+This is the default if no other option is specified.
+endif::[]

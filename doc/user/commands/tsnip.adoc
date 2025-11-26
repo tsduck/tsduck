@@ -48,6 +48,6 @@ General options
 
 include::{docdir}/opt/opt-no-pager.adoc[tags=!*]
 
-include::{docdir}/opt/group-nip-analyzer.adoc[tags=!*]
+include::{docdir}/opt/group-flute.adoc[tags=!*;dvbnip]
 include::{docdir}/opt/group-pcap-filter.adoc[tags=!*]
 include::{docdir}/opt/group-common-commands.adoc[tags=!*]

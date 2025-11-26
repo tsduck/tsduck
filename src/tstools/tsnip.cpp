@@ -85,12 +85,14 @@ int MainCode(int argc, char *argv[])
     // Setup an output pager if necessary.
     std::ostream& out(opt.pager.output(opt));
     ts::ReportFile<ts::ThreadSafety::None> report(out, opt.maxSeverity());
-    report.setReportPrefix(u"\n* ");
+    report.setReportPrefix(u"* ");
     opt.duck.setReport(&report);
 
     // Initialize a DVB-NIP analyzer.
     ts::NIPAnalyzer analyzer(opt.duck);
-    analyzer.reset(opt.nip);
+    if (!analyzer.reset(opt.nip)) {
+        return EXIT_FAILURE;
+    }
 
     // Read all IP packets from the file.
     ts::IPPacket ip;
@@ -100,6 +102,11 @@ int MainCode(int argc, char *argv[])
         analyzer.feedPacket(ip);
     }
     opt.file.close();
+
+    // Report final summary.
+    if (opt.nip.summary) {
+        analyzer.printSummary(out);
+    }
 
     return EXIT_SUCCESS;
 }

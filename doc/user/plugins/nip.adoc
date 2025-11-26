@@ -53,5 +53,5 @@ The name is not case sensitive and blanks are ignored.
 By default, if neither `--pid` nor `--service` is specified, use the first MPE PID which is found.
 Options `--pid` and `--service` are mutually exclusive.
 
-include::{docdir}/opt/group-nip-analyzer.adoc[tags=!*]
+include::{docdir}/opt/group-flute.adoc[tags=!*;dvbnip]
 include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

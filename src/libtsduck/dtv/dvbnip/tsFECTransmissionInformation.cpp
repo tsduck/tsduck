@@ -81,7 +81,7 @@ ts::UString ts::FECTransmissionInformation::toString() const
 {
     UString str;
     if (valid) {
-        str.format(u"transf len: %d, fec inst id: %d", transfer_length, fec_instance_id);
+        str.format(u"transfer len: %d, fec inst id: %d", transfer_length, fec_instance_id);
         if (fec_encoding_id == FEI_COMPACT_NOCODE || fec_encoding_id == FEI_EXPANDABLE || fec_encoding_id == FEI_COMPACT) {
             str.format(u", max src blk len: %d", max_source_block_length);
         }
