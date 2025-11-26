@@ -16,9 +16,8 @@
 
 void ts::NIPAnalyzerArgs::defineArgs(Args& args)
 {
-    args.option(u"dump-flute-payload");
-    args.help(u"dump-flute-payload",
-              u"Same as --log-flute-packets and also dump the payload of each FLUTE packet.");
+    // Define arguments from superclass.
+    FluteDemuxArgs::defineArgs(args);
 
     args.option(u"dump-xml-files");
     args.help(u"dump-xml-files",
@@ -32,15 +31,19 @@ void ts::NIPAnalyzerArgs::defineArgs(Args& args)
     args.help(u"log-files",
               u"Log a message describing each received file.");
 
-    args.option(u"log-flute-packets");
-    args.help(u"log-flute-packets",
-              u"Log a message describing the structure of each FLUTE packet.");
-
     args.option(u"save-bootstrap", 0, Args::FILENAME);
     args.help(u"save-bootstrap",
               u"Save the bootstrap multicast gateway configuration in the specified file. "
               u"This is a XML file. "
               u"If the specified path is '-', the file is written to standard output.");
+
+    args.option(u"save-dvb-gw", 0, Args::DIRECTORY);
+    args.help(u"save-dvb-gw",
+              u"Save all files in the DVB-NIP carousel with URI starting with http://dvb.gw/. "
+              u"The specified path is a directory. "
+              u"The file hierarchy is recreated from this directory. "
+              u"Example: with '--save-dvb-gw /save/to', the file http://dvb.gw/operator.com/materials/f.jpg "
+              u"is saved as /save/to/operator.com/materials/f.jpg.");
 
     args.option(u"save-fdt", 0, Args::FILENAME);
     args.help(u"save-fdt",
@@ -75,8 +78,9 @@ void ts::NIPAnalyzerArgs::defineArgs(Args& args)
 
 bool ts::NIPAnalyzerArgs::loadArgs(DuckContext& duck, Args& args)
 {
-    dump_flute_payload = args.present(u"dump-flute-payload");
-    log_flute_packets = dump_flute_payload || args.present(u"log-flute-packets");
+    // Decode arguments from superclass.
+    bool ok = FluteDemuxArgs::loadArgs(duck, args);
+
     log_fdt = args.present(u"log-fdt");
     log_files = args.present(u"log-files");
     dump_xml_files = args.present(u"dump-xml-files");
@@ -85,5 +89,7 @@ bool ts::NIPAnalyzerArgs::loadArgs(DuckContext& duck, Args& args)
     args.getPathValue(save_sif, u"save-sif");
     args.getPathValue(save_slep, u"save-slep");
     args.getPathValue(save_bootstrap, u"save-bootstrap");
-    return true;
+    args.getPathValue(save_dvbgw_dir, u"save-dvb-gw");
+
+    return ok;
 }

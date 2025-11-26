@@ -120,6 +120,5 @@ void ts::ReportBuffer<SAFETY>::writeLog(int severity, const UString& message)
     if (!_buffer.empty()) {
         _buffer.append(u'\n');
     }
-    _buffer.append(Severity::Header(severity));
-    _buffer.append(message);
+    _buffer.append(Severity::AddHeader(severity, message));
 }

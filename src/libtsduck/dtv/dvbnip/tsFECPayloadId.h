@@ -26,10 +26,10 @@ namespace ts {
     class TSDUCKDLL FECPayloadId : public StringifyInterface
     {
     public:
-        bool     valid = false;            //!< The information was successfully parsed.
-        uint8_t  fec_encoding_id = 0;      //!< FEC Encoding ID which was used to parse the structure (not part of the structore).
-        uint16_t source_block_number = 0;  //!< SBN, Source Block Number (FEC Encoding ID 0 and 130, RFC 3695, section 2.1).
-        uint16_t encoding_symbol_id = 0;   //!< Encoding Symbol ID (FEC Encoding ID 0 and 130, RFC 3695, section 2.1).
+        bool    valid = false;            //!< The information was successfully parsed.
+        uint8_t fec_encoding_id = 0;      //!< FEC Encoding ID which was used to parse the structure (not part of the structore).
+        size_t  source_block_number = 0;  //!< SBN, Source Block Number (FEC Encoding ID 0 and 130, RFC 3695, section 2.1).
+        size_t  encoding_symbol_id = 0;   //!< Encoding Symbol ID (FEC Encoding ID 0 and 130, RFC 3695, section 2.1).
 
         //!
         //! Default constructor.

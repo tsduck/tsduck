@@ -46,12 +46,37 @@ Log a message describing each received file.
 Log a message describing the structure of each FLUTE packet.
 
 [.opt]
+*--max-file-size* _value_
+
+[.optdoc]
+Maximum size of files in the DVB-NIP carousel to analyze or extract.
+Each received file is accumulated in memory, chunk by chunk, until the file is complete.
+After processing the file, all chunks are freeed.
+This option is useful when the stream contains many large files which clutter the memory during their reception.
+All files which are announced as larger than the specified size are ignored.
+
+[.optdoc]
+By default, all files are received and analyzed or saved.
+
+[.opt]
 *--save-bootstrap* _file-name_
 
 [.optdoc]
 Save the bootstrap multicast gateway configuration in the specified file.
 This is a XML file.
 If the specified path is '-', the file is written to standard output.
+
+[.opt]
+*--save-dvb-gw* _directory-name_
+
+[.optdoc]
+Save all files in the DVB-NIP carousel with URI starting with `http://dvb.gw/`.
+The specified path is a directory.
+The file hierarchy is recreated from this directory.
+
+[.optdoc]
+Example: with `--save-dvb-gw /save/to`, the file `http://dvb.gw/operator.com/materials/f.jpg`
+is saved as `/save/to/operator.com/materials/f.jpg`.
 
 [.opt]
 *--save-fdt* _file-name_

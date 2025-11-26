@@ -56,15 +56,29 @@ namespace ts {
         //!
         void feedPacket(const IPSocketAddress& source, const IPSocketAddress& destination, const uint8_t* udp, size_t udp_size);
 
+        //!
+        //! Add a FLUTE session in the DVB-NIP analyzer.
+        //! There is normally no reason to call this from the application.
+        //! The analyzer always starts with the DVB-NIP Announcement Channel on reset().
+        //! Then, all declared sessions in the DVB-NIP tables are automatically added.
+        //! @param [in] session The session id to add.
+        //!
+        void addSession(const FluteSessionId& session);
+
     private:
         DuckContext&    _duck;
         Report&         _report {_duck.report()};
         NIPAnalyzerArgs _args {};
         FluteDemux      _flute_demux {_duck, this};
+        std::set<FluteSessionId> _session_filter {};
 
         // Inherited methods.
         virtual void handleFluteFile(FluteDemux&, const FluteFile&) override;
         virtual void handleFluteFDT(FluteDemux&, const FluteFDT&) override;
+
+        // Check if a UDP packet or FLUTE file is part of a filtered session.
+        bool isFiltered(const IPAddress& source, const IPSocketAddress& destination) const;
+        bool isFiltered(const FluteSessionId& session) const;
 
         // Save a XML file (if the file name is not empty).
         void saveXML(const FluteFile& file, const fs::path& path, const std::optional<uint32_t> instance = std::optional<uint32_t>());

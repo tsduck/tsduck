@@ -28,14 +28,55 @@ ts::NIPAnalyzer::NIPAnalyzer(DuckContext& duck) :
 void ts::NIPAnalyzer::reset(const NIPAnalyzerArgs& args)
 {
     _args = args;
-    _flute_demux.reset();
-    _flute_demux.setPacketLogLevel(_args.log_flute_packets ? Severity::Info : Severity::Debug);
-    _flute_demux.logPacketContent(_args.dump_flute_payload);
+    _flute_demux.reset(_args);
+
+    // Reset the list of sessions to filter with the DVB-NIP announcement channel (IPv4 and IPv6).
+    static const FluteSessionId announce4(IPAddress(), NIPSignallingAddress4(), NIP_SIGNALLING_TSI);
+    static const FluteSessionId announce6(IPAddress(), NIPSignallingAddress6(), NIP_SIGNALLING_TSI);
+    _session_filter.clear();
+    addSession(announce4);
+    addSession(announce6);
 }
 
 
 //----------------------------------------------------------------------------
-// The following method feeds the demux with an IP packet.
+// Add a FLUTE session in the DVB-NIP analyzer.
+//----------------------------------------------------------------------------
+
+void ts::NIPAnalyzer::addSession(const FluteSessionId& session)
+{
+    _report.debug(u"adding session %s", session);
+    _session_filter.insert(session);
+}
+
+
+//----------------------------------------------------------------------------
+// Check if a UDP packet or FLUTE file is part of a filtered session.
+//----------------------------------------------------------------------------
+
+bool ts::NIPAnalyzer::isFiltered(const IPAddress& source, const IPSocketAddress& destination) const
+{
+    for (const auto& it : _session_filter) {
+        if (it.source.match(source) && it.destination.match(destination)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool ts::NIPAnalyzer::isFiltered(const FluteSessionId& session) const
+{
+    for (const auto& it : _session_filter) {
+        if (it.match(session)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+
+//----------------------------------------------------------------------------
+// The following method feeds the demux with an IP or UDP packet.
 //----------------------------------------------------------------------------
 
 void ts::NIPAnalyzer::feedPacket(const IPPacket& pkt)
@@ -45,15 +86,10 @@ void ts::NIPAnalyzer::feedPacket(const IPPacket& pkt)
     }
 }
 
-
-//----------------------------------------------------------------------------
-// The following method feeds the demux with a UDP packet.
-//----------------------------------------------------------------------------
-
 void ts::NIPAnalyzer::feedPacket(const IPSocketAddress& source, const IPSocketAddress& destination, const uint8_t* udp, size_t udp_size)
 {
-    // Experimental code.
-    if (destination == NIPSignallingAddress4() || destination.sameMulticast6(NIPSignallingAddress6())) {
+    // Feed the FLUTE demux with possibly filtered packets. The TSI is not yet accessible, only the addresses.
+    if (isFiltered(source, destination)) {
         _flute_demux.feedPacket(source, destination, udp, udp_size);
     }
 }
@@ -65,6 +101,11 @@ void ts::NIPAnalyzer::feedPacket(const IPSocketAddress& source, const IPSocketAd
 
 void ts::NIPAnalyzer::handleFluteFDT(FluteDemux& demux, const FluteFDT& fdt)
 {
+    // Filter out files from non-filtered sessions.
+    if (!isFiltered(fdt.sessionId())) {
+        return;
+    }
+
     // Log the content of the FDT.
     if (_args.log_fdt) {
         UString line;
@@ -86,6 +127,11 @@ void ts::NIPAnalyzer::handleFluteFDT(FluteDemux& demux, const FluteFDT& fdt)
 
 void ts::NIPAnalyzer::handleFluteFile(FluteDemux& demux, const FluteFile& file)
 {
+    // Filter out files from non-filtered sessions.
+    if (!isFiltered(file.sessionId())) {
+        return;
+    }
+
     const UString name(file.name());
     const bool is_xml = file.type().contains(u"xml");
 
@@ -115,9 +161,15 @@ void ts::NIPAnalyzer::handleFluteFile(FluteDemux& demux, const FluteFile& file)
         }
         else if (name.similar(u"urn:dvb:metadata:cs:NativeIPMulticastTransportObjectTypeCS:2023:bootstrap")) {
             saveXML(file, _args.save_bootstrap);
-            MulticastGatewayConfiguration mgc(_report, file);
+
+            // Add all transport sessions in the session filter.
+            const MulticastGatewayConfiguration mgc(_report, file);
             if (mgc.isValid()) {
-                mgc.display(std::cout, u"  "); //@@ debug purpose
+                for (const auto& sess : mgc.sessions) {
+                    for (const auto& id : sess.endpoints) {
+                        addSession(id);
+                    }
+                }
             }
         }
     }

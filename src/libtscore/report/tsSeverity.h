@@ -39,11 +39,19 @@ namespace ts {
         static constexpr int Debug   = 1;   //!< First debug level.
 
         //!
-        //! Formatted line prefix header for a severity
+        //! Formatted line prefix header for a severity.
         //! @param [in] severity Severity value.
         //! @return A string to prepend to messages. Empty for Info and Verbose levels.
         //!
         static UString Header(int severity);
+
+        //!
+        //! Added the prefix header for a severity to a given message.
+        //! @param [in] severity Severity value.
+        //! @param [in] message The message to which the header shall be prepended.
+        //! @return The complete message string with header included.
+        //!
+        static UString AddHeader(int severity, const UString& message);
 
         //!
         //! An enumeration to use severity values on the command line for instance.

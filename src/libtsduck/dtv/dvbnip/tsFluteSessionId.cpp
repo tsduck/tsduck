@@ -72,6 +72,7 @@ bool ts::FluteSessionId::nipAnnouncementChannel() const
     return destination == NIPSignallingAddress4() || destination.sameMulticast6(NIPSignallingAddress6());
 }
 
+
 //----------------------------------------------------------------------------
 // Implementation of StringifyInterface.
 //----------------------------------------------------------------------------

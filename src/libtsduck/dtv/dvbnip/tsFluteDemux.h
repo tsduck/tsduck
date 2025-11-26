@@ -12,6 +12,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
+#include "tsFluteDemuxArgs.h"
 #include "tsFluteHandlerInterface.h"
 #include "tsFluteSessionId.h"
 #include "tsDuckContext.h"
@@ -48,6 +49,12 @@ namespace ts {
         void setHandler(FluteHandlerInterface* h) { _handler = h; }
 
         //!
+        //! Reset the demux.
+        //! @param [in] args Demux arguments.
+        //!
+        void reset(const FluteDemuxArgs& args);
+
+        //!
         //! The following method feeds the demux with an IP packet.
         //! The packet is ignored if this is not a UDP packet.
         //! @param [in] pkt An IP packet.
@@ -63,53 +70,23 @@ namespace ts {
         //!
         void feedPacket(const IPSocketAddress& source, const IPSocketAddress& destination, const uint8_t* udp, size_t udp_size);
 
-        //!
-        //! Reset the demux.
-        //!
-        void reset();
-
-        //!
-        //! Add a Transport Session Identifier (TSI) to filter.
-        //! By default, the demux processes all sessions. If one or more TSI are specified,
-        //! only the corresponding sessions are demuxed.
-        //! @param [in] tsi The Transport Session Identifier (TSI) to filter.
-        //!
-        void addTSI(uint64_t tsi) { _tsi_filter.insert(tsi); }
-
-        //!
-        //! Remove a Transport Session Identifier (TSI) to filter.
-        //! @param [in] tsi The Transport Session Identifier (TSI) to remove.
-        //! @see addTSI()
-        //!
-        void removeTSI(uint64_t tsi) { _tsi_filter.erase(tsi); }
-
-        //!
-        //! Set the severity level at which the FLUTE packets are logged.
-        //! The default is Severity::Debug.
-        //! @param [in] level Severity level at which the FLUTE packets are logged.
-        //!
-        void setPacketLogLevel(int level) { _packet_log_level = level; }
-
-        //!
-        //! Specify if the content of the FLUTE packets is dumped when the packet is logged.
-        //! The default is false.
-        //! @param [in] on True if the content of the FLUTE packets is dumped.
-        //! @see setPacketLogLevel()
-        //!
-        void logPacketContent(bool on) { _log_packet_content = on; }
-
     private:
         // Description of a file being received.
         class TSDUCKDLL FileContext
         {
         public:
-            bool      processed = false;          // The file has been processed, ignored subsequent packets.
-            uint32_t  instance = 0xFFFFFFFF;      // For FDT only: FDT instance.
-            uint64_t  transfer_length = 0;        // The expected length of the transport object (same as in FTI header).
-            uint64_t  current_length = 0;         // The number of currently received bytes.
-            UString   name {};                    // File name or URN.
-            UString   type {};                    // File MIME type.
-            std::vector<ByteBlockPtr> chunks {};  // Chunks of the file being received. Erased when processed to save storage.
+            bool     processed = false;      // The file has been processed, ignored subsequent packets.
+            uint32_t instance = 0xFFFFFFFF;  // For FDT only: FDT instance.
+            uint64_t transfer_length = 0;    // The expected length of the transport object (same as in FTI header).
+            uint64_t current_length = 0;     // The number of currently received bytes.
+            UString  name {};                // File name or URN.
+            UString  type {};                // File MIME type.
+
+            // Chunks of the file being received.
+            // First level of index: Source Block Number (SBN).
+            // Second level of index: Encoding Symbol ID in source block.
+            // Erased when the file is processed to save storage.
+            std::vector<std::vector<ByteBlockPtr>> chunks {};
 
             // Reset the content.
             void clear();
@@ -127,10 +104,11 @@ namespace ts {
         DuckContext&           _duck;
         Report&                _report {_duck.report()};
         FluteHandlerInterface* _handler = nullptr;
-        int                    _packet_log_level = Severity::Debug;
-        bool                   _log_packet_content = false;
-        std::set<uint64_t>     _tsi_filter {};
+        FluteDemuxArgs         _args {};
         std::map<FluteSessionId, SessionContext> _sessions {};
+
+        // Update the announced length of a file. Return true on success, false if the file should be ignored.
+        bool updateFileSize(const FluteSessionId& sid, SessionContext& session, uint64_t toi, FileContext& file, uint64_t file_size);
 
         // Process a complete file.
         void processCompleteFile(const FluteSessionId& sid, SessionContext& session, uint64_t toi, FileContext& file);

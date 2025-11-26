@@ -38,9 +38,9 @@ ts::FluteDemux::~FluteDemux()
 // Reset the demux.
 //----------------------------------------------------------------------------
 
-void ts::FluteDemux::reset()
+void ts::FluteDemux::reset(const FluteDemuxArgs& args)
 {
-    _tsi_filter.clear();
+    _args = args;
     _sessions.clear();
 }
 
@@ -83,12 +83,6 @@ void ts::FluteDemux::feedPacket(const IPSocketAddress& source, const IPSocketAdd
         return;
     }
 
-    // Filter sessions.
-    if (!_tsi_filter.empty() && !_tsi_filter.contains(lct.tsi)) {
-        _report.debug(u"ignore unfiltered TSI %n", lct.tsi);
-        return;
-    }
-
     // The FEC Encoding ID is stored in codepoint (RFC 3926, section 5.1).
     // We currently only support the default one, value 0.
     if (lct.codepoint != FEI_COMPACT_NOCODE) {
@@ -97,18 +91,18 @@ void ts::FluteDemux::feedPacket(const IPSocketAddress& source, const IPSocketAdd
     }
 
     // Log message for the packet.
-    if (_packet_log_level <= _report.maxSeverity()) {
+    if (_args.log_flute_packets) {
         UString line;
         line.format(u"source: %s, destination: %s\n"
                     u"    %s\n"
                     u"    payload: %d bytes",
                     source, destination, lct, udp_size);
-        if (_log_packet_content && udp_size > 0) {
+        if (_args.dump_flute_payload && udp_size > 0) {
             line += u'\n';
             line.appendDump(udp, udp_size, UString::ASCII | UString::HEXA | UString::BPL, 4, 16);
             line.trim(false, true);
         }
-        _report.log(_packet_log_level, line);
+        _report.info(line);
     }
 
     // With empty payload, nothing more to do.
@@ -144,38 +138,35 @@ void ts::FluteDemux::feedPacket(const IPSocketAddress& source, const IPSocketAdd
     }
 
     // Update/check transfer length coming from FTI header.
-    if (lct.fti.valid) {
-        if (file.transfer_length > 0 && file.transfer_length != lct.fti.transfer_length) {
-            _report.error(u"file transfer length changed in the middle of transmission, was %'d, now %'d, TOI %d, %s",
-                          file.transfer_length, lct.fti.transfer_length, lct.toi, sid);
-        }
-        file.transfer_length = lct.fti.transfer_length;
+    if (lct.fti.valid && !updateFileSize(sid, session, lct.toi, file, lct.fti.transfer_length)) {
+        // File too large, ignored.
+        return;
     }
 
-    // Check the FEC payload ID. We don't currently support non-zero SBN (to be studied).
+    // Check the FEC payload ID.
     if (!lct.fpi.valid) {
         _report.error(u"FEC payload ID not found in FLUTE packet, %s", sid);
         return;
     }
-    if (lct.fpi.source_block_number > 0) {
-        _report.error(u"Source block number is %n in FEC payload ID, not supported yet, TOI %d, %s", lct.fpi.source_block_number, lct.toi, sid);
-        return;
-    }
 
     // Store the file chunk if not already there.
-    const size_t chunk_index = size_t(lct.fpi.encoding_symbol_id);
-    if (chunk_index >= file.chunks.size()) {
-        file.chunks.resize(chunk_index + 1);
+    if (lct.fpi.source_block_number >= file.chunks.size()) {
+        file.chunks.resize(lct.fpi.source_block_number + 1);
     }
-    if (file.chunks[chunk_index] == nullptr) {
+    auto& syms(file.chunks[lct.fpi.source_block_number]);
+    const size_t sym_index = lct.fpi.encoding_symbol_id;
+    if (sym_index >= syms.size()) {
+        syms.resize(sym_index + 1);
+    }
+    if (syms[sym_index] == nullptr) {
         // New chunk.
-        file.chunks[chunk_index] = std::make_shared<ByteBlock>(udp, udp_size);
+        syms[sym_index] = std::make_shared<ByteBlock>(udp, udp_size);
         file.current_length += udp_size;
     }
-    else if (udp_size != file.chunks[chunk_index]->size()) {
+    else if (udp_size != syms[sym_index]->size()) {
         // Chunk already there with a different size.
         _report.error(u"size of file chunk #%n changed in the middle of transmission, was %'d, now %'d, TOI %d, %s",
-                      chunk_index, file.chunks[chunk_index]->size(), udp_size, lct.toi, sid);
+                      sym_index, syms[sym_index]->size(), udp_size, lct.toi, sid);
         return;
     }
 
@@ -191,6 +182,32 @@ void ts::FluteDemux::feedPacket(const IPSocketAddress& source, const IPSocketAdd
 
 
 //----------------------------------------------------------------------------
+// Update the announced length of a file.
+//----------------------------------------------------------------------------
+
+bool ts::FluteDemux::updateFileSize(const FluteSessionId& sid, SessionContext& session, uint64_t toi, FileContext& file, uint64_t file_size)
+{
+    // Unlikely case when the file size has changed.
+    if (file.transfer_length > 0 && file.transfer_length != file_size) {
+        _report.error(u"file transfer length changed in the middle of transmission, was %'d, now %'d, TOI %d, %s", file.transfer_length, file_size, toi, sid);
+    }
+
+    file.transfer_length = file_size;
+
+    if (_args.max_file_size > 0 && file_size > _args.max_file_size) {
+        _report.verbose(u"ignoring file from %s, TOI: %d, too large: %'d bytes", sid, toi, file_size);
+        // Mark the file as processed (ignored in the future). Deallocate everything.
+        file.processed = true;
+        file.chunks.clear();
+        return false;
+    }
+    else {
+        return true;
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Process a complete file.
 //----------------------------------------------------------------------------
 
@@ -199,17 +216,24 @@ void ts::FluteDemux::processCompleteFile(const FluteSessionId& sid, SessionConte
     // Rebuild the content of the file.
     ByteBlockPtr data(std::make_shared<ByteBlock>(file.transfer_length));
     size_t next_index = 0;
-    for (const auto& bb : file.chunks) {
-        if (bb != nullptr) {
-            if (next_index + bb->size() > data->size()) {
-                // Should not happen, but let's be conservative.
-                _report.debug(u"need to increase size of file buffer, was %'d, now %'d, TOI %d, %s", data->size(), next_index + bb->size(), toi, sid);
-                data->resize(next_index + bb->size());
+    for (auto& src : file.chunks) {
+        for (auto& sym : src) {
+            if (sym != nullptr) {
+                if (next_index + sym->size() > data->size()) {
+                    // Should not happen, but let's be conservative.
+                    _report.debug(u"need to increase size of file buffer, was %'d, now %'d, TOI %d, %s", data->size(), next_index + sym->size(), toi, sid);
+                    data->resize(next_index + sym->size());
+                }
+                MemCopy(data->data() + next_index, sym->data(), sym->size());
+                next_index += sym->size();
             }
-            MemCopy(data->data() + next_index, bb->data(), bb->size());
-            next_index += bb->size();
         }
     }
+
+    // Deallocate chunks after rebuilding the file.
+    file.chunks.clear();
+
+    // Shrink rebuilt file data if necessary.
     data->resize(next_index);
 
     // Important: we currently support FEC Encoding ID zero, meaning no encoding,
@@ -248,5 +272,4 @@ void ts::FluteDemux::processCompleteFile(const FluteSessionId& sid, SessionConte
 
     // Now forget about this file.
     file.processed = true;
-    file.chunks.clear();
 }

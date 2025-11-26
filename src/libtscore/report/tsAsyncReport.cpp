@@ -137,7 +137,7 @@ void ts::AsyncReport::asyncThreadLog(int severity, const UString& message)
     if (_time_stamp) {
         std::cerr << ts::Time::CurrentLocalTime().format(ts::Time::DATETIME) << " - ";
     }
-    std::cerr << Severity::Header(severity) << message << std::endl;
+    std::cerr << Severity::AddHeader(severity, message) << std::endl;
 }
 
 void ts::AsyncReport::asyncThreadCompleted()
