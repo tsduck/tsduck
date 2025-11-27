@@ -15,6 +15,7 @@
 #include "tsNIPAnalyzerArgs.h"
 #include "tsDuckContext.h"
 #include "tsFluteDemux.h"
+#include "tsNIPActualCarrierInformation.h"
 #include "tsIPSocketAddress.h"
 #include "tsIPPacket.h"
 
@@ -96,11 +97,13 @@ namespace ts {
         Report&         _report {_duck.report()};
         NIPAnalyzerArgs _args {};
         FluteDemux      _flute_demux {_duck, this};
-        std::set<FluteSessionId> _session_filter {};
+        std::set<FluteSessionId>                 _session_filter {};
         std::map<FluteSessionId, SessionContext> _sessions {};
+        std::set<NIPActualCarrierInformation>    _nacis {};
 
         // Inherited methods.
         virtual void handleFluteFile(FluteDemux&, const FluteFile&) override;
+        virtual void handleFluteNACI(FluteDemux&, const NIPActualCarrierInformation&) override;
         virtual void handleFluteStatus(FluteDemux&, const FluteSessionId&, const UString&, const UString&, uint64_t, uint64_t, uint64_t) override;
 
         // Check if a UDP packet or FLUTE file is part of a filtered session.

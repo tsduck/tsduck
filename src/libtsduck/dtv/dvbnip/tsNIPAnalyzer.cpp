@@ -8,6 +8,7 @@
 
 #include "tsNIPAnalyzer.h"
 #include "tsNIP.h"
+#include "tsServiceInformationFile.h"
 #include "tsMulticastGatewayConfiguration.h"
 #include "tsTextTable.h"
 #include "tsErrCodeReport.h"
@@ -33,6 +34,7 @@ bool ts::NIPAnalyzer::reset(const NIPAnalyzerArgs& args)
     _flute_demux.reset(_args);
     _session_filter.clear();
     _sessions.clear();
+    _nacis.clear();
 
     // Filter the DVB-NIP announcement channel (IPv4 and IPv6).
     static const FluteSessionId announce4(IPAddress(), NIPSignallingAddress4(), NIP_SIGNALLING_TSI);
@@ -109,6 +111,16 @@ void ts::NIPAnalyzer::feedPacket(const IPSocketAddress& source, const IPSocketAd
 
 
 //----------------------------------------------------------------------------
+// Process a NIPActualCarrierInformation.
+//----------------------------------------------------------------------------
+
+void ts::NIPAnalyzer::handleFluteNACI(FluteDemux& demux, const NIPActualCarrierInformation& naci)
+{
+    _nacis.insert(naci);
+}
+
+
+//----------------------------------------------------------------------------
 // Process a FLUTE file.
 //----------------------------------------------------------------------------
 
@@ -138,6 +150,19 @@ void ts::NIPAnalyzer::handleFluteFile(FluteDemux& demux, const FluteFile& file)
         }
         else if (name.similar(u"urn:dvb:metadata:nativeip:ServiceInformationFile")) {
             saveXML(file, _args.save_sif);
+            ServiceInformationFile sif(_report, file);
+            if (sif.isValid()) {
+                NIPActualCarrierInformation naci;
+                naci.valid = true;
+                naci.nip_stream_provider_name = sif.provider_name;
+                for (const auto& st : sif.streams) {
+                    naci.nip_network_id = st.nip_network_id;
+                    naci.nip_carrier_id = st.nip_carrier_id;
+                    naci.nip_link_id = st.nip_link_id;
+                    naci.nip_service_id = st.nip_service_id;
+                    handleFluteNACI(demux, naci);
+                }
+            }
         }
         else if (name.similar(u"urn:dvb:metadata:nativeip:dvb-i-slep")) {
             saveXML(file, _args.save_slep);
@@ -233,10 +258,21 @@ void ts::NIPAnalyzer::printSummary(std::ostream& out)
     // Get status of incomplete files from the FLUTE demux.
     _flute_demux.getFilesStatus();
 
+    // Display the DVB-NIP carrier information.
+    out << std::endl << "DVB-NIP carriers: " << _nacis.size() << std::endl;
+    for (const auto& naci : _nacis) {
+        out << "Provider: \"" << naci.nip_stream_provider_name
+            << "\", network: " << naci.nip_network_id
+            << ", carrier: " << naci.nip_carrier_id
+            << ", link: " << naci.nip_link_id
+            << ", service: " << naci.nip_service_id << std::endl;
+    }
+    out << std::endl;
+
     // Display the status of all files.
     size_t session_count = 0;
     for (const auto& sess : _sessions) {
-        out << std::endl << "Session #" << (++session_count) << ": " << sess.first << std::endl;
+        out << "Session #" << (++session_count) << ": " << sess.first << std::endl;
         if (sess.second.files.empty()) {
             out << "  No file received" << std::endl;
         }
@@ -258,9 +294,6 @@ void ts::NIPAnalyzer::printSummary(std::ostream& out)
             }
             tab.output(out, TextTable::Headers::TEXT, true, u"  ", u"  ");
         }
-    }
-
-    if (session_count > 0) {
         out << std::endl;
     }
 }

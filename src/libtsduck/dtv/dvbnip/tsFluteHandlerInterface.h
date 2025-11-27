@@ -21,6 +21,7 @@ namespace ts {
     class FluteFile;
     class FluteFDT;
     class FluteSessionId;
+    class NIPActualCarrierInformation;
 
     //!
     //! FLUTE demux handler interface.
@@ -48,6 +49,14 @@ namespace ts {
         //! @param [in] fdt The received FDT.
         //!
         virtual void handleFluteFDT(FluteDemux& demux, const FluteFDT& fdt);
+
+        //!
+        //! This hook is invoked when a NIPActualCarrierInformation is found in a LCT header.
+        //! The default implementation does nothing.
+        //! @param [in,out] demux A reference to the FLUTE demux.
+        //! @param [in] naci The received NIPActualCarrierInformation.
+        //!
+        virtual void handleFluteNACI(FluteDemux& demux, const NIPActualCarrierInformation& naci);
 
         //!
         //! This hook is invoked by FluteDemux::getFilesStatus() for each file.

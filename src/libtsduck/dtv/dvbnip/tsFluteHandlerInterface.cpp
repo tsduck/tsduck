@@ -20,6 +20,10 @@ void ts::FluteHandlerInterface::handleFluteFDT(FluteDemux&, const FluteFDT&)
 {
 }
 
+void ts::FluteHandlerInterface::handleFluteNACI(FluteDemux&, const NIPActualCarrierInformation&)
+{
+}
+
 void ts::FluteHandlerInterface::handleFluteStatus(FluteDemux&, const FluteSessionId&, const UString&, const UString&, uint64_t, uint64_t, uint64_t)
 {
 }

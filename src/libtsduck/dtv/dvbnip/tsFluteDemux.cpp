@@ -105,6 +105,11 @@ void ts::FluteDemux::feedPacket(const IPSocketAddress& source, const IPSocketAdd
         _report.info(line);
     }
 
+    // Notify NIPActualCarrierInformation.
+    if (lct.naci.valid && _handler != nullptr) {
+        _handler->handleFluteNACI(*this, lct.naci);
+    }
+
     // With empty payload, nothing more to do.
     if (udp_size == 0) {
         return;

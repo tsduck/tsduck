@@ -59,7 +59,18 @@ namespace ts {
         //!
         bool deserialize(const LCTHeader& lct);
 
+        //!
+        //! Comparison operator for use as index in maps.
+        //! @param [in] other Another instance to compare.
+        //! @return True is this instance is logically less that @a other.
+        //!
+        bool operator<(const NIPActualCarrierInformation& other) const;
+
         // Implementation of StringifyInterface.
         virtual UString toString() const override;
+
+    private:
+        // Index of all intergers.
+        uint64_t index() const;
     };
 }

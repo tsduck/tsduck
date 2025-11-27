@@ -60,6 +60,27 @@ bool ts::NIPActualCarrierInformation::deserialize(const LCTHeader& lct)
 
 
 //----------------------------------------------------------------------------
+// Comparison operator for use as index in maps.
+//----------------------------------------------------------------------------
+
+bool ts::NIPActualCarrierInformation::operator<(const NIPActualCarrierInformation& other) const
+{
+    if (nip_stream_provider_name != other.nip_stream_provider_name) {
+        return nip_stream_provider_name < other.nip_stream_provider_name;
+    }
+    else {
+        return index() < other.index();
+    }
+}
+
+// Index of all intergers.
+uint64_t ts::NIPActualCarrierInformation::index() const
+{
+    return (uint64_t(nip_network_id) << 48) | (uint64_t(nip_carrier_id) << 32) | (uint64_t(nip_link_id) << 16) | nip_network_id;
+}
+
+
+//----------------------------------------------------------------------------
 // Convert to string. Implementation of StringifyInterface.
 //----------------------------------------------------------------------------
 
