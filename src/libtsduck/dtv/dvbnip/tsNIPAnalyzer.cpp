@@ -30,8 +30,8 @@ ts::NIPAnalyzer::NIPAnalyzer(DuckContext& duck) :
 
 bool ts::NIPAnalyzer::reset(const NIPAnalyzerArgs& args)
 {
+    bool ok = _flute_demux.reset(args);
     _args = args;
-    _flute_demux.reset(_args);
     _session_filter.clear();
     _sessions.clear();
     _nacis.clear();
@@ -45,10 +45,10 @@ bool ts::NIPAnalyzer::reset(const NIPAnalyzerArgs& args)
     // Check that the root directory exists for carousel files.
     if (!_args.save_dvbgw_dir.empty() && !fs::is_directory(_args.save_dvbgw_dir)) {
         _report.error(u"directory not found: %s", _args.save_dvbgw_dir);
-        return false;
+        ok = false;
     }
 
-    return true;
+    return ok;
 }
 
 
@@ -179,9 +179,16 @@ void ts::NIPAnalyzer::handleFluteFile(FluteDemux& demux, const FluteFile& file)
         const MulticastGatewayConfiguration mgc(_report, file);
         _report.debug(u"got %s session configuration in %s, %s", mgc.isValid() ? u"valid" : u"invalid", name, file.sessionId());
         if (mgc.isValid()) {
-            for (const auto& sess : mgc.sessions) {
+            for (const auto& sess : mgc.transport_sessions) {
                 for (const auto& id : sess.endpoints) {
                     addSession(id);
+                }
+            }
+            for (const auto& sess1 : mgc.multicast_sessions) {
+                for (const auto& sess2 : sess1.transport_sessions) {
+                    for (const auto& id : sess2.endpoints) {
+                        addSession(id);
+                    }
                 }
             }
         }

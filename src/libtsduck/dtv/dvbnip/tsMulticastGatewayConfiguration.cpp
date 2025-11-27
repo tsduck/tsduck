@@ -25,8 +25,14 @@ ts::MulticastGatewayConfiguration::MulticastGatewayConfiguration(Report& report,
 
         // Decode all MulticastGatewayConfigurationTransportSession elements.
         for (const xml::Element* e = root->findFirstChild(u"MulticastGatewayConfigurationTransportSession", true); _valid && e != nullptr; e = e->findNextSibling(true)) {
-            sessions.emplace_back();
-            _valid = sessions.back().parseXML(e);
+            transport_sessions.emplace_back();
+            _valid = transport_sessions.back().parseXML(e);
+        }
+
+        // Decode all MulticastSession elements.
+        for (const xml::Element* e = root->findFirstChild(u"MulticastSession", true); _valid && e != nullptr; e = e->findNextSibling(true)) {
+            multicast_sessions.emplace_back();
+            _valid = multicast_sessions.back().parseXML(e);
         }
 
         // Other elements of the <MulticastGatewayConfiguration> are not parsed (so far).
@@ -44,11 +50,21 @@ ts::MulticastGatewayConfiguration::~MulticastGatewayConfiguration()
 
 std::ostream& ts::MulticastGatewayConfiguration::display(std::ostream& out, const UString& margin, int level) const
 {
-    out << margin << "MulticastGatewayConfiguration: " << sessions.size() << " sessions" << std::endl;
+    out << margin << "MulticastGatewayConfiguration: "
+        << transport_sessions.size() << " transport sessions, "
+        << multicast_sessions.size() << " multicast sessions" << std::endl;
+
     int count = 0;
-    for (const auto& it : sessions) {
+    for (const auto& it : transport_sessions) {
         out << margin << "- TransportSession " << ++count << ":" << std::endl;
         it.display(out, margin + u"  ");
     }
+
+    count = 0;
+    for (const auto& it : multicast_sessions) {
+        out << margin << "- MulticastSession " << ++count << ":" << std::endl;
+        it.display(out, margin + u"  ");
+    }
+
     return out;
 }

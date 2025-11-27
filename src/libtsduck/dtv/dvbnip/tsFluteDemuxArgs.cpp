@@ -16,7 +16,7 @@
 
 bool ts::FluteDemuxArgs::none() const
 {
-    return !log_flute_packets && !dump_flute_payload && !log_fdt && !log_files && !dump_xml_files && save_fdt.empty();
+    return !log_flute_packets && !dump_flute_payload && !log_fdt && !log_files && !dump_xml_files && save_fdt.empty() && extract_files.empty();
 }
 
 
@@ -61,6 +61,34 @@ void ts::FluteDemuxArgs::defineArgs(Args& args)
               u"Each FDT instance is saved in a separate file. "
               u"If the specified path is 'dir/fdt.xml' for instance, the FDT with instance N is saved in file 'dir/fdt-N.xml'. "
               u"If the specified path is '-', the file is written to standard output.");
+
+    args.option(u"extract-file", 'e', Args::STRING, 0, Args::UNLIMITED_COUNT);
+    args.help(u"extract-file", u"name-or-urn",
+              u"Extract the specified file from the FLUTE carousel. "
+              u"The name-or-urn shall be the exact complete name of the file, as identified in the FDT. "
+              u"The option --extract-file can be specified several times. "
+              u"All files are extracted in the output directory which is specified in option --output-directory. "
+              u"The output base name of each file is the last part of the name-or-urn, after the last slash or colon.");
+
+    args.option(u"extract-source", 0, Args::IPADDR);
+    args.help(u"extract-source",
+              u"With --extract-file, specify the source IP address of files. "
+              u"By default, extract the files with matching name and any IP source address.");
+
+    args.option(u"extract-destination", 0, Args::IPSOCKADDR_OAP);
+    args.help(u"extract-destination",
+              u"With --extract-file, specify the destination IP address and/or UDP port of files. "
+              u"By default, extract the files with matching name and any IP destination.");
+
+    args.option(u"extract-tsi", 0, Args::UINT63);
+    args.help(u"extract-tsi",
+              u"With --extract-file, specify the Transport Session Identifier (TSI) of files. "
+              u"By default, extract the files with matching name and any TSI.");
+
+    args.option(u"output-directory", 'o', Args::DIRECTORY);
+    args.help(u"output-directory",
+              u"Output directory for files which are extracted using option --extract-file. "
+              u"The default is the current directory.");
 }
 
 
@@ -76,6 +104,11 @@ bool ts::FluteDemuxArgs::loadArgs(DuckContext& duck, Args& args)
     log_files = args.present(u"log-files");
     dump_xml_files = args.present(u"dump-xml-files");
     args.getIntValue(max_file_size, u"max-file-size");
-    args.getPathValue(save_fdt, u"save-fdt");
+    args.getPathValue(save_fdt, u"save-fdt");    
+    args.getValues(extract_files, u"extract-file");
+    args.getIPValue(extract_session.source, u"extract-source");
+    args.getSocketValue(extract_session.destination, u"extract-destination");
+    args.getIntValue(extract_session.tsi, u"extract-tsi", INVALID_TSI);
+    args.getPathValue(output_directory, u"output-directory");
     return true;
 }

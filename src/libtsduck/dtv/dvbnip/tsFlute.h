@@ -24,6 +24,11 @@ namespace ts {
     constexpr uint64_t FLUTE_FDT_TOI = 0;
 
     //!
+    //! Invalid Transport Session Identifier (TSI) value, to be used as placeholder.
+    //!
+    constexpr uint64_t INVALID_TSI = std::numeric_limits<uint64_t>::max();
+
+    //!
     //! FEC Encoding ID values for FLUTE and LCT.
     //! @see IETF RFC 3926, section 5.1.4
     //!

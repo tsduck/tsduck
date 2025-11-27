@@ -59,7 +59,8 @@ bool ts::FluteSessionId::operator<(const FluteSessionId& other) const
 
 bool ts::FluteSessionId::match(const FluteSessionId& other) const
 {
-    return tsi == other.tsi && source.match(other.source) && destination.match(other.destination);
+    return (tsi == INVALID_TSI || other.tsi == INVALID_TSI || tsi == other.tsi) &&
+           source.match(other.source) && destination.match(other.destination);
 }
 
 

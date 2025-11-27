@@ -38,10 +38,18 @@ ts::FluteDemux::~FluteDemux()
 // Reset the demux.
 //----------------------------------------------------------------------------
 
-void ts::FluteDemux::reset(const FluteDemuxArgs& args)
+bool ts::FluteDemux::reset(const FluteDemuxArgs& args)
 {
     _args = args;
     _sessions.clear();
+
+    // Check that the output directory exists for extracted files.
+    if (!_args.output_directory.empty() && !fs::is_directory(_args.output_directory)) {
+        _report.error(u"directory not found: %s", _args.output_directory);
+        return false;
+    }
+
+    return true;
 }
 
 
@@ -267,6 +275,33 @@ void ts::FluteDemux::processCompleteFile(const FluteSessionId& sid, SessionConte
                 line += ff.toXML();
             }
             _report.info(line);
+        }
+
+        // Check if the file shall be extracted.
+        if (sid.match(_args.extract_session)) {
+            for (const auto& n : _args.extract_files) {
+                if (file.name.similar(n)) {
+                    // Find last part of the name.
+                    size_t start = file.name.find_last_of(u"/:");
+                    start = start >= file.name.length() ? 0 : start + 1;
+                    // Build output path.
+                    fs::path out(_args.output_directory);
+                    if (out.empty()) {
+                        out = file.name.substr(start);
+                    }
+                    else {
+                        out /= file.name.substr(start);
+                    }
+                    // Many reference XML files do not have extension.
+                    if (is_xml && !file.name.ends_with(u".xml", CASE_INSENSITIVE)) {
+                        out += u".xml";
+                    }
+                    // Save the file.
+                    _report.verbose(u"extracting %s", out);
+                    data->saveToFile(out, &_report);
+                    break;
+                }
+            }
         }
 
         // Notify the application.

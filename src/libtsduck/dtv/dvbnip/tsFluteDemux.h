@@ -51,8 +51,9 @@ namespace ts {
         //!
         //! Reset the demux.
         //! @param [in] args Demux arguments.
+        //! @return True on success, false on error.
         //!
-        void reset(const FluteDemuxArgs& args);
+        bool reset(const FluteDemuxArgs& args);
 
         //!
         //! The following method feeds the demux with an IP packet.

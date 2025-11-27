@@ -22,6 +22,10 @@
 
 //---- end of tag tricks ----
 
+//----------------------------------------------------------------------------
+// FLUTE / NIP title
+//----------------------------------------------------------------------------
+
 ifdef::opt-flute[]
 [.usage]
 FLUTE protocol options
@@ -34,6 +38,10 @@ DVB-NIP analysis options
 These options are identical in the command `tsnip` and the `tsp` plugin `nip`.
 endif::[]
 
+//----------------------------------------------------------------------------
+// Common FLUTE options
+//----------------------------------------------------------------------------
+
 [.opt]
 *--dump-flute-payload*
 
@@ -45,6 +53,40 @@ Same as `--log-flute-packets` and also dump the payload of each FLUTE packet.
 
 [.optdoc]
 Dump the content of XML files when they are received.
+
+[.opt]
+*--extract-destination* _[ip-address]:[port]_
+
+[.optdoc]
+With `--extract-file`, specify the destination IP address and/or UDP port of files.
+By default, extract the files with matching name and any IP destination.
+
+[.opt]
+*-e* _name-or-urn_ +
+*--extract-file* _name-or-urn_
+
+[.optdoc]
+Extract the specified file from the FLUTE carousel.
+The _name-or-urn_ shall be the exact complete name of the file, as identified in the FDT.
+
+[.optdoc]
+The option `--extract-file` can be specified several times.
+All files are extracted in the output directory which is specified in option `--output-directory`.
+The output base name of each file is the last part of the _name-or-urn_, after the last slash or colon.
+
+[.opt]
+*--extract-source* _ip-address_
+
+[.optdoc]
+With `--extract-file`, specify the source IP address of files.
+By default, extract the files with matching name and any IP source address.
+
+[.opt]
+*--extract-tsi* _value_
+
+[.optdoc]
+With `--extract-file`, specify the Transport Session Identifier (TSI) of files.
+By default, extract the files with matching name and any TSI.
 
 [.opt]
 *--log-fdt*
@@ -77,6 +119,16 @@ All files which are announced as larger than the specified size are ignored.
 [.optdoc]
 By default, all files are received and analyzed or saved.
 
+[.opt]
+*-o* _directory-name_ +
+*--output-directory* _directory-name_
+
+[.optdoc]
+Output directory for files which are extracted using option `--extract-file`.
+
+[.optdoc]
+The default is the current directory.
+
 //----------------------------------------------------------------------------
 // option --save-bootstrap
 //----------------------------------------------------------------------------
@@ -92,7 +144,7 @@ If the specified path is '`-`', the file is written to standard output.
 endif::[]
 
 //----------------------------------------------------------------------------
-// option --save-bootstrap
+// option --save-dvb-gw
 //----------------------------------------------------------------------------
 
 ifdef::opt-dvbnip[]
@@ -110,7 +162,7 @@ is saved as `/save/to/operator.com/materials/f.jpg`.
 endif::[]
 
 //----------------------------------------------------------------------------
-// option --save-fdt
+// option --save-fdt (common)
 //----------------------------------------------------------------------------
 
 [.opt]

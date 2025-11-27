@@ -12,6 +12,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
+#include "tsFlute.h"
 #include "tsStringifyInterface.h"
 #include "tsIPSocketAddress.h"
 #include "tsxml.h"
@@ -24,9 +25,9 @@ namespace ts {
     class TSDUCKDLL FluteSessionId : public StringifyInterface
     {
     public:
-        IPAddress       source {};       //!< Source IP address.
-        IPSocketAddress destination {};  //!< Destination IP address and UDP port.
-        uint64_t        tsi = 0;         //!< Transport Session Identifier.
+        IPAddress       source {};          //!< Source IP address.
+        IPSocketAddress destination {};     //!< Destination IP address and UDP port.
+        uint64_t        tsi = INVALID_TSI;  //!< Transport Session Identifier.
 
         //!
         //! Default constructor.
@@ -56,7 +57,7 @@ namespace ts {
         //!
         //! Check if this session id "matches" another one.
         //! @param [in] other Another instance to compare.
-        //! @return False if this and @a other addresses and porsts are both specified and are different.
+        //! @return False if any addresse, port, or TSI in @a this and @a other are both specified and are different.
         //! True otherwise.
         //!
         bool match(const FluteSessionId& other) const;

@@ -15,11 +15,13 @@
 #include "tsFluteFile.h"
 #include "tsDisplayInterface.h"
 #include "tsMulticastGatewayConfigurationTransportSession.h"
+#include "tsMulticastSession.h"
 #include "tsReport.h"
 
 namespace ts {
     //!
     //! Representation of a MulticastGatewayConfiguration (Multicast ABR).
+    //! Caution: This implementation is partial. Some part of the XML document are not deserialized.
     //! @see ETSI TS 103 769, section 10.2.1.2
     //! @ingroup libtsduck mpeg
     //!
@@ -44,8 +46,12 @@ namespace ts {
 
         //!
         //! List of MulticastGatewayConfigurationTransportSession.
-        //! This is currently the only structures which are extracted from XML.
         //!
-        std::list<MulticastGatewayConfigurationTransportSession> sessions {};
+        std::list<MulticastGatewayConfigurationTransportSession> transport_sessions {};
+
+        //!
+        //! List of MulticastSession.
+        //!
+        std::list<MulticastSession> multicast_sessions {};
     };
 }
