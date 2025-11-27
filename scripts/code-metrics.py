@@ -64,28 +64,28 @@ class filetype:
 
     # Format a percentage.
     def percent(x, max):
-        return '' if max == 0 else '%d%%' % int((100*x)/max)
+        return '' if max == 0 else '%d%%' % int((100*x)/max + 0.5)
 
     # Display header for lines of code.
     def print_lines_header():
-        print('| %-*s | %*s | %*s | %*s | %*s | %*s | %*s | %*s | %*s |' %
+        print('| %-*s | %*s | %*s | %*s | %*s | %*s | %*s | %*s | %*s | %*s |' %
               (filetype.description_width, filetype.description_header,
                filetype.data_width, 'Files',
                filetype.data_width, 'Blank', filetype.percent_width, 'Blank %',
                filetype.data_width, 'Comment', filetype.percent_width, 'Comment %',
                filetype.data_width, 'Code', filetype.percent_width, 'Code %',
-               filetype.data_width, 'Total'))
-        print('| %s | %s: | %s: | %s: | %s: | %s: | %s: | %s: | %s: |' %
+               filetype.data_width, 'Total', filetype.percent_width, 'Total %'))
+        print('| %s | %s: | %s: | %s: | %s: | %s: | %s: | %s: | %s: | %s: |' %
               (filetype.description_width * '-',
                (filetype.data_width - 1) * '-',
                (filetype.data_width - 1) * '-', (filetype.percent_width - 1) * '-',
                (filetype.data_width - 1) * '-', (filetype.percent_width - 1) * '-',
                (filetype.data_width - 1) * '-', (filetype.percent_width - 1) * '-',
-               (filetype.data_width - 1) * '-'))
+               (filetype.data_width - 1) * '-', (filetype.percent_width - 1) * '-'))
 
     # Display lines of code on one line.
-    def print_lines(self):
-        print('| %-*s | %*s | %*s | %*s | %*s | %*s | %*s | %*s | %*s |' %
+    def print_lines(self, grand_total):
+        print('| %-*s | %*s | %*s | %*s | %*s | %*s | %*s | %*s | %*s | %*s |' %
               (filetype.description_width, self.description,
                filetype.data_width, f"{self.files:,}",
                filetype.data_width, f"{self.blank_lines:,}",
@@ -94,33 +94,35 @@ class filetype:
                filetype.percent_width, filetype.percent(self.comment_lines, self.total_lines),
                filetype.data_width, f"{self.code_lines:,}",
                filetype.percent_width, filetype.percent(self.code_lines, self.total_lines),
-               filetype.data_width, f"{self.total_lines:,}"))
+               filetype.data_width, f"{self.total_lines:,}",
+               filetype.percent_width, filetype.percent(self.total_lines, grand_total)))
 
     # Display header for characters of code.
     def print_chars_header():
-        print('| %-*s | %*s | %*s | %*s | %*s | %*s | %*s |' %
+        print('| %-*s | %*s | %*s | %*s | %*s | %*s | %*s | %*s |' %
               (filetype.description_width, filetype.description_header,
                filetype.data_width, 'Files',
                filetype.data_width, 'Comment', filetype.percent_width, 'Comment %',
                filetype.data_width, 'Code', filetype.percent_width, 'Code %',
-               filetype.data_width, 'Total'))
-        print('| %s | %s: | %s: | %s: | %s: | %s: | %s: |' %
+               filetype.data_width, 'Total', filetype.percent_width, 'Total %'))
+        print('| %s | %s: | %s: | %s: | %s: | %s: | %s: | %s: |' %
               (filetype.description_width * '-',
                (filetype.data_width - 1) * '-',
                (filetype.data_width - 1) * '-', (filetype.percent_width - 1) * '-',
                (filetype.data_width - 1) * '-', (filetype.percent_width - 1) * '-',
-               (filetype.data_width - 1) * '-'))
+               (filetype.data_width - 1) * '-', (filetype.percent_width - 1) * '-'))
 
     # Display characters of code on one line.
-    def print_chars(self):
-        print('| %-*s | %*s | %*s | %*s | %*s | %*s | %*s |' %
+    def print_chars(self, grand_total):
+        print('| %-*s | %*s | %*s | %*s | %*s | %*s | %*s | %*s |' %
               (filetype.description_width, self.description,
                filetype.data_width, f"{self.files:,}",
                filetype.data_width, f"{self.comment_chars:,}",
                filetype.percent_width, filetype.percent(self.comment_chars, self.total_chars),
                filetype.data_width, f"{self.code_chars:,}",
                filetype.percent_width, filetype.percent(self.code_chars, self.total_chars),
-               filetype.data_width, f"{self.total_chars:,}"))
+               filetype.data_width, f"{self.total_chars:,}",
+               filetype.percent_width, filetype.percent(self.total_chars, grand_total)))
 
     # Process one source file.
     def process_file(self, path):
@@ -274,17 +276,17 @@ if __name__ == '__main__':
     print('### Lines of code')
     print()
     filetype.print_lines_header()
-    files_total.print_lines()
-    files_cpp.print_lines()
+    files_total.print_lines(files_total.total_lines)
+    files_cpp.print_lines(files_total.total_lines)
     for ft in files_order:
         if ft.description is not None and ft.total_lines > 0:
-            ft.print_lines()
+            ft.print_lines(files_total.total_lines)
     print()
     print('### Characters of code')
     print()
     filetype.print_chars_header()
-    files_total.print_chars()
-    files_cpp.print_chars()
+    files_total.print_chars(files_total.total_chars)
+    files_cpp.print_chars(files_total.total_chars)
     for ft in files_order:
         if ft.description is not None and ft.total_chars > 0:
-            ft.print_chars()
+            ft.print_chars(files_total.total_chars)
