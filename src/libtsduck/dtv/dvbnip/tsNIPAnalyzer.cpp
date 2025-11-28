@@ -130,6 +130,7 @@ void ts::NIPAnalyzer::handleFluteFile(FluteDemux& demux, const FluteFile& file)
 
     // Filter out files from non-filtered sessions.
     if (!isFiltered(file.sessionId())) {
+        _report.debug(u"ignoring %s from %s", file.name(), file.sessionId());
         return;
     }
 
@@ -245,13 +246,11 @@ void ts::NIPAnalyzer::saveFile(const FluteFile& file, const fs::path& root_dir, 
     }
 
     // Create intermediate subdirectories if required.
-    if (!fs::create_directories(path, &ErrCodeReport(_report, u"error creating directory", path))) {
-        return;
-    }
+    fs::create_directories(path, &ErrCodeReport(_report, u"error creating directory", path));
 
     // Save final file.
     path /= basename;
-    _report.debug(u"saving %s", path);
+    _report.verbose(u"saving %s", path);
     file.content().saveToFile(path, &_report);
 }
 

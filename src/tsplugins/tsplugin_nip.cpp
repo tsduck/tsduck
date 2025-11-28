@@ -189,7 +189,7 @@ void ts::NIPPlugin::handleMPENewPID(MPEDemux& demux, const PMT& pmt, PID pid)
 void ts::NIPPlugin::handleMPEPacket(MPEDemux& demux, const MPEPacket& mpe)
 {
     const IPSocketAddress destination(mpe.destinationSocket());
-    debug(u"MPE packet on PID %n, for address %s, %d bytes", mpe.sourcePID(), destination, mpe.datagramSize());
+    log(2, u"MPE packet on PID %n, for address %s, %d bytes", mpe.sourcePID(), destination, mpe.datagramSize());
 
     if (!_abort && mpe.sourcePID() == _mpe_pid) {
         _nip_analyzer.feedPacket(mpe.sourceSocket(), mpe.destinationSocket(), mpe.udpMessage(), mpe.udpMessageSize());
