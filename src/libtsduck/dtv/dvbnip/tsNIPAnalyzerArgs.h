@@ -29,6 +29,7 @@ namespace ts {
 
         // Analysis options:
         bool     summary = false;         //!< Option -\-summary
+        fs::path output_file {};          //!< Option -\-output-file
         fs::path save_nif {};             //!< Option -\-save-nif
         fs::path save_sif {};             //!< Option -\-save-sif
         fs::path save_slep {};            //!< Option -\-save-slep
@@ -37,9 +38,10 @@ namespace ts {
 
         //!
         //! Check if something specific was required.
-        //! @return True if there is something to do, log or display.
+        //! @param [in] except_summary If true, ignore option --summary in the check for something to do.
+        //! @return True if there is nothing to do, log or display.
         //!
-        bool none() const;
+        bool none(bool except_summary = false) const;
 
         //!
         //! Add command line option definitions in an Args.

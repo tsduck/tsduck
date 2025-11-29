@@ -14,9 +14,9 @@
 // Check if something specific was required.
 //----------------------------------------------------------------------------
 
-bool ts::NIPAnalyzerArgs::none() const
+bool ts::NIPAnalyzerArgs::none(bool except_summary) const
 {
-    return ts::FluteDemuxArgs::none() && !summary &&
+    return ts::FluteDemuxArgs::none() && (except_summary || !summary) &&
         save_nif.empty() && save_sif.empty() && save_slep.empty() && save_bootstrap.empty() && save_dvbgw_dir.empty();
 }
 
@@ -29,6 +29,11 @@ void ts::NIPAnalyzerArgs::defineArgs(Args& args)
 {
     // Define arguments from superclass.
     FluteDemuxArgs::defineArgs(args);
+
+    args.option(u"output-file", 'o', Args::FILENAME);
+    args.help(u"output-file",
+              u"With --summary, save the report in the specified file. "
+              u"By default or if the specified path is '-', the report is written to standard output.");
 
     args.option(u"save-bootstrap", 0, Args::FILENAME);
     args.help(u"save-bootstrap",
@@ -79,6 +84,7 @@ bool ts::NIPAnalyzerArgs::loadArgs(DuckContext& duck, Args& args)
     bool ok = FluteDemuxArgs::loadArgs(duck, args);
 
     summary = args.present(u"summary");
+    args.getPathValue(output_file, u"output-file");
     args.getPathValue(save_bootstrap, u"save-bootstrap");
     args.getPathValue(save_dvbgw_dir, u"save-dvb-gw");
     args.getPathValue(save_nif, u"save-nif");

@@ -91,26 +91,6 @@ bool ts::NIPAnalyzer::isFiltered(const FluteSessionId& session) const
 
 
 //----------------------------------------------------------------------------
-// The following method feeds the demux with an IP or UDP packet.
-//----------------------------------------------------------------------------
-
-void ts::NIPAnalyzer::feedPacket(const IPPacket& pkt)
-{
-    if (pkt.isUDP()) {
-        feedPacket(pkt.source(), pkt.destination(), pkt.protocolData(), pkt.protocolDataSize());
-    }
-}
-
-void ts::NIPAnalyzer::feedPacket(const IPSocketAddress& source, const IPSocketAddress& destination, const uint8_t* udp, size_t udp_size)
-{
-    // Feed the FLUTE demux with possibly filtered packets. The TSI is not yet accessible, only the addresses.
-    if (isFiltered(source, destination)) {
-        _flute_demux.feedPacket(source, destination, udp, udp_size);
-    }
-}
-
-
-//----------------------------------------------------------------------------
 // Process a NIPActualCarrierInformation.
 //----------------------------------------------------------------------------
 
@@ -259,8 +239,19 @@ void ts::NIPAnalyzer::saveFile(const FluteFile& file, const fs::path& root_dir, 
 // Print a summary of the DVB-NIP session.
 //----------------------------------------------------------------------------
 
-void ts::NIPAnalyzer::printSummary(std::ostream& out)
+void ts::NIPAnalyzer::printSummary(std::ostream& user_output)
 {
+    // Create the user-specified output file if required.
+    const bool use_file = !_args.output_file.empty() && _args.output_file != u"-";
+    std::ofstream outfile;
+    if (use_file) {
+        outfile.open(_args.output_file);
+        if (!outfile) {
+            _report.error(u"error creating %s", _args.output_file);
+        }
+    }
+    std::ostream& out(use_file ? outfile : user_output);
+
     // Get status of incomplete files from the FLUTE demux.
     _flute_demux.getFilesStatus();
 
@@ -301,6 +292,11 @@ void ts::NIPAnalyzer::printSummary(std::ostream& out)
             tab.output(out, TextTable::Headers::TEXT, true, u"  ", u"  ");
         }
         out << std::endl;
+    }
+
+    // Close the user-specified output file if required.
+    if (use_file) {
+        outfile.close();
     }
 }
 

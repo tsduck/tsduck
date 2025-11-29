@@ -42,6 +42,7 @@ namespace ts {
         bool             _abort = false;             // Error, abort asap.
         bool             _wait_for_service = false;  // Wait for MPE service id to be identified.
         PID              _mpe_pid = PID_NULL;        // Actual MPE PID.
+        PCR              _last_timestamp {};         // Last valid timestamp from TS packets.
         ServiceDiscovery _service {duck, nullptr};   // Service containing the MPE PID.
         MPEDemux         _mpe_demux {duck, this};    // MPE demux to extract MPE datagrams.
         NIPAnalyzer      _nip_analyzer {duck};       // DVB-NIP analyzer.
@@ -78,7 +79,6 @@ ts::NIPPlugin::NIPPlugin(TSP* tsp_) :
          u"The name is not case sensitive and blanks are ignored. "
          u"By default, if neither --pid nor --service is specified, use the first MPE PID which is found."
          u"Options --pid and --service are mutually exclusive.");
-
 }
 
 
@@ -112,6 +112,7 @@ bool ts::NIPPlugin::start()
     _abort = false;
     _wait_for_service = false;
     _mpe_pid = _opt_pid;
+    _last_timestamp = PCR::zero();
     _service.clear();
     _mpe_demux.reset();
 
@@ -140,7 +141,7 @@ bool ts::NIPPlugin::start()
 bool ts::NIPPlugin::stop()
 {
     if (_opt_nip.summary) {
-        _nip_analyzer.printSummary(std::cout);
+        _nip_analyzer.printSummary();
     }
     return true;
 }
@@ -152,6 +153,10 @@ bool ts::NIPPlugin::stop()
 
 ts::ProcessorPlugin::Status ts::NIPPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
+    if (pkt_data.hasInputTimeStamp()) {
+        _last_timestamp = pkt_data.getInputTimeStamp();
+    }
+
     if (_wait_for_service) {
         // Service id not yet found.
         _service.feedPacket(pkt);
@@ -161,6 +166,7 @@ ts::ProcessorPlugin::Status ts::NIPPlugin::processPacket(TSPacket& pkt, TSPacket
         // Feed the MPE demux.
         _mpe_demux.feedPacket(pkt);
     }
+
     return _abort ? TSP_END : TSP_OK;
 }
 
@@ -192,6 +198,6 @@ void ts::NIPPlugin::handleMPEPacket(MPEDemux& demux, const MPEPacket& mpe)
     log(2, u"MPE packet on PID %n, for address %s, %d bytes", mpe.sourcePID(), destination, mpe.datagramSize());
 
     if (!_abort && mpe.sourcePID() == _mpe_pid) {
-        _nip_analyzer.feedPacket(mpe.sourceSocket(), mpe.destinationSocket(), mpe.udpMessage(), mpe.udpMessageSize());
+        _nip_analyzer.feedPacket(_last_timestamp, mpe.sourceSocket(), mpe.destinationSocket(), mpe.udpMessage(), mpe.udpMessageSize());
     }
 }

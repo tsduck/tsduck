@@ -15,7 +15,6 @@
 #include "tsFluteFDT.h"
 #include "tsFlute.h"
 #include "tsIPSocketAddress.h"
-#include "tsIPPacket.h"
 #include "tsLCTHeader.h"
 
 
@@ -67,22 +66,10 @@ void ts::FluteDemux::FileContext::clear()
 
 
 //----------------------------------------------------------------------------
-// The following method feeds the demux with an IP packet.
-//----------------------------------------------------------------------------
-
-void ts::FluteDemux::feedPacket(const IPPacket& pkt)
-{
-    if (pkt.isUDP()) {
-        feedPacket(pkt.source(), pkt.destination(), pkt.protocolData(), pkt.protocolDataSize());
-    }
-}
-
-
-//----------------------------------------------------------------------------
 // The following method feeds the demux with a UDP packet.
 //----------------------------------------------------------------------------
 
-void ts::FluteDemux::feedPacket(const IPSocketAddress& source, const IPSocketAddress& destination, const uint8_t* udp, size_t udp_size)
+void ts::FluteDemux::feedPacketImpl(const cn::microseconds& timestamp, const IPSocketAddress& source, const IPSocketAddress& destination, const uint8_t* udp, size_t udp_size)
 {
     // Get LCT header.
     LCTHeader lct;

@@ -44,18 +44,22 @@ namespace ts {
         //!
         //! The following method feeds the analyzer with an IP packet.
         //! The packet is ignored if this is not a UDP packet.
+        //! @param [in] timestamp Packet time stamp value. This value should be taken from a monotonic clock.
         //! @param [in] pkt An IP packet.
         //!
-        void feedPacket(const IPPacket& pkt);
+        template <class Rep, class Period>
+        void feedPacket(const cn::duration<Rep,Period>& timestamp, const IPPacket& pkt);
 
         //!
         //! The following method feeds the analyzer with a UDP packet.
+        //! @param [in] timestamp Packet time stamp value. This value should be taken from a monotonic clock.
         //! @param [in] source Source socket address.
         //! @param [in] destination Destination socket address.
         //! @param [in] udp Address of UDP payload.
         //! @param [in] udp_size Size in bytes of UDP payload.
         //!
-        void feedPacket(const IPSocketAddress& source, const IPSocketAddress& destination, const uint8_t* udp, size_t udp_size);
+        template <class Rep, class Period>
+        void feedPacket(const cn::duration<Rep,Period>& timestamp, const IPSocketAddress& source, const IPSocketAddress& destination, const uint8_t* udp, size_t udp_size);
 
         //!
         //! Add a FLUTE session in the DVB-NIP analyzer.
@@ -69,9 +73,10 @@ namespace ts {
         //!
         //! Print a summary of the DVB-NIP session.
         //! Print nothing of option @a summary was not specified.
-        //! @param out Where to print the summary.
+        //! @param [in,out] out Where to print the summary if no output file was specified in NIPAnalyzerArgs.
+        //! Ignored when an output file was specified.
         //!
-        void printSummary(std::ostream& out);
+        void printSummary(std::ostream& out = std::cout);
 
     private:
         // Description of a file.
@@ -117,3 +122,31 @@ namespace ts {
         void saveFile(const FluteFile& file, const fs::path& root_dir, const UString& path);
     };
 }
+
+
+//----------------------------------------------------------------------------
+// Template definitions.
+//----------------------------------------------------------------------------
+
+#if !defined(DOXYGEN)
+
+// Feed the analyzer with a UDP packet (IPPacket version).
+template <class Rep, class Period>
+void ts::NIPAnalyzer::feedPacket(const cn::duration<Rep,Period>& timestamp, const IPPacket& pkt)
+{
+    if (pkt.isUDP()) {
+        feedPacket(cn::duration_cast<cn::microseconds>(timestamp), pkt.source(), pkt.destination(), pkt.protocolData(), pkt.protocolDataSize());
+    }
+}
+
+// Feed the analyzer with a UDP packet (IPPacket version).
+template <class Rep, class Period>
+void ts::NIPAnalyzer::feedPacket(const cn::duration<Rep,Period>& timestamp, const IPSocketAddress& source, const IPSocketAddress& destination, const uint8_t* udp, size_t udp_size)
+{
+    // Feed the FLUTE demux with possibly filtered packets. The TSI is not yet accessible, only the addresses.
+    if (isFiltered(source, destination)) {
+        _flute_demux.feedPacket(timestamp, source, destination, udp, udp_size);
+    }
+}
+
+#endif // DOXYGEN

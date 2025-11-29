@@ -15,11 +15,11 @@
 #include "tsFluteDemuxArgs.h"
 #include "tsFluteHandlerInterface.h"
 #include "tsFluteSessionId.h"
+#include "tsIPPacket.h"
 #include "tsDuckContext.h"
 
 namespace ts {
 
-    class IPPacket;
     class FluteFDT;
 
     //!
@@ -58,18 +58,25 @@ namespace ts {
         //!
         //! The following method feeds the demux with an IP packet.
         //! The packet is ignored if this is not a UDP packet.
+        //! @param [in] timestamp Packet time stamp value. This value should be taken from a monotonic clock.
         //! @param [in] pkt An IP packet.
         //!
-        void feedPacket(const IPPacket& pkt);
+        template <class Rep, class Period>
+        void feedPacket(const cn::duration<Rep,Period>& timestamp, const IPPacket& pkt);
 
         //!
         //! The following method feeds the demux with a UDP packet.
+        //! @param [in] timestamp Packet time stamp value. This value should be taken from a monotonic clock.
         //! @param [in] source Source socket address.
         //! @param [in] destination Destination socket address.
         //! @param [in] udp Address of UDP payload.
         //! @param [in] udp_size Size in bytes of UDP payload.
         //!
-        void feedPacket(const IPSocketAddress& source, const IPSocketAddress& destination, const uint8_t* udp, size_t udp_size);
+        template <class Rep, class Period>
+        void feedPacket(const cn::duration<Rep,Period>& timestamp, const IPSocketAddress& source, const IPSocketAddress& destination, const uint8_t* udp, size_t udp_size)
+        {
+            feedPacketImpl(cn::duration_cast<cn::microseconds>(timestamp), source, destination,udp, udp_size);
+        }
 
         //!
         //! Get the current status of all file transfers.
@@ -115,6 +122,9 @@ namespace ts {
         FluteDemuxArgs         _args {};
         std::map<FluteSessionId, SessionContext> _sessions {};
 
+        // Feed the analyzer with a UDP packet (non template version).
+        void feedPacketImpl(const cn::microseconds& timestamp, const IPSocketAddress& source, const IPSocketAddress& destination, const uint8_t* udp, size_t udp_size);
+
         // Update the announced length of a file. Return true on success, false if the file should be ignored.
         bool updateFileSize(const FluteSessionId& sid, SessionContext& session, uint64_t toi, FileContext& file, uint64_t file_size);
 
@@ -125,3 +135,21 @@ namespace ts {
         void processFDT(SessionContext& session, const FluteFDT& fdt);
     };
 }
+
+
+//----------------------------------------------------------------------------
+// Template definitions.
+//----------------------------------------------------------------------------
+
+#if !defined(DOXYGEN)
+
+// Feed the analyzer with a UDP packet (IPPacket version).
+template <class Rep, class Period>
+void ts::FluteDemux::feedPacket(const cn::duration<Rep,Period>& timestamp, const IPPacket& pkt)
+{
+    if (pkt.isUDP()) {
+        feedPacketImpl(cn::duration_cast<cn::microseconds>(timestamp), pkt.source(), pkt.destination(), pkt.protocolData(), pkt.protocolDataSize());
+    }
+}
+
+#endif // DOXYGEN

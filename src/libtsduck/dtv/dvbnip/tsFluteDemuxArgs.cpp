@@ -85,7 +85,7 @@ void ts::FluteDemuxArgs::defineArgs(Args& args)
               u"With --extract-file, specify the Transport Session Identifier (TSI) of files. "
               u"By default, extract the files with matching name and any TSI.");
 
-    args.option(u"output-directory", 'o', Args::DIRECTORY);
+    args.option(u"output-directory", 'd', Args::DIRECTORY);
     args.help(u"output-directory",
               u"Output directory for files which are extracted using option --extract-file. "
               u"The default is the current directory.");
@@ -104,7 +104,7 @@ bool ts::FluteDemuxArgs::loadArgs(DuckContext& duck, Args& args)
     log_files = args.present(u"log-files");
     dump_xml_files = args.present(u"dump-xml-files");
     args.getIntValue(max_file_size, u"max-file-size");
-    args.getPathValue(save_fdt, u"save-fdt");    
+    args.getPathValue(save_fdt, u"save-fdt");
     args.getValues(extract_files, u"extract-file");
     args.getIPValue(extract_session.source, u"extract-source");
     args.getSocketValue(extract_session.destination, u"extract-destination");

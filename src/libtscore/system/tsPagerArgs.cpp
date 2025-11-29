@@ -15,10 +15,10 @@
 // Constructors and destructors.
 //----------------------------------------------------------------------------
 
-ts::PagerArgs::PagerArgs(bool pageByDefault, bool stdoutOnly) :
-    page_by_default(pageByDefault),
-    use_pager(pageByDefault),
-    _pager(ts::OutputPager::DEFAULT_PAGER, stdoutOnly)
+ts::PagerArgs::PagerArgs(bool page_by_default, bool stdout_only) :
+    use_pager(page_by_default),
+    _page_by_default(page_by_default),
+    _pager(ts::OutputPager::DEFAULT_PAGER, stdout_only)
 {
 }
 
@@ -36,7 +36,7 @@ ts::PagerArgs::~PagerArgs()
 
 void ts::PagerArgs::defineArgs(Args& args)
 {
-    if (page_by_default) {
+    if (_page_by_default) {
         args.option(u"no-pager");
         args.help(u"no-pager",
                   u"Do not send output through a pager process. "
@@ -57,7 +57,7 @@ void ts::PagerArgs::defineArgs(Args& args)
 
 bool ts::PagerArgs::loadArgs(Args& args)
 {
-    if (page_by_default) {
+    if (_page_by_default) {
         use_pager = !args.present(u"no-pager");
     }
     else {

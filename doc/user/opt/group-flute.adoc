@@ -119,8 +119,12 @@ All files which are announced as larger than the specified size are ignored.
 [.optdoc]
 By default, all files are received and analyzed or saved.
 
+//----------------------------------------------------------------------------
+// option --output-directory
+//----------------------------------------------------------------------------
+
 [.opt]
-*-o* _directory-name_ +
+*-d* _directory-name_ +
 *--output-directory* _directory-name_
 
 [.optdoc]
@@ -128,6 +132,20 @@ Output directory for files which are extracted using option `--extract-file`.
 
 [.optdoc]
 The default is the current directory.
+
+//----------------------------------------------------------------------------
+// option --output-file
+//----------------------------------------------------------------------------
+
+ifdef::opt-dvbnip[]
+[.opt]
+*-o* _file-name_ +
+*--output-file* _file-name_
+
+[.optdoc]
+With `--summary`, save the report in the specified file.
+By default or if the specified path is '`-`', the report is written to the standard output.
+endif::[]
 
 //----------------------------------------------------------------------------
 // option --save-bootstrap

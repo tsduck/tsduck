@@ -46,7 +46,7 @@ namespace ts {
 
         //!
         //! Check if something specific was required.
-        //! @return True if there is something to do, log or display.
+        //! @return True if there is nothing to do, log or display.
         //!
         bool none() const;
 

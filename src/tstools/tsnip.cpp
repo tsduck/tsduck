@@ -62,6 +62,11 @@ Options::Options(int argc, char *argv[]) :
     nip.loadArgs(duck, *this);
     getValue(input_file, u"");
     exitOnError();
+
+    // Don't page if there is nothing to do except a summary in a specified output file.
+    if (nip.none(true) && !nip.output_file.empty() && nip.output_file != u"-") {
+        pager.use_pager = false;
+    }
 }
 
 
@@ -99,7 +104,7 @@ int MainCode(int argc, char *argv[])
     ts::VLANIdStack vlans;
     cn::microseconds timestamp;
     while (opt.file.readIP(ip, vlans, timestamp, opt)) {
-        analyzer.feedPacket(ip);
+        analyzer.feedPacket(timestamp, ip);
     }
     opt.file.close();
 
