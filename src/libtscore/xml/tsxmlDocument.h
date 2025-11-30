@@ -53,16 +53,16 @@ namespace ts::xml {
 
         //!
         //! Load and parse an XML file.
-        //! @param [in] fileName Name of the XML file to load.
-        //! If @a fileName is empty or "-", read the standard input.
-        //! If @a fileName starts with "<?xml", this is considered as "inline XML content".
+        //! @param [in] file_name Name of the XML file to load.
+        //! If @a file_name is empty or "-", read the standard input.
+        //! If @a file_name starts with "<?xml", this is considered as "inline XML content".
         //! The document is loaded from this string instead of reading a file.
         //! @param [in] search If true, search the XML file in the TSDuck configuration directories
-        //! if @a fileName is not found and does not contain any directory part.
+        //! if @a file_name is not found and does not contain any directory part.
         //! @return True on success, false on error.
         //! @see SearchConfigurationFile()
         //!
-        bool load(const UString& fileName, bool search = true);
+        bool load(const UString& file_name, bool search = true);
 
         //!
         //! Load and parse an XML file.
@@ -73,12 +73,12 @@ namespace ts::xml {
 
         //!
         //! Save an XML file.
-        //! @param [in] fileName Name of the XML file to save.
-        //! If @a fileName is empty or "-", writes to the standard output.
+        //! @param [in] file_name Name of the XML file to save.
+        //! If @a file_name is empty or "-", writes to the standard output.
         //! @param [in] indent Indentation width of each level.
         //! @return True on success, false on error.
         //!
-        bool save(const fs::path& fileName, size_t indent = 2);
+        bool save(const fs::path& file_name, size_t indent = 2);
 
         //!
         //! Check if a "file name" is in fact inline XML content instead of a file name.
@@ -90,7 +90,7 @@ namespace ts::xml {
         //!
         //! Get a suitable display name for an XML file name or inline content.
         //! @param [in] name A file name string.
-        //! @param [in] stdInputIfEmpty If true and if @a fileName is empty, reads the standard input.
+        //! @param [in] stdInputIfEmpty If true and if @a file_name is empty, reads the standard input.
         //! @return A suitable string to display.
         //!
         static UString DisplayFileName(const UString& name, bool stdInputIfEmpty = false);

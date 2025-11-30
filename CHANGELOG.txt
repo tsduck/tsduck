@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.43-4507 (November 2025)
+VERSION 3.43-4510 (November 2025)
 
 [NEW] New commands and plugins:
 
@@ -23,6 +23,10 @@ VERSION 3.43-4507 (November 2025)
     inputs are available for InfluxDB.
   * In plugin "splicemonitor",  it is now possible to send all detected SCTE-35
     splice events to an InfluxDB server.
+  * In  command  "tsxml",  it  is  possible to specify a directory as output to
+    process several input files. It is also possible to rewrite the input files
+    after  processing  (previously,  the output file was created before opening
+    the input files).
   * New options in existing commands and plugins:
     - Option --summary in plugin "mpe".
     - Options --iat, --tag in plugin "influx".

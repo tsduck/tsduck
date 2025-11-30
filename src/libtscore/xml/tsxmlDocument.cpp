@@ -96,31 +96,31 @@ bool ts::xml::Document::load(std::istream& strm)
     return parser.loadStream(strm) && parseNode(parser, nullptr);
 }
 
-bool ts::xml::Document::load(const UString& fileName, bool search)
+bool ts::xml::Document::load(const UString& file_name, bool search)
 {
     // Specific case of inline XML content, when the string is not the name of a file but directly an XML content.
-    if (IsInlineXML(fileName)) {
-        return parse(fileName);
+    if (IsInlineXML(file_name)) {
+        return parse(file_name);
     }
 
     // Specific case of the standard input.
-    if (fileName.empty() || fileName == u"-") {
+    if (file_name.empty() || file_name == u"-") {
         return load(std::cin);
     }
 
     // Actual file name to load after optional search in directories.
-    const UString actualFileName(search ? SearchConfigurationFile(fileName) : fileName);
+    const UString actual_file_name(search ? SearchConfigurationFile(file_name) : file_name);
 
     // Eliminate non-existent files.
-    if (actualFileName.empty()) {
-        report().error(u"file not found: %s", fileName);
+    if (actual_file_name.empty()) {
+        report().error(u"file not found: %s", file_name);
         return false;
     }
 
     // Parse the document from the file.
     TextParser parser(report());
-    report().debug(u"loading XML file %s", actualFileName);
-    return parser.loadFile(actualFileName) && parseNode(parser, nullptr);
+    report().debug(u"loading XML file %s", actual_file_name);
+    return parser.loadFile(actual_file_name) && parseNode(parser, nullptr);
 }
 
 
@@ -207,15 +207,15 @@ bool ts::xml::Document::parseNode(TextParser& parser, const Node* parent)
 // Save an XML file.
 //----------------------------------------------------------------------------
 
-bool ts::xml::Document::save(const fs::path& fileName, size_t indent)
+bool ts::xml::Document::save(const fs::path& file_name, size_t indent)
 {
     TextFormatter out(report());
     out.setIndentSize(indent);
 
-    if (fileName.empty() || fileName == u"-") {
+    if (file_name.empty() || file_name == u"-") {
         out.setStream(std::cout);
     }
-    else if (!out.setFile(fileName)) {
+    else if (!out.setFile(file_name)) {
         return false;
     }
 

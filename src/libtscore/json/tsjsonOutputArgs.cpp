@@ -198,6 +198,21 @@ bool ts::json::OutputArgs::tcpDisconnect(bool force, Report& rep)
 // Issue a JSON report according to options.
 //----------------------------------------------------------------------------
 
+bool ts::json::OutputArgs::report(const json::Value& root, const fs::path& file_name, Report& rep)
+{
+    // Process file output.
+    if (_json_opt) {
+        TextFormatter text(rep);
+        text.setFile(file_name);
+        root.print(text);
+        text << ts::endl;
+        text.close();
+    }
+
+    // Other output forms.
+    return report(root, rep);
+}
+
 bool ts::json::OutputArgs::report(const json::Value& root, std::ostream& stm, Report& rep)
 {
     // Process file output.
