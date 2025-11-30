@@ -4,8 +4,8 @@
   <!-- A target to build tsduck.dtv.names from all .names files -->
 
   <ItemGroup>
-    <DtvNamesFiles Include="$(TSDuckRootDir)src\libtsduck\base\**\*.names;
-                            $(TSDuckRootDir)src\libtsduck\dtv\**\*.names"/>
+    <DtvNamesFiles Include="$(TSDuckRootDir)src\libtsduck\dtv\**\*.names;
+                            $(TSDuckRootDir)src\libtsduck\mcast\**\*.names"/>
   </ItemGroup>
 
   <Target Name="BuildDtvNames" Inputs="@(DtvNamesFiles)" Outputs="$(OutDir)tsduck.dtv.names">

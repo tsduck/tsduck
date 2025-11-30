@@ -12,15 +12,15 @@
 
 #include "tsAbstractSingleMPEPlugin.h"
 #include "tsPluginRepository.h"
-#include "tsNIPAnalyzer.h"
 #include "tsMPEPacket.h"
+#include "tsmcastNIPAnalyzer.h"
 
 
 //----------------------------------------------------------------------------
 // Plugin definition
 //----------------------------------------------------------------------------
 
-namespace ts {
+namespace ts::mcast {
     class NIPPlugin: public AbstractSingleMPEPlugin
     {
         TS_PLUGIN_CONSTRUCTORS(NIPPlugin);
@@ -40,14 +40,14 @@ namespace ts {
     };
 }
 
-TS_REGISTER_PROCESSOR_PLUGIN(u"nip", ts::NIPPlugin);
+TS_REGISTER_PROCESSOR_PLUGIN(u"nip", ts::mcast::NIPPlugin);
 
 
 //----------------------------------------------------------------------------
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::NIPPlugin::NIPPlugin(TSP* tsp_) :
+ts::mcast::NIPPlugin::NIPPlugin(TSP* tsp_) :
     AbstractSingleMPEPlugin(tsp_, u"DVB-NIP (Native IP) analyzer", u"[options]", u"DVB-NIP stream")
 {
     _opt_nip.defineArgs(*this);
@@ -58,7 +58,7 @@ ts::NIPPlugin::NIPPlugin(TSP* tsp_) :
 // Get command line options
 //----------------------------------------------------------------------------
 
-bool ts::NIPPlugin::getOptions()
+bool ts::mcast::NIPPlugin::getOptions()
 {
     return AbstractSingleMPEPlugin::getOptions() && _opt_nip.loadArgs(duck, *this);
 }
@@ -68,7 +68,7 @@ bool ts::NIPPlugin::getOptions()
 // Start method
 //----------------------------------------------------------------------------
 
-bool ts::NIPPlugin::start()
+bool ts::mcast::NIPPlugin::start()
 {
     return AbstractSingleMPEPlugin::start() && _nip_analyzer.reset(_opt_nip);
 }
@@ -78,7 +78,7 @@ bool ts::NIPPlugin::start()
 // Stop method
 //----------------------------------------------------------------------------
 
-bool ts::NIPPlugin::stop()
+bool ts::mcast::NIPPlugin::stop()
 {
     if (_opt_nip.summary) {
         _nip_analyzer.printSummary();
@@ -91,7 +91,7 @@ bool ts::NIPPlugin::stop()
 // MPE packet processing method
 //----------------------------------------------------------------------------
 
-void ts::NIPPlugin::handleSingleMPEPacket(PCR timestamp, const MPEPacket& mpe)
+void ts::mcast::NIPPlugin::handleSingleMPEPacket(PCR timestamp, const MPEPacket& mpe)
 {
     const IPSocketAddress destination(mpe.destinationSocket());
     log(2, u"MPE packet on PID %n, for address %s, %d bytes", mpe.sourcePID(), destination, mpe.datagramSize());

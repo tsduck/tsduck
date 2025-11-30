@@ -14,10 +14,10 @@
 #include "tsDuckContext.h"
 #include "tsPagerArgs.h"
 #include "tsReportFile.h"
-#include "tsNIPAnalyzer.h"
 #include "tsIPPacket.h"
 #include "tsIPProtocols.h"
 #include "tsPcapFilter.h"
+#include "tsmcastNIPAnalyzer.h"
 TS_MAIN(MainCode);
 
 
@@ -32,11 +32,11 @@ namespace {
     public:
         Options(int argc, char *argv[]);
 
-        ts::DuckContext     duck {this};
-        ts::UString         input_file {};
-        ts::PcapFilter      file {};
-        ts::PagerArgs       pager {true, true};
-        ts::NIPAnalyzerArgs nip {};
+        ts::DuckContext duck {this};
+        ts::UString     input_file {};
+        ts::PcapFilter  file {};
+        ts::PagerArgs   pager {true, true};
+        ts::mcast::NIPAnalyzerArgs nip {};
     };
 }
 
@@ -94,7 +94,7 @@ int MainCode(int argc, char *argv[])
     opt.duck.setReport(&report);
 
     // Initialize a DVB-NIP analyzer.
-    ts::NIPAnalyzer analyzer(opt.duck);
+    ts::mcast::NIPAnalyzer analyzer(opt.duck);
     if (!analyzer.reset(opt.nip)) {
         return EXIT_FAILURE;
     }
