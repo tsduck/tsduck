@@ -13,7 +13,6 @@
 
 #pragma once
 #include "tsFluteFile.h"
-#include "tsDisplayInterface.h"
 #include "tsReport.h"
 #include "tsTime.h"
 
@@ -23,7 +22,7 @@ namespace ts {
     //! @see ETSI TS 103 876, section 8.4.3.2
     //! @ingroup libtsduck mpeg
     //!
-    class TSDUCKDLL ServiceInformationFile : public FluteFile, public DisplayInterface
+    class TSDUCKDLL ServiceInformationFile : public FluteFile
     {
         TS_RULE_OF_FIVE(ServiceInformationFile, override);
     public:
@@ -38,9 +37,6 @@ namespace ts {
         //! @param [in] file Received file from FLUTE demux.
         //!
         ServiceInformationFile(Report& report, const FluteFile& file);
-
-        // Inherited methods.
-        virtual std::ostream& display(std::ostream& stream = std::cout, const UString& margin = UString(), int level = Severity::Info) const override;
 
         //!
         //! Definition of a \<InteractiveApplications> element in a \<BroadcastMedia>.

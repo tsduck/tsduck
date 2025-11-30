@@ -59,27 +59,3 @@ ts::ServiceInformationFile::ServiceInformationFile(Report& report, const FluteFi
 ts::ServiceInformationFile::~ServiceInformationFile()
 {
 }
-
-
-//----------------------------------------------------------------------------
-// Display the content of this structure.
-//----------------------------------------------------------------------------
-
-std::ostream& ts::ServiceInformationFile::display(std::ostream& out, const UString& margin, int level) const
-{
-    out << margin << "ServiceInformationFile: " << streams.size() << " streams" << std::endl
-        << margin << "  Version update: " << version_update << ", provider: \"" << provider_name << "\"" << std::endl;
-    int count = 0;
-    for (const auto& st : streams) {
-        out << margin << "- BroadcastMediaStream " << ++count << ":" << std::endl
-            << margin << "  NIP network: " << st.nip_network_id << ", carrier: " << st.nip_carrier_id
-            << ", link: " << st.nip_link_id << ", service: " << st.nip_service_id << std::endl;
-        for (const auto& uri : st.uri) {
-            out << margin << "  URI: " << uri << std::endl;
-        }
-        for (const auto& app : st.apps) {
-            out << margin << "  App: id: " << app.id << ", URI: " << app.uri << ", type: " << app.uri << std::endl;
-        }
-    }
-    return out;
-}
