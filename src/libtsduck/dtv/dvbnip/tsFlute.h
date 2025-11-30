@@ -65,4 +65,13 @@ namespace ts {
         CENC_DEFLATE = 2,  //!< Deflate encoding [RFC1951].
         CENC_GZIP    = 3,  //!< GZip encoding [RFC1952].
     };
+
+    //!
+    //! Logical definition of a unicast file transport protocol.
+    //!
+    enum FileTransport {
+        FT_UNKNOWN,   //!< Unrecognized protocol.
+        FT_FLUTE,     //!< File Delivery over Unidirectional Transport, RFC 3926 (v1), RFC 6726 (v2).
+        FT_ROUTE,     //!< Real-Time Transport Object Delivery over Unidirectional Transport, RFC 9223.
+    };
 }

@@ -12,7 +12,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsDisplayInterface.h"
+#include "tsTransportProtocol.h"
 #include "tsFluteSessionId.h"
 #include "tsxml.h"
 
@@ -24,9 +24,8 @@ namespace ts {
     //! @see ETSI TS 103 769, section 10.2.2.1
     //! @ingroup libtsduck mpeg
     //!
-    class TSDUCKDLL MulticastSession : public DisplayInterface
+    class TSDUCKDLL MulticastSession
     {
-        TS_RULE_OF_FIVE(MulticastSession, override);
     public:
         //!
         //! Default constructor.
@@ -45,9 +44,6 @@ namespace ts {
         //!
         bool parseXML(const xml::Element* element);
 
-        // Inherited methods.
-        virtual std::ostream& display(std::ostream& stream = std::cout, const UString& margin = UString(), int level = Severity::Info) const override;
-
         //!
         //! An entry of \<MulticastTransportSession>.
         //! @see ETSI TS 103 769, section 10.2.3
@@ -61,13 +57,12 @@ namespace ts {
             UString content_ingest_method {};        //!< attribute contentIngestMethod.
             UString transmission_mode {};            //!< attribute transmissionMode.
             UString transport_security {};           //!< attribute transportSecurity.
-            UString protocol_identifier {};          //!< attribute protocolIdentifier in \<TransportProtocol>.
-            UString protocol_version {};             //!< attribute protocolVersion in \<TransportProtocol>.
+            TransportProtocol protocol {};           //!< element \<TransportProtocol>.
             std::list<FluteSessionId> endpoints {};  //!< list of \<EndpointAddress>.
         };
 
         // Public fields coming from the XML representation.
-        UString service_identifier {};                              //!< attribute serviceIdentifier.
+        UString service_identifier {};                               //!< attribute serviceIdentifier.
         std::list<MulticastTransportSession> transport_sessions {};  //!< elements \<MulticastTransportSession>.
     };
 }

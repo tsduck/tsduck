@@ -15,6 +15,7 @@
 #include "tsNIPAnalyzerArgs.h"
 #include "tsDuckContext.h"
 #include "tsFluteDemux.h"
+#include "tsTransportProtocol.h"
 #include "tsNIPActualCarrierInformation.h"
 #include "tsIPSocketAddress.h"
 #include "tsIPPacket.h"
@@ -114,6 +115,9 @@ namespace ts {
         // Check if a UDP packet or FLUTE file is part of a filtered session.
         bool isFiltered(const IPAddress& source, const IPSocketAddress& destination) const;
         bool isFiltered(const FluteSessionId& session) const;
+
+        // Add a session with a given protocol.
+        void addProtocolSession(const TransportProtocol& protocol, const FluteSessionId& session);
 
         // Save a XML file (if the file name is not empty).
         void saveXML(const FluteFile& file, const fs::path& path);

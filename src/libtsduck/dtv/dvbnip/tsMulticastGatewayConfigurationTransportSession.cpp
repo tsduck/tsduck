@@ -11,15 +11,6 @@
 
 
 //----------------------------------------------------------------------------
-// Constructor and destructor.
-//----------------------------------------------------------------------------
-
-ts::MulticastGatewayConfigurationTransportSession::~MulticastGatewayConfigurationTransportSession()
-{
-}
-
-
-//----------------------------------------------------------------------------
 // Clear the content of this object.
 //----------------------------------------------------------------------------
 
@@ -28,8 +19,7 @@ void ts::MulticastGatewayConfigurationTransportSession::clear()
     service_class.clear();
     transport_security.clear();
     tags.clear();
-    trans_proto_id.clear();
-    trans_proto_version = 0;
+    protocol.clear();
     bitrate_average = bitrate_maximum = 0;
     repair_base_url.clear();
     repair_obj_base_uri.clear();
@@ -55,15 +45,12 @@ bool ts::MulticastGatewayConfigurationTransportSession::parseXML(const xml::Elem
     }
 
     const xml::Element* e = nullptr;
-    bool ok =
-        element->getAttribute(service_class, u"serviceClass", false) &&
-        element->getAttribute(transport_security, u"transportSecurity", false, u"none") &&
-        (e = element->findFirstChild(u"BitRate")) != nullptr &&
-        e->getIntAttribute(bitrate_average, u"average", false) &&
-        e->getIntAttribute(bitrate_maximum, u"maximum", true) &&
-        (e = element->findFirstChild(u"TransportProtocol")) != nullptr &&
-        e->getAttribute(trans_proto_id, u"protocolIdentifier", true) &&
-        e->getIntAttribute(trans_proto_version, u"protocolVersion", true);
+    bool ok = element->getAttribute(service_class, u"serviceClass", false) &&
+              element->getAttribute(transport_security, u"transportSecurity", false, u"none") &&
+              (e = element->findFirstChild(u"BitRate")) != nullptr &&
+              e->getIntAttribute(bitrate_average, u"average", false) &&
+              e->getIntAttribute(bitrate_maximum, u"maximum", true) &&
+              protocol.parseXML(element);
 
     if (ok) {
         // The attribute tags contains a space-separated list of URL's.
@@ -98,7 +85,7 @@ bool ts::MulticastGatewayConfigurationTransportSession::parseXML(const xml::Elem
             ok = e1->getText(resource_locator.back().uri, true) &&
                  e1->getBoolAttribute(resource_locator.back().compression_preferred, u"compressionPreferred") &&
                  e1->getAttribute(resource_locator.back().target_acquisition_latency, u"targetAcquisitionLatency") &&
-                e1->getAttribute(resource_locator.back().revalidation_period, u"revalidationPeriod");
+                 e1->getAttribute(resource_locator.back().revalidation_period, u"revalidationPeriod");
         }
     }
 
@@ -128,75 +115,6 @@ bool ts::MulticastGatewayConfigurationTransportSession::parseXML(const xml::Elem
 
 
 //----------------------------------------------------------------------------
-// Display the content of this structure.
-//----------------------------------------------------------------------------
-
-std::ostream& ts::MulticastGatewayConfigurationTransportSession::display(std::ostream& out, const UString& margin, int level) const
-{
-    out << margin << "serviceClass: " << service_class << std::endl
-        << margin << "transportSecurity: " << transport_security << std::endl
-        << margin << "protocolIdentifier: " << trans_proto_id << std::endl
-        << margin << "protocolVersion: " << trans_proto_version << std::endl
-        << margin << "BitRate average: " << bitrate_average << std::endl
-        << margin << "BitRate maximum: " << bitrate_maximum << std::endl
-        << margin << "tag: " << tags.size() << " values" << std::endl;
-    for (const auto& it : tags) {
-        out << margin << "  " << it << std::endl;
-    }
-
-    out << margin << "UnicastRepairParameters transportObjectBaseURI: " << repair_obj_base_uri << std::endl
-        << margin << "UnicastRepairParameters transportObjectReceptionTimeout: " << repair_recv_timeout << std::endl
-        << margin << "UnicastRepairParameters fixedBackOffPeriod: " << repair_fixed_backoff << std::endl
-        << margin << "UnicastRepairParameters randomBackOffPeriod: " << repair_rand_backoff << std::endl
-        << margin << "UnicastRepairParameters BaseURL: " << repair_base_url.size() << " elements" << std::endl;
-    for (const auto& it : repair_base_url) {
-        out << margin << "  " << it.uri << " (weigth: " << it.relative_weight << ")" << std::endl;
-    }
-
-    out << margin << "EndpointAddress: " << endpoints.size() << " elements" << std::endl;
-    for (const auto& it : endpoints) {
-        out << margin << "  " << it << std::endl;
-    }
-
-    out << margin << "MulticastGatewayConfigurationMacro: " << macros.size() << " elements" << std::endl;
-    for (const auto& it : macros) {
-        out << margin << "  " << it.first << " = " << it.second << std::endl;
-    }
-
-    out << margin << "ForwardErrorCorrectionParameters: " << fec.size() << " elements" << std::endl;
-    for (const auto& it : fec) {
-        out << margin << "  SchemeIdentifier: " << it.scheme_identifier << std::endl
-            << margin << "  OverheadPercentage: " << it.overhead_percentage << std::endl
-            << margin << "  EndpointAddress: " << it.endpoints.size() << " elements" << std::endl;
-        for (const auto& it2 : it.endpoints) {
-            out << margin << "    " << it2 << std::endl;
-        }
-    }
-
-    out << margin << "ObjectCarousel aggregateTransportSize: " << carousel_transport_size << std::endl
-        << margin << "ObjectCarousel aggregateContentSize: " << carousel_content_size << std::endl
-        << margin << "ObjectCarousel ResourceLocator: " << resource_locator.size() << " elements" << std::endl;
-    for (const auto& it : resource_locator) {
-        out << margin << "- URI: " << it.uri << std::endl
-            << margin << "  compressionPreferred: " << UString::TrueFalse(it.compression_preferred) << std::endl
-            << margin << "  targetAcquisitionLatency: " << it.target_acquisition_latency << std::endl
-            << margin << "  revalidationPeriod: " << it.revalidation_period << std::endl;
-    }
-
-    out << margin << "ObjectCarousel PresentationManifests: " << carousel_manifests.size() << " elements" << std::endl;
-    for (const auto& it : carousel_manifests) {
-        it.display(out, margin);
-    }
-
-    out << margin << "ObjectCarousel InitSegments: " << carousel_segment.size() << " elements" << std::endl;
-    for (const auto& it : carousel_segment) {
-        it.display(out, margin);
-    }
-    return out;
-}
-
-
-//----------------------------------------------------------------------------
 // Entry of <PresentationManifests> or <InitSegments> in <ObjectCarousel>.
 //----------------------------------------------------------------------------
 
@@ -206,13 +124,4 @@ bool ts::MulticastGatewayConfigurationTransportSession::ReferencingCarouselMedia
            e->getAttribute(target_acquisition_latency, u"targetAcquisitionLatency") &&
            e->getAttribute(service_id_ref, u"serviceIdRef") &&
            e->getAttribute(transport_session_id_ref, u"transportSessionIdRef");
-}
-
-std::ostream& ts::MulticastGatewayConfigurationTransportSession::ReferencingCarouselMediaPresentationResourceType::display(std::ostream& out, const UString& margin) const
-{
-    out << margin << "- compressionPreferred: " << UString::TrueFalse(compression_preferred) << std::endl
-        << margin << "  targetAcquisitionLatency: " << target_acquisition_latency << std::endl
-        << margin << "  serviceIdRef: " << service_id_ref << std::endl
-        << margin << "  transportSessionIdRef: " << transport_session_id_ref << std::endl;
-    return out;
 }

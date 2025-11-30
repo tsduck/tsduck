@@ -56,6 +56,17 @@ bool ts::NIPAnalyzer::reset(const NIPAnalyzerArgs& args)
 // Add a FLUTE session in the DVB-NIP analyzer.
 //----------------------------------------------------------------------------
 
+void ts::NIPAnalyzer::addProtocolSession(const TransportProtocol& protocol, const FluteSessionId& session)
+{
+    // We currently support FLUTE only.
+    if (protocol.protocol == FT_FLUTE) {
+        addSession(session);
+    }
+    else {
+        _report.warning(u"ignoring session %s, unsupported protocol %s", protocol.protocol_identifier);
+    }
+}
+
 void ts::NIPAnalyzer::addSession(const FluteSessionId& session)
 {
     if (!_session_filter.contains(session)) {
@@ -162,13 +173,13 @@ void ts::NIPAnalyzer::handleFluteFile(FluteDemux& demux, const FluteFile& file)
         if (mgc.isValid()) {
             for (const auto& sess : mgc.transport_sessions) {
                 for (const auto& id : sess.endpoints) {
-                    addSession(id);
+                    addProtocolSession(sess.protocol, id);
                 }
             }
             for (const auto& sess1 : mgc.multicast_sessions) {
                 for (const auto& sess2 : sess1.transport_sessions) {
                     for (const auto& id : sess2.endpoints) {
-                        addSession(id);
+                        addProtocolSession(sess2.protocol, id);
                     }
                 }
             }

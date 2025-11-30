@@ -42,29 +42,3 @@ ts::MulticastGatewayConfiguration::MulticastGatewayConfiguration(Report& report,
 ts::MulticastGatewayConfiguration::~MulticastGatewayConfiguration()
 {
 }
-
-
-//----------------------------------------------------------------------------
-// Display the content of this structure.
-//----------------------------------------------------------------------------
-
-std::ostream& ts::MulticastGatewayConfiguration::display(std::ostream& out, const UString& margin, int level) const
-{
-    out << margin << "MulticastGatewayConfiguration: "
-        << transport_sessions.size() << " transport sessions, "
-        << multicast_sessions.size() << " multicast sessions" << std::endl;
-
-    int count = 0;
-    for (const auto& it : transport_sessions) {
-        out << margin << "- TransportSession " << ++count << ":" << std::endl;
-        it.display(out, margin + u"  ");
-    }
-
-    count = 0;
-    for (const auto& it : multicast_sessions) {
-        out << margin << "- MulticastSession " << ++count << ":" << std::endl;
-        it.display(out, margin + u"  ");
-    }
-
-    return out;
-}

@@ -13,7 +13,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsDisplayInterface.h"
+#include "tsTransportProtocol.h"
 #include "tsFluteSessionId.h"
 #include "tsxml.h"
 
@@ -25,9 +25,8 @@ namespace ts {
     //! @see ETSI TS 103 769, section 10.2.5
     //! @ingroup libtsduck mpeg
     //!
-    class TSDUCKDLL MulticastGatewayConfigurationTransportSession : public DisplayInterface
+    class TSDUCKDLL MulticastGatewayConfigurationTransportSession
     {
-        TS_RULE_OF_FIVE(MulticastGatewayConfigurationTransportSession, override);
     public:
         //!
         //! Default constructor.
@@ -45,9 +44,6 @@ namespace ts {
         //! @return True on success, false on error.
         //!
         bool parseXML(const xml::Element* element);
-
-        // Inherited methods.
-        virtual std::ostream& display(std::ostream& stream = std::cout, const UString& margin = UString(), int level = Severity::Info) const override;
 
         //!
         //! A URI with an associated weighting attribute.
@@ -86,7 +82,6 @@ namespace ts {
 
             //! @cond nodoxygen
             bool parseXML(const xml::Element*);
-            std::ostream& display(std::ostream&, const UString& margin) const;
             //! @endcond
         };
 
@@ -104,23 +99,22 @@ namespace ts {
         };
 
         // Public fields coming from the XML representation.
-        UString          service_class {};             //!< attribute serviceClass.
-        UString          transport_security {};        //!< attribute transportSecurity
-        UStringList      tags {};                      //!< attribute tags
-        UString          trans_proto_id {};            //!< attribute protocolIdentifier in \<TransportProtocol>.
-        uint32_t         trans_proto_version = 0;      //!< attribute protocolVersion in \<TransportProtocol>.
-        uint32_t         bitrate_average = 0;          //!< attribute average in \<BitRate>.
-        uint32_t         bitrate_maximum = 0;          //!< attribute maximum in \<BitRate>.
-        std::list<WeightedURIType> repair_base_url {}; //!< elements \<BaseURL> in \<UnicastRepairParameters>.
-        UString          repair_obj_base_uri {};       //!< attribute transportObjectBaseURI in \<UnicastRepairParameters>.
-        cn::milliseconds repair_recv_timeout {};       //!< attribute transportObjectReceptionTimeout in \<UnicastRepairParameters>.
-        cn::milliseconds repair_fixed_backoff {};      //!< attribute fixedBackOffPeriod in \<UnicastRepairParameters>.
-        cn::milliseconds repair_rand_backoff {};       //!< attribute randomBackOffPeriod in \<UnicastRepairParameters>.
-        std::list<FluteSessionId> endpoints {};        //!< list of \<EndpointAddress>.
-        UStringToUStringMap       macros {};           //!< map of \<MulticastGatewayConfigurationMacro>, indexed by attribute key.
+        UString           service_class {};             //!< attribute serviceClass.
+        UString           transport_security {};        //!< attribute transportSecurity
+        UStringList       tags {};                      //!< attribute tags
+        TransportProtocol protocol {};                  //!< element \<TransportProtocol>.
+        uint32_t          bitrate_average = 0;          //!< attribute average in \<BitRate>.
+        uint32_t          bitrate_maximum = 0;          //!< attribute maximum in \<BitRate>.
+        std::list<WeightedURIType> repair_base_url {};  //!< elements \<BaseURL> in \<UnicastRepairParameters>.
+        UString           repair_obj_base_uri {};       //!< attribute transportObjectBaseURI in \<UnicastRepairParameters>.
+        cn::milliseconds  repair_recv_timeout {};       //!< attribute transportObjectReceptionTimeout in \<UnicastRepairParameters>.
+        cn::milliseconds  repair_fixed_backoff {};      //!< attribute fixedBackOffPeriod in \<UnicastRepairParameters>.
+        cn::milliseconds  repair_rand_backoff {};       //!< attribute randomBackOffPeriod in \<UnicastRepairParameters>.
+        std::list<FluteSessionId> endpoints {};         //!< list of \<EndpointAddress>.
+        UStringToUStringMap       macros {};            //!< map of \<MulticastGatewayConfigurationMacro>, indexed by attribute key.
         std::list<ForwardErrorCorrectionParametersType> fec {}; //!< list of \<ForwardErrorCorrectionParameters>.
-        uint32_t         carousel_transport_size = 0;  //!< attribute aggregateTransportSize in \<ObjectCarousel>.
-        uint32_t         carousel_content_size = 0;    //!< attribute aggregateContentSize in \<ObjectCarousel>.
+        uint32_t          carousel_transport_size = 0;  //!< attribute aggregateTransportSize in \<ObjectCarousel>.
+        uint32_t          carousel_content_size = 0;    //!< attribute aggregateContentSize in \<ObjectCarousel>.
         std::list<CarouselResourceLocatorType> resource_locator {}; //!< all \<ResourceLocator> in \<ObjectCarousel>.
         std::list<ReferencingCarouselMediaPresentationResourceType> carousel_manifests {};  //!< all \<PresentationManifests> in \<ObjectCarousel>.
         std::list<ReferencingCarouselMediaPresentationResourceType> carousel_segment {};    //!< all \<InitSegments> in \<ObjectCarousel>.

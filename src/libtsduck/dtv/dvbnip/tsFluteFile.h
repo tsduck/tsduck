@@ -45,7 +45,7 @@ namespace ts {
                   const ByteBlockPtr&   content);
 
         //!
-        //! Check if the fiel is valid (for instance is XML content was successfully parsed).
+        //! Check if the file is valid (for instance is XML content was successfully parsed).
         //! @return True if the file is valid. False otherwise.
         //!
         bool isValid() const { return _valid; }
