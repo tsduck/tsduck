@@ -88,12 +88,13 @@ namespace ts::mcast {
         class TSDUCKDLL FileContext
         {
         public:
-            bool     processed = false;      // The file has been processed, ignored subsequent packets.
-            uint32_t instance = 0xFFFFFFFF;  // For FDT only: FDT instance.
-            uint64_t transfer_length = 0;    // The expected length of the transport object (same as in FTI header).
-            uint64_t current_length = 0;     // The number of currently received bytes.
-            UString  name {};                // File name or URN.
-            UString  type {};                // File MIME type.
+            bool             processed = false;      // The file has been processed, ignored subsequent packets.
+            uint32_t         instance = 0xFFFFFFFF;  // For FDT only: FDT instance.
+            uint64_t         transfer_length = 0;    // The expected length of the transport object (same as in FTI header).
+            uint64_t         current_length = 0;     // The number of currently received bytes.
+            UString          name {};                // File name or URN.
+            UString          type {};                // File MIME type.
+            cn::microseconds last_time {};           // Timestamp of last received data for the file.
 
             // Chunks of the file being received.
             // First level of index: Source Block Number (SBN).
@@ -118,7 +119,25 @@ namespace ts::mcast {
         Report&                _report {_duck.report()};
         FluteHandlerInterface* _handler = nullptr;
         FluteDemuxArgs         _args {};
-        std::map<FluteSessionId, SessionContext> _sessions {};
+        uint64_t               _packet_count = 0;               // Number of IP packets.
+        cn::microseconds       _next_gc_timestamp {};           // Timestamps of next garbage collection.
+        std::map<FluteSessionId, SessionContext> _sessions {};  // Session contexts, indexed by session id.
+
+        // Avoid accumulation of old file descriptions which clutter the memory:
+        // 1) When a file is completely received and passed to the application (processed = true), we deallocate the data chunks
+        //    because they are no longer necessary. However, we keep the FileContext for a while in case packets are repeated for
+        //    that file. In that case, we need to remember that this file was processed and avoid recreate a "new file".
+        // 2) When parts of a large file are lost, the file will never be complete and will never be passed to the application.
+        //    Therefore, its FileContext will stay allocated forever.
+        // To avoid an ever-growing number of FileContext (with or without data chunk), we do some periodic garbage collection (gc).
+        // The gc is executed every '_gc_interval'. All files for which no packet has been received in the last '_file_max_lifetime'
+        // is purged. These values are currenty hard-coded (with default from environment variables) but may become parameters in
+        // the future.
+        static const cn::microseconds _gc_interval;
+        static const cn::microseconds _file_max_lifetime;
+
+        // Execute the garbage collector.
+        void garbageCollector(const cn::microseconds& current_timestamp);
 
         // Feed the analyzer with a UDP packet (non template version).
         void feedPacketImpl(const cn::microseconds& timestamp, const IPSocketAddress& source, const IPSocketAddress& destination, const uint8_t* udp, size_t udp_size);

@@ -15,6 +15,18 @@
 #include "tsmcastLCTHeader.h"
 #include "tsmcast.h"
 #include "tsIPSocketAddress.h"
+#include "tsEnvironment.h"
+
+// The garbage collector configuration can be initialized using environment variables.
+// The environment variables for the default values are in seconds.
+namespace {
+    inline cn::microseconds InitGC(const ts::UChar* name, cn::seconds::rep defvalue)
+    {
+        return cn::duration_cast<cn::microseconds>(cn::seconds(ts::GetIntEnvironment<cn::seconds::rep>(name, defvalue)));
+    }
+}
+const cn::microseconds ts::mcast::FluteDemux::_gc_interval       = InitGC(u"TS_FLUTE_GC_INTERVAL", 5);
+const cn::microseconds ts::mcast::FluteDemux::_file_max_lifetime = InitGC(u"TS_FLUTE_GC_MAX_LIFE", 30);
 
 
 //----------------------------------------------------------------------------
@@ -40,6 +52,8 @@ bool ts::mcast::FluteDemux::reset(const FluteDemuxArgs& args)
 {
     _args = args;
     _sessions.clear();
+    _packet_count = 0;
+    _next_gc_timestamp = cn::microseconds::zero();
 
     // Check that the output directory exists for extracted files.
     if (!_args.output_directory.empty() && !fs::is_directory(_args.output_directory)) {
@@ -70,6 +84,20 @@ void ts::mcast::FluteDemux::FileContext::clear()
 
 void ts::mcast::FluteDemux::feedPacketImpl(const cn::microseconds& timestamp, const IPSocketAddress& source, const IPSocketAddress& destination, const uint8_t* udp, size_t udp_size)
 {
+    // Count IP packets.
+    if (_packet_count++ == 0) {
+        // First packet, initialize the garbage collector time.
+        _next_gc_timestamp = timestamp + _gc_interval;
+        _report.debug(u"FluteDemux garbage collector every %d seconds, max file life time: %d seconds",
+                      cn::duration_cast<cn::seconds>(_gc_interval).count(),
+                      cn::duration_cast<cn::seconds>(_file_max_lifetime).count());
+    }
+    else if (timestamp >= _next_gc_timestamp) {
+        // Time to collect the garbage.
+        garbageCollector(timestamp);
+        _next_gc_timestamp += _gc_interval;
+    }
+
     // Get LCT header.
     LCTHeader lct;
     if (!lct.deserialize(udp, udp_size)) {
@@ -113,6 +141,9 @@ void ts::mcast::FluteDemux::feedPacketImpl(const cn::microseconds& timestamp, co
     const FluteSessionId sid(source, destination, lct.tsi);
     SessionContext& session(_sessions[sid]);
     FileContext& file(session.files[lct.toi]);
+
+    // Keep track of last packet time, for the garbage collector.
+    file.last_time = timestamp;
 
     // If the file is the FDT of the session, it must have FDT and FTI headers.
     if (lct.toi == FLUTE_FDT_TOI) {
@@ -378,4 +409,29 @@ void ts::mcast::FluteDemux::getFilesStatus()
             }
         }
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Execute the garbage collector.
+//----------------------------------------------------------------------------
+
+void ts::mcast::FluteDemux::garbageCollector(const cn::microseconds& current_timestamp)
+{
+    _report.debug(u"FluteDemux garbage collector started");
+    size_t reclaimed = 0;
+    size_t kept = 0;
+    for (auto& sess : _sessions) {
+        for (auto file = sess.second.files.begin(); file != sess.second.files.end(); ) {
+            if (file->second.last_time + _file_max_lifetime >= current_timestamp) {
+                ++reclaimed;
+                file = sess.second.files.erase(file);
+            }
+            else {
+                ++kept;
+                ++file;
+            }
+        }
+    }
+    _report.debug(u"FluteDemux garbage collector complete, %'d files reclaimed, %'d kept", reclaimed, kept);
 }
