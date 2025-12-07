@@ -98,6 +98,14 @@ namespace ts::mcast {
             std::map<UString, FileContext> files {};  // Description of files, indexed by name.
         };
 
+        // Description of a service list.
+        class TSDUCKDLL ServiceListContext
+        {
+        public:
+            UString provider_name {};
+            UString list_name {};
+        };
+
         // NIPAnalyzer private fields.
         DuckContext&    _duck;
         Report&         _report {_duck.report()};
@@ -106,6 +114,7 @@ namespace ts::mcast {
         std::set<FluteSessionId>                 _session_filter {};
         std::map<FluteSessionId, SessionContext> _sessions {};
         std::set<NIPActualCarrierInformation>    _nacis {};
+        std::map<UString, ServiceListContext>    _service_lists {};  // Service lists, indexed by their URI.
 
         // Inherited methods.
         virtual void handleFluteFile(FluteDemux&, const FluteFile&) override;

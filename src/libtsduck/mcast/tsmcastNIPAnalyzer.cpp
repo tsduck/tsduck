@@ -9,6 +9,8 @@
 #include "tsmcastNIPAnalyzer.h"
 #include "tsmcastServiceInformationFile.h"
 #include "tsmcastGatewayConfiguration.h"
+#include "tsmcastServiceListEntryPoints.h"
+#include "tsmcastServiceList.h"
 #include "tsmcast.h"
 #include "tsTextTable.h"
 #include "tsErrCodeReport.h"
@@ -35,6 +37,7 @@ bool ts::mcast::NIPAnalyzer::reset(const NIPAnalyzerArgs& args)
     _session_filter.clear();
     _sessions.clear();
     _nacis.clear();
+    _service_lists.clear();
 
     // Filter the DVB-NIP announcement channel (IPv4 and IPv6).
     static const FluteSessionId announce4(IPAddress(), NIPSignallingAddress4(), NIP_SIGNALLING_TSI);
@@ -138,11 +141,13 @@ void ts::mcast::NIPAnalyzer::handleFluteFile(FluteDemux& demux, const FluteFile&
     // Process some known files in the announcement channel.
     if (file.sessionId().nipAnnouncementChannel()) {
         if (name.similar(u"urn:dvb:metadata:nativeip:NetworkInformationFile")) {
+            // Got a NIF.
             saveXML(file, _args.save_nif);
         }
         else if (name.similar(u"urn:dvb:metadata:nativeip:ServiceInformationFile")) {
+            // Got a SIF.
             saveXML(file, _args.save_sif);
-            ServiceInformationFile sif(_report, file);
+            const ServiceInformationFile sif(_report, file);
             if (sif.isValid()) {
                 NIPActualCarrierInformation naci;
                 naci.valid = true;
@@ -154,7 +159,23 @@ void ts::mcast::NIPAnalyzer::handleFluteFile(FluteDemux& demux, const FluteFile&
             }
         }
         else if (name.similar(u"urn:dvb:metadata:nativeip:dvb-i-slep")) {
+            // Got a service list entry points.
             saveXML(file, _args.save_slep);
+            const ServiceListEntryPoints slep(_report, file);
+            if (slep.isValid()) {
+                // Grab all service lists.
+                for (const auto& prov : slep.providers) {
+                    for (const auto& l1 : prov.lists) {
+                        for (const auto& l2 : l1.lists) {
+                            if (l2.type.contains(u"xml", CASE_INSENSITIVE)) {
+                                auto& slc(_service_lists[l2.uri]);
+                                slc.list_name = l1.name;
+                                slc.provider_name = prov.provider.name;
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -180,6 +201,22 @@ void ts::mcast::NIPAnalyzer::handleFluteFile(FluteDemux& demux, const FluteFile&
                     }
                 }
             }
+        }
+    }
+
+    // Process service lists.
+    if (file.type().similar(u"application/vnd.dvb.dvbisl+xml")) {
+        // Report a verbose message if not yet registered from a service list entry point.
+        if (!_service_lists.contains(file.name())) {
+            _report.verbose(u"unannounced service list %s on %s", file.name(), file.sessionId());
+        }
+        // Process the service list.
+        auto& slc(_service_lists[file.name()]);
+        const ServiceList slist(_report, file);
+        if (slist.isValid()) {
+            slc.list_name = slist.list_name;
+            slc.provider_name = slist.provider_name;
+            //@@@ to be continued...
         }
     }
 
@@ -347,6 +384,11 @@ void ts::mcast::NIPAnalyzer::handleFluteStatus(FluteDemux& demux,
         file->second.toi = toi;
         if (!type.empty()) {
             file->second.type = type;
+            // Remove qualification such as "charset=utf-8" in type.
+            const size_t sc = file->second.type.find(u";");
+            if (sc < file->second.type.length()) {
+                file->second.type.resize(sc);
+            }
         }
     }
 }

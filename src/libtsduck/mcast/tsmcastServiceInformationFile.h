@@ -54,6 +54,12 @@ namespace ts::mcast {
         //!
         //! Definition of a \<BroadcastMediaStream> element.
         //!
+        //! There is one BroadcastMediaStream per NIP Stream.
+        //! Each URI may point to:
+        //! - A service list file (.xml).
+        //! - A HLS play list (.m3u8) for a service.
+        //! - A MPEG-DASH manifest (.mpd) for a service.
+        //!
         class TSDUCKDLL BroadcastMediaStream
         {
         public:

@@ -69,10 +69,16 @@ namespace ts::mcast {
         const UString& name() const { return _name; }
 
         //!
-        //! Get the MIME type of the file.
+        //! Get the base MIME type of the file, excluding qualification such as "charset=utf-8".
         //! @return A constant reference to the type string in the object.
         //!
         const UString& type() const { return _type; }
+
+        //!
+        //! Get the original full MIME type of the file.
+        //! @return A constant reference to the type string in the object.
+        //!
+        const UString& fullType() const { return _full_type; }
 
         //!
         //! Get the size of the file.
@@ -122,6 +128,7 @@ namespace ts::mcast {
         uint64_t       _toi = 0;
         UString        _name {};
         UString        _type {};
+        UString        _full_type {};
         ByteBlockPtr   _content {};
     };
 }

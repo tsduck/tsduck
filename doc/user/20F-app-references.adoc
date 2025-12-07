@@ -149,6 +149,7 @@
 |MUX |Multiplexer
 |NBIT |Network Board Information Table (ISDB)
 |NIC |Network Interface Card
+|NIF |Network Information File (DVB-NIP)
 |NIST |National Institute of Standards and Technology
 |NIT |Network Information Table (DVB)
 |NPT |Normal Play Time
@@ -195,7 +196,9 @@
 |SGT |Service Guide Table (SES Astra)
 |SHA |Secure Hash Algorithm, SHA-1, SHA-256, SHA-512, SHA-3 (cryptography)
 |SI |Service Information (DVB)
+|SIF |Service Information File (DVB-NIP)
 |SIT |Selection Information Table (DVB)
+|SLEP |Service List Entry Point (DVB-I, DVB-NIP)
 |SMPTE |Society of Motion Picture and Television Engineers
 |SRT |Secure Reliable Transport (network protocol)
 |SRT |SubRip Text (subtitles format)

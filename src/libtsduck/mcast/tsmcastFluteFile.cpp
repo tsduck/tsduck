@@ -24,8 +24,14 @@ ts::mcast::FluteFile::FluteFile(const FluteSessionId& sid,
     _toi(toi),
     _name(name),
     _type(type),
+    _full_type(type),
     _content(content != nullptr ? content : std::make_shared<ByteBlock>())
 {
+    // Remove qualification such as "charset=utf-8" in type.
+    const size_t sc = _type.find(u";");
+    if (sc < _type.length()) {
+        _type.resize(sc);
+    }
 }
 
 ts::mcast::FluteFile::~FluteFile()

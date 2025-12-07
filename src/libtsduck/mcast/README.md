@@ -13,7 +13,7 @@ Some of the known high-level standards are:
 - DVB-NIP, Native IP content delivery.
 - DVB-I, discovery of television services over IP.
 - DVB-MABR, adaptive bitrate over multicast.
-- ATSC 3.0.
+- ATSC 3.0, the next generation of American terrestrial TV over broadcast IP.
 - ABNT TV 3.0, a Brazilian standard, based on ATSC 3.0.
 
 ## Protocols stack
@@ -49,9 +49,20 @@ Note: FLUTE v2 is not backward compatible with FLUTE v1. DVB-NIP uses FLUTE v1.
 
 - ALC: Asynchronous Layered Coding
 - FDT: File Delivery Table
+- FEC: Forward Error Correction
 - LCT: Layered Coding Transport
+- NIF: Network Information File
+- SIF: Service Information File
+- SLEP: Service List Entry Point
 - TOI: Transport Object Identifier
 - TSI: Transport Session Identifier
+
+## Limitations
+
+The current implementation of DVB-NIP in TSDuck has the following limitations:
+
+- FLUTE only. DVB-NIP over ROUTE is not supported.
+- The only supported FEC Encoding ID is 0, 'Compact No-Code FEC' (Fully-Specified).
 
 ## DVB-NIP
 
@@ -73,13 +84,6 @@ properly declared into the PMT of a service. This service must have one single M
 A TS may carry several DVB-NIP streams but they must be in distinct services, one per
 DVB-NIP stream.
 
-## Limitations
-
-The current implementation of DVB-NIP in TSDuck has the following limitations:
-
-- FLUTE only. DVB-NIP over ROUTE is not supported.
-- The only supported FEC Encoding ID is 0, 'Compact No-Code FEC' (Fully-Specified).
-
 ## FEC, Forward Error Correction
 
 - FEC Encoding ID: An integer which defines the type of FEC. With FLUTE, it is stored in
@@ -92,9 +96,7 @@ The current implementation of DVB-NIP in TSDuck has the following limitations:
   extensions), immediately before the packet payload. The format of the FEC Payload ID
   structure depends on the FEC Encoding ID.
 
-## Miscellaneous notes on DVB-NIP
-
-### Transport protocol
+## File transport protocol
 
 DVB-NIP is based on FLUTE or ROUTE, two similar protocols to broadcast files.
 FLUTE and ROUTE are identically based on ALC, which is itself based on LCT.
@@ -110,7 +112,52 @@ Nobody knows...
 
 The current implementation of DVB-NIP in TSDuck assumes that FLUTE is used, not ROUTE.
 
-### Definitions
+## DVB-NIP definitions
+
+- Announcement channel: multicast destination 224.0.23.14:3937.
+- Bootstrap stream: the DVB-NIP standard is unclear.
+  - Can be the same as announcement.
+  - Can be several streams, typically one per operator, which are listed in the
+    "bootstrap" file in the anouncement channel.
+- NIP stream identifier: NIPNetworkID, NIPCarrierID, NIPLinkID, NIPServiceID.
+
+## Service discovery
+
+- Listen on announcement channel (destination 224.0.23.14:3937).
+  - Get bootstrap multicast gateway configuration instance document.
+    - Name: `urn:dvb:metadata:cs:NativeIPMulticastTransportObjectTypeCS:2023:bootstrap`
+    - Type: `application/xml+dvb-mabr-session-configuration`
+  - Get NIP Network Information File (NIF).
+    - Name: `urn:dvb:metadata:nativeip:NetworkInformationFile`
+    - Type: `application/xml+dvb-nip-nif`
+  - Get NIP Service Information File (SIF).
+    - Name: `urn:dvb:metadata:nativeip:ServiceInformationFile`
+    - Type: `application/xml+dvb-nip-sif`
+
+- The NIF contains a list of physical networks (e.g. satellite positions).
+  - A physical network contains several DVB-NIP streams.
+  - A DVB-NIP stream is defined by:
+    - Its logical NIP stream identifier.
+    - Its physical parameters (modulation parameters for the physical stream, TS or GSE).
+
+- The SIF contains a list of "broadcast media streams".
+  - A broadcast media stream contains:
+    - Its logical NIP stream identifier.
+    - A list of service URI's and a list of interactive applications.
+    - Each service URI may point to:
+      - A service list file (`.xml`).
+      - A HLS play list (`.m3u8`) for a service.
+      - A MPEG-DASH manifest (`.mpd`) for a service.
+    
+- The "bootstrap" file is a MulticastGatewayConfiguration.
+  - It contains several "transport sessions".
+  - A transport session contains:
+    - An end point: source IP address, destination IP address and UDP port, TSI.
+    - The transport protocol: FLUTE or ROUTE.
+    - Bitrate information.
+    - An optional list of important files in that session (tables, service lists, manifests or playlists, images, etc).
+
+## FLUTE definitions
 
 - Channel = source IP address / destination IP address and UDP port
 - Session = source IP address / TSI
