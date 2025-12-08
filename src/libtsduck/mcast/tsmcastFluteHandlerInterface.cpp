@@ -12,18 +12,18 @@ ts::mcast::FluteHandlerInterface::~FluteHandlerInterface()
 {
 }
 
-void ts::mcast::FluteHandlerInterface::handleFluteFile(FluteDemux&, const FluteFile&)
+void ts::mcast::FluteHandlerInterface::handleFluteFile(const FluteFile&)
 {
 }
 
-void ts::mcast::FluteHandlerInterface::handleFluteFDT(FluteDemux&, const FluteFDT&)
+void ts::mcast::FluteHandlerInterface::handleFluteFDT(const FluteFDT&)
 {
 }
 
-void ts::mcast::FluteHandlerInterface::handleFluteNACI(FluteDemux&, const NIPActualCarrierInformation&)
+void ts::mcast::FluteHandlerInterface::handleFluteNACI(const NIPActualCarrierInformation&)
 {
 }
 
-void ts::mcast::FluteHandlerInterface::handleFluteStatus(FluteDemux&, const FluteSessionId&, const UString&, const UString&, uint64_t, uint64_t, uint64_t)
+void ts::mcast::FluteHandlerInterface::handleFluteStatus(const FluteSessionId&, const UString&, const UString&, uint64_t, uint64_t, uint64_t)
 {
 }

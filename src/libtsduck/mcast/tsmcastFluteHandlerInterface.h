@@ -40,31 +40,27 @@ namespace ts::mcast {
         //!
         //! This hook is invoked when a new file is available.
         //! The default implementation does nothing.
-        //! @param [in,out] demux A reference to the FLUTE demux.
         //! @param [in] file The received file.
         //!
-        virtual void handleFluteFile(FluteDemux& demux, const FluteFile& file);
+        virtual void handleFluteFile(const FluteFile& file);
 
         //!
         //! This hook is invoked when a new File Delivery Table (FDT) is available.
         //! The default implementation does nothing.
-        //! @param [in,out] demux A reference to the FLUTE demux.
         //! @param [in] fdt The received FDT.
         //!
-        virtual void handleFluteFDT(FluteDemux& demux, const FluteFDT& fdt);
+        virtual void handleFluteFDT(const FluteFDT& fdt);
 
         //!
         //! This hook is invoked when a NIPActualCarrierInformation is found in a LCT header.
         //! The default implementation does nothing.
-        //! @param [in,out] demux A reference to the FLUTE demux.
         //! @param [in] naci The received NIPActualCarrierInformation.
         //!
-        virtual void handleFluteNACI(FluteDemux& demux, const NIPActualCarrierInformation& naci);
+        virtual void handleFluteNACI(const NIPActualCarrierInformation& naci);
 
         //!
         //! This hook is invoked by FluteDemux::getFilesStatus() for each file.
         //! The default implementation does nothing.
-        //! @param [in,out] demux A reference to the FLUTE demux.
         //! @param [in] session Session identification.
         //! @param [in] name File name. May be empty if partially transfered and not referenced yet in FDT.
         //! @param [in] type File type. May be empty as well.
@@ -72,8 +68,7 @@ namespace ts::mcast {
         //! @param [in] total_length Total announced file size in bytes.
         //! @param [in] received_length Number of received bytes so far.
         //!
-        virtual void handleFluteStatus(FluteDemux& demux,
-                                       const FluteSessionId& session,
+        virtual void handleFluteStatus(const FluteSessionId& session,
                                        const UString& name,
                                        const UString& type,
                                        uint64_t toi,

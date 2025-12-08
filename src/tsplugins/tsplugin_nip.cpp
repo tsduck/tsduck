@@ -13,7 +13,7 @@
 #include "tsAbstractSingleMPEPlugin.h"
 #include "tsPluginRepository.h"
 #include "tsMPEPacket.h"
-#include "tsmcastNIPAnalyzer.h"
+#include "tsmcastNIPAnalyzerReport.h"
 
 
 //----------------------------------------------------------------------------
@@ -36,7 +36,7 @@ namespace ts::mcast {
         NIPAnalyzerArgs _opt_nip {};
 
         // Plugin private fields.
-        NIPAnalyzer _nip_analyzer {duck};
+        NIPAnalyzerReport _nip_analyzer {duck};
     };
 }
 

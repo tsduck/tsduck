@@ -17,7 +17,7 @@
 #include "tsIPPacket.h"
 #include "tsIPProtocols.h"
 #include "tsPcapFilter.h"
-#include "tsmcastNIPAnalyzer.h"
+#include "tsmcastNIPAnalyzerReport.h"
 TS_MAIN(MainCode);
 
 
@@ -94,7 +94,7 @@ int MainCode(int argc, char *argv[])
     opt.duck.setReport(&report);
 
     // Initialize a DVB-NIP analyzer.
-    ts::mcast::NIPAnalyzer analyzer(opt.duck);
+    ts::mcast::NIPAnalyzerReport analyzer(opt.duck);
     if (!analyzer.reset(opt.nip)) {
         return EXIT_FAILURE;
     }

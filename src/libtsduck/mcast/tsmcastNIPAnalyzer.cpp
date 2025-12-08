@@ -7,9 +7,8 @@
 //----------------------------------------------------------------------------
 
 #include "tsmcastNIPAnalyzer.h"
+#include "tsmcastNIPActualCarrierInformation.h"
 #include "tsmcast.h"
-#include "tsTextTable.h"
-#include "tsErrCodeReport.h"
 
 
 //----------------------------------------------------------------------------
@@ -26,13 +25,10 @@ ts::mcast::NIPAnalyzer::NIPAnalyzer(DuckContext& duck) :
 // Reset the analysis.
 //----------------------------------------------------------------------------
 
-bool ts::mcast::NIPAnalyzer::reset(const NIPAnalyzerArgs& args)
+bool ts::mcast::NIPAnalyzer::reset(const FluteDemuxArgs& args)
 {
     bool ok = _flute_demux.reset(args);
-    _args = args;
     _session_filter.clear();
-    _sessions.clear();
-    _nacis.clear();
     _service_lists.clear();
     _services.clear();
 
@@ -41,12 +37,6 @@ bool ts::mcast::NIPAnalyzer::reset(const NIPAnalyzerArgs& args)
     static const FluteSessionId announce6(IPAddress(), NIPSignallingAddress6(), NIP_SIGNALLING_TSI);
     addSession(announce4);
     addSession(announce6);
-
-    // Check that the root directory exists for carousel files.
-    if (!_args.save_dvbgw_dir.empty() && !fs::is_directory(_args.save_dvbgw_dir)) {
-        _report.error(u"directory not found: %s", _args.save_dvbgw_dir);
-        ok = false;
-    }
 
     return ok;
 }
@@ -102,87 +92,47 @@ bool ts::mcast::NIPAnalyzer::isFiltered(const FluteSessionId& session) const
 
 
 //----------------------------------------------------------------------------
-// Process a NIPActualCarrierInformation.
-//----------------------------------------------------------------------------
-
-void ts::mcast::NIPAnalyzer::handleFluteNACI(FluteDemux& demux, const NIPActualCarrierInformation& naci)
-{
-    _nacis.insert(naci);
-}
-
-
-//----------------------------------------------------------------------------
 // Process a FLUTE file.
 //----------------------------------------------------------------------------
 
-void ts::mcast::NIPAnalyzer::handleFluteFile(FluteDemux& demux, const FluteFile& file)
+void ts::mcast::NIPAnalyzer::handleFluteFile(const FluteFile& file)
 {
-    const UString& name(file.name());
-
     // Filter out files from non-filtered sessions.
     if (!isFiltered(file.sessionId())) {
         _report.debug(u"ignoring %s from %s", file.name(), file.sessionId());
         return;
     }
 
-    // Remember statistics about files.
-    if (_args.summary) {
-        auto& session(_sessions[file.sessionId()]);
-        auto& fctx(session.files[file.name()]);
-        fctx.complete = true;
-        fctx.type = file.type();
-        fctx.size = fctx.received = file.size();
-        fctx.toi = file.toi();
-    }
+    // Is this a file from the DVB-NIP announcement channel?
+    const bool is_announce = file.sessionId().nipAnnouncementChannel();
 
-    // Process some known files in the announcement channel.
-    if (file.sessionId().nipAnnouncementChannel()) {
-        if (name.similar(u"urn:dvb:metadata:nativeip:NetworkInformationFile")) {
-            // Got a NIF.
-            saveXML(file, _args.save_nif);
-        }
-        else if (name.similar(u"urn:dvb:metadata:nativeip:ServiceInformationFile")) {
-            // Got a SIF.
-            saveXML(file, _args.save_sif);
-            const ServiceInformationFile sif(_report, file);
-            if (sif.isValid()) {
-                processSIF(demux, sif);
-            }
-        }
-        else if (name.similar(u"urn:dvb:metadata:nativeip:dvb-i-slep")) {
-            // Got a service list entry points.
-            saveXML(file, _args.save_slep);
-            const ServiceListEntryPoints slep(_report, file);
-            if (slep.isValid()) {
-                processSLEP(demux, slep);
-            }
+    if (is_announce && file.name().similar(u"urn:dvb:metadata:nativeip:ServiceInformationFile")) {
+        // Process a SIF.
+        const ServiceInformationFile sif(_report, file);
+        if (sif.isValid()) {
+            processSIF(sif);
         }
     }
-
-    // Process gateway configurations to find other sessions.
-    const bool is_bootstrap = name.similar(u"urn:dvb:metadata:cs:NativeIPMulticastTransportObjectTypeCS:2023:bootstrap");
-    if (is_bootstrap) {
-        saveXML(file, _args.save_bootstrap);
+    else if (is_announce && file.name().similar(u"urn:dvb:metadata:nativeip:dvb-i-slep")) {
+        // Process a service list entry points.
+        const ServiceListEntryPoints slep(_report, file);
+        if (slep.isValid()) {
+            processSLEP(slep);
+        }
     }
-    if (is_bootstrap || file.type().similar(u"application/xml+dvb-mabr-session-configuration")) {
+    else if (file.type().similar(u"application/xml+dvb-mabr-session-configuration")) {
+        // Process gateway configurations to find other sessions.
         const GatewayConfiguration mgc(_report, file);
         if (mgc.isValid()) {
-            processGatewayConfiguration(demux, mgc);
+            processGatewayConfiguration(mgc);
         }
     }
-
-    // Process service lists.
-    if (file.type().similar(u"application/vnd.dvb.dvbisl+xml")) {
+    else if (file.type().similar(u"application/vnd.dvb.dvbisl+xml")) {
+        // Process service lists.
         const ServiceList slist(_report, file);
         if (slist.isValid()) {
-            processServiceList(demux, slist);
+            processServiceList(slist);
         }
-    }
-
-    // Save carousel files.
-    static const UString dvbgw_prefix(u"http://dvb.gw/");
-    if (!_args.save_dvbgw_dir.empty() && name.starts_with(dvbgw_prefix)) {
-        saveFile(file, _args.save_dvbgw_dir, name.substr(dvbgw_prefix.length()));
     }
 }
 
@@ -191,7 +141,7 @@ void ts::mcast::NIPAnalyzer::handleFluteFile(FluteDemux& demux, const FluteFile&
 // Process a bootstrap or multicast gateway configuration.
 //----------------------------------------------------------------------------
 
-void ts::mcast::NIPAnalyzer::processGatewayConfiguration(FluteDemux& demux, const GatewayConfiguration& mgc)
+void ts::mcast::NIPAnalyzer::processGatewayConfiguration(const GatewayConfiguration& mgc)
 {
     // Add all transport sessions in the session filter.
     for (const auto& sess : mgc.transport_sessions) {
@@ -214,15 +164,16 @@ void ts::mcast::NIPAnalyzer::processGatewayConfiguration(FluteDemux& demux, cons
 // Process a Service Information File (SIF).
 //----------------------------------------------------------------------------
 
-void ts::mcast::NIPAnalyzer::processSIF(FluteDemux& demux, const ServiceInformationFile& sif)
+void ts::mcast::NIPAnalyzer::processSIF(const ServiceInformationFile& sif)
 {
     // Register all NIP actual carrier information.
+    // Typically used by a subclass, if necessary.
     NIPActualCarrierInformation naci;
     naci.valid = true;
     naci.stream_provider_name = sif.provider_name;
     for (const auto& st : sif.streams) {
         naci.stream_id = st.stream_id;
-        handleFluteNACI(demux, naci);
+        handleFluteNACI(naci);
     }
 }
 
@@ -231,7 +182,7 @@ void ts::mcast::NIPAnalyzer::processSIF(FluteDemux& demux, const ServiceInformat
 // Process a Service List Entry Points (SLEP).
 //----------------------------------------------------------------------------
 
-void ts::mcast::NIPAnalyzer::processSLEP(FluteDemux& demux, const ServiceListEntryPoints& slep)
+void ts::mcast::NIPAnalyzer::processSLEP(const ServiceListEntryPoints& slep)
 {
     // Grab all service lists.
     for (const auto& prov : slep.providers) {
@@ -252,7 +203,7 @@ void ts::mcast::NIPAnalyzer::processSLEP(FluteDemux& demux, const ServiceListEnt
 // Process a Service List.
 //----------------------------------------------------------------------------
 
-void ts::mcast::NIPAnalyzer::processServiceList(FluteDemux& demux, const ServiceList& slist)
+void ts::mcast::NIPAnalyzer::processServiceList(const ServiceList& slist)
 {
     // Report a verbose message if not yet registered from a service list entry point.
     if (!_service_lists.contains(slist.name())) {
@@ -265,8 +216,14 @@ void ts::mcast::NIPAnalyzer::processServiceList(FluteDemux& demux, const Service
     slc.list_name = slist.list_name;
     slc.provider_name = slist.provider_name;
 
+    // Set of unique ids of new services.
+    std::set<UString> new_services;
+
     // Process each service.
     for (const auto& it1 : slist.services) {
+        if (!_services.contains(it1.unique_id)) {
+            new_services.insert(it1.unique_id);
+        }
         auto& serv(_services[it1.unique_id]);
         serv.service_name = it1.service_name;
         serv.provider_name = it1.provider_name;
@@ -286,239 +243,19 @@ void ts::mcast::NIPAnalyzer::processServiceList(FluteDemux& demux, const Service
             serv.visible = it2.visible;
         }
     }
-}
 
-
-//----------------------------------------------------------------------------
-// Save a XML file (if the file name is not empty).
-//----------------------------------------------------------------------------
-
-void ts::mcast::NIPAnalyzer::saveXML(const FluteFile& file, const fs::path& path)
-{
-    // Don't save the file if the path is empty.
-    if (!path.empty()) {
-        _report.debug(u"saving %s", path);
-        if (!file.toXML().save(path, false, true)) {
-            _report.error(u"error creating file %s", path);
-        }
+    // Notify new services, when the descriptions are complete.
+    for (const auto& it : new_services) {
+        processNewService(_services[it]);
     }
 }
 
 
 //----------------------------------------------------------------------------
-// Save a carousel file.
+// This virtual method is invoked for each new service.
 //----------------------------------------------------------------------------
 
-void ts::mcast::NIPAnalyzer::saveFile(const FluteFile& file, const fs::path& root_dir, const UString& relative_path)
+void ts::mcast::NIPAnalyzer::processNewService(const ServiceContext& service)
 {
-    // Cleanup the file path to avoid directory traversal attack.
-    UStringVector comp;
-    relative_path.split(comp, u'/', true, true);
-    fs::path path(root_dir);
-    fs::path basename;
-    for (size_t i = 0; i < comp.size(); ++i) {
-        if (comp[i] != u"." && comp[i] != u"..") {
-            if (i + 1 < comp.size()) {
-                path /= comp[i];
-            }
-            else {
-                basename = comp[i];
-            }
-        }
-    }
-    if (basename.empty()) {
-        _report.error(u"no filename specified in \"%s\"", relative_path);
-        return;
-    }
-
-    // Create intermediate subdirectories if required.
-    fs::create_directories(path, &ErrCodeReport(_report, u"error creating directory", path));
-
-    // Save final file.
-    path /= basename;
-    _report.verbose(u"saving %s", path);
-    file.content().saveToFile(path, &_report);
-}
-
-
-//----------------------------------------------------------------------------
-// Print a summary of the DVB-NIP session.
-//----------------------------------------------------------------------------
-
-void ts::mcast::NIPAnalyzer::printSummary(std::ostream& user_output)
-{
-    // Create the user-specified output file if required.
-    const bool use_file = !_args.output_file.empty() && _args.output_file != u"-";
-    std::ofstream outfile;
-    if (use_file) {
-        outfile.open(_args.output_file);
-        if (!outfile) {
-            _report.error(u"error creating %s", _args.output_file);
-        }
-    }
-    std::ostream& out(use_file ? outfile : user_output);
-
-    // Get status of incomplete files from the FLUTE demux.
-    _flute_demux.getFilesStatus();
-
-    // Display the DVB-NIP carrier information.
-    out << std::endl << "DVB-NIP carriers: " << _nacis.size() << std::endl;
-    for (const auto& naci : _nacis) {
-        out << "Provider: \"" << naci.stream_provider_name << "\", " << naci.stream_id << std::endl;
-    }
-    out << std::endl;
-
-    // Display service lists information.
-    out << "Service lists: " << _service_lists.size() << std::endl;
-    if (!_service_lists.empty()) {
-        TextTable tab;
-        enum col {PROVIDER, LISTNAME, SESSION, FILENAME};
-        tab.addColumn(PROVIDER, u"Provider", TextTable::Align::LEFT);
-        tab.addColumn(LISTNAME, u"List name", TextTable::Align::LEFT);
-        tab.addColumn(SESSION,  u"Session id", TextTable::Align::LEFT);
-        tab.addColumn(FILENAME, u"File URN", TextTable::Align::LEFT);
-        for (const auto& it : _service_lists) {
-            tab.setCell(PROVIDER, it.second.provider_name);
-            tab.setCell(LISTNAME, it.second.list_name);
-            tab.setCell(SESSION,  it.second.session_id.isValid() ? it.second.session_id.toString() : u"unknown");
-            tab.setCell(FILENAME, it.first);
-            tab.newLine();
-        }
-        tab.output(out, TextTable::Headers::TEXT, true, u"  ", u"  ");
-    }
-    out << std::endl;
-
-    // Display services information.
-    out << "Services: " << _services.size() << " (V: visible, S: selectable)" << std::endl;
-    if (!_services.empty()) {
-        // Build a temporary map, indexed by LCN, to get a sorted list of services.
-        std::multimap<uint32_t, const ServiceContext*> sorted;
-        for (const auto& it1 : _services) {
-            sorted.insert(std::make_pair(it1.second.channel_number, &it1.second));
-        }
-        // Now use the sorted map to display.
-        TextTable tab;
-        enum {LCN, FLAGS, PROVIDER, SNAME, FILENAME, FILETYPE};
-        tab.addColumn(LCN, u"LCN", TextTable::Align::RIGHT);
-        tab.addColumn(FLAGS, u"VS", TextTable::Align::RIGHT);
-        tab.addColumn(PROVIDER, u"Provider", TextTable::Align::LEFT);
-        tab.addColumn(SNAME, u"Service", TextTable::Align::LEFT);
-        tab.addColumn(FILENAME, u"Media URN", TextTable::Align::LEFT);
-        tab.addColumn(FILETYPE, u"Type", TextTable::Align::LEFT);
-        for (const auto& it1 : sorted) {
-            const auto& serv(*it1.second);
-            UString flags(u"--");
-            if (serv.visible) {
-                flags[0] = 'v';
-            }
-            if (serv.selectable) {
-                flags[1] = 's';
-            }
-            if (serv.instances.empty()) {
-                tab.setCell(LCN, UString::Decimal(serv.channel_number));
-                tab.setCell(FLAGS, flags);
-                tab.setCell(PROVIDER, serv.provider_name);
-                tab.setCell(SNAME, serv.service_name);
-                tab.newLine();
-            }
-            else {
-                for (const auto& it2 : serv.instances) {
-                    tab.setCell(LCN, UString::Decimal(serv.channel_number));
-                    tab.setCell(FLAGS, flags);
-                    tab.setCell(PROVIDER, serv.provider_name);
-                    tab.setCell(SNAME, serv.service_name);
-                    tab.setCell(FILENAME, it2.first);
-                    tab.setCell(FILETYPE, it2.second.media_type);
-                    tab.newLine();
-                }
-            }
-        }
-        tab.output(out, TextTable::Headers::TEXT, true, u"  ", u"  ");
-    }
-    out << std::endl;
-
-    // Display the status of all files.
-    size_t session_count = 0;
-    for (const auto& sess : _sessions) {
-        out << "Session #" << (++session_count) << ": " << sess.first << std::endl;
-        if (sess.second.files.empty()) {
-            out << "  No file received" << std::endl;
-        }
-        else {
-            TextTable tab;
-            enum {SIZE, TOI, STATUS, NAME, TYPE};
-            tab.addColumn(SIZE, u"Size", TextTable::Align::RIGHT);
-            tab.addColumn(TOI, u"TOI", TextTable::Align::RIGHT);
-            tab.addColumn(STATUS, u"Status", TextTable::Align::RIGHT);
-            tab.addColumn(NAME, u"Name", TextTable::Align::LEFT);
-            tab.addColumn(TYPE, u"Type", TextTable::Align::LEFT);
-            for (const auto& file : sess.second.files) {
-                tab.setCell(SIZE, UString::Decimal(file.second.size));
-                tab.setCell(TOI, UString::Decimal(file.second.toi));
-                tab.setCell(STATUS, file.second.complete ? u"complete" : UString::Decimal(file.second.received));
-                tab.setCell(NAME, file.first);
-                tab.setCell(TYPE, file.second.type);
-                tab.newLine();
-            }
-            tab.output(out, TextTable::Headers::TEXT, true, u"  ", u"  ");
-        }
-        out << std::endl;
-    }
-
-    // Close the user-specified output file if required.
-    if (use_file) {
-        outfile.close();
-    }
-}
-
-
-//----------------------------------------------------------------------------
-// Invoked by FluteDemux::getFilesStatus() for each file.
-//----------------------------------------------------------------------------
-
-void ts::mcast::NIPAnalyzer::handleFluteStatus(FluteDemux& demux,
-                                        const FluteSessionId& session_id,
-                                        const UString& name,
-                                        const UString& type,
-                                        uint64_t toi,
-                                        uint64_t total_length,
-                                        uint64_t received_length)
-{
-    auto& session(_sessions[session_id]);
-    auto file = session.files.find(name);
-
-    // If the file is unnamed, try to find a matching TOI in the session.
-    if (name.empty()) {
-        for (file = session.files.begin(); file != session.files.end() && file->second.toi != toi; ++file) {
-        }
-    }
-
-    // If the file is still not found, create an entry for an incomplete file.
-    if (file == session.files.end()) {
-        // Do not create a new entry for an FDT. This is a FLUTE-level file, not a DVB-NIP one.
-        if (toi == 0) {
-            return;
-        }
-        // Create an entry for an incomplete file.
-        UString new_name(name);
-        if (new_name.empty()) {
-            new_name.format(u"(unknown, TOI %d)", toi);
-        }
-        file = session.files.emplace(new_name, FileContext()).first;
-    }
-
-    // If the file is not completely received, update the description.
-    if (!file->second.complete) {
-        file->second.size = total_length;
-        file->second.received = received_length;
-        file->second.toi = toi;
-        if (!type.empty()) {
-            file->second.type = type;
-            // Remove qualification such as "charset=utf-8" in type.
-            const size_t sc = file->second.type.find(u";");
-            if (sc < file->second.type.length()) {
-                file->second.type.resize(sc);
-            }
-        }
-    }
+    // Nothing to do by default, let subclasses use this.
 }

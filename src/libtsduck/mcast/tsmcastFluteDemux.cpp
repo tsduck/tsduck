@@ -129,7 +129,7 @@ void ts::mcast::FluteDemux::feedPacketImpl(const cn::microseconds& timestamp, co
 
     // Notify NIPActualCarrierInformation.
     if (lct.naci.valid && _handler != nullptr) {
-        _handler->handleFluteNACI(*this, lct.naci);
+        _handler->handleFluteNACI(lct.naci);
     }
 
     // With empty payload, nothing more to do.
@@ -323,7 +323,7 @@ void ts::mcast::FluteDemux::processCompleteFile(const FluteSessionId& sid, Sessi
 
         // Notify the application.
         if (_handler != nullptr) {
-            _handler->handleFluteFile(*this, ff);
+            _handler->handleFluteFile(ff);
         }
     }
 
@@ -378,7 +378,7 @@ void ts::mcast::FluteDemux::processFDT(SessionContext& session, const FluteFDT& 
 
     // Notify the application.
     if (_handler != nullptr) {
-        _handler->handleFluteFDT(*this, fdt);
+        _handler->handleFluteFDT(fdt);
     }
 
     // Process all complete files which were not processed yet because of an absence of FDT.
@@ -399,8 +399,7 @@ void ts::mcast::FluteDemux::getFilesStatus()
     if (_handler != nullptr) {
         for (const auto& sess : _sessions) {
             for (const auto& file : sess.second.files) {
-                _handler->handleFluteStatus(*this,
-                                            sess.first,
+                _handler->handleFluteStatus(sess.first,
                                             file.second.name,
                                             file.second.type,
                                             file.first,
