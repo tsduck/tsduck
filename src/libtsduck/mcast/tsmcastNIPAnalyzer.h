@@ -116,8 +116,9 @@ namespace ts::mcast {
         //! @param [out] lists Returned container of service list descriptions.
         //! The list of sorted by file names of service lists.
         //!
-        template <class CONTAINER> requires std::same_as<typename CONTAINER::value_type, ServiceListContext>
+        template <class CONTAINER> requires std::same_as<typename CONTAINER::value_type, ts::mcast::NIPAnalyzer::ServiceListContext>
         void getServiceLists(CONTAINER& lists) const;
+        // Note: Must fully qualify ServiceListContext in same_as<> because of a Visual Studio bug.
 
         //!
         //! Description of an instance of service.
@@ -152,8 +153,9 @@ namespace ts::mcast {
         //! @param [out] services Returned container of service descriptions.
         //! The list of sorted by logical channel number (LCN).
         //!
-        template <class CONTAINER> requires std::same_as<typename CONTAINER::value_type, ServiceContext>
+        template <class CONTAINER> requires std::same_as<typename CONTAINER::value_type, ts::mcast::NIPAnalyzer::ServiceContext>
         void getServices(CONTAINER& services) const;
+        // Note: Must fully qualify ServiceContext in same_as<> because of a Visual Studio bug.
 
     protected:
         //!
