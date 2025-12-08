@@ -23,10 +23,13 @@ ts::mcast::ServiceList::ServiceList(Report& report, const FluteFile& file) :
     if (parseXML(doc, u"ServiceList", true)) {
         const xml::Element* root = doc.rootElement();
 
-        _valid = root->getIntAttribute(version, u"version", true) &&
-                 root->getAttribute(list_id, u"id", true) &&
-                 root->getAttribute(lang, u"lang", true) &&
-                 root->getTextChild(list_name, u"Name", true, true) &&
+        // Display error but do not fail if missing (some bogus streams don't have them).
+        root->getIntAttribute(version, u"version", true);
+        root->getAttribute(list_id, u"id", true);
+        root->getAttribute(lang, u"lang", true);
+
+        // The others must really be there.
+        _valid = root->getTextChild(list_name, u"Name", true, true) &&
                  root->getTextChild(provider_name, u"ProviderName", true, true);
 
         for (const xml::Element* e = root->findFirstChild(u"Service", true); _valid && e != nullptr; e = e->findNextSibling(true)) {
@@ -80,15 +83,22 @@ ts::mcast::ServiceList::LCNTable::LCNTable(const xml::Element* element)
 ts::mcast::ServiceList::ServiceType::ServiceType(const xml::Element* element, bool test) :
     test_service(test)
 {
+    const xml::Element* e1 = nullptr;
+    UString ext_name;
+
     if (element != nullptr) {
-        valid = element->getIntAttribute(version, u"version", true) &&
-                element->getAttribute(lang, u"lang") &&
-                element->getBoolAttribute(dynamic, u"dynamic") &&
-                element->getBoolAttribute(replay_available, u"replayAvailable") &&
-                element->getTextChild(unique_id, u"UniqueIdentifier", true, true) &&
+        // Display error but do not fail if missing (some bogus streams don't have them).
+        element->getIntAttribute(version, u"version", true);
+        element->getAttribute(lang, u"lang");
+        element->getBoolAttribute(dynamic, u"dynamic");
+        element->getBoolAttribute(replay_available, u"replayAvailable");
+
+        // The others must really be there.
+        valid = element->getTextChild(unique_id, u"UniqueIdentifier", true, true) &&
                 element->getTextChild(service_name, u"ServiceName", true, true) &&
                 element->getTextChild(provider_name, u"ProviderName", true, true);
 
+        // Loop on all "service instances" (various places where the same service is available).
         for (const xml::Element* e = element->findFirstChild(u"ServiceInstance", true); valid && e != nullptr; e = e->findNextSibling(true)) {
             instances.emplace_back();
             auto& inst(instances.back());
@@ -96,20 +106,35 @@ ts::mcast::ServiceList::ServiceType::ServiceType(const xml::Element* element, bo
                     e->getAttribute(inst.id, u"id") &&
                     e->getAttribute(inst.lang, u"lang");
 
-            const xml::Element* e1 = e->findFirstChild(u"IdentifierBasedDeliveryParameters", true);
-            if (valid && e1 != nullptr) {
-                valid = e1->getText(inst.id_based_params, true) &&
-                        e1->getAttribute(inst.id_based_params_type, u"contentType");
+            // Try to find a playlist in <IdentifierBasedDeliveryParameters>.
+            if (valid &&
+                (e1 = e->findFirstChild(u"IdentifierBasedDeliveryParameters", true)) != nullptr)
+            {
+                valid = e1->getText(inst.media_params, true) &&
+                        e1->getAttribute(inst.media_params_type, u"contentType");
             }
 
+            // Otherwise, try to find a manifest in <DASHDeliveryParameters>.
             if (valid &&
-                (e1 = e->findFirstChild(u"OtherDeliveryParameters", true)) != nullptr &&
-                e1->getAttribute(inst.other_params_ext_name, u"extensionName") &&
-                inst.other_params_ext_name == u"vnd.apple.mpegurl" &&
+                inst.media_params.empty() &&
+                (e1 = e->findFirstChild(u"DASHDeliveryParameters", true)) != nullptr &&
                 (e1 = e1->findFirstChild(u"UriBasedLocation", true)) != nullptr)
             {
-                e1->getTextChild(inst.other_params_uri, u"URI", true);
-                e1->getAttribute(inst.other_params_uri_type, u"contentType");
+                e1->getTextChild(inst.media_params, u"URI", true);
+                e1->getAttribute(inst.media_params_type, u"contentType");
+            }
+
+            // Otherwise, try to find a playlist in <OtherDeliveryParameters>.
+            // Not sure it is valid but it appeared in at least one example.
+            if (valid &&
+                inst.media_params.empty() &&
+                (e1 = e->findFirstChild(u"OtherDeliveryParameters", true)) != nullptr &&
+                e1->getAttribute(ext_name, u"extensionName") &&
+                ext_name == u"vnd.apple.mpegurl" &&
+                (e1 = e1->findFirstChild(u"UriBasedLocation", true)) != nullptr)
+            {
+                e1->getTextChild(inst.media_params, u"URI", true);
+                e1->getAttribute(inst.media_params_type, u"contentType");
             }
         }
     }

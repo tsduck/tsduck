@@ -35,6 +35,17 @@ void ts::mcast::FluteSessionId::clear()
 
 
 //----------------------------------------------------------------------------
+// Check if there is some valid session value.
+//----------------------------------------------------------------------------
+
+bool ts::mcast::FluteSessionId::isValid() const
+{
+    // Source address is not required.
+    return destination.hasAddress() && destination.hasPort() && tsi != INVALID_TSI;
+}
+
+
+//----------------------------------------------------------------------------
 // Comparison operator for use as index in maps.
 //----------------------------------------------------------------------------
 

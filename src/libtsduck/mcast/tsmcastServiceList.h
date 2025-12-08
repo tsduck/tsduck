@@ -78,15 +78,12 @@ namespace ts::mcast {
         class TSDUCKDLL ServiceInstance
         {
         public:
-            ServiceInstance() = default;        //!< Constructor.
-            uint32_t priority = 0;              //!< Attribute "priority".
-            UString  id {};                     //!< Attribute "id"
-            UString  lang {};                   //!< Attribute "xml:lang"
-            UString  id_based_params {};        //!< Element \<IdentifierBasedDeliveryParameters>.
-            UString  id_based_params_type {};   //!< Attribute "contentType" of element \<IdentifierBasedDeliveryParameters>.
-            UString  other_params_ext_name {};  //!< Attribute "extensionName" of element \<OtherDeliveryParameters>.
-            UString  other_params_uri {};       //!< Element \<URI> of element \<UriBasedLocation> in \<OtherDeliveryParameters>, when "extensionName" is "vnd.apple.mpegurl".
-            UString  other_params_uri_type {};  //!< Attribute "contentType" of element \<UriBasedLocation> in \<OtherDeliveryParameters>.
+            ServiceInstance() = default;     //!< Constructor.
+            uint32_t priority = 0;           //!< Attribute "priority".
+            UString  id {};                  //!< Attribute "id"
+            UString  lang {};                //!< Attribute "xml:lang"
+            UString  media_params {};        //!< Media playlist, manifest, etc.
+            UString  media_params_type {};   //!< Media parameters type.
         };
 
         //!

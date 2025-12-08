@@ -55,6 +55,12 @@ namespace ts::mcast {
         void clear();
 
         //!
+        //! Check if there is some valid session value.
+        //! @return True is there is some valid session value.
+        //!
+        bool isValid() const;
+
+        //!
         //! Check if this session id "matches" another one.
         //! @param [in] other Another instance to compare.
         //! @return False if any addresse, port, or TSI in @a this and @a other are both specified and are different.

@@ -16,6 +16,10 @@
 #include "tsmcastFluteDemux.h"
 #include "tsmcastTransportProtocol.h"
 #include "tsmcastNIPActualCarrierInformation.h"
+#include "tsmcastGatewayConfiguration.h"
+#include "tsmcastServiceInformationFile.h"
+#include "tsmcastServiceListEntryPoints.h"
+#include "tsmcastServiceList.h"
 #include "tsDuckContext.h"
 #include "tsIPSocketAddress.h"
 #include "tsIPPacket.h"
@@ -102,8 +106,31 @@ namespace ts::mcast {
         class TSDUCKDLL ServiceListContext
         {
         public:
-            UString provider_name {};
-            UString list_name {};
+            FluteSessionId session_id {};     // Where the service list is received.
+            UString        provider_name {};  // Provider for the service list (not the services).
+            UString        list_name {};      // List title (not its file name).
+        };
+
+        // Description of an instance of service).
+        class TSDUCKDLL ServiceInstanceContext
+        {
+        public:
+            FluteSessionId session_id {};          // Where the service media are received.
+            uint32_t       instance_priority = 0;
+            UString        media_type {};
+        };
+
+        // Description of a service.
+        class TSDUCKDLL ServiceContext
+        {
+        public:
+            FluteSessionId session_id {};          // Where the service media are received.
+            uint32_t       channel_number = 0;     // LCN.
+            bool           selectable = true;
+            bool           visible = true;
+            UString        service_name {};
+            UString        provider_name {};
+            std::map<UString, ServiceInstanceContext> instances {}; // Indexed by media URN.
         };
 
         // NIPAnalyzer private fields.
@@ -115,6 +142,7 @@ namespace ts::mcast {
         std::map<FluteSessionId, SessionContext> _sessions {};
         std::set<NIPActualCarrierInformation>    _nacis {};
         std::map<UString, ServiceListContext>    _service_lists {};  // Service lists, indexed by their URI.
+        std::map<UString, ServiceContext>        _services {};       // Services, indexed by their unique id.
 
         // Inherited methods.
         virtual void handleFluteFile(FluteDemux&, const FluteFile&) override;
@@ -133,6 +161,12 @@ namespace ts::mcast {
 
         // Save a carousel file.
         void saveFile(const FluteFile& file, const fs::path& root_dir, const UString& path);
+
+        // Process various tables.
+        void processSIF(FluteDemux&, const ServiceInformationFile&);
+        void processSLEP(FluteDemux&, const ServiceListEntryPoints&);
+        void processServiceList(FluteDemux&, const ServiceList&);
+        void processGatewayConfiguration(FluteDemux&, const GatewayConfiguration&);
     };
 }
 
