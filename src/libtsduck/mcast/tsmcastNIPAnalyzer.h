@@ -42,7 +42,7 @@ namespace ts::mcast {
         //! @param [in] args Analysis arguments.
         //! @return True on success, false on error.
         //!
-        virtual bool reset(const FluteDemuxArgs& args);
+        bool reset(const FluteDemuxArgs& args);
 
         //!
         //! The following method feeds the analyzer with an IP packet.
@@ -144,6 +144,7 @@ namespace ts::mcast {
             bool           selectable = true;   //!< Service is selectable.
             bool           visible = true;      //!< Service is visible.
             UString        service_name {};     //!< Service name.
+            UString        service_type {};     //!< Service type.
             UString        provider_name {};    //!< Service provider name.
             std::map<UString, ServiceInstanceContext> instances {}; //!< List of service instances, indexed by media file name.
         };
@@ -193,17 +194,26 @@ namespace ts::mcast {
         //!
         virtual void processNewService(const ServiceContext& service);
 
-    private:
-        // NIPAnalyzer private fields.
-        DuckContext& _duck;
-        Report&      _report {_duck.report()};
-        FluteDemux   _flute_demux {_duck, this};
-        std::set<FluteSessionId>              _session_filter {};
-        std::map<UString, ServiceListContext> _service_lists {};  // Service lists, indexed by their URI.
-        std::map<UString, ServiceContext>     _services {};       // Services, indexed by their unique id.
+        //!
+        //! Force a file status update in the FLUTE so that a subclass can be notified on its handleFluteFile().
+        //!
+        void getFileStatus() { _flute_demux.getFilesStatus(); }
 
         // Inherited methods.
         virtual void handleFluteFile(const FluteFile&) override;
+
+        // Protected fields, accessible to subclasses for convenience.
+        //! @cond nodoxygen
+        DuckContext& _duck;
+        Report& _report {_duck.report()};
+        //! @endcond
+
+    private:
+        // NIPAnalyzer private fields.
+        FluteDemux                            _flute_demux {_duck, this};
+        std::set<FluteSessionId>              _session_filter {};
+        std::map<UString, ServiceListContext> _service_lists {};  // Service lists, indexed by their URI.
+        std::map<UString, ServiceContext>     _services {};       // Services, indexed by their unique id.
     };
 }
 

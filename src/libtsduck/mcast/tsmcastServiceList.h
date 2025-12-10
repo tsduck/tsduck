@@ -107,6 +107,7 @@ namespace ts::mcast {
             UString  lang {};                         //!< Attribute "xml:lang"
             UString  unique_id {};                    //!< Element \<UniqueIdentifier>.
             UString  service_name {};                 //!< Element \<ServiceName>.
+            UString  service_type {};                 //!< Element \<ServiceType>.
             UString  provider_name {};                //!< Element \<ProviderName>.
             std::list<ServiceInstance> instances {};  //!< Elements \<ServiceInstance>.
         };

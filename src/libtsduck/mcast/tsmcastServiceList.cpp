@@ -98,6 +98,11 @@ ts::mcast::ServiceList::ServiceType::ServiceType(const xml::Element* element, bo
                 element->getTextChild(service_name, u"ServiceName", true, true) &&
                 element->getTextChild(provider_name, u"ProviderName", true, true);
 
+        // Service type is optional.
+        if ((e1 = element->findFirstChild(u"ServiceType", true)) != nullptr) {
+            valid = e1->getAttribute(service_type, u"href");
+        }
+
         // Loop on all "service instances" (various places where the same service is available).
         for (const xml::Element* e = element->findFirstChild(u"ServiceInstance", true); valid && e != nullptr; e = e->findNextSibling(true)) {
             instances.emplace_back();

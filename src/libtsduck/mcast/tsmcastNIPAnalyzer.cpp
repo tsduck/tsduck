@@ -227,6 +227,7 @@ void ts::mcast::NIPAnalyzer::processServiceList(const ServiceList& slist)
         auto& serv(_services[it1.unique_id]);
         serv.service_name = it1.service_name;
         serv.provider_name = it1.provider_name;
+        serv.service_type = it1.service_type;
         for (const auto& it2 : it1.instances) {
             auto& inst(serv.instances[it2.media_params]);
             inst.instance_priority = it2.priority;
