@@ -16,6 +16,10 @@
     #define WINDOWS 1
 #endif
 
+#if defined(__llvm__)
+#pragma clang diagnostic ignored "-Wdeprecated-declarations" // wstring_convert
+#endif
+
 //---------------------------------------------------------------------------------
 // Internal utility functions.
 //---------------------------------------------------------------------------------
