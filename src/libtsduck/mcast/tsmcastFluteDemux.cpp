@@ -5,11 +5,6 @@
 // BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  This class extract files from FLUTE streams in UDP datagrams.
-//!
-//----------------------------------------------------------------------------
 
 #include "tsmcastFluteDemux.h"
 #include "tsmcastLCTHeader.h"
@@ -156,7 +151,7 @@ void ts::mcast::FluteDemux::feedPacketImpl(const cn::microseconds& timestamp, co
             return;
         }
         if (file.instance != lct.fdt.fdt_instance_id) {
-            _report.debug(u"new FDT instance %n, %s", lct.fdt.fdt_instance_id, sid);
+            _report.log(2, u"new FDT instance %n, %s", lct.fdt.fdt_instance_id, sid);
             file.clear();
             file.instance = lct.fdt.fdt_instance_id;
         }

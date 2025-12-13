@@ -5,25 +5,21 @@
 // BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  Version identification of TSDuck.
-//!
+
+#include "tsmcastNIPService.h"
+
+
+//----------------------------------------------------------------------------
+// Clear the content of the structure.
 //----------------------------------------------------------------------------
 
-#pragma once
-//!
-//! TSDuck major version.
-//! @ingroup app
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//! @ingroup app
-//!
-#define TS_VERSION_MINOR 43
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//! @ingroup app
-//!
-#define TS_COMMIT 4519
+void ts::mcast::NIPService::clear()
+{
+    channel_number = 0;
+    selectable = true;
+    visible = true;
+    service_name.clear();
+    service_type.clear();
+    provider_name.clear();
+    instances.clear();
+}

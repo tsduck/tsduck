@@ -21,6 +21,7 @@ namespace ts::mcast {
     //!
     //! Representation of a ServiceInformationFile (DVB-NIP).
     //! @see ETSI TS 103 876, section 8.4.3.2
+    //! @see NetworkInformationFile
     //! @ingroup libtsduck mpeg
     //!
     class TSDUCKDLL ServiceInformationFile : public FluteFile

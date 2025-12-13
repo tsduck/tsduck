@@ -42,6 +42,13 @@ namespace ts {
         };
 
         //!
+        //! Enumeration description of ts::hls::PlayListType.
+        //! @ingroup hls
+        //! @return A constant reference to the enumeration description.
+        //!
+        TSDUCKDLL const Names& PlayListTypeNames();
+
+        //!
         //! Tags to be used in the .M3U8 playlists.
         //! @ingroup hls
         //! @see RFC 8216, chapter 4.

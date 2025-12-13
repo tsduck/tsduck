@@ -556,48 +556,77 @@ bool ts::hls::PlayList::reload(bool strict, const WebRequestArgs& args, ts::Repo
     }
 
     // Reload the new content in another object.
-    PlayList plNew;
-    if ((_is_url && !plNew.loadURL(_original, strict, args, PlayListType::UNKNOWN, report)) ||
-        (!_is_url && !plNew.loadFile(_original, strict, PlayListType::UNKNOWN, report)))
+    PlayList new_pl;
+    if ((_is_url && !new_pl.loadURL(_original, strict, args, PlayListType::UNKNOWN, report)) ||
+        (!_is_url && !new_pl.loadFile(_original, strict, PlayListType::UNKNOWN, report)))
     {
         return false;
     }
-    assert(plNew._valid);
-    report.debug(u"playlist media sequence: old: %d/%s, new: %d/%d", _media_sequence, _segments.size(), plNew._media_sequence, plNew._segments.size());
 
-    // If no new segment is present, nothing to do.
-    if (plNew._media_sequence + plNew._segments.size() <= _media_sequence + _segments.size()) {
-        report.debug(u"no new segment in playlist");
-        return true;
-    }
-
-    // Copy global characteristics.
-    _type = plNew._type;
-    _version = plNew._version;
-    _target_duration = plNew._target_duration;
-    _end_list = plNew._end_list;
-    _utc_termination = plNew._utc_termination;
-    _loaded_content.swap(plNew._loaded_content);
-
-    // Copy missing segments.
-    if (_media_sequence + _segments.size() < plNew._media_sequence) {
-        // There are missing segments, we reloaded too late.
-        report.warning(u"missed %d HLS segments, dropping %d outdated segments", plNew._media_sequence - _media_sequence - _segments.size(), _segments.size());
-        // Dropping current segments, reloading fresh contiguous set of segments.
-        _media_sequence = plNew._media_sequence;
-        _segments.swap(plNew._segments);
-    }
-    else {
-        // Start at first new segment, copy all new segments.
-        for (size_t i = _media_sequence + _segments.size() - plNew._media_sequence; i < plNew._segments.size(); ++i) {
-            _segments.push_back(plNew._segments[i]);
-        }
-    }
+    // Then update the content.
+    reload(new_pl, report);
 
     // Autosave if necessary, ignore errors.
     autoSave(report);
-
     return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Reload a media playlist with updated text content.
+//----------------------------------------------------------------------------
+
+bool ts::hls::PlayList::reloadText(const UString& text, bool strict, Report& report)
+{
+    // Load the new content in another object.
+    PlayList new_pl;
+    if (!new_pl.loadText(text, strict, PlayListType::UNKNOWN, report)) {
+        return false;
+    }
+
+    // Then update the content.
+    reload(new_pl, report);
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Reload common code.
+//----------------------------------------------------------------------------
+
+void ts::hls::PlayList::reload(PlayList& new_pl, Report& report)
+{
+    assert(new_pl._valid);
+    report.debug(u"playlist media sequence: old: %d/%s, new: %d/%d", _media_sequence, _segments.size(), new_pl._media_sequence, new_pl._segments.size());
+
+    // If no new segment is present, nothing to do.
+    if (new_pl._media_sequence + new_pl._segments.size() <= _media_sequence + _segments.size()) {
+        report.debug(u"no new segment in playlist");
+        return;
+    }
+
+    // Copy global characteristics.
+    _type = new_pl._type;
+    _version = new_pl._version;
+    _target_duration = new_pl._target_duration;
+    _end_list = new_pl._end_list;
+    _utc_termination = new_pl._utc_termination;
+    _loaded_content.swap(new_pl._loaded_content);
+
+    // Copy missing segments.
+    if (_media_sequence + _segments.size() < new_pl._media_sequence) {
+        // There are missing segments, we reloaded too late.
+        report.warning(u"missed %d HLS segments, dropping %d outdated segments", new_pl._media_sequence - _media_sequence - _segments.size(), _segments.size());
+        // Dropping current segments, reloading fresh contiguous set of segments.
+        _media_sequence = new_pl._media_sequence;
+        _segments.swap(new_pl._segments);
+    }
+    else {
+        // Start at first new segment, copy all new segments.
+        for (size_t i = _media_sequence + _segments.size() - new_pl._media_sequence; i < new_pl._segments.size(); ++i) {
+            _segments.push_back(new_pl._segments[i]);
+        }
+    }
 }
 
 

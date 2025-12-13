@@ -7,7 +7,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Command line arguments for the class NIPAnalyzerReport.
+//!  Command line arguments for the class NIPAnalyzer.
 //!
 //----------------------------------------------------------------------------
 
@@ -16,7 +16,7 @@
 
 namespace ts::mcast {
     //!
-    //! Command line arguments for the class NIPAnalyzerReport.
+    //! Command line arguments for the class NIPAnalyzer.
     //! @ingroup libtsduck mpeg
     //!
     class TSDUCKDLL NIPAnalyzerArgs : public FluteDemuxArgs
