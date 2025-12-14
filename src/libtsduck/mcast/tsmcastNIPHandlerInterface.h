@@ -13,10 +13,10 @@
 
 #pragma once
 #include "tsmcastFluteHandlerInterface.h"
-#include "tsmcastNetworkInformationFile.h"
 
 namespace ts::mcast {
 
+    class NetworkInformationFile;
     class ServiceInformationFile;
     class ServiceListEntryPoints;
     class GatewayConfiguration;

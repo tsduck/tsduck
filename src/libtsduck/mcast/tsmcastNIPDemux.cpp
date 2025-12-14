@@ -109,8 +109,10 @@ void ts::mcast::NIPDemux::handleFluteFile(const FluteFile& file)
 
     if (is_announce && file.name().similar(u"urn:dvb:metadata:nativeip:NetworkInformationFile")) {
         // Process a NIF.
-        // Currently, there is no XML interpretation.
-        processNIF(file);
+        const NetworkInformationFile nif(_report, file);
+        if (nif.isValid()) {
+            processNIF(nif);
+        }
     }
     else if (is_announce && file.name().similar(u"urn:dvb:metadata:nativeip:ServiceInformationFile")) {
         // Process a SIF.
@@ -208,6 +210,8 @@ void ts::mcast::NIPDemux::processGatewayConfiguration(const GatewayConfiguration
 
 void ts::mcast::NIPDemux::processNIF(const NetworkInformationFile& nif)
 {
+    _report.debug(u"NIF type: %s, network type: %s, name: %s, provider: %s", nif.nif_type, nif.actual.network_type, nif.actual.network_name, nif.actual.provider_name);
+
     // Only forward to the NIP handler, no local interpretation.
     if (_handler != nullptr) {
         _handler->handleNetworkInformationFile(nif);
@@ -221,6 +225,8 @@ void ts::mcast::NIPDemux::processNIF(const NetworkInformationFile& nif)
 
 void ts::mcast::NIPDemux::processSIF(const ServiceInformationFile& sif)
 {
+    _report.debug(u"SIF provider: %s, %d streams", sif.provider_name, sif.streams.size());
+
     // Register all NIP actual carrier information.
     // Typically used by a subclass, if necessary.
     NIPActualCarrierInformation naci;

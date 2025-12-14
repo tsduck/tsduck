@@ -81,6 +81,23 @@ void ts::hls::PlayList::buildURL(MediaElement& media, const UString& uri) const
     }
 }
 
+//----------------------------------------------------------------------------
+// Update the URL or file paths of all media segments or playlists.
+//----------------------------------------------------------------------------
+
+void ts::hls::PlayList::updateReferences()
+{
+    for (auto& me : _segments) {
+        buildURL(me, me.relative_uri);
+    }
+    for (auto& me : _playlists) {
+        buildURL(me, me.relative_uri);
+    }
+    for (auto& me : _alt_playlists) {
+        buildURL(me, me.relative_uri);
+    }
+}
+
 
 //----------------------------------------------------------------------------
 // Set the playlist type.
@@ -422,6 +439,40 @@ size_t ts::hls::PlayList::selectAltPlayList(const UString& type, const UString& 
 
 
 //----------------------------------------------------------------------------
+// Update the URL or filename of the playlist.
+//----------------------------------------------------------------------------
+
+bool ts::hls::PlayList::setURL(const UString& url_string, Report& report)
+{
+    const URL url(url_string);
+    if (url.isValid()) {
+        setURL(url);
+        return true;
+    }
+    else {
+        report.error(u"invalid URL: %s", url_string);
+        return false;
+    }
+}
+
+void ts::hls::PlayList::setURL(const URL& url)
+{
+    _url = url;
+    _original = url.toString();
+    _is_url = true;
+    updateReferences();
+}
+
+void ts::hls::PlayList::setFile(const UString& filename)
+{
+    _original = filename;
+    _file_base = DirectoryName(filename) + fs::path::preferred_separator;
+    _is_url = false;
+    updateReferences();
+}
+
+
+//----------------------------------------------------------------------------
 // Load the playlist from a URL.
 //----------------------------------------------------------------------------
 
@@ -432,7 +483,7 @@ bool ts::hls::PlayList::loadURL(const UString& url_string, bool strict, const We
         return loadURL(url, strict, args, type, report);
     }
     else {
-        report.error(u"invalid URL");
+        report.error(u"invalid URL: %s", url_string);
         return false;
     }
 }
@@ -440,12 +491,8 @@ bool ts::hls::PlayList::loadURL(const UString& url_string, bool strict, const We
 bool ts::hls::PlayList::loadURL(const URL& url, bool strict, const WebRequestArgs& args, PlayListType type, Report& report)
 {
     clear();
+    setURL(url);
     _type = type;
-
-    // Keep the URL.
-    _url = url;
-    _original = url.toString();
-    _is_url = true;
 
     // Build a web request to download the playlist.
     WebRequest web(report);
@@ -504,12 +551,8 @@ bool ts::hls::PlayList::loadURL(const URL& url, bool strict, const WebRequestArg
 bool ts::hls::PlayList::loadFile(const UString& filename, bool strict, PlayListType type, Report& report)
 {
     clear();
+    setFile(filename);
     _type = type;
-
-    // Keep file name.
-    _original = filename;
-    _file_base = DirectoryName(filename) + fs::path::preferred_separator;
-    _is_url = false;
 
     // Check strict conformance: according to RFC 8216, a playlist must either ends in .m3u8 or .m3u.
     if (strict && !filename.ends_with(u".m3u8", CASE_INSENSITIVE) && !filename.ends_with(u".m3u", CASE_INSENSITIVE)) {

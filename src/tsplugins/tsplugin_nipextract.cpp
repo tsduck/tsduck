@@ -42,9 +42,25 @@ namespace ts::mcast {
         UString       _playlist_url {};       // Playlist of the service.
         hls::PlayList _playlist {};           // Playlist content.
 
+        // Initial playlist acquisition: Before locating the service, we do not know the name of its HLS playlist.
+        // When the playlist is a media playlist, it is regularly updated and new versions (with a new FLUTE TOI)
+        // are received. On the other hand, when the playlist is a master playlist, it is never updated (it is
+        // received with the same TOI all the time). The application is notified only once, the first time it is
+        // received. It this reception occurs before locating the service, we don't know yet that this playlist
+        // will be needed later, and we won't receive another copy. Therefore, before locating the service, we
+        // build a cache of all received playlist. Once the service is located, we clear it and no longer use it.
+        // This cache is indexed by file name.
+        std::map<UString, FluteFile> _initial_playlist_cache {};
+
+        // Process an update of the playlist of the service.
+        void processPlayList(const FluteFile& file);
+
         // Implementation of NIPHandlerInterface.
         virtual void handleNewService(const NIPService& service) override;
         virtual void handleFluteFile(const FluteFile& file) override;
+
+        // Check if a file can be a HLS playlist.
+        static bool IsValidPlaylist(const UString& file_name, const UString& file_type);
     };
 }
 
@@ -96,7 +112,10 @@ bool ts::mcast::NIPExtractPlugin::getOptions()
 
 bool ts::mcast::NIPExtractPlugin::start()
 {
+    _playlist_url.clear();
     _playlist.clear();
+    _initial_playlist_cache.clear();
+
     return AbstractSingleMPEPlugin::start() && _demux.reset(FluteDemuxArgs());
 }
 
@@ -108,6 +127,16 @@ bool ts::mcast::NIPExtractPlugin::start()
 void ts::mcast::NIPExtractPlugin::handleSingleMPEPacket(PCR timestamp, const MPEPacket& mpe)
 {
     _demux.feedPacket(timestamp, mpe.sourceSocket(), mpe.destinationSocket(), mpe.udpMessage(), mpe.udpMessageSize());
+}
+
+
+//----------------------------------------------------------------------------
+// Check if a file can be a HLS playlist.
+//----------------------------------------------------------------------------
+
+bool ts::mcast::NIPExtractPlugin::IsValidPlaylist(const UString& file_name, const UString& file_type)
+{
+    return file_type.similar(u"application/vnd.apple.mpegurl") || file_name.ends_with(u".m3u8", CASE_INSENSITIVE);
 }
 
 
@@ -137,7 +166,7 @@ void ts::mcast::NIPExtractPlugin::handleNewService(const NIPService& service)
     if (found || _use_first_service) {
         for (const auto& ins : service.instances) {
             // Does it look like a HLS playlist?
-            if (ins.second.media_type.similar(u"application/vnd.apple.mpegurl") || ins.first.ends_with(u".m3u8", CASE_INSENSITIVE)) {
+            if (IsValidPlaylist(ins.first, ins.second.media_type)) {
                 _playlist_url = ins.first;
                 found = true;
                 break;
@@ -154,6 +183,57 @@ void ts::mcast::NIPExtractPlugin::handleNewService(const NIPService& service)
         else {
             verbose(u"using service '%s', LCN: %d, provider '%s'", service.service_name, service.channel_number, service.provider_name);
             debug(u"service playlist: %s", _playlist_url);
+            // Check if we already received that playlist.
+            const auto it = _initial_playlist_cache.find(_playlist_url);
+            if (it != _initial_playlist_cache.end()) {
+                processPlayList(it->second);
+            }
+            // Clear the cache of initial playlists (no longer need it).
+            _initial_playlist_cache.clear();
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Process an update of the playlist of the service.
+//----------------------------------------------------------------------------
+
+void ts::mcast::NIPExtractPlugin::processPlayList(const FluteFile& file)
+{
+    // Load or reload the playlist.
+    debug(u"%sloading playlist %s", _playlist.isValid() ? u"re" : u"", file.name());
+    bool success = _playlist.isValid() ?
+                       _playlist.reloadText(file.toText(), false, *this) :
+                       _playlist.loadText(file.toText(), false, hls::PlayListType::UNKNOWN, *this);
+    if (!success) {
+        error(u"error reloading service playlist");
+        return;
+    }
+    _playlist.setURL(_playlist_url, *this);
+    debug(u"loaded %s playlist", hls::PlayListTypeNames().name(_playlist.type()));
+
+    // In case of master playlist, select a media playlist.
+    if (_playlist.type() == hls::PlayListType::MASTER) {
+
+        // Find the playlist with highest resolution.
+        const size_t pl_index = _playlist.selectPlayListHighestResolution();
+        if (pl_index == NPOS) {
+            error(u"could not find a media playlist from the master playlist %s", _playlist_url);
+            setError();
+            return;
+        }
+
+        // Replace the playlist of the service with the media playlist.
+        const hls::MediaPlayList& pl(_playlist.playList(pl_index));
+        _playlist_url = pl.urlString();
+        _playlist.clear();
+        debug(u"media playlist: %s", _playlist_url);
+
+        // Check if we already received that media playlist.
+        const auto it = _initial_playlist_cache.find(_playlist_url);
+        if (it != _initial_playlist_cache.end()) {
+            processPlayList(it->second);
         }
     }
 }
@@ -167,23 +247,17 @@ void ts::mcast::NIPExtractPlugin::handleFluteFile(const FluteFile& file)
 {
     // Ignore all files as long as the playlist is unknown.
     if (_playlist_url.empty()) {
+        // Cache initial playlists (see comments in class declaration).
+        if (IsValidPlaylist(file.name(), file.type())) {
+            debug(u"caching initial playlist %s, toi %d", file.name(), file.toi());
+            _initial_playlist_cache[file.name()] = file;
+        }
         return;
     }
 
     // Reload the service playlist when found.
     if (file.name() == _playlist_url) {
-        // Load or reload the playlist.
-        debug(u"reloading playlist %s", file.name());
-        bool success = _playlist.isValid() ?
-            _playlist.reloadText(file.toText(), false, *this) :
-            _playlist.loadText(file.toText(), false, hls::PlayListType::UNKNOWN, *this);
-        if (!success) {
-            error(u"error reloading service playlist");
-            return;
-        }
-        debug(u"loaded %s playlist", hls::PlayListTypeNames().name(_playlist.type()));
-
-        //@@@ TODO: in case of master playlist, select the intermediate playlist and replace _playlist_url.
+        processPlayList(file);
     }
 
     //@@@ TODO: process segments.

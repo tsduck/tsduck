@@ -94,6 +94,26 @@ namespace ts::hls {
         bool loadText(const UString& text, bool strict = false, PlayListType type = PlayListType::UNKNOWN, Report& report = CERR);
 
         //!
+        //! Update the URL of the playlist.
+        //! @param [in] url URL from which to load the playlist.
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //!
+        bool setURL(const UString& url, Report& report = CERR);
+
+        //!
+        //! Update the URL of the playlist.
+        //! @param [in] url URL from which to load the playlist.
+        //!
+        void setURL(const URL& url);
+
+        //!
+        //! Update the file name of the playlist.
+        //! @param [in] filename File from which to load the playlist.
+        //!
+        void setFile(const UString& filename);
+
+        //!
         //! Reload a media playlist with updated content.
         //! Master playlists or media playlists for which endList() is true are never reloaded.
         //! Live playlists (media playlists for which endList() is false) are reloaded from the same URL.
@@ -473,6 +493,9 @@ namespace ts::hls {
 
         // Reload common code.
         void reload(PlayList& new_pl, Report& report);
+
+        // Update the URL or file paths of all media segments or playlists.
+        void updateReferences();
 
         // Check if the line contains a valid tag or URI.
         bool getTag(const UString& line, Tag& tag, UString& params, bool strict, Report& report);
