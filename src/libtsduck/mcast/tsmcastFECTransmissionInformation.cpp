@@ -31,7 +31,7 @@ bool ts::mcast::FECTransmissionInformation::deserialize(uint8_t fei, const uint8
 {
     clear();
     fec_encoding_id = fei;
-    if (addr == nullptr | size < 10) {
+    if (addr == nullptr || size < 10) {
         return false;
     }
     transfer_length = GetUInt48(addr);
