@@ -16,9 +16,6 @@
 #include "tsUString.h"
 
 namespace ts::mcast {
-
-    class LCTHeader;
-
     //!
     //! Representation of the FEC Transmission Information in FLUTE headers.
     //! @see IETF RFC 3926, section 5.1.1
@@ -29,7 +26,6 @@ namespace ts::mcast {
     class TSDUCKDLL FECTransmissionInformation : public StringifyInterface
     {
     public:
-        bool     valid = false;                //!< The information was successfully parsed.
         uint8_t  fec_encoding_id = 0;          //!< FEC Encoding ID which was used to parse the structure (not part of the structore).
         uint64_t transfer_length = 0;          //!< The length of the transport object that carries the file in bytes.
         uint16_t fec_instance_id = 0;          //!< FEC Instance ID (FEC Encoding ID 128-255).
@@ -55,13 +51,6 @@ namespace ts::mcast {
         //! @return True on success, false on error. Same as @a valid field.
         //!
         bool deserialize(uint8_t fec_encoding_id, const uint8_t* addr, size_t size);
-
-        //!
-        //! Deserialize the structure from a HET_FTI LCT header extension.
-        //! @param [in] lct LCT header.
-        //! @return True on success, false on error or not present in LCT header. Same as @a valid field.
-        //!
-        bool deserialize(const LCTHeader& lct);
 
         // Implementation of StringifyInterface.
         virtual UString toString() const override;

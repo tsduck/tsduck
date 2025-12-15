@@ -230,7 +230,6 @@ void ts::mcast::NIPDemux::processSIF(const ServiceInformationFile& sif)
     // Register all NIP actual carrier information.
     // Typically used by a subclass, if necessary.
     NIPActualCarrierInformation naci;
-    naci.valid = true;
     naci.stream_provider_name = sif.provider_name;
     for (const auto& st : sif.streams) {
         naci.stream_id = st.stream_id;

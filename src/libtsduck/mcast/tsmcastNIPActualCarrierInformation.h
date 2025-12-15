@@ -17,9 +17,6 @@
 #include "tsmcastNIPStreamId.h"
 
 namespace ts::mcast {
-
-    class LCTHeader;
-
     //!
     //! Representation of the DVB-NIP Actual Carrier Information from LCT header extension HET_NACI.
     //! @see ETSI TS 103 876, section 8.7.3
@@ -28,7 +25,6 @@ namespace ts::mcast {
     class TSDUCKDLL NIPActualCarrierInformation : public StringifyInterface
     {
     public:
-        bool        valid = false;            //!< The information was successfully parsed.
         NIPStreamId stream_id {};             //!< NIP stream id.
         UString     stream_provider_name {};  //!< NIPStreamProviderName
 
@@ -46,16 +42,9 @@ namespace ts::mcast {
         //! Deserialize the structure from a binary area.
         //! @param [in] addr Address of binary area.
         //! @param [in] size Size of binary area.
-        //! @return True on success, false on error. Same as @a valid field.
+        //! @return True on success, false on error. Ò
         //!
         bool deserialize(const uint8_t* addr, size_t size);
-
-        //!
-        //! Deserialize the structure from a HET_NACI LCT header extension.
-        //! @param [in] lct LCT header.
-        //! @return True on success, false on error or not present in LCT header. Same as @a valid field.
-        //!
-        bool deserialize(const LCTHeader& lct);
 
         //!
         //! Comparison operator for use as index in maps.

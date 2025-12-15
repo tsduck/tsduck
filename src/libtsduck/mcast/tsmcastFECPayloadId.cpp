@@ -30,12 +30,22 @@ bool ts::mcast::FECPayloadId::deserialize(uint8_t fei, const uint8_t*& addr, siz
 {
     clear();
     fec_encoding_id = fei;
-    if (addr != nullptr && (fei == FEI_COMPACT_NOCODE || fei == FEI_COMPACT) && size >= 4) {
-        valid = true;
-        source_block_number = GetUInt16(addr);
-        encoding_symbol_id = GetUInt16(addr + 2);
-        addr += 4;
-        size -= 4;
+    if (addr != nullptr && size >= 4) {
+        if (fei == FEI_COMPACT_NOCODE || fei == FEI_COMPACT) {
+            valid = true;
+            source_block_number = GetUInt16(addr);
+            encoding_symbol_id = GetUInt16(addr + 2);
+            addr += 4;
+            size -= 4;
+        }
+        else if (fei == FEI_RAPTORQ) {
+            // RFC 6330, section 3.2.
+            valid = true;
+            source_block_number = GetUInt8(addr);
+            encoding_symbol_id = GetUInt24(addr + 1);
+            addr += 4;
+            size -= 4;
+        }
     }
     return valid;
 }

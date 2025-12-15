@@ -95,15 +95,15 @@ void ts::mcast::FluteDemux::feedPacketImpl(const cn::microseconds& timestamp, co
 
     // Get LCT header.
     LCTHeader lct;
-    if (!lct.deserialize(udp, udp_size)) {
+    if (!lct.deserialize(udp, udp_size, FT_FLUTE)) {
         _report.error(u"invalid LCT header from %s", source);
         return;
     }
 
     // The FEC Encoding ID is stored in codepoint (RFC 3926, section 5.1).
     // We currently only support the default one, value 0.
-    if (lct.codepoint != FEI_COMPACT_NOCODE) {
-        _report.error(u"unsupported FEC Encoding ID %d from %s", lct.codepoint, source);
+    if (lct.fec_encoding_id != FEI_COMPACT_NOCODE) {
+        _report.error(u"unsupported FEC Encoding ID %d from %s", lct.fec_encoding_id, source);
         return;
     }
 
@@ -123,8 +123,8 @@ void ts::mcast::FluteDemux::feedPacketImpl(const cn::microseconds& timestamp, co
     }
 
     // Notify NIPActualCarrierInformation.
-    if (lct.naci.valid && _handler != nullptr) {
-        _handler->handleFluteNACI(lct.naci);
+    if (lct.naci.has_value() && _handler != nullptr) {
+        _handler->handleFluteNACI(lct.naci.value());
     }
 
     // With empty payload, nothing more to do.
@@ -142,18 +142,18 @@ void ts::mcast::FluteDemux::feedPacketImpl(const cn::microseconds& timestamp, co
 
     // If the file is the FDT of the session, it must have FDT and FTI headers.
     if (lct.toi == FLUTE_FDT_TOI) {
-        if (!lct.fdt.valid) {
+        if (!lct.fdt.has_value()) {
             _report.error(u"FDT in FLUTE packet without EXT_FDT header, %s", sid);
             return;
         }
-        if (!lct.fti.valid) {
+        if (!lct.fti.has_value()) {
             _report.error(u"FDT in FLUTE packet without EXT_FTI header, %s", sid);
             return;
         }
-        if (file.instance != lct.fdt.fdt_instance_id) {
-            _report.log(2, u"new FDT instance %n, %s", lct.fdt.fdt_instance_id, sid);
+        if (file.instance != lct.fdt.value().fdt_instance_id) {
+            _report.log(2, u"new FDT instance %n, %s", lct.fdt.value().fdt_instance_id, sid);
             file.clear();
-            file.instance = lct.fdt.fdt_instance_id;
+            file.instance = lct.fdt.value().fdt_instance_id;
         }
     }
 
@@ -162,8 +162,15 @@ void ts::mcast::FluteDemux::feedPacketImpl(const cn::microseconds& timestamp, co
         return;
     }
 
-    // Update/check transfer length coming from FTI header.
-    if (lct.fti.valid && !updateFileSize(sid, session, lct.toi, file, lct.fti.transfer_length)) {
+    // Update/check transfer length coming from FTI or TOL header.
+    std::optional<uint64_t> transfer_length;
+    if (lct.tol.has_value()) {
+        transfer_length = lct.tol.value();  // Typically ROUTE.
+    }
+    else if (lct.fti.has_value()) {
+        transfer_length = lct.fti.value().transfer_length;  // FLUTE or ROUTE.
+    }
+    if (transfer_length.has_value() && !updateFileSize(sid, session, lct.toi, file, transfer_length.value())) {
         // File too large, ignored.
         return;
     }

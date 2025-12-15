@@ -64,6 +64,7 @@ namespace ts {
         //!
         enum : uint8_t {
             FEI_COMPACT_NOCODE =   0,  //!< Compact No-Code FEC (Fully-Specified)
+            FEI_RAPTORQ        =   6,  //!< RaptorQ FEC Scheme (RFC 6330)
             FEI_EXPANDABLE     = 128,  //!< Small Block, Large Block and Expandable FEC (Under-Specified)
             FEI_SMALL_BLOCK    = 129,  //!< Small Block Systematic FEC (Under-Specified)
             FEI_COMPACT        = 130,  //!< Compact FEC (Under-Secified)
@@ -78,11 +79,13 @@ namespace ts {
             HET_AUTH           =   1,  //!< Packet authentication extension.
             HET_TIME           =   2,  //!< Time extension.
             HET_FTI            =  64,  //!< FEC Object Transmission Information extension (ALC, RFC 5775).
+            HET_TOL48          =  67,  //!< ATSC Transport Object Length, 48-bit version (ATSC A/331, section A.3.8.1).
             HET_NACI           =  68,  //!< NIP Actual Carrier Information (DVB-NIP, ETSI TS 103 876).
             HET_MAX_VAR_SIZE   = 127,  //!< Max type value for variable-size header extensions.
             HET_MIN_FIXED_SIZE = 128,  //!< Min type value for fixed-size header extensions (24-bit payload).
             HET_FDT            = 192,  //!< FDT Instance Header (FLUTE, RFC 3926).
             HET_CENC           = 193,  //!< FDT Instance Content Encoding extension (FLUTE, RFC 3926).
+            HET_TOL24          = 194,  //!< ATSC Transport Object Length, 24-bit version (ATSC A/331, section A.3.8.1).
             HET_MAX_FIXED_SIZE = 255,  //!< Max type value for fixed-size header extensions (24-bit payload).
         };
 
@@ -94,6 +97,25 @@ namespace ts {
             CENC_ZLIB    = 1,  //!< ZLib encoding [RFC1950].
             CENC_DEFLATE = 2,  //!< Deflate encoding [RFC1951].
             CENC_GZIP    = 3,  //!< GZip encoding [RFC1952].
+        };
+
+        //!
+        //! Codepoint values in LCT headers with ROUTE protocol.
+        //! "IS" stands for Initialization Segment of the media content such as the DASH Initialization Segment.
+        //! @see RFC 9223, section 2.1
+        //!
+        enum : uint8_t {
+            ROUTE_CP_NONE            =  0, //!< Reserved (not used)
+            ROUTE_CP_NRT_FILE        =  1, //!< Non Real Time (NRT) - File Mode
+            ROUTE_CP_NRT_ENTITY      =  2, //!< NRT - Entity Mode
+            ROUTE_CP_NRT_UNSIGNED    =  3, //!< NRT - Unsigned Package Mode
+            ROUTE_CP_NRT_SIGNED      =  4, //!< NRT - Signed Package Mode
+            ROUTE_CP_NEW_IS_CHANGED  =  5, //!< New IS, timeline changed
+            ROUTE_CP_NEW_IS_CONTINUE =  6, //!< New IS, timeline continued
+            ROUTE_CP_REDUNDANT_IS    =  7, //!< Redundant IS
+            ROUTE_CP_MEDIA_FILE      =  8, //!< Media Segment, File Mode
+            ROUTE_CP_MEDIA_ENTITY    =  9, //!< Media Segment, Entity Mode
+            ROUTE_CP_MEDIA_RAC       = 10, //!< Media Segment, File Mode with CMAF Random Access Chunk
         };
 
         //!
