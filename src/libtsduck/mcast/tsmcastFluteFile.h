@@ -99,6 +99,13 @@ namespace ts::mcast {
         const ByteBlock& content() const { return *_content; }
 
         //!
+        //! Get a shared pointer (std::shared_ptr) to the content of the file.
+        //! This allow to keep the content for some time, even after the FluteFile object is deleted.
+        //! @return A shared pointer to the content of the file.
+        //!
+        const ByteBlockPtr contentPointer() const { return _content; }
+
+        //!
         //! Get a character string version of the file, if it is a text file.
         //! @return A string resulting from the conversion of the file content from UTF-8.
         //!

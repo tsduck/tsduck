@@ -201,6 +201,10 @@ endif::[]
 |packet
 |DVB-NIP (Native IP) analyzer
 
+|nipextract
+|packet
+|DVB-NIP (Native IP) live service extraction
+
 |nit
 |packet
 |Perform various transformations on the NIT
