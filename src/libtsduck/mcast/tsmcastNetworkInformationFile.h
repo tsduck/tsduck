@@ -37,8 +37,9 @@ namespace ts::mcast {
         //! Constructor.
         //! @param [in,out] report Where to report errors.
         //! @param [in] file Received file from FLUTE demux.
+        //! @param [in] strict Strict XML parsing, do not tolerate missing mandatory elements or attributes.
         //!
-        NetworkInformationFile(Report& report, const FluteFile& file);
+        NetworkInformationFile(Report& report, const FluteFile& file, bool strict);
 
         //!
         //! Definition of a \<NIPStream>.
@@ -70,9 +71,10 @@ namespace ts::mcast {
             //!
             //! Reinitialize the structure from a XML element.
             //! @param [in] element Root XML element to analyze.
+            //! @param [in] strict Strict XML parsing, do not tolerate missing mandatory elements or attributes.
             //! @return True on success, false on error.
             //!
-            bool parseXML(const xml::Element* element);
+            bool parseXML(const xml::Element* element, bool strict);
         };
 
         // NetworkInformationFile public fields.

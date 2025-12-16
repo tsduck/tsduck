@@ -235,6 +235,17 @@ If the specified path is '`-`', the file is written to standard output.
 endif::[]
 
 //----------------------------------------------------------------------------
+// option --strict
+//----------------------------------------------------------------------------
+
+[.opt]
+*--strict*
+
+[.optdoc]
+Apply a strict interpretation of protocols.
+By default, non-fatal misusages of the protocols are ignored.
+
+//----------------------------------------------------------------------------
 // option --summary
 //----------------------------------------------------------------------------
 

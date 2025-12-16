@@ -373,8 +373,19 @@ bool ts::mcast::NIPExtractPlugin::processSegment(const FluteFile& file)
         return false;
     }
 
+    // Check that the segment contains TS packets. Check at most the first 10 TS packets.
+    const ByteBlockPtr content(file.contentPointer());
+    const size_t check_count = std::min<size_t>(10, content->size() / PKT_SIZE);
+    for (size_t i = 0; i < check_count; ++i) {
+        if ((*content)[i * PKT_SIZE] != SYNC_BYTE) {
+            error(u"segment does not contain TS packets: %s", file.name());
+            setError();
+            return false;
+        }
+    }
+
     // Enqueue the segment file content.
-    _output.push_back(file.contentPointer());
+    _output.push_back(content);
     debug(u"enqueue segment for output: %s", file.name());
 
     if (!_service_session.isValid()) {

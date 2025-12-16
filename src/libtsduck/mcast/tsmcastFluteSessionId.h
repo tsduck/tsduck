@@ -77,9 +77,10 @@ namespace ts::mcast {
         //!
         //! Reinitialize the structure from a XML element.
         //! @param [in] element Root XML element to analyze.
+        //! @param [in] strict Strict XML parsing, do not tolerate missing mandatory elements or attributes.
         //! @return True on success, false on error.
         //!
-        bool parseXML(const xml::Element* element);
+        bool parseXML(const xml::Element* element, bool strict);
 
         // Implementation of StringifyInterface.
         virtual UString toString() const override;

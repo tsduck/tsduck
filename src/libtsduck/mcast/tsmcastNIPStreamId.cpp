@@ -46,11 +46,12 @@ ts::UString ts::mcast::NIPStreamId::toString() const
 // Read from a XML element.
 //----------------------------------------------------------------------------
 
-bool ts::mcast::NIPStreamId::parseXML(const xml::Element* element)
+bool ts::mcast::NIPStreamId::parseXML(const xml::Element* element, bool strict)
 {
+    clear();
     return element != nullptr &&
-        element->getIntChild(network_id, u"NIPNetworkID", true, 0, 1, 65280) &&
-        element->getIntChild(carrier_id, u"NIPCarrierID", true) &&
-        element->getIntChild(link_id, u"NIPLinkID", true) &&
-        element->getIntChild(service_id, u"NIPServiceID", true);
+        element->getIntChild(network_id, u"NIPNetworkID", strict, 0, 1, 65280) &&
+        element->getIntChild(carrier_id, u"NIPCarrierID", strict) &&
+        element->getIntChild(link_id, u"NIPLinkID", strict) &&
+        element->getIntChild(service_id, u"NIPServiceID", strict);
 }

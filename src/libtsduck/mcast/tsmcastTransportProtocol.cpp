@@ -27,7 +27,7 @@ void ts::mcast::TransportProtocol::clear()
 // Reinitialize the structure from a XML element.
 //----------------------------------------------------------------------------
 
-bool ts::mcast::TransportProtocol::parseXML(const xml::Element* element, const UString& child_name)
+bool ts::mcast::TransportProtocol::parseXML(const xml::Element* element, bool strict, const UString& child_name)
 {
     clear();
     const xml::Element* e = element;
@@ -35,7 +35,7 @@ bool ts::mcast::TransportProtocol::parseXML(const xml::Element* element, const U
         return false;
     }
 
-    bool ok = e->getAttribute(protocol_identifier, u"protocolIdentifier", true) &&
+    bool ok = e->getAttribute(protocol_identifier, u"protocolIdentifier", strict) &&
               e->getAttribute(protocol_version, u"protocolVersion");
 
     if (ok) {

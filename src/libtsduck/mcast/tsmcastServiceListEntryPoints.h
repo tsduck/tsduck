@@ -36,8 +36,9 @@ namespace ts::mcast {
         //! Constructor.
         //! @param [in,out] report Where to report errors.
         //! @param [in] file Received file from FLUTE demux.
+        //! @param [in] strict Strict XML parsing, do not tolerate missing mandatory elements or attributes.
         //!
-        ServiceListEntryPoints(Report& report, const FluteFile& file);
+        ServiceListEntryPoints(Report& report, const FluteFile& file, bool strict);
 
         //!
         //! Definition of an ExtendedURIType or ExtendedURIPathType element.
@@ -48,15 +49,17 @@ namespace ts::mcast {
             //!
             //! Constructor.
             //! @param [in] element XML element containing the extended URI.
+            //! @param [in] strict Strict XML parsing, do not tolerate missing mandatory elements or attributes.
             //!
-            ExtendedURI(const xml::Element* element = nullptr);
+            ExtendedURI(const xml::Element* element = nullptr, bool strict = true);
 
             //!
             //! Constructor from a parent element.
             //! @param [in] parent Parent XML element containing the extended URI.
             //! @param [in] element Name of the child element containing the extended URI.
+            //! @param [in] strict Strict XML parsing, do not tolerate missing mandatory elements or attributes.
             //!
-            ExtendedURI(const xml::Element* parent, const UString& element);
+            ExtendedURI(const xml::Element* parent, const UString& element, bool strict);
 
             bool    valid = false;  //!< Element was correctly deserialized.
             UString uri {};         //!< URI.
@@ -72,15 +75,17 @@ namespace ts::mcast {
             //!
             //! Constructor.
             //! @param [in] element XML element containing the organization.
+            //! @param [in] strict Strict XML parsing, do not tolerate missing mandatory elements or attributes.
             //!
-            Organization(const xml::Element* element = nullptr);
+            Organization(const xml::Element* element = nullptr, bool strict = true);
 
             //!
             //! Constructor from a parent element.
             //! @param [in] parent Parent XML element containing the organization.
             //! @param [in] element Name of the child element containing the organization.
+            //! @param [in] strict Strict XML parsing, do not tolerate missing mandatory elements or attributes.
             //!
-            Organization(const xml::Element* parent, const UString& element);
+            Organization(const xml::Element* parent, const UString& element, bool strict);
 
             bool    valid = false;      //!< Element was correctly deserialized.
             bool    regulator = false;  //!< Attribute "regulatorFlag".
@@ -96,8 +101,9 @@ namespace ts::mcast {
             //!
             //! Constructor.
             //! @param [in] element XML element containing the organization.
+            //! @param [in] strict Strict XML parsing, do not tolerate missing mandatory elements or attributes.
             //!
-            ServiceListOffering(const xml::Element* element = nullptr);
+            ServiceListOffering(const xml::Element* element = nullptr, bool strict = true);
 
             bool    valid = false;            //!< Element was correctly deserialized.
             bool    regulator = false;        //!< Attribute "regulatorListFlag".
@@ -116,8 +122,9 @@ namespace ts::mcast {
             //!
             //! Constructor.
             //! @param [in] element XML element containing the organization.
+            //! @param [in] strict Strict XML parsing, do not tolerate missing mandatory elements or attributes.
             //!
-            ProviderOffering(const xml::Element* element = nullptr);
+            ProviderOffering(const xml::Element* element = nullptr, bool strict = true);
 
             bool         valid = false;               //!< Element was correctly deserialized.
             Organization provider {};                 //!< Element \<Provider>.

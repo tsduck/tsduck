@@ -36,8 +36,9 @@ namespace ts::mcast {
         //! Constructor.
         //! @param [in,out] report Where to report errors.
         //! @param [in] file Received file from FLUTE demux.
+        //! @param [in] strict Strict XML parsing, do not tolerate missing mandatory elements or attributes.
         //!
-        ServiceList(Report& report, const FluteFile& file);
+        ServiceList(Report& report, const FluteFile& file, bool strict);
 
         //!
         //! Definition of a \<LCN>.
@@ -61,8 +62,9 @@ namespace ts::mcast {
             //!
             //! Constructor.
             //! @param [in] element XML element containing the object.
+            //! @param [in] strict Strict XML parsing, do not tolerate missing mandatory elements or attributes.
             //!
-            LCNTable(const xml::Element* element = nullptr);
+            LCNTable(const xml::Element* element = nullptr, bool strict = true);
 
             bool valid = false;                   //!< Element was correctly deserialized.
             bool preserve_broadcast_lcn = false;  //!< Attribute "preserveBroadcastLCN".
@@ -96,8 +98,9 @@ namespace ts::mcast {
             //! Constructor.
             //! @param [in] element XML element containing the object.
             //! @param [in] test True if this is a test service.
+            //! @param [in] strict Strict XML parsing, do not tolerate missing mandatory elements or attributes.
             //!
-            ServiceType(const xml::Element* element = nullptr, bool test = false);
+            ServiceType(const xml::Element* element = nullptr, bool test = false, bool strict = true);
 
             bool     valid = false;                   //!< Element was correctly deserialized.
             bool     test_service = false;            //!< This is a \<TestService>, not a \<Service>.

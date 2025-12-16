@@ -98,15 +98,15 @@ ts::UString ts::mcast::FluteSessionId::toString() const
 // Reinitialize the structure from a XML element.
 //----------------------------------------------------------------------------
 
-bool ts::mcast::FluteSessionId::parseXML(const xml::Element* element)
+bool ts::mcast::FluteSessionId::parseXML(const xml::Element* element, bool strict)
 {
     clear();
     uint16_t port = 0;
     bool ok = element != nullptr &&
               element->getIPChild(source, u"NetworkSourceAddress", false) &&
-              element->getIPChild(destination, u"NetworkDestinationGroupAddress", true) &&
-              element->getIntChild(port, u"TransportDestinationPort", true) &&
-              element->getIntChild(tsi, u"MediaTransportSessionIdentifier", true);
+              element->getIPChild(destination, u"NetworkDestinationGroupAddress", strict) &&
+              element->getIntChild(port, u"TransportDestinationPort", strict) &&
+              element->getIntChild(tsi, u"MediaTransportSessionIdentifier", strict);
     destination.setPort(port);
     return ok;
 }

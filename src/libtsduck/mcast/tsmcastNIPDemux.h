@@ -148,6 +148,7 @@ namespace ts::mcast {
         DuckContext&                          _duck;
         Report&                               _report {_duck.report()};
         NIPHandlerInterface*                  _handler = nullptr;
+        FluteDemuxArgs                        _args {};
         FluteDemux                            _flute_demux {_duck, this};
         std::set<FluteSessionId>              _session_filter {};
         std::map<UString, ServiceListContext> _service_lists {};  // Service lists, indexed by their URI.

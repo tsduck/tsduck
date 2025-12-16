@@ -197,8 +197,11 @@ void ts::mcast::FluteDemux::feedPacketImpl(const cn::microseconds& timestamp, co
     }
     else if (udp_size != syms[sym_index]->size()) {
         // Chunk already there with a different size.
-        _report.error(u"size of file chunk #%n changed in the middle of transmission, was %'d, now %'d, TOI %d, %s",
-                      sym_index, syms[sym_index]->size(), udp_size, lct.toi, sid);
+        // Tolerate new size = 0 in non-strict mode.
+        if (udp_size > 0 || _args.strict) {
+            _report.error(u"size of file chunk #%n changed in the middle of transmission, was %'d, now %'d, TOI %d, %s",
+                          sym_index, syms[sym_index]->size(), udp_size, lct.toi, sid);
+        }
         return;
     }
 
@@ -219,8 +222,8 @@ void ts::mcast::FluteDemux::feedPacketImpl(const cn::microseconds& timestamp, co
 
 bool ts::mcast::FluteDemux::updateFileSize(const FluteSessionId& sid, SessionContext& session, uint64_t toi, FileContext& file, uint64_t file_size)
 {
-    // Unlikely case when the file size has changed.
-    if (file.transfer_length > 0 && file.transfer_length != file_size) {
+    // Unlikely case when the file size has changed. Tolerate new size = 0 in non-strict mode.
+    if (file.transfer_length > 0 && file.transfer_length != file_size && (file_size > 0 || _args.strict)) {
         _report.error(u"file transfer length changed in the middle of transmission, was %'d, now %'d, TOI %d, %s", file.transfer_length, file_size, toi, sid);
     }
 

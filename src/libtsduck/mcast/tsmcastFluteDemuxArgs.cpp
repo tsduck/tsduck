@@ -89,6 +89,12 @@ void ts::mcast::FluteDemuxArgs::defineArgs(Args& args)
     args.help(u"output-directory",
               u"Output directory for files which are extracted using option --extract-file. "
               u"The default is the current directory.");
+
+    args.option(u"strict");
+    args.help(u"strict",
+              u"Apply a strict interpretation of protocols. "
+              u"By default, non-fatal misusages of the protocols are ignored.");
+
 }
 
 
@@ -98,6 +104,7 @@ void ts::mcast::FluteDemuxArgs::defineArgs(Args& args)
 
 bool ts::mcast::FluteDemuxArgs::loadArgs(DuckContext& duck, Args& args)
 {
+    strict = args.present(u"strict");
     dump_flute_payload = args.present(u"dump-flute-payload");
     log_flute_packets = dump_flute_payload || args.present(u"log-flute-packets");
     log_fdt = args.present(u"log-fdt");

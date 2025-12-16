@@ -25,7 +25,7 @@ void ts::mcast::MulticastSession::clear()
 // Reinitialize the structure from a XML element.
 //----------------------------------------------------------------------------
 
-bool ts::mcast::MulticastSession::parseXML(const xml::Element* element)
+bool ts::mcast::MulticastSession::parseXML(const xml::Element* element, bool strict)
 {
     if (element == nullptr) {
         return false;
@@ -41,11 +41,11 @@ bool ts::mcast::MulticastSession::parseXML(const xml::Element* element)
              e->getAttribute(sess.content_ingest_method, u"contentIngestMethod") &&
              e->getAttribute(sess.transmission_mode, u"transmissionMode") &&
              e->getAttribute(sess.transport_security, u"transportSecurity") &&
-             sess.protocol.parseXML(e);
+             sess.protocol.parseXML(e, strict);
 
-        for (const xml::Element* ep = e->findFirstChild(u"EndpointAddress"); ok && ep != nullptr; ep = ep->findNextSibling(true)) {
+        for (const xml::Element* ep = e->findFirstChild(u"EndpointAddress", !strict); ok && ep != nullptr; ep = ep->findNextSibling(true)) {
             sess.endpoints.emplace_back();
-            ok = sess.endpoints.back().parseXML(ep);
+            ok = sess.endpoints.back().parseXML(ep, strict);
         }
     }
 

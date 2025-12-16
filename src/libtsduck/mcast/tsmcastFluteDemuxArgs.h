@@ -34,6 +34,7 @@ namespace ts::mcast {
         FluteDemuxArgs() = default;
 
         // Analysis options:
+        bool           strict = false;              //!< Option -\-strict
         bool           log_flute_packets = false;   //!< Option -\-log-flute-packets
         bool           dump_flute_payload = false;  //!< Option -\-dump-flute-payload
         bool           log_fdt = false;             //!< Option -\-log-fdt

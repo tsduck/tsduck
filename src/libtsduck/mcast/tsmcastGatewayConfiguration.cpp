@@ -15,7 +15,7 @@
 // Constructor and destructor.
 //----------------------------------------------------------------------------
 
-ts::mcast::GatewayConfiguration::GatewayConfiguration(Report& report, const FluteFile& file) :
+ts::mcast::GatewayConfiguration::GatewayConfiguration(Report& report, const FluteFile& file, bool strict) :
     FluteFile(file)
 {
     // Parse the XML document.
@@ -26,13 +26,13 @@ ts::mcast::GatewayConfiguration::GatewayConfiguration(Report& report, const Flut
         // Decode all GatewayConfigurationTransportSession elements.
         for (const xml::Element* e = root->findFirstChild(u"MulticastGatewayConfigurationTransportSession", true); _valid && e != nullptr; e = e->findNextSibling(true)) {
             transport_sessions.emplace_back();
-            _valid = transport_sessions.back().parseXML(e);
+            _valid = transport_sessions.back().parseXML(e, strict);
         }
 
         // Decode all MulticastSession elements.
         for (const xml::Element* e = root->findFirstChild(u"MulticastSession", true); _valid && e != nullptr; e = e->findNextSibling(true)) {
             multicast_sessions.emplace_back();
-            _valid = multicast_sessions.back().parseXML(e);
+            _valid = multicast_sessions.back().parseXML(e, strict);
         }
 
         // Other elements of the <GatewayConfiguration> are not parsed (so far).

@@ -15,7 +15,7 @@
 // Constructor and destructor.
 //----------------------------------------------------------------------------
 
-ts::mcast::ServiceInformationFile::ServiceInformationFile(Report& report, const FluteFile& file) :
+ts::mcast::ServiceInformationFile::ServiceInformationFile(Report& report, const FluteFile& file, bool strict) :
     FluteFile(file)
 {
     // Parse the XML document.
@@ -25,31 +25,31 @@ ts::mcast::ServiceInformationFile::ServiceInformationFile(Report& report, const 
 
         // Decode fixed elements.
         UString time;
-        _valid = root->getTextChild(time, u"VersionUpdate", true, true) && root->getTextChild(provider_name, u"NIPNetworkProviderName", true, true);
+        _valid = root->getTextChild(time, u"VersionUpdate", true, strict) && root->getTextChild(provider_name, u"NIPNetworkProviderName", true, strict);
         if (_valid) {
             version_update.fromISO(time);
         }
 
         // Decode all BroadcastMediaStream elements.
-        for (const xml::Element* e = root->findFirstChild(u"BroadcastMediaStream", false); _valid && e != nullptr; e = e->findNextSibling(true)) {
+        for (const xml::Element* e = root->findFirstChild(u"BroadcastMediaStream", !strict); _valid && e != nullptr; e = e->findNextSibling(true)) {
             streams.emplace_back();
             auto& st(streams.back());
             const xml::Element* bmedia = nullptr;
-            _valid = e->getIntChild(st.stream_id.network_id, u"NIPNetworkID", true, 0, 1, 65280) &&
-                     e->getIntChild(st.stream_id.carrier_id, u"NIPCarrierID", true) &&
-                     e->getIntChild(st.stream_id.link_id, u"NIPLinkID", true) &&
-                     e->getIntChild(st.stream_id.service_id, u"NIPServiceID", true) &&
-                     (bmedia = e->findFirstChild(u"BroadcastMedia")) != nullptr;
-            if (_valid) {
+            _valid = e->getIntChild(st.stream_id.network_id, u"NIPNetworkID", strict, 0, 1, 65280) &&
+                     e->getIntChild(st.stream_id.carrier_id, u"NIPCarrierID", strict) &&
+                     e->getIntChild(st.stream_id.link_id, u"NIPLinkID", strict) &&
+                     e->getIntChild(st.stream_id.service_id, u"NIPServiceID", strict) &&
+                     ((bmedia = e->findFirstChild(u"BroadcastMedia", !strict)) != nullptr || !strict);
+            if (_valid && bmedia != nullptr) {
                 for (const xml::Element* e1 = bmedia->findFirstChild(u"URI", true); _valid && e1 != nullptr; e1 = e1->findNextSibling(true)) {
                     st.uri.emplace_back();
                     _valid = e1->getText(st.uri.back(), true);
                 }
                 for (const xml::Element* e1 = bmedia->findFirstChild(u"InteractiveApplications", true); _valid && e1 != nullptr; e1 = e1->findNextSibling(true)) {
                     st.apps.emplace_back();
-                    _valid = e1->getTextChild(st.apps.back().type, u"ApplicationType", true, true) &&
-                             e1->getTextChild(st.apps.back().uri, u"ApplicationURI", true, true) &&
-                             e1->getIntChild(st.apps.back().id, u"ApplicationID", true);
+                    _valid = e1->getTextChild(st.apps.back().type, u"ApplicationType", true, strict) &&
+                             e1->getTextChild(st.apps.back().uri, u"ApplicationURI", true, strict) &&
+                             e1->getIntChild(st.apps.back().id, u"ApplicationID", strict);
                 }
             }
         }

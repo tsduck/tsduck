@@ -29,6 +29,7 @@ ts::mcast::NIPDemux::NIPDemux(DuckContext& duck, NIPHandlerInterface* handler) :
 bool ts::mcast::NIPDemux::reset(const FluteDemuxArgs& args)
 {
     bool ok = _flute_demux.reset(args);
+    _args = args;
     _session_filter.clear();
     _service_lists.clear();
     _services.clear();
@@ -109,35 +110,35 @@ void ts::mcast::NIPDemux::handleFluteFile(const FluteFile& file)
 
     if (is_announce && file.name().similar(u"urn:dvb:metadata:nativeip:NetworkInformationFile")) {
         // Process a NIF.
-        const NetworkInformationFile nif(_report, file);
+        const NetworkInformationFile nif(_report, file, _args.strict);
         if (nif.isValid()) {
             processNIF(nif);
         }
     }
     else if (is_announce && file.name().similar(u"urn:dvb:metadata:nativeip:ServiceInformationFile")) {
         // Process a SIF.
-        const ServiceInformationFile sif(_report, file);
+        const ServiceInformationFile sif(_report, file, _args.strict);
         if (sif.isValid()) {
             processSIF(sif);
         }
     }
     else if (is_announce && file.name().similar(u"urn:dvb:metadata:nativeip:dvb-i-slep")) {
         // Process a service list entry points.
-        const ServiceListEntryPoints slep(_report, file);
+        const ServiceListEntryPoints slep(_report, file, _args.strict);
         if (slep.isValid()) {
             processSLEP(slep);
         }
     }
     else if (file.type().similar(u"application/xml+dvb-mabr-session-configuration")) {
         // Process gateway configurations to find other sessions.
-        const GatewayConfiguration mgc(_report, file);
+        const GatewayConfiguration mgc(_report, file, _args.strict);
         if (mgc.isValid()) {
             processGatewayConfiguration(mgc);
         }
     }
     else if (file.type().similar(u"application/vnd.dvb.dvbisl+xml")) {
         // Process service lists.
-        const ServiceList slist(_report, file);
+        const ServiceList slist(_report, file, _args.strict);
         if (slist.isValid()) {
             processServiceList(slist);
         }

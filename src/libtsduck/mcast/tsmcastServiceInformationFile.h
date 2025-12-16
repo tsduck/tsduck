@@ -38,8 +38,9 @@ namespace ts::mcast {
         //! Constructor.
         //! @param [in,out] report Where to report errors.
         //! @param [in] file Received file from FLUTE demux.
+        //! @param [in] strict Strict XML parsing, do not tolerate missing mandatory elements or attributes.
         //!
-        ServiceInformationFile(Report& report, const FluteFile& file);
+        ServiceInformationFile(Report& report, const FluteFile& file, bool strict);
 
         //!
         //! Definition of a \<InteractiveApplications> element in a \<BroadcastMedia>.

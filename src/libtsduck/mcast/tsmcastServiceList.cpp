@@ -15,7 +15,7 @@
 // Constructor and destructor.
 //----------------------------------------------------------------------------
 
-ts::mcast::ServiceList::ServiceList(Report& report, const FluteFile& file) :
+ts::mcast::ServiceList::ServiceList(Report& report, const FluteFile& file, bool strict) :
     FluteFile(file)
 {
     // Parse the XML document.
@@ -24,27 +24,27 @@ ts::mcast::ServiceList::ServiceList(Report& report, const FluteFile& file) :
         const xml::Element* root = doc.rootElement();
 
         // Display error but do not fail if missing (some bogus streams don't have them).
-        root->getIntAttribute(version, u"version", true);
-        root->getAttribute(list_id, u"id", true);
-        root->getAttribute(lang, u"lang", true);
+        root->getIntAttribute(version, u"version", strict);
+        root->getAttribute(list_id, u"id", strict);
+        root->getAttribute(lang, u"lang", strict);
 
         // The others must really be there.
-        _valid = root->getTextChild(list_name, u"Name", true, true) &&
-                 root->getTextChild(provider_name, u"ProviderName", true, true);
+        _valid = root->getTextChild(list_name, u"Name", true, strict) &&
+                 root->getTextChild(provider_name, u"ProviderName", true, strict);
 
         for (const xml::Element* e = root->findFirstChild(u"Service", true); _valid && e != nullptr; e = e->findNextSibling(true)) {
-            services.emplace_back(e, false);
+            services.emplace_back(e, false, strict);
             _valid = services.back().valid;
         }
 
         for (const xml::Element* e = root->findFirstChild(u"TestService", true); _valid && e != nullptr; e = e->findNextSibling(true)) {
-            services.emplace_back(e, true);
+            services.emplace_back(e, true, strict);
             _valid = services.back().valid;
         }
 
         for (const xml::Element* e1 = root->findFirstChild(u"LCNTableList", true); _valid && e1 != nullptr; e1 = e1->findNextSibling(true)) {
             for (const xml::Element* e2 = e1->findFirstChild(u"LCNTable"); _valid && e2 != nullptr; e2 = e2->findNextSibling(true)) {
-                lcn_tables.emplace_back(e2);
+                lcn_tables.emplace_back(e2, strict);
                 _valid = lcn_tables.back().valid;
             }
         }
@@ -60,7 +60,7 @@ ts::mcast::ServiceList::~ServiceList()
 // Definition of a <LCNTableList>.
 //----------------------------------------------------------------------------
 
-ts::mcast::ServiceList::LCNTable::LCNTable(const xml::Element* element)
+ts::mcast::ServiceList::LCNTable::LCNTable(const xml::Element* element, bool strict)
 {
     if (element != nullptr) {
         valid = element->getBoolAttribute(preserve_broadcast_lcn, u"preserveBroadcastLCN");
@@ -69,8 +69,8 @@ ts::mcast::ServiceList::LCNTable::LCNTable(const xml::Element* element)
             auto& lcn(lcns.back());
             valid = e->getBoolAttribute(lcn.visible, u"visible", false, true) &&
                     e->getBoolAttribute(lcn.selectable, u"selectable", false, true) &&
-                    e->getIntAttribute(lcn.channel_number, u"channelNumber", true) &&
-                    e->getAttribute(lcn.service_ref, u"serviceRef", true);
+                    e->getIntAttribute(lcn.channel_number, u"channelNumber", strict) &&
+                    e->getAttribute(lcn.service_ref, u"serviceRef", strict);
         }
     }
 }
@@ -80,7 +80,7 @@ ts::mcast::ServiceList::LCNTable::LCNTable(const xml::Element* element)
 // Definition of a <Service> or <TestService>.
 //----------------------------------------------------------------------------
 
-ts::mcast::ServiceList::ServiceType::ServiceType(const xml::Element* element, bool test) :
+ts::mcast::ServiceList::ServiceType::ServiceType(const xml::Element* element, bool test, bool strict) :
     test_service(test)
 {
     const xml::Element* e1 = nullptr;
@@ -88,15 +88,15 @@ ts::mcast::ServiceList::ServiceType::ServiceType(const xml::Element* element, bo
 
     if (element != nullptr) {
         // Display error but do not fail if missing (some bogus streams don't have them).
-        element->getIntAttribute(version, u"version", true);
+        element->getIntAttribute(version, u"version", strict);
         element->getAttribute(lang, u"lang");
         element->getBoolAttribute(dynamic, u"dynamic");
         element->getBoolAttribute(replay_available, u"replayAvailable");
 
         // The others must really be there.
-        valid = element->getTextChild(unique_id, u"UniqueIdentifier", true, true) &&
-                element->getTextChild(service_name, u"ServiceName", true, true) &&
-                element->getTextChild(provider_name, u"ProviderName", true, true);
+        valid = element->getTextChild(unique_id, u"UniqueIdentifier", true, strict) &&
+                element->getTextChild(service_name, u"ServiceName", true, strict) &&
+                element->getTextChild(provider_name, u"ProviderName", true, strict);
 
         // Service type is optional.
         if ((e1 = element->findFirstChild(u"ServiceType", true)) != nullptr) {
@@ -125,7 +125,7 @@ ts::mcast::ServiceList::ServiceType::ServiceType(const xml::Element* element, bo
                 (e1 = e->findFirstChild(u"DASHDeliveryParameters", true)) != nullptr &&
                 (e1 = e1->findFirstChild(u"UriBasedLocation", true)) != nullptr)
             {
-                e1->getTextChild(inst.media_params, u"URI", true);
+                e1->getTextChild(inst.media_params, u"URI", strict);
                 e1->getAttribute(inst.media_params_type, u"contentType");
             }
 
@@ -138,7 +138,7 @@ ts::mcast::ServiceList::ServiceType::ServiceType(const xml::Element* element, bo
                 ext_name == u"vnd.apple.mpegurl" &&
                 (e1 = e1->findFirstChild(u"UriBasedLocation", true)) != nullptr)
             {
-                e1->getTextChild(inst.media_params, u"URI", true);
+                e1->getTextChild(inst.media_params, u"URI", strict);
                 e1->getAttribute(inst.media_params_type, u"contentType");
             }
         }

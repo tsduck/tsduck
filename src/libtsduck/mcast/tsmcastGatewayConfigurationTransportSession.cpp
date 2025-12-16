@@ -38,7 +38,7 @@ void ts::mcast::GatewayConfigurationTransportSession::clear()
 // Reinitialize the structure from a XML element.
 //----------------------------------------------------------------------------
 
-bool ts::mcast::GatewayConfigurationTransportSession::parseXML(const xml::Element* element)
+bool ts::mcast::GatewayConfigurationTransportSession::parseXML(const xml::Element* element, bool strict)
 {
     if (element == nullptr) {
         return false;
@@ -47,10 +47,13 @@ bool ts::mcast::GatewayConfigurationTransportSession::parseXML(const xml::Elemen
     const xml::Element* e = nullptr;
     bool ok = element->getAttribute(service_class, u"serviceClass", false) &&
               element->getAttribute(transport_security, u"transportSecurity", false, u"none") &&
-              (e = element->findFirstChild(u"BitRate")) != nullptr &&
-              e->getIntAttribute(bitrate_average, u"average", false) &&
-              e->getIntAttribute(bitrate_maximum, u"maximum", true) &&
-              protocol.parseXML(element);
+              ((e = element->findFirstChild(u"BitRate", !strict)) != nullptr || !strict) &&
+              protocol.parseXML(element, strict);
+
+    if (ok && e != nullptr) {
+        ok = e->getIntAttribute(bitrate_average, u"average", false) &&
+             e->getIntAttribute(bitrate_maximum, u"maximum", strict);
+    }
 
     if (ok) {
         // The attribute tags contains a space-separated list of URL's.
@@ -59,12 +62,12 @@ bool ts::mcast::GatewayConfigurationTransportSession::parseXML(const xml::Elemen
 
     if (ok && (e = element->findFirstChild(u"UnicastRepairParameters", true))) {
         ok = e->getAttribute(repair_obj_base_uri, u"transportObjectBaseURI", false) &&
-             e->getChronoAttribute(repair_recv_timeout, u"transportObjectReceptionTimeout", true) &&
+             e->getChronoAttribute(repair_recv_timeout, u"transportObjectReceptionTimeout", strict) &&
              e->getChronoAttribute(repair_fixed_backoff, u"fixedBackOffPeriod", false) &&
              e->getChronoAttribute(repair_rand_backoff, u"randomBackOffPeriod", false);
         for (const xml::Element* bu = e->findFirstChild(u"BaseURL", true); ok && bu != nullptr; bu = bu->findNextSibling(true)) {
             repair_base_url.emplace_back();
-            ok = bu->getText(repair_base_url.back().uri, true) &&
+            ok = bu->getText(repair_base_url.back().uri, strict) &&
                  bu->getIntAttribute(repair_base_url.back().relative_weight, u"relativeWeight", false, 1);
         }
     }
@@ -74,11 +77,11 @@ bool ts::mcast::GatewayConfigurationTransportSession::parseXML(const xml::Elemen
              e->getIntChild(carousel_transport_size, u"aggregateTransportSize", false);
         for (const xml::Element* e1 = e->findFirstChild(u"PresentationManifests", true); ok && e1 != nullptr; e1 = e1->findNextSibling(true)) {
             carousel_manifests.emplace_back();
-            ok = carousel_manifests.back().parseXML(e1);
+            ok = carousel_manifests.back().parseXML(e1, strict);
         }
         for (const xml::Element* e1 = e->findFirstChild(u"InitSegments", true); ok && e1 != nullptr; e1 = e1->findNextSibling(true)) {
             carousel_segment.emplace_back();
-            ok = carousel_segment.back().parseXML(e1);
+            ok = carousel_segment.back().parseXML(e1, strict);
         }
         for (const xml::Element* e1 = e->findFirstChild(u"ResourceLocator", true); ok && e1 != nullptr; e1 = e1->findNextSibling(true)) {
             resource_locator.emplace_back();
@@ -91,7 +94,7 @@ bool ts::mcast::GatewayConfigurationTransportSession::parseXML(const xml::Elemen
 
     for (e = element->findFirstChild(u"EndpointAddress", true); ok && e != nullptr; e = e->findNextSibling(true)) {
         endpoints.emplace_back();
-        ok = endpoints.back().parseXML(e);
+        ok = endpoints.back().parseXML(e, strict);
     }
 
     for (e = element->findFirstChild(u"GatewayConfigurationMacro", true); ok && e != nullptr; e = e->findNextSibling(true)) {
@@ -102,11 +105,11 @@ bool ts::mcast::GatewayConfigurationTransportSession::parseXML(const xml::Elemen
 
     for (e = element->findFirstChild(u"ForwardErrorCorrectionParameters", true); ok && e != nullptr; e = e->findNextSibling(true)) {
         fec.emplace_back();
-        ok = e->getTextChild(fec.back().scheme_identifier, u"SchemeIdentifier", true, true) &&
-             e->getIntChild(fec.back().overhead_percentage, u"OverheadPercentage", true);
+        ok = e->getTextChild(fec.back().scheme_identifier, u"SchemeIdentifier", true, strict) &&
+             e->getIntChild(fec.back().overhead_percentage, u"OverheadPercentage", strict);
         for (const xml::Element* ep = e->findFirstChild(u"EndpointAddress", true); ok && ep != nullptr; ep = ep->findNextSibling(true)) {
             fec.back().endpoints.emplace_back();
-            ok = fec.back().endpoints.back().parseXML(e);
+            ok = fec.back().endpoints.back().parseXML(e, strict);
         }
     }
 
@@ -118,7 +121,7 @@ bool ts::mcast::GatewayConfigurationTransportSession::parseXML(const xml::Elemen
 // Entry of <PresentationManifests> or <InitSegments> in <ObjectCarousel>.
 //----------------------------------------------------------------------------
 
-bool ts::mcast::GatewayConfigurationTransportSession::ReferencingCarouselMediaPresentationResourceType::parseXML(const xml::Element* e)
+bool ts::mcast::GatewayConfigurationTransportSession::ReferencingCarouselMediaPresentationResourceType::parseXML(const xml::Element* e, bool strict)
 {
     return e->getBoolAttribute(compression_preferred, u"compressionPreferred") &&
            e->getAttribute(target_acquisition_latency, u"targetAcquisitionLatency") &&

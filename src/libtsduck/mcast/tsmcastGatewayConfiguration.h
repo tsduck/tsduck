@@ -37,8 +37,9 @@ namespace ts::mcast {
         //! Constructor.
         //! @param [in,out] report Where to report errors.
         //! @param [in] file Received file from FLUTE demux.
+        //! @param [in] strict Strict XML parsing, do not tolerate missing mandatory elements or attributes.
         //!
-        GatewayConfiguration(Report& report, const FluteFile& file);
+        GatewayConfiguration(Report& report, const FluteFile& file, bool strict);
 
         //!
         //! List of GatewayConfigurationTransportSession.

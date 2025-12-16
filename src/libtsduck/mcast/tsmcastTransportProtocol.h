@@ -39,10 +39,11 @@ namespace ts::mcast {
         //!
         //! Reinitialize the structure from a XML element.
         //! @param [in] element Root XML element to analyze.
+        //! @param [in] strict Strict XML parsing, do not tolerate missing mandatory elements or attributes.
         //! @param [in] child_name Name of the child element in @a element. If empty, directly use @a element.
         //! @return True on success, false on error.
         //!
-        bool parseXML(const xml::Element* element, const UString& child_name = u"TransportProtocol");
+        bool parseXML(const xml::Element* element, bool strict, const UString& child_name = u"TransportProtocol");
 
         // Public fields coming from the XML representation.
         FileTransport protocol = FT_UNKNOWN;   //!< interpretation of attribute protocolIdentifier.
