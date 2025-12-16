@@ -16,7 +16,7 @@
 
 bool ts::mcast::NIPAnalyzerArgs::none(bool except_summary) const
 {
-    return ts::mcast::FluteDemuxArgs::none() && (except_summary || !summary) &&
+    return FluteDemuxArgs::none() && (except_summary || !summary) &&
            save_nif.empty() && save_sif.empty() && save_slep.empty() && save_bootstrap.empty() && save_dvbgw_dir.empty();
 }
 

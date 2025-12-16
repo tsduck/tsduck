@@ -26,7 +26,7 @@ ts::mcast::FluteFDT::FluteFDT(Report&               report,
 {
     // Parse the XML document.
     xml::Document doc(report);
-    if (parseXML(doc, u"FDT-Instance")) {
+    if (parseXML(doc, u"FDT-Instance", true)) {
         const xml::Element* root = doc.rootElement();
         uint32_t expires_int = 0;
 

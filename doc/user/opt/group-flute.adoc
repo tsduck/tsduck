@@ -6,19 +6,25 @@
 //
 // Documentation for options in class ts::FluteDemuxArgs and subclasses.
 //
-// tags: dvbnip
+// tags: dvbnip flute
 //
 //----------------------------------------------------------------------------
 
 //---- ugly tag tricks ----
 
-:opt-flute: true
+:opt-base: true
 :!opt-dvbnip:
+:!opt-flute:
 
 // tag::dvbnip[]
-:!opt-flute:
+:!opt-base:
 :opt-dvbnip: true
 // end::dvbnip[]
+
+// tag::flute[]
+:!opt-base:
+:opt-flute: true
+// end::flute[]
 
 //---- end of tag tricks ----
 
@@ -26,7 +32,7 @@
 // FLUTE / NIP title
 //----------------------------------------------------------------------------
 
-ifdef::opt-flute[]
+ifdef::opt-base[]
 [.usage]
 FLUTE protocol options
 endif::[]
@@ -36,6 +42,29 @@ ifdef::opt-dvbnip[]
 DVB-NIP analysis options
 
 These options are identical in the command `tsnip` and the `tsp` plugin `nip`.
+endif::[]
+
+ifdef::opt-flute[]
+[.usage]
+FLUTE analysis options
+
+These options are identical in the command `tsflute` and the `tsp` plugin `flute`.
+endif::[]
+
+//----------------------------------------------------------------------------
+// option --destination
+//----------------------------------------------------------------------------
+
+ifdef::opt-flute[]
+[.opt]
+*-d* _[ip-address]:[port]_ +
+*--destination* _[ip-address]:[port]_
+
+[.optdoc]
+Only use UDP packets with the specified destination IP address and/or UDP port.
+
+[.optdoc]
+Multiple options `--destination` can be specified. By default, use all UDP packets.
 endif::[]
 
 //----------------------------------------------------------------------------
@@ -53,6 +82,27 @@ Same as `--log-flute-packets` and also dump the payload of each FLUTE packet.
 
 [.optdoc]
 Dump the content of XML files when they are received.
+
+//----------------------------------------------------------------------------
+// Option --extract-carousel
+//----------------------------------------------------------------------------
+
+ifdef::opt-flute[]
+[.opt]
+*--extract-carousel* _directory-name_
+
+[.optdoc]
+Save all files in the FLUTE carousel. The specified path is a directory.
+The file hierarchy is recreated from this directory.
+
+[.optdoc]
+When a FLUTE file name is an URI, the URI scheme is removed.
+The characters which are not allowed in file names are replaced with an underscore.
+endif::[]
+
+//----------------------------------------------------------------------------
+// Common FLUTE options
+//----------------------------------------------------------------------------
 
 [.opt]
 *--extract-destination* _[ip-address]:[port]_
@@ -138,6 +188,16 @@ The default is the current directory.
 //----------------------------------------------------------------------------
 
 ifdef::opt-dvbnip[]
+[.opt]
+*-o* _file-name_ +
+*--output-file* _file-name_
+
+[.optdoc]
+With `--summary`, save the report in the specified file.
+By default or if the specified path is '`-`', the report is written to the standard output.
+endif::[]
+
+ifdef::opt-flute[]
 [.opt]
 *-o* _file-name_ +
 *--output-file* _file-name_
@@ -255,5 +315,14 @@ ifdef::opt-dvbnip[]
 
 [.optdoc]
 Display a summary of the DVB-NIP session.
+This is the default if no other option is specified.
+endif::[]
+
+ifdef::opt-flute[]
+[.opt]
+*--summary*
+
+[.optdoc]
+Display a summary of the FLUTE session.
 This is the default if no other option is specified.
 endif::[]

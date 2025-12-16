@@ -2,11 +2,13 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.43-4523 (December 2025)
+VERSION 3.43-4527 (December 2025)
 
 [NEW] New commands and plugins:
 
+  * Added command "tsflute": FLUTE analyzer in pcap files.
   * Added command "tsnip": DVB-NIP (Native IP) analyzer in pcap files.
+  * Added plugin "flute": FLUTE analyzer in MPE streams.
   * Added plugin "nip": DVB-NIP (Native IP) analyzer in MPE streams.
   * Added plugin "nipextract": DVB-NIP (Native IP) live service extraction from
     MPE streams.

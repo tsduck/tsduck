@@ -1,0 +1,59 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2025, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== flute
+
+[.cmd-header]
+FLUTE analyzer
+
+This plugin analyzes one FLUTE stream from one MPE PID in the transport stream.
+FLUTE is the "File Delivery over Unidirectional Transport".
+It is used by various protocols such as Multicast Adaptive Bit Rate or DVB-NIP.
+
+NOTE: To analyze a FLUTE stream which is natively transported on an IP network,
+use the command `tsflute`. See xref:_tsflute[xrefstyle=short] for more details.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P flute [options]
+----
+
+[.usage]
+Transport stream options
+
+[.opt]
+*-p* _value_ +
+*--pid* _value_
+
+[.optdoc]
+Specify the MPE PID containing the FLUTE stream.
+
+[.optdoc]
+By default, if neither `--pid` nor `--service` is specified, use the first MPE PID which is found.
+Options `--pid` and `--service` are mutually exclusive.
+
+[.opt]
+*-s* _name-or-id_ +
+*--service* _name-or-id_
+
+[.optdoc]
+Specify the service containing the FLUTE stream in a MPE PID.
+If the argument is an integer value (either decimal or hexadecimal), it is interpreted as a service id.
+Otherwise, it is interpreted as a service name, as specified in the SDT.
+The name is not case sensitive and blanks are ignored.
+
+[.optdoc]
+By default, if neither `--pid` nor `--service` is specified, use the first MPE PID which is found.
+Options `--pid` and `--service` are mutually exclusive.
+
+include::{docdir}/opt/group-flute.adoc[tags=!*;flute]
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]
