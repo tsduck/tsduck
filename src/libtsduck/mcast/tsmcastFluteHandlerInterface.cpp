@@ -23,7 +23,3 @@ void ts::mcast::FluteHandlerInterface::handleFluteFDT(const FluteFDT&)
 void ts::mcast::FluteHandlerInterface::handleFluteNACI(const NIPActualCarrierInformation&)
 {
 }
-
-void ts::mcast::FluteHandlerInterface::handleFluteStatus(const FluteSessionId&, const UString&, const UString&, uint64_t, uint64_t, uint64_t)
-{
-}

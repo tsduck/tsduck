@@ -35,9 +35,8 @@ bool ts::mcast::NIPAnalyzer::reset(const NIPAnalyzerArgs& args)
 
     // Local initialization.
     _args = args;
-    _sessions.clear();
     _nacis.clear();
-    return _demux.reset(_args);
+    return _demux.reset(_args, _args.summary);
 }
 
 
@@ -57,16 +56,6 @@ void ts::mcast::NIPAnalyzer::handleFluteNACI(const NIPActualCarrierInformation& 
 
 void ts::mcast::NIPAnalyzer::handleFluteFile(const FluteFile& file)
 {
-    // Remember statistics about files.
-    if (_args.summary) {
-        auto& session(_sessions[file.sessionId()]);
-        auto& fctx(session.files[file.name()]);
-        fctx.complete = true;
-        fctx.type = file.type();
-        fctx.size = fctx.received = file.size();
-        fctx.toi = file.toi();
-    }
-
     // Process some files from the DVB-NIP announcement channel.
     if (file.sessionId().nipAnnouncementChannel()) {
         if (file.name().similar(u"urn:dvb:metadata:nativeip:NetworkInformationFile")) {
@@ -164,9 +153,6 @@ void ts::mcast::NIPAnalyzer::printSummary(std::ostream& user_output)
     }
     std::ostream& out(use_file ? outfile : user_output);
 
-    // Get status of incomplete files from the FLUTE demux.
-    _demux.getFileStatus();
-
     // Display the DVB-NIP carrier information.
     out << std::endl << "DVB-NIP carriers: " << _nacis.size() << std::endl;
     for (const auto& naci : _nacis) {
@@ -256,87 +242,10 @@ void ts::mcast::NIPAnalyzer::printSummary(std::ostream& user_output)
     out << std::endl;
 
     // Display the status of all files.
-    size_t session_count = 0;
-    for (const auto& sess : _sessions) {
-        out << "Session #" << (++session_count) << ": " << sess.first << std::endl;
-        if (sess.second.files.empty()) {
-            out << "  No file received" << std::endl;
-        }
-        else {
-            TextTable tab;
-            enum {SIZE, TOI, STATUS, NAME, TYPE};
-            tab.addColumn(SIZE, u"Size", TextTable::Align::RIGHT);
-            tab.addColumn(TOI, u"TOI", TextTable::Align::RIGHT);
-            tab.addColumn(STATUS, u"Status", TextTable::Align::RIGHT);
-            tab.addColumn(NAME, u"Name", TextTable::Align::LEFT);
-            tab.addColumn(TYPE, u"Type", TextTable::Align::LEFT);
-            for (const auto& file : sess.second.files) {
-                tab.setCell(SIZE, UString::Decimal(file.second.size));
-                tab.setCell(TOI, UString::Decimal(file.second.toi));
-                tab.setCell(STATUS, file.second.complete ? u"complete" : UString::Decimal(file.second.received));
-                tab.setCell(NAME, file.first);
-                tab.setCell(TYPE, file.second.type);
-                tab.newLine();
-            }
-            tab.output(out, TextTable::Headers::TEXT, true, u"  ", u"  ");
-        }
-        out << std::endl;
-    }
+    _demux.getFluteDemux().printFilesStatus(out);
 
     // Close the user-specified output file if required.
     if (use_file) {
         outfile.close();
-    }
-}
-
-
-//----------------------------------------------------------------------------
-// Invoked by FluteDemux::getFilesStatus() for each file.
-//----------------------------------------------------------------------------
-
-void ts::mcast::NIPAnalyzer::handleFluteStatus(const FluteSessionId& session_id,
-                                               const UString& name,
-                                               const UString& type,
-                                               uint64_t toi,
-                                               uint64_t total_length,
-                                               uint64_t received_length)
-{
-    // Locate file in sessions.
-    auto& session(_sessions[session_id]);
-    auto file = session.files.find(name);
-
-    // If the file is unnamed, try to find a matching TOI in the session.
-    if (name.empty()) {
-        for (file = session.files.begin(); file != session.files.end() && file->second.toi != toi; ++file) {
-        }
-    }
-
-    // If the file is still not found, create an entry for an incomplete file.
-    if (file == session.files.end()) {
-        // Do not create a new entry for an FDT. This is a FLUTE-level file, not a DVB-NIP one.
-        if (toi == 0) {
-            return;
-        }
-        // Create an entry for an incomplete file.
-        UString new_name(name);
-        if (new_name.empty()) {
-            new_name.format(u"(unknown, TOI %d)", toi);
-        }
-        file = session.files.emplace(new_name, FileContext()).first;
-    }
-
-    // If the file is not completely received, update the description.
-    if (!file->second.complete) {
-        file->second.size = total_length;
-        file->second.received = received_length;
-        file->second.toi = toi;
-        if (!type.empty()) {
-            file->second.type = type;
-            // Remove qualification such as "charset=utf-8" in type.
-            const size_t sc = file->second.type.find(u";");
-            if (sc < file->second.type.length()) {
-                file->second.type.resize(sc);
-            }
-        }
     }
 }

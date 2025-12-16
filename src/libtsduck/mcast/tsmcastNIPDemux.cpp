@@ -26,9 +26,9 @@ ts::mcast::NIPDemux::NIPDemux(DuckContext& duck, NIPHandlerInterface* handler) :
 // Reset the demux.
 //----------------------------------------------------------------------------
 
-bool ts::mcast::NIPDemux::reset(const FluteDemuxArgs& args)
+bool ts::mcast::NIPDemux::reset(const FluteDemuxArgs& args, bool will_get_files_status)
 {
-    bool ok = _flute_demux.reset(args);
+    bool ok = _flute_demux.reset(args, will_get_files_status);
     _args = args;
     _session_filter.clear();
     _service_lists.clear();
@@ -166,13 +166,6 @@ void ts::mcast::NIPDemux::handleFluteNACI(const NIPActualCarrierInformation& nac
 {
     if (_handler != nullptr) {
         _handler->handleFluteNACI(naci);
-    }
-}
-
-void ts::mcast::NIPDemux::handleFluteStatus(const FluteSessionId& session, const UString& name, const UString& type, uint64_t toi, uint64_t total, uint64_t received)
-{
-    if (_handler != nullptr) {
-        _handler->handleFluteStatus(session, name, type, toi, total, received);
     }
 }
 

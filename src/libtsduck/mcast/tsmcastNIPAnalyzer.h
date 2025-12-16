@@ -73,36 +73,16 @@ namespace ts::mcast {
         void printSummary(std::ostream& out = std::cout);
 
     private:
-        // Description of a file.
-        class TSDUCKDLL FileContext
-        {
-        public:
-            bool     complete = false;  // The file has been received in this object.
-            uint64_t size = 0;          // File size in bytes.
-            uint64_t received = 0;      // Received size in bytes.
-            uint64_t toi = 0;           // Transport object identifier.
-            UString  type {};           // File type.
-        };
-
-        // Description of a session.
-        class TSDUCKDLL SessionContext
-        {
-        public:
-            std::map<UString, FileContext> files {};  // Description of files, indexed by name.
-        };
-
         // NIPAnalyzer private fields.
         DuckContext&    _duck;
         Report&         _report {_duck.report()};
         NIPAnalyzerArgs _args {};
         NIPDemux        _demux {_duck, this};
-        std::map<FluteSessionId, SessionContext> _sessions {};
-        std::set<NIPActualCarrierInformation>    _nacis {};
+        std::set<NIPActualCarrierInformation> _nacis {};
 
         // Implementation of NIPHandlerInterface.
         virtual void handleFluteFile(const FluteFile&) override;
         virtual void handleFluteNACI(const NIPActualCarrierInformation&) override;
-        virtual void handleFluteStatus(const FluteSessionId&, const UString&, const UString&, uint64_t, uint64_t, uint64_t) override;
 
         // Save a XML file (if the file name is not empty).
         void saveXML(const FluteFile& file, const fs::path& path);

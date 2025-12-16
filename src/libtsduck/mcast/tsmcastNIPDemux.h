@@ -50,9 +50,14 @@ namespace ts::mcast {
         //!
         //! Reset the demux.
         //! @param [in] args Demux arguments.
+        //! @param [in] will_get_files_status We intend to call FluteDemux::getFilesStatus() later.
+        //! This means that the demux needs to keep track of all received files. Since
+        //! this uses a ever-growing amount of memory, be sure to specify this option
+        //! when necessary only and when the demux session, until the next reset(), is
+        //! limited in time.
         //! @return True on success, false on error.
         //!
-        bool reset(const FluteDemuxArgs& args);
+        bool reset(const FluteDemuxArgs& args, bool will_get_files_status = false);
 
         //!
         //! The following method feeds the demux with an IP packet.
@@ -140,9 +145,11 @@ namespace ts::mcast {
         // Note: Must fully qualify NIPService in same_as<> because of a Visual Studio bug.
 
         //!
-        //! Force a file status update in the FLUTE so that the handler can be notified on its handleFluteFile().
+        //! Get a constant reference to the undelying FLUTE demux.
+        //! Because the reference is const, the FLUTE demux can only be used to get or print the status of files.
+        //! @return A constant reference to the undelying FLUTE demux.
         //!
-        void getFileStatus() { _flute_demux.getFilesStatus(); }
+        const FluteDemux& getFluteDemux() const { return _flute_demux; }
 
     private:
         DuckContext&                          _duck;
@@ -159,7 +166,6 @@ namespace ts::mcast {
         virtual void handleFluteFile(const FluteFile&) override;
         virtual void handleFluteFDT(const FluteFDT&) override;
         virtual void handleFluteNACI(const NIPActualCarrierInformation&) override;
-        virtual void handleFluteStatus(const FluteSessionId&, const UString&, const UString&, uint64_t, uint64_t, uint64_t) override;
 
         // Process the basic elements of a DVB-NIP stream.
         virtual void processGatewayConfiguration(const GatewayConfiguration& mgc);

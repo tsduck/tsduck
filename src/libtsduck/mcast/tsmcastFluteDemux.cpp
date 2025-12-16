@@ -9,6 +9,7 @@
 #include "tsmcastFluteDemux.h"
 #include "tsmcastLCTHeader.h"
 #include "tsmcast.h"
+#include "tsTextTable.h"
 #include "tsIPSocketAddress.h"
 #include "tsEnvironment.h"
 
@@ -43,10 +44,11 @@ ts::mcast::FluteDemux::~FluteDemux()
 // Reset the demux.
 //----------------------------------------------------------------------------
 
-bool ts::mcast::FluteDemux::reset(const FluteDemuxArgs& args)
+bool ts::mcast::FluteDemux::reset(const FluteDemuxArgs& args, bool will_get_files_status)
 {
     _args = args;
     _sessions.clear();
+    _keep_file_status = will_get_files_status;
     _packet_count = 0;
     _next_gc_timestamp = cn::microseconds::zero();
 
@@ -100,8 +102,7 @@ void ts::mcast::FluteDemux::feedPacketImpl(const cn::microseconds& timestamp, co
         return;
     }
 
-    // The FEC Encoding ID is stored in codepoint (RFC 3926, section 5.1).
-    // We currently only support the default one, value 0.
+    // We currently only support the default FEC Encoding ID, value 0.
     if (lct.fec_encoding_id != FEI_COMPACT_NOCODE) {
         _report.error(u"unsupported FEC Encoding ID %d from %s", lct.fec_encoding_id, source);
         return;
@@ -135,7 +136,7 @@ void ts::mcast::FluteDemux::feedPacketImpl(const cn::microseconds& timestamp, co
     // Get/create transport session and file.
     const FluteSessionId sid(source, destination, lct.tsi);
     SessionContext& session(_sessions[sid]);
-    FileContext& file(session.files[lct.toi]);
+    FileContext& file(session.files_by_toi[lct.toi]);
 
     // Keep track of last packet time, for the garbage collector.
     file.last_time = timestamp;
@@ -326,6 +327,15 @@ void ts::mcast::FluteDemux::processCompleteFile(const FluteSessionId& sid, Sessi
             }
         }
 
+        // Keep the status of all received files if necessary.
+        if (_keep_file_status) {
+            auto& f(session.files_by_name[file.name]);
+            f.type = file.type;
+            f.size = f.received = data->size();
+            f.last_toi = toi;
+            CleanupFileStatus(f);
+        }
+
         // Notify the application.
         if (_handler != nullptr) {
             _handler->handleFluteFile(ff);
@@ -375,7 +385,7 @@ void ts::mcast::FluteDemux::processFDT(SessionContext& session, const FluteFDT& 
 
     // Register information for other files in the session, as described in the FDT.
     for (const auto& f : fdt.files) {
-        FileContext& sf(session.files[f.toi]);
+        FileContext& sf(session.files_by_toi[f.toi]);
         sf.name = f.content_location;
         sf.type = f.content_type;
         updateFileSize(fdt.sessionId(), session, f.toi, sf, f.transfer_length);
@@ -387,7 +397,7 @@ void ts::mcast::FluteDemux::processFDT(SessionContext& session, const FluteFDT& 
     }
 
     // Process all complete files which were not processed yet because of an absence of FDT.
-    for (auto& f : session.files) {
+    for (auto& f : session.files_by_toi) {
         if (f.first != FLUTE_FDT_TOI && !f.second.processed && f.second.transfer_length > 0 && f.second.current_length >= f.second.transfer_length) {
             processCompleteFile(fdt.sessionId(), session, f.first, f.second);
         }
@@ -399,19 +409,86 @@ void ts::mcast::FluteDemux::processFDT(SessionContext& session, const FluteFDT& 
 // Get the current status of all file transfers.
 //----------------------------------------------------------------------------
 
-void ts::mcast::FluteDemux::getFilesStatus()
+void ts::mcast::FluteDemux::getFilesStatus(SessionStatus& status) const
 {
-    if (_handler != nullptr) {
-        for (const auto& sess : _sessions) {
-            for (const auto& file : sess.second.files) {
-                _handler->handleFluteStatus(sess.first,
-                                            file.second.name,
-                                            file.second.type,
-                                            file.first,
-                                            file.second.transfer_length,
-                                            file.second.processed ? file.second.transfer_length : file.second.current_length);
+    status.clear();
+    for (const auto& sess : _sessions) {
+        // In each session, start with a copy of all received files.
+        auto& st_sess(status[sess.first]);
+        st_sess = sess.second.files_by_name;
+
+        // Then, add all partially transfered files.
+        for (const auto& file : sess.second.files_by_toi) {
+            // Process unprocessed files which are not an FDT (TOI = 0).
+            if (!file.second.processed && file.first != FLUTE_FDT_TOI) {
+                // If the file name is not yet known, build a dummy one.
+                UString fname(file.second.name);
+                if (fname.empty()) {
+                    fname.format(u"(unknown, TOI %d)", file.first);
+                }
+                // Update the file status.
+                auto& st_file(st_sess[fname]);
+                st_file.last_toi = file.first;
+                st_file.received = file.second.current_length;
+                st_file.size = file.second.transfer_length;
+                st_file.type = file.second.type;
+                CleanupFileStatus(st_file);
             }
         }
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Cleanup a FileStatus.
+//----------------------------------------------------------------------------
+
+void ts::mcast::FluteDemux::CleanupFileStatus(FileStatus& file)
+{
+    // Remove qualification such as "charset=utf-8" in type.
+    const size_t sc = file.type.find(u";");
+    if (sc < file.type.length()) {
+        file.type.resize(sc);
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Print a list of all received files.
+//----------------------------------------------------------------------------
+
+void ts::mcast::FluteDemux::printFilesStatus(std::ostream& out) const
+{
+    // Collect all files status.
+    SessionStatus status;
+    getFilesStatus(status);
+
+    // Display the status of all files.
+    size_t session_count = 0;
+    for (const auto& sess : status) {
+        out << "Session #" << (++session_count) << ": " << sess.first << std::endl;
+        if (sess.second.empty()) {
+            out << "  No file received" << std::endl;
+        }
+        else {
+            TextTable tab;
+            enum {SIZE, TOI, STATUS, NAME, TYPE};
+            tab.addColumn(SIZE, u"Size", TextTable::Align::RIGHT);
+            tab.addColumn(TOI, u"TOI", TextTable::Align::RIGHT);
+            tab.addColumn(STATUS, u"Status", TextTable::Align::RIGHT);
+            tab.addColumn(NAME, u"Name", TextTable::Align::LEFT);
+            tab.addColumn(TYPE, u"Type", TextTable::Align::LEFT);
+            for (const auto& file : sess.second) {
+                tab.setCell(SIZE, UString::Decimal(file.second.size));
+                tab.setCell(TOI, UString::Decimal(file.second.last_toi));
+                tab.setCell(STATUS, file.second.received == file.second.size ? u"complete" : UString::Decimal(file.second.received));
+                tab.setCell(NAME, file.first);
+                tab.setCell(TYPE, file.second.type);
+                tab.newLine();
+            }
+            tab.output(out, TextTable::Headers::TEXT, true, u"  ", u"  ");
+        }
+        out << std::endl;
     }
 }
 
@@ -426,10 +503,10 @@ void ts::mcast::FluteDemux::garbageCollector(const cn::microseconds& current_tim
     size_t reclaimed = 0;
     size_t kept = 0;
     for (auto& sess : _sessions) {
-        for (auto file = sess.second.files.begin(); file != sess.second.files.end(); ) {
+        for (auto file = sess.second.files_by_toi.begin(); file != sess.second.files_by_toi.end(); ) {
             if (file->second.last_time + _file_max_lifetime >= current_timestamp) {
                 ++reclaimed;
-                file = sess.second.files.erase(file);
+                file = sess.second.files_by_toi.erase(file);
             }
             else {
                 ++kept;

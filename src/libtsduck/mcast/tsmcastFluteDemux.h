@@ -49,9 +49,15 @@ namespace ts::mcast {
         //!
         //! Reset the demux.
         //! @param [in] args Demux arguments.
+        //! @param [in] will_get_files_status We intend to call getFilesStatus() later.
+        //! This means that the demux needs to keep track of all received files. Since
+        //! this uses a ever-growing amount of memory, be sure to specify this option
+        //! when necessary only and when the demux session, until the next reset(), is
+        //! limited in time.
         //! @return True on success, false on error.
+        //! @see getFilesStatus()
         //!
-        bool reset(const FluteDemuxArgs& args);
+        bool reset(const FluteDemuxArgs& args, bool will_get_files_status = false);
 
         //!
         //! The following method feeds the demux with an IP packet.
@@ -77,11 +83,39 @@ namespace ts::mcast {
         }
 
         //!
-        //! Get the current status of all file transfers.
-        //! The current handler is invoked on method @a handleFluteStatus() for each file,
-        //! either completely or partially transfered.
+        //! Description of a file, as returned by getFilesStatus().
+        //! @see getFilesStatus()
         //!
-        void getFilesStatus();
+        class TSDUCKDLL FileStatus
+        {
+        public:
+            FileStatus() = default;  //!< Constructor.
+            uint64_t size = 0;       //!< File size in bytes.
+            uint64_t received = 0;   //!< Received size in bytes.
+            uint64_t last_toi = 0;   //!< Last Transport Object Identifier used by this file.
+            UString  type {};        //!< File type.
+        };
+
+        //!
+        //! Description of all files, in all sessions, as returned by getFilesStatus().
+        //! The outer map is indexed by FLUTE session id. In each session, the files are indexed by name.
+        //! @see getFilesStatus()
+        //!
+        using SessionStatus = std::map<FluteSessionId, std::map<UString, FileStatus>>;
+
+        //!
+        //! Get the current status of all file transfers.
+        //! This method returns current transfers only if @a will_get_files_status was false when reset() was called.
+        //! @param [out] status A description of all sessions and files.
+        //!
+        void getFilesStatus(SessionStatus& status) const;
+
+        //!
+        //! Print a list of all received files.
+        //! This method prints current transfers only if @a will_get_files_status was false when reset() was called.
+        //! @param [in,out] out Where to print the summary.
+        //!
+        void printFilesStatus(std::ostream& out) const;
 
     private:
         // Description of a file being received.
@@ -110,8 +144,9 @@ namespace ts::mcast {
         class TSDUCKDLL SessionContext
         {
         public:
-            std::optional<uint32_t>         fdt_instance {};  // Current FDT instance.
-            std::map<uint64_t, FileContext> files {};         // Files contexts, indexes by TOI (Transport Object Identifier).
+            std::optional<uint32_t>         fdt_instance {};   // Current FDT instance.
+            std::map<uint64_t, FileContext> files_by_toi {};   // File contexts, indexes by TOI (Transport Object Identifier).
+            std::map<UString, FileStatus>   files_by_name {};  // File status, indexes by name, for getFilesStatus() only.
         };
 
         // FluteDemux private fields.
@@ -119,6 +154,7 @@ namespace ts::mcast {
         Report&                _report {_duck.report()};
         FluteHandlerInterface* _handler = nullptr;
         FluteDemuxArgs         _args {};
+        bool                   _keep_file_status = false;
         uint64_t               _packet_count = 0;               // Number of IP packets.
         cn::microseconds       _next_gc_timestamp {};           // Timestamps of next garbage collection.
         std::map<FluteSessionId, SessionContext> _sessions {};  // Session contexts, indexed by session id.
@@ -150,6 +186,9 @@ namespace ts::mcast {
 
         // Process a File Delivery Table (FDT).
         void processFDT(SessionContext& session, const FluteFDT& fdt);
+
+        // Cleanup a FileStatus.
+        static void CleanupFileStatus(FileStatus& file);
     };
 }
 
