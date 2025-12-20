@@ -125,6 +125,10 @@ endif::[]
 |packet
 |Filter TS packets according to various criteria
 
+|flute
+|packet
+|FLUTE protocol analyzer
+
 |fork
 |input, output, packet
 |Exchange packets with a created process, either input or output

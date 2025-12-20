@@ -48,7 +48,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"flute", ts::mcast::FlutePlugin);
 //----------------------------------------------------------------------------
 
 ts::mcast::FlutePlugin::FlutePlugin(TSP* tsp_) :
-    AbstractSingleMPEPlugin(tsp_, u"FLUTE analyzer", u"[options]", u"FLUTE stream")
+    AbstractSingleMPEPlugin(tsp_, u"FLUTE protocol analyzer", u"[options]", u"FLUTE stream")
 {
     _opt_flute.defineArgs(*this);
 }

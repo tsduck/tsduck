@@ -10,7 +10,7 @@
 === flute
 
 [.cmd-header]
-FLUTE analyzer
+FLUTE protocol analyzer
 
 This plugin analyzes one FLUTE stream from one MPE PID in the transport stream.
 FLUTE is the "File Delivery over Unidirectional Transport".

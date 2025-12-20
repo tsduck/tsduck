@@ -98,7 +98,7 @@ void ts::mcast::FluteDemux::feedPacketImpl(const cn::microseconds& timestamp, co
     // Get LCT header.
     LCTHeader lct;
     if (!lct.deserialize(udp, udp_size, FT_FLUTE)) {
-        _report.error(u"invalid LCT header from %s", source);
+        _report.error(u"invalid LCT header from %s to %s", source, destination);
         return;
     }
 
@@ -481,7 +481,7 @@ void ts::mcast::FluteDemux::printFilesStatus(std::ostream& out) const
             for (const auto& file : sess.second) {
                 tab.setCell(SIZE, UString::Decimal(file.second.size));
                 tab.setCell(TOI, UString::Decimal(file.second.last_toi));
-                tab.setCell(STATUS, file.second.received == file.second.size ? u"complete" : UString::Decimal(file.second.received));
+                tab.setCell(STATUS, file.second.received == file.second.size && file.second.size > 0 ? u"complete" : UString::Decimal(file.second.received));
                 tab.setCell(NAME, file.first);
                 tab.setCell(TYPE, file.second.type);
                 tab.newLine();
