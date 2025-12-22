@@ -29,6 +29,7 @@ namespace ts {
         ISDB    = 0x0010,  //!< Defined by ISDB.
         JAPAN   = 0x0020,  //!< Defined in Japan only (typically in addition to ISDB).
         ABNT    = 0x0040,  //!< Defined by ABNT (Brazil, typically in addition to ISDB).
+        DTMB    = 0x0080,  //!< Defined by DTMB (China).
         DVBONLY = 0x8000   //!< Used with DVB. Means strict DVB, cannot be the DVB subset as used by ISDB.
     };
 
