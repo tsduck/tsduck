@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.43-4527 (December 2025)
+VERSION 3.43-4539 (December 2025)
 
 [NEW] New commands and plugins:
 
@@ -38,6 +38,9 @@ VERSION 3.43-4527 (December 2025)
     - Option --ignore-pid-conflict in plugin "spliceinject".
     - Option --duration in "tstables" and plugin "tables".
     - Options --influx* in plugin "splicemonitor".
+    - Options  --dtmb,  --china  in  "tsanalyze",  "tsdate",  "tsdump",  "tsp",
+      "tspsi",  "tsscan",  "tstabcomp",  "tstabdump",  "tstables"  and  plugins
+      "analyze", "dump", "psi", "rmorphan", "tables".
 
 [BUG] Bug fixes:
 
