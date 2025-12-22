@@ -2,10 +2,16 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.43-4467 (October 2025)
+VERSION 3.43-4527 (December 2025)
 
 [NEW] New commands and plugins:
 
+  * Added command "tsflute": FLUTE analyzer in pcap files.
+  * Added command "tsnip": DVB-NIP (Native IP) analyzer in pcap files.
+  * Added plugin "flute": FLUTE analyzer in MPE streams.
+  * Added plugin "nip": DVB-NIP (Native IP) analyzer in MPE streams.
+  * Added plugin "nipextract": DVB-NIP (Native IP) live service extraction from
+    MPE streams.
   * Added plugin "iat":  Analyze  Inter-packet Arrival Time (IAT) for datagram-
     based input plugins.
 
@@ -21,6 +27,10 @@ VERSION 3.43-4467 (October 2025)
     inputs are available for InfluxDB.
   * In plugin "splicemonitor",  it is now possible to send all detected SCTE-35
     splice events to an InfluxDB server.
+  * In  command  "tsxml",  it  is  possible to specify a directory as output to
+    process several input files. It is also possible to rewrite the input files
+    after  processing  (previously,  the output file was created before opening
+    the input files).
   * New options in existing commands and plugins:
     - Option --summary in plugin "mpe".
     - Options --iat, --tag in plugin "influx".

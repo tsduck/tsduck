@@ -210,7 +210,7 @@ bool ts::Descriptor::fromXML(DuckContext& duck, EDID& edid, const xml::Element* 
     }
 
     // Try to decode a generic descriptor.
-    if (node->name().similar(AbstractDescriptor::XML_GENERIC_DESCRIPTOR)) {
+    if (node->nameMatch(AbstractDescriptor::XML_GENERIC_DESCRIPTOR)) {
         DID tag = 0xFF;
         ByteBlock payload;
         if (node->getIntAttribute<DID>(tag, u"tag", true, 0xFF, 0x00, 0xFF) && node->getHexaText(payload, 0, 255)) {

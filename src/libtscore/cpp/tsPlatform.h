@@ -996,6 +996,23 @@ private:                             \
         /** @endcond */
 
 //!
+//! A macro to declare the basic operators in the declaration of an interface class which is a subclass of another interface.
+//! @ingroup cpp
+//! @param classname Name of the enclosing class.
+//!
+#define TS_SUBINTERFACE(classname)                         \
+    public:                                                \
+        /** @cond nodoxygen */                             \
+        classname() = default;                             \
+        classname(classname&&) = default;                  \
+        classname(const classname&) = default;             \
+        classname& operator=(classname&&) = default;       \
+        classname& operator=(const classname&) = default;  \
+        virtual ~classname() override;                     \
+        auto operator<=>(const classname&) const = default \
+        /** @endcond */
+
+//!
 //! Singleton class declaration.
 //! @ingroup cpp
 //!

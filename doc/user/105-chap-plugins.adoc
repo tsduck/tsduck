@@ -27,7 +27,7 @@ endif::[]
 
 |aes
 |packet
-|Experimental AES scrambling
+|AES scrambling (experimental)
 
 |analyze
 |packet
@@ -125,6 +125,10 @@ endif::[]
 |packet
 |Filter TS packets according to various criteria
 
+|flute
+|packet
+|FLUTE protocol analyzer
+
 |fork
 |input, output, packet
 |Exchange packets with a created process, either input or output
@@ -196,6 +200,14 @@ endif::[]
 |mux
 |packet
 |Inject TS packets from a file into the transport
+
+|nip
+|packet
+|DVB-NIP (Native IP) analyzer
+
+|nipextract
+|packet
+|DVB-NIP (Native IP) live service extraction
 
 |nit
 |packet

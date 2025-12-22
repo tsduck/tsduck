@@ -244,18 +244,6 @@ registration descriptors and private data specifier descriptors.
 See xref:opt-default-std[xrefstyle=short] for more details.
 // end::fixpds[]
 
-
-//----------------------------------------------------------------------------
-
-// tag::pds[]
-[.opt]
-*--default-pds* _value_
-
-[.optdoc]
-Default DVB-defined private data specifier (PDS).
-See xref:opt-default-std[xrefstyle=short] for more details.
-// end::pds[]
-
 //----------------------------------------------------------------------------
 // option --hf-band-region (optionally -r)
 //----------------------------------------------------------------------------

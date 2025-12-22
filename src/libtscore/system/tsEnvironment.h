@@ -68,6 +68,17 @@ namespace ts {
     TSCOREDLL UString GetEnvironment(const UString& varname, const UString& defvalue = UString());
 
     //!
+    //! Get the value of an environment variable as an integer value.
+    //! @ingroup environment
+    //! @tparam INT An integer type, any size, signed or unsigned.
+    //! @param [in] varname Environment variable name.
+    //! @param [in] defvalue Default value if the specified environment variable does not exist or is not an integer.
+    //! @return The value of the specified environment variable, @a defvalue otherwise.
+    //!
+    template <typename INT> requires std::integral<INT>
+    INT GetIntEnvironment(const UString& varname, INT defvalue = static_cast<INT>(0));
+
+    //!
     //! Get the value of an environment variable containing a search path.
     //! The search path is analyzed and split into individual directory names.
     //! @ingroup environment
@@ -191,3 +202,17 @@ namespace ts {
     TSCOREDLL bool LoadEnvironment(Environment& env, const UString& fileName);
 }
 TS_ENABLE_BITMASK_OPERATORS(ts::ExpandOptions);
+
+
+//----------------------------------------------------------------------------
+// Template definitions.
+//----------------------------------------------------------------------------
+
+// Get the value of an environment variable as an integer value.
+template <typename INT> requires std::integral<INT>
+INT ts::GetIntEnvironment(const UString& varname, INT defvalue)
+{
+    const UString sval(GetEnvironment(varname));
+    INT ival = 0;
+    return sval.toInteger(ival, UString::DEFAULT_THOUSANDS_SEPARATOR) ? ival : defvalue;
+}

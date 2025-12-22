@@ -411,6 +411,22 @@ bool ts::IPAddress::isMulticast() const
     }
 }
 
+// Check if two IPv6 multicast addresses are identical, excluding the "scope" bits.
+bool ts::IPAddress::sameMulticast6(const IPAddress& mc) const
+{
+    return _gen == IP::v6 && mc._gen == IP::v6 &&
+           port() == mc.port() &&
+           _bytes6[0] == 0xFF && mc._bytes6[0] == 0xFF &&
+           (_bytes6[1] & 0xF0) == (mc._bytes6[1] & 0xF0) &&
+           MemCompare(_bytes6 + 2, mc._bytes6 + 2, BYTES6 - 2) == 0;
+}
+
+// Get the IPv6 multicast "scope" bits of this address.
+uint8_t ts::IPAddress::scopeMulticast6() const
+{
+    return _gen == IP::v6 && _bytes6[0] == 0xFF ? (_bytes6[1] & 0x0F) : 0xFF;
+}
+
 // SSM: source specific multicast.
 bool ts::IPAddress::isSSM() const
 {
@@ -450,18 +466,27 @@ bool ts::IPAddress::match(const IPAddress& other) const
         return true;
     }
     else if (_gen == IP::v6) {
-        if (other._gen == IP::v6) {
+        if (other._gen == IP::v4) {
+            // Compare an IPv6 address with an IPv4 address: possible is the IPv6 address is IPv4-mapped.
+            return isIPv4Mapped() && GetUInt32BE(_bytes6 + 12) == other._addr4;
+        }
+        else if (_bytes6[0] != 0xFF || other._bytes6[0] != 0xFF) {
+            // Compare two IPv6 addresses, at least one of them is not multicast.
             return IsEqual6(_bytes6, other._bytes6);
         }
         else {
-            return isIPv4Mapped() && GetUInt32BE(_bytes6 + 12) == other._addr4;
+            // Compare two IPv6 multicast addresses, the comparison shall exclude the "scope" bits.
+            return (_bytes6[1] & 0xF0) == (other._bytes6[1] & 0xF0) && MemCompare(_bytes6 + 2, other._bytes6 + 2, BYTES6 - 2) == 0;
         }
     }
     else {
+        // This address is IPv4.
         if (other._gen == IP::v4) {
+            // Compare two IPv4 addresses.
             return _addr4 == other._addr4;
         }
         else {
+            // The other address is IPv6, same comment as in the opposite case above.
             return other.isIPv4Mapped() && GetUInt32BE(other._bytes6 + 12) == _addr4;
         }
     }

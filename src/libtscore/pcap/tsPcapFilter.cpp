@@ -18,33 +18,33 @@ void ts::PcapFilter::defineArgs(Args& args)
 {
     args.option(u"first-packet", 0, Args::POSITIVE);
     args.help(u"first-packet",
-         u"Filter packets starting at the specified number. "
-         u"The packet numbering counts all captured packets from the beginning of the file, starting at 1. "
-         u"This is the same value as seen on Wireshark in the leftmost column.");
+              u"Filter packets starting at the specified number. "
+              u"The packet numbering counts all captured packets from the beginning of the file, starting at 1. "
+              u"This is the same value as seen on Wireshark in the leftmost column.");
 
     args.option<cn::microseconds>(u"first-timestamp");
     args.help(u"first-timestamp",
-         u"Filter packets starting at the specified timestamp in micro-seconds from the beginning of the capture. "
-         u"This is the same value as seen on Wireshark in the \"Time\" column (in seconds).");
+              u"Filter packets starting at the specified timestamp in micro-seconds from the beginning of the capture. "
+              u"This is the same value as seen on Wireshark in the \"Time\" column (in seconds).");
 
     args.option(u"first-date", 0, Args::STRING);
     args.help(u"first-date", u"date-time",
-         u"Filter packets starting at the specified date. Use format YYYY/MM/DD:hh:mm:ss.mmm.");
+              u"Filter packets starting at the specified date. Use format YYYY/MM/DD:hh:mm:ss.mmm.");
 
     args.option(u"last-packet", 0, Args::POSITIVE);
     args.help(u"last-packet",
-         u"Filter packets up to the specified number. "
-         u"The packet numbering counts all captured packets from the beginning of the file, starting at 1. "
-         u"This is the same value as seen on Wireshark in the leftmost column.");
+              u"Filter packets up to the specified number. "
+              u"The packet numbering counts all captured packets from the beginning of the file, starting at 1. "
+              u"This is the same value as seen on Wireshark in the leftmost column.");
 
     args.option<cn::microseconds>(u"last-timestamp");
     args.help(u"last-timestamp",
-         u"Filter packets up to the specified timestamp in micro-seconds from the beginning of the capture. "
-         u"This is the same value as seen on Wireshark in the \"Time\" column (in seconds).");
+              u"Filter packets up to the specified timestamp in micro-seconds from the beginning of the capture. "
+              u"This is the same value as seen on Wireshark in the \"Time\" column (in seconds).");
 
     args.option(u"last-date", 0, Args::STRING);
     args.help(u"last-date", u"date-time",
-         u"Filter packets up to the specified date. Use format YYYY/MM/DD:hh:mm:ss.mmm.");
+              u"Filter packets up to the specified date. Use format YYYY/MM/DD:hh:mm:ss.mmm.");
 
     args.option(u"vlan-id", 0, Args::UINT32, 0, Args::UNLIMITED_COUNT);
     args.help(u"vlan-id",

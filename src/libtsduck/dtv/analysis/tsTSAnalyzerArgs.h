@@ -7,7 +7,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Report options for the class TSAnalyzer.
+//!  Command line arguments for the class TSAnalyzer.
 //!
 //----------------------------------------------------------------------------
 
@@ -20,20 +20,20 @@ namespace ts {
     class DuckContext;
 
     //!
-    //! Report options for the class TSAnalyzer.
+    //! Command line arguments for the class TSAnalyzer.
     //! @ingroup libtsduck mpeg
     //!
-    //! The default options are
+    //! The default command line options are:
     //! -\-ts-analysis -\-service-analysis -\-pid-analysis -\-table-analysis
     //!
-    class TSDUCKDLL TSAnalyzerOptions
+    class TSDUCKDLL TSAnalyzerArgs
     {
-        TS_NOCOPY(TSAnalyzerOptions);
+        TS_NOCOPY(TSAnalyzerArgs);
     public:
         //!
         //! Constructor.
         //!
-        TSAnalyzerOptions() = default;
+        TSAnalyzerArgs() = default;
 
         // Full analysis options:
         bool ts_analysis = false;            //!< Option -\-ts-analysis

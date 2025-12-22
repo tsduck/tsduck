@@ -8,6 +8,7 @@ Other DVB-defined structures and protocols are defined in the following director
 - `libtsduck/dtv/descriptors/dvb`: DVB-defined descriptors.
 - `libtsduck/dtv/broadcast`: DVB modulation parameters.
 - `libtsduck/dtv/charset`: DVB character sets (along with non-DVB character sets).
+- `libtsduck/dtv/dvbnip`: DVB-NIP (Native IP).
 - `libtsduck/dtv/dvbsimulcrypt`: DVB SimulCrypt head-end protocols.
 - `libtsduck/dtv/epg`: EIT management.
 - `libtsduck/dtv/mpe`: Multi-Protocol Encapsulation.

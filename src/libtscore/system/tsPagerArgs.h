@@ -28,17 +28,16 @@ namespace ts {
         TS_NOCOPY(PagerArgs);
     public:
         // Public fields
-        bool page_by_default = false; //!< Use a page process by default.
-        bool use_pager = false;       //!< Actually use a page process.
+       bool use_pager = false;  //!< Actually use a page process.
 
         //!
         //! Default constructor.
-        //! @param [in] pageByDefault If true, paging is enabled by default and option @c -\-no-pager
+        //! @param [in] page_by_default If true, paging is enabled by default and option @c -\-no-pager
         //! is defined. If false, do not page by default and option @c -\-pager is defined.
-        //! @param [in] stdoutOnly If true, use only stdout. If false, if stdout is not a terminal but
+        //! @param [in] stdout_only If true, use only stdout. If false, if stdout is not a terminal but
         //! stderr is one, then use stderr for paging.
         //!
-        PagerArgs(bool pageByDefault = false, bool stdoutOnly = true);
+        PagerArgs(bool page_by_default = false, bool stdout_only = true);
 
         //!
         //! Destructor.
@@ -67,6 +66,7 @@ namespace ts {
         std::ostream& output(Report& report = CERR);
 
     private:
+        bool _page_by_default = false;
         OutputPager _pager;
     };
 }

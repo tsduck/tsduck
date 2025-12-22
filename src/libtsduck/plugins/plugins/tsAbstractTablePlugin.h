@@ -41,8 +41,8 @@ namespace ts {
         //!
         //! Constructor for subclasses.
         //! @param [in] tsp Object to communicate with the Transport Stream Processor main executable.
-        //! @param [in] description A short one-line description, eg. "Descrambler for 'xyz' CAS".
-        //! @param [in] syntax A short one-line syntax summary, default: u"[options] [service]".
+        //! @param [in] description A short one-line description.
+        //! @param [in] syntax A short one-line syntax summary.
         //! @param [in] table_name Name of the table to process (for help text).
         //! @param [in] pid PID containing the tables to process. Does nothing when PID_NULL.
         //! @param [in] default_bitrate Default bitrate of new PID if a table is created.

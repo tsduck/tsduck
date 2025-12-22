@@ -24,6 +24,6 @@ ts::CerrReport::CerrReport()
 // Message logging method.
 void ts::CerrReport::writeLog(int severity, const UString &msg)
 {
-    std::cerr << "* " << Severity::Header(severity) << msg << std::endl;
+    std::cerr << "* " << Severity::AddHeader(severity, msg) << std::endl;
     std::cerr.flush();
 }

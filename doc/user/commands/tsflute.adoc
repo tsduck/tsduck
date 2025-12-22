@@ -1,0 +1,51 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2025, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== tsflute
+
+[.cmd-header]
+Analyze a FLUTE stream from a pcap or pcap-ng file
+
+FLUTE is the "File Delivery over Unidirectional Transport".
+It is used by various protocols such as Multicast Adaptive Bit Rate or DVB-NIP.
+
+The pcap file shall contain all UDP packets of a FLUTE stream.
+Non-UDP packets are ignored.
+
+NOTE: To analyze a FLUTE stream which is transported using MPE in a MPEG-2 transport stream,
+use the `tsp` plugin `flute`. See xref:_flute[xrefstyle=short] for more details.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsflute [options] [input-file]
+----
+
+[.usage]
+Parameters
+
+[.opt]
+_input-file_
+
+[.optdoc]
+Input file in pcap or pcap-ng format, typically as saved by Wireshark.
+
+[.optdoc]
+Use the standard input if no file name is specified.
+
+[.usage]
+General options
+
+include::{docdir}/opt/opt-no-pager.adoc[tags=!*]
+
+include::{docdir}/opt/group-flute.adoc[tags=!*;flute]
+include::{docdir}/opt/group-pcap-filter.adoc[tags=!*]
+include::{docdir}/opt/group-common-commands.adoc[tags=!*]

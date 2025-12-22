@@ -57,6 +57,7 @@ class UStringTest: public tsunit::Test
     TSUNIT_DECLARE_TEST(TrueFalse);
     TSUNIT_DECLARE_TEST(OnOff);
     TSUNIT_DECLARE_TEST(SimilarStrings);
+    TSUNIT_DECLARE_TEST(SimilarAfterLast);
     TSUNIT_DECLARE_TEST(LoadSave);
     TSUNIT_DECLARE_TEST(ToDigit);
     TSUNIT_DECLARE_TEST(ToInteger);
@@ -87,6 +88,7 @@ class UStringTest: public tsunit::Test
     TSUNIT_DECLARE_TEST(Chrono);
     TSUNIT_DECLARE_TEST(Duration);
     TSUNIT_DECLARE_TEST(Percentage);
+    TSUNIT_DECLARE_TEST(Range);
 
 public:
     virtual void beforeTest() override;
@@ -965,6 +967,14 @@ TSUNIT_DEFINE_TEST(SimilarStrings)
     TSUNIT_ASSERT(ts::UString(u"  AZE R T Y    ").similar(u"aZer tY"));
     TSUNIT_ASSERT(!ts::UString(u"").similar(u"az"));
     TSUNIT_ASSERT(!ts::UString(u"az").similar(u""));
+}
+
+TSUNIT_DEFINE_TEST(SimilarAfterLast)
+{
+    TSUNIT_ASSERT(ts::UString(u"").similarAfterLast(u"", u':'));
+    TSUNIT_ASSERT(ts::UString(u"zaa gzg : ").similarAfterLast(u"rg f : ", u':'));
+    TSUNIT_ASSERT(ts::UString(u"zaa gzg : rty ").similarAfterLast(u"zae v zgX : rt y ", u':'));
+    TSUNIT_ASSERT(!ts::UString(u"zaa gzg : rty ").similarAfterLast(u"zaa gzg : rtyX ", u':'));
 }
 
 TSUNIT_DEFINE_TEST(LoadSave)
@@ -2491,4 +2501,11 @@ TSUNIT_DEFINE_TEST(Percentage)
     TSUNIT_EQUAL(u"0.00%", ts::UString::Percentage(0, 34));
     TSUNIT_EQUAL(u"50.00%", ts::UString::Percentage(200, 400));
     TSUNIT_EQUAL(u"50.00%", ts::UString::Percentage(cn::milliseconds(500), cn::seconds(1)));
+}
+
+TSUNIT_DEFINE_TEST(Range)
+{
+    TSUNIT_EQUAL(u"A", ts::UString::Range('A', 'A'));
+    TSUNIT_EQUAL(u"ABCDEF", ts::UString::Range('A', 'F'));
+    TSUNIT_EQUAL(u"", ts::UString::Range('G', 'A'));
 }

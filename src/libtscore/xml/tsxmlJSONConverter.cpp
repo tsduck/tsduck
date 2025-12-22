@@ -50,7 +50,7 @@ ts::json::ValuePtr ts::xml::JSONConverter::convertToJSON(const Document& source,
     else {
         // Ignore the model if the model root has a different name from the source root.
         const Element* modelRoot = rootElement();
-        if (modelRoot != nullptr && !modelRoot->name().similar(docRoot->name())) {
+        if (modelRoot != nullptr && !modelRoot->nameMatch(docRoot)) {
             modelRoot = nullptr;
         }
 
@@ -145,7 +145,10 @@ ts::json::ValuePtr ts::xml::JSONConverter::convertElementToJSON(const Element* m
         }
 
         // Add the attribute in the JSON object.
-        jobj->add(it.first, jvalue);
+        // Note: all attributes names are converted to lowercase. This is quite questionable.
+        // However, this was an unfortunate side effect of a previous implementation. Because the
+        // attribute name may be used in many existing JSON parsers, we keep the previous behavior.
+        jobj->add(it.first.toLower(), jvalue);
     }
 
     // Process the list of children, if any.

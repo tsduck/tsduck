@@ -55,7 +55,7 @@ bool ts::xml::ModelDocument::validate(const Document& doc) const
         report().error(u"invalid XML document, no root element");
         return false;
     }
-    else if (modelRoot->haveSameName(docRoot)) {
+    else if (modelRoot->nameMatch(docRoot)) {
         return validateElement(modelRoot, docRoot);
     }
     else {
@@ -131,7 +131,7 @@ const ts::xml::Element* ts::xml::ModelDocument::findModelElement(const Element* 
             // Found the child.
             return child;
         }
-        else if (child->name().similar(TSXML_REF_NODE)) {
+        else if (child->nameMatch(TSXML_REF_NODE)) {
             // The model contains a reference to a child of the root of the document.
             // Example: <_any in="_descriptors"/> => child is the <_any> node.
             // Find the reference name, "_descriptors" in the example.

@@ -1,0 +1,40 @@
+[lct_het]
+# Layered Coding Transport Header Extension Type
+Bits = 8
+0   = NOP
+1   = AUTH
+2   = TIME
+64  = FTI
+67  = TOL48
+68  = NACI
+192 = FDT
+193 = CENC
+194 = TOL24
+
+[lct_het_desc]
+Bits = 8
+0   = NOP, No-Operation extension
+1   = AUTH, Packet authentication extension
+2   = TIME, Time extension
+64  = FTI, FEC Object Transmission Information extension (ALC, RFC 5775)
+67  = TOL, ATSC Transport Object Length, 48-bit version (ATSC A/331)
+68  = NACI, NIP Actual Carrier Information (DVB-NIP, ETSI TS 103 876)
+192 = FDT, FDT Instance Header (FLUTE, RFC 3926)
+193 = CENC, FDT Instance Content Encoding extension (FLUTE, RFC 3926)
+194 = TOL, ATSC Transport Object Length, 24-bit version (ATSC A/331)
+
+[lct_cenc]
+# Content encoding values in LCT EXT_CENC header.
+# See RFC 6726, section 3.4.3.
+Bits = 8
+0 = NULL
+1 = ZLIB
+2 = DEFLATE
+3 = GZIP
+
+[lct_cenc_desc]
+Bits = 8
+0 = NULL
+1 = ZLIB [RFC1950]
+2 = DEFLATE [RFC1951]
+3 = GZIP [RFC1952]

@@ -942,7 +942,7 @@ bool ts::DescriptorList::fromXML(DuckContext& duck, xml::ElementVector& others, 
             // The tag is not a descriptor name, this is one of the allowed other node.
             others.push_back(node);
         }
-        else if (node->name().similar(u"metadata")) {
+        else if (node->nameMatch(u"metadata")) {
             // Always ignore <metadata> nodes.
         }
         else if (!bin->fromXML(duck, edid, node, tableId())) {

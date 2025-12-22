@@ -13,7 +13,7 @@
 
 #pragma once
 #include "tsUString.h"
-#include "tsReport.h"
+#include "tsSeverity.h"
 
 namespace ts {
     //!

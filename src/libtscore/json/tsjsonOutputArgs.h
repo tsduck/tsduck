@@ -74,6 +74,16 @@ namespace ts::json {
         //!
         //! Issue a JSON report according to options.
         //! @param [in] root JSON root object.
+        //! @param [in] file_name Output file name when @c -\-json is specified.
+        //! If the specified file is empty or "-", use the standard output.
+        //! @param [in] rep Logger to report errors or output one-line JSON when @c -\-json-line is specified.
+        //! @return True on success, false on error.
+        //!
+        bool report(const json::Value& root, const fs::path& file_name, Report& rep);
+
+        //!
+        //! Issue a JSON report according to options.
+        //! @param [in] root JSON root object.
         //! @param [in] stm Output stream when @c -\-json is specified.
         //! @param [in] rep Logger to report errors or output one-line JSON when @c -\-json-line is specified.
         //! @return True on success, false on error.

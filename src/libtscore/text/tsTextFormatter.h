@@ -117,10 +117,11 @@ namespace ts {
 
         //!
         //! Set output to a text file.
-        //! @param [in] fileName Output file name.
+        //! @param [in] file_name Output file name.
+        //! If the specified file is empty or "-", use the standard output.
         //! @return True on success, false on error.
         //!
-        bool setFile(const fs::path& fileName);
+        bool setFile(const fs::path& file_name);
 
         //!
         //! Set output to an internal string buffer.

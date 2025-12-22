@@ -29,10 +29,7 @@ namespace ts {
     //! is the following:
     //!
     //! @code
-    //! if (!std::filesystem::create_directory(dir, &ErrCodeReport(report, "error creating directory", dir))) {
-    //!     // error processing, error message already logged to report
-    //!     return false;
-    //! }
+    //! std::filesystem::create_directory(dir, &ErrCodeReport(report, u"error creating directory", dir));
     //! @endcode
     //!
     //! The first important point is the usage of a constructor, directly as a parameter

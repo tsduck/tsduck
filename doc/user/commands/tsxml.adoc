@@ -145,8 +145,8 @@ Merge all input files into one single XML document, instead of processing all in
 With this option, all input XML files must have the same root tag.
 
 [.opt]
-*-m* _filename_ +
-*--model* _filename_
+*-m* _file-name_ +
+*--model* _file-name_
 
 [.optdoc]
 Specify an XML model file which is used to validate all input files.
@@ -170,18 +170,24 @@ This option verifies that the input files are valid resource monitoring configur
 With `--yaml`, do not add the standard YAML header and trailer.
 
 [.opt]
-*-o* _filename_ +
-*--output* _filename_
+*-o* _file-name_ +
+*--output* _file-name_
 
 [.optdoc]
 Specify the name of the output file (standard output by default).
 
 [.optdoc]
-An output file is produced only if at least one of `--patch`, `--reformat`, `--json`, `--yaml` is specified.
+If the specified file is an existing directory, the output files are created in that directory
+with the same name as input, with extension `.xml`, `.json`, or `.yml`, as appropriate.
+If several input files are specified without `--merge`, the specified output must be a directory.
+
+[.optdoc]
+An output file is produced only if at least one of `--patch`, `--reformat`, `--uncomment`,
+`--merge`, `--json`, or `--yaml` is specified.
 
 [.opt]
-*-p* _filename_ +
-*--patch* _filename_
+*-p* _file-name_ +
+*--patch* _file-name_
 
 [.optdoc]
 Specify an XML patch file.

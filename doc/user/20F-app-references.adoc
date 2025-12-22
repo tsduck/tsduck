@@ -24,6 +24,7 @@
 |ACG |Access Criteria Generator (DVB SimulCrypt)
 |AES |Advanced Encryption Standard (cryptography)
 |AIT |Application Information Table (DVB)
+|ALC |Asynchronous Layered Coding (DVB-NIP)
 |ANSI |American National Standards Institute
 |API |Application Programming Interface
 |AOM |Alliance for Open Media
@@ -97,9 +98,10 @@
 |ES |Elementary Stream
 |ETSI |European Telecommunications Standards Institute
 |ETT |Extended Text Table (ATSC)
+|FDT |File Delivery Table (DVB-NIP)
 |FEC |Forward Error Correction
 |FIPS |Federal Information Processing Standard
-|FLUTE |File Delivery over Unidirectional Transport (RFC 3926)
+|FLUTE |File Delivery over Unidirectional Transport (DVB-NIP)
 |FTA |Free To Air
 |GOP |Group Of Pictures (MPEG)
 |GS |Generic Stream
@@ -131,6 +133,7 @@
 |JSON |JavaScript Object Notation (data representation)
 |LAN |Local Area Network
 |LCN |Logical Channel Number (a.k.a. TV channel number)
+|LCT |Layered Coding Transport (DVB-NIP)
 |LDT |Linked Description Table (ISDB)
 |LIT |Local event Information Table (ISDB)
 |LNB |Low-Noise Block down-converter (satellite)
@@ -146,6 +149,7 @@
 |MUX |Multiplexer
 |NBIT |Network Board Information Table (ISDB)
 |NIC |Network Interface Card
+|NIF |Network Information File (DVB-NIP)
 |NIST |National Institute of Standards and Technology
 |NIT |Network Information Table (DVB)
 |NPT |Normal Play Time
@@ -177,6 +181,7 @@
 |RIST |Reliable Internet Stream Transport (network protocol)
 |RNG |Random Number Generator (cryptography)
 |RNT |Resolution provider Notification Table (DVB)
+|ROUTE |Real-Time Transport Object Delivery over Unidirectional Transport (ATSC 3.0, DVB-NIP)
 |RRT |Rating Region Table (ATSC)
 |RS |Reed-Solomon (FEC code)
 |RST |Running Status Table (DVB)
@@ -191,7 +196,9 @@
 |SGT |Service Guide Table (SES Astra)
 |SHA |Secure Hash Algorithm, SHA-1, SHA-256, SHA-512, SHA-3 (cryptography)
 |SI |Service Information (DVB)
+|SIF |Service Information File (DVB-NIP)
 |SIT |Selection Information Table (DVB)
+|SLEP |Service List Entry Point (DVB-I, DVB-NIP)
 |SMPTE |Society of Motion Picture and Television Engineers
 |SRT |Secure Reliable Transport (network protocol)
 |SRT |SubRip Text (subtitles format)
@@ -204,11 +211,13 @@
 |TID |Table Identifier
 |TMCC |Transmission and Multiplexing Configuration Control (ISDB)
 |TNT |_Télévision Numérique Terrestre_ (French DTTV network)
+|TOI |Transport Object Identifier (DVB-NIP)
 |TOT |Time Offset Table (DVB)
 |TPS |Transmission Parameter Signalling (modulation)
 |TRNG |True Random Number Generator (cryptography)
 |TS |Transport Stream
 |TSDT |Transport Stream Description Table (MPEG)
+|TSI |Transport Session Identifier (DVB-NIP)
 |TSP |Transport Stream Packet (ISDB)
 |TVCT |Terrestrial Virtual Channel Table (ATSC)
 |UDP |User Datagram Protocol (networking)
@@ -322,7 +331,7 @@
 * [[[ETSI-103-770]]] ETSI TS 103 770, V1.2.1, September 2024:
   "Digital Video Broadcasting (DVB); Service Discovery and Programme Metadata for DVB-I".
 * [[[ETSI-103-876]]] ETSI TS 103 876, V1.1.1, September 2024:
-  "Digital Video Broadcasting (DVB); Native IP Broadcasting".
+  "Digital Video Broadcasting (DVB); Native IP Broadcasting" (DVB-NIP).
 * [[[ETSI-289]]] ETSI, ETR 289, October 1996:
   "Digital Video Broadcasting (DVB); Support for use of scrambling and Conditional Access (CA) within digital broadcasting systems".
 * [[[ETSI-300-468]]] ETSI EN 300 468, V1.16.1, August 2019:

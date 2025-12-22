@@ -122,10 +122,10 @@ bool ts::AbstractSignalization::checkXMLName(const xml::Element* element) const
     if (element == nullptr) {
         return false;
     }
-    else if (element->name().similar(_xml_name)) {
+    else if (element->nameMatch(_xml_name)) {
         return true;
     }
-    else if (_xml_legacy_name != nullptr && element->name().similar(_xml_legacy_name)) {
+    else if (_xml_legacy_name != nullptr && element->nameMatch(_xml_legacy_name)) {
         return true;
     }
     else {

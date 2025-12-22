@@ -52,7 +52,7 @@ namespace ts::xml {
         //! Check if the text is a CDATA node.
         //! @return True if the text is a CDATA node.
         //!
-        bool isCData() const { return _isCData; }
+        bool isCData() const { return _is_cdata; }
 
         //!
         //! Check if the text is trimmable (space reduction).
@@ -71,14 +71,14 @@ namespace ts::xml {
         virtual Node* clone() const override;
         virtual UString typeName() const override;
         virtual bool stickyOutput() const override;
-        virtual void print(TextFormatter& output, bool keepNodeOpen = false) const override;
+        virtual void print(TextFormatter& output, bool keep_node_open = false) const override;
 
     protected:
         // Inherited from xml::Node.
         virtual bool parseNode(TextParser& parser, const Node* parent) override;
 
     private:
-        bool _isCData;
-        bool _trimmable;
+        bool _is_cdata = false;
+        bool _trimmable = false;
     };
 }

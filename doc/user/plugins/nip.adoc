@@ -1,0 +1,57 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2025, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== nip
+
+[.cmd-header]
+DVB-NIP (Native IP) analyzer
+
+This plugin analyzes one DVB-NIP stream from one MPE PID in the transport stream.
+
+NOTE: To analyze a DVB-NIP stream which is transported using GSE or natively on an IP network,
+use the command `tsnip`. See xref:_tsnip[xrefstyle=short] for more details.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P nip [options]
+----
+
+[.usage]
+Transport stream options
+
+[.opt]
+*-p* _value_ +
+*--pid* _value_
+
+[.optdoc]
+Specify the MPE PID containing the DVB-NIP stream.
+
+[.optdoc]
+By default, if neither `--pid` nor `--service` is specified, use the first MPE PID which is found.
+Options `--pid` and `--service` are mutually exclusive.
+
+[.opt]
+*-s* _name-or-id_ +
+*--service* _name-or-id_
+
+[.optdoc]
+Specify the service containing the DVB-NIP stream in a MPE PID.
+If the argument is an integer value (either decimal or hexadecimal), it is interpreted as a service id.
+Otherwise, it is interpreted as a service name, as specified in the SDT.
+The name is not case sensitive and blanks are ignored.
+
+[.optdoc]
+By default, if neither `--pid` nor `--service` is specified, use the first MPE PID which is found.
+Options `--pid` and `--service` are mutually exclusive.
+
+include::{docdir}/opt/group-flute.adoc[tags=!*;dvbnip]
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

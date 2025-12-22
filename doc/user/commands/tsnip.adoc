@@ -1,0 +1,53 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2025, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== tsnip
+
+[.cmd-header]
+Analyze a DVB-NIP stream from a pcap or pcap-ng file
+
+The pcap file shall contain all UDP packets of a DVB-NIP stream.
+Non-UDP packets and UDP packets which are not part of the DVB-NIP stream are ignored.
+Thus, it is safe to analyze a pcap file containing the capture of a complete network link
+over which a DVB-NIP stream is sent.
+
+The DVB-NIP announcement channel (IPv4 multicast address 224.0.23.14, UDP port 3937) must be present
+and is used as starting point.
+
+NOTE: To analyze a DVB-NIP stream which is transported using MPE in a MPEG-2 transport stream,
+use the `tsp` plugin `nip`. See xref:_nip[xrefstyle=short] for more details.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsnip [options] [input-file]
+----
+
+[.usage]
+Parameters
+
+[.opt]
+_input-file_
+
+[.optdoc]
+Input file in pcap or pcap-ng format, typically as saved by Wireshark.
+
+[.optdoc]
+Use the standard input if no file name is specified.
+
+[.usage]
+General options
+
+include::{docdir}/opt/opt-no-pager.adoc[tags=!*]
+
+include::{docdir}/opt/group-flute.adoc[tags=!*;dvbnip]
+include::{docdir}/opt/group-pcap-filter.adoc[tags=!*]
+include::{docdir}/opt/group-common-commands.adoc[tags=!*]

@@ -21,6 +21,13 @@ Write-Output "==== Git download and installation procedure"
 
 . "$PSScriptRoot\install-common.ps1"
 
-Install-GitHub-Exe 'git-for-windows/git' '/Git-.*-64-bit\.exe$' @("/verysilent", "/suppressmsgboxes", "/norestart") -Latest
+if ($env:PROCESSOR_ARCHITECTURE -like 'Arm64*') {
+    $Pattern = '/Git-.*-arm64\.exe$'
+}
+else {
+    $Pattern = '/Git-.*-64-bit\.exe$'
+}
+
+Install-GitHub-Exe 'git-for-windows/git' $Pattern @("/verysilent", "/suppressmsgboxes", "/norestart") -Latest
 
 Exit-Script

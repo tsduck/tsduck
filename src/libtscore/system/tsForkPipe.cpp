@@ -31,12 +31,6 @@
 // Constructor / destructor
 //----------------------------------------------------------------------------
 
-ts::ForkPipe::ForkPipe()
-{
-    // We will handle broken-pipe errors, don't kill us for that.
-    IgnorePipeSignal();
-}
-
 ts::ForkPipe::~ForkPipe()
 {
     close(NULLREP);

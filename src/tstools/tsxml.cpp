@@ -18,7 +18,6 @@
 #include "tsjsonOutputArgs.h"
 #include "tsjsonYAML.h"
 #include "tsSectionFile.h"
-#include "tsOutputRedirector.h"
 TS_MAIN(MainCode);
 
 #define DEFAULT_INDENT 2
@@ -35,29 +34,30 @@ namespace {
     public:
         Options(int argc, char *argv[]);
 
-        ts::DuckContext          duck {this};           // TSDuck execution contexts.
-        ts::UStringVector        infiles {};            // Input file names.
-        fs::path                 outfile {};            // Output file name.
-        ts::UString              model {};              // Model file name.
-        ts::UStringVector        patches {};            // XML patch files.
-        ts::UStringVector        sorted_tags {};        // Sort the content of these tags.
-        bool                     reformat = false;      // Reformat input files.
-        bool                     uncomment = false;     // Remove comments.
-        bool                     xml_line = false;      // Output XML on one single line.
-        bool                     tables_model = false;  // Use table model file.
-        bool                     use_model = false;     // There is a model to use.
-        bool                     from_json = false;     // Perform an automated JSON-to-XML conversion on input.
-        bool                     merge_inputs = false;  // Merge all input XML files as one.
-        bool                     expand_input = false;  // Expand environment variables in input files.
-        bool                     expand_patch = false;  // Expand environment variables in patch files.
-        bool                     yaml_output = false;   // Generate an output in YAML format.
-        bool                     no_yaml_head = false;  // No YAML header and trailer.
-        bool                     need_output = false;   // An output file is needed.
-        ts::UString              xml_prefix {};         // Prefix in XML line.
-        size_t                   indent = 2;            // Output indentation.
-        ts::xml::Tweaks          xml_tweaks {};         // XML formatting options.
+        ts::DuckContext          duck {this};             // TSDuck execution contexts.
+        ts::UStringVector        infiles {};              // Input file names.
+        fs::path                 outfile {};              // Output file name.
+        ts::UString              model {};                // Model file name.
+        ts::UStringVector        patches {};              // XML patch files.
+        ts::UStringVector        sorted_tags {};          // Sort the content of these tags.
+        bool                     reformat = false;        // Reformat input files.
+        bool                     uncomment = false;       // Remove comments.
+        bool                     xml_line = false;        // Output XML on one single line.
+        bool                     tables_model = false;    // Use table model file.
+        bool                     use_model = false;       // There is a model to use.
+        bool                     from_json = false;       // Perform an automated JSON-to-XML conversion on input.
+        bool                     merge_inputs = false;    // Merge all input XML files as one.
+        bool                     expand_input = false;    // Expand environment variables in input files.
+        bool                     expand_patch = false;    // Expand environment variables in patch files.
+        bool                     yaml_output = false;     // Generate an output in YAML format.
+        bool                     no_yaml_head = false;    // No YAML header and trailer.
+        bool                     need_output = false;     // An output file is needed.
+        bool                     outfile_is_dir = false;  // The specified output is a directory.
+        ts::UString              xml_prefix {};           // Prefix in XML line.
+        size_t                   indent = 2;              // Output indentation.
+        ts::xml::Tweaks          xml_tweaks {};           // XML formatting options.
         ts::xml::MergeAttributes merge_attr = ts::xml::MergeAttributes::NONE; // How to merge attributes (with merge_inputs);
-        ts::json::OutputArgs     json {};               // JSON output options.
+        ts::json::OutputArgs     json {};                 // JSON output options.
     };
 }
 
@@ -125,7 +125,7 @@ Options::Options(int argc, char *argv[]) :
          u"With this option, all input XML files must have the same root tag.");
 
     option(u"model", 'm', FILENAME);
-    help(u"model", u"filename",
+    help(u"model",
          u"Specify an XML model file which is used to validate all input files.");
 
     option(u"monitor");
@@ -134,12 +134,15 @@ Options::Options(int argc, char *argv[]) :
          u"It verifies that the input files are valid system monitoring configuration files.");
 
     option(u"output", 'o', FILENAME);
-    help(u"output", u"filename",
+    help(u"output",
          u"Specify the name of the output file (standard output by default). "
-         u"An output file is produced only if at least one of --patch, --reformat, --json, --yaml is specified.");
+         u"If the specified file is an existing directory, the files are created with the same name as input, "
+         u"with extension .xml, .json, or .yml, as appropriate. "
+         u"If several input files are specified without --merge, the specified output must be a directory. "
+         u"An output file is produced only if at least one of --patch, --reformat, --uncomment, --merge, --json, --yaml is specified.");
 
     option(u"patch", 'p', FILENAME, 0, UNLIMITED_COUNT);
-    help(u"patch", u"filename",
+    help(u"patch",
          u"Specify an XML patch file. All operations which are specified in this file are applied on each input file. "
          u"Several --patch options can be specified. Patch files are sequentially applied on each input file.");
 
@@ -227,6 +230,12 @@ Options::Options(int argc, char *argv[]) :
     // An output file wil be produced.
     need_output = reformat || uncomment || merge_inputs || json.useFile() || yaml_output || from_json || expand_input;
 
+    // Check if output is a directory.
+    outfile_is_dir = !outfile.empty() && fs::is_directory(outfile);
+    if (infiles.size() > 1 && !merge_inputs && !outfile.empty() && !outfile_is_dir) {
+        error(u"the specified output must be a directory when several input files are specified");
+    }
+
     exitOnError();
 }
 
@@ -303,28 +312,50 @@ namespace {
 //----------------------------------------------------------------------------
 
 namespace {
-    void SaveDocument(Options& opt, const ts::xml::JSONConverter& model, ts::xml::Document& doc)
+    void SaveDocument(Options& opt, const ts::xml::JSONConverter& model, ts::xml::Document& doc, const fs::path& infile = fs::path())
     {
+        // Build output path.
+        fs::path out(opt.outfile);
+        if (opt.outfile_is_dir) {
+            // Build missing part.
+            if (infile.empty()) {
+                out /= u"out.xml";
+            }
+            else {
+                out /= infile.filename();
+            }
+        }
+
+        // Output XML result as one line on error log.
         if (opt.xml_line) {
-            // Output XML result as one line on error log.
             opt.info(opt.xml_prefix + doc.oneLiner());
         }
+
+        // JSON, YAML, XML output.
         if (opt.json.useJSON() || opt.yaml_output) {
             // Perform XML to JSON conversion.
             const ts::json::ValuePtr jobj(model.convertToJSON(doc));
             // Output JSON and/or YAML result.
             if (opt.json.useJSON()) {
-                opt.json.report(*jobj, std::cout, opt);
+                if (opt.outfile_is_dir) {
+                    // Adjust implicit output file.
+                    out.replace_extension(u".json");
+                }
+                opt.json.report(*jobj, out, opt);
             }
             if (opt.yaml_output) {
+                if (opt.outfile_is_dir) {
+                    // Adjust implicit output file.
+                    out.replace_extension(u".yml");
+                }
                 ts::TextFormatter text(opt);
-                text.setStream(std::cout);
+                text.setFile(out);
                 ts::json::YAML::PrintAsYAML(text, *jobj, !opt.no_yaml_head);
             }
         }
         else if (opt.need_output) {
-            // Same XML output on stdout (possibly already redirected to a file).
-            doc.save(u"", opt.indent);
+            // Same XML output.
+            doc.save(out, opt.indent);
         }
     }
 }
@@ -362,9 +393,6 @@ int MainCode(int argc, char *argv[])
     patch.loadPatchFiles(opt.xml_tweaks);
     opt.exitOnError();
 
-    // Redirect standard output only if required.
-    ts::OutputRedirector out(opt.need_output ? opt.outfile : fs::path(), opt, std::cout, std::ios::out);
-
     if (opt.merge_inputs && opt.infiles.size() > 1) {
         // Load all input files as one merged document.
         ts::xml::Document doc(opt);
@@ -384,7 +412,7 @@ int MainCode(int argc, char *argv[])
             ts::xml::Document doc(opt);
             if (LoadDocument(opt, model, doc, file)) {
                 ProcessDocument(opt, patch, doc);
-                SaveDocument(opt, model, doc);
+                SaveDocument(opt, model, doc, file);
             }
         }
     }

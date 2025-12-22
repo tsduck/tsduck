@@ -99,14 +99,14 @@ namespace ts {
         //! @param [in] size Size of the memory area. If the size is 4, this is an IPv4 address.
         //! If the size is 16, this is an IPv6 address. For all other sizes, the address is AnyAddress4.
         //!
-        IPAddress(const void* addr, size_t size) { setAddress(addr, size); }
+        IPAddress(const void* addr, size_t size) { IPAddress::setAddress(addr, size); }
 
         //!
         //! Generic constructor from an address in binary format.
         //! @param [in] bb Byte block containing the address in binary format. If the size is 4, this is an IPv4 address.
         //! If the size is 16, this is an IPv6 address. For all other sizes, the address is AnyAddress4.
         //!
-        IPAddress(const ByteBlock& bb) { setAddress(bb.data(), bb.size()); }
+        IPAddress(const ByteBlock& bb) { IPAddress::setAddress(bb.data(), bb.size()); }
 
         //!
         //! IPv4 constructor from an integer IPv4 address.
@@ -251,6 +251,21 @@ namespace ts {
         //! @return True if the address is an SSM address, false otherwise.
         //!
         bool isSSM() const;
+
+        //!
+        //! Check if two IPv6 multicast addresses are identical, excluding the "scope" bits.
+        //! If this address or @a mc are socket addresses, they must also have the same port.
+        //! @param [in] mc Another IPv6 multicast address.
+        //! @return True if this address and @a mc are two IPv6 multicast addresses and are
+        //! identical, excluding the "scope" bits in the comparison. False otherwise.
+        //!
+        bool sameMulticast6(const IPAddress& mc) const;
+
+        //!
+        //! Get the IPv6 multicast "scope" bits of this address.
+        //! @return The IPv6 multicast "scope" bits of this address (from 0x00 ro 0x0F) or 0xFF if not an IPv6 multicast address.
+        //!
+        uint8_t scopeMulticast6() const;
 
         //!
         //! Check if the address is a link-local address, typically an auto-configured address.

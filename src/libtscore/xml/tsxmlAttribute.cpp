@@ -45,6 +45,16 @@ ts::xml::Attribute::Attribute(const UString& name, const UString& value, size_t 
 
 
 //----------------------------------------------------------------------------
+// Check if the name of the attribute matches a given value.
+//----------------------------------------------------------------------------
+
+bool ts::xml::Attribute::nameMatch(const UChar* str, bool ignore_namespace) const
+{
+    return str != nullptr && (ignore_namespace ? _name.similarAfterLast(str, u':') : _name.similar(str));
+}
+
+
+//----------------------------------------------------------------------------
 // Expand all environment variables in the attribute value.
 //----------------------------------------------------------------------------
 

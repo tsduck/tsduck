@@ -33,7 +33,7 @@ namespace ts::xml {
 
         //!
         //! Full constructor.
-        //! @param [in] name Attribute name with original case sensitivity.
+        //! @param [in] name Attribute name.
         //! @param [in] value Attribute value.
         //! @param [in] line Line number in input document.
         //!
@@ -52,10 +52,52 @@ namespace ts::xml {
         size_t lineNumber() const { return _line; }
 
         //!
-        //! Get the attribute name with original case sensitivity.
-        //! @return A constant reference to the attribute name with original case sensitivity.
+        //! Get the attribute name.
+        //! @return A constant reference to the attribute name.
         //!
         const UString& name() const { return _name; }
+
+        //!
+        //! Check if the name of the attribute matches a given value, case-insensitive.
+        //! @param [in] str The string value to compare.
+        //! @return True is the name of this object matches @a str.
+        //!
+        bool nameMatch(const UChar* str) const { return nameMatch(str, _ignore_namespace); }
+
+        //!
+        //! Check if the name of the attribute matches a given value, case-insensitive.
+        //! @param [in] str The string value to compare.
+        //! @return True is the name of this object matches @a str.
+        //!
+        bool nameMatch(const UString& str) const { return nameMatch(str.c_str(), _ignore_namespace); }
+
+        //!
+        //! Check if the name of the attribute matches a given value, case-insensitive.
+        //! @param [in] str The string value to compare.
+        //! @param [in] ignore_namespace If true, ignore namespaces in the comparison.
+        //! @return True is the name of this object matches @a str.
+        //!
+        bool nameMatch(const UChar* str, bool ignore_namespace) const;
+
+        //!
+        //! Check if the name of the attribute matches a given value, case-insensitive.
+        //! @param [in] str The string value to compare.
+        //! @param [in] ignore_namespace If true, ignore namespaces in the comparison.
+        //! @return True is the name of this object matches @a str.
+        //!
+        bool nameMatch(const UString& str, bool ignore_namespace) const { return nameMatch(str.c_str(), ignore_namespace); }
+
+        //!
+        //! Check if namespace is ignored by default when comparing attribute names.
+        //! @return True if namespace is ignored by default.
+        //!
+        bool ignoreNamespace() const { return _ignore_namespace; }
+
+        //!
+        //! Specify if namespace is ignored by default when comparing attribute names.
+        //! @param [in] ignore It true, namespace is ignored by default.
+        //!
+        void setIignoreNamespace(bool ignore) { _ignore_namespace = ignore; }
 
         //!
         //! Get the attribute value.
@@ -215,6 +257,7 @@ namespace ts::xml {
 
     private:
         bool    _valid = false;
+        bool    _ignore_namespace = false;
         UString _name {};
         UString _value {};
         size_t  _line = 0;

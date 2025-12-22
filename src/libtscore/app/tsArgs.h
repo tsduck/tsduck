@@ -814,7 +814,7 @@ namespace ts {
         //! an empty string, this specifies a parameter, not an option. If the specified option
         //! was not declared in the syntax of the command, a fatal error is reported.
         //!
-        template <class CONTAINER> requires std::derived_from<typename CONTAINER::value_type, ts::UString>
+        template <class CONTAINER> requires std::same_as<typename CONTAINER::value_type, ts::UString>
         void getValues(CONTAINER& values, const UChar* name = nullptr) const;
 
         //!
@@ -1149,6 +1149,19 @@ namespace ts {
         void getSocketValue(IPSocketAddress& value, const UChar* name = nullptr, const IPSocketAddress& def_value = IPSocketAddress(), size_t index = 0, IP preferred = IP::Any) const;
 
         //!
+        //! Get all occurences of an option in a container of IP socket addresses.
+        //!
+        //! @tparam CONTAINER A container type of IPSocketAddress such as list, vector, etc.
+        //! @param [out] values A container of IPSocketAddress receiving all values of the option or parameter.
+        //! @param [in] name The full name of the option. If the parameter is a null pointer or
+        //! an empty string, this specifies a parameter, not an option. If the specified option
+        //! was not declared in the syntax of the command, a fatal error is reported.
+        //! @param [in] preferred Preferred IP generation of the resolved address.
+        //!
+        template <class CONTAINER> requires std::same_as<typename CONTAINER::value_type, ts::IPSocketAddress>
+        void getSocketValues(CONTAINER& values, const UChar* name = nullptr, IP preferred = IP::Any) const;
+
+        //!
         //! Get the value of an option as an IP socket address in the last analyzed command line.
         //!
         //! @param [in] name The full name of the option. If the parameter is a null pointer or
@@ -1445,7 +1458,7 @@ bool ts::Args::IOption::inRange(INT value) const
 // Get all occurences of an option in a container of strings.
 //----------------------------------------------------------------------------
 
-template <class CONTAINER> requires std::derived_from<typename CONTAINER::value_type, ts::UString>
+template <class CONTAINER> requires std::same_as<typename CONTAINER::value_type, ts::UString>
 void ts::Args::getValues(CONTAINER& values, const UChar* name) const
 {
     const IOption& opt(getIOption(name));
@@ -1715,4 +1728,21 @@ void ts::Args::getChronoValue(cn::duration<Rep1, Period1>& value,
     }
 
     value = cn::duration<Rep1, Period1>(static_cast<Rep1>(ivalue));
+}
+
+
+//----------------------------------------------------------------------------
+// Get all occurences of an option in a container of IP socket addresses.
+//----------------------------------------------------------------------------
+
+template <class CONTAINER> requires std::same_as<typename CONTAINER::value_type, ts::IPSocketAddress>
+void ts::Args::getSocketValues(CONTAINER& values, const UChar* name, IP preferred) const
+{
+    values.clear();
+    IPSocketAddress addr;
+    const size_t max = count(name);
+    for (size_t i = 0; i < max; ++i) {
+        getSocketValue(addr, name, IPSocketAddress(), i, preferred);
+        values.push_back(addr);
+    }
 }

@@ -43,7 +43,7 @@ ts::UString ts::xml::Unknown::typeName() const
 // Print the node.
 //----------------------------------------------------------------------------
 
-void ts::xml::Unknown::print(TextFormatter& output, bool keepNodeOpen) const
+void ts::xml::Unknown::print(TextFormatter& output, bool keep_node_open) const
 {
     // In unknown nodes, we escape all 5 XML characters: < > & ' "
     // Since the node is unknown, let's be conservative.

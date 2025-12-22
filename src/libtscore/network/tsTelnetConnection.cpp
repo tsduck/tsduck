@@ -67,7 +67,7 @@ bool ts::TelnetConnection::sendLine(const UString& str, Report& report)
 
 void ts::TelnetConnection::writeLog(int severity, const UString& msg)
 {
-    sendLine(Severity::Header(severity) + msg, NULLREP);
+    sendLine(Severity::AddHeader(severity, msg), NULLREP);
 }
 
 

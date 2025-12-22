@@ -1,0 +1,84 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2025, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== nipextract
+
+[.cmd-header]
+DVB-NIP (Native IP) live service extraction
+
+This plugin extracts a live service from a DVB-NIP stream from one MPE PID in the transport stream.
+The extracted live service replaces the complete input TS.
+The output of the plugin is a Single Program Transport Stream (SPTS) containing the extracted service.
+
+The live service to extract from DVB-NIP must be formatted using HLS with transport stream packets.
+Services in MPEG-DASH format or HLS with fragmented MP4 cannot be extracted because they do not
+use transport stream packets.
+
+NOTE: This plugin is probably useless in practice. However, it is a good way to understand DVB-NIP.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P nipextract [options]
+----
+
+[.usage]
+Options
+
+[.opt]
+*-l* _value_ +
+*--lcn* _value_
+
+[.optdoc]
+Logical channel number of the DVB-NIP service to extract.
+This is the channel number in the DVB-NIP stream.
+
+[.optdoc]
+If neither `--lcn` nor `--name` are specified, the plugin extracts the first live service that is found in the DVB-NIP stream.
+
+[.opt]
+*-n* _'string'_ +
+*--name* _'string'_
+
+[.optdoc]
+Name of the DVB-NIP service to extract.
+This is the service name in the DVB-NIP stream, as found in the DVB-NIP service lists.
+The name is case-insensitive and blanks are ignored.
+
+[.optdoc]
+If neither `--lcn` nor `--name` are specified, the plugin extracts the first live service that is found in the DVB-NIP stream.
+
+[.opt]
+*-p* _value_ +
+*--pid* _value_
+
+[.optdoc]
+Specify the MPE PID containing the DVB-NIP stream.
+
+[.optdoc]
+By default, if neither `--pid` nor `--service` is specified, use the first MPE PID which is found.
+Options `--pid` and `--service` are mutually exclusive.
+
+[.opt]
+*-s* _name-or-id_ +
+*--service* _name-or-id_
+
+[.optdoc]
+Specify the service containing the DVB-NIP stream in a MPE PID.
+If the argument is an integer value (either decimal or hexadecimal), it is interpreted as a service id.
+Otherwise, it is interpreted as a service name, as specified in the SDT.
+The name is not case sensitive and blanks are ignored.
+
+[.optdoc]
+By default, if neither `--pid` nor `--service` is specified, use the first MPE PID which is found.
+Options `--pid` and `--service` are mutually exclusive.
+
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

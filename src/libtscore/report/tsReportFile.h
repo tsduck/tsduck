@@ -99,5 +99,5 @@ template <ts::ThreadSafety SAFETY>
 void ts::ReportFile<SAFETY>::writeLog(int severity, const UString& message)
 {
     std::lock_guard<MutexType> lock(_mutex);
-    _file << Severity::Header(severity) << message << std::endl;
+    _file << Severity::AddHeader(severity, message) << std::endl;
 }

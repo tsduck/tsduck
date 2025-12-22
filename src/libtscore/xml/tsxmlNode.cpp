@@ -24,7 +24,7 @@
 
 ts::xml::Node::Node(Report& report, size_t line) :
     _report(report),
-    _inputLineNum(line)
+    _input_line_num(line)
 {
 }
 
@@ -39,11 +39,13 @@ ts::xml::Node::Node(const Node& other) :
     _report(other._report),
     _value(other._value),
     _parent(nullptr),
-    _firstChild(nullptr),
-    _inputLineNum(other._inputLineNum)
+    _first_child(nullptr),
+    _input_line_num(other._input_line_num),
+    _preserve_space(other._preserve_space),
+    _ignore_namespace(other._ignore_namespace)
 {
     // Duplicate all children from other.
-    for (const Node* node = other._firstChild; node != nullptr; node = node->nextSibling()) {
+    for (const Node* node = other._first_child; node != nullptr; node = node->nextSibling()) {
         node->clone()->reparent(this);
     }
 }
@@ -76,14 +78,14 @@ bool ts::xml::Node::stickyOutput() const
 void ts::xml::Node::clear()
 {
     // Free all our children nodes.
-    while (_firstChild != nullptr) {
+    while (_first_child != nullptr) {
         // The child will cleanly remove itself from the list of children.
-        delete _firstChild;
+        delete _first_child;
     }
 
     // Clear other fields.
     _value.clear();
-    _inputLineNum = 0;
+    _input_line_num = 0;
 }
 
 
@@ -91,10 +93,10 @@ void ts::xml::Node::clear()
 // Attach the node to a new parent.
 //----------------------------------------------------------------------------
 
-void ts::xml::Node::reparent(Node* newParent, bool last)
+void ts::xml::Node::reparent(Node* new_parent, bool last)
 {
     // If the parent does not change (including zero), nothing to do.
-    if (newParent == _parent) {
+    if (new_parent == _parent) {
         return;
     }
 
@@ -102,30 +104,33 @@ void ts::xml::Node::reparent(Node* newParent, bool last)
     if (_parent != nullptr) {
         // If we are the first child, make the parent point to the next child.
         // Unless we are alone in the ring of children, in which case the parent has no more children.
-        if (_parent->_firstChild == this) {
-            _parent->_firstChild = ringAlone() ? nullptr : ringNext<Node>();
+        if (_parent->_first_child == this) {
+            _parent->_first_child = ringAlone() ? nullptr : ringNext<Node>();
         }
         // Remove ourselves from our parent's children.
         ringRemove();
     }
 
     // Set new parent.
-    _parent = newParent;
+    _parent = new_parent;
 
     // Insert inside new parent structure.
     if (_parent != nullptr) {
-        if (_parent->_firstChild == nullptr) {
+        if (_parent->_first_child == nullptr) {
             // We become the only child of the parent.
-            _parent->_firstChild = this;
+            _parent->_first_child = this;
         }
         else {
             // Insert in the ring of children, "before the first child", meaning at end of list.
-            ringInsertBefore(_parent->_firstChild);
+            ringInsertBefore(_parent->_first_child);
             if (!last) {
                 // If we need to be added as first child, simply adjust the pointer to the first child.
-                _parent->_firstChild = this;
+                _parent->_first_child = this;
             }
         }
+
+        // Propagate properties from the parent.
+        setIignoreNamespace(_parent->_ignore_namespace);
     }
 }
 
@@ -134,43 +139,45 @@ void ts::xml::Node::reparent(Node* newParent, bool last)
 // Move the node before another node, potentially to a new parent.
 //----------------------------------------------------------------------------
 
-void ts::xml::Node::move(Node* newSibling, bool before)
+void ts::xml::Node::move(Node* new_sibling, bool before)
 {
     // Must be moved somewhere different.
-    if (newSibling == nullptr ||
-        newSibling->_parent == nullptr ||
-        newSibling == this ||
-        (before && newSibling == ringNext<Node>()) ||
-        (!before && newSibling == ringPrevious<Node>()))
+    if (new_sibling == nullptr ||
+        new_sibling->_parent == nullptr ||
+        new_sibling == this ||
+        (before && new_sibling == ringNext<Node>()) ||
+        (!before && new_sibling == ringPrevious<Node>()))
     {
         return;
     }
 
     // Extract from the current parent.
-    if (newSibling->_parent == _parent) {
+    if (new_sibling->_parent == _parent) {
         // Keep same parent, remove ourselves from the ring.
         assert(!ringAlone()); // We cannot be alone since we already have a sibling.
-        if (_parent->_firstChild == this) {
-            _parent->_firstChild = ringNext<Node>();
+        if (_parent->_first_child == this) {
+            _parent->_first_child = ringNext<Node>();
         }
         ringRemove();
     }
     else {
         // Move to a new parent, but not yet inserted in the ring.
         reparent(nullptr);
-        _parent = newSibling->_parent;
+        _parent = new_sibling->_parent;
+        // Propagate properties from the new
+        setIignoreNamespace(_parent->_ignore_namespace);
     }
 
     // Insert somewhere else in the parent structure.
-    assert(_parent->_firstChild != nullptr); // Because of newSibling.
+    assert(_parent->_first_child != nullptr); // Because of new_sibling.
     if (before) {
-        if (_parent->_firstChild == newSibling) {
-            _parent->_firstChild = this;
+        if (_parent->_first_child == new_sibling) {
+            _parent->_first_child = this;
         }
-        ringInsertBefore(newSibling);
+        ringInsertBefore(new_sibling);
     }
     else {
-        ringInsertAfter(newSibling);
+        ringInsertAfter(new_sibling);
     }
 }
 
@@ -252,11 +259,27 @@ size_t ts::xml::Node::depth() const
 
 bool ts::xml::Node::preserveSpace() const
 {
-    bool pres = _preserveSpace;
+    bool pres = _preserve_space;
     for (const Node* n = this; !pres && n->_parent != nullptr; n = n->_parent) {
-        pres = n->_preserveSpace;
+        pres = n->_preserve_space;
     }
     return pres;
+}
+
+
+//----------------------------------------------------------------------------
+// Specify if namespace is ignored by default when comparing names.
+//----------------------------------------------------------------------------
+
+void ts::xml::Node::setIignoreNamespace(bool ignore)
+{
+    // Costly recursive operation, do it only when necessary.
+    if (_ignore_namespace != ignore) {
+        _ignore_namespace = ignore;
+        for (Node* child = firstChild(); child != nullptr; child = child->nextSibling()) {
+            child->setIignoreNamespace(ignore);
+        }
+    }
 }
 
 
@@ -264,12 +287,11 @@ bool ts::xml::Node::preserveSpace() const
 // Get the current XML parsing and formatting tweaks for this node.
 //----------------------------------------------------------------------------
 
-const ts::xml::Tweaks ts::xml::Node::defaultTweaks;
-
 const ts::xml::Tweaks& ts::xml::Node::tweaks() const
 {
-    const ts::xml::Document* const doc = document();
-    return doc != nullptr ? doc->tweaks() : defaultTweaks;
+    static const Tweaks default_tweaks;
+    const Document* const doc = document();
+    return doc != nullptr ? doc->tweaks() : default_tweaks;
 }
 
 
@@ -281,13 +303,13 @@ ts::xml::Node* ts::xml::Node::nextSibling()
 {
     // When the ring points to the first child, this is the end of the list.
     Node* next = ringNext<Node>();
-    return next == this || (_parent != nullptr && next == _parent->_firstChild) ? nullptr : next;
+    return next == this || (_parent != nullptr && next == _parent->_first_child) ? nullptr : next;
 }
 
 ts::xml::Node* ts::xml::Node::previousSibling()
 {
     Node* prev = ringPrevious<Node>();
-    return prev == this || (_parent != nullptr && this == _parent->_firstChild) ? nullptr : prev;
+    return prev == this || (_parent != nullptr && this == _parent->_first_child) ? nullptr : prev;
 }
 
 
@@ -319,7 +341,7 @@ ts::xml::Element* ts::xml::Node::previousSiblingElement()
 
 
 //----------------------------------------------------------------------------
-// Find the first child element by name, case-insensitive.
+// Find the first child element.
 //----------------------------------------------------------------------------
 
 ts::xml::Element* ts::xml::Node::firstChildElement()
