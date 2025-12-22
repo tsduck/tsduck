@@ -192,7 +192,7 @@ namespace ts::xml {
         //! A constant iterator over child elements of a parent element.
         //! Dereferencing an iterator accesses a constant Element instance.
         //!
-        class TSDUCKDLL ConstElementIterator : private std::vector<const Element*>::const_iterator
+        class TSCOREDLL ConstElementIterator : private std::vector<const Element*>::const_iterator
         {
         private:
             // A ConstElementIterator is a const_iterator on the vector of Element* in a specific ConstElementSet.
@@ -219,7 +219,7 @@ namespace ts::xml {
         //! Instances of these classes can only be created using ts::xml::Element::children()
         //! and should only be used as temporary objects in range-based "for" loops.
         //!
-        class TSDUCKDLL ConstElementSet
+        class TSCOREDLL ConstElementSet
         {
         private:
             // If not null and dereferences to false, iteration should stop.
