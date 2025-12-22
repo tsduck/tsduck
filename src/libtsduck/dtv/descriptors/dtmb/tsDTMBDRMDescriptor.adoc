@@ -1,6 +1,6 @@
-==== CUVV_video_stream_descriptor
+==== DTMB_DRM_descriptor
 
-Defined by ITU in <<J.1041>>.
+Defined by ITU in <<ITU-J1041>>.
 
 [source,xml]
 ----

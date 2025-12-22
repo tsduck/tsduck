@@ -139,10 +139,6 @@ include::.all.dvb.descriptors.adoc[]
 
 include::.all.dtg.descriptors.adoc[]
 
-=== DTMB-defined descriptors
-
-include::.all.dtmb.descriptors.adoc[]
-
 === EACEM-defined descriptors (DVB private descriptors)
 
 include::.all.eacem.descriptors.adoc[]
@@ -192,6 +188,10 @@ include::.all.atsc.descriptors.adoc[]
 === ISDB-defined descriptors
 
 include::.all.isdb.descriptors.adoc[]
+
+=== DTMB-defined descriptors
+
+include::.all.dtmb.descriptors.adoc[]
 
 [#xml-generic]
 === Generic format for unsupported tables and descriptors

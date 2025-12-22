@@ -570,6 +570,15 @@ A synonym for `--isdb --abnt --time-reference UTC-3`.
 This is a handy shortcut when working on South American ISDB-Tb transport streams.
 
 [.opt]
+*--china*
+
+[.optdoc]
+A synonym for `--dtmb`.
+
+[.optdoc]
+This is a handy shortcut when working on Chinese transport streams.
+
+[.opt]
 *--default-pds* _value_
 
 [.optdoc]
@@ -686,6 +695,12 @@ as many `registration_descriptor`, in the same order as the options on the comma
 before any actual `registration_descriptor` in descriptor lists.
 
 [.opt]
+*--dtmb*
+
+[.optdoc]
+Assume that the transport stream is a DTMB one.
+
+[.opt]
 *--dvb*
 
 [.optdoc]
@@ -777,6 +792,8 @@ Japan such as different semantics for component types.
 
 [.optdoc]
 A synonym for `--isdb --abnt --time-reference UTC+8`.
+
+[.optdoc]
 This is a handy shortcut when working on Philippines transport streams.
 
 [.opt]

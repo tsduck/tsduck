@@ -546,6 +546,6 @@ namespace ts {
         };
 
         // Define several classes of command line options in an Args.
-        void defineOptions(Args& args, int cmdOptionsMask);
+        void defineOptions(Args& args, int cmd_options_mask);
     };
 }

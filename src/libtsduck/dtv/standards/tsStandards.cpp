@@ -19,16 +19,16 @@ bool ts::CompatibleStandards(Standards std)
     //
     // Compatibility matrix, one by one:
     //
-    //           NONE  MPEG  DVB   SCTE  ATSC  ISDB JAPAN  ABNT  DTMB
-    //   NONE           X     X     X     X     X     X     X     X
-    //   MPEG                 X     X     X     X     X     X     X
-    //   DVB                        X     -    (X)   (X)   (X)    X
-    //   SCTE                             X     X     X     X
-    //   ATSC                                   -     -     -
-    //   ISDB                                         X     X
-    //   JAPAN                                              -
-    //   ABNT
-    //   DTMB
+    //             NONE  MPEG  DVB   SCTE  ATSC  ISDB JAPAN  ABNT  DTMB
+    //  1. NONE           X     X     X     X     X     X     X     X
+    //  2. MPEG                 X     X     X     X     X     X     X
+    //  3. DVB                        X     -    (X)   (X)   (X)   (X)
+    //  4. SCTE                             X     X     X     X     -
+    //  5. ATSC                                   -     -     -     -
+    //  6. ISDB                                         X     X     -
+    //  7. JAPAN                                              -     -
+    //  8. ABNT                                                     -
+    //  9. DTMB
     //
     //  X  : Compatible.
     // (X) : Mixed compatibility. ISDB is based on a subset of DVB and adds other
@@ -42,20 +42,26 @@ bool ts::CompatibleStandards(Standards std)
     // (thread-safe init-safe static data patterns).
     //
     static const std::set<Standards> incompatible_standards {
-        (Standards::ATSC    | Standards::DVB),
-        (Standards::ATSC    | Standards::ISDB),
-        (Standards::ATSC    | Standards::JAPAN),
-        (Standards::ATSC    | Standards::ABNT),
-        (Standards::JAPAN   | Standards::ABNT),
+        // Table line 3.
+        (Standards::DVB     | Standards::ATSC),
         (Standards::DVBONLY | Standards::ISDB),
         (Standards::DVBONLY | Standards::JAPAN),
         (Standards::DVBONLY | Standards::ABNT),
-        (Standards::DTMB    | Standards::DVBONLY),
-        (Standards::DTMB    | Standards::SCTE),
-        (Standards::DTMB    | Standards::ATSC),
-        (Standards::DTMB    | Standards::ISDB),
-        (Standards::DTMB    | Standards::JAPAN),
-        (Standards::DTMB    | Standards::ABNT), 
+        (Standards::DVBONLY | Standards::DTMB),
+        // Table line 4.
+        (Standards::SCTE    | Standards::DTMB),
+        // Table line 5.
+        (Standards::ATSC    | Standards::ISDB),
+        (Standards::ATSC    | Standards::JAPAN),
+        (Standards::ATSC    | Standards::ABNT),
+        (Standards::ATSC    | Standards::DTMB),
+        // Table line 6.
+        (Standards::ISDB    | Standards::DTMB),
+        // Table line 7.
+        (Standards::JAPAN   | Standards::ABNT),
+        (Standards::JAPAN   | Standards::DTMB),
+        // Table line 8.
+        (Standards::ABNT    | Standards::DTMB),
     };
 
     for (auto forbidden : incompatible_standards) {

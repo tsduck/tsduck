@@ -307,13 +307,13 @@ bool ts::DuckContext::setOutput(const fs::path& fileName, bool override)
 // Define several classes of command line options in an Args.
 //----------------------------------------------------------------------------
 
-void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
+void ts::DuckContext::defineOptions(Args& args, int cmd_options_mask)
 {
     // Remember defined command line options.
-    _defined_cmd_options |= cmdOptionsMask;
+    _defined_cmd_options |= cmd_options_mask;
 
     // Options relating to default PDS.
-    if (cmdOptionsMask & CMD_PDS) {
+    if (cmd_options_mask & CMD_PDS) {
 
         args.option(u"default-pds", 0, PrivateDataSpecifierEnum());
         args.help(u"default-pds",
@@ -333,7 +333,7 @@ void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
                   u"Several options --default-registration can be specified. "
                   u"Unlike DVB private data specifiers, several MPEG registration ids can be simultaneously defined.");
     }
-    if (cmdOptionsMask & CMD_FIX_PDS) {
+    if (cmd_options_mask & CMD_FIX_PDS) {
 
         args.option(u"fix-missing-pds");
         args.help(u"fix-missing-pds",
@@ -342,7 +342,7 @@ void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
     }
 
     // Options relating to default character sets.
-    if (cmdOptionsMask & CMD_CHARSET) {
+    if (cmd_options_mask & CMD_CHARSET) {
 
         args.option(u"default-charset", 0, Args::STRING);
         args.help(u"default-charset", u"name",
@@ -353,7 +353,7 @@ void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
     }
 
     // Options relating to default standards.
-    if (cmdOptionsMask & CMD_STANDARDS) {
+    if (cmd_options_mask & CMD_STANDARDS) {
 
         args.option(u"abnt");
         args.help(u"abnt",
@@ -395,7 +395,7 @@ void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
     }
 
     // Options relating to default UHF/VHF region.
-    if (cmdOptionsMask & CMD_HF_REGION) {
+    if (cmd_options_mask & CMD_HF_REGION) {
 
         args.option(u"hf-band-region", 'r', Args::STRING);
         args.help(u"hf-band-region", u"name",
@@ -405,7 +405,7 @@ void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
     }
 
     // Options relating to default CAS identification.
-    if (cmdOptionsMask & CMD_CAS) {
+    if (cmd_options_mask & CMD_CAS) {
 
         args.option(u"default-cas-id", 0, Args::UINT16);
         args.help(u"default-cas-id",
@@ -423,7 +423,7 @@ void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
     }
 
     // Options relating to non-standard time reference.
-    if (cmdOptionsMask & CMD_TIMEREF) {
+    if (cmd_options_mask & CMD_TIMEREF) {
 
         args.option(u"time-reference", 0, Args::STRING);
         args.help(u"time-reference", u"name",
@@ -434,10 +434,10 @@ void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
     }
 
     // Option --europe triggers different options in different sets of options.
-    if (cmdOptionsMask & (CMD_CHARSET | CMD_STANDARDS)) {
+    if (cmd_options_mask & (CMD_CHARSET | CMD_STANDARDS)) {
 
         // Build help text for --europe option. It depends on which set of options is requested.
-        // Use _definedCmdOptions instead of cmdOptionsMask to include previous options.
+        // Use _defined_cmd_options instead of cmd_options_mask to include previous options.
         UStringList options;
         UString other;
         if (_defined_cmd_options & CMD_STANDARDS) {
@@ -459,10 +459,10 @@ void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
     }
 
     // Option --japan triggers different options in different sets of options.
-    if (cmdOptionsMask & (CMD_CHARSET | CMD_STANDARDS | CMD_HF_REGION | CMD_TIMEREF)) {
+    if (cmd_options_mask & (CMD_CHARSET | CMD_STANDARDS | CMD_HF_REGION | CMD_TIMEREF)) {
 
         // Build help text for --japan option. It depends on which set of options is requested.
-        // Use _definedCmdOptions instead of cmdOptionsMask to include previous options.
+        // Use _defined_cmd_options instead of cmd_options_mask to include previous options.
         UStringList options;
         if (_defined_cmd_options & CMD_STANDARDS) {
             options.push_back(u"--isdb");
@@ -483,7 +483,7 @@ void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
     }
 
     // Option --philippines triggers different options in different sets of options.
-    if (cmdOptionsMask & (CMD_CHARSET | CMD_STANDARDS | CMD_HF_REGION | CMD_TIMEREF)) {
+    if (cmd_options_mask & (CMD_CHARSET | CMD_STANDARDS | CMD_HF_REGION | CMD_TIMEREF)) {
 
         // Build help text. Same principle as --japan.
         UStringList options;
@@ -507,7 +507,7 @@ void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
     }
 
     // Option --brazil triggers different options in different sets of options.
-    if (cmdOptionsMask & (CMD_CHARSET | CMD_STANDARDS | CMD_HF_REGION | CMD_TIMEREF)) {
+    if (cmd_options_mask & (CMD_CHARSET | CMD_STANDARDS | CMD_HF_REGION | CMD_TIMEREF)) {
 
         // Build help text. Same principle as --japan.
         UStringList options;
@@ -531,7 +531,7 @@ void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
     }
 
     // Option --usa triggers different options in different sets of options.
-    if (cmdOptionsMask & (CMD_STANDARDS | CMD_HF_REGION)) {
+    if (cmd_options_mask & (CMD_STANDARDS | CMD_HF_REGION)) {
 
         // Build help text. Same principle as --japan.
         UStringList options;
@@ -548,10 +548,10 @@ void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
     }
 
     // Option --china triggers different options in different sets of options.
-    if (cmdOptionsMask & (CMD_CHARSET | CMD_STANDARDS)) {
+    if (cmd_options_mask & CMD_STANDARDS) {
 
         // Build help text for --china option. It depends on which set of options is requested.
-        // Use _definedCmdOptions instead of cmdOptionsMask to include previous options.
+        // Use _defined_cmd_options instead of cmd_options_mask to include previous options.
         UStringList options;
         if (_defined_cmd_options & CMD_STANDARDS) {
             options.push_back(u"--dtmb");
@@ -559,7 +559,7 @@ void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
         args.option(u"china");
         args.help(u"china",
                   u"A synonym for '" + UString::Join(options, u" ") + u"'. "
-                                                                      u"This is a handy shortcut when working on Chinese transport streams.");
+                  u"This is a handy shortcut when working on Chinese transport streams.");
     }
 }
 
