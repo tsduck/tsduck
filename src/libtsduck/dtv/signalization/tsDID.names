@@ -684,4 +684,4 @@ Extended = true
 #
 # DTMB descriptors
 #
-0x0080_00_FFFFFFFF_C0 = ITU DRM Descriptor
+0x0080_00_FFFFFFFF_C0 = DTMB DRM Descriptor

@@ -2,7 +2,7 @@
 <tsduck>
   <_descriptors>
 
-    <ITU_DRM_descriptor
+    <DTMB_DRM_descriptor
         video_format="uint4, required"
         video_encryption_method="uint4, required"
         audio_format="uint4, required"
@@ -12,7 +12,7 @@
         Hexadecimal content
       </DRM_data_bytes>
 
-      </ITU_DRM_descriptor>
+    </DTMB_DRM_descriptor>
     
   </_descriptors>
 </tsduck>

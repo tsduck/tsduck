@@ -6,7 +6,7 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsITUDRMDescriptor.h"
+#include "tsDTMBDRMDescriptor.h"
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
@@ -14,8 +14,8 @@
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 
-#define MY_XML_NAME u"ITU_DRM_descriptor"
-#define MY_CLASS    ts::ITUDRMDescriptor
+#define MY_XML_NAME u"DTMB_DRM_descriptor"
+#define MY_CLASS    ts::DTMBDRMDescriptor
 #define MY_EDID     ts::EDID::Regular(ts::DID_DTMB_DRM, ts::Standards::DTMB)
 
 TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
@@ -25,12 +25,12 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescript
 // Constructors
 //----------------------------------------------------------------------------
 
-ts::ITUDRMDescriptor::ITUDRMDescriptor() :
+ts::DTMBDRMDescriptor::DTMBDRMDescriptor() :
     AbstractDescriptor(MY_EDID, MY_XML_NAME)
 {
 }
 
-void ts::ITUDRMDescriptor::clearContent()
+void ts::DTMBDRMDescriptor::clearContent()
 {
     video_format = 0;
     video_encryption_method = 0;
@@ -39,8 +39,8 @@ void ts::ITUDRMDescriptor::clearContent()
     DRM_data_bytes.clear();
 }
 
-ts::ITUDRMDescriptor::ITUDRMDescriptor(DuckContext& duck, const Descriptor& desc) :
-    ITUDRMDescriptor()
+ts::DTMBDRMDescriptor::DTMBDRMDescriptor(DuckContext& duck, const Descriptor& desc) :
+    DTMBDRMDescriptor()
 {
     deserialize(duck, desc);
 }
@@ -50,7 +50,7 @@ ts::ITUDRMDescriptor::ITUDRMDescriptor(DuckContext& duck, const Descriptor& desc
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ITUDRMDescriptor::serializePayload(PSIBuffer& buf) const
+void ts::DTMBDRMDescriptor::serializePayload(PSIBuffer& buf) const
 {
     buf.putBits(video_format, 4);
     buf.putBits(video_encryption_method, 4);
@@ -64,7 +64,7 @@ void ts::ITUDRMDescriptor::serializePayload(PSIBuffer& buf) const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::ITUDRMDescriptor::deserializePayload(PSIBuffer& buf)
+void ts::DTMBDRMDescriptor::deserializePayload(PSIBuffer& buf)
 {
     video_format = buf.getBits<uint8_t>(4);
     video_encryption_method = buf.getBits<uint8_t>(4);
@@ -78,7 +78,7 @@ void ts::ITUDRMDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ITUDRMDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
+void ts::DTMBDRMDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(2)) {
         disp << margin << "Video format: " << DataName(MY_XML_NAME, u"video_format", buf.getBits<uint8_t>(4), NamesFlags::NAME_VALUE | NamesFlags::HEXA) << std::endl;
@@ -94,7 +94,7 @@ void ts::ITUDRMDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Desc
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::ITUDRMDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
+void ts::DTMBDRMDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"video_format", video_format, true);
     root->setIntAttribute(u"video_encryption_method", video_encryption_method, true);
@@ -108,7 +108,7 @@ void ts::ITUDRMDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-bool ts::ITUDRMDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
+bool ts::DTMBDRMDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     return element->getIntAttribute(video_format, u"video_format", true, 0, 0, 0xF) &&
            element->getIntAttribute(video_encryption_method, u"video_encryption_method", true, 0, 0, 0xF) &&

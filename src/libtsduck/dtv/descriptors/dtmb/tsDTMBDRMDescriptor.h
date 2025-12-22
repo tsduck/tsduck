@@ -21,7 +21,7 @@ namespace ts {
     //! @see ITU J.1041 clause 7.2.1
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL ITUDRMDescriptor : public AbstractDescriptor
+    class TSDUCKDLL DTMBDRMDescriptor : public AbstractDescriptor
     {
     public:
         // Public members:
@@ -35,14 +35,14 @@ namespace ts {
         //!
         //! Default constructor.
         //!
-        ITUDRMDescriptor();
+        DTMBDRMDescriptor();
 
         //!
         //! Constructor from a binary descriptor
         //! @param [in,out] duck TSDuck execution context.
         //! @param [in] bin A binary descriptor to deserialize.
         //!
-        ITUDRMDescriptor(DuckContext& duck, const Descriptor& bin);
+        DTMBDRMDescriptor(DuckContext& duck, const Descriptor& bin);
 
         // Inherited methods
         DeclareDisplayDescriptor();
