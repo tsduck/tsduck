@@ -66,6 +66,10 @@ namespace ts::xml {
         //!
         const UString& parentName() const;
 
+        //--------------------------------------------------------------------
+        // Elements matching
+        //--------------------------------------------------------------------
+
         //!
         //! Check if the name of the element matches a given value, case-insensitive.
         //! @param [in] str The string value to compare.
@@ -111,51 +115,9 @@ namespace ts::xml {
         //!
         bool nameMatch(const Element* other, bool ignore_namespace) const { return other != nullptr && nameMatch(other->name(), ignore_namespace); }
 
-        //!
-        //! Find the first child element by name, case-insensitive.
-        //! @param [in] name Name of the child element to search. If empty, get the first element.
-        //! @param [in] silent If true, do not report error if the element does not exist.
-        //! @return Child element address or zero if not found.
-        //!
-        const Element* findFirstChild(const UString& name, bool silent = false) const { return (const_cast<Element*>(this))->findFirstChild(name, silent); }
-
-        //!
-        //! Find the first child element by name, case-insensitive.
-        //! @param [in] name Name of the child element to search. If empty, get the first element.
-        //! @param [in] silent If true, do not report error if the element does not exist.
-        //! @return Child element address or zero if not found.
-        //!
-        Element* findFirstChild(const UString& name, bool silent = false);
-
-        //!
-        //! Find the next sibling element by name, case-insensitive.
-        //! @param [in] name Name of the sibling element to search. If empty, get the next element.
-        //! @param [in] silent If true, do not report error if the element does not exist.
-        //! @return Child element address or zero if not found.
-        //!
-        const Element* findNextSibling(const UString& name, bool silent = false) const { return (const_cast<Element*>(this))->findNextSibling(name, silent); }
-
-        //!
-        //! Find the next sibling element by name, case-insensitive.
-        //! @param [in] name Name of the sibling element to search. If empty, get the next element.
-        //! @param [in] silent If true, do not report error if the element does not exist.
-        //! @return Child element address or zero if not found.
-        //!
-        Element* findNextSibling(const UString& name, bool silent = false);
-
-        //!
-        //! Find the next sibling element with same name as this element.
-        //! @param [in] silent If true, do not report error if the element does not exist.
-        //! @return Child element address or zero if not found.
-        //!
-        const Element* findNextSibling(bool silent = false) const { return findNextSibling(name(), silent); }
-
-        //!
-        //! Find the next sibling element by name, case-insensitive.
-        //! @param [in] silent If true, do not report error if the element does not exist.
-        //! @return Child element address or zero if not found.
-        //!
-        Element* findNextSibling(bool silent = false) { return findNextSibling(name(), silent); }
+        //--------------------------------------------------------------------
+        // Find elements
+        //--------------------------------------------------------------------
 
         //!
         //! Find all children elements by name, case-insensitive.
@@ -173,6 +135,219 @@ namespace ts::xml {
         //! @return True if present, false if not present.
         //!
         bool hasChildElement(const UString& name) const;
+
+        //!
+        //! Find the first child element by name, case-insensitive.
+        //! @param [in] name Name of the child element to search. If empty, get the first element.
+        //! @param [in] required If true, generate an error if the attribute is not found.
+        //! @return Child element address or zero if not found.
+        //!
+        const Element* findFirstChild(const UString& name, bool required = false) const { return (const_cast<Element*>(this))->findFirstChild(name, required); }
+
+        //!
+        //! Find the first child element by name, case-insensitive.
+        //! @param [in] name Name of the child element to search. If empty, get the first element.
+        //! @param [in] required If true, generate an error if the attribute is not found.
+        //! @return Child element address or zero if not found.
+        //!
+        Element* findFirstChild(const UString& name, bool required = false);
+
+        //!
+        //! Find the next sibling element by name, case-insensitive.
+        //! @param [in] name Name of the sibling element to search. If empty, get the next element.
+        //! @param [in] required If true, generate an error if the attribute is not found.
+        //! @return Child element address or zero if not found.
+        //!
+        const Element* findNextSibling(const UString& name, bool required = false) const { return (const_cast<Element*>(this))->findNextSibling(name, required); }
+
+        //!
+        //! Find the next sibling element by name, case-insensitive.
+        //! @param [in] name Name of the sibling element to search. If empty, get the next element.
+        //! @param [in] required If true, generate an error if the attribute is not found.
+        //! @return Child element address or zero if not found.
+        //!
+        Element* findNextSibling(const UString& name, bool required = false);
+
+        //!
+        //! Find the next sibling element with same name as this element.
+        //! @param [in] required If true, generate an error if the attribute is not found.
+        //! @return Child element address or zero if not found.
+        //!
+        const Element* findNextSibling(bool required = false) const { return findNextSibling(name(), required); }
+
+        //!
+        //! Find the next sibling element with same name as this element.
+        //! @param [in] required If true, generate an error if the attribute is not found.
+        //! @return Child element address or zero if not found.
+        //!
+        Element* findNextSibling(bool required = false) { return findNextSibling(name(), required); }
+
+        //--------------------------------------------------------------------
+        // Iterating over a constant list of XML elements
+        //--------------------------------------------------------------------
+
+        class ConstElementSet;
+
+        //!
+        //! A constant iterator over child elements of a parent element.
+        //! Dereferencing an iterator accesses a constant Element instance.
+        //!
+        class TSDUCKDLL ConstElementIterator : private std::vector<const Element*>::const_iterator
+        {
+        private:
+            // A ConstElementIterator is a const_iterator on the vector of Element* in a specific ConstElementSet.
+            using SuperClass = std::vector<const Element*>::const_iterator;
+            // Pointer to the associated ConstElementSet.
+            const ConstElementSet* _set = nullptr;
+            // Constructors are inaccessible, only through ConstElementSet begin() and end().
+            ConstElementIterator() = delete;
+            ConstElementIterator(const ConstElementSet& set, const SuperClass& up) : SuperClass(up), _set(&set) {}
+            friend class ConstElementSet;
+        public:
+            // Standard iterator's operations, no need to document them.
+            //! @cond nodoxygen
+            ConstElementIterator& operator--();
+            ConstElementIterator& operator++();
+            const Element& operator*() { return **static_cast<SuperClass>(*this); }
+            const Element* operator->() { return &**static_cast<SuperClass>(*this); }
+            bool operator==(const ConstElementIterator& other) const { return static_cast<SuperClass>(*this) == static_cast<SuperClass>(other); }
+            //! @endcond
+        };
+
+        //!
+        //! An iterable set of constant XML elements.
+        //! Instances of these classes can only be created using ts::xml::Element::children()
+        //! and should only be used as temporary objects in range-based "for" loops.
+        //!
+        class TSDUCKDLL ConstElementSet
+        {
+        private:
+            // If not null and dereferences to false, iteration should stop.
+            const bool* _valid = nullptr;
+            // A vector of pointers to children elements. They must remain valid while iterating.
+            std::vector<const Element*> _elements {};
+            // Constructors are inaccessible, only through Element::children().
+            ConstElementSet() = default;
+            ConstElementSet(ConstElementSet&&) = default;
+            ConstElementSet(const ConstElementSet&) = default;
+            ConstElementSet& operator=(ConstElementSet&&) = default;
+            ConstElementSet& operator=(const ConstElementSet&) = default;
+            friend class ConstElementIterator;
+            friend class Element;
+        public:
+            //!
+            //! Check if iterations across the set of constant XML elements can continue.
+            //! @return True if iteration can continue, false if should stop.
+            //!
+            bool isValid() const { return _valid == nullptr || *_valid; }
+            //!
+            //! Get the iterator to the beginning of the set.
+            //! @return The iterator to the beginning of the set.
+            //!
+            ConstElementIterator begin() const;
+            //!
+            //! Get the iterator to the end of the set.
+            //! @return The iterator to the end of the set.
+            //!
+            ConstElementIterator end() const { return ConstElementIterator(*this, _elements.end()); }
+        };
+
+        //!
+        //! Get an iterable set of all children elements of a given name and iteration conditions.
+        //! @param [in] name Name of the children elements to iterate over. If empty, iterate over all children elements.
+        //! @param [in,out] valid_condition Optional pointer to a "validity" condition. This is typically an external boolean
+        //! variable which is used all along the parsing of the XML structure. Whenever this variable becomes false, iteration
+        //! will stop (all operations on iterators will return the end() iterator value).
+        //! @param [in] min_count Minimum number of required children. If there are less children, an error is reported,
+        //! @a valid_condition is set to false (if not nullptr), the set of iterable elements is empty.
+        //! @param [in] max_count Maximum number of required children. If there are more children, an error is reported,
+        //! @a valid_condition is set to false (if not nullptr), the set of iterable elements is empty.
+        //! @return A iterable set of elements.
+        //!
+        //! Sample code:
+        //! @code
+        //! // Iterate over all children elements:
+        //! for (auto& e : root->children()) {
+        //!     e.getIntAttribute(...);
+        //! }
+        //!
+        //! // Iterate over all "a" children elements with error and cardinality check:
+        //! bool valid = true;
+        //! for (auto& e : root->children(u"a", &valid, 1, 5)) {
+        //!     valid = e.getIntAttribute(...);
+        //! }
+        //! @endcode
+        //!
+        ConstElementSet children(const UString& name = UString(), bool* valid_condition = nullptr, size_t min_count = 0, size_t max_count = UNLIMITED) const;
+
+        //--------------------------------------------------------------------
+        // Find / delete attributes
+        //--------------------------------------------------------------------
+
+        //!
+        //! Get the list of all attribute names.
+        //! @param [out] names Returned list of all attribute names.
+        //!
+        void getAttributesNames(UStringList& names) const;
+
+        //!
+        //! Get the list of all attributes.
+        //! @param [out] attr Returned map of all attribute names (index in the map) and corresponding values.
+        //!
+        void getAttributes(std::map<UString,UString>& attr) const;
+
+        //!
+        //! Get the list of all attribute names, sorted by modification order.
+        //! The method is slower than getAttributesNames().
+        //! @param [out] names Returned list of all attribute names.
+        //!
+        void getAttributesNamesInModificationOrder(UStringList& names) const;
+
+        //!
+        //! Get the number of attributes in the element.
+        //! @return The number of attributes in the element.
+        //!
+        size_t getAttributesCount() const { return _attributes.size(); }
+
+        //!
+        //! Check if an attribute exists in the element.
+        //! @param [in] attribute_name Attribute name.
+        //! @return True if the attribute exists.
+        //!
+        bool hasAttribute(const UString& attribute_name) const;
+
+        //!
+        //! Check if an attribute exists in the element and has the specified value.
+        //! @param [in] attribute_name Attribute name.
+        //! @param [in] value Expected value.
+        //! @param [in] similar If true, the comparison between the actual and expected
+        //! values is performed case-insensitive and ignoring blanks. Additionally,
+        //! if the values are integers, the integer values are compared (otherwise,
+        //! identical values in decimal and hexadecimal wouldn't match).
+        //! If @a similar is false, a strict comparison is performed.
+        //! @return True if the attribute exists and has the expected value.
+        //!
+        bool hasAttribute(const UString& attribute_name, const UString& value, bool similar = false) const;
+
+        //!
+        //! Get an attribute.
+        //! @param [in] attribute_name Attribute name.
+        //! @param [in] required If true, generate an error if the attribute is not found.
+        //! @return A constant reference to an attribute.
+        //! If the argument does not exist, the referenced object is marked invalid.
+        //! The reference is valid as long as the Element object is not modified.
+        //!
+        const Attribute& attribute(const UString& attribute_name, bool required = false) const;
+
+        //!
+        //! Delete an attribute.
+        //! @param [in] name Attribute name to delete.
+        //!
+        void deleteAttribute(const UString& name);
+
+        //--------------------------------------------------------------------
+        // Get text or hexa child element
+        //--------------------------------------------------------------------
 
         //!
         //! Get text in a child of the element.
@@ -217,8 +392,8 @@ namespace ts::xml {
         //! @param [out] data The content of the text in the child element.
         //! @param [in] name Name of the child element to search.
         //! @param [in] required If true, generate an error if the child element is not found.
-        //! @param [in] min_size Minimum allowed size for the value string.
-        //! @param [in] max_size Maximum allowed size for the value string.
+        //! @param [in] min_size Minimum allowed size for the returned binary data.
+        //! @param [in] max_size Maximum allowed size for the returned binary data.
         //! @return True on success, false on error.
         //!
         bool getHexaTextChild(ByteBlock& data,
@@ -232,11 +407,15 @@ namespace ts::xml {
         //! In practice, concatenate the content of all Text children inside the element
         //! and interpret the result as hexadecimal data.
         //! @param [out] data Buffer receiving the decoded hexadecimal data.
-        //! @param [in] min_size Minimum size of the returned data.
-        //! @param [in] max_size Maximum size of the returned data.
+        //! @param [in] min_size Minimum size of the returned binary data.
+        //! @param [in] max_size Maximum size of the returned binary data.
         //! @return True on success, false on error.
         //!
         bool getHexaText(ByteBlock& data, size_t min_size = 0, size_t max_size = UNLIMITED) const;
+
+        //--------------------------------------------------------------------
+        // Add text or hexa child element
+        //--------------------------------------------------------------------
 
         //!
         //! Add a new child element at the end of children.
@@ -292,41 +471,9 @@ namespace ts::xml {
         //!
         Text* addHexaTextChild(const UString& name, const ByteBlock& data, bool only_not_empty = false);
 
-        //!
-        //! Check if an attribute exists in the element.
-        //! @param [in] attribute_name Attribute name.
-        //! @return True if the attribute exists.
-        //!
-        bool hasAttribute(const UString& attribute_name) const;
-
-        //!
-        //! Check if an attribute exists in the element and has the specified value.
-        //! @param [in] attribute_name Attribute name.
-        //! @param [in] value Expected value.
-        //! @param [in] similar If true, the comparison between the actual and expected
-        //! values is performed case-insensitive and ignoring blanks. Additionally,
-        //! if the values are integers, the integer values are compared (otherwise,
-        //! identical values in decimal and hexadecimal wouldn't match).
-        //! If @a similar is false, a strict comparison is performed.
-        //! @return True if the attribute exists and has the expected value.
-        //!
-        bool hasAttribute(const UString& attribute_name, const UString& value, bool similar = false) const;
-
-        //!
-        //! Get an attribute.
-        //! @param [in] attribute_name Attribute name.
-        //! @param [in] silent If true, do not report error.
-        //! @return A constant reference to an attribute.
-        //! If the argument does not exist, the referenced object is marked invalid.
-        //! The reference is valid as long as the Element object is not modified.
-        //!
-        const Attribute& attribute(const UString& attribute_name, bool silent = false) const;
-
-        //!
-        //! Delete an attribute.
-        //! @param [in] name Attribute name to delete.
-        //!
-        void deleteAttribute(const UString& name);
+        //--------------------------------------------------------------------
+        // Text attribute
+        //--------------------------------------------------------------------
 
         //!
         //! Set an attribute.
@@ -335,228 +482,6 @@ namespace ts::xml {
         //! @param [in] only_if_not_empty When true, do not insert the attribute if @a value is empty.
         //!
         void setAttribute(const UString& name, const UString& value, bool only_if_not_empty = false);
-
-        //!
-        //! Set an optional attribute to a node.
-        //! @param [in] name Attribute name.
-        //! @param [in] value Attribute value.
-        //!
-        void setOptionalAttribute(const UString& name, const std::optional<UString>& value)
-        {
-            if (value.has_value()) {
-                setAttribute(name, value.value());
-            }
-        }
-
-        //!
-        //! Set a bool attribute to a node.
-        //! @param [in] name Attribute name.
-        //! @param [in] value Attribute value.
-        //!
-        void setBoolAttribute(const UString& name, bool value)
-        {
-            refAttribute(name).setBool(value);
-        }
-
-        //!
-        //! Set an optional bool attribute to a node.
-        //! @param [in] name Attribute name.
-        //! @param [in] value Attribute value.
-        //!
-        void setOptionalBoolAttribute(const UString& name, const std::optional<bool>& value)
-        {
-            if (value.has_value()) {
-                refAttribute(name).setBool(value.value());
-            }
-        }
-
-        //!
-        //! Set an attribute with an integer value to a node.
-        //! @tparam INT An integer type.
-        //! @param [in] name Attribute name.
-        //! @param [in] value Attribute value.
-        //! @param [in] hexa If true, use an hexadecimal representation (0x...).
-        //!
-        template <typename INT> requires std::integral<INT>
-        void setIntAttribute(const UString& name, INT value, bool hexa = false)
-        {
-            refAttribute(name).setInteger<INT>(value, hexa);
-        }
-
-        //!
-        //! Set an optional attribute with an integer value to a node.
-        //! @tparam INT An integer type.
-        //! @param [in] name Attribute name.
-        //! @param [in] value Attribute optional value. If the variable is not set, no attribute is set.
-        //! @param [in] hexa If true, use an hexadecimal representation (0x...).
-        //!
-        template <typename INT> requires std::integral<INT>
-        void setOptionalIntAttribute(const UString& name, const std::optional<INT>& value, bool hexa = false)
-        {
-            if (value.has_value()) {
-                refAttribute(name).setInteger<INT>(value.value(), hexa);
-            }
-        }
-
-        //!
-        //! Set an attribute with a std::chrono::duration value to a node.
-        //! @param [in] name Attribute name.
-        //! @param [in] value Attribute value.
-        //! @param [in] hexa If true, use an hexadecimal representation (0x...).
-        //!
-        template <class Rep, class Period>
-        void setChronoAttribute(const UString& name, cn::duration<Rep,Period> value, bool hexa = false)
-        {
-            refAttribute(name).setInteger<Rep>(value.count(), hexa);
-        }
-
-        //!
-        //! Set an attribute with a floating-point value to a node.
-        //! @tparam FLT A floating-point type.
-        //! @param [in] name Attribute name.
-        //! @param [in] value Attribute value.
-        //! @param [in] width Width of the formatted number, not including the optional prefix and separator.
-        //! @param [in] precision Precision to use after the decimal point.  Default is 6 digits.
-        //! @param [in] force_sign If true, force a '+' sign for positive values.
-        //!
-        template <typename FLT> requires std::floating_point<FLT>
-        void setFloatAttribute(const UString& name, FLT value, size_t width = 0, size_t precision = 6, bool force_sign = false)
-        {
-            refAttribute(name).setFloat<FLT>(value, width, precision, force_sign);
-        }
-
-        //!
-        //! Set an optional attribute with a floating-point value to a node.
-        //! @tparam FLT A floating-point type.
-        //! @param [in] name Attribute name.
-        //! @param [in] value Attribute optional value. If the variable is not set, no attribute is set.
-        //! @param [in] width Width of the formatted number, not including the optional prefix and separator.
-        //! @param [in] precision Precision to use after the decimal point.  Default is 6 digits.
-        //! @param [in] force_sign If true, force a '+' sign for positive values.
-        //!
-        template <typename FLT> requires std::floating_point<FLT>
-        void setOptionalFloatAttribute(const UString& name, const std::optional<FLT>& value, size_t width = 0, size_t precision = 6, bool force_sign = false)
-        {
-            if (value.has_value()) {
-                refAttribute(name).setFloat<FLT>(value.value(), width, precision, force_sign);
-            }
-        }
-
-        //!
-        //! Set an enumeration attribute of a node.
-        //! @tparam INT An integer or enum type.
-        //! @param [in] definition The definition of enumeration values.
-        //! @param [in] name Attribute name.
-        //! @param [in] value Attribute value.
-        //!
-        template <typename INT> requires ts::int_enum<INT>
-        void setEnumAttribute(const Names& definition, const UString& name, INT value)
-        {
-            refAttribute(name).setEnum(definition, value);
-        }
-
-        //!
-        //! Set an optional attribute with an enumeration attribute to a node.
-        //! @tparam INT An integer or enum type.
-        //! @param [in] definition The definition of enumeration values.
-        //! @param [in] name Attribute name.
-        //! @param [in] value Attribute optional value. If the variable is not set, no attribute is set.
-        //!
-        template <typename INT> requires ts::int_enum<INT>
-        void setOptionalEnumAttribute(const Names& definition, const UString& name, const std::optional<INT>& value)
-        {
-            if (value.has_value()) {
-                refAttribute(name).setEnum(definition, value.value());
-            }
-        }
-
-        //!
-        //! Set a date/time attribute of an XML element.
-        //! @param [in] name Attribute name.
-        //! @param [in] value Attribute value.
-        //!
-        void setDateTimeAttribute(const UString& name, const Time& value)
-        {
-            refAttribute(name).setDateTime(value);
-        }
-
-        //!
-        //! Set an optional date/time attribute of an XML element.
-        //! @param [in] name Attribute name.
-        //! @param [in] value Attribute value.
-        //!
-        void setOptionalDateTimeAttribute(const UString& name, const std::optional<Time>& value)
-        {
-            if (value.has_value()) {
-                refAttribute(name).setDateTime(value.value());
-            }
-        }
-
-        //!
-        //! Set a date (xithout hours) attribute of an XML element.
-        //! @param [in] name Attribute name.
-        //! @param [in] value Attribute value.
-        //!
-        void setDateAttribute(const UString& name, const Time& value)
-        {
-            refAttribute(name).setDate(value);
-        }
-
-        //!
-        //! Set an optional date (xithout hours) attribute of an XML element.
-        //! @param [in] name Attribute name.
-        //! @param [in] value Attribute value.
-        //!
-        void setOptionalDateAttribute(const UString& name, const std::optional<Time>& value)
-        {
-            if (value.has_value()) {
-                refAttribute(name).setDate(value.value());
-            }
-        }
-
-        //!
-        //! Set a time attribute of an XML element in "hh:mm:ss" format.
-        //! @param [in] name Attribute name.
-        //! @param [in] value Attribute value.
-        //!
-        template <class Rep, class Period>
-        void setTimeAttribute(const UString& name, const cn::duration<Rep,Period>& value)
-        {
-            refAttribute(name).setTime(value);
-        }
-
-        //!
-        //! Set an optional time attribute of an XML element in "hh:mm:ss" format.
-        //! @param [in] name Attribute name.
-        //! @param [in] value Attribute value.
-        //!
-        template <class Rep, class Period>
-        void setOptionalTimeAttribute(const UString& name, const std::optional<cn::duration<Rep,Period>>& value)
-        {
-            if (value.has_value()) {
-                refAttribute(name).setTime(value.value());
-            }
-        }
-
-        //!
-        //! Set an IPv4 or IPv6 address attribute of an XML element.
-        //! @param [in] name Attribute name.
-        //! @param [in] value Attribute value.
-        //!
-        void setIPAttribute(const UString& name, const IPAddress& value)
-        {
-            setAttribute(name, value.toString());
-        }
-
-        //!
-        //! Set a MAC address attribute of an XML element in "x:x:x:x:x:x" format.
-        //! @param [in] name Attribute name.
-        //! @param [in] value Attribute value.
-        //!
-        void setMACAttribute(const UString& name, const MACAddress& value)
-        {
-            setAttribute(name, value.toString());
-        }
 
         //!
         //! Get a string attribute of an XML element.
@@ -574,6 +499,18 @@ namespace ts::xml {
                           const UString& def_value = UString(),
                           size_t min_size = 0,
                           size_t max_size = UNLIMITED) const;
+
+        //!
+        //! Set an optional attribute to a node.
+        //! @param [in] name Attribute name.
+        //! @param [in] value Attribute value.
+        //!
+        void setOptionalAttribute(const UString& name, const std::optional<UString>& value)
+        {
+            if (value.has_value()) {
+                setAttribute(name, value.value());
+            }
+        }
 
         //!
         //! Get an optional string attribute of an XML element.
@@ -612,6 +549,59 @@ namespace ts::xml {
             return getAttribute(value.value(), name, required, def_value, min_size, max_size);
         }
 
+        //--------------------------------------------------------------------
+        // Base64-encoded attribute
+        //--------------------------------------------------------------------
+
+        //!
+        //! Set a Base64-encoded attribute.
+        //! @param [in] name Name of the child element to search.
+        //! @param [in] data Address of binary data.
+        //! @param [in] size Size in bytes of binary data.
+        //! @param [in] only_not_empty When true, do not add the attribute if the data is empty.
+        //!
+        void setBase64Attribute(const UString& name, const void* data, size_t size, bool only_not_empty = false);
+
+        //!
+        //! Set a Base64-encoded attribute.
+        //! @param [in] name Name of the child element to search.
+        //! @param [in] data Binary data.
+        //! @param [in] only_not_empty When true, do not add the attribute if the data is empty.
+        //!
+        void setBase64Attribute(const UString& name, const ByteBlock& data, bool only_not_empty = false)
+        {
+            setBase64Attribute(name, data.data(), data.size(), only_not_empty);
+        }
+
+        //!
+        //! Get a Base64-encoded attribute.
+        //! @param [out] data The decoded content of the attribute.
+        //! @param [in] name Name of the attribute.
+        //! @param [in] required If true, generate an error if the attribute is not found.
+        //! @param [in] min_size Minimum allowed size for the returned binary data.
+        //! @param [in] max_size Maximum allowed size for the returned binary data.
+        //! @return True on success, false on error.
+        //!
+        bool getBase64Attribute(ByteBlock& data,
+                                const UString& name,
+                                bool required = false,
+                                size_t min_size = 0,
+                                size_t max_size = UNLIMITED) const;
+
+        //--------------------------------------------------------------------
+        // Boolean attribute
+        //--------------------------------------------------------------------
+
+        //!
+        //! Set a bool attribute to a node.
+        //! @param [in] name Attribute name.
+        //! @param [in] value Attribute value.
+        //!
+        void setBoolAttribute(const UString& name, bool value)
+        {
+            refAttribute(name).setBool(value);
+        }
+
         //!
         //! Get a boolean attribute of an XML element.
         //! @param [out] value Returned value of the attribute.
@@ -623,12 +613,41 @@ namespace ts::xml {
         bool getBoolAttribute(bool& value, const UString& name, bool required = false, bool def_value = false) const;
 
         //!
+        //! Set an optional bool attribute to a node.
+        //! @param [in] name Attribute name.
+        //! @param [in] value Attribute value.
+        //!
+        void setOptionalBoolAttribute(const UString& name, const std::optional<bool>& value)
+        {
+            if (value.has_value()) {
+                refAttribute(name).setBool(value.value());
+            }
+        }
+
+        //!
         //! Get an optional boolean attribute of an XML element.
         //! @param [out] value Returned value of the attribute.
         //! @param [in] name Name of the attribute.
         //! @return True on success, false on error.
         //!
         bool getOptionalBoolAttribute(std::optional<bool>& value, const UString& name) const;
+
+        //--------------------------------------------------------------------
+        // Integer / enumeration attribute or child element
+        //--------------------------------------------------------------------
+
+        //!
+        //! Set an attribute with an integer value to a node.
+        //! @tparam INT An integer type.
+        //! @param [in] name Attribute name.
+        //! @param [in] value Attribute value.
+        //! @param [in] hexa If true, use an hexadecimal representation (0x...).
+        //!
+        template <typename INT> requires std::integral<INT>
+        void setIntAttribute(const UString& name, INT value, bool hexa = false)
+        {
+            refAttribute(name).setInteger<INT>(value, hexa);
+        }
 
         //!
         //! Get an integer or enum attribute of an XML element.
@@ -695,6 +714,21 @@ namespace ts::xml {
         }
 
         //!
+        //! Set an optional attribute with an integer value to a node.
+        //! @tparam INT An integer type.
+        //! @param [in] name Attribute name.
+        //! @param [in] value Attribute optional value. If the variable is not set, no attribute is set.
+        //! @param [in] hexa If true, use an hexadecimal representation (0x...).
+        //!
+        template <typename INT> requires std::integral<INT>
+        void setOptionalIntAttribute(const UString& name, const std::optional<INT>& value, bool hexa = false)
+        {
+            if (value.has_value()) {
+                refAttribute(name).setInteger<INT>(value.value(), hexa);
+            }
+        }
+
+        //!
         //! Get an optional integer or enum attribute of an XML element.
         //! @tparam INT An integer or enum type.
         //! @param [out] value Returned value of the attribute. If the attribute is not present, the variable is reset.
@@ -727,6 +761,19 @@ namespace ts::xml {
                                         bool condition,
                                         INT1 min_value = std::numeric_limits<typename ts::underlying_type<INT>::type>::min(),
                                         INT2 max_value = std::numeric_limits<typename ts::underlying_type<INT>::type>::max()) const;
+
+        //!
+        //! Set an enumeration attribute of a node.
+        //! @tparam INT An integer or enum type.
+        //! @param [in] definition The definition of enumeration values.
+        //! @param [in] name Attribute name.
+        //! @param [in] value Attribute value.
+        //!
+        template <typename INT> requires ts::int_enum<INT>
+        void setEnumAttribute(const Names& definition, const UString& name, INT value)
+        {
+            refAttribute(name).setEnum(definition, value);
+        }
 
         //!
         //! Get an enumeration attribute of an XML element.
@@ -762,6 +809,21 @@ namespace ts::xml {
         }
 
         //!
+        //! Set an optional attribute with an enumeration attribute to a node.
+        //! @tparam INT An integer or enum type.
+        //! @param [in] definition The definition of enumeration values.
+        //! @param [in] name Attribute name.
+        //! @param [in] value Attribute optional value. If the variable is not set, no attribute is set.
+        //!
+        template <typename INT> requires ts::int_enum<INT>
+        void setOptionalEnumAttribute(const Names& definition, const UString& name, const std::optional<INT>& value)
+        {
+            if (value.has_value()) {
+                refAttribute(name).setEnum(definition, value.value());
+            }
+        }
+
+        //!
         //! Get an optional enumeration attribute of an XML element.
         //! Integer literals and integer values are accepted in the attribute.
         //! @tparam INT An integer or enum type.
@@ -773,6 +835,25 @@ namespace ts::xml {
         template <typename INT>
             requires ts::int_enum<INT>
         bool getOptionalEnumAttribute(std::optional<INT>& value, const Names& definition, const UString& name) const;
+
+        //--------------------------------------------------------------------
+        // Float attribute
+        //--------------------------------------------------------------------
+
+        //!
+        //! Set an attribute with a floating-point value to a node.
+        //! @tparam FLT A floating-point type.
+        //! @param [in] name Attribute name.
+        //! @param [in] value Attribute value.
+        //! @param [in] width Width of the formatted number, not including the optional prefix and separator.
+        //! @param [in] precision Precision to use after the decimal point.  Default is 6 digits.
+        //! @param [in] force_sign If true, force a '+' sign for positive values.
+        //!
+        template <typename FLT> requires std::floating_point<FLT>
+        void setFloatAttribute(const UString& name, FLT value, size_t width = 0, size_t precision = 6, bool force_sign = false)
+        {
+            refAttribute(name).setFloat<FLT>(value, width, precision, force_sign);
+        }
 
         //!
         //! Get a floating-point attribute of an XML element.
@@ -793,6 +874,23 @@ namespace ts::xml {
                                FLT1 def_value = static_cast<FLT>(0.0),
                                FLT2 min_value = std::numeric_limits<FLT>::lowest(),
                                FLT3 max_value = std::numeric_limits<FLT>::max()) const;
+
+        //!
+        //! Set an optional attribute with a floating-point value to a node.
+        //! @tparam FLT A floating-point type.
+        //! @param [in] name Attribute name.
+        //! @param [in] value Attribute optional value. If the variable is not set, no attribute is set.
+        //! @param [in] width Width of the formatted number, not including the optional prefix and separator.
+        //! @param [in] precision Precision to use after the decimal point.  Default is 6 digits.
+        //! @param [in] force_sign If true, force a '+' sign for positive values.
+        //!
+        template <typename FLT> requires std::floating_point<FLT>
+        void setOptionalFloatAttribute(const UString& name, const std::optional<FLT>& value, size_t width = 0, size_t precision = 6, bool force_sign = false)
+        {
+            if (value.has_value()) {
+                refAttribute(name).setFloat<FLT>(value.value(), width, precision, force_sign);
+            }
+        }
 
         //!
         //! Get an optional floating-point attribute of an XML element.
@@ -827,14 +925,30 @@ namespace ts::xml {
         template <typename FLT, typename FLT1 = FLT, typename FLT2 = FLT, typename FLT3 = FLT>
             requires std::floating_point<FLT> && std::is_arithmetic_v<FLT1> && std::is_arithmetic_v<FLT2> && std::is_arithmetic_v<FLT3>
         bool getVariableFloatAttribute(std::optional<FLT>& value,
-                                       const UString& name,
-                                       bool required = false,
-                                       FLT1 def_value = static_cast<FLT>(0),
-                                       FLT2 min_value = std::numeric_limits<FLT>::lowest(),
-                                       FLT3 max_value = std::numeric_limits<FLT>::max()) const
+            const UString& name,
+            bool required = false,
+            FLT1 def_value = static_cast<FLT>(0),
+            FLT2 min_value = std::numeric_limits<FLT>::lowest(),
+            FLT3 max_value = std::numeric_limits<FLT>::max()) const
         {
             set_default(value, def_value);
             return getFloatAttribute(value.value(), name, required, def_value, min_value, max_value);
+        }
+
+        //--------------------------------------------------------------------
+        // Chrono attribute
+        //--------------------------------------------------------------------
+
+        //!
+        //! Set an attribute with a std::chrono::duration value to a node.
+        //! @param [in] name Attribute name.
+        //! @param [in] value Attribute value.
+        //! @param [in] hexa If true, use an hexadecimal representation (0x...).
+        //!
+        template <class Rep, class Period>
+        void setChronoAttribute(const UString& name, cn::duration<Rep,Period> value, bool hexa = false)
+        {
+            refAttribute(name).setInteger<Rep>(value.count(), hexa);
         }
 
         //!
@@ -855,6 +969,20 @@ namespace ts::xml {
                                 const cn::duration<Rep, Period>& min_value = cn::duration<Rep, Period>::min(),
                                 const cn::duration<Rep, Period>& max_value = cn::duration<Rep, Period>::max()) const;
 
+        //--------------------------------------------------------------------
+        // Date / time attribute or child element
+        //--------------------------------------------------------------------
+
+        //!
+        //! Set a date/time attribute of an XML element.
+        //! @param [in] name Attribute name.
+        //! @param [in] value Attribute value.
+        //!
+        void setDateTimeAttribute(const UString& name, const Time& value)
+        {
+            refAttribute(name).setDateTime(value);
+        }
+
         //!
         //! Get a date/time attribute of an XML element.
         //! @param [out] value Returned value of the attribute.
@@ -866,12 +994,54 @@ namespace ts::xml {
         bool getDateTimeAttribute(Time& value, const UString& name, bool required = false, const Time& def_value = Time()) const;
 
         //!
+        //! Get a date/time attribute in ISO 8601 representation of an XML element.
+        //! @param [out] value Returned value of the attribute.
+        //! @param [in] name Name of the attribute.
+        //! @param [in] required If true, generate an error if the attribute is not found.
+        //! @param [in] def_value Default value to return if the attribute is not present.
+        //! @return True on success, false on error.
+        //!
+        bool getISODateTimeAttribute(Time& value, const UString& name, bool required = false, const Time& def_value = Time()) const;
+
+        //!
+        //! Get a date/time child element in ISO 8601 representation.
+        //! @param [out] value Returned value of the attribute.
+        //! @param [in] name Name of the child to search.
+        //! @param [in] required If true, generate an error if the child is not found.
+        //! @param [in] def_value Default value to return if the attribute is not present.
+        //! @return True on success, false on error.
+        //!
+        bool getISODateTimeChild(Time& value, const UString& name, bool required = false, const Time& def_value = Time()) const;
+
+        //!
+        //! Set an optional date/time attribute of an XML element.
+        //! @param [in] name Attribute name.
+        //! @param [in] value Attribute value.
+        //!
+        void setOptionalDateTimeAttribute(const UString& name, const std::optional<Time>& value)
+        {
+            if (value.has_value()) {
+                refAttribute(name).setDateTime(value.value());
+            }
+        }
+
+        //!
         //! Get an optional date/time attribute of an XML element.
         //! @param [out] value Returned value of the attribute.
         //! @param [in] name Name of the attribute.
         //! @return True on success, false on error.
         //!
         bool getOptionalDateTimeAttribute(std::optional<Time>& value, const UString& name) const;
+
+        //!
+        //! Set a date (without hours) attribute of an XML element.
+        //! @param [in] name Attribute name.
+        //! @param [in] value Attribute value.
+        //!
+        void setDateAttribute(const UString& name, const Time& value)
+        {
+            refAttribute(name).setDate(value);
+        }
 
         //!
         //! Get a date (without hours) attribute of an XML element.
@@ -884,12 +1054,35 @@ namespace ts::xml {
         bool getDateAttribute(Time& value, const UString& name, bool required = false, const Time& def_value = Time()) const;
 
         //!
+        //! Set an optional date (xithout hours) attribute of an XML element.
+        //! @param [in] name Attribute name.
+        //! @param [in] value Attribute value.
+        //!
+        void setOptionalDateAttribute(const UString& name, const std::optional<Time>& value)
+        {
+            if (value.has_value()) {
+                refAttribute(name).setDate(value.value());
+            }
+        }
+
+        //!
         //! Get an optional date (without hours) attribute of an XML element.
         //! @param [out] value Returned value of the attribute.
         //! @param [in] name Name of the attribute.
         //! @return True on success, false on error.
         //!
         bool getOptionalDateAttribute(std::optional<Time>& value, const UString& name) const;
+
+        //!
+        //! Set a time attribute of an XML element in "hh:mm:ss" format.
+        //! @param [in] name Attribute name.
+        //! @param [in] value Attribute value.
+        //!
+        template <class Rep, class Period>
+        void setTimeAttribute(const UString& name, const cn::duration<Rep,Period>& value)
+        {
+            refAttribute(name).setTime(value);
+        }
 
         //!
         //! Get a time attribute of an XML element in "hh:mm:ss" format.
@@ -916,6 +1109,19 @@ namespace ts::xml {
         bool getTimeAttribute(cn::duration<Rep1,Period1>& value, const UString& name, bool required, const cn::duration<Rep2,Period2>& def_value) const;
 
         //!
+        //! Set an optional time attribute of an XML element in "hh:mm:ss" format.
+        //! @param [in] name Attribute name.
+        //! @param [in] value Attribute value.
+        //!
+        template <class Rep, class Period>
+        void setOptionalTimeAttribute(const UString& name, const std::optional<cn::duration<Rep,Period>>& value)
+        {
+            if (value.has_value()) {
+                refAttribute(name).setTime(value.value());
+            }
+        }
+
+        //!
         //! Get an optional time attribute of an XML element in "hh:mm:ss" format.
         //! @param [out] value Returned value of the attribute.
         //! @param [in] name Name of the attribute.
@@ -923,6 +1129,20 @@ namespace ts::xml {
         //!
         template <class Rep, class Period>
         bool getOptionalTimeAttribute(std::optional<cn::duration<Rep,Period>>& value, const UString& name) const;
+
+        //--------------------------------------------------------------------
+        // IP address and socket attribute or child element
+        //--------------------------------------------------------------------
+
+        //!
+        //! Set an IPv4 or IPv6 address attribute of an XML element.
+        //! @param [in] name Attribute name.
+        //! @param [in] value Attribute value.
+        //!
+        void setIPAttribute(const UString& name, const IPAddress& value)
+        {
+            setAttribute(name, value.toString());
+        }
 
         //!
         //! Get an IPv4 or IPv6 address attribute of an XML element in numerical format or host name.
@@ -945,6 +1165,16 @@ namespace ts::xml {
         bool getIPChild(IPAddress& value, const UString& name, bool required = false, const IPAddress& def_value = IPAddress()) const;
 
         //!
+        //! Set a MAC address attribute of an XML element in "x:x:x:x:x:x" format.
+        //! @param [in] name Attribute name.
+        //! @param [in] value Attribute value.
+        //!
+        void setMACAttribute(const UString& name, const MACAddress& value)
+        {
+            setAttribute(name, value.toString());
+        }
+
+        //!
         //! Get a MAC address attribute of an XML element in "x:x:x:x:x:x" format.
         //! @param [out] value Returned value of the attribute.
         //! @param [in] name Name of the attribute.
@@ -954,30 +1184,9 @@ namespace ts::xml {
         //!
         bool getMACAttribute(MACAddress& value, const UString& name, bool required = false, const MACAddress& def_value = MACAddress()) const;
 
-        //!
-        //! Get the list of all attribute names.
-        //! @param [out] names Returned list of all attribute names.
-        //!
-        void getAttributesNames(UStringList& names) const;
-
-        //!
-        //! Get the list of all attributes.
-        //! @param [out] attr Returned map of all attribute names (index in the map) and corresponding values.
-        //!
-        void getAttributes(std::map<UString,UString>& attr) const;
-
-        //!
-        //! Get the list of all attribute names, sorted by modification order.
-        //! The method is slower than getAttributesNames().
-        //! @param [out] names Returned list of all attribute names.
-        //!
-        void getAttributesNamesInModificationOrder(UStringList& names) const;
-
-        //!
-        //! Get the number of attributes in the element.
-        //! @return The number of attributes in the element.
-        //!
-        size_t getAttributesCount() const { return _attributes.size(); }
+        //--------------------------------------------------------------------
+        // Merging / sorting elements
+        //--------------------------------------------------------------------
 
         //!
         //! Recursively merge another element into this one.
@@ -995,6 +1204,10 @@ namespace ts::xml {
         //!
         void sort(const UString& name = UString());
 
+        //--------------------------------------------------------------------
+        // Inherited methods
+        //--------------------------------------------------------------------
+
         // Inherited from xml::Node.
         virtual Node* clone() const override;
         virtual void clear() override;
@@ -1008,7 +1221,6 @@ namespace ts::xml {
         // Inherited from xml::Node.
         virtual bool parseNode(TextParser& parser, const Node* parent) override;
 
-    private:
     private:
         // Attributes are stored indexed by name.
         using AttributeMap = std::map<UString, Attribute>;
@@ -1033,7 +1245,7 @@ template <typename INT, typename INT1, typename INT2, typename INT3>
     requires ts::int_enum<INT> && ts::int_enum<INT1> && ts::int_enum<INT2> && ts::int_enum<INT3>
 bool ts::xml::Element::getIntAttribute(INT& value, const UString& name, bool required, INT1 def_value, INT2 min_value, INT3 max_value) const
 {
-    const Attribute& attr(attribute(name, !required));
+    const Attribute& attr(attribute(name, required));
     if (!attr.isValid()) {
         // Attribute not present.
         value = INT(def_value);
@@ -1142,7 +1354,7 @@ template <typename INT, typename INT1>
     requires ts::int_enum<INT> && ts::int_enum<INT1>
 bool ts::xml::Element::getEnumAttribute(INT& value, const Names& definition, const UString& name, bool required, INT1 def_value) const
 {
-    const Attribute& attr(attribute(name, !required));
+    const Attribute& attr(attribute(name, required));
     if (!attr.isValid()) {
         // Attribute not present.
         value = INT(def_value);
@@ -1191,7 +1403,7 @@ template <typename FLT, typename FLT1, typename FLT2, typename FLT3>
     requires std::floating_point<FLT> && std::is_arithmetic_v<FLT1> && std::is_arithmetic_v<FLT2> && std::is_arithmetic_v<FLT3>
 bool ts::xml::Element::getFloatAttribute(FLT& value, const UString& name, bool required, FLT1 def_value, FLT2 min_value, FLT3 max_value) const
 {
-    const Attribute& attr(attribute(name, !required));
+    const Attribute& attr(attribute(name, required));
     if (!attr.isValid()) {
         // Attribute not present.
         value = FLT(def_value);

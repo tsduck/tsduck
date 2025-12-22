@@ -808,10 +808,10 @@ bool ts::SAT::beam_hopping_time_plan_info_type::fromXML(const xml::Element* elem
         time_of_application.fromXML(element, u"time_of_application") &&
         cycle_duration.fromXML(element, u"cycle_duration");
 
-    if (ok && element->findFirstChild(u"time_plan_mode_0", true)) {
+    if (ok && element->findFirstChild(u"time_plan_mode_0")) {
         time_plan_mode = 0;
         NCR_type newNCR;
-        const xml::Element* plan = element->findFirstChild(u"time_plan_mode_0", true);
+        const xml::Element* plan = element->findFirstChild(u"time_plan_mode_0");
 
         ok = newNCR.fromXML(plan, u"dwell_duration");
         if (ok) {
@@ -822,9 +822,9 @@ bool ts::SAT::beam_hopping_time_plan_info_type::fromXML(const xml::Element* elem
             on_time = newNCR;
         }
     }
-    else if (ok && element->findFirstChild(u"time_plan_mode_1", true)) {
+    else if (ok && element->findFirstChild(u"time_plan_mode_1")) {
         time_plan_mode = 1;
-        const xml::Element* plan = element->findFirstChild(u"time_plan_mode_1", true);
+        const xml::Element* plan = element->findFirstChild(u"time_plan_mode_1");
         ok = plan->getOptionalIntAttribute(current_slot, u"current_slot", 0, 0x7FFF);
         xml::ElementVector slots;
         ok &= plan->getChildren(slots, u"slot", 1, 0x7FFF);
@@ -851,10 +851,10 @@ bool ts::SAT::beam_hopping_time_plan_info_type::fromXML(const xml::Element* elem
             ok = false;
         }
     }
-    else if (ok && element->findFirstChild(u"time_plan_mode_2", true)) {
+    else if (ok && element->findFirstChild(u"time_plan_mode_2")) {
         time_plan_mode = 2;
         NCR_type newNCR;
-        const xml::Element* plan = element->findFirstChild(u"time_plan_mode_2", true);
+        const xml::Element* plan = element->findFirstChild(u"time_plan_mode_2");
 
         ok = newNCR.fromXML(plan, u"grid_size");
         if (ok) {

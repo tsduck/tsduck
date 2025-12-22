@@ -288,7 +288,7 @@ bool ts::AIT::analyzeXML(DuckContext& duck, const xml::Element* element)
     for (size_t index = 0; ok && index < children.size(); ++index) {
         Application application(this);
         ApplicationIdentifier identifier;
-        const xml::Element* id = children[index]->findFirstChild(u"application_identifier", true);
+        const xml::Element* id = children[index]->findFirstChild(u"application_identifier");
         xml::ElementVector others;
         UStringList allowed({ u"application_identifier" });
 

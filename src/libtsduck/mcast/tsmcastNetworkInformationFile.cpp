@@ -22,22 +22,18 @@ ts::mcast::NetworkInformationFile::NetworkInformationFile(Report& report, const 
     xml::Document doc(report);
     if (parseXML(doc, u"NetworkInformationFile", true)) {
         const xml::Element* root = doc.rootElement();
-        const xml::Element* e = nullptr;
+        const xml::Element* abn = nullptr;
 
         // Decode fixed elements.
-        UString time;
-        _valid = root->getTextChild(time, u"VersionUpdate", true, strict) &&
+        _valid = root->getISODateTimeChild(version_update, u"VersionUpdate", strict) &&
                  root->getTextChild(nif_type, u"NIFType", true, strict) &&
-                 ((e = root->findFirstChild(u"ActualBroadcastNetwork", !strict)) != nullptr || !strict) &&
-                 (e == nullptr || actual.parseXML(e, strict));
-        if (_valid) {
-            version_update.fromISO(time);
-        }
+                 ((abn = root->findFirstChild(u"ActualBroadcastNetwork", strict)) != nullptr || !strict) &&
+                 (abn == nullptr || actual.parseXML(abn, strict));
 
         // Decode all OtherBroadcastNetwork elements.
-        for (e = root->findFirstChild(u"OtherBroadcastNetwork", true); _valid && e != nullptr; e = e->findNextSibling(true)) {
+        for (auto& e : root->children(u"OtherBroadcastNetwork", &_valid)) {
             others.emplace_back();
-            _valid = others.back().parseXML(e, strict);
+            _valid = others.back().parseXML(&e, strict);
         }
     }
 }
@@ -60,14 +56,14 @@ bool ts::mcast::NetworkInformationFile::BroadcastNetwork::parseXML(const xml::El
               element->getIntChild(nip_network_id, u"NIPNetworkID", strict, 0, 1, 65280);
 
     streams.clear();
-    for (const xml::Element* e = element->findFirstChild(u"NIPStream", !strict); ok && e != nullptr; e = e->findNextSibling(true)) {
+    for (auto& e : element->children(u"NIPStream", &ok, strict ? 1 : 0)) {
         streams.emplace_back();
         auto& st(streams.back());
-        ok = e->getTextChild(st.link_layer_format, u"LinkLayerFormat", true, strict) &&
-             e->getTextChild(st.provider_name, u"NIPStreamProviderName", true, strict) &&
-             e->getIntChild(st.carrier_id, u"NIPCarrierID", strict) &&
-             e->getIntChild(st.link_id, u"NIPLinkID", strict) &&
-             e->getIntChild(st.service_id, u"NIPServiceID", strict);
+        ok = e.getTextChild(st.link_layer_format, u"LinkLayerFormat", true, strict) &&
+             e.getTextChild(st.provider_name, u"NIPStreamProviderName", true, strict) &&
+             e.getIntChild(st.carrier_id, u"NIPCarrierID", strict) &&
+             e.getIntChild(st.link_id, u"NIPLinkID", strict) &&
+             e.getIntChild(st.service_id, u"NIPServiceID", strict);
     }
 
     return ok;

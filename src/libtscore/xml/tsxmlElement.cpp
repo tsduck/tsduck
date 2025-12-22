@@ -8,6 +8,7 @@
 
 #include "tsxmlElement.h"
 #include "tsxmlText.h"
+#include "tsBase64.h"
 #include "tsFatal.h"
 
 
@@ -110,10 +111,95 @@ void ts::xml::Element::expandEnvironment(bool recurse)
 
 
 //----------------------------------------------------------------------------
+// Iterating over a constant list of XML elements
+//----------------------------------------------------------------------------
+
+// Iterator pre-decrement operator.
+ts::xml::Element::ConstElementIterator& ts::xml::Element::ConstElementIterator::operator--()
+{
+    assert(_set != nullptr);
+    if (_set->isValid()) {
+        // Iterating over associated set is valid, pre-decrement superclass.
+        --*static_cast<SuperClass*>(this);
+    }
+    else {
+        // Iterating over associated set has been invalidated, always point to end, will terminate iterations.
+        *static_cast<SuperClass*>(this) = _set->_elements.end();
+    }
+    return *this;
+}
+
+// Iterator pre-increment operator.
+ts::xml::Element::ConstElementIterator& ts::xml::Element::ConstElementIterator::operator++()
+{
+    assert(_set != nullptr);
+    if (_set->isValid()) {
+        // Iterating over associated set is valid, pre-increment superclass.
+        ++*static_cast<SuperClass*>(this);
+    }
+    else {
+        // Iterating over associated set has been invalidated, always point to end, will terminate iterations.
+        *static_cast<SuperClass*>(this) = _set->_elements.end();
+    }
+    return *this;
+}
+
+// Get the iterator to the beginning of the set.
+ts::xml::Element::ConstElementIterator ts::xml::Element::ConstElementSet::begin() const
+{
+    // If iteration is invalidated, return end() to prevent iteration.
+    return ConstElementIterator(*this, isValid() ? _elements.begin() : _elements.end());
+}
+
+// Get an iterable set of all children elements of a given name.
+ts::xml::Element::ConstElementSet ts::xml::Element::children(const UString& search_name, bool* valid_condition, size_t min_count, size_t max_count) const
+{
+    ConstElementSet set;
+
+    // If condition is already invalid, search nothing.
+    set._valid = valid_condition;
+    if (set.isValid()) {
+
+        // Search all matching children and stores them in the set.
+        for (const Element* child = firstChildElement(); child != nullptr; child = child->nextSiblingElement()) {
+            if (search_name.empty() || child->nameMatch(search_name)) {
+                set._elements.push_back(child);
+            }
+        }
+
+        // Check cardinality.
+        const size_t size = set._elements.size();
+        if (size < min_count || size > max_count) {
+            // Report error.
+            if (max_count == UNLIMITED) {
+                report().error(u"<%s>, line %d, contains %d <%s>, at least %d required", name(), lineNumber(), size, search_name, min_count);
+            }
+            else {
+                report().error(u"<%s>, line %d, contains %d <%s>, allowed %d to %d", name(), lineNumber(), size, search_name, min_count, max_count);
+            }
+            // Prevent iteration.
+            set._elements.clear();
+            // Enforce the set as "invalid", even without explicit valid_condition.
+            if (valid_condition != nullptr) {
+                *valid_condition = false;
+            }
+            else {
+                static const bool always_false = false;
+                set._valid = &always_false;
+            }
+        }
+    }
+
+    // Make sure we have only one return statement, at the end, to allow copy optimization on return.
+    return set;
+}
+
+
+//----------------------------------------------------------------------------
 // Find the first child element by name, case-insensitive.
 //----------------------------------------------------------------------------
 
-ts::xml::Element* ts::xml::Element::findFirstChild(const UString& name, bool silent)
+ts::xml::Element* ts::xml::Element::findFirstChild(const UString& name, bool required)
 {
     // Loop on all children.
     for (Element* child = firstChildElement(); child != nullptr; child = child->nextSiblingElement()) {
@@ -123,7 +209,7 @@ ts::xml::Element* ts::xml::Element::findFirstChild(const UString& name, bool sil
     }
 
     // Child node not found.
-    if (!silent) {
+    if (required) {
         report().error(u"Child node <%s> not found in <%s>, line %d", name, value(), lineNumber());
     }
     return nullptr;
@@ -134,7 +220,7 @@ ts::xml::Element* ts::xml::Element::findFirstChild(const UString& name, bool sil
 // Find the next sibling element by name, case-insensitive.
 //----------------------------------------------------------------------------
 
-ts::xml::Element* ts::xml::Element::findNextSibling(const UString& name, bool silent)
+ts::xml::Element* ts::xml::Element::findNextSibling(const UString& name, bool required)
 {
     // Loop on all sibling.
     for (Element* child = nextSiblingElement(); child != nullptr; child = child->nextSiblingElement()) {
@@ -144,7 +230,7 @@ ts::xml::Element* ts::xml::Element::findNextSibling(const UString& name, bool si
     }
 
     // Sibling node not found.
-    if (!silent) {
+    if (required) {
         report().error(u"Next node <%s> not found, line %d", name, lineNumber());
     }
     return nullptr;
@@ -466,14 +552,14 @@ ts::xml::Attribute& ts::xml::Element::refAttribute(const UString& name)
 // Get an attribute.
 //----------------------------------------------------------------------------
 
-const ts::xml::Attribute& ts::xml::Element::attribute(const UString& attribute_name, bool silent) const
+const ts::xml::Attribute& ts::xml::Element::attribute(const UString& attribute_name, bool required) const
 {
     const auto it = findAttribute(attribute_name);
     if (it != _attributes.end()) {
         // Found the real attribute.
         return it->second;
     }
-    if (!silent) {
+    if (required) {
         report().error(u"attribute '%s' not found in <%s>, line %d", attribute_name, name(), lineNumber());
     }
     // Return a reference to a static invalid attribute.
@@ -487,7 +573,7 @@ const ts::xml::Attribute& ts::xml::Element::attribute(const UString& attribute_n
 
 bool ts::xml::Element::hasAttribute(const UString& name, const UString& value, bool similar) const
 {
-    const Attribute& attr(attribute(name, true));
+    const Attribute& attr(attribute(name));
     std::intmax_t a = 0, b = 0;
     if (!attr.isValid()) {
         // Attribute not present.
@@ -519,7 +605,7 @@ bool ts::xml::Element::getAttribute(UString& value,
                                     size_t min_size,
                                     size_t max_size) const
 {
-    const Attribute& attr(attribute(name, !required));
+    const Attribute& attr(attribute(name, required));
     if (!attr.isValid()) {
         // Attribute not present.
         value = def_value;
@@ -534,12 +620,12 @@ bool ts::xml::Element::getAttribute(UString& value,
 
         // Incorrect value size.
         if (max_size == UNLIMITED) {
-            report().error(u"Incorrect value for attribute '%s' in <%s>, line %d, contains %d characters, at least %d required",
+            report().error(u"incorrect value for attribute '%s' in <%s>, line %d, contains %d characters, at least %d required",
                            name, this->name(), attr.lineNumber(), value.length(), min_size);
             return false;
         }
         else {
-            report().error(u"Incorrect value for attribute '%s' in <%s>, line %d, contains %d characters, allowed %d to %d",
+            report().error(u"oncorrect value for attribute '%s' in <%s>, line %d, contains %d characters, allowed %d to %d",
                            name, this->name(), attr.lineNumber(), value.length(), min_size, max_size);
             return false;
         }
@@ -567,6 +653,62 @@ bool ts::xml::Element::getOptionalAttribute(std::optional<UString>& value, const
     }
 
     return ok;
+}
+
+
+//----------------------------------------------------------------------------
+// Set a Base64-encoded attribute.
+//----------------------------------------------------------------------------
+
+void ts::xml::Element::setBase64Attribute(const UString& name, const void* data, size_t size, bool only_not_empty)
+{
+    // Filter incorrect parameters.
+    if (data == nullptr) {
+        data = "";
+        size = 0;
+    }
+
+    // Do nothing if empty.
+    if (size > 0 || !only_not_empty) {
+        setAttribute(name, Base64::Encoded(data, size));
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Get a Base64-encoded attribute.
+//----------------------------------------------------------------------------
+
+bool ts::xml::Element::getBase64Attribute(ByteBlock& data, const UString& name, bool required, size_t min_size, size_t max_size) const
+{
+    data.clear();
+
+    // Get the string version of the attribute.
+    UString str;
+    if (!getAttribute(str, name, required)) {
+        return false;
+    }
+
+    // Decode Base64.
+    if (!Base64::Decode(data, str)) {
+        report().error(u"invalid Base-64 value for attribute '%s' in <%s>, line %d", name, this->name(), lineNumber());
+        return false;
+    }
+
+    // Check returned size
+    if (data.size() >= min_size && data.size() <= max_size) {
+        return true;
+    }
+    else if (max_size == UNLIMITED) {
+        report().error(u"invalid value for attribute '%s' in <%s>, line %d, contains %d bytes, at least %d required",
+                       name, this->name(), lineNumber(), data.size(), min_size);
+        return false;
+    }
+    else {
+        report().error(u"invalid value for attribute '%s' in <%s>, line %d, contains %d bytes, allowed %d to %d",
+                       name, this->name(), lineNumber(), data.size(), min_size, max_size);
+        return false;
+    }
 }
 
 
@@ -626,6 +768,7 @@ bool ts::xml::Element::getOptionalBoolAttribute(std::optional<bool>& value, cons
 // Get a date/time attribute of an XML element.
 //----------------------------------------------------------------------------
 
+// Get a date/time attribute of an XML element.
 bool ts::xml::Element::getDateTimeAttribute(Time& value, const UString& name, bool required, const Time& def_value) const
 {
     UString str;
@@ -645,6 +788,47 @@ bool ts::xml::Element::getDateTimeAttribute(Time& value, const UString& name, bo
     return ok;
 }
 
+// Get a date/time attribute in ISO 8601 representation of an XML element.
+bool ts::xml::Element::getISODateTimeAttribute(Time& value, const UString& name, bool required, const Time& def_value) const
+{
+    UString str;
+    if (!getAttribute(str, name, required)) {
+        return false;
+    }
+    if (!required && str.empty()) {
+        value = def_value;
+        return true;
+    }
+
+    // Analyze the time string.
+    const bool ok = value.fromISO(str);
+    if (!ok) {
+        report().error(u"'%s' is not a valid ISO-8601 date/time for attribute '%s' in <%s>, line %d", str, name, this->name(), lineNumber());
+    }
+    return ok;
+}
+
+// Get a date/time child element in ISO 8601 representation.
+bool ts::xml::Element::getISODateTimeChild(Time& value, const UString& name, bool required , const Time& def_value) const
+{
+    UString str;
+    if (!getTextChild(str, name, true, required)) {
+        return false;
+    }
+    if (!required && str.empty()) {
+        value = def_value;
+        return true;
+    }
+
+    // Analyze the time string.
+    const bool ok = value.fromISO(str);
+    if (!ok) {
+        report().error(u"'%s' is not a valid ISO-8601 date/time for <%s> in <%s>, line %d", str, name, this->name(), lineNumber());
+    }
+    return ok;
+}
+
+// Get an optional date/time attribute of an XML element.
 bool ts::xml::Element::getOptionalDateTimeAttribute(std::optional<Time>& value, const UString& name) const
 {
     if (!hasAttribute(name)) {
@@ -842,7 +1026,7 @@ bool ts::xml::Element::merge(Element* other, MergeAttributes attr_options)
     xml::Element* elem = nullptr;
     while ((elem = other->firstChildElement()) != nullptr) {
         // We need to merge its content with an element of the same name in the main.
-        xml::Element* main = findFirstChild(elem->name(), true);
+        xml::Element* main = findFirstChild(elem->name());
         if (main == nullptr) {
             // The tag did not exist in the main element, simply move is here.
             elem->reparent(this);
@@ -909,7 +1093,7 @@ void ts::xml::Element::print(TextFormatter& output, bool keep_node_open) const
 
     // Loop on all attributes.
     for (const auto& atname : names) {
-        const Attribute& attr(attribute(atname));
+        const Attribute& attr(attribute(atname, true));
         output << " " << attr.name() << "=" << attr.formattedValue(tweaks());
     }
 

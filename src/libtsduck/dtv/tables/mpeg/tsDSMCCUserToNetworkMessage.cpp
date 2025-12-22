@@ -707,7 +707,7 @@ bool ts::DSMCCUserToNetworkMessage::analyzeXML(DuckContext& duck, const xml::Ele
 
     if (header.message_id == DSMCC_MSGID_DSI) {
 
-        const xml::Element* dsi_element = element->findFirstChild(u"DSI", false);
+        const xml::Element* dsi_element = element->findFirstChild(u"DSI", true);
         if (dsi_element == nullptr) {
             return false;
         }
@@ -715,7 +715,7 @@ bool ts::DSMCCUserToNetworkMessage::analyzeXML(DuckContext& duck, const xml::Ele
         ok = dsi_element->getHexaTextChild(server_id, u"server_id") &&
              compatibility_descriptor.fromXML(duck, dsi_element, false);
 
-        const xml::Element* ior_element = dsi_element->findFirstChild(u"IOR", false);
+        const xml::Element* ior_element = dsi_element->findFirstChild(u"IOR", true);
         if (ior_element == nullptr) {
             return false;
         }
@@ -731,7 +731,7 @@ bool ts::DSMCCUserToNetworkMessage::analyzeXML(DuckContext& duck, const xml::Ele
                  profile_elements[it]->getIntAttribute(tagged_profile.profile_data_byte_order, u"profile_data_byte_order", true);
 
             if (tagged_profile.profile_id_tag == DSMCC_TAG_BIOP) {  // TAG_BIOP (BIOP Profile Body)
-                const xml::Element* biop_profile_body_element = profile_elements[it]->findFirstChild(u"BIOP_profile_body", false);
+                const xml::Element* biop_profile_body_element = profile_elements[it]->findFirstChild(u"BIOP_profile_body", true);
                 if (biop_profile_body_element == nullptr) {
                     return false;
                 }
@@ -746,7 +746,7 @@ bool ts::DSMCCUserToNetworkMessage::analyzeXML(DuckContext& duck, const xml::Ele
 
                     switch (liteComponent.component_id_tag) {
                         case DSMCC_TAG_OBJECT_LOCATION: {  // TAG_ObjectLocation
-                            const xml::Element* biop_object_location_element = lite_component_elements[it2]->findFirstChild(u"BIOP_object_location", false);
+                            const xml::Element* biop_object_location_element = lite_component_elements[it2]->findFirstChild(u"BIOP_object_location", true);
                             if (biop_object_location_element == nullptr) {
                                 return false;
                             }
@@ -785,7 +785,7 @@ bool ts::DSMCCUserToNetworkMessage::analyzeXML(DuckContext& duck, const xml::Ele
                 }
             }
             else if (tagged_profile.profile_id_tag == DSMCC_TAG_LITE_OPTIONS) {  // TODO: TAG_LITE_OPTIONS (Lite Options Profile Body)
-                const xml::Element* lite_options_profile_body_element = profile_elements[it]->findFirstChild(u"Lite_options_profile_body", false);
+                const xml::Element* lite_options_profile_body_element = profile_elements[it]->findFirstChild(u"Lite_options_profile_body", true);
                 if (lite_options_profile_body_element == nullptr) {
                     return false;
                 }
@@ -796,7 +796,7 @@ bool ts::DSMCCUserToNetworkMessage::analyzeXML(DuckContext& duck, const xml::Ele
                 }
             }
             else {  // Any other Profile Type
-                const xml::Element* unknown_profile_body_element = profile_elements[it]->findFirstChild(u"Unknown_profile_body", false);
+                const xml::Element* unknown_profile_body_element = profile_elements[it]->findFirstChild(u"Unknown_profile_body", true);
                 if (unknown_profile_body_element == nullptr) {
                     return false;
                 }
@@ -813,7 +813,7 @@ bool ts::DSMCCUserToNetworkMessage::analyzeXML(DuckContext& duck, const xml::Ele
         }
     }
     else if (header.message_id == DSMCC_MSGID_DII) {
-        const xml::Element* dii_element = element->findFirstChild(u"DII", false);
+        const xml::Element* dii_element = element->findFirstChild(u"DII", true);
         if (dii_element == nullptr) {
             return false;
         }

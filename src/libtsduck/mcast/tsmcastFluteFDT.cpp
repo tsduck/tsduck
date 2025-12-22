@@ -8,7 +8,6 @@
 
 #include "tsmcastFluteFDT.h"
 #include "tsmcast.h"
-#include "tsBase64.h"
 #include "tsxmlDocument.h"
 #include "tsxmlElement.h"
 
@@ -43,22 +42,20 @@ ts::mcast::FluteFDT::FluteFDT(Report&               report,
         static const Time origin(1900, 1, 1, 0, 0);
         expires = origin + cn::seconds(expires_int);
 
-        for (const xml::Element* e = root->findFirstChild(u"File", true); _valid && e != nullptr; e = e->findNextSibling(true)) {
+        for (auto& e : root->children(u"File", &_valid, 1)) {
             File& file(files.emplace_back());
-            UString md5_base64;
-            _valid = e->getAttribute(file.content_location, u"Content-Location", true) &&
-                     e->getIntAttribute(file.toi, u"TOI", true) &&
-                     e->getIntAttribute(file.content_length, u"Content-Length") &&
-                     e->getIntAttribute(file.transfer_length, u"Transfer-Length") &&
-                     e->getAttribute(file.content_type, u"Content-Type") &&
-                     e->getAttribute(file.content_encoding, u"Content-Encoding") &&
-                     e->getAttribute(md5_base64, u"Content-MD5") &&
-                     Base64::Decode(file.content_md5, md5_base64) &&
-                     e->getIntAttribute(file.fec_encoding_id, u"FEC-OTI-FEC-Encoding-ID") &&
-                     e->getIntAttribute(file.fec_instance_id, u"FEC-OTI-FEC-Instance-ID") &&
-                     e->getIntAttribute(file.max_source_block_length, u"FEC-OTI-Maximum-Source-Block-Length") &&
-                     e->getIntAttribute(file.encoding_symbol_length, u"FEC-OTI-Encoding-Symbol-Length") &&
-                     e->getIntAttribute(file.max_encoding_symbols, u"FEC-OTI-Max-Number-of-Encoding-Symbols");
+            _valid = e.getAttribute(file.content_location, u"Content-Location", true) &&
+                     e.getIntAttribute(file.toi, u"TOI", true) &&
+                     e.getIntAttribute(file.content_length, u"Content-Length") &&
+                     e.getIntAttribute(file.transfer_length, u"Transfer-Length") &&
+                     e.getAttribute(file.content_type, u"Content-Type") &&
+                     e.getAttribute(file.content_encoding, u"Content-Encoding") &&
+                     e.getBase64Attribute(file.content_md5, u"Content-MD5") &&
+                     e.getIntAttribute(file.fec_encoding_id, u"FEC-OTI-FEC-Encoding-ID") &&
+                     e.getIntAttribute(file.fec_instance_id, u"FEC-OTI-FEC-Instance-ID") &&
+                     e.getIntAttribute(file.max_source_block_length, u"FEC-OTI-Maximum-Source-Block-Length") &&
+                     e.getIntAttribute(file.encoding_symbol_length, u"FEC-OTI-Encoding-Symbol-Length") &&
+                     e.getIntAttribute(file.max_encoding_symbols, u"FEC-OTI-Max-Number-of-Encoding-Symbols");
         }
     }
 

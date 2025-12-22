@@ -145,7 +145,7 @@ void ts::AbstractTable::fromXML(DuckContext& duck, const xml::Element* element)
 
     // Add the attribute element.
     if (isValid()) {
-        const xml::Element* meta = element->findFirstChild(u"metadata", true);
+        const xml::Element* meta = element->findFirstChild(u"metadata");
         if (meta != nullptr) {
             meta->getAttribute(_attribute, u"attribute");
         }
@@ -156,7 +156,7 @@ ts::xml::Element* ts::AbstractTable::GetOrCreateMetadata(xml::Element* element)
 {
     xml::Element* meta = nullptr;
     if (element != nullptr) {
-        meta = element->findFirstChild(u"metadata", true);
+        meta = element->findFirstChild(u"metadata");
         if (meta == nullptr) {
             // Make sure that the <metadata> is always in first position in the XML structure.
             meta = new xml::Element(element, u"metadata", false);

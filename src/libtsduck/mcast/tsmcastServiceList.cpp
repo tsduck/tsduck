@@ -32,19 +32,19 @@ ts::mcast::ServiceList::ServiceList(Report& report, const FluteFile& file, bool 
         _valid = root->getTextChild(list_name, u"Name", true, strict) &&
                  root->getTextChild(provider_name, u"ProviderName", true, strict);
 
-        for (const xml::Element* e = root->findFirstChild(u"Service", true); _valid && e != nullptr; e = e->findNextSibling(true)) {
-            services.emplace_back(e, false, strict);
+        for (auto& e : root->children(u"Service", &_valid)) {
+            services.emplace_back(&e, false, strict);
             _valid = services.back().valid;
         }
 
-        for (const xml::Element* e = root->findFirstChild(u"TestService", true); _valid && e != nullptr; e = e->findNextSibling(true)) {
-            services.emplace_back(e, true, strict);
+        for (auto& e : root->children(u"TestService", &_valid)) {
+            services.emplace_back(&e, true, strict);
             _valid = services.back().valid;
         }
 
-        for (const xml::Element* e1 = root->findFirstChild(u"LCNTableList", true); _valid && e1 != nullptr; e1 = e1->findNextSibling(true)) {
-            for (const xml::Element* e2 = e1->findFirstChild(u"LCNTable"); _valid && e2 != nullptr; e2 = e2->findNextSibling(true)) {
-                lcn_tables.emplace_back(e2, strict);
+        for (auto& e1 : root->children(u"LCNTableList", &_valid)) {
+            for (auto& e2 : e1.children(u"LCNTable", &_valid)) {
+                lcn_tables.emplace_back(&e2, strict);
                 _valid = lcn_tables.back().valid;
             }
         }
@@ -64,13 +64,13 @@ ts::mcast::ServiceList::LCNTable::LCNTable(const xml::Element* element, bool str
 {
     if (element != nullptr) {
         valid = element->getBoolAttribute(preserve_broadcast_lcn, u"preserveBroadcastLCN");
-        for (const xml::Element* e = element->findFirstChild(u"LCN", true); valid && e != nullptr; e = e->findNextSibling(true)) {
+        for (auto& e : element->children(u"LCN", &valid)) {
             lcns.emplace_back();
             auto& lcn(lcns.back());
-            valid = e->getBoolAttribute(lcn.visible, u"visible", false, true) &&
-                    e->getBoolAttribute(lcn.selectable, u"selectable", false, true) &&
-                    e->getIntAttribute(lcn.channel_number, u"channelNumber", strict) &&
-                    e->getAttribute(lcn.service_ref, u"serviceRef", strict);
+            valid = e.getBoolAttribute(lcn.visible, u"visible", false, true) &&
+                    e.getBoolAttribute(lcn.selectable, u"selectable", false, true) &&
+                    e.getIntAttribute(lcn.channel_number, u"channelNumber", strict) &&
+                    e.getAttribute(lcn.service_ref, u"serviceRef", strict);
         }
     }
 }
@@ -99,21 +99,21 @@ ts::mcast::ServiceList::ServiceType::ServiceType(const xml::Element* element, bo
                 element->getTextChild(provider_name, u"ProviderName", true, strict);
 
         // Service type is optional.
-        if ((e1 = element->findFirstChild(u"ServiceType", true)) != nullptr) {
+        if ((e1 = element->findFirstChild(u"ServiceType")) != nullptr) {
             valid = e1->getAttribute(service_type, u"href");
         }
 
         // Loop on all "service instances" (various places where the same service is available).
-        for (const xml::Element* e = element->findFirstChild(u"ServiceInstance", true); valid && e != nullptr; e = e->findNextSibling(true)) {
+        for (auto& e : element->children(u"ServiceInstance", &valid)) {
             instances.emplace_back();
             auto& inst(instances.back());
-            valid = e->getIntAttribute(inst.priority, u"priority") &&
-                    e->getAttribute(inst.id, u"id") &&
-                    e->getAttribute(inst.lang, u"lang");
+            valid = e.getIntAttribute(inst.priority, u"priority") &&
+                    e.getAttribute(inst.id, u"id") &&
+                    e.getAttribute(inst.lang, u"lang");
 
             // Try to find a playlist in <IdentifierBasedDeliveryParameters>.
             if (valid &&
-                (e1 = e->findFirstChild(u"IdentifierBasedDeliveryParameters", true)) != nullptr)
+                (e1 = e.findFirstChild(u"IdentifierBasedDeliveryParameters")) != nullptr)
             {
                 valid = e1->getText(inst.media_params, true) &&
                         e1->getAttribute(inst.media_params_type, u"contentType");
@@ -122,8 +122,8 @@ ts::mcast::ServiceList::ServiceType::ServiceType(const xml::Element* element, bo
             // Otherwise, try to find a manifest in <DASHDeliveryParameters>.
             if (valid &&
                 inst.media_params.empty() &&
-                (e1 = e->findFirstChild(u"DASHDeliveryParameters", true)) != nullptr &&
-                (e1 = e1->findFirstChild(u"UriBasedLocation", true)) != nullptr)
+                (e1 = e.findFirstChild(u"DASHDeliveryParameters")) != nullptr &&
+                (e1 = e1->findFirstChild(u"UriBasedLocation")) != nullptr)
             {
                 e1->getTextChild(inst.media_params, u"URI", strict);
                 e1->getAttribute(inst.media_params_type, u"contentType");
@@ -133,10 +133,10 @@ ts::mcast::ServiceList::ServiceType::ServiceType(const xml::Element* element, bo
             // Not sure it is valid but it appeared in at least one example.
             if (valid &&
                 inst.media_params.empty() &&
-                (e1 = e->findFirstChild(u"OtherDeliveryParameters", true)) != nullptr &&
+                (e1 = e.findFirstChild(u"OtherDeliveryParameters")) != nullptr &&
                 e1->getAttribute(ext_name, u"extensionName") &&
                 ext_name == u"vnd.apple.mpegurl" &&
-                (e1 = e1->findFirstChild(u"UriBasedLocation", true)) != nullptr)
+                (e1 = e1->findFirstChild(u"UriBasedLocation")) != nullptr)
             {
                 e1->getTextChild(inst.media_params, u"URI", strict);
                 e1->getAttribute(inst.media_params_type, u"contentType");

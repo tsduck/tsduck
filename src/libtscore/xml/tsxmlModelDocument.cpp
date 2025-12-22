@@ -98,14 +98,14 @@ bool ts::xml::ModelDocument::validateElement(const Element* model, const Element
     }
 
     // Check that all children elements in doc exist in model.
-    for (const Element* docChild = doc->firstChildElement(); docChild != nullptr; docChild = docChild->nextSiblingElement()) {
-        const Element* modelChild = findModelElement(model, docChild->name());
-        if (modelChild == nullptr) {
+    for (auto& doc_child : doc->children()) {
+        const Element* model_child = findModelElement(model, doc_child.name());
+        if (model_child == nullptr) {
             // The corresponding node does not exist in the model.
-            report().error(u"unexpected node <%s> in <%s>, line %d", docChild->name(), doc->name(), docChild->lineNumber());
+            report().error(u"unexpected node <%s> in <%s>, line %d", doc_child.name(), doc->name(), doc_child.lineNumber());
             success = false;
         }
-        else if (!validateElement(modelChild, docChild)) {
+        else if (!validateElement(model_child, &doc_child)) {
             success = false;
         }
     }
@@ -135,7 +135,7 @@ const ts::xml::Element* ts::xml::ModelDocument::findModelElement(const Element* 
             // The model contains a reference to a child of the root of the document.
             // Example: <_any in="_descriptors"/> => child is the <_any> node.
             // Find the reference name, "_descriptors" in the example.
-            const UString refName(child->attribute(TSXML_REF_ATTR).value());
+            const UString refName(child->attribute(TSXML_REF_ATTR, true).value());
             if (refName.empty()) {
                 report().error(u"invalid XML model, missing or empty attribute 'in' for <%s> at line %d", child->name(), child->lineNumber());
             }
@@ -143,10 +143,10 @@ const ts::xml::Element* ts::xml::ModelDocument::findModelElement(const Element* 
                 // Locate the referenced node inside the model root.
                 const Document* document = elem->document();
                 const Element* root = document == nullptr ? nullptr : document->rootElement();
-                const Element* refElem = root == nullptr ? nullptr : root->findFirstChild(refName, true);
+                const Element* refElem = root == nullptr ? nullptr : root->findFirstChild(refName);
                 if (refElem == nullptr) {
                     // The referenced element does not exist.
-                    report().error(u"invalid XML model, <%s> not found in model root, referenced in line %d", refName, child->attribute(TSXML_REF_ATTR).lineNumber());
+                    report().error(u"invalid XML model, <%s> not found in model root, referenced in line %d", refName, child->attribute(TSXML_REF_ATTR, true).lineNumber());
                 }
                 else {
                     // Check if the child is found inside the referenced element.

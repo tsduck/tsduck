@@ -24,32 +24,29 @@ ts::mcast::ServiceInformationFile::ServiceInformationFile(Report& report, const 
         const xml::Element* root = doc.rootElement();
 
         // Decode fixed elements.
-        UString time;
-        _valid = root->getTextChild(time, u"VersionUpdate", true, strict) && root->getTextChild(provider_name, u"NIPNetworkProviderName", true, strict);
-        if (_valid) {
-            version_update.fromISO(time);
-        }
+        _valid = root->getISODateTimeChild(version_update, u"VersionUpdate", strict) &&
+                 root->getTextChild(provider_name, u"NIPNetworkProviderName", true, strict);
 
         // Decode all BroadcastMediaStream elements.
-        for (const xml::Element* e = root->findFirstChild(u"BroadcastMediaStream", !strict); _valid && e != nullptr; e = e->findNextSibling(true)) {
+        for (auto& e : root->children(u"BroadcastMediaStream", &_valid, strict ? 1 : 0)) {
             streams.emplace_back();
             auto& st(streams.back());
             const xml::Element* bmedia = nullptr;
-            _valid = e->getIntChild(st.stream_id.network_id, u"NIPNetworkID", strict, 0, 1, 65280) &&
-                     e->getIntChild(st.stream_id.carrier_id, u"NIPCarrierID", strict) &&
-                     e->getIntChild(st.stream_id.link_id, u"NIPLinkID", strict) &&
-                     e->getIntChild(st.stream_id.service_id, u"NIPServiceID", strict) &&
-                     ((bmedia = e->findFirstChild(u"BroadcastMedia", !strict)) != nullptr || !strict);
+            _valid = e.getIntChild(st.stream_id.network_id, u"NIPNetworkID", strict, 0, 1, 65280) &&
+                     e.getIntChild(st.stream_id.carrier_id, u"NIPCarrierID", strict) &&
+                     e.getIntChild(st.stream_id.link_id, u"NIPLinkID", strict) &&
+                     e.getIntChild(st.stream_id.service_id, u"NIPServiceID", strict) &&
+                     ((bmedia = e.findFirstChild(u"BroadcastMedia", strict)) != nullptr || !strict);
             if (_valid && bmedia != nullptr) {
-                for (const xml::Element* e1 = bmedia->findFirstChild(u"URI", true); _valid && e1 != nullptr; e1 = e1->findNextSibling(true)) {
+                for (auto& e1 : bmedia->children(u"URI", &_valid)) {
                     st.uri.emplace_back();
-                    _valid = e1->getText(st.uri.back(), true);
+                    _valid = e1.getText(st.uri.back(), true);
                 }
-                for (const xml::Element* e1 = bmedia->findFirstChild(u"InteractiveApplications", true); _valid && e1 != nullptr; e1 = e1->findNextSibling(true)) {
+                for (auto& e1 : bmedia->children(u"InteractiveApplications", &_valid)) {
                     st.apps.emplace_back();
-                    _valid = e1->getTextChild(st.apps.back().type, u"ApplicationType", true, strict) &&
-                             e1->getTextChild(st.apps.back().uri, u"ApplicationURI", true, strict) &&
-                             e1->getIntChild(st.apps.back().id, u"ApplicationID", strict);
+                    _valid = e1.getTextChild(st.apps.back().type, u"ApplicationType", true, strict) &&
+                             e1.getTextChild(st.apps.back().uri, u"ApplicationURI", true, strict) &&
+                             e1.getIntChild(st.apps.back().id, u"ApplicationID", strict);
                 }
             }
         }

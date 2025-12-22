@@ -47,7 +47,7 @@ bool ts::mcast::GatewayConfigurationTransportSession::parseXML(const xml::Elemen
     const xml::Element* e = nullptr;
     bool ok = element->getAttribute(service_class, u"serviceClass", false) &&
               element->getAttribute(transport_security, u"transportSecurity", false, u"none") &&
-              ((e = element->findFirstChild(u"BitRate", !strict)) != nullptr || !strict) &&
+              ((e = element->findFirstChild(u"BitRate", strict)) != nullptr || !strict) &&
               protocol.parseXML(element, strict);
 
     if (ok && e != nullptr) {
@@ -57,59 +57,59 @@ bool ts::mcast::GatewayConfigurationTransportSession::parseXML(const xml::Elemen
 
     if (ok) {
         // The attribute tags contains a space-separated list of URL's.
-        element->attribute(u"tags", true).value().split(tags, u' ', true, true);
+        element->attribute(u"tags").value().split(tags, u' ', true, true);
     }
 
-    if (ok && (e = element->findFirstChild(u"UnicastRepairParameters", true))) {
+    if (ok && (e = element->findFirstChild(u"UnicastRepairParameters")) != nullptr) {
         ok = e->getAttribute(repair_obj_base_uri, u"transportObjectBaseURI", false) &&
              e->getChronoAttribute(repair_recv_timeout, u"transportObjectReceptionTimeout", strict) &&
              e->getChronoAttribute(repair_fixed_backoff, u"fixedBackOffPeriod", false) &&
              e->getChronoAttribute(repair_rand_backoff, u"randomBackOffPeriod", false);
-        for (const xml::Element* bu = e->findFirstChild(u"BaseURL", true); ok && bu != nullptr; bu = bu->findNextSibling(true)) {
+        for (auto& bu : e->children(u"BaseURL", &ok)) {
             repair_base_url.emplace_back();
-            ok = bu->getText(repair_base_url.back().uri, strict) &&
-                 bu->getIntAttribute(repair_base_url.back().relative_weight, u"relativeWeight", false, 1);
+            ok = bu.getText(repair_base_url.back().uri, strict) &&
+                 bu.getIntAttribute(repair_base_url.back().relative_weight, u"relativeWeight", false, 1);
         }
     }
 
-    if (ok && (e = element->findFirstChild(u"ObjectCarousel", true))) {
+    if (ok && (e = element->findFirstChild(u"ObjectCarousel")) != nullptr) {
         ok = e->getIntChild(carousel_content_size, u"aggregateContentSize", false) &&
              e->getIntChild(carousel_transport_size, u"aggregateTransportSize", false);
-        for (const xml::Element* e1 = e->findFirstChild(u"PresentationManifests", true); ok && e1 != nullptr; e1 = e1->findNextSibling(true)) {
+        for (auto& e1 : e->children(u"PresentationManifests", &ok)) {
             carousel_manifests.emplace_back();
-            ok = carousel_manifests.back().parseXML(e1, strict);
+            ok = carousel_manifests.back().parseXML(&e1, strict);
         }
-        for (const xml::Element* e1 = e->findFirstChild(u"InitSegments", true); ok && e1 != nullptr; e1 = e1->findNextSibling(true)) {
+        for (auto& e1 : e->children(u"InitSegments", &ok)) {
             carousel_segment.emplace_back();
-            ok = carousel_segment.back().parseXML(e1, strict);
+            ok = carousel_segment.back().parseXML(&e1, strict);
         }
-        for (const xml::Element* e1 = e->findFirstChild(u"ResourceLocator", true); ok && e1 != nullptr; e1 = e1->findNextSibling(true)) {
+        for (auto& e1 : e->children(u"ResourceLocator", &ok)) {
             resource_locator.emplace_back();
-            ok = e1->getText(resource_locator.back().uri, true) &&
-                 e1->getBoolAttribute(resource_locator.back().compression_preferred, u"compressionPreferred") &&
-                 e1->getAttribute(resource_locator.back().target_acquisition_latency, u"targetAcquisitionLatency") &&
-                 e1->getAttribute(resource_locator.back().revalidation_period, u"revalidationPeriod");
+            ok = e1.getText(resource_locator.back().uri, true) &&
+                 e1.getBoolAttribute(resource_locator.back().compression_preferred, u"compressionPreferred") &&
+                 e1.getAttribute(resource_locator.back().target_acquisition_latency, u"targetAcquisitionLatency") &&
+                 e1.getAttribute(resource_locator.back().revalidation_period, u"revalidationPeriod");
         }
     }
 
-    for (e = element->findFirstChild(u"EndpointAddress", true); ok && e != nullptr; e = e->findNextSibling(true)) {
+    for (auto& e1 : element->children(u"EndpointAddress", &ok)) {
         endpoints.emplace_back();
-        ok = endpoints.back().parseXML(e, strict);
+        ok = endpoints.back().parseXML(&e1, strict);
     }
 
-    for (e = element->findFirstChild(u"GatewayConfigurationMacro", true); ok && e != nullptr; e = e->findNextSibling(true)) {
+    for (auto& e1 : element->children(u"GatewayConfigurationMacro", &ok)) {
         UString key, value;
-        ok = e->getAttribute(key, u"key", true) && e->getText(value, true);
+        ok = e1.getAttribute(key, u"key", true) && e1.getText(value, true);
         macros.insert(std::make_pair(key, value));
     }
 
-    for (e = element->findFirstChild(u"ForwardErrorCorrectionParameters", true); ok && e != nullptr; e = e->findNextSibling(true)) {
+    for (auto& e1 : element->children(u"ForwardErrorCorrectionParameters", &ok)) {
         fec.emplace_back();
-        ok = e->getTextChild(fec.back().scheme_identifier, u"SchemeIdentifier", true, strict) &&
-             e->getIntChild(fec.back().overhead_percentage, u"OverheadPercentage", strict);
-        for (const xml::Element* ep = e->findFirstChild(u"EndpointAddress", true); ok && ep != nullptr; ep = ep->findNextSibling(true)) {
+        ok = e1.getTextChild(fec.back().scheme_identifier, u"SchemeIdentifier", true, strict) &&
+             e1.getIntChild(fec.back().overhead_percentage, u"OverheadPercentage", strict);
+        for (auto& ep : e1.children(u"EndpointAddress", &ok)) {
             fec.back().endpoints.emplace_back();
-            ok = fec.back().endpoints.back().parseXML(e, strict);
+            ok = fec.back().endpoints.back().parseXML(&ep, strict);
         }
     }
 

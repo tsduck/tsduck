@@ -43,6 +43,7 @@ class XMLTest: public tsunit::Test
     TSUNIT_DECLARE_TEST(SetFloat);
     TSUNIT_DECLARE_TEST(PreserveSpace);
     TSUNIT_DECLARE_TEST(IntValue);
+    TSUNIT_DECLARE_TEST(Iterators);
 
 public:
     virtual void beforeTest() override;
@@ -114,28 +115,28 @@ TSUNIT_DEFINE_TEST(Document)
     TSUNIT_ASSERT(root->hasAttribute(u"attr1"));
     TSUNIT_ASSERT(root->hasAttribute(u"AttR1"));
     TSUNIT_EQUAL(u"root", root->name());
-    TSUNIT_EQUAL(u"val1", root->attribute(u"attr1").value());
-    TSUNIT_EQUAL(u"val1", root->attribute(u"AtTr1").value());
+    TSUNIT_EQUAL(u"val1", root->attribute(u"attr1", true).value());
+    TSUNIT_EQUAL(u"val1", root->attribute(u"AtTr1", true).value());
     TSUNIT_ASSERT(!root->hasAttribute(u"nonexistent"));
-    TSUNIT_ASSERT(!root->attribute(u"nonexistent", true).isValid());
-    TSUNIT_ASSERT(root->attribute(u"nonexistent", true).value().empty());
-    TSUNIT_ASSERT(root->attribute(u"nonexistent", true).name().empty());
+    TSUNIT_ASSERT(!root->attribute(u"nonexistent").isValid());
+    TSUNIT_ASSERT(root->attribute(u"nonexistent").value().empty());
+    TSUNIT_ASSERT(root->attribute(u"nonexistent").name().empty());
 
     ts::xml::Element* elem = root->firstChildElement();
     TSUNIT_ASSERT(elem != nullptr);
     TSUNIT_ASSERT(elem->hasChildren());
     TSUNIT_EQUAL(u"node1", elem->name());
     TSUNIT_ASSERT(elem->hasAttribute(u"a1"));
-    TSUNIT_EQUAL(u"v1", elem->attribute(u"a1").value());
+    TSUNIT_EQUAL(u"v1", elem->attribute(u"a1", true).value());
     TSUNIT_ASSERT(elem->hasAttribute(u"a2"));
-    TSUNIT_EQUAL(u"v2", elem->attribute(u"a2").value());
+    TSUNIT_EQUAL(u"v2", elem->attribute(u"a2", true).value());
     TSUNIT_EQUAL(u"Text in node1", elem->text());
 
     elem = elem->nextSiblingElement();
     TSUNIT_ASSERT(elem != nullptr);
     TSUNIT_ASSERT(elem->hasChildren());
     TSUNIT_EQUAL(u"node2", elem->name());
-    TSUNIT_EQUAL(u"x1", elem->attribute(u"b1").value());
+    TSUNIT_EQUAL(u"x1", elem->attribute(u"b1", true).value());
     TSUNIT_EQUAL(u"Text in node2", elem->text());
 
     elem = elem->nextSiblingElement();
@@ -145,7 +146,7 @@ TSUNIT_DEFINE_TEST(Document)
     TSUNIT_ASSERT(elem->hasAttribute(u"foo"));
     TSUNIT_ASSERT(elem->hasAttribute(u"foo", u"bar"));
     TSUNIT_ASSERT(!elem->hasAttribute(u"foo", u"spam"));
-    TSUNIT_EQUAL(u"bar", elem->attribute(u"foo").value());
+    TSUNIT_EQUAL(u"bar", elem->attribute(u"foo", true).value());
     TSUNIT_ASSERT(elem->text().empty());
     elem->deleteAttribute(u"foo");
     TSUNIT_ASSERT(!elem->hasAttribute(u"foo"));
@@ -209,8 +210,8 @@ TSUNIT_DEFINE_TEST(FileBOM)
     ts::xml::Element* elem = root->firstChildElement();
     TSUNIT_ASSERT(elem != nullptr);
     TSUNIT_EQUAL(childName, elem->name());
-    TSUNIT_EQUAL(childAttrName, elem->attribute(childAttrName).name());
-    TSUNIT_EQUAL(childAttrValue, elem->attribute(childAttrName).value());
+    TSUNIT_EQUAL(childAttrName, elem->attribute(childAttrName, true).name());
+    TSUNIT_EQUAL(childAttrValue, elem->attribute(childAttrName, true).value());
     TSUNIT_EQUAL(childText1, elem->text(false));
     TSUNIT_EQUAL(childText2, elem->text(true));
 
@@ -318,7 +319,7 @@ TSUNIT_DEFINE_TEST(KeepOpen)
     ts::xml::Element* root = doc.rootElement();
     TSUNIT_ASSERT(root != nullptr);
 
-    ts::xml::Element* node2 = root->findFirstChild(u"NODE2");
+    ts::xml::Element* node2 = root->findFirstChild(u"NODE2", true);
     TSUNIT_ASSERT(node2 != nullptr);
     TSUNIT_EQUAL(u"node2", node2->name());
 
@@ -395,7 +396,7 @@ TSUNIT_DEFINE_TEST(Escape)
     TSUNIT_ASSERT(elem != nullptr);
     TSUNIT_EQUAL(u"child1", elem->name());
     TSUNIT_ASSERT(elem->hasAttribute(u"str"));
-    TSUNIT_EQUAL(u"ab&<>'\"cd", elem->attribute(u"str").value());
+    TSUNIT_EQUAL(u"ab&<>'\"cd", elem->attribute(u"str", true).value());
 
     elem = elem->nextSiblingElement();
     TSUNIT_ASSERT(elem != nullptr);
@@ -701,7 +702,7 @@ TSUNIT_DEFINE_TEST(GetFloat)
     ts::xml::Element* root = doc.rootElement();
     TSUNIT_ASSERT(root != nullptr);
 
-    ts::xml::Element* node = root->findFirstChild(u"node", true);
+    ts::xml::Element* node = root->findFirstChild(u"node");
     TSUNIT_ASSERT(node != nullptr);
 
     double dbl = 0.0;
@@ -791,4 +792,101 @@ TSUNIT_DEFINE_TEST(IntValue)
 
     int8_t i8 = 0;
     TSUNIT_ASSERT(!root->getIntAttribute(i8, u"a"));
+}
+
+TSUNIT_DEFINE_TEST(Iterators)
+{
+    static const ts::UChar* document =
+        u"<?xml version='1.0' encoding='UTF-8'?>\n"
+        u"<doc>\n"
+        u"  <a count='1' global='1'/>\n"
+        u"  <b count='1' global='2'/>\n"
+        u"  <a count='2' global='3' stop='true'/>\n"
+        u"  <b count='2' global='4'/>\n"
+        u"  <a count='3' global='5'/>\n"
+        u"  <a count='4' global='6'/>\n"
+        u"</doc>";
+
+    ts::ReportBuffer<ts::ThreadSafety::None> rep;
+    ts::xml::Document doc(rep);
+    TSUNIT_ASSERT(doc.parse(document));
+    TSUNIT_EQUAL(2, doc.childrenCount());
+
+    ts::xml::Element* root = doc.rootElement();
+    TSUNIT_ASSERT(root != nullptr);
+
+    int count = 1;
+    for (auto& e : root->children()) {
+        int attr = 0;
+        TSUNIT_ASSERT(e.getIntAttribute(attr, u"global", true));
+        TSUNIT_EQUAL(count, attr);
+        count++;
+    }
+    TSUNIT_EQUAL(7, count);
+    TSUNIT_EQUAL(u"", rep.messages());
+
+    count = 1;
+    for (auto& e : root->children(u"a")) {
+        int attr = 0;
+        TSUNIT_ASSERT(e.getIntAttribute(attr, u"count", true));
+        TSUNIT_EQUAL(count, attr);
+        count++;
+    }
+    TSUNIT_EQUAL(5, count);
+    TSUNIT_EQUAL(u"", rep.messages());
+
+    bool valid = true;
+    count = 1;
+    for ([[maybe_unused]] auto& e : root->children(u"c", &valid)) {
+        count++;
+    }
+    TSUNIT_EQUAL(1, count);
+    TSUNIT_ASSERT(valid);
+    TSUNIT_EQUAL(u"", rep.messages());
+
+    valid = true;
+    count = 1;
+    for (auto& e : root->children(u"a", &valid)) {
+        bool stop = false;
+        TSUNIT_ASSERT(e.getBoolAttribute(stop, u"stop"));
+        count++;
+        valid = !stop;
+    }
+    TSUNIT_EQUAL(3, count);
+    TSUNIT_ASSERT(!valid);
+    TSUNIT_EQUAL(u"", rep.messages());
+
+    valid = false;
+    count = 1;
+    for ([[maybe_unused]] auto& e : root->children(u"a", &valid)) {
+        count++;
+    }
+    TSUNIT_EQUAL(1, count);
+    TSUNIT_ASSERT(!valid);
+    TSUNIT_EQUAL(u"", rep.messages());
+
+    valid = true;
+    count = 1;
+    for (auto& e : root->children(u"a", &valid, 6)) {
+        int attr = 0;
+        TSUNIT_ASSERT(e.getIntAttribute(attr, u"count", true));
+        TSUNIT_EQUAL(count, attr);
+        count++;
+    }
+    TSUNIT_EQUAL(1, count);
+    TSUNIT_ASSERT(!valid);
+    TSUNIT_EQUAL(u"Error: <doc>, line 2, contains 4 <a>, at least 6 required", rep.messages());
+
+    valid = true;
+    count = 1;
+    rep.clear();
+    for (auto& e : root->children(u"a", &valid, 1, 3)) {
+        int attr = 0;
+        TSUNIT_ASSERT(e.getIntAttribute(attr, u"count", true));
+        TSUNIT_EQUAL(count, attr);
+        count++;
+    }
+    TSUNIT_EQUAL(1, count);
+    TSUNIT_ASSERT(!valid);
+    TSUNIT_EQUAL(u"Error: <doc>, line 2, contains 4 <a>, allowed 1 to 3", rep.messages());
 }

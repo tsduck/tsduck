@@ -30,7 +30,7 @@ ts::TimeConfigurationFile::TimeConfigurationFile()
 
     // Get the root in the document. Should be ok since we validated the document.
     const xml::Element* root = doc.rootElement();
-    const xml::Element* xleap_root = root == nullptr ? nullptr : root->findFirstChild(u"leap_seconds");
+    const xml::Element* xleap_root = root == nullptr ? nullptr : root->findFirstChild(u"leap_seconds", true);
     if (xleap_root == nullptr) {
         return;
     }

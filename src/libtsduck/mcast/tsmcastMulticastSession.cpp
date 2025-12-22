@@ -33,19 +33,19 @@ bool ts::mcast::MulticastSession::parseXML(const xml::Element* element, bool str
 
     bool ok = element->getAttribute(service_identifier, u"serviceIdentifier", false);
 
-    for (const xml::Element* e = element->findFirstChild(u"MulticastTransportSession", true); ok && e != nullptr; e = e->findNextSibling(true)) {
+    for (auto& mts : element->children(u"MulticastTransportSession", &ok)) {
         transport_sessions.emplace_back();
         auto& sess(transport_sessions.back());
-        ok = e->getAttribute(sess.id, u"id") &&
-             e->getAttribute(sess.service_class, u"serviceClass") &&
-             e->getAttribute(sess.content_ingest_method, u"contentIngestMethod") &&
-             e->getAttribute(sess.transmission_mode, u"transmissionMode") &&
-             e->getAttribute(sess.transport_security, u"transportSecurity") &&
-             sess.protocol.parseXML(e, strict);
+        ok = mts.getAttribute(sess.id, u"id") &&
+             mts.getAttribute(sess.service_class, u"serviceClass") &&
+             mts.getAttribute(sess.content_ingest_method, u"contentIngestMethod") &&
+             mts.getAttribute(sess.transmission_mode, u"transmissionMode") &&
+             mts.getAttribute(sess.transport_security, u"transportSecurity") &&
+             sess.protocol.parseXML(&mts, strict);
 
-        for (const xml::Element* ep = e->findFirstChild(u"EndpointAddress", !strict); ok && ep != nullptr; ep = ep->findNextSibling(true)) {
+        for (auto& ep : mts.children(u"EndpointAddress", &ok, strict ? 1 : 0)) {
             sess.endpoints.emplace_back();
-            ok = sess.endpoints.back().parseXML(ep, strict);
+            ok = sess.endpoints.back().parseXML(&ep, strict);
         }
     }
 

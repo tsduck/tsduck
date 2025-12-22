@@ -89,7 +89,7 @@ bool ts::TunerEmulator::open(const UString& device_name, bool info_only)
     DeliverySystem def_delivery = DS_UNDEFINED;
     uint64_t def_bandwidth = 0;
     UString def_directory;
-    const xml::Element* def = root->findFirstChild(u"defaults", true);
+    const xml::Element* def = root->findFirstChild(u"defaults");
     bool success = true;
     if (def != nullptr) {
         success = def->getEnumAttribute(def_delivery, DeliverySystemEnum(), u"delivery", false, DS_UNDEFINED) &&

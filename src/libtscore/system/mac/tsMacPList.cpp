@@ -39,7 +39,7 @@ bool ts::MacPList::load(const ts::UString& fileName, Report& report)
     const xml::Element* root = doc.rootElement();
 
     // Get the <dict> element inside <plist>
-    const xml::Element* dict = root == nullptr ? nullptr : root->findFirstChild(u"dict");
+    const xml::Element* dict = root == nullptr ? nullptr : root->findFirstChild(u"dict", true);
     if (dict == nullptr) {
         return false;
     }

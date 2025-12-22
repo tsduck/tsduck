@@ -31,7 +31,7 @@ bool ts::mcast::TransportProtocol::parseXML(const xml::Element* element, bool st
 {
     clear();
     const xml::Element* e = element;
-    if (element == nullptr || (!child_name.empty() && (e = element->findFirstChild(child_name)) == nullptr)) {
+    if (element == nullptr || (!child_name.empty() && (e = element->findFirstChild(child_name, true)) == nullptr)) {
         return false;
     }
 
