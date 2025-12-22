@@ -139,6 +139,10 @@ include::.all.dvb.descriptors.adoc[]
 
 include::.all.dtg.descriptors.adoc[]
 
+=== DTMB-defined descriptors
+
+include::.all.dtmb.descriptors.adoc[]
+
 === EACEM-defined descriptors (DVB private descriptors)
 
 include::.all.eacem.descriptors.adoc[]
