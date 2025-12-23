@@ -1,6 +1,6 @@
-==== DTMB_DRM_descriptor
+==== DTMB DRM_descriptor
 
-Defined by ITU in <<ITU-J1041>>.
+As defined in ITU <<ITU-J1041>>.
 
 [source,xml]
 ----
