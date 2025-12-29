@@ -129,7 +129,7 @@ bool ts::mcast::LCTHeader::deserialize(const uint8_t*& addr, size_t& size, FileT
         else {
             // Variable size extension.
             hel = 4 * size_t(addr[1]);
-            if (hdr_len < hel) {
+            if (hel == 0 || hdr_len < hel) {
                 break;
             }
             headdr = addr + 2;
