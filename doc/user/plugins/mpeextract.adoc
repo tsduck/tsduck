@@ -1,0 +1,69 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2025, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== mpeextract
+
+[.cmd-header]
+Extract a UDP or RTP transport stream from MPE
+
+This plugin extracts MPE (Multi-Protocol Encapsulation) datagrams from one PID.
+One of the UDP streams is selected, based on its destination IP address and UDP port.
+This UDP stream is assumed to contain a transport stream over UDP/IP, as created by the
+output plugin `ip` for instance.
+This transport stream is extracted and completely replaces the input transport stream.
+
+See <<ETSI-301-192>> for more details on MPE.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P mpeextract [options]
+----
+
+[.usage]
+Options
+
+[.opt]
+*-d* _ip-address:port_ +
+*--destination* _ip-address:port_
+
+[.optdoc]
+IP address and UDP port of the stream to extract.
+
+[.optdoc]
+If `--destination` is not specified, extract the first destination socket address that is found in the selected MPE PID.
+
+[.opt]
+*-p* _value_ +
+*--pid* _value_
+
+[.optdoc]
+Specify the MPE PID containing the UDP transport stream.
+
+[.optdoc]
+By default, if neither `--pid` nor `--service` is specified, use the first MPE PID which is found.
+Options `--pid` and `--service` are mutually exclusive.
+
+[.opt]
+*-s* _name-or-id_ +
+*--service* _name-or-id_
+
+[.optdoc]
+Specify the service containing the UDP transport stream in a MPE PID.
+If the argument is an integer value (either decimal or hexadecimal), it is interpreted as a service id.
+Otherwise, it is interpreted as a service name, as specified in the SDT.
+The name is not case sensitive and blanks are ignored.
+
+[.optdoc]
+By default, if neither `--pid` nor `--service` is specified, use the first MPE PID which is found.
+Options `--pid` and `--service` are mutually exclusive.
+
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

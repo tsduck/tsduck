@@ -30,7 +30,7 @@ namespace ts::mcast {
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
-        virtual void handleSingleMPEPacket(PCR timestamp, const MPEPacket& mpe) override;
+        virtual void handleSingleMPEPacket(PCR timestamp, TimeSource source, const MPEPacket& mpe) override;
 
     private:
         // Command line options.
@@ -189,7 +189,7 @@ ts::ProcessorPlugin::Status ts::mcast::NIPExtractPlugin::processPacket(TSPacket&
 // MPE packet processing method
 //----------------------------------------------------------------------------
 
-void ts::mcast::NIPExtractPlugin::handleSingleMPEPacket(PCR timestamp, const MPEPacket& mpe)
+void ts::mcast::NIPExtractPlugin::handleSingleMPEPacket(PCR timestamp, TimeSource source, const MPEPacket& mpe)
 {
     _demux.feedPacket(timestamp, mpe.sourceSocket(), mpe.destinationSocket(), mpe.udpMessage(), mpe.udpMessageSize());
 }

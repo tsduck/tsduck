@@ -29,7 +29,7 @@ namespace ts::mcast {
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual bool stop() override;
-        virtual void handleSingleMPEPacket(PCR timestamp, const MPEPacket& mpe) override;
+        virtual void handleSingleMPEPacket(PCR timestamp, TimeSource source, const MPEPacket& mpe) override;
 
     private:
         // Command line options.
@@ -91,7 +91,7 @@ bool ts::mcast::NIPPlugin::stop()
 // MPE packet processing method
 //----------------------------------------------------------------------------
 
-void ts::mcast::NIPPlugin::handleSingleMPEPacket(PCR timestamp, const MPEPacket& mpe)
+void ts::mcast::NIPPlugin::handleSingleMPEPacket(PCR timestamp, TimeSource source, const MPEPacket& mpe)
 {
     const IPSocketAddress destination(mpe.destinationSocket());
     log(2, u"MPE packet on PID %n, for address %s, %d bytes", mpe.sourcePID(), destination, mpe.datagramSize());

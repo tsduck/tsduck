@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.43-4539 (December 2025)
+VERSION 3.43-4544 (December 2025)
 
 [NEW] New commands and plugins:
 
@@ -12,6 +12,7 @@ VERSION 3.43-4539 (December 2025)
   * Added plugin "nip": DVB-NIP (Native IP) analyzer in MPE streams.
   * Added plugin "nipextract": DVB-NIP (Native IP) live service extraction from
     MPE streams.
+  * Added plugin "mpeextract": Extract a UDP or RTP transport stream from MPE.
   * Added plugin "iat":  Analyze  Inter-packet Arrival Time (IAT) for datagram-
     based input plugins.
 

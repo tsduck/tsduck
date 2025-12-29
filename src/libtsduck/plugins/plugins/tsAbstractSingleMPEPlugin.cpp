@@ -64,6 +64,7 @@ bool ts::AbstractSingleMPEPlugin::start()
     _wait_for_service = false;
     _mpe_pid = _opt_pid;
     _last_timestamp = PCR::zero();
+    _last_time_source = TimeSource::UNDEFINED;
     _service.clear();
     _mpe_demux.reset();
 
@@ -85,10 +86,11 @@ bool ts::AbstractSingleMPEPlugin::start()
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::AbstractSingleMPEPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
+ts::ProcessorPlugin::Status ts::AbstractSingleMPEPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& mdata)
 {
-    if (pkt_data.hasInputTimeStamp()) {
-        _last_timestamp = pkt_data.getInputTimeStamp();
+    if (mdata.hasInputTimeStamp()) {
+        _last_timestamp = mdata.getInputTimeStamp();
+        _last_time_source = mdata.getInputTimeSource();
     }
 
     if (_wait_for_service) {
@@ -129,6 +131,6 @@ void ts::AbstractSingleMPEPlugin::handleMPENewPID(MPEDemux& demux, const PMT& pm
 void ts::AbstractSingleMPEPlugin::handleMPEPacket(MPEDemux& demux, const MPEPacket& mpe)
 {
     if (!_abort && mpe.sourcePID() == _mpe_pid) {
-        handleSingleMPEPacket(_last_timestamp, mpe);
+        handleSingleMPEPacket(_last_timestamp, _last_time_source, mpe);
     }
 }

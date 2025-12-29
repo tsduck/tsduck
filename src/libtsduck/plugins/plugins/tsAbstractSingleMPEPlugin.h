@@ -34,9 +34,10 @@ namespace ts {
         //!
         //! Handle one MPE packet (to be implemented by subclasses).
         //! @param [in] timestamp Timestamp in PCR unit of the last TS packet for this MPE packet.
+        //! @param [in] source Source of @a timestamp.
         //! @param [in] mpe MPE packet.
         //!
-        virtual void handleSingleMPEPacket(PCR timestamp, const MPEPacket& mpe) = 0;
+        virtual void handleSingleMPEPacket(PCR timestamp, TimeSource source, const MPEPacket& mpe) = 0;
 
     protected:
         //!
@@ -70,6 +71,7 @@ namespace ts {
         bool             _wait_for_service = false;  // Wait for MPE service id to be identified.
         PID              _mpe_pid = PID_NULL;        // Actual MPE PID.
         PCR              _last_timestamp {};         // Last valid timestamp from TS packets.
+        TimeSource       _last_time_source = TimeSource::UNDEFINED;  // Source of  _last_timestamp.
         ServiceDiscovery _service {duck, nullptr};   // Service containing the MPE PID.
         MPEDemux         _mpe_demux {duck, this};    // MPE demux to extract MPE datagrams.
 

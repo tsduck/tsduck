@@ -193,6 +193,10 @@ endif::[]
 |packet
 |Extract MPE (Multi-Protocol Encapsulation) datagrams
 
+|mpeextract
+|packet
+|Extract a UDP or RTP transport stream from MPE
+
 |mpeinject
 |packet
 |Encapsulate and inject an incoming UDP stream into MPE
