@@ -1,7 +1,7 @@
 #-----------------------------------------------------------------------------
 #
 #  TSDuck - The MPEG Transport Stream Toolkit
-#  Copyright (c) 2005-2025, Thierry Lelegard
+#  Copyright (c) 2005-2026, Thierry Lelegard
 #  BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 #
 #  TSDuck Python bindings
@@ -1746,7 +1746,7 @@ class VersionMismatch(Exception):
 ## @cond nodoxygen
 
 __author__ = 'Thierry Lelegard'
-__copyright__ = '2005-2025, Thierry Lelegard'
+__copyright__ = '2005-2026, Thierry Lelegard'
 __version__ = version()
 
 # Minimum required version for TSDuck library. Must be incremented when

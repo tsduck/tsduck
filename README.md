@@ -95,5 +95,5 @@ using [PayPal](https://tsduck.io/donate/)
 TSDuck is distributed under the terms of the Simplified 2-Clause BSD License.
 See the file `LICENSE.txt` for details.
 
-*Copyright (c) 2005-2025, Thierry Lelegard*<br/>
+*Copyright (c) 2005-2026, Thierry Lelegard*<br/>
 *All rights reserved*
