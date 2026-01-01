@@ -341,7 +341,15 @@ ts::Time ts::GetFileModificationTimeLocal(const UString& path)
 bool ts::SetFileModificationTimeUTC(const UString& path, const Time& time)
 {
 #if defined(TS_WINDOWS)
-    //@@@ ::SetFileTime
+    const ::HANDLE h = ::CreateFileW(path.wc_str(), FILE_WRITE_ATTRIBUTES, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+    if (h == INVALID_HANDLE_VALUE) {
+        return false;
+    }
+    ::FILETIME ft;
+    time.toWin32FileTime(ft);
+    const bool success = ::SetFileTime(h, nullptr, &ft, &ft) != 0;
+    ::CloseHandle(h);
+    return success;
 #else
     const cn::microseconds usec = std::max(cn::microseconds::zero(), cn::duration_cast<cn::microseconds>(time - Time::UnixEpoch));
     ::timeval times[2];

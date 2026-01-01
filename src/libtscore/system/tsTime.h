@@ -668,6 +668,16 @@ namespace ts {
         //! @return The corresponding UTC time.
         //!
         static Time Win32FileTimeToUTC(const ::FILETIME& fileTime);
+
+        //!
+        //! Convert the time to a Win32 @c FILETIME (Microsoft Windows only).
+        //!
+        //! This function is available on Microsoft Windows systems only
+        //! and should not be used on portable software.
+        //!
+        //! @param [out] fileTime The corresponding Win32 @c FILETIME value.
+        //!
+        void toWin32FileTime(::FILETIME& fileTime) const;
 #endif
 
 #if defined(TS_UNIX) || defined(DOXYGEN)

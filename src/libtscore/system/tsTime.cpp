@@ -585,29 +585,33 @@ ts::Time ts::Time::CurrentUTC()
 
 
 //----------------------------------------------------------------------------
-// This static routine converts a Win32 FILETIME to cn::milliseconds
+// Windows time conversions
 //----------------------------------------------------------------------------
 
 #if defined(TS_WINDOWS)
+
+// Converts a Win32 FILETIME to cn::milliseconds.
 cn::milliseconds ts::Time::Win32FileTimeToMilliSecond(const ::FILETIME& ft)
 {
     FileTime ftime;
     ftime.ft = ft;
     return cn::duration_cast<cn::milliseconds>(Ticks(ftime.i));
 }
-#endif
 
-
-//----------------------------------------------------------------------------
-// This static routine converts a Win32 FILETIME to a UTC time
-//----------------------------------------------------------------------------
-
-#if defined(TS_WINDOWS)
+// Converts a Win32 FILETIME to a UTC time.
 ts::Time ts::Time::Win32FileTimeToUTC(const ::FILETIME& ft)
 {
     FileTime ftime;
     ftime.ft = ft;
     return Time(ftime.i);
+}
+
+// Convert the time to a Win32 @c FILETIME.
+void ts::Time::toWin32FileTime(::FILETIME& ft) const
+{
+    FileTime ftime;
+    ftime.i = _value;
+    ft = ftime.ft;
 }
 #endif
 
