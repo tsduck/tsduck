@@ -104,7 +104,7 @@ namespace ts {
 
         // Report metrics to InfluxDB.
         void reportMetrics(bool force);
-        void reportMetrics(Time timestamp, cn::milliseconds duration);
+        void reportMetrics(const Time& timestamp, cn::milliseconds duration);
 
         // Build metrics string for a given type of timestamp.
         void addTimestampMetrics(InfluxRequest& req, const UChar* measurement, PID ServiceContext::* refpid, uint64_t PIDContext::* value, uint16_t tsid);
@@ -425,7 +425,7 @@ void ts::InfluxPlugin::reportMetrics(bool force)
 // Report metrics to InfluxDB using known timestamp and duration.
 //----------------------------------------------------------------------------
 
-void ts::InfluxPlugin::reportMetrics(Time timestamp, cn::milliseconds duration)
+void ts::InfluxPlugin::reportMetrics(const Time& timestamp, cn::milliseconds duration)
 {
     // Build data to post. Use a shared pointer to send to the message queue.
     auto req = std::make_shared<InfluxRequest>(*this, _influx_args);

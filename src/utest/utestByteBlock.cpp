@@ -42,7 +42,7 @@ TSUNIT_REGISTER(ByteBlockTest);
 // Initialization.
 //----------------------------------------------------------------------------
 
-// Test suite initialization method.
+// Test initialization method.
 void ByteBlockTest::beforeTest()
 {
     if (_tempFileName.empty()) {
@@ -51,7 +51,7 @@ void ByteBlockTest::beforeTest()
     fs::remove(_tempFileName, &ts::ErrCodeReport());
 }
 
-// Test suite cleanup method.
+// Test cleanup method.
 void ByteBlockTest::afterTest()
 {
     fs::remove(_tempFileName, &ts::ErrCodeReport());
@@ -70,6 +70,7 @@ namespace {
         ts::ByteBlock b = ts::ByteBlock(13, 42);
     };
 }
+
 TSUNIT_DEFINE_TEST(Constructors)
 {
     ts::ByteBlock v1;

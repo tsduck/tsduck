@@ -461,10 +461,10 @@ TSUNIT_DEFINE_TEST(TempFiles)
 
 TSUNIT_DEFINE_TEST(FileTime)
 {
-    const fs::path tmpName(ts::TempFile());
+    const fs::path tmp_name(ts::TempFile());
 
     const ts::Time before(ts::Time::CurrentUTC());
-    TSUNIT_ASSERT(_CreateFile(tmpName, 0));
+    TSUNIT_ASSERT(_CreateFile(tmp_name, 0));
     const ts::Time after(ts::Time::CurrentUTC());
 
     // Some systems (Linux) do not store the milliseconds in the file time.
@@ -486,34 +486,48 @@ TSUNIT_DEFINE_TEST(FileTime)
     // SysUtilsTest:      after:       2020/08/27 09:23:26.000
     // SysUtilsTest:      file local:  2020/08/27 11:23:25.000
 
-    ts::Time::Fields beforeFields(before);
-    const cn::milliseconds adjustment = cn::milliseconds(beforeFields.millisecond < 100 ? 1009 : 0);
-    beforeFields.millisecond = 0;
-    ts::Time beforeBase(beforeFields);
-    beforeBase -= adjustment;
+    ts::Time::Fields before_fields(before);
+    const cn::milliseconds adjustment = cn::milliseconds(before_fields.millisecond < 100 ? 1009 : 0);
+    before_fields.millisecond = 0;
+    ts::Time before_base(before_fields);
+    before_base -= adjustment;
 
-    TSUNIT_ASSERT(fs::exists(tmpName));
-    const ts::Time fileUtc(ts::GetFileModificationTimeUTC(tmpName));
-    const ts::Time fileLocal(ts::GetFileModificationTimeLocal(tmpName));
+    TSUNIT_ASSERT(fs::exists(tmp_name));
+    const ts::Time file_utc(ts::GetFileModificationTimeUTC(tmp_name));
+    const ts::Time file_local(ts::GetFileModificationTimeLocal(tmp_name));
 
-    debug() << "SysUtilsTest: file: " << tmpName << std::endl
+    debug() << "SysUtilsTest: file: " << tmp_name << std::endl
             << "SysUtilsTest:      before:      " << before << std::endl
-            << "SysUtilsTest:      before base: " << beforeBase << std::endl
-            << "SysUtilsTest:      file UTC:    " << fileUtc << std::endl
+            << "SysUtilsTest:      before base: " << before_base << std::endl
+            << "SysUtilsTest:      file UTC:    " << file_utc << std::endl
             << "SysUtilsTest:      after:       " << after << std::endl
-            << "SysUtilsTest:      file local:  " << fileLocal << std::endl;
+            << "SysUtilsTest:      file local:  " << file_local << std::endl;
 
     // Check that file modification occured between before and after.
     // Some systems may not store the milliseconds in the file time.
     // So we use before without milliseconds
 
-    TSUNIT_ASSERT(beforeBase <= fileUtc);
-    TSUNIT_ASSERT(fileUtc <= after);
-    TSUNIT_ASSERT(fileUtc.UTCToLocal() == fileLocal);
-    TSUNIT_ASSERT(fileLocal.localToUTC() == fileUtc);
+    TSUNIT_ASSERT(before_base <= file_utc);
+    TSUNIT_ASSERT(file_utc <= after);
+    TSUNIT_ASSERT(file_utc.UTCToLocal() == file_local);
+    TSUNIT_ASSERT(file_local.localToUTC() == file_utc);
 
-    TSUNIT_ASSERT(fs::remove(tmpName, &ts::ErrCodeReport(CERR, u"error deleting", tmpName)));
-    TSUNIT_ASSERT(!fs::exists(tmpName));
+    // Update modification time, one hour later.
+
+    TSUNIT_ASSERT(ts::SetFileModificationTimeUTC(tmp_name, file_utc + cn::hours(1)));
+    const ts::Time new_utc(ts::GetFileModificationTimeUTC(tmp_name));
+    const ts::Time new_local(ts::GetFileModificationTimeLocal(tmp_name));
+
+    debug() << "SysUtilsTest:      new UTC:     " << new_utc << std::endl
+            << "SysUtilsTest:      new local:   " << new_local << std::endl;
+
+    TSUNIT_ASSERT(before_base + cn::hours(1) <= new_utc);
+    TSUNIT_ASSERT(new_utc <= after + cn::hours(1));
+    TSUNIT_ASSERT(new_utc.UTCToLocal() == new_local);
+    TSUNIT_ASSERT(new_local.localToUTC() == new_utc);
+
+    TSUNIT_ASSERT(fs::remove(tmp_name, &ts::ErrCodeReport(CERR, u"error deleting", tmp_name)));
+    TSUNIT_ASSERT(!fs::exists(tmp_name));
 }
 
 TSUNIT_DEFINE_TEST(Wildcard)

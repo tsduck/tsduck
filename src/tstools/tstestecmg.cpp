@@ -201,13 +201,13 @@ namespace {
         EventQueue(const CmdOptions& opt, ts::Report& report);
 
         // Post a termination request at the due date..
-        void postTermination(ts::Time due)
+        void postTermination(const ts::Time& due)
         {
             enqueue(Event(due));
         }
 
         // Post an ECM request at the due date..
-        void postRequest(ts::Time due, uint16_t channel_id, uint16_t stream_id)
+        void postRequest(const ts::Time& due, uint16_t channel_id, uint16_t stream_id)
         {
             enqueue(Event(due, channel_id, stream_id));
         }

@@ -171,6 +171,24 @@ namespace ts {
     TSCOREDLL Time GetFileModificationTimeUTC(const UString& path);
 
     //!
+    //! Set the local time of the last modification of a file.
+    //! @ingroup files
+    //! @param [in] path A file path.
+    //! @param [in] time The modification local time to set.
+    //! @return True on success, false on error.
+    //!
+    TSCOREDLL bool SetFileModificationTimeLocal(const UString& path, const Time& time);
+
+    //!
+    //! Set the UTC time of the last modification of a file.
+    //! @ingroup files
+    //! @param [in] path A file path.
+    //! @param [in] time The modification UTC time to set.
+    //! @return True on success, false on error.
+    //!
+    TSCOREDLL bool SetFileModificationTimeUTC(const UString& path, const Time& time);
+
+    //!
     //! Get all files matching a specified wildcard pattern and append them into a container.
     //! @ingroup files
     //! @tparam CONTAINER A container class of @c UString as defined by the

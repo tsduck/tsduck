@@ -38,7 +38,7 @@ ts::InfluxRequest::~InfluxRequest()
 // Start building a request to the InfluxDB server.
 //----------------------------------------------------------------------------
 
-void ts::InfluxRequest::start(Time timestamp)
+void ts::InfluxRequest::start(const Time& timestamp)
 {
     // Convert timestamp in milliseconds since Unix Epoch for InfluxDB server.
     const auto duration = timestamp - Time::UnixEpoch;

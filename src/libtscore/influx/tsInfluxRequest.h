@@ -45,7 +45,7 @@ namespace ts {
         //! Start building a request to the InfluxDB server.
         //! @param [in] timestamp Value of the timestamp for that request.
         //!
-        void start(Time timestamp);
+        void start(const Time& timestamp);
 
         //!
         //! Add a line in the request being built, with one single integer value.
