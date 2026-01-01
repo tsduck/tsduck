@@ -15,15 +15,18 @@
 :opt-base: true
 :!opt-dvbnip:
 :!opt-flute:
+:!opt-delete-after:
 
 // tag::dvbnip[]
 :!opt-base:
 :opt-dvbnip: true
+:opt-delete-after: true
 // end::dvbnip[]
 
 // tag::flute[]
 :!opt-base:
 :opt-flute: true
+:opt-delete-after: true
 // end::flute[]
 
 //---- end of tag tricks ----
@@ -49,6 +52,25 @@ ifdef::opt-flute[]
 FLUTE analysis options
 
 These options are identical in the command `tsflute` and the `tsp` plugin `flute`.
+endif::[]
+
+//----------------------------------------------------------------------------
+// option --delete-after
+//----------------------------------------------------------------------------
+
+ifdef::opt-delete-after[]
+[.opt]
+*--delete-after* _seconds_
+
+[.optdoc]
+ifdef::opt-flute[]
+With `--extract-carousel`,
+endif::[]
+ifdef::opt-dvbnip[]
+With `--save-dvb-gw`,
+endif::[]
+delete the extracted files the specified number of seconds after their creation.
+This option is useful to prevent disk overflow when the file extraction runs continuously.
 endif::[]
 
 //----------------------------------------------------------------------------

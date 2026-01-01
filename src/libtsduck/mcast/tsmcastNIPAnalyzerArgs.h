@@ -28,13 +28,14 @@ namespace ts::mcast {
         NIPAnalyzerArgs() = default;
 
         // Analysis options:
-        bool     summary = false;         //!< Option -\-summary
-        fs::path output_file {};          //!< Option -\-output-file
-        fs::path save_nif {};             //!< Option -\-save-nif
-        fs::path save_sif {};             //!< Option -\-save-sif
-        fs::path save_slep {};            //!< Option -\-save-slep
-        fs::path save_bootstrap {};       //!< Option -\-save-bootstrap
-        fs::path save_dvbgw_dir {};       //!< Option -\-save-dvb-gw
+        bool        summary = false;    //!< Option -\-summary
+        fs::path    output_file {};     //!< Option -\-output-file
+        fs::path    save_nif {};        //!< Option -\-save-nif
+        fs::path    save_sif {};        //!< Option -\-save-sif
+        fs::path    save_slep {};       //!< Option -\-save-slep
+        fs::path    save_bootstrap {};  //!< Option -\-save-bootstrap
+        fs::path    save_dvbgw_dir {};  //!< Option -\-save-dvb-gw
+        cn::seconds delete_after {};    //!< Option -\-delete-after
 
         //!
         //! Check if something specific was required.

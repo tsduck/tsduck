@@ -31,6 +31,7 @@ namespace ts::mcast {
         bool                  summary = false;  //!< Option -\-summary
         fs::path              output_file {};   //!< Option -\-output-file
         fs::path              carousel_dir {};  //!< Option -\-extract-carousel
+        cn::seconds           delete_after {};  //!< Option -\-delete-after
         IPSocketAddressVector destinations {};  //!< Options -\-destination
 
         //!

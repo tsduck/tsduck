@@ -63,6 +63,11 @@ void ts::mcast::FluteAnalyzerArgs::defineArgs(Args& args)
               u"When a FLUTE file name is an URI, the URI scheme is removed. "
               u"The characters which are not allowed in file names are replaced with an underscore.");
 
+    args.option<cn::seconds>(u"delete-after");
+    args.help(u"delete-after",
+              u"With --extract-carousel, delete the extracted files the specified number of seconds after their creation. "
+              u"This option is useful to prevent disk overflow when the file extraction runs continuously.");
+
     args.option(u"output-file", 'o', Args::FILENAME);
     args.help(u"output-file",
               u"With --summary, save the report in the specified file. "
@@ -87,6 +92,7 @@ bool ts::mcast::FluteAnalyzerArgs::loadArgs(DuckContext& duck, Args& args)
     summary = args.present(u"summary");
     args.getPathValue(output_file, u"output-file");
     args.getPathValue(carousel_dir, u"extract-carousel");
+    args.getChronoValue(delete_after, u"delete-after");
     args.getSocketValues(destinations, u"destination");
 
     // Default option is --summary.

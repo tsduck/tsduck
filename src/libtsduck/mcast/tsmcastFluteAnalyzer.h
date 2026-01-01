@@ -14,6 +14,7 @@
 #pragma once
 #include "tsmcastFluteDemux.h"
 #include "tsmcastFluteAnalyzerArgs.h"
+#include "tsFileTreeManager.h"
 
 namespace ts::mcast {
     //!
@@ -79,11 +80,9 @@ namespace ts::mcast {
         Report&           _report {_duck.report()};
         FluteAnalyzerArgs _args {};
         FluteDemux        _demux {_duck, this};
+        FileTreeManager   _file_extraction {_report};
 
         // Implementation of NIPHandlerInterface.
         virtual void handleFluteFile(const FluteFile&) override;
-
-        // Save a carousel file.
-        void saveFile(const FluteFile& file);
     };
 }

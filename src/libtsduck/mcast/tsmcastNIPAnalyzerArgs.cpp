@@ -49,6 +49,11 @@ void ts::mcast::NIPAnalyzerArgs::defineArgs(Args& args)
               u"Example: with '--save-dvb-gw /save/to', the file http://dvb.gw/operator.com/materials/f.jpg "
               u"is saved as /save/to/operator.com/materials/f.jpg.");
 
+    args.option<cn::seconds>(u"delete-after");
+    args.help(u"delete-after",
+              u"With --save-dvb-gw, delete the extracted files the specified number of seconds after their creation. "
+              u"This option is useful to prevent disk overflow when the file extraction runs continuously.");
+
     args.option(u"save-nif", 0, Args::FILENAME);
     args.help(u"save-nif",
               u"Save the DVB-NIP Network Information File (NIF) in the specified file. "
@@ -90,6 +95,7 @@ bool ts::mcast::NIPAnalyzerArgs::loadArgs(DuckContext& duck, Args& args)
     args.getPathValue(save_nif, u"save-nif");
     args.getPathValue(save_sif, u"save-sif");
     args.getPathValue(save_slep, u"save-slep");
+    args.getChronoValue(delete_after, u"delete-after");
 
     // Default option is --summary.
     summary = summary || none();

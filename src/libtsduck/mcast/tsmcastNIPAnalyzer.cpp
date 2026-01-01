@@ -36,6 +36,8 @@ bool ts::mcast::NIPAnalyzer::reset(const NIPAnalyzerArgs& args)
     // Local initialization.
     _args = args;
     _nacis.clear();
+    _file_extraction.setRootDirectory(_args.save_dvbgw_dir);
+    _file_extraction.setDeleteAfter(_args.delete_after);
     return _demux.reset(_args, _args.summary);
 }
 
@@ -79,7 +81,7 @@ void ts::mcast::NIPAnalyzer::handleFluteFile(const FluteFile& file)
     // Save carousel files.
     static const UString dvbgw_prefix(u"http://dvb.gw/");
     if (!_args.save_dvbgw_dir.empty() && file.name().starts_with(dvbgw_prefix)) {
-        saveFile(file, _args.save_dvbgw_dir, file.name().substr(dvbgw_prefix.length()));
+        _file_extraction.saveFile(file.content(), file.name().substr(dvbgw_prefix.length()));
     }
 }
 
@@ -97,42 +99,6 @@ void ts::mcast::NIPAnalyzer::saveXML(const FluteFile& file, const fs::path& path
             _report.error(u"error creating file %s", path);
         }
     }
-}
-
-
-//----------------------------------------------------------------------------
-// Save a carousel file.
-//----------------------------------------------------------------------------
-
-void ts::mcast::NIPAnalyzer::saveFile(const FluteFile& file, const fs::path& root_dir, const UString& relative_path)
-{
-    // Cleanup the file path to avoid directory traversal attack.
-    UStringVector comp;
-    relative_path.split(comp, u'/', true, true);
-    fs::path path(root_dir);
-    fs::path basename;
-    for (size_t i = 0; i < comp.size(); ++i) {
-        if (comp[i] != u"." && comp[i] != u"..") {
-            if (i + 1 < comp.size()) {
-                path /= comp[i];
-            }
-            else {
-                basename = comp[i];
-            }
-        }
-    }
-    if (basename.empty()) {
-        _report.error(u"no filename specified in \"%s\"", relative_path);
-        return;
-    }
-
-    // Create intermediate subdirectories if required.
-    fs::create_directories(path, &ErrCodeReport(_report, u"error creating directory", path));
-
-    // Save final file.
-    path /= basename;
-    _report.verbose(u"saving %s", path);
-    file.content().saveToFile(path, &_report);
 }
 
 

@@ -15,6 +15,7 @@
 #include "tsmcastNIPDemux.h"
 #include "tsmcastNIPAnalyzerArgs.h"
 #include "tsmcastNIPActualCarrierInformation.h"
+#include "tsFileTreeManager.h"
 
 namespace ts::mcast {
     //!
@@ -79,6 +80,7 @@ namespace ts::mcast {
         NIPAnalyzerArgs _args {};
         NIPDemux        _demux {_duck, this};
         std::set<NIPActualCarrierInformation> _nacis {};
+        FileTreeManager _file_extraction {_report};
 
         // Implementation of NIPHandlerInterface.
         virtual void handleFluteFile(const FluteFile&) override;
@@ -86,8 +88,5 @@ namespace ts::mcast {
 
         // Save a XML file (if the file name is not empty).
         void saveXML(const FluteFile& file, const fs::path& path);
-
-        // Save a carousel file.
-        void saveFile(const FluteFile& file, const fs::path& root_dir, const UString& path);
     };
 }
