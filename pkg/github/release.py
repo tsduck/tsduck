@@ -123,6 +123,10 @@ def get_release(tag):
             repo.fatal('no release found for tag %s' % tag)
     if re.fullmatch('v' + pattern_version, release.tag_name) is None:
         repo.fatal('invalid tag "%s"' % release.tag_name)
+    # Attribute 'title' is deprecated, replaced by 'name'.
+    # Make sure 'name' exists on older versions.
+    if not hasattr(release, 'name'):
+        release.name = release.title
     return release
 
 # A function to get the TSDuck version from tsVersion.h in the repo.
@@ -227,7 +231,7 @@ def list_releases():
     for rel in repo.repo.get_releases():
         date = '%04d-%02d-%02d' % (rel.created_at.year, rel.created_at.month, rel.created_at.day)
         type = 'draft' if rel.draft else ('prerelease' if rel.prerelease else ('latest' if rel.id == latest.id else ''))
-        text.append([rel.tag_name, type, date, rel.title])
+        text.append([rel.tag_name, type, date, rel.name])
     width = [0] * len(text[0])
     for line in text:
         for i in range(len(line)):
@@ -267,7 +271,7 @@ if opt_verify:
 if opt_update:
     release = get_release(opt_tag)
     version = release.tag_name[1:]
-    repo.info('Release: %s' % release.title)
+    repo.info('Release: %s' % release.name)
     repo.info('Version: %s' % version)
 
     # Locate packages for that version and upload missing ones.
@@ -277,13 +281,13 @@ if opt_update:
     # Update title and body.
     title = build_title(release)
     body = build_body_text(release)
-    if title == release.title:
+    if title == release.name:
         repo.info('Release title is already set')
     if body == release.body:
         repo.info('Release body text is already set')
-    if title != release.title or body != release.body:
+    if title != release.name or body != release.body:
         if repo.dry_run:
-            if title != release.title:
+            if title != release.name:
                 repo.warning('title should be changed to: %s' % title)
             if body != release.body:
                 repo.warning('body text should be updated')
@@ -319,7 +323,7 @@ if opt_create:
     releases = [rel for rel in repo.repo.get_releases() if rel.tag_name == tag_name]
     if len(releases) > 0:
         release = releases[0]
-        repo.info('A release already exists for tag %s (%s)' % (tag_name, release.title))
+        repo.info('A release already exists for tag %s (%s)' % (tag_name, release.name))
     else:
         title = 'Version %s' % version
         repo.info('Creating release "%s"' % title)

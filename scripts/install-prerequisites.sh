@@ -340,6 +340,9 @@ elif [[ -f /etc/fedora-release ]]; then
 
     FC=$(grep " release " /etc/fedora-release 2>/dev/null | sed -e 's/^.* release \([0-9\.]*\) .*$/\1/')
 
+    # Note: Starting with Fedora 43 (?), the package java-latest-openjdk-devel still exists but no longer
+    # install java and javac (don't know what's its value then). Need to install a precise version.
+
     PKGLIST+=(git gcc-c++ make cmake which hostname glibc-langpack-en flex bison dos2unix curl tar zip kernel-headers libatomic rpmdevtools python3)
     [[ -z $NOOPENSSL            ]] && PKGLIST+=(openssl openssl-devel)
     [[ -z $NOEDITLINE           ]] && PKGLIST+=(libedit-devel)
@@ -349,7 +352,7 @@ elif [[ -f /etc/fedora-release ]]; then
     [[ -z $NOSRT && $FC -ge 31  ]] && PKGLIST+=(srt-devel)
     [[ -z $NOCURL               ]] && PKGLIST+=(libcurl libcurl-devel)
     [[ -z $NOVATEK              ]] && PKGLIST+=(libusb1-devel)
-    [[ -z $NOJAVA               ]] && PKGLIST+=(java-latest-openjdk-devel)
+    [[ -z $NOJAVA               ]] && PKGLIST+=(java-25-openjdk-devel)
     [[ -z $NODOXYGEN            ]] && PKGLIST+=(doxygen graphviz)
     [[ -n $STATIC               ]] && PKGLIST+=(glibc-static libstdc++-static)
     [[ -z $NODOC                ]] && PKGLIST+=(rubygem-asciidoctor qpdf)

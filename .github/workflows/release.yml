@@ -178,22 +178,22 @@ jobs:
         - distro: ubuntu
           build_distro: ${{ inputs.ubuntu_image != 'none' }}
           image: ${{ inputs.ubuntu_image }}
-          setup_command: apt update; apt install -y sudo git lsb-release
+          setup_command: apt update; apt upgrade -y; apt install -y sudo git lsb-release
           package_options:
         - distro: debian
           build_distro: ${{ inputs.debian_image != 'none' }}
           image: ${{ inputs.debian_image }}
-          setup_command: apt update; apt install -y sudo git lsb-release
+          setup_command: apt update; apt upgrade -y; apt install -y sudo git lsb-release
           package_options:
         - distro: fedora
           build_distro: ${{ inputs.fedora_image != 'none' }}
           image: ${{ inputs.fedora_image }}
-          setup_command: dnf install -y sudo git
+          setup_command: dnf update -y; dnf install -y sudo git
           package_options: --allowerasing
         - distro: redhat
           build_distro: ${{ inputs.redhat_image != 'none' }}
           image: ${{ inputs.redhat_image }}
-          setup_command: dnf install -y sudo git
+          setup_command: dnf update -y; dnf install -y sudo git
           package_options: --allowerasing
     name: Build on ${{ matrix.distro }} for ${{ matrix.arch }}
     # Warning: "matrix" is not accepted in "jobs.job.if". However, it is in "jobs.job.with".
