@@ -409,6 +409,30 @@ ts::UString ts::SearchExecutableFile(const UString& fileName, const UString& pat
 
 
 //----------------------------------------------------------------------------
+// Get the system-dependent root of installed packages.
+//----------------------------------------------------------------------------
+
+const ts::UString& ts::DefaultPackageInstallationRoot()
+{
+    static const UString path =
+#if defined(TS_WINDOWS)
+        GetEnvironment(u"TSDUCK");
+#elif defined(TS_MAC) && defined(TS_X86_64)
+        u"/usr/local";
+#elif defined(TS_MAC) && defined(TS_ARM64)
+        u"/opt/homebrew";
+#elif defined(TS_FREEBSD) || defined(TS_OPENBSD) || defined(TS_DRAGONFLYBSD)
+        u"/usr/local";
+#elif defined(TS_NETBSD)
+        u"/usr/pkg";
+#else
+        u"/usr";
+#endif
+    return path;
+}
+
+
+//----------------------------------------------------------------------------
 // Search a configuration file.
 //----------------------------------------------------------------------------
 
@@ -458,18 +482,11 @@ ts::UString ts::SearchConfigurationFile(const UString& fileName)
     // application is not a TSDuck one but a third-party application which uses the
     // TSDuck library. In that case, relative paths from the executables are useless.
 #if defined(TS_WINDOWS)
-    const UString tsroot(GetEnvironment(u"TSDUCK"));
-    if (!tsroot.empty()) {
-        dirList.push_back(tsroot + u"\\bin");
+    if (!DefaultPackageInstallationRoot().empty()) {
+        dirList.push_back(DefaultPackageInstallationRoot() + u"\\bin");
     }
-#elif (defined(TS_MAC) && defined(TS_X86_64)) || defined(TS_FREEBSD) || defined(TS_OPENBSD) || defined(TS_DRAGONFLYBSD)
-    dirList.push_back(u"/usr/local/share/tsduck");
-#elif defined(TS_MAC) && defined(TS_ARM64)
-    dirList.push_back(u"/opt/homebrew/share/tsduck");
-#elif defined(TS_NETBSD)
-    dirList.push_back(u"/usr/pkg/share/tsduck");
-#elif defined(TS_UNIX)
-    dirList.push_back(u"/usr/share/tsduck");
+#else
+    dirList.push_back(DefaultPackageInstallationRoot() + u"/share/tsduck");
 #endif
 
     // Search the file.

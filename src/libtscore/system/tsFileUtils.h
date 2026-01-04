@@ -270,6 +270,23 @@ namespace ts {
     TSCOREDLL UString SearchExecutableFile(const UString& fileName, const UString& pathName = PATH_ENVIRONMENT_VARIABLE);
 
     //!
+    //! Get the system-dependent root of installed packages.
+    //! TSDuck is location-independent and uses the current executable as a reference point.
+    //! However, when installed as an official package, it should be there.
+    //!
+    //! The standard root for installed packages is:
+    //! - Linux: /usr
+    //! - macOS on Intel: /usr/local
+    //! - macOS on Arm: /opt/homebrew
+    //! - FreeBSD, OpenBSD, DragonFlyBSD: /usr/local
+    //! - NetBSD: /usr/pkg
+    //! - Other UNIX: /usr
+    //! - Windows: Environment variable TSDUCK.
+    //! @return A constant reference to the system-dependent root of installed packages.
+    //!
+    TSCOREDLL const UString& DefaultPackageInstallationRoot();
+
+    //!
     //! Search a configuration file.
     //! @ingroup files
     //! @param [in] fileName Name of the file to search.

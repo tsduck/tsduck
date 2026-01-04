@@ -122,19 +122,11 @@ void ts::ApplicationSharedLibrary::GetSearchPath(UStringList& directories, const
         directories.push_back(u"/usr/lib64");
     }
 #endif
-#if (defined(TS_MAC) && defined(TS_X86_64)) || defined(TS_FREEBSD) || defined(TS_OPENBSD) || defined(TS_DRAGONFLYBSD)
-    directories.push_back(u"/usr/local/lib/tsduck");
-    directories.push_back(u"/usr/local/lib");
-#elif defined(TS_MAC) && defined(TS_ARM64)
-    directories.push_back(u"/opt/homebrew/lib/tsduck");
-    directories.push_back(u"/opt/homebrew/lib");
-#elif defined(TS_NETBSD)
-    directories.push_back(u"/usr/pkg/lib/tsduck");
-    directories.push_back(u"/usr/pkg/lib");
-#else
-    directories.push_back(u"/usr/lib/tsduck");
-    directories.push_back(u"/usr/lib");
-#endif
+    // Add default system locations of the TSDuck plugins. This is useful when the
+    // application is not a TSDuck one but a third-party application which uses the
+    // TSDuck library. In that case, relative paths from the executables are useless.
+    directories.push_back(DefaultPackageInstallationRoot() + u"/lib/tsduck");
+    directories.push_back(DefaultPackageInstallationRoot() + u"/lib");
 #endif // TS_UNIX
 
     // On Windows system, try the PATH.
