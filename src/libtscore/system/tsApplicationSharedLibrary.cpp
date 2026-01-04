@@ -122,12 +122,15 @@ void ts::ApplicationSharedLibrary::GetSearchPath(UStringList& directories, const
         directories.push_back(u"/usr/lib64");
     }
 #endif
-#if defined(TS_MAC) && defined(TS_X86_64)
+#if (defined(TS_MAC) && defined(TS_X86_64)) || defined(TS_FREEBSD) || defined(TS_OPENBSD) || defined(TS_DRAGONFLYBSD)
     directories.push_back(u"/usr/local/lib/tsduck");
     directories.push_back(u"/usr/local/lib");
 #elif defined(TS_MAC) && defined(TS_ARM64)
     directories.push_back(u"/opt/homebrew/lib/tsduck");
     directories.push_back(u"/opt/homebrew/lib");
+#elif defined(TS_NETBSD)
+    directories.push_back(u"/usr/pkg/lib/tsduck");
+    directories.push_back(u"/usr/pkg/lib");
 #else
     directories.push_back(u"/usr/lib/tsduck");
     directories.push_back(u"/usr/lib");

@@ -462,10 +462,12 @@ ts::UString ts::SearchConfigurationFile(const UString& fileName)
     if (!tsroot.empty()) {
         dirList.push_back(tsroot + u"\\bin");
     }
-#elif defined(TS_MAC) && defined(TS_X86_64)
+#elif (defined(TS_MAC) && defined(TS_X86_64)) || defined(TS_FREEBSD) || defined(TS_OPENBSD) || defined(TS_DRAGONFLYBSD)
     dirList.push_back(u"/usr/local/share/tsduck");
 #elif defined(TS_MAC) && defined(TS_ARM64)
     dirList.push_back(u"/opt/homebrew/share/tsduck");
+#elif defined(TS_NETBSD)
+    dirList.push_back(u"/usr/pkg/share/tsduck");
 #elif defined(TS_UNIX)
     dirList.push_back(u"/usr/share/tsduck");
 #endif
@@ -473,6 +475,7 @@ ts::UString ts::SearchConfigurationFile(const UString& fileName)
     // Search the file.
     for (const auto& dir : dirList) {
         const UString path(dir + fs::path::preferred_separator + fileName);
+        CERR.debug(u"looking for %s", path);
         if (fs::exists(path)) {
             return path;
         }
