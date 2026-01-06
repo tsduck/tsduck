@@ -1139,10 +1139,24 @@ $ make -j10 NODOC=1
 $ sudo make install NODOC=1
 ----
 
-[#bsdinstall]
-==== Installing on BSD systems
+[#freebsdinstall]
+==== Installing on FreeBSD systems
 
-There is currently no installer for FreeBSD, OpenBSD, NetBSD, DragonFlyBSD.
+Starting with version 3.43, TSDuck is part of the FreeBSD Ports.
+It can be installed using the `pkg` command:
+
+[source,shell]
+----
+$ sudo pkg install tsduck
+----
+
+NOTE: TSDuck is supposed to be included the April 2026 "Quarterly" branch of the FreeBSD Ports.
+Before that date, use the "Latest" branch to get the `tsduck` package.
+
+[#bsdinstall]
+==== Installing on other BSD systems
+
+There is currently no installer for OpenBSD, NetBSD, DragonFlyBSD.
 You need to build and install as follow:
 
 [source,shell]
