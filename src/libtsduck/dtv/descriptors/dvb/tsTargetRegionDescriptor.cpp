@@ -159,30 +159,25 @@ void ts::TargetRegionDescriptor::buildXML(DuckContext& duck, xml::Element* root)
 
 bool ts::TargetRegionDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector xregions;
-    bool ok =
-        element->getAttribute(country_code, u"country_code", true, u"", 3, 3) &&
-        element->getChildren(xregions, u"region");
-
-    for (size_t i = 0; ok && i < xregions.size(); ++i) {
-        Region region;
-        ok = xregions[i]->getAttribute(region.country_code, u"country_code", false, u"", 3, 3) &&
-             xregions[i]->getIntAttribute(region.primary_region_code, u"primary_region_code", false) &&
-             xregions[i]->getIntAttribute(region.secondary_region_code, u"secondary_region_code", false) &&
-             xregions[i]->getIntAttribute(region.tertiary_region_code, u"tertiary_region_code", false);
-        if (xregions[i]->hasAttribute(u"tertiary_region_code")) {
+    bool ok = element->getAttribute(country_code, u"country_code", true, u"", 3, 3);
+    for (auto& child : element->children(u"region", &ok)) {
+        auto& region(regions.emplace_back());
+        ok = child.getAttribute(region.country_code, u"country_code", false, u"", 3, 3) &&
+             child.getIntAttribute(region.primary_region_code, u"primary_region_code", false) &&
+             child.getIntAttribute(region.secondary_region_code, u"secondary_region_code", false) &&
+             child.getIntAttribute(region.tertiary_region_code, u"tertiary_region_code", false);
+        if (child.hasAttribute(u"tertiary_region_code")) {
             region.region_depth = 3;
         }
-        else if (xregions[i]->hasAttribute(u"secondary_region_code")) {
+        else if (child.hasAttribute(u"secondary_region_code")) {
             region.region_depth = 2;
         }
-        else if (xregions[i]->hasAttribute(u"primary_region_code")) {
+        else if (child.hasAttribute(u"primary_region_code")) {
             region.region_depth = 1;
         }
         else {
             region.region_depth = 0;
         }
-        regions.push_back(region);
     }
     return ok;
 }

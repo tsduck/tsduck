@@ -182,20 +182,15 @@ void ts::AnnouncementSupportDescriptor::buildXML(DuckContext& duck, xml::Element
 
 bool ts::AnnouncementSupportDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector xann;
-    bool ok = element->getChildren(xann, u"announcement");
-
-    for (size_t i = 0; ok && i < xann.size(); ++i) {
-        Announcement ann;
-        ok = xann[i]->getIntAttribute(ann.announcement_type, u"announcement_type", true, 0, 0x00, 0x0F) &&
-             xann[i]->getIntAttribute(ann.reference_type, u"reference_type", true, 0, 0x00, 0x07) &&
-             xann[i]->getIntAttribute(ann.original_network_id, u"original_network_id", ann.reference_type >= 1 && ann.reference_type <= 3) &&
-             xann[i]->getIntAttribute(ann.transport_stream_id, u"transport_stream_id", ann.reference_type >= 1 && ann.reference_type <= 3) &&
-             xann[i]->getIntAttribute(ann.service_id, u"service_id", ann.reference_type >= 1 && ann.reference_type <= 3) &&
-             xann[i]->getIntAttribute(ann.component_tag, u"component_tag", ann.reference_type >= 1 && ann.reference_type <= 3);
-        if (ok) {
-            announcements.push_back(ann);
-        }
+    bool ok = true;
+    for (auto& child : element->children(u"announcement", &ok)) {
+        auto& ann(announcements.emplace_back());
+        ok = child.getIntAttribute(ann.announcement_type, u"announcement_type", true, 0, 0x00, 0x0F) &&
+             child.getIntAttribute(ann.reference_type, u"reference_type", true, 0, 0x00, 0x07) &&
+             child.getIntAttribute(ann.original_network_id, u"original_network_id", ann.reference_type >= 1 && ann.reference_type <= 3) &&
+             child.getIntAttribute(ann.transport_stream_id, u"transport_stream_id", ann.reference_type >= 1 && ann.reference_type <= 3) &&
+             child.getIntAttribute(ann.service_id, u"service_id", ann.reference_type >= 1 && ann.reference_type <= 3) &&
+             child.getIntAttribute(ann.component_tag, u"component_tag", ann.reference_type >= 1 && ann.reference_type <= 3);
     }
     return ok;
 }

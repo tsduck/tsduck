@@ -118,15 +118,12 @@ void ts::DTGServiceAttributeDescriptor::buildXML(DuckContext& duck, xml::Element
 
 bool ts::DTGServiceAttributeDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector xservice;
-    bool ok = element->getChildren(xservice, u"service", 0, MAX_ENTRIES);
-
-    for (auto it = xservice.begin(); ok && it != xservice.end(); ++it) {
-        Entry entry;
-        ok = (*it)->getIntAttribute(entry.service_id, u"service_id", true) &&
-             (*it)->getBoolAttribute(entry.numeric_selection, u"numeric_selection", true) &&
-             (*it)->getBoolAttribute(entry.visible_service, u"visible_service", true);
-        entries.push_back(entry);
+    bool ok = true;
+    for (auto& child : element->children(u"service", &ok, 0, MAX_ENTRIES)) {
+        auto& entry(entries.emplace_back());
+        ok = child.getIntAttribute(entry.service_id, u"service_id", true) &&
+             child.getBoolAttribute(entry.numeric_selection, u"numeric_selection", true) &&
+             child.getBoolAttribute(entry.visible_service, u"visible_service", true);
     }
     return ok;
 }

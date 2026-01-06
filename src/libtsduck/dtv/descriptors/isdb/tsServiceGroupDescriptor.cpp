@@ -136,17 +136,13 @@ void ts::ServiceGroupDescriptor::buildXML(DuckContext& duck, xml::Element* root)
 
 bool ts::ServiceGroupDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector xserv;
-    bool ok =
-        element->getIntAttribute(service_group_type, u"service_group_type", true, 0, 0, 15) &&
-        element->getChildren(xserv, u"service", 0, service_group_type == 1 ? 63 : 0) &&
-        element->getHexaTextChild(private_data, u"private_data", false, 0, service_group_type == 1 ? 0 : 254);
+    bool ok = element->getIntAttribute(service_group_type, u"service_group_type", true, 0, 0, 15) &&
+              element->getHexaTextChild(private_data, u"private_data", false, 0, service_group_type == 1 ? 0 : 254);
 
-    for (auto it = xserv.begin(); ok && it != xserv.end(); ++it) {
-        SimultaneousService ss;
-        ok = (*it)->getIntAttribute(ss.primary_service_id, u"primary_service_id", true) &&
-             (*it)->getIntAttribute(ss.secondary_service_id, u"secondary_service_id", true);
-        simultaneous_services.push_back(ss);
+    for (auto& child : element->children(u"service", &ok, 0, service_group_type == 1 ? 63 : 0)) {
+        auto& ss(simultaneous_services.emplace_back());
+        ok = child.getIntAttribute(ss.primary_service_id, u"primary_service_id", true) &&
+             child.getIntAttribute(ss.secondary_service_id, u"secondary_service_id", true);
     }
     return ok;
 }

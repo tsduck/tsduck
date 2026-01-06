@@ -158,15 +158,12 @@ void ts::TeletextDescriptor::buildXML(DuckContext& duck, xml::Element* root) con
 
 bool ts::TeletextDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector children;
-    bool ok = element->getChildren(children, u"teletext", 0, MAX_ENTRIES);
-
-    for (size_t i = 0; ok && i < children.size(); ++i) {
-        Entry entry;
-        ok = children[i]->getAttribute(entry.language_code, u"language_code", true, u"", 3, 3) &&
-             children[i]->getIntAttribute(entry.teletext_type, u"teletext_type", true) &&
-             children[i]->getIntAttribute(entry.page_number, u"page_number", true);
-        entries.push_back(entry);
+    bool ok = true;
+    for (auto& child : element->children(u"teletext", &ok, 0, MAX_ENTRIES)) {
+        auto& entry(entries.emplace_back());
+        ok = child.getAttribute(entry.language_code, u"language_code", true, u"", 3, 3) &&
+             child.getIntAttribute(entry.teletext_type, u"teletext_type", true) &&
+             child.getIntAttribute(entry.page_number, u"page_number", true);
     }
     return ok;
 }

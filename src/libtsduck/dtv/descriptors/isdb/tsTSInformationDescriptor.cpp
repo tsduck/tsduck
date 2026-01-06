@@ -146,24 +146,16 @@ void ts::TSInformationDescriptor::buildXML(DuckContext& duck, xml::Element* root
 
 bool ts::TSInformationDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector xtype;
-    bool ok =
-        element->getIntAttribute(remote_control_key_id, u"remote_control_key_id", true) &&
-        element->getAttribute(ts_name, u"ts_name", true) &&
-        element->getHexaTextChild(reserved_future_use, u"reserved_future_use") &&
-        element->getChildren(xtype, u"transmission_type", 0, 3);
+    bool ok = element->getIntAttribute(remote_control_key_id, u"remote_control_key_id", true) &&
+              element->getAttribute(ts_name, u"ts_name", true) &&
+              element->getHexaTextChild(reserved_future_use, u"reserved_future_use");
 
-    for (auto it1 = xtype.begin(); ok && it1 != xtype.end(); ++it1) {
-        Entry e;
-        xml::ElementVector xserv;
-        ok = (*it1)->getIntAttribute(e.transmission_type_info, u"transmission_type_info", true) &&
-             (*it1)->getChildren(xserv, u"service");
-        for (auto it2 = xserv.begin(); ok && it2 != xserv.end(); ++it2) {
-            uint16_t id = 0;
-            ok = (*it2)->getIntAttribute(id, u"id", true);
-            e.service_ids.push_back(id);
+    for (auto& child1 : element->children(u"transmission_type", &ok, 0, 3)) {
+        auto& e(transmission_types.emplace_back());
+        ok = child1.getIntAttribute(e.transmission_type_info, u"transmission_type_info", true);
+        for (auto& child2 : child1.children(u"service", &ok)) {
+            ok = child2.getIntAttribute(e.service_ids.emplace_back(), u"id", true);
         }
-        transmission_types.push_back(e);
     }
     return ok;
 }

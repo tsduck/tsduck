@@ -214,35 +214,24 @@ void ts::DFIT::buildXML(DuckContext& duck, xml::Element* root) const
 
 bool ts::DFIT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector xstyle, xfile, xsize;
-    bool ok =
-        element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
-        element->getBoolAttribute(_is_current, u"current", false, true) &&
-        element->getIntAttribute(font_id, u"font_id", true, 0, 0, 0x7F) &&
-        element->getIntAttribute(font_id_extension, u"font_id_extension", false, 0, 0, 0x01FF) &&
-        element->getAttribute(font_family, u"font_family", true) &&
-        element->getChildren(xstyle, u"font_style_weight", 1) &&
-        element->getChildren(xfile, u"font_file_URI", 1) &&
-        element->getChildren(xsize, u"font_size");
+    bool ok = element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
+              element->getBoolAttribute(_is_current, u"current", false, true) &&
+              element->getIntAttribute(font_id, u"font_id", true, 0, 0, 0x7F) &&
+              element->getIntAttribute(font_id_extension, u"font_id_extension", false, 0, 0, 0x01FF) &&
+              element->getAttribute(font_family, u"font_family", true);
 
-    for (const auto& it : xstyle) {
-        FontStyleWeight sw;
-        ok = it->getIntAttribute(sw.font_style, u"font_style", true, 0, 0, 7) &&
-             it->getIntAttribute(sw.font_weight, u"font_weight", true, 0, 0, 15) &&
-             ok;
-        font_style_weight.push_back(sw);
+    for (auto& it : element->children(u"font_style_weight", &ok, 1)) {
+        auto& sw(font_style_weight.emplace_back());
+        ok = it.getIntAttribute(sw.font_style, u"font_style", true, 0, 0, 7) &&
+             it.getIntAttribute(sw.font_weight, u"font_weight", true, 0, 0, 15);
     }
-    for (const auto& it : xfile) {
-        FontFile ff;
-        ok = it->getIntAttribute(ff.font_file_format, u"font_file_format", true, 0, 0, 15) &&
-             it->getAttribute(ff.uri, u"uri", true) &&
-             ok;
-        font_file_URI.push_back(ff);
+    for (auto& it : element->children(u"font_file_URI", &ok, 1)) {
+        auto& ff(font_file_URI.emplace_back());
+        ok = it.getIntAttribute(ff.font_file_format, u"font_file_format", true, 0, 0, 15) &&
+             it.getAttribute(ff.uri, u"uri", true);
     }
-    for (const auto& it : xsize) {
-        uint16_t size = 0;
-        ok = it->getIntAttribute(size, u"font_size", true) && ok;
-        font_size.push_back(size);
+    for (auto& it : element->children(u"font_size", &ok)) {
+        ok = it.getIntAttribute(font_size.emplace_back(), u"font_size", true);
     }
     return ok;
 }

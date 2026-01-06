@@ -148,28 +148,24 @@ void ts::TargetRegionNameDescriptor::buildXML(DuckContext& duck, xml::Element* r
 
 bool ts::TargetRegionNameDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector xregions;
-    bool ok =
-        element->getAttribute(country_code, u"country_code", true, u"", 3, 3) &&
-        element->getAttribute(ISO_639_language_code, u"ISO_639_language_code", true, u"", 3, 3) &&
-        element->getChildren(xregions, u"region");
+    bool ok = element->getAttribute(country_code, u"country_code", true, u"", 3, 3) &&
+              element->getAttribute(ISO_639_language_code, u"ISO_639_language_code", true, u"", 3, 3);
 
-    for (size_t i = 0; ok && i < xregions.size(); ++i) {
-        Region region;
-        ok = xregions[i]->getAttribute(region.region_name, u"region_name", true) &&
-             xregions[i]->getIntAttribute(region.primary_region_code, u"primary_region_code", true) &&
-             xregions[i]->getIntAttribute(region.secondary_region_code, u"secondary_region_code", false) &&
-             xregions[i]->getIntAttribute(region.tertiary_region_code, u"tertiary_region_code", false);
-        if (xregions[i]->hasAttribute(u"tertiary_region_code")) {
+    for (auto& child : element->children(u"region", &ok)) {
+        auto& region(regions.emplace_back());
+        ok = child.getAttribute(region.region_name, u"region_name", true) &&
+             child.getIntAttribute(region.primary_region_code, u"primary_region_code", true) &&
+             child.getIntAttribute(region.secondary_region_code, u"secondary_region_code", false) &&
+             child.getIntAttribute(region.tertiary_region_code, u"tertiary_region_code", false);
+        if (child.hasAttribute(u"tertiary_region_code")) {
             region.region_depth = 3;
         }
-        else if (xregions[i]->hasAttribute(u"secondary_region_code")) {
+        else if (child.hasAttribute(u"secondary_region_code")) {
             region.region_depth = 2;
         }
         else {
             region.region_depth = 1;
         }
-        regions.push_back(region);
     }
     return ok;
 }

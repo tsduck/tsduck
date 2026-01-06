@@ -119,17 +119,12 @@ void ts::DeferredAssociationTagsDescriptor::buildXML(DuckContext& duck, xml::Ele
 
 bool ts::DeferredAssociationTagsDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector children;
-    bool ok =
-        element->getIntAttribute(transport_stream_id, u"transport_stream_id", true) &&
-        element->getIntAttribute(program_number, u"program_number", true) &&
-        element->getChildren(children, u"association") &&
-        element->getHexaTextChild(private_data, u"private_data", false);
+    bool ok = element->getIntAttribute(transport_stream_id, u"transport_stream_id", true) &&
+              element->getIntAttribute(program_number, u"program_number", true) &&
+              element->getHexaTextChild(private_data, u"private_data", false);
 
-    for (size_t i = 0; ok && i < children.size(); ++i) {
-        uint16_t tag = 0;
-        ok = children[i]->getIntAttribute(tag, u"tag", true);
-        association_tags.push_back(tag);
+    for (auto& child : element->children(u"association", &ok)) {
+        ok = child.getIntAttribute(association_tags.emplace_back(), u"tag", true);
     }
     return ok;
 }

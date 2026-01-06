@@ -187,31 +187,22 @@ void ts::ApplicationRecordingDescriptor::buildXML(DuckContext& duck, xml::Elemen
 
 bool ts::ApplicationRecordingDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector labelChildren;
-    xml::ElementVector compChildren;
-    bool ok =
-        element->getBoolAttribute(scheduled_recording, u"scheduled_recording", true) &&
-        element->getBoolAttribute(trick_mode_aware, u"trick_mode_aware", true) &&
-        element->getBoolAttribute(time_shift, u"time_shift", true) &&
-        element->getBoolAttribute(dynamic, u"dynamic", true) &&
-        element->getBoolAttribute(av_synced, u"av_synced", true) &&
-        element->getBoolAttribute(initiating_replay, u"initiating_replay", true) &&
-        element->getChildren(labelChildren, u"label") &&
-        element->getChildren(compChildren, u"component") &&
-        element->getHexaTextChild(private_data, u"private") &&
-        element->getHexaTextChild(reserved_future_use, u"reserved_future_use");
+    bool ok = element->getBoolAttribute(scheduled_recording, u"scheduled_recording", true) &&
+              element->getBoolAttribute(trick_mode_aware, u"trick_mode_aware", true) &&
+              element->getBoolAttribute(time_shift, u"time_shift", true) &&
+              element->getBoolAttribute(dynamic, u"dynamic", true) &&
+              element->getBoolAttribute(av_synced, u"av_synced", true) &&
+              element->getBoolAttribute(initiating_replay, u"initiating_replay", true) &&
+              element->getHexaTextChild(private_data, u"private") &&
+              element->getHexaTextChild(reserved_future_use, u"reserved_future_use");
 
-    for (size_t i = 0; ok && i < labelChildren.size(); ++i) {
-        RecodingLabel lab;
-        ok = labelChildren[i]->getAttribute(lab.label, u"label", true) &&
-             labelChildren[i]->getIntAttribute(lab.storage_properties, u"storage_properties", true, 0, 0, 3);
-        labels.push_back(lab);
+    for (auto& child : element->children(u"label", &ok)) {
+        auto& lab(labels.emplace_back());
+        ok = child.getAttribute(lab.label, u"label", true) &&
+             child.getIntAttribute(lab.storage_properties, u"storage_properties", true, 0, 0, 3);
     }
-
-    for (size_t i = 0; ok && i < compChildren.size(); ++i) {
-        uint8_t tag = 0;
-        ok = compChildren[i]->getIntAttribute(tag, u"tag", true);
-        component_tags.push_back(tag);
+    for (auto& child : element->children(u"component", &ok)) {
+        ok = child.getIntAttribute(component_tags.emplace_back(), u"tag", true);
     }
     return ok;
 }

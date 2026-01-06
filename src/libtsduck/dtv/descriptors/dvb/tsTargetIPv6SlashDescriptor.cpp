@@ -108,14 +108,11 @@ void ts::TargetIPv6SlashDescriptor::buildXML(DuckContext& duck, xml::Element* ro
 
 bool ts::TargetIPv6SlashDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector children;
-    bool ok = element->getChildren(children, u"address", 0, MAX_ENTRIES);
-
-    for (size_t i = 0; ok && i < children.size(); ++i) {
-        Address addr;
-        ok = children[i]->getIPAttribute(addr.IPv6_addr, u"IPv6_addr", true) &&
-             children[i]->getIntAttribute(addr.IPv6_slash_mask, u"IPv6_slash_mask", true);
-        addresses.push_back(addr);
+    bool ok = true;
+    for (auto& child : element->children(u"address", &ok, 0, MAX_ENTRIES)) {
+        auto& addr(addresses.emplace_back());
+        ok = child.getIPAttribute(addr.IPv6_addr, u"IPv6_addr", true) &&
+             child.getIntAttribute(addr.IPv6_slash_mask, u"IPv6_slash_mask", true);
     }
     return ok;
 }

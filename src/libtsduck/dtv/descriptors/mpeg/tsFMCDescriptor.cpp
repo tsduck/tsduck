@@ -109,14 +109,11 @@ void ts::FMCDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 
 bool ts::FMCDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector children;
-    bool ok = element->getChildren(children, u"stream", 0, MAX_ENTRIES);
-
-    for (size_t i = 0; ok && i < children.size(); ++i) {
-        Entry entry;
-        ok = children[i]->getIntAttribute(entry.ES_ID, u"ES_ID", true) &&
-             children[i]->getIntAttribute(entry.M4MuxChannel, u"M4MuxChannel", true);
-        entries.push_back(entry);
+    bool ok = true;
+    for (auto& child : element->children(u"stream", &ok, 0, MAX_ENTRIES)) {
+        auto& entry(entries.emplace_back());
+        ok = child.getIntAttribute(entry.ES_ID, u"ES_ID", true) &&
+             child.getIntAttribute(entry.M4MuxChannel, u"M4MuxChannel", true);
     }
     return ok;
 }

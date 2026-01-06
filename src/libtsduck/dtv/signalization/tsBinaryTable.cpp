@@ -621,33 +621,26 @@ bool ts::BinaryTable::fromXML(DuckContext& duck, const xml::Element* node)
 
     if (node->nameMatch(AbstractTable::XML_GENERIC_LONG_TABLE)) {
         TID tid = 0xFF;
-        uint16_t tidExt = 0xFFFF;
+        uint16_t tid_ext = 0xFFFF;
         uint8_t version = 0;
         bool priv = true;
         bool current = true;
-        xml::ElementVector sectionNodes;
-        if (node->getIntAttribute<TID>(tid, u"table_id", true, 0xFF, 0x00, 0xFF) &&
-            node->getIntAttribute<uint16_t>(tidExt, u"table_id_ext", false, 0xFFFF, 0x0000, 0xFFFF) &&
-            node->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
-            node->getBoolAttribute(current, u"current", false, true) &&
-            node->getBoolAttribute(priv, u"private", false, true) &&
-            node->getChildren(sectionNodes, u"section", 1, 256))
-        {
-            for (size_t index = 0; index < sectionNodes.size(); ++index) {
-                assert(sectionNodes[index] != nullptr);
-                ByteBlock payload;
-                if (sectionNodes[index]->getHexaText(payload, 0, MAX_PSI_LONG_SECTION_PAYLOAD_SIZE)) {
-                    addNewSection(tid, priv, tidExt, version, current, uint8_t(index), uint8_t(index), payload.data(), payload.size());
-                }
-                else {
-                    // Invalid <section> content.
-                    clear();
-                    break;
-                }
-            }
+        uint8_t section_number = 0;
+        bool ok = node->getIntAttribute(tid, u"table_id", true, 0xFF, 0x00, 0xFF) &&
+                  node->getIntAttribute(tid_ext, u"table_id_ext", false, 0xFFFF, 0x0000, 0xFFFF) &&
+                  node->getIntAttribute(version, u"version", false, 0, 0, 31) &&
+                  node->getBoolAttribute(current, u"current", false, true) &&
+                  node->getBoolAttribute(priv, u"private", false, true);
+        for (auto& child : node->children(u"section", &ok, 1, 256)) {
+            ByteBlock payload;
+            ok = child.getHexaText(payload, 0, MAX_PSI_LONG_SECTION_PAYLOAD_SIZE);
+            addNewSection(tid, priv, tid_ext, version, current, section_number, section_number, payload.data(), payload.size());
+            section_number++;
         }
-        // The XML element name was valid.
-        return true;
+        if (!ok) {
+            clear();
+        }
+        return ok;
     }
 
     // At this point, the table is invalid.

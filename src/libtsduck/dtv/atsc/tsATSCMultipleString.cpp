@@ -168,23 +168,14 @@ ts::xml::Element* ts::ATSCMultipleString::toXML(DuckContext& duck, xml::Element*
 bool ts::ATSCMultipleString::fromXML(DuckContext& duck, const xml::Element* elem)
 {
     clear();
-    if (elem == nullptr) {
-        return false;
-    }
-    else {
-        xml::ElementVector children;
-        bool ok = elem->getChildren(children, u"string", 0, 255);
-        for (size_t i = 0; i < children.size(); ++i) {
-            StringElement s;
-            if (children[i]->getAttribute(s.language, u"language", true, UString(), 3, 3) && children[i]->getAttribute(s.text, u"text", true)) {
-                _strings.push_back(s);
-            }
-            else {
-                ok = false;
-            }
+    bool ok = elem != nullptr;
+    if (ok) {
+        for (auto& child : elem->children(u"string", &ok, 0, 255)) {
+            auto& s(_strings.emplace_back());
+            ok = child.getAttribute(s.language, u"language", true, UString(), 3, 3) && child.getAttribute(s.text, u"text", true);
         }
-        return ok;
     }
+    return ok;
 }
 
 bool ts::ATSCMultipleString::fromXML(DuckContext& duck, const xml::Element* parent, const UString& name, bool required)

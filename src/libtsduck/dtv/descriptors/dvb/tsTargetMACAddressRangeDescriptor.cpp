@@ -103,14 +103,11 @@ void ts::TargetMACAddressRangeDescriptor::buildXML(DuckContext& duck, xml::Eleme
 
 bool ts::TargetMACAddressRangeDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector children;
-    bool ok = element->getChildren(children, u"range", 0, MAX_ENTRIES);
-
-    for (size_t i = 0; ok && i < children.size(); ++i) {
-        Range range;
-        ok = children[i]->getMACAttribute(range.MAC_addr_low, u"MAC_addr_low", true) &&
-             children[i]->getMACAttribute(range.MAC_addr_high, u"MAC_addr_high", true);
-        ranges.push_back(range);
+    bool ok = true;
+    for (auto& child : element->children(u"range", &ok, 0, MAX_ENTRIES)) {
+        auto& range(ranges.emplace_back());
+        ok = child.getMACAttribute(range.MAC_addr_low, u"MAC_addr_low", true) &&
+             child.getMACAttribute(range.MAC_addr_high, u"MAC_addr_high", true);
     }
     return ok;
 }

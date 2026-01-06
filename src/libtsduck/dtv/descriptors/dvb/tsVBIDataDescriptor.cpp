@@ -167,38 +167,32 @@ void ts::VBIDataDescriptor::buildXML(DuckContext& duck, xml::Element* root) cons
 
 bool ts::VBIDataDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector srv;
-    bool ok = element->getChildren(srv, u"service");
+    bool ok = true;
+    for (auto& srv : element->children(u"service", &ok)) {
+        auto& service(services.emplace_back());
+        ok = srv.getIntAttribute(service.data_service_id, u"data_service_id", true) &&
+             srv.getHexaTextChild(service.reserved, u"reserved", false);
 
-    for (size_t srvIndex = 0; ok && srvIndex < srv.size(); ++srvIndex) {
-        Service service;
-        xml::ElementVector fld;
-        ok = srv[srvIndex]->getIntAttribute(service.data_service_id, u"data_service_id", true) &&
-             srv[srvIndex]->getChildren(fld, u"field") &&
-             srv[srvIndex]->getHexaTextChild(service.reserved, u"reserved", false);
+        for (auto& fld : srv.children(u"field", &ok)) {
+            auto& field(service.fields.emplace_back());
+            ok = fld.getBoolAttribute(field.field_parity, u"field_parity", false, false) &&
+                 fld.getIntAttribute(field.line_offset, u"line_offset", false, 0x00, 0x00, 0x1F);
+        }
 
         if (ok) {
             if (service.hasReservedBytes()) {
-                if (!fld.empty()) {
-                    element->report().error(u"no <field> allowed in <service>, line %d, when data_service_id='%d'", srv[srvIndex]->lineNumber(), service.data_service_id);
+                if (!service.fields.empty()) {
+                    element->report().error(u"no <field> allowed in <service>, line %d, when data_service_id='%d'", srv.lineNumber(), service.data_service_id);
                     ok = false;
                 }
             }
             else {
                 if (!service.reserved.empty()) {
-                    element->report().error(u"no <reserved> allowed in <service>, line %d, when data_service_id='%d'", srv[srvIndex]->lineNumber(), service.data_service_id);
+                    element->report().error(u"no <reserved> allowed in <service>, line %d, when data_service_id='%d'", srv.lineNumber(), service.data_service_id);
                     ok = false;
                 }
             }
         }
-
-        for (size_t fldIndex = 0; ok && fldIndex < fld.size(); ++fldIndex) {
-            Field field;
-            ok = fld[fldIndex]->getBoolAttribute(field.field_parity, u"field_parity", false, false) &&
-                 fld[fldIndex]->getIntAttribute(field.line_offset, u"line_offset", false, 0x00, 0x00, 0x1F);
-            service.fields.push_back(field);
-        }
-        services.push_back(service);
     }
     return ok;
 }

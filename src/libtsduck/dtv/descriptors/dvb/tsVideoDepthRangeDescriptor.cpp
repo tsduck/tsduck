@@ -13,7 +13,6 @@
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
-#include "tsIntegerUtils.h"
 
 #define MY_XML_NAME u"video_depth_range_descriptor"
 #define MY_CLASS    ts::VideoDepthRangeDescriptor
@@ -145,16 +144,13 @@ void ts::VideoDepthRangeDescriptor::buildXML(DuckContext& duck, xml::Element* ro
 
 bool ts::VideoDepthRangeDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector xranges;
-    bool ok = element->getChildren(xranges, u"range");
-
-    for (size_t i = 0; ok && i < xranges.size(); ++i) {
-        Range range;
-        ok = xranges[i]->getIntAttribute(range.range_type, u"range_type", true) &&
-             xranges[i]->getIntAttribute(range.video_max_disparity_hint, u"video_max_disparity_hint", range.range_type == 0) &&
-             xranges[i]->getIntAttribute(range.video_min_disparity_hint, u"video_min_disparity_hint", range.range_type == 0) &&
-             xranges[i]->getHexaTextChild(range.range_selector, u"range_selector", false, 0, range.range_type < 2 ? 0 : MAX_DESCRIPTOR_SIZE);
-        ranges.push_back(range);
+    bool ok = true;
+    for (auto& child : element->children(u"range", &ok)) {
+        auto& range(ranges.emplace_back());
+        ok = child.getIntAttribute(range.range_type, u"range_type", true) &&
+             child.getIntAttribute(range.video_max_disparity_hint, u"video_max_disparity_hint", range.range_type == 0) &&
+             child.getIntAttribute(range.video_min_disparity_hint, u"video_min_disparity_hint", range.range_type == 0) &&
+             child.getHexaTextChild(range.range_selector, u"range_selector", false, 0, range.range_type < 2 ? 0 : MAX_DESCRIPTOR_SIZE);
     }
     return ok;
 }

@@ -102,15 +102,9 @@ void ts::TargetMACAddressDescriptor::buildXML(DuckContext& duck, xml::Element* r
 
 bool ts::TargetMACAddressDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector children;
-    bool ok =
-        element->getMACAttribute(MAC_addr_mask, u"MAC_addr_mask", true) &&
-        element->getChildren(children, u"address", 0, MAX_ENTRIES);
-
-    for (size_t i = 0; ok && i < children.size(); ++i) {
-        MACAddress addr;
-        ok = children[i]->getMACAttribute(addr, u"MAC_addr", true);
-        MAC_addr.push_back(addr);
+    bool ok = element->getMACAttribute(MAC_addr_mask, u"MAC_addr_mask", true);
+    for (auto& child : element->children(u"address", &ok, 0, MAX_ENTRIES)) {
+        ok = child.getMACAttribute(MAC_addr.emplace_back(), u"MAC_addr", true);
     }
     return ok;
 }

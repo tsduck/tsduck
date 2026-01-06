@@ -112,12 +112,9 @@ void ts::CAIdentifierDescriptor::buildXML(DuckContext& duck, xml::Element* root)
 
 bool ts::CAIdentifierDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector children;
-    bool ok = element->getChildren(children, u"CA_system_id", 0, (MAX_DESCRIPTOR_SIZE - 2) / 2);
-    for (size_t i = 0; ok && i < children.size(); ++i) {
-        uint16_t id = 0;
-        ok = children[i]->getIntAttribute(id, u"value", true, 0, 0x0000, 0xFFFF);
-        casids.push_back(id);
+    bool ok = true;
+    for (auto& child : element->children(u"CA_system_id", &ok, 0, (MAX_DESCRIPTOR_SIZE - 2) / 2)) {
+        ok = child.getIntAttribute(casids.emplace_back(), u"value", true, 0, 0x0000, 0xFFFF);
     }
     return ok;
 }

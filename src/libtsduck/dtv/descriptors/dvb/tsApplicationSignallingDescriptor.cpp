@@ -115,14 +115,11 @@ void ts::ApplicationSignallingDescriptor::buildXML(DuckContext& duck, xml::Eleme
 
 bool ts::ApplicationSignallingDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector children;
-    bool ok = element->getChildren(children, u"application", 0, MAX_ENTRIES);
-
-    for (size_t i = 0; ok && i < children.size(); ++i) {
-        Entry entry;
-        ok = children[i]->getIntAttribute(entry.application_type, u"application_type", true, 0, 0x0000, 0x7FFF) &&
-             children[i]->getIntAttribute(entry.AIT_version_number, u"AIT_version_number", true, 0, 0x00, 0x1F);
-        entries.push_back(entry);
+    bool ok = true;
+    for (auto& child : element->children(u"application", &ok, 0, MAX_ENTRIES)) {
+        auto& entry(entries.emplace_back());
+        ok = child.getIntAttribute(entry.application_type, u"application_type", true, 0, 0x0000, 0x7FFF) &&
+             child.getIntAttribute(entry.AIT_version_number, u"AIT_version_number", true, 0, 0x00, 0x1F);
     }
     return ok;
 }

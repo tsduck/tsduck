@@ -125,17 +125,13 @@ void ts::EutelsatChannelNumberDescriptor::buildXML(DuckContext& duck, xml::Eleme
 
 bool ts::EutelsatChannelNumberDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector children;
-    bool ok = element->getChildren(children, u"service", 0, MAX_ENTRIES);
-
-    for (size_t i = 0; ok && i < children.size(); ++i) {
-        Entry entry;
-        ok =
-            children[i]->getIntAttribute(entry.onetw_id, u"original_network_id", true, 0, 0x0000, 0xFFFF) &&
-            children[i]->getIntAttribute(entry.ts_id, u"transport_stream_id", true, 0, 0x0000, 0xFFFF) &&
-            children[i]->getIntAttribute(entry.service_id, u"service_id", true, 0, 0x0000, 0xFFFF) &&
-            children[i]->getIntAttribute(entry.ecn, u"eutelsat_channel_number", true, 0, 0x0000, 0x03FF);
-        entries.push_back(entry);
+    bool ok = true;
+    for (auto& child : element->children(u"service", &ok, 0, MAX_ENTRIES)) {
+        auto& entry(entries.emplace_back());
+        ok = child.getIntAttribute(entry.onetw_id, u"original_network_id", true, 0, 0x0000, 0xFFFF) &&
+             child.getIntAttribute(entry.ts_id, u"transport_stream_id", true, 0, 0x0000, 0xFFFF) &&
+             child.getIntAttribute(entry.service_id, u"service_id", true, 0, 0x0000, 0xFFFF) &&
+             child.getIntAttribute(entry.ecn, u"eutelsat_channel_number", true, 0, 0x0000, 0x03FF);
     }
     return ok;
 }

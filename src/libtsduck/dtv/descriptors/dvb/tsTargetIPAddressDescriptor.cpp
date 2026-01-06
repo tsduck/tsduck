@@ -112,15 +112,9 @@ void ts::TargetIPAddressDescriptor::buildXML(DuckContext& duck, xml::Element* ro
 
 bool ts::TargetIPAddressDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector children;
-    bool ok =
-        element->getIPAttribute(IPv4_addr_mask, u"IPv4_addr_mask", true) &&
-        element->getChildren(children, u"address", 0, MAX_ENTRIES);
-
-    for (size_t i = 0; ok && i < children.size(); ++i) {
-        IPAddress addr;
-        ok = children[i]->getIPAttribute(addr, u"IPv4_addr", true);
-        IPv4_addr.push_back(addr);
+    bool ok = element->getIPAttribute(IPv4_addr_mask, u"IPv4_addr_mask", true);
+    for (auto& child : element->children(u"address", &ok, 0, MAX_ENTRIES)) {
+        ok = child.getIPAttribute(IPv4_addr.emplace_back(), u"IPv4_addr", true);
     }
     return ok;
 }

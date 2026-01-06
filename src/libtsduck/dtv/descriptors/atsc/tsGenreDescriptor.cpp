@@ -96,13 +96,10 @@ void ts::GenreDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 
 bool ts::GenreDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector children;
-    bool ok = element->getChildren(children, u"attribute", 0, 0x1F);
-
-    for (size_t i = 0; ok && i < children.size(); ++i) {
-        uint8_t attr = 0;
-        ok = children[i]->getIntAttribute(attr, u"value", true);
-        attributes.push_back(attr);
+    bool ok = true;
+    for (auto& it : element->children(u"attribute", &ok, 0, 0x1F)) {
+        auto& attr(attributes.emplace_back());
+        ok = it.getIntAttribute(attr, u"value", true);
     }
     return ok;
 }

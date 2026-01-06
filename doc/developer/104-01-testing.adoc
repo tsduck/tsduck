@@ -293,6 +293,30 @@ Already up to date.
 $
 ------
 
+[#testsionly]
+===== Running PSI/SI tests only
+
+Some tests scripts in the suite are dedicated to some PSI/SI tables or descriptors.
+The scripts for such tests are usually simple and only invoke the standard script `standard-si-test.sh`
+using a specific XML input file which contains the PSI/SI tables or descriptors to test.
+
+Running the complete test suite takes time.
+In some cases, when modifying code which may affect all PSI/SI, it is useful to run all related tests,
+without running the complete test suite.
+This can be done using option `--si-only`.
+
+[source,shell]
+------
+$ ./run-all-tests.sh --si-only
+------
+
+On {unix}, in the `tsduck` project, the `make` target `si-test-suite` runs that subset of the test suite.
+
+[source,shell]
+------
+$ make si-test-suite
+------
+
 [#testlargefiles]
 ===== Large files
 

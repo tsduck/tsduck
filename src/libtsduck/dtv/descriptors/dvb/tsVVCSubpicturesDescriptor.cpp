@@ -142,18 +142,13 @@ void ts::VVCSubpicturesDescriptor::buildXML(DuckContext& duck, xml::Element* roo
 
 bool ts::VVCSubpicturesDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector children;
-    bool ok =
-        element->getBoolAttribute(default_service_mode, u"default_service_mode", true) &&
-        element->getIntAttribute(processing_mode, u"processing_mode", true, 0, 0, 7) &&
-        element->getAttribute(service_description, u"service_description", false) &&
-        element->getChildren(children, u"subpicture", 0, 0x3F);
-    for (size_t i = 0; ok && i < children.size(); ++i) {
-        uint8_t ctag, sp_id;
-        ok = children[i]->getIntAttribute(ctag, u"component_tag", true, 0, 0, 0xFF) &&
-             children[i]->getIntAttribute(sp_id, u"subpicture_id", true, 0, 0, 0xFF);
-        component_tag.push_back(ctag);
-        vvc_subpicture_id.push_back(sp_id);
+    bool ok = element->getBoolAttribute(default_service_mode, u"default_service_mode", true) &&
+              element->getIntAttribute(processing_mode, u"processing_mode", true, 0, 0, 7) &&
+              element->getAttribute(service_description, u"service_description", false);
+
+    for (auto& child : element->children(u"subpicture", &ok, 0, 0x3F)) {
+        ok = child.getIntAttribute(component_tag.emplace_back(), u"component_tag", true, 0, 0, 0xFF) &&
+             child.getIntAttribute(vvc_subpicture_id.emplace_back(), u"subpicture_id", true, 0, 0, 0xFF);
     }
     return ok;
 }

@@ -508,26 +508,22 @@ void ts::EIT::buildXML(DuckContext& duck, xml::Element* root) const
 
 bool ts::EIT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector children;
-    bool ok =
-        getTableId(element) &&
-        element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
-        element->getBoolAttribute(_is_current, u"current", false, true) &&
-        element->getIntAttribute(service_id, u"service_id", true, 0, 0x0000, 0xFFFF) &&
-        element->getIntAttribute(ts_id, u"transport_stream_id", true, 0, 0x0000, 0xFFFF) &&
-        element->getIntAttribute(onetw_id, u"original_network_id", true, 0, 0x00, 0xFFFF) &&
-        element->getIntAttribute<TID>(last_table_id, u"last_table_id", false, _table_id, 0x00, 0xFF) &&
-        element->getChildren(children, u"event");
+    bool ok = getTableId(element) &&
+              element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
+              element->getBoolAttribute(_is_current, u"current", false, true) &&
+              element->getIntAttribute(service_id, u"service_id", true, 0, 0x0000, 0xFFFF) &&
+              element->getIntAttribute(ts_id, u"transport_stream_id", true, 0, 0x0000, 0xFFFF) &&
+              element->getIntAttribute(onetw_id, u"original_network_id", true, 0, 0x00, 0xFFFF) &&
+              element->getIntAttribute<TID>(last_table_id, u"last_table_id", false, _table_id, 0x00, 0xFF);
 
-    // Get all events.
-    for (size_t i = 0; ok && i < children.size(); ++i) {
+    for (auto& child : element->children(u"event", &ok)) {
         Event& event(events.newEntry());
-        ok = children[i]->getIntAttribute(event.event_id, u"event_id", true, 0, 0x0000, 0xFFFF) &&
-             children[i]->getDateTimeAttribute(event.start_time, u"start_time", true) &&
-             children[i]->getTimeAttribute(event.duration, u"duration", true) &&
-             children[i]->getEnumAttribute(event.running_status, RunningStatusEnum(), u"running_status", false, 0) &&
-             children[i]->getBoolAttribute(event.CA_controlled, u"CA_mode", false, false) &&
-             event.descs.fromXML(duck, children[i]);
+        ok = child.getIntAttribute(event.event_id, u"event_id", true, 0, 0x0000, 0xFFFF) &&
+             child.getDateTimeAttribute(event.start_time, u"start_time", true) &&
+             child.getTimeAttribute(event.duration, u"duration", true) &&
+             child.getEnumAttribute(event.running_status, RunningStatusEnum(), u"running_status", false, 0) &&
+             child.getBoolAttribute(event.CA_controlled, u"CA_mode", false, false) &&
+             event.descs.fromXML(duck, &child);
     }
     return ok;
 }

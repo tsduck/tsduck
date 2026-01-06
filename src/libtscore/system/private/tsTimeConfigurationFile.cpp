@@ -36,12 +36,10 @@ ts::TimeConfigurationFile::TimeConfigurationFile()
     }
 
     // Get leap seconds configuration.
-    xml::ElementVector xleap;
     xleap_root->getChronoAttribute(initial_seconds, u"initial", true);
-    xleap_root->getChildren(xleap, u"leap");
-    for (const auto& it : xleap) {
+    for (auto& it : xleap_root->children(u"leap")) {
         LeapSecond ls;
-        if (it->getDateTimeAttribute(ls.after, u"after", true) && it->getChronoAttribute(ls.count, u"count", true)) {
+        if (it.getDateTimeAttribute(ls.after, u"after", true) && it.getChronoAttribute(ls.count, u"count", true)) {
             leap_seconds.push_back(ls);
         }
     }

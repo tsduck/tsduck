@@ -129,19 +129,16 @@ void ts::C2BundleDeliverySystemDescriptor::buildXML(DuckContext& duck, xml::Elem
 
 bool ts::C2BundleDeliverySystemDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector children;
-    bool ok = element->getChildren(children, u"plp", 0, MAX_ENTRIES);
-
-    for (size_t i = 0; ok && i < children.size(); ++i) {
-        Entry e;
-        ok = children[i]->getIntAttribute(e.plp_id, u"plp_id", true) &&
-             children[i]->getIntAttribute(e.data_slice_id, u"data_slice_id", true) &&
-             children[i]->getIntAttribute(e.C2_system_tuning_frequency, u"C2_system_tuning_frequency", true) &&
-             children[i]->getIntAttribute(e.C2_system_tuning_frequency_type, u"C2_system_tuning_frequency_type", true, 0, 0, 3) &&
-             children[i]->getIntAttribute(e.active_OFDM_symbol_duration, u"active_OFDM_symbol_duration", true, 0, 0, 7) &&
-             children[i]->getEnumAttribute(e.guard_interval, C2DeliverySystemDescriptor::C2GuardIntervalNames(), u"guard_interval", true) &&
-             children[i]->getBoolAttribute(e.master_channel, u"master_channel", true);
-        entries.push_back(e);
+    bool ok = true;
+    for (auto& child : element->children(u"plp", &ok, 0, MAX_ENTRIES)) {
+        auto& e(entries.emplace_back());
+        ok = child.getIntAttribute(e.plp_id, u"plp_id", true) &&
+             child.getIntAttribute(e.data_slice_id, u"data_slice_id", true) &&
+             child.getIntAttribute(e.C2_system_tuning_frequency, u"C2_system_tuning_frequency", true) &&
+             child.getIntAttribute(e.C2_system_tuning_frequency_type, u"C2_system_tuning_frequency_type", true, 0, 0, 3) &&
+             child.getIntAttribute(e.active_OFDM_symbol_duration, u"active_OFDM_symbol_duration", true, 0, 0, 7) &&
+             child.getEnumAttribute(e.guard_interval, C2DeliverySystemDescriptor::C2GuardIntervalNames(), u"guard_interval", true) &&
+             child.getBoolAttribute(e.master_channel, u"master_channel", true);
     }
     return ok;
 }

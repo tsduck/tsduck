@@ -40,12 +40,18 @@ valgrind valgrind-shared valgrind-static:
 .PHONY: test-suite
 test-suite: default
 	@if [[ -d ../tsduck-test/.git ]]; then \
-	   cd ../tsduck-test; git pull; ./run-all-tests.sh --bin "$(BINDIR)"; \
+	   cd ../tsduck-test; git pull; ./run-all-tests.sh --bin "$(BINDIR)" $(TEST_SUITE_FLAGS); \
 	 elif [[ -x ../tsduck-test/run-all-tests.sh ]]; then \
-	   ../tsduck-test/run-all-tests.sh --bin "$(BINDIR)"; \
+	   ../tsduck-test/run-all-tests.sh --bin "$(BINDIR)" $(TEST_SUITE_FLAGS); \
 	 else \
 	   echo >&2 "No test repository in ../tsduck-test"; \
 	 fi
+
+# Execute the same TSDuck test suite, but only PSI/SI tests.
+
+.PHONY: si-test-suite
+si-test-suite: TEST_SUITE_FLAGS = --si-only
+si-test-suite: test-suite
 
 # Alternative target to build with cross-compilation
 
