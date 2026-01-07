@@ -258,30 +258,24 @@ void ts::AEIT::buildXML(DuckContext& duck, xml::Element* root) const
 
 bool ts::AEIT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector xsources;
-    bool ok =
-        element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
-        element->getIntAttribute(AEIT_subtype, u"AEIT_subtype", false, 0) &&
-        element->getIntAttribute(MGT_tag, u"MGT_tag", true) &&
-        element->getChildren(xsources, u"source", 0, AEIT_subtype != 0 ? 0 : xml::UNLIMITED) &&
-        (AEIT_subtype == 0 || element->getHexaTextChild(reserved, u"reserved"));                                                                                                                                                                                                (AEIT_subtype == 0 || element->getHexaTextChild(reserved, u"reserved"));
+    bool ok = element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
+              element->getIntAttribute(AEIT_subtype, u"AEIT_subtype", false, 0) &&
+              element->getIntAttribute(MGT_tag, u"MGT_tag", true) &&
+              (AEIT_subtype == 0 || element->getHexaTextChild(reserved, u"reserved"));                                                                                                                                                                                                (AEIT_subtype == 0 || element->getHexaTextChild(reserved, u"reserved"));
 
-    for (const auto& xsrc : xsources) {
-        Source& src(sources.newEntry());
-        xml::ElementVector xevent;
-        ok = xsrc->getIntAttribute(src.source_id, u"source_id", true) &&
-             xsrc->getChildren(xevent, u"event") &&
-             ok;
-        for (const auto& xd : xevent) {
-            Event& event(src.events.newEntry());
-            xml::ElementVector xtitle;
-            ok = xd->getBoolAttribute(event.off_air, u"off_air", true) &&
-                 xd->getIntAttribute(event.event_id, u"event_id", true, 0, 0, 0x3FFF) &&
-                 xd->getDateTimeAttribute(event.start_time, u"start_time", true) &&
-                 xd->getChronoAttribute(event.duration, u"duration", true, cn::seconds::zero(), cn::seconds::zero(), cn::seconds(0x000FFFFF)) &&
-                 event.descs.fromXML(duck, xtitle, xd, u"title_text") &&
-                 (xtitle.empty() || event.title_text.fromXML(duck, xtitle[0])) &&
-                 ok;
+    for (auto& xsrc : element->children(u"source", &ok, 0, AEIT_subtype != 0 ? 0 : xml::UNLIMITED)) {
+        auto& src(sources.newEntry());
+        ok = xsrc.getIntAttribute(src.source_id, u"source_id", true);
+        for (auto& xevent : xsrc.children(u"event", &ok)) {
+            auto& event(src.events.newEntry());
+            ok = xevent.getBoolAttribute(event.off_air, u"off_air", true) &&
+                 xevent.getIntAttribute(event.event_id, u"event_id", true, 0, 0, 0x3FFF) &&
+                 xevent.getDateTimeAttribute(event.start_time, u"start_time", true) &&
+                 xevent.getChronoAttribute(event.duration, u"duration", true, cn::seconds::zero(), cn::seconds::zero(), cn::seconds(0x000FFFFF)) &&
+                 event.descs.fromXML(duck, &xevent, u"title_text");
+            for (auto& xtitle : xevent.children(u"title_text", &ok, 0, 1)) {
+                 ok = event.title_text.fromXML(duck, &xtitle);
+            }
         }
     }
     return ok;

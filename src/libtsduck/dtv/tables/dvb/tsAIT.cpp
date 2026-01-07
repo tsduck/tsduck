@@ -276,30 +276,22 @@ void ts::AIT::buildXML(DuckContext& duck, xml::Element* root) const
 
 bool ts::AIT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector children;
-    bool ok =
-        element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
-        element->getBoolAttribute(_is_current, u"current", false, true) &&
-        element->getBoolAttribute(test_application_flag, u"test_application_flag", false, true) &&
-        element->getIntAttribute(application_type, u"application_type", true, 0, 0x0000, 0x7FFF) &&
-        descs.fromXML(duck, children, element, u"application");
+    bool ok = element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
+              element->getBoolAttribute(_is_current, u"current", false, true) &&
+              element->getBoolAttribute(test_application_flag, u"test_application_flag", false, true) &&
+              element->getIntAttribute(application_type, u"application_type", true, 0, 0x0000, 0x7FFF) &&
+              descs.fromXML(duck, element, u"application");
 
-    // Iterate through applications
-    for (size_t index = 0; ok && index < children.size(); ++index) {
-        Application application(this);
+    for (auto& xapp : element->children(u"application", &ok)) {
         ApplicationIdentifier identifier;
-        const xml::Element* id = children[index]->findFirstChild(u"application_identifier");
-        xml::ElementVector others;
-        UStringList allowed({ u"application_identifier" });
-
-        ok = children[index]->getIntAttribute(application.control_code, u"control_code", true, 0, 0x00, 0xFF) &&
-             application.descs.fromXML(duck, others, children[index], allowed) &&
-             id != nullptr &&
-             id->getIntAttribute(identifier.organization_id, u"organization_id", true, 0, 0, 0xFFFFFFFF) &&
-             id->getIntAttribute(identifier.application_id, u"application_id", true, 0, 0, 0xFFFF);
-
+        for (auto& xid : xapp.children(u"application_identifier", &ok, 1, 1)) {
+            ok = xid.getIntAttribute(identifier.organization_id, u"organization_id", true, 0, 0, 0xFFFFFFFF) &&
+                 xid.getIntAttribute(identifier.application_id, u"application_id", true, 0, 0, 0xFFFF);
+        }
         if (ok) {
-            applications[identifier] = std::move(application);
+            auto& application(applications[identifier]);
+            ok = xapp.getIntAttribute(application.control_code, u"control_code", true, 0, 0x00, 0xFF) &&
+                 application.descs.fromXML(duck, &xapp, u"application_identifier");
         }
     }
     return ok;

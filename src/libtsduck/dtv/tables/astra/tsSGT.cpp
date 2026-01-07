@@ -247,25 +247,23 @@ void ts::SGT::buildXML(DuckContext& duck, xml::Element* root) const
 
 bool ts::SGT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector children;
     bool ok = element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
               element->getBoolAttribute(_is_current, u"current", false, true) &&
               element->getIntAttribute(service_list_id, u"service_list_id", true) &&
-              descs.fromXML(duck, children, element, u"service");
+              descs.fromXML(duck, element, u"service");
 
-    for (auto child : children) {
+    for (auto& xserv : element->children(u"service", &ok)) {
         ServiceIdTriplet id;
-        ok = child->getIntAttribute(id.service_id, u"service_id", true) &&
-             child->getIntAttribute(id.transport_stream_id, u"transport_stream_id", true) &&
-             child->getIntAttribute(id.original_network_id, u"original_network_id", true) &&
-             ok;
+        ok = xserv.getIntAttribute(id.service_id, u"service_id", true) &&
+             xserv.getIntAttribute(id.transport_stream_id, u"transport_stream_id", true) &&
+             xserv.getIntAttribute(id.original_network_id, u"original_network_id", true);
         if (ok) {
             auto& serv(services[id]);
-            ok = child->getIntAttribute(serv.logical_channel_number, u"logical_channel_number", true, 0, 0, 0x3FFF) &&
-                 child->getBoolAttribute(serv.visible_service_flag, u"visible_service_flag", false, true) &&
-                 child->getBoolAttribute(serv.new_service_flag, u"new_service_flag", false, false) &&
-                 child->getIntAttribute(serv.genre_code, u"genre_code", false, 0xFFFF) &&
-                 serv.descs.fromXML(duck, child);
+            ok = xserv.getIntAttribute(serv.logical_channel_number, u"logical_channel_number", true, 0, 0, 0x3FFF) &&
+                 xserv.getBoolAttribute(serv.visible_service_flag, u"visible_service_flag", false, true) &&
+                 xserv.getBoolAttribute(serv.new_service_flag, u"new_service_flag", false, false) &&
+                 xserv.getIntAttribute(serv.genre_code, u"genre_code", false, 0xFFFF) &&
+                 serv.descs.fromXML(duck, &xserv);
         }
     }
     return ok;

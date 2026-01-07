@@ -371,35 +371,32 @@ void ts::SVCT::buildXML(DuckContext& duck, xml::Element* root) const
 
 bool ts::SVCT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector children;
-    bool ok =
-        element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
-        element->getBoolAttribute(_is_current, u"current", false, true) &&
-        element->getIntAttribute(SVCT_subtype, u"SVCT_subtype", false, 0) &&
-        element->getIntAttribute(SVCT_id, u"SVCT_id", true) &&
-        element->getIntAttribute(protocol_version, u"protocol_version", false, 0) &&
-        descs.fromXML(duck, children, element, u"channel");
+    bool ok = element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
+              element->getBoolAttribute(_is_current, u"current", false, true) &&
+              element->getIntAttribute(SVCT_subtype, u"SVCT_subtype", false, 0) &&
+              element->getIntAttribute(SVCT_id, u"SVCT_id", true) &&
+              element->getIntAttribute(protocol_version, u"protocol_version", false, 0) &&
+              descs.fromXML(duck, element, u"channel");
 
-    for (size_t index = 0; ok && index < children.size(); ++index) {
-        // Add a new Channel at the end of the list.
-        Channel& ch(channels.newEntry());
-        ok = children[index]->getAttribute(ch.short_name, u"short_name", true, UString(), 0, 8) &&
-             children[index]->getIntAttribute(ch.major_channel_number, u"major_channel_number", true, 0, 0, 0x03FF) &&
-             children[index]->getIntAttribute(ch.minor_channel_number, u"minor_channel_number", true, 0, 0, 0x03FF) &&
-             children[index]->getIntAttribute(ch.modulation_mode, u"modulation_mode", true, 0, 0, 0x3F) &&
-             children[index]->getIntAttribute(ch.carrier_frequency, u"carrier_frequency", true) &&
-             children[index]->getIntAttribute(ch.carrier_symbol_rate, u"carrier_symbol_rate", true) &&
-             children[index]->getIntAttribute(ch.polarization, u"polarization", true, 0, 0, 3) &&
-             children[index]->getIntAttribute(ch.FEC_Inner, u"FEC_Inner", true) &&
-             children[index]->getIntAttribute(ch.channel_TSID, u"channel_TSID", true) &&
-             children[index]->getIntAttribute(ch.program_number, u"program_number", true) &&
-             children[index]->getIntAttribute(ch.ETM_location, u"ETM_location", false, 0, 0, 3) &&
-             children[index]->getBoolAttribute(ch.hidden, u"hidden", false, false) &&
-             children[index]->getBoolAttribute(ch.hide_guide, u"hide_guide", false, false) &&
-             children[index]->getEnumAttribute(ch.service_type, VCT::ServiceTypeEnum(), u"service_type", false, ATSC_STYPE_DTV) &&
-             children[index]->getIntAttribute(ch.source_id, u"source_id", true) &&
-             children[index]->getIntAttribute(ch.feed_id, u"feed_id", true) &&
-             ch.descs.fromXML(duck, children[index]);
+    for (auto& xchan : element->children(u"channel", &ok)) {
+        auto& ch(channels.newEntry());
+        ok = xchan.getAttribute(ch.short_name, u"short_name", true, UString(), 0, 8) &&
+             xchan.getIntAttribute(ch.major_channel_number, u"major_channel_number", true, 0, 0, 0x03FF) &&
+             xchan.getIntAttribute(ch.minor_channel_number, u"minor_channel_number", true, 0, 0, 0x03FF) &&
+             xchan.getIntAttribute(ch.modulation_mode, u"modulation_mode", true, 0, 0, 0x3F) &&
+             xchan.getIntAttribute(ch.carrier_frequency, u"carrier_frequency", true) &&
+             xchan.getIntAttribute(ch.carrier_symbol_rate, u"carrier_symbol_rate", true) &&
+             xchan.getIntAttribute(ch.polarization, u"polarization", true, 0, 0, 3) &&
+             xchan.getIntAttribute(ch.FEC_Inner, u"FEC_Inner", true) &&
+             xchan.getIntAttribute(ch.channel_TSID, u"channel_TSID", true) &&
+             xchan.getIntAttribute(ch.program_number, u"program_number", true) &&
+             xchan.getIntAttribute(ch.ETM_location, u"ETM_location", false, 0, 0, 3) &&
+             xchan.getBoolAttribute(ch.hidden, u"hidden", false, false) &&
+             xchan.getBoolAttribute(ch.hide_guide, u"hide_guide", false, false) &&
+             xchan.getEnumAttribute(ch.service_type, VCT::ServiceTypeEnum(), u"service_type", false, ATSC_STYPE_DTV) &&
+             xchan.getIntAttribute(ch.source_id, u"source_id", true) &&
+             xchan.getIntAttribute(ch.feed_id, u"feed_id", true) &&
+             ch.descs.fromXML(duck, &xchan);
     }
     return ok;
 }

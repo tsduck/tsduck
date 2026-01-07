@@ -347,26 +347,22 @@ void ts::DCCSCT::buildXML(DuckContext& duck, xml::Element* root) const
 
 bool ts::DCCSCT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector children;
-    bool ok =
-        element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
-        element->getIntAttribute(protocol_version, u"protocol_version", false, 0) &&
-        element->getIntAttribute(dccsct_type, u"dccsct_type", false, 0) &&
-        descs.fromXML(duck, children, element, u"update");
+    bool ok = element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
+              element->getIntAttribute(protocol_version, u"protocol_version", false, 0) &&
+              element->getIntAttribute(dccsct_type, u"dccsct_type", false, 0) &&
+              descs.fromXML(duck, element, u"update");
 
-    for (size_t index = 0; ok && index < children.size(); ++index) {
-        // Add a new Update at the end of the list.
-        Update& upd(updates.newEntry());
-        xml::ElementVector unused;
-        ok = children[index]->getEnumAttribute(upd.update_type, UpdateTypeNames(), u"update_type", true) &&
-            children[index]->getIntAttribute(upd.genre_category_code, u"genre_category_code", upd.update_type == new_genre_category) &&
-            children[index]->getIntAttribute(upd.dcc_state_location_code, u"dcc_state_location_code", upd.update_type == new_state) &&
-            children[index]->getIntAttribute(upd.state_code, u"state_code", upd.update_type == new_county) &&
-            children[index]->getIntAttribute(upd.dcc_county_location_code, u"dcc_county_location_code", upd.update_type == new_county, 0, 0, 0x03FF) &&
-            upd.genre_category_name_text.fromXML(duck, children[index], u"genre_category_name_text", upd.update_type == new_genre_category) &&
-            upd.dcc_state_location_code_text.fromXML(duck, children[index], u"dcc_state_location_code_text", upd.update_type == new_state) &&
-            upd.dcc_county_location_code_text.fromXML(duck, children[index], u"dcc_county_location_code_text", upd.update_type == new_county) &&
-            upd.descs.fromXML(duck, unused, children[index], u"genre_category_name_text,dcc_state_location_code_text,dcc_county_location_code_text");
+    for (auto& xupdate : element->children(u"update", &ok)) {
+        auto& upd(updates.newEntry());
+        ok = xupdate.getEnumAttribute(upd.update_type, UpdateTypeNames(), u"update_type", true) &&
+             xupdate.getIntAttribute(upd.genre_category_code, u"genre_category_code", upd.update_type == new_genre_category) &&
+             xupdate.getIntAttribute(upd.dcc_state_location_code, u"dcc_state_location_code", upd.update_type == new_state) &&
+             xupdate.getIntAttribute(upd.state_code, u"state_code", upd.update_type == new_county) &&
+             xupdate.getIntAttribute(upd.dcc_county_location_code, u"dcc_county_location_code", upd.update_type == new_county, 0, 0, 0x03FF) &&
+             upd.genre_category_name_text.fromXML(duck, &xupdate, u"genre_category_name_text", upd.update_type == new_genre_category) &&
+             upd.dcc_state_location_code_text.fromXML(duck, &xupdate, u"dcc_state_location_code_text", upd.update_type == new_state) &&
+             upd.dcc_county_location_code_text.fromXML(duck, &xupdate, u"dcc_county_location_code_text", upd.update_type == new_county) &&
+             upd.descs.fromXML(duck, &xupdate, u"genre_category_name_text,dcc_state_location_code_text,dcc_county_location_code_text");
     }
     return ok;
 }

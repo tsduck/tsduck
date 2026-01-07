@@ -481,32 +481,52 @@ namespace ts {
         //!
         //! This method decodes an XML list of descriptors.
         //! @param [in,out] duck TSDuck execution context.
-        //! @param [out] others Returned list of non-descriptor XML elements.
-        //! All these elements are not null and their names are in @a allowedOthers.
-        //! @param [in] parent The XML element containing all descriptors.
-        //! @param [in] allowedOthers A list of allowed element names inside @a parent which are not descriptors.
-        //! @return True on success, false on error.
-        //!
-        bool fromXML(DuckContext& duck, xml::ElementVector& others, const xml::Element* parent, const UStringList& allowedOthers);
-
-        //!
-        //! This method decodes an XML list of descriptors.
-        //! @param [in,out] duck TSDuck execution context.
-        //! @param [out] others Returned list of non-descriptor XML elements.
-        //! All these elements are not null and their names are in @a allowedOthers.
-        //! @param [in] parent The XML element containing all descriptors.
-        //! @param [in] allowedOthers A comma-separated list of allowed element names inside @a parent which are not descriptors.
-        //! @return True on success, false on error.
-        //!
-        bool fromXML(DuckContext& duck, xml::ElementVector& others, const xml::Element* parent, const UString& allowedOthers);
-
-        //!
-        //! This method decodes an XML list of descriptors.
-        //! @param [in,out] duck TSDuck execution context.
         //! @param [in] parent The XML element containing all descriptors. All children must be valid descriptors.
         //! @return True on success, false on error.
         //!
         bool fromXML(DuckContext& duck, const xml::Element* parent);
+
+        //!
+        //! This method decodes an XML list of descriptors.
+        //! @param [in,out] duck TSDuck execution context.
+        //! @param [in] parent The XML element containing all descriptors.
+        //! @param [in] allowed_others A list of allowed element names inside @a parent which are not descriptors.
+        //! @return True on success, false on error.
+        //!
+        bool fromXML(DuckContext& duck, const xml::Element* parent, const UStringList& allowed_others);
+
+        //!
+        //! This method decodes an XML list of descriptors.
+        //! @param [in,out] duck TSDuck execution context.
+        //! @param [in] parent The XML element containing all descriptors.
+        //! @param [in] allowed_others A comma-separated list of allowed element names inside @a parent which are not descriptors.
+        //! @return True on success, false on error.
+        //!
+        bool fromXML(DuckContext& duck, const xml::Element* parent, const UString& allowed_others);
+
+        //!
+        //! This method decodes an XML list of descriptors.
+        //! @param [in,out] duck TSDuck execution context.
+        //! @param [out] others Returned list of non-descriptor XML elements.
+        //! All these elements are not null and their names are in @a allowed_others.
+        //! @param [in] parent The XML element containing all descriptors.
+        //! @param [in] allowed_others A list of allowed element names inside @a parent which are not descriptors.
+        //! @return True on success, false on error.
+        // @@@@ this method will be removed after current refactoring of XML iteration
+        //!
+        bool fromXML(DuckContext& duck, xml::ElementVector& others, const xml::Element* parent, const UStringList& allowed_others);
+
+        //!
+        //! This method decodes an XML list of descriptors.
+        //! @param [in,out] duck TSDuck execution context.
+        //! @param [out] others Returned list of non-descriptor XML elements.
+        //! All these elements are not null and their names are in @a allowed_others.
+        //! @param [in] parent The XML element containing all descriptors.
+        //! @param [in] allowed_others A comma-separated list of allowed element names inside @a parent which are not descriptors.
+        //! @return True on success, false on error.
+        // @@@@ this method will be removed after current refactoring of XML iteration
+        //!
+        bool fromXML(DuckContext& duck, xml::ElementVector& others, const xml::Element* parent, const UString& allowed_others);
 
     private:
         // Vector of safe pointers to descriptors.

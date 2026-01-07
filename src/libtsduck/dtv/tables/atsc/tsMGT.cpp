@@ -272,20 +272,17 @@ void ts::MGT::buildXML(DuckContext& duck, xml::Element* root) const
 
 bool ts::MGT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector children;
-    bool ok =
-        element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
-        element->getIntAttribute(protocol_version, u"protocol_version", false, 0) &&
-        descs.fromXML(duck, children, element, u"table");
+    bool ok = element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
+              element->getIntAttribute(protocol_version, u"protocol_version", false, 0) &&
+              descs.fromXML(duck, element, u"table");
 
-    for (size_t index = 0; ok && index < children.size(); ++index) {
-        // Add a new TableType at the end of the list.
-        TableType& tt(tables.newEntry());
-        ok = children[index]->getEnumAttribute(tt.table_type, TableTypeEnum(), u"type", true) &&
-             children[index]->getIntAttribute<PID>(tt.table_type_PID, u"PID", true, 0, 0x0000, 0x1FFF) &&
-             children[index]->getIntAttribute(tt.table_type_version_number, u"version_number", true, 0, 0, 31) &&
-             children[index]->getIntAttribute(tt.number_bytes, u"number_bytes", true) &&
-             tt.descs.fromXML(duck, children[index]);
+    for (auto& xtable : element->children(u"table", &ok)) {
+        auto& tt(tables.newEntry());
+        ok = xtable.getEnumAttribute(tt.table_type, TableTypeEnum(), u"type", true) &&
+             xtable.getIntAttribute<PID>(tt.table_type_PID, u"PID", true, 0, 0x0000, 0x1FFF) &&
+             xtable.getIntAttribute(tt.table_type_version_number, u"version_number", true, 0, 0, 31) &&
+             xtable.getIntAttribute(tt.number_bytes, u"number_bytes", true) &&
+             tt.descs.fromXML(duck, &xtable);
     }
     return ok;
 }

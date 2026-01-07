@@ -215,23 +215,20 @@ void ts::DET::buildXML(DuckContext& duck, xml::Element* root) const
 
 bool ts::DET::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector xdata;
-    bool ok =
-        element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
-        element->getIntAttribute(source_id, u"source_id", true) &&
-        element->getIntAttribute(protocol_version, u"protocol_version", false, 0) &&
-        element->getChildren(xdata, u"data");
+    bool ok = element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
+              element->getIntAttribute(source_id, u"source_id", true) &&
+              element->getIntAttribute(protocol_version, u"protocol_version", false, 0);
 
-    // Get all data events.
-    for (size_t i = 0; ok && i < xdata.size(); ++i) {
-        Data& event(data.newEntry());
-        xml::ElementVector xtitle;
-        ok = xdata[i]->getIntAttribute(event.data_id, u"data_id", true, 0, 0, 0x3FFF) &&
-             xdata[i]->getDateTimeAttribute(event.start_time, u"start_time", true) &&
-             xdata[i]->getIntAttribute(event.ETM_location, u"ETM_location", true, 0, 0, 3) &&
-             xdata[i]->getChronoAttribute(event.length_in_seconds, u"length_in_seconds", true, cn::seconds::zero(), cn::seconds::zero(), cn::seconds(0x000FFFFF)) &&
-             event.descs.fromXML(duck, xtitle, xdata[i], u"title_text") &&
-             (xtitle.empty() || event.title_text.fromXML(duck, xtitle[0]));
+    for (auto& xdata : element->children(u"data", &ok)) {
+        auto& event(data.newEntry());
+        ok = xdata.getIntAttribute(event.data_id, u"data_id", true, 0, 0, 0x3FFF) &&
+             xdata.getDateTimeAttribute(event.start_time, u"start_time", true) &&
+             xdata.getIntAttribute(event.ETM_location, u"ETM_location", true, 0, 0, 3) &&
+             xdata.getChronoAttribute(event.length_in_seconds, u"length_in_seconds", true, cn::seconds::zero(), cn::seconds::zero(), cn::seconds(0x000FFFFF)) &&
+             event.descs.fromXML(duck, &xdata, u"title_text");
+        for (auto& xtitle : xdata.children(u"title_text", &ok, 0, 1)) {
+             ok = event.title_text.fromXML(duck, &xtitle);
+        }
     }
     return ok;
 }

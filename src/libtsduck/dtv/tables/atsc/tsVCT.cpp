@@ -479,36 +479,33 @@ void ts::VCT::buildXML(DuckContext& duck, xml::Element* root) const
 
 bool ts::VCT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector children;
-    bool ok =
-        element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
-        element->getBoolAttribute(_is_current, u"current", false, true) &&
-        element->getIntAttribute(protocol_version, u"protocol_version", false, 0) &&
-        element->getIntAttribute(transport_stream_id, u"transport_stream_id", true) &&
-        descs.fromXML(duck, children, element, u"channel");
+    bool ok = element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
+              element->getBoolAttribute(_is_current, u"current", false, true) &&
+              element->getIntAttribute(protocol_version, u"protocol_version", false, 0) &&
+              element->getIntAttribute(transport_stream_id, u"transport_stream_id", true) &&
+              descs.fromXML(duck, element, u"channel");
 
-    for (size_t index = 0; ok && index < children.size(); ++index) {
-        // Add a new Channel at the end of the list.
-        Channel& ch(channels.newEntry());
-        ok = children[index]->getAttribute(ch.short_name, u"short_name", true, UString(), 0, 7) &&
-             children[index]->getIntAttribute(ch.major_channel_number, u"major_channel_number", true, 0, 0, 0x03FF) &&
-             children[index]->getIntAttribute(ch.minor_channel_number, u"minor_channel_number", true, 0, 0, 0x03FF) &&
-             children[index]->getEnumAttribute(ch.modulation_mode, ModulationModeEnum(), u"modulation_mode", true) &&
-             children[index]->getIntAttribute(ch.carrier_frequency, u"carrier_frequency", false, 0) &&
-             children[index]->getIntAttribute(ch.channel_TSID, u"channel_TSID", true) &&
-             children[index]->getIntAttribute(ch.program_number, u"program_number", true) &&
-             children[index]->getIntAttribute(ch.ETM_location, u"ETM_location", false, 0, 0x00, 0x03) &&
-             children[index]->getBoolAttribute(ch.access_controlled, u"access_controlled", false, false) &&
-             children[index]->getBoolAttribute(ch.hidden, u"hidden", false, false) &&
-             children[index]->getBoolAttribute(ch.hide_guide, u"hide_guide", false, false) &&
-             children[index]->getEnumAttribute(ch.service_type, ServiceTypeEnum(), u"service_type", false, ATSC_STYPE_DTV) &&
-             children[index]->getIntAttribute(ch.source_id, u"source_id", true) &&
-             ch.descs.fromXML(duck, children[index]);
+    for (auto& xchan : element->children(u"channel", &ok)) {
+        auto& ch(channels.newEntry());
+        ok = xchan.getAttribute(ch.short_name, u"short_name", true, UString(), 0, 7) &&
+             xchan.getIntAttribute(ch.major_channel_number, u"major_channel_number", true, 0, 0, 0x03FF) &&
+             xchan.getIntAttribute(ch.minor_channel_number, u"minor_channel_number", true, 0, 0, 0x03FF) &&
+             xchan.getEnumAttribute(ch.modulation_mode, ModulationModeEnum(), u"modulation_mode", true) &&
+             xchan.getIntAttribute(ch.carrier_frequency, u"carrier_frequency", false, 0) &&
+             xchan.getIntAttribute(ch.channel_TSID, u"channel_TSID", true) &&
+             xchan.getIntAttribute(ch.program_number, u"program_number", true) &&
+             xchan.getIntAttribute(ch.ETM_location, u"ETM_location", false, 0, 0x00, 0x03) &&
+             xchan.getBoolAttribute(ch.access_controlled, u"access_controlled", false, false) &&
+             xchan.getBoolAttribute(ch.hidden, u"hidden", false, false) &&
+             xchan.getBoolAttribute(ch.hide_guide, u"hide_guide", false, false) &&
+             xchan.getEnumAttribute(ch.service_type, ServiceTypeEnum(), u"service_type", false, ATSC_STYPE_DTV) &&
+             xchan.getIntAttribute(ch.source_id, u"source_id", true) &&
+             ch.descs.fromXML(duck, &xchan);
 
         if (ok && _table_id == TID_CVCT) {
             // CVCT-specific fields.
-            ok = children[index]->getIntAttribute(ch.path_select, u"path_select", false, 0, 0, 1) &&
-                 children[index]->getBoolAttribute(ch.out_of_band, u"out_of_band", false, false);
+            ok = xchan.getIntAttribute(ch.path_select, u"path_select", false, 0, 0, 1) &&
+                 xchan.getBoolAttribute(ch.out_of_band, u"out_of_band", false, false);
         }
     }
     return ok;

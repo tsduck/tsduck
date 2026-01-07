@@ -373,37 +373,30 @@ void ts::DST::buildXML(DuckContext& duck, xml::Element* root) const
 
 bool ts::DST::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector xapps, unused;
     bool ok = element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
               element->getIntAttribute(table_id_extension, u"table_id_extension", false, 0xFFFF) &&
               element->getIntAttribute(sdf_protocol_version, u"sdf_protocol_version", false, 1) &&
-              element->getChildren(xapps, u"application") &&
               element->getHexaTextChild(service_private_data, u"service_private_data") &&
-              descs.fromXML(duck, unused, element, u"application,service_private_data");
+              descs.fromXML(duck, element, u"application,service_private_data");
 
-    for (auto xapp : xapps) {
-        xml::ElementVector xtaps, xid;
-        Application& app(apps.newEntry());
+    for (auto& xapp : element->children(u"application", &ok)) {
+        auto& app(apps.newEntry());
         static const UString OTHER_TAGS = UString(u"app_id,app_data,tap,") + DSMCCCompatibilityDescriptor::DEFAULT_XML_NAME;
-        ok = app.compatibility_descriptor.fromXML(duck, xapp) &&
-             xapp->getChildren(xid, u"app_id", 0, 1) &&
-             xapp->getChildren(xtaps, u"tap") &&
-             xapp->getHexaTextChild(app.app_data, u"app_data") &&
-             app.descs.fromXML(duck, unused, xapp, OTHER_TAGS) &&
-             ok;
-        if (ok && !xid.empty()) {
+        ok = app.compatibility_descriptor.fromXML(duck, &xapp) &&
+             xapp.getHexaTextChild(app.app_data, u"app_data");
+             app.descs.fromXML(duck, &xapp, OTHER_TAGS);
+        for (auto& xid : xapp.children(u"app_id", &ok, 0, 1)) {
             app.app_id_description = uint16_t(0); // uint16_t cast required by MSVC.
-            ok = xid[0]->getIntAttribute(app.app_id_description.value(), u"description", true) &&
-                 xid[0]->getHexaText(app.app_id);
+            ok = xid.getIntAttribute(app.app_id_description.value(), u"description", true) &&
+                 xid.getHexaText(app.app_id);
         }
-        for (auto xtap : xtaps) {
-            Tap& tap(app.taps.newEntry());
-            ok = xtap->getIntAttribute(tap.protocol_encapsulation, u"protocol_encapsulation", true) &&
-                 xtap->getIntAttribute(tap.action_type, u"action_type", true, 0, 0, 0x7F) &&
-                 xtap->getBoolAttribute(tap.resource_location, u"resource_location", true) &&
-                 tap.tap.fromXML(duck, xtap) &&
-                 tap.descs.fromXML(duck, unused, xtap, DSMCCTap::DEFAULT_XML_NAME) &&
-                 ok;
+        for (auto& xtap : xapp.children(u"tap", & ok)) {
+            auto& tap(app.taps.newEntry());
+            ok = xtap.getIntAttribute(tap.protocol_encapsulation, u"protocol_encapsulation", true) &&
+                 xtap.getIntAttribute(tap.action_type, u"action_type", true, 0, 0, 0x7F) &&
+                 xtap.getBoolAttribute(tap.resource_location, u"resource_location", true) &&
+                 tap.tap.fromXML(duck, &xtap) &&
+                 tap.descs.fromXML(duck, &xtap, DSMCCTap::DEFAULT_XML_NAME);
         }
     }
     return ok;

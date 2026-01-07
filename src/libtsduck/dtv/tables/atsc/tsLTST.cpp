@@ -247,28 +247,23 @@ void ts::LTST::buildXML(DuckContext& duck, xml::Element* root) const
 bool ts::LTST::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     xml::ElementVector xsources;
-    bool ok =
-        element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
-        element->getIntAttribute(table_id_extension, u"table_id_extension", true) &&
-        element->getIntAttribute(protocol_version, u"protocol_version", false, 0) &&
-        element->getChildren(xsources, u"source");
+    bool ok = element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
+              element->getIntAttribute(table_id_extension, u"table_id_extension", true) &&
+              element->getIntAttribute(protocol_version, u"protocol_version", false, 0);
 
-    for (const auto& xsrc : xsources) {
-        Source& src(sources.newEntry());
-        xml::ElementVector xdata;
-        ok = xsrc->getIntAttribute(src.source_id, u"source_id", true) &&
-             xsrc->getChildren(xdata, u"data") &&
-             ok;
-        for (const auto& xd : xdata) {
-            Data& event(src.data.newEntry());
-            xml::ElementVector xtitle;
-            ok = xd->getIntAttribute(event.data_id, u"data_id", true, 0, 0, 0x3FFF) &&
-                 xd->getDateTimeAttribute(event.start_time, u"start_time", true) &&
-                 xd->getIntAttribute(event.ETM_location, u"ETM_location", true, 0, 0, 3) &&
-                 xd->getChronoAttribute(event.length_in_seconds, u"length_in_seconds", true, cn::seconds::zero(), cn::seconds::zero(), cn::seconds(0x000FFFFF)) &&
-                 event.descs.fromXML(duck, xtitle, xd, u"title_text") &&
-                 (xtitle.empty() || event.title_text.fromXML(duck, xtitle[0])) &&
-                 ok;
+    for (auto& xsrc : element->children(u"source", &ok)) {
+        auto& src(sources.newEntry());
+        ok = xsrc.getIntAttribute(src.source_id, u"source_id", true);
+        for (auto& xd : xsrc.children(u"data", &ok)) {
+            auto& event(src.data.newEntry());
+            ok = xd.getIntAttribute(event.data_id, u"data_id", true, 0, 0, 0x3FFF) &&
+                 xd.getDateTimeAttribute(event.start_time, u"start_time", true) &&
+                 xd.getIntAttribute(event.ETM_location, u"ETM_location", true, 0, 0, 3) &&
+                 xd.getChronoAttribute(event.length_in_seconds, u"length_in_seconds", true, cn::seconds::zero(), cn::seconds::zero(), cn::seconds(0x000FFFFF)) &&
+                 event.descs.fromXML(duck, &xd, u"title_text");
+            for (auto& xtitle : xd.children(u"title_text", &ok, 0, 1)) {
+                ok = event.title_text.fromXML(duck, &xtitle);
+            }
         }
     }
     return ok;

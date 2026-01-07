@@ -216,23 +216,20 @@ void ts::ATSCEIT::buildXML(DuckContext& duck, xml::Element* root) const
 
 bool ts::ATSCEIT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector xevent;
-    bool ok =
-        element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
-        element->getIntAttribute(source_id, u"source_id", true) &&
-        element->getIntAttribute(protocol_version, u"protocol_version", false, 0) &&
-        element->getChildren(xevent, u"event");
+    bool ok = element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
+              element->getIntAttribute(source_id, u"source_id", true) &&
+              element->getIntAttribute(protocol_version, u"protocol_version", false, 0);
 
-    // Get all events.
-    for (size_t i = 0; ok && i < xevent.size(); ++i) {
-        Event& event(events.newEntry());
-        xml::ElementVector xtitle;
-        ok = xevent[i]->getIntAttribute(event.event_id, u"event_id", true, 0, 0, 0x3FFF) &&
-             xevent[i]->getDateTimeAttribute(event.start_time, u"start_time", true) &&
-             xevent[i]->getIntAttribute(event.ETM_location, u"ETM_location", true, 0, 0, 3) &&
-             xevent[i]->getChronoAttribute(event.length_in_seconds, u"length_in_seconds", true, cn::seconds::zero(), cn::seconds::zero(), cn::seconds(0x000FFFFF)) &&
-             event.descs.fromXML(duck, xtitle, xevent[i], u"title_text") &&
-             (xtitle.empty() || event.title_text.fromXML(duck, xtitle[0]));
+    for (auto& xevent : element->children(u"event", &ok)) {
+        auto& event(events.newEntry());
+        ok = xevent.getIntAttribute(event.event_id, u"event_id", true, 0, 0, 0x3FFF) &&
+             xevent.getDateTimeAttribute(event.start_time, u"start_time", true) &&
+             xevent.getIntAttribute(event.ETM_location, u"ETM_location", true, 0, 0, 3) &&
+             xevent.getChronoAttribute(event.length_in_seconds, u"length_in_seconds", true, cn::seconds::zero(), cn::seconds::zero(), cn::seconds(0x000FFFFF)) &&
+             event.descs.fromXML(duck, &xevent, u"title_text");
+        for (auto& xtitle : xevent.children(u"title_text", &ok, 0, 1)) {
+            ok = event.title_text.fromXML(duck, &xtitle);
+        }
     }
     return ok;
 }
