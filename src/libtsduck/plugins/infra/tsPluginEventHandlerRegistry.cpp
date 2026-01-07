@@ -43,7 +43,7 @@ void ts::PluginEventHandlerRegistry::registerEventHandler(PluginEventHandlerInte
 
 
 //----------------------------------------------------------------------------
-// Unregister all occurences of an event handler.
+// Unregister all occurrences of an event handler.
 //----------------------------------------------------------------------------
 
 void ts::PluginEventHandlerRegistry::unregisterEventHandler(PluginEventHandlerInterface* handler)

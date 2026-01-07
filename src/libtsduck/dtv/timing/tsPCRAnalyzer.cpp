@@ -230,7 +230,7 @@ bool ts::PCRAnalyzer::feedPacket(const TSPacket& pkt)
         else if (pkt.hasPayload()) {
             // Packet has payload. Compute next continuity counter.
             uint8_t next_cont((ps.cur_continuity + 1) & 0x0F);
-            // The countinuity counter must be either identical to previous one (duplicated packet) or adjacent.
+            // The continuity counter must be either identical to previous one (duplicated packet) or adjacent.
             broken_rate = continuity_cnt != ps.cur_continuity && continuity_cnt != next_cont;
         }
         else if (continuity_cnt != ps.cur_continuity) {

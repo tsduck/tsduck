@@ -227,7 +227,7 @@ bool ts::ArgsWithPlugins::analyze(const UString& app_name, const UStringVector& 
     const size_t proc_count = pluginCount(PluginType::PROCESSOR);
     const size_t out_count = pluginCount(PluginType::OUTPUT);
 
-    // Check min and max number of occurences of each plugin type.
+    // Check min and max number of occurrences of each plugin type.
     if (in_count < _min_inputs) {
         error(u"not enough input plugins, need at least %d", _min_inputs);
         return false;

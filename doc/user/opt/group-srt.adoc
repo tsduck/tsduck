@@ -360,7 +360,7 @@ A string limited to 512 characters that can be set on the socket prior to connec
 This stream ID will be able to be retrieved by the listener side from the socket that is returned from `srt_accept()`
 and was connected by a socket with that set stream ID (so you usually use SET on the socket used for `srt_connect()`
 and GET on the socket retrieved from `srt_accept()`).
-This string can be used completely free-form, however it's highly recommended to follow the SRT Access Control guidlines.
+This string can be used completely free-form, however it's highly recommended to follow the SRT Access Control guidelines.
 
 [.opt]
 *--tlpktdrop*

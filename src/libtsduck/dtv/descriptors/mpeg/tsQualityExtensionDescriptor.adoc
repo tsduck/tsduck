@@ -6,7 +6,7 @@ Defined by MPEG in <<ISO-13818-1>>.
 ----
 <quality_extension_descriptor field_size_bytes="uint8, required">
 
-  <!-- between 1 and 255 metric codes to be provied (although only 7 are defined) -->
+  <!-- between 1 and 255 metric codes to be provided (although only 7 are defined) -->
   <metric code="uint32, required"/>
 
 </quality_extension_descriptor>

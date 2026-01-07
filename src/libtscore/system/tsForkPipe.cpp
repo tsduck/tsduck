@@ -17,7 +17,7 @@
 #define PIPE_WRITEFD 1
 #define PIPE_COUNT   2
 
-// Path to defaut basic shell on UNIX systems.
+// Path to default basic shell on UNIX systems.
 // Can be overridden on the command line, eg. make CXXFLAGS_EXTRA="-DTS_SHELL_PATH=/foo/bar/bin/sh"
 #if !defined(TS_SHELL_PATH)
     #define TS_SHELL_PATH /bin/sh

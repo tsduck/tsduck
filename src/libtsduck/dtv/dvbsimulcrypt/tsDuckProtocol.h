@@ -65,7 +65,7 @@ namespace ts {
     //!     A 2-byte PID value.
     //!
     //! PRM_TIMESTAMP
-    //!     A timestamp identifying the occurence of the event. Same format
+    //!     A timestamp identifying the occurrence of the event. Same format
     //!     as the activation_time in the EIS<=>SCS DVB Simulcrypt protocol:
     //!        year       2 bytes
     //!        month      1 byte

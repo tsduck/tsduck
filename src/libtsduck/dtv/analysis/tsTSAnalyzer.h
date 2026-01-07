@@ -241,11 +241,11 @@ namespace ts {
         public:
             // Public members - Synthetic data (do not modify outside XTIDContext methods)
             const XTID xtid;                       //!< XTID value.
-            uint64_t   table_count = 0;            //!< Number of occurences of this table (section# 0).
-            uint64_t   section_count = 0;          //!< Number of occurences of sections in this table.
-            uint64_t   repetition_ts = 0;          //!< Average number of TS packets between occurences of this table (section# 0).
-            uint64_t   min_repetition_ts = 0;      //!< Minimum number of TS packets between occurences of this table (section# 0).
-            uint64_t   max_repetition_ts = 0;      //!< Maximum number of TS packets between occurences of this table (section# 0).
+            uint64_t   table_count = 0;            //!< Number of occurrences of this table (section# 0).
+            uint64_t   section_count = 0;          //!< Number of occurrences of sections in this table.
+            uint64_t   repetition_ts = 0;          //!< Average number of TS packets between occurrences of this table (section# 0).
+            uint64_t   min_repetition_ts = 0;      //!< Minimum number of TS packets between occurrences of this table (section# 0).
+            uint64_t   max_repetition_ts = 0;      //!< Maximum number of TS packets between occurrences of this table (section# 0).
             uint8_t    first_version = 0;          //!< First version encountered.
             uint8_t    last_version = 0;           //!< First version encountered.
             std::bitset<SVERSION_MAX> versions {}; //!< Set of versions.

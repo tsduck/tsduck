@@ -11,9 +11,9 @@ Defined by ARIB in <<ARIB-B10J>>.
    modulation_type_B="uint2, required"
    modulation_type_C="uint2, required">
 
-   <addtional_connected_transmission_info>
+   <additional_connected_transmission_info>
      Hexadecimal data
-   </addtional_connected_transmission_info>
+   </additional_connected_transmission_info>
 
 </ISDB_connected_transmission_descriptor>
 ----

@@ -164,7 +164,7 @@ namespace ts::hls {
         UString textContent(Report& report = CERR) const;
 
         //!
-        //! Get the orginal loaded text content of the playlist.
+        //! Get the original loaded text content of the playlist.
         //! This can be different from the current content of the playlist
         //! if the object has been modified.
         //! @return A constant reference to the original loaded text lines.

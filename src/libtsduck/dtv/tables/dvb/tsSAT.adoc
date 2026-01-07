@@ -39,8 +39,8 @@ Defined by DVB in <<ETSI-300-468>>.
     <!-- 1 or more cell_fragment required -->
     <cell_fragment
         cell_fragment_id="uint32, required"
-        first_occurence="bool, required"
-        last_occurence="bool, required"
+        first_occurrence="bool, required"
+        last_occurrence="bool, required"
         center_latitude="int18, optional"
         center_longitude="int19, optional"
         max_distance="uint24, optional">

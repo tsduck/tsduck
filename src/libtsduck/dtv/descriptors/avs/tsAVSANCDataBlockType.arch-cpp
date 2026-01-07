@@ -303,7 +303,7 @@ void ts::anc_data_block_type::loudness_metadata_block_type::avs3_loudness::displ
         case 0x6:  // Loudness range defined in EBU-R 128
             disp << UString::Format(u": %5.2f (%d)", LoudnessValToRange(loudnessVal), loudnessVal);
             break;
-        case 0x7:  // Sound presssure level
+        case 0x7:  // Sound pressure level
             disp << UString::Format(u": %6.4f (%d)", 80 + loudnessVal, loudnessVal);
             break;
         case 0x8:  // Create room type

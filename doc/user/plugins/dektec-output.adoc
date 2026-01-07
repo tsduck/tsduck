@@ -494,7 +494,7 @@ The default is native interleave.
 
 [.optdoc]
 All modulators devices: try to guess default modulation parameters from input stream.
-All explicitely specified parameters override these defaults.
+All explicitly specified parameters override these defaults.
 
 [.optdoc]
 If the input plugin is `dvb`,
@@ -508,7 +508,7 @@ With other input plugins, if the specified output modulation is DVB-T or DVB-T2,
 try to guess the following modulation parameters from the input bitrate:
 `--bandwidth` `--constellation` `--convolutional-rate` `--guard-interval`.
 When a specific bitrate can be produced by distinct combinations of modulation parameters,
-a deterministic order is applied to select the prefered combination.
+a deterministic order is applied to select the preferred combination.
 
 [.opt]
 *--inversion*

@@ -275,7 +275,7 @@ The four possible representations are listed below:
   But the accuracy of computations is not always preserved.
 * *64-bit fixed-point value with 1 decimal digit*:
   The underlying representation is a 64-bit integer type. The performances are correct.
-  The accurancy is better than with integers but with one decimal only.
+  The accuracy is better than with integers but with one decimal only.
   Using more than one decimal is possible but may lead to intermediate overflows.
 * *64-bit integer values*:
   This provides the best performance but no accuracy below one bit per second.
@@ -688,7 +688,7 @@ This option is meaningful only when the signalization is incorrect,
 when MPEG private descriptors appear in tables without the correct preceding `registration_descriptor`.
 
 [.optdoc]
-Several options `--default-registration` can be specifed.
+Several options `--default-registration` can be specified.
 Unlike DVB private data specifiers, several MPEG registration ids can be simultaneously defined.
 When several default registration ids are specified, they are used as if they were placed in
 as many `registration_descriptor`, in the same order as the options on the command line,
@@ -1412,7 +1412,7 @@ Smaller examples are shown in the patch file below:
 In [1], any service with id 10 in any PAT is updated with attribute `program_map_PID="1000"`.
 
 In [2], in any service with id 20 in any PAT, the attribute `program_map_PID` is deleted
-(this results in an invalid PAT but this is for the demonstation only).
+(this results in an invalid PAT but this is for the demonstration only).
 
 In [3], any service with id 30 in any PAT is deleted.
 

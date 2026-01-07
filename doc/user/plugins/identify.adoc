@@ -14,7 +14,7 @@ Identify PID's based on various criteria
 
 This plugin explores the signalization of the transport stream to identify all PID's which satisfy some selection criteria.
 
-By default, a log message is issued for each newly idenfied PID.
+By default, a log message is issued for each newly identified PID.
 It is also possible to set one or more labels on all packets of the identified PID's.
 Using labels, it is possible to identify these packets in other plugins, downstream the chain of processing.
 
@@ -45,7 +45,7 @@ This option is typically useful with `--set-environment-variable`.
 If another plugin, downstream the chain, uses this environment variable,
 using `--only-label NN` on that plugin ensures that the plugin only starts after the PID is identified
 and therefore after the environment variable is defined.
-As another more radical example, using `-P filter --negate --label NN` deletes all TS packets until the PID is idenfified.
+As another more radical example, using `-P filter --negate --label NN` deletes all TS packets until the PID is identified.
 
 [.optdoc]
 See also the option `--set-label`.

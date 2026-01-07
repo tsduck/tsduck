@@ -834,58 +834,58 @@ namespace ts {
         UString toDecomposedDiacritical() const;
 
         //!
-        //! Remove all occurences of a substring.
+        //! Remove all occurrences of a substring.
         //! @param [in] substr Substring to remove.
         //!
         void remove(const UString& substr);
 
         //!
-        //! Remove all occurences of a character.
+        //! Remove all occurrences of a character.
         //! @param [in] c Character to remove.
         //!
         void remove(UChar c);
 
         //!
-        //! Remove all occurences of a substring.
+        //! Remove all occurrences of a substring.
         //! @param [in] substr Substring to remove.
-        //! @return This string with all occurences of @a substr removed.
+        //! @return This string with all occurrences of @a substr removed.
         //!
         UString toRemoved(const UString& substr) const;
 
         //!
-        //! Remove all occurences of a character.
+        //! Remove all occurrences of a character.
         //! @param [in] c Character to remove.
-        //! @return This string with all occurences of @a substr removed.
+        //! @return This string with all occurrences of @a substr removed.
         //!
         UString toRemoved(UChar c) const;
 
         //!
-        //! Substitute all occurences of a string with another one.
+        //! Substitute all occurrences of a string with another one.
         //! @param [in] value Value to search.
         //! @param [in] replacement Replacement string for @a value.
         //!
         void substitute(const UString& value, const UString& replacement);
 
         //!
-        //! Substitute all occurences of a character with another one.
+        //! Substitute all occurrences of a character with another one.
         //! @param [in] value Value to search.
         //! @param [in] replacement Replacement for @a value.
         //!
         void substitute(UChar value, UChar replacement);
 
         //!
-        //! Return a copy of the string where all occurences of a string are substituted with another one.
+        //! Return a copy of the string where all occurrences of a string are substituted with another one.
         //! @param [in] value Value to search.
         //! @param [in] replacement Replacement string for @a value.
-        //! @return A copy to this string where all occurences of @a value have been replaced by @a replace.
+        //! @return A copy to this string where all occurrences of @a value have been replaced by @a replace.
         //!
         UString toSubstituted(const UString& value, const UString& replacement) const;
 
         //!
-        //! Return a copy of the string where all occurences of a character are substituted with another one.
+        //! Return a copy of the string where all occurrences of a character are substituted with another one.
         //! @param [in] value Value to search.
         //! @param [in] replacement Replacement for @a value.
-        //! @return A copy to this string where all occurences of @a value have been replaced by @a replace.
+        //! @return A copy to this string where all occurrences of @a value have been replaced by @a replace.
         //!
         UString toSubstituted(UChar value, UChar replacement) const;
 

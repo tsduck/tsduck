@@ -117,7 +117,7 @@ Otherwise, they are included in an EIT Other.
 ==== Deleting events from the EPG database
 
 Events are automatically removed from the EPG database when they become obsolete
-(the current transport stream time goes beyong the end time of the event).
+(the current transport stream time goes beyond the end time of the event).
 
 Deleting an event in advance is possible using the same type of files as used to load events.
 When an EIT is read from a XML or JSON file, if the metadata of that EIT contains `attribute="delete"`,

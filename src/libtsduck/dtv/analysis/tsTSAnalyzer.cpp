@@ -360,7 +360,7 @@ void ts::TSAnalyzer::handleSection(SectionDemux&, const Section& section)
     // Section# 0 is used to track tables
     if (section.sectionNumber() == 0) {
         if (etc->table_count++ == 0) {
-            // First occurence of table
+            // First occurrence of table
             etc->first_pkt = _ts_pkt_cnt;
             if (section.isLongSection()) {
                 etc->first_version = version;

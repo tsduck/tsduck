@@ -422,9 +422,9 @@ bool ts::SAT::cell_fragment_info_type::obsolescent_delivery_system_id_type::from
 void ts::SAT::cell_fragment_info_type::serialize(PSIBuffer& buf) const
 {
     buf.putUInt32(cell_fragment_id);
-    buf.putBit(first_occurence);
-    buf.putBit(last_occurence);
-    if (first_occurence) {
+    buf.putBit(first_occurrence);
+    buf.putBit(last_occurrence);
+    if (first_occurrence) {
         buf.putReservedZero(4);
         buf.putBits(center_latitude.value(), 18);
         buf.putReservedZero(5);
@@ -454,9 +454,9 @@ void ts::SAT::cell_fragment_info_type::serialize(PSIBuffer& buf) const
 void ts::SAT::cell_fragment_info_type::deserialize(PSIBuffer& buf)
 {
     cell_fragment_id = buf.getUInt32();
-    first_occurence = buf.getBool();
-    last_occurence = buf.getBool();
-    if (first_occurence) {
+    first_occurrence = buf.getBool();
+    last_occurrence = buf.getBool();
+    if (first_occurrence) {
         buf.skipBits(4);
         buf.getBits(center_latitude, 18);
         buf.skipBits(5);
@@ -492,8 +492,8 @@ void ts::SAT::cell_fragment_info_type::deserialize(PSIBuffer& buf)
 void ts::SAT::cell_fragment_info_type::toXML(xml::Element* root)
 {
     root->setIntAttribute(u"cell_fragment_id", cell_fragment_id, true);
-    root->setBoolAttribute(u"first_occurence", first_occurence);
-    root->setBoolAttribute(u"last_occurence", last_occurence);
+    root->setBoolAttribute(u"first_occurrence", first_occurrence);
+    root->setBoolAttribute(u"last_occurrence", last_occurrence);
     root->setOptionalIntAttribute(u"center_latitude", center_latitude);
     root->setOptionalIntAttribute(u"center_longitude", center_longitude);
     root->setOptionalIntAttribute(u"max_distance", max_distance);
@@ -513,8 +513,8 @@ void ts::SAT::cell_fragment_info_type::toXML(xml::Element* root)
 bool ts::SAT::cell_fragment_info_type::fromXML(const xml::Element* element)
 {
     bool ok = element->getIntAttribute(cell_fragment_id, u"cell_fragment_id", true) &&
-        element->getBoolAttribute(first_occurence, u"first_occurence", true) &&
-        element->getBoolAttribute(last_occurence, u"last_occurence", true) &&
+        element->getBoolAttribute(first_occurrence, u"first_occurrence", true) &&
+        element->getBoolAttribute(last_occurrence, u"last_occurrence", true) &&
         element->getOptionalIntAttribute(center_latitude, u"center_latitude", -90000, 90000) &&
         element->getOptionalIntAttribute(center_longitude, u"center_longitude", -180000, 180000) &&
         element->getOptionalIntAttribute(max_distance, u"max_distance", 0, 0xFFFFFF);
@@ -1580,10 +1580,10 @@ void ts::SAT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
             loop = 1;
             while (buf.canReadBytes(4)) {
                 disp << margin << UString::Format(u"[%d] Cell fragment id: %08x", loop++, buf.getUInt32());
-                bool _first_occurence = buf.getBool();
-                bool _last_occurence = buf.getBool();
-                disp << ", first: " << UString::TrueFalse(_first_occurence) << ", last: " << UString::TrueFalse(_last_occurence) << std::endl;
-                if (_first_occurence) {
+                bool _first_occurrence = buf.getBool();
+                bool _last_occurrence = buf.getBool();
+                disp << ", first: " << UString::TrueFalse(_first_occurrence) << ", last: " << UString::TrueFalse(_last_occurrence) << std::endl;
+                if (_first_occurrence) {
                     buf.skipReservedBits(4, 0);
                     disp << margin << "  Center latitude: " << degrees18(buf.getBits<uint32_t>(18));
                     buf.skipReservedBits(5, 0);

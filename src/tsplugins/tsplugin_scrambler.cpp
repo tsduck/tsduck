@@ -285,7 +285,7 @@ ts::ScramblerPlugin::ScramblerPlugin(TSP* tsp_) :
 
     option(u"pid-ecm", 0, PIDVAL);
     help(u"pid-ecm",
-         u"Specifies the new ECM PID for the service. By defaut, use the first "
+         u"Specifies the new ECM PID for the service. By default, use the first "
          u"unused PID immediately following the PMT PID. Using the default, there "
          u"is a risk to later discover that this PID is already used. In that case, "
          u"specify --pid-ecm with a notoriously unused PID value.");

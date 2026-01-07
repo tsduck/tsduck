@@ -211,7 +211,7 @@ With `--udp`, specify the number of milliseconds to wait after the last data_pro
 and before the stream_close_request message (TCP).
 
 [.optdoc]
-This can be necesssary to ensure that the stream_close_request is processed after the processing of the last data_provision.
+This can be necessary to ensure that the stream_close_request is processed after the processing of the last data_provision.
 The default is 100 ms.
 
 include::{docdir}/opt/group-dvbsim-log.adoc[tags=!*;emmg]

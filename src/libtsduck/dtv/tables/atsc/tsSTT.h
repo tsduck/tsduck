@@ -30,7 +30,7 @@ namespace ts {
     //! Normally, all consecutive sections with same tid, tid ext and version
     //! should be identical. But this is not the case with the ATSC STT.
     //! Specifically, when a SectionDemux is used, it reports only the first
-    //! occurence of the STT because all subsequent sections have the same version.
+    //! occurrence of the STT because all subsequent sections have the same version.
     //! To be notified of all STT sections with a SectionDemux, it is necessary
     //! to provide a section handler, not a table handler.
     //!

@@ -195,14 +195,14 @@ void ts::tlv::MessageFactory::analyzeMessage()
     // At this point, we know that the command is defined in the protocol
     // and that all actual parameters are defined for this command in the
     // protocol. Now, we need to check that all protocol-defined parameters
-    // are present, with a number of occurences in the allowed range.
+    // are present, with a number of occurrences in the allowed range.
     for (const auto& parm_it : cmd_it->second.params) {
 
         // Protocol-defined parameter tag:
         TAG tag = parm_it.first;
         // Protocol-defined parameter properties:
         const Protocol::Parameter& desc(parm_it.second);
-        // Number of actual occurences in current command:
+        // Number of actual occurrences in current command:
         size_t count = _params.count(tag);
 
         if (count < desc.min_count || count > desc.max_count) {
@@ -221,7 +221,7 @@ void ts::tlv::MessageFactory::analyzeMessage()
 
 
 //----------------------------------------------------------------------------
-// Get location of the first occurence of a parameter:
+// Get location of the first occurrence of a parameter:
 //----------------------------------------------------------------------------
 
 void ts::tlv::MessageFactory::get(TAG tag, Parameter& param) const
@@ -237,7 +237,7 @@ void ts::tlv::MessageFactory::get(TAG tag, Parameter& param) const
 
 
 //----------------------------------------------------------------------------
-// Get all occurences of a parameter.
+// Get all occurrences of a parameter.
 //----------------------------------------------------------------------------
 
 void ts::tlv::MessageFactory::get(TAG tag, std::vector<Parameter>& param) const
@@ -255,7 +255,7 @@ void ts::tlv::MessageFactory::get(TAG tag, std::vector<Parameter>& param) const
 
 
 //----------------------------------------------------------------------------
-// Get all occurences of a parameter.
+// Get all occurrences of a parameter.
 //----------------------------------------------------------------------------
 
 void ts::tlv::MessageFactory::get(TAG tag, std::vector<bool>& param) const
@@ -273,7 +273,7 @@ void ts::tlv::MessageFactory::get(TAG tag, std::vector<bool>& param) const
 
 
 //----------------------------------------------------------------------------
-// Get all occurences of a parameter.
+// Get all occurrences of a parameter.
 //----------------------------------------------------------------------------
 
 void ts::tlv::MessageFactory::get(TAG tag, std::vector<std::string>& param) const
@@ -291,7 +291,7 @@ void ts::tlv::MessageFactory::get(TAG tag, std::vector<std::string>& param) cons
 
 
 //----------------------------------------------------------------------------
-// Get first occurence of a parameter as a compound TLV parameter.
+// Get first occurrence of a parameter as a compound TLV parameter.
 //----------------------------------------------------------------------------
 
 void ts::tlv::MessageFactory::getCompound(TAG tag, MessagePtr& param) const
@@ -310,7 +310,7 @@ void ts::tlv::MessageFactory::getCompound(TAG tag, MessagePtr& param) const
 
 
 //----------------------------------------------------------------------------
-// Get all occurences of a parameter as compound TLV parameters.
+// Get all occurrences of a parameter as compound TLV parameters.
 //----------------------------------------------------------------------------
 
 void ts::tlv::MessageFactory::getCompound(TAG tag, std::vector<MessagePtr>& param) const

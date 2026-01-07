@@ -74,7 +74,7 @@ ts::Args::IOption::IOption(Args*           parent,
     }
     // Handle invalid values
     if (max_occur < min_occur) {
-        parent->fatalArgError(u"invalid occurences for " + display());
+        parent->fatalArgError(u"invalid occurrences for " + display());
     }
     // Parameters are values by definition
     if (name.empty() && type == NONE) {
@@ -196,7 +196,7 @@ ts::Args::IOption::IOption(Args*        parent,
     }
     // Handle invalid values
     if (max_occur < min_occur) {
-        parent->fatalArgError(u"invalid occurences for " + display());
+        parent->fatalArgError(u"invalid occurrences for " + display());
     }
 }
 
@@ -794,7 +794,7 @@ bool ts::Args::present(const UChar* name) const
 
 
 //----------------------------------------------------------------------------
-// Check the number of occurences of the option.
+// Check the number of occurrences of the option.
 //----------------------------------------------------------------------------
 
 size_t ts::Args::count(const UChar* name) const
@@ -804,9 +804,9 @@ size_t ts::Args::count(const UChar* name) const
 
 
 //----------------------------------------------------------------------------
-// Get the value of an option. The index designates the occurence of
+// Get the value of an option. The index designates the occurrence of
 // the option. If the option is not present, or not with this
-// occurence, def_value is returned.
+// occurrence, def_value is returned.
 //----------------------------------------------------------------------------
 
 ts::UString ts::Args::value(const UChar* name, const UChar* def_value, size_t index) const
@@ -963,7 +963,7 @@ void ts::Args::getSocketValue(IPSocketAddress& value, const UChar* name, const I
         value = def_value;
     }
     else {
-        // If there is a prefered IP generation and the parameter was initially resolved with another IP generation, try to
+        // If there is a preferred IP generation and the parameter was initially resolved with another IP generation, try to
         // resolve it again with the preferred generation. If it fails, use initial address, even if not the same generation.
         if (preferred == IP::Any || opt.values[index].address.generation() == preferred || !value.resolve(opt.values[index].string.value(), NULLREP, preferred)) {
             value = opt.values[index].address;
@@ -1195,12 +1195,12 @@ bool ts::Args::analyze(const UString& app_name, const UStringVector& arguments, 
         return false;
     }
 
-    // Look for parameters/options number of occurences.
+    // Look for parameters/options number of occurrences.
     // Don't do that if command already proven wrong.
     if (valid()) {
         for (auto& it : _iopts) {
             const IOption& op(it.second);
-            // Don't check number of occurences when the option has no value.
+            // Don't check number of occurrences when the option has no value.
             // Specifying such an option multiple times is the same as once.
             if (op.type != NONE) {
                 if (op.value_count < op.min_occur) {
@@ -1376,7 +1376,7 @@ bool ts::Args::validateParameter(IOption& opt, const std::optional<UString>& val
     // Push value. For optional parameters without value, an unset variable is pushed.
     opt.values.push_back(arg);
 
-    // Add the number of occurences. Can be more than one in case of integer range.
+    // Add the number of occurrences. Can be more than one in case of integer range.
     opt.value_count += opt.type == INTEGER && arg.int_count > 0 ? arg.int_count : 1;
 
     return true;

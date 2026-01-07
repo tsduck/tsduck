@@ -44,7 +44,7 @@ The command receives seven additional parameters:
 4. The string `in` or `out` for splice in / splice out command.
 5. The adjusted PTS value in the splice command.
 6. Pre-roll time in milliseconds. This is the time between the first occurrence of a splice command and the corresponding event.
-7. Number of occurences of the command before the event.
+7. Number of occurrences of the command before the event.
 
 [.optdoc]
 These parameters can be used or ignored by the alarm command.

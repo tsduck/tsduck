@@ -229,7 +229,7 @@ namespace ts {
         //! @param [in] gen New IP generation to apply. If @a gen is IP::Any or the same as the current
         //! generation, return true. A conversion from IPv4 to IPv6 always works (IPv4-mapped address).
         //! The conversion of an IPv6 address into IPv4 is only possible if it is an IPv4-mapped address.
-        //! For convenience, the IPv4 and IPv6 ampty and loopback addressses are converted to each other.
+        //! For convenience, the IPv4 and IPv6 ampty and loopback addresses are converted to each other.
         //! @return True if the conversion was successful, false if the conversion was no possible.
         //!
         bool convert(IP gen);

@@ -94,7 +94,7 @@ namespace ts {
     //! Remove duplicated elements in a container.
     //! @ingroup cpp
     //!
-    //! When duplicates are found, this first occurence is kept, aothers are removed.
+    //! When duplicates are found, this first occurrence is kept, aothers are removed.
     //!
     //! The predefined function @c std::unique() removes duplicated elements when they
     //! are consecutive only. This function removes all duplicates.

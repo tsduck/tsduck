@@ -90,7 +90,7 @@ namespace ts {
         void registerEventHandler(PluginEventHandlerInterface* handler, const Criteria& criteria = Criteria::Any);
 
         //!
-        //! Unregister all occurences of an event handler.
+        //! Unregister all occurrences of an event handler.
         //! Note: calling this function while executing a plugin event hander does nothing.
         //! This is typically used in the destructor of an event handler.
         //! @param [in] handler The event handler to unregister. When null, all events are unregistered.

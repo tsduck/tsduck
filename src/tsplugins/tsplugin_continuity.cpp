@@ -71,7 +71,7 @@ ts::ContinuityPlugin::ContinuityPlugin(TSP* tsp_) :
          u"By default, with --fix, duplicated input packets are replicated as duplicated on output "
          u"(the corresponding output packets have the same continuity counters). "
          u"When this option is specified, the input packets are not considered as duplicated and "
-         u"the output packets receive individually incremented countinuity counters.");
+         u"the output packets receive individually incremented continuity counters.");
 
     option(u"pid", 'p', PIDVAL, 0, UNLIMITED_COUNT);
     help(u"pid", u"pid1[-pid2]",

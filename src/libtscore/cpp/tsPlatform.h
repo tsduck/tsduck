@@ -677,7 +677,7 @@ TS_LLVM_NOWARNING(unused-parameter)               // Unused parameters are frequ
 TS_LLVM_NOWARNING(global-constructors)            // Do not warn about static/global objects being constructed.
 TS_LLVM_NOWARNING(exit-time-destructors)          // Do not warn about static/global objects being destructed.
 TS_LLVM_NOWARNING(covered-switch-default)         // Allow "default" in "switch" after all enum values to catch invalid binary values.
-TS_LLVM_NOWARNING(sign-conversion)                // Too many occurences since pointer arithmetics is signed, opposite from size_t.
+TS_LLVM_NOWARNING(sign-conversion)                // Too many occurrences since pointer arithmetics is signed, opposite from size_t.
 TS_LLVM_NOWARNING(padded)                         // Do not care if padding is required between class fields.
 TS_LLVM_NOWARNING(reserved-id-macro)              // We sometimes use underscores at the beginning of identifiers.
 TS_LLVM_NOWARNING(reserved-identifier)            // Identifier '_Xxx' is reserved because it starts with '_' followed by a capital letter.

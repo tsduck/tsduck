@@ -17,7 +17,7 @@ This plugin injects TS packets from a file into a transport stream, replacing pa
 NOTE: The name "mux" is probably a poor choice.
 This plugin a not a _multiplexer_ in the common sense of Digital TV.
 It only injects packets as they arrive,
-without the advanced synchonization features which are usually expected from a real multiplexer.
+without the advanced synchronization features which are usually expected from a real multiplexer.
 
 [.usage]
 Usage

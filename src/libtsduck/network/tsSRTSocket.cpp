@@ -269,7 +269,7 @@ void ts::SRTSocket::defineArgs(ts::Args& args)
               u"is returned from srt_accept and was connected by a socket with that set stream ID (so "
               u"you usually use SET on the socket used for srt_connect and GET on the socket retrieved "
               u"from srt_accept). This string can be used completely free-form, however it's highly "
-              u"recommended to follow the SRT Access Control guidlines.");
+              u"recommended to follow the SRT Access Control guidelines.");
 
     args.option(u"udp-rcvbuf", 0, Args::POSITIVE);
     args.help(u"udp-rcvbuf", u"UDP socket receive buffer size in bytes.");

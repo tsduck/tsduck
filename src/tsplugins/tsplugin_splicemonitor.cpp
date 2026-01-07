@@ -53,11 +53,11 @@ namespace ts {
         {
         public:
             SpliceEvent() = default;                   // Constructor.
-            PacketCounter first_cmd_packet = 0;        // Packet index of first occurence of splice command for signaled event.
+            PacketCounter first_cmd_packet = 0;        // Packet index of first occurrence of splice command for signaled event.
             uint32_t      event_id = SpliceInsert::INVALID_EVENT_ID;  // Signaled event id.
             uint64_t      event_pts = INVALID_PTS;     // Signaled PTS (lowest PTS value in command).
             uint64_t      duration_pts = INVALID_PTS;  // Event duration in PTS units.
-            size_t        event_count = 0;             // Number of occurences of same insert commands for this event.
+            size_t        event_count = 0;             // Number of occurrences of same insert commands for this event.
             bool          event_out = false;           // Copy of splice_out for this event.
         };
 
@@ -179,7 +179,7 @@ ts::SpliceMonitorPlugin::SpliceMonitorPlugin(TSP* tsp_) :
          u"4. The string \"in\" or \"out\" for splice in / splice out command.\n"
          u"5. The adjusted PTS value in the splice command.\n"
          u"6. Pre-roll time in milliseconds.\n"
-         u"7. Number of occurences of the command before the event.");
+         u"7. Number of occurrences of the command before the event.");
 
     option(u"all-commands", 'a');
     help(u"all-commands",

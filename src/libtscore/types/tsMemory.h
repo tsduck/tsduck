@@ -128,7 +128,7 @@ namespace ts {
     //! @param [in] area_size Size in bytes of the memory area.
     //! @param [in] pattern Address of the content of the pattern to check.
     //! @param [in] pattern_size Size in bytes of the pattern.
-    //! @return Address of the first occurence of @a pattern in @a area or the null pointer if not found.
+    //! @return Address of the first occurrence of @a pattern in @a area or the null pointer if not found.
     //!
     TSCOREDLL const uint8_t* LocatePattern(const void* area, size_t area_size, const void* pattern, size_t pattern_size);
 
@@ -139,7 +139,7 @@ namespace ts {
     //! @param [in] area Address of a memory area to check.
     //! @param [in] area_size Size in bytes of the memory area.
     //! @param [in] third Third byte of the pattern, after 00 00.
-    //! @return Address of the first occurence of the 3-byte pattern in @a area or the null pointer if not found.
+    //! @return Address of the first occurrence of the 3-byte pattern in @a area or the null pointer if not found.
     //!
     TSCOREDLL const uint8_t* LocateZeroZero(const void* area, size_t area_size, uint8_t third);
 

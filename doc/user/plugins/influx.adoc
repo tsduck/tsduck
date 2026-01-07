@@ -236,7 +236,7 @@ The presence of the secondary tags depend on the `scope` tag.
 It is possible to add user-defined tags to build a custom identification.
 This can be useful if several instances of the plugin `influx` send metrics to the same bucket.
 
-Consider the following defaut metrics, sending the global bitrate of the TS.
+Consider the following default metrics, sending the global bitrate of the TS.
 
 [source,text]
 ----

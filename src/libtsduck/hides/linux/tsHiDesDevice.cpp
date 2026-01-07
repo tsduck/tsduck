@@ -49,7 +49,7 @@
 //  of the URB is #define URB_BUFSIZE_TX 32712 (172 packets, 348/2). To avoid
 //  issues, we limit our I/O's to 172 packets at a time, the URB size.
 //
-//  A patched version of the orginal driver from HiDes / ITE is available in
+//  A patched version of the original driver from HiDes / ITE is available in
 //  https://github.com/tsduck/hides-drivers
 //
 //  The patched driver suspends the process when the buffer is full and waits

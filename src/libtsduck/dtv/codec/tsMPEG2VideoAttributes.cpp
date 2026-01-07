@@ -81,7 +81,7 @@ ts::UString ts::MPEG2VideoAttributes::chromaFormatName() const
 
 
 //----------------------------------------------------------------------------
-// Refresh mode (both can be false if unspecifed)
+// Refresh mode (both can be false if unspecified)
 //----------------------------------------------------------------------------
 
 ts::UString ts::MPEG2VideoAttributes::refreshModeName() const

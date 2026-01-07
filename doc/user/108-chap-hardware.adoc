@@ -246,7 +246,7 @@ However, if the tuners are connected to distinct antenna sources, we must be sur
 If the tuners are USB devices, they may be assigned different adapter numbers each time they are plugged in.
 
 To solve this problem, it is possible to use the device path of a tuner as tuner name.
-The device path remains contant for a given physical tuner.
+The device path remains constant for a given physical tuner.
 
 To get the device paths, use the following command:
 

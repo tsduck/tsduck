@@ -44,7 +44,7 @@ void ts::ISDBConnectedTransmissionDescriptor::clearContent()
     modulation_type_A = 0;
     modulation_type_B = 0;
     modulation_type_C = 0;
-    addtional_connected_transmission_info.clear();
+    additional_connected_transmission_info.clear();
 }
 
 
@@ -59,7 +59,7 @@ void ts::ISDBConnectedTransmissionDescriptor::serializePayload(PSIBuffer& buf) c
     buf.putBits(modulation_type_A, 2);
     buf.putBits(modulation_type_B, 2);
     buf.putBits(modulation_type_C, 2);
-    buf.putBytes(addtional_connected_transmission_info);
+    buf.putBytes(additional_connected_transmission_info);
 }
 
 
@@ -74,7 +74,7 @@ void ts::ISDBConnectedTransmissionDescriptor::deserializePayload(PSIBuffer& buf)
     modulation_type_A = buf.getBits<uint8_t>(2);
     modulation_type_B = buf.getBits<uint8_t>(2);
     modulation_type_C = buf.getBits<uint8_t>(2);
-    buf.getBytes(addtional_connected_transmission_info);
+    buf.getBytes(additional_connected_transmission_info);
 }
 
 
@@ -107,7 +107,7 @@ void ts::ISDBConnectedTransmissionDescriptor::buildXML(DuckContext& duck, xml::E
     root->setIntAttribute(u"modulation_type_A", modulation_type_A, true);
     root->setIntAttribute(u"modulation_type_B", modulation_type_B, true);
     root->setIntAttribute(u"modulation_type_C", modulation_type_C, true);
-    root->addHexaTextChild(u"addtional_connected_transmission_info", addtional_connected_transmission_info, true);
+    root->addHexaTextChild(u"additional_connected_transmission_info", additional_connected_transmission_info, true);
 }
 
 
@@ -122,5 +122,5 @@ bool ts::ISDBConnectedTransmissionDescriptor::analyzeXML(DuckContext& duck, cons
            element->getIntAttribute(modulation_type_A, u"modulation_type_A", true) &&
            element->getIntAttribute(modulation_type_B, u"modulation_type_B", true) &&
            element->getIntAttribute(modulation_type_C, u"modulation_type_C", true) &&
-           element->getHexaTextChild(addtional_connected_transmission_info, u"addtional_connected_transmission_info", false);
+           element->getHexaTextChild(additional_connected_transmission_info, u"additional_connected_transmission_info", false);
 }

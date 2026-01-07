@@ -764,7 +764,7 @@ ts::UString ts::UString::toDecomposedDiacritical() const
 
 
 //----------------------------------------------------------------------------
-// Remove all occurences of a substring.
+// Remove all occurrences of a substring.
 //----------------------------------------------------------------------------
 
 void ts::UString::remove(const UString& substr)
@@ -802,7 +802,7 @@ ts::UString ts::UString::toRemoved(UChar c) const
 
 
 //----------------------------------------------------------------------------
-// Substitute all occurences of a string with another one.
+// Substitute all occurrences of a string with another one.
 //----------------------------------------------------------------------------
 
 void ts::UString::substitute(const UString& value, const UString& replacement)

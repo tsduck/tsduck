@@ -148,7 +148,7 @@ If a file of control-words is specified (option `--cw-file`), only the first con
 
 [.optdoc]
 Specifies the new ECM PID for the service.
-By defaut, use the first unused PID immediately following the PMT PID.
+By default, use the first unused PID immediately following the PMT PID.
 Using the default, there is a risk to later discover that this PID is already used.
 In that case, specify `--pid-ecm` with a notoriously unused PID value.
 

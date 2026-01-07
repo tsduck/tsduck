@@ -211,7 +211,7 @@ EMMGOptions::EMMGOptions(int argc, char *argv[]) :
     help(u"udp-end-wait",
          u"With --udp, specify the number of milliseconds to wait after the last "
          u"data_provision message (UDP) and before the stream_close_request message (TCP). "
-         u"This can be necesssary to ensure that the stream_close_request is "
+         u"This can be necessary to ensure that the stream_close_request is "
          u"processed after the processing of the last data_provision. "
          u"Default: " + ts::UString::Chrono(DEFAULT_UDP_END_WAIT, true) + u".");
 

@@ -289,10 +289,10 @@ namespace ts {
 
             uint32_t          cell_fragment_id = 0;     /**< The identifier of this cell fragment. It can occur multiple times in consecutive
                                                              sections if the signalling is spanned over multiple sections.     */
-            bool              first_occurence = false;  /**< Indicates that this section is the first section in a sequence of 1 or more sections
+            bool              first_occurrence = false;  /**< Indicates that this section is the first section in a sequence of 1 or more sections
                                                              that contain the information for the cell fragment. When this bit is set to 1, it is
                                                              the first section of the sequence. When it is set to 0, it is not the first section. */
-            bool              last_occurence = false;   /**< Indicates that this section is the last section in a sequence of 1 or more sections that
+            bool              last_occurrence = false;   /**< Indicates that this section is the last section in a sequence of 1 or more sections that
                                                              contain the information for the cell fragment. When this bit is set to 1, it is the
                                                              last section of the sequence. When it is set to 0, it is not the last section. */
             std::optional<int32_t> center_latitude {};  /**< 18 bits - tcimsbf. The current center of the cell fragment on earth in the WGS84 datum

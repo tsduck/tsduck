@@ -1256,8 +1256,7 @@ The report file is quite large:
 |  0x01FF  (System Software Update) ....................  C       35,015 b/s  |
 |                                                                             |
 |  Note 1: C=Clear, S=Scrambled                                               |
-|  Note 2: Unless explicitely specified otherwise, all bitrates are based on  |
-|  188 bytes per packet.                                                      |
+|  Note 2: Unless specified otherwise, bitrates are based on 188 bytes/pkt    |
 ===============================================================================
 
 
@@ -3233,7 +3232,7 @@ Analysis of this command:
 
 [.compact-list]
 * Initial `tsp` command:
-** Add one null packet every 10 input packets (`--add-input-stuffing 1/10`) to accomodate the encapsulation overhead.
+** Add one null packet every 10 input packets (`--add-input-stuffing 1/10`) to accommodate the encapsulation overhead.
    In this specific example, this is useless because a broadcast TS always contain some stuffing.
    But it would be required if you read an IP stream without stuffing, for instance.
 ** Receive a DVB-T transport stream from a tuner on UHF channel 30.
@@ -3254,7 +3253,7 @@ Analysis of this command:
 ** Respecify the original TS id, original network id and service id using dedicated `ffmpeg` options.
    This is important to preserve the references of the EIT's.
    By default, `ffmpeg` would generate TS id 1 and service id 1 which would not match with the EIT's.
-   We also respecify the orginal service name (`ffmpeg` generates a dummy name by default).
+   We also respecify the original service name (`ffmpeg` generates a dummy name by default).
    All these values shall be adapted according to the input stream.
 * Final `tsp` command:
 ** Decapsulate the tunnel PID. We have forced it in `ffmpeg` as PID 0x900 using `-mpegts_start_pid`.
@@ -3266,7 +3265,7 @@ Analysis of this command:
 [#sample-json-analyze]
 ==== JSON analysis of a transport stream
 
-The option `--json` is used with `tsanalyze` or the pugin `analyze` to produce a JSON output.
+The option `--json` is used with `tsanalyze` or the plugin `analyze` to produce a JSON output.
 Such output can be used with many tools.
 In shell scripts, the open source tool `jq` (for "JSON Query") is extremely powerful.
 

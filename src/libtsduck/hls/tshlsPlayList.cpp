@@ -691,7 +691,7 @@ bool ts::hls::PlayList::parse(const UString& text, bool strict, Report& report)
 bool ts::hls::PlayList::parse(bool strict, Report& report)
 {
     // Global media segment or playlist information.
-    // Contains properties which are valid until next occurence of same property.
+    // Contains properties which are valid until next occurrence of same property.
     MediaPlayList plGlobal;
     MediaSegment segGlobal;
 

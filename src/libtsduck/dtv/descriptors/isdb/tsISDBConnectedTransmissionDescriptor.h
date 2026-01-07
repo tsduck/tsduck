@@ -24,12 +24,12 @@ namespace ts {
     class TSDUCKDLL ISDBConnectedTransmissionDescriptor: public AbstractDescriptor {
     public:
         // ISDBLDTLinkageDescriptor public members:
-        uint16_t  connected_transmission_group_id = 0;       //!< the label identifying the connected transmission group.
-        uint8_t   segment_type = 0;                          //!< 2 bits. indicates segment type in accordance with table 6-80. The number of layers and the layer of each segment type are shown in the table.
-        uint8_t   modulation_type_A = 0;                     //!< 2 bits.
-        uint8_t   modulation_type_B = 0;                     //!< 2 bits.
-        uint8_t   modulation_type_C = 0;                     //!< 2 bits.
-        ByteBlock addtional_connected_transmission_info {};  //!< additional information specified in the operational guidelines of service providers.
+        uint16_t  connected_transmission_group_id = 0;        //!< the label identifying the connected transmission group.
+        uint8_t   segment_type = 0;                           //!< 2 bits. indicates segment type in accordance with table 6-80. The number of layers and the layer of each segment type are shown in the table.
+        uint8_t   modulation_type_A = 0;                      //!< 2 bits.
+        uint8_t   modulation_type_B = 0;                      //!< 2 bits.
+        uint8_t   modulation_type_C = 0;                      //!< 2 bits.
+        ByteBlock additional_connected_transmission_info {};  //!< additional information specified in the operational guidelines of service providers.
 
         //!
         //! Default constructor.

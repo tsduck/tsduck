@@ -75,8 +75,8 @@ namespace ts::tlv {
         //! @param [in] param_tag Parameter tag.
         //! @param [in] min_size Minimum allowed size for the parameter value.
         //! @param [in] max_size Maximum allowed size for the parameter value.
-        //! @param [in] min_count Minimum number of occurences of this parameter in the command.
-        //! @param [in] max_count Maximum number of occurences of this parameter in the command.
+        //! @param [in] min_count Minimum number of occurrences of this parameter in the command.
+        //! @param [in] max_count Maximum number of occurrences of this parameter in the command.
         //!
         void add(TAG cmd_tag, TAG param_tag, size_t min_size, size_t max_size, size_t min_count, size_t max_count);
 
@@ -86,8 +86,8 @@ namespace ts::tlv {
         //! @param [in] cmd_tag Message tag.
         //! @param [in] param_tag Parameter tag.
         //! @param [in] compound Protocol describing the compound TLV structure.
-        //! @param [in] min_count Minimum number of occurences of this parameter in the command.
-        //! @param [in] max_count Maximum number of occurences of this parameter in the command.
+        //! @param [in] min_count Minimum number of occurrences of this parameter in the command.
+        //! @param [in] max_count Maximum number of occurrences of this parameter in the command.
         //!
         void add(TAG cmd_tag, TAG param_tag, const Protocol* compound, size_t min_count, size_t max_count);
 
@@ -131,8 +131,8 @@ namespace ts::tlv {
             const Protocol* compound;  // Compound TLV parameter (or nullptr)
             size_t min_size;           // Min size (if compound == nullptr)
             size_t max_size;           // Max size (if compound == nullptr)
-            size_t min_count;          // Min occurence count
-            size_t max_count;          // Max occurence count
+            size_t min_count;          // Min occurrence count
+            size_t max_count;          // Max occurrence count
         };
         using ParameterMap = std::map<TAG,Parameter>;
 

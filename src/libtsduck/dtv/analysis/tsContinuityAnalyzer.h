@@ -122,7 +122,7 @@ namespace ts {
         //! @param [in] on When true (the default), duplicated input packets are replicated
         //! as duplicated on output (the corresponding output packets have the same continuity
         //! counters). When false, the input packets are not considered as duplicated and the
-        //! output packets have incremented countinuity counters.
+        //! output packets have incremented continuity counters.
         //!
         void setReplicateDuplicated(bool on) { _replicate_dup = on; }
 

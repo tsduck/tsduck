@@ -334,9 +334,9 @@ namespace ts {
         //! @param [in] name Long name of option. 0 or "" means a parameter, not an option.
         //! @param [in] short_name Optional one letter short name.
         //! @param [in] type Option or parameter value type.
-        //! @param [in] min_occur Minimum number of occurences of this option on the command line,
+        //! @param [in] min_occur Minimum number of occurrences of this option on the command line,
         //! ignored if @a type is @link NONE @endlink.
-        //! @param [in] max_occur Maximum number of occurences, ignored if @a type is @link NONE @endlink,
+        //! @param [in] max_occur Maximum number of occurrences, ignored if @a type is @link NONE @endlink,
         //! 0 means default (1 for an option, unlimited for a parameters).
         //! @param [in] min_value Minimum value for integer, minimum size for string and hexa data.
         //! @param [in] max_value Maximum value for integer, maximum size for string and hexa data.
@@ -370,8 +370,8 @@ namespace ts {
         //! @param [in] enumeration List of enumeration values. The command line parameter value can be
         //! a string describing an enumeration value or directly an integer value. In the application,
         //! the option's value is always the integer value of the enumeration value.
-        //! @param [in] min_occur Minimum number of occurences of this option on the command line.
-        //! @param [in] max_occur Maximum number of occurences. 0 means default : 1 for an option, unlimited for a parameters.
+        //! @param [in] min_occur Minimum number of occurrences of this option on the command line.
+        //! @param [in] max_occur Maximum number of occurrences. 0 means default : 1 for an option, unlimited for a parameters.
         //! @param [in] optional  When true, the option's value is optional.
         //! @return A reference to this instance.
         //!
@@ -393,8 +393,8 @@ namespace ts {
         //! @tparam NUMTYPE A subclass of AbstractNumber.
         //! @param [in] name Long name of option. 0 or "" means a parameter, not an option.
         //! @param [in] short_name Optional one letter short name.
-        //! @param [in] min_occur Minimum number of occurences of this option on the command line.
-        //! @param [in] max_occur Maximum number of occurences. 0 means default : 1 for an option, unlimited for a parameters.
+        //! @param [in] min_occur Minimum number of occurrences of this option on the command line.
+        //! @param [in] max_occur Maximum number of occurrences. 0 means default : 1 for an option, unlimited for a parameters.
         //! @param [in] min_value Minimum value. Use an integer value, not a @a NUMTYPE value.
         //! @param [in] max_value Maximum value. Use an integer value, not a @a NUMTYPE value
         //! @param [in] optional  When true, the option's value is optional.
@@ -421,8 +421,8 @@ namespace ts {
         //! @tparam DURATION An instance of std::chrono::duration.
         //! @param [in] name Long name of option. 0 or "" means a parameter, not an option.
         //! @param [in] short_name Optional one letter short name.
-        //! @param [in] min_occur Minimum number of occurences of this option on the command line.
-        //! @param [in] max_occur Maximum number of occurences. 0 means default : 1 for an option, unlimited for a parameters.
+        //! @param [in] min_occur Minimum number of occurrences of this option on the command line.
+        //! @param [in] max_occur Maximum number of occurrences. 0 means default : 1 for an option, unlimited for a parameters.
         //! @param [in] min_value Minimum value. Use an integer value, not a @a DURATION value.
         //! @param [in] max_value Maximum value. Use an integer value, not a @a DURATION value.
         //! @param [in] optional  When true, the option's value is optional.
@@ -504,10 +504,10 @@ namespace ts {
         Args& copyOptions(const Args& other, const bool replace = false);
 
         //!
-        //! Unlimited number of occurences.
+        //! Unlimited number of occurrences.
         //!
         //! To be used as value for parameter @a max_occur to indicate that there is no
-        //! limit to the number of occurences of an option.
+        //! limit to the number of occurrences of an option.
         //!
         //! Warning: use only for @a max_occur (@c size_t ). Do not use for @a max_value
         //! (@c int64_t ) since @c size_t is @c uint64_t on 64-bit platforms.
@@ -754,12 +754,12 @@ namespace ts {
         bool present(const UChar* name = nullptr) const;
 
         //!
-        //! Check the number of occurences of an option in the last analyzed command line.
+        //! Check the number of occurrences of an option in the last analyzed command line.
         //!
         //! @param [in] name The full name of the option. If the parameter is a null pointer or
         //! an empty string, this specifies a parameter, not an option. If the specified option
         //! was not declared in the syntax of the command, a fatal error is reported.
-        //! @return The number of occurences of the corresponding option or parameter in the
+        //! @return The number of occurrences of the corresponding option or parameter in the
         //! command line.
         //!
         size_t count(const UChar* name = nullptr) const;
@@ -772,9 +772,9 @@ namespace ts {
         //! an empty string, this specifies a parameter, not an option. If the specified option
         //! was not declared in the syntax of the command, a fatal error is reported.
         //! @param [in] def_value The string to return in @a value if the option or parameter
-        //! is not present in the command line or with fewer occurences than @a index.
-        //! @param [in] index The occurence of the option to return. Zero designates the
-        //! first occurence.
+        //! is not present in the command line or with fewer occurrences than @a index.
+        //! @param [in] index The occurrence of the option to return. Zero designates the
+        //! first occurrence.
         //!
         void getValue(UString& value, const UChar* name = nullptr, const UChar* def_value = u"", size_t index = 0) const;
 
@@ -785,9 +785,9 @@ namespace ts {
         //! an empty string, this specifies a parameter, not an option. If the specified option
         //! was not declared in the syntax of the command, a fatal error is reported.
         //! @param [in] def_value The string to return if the option or parameter
-        //! is not present in the command line or with fewer occurences than @a index.
-        //! @param [in] index The occurence of the option to return. Zero designates the
-        //! first occurence.
+        //! is not present in the command line or with fewer occurrences than @a index.
+        //! @param [in] index The occurrence of the option to return. Zero designates the
+        //! first occurrence.
         //! @return The value of the option or parameter.
         //!
         UString value(const UChar* name = nullptr, const UChar* def_value = u"", size_t index = 0) const;
@@ -806,7 +806,7 @@ namespace ts {
         void getOptionalValue(std::optional<UString>& value, const UChar* name = nullptr, bool clear_if_absent = false) const;
 
         //!
-        //! Get all occurences of an option in a container of strings.
+        //! Get all occurrences of an option in a container of strings.
         //!
         //! @tparam CONTAINER A container type of UString such as list, vector, etc.
         //! @param [out] values A container of strings receiving all values of the option or parameter.
@@ -825,14 +825,14 @@ namespace ts {
         //! an empty string, this specifies a parameter, not an option. If the specified option
         //! was not declared in the syntax of the command, a fatal error is reported.
         //! @param [in] def_value The path to return in @a value if the option or parameter
-        //! is not present in the command line or with fewer occurences than @a index.
-        //! @param [in] index The occurence of the option to return. Zero designates the
-        //! first occurence.
+        //! is not present in the command line or with fewer occurrences than @a index.
+        //! @param [in] index The occurrence of the option to return. Zero designates the
+        //! first occurrence.
         //!
         void getPathValue(fs::path& value, const UChar* name = nullptr, const fs::path& def_value = fs::path(), size_t index = 0) const;
 
         //!
-        //! Get all occurences of a filesystem path option in a container of path.
+        //! Get all occurrences of a filesystem path option in a container of path.
         //!
         //! @tparam CONTAINER A container type of fs::path such as list, vector, etc.
         //! @param [out] values A container of fs::path receiving all values of the option or parameter.
@@ -857,9 +857,9 @@ namespace ts {
         //! was not declared in the syntax of the command or declared as a non-string type,
         //! a fatal error is reported.
         //! @param [in] def_value The value to return in @a value if the option or parameter
-        //! is not present in the command line or with fewer occurences than @a index.
-        //! @param [in] index The occurence of the option to return. Zero designates the
-        //! first occurence.
+        //! is not present in the command line or with fewer occurrences than @a index.
+        //! @param [in] index The occurrence of the option to return. Zero designates the
+        //! first occurrence.
         //!
         template <typename INT, typename INT2 = INT> requires ts::int_enum<INT> && ts::int_enum<INT2>
         void getIntValue(INT& value, const UChar* name = nullptr, const INT2 def_value = static_cast<INT2>(0), size_t index = 0) const;
@@ -873,9 +873,9 @@ namespace ts {
         //! was not declared in the syntax of the command or declared as a non-string type,
         //! a fatal error is reported.
         //! @param [in] def_value The value to return if the option or parameter
-        //! is not present in the command line or with fewer occurences than @a index.
-        //! @param [in] index The occurence of the option to return. Zero designates the
-        //! first occurence.
+        //! is not present in the command line or with fewer occurrences than @a index.
+        //! @param [in] index The occurrence of the option to return. Zero designates the
+        //! first occurrence.
         //! @return The integer value of the option or parameter.
         //!
         template <typename INT> requires ts::int_enum<INT>
@@ -897,7 +897,7 @@ namespace ts {
         void getOptionalIntValue(std::optional<INT>& value, const UChar* name = nullptr, bool clear_if_absent = false) const;
 
         //!
-        //! Get all occurences of an integer option in a vector of integers.
+        //! Get all occurrences of an integer option in a vector of integers.
         //!
         //! @tparam INT An integer or enumeration type for the result.
         //! @param [out] values A container of integers receiving all values of the option or parameter.
@@ -910,7 +910,7 @@ namespace ts {
         void getIntValues(std::vector<INT>& values, const UChar* name = nullptr) const;
 
         //!
-        //! Get all occurences of an integer option in a set of integers.
+        //! Get all occurrences of an integer option in a set of integers.
         //!
         //! @tparam INT An integer or enumeration type for the result.
         //! @param [out] values A container of integers receiving all values of the option or parameter.
@@ -923,7 +923,7 @@ namespace ts {
         void getIntValues(std::set<INT>& values, const UChar* name = nullptr) const;
 
         //!
-        //! Get all occurences of an option as a bitset of values.
+        //! Get all occurrences of an option as a bitset of values.
         //!
         //! @param [out] values A bitset receiving all values of the option or parameter.
         //! For each value of the option, the corresponding bit is set. Values which are
@@ -938,7 +938,7 @@ namespace ts {
         void getIntValues(std::bitset<N>& values, const UChar* name = nullptr, bool defValue = false) const;
 
         //!
-        //! Get all occurences of an option as a compact bitset of values.
+        //! Get all occurrences of an option as a compact bitset of values.
         //!
         //! @param [out] values A compact bitset receiving all values of the option or parameter.
         //! For each value of the option, the corresponding bit is set. Values which are
@@ -1003,8 +1003,8 @@ namespace ts {
         //! was not declared in the syntax of the command or declared as a non-string type,
         //! a fatal error is reported.
         //! @param [in] def_value The value to return in @a value if the option or parameter
-        //! is not present in the command line or with fewer occurences than @a index.
-        //! @param [in] index The occurence of the option to return. Zero designates the first occurence.
+        //! is not present in the command line or with fewer occurrences than @a index.
+        //! @param [in] index The occurrence of the option to return. Zero designates the first occurrence.
         //! Add the definition of an option, the value being an instance of std::chrono::duration.
         //!
         template <class Rep1, class Period1, class Rep2, class Period2>
@@ -1025,7 +1025,7 @@ namespace ts {
         //! an empty string, this specifies a parameter, not an option. If the specified option
         //! was not declared in the syntax of the command or declared as a non-string type,
         //! a fatal error is reported.
-        //! @param [in] index The occurence of the option to return. Zero designates the first occurence.
+        //! @param [in] index The occurrence of the option to return. Zero designates the first occurrence.
         //! Add the definition of an option, the value being an instance of std::chrono::duration.
         //!
         template <class Rep, class Period>
@@ -1039,15 +1039,15 @@ namespace ts {
         //!
         //! @param [out] value A variable receiving the tristate value of the option or parameter.
         //! The returned value is always one of the three valid Tristate values.
-        //! When the option or parameter is not present in the command line or with fewer occurences
+        //! When the option or parameter is not present in the command line or with fewer occurrences
         //! than @a index, the returned value is Maybe. For options with optional values, if the
         //! the option is present without value, the returned value is TRUE.
         //! @param [in] name The full name of the option. If the parameter is a null pointer or
         //! an empty string, this specifies a parameter, not an option. If the specified option
         //! was not declared in the syntax of the command or declared as a non-string type,
         //! a fatal error is reported.
-        //! @param [in] index The occurence of the option to return. Zero designates the
-        //! first occurence.
+        //! @param [in] index The occurrence of the option to return. Zero designates the
+        //! first occurrence.
         //!
         void getTristateValue(Tristate& value, const UChar* name = nullptr, size_t index = 0) const;
 
@@ -1058,11 +1058,11 @@ namespace ts {
         //! an empty string, this specifies a parameter, not an option. If the specified option
         //! was not declared in the syntax of the command or declared as a non-string type,
         //! a fatal error is reported.
-        //! @param [in] index The occurence of the option to return. Zero designates the
-        //! first occurence.
+        //! @param [in] index The occurrence of the option to return. Zero designates the
+        //! first occurrence.
         //! @return The tristate value of the option or parameter.
         //! The returned value is always one of the three valid Tristate values.
-        //! When the option or parameter is not present in the command line or with fewer occurences
+        //! When the option or parameter is not present in the command line or with fewer occurrences
         //! than @a index, the returned value is Maybe. For options with optional values, if the
         //! the option is present without value, the returned value is TRUE.
         //!
@@ -1077,9 +1077,9 @@ namespace ts {
         //! was not declared in the syntax of the command or declared as a non-string type,
         //! a fatal error is reported.
         //! @param [in] def_value The data to return if the option or parameter
-        //! is not present in the command line or with fewer occurences than @a index.
-        //! @param [in] index The occurence of the option to return. Zero designates the
-        //! first occurence.
+        //! is not present in the command line or with fewer occurrences than @a index.
+        //! @param [in] index The occurrence of the option to return. Zero designates the
+        //! first occurrence.
         //!
         void getHexaValue(ByteBlock& value, const UChar* name = nullptr, const ByteBlock& def_value = ByteBlock(), size_t index = 0) const;
 
@@ -1091,9 +1091,9 @@ namespace ts {
         //! was not declared in the syntax of the command or declared as a non-string type,
         //! a fatal error is reported.
         //! @param [in] def_value The data to return if the option or parameter
-        //! is not present in the command line or with fewer occurences than @a index.
-        //! @param [in] index The occurence of the option to return. Zero designates the
-        //! first occurence.
+        //! is not present in the command line or with fewer occurrences than @a index.
+        //! @param [in] index The occurrence of the option to return. Zero designates the
+        //! first occurrence.
         //! @return The decoded binary value of the option or parameter.
         //!
         ByteBlock hexaValue(const UChar* name = nullptr, const ByteBlock& def_value = ByteBlock(), size_t index = 0) const;
@@ -1107,9 +1107,9 @@ namespace ts {
         //! was not declared in the syntax of the command or declared as a non-string type,
         //! a fatal error is reported.
         //! @param [in] def_value The IP address to return if the option or parameter
-        //! is not present in the command line or with fewer occurences than @a index.
-        //! @param [in] index The occurence of the option to return. Zero designates the
-        //! first occurence.
+        //! is not present in the command line or with fewer occurrences than @a index.
+        //! @param [in] index The occurrence of the option to return. Zero designates the
+        //! first occurrence.
         //! @param [in] preferred Preferred IP generation of the resolved address.
         //!
         void getIPValue(IPAddress& value, const UChar* name = nullptr, const IPAddress& def_value = IPAddress(), size_t index = 0, IP preferred = IP::Any) const;
@@ -1122,9 +1122,9 @@ namespace ts {
         //! was not declared in the syntax of the command or declared as a non-string type,
         //! a fatal error is reported.
         //! @param [in] def_value The IP address to return if the option or parameter
-        //! is not present in the command line or with fewer occurences than @a index.
-        //! @param [in] index The occurence of the option to return. Zero designates the
-        //! first occurence.
+        //! is not present in the command line or with fewer occurrences than @a index.
+        //! @param [in] index The occurrence of the option to return. Zero designates the
+        //! first occurrence.
         //! @param [in] preferred Preferred IP generation of the resolved address.
         //! @return The resolved IP address value of the option or parameter.
         //!
@@ -1139,17 +1139,17 @@ namespace ts {
         //! was not declared in the syntax of the command or declared as a non-string type,
         //! a fatal error is reported.
         //! @param [in] def_value The IP address socket to return if the option or parameter
-        //! is not present in the command line or with fewer occurences than @a index.
+        //! is not present in the command line or with fewer occurrences than @a index.
         //! If the parameter is present but either address or port is missing, the missing part
         //! is copied from @a def_value.
-        //! @param [in] index The occurence of the option to return. Zero designates the
-        //! first occurence.
+        //! @param [in] index The occurrence of the option to return. Zero designates the
+        //! first occurrence.
         //! @param [in] preferred Preferred IP generation of the resolved address.
         //!
         void getSocketValue(IPSocketAddress& value, const UChar* name = nullptr, const IPSocketAddress& def_value = IPSocketAddress(), size_t index = 0, IP preferred = IP::Any) const;
 
         //!
-        //! Get all occurences of an option in a container of IP socket addresses.
+        //! Get all occurrences of an option in a container of IP socket addresses.
         //!
         //! @tparam CONTAINER A container type of IPSocketAddress such as list, vector, etc.
         //! @param [out] values A container of IPSocketAddress receiving all values of the option or parameter.
@@ -1171,9 +1171,9 @@ namespace ts {
         //! @param [in] def_value The IP socket address to return if the option or parameter
         //! If the parameter is present but either address or port is missing, the missing part
         //! is copied from @a def_value.
-        //! is not present in the command line or with fewer occurences than @a index.
-        //! @param [in] index The occurence of the option to return. Zero designates the
-        //! first occurence.
+        //! is not present in the command line or with fewer occurrences than @a index.
+        //! @param [in] index The occurrence of the option to return. Zero designates the
+        //! first occurrence.
         //! @param [in] preferred Preferred IP generation of the resolved address.
         //! @return The resolved IP socket address value of the option or parameter.
         //!
@@ -1193,9 +1193,9 @@ namespace ts {
         //! was not declared in the syntax of the command or declared as a non-string type,
         //! a fatal error is reported.
         //! @param [in] def_value The value to return in @a value if the option or parameter
-        //! is not present in the command line or with fewer occurences than @a index.
-        //! @param [in] index The occurence of the option to return. Zero designates the
-        //! first occurence.
+        //! is not present in the command line or with fewer occurrences than @a index.
+        //! @param [in] index The occurrence of the option to return. Zero designates the
+        //! first occurrence.
         //!
         template <class NUMTYPE> requires std::derived_from<NUMTYPE, ts::AbstractNumber>
         void getValue(NUMTYPE& value, const UChar* name = nullptr, const NUMTYPE& def_value = NUMTYPE(0), size_t index = 0) const;
@@ -1214,9 +1214,9 @@ namespace ts {
         //! was not declared in the syntax of the command or declared as a non-string type,
         //! a fatal error is reported.
         //! @param [in] def_value The value to return in @a value if the option or parameter
-        //! is not present in the command line or with fewer occurences than @a index.
-        //! @param [in] index The occurence of the option to return. Zero designates the
-        //! first occurence.
+        //! is not present in the command line or with fewer occurrences than @a index.
+        //! @param [in] index The occurrence of the option to return. Zero designates the
+        //! first occurrence.
         //!
         template <class NUMTYPE, typename INT1> requires std::derived_from<NUMTYPE, AbstractNumber> && std::integral<INT1>
         void getValue(NUMTYPE& value, const UChar* name, INT1 def_value, size_t index = 0) const
@@ -1237,9 +1237,9 @@ namespace ts {
         //! was not declared in the syntax of the command or declared as a non-string type,
         //! a fatal error is reported.
         //! @param [in] def_value The value to return in @a value if the option or parameter
-        //! is not present in the command line or with fewer occurences than @a index.
-        //! @param [in] index The occurence of the option to return. Zero designates the
-        //! first occurence.
+        //! is not present in the command line or with fewer occurrences than @a index.
+        //! @param [in] index The occurrence of the option to return. Zero designates the
+        //! first occurrence.
         //! @return The value of the option or parameter.
         //!
         template <class NUMTYPE> requires std::derived_from<NUMTYPE, ts::AbstractNumber>
@@ -1306,8 +1306,8 @@ namespace ts {
             UChar             short_name = 0;  // Short option name (u'v' for -v), 0 if unused
             UString           new_name {};     // When non-empty, this option is legacy, equivalent to this new one
             ArgType           type = NONE;     // Argument type
-            size_t            min_occur = 0;   // Minimum occurence
-            size_t            max_occur = 0;   // Maximum occurence
+            size_t            min_occur = 0;   // Minimum occurrence
+            size_t            max_occur = 0;   // Maximum occurrence
             int64_t           min_value = 0;   // Minimum value (for integer args)
             int64_t           max_value = 0;   // Maximum value (for integer args)
             size_t            decimals = 0;    // Number of meaningful decimal digits
@@ -1455,7 +1455,7 @@ bool ts::Args::IOption::inRange(INT value) const
 
 
 //----------------------------------------------------------------------------
-// Get all occurences of an option in a container of strings.
+// Get all occurrences of an option in a container of strings.
 //----------------------------------------------------------------------------
 
 template <class CONTAINER> requires std::same_as<typename CONTAINER::value_type, ts::UString>
@@ -1581,7 +1581,7 @@ NUMTYPE ts::Args::numValue(const UChar* name, const NUMTYPE& def_value, size_t i
 
 
 //----------------------------------------------------------------------------
-// Return all occurences of this option in a vector of integers.
+// Return all occurrences of this option in a vector of integers.
 //----------------------------------------------------------------------------
 
 template <typename INT> requires ts::int_enum<INT>
@@ -1601,7 +1601,7 @@ void ts::Args::getIntValues(std::vector<INT>& values, const UChar* name) const
 
 
 //----------------------------------------------------------------------------
-// Return all occurences of this option in a set of integers.
+// Return all occurrences of this option in a set of integers.
 //----------------------------------------------------------------------------
 
 template <typename INT> requires ts::int_enum<INT>
@@ -1620,7 +1620,7 @@ void ts::Args::getIntValues(std::set<INT>& values, const UChar* name) const
 
 
 //----------------------------------------------------------------------------
-// Get all occurences of an option as a bitset of values.
+// Get all occurrences of an option as a bitset of values.
 //----------------------------------------------------------------------------
 
 template <std::size_t N>
@@ -1732,7 +1732,7 @@ void ts::Args::getChronoValue(cn::duration<Rep1, Period1>& value,
 
 
 //----------------------------------------------------------------------------
-// Get all occurences of an option in a container of IP socket addresses.
+// Get all occurrences of an option in a container of IP socket addresses.
 //----------------------------------------------------------------------------
 
 template <class CONTAINER> requires std::same_as<typename CONTAINER::value_type, ts::IPSocketAddress>

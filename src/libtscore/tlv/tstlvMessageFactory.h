@@ -47,12 +47,12 @@ namespace ts::tlv {
     //!
     //! The get() and getCompound() methods retrieve the value of parameters.
     //! For each parameter type, two versions are available.
-    //! - The first version returns the first occurence of a
+    //! - The first version returns the first occurrence of a
     //!   parameter and is typically used when the cardinality
     //!   of a parameter is 1 or 0 to 1. In the later case,
     //!   the message deserialization routine should first check
     //!   the availability of the parameter using count().
-    //! - The second version returns all occurences of the
+    //! - The second version returns all occurrences of the
     //!   parameter in a vector.
     //!
     //! An exception is thrown when the parameter is not present
@@ -167,9 +167,9 @@ namespace ts::tlv {
         };
 
         //!
-        //! Get actual number of occurences of a parameter.
+        //! Get actual number of occurrences of a parameter.
         //! @param [in] tag Parameter tag to search.
-        //! @return The actual number of occurences of a parameter.
+        //! @return The actual number of occurrences of a parameter.
         //!
         size_t count(TAG tag) const { return _params.count(tag); }
 
@@ -182,7 +182,7 @@ namespace ts::tlv {
         void get(TAG tag, Parameter& param) const;
 
         //!
-        //! Get the location of all occurences of a parameter.
+        //! Get the location of all occurrences of a parameter.
         //! Address and size point into the original message buffer, use with care!
         //! @param [in] tag Parameter tag to search.
         //! @param [out] param Vector of descriptions of the parameter values.
@@ -352,7 +352,7 @@ void ts::tlv::MessageFactory::checkParamSize(TAG tag, const ParameterMultimap::c
     }
 }
 
-// Get first occurence of an integer parameter:
+// Get first occurrence of an integer parameter:
 template <typename INT> requires std::integral<INT>
 INT ts::tlv::MessageFactory::get(TAG tag) const
 {
@@ -366,7 +366,7 @@ INT ts::tlv::MessageFactory::get(TAG tag) const
     }
 }
 
-// Get all occurences of an integer parameter.
+// Get all occurrences of an integer parameter.
 template <typename INT> requires std::integral<INT>
 void ts::tlv::MessageFactory::get(TAG tag, std::vector<INT>& param) const
 {
@@ -394,7 +394,7 @@ void ts::tlv::MessageFactory::getCompound(TAG tag, MSG& param) const
     param = *msg;
 }
 
-// Get all occurences of a compound TLV parameter using a derived class of Message.
+// Get all occurrences of a compound TLV parameter using a derived class of Message.
 template <class MSG>
 void ts::tlv::MessageFactory::getCompound(TAG tag, std::vector<MSG>& param) const
 {
@@ -412,7 +412,7 @@ void ts::tlv::MessageFactory::getCompound(TAG tag, std::vector<MSG>& param) cons
             it->second.compound->factory(gen);
             MSG* msg = dynamic_cast<MSG*>(gen.get());
             if (msg == 0) {
-                throw DeserializationInternalError(UString::Format(u"Wrong compound TLV type for occurence %d of parameter 0x%X", i, tag));
+                throw DeserializationInternalError(UString::Format(u"Wrong compound TLV type for occurrence %d of parameter 0x%X", i, tag));
             }
             param.push_back(*msg);
         }

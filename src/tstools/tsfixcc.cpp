@@ -64,7 +64,7 @@ Options::Options(int argc, char *argv[]) :
          u"By default, duplicated input packets are replicated as duplicated on output "
          u"(the corresponding output packets have the same continuity counters). "
          u"When this option is specified, the input packets are not considered as duplicated and "
-         u"the output packets receive individually incremented countinuity counters.");
+         u"the output packets receive individually incremented continuity counters.");
 
     analyze(argc, argv);
 

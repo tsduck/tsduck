@@ -65,14 +65,14 @@ namespace ts {
         //!
         //! Check if refresh mode is progressive.
         //! @return True if refresh mode is progressive. Note that progressive() and
-        //! interlaced() can return false both if the refresh mode is unspecifed.
+        //! interlaced() can return false both if the refresh mode is unspecified.
         //!
         bool progressive() const {return _is_valid ? _progressive : false;}
 
         //!
         //! Check if refresh mode is interlaced.
         //! @return True if refresh mode is interlaced. Note that progressive() and
-        //! interlaced() can return false both if the refresh mode is unspecifed.
+        //! interlaced() can return false both if the refresh mode is unspecified.
         //!
         bool interlaced() const {return _is_valid ? _interlaced : false;}
 

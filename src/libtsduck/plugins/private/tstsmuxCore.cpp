@@ -475,7 +475,7 @@ bool ts::tsmux::Core::Input::getPacket(TSPacket& pkt, TSPacketMetadata& pkt_data
     }
 
     // If the packet contains a PCR, check if it is time to insert it in the output.
-    // PCR packets are inserted at the same (or similar) PCR interval as in the orginal stream.
+    // PCR packets are inserted at the same (or similar) PCR interval as in the original stream.
     if (pkt.hasPCR()) {
         const auto clock = _pid_clocks.find(pid);
         if (clock != _pid_clocks.end()) {

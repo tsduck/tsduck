@@ -393,7 +393,7 @@ void ts::DSMCCUserToNetworkMessage::serializePayload(BinaryTable& table, PSIBuff
             buf.pushWriteSequenceWithLeadingLength(8);  // user_info_length
 
             // Normaly I would use putDescriptorListWithLength
-            // but UserInfoLength is only 1 byte instead of 2 asssumed
+            // but UserInfoLength is only 1 byte instead of 2 assumed
             // by above method
             buf.putDescriptorList(module.second.descs);
 
