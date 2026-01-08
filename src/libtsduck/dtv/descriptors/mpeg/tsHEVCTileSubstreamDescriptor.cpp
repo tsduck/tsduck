@@ -160,35 +160,25 @@ void ts::HEVCTileSubstreamDescriptor::buildXML(DuckContext& duck, xml::Element* 
 
 bool ts::HEVCTileSubstreamDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector Reference, Substream;
     ReferenceFlag = 0;
-    bool ok =
-        element->getIntAttribute(SubstreamID, u"SubstreamID", true, 0, 0, 0x7F) &&
-        element->getChildren(Reference, u"Reference", 0, 1) &&
-        element->getChildren(Substream, u"Substream");
+    bool ok = element->getIntAttribute(SubstreamID, u"SubstreamID", true, 0, 0, 0x7F) ;
 
-    if (ok && !Reference.empty() && !Substream.empty()) {
-        element->report().error(u"cannot specify both Reference and Substream in <%s>, line %d", element->name(), element->lineNumber());
-        ok = false;
-    }
-    if (ok && !Reference.empty()) {
+    for (auto& xref : element->children(u"Reference", &ok, 0, 1)) {
         ReferenceFlag = 1;
-        uint8_t _PreambleFlag = 0;
-        uint8_t _PatternReference = 0;
-        ok = Reference[0]->getIntAttribute(_PreambleFlag, u"PreambleFlag", true, 0, 0, 1) &&
-             Reference[0]->getIntAttribute(_PatternReference, u"PatternReference", true, 0, 0, 0x7F);
-        PreambleFlag = _PreambleFlag;
-        PatternReference = _PatternReference;
+        ok = xref.getIntAttribute(PreambleFlag, u"PreambleFlag", true, 0, 0, 1) &&
+             xref.getIntAttribute(PatternReference, u"PatternReference", true, 0, 0, 0x7F);
     }
-    if (ok && !Substream.empty()) {
-        ReferenceFlag = 0;
-        for (size_t i=0; ok && i<Substream.size(); i++) {
-            substream_type newSubStream;
-            ok = Substream[i]->getIntAttribute(newSubStream.Flag, u"Flag", true, 0, 0, 1) &&
-                 Substream[i]->getIntAttribute(newSubStream.AdditionalSubstreamID, u"AdditionalSubstreamID", true, 0, 0, 0x7F);
-            if (ok) {
-                Substreams.push_back(newSubStream);
-            }
+
+    for (auto& xsub : element->children(u"Substream", &ok)) {
+        if (ReferenceFlag != 0) {
+            element->report().error(u"cannot specify both Reference and Substream in <%s>, line %d", element->name(), element->lineNumber());
+            ok = false;
+        }
+        else {
+            ReferenceFlag = 0;
+            auto& newSubStream(Substreams.emplace_back());
+            ok = xsub.getIntAttribute(newSubStream.Flag, u"Flag", true, 0, 0, 1) &&
+                 xsub.getIntAttribute(newSubStream.AdditionalSubstreamID, u"AdditionalSubstreamID", true, 0, 0, 0x7F);
         }
     }
     return ok;

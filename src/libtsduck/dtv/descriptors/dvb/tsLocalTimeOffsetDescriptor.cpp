@@ -128,17 +128,14 @@ void ts::LocalTimeOffsetDescriptor::buildXML(DuckContext& duck, xml::Element* ro
 
 bool ts::LocalTimeOffsetDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector children;
-    bool ok = element->getChildren(children, u"region");
-
-    for (size_t index = 0; ok && index < children.size(); ++index) {
-        Region region;
-        ok = children[index]->getAttribute(region.country, u"country_code", true, u"", 3, 3) &&
-             children[index]->getIntAttribute<unsigned int>(region.region_id, u"country_region_id", true, 0, 0, 63) &&
-             children[index]->getChronoAttribute(region.time_offset, u"local_time_offset", true, cn::minutes::zero(), cn::minutes(-780), cn::minutes(780)) &&
-             children[index]->getDateTimeAttribute(region.next_change, u"time_of_change", true) &&
-             children[index]->getChronoAttribute(region.next_time_offset, u"next_time_offset", true, cn::minutes::zero(), cn::minutes(-780), cn::minutes(780));
-        regions.push_back(region);
+    bool ok = true;
+    for (auto& xregion : element->children(u"region", &ok)) {
+        auto& region(regions.emplace_back());
+        ok = xregion.getAttribute(region.country, u"country_code", true, u"", 3, 3) &&
+             xregion.getIntAttribute<unsigned int>(region.region_id, u"country_region_id", true, 0, 0, 63) &&
+             xregion.getChronoAttribute(region.time_offset, u"local_time_offset", true, cn::minutes::zero(), cn::minutes(-780), cn::minutes(780)) &&
+             xregion.getDateTimeAttribute(region.next_change, u"time_of_change", true) &&
+             xregion.getChronoAttribute(region.next_time_offset, u"next_time_offset", true, cn::minutes::zero(), cn::minutes(-780), cn::minutes(780));
     }
     return ok;
 }

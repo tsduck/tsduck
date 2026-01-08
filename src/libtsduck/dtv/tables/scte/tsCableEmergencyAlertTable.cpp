@@ -321,60 +321,46 @@ void ts::CableEmergencyAlertTable::buildXML(DuckContext& duck, xml::Element* roo
 
 bool ts::CableEmergencyAlertTable::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector others;
-    xml::ElementVector locs;
-    xml::ElementVector exceps;
+    bool ok = element->getIntAttribute(_version, u"sequence_number", true, 0, 0, 31) &&
+              element->getIntAttribute(protocol_version, u"protocol_version", false, 0) &&
+              element->getIntAttribute(EAS_event_ID, u"EAS_event_ID", true) &&
+              element->getAttribute(EAS_originator_code, u"EAS_originator_code", true, UString(), 3, 3) &&
+              element->getAttribute(EAS_event_code, u"EAS_event_code", true, UString(), 0, 255) &&
+              nature_of_activation_text.fromXML(duck, element, u"nature_of_activation_text", false) &&
+              element->getIntAttribute(alert_message_time_remaining, u"alert_message_time_remaining", false, 0, 0, 120) &&
+              element->getDateTimeAttribute(event_start_time, u"event_start_time", false, Time::Epoch) &&
+              element->getIntAttribute(event_duration, u"event_duration", false, 0, 0, 6000) &&
+              element->getIntAttribute(alert_priority, u"alert_priority", true, 0, 0, 15) &&
+              element->getIntAttribute(details_OOB_source_ID, u"details_OOB_source_ID", false) &&
+              element->getIntAttribute(details_major_channel_number, u"details_major_channel_number", false, 0, 0, 0x03FF) &&
+              element->getIntAttribute(details_minor_channel_number, u"details_minor_channel_number", false, 0, 0, 0x03FF) &&
+              element->getIntAttribute(audio_OOB_source_ID, u"audio_OOB_source_ID", false) &&
+              alert_text.fromXML(duck, element, u"alert_text", false) &&
+              descs.fromXML(duck, element, u"location,exception,alert_text,nature_of_activation_text");
 
-    bool ok =
-        element->getIntAttribute(_version, u"sequence_number", true, 0, 0, 31) &&
-        element->getIntAttribute(protocol_version, u"protocol_version", false, 0) &&
-        element->getIntAttribute(EAS_event_ID, u"EAS_event_ID", true) &&
-        element->getAttribute(EAS_originator_code, u"EAS_originator_code", true, UString(), 3, 3) &&
-        element->getAttribute(EAS_event_code, u"EAS_event_code", true, UString(), 0, 255) &&
-        nature_of_activation_text.fromXML(duck, element, u"nature_of_activation_text", false) &&
-        element->getIntAttribute(alert_message_time_remaining, u"alert_message_time_remaining", false, 0, 0, 120) &&
-        element->getDateTimeAttribute(event_start_time, u"event_start_time", false, Time::Epoch) &&
-        element->getIntAttribute(event_duration, u"event_duration", false, 0, 0, 6000) &&
-        element->getIntAttribute(alert_priority, u"alert_priority", true, 0, 0, 15) &&
-        element->getIntAttribute(details_OOB_source_ID, u"details_OOB_source_ID", false) &&
-        element->getIntAttribute(details_major_channel_number, u"details_major_channel_number", false, 0, 0, 0x03FF) &&
-        element->getIntAttribute(details_minor_channel_number, u"details_minor_channel_number", false, 0, 0, 0x03FF) &&
-        element->getIntAttribute(audio_OOB_source_ID, u"audio_OOB_source_ID", false) &&
-        alert_text.fromXML(duck, element, u"alert_text", false) &&
-        element->getChildren(locs, u"location", 1, 31) &&
-        element->getChildren(exceps, u"exception", 0, 255) &&
-        descs.fromXML(duck, others, element, u"location,exception,alert_text,nature_of_activation_text");
-
-    for (size_t i = 0; ok && i < locs.size(); ++i) {
-        Location loc;
-        ok = locs[i]->getIntAttribute(loc.state_code, u"state_code", true, 0, 0, 99) &&
-             locs[i]->getIntAttribute(loc.county_subdivision, u"county_subdivision", true, 0, 0, 9) &&
-             locs[i]->getIntAttribute(loc.county_code, u"county_code", true, 0, 0, 909);
-        if (ok) {
-            locations.push_back(loc);
-        }
+    for (auto& xloc : element->children(u"location", &ok, 1, 31)) {
+        auto& loc(locations.emplace_back());
+        ok = xloc.getIntAttribute(loc.state_code, u"state_code", true, 0, 0, 99) &&
+             xloc.getIntAttribute(loc.county_subdivision, u"county_subdivision", true, 0, 0, 9) &&
+             xloc.getIntAttribute(loc.county_code, u"county_code", true, 0, 0, 909);
     }
 
-    for (size_t i = 0; ok && i < exceps.size(); ++i) {
-        Exception exc;
+    for (auto& xexc : element->children(u"exception", &ok, 0, 255)) {
+        auto& exc(exceptions.emplace_back());
         bool wrong = false;
-        exc.in_band = exceps[i]->hasAttribute(u"major_channel_number") && exceps[i]->hasAttribute(u"minor_channel_number");
+        exc.in_band = xexc.hasAttribute(u"major_channel_number") && xexc.hasAttribute(u"minor_channel_number");
         if (exc.in_band) {
-            wrong = exceps[i]->hasAttribute(u"OOB_source_ID");
-            ok =
-                exceps[i]->getIntAttribute(exc.major_channel_number, u"major_channel_number", true, 0, 0, 0x03FF) &&
-                exceps[i]->getIntAttribute(exc.minor_channel_number, u"minor_channel_number", true, 0, 0, 0x03FF);
+            wrong = xexc.hasAttribute(u"OOB_source_ID");
+            ok = xexc.getIntAttribute(exc.major_channel_number, u"major_channel_number", true, 0, 0, 0x03FF) &&
+                 xexc.getIntAttribute(exc.minor_channel_number, u"minor_channel_number", true, 0, 0, 0x03FF);
         }
         else {
-            wrong = exceps[i]->hasAttribute(u"major_channel_number") || exceps[i]->hasAttribute(u"minor_channel_number");
-            ok = exceps[i]->getIntAttribute(exc.OOB_source_ID, u"OOB_source_ID", true);
+            wrong = xexc.hasAttribute(u"major_channel_number") || xexc.hasAttribute(u"minor_channel_number");
+            ok = xexc.getIntAttribute(exc.OOB_source_ID, u"OOB_source_ID", true);
         }
         if (wrong) {
             ok = false;
-            exceps[i]->report().error(u"invalid combination of attributes in <%s>, line %d", exceps[i]->name(), exceps[i]->lineNumber());
-        }
-        if (ok) {
-            exceptions.push_back(exc);
+            xexc.report().error(u"invalid combination of attributes in <%s>, line %d", xexc.name(), xexc.lineNumber());
         }
     }
     return ok;

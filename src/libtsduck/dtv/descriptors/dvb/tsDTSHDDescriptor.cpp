@@ -305,44 +305,28 @@ bool ts::DTSHDDescriptor::analyzeXML(DuckContext& duck, const xml::Element* elem
 
 bool ts::DTSHDDescriptor::SubstreamInfoFromXML(std::optional<SubstreamInfo>& info, const UString& name, const xml::Element* parent)
 {
+    info.reset();
+    bool ok = true;
+
     // Get at most one element of this name.
-    xml::ElementVector children;
-    if (!parent->getChildren(children, name, 0, 1)) {
-        return false;
-    }
-
-    if (children.empty()) {
-        // Element not present
-        info.reset();
-        return true;
-    }
-    else {
-        // Element present once.
-        assert(children.size() == 1);
-
+    for (auto& child : parent->children(name, &ok, 0, 1)) {
         info = SubstreamInfo();
-        SubstreamInfo& si(info.value());
-        const xml::Element* const x = children[0];
-        xml::ElementVector xassets;
+        auto& si(info.value());
 
-        bool valid =
-            x->getIntAttribute(si.channel_count, u"channel_count", true, 0, 0, 0x1F) &&
-            x->getBoolAttribute(si.LFE, u"LFE", true) &&
-            x->getIntAttribute(si.sampling_frequency, u"sampling_frequency", true, 0, 0, 0x0F) &&
-            x->getBoolAttribute(si.sample_resolution, u"sample_resolution", true) &&
-            x->getChildren(xassets, u"asset_info", 1, 8);
+        ok = child.getIntAttribute(si.channel_count, u"channel_count", true, 0, 0, 0x1F) &&
+             child.getBoolAttribute(si.LFE, u"LFE", true) &&
+             child.getIntAttribute(si.sampling_frequency, u"sampling_frequency", true, 0, 0, 0x0F) &&
+             child.getBoolAttribute(si.sample_resolution, u"sample_resolution", true);
 
-        for (size_t i = 0; valid && i < xassets.size(); ++i) {
-            si.asset_info.resize(si.asset_info.size() + 1);
-            AssetInfo& ai(si.asset_info.back());
-            valid =
-                xassets[i]->getIntAttribute(ai.asset_construction, u"asset_construction", true, 0, 0, 0x1F) &&
-                xassets[i]->getBoolAttribute(ai.vbr, u"vbr", true) &&
-                xassets[i]->getBoolAttribute(ai.post_encode_br_scaling, u"post_encode_br_scaling", true) &&
-                xassets[i]->getIntAttribute(ai.bit_rate, u"bit_rate", true, 0, 0, 0x1FFF) &&
-                xassets[i]->getOptionalIntAttribute(ai.component_type, u"component_type") &&
-                xassets[i]->getOptionalAttribute(ai.ISO_639_language_code, u"ISO_639_language_code", 3, 3);
+        for (auto& xasset : child.children(u"asset_info", &ok, 1, 8)) {
+            auto& ai(si.asset_info.emplace_back());
+            ok = xasset.getIntAttribute(ai.asset_construction, u"asset_construction", true, 0, 0, 0x1F) &&
+                 xasset.getBoolAttribute(ai.vbr, u"vbr", true) &&
+                 xasset.getBoolAttribute(ai.post_encode_br_scaling, u"post_encode_br_scaling", true) &&
+                 xasset.getIntAttribute(ai.bit_rate, u"bit_rate", true, 0, 0, 0x1FFF) &&
+                 xasset.getOptionalIntAttribute(ai.component_type, u"component_type") &&
+                 xasset.getOptionalAttribute(ai.ISO_639_language_code, u"ISO_639_language_code", 3, 3);
         }
-        return valid;
     }
+    return ok;
 }

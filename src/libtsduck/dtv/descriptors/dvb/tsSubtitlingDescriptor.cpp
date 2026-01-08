@@ -141,16 +141,13 @@ void ts::SubtitlingDescriptor::buildXML(DuckContext& duck, xml::Element* root) c
 
 bool ts::SubtitlingDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector children;
-    bool ok = element->getChildren(children, u"subtitling", 0, MAX_ENTRIES);
-
-    for (size_t i = 0; ok && i < children.size(); ++i) {
-        Entry entry;
-        ok = children[i]->getAttribute(entry.language_code, u"language_code", true, u"", 3, 3) &&
-             children[i]->getIntAttribute(entry.subtitling_type, u"subtitling_type", true) &&
-             children[i]->getIntAttribute(entry.composition_page_id, u"composition_page_id", true) &&
-             children[i]->getIntAttribute(entry.ancillary_page_id, u"ancillary_page_id", true);
-        entries.push_back(entry);
+    bool ok = true;
+    for (auto& child : element->children(u"subtitling", &ok, 0, MAX_ENTRIES)) {
+        auto& entry(entries.emplace_back());
+        ok = child.getAttribute(entry.language_code, u"language_code", true, u"", 3, 3) &&
+             child.getIntAttribute(entry.subtitling_type, u"subtitling_type", true) &&
+             child.getIntAttribute(entry.composition_page_id, u"composition_page_id", true) &&
+             child.getIntAttribute(entry.ancillary_page_id, u"ancillary_page_id", true);
     }
     return ok;
 }

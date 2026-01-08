@@ -119,16 +119,12 @@ void ts::ATSCComponentListDescriptor::buildXML(DuckContext& duck, xml::Element* 
 
 bool ts::ATSCComponentListDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector xcomp;
-    bool ok = element->getBoolAttribute(alternate, u"alternate", true) &&
-              element->getChildren(xcomp, u"component");
-
-    for (size_t i = 0; ok && i < xcomp.size(); ++i) {
-        Component cp;
-        ok = xcomp[i]->getIntAttribute(cp.stream_type, u"stream_type", true) &&
-             xcomp[i]->getIntAttribute(cp.format_identifier, u"format_identifier", true) &&
-             xcomp[i]->getHexaTextChild(cp.stream_info_details, u"stream_info");
-        components.push_back(cp);
+    bool ok = element->getBoolAttribute(alternate, u"alternate", true);
+    for (auto& xcomp : element->children(u"component", &ok)) {
+        auto& cp(components.emplace_back());
+        ok = xcomp.getIntAttribute(cp.stream_type, u"stream_type", true) &&
+             xcomp.getIntAttribute(cp.format_identifier, u"format_identifier", true) &&
+             xcomp.getHexaTextChild(cp.stream_info_details, u"stream_info");
     }
     return ok;
 }

@@ -107,13 +107,9 @@ void ts::DVBHTMLApplicationDescriptor::buildXML(DuckContext& duck, xml::Element*
 
 bool ts::DVBHTMLApplicationDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector children;
-    bool ok = element->getAttribute(parameter, u"parameter", false) && element->getChildren(children, u"application");
-
-    for (size_t i = 0; ok && i < children.size(); ++i) {
-        uint16_t id = 0;
-        ok = children[i]->getIntAttribute(id, u"id", true);
-        application_ids.push_back(id);
+    bool ok = element->getAttribute(parameter, u"parameter", false);
+    for (auto& xapp : element->children(u"application", &ok)) {
+        ok = xapp.getIntAttribute(application_ids.emplace_back(), u"id", true);
     }
     return ok;
 }

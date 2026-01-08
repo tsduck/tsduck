@@ -94,6 +94,6 @@ namespace ts {
         void addDescriptors(DuckContext& duck, const DescriptorList& dlist);
 
         // Last encountered offset from UTC in the context, typically for ISDB.
-        mutable cn::milliseconds _time_reference_offset {0};
+        mutable cn::milliseconds _time_reference_offset = cn::milliseconds::zero();
     };
 }

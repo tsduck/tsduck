@@ -166,28 +166,22 @@ void ts::NetworkChangeNotifyDescriptor::buildXML(DuckContext& duck, xml::Element
 
 bool ts::NetworkChangeNotifyDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector xcells;
-    bool ok = element->getChildren(xcells, u"cell");
-
-    for (size_t i1 = 0; ok && i1 < xcells.size(); ++i1) {
-        Cell cell;
-        xml::ElementVector xchanges;
-        ok = xcells[i1]->getIntAttribute(cell.cell_id, u"cell_id", true) &&
-             xcells[i1]->getChildren(xchanges, u"change");
-        for (size_t i2 = 0; ok && i2 < xchanges.size(); ++i2) {
-            Change ch;
-            ok = xchanges[i2]->getIntAttribute(ch.network_change_id, u"network_change_id", true) &&
-                 xchanges[i2]->getIntAttribute(ch.network_change_version, u"network_change_version", true) &&
-                 xchanges[i2]->getDateTimeAttribute(ch.start_time_of_change, u"start_time_of_change", true) &&
-                 xchanges[i2]->getTimeAttribute(ch.change_duration, u"change_duration", true) &&
-                 xchanges[i2]->getIntAttribute(ch.receiver_category, u"receiver_category", true, 0, 0x00, 0x07) &&
-                 xchanges[i2]->getIntAttribute(ch.change_type, u"change_type", true, 0, 0x00, 0x0F) &&
-                 xchanges[i2]->getIntAttribute(ch.message_id, u"message_id", true) &&
-                 xchanges[i2]->getOptionalIntAttribute(ch.invariant_ts_tsid, u"invariant_ts_tsid") &&
-                 xchanges[i2]->getOptionalIntAttribute(ch.invariant_ts_onid, u"invariant_ts_onid");
-            cell.changes.push_back(ch);
+    bool ok = true;
+    for (auto& xcell : element->children(u"cell", &ok)) {
+        auto& cell(cells.emplace_back());
+        ok = xcell.getIntAttribute(cell.cell_id, u"cell_id", true);
+        for (auto& xchange : xcell.children(u"change", &ok)) {
+            auto& ch(cell.changes.emplace_back());
+            ok = xchange.getIntAttribute(ch.network_change_id, u"network_change_id", true) &&
+                 xchange.getIntAttribute(ch.network_change_version, u"network_change_version", true) &&
+                 xchange.getDateTimeAttribute(ch.start_time_of_change, u"start_time_of_change", true) &&
+                 xchange.getTimeAttribute(ch.change_duration, u"change_duration", true) &&
+                 xchange.getIntAttribute(ch.receiver_category, u"receiver_category", true, 0, 0x00, 0x07) &&
+                 xchange.getIntAttribute(ch.change_type, u"change_type", true, 0, 0x00, 0x0F) &&
+                 xchange.getIntAttribute(ch.message_id, u"message_id", true) &&
+                 xchange.getOptionalIntAttribute(ch.invariant_ts_tsid, u"invariant_ts_tsid") &&
+                 xchange.getOptionalIntAttribute(ch.invariant_ts_onid, u"invariant_ts_onid");
         }
-        cells.push_back(cell);
     }
     return ok;
 }

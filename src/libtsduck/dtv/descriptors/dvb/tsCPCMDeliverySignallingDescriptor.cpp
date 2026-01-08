@@ -332,50 +332,35 @@ bool ts::CPCMDeliverySignallingDescriptor::analyzeXML(DuckContext& duck, const x
 {
     bool ok = element->getIntAttribute(cpcm_version, u"cpcm_version", true, 0, 0, 0x01);
     if (cpcm_version == 0x01) {
-        xml::ElementVector children;
-        ok &= element->getChildren(children, u"cpcm_v1_delivery_signalling", 0, 1);
-        for (size_t i = 0; ok && i < children.size(); ++i) {
-            xml::ElementVector cpsList;
-            ok = children[i]->getIntAttribute(cpcm_v1_delivery_signalling.copy_control, u"copy_control", true, 0, 0, 7) &&
-                children[i]->getBoolAttribute(cpcm_v1_delivery_signalling.do_not_cpcm_scramble, u"do_not_cpcm_scramble", true) &&
-                children[i]->getBoolAttribute(cpcm_v1_delivery_signalling.viewable, u"viewable", true) &&
-                children[i]->getBoolAttribute(cpcm_v1_delivery_signalling.move_local, u"move_local", true) &&
-                children[i]->getIntAttribute(cpcm_v1_delivery_signalling.move_and_copy_propagation_information, u"move_and_copy_propagation_information", true, 0, 0, 3) &&
-                children[i]->getIntAttribute(cpcm_v1_delivery_signalling.view_propagation_information, u"view_propagation_information", true, 0, 0, 3) &&
-                children[i]->getBoolAttribute(cpcm_v1_delivery_signalling.remote_access_record_flag, u"remote_access_record_flag", true) &&
-                children[i]->getBoolAttribute(cpcm_v1_delivery_signalling.export_beyond_trust, u"export_beyond_trust", true) &&
-                children[i]->getBoolAttribute(cpcm_v1_delivery_signalling.disable_analogue_sd_export, u"disable_analogue_sd_export", true) &&
-                children[i]->getBoolAttribute(cpcm_v1_delivery_signalling.disable_analogue_sd_consumption, u"disable_analogue_sd_consumption", true) &&
-                children[i]->getBoolAttribute(cpcm_v1_delivery_signalling.disable_analogue_hd_export, u"disable_analogue_hd_export", true) &&
-                children[i]->getBoolAttribute(cpcm_v1_delivery_signalling.disable_analogue_hd_consumption, u"disable_analogue_hd_consumption", true) &&
-                children[i]->getBoolAttribute(cpcm_v1_delivery_signalling.image_constraint, u"image_constraint", true) &&
-                children[i]->getOptionalIntAttribute(cpcm_v1_delivery_signalling.view_period_from_first_playback, u"view_period_from_first_playback") &&
-                children[i]->getOptionalIntAttribute(cpcm_v1_delivery_signalling.simultaneous_view_count, u"simultaneous_view_count") &&
-                children[i]->getOptionalIntAttribute(cpcm_v1_delivery_signalling.remote_access_delay, u"remote_access_delay") &&
-                children[i]->getChildren(cpsList, u"cps", 0, 0xFF);
+        for (auto& child : element->children(u"cpcm_v1_delivery_signalling", &ok, 0, 1)) {
+            ok = child.getIntAttribute(cpcm_v1_delivery_signalling.copy_control, u"copy_control", true, 0, 0, 7) &&
+                 child.getBoolAttribute(cpcm_v1_delivery_signalling.do_not_cpcm_scramble, u"do_not_cpcm_scramble", true) &&
+                 child.getBoolAttribute(cpcm_v1_delivery_signalling.viewable, u"viewable", true) &&
+                 child.getBoolAttribute(cpcm_v1_delivery_signalling.move_local, u"move_local", true) &&
+                 child.getIntAttribute(cpcm_v1_delivery_signalling.move_and_copy_propagation_information, u"move_and_copy_propagation_information", true, 0, 0, 3) &&
+                 child.getIntAttribute(cpcm_v1_delivery_signalling.view_propagation_information, u"view_propagation_information", true, 0, 0, 3) &&
+                 child.getBoolAttribute(cpcm_v1_delivery_signalling.remote_access_record_flag, u"remote_access_record_flag", true) &&
+                 child.getBoolAttribute(cpcm_v1_delivery_signalling.export_beyond_trust, u"export_beyond_trust", true) &&
+                 child.getBoolAttribute(cpcm_v1_delivery_signalling.disable_analogue_sd_export, u"disable_analogue_sd_export", true) &&
+                 child.getBoolAttribute(cpcm_v1_delivery_signalling.disable_analogue_sd_consumption, u"disable_analogue_sd_consumption", true) &&
+                 child.getBoolAttribute(cpcm_v1_delivery_signalling.disable_analogue_hd_export, u"disable_analogue_hd_export", true) &&
+                 child.getBoolAttribute(cpcm_v1_delivery_signalling.disable_analogue_hd_consumption, u"disable_analogue_hd_consumption", true) &&
+                 child.getBoolAttribute(cpcm_v1_delivery_signalling.image_constraint, u"image_constraint", true) &&
+                 child.getOptionalIntAttribute(cpcm_v1_delivery_signalling.view_period_from_first_playback, u"view_period_from_first_playback") &&
+                 child.getOptionalIntAttribute(cpcm_v1_delivery_signalling.simultaneous_view_count, u"simultaneous_view_count") &&
+                 child.getOptionalIntAttribute(cpcm_v1_delivery_signalling.remote_access_delay, u"remote_access_delay") &&
+                 child.getOptionalDateTimeAttribute(cpcm_v1_delivery_signalling.view_window_start, u"view_window_start") &&
+                 child.getOptionalDateTimeAttribute(cpcm_v1_delivery_signalling.view_window_end, u"view_window_end") &&
+                 child.getOptionalDateTimeAttribute(cpcm_v1_delivery_signalling.remote_access_date, u"remote_access_date");
 
-            Time tmpDate;
-            if (ok && children[i]->hasAttribute(u"view_window_start")) {
-                ok = children[i]->getDateTimeAttribute(tmpDate, u"view_window_start", true);
-                cpcm_v1_delivery_signalling.view_window_start = tmpDate;
-            }
-            if (ok && children[i]->hasAttribute(u"view_window_end")) {
-                ok = children[i]->getDateTimeAttribute(tmpDate, u"view_window_end", true);
-                cpcm_v1_delivery_signalling.view_window_end = tmpDate;
-            }
-            if (ok && (children[i]->hasAttribute(u"view_window_start") + children[i]->hasAttribute(u"view_window_end") == 1)) {
+            if (ok && cpcm_v1_delivery_signalling.view_window_start.has_value() + cpcm_v1_delivery_signalling.view_window_end.has_value() == 1) {
                 element->report().error(u"both 'view_window_start' and 'view_window_end' must be specified or omitted in <%s>", element->name());
                 ok = false;
             }
-            if (ok && children[i]->hasAttribute(u"remote_access_date")) {
-                ok = children[i]->getDateTimeAttribute(tmpDate, u"remote_access_date", true);
-                cpcm_v1_delivery_signalling.remote_access_date = tmpDate;
-            }
-            for (size_t j = 0; ok && j < cpsList.size(); ++j) {
-                CPSvector newCPS;
-                ok &= cpsList[j]->getIntAttribute(newCPS.C_and_R_regime_mask, u"C_and_R_regime_mask") &&
-                    cpsList[j]->getHexaText(newCPS.cps_byte);
-                cpcm_v1_delivery_signalling.cps_vector.push_back(newCPS);
+            for (auto& xcps : child.children(u"cps", &ok, 0, 0xFF)) {
+                auto& cps(cpcm_v1_delivery_signalling.cps_vector.emplace_back());
+                ok = xcps.getIntAttribute(cps.C_and_R_regime_mask, u"C_and_R_regime_mask") &&
+                     xcps.getHexaText(cps.cps_byte);
             }
          }
     }

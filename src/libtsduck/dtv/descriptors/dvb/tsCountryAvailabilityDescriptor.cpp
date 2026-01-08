@@ -102,8 +102,7 @@ void ts::CountryAvailabilityDescriptor::buildXML(DuckContext& duck, xml::Element
 {
     root->setBoolAttribute(u"country_availability", country_availability);
     for (const auto& code : country_codes) {
-        xml::Element* e = root->addElement(u"country");
-        e->setAttribute(u"country_code", code);
+        root->addElement(u"country")->setAttribute(u"country_code", code);
     }
 }
 
@@ -114,14 +113,10 @@ void ts::CountryAvailabilityDescriptor::buildXML(DuckContext& duck, xml::Element
 
 bool ts::CountryAvailabilityDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector children;
-    bool ok = element->getBoolAttribute(country_availability, u"country_availability", true) &&
-        element->getChildren(children, u"country", 0, MAX_ENTRIES);
-
-    for (size_t i = 0; ok && i < children.size(); ++i) {
-        UString name;
-        ok = children[i]->getAttribute(name, u"country_code", true, UString(), 3, 3);
-        country_codes.push_back(name);
+    bool ok = element->getBoolAttribute(country_availability, u"country_availability", true);
+    for (auto& xcountry : element->children(u"country", &ok, 0, MAX_ENTRIES)) {
+        auto& name(country_codes.emplace_back());
+        ok = xcountry.getAttribute(name, u"country_code", true, UString(), 3, 3);
     }
     return ok;
 }

@@ -117,15 +117,12 @@ void ts::NorDigLogicalChannelDescriptorV1::buildXML(DuckContext& duck, xml::Elem
 
 bool ts::NorDigLogicalChannelDescriptorV1::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector children;
-    bool ok = element->getChildren(children, u"service", 0, MAX_ENTRIES);
-
-    for (size_t i = 0; ok && i < children.size(); ++i) {
-        Entry entry;
-        ok = children[i]->getIntAttribute(entry.service_id, u"service_id", true) &&
-             children[i]->getIntAttribute(entry.lcn, u"logical_channel_number", true, 0, 0x0000, 0x3FFF) &&
-             children[i]->getBoolAttribute(entry.visible, u"visible_service", false, true);
-        entries.push_back(entry);
+    bool ok = true;
+    for (auto& child : element->children(u"service", &ok, 0, MAX_ENTRIES)) {
+        auto& entry(entries.emplace_back());
+        ok = child.getIntAttribute(entry.service_id, u"service_id", true) &&
+             child.getIntAttribute(entry.lcn, u"logical_channel_number", true, 0, 0x0000, 0x3FFF) &&
+             child.getBoolAttribute(entry.visible, u"visible_service", false, true);
     }
     return ok;
 }

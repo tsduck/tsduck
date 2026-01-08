@@ -161,12 +161,11 @@ void ts::CDT::buildXML(DuckContext& duck, xml::Element* root) const
 
 bool ts::CDT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector xdata;
     return element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
            element->getBoolAttribute(_is_current, u"current", false, true) &&
            element->getIntAttribute(download_data_id, u"download_data_id", true) &&
            element->getIntAttribute(original_network_id, u"original_network_id", true) &&
            element->getIntAttribute(data_type, u"data_type", true) &&
-           descs.fromXML(duck, xdata, element, u"data_module") &&
-           element->getHexaTextChild(data_module, u"data_module");
+           element->getHexaTextChild(data_module, u"data_module") &&
+           descs.fromXML(duck, element, u"data_module");
 }

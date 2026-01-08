@@ -284,40 +284,31 @@ bool ts::SpliceSchedule::GetSpliceTime(const DuckContext& duck, const xml::Eleme
 
 bool ts::SpliceSchedule::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector xmlEvents;
-    bool ok = element->getChildren(xmlEvents, u"splice_event", 0, 255);
-
-    for (size_t i = 0; ok && i < xmlEvents.size(); ++i) {
-        Event ev;
-        ok = xmlEvents[i]->getIntAttribute(ev.event_id, u"splice_event_id", true) &&
-             xmlEvents[i]->getBoolAttribute(ev.canceled, u"splice_event_cancel", false, false);
+    bool ok = true;
+    for (auto& xevent : element->children(u"splice_event", &ok, 0, 255)) {
+        auto& ev(events.emplace_back());
+        ok = xevent.getIntAttribute(ev.event_id, u"splice_event_id", true) &&
+             xevent.getBoolAttribute(ev.canceled, u"splice_event_cancel", false, false);
 
         if (ok && !ev.canceled) {
-            xml::ElementVector breakDuration, components;
-            ok = xmlEvents[i]->getBoolAttribute(ev.splice_out, u"out_of_network", true) &&
-                 xmlEvents[i]->getIntAttribute(ev.program_id, u"unique_program_id", true) &&
-                 xmlEvents[i]->getIntAttribute(ev.avail_num, u"avail_num", false, 0) &&
-                 xmlEvents[i]->getIntAttribute(ev.avails_expected, u"avails_expected", false, 0) &&
-                 xmlEvents[i]->getChildren(breakDuration, u"break_duration", 0, 1) &&
-                 xmlEvents[i]->getChildren(components, u"component", 0, 255);
-            ev.use_duration = !breakDuration.empty();
-            if (ok && ev.use_duration) {
-                assert(breakDuration.size() == 1);
-                ok = breakDuration[0]->getBoolAttribute(ev.auto_return, u"auto_return", true) &&
-                     breakDuration[0]->getIntAttribute(ev.duration_pts, u"duration", true);
+            ok = xevent.getBoolAttribute(ev.splice_out, u"out_of_network", true) &&
+                 xevent.getIntAttribute(ev.program_id, u"unique_program_id", true) &&
+                 xevent.getIntAttribute(ev.avail_num, u"avail_num", false, 0) &&
+                 xevent.getIntAttribute(ev.avails_expected, u"avails_expected", false, 0);
+            for (auto& xbd : xevent.children(u"break_duration", &ok, 0, 1)) {
+                ev.use_duration = true;
+                ok = xbd.getBoolAttribute(ev.auto_return, u"auto_return", true) &&
+                     xbd.getIntAttribute(ev.duration_pts, u"duration", true);
             }
-            if (ok && components.empty()) {
-                ok = GetSpliceTime(duck, xmlEvents[i], u"utc_splice_time", ev.program_utc);
-            }
-            for (size_t i1 = 0; ok && i1 < components.size(); ++i1) {
+            for (auto& xcomp : xevent.children(u"component", &ok, 0, 255)) {
                 uint8_t tag = 0;
-                uint32_t utc = 0;
-                ok = components[i1]->getIntAttribute(tag, u"component_tag", true) &&
-                     GetSpliceTime(duck, components[i1], u"utc_splice_time", utc);
-                ev.components_utc[tag] = utc;
+                ok = xcomp.getIntAttribute(tag, u"component_tag", true) &&
+                     GetSpliceTime(duck, &xcomp, u"utc_splice_time", ev.components_utc[tag]);
+            }
+            if (ok && ev.components_utc.empty()) {
+                ok = GetSpliceTime(duck, &xevent, u"utc_splice_time", ev.program_utc);
             }
         }
-        events.push_back(ev);
     }
     return ok;
 }

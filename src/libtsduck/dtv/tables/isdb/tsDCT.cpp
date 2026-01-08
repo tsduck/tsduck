@@ -198,23 +198,18 @@ bool ts::DCT::analyzeXML(DuckContext& duck, const xml::Element* element)
     bool ok = element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
               element->getBoolAttribute(_is_current, u"current", false, true) &&
               element->getIntAttribute(network_id, u"network_id", true) &&
-              element->getIntAttribute(transmission_rate, u"transmission_rate", true) &&
-              element->getChildren(xstr, u"transport_stream");
-    for (size_t i = 0; ok && i < xstr.size(); ++i) {
-        streams.push_back(StreamInfo());
-        StreamInfo& str(streams.back());
-        xml::ElementVector xmod;
-        ok = xstr[i]->getIntAttribute(str.transport_stream_id, u"id", true) &&
-             xstr[i]->getIntAttribute(str.DL_PID, u"DL_PID", true, PID_NULL, 0x0000, 0x1FFF) &&
-             xstr[i]->getIntAttribute(str.ECM_PID, u"ECM_PID", false, PID_NULL, 0x0000, 0x1FFF) &&
-             xstr[i]->getChildren(xmod, u"model");
-        for (size_t j = 0; ok && j < xmod.size(); ++j) {
-            str.models.push_back(ModelInfo());
-            ModelInfo& mod(str.models.back());
-            ok = xmod[j]->getIntAttribute(mod.maker_id, u"maker_id", true) &&
-                 xmod[j]->getIntAttribute(mod.model_id, u"model_id", true) &&
-                 xmod[j]->getIntAttribute(mod.version_id, u"version_id", true) &&
-                 xmod[j]->getIntAttribute(mod.DLT_size, u"DLT_size", true);
+              element->getIntAttribute(transmission_rate, u"transmission_rate", true);
+    for (auto& xts : element->children(u"transport_stream", &ok)) {
+        auto& str(streams.emplace_back());
+        ok = xts.getIntAttribute(str.transport_stream_id, u"id", true) &&
+             xts.getIntAttribute(str.DL_PID, u"DL_PID", true, PID_NULL, 0x0000, 0x1FFF) &&
+             xts.getIntAttribute(str.ECM_PID, u"ECM_PID", false, PID_NULL, 0x0000, 0x1FFF);
+        for (auto& xmod : xts.children(u"model", &ok)) {
+            auto& mod(str.models.emplace_back());
+            ok = xmod.getIntAttribute(mod.maker_id, u"maker_id", true) &&
+                 xmod.getIntAttribute(mod.model_id, u"model_id", true) &&
+                 xmod.getIntAttribute(mod.version_id, u"version_id", true) &&
+                 xmod.getIntAttribute(mod.DLT_size, u"DLT_size", true);
         }
     }
     return ok;

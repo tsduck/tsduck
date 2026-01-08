@@ -915,39 +915,21 @@ bool ts::DescriptorList::toXML(DuckContext& duck, xml::Element* parent) const
 
 bool ts::DescriptorList::fromXML(DuckContext& duck, const xml::Element* parent)
 {
-    xml::ElementVector others;
     static const UStringList empty;
-    return fromXML(duck, others, parent, empty);
+    return fromXML(duck, parent, empty);
 }
 
 bool ts::DescriptorList::fromXML(DuckContext& duck, const xml::Element* parent, const UString& allowed_others)
 {
-    xml::ElementVector others;
     UStringList allowed;
     allowed_others.split(allowed);
-    return fromXML(duck, others, parent, allowed);
+    return fromXML(duck, parent, allowed);
 }
 
 bool ts::DescriptorList::fromXML(DuckContext& duck, const xml::Element* parent, const UStringList& allowed_others)
 {
-    xml::ElementVector others;
-    return fromXML(duck, others, parent, allowed_others);
-}
-
-// @@@@ this method will be removed after current refactoring of XML iteration
-bool ts::DescriptorList::fromXML(DuckContext& duck, xml::ElementVector& others, const xml::Element* parent, const UString& allowed_others)
-{
-    UStringList allowed;
-    allowed_others.split(allowed);
-    return fromXML(duck, others, parent, allowed);
-}
-
-// @@@@ this method will be removed after current refactoring of XML iteration
-bool ts::DescriptorList::fromXML(DuckContext& duck, xml::ElementVector& others, const xml::Element* parent, const UStringList& allowed_others)
-{
     bool success = true;
     clear();
-    others.clear();
     EDID edid;
 
     // Analyze all children nodes. Most of them are descriptors.
@@ -957,7 +939,6 @@ bool ts::DescriptorList::fromXML(DuckContext& duck, xml::ElementVector& others, 
 
         if (node->name().isContainedSimilarIn(allowed_others)) {
             // The tag is not a descriptor name, this is one of the allowed other node.
-            others.push_back(node);
         }
         else if (node->nameMatch(u"metadata")) {
             // Always ignore <metadata> nodes.

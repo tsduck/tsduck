@@ -97,15 +97,12 @@ void ts::ExternalApplicationAuthorizationDescriptor::buildXML(DuckContext& duck,
 
 bool ts::ExternalApplicationAuthorizationDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector children;
-    bool ok = element->getChildren(children, u"application", 0, MAX_ENTRIES);
-
-    for (size_t i = 0; ok && i < children.size(); ++i) {
-        Entry entry;
-        ok = children[i]->getIntAttribute(entry.application_identifier.organization_id, u"organization_id", true) &&
-             children[i]->getIntAttribute(entry.application_identifier.application_id, u"application_id", true) &&
-             children[i]->getIntAttribute(entry.application_priority, u"application_priority", true);
-        entries.push_back(entry);
+    bool ok = true;
+    for (auto& child : element->children(u"application", &ok, 0, MAX_ENTRIES)) {
+        auto& entry(entries.emplace_back());
+        ok = child.getIntAttribute(entry.application_identifier.organization_id, u"organization_id", true) &&
+             child.getIntAttribute(entry.application_identifier.application_id, u"application_id", true) &&
+             child.getIntAttribute(entry.application_priority, u"application_priority", true);
     }
     return ok;
 }

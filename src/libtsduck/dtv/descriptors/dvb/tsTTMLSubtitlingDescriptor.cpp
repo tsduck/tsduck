@@ -253,29 +253,24 @@ void ts::TTMLSubtitlingDescriptor::buildXML(DuckContext& duck, xml::Element* roo
 
 bool ts::TTMLSubtitlingDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector children;
-    uint8_t tmp;
-    bool ok =
-        element->getAttribute(language_code, u"ISO_639_language_code", true) &&
-        element->getIntAttribute(subtitle_purpose, u"subtitle_purpose", true, 0x00, 0x00, 0x31) &&
-        element->getIntAttribute(TTS_suitability, u"TTS_suitability", true, 0x00, 0x00, 0x02) &&
-        element->getOptionalIntAttribute(qualifier, u"qualifier") &&
-        element->getAttribute(service_name, u"service_name") &&
-        element->getIntAttribute(reserved_zero_future_use_bytes, u"reserved_zero_future_count");
+    bool ok = element->getAttribute(language_code, u"ISO_639_language_code", true) &&
+              element->getIntAttribute(subtitle_purpose, u"subtitle_purpose", true, 0x00, 0x00, 0x31) &&
+              element->getIntAttribute(TTS_suitability, u"TTS_suitability", true, 0x00, 0x00, 0x02) &&
+              element->getOptionalIntAttribute(qualifier, u"qualifier") &&
+              element->getAttribute(service_name, u"service_name") &&
+              element->getIntAttribute(reserved_zero_future_use_bytes, u"reserved_zero_future_count");
 
     if (ok && ((subtitle_purpose >= 0x03 && subtitle_purpose <= 0x0F) || (subtitle_purpose >= 0x13 && subtitle_purpose <= 0x2F) || (subtitle_purpose >= 0x32))) {
         element->report().error(u"value 0x%X in <%s>, line %d, is reserved.", subtitle_purpose, element->name(), element->lineNumber());
         ok = false;
     }
-    ok &= element->getChildren(children, u"dvb_ttml_profile", 0x00, 0x0F);
-    for (auto child : children) {
-        ok &= child->getIntAttribute(tmp, u"value", true, 0, 0x00, 0x02);
-        dvb_ttml_profile.push_back(tmp);
+
+    for (auto& child : element->children(u"dvb_ttml_profile", &ok, 0x00, 0x0F)) {
+        ok = child.getIntAttribute(dvb_ttml_profile.emplace_back(), u"value", true, 0, 0x00, 0x02);
     }
-    ok &= element->getChildren(children, u"font_id", 0x00, 0xFF);
-    for (auto child : children) {
-        ok &= child->getIntAttribute(tmp, u"value", true, 0, 0, 0x7F);
-        font_id.push_back(tmp);
+
+    for (auto& child : element->children(u"font_id", &ok, 0x00, 0xFF)) {
+        ok = child.getIntAttribute(font_id.emplace_back(), u"value", true, 0, 0, 0x7F);
     }
     return ok;
 }

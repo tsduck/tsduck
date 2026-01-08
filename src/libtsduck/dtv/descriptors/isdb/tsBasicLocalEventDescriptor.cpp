@@ -208,28 +208,24 @@ void ts::BasicLocalEventDescriptor::buildXML(DuckContext& duck, xml::Element* ro
 
 bool ts::BasicLocalEventDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector xcomp;
     cn::milliseconds::rep start_time_extension = 0;
     cn::milliseconds::rep duration_extension = 0;
-    bool ok =
-        element->getIntAttribute(segmentation_mode, u"segmentation_mode", true, 0, 0x00, 0x0F) &&
-        element->getIntAttribute(start_time_NPT, u"start_time_NPT", segmentation_mode == 1, 0, 0, 0x00000001FFFFFFFF) &&
-        element->getIntAttribute(end_time_NPT, u"end_time_NPT", segmentation_mode == 1, 0, 0, 0x00000001FFFFFFFF) &&
-        element->getTimeAttribute(start_time, u"start_time", segmentation_mode > 1 && segmentation_mode < 6) &&
-        element->getTimeAttribute(duration, u"duration", segmentation_mode > 1 && segmentation_mode < 6) &&
-        element->getIntAttribute(start_time_extension, u"start_time_extension", false, 0) &&
-        element->getIntAttribute(duration_extension, u"duration_extension", false, 0) &&
-        element->getHexaTextChild(reserved_data, u"reserved_data", false) &&
-        element->getChildren(xcomp, u"component");
+
+    bool ok = element->getIntAttribute(segmentation_mode, u"segmentation_mode", true, 0, 0x00, 0x0F) &&
+              element->getIntAttribute(start_time_NPT, u"start_time_NPT", segmentation_mode == 1, 0, 0, 0x00000001FFFFFFFF) &&
+              element->getIntAttribute(end_time_NPT, u"end_time_NPT", segmentation_mode == 1, 0, 0, 0x00000001FFFFFFFF) &&
+              element->getTimeAttribute(start_time, u"start_time", segmentation_mode > 1 && segmentation_mode < 6) &&
+              element->getTimeAttribute(duration, u"duration", segmentation_mode > 1 && segmentation_mode < 6) &&
+              element->getIntAttribute(start_time_extension, u"start_time_extension", false, 0) &&
+              element->getIntAttribute(duration_extension, u"duration_extension", false, 0) &&
+              element->getHexaTextChild(reserved_data, u"reserved_data", false);
 
     // Convert seconds to milliseconds.
     start_time += cn::milliseconds(start_time_extension);
     duration += cn::milliseconds(duration_extension);
 
-    for (auto it = xcomp.begin(); ok && it != xcomp.end(); ++it) {
-        uint8_t tag = 0;
-        ok = (*it)->getIntAttribute(tag, u"tag", true);
-        component_tags.push_back(tag);
+    for (auto& xcomp : element->children(u"component", &ok)) {
+        ok = xcomp.getIntAttribute(component_tags.emplace_back(), u"tag", true);
     }
     return ok;
 }

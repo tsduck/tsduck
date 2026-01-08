@@ -253,72 +253,38 @@ void ts::HEVCOperationPointDescriptor::buildXML(DuckContext& duck, xml::Element*
 
 bool ts::HEVCOperationPointDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector _profile_tier_levels, _operation_points;
+    bool ok = true;
 
-    bool ok = element->getChildren(_profile_tier_levels, u"profile_tier_level_info") &&
-              element->getChildren(_operation_points, u"operation_point");
-
-    if (ok && _profile_tier_levels.size() > MAX_PROFILE_TIER_LEVELS) {
-        element->report().error(u"only %d <profile_tier_level_info> elements are permitted [<%s>, line %d]", MAX_PROFILE_TIER_LEVELS, element->name(), element->lineNumber());
-        ok = false;
-    }
-    if (ok && _operation_points.size() > MAX_OPERATION_POINTS) {
-        element->report().error(u"only %d <operation_point> elements are permitted [<%s>, line %d]", MAX_OPERATION_POINTS, element->name(), element->lineNumber());
-        ok = false;
+    for (auto& child : element->children(u"profile_tier_level_info", &ok, 0, MAX_PROFILE_TIER_LEVELS)) {
+        ok = child.getHexaText(profile_tier_level_infos.emplace_back(), PROFILE_TIER_LEVEL_INFO_SIZE, PROFILE_TIER_LEVEL_INFO_SIZE);
     }
 
-    for (size_t i = 0; ok && i < _profile_tier_levels.size(); i++) {
-        ByteBlock ptli;
-        ok &= _profile_tier_levels[i]->getHexaText(ptli);
-        if (ok && (ptli.size() != PROFILE_TIER_LEVEL_INFO_SIZE)) {
-            _profile_tier_levels[i]->report().error(u"<profile_tier_level_info> must contain %d bytes [<%s>, line %d]", PROFILE_TIER_LEVEL_INFO_SIZE, _profile_tier_levels[i]->name(), _profile_tier_levels[i]->lineNumber());
-            ok = false;
-        }
-        profile_tier_level_infos.push_back(ptli);
-    }
+    for (auto& child1 : element->children(u"operation_point", &ok, 0, MAX_OPERATION_POINTS)) {
+        auto& op(operation_points.emplace_back());
+        ok = child1.getIntAttribute(op.target_ols, u"target_ols", true, 0, 0, 0xFF) &&
+             child1.getIntAttribute(op.constant_frame_rate_info_idc, u"constant_frame_rate_info_idc", true, 0, 0, 0x03) &&
+             child1.getIntAttribute(op.applicable_temporal_id, u"applicable_temporal_id", true, 0, 0, 0x07) &&
+             child1.getOptionalIntAttribute(op.frame_rate_indicator, u"frame_rate_indicator", 0, 0x0FFF) &&
+             child1.getOptionalIntAttribute(op.avg_bit_rate, u"avg_bit_rate", 0, 0xFFFFFF) &&
+             child1.getOptionalIntAttribute(op.max_bit_rate, u"max_bit_rate", 0, 0xFFFFFF);
 
-    for (size_t i = 0; ok && i < _operation_points.size(); i++) {
-        operation_point_type op;
-        ok &= _operation_points[i]->getIntAttribute(op.target_ols, u"target_ols", true, 0, 0, 0xFF);
-
-        xml::ElementVector _ES, _ESinOP;
-        ok &= _operation_points[i]->getChildren(_ES, u"ES") &&
-              _operation_points[i]->getChildren(_ESinOP, u"ESinOP");
-
-        if (ok && (_ES.size() > MAX_ES_POINTS)) {
-            _operation_points[i]->report().error(u"only %d <ES> elements are permitted [<%s>, line %d]", MAX_ES_POINTS, _operation_points[i]->name(), _operation_points[i]->lineNumber());
-            ok = false;
-        }
-        for (size_t j = 0; j < _ES.size(); j++) {
-            ES_type newES;
-            ok &= _ES[j]->getBoolAttribute(newES.prepend_dependencies, u"prepend_dependencies") &&
-                  _ES[j]->getIntAttribute(newES.ES_reference, u"ES_reference", true, 0, 0, 0x3F);
-            op.ESs.push_back(newES);
+        for (auto& child2 : child1.children(u"ES", &ok, 0, MAX_ES_POINTS)) {
+            auto& es(op.ESs.emplace_back());
+            ok = child2.getBoolAttribute(es.prepend_dependencies, u"prepend_dependencies") &&
+                 child2.getIntAttribute(es.ES_reference, u"ES_reference", true, 0, 0, 0x3F);
         }
 
-        if (ok && (_ESinOP.size() > MAX_numEsInOp)) {
-            _operation_points[i]->report().error(u"only %d <ESinOP> elements are permitted [<%s>, line %d]", MAX_numEsInOp, _operation_points[i]->name(), _operation_points[i]->lineNumber());
-            ok = false;
+        for (auto& child2 : child1.children(u"ESinOP", &ok, 0, MAX_numEsInOp)) {
+            auto& es(op.ESinOPs.emplace_back());
+            ok = child2.getBoolAttribute(es.necessary_layer_flag, u"necessary_layer") &&
+                 child2.getBoolAttribute(es.output_layer_flag, u"output_layer") &&
+                 child2.getIntAttribute(es.ptl_ref_idx, u"ptl_ref_idx", true, 0, 0, 0x3F);
         }
-        for (size_t k = 0; k < _ESinOP.size(); k++) {
-            ES_in_OP_type newESinOP;
-            ok &= _ESinOP[k]->getBoolAttribute(newESinOP.necessary_layer_flag, u"necessary_layer") &&
-                  _ESinOP[k]->getBoolAttribute(newESinOP.output_layer_flag, u"output_layer") &&
-                  _ESinOP[k]->getIntAttribute(newESinOP.ptl_ref_idx, u"ptl_ref_idx", true, 0, 0, 0x3F);
-            op.ESinOPs.push_back(newESinOP);
-        }
-
-        ok &= _operation_points[i]->getIntAttribute(op.constant_frame_rate_info_idc, u"constant_frame_rate_info_idc", true, 0, 0, 0x03) &&
-              _operation_points[i]->getIntAttribute(op.applicable_temporal_id, u"applicable_temporal_id", true, 0, 0, 0x07) &&
-              _operation_points[i]->getOptionalIntAttribute(op.frame_rate_indicator, u"frame_rate_indicator", 0, 0x0FFF) &&
-              _operation_points[i]->getOptionalIntAttribute(op.avg_bit_rate, u"avg_bit_rate", 0, 0xFFFFFF) &&
-              _operation_points[i]->getOptionalIntAttribute(op.max_bit_rate, u"max_bit_rate", 0, 0xFFFFFF);
 
         if (ok && ((op.constant_frame_rate_info_idc > 0) && !op.frame_rate_indicator.has_value())) {
-            _operation_points[i]->report().error(u"attribute frame_rate_indicator is required when constant_frame_rate_info_idc is not zero. [<%s>, line %d]", _operation_points[i]->name(), _operation_points[i]->lineNumber());
+            child1.report().error(u"attribute frame_rate_indicator is required when constant_frame_rate_info_idc is not zero. [<%s>, line %d]", child1.name(), child1.lineNumber());
+            ok = false;
         }
-
-        operation_points.push_back(op);
     }
     return ok;
 }

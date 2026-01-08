@@ -321,69 +321,53 @@ void ts::SHDeliverySystemDescriptor::buildXML(DuckContext& duck, xml::Element* r
 
 bool ts::SHDeliverySystemDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector xmods;
-    bool ok =
-        element->getIntAttribute(diversity_mode, u"diversity_mode", true, 0, 0, 15) &&
-        element->getChildren(xmods, u"modulation");
+    bool ok = element->getIntAttribute(diversity_mode, u"diversity_mode", true, 0, 0, 15);
 
-    for (size_t i = 0; ok && i < xmods.size(); ++i) {
-        Modulation mod;
-        xml::ElementVector xofdm;
-        xml::ElementVector xtdm;
-        xml::ElementVector xint;
-        ok = xmods[i]->getChildren(xofdm, u"OFDM", 0, 1) &&
-             xmods[i]->getChildren(xtdm, u"TDM", xofdm.empty() ? 1 : 0, xofdm.empty() ? 1 : 0) &&
-             xmods[i]->getChildren(xint, u"interleaver", 0, 1);
+    for (auto& xmod : element->children(u"modulation", &ok)) {
+        auto& mod(modulations.emplace_back());
 
-        if (ok) {
-            mod.is_ofdm = !xofdm.empty();
-            if (mod.is_ofdm) {
-                assert(xofdm.size() == 1);
-                ok = xofdm[0]->getEnumAttribute(mod.ofdm.bandwidth, BandwidthNames(), u"bandwidth", true) &&
-                     xofdm[0]->getIntAttribute(mod.ofdm.priority, u"priority", true, 0, 0, 1) &&
-                     xofdm[0]->getIntAttribute(mod.ofdm.constellation_and_hierarchy, u"constellation_and_hierarchy", true, 0, 0, 0x07) &&
-                     xofdm[0]->getIntAttribute(mod.ofdm.code_rate, u"code_rate", true, 0, 0, 0x0F) &&
-                     xofdm[0]->getEnumAttribute(mod.ofdm.guard_interval, GuardIntervalNames(), u"guard_interval", true) &&
-                     xofdm[0]->getEnumAttribute(mod.ofdm.transmission_mode, TransmissionModeNames(), u"transmission_mode", true) &&
-                     xofdm[0]->getBoolAttribute(mod.ofdm.common_frequency, u"common_frequency", true);
-            }
-            else {
-                assert(xtdm.size() == 1);
-                ok = xtdm[0]->getEnumAttribute(mod.tdm.polarization, PolarizationNames(), u"polarization", true) &&
-                     xtdm[0]->getEnumAttribute(mod.tdm.roll_off, RollOffNames(), u"roll_off", true) &&
-                     xtdm[0]->getEnumAttribute(mod.tdm.modulation_mode, ModulationNames(), u"modulation_mode", true) &&
-                     xtdm[0]->getIntAttribute(mod.tdm.code_rate, u"code_rate", true, 0, 0, 0x0F) &&
-                     xtdm[0]->getIntAttribute(mod.tdm.symbol_rate, u"symbol_rate", true, 0, 0, 0x1F);
-            }
+        for (auto& xofdm : xmod.children(u"OFDM", &ok, 0, 1)) {
+            mod.is_ofdm = true;
+            ok = xofdm.getEnumAttribute(mod.ofdm.bandwidth, BandwidthNames(), u"bandwidth", true) &&
+                 xofdm.getIntAttribute(mod.ofdm.priority, u"priority", true, 0, 0, 1) &&
+                 xofdm.getIntAttribute(mod.ofdm.constellation_and_hierarchy, u"constellation_and_hierarchy", true, 0, 0, 0x07) &&
+                 xofdm.getIntAttribute(mod.ofdm.code_rate, u"code_rate", true, 0, 0, 0x0F) &&
+                 xofdm.getEnumAttribute(mod.ofdm.guard_interval, GuardIntervalNames(), u"guard_interval", true) &&
+                 xofdm.getEnumAttribute(mod.ofdm.transmission_mode, TransmissionModeNames(), u"transmission_mode", true) &&
+                 xofdm.getBoolAttribute(mod.ofdm.common_frequency, u"common_frequency", true);
         }
 
-        mod.interleaver_presence = ok && !xint.empty();
-        if (mod.interleaver_presence) {
-            assert(xint.size() == 1);
-            ok = xint[0]->getIntAttribute(mod.common_multiplier, u"common_multiplier", true, 0, 0, 0x3F);
-            if (ok) {
-                const int attr_count =
-                    xint[0]->hasAttribute(u"nof_late_taps") +
-                    xint[0]->hasAttribute(u"nof_slices") +
-                    xint[0]->hasAttribute(u"slice_distance") +
-                    xint[0]->hasAttribute(u"non_late_increments");
-                mod.short_interleaver = attr_count == 0;
-                if (attr_count == 4) {
-                    ok = xint[0]->getIntAttribute(mod.nof_late_taps, u"nof_late_taps", true, 0, 0, 0x3F) &&
-                         xint[0]->getIntAttribute(mod.nof_slices, u"nof_slices", true, 0, 0, 0x3F) &&
-                         xint[0]->getIntAttribute(mod.slice_distance, u"slice_distance", true, 0, 0, 0xFF) &&
-                         xint[0]->getIntAttribute(mod.non_late_increments, u"non_late_increments", true, 0, 0, 0x3F);
-                }
-                else if (attr_count != 0) {
-                    ok = false;
-                    element->report().error(u"in <%s>, line %d, attributes nof_late_taps, nof_slices, slice_distance, "
-                                            u"non_late_increments must be all present or all absent",
-                                            xint[0]->name(), xint[0]->lineNumber());
-                }
-            }
+        for (auto& xtdm : xmod.children(u"TDM", &ok, mod.is_ofdm ? 0 : 1, mod.is_ofdm ? 0 : 1)) {
+            ok = xtdm.getEnumAttribute(mod.tdm.polarization, PolarizationNames(), u"polarization", true) &&
+                 xtdm.getEnumAttribute(mod.tdm.roll_off, RollOffNames(), u"roll_off", true) &&
+                 xtdm.getEnumAttribute(mod.tdm.modulation_mode, ModulationNames(), u"modulation_mode", true) &&
+                 xtdm.getIntAttribute(mod.tdm.code_rate, u"code_rate", true, 0, 0, 0x0F) &&
+                 xtdm.getIntAttribute(mod.tdm.symbol_rate, u"symbol_rate", true, 0, 0, 0x1F);
         }
 
-        modulations.push_back(mod);
+        for (auto& xint : xmod.children(u"interleaver", &ok, 0, 1)) {
+            mod.interleaver_presence = true;
+            ok = xint.getIntAttribute(mod.common_multiplier, u"common_multiplier", true, 0, 0, 0x3F);
+            const int attr_count =
+                xint.hasAttribute(u"nof_late_taps") +
+                xint.hasAttribute(u"nof_slices") +
+                xint.hasAttribute(u"slice_distance") +
+                xint.hasAttribute(u"non_late_increments");
+            mod.short_interleaver = attr_count == 0;
+            if (attr_count == 4) {
+                ok = xint.getIntAttribute(mod.nof_late_taps, u"nof_late_taps", true, 0, 0, 0x3F) &&
+                     xint.getIntAttribute(mod.nof_slices, u"nof_slices", true, 0, 0, 0x3F) &&
+                     xint.getIntAttribute(mod.slice_distance, u"slice_distance", true, 0, 0, 0xFF) &&
+                     xint.getIntAttribute(mod.non_late_increments, u"non_late_increments", true, 0, 0, 0x3F);
+            }
+            else if (attr_count != 0) {
+                ok = false;
+                element->report().error(u"in <%s>, line %d, attributes nof_late_taps, nof_slices, slice_distance, "
+                                        u"non_late_increments must be all present or all absent",
+                                        xint.name(), xint.lineNumber());
+            }
+        }
     }
+
     return ok;
 }

@@ -347,20 +347,15 @@ bool ts::LNB::LNBRepository::load(Report& report)
         // Since the document was validated, we assume that all elements in root are <lnb>.
         UStringList index_names;
         bool is_default = false;
-        xml::ElementVector xalias;
-        xml::ElementVector xband;
 
         // Get <lnb> element.
-        bool lnb_ok =
-            getNameAttribute(node, lnb->_name, index_names) &&
-            node->getBoolAttribute(is_default, u"default", false, false) &&
-            node->getChildren(xalias, u"alias") &&
-            node->getChildren(xband, u"band", 1);
+        bool lnb_ok = getNameAttribute(node, lnb->_name, index_names) &&
+                      node->getBoolAttribute(is_default, u"default", false, false);
 
         // Get all aliases. Don't stop on error.
-        for (auto it : xalias) {
+        for (auto& xalias : node->children(u"alias")) {
             UString alias;
-            lnb_ok = getNameAttribute(it, alias, index_names) && lnb_ok;
+            lnb_ok = getNameAttribute(&xalias, alias, index_names) && lnb_ok;
             // Check if the alias is suitable for command line usage.
             if (lnb_ok && lnb->_alias.empty()) {
                 bool ok = true;
@@ -375,14 +370,14 @@ bool ts::LNB::LNBRepository::load(Report& report)
         }
 
         // Get all bands.
-        for (auto it : xband) {
+        for (auto& xband : node->children(u"band", &lnb_ok, 1)) {
             Band band;
             const bool band_ok =
-                it->getIntAttribute(band.low, u"low", true) &&
-                it->getIntAttribute(band.high, u"high", true) &&
-                it->getIntAttribute(band.oscillator, u"oscillator", true) &&
-                it->getIntAttribute(band.switch_freq, u"switch", false, 0) &&
-                it->getEnumAttribute(band.polarity, PolarizationEnum(), u"polarity", false, POL_NONE);
+                xband.getIntAttribute(band.low, u"low", true) &&
+                xband.getIntAttribute(band.high, u"high", true) &&
+                xband.getIntAttribute(band.oscillator, u"oscillator", true) &&
+                xband.getIntAttribute(band.switch_freq, u"switch", false, 0) &&
+                xband.getEnumAttribute(band.polarity, PolarizationEnum(), u"polarity", false, POL_NONE);
             if (band_ok) {
                 lnb->_bands.push_back(band);
             }

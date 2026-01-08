@@ -187,21 +187,18 @@ bool ts::DSMCCCompatibilityDescriptor::fromXML(DuckContext& duck, const xml::Ele
     }
 
     // Analyze the compatibilityDescriptor() element.
-    xml::ElementVector xdescs;
-    bool ok = e->getChildren(xdescs, u"descriptor");
-    for (size_t i1 = 0; ok && i1 < xdescs.size(); ++i1) {
-        Descriptor& desc(descs.emplace_back());
-        xml::ElementVector xsubdescs;
-        ok = xdescs[i1]->getIntAttribute(desc.descriptorType, u"descriptorType", true) &&
-             xdescs[i1]->getIntAttribute(desc.specifierType, u"specifierType", false, 1) &&
-             xdescs[i1]->getIntAttribute(desc.specifierData, u"specifierData", true, 0, 0, 0x00FFFFFF) &&
-             xdescs[i1]->getIntAttribute(desc.model, u"model", false, 0) &&
-             xdescs[i1]->getIntAttribute(desc.version, u"version", false, 0) &&
-             xdescs[i1]->getChildren(xsubdescs, u"subDescriptor");
-        for (size_t i2 = 0; ok && i2 < xsubdescs.size(); ++i2) {
-            SubDescriptor& subdesc(desc.subdescs.emplace_back());
-            ok = xsubdescs[i2]->getIntAttribute(subdesc.subDescriptorType, u"subDescriptorType", true) &&
-                 xsubdescs[i2]->getHexaText(subdesc.additionalInformation);
+    bool ok = true;
+    for (auto& xdesc : e->children(u"descriptor", &ok)) {
+        auto& desc(descs.emplace_back());
+        ok = xdesc.getIntAttribute(desc.descriptorType, u"descriptorType", true) &&
+             xdesc.getIntAttribute(desc.specifierType, u"specifierType", false, 1) &&
+             xdesc.getIntAttribute(desc.specifierData, u"specifierData", true, 0, 0, 0x00FFFFFF) &&
+             xdesc.getIntAttribute(desc.model, u"model", false, 0) &&
+             xdesc.getIntAttribute(desc.version, u"version", false, 0);
+        for (auto& xsub : xdesc.children(u"subDescriptor", &ok)) {
+            auto& subdesc(desc.subdescs.emplace_back());
+            ok = xsub.getIntAttribute(subdesc.subDescriptorType, u"subDescriptorType", true) &&
+                 xsub.getHexaText(subdesc.additionalInformation);
         }
     }
     return ok;

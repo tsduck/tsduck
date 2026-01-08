@@ -181,61 +181,44 @@ void ts::HEVCSubregionDescriptor::buildXML(DuckContext& duck, xml::Element* root
 
 bool ts::HEVCSubregionDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector subregions;
-    int8_t SubstreamMarkingFlag = -1;
-    bool ok =
-        element->getIntAttribute(SubstreamIDsPerLine, u"SubstreamIDsPerLine", true, 0, 0, 0x7F) &&
-        element->getIntAttribute(TotalSubstreamIDs, u"TotalSubstreamIDs", true) &&
-        element->getIntAttribute(LevelFullPanorama, u"LevelFullPanorama", true) &&
-        element->getChildren(subregions, u"SubregionLayout");
+    bool ok = element->getIntAttribute(SubstreamIDsPerLine, u"SubstreamIDsPerLine", true, 0, 0, 0x7F) &&
+              element->getIntAttribute(TotalSubstreamIDs, u"TotalSubstreamIDs", true) &&
+              element->getIntAttribute(LevelFullPanorama, u"LevelFullPanorama", true);
 
-    if (ok) {
-        for (size_t i = 0; ok && i < subregions.size(); i++) {
-            subregion_layout_type newSubregionLayout;
-            if (SubstreamMarkingFlag == -1) {
-                SubstreamMarkingFlag = (subregions[i]->hasAttribute(u"PreambleSubstreamID") ? 1 : 0);
+    // All <SubregionLayout> must either contain attribute PreambleSubstreamID or not.
+    std::optional<bool> SubstreamMarkingFlag;
+
+    for (auto& xregion : element->children(u"SubregionLayout", &ok)) {
+        auto& newSubregionLayout(SubregionLayouts.emplace_back());
+        ok = xregion.getOptionalIntAttribute(newSubregionLayout.PreambleSubstreamID, u"PreambleSubstreamID", 0, 0x7F) &&
+             xregion.getIntAttribute(newSubregionLayout.Level, u"Level") &&
+             xregion.getIntAttribute(newSubregionLayout.PictureSizeHor, u"PictureSizeHor") &&
+             xregion.getIntAttribute(newSubregionLayout.PictureSizeVer, u"PictureSizeVer");
+
+        if (!SubstreamMarkingFlag.has_value()) {
+            SubstreamMarkingFlag = xregion.hasAttribute(u"PreambleSubstreamID") ? 1 : 0;
+        }
+        else if (SubstreamMarkingFlag.value() != xregion.hasAttribute(u"PreambleSubstreamID")) {
+            xregion.report().error(u"all Subregions must either contain @PreambleSubstreamID or not in <%s>, line %d", element->name(), element->lineNumber());
+            ok = false;
+        }
+
+        // All <Pattern> must contain the same number of <Substream>.
+        std::optional<size_t> substreamCount;
+
+        for (auto& xpattern : xregion.children(u"Pattern", &ok, 1)) {
+            auto& newPattern(newSubregionLayout.Patterns.emplace_back());
+            for (auto& xoffset : xpattern.children(u"Substream", &ok, 1)) {
+                ok = xoffset.getIntAttribute(newPattern.SubstreamOffset.emplace_back(), u"offset", true);
             }
-            if ((SubstreamMarkingFlag == 1) && !(subregions[i]->hasAttribute(u"PreambleSubstreamID"))) {
-                subregions[i]->report().error(u"all Subregions must either contain @PreambleSubstreamID or not in <%s>, line %d", element->name(), element->lineNumber());
+            // All patterns must have the same number of SubstreamOffset values;
+            if (!substreamCount.has_value()) {
+                substreamCount = newPattern.SubstreamOffset.size();
+            }
+            else if (newPattern.SubstreamOffset.size() != substreamCount.value()) {
+                element->report().error(u"number of substream offsets '%d' must be the same as in the first pattern (%d) in <%s>, line %d",
+                                        newPattern.SubstreamOffset.size(), substreamCount.value(), xpattern.name(), xpattern.lineNumber());
                 ok = false;
-            }
-            xml::ElementVector patterns;
-            ok &= subregions[i]->getOptionalIntAttribute(newSubregionLayout.PreambleSubstreamID, u"PreambleSubstreamID", 0, 0x7F) &&
-                subregions[i]->getIntAttribute(newSubregionLayout.Level, u"Level") &&
-                subregions[i]->getIntAttribute(newSubregionLayout.PictureSizeHor, u"PictureSizeHor") &&
-                subregions[i]->getIntAttribute(newSubregionLayout.PictureSizeVer, u"PictureSizeVer") &&
-                subregions[i]->getChildren(patterns, u"Pattern", 1);
-            int substreamCount = -1;
-            if (ok) {
-                for (size_t j = 0; ok && j < patterns.size(); j++) {
-                    pattern_type newPattern;
-                    xml::ElementVector offsets;
-                    ok = patterns[j]->getChildren(offsets, u"Substream", 1);
-
-                    if (ok) {
-                        // All patterns must have the same number of SubstreamOffset values;
-                        if (substreamCount == -1) {
-                            substreamCount = int(offsets.size());
-                        }
-                        else if (int(offsets.size()) != substreamCount) {
-                            element->report().error(u"number of substream offsets '%d' must be the same as in the first pattern (%d) in <%s>, line %d", offsets.size(), substreamCount, patterns[j]->name(), patterns[j]->lineNumber());
-                            ok = false;
-                        }
-                    }
-                    if (ok) {
-                        for (size_t k = 0; ok && k < offsets.size(); k++) {
-                            int8_t offset;
-                            ok = offsets[k]->getIntAttribute(offset, u"offset", true);
-                            if (ok) {
-                                newPattern.SubstreamOffset.push_back(offset);
-                            }
-                        }
-                    }
-                    newSubregionLayout.Patterns.push_back(newPattern);
-                }
-            }
-            if (ok) {
-                SubregionLayouts.push_back(newSubregionLayout);
             }
         }
     }

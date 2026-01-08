@@ -206,17 +206,14 @@ void ts::NRT::buildXML(DuckContext& duck, xml::Element* root) const
 
 bool ts::NRT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector xres;
     bool ok = element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
               element->getIntAttribute(table_id_extension, u"table_id_extension", false, 0xFFFF) &&
-              element->getChildren(xres, u"resource") &&
               element->getHexaTextChild(private_data, u"private_data");
 
-    for (auto xr : xres) {
-        Resource& res(resources.emplace_back());
-        ok = res.compatibility_descriptor.fromXML(duck, xr) &&
-             res.resource_descriptor.fromXML(duck, xr) &&
-             ok;
+    for (auto& xr : element->children(u"resource", &ok)) {
+        auto& res(resources.emplace_back());
+        ok = res.compatibility_descriptor.fromXML(duck, &xr) &&
+             res.resource_descriptor.fromXML(duck, &xr);
     }
     return ok;
 }

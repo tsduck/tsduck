@@ -162,17 +162,15 @@ void ts::SelectionInformationTable::buildXML(DuckContext& duck, xml::Element* ro
 
 bool ts::SelectionInformationTable::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector children;
-    bool ok =
-        element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
-        element->getBoolAttribute(_is_current, u"current", false, true) &&
-        descs.fromXML(duck, children, element, u"service");
+    bool ok = element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
+              element->getBoolAttribute(_is_current, u"current", false, true) &&
+              descs.fromXML(duck, element, u"service");
 
-    for (size_t index = 0; ok && index < children.size(); ++index) {
+    for (auto& xserv : element->children(u"service", &ok))  {
         uint16_t id = 0;
-        ok = children[index]->getIntAttribute(id, u"service_id", true) &&
-             children[index]->getEnumAttribute(services[id].running_status, RunningStatusEnum(), u"running_status", true) &&
-             services[id].descs.fromXML(duck, children[index]);
+        ok = xserv.getIntAttribute(id, u"service_id", true) &&
+             xserv.getEnumAttribute(services[id].running_status, RunningStatusEnum(), u"running_status", true) &&
+             services[id].descs.fromXML(duck, &xserv);
     }
     return ok;
 }

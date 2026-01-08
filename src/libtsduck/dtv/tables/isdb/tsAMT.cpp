@@ -221,28 +221,20 @@ void ts::AMT::buildXML(DuckContext& duck, xml::Element* root) const
 
 bool ts::AMT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector xsrv;
-    bool ok =
-        element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
-        element->getBoolAttribute(_is_current, u"current", false, true) &&
-        element->getChildren(xsrv, u"service");
+    bool ok = element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
+              element->getBoolAttribute(_is_current, u"current", false, true);
 
-    for (const auto& it : xsrv) {
+    for (auto& xsrv : element->children(u"service", &ok)) {
         uint16_t service_id = 0;
-        ok = it->getIntAttribute(service_id, u"service_id", true) && ok;
-        if (!ok) {
-            break;
-        }
-        else if (services.contains(service_id)) {
+        ok = xsrv.getIntAttribute(service_id, u"service_id", true) && ok;
+        if (ok && services.contains(service_id)) {
             element->report().error(u"duplicate service_id %n in <%s>, line %d", service_id, element->name(), element->lineNumber());
         }
-        else {
-            auto& srv(services[service_id]);
-            ok = it->getIPAttribute(srv.src, u"src", true) &&
-                 it->getIPAttribute(srv.dst, u"dst", true) &&
-                 it->getHexaTextChild(srv.private_data, u"private_data") &&
-                 ok;
-        }
+        auto& srv(services[service_id]);
+        ok = xsrv.getIPAttribute(srv.src, u"src", true) &&
+             xsrv.getIPAttribute(srv.dst, u"dst", true) &&
+             xsrv.getHexaTextChild(srv.private_data, u"private_data") &&
+             ok;
     }
     return ok;
 }

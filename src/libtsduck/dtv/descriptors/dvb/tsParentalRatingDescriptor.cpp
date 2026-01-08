@@ -133,14 +133,11 @@ void ts::ParentalRatingDescriptor::buildXML(DuckContext& duck, xml::Element* roo
 
 bool ts::ParentalRatingDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector children;
-    bool ok = element->getChildren(children, u"country", 0, MAX_ENTRIES);
-
-    for (size_t i = 0; ok && i < children.size(); ++i) {
-        Entry entry;
-        ok = children[i]->getAttribute(entry.country_code, u"country_code", true, u"", 3, 3) &&
-             children[i]->getIntAttribute(entry.rating, u"rating", true, 0, 0x00, 0xFF);
-        entries.push_back(entry);
+    bool ok = true;
+    for (auto& child : element->children(u"country", &ok, 0, MAX_ENTRIES)) {
+        auto& entry(entries.emplace_back());
+        ok = child.getAttribute(entry.country_code, u"country_code", true, u"", 3, 3) &&
+             child.getIntAttribute(entry.rating, u"rating", true, 0, 0x00, 0xFF);
     }
     return ok;
 }

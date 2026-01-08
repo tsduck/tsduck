@@ -181,28 +181,25 @@ void ts::EASAudioFileDescriptor::buildXML(DuckContext& duck, xml::Element* root)
 
 bool ts::EASAudioFileDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector children;
-    bool ok = element->getChildren(children, u"file");
-
-    for (size_t i = 0; ok && i < children.size(); ++i) {
-        Entry entry;
-        ok = children[i]->getIntAttribute(entry.audio_format, u"audio_format", true, 0, 0, 127) &&
-             children[i]->getAttribute(entry.file_name, u"file_name", false) &&
-             children[i]->getIntAttribute(entry.audio_source, u"audio_source", true);
+    bool ok = true;
+    for (auto& child : element->children(u"file", &ok)) {
+        auto& entry(entries.emplace_back());
+        ok = child.getIntAttribute(entry.audio_format, u"audio_format", true, 0, 0, 127) &&
+             child.getAttribute(entry.file_name, u"file_name", false) &&
+             child.getIntAttribute(entry.audio_source, u"audio_source", true);
         if (ok) {
             if (entry.audio_source == 0x01) {
-                ok = children[i]->getIntAttribute(entry.program_number, u"program_number", true) &&
-                     children[i]->getIntAttribute(entry.carousel_id, u"carousel_id", true) &&
-                     children[i]->getIntAttribute(entry.application_id, u"application_id", true);
+                ok = child.getIntAttribute(entry.program_number, u"program_number", true) &&
+                     child.getIntAttribute(entry.carousel_id, u"carousel_id", true) &&
+                     child.getIntAttribute(entry.application_id, u"application_id", true);
             }
             else if (entry.audio_source == 0x02) {
-                ok = children[i]->getIntAttribute(entry.program_number, u"program_number", true) &&
-                     children[i]->getIntAttribute(entry.download_id, u"download_id", true) &&
-                     children[i]->getIntAttribute(entry.module_id, u"module_id", true) &&
-                     children[i]->getIntAttribute(entry.application_id, u"application_id", true);
+                ok = child.getIntAttribute(entry.program_number, u"program_number", true) &&
+                     child.getIntAttribute(entry.download_id, u"download_id", true) &&
+                     child.getIntAttribute(entry.module_id, u"module_id", true) &&
+                     child.getIntAttribute(entry.application_id, u"application_id", true);
             }
         }
-        entries.push_back(entry);
     }
     return ok;
 }

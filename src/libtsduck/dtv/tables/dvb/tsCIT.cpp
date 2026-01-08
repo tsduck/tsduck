@@ -215,33 +215,26 @@ void ts::CIT::buildXML(DuckContext& duck, xml::Element* root) const
 
 bool ts::CIT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector xprepend;
-    xml::ElementVector xcrid;
-    bool ok =
-        element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
-        element->getBoolAttribute(_is_current, u"current", false, true) &&
-        element->getIntAttribute(service_id, u"service_id", true) &&
-        element->getIntAttribute(transport_stream_id, u"transport_stream_id", true) &&
-        element->getIntAttribute(original_network_id, u"original_network_id", true) &&
-        element->getChildren(xprepend, u"prepend_string", 0, 254) &&
-        element->getChildren(xcrid, u"crid");
+    bool ok = element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
+              element->getBoolAttribute(_is_current, u"current", false, true) &&
+              element->getIntAttribute(service_id, u"service_id", true) &&
+              element->getIntAttribute(transport_stream_id, u"transport_stream_id", true) &&
+              element->getIntAttribute(original_network_id, u"original_network_id", true);
 
-    for (auto it = xprepend.begin(); ok && it != xprepend.end(); ++it) {
-        UString str;
-        ok = (*it)->getAttribute(str, u"value", true);
-        prepend_strings.push_back(str);
+    for (auto& xprepend : element->children(u"prepend_string", &ok, 0, 254)) {
+        auto& str(prepend_strings.emplace_back());
+        ok = xprepend.getAttribute(str, u"value", true);
     }
 
-    for (auto it = xcrid.begin(); ok && it != xcrid.end(); ++it) {
-        CRID cr;
-        ok = (*it)->getIntAttribute(cr.crid_ref, u"crid_ref", true) &&
-             (*it)->getIntAttribute(cr.prepend_string_index, u"prepend_string_index", true) &&
-             (*it)->getAttribute(cr.unique_string, u"unique_string", true, UString(), 0, 255);
+    for (auto& xcrid : element->children(u"crid", &ok)) {
+        auto& cr(crids.emplace_back());
+        ok = xcrid.getIntAttribute(cr.crid_ref, u"crid_ref", true) &&
+             xcrid.getIntAttribute(cr.prepend_string_index, u"prepend_string_index", true) &&
+             xcrid.getAttribute(cr.unique_string, u"unique_string", true, UString(), 0, 255);
         if (ok && cr.prepend_string_index >= prepend_strings.size() && cr.prepend_string_index != 0xFF) {
-            element->report().error(u"line %d, attribute 'prepend_string_index' out of range", (*it)->lineNumber());
+            element->report().error(u"line %d, attribute 'prepend_string_index' out of range", xcrid.lineNumber());
             ok = false;
         }
-        crids.push_back(cr);
     }
     return ok;
 }

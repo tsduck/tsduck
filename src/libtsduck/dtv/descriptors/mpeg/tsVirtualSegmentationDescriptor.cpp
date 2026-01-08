@@ -190,21 +190,16 @@ void ts::VirtualSegmentationDescriptor::buildXML(DuckContext& duck, xml::Element
 
 bool ts::VirtualSegmentationDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector xpart;
-    bool ok =
-        element->getOptionalIntAttribute(ticks_per_second, u"ticks_per_second", 0, 0x001FFFFF) &&
-        element->getChildren(xpart, u"partition", 0, MAX_PARTITION);
-
-    for (auto it = xpart.begin(); ok && it != xpart.end(); ++it) {
-        Partition part;
-        ok = (*it)->getIntAttribute(part.partition_id, u"partition_id", true, 0, 0, 7) &&
-             (*it)->getIntAttribute(part.SAP_type_max, u"SAP_type_max", true, 0, 0, 7) &&
-             (*it)->getOptionalIntAttribute<PID>(part.boundary_PID, u"boundary_PID", 0, 0x1FFF) &&
-             (*it)->getOptionalIntAttribute(part.maximum_duration, u"maximum_duration", 0, 0x1FFFFFFF);
+    bool ok = element->getOptionalIntAttribute(ticks_per_second, u"ticks_per_second", 0, 0x001FFFFF);
+    for (auto& child : element->children(u"partition", &ok, 0, MAX_PARTITION)) {
+        auto& part(partitions.emplace_back());
+        ok = child.getIntAttribute(part.partition_id, u"partition_id", true, 0, 0, 7) &&
+             child.getIntAttribute(part.SAP_type_max, u"SAP_type_max", true, 0, 0, 7) &&
+             child.getOptionalIntAttribute(part.boundary_PID, u"boundary_PID", 0, 0x1FFF) &&
+             child.getOptionalIntAttribute(part.maximum_duration, u"maximum_duration", 0, 0x1FFFFFFF);
         if (part.boundary_PID.has_value() && part.maximum_duration.has_value()) {
-            element->report().error(u"attributes 'boundary_PID' and 'maximum_duration' are mutually exclusive in <%s>, line %d", element->name(), (*it)->lineNumber());
+            element->report().error(u"attributes 'boundary_PID' and 'maximum_duration' are mutually exclusive in <%s>, line %d", element->name(), child.lineNumber());
         }
-        partitions.push_back(part);
     }
     return ok;
 }

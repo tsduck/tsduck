@@ -128,18 +128,14 @@ void ts::SpliceAudioDescriptor::buildXML(DuckContext& duck, xml::Element* root) 
 
 bool ts::SpliceAudioDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector children;
-    bool ok = element->getIntAttribute(identifier, u"identifier", false, SPLICE_ID_CUEI) &&
-              element->getChildren(children, u"audio", 0, MAX_ENTRIES);
-
-    for (size_t i = 0; ok && i < children.size(); ++i) {
-        Audio a;
-        ok = children[i]->getIntAttribute(a.component_tag, u"component_tag", true) &&
-             children[i]->getAttribute(a.ISO_code, u"ISO_code", true, u"", 3, 3) &&
-             children[i]->getIntAttribute(a.Bit_Stream_Mode, u"Bit_Stream_Mode", true, 0, 0, 0x07) &&
-             children[i]->getIntAttribute(a.Num_Channels, u"Num_Channels", true, 0, 0, 0x0F) &&
-             children[i]->getBoolAttribute(a.Full_Srvc_Audio, u"Full_Srvc_Audio", true);
-        audio.push_back(a);
+    bool ok = element->getIntAttribute(identifier, u"identifier", false, SPLICE_ID_CUEI);
+    for (auto& child : element->children(u"audio", &ok, 0, MAX_ENTRIES)) {
+        auto& a(audio.emplace_back());
+        ok = child.getIntAttribute(a.component_tag, u"component_tag", true) &&
+             child.getAttribute(a.ISO_code, u"ISO_code", true, u"", 3, 3) &&
+             child.getIntAttribute(a.Bit_Stream_Mode, u"Bit_Stream_Mode", true, 0, 0, 0x07) &&
+             child.getIntAttribute(a.Num_Channels, u"Num_Channels", true, 0, 0, 0x0F) &&
+             child.getBoolAttribute(a.Full_Srvc_Audio, u"Full_Srvc_Audio", true);
     }
     return ok;
 }

@@ -159,14 +159,11 @@ void ts::MPEFECTable::buildXML(DuckContext& duck, xml::Element* root) const
 
 bool ts::MPEFECTable::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector xcol;
-    bool ok = element->getIntAttribute(padding_columns, u"padding_columns", true, 0, 0, MAX_COLUMN_NUMBER) &&
-              element->getChildren(xcol, u"column", 1, MAX_COLUMN_NUMBER + 1);
-
-    columns.resize(xcol.size());
-    for (size_t i = 0; ok && i < xcol.size(); ++i) {
-        ok = columns[i].rt.analyzeXML(duck, xcol[i], false) &&
-             xcol[i]->getHexaTextChild(columns[i].rs_data, u"rs_data", true);
+    bool ok = element->getIntAttribute(padding_columns, u"padding_columns", true, 0, 0, MAX_COLUMN_NUMBER);
+    for (auto& xcol : element->children(u"column", &ok, 1, MAX_COLUMN_NUMBER + 1)) {
+        auto& col(columns.emplace_back());
+        ok = col.rt.analyzeXML(duck, &xcol, false) &&
+             xcol.getHexaTextChild(col.rs_data, u"rs_data", true);
     }
     return ok;
 }

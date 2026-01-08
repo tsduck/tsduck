@@ -115,14 +115,11 @@ void ts::EASInbandExceptionChannelsDescriptor::buildXML(DuckContext& duck, xml::
 
 bool ts::EASInbandExceptionChannelsDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector children;
-    bool ok = element->getChildren(children, u"exception", 0, MAX_ENTRIES);
-
-    for (size_t i = 0; ok && i < children.size(); ++i) {
-        Entry entry;
-        ok = children[i]->getIntAttribute(entry.RF_channel, u"RF_channel", true) &&
-             children[i]->getIntAttribute(entry.program_number, u"program_number", true);
-        entries.push_back(entry);
+    bool ok = true;
+    for (auto& child : element->children(u"exception", &ok, 0, MAX_ENTRIES)) {
+        auto& entry(entries.emplace_back());
+        ok = child.getIntAttribute(entry.RF_channel, u"RF_channel", true) &&
+             child.getIntAttribute(entry.program_number, u"program_number", true);
     }
     return ok;
 }

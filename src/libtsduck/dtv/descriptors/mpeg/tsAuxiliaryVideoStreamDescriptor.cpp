@@ -458,19 +458,9 @@ bool ts::AuxiliaryVideoStreamDescriptor::si_message_type::fromXML(const xml::Ele
 
 bool ts::AuxiliaryVideoStreamDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    ts::xml::ElementVector si_msgs;
-    bool ok = element->getIntAttribute(aux_video_codedstreamtype, u"aux_video_codedstreamtype", true) &&
-              element->getChildren(si_msgs, u"si_message", 1);
-    if (ok) {
-        for (size_t i = 0; i < si_msgs.size(); i++) {
-            si_message_type newSI;
-            if (newSI.fromXML(si_msgs[i])) {
-                si_messages.push_back(newSI);
-            }
-            else {
-                ok = false;
-            }
-        }
+    bool ok = element->getIntAttribute(aux_video_codedstreamtype, u"aux_video_codedstreamtype", true);
+    for (auto& xsi : element->children(u"si_message", &ok, 1)) {
+        ok = si_messages.emplace_back().fromXML(&xsi);
     }
     return ok;
 }

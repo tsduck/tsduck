@@ -716,76 +716,65 @@ bool ts::DSMCCUserToNetworkMessage::analyzeXML(DuckContext& duck, const xml::Ele
              compatibility_descriptor.fromXML(duck, dsi_element, false);
 
         const xml::Element* ior_element = dsi_element->findFirstChild(u"IOR", true);
-        if (ior_element == nullptr) {
+        if (!ok || ior_element == nullptr) {
             return false;
         }
 
-        xml::ElementVector profile_elements;
-        ok = ior_element->getHexaTextChild(ior.type_id, u"type_id") &&
-             ior_element->getChildren(profile_elements, u"tagged_profile");
+        ok = ior_element->getHexaTextChild(ior.type_id, u"type_id");
 
-        for (size_t it = 0; ok && it < profile_elements.size(); ++it) {
-            TaggedProfile tagged_profile;
-
-            ok = profile_elements[it]->getIntAttribute(tagged_profile.profile_id_tag, u"profile_id_tag", true) &&
-                 profile_elements[it]->getIntAttribute(tagged_profile.profile_data_byte_order, u"profile_data_byte_order", true);
+        for (auto& xprofile : ior_element->children(u"tagged_profile", &ok)) {
+            auto& tagged_profile(ior.tagged_profiles.emplace_back());
+            ok = xprofile.getIntAttribute(tagged_profile.profile_id_tag, u"profile_id_tag", true) &&
+                 xprofile.getIntAttribute(tagged_profile.profile_data_byte_order, u"profile_data_byte_order", true);
 
             if (tagged_profile.profile_id_tag == DSMCC_TAG_BIOP) {  // TAG_BIOP (BIOP Profile Body)
-                const xml::Element* biop_profile_body_element = profile_elements[it]->findFirstChild(u"BIOP_profile_body", true);
+                const xml::Element* biop_profile_body_element = xprofile.findFirstChild(u"BIOP_profile_body", true);
                 if (biop_profile_body_element == nullptr) {
                     return false;
                 }
 
-                xml::ElementVector lite_component_elements;
-                ok = biop_profile_body_element->getChildren(lite_component_elements, u"lite_component");
+                for (auto& lite_component_element : biop_profile_body_element->children(u"lite_component", &ok)) {
+                    auto& lite_component(tagged_profile.liteComponents.emplace_back());
+                    ok = lite_component_element.getIntAttribute(lite_component.component_id_tag, u"component_id_tag", true);
 
-                for (size_t it2 = 0; ok && it2 < lite_component_elements.size(); ++it2) {
-                    LiteComponent liteComponent;
-
-                    ok = lite_component_elements[it2]->getIntAttribute(liteComponent.component_id_tag, u"component_id_tag", true);
-
-                    switch (liteComponent.component_id_tag) {
+                    switch (lite_component.component_id_tag) {
                         case DSMCC_TAG_OBJECT_LOCATION: {  // TAG_ObjectLocation
-                            const xml::Element* biop_object_location_element = lite_component_elements[it2]->findFirstChild(u"BIOP_object_location", true);
+                            const xml::Element* biop_object_location_element = lite_component_element.findFirstChild(u"BIOP_object_location", true);
                             if (biop_object_location_element == nullptr) {
                                 return false;
                             }
 
-                            ok = biop_object_location_element->getIntAttribute(liteComponent.carousel_id, u"carousel_id", true) &&
-                                 biop_object_location_element->getIntAttribute(liteComponent.module_id, u"module_id", true) &&
-                                 biop_object_location_element->getIntAttribute(liteComponent.version_major, u"version_major", true) &&
-                                 biop_object_location_element->getIntAttribute(liteComponent.version_minor, u"version_minor", true);
+                            ok = biop_object_location_element->getIntAttribute(lite_component.carousel_id, u"carousel_id", true) &&
+                                 biop_object_location_element->getIntAttribute(lite_component.module_id, u"module_id", true) &&
+                                 biop_object_location_element->getIntAttribute(lite_component.version_major, u"version_major", true) &&
+                                 biop_object_location_element->getIntAttribute(lite_component.version_minor, u"version_minor", true);
 
                             ByteBlock bb;
                             if (biop_object_location_element->getHexaTextChild(bb, u"object_key_data")) {
-                                liteComponent.object_key_data = bb;
+                                lite_component.object_key_data = bb;
                             }
 
                             break;
                         }
 
                         case DSMCC_TAG_CONN_BINDER: {  // TAG_ConnBinder
-                            const xml::Element* dsm_conn_binder_element = lite_component_elements[it2]->findFirstChild(u"DSM_conn_binder");
-                            ok = dsm_conn_binder_element != nullptr && liteComponent.tap.fromXML(duck, dsm_conn_binder_element);
+                            const xml::Element* dsm_conn_binder_element = lite_component_element.findFirstChild(u"DSM_conn_binder");
+                            ok = dsm_conn_binder_element != nullptr && lite_component.tap.fromXML(duck, dsm_conn_binder_element);
                             break;
                         }
 
                         default: {  //UnknownComponent
                             ByteBlock bb;
-                            if (lite_component_elements[it2]->getHexaTextChild(bb, u"component_data")) {
-                                liteComponent.component_data = bb;
+                            if (lite_component_element.getHexaTextChild(bb, u"component_data")) {
+                                lite_component.component_data = bb;
                             }
                             break;
                         }
                     }
-
-                    if (ok) {
-                        tagged_profile.liteComponents.push_back(liteComponent);
-                    }
                 }
             }
             else if (tagged_profile.profile_id_tag == DSMCC_TAG_LITE_OPTIONS) {  // TODO: TAG_LITE_OPTIONS (Lite Options Profile Body)
-                const xml::Element* lite_options_profile_body_element = profile_elements[it]->findFirstChild(u"Lite_options_profile_body", true);
+                const xml::Element* lite_options_profile_body_element = xprofile.findFirstChild(u"Lite_options_profile_body", true);
                 if (lite_options_profile_body_element == nullptr) {
                     return false;
                 }
@@ -796,7 +785,7 @@ bool ts::DSMCCUserToNetworkMessage::analyzeXML(DuckContext& duck, const xml::Ele
                 }
             }
             else {  // Any other Profile Type
-                const xml::Element* unknown_profile_body_element = profile_elements[it]->findFirstChild(u"Unknown_profile_body", true);
+                const xml::Element* unknown_profile_body_element = xprofile.findFirstChild(u"Unknown_profile_body", true);
                 if (unknown_profile_body_element == nullptr) {
                     return false;
                 }
@@ -806,10 +795,6 @@ bool ts::DSMCCUserToNetworkMessage::analyzeXML(DuckContext& duck, const xml::Ele
                     tagged_profile.profile_data = bb;
                 }
             }
-
-            if (ok) {
-                ior.tagged_profiles.push_back(tagged_profile);
-            }
         }
     }
     else if (header.message_id == DSMCC_MSGID_DII) {
@@ -818,27 +803,23 @@ bool ts::DSMCCUserToNetworkMessage::analyzeXML(DuckContext& duck, const xml::Ele
             return false;
         }
 
-        xml::ElementVector module_elements;
         ok = dii_element->getIntAttribute(download_id, u"download_id", true) &&
              dii_element->getIntAttribute(block_size, u"block_size", true) &&
-             dii_element->getChildren(module_elements, u"module") &&
              compatibility_descriptor.fromXML(duck, dii_element, false);
 
-        for (size_t it = 0; ok && it < module_elements.size(); ++it) {
-            Module&            module(modules.newEntry());
-            xml::ElementVector tap_elements;
+        for (auto& xmod : dii_element->children(u"module", &ok)) {
+            auto& module(modules.newEntry());
+            ok = xmod.getIntAttribute(module.module_id, u"module_id", true) &&
+                 xmod.getIntAttribute(module.module_size, u"module_size", true) &&
+                 xmod.getIntAttribute(module.module_version, u"module_version", true) &&
+                 xmod.getIntAttribute(module.module_timeout, u"module_timeout", true) &&
+                 xmod.getIntAttribute(module.block_timeout, u"block_timeout", true) &&
+                 xmod.getIntAttribute(module.min_block_time, u"min_block_time", true) &&
+                 module.descs.fromXML(duck, &xmod, u"tap");
 
-            ok = module_elements[it]->getIntAttribute(module.module_id, u"module_id", true) &&
-                 module_elements[it]->getIntAttribute(module.module_size, u"module_size", true) &&
-                 module_elements[it]->getIntAttribute(module.module_version, u"module_version", true) &&
-                 module_elements[it]->getIntAttribute(module.module_timeout, u"module_timeout", true) &&
-                 module_elements[it]->getIntAttribute(module.block_timeout, u"block_timeout", true) &&
-                 module_elements[it]->getIntAttribute(module.min_block_time, u"min_block_time", true) &&
-                 module.descs.fromXML(duck, tap_elements, module_elements[it], u"tap");
-
-            for (size_t itt = 0; ok && itt < tap_elements.size(); ++itt) {
-                DSMCCTap& tap(module.taps.emplace_back());
-                ok = tap.fromXML(duck, tap_elements[itt], nullptr);
+            for (auto& xtap : xmod.children(u"tap", &ok)) {
+                auto& tap(module.taps.emplace_back());
+                ok = tap.fromXML(duck, &xtap, nullptr);
             }
         }
     }

@@ -137,20 +137,15 @@ void ts::HEVCHierarchyExtensionDescriptor::buildXML(DuckContext& duck, xml::Elem
 
 bool ts::HEVCHierarchyExtensionDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector xlayer;
-    bool ok =
-        element->getIntAttribute(extension_dimension_bits, u"extension_dimension_bits", true) &&
-        element->getIntAttribute(hierarchy_layer_index, u"hierarchy_layer_index", true, 0, 0, 0x3F) &&
-        element->getIntAttribute(temporal_id, u"temporal_id", true, 0, 0, 0x07) &&
-        element->getIntAttribute(nuh_layer_id, u"nuh_layer_id", true, 0, 0, 0x3F) &&
-        element->getBoolAttribute(tref_present, u"tref_present", true) &&
-        element->getIntAttribute(hierarchy_channel, u"hierarchy_channel", true, 0, 0, 0x3F) &&
-        element->getChildren(xlayer, u"embedded_layer", 0, 0x3F);
+    bool ok = element->getIntAttribute(extension_dimension_bits, u"extension_dimension_bits", true) &&
+              element->getIntAttribute(hierarchy_layer_index, u"hierarchy_layer_index", true, 0, 0, 0x3F) &&
+              element->getIntAttribute(temporal_id, u"temporal_id", true, 0, 0, 0x07) &&
+              element->getIntAttribute(nuh_layer_id, u"nuh_layer_id", true, 0, 0, 0x3F) &&
+              element->getBoolAttribute(tref_present, u"tref_present", true) &&
+              element->getIntAttribute(hierarchy_channel, u"hierarchy_channel", true, 0, 0, 0x3F);
 
-    for (auto it : xlayer) {
-        uint8_t id = 0;
-        ok = it->getIntAttribute(id, u"hierarchy_layer_index", true, 0, 0, 0x3F);
-        hierarchy_ext_embedded_layer_index.push_back(id);
+    for (auto& child : element->children(u"embedded_layer", &ok, 0, 0x3F)) {
+        ok = child.getIntAttribute(hierarchy_ext_embedded_layer_index.emplace_back(), u"hierarchy_layer_index", true, 0, 0, 0x3F);
     }
     return ok;
 }

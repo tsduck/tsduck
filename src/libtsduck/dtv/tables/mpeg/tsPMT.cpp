@@ -623,24 +623,23 @@ void ts::PMT::buildXML(DuckContext& duck, xml::Element* root) const
 
 bool ts::PMT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector children;
-    bool ok =
-        element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
-        element->getBoolAttribute(_is_current, u"current", false, true) &&
-        element->getIntAttribute(service_id, u"service_id", true, 0, 0x0000, 0xFFFF) &&
-        element->getIntAttribute(pcr_pid, u"PCR_PID", false, PID_NULL, 0x0000, 0x1FFF) &&
-        descs.fromXML(duck, children, element, u"component");
+    bool ok = element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
+              element->getBoolAttribute(_is_current, u"current", false, true) &&
+              element->getIntAttribute(service_id, u"service_id", true, 0, 0x0000, 0xFFFF) &&
+              element->getIntAttribute(pcr_pid, u"PCR_PID", false, PID_NULL, 0x0000, 0x1FFF) &&
+              descs.fromXML(duck, element, u"component");
 
-    for (auto e : children) {
+    for (auto& xcomp : element->children(u"component", &ok)) {
         PID pid = PID_NULL;
-        ok = e->getIntAttribute<PID>(pid, u"elementary_PID", true, 0, 0x0000, 0x1FFF);
+        ok = xcomp.getIntAttribute(pid, u"elementary_PID", true, 0, 0x0000, 0x1FFF);
         if (ok) {
             if (streams.contains(pid)) {
-                element->report().error(u"line %d: in <%s>, duplicated <%s> for PID %n", e->lineNumber(), element->name(), e->name(), pid);
+                element->report().error(u"line %d: in <%s>, duplicated <%s> for PID %n", xcomp.lineNumber(), element->name(), xcomp.name(), pid);
                 ok = false;
             }
             else {
-                ok = e->getIntAttribute(streams[pid].stream_type, u"stream_type", true) && streams[pid].descs.fromXML(duck, e);
+                ok = xcomp.getIntAttribute(streams[pid].stream_type, u"stream_type", true) &&
+                     streams[pid].descs.fromXML(duck, &xcomp);
             }
         }
     }

@@ -104,18 +104,15 @@ void ts::ContentDescriptor::buildXML(DuckContext& duck, xml::Element* root) cons
 
 bool ts::ContentDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector children;
-    bool ok = element->getChildren(children, u"content", 0, MAX_ENTRIES);
-
-    for (size_t i = 0; ok && i < children.size(); ++i) {
-        Entry entry;
+    bool ok = true;
+    for (auto& xcont : element->children(u"content", &ok)) {
+        auto& entry(entries.emplace_back());
         uint8_t user = 0;
-        ok = children[i]->getIntAttribute(entry.content_nibble_level_1, u"content_nibble_level_1", true, 0, 0x00, 0x0F) &&
-             children[i]->getIntAttribute(entry.content_nibble_level_2, u"content_nibble_level_2", true, 0, 0x00, 0x0F) &&
-             children[i]->getIntAttribute(user, u"user_byte", true, 0, 0x00, 0xFF);
+        ok = xcont.getIntAttribute(entry.content_nibble_level_1, u"content_nibble_level_1", true, 0, 0x00, 0x0F) &&
+             xcont.getIntAttribute(entry.content_nibble_level_2, u"content_nibble_level_2", true, 0, 0x00, 0x0F) &&
+             xcont.getIntAttribute(user, u"user_byte", true, 0, 0x00, 0xFF);
         entry.user_nibble_1 = (user >> 4) & 0x0F;
         entry.user_nibble_2 = user & 0x0F;
-        entries.push_back(entry);
     }
     return ok;
 }

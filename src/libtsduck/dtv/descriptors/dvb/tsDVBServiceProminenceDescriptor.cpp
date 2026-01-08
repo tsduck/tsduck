@@ -240,42 +240,33 @@ void ts::DVBServiceProminenceDescriptor::buildXML(DuckContext& duck, xml::Elemen
 
 bool ts::DVBServiceProminenceDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector sogis;
-    bool ok =
-        element->getChildren(sogis, u"sogi") &&
-        element->getHexaTextChild(private_data, u"private_data", false);
+    bool ok = element->getHexaTextChild(private_data, u"private_data", false);
 
-    for (auto sogi : sogis) {
-        SOGI_type s;
-        xml::ElementVector regions;
-        ok = ok &&
-             sogi->getBoolAttribute(s.SOGI_flag, u"SOGI_flag", true) &&
-             sogi->getIntAttribute(s.SOGI_priority, u"SOGI_priority", true, 0, 0, 0xFFF) &&
-             sogi->getOptionalIntAttribute(s.service_id, u"service_id", 0, 0xFFFF) &&
-             sogi->getChildren(regions, u"target_region");
+    for (auto& sogi : element->children(u"sogi", &ok)) {
+        auto& s(SOGI_list.emplace_back());
+        ok = sogi.getBoolAttribute(s.SOGI_flag, u"SOGI_flag", true) &&
+             sogi.getIntAttribute(s.SOGI_priority, u"SOGI_priority", true, 0, 0, 0xFFF) &&
+             sogi.getOptionalIntAttribute(s.service_id, u"service_id", 0, 0xFFFF);
 
-        for (auto rgn : regions) {
-            SOGI_region_type r;
-            ok = ok &&
-                 rgn->getOptionalAttribute(r.country_code, u"country_code", 3, 3) &&
-                 rgn->getOptionalIntAttribute(r.primary_region_code, u"primary_region_code", 0, 0xFF) &&
-                 rgn->getOptionalIntAttribute(r.secondary_region_code, u"secondary_region_code", 0, 0xFF) &&
-                 rgn->getOptionalIntAttribute(r.tertiary_region_code, u"tertiary_region_code", 0, 0xFFFF);
+        for (auto& rgn : sogi.children(u"target_region", &ok)) {
+            auto& r(s.regions.emplace_back());
+            ok = rgn.getOptionalAttribute(r.country_code, u"country_code", 3, 3) &&
+                 rgn.getOptionalIntAttribute(r.primary_region_code, u"primary_region_code", 0, 0xFF) &&
+                 rgn.getOptionalIntAttribute(r.secondary_region_code, u"secondary_region_code", 0, 0xFF) &&
+                 rgn.getOptionalIntAttribute(r.tertiary_region_code, u"tertiary_region_code", 0, 0xFFFF);
             if (ok && !r.country_code.has_value() && !r.primary_region_code.has_value()) {
-                rgn->report().error(u"country_code and/or primary_region_code must be present in <%s>, line %d", rgn->name(), rgn->lineNumber());
+                rgn.report().error(u"country_code and/or primary_region_code must be present in <%s>, line %d", rgn.name(), rgn.lineNumber());
                 ok = false;
             }
             if (ok && !r.primary_region_code.has_value() && r.secondary_region_code.has_value()) {
-                rgn->report().error(u"secondary_region_code cannot be used without primary_region_code in <%s>, line %d", rgn->name(), rgn->lineNumber());
+                rgn.report().error(u"secondary_region_code cannot be used without primary_region_code in <%s>, line %d", rgn.name(), rgn.lineNumber());
                 ok = false;
             }
             if (ok && !r.secondary_region_code.has_value() && r.tertiary_region_code.has_value()) {
-                rgn->report().error(u"tertiary_region_code cannot be used without secondary_region_code in <%s>, line %d", rgn->name(), rgn->lineNumber());
+                rgn.report().error(u"tertiary_region_code cannot be used without secondary_region_code in <%s>, line %d", rgn.name(), rgn.lineNumber());
                 ok = false;
             }
-            s.regions.push_back(r);
         }
-        SOGI_list.push_back(s);
     }
     return ok;
 }

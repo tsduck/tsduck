@@ -128,15 +128,13 @@ void ts::ContentIdentifierDescriptor::buildXML(DuckContext& duck, xml::Element* 
 
 bool ts::ContentIdentifierDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector xcrid;
-    bool ok = element->getChildren(xcrid, u"crid");
-    for (auto it = xcrid.begin(); ok && it != xcrid.end(); ++it) {
-        CRID cr;
-        ok = (*it)->getIntAttribute(cr.crid_type, u"crid_type", true, 0, 0, 0x3F) &&
-             (*it)->getIntAttribute(cr.crid_location, u"crid_location", true, 0, 0, 3) &&
-             (*it)->getIntAttribute(cr.crid_ref, u"crid_ref", cr.crid_location == 1) &&
-             (*it)->getAttribute(cr.crid, u"crid", cr.crid_location == 0, UString(), 0, 255);
-        crids.push_back(cr);
+    bool ok = true;
+    for (auto& xcrid : element->children(u"crid", &ok)) {
+        auto& cr(crids.emplace_back());
+        ok = xcrid.getIntAttribute(cr.crid_type, u"crid_type", true, 0, 0, 0x3F) &&
+             xcrid.getIntAttribute(cr.crid_location, u"crid_location", true, 0, 0, 3) &&
+             xcrid.getIntAttribute(cr.crid_ref, u"crid_ref", cr.crid_location == 1) &&
+             xcrid.getAttribute(cr.crid, u"crid", cr.crid_location == 0, UString(), 0, 255);
     }
     return ok;
 }

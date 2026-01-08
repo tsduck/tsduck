@@ -168,20 +168,16 @@ void ts::DigitalCopyControlDescriptor::buildXML(DuckContext& duck, xml::Element*
 
 bool ts::DigitalCopyControlDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector xcomp;
-    bool ok =
-        element->getIntAttribute(digital_recording_control_data, u"digital_recording_control_data", true, 0, 0x00, 0x03) &&
-        element->getIntAttribute(user_defined, u"user_defined", false, 0, 0x00, 0x0F) &&
-        element->getOptionalIntAttribute(maximum_bitrate, u"maximum_bitrate") &&
-        element->getChildren(xcomp, u"component_control");
+    bool ok = element->getIntAttribute(digital_recording_control_data, u"digital_recording_control_data", true, 0, 0x00, 0x03) &&
+              element->getIntAttribute(user_defined, u"user_defined", false, 0, 0x00, 0x0F) &&
+              element->getOptionalIntAttribute(maximum_bitrate, u"maximum_bitrate");
 
-    for (size_t i = 0; ok && i < xcomp.size(); ++i) {
-        Component comp;
-        ok = xcomp[i]->getIntAttribute(comp.component_tag, u"component_tag", true) &&
-             xcomp[i]->getIntAttribute(comp.digital_recording_control_data, u"digital_recording_control_data", true, 0, 0x00, 0x03) &&
-             xcomp[i]->getIntAttribute(comp.user_defined, u"user_defined", false, 0, 0x00, 0x0F) &&
-             xcomp[i]->getOptionalIntAttribute(comp.maximum_bitrate, u"maximum_bitrate");
-        components.push_back(comp);
+    for (auto& xcomp : element->children(u"component_control", &ok)) {
+        auto& comp(components.emplace_back());
+        ok = xcomp.getIntAttribute(comp.component_tag, u"component_tag", true) &&
+             xcomp.getIntAttribute(comp.digital_recording_control_data, u"digital_recording_control_data", true, 0, 0x00, 0x03) &&
+             xcomp.getIntAttribute(comp.user_defined, u"user_defined", false, 0, 0x00, 0x0F) &&
+             xcomp.getOptionalIntAttribute(comp.maximum_bitrate, u"maximum_bitrate");
     }
     return ok;
 }

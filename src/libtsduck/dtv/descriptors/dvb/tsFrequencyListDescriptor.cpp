@@ -157,15 +157,9 @@ void ts::FrequencyListDescriptor::buildXML(DuckContext& duck, xml::Element* root
 
 bool ts::FrequencyListDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector children;
-    bool ok =
-        element->getEnumAttribute(coding_type, CodingTypeEnum(), u"coding_type", true) &&
-        element->getChildren(children, u"centre_frequency", 0, MAX_ENTRIES);
-
-    for (size_t i = 0; ok && i < children.size(); ++i) {
-        uint64_t freq = 0;
-        ok = children[i]->getIntAttribute(freq, u"value", true);
-        frequencies.push_back(freq);
+    bool ok = element->getEnumAttribute(coding_type, CodingTypeEnum(), u"coding_type", true);
+    for (auto& child : element->children(u"centre_frequency", &ok, 0, MAX_ENTRIES)) {
+        ok = child.getIntAttribute(frequencies.emplace_back(), u"value", true);
     }
     return ok;
 }

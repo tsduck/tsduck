@@ -254,23 +254,21 @@ void ts::INT::buildXML(DuckContext& duck, xml::Element* root) const
 
 bool ts::INT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector children;
-    bool ok =
-        element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
-        element->getBoolAttribute(_is_current, u"current", false, true) &&
-        element->getIntAttribute(action_type, u"action_type", false, 0x01) &&
-        element->getIntAttribute(processing_order, u"processing_order", false, 0x00) &&
-        element->getIntAttribute(platform_id, u"platform_id", true, 0, 0x000000, 0xFFFFFF) &&
-        platform_descs.fromXML(duck, children, element, u"device");
+    bool ok = element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
+              element->getBoolAttribute(_is_current, u"current", false, true) &&
+              element->getIntAttribute(action_type, u"action_type", false, 0x01) &&
+              element->getIntAttribute(processing_order, u"processing_order", false, 0x00) &&
+              element->getIntAttribute(platform_id, u"platform_id", true, 0, 0x000000, 0xFFFFFF) &&
+              platform_descs.fromXML(duck, element, u"device");
 
-    for (size_t index = 0; ok && index < children.size(); ++index) {
-        Device& dev(devices.newEntry());
-        xml::ElementVector target;
-        xml::ElementVector operational;
-        ok = children[index]->getChildren(target, u"target", 0, 1) &&
-             (target.empty() || dev.target_descs.fromXML(duck, target[0])) &&
-             children[index]->getChildren(operational, u"operational", 0, 1) &&
-             (operational.empty() || dev.operational_descs.fromXML(duck, operational[0]));
+    for (auto& xdev : element->children(u"device", &ok)) {
+        auto& dev(devices.newEntry());
+        for (auto& xtarget : xdev.children(u"target", &ok, 0, 1)) {
+            ok = dev.target_descs.fromXML(duck, &xtarget);
+        }
+        for (auto& xop : xdev.children(u"operational", &ok, 0, 1)) {
+            ok = dev.operational_descs.fromXML(duck, &xop);
+        }
     }
     return ok;
 }

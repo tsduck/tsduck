@@ -578,15 +578,14 @@ void ts::RCT::Link::buildXML(DuckContext& duck, xml::Element* parent) const
 
 bool ts::RCT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector xlink;
     bool ok = element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
               element->getBoolAttribute(_is_current, u"current", false, true) &&
               element->getIntAttribute(service_id, u"service_id", true) &&
               element->getIntAttribute(year_offset, u"year_offset", true) &&
-              descs.fromXML(duck, xlink, element, u"link");
-    for (auto e : xlink) {
-        Link& link(links.newEntry());
-        ok = link.analyzeXML(duck, e) && ok;
+              descs.fromXML(duck, element, u"link");
+    for (auto& xlink : element->children(u"link", &ok)) {
+        auto& link(links.newEntry());
+        ok = link.analyzeXML(duck, &xlink);
     }
     return ok;
 }
@@ -620,7 +619,6 @@ bool ts::RCT::PromotionalText::analyzeXML(DuckContext& duck, const xml::Element*
 
 bool ts::RCT::Link::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector xtext, xdvb, xother;
     bool ok = element->getIntAttribute(link_type, u"link_type", true, 0, 0, 0x0F) &&
               element->getIntAttribute(how_related_classification_scheme_id, u"how_related_classification_scheme_id", true, 0, 0, 0x3F) &&
               element->getIntAttribute(term_id, u"term_id", true, 0, 0, 0x0FFF) &&
@@ -629,17 +627,14 @@ bool ts::RCT::Link::analyzeXML(DuckContext& duck, const xml::Element* element)
               element->getAttribute(media_uri, u"media_uri", link_type == 0 || link_type == 2) &&
               element->getBoolAttribute(default_icon_flag, u"default_icon_flag", true) &&
               element->getIntAttribute(icon_id, u"icon_id", true, 0, 0, 0x07) &&
-              element->getChildren(xdvb, u"dvb_binary_locator", link_type == 1 || link_type == 2 ? 1 : 0, 1) &&
-              element->getChildren(xtext, u"promotional_text") &&
-              descs.fromXML(duck, xother, element, u"dvb_binary_locator,promotional_text");
+              descs.fromXML(duck, element, u"dvb_binary_locator,promotional_text");
 
-    if (ok && (link_type == 1 || link_type == 2) && !xdvb.empty()) {
-        ok = dvb_binary_locator.analyzeXML(duck, xdvb[0]);
+    for (auto& xdvb : element->children(u"dvb_binary_locator", &ok, link_type == 1 || link_type == 2 ? 1 : 0, 1)) {
+        ok = dvb_binary_locator.analyzeXML(duck, &xdvb);
     }
-    for (auto e : xtext) {
-        PromotionalText text;
-        ok = text.analyzeXML(duck, e) && ok;
-        promotional_texts.push_back(std::move(text));
+    for (auto& xtext : element->children(u"promotional_text", &ok)) {
+        auto& text(promotional_texts.emplace_back());
+        ok = text.analyzeXML(duck, &xtext);
     }
     return ok;
 }

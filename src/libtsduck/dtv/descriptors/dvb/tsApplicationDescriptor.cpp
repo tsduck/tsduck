@@ -144,34 +144,23 @@ void ts::ApplicationDescriptor::buildXML(DuckContext& duck, xml::Element* root) 
 
 bool ts::ApplicationDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector prof;
-    xml::ElementVector label;
-    bool ok =
-        element->getBoolAttribute(service_bound, u"service_bound", true) &&
-        element->getIntAttribute(visibility, u"visibility", true, 0, 0, 3) &&
-        element->getIntAttribute(application_priority, u"application_priority", true) &&
-        element->getChildren(prof, u"profile") &&
-        element->getChildren(label, u"transport_protocol");
+    bool ok = element->getBoolAttribute(service_bound, u"service_bound", true) &&
+              element->getIntAttribute(visibility, u"visibility", true, 0, 0, 3) &&
+              element->getIntAttribute(application_priority, u"application_priority", true);
 
-    for (size_t i = 0; ok && i < prof.size(); ++i) {
-        Profile p;
+    for (auto& xprof : element->children(u"profile", &ok)) {
+        auto& prof(profiles.emplace_back());
         UString version;
-        ok = prof[i]->getIntAttribute(p.application_profile, u"application_profile", true) &&
-             prof[i]->getAttribute(version, u"version", true);
-        if (ok && !version.scan(u"%d.%d.%d", &p.version_major, &p.version_minor, &p.version_micro)) {
+        ok = xprof.getIntAttribute(prof.application_profile, u"application_profile", true) &&
+             xprof.getAttribute(version, u"version", true);
+        if (ok && !version.scan(u"%d.%d.%d", &prof.version_major, &prof.version_minor, &prof.version_micro)) {
             ok = false;
-            prof[i]->report().error(u"invalid version '%s' in <%s>, line %d, use 'major.minor.micro'", version, prof[i]->name(), prof[i]->lineNumber());
-        }
-        if (ok) {
-            profiles.push_back(p);
+            xprof.report().error(u"invalid version '%s' in <%s>, line %d, use 'major.minor.micro'", version, xprof.name(), xprof.lineNumber());
         }
     }
-    for (size_t i = 0; ok && i < label.size(); ++i) {
-        uint8_t l;
-        ok = label[i]->getIntAttribute(l, u"label", true);
-        if (ok) {
-            transport_protocol_labels.push_back(l);
-        }
+    for (auto& xlabel : element->children(u"transport_protocol", &ok)) {
+        auto& label(transport_protocol_labels.emplace_back());
+        ok = xlabel.getIntAttribute(label, u"label", true);
     }
     return ok;
 }

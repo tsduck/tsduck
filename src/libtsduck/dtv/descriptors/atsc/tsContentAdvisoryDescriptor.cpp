@@ -140,23 +140,16 @@ void ts::ContentAdvisoryDescriptor::buildXML(DuckContext& duck, xml::Element* ro
 
 bool ts::ContentAdvisoryDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector children;
-    bool ok = element->getChildren(children, u"region", 0, MAX_ENTRIES);
-
-    for (size_t i = 0; ok && i < children.size(); ++i) {
-        Entry entry;
-        xml::ElementVector children2;
-        ok = children[i]->getIntAttribute(entry.rating_region, u"rating_region", true) &&
-             children[i]->getChildren(children2, u"dimension", 0, 255) &&
-             entry.rating_description.fromXML(duck, children[i], u"rating_description", false);
-        for (size_t i2 = 0; ok && i2 < children2.size(); ++i2) {
+    bool ok = true;
+    for (auto& xregion : element->children(u"region", &ok, 0, MAX_ENTRIES)) {
+        auto& entry(entries.emplace_back());
+        ok = xregion.getIntAttribute(entry.rating_region, u"rating_region", true) &&
+             entry.rating_description.fromXML(duck, &xregion, u"rating_description", false);
+        for (auto& xdim : xregion.children(u"dimension", &ok, 0, 255)) {
             uint8_t dim = 0;
-            uint8_t val = 0;
-            ok = children2[i2]->getIntAttribute(dim, u"rating_dimension_j", true) &&
-                 children2[i2]->getIntAttribute(val, u"rating_value", true, 0, 0, 0x0F);
-            entry.rating_values[dim] = val;
+            ok = xdim.getIntAttribute(dim, u"rating_dimension_j", true) &&
+                 xdim.getIntAttribute(entry.rating_values[dim], u"rating_value", true, 0, 0, 0x0F);
         }
-        entries.push_back(entry);
-    }
+   }
     return ok;
 }

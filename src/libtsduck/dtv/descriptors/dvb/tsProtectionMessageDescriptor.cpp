@@ -101,13 +101,9 @@ void ts::ProtectionMessageDescriptor::buildXML(DuckContext& duck, xml::Element* 
 
 bool ts::ProtectionMessageDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector children;
-    bool ok = element->getChildren(children, u"component", 0, 15);
-
-    for (size_t i = 0; ok && i < children.size(); ++i) {
-        uint8_t t = 0;
-        ok = children[i]->getIntAttribute(t, u"tag", true);
-        component_tags.push_back(t);
+    bool ok = true;
+    for (auto& child : element->children(u"component", &ok, 0, 15)) {
+        ok = child.getIntAttribute(component_tags.emplace_back(), u"tag", true);
     }
     return ok;
 }

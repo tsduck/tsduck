@@ -124,19 +124,15 @@ void ts::SkyLogicalChannelNumberDescriptor::buildXML(DuckContext& duck, xml::Ele
 
 bool ts::SkyLogicalChannelNumberDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector children;
-    bool ok =
-        element->getIntAttribute(region_id, u"region_id", true, 0, 0x0000, 0xFFFF) &&
-        element->getChildren(children, u"service", 0, MAX_ENTRIES);
+    bool ok = element->getIntAttribute(region_id, u"region_id", true, 0, 0x0000, 0xFFFF);
 
-    for (size_t i = 0; ok && i < children.size(); ++i) {
-        Entry entry;
-        ok = children[i]->getIntAttribute(entry.service_id, u"service_id", true, 0, 0x0000, 0xFFFF) &&
-             children[i]->getIntAttribute(entry.service_type, u"service_type", true, 0, 0x00, 0xFF) &&
-             children[i]->getIntAttribute(entry.channel_id, u"channel_id", true, 0, 0x0000, 0xFFFF) &&
-             children[i]->getIntAttribute(entry.lcn, u"logical_channel_number", true, 0, 0x0000, 0xFFFF) &&
-             children[i]->getIntAttribute(entry.sky_id, u"sky_id", true, 0, 0x0000, 0xFFFF);
-        entries.push_back(entry);
+    for (auto& xserv : element->children(u"service", &ok, 0, MAX_ENTRIES)) {
+        auto& entry(entries.emplace_back());
+        ok = xserv.getIntAttribute(entry.service_id, u"service_id", true, 0, 0x0000, 0xFFFF) &&
+             xserv.getIntAttribute(entry.service_type, u"service_type", true, 0, 0x00, 0xFF) &&
+             xserv.getIntAttribute(entry.channel_id, u"channel_id", true, 0, 0x0000, 0xFFFF) &&
+             xserv.getIntAttribute(entry.lcn, u"logical_channel_number", true, 0, 0x0000, 0xFFFF) &&
+             xserv.getIntAttribute(entry.sky_id, u"sky_id", true, 0, 0x0000, 0xFFFF);
     }
     return ok;
 }

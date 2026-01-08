@@ -366,14 +366,11 @@ void ts::SpliceSegmentationDescriptor::buildXML(DuckContext& duck, xml::Element*
 
 bool ts::SpliceSegmentationDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    bool ok =
-        element->getIntAttribute(identifier, u"identifier", false, SPLICE_ID_CUEI) &&
-        element->getIntAttribute(segmentation_event_id, u"segmentation_event_id", true) &&
-        element->getBoolAttribute(segmentation_event_cancel, u"segmentation_event_cancel", false, false);
+    bool ok = element->getIntAttribute(identifier, u"identifier", false, SPLICE_ID_CUEI) &&
+              element->getIntAttribute(segmentation_event_id, u"segmentation_event_id", true) &&
+              element->getBoolAttribute(segmentation_event_cancel, u"segmentation_event_cancel", false, false);
 
     if (ok && !segmentation_event_cancel) {
-        xml::ElementVector upid;
-        xml::ElementVector comp;
         ok = element->getBoolAttribute(web_delivery_allowed, u"web_delivery_allowed", false, true) &&
              element->getBoolAttribute(no_regional_blackout, u"no_regional_blackout", false, true) &&
              element->getBoolAttribute(archive_allowed, u"archive_allowed", false, true) &&
@@ -381,23 +378,22 @@ bool ts::SpliceSegmentationDescriptor::analyzeXML(DuckContext& duck, const xml::
              element->getOptionalIntAttribute(segmentation_duration, u"segmentation_duration", 0, 0x000000FFFFFFFFFF) &&
              element->getIntAttribute(segmentation_type_id, u"segmentation_type_id", true) &&
              element->getIntAttribute(segment_num, u"segment_num", true) &&
-             element->getIntAttribute(segments_expected, u"segments_expected", true) &&
-             element->getChildren(upid, u"segmentation_upid", 1, 1) &&
-             upid[0]->getIntAttribute(segmentation_upid_type, u"type", true) &&
-             upid[0]->getHexaText(segmentation_upid, 0, 255) &&
-             element->getChildren(comp, u"component", 0, 255);
+             element->getIntAttribute(segments_expected, u"segments_expected", true);
+
+        for (auto& xupid : element->children(u"segmentation_upid", &ok, 1, 1)) {
+             xupid.getIntAttribute(segmentation_upid_type, u"type", true) &&
+             xupid.getHexaText(segmentation_upid, 0, 255);
+        }
 
         if (ok && (segmentation_type_id == 0x34 || segmentation_type_id == 0x36)) {
             ok = element->getIntAttribute(sub_segment_num, u"sub_segment_num", true) &&
                  element->getIntAttribute(sub_segments_expected, u"sub_segments_expected", true);
         }
 
-        for (size_t i = 0; ok && i < comp.size(); ++i) {
+        for (auto& xcomp : element->children(u"component", &ok, 0, 255)) {
             uint8_t tag = 0;
-            uint64_t pts = 0;
-            ok = comp[i]->getIntAttribute(tag, u"component_tag", true) &&
-                 comp[i]->getIntAttribute(pts, u"pts_offset", true, 0, 0, PTS_DTS_MASK);
-            pts_offsets[tag] = pts;
+            ok = xcomp.getIntAttribute(tag, u"component_tag", true) &&
+                 xcomp.getIntAttribute(pts_offsets[tag], u"pts_offset", true, 0, 0, PTS_DTS_MASK);
         }
         program_segmentation = pts_offsets.empty();
     }

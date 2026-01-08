@@ -220,14 +220,11 @@ void ts::NBIT::buildXML(DuckContext& duck, xml::Element* root) const
 
 bool ts::NBIT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector xinfo;
     bool body = true;
-    bool ok =
-        element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
-        element->getBoolAttribute(_is_current, u"current", false, true) &&
-        element->getIntAttribute(original_network_id, u"original_network_id", true) &&
-        element->getBoolAttribute(body, u"body", false, true) &&
-        element->getChildren(xinfo, u"information");
+    bool ok = element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
+              element->getBoolAttribute(_is_current, u"current", false, true) &&
+              element->getIntAttribute(original_network_id, u"original_network_id", true) &&
+              element->getBoolAttribute(body, u"body", false, true);
 
     if (body) {
         setBody();
@@ -236,20 +233,16 @@ bool ts::NBIT::analyzeXML(DuckContext& duck, const xml::Element* element)
         setReference();
     }
 
-    for (auto it1 = xinfo.begin(); ok && it1 != xinfo.end(); ++it1) {
+    for (auto& xinfo : element->children(u"information", &ok)) {
         uint16_t id = 0;
-        xml::ElementVector xkey;
-        ok = (*it1)->getIntAttribute(id, u"information_id", true) &&
-             (*it1)->getIntAttribute(informations[id].information_type, u"information_type", true, 0, 0, 15) &&
-             (*it1)->getIntAttribute(informations[id].description_body_location, u"description_body_location", true, 0, 0, 3) &&
-             (*it1)->getIntAttribute(informations[id].user_defined, u"user_defined", false, 0xFF) &&
-             informations[id].descs.fromXML(duck, xkey, *it1, u"key");
-        for (auto it2 = xkey.begin(); ok && it2 != xkey.end(); ++it2) {
-            uint16_t kid = 0;
-            ok = (*it2)->getIntAttribute(kid, u"id", true);
-            if (ok) {
-                informations[id].key_ids.push_back(kid);
-            }
+        ok = xinfo.getIntAttribute(id, u"information_id", true) &&
+             xinfo.getIntAttribute(informations[id].information_type, u"information_type", true, 0, 0, 15) &&
+             xinfo.getIntAttribute(informations[id].description_body_location, u"description_body_location", true, 0, 0, 3) &&
+             xinfo.getIntAttribute(informations[id].user_defined, u"user_defined", false, 0xFF) &&
+             informations[id].descs.fromXML(duck, &xinfo, u"key");
+        for (auto& xkey : xinfo.children(u"key", &ok)) {
+            auto& kid(informations[id].key_ids.emplace_back());
+            ok = xkey.getIntAttribute(kid, u"id", true);
         }
     }
     return ok;

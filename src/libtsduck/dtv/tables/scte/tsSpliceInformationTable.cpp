@@ -340,51 +340,50 @@ void ts::SpliceInformationTable::buildXML(DuckContext& duck, xml::Element* root)
 
 bool ts::SpliceInformationTable::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector command;
-    bool ok =
-        element->getIntAttribute(protocol_version, u"protocol_version", false, 0) &&
-        element->getIntAttribute(pts_adjustment, u"pts_adjustment", false, 0) &&
-        element->getIntAttribute(tier, u"tier", false, 0x0FFF, 0, 0x0FFF) &&
-        descs.fromXML(duck, command, element, u"splice_null,splice_schedule,splice_insert,time_signal,bandwidth_reservation,private_command");
+    bool ok = element->getIntAttribute(protocol_version, u"protocol_version", false, 0) &&
+              element->getIntAttribute(pts_adjustment, u"pts_adjustment", false, 0) &&
+              element->getIntAttribute(tier, u"tier", false, 0x0FFF, 0, 0x0FFF) &&
+              descs.fromXML(duck, element, u"splice_null,splice_schedule,splice_insert,time_signal,bandwidth_reservation,private_command");
 
-    if (ok && command.size() != 1) {
+    // There must be exactly one splice command.
+    size_t command_count = 0;
+    for ([[maybe_unused]] auto& xcmd : element->children(u"splice_null", &ok, 0, 1)) {
+        command_count++;
+        splice_command_type = SPLICE_NULL;
+    }
+    for (auto& xcmd : element->children(u"splice_schedule", &ok, 0, 1)) {
+        command_count++;
+        splice_command_type = SPLICE_SCHEDULE;
+        splice_schedule.fromXML(duck, &xcmd);
+        ok = splice_schedule.isValid();
+    }
+    for (auto& xcmd : element->children(u"splice_insert", &ok, 0, 1)) {
+        command_count++;
+        splice_command_type = SPLICE_INSERT;
+        splice_insert.fromXML(duck, &xcmd);
+        ok = splice_insert.isValid();
+    }
+    for (auto& xcmd : element->children(u"time_signal", &ok, 0, 1)) {
+        command_count++;
+        splice_command_type = SPLICE_TIME_SIGNAL;
+        ok = xcmd.getOptionalIntAttribute(time_signal, u"pts_time", 0, PTS_DTS_MASK);
+    }
+    for ([[maybe_unused]] auto& xcmd : element->children(u"bandwidth_reservation", &ok, 0, 1)) {
+        command_count++;
+        splice_command_type = SPLICE_BANDWIDTH_RESERVATION;
+    }
+    for (auto& xcmd : element->children(u"private_command", &ok, 0, 1)) {
+        command_count++;
+        splice_command_type = SPLICE_PRIVATE_COMMAND;
+        ok = xcmd.getIntAttribute(private_command.identifier, u"identifier", true) &&
+             xcmd.getHexaText(private_command.private_bytes);
+    }
+
+    if (ok && command_count != 1) {
         element->report().error(u"Specify exactly one splice command in <%s>, line %d", element->name(), element->lineNumber());
-        return false;
+        ok = false;
     }
 
-    if (ok) {
-        assert(command.size() == 1);
-        const xml::Element* const cmd = command[0];
-        if (cmd->name() == u"splice_null") {
-            splice_command_type = SPLICE_NULL;
-        }
-        else if (cmd->name() == u"splice_schedule") {
-            splice_command_type = SPLICE_SCHEDULE;
-            splice_schedule.fromXML(duck, cmd);
-            ok = splice_schedule.isValid();
-        }
-        else if (cmd->name() == u"splice_insert") {
-            splice_command_type = SPLICE_INSERT;
-            splice_insert.fromXML(duck, cmd);
-            ok = splice_insert.isValid();
-        }
-        else if (cmd->name() == u"time_signal") {
-            splice_command_type = SPLICE_TIME_SIGNAL;
-            ok = cmd->getOptionalIntAttribute(time_signal, u"pts_time", 0, PTS_DTS_MASK);
-        }
-        else if (cmd->name() == u"bandwidth_reservation") {
-            splice_command_type = SPLICE_BANDWIDTH_RESERVATION;
-        }
-        else if (cmd->name() == u"private_command") {
-            splice_command_type = SPLICE_PRIVATE_COMMAND;
-            ok = cmd->getIntAttribute(private_command.identifier, u"identifier", true) &&
-                 cmd->getHexaText(private_command.private_bytes);
-        }
-        else {
-            // should not get there.
-            return false;
-        }
-    }
     return ok;
 }
 

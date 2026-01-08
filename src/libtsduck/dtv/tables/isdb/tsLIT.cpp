@@ -184,21 +184,17 @@ void ts::LIT::buildXML(DuckContext& duck, xml::Element* root) const
 
 bool ts::LIT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector xevent;
-    bool ok =
-        element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
-        element->getBoolAttribute(_is_current, u"current", false, true) &&
-        element->getIntAttribute(event_id, u"event_id", true) &&
-        element->getIntAttribute(service_id, u"service_id", true) &&
-        element->getIntAttribute(transport_stream_id, u"transport_stream_id", true) &&
-        element->getIntAttribute(original_network_id, u"original_network_id", true) &&
-        element->getChildren(xevent, u"event");
+    bool ok = element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
+              element->getBoolAttribute(_is_current, u"current", false, true) &&
+              element->getIntAttribute(event_id, u"event_id", true) &&
+              element->getIntAttribute(service_id, u"service_id", true) &&
+              element->getIntAttribute(transport_stream_id, u"transport_stream_id", true) &&
+              element->getIntAttribute(original_network_id, u"original_network_id", true);
 
-    for (auto it = xevent.begin(); ok && it != xevent.end(); ++it) {
-        Event& ev(events.newEntry());
-        xml::ElementVector xschedule;
-        ok = (*it)->getIntAttribute(ev.local_event_id, u"local_event_id", true) &&
-             ev.descs.fromXML(duck, *it);
+    for (auto& xevent : element->children(u"event", &ok)) {
+        auto& ev(events.newEntry());
+        ok = xevent.getIntAttribute(ev.local_event_id, u"local_event_id", true) &&
+             ev.descs.fromXML(duck, &xevent);
     }
     return ok;
 }

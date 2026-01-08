@@ -244,21 +244,14 @@ bool ts::AVS2AudioDescriptor::avs_version_info::fromXML(const xml::Element* elem
 
 bool ts::AVS2AudioDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector version_info;
     bool ok = element->getIntAttribute(num_channels, u"num_channels", true) &&
               element->getIntAttribute(sample_rate_index, u"sample_rate_index", true, 0, 0, 12) &&
               element->getOptionalAttribute(description, u"description", 0, 255) &&
               element->getOptionalAttribute(language, u"language", 3, 3) &&
-              element->getChildren(version_info, u"version_info", 0, 1) &&
               element->getHexaTextChild(additional_info, u"additional_info");
-    if (!version_info.empty()) {
-        avs_version_info vi;
-        if (vi.fromXML(version_info[0])) {
-            avs_version = vi;
-        }
-        else {
-            ok = false;
-        }
+    for (auto& xver : element->children(u"version_info", &ok, 0, 1)) {
+        avs_version = avs_version_info();
+        ok = avs_version.value().fromXML(&xver);
     }
     return ok;
 }

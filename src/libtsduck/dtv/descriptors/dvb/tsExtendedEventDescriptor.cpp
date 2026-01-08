@@ -271,19 +271,15 @@ void ts::ExtendedEventDescriptor::buildXML(DuckContext& duck, xml::Element* root
 
 bool ts::ExtendedEventDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector children;
-    bool ok =
-        element->getIntAttribute(descriptor_number, u"descriptor_number", true) &&
-        element->getIntAttribute(last_descriptor_number, u"last_descriptor_number", true) &&
-        element->getAttribute(language_code, u"language_code", true, u"", 3, 3) &&
-        element->getTextChild(text, u"text") &&
-        element->getChildren(children, u"item");
+    bool ok = element->getIntAttribute(descriptor_number, u"descriptor_number", true) &&
+              element->getIntAttribute(last_descriptor_number, u"last_descriptor_number", true) &&
+              element->getAttribute(language_code, u"language_code", true, u"", 3, 3) &&
+              element->getTextChild(text, u"text");
 
-    for (size_t i = 0; ok && i < children.size(); ++i) {
-        Entry entry;
-        ok = children[i]->getTextChild(entry.item_description, u"description") &&
-             children[i]->getTextChild(entry.item, u"name");
-        entries.push_back(entry);
+    for (auto& child : element->children(u"item", &ok)) {
+        auto& entry(entries.emplace_back());
+        ok = child.getTextChild(entry.item_description, u"description") &&
+             child.getTextChild(entry.item, u"name");
     }
     return ok;
 }

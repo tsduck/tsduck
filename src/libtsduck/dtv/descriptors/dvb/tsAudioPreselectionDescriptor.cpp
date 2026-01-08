@@ -226,31 +226,24 @@ void ts::AudioPreselectionDescriptor::buildXML(DuckContext& duck, xml::Element* 
 
 bool ts::AudioPreselectionDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector children;
-    bool ok = element->getChildren(children, u"preselection");
-
-    for (size_t i = 0; ok && i < children.size(); ++i) {
-        PreSelection sel;
-        xml::ElementVector msi;
-        xml::ElementVector comps;
-        ok = children[i]->getIntAttribute(sel.preselection_id, u"preselection_id", true, 0, 0x00, 0x1F) &&
-             children[i]->getIntAttribute(sel.audio_rendering_indication, u"audio_rendering_indication", true, 0, 0x00, 0x07) &&
-             children[i]->getBoolAttribute(sel.audio_description, u"audio_description", false, false) &&
-             children[i]->getBoolAttribute(sel.spoken_subtitles, u"spoken_subtitles", false, false) &&
-             children[i]->getBoolAttribute(sel.dialogue_enhancement, u"dialogue_enhancement", false, false) &&
-             children[i]->getBoolAttribute(sel.interactivity_enabled, u"interactivity_enabled", false, false) &&
-             children[i]->getAttribute(sel.ISO_639_language_code, u"ISO_639_language_code", false, u"", 3, 3) &&
-             children[i]->getOptionalIntAttribute(sel.message_id, u"message_id") &&
-             children[i]->getChildren(msi, u"multi_stream_info", 0, 1) &&
-             (msi.empty() || msi.front()->getChildren(comps, u"component", 0, 0x07)) &&
-             children[i]->getHexaTextChild(sel.future_extension, u"future_extension", false, 0, 0x1F);
-
-        for (size_t i2 = 0; ok && i2 < comps.size(); ++i2) {
-            uint8_t t = 0;
-            ok = comps[i2]->getIntAttribute(t, u"tag", true);
-            sel.aux_component_tags.push_back(t);
+    bool ok = true;
+    for (auto& xpresel : element->children(u"preselection", &ok)) {
+        auto& sel(entries.emplace_back());
+        ok = xpresel.getIntAttribute(sel.preselection_id, u"preselection_id", true, 0, 0x00, 0x1F) &&
+             xpresel.getIntAttribute(sel.audio_rendering_indication, u"audio_rendering_indication", true, 0, 0x00, 0x07) &&
+             xpresel.getBoolAttribute(sel.audio_description, u"audio_description", false, false) &&
+             xpresel.getBoolAttribute(sel.spoken_subtitles, u"spoken_subtitles", false, false) &&
+             xpresel.getBoolAttribute(sel.dialogue_enhancement, u"dialogue_enhancement", false, false) &&
+             xpresel.getBoolAttribute(sel.interactivity_enabled, u"interactivity_enabled", false, false) &&
+             xpresel.getAttribute(sel.ISO_639_language_code, u"ISO_639_language_code", false, u"", 3, 3) &&
+             xpresel.getOptionalIntAttribute(sel.message_id, u"message_id") &&
+             xpresel.getHexaTextChild(sel.future_extension, u"future_extension", false, 0, 0x1F);
+        for (auto& xmsi : xpresel.children(u"multi_stream_info", &ok, 0, 1)) {
+            for (auto& xcomp : xmsi.children(u"component", &ok, 0, 0x07)) {
+                auto& t(sel.aux_component_tags.emplace_back());
+                ok = xcomp.getIntAttribute(t, u"tag", true);
+            }
         }
-        entries.push_back(sel);
     }
     return ok && hasValidSizes();
 }

@@ -364,49 +364,29 @@ bool ts::S2Xv2SatelliteDeliverySystemDescriptor::analyzeXML(DuckContext& duck, c
         element->getIntAttribute(receiver_profiles, u"receiver_profiles", true, 0, 0, 0x1F) &&
         element->getIntAttribute(satellite_id, u"satellite_id", true, 0, 0, 0xFFFFFF) &&
         element->getIntAttribute(frequency, u"frequency", true, 0, 0, 999999990000) &&
-        element->getIntAttribute(symbol_rate, u"symbol_rate", true, 0, 0, 9999999900);
+        element->getIntAttribute(symbol_rate, u"symbol_rate", true, 0, 0, 9999999900) &&
+        element->getIntAttribute(input_stream_identifier, u"input_stream_identifier") &&
+        ((S2Xv2_mode != 1 && S2Xv2_mode != 2) || element->getOptionalIntAttribute(scrambling_sequence_index, u"scrambling_sequence_index", 0, 0x3FFFF)) &&
+        ((S2Xv2_mode != 2 && S2Xv2_mode != 5) || element->getIntAttribute(timeslice_number, u"timeslice_number", true));
 
-    if (ok && element->hasAttribute(u"input_stream_identifier")) {
-        ok &= element->getIntAttribute(input_stream_identifier, u"input_stream_identifier", true);
-        if (ok) {
-            multiple_input_stream_flag = true;
+    multiple_input_stream_flag = element->hasAttribute(u"input_stream_identifier");
+
+    if (channel_bond == 1) {
+        for (auto& child : element->children(u"secondary_delivery_system", &ok, 1, 2)) {
+            ok = child.getIntAttribute(secondary_delivery_system_ids.emplace_back(), u"id", true);
         }
+        num_channel_bonds_minus1 = secondary_delivery_system_ids.size() == 1 ? 0 : 1;
     }
-    if (ok && (S2Xv2_mode == 1 || S2Xv2_mode == 2)) {
-        ok &= element->getOptionalIntAttribute(scrambling_sequence_index, u"scrambling_sequence_index", 0, 0x3FFFF);
-    }
-    if (ok && (S2Xv2_mode == 2 || S2Xv2_mode == 5)) {
-        ok &= element->getIntAttribute(timeslice_number, u"timeslice_number", true);
-    }
-    if (ok && channel_bond == 1) {
-        xml::ElementVector secondary_delivery_systems;
-        ok = element->getChildren(secondary_delivery_systems, u"secondary_delivery_system", 1, 2);
-        for (size_t i = 0; ok && i < secondary_delivery_systems.size(); ++i) {
-            uint32_t _secondary_delivery_system_id;
-            ok = secondary_delivery_systems[i]->getIntAttribute(_secondary_delivery_system_id, u"id", true);
-            if (ok) {
-                secondary_delivery_system_ids.push_back(_secondary_delivery_system_id);
-            }
-        }
-        if (ok) {
-            num_channel_bonds_minus1 = (secondary_delivery_systems.size() == 1) ? 0 : 1;
-        }
-    }
-    if (ok && (S2Xv2_mode == 4 || S2Xv2_mode == 5)) {
-        xml::ElementVector _superframes;
-        ok = element->getChildren(_superframes, u"superframe", 1, 1);
-        if (ok) {
-            ok = _superframes[0]->getIntAttribute(SOSF_WH_sequence_number, u"SOSF_WH_sequence_number", true) &&
-                 _superframes[0]->getIntAttribute(reference_scrambling_index, u"reference_scrambling_index", true, 0, 0, 0xFFFFF) &&
-                 _superframes[0]->getIntAttribute(payload_scrambling_index, u"payload_scrambling_index", true, 0, 0, 0xFFFFF) &&
-                 _superframes[0]->getIntAttribute(superframe_pilots_WH_sequence_number, u"superframe_pilots_WH_sequence_number", true, 0, 0, 0x1F) &&
-                 _superframes[0]->getIntAttribute(postamble_PLI, u"postamble_PLI", true, 0, 0, 7);
-            if (ok && _superframes[0]->hasAttribute(u"SFFI")) {
-                ok = _superframes[0]->getOptionalIntAttribute(SFFI, u"SFFI", 0, 0xF);
-            }
-            if (ok && _superframes[0]->hasAttribute(u"beamhopping_time_plan_id")) {
-                ok = _superframes[0]->getOptionalIntAttribute(beamhopping_time_plan_id, u"beamhopping_time_plan_id");
-            }
+
+    if (S2Xv2_mode == 4 || S2Xv2_mode == 5) {
+        for (auto& child : element->children(u"superframe", &ok, 1, 1)) {
+            ok = child.getIntAttribute(SOSF_WH_sequence_number, u"SOSF_WH_sequence_number", true) &&
+                 child.getIntAttribute(reference_scrambling_index, u"reference_scrambling_index", true, 0, 0, 0xFFFFF) &&
+                 child.getIntAttribute(payload_scrambling_index, u"payload_scrambling_index", true, 0, 0, 0xFFFFF) &&
+                 child.getIntAttribute(superframe_pilots_WH_sequence_number, u"superframe_pilots_WH_sequence_number", true, 0, 0, 0x1F) &&
+                 child.getIntAttribute(postamble_PLI, u"postamble_PLI", true, 0, 0, 7) &&
+                 child.getOptionalIntAttribute(SFFI, u"SFFI", 0, 0xF) &&
+                 child.getOptionalIntAttribute(beamhopping_time_plan_id, u"beamhopping_time_plan_id");
         }
     }
     return ok;

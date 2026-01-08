@@ -209,18 +209,16 @@ void ts::BIT::buildXML(DuckContext& duck, xml::Element* root) const
 
 bool ts::BIT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector xbroadcasters;
-    bool ok =
-        element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
-        element->getBoolAttribute(_is_current, u"current", false, true) &&
-        element->getIntAttribute(original_network_id, u"original_network_id", true) &&
-        element->getBoolAttribute(broadcast_view_propriety, u"broadcast_view_propriety", true) &&
-        descs.fromXML(duck, xbroadcasters, element, u"broadcaster");
+    bool ok = element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
+              element->getBoolAttribute(_is_current, u"current", false, true) &&
+              element->getIntAttribute(original_network_id, u"original_network_id", true) &&
+              element->getBoolAttribute(broadcast_view_propriety, u"broadcast_view_propriety", true) &&
+              descs.fromXML(duck, element, u"broadcaster");
 
-    for (auto it = xbroadcasters.begin(); ok && it != xbroadcasters.end(); ++it) {
-        uint8_t id;
-        ok = (*it)->getIntAttribute(id, u"broadcaster_id", true) &&
-             broadcasters[id].descs.fromXML(duck, *it);
+    for (auto& xbroadcaster : element->children(u"broadcaster", &ok)) {
+        uint8_t id = 0;
+        ok = xbroadcaster.getIntAttribute(id, u"broadcaster_id", true) &&
+             broadcasters[id].descs.fromXML(duck, &xbroadcaster);
     }
     return ok;
 }

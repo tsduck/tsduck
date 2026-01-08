@@ -447,55 +447,41 @@ void ts::LinkageDescriptor::buildXML(DuckContext& duck, xml::Element* root) cons
 
 bool ts::LinkageDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    bool ok =
-        element->getIntAttribute(ts_id, u"transport_stream_id", true) &&
-        element->getIntAttribute(onetw_id, u"original_network_id", true) &&
-        element->getIntAttribute(service_id, u"service_id", true) &&
-        element->getIntAttribute(linkage_type, u"linkage_type", true) &&
-        element->getHexaTextChild(private_data, u"private_data", false);
+    bool ok = element->getIntAttribute(ts_id, u"transport_stream_id", true) &&
+              element->getIntAttribute(onetw_id, u"original_network_id", true) &&
+              element->getIntAttribute(service_id, u"service_id", true) &&
+              element->getIntAttribute(linkage_type, u"linkage_type", true) &&
+              element->getHexaTextChild(private_data, u"private_data", false);
 
-    xml::ElementVector mobileElements;
-    xml::ElementVector eventElements;
-    xml::ElementVector extEventElements;
+    const size_t mobile_count = linkage_type == LINKAGE_HAND_OVER ? 1 : 0;
+    const size_t event_count = linkage_type == LINKAGE_EVENT ? 1 : 0;
+    const size_t ext_event_count = linkage_type >= LINKAGE_EXT_EVENT_MIN && linkage_type <= LINKAGE_EXT_EVENT_MAX ? 1 : 0;
 
-    if (ok) {
-        const size_t mobileCount = linkage_type == LINKAGE_HAND_OVER ? 1 : 0;
-        const size_t eventCount = linkage_type == LINKAGE_EVENT ? 1 : 0;
-        const size_t extEventCount = linkage_type >= LINKAGE_EXT_EVENT_MIN && linkage_type <= LINKAGE_EXT_EVENT_MAX ? 1 : 0;
-        ok = element->getChildren(mobileElements, u"mobile_handover_info", mobileCount, mobileCount) &&
-             element->getChildren(eventElements, u"event_linkage_info", eventCount, eventCount) &&
-             element->getChildren(extEventElements, u"extended_event_linkage_info", extEventCount, extEventCount);
+    for (auto& child : element->children(u"mobile_handover_info", &ok, mobile_count, mobile_count)) {
+        ok = child.getIntAttribute(mobile_handover_info.handover_type, u"handover_type", true, 0, 0, 0x0F) &&
+             child.getEnumAttribute(mobile_handover_info.origin_type, OriginTypeNames(), u"origin_type", true) &&
+             child.getIntAttribute(mobile_handover_info.network_id, u"network_id", mobile_handover_info.handover_type >= 1 && mobile_handover_info.handover_type <= 3) &&
+             child.getIntAttribute(mobile_handover_info.initial_service_id, u"initial_service_id", mobile_handover_info.origin_type == 0x00);
     }
 
-    if (ok && !mobileElements.empty()) {
-        ok = mobileElements[0]->getIntAttribute(mobile_handover_info.handover_type, u"handover_type", true, 0, 0, 0x0F) &&
-             mobileElements[0]->getEnumAttribute(mobile_handover_info.origin_type, OriginTypeNames(), u"origin_type", true) &&
-             mobileElements[0]->getIntAttribute(mobile_handover_info.network_id, u"network_id",
-                                                mobile_handover_info.handover_type >= 1 && mobile_handover_info.handover_type <= 3) &&
-             mobileElements[0]->getIntAttribute(mobile_handover_info.initial_service_id, u"initial_service_id",
-                                                mobile_handover_info.origin_type == 0x00);
+    for (auto& child : element->children(u"event_linkage_info", &ok, event_count, event_count)) {
+        ok = child.getIntAttribute(event_linkage_info.target_event_id, u"target_event_id", true) &&
+             child.getBoolAttribute(event_linkage_info.target_listed, u"target_listed", true) &&
+             child.getBoolAttribute(event_linkage_info.event_simulcast, u"event_simulcast", true);
     }
 
-    if (ok && !eventElements.empty()) {
-        ok = eventElements[0]->getIntAttribute(event_linkage_info.target_event_id, u"target_event_id", true) &&
-             eventElements[0]->getBoolAttribute(event_linkage_info.target_listed, u"target_listed", true) &&
-             eventElements[0]->getBoolAttribute(event_linkage_info.event_simulcast, u"event_simulcast", true);
-    }
-
-    if (ok && !extEventElements.empty()) {
-        ok = extEventElements[0]->getChildren(eventElements, u"event");
-        for (size_t i = 0; ok && i < eventElements.size(); ++i) {
-            ExtendedEventLinkageInfo info;
-            ok = eventElements[i]->getIntAttribute(info.target_event_id, u"target_event_id", true) &&
-                 eventElements[i]->getBoolAttribute(info.target_listed, u"target_listed", true) &&
-                 eventElements[i]->getBoolAttribute(info.event_simulcast, u"event_simulcast", true) &&
-                 eventElements[i]->getIntAttribute(info.link_type, u"link_type", true, 0, 0, 3) &&
-                 eventElements[i]->getIntAttribute(info.target_id_type, u"target_id_type", true, 0, 0, 3) &&
-                 eventElements[i]->getIntAttribute(info.user_defined_id, u"user_defined_id", info.target_id_type == 3) &&
-                 eventElements[i]->getIntAttribute(info.target_transport_stream_id, u"target_transport_stream_id", info.target_id_type == 1) &&
-                 eventElements[i]->getOptionalIntAttribute(info.target_original_network_id, u"target_original_network_id") &&
-                 eventElements[i]->getOptionalIntAttribute(info.target_service_id, u"target_service_id");
-            extended_event_linkage_info.push_back(info);
+    for (auto& child : element->children(u"extended_event_linkage_info", &ok, ext_event_count, ext_event_count)) {
+        for (auto& xev : child.children(u"event", &ok)) {
+            auto& info(extended_event_linkage_info.emplace_back());
+            ok = xev.getIntAttribute(info.target_event_id, u"target_event_id", true) &&
+                 xev.getBoolAttribute(info.target_listed, u"target_listed", true) &&
+                 xev.getBoolAttribute(info.event_simulcast, u"event_simulcast", true) &&
+                 xev.getIntAttribute(info.link_type, u"link_type", true, 0, 0, 3) &&
+                 xev.getIntAttribute(info.target_id_type, u"target_id_type", true, 0, 0, 3) &&
+                 xev.getIntAttribute(info.user_defined_id, u"user_defined_id", info.target_id_type == 3) &&
+                 xev.getIntAttribute(info.target_transport_stream_id, u"target_transport_stream_id", info.target_id_type == 1) &&
+                 xev.getOptionalIntAttribute(info.target_original_network_id, u"target_original_network_id") &&
+                 xev.getOptionalIntAttribute(info.target_service_id, u"target_service_id");
         }
     }
     return ok;

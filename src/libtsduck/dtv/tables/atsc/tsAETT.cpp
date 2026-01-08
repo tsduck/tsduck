@@ -189,21 +189,15 @@ void ts::AETT::buildXML(DuckContext& duck, xml::Element* root) const
 
 bool ts::AETT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector xetm;
     bool ok = element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
               element->getIntAttribute(AETT_subtype, u"AETT_subtype", false, 0) &&
               element->getIntAttribute(MGT_tag, u"MGT_tag", true) &&
-              element->getChildren(xetm, u"ETM_data", 0, AETT_subtype != 0 ? 0 : xml::UNLIMITED) &&
               (AETT_subtype == 0 || element->getHexaTextChild(reserved, u"reserved"));
 
-    if (ok && AETT_subtype == 0) {
-        for (const auto& xe : xetm) {
-            ETM& etm(etms.emplace_back());
-            ok = xe->getIntAttribute(etm.ETM_id, u"ETM_id", true) &&
-                 etm.extended_text_message.fromXML(duck, xe, u"extended_text_message", false) &&
-                 ok;
-        }
+    for (auto& xe : element->children(u"ETM_data", &ok, 0, AETT_subtype != 0 ? 0 : xml::UNLIMITED)) {
+        auto& etm(etms.emplace_back());
+        ok = xe.getIntAttribute(etm.ETM_id, u"ETM_id", true) &&
+             etm.extended_text_message.fromXML(duck, &xe, u"extended_text_message", false);
     }
-
     return ok;
 }

@@ -114,15 +114,12 @@ void ts::MultilingualServiceNameDescriptor::buildXML(DuckContext& duck, xml::Ele
 
 bool ts::MultilingualServiceNameDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector children;
-    bool ok = element->getChildren(children, u"language");
-
-    for (size_t i = 0; ok && i < children.size(); ++i) {
-        Entry entry;
-        ok = children[i]->getAttribute(entry.language, u"code", true, u"", 3, 3) &&
-             children[i]->getAttribute(entry.service_provider_name, u"service_provider_name", true) &&
-             children[i]->getAttribute(entry.service_name, u"service_name", true);
-        entries.push_back(entry);
+    bool ok = true;
+    for (auto& child : element->children(u"language", &ok)) {
+        auto& entry(entries.emplace_back());
+        ok = child.getAttribute(entry.language, u"code", true, u"", 3, 3) &&
+             child.getAttribute(entry.service_provider_name, u"service_provider_name", true) &&
+             child.getAttribute(entry.service_name, u"service_name", true);
     }
     return ok;
 }

@@ -192,27 +192,22 @@ void ts::DownloadContentDescriptor::buildXML(DuckContext& duck, xml::Element* ro
 
 bool ts::DownloadContentDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector xtext, xmods;
-    bool ok =
-        element->getBoolAttribute(reboot, u"reboot", true) &&
-        element->getBoolAttribute(add_on, u"add_on", true) &&
-        element->getIntAttribute(component_size, u"component_size", true) &&
-        element->getIntAttribute(download_id, u"download_id", true) &&
-        element->getIntAttribute(time_out_value_DII, u"time_out_value_DII", true) &&
-        element->getIntAttribute(leak_rate, u"leak_rate", true, 0, 0, 0x003FFFFF) &&
-        element->getIntAttribute(component_tag, u"component_tag", true) &&
-        compatibility_descriptor.fromXML(duck, element, false) &&
-        element->getChildren(xmods, u"module") &&
-        element->getHexaTextChild(private_data, u"private_data", false) &&
-        element->getChildren(xtext, u"text_info", 0, 1);
+    bool ok = element->getBoolAttribute(reboot, u"reboot", true) &&
+              element->getBoolAttribute(add_on, u"add_on", true) &&
+              element->getIntAttribute(component_size, u"component_size", true) &&
+              element->getIntAttribute(download_id, u"download_id", true) &&
+              element->getIntAttribute(time_out_value_DII, u"time_out_value_DII", true) &&
+              element->getIntAttribute(leak_rate, u"leak_rate", true, 0, 0, 0x003FFFFF) &&
+              element->getIntAttribute(component_tag, u"component_tag", true) &&
+              compatibility_descriptor.fromXML(duck, element, false) &&
+              element->getHexaTextChild(private_data, u"private_data", false);
 
-    for (size_t i = 0; ok && i < xmods.size(); ++i) {
-        module_info.emplace_back();
-        ok = module_info.back().analyzeXML(duck, xmods[i]);
+    for (auto& xmod : element->children(u"module", &ok)) {
+        ok = module_info.emplace_back().analyzeXML(duck, &xmod);
     }
-    if (ok && !xtext.empty()) {
+    for (auto& xtext : element->children(u"text_info", &ok, 0, 1)) {
         text_info.emplace();
-        ok = text_info.value().analyzeXML(duck, xtext[0]);
+        ok = text_info.value().analyzeXML(duck, &xtext);
     }
     return ok;
 }

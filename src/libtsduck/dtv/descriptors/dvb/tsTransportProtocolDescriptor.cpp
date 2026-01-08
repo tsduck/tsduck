@@ -329,63 +329,53 @@ void ts::TransportProtocolDescriptor::buildXML(DuckContext& duck, xml::Element* 
 
 bool ts::TransportProtocolDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector objcar;
-    xml::ElementVector ip;
-    xml::ElementVector htt;
-    xml::ElementVector proto;
-    xml::ElementVector urls;
+    bool ok = element->getIntAttribute(transport_protocol_label, u"transport_protocol_label", true);
+    size_t protocol_count = 0;
 
-    bool ok =
-        element->getIntAttribute(transport_protocol_label, u"transport_protocol_label", true) &&
-        element->getChildren(objcar, u"object_carousel", 0, 1) &&
-        element->getChildren(ip, u"ip_mpe", 0, 1) &&
-        element->getChildren(htt, u"http", 0, 1) &&
-        element->getChildren(proto, u"protocol", 0, 1);
-
-    if (ok && (objcar.size() + ip.size() + htt.size() + proto.size()) != 1) {
-        element->report().error(u"specify exactly one of <object_carousel>, <ip_mpe>, <http>, <protocol> in <%s>, line %d", element->name(), element->lineNumber());
-        return false;
-    }
-    else if (ok && !objcar.empty()) {
+    for (auto& child : element->children(u"object_carousel", &ok, 0, 1)) {
+        protocol_count++;
         protocol_id = MHP_PROTO_CAROUSEL;
-        ok = objcar[0]->getOptionalIntAttribute(carousel.original_network_id, u"original_network_id") &&
-             objcar[0]->getOptionalIntAttribute(carousel.transport_stream_id, u"transport_stream_id") &&
-             objcar[0]->getOptionalIntAttribute(carousel.service_id, u"service_id") &&
-             objcar[0]->getIntAttribute(carousel.component_tag, u"component_tag", true);
+        ok = child.getOptionalIntAttribute(carousel.original_network_id, u"original_network_id") &&
+             child.getOptionalIntAttribute(carousel.transport_stream_id, u"transport_stream_id") &&
+             child.getOptionalIntAttribute(carousel.service_id, u"service_id") &&
+             child.getIntAttribute(carousel.component_tag, u"component_tag", true);
     }
-    else if (ok && !ip.empty()) {
+
+    for (auto& child : element->children(u"ip_mpe", &ok, 0, 1)) {
+        protocol_count++;
         protocol_id = MHP_PROTO_MPE;
-        ok = ip[0]->getOptionalIntAttribute(mpe.original_network_id, u"original_network_id") &&
-             ip[0]->getOptionalIntAttribute(mpe.transport_stream_id, u"transport_stream_id") &&
-             ip[0]->getOptionalIntAttribute(mpe.service_id, u"service_id") &&
-             ip[0]->getBoolAttribute(mpe.alignment_indicator, u"alignment_indicator", true) &&
-             ip[0]->getChildren(urls, u"url");
-        for (size_t i = 0; ok && i < urls.size(); ++i) {
-            UString u;
-            ok = urls[i]->getAttribute(u, u"value");
-            mpe.urls.push_back(u);
+        ok = child.getOptionalIntAttribute(mpe.original_network_id, u"original_network_id") &&
+             child.getOptionalIntAttribute(mpe.transport_stream_id, u"transport_stream_id") &&
+             child.getOptionalIntAttribute(mpe.service_id, u"service_id") &&
+             child.getBoolAttribute(mpe.alignment_indicator, u"alignment_indicator", true);
+        for (auto& xurl : child.children(u"url", &ok)) {
+            ok = xurl.getAttribute(mpe.urls.emplace_back(), u"value");
         }
     }
-    else if (ok && !htt.empty()) {
+
+    for (auto& child : element->children(u"http", &ok, 0, 1)) {
+        protocol_count++;
         protocol_id = MHP_PROTO_HTTP;
-        ok = htt[0]->getChildren(urls, u"url");
-        for (size_t i = 0; ok && i < urls.size(); ++i) {
-            HTTPEntry e;
-            xml::ElementVector exts;
-            ok = urls[i]->getAttribute(e.URL_base, u"base") &&
-                 urls[i]->getChildren(exts, u"extension");
-            for (size_t ie = 0; ok && ie < exts.size(); ++ie) {
-                UString u;
-                ok = exts[ie]->getAttribute(u, u"value");
-                e.URL_extensions.push_back(u);
+        for (auto& xurl : child.children(u"url", &ok)) {
+            auto& he(http.emplace_back());
+            ok = xurl.getAttribute(he.URL_base, u"base");
+            for (auto& xext : xurl.children(u"extension", &ok)) {
+                ok = xext.getAttribute(he.URL_extensions.emplace_back(), u"value");
             }
-            http.push_back(e);
         }
     }
-    else if (ok && !proto.empty()) {
-        ok = proto[0]->getIntAttribute(protocol_id, u"id", true) &&
-            proto[0]->getHexaText(selector) &&
-            transferSelectorBytes(duck);
+
+    for (auto& child : element->children(u"protocol", &ok, 0, 1)) {
+        protocol_count++;
+        ok = child.getIntAttribute(protocol_id, u"id", true) &&
+             child.getHexaText(selector) &&
+             transferSelectorBytes(duck);
     }
+
+    if (ok && protocol_count != 1) {
+        element->report().error(u"specify exactly one of <object_carousel>, <ip_mpe>, <http>, <protocol> in <%s>, line %d", element->name(), element->lineNumber());
+        ok = false;
+    }
+
     return ok;
 }

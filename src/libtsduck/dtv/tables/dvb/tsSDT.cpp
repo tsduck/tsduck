@@ -403,30 +403,23 @@ void ts::SDT::buildXML(DuckContext& duck, xml::Element* root) const
 
 bool ts::SDT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector children;
     bool actual = true;
-    bool ok =
-        element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
-        element->getBoolAttribute(_is_current, u"current", false, true) &&
-        element->getIntAttribute(ts_id, u"transport_stream_id", true, 0, 0x0000, 0xFFFF) &&
-        element->getIntAttribute(onetw_id, u"original_network_id", true, 0, 0x0000, 0xFFFF) &&
-        element->getBoolAttribute(actual, u"actual", false, true) &&
-        element->getChildren(children, u"service");
+    bool ok = element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
+              element->getBoolAttribute(_is_current, u"current", false, true) &&
+              element->getIntAttribute(ts_id, u"transport_stream_id", true, 0, 0x0000, 0xFFFF) &&
+              element->getIntAttribute(onetw_id, u"original_network_id", true, 0, 0x0000, 0xFFFF) &&
+              element->getBoolAttribute(actual, u"actual", false, true);
 
     setActual(actual);
 
-    for (size_t index = 0; ok && index < children.size(); ++index) {
+    for (auto& xserv : element->children(u"service", &ok)) {
         uint16_t id = 0;
-        int rs = 0;
-        ok = children[index]->getIntAttribute(id, u"service_id", true, 0, 0x0000, 0xFFFF) &&
-             children[index]->getBoolAttribute(services[id].EITs_present, u"EIT_schedule", false, false) &&
-             children[index]->getBoolAttribute(services[id].EITpf_present, u"EIT_present_following", false, false) &&
-             children[index]->getBoolAttribute(services[id].CA_controlled, u"CA_mode", false, false) &&
-             children[index]->getEnumAttribute(rs, RunningStatusEnum(), u"running_status", false, 0) &&
-             services[id].descs.fromXML(duck, children[index]);
-        if (ok) {
-            services[id].running_status = uint8_t(rs);
-        }
+        ok = xserv.getIntAttribute(id, u"service_id", true, 0, 0x0000, 0xFFFF) &&
+             xserv.getBoolAttribute(services[id].EITs_present, u"EIT_schedule", false, false) &&
+             xserv.getBoolAttribute(services[id].EITpf_present, u"EIT_present_following", false, false) &&
+             xserv.getBoolAttribute(services[id].CA_controlled, u"CA_mode", false, false) &&
+             xserv.getEnumAttribute(services[id].running_status, RunningStatusEnum(), u"running_status", false, 0) &&
+             services[id].descs.fromXML(duck, &xserv);
     }
     return ok;
 }

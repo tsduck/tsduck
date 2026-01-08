@@ -291,30 +291,26 @@ void ts::SDTT::buildXML(DuckContext& duck, xml::Element* root) const
 
 bool ts::SDTT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector xcontent;
-    bool ok =
-        element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
-        element->getBoolAttribute(_is_current, u"current", false, true) &&
-        element->getIntAttribute(table_id_ext, u"table_id_ext", true) &&
-        element->getIntAttribute(transport_stream_id, u"transport_stream_id", true) &&
-        element->getIntAttribute(original_network_id, u"original_network_id", true) &&
-        element->getIntAttribute(service_id, u"service_id", true) &&
-        element->getChildren(xcontent, u"content");
+    bool ok = element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
+              element->getBoolAttribute(_is_current, u"current", false, true) &&
+              element->getIntAttribute(table_id_ext, u"table_id_ext", true) &&
+              element->getIntAttribute(transport_stream_id, u"transport_stream_id", true) &&
+              element->getIntAttribute(original_network_id, u"original_network_id", true) &&
+              element->getIntAttribute(service_id, u"service_id", true);
 
-    for (auto it1 = xcontent.begin(); ok && it1 != xcontent.end(); ++it1) {
-        xml::ElementVector xsched;
-        Content& cnt(contents.newEntry());
-        ok = (*it1)->getIntAttribute(cnt.group, u"group", true, 0, 0, 0x0F) &&
-             (*it1)->getIntAttribute(cnt.target_version, u"target_version", true, 0, 0, 0x0FFF) &&
-             (*it1)->getIntAttribute(cnt.new_version, u"new_version", true, 0, 0, 0x0FFF) &&
-             (*it1)->getIntAttribute(cnt.download_level, u"download_level", true, 0, 0, 0x03) &&
-             (*it1)->getIntAttribute(cnt.version_indicator, u"version_indicator", true, 0, 0, 0x03) &&
-             (*it1)->getIntAttribute(cnt.schedule_timeshift_information, u"schedule_timeshift_information", true, 0, 0, 0x0F) &&
-             cnt.descs.fromXML(duck, xsched, *it1, u"schedule");
-        for (auto it2 = xsched.begin(); ok && it2 != xsched.end(); ++it2) {
-            cnt.schedules.emplace_back();
-            ok = (*it2)->getDateTimeAttribute(cnt.schedules.back().start_time, u"start_time", true) &&
-                 (*it2)->getTimeAttribute(cnt.schedules.back().duration, u"duration", true);
+    for (auto& xcontent : element->children(u"content", &ok)) {
+        auto& cnt(contents.newEntry());
+        ok = xcontent.getIntAttribute(cnt.group, u"group", true, 0, 0, 0x0F) &&
+             xcontent.getIntAttribute(cnt.target_version, u"target_version", true, 0, 0, 0x0FFF) &&
+             xcontent.getIntAttribute(cnt.new_version, u"new_version", true, 0, 0, 0x0FFF) &&
+             xcontent.getIntAttribute(cnt.download_level, u"download_level", true, 0, 0, 0x03) &&
+             xcontent.getIntAttribute(cnt.version_indicator, u"version_indicator", true, 0, 0, 0x03) &&
+             xcontent.getIntAttribute(cnt.schedule_timeshift_information, u"schedule_timeshift_information", true, 0, 0, 0x0F) &&
+             cnt.descs.fromXML(duck, &xcontent, u"schedule");
+        for (auto& xsched : xcontent.children(u"schedule", &ok)) {
+            auto& sched(cnt.schedules.emplace_back());
+            ok = xsched.getDateTimeAttribute(sched.start_time, u"start_time", true) &&
+                 xsched.getTimeAttribute(sched.duration, u"duration", true);
         }
     }
     return ok;

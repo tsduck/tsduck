@@ -79,13 +79,10 @@ void ts::CPIdentifierDescriptor::buildXML(DuckContext& duck, xml::Element* root)
 
 bool ts::CPIdentifierDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector children;
-    bool ok = element->getChildren(children, u"CP_system_id", 0, (MAX_DESCRIPTOR_SIZE - 3) / 2);
-
-    for (size_t i = 0; ok && i < children.size(); ++i) {
-        uint16_t id = 0;
-        ok = children[i]->getIntAttribute(id, u"value", true);
-        cpids.push_back(id);
+    bool ok = true;
+    for (auto& child : element->children(u"CP_system_id", &ok, 0, (MAX_DESCRIPTOR_SIZE - 3) / 2)) {
+        auto& id(cpids.emplace_back());
+        ok = child.getIntAttribute(id, u"value", true);
     }
     return ok;
 }

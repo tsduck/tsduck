@@ -324,29 +324,24 @@ void ts::UNT::buildXML(DuckContext& duck, xml::Element* root) const
 
 bool ts::UNT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector xdevices;
-    bool ok =
-        element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
-        element->getBoolAttribute(_is_current, u"current", false, true) &&
-        element->getIntAttribute(action_type, u"action_type", false, 0x01) &&
-        element->getIntAttribute(OUI, u"OUI", true, 0, 0x000000, 0xFFFFFF) &&
-        element->getIntAttribute(processing_order, u"processing_order", false, 0x00) &&
-        descs.fromXML(duck, xdevices, element, u"devices");
+    bool ok = element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
+              element->getBoolAttribute(_is_current, u"current", false, true) &&
+              element->getIntAttribute(action_type, u"action_type", false, 0x01) &&
+              element->getIntAttribute(OUI, u"OUI", true, 0, 0x000000, 0xFFFFFF) &&
+              element->getIntAttribute(processing_order, u"processing_order", false, 0x00) &&
+              descs.fromXML(duck, element, u"devices");
 
-    for (size_t i1 = 0; ok && i1 < xdevices.size(); ++i1) {
-        Devices& devs(devices.newEntry());
-        xml::ElementVector xplatforms;
-        ok = devs.compatibilityDescriptor.fromXML(duck, xdevices[i1]) &&
-             xdevices[i1]->getChildren(xplatforms, u"platform");
-
-        for (size_t i2 = 0; ok && i2 < xplatforms.size(); ++i2) {
-            Platform& platform(devs.platforms.newEntry());
-            xml::ElementVector xtarget;
-            xml::ElementVector xoperational;
-            ok = xplatforms[i2]->getChildren(xtarget, u"target", 0, 1) &&
-                 (xtarget.empty() || platform.target_descs.fromXML(duck, xtarget[0])) &&
-                 xplatforms[i2]->getChildren(xoperational, u"operational", 0, 1) &&
-                 (xoperational.empty() || platform.operational_descs.fromXML(duck, xoperational[0]));
+    for (auto& xdevice : element->children(u"devices", &ok)) {
+        auto& devs(devices.newEntry());
+        ok = devs.compatibilityDescriptor.fromXML(duck, &xdevice);
+        for (auto& xplatform : xdevice.children(u"platform", &ok)) {
+            auto& platform(devs.platforms.newEntry());
+            for (auto& xtarget : xplatform.children(u"target", &ok, 0, 1)) {
+                ok = platform.target_descs.fromXML(duck, &xtarget);
+            }
+            for (auto& xoperational : xplatform.children(u"operational", &ok, 0, 1)) {
+                ok = platform.operational_descs.fromXML(duck, &xoperational);
+            }
         }
     }
     return ok;

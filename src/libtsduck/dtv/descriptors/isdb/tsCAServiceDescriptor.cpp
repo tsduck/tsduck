@@ -113,17 +113,12 @@ void ts::CAServiceDescriptor::buildXML(DuckContext& duck, xml::Element* root) co
 
 bool ts::CAServiceDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector xserv;
-    bool ok =
-        element->getIntAttribute(CA_system_id, u"CA_system_id", true) &&
-        element->getIntAttribute(ca_broadcaster_group_id, u"ca_broadcaster_group_id", true) &&
-        element->getIntAttribute(message_control, u"message_control", true) &&
-        element->getChildren(xserv, u"service", 0, 125);
+    bool ok = element->getIntAttribute(CA_system_id, u"CA_system_id", true) &&
+              element->getIntAttribute(ca_broadcaster_group_id, u"ca_broadcaster_group_id", true) &&
+              element->getIntAttribute(message_control, u"message_control", true);
 
-    for (auto it = xserv.begin(); ok && it != xserv.end(); ++it) {
-        uint16_t id = 0;
-        ok = (*it)->getIntAttribute(id, u"id", true);
-        service_ids.push_back(id);
+    for (auto& xserv : element->children(u"service", &ok, 0, 125)) {
+        ok = xserv.getIntAttribute(service_ids.emplace_back(), u"id", true);
     }
     return ok;
 }

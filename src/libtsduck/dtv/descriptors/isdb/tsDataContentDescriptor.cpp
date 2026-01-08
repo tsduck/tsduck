@@ -127,19 +127,14 @@ void ts::DataContentDescriptor::buildXML(DuckContext& duck, xml::Element* root) 
 
 bool ts::DataContentDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector xcomp;
-    bool ok =
-        element->getIntAttribute(data_component_id, u"data_component_id", true) &&
-        element->getIntAttribute(entry_component, u"entry_component", true) &&
-        element->getAttribute(ISO_639_language_code, u"ISO_639_language_code", true, UString(), 3, 3) &&
-        element->getAttribute(text, u"text", true) &&
-        element->getHexaTextChild(selector_bytes, u"selector_bytes", false, 0, MAX_DESCRIPTOR_SIZE - 8) &&
-        element->getChildren(xcomp, u"component");
+    bool ok = element->getIntAttribute(data_component_id, u"data_component_id", true) &&
+              element->getIntAttribute(entry_component, u"entry_component", true) &&
+              element->getAttribute(ISO_639_language_code, u"ISO_639_language_code", true, UString(), 3, 3) &&
+              element->getAttribute(text, u"text", true) &&
+              element->getHexaTextChild(selector_bytes, u"selector_bytes", false, 0, MAX_DESCRIPTOR_SIZE - 8);
 
-    for (auto it = xcomp.begin(); ok && it != xcomp.end(); ++it) {
-        uint8_t ref = 0;
-        ok = (*it)->getIntAttribute(ref, u"ref", true);
-        component_refs.push_back(ref);
+    for (auto& child : element->children(u"component", &ok)) {
+        ok = child.getIntAttribute(component_refs.emplace_back(), u"ref", true);
     }
     return ok;
 }

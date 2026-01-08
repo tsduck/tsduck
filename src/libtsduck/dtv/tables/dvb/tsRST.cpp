@@ -137,19 +137,14 @@ void ts::RST::buildXML(DuckContext& duck, xml::Element* root) const
 
 bool ts::RST::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector children;
-    bool ok = element->getChildren(children, u"event");
-
-    for (size_t index = 0; ok && index < children.size(); ++index) {
-        Event event;
-        ok = children[index]->getIntAttribute(event.transport_stream_id, u"transport_stream_id", true, 0, 0x0000, 0xFFFF) &&
-             children[index]->getIntAttribute(event.original_network_id, u"original_network_id", true, 0, 0x0000, 0xFFFF) &&
-             children[index]->getIntAttribute(event.service_id, u"service_id", true, 0, 0x0000, 0xFFFF) &&
-             children[index]->getIntAttribute(event.event_id, u"event_id", true, 0, 0x0000, 0xFFFF) &&
-             children[index]->getEnumAttribute(event.running_status, RunningStatusEnum(), u"running_status", true);
-        if (ok) {
-            events.push_back(event);
-        }
+    bool ok = true;
+    for (auto& xevent : element->children(u"event", &ok)) {
+        auto& event(events.emplace_back());
+        ok = xevent.getIntAttribute(event.transport_stream_id, u"transport_stream_id", true, 0, 0x0000, 0xFFFF) &&
+             xevent.getIntAttribute(event.original_network_id, u"original_network_id", true, 0, 0x0000, 0xFFFF) &&
+             xevent.getIntAttribute(event.service_id, u"service_id", true, 0, 0x0000, 0xFFFF) &&
+             xevent.getIntAttribute(event.event_id, u"event_id", true, 0, 0x0000, 0xFFFF) &&
+             xevent.getEnumAttribute(event.running_status, RunningStatusEnum(), u"running_status", true);
     }
     return ok;
 }

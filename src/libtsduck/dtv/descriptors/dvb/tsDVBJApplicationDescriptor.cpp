@@ -91,13 +91,9 @@ void ts::DVBJApplicationDescriptor::buildXML(DuckContext& duck, xml::Element* ro
 
 bool ts::DVBJApplicationDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector children;
-    bool ok = element->getChildren(children, u"parameter");
-
-    for (size_t i = 0; ok && i < children.size(); ++i) {
-        UString param;
-        ok = children[i]->getAttribute(param, u"value", true);
-        parameters.push_back(param);
+    bool ok = true;
+    for (auto& child : element->children(u"parameter", &ok)) {
+        ok = child.getAttribute(parameters.emplace_back(), u"value", true);
     }
     return ok;
 }

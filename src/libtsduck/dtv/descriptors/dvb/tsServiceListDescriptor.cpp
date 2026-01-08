@@ -149,14 +149,11 @@ void ts::ServiceListDescriptor::buildXML(DuckContext& duck, xml::Element* root) 
 
 bool ts::ServiceListDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector children;
-    bool ok = element->getChildren(children, u"service", 0, MAX_ENTRIES);
-
-    for (size_t i = 0; ok && i < children.size(); ++i) {
-        Entry entry;
-        ok = children[i]->getIntAttribute(entry.service_id, u"service_id", true, 0, 0x0000, 0xFFFF) &&
-             children[i]->getIntAttribute(entry.service_type, u"service_type", true, 0, 0x00, 0xFF);
-        entries.push_back(entry);
+    bool ok = true;
+    for (auto& child : element->children(u"service", &ok, 0, MAX_ENTRIES)) {
+        auto& entry(entries.emplace_back());
+        ok = child.getIntAttribute(entry.service_id, u"service_id", true, 0, 0x0000, 0xFFFF) &&
+             child.getIntAttribute(entry.service_type, u"service_type", true, 0, 0x00, 0xFF);
     }
     return ok;
 }

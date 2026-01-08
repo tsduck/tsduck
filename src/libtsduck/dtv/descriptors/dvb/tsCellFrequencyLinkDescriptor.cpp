@@ -128,22 +128,16 @@ void ts::CellFrequencyLinkDescriptor::buildXML(DuckContext& duck, xml::Element* 
 
 bool ts::CellFrequencyLinkDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector xcells;
-    bool ok = element->getChildren(xcells, u"cell");
-
-    for (size_t i1 = 0; ok && i1 < xcells.size(); ++i1) {
-        Cell cell;
-        xml::ElementVector xsubcells;
-        ok = xcells[i1]->getIntAttribute(cell.cell_id, u"cell_id", true) &&
-             xcells[i1]->getIntAttribute(cell.frequency, u"frequency", true) &&
-             xcells[i1]->getChildren(xsubcells, u"subcell");
-        for (size_t i2 = 0; ok && i2 < xsubcells.size(); ++i2) {
-            Subcell sub;
-            ok = xsubcells[i2]->getIntAttribute(sub.cell_id_extension, u"cell_id_extension", true) &&
-                 xsubcells[i2]->getIntAttribute(sub.transposer_frequency, u"transposer_frequency", true);
-            cell.subcells.push_back(sub);
+    bool ok = true;
+    for (auto& xcell : element->children(u"cell", &ok)) {
+        auto& cell(cells.emplace_back());
+        ok = xcell.getIntAttribute(cell.cell_id, u"cell_id", true) &&
+             xcell.getIntAttribute(cell.frequency, u"frequency", true);
+        for (auto& xsub : xcell.children(u"subcell", &ok)) {
+            auto& sub(cell.subcells.emplace_back());
+            ok = xsub.getIntAttribute(sub.cell_id_extension, u"cell_id_extension", true) &&
+                 xsub.getIntAttribute(sub.transposer_frequency, u"transposer_frequency", true);
         }
-        cells.push_back(cell);
     }
     return ok;
 }

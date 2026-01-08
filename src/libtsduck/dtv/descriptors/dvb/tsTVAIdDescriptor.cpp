@@ -106,13 +106,11 @@ void ts::TVAIdDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 
 bool ts::TVAIdDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector xtva;
-    bool ok = element->getChildren(xtva, u"TVA", 0, MAX_ENTRIES);
-    for (auto it = xtva.begin(); ok && it != xtva.end(); ++it) {
-        TVAId ti;
-        ok = (*it)->getIntAttribute(ti.TVA_id, u"id", true) &&
-             (*it)->getIntAttribute(ti.running_status, u"running_status", true, 0, 0, 7);
-        TVA_ids.push_back(ti);
+    bool ok = true;
+    for (auto& child : element->children(u"TVA", &ok, 0, MAX_ENTRIES)) {
+        auto& ti(TVA_ids.emplace_back());
+        ok = child.getIntAttribute(ti.TVA_id, u"id", true) &&
+             child.getIntAttribute(ti.running_status, u"running_status", true, 0, 0, 7);
     }
     return ok;
 }

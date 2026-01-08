@@ -283,24 +283,21 @@ void ts::RNT::buildXML(DuckContext& duck, xml::Element* root) const
 
 bool ts::RNT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector xprov;
-    bool ok =
-        element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
-        element->getBoolAttribute(_is_current, u"current", false, true) &&
-        element->getIntAttribute(context_id, u"context_id", true) &&
-        element->getIntAttribute(context_id_type, u"context_id_type", true) &&
-        descs.fromXML(duck, xprov, element, u"resolution_provider");
+    bool ok = element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
+              element->getBoolAttribute(_is_current, u"current", false, true) &&
+              element->getIntAttribute(context_id, u"context_id", true) &&
+              element->getIntAttribute(context_id_type, u"context_id_type", true) &&
+              descs.fromXML(duck, element, u"resolution_provider");
 
-    for (auto it1 = xprov.begin(); ok && it1 != xprov.end(); ++it1) {
-        ResolutionProvider& rprov(providers.newEntry());
-        xml::ElementVector xauth;
-        ok = (*it1)->getAttribute(rprov.name, u"name", true, UString(), 0, 255) &&
-             rprov.descs.fromXML(duck, xauth, *it1, u"CRID_authority");
-        for (auto it2 = xauth.begin(); ok && it2 != xauth.end(); ++it2) {
-            CRIDAuthority& auth(rprov.CRID_authorities.newEntry());
-            ok = (*it2)->getAttribute(auth.name, u"name", true, UString(), 0, 255) &&
-                 (*it2)->getIntAttribute(auth.policy, u"policy", true, 0, 0, 3) &&
-                 auth.descs.fromXML(duck, *it2);
+    for (auto& xprov : element->children(u"resolution_provider", &ok)) {
+        auto& prov(providers.newEntry());
+        ok = xprov.getAttribute(prov.name, u"name", true, UString(), 0, 255) &&
+             prov.descs.fromXML(duck, &xprov, u"CRID_authority");
+        for (auto& xauth : xprov.children(u"CRID_authority", &ok)) {
+            auto& auth(prov.CRID_authorities.newEntry());
+            ok = xauth.getAttribute(auth.name, u"name", true, UString(), 0, 255) &&
+                 xauth.getIntAttribute(auth.policy, u"policy", true, 0, 0, 3) &&
+                 auth.descs.fromXML(duck, &xauth);
         }
     }
     return ok;

@@ -293,29 +293,27 @@ void ts::S2XSatelliteDeliverySystemDescriptor::buildChannelXML(const Channel& ch
 bool ts::S2XSatelliteDeliverySystemDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     std::optional<uint32_t> scrambling;
-    xml::ElementVector xmaster;
-    xml::ElementVector xbond;
+    bool ok = element->getIntAttribute(receiver_profiles, u"receiver_profiles", true, 0, 0, 0x1F) &&
+              element->getIntAttribute(S2X_mode, u"S2X_mode", true, 0, 0, 0x03) &&
+              element->getIntAttribute(TS_GS_S2X_mode, u"TS_GS_S2X_mode", true, 0, 0, 0x03) &&
+              element->getOptionalIntAttribute(scrambling, u"scrambling_sequence_index", 0x00000000, 0x0003FFFF) &&
+              (S2X_mode != 2 || element->getIntAttribute(timeslice_number, u"timeslice_number", true)) &&
+              element->getHexaTextChild(reserved_future_use, u"reserved_future_use");
 
-    bool ok =
-        element->getIntAttribute(receiver_profiles, u"receiver_profiles", true, 0, 0, 0x1F) &&
-        element->getIntAttribute(S2X_mode, u"S2X_mode", true, 0, 0, 0x03) &&
-        element->getIntAttribute(TS_GS_S2X_mode, u"TS_GS_S2X_mode", true, 0, 0, 0x03) &&
-        element->getOptionalIntAttribute(scrambling, u"scrambling_sequence_index", 0x00000000, 0x0003FFFF) &&
-        (S2X_mode != 2 || element->getIntAttribute(timeslice_number, u"timeslice_number", true)) &&
-        element->getHexaTextChild(reserved_future_use, u"reserved_future_use") &&
-        element->getChildren(xmaster, u"master_channel", 1, 1) &&
-        element->getChildren(xbond, u"channel_bond", S2X_mode == 3 ? 1 : 0, S2X_mode == 3 ? 2 : 0) &&
-        getChannelXML(master_channel, duck, xmaster[0]) &&
-        (S2X_mode != 3 || getChannelXML(channel_bond_0, duck, xbond[0]));
+    scrambling_sequence_selector = scrambling.has_value();
+    scrambling_sequence_index = scrambling.value_or(0);
 
-    if (ok) {
-        scrambling_sequence_selector = scrambling.has_value();
-        scrambling_sequence_index = scrambling.value_or(0);
-        num_channel_bonds_minus_one = S2X_mode == 3 && xbond.size() > 1;
-        if (num_channel_bonds_minus_one) {
-            ok = getChannelXML(channel_bond_1, duck, xbond[1]);
-        }
+    for (auto& child : element->children(u"master_channel", &ok, 1, 1)) {
+        ok = getChannelXML(master_channel, duck, &child);
     }
+
+    bool second = false;
+    for (auto& child : element->children(u"channel_bond", &ok, S2X_mode == 3 ? 1 : 0, S2X_mode == 3 ? 2 : 0)) {
+        num_channel_bonds_minus_one = second;
+        ok = getChannelXML(second ? channel_bond_1 : channel_bond_0, duck, &child);
+        second = true;
+    }
+
     return ok;
 }
 

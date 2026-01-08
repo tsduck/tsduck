@@ -106,15 +106,9 @@ void ts::ServiceAvailabilityDescriptor::buildXML(DuckContext& duck, xml::Element
 
 bool ts::ServiceAvailabilityDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector children;
-    bool ok =
-        element->getBoolAttribute(availability, u"availability", true) &&
-        element->getChildren(children, u"cell", 0, MAX_CELLS);
-
-    for (size_t i = 0; ok && i < children.size(); ++i) {
-        uint16_t id = 0;
-        ok = children[i]->getIntAttribute(id, u"id", true);
-        cell_ids.push_back(id);
+    bool ok = element->getBoolAttribute(availability, u"availability", true);
+    for (auto& child : element->children(u"cell", &ok, 0, MAX_CELLS)) {
+        ok = child.getIntAttribute(cell_ids.emplace_back(), u"id", true);
     }
     return ok;
 }

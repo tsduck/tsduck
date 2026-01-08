@@ -137,20 +137,11 @@ void ts::RNTScanDescriptor::ScanTriplet::toXML(xml::Element* root) const
 
 bool ts::RNTScanDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector references;
-    bool references_ok = true, ok = element->getChildren(references, u"RNT_reference", 1);
-    if (ok) {
-        for (size_t i = 0; i < references.size(); ++i) {
-            ScanTriplet reference;
-            if (reference.fromXML(references[i])) {
-                RNTreferences.push_back(reference);
-            }
-            else {
-                references_ok = false;
-            }
-        }
+    bool ok = true;
+    for (auto& child : element->children(u"RNT_reference", &ok, 1)) {
+        RNTreferences.emplace_back().fromXML(&child);
     }
-    return ok && references_ok;
+    return ok;
 }
 
 bool ts::RNTScanDescriptor::ScanTriplet::fromXML(const xml::Element* element)

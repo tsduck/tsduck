@@ -122,18 +122,13 @@ void ts::CAContractInfoDescriptor::buildXML(DuckContext& duck, xml::Element* roo
 
 bool ts::CAContractInfoDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector xcomp;
-    bool ok =
-        element->getIntAttribute(CA_system_id, u"CA_system_id", true) &&
-        element->getIntAttribute(CA_unit_id, u"CA_unit_id", true, 0, 0x00, 0x0F) &&
-        element->getAttribute(fee_name, u"fee_name") &&
-        element->getChildren(xcomp, u"component", 0, 15) &&
-        element->getHexaTextChild(contract_verification_info, u"contract_verification_info", false);
+    bool ok = element->getIntAttribute(CA_system_id, u"CA_system_id", true) &&
+              element->getIntAttribute(CA_unit_id, u"CA_unit_id", true, 0, 0x00, 0x0F) &&
+              element->getAttribute(fee_name, u"fee_name") &&
+              element->getHexaTextChild(contract_verification_info, u"contract_verification_info", false);
 
-    for (auto it = xcomp.begin(); ok && it != xcomp.end(); ++it) {
-        uint8_t tag = 0;
-        ok = (*it)->getIntAttribute(tag, u"tag", true);
-        component_tags.push_back(tag);
+    for (auto& xcomp : element->children(u"component", &ok, 0, 15)) {
+        ok = xcomp.getIntAttribute(component_tags.emplace_back(), u"tag", true);
     }
     return ok;
 }

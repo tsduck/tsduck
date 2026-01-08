@@ -294,30 +294,23 @@ void ts::PCAT::buildXML(DuckContext& duck, xml::Element* root) const
 
 bool ts::PCAT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector xversion;
-    bool ok =
-        element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
-        element->getBoolAttribute(_is_current, u"current", false, true) &&
-        element->getIntAttribute(service_id, u"service_id", true) &&
-        element->getIntAttribute(transport_stream_id, u"transport_stream_id", true) &&
-        element->getIntAttribute(original_network_id, u"original_network_id", true) &&
-        element->getIntAttribute(content_id, u"content_id", true) &&
-        element->getChildren(xversion, u"version");
+    bool ok = element->getIntAttribute(_version, u"version", false, 0, 0, 31) &&
+              element->getBoolAttribute(_is_current, u"current", false, true) &&
+              element->getIntAttribute(service_id, u"service_id", true) &&
+              element->getIntAttribute(transport_stream_id, u"transport_stream_id", true) &&
+              element->getIntAttribute(original_network_id, u"original_network_id", true) &&
+              element->getIntAttribute(content_id, u"content_id", true);
 
-    for (auto it1 = xversion.begin(); ok && it1 != xversion.end(); ++it1) {
-        ContentVersion& cv(versions.newEntry());
-        xml::ElementVector xschedule;
-        ok = (*it1)->getIntAttribute(cv.content_version, u"content_version", true) &&
-             (*it1)->getIntAttribute(cv.content_minor_version, u"content_minor_version", true) &&
-             (*it1)->getIntAttribute(cv.version_indicator, u"version_indicator", true, 0, 0, 3) &&
-             cv.descs.fromXML(duck, xschedule, *it1, u"schedule");
-        for (auto it2 = xschedule.begin(); ok && it2 != xschedule.end(); ++it2) {
-            Schedule sched;
-            ok = (*it2)->getDateTimeAttribute(sched.start_time, u"start_time", true) &&
-                 (*it2)->getTimeAttribute(sched.duration, u"duration", true);
-            if (ok) {
-                cv.schedules.push_back(sched);
-            }
+    for (auto& xversion : element->children(u"version", &ok)) {
+        auto& cv(versions.newEntry());
+        ok = xversion.getIntAttribute(cv.content_version, u"content_version", true) &&
+             xversion.getIntAttribute(cv.content_minor_version, u"content_minor_version", true) &&
+             xversion.getIntAttribute(cv.version_indicator, u"version_indicator", true, 0, 0, 3) &&
+             cv.descs.fromXML(duck, &xversion, u"schedule");
+        for (auto& xschedule : xversion.children(u"schedule", &ok)) {
+            auto& sched(cv.schedules.emplace_back());
+            ok = xschedule.getDateTimeAttribute(sched.start_time, u"start_time", true) &&
+                 xschedule.getTimeAttribute(sched.duration, u"duration", true);
         }
     }
     return ok;

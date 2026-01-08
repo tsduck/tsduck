@@ -248,9 +248,8 @@ bool ts::TOT::analyzeXML(DuckContext& duck, const xml::Element* element)
     // Always cache this value.
     _time_reference_offset = duck.timeReferenceOffset();
 
+    // Get all descriptors in a separate list.
     DescriptorList orig(this);
-
-    // Get all descriptors in a separated list.
     const bool ok = element->getDateTimeAttribute(utc_time, u"UTC_time", true) && orig.fromXML(duck, element);
 
     // Then, split local_time_offset_descriptor and others.

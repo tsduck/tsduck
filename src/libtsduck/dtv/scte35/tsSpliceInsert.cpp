@@ -321,41 +321,34 @@ void ts::SpliceInsert::buildXML(DuckContext& duck, xml::Element* root) const
 
 bool ts::SpliceInsert::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    bool ok =
-        element->getIntAttribute<uint32_t>(event_id, u"splice_event_id", true) &&
-        element->getBoolAttribute(canceled, u"splice_event_cancel", false, false);
+    bool ok = element->getIntAttribute(event_id, u"splice_event_id", true) &&
+              element->getBoolAttribute(canceled, u"splice_event_cancel", false, false);
 
     if (ok && !canceled) {
-        xml::ElementVector breakDuration;
-        xml::ElementVector components;
         ok = element->getBoolAttribute(splice_out, u"out_of_network", true) &&
              element->getBoolAttribute(immediate, u"splice_immediate", false, false) &&
-             element->getIntAttribute<uint16_t>(program_id, u"unique_program_id", true) &&
-             element->getIntAttribute<uint8_t>(avail_num, u"avail_num", false, 0) &&
-             element->getIntAttribute<uint8_t>(avails_expected, u"avails_expected", false, 0) &&
-             element->getChildren(breakDuration, u"break_duration", 0, 1) &&
-             element->getOptionalIntAttribute<uint64_t>(program_pts, u"pts_time", 0, PTS_DTS_MASK) &&
-             element->getChildren(components, u"component", 0, 255);
-        use_duration = !breakDuration.empty();
-        if (!immediate && components.empty() && !program_pts.has_value()) {
+             element->getIntAttribute(program_id, u"unique_program_id", true) &&
+             element->getIntAttribute(avail_num, u"avail_num", false, 0) &&
+             element->getIntAttribute(avails_expected, u"avails_expected", false, 0) &&
+             element->getOptionalIntAttribute(program_pts, u"pts_time", 0, PTS_DTS_MASK);
+
+        for (auto& xbd : element->children(u"break_duration", &ok, 0, 1)) {
+            use_duration = true;
+            ok = xbd.getBoolAttribute(auto_return, u"auto_return", true) &&
+                 xbd.getIntAttribute(duration_pts, u"duration", true);
+        }
+        for (auto& xcomp : element->children(u"component", &ok, 0, 255)) {
+            uint8_t tag = 0;
+            ok = xcomp.getIntAttribute(tag, u"component_tag", true) &&
+                 xcomp.getOptionalIntAttribute(components_pts[tag], u"pts_time", 0, PTS_DTS_MASK);
+        }
+        if (!immediate && components_pts.empty() && !program_pts.has_value()) {
             ok = false;
             element->report().error(u"without <component> or splice_immediate, attribute \"pts_time\" is required in <%s> at line %d", element->name(), element->lineNumber());
         }
-        if ((!components.empty() || immediate) && program_pts.has_value()) {
+        if ((!components_pts.empty() || immediate) && program_pts.has_value()) {
             ok = false;
             element->report().error(u"with <component> or splice_immediate, attribute \"pts_time\" not allowed in <%s> at line %d", element->name(), element->lineNumber());
-        }
-        if (ok && use_duration) {
-            assert(breakDuration.size() == 1);
-            ok = breakDuration[0]->getBoolAttribute(auto_return, u"auto_return", true) &&
-                 breakDuration[0]->getIntAttribute<uint64_t>(duration_pts, u"duration", true);
-        }
-        for (size_t i = 0; ok && i < components.size(); ++i) {
-            uint8_t tag = 0;
-            SpliceTime pts;
-            ok = components[i]->getIntAttribute<uint8_t>(tag, u"component_tag", true) &&
-                 components[i]->getOptionalIntAttribute<uint64_t>(pts, u"pts_time", 0, PTS_DTS_MASK);
-            components_pts[tag] = pts;
         }
     }
     return ok;

@@ -119,16 +119,11 @@ void ts::PrefetchDescriptor::buildXML(DuckContext& duck, xml::Element* root) con
 
 bool ts::PrefetchDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector children;
-    bool ok =
-        element->getIntAttribute(transport_protocol_label, u"transport_protocol_label", true) &&
-        element->getChildren(children, u"module");
-
-    for (size_t i = 0; ok && i < children.size(); ++i) {
-        Entry entry;
-        ok = children[i]->getAttribute(entry.label, u"label", true) &&
-             children[i]->getIntAttribute(entry.prefetch_priority, u"prefetch_priority", true, 1, 1, 100);
-        entries.push_back(entry);
+    bool ok = element->getIntAttribute(transport_protocol_label, u"transport_protocol_label", true);
+    for (auto& child : element->children(u"module", &ok)) {
+        auto& entry(entries.emplace_back());
+        ok = child.getAttribute(entry.label, u"label", true) &&
+             child.getIntAttribute(entry.prefetch_priority, u"prefetch_priority", true, 1, 1, 100);
     }
     return ok;
 }
