@@ -196,7 +196,7 @@ bool ts::HEVCSubregionDescriptor::analyzeXML(DuckContext& duck, const xml::Eleme
              xregion.getIntAttribute(newSubregionLayout.PictureSizeVer, u"PictureSizeVer");
 
         if (!SubstreamMarkingFlag.has_value()) {
-            SubstreamMarkingFlag = xregion.hasAttribute(u"PreambleSubstreamID") ? 1 : 0;
+            SubstreamMarkingFlag = xregion.hasAttribute(u"PreambleSubstreamID");
         }
         else if (SubstreamMarkingFlag.value() != xregion.hasAttribute(u"PreambleSubstreamID")) {
             xregion.report().error(u"all Subregions must either contain @PreambleSubstreamID or not in <%s>, line %d", element->name(), element->lineNumber());

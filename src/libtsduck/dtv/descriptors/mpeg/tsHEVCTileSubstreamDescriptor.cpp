@@ -165,8 +165,11 @@ bool ts::HEVCTileSubstreamDescriptor::analyzeXML(DuckContext& duck, const xml::E
 
     for (auto& xref : element->children(u"Reference", &ok, 0, 1)) {
         ReferenceFlag = 1;
-        ok = xref.getIntAttribute(PreambleFlag, u"PreambleFlag", true, 0, 0, 1) &&
-             xref.getIntAttribute(PatternReference, u"PatternReference", true, 0, 0, 0x7F);
+        // Force a value on std::optional.
+        PreambleFlag = uint8_t(0);
+        PatternReference = uint8_t(0);
+        ok = xref.getIntAttribute(PreambleFlag.value(), u"PreambleFlag", true, 0, 0, 1) &&
+             xref.getIntAttribute(PatternReference.value(), u"PatternReference", true, 0, 0, 0x7F);
     }
 
     for (auto& xsub : element->children(u"Substream", &ok)) {
