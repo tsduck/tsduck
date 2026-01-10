@@ -507,43 +507,50 @@ bool ts::ISDBHyperlinkDescriptor::analyzeXML(DuckContext& duck, const xml::Eleme
         switch (link_destination_type) {
             case LINK_TO_SERVICE: {
                 for (auto& child : element->children(u"Service", &ok, 1, 1)) {
-                    ok = link_to_service.emplace().fromXML(&child);
+                    link_to_service = ServiceTriplet(); // emplace() not working with clang 20
+                    ok = link_to_service.value().fromXML(&child);
                 }
                 break;
             }
             case LINK_TO_EVENT: {
                 for (auto& child : element->children(u"Event", &ok, 1, 1)) {
-                    ok = link_to_event.emplace().fromXML(&child);
+                    link_to_event = EventTriplet();  // emplace() not working with clang 20
+                    ok = link_to_event.value().fromXML(&child);
                 }
                 break;
             }
             case LINK_TO_MODULE: {
                 for (auto& child : element->children(u"Module", &ok, 1, 1)) {
-                    ok = link_to_module.emplace().fromXML(&child);
+                    link_to_module = ModuleTriplet();  // emplace() not working with clang 20
+                    ok = link_to_module.value().fromXML(&child);
                 }
                 break;
             }
             case LINK_TO_CONTENT: {
                 for (auto& child : element->children(u"Content", &ok, 1, 1)) {
-                    ok = link_to_content.emplace().fromXML(&child);
+                    link_to_content = ContentTriplet();  // emplace() not working with clang 20
+                    ok = link_to_content.value().fromXML(&child);
                 }
                 break;
             }
             case LINK_TO_CONTENT_MODULE: {
                 for (auto& child : element->children(u"ContentModule", &ok, 1, 1)) {
-                    ok = link_to_content_module.emplace().fromXML(&child);
+                    link_to_content_module = ContentModuleTriplet();  // emplace() not working with clang 20
+                    ok = link_to_content_module.value().fromXML(&child);
                 }
                 break;
             }
             case LINK_TO_ERT_NODE: {
                 for (auto& child : element->children(u"ERTNode", &ok, 1, 1)) {
-                    ok = link_to_ert_node.emplace().fromXML(&child);
+                    link_to_ert_node = ERTNode();  // emplace() not working with clang 20
+                    ok = link_to_ert_node.value().fromXML(&child);
                 }
                 break;
             }
             case LINK_TO_STORED_CONTENT: {
                 for (auto& child : element->children(u"StoredContent", &ok, 1, 1)) {
-                    ok = link_to_stored_content.emplace().fromXML(&child);
+                    link_to_stored_content = StoredContent();  // emplace() not working with clang 20
+                    ok = link_to_stored_content.value().fromXML(&child);
                 }
                 break;
             }

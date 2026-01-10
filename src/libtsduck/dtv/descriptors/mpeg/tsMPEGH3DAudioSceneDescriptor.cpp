@@ -588,10 +588,12 @@ bool ts::MPEGH3DAudioSceneDescriptor::MH3D_InteractivityInfo_type::fromXML(const
               element->getOptionalAttribute(mae_contentLanguage, u"contentLanguage", 0, 3);
 
     for (auto& it : element->children(u"PositionInteractivity", &ok, 0, 1)) {
-        ok = positionInteractivity.emplace().fromXML(&it);
+        positionInteractivity = PositionInteractivityType();  // emplace() not working with clang 20
+        ok = positionInteractivity.value().fromXML(&it);
     }
     for (auto& it : element->children(u"GainInteractivity", &ok, 0, 1)) {
-        ok = gainInteractivity.emplace().fromXML(&it);
+        gainInteractivity = GainInteractivityType();  // emplace() not working with clang 20
+        ok = gainInteractivity.value().fromXML(&it);
     }
     return ok;
 }
