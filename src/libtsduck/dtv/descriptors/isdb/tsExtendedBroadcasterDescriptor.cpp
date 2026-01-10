@@ -159,26 +159,18 @@ void ts::ExtendedBroadcasterDescriptor::buildXML(DuckContext& duck, xml::Element
 
 bool ts::ExtendedBroadcasterDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector xaffiliations;
-    xml::ElementVector xbroadcasters;
-    bool ok =
-        element->getIntAttribute(broadcaster_type, u"broadcaster_type", true, 0, 0, 15) &&
-        element->getIntAttribute(terrestrial_broadcaster_id, u"terrestrial_broadcaster_id", broadcaster_type == 0x01 || broadcaster_type == 0x02) &&
-        element->getChildren(xaffiliations, u"affiliation", 0, broadcaster_type == 0x01 || broadcaster_type == 0x02 ? 15 : 0) &&
-        element->getChildren(xbroadcasters, u"broadcaster", 0, broadcaster_type == 0x01 || broadcaster_type == 0x02 ? 15 : 0) &&
-        element->getHexaTextChild(private_data, u"private_data");
+    bool ok = element->getIntAttribute(broadcaster_type, u"broadcaster_type", true, 0, 0, 15) &&
+              element->getIntAttribute(terrestrial_broadcaster_id, u"terrestrial_broadcaster_id", broadcaster_type == 0x01 || broadcaster_type == 0x02) &&
+              element->getHexaTextChild(private_data, u"private_data");
 
-    for (auto it = xaffiliations.begin(); ok && it != xaffiliations.end(); ++it) {
-        uint8_t id = 0;
-        ok = (*it)->getIntAttribute(id, u"id", true);
-        affiliation_ids.push_back(id);
+    for (auto& xaffiliation : element->children(u"affiliation", &ok, 0, broadcaster_type == 0x01 || broadcaster_type == 0x02 ? 15 : 0)) {
+        ok = xaffiliation.getIntAttribute(affiliation_ids.emplace_back(), u"id", true);
     }
 
-    for (auto it = xbroadcasters.begin(); ok && it != xbroadcasters.end(); ++it) {
-        Broadcaster bc;
-        ok = (*it)->getIntAttribute(bc.original_network_id, u"original_network_id", true) &&
-             (*it)->getIntAttribute(bc.broadcaster_id, u"broadcaster_id", true);
-        broadcasters.push_back(bc);
+    for (auto& xbroadcaster : element->children(u"broadcaster", &ok, 0, broadcaster_type == 0x01 || broadcaster_type == 0x02 ? 15 : 0)) {
+        auto& bc(broadcasters.emplace_back());
+        ok = xbroadcaster.getIntAttribute(bc.original_network_id, u"original_network_id", true) &&
+             xbroadcaster.getIntAttribute(bc.broadcaster_id, u"broadcaster_id", true);
     }
     return ok;
 }

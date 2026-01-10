@@ -30,7 +30,7 @@ namespace ts {
         class TSDUCKDLL substructure_type {
         public:
             substructure_type() = default;             //!< Constructor
-            uint8_t              repititionCount = 0;  //!< 3 bits
+            uint8_t              repetitionCount = 0;  //!< 3 bits
             std::vector<uint8_t> m4MuxChannel {};      //!< list of 8 bit values
             std::vector<uint8_t> numberOfBytes {};     //!< list of 8 bit values
         };

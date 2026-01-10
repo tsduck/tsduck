@@ -64,7 +64,7 @@ void ts::MuxCodeDescriptor::serializePayload(PSIBuffer& buf) const
         for (auto it2 : it.substructure) {
             uint8_t slotCount = uint8_t(std::min(it2.m4MuxChannel.size(), it2.numberOfBytes.size()));
             buf.putBits(slotCount, 5);
-            buf.putBits(it2.repititionCount, 3);
+            buf.putBits(it2.repetitionCount, 3);
             for (uint8_t i = 0; i < slotCount; i++) {
                 buf.putUInt8(it2.m4MuxChannel[i]);
                 buf.putUInt8(it2.numberOfBytes[i]);
@@ -91,7 +91,7 @@ void ts::MuxCodeDescriptor::deserializePayload(PSIBuffer& buf)
                 substructure_type newSubstructure;
                 uint8_t slotCount;
                 buf.getBits(slotCount, 5);
-                buf.getBits(newSubstructure.repititionCount, 3);
+                buf.getBits(newSubstructure.repetitionCount, 3);
                 for (uint8_t k = 0; k < slotCount; k++) {
                     uint8_t m4MuxChannel = buf.getUInt8();
                     newSubstructure.m4MuxChannel.push_back(m4MuxChannel);
@@ -142,7 +142,7 @@ void ts::MuxCodeDescriptor::buildXML(DuckContext& duck, xml::Element* root) cons
 
         for (const auto& it2 : it.substructure) {
             ts::xml::Element* _substructure = _entry->addElement(u"substructure");
-            _substructure->setIntAttribute(u"repetitionCount", it2.repititionCount);
+            _substructure->setIntAttribute(u"repetitionCount", it2.repetitionCount);
             uint8_t slotCount = uint8_t(std::min(it2.m4MuxChannel.size(), it2.numberOfBytes.size()));
             for (uint8_t k = 0; k < slotCount; k++) {
                 ts::xml::Element* _slot = _substructure->addElement(u"slot");
@@ -160,47 +160,30 @@ void ts::MuxCodeDescriptor::buildXML(DuckContext& duck, xml::Element* root) cons
 
 bool ts::MuxCodeDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector MuxCodeEntries;
-    bool ok = element->getChildren(MuxCodeEntries, u"MuxCodeEntry");
+    bool ok = true;
+    for (auto& xmce : element->children(u"MuxCodeEntry", &ok)) {
+        auto& MuxCodeEntry(MuxCodeTableEntry.emplace_back());
+        ok = xmce.getIntAttribute(MuxCodeEntry.MuxCode, u"MuxCode", true, 0, 0, 0x0F) &&
+             xmce.getIntAttribute(MuxCodeEntry.version, u"version", true, 0, 0, 0x0F);
 
-    for (size_t i = 0; ok && i < MuxCodeEntries.size(); ++i) {
-        MuxCodeTableEntry_type MuxCodeEntry;
-        ok &= MuxCodeEntries[i]->getIntAttribute(MuxCodeEntry.MuxCode, u"MuxCode", true, 0, 0, 0x0F);
-        ok &= MuxCodeEntries[i]->getIntAttribute(MuxCodeEntry.version, u"version", true, 0, 0, 0x0F);
+        for (auto& xsub : xmce.children(u"substructure", &ok, 0, MAX_SUBSTRUCTURES)) {
+            auto& substruct(MuxCodeEntry.substructure.emplace_back());
+            ok = xsub.getIntAttribute(substruct.repetitionCount, u"repetitionCount", true, 0, 0, 0x07);
 
-        xml::ElementVector subStructures;
-        ok &= MuxCodeEntries[i]->getChildren(subStructures, u"substructure");
-        if (subStructures.size() > MAX_SUBSTRUCTURES) {
-            element->report().error(u"only %d <substructure> elements are permitted [<%s>, line %d]", MAX_SUBSTRUCTURES, element->name(), element->lineNumber());
-            ok = false;
+            for (auto& xslot : xsub.children(u"slot", &ok, 0, MAX_SLOTS)) {
+                ok &= xslot.getIntAttribute(substruct.m4MuxChannel.emplace_back(), u"m4MuxChannel", true, 0, 0, 0xFF) &&
+                      xslot.getIntAttribute(substruct.numberOfBytes.emplace_back(), u"numberOfBytes", true, 0, 0, 0xFF);
+            }
         }
-        for (size_t j = 0; ok && j < subStructures.size(); ++j) {
-            substructure_type _substructure;
 
-            ok &= subStructures[j]->getIntAttribute(_substructure.repititionCount, u"repetitionCount", true, 0, 0, 0x07);
-
-            if ((_substructure.repititionCount == 0) && j != (subStructures.size() - 1)) {
-                // repetitionCount of zero is only permitted in the last substructire (ISO/IEC 14496-1 clause 7.4.2.5.2)
-                element->report().error(u"repetitionCount=='%d' is only valid the last <substructure> [<%s>, line %d]", _substructure.repititionCount, element->name(), element->lineNumber());
+        // repetitionCount of zero is only permitted in the last substructire (ISO/IEC 14496-1 clause 7.4.2.5.2)
+        for (size_t i = 0; i + 1 < MuxCodeEntry.substructure.size(); ++i) {
+            if (MuxCodeEntry.substructure[i].repetitionCount == 0) {
+                element->report().error(u"repetitionCount=='%d' is only valid the last <substructure> [<%s>, line %d]",
+                                        MuxCodeEntry.substructure[i].repetitionCount, element->name(), xmce.lineNumber());
                 ok = false;
             }
-            xml::ElementVector slots;
-            ok &= subStructures[j]->getChildren(slots, u"slot");
-            if (slots.size() > MAX_SLOTS) {
-                element->report().error(u"only %d <slot> elements are permitted [<%s>, line %d]", MAX_SLOTS, element->name(), element->lineNumber());
-                ok = false;
-            }
-            for (size_t k = 0; ok && k < slots.size(); k++) {
-                uint32_t _tmp;
-                ok &= slots[k]->getIntAttribute(_tmp, u"m4MuxChannel", true, 0, 0, 0xFF);
-                _substructure.m4MuxChannel.push_back(uint8_t(_tmp));
-                ok &= slots[k]->getIntAttribute(_tmp, u"numberOfBytes", true, 0, 0, 0xFF);
-                _substructure.numberOfBytes.push_back(uint8_t(_tmp));
-            }
-            MuxCodeEntry.substructure.push_back(_substructure);
-
         }
-        MuxCodeTableEntry.push_back(MuxCodeEntry);
     }
     return ok;
 }

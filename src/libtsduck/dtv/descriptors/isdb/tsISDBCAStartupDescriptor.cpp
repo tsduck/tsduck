@@ -158,13 +158,11 @@ void ts::ISDBCAStartupDescriptor::buildXML(DuckContext& duck, xml::Element* root
 
 bool ts::ISDBCAStartupDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector xexcl;
     bool ok = element->getIntAttribute(CA_system_ID, u"CA_system_ID", true) &&
               element->getIntAttribute(CA_program_ID, u"CA_program_ID", true, 0, 0, PID_NULL) &&
               element->getIntAttribute(load_indicator, u"load_indicator", true, 0, 0, 0x7F) &&
               element->getOptionalIntAttribute(second_CA_program_ID, u"second_CA_program_ID", 0, PID_NULL) &&
               element->getOptionalIntAttribute(second_load_indicator, u"second_load_indicator", 0, 0x7F) &&
-              element->getChildren(xexcl, u"exclusion") &&
               element->getHexaTextChild(load_security_info, u"load_security_info") &&
               element->getHexaTextChild(private_data, u"private_data");
 
@@ -173,9 +171,8 @@ bool ts::ISDBCAStartupDescriptor::analyzeXML(DuckContext& duck, const xml::Eleme
         element->report().error(u"attributes 'second_CA_program_ID' and 'second_load_indicator' must be both present or absent in <%s>, line %d", element->name(), element->lineNumber());
     }
 
-    exclusion_CA_program_ID.resize(xexcl.size());
-    for (size_t i = 0; i < xexcl.size() && ok; ++i) {
-        ok = xexcl[i]->getIntAttribute(exclusion_CA_program_ID[i], u"CA_program_ID", true, 0, 0, PID_NULL);
+    for (auto& child : element->children(u"exclusion", &ok)) {
+        ok = child.getIntAttribute(exclusion_CA_program_ID.emplace_back(), u"CA_program_ID", true, 0, 0, PID_NULL);
     }
 
     return ok;

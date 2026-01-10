@@ -211,39 +211,29 @@ void ts::MPEGH3DAudioTextLabelDescriptor::buildXML(DuckContext& duck, xml::Eleme
 
 bool ts::MPEGH3DAudioTextLabelDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector desclanguages;
-    bool ok =
-        element->getIntAttribute(_3dAudioSceneInfoID, u"_3dAudioSceneInfoID", true, 0, 0x00, 0xFF) &&
-        element->getOptionalIntAttribute(numReservedBytes, u"numReservedBytes", 0, 0xFFFF) &&
-        element->getChildren(desclanguages, u"DescriptionLanguage", 0, 0x0F);
+    bool ok = element->getIntAttribute(_3dAudioSceneInfoID, u"_3dAudioSceneInfoID", true, 0, 0x00, 0xFF) &&
+              element->getOptionalIntAttribute(numReservedBytes, u"numReservedBytes", 0, 0xFFFF);
 
-    for (size_t i = 0; ok && i < desclanguages.size(); ++i) {
-        descriptionLanguage_type newDescriptionLanguage;
-        xml::ElementVector groupDescriptions, switchGroupDescriptions, groupPresetDescriptions;
-        ok &= desclanguages[i]->getAttribute(newDescriptionLanguage.descriptionLanguage, u"descriptionLanguage", true, u"***", 3, 3) &&
-            desclanguages[i]->getChildren(groupDescriptions, u"GroupDescription", 0, 0x7F) &&
-            desclanguages[i]->getChildren(switchGroupDescriptions, u"SwitchGroupDescription", 0, 0x1F) &&
-            desclanguages[i]->getChildren(groupPresetDescriptions, u"GroupPresetDescription", 0, 0x1F);
+    for (auto& xlang : element->children(u"DescriptionLanguage", &ok, 0, 15)) {
+        auto& newDescriptionLanguage(description_languages.emplace_back());
 
-        for (size_t n = 0; ok && n < groupDescriptions.size(); ++n) {
-            groupDescription_type newGroupDescription;
-            ok &= groupDescriptions[n]->getIntAttribute(newGroupDescription.mae_descriptionGroupID, u"mae_descriptionGroupID", true, 0, 0x00, 0x7F) &&
-                groupDescriptions[n]->getAttribute(newGroupDescription.groupDescriptionData, u"groupDescription");
-            newDescriptionLanguage.group_descriptions.push_back(newGroupDescription);
+        ok = xlang.getAttribute(newDescriptionLanguage.descriptionLanguage, u"descriptionLanguage", true, u"***", 3, 3);
+
+        for (auto& it : xlang.children(u"GroupDescription", &ok, 0, 0x7F)) {
+            auto& newGroupDescription(newDescriptionLanguage.group_descriptions.emplace_back());
+            ok = it.getIntAttribute(newGroupDescription.mae_descriptionGroupID, u"mae_descriptionGroupID", true, 0, 0x00, 0x7F) &&
+                 it.getAttribute(newGroupDescription.groupDescriptionData, u"groupDescription");
         }
-        for (size_t n = 0; ok && n < switchGroupDescriptions.size(); ++n) {
-            switchGroupDescription_type newSwitchGroupDescription;
-            ok &= switchGroupDescriptions[n]->getIntAttribute(newSwitchGroupDescription.mae_descriptionSwitchGroupID, u"mae_descriptionSwitchGroupID", true, 0, 0x00, 0x1F) &&
-                switchGroupDescriptions[n]->getAttribute(newSwitchGroupDescription.switchGroupDescriptionData, u"switchGroupDescription");
-            newDescriptionLanguage.switch_group_descriptions.push_back(newSwitchGroupDescription);
+        for (auto& it : xlang.children(u"SwitchGroupDescription", &ok, 0, 0x1F)) {
+            auto& newSwitchGroupDescription(newDescriptionLanguage.switch_group_descriptions.emplace_back());
+            ok = it.getIntAttribute(newSwitchGroupDescription.mae_descriptionSwitchGroupID, u"mae_descriptionSwitchGroupID", true, 0, 0x00, 0x1F) &&
+                 it.getAttribute(newSwitchGroupDescription.switchGroupDescriptionData, u"switchGroupDescription");
         }
-        for (size_t n = 0; ok && n < groupPresetDescriptions.size(); ++n) {
-            groupPresetsDescription_type newGroupPresetsDescription;
-            ok &= groupPresetDescriptions[n]->getIntAttribute(newGroupPresetsDescription.mae_descriptionGroupPresetID, u"mae_descriptionGroupPresetID", true, 0, 0x00, 0x1F) &&
-                groupPresetDescriptions[n]->getAttribute(newGroupPresetsDescription.groupDescriptionPresetData, u"groupPresetDescription");
-            newDescriptionLanguage.group_preset_descriptions.push_back(newGroupPresetsDescription);
+        for (auto& it : xlang.children(u"GroupPresetDescription", &ok, 0, 0x1F)) {
+            auto& newGroupPresetsDescription(newDescriptionLanguage.group_preset_descriptions.emplace_back());
+            ok = it.getIntAttribute(newGroupPresetsDescription.mae_descriptionGroupPresetID, u"mae_descriptionGroupPresetID", true, 0, 0x00, 0x1F) &&
+                 it.getAttribute(newGroupPresetsDescription.groupDescriptionPresetData, u"groupPresetDescription");
         }
-        description_languages.push_back(newDescriptionLanguage);
     }
     return ok;
 }

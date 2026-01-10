@@ -255,80 +255,72 @@ void ts::MediaServiceKindDescriptor::buildXML(DuckContext& duck, xml::Element* r
 
 bool ts::MediaServiceKindDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector children;
-    bool ok = element->getChildren(children, u"media_service_kind");
+    bool ok = true;
+    for (auto& xmsk : element->children(u"media_service_kind", &ok)) {
+        auto& newMSK(media_service_kinds.emplace_back());
+        int mdf=0, mt=0;
+        ok = xmsk.getEnumAttribute(mdf, MediaDescriptionFlag(), u"media_description", true) &&
+             xmsk.getEnumAttribute(mt, MediaType(), u"media_type", true) &&
+             xmsk.getOptionalIntAttribute(newMSK.ID_length_code, u"ID_length_code", 0, 0x7) &&
+             xmsk.getOptionalIntAttribute(newMSK.ID_type, u"ID_type", 0, 0x1FFF);
+        newMSK.media_description_flag = uint8_t(mdf);
+        newMSK.media_type_idc = uint8_t(mt);
 
-    if (ok) {
-        for (size_t i=0; ok && i<children.size(); i++) {
-            media_service_kind_type newMSK;
-            int mdf=0, mt=0;
-            ok = children[i]->getEnumAttribute(mdf, MediaDescriptionFlag(), u"media_description", true) &&
-                 children[i]->getEnumAttribute(mt, MediaType(), u"media_type", true) &&
-                 children[i]->getOptionalIntAttribute(newMSK.ID_length_code, u"ID_length_code", 0, 0x7) &&
-                 children[i]->getOptionalIntAttribute(newMSK.ID_type, u"ID_type", 0, 0x1FFF);
-            newMSK.media_description_flag = uint8_t(mdf);
-            newMSK.media_type_idc = uint8_t(mt);
-
-            if (ok) {
-                if (newMSK.ID_length_code.has_value()) {
-                    switch (newMSK.ID_length_code.value()) {
-                        case 0: newMSK.ID_len = 1; break;
-                        case 1: newMSK.ID_len = 2; break;
-                        case 2: newMSK.ID_len = 4; break;
-                        case 3: newMSK.ID_len = 8; break;
-                        case 4: newMSK.ID_len = 12; break;
-                        case 5: newMSK.ID_len = 16; break;
-                        case 6: newMSK.ID_len = 20; break;
-                        case 7:
-                            ok = children[i]->getIntAttribute(newMSK.ID_len, u"ID_len");
-                            break;
-                        default:
-                            ok = false;
-                            break;
-                    }
-                }
-                if (ok && (newMSK.ID_len != 0)) {
-                    ok &= children[i]->getAttribute(newMSK.media_ID_field, u"media_ID", true, UString('*', newMSK.ID_len), newMSK.ID_len, newMSK.ID_len);
+        if (ok) {
+            if (newMSK.ID_length_code.has_value()) {
+                switch (newMSK.ID_length_code.value()) {
+                    case 0: newMSK.ID_len = 1; break;
+                    case 1: newMSK.ID_len = 2; break;
+                    case 2: newMSK.ID_len = 4; break;
+                    case 3: newMSK.ID_len = 8; break;
+                    case 4: newMSK.ID_len = 12; break;
+                    case 5: newMSK.ID_len = 16; break;
+                    case 6: newMSK.ID_len = 20; break;
+                    case 7:
+                        ok = xmsk.getIntAttribute(newMSK.ID_len, u"ID_len");
+                        break;
+                    default:
+                        ok = false;
+                        break;
                 }
             }
-            xml::ElementVector mediaPairs;
-            ok &= children[i]->getChildren(mediaPairs, u"language_media_pair", 0, 0x7);
-            for (size_t j = 0; ok && j < mediaPairs.size(); j++) {
-                language_media_pair_type newLanguagePair;
-                ok = mediaPairs[j]->getIntAttribute(newLanguagePair.configuration_type, u"configuration_type", true, 0, 0, 3) &&
-                     mediaPairs[j]->getIntAttribute(newLanguagePair.lang_len_idc, u"lang_len_idc", true, 0, 0, 3);
-                if (ok) {
-                    switch (newLanguagePair.lang_len_idc) {
+            if (ok && (newMSK.ID_len != 0)) {
+                ok = xmsk.getAttribute(newMSK.media_ID_field, u"media_ID", true, UString('*', newMSK.ID_len), newMSK.ID_len, newMSK.ID_len);
+            }
+        }
+
+        for (auto& xlmp : xmsk.children(u"language_media_pair", &ok, 0, 0x7)) {
+            auto& newLanguagePair(newMSK.language_media_service_type_pairs.emplace_back());
+            ok = xlmp.getIntAttribute(newLanguagePair.configuration_type, u"configuration_type", true, 0, 0, 3) &&
+                 xlmp.getIntAttribute(newLanguagePair.lang_len_idc, u"lang_len_idc", true, 0, 0, 3) &&
+                 xlmp.getAttribute(newLanguagePair.language_code, u"BCP47_language_code", true, u"");
+            if (ok) {
+                switch (newLanguagePair.lang_len_idc) {
                     case 0:
-                        mediaPairs[j]->getIntAttribute(newLanguagePair.lang_len, u"lang_len", true, 0);
+                        ok = xlmp.getIntAttribute(newLanguagePair.lang_len, u"lang_len", true, 0);
                         break;
-                    case 1: newLanguagePair.lang_len = 2; break;
-                    case 2: newLanguagePair.lang_len = 3; break;
+                    case 1:
+                        newLanguagePair.lang_len = 2;
+                        break;
+                    case 2:
+                        newLanguagePair.lang_len = 3;
+                        break;
                     case 3:
-                        mediaPairs[j]->report().error(u"'3' is a reserved value for @lang_len_idc in <%s>, line %d", element->name(), element->lineNumber());
+                        xlmp.report().error(u"'3' is a reserved value for @lang_len_idc in <%s>, line %d", element->name(), element->lineNumber());
                         ok = false;
                         break;
                     default:
                         ok = false;
-                    }
+                        break;
                 }
-                ok &= mediaPairs[j]->getAttribute(newLanguagePair.language_code, u"BCP47_language_code", true, u"");
-                if (newLanguagePair.language_code.length() != newLanguagePair.lang_len) {
-                    mediaPairs[j]->report().error(u"specified length (%d) does not match @IETF_BCP_47_language_code length (%d) in <%s>, line %d", newLanguagePair.lang_len, newLanguagePair.language_code.length(), element->name(), element->lineNumber());
-                    ok = false;
-                }
-                xml::ElementVector mediaServiceTypes;
-                ok &= mediaPairs[j]->getChildren(mediaServiceTypes, u"media_service_type", 0, 7);
-                for (size_t k = 0; ok && k < mediaServiceTypes.size(); k++) {
-                    uint8_t mstp;
-                    ok = mediaServiceTypes[k]->getIntAttribute(mstp, u"purpose", true, 0, 0x00);
-                    if (ok) {
-                        newLanguagePair.media_service_types.push_back(mstp);
-                    }
-                }
-                newMSK.language_media_service_type_pairs.push_back(newLanguagePair);
             }
-            media_service_kinds.push_back(newMSK);
+            if (ok && newLanguagePair.language_code.length() != newLanguagePair.lang_len) {
+                xlmp.report().error(u"specified length (%d) does not match @IETF_BCP_47_language_code length (%d) in <%s>, line %d", newLanguagePair.lang_len, newLanguagePair.language_code.length(), element->name(), element->lineNumber());
+                ok = false;
+            }
+            for (auto& xmst : xlmp.children(u"media_service_type", &ok, 0, 7)) {
+                ok = xmst.getIntAttribute(newLanguagePair.media_service_types.emplace_back(), u"purpose", true, 0, 0x00);
+            }
         }
     }
     return ok;

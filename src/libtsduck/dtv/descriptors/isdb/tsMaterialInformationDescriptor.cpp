@@ -173,24 +173,19 @@ void ts::MaterialInformationDescriptor::buildXML(DuckContext& duck, xml::Element
 
 bool ts::MaterialInformationDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector xmat;
-    bool ok =
-        element->getIntAttribute(descriptor_number, u"descriptor_number", true, 0, 0x00, 0x0F) &&
-        element->getIntAttribute(last_descriptor_number, u"last_descriptor_number", true, 0, 0x00, 0x0F) &&
-        element->getChildren(xmat, u"material");
+    bool ok = element->getIntAttribute(descriptor_number, u"descriptor_number", true, 0, 0x00, 0x0F) &&
+              element->getIntAttribute(last_descriptor_number, u"last_descriptor_number", true, 0, 0x00, 0x0F);
 
-    for (const auto& xm : xmat) {
-        Material mat;
-        ok = xm->getIntAttribute(mat.material_type, u"material_type", true) &&
-             xm->getAttribute(mat.material_name, u"material_name", true) &&
-             xm->getIntAttribute(mat.material_code_type, u"material_code_type", true) &&
-             xm->getAttribute(mat.material_code, u"material_code", true) &&
-             xm->getOptionalTimeAttribute(mat.material_period, u"material_period") &&
-             xm->getIntAttribute(mat.material_url_type, u"material_url_type", true) &&
-             xm->getAttribute(mat.material_url, u"material_url", true) &&
-             xm->getHexaTextChild(mat.reserved, u"reserved_future_use") &&
-             ok;
-        material.push_back(mat);
+    for (auto& xmat : element->children(u"material", &ok)) {
+        auto& mat(material.emplace_back());
+        ok = xmat.getIntAttribute(mat.material_type, u"material_type", true) &&
+             xmat.getAttribute(mat.material_name, u"material_name", true) &&
+             xmat.getIntAttribute(mat.material_code_type, u"material_code_type", true) &&
+             xmat.getAttribute(mat.material_code, u"material_code", true) &&
+             xmat.getOptionalTimeAttribute(mat.material_period, u"material_period") &&
+             xmat.getIntAttribute(mat.material_url_type, u"material_url_type", true) &&
+             xmat.getAttribute(mat.material_url, u"material_url", true) &&
+             xmat.getHexaTextChild(mat.reserved, u"reserved_future_use");
     }
     return ok;
 }

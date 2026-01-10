@@ -96,15 +96,9 @@ void ts::QualityExtensionDescriptor::buildXML(DuckContext& duck, xml::Element* r
 
 bool ts::QualityExtensionDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector _metric_codes;
-    bool ok =
-        element->getIntAttribute(field_size_bytes, u"field_size_bytes", true, 0, 0, 0xFF) &&
-        element->getChildren(_metric_codes, u"metric", 1, 0xFF);
-
-    for (size_t i = 0; ok && i < _metric_codes.size(); i++) {
-        uint32_t metric_code = 0;
-        ok = _metric_codes[i]->getIntAttribute(metric_code, u"code", true);
-        metric_codes.push_back(metric_code);
+    bool ok = element->getIntAttribute(field_size_bytes, u"field_size_bytes", true, 0, 0, 0xFF);
+    for (auto& xmetric : element->children(u"metric", &ok, 1, 255)) {
+        ok = xmetric.getIntAttribute(metric_codes.emplace_back(), u"code", true);
     }
     return ok;
 }

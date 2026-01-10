@@ -178,47 +178,44 @@ void ts::ISDBAdvancedCableDeliverySystemDescriptor::buildXML(DuckContext& duck, 
 
 bool ts::ISDBAdvancedCableDeliverySystemDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector xnormal, xother;
-    bool ok = element->getChildren(xnormal, u"normal_data") && element->getChildren(xother, u"other_data");
-    if (ok && xnormal.size() + xother.size() != 1) {
-        element->report().error(u"exactly one of <normal_data> or <other_data> must be present in <%s>, line %d", element->name(), element->lineNumber());
-        return false;
+    bool ok = true;
+    bool normal = false;
+
+    // Exactly one of <normal_data> or <other_data> must be present.
+    for (auto& xnormal : element->children(u"normal_data", &ok, 0, 1)) {
+        normal = true;
+        descriptor_tag_extension = 0;
+        ok = xnormal.getIntAttribute(normal_data.plp_id, u"plp_id", true) &&
+             xnormal.getIntAttribute(normal_data.effective_symbol_length, u"effective_symbol_length", true, 0, 0, 7) &&
+             xnormal.getIntAttribute(normal_data.guard_interval, u"guard_interval", true, 0, 0, 7) &&
+             xnormal.getIntAttribute(normal_data.bundled_channel, u"bundled_channel", true);
+        for (auto& xc : xnormal.children(u"carrier", &ok)) {
+            auto& car(normal_data.carriers.emplace_back());
+            ok = xc.getIntAttribute(car.data_slice_id, u"data_slice_id", true) &&
+                 xc.getIntAttribute(car.frequency, u"frequency", true) &&
+                 xc.getIntAttribute(car.frame_type, u"frame_type", true, 0, 0, 3) &&
+                 xc.getIntAttribute(car.FEC_outer, u"FEC_outer", true, 0, 0, 0x0F) &&
+                 xc.getIntAttribute(car.modulation, u"modulation", true) &&
+                 xc.getIntAttribute(car.FEC_inner, u"FEC_inner", true, 0, 0, 0x0F);
+        }
     }
 
-    if (!xnormal.empty()) {
-        descriptor_tag_extension = 0;
-        xml::ElementVector xcar;
-        ok = xnormal[0]->getIntAttribute(normal_data.plp_id, u"plp_id", true) &&
-             xnormal[0]->getIntAttribute(normal_data.effective_symbol_length, u"effective_symbol_length", true, 0, 0, 7) &&
-             xnormal[0]->getIntAttribute(normal_data.guard_interval, u"guard_interval", true, 0, 0, 7) &&
-             xnormal[0]->getIntAttribute(normal_data.bundled_channel, u"bundled_channel", true) &&
-             xnormal[0]->getChildren(xcar, u"carrier") &&
-             ok;
-        for (const auto& xc : xcar) {
-            Carrier car;
-            ok = xc->getIntAttribute(car.data_slice_id, u"data_slice_id", true) &&
-                 xc->getIntAttribute(car.frequency, u"frequency", true) &&
-                 xc->getIntAttribute(car.frame_type, u"frame_type", true, 0, 0, 3) &&
-                 xc->getIntAttribute(car.FEC_outer, u"FEC_outer", true, 0, 0, 0x0F) &&
-                 xc->getIntAttribute(car.modulation, u"modulation", true) &&
-                 xc->getIntAttribute(car.FEC_inner, u"FEC_inner", true, 0, 0, 0x0F) &&
-                 ok;
-            normal_data.carriers.push_back(car);
-        }
-    }
-    else {
-        ok = xother[0]->getIntAttribute(descriptor_tag_extension, u"descriptor_tag_extension", false, 0x01);
-        if (descriptor_tag_extension == 0x01) {
-            // earthquake warning information transmission
-            ok = xother[0]->getHexaText(other_data, 26, 88) && ok;
-            if (ok) {
-                // Pad with 0xFF up to 88 bytes.
-                other_data.resize(88, 0xFF);
+    for (auto& xother : element->children(u"other_data", &ok, normal ? 0 : 1, normal ? 0 : 1)) {
+        ok = xother.getIntAttribute(descriptor_tag_extension, u"descriptor_tag_extension", false, 0x01);
+        if (ok) {
+            if (descriptor_tag_extension == 0x01) {
+                // earthquake warning information transmission
+                ok = xother.getHexaText(other_data, 26, 88);
+                if (ok) {
+                    // Pad with 0xFF up to 88 bytes.
+                    other_data.resize(88, 0xFF);
+                }
+            }
+            else {
+                ok = xother.getHexaText(other_data);
             }
         }
-        else {
-            ok = xother[0]->getHexaText(other_data) && ok;
-        }
     }
+
     return ok;
 }

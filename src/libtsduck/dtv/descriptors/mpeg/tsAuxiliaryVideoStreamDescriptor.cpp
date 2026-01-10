@@ -353,24 +353,16 @@ void ts::AuxiliaryVideoStreamDescriptor::buildXML(DuckContext& duck, xml::Elemen
 
 bool ts::AuxiliaryVideoStreamDescriptor::si_message_type::generic_params_type::fromXML(const xml::Element* element)
 {
-    xml::ElementVector gp;
-    bool ok = element->getChildren(gp, u"generic_params", 1, 1) &&
-              gp[0]->getIntAttribute(position_offset_h, u"position_offset_h", true) &&
-              gp[0]->getIntAttribute(position_offset_v, u"position_offset_v", true);
-
-    if (ok) {
-        if (gp[0]->hasAttribute(u"aux_is_bottom_field") && gp[0]->hasAttribute(u"aux_is_interlaced")) {
-            element->report().error(u"only one of <aux_is_bottom_field> and <aux_is_interlaced> must be specified  in <%s>, line %d", element->name(), element->lineNumber());
+    bool ok = true;
+    for (auto& gp : element->children(u"generic_params", &ok, 1, 1)) {
+        ok = gp.getIntAttribute(position_offset_h, u"position_offset_h", true) &&
+             gp.getIntAttribute(position_offset_v, u"position_offset_v", true) &&
+             gp.getOptionalBoolAttribute(aux_is_bottom_field, u"aux_is_bottom_field") &&
+             gp.getOptionalBoolAttribute(aux_is_interlaced, u"aux_is_interlaced");
+        if (ok && aux_is_bottom_field.has_value() + aux_is_interlaced.has_value() != 1) {
+            element->report().error(u"exactly one of <aux_is_bottom_field> and <aux_is_interlaced> must be specified in <%s>, line %d", element->name(), element->lineNumber());
             ok = false;
         }
-        if (!gp[0]->hasAttribute(u"aux_is_bottom_field") && !gp[0]->hasAttribute(u"aux_is_interlaced")) {
-            element->report().error(u"either <aux_is_bottom_field> or <aux_is_interlaced> must be specified  in <%s>, line %d", element->name(), element->lineNumber());
-            ok = false;
-        }
-    }
-    if (ok) {
-        ok = gp[0]->getOptionalBoolAttribute(aux_is_bottom_field, u"aux_is_bottom_field") &&
-             gp[0]->getOptionalBoolAttribute(aux_is_interlaced, u"aux_is_interlaced");
     }
     return ok;
 }

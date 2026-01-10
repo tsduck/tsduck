@@ -119,18 +119,15 @@ void ts::M4MuxBufferSizeDescriptor::buildXML(DuckContext& duck, xml::Element* ro
 
 bool ts::M4MuxBufferSizeDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector DefaultM4MuxBuffer;
-    bool ok = element->getChildren(DefaultM4MuxBuffer, u"DefaultM4MuxBufferDescriptor", 1, 1);
-    ok &= DefaultM4MuxBuffer[0]->getIntAttribute(DefaultM4MuxBufferDescriptor.m4MuxChnnel, u"m4MuxChannel", true, 0, 0, 0xFF) &&
-        DefaultM4MuxBuffer[0]->getIntAttribute(DefaultM4MuxBufferDescriptor.FB_BufferSize, u"FB_BufferSize", true, 0, 0, 0xFFFFFF);
-
-    xml::ElementVector M4MuxBuffers;
-    ok &= element->getChildren(M4MuxBuffers, u"M4MuxBufferDescriptor");
-    for (size_t i = 0; ok && i < M4MuxBuffers.size(); i++) {
-        M4MuxBufferDescriptor_type newMuxBuffer;
-        ok &= M4MuxBuffers[i]->getIntAttribute(newMuxBuffer.m4MuxChnnel, u"m4MuxChannel", true, 0, 0, 0xFF) &&
-            M4MuxBuffers[i]->getIntAttribute(newMuxBuffer.FB_BufferSize, u"FB_BufferSize", true, 0, 0, 0xFFFFFF);
-        M4MuxBufferDescriptor.push_back(newMuxBuffer);
+    bool ok = true;
+    for (auto& child : element->children(u"DefaultM4MuxBufferDescriptor", &ok, 1, 1)) {
+        ok = child.getIntAttribute(DefaultM4MuxBufferDescriptor.m4MuxChnnel, u"m4MuxChannel", true, 0, 0, 0xFF) &&
+             child.getIntAttribute(DefaultM4MuxBufferDescriptor.FB_BufferSize, u"FB_BufferSize", true, 0, 0, 0xFFFFFF);
+    }
+    for (auto& child : element->children(u"M4MuxBufferDescriptor", &ok)) {
+        auto& newMuxBuffer(M4MuxBufferDescriptor.emplace_back());
+        ok = child.getIntAttribute(newMuxBuffer.m4MuxChnnel, u"m4MuxChannel", true, 0, 0, 0xFF) &&
+             child.getIntAttribute(newMuxBuffer.FB_BufferSize, u"FB_BufferSize", true, 0, 0, 0xFFFFFF);
     }
     return ok;
 }

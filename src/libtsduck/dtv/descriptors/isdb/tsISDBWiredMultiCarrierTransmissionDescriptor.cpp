@@ -131,20 +131,16 @@ void ts::ISDBWiredMultiCarrierTransmissionDescriptor::buildXML(DuckContext& duck
 
 bool ts::ISDBWiredMultiCarrierTransmissionDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector xcar;
-    bool ok = element->getChildren(xcar, u"carrier");
-
-    for (const auto& xc : xcar) {
-        Carrier car;
-        ok = xc->getIntAttribute(car.frequency, u"frequency", true) &&
-             xc->getIntAttribute(car.frame_type, u"frame_type", true, 0, 0, 0x0F) &&
-             xc->getIntAttribute(car.FEC_outer, u"FEC_outer", true, 0, 0, 0x0F) &&
-             xc->getIntAttribute(car.modulation, u"modulation", true) &&
-             xc->getIntAttribute(car.symbol_rate, u"symbol_rate", true) &&
-             xc->getIntAttribute(car.FEC_inner, u"FEC_inner", false, 0x0F, 0, 0x0F) &&
-             xc->getIntAttribute(car.group_id, u"group_id", true) &&
-             ok;
-        carriers.push_back(car);
+    bool ok = true;
+    for (auto& xcar : element->children(u"carrier", &ok)) {
+        auto& car(carriers.emplace_back());
+        ok = xcar.getIntAttribute(car.frequency, u"frequency", true) &&
+             xcar.getIntAttribute(car.frame_type, u"frame_type", true, 0, 0, 0x0F) &&
+             xcar.getIntAttribute(car.FEC_outer, u"FEC_outer", true, 0, 0, 0x0F) &&
+             xcar.getIntAttribute(car.modulation, u"modulation", true) &&
+             xcar.getIntAttribute(car.symbol_rate, u"symbol_rate", true) &&
+             xcar.getIntAttribute(car.FEC_inner, u"FEC_inner", false, 0x0F, 0, 0x0F) &&
+             xcar.getIntAttribute(car.group_id, u"group_id", true);
     }
     return ok;
 }

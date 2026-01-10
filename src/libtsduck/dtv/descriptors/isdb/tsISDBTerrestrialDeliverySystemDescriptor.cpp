@@ -166,17 +166,12 @@ void ts::ISDBTerrestrialDeliverySystemDescriptor::buildXML(DuckContext& duck, xm
 
 bool ts::ISDBTerrestrialDeliverySystemDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector xfreq;
-    bool ok =
-        element->getIntAttribute(area_code, u"area_code", true, 0, 0, 0x0FFF) &&
-        element->getEnumAttribute(guard_interval, GuardIntervalNames(), u"guard_interval", true) &&
-        element->getEnumAttribute(transmission_mode, TransmissionModeNames(), u"transmission_mode", true) &&
-        element->getChildren(xfreq, u"frequency", 0, 126);
+    bool ok = element->getIntAttribute(area_code, u"area_code", true, 0, 0, 0x0FFF) &&
+              element->getEnumAttribute(guard_interval, GuardIntervalNames(), u"guard_interval", true) &&
+              element->getEnumAttribute(transmission_mode, TransmissionModeNames(), u"transmission_mode", true);
 
-    for (auto it = xfreq.begin(); ok && it != xfreq.end(); ++it) {
-        uint64_t f = 0;
-        ok = (*it)->getIntAttribute(f, u"value", true);
-        frequencies.push_back(f);
+    for (auto& xfreq : element->children(u"frequency", &ok, 0, 126)) {
+        ok = xfreq.getIntAttribute(frequencies.emplace_back(), u"value", true);
     }
     return ok;
 }

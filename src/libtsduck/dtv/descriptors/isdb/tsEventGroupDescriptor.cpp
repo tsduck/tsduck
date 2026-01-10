@@ -166,28 +166,21 @@ void ts::EventGroupDescriptor::buildXML(DuckContext& duck, xml::Element* root) c
 
 bool ts::EventGroupDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector xactual;
-    xml::ElementVector xother;
-    bool ok =
-        element->getIntAttribute(group_type, u"group_type", true, 0, 0, 15) &&
-        element->getChildren(xactual, u"actual", 0, 15) &&
-        element->getChildren(xother, u"other", 0, group_type == 4 || group_type == 5 ? 31 : 0) &&
-        element->getHexaTextChild(private_data, u"private_data", false, 0, group_type == 4 || group_type == 5 ? 0 : 254);
+    bool ok = element->getIntAttribute(group_type, u"group_type", true, 0, 0, 15) &&
+              element->getHexaTextChild(private_data, u"private_data", false, 0, group_type == 4 || group_type == 5 ? 0 : 254);
 
-    for (auto it = xactual.begin(); ok && it != xactual.end(); ++it) {
-        ActualEvent ev;
-        ok = (*it)->getIntAttribute(ev.service_id, u"service_id", true) &&
-             (*it)->getIntAttribute(ev.event_id, u"event_id", true);
-        actual_events.push_back(ev);
+    for (auto& xactual : element->children(u"actual", &ok, 0, 15)) {
+        auto& ev(actual_events.emplace_back());
+        ok = xactual.getIntAttribute(ev.service_id, u"service_id", true) &&
+             xactual.getIntAttribute(ev.event_id, u"event_id", true);
     }
 
-    for (auto it = xother.begin(); ok && it != xother.end(); ++it) {
-        OtherEvent ev;
-        ok = (*it)->getIntAttribute(ev.original_network_id, u"original_network_id", true) &&
-             (*it)->getIntAttribute(ev.transport_stream_id, u"transport_stream_id", true) &&
-             (*it)->getIntAttribute(ev.service_id, u"service_id", true) &&
-             (*it)->getIntAttribute(ev.event_id, u"event_id", true);
-        other_events.push_back(ev);
+    for (auto& xother : element->children(u"other", &ok, 0, group_type == 4 || group_type == 5 ? 31 : 0)) {
+        auto& ev(other_events.emplace_back());
+        ok = xother.getIntAttribute(ev.original_network_id, u"original_network_id", true) &&
+             xother.getIntAttribute(ev.transport_stream_id, u"transport_stream_id", true) &&
+             xother.getIntAttribute(ev.service_id, u"service_id", true) &&
+             xother.getIntAttribute(ev.event_id, u"event_id", true);
     }
     return ok;
 }

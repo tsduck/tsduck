@@ -361,74 +361,50 @@ void ts::J2KVideoDescriptor::JPEGXS_Block_type::toXML(xml::Element* root) const
 
 bool ts::J2KVideoDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    if (element->hasAttribute(u"color_specification") &&
-        (element->hasAttribute(u"colour_primaries") ||
-         element->hasAttribute(u"transfer_characteristics") ||
-         element->hasAttribute(u"matrix_coefficients") ||
-         element->hasAttribute(u"video_full_range_flag"))) {
+    const bool isExtendedCapabilities = element->hasAttribute(u"colour_primaries") ||
+                                        element->hasAttribute(u"transfer_characteristics") ||
+                                        element->hasAttribute(u"matrix_coefficients") ||
+                                        element->hasAttribute(u"video_full_range_flag");
 
-        element->report().error(u"cannot specify both legacy (color_specification) and extended (colour_primaries, transfer_characteristics, matrix_coefficients, video_full_range_flag) attributes in <%s>, line %d", element->name(), element->lineNumber());
+    if (element->hasAttribute(u"color_specification") && isExtendedCapabilities) {
+        element->report().error(u"cannot specify both legacy (color_specification) and extended "
+                                u"(colour_primaries, transfer_characteristics, matrix_coefficients, video_full_range_flag) attributes in <%s>, line %d",
+                                element->name(), element->lineNumber());
         return false;
     }
 
-    bool isExtendedCapabilities = element->hasAttribute(u"colour_primaries") || element->hasAttribute(u"transfer_characteristics") || element->hasAttribute(u"matrix_coefficients") || element->hasAttribute(u"video_full_range_flag");
     bool ok = element->getIntAttribute(profile_and_level, u"profile_and_level", true, 0, 0, 0x7FFF) &&
-            element->getIntAttribute(horizontal_size, u"horizontal_size", true) &&
-            element->getIntAttribute(vertical_size, u"vertical_size", true) &&
-            element->getIntAttribute(max_bit_rate, u"max_bit_rate", true) &&
-            element->getIntAttribute(max_buffer_size, u"max_buffer_size", true) &&
-            element->getIntAttribute(DEN_frame_rate, u"DEN_frame_rate", true) &&
-            element->getIntAttribute(NUM_frame_rate, u"NUM_frame_rate", true) &&
-            element->getBoolAttribute(still_mode, u"still_mode", true) &&
-            element->getBoolAttribute(interlaced_video, u"interlaced_video", true) &&
-            element->getHexaTextChild(private_data, u"private_data", false, 0, MAX_DESCRIPTOR_SIZE - 26);
+              element->getIntAttribute(horizontal_size, u"horizontal_size", true) &&
+              element->getIntAttribute(vertical_size, u"vertical_size", true) &&
+              element->getIntAttribute(max_bit_rate, u"max_bit_rate", true) &&
+              element->getIntAttribute(max_buffer_size, u"max_buffer_size", true) &&
+              element->getIntAttribute(DEN_frame_rate, u"DEN_frame_rate", true) &&
+              element->getIntAttribute(NUM_frame_rate, u"NUM_frame_rate", true) &&
+              element->getBoolAttribute(still_mode, u"still_mode", true) &&
+              element->getBoolAttribute(interlaced_video, u"interlaced_video", true) &&
+              element->getHexaTextChild(private_data, u"private_data", false, 0, MAX_DESCRIPTOR_SIZE - 26);
 
     if (ok) {
         if (isExtendedCapabilities) {
-            uint8_t cp, tc, mc;
-            bool    vf;
-            ok = element->getIntAttribute(cp, u"colour_primaries", true) &&
-                 element->getIntAttribute(tc, u"transfer_characteristics", true) &&
-                 element->getIntAttribute(mc, u"matrix_coefficients", true) &&
-                 element->getBoolAttribute(vf, u"video_full_range_flag", true);
-            if (ok) {
-                colour_primaries = cp;
-                transfer_characteristics = tc;
-                matrix_coefficients = mc;
-                video_full_range_flag = vf;
-            }
+            ok = element->getIntAttribute(colour_primaries.emplace(), u"colour_primaries", true) &&
+                 element->getIntAttribute(transfer_characteristics.emplace(), u"transfer_characteristics", true) &&
+                 element->getIntAttribute(matrix_coefficients.emplace(), u"matrix_coefficients", true) &&
+                 element->getBoolAttribute(video_full_range_flag.emplace(), u"video_full_range_flag", true);
         }
         else {
-            uint8_t cs;
-            ok = element->getIntAttribute(cs, u"color_specification", true);
-            if (ok) {
-                color_specification = cs;
-            }
+            ok = element->getIntAttribute(color_specification.emplace(), u"color_specification", true);
         }
     }
 
-    if (ok && isExtendedCapabilities) {
-        xml::ElementVector ext_data;
-
-        ok = element->getChildren(ext_data, u"stripe", 0, 1);
-        if (ok && !ext_data.empty()) {
-            JPEGXS_Stripe_type newStripe;
-            ok = newStripe.fromXML(ext_data[0]);
-            stripe = newStripe;
+    if (isExtendedCapabilities) {
+        for (auto& child : element->children(u"stripe", &ok, 0, 1)) {
+            ok = stripe.emplace().fromXML(&child);
         }
-
-        ok =element->getChildren(ext_data, u"block", 0, 1) && ok;
-        if (ok && !ext_data.empty()) {
-            JPEGXS_Block_type newBlock;
-            ok = newBlock.fromXML(ext_data[0]);
-            block = newBlock;
+        for (auto& child : element->children(u"block", &ok, 0, 1)) {
+            ok = block.emplace().fromXML(&child);
         }
-
-        ok = element->getChildren(ext_data, u"mdm", 0, 1) && ok;
-        if (ok && !ext_data.empty()) {
-            Mastering_Display_Metadata_type newMDM;
-            ok = newMDM.fromXML(ext_data[0]);
-            mdm = newMDM;
+        for (auto& child : element->children(u"mdm", &ok, 0, 1)) {
+            ok = mdm.emplace().fromXML(&child);
         }
     }
 

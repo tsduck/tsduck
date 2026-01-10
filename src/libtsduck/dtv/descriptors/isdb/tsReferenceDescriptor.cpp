@@ -119,18 +119,14 @@ void ts::ReferenceDescriptor::buildXML(DuckContext& duck, xml::Element* root) co
 
 bool ts::ReferenceDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector xref;
-    bool ok =
-        element->getIntAttribute(information_provider_id, u"information_provider_id", true) &&
-        element->getIntAttribute(event_relation_id, u"event_relation_id", true) &&
-        element->getChildren(xref, u"reference");
+    bool ok = element->getIntAttribute(information_provider_id, u"information_provider_id", true) &&
+              element->getIntAttribute(event_relation_id, u"event_relation_id", true);
 
-    for (auto it = xref.begin(); ok && it != xref.end(); ++it) {
-        Reference ref;
-        ok = (*it)->getIntAttribute(ref.reference_node_id, u"reference_node_id", true) &&
-             (*it)->getIntAttribute(ref.reference_number, u"reference_number", true) &&
-             (*it)->getIntAttribute(ref.last_reference_number, u"last_reference_number", true);
-        references.push_back(ref);
+    for (auto& child : element->children(u"reference", &ok)) {
+        auto& ref(references.emplace_back());
+        ok = child.getIntAttribute(ref.reference_node_id, u"reference_node_id", true) &&
+             child.getIntAttribute(ref.reference_number, u"reference_number", true) &&
+             child.getIntAttribute(ref.last_reference_number, u"last_reference_number", true);
     }
     return ok;
 }

@@ -202,26 +202,22 @@ void ts::VVCVideoDescriptor::buildXML(DuckContext& duck, xml::Element* root) con
 
 bool ts::VVCVideoDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector children;
-    bool ok =
-        element->getIntAttribute(profile_idc, u"profile_idc", true, 0, 0x00, 0x7F) &&
-        element->getBoolAttribute(tier, u"tier_flag", true) &&
-        element->getBoolAttribute(progressive_source, u"progressive_source_flag", true) &&
-        element->getBoolAttribute(interlaced_source, u"interlaced_source_flag", true) &&
-        element->getBoolAttribute(non_packed_constraint, u"non_packed_constraint_flag", true) &&
-        element->getBoolAttribute(frame_only_constraint, u"frame_only_constraint_flag", true) &&
-        element->getIntAttribute(level_idc, u"level_idc", true) &&
-        element->getBoolAttribute(VVC_still_present, u"VVC_still_present_flag", true) &&
-        element->getBoolAttribute(VVC_24hr_picture_present, u"VVC_24hr_picture_present_flag", true) &&
-        element->getIntAttribute(HDR_WCG_idc, u"HDR_WCG_idc", true, 3, 0, 3) &&
-        element->getIntAttribute(video_properties_tag, u"video_properties_tag", true, 0, 0, 15) &&
-        element->getOptionalIntAttribute(temporal_id_min, u"temporal_id_min", 0, 7) &&
-        element->getOptionalIntAttribute(temporal_id_max, u"temporal_id_max", 0, 7) &&
-        element->getChildren(children, u"sub_profile_idc");
-    for (size_t i = 0; ok && i < children.size(); ++i) {
-        uint32_t value = 0;
-        ok = children[i]->getIntAttribute(value, u"value", true);
-        sub_profile_idc.push_back(value);
+    bool ok = element->getIntAttribute(profile_idc, u"profile_idc", true, 0, 0x00, 0x7F) &&
+              element->getBoolAttribute(tier, u"tier_flag", true) &&
+              element->getBoolAttribute(progressive_source, u"progressive_source_flag", true) &&
+              element->getBoolAttribute(interlaced_source, u"interlaced_source_flag", true) &&
+              element->getBoolAttribute(non_packed_constraint, u"non_packed_constraint_flag", true) &&
+              element->getBoolAttribute(frame_only_constraint, u"frame_only_constraint_flag", true) &&
+              element->getIntAttribute(level_idc, u"level_idc", true) &&
+              element->getBoolAttribute(VVC_still_present, u"VVC_still_present_flag", true) &&
+              element->getBoolAttribute(VVC_24hr_picture_present, u"VVC_24hr_picture_present_flag", true) &&
+              element->getIntAttribute(HDR_WCG_idc, u"HDR_WCG_idc", true, 3, 0, 3) &&
+              element->getIntAttribute(video_properties_tag, u"video_properties_tag", true, 0, 0, 15) &&
+              element->getOptionalIntAttribute(temporal_id_min, u"temporal_id_min", 0, 7) &&
+              element->getOptionalIntAttribute(temporal_id_max, u"temporal_id_max", 0, 7);
+
+    for (auto& child : element->children(u"sub_profile_idc", &ok)) {
+        ok = child.getIntAttribute(sub_profile_idc.emplace_back(), u"value", true);
     }
     if (ok && temporal_id_min.has_value() + temporal_id_max.has_value() == 1) {
         element->report().error(u"line %d: in <%s>, attributes 'temporal_id_min' and 'temporal_id_max' must be both present or both omitted", element->lineNumber(), element->name());

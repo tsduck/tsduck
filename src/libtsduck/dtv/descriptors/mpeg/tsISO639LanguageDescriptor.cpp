@@ -129,14 +129,11 @@ void ts::ISO639LanguageDescriptor::buildXML(DuckContext& duck, xml::Element* roo
 
 bool ts::ISO639LanguageDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector children;
-    bool ok = element->getChildren(children, u"language", 0, MAX_ENTRIES);
-
-    for (size_t i = 0; ok && i < children.size(); ++i) {
-        Entry entry;
-        ok = children[i]->getAttribute(entry.language_code, u"code", true, u"", 3, 3) &&
-             children[i]->getIntAttribute(entry.audio_type, u"audio_type", true, 0, 0x00, 0xFF);
-        entries.push_back(entry);
+    bool ok = true;
+    for (auto& child : element->children(u"language", &ok, 0, MAX_ENTRIES)) {
+        auto& entry(entries.emplace_back());
+        ok = child.getAttribute(entry.language_code, u"code", true, u"", 3, 3) &&
+             child.getIntAttribute(entry.audio_type, u"audio_type", true, 0, 0x00, 0xFF);
     }
     return ok;
 }

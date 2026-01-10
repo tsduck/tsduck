@@ -217,7 +217,7 @@ namespace ts {
         uint8_t                                  _3dAudioSceneID = 0;       //!< ID for the current audio scene, per mae_audio_SeceneInfoId in ISO/IEC 23008-03.
         std::vector<MH3D_InteractivityInfo_type> groupDefinitions {};       //!< Interactivity groups.
         std::vector<MH3D_SwitchGroup_type>       switchGroupDefinitions {}; //!< Switch groups.
-        std::vector<MH3D_PresetGroup_type>       groupPresetDefintions {};  //!< Preset groups.
+        std::vector<MH3D_PresetGroup_type>       groupPresetDefinitions {}; //!< Preset groups.
         ByteBlock                                reserved {};               //!< Reserved data.
 
         //!

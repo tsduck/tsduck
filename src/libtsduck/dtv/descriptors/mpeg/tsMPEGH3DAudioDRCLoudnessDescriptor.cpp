@@ -172,25 +172,18 @@ void ts::MPEGH3DAudioDRCLoudnessDescriptor::buildXML(DuckContext& duck, xml::Ele
 
 bool ts::MPEGH3DAudioDRCLoudnessDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector xdrc, xldi, xdmi;
-    bool ok = element->getChildren(xdrc, u"drcInstructionsUniDrc", 0, 0x3F) &&
-              element->getChildren(xldi, u"loudnessInfo", 0, 0x3F) &&
-              element->getChildren(xdmi, u"downmixId", 0, 0x1F) &&
-              element->getHexaTextChild(reserved, u"reserved", false);
+    bool ok = element->getHexaTextChild(reserved, u"reserved", false);
 
-    drcInstructionsUniDrc.resize(xdrc.size());
-    for (size_t i = 0; ok && i < drcInstructionsUniDrc.size(); ++i) {
-        ok = drcInstructionsUniDrc[i].fromXML(xdrc[i]);
+    for (auto& it : element->children(u"drcInstructionsUniDrc", &ok, 0, 0x3F)) {
+        ok = drcInstructionsUniDrc.emplace_back().fromXML(&it);
     }
 
-    loudnessInfo.resize(xldi.size());
-    for (size_t i = 0; ok && i < loudnessInfo.size(); ++i) {
-        ok = loudnessInfo[i].fromXML(xldi[i]);
+    for (auto& it : element->children(u"loudnessInfo", &ok, 0, 0x3F)) {
+        ok = loudnessInfo.emplace_back().fromXML(&it);
     }
 
-    downmixId.resize(xdmi.size());
-    for (size_t i = 0; ok && i < downmixId.size(); ++i) {
-        ok = downmixId[i].fromXML(xdmi[i]);
+    for (auto& it : element->children(u"downmixId", &ok, 0, 0x1F)) {
+        ok = downmixId.emplace_back().fromXML(&it);
     }
 
     return ok;
@@ -330,7 +323,6 @@ bool ts::MPEGH3DAudioDRCLoudnessDescriptor::DRCInstructions::fromXML(const xml::
 {
     clear();
 
-    xml::ElementVector xid;
     bool ok =
         element->getIntAttribute(drcInstructionsType, u"drcInstructionsType", true, 0, 0, 3) &&
         element->getConditionalIntAttribute(mae_groupID, u"mae_groupID", drcInstructionsType == 2, 0, 0x7F) &&
@@ -343,13 +335,10 @@ bool ts::MPEGH3DAudioDRCLoudnessDescriptor::DRCInstructions::fromXML(const xml::
         (!bsDrcSetTargetLoudnessValueUpper.has_value() ||
          element->getOptionalIntAttribute(bsDrcSetTargetLoudnessValueLower, u"bsDrcSetTargetLoudnessValueLower", 0, 0x3F)) &&
         element->getIntAttribute(dependsOnDrcSet, u"dependsOnDrcSet", true, 0, 0, 0x3F) &&
-        element->getBoolAttribute(noIndependentUse, u"noIndependentUse", dependsOnDrcSet == 0) &&
-        element->getChildren(xid, u"additionalDownmixId", 0, 7);
+        element->getBoolAttribute(noIndependentUse, u"noIndependentUse", dependsOnDrcSet == 0);
 
-    for (auto it = xid.begin(); ok && it != xid.end(); ++it) {
-        uint8_t value = 0;
-        ok = (*it)->getIntAttribute(value, u"value", true, 0, 0, 0x7F);
-        additionalDownmixId.push_back(value);
+    for (auto& it : element->children(u"additionalDownmixId", &ok, 0, 7)) {
+        ok = it.getIntAttribute(additionalDownmixId.emplace_back(), u"value", true, 0, 0, 0x7F);
     }
     return ok;
 }

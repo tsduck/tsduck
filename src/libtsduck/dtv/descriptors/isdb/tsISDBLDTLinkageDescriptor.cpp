@@ -156,25 +156,13 @@ void ts::ISDBLDTLinkageDescriptor::DescriptionType::toXML(xml::Element* root) co
 
 bool ts::ISDBLDTLinkageDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector descs;
     bool ok = element->getIntAttribute(original_service_id, u"original_service_id", true) &&
               element->getIntAttribute(transport_stream_id, u"transport_stream_id", true) &&
-              element->getIntAttribute(original_network_id, u"original_network_id", true) &&
-              element->getChildren(descs, u"Description");
-
-    bool descriptions_ok = true;
-    if (ok) {
-        for (auto desc : descs) {
-            DescriptionType t;
-            if (t.fromXML(desc)) {
-                descriptions.push_back(t);
-            }
-            else {
-                descriptions_ok = false;
-            }
-        }
+              element->getIntAttribute(original_network_id, u"original_network_id", true);
+    for (auto& xdesc : element->children(u"Description", &ok)) {
+        ok = descriptions.emplace_back().fromXML(&xdesc);
     }
-    return ok && descriptions_ok;
+    return ok;
 }
 
 bool ts::ISDBLDTLinkageDescriptor::DescriptionType::fromXML(const xml::Element* element)

@@ -264,23 +264,18 @@ bool ts::MPEG4TextDescriptor::analyzeXML(DuckContext& duck, const xml::Element* 
         0x10
     };
 
-    xml::ElementVector Compatible_3GPPFormat_children;
-    xml::ElementVector Sample_index_and_description_children;
-    bool ok =
-        element->getIntAttribute(textFormat, u"textFormat", true) &&
-        element->getIntAttribute(ThreeGPPBaseFormat, u"ThreeGPPBaseFormat", true) &&
-        element->getIntAttribute(profileLevel, u"profileLevel", true) &&
-        element->getIntAttribute(durationClock, u"durationClock", true, 0, 0, 0x00FFFFFF) &&
-        element->getIntAttribute(sampleDescriptionFlags, u"sampleDescriptionFlags", true, 0, 0, 3) &&
-        element->getIntAttribute(layer, u"layer", true) &&
-        element->getIntAttribute(text_track_width, u"text_track_width", true) &&
-        element->getIntAttribute(text_track_height, u"text_track_height", true) &&
-        element->getOptionalIntAttribute(scene_width, u"scene_width") &&
-        element->getOptionalIntAttribute(scene_height, u"scene_height") &&
-        element->getOptionalIntAttribute(horizontal_scene_offset, u"horizontal_scene_offset") &&
-        element->getOptionalIntAttribute(vertical_scene_offset, u"vertical_scene_offset") &&
-        element->getChildren(Compatible_3GPPFormat_children, u"Compatible_3GPPFormat") &&
-        element->getChildren(Sample_index_and_description_children, u"Sample_index_and_description");
+    bool ok = element->getIntAttribute(textFormat, u"textFormat", true) &&
+              element->getIntAttribute(ThreeGPPBaseFormat, u"ThreeGPPBaseFormat", true) &&
+              element->getIntAttribute(profileLevel, u"profileLevel", true) &&
+              element->getIntAttribute(durationClock, u"durationClock", true, 0, 0, 0x00FFFFFF) &&
+              element->getIntAttribute(sampleDescriptionFlags, u"sampleDescriptionFlags", true, 0, 0, 3) &&
+              element->getIntAttribute(layer, u"layer", true) &&
+              element->getIntAttribute(text_track_width, u"text_track_width", true) &&
+              element->getIntAttribute(text_track_height, u"text_track_height", true) &&
+              element->getOptionalIntAttribute(scene_width, u"scene_width") &&
+              element->getOptionalIntAttribute(scene_height, u"scene_height") &&
+              element->getOptionalIntAttribute(horizontal_scene_offset, u"horizontal_scene_offset") &&
+              element->getOptionalIntAttribute(vertical_scene_offset, u"vertical_scene_offset");
 
     if (!ALLOWED_3GPPBASEFORMAT_VALUES.contains(ThreeGPPBaseFormat)) {
         element->report().error(u"line %d: in <%s>, attribute 'ThreeGPPBaseFormat' has a reserved value (0x%X)", element->lineNumber(), element->name(), ThreeGPPBaseFormat);
@@ -295,21 +290,20 @@ bool ts::MPEG4TextDescriptor::analyzeXML(DuckContext& duck, const xml::Element* 
         element->report().error(u"line %d: in <%s>, attributes 'scene_width', 'scene_height', 'horizontal_scene_offset' and 'vertical_scene_offset' must all be present or all omitted", element->lineNumber(), element->name());
         ok = false;
     }
-    for (auto it : Compatible_3GPPFormat_children) {
+    for (auto& it : element->children(u"Compatible_3GPPFormat", &ok)) {
         uint8_t value = 0;
-        ok &= it->getIntAttribute(value, u"value", true);
+        ok = it.getIntAttribute(value, u"value", true);
         if (!ALLOWED_3GPPBASEFORMAT_VALUES.contains(value)) {
             element->report().error(u"line %d: in <%s>, element 'Compatible_3GPPFormat' has a reserved value (0x%X)", element->lineNumber(), element->name(), value);
             ok = false;
         }
         Compatible_3GPPFormat.push_back(value);
     }
-    for (auto it : Sample_index_and_description_children) {
+    for (auto it : element->children(u"Sample_index_and_description", &ok))  {
         Sample_index_and_description_type sample;
-        ok = ok &&
-             it->getIntAttribute(sample.sample_index, u"sample_index", true) &&
-             it->getIntAttribute(sample.SampleDescription.textFormat, u"textFormat") &&
-             it->getHexaText(sample.SampleDescription.formatSpecificTextConfig);
+        ok = it.getIntAttribute(sample.sample_index, u"sample_index", true) &&
+             it.getIntAttribute(sample.SampleDescription.textFormat, u"textFormat") &&
+             it.getHexaText(sample.SampleDescription.formatSpecificTextConfig);
         if (ok && !ALLOWED_TEXTFORMAT_VALUES.contains(sample.SampleDescription.textFormat)) {
             element->report().error(u"line %d: in <%s>, attribute 'textFormat' has a reserved value (0x%X)", element->lineNumber(), element->name(), sample.SampleDescription.textFormat);
             ok = false;

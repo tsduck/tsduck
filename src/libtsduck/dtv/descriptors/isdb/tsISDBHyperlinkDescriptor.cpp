@@ -504,73 +504,51 @@ bool ts::ISDBHyperlinkDescriptor::analyzeXML(DuckContext& duck, const xml::Eleme
               element->getHexaTextChild(private_data, u"private_data", false);
 
     if (ok) {
-        ts::xml::ElementVector elems;
         switch (link_destination_type) {
             case LINK_TO_SERVICE: {
-                ServiceTriplet tmp;
-                ok = element->getChildren(elems, u"Service", 1, 1) &&
-                     tmp.fromXML(elems[0]);
-                if (ok) {
-                    link_to_service = tmp;
+                for (auto& child : element->children(u"Service", &ok, 1, 1)) {
+                    ok = link_to_service.emplace().fromXML(&child);
                 }
+                break;
             }
-            break;
             case LINK_TO_EVENT: {
-                EventTriplet t;
-                ok = element->getChildren(elems, u"Event", 1, 1) &&
-                     t.fromXML(elems[0]);
-                if (ok) {
-                    link_to_event = t;
+                for (auto& child : element->children(u"Event", &ok, 1, 1)) {
+                    ok = link_to_event.emplace().fromXML(&child);
                 }
+                break;
             }
-            break;
             case LINK_TO_MODULE: {
-                ModuleTriplet t;
-                ok = element->getChildren(elems, u"Module", 1, 1) &&
-                     t.fromXML(elems[0]);
-                if (ok) {
-                    link_to_module = t;
+                for (auto& child : element->children(u"Module", &ok, 1, 1)) {
+                    ok = link_to_module.emplace().fromXML(&child);
                 }
+                break;
             }
-            break;
             case LINK_TO_CONTENT: {
-                ContentTriplet t;
-                ok = element->getChildren(elems, u"Content", 1, 1) &&
-                     t.fromXML(elems[0]);
-                if (ok) {
-                    link_to_content = t;
+                for (auto& child : element->children(u"Content", &ok, 1, 1)) {
+                    ok = link_to_content.emplace().fromXML(&child);
                 }
+                break;
             }
-            break;
             case LINK_TO_CONTENT_MODULE: {
-                ContentModuleTriplet t;
-                ok = element->getChildren(elems, u"ContentModule", 1, 1) &&
-                     t.fromXML(elems[0]);
-                if (ok) {
-                    link_to_content_module = t;
+                for (auto& child : element->children(u"ContentModule", &ok, 1, 1)) {
+                    ok = link_to_content_module.emplace().fromXML(&child);
                 }
+                break;
             }
-            break;
             case LINK_TO_ERT_NODE: {
-                ERTNode t;
-                ok = element->getChildren(elems, u"ERTNode", 1, 1) &&
-                     t.fromXML(elems[0]);
-                if (ok) {
-                    link_to_ert_node = t;
+                for (auto& child : element->children(u"ERTNode", &ok, 1, 1)) {
+                    ok = link_to_ert_node.emplace().fromXML(&child);
                 }
+                break;
             }
-            break;
             case LINK_TO_STORED_CONTENT: {
-                StoredContent t;
-                ok = element->getChildren(elems, u"StoredContent", 1, 1) &&
-                     t.fromXML(elems[0]);
-                if (ok) {
-                    link_to_stored_content = t;
+                for (auto& child : element->children(u"StoredContent", &ok, 1, 1)) {
+                    ok = link_to_stored_content.emplace().fromXML(&child);
                 }
+                break;
             }
-            break;
             default:
-            break;
+                break;
         }
     }
     return ok;

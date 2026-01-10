@@ -240,49 +240,26 @@ void ts::ISDBComponentGroupDescriptor::ComponentGroup::CAUnit::toXML(xml::Elemen
 
 bool ts::ISDBComponentGroupDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector _components;
-    bool ok = element->getIntAttribute(component_group_type, u"component_group_type", true, 0, 0, 0x7) &&
-              element->getChildren(_components, u"component_group", 0, 16);
-    bool components_ok = true;
-    if (ok) {
-        for (const auto& component : _components) {
-            ComponentGroup newComponent;
-            if (newComponent.fromXML(component)) {
-                components.push_back(newComponent);
-            }
-            else {
-                components_ok = false;
-            }
-        }
-        if (components_ok && !matching_total_bit_rate()) {
-            element->report().error(u"total_bit_rate must be specified for all or none of the component_group in  <%s>, line %d", element->name(), element->lineNumber());
-            components_ok = false;
-        }
+    bool ok = element->getIntAttribute(component_group_type, u"component_group_type", true, 0, 0, 0x7);
+    for (auto& xcomp : element->children(u"component_group", &ok, 0, 16)) {
+        ok = components.emplace_back().fromXML(&xcomp);
     }
-    return ok && components_ok;
+    if (ok && !matching_total_bit_rate()) {
+        element->report().error(u"total_bit_rate must be specified for all or none of the component_group in <%s>, line %d", element->name(), element->lineNumber());
+        ok = false;
+    }
+    return ok;
 }
 
 bool ts::ISDBComponentGroupDescriptor::ComponentGroup::fromXML(const xml::Element* element)
 {
-    xml::ElementVector CAunits;
     bool ok = element->getIntAttribute(component_group_id, u"component_group_id", true, 0, 0, 0xF) &&
-              element->getChildren(CAunits, u"CAUnit", 0, 0xF) &&
               element->getOptionalIntAttribute(total_bit_rate, u"total_bit_rate") &&
               element->getAttribute(explanation, u"explanation", false, u"", 0, 255);
-
-    bool units_ok = true;
-    if (ok) {
-        for (auto unit : CAunits) {
-            CAUnit newCAunit;
-            if (newCAunit.fromXML(unit)) {
-                CA_units.push_back(newCAunit);
-            }
-            else {
-                units_ok = false;
-            }
-        }
+    for (auto& xcu : element->children(u"CAUnit", &ok, 0, 0xF)) {
+        ok = CA_units.emplace_back().fromXML(&xcu);
     }
-    return ok && units_ok;
+    return ok;
 
 }
 

@@ -131,22 +131,15 @@ void ts::EmergencyInformationDescriptor::buildXML(DuckContext& duck, xml::Elemen
 
 bool ts::EmergencyInformationDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector xevent;
-    bool ok = element->getChildren(xevent, u"event");
-
-    for (auto it1 = xevent.begin(); ok && it1 != xevent.end(); ++it1) {
-        Event ev;
-        xml::ElementVector xarea;
-        ok = (*it1)->getIntAttribute(ev.service_id, u"service_id", true) &&
-             (*it1)->getBoolAttribute(ev.started, u"started", true) &&
-             (*it1)->getIntAttribute(ev.signal_level, u"signal_level", true, 0, 0, 1) &&
-             (*it1)->getChildren(xarea, u"area");
-        for (auto it2 = xarea.begin(); ok && it2 != xarea.end(); ++it2) {
-            uint16_t code = 0;
-            ok = (*it2)->getIntAttribute(code, u"code", true, 0, 0, 0x0FFF);
-            ev.area_codes.push_back(code);
+    bool ok = true;
+    for (auto& xevent : element->children(u"event", &ok)) {
+        auto& ev(events.emplace_back());
+        ok = xevent.getIntAttribute(ev.service_id, u"service_id", true) &&
+             xevent.getBoolAttribute(ev.started, u"started", true) &&
+             xevent.getIntAttribute(ev.signal_level, u"signal_level", true, 0, 0, 1);
+        for (auto& xarea : xevent.children(u"area", &ok)) {
+            ok = xarea.getIntAttribute(ev.area_codes.emplace_back(), u"code", true, 0, 0, 0x0FFF);
         }
-        events.push_back(ev);
     }
     return ok;
 }

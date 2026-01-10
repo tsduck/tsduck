@@ -245,47 +245,36 @@ void ts::NetworkDownloadContentDescriptor::buildXML(DuckContext& duck, xml::Elem
 
 bool ts::NetworkDownloadContentDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector xipv4, xipv6, xurl, xtext;
-    bool ok =
-        element->getBoolAttribute(reboot, u"reboot", true) &&
-        element->getBoolAttribute(add_on, u"add_on", true) &&
-        element->getIntAttribute(component_size, u"component_size", true) &&
-        element->getIntAttribute(session_protocol_number, u"session_protocol_number", true) &&
-        element->getIntAttribute(session_id, u"session_id", true) &&
-        element->getIntAttribute(retry, u"retry", true) &&
-        element->getIntAttribute(connect_timer, u"connect_timer", true, 0, 0, 0x00FFFFFF) &&
-        element->getChildren(xipv4, u"ipv4", 0, 1) &&
-        element->getChildren(xipv6, u"ipv6", 0, 1) &&
-        element->getChildren(xurl, u"url", 0, 1) &&
-        compatibility_descriptor.fromXML(duck, element, false) &&
-        element->getHexaTextChild(private_data, u"private_data", false) &&
-        element->getChildren(xtext, u"text_info", 0, 1);
+    bool ok = element->getBoolAttribute(reboot, u"reboot", true) &&
+              element->getBoolAttribute(add_on, u"add_on", true) &&
+              element->getIntAttribute(component_size, u"component_size", true) &&
+              element->getIntAttribute(session_protocol_number, u"session_protocol_number", true) &&
+              element->getIntAttribute(session_id, u"session_id", true) &&
+              element->getIntAttribute(retry, u"retry", true) &&
+              element->getIntAttribute(connect_timer, u"connect_timer", true, 0, 0, 0x00FFFFFF) &&
+              compatibility_descriptor.fromXML(duck, element, false) &&
+              element->getHexaTextChild(private_data, u"private_data", false);
 
-    if (xipv4.size() + xipv6.size() + xurl.size() != 1) {
-        ok = false;
-        element->report().error(u"exactly one of <ipv4>, <ipv6>, <url> required in <%s>, line %d", element->name(), element->lineNumber());
-    }
-    if (ok && !xipv4.empty()) {
+    for (auto& child : element->children(u"ipv4", &ok, 0, 1)) {
         IPAddress address;
         uint16_t port = 0;
-        ok = xipv4[0]->getIPAttribute(address, u"address", true) && xipv4[0]->getIntAttribute(port, u"port", true);
+        ok = child.getIPAttribute(address, u"address", true) && child.getIntAttribute(port, u"port", true);
         ip.emplace(address, port);
-    }
-    else if (ok && !xipv6.empty()) {
-        IPAddress address;
-        uint16_t port = 0;
-        ok = xipv6[0]->getIPAttribute(address, u"address", true) && xipv6[0]->getIntAttribute(port, u"port", true);
-        ip.emplace(address, port);
-    }
-    else if (ok && !xurl.empty()) {
-        UString str;
-        ok = xurl[0]->getAttribute(str, u"url", true);
-        url.emplace(str);
     }
 
-    if (ok && !xtext.empty()) {
-        text_info.emplace();
-        ok = text_info.value().analyzeXML(duck, xtext[0]);
+    for (auto& child : element->children(u"ipv6", &ok, 0, ip.has_value() ? 0 : 1)) {
+        IPAddress address;
+        uint16_t port = 0;
+        ok = child.getIPAttribute(address, u"address", true) && child.getIntAttribute(port, u"port", true);
+        ip.emplace(address, port);
+    }
+
+    for (auto& child : element->children(u"url", &ok, ip.has_value() ? 0 : 1, ip.has_value() ? 0 : 1)) {
+        ok = child.getAttribute(url.emplace(), u"url", true);
+    }
+
+    for (auto& child : element->children(u"text_info", &ok, 0, 1)) {
+        ok = text_info.emplace().analyzeXML(duck, &child);
     }
     return ok;
 }

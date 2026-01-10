@@ -158,27 +158,19 @@ void ts::ISDBCableTSDivisionSystemDescriptor::buildXML(DuckContext& duck, xml::E
 
 bool ts::ISDBCableTSDivisionSystemDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector xcar;
-    bool ok = element->getChildren(xcar, u"carrier");
-
-    for (const auto& xc : xcar) {
-        Carrier car;
-        xml::ElementVector xserv;
-        ok = xc->getIntAttribute(car.frequency, u"frequency", true) &&
-             xc->getIntAttribute(car.frame_type, u"frame_type", true, 0, 0, 0x0F) &&
-             xc->getIntAttribute(car.FEC_outer, u"FEC_outer", true, 0, 0, 0x0F) &&
-             xc->getIntAttribute(car.modulation, u"modulation", true) &&
-             xc->getIntAttribute(car.symbol_rate, u"symbol_rate", true) &&
-             xc->getIntAttribute(car.FEC_inner, u"FEC_inner", false, 0x0F, 0, 0x0F) &&
-             xc->getHexaTextChild(car.future_use_data, u"future_use_data") &&
-             xc->getChildren(xserv, u"service") &&
-             ok;
-        for (const auto& xs : xserv) {
-            uint16_t id = 0;
-            ok = xs->getIntAttribute(id, u"id") && ok;
-            car.service_id.push_back(id);
+    bool ok = true;
+    for (auto& xc : element->children(u"carrier", &ok)) {
+        auto& car(carriers.emplace_back());
+        ok = xc.getIntAttribute(car.frequency, u"frequency", true) &&
+             xc.getIntAttribute(car.frame_type, u"frame_type", true, 0, 0, 0x0F) &&
+             xc.getIntAttribute(car.FEC_outer, u"FEC_outer", true, 0, 0, 0x0F) &&
+             xc.getIntAttribute(car.modulation, u"modulation", true) &&
+             xc.getIntAttribute(car.symbol_rate, u"symbol_rate", true) &&
+             xc.getIntAttribute(car.FEC_inner, u"FEC_inner", false, 0x0F, 0, 0x0F) &&
+             xc.getHexaTextChild(car.future_use_data, u"future_use_data");
+        for (auto& xs : xc.children(u"service", &ok)) {
+            ok = xs.getIntAttribute(car.service_id.emplace_back(), u"id") && ok;
         }
-        carriers.push_back(car);
     }
     return ok;
 }

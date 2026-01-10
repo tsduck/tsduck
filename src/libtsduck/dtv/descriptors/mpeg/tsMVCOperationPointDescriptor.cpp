@@ -192,37 +192,26 @@ void ts::MVCOperationPointDescriptor::buildXML(DuckContext& duck, xml::Element* 
 
 bool ts::MVCOperationPointDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector xlevel;
-    bool ok =
-        element->getIntAttribute(profile_idc, u"profile_idc", true) &&
-        element->getBoolAttribute(constraint_set0, u"constraint_set0", true) &&
-        element->getBoolAttribute(constraint_set1, u"constraint_set1", true) &&
-        element->getBoolAttribute(constraint_set2, u"constraint_set2", true) &&
-        element->getBoolAttribute(constraint_set3, u"constraint_set3", true) &&
-        element->getBoolAttribute(constraint_set4, u"constraint_set4", true) &&
-        element->getBoolAttribute(constraint_set5, u"constraint_set5", true) &&
-        element->getIntAttribute(AVC_compatible_flags, u"AVC_compatible_flags", true, 0, 0, 3) &&
-        element->getChildren(xlevel, u"level");
+    bool ok = element->getIntAttribute(profile_idc, u"profile_idc", true) &&
+              element->getBoolAttribute(constraint_set0, u"constraint_set0", true) &&
+              element->getBoolAttribute(constraint_set1, u"constraint_set1", true) &&
+              element->getBoolAttribute(constraint_set2, u"constraint_set2", true) &&
+              element->getBoolAttribute(constraint_set3, u"constraint_set3", true) &&
+              element->getBoolAttribute(constraint_set4, u"constraint_set4", true) &&
+              element->getBoolAttribute(constraint_set5, u"constraint_set5", true) &&
+              element->getIntAttribute(AVC_compatible_flags, u"AVC_compatible_flags", true, 0, 0, 3);
 
-    for (auto it1 = xlevel.begin(); ok && it1 != xlevel.end(); ++it1) {
-        Level lev;
-        xml::ElementVector xpoint;
-        ok = (*it1)->getIntAttribute(lev.level_idc, u"level_idc", true) &&
-             (*it1)->getChildren(xpoint, u"operation_point");
-        for (auto it2 = xpoint.begin(); ok && it2 != xpoint.end(); ++it2) {
-            Point pt;
-            xml::ElementVector xes;
-            ok = (*it2)->getIntAttribute(pt.applicable_temporal_id, u"applicable_temporal_id", true, 0, 0, 7) &&
-                 (*it2)->getIntAttribute(pt.num_target_output_views, u"num_target_output_views", true) &&
-                 (*it2)->getChildren(xes, u"ES");
-            for (auto it3 = xes.begin(); ok && it3 != xes.end(); ++it3) {
-                uint8_t ref = 0;
-                ok = (*it3)->getIntAttribute(ref, u"reference", true, 0, 0, 0x3F);
-                pt.ES_references.push_back(ref);
+    for (auto& it1 : element->children(u"level", &ok)) {
+        auto& lev(levels.emplace_back());
+        ok = it1.getIntAttribute(lev.level_idc, u"level_idc", true);
+        for (auto& it2 : it1.children(u"operation_point", &ok)) {
+            auto& pt(lev.operation_points.emplace_back());
+            ok = it2.getIntAttribute(pt.applicable_temporal_id, u"applicable_temporal_id", true, 0, 0, 7) &&
+                 it2.getIntAttribute(pt.num_target_output_views, u"num_target_output_views", true);
+            for (auto& it3 : it2.children(u"ES", &ok)) {
+                ok = it3.getIntAttribute(pt.ES_references.emplace_back(), u"reference", true, 0, 0, 0x3F);
             }
-            lev.operation_points.push_back(pt);
         }
-        levels.push_back(lev);
     }
     return ok;
 }

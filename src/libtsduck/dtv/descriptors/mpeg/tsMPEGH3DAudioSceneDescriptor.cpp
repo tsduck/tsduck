@@ -35,7 +35,7 @@ void ts::MPEGH3DAudioSceneDescriptor::clearContent()
     _3dAudioSceneID = 0;
     groupDefinitions.clear();
     switchGroupDefinitions.clear();
-    groupPresetDefintions.clear();
+    groupPresetDefinitions.clear();
 }
 
 ts::MPEGH3DAudioSceneDescriptor::MPEGH3DAudioSceneDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -53,7 +53,7 @@ void ts::MPEGH3DAudioSceneDescriptor::serializePayload(PSIBuffer& buf) const
 {
     buf.putBit(!groupDefinitions.empty());          // groupDefinitionPresent
     buf.putBit(!switchGroupDefinitions.empty());    // switchGroupDefinitionPresent
-    buf.putBit(!groupPresetDefintions.empty());     // groupPresetDefinitionPresent
+    buf.putBit(!groupPresetDefinitions.empty());     // groupPresetDefinitionPresent
     buf.putReserved(5);
     buf.putUInt8(_3dAudioSceneID);
 
@@ -71,10 +71,10 @@ void ts::MPEGH3DAudioSceneDescriptor::serializePayload(PSIBuffer& buf) const
             sg.serialize(buf);
         }
     }
-    if (!groupPresetDefintions.empty()) {
+    if (!groupPresetDefinitions.empty()) {
         buf.putReserved(3);
-        buf.putBits(groupPresetDefintions.size(), 5);
-        for (const auto& pg : groupPresetDefintions) {
+        buf.putBits(groupPresetDefinitions.size(), 5);
+        for (const auto& pg : groupPresetDefinitions) {
             pg.serialize(buf);
         }
     }
@@ -216,7 +216,7 @@ void ts::MPEGH3DAudioSceneDescriptor::deserializePayload(PSIBuffer& buf)
         const uint8_t numPresetGroups = buf.getBits<uint8_t>(5);
         for (auto i = 0; i < numPresetGroups; i++) {
             MH3D_PresetGroup_type newPresetGroup(buf);
-            groupPresetDefintions.push_back(newPresetGroup);
+            groupPresetDefinitions.push_back(newPresetGroup);
         }
     }
     buf.getBytes(reserved);
@@ -481,7 +481,7 @@ void ts::MPEGH3DAudioSceneDescriptor::buildXML(DuckContext& duck, xml::Element* 
     for (const auto& sg : switchGroupDefinitions) {
         sg.toXML(root->addElement(u"SwitchGroup"));
     }
-    for (const auto& pg : groupPresetDefintions) {
+    for (const auto& pg : groupPresetDefinitions) {
         pg.toXML(root->addElement(u"PresetGroup"));
     }
     root->addHexaTextChild(u"reserved", reserved, true);
@@ -561,71 +561,37 @@ void ts::MPEGH3DAudioSceneDescriptor::MH3D_PresetGroup_type::GroupPresetConditio
 
 bool ts::MPEGH3DAudioSceneDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    ts::xml::ElementVector interactivity_groups, switch_groups, preset_groups;
     bool ok = element->getIntAttribute(_3dAudioSceneID, u"sceneID", true) &&
-              element->getChildren(interactivity_groups, u"InteractivityGroup", 0, 127) &&
-              element->getChildren(switch_groups, u"SwitchGroup", 0, 31) &&
-              element->getChildren(preset_groups, u"PresetGroup", 0, 31) &&
               element->getHexaTextChild(reserved, u"reserved", false);
-    bool ig_ok = true;
-    for (size_t i = 0; ok && i < interactivity_groups.size(); ++i) {
-        MH3D_InteractivityInfo_type newIG;
-        if (newIG.fromXML(interactivity_groups[i])) {
-            groupDefinitions.push_back(newIG);
-        }
-        else {
-            ig_ok = false;
-        }
+
+    for (auto& it : element->children(u"InteractivityGroup", &ok, 0, 127)) {
+        ok = groupDefinitions.emplace_back().fromXML(&it);
     }
-    bool sg_ok = true;
-    for (size_t i = 0; ok && i < switch_groups.size(); ++i) {
-        MH3D_SwitchGroup_type newSG;
-        if (newSG.fromXML(switch_groups[i])) {
-            switchGroupDefinitions.push_back(newSG);
-        }
-        else {
-            sg_ok = false;
-        }
+
+    for (auto& it : element->children(u"SwitchGroup", &ok, 0, 31)) {
+        ok = switchGroupDefinitions.emplace_back().fromXML(&it);
     }
-    bool pg_ok = true;
-    for (size_t i = 0; ok && i < preset_groups.size(); ++i) {
-        MH3D_PresetGroup_type newPG;
-        if (newPG.fromXML(preset_groups[i])) {
-            groupPresetDefintions.push_back(newPG);
-        }
-        else {
-            pg_ok = false;
-        }
+
+    for (auto& it : element->children(u"PresetGroup", &ok, 0, 31)) {
+        ok = groupPresetDefinitions.emplace_back().fromXML(&it);
     }
-    return ok && ig_ok && sg_ok && pg_ok;
+    return ok;
 }
 
 
 bool ts::MPEGH3DAudioSceneDescriptor::MH3D_InteractivityInfo_type::fromXML(const xml::Element* element)
 {
-    ts::xml::ElementVector position_interactivity, gain_interactivity;
     bool ok = element->getIntAttribute(mae_groupID, u"groupID", true, 0, 0, 0x1f) &&
               element->getBoolAttribute(mae_allowOnOff, u"allowOnOff", true) &&
               element->getBoolAttribute(mae_defaultOnOff, u"defaultOnOff", true) &&
               element->getIntAttribute(mae_contentKind, u"contentKind", true, 0, 0, 0x0f) &&
-              element->getChildren(position_interactivity, u"PositionInteractivity", 0, 1) &&
-              element->getChildren(gain_interactivity, u"GainInteractivity", 0, 1) &&
               element->getOptionalAttribute(mae_contentLanguage, u"contentLanguage", 0, 3);
-    if (ok) {
-        if (!position_interactivity.empty()) {
-            PositionInteractivityType pos;
-            ok = pos.fromXML(position_interactivity[0]);
-            if (ok) {
-                positionInteractivity = pos;
-            }
-        }
-        if (!gain_interactivity.empty()) {
-            GainInteractivityType gain;
-            ok = gain.fromXML(gain_interactivity[0]) && ok;
-            if (ok) {
-                gainInteractivity = gain;
-            }
-        }
+
+    for (auto& it : element->children(u"PositionInteractivity", &ok, 0, 1)) {
+        ok = positionInteractivity.emplace().fromXML(&it);
+    }
+    for (auto& it : element->children(u"GainInteractivity", &ok, 0, 1)) {
+        ok = gainInteractivity.emplace().fromXML(&it);
     }
     return ok;
 }
@@ -670,21 +636,11 @@ bool ts::MPEGH3DAudioSceneDescriptor::MH3D_SwitchGroup_type::fromXML(const xml::
 
 bool ts::MPEGH3DAudioSceneDescriptor::MH3D_PresetGroup_type::fromXML(const xml::Element* element)
 {
-    ts::xml::ElementVector preset_conditions;
     bool ok = element->getIntAttribute(mae_groupPresetID, u"groupPresetID", true, 0, 0, 0x1f) &&
-              element->getIntAttribute(mae_groupPresetKind, u"groupPresetKind", true, 0, 0, 0x1f) &&
-              element->getChildren(preset_conditions, u"PresetConditions", 1, 16);
+              element->getIntAttribute(mae_groupPresetKind, u"groupPresetKind", true, 0, 0, 0x1f);
 
-    if (ok) {
-        for (size_t i = 0; i < preset_conditions.size(); ++i) {
-            GroupPresetConditions_type newConditions;
-            if (newConditions.fromXML(preset_conditions[i])) {
-                groupPresetConditions.push_back(newConditions);
-            }
-            else {
-                ok = false;
-            }
-        }
+    for (auto& it : element->children(u"PresetConditions", &ok, 1, 16)) {
+        ok = groupPresetConditions.emplace_back().fromXML(&it);
     }
     return ok;
 }
