@@ -46,7 +46,7 @@ namespace ts {
                 //!
                 //! Default constructor.
                 //!
-                PositionInteractivityType() = default;
+                PositionInteractivityType() {}  // using "= default" breaks std::optional::emplace() with clang
                 //!
                 //! Constructor from a binary descriptor
                 //! @param [in] buf A binary descriptor to deserialize.
@@ -74,7 +74,7 @@ namespace ts {
                 //!
                 //! Default constructor.
                 //!
-                GainInteractivityType() = default;
+                GainInteractivityType() {}  // using "= default" breaks std::optional::emplace() with clang
                 //!
                 //! Constructor from a binary descriptor
                 //! @param [in] buf A binary descriptor to deserialize.

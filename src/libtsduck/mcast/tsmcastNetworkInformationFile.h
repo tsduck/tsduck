@@ -46,7 +46,7 @@ namespace ts::mcast {
         class TSDUCKDLL SatellitePosition
         {
         public:
-            SatellitePosition() = default;   //!< Constructor.
+            SatellitePosition() {}           //!< Constructor.
             double  orbital_position = 0.0;  //!< Element \<OrbitalPosition>
             UString west_east {};            //!< Element \<West_East_flag>
         };
@@ -57,7 +57,7 @@ namespace ts::mcast {
         class TSDUCKDLL BootstrapStream
         {
         public:
-            BootstrapStream() = default;  //!< Constructor.
+            BootstrapStream() {}          //!< Constructor.
             UString bootstrap_type {};    //!< Element \<BootstrapType>.
             UString status {};            //!< Element \<Status>.
         };
@@ -68,7 +68,7 @@ namespace ts::mcast {
         class TSDUCKDLL DVBS2_NIPDeliveryParameters
         {
         public:
-            DVBS2_NIPDeliveryParameters() = default;  //!< Constructor.
+            DVBS2_NIPDeliveryParameters() {}          //!< Constructor.
             uint64_t frequency = 0;                   //!< Element \<Frequency> in units of 10 kHz.
             uint64_t symbol_rate = 0;                 //!< Element \<SymbolRate> in units of 1 k sym/s.
             UString  polarization {};                 //!< Element \<Polarization>.
@@ -85,7 +85,7 @@ namespace ts::mcast {
         class TSDUCKDLL DVBS2X_NIPDeliveryParameters
         {
         public:
-            DVBS2X_NIPDeliveryParameters() = default; //!< Constructor.
+            DVBS2X_NIPDeliveryParameters() {}         //!< Constructor.
             UString  receiver_profiles {};            //!< Element \<receiver_profiles>.
             UString  s2x_mode {};                     //!< Element \<S2X_mode>.
             uint64_t frequency = 0;                   //!< Element \<Frequency> in units of 10 kHz.
@@ -102,7 +102,7 @@ namespace ts::mcast {
         class TSDUCKDLL T2_descriptor
         {
         public:
-            T2_descriptor() = default;          //!< Constructor.
+            T2_descriptor() {}                  //!< Constructor.
             UString  siso_miso {};              //!< Element \<SISO_MISO>.
             UString  bandwidth {};              //!< Element \<bandwidth>.
             UString  guard_interval {};         //!< Element \<guard_interval>.
@@ -121,7 +121,7 @@ namespace ts::mcast {
         class TSDUCKDLL DVBT2_NIPDeliveryParameters
         {
         public:
-            DVBT2_NIPDeliveryParameters() = default;  //!< Constructor.
+            DVBT2_NIPDeliveryParameters() {}          //!< Constructor.
             uint8_t  plp_id = 0;                      //!< Element \<plp_id>.
             uint16_t t2_system_id = 0;                //!< Element \<T2_system_id>.
             std::optional<T2_descriptor> t2_desc {};  //!< Element \<long_T2_system_delivery_descriptor>.

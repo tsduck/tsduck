@@ -26,7 +26,7 @@ namespace ts {
         //!
         //! Linkage description type.
         //!
-        class DescriptionType
+        class TSDUCKDLL DescriptionType
         {
             TS_DEFAULT_COPY_MOVE(DescriptionType);
         public:

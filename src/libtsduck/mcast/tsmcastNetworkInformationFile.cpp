@@ -60,7 +60,7 @@ bool ts::mcast::NetworkInformationFile::BroadcastNetwork::parseXML(const xml::El
     // At most one <SatellitePosition>.
     satellite_position.reset();
     for (auto& e : element->children(u"SatellitePosition", &ok, 0, 1)) {
-        emplace(satellite_position);
+        satellite_position.emplace();
         ok = e.getFloatChild(satellite_position->orbital_position, u"OrbitalPosition", strict, 0.0, 0.0, 180.0) &&
              e.getTextChild(satellite_position->west_east, u"West_East_flag", true, strict);
     }
@@ -77,14 +77,14 @@ bool ts::mcast::NetworkInformationFile::BroadcastNetwork::parseXML(const xml::El
 
         // At most one <BootstrapStream>.
         for (auto& bs : e.children(u"BootstrapStream", &ok, 0, 1)) {
-            emplace(st.bootstrap_stream);
+            st.bootstrap_stream.emplace();
             ok = bs.getTextChild(st.bootstrap_stream->bootstrap_type, u"BootstrapType", true, strict) &&
                  bs.getTextChild(st.bootstrap_stream->status, u"Status", true, strict);
         }
 
         // Exactly one of <DVBS2_NIPDeliveryParameters>, <DVBS2X_NIPDeliveryParameters>, <DVBT2_NIPDeliveryParameters>, <OtherDeliveryParameters>.
         for (auto& dp : e.children(u"DVBS2_NIPDeliveryParameters", &ok, 0, 1)) {
-            emplace(st.dvbs2);
+            st.dvbs2.emplace();
             ok = dp.getIntChild(st.dvbs2->frequency, u"Frequency", strict) &&
                  dp.getIntChild(st.dvbs2->symbol_rate, u"SymbolRate", strict) &&
                  dp.getIntChild(st.dvbs2->scrambling_sequence_index, u"scrambling_sequence_index", false, 0, 0, 0x3FFFF) &&
@@ -95,7 +95,7 @@ bool ts::mcast::NetworkInformationFile::BroadcastNetwork::parseXML(const xml::El
                  dp.getTextChild(st.dvbs2->fec, u"FEC", true, strict);
         }
         for (auto& dp : e.children(u"DVBS2X_NIPDeliveryParameters", &ok, 0, 1)) {
-            emplace(st.dvbs2x);
+            st.dvbs2x.emplace();
             ok = dp.getTextChild(st.dvbs2x->receiver_profiles, u"receiver_profiles", true, strict) &&
                  dp.getTextChild(st.dvbs2x->s2x_mode, u"S2X_mode", true, strict) &&
                  dp.getIntChild(st.dvbs2x->frequency, u"Frequency", strict) &&
@@ -107,11 +107,11 @@ bool ts::mcast::NetworkInformationFile::BroadcastNetwork::parseXML(const xml::El
 
         }
         for (auto& dp : e.children(u"DVBT2_NIPDeliveryParameters", &ok, 0, 1)) {
-            emplace(st.dvbt2);
+            st.dvbt2.emplace();
             ok = dp.getIntChild(st.dvbt2->plp_id, u"plp_id", strict) &&
                  dp.getIntChild(st.dvbt2->t2_system_id, u"T2_system_id", strict);
             for (auto& xt2 : e.children(u"long_T2_system_delivery_descriptor", &ok, 0, 1)) {
-                emplace(st.dvbt2->t2_desc);
+                st.dvbt2->t2_desc.emplace();
                 auto& t2(st.dvbt2->t2_desc.value());
                 ok = xt2.getTextChild(t2.siso_miso, u"SISO_MISO", true, strict) &&
                      xt2.getTextChild(t2.bandwidth, u"bandwidth", true, strict) &&

@@ -507,43 +507,43 @@ bool ts::ISDBHyperlinkDescriptor::analyzeXML(DuckContext& duck, const xml::Eleme
         switch (link_destination_type) {
             case LINK_TO_SERVICE: {
                 for (auto& child : element->children(u"Service", &ok, 1, 1)) {
-                    ok = emplace(link_to_service).fromXML(&child);
+                    ok = link_to_service.emplace().fromXML(&child);
                 }
                 break;
             }
             case LINK_TO_EVENT: {
                 for (auto& child : element->children(u"Event", &ok, 1, 1)) {
-                    ok = emplace(link_to_event).fromXML(&child);
+                    ok = link_to_event.emplace().fromXML(&child);
                 }
                 break;
             }
             case LINK_TO_MODULE: {
                 for (auto& child : element->children(u"Module", &ok, 1, 1)) {
-                    ok = emplace(link_to_module).fromXML(&child);
+                    ok = link_to_module.emplace().fromXML(&child);
                 }
                 break;
             }
             case LINK_TO_CONTENT: {
                 for (auto& child : element->children(u"Content", &ok, 1, 1)) {
-                    ok = emplace(link_to_content).fromXML(&child);
+                    ok = link_to_content.emplace().fromXML(&child);
                 }
                 break;
             }
             case LINK_TO_CONTENT_MODULE: {
                 for (auto& child : element->children(u"ContentModule", &ok, 1, 1)) {
-                    ok = emplace(link_to_content_module).fromXML(&child);
+                    ok = link_to_content_module.emplace().fromXML(&child);
                 }
                 break;
             }
             case LINK_TO_ERT_NODE: {
                 for (auto& child : element->children(u"ERTNode", &ok, 1, 1)) {
-                    ok = emplace(link_to_ert_node).fromXML(&child);
+                    ok = link_to_ert_node.emplace().fromXML(&child);
                 }
                 break;
             }
             case LINK_TO_STORED_CONTENT: {
                 for (auto& child : element->children(u"StoredContent", &ok, 1, 1)) {
-                    ok = emplace(link_to_stored_content).fromXML(&child);
+                    ok = link_to_stored_content.emplace().fromXML(&child);
                 }
                 break;
             }
