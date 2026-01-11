@@ -1209,6 +1209,7 @@ namespace ts {
     //! @ingroup cpp
     //! @tparam T The type of the optional object.
     //! @param [in,out] opt The optinal object to initialize.
+    //! @return A reference to the value of @a opt.
     //!
     template <class T>
     inline T& emplace(std::optional<T>& opt)
