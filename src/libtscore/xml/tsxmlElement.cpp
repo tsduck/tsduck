@@ -719,23 +719,36 @@ bool ts::xml::Element::getBase64Attribute(ByteBlock& data, const UString& name, 
 bool ts::xml::Element::getBoolAttribute(bool& value, const UString& name, bool required, bool def_value) const
 {
     UString str;
-    if (!getAttribute(str, name, required)) {
-        return false;
-    }
-    else if (!required && str.empty()) {
+    if (!getAttribute(str, name, required) || str.empty()) {
         value = def_value;
-        return true;
+        return !required;
     }
-    else if (str.similar(u"true") || str.similar(u"yes") || str.similar(u"1")) {
-        value = true;
-        return true;
-    }
-    else if (str.similar(u"false") || str.similar(u"no") || str.similar(u"0")) {
-        value = false;
+    else if (str.toBool(value)) {
         return true;
     }
     else {
         report().error(u"'%s' is not a valid boolean value for attribute '%s' in <%s>, line %d", str, name, this->name(), lineNumber());
+        return false;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Get a boolean value from a child of an XML element.
+//----------------------------------------------------------------------------
+
+bool ts::xml::Element::getBoolChild(bool& value, const UString& name, bool required, bool def_value) const
+{
+    UString str;
+    if (!getTextChild(str, name, true, required) || str.empty()) {
+        value = def_value;
+        return !required;
+    }
+    else if (str.toBool(value)) {
+        return true;
+    }
+    else {
+        report().error(u"'%s' is not a valid boolean value in <%s> in <%s>, line %d", str, name, this->name(), lineNumber());
         return false;
     }
 }

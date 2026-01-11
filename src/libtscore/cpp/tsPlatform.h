@@ -1202,6 +1202,24 @@ namespace ts {
             opt = value;
         }
     }
+
+    //!
+    //! Replacement for std::optional::emplace() without parameters.
+    //! The standard version of emplace() is broken with clang 20.
+    //! @ingroup cpp
+    //! @tparam T The type of the optional object.
+    //! @param [in,out] opt The optinal object to initialize.
+    //!
+    template <class T>
+    inline T& emplace(std::optional<T>& opt)
+    {
+#if defined(TS_LLVM)
+        opt = T();
+        return opt.value();
+#else
+        return opt.emplace();
+#endif
+    }
 }
 
 

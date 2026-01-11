@@ -165,19 +165,19 @@ bool ts::mcast::LCTHeader::deserialize(const uint8_t*& addr, size_t& size, FileT
                 break;
             case HET_NACI:
                 naci.emplace();
-                if (!naci.value().deserialize(headdr, hel)) {
+                if (!naci->deserialize(headdr, hel)) {
                     naci.reset();
                 }
                 break;
             case HET_FDT:
                 fdt.emplace();
-                if (!fdt.value().deserialize(headdr, hel)) {
+                if (!fdt->deserialize(headdr, hel)) {
                     fdt.reset();
                 }
                 break;
             case HET_FTI:
                 fti.emplace();
-                if (!fti.value().deserialize(fec_encoding_id, headdr, hel)) {
+                if (!fti->deserialize(fec_encoding_id, headdr, hel)) {
                     fti.reset();
                 }
                 break;

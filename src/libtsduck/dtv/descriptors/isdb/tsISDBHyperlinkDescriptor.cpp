@@ -114,37 +114,37 @@ void ts::ISDBHyperlinkDescriptor::serializePayload(PSIBuffer& buf) const
     switch (link_destination_type) {
         case LINK_TO_SERVICE:
             if (link_to_service.has_value()) {
-                link_to_service.value().serialize(buf);
+                link_to_service->serialize(buf);
             }
             break;
         case LINK_TO_EVENT:
             if (link_to_event.has_value()) {
-                link_to_event.value().serialize(buf);
+                link_to_event->serialize(buf);
             }
             break;
         case LINK_TO_MODULE:
             if (link_to_module.has_value()) {
-                link_to_module.value().serialize(buf);
+                link_to_module->serialize(buf);
             }
             break;
         case LINK_TO_CONTENT:
             if (link_to_content.has_value()) {
-                link_to_content.value().serialize(buf);
+                link_to_content->serialize(buf);
             }
             break;
         case LINK_TO_CONTENT_MODULE:
             if (link_to_content_module.has_value()) {
-                link_to_content_module.value().serialize(buf);
+                link_to_content_module->serialize(buf);
             }
             break;
         case LINK_TO_ERT_NODE:
             if (link_to_ert_node.has_value()) {
-                link_to_ert_node.value().serialize(buf);
+                link_to_ert_node->serialize(buf);
             }
             break;
         case LINK_TO_STORED_CONTENT:
             if (link_to_stored_content.has_value()) {
-                link_to_stored_content.value().serialize(buf);
+                link_to_stored_content->serialize(buf);
             }
             break;
         default:
@@ -401,43 +401,43 @@ void ts::ISDBHyperlinkDescriptor::buildXML(DuckContext& duck, xml::Element* root
     switch (link_destination_type) {
         case LINK_TO_SERVICE: {
             if (link_to_service.has_value()) {
-                link_to_service.value().toXML(root->addElement(u"Service"));
+                link_to_service->toXML(root->addElement(u"Service"));
             }
         }
         break;
         case LINK_TO_EVENT: {
             if (link_to_event.has_value()) {
-                link_to_event.value().toXML(root->addElement(u"Event"));
+                link_to_event->toXML(root->addElement(u"Event"));
             }
         }
         break;
         case LINK_TO_MODULE: {
             if (link_to_module.has_value()) {
-                link_to_module.value().toXML(root->addElement(u"Module"));
+                link_to_module->toXML(root->addElement(u"Module"));
             }
         }
         break;
         case LINK_TO_CONTENT: {
             if (link_to_content.has_value()) {
-                link_to_content.value().toXML(root->addElement(u"Content"));
+                link_to_content->toXML(root->addElement(u"Content"));
             }
         }
         break;
         case LINK_TO_CONTENT_MODULE: {
             if (link_to_content_module.has_value()) {
-                link_to_content_module.value().toXML(root->addElement(u"ContentModule"));
+                link_to_content_module->toXML(root->addElement(u"ContentModule"));
             }
         }
         break;
         case LINK_TO_ERT_NODE: {
             if (link_to_ert_node.has_value()) {
-                link_to_ert_node.value().toXML(root->addElement(u"ERTNode"));
+                link_to_ert_node->toXML(root->addElement(u"ERTNode"));
             }
         }
         break;
         case LINK_TO_STORED_CONTENT: {
             if (link_to_stored_content.has_value()) {
-                link_to_stored_content.value().toXML(root->addElement(u"StoredContent"));
+                link_to_stored_content->toXML(root->addElement(u"StoredContent"));
             }
         }
         break;
@@ -507,50 +507,43 @@ bool ts::ISDBHyperlinkDescriptor::analyzeXML(DuckContext& duck, const xml::Eleme
         switch (link_destination_type) {
             case LINK_TO_SERVICE: {
                 for (auto& child : element->children(u"Service", &ok, 1, 1)) {
-                    link_to_service = ServiceTriplet(); // emplace() not working with clang 20
-                    ok = link_to_service.value().fromXML(&child);
+                    ok = emplace(link_to_service).fromXML(&child);
                 }
                 break;
             }
             case LINK_TO_EVENT: {
                 for (auto& child : element->children(u"Event", &ok, 1, 1)) {
-                    link_to_event = EventTriplet();  // emplace() not working with clang 20
-                    ok = link_to_event.value().fromXML(&child);
+                    ok = emplace(link_to_event).fromXML(&child);
                 }
                 break;
             }
             case LINK_TO_MODULE: {
                 for (auto& child : element->children(u"Module", &ok, 1, 1)) {
-                    link_to_module = ModuleTriplet();  // emplace() not working with clang 20
-                    ok = link_to_module.value().fromXML(&child);
+                    ok = emplace(link_to_module).fromXML(&child);
                 }
                 break;
             }
             case LINK_TO_CONTENT: {
                 for (auto& child : element->children(u"Content", &ok, 1, 1)) {
-                    link_to_content = ContentTriplet();  // emplace() not working with clang 20
-                    ok = link_to_content.value().fromXML(&child);
+                    ok = emplace(link_to_content).fromXML(&child);
                 }
                 break;
             }
             case LINK_TO_CONTENT_MODULE: {
                 for (auto& child : element->children(u"ContentModule", &ok, 1, 1)) {
-                    link_to_content_module = ContentModuleTriplet();  // emplace() not working with clang 20
-                    ok = link_to_content_module.value().fromXML(&child);
+                    ok = emplace(link_to_content_module).fromXML(&child);
                 }
                 break;
             }
             case LINK_TO_ERT_NODE: {
                 for (auto& child : element->children(u"ERTNode", &ok, 1, 1)) {
-                    link_to_ert_node = ERTNode();  // emplace() not working with clang 20
-                    ok = link_to_ert_node.value().fromXML(&child);
+                    ok = emplace(link_to_ert_node).fromXML(&child);
                 }
                 break;
             }
             case LINK_TO_STORED_CONTENT: {
                 for (auto& child : element->children(u"StoredContent", &ok, 1, 1)) {
-                    link_to_stored_content = StoredContent();  // emplace() not working with clang 20
-                    ok = link_to_stored_content.value().fromXML(&child);
+                    ok = emplace(link_to_stored_content).fromXML(&child);
                 }
                 break;
             }

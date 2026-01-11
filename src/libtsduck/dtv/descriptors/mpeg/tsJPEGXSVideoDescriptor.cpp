@@ -100,7 +100,7 @@ void ts::JPEGXSVideoDescriptor::serializePayload(PSIBuffer& buf) const
     buf.putBit(mdm.has_value());
     buf.putBits(0x00, 6);
     if (mdm.has_value()) {
-        mdm.value().serialize(buf);
+        mdm->serialize(buf);
     }
     buf.putBytes(private_data);
 }
@@ -241,7 +241,7 @@ void ts::JPEGXSVideoDescriptor::buildXML(DuckContext& duck, xml::Element* root) 
     root->setBoolAttribute(u"still_mode", still_mode);
 
     if (mdm.has_value()) {
-        mdm.value().toXML(root->addElement(u"mdm"));
+        mdm->toXML(root->addElement(u"mdm"));
     }
     root->addHexaTextChild(u"private_data", private_data, true);
 }

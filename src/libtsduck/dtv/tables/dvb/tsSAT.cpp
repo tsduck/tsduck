@@ -234,10 +234,10 @@ void ts::SAT::satellite_position_v2_info_type::serialize(PSIBuffer& buf) const
     buf.putReservedZero(7);
     buf.putBits(position_system, 1);
     if ((position_system == POSITION_SYSTEM_GEOSTATIONARY) && geostationaryPosition.has_value()) {
-        geostationaryPosition.value().serialize(buf);
+        geostationaryPosition->serialize(buf);
     }
     else if ((position_system == POSITION_SYSTEM_EARTH_ORBITING) && earthOrbiting.has_value()) {
-        earthOrbiting.value().serialize(buf);
+        earthOrbiting->serialize(buf);
     }
 }
 
@@ -260,10 +260,10 @@ void ts::SAT::satellite_position_v2_info_type::toXML(xml::Element* root)
 {
     root->setIntAttribute(u"satellite_id", satellite_id, true);
     if ((position_system == POSITION_SYSTEM_GEOSTATIONARY) && geostationaryPosition.has_value()) {
-        geostationaryPosition.value().toXML(root->addElement(u"geostationary"));
+        geostationaryPosition->toXML(root->addElement(u"geostationary"));
     }
     else if ((position_system == POSITION_SYSTEM_EARTH_ORBITING) && earthOrbiting.has_value()) {
-        earthOrbiting.value().toXML(root->addElement(u"earth_orbiting"));
+        earthOrbiting->toXML(root->addElement(u"earth_orbiting"));
     }
 }
 
@@ -672,15 +672,15 @@ uint16_t ts::SAT::beam_hopping_time_plan_info_type::plan_length(void) const
     uint16_t plan_length = 7 + time_of_application.serialized_length() + cycle_duration.serialized_length();
     switch (time_plan_mode()) {
     case HOP_1_TRANSMISSION:
-        plan_length += dwell_duration.value().serialized_length() + on_time.value().serialized_length();
+        plan_length += dwell_duration->serialized_length() + on_time->serialized_length();
         break;
     case HOP_MULTI_TRANSMISSION:
         plan_length += 4
             + ((uint16_t(slot_transmission_on.size()) + padding_size_K(slot_transmission_on.size())) / 8);
         break;
     case HOP_GRID:
-        plan_length += grid_size.value().serialized_length() + revisit_duration.value().serialized_length()
-            + sleep_time.value().serialized_length() + sleep_duration.value().serialized_length();
+        plan_length += grid_size->serialized_length() + revisit_duration->serialized_length()
+            + sleep_time->serialized_length() + sleep_duration->serialized_length();
         break;
     default:
         plan_length = 0;
@@ -716,8 +716,8 @@ void ts::SAT::beam_hopping_time_plan_info_type::serialize(PSIBuffer& buf) const
     time_of_application.serialize(buf);
     cycle_duration.serialize(buf);
     if (_time_plan_mode == HOP_1_TRANSMISSION) {
-        dwell_duration.value().serialize(buf);
-        on_time.value().serialize(buf);
+        dwell_duration->serialize(buf);
+        on_time->serialize(buf);
     }
     else if (_time_plan_mode == HOP_MULTI_TRANSMISSION) {
         buf.putReservedZero(1);
@@ -730,10 +730,10 @@ void ts::SAT::beam_hopping_time_plan_info_type::serialize(PSIBuffer& buf) const
         buf.putReservedZero(padding_size_K(slot_transmission_on.size()));
     }
     else if (_time_plan_mode == HOP_GRID) {
-        grid_size.value().serialize(buf);
-        revisit_duration.value().serialize(buf);
-        sleep_time.value().serialize(buf);
-        sleep_duration.value().serialize(buf);
+        grid_size->serialize(buf);
+        revisit_duration->serialize(buf);
+        sleep_time->serialize(buf);
+        sleep_duration->serialize(buf);
     }
 }
 
@@ -782,8 +782,8 @@ void ts::SAT::beam_hopping_time_plan_info_type::toXML(xml::Element* root)
 
     if (time_plan_mode() == HOP_1_TRANSMISSION) {
         xml::Element* e = root->addElement(u"time_plan_mode_0");
-        dwell_duration.value().toXML(e, u"dwell_duration");
-        on_time.value().toXML(e, u"on_time");
+        dwell_duration->toXML(e, u"dwell_duration");
+        on_time->toXML(e, u"on_time");
     }
     else if (time_plan_mode() == HOP_MULTI_TRANSMISSION) {
         xml::Element* e = root->addElement(u"time_plan_mode_1");
@@ -794,10 +794,10 @@ void ts::SAT::beam_hopping_time_plan_info_type::toXML(xml::Element* root)
     }
     else if (time_plan_mode() == HOP_GRID) {
         xml::Element* e = root->addElement(u"time_plan_mode_2");
-        grid_size.value().toXML(e, u"grid_size");
-        revisit_duration.value().toXML(e, u"revisit_duration");
-        sleep_time.value().toXML(e, u"sleep_time");
-        sleep_duration.value().toXML(e, u"sleep_duration");
+        grid_size->toXML(e, u"grid_size");
+        revisit_duration->toXML(e, u"revisit_duration");
+        sleep_time->toXML(e, u"sleep_time");
+        sleep_duration->toXML(e, u"sleep_duration");
     }
 }
 
@@ -934,10 +934,10 @@ void ts::SAT::satellite_position_v3_info_type::v3_satellite_type::v3_satellite_m
     buf.putBits(interpolation_type.value_or(0), 3);
     buf.putBits(interpolation_degree.value_or(0), 3);
     if (usable_start_time.has_value()) {
-        usable_start_time.value().serialize(buf);
+        usable_start_time->serialize(buf);
     }
     if (usable_stop_time.has_value()) {
-        usable_stop_time.value().serialize(buf);
+        usable_stop_time->serialize(buf);
     }
 }
 
@@ -979,10 +979,10 @@ void ts::SAT::satellite_position_v3_info_type::v3_satellite_type::v3_satellite_m
         root->setIntAttribute(u"interpolation_degree", interpolation_degree.value());
     }
     if (usable_start_time.has_value()) {
-        usable_start_time.value().toXML(root->addElement(u"usable_start_time"));
+        usable_start_time->toXML(root->addElement(u"usable_start_time"));
     }
     if (usable_stop_time.has_value()) {
-        usable_stop_time.value().toXML(root->addElement(u"usable_stop_time"));
+        usable_stop_time->toXML(root->addElement(u"usable_stop_time"));
     }
 }
 
@@ -1171,19 +1171,19 @@ void ts::SAT::satellite_position_v3_info_type::v3_satellite_type::serialize(PSIB
     buf.putUInt24(satellite_id);
     buf.putBits(0x00, 3);
     buf.putBit(metadata.has_value());
-    buf.putBit(metadata.has_value() && metadata.value().usable_start_time.has_value());  // usable_start_time_flag
-    buf.putBit(metadata.has_value() && metadata.value().usable_stop_time.has_value());  // usable_stop_time_flag
+    buf.putBit(metadata.has_value() && metadata->usable_start_time.has_value());  // usable_start_time_flag
+    buf.putBit(metadata.has_value() && metadata->usable_stop_time.has_value());  // usable_stop_time_flag
     buf.putBit(hasEphemerisAcceleration2());  // ephemeris_accel_flag
     buf.putBit(covariance.has_value());  //covariance_flag
     if (metadata.has_value()) {
-        metadata.value().serialize(buf);
+        metadata->serialize(buf);
     }
     buf.putBits(ephemeris_data.size(), 16);
     for (const auto& it : ephemeris_data) {
         it.serialize(buf);
     }
     if (covariance.has_value()) {
-        covariance.value().serialize(buf);
+        covariance->serialize(buf);
     }
 }
 
@@ -1215,13 +1215,13 @@ void ts::SAT::satellite_position_v3_info_type::v3_satellite_type::toXML(xml::Ele
 {
     root->setIntAttribute(u"satellite_id", satellite_id, true);
     if (metadata.has_value()) {
-        metadata.value().toXML(root);
+        metadata->toXML(root);
     }
     for (auto it : ephemeris_data) {
         it.toXML(root->addElement(u"ephemeris_data"));
     }
     if (covariance.has_value()) {
-        covariance.value().toXML(root->addElement(u"covariance"));
+        covariance->toXML(root->addElement(u"covariance"));
     }
 }
 
@@ -1445,7 +1445,7 @@ void ts::SAT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
             break;
         case SATELLITE_POSITION_V3_INFO:
             if (satellite_position_v3_info.has_value()) {
-                satellite_position_v3_info.value().serialize(buf);
+                satellite_position_v3_info->serialize(buf);
             }
             break;
         default:

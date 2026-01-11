@@ -163,7 +163,7 @@ ts::duck::LogSection::LogSection(const tlv::MessageFactory& fact) :
     }
     if (1 == fact.count(Tags::PRM_TIMESTAMP)) {
         timestamp = SimulCryptDate();
-        timestamp.value().get(fact, Tags::PRM_TIMESTAMP);
+        timestamp->get(fact, Tags::PRM_TIMESTAMP);
     }
     assert(1 == fact.count(Tags::PRM_SECTION));
     ByteBlock bb;
@@ -177,7 +177,7 @@ void ts::duck::LogSection::serializeParameters(tlv::Serializer& fact) const
         fact.put(Tags::PRM_PID, pid.value());
     }
     if (timestamp.has_value()) {
-        timestamp.value().put(fact, Tags::PRM_TIMESTAMP);
+        timestamp->put(fact, Tags::PRM_TIMESTAMP);
     }
     if (section != nullptr) {
         fact.put(Tags::PRM_SECTION, section->content(), section->size());
@@ -206,7 +206,7 @@ ts::duck::LogTable::LogTable(const tlv::MessageFactory& fact) :
     }
     if (1 == fact.count(Tags::PRM_TIMESTAMP)) {
         timestamp = SimulCryptDate();
-        timestamp.value().get(fact, Tags::PRM_TIMESTAMP);
+        timestamp->get(fact, Tags::PRM_TIMESTAMP);
     }
     std::vector<tlv::MessageFactory::Parameter> params;
     fact.get(Tags::PRM_SECTION, params);
@@ -221,7 +221,7 @@ void ts::duck::LogTable::serializeParameters(tlv::Serializer& fact) const
         fact.put(Tags::PRM_PID, pid.value());
     }
     if (timestamp.has_value()) {
-        timestamp.value().put(fact, Tags::PRM_TIMESTAMP);
+        timestamp->put(fact, Tags::PRM_TIMESTAMP);
     }
     for (size_t i = 0; i < sections.size(); ++i) {
         if (sections[i] != nullptr) {

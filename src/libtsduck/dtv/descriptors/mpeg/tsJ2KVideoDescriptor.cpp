@@ -122,13 +122,13 @@ void ts::J2KVideoDescriptor::serializePayload(PSIBuffer& buf) const
         buf.putBit(video_full_range_flag.value_or(0));
         buf.putBits(0xFF, 7);
         if (stripe.has_value()) {
-            stripe.value().serialize(buf);
+            stripe->serialize(buf);
         }
         if (block.has_value()) {
-            block.value().serialize(buf);
+            block->serialize(buf);
         }
         if (mdm.has_value()) {
-            mdm.value().serialize(buf);
+            mdm->serialize(buf);
         }
     }
     buf.putBytes(private_data);
@@ -323,13 +323,13 @@ void ts::J2KVideoDescriptor::buildXML(DuckContext& duck, xml::Element* root) con
         root->setIntAttribute(u"matrix_coefficients", matrix_coefficients.value_or(0));
         root->setBoolAttribute(u"video_full_range_flag", video_full_range_flag.value_or(0));
         if (stripe.has_value()) {
-            stripe.value().toXML(root->addElement(u"stripe"));
+            stripe->toXML(root->addElement(u"stripe"));
         }
         if (block.has_value()) {
-            block.value().toXML(root->addElement(u"block"));
+            block->toXML(root->addElement(u"block"));
         }
         if (mdm.has_value()) {
-            mdm.value().toXML(root->addElement(u"mdm"));
+            mdm->toXML(root->addElement(u"mdm"));
         }
     }
     root->addHexaTextChild(u"private_data", private_data, true);

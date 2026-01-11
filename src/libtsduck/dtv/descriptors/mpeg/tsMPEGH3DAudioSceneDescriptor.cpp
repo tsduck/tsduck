@@ -94,10 +94,10 @@ void ts::MPEGH3DAudioSceneDescriptor::MH3D_InteractivityInfo_type::serialize(PSI
     buf.putReserved(4);
     buf.putBits(mae_contentKind, 4);
     if (positionInteractivity.has_value()) {
-        positionInteractivity.value().serialize(buf);
+        positionInteractivity->serialize(buf);
     }
     if (gainInteractivity.has_value()) {
-        gainInteractivity.value().serialize(buf);
+        gainInteractivity->serialize(buf);
     }
     if (mae_contentLanguage.has_value()) {
          buf.putLanguageCode(mae_contentLanguage.value());
@@ -497,10 +497,10 @@ void ts::MPEGH3DAudioSceneDescriptor::MH3D_InteractivityInfo_type::toXML(xml::El
         root->setAttribute(u"contentLanguage", mae_contentLanguage.value());
 
     if (positionInteractivity.has_value()) {
-        positionInteractivity.value().toXML(root->addElement(u"PositionInteractivity"));
+        positionInteractivity->toXML(root->addElement(u"PositionInteractivity"));
     }
     if (gainInteractivity.has_value()) {
-        gainInteractivity.value().toXML(root->addElement(u"GainInteractivity"));
+        gainInteractivity->toXML(root->addElement(u"GainInteractivity"));
     }
 }
 
@@ -588,12 +588,10 @@ bool ts::MPEGH3DAudioSceneDescriptor::MH3D_InteractivityInfo_type::fromXML(const
               element->getOptionalAttribute(mae_contentLanguage, u"contentLanguage", 0, 3);
 
     for (auto& it : element->children(u"PositionInteractivity", &ok, 0, 1)) {
-        positionInteractivity = PositionInteractivityType();  // emplace() not working with clang 20
-        ok = positionInteractivity.value().fromXML(&it);
+        ok = emplace(positionInteractivity).fromXML(&it);
     }
     for (auto& it : element->children(u"GainInteractivity", &ok, 0, 1)) {
-        gainInteractivity = GainInteractivityType();  // emplace() not working with clang 20
-        ok = gainInteractivity.value().fromXML(&it);
+        ok = emplace(gainInteractivity).fromXML(&it);
     }
     return ok;
 }
@@ -658,7 +656,8 @@ bool ts::MPEGH3DAudioSceneDescriptor::MH3D_PresetGroup_type::GroupPresetConditio
          hasPresetDistFactor = element->hasAttribute(u"groupPresetDistFactor");
 
     if (!(hasPresetDisableGainInteractivity || hasPresetDisablePositionInteractivity || hasPresetGain ||
-          hasPresetAzOffset || hasPresetElOffset || hasPresetDistFactor)) {
+          hasPresetAzOffset || hasPresetElOffset || hasPresetDistFactor))
+    {
         // i.e. groupPresetConditionOnOff == false
         return ok;
     }

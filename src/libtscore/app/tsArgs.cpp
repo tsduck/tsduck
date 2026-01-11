@@ -877,7 +877,7 @@ void ts::Args::getTristateValue(Tristate& value, const UChar* name, size_t index
         // Option present without value, meaning true.
         value = Tristate::True;
     }
-    else if (!opt.values[index].string.value().toTristate(value)) {
+    else if (!opt.values[index].string->toTristate(value)) {
         // Value present but not a valid tristate value. Should not occur if the
         // option was declared using TRISTATE type. So, this must be some string
         // option and we cannot decide the Tristate value.
@@ -907,7 +907,7 @@ void ts::Args::getHexaValue(ByteBlock& value, const UChar* name, const ByteBlock
         value = def_value;
     }
     else {
-        opt.values[index].string.value().hexaDecode(value);
+        opt.values[index].string->hexaDecode(value);
     }
 }
 
@@ -1250,7 +1250,7 @@ bool ts::Args::validateParameter(IOption& opt, const std::optional<UString>& val
     }
     else if (opt.type == TRISTATE) {
         Tristate t;
-        if (!val.value().toTristate(t)) {
+        if (!val->toTristate(t)) {
             error(u"invalid value %s for %s, use one of %s", val.value(), opt.display(), UString::TristateNamesList());
             return false;
         }
@@ -1271,19 +1271,19 @@ bool ts::Args::validateParameter(IOption& opt, const std::optional<UString>& val
         }
     }
     else if (opt.type == STRING) {
-        if (val.value().size() < size_t(opt.min_value)) {
-            error(u"invalid size %d for %s, must be at least %d characters", val.value().size(), opt.display(), opt.min_value);
+        if (val->size() < size_t(opt.min_value)) {
+            error(u"invalid size %d for %s, must be at least %d characters", val->size(), opt.display(), opt.min_value);
             return false;
         }
-        if (val.value().size() > size_t(opt.max_value)) {
-            error(u"invalid size %d for %s, must be at most %d characters", val.value().size(), opt.display(), opt.max_value);
+        if (val->size() > size_t(opt.max_value)) {
+            error(u"invalid size %d for %s, must be at most %d characters", val->size(), opt.display(), opt.max_value);
             return false;
         }
     }
     else if (opt.type == HEXADATA) {
         // We keep the arg as a string value after validation and will parse it again when the value is queried later.
         ByteBlock data;
-        if (!val.value().hexaDecode(data)) {
+        if (!val->hexaDecode(data)) {
             error(u"invalid hexadecimal value '%s' for %s", val.value(), opt.display());
             return false;
         }
@@ -1340,14 +1340,14 @@ bool ts::Args::validateParameter(IOption& opt, const std::optional<UString>& val
         arg.int_base = i;
         arg.int_count = 1;
     }
-    else if (val.value().toInteger(arg.int_base, THOUSANDS_SEPARATORS, opt.decimals, DECIMAL_POINTS)) {
+    else if (val->toInteger(arg.int_base, THOUSANDS_SEPARATORS, opt.decimals, DECIMAL_POINTS)) {
         // Found exactly one integer value.
         arg.int_count = 1;
     }
-    else if ((point = val.value().find(u'-')) != NPOS &&
-             point + 1 < val.value().size() &&
-             val.value().substr(0, point).toInteger(arg.int_base, THOUSANDS_SEPARATORS, opt.decimals, DECIMAL_POINTS) &&
-             val.value().substr(point + 1).toInteger(last, THOUSANDS_SEPARATORS, opt.decimals, DECIMAL_POINTS))
+    else if ((point = val->find(u'-')) != NPOS &&
+             point + 1 < val->size() &&
+             val->substr(0, point).toInteger(arg.int_base, THOUSANDS_SEPARATORS, opt.decimals, DECIMAL_POINTS) &&
+             val->substr(point + 1).toInteger(last, THOUSANDS_SEPARATORS, opt.decimals, DECIMAL_POINTS))
     {
         // Found one range of integer values.
         if (last < arg.int_base) {

@@ -318,11 +318,11 @@ std::ostream& ts::Service::Display(std::ostream& strm,
         count++;
         fields |= it->getFields();
         if (it->_name.has_value()) {
-            name_width = std::max(name_width, it->_name.value().width());
+            name_width = std::max(name_width, it->_name->width());
             fields |= NAME;
         }
         if (it->_provider.has_value()) {
-            provider_width = std::max(provider_width, it->_provider.value().width());
+            provider_width = std::max(provider_width, it->_provider->width());
             fields |= PROVIDER;
         }
     }

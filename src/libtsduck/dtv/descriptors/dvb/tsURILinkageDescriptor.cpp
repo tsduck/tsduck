@@ -76,7 +76,7 @@ void ts::URILinkageDescriptor::serializePayload(PSIBuffer& buf) const
         buf.putUInt16(min_polling_interval);
     }
     else if ((uri_linkage_type == URI_LINKAGE_DVB_I) && dvb_i_private_data.has_value()) {
-        dvb_i_private_data.value().serialize(buf);
+        dvb_i_private_data->serialize(buf);
     }
     buf.putBytes(private_data);
 }
@@ -179,7 +179,7 @@ void ts::URILinkageDescriptor::buildXML(DuckContext& duck, xml::Element* root) c
     }
     else if (uri_linkage_type == URI_LINKAGE_DVB_I) {
         if (dvb_i_private_data.has_value())
-            dvb_i_private_data.value().toXML(root->addElement(u"DVB_I_linkage"));
+            dvb_i_private_data->toXML(root->addElement(u"DVB_I_linkage"));
     }
     if ((uri_linkage_type != URI_LINKAGE_DVB_I)  && !private_data.empty()) {
         root->addHexaTextChild(u"private_data", private_data);

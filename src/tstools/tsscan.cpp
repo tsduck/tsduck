@@ -448,7 +448,7 @@ bool OffsetScanner::tryOffset(int32_t offset, ts::DeliverySystem sys)
         _opt.verbose(u"%s, %s", _opt.hfband->description(_channel, offset), state);
 
         if (state.signal_strength.has_value()) {
-            const int64_t strength = state.signal_strength.value().value;
+            const int64_t strength = state.signal_strength->value;
             if (strength <= _opt.min_strength) {
                 // Strength is supported but too low
                 ok = false;

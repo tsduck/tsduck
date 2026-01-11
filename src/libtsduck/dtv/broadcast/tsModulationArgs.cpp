@@ -866,7 +866,7 @@ std::ostream& ts::ModulationArgs::display(std::ostream& strm, const ts::UString&
                 }
             }
             if (isdbt_layers.has_value()) {
-                strm << margin << "Layers: " << (isdbt_layers.value().empty() ? u"none" : isdbt_layers.value()) << std::endl;
+                strm << margin << "Layers: " << (isdbt_layers->empty() ? u"none" : isdbt_layers.value()) << std::endl;
             }
             if (isdbt_partial_reception.has_value()) {
                 strm << margin << "Partial reception: " << UString::OnOff(isdbt_partial_reception.value()) << std::endl;
@@ -1031,7 +1031,7 @@ ts::UString ts::ModulationArgs::toPluginOptions(bool no_local) const
             if (isdbt_partial_reception == true) {
                 opt += u" --isdbt-partial-reception";
             }
-            if (!isdbt_layers.has_value() || !isdbt_layers.value().empty()) {
+            if (!isdbt_layers.has_value() || !isdbt_layers->empty()) {
                 opt += UString::Format(u" --isdbt-layers \"%s\"", isdbt_layers.value_or(DEFAULT_ISDBT_LAYERS));
             }
             if (layer_a_fec.has_value() && layer_a_fec != FEC_AUTO) {

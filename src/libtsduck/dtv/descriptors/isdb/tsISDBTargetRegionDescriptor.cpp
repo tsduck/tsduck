@@ -59,7 +59,7 @@ void ts::ISDBTargetRegionDescriptor::serializePayload(PSIBuffer& buf) const
 {
     buf.putUInt8(region_spec_type);
     if (region_spec_type == 0x01 && target_region_mask.has_value()) {
-        target_region_mask.value().serialize(buf);
+        target_region_mask->serialize(buf);
     }
 }
 
@@ -150,7 +150,7 @@ void ts::ISDBTargetRegionDescriptor::buildXML(DuckContext& duck, xml::Element* r
 {
     root->setIntAttribute(u"region_spec_type", region_spec_type, true);
     if (region_spec_type == 0x01 && target_region_mask.has_value()) {
-        target_region_mask.value().toXML(root);
+        target_region_mask->toXML(root);
     }
 }
 

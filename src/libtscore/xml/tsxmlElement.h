@@ -589,7 +589,7 @@ namespace ts::xml {
                                 size_t max_size = UNLIMITED) const;
 
         //--------------------------------------------------------------------
-        // Boolean attribute
+        // Boolean attribute or child element.
         //--------------------------------------------------------------------
 
         //!
@@ -611,6 +611,16 @@ namespace ts::xml {
         //! @return True on success, false on error.
         //!
         bool getBoolAttribute(bool& value, const UString& name, bool required = false, bool def_value = false) const;
+
+        //!
+        //! Get a boolean value from a child of an XML element.
+        //! @param [out] value Returned value of the attribute.
+        //! @param [in] name Name of the attribute.
+        //! @param [in] required If true, generate an error if the attribute is not found.
+        //! @param [in] def_value Default value to return if the attribute is not present.
+        //! @return True on success, false on error.
+        //!
+        bool getBoolChild(bool& value, const UString& name, bool required = false, bool def_value = false) const;
 
         //!
         //! Set an optional bool attribute to a node.
@@ -837,7 +847,7 @@ namespace ts::xml {
         bool getOptionalEnumAttribute(std::optional<INT>& value, const Names& definition, const UString& name) const;
 
         //--------------------------------------------------------------------
-        // Float attribute
+        // Float attribute or child element
         //--------------------------------------------------------------------
 
         //!
@@ -874,6 +884,26 @@ namespace ts::xml {
                                FLT1 def_value = static_cast<FLT>(0.0),
                                FLT2 min_value = std::numeric_limits<FLT>::lowest(),
                                FLT3 max_value = std::numeric_limits<FLT>::max()) const;
+
+        //!
+        //! Get a floating-point value in a child of the element.
+        //! @tparam FLT A floating-point type.
+        //! @param [out] value Returned value of the child.
+        //! @param [in] name Name of the child to search.
+        //! @param [in] required If true, generate an error if the child is not found.
+        //! @param [in] def_value Default value to return if the child is not present.
+        //! @param [in] min_value Minimum allowed value for the child.
+        //! @param [in] max_value Maximum allowed value for the child.
+        //! @return True on success, false on error.
+        //!
+        template <typename FLT, typename FLT1 = FLT, typename FLT2 = FLT, typename FLT3 = FLT>
+            requires std::floating_point<FLT> && std::is_arithmetic_v<FLT1> && std::is_arithmetic_v<FLT2> && std::is_arithmetic_v<FLT3>
+        bool getFloatChild(FLT& value,
+                           const UString& name,
+                           bool required = false,
+                           FLT1 def_value = static_cast<FLT>(0.0),
+                           FLT2 min_value = std::numeric_limits<FLT>::lowest(),
+                           FLT3 max_value = std::numeric_limits<FLT>::max()) const;
 
         //!
         //! Set an optional attribute with a floating-point value to a node.
@@ -1419,6 +1449,33 @@ bool ts::xml::Element::getFloatAttribute(FLT& value, const UString& name, bool r
     }
     else if (val < FLT(min_value) || val > FLT(max_value)) {
         report().error(u"'%s' must be in range %f to %f for attribute '%s' in <%s>, line %d", str, double(min_value), double(max_value), name, this->name(), lineNumber());
+        return false;
+    }
+    else {
+        value = val;
+        return true;
+    }
+}
+
+// Get a floating-point value in a child of an XML element.
+template <typename FLT, typename FLT1, typename FLT2, typename FLT3>
+    requires std::floating_point<FLT> && std::is_arithmetic_v<FLT1> && std::is_arithmetic_v<FLT2> && std::is_arithmetic_v<FLT3>
+bool ts::xml::Element::getFloatChild(FLT& value, const UString& name, bool required, FLT1 def_value, FLT2 min_value, FLT3 max_value) const
+{
+    UString str;
+    if (!getTextChild(str, name, true, required) || str.empty()) {
+        value = FLT(def_value);
+        return !required;
+    }
+
+    // Attribute found, get its value.
+    FLT val = FLT(0.0);
+    if (!str.toFloat(val)) {
+        report().error(u"'%s' is not a valid floating-point value for <%s> in <%s>, line %d", str, name, this->name(), lineNumber());
+        return false;
+    }
+    else if (val < FLT(min_value) || val > FLT(max_value)) {
+        report().error(u"'%s' must be in range %f to %f for <%s> in <%s>, line %d", str, double(min_value), double(max_value), name, this->name(), lineNumber());
         return false;
     }
     else {

@@ -882,13 +882,13 @@ bool ts::TunerDevice::getCurrentTuning(ModulationArgs& params, bool reset_unknow
             if ((val = props.getByCommand(DTV_ISDBT_LAYER_ENABLED)) != DTVProperties::UNKNOWN) {
                 params.isdbt_layers = UString();
                 if ((val & 0x01) != 0) {
-                    params.isdbt_layers.value().append(1, u'A');
+                    params.isdbt_layers->append(1, u'A');
                 }
                 if ((val & 0x02) != 0) {
-                    params.isdbt_layers.value().append(1, u'B');
+                    params.isdbt_layers->append(1, u'B');
                 }
                 if ((val & 0x04) != 0) {
-                    params.isdbt_layers.value().append(1, u'C');
+                    params.isdbt_layers->append(1, u'C');
                 }
             }
             params.layer_a_fec.reset();

@@ -78,13 +78,13 @@ void ts::NetworkDownloadContentDescriptor::serializePayload(PSIBuffer& buf) cons
     else if (ip.has_value()) {
         if (ip->generation() == IP::v4) {
             buf.putUInt8(0x00); // address_type = IPv4
-            buf.putUInt32(ip.value().address4());
+            buf.putUInt32(ip->address4());
         }
         else {
             buf.putUInt8(0x01); // address_type = IPv6
-            buf.putBytes(ip.value().address6());
+            buf.putBytes(ip->address6());
         }
-        buf.putUInt16(ip.value().port());
+        buf.putUInt16(ip->port());
     }
     else if (url.has_value()) {
         buf.putUInt8(0x02); // address_type = URL
@@ -97,7 +97,7 @@ void ts::NetworkDownloadContentDescriptor::serializePayload(PSIBuffer& buf) cons
     buf.putUInt8(uint8_t(private_data.size()));
     buf.putBytes(private_data);
     if (text_info.has_value()) {
-        text_info.value().serializePayload(buf);
+        text_info->serializePayload(buf);
     }
 }
 
@@ -140,7 +140,7 @@ void ts::NetworkDownloadContentDescriptor::deserializePayload(PSIBuffer& buf)
     buf.getBytes(private_data, buf.getUInt8());
     if (text_info_flag) {
         text_info.emplace();
-        text_info.value().deserializePayload(buf);
+        text_info->deserializePayload(buf);
     }
 }
 
@@ -228,9 +228,9 @@ void ts::NetworkDownloadContentDescriptor::buildXML(DuckContext& duck, xml::Elem
     root->setIntAttribute(u"connect_timer", connect_timer);
 
     if (ip.has_value()) {
-        xml::Element* e = root->addElement(UString::Format(u"ipv%d", int(ip.value().generation())));
+        xml::Element* e = root->addElement(UString::Format(u"ipv%d", int(ip->generation())));
         e->setIPAttribute(u"address", IPAddress(ip.value()));
-        e->setIntAttribute(u"port", ip.value().port());
+        e->setIntAttribute(u"port", ip->port());
     }
     else if (url.has_value()) {
         root->addElement(u"url")->setAttribute(u"url", url.value());
@@ -239,7 +239,7 @@ void ts::NetworkDownloadContentDescriptor::buildXML(DuckContext& duck, xml::Elem
     compatibility_descriptor.toXML(duck, root, true);
     root->addHexaTextChild(u"private_data", private_data, true);
     if (text_info.has_value()) {
-        text_info.value().buildXML(duck, root);
+        text_info->buildXML(duck, root);
     }
 }
 

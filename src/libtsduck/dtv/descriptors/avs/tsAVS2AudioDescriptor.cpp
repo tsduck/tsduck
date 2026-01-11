@@ -77,7 +77,7 @@ void ts::AVS2AudioDescriptor::serializePayload(PSIBuffer& buf) const
         buf.putLanguageCode(language.value());
     }
     if (avs_version.has_value()) {
-        avs_version.value().serialize(buf);
+        avs_version->serialize(buf);
     }
     buf.putBytes(additional_info);
 }
@@ -216,7 +216,7 @@ void ts::AVS2AudioDescriptor::buildXML(DuckContext& duck, xml::Element* root) co
         root->setAttribute(u"language", language.value());
     }
     if (avs_version.has_value()) {
-        avs_version.value().toXML(root->addElement(u"version_info"));
+        avs_version->toXML(root->addElement(u"version_info"));
     }
     root->addHexaTextChild(u"additional_info", additional_info, true);
 }
@@ -251,7 +251,7 @@ bool ts::AVS2AudioDescriptor::analyzeXML(DuckContext& duck, const xml::Element* 
               element->getHexaTextChild(additional_info, u"additional_info");
     for (auto& xver : element->children(u"version_info", &ok, 0, 1)) {
         avs_version = avs_version_info();
-        ok = avs_version.value().fromXML(&xver);
+        ok = avs_version->fromXML(&xver);
     }
     return ok;
 }

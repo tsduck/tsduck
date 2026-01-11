@@ -151,10 +151,10 @@ void ts::mcast::FluteDemux::feedPacketImpl(const cn::microseconds& timestamp, co
             _report.error(u"FDT in FLUTE packet without EXT_FTI header, %s", sid);
             return;
         }
-        if (file.instance != lct.fdt.value().fdt_instance_id) {
-            _report.log(2, u"new FDT instance %n, %s", lct.fdt.value().fdt_instance_id, sid);
+        if (file.instance != lct.fdt->fdt_instance_id) {
+            _report.log(2, u"new FDT instance %n, %s", lct.fdt->fdt_instance_id, sid);
             file.clear();
-            file.instance = lct.fdt.value().fdt_instance_id;
+            file.instance = lct.fdt->fdt_instance_id;
         }
     }
 
@@ -169,7 +169,7 @@ void ts::mcast::FluteDemux::feedPacketImpl(const cn::microseconds& timestamp, co
         transfer_length = lct.tol.value();  // Typically ROUTE.
     }
     else if (lct.fti.has_value()) {
-        transfer_length = lct.fti.value().transfer_length;  // FLUTE or ROUTE.
+        transfer_length = lct.fti->transfer_length;  // FLUTE or ROUTE.
     }
     if (transfer_length.has_value() && !updateFileSize(sid, session, lct.toi, file, transfer_length.value())) {
         // File too large, ignored.

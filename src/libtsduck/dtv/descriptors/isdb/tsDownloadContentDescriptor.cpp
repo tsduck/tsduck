@@ -82,7 +82,7 @@ void ts::DownloadContentDescriptor::serializePayload(PSIBuffer& buf) const
     buf.putUInt8(uint8_t(private_data.size()));
     buf.putBytes(private_data);
     if (text_info.has_value()) {
-        text_info.value().serializePayload(buf);
+        text_info->serializePayload(buf);
     }
 }
 
@@ -112,7 +112,7 @@ void ts::DownloadContentDescriptor::deserializePayload(PSIBuffer& buf)
     buf.getBytes(private_data, buf.getUInt8());
     if (text_info_flag) {
         text_info.emplace();
-        text_info.value().deserializePayload(buf);
+        text_info->deserializePayload(buf);
     }
 }
 
@@ -186,7 +186,7 @@ void ts::DownloadContentDescriptor::buildXML(DuckContext& duck, xml::Element* ro
     }
     root->addHexaTextChild(u"private_data", private_data, true);
     if (text_info.has_value()) {
-        text_info.value().buildXML(duck, root);
+        text_info->buildXML(duck, root);
     }
 }
 
@@ -207,7 +207,7 @@ bool ts::DownloadContentDescriptor::analyzeXML(DuckContext& duck, const xml::Ele
     }
     for (auto& xtext : element->children(u"text_info", &ok, 0, 1)) {
         text_info.emplace();
-        ok = text_info.value().analyzeXML(duck, &xtext);
+        ok = text_info->analyzeXML(duck, &xtext);
     }
     return ok;
 }

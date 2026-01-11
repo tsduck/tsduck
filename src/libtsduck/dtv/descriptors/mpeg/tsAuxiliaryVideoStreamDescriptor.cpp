@@ -53,22 +53,22 @@ uint32_t ts::AuxiliaryVideoStreamDescriptor::si_message_type::get_message_size()
     const uint32_t _payload_type = payload_type.value();
     if (_payload_type == 0 || _payload_type == 1) {
         if (generic_params.has_value()) {
-            _size += generic_params.value().get_size();
+            _size += generic_params->get_size();
         }
     }
     if (_payload_type == 0) {
         if (depth_params.has_value()) {
-            _size += depth_params.value().get_size();
+            _size += depth_params->get_size();
         }
     }
     else if (_payload_type == 1) {
         if (parallax_params.has_value()) {
-            _size += parallax_params.value().get_size();
+            _size += parallax_params->get_size();
         }
     }
     else {
         if (reserved_si_message.has_value()) {
-            _size += uint32_t(reserved_si_message.value().size());
+            _size += uint32_t(reserved_si_message->size());
         }
     }
     return _size;
@@ -118,17 +118,17 @@ void ts::AuxiliaryVideoStreamDescriptor::si_message_type::serialize(PSIBuffer& b
     si_message_size.serialize(buf);
     if ((payload_type.value() == 0) || (payload_type.value() == 1)) {
         if (generic_params.has_value()) {
-            generic_params.value().serialize(buf);
+            generic_params->serialize(buf);
         }
     }
     if (payload_type.value() == 0) {
         if (depth_params.has_value()) {
-            depth_params.value().serialize(buf);
+            depth_params->serialize(buf);
         }
     }
     else if (payload_type.value() == 1) {
         if (parallax_params.has_value()) {
-            parallax_params.value().serialize(buf);
+            parallax_params->serialize(buf);
         }
     }
     else {
@@ -318,17 +318,17 @@ void ts::AuxiliaryVideoStreamDescriptor::si_message_type::toXML(xml::Element* ro
     root->setIntAttribute(u"payload_type", payload_type.value(), true);
     if ((payload_type.value() == 0) || (payload_type.value() == 1)) {
         if (generic_params.has_value()) {
-            generic_params.value().toXML(root->addElement(u"generic_params"));
+            generic_params->toXML(root->addElement(u"generic_params"));
         }
     }
     if (payload_type.value() == 0) {
         if (depth_params.has_value()) {
-            depth_params.value().toXML(root->addElement(u"depth_params"));
+            depth_params->toXML(root->addElement(u"depth_params"));
         }
     }
     else if (payload_type.value() == 1) {
         if (parallax_params.has_value()) {
-            parallax_params.value().toXML(root->addElement(u"parallax_params"));
+            parallax_params->toXML(root->addElement(u"parallax_params"));
         }
     }
     else {
