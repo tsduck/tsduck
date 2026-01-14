@@ -13,8 +13,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsmcastTransportProtocol.h"
-#include "tsmcastFluteSessionId.h"
+#include "tsmcastBaseMulticastTransportSession.h"
 #include "tsxml.h"
 
 namespace ts::mcast {
@@ -25,7 +24,7 @@ namespace ts::mcast {
     //! @see ETSI TS 103 769, section 10.2.5
     //! @ingroup libtsduck mpeg
     //!
-    class TSDUCKDLL GatewayConfigurationTransportSession
+    class TSDUCKDLL GatewayConfigurationTransportSession : public BaseMulticastTransportSession
     {
     public:
         //!
@@ -45,29 +44,6 @@ namespace ts::mcast {
         //! @return True on success, false on error.
         //!
         bool parseXML(const xml::Element* element, bool strict);
-
-        //!
-        //! A URI with an associated weighting attribute.
-        //!
-        class TSDUCKDLL WeightedURIType
-        {
-        public:
-            WeightedURIType() = default;   //!< Constructor.
-            UString  uri {};               //!< URI
-            uint32_t relative_weight = 0;  //!< Relative weight.
-        };
-
-        //!
-        //! An entry of \<ForwardErrorCorrectionParameters>.
-        //!
-        class TSDUCKDLL ForwardErrorCorrectionParametersType
-        {
-        public:
-            ForwardErrorCorrectionParametersType() = default;  //!< Constructor.
-            UString  scheme_identifier {};                     //!< SchemeIdentifier
-            uint32_t overhead_percentage = 0;                  //!< OverheadPercentage.
-            std::list<FluteSessionId> endpoints {};            //!< list of \<EndpointAddress>.
-        };
 
         //!
         //! An entry of \<PresentationManifests> or \<InitSegments> in \<ObjectCarousel>.
@@ -100,23 +76,11 @@ namespace ts::mcast {
         };
 
         // Public fields coming from the XML representation.
-        UString           service_class {};             //!< attribute serviceClass.
-        UString           transport_security {};        //!< attribute transportSecurity
-        UStringList       tags {};                      //!< attribute tags
-        TransportProtocol protocol {};                  //!< element \<TransportProtocol>.
-        uint32_t          bitrate_average = 0;          //!< attribute average in \<BitRate>.
-        uint32_t          bitrate_maximum = 0;          //!< attribute maximum in \<BitRate>.
-        std::list<WeightedURIType> repair_base_url {};  //!< elements \<BaseURL> in \<UnicastRepairParameters>.
-        UString           repair_obj_base_uri {};       //!< attribute transportObjectBaseURI in \<UnicastRepairParameters>.
-        cn::milliseconds  repair_recv_timeout {};       //!< attribute transportObjectReceptionTimeout in \<UnicastRepairParameters>.
-        cn::milliseconds  repair_fixed_backoff {};      //!< attribute fixedBackOffPeriod in \<UnicastRepairParameters>.
-        cn::milliseconds  repair_rand_backoff {};       //!< attribute randomBackOffPeriod in \<UnicastRepairParameters>.
-        std::list<FluteSessionId> endpoints {};         //!< list of \<EndpointAddress>.
-        UStringToUStringMap       macros {};            //!< map of \<GatewayConfigurationMacro>, indexed by attribute key.
-        std::list<ForwardErrorCorrectionParametersType> fec {}; //!< list of \<ForwardErrorCorrectionParameters>.
-        uint32_t          carousel_transport_size = 0;  //!< attribute aggregateTransportSize in \<ObjectCarousel>.
-        uint32_t          carousel_content_size = 0;    //!< attribute aggregateContentSize in \<ObjectCarousel>.
-        std::list<CarouselResourceLocatorType> resource_locator {}; //!< all \<ResourceLocator> in \<ObjectCarousel>.
+        UStringList         tags {};                                 //!< attribute tags
+        UStringToUStringMap macros {};                               //!< map of \<GatewayConfigurationMacro>, indexed by attribute key.
+        uint32_t            carousel_transport_size = 0;             //!< attribute aggregateTransportSize in \<ObjectCarousel>.
+        uint32_t            carousel_content_size = 0;               //!< attribute aggregateContentSize in \<ObjectCarousel>.
+        std::list<CarouselResourceLocatorType> resource_locator {};  //!< all \<ResourceLocator> in \<ObjectCarousel>.
         std::list<ReferencingCarouselMediaPresentationResourceType> carousel_manifests {};  //!< all \<PresentationManifests> in \<ObjectCarousel>.
         std::list<ReferencingCarouselMediaPresentationResourceType> carousel_segment {};    //!< all \<InitSegments> in \<ObjectCarousel>.
     };

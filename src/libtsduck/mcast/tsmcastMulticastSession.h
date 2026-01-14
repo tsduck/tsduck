@@ -12,15 +12,14 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsmcastTransportProtocol.h"
-#include "tsmcastFluteSessionId.h"
+#include "tsmcastBaseMulticastTransportSession.h"
+#include "tsmcastReportingLocator.h"
 #include "tsxml.h"
 
 namespace ts::mcast {
     //!
     //! Representation of a MulticastSession (Multicast ABR).
     //! This substructure is used in several XML tables.
-    //! Caution: This implementation is partial. Some part of the XML document are not deserialized.
     //! @see ETSI TS 103 769, section 10.2.2.1
     //! @ingroup libtsduck mpeg
     //!
@@ -46,24 +45,38 @@ namespace ts::mcast {
         bool parseXML(const xml::Element* element, bool strict);
 
         //!
-        //! An entry of \<MulticastTransportSession>.
-        //! @see ETSI TS 103 769, section 10.2.3
+        //! An entry of \<PresentationManifestLocator>.
+        //! @see ETSI TS 103 769, section 10.2.2.1
         //!
-        class TSDUCKDLL MulticastTransportSession
+        class TSDUCKDLL PresentationManifestLocator
+        {
+        public:
+            PresentationManifestLocator() = default;   //!< Constructor.
+            UString uri {};                            //!< Content of element \<PresentationManifestLocator>.
+            UString manifest_id {};                    //!< attribute manifestId.
+            UString content_type {};                   //!< attribute contentType.
+            UString transport_object_uri {};           //!< attribute transportObjectURI.
+            UString content_playback_path_pattern {};  //!< attribute contentPlaybackPathPattern.
+        };
+
+        //!
+        //! An entry of \<MulticastTransportSession>.
+        //! @see ETSI TS 103 769, section 10.2.3.1
+        //!
+        class TSDUCKDLL MulticastTransportSession : public BaseMulticastTransportSession
         {
         public:
             MulticastTransportSession() = default;   //!< Constructor.
             UString id {};                           //!< attribute id.
-            UString service_class {};                //!< attribute serviceClass.
             UString content_ingest_method {};        //!< attribute contentIngestMethod.
             UString transmission_mode {};            //!< attribute transmissionMode.
-            UString transport_security {};           //!< attribute transportSecurity.
-            TransportProtocol protocol {};           //!< element \<TransportProtocol>.
-            std::list<FluteSessionId> endpoints {};  //!< list of \<EndpointAddress>.
         };
 
         // Public fields coming from the XML representation.
-        UString service_identifier {};                               //!< attribute serviceIdentifier.
-        std::list<MulticastTransportSession> transport_sessions {};  //!< elements \<MulticastTransportSession>.
+        UString          service_identifier {};                        //!< attribute serviceIdentifier.
+        cn::milliseconds content_playback_availability_offset {};      //!< attribute contentPlaybackAvailabilityOffset
+        std::list<PresentationManifestLocator> manifest_locators {};   //!< elements \<PresentationManifestLocator>.
+        std::list<ReportingLocator>            reporting_locators {};  //!< elements \<ReportingLocator> in \<MulticastGatewaySessionReporting>
+        std::list<MulticastTransportSession>   transport_sessions {};  //!< elements \<MulticastTransportSession>.
     };
 }

@@ -309,11 +309,27 @@ ts::Time ts::ISOTime::TimeFromISO(const UString& str)
         if (IntFromString(str, pos, end_time, 2, fields.hour, width) && IntFromString(str, pos, end_time, 2, fields.minute, width)) {
             IntFromString(str, pos, end_time, 2, fields.second, width);
         }
-        if (pos < str.length() && (str[pos] == '.' || str[pos] == ',')) {
-            pos++;
-            if (IntFromString(str, pos, end_time, 3, fields.millisecond, width)) {
-                while (width++ < 3) {
-                    fields.millisecond *= 10;
+        if (pos < str.length()) {
+            // Look for fractional second (pure ISO 8601) or frame number (mpeg7:timePointType).
+            if (str[pos] == '.' || str[pos] == ',') {
+                // This is fractional second.
+                pos++;
+                if (IntFromString(str, pos, end_time, 3, fields.millisecond, width)) {
+                    while (width++ < 3) {
+                        fields.millisecond *= 10;
+                    }
+                }
+            }
+            else if (str[pos] == ':') {
+                // This is a mpeg7:timePointType frame number. Must be followed by the frame rate "F\d+".
+                pos++;
+                int fnum = 0;
+                if (IntFromString(str, pos, end_time, 10, fnum, width) && pos < str.length() && ToUpper(str[pos]) == 'F') {
+                    pos++;
+                    int frate = 0;
+                    if (IntFromString(str, pos, end_time, 10, frate, width) && frate > 0) {
+                        fields.millisecond = (1000 * fnum) / frate;
+                    }
                 }
             }
         }

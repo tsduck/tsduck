@@ -22,6 +22,7 @@ class ISOTimeTest: public tsunit::Test
 {
     TSUNIT_DECLARE_TEST(ToISO);
     TSUNIT_DECLARE_TEST(TimeFromISO);
+    TSUNIT_DECLARE_TEST(TimeFromMPEG7);
     TSUNIT_DECLARE_TEST(DurationFromISO);
     TSUNIT_DECLARE_TEST(FromString);
 
@@ -59,8 +60,14 @@ TSUNIT_DEFINE_TEST(TimeFromISO)
     TSUNIT_EQUAL(u"1998/03/04 00:00:00.000", ts::ISOTime::TimeFromISO(u"1998 3 4").toString());
     TSUNIT_EQUAL(u"2007/03/01 12:43:56.000", ts::ISOTime::TimeFromISO(u"2007-03-01T13:45:56-01:02").toString());
     TSUNIT_EQUAL(u"2025/01/10 11:36:58.000", ts::ISOTime::TimeFromISO(u"2025-01-10T11:36:58Z").toString());
+}
 
-    // TODO: "2026-09-04T07:13:35:000F1000" is reported in a DVB-NIP file but seems invalid
+TSUNIT_DEFINE_TEST(TimeFromMPEG7)
+{
+    // Analyze a mpeg7:timePointType string.
+    TSUNIT_EQUAL(u"2026/09/04 07:13:35.000", ts::ISOTime::TimeFromISO(u"2026-09-04T07:13:35:000F1000").toString());
+    TSUNIT_EQUAL(u"2026/09/04 07:13:35.987", ts::ISOTime::TimeFromISO(u"2026-09-04T07:13:35:987F1000").toString());
+    TSUNIT_EQUAL(u"2026/09/04 07:13:35.050", ts::ISOTime::TimeFromISO(u"2026-09-04T07:13:35:5F100").toString());
 }
 
 TSUNIT_DEFINE_TEST(DurationFromISO)

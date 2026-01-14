@@ -207,6 +207,7 @@ namespace ts {
         //! Decode a time from an ISO 8601 representation.
         //! Missing date fields default to the current UTC time.
         //! Missing time fields default to zero.
+        //! The mpeg7:timePointType format is an extension of ISO 8601 and is also recognized here.
         //! @param [in] str A string describing a date and time in ISO 8601 representation.
         //! @return The converted time or ts::Time::Epoch if the string cannot be decoded.
         //!
