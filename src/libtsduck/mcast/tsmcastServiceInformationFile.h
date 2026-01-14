@@ -20,7 +20,6 @@
 namespace ts::mcast {
     //!
     //! Representation of a ServiceInformationFile (DVB-NIP).
-    //! Caution: This implementation is partial. Some part of the XML document are not deserialized.
     //! @see ETSI TS 103 876, section 8.4.3.2
     //! @see NetworkInformationFile
     //! @ingroup libtsduck mpeg

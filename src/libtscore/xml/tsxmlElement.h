@@ -17,6 +17,7 @@
 #include "tsByteBlock.h"
 #include "tsIPAddress.h"
 #include "tsMACAddress.h"
+#include "tsISOTime.h"
 #include "tsIntegerUtils.h"
 
 namespace ts::xml {
@@ -999,6 +1000,26 @@ namespace ts::xml {
                                 const cn::duration<Rep, Period>& min_value = cn::duration<Rep, Period>::min(),
                                 const cn::duration<Rep, Period>& max_value = cn::duration<Rep, Period>::max()) const;
 
+        //!
+        //! Get a std::chrono::milliseconds attribute in ISO 8601 representation of an XML element.
+        //! @param [out] value Returned value of the attribute.
+        //! @param [in] name Name of the attribute.
+        //! @param [in] required If true, generate an error if the attribute is not found.
+        //! @param [in] strict If true, generate an error if the value of the attribute is invalid.
+        //! When false, an invalid value is silently transformed in the default value.
+        //! @param [in] def_value Default value to return if the attribute is not present.
+        //! @param [in] min_value Minimum allowed value for the attribute.
+        //! @param [in] max_value Maximum allowed value for the attribute.
+        //! @return True on success, false on error.
+        //!
+        bool getISODurationAttribute(cn::milliseconds& value,
+                                     const UString& name,
+                                     bool required = false,
+                                     bool strict = false,
+                                     const cn::milliseconds& def_value = cn::milliseconds::zero(),
+                                     const cn::milliseconds& min_value = cn::milliseconds::min(),
+                                     const cn::milliseconds& max_value = cn::milliseconds::max()) const;
+
         //--------------------------------------------------------------------
         // Date / time attribute or child element
         //--------------------------------------------------------------------
@@ -1028,20 +1049,52 @@ namespace ts::xml {
         //! @param [out] value Returned value of the attribute.
         //! @param [in] name Name of the attribute.
         //! @param [in] required If true, generate an error if the attribute is not found.
+        //! @param [in] strict If true, generate an error if the value of the attribute is invalid.
+        //! When false, an invalid value is silently transformed in the default value.
         //! @param [in] def_value Default value to return if the attribute is not present.
         //! @return True on success, false on error.
         //!
-        bool getISODateTimeAttribute(Time& value, const UString& name, bool required = false, const Time& def_value = Time()) const;
+        bool getISODateTimeAttribute(Time& value, const UString& name, bool required = false, bool strict = false, const Time& def_value = Time()) const;
+
+        //!
+        //! Get a date/time attribute in ISO 8601 representation of an XML element.
+        //! This version is more generic than the one returning a simple Time value.
+        //! It can receive any form of ISO 8601 data, include time intervals.
+        //! There is no default value, it returns an invalid ISOTime as default value.
+        //! @param [out] value Returned value of the attribute.
+        //! @param [in] name Name of the attribute.
+        //! @param [in] required If true, generate an error if the attribute is not found.
+        //! @param [in] strict If true, generate an error if the value of the attribute is invalid.
+        //! When false, an invalid value is silently transformed in the default value.
+        //! @return True on success, false on error.
+        //!
+        bool getISODateTimeAttribute(ISOTime& value, const UString& name, bool required = false, bool strict = false) const;
 
         //!
         //! Get a date/time child element in ISO 8601 representation.
         //! @param [out] value Returned value of the attribute.
         //! @param [in] name Name of the child to search.
         //! @param [in] required If true, generate an error if the child is not found.
+        //! @param [in] strict If true, generate an error if the value of the attribute is invalid.
+        //! When false, an invalid value is silently transformed in the default value.
         //! @param [in] def_value Default value to return if the attribute is not present.
         //! @return True on success, false on error.
         //!
-        bool getISODateTimeChild(Time& value, const UString& name, bool required = false, const Time& def_value = Time()) const;
+        bool getISODateTimeChild(Time& value, const UString& name, bool required = false, bool strict = false, const Time& def_value = Time()) const;
+
+        //!
+        //! Get a date/time child element in ISO 8601 representation.
+        //! This version is more generic than the one returning a simple Time value.
+        //! It can receive any form of ISO 8601 data, include time intervals.
+        //! There is no default value, it returns an invalid ISOTime as default value.
+        //! @param [out] value Returned value of the attribute.
+        //! @param [in] name Name of the child to search.
+        //! @param [in] required If true, generate an error if the child is not found.
+        //! @param [in] strict If true, generate an error if the value of the attribute is invalid.
+        //! When false, an invalid value is silently transformed in the default value.
+        //! @return True on success, false on error.
+        //!
+        bool getISODateTimeChild(ISOTime& value, const UString& name, bool required = false, bool strict = false) const;
 
         //!
         //! Set an optional date/time attribute of an XML element.

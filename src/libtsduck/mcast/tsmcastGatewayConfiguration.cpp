@@ -23,19 +23,25 @@ ts::mcast::GatewayConfiguration::GatewayConfiguration(Report& report, const Flut
     if (parseXML(doc, u"MulticastGatewayConfiguration", true)) {
         const xml::Element* root = doc.rootElement();
 
+        _valid = root->getISODateTimeAttribute(validity_period, u"validityPeriod", false, strict) &&
+                 root->getISODateTimeAttribute(valid_until, u"validUntil", false, strict);
+
         // Decode all GatewayConfigurationTransportSession elements.
         for (auto& e : root->children(u"MulticastGatewayConfigurationTransportSession", &_valid)) {
-            transport_sessions.emplace_back();
-            _valid = transport_sessions.back().parseXML(&e, strict);
+            _valid = transport_sessions.emplace_back().parseXML(&e, strict);
         }
 
         // Decode all MulticastSession elements.
         for (auto& e : root->children(u"MulticastSession", &_valid)) {
-            multicast_sessions.emplace_back();
-            _valid = multicast_sessions.back().parseXML(&e, strict);
+            _valid = multicast_sessions.emplace_back().parseXML(&e, strict);
         }
 
-        // Other elements of the <GatewayConfiguration> are not parsed (so far).
+        // Decode at most one MulticastGatewaySessionReporting element.
+        for (auto& e1 : root->children(u"MulticastGatewaySessionReporting", &_valid, 0, 1)) {
+            for (auto& e2 : e1.children(u"ReportingLocator", &_valid, strict ? 1 : 0)) {
+                _valid = reporting_locators.emplace_back().parseXML(&e2, strict);
+            }
+        }
     }
 }
 

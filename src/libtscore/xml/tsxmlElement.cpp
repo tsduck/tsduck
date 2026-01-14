@@ -778,6 +778,49 @@ bool ts::xml::Element::getOptionalBoolAttribute(std::optional<bool>& value, cons
 
 
 //----------------------------------------------------------------------------
+// Get a chrono attribute of an XML element.
+//----------------------------------------------------------------------------
+
+bool ts::xml::Element::getISODurationAttribute(cn::milliseconds& value,
+                                               const UString& name,
+                                               bool required,
+                                               bool strict,
+                                               const cn::milliseconds& def_value,
+                                               const cn::milliseconds& min_value,
+                                               const cn::milliseconds& max_value) const
+{
+    UString str;
+    if (!getAttribute(str, name, required)) {
+    }
+    if (!required && str.empty()) {
+        value = def_value;
+        return true;
+    }
+
+    // Analyze the time string.
+    const cn::milliseconds d = ISOTime::DurationFromISO(str);
+    if (d < cn::milliseconds::zero()) {
+        if (strict) {
+            report().error(u"'%s' is not a valid ISO-8601 duration for attribute '%s' in <%s>, line %d", str, name, this->name(), lineNumber());
+            return false;
+        }
+        else {
+            value = def_value;
+            return true;
+        }
+    }
+    else if (d < min_value || d > max_value) {
+        report().error(u"'%s' must be in range %'d to %'d milliseconds for attribute '%s' in <%s>, line %d", str, min_value, max_value, name, this->name(), lineNumber());
+        return false;
+    }
+    else {
+        value = d;
+        return true;
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Get a date/time attribute of an XML element.
 //----------------------------------------------------------------------------
 
@@ -802,7 +845,7 @@ bool ts::xml::Element::getDateTimeAttribute(Time& value, const UString& name, bo
 }
 
 // Get a date/time attribute in ISO 8601 representation of an XML element.
-bool ts::xml::Element::getISODateTimeAttribute(Time& value, const UString& name, bool required, const Time& def_value) const
+bool ts::xml::Element::getISODateTimeAttribute(Time& value, const UString& name, bool required, bool strict, const Time& def_value) const
 {
     UString str;
     if (!getAttribute(str, name, required)) {
@@ -814,7 +857,27 @@ bool ts::xml::Element::getISODateTimeAttribute(Time& value, const UString& name,
     }
 
     // Analyze the time string.
-    const bool ok = value.fromISO(str);
+    const bool ok = (value = ISOTime::TimeFromISO(str)) != Time::Epoch || !strict;
+    if (!ok) {
+        report().error(u"'%s' is not a valid ISO-8601 date/time for attribute '%s' in <%s>, line %d", str, name, this->name(), lineNumber());
+    }
+    return ok;
+}
+
+// Get a full ISO 8601 representation of an XML element.
+bool ts::xml::Element::getISODateTimeAttribute(ISOTime& value, const UString& name, bool required, bool strict) const
+{
+    value.clear();
+    UString str;
+    if (!getAttribute(str, name, required)) {
+        return false;
+    }
+    if (!required && str.empty()) {
+        return true;
+    }
+
+    // Analyze the time string.
+    const bool ok = value.fromString(str) || !strict;
     if (!ok) {
         report().error(u"'%s' is not a valid ISO-8601 date/time for attribute '%s' in <%s>, line %d", str, name, this->name(), lineNumber());
     }
@@ -822,7 +885,7 @@ bool ts::xml::Element::getISODateTimeAttribute(Time& value, const UString& name,
 }
 
 // Get a date/time child element in ISO 8601 representation.
-bool ts::xml::Element::getISODateTimeChild(Time& value, const UString& name, bool required , const Time& def_value) const
+bool ts::xml::Element::getISODateTimeChild(Time& value, const UString& name, bool required, bool strict, const Time& def_value) const
 {
     UString str;
     if (!getTextChild(str, name, true, required)) {
@@ -834,7 +897,27 @@ bool ts::xml::Element::getISODateTimeChild(Time& value, const UString& name, boo
     }
 
     // Analyze the time string.
-    const bool ok = value.fromISO(str);
+    const bool ok = (value = ISOTime::TimeFromISO(str)) != Time::Epoch || !strict;
+    if (!ok) {
+        report().error(u"'%s' is not a valid ISO-8601 date/time for <%s> in <%s>, line %d", str, name, this->name(), lineNumber());
+    }
+    return ok;
+}
+
+// Get a full ISO 8601 representation in a child element.
+bool ts::xml::Element::getISODateTimeChild(ISOTime& value, const UString& name, bool required, bool strict) const
+{
+    value.clear();
+    UString str;
+    if (!getTextChild(str, name, true, required)) {
+        return false;
+    }
+    if (!required && str.empty()) {
+        return true;
+    }
+
+    // Analyze the time string.
+    const bool ok = value.fromString(str) || !strict;
     if (!ok) {
         report().error(u"'%s' is not a valid ISO-8601 date/time for <%s> in <%s>, line %d", str, name, this->name(), lineNumber());
     }

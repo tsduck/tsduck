@@ -15,12 +15,13 @@
 #include "tsmcastFluteFile.h"
 #include "tsmcastGatewayConfigurationTransportSession.h"
 #include "tsmcastMulticastSession.h"
+#include "tsmcastReportingLocator.h"
+#include "tsISOTime.h"
 #include "tsReport.h"
 
 namespace ts::mcast {
     //!
     //! Representation of a MulticastGatewayConfiguration (Multicast ABR).
-    //! Caution: This implementation is partial. Some part of the XML document are not deserialized.
     //! @see ETSI TS 103 769, section 10.2.1.2
     //! @ingroup libtsduck mpeg
     //!
@@ -41,14 +42,11 @@ namespace ts::mcast {
         //!
         GatewayConfiguration(Report& report, const FluteFile& file, bool strict);
 
-        //!
-        //! List of GatewayConfigurationTransportSession.
-        //!
-        std::list<GatewayConfigurationTransportSession> transport_sessions {};
-
-        //!
-        //! List of MulticastSession.
-        //!
-        std::list<MulticastSession> multicast_sessions {};
+        // GatewayConfiguration public fields.
+        ISOTime validity_period {};  //!< Attribute validityPeriod
+        Time    valid_until {};      //!< Attribute validUntil (Time::Epoch if absent)
+        std::list<GatewayConfigurationTransportSession> transport_sessions {};  //!< Elements \<GatewayConfigurationTransportSession>
+        std::list<MulticastSession> multicast_sessions {};                      //!< Elements \<MulticastSession>
+        std::list<ReportingLocator> reporting_locators {};                      //!< Elements \<ReportingLocator> in \<MulticastGatewaySessionReporting>
     };
 }

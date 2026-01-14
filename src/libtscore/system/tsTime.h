@@ -34,8 +34,6 @@ namespace ts {
     //!
     //! The implementation of the class is designed to be light and fast so that
     //! @c Time objects may be copied without overhead.
-    //! The class is not polymorphic, there is no virtual methods and no vtable.
-    //! In fact, the actual representation is only a 64-bit integer.
     //!
     class TSCOREDLL Time final: public StringifyInterface
     {
@@ -327,33 +325,6 @@ namespace ts {
         //! @return True on success, false if the string cannot be decoded.
         //!
         bool decode(const UString& str, int fields = DATE | TIME);
-
-        //!
-        //! Decode a time from an ISO 8601 representation.
-        //! The resulting decoded time is stored in this object.
-        //! Missing date fields default to the current UTC time.
-        //! Missing time fields default to zero.
-        //! @param [in] str A string describing a date and time in ISO 8601 representation.
-        //! @return True on success, false if the string cannot be decoded.
-        //!
-        bool fromISO(const UString& str);
-
-        //!
-        //! Format the time in ISO 8601 representation.
-        //! @return A string describing the date and time in ISO 8601 representation.
-        //!
-        UString toISO() const { return toIsoWithMinutes(0); }
-
-        //!
-        //! Format the time in ISO 8601 representation, including an offset from UTC time.
-        //! @param [in] utc_offset The offset from UTC time to include in the representation.
-        //! @return A string describing the date and time in ISO 8601 representation.
-        //!
-        template <class Rep, class Period>
-        UString toISO(cn::duration<Rep,Period> utc_offset) const
-        {
-            return toIsoWithMinutes(cn::duration_cast<cn::minutes>(utc_offset).count());
-        }
 
         //!
         //! Get the number of leap seconds between two UTC dates.
@@ -715,9 +686,6 @@ namespace ts {
 
         // Static private routine: Build the 64-bit value from fields
         static int64_t ToInt64(int year, int month, int day, int hour, int minute, int second, int millisecond);
-
-        // Format the time in ISO 8601 representation, including an offset from UTC time.
-        UString toIsoWithMinutes(intmax_t utc_offset) const;
 
         // Number of clock ticks per millisecond.
         static constexpr int64_t TICKS_PER_MS =
