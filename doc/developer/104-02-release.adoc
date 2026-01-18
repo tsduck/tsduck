@@ -183,6 +183,15 @@ The PowerShell script `pkg/winget/release.ps1` is used to create and publish a n
 TSDuck release on winget. It must be run from a Windows system, after the creation
 of the GitHub release. The Windows binaries on GitHub are declared in WinGet.
 
+===== Creating the FreeBSD port
+
+On FreeBSD systems, TSDuck is managed as a "port". This is how TSDuck can be installed
+using the command `pkg install tsduck`.
+
+Each time a new release is created, the maintainer shall request an update of the
+TSDuck port. See the detailed description in the
+https://github.com/tsduck/tsduck/tree/master/pkg/freebsd[pkg/freebsd] directory.
+
 ===== Updating the version number
 
 Once a release is published, the minor version number of TSDuck `TS_VERSION_MINOR`

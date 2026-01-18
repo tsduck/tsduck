@@ -23,7 +23,8 @@ ts::mcast::GatewayConfiguration::GatewayConfiguration(Report& report, const Flut
     if (parseXML(doc, u"MulticastGatewayConfiguration", true)) {
         const xml::Element* root = doc.rootElement();
 
-        _valid = root->getISODateTimeAttribute(validity_period, u"validityPeriod", false, strict) &&
+        _valid = root->getIntAttribute(schema_version, u"schemaVersion", strict) &&
+                 root->getISODateTimeAttribute(validity_period, u"validityPeriod", false, strict) &&
                  root->getISODateTimeAttribute(valid_until, u"validUntil", false, strict);
 
         // Decode all GatewayConfigurationTransportSession elements.

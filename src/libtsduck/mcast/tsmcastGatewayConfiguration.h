@@ -43,8 +43,9 @@ namespace ts::mcast {
         GatewayConfiguration(Report& report, const FluteFile& file, bool strict);
 
         // GatewayConfiguration public fields.
-        ISOTime validity_period {};  //!< Attribute validityPeriod
-        Time    valid_until {};      //!< Attribute validUntil (Time::Epoch if absent)
+        uint32_t schema_version = 0;  //!< Attribute schemaVersion
+        ISOTime  validity_period {};  //!< Attribute validityPeriod
+        Time     valid_until {};      //!< Attribute validUntil (Time::Epoch if absent)
         std::list<GatewayConfigurationTransportSession> transport_sessions {};  //!< Elements \<GatewayConfigurationTransportSession>
         std::list<MulticastSession> multicast_sessions {};                      //!< Elements \<MulticastSession>
         std::list<ReportingLocator> reporting_locators {};                      //!< Elements \<ReportingLocator> in \<MulticastGatewaySessionReporting>
