@@ -15,6 +15,7 @@
     #include "tsBeforeStandardHeaders.h"
     #include <mstcpip.h>
     #include "tsAfterStandardHeaders.h"
+    #include "tsSysInfo.h"
 #elif defined(TS_LINUX)
     #include "tsBeforeStandardHeaders.h"
     #include <linux/errqueue.h>
@@ -315,13 +316,17 @@ bool ts::UDPSocket::setReceiveTimestamps(bool on, Report& report)
 {
 #if defined(TS_WINDOWS)
 
-    ::TIMESTAMPING_CONFIG config;
-    TS_ZERO(config);
-    config.Flags = TIMESTAMPING_FLAG_RX;
-    ::DWORD bytes = 0;
-    if (::WSAIoctl(getSocket(), SIO_TIMESTAMPING, &config, sizeof(config), nullptr, 0, &bytes, nullptr, nullptr) != 0) {
-        report.error(u"socket option SIO_TIMESTAMPING: %s", SysErrorCodeMessage(::WSAGetLastError()));
-        return false;
+    // On Windows, SIO_TIMESTAMPING is supported after Windows 10 Build 20348.
+    // Silently ignore the feature when not supported.
+    if (SysInfo::Instance().systemBuild() >= 20348) {
+        ::TIMESTAMPING_CONFIG config;
+        TS_ZERO(config);
+        config.Flags = TIMESTAMPING_FLAG_RX;
+        ::DWORD bytes = 0;
+        if (::WSAIoctl(getSocket(), SIO_TIMESTAMPING, &config, sizeof(config), nullptr, 0, &bytes, nullptr, nullptr) != 0) {
+            report.error(u"socket option SIO_TIMESTAMPING: %s", SysErrorCodeMessage(::WSAGetLastError()));
+            return false;
+        }
     }
 
 #else

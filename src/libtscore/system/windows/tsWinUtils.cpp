@@ -152,6 +152,32 @@ ts::UString ts::WinDeviceName(::HANDLE handle)
 
 
 //-----------------------------------------------------------------------------
+// Search a function in a list of DLL's (Windows-specific).
+//-----------------------------------------------------------------------------
+
+void* ts::GetFunctionFromDLL(const char* function, std::initializer_list<const char*> dll)
+{
+    for (auto name : dll) {
+        // Try to access an already loaded DLL.
+        ::HMODULE hmod = ::GetModuleHandleA(name);
+        if (hmod == nullptr) {
+            // Not loaded, try to load it.
+            hmod = LoadLibraryA(name);
+        }
+        if (hmod != nullptr) {
+            // DLL loaded, look for the function.
+            void* addr = ::GetProcAddress(hmod, function);
+            if (addr != nullptr) {
+                // Function found.
+                return addr;
+            }
+        }
+    }
+    return nullptr;
+}
+
+
+//-----------------------------------------------------------------------------
 // Start an application with elevated privileges (Windows-specific).
 //-----------------------------------------------------------------------------
 

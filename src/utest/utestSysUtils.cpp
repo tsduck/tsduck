@@ -658,11 +658,12 @@ TSUNIT_DEFINE_TEST(IsTerminal)
 TSUNIT_DEFINE_TEST(SysInfo)
 {
     debug() << "SysUtilsTest::testSysInfo: " << std::endl
-            << "    arch() = " << int(ts::SysInfo::Instance().arch()) << std::endl
-            << "    os() = " << int(ts::SysInfo::Instance().os()) << std::endl
-            << "    osFlavor() = " << int(ts::SysInfo::Instance().osFlavor()) << std::endl
+            << "    arch = " << int(ts::SysInfo::Instance().arch()) << std::endl
+            << "    os = " << int(ts::SysInfo::Instance().os()) << std::endl
+            << "    osFlavor = " << int(ts::SysInfo::Instance().osFlavor()) << std::endl
             << "    systemVersion = \"" << ts::SysInfo::Instance().systemVersion() << '"' << std::endl
             << "    systemMajorVersion = " << ts::SysInfo::Instance().systemMajorVersion() << std::endl
+            << "    systemBuild = " << ts::SysInfo::Instance().systemBuild() << std::endl
             << "    systemName = \"" << ts::SysInfo::Instance().systemName() << '"' << std::endl
             << "    hostName = \"" << ts::SysInfo::Instance().hostName() << '"' << std::endl
             << "    memoryPageSize = " << ts::SysInfo::Instance().memoryPageSize() << std::endl;
@@ -670,6 +671,7 @@ TSUNIT_DEFINE_TEST(SysInfo)
 #if defined(TS_WINDOWS)
     TSUNIT_EQUAL(ts::SysInfo::WINDOWS, ts::SysInfo::Instance().os());
     TSUNIT_EQUAL(ts::SysInfo::NONE, ts::SysInfo::Instance().osFlavor());
+    TSUNIT_ASSERT(ts::SysInfo::Instance().systemBuild() > 0);
 #elif defined(TS_LINUX)
     TSUNIT_EQUAL(ts::SysInfo::LINUX, ts::SysInfo::Instance().os());
 #elif defined(TS_MAC)

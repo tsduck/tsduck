@@ -147,6 +147,18 @@ namespace ts {
     TSCOREDLL UString WinDeviceName(::HANDLE handle);
 
     //!
+    //! Search a function in a list of DLL's (Windows-specific).
+    //! This function is typically used in "static const" declarations to find functions once.
+    //! @param [in] function Name of the function to find.
+    //! @param [in] dll List of DLL to search. Each DLL is search until the function is found.
+    //! The DLL is first searched in the process memory (GetModuleHandle) and then loaded if
+    //! necessary (LoadLibrary). Once a library is loaded, we don't unload it to keep access to
+    //! the function.
+    //! @return The address of the function or a null pointer if not found.
+    //!
+    TSCOREDLL void* GetFunctionFromDLL(const char* function, std::initializer_list<const char*> dll);
+
+    //!
     //! Start an application with elevated privileges (Windows-specific).
     //! @param [in] exeName Path name of the executable file to run.
     //! @param [in] synchronous If true, wait for the process to terminate.

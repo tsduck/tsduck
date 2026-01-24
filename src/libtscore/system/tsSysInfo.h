@@ -101,6 +101,13 @@ namespace ts {
         //!
         int systemMajorVersion() const { return _systemMajorVersion; }
         //!
+        //! Get the operating system build as an integer.
+        //! The exact meaning of this number is system dependent.
+        //! On Windows, it returns the Windows build number.
+        //! @return The operating system build or -1 if unknown.
+        //!
+        int systemBuild() const { return _systemBuild; }
+        //!
         //! Get the operating system name.
         //! @return The operating system name.
         //!
@@ -146,6 +153,7 @@ namespace ts {
         SysFlavor _osFlavor = UNKNOWN;
         bool      _crcInstructions = false;
         int       _systemMajorVersion = -1;
+        int       _systemBuild = -1;
         UString   _systemVersion {};
         UString   _systemName {};
         UString   _hostName {};

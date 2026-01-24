@@ -2,6 +2,16 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
+VERSION 3.44-4571 (January 2026)
+
+[BUG] Bug fixes:
+
+  * Fixed issue #1693:  On old versions of Windows 10, before Build 20348,  UDP
+    reception failed with an error on socket option SIO_TIMESTAMPING.  Now,  on
+    these older Windows versions, UDP packet timestamping is simply ignored.
+
+-------------------------------------------------------------------------------
+
 VERSION 3.43-4549 (January 2026)
 
 [NEW] New commands and plugins:

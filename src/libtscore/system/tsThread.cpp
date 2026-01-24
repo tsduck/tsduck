@@ -12,6 +12,10 @@
 #include "tsSysInfo.h"
 #include "tsIntegerUtils.h"
 
+#if defined(TS_WINDOWS)
+    #include "tsWinUtils.h"
+#endif
+
 #if defined(TS_LINUX)
     #include "tsBeforeStandardHeaders.h"
     #include <sys/prctl.h>
@@ -314,50 +318,6 @@ bool ts::Thread::waitForTermination()
 
 
 //----------------------------------------------------------------------------
-// Dynamically resolve SetThreadDescription() on Windows.
-// Implemented as a static function to allow "initialize once" later.
-//
-// On Windows, SetThreadDescription() is used to set the thread name.
-// This function in defined in Kernel32.dll on recent versions of Windows.
-// On older versions, referencing this symbol fails. According to
-// https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-setthreaddescription
-// on Windows Server 2016, Windows 10 LTSB 2016 and Windows 10 version 1607,
-// SetThreadDescription is only available by Run Time Dynamic Linking in
-// KernelBase.dll. So, we try Kernel32 first, then KernelBase. Eventually,
-// it may not be defined at all and we return a null pointer.
-//
-// Kernel32 and KernelBase are supposed to be already loaded in any user
-// process, so we directly use GetModuleHandle() instead of ts::SharedLibrary.
-//----------------------------------------------------------------------------
-
-#if defined(TS_WINDOWS)
-namespace {
-
-    // Profile for SetThreadDescription().
-    // Note: WINAPI is mandatory on Win32, otherwise calling the function crashes. This is the default with x64.
-    using SetThreadDescriptionProfile = ::HRESULT (WINAPI*)(::HANDLE hThread, ::PCWSTR lpThreadDescription);
-
-    // Dynamically resolve SetThreadDescription() on Windows.
-    SetThreadDescriptionProfile GetSetThreadDescription()
-    {
-        void* addr = nullptr;
-        const ::HMODULE k32 = ::GetModuleHandleA("Kernel32.dll");
-        if (k32 != nullptr) {
-            addr = ::GetProcAddress(k32, "SetThreadDescription");
-        }
-        if (addr == nullptr) {
-            const ::HMODULE kbase = ::GetModuleHandleA("KernelBase.dll");
-            if (kbase != nullptr) {
-                addr = ::GetProcAddress(kbase, "SetThreadDescription");
-            }
-        }
-        return reinterpret_cast<SetThreadDescriptionProfile>(addr);
-    }
-}
-#endif
-
-
-//----------------------------------------------------------------------------
 // Static method. Actual starting point of threads. Parameter is "this".
 //----------------------------------------------------------------------------
 
@@ -385,8 +345,23 @@ void ts::Thread::mainWrapper()
 #elif defined(TS_FREEBSD) || defined(TS_DRAGONFLYBSD)
         ::pthread_setname_np(_pthread, name.toUTF8().c_str());
 #elif defined(TS_WINDOWS)
+        // Dynamically resolve SetThreadDescription() on Windows.
+        // On Windows, SetThreadDescription() is used to set the thread name.
+        // This function in defined in Kernel32.dll on recent versions of Windows.
+        // On older versions, referencing this symbol fails. According to
+        // https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-setthreaddescription
+        // on Windows Server 2016, Windows 10 LTSB 2016 and Windows 10 version 1607,
+        // SetThreadDescription is only available by Run Time Dynamic Linking in
+        // KernelBase.dll. So, we try Kernel32 first, then KernelBase. Eventually,
+        // it may not be defined at all and we return a null pointer.
+
+        // Profile for SetThreadDescription().
+        using SetThreadDescriptionProfile = ::HRESULT(WINAPI*)(::HANDLE hThread, ::PCWSTR lpThreadDescription);
+
         // Thread-safe init-safe static data pattern:
-        static const SetThreadDescriptionProfile SetThreadDescriptionAddr = GetSetThreadDescription();
+        static const SetThreadDescriptionProfile SetThreadDescriptionAddr =
+            reinterpret_cast<SetThreadDescriptionProfile>(GetFunctionFromDLL("SetThreadDescription", {"Kernel32.dll", "KernelBase.dll"}));
+
         if (SetThreadDescriptionAddr != nullptr) {
             SetThreadDescriptionAddr(::GetCurrentThread(), name.wc_str());
         }
