@@ -2,7 +2,13 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.44-4571 (January 2026)
+VERSION 3.44-4572 (February 2026)
+
+[IMP] Improvements on existing commands and plugins:
+
+  * With  "tsp --upgrade",  do  not upgrate the development environment package
+    (tsduck-devel or tsduck-dev) if one exists for the operating system  and it
+    is not installed.
 
 [BUG] Bug fixes:
 

@@ -726,3 +726,35 @@ bool ts::ForkPipe::Launch(const ts::UString& command, ts::Report& report, ts::Fo
         return false;
     }
 }
+
+
+//----------------------------------------------------------------------------
+// This static method launches a command and gets its output as text.
+//----------------------------------------------------------------------------
+
+bool ts::ForkPipe::GetOutput(UString& output, const UString& command, Report& report, bool include_stderr)
+{
+    // Run the command.
+    ForkPipe exe;
+    if (!exe.open(command, SYNCHRONOUS, 0, report, include_stderr ? STDOUTERR_PIPE : STDOUT_PIPE, STDIN_NONE)) {
+        report.error(u"cannot execute command: %s", command);
+        return false;
+    }
+
+    // Read all output in a 8-bit string.
+    static constexpr size_t chunk_size = 2048;
+    std::string out8;
+    size_t size = 0;
+    size_t ret_size = 0;
+    out8.resize(chunk_size);
+    while (exe.readStreamComplete(out8.data() + size, out8.size() - size, ret_size, report)) {
+        size = std::min(size + ret_size, out8.size());
+        out8.resize(size + chunk_size);
+    }
+    out8.resize(size);
+    const bool eof = exe.endOfStream();
+
+    // Return the output.
+    output.assignFromUTF8(out8);
+    return exe.close(report) && eof;
+}

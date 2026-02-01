@@ -170,6 +170,17 @@ namespace ts {
                            InputMode in_mode = STDIN_PARENT,
                            WaitMode wait_mode = ASYNCHRONOUS);
 
+        //!
+        //! This static method launches a command and gets its output as text.
+        //! @param [in] output The output of the command.
+        //! @param [in] command The command to execute.
+        //! @param [in,out] report Where to report errors.
+        //! @param [in] include_stderr If false, the standard error of the command is the same as the parent process.
+        //! If true, the standard error is merged with the standard output in @a output.
+        //! @return True on success, false on error.
+        //!
+        static bool GetOutput(UString& output, const UString& command, Report& report, bool include_stderr = false);
+
         // Implementation of AbstractReadStreamInterface
         virtual bool endOfStream() override;
         virtual bool readStreamPartial(void* addr, size_t max_size, size_t& ret_size, Report& report) override;

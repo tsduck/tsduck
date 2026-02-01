@@ -478,16 +478,41 @@ namespace {
             return false;
         }
 
+        // Get system info to determine which command to run.
+        const ts::SysInfo& sys(ts::SysInfo::Instance());
+
+        // Check if the devel package is installed, if it exists.
+        // If there is a devel package and it is not installed, do not try to upgrade it.
+        ts::UString command, ignore_pattern;
+        if (sys.osFlavor() == ts::SysInfo::FEDORA || sys.osFlavor() == ts::SysInfo::REDHAT) {
+            command = u"rpm -q tsduck-devel 2>/dev/null >/dev/null && echo installed";
+            ignore_pattern = u"tsduck-devel";
+        }
+        else if (sys.osFlavor() == ts::SysInfo::UBUNTU || sys.osFlavor() == ts::SysInfo::DEBIAN || sys.osFlavor() == ts::SysInfo::RASPBIAN) {
+            command = u"dpkg -s tsduck-dev 2>/dev/null >/dev/null && echo installed";
+            ignore_pattern = u"tsduck-dev";
+        }
+        if (!command.empty()) {
+            ts::UString output;
+            opt.debug(u"running: %s", command);
+            ts::ForkPipe::GetOutput(output, command, opt);
+            output.trim();
+            opt.debug(u"devel package status: \"%s\"", output);
+            if (!output.empty()) {
+                // Devel package installed.
+                ignore_pattern.clear();
+            }
+        }
+
         // Get local asset files for this platform.
         ts::GitHubRelease::AssetList assets;
         rel.getPlatformAssets(assets);
         ts::UStringList files;
         for (const auto& it : assets) {
-            files.push_back(opt.out_dir + it.name);
+            if (ignore_pattern.empty() || !it.name.contains(ignore_pattern)) {
+                files.push_back(opt.out_dir + it.name);
+            }
         }
-
-        // Get system info to determine which command to run.
-        const ts::SysInfo& sys(ts::SysInfo::Instance());
 
         if (files.empty() && sys.os() != ts::SysInfo::MACOS) {
             opt.error(u"no binary installer available for your system");
