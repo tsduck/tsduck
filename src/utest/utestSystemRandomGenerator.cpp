@@ -23,7 +23,9 @@
 class SystemRandomGeneratorTest: public tsunit::Test
 {
     TSUNIT_DECLARE_TEST(SystemRandomGenerator);
+#if !defined(TS_NO_EXTERNAL_TESTS)
     TSUNIT_DECLARE_TEST(BetterSystemRandomGenerator);
+#endif
     TSUNIT_DECLARE_TEST(Range);
 
 private:
@@ -87,10 +89,12 @@ TSUNIT_DEFINE_TEST(SystemRandomGenerator)
     testRandom(gen);
 }
 
+#if !defined(TS_NO_EXTERNAL_TESTS)
 TSUNIT_DEFINE_TEST(BetterSystemRandomGenerator)
 {
     testRandom(ts::BetterSystemRandomGenerator::Instance());
 }
+#endif // TS_NO_EXTERNAL_TESTS
 
 void SystemRandomGeneratorTest::testRandomRange(ts::RandomGenerator& prng, int64_t min, int64_t max)
 {

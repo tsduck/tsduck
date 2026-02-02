@@ -48,7 +48,9 @@ class SysUtilsTest: public tsunit::Test
     TSUNIT_DECLARE_TEST(FileTime);
     TSUNIT_DECLARE_TEST(Wildcard);
     TSUNIT_DECLARE_TEST(SearchWildcard);
+#if !defined(TS_NO_EXTERNAL_TESTS)
     TSUNIT_DECLARE_TEST(HomeDirectory);
+#endif
     TSUNIT_DECLARE_TEST(ProcessCpuTime);
     TSUNIT_DECLARE_TEST(ProcessVirtualSize);
     TSUNIT_DECLARE_TEST(IsTerminal);
@@ -599,6 +601,7 @@ TSUNIT_DEFINE_TEST(SearchWildcard)
 #endif
 }
 
+#if !defined(TS_NO_EXTERNAL_TESTS)
 TSUNIT_DEFINE_TEST(HomeDirectory)
 {
     const ts::UString dir(ts::UserHomeDirectory());
@@ -608,6 +611,7 @@ TSUNIT_DEFINE_TEST(HomeDirectory)
     TSUNIT_ASSERT(fs::exists(dir));
     TSUNIT_ASSERT(fs::is_directory(dir));
 }
+#endif // TS_NO_EXTERNAL_TESTS
 
 TSUNIT_DEFINE_TEST(ProcessCpuTime)
 {

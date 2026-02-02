@@ -30,13 +30,17 @@
 
 class WebRequestTest: public tsunit::Test
 {
+#if !defined(TS_NO_EXTERNAL_TESTS)
     TSUNIT_DECLARE_TEST(GitHub);
     TSUNIT_DECLARE_TEST(Google);
     TSUNIT_DECLARE_TEST(ReadMeFile);
     TSUNIT_DECLARE_TEST(NoRedirection);
+#endif
     TSUNIT_DECLARE_TEST(NonExistentHost);
     TSUNIT_DECLARE_TEST(InvalidURL);
+#if !defined(TS_NO_EXTERNAL_TESTS)
     TSUNIT_DECLARE_TEST(Post);
+#endif
 
 public:
     virtual void beforeTest() override;
@@ -158,6 +162,7 @@ void WebRequestTest::testURL(const ts::UString& url, bool expectRedirection, boo
 // Test cases
 //----------------------------------------------------------------------------
 
+#if !defined(TS_NO_EXTERNAL_TESTS)
 TSUNIT_DEFINE_TEST(GitHub)
 {
     testURL(u"http://www.github.com/",
@@ -203,6 +208,7 @@ TSUNIT_DEFINE_TEST(NoRedirection)
     TSUNIT_ASSERT(!request.finalURL().empty());
     TSUNIT_ASSERT(request.finalURL() != request.originalURL());
 }
+#endif // TS_NO_EXTERNAL_TESTS
 
 TSUNIT_DEFINE_TEST(NonExistentHost)
 {
@@ -226,6 +232,7 @@ TSUNIT_DEFINE_TEST(InvalidURL)
     debug() << "WebRequestTest::testInvalidURL: " << rep.messages() << std::endl;
 }
 
+#if !defined(TS_NO_EXTERNAL_TESTS)
 TSUNIT_DEFINE_TEST(Post)
 {
     // These servers are known to return POST data into a JSON string.
@@ -258,3 +265,4 @@ TSUNIT_DEFINE_TEST(Post)
         TSUNIT_EQUAL(post, jv->value(u"data").toString());
     }
 }
+#endif // TS_NO_EXTERNAL_TESTS
