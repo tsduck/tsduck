@@ -123,6 +123,15 @@ namespace ts {
         //!
         UString cpuName() const { return _cpuName; }
         //!
+        //! Get the number of CPU cores.
+        //! This is typically the number of logical cores, which can be different from the number
+        //! of physical cores when they implement some form of hyperthreading. The result can be
+        //! the same as std::thread::hardware_concurrency() but the latter is documented to be
+        //! considered as a hint only and not accurate.
+        //! @return The number of CPU cores.
+        //!
+        size_t cpuCoreCount() const { return _cpuCoreCount; }
+        //!
         //! Get system memory page size.
         //! @return The system memory page size in bytes.
         //!
@@ -157,6 +166,7 @@ namespace ts {
         UString   _systemVersion {};
         UString   _systemName {};
         UString   _hostName {};
+        size_t    _cpuCoreCount = 0;
         size_t    _memoryPageSize = 0;
     };
 }

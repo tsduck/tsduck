@@ -290,6 +290,31 @@ ts::SysInfo::SysInfo() :
 #endif
 
     //
+    // Get the number of CPU cores.
+    //
+#if defined(TS_WINDOWS)
+
+    // SYSTEM_INFO already fetched.
+    _cpuCoreCount = size_t(sysinfo.dwNumberOfProcessors);
+    
+#elif defined(TS_MAC)
+
+    const long core_count = ::sysconf(_SC_NPROCESSORS_ONLN);
+    if (core_count > 0) {
+        _cpuCoreCount = size_t(core_count);
+    }
+
+#endif
+
+    // If not implemented of default to 1, use std::thread::hardware_concurrency().
+    if (_cpuCoreCount < 2) {
+        const size_t hc = std::thread::hardware_concurrency();
+        if (hc > _cpuCoreCount) {
+            //@@@@@  _cpuCoreCount = size_t(hc);
+        }
+    }
+
+    //
     // Get support for specialized instructions.
     // Can be globally disabled using environment variables.
     //
