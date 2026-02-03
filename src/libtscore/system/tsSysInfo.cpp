@@ -297,7 +297,7 @@ ts::SysInfo::SysInfo() :
     // SYSTEM_INFO already fetched.
     _cpuCoreCount = size_t(sysinfo.dwNumberOfProcessors);
     
-#elif defined(TS_MAC)
+#elif defined(TS_UNIX)
 
     const long core_count = ::sysconf(_SC_NPROCESSORS_ONLN);
     if (core_count > 0) {
