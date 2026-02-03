@@ -15,6 +15,12 @@
 #include "tsPlatform.h"
 
 namespace ts {
+    // warning C5291: 'ts::AbstractOutputStream': deriving from the base class 'std::basic_ostream<char,std::char_traits<char>>'
+    // can cause potential runtime issues due to an ABI bug. Recommend adding a 4-byte data member to the base class for the
+    // padding at the end of it to work around this bug.
+    TS_PUSH_WARNING()
+    TS_MSC_NOWARNING(5291)
+
     //!
     //! Intermediate abstract class to help implementing @c std::ostream.
     //! @ingroup libtscore cpp
@@ -23,6 +29,7 @@ namespace ts {
         public std::basic_ostream<char>,     // Public base
         private std::basic_streambuf<char>   // Internally use a streambuf
     {
+        TS_POP_WARNING()
         TS_NOCOPY(AbstractOutputStream);
     public:
         //!
