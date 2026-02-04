@@ -187,11 +187,16 @@ elif [[ "$SYSTEM" == "OpenBSD" ]]; then
     disamb_pkg() { pkg_info -Q $1 | grep "^$1-[0-9]" | grep -v -e -static | sort | tail -1 | sed -e 's/ .*//'; }
 
     PKGLIST+=(git curl zip bash gsed ggrep gmake $(disamb_pkg gtar) dos2unix coreutils $(disamb_pkg python))
-    [[ -z $NOPCSC    ]] && PKGLIST+=(pcsc-lite)
-    [[ -z $NOJAVA    ]] && PKGLIST+=($(disamb_pkg jdk))
-    [[ -z $NODOXYGEN ]] && PKGLIST+=(doxygen graphviz)
-    [[ -z $NODOC     ]] && PKGLIST+=($(disamb_pkg ruby) ruby-shims asciidoctor qpdf)
-    [[ -z $NODOC     ]] && GEMLIST+=(asciidoctor-pdf rouge)
+    # By default, OpenBSD uses LibreSSL instead of OpenSSL. However, the LibreSSL API is no longer
+    # compatible with OpenSSL and we need to force the installation of OpenSSL. The problem is that
+    # there is no generic "openssl" package. We must install a specific version. This version may
+    # need to be changed in future versions of OpenBSD.
+    [[ -z $NOOPENSSL  ]] && PKGLIST+=(openssl-3.4.1p0v0)
+    [[ -z $NOPCSC     ]] && PKGLIST+=(pcsc-lite)
+    [[ -z $NOJAVA     ]] && PKGLIST+=($(disamb_pkg jdk))
+    [[ -z $NODOXYGEN  ]] && PKGLIST+=(doxygen graphviz)
+    [[ -z $NODOC      ]] && PKGLIST+=($(disamb_pkg ruby) ruby-shims asciidoctor qpdf)
+    [[ -z $NODOC      ]] && GEMLIST+=(asciidoctor-pdf rouge)
 
     echo "Packages: ${PKGLIST[*]}"
     $DRYRUN && exit 0

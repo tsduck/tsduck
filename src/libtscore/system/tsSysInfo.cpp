@@ -310,7 +310,7 @@ ts::SysInfo::SysInfo() :
     if (_cpuCoreCount < 2) {
         const size_t hc = std::thread::hardware_concurrency();
         if (hc > _cpuCoreCount) {
-            //@@@@@  _cpuCoreCount = size_t(hc);
+            _cpuCoreCount = size_t(hc);
         }
     }
 

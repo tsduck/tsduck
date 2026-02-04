@@ -797,6 +797,23 @@ fi
 [[ -n $NOHWACCEL ]] && CXXFLAGS_INCLUDES="$CXXFLAGS_INCLUDES -DTS_NO_ARM_AES_INSTRUCTIONS=1"
 [[ -n $NODEPRECATE ]] && CXXFLAGS_INCLUDES="$CXXFLAGS_INCLUDES -DTS_NODEPRECATE=1"
 
+# By default, OpenBSD uses LibreSSL instead of OpenSSL. However, the LibreSSL API is no longer
+# compatible with OpenSSL and we need to force the installation of OpenSSL. The problem is that
+# there is no generic "openssl" package. We must install a specific version such as package
+# "openssl-3.4.1p0v0". Moreover, several versions can be installed side by side. They are
+# installed in distinct directories such as "/usr/local/lib/eopenssl33", "/usr/local/lib/eopenssl34".
+# So, we need to check which are installed and select the latest one.
+if [[ -z $NOOPENSSL && -n $OPENBSD ]]; then
+    OPENSSL_NAME=$(ls /usr/local/lib/eopenssl*/libcrypto.so* 2>/dev/null | sort | tail -1)
+    if [[ -z $OPENSSL_NAME ]]; then
+        echo >&2 "Warning: no openssl package found, compilation errors may appear"
+    else
+        OPENSSL_NAME=$(basename $(dirname $OPENSSL_NAME))
+        LIBTSCORE_LDLIBS="$LIBTSCORE_LDLIBS -L/usr/local/lib/$OPENSSL_NAME"
+        LIBTSCORE_CXXFLAGS_INCLUDES="$LIBTSCORE_CXXFLAGS_INCLUDES -I/usr/local/include/$OPENSSL_NAME"
+    fi
+fi
+
 # These variables are used when building the TSDuck library, not in the applications.
 # Note, however, that LIBTSDUCK_LDLIBS is still necessary when linking applications
 # against the TSDuck static library.
