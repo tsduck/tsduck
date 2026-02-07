@@ -14,8 +14,7 @@
 #include "tsPluginRepository.h"
 #include "tsBinaryTable.h"
 #include "tsSectionDemux.h"
-#include "tsDSMCCUserToNetworkMessage.h"
-#include "tsDSMCCDownloadDataMessage.h"
+#include "tsDSMCCCarouselController.h"
 #include "tsZlib.h"
 
 
@@ -24,41 +23,26 @@
 //----------------------------------------------------------------------------
 
 namespace ts {
-    class DSMCCPlugin: public ProcessorPlugin, private TableHandlerInterface
+    class DSMCCPlugin: public ProcessorPlugin, private TableHandlerInterface, private SectionHandlerInterface
     {
         TS_PLUGIN_CONSTRUCTORS(DSMCCPlugin);
 
     public:
-        // Implementation of plugin API
         virtual bool start() override;
+        virtual bool stop() override;
         virtual bool getOptions() override;
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
-        using ModulesMap = std::map<uint16_t, ByteBlock>;
+        bool _abort = false;  // Error (not found, etc).
+        PID _pid = PID_NULL;  // Carousel PID.
+        DSMCCCarouselController _controller {duck};
+        SectionDemux _demux {duck, this, this};  // Section filter for Tables and Sections
 
-        bool _abort = false;                   // Error (not found, etc).
-        PID _pid = PID_NULL;                   // Carousel PID.
-        bool _dsi_found = false;               // DSI found flag
-        bool _dii_found = false;               // DII found flag
-        bool _all_modules_found = false;       // All modules found flag
-        uint16_t _number_of_modules = 0x0000;  // Number of modules
-        ModulesMap _modules {};                // Map of modules data
-        SectionDemux _demux {duck, this};      // Section filter
-
-        bool _dump_ready = false;
-
-        std::ostream* _out = &std::cout;
-
-        bool _opt_list = false;
         UString _opt_out_dir {};
 
-        // Invoked by the demux when a complete table is available.
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;
-
-        // Process specific tables
-        void processUNM(const DSMCCUserToNetworkMessage&);
-        void processDDM(const DSMCCDownloadDataMessage&);
+        virtual void handleSection(SectionDemux&, const Section&) override;
     };
 }  // namespace ts
 
@@ -75,11 +59,8 @@ ts::DSMCCPlugin::DSMCCPlugin(TSP* tsp_) :
     option(u"pid", 'p', PIDVAL);
     help(u"pid", u"Specifies the PID carrying DSM-CC Object Carousel. This is a required parameter.");
 
-    option(u"list", 'l');
-    help(u"list", u"List the content of the object carousel instead of extracting files.");
-
     option(u"output-directory", 'o', STRING);
-    help(u"output-directory", u"Specify the directory where carousel files will be extracted. Required unless --list is used.");
+    help(u"output-directory", u"Specify the directory where carousel files will be extracted. This is a required parameter.");
 }
 
 //----------------------------------------------------------------------------
@@ -91,16 +72,16 @@ bool ts::DSMCCPlugin::getOptions()
     getIntValue(_pid, u"pid");
     verbose(u"get options pid: %n", _pid);
 
-    _opt_list = present(u"list");
     getValue(_opt_out_dir, u"output-directory");
+    verbose(u"get options output-directory: %s", _opt_out_dir);
 
     if (_pid == PID_NULL) {
         error(u"a PID must be specified using --pid");
         return false;
     }
 
-    if (!_opt_list && _opt_out_dir.empty()) {
-        error(u"an output directory must be specified with --output-directory unless --list is used");
+    if (_opt_out_dir.empty()) {
+        error(u"an output directory must be specified with --output-directory");
         return false;
     }
     return true;
@@ -112,19 +93,49 @@ bool ts::DSMCCPlugin::getOptions()
 bool ts::DSMCCPlugin::start()
 {
     verbose(u"start");
-    // Get command line arguments.
+
     duck.loadArgs(*this);
     getIntValue(_pid, u"pid", PID_NULL);
 
     // Reinitialize the plugin state.
     _abort = false;
-    _dsi_found = false;
-    _dii_found = false;
-    _all_modules_found = false;
-    _dump_ready = false;
-    _number_of_modules = 0x0000;
-    _modules.clear();
+    _controller.clear();
+
     _demux.reset();
+    _demux.setTableHandler(this);
+    _demux.setSectionHandler(this);
+
+    _controller.setModuleCompletedHandler([this](const DSMCCCarouselController::ModuleContext& ctx) {
+        verbose(u"Module Complete: ID 0x%X (Size: %d)", ctx.module_id, ctx.payload.size());
+
+        ByteBlock uncompressed;
+        if (ctx.is_compressed) {
+            if (Zlib::Decompress(uncompressed, ctx.payload)) {
+                verbose(u"  -> Decompressed size: %d", uncompressed.size());
+                // Additional check if original_size was provided in DII
+                if (ctx.original_size > 0 && uncompressed.size() != ctx.original_size) {
+                    warning(u"Module 0x%X: Decompressed size mismatch! Expected %d, got %d", ctx.module_id, ctx.original_size, uncompressed.size());
+                }
+            }
+            else {
+                error(u"Module 0x%X: Decompression failed!", ctx.module_id);
+                uncompressed = ctx.payload;
+            }
+        }
+        else {
+            uncompressed = ctx.payload;
+        }
+
+        if (!_opt_out_dir.empty()) {
+            UString filename = UString::Format(u"%s/module_%04X.bin", _opt_out_dir, ctx.module_id);
+            if (uncompressed.saveToFile(filename)) {
+                verbose(u"  -> Saved to %s", filename);
+            }
+            else {
+                error(u"Error saving module to %s", filename);
+            }
+        }
+    });
 
     if (_pid != PID_NULL) {
         verbose(u"_demux.addPID: %n", _pid);
@@ -136,110 +147,42 @@ bool ts::DSMCCPlugin::start()
 
 
 //----------------------------------------------------------------------------
+// Stop method
+//----------------------------------------------------------------------------
+
+bool ts::DSMCCPlugin::stop()
+{
+    verbose(u"stop");
+
+    std::stringstream ss;
+    _controller.listModules(ss);
+    UString status = UString::FromUTF8(ss.str());
+    if (!status.empty()) {
+        verbose(u"Final Module Status:\n%s", status);
+    }
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
 // Invoked by the demux when a complete table is available.
 //----------------------------------------------------------------------------
 
 void ts::DSMCCPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
 {
-    verbose(u"handleTable TID: %n", table.tableId());
-
-    switch (table.tableId()) {
-
-        case TID_DSMCC_UNM: {
-            DSMCCUserToNetworkMessage unm(duck, table);
-            if (unm.isValid()) {
-                processUNM(unm);
-            }
-            break;
-        }
-
-        case TID_DSMCC_DDM: {
-            DSMCCDownloadDataMessage ddm(duck, table);
-            if (ddm.isValid()) {
-                processDDM(ddm);
-            }
-            break;
-        }
-
-        default: {
-            break;
-        }
-    }
-
-    if (_all_modules_found) {
-        verbose(u"Removing PID: %n", _pid);
-        _demux.removePID(_pid);
-    }
+    _controller.handleTable(demux, table);
 }
 
 
 //----------------------------------------------------------------------------
-//  This method processes a DSM-CC User-to-Network Message.
+// Invoked by the demux when a complete section is available.
 //----------------------------------------------------------------------------
 
-void ts::DSMCCPlugin::processUNM(const DSMCCUserToNetworkMessage& unm)
+void ts::DSMCCPlugin::handleSection(SectionDemux& demux, const Section& section)
 {
-    verbose(u"processUNM");
-
-    if (unm.header.message_id == 0x1006) {
-        _dsi_found = true;
-        verbose(u"DSI found");
-    }
-    else if (unm.header.message_id == 0x1002) {
-        _dii_found = true;
-        verbose(u"DII found");
-        verbose(u"number of modules: %n", unm.modules.size());
-        _number_of_modules = static_cast<uint16_t>(unm.modules.size());
-    }
+    _controller.handleSection(demux, section);
 }
 
-//----------------------------------------------------------------------------
-//  This method processes a DSM-CC Download Data Message.
-//----------------------------------------------------------------------------
-
-void ts::DSMCCPlugin::processDDM(const DSMCCDownloadDataMessage& ddm)
-{
-    verbose(u"processDDM");
-
-    _modules[ddm.module_id] = ddm.block_data;
-
-    verbose(u"Number of modules: %n", _modules.size());
-
-    if (_dsi_found && _dii_found) {
-        verbose(u"dsi and dii found!!!");
-        verbose(u"modules captured: %d", static_cast<uint16_t>(_number_of_modules));
-        if (_number_of_modules == static_cast<uint16_t>(_modules.size())) {
-            _all_modules_found = true;
-            verbose(u"ALL MODULES FOUND!");
-            for (auto& module : _modules) {
-
-                /*if (module.first == 0x0001 && !_dump_ready) {*/
-                ByteBlock compressed_module = module.second;
-                ByteBlock uncompressed_module {};
-                Zlib::Decompress(uncompressed_module, compressed_module);
-
-                uint32_t _hexa_flags = 0;
-                _hexa_flags = UString::HEXA | UString::ASCII;
-
-                if (true) {
-                    *_out << UString::Format(u"COMPRESSED MODULE ID: %n", module.first)
-                          << std::endl
-                          << UString::Dump(compressed_module, _hexa_flags, 16)
-                          << std::endl;
-
-
-                    *_out << std::endl
-                          << UString::Format(u"UNCOMPRESSED MODULE ID: %n", module.first)
-                          << std::endl
-                          << UString::Dump(uncompressed_module, _hexa_flags, 16)
-                          << std::endl;
-                }
-                /*_dump_ready = true;*/
-                /*}*/
-            }
-        }
-    }
-}
 
 //----------------------------------------------------------------------------
 // Packet processing method
