@@ -184,14 +184,11 @@ elif [[ "$SYSTEM" == "DragonFly" ]]; then
 
 elif [[ "$SYSTEM" == "OpenBSD" ]]; then
 
+    # Get the package name of the latest version of a package for which several versions exist at the same time.
     disamb_pkg() { pkg_info -Q $1 | grep "^$1-[0-9]" | grep -v -e -static | sort | tail -1 | sed -e 's/ .*//'; }
 
-    PKGLIST+=(git curl zip bash gsed ggrep gmake $(disamb_pkg gtar) dos2unix coreutils $(disamb_pkg python))
-    # By default, OpenBSD uses LibreSSL instead of OpenSSL. However, the LibreSSL API is no longer
-    # compatible with OpenSSL and we need to force the installation of OpenSSL. The problem is that
-    # there is no generic "openssl" package. We must install a specific version. This version may
-    # need to be changed in future versions of OpenBSD.
-    [[ -z $NOOPENSSL  ]] && PKGLIST+=(openssl-3.4.1p0v0)
+    PKGLIST+=(git curl zip bash gsed ggrep gmake $(disamb_pkg gtar) dos2unix coreutils base64 $(disamb_pkg python))
+    [[ -z $NOOPENSSL  ]] && PKGLIST+=($(disamb_pkg openssl))
     [[ -z $NOPCSC     ]] && PKGLIST+=(pcsc-lite)
     [[ -z $NOJAVA     ]] && PKGLIST+=($(disamb_pkg jdk))
     [[ -z $NODOXYGEN  ]] && PKGLIST+=(doxygen graphviz)

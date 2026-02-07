@@ -64,6 +64,12 @@ TSDuck has been tested on the following operating systems on at least one CPU ar
 
 |===
 
+CAUTION: On OpenBSD and DragonFlyBSD, there is a mixture of LibreSSL as core cryptographic
+library and several simultaneous versions of OpenSSL in the package manager.
+As a consequence, building or running TSDuck may fail in some configurations.
+This inconvenience is expected to disappear when LibreSSL in the core OS is replaced
+with a recent, stable and complete version of OpenSSL.
+
 TSDuck has been tested on the following CPU architectures on at least one operating system.
 
 .Tested CPU architectures

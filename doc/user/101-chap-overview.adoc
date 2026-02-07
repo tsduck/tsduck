@@ -156,12 +156,26 @@ This is the standard installation structure for Homebrew.
 
 The development environment is always installed with TSDuck using Homebrew.
 
-==== BSD systems
+==== FreeBSD
 
-There is no binary package for TSDuck on BSD systems.
-It must be compiled and installed using the make command.
+On FreeBSD, TSDuck is included in the Ports packages.
+
+The TSDuck installation command is simply:
+
+[source,shell]
+----
+$ sudo pkg install tsduck
+----
+
+All tools are accessible from `/usr/local/bin`, as any other command from Ports.
+The development environment is always installed with TSDuck.
+
+==== Other BSD systems
+
+There is no binary package for TSDuck on other BSD systems.
+It must be compiled and installed using the `gmake` command.
 See the chapter xref:tsduck-dev.html#chap-build["building and installing TSDuck"] section in <<TSDuck-Dev>>.
 
-After installation, all tools are in `/usr/local/bin` for FreeBSD, OpenBSD and DragonFly BSD.
+After installation, all tools are in `/usr/local/bin` for OpenBSD and DragonFly BSD.
 They are in `/usr/pkg/bin` for NetBSD.
 These are the standard locations for the installed packages on these systems.
