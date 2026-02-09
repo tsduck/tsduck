@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_dsmccLiteComponent>
+
+    <!-- DSM-CC LiteComponent() structure -->
+    <lite_component component_id_tag="uint32_t, required">
+      <!-- component_id_tag = 0x49534F50 (TAG_ObjectLocation) -->
+      <BIOP_object_location
+        carousel_id="uint32_t, required"
+        module_id="uint16_t, required"
+        version_major="uint8_t, required"
+        version_minor="uint8_t, required">
+        <object_key_data>
+            Hexadecimal content
+        </object_key_data>
+      </BIOP_object_location>
+      <!-- component_id_tag = 0x49534F40 (TAG_ConnBinder) -->
+      <DSM_conn_binder>
+        <_any in="_dsmccTap"/>
+      </DSM_conn_binder>
+      <!-- component_id_tag = other (Unknown) -->
+      <Unknown_component>
+        <component_data>
+            Hexadecimal content
+        </component_data>
+      </Unknown_component>
+    </lite_component>
+
+  </_dsmccLiteComponent>
+</tsduck>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_dsmccIOR>
+
+    <!-- DSM-CC IOR() structure -->
+    <IOR>
+      <type_id>
+        Hexadecimal content
+      </type_id>
+      <_any in="_dsmccTaggedProfile"/>
+    </IOR>
+
+  </_dsmccIOR>
+</tsduck>

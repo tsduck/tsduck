@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_dsmccTaggedProfile>
+
+    <!-- DSM-CC TaggedProfile() structure -->
+    <tagged_profile profile_id_tag="uint32_t, required" profile_data_byte_order="uint8, required">
+      <!-- profile_id_tag = 0x49534F06 -->
+      <BIOP_profile_body>
+        <_any in="_dsmccLiteComponent"/>
+      </BIOP_profile_body>
+      <!-- profile_id_tag = 0x49534F05 -->
+      <Lite_options_profile_body>
+        <profile_data>
+        Hexadecimal content
+        </profile_data>
+      </Lite_options_profile_body>
+      <!-- profile_id_tag = other -->
+      <Unknown_profile_body>
+        <profile_data>
+        Hexadecimal content
+        </profile_data>
+      </Unknown_profile_body>
+    </tagged_profile>
+
+  </_dsmccTaggedProfile>
+</tsduck>
