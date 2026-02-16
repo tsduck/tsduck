@@ -27,9 +27,46 @@ TS_REGISTER_TABLE(MY_CLASS, {MY_TID}, MY_STD, MY_XML_NAME, MY_CLASS::DisplaySect
 //----------------------------------------------------------------------------
 
 ts::DSMCCUserToNetworkMessage::DSMCCUserToNetworkMessage(uint8_t vers, bool cur) :
-    AbstractLongTable(MY_TID, MY_XML_NAME, MY_STD, vers, cur),
-    modules(this)
+    AbstractLongTable(MY_TID, MY_XML_NAME, MY_STD, vers, cur)
 {
+}
+
+ts::DSMCCUserToNetworkMessage::DSMCCUserToNetworkMessage(const DSMCCUserToNetworkMessage& other) :
+    AbstractLongTable(other),
+    header(other.header),
+    compatibility_descriptor(other.compatibility_descriptor)
+{
+    if (const auto* dii = other.toDII()) {
+        auto& new_dii = body.emplace<DownloadInfoIndication>(this);
+        new_dii.download_id = dii->download_id;
+        new_dii.block_size = dii->block_size;
+        new_dii.modules = dii->modules;
+    }
+    else if (const auto* dsi = other.toDSI()) {
+        body = *dsi;
+    }
+}
+
+ts::DSMCCUserToNetworkMessage& ts::DSMCCUserToNetworkMessage::operator=(const DSMCCUserToNetworkMessage& other)
+{
+    if (this != &other) {
+        AbstractLongTable::operator=(other);
+        header = other.header;
+        compatibility_descriptor = other.compatibility_descriptor;
+        if (const auto* dii = other.toDII()) {
+            auto& new_dii = body.emplace<DownloadInfoIndication>(this);
+            new_dii.download_id = dii->download_id;
+            new_dii.block_size = dii->block_size;
+            new_dii.modules = dii->modules;
+        }
+        else if (const auto* dsi = other.toDSI()) {
+            body = *dsi;
+        }
+        else {
+            body = std::monostate{};
+        }
+    }
+    return *this;
 }
 
 ts::DSMCCUserToNetworkMessage::DSMCCUserToNetworkMessage(DuckContext& duck, const BinaryTable& table) :
@@ -38,7 +75,7 @@ ts::DSMCCUserToNetworkMessage::DSMCCUserToNetworkMessage(DuckContext& duck, cons
     deserialize(duck, table);
 }
 
-ts::DSMCCUserToNetworkMessage::Module::Module(const AbstractTable* table) :
+ts::DSMCCUserToNetworkMessage::DownloadInfoIndication::Module::Module(const AbstractTable* table) :
     EntryWithDescriptors(table)
 {
 }
@@ -62,14 +99,7 @@ void ts::DSMCCUserToNetworkMessage::clearContent()
     header.clear();
     compatibility_descriptor.clear();
 
-    // DSI
-    server_id.clear();
-    ior.clear();
-
-    // DII
-    download_id = 0;
-    block_size = 0;
-    modules.clear();
+    body = std::monostate{};
 }
 
 
@@ -126,23 +156,25 @@ void ts::DSMCCUserToNetworkMessage::deserializePayload(PSIBuffer& buf, const Sec
     }
 
     if (header.message_id == DSMCC_MSGID_DSI) {
+        DownloadServerInitiate& dsi(body.emplace<DownloadServerInitiate>());
 
-        buf.getBytes(server_id, DSMCC_SERVER_ID_SIZE);
+        buf.getBytes(dsi.server_id, DSMCC_SERVER_ID_SIZE);
         compatibility_descriptor.deserialize(buf);
 
         // Private_data_length
         buf.pushReadSizeFromLength(16);  // private_data_length
 
-        ior.deserialize(buf);
+        dsi.ior.deserialize(buf);
 
         buf.skipBytes(4);  // download_taps_count + service_context_list_count + user_info_length
 
         buf.popState();
     }
     else if (header.message_id == DSMCC_MSGID_DII) {
+        DownloadInfoIndication& dii(body.emplace<DownloadInfoIndication>(this));
 
-        download_id = buf.getUInt32();
-        block_size = buf.getUInt16();
+        dii.download_id = buf.getUInt32();
+        dii.block_size = buf.getUInt16();
 
         buf.skipBytes(10);  // windowSize + ackPeriod + tCDownloadWindow + tCDownloadScenario
         compatibility_descriptor.deserialize(buf);
@@ -150,7 +182,7 @@ void ts::DSMCCUserToNetworkMessage::deserializePayload(PSIBuffer& buf, const Sec
         const uint16_t number_of_modules = buf.getUInt16();
 
         for (size_t i = 0; i < number_of_modules; i++) {
-            Module& module(modules.newEntry());
+            DownloadInfoIndication::Module& module(dii.modules.newEntry());
 
             module.module_id = buf.getUInt16();
             module.module_size = buf.getUInt32();
@@ -202,14 +234,14 @@ void ts::DSMCCUserToNetworkMessage::serializePayload(BinaryTable& table, PSIBuff
 
     buf.pushWriteSequenceWithLeadingLength(16);
 
-    if (header.message_id == DSMCC_MSGID_DSI) {
-        buf.putBytes(server_id);
+    if (const auto* dsi = toDSI()) {
+        buf.putBytes(dsi->server_id);
         compatibility_descriptor.serialize(buf, true);
 
         buf.pushWriteSequenceWithLeadingLength(16);  // private_data
 
         // IOP::IOR
-        ior.serialize(buf);
+        dsi->ior.serialize(buf);
 
         buf.putUInt8(0x00);     // download_taps_count
         buf.putUInt8(0x00);     // service_context_list_count
@@ -217,10 +249,10 @@ void ts::DSMCCUserToNetworkMessage::serializePayload(BinaryTable& table, PSIBuff
 
         buf.popState();  // close private_data
     }
-    else if (header.message_id == DSMCC_MSGID_DII) {
+    else if (const auto* dii = toDII()) {
 
-        buf.putUInt32(download_id);
-        buf.putUInt16(block_size);
+        buf.putUInt32(dii->download_id);
+        buf.putUInt16(dii->block_size);
 
         // ETSI TR 101 202 V1.2.1 5.7.5.1
         // Not used and set to zero
@@ -230,9 +262,9 @@ void ts::DSMCCUserToNetworkMessage::serializePayload(BinaryTable& table, PSIBuff
         buf.putUInt32(0x00000000);  // tCDownloadScenario
         compatibility_descriptor.serialize(buf, true);
 
-        buf.putUInt16(uint16_t(modules.size()));
+        buf.putUInt16(uint16_t(dii->modules.size()));
 
-        for (const auto& module : modules) {
+        for (const auto& module : dii->modules) {
 
             buf.putUInt16(module.second.module_id);
             buf.putUInt32(module.second.module_size);
@@ -392,22 +424,22 @@ void ts::DSMCCUserToNetworkMessage::buildXML(DuckContext& duck, xml::Element* ro
     root->setIntAttribute(u"message_id", header.message_id, true);
     root->setIntAttribute(u"transaction_id", header.transaction_id, true);
 
-    if (header.message_id == DSMCC_MSGID_DSI) {
-        xml::Element* dsi = root->addElement(u"DSI");
-        dsi->addHexaTextChild(u"server_id", server_id, true);
-        compatibility_descriptor.toXML(duck, dsi, true);
+    if (const auto* dsi = toDSI()) {
+        xml::Element* dsi_xml = root->addElement(u"DSI");
+        dsi_xml->addHexaTextChild(u"server_id", dsi->server_id, true);
+        compatibility_descriptor.toXML(duck, dsi_xml, true);
 
-        ior.toXML(duck, dsi);
+        dsi->ior.toXML(duck, dsi_xml);
     }
-    else if (header.message_id == DSMCC_MSGID_DII) {
+    else if (const auto* dii = toDII()) {
 
-        xml::Element* dii = root->addElement(u"DII");
-        dii->setIntAttribute(u"download_id", download_id, true);
-        dii->setIntAttribute(u"block_size", block_size, true);
-        compatibility_descriptor.toXML(duck, dii, true);
+        xml::Element* dii_xml = root->addElement(u"DII");
+        dii_xml->setIntAttribute(u"download_id", dii->download_id, true);
+        dii_xml->setIntAttribute(u"block_size", dii->block_size, true);
+        compatibility_descriptor.toXML(duck, dii_xml, true);
 
-        for (const auto& it : modules) {
-            xml::Element* mod = dii->addElement(u"module");
+        for (const auto& it : dii->modules) {
+            xml::Element* mod = dii_xml->addElement(u"module");
             mod->setIntAttribute(u"module_id", it.second.module_id, true);
             mod->setIntAttribute(u"module_size", it.second.module_size, true);
             mod->setIntAttribute(u"module_version", it.second.module_version, true);
@@ -445,7 +477,8 @@ bool ts::DSMCCUserToNetworkMessage::analyzeXML(DuckContext& duck, const xml::Ele
             return false;
         }
 
-        ok = dsi_element->getHexaTextChild(server_id, u"server_id") &&
+        DownloadServerInitiate& dsi(body.emplace<DownloadServerInitiate>());
+        ok = dsi_element->getHexaTextChild(dsi.server_id, u"server_id") &&
             compatibility_descriptor.fromXML(duck, dsi_element, false);
 
         const xml::Element* ior_element = dsi_element->findFirstChild(u"IOR", true);
@@ -453,7 +486,7 @@ bool ts::DSMCCUserToNetworkMessage::analyzeXML(DuckContext& duck, const xml::Ele
             return false;
         }
 
-        ok = ior.fromXML(duck, ior_element);
+        ok = dsi.ior.fromXML(duck, ior_element);
     }
     else if (header.message_id == DSMCC_MSGID_DII) {
         const xml::Element* dii_element = element->findFirstChild(u"DII", true);
@@ -461,12 +494,13 @@ bool ts::DSMCCUserToNetworkMessage::analyzeXML(DuckContext& duck, const xml::Ele
             return false;
         }
 
-        ok = dii_element->getIntAttribute(download_id, u"download_id", true) &&
-            dii_element->getIntAttribute(block_size, u"block_size", true) &&
+        DownloadInfoIndication& dii(body.emplace<DownloadInfoIndication>(this));
+        ok = dii_element->getIntAttribute(dii.download_id, u"download_id", true) &&
+            dii_element->getIntAttribute(dii.block_size, u"block_size", true) &&
             compatibility_descriptor.fromXML(duck, dii_element, false);
 
         for (auto& xmod : dii_element->children(u"module", &ok)) {
-            auto& module(modules.newEntry());
+            DownloadInfoIndication::Module& module(dii.modules.newEntry());
             ok = xmod.getIntAttribute(module.module_id, u"module_id", true) &&
                 xmod.getIntAttribute(module.module_size, u"module_size", true) &&
                 xmod.getIntAttribute(module.module_version, u"module_version", true) &&
@@ -476,7 +510,7 @@ bool ts::DSMCCUserToNetworkMessage::analyzeXML(DuckContext& duck, const xml::Ele
                 module.descs.fromXML(duck, &xmod, u"tap");
 
             for (auto& xtap : xmod.children(u"tap", &ok)) {
-                auto& tap(module.taps.emplace_back());
+                DSMCCTap& tap(module.taps.emplace_back());
                 ok = tap.fromXML(duck, &xtap, nullptr);
             }
         }

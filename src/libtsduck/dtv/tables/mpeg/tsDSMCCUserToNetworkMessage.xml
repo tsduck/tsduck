@@ -13,6 +13,7 @@
 
       <_any in="_metadata"/>
 
+      <!-- required when message_id == 0x1006 (DownloadServerInitiate) -->
       <DSI>
         <server_id>
           Hexadecimal content
@@ -21,6 +22,7 @@
         <_any in="_dsmccIOR"/>
       </DSI>
 
+      <!-- required when message_id == 0x1002 (DownloadInfoIndication) -->
       <DII download_id="uint32, required" block_size="uint16, required">
         <_any in="_dsmccCompatibilityDescriptor"/>
         <module

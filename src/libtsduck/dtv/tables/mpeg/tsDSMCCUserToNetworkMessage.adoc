@@ -13,7 +13,7 @@ Defined by MPEG in <<ISO-13818-6>>.
     message_id="uint16, required"
     transaction_id="uint32, required">
 
-  <!-- Exactly one of DSI or DII -->
+  <!-- required when message_id == 0x1006 (DownloadServerInitiate) -->
   <DSI>
     <server_id>
       Hexadecimal content
@@ -93,6 +93,7 @@ Defined by MPEG in <<ISO-13818-6>>.
 
   </DSI>
 
+  <!-- required when message_id == 0x1002 (DownloadInfoIndication) -->
   <DII download_id="uint32, required" block_size="uint16, required">
 
     <!-- Optional DSM-CC compatibilityDescriptor() structure -->

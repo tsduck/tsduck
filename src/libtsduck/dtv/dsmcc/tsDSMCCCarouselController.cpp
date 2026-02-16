@@ -110,7 +110,12 @@ void ts::DSMCCCarouselController::processDSI(const DSMCCUserToNetworkMessage& un
 
 void ts::DSMCCCarouselController::processDII(const DSMCCUserToNetworkMessage& unm)
 {
-    for (const auto& it : unm.modules) {
+    const auto* dii = unm.toDII();
+    if (dii == nullptr) {
+        return;
+    }
+
+    for (const auto& it : dii->modules) {
         const auto& mod_info = it.second;
         const uint16_t mod_id = mod_info.module_id;
 
@@ -120,7 +125,7 @@ void ts::DSMCCCarouselController::processDII(const DSMCCUserToNetworkMessage& un
         if (ctx.status == ModuleContext::Status::UNKNOWN || ctx.module_version != mod_info.module_version) {
             ctx.module_id = mod_id;
             ctx.module_version = mod_info.module_version;
-            ctx.setSize(mod_info.module_size, unm.block_size > 0 ? unm.block_size : 4066);
+            ctx.setSize(mod_info.module_size, dii->block_size > 0 ? dii->block_size : 4066);
             ctx.status = ModuleContext::Status::PENDING;
 
             // Look for compressed_module_descriptor

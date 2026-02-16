@@ -55,53 +55,87 @@ namespace ts {
         };
 
         //  *****************************************
-        //  *** DownloadInfoIndication Structures ***
+        //  *** DownloadServerInitiate Structure  ***
         //  *****************************************
+        struct TSDUCKDLL DownloadServerInitiate {
+            ByteBlock server_id {};  //!< Field shall be set to 20 bytes with the value 0xFF.
+            DSMCCIOR ior {};         //!< Interoperable Object Reference (IOR) structure.
 
-        //!
-        //! Representation of BIOP::ModuleInfo structure
-        //! @see ETSI TR 101 202 V1.2.1 (2003-01), Table 4.14
-        //!
-        class TSDUCKDLL Module: public EntryWithDescriptors
-        {
-            TS_NO_DEFAULT_CONSTRUCTORS(Module);
-            TS_DEFAULT_ASSIGMENTS(Module);
-
-        public:
-            uint16_t module_id = 0;       //!< Identifies the module.
-            uint32_t module_size = 0;     //!< Length of the module in bytes.
-            uint8_t module_version = 0;   //!< Identifies the version of the module.
-            uint32_t module_timeout = 0;  //!< Time out value in microseconds that may be used to time out the acquisition of all Blocks of the Module.
-            uint32_t block_timeout = 0;   //!< Time out value in microseconds that may be used to time out the reception of the next Block after a Block has been acquired.
-            uint32_t min_block_time = 0;  //!< Indicates the minimum time period that exists between the delivery of two subsequent Blocks of the Module.
-            std::list<DSMCCTap> taps {};  //!< List of Taps.
-
-            //!
-            //! Constructor.
-            //! @param [in] table Parent DSMCCUserToNetworkMessage Table.
-            //!
-            explicit Module(const AbstractTable* table);
+            void clear()
+            {
+                server_id.clear();
+                ior.clear();
+            }
         };
 
-        //!
-        //! List of Modules
-        //!
-        using ModuleList = AttachedEntryList<Module>;
+        //  *****************************************
+        //  *** DownloadInfoIndication Structure  ***
+        //  *****************************************
+        struct TSDUCKDLL DownloadInfoIndication {
 
-        // Common fields for all DSMCCUserToNetworkMessage:
+            uint32_t download_id = 0;  //!< Same value as the downloadId field of the DownloadDataBlock() messages which carry the Blocks of the Module.
+            uint16_t block_size = 0;   //!< Block size of all the DownloadDataBlock() messages which convey the Blocks of the Modules.
+
+            //!
+            //! Representation of BIOP::ModuleInfo structure
+            //! @see ETSI TR 101 202 V1.2.1 (2003-01), Table 4.14
+            //!
+            class TSDUCKDLL Module: public EntryWithDescriptors
+            {
+                TS_NO_DEFAULT_CONSTRUCTORS(Module);
+                TS_DEFAULT_ASSIGMENTS(Module);
+
+            public:
+                uint16_t module_id = 0;       //!< Identifies the module.
+                uint32_t module_size = 0;     //!< Length of the module in bytes.
+                uint8_t module_version = 0;   //!< Identifies the version of the module.
+                uint32_t module_timeout = 0;  //!< Time out value in microseconds that may be used to time out the acquisition of all Blocks of the Module.
+                uint32_t block_timeout = 0;   //!< Time out value in microseconds that may be used to time out the reception of the next Block after a Block has been acquired.
+                uint32_t min_block_time = 0;  //!< Indicates the minimum time period that exists between the delivery of two subsequent Blocks of the Module.
+                std::list<DSMCCTap> taps {};  //!< List of Taps.
+
+                //!
+                //! Constructor.
+                //! @param [in] table Parent DSMCCUserToNetworkMessage Table.
+                //!
+                explicit Module(const AbstractTable* table);
+            };
+
+            //!
+            //! List of Modules
+            //!
+            using ModuleList = AttachedEntryList<Module>;
+
+            ModuleList modules;  //!< List of modules structures.
+
+            explicit DownloadInfoIndication(DSMCCUserToNetworkMessage* parent) : modules(parent) {}
+            DownloadInfoIndication(const DownloadInfoIndication&) = delete;
+            DownloadInfoIndication& operator=(const DownloadInfoIndication&) = delete;
+
+            void clear()
+            {
+                download_id = 0;
+                block_size = 0;
+                modules.clear();
+            }
+        };
+
+        using MessageBody = std::variant<std::monostate, DownloadServerInitiate, DownloadInfoIndication>;
 
         MessageHeader header {};                                   //!< DSM-CC Message Header.
         DSMCCCompatibilityDescriptor compatibility_descriptor {};  //!< DSM-CC compatibilityDescriptor.
+        MessageBody body;                                          //!< Message body, either DSI or DII.
 
-        // These fields apply to DSI:
-        ByteBlock server_id {};  //!< Field shall be set to 20 bytes with the value 0xFF.
-        DSMCCIOR ior {};         //!< Interoperable Object Reference (IOR) structure.
 
-        // These fields apply to DII:
-        uint32_t download_id = 0;  //!< Same value as the downloadId field of the DownloadDataBlock() messages which carry the Blocks of the Module.
-        uint16_t block_size = 0;   //!< Block size of all the DownloadDataBlock() messages which convey the Blocks of the Modules.
-        ModuleList modules;        //!< List of modules structures.
+        // Accessors to the message body
+        bool isDSI() const { return std::holds_alternative<DownloadServerInitiate>(body); }
+        bool isDII() const { return std::holds_alternative<DownloadInfoIndication>(body); }
 
+        DownloadServerInitiate* toDSI() { return std::get_if<DownloadServerInitiate>(&body); }
+        const DownloadServerInitiate* toDSI() const { return std::get_if<DownloadServerInitiate>(&body); }
+
+        DownloadInfoIndication* toDII() { return std::get_if<DownloadInfoIndication>(&body); }
+        const DownloadInfoIndication* toDII() const { return std::get_if<DownloadInfoIndication>(&body); }
 
         //!
         //! Default constructor.
@@ -109,6 +143,19 @@ namespace ts {
         //! @param [in] cur True if table is current, false if table is next.
         //!
         DSMCCUserToNetworkMessage(uint8_t vers = 0, bool cur = true);
+
+        //!
+        //! Copy constructor.
+        //! @param [in] other Other table to copy.
+        //!
+        DSMCCUserToNetworkMessage(const DSMCCUserToNetworkMessage& other);
+
+        //!
+        //! Assignment operator.
+        //! @param [in] other Other table to copy.
+        //! @return A reference to this object.
+        //!
+        DSMCCUserToNetworkMessage& operator=(const DSMCCUserToNetworkMessage& other);
 
         //!
         //! Constructor from a binary table.
