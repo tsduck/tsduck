@@ -305,7 +305,7 @@ bool ts::TSScrambling::start()
 
     // Create the output file for control words.
     if (!_out_cw_name.empty()) {
-        _out_cw_file.open(_out_cw_name.toUTF8().c_str(), std::ios::out);
+        _out_cw_file.open(TS_FILENAME_FOR_STD_OPEN(_out_cw_name), std::ios::out);
         success = !_out_cw_file.fail();
         if (!success) {
             _report.error(u"error creating %s", _out_cw_name);

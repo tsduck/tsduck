@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.44-4572 (February 2026)
+VERSION 3.44-4579 (March 2026)
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -15,6 +15,11 @@ VERSION 3.44-4572 (February 2026)
   * Fixed issue #1693:  On old versions of Windows 10, before Build 20348,  UDP
     reception failed with an error on socket option SIO_TIMESTAMPING.  Now,  on
     these older Windows versions, UDP packet timestamping is simply ignored.
+  * Fixed issue #1698:  On  Windows,  using  non-ASCII file names (e.g. Chinese
+    names)  failed  in  some  cases.  This  is  due  to an inconsistency of the
+    Microsoft  C++  runtime library. A workaround for this issue is deployed in
+    the TSDuck source code. Remaining cases may still be present. Please report
+    them and they will be fixed.
 
 -------------------------------------------------------------------------------
 

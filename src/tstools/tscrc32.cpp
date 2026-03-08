@@ -84,7 +84,7 @@ namespace {
         else {
             // Dump named files. Open the file in binary mode. Will be closed by destructor.
             in = &file;
-            file.open(filename.toUTF8().c_str(), std::ios::binary);
+            file.open(TS_FILENAME_FOR_STD_OPEN(filename), std::ios::binary);
             if (!file) {
                 opt.error(u"cannot open file %s", filename);
                 return;

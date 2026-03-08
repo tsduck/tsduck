@@ -110,7 +110,7 @@ int MainCode(int argc, char *argv[])
         mode |= std::ios::out;
     }
 
-    opt.file.open(opt.filename.toUTF8().c_str(), mode);
+    opt.file.open(TS_FILENAME_FOR_STD_OPEN(opt.filename), mode);
 
     if (!opt.file) {
         opt.error(u"cannot open file %s", opt.filename);

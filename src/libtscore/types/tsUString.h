@@ -643,6 +643,45 @@ namespace ts {
         UString& assignFromWChar(const wchar_t* wstr, size_type count);
 
         //--------------------------------------------------------------------
+        // WORKAROUND FOR WINDOWS CRAP ON FILE NAMES !!!!!!!!!!!!!!!!!!
+        //--------------------------------------------------------------------
+
+        //!
+        //! Prepare a UString to be used as a file name for the C++ runtime library.
+        //!
+        //! This awful macro is required by the f@#! crap of Microsoft C++ runtime library.
+        //!
+        //! In all operating systems, the methods open() of the C++ runtime library accept
+        //! UTF-8 names. Except Windows, as usual... With Windows, either you use wfile on
+        //! wchar_t file names, or you use file on a char file name. In the first case, the
+        //! semantic of a wfile is not the same as a file and it does not work. In the second
+        //! case, the char file name must be strictly 8 bits, not UTF-8. As a workaround,
+        //! recent versions of the Microsoft "standard" C++ runtime library have added
+        //! another open() method on file using a wchar_t file name. To open standard files
+        //! using non-ASCII file names (e.g. Chinese names), we must use this non-standard
+        //! method. On all other operating systems, the standard open() method works.
+        //!
+        //! To "hide" this trick, this macro returns either a char or a wchar_t address
+        //! inside some temporary object, from a UString object.
+        //!
+        //! This feature must be implemented as a macro, not a function, and must be used
+        //! directly in the call of the standard open() function, because it returns an
+        //! address inside a temporary object. This object must be inlined in the open()
+        //! function call.
+        //!
+        //! LET MICROSOFT BURN IN HELL !!!
+        //!
+        //! @ingroup cpp
+        //! @param name The file name in a UString object.
+        //! @hideinitializer
+        //! 
+        #if defined(TS_WINDOWS)
+            #define TS_FILENAME_FOR_STD_OPEN(name) ((name).wc_str())
+        #else
+            #define TS_FILENAME_FOR_STD_OPEN(name) ((name).toUTF8().c_str())
+        #endif
+
+        //--------------------------------------------------------------------
         // Equivalences with std::filesystem::path
         //--------------------------------------------------------------------
 

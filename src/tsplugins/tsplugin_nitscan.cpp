@@ -208,7 +208,7 @@ bool ts::NITScanPlugin::start()
     }
     else {
         _output = &_output_stream;
-        _output_stream.open(_output_name.toUTF8().c_str());
+        _output_stream.open(TS_FILENAME_FOR_STD_OPEN(_output_name));
         if (!_output_stream) {
             error(u"cannot create file %s", _output_name);
             return false;
