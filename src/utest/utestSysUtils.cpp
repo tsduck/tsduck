@@ -67,7 +67,7 @@ public:
 
 private:
     cn::milliseconds _precision {};
-    fs::path _temp_dir;
+    fs::path _temp_dir {};
  };
 
 TSUNIT_REGISTER(SysUtilsTest);
