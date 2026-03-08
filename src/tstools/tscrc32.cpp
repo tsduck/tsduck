@@ -29,10 +29,10 @@ namespace {
     public:
         Options(int argc, char *argv[]);
 
-        ts::UStringVector infiles {};          // Input file names.
-        ts::ByteBlock     indata {};           // Raw input data.
-        bool              show_name = false;   // Show file name on input.
-        bool              accelerated = false; // Check if the computation of CRC32 is accelerated.
+        std::vector<fs::path> infiles {};          // Input file names.
+        ts::ByteBlock         indata {};           // Raw input data.
+        bool                  show_name = false;   // Show file name on input.
+        bool                  accelerated = false; // Check if the computation of CRC32 is accelerated.
     };
 }
 
@@ -50,7 +50,7 @@ Options::Options(int argc, char *argv[]) :
 
     analyze(argc, argv);
 
-    getValues(infiles);
+    getPathValues(infiles);
     getHexaValue(indata, u"data");
     show_name = verbose() || infiles.size() + !indata.empty() > 1;
     accelerated = present(u"accelerated");
@@ -64,7 +64,7 @@ Options::Options(int argc, char *argv[]) :
 //----------------------------------------------------------------------------
 
 namespace {
-    void ProcessFile(Options& opt, const ts::UString& filename)
+    void ProcessFile(Options& opt, const fs::path& filename)
     {
         ts::CRC32 crc;
         ts::UString prefix;
@@ -84,7 +84,7 @@ namespace {
         else {
             // Dump named files. Open the file in binary mode. Will be closed by destructor.
             in = &file;
-            file.open(TS_FILENAME_FOR_STD_OPEN(filename), std::ios::binary);
+            file.open(filename, std::ios::binary);
             if (!file) {
                 opt.error(u"cannot open file %s", filename);
                 return;

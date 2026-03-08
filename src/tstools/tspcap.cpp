@@ -39,8 +39,8 @@ namespace {
 
         ts::DuckContext       duck {this};
         ts::PagerArgs         pager {true, true};
-        ts::UString           input_file {};
-        ts::UString           output_file {};
+        fs::path              input_file {};
+        fs::path              output_file {};
         bool                  print_summary = false;
         bool                  list_streams = false;
         bool                  print_intervals = false;
@@ -125,8 +125,8 @@ Options::Options(int argc, char *argv[]) :
 
     // Load option values.
     pager.loadArgs(*this);
-    getValue(input_file, u"");
-    getValue(output_file, u"output-tcp-stream");
+    getPathValue(input_file, u"");
+    getPathValue(output_file, u"output-tcp-stream");
     save_tcp = present(u"output-tcp-stream");
     getSocketValue(dest_filter, u"destination");
     getSocketValue(source_filter, u"source");
@@ -761,7 +761,7 @@ bool TCPSessionDump::save()
         out = &std::cout;
     }
     else {
-        outfile.open(_opt.output_file.toUTF8(), std::ios::out | std::ios::binary);
+        outfile.open(_opt.output_file, std::ios::out | std::ios::binary);
         ok = bool(outfile);
         if (!ok) {
             _opt.error(u"error creating %s", _opt.output_file);

@@ -34,18 +34,18 @@ namespace {
     public:
         Options(int argc, char *argv[]);
 
-        ts::DuckContext     duck {this};         // TSDuck context
-        bool                raw_file = false;    // Raw dump of file, not TS packets
-        bool                udp_dump = false;    // Dump UDP packets, not TS packets
-        uint32_t            raw_flags = 0;       // Raw dump flags
-        size_t              raw_bpl = 0;         // Bytes per line in raw mode.
-        uint64_t            start_offset = 0;    // Start offset in bytes
-        ts::PacketCounter   max_packets = 0;     // Maximum number of packets to dump per file
-        ts::UStringVector   infiles {};          // Input file names
-        ts::TSPacketFormat  format = ts::TSPacketFormat::AUTODETECT;  // Input file format
-        ts::TSDumpArgs      dump {};             // Packet dump options
-        ts::PagerArgs       pager {true, true};  // Output paging options
-        ts::UDPReceiverArgs udp {};              // UDP options
+        ts::DuckContext       duck {this};         // TSDuck context
+        bool                  raw_file = false;    // Raw dump of file, not TS packets
+        bool                  udp_dump = false;    // Dump UDP packets, not TS packets
+        uint32_t              raw_flags = 0;       // Raw dump flags
+        size_t                raw_bpl = 0;         // Bytes per line in raw mode.
+        uint64_t              start_offset = 0;    // Start offset in bytes
+        ts::PacketCounter     max_packets = 0;     // Maximum number of packets to dump per file
+        std::vector<fs::path> infiles {};          // Input file names
+        ts::TSPacketFormat    format = ts::TSPacketFormat::AUTODETECT;  // Input file format
+        ts::TSDumpArgs        dump {};             // Packet dump options
+        ts::PagerArgs         pager {true, true};  // Output paging options
+        ts::UDPReceiverArgs   udp {};              // UDP options
     };
 }
 
@@ -87,7 +87,7 @@ Options::Options(int argc, char *argv[]) :
     dump.loadArgs(duck, *this);
     pager.loadArgs(*this);
 
-    getValues(infiles);
+    getPathValues(infiles);
     raw_file = present(u"raw-file");
     start_offset = intValue<uint64_t>(u"byte-offset", intValue<uint64_t>(u"packet-offset", 0) * ts::PKT_SIZE);
     getIntValue(max_packets, u"max-packets", std::numeric_limits<ts::PacketCounter>::max());
@@ -125,7 +125,7 @@ Options::Options(int argc, char *argv[]) :
 //----------------------------------------------------------------------------
 
 namespace {
-    void DumpTSFile(Options& opt, const ts::UString& filename, std::ostream& out)
+    void DumpTSFile(Options& opt, const fs::path& filename, std::ostream& out)
     {
         if (opt.infiles.size() > 1 && !opt.dump.log) {
             out << "* File " << filename << std::endl;
@@ -163,7 +163,7 @@ namespace {
 //----------------------------------------------------------------------------
 
 namespace {
-    void DumpRawFile(Options& opt, const ts::UString& filename, std::ostream& out)
+    void DumpRawFile(Options& opt, const fs::path& filename, std::ostream& out)
     {
         std::istream* in = nullptr;
         std::ifstream file;
@@ -178,7 +178,7 @@ namespace {
         else {
             // Dump named files. Open the file in binary mode. Will be closed by destructor.
             in = &file;
-            file.open(TS_FILENAME_FOR_STD_OPEN(filename), std::ios::binary);
+            file.open(filename, std::ios::binary);
             if (!file) {
                 opt.error(u"cannot open file %s", filename);
                 return;

@@ -81,7 +81,7 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool save(const UString& fileName, bool createDirectories = false, Report& report = CERR) const;
+        bool save(const fs::path& fileName, bool createDirectories = false, Report& report = CERR) const;
 
         //!
         //! Serialize as XML text.

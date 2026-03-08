@@ -19,6 +19,7 @@
 #include "tsEnvironment.h"
 #include "tsSysInfo.h"
 #include "tsErrCodeReport.h"
+#include "tsCerrReport.h"
 #include "tsRegistry.h"
 #include "tsTime.h"
 #include "tsUID.h"
@@ -57,13 +58,16 @@ class SysUtilsTest: public tsunit::Test
     TSUNIT_DECLARE_TEST(AbsoluteFilePath);
     TSUNIT_DECLARE_TEST(CleanupFilePath);
     TSUNIT_DECLARE_TEST(RelativeFilePath);
+    TSUNIT_DECLARE_TEST(OpenFileName);
 
 public:
     virtual void beforeTestSuite() override;
     virtual void afterTestSuite() override;
+    virtual void afterTest() override;
 
 private:
     cn::milliseconds _precision {};
+    fs::path _temp_dir;
  };
 
 TSUNIT_REGISTER(SysUtilsTest);
@@ -79,11 +83,22 @@ void SysUtilsTest::beforeTestSuite()
     _precision = cn::milliseconds(2);
     ts::SetTimersPrecision(_precision);
     debug() << "SysUtilsTest: timer precision = " << ts::UString::Chrono(_precision) << std::endl;
+
+    _temp_dir = ts::TempFile(u".sysutilstest");
 }
 
 // Test suite cleanup method.
 void SysUtilsTest::afterTestSuite()
 {
+}
+
+// Test cleanup method.
+void SysUtilsTest::afterTest()
+{
+    if (fs::is_directory(_temp_dir)) {
+        debug() << "SysUtilsTest: deleting directory " << _temp_dir << std::endl;
+        fs::remove_all(_temp_dir, &ts::ErrCodeReport(CERR, u"error removing", _temp_dir));
+    }
 }
 
 // Vectors of strings
@@ -790,4 +805,59 @@ TSUNIT_DEFINE_TEST(RelativeFilePath)
     TSUNIT_EQUAL(u"../ab/cd/ef", ts::RelativeFilePath(u"/ab/cd/ef", u"/xy"));
     TSUNIT_EQUAL(u"ab/cd/ef", ts::RelativeFilePath(u"/ab/cd/ef", u"/"));
 #endif
+}
+
+TSUNIT_DEFINE_TEST(OpenFileName)
+{
+    // Chinese UTF-8 sequence for "hello".
+    static const uint8_t hello_bin[] = {0xE4, 0xBD, 0xA0, 0xE5, 0xA5, 0xBD, 0x00};
+    static const ts::UString hello(ts::UString::FromUTF8(reinterpret_cast<const char*>(&hello_bin)));
+
+    const ts::UString prefix = _temp_dir + fs::path::preferred_separator + hello;
+    debug() << "TestSysUtils::OpenFileName: \"" << prefix << "\"" << std::endl;
+    TSUNIT_EQUAL(2, hello.length());
+
+    // Create temporary directory
+    fs::create_directory(_temp_dir, &ts::ErrCodeReport(CERR, u"error removing", _temp_dir));
+    TSUNIT_ASSERT(fs::is_directory(_temp_dir));
+
+    std::ofstream out;
+    std::ifstream in;
+    ts::UStringVector files;
+    std::string line;
+
+    // On Windows, creating a file with UTF-8 name fails (invalid name).
+    // On other operating systems, it works.
+#if !defined(TS_WINDOWS)
+    out.open((prefix + u".utf8").toUTF8().c_str());
+    TSUNIT_ASSERT(bool(out));
+    out << "ABCD" << std::endl;
+    out.close();
+
+    TSUNIT_ASSERT(ts::ExpandWildcard(files, _temp_dir + fs::path::preferred_separator + u"*.utf8"));
+    TSUNIT_EQUAL(1, files.size());
+    TSUNIT_EQUAL(hello + u".utf8", ts::BaseName(files.front()));
+
+    in.open(fs::path(prefix + u".utf8"));
+    TSUNIT_ASSERT(bool(in));
+    TSUNIT_ASSERT(bool(std::getline(in, line)));
+    TSUNIT_EQUAL("ABCD", line);
+    in.close();
+#endif
+
+    // Using fs::path works on all operating systems.
+    out.open(fs::path(prefix + u".path"));
+    TSUNIT_ASSERT(bool(out));
+    out << "WXYZ" << std::endl;
+    out.close();
+
+    TSUNIT_ASSERT(ts::ExpandWildcard(files, _temp_dir + fs::path::preferred_separator + u"*.path"));
+    TSUNIT_EQUAL(1, files.size());
+    TSUNIT_EQUAL(hello + u".path", ts::BaseName(files.front()));
+
+    in.open(fs::path(prefix + u".path"));
+    TSUNIT_ASSERT(bool(in));
+    TSUNIT_ASSERT(bool(std::getline(in, line)));
+    TSUNIT_EQUAL("WXYZ", line);
+    in.close();
 }

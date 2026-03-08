@@ -432,7 +432,7 @@ bool ts::ChannelFile::parseDocument(const xml::Document& doc)
 // Create XML file or text.
 //----------------------------------------------------------------------------
 
-bool ts::ChannelFile::save(const UString& fileName, bool createDirectories, Report& report) const
+bool ts::ChannelFile::save(const fs::path& fileName, bool createDirectories, Report& report) const
 {
     if (createDirectories) {
         const UString dir(DirectoryName(fileName));

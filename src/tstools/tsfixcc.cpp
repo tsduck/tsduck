@@ -29,7 +29,7 @@ namespace {
         bool         test = false;          // Test mode
         bool         circular = false;      // Add empty packets to enforce circular continuity
         bool         no_replicate = false;  // Option --no-replicate-duplicated
-        ts::UString  filename {};           // File name
+        fs::path     filename {};           // File name
         std::fstream file {};               // File buffer
 
         // Check if there was an I/O error on the file.
@@ -68,7 +68,7 @@ Options::Options(int argc, char *argv[]) :
 
     analyze(argc, argv);
 
-    filename = value(u"");
+    getPathValue(filename, u"");
     circular = present(u"circular");
     test = present(u"no-action") || present(u"noaction");
     no_replicate = present(u"no-replicate-duplicated");
@@ -110,7 +110,7 @@ int MainCode(int argc, char *argv[])
         mode |= std::ios::out;
     }
 
-    opt.file.open(TS_FILENAME_FOR_STD_OPEN(opt.filename), mode);
+    opt.file.open(opt.filename, mode);
 
     if (!opt.file) {
         opt.error(u"cannot open file %s", opt.filename);
