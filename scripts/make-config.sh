@@ -528,8 +528,7 @@ fi
 CXXFLAGS_WARNINGS="-Werror"
 if [[ -n $USE_LLVM ]]; then
     CXXFLAGS_WARNINGS="$CXXFLAGS_WARNINGS -Weverything"
-    CXXFLAGS_NO_WARNINGS="$CXXFLAGS_NO_WARNINGS -Wno-c++98-compat-pedantic -Wno-deprecated-declarations -Wno-nrvo"
-    CXXFLAGS_NO_WARNINGS="$CXXFLAGS_NO_WARNINGS -Wno-ms-bitfield-padding -Wimplicit-int-conversion -Wno-implicit-int-conversion-on-negation"
+    CXXFLAGS_NO_WARNINGS="$CXXFLAGS_NO_WARNINGS -Wno-c++98-compat-pedantic"
     if [[ -n $MACOS ]]; then
         # On macOS, it is normal to include from /usr/local/include since some libraries come from Homebrew.
         # Starting with clang 12, this generates a warning we need to disable. However, this disable option

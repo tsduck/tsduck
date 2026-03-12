@@ -27,8 +27,7 @@ The packaging of installers, when available, is also "native":
 `.deb` packages on Ubuntu, Debian and the like,
 Homebrew distribution on macOS,
 NSIS-based executable installers on Windows.
-TSDuck also provides native support for https://nixos.org[Nix], Linux and macOS.
-
+TSDuck also provides native support for https://nixos.org[Nix] on Linux and macOS.
 
 [#building]
 === Building TSDuck
@@ -711,9 +710,9 @@ Use `scripts/setenv.sh --help` for other options.
 ==== Building with Nix
 
 TSDuck provides native https://nixos.org[Nix] flakes for Linux and macOS.
+Nix must be installed on your system with Flakes support enabled.
 
-[.usage]
-You must have Nix Flakes enabled:
+To build from the original TSDuck repository, use one of the following commands:
 
 [source,shell]
 ----
@@ -722,20 +721,15 @@ $ nix build github:tsduck/tsduck/<tag|branch>?dir=pkg/nix # specific tag or bran
 $ nix build github:tsduck/tsduck?dir=pkg/nix#tsduck-min   # minimal, no hardware
 ----
 
-Or for local development:
+For local development, use the following sequence of commands:
 
 [source,shell]
 ----
 $ git clone https://github.com/tsduck/tsduck.git
+$ cd tsduck
 $ nix build ./pkg/nix
 $ nix develop ./pkg/nix
 ----
-
-===== Pre-requisites
-
-Nix must be installed on your system with Flakes support enabled.
-
-===== Building TSDuck with Nix
 
 To build the default TSDuck package:
 
@@ -756,8 +750,6 @@ $ nix build ./pkg/nix#java-tsduck-min     # Java bindings (against tsduck-min)
 ----
 
 The build result will be available in the `./result` symlink.
-
-===== Development environment
 
 Nix provides development shells with all build dependencies pre-configured:
 
