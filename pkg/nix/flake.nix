@@ -7,31 +7,21 @@
   };
 
   outputs = { self, nixpkgs, flake-utils, ... }:
-    flake-utils.lib.eachDefaultSystem (system:
-      let
-        pkgs = import nixpkgs { inherit system; };
+    let
+      # Development build flag: true if git tree is dirty (local dev), false for clean builds
+      dev = self ? dirtyRev || self ? dirtyShortRev || !(self ? rev);
 
-        # Development build flag: true if git tree is dirty (local dev), false for clean builds
-        dev = self ? dirtyRev || self ? dirtyShortRev || !(self ? rev);
-
-        # Only available on x86_64-linux
-        linuxX86Only = if system == "x86_64-linux" then {
-          dtapi = pkgs.callPackage ./dtapi.nix { };
-          vatek = pkgs.callPackage ./vatek.nix { };
-        } else {
-          dtapi = null;
-          vatek = null;
-        };
-
-        # Python bindings parameterised on which tsduck package they wrap.
-        mkPythonTsduck = tsduckPkg: pkgs.python3.pkgs.buildPythonPackage {
+      # Build Python bindings for a given tsduck package.
+      # Factored out so it can be called from both the overlay and per-system packages.
+      mkPythonTsduck = { python3, lib, stdenv, tsduckPkg }:
+        python3.pkgs.buildPythonPackage {
           pname = "tsduck";
           version = tsduckPkg.version;
           format = "other";
 
-          src = pkgs.lib.fileset.toSource {
+          src = lib.fileset.toSource {
             root = ../..;
-            fileset = pkgs.lib.fileset.unions [
+            fileset = lib.fileset.unions [
               ../../src/libtsduck/python/tsduck.py
               ../../src/libtsduck/python/ts.py
             ];
@@ -42,31 +32,84 @@
 
           installPhase = ''
             runHook preInstall
-            mkdir -p $out/${pkgs.python3.sitePackages}
-            cp src/libtsduck/python/tsduck.py $out/${pkgs.python3.sitePackages}/
-            cp src/libtsduck/python/ts.py $out/${pkgs.python3.sitePackages}/
+            mkdir -p $out/${python3.sitePackages}
+            cp src/libtsduck/python/tsduck.py $out/${python3.sitePackages}/
+            cp src/libtsduck/python/ts.py $out/${python3.sitePackages}/
             runHook postInstall
           '';
 
           postFixup =
             let
-              libPath = "${tsduckPkg}/lib/libtsduck.${if pkgs.stdenv.isDarwin then "dylib" else "so"}";
+              libPath = "${tsduckPkg}/lib/libtsduck.${if stdenv.isDarwin then "dylib" else "so"}";
             in ''
-              substituteInPlace $out/${pkgs.python3.sitePackages}/tsduck.py \
+              substituteInPlace $out/${python3.sitePackages}/tsduck.py \
                 --replace-fail "return ctypes.util.find_library('tsduck')" 'return "${libPath}"'
             '';
 
           pythonImportsCheck = [ "tsduck" "ts" ];
 
-          meta = with pkgs.lib; {
+          meta = with lib; {
             description = "Python bindings for TSDuck";
             homepage = "https://github.com/tsduck/tsduck";
             license = licenses.bsd2;
           };
         };
 
-        # Java bindings parameterised on which tsduck package they wrap.
-        mkJavaTsduck = tsduckPkg: pkgs.stdenv.mkDerivation {
+    in
+    {
+      overlays.default = final: prev: let
+        # Hardware support packages – only available on x86_64-linux
+        linuxX86Only = if final.stdenv.hostPlatform.system == "x86_64-linux" then {
+          dtapi = final.callPackage ./dtapi.nix { };
+          vatek = final.callPackage ./vatek.nix { };
+        } else {
+          dtapi = null;
+          vatek = null;
+        };
+      in {
+        tsduck = final.callPackage ./tsduck.nix {
+          inherit dev;
+          python3 = prev.python3;
+          dtapi = linuxX86Only.dtapi;
+          vatek = linuxX86Only.vatek;
+          enableHides = true;
+        };
+
+        tsduck-min = final.callPackage ./tsduck.nix {
+          inherit dev;
+          python3 = prev.python3;
+          dtapi = null;
+          vatek = null;
+          enableHides = false;
+        };
+
+        pythonPackagesExtensions = prev.pythonPackagesExtensions ++ [
+          (python-final: python-prev: {
+            tsduck = mkPythonTsduck {
+              python3 = python-final.python;
+              lib = final.lib;
+              stdenv = final.stdenv;
+              tsduckPkg = final.tsduck;
+            };
+            tsduck-min = mkPythonTsduck {
+              python3 = python-final.python;
+              lib = final.lib;
+              stdenv = final.stdenv;
+              tsduckPkg = final.tsduck-min;
+            };
+          })
+        ];
+      };
+    }
+    //
+    flake-utils.lib.eachDefaultSystem (system:
+      let
+        pkgs = import nixpkgs {
+          inherit system;
+          overlays = [ self.overlays.default ];
+        };
+
+        mkJava = tsduckPkg: pkgs.stdenv.mkDerivation {
           pname = "tsduck-java";
           version = tsduckPkg.version;
 
@@ -92,39 +135,31 @@
       in
       {
         packages = {
-          default = self.packages.${system}.tsduck;
+          default = pkgs.tsduck;
 
-          # Third-party hardware support packages (built separately)
-          inherit linuxX86Only;
-
-          # TSDuck with all hardware support (default)
-          tsduck = pkgs.callPackage ./tsduck.nix {
-            inherit dev;
-            dtapi = linuxX86Only.dtapi;
-            vatek = linuxX86Only.vatek;
-            enableHides = true;
-          };
-
-          tsduck-min = pkgs.callPackage ./tsduck.nix {
-            inherit dev;
-            dtapi = null;
-            vatek = null;
-            enableHides = false;
-          };
-
-          # Python bindings
-          python-tsduck     = mkPythonTsduck self.packages.${system}.tsduck;
-          python-tsduck-min = mkPythonTsduck self.packages.${system}.tsduck-min;
+          # TSDuck C++ packages (provided by the overlay)
+          tsduck     = pkgs.tsduck;
+          tsduck-min = pkgs.tsduck-min;
+        } // (if system == "x86_64-linux" then {
+          # Third-party hardware support packages (x86_64-linux only, built separately)
+          dtapi = pkgs.callPackage ./dtapi.nix { };
+          vatek = pkgs.callPackage ./vatek.nix { };
+        } else { }) // {
+          # Python bindings (provided by the overlay via pythonPackagesExtensions)
+          # These aliases preserve backward compatibility with:
+          #   nix build ./pkg/nix#python-tsduck
+          python-tsduck     = pkgs.python3Packages.tsduck;
+          python-tsduck-min = pkgs.python3Packages.tsduck-min;
 
           # Java bindings
-          java-tsduck     = mkJavaTsduck self.packages.${system}.tsduck;
-          java-tsduck-min = mkJavaTsduck self.packages.${system}.tsduck-min;
+          java-tsduck     = mkJava pkgs.tsduck;
+          java-tsduck-min = mkJava pkgs.tsduck-min;
         };
 
         devShells = {
           default = pkgs.mkShell {
             # Inherit all build dependencies from the full package (with Java)
-            inputsFrom = [ self.packages.${system}.tsduck ];
+            inputsFrom = [ pkgs.tsduck ];
 
             # Additional development tools
             packages = with pkgs; [
@@ -162,9 +197,9 @@
           python = pkgs.mkShell {
             packages = [
               (pkgs.python3.withPackages (ps: [
-                self.packages.${system}.python-tsduck
+                ps.tsduck
               ]))
-              self.packages.${system}.tsduck
+              pkgs.tsduck
             ];
 
             shellHook = ''
@@ -189,30 +224,30 @@
           # Default app shows version
           default = {
             type = "app";
-            program = "${self.packages.${system}.default}/bin/tsversion";
+            program = "${pkgs.tsduck}/bin/tsversion";
           };
 
           # Convenient shortcuts for common tools
           tsp = {
             type = "app";
-            program = "${self.packages.${system}.default}/bin/tsp";
+            program = "${pkgs.tsduck}/bin/tsp";
           };
 
           tsanalyze = {
             type = "app";
-            program = "${self.packages.${system}.default}/bin/tsanalyze";
+            program = "${pkgs.tsduck}/bin/tsanalyze";
           };
 
           tsdump = {
             type = "app";
-            program = "${self.packages.${system}.default}/bin/tsdump";
+            program = "${pkgs.tsduck}/bin/tsdump";
           };
 
           # Python REPL with TSDuck bindings
           python = {
             type = "app";
             program = "${pkgs.python3.withPackages (ps: [
-              self.packages.${system}.python-tsduck
+              ps.tsduck
             ])}/bin/python";
           };
         };

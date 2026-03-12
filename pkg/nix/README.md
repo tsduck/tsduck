@@ -11,6 +11,19 @@ This directory contains the Nix packaging for TSDuck and its optional hardware d
 - **`python-tsduck`** / **`python-tsduck-min`** — Python bindings
 - **`java-tsduck`** / **`java-tsduck-min`** — Java bindings
 
+### Overlay
+
+The flake exports `overlays.default` which adds the following to nixpkgs:
+
+- **`pkgs.tsduck`** — Full TSDuck C++ package
+- **`pkgs.tsduck-min`** — Minimal TSDuck (no hardware SDKs)
+- **`pkgs.python3Packages.tsduck`** — Python bindings (full)
+- **`pkgs.python3Packages.tsduck-min`** — Python bindings (minimal)
+
+The Python packages are injected via `pythonPackagesExtensions`, making them
+available under all Python interpreters (e.g. `python311Packages`,
+`python312Packages`, `python313Packages`) and work with `python3.withPackages`.
+
 ## Building
 
 ### From GitHub (flake URL):
@@ -75,10 +88,57 @@ and `jq`.
 
 ## Using TSDuck as a Flake Input
 
+### Recommended: Using the overlay
+
+The overlay is the recommended way to consume TSDuck from another flake.
+It integrates TSDuck into your nixpkgs instance so packages are available
+as `pkgs.tsduck`, `pkgs.python3Packages.tsduck`, etc.
+
 ```nix
 {
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
+    tsduck = {
+      url = "github:tsduck/tsduck?dir=pkg/nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+  };
+
+  outputs = { self, nixpkgs, tsduck, ... }:
+    let
+      system = "x86_64-linux";
+      pkgs = import nixpkgs {
+        inherit system;
+        overlays = [ tsduck.overlays.default ];
+      };
+    in {
+      # Use TSDuck C++ tools
+      packages.${system}.default = pkgs.tsduck;
+
+      # Python with TSDuck bindings
+      packages.${system}.python-env = pkgs.python3.withPackages (ps: [
+        ps.tsduck
+      ]);
+
+      # Development shell
+      devShells.${system}.default = pkgs.mkShell {
+        packages = [
+          pkgs.tsduck
+          (pkgs.python3.withPackages (ps: [ ps.tsduck ]))
+        ];
+      };
+    };
+}
+```
+
+### Alternative: Direct package references
+
+You can also reference packages directly without using the overlay:
+
+```nix
+{
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
     tsduck = {
       url = "github:tsduck/tsduck?dir=pkg/nix";
       inputs.nixpkgs.follows = "nixpkgs";
