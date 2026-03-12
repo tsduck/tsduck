@@ -1,0 +1,5 @@
+# Automatically load the Nix development environment
+use flake ./pkg/nix
+
+# Optional: Use the Python development shell instead
+# use flake ./pkg/nix#python

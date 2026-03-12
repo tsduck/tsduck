@@ -53,6 +53,7 @@
     TS_LLVM_NOWARNING(zero-as-null-pointer-constant)
     TS_LLVM_NOWARNING(reserved-identifier)
     TS_LLVM_NOWARNING(unused-function)
+    TS_LLVM_NOWARNING(implicit-int-conversion)
     TS_GCC_NOWARNING(missing-field-initializers)
     TS_GCC_NOWARNING(old-style-cast)
     TS_GCC_NOWARNING(switch-default)
