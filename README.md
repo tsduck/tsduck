@@ -74,9 +74,6 @@ in the developer guide for more details.
 - On macOS, [use the Homebrew packager](https://tsduck.io/docs/tsduck-dev.html#macinstall): `brew install tsduck`
 - On Windows, [use winget](https://learn.microsoft.com/en-us/windows/package-manager/winget/): `winget install tsduck`
 - On FreeBSD, [use FreeBSD Ports](https://tsduck.io/docs/tsduck-dev.html#freebsdinstall): `pkg install tsduck`
-<!-- broken command:
-- With Nix (Linux, macOS), [use Nix Flakes](https://tsduck.io/docs/tsduck-dev.html#nixinstall): `nix profile install github:tsduck/tsduck?dir=pkg/nix`
--->
 
 Pre-built [binary packages](https://github.com/tsduck/tsduck/releases) are available
 for Windows and the very latest versions of some Linux distros (Fedora, RedHat and clones, Ubuntu, Debian),
