@@ -1,5 +1,0 @@
-====================================================
-TSDuck - List of features to be implemented or fixed
-====================================================
-
-* Issue #324: Fix tsswitch --delayed-switch --receive-timeout.

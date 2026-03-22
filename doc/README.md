@@ -6,6 +6,7 @@ Subdirectories:
 - `developer`: TSDuck Developer Guide (asciidoc).
 - `doxy`: TSDuck Programming Reference (doxygen, from source files).
 - `adoc`: Common files for Asciidoctor (CSS, docinfo, PDF theme).
+- `notes`: Various notes about things to do.
 
 Building the user and developer guides:
 
