@@ -170,14 +170,14 @@ Packet transmission strategies:
   and the packet is lost for the forked branch.
 
 Abort reverse transmission strategies (after an abort somewhere in the forked
-branch is transmitted back to the first plugin of the foked branch):
+branch is transmitted back to the first plugin of the forked branch):
 
 - Synchronous split point: In the main branch, an abort is transmitted backward
   and an "end of input" is transmitted downstream, as if the abort occurred in
   a plugin at the split point.
 
 - Lossy split point: Nothing changes in the main branch. The forked branch is
-  declared as "dead" and no packet will be transmitted in the forked
+  declared as "dead" and no further packet will be transmitted in the forked
   branch. The split point is considered as no longer existent.
 
 ### Command line syntax
