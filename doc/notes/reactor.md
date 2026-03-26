@@ -70,18 +70,29 @@ An event loop shall include the following features:
   shall we invoke a specific callback to notify the class which expected the
   callback?
 
+- Worker delegation: When a callback in the reactor needs to run some lengthy
+  computing, or call a library with blocking I/O, it cannot do it sequentially
+  because it would block the reactor. Instead, it should delegate that
+  treatment to another work thread. A completion callback will be called in the
+  reactor when the delegated task completes. There is a pool of a maximum
+  number of worker threads. A delegated task is either 1) executed in an idle
+  worker thread, 2) executed in a newly created worker thread if none were
+  idle, 3) queued for later execution if the maximum number of worker threads
+  is reached.
+
 ## Implementations
 
 ### Linux
 
 Investigate `io_uring`. Is it possible to wake up on timers or user-triggered
-events?
-
-See https://kernel.dk/io_uring.pdf
+events? See https://kernel.dk/io_uring.pdf
 
 When using `poll()`, the max number of file descriptors is `RLIMIT_NOFILE`, a
 dynamic value. By default, `ulimit -n` reports 1024. The max allowed value to
 set is in `/proc/sys/fs/file-max`, which is typically 2^63.
+
+See `timerfd()` for timers which are compatible with `poll()` and `epoll()`.
+See also `eventfd()` for event equivalent.
 
 ### macOS and BSD
 
@@ -97,4 +108,15 @@ for `poll()` does not mention `OPEN_MAX`. It mentions the "system tunable
 `OPEN_MAX` is defined in `sys/syslimits.h` and `FD_SETSIZE` is defined in
 `sys/select.h`.
 
+See also `kqueue`, available on macOS and all BSD.
+
 ### Windows
+
+See input/output completion port:
+- https://learn.microsoft.com/en-us/windows/win32/fileio/i-o-completion-ports
+
+Canceling I/O:
+- https://learn.microsoft.com/en-us/windows/win32/fileio/canceling-pending-i-o-operations
+
+Asynchronous Procedure Calls (APC), I/O completion:
+- https://learn.microsoft.com/en-us/windows/win32/sync/asynchronous-procedure-calls
