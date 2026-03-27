@@ -70,9 +70,10 @@ ts::UString ts::SysCtrlString(std::initializer_list<int> oid)
 
 ts::ByteBlock ts::SysCtrlBytes(std::initializer_list<int> oid)
 {
+    ByteBlock value;
+
 #if defined(TS_MAC) || defined(TS_BSD)
 
-    ByteBlock value;
     std::vector<int> vecoid(oid.begin(), oid.end());
 
     // First step, get the returned size of the value.
