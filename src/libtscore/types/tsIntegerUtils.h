@@ -658,8 +658,8 @@ namespace ts {
         }
         else if constexpr (std::signed_integral<INT>) {
             if (den < 0) {
-                num = -num;
-                den = -den;
+                num = static_cast<INT>(-num);
+                den = static_cast<INT>(-den);
             }
         }
         else {
@@ -1059,10 +1059,10 @@ INT ts::GCD(INT x, INT y)
     else if constexpr (std::signed_integral<INT>) {
         INT z;
         if (x < 0) {
-            x = -x;
+            x = static_cast<INT>(-x);
         }
         if (y < 0) {
-            y = -y;
+            y = static_cast<INT>(-y);
         }
         while (y != 0) {
             z = x % y;

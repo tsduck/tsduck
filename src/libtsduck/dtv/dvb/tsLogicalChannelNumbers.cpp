@@ -215,7 +215,8 @@ ts::LogicalChannelNumbers::LCNMap::const_iterator ts::LogicalChannelNumbers::fin
         if (it->second.ts_id == ts_id) {
             if (it->second.onet_id == onet_id) {
                 // Found an exact match, including if both are INVALID_NETWORK_ID, final value.
-                return it;
+                result = it;
+                break;
             }
             else if (it->second.onet_id == INVALID_NETWORK_ID || onet_id == INVALID_NETWORK_ID) {
                 // Possible match, keep it but continue to search an exact match.

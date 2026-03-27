@@ -485,19 +485,20 @@ ts::BitRate ts::ModulationArgs::theoreticalBitrate() const
     const auto bounds(SpecializedCalculators().equal_range(delivery_system.value_or(DS_UNDEFINED)));
     for (auto it = bounds.first; it != bounds.second; ++it) {
         if (it->second(bitrate, *this)) {
-            return bitrate;
+            break;
         }
     }
 
     // Then try generic calculators.
-    for (auto func : GenericCalculators()) {
-        if (func(bitrate, *this)) {
-            return bitrate;
+    if (bitrate == 0) {
+        for (auto func : GenericCalculators()) {
+            if (func(bitrate, *this)) {
+                break;
+            }
         }
     }
 
-    // Don't know how to compute for that modulation.
-    return 0;
+    return bitrate;
 }
 
 

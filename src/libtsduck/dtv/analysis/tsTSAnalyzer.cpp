@@ -267,18 +267,16 @@ ts::TSAnalyzer::XTIDContextPtr ts::TSAnalyzer::getXTID(const Section& section)
 
 ts::TSAnalyzer::PIDContextPtr ts::TSAnalyzer::getPID(PID pid, const UString& description)
 {
-    const PIDContextPtr p(_pids[pid]);
+    auto p = _pids[pid];
     if (p == nullptr) {
         // The PID was not yet used, map entry just created.
-        return _pids[pid] = std::make_shared<PIDContext>(pid, description);
+        p = _pids[pid] = std::make_shared<PIDContext>(pid, description);
     }
-    else {
-        // If the PID was marked as unreferenced, now use actual description.
-        if (p->description == UNREFERENCED && description != UNREFERENCED) {
-            p->description = description;
-        }
-        return p;
+    else if (p->description == UNREFERENCED && description != UNREFERENCED) {
+        // The PID was marked as unreferenced, now use actual description.
+        p->description = description;
     }
+    return p;
 }
 
 
@@ -288,14 +286,12 @@ ts::TSAnalyzer::PIDContextPtr ts::TSAnalyzer::getPID(PID pid, const UString& des
 
 ts::TSAnalyzer::ServiceContextPtr ts::TSAnalyzer::getService(uint16_t service_id)
 {
-    ServiceContextPtr p(_services[service_id]);
+    auto p = _services[service_id];
     if (p == nullptr) {
         // The service was not yet used, map entry just created.
-        return _services[service_id] = std::make_shared<ServiceContext>(service_id);
+        p = _services[service_id] = std::make_shared<ServiceContext>(service_id);
     }
-    else {
-        return p;
-    }
+    return p;
 }
 
 
@@ -844,18 +840,18 @@ ts::UString ts::TSAnalyzer::PIDContext::fullDescription(bool include_attributes)
     if (include_attributes) {
         lines.insert(lines.end(), attributes.begin(), attributes.end());
     }
-    UString more(UString::Join(lines, u", ", true));
+    UString result(UString::Join(lines, u", ", true));
 
     // Return full description
-    if (description.empty()) {
-        return more;
+    if (!description.empty()) {
+        if (result.empty()) {
+            result = description;
+        }
+        else {
+            result = description + u" (" + result + u")";
+        }
     }
-    else if (more.empty()) {
-        return description;
-    }
-    else {
-        return description + u" (" + more + u")";
-    }
+    return result;
 }
 
 

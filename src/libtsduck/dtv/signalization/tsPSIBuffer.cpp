@@ -255,13 +255,13 @@ ts::Time ts::PSIBuffer::getMJD(MJDFormat mjd_fmt)
     const size_t size = MJDSize(mjd_fmt);
     if (readError() || !readIsByteAligned() || (mjd_fmt != MJD_DATE && mjd_fmt != MJD_FULL) || remainingReadBytes() < size) {
         setReadError();
-        return Time::Epoch;
+        result = Time::Epoch;
     }
     else {
         DecodeMJD(currentReadAddress(), mjd_fmt, result);
         skipBytes(size);
-        return result;
     }
+    return result;
 }
 
 

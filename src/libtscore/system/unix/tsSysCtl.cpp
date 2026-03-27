@@ -72,26 +72,26 @@ ts::ByteBlock ts::SysCtrlBytes(std::initializer_list<int> oid)
 {
 #if defined(TS_MAC) || defined(TS_BSD)
 
+    ByteBlock value;
     std::vector<int> vecoid(oid.begin(), oid.end());
 
     // First step, get the returned size of the value.
     size_t length = 0;
     if (::sysctl(&vecoid[0], u_int(vecoid.size()), nullptr, &length, nullptr, 0) < 0) {
-        return ByteBlock();
+        length = 0; // in case it was set to some garbage by sysctl()
     }
 
     // Then get the value with the right buffer size.
-    ByteBlock value(length, 0);
+    value.resize(length);
     if (::sysctl(&vecoid[0], u_int(vecoid.size()), value.data(), &length, nullptr, 0) < 0) {
-        return ByteBlock();
+        value.clear(); // error
     }
-
-    return value;
 
 #else
 
     // sysctl(2) not implemented on this platform.
-    return ByteBlock();
 
 #endif
+
+    return value;
 }

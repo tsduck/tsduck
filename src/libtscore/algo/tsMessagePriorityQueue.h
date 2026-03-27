@@ -76,19 +76,17 @@ ts::MessagePriorityQueue<MSG, COMPARE>::enqueuePlacement(const typename SuperCla
     auto loc = list.end();
 
     // Null pointers are stored at end (anywhere else would be probably fine).
-    if (msg == nullptr) {
-        return loc;
-    }
-
-    // Loop until the previous element is lower that msg.
-    while (loc != list.begin()) {
-        const auto cur = loc;
-        --loc;
-        if (*loc != nullptr && !COMPARE()(*msg, **loc)) {
-            return cur;
+    if (msg != nullptr) {
+        // Loop until the previous element is lower that msg.
+        // When reached begin of list, all elements are greater than msg.
+        while (loc != list.begin()) {
+            const auto cur = loc;
+            --loc;
+            if (*loc != nullptr && !COMPARE()(*msg, **loc)) {
+                loc = cur;
+                break;
+            }
         }
     }
-
-    // Reached begin of list, all elements are greater than msg.
     return loc;
 }

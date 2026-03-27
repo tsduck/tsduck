@@ -381,6 +381,7 @@ namespace ts {
         bool             _datagram : 1;         // Packet was originally extracted from a datagram of several TS packets.
         TS_PUSH_WARNING()
         TS_LLVM_NOWARNING(unused-private-field)
+        TS_LLVM_NOWARNING(ms-bitfield-padding)  // Microsoft padding ??!!
         unsigned int     _pad1 : 3;             // Padding to next byte.
         unsigned int     _pad2 : 8;             // Padding to next multiple of 4 bytes -1.
         TS_POP_WARNING()

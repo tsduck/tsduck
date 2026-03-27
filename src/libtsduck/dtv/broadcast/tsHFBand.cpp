@@ -53,15 +53,14 @@ ts::UStringList ts::HFBand::GetAllBands(const UString& region, Report& report)
 
 ts::HFBand::ChannelsRangeList::const_iterator ts::HFBand::getRange(uint32_t channel) const
 {
-    for (auto it = _channels.begin(); it != _channels.end(); ++it) {
-        if (channel < it->first_channel) {
-            return _channels.end();
-        }
-        else if (channel <= it->last_channel) {
-            return it;
+    auto result = _channels.end();
+    for (auto it = _channels.begin(); it != _channels.end() && channel >= it->first_channel; ++it) {
+        if (channel <= it->last_channel) {
+            result = it;
+            break;
         }
     }
-    return _channels.end();
+    return result;
 }
 
 

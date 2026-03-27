@@ -3583,7 +3583,7 @@ bool ts::UString::ToIntegerHelper(const UChar* start, const UChar* end, INT& val
     // Convert the unsigned integer as signed integer with the appropriate sign.
     value = static_cast<INT>(uvalue);
     if (negative) {
-        value = -value;
+        value = static_cast<INT>(-value);
     }
 
     return ok;

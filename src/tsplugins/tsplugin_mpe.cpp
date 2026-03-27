@@ -577,6 +577,9 @@ void ts::MPEPlugin::handleMPEPacket(MPEDemux& demux, const MPEPacket& mpe)
 
 ts::UString ts::MPEPlugin::syncLayoutString(const uint8_t* udp, size_t udp_size)
 {
+    TS_PUSH_WARNING()
+    TS_LLVM_NOWARNING(nrvo) // not eliding copy on return
+
     // Nothing to display without --sync-layout.
     if (!_sync_layout) {
         return UString();
@@ -635,4 +638,6 @@ ts::UString ts::MPEPlugin::syncLayoutString(const uint8_t* udp, size_t udp_size)
     }
 
     return result;
+
+    TS_PUSH_WARNING()
 }

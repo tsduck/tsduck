@@ -893,6 +893,12 @@ bool ts::Names::AllInstances::loadFileLocked(const UString& file_name)
     NamesPtr section;
     size_t error_count = 0;
 
+    // False positive in LLVM thread-safety-analysis: The mutex section->_mutex is used to lock the section content.
+    // Here, section is initially nullptr. Then, it may become non-null. Later, it may change value. The mutex must
+    // be locked after section is set and unlocked before it is unset or changed. LLVM 21 is confused with this scenario.
+    TS_PUSH_WARNING()
+    TS_LLVM_NOWARNING(thread-safety-analysis)
+
     try {
         for (size_t line_number = 1; line.getLine(strm); ++line_number) {
 
@@ -939,6 +945,8 @@ bool ts::Names::AllInstances::loadFileLocked(const UString& file_name)
     if (section != nullptr) {
         section->_mutex.unlock();
     }
+    TS_POP_WARNING()
+
     strm.close();
 
     // Verify that all sections have bits size.

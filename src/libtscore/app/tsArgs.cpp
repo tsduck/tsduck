@@ -264,17 +264,19 @@ ts::UString ts::Args::IOption::valueDescription(ValueContext ctx) const
 
     if (type == NONE || (flags & (IOPT_OPTVALUE | IOPT_OPTVAL_NOHELP)) == (IOPT_OPTVALUE | IOPT_OPTVAL_NOHELP)) {
         // No value or value is optional and shall not be documented.
-        return UString();
+        desc.clear();
     }
     else if (ctx == ALONE) {
-        return desc;
+        // Simple text
     }
     else if ((flags & IOPT_OPTVALUE) != 0) {
-        return (ctx == LONG ? u"[=" : u"[") + desc + u"]";
+        desc.insert(0, ctx == LONG ? u"[=" : u"[");
+        desc.append(u']');
     }
     else {
-        return SPACE + desc;
+        desc.insert(0, 1, SPACE);
     }
+    return desc;
 }
 
 
@@ -372,18 +374,19 @@ ts::UString ts::Args::IOption::helpText(size_t line_width) const
 {
     IndentationContext indent_desc = TITLE;
     UString text;
+    bool undocumented = false;
 
     // Add option / parameter name.
     if (name.empty()) {
         // This is the parameters (ie. not options).
         indent_desc = PARAMETER_DESC;
         // Print nothing if parameters are undocumented.
-        if (help.empty() && syntax.empty()) {
-            return UString();
-        }
+        undocumented = help.empty() && syntax.empty();
         // Print generic title instead of option names.
-        text += HelpLines(TITLE, max_occur <= 1 ? u"Parameter:" : u"Parameters:", line_width);
-        text += LINE_FEED;
+        if (!undocumented) {
+            text += HelpLines(TITLE, max_occur <= 1 ? u"Parameter:" : u"Parameters:", line_width);
+            text += LINE_FEED;
+        }
     }
     else {
         // This is an option.
@@ -394,28 +397,30 @@ ts::UString ts::Args::IOption::helpText(size_t line_width) const
         text += HelpLines(OPTION_NAME, UString::Format(u"--%s%s", name, valueDescription(IOption::LONG)), line_width);
     }
 
-    // Add option description.
-    if (!help.empty()) {
-        text += HelpLines(indent_desc, help, line_width);
-    }
-    else if (name.empty() && !syntax.empty()) {
-        // For parameters (no option name previously displayed), use syntax as fallback for help.
-        text += HelpLines(indent_desc, syntax, line_width);
-    }
+    if (!undocumented) {
+        // Add option description.
+        if (!help.empty()) {
+            text += HelpLines(indent_desc, help, line_width);
+        }
+        else if (name.empty() && !syntax.empty()) {
+            // For parameters (no option name previously displayed), use syntax as fallback for help.
+            text += HelpLines(indent_desc, syntax, line_width);
+        }
 
-    // Document all possible values for enumeration types.
-    if (!enumeration.empty() && (flags & (IOPT_OPTVALUE | IOPT_OPTVAL_NOHELP)) != (IOPT_OPTVALUE | IOPT_OPTVAL_NOHELP)) {
-        text += HelpLines(indent_desc, u"The '" + valueDescription(IOption::ALONE) + u"' must be one of " + optionNames(u", ") + u".", line_width);
-    }
+        // Document all possible values for enumeration types.
+        if (!enumeration.empty() && (flags & (IOPT_OPTVALUE | IOPT_OPTVAL_NOHELP)) != (IOPT_OPTVALUE | IOPT_OPTVAL_NOHELP)) {
+            text += HelpLines(indent_desc, u"The '" + valueDescription(IOption::ALONE) + u"' must be one of " + optionNames(u", ") + u".", line_width);
+        }
 
-    // Document decimal values (with a decimal point).
-    if (decimals > 0) {
-        text += HelpLines(indent_desc, UString::Format(u"The value may include up to %d meaningful decimal digits.", decimals), line_width);
-    }
-    if (type == ANUMBER && anumber != nullptr) {
-        const UString desc(anumber->description());
-        if (!desc.empty()) {
-            text += HelpLines(indent_desc, UString::Format(u"The value must be a %s.", desc), line_width);
+        // Document decimal values (with a decimal point).
+        if (decimals > 0) {
+            text += HelpLines(indent_desc, UString::Format(u"The value may include up to %d meaningful decimal digits.", decimals), line_width);
+        }
+        if (type == ANUMBER && anumber != nullptr) {
+            const UString desc(anumber->description());
+            if (!desc.empty()) {
+                text += HelpLines(indent_desc, UString::Format(u"The value must be a %s.", desc), line_width);
+            }
         }
     }
 

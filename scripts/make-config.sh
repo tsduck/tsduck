@@ -529,6 +529,11 @@ CXXFLAGS_WARNINGS="-Werror"
 if [[ -n $USE_LLVM ]]; then
     CXXFLAGS_WARNINGS="$CXXFLAGS_WARNINGS -Weverything"
     CXXFLAGS_NO_WARNINGS="$CXXFLAGS_NO_WARNINGS -Wno-c++98-compat-pedantic"
+    # With the new thread-safety check of LLVM, there is a bug with thread-safety-negative in clang 21.
+    # TODO: check which version fixes this to set a max version.
+    if [[ $LLVM_MAJOR -ge 21 ]]; then
+        CXXFLAGS_NO_WARNINGS="$CXXFLAGS_NO_WARNINGS -Wno-thread-safety-negative"
+    fi
     if [[ -n $MACOS ]]; then
         # On macOS, it is normal to include from /usr/local/include since some libraries come from Homebrew.
         # Starting with clang 12, this generates a warning we need to disable. However, this disable option

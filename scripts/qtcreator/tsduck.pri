@@ -89,6 +89,7 @@ mac {
     LLVM_MAJOR = $$member(LLVM_FIELDS, 0)
     QMAKE_CXXFLAGS_WARN_ON += -Weverything -Wno-c++98-compat-pedantic
     greaterThan(LLVM_MAJOR, 11): QMAKE_CXXFLAGS_WARN_ON += -Wno-poison-system-directories
+    greaterThan(LLVM_MAJOR, 20): QMAKE_CXXFLAGS_WARN_ON += -Wno-thread-safety-negative
     exists(/usr/local/include): QMAKE_CXXFLAGS += -I/usr/local/include
     exists(/opt/homebrew/include): QMAKE_CXXFLAGS += -I/opt/homebrew/include
     LIBS += -framework PCSC

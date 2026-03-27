@@ -165,7 +165,7 @@ bool ts::AbstractDescrambler::stop()
 
 
 //----------------------------------------------------------------------------
-//  This method is invoked when a PMT is available for the service.
+// This method is invoked when a PMT is available for the service.
 //----------------------------------------------------------------------------
 
 void ts::AbstractDescrambler::handlePMT(const PMT& pmt, PID)
@@ -259,6 +259,12 @@ void ts::AbstractDescrambler::analyzeDescriptors(const DescriptorList& dlist, st
         }
     }
 }
+
+
+// False positive in LLVM thread-safety-analysis: The mutex is used only when _synchronous is false.
+// LLVM 21 is confused with this scenario. It considers that a mutex shall always be used.
+TS_PUSH_WARNING()
+TS_LLVM_NOWARNING(thread-safety-analysis)
 
 
 //----------------------------------------------------------------------------
@@ -529,3 +535,5 @@ ts::ProcessorPlugin::Status ts::AbstractDescrambler::processPacket(TSPacket& pkt
     // Descramble the packet payload.
     return pecm->scrambling.decrypt(pkt) ? TSP_OK : TSP_END;
 }
+
+TS_POP_WARNING()
