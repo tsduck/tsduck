@@ -639,5 +639,5 @@ ts::UString ts::MPEPlugin::syncLayoutString(const uint8_t* udp, size_t udp_size)
 
     return result;
 
-    TS_PUSH_WARNING()
+    TS_POP_WARNING()
 }
