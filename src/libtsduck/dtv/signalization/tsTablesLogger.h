@@ -191,6 +191,7 @@ namespace ts {
         bool                     _duration = false;          // Display duration since beginning with each table.
         bool                     _packet_index = false;      // Display packet index with each table.
         bool                     _meta_sections = false;     // Add hexadecimal dump of each section in XML and JSON metadata.
+        bool                     _meta_base64 = false;       // Add Base-64 dump of each section in XML and JSON metadata.
         bool                     _logger = false;            // Table logger.
         size_t                   _log_size = DEFAULT_LOG_SIZE;  // Size of table to log.
         bool                     _no_duplicate = false;      // Exclude consecutive duplicated short sections on a PID.

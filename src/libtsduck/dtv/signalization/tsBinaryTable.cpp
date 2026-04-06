@@ -539,7 +539,7 @@ ts::xml::Element* ts::BinaryTable::toXML(DuckContext& duck, xml::Element* parent
     }
 
     // Add optional metadata.
-    if ((opt.setPID && _source_pid != PID_NULL) || opt.setLocalTime || opt.setPackets || opt.setSections) {
+    if ((opt.setPID && _source_pid != PID_NULL) || opt.setLocalTime || opt.setPackets || opt.setSections || opt.setBase64) {
         // Add <metadata> element as first child of the table.
         // This element is not part of the table but describes how the table was collected.
         xml::Element* meta = AbstractTable::GetOrCreateMetadata(node);
@@ -553,10 +553,16 @@ ts::xml::Element* ts::BinaryTable::toXML(DuckContext& duck, xml::Element* parent
             meta->setIntAttribute(u"first_ts_packet", firstTSPacketIndex());
             meta->setIntAttribute(u"last_ts_packet", lastTSPacketIndex());
         }
-        if (opt.setSections) {
+        if (opt.setSections || opt.setBase64) {
             for (const auto& sec : _sections) {
                 if (sec != nullptr && sec->isValid()) {
-                    meta->addHexaTextChild(u"section", sec->content(), sec->size());
+                    xml::Element* xsection = meta->addElement(u"section");
+                    if (opt.setBase64) {
+                        xsection->setBase64Attribute(u"base64", sec->content(), sec->size());
+                    }
+                    if (opt.setSections) {
+                        xsection->addHexaText(sec->content(), sec->size());
+                    }
                 }
             }
         }

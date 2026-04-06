@@ -2,13 +2,16 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.44-4579 (March 2026)
+VERSION 3.44-4594 (April 2026)
 
 [IMP] Improvements on existing commands and plugins:
 
   * With  "tsp --upgrade",  do  not upgrate the development environment package
     (tsduck-devel or tsduck-dev) if one exists for the operating system  and it
     is not installed.
+  * New options in existing commands and plugins:
+    - Option --meta-base64-sections in "tstables  and  plugins  "splicemonitor"
+      and "tables".
 
 [BUG] Bug fixes:
 

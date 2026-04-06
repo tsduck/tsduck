@@ -670,7 +670,7 @@ void ts::xml::Element::setBase64Attribute(const UString& name, const void* data,
 
     // Do nothing if empty.
     if (size > 0 || !only_not_empty) {
-        setAttribute(name, Base64::Encoded(data, size));
+        setAttribute(name, Base64::Encoded(data, size, 0));
     }
 }
 

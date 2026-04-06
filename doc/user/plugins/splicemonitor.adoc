@@ -89,6 +89,12 @@ Specify a maximum number of repetitions for each splice command.
 See option `--alarm-command` for the processing of non-nominal cases.
 
 [.opt]
+*--meta-base64-sections*
+
+[.optdoc]
+Add a Base-64 dump of each section in the XML and JSON metadata.
+
+[.opt]
 *--meta-sections*
 
 [.optdoc]

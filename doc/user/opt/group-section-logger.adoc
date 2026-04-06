@@ -348,6 +348,12 @@ The optional string parameter specifies a prefix to prepend on the log line befo
 to facilitate the filtering of the appropriate line in the logs.
 
 [.opt]
+*--meta-base64-sections*
+
+[.optdoc]
+Add a Base-64 dump of each section in the XML and JSON metadata.
+
+[.opt]
 *--meta-sections*
 
 [.optdoc]

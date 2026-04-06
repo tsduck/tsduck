@@ -323,6 +323,7 @@ namespace ts {
             bool setLocalTime = false;  //!< Add a metadata element with the current local time.
             bool setPackets = false;    //!< Add a metadata element with the index of the first and last TS packets of the table.
             bool setSections = false;   //!< Add metadata elements with hexadecimal dump of each section in the table.
+            bool setBase64 = false;     //!< Add metadata elements with Base-64 dump of each section in the table.
         };
 
         //!

@@ -216,6 +216,9 @@ ts::SpliceMonitorPlugin::SpliceMonitorPlugin(TSP* tsp_) :
          u"Specify a maximum pre-roll time in milliseconds for splice commands. "
          u"See option --alarm-command for non-nominal cases.");
 
+    option(u"meta-base64-sections");
+    help(u"meta-base64-sections", u"Add Base-64 dump of each section in XML and JSON metadata.");
+
     option(u"meta-sections");
     help(u"meta-sections", u"Add hexadecimal dump of each section in XML and JSON metadata.");
 
@@ -277,6 +280,7 @@ bool ts::SpliceMonitorPlugin::getOptions()
     _xml_options.setPackets = _packet_index = present(u"packet-index");
     _xml_options.setLocalTime = _time_stamp = present(u"timestamp");
     _xml_options.setSections = present(u"meta-sections");
+    _xml_options.setBase64 = present(u"meta-base64-sections");
     _no_adjustment = present(u"no-adjustment");
     getIntValue(_splice_pid, u"splice-pid", PID_NULL);
     getIntValue(_pts_pid, u"time-pid", PID_NULL);
