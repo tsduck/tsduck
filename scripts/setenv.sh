@@ -16,7 +16,16 @@
 #
 #-----------------------------------------------------------------------------
 
-SCRIPT=$(basename "${BASH_SOURCE[0]}")
+if [ -n "${BASH_VERSION:-}" ]; then
+    THIS_SCRIPT="${BASH_SOURCE[0]}"
+elif [ -n "${ZSH_VERSION:-}" ]; then
+    # shellcheck disable=SC2296
+    THIS_SCRIPT="${(%):-%x}"
+else
+    THIS_SCRIPT="$0"
+fi
+
+SCRIPT=$(basename "$THIS_SCRIPT")
 usage() { echo >&2 "syntax: $SCRIPT [--bin dir] [--debug] [--display] [-all]"; exit 1; }
 
 # Default options.
@@ -49,7 +58,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Build binary directory.
-ROOTDIR=$(cd $(dirname "${BASH_SOURCE[0]}")/..; pwd)
+ROOTDIR=$(cd "$(dirname "$THIS_SCRIPT")/.." || exit; pwd)
 TSPYDIR="$ROOTDIR/src/libtsduck/python"
 if [[ -z "$BINDIR" ]]; then
     ARCH=$(uname -m | sed -e 's/i.86/i386/' -e 's/^arm.*$/arm/' -e 's/ /-/g')
@@ -61,12 +70,18 @@ fi
 addpath() {
     local varname=$1
     local bindir="$2"
-    local npath=":${!varname}:"
+    local current_path
+    eval "current_path=\"\$$varname\""
+    local npath=":${current_path}:"
     npath="${npath//:$bindir:/:}"
     npath="${npath//::/:}"
     npath="${npath/#:/}"
     npath="${npath/%:/}"
-    [[ -z "$npath" ]] && export $varname="$bindir:" || export $varname="$bindir:$npath:"
+    if [[ -z "$npath" ]]; then
+        export "$varname=$bindir"
+    else
+        export "$varname=$bindir:$npath"
+    fi
 }
 
 # Display or set path.
