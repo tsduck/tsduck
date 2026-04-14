@@ -7,46 +7,54 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  DSM-CC Object Carousel Controller (FSM).
+//!  DSM-CC Object Carousel Module Assembler (FSM).
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
 #include "tsDuckContext.h"
-#include "tsSectionDemux.h"
-#include "tsBinaryTable.h"
 #include "tsDSMCC.h"
 #include "tsDSMCCUserToNetworkMessage.h"
 #include "tsDSMCCDownloadDataMessage.h"
+#include <functional>
 #include <map>
 #include <algorithm>
 
 namespace ts {
 
     //!
-    //! Manages the lifecycle and state of a DSM-CC Object Carousel.
+    //! Assembles DSM-CC Object Carousel modules from DSI/DII/DDB messages.
     //!
-    class TSDUCKDLL DSMCCCarouselController: public TableHandlerInterface, public SectionHandlerInterface
+    //! Demux-agnostic: callers feed already-parsed DSM-CC messages via feedUserToNetwork()
+    //! and feedDownloadData(). A callback is invoked when a module is fully assembled.
+    //!
+    class TSDUCKDLL DSMCCModuleAssembler
     {
-        TS_NOCOPY(DSMCCCarouselController);
+        TS_NOCOPY(DSMCCModuleAssembler);
 
     public:
         //!
         //! Constructor.
         //! @param [in,out] duck TSDuck execution context.
         //!
-        explicit DSMCCCarouselController(DuckContext& duck);
+        explicit DSMCCModuleAssembler(DuckContext& duck);
 
         //!
-        //! Clear the state of the controller.
+        //! Clear the state of the assembler.
         //!
         void clear();
 
-        // Implementation of TableHandlerInterface (for DSI, DII, DDM)
-        virtual void handleTable(SectionDemux&, const BinaryTable&) override;
+        //!
+        //! Feed a DSM-CC User-to-Network Message (DSI or DII).
+        //! @param [in] unm The parsed message.
+        //!
+        void feedUserToNetwork(const DSMCCUserToNetworkMessage& unm);
 
-        // Implementation of SectionHandlerInterface (for DDB progress tracking)
-        virtual void handleSection(SectionDemux&, const Section&) override;
+        //!
+        //! Feed a DSM-CC Download Data Message (DDB).
+        //! @param [in,out] ddm The parsed message. Payload may be moved out.
+        //!
+        void feedDownloadData(DSMCCDownloadDataMessage& ddm);
 
         //!
         //! List the status of current modules to an output stream.
@@ -106,7 +114,7 @@ namespace ts {
         //! Set a callback to be invoked when a module is fully loaded.
         //! @param [in] handler The callback function.
         //!
-        void setModuleCompletedHandler(ModuleHandler handler) { _on_module_complete = handler; }
+        void setModuleCompletedHandler(ModuleHandler handler) { _on_module_complete = std::move(handler); }
 
     private:
         ModuleHandler _on_module_complete = nullptr;

@@ -6,7 +6,7 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsDSMCCCarouselController.h"
+#include "tsDSMCCModuleAssembler.h"
 #include "tsPSIBuffer.h"
 #include "tsDSMCCCompressedModuleDescriptor.h"
 
@@ -14,7 +14,7 @@
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::DSMCCCarouselController::DSMCCCarouselController(DuckContext& duck) :
+ts::DSMCCModuleAssembler::DSMCCModuleAssembler(DuckContext& duck) :
     _duck(duck)
 {
 }
@@ -24,7 +24,7 @@ ts::DSMCCCarouselController::DSMCCCarouselController(DuckContext& duck) :
 // Clear state
 //----------------------------------------------------------------------------
 
-void ts::DSMCCCarouselController::clear()
+void ts::DSMCCModuleAssembler::clear()
 {
     _state = State::UNMOUNTED;
     _modules.clear();
@@ -33,52 +33,33 @@ void ts::DSMCCCarouselController::clear()
 
 
 //----------------------------------------------------------------------------
-// Handle Tables (DSI, DII, DDM)
+// Feed a User-to-Network Message (DSI or DII)
 //----------------------------------------------------------------------------
 
-void ts::DSMCCCarouselController::handleTable(SectionDemux& demux, const BinaryTable& table)
+void ts::DSMCCModuleAssembler::feedUserToNetwork(const DSMCCUserToNetworkMessage& unm)
 {
-    // Filter for DSM-CC User-to-Network Messages (0x3B)
-    if (table.tableId() == TID_DSMCC_UNM) {
-        DSMCCUserToNetworkMessage unm(_duck, table);
-        if (unm.isValid()) {
-            if (unm.header.message_id == DSMCC_MSGID_DSI) {
-                processDSI(unm);
-            }
-            else if (unm.header.message_id == DSMCC_MSGID_DII) {
-                processDII(unm);
-            }
-        }
+    if (!unm.isValid()) {
+        return;
     }
-    // Filter for DSM-CC Download Data Messages (0x3C)
-    else if (table.tableId() == TID_DSMCC_DDM) {
-        DSMCCDownloadDataMessage ddm(_duck, table);
-        if (ddm.isValid()) {
-            processDDB(ddm);
-        }
+    if (unm.header.message_id == DSMCC_MSGID_DSI) {
+        processDSI(unm);
+    }
+    else if (unm.header.message_id == DSMCC_MSGID_DII) {
+        processDII(unm);
     }
 }
 
 
 //----------------------------------------------------------------------------
-// Handle Sections (DDB progress tracking)
+// Feed a Download Data Message (DDB)
 //----------------------------------------------------------------------------
 
-void ts::DSMCCCarouselController::handleSection(SectionDemux& demux, const Section& section)
+void ts::DSMCCModuleAssembler::feedDownloadData(DSMCCDownloadDataMessage& ddm)
 {
-    if (section.tableId() == TID_DSMCC_DDM) {
-        auto it = _modules.find(section.tableIdExtension());
-        if (it != _modules.end()) {
-            ModuleContext& ctx = it->second;
-            if (ctx.status != ModuleContext::Status::COMPLETE) {
-                if (ctx.markBlockReceived(section.sectionNumber())) {
-                    _state = State::LOADING;
-                    _duck.report().verbose(u"Module 0x%X progress: %d/%d blocks",
-                                           ctx.module_id, ctx.countReceived(), ctx.expected_blocks);
-                }
-            }
-        }
+    if (!ddm.isValid()) {
+        return;
     }
+    processDDB(ddm);
 }
 
 
@@ -86,7 +67,7 @@ void ts::DSMCCCarouselController::handleSection(SectionDemux& demux, const Secti
 // Process DSI (Download Server Initiate)
 //----------------------------------------------------------------------------
 
-void ts::DSMCCCarouselController::processDSI(const DSMCCUserToNetworkMessage& unm)
+void ts::DSMCCModuleAssembler::processDSI(const DSMCCUserToNetworkMessage& unm)
 {
     // In a full implementation, we would parse the Service Gateway IOR here.
     // For now, we just note that the DSI is present and we are "MOUNTED".
@@ -108,7 +89,7 @@ void ts::DSMCCCarouselController::processDSI(const DSMCCUserToNetworkMessage& un
 // Process DII (Download Info Indication)
 //----------------------------------------------------------------------------
 
-void ts::DSMCCCarouselController::processDII(const DSMCCUserToNetworkMessage& unm)
+void ts::DSMCCModuleAssembler::processDII(const DSMCCUserToNetworkMessage& unm)
 {
     const auto* dii = unm.toDII();
     if (dii == nullptr) {
@@ -151,7 +132,7 @@ void ts::DSMCCCarouselController::processDII(const DSMCCUserToNetworkMessage& un
 // Process DDB (Download Data Block)
 //----------------------------------------------------------------------------
 
-void ts::DSMCCCarouselController::processDDB(DSMCCDownloadDataMessage& ddm)
+void ts::DSMCCModuleAssembler::processDDB(DSMCCDownloadDataMessage& ddm)
 {
     auto it = _modules.find(ddm.module_id);
     if (it == _modules.end()) {
@@ -171,12 +152,12 @@ void ts::DSMCCCarouselController::processDDB(DSMCCDownloadDataMessage& ddm)
     // Move payload for performance (avoid large memory copy)
     ctx.payload = std::move(ddm.block_data);
 
+    ctx.status = ModuleContext::Status::COMPLETE;
+    ctx.received_blocks.assign(ctx.expected_blocks, true);
+
     if (_on_module_complete) {
         _on_module_complete(ctx);
     }
-
-    ctx.status = ModuleContext::Status::COMPLETE;
-    ctx.received_blocks.assign(ctx.expected_blocks, true);
 
     checkGlobalState();
 }
@@ -186,7 +167,7 @@ void ts::DSMCCCarouselController::processDDB(DSMCCDownloadDataMessage& ddm)
 // Helper: Check Global State
 //----------------------------------------------------------------------------
 
-void ts::DSMCCCarouselController::checkGlobalState()
+void ts::DSMCCModuleAssembler::checkGlobalState()
 {
     bool all_complete = true;
     bool any_pending = false;
@@ -221,7 +202,7 @@ void ts::DSMCCCarouselController::checkGlobalState()
 // ModuleContext Implementation
 //----------------------------------------------------------------------------
 
-void ts::DSMCCCarouselController::ModuleContext::setSize(uint32_t size, uint16_t blk_size)
+void ts::DSMCCModuleAssembler::ModuleContext::setSize(uint32_t size, uint16_t blk_size)
 {
     module_size = size;
     block_size = blk_size;
@@ -231,7 +212,7 @@ void ts::DSMCCCarouselController::ModuleContext::setSize(uint32_t size, uint16_t
     received_blocks.assign(expected_blocks, false);
 }
 
-bool ts::DSMCCCarouselController::ModuleContext::markBlockReceived(uint8_t section_num)
+bool ts::DSMCCModuleAssembler::ModuleContext::markBlockReceived(uint8_t section_num)
 {
     if (section_num < received_blocks.size() && !received_blocks[section_num]) {
         received_blocks[section_num] = true;
@@ -241,7 +222,7 @@ bool ts::DSMCCCarouselController::ModuleContext::markBlockReceived(uint8_t secti
 }
 
 
-void ts::DSMCCCarouselController::listModules(std::ostream& out) const
+void ts::DSMCCModuleAssembler::listModules(std::ostream& out) const
 {
     for (const auto& pair : _modules) {
         const auto& ctx = pair.second;
