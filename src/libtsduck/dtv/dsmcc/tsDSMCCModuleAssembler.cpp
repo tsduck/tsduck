@@ -28,6 +28,7 @@ void ts::DSMCCModuleAssembler::clear()
 {
     _state = State::UNMOUNTED;
     _modules.clear();
+    _orphan_ddbs.clear();
     _dsi_found = false;
 }
 
@@ -121,6 +122,8 @@ void ts::DSMCCModuleAssembler::processDII(const DSMCCUserToNetworkMessage& unm)
 
             _duck.report().verbose(u"Discovered Module ID: 0x%X, Size: %d, Version: %d, Original Size: %d",
                                    mod_id, ctx.module_size, ctx.module_version, ctx.original_size);
+
+            replayOrphans(ctx);
         }
     }
 
@@ -136,7 +139,11 @@ void ts::DSMCCModuleAssembler::processDDB(DSMCCDownloadDataMessage& ddm)
 {
     auto it = _modules.find(ddm.module_id);
     if (it == _modules.end()) {
-        // We received a block for a module we don't know about yet (no DII).
+        // DDB arrived before the DII that declares this module.
+        // Buffer it and replay once the DII catches up.
+        _duck.report().verbose(u"Buffering orphan DDB: Module 0x%X Ver %d (%d bytes)",
+                               ddm.module_id, ddm.module_version, ddm.block_data.size());
+        _orphan_ddbs[ddm.module_id].push_back({ddm.module_version, std::move(ddm.block_data)});
         return;
     }
 
@@ -160,6 +167,34 @@ void ts::DSMCCModuleAssembler::processDDB(DSMCCDownloadDataMessage& ddm)
     }
 
     checkGlobalState();
+}
+
+
+//----------------------------------------------------------------------------
+// Replay buffered DDBs matching a freshly registered module version.
+//----------------------------------------------------------------------------
+
+void ts::DSMCCModuleAssembler::replayOrphans(ModuleContext& ctx)
+{
+    auto it = _orphan_ddbs.find(ctx.module_id);
+    if (it == _orphan_ddbs.end()) {
+        return;
+    }
+
+    for (auto& orphan : it->second) {
+        if (orphan.module_version != ctx.module_version || ctx.status == ModuleContext::Status::COMPLETE) {
+            continue;
+        }
+        _duck.report().verbose(u"Replaying orphan DDB: Module 0x%X Ver %d (%d bytes)",
+                               ctx.module_id, ctx.module_version, orphan.block_data.size());
+        ctx.payload = std::move(orphan.block_data);
+        ctx.status = ModuleContext::Status::COMPLETE;
+        ctx.received_blocks.assign(ctx.expected_blocks, true);
+        if (_on_module_complete) {
+            _on_module_complete(ctx);
+        }
+    }
+    _orphan_ddbs.erase(it);
 }
 
 

@@ -136,9 +136,21 @@ namespace ts {
         // Module Tracking
         std::map<uint16_t, ModuleContext> _modules {};
 
+        // DDB payload received before the DII that announces the module.
+        // Keyed by module_id; each entry holds the version and the payload to
+        // replay once the DII arrives.
+        struct OrphanBlock {
+            uint8_t   module_version = 0;
+            ByteBlock block_data {};
+        };
+        std::map<uint16_t, std::vector<OrphanBlock>> _orphan_ddbs {};
+
         void processDSI(const DSMCCUserToNetworkMessage& unm);
         void processDII(const DSMCCUserToNetworkMessage& unm);
         void processDDB(DSMCCDownloadDataMessage& ddm);
+
+        // Apply any buffered DDB whose version matches the freshly registered module.
+        void replayOrphans(ModuleContext& ctx);
 
         void checkGlobalState();
     };
