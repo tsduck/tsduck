@@ -15,6 +15,7 @@
 #include "tsBinaryTable.h"
 #include "tsSectionDemux.h"
 #include "tsDSMCCCarousel.h"
+#include <filesystem>
 
 
 //----------------------------------------------------------------------------
@@ -39,6 +40,10 @@ namespace ts {
         SectionDemux _demux {duck, this, nullptr};
 
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;
+
+        // Write a resolved BIOP File object to disk under _opt_out_dir.
+        // Rejects names containing ".." or "." segments; creates intermediate directories.
+        void extractFile(const UString& name, const BIOPFileMessage& file);
     };
 }  // namespace ts
 
@@ -100,12 +105,19 @@ bool ts::DSMCCPlugin::start()
 
     _carousel.setModuleCompletedHandler([this](uint16_t module_id, const ByteBlock& payload) {
         verbose(u"Module complete: ID 0x%X (size: %d)", module_id, payload.size());
-        UString filename = UString::Format(u"%s/module_%04X.bin", _opt_out_dir, module_id);
-        if (payload.saveToFile(filename)) {
-            verbose(u"  -> Saved to %s", filename);
+        namespace fs = std::filesystem;
+        const fs::path dir = fs::path(_opt_out_dir.toUTF8()) / "modules";
+        std::error_code ec;
+        fs::create_directories(dir, ec);
+        if (ec) {
+            error(u"Cannot create directory %s: %s",
+                  UString::FromUTF8(dir.string()),
+                  UString::FromUTF8(ec.message()));
+            return;
         }
-        else {
-            error(u"Error saving module to %s", filename);
+        const UString filename = UString::FromUTF8((dir / UString::Format(u"module_%04X.bin", module_id).toUTF8()).string());
+        if (payload.saveToFile(filename, this)) {
+            verbose(u"  -> Saved to %s", filename);
         }
     });
 
@@ -115,25 +127,8 @@ bool ts::DSMCCPlugin::start()
                 name.empty() ? u"(unresolved)" : name,
                 UString::FromUTF8(msg.kindTag()));
 
-        const std::vector<BIOPBinding>* bindings = msg.bindingList();
-        if (bindings == nullptr) {
-            return;
-        }
-        for (const auto& b : *bindings) {
-            UString id_path;
-            for (const auto& nc : b.name) {
-                if (!id_path.empty()) {
-                    id_path += u"/";
-                }
-                id_path += nc.idString();
-            }
-            const std::string kind = b.name.empty() ? std::string() : b.name.back().kindTag();
-            verbose(u"  binding: \"%s\" kind=\"%s\" type=0x%02X profiles=%d info=%d",
-                    id_path,
-                    UString::FromUTF8(kind),
-                    b.binding_type,
-                    b.ior.tagged_profiles.size(),
-                    b.object_info.size());
+        if (!name.empty() && msg.kindTag() == BIOPObjectKind::FILE) {
+            extractFile(name, static_cast<const BIOPFileMessage&>(msg));
         }
     });
 
@@ -185,6 +180,50 @@ void ts::DSMCCPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
         }
         default:
             break;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Extract a resolved BIOP File to disk.
+//----------------------------------------------------------------------------
+
+void ts::DSMCCPlugin::extractFile(const UString& name, const BIOPFileMessage& file)
+{
+    namespace fs = std::filesystem;
+
+    // The resolver returns paths starting with '/'. Split into segments and
+    // reject path-traversal / current-directory tokens so a crafted carousel
+    // can't escape _opt_out_dir.
+    UStringVector parts;
+    name.split(parts, u'/', true, true);  // trim, remove_empty
+
+    fs::path rel;
+    for (const auto& seg : parts) {
+        if (seg == u".." || seg == u".") {
+            warning(u"Refusing unsafe path: %s", name);
+            return;
+        }
+        rel /= seg.toUTF8();
+    }
+    if (rel.empty()) {
+        return;  // name was just "/" or all-empty segments
+    }
+
+    const fs::path full = fs::path(_opt_out_dir.toUTF8()) / "files" / rel;
+
+    std::error_code ec;
+    fs::create_directories(full.parent_path(), ec);
+    if (ec) {
+        error(u"Cannot create directory %s: %s",
+              UString::FromUTF8(full.parent_path().string()),
+              UString::FromUTF8(ec.message()));
+        return;
+    }
+
+    const UString out_path = UString::FromUTF8(full.string());
+    if (file.content.saveToFile(out_path, this)) {
+        verbose(u"Extracted %s (%d bytes)", out_path, file.content.size());
     }
 }
 
