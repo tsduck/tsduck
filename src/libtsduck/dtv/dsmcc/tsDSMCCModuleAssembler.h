@@ -18,7 +18,6 @@
 #include "tsDSMCCDownloadDataMessage.h"
 #include <functional>
 #include <map>
-#include <algorithm>
 
 namespace ts {
 
@@ -71,11 +70,10 @@ namespace ts {
             uint8_t module_version = 0;
             uint16_t block_size = 4066;
 
-            size_t expected_blocks = 0;            // Calculated from module_size and block_size
-            std::vector<bool> received_blocks {};  // Progress bitmask
-            bool is_compressed = false;            // Compressed_module_descriptor detected in DII
-            uint32_t original_size = 0;            // Original size from compressed_module_descriptor
-            ByteBlock payload {};                  // Complete module payload assembled from DDBs
+            size_t expected_blocks = 0;  // Calculated from module_size and block_size
+            bool is_compressed = false;  // Compressed_module_descriptor detected in DII
+            uint32_t original_size = 0;  // Original size from compressed_module_descriptor
+            ByteBlock payload {};        // Complete module payload assembled from DDBs
 
             enum class Status { UNKNOWN,
                                 PENDING,
@@ -86,17 +84,6 @@ namespace ts {
             //! Initialize module with expected size and block size.
             //!
             void setSize(uint32_t size, uint16_t blk_size);
-
-            //!
-            //! Get the number of received blocks.
-            //!
-            size_t countReceived() const { return std::count(received_blocks.begin(), received_blocks.end(), true); }
-
-            //!
-            //! Mark a block as received for progress tracking.
-            //! @return True if it was a new block.
-            //!
-            bool markBlockReceived(uint8_t section_num);
 
             //!
             //! Check if module is fully loaded.
@@ -121,18 +108,6 @@ namespace ts {
 
         DuckContext& _duck;
 
-        // FSM State
-        enum class State {
-            UNMOUNTED,    // Waiting for DSI
-            MOUNTING,     // Analyzing DSI
-            DISCOVERING,  // Collecting DIIs
-            LOADING,      // Collecting DDBs
-            READY         // All known modules loaded
-        };
-        State _state = State::UNMOUNTED;
-
-        bool _dsi_found = false;
-
         // Module Tracking
         std::map<uint16_t, ModuleContext> _modules {};
 
@@ -145,13 +120,10 @@ namespace ts {
         };
         std::map<uint16_t, std::vector<OrphanBlock>> _orphan_ddbs {};
 
-        void processDSI(const DSMCCUserToNetworkMessage& unm);
         void processDII(const DSMCCUserToNetworkMessage& unm);
         void processDDB(DSMCCDownloadDataMessage& ddm);
 
         // Apply any buffered DDB whose version matches the freshly registered module.
         void replayOrphans(ModuleContext& ctx);
-
-        void checkGlobalState();
     };
 }  // namespace ts

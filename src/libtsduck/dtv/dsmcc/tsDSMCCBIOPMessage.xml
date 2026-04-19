@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_dsmccBIOPMessage>
+
+    <!-- BIOP Message (common header + polymorphic body) -->
+    <BIOP_message
+        object_kind="string, required"
+        magic="uint32, default=0x42494F50"
+        version_major="uint8, default=0x01"
+        version_minor="uint8, default=0x00"
+        byte_order="uint8, default=0x00"
+        message_type="uint8, default=0x00">
+
+      <object_key>
+        Hexadecimal content
+      </object_key>
+
+      <object_info>
+        Hexadecimal content
+      </object_info>
+
+      <service_context context_id="uint32, required">
+        <context_data>
+          Hexadecimal content
+        </context_data>
+      </service_context>
+
+      <!-- Body for object_kind="fil" -->
+      <fil>
+        <content>
+          Hexadecimal content
+        </content>
+      </fil>
+
+      <!-- Body for object_kind="dir" or object_kind="srg" -->
+      <bindings>
+        <binding binding_type="uint8, required">
+          <name_component>
+            <id>
+              Hexadecimal content
+            </id>
+            <kind>
+              Hexadecimal content
+            </kind>
+          </name_component>
+          <_any in="_dsmccIOR"/>
+          <object_info>
+            Hexadecimal content
+          </object_info>
+        </binding>
+      </bindings>
+
+    </BIOP_message>
+
+  </_dsmccBIOPMessage>
+</tsduck>

@@ -26,10 +26,8 @@ ts::DSMCCModuleAssembler::DSMCCModuleAssembler(DuckContext& duck) :
 
 void ts::DSMCCModuleAssembler::clear()
 {
-    _state = State::UNMOUNTED;
     _modules.clear();
     _orphan_ddbs.clear();
-    _dsi_found = false;
 }
 
 
@@ -42,10 +40,7 @@ void ts::DSMCCModuleAssembler::feedUserToNetwork(const DSMCCUserToNetworkMessage
     if (!unm.isValid()) {
         return;
     }
-    if (unm.header.message_id == DSMCC_MSGID_DSI) {
-        processDSI(unm);
-    }
-    else if (unm.header.message_id == DSMCC_MSGID_DII) {
+    if (unm.header.message_id == DSMCC_MSGID_DII) {
         processDII(unm);
     }
 }
@@ -61,28 +56,6 @@ void ts::DSMCCModuleAssembler::feedDownloadData(DSMCCDownloadDataMessage& ddm)
         return;
     }
     processDDB(ddm);
-}
-
-
-//----------------------------------------------------------------------------
-// Process DSI (Download Server Initiate)
-//----------------------------------------------------------------------------
-
-void ts::DSMCCModuleAssembler::processDSI(const DSMCCUserToNetworkMessage& unm)
-{
-    // In a full implementation, we would parse the Service Gateway IOR here.
-    // For now, we just note that the DSI is present and we are "MOUNTED".
-
-    if (!_dsi_found) {
-        _duck.report().verbose(u"New DSI Transaction ID detected: 0x%X", unm.header.transaction_id);
-
-        _dsi_found = true;
-
-        if (_state == State::UNMOUNTED) {
-            _state = State::MOUNTING;
-            checkGlobalState();
-        }
-    }
 }
 
 
@@ -126,8 +99,6 @@ void ts::DSMCCModuleAssembler::processDII(const DSMCCUserToNetworkMessage& unm)
             replayOrphans(ctx);
         }
     }
-
-    checkGlobalState();
 }
 
 
@@ -156,17 +127,16 @@ void ts::DSMCCModuleAssembler::processDDB(DSMCCDownloadDataMessage& ddm)
 
     _duck.report().verbose(u"Module 0x%X Complete! (Size: %d)", ctx.module_id, ddm.block_data.size());
 
-    // Move payload for performance (avoid large memory copy)
+    // Invariant: ddm.block_data already contains the full module payload — the upstream
+    // DSMCC section layer concatenates DDB blocks before handing us the DDM. Do not
+    // reintroduce a per-block bitmap here unless that layer changes.
     ctx.payload = std::move(ddm.block_data);
 
     ctx.status = ModuleContext::Status::COMPLETE;
-    ctx.received_blocks.assign(ctx.expected_blocks, true);
 
     if (_on_module_complete) {
         _on_module_complete(ctx);
     }
-
-    checkGlobalState();
 }
 
 
@@ -182,54 +152,21 @@ void ts::DSMCCModuleAssembler::replayOrphans(ModuleContext& ctx)
     }
 
     for (auto& orphan : it->second) {
-        if (orphan.module_version != ctx.module_version || ctx.status == ModuleContext::Status::COMPLETE) {
+        if (ctx.status == ModuleContext::Status::COMPLETE) {
+            break;  // Already assembled; remaining orphans are redundant duplicates.
+        }
+        if (orphan.module_version != ctx.module_version) {
             continue;
         }
         _duck.report().verbose(u"Replaying orphan DDB: Module 0x%X Ver %d (%d bytes)",
                                ctx.module_id, ctx.module_version, orphan.block_data.size());
         ctx.payload = std::move(orphan.block_data);
         ctx.status = ModuleContext::Status::COMPLETE;
-        ctx.received_blocks.assign(ctx.expected_blocks, true);
         if (_on_module_complete) {
             _on_module_complete(ctx);
         }
     }
     _orphan_ddbs.erase(it);
-}
-
-
-//----------------------------------------------------------------------------
-// Helper: Check Global State
-//----------------------------------------------------------------------------
-
-void ts::DSMCCModuleAssembler::checkGlobalState()
-{
-    bool all_complete = true;
-    bool any_pending = false;
-
-    if (_modules.empty()) {
-        all_complete = false;
-    }
-    else {
-        for (const auto& pair : _modules) {
-            if (!pair.second.isComplete()) {
-                all_complete = false;
-                if (pair.second.status != ModuleContext::Status::UNKNOWN) {
-                    any_pending = true;
-                }
-            }
-        }
-    }
-
-    if (all_complete && !_modules.empty()) {
-        _state = State::READY;
-    }
-    else if (any_pending) {
-        _state = State::LOADING;
-    }
-    else if (_dsi_found) {
-        _state = State::DISCOVERING;
-    }
 }
 
 
@@ -241,19 +178,7 @@ void ts::DSMCCModuleAssembler::ModuleContext::setSize(uint32_t size, uint16_t bl
 {
     module_size = size;
     block_size = blk_size;
-
-    // Calculate expected blocks
     expected_blocks = (size + block_size - 1) / block_size;
-    received_blocks.assign(expected_blocks, false);
-}
-
-bool ts::DSMCCModuleAssembler::ModuleContext::markBlockReceived(uint8_t section_num)
-{
-    if (section_num < received_blocks.size() && !received_blocks[section_num]) {
-        received_blocks[section_num] = true;
-        return true;
-    }
-    return false;
 }
 
 
@@ -261,9 +186,9 @@ void ts::DSMCCModuleAssembler::listModules(std::ostream& out) const
 {
     for (const auto& pair : _modules) {
         const auto& ctx = pair.second;
-        out << UString::Format(u"ID: %04X | Ver: %d | Size: %6d | Blocks: %3d/%3d | Status: %s",
+        out << UString::Format(u"ID: %04X | Ver: %d | Size: %6d | Blocks: %3d | Status: %s",
                                ctx.module_id, ctx.module_version, ctx.module_size,
-                               ctx.countReceived(), ctx.expected_blocks,
+                               ctx.expected_blocks,
                                ctx.isComplete() ? "COMPLETE" : "PENDING")
             << std::endl;
     }

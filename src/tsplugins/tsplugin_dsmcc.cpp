@@ -109,6 +109,34 @@ bool ts::DSMCCPlugin::start()
         }
     });
 
+    _carousel.setObjectHandler([this](uint16_t module_id, const UString& name, const BIOPMessage& msg) {
+        verbose(u"Module 0x%X BIOP object: name=\"%s\" kind=\"%s\"",
+                module_id,
+                name.empty() ? u"(unresolved)" : name,
+                UString::FromUTF8(msg.kindTag()));
+
+        const std::vector<BIOPBinding>* bindings = msg.bindingList();
+        if (bindings == nullptr) {
+            return;
+        }
+        for (const auto& b : *bindings) {
+            UString id_path;
+            for (const auto& nc : b.name) {
+                if (!id_path.empty()) {
+                    id_path += u"/";
+                }
+                id_path += nc.idString();
+            }
+            const std::string kind = b.name.empty() ? std::string() : b.name.back().kindTag();
+            verbose(u"  binding: \"%s\" kind=\"%s\" type=0x%02X profiles=%d info=%d",
+                    id_path,
+                    UString::FromUTF8(kind),
+                    b.binding_type,
+                    b.ior.tagged_profiles.size(),
+                    b.object_info.size());
+        }
+    });
+
     if (_pid != PID_NULL) {
         verbose(u"_demux.addPID: %n", _pid);
         _demux.addPID(_pid);
@@ -125,6 +153,8 @@ bool ts::DSMCCPlugin::start()
 bool ts::DSMCCPlugin::stop()
 {
     verbose(u"stop");
+
+    _carousel.flushPendingObjects();
 
     std::stringstream ss;
     _carousel.listModules(ss);

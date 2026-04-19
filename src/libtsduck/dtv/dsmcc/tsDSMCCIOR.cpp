@@ -91,7 +91,7 @@ bool ts::DSMCCIOR::fromXML(DuckContext& duck, const xml::Element* element)
     bool ok = element->getHexaTextChild(type_id, u"type_id");
 
     for (auto& xprofile : element->children(u"tagged_profile", &ok)) {
-        ok = tagged_profiles.emplace_back().fromXML(duck, &xprofile);
+        ok = ok && tagged_profiles.emplace_back().fromXML(duck, &xprofile);
     }
 
     return ok;

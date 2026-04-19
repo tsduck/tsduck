@@ -14,6 +14,8 @@
 #pragma once
 #include "tsDuckContext.h"
 #include "tsDSMCCModuleAssembler.h"
+#include "tsDSMCCBIOPMessage.h"
+#include "tsDSMCCBIOPNameResolver.h"
 
 namespace ts {
 
@@ -59,6 +61,13 @@ namespace ts {
         void listModules(std::ostream& out) const { _assembler.listModules(out); }
 
         //!
+        //! Flush any BIOP objects that were buffered while waiting for their parent
+        //! directory to be parsed. Objects whose names still cannot be resolved are
+        //! emitted with an empty name.
+        //!
+        void flushPendingObjects();
+
+        //!
         //! Callback type for module completion events.
         //! Parameters: module id, decompressed payload.
         //!
@@ -70,11 +79,29 @@ namespace ts {
         //!
         void setModuleCompletedHandler(ModuleHandler handler) { _on_module = std::move(handler); }
 
+        //!
+        //! Callback type for BIOP object events.
+        //! Invoked once per BIOP message parsed from a completed module.
+        //! Parameters: module id, resolved object path (joined NameComponents from
+        //! the parent SRG/Directory bindings; empty if the parent has not been
+        //! parsed yet), parsed BIOP message.
+        //!
+        using ObjectHandler = std::function<void(uint16_t module_id, const UString& name, const BIOPMessage& msg)>;
+
+        //!
+        //! Set a callback to be invoked for each BIOP object extracted from a module.
+        //! @param [in] handler The callback function.
+        //!
+        void setObjectHandler(ObjectHandler handler) { _on_object = std::move(handler); }
+
     private:
         DuckContext& _duck;
         DSMCCModuleAssembler _assembler;
         ModuleHandler _on_module = nullptr;
+        ObjectHandler _on_object = nullptr;
+        BIOPNameResolver _names {};
 
         void onAssemblerModuleComplete(const DSMCCModuleAssembler::ModuleContext& ctx);
+        void scanBIOPObjects(uint16_t module_id, const ByteBlock& payload);
     };
 }  // namespace ts
