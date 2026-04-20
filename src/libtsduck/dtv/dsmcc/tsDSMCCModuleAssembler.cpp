@@ -186,9 +186,16 @@ void ts::DSMCCModuleAssembler::listModules(std::ostream& out) const
 {
     for (const auto& pair : _modules) {
         const auto& ctx = pair.second;
-        out << UString::Format(u"ID: %04X | Ver: %d | Size: %6d | Blocks: %3d | Status: %s",
+        UString comp;
+        if (ctx.is_compressed) {
+            comp = UString::Format(u"yes (orig %d)", ctx.original_size);
+        }
+        else {
+            comp = u"no";
+        }
+        out << UString::Format(u"ID: %04X | Ver: %d | Size: %6d | Blocks: %3d | Compressed: %s | Status: %s",
                                ctx.module_id, ctx.module_version, ctx.module_size,
-                               ctx.expected_blocks,
+                               ctx.expected_blocks, comp,
                                ctx.isComplete() ? "COMPLETE" : "PENDING")
             << std::endl;
     }
