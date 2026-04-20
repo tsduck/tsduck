@@ -2,6 +2,19 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
+[NEW] New commands and plugins:
+
+  * Added plugin "dsmcc":  Extract content from DSM-CC carousels on a given
+    PID.  Assembles DSI/DII/DDB  modules  (decompressing  when  needed) and
+    either  interprets  them  as  a  BIOP  object  carousel  (default)  or
+    downloads  them  as  opaque  modules  for  a  data  carousel  (DVB-SSU
+    style, with --data-carousel).  In object mode, File objects under the
+    ServiceGateway are  extracted  to  <outdir>/files/<path>.  Options
+    --list (inspect without writing), --dump-modules (keep raw assembled
+    payloads) and --data-carousel are supported.
+
+-------------------------------------------------------------------------------
+
 VERSION 3.44-4594 (April 2026)
 
 [IMP] Improvements on existing commands and plugins:
