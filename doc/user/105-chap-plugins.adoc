@@ -89,6 +89,10 @@ endif::[]
 |output
 |Drop output packets
 
+|dsmcc
+|packet
+|Extract DSM-CC carousel content
+
 |dump
 |packet
 |Dump transport stream packets

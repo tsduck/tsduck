@@ -38,6 +38,7 @@ namespace ts {
         UString _opt_out_dir {};
         bool _opt_list = false;
         bool _opt_dump_modules = false;
+        bool _opt_data_carousel = false;
 
         struct FileEntry {
             UString path {};
@@ -70,7 +71,7 @@ ts::DSMCCPlugin::DSMCCPlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Extract DSM-CC content", u"[options]")
 {
     option(u"pid", 'p', PIDVAL);
-    help(u"pid", u"Specifies the PID carrying DSM-CC Object Carousel. This is a required parameter.");
+    help(u"pid", u"PID carrying the DSM-CC carousel (DSI/DII/DDB sections). Required.");
 
     option(u"output-directory", 'o', STRING);
     help(u"output-directory", u"Directory where carousel files will be extracted. "
@@ -83,6 +84,13 @@ ts::DSMCCPlugin::DSMCCPlugin(TSP* tsp_) :
     option(u"dump-modules");
     help(u"dump-modules", u"Also write raw assembled module payloads to "
                           u"<output-directory>/modules/. Ignored with --list.");
+
+    option(u"data-carousel");
+    help(u"data-carousel", u"Treat the PID as a plain data carousel (e.g. DVB-SSU) "
+                           u"instead of an object carousel: skip BIOP parsing and "
+                           u"write each completed module directly as "
+                           u"<output-directory>/module_XXXX.bin. Mutually exclusive "
+                           u"with --dump-modules.");
 }
 
 //----------------------------------------------------------------------------
@@ -95,13 +103,20 @@ bool ts::DSMCCPlugin::getOptions()
     getValue(_opt_out_dir, u"output-directory");
     _opt_list = present(u"list");
     _opt_dump_modules = present(u"dump-modules");
+    _opt_data_carousel = present(u"data-carousel");
 
     verbose(u"get options pid: %n", _pid);
     verbose(u"get options output-directory: %s", _opt_out_dir);
-    verbose(u"get options list: %s, dump-modules: %s", _opt_list, _opt_dump_modules);
+    verbose(u"get options list: %s, dump-modules: %s, data-carousel: %s",
+            _opt_list, _opt_dump_modules, _opt_data_carousel);
 
     if (_pid == PID_NULL) {
         error(u"a PID must be specified using --pid");
+        return false;
+    }
+
+    if (_opt_data_carousel && _opt_dump_modules) {
+        error(u"--data-carousel and --dump-modules are mutually exclusive");
         return false;
     }
 
@@ -125,16 +140,24 @@ bool ts::DSMCCPlugin::start()
 
     _carousel.clear();
     _files.clear();
+    _carousel.setScanBIOP(!_opt_data_carousel);
     _demux.reset();
     _demux.setTableHandler(this);
 
     _carousel.setModuleCompletedHandler([this](uint16_t module_id, const ByteBlock& payload) {
         verbose(u"Module complete: ID 0x%X (size: %d)", module_id, payload.size());
-        if (_opt_list || !_opt_dump_modules) {
+        if (_opt_list) {
+            return;
+        }
+        if (!_opt_dump_modules && !_opt_data_carousel) {
             return;
         }
         namespace fs = std::filesystem;
-        const fs::path dir = fs::path(_opt_out_dir.toUTF8()) / "modules";
+        // Data-carousel mode writes flat under the output directory; object-carousel
+        // mode with --dump-modules writes under a modules/ sibling of files/.
+        const fs::path dir = _opt_data_carousel
+            ? fs::path(_opt_out_dir.toUTF8())
+            : fs::path(_opt_out_dir.toUTF8()) / "modules";
         std::error_code ec;
         fs::create_directories(dir, ec);
         if (ec) {
@@ -149,21 +172,23 @@ bool ts::DSMCCPlugin::start()
         }
     });
 
-    _carousel.setObjectHandler([this](uint16_t module_id, const UString& name, const BIOPMessage& msg) {
-        verbose(u"Module 0x%X BIOP object: name=\"%s\" kind=\"%s\"",
-                module_id,
-                name.empty() ? u"(unresolved)" : name,
-                UString::FromUTF8(msg.kindTag()));
+    if (!_opt_data_carousel) {
+        _carousel.setObjectHandler([this](uint16_t module_id, const UString& name, const BIOPMessage& msg) {
+            verbose(u"Module 0x%X BIOP object: name=\"%s\" kind=\"%s\"",
+                    module_id,
+                    name.empty() ? u"(unresolved)" : name,
+                    UString::FromUTF8(msg.kindTag()));
 
-        if (name.empty() || msg.kindTag() != BIOPObjectKind::FILE) {
-            return;
-        }
-        const auto& file = static_cast<const BIOPFileMessage&>(msg);
-        _files.push_back({name, file.content.size()});
-        if (!_opt_list) {
-            extractFile(name, file);
-        }
-    });
+            if (name.empty() || msg.kindTag() != BIOPObjectKind::FILE) {
+                return;
+            }
+            const auto& file = static_cast<const BIOPFileMessage&>(msg);
+            _files.push_back({name, file.content.size()});
+            if (!_opt_list) {
+                extractFile(name, file);
+            }
+        });
+    }
 
     if (_pid != PID_NULL) {
         verbose(u"_demux.addPID: %n", _pid);
@@ -205,52 +230,57 @@ bool ts::DSMCCPlugin::stop()
 
 void ts::DSMCCPlugin::printListSummary()
 {
-    std::vector<FileEntry> sorted = _files;
-    std::sort(sorted.begin(), sorted.end(),
-              [](const FileEntry& a, const FileEntry& b) { return a.path < b.path; });
-
-    size_t total_bytes = 0;
-    for (const auto& f : sorted) {
-        total_bytes += f.size;
-    }
-
     std::stringstream ss;
-    ss << "Carousel tree:" << std::endl;
-    if (sorted.empty()) {
-        ss << "  (no resolved objects)" << std::endl;
+
+    if (_opt_data_carousel) {
+        ss << "Data carousel: BIOP parsing disabled." << std::endl;
     }
     else {
-        ss << "/" << std::endl;
-        UStringVector prev_dirs;
+        std::vector<FileEntry> sorted = _files;
+        std::sort(sorted.begin(), sorted.end(),
+                  [](const FileEntry& a, const FileEntry& b) { return a.path < b.path; });
+
+        size_t total_bytes = 0;
         for (const auto& f : sorted) {
-            UStringVector segs;
-            f.path.split(segs, u'/', true, true);
-            if (segs.empty()) {
-                continue;
-            }
-            UStringVector dirs(segs.begin(), segs.end() - 1);
-            size_t common = 0;
-            while (common < dirs.size() && common < prev_dirs.size() && dirs[common] == prev_dirs[common]) {
-                ++common;
-            }
-            for (size_t i = common; i < dirs.size(); ++i) {
-                ss << std::string(2 * (i + 1), ' ') << dirs[i].toUTF8() << "/" << std::endl;
-            }
-            ss << std::string(2 * (dirs.size() + 1), ' ')
-               << segs.back().toUTF8()
-               << UString::Format(u"  (%d bytes)", f.size).toUTF8()
-               << std::endl;
-            prev_dirs = dirs;
+            total_bytes += f.size;
         }
+
+        ss << "Carousel tree:" << std::endl;
+        if (sorted.empty()) {
+            ss << "  (no resolved objects)" << std::endl;
+        }
+        else {
+            ss << "/" << std::endl;
+            UStringVector prev_dirs;
+            for (const auto& f : sorted) {
+                UStringVector segs;
+                f.path.split(segs, u'/', true, true);
+                if (segs.empty()) {
+                    continue;
+                }
+                UStringVector dirs(segs.begin(), segs.end() - 1);
+                size_t common = 0;
+                while (common < dirs.size() && common < prev_dirs.size() && dirs[common] == prev_dirs[common]) {
+                    ++common;
+                }
+                for (size_t i = common; i < dirs.size(); ++i) {
+                    ss << std::string(2 * (i + 1), ' ') << dirs[i].toUTF8() << "/" << std::endl;
+                }
+                ss << std::string(2 * (dirs.size() + 1), ' ')
+                   << segs.back().toUTF8()
+                   << UString::Format(u"  (%d bytes)", f.size).toUTF8()
+                   << std::endl;
+                prev_dirs = dirs;
+            }
+        }
+
+        ss << std::endl
+           << UString::Format(u"Files: %d (%d byte(s) total)", sorted.size(), total_bytes).toUTF8()
+           << std::endl;
     }
 
     ss << std::endl << "Modules:" << std::endl;
     _carousel.listModules(ss);
-
-    ss << std::endl
-       << UString::Format(u"Statistics: %d file(s), %d byte(s) total",
-                          sorted.size(), total_bytes).toUTF8()
-       << std::endl;
 
     info(u"%s", UString::FromUTF8(ss.str()));
 }

@@ -1,0 +1,134 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2026, Piotr Serafin
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== dsmcc
+
+[.cmd-header]
+Extract DSM-CC carousel content
+
+This plugin processes the DSM-CC sections on one PID, assembles the carousel
+modules (including decompression when a `compressed_module_descriptor` is
+present), and either interprets them as an **object carousel** or leaves
+them as opaque blobs for a **data carousel**.
+
+The plugin passes the original transport stream through unchanged, so it
+can be chained with other plugins. A `--list` mode is also available for
+inspection without writing anything.
+
+DSM-CC defines two carousel variants over the same DSI/DII/DDB transport:
+
+* *Object carousel.* Each module contains a tree of BIOP messages
+  (ServiceGateway, Directory, File). Used by interactive broadcast
+  applications such as MHP, HbbTV and OpenTV. This is the default mode:
+  the plugin parses every module as BIOP, resolves each object's absolute
+  path from the ServiceGateway/Directory bindings, and writes the
+  resulting files to `_directory_/files/<path>`.
+
+* *Data carousel.* Each module is an opaque payload with no BIOP structure,
+  typically used for DVB System Software Update (<<ETSI-102-006>>) or
+  custom private data. Pass `--data-carousel` to skip BIOP parsing and
+  write each completed module directly to
+  `_directory_/module_XXXX.bin`.
+
+See <<ISO-13818-6>> for the DSM-CC specification.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P dsmcc [options]
+----
+
+[.usage]
+Options
+
+[.opt]
+*-p* _value_ +
+*--pid* _value_
+
+[.optdoc]
+PID carrying the DSM-CC Object Carousel (DSI/DII/DDB sections). Required.
+
+[.opt]
+*-o* _directory_ +
+*--output-directory* _directory_
+
+[.optdoc]
+Directory where extracted files are written. Resolved BIOP File objects are
+written under `_directory_/files/<path>` preserving the carousel tree.
+Required unless `--list` is used.
+
+[.optdoc]
+Path segments equal to `..` or `.` are rejected so a crafted carousel cannot
+escape the output directory.
+
+[.opt]
+*-l* +
+*--list*
+
+[.optdoc]
+List-only mode: print the resolved file tree, the module table (including
+compression info) and summary statistics; do not write anything to disk.
+`--output-directory` is not required in this mode.
+
+[.opt]
+*--dump-modules*
+
+[.optdoc]
+Also write the raw assembled module payloads (after decompression) to
+`_directory_/modules/module_XXXX.bin`, one file per module id. Useful for
+offline inspection of the raw payloads. Ignored with `--list`. Mutually
+exclusive with `--data-carousel`.
+
+[.opt]
+*--data-carousel*
+
+[.optdoc]
+Treat the PID as a plain data carousel (e.g. DVB-SSU) instead of an object
+carousel. BIOP parsing is skipped and each completed module is written
+directly as `_directory_/module_XXXX.bin`. No `files/` or `modules/`
+subdirectory is created. Mutually exclusive with `--dump-modules`.
+
+[.usage]
+Examples
+
+List the contents of a carousel on PID `0x76A` in a captured TS file, without
+writing anything:
+
+[source,shell]
+----
+$ tsp -P dsmcc --pid 0x76A --list -I file capture.ts -O drop
+----
+
+Extract the files from the same carousel into `./out/files/`:
+
+[source,shell]
+----
+$ tsp -P dsmcc --pid 0x76A -o ./out -I file capture.ts -O drop
+----
+
+Extract from a live DVB-S tuner and also keep the raw module payloads for
+post-mortem analysis:
+
+[source,shell]
+----
+$ tsp -I dvb --frequency 12597000000 --polarity vertical --symbol-rate 27500000 \
+      -P dsmcc --pid 0x76A -o ./out --dump-modules \
+      -O drop
+----
+
+Collect a DVB-SSU data carousel as raw module files:
+
+[source,shell]
+----
+$ tsp -P dsmcc --pid 0x123 -o ./ssu --data-carousel -I file update.ts -O drop
+----
+
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

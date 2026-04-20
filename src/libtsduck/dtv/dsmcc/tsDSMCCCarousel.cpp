@@ -65,7 +65,8 @@ void ts::DSMCCCarousel::onAssemblerModuleComplete(const DSMCCModuleAssembler::Mo
 
     // Skip BIOP parsing when decompression failed (payload empty) — parsing would
     // otherwise chew through random bytes and flood the log with spurious errors.
-    if (!payload.empty()) {
+    // Also skip when the caller has explicitly disabled it (data carousel mode).
+    if (_scan_biop && !payload.empty()) {
         scanBIOPObjects(ctx.module_id, payload);
     }
 

@@ -94,12 +94,22 @@ namespace ts {
         //!
         void setObjectHandler(ObjectHandler handler) { _on_object = std::move(handler); }
 
+        //!
+        //! Enable or disable BIOP parsing of completed modules. When disabled, the
+        //! module handler still fires but no object handler callbacks occur. Use
+        //! this for plain data carousels (e.g. DVB-SSU) where module payloads are
+        //! opaque and BIOP parsing would only produce spurious warnings.
+        //! @param [in] enabled True to parse BIOP (default), false to skip.
+        //!
+        void setScanBIOP(bool enabled) { _scan_biop = enabled; }
+
     private:
         DuckContext& _duck;
         DSMCCModuleAssembler _assembler;
         ModuleHandler _on_module = nullptr;
         ObjectHandler _on_object = nullptr;
         BIOPNameResolver _names {};
+        bool _scan_biop = true;
 
         void onAssemblerModuleComplete(const DSMCCModuleAssembler::ModuleContext& ctx);
         void scanBIOPObjects(uint16_t module_id, const ByteBlock& payload);
