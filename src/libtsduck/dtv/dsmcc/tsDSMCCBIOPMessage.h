@@ -387,6 +387,8 @@ namespace ts {
     //!
     class TSDUCKDLL BIOPFileMessage : public BIOPMessage
     {
+        TS_NOCOPY(BIOPFileMessage);
+
     public:
         ByteBlock content {}; //!< File content bytes.
 
@@ -411,6 +413,8 @@ namespace ts {
     //!
     class TSDUCKDLL BIOPBindingListMessage : public BIOPMessage
     {
+        TS_NOCOPY(BIOPBindingListMessage);
+
     public:
         std::vector<BIOPBinding> bindings {}; //!< Child bindings.
 
@@ -431,6 +435,8 @@ namespace ts {
     //!
     class TSDUCKDLL BIOPServiceGatewayMessage : public BIOPBindingListMessage
     {
+        TS_NOCOPY(BIOPServiceGatewayMessage);
+
     public:
         BIOPServiceGatewayMessage() = default;
         virtual ~BIOPServiceGatewayMessage() override;
@@ -442,6 +448,8 @@ namespace ts {
     //!
     class TSDUCKDLL BIOPDirectoryMessage : public BIOPBindingListMessage
     {
+        TS_NOCOPY(BIOPDirectoryMessage);
+
     public:
         BIOPDirectoryMessage() = default;
         virtual ~BIOPDirectoryMessage() override;

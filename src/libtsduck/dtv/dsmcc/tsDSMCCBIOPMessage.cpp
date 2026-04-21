@@ -271,7 +271,11 @@ namespace {
     // and then have its fields moved into the real subclass.
     class BIOPCommonHolder : public ts::BIOPMessage
     {
+        TS_NOCOPY(BIOPCommonHolder);
+
     public:
+        BIOPCommonHolder() = default;
+
         bool readCommon(ts::PSIBuffer& buf, uint32_t& body_length)
         {
             return deserializeCommon(buf, body_length);
