@@ -13,6 +13,14 @@
 
 
 //----------------------------------------------------------------------------
+// Out-of-line destructors: give the empty leaf classes a vtable anchor.
+//----------------------------------------------------------------------------
+
+ts::BIOPServiceGatewayMessage::~BIOPServiceGatewayMessage() = default;
+ts::BIOPDirectoryMessage::~BIOPDirectoryMessage() = default;
+
+
+//----------------------------------------------------------------------------
 // BIOPMessageHeader - Check if the header is valid
 //----------------------------------------------------------------------------
 

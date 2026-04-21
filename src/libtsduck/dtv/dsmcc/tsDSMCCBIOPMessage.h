@@ -427,11 +427,21 @@ namespace ts {
     //! The ServiceGateway is the root of the carousel's object hierarchy.
     //! @ingroup libtsduck mpeg
     //!
-    class TSDUCKDLL BIOPServiceGatewayMessage : public BIOPBindingListMessage {};
+    class TSDUCKDLL BIOPServiceGatewayMessage : public BIOPBindingListMessage
+    {
+    public:
+        BIOPServiceGatewayMessage() = default;
+        virtual ~BIOPServiceGatewayMessage() override;
+    };
 
     //!
     //! BIOP Directory Message.
     //! @ingroup libtsduck mpeg
     //!
-    class TSDUCKDLL BIOPDirectoryMessage : public BIOPBindingListMessage {};
+    class TSDUCKDLL BIOPDirectoryMessage : public BIOPBindingListMessage
+    {
+    public:
+        BIOPDirectoryMessage() = default;
+        virtual ~BIOPDirectoryMessage() override;
+    };
 }  // namespace ts
