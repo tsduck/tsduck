@@ -275,6 +275,8 @@ namespace ts {
     //!
     class TSDUCKDLL BIOPMessage
     {
+        TS_NOCOPY(BIOPMessage);
+
     public:
         BIOPMessageHeader              header {};           //!< BIOP message header.
         ByteBlock                      object_key {};       //!< Object key bytes.
