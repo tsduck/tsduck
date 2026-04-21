@@ -65,28 +65,36 @@ namespace ts {
         //! Context for a single Module in the carousel.
         //!
         struct ModuleContext {
-            uint16_t module_id = 0;
-            uint32_t module_size = 0;
-            uint8_t module_version = 0;
-            uint16_t block_size = 4066;
+            uint16_t module_id = 0;       //!< Module identifier from the DII.
+            uint32_t module_size = 0;     //!< Total module size in bytes.
+            uint8_t module_version = 0;   //!< Module version, incremented by the broadcaster on update.
+            uint16_t block_size = 4066;   //!< Block size in bytes, announced by the DII.
 
-            size_t expected_blocks = 0;  // Calculated from module_size and block_size
-            bool is_compressed = false;  // Compressed_module_descriptor detected in DII
-            uint32_t original_size = 0;  // Original size from compressed_module_descriptor
-            ByteBlock payload {};        // Complete module payload assembled from DDBs
+            size_t expected_blocks = 0;   //!< Number of DDB blocks expected (ceil(module_size / block_size)).
+            bool is_compressed = false;   //!< True if a compressed_module_descriptor is present.
+            uint32_t original_size = 0;   //!< Uncompressed size from compressed_module_descriptor.
+            ByteBlock payload {};         //!< Complete module payload assembled from DDBs.
 
-            enum class Status { UNKNOWN,
-                                PENDING,
-                                COMPLETE };
-            Status status = Status::UNKNOWN;
+            //!
+            //! Completion status of this module.
+            //!
+            enum class Status {
+                UNKNOWN,    //!< No information yet (no DII and no block seen).
+                PENDING,    //!< DII seen, still collecting blocks.
+                COMPLETE    //!< All blocks received and (if needed) decompressed.
+            };
+            Status status = Status::UNKNOWN;  //!< Current status of the module.
 
             //!
             //! Initialize module with expected size and block size.
+            //! @param [in] size Total module size in bytes.
+            //! @param [in] blk_size Block size in bytes.
             //!
             void setSize(uint32_t size, uint16_t blk_size);
 
             //!
             //! Check if module is fully loaded.
+            //! @return True if the module is complete.
             //!
             bool isComplete() const { return status == Status::COMPLETE; }
         };

@@ -124,7 +124,7 @@ namespace ts {
         //!
         //! Write the header fields as attributes on the given element.
         //! The header has no dedicated XML container; its fields live as attributes
-        //! directly on the enclosing <BIOP_message> element.
+        //! directly on the enclosing `<BIOP_message>` element.
         //! @param [in,out] duck TSDuck execution context.
         //! @param [in,out] element The element to attach the header attributes to.
         //!
@@ -186,11 +186,13 @@ namespace ts {
 
         //!
         //! Return the id as a UString, stripping any trailing NUL.
+        //! @return The id as a UString.
         //!
         UString idString() const;
 
         //!
         //! Return the kind as a std::string, stripping any trailing NUL.
+        //! @return The kind tag as a std::string.
         //!
         std::string kindTag() const;
 
@@ -362,14 +364,14 @@ namespace ts {
         //!
         //! Serialize the subclass-specific body to XML.
         //! @param [in,out] duck TSDuck execution context.
-        //! @param [in,out] msg_element The <BIOP_message> XML element to append body children to.
+        //! @param [in,out] msg_element The `<BIOP_message>` XML element to append body children to.
         //!
         virtual void toXMLBody(DuckContext& duck, xml::Element* msg_element) const = 0;
 
         //!
         //! Deserialize the subclass-specific body from XML.
         //! @param [in,out] duck TSDuck execution context.
-        //! @param [in] msg_element The <BIOP_message> XML element containing the body.
+        //! @param [in] msg_element The `<BIOP_message>` XML element containing the body.
         //! @return True on success.
         //!
         virtual bool fromXMLBody(DuckContext& duck, const xml::Element* msg_element) = 0;

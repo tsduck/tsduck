@@ -55,6 +55,7 @@ namespace ts {
 
         //!
         //! Mark a key as a carousel root (a ServiceGateway).
+        //! @param [in] key (module_id, object_key) of the ServiceGateway.
         //!
         void addRoot(const NameKey& key);
 

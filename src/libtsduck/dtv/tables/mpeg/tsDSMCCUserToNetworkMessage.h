@@ -57,10 +57,16 @@ namespace ts {
         //  *****************************************
         //  *** DownloadServerInitiate Structure  ***
         //  *****************************************
+        //!
+        //! DSM-CC DownloadServerInitiate (DSI) message body.
+        //!
         struct TSDUCKDLL DownloadServerInitiate {
             ByteBlock server_id {};  //!< Field shall be set to 20 bytes with the value 0xFF.
             DSMCCIOR ior {};         //!< Interoperable Object Reference (IOR) structure.
 
+            //!
+            //! Reset the DSI body to its default state.
+            //!
             void clear()
             {
                 server_id.clear();
@@ -71,6 +77,9 @@ namespace ts {
         //  *****************************************
         //  *** DownloadInfoIndication Structure  ***
         //  *****************************************
+        //!
+        //! DSM-CC DownloadInfoIndication (DII) message body.
+        //!
         struct TSDUCKDLL DownloadInfoIndication {
 
             uint32_t download_id = 0;  //!< Same value as the downloadId field of the DownloadDataBlock() messages which carry the Blocks of the Module.
@@ -108,10 +117,17 @@ namespace ts {
 
             ModuleList modules;  //!< List of modules structures.
 
+            //!
+            //! Constructor.
+            //! @param [in] parent Parent DSMCCUserToNetworkMessage table.
+            //!
             explicit DownloadInfoIndication(DSMCCUserToNetworkMessage* parent) : modules(parent) {}
             DownloadInfoIndication(const DownloadInfoIndication&) = delete;
             DownloadInfoIndication& operator=(const DownloadInfoIndication&) = delete;
 
+            //!
+            //! Reset the DII body to its default state.
+            //!
             void clear()
             {
                 download_id = 0;
@@ -120,6 +136,9 @@ namespace ts {
             }
         };
 
+        //!
+        //! Discriminated union holding either a DSI or a DII body.
+        //!
         using MessageBody = std::variant<std::monostate, DownloadServerInitiate, DownloadInfoIndication>;
 
         MessageHeader header {};                                   //!< DSM-CC Message Header.
@@ -127,14 +146,19 @@ namespace ts {
         MessageBody body;                                          //!< Message body, either DSI or DII.
 
 
-        // Accessors to the message body
+        //! @return True if the body is a DSI.
         bool isDSI() const { return std::holds_alternative<DownloadServerInitiate>(body); }
+        //! @return True if the body is a DII.
         bool isDII() const { return std::holds_alternative<DownloadInfoIndication>(body); }
 
+        //! @return Pointer to the DSI body, or null if the body is not a DSI.
         DownloadServerInitiate* toDSI() { return std::get_if<DownloadServerInitiate>(&body); }
+        //! @return Const pointer to the DSI body, or null if the body is not a DSI.
         const DownloadServerInitiate* toDSI() const { return std::get_if<DownloadServerInitiate>(&body); }
 
+        //! @return Pointer to the DII body, or null if the body is not a DII.
         DownloadInfoIndication* toDII() { return std::get_if<DownloadInfoIndication>(&body); }
+        //! @return Const pointer to the DII body, or null if the body is not a DII.
         const DownloadInfoIndication* toDII() const { return std::get_if<DownloadInfoIndication>(&body); }
 
         //!
