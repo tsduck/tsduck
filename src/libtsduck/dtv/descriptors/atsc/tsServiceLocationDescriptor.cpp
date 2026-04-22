@@ -107,7 +107,7 @@ void ts::ServiceLocationDescriptor::DisplayDescriptor(TablesDisplay& disp, const
         for (size_t i = 0; i < count && buf.canReadBytes(6); ++i) {
             const uint8_t stype = buf.getUInt8();
             disp << margin << UString::Format(u"- PID: %n", buf.getPID());
-            disp << ", language: \"" << buf.getLanguageCode() << "\", type: " << ServiceTypeName(stype, NamesFlags::VALUE_NAME) << std::endl;
+            disp << ", language: \"" << buf.getLanguageCode() << "\", type: " << DataName(MY_XML_NAME, u"stream_type", stype, NamesFlags::NAME_VALUE) << std::endl;
         }
     }
 }

@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.44-4614 (April 2026)
+VERSION 3.44-4616 (April 2026)
 
 [NEW] New commands and plugins:
 
@@ -33,6 +33,7 @@ VERSION 3.44-4614 (April 2026)
     Microsoft  C++  runtime library. A workaround for this issue is deployed in
     the TSDuck source code. Remaining cases may still be present. Please report
     them and they will be fixed.
+  * Fixed issue #1705: Incorrect display of ATSC service_location_descriptor.
 
 -------------------------------------------------------------------------------
 

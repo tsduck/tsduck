@@ -1,0 +1,10 @@
+[service_location_descriptor.stream_type]
+Bits = 8
+0x02 = ISO/IEC 13818-2 Video or ISO/IEC 11172-2 constrained parameter video stream
+0x06 = PES packets containing A/90 streaming, synchronized data
+0x0B = DSM-CC sections containing A/90 asynchronous data
+0x0D = DSM-CC addressable sections per A/90
+0x14 = DSM-CC sections containing non-streaming, synchronized data per A/90
+0x81 = Audio per ATSC A/53 Part 5
+0x95 = Sections conveying A/90 Data Service Table, Network Resources Table
+0xC2 = PES packets containing A/90 streaming, synchronous data
