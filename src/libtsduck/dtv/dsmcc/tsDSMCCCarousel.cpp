@@ -16,22 +16,21 @@ namespace {
     // Decompress the assembled module payload when ctx.is_compressed is set. Returns an
     // empty ByteBlock on decompression failure so the caller can skip BIOP parsing
     // rather than feeding compressed bytes into it.
-    ts::ByteBlock decompressIfNeeded(const ts::DSMCCModuleAssembler::ModuleContext& ctx, ts::Report& report)
+    void DecompressIfNeeded(ts::ByteBlock& out, const ts::DSMCCModuleAssembler::ModuleContext& ctx, ts::Report& report)
     {
         if (!ctx.is_compressed) {
-            return ctx.payload;
+            out = ctx.payload;
         }
-        ts::ByteBlock out;
-        if (ts::Zlib::Decompress(out, ctx.payload)) {
+        else if (ts::Zlib::Decompress(out, ctx.payload)) {
             report.verbose(u"Module 0x%X decompressed size: %d", ctx.module_id, out.size());
             if (ctx.original_size > 0 && out.size() != ctx.original_size) {
-                report.warning(u"Module 0x%X: decompressed size mismatch, expected %d, got %d",
-                               ctx.module_id, ctx.original_size, out.size());
+                report.warning(u"Module 0x%X: decompressed size mismatch, expected %d, got %d", ctx.module_id, ctx.original_size, out.size());
             }
-            return out;
         }
-        report.error(u"Module 0x%X: decompression failed", ctx.module_id);
-        return ts::ByteBlock();
+        else {
+            report.error(u"Module 0x%X: decompression failed", ctx.module_id);
+            out.clear();
+        }
     }
 }
 
@@ -61,7 +60,8 @@ void ts::DSMCCCarousel::flushPendingObjects()
 
 void ts::DSMCCCarousel::onAssemblerModuleComplete(const DSMCCModuleAssembler::ModuleContext& ctx)
 {
-    ByteBlock payload = decompressIfNeeded(ctx, _duck.report());
+    ByteBlock payload;
+    DecompressIfNeeded(payload, ctx, _duck.report());
 
     // Skip BIOP parsing when decompression failed (payload empty) — parsing would
     // otherwise chew through random bytes and flood the log with spurious errors.

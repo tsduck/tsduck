@@ -289,35 +289,34 @@ namespace {
 
 std::unique_ptr<ts::BIOPMessage> ts::BIOPMessage::Parse(PSIBuffer& buf)
 {
+    std::unique_ptr<ts::BIOPMessage> msg;
     BIOPCommonHolder common;
     uint32_t body_length = 0;
-    if (!common.readCommon(buf, body_length)) {
-        return nullptr;
-    }
+    if (common.readCommon(buf, body_length)) {
+        msg = CreateForKind(common.kindTag());
+        if (!msg) {
+            // Unsupported kind: popState jumps to the end of the message_size scope,
+            // swallowing the remaining body bytes so the next Parse() can resume cleanly.
+            buf.popState();
+        }
+        else {
+            // Transfer common fields.
+            msg->header = common.header;
+            msg->object_key = std::move(common.object_key);
+            msg->object_kind = std::move(common.object_kind);
+            msg->object_info = std::move(common.object_info);
+            msg->service_contexts = std::move(common.service_contexts);
 
-    auto msg = CreateForKind(common.kindTag());
-    if (!msg) {
-        // Unsupported kind: popState jumps to the end of the message_size scope,
-        // swallowing the remaining body bytes so the next Parse() can resume cleanly.
-        buf.popState();
-        return nullptr;
-    }
+            // Constrain body reads to messageBody_length.
+            buf.pushReadSize(buf.currentReadByteOffset() + body_length);
+            const bool ok = msg->deserializeBody(buf);
+            buf.popState();  // body scope
+            buf.popState();  // message_size scope from deserializeCommon
 
-    // Transfer common fields.
-    msg->header = common.header;
-    msg->object_key = std::move(common.object_key);
-    msg->object_kind = std::move(common.object_kind);
-    msg->object_info = std::move(common.object_info);
-    msg->service_contexts = std::move(common.service_contexts);
-
-    // Constrain body reads to messageBody_length.
-    buf.pushReadSize(buf.currentReadByteOffset() + body_length);
-    const bool ok = msg->deserializeBody(buf);
-    buf.popState();  // body scope
-    buf.popState();  // message_size scope from deserializeCommon
-
-    if (!ok) {
-        return nullptr;
+            if (!ok) {
+                msg.reset();
+            }
+        }
     }
     return msg;
 }
@@ -586,14 +585,13 @@ bool ts::BIOPMessage::fromXML(DuckContext& duck, const xml::Element* element)
 
 std::unique_ptr<ts::BIOPMessage> ts::BIOPMessage::FromXML(DuckContext& duck, const xml::Element* element)
 {
+    std::unique_ptr<ts::BIOPMessage> msg;
     UString kind_str;
-    if (!element->getAttribute(kind_str, u"object_kind", true)) {
-        return nullptr;
-    }
-
-    auto msg = CreateForKind(kind_str.toUTF8());
-    if (!msg || !msg->fromXML(duck, element)) {
-        return nullptr;
+    if (element->getAttribute(kind_str, u"object_kind", true)) {
+        msg = CreateForKind(kind_str.toUTF8());
+        if (!msg || !msg->fromXML(duck, element)) {
+            msg.reset();
+        }
     }
     return msg;
 }

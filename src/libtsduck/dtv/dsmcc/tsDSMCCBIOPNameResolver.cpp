@@ -78,24 +78,28 @@ void ts::BIOPNameResolver::flush(const EmitCallback& cb)
 // when no path to a root exists (parent module not yet parsed) or on cycle.
 ts::UString ts::BIOPNameResolver::resolveName(const NameKey& key) const
 {
-    if (_roots.contains(key)) {
-        return u"/";
-    }
-
     UString path;
-    std::set<NameKey> visited;
-    for (NameKey current = key; ;) {
-        if (!visited.insert(current).second) {
-            return UString();  // cycle
-        }
-        const auto it = _parent_link.find(current);
-        if (it == _parent_link.end()) {
-            return UString();  // no link upward
-        }
-        path = u"/" + it->second.local_name + path;
-        current = it->second.parent;
-        if (_roots.contains(current)) {
-            return path;
+    if (_roots.contains(key)) {
+        path = u"/";
+    }
+    else {
+        std::set<NameKey> visited;
+        for (NameKey current = key; ;) {
+            if (!visited.insert(current).second) {
+                path.clear();
+                break;
+            }
+            const auto it = _parent_link.find(current);
+            if (it == _parent_link.end()) {
+                path.clear();
+                break;
+            }
+            path = u"/" + it->second.local_name + path;
+            current = it->second.parent;
+            if (_roots.contains(current)) {
+                break;
+            }
         }
     }
+    return path;
 }
