@@ -89,6 +89,10 @@ class repository:
         if len(self.argv) > 1:
             self.fatal('extraneous options: %s' % ' '.join(self.argv[1:]))
 
+    # Get all remaining command line arguments.
+    def get_remaining_args(self):
+        return self.argv[1:]
+
     # Message reporting.
     def verbose(self, message):
         if self.verbose_mode:
