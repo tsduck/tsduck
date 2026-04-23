@@ -58,6 +58,45 @@ void ts::DSMCCCarousel::flushPendingObjects()
 }
 
 
+void ts::DSMCCCarousel::feedUserToNetwork(const DSMCCUserToNetworkMessage& unm)
+{
+    // SRG bootstrap only applies to object carousels. In data-carousel mode
+    // (DVB-SSU, etc.) the DSI's private_data is a GroupInfoIndication, not an
+    // IOR pointing to a ServiceGateway — the upstream UNM parser reads it as
+    // an IOR regardless, so dsi.ior would be garbage here. Skip bootstrap; the
+    // assembler still consumes DII as usual.
+    if (_scan_biop) {
+        if (const auto* dsi = unm.toDSI()) {
+            bootstrapFromDSI(*dsi);
+        }
+    }
+    _assembler.feedUserToNetwork(unm);
+}
+
+
+// Extract the ServiceGateway location from the DSI's IOR and pre-seed it as a
+// root in the name resolver. If nothing matches, we leave the scan fallback in
+// scanBIOPObjects() to catch the SRG when its module is parsed.
+void ts::DSMCCCarousel::bootstrapFromDSI(const DSMCCUserToNetworkMessage::DownloadServerInitiate& dsi)
+{
+    for (const auto& tp : dsi.ior.tagged_profiles) {
+        if (tp.profile_id_tag != DSMCC_TAG_BIOP) {
+            continue;
+        }
+        for (const auto& lc : tp.lite_components) {
+            if (lc.component_id_tag != DSMCC_TAG_OBJECT_LOCATION) {
+                continue;
+            }
+            _names.addRoot({lc.module_id, lc.object_key_data});
+            _duck.report().verbose(u"DSI bootstrap: ServiceGateway at carousel_id=0x%X module_id=0x%X (object_key %d bytes)",
+                                   lc.carousel_id, lc.module_id, lc.object_key_data.size());
+            return;
+        }
+    }
+    _duck.report().verbose(u"DSI bootstrap: no BIOP ObjectLocation in IOR, falling back to module scan");
+}
+
+
 void ts::DSMCCCarousel::onAssemblerModuleComplete(const DSMCCModuleAssembler::ModuleContext& ctx)
 {
     ByteBlock payload;

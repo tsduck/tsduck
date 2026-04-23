@@ -44,9 +44,12 @@ namespace ts {
 
         //!
         //! Feed a DSM-CC User-to-Network Message (DSI or DII).
+        //! For a DSI, the carousel engine extracts the ServiceGateway location
+        //! from the IOR and pre-seeds the name resolver so path resolution works
+        //! as soon as the SRG module arrives.
         //! @param [in] unm The parsed message.
         //!
-        void feedUserToNetwork(const DSMCCUserToNetworkMessage& unm) { _assembler.feedUserToNetwork(unm); }
+        void feedUserToNetwork(const DSMCCUserToNetworkMessage& unm);
 
         //!
         //! Feed a DSM-CC Download Data Message (DDB).
@@ -113,5 +116,6 @@ namespace ts {
 
         void onAssemblerModuleComplete(const DSMCCModuleAssembler::ModuleContext& ctx);
         void scanBIOPObjects(uint16_t module_id, const ByteBlock& payload);
+        void bootstrapFromDSI(const DSMCCUserToNetworkMessage::DownloadServerInitiate& dsi);
     };
 }  // namespace ts
