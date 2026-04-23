@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2025, Piotr Serafin
+// Copyright (c) 2005-2026, Piotr Serafin
 // BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 // Unit test for BIOP message structures.

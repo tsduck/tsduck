@@ -80,7 +80,7 @@ void ts::DSMCCModuleAssembler::processDII(const DSMCCUserToNetworkMessage& unm)
         if (ctx.status == ModuleContext::Status::UNKNOWN || ctx.module_version != mod_info.module_version) {
             ctx.module_id = mod_id;
             ctx.module_version = mod_info.module_version;
-            ctx.setSize(mod_info.module_size, dii->block_size > 0 ? dii->block_size : 4066);
+            ctx.setSize(mod_info.module_size, dii->block_size);
             ctx.status = ModuleContext::Status::PENDING;
 
             // Look for compressed_module_descriptor
@@ -176,8 +176,10 @@ void ts::DSMCCModuleAssembler::replayOrphans(ModuleContext& ctx)
 
 void ts::DSMCCModuleAssembler::ModuleContext::setSize(uint32_t size, uint16_t blk_size)
 {
+    // Fall back to the DSM-CC default block size if the DII announces 0 —
+    // the spec forbids it but malformed carousels show up and we must not divide by zero.
     module_size = size;
-    block_size = blk_size;
+    block_size = blk_size > 0 ? blk_size : 4066;
     expected_blocks = (size + block_size - 1) / block_size;
 }
 
@@ -193,10 +195,9 @@ void ts::DSMCCModuleAssembler::listModules(std::ostream& out) const
         else {
             comp = u"no";
         }
-        out << UString::Format(u"ID: %04X | Ver: %d | Size: %6d | Blocks: %3d | Compressed: %s | Status: %s",
+        out << UString::Format(u"ID: %04X | Ver: %d | Size: %6d | Blocks: %3d | Compressed: %s | Status: %s\n",
                                ctx.module_id, ctx.module_version, ctx.module_size,
                                ctx.expected_blocks, comp,
-                               ctx.isComplete() ? "COMPLETE" : "PENDING")
-            << std::endl;
+                               ctx.isComplete() ? u"COMPLETE" : u"PENDING");
     }
 }
