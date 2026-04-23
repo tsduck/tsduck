@@ -26,4 +26,4 @@ for inum in args[1:]:
         repo.error('issue %s not found' % inum)
     else:
         repo.verbose('setting label "%s" on issue %s' % (label, inum))
-        issue.set_labels(label)
+        issue.add_to_labels(label)
