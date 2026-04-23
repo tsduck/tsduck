@@ -21,6 +21,21 @@ Separate but related: some streams carry several carousels on the same
 PID (different transaction_id groups). Those should be tracked
 independently and addressable by carousel id.
 
+A **survey mode** (`--list-carousels` or similar) that scans a TS and
+reports every PID carrying DSM-CC — transaction_ids, versions, module
+counts, compressed/uncompressed sizes — would save a lot of "grep the
+PMT, guess the PID" cycles before the real extraction run.
+
+## Carousel bootstrap
+
+- **Use the DSI IOR.** The DownloadServerInitiate carries an IOR that
+  names the ServiceGateway module, but the carousel engine ignores it
+  and rediscovers the SRG by scanning every completed module for a
+  `srg` kind tag. Works in practice; the cost is that we BIOP-parse
+  modules we already know aren't the gateway, and we throw away the
+  carousel_id / compatibility_descriptor that DSI also carries. Hook
+  DSI into `feedUserToNetwork` so the SRG location is known up front.
+
 ## Knowing what the carousel is doing
 
 - **Version tracking.** The upper bits of `transaction_id` encode a
@@ -67,6 +82,36 @@ independently and addressable by carousel id.
 - `BIOP::UserMessage` / user-private modules — don't try to interpret
   them, just expose the bytes for callers that do (OpenTV, mainly).
 
+## Data carousel gaps
+
+`--data-carousel` today dumps assembled modules and stops there.
+Enough to pull bytes off a DVB-SSU stream, but it drops most of the
+structure the spec gives us:
+
+- **Group hierarchy.** The DSI's `private_data` in data-carousel mode
+  carries a `GroupInfoIndication` listing the carousel's groups; each
+  DII then describes one group. Parse it, track groups as first-class
+  citizens, and expose `carousel → group → module` instead of the
+  flat module list we have now.
+- **SuperGroupInfoIndication** for the (rarer) case where groups are
+  themselves grouped.
+- **Group-scoped module ids.** Today modules are keyed purely by
+  `module_id`; a multi-group carousel requires `(group_id, module_id)`
+  to disambiguate.
+- **Carousel / group / module descriptors** beyond
+  `compressed_module_descriptor`: `label_descriptor`,
+  `caching_priority_descriptor`, and the DVB-SSU set —
+  `update_descriptor`, `SSU_location_descriptor`,
+  `SSU_scheduling_descriptor`, `SSU_event_name_descriptor`,
+  `SSU_URI_linkage_descriptor`. They tell you *what* the payload
+  updates, *when*, and *for which receivers*, which is the whole
+  point of SSU.
+- **Per-group completeness stats** alongside the per-module ones.
+- **Output layout.** Modules currently land flat as
+  `module_<id>_v<version>.bin`. Data-carousel extraction should
+  mirror the group hierarchy on disk and use `label_descriptor`
+  contents when present, so the output is self-describing.
+
 ## Output
 
 - **XML/JSON dump of the tree.** Serialise the resolved object graph
@@ -77,14 +122,32 @@ independently and addressable by carousel id.
   written: path, size, module id, compressed/uncompressed sizes,
   carousel version. Makes extractions self-describing.
 
-## Robustness
+## Other profiles
 
-- Need to go through parsing with an adversarial mindset —
-  truncated sections, CRC failures, conflicting module descriptors,
-  duplicate blocks, DSI/DII that don't agree — and make sure nothing
-  crashes or silently misbehaves. Unit tests for each.
-- **Resume.** Persist assembler state so a long capture that gets
-  interrupted doesn't have to start over. Nice-to-have, not urgent.
+DSM-CC shows up in more places than European DVB and the code here
+should be honest about where it stops:
+
+- **"MHP/GEM"** over DVB is what we mostly follow today, reading
+  ETSI TR 101 202 as the primary reference.
+- **"ATSC A/90"** uses DSM-CC sections with different semantics. Not
+  handled.
+- **"ARIB B.23"** (Japan) has its own tweaks on top. Not handled.
+
+Explicit scope saves people wasted debugging time when a non-DVB
+capture refuses to parse.
+
+## Diagnostics
+
+For when the extractor disagrees with the stream and you need to see
+what's really there:
+
+- `--raw-modules` to dump the post-assembly, pre-BIOP module bytes.
+  Lets you inspect a broken carousel without the BIOP layer hiding
+  the evidence.
+- Hex trace of BIOP messages behind a verbose flag — the sort of
+  thing you turn on once a year and are glad exists.
+- Coverage report scoped to the dsmcc subdirectory so we can see
+  where the test surface is actually thin.
 
 ## The other direction: carousel as an input plugin
 

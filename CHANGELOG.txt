@@ -2,6 +2,8 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
+VERSION 3.44-4594 (April 2026)
+
 [NEW] New commands and plugins:
 
   * Added plugin "dsmcc":  Extract content from DSM-CC carousels on a given
@@ -12,10 +14,6 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
     ServiceGateway are  extracted  to  <outdir>/files/<path>.  Options
     --list (inspect without writing), --dump-modules (keep raw assembled
     payloads) and --data-carousel are supported.
-
--------------------------------------------------------------------------------
-
-VERSION 3.44-4594 (April 2026)
 
 [IMP] Improvements on existing commands and plugins:
 
