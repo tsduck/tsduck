@@ -219,7 +219,7 @@ files_order = [
     filetype('Java',          '*.java', '//', '/*', '*/'),
     filetype('Python',        '*.py', '#'),
     filetype('Ruby',          '*.rb', '#'),
-    filetype('Bash shell',    ['*.sh', '*.bash', 'bash-*', 'tsconfig'], '#'),
+    filetype('Bash shell',    ['*.sh', '*.bash', 'bash-*', 'tsconfig', 'envrc-*'], '#'),
     filetype('PowerShell',    ['*.ps1', '*.psm1'], '#'),
     filetype('Tools config',  ['.gitattributes', '.gitignore', '.clang-format', '.editorconfig', '.classpath', '.project',
                                '*.supp', '*.rc', '*.reg'], '#'),
@@ -236,7 +236,7 @@ files_order = [
     filetype(None,            '.*.adoc'),
     filetype('Asciidoc',      '*.adoc', '//'),
     filetype('Doxygen',       ['Doxyfile*', '*.dox'], '#'),
-    filetype('Packaging',     ['*.nsi', '*.control', '*.spec', '*.perms', '*.rules', '*.pc', 'Dockerfile*'], '#'),
+    filetype('Packaging',     ['*.nsi', '*.control', '*.spec', '*.perms', '*.rules', '*.pc', 'Dockerfile*', '*.nix'], '#'),
     filetype(None,            ['.git', '__pycache__', 'bin', 'data', 'installers', 'build', '*.arch-*', '*.user']),
     filetype(None,            ['.DS_Store', '*.xlsx', '*.pptx', '*.pdf', '*.bin', '*.ts', '*.xcf', '*.png', '*.svg', '*.ico'])
 ]

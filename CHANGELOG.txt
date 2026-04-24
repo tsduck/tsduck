@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.44-4616 (April 2026)
+VERSION 3.44-4624 (April 2026)
 
 [NEW] New commands and plugins:
 
@@ -14,7 +14,7 @@ VERSION 3.44-4616 (April 2026)
     <outdir>/files/<path>.  Options  --list  (inspect without writing), --dump-
     modules (keep raw assembled payloads) and --data-carousel are supported.
   * Added  command  "tsdsmcc":  Standalone  DSM-CC  carousel  extraction  tool,
-    one-shot equivalent of "tsp -I file ... -P dsmcc ... -O drop". Shares  its
+    one-shot equivalent of "tsp -I file ... -P dsmcc ... -O drop".  Shares  its
     extraction engine with the plugin and exposes the same option set.
 
 [IMP] Improvements on existing commands and plugins:
