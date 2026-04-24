@@ -90,7 +90,7 @@ bool ts::PcapStream::Stream::dataAvailable() const
 void ts::PcapStream::Stream::store(const IPPacket& pkt, cn::microseconds tstamp)
 {
     // Allocate a new data block.
-    const DataBlockPtr ptr(new DataBlock(pkt, tstamp));
+    const DataBlockPtr ptr(std::make_shared<DataBlock>(pkt, tstamp));
 
     // Resolve wrap-up of TCP sequence number at 2^32.
     // Use the 32 upper bits of first queued block to get the order of magnitude.

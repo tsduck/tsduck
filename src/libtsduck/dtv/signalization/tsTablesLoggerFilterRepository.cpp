@@ -8,6 +8,9 @@
 
 #include "tsTablesLoggerFilterRepository.h"
 
+TS_PUSH_WARNING()
+TS_GCC_NOWARNING(array-bounds) // Bug in gcc 16.0.1 in Fedora 44
+
 TS_DEFINE_SINGLETON(ts::TablesLoggerFilterRepository);
 
 
@@ -53,3 +56,5 @@ void ts::TablesLoggerFilterRepository::createFilters(TablesLoggerFilterVector& f
         }
     }
 }
+
+TS_POP_WARNING()

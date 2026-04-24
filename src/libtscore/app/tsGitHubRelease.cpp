@@ -167,7 +167,7 @@ bool ts::GitHubRelease::GetAllVersions(GitHubReleaseVector& versions, const UStr
     // Extract all elements of the array and build release objects.
     // We treat elements in reverse order for performance reasons.
     while (response->size() > 0) {
-        const GitHubReleasePtr vers(new GitHubRelease);
+        const GitHubReleasePtr vers(std::make_shared<GitHubRelease>());
         vers->_root = response->extractAt(response->size() - 1);
         if (vers->validate(report)) {
             versions.push_back(vers);

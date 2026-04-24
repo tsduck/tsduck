@@ -11,6 +11,9 @@
 #include "tsAbstractDescriptor.h"
 #include "tsxmlElement.h"
 
+TS_PUSH_WARNING()
+TS_GCC_NOWARNING(array-bounds) // Bug in gcc 16.0.1 in Fedora 44
+
 
 //----------------------------------------------------------------------------
 // Constructors and destructors.
@@ -228,3 +231,5 @@ bool ts::Descriptor::fromXML(DuckContext& duck, EDID& edid, const xml::Element* 
     node->report().error(u"<%s>, line %d, is not a valid descriptor", node->name(), node->lineNumber());
     return false;
 }
+
+TS_POP_WARNING()

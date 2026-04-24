@@ -334,7 +334,7 @@ void ts::EITProcessor::handleSection(SectionDemux& demux, const Section& section
 
     // At this point, we need to keep the section.
     // Build a copy of it for insertion in the queue.
-    const SectionPtr sp(new Section(section, ShareMode::COPY));
+    const SectionPtr sp(std::make_shared<Section>(section, ShareMode::COPY));
     CheckNonNull(sp.get());
 
     // Update the section if this is an EIT.

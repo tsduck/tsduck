@@ -75,7 +75,7 @@ linux|mingw {
     QMAKE_CXXFLAGS_WARN_ON += -Wundef -Wcast-align -Wstrict-null-sentinel -Wformat-security \
         -Wswitch-default -Wuninitialized -Wno-unused-parameter -Wfloat-equal -Wpointer-arith \
         -Wsign-promo -Woverloaded-virtual -Wctor-dtor-privacy -Wnon-virtual-dtor \
-        -Woverloaded-virtual -Wzero-as-null-pointer-constant
+        -Woverloaded-virtual -Wsuggest-override -Wzero-as-null-pointer-constant -Wformat-nonliteral
     greaterThan(GCC_MAJOR, 4): QMAKE_CXXFLAGS_WARN_ON += -Wpedantic -Weffc++ -Wshadow
 }
 linux {
