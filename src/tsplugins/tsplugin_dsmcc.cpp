@@ -60,7 +60,8 @@ ts::DSMCCPlugin::DSMCCPlugin(TSP* tsp_) :
 
     option(u"dump-modules");
     help(u"dump-modules", u"Also write raw assembled module payloads to "
-                          u"<output-directory>/modules/. Ignored with --list.");
+                          u"<output-directory>/modules/. Mutually exclusive "
+                          u"with --list and with --data-carousel.");
 
     option(u"data-carousel");
     help(u"data-carousel", u"Treat the PID as a plain data carousel (e.g. DVB-SSU) "
@@ -90,6 +91,11 @@ bool ts::DSMCCPlugin::getOptions()
 
     if (_ext_opts.data_carousel && _ext_opts.dump_modules) {
         error(u"--data-carousel and --dump-modules are mutually exclusive");
+        return false;
+    }
+
+    if (_ext_opts.list_mode && _ext_opts.dump_modules) {
+        error(u"--list and --dump-modules are mutually exclusive");
         return false;
     }
 

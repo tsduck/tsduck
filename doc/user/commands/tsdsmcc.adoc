@@ -7,26 +7,22 @@
 //----------------------------------------------------------------------------
 
 <<<
-=== dsmcc
+=== tsdsmcc
 
 [.cmd-header]
 Extract DSM-CC carousel content
 
-This plugin processes the DSM-CC sections on one PID, assembles the carousel
-modules (including decompression when a `compressed_module_descriptor` is
-present), and either interprets them as an **object carousel** or leaves
-them as opaque blobs for a **data carousel**.
-
-The plugin passes the original transport stream through unchanged, so it
-can be chained with other plugins. A `--list` mode is also available for
-inspection without writing anything.
+This utility pulls content out of a DSM-CC carousel on a given PID of an
+MPEG transport stream. It shares its extraction engine with the `tsp`
+plugin `dsmcc` and is the one-shot equivalent of
+`tsp -I file capture.ts -P dsmcc ... -O drop`.
 
 DSM-CC defines two carousel variants over the same DSI/DII/DDB transport:
 
 * *Object carousel.* Each module contains a tree of BIOP messages
   (ServiceGateway, Directory, File). Used by interactive broadcast
   applications such as MHP, HbbTV and OpenTV. This is the default mode:
-  the plugin parses every module as BIOP, resolves each object's absolute
+  `tsdsmcc` parses every module as BIOP, resolves each object's absolute
   path from the ServiceGateway/Directory bindings, and writes the
   resulting files to `_directory_/files/<path>`.
 
@@ -38,13 +34,29 @@ DSM-CC defines two carousel variants over the same DSI/DII/DDB transport:
 
 See <<ISO-13818-6>> for the DSM-CC specification.
 
+NOTE: To extract a carousel that is part of a larger pipeline (live input,
+multiple processing stages, etc.), use the `tsp` plugin `dsmcc`.
+See xref:_dsmcc[xrefstyle=short] for more details.
+
 [.usage]
 Usage
 
 [source,shell]
 ----
-$ tsp -P dsmcc [options]
+$ tsdsmcc [options] [input-file]
 ----
+
+[.usage]
+Parameters
+
+[.opt]
+_input-file_
+
+[.optdoc]
+MPEG transport stream, either a capture file or a pipe from a live stream
+(see option `--format` for binary formats).
+If the parameter is omitted, is an empty string or a dash (`-`),
+the standard input is used.
 
 [.usage]
 Options
@@ -97,6 +109,11 @@ directly as `_directory_/module_XXXX.bin`. No `files/` or `modules/`
 subdirectory is created. Mutually exclusive with `--dump-modules`.
 
 [.usage]
+Input options
+
+include::{docdir}/opt/opt-format.adoc[tags=!*;input]
+
+[.usage]
 Examples
 
 List the contents of a carousel on PID `0x76A` in a captured TS file, without
@@ -104,31 +121,21 @@ writing anything:
 
 [source,shell]
 ----
-$ tsp -P dsmcc --pid 0x76A --list -I file capture.ts -O drop
+$ tsdsmcc --pid 0x76A --list capture.ts
 ----
 
 Extract the files from the same carousel into `./out/files/`:
 
 [source,shell]
 ----
-$ tsp -P dsmcc --pid 0x76A -o ./out -I file capture.ts -O drop
-----
-
-Extract from a live DVB-S tuner and also keep the raw module payloads for
-post-mortem analysis:
-
-[source,shell]
-----
-$ tsp -I dvb --frequency 12597000000 --polarity vertical --symbol-rate 27500000 \
-      -P dsmcc --pid 0x76A -o ./out --dump-modules \
-      -O drop
+$ tsdsmcc --pid 0x76A -o ./out capture.ts
 ----
 
 Collect a DVB-SSU data carousel as raw module files:
 
 [source,shell]
 ----
-$ tsp -P dsmcc --pid 0x123 -o ./ssu --data-carousel -I file update.ts -O drop
+$ tsdsmcc --pid 0x123 -o ./ssu --data-carousel update.ts
 ----
 
-include::{docdir}/opt/group-common-plugins.adoc[tags=!*]
+include::{docdir}/opt/group-common-commands.adoc[tags=!*]

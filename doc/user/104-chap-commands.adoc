@@ -55,6 +55,9 @@ endif::[]
 |tsdektec
 |Control a Dektec device.
 
+|tsdsmcc
+|Extract DSM-CC Object Carousel content from an MPEG transport stream.
+
 |tsdump
 |Dump the content of a TS file.
 
