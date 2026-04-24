@@ -79,7 +79,7 @@ namespace ts {
         Options                 _options;
         DSMCCCarousel           _carousel;
         SectionDemux            _demux;
-        std::vector<FileEntry>  _files {};
+        std::vector<FileEntry>  _resolved_files {};
 
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;
 

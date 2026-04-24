@@ -12,7 +12,6 @@
 #include "tsBinaryTable.h"
 #include <algorithm>
 #include <filesystem>
-#include <sstream>
 
 
 ts::DSMCCExtractor::DSMCCExtractor(DuckContext& duck, const Options& options) :
@@ -59,9 +58,7 @@ void ts::DSMCCExtractor::flush()
         return;
     }
 
-    std::stringstream ss;
-    _carousel.listModules(ss);
-    UString status = UString::FromUTF8(ss.str());
+    const UString status = _carousel.listModules();
     if (!status.empty()) {
         _duck.report().verbose(u"Final Module Status:\n%s", status);
     }
@@ -101,9 +98,8 @@ void ts::DSMCCExtractor::onModuleCompleted(uint16_t module_id, const ByteBlock& 
     namespace fs = std::filesystem;
     // Data-carousel mode writes flat under the output directory; object-carousel
     // mode with dump_modules writes under a modules/ sibling of files/.
-    const fs::path dir = _options.data_carousel
-        ? fs::path(_options.out_dir.toUTF8())
-        : fs::path(_options.out_dir.toUTF8()) / "modules";
+    const fs::path out = fs::path(_options.out_dir.toUTF8());
+    const fs::path dir = _options.data_carousel ? out : out / "modules";
     std::error_code ec;
     fs::create_directories(dir, ec);
     if (ec) {
@@ -130,7 +126,7 @@ void ts::DSMCCExtractor::onObjectReady(uint16_t module_id, const UString& name, 
         return;
     }
     const auto& file = static_cast<const BIOPFileMessage&>(msg);
-    _files.push_back({name, file.content.size()});
+    _resolved_files.push_back({name, file.content.size()});
     if (!_options.list_mode) {
         extractFile(name, file);
     }
@@ -159,7 +155,8 @@ void ts::DSMCCExtractor::extractFile(const UString& name, const BIOPFileMessage&
         return;
     }
 
-    const fs::path full = fs::path(_options.out_dir.toUTF8()) / "files" / rel;
+    const fs::path out = fs::path(_options.out_dir.toUTF8());
+    const fs::path full = out / "files" / rel;
 
     std::error_code ec;
     fs::create_directories(full.parent_path(), ec);
@@ -179,13 +176,13 @@ void ts::DSMCCExtractor::extractFile(const UString& name, const BIOPFileMessage&
 
 void ts::DSMCCExtractor::printListSummary()
 {
-    std::stringstream ss;
+    UString text;
 
     if (_options.data_carousel) {
-        ss << "Data carousel: BIOP parsing disabled." << std::endl;
+        text += u"Data carousel: BIOP parsing disabled.\n";
     }
     else {
-        std::vector<FileEntry> sorted = _files;
+        std::vector<FileEntry> sorted = _resolved_files;
         std::sort(sorted.begin(), sorted.end(),
                   [](const FileEntry& a, const FileEntry& b) { return a.path < b.path; });
 
@@ -194,12 +191,12 @@ void ts::DSMCCExtractor::printListSummary()
             total_bytes += f.size;
         }
 
-        ss << "Carousel tree:" << std::endl;
+        text += u"Carousel tree:\n";
         if (sorted.empty()) {
-            ss << "  (no resolved objects)" << std::endl;
+            text += u"  (no resolved objects)\n";
         }
         else {
-            ss << "/" << std::endl;
+            text += u"/\n";
             UStringVector prev_dirs;
             for (const auto& f : sorted) {
                 UStringVector segs;
@@ -213,23 +210,19 @@ void ts::DSMCCExtractor::printListSummary()
                     ++common;
                 }
                 for (size_t i = common; i < dirs.size(); ++i) {
-                    ss << std::string(2 * (i + 1), ' ') << dirs[i].toUTF8() << "/" << std::endl;
+                    text += UString(2 * (i + 1), u' ') + dirs[i] + u"/\n";
                 }
-                ss << std::string(2 * (dirs.size() + 1), ' ')
-                   << segs.back().toUTF8()
-                   << UString::Format(u"  (%d bytes)", f.size).toUTF8()
-                   << std::endl;
+                text += UString(2 * (dirs.size() + 1), u' ') + segs.back()
+                      + UString::Format(u"  (%d bytes)\n", f.size);
                 prev_dirs = dirs;
             }
         }
 
-        ss << std::endl
-           << UString::Format(u"Files: %d (%d byte(s) total)", sorted.size(), total_bytes).toUTF8()
-           << std::endl;
+        text += UString::Format(u"\nFiles: %d (%d byte(s) total)\n", sorted.size(), total_bytes);
     }
 
-    ss << std::endl << "Modules:" << std::endl;
-    _carousel.listModules(ss);
+    text += u"\nModules:\n";
+    text += _carousel.listModules();
 
-    _duck.report().info(u"%s", UString::FromUTF8(ss.str()));
+    _duck.report().info(u"%s", text);
 }

@@ -58,10 +58,11 @@ namespace ts {
         void feedDownloadData(DSMCCDownloadDataMessage& ddm) { _assembler.feedDownloadData(ddm); }
 
         //!
-        //! List the status of current modules to an output stream.
-        //! @param [in,out] out Output stream.
+        //! Render the status of current modules as a UString.
+        //! @return One line per module (trailing newline), empty if no modules
+        //! have been seen yet.
         //!
-        void listModules(std::ostream& out) const { _assembler.listModules(out); }
+        UString listModules() const { return _assembler.listModules(); }
 
         //!
         //! Flush any BIOP objects that were buffered while waiting for their parent

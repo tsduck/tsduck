@@ -56,10 +56,11 @@ namespace ts {
         void feedDownloadData(DSMCCDownloadDataMessage& ddm);
 
         //!
-        //! List the status of current modules to an output stream.
-        //! @param [in,out] out Output stream.
+        //! Render the status of current modules as a UString.
+        //! @return One line per module (trailing newline), empty if no modules
+        //! have been seen yet.
         //!
-        void listModules(std::ostream& out) const;
+        UString listModules() const;
 
         //!
         //! Context for a single Module in the carousel.

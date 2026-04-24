@@ -184,20 +184,18 @@ void ts::DSMCCModuleAssembler::ModuleContext::setSize(uint32_t size, uint16_t bl
 }
 
 
-void ts::DSMCCModuleAssembler::listModules(std::ostream& out) const
+ts::UString ts::DSMCCModuleAssembler::listModules() const
 {
+    UString out;
     for (const auto& pair : _modules) {
         const auto& ctx = pair.second;
-        UString comp;
-        if (ctx.is_compressed) {
-            comp = UString::Format(u"yes (orig %d)", ctx.original_size);
-        }
-        else {
-            comp = u"no";
-        }
-        out << UString::Format(u"ID: %04X | Ver: %d | Size: %6d | Blocks: %3d | Compressed: %s | Status: %s\n",
+        const UString comp = ctx.is_compressed
+            ? UString::Format(u"yes (orig %d)", ctx.original_size)
+            : UString(u"no");
+        out += UString::Format(u"ID: %04X | Ver: %d | Size: %6d | Blocks: %3d | Compressed: %s | Status: %s\n",
                                ctx.module_id, ctx.module_version, ctx.module_size,
                                ctx.expected_blocks, comp,
                                ctx.isComplete() ? u"COMPLETE" : u"PENDING");
     }
+    return out;
 }
