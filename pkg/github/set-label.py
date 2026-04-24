@@ -10,7 +10,7 @@
 #
 #-----------------------------------------------------------------------------
 
-import sys, datetime, tsgithub
+import sys, tsgithub
 
 # Get command line options.
 repo = tsgithub.repository(sys.argv)

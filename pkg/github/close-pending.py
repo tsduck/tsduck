@@ -21,6 +21,18 @@ today = datetime.datetime.today().toordinal()
 repo = tsgithub.repository(sys.argv)
 repo.check_opt_final()
 
+# Get the date where an issue was updated last.
+# We cannot use 'issue.updated_at' because it returns the date of the last update,
+# whatever it is, including setting a label, including setting label 'close pending'.
+# We want the date of the last comment.
+def get_issue_last_date(issue):
+    if issue.comments == 0:
+        # No comment, just the issue itself.
+        return issue.created_at
+    else:
+        comms = [c for c in issue.get_comments()]
+        return comms[-1].updated_at
+
 # A function to cleanup messages with a given label and age in days.
 def check_and_close(label_name, max_days):
     
@@ -30,8 +42,9 @@ def check_and_close(label_name, max_days):
 
     # Then, do the cleanup in a second pass.
     for issue in pending_issues:
-        date = issue.updated_at.strftime('%Y-%m-%d')
-        age = today - issue.updated_at.toordinal()
+        last_date = get_issue_last_date(issue)
+        date = last_date.strftime('%Y-%m-%d')
+        age = today - last_date.toordinal()
         comments = [] if issue.pull_request is None else ['PR']
         comments.append(issue.state)
         comments.extend([l.name for l in issue.labels if l.name != label_name])
