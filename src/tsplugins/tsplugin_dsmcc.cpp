@@ -13,6 +13,7 @@
 
 #include "tsPluginRepository.h"
 #include "tsDSMCCExtractor.h"
+#include "tsDSMCCExtractorArgs.h"
 
 
 //----------------------------------------------------------------------------
@@ -31,8 +32,7 @@ namespace ts {
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
-        PID _pid = PID_NULL;
-        DSMCCExtractor::Options _ext_opts {};
+        DSMCCExtractorArgs              _args {};
         std::unique_ptr<DSMCCExtractor> _extractor {};
     };
 }
@@ -40,89 +40,27 @@ namespace ts {
 TS_REGISTER_PROCESSOR_PLUGIN(u"dsmcc", ts::DSMCCPlugin);
 
 
-//----------------------------------------------------------------------------
-// Constructor
-//----------------------------------------------------------------------------
-
 ts::DSMCCPlugin::DSMCCPlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Extract DSM-CC content", u"[options]")
 {
-    option(u"pid", 'p', PIDVAL);
-    help(u"pid", u"PID carrying the DSM-CC carousel (DSI/DII/DDB sections). Required.");
-
-    option(u"output-directory", 'o', STRING);
-    help(u"output-directory", u"Directory where carousel files will be extracted. "
-                              u"Required unless --list is set.");
-
-    option(u"list", 'l');
-    help(u"list", u"List-only mode: print the carousel tree, module table and statistics "
-                  u"without writing any files. --output-directory is not required.");
-
-    option(u"dump-modules");
-    help(u"dump-modules", u"Also write raw assembled module payloads to "
-                          u"<output-directory>/modules/. Mutually exclusive "
-                          u"with --list and with --data-carousel.");
-
-    option(u"data-carousel");
-    help(u"data-carousel", u"Treat the PID as a plain data carousel (e.g. DVB-SSU) "
-                           u"instead of an object carousel: skip BIOP parsing and "
-                           u"write each completed module directly as "
-                           u"<output-directory>/module_XXXX.bin. Mutually exclusive "
-                           u"with --dump-modules.");
+    _args.defineArgs(*this);
 }
 
-
-//----------------------------------------------------------------------------
-// Get command line options
-//----------------------------------------------------------------------------
 
 bool ts::DSMCCPlugin::getOptions()
 {
-    getIntValue(_pid, u"pid");
-    getValue(_ext_opts.out_dir, u"output-directory");
-    _ext_opts.list_mode = present(u"list");
-    _ext_opts.dump_modules = present(u"dump-modules");
-    _ext_opts.data_carousel = present(u"data-carousel");
-
-    if (_pid == PID_NULL) {
-        error(u"a PID must be specified using --pid");
-        return false;
-    }
-
-    if (_ext_opts.data_carousel && _ext_opts.dump_modules) {
-        error(u"--data-carousel and --dump-modules are mutually exclusive");
-        return false;
-    }
-
-    if (_ext_opts.list_mode && _ext_opts.dump_modules) {
-        error(u"--list and --dump-modules are mutually exclusive");
-        return false;
-    }
-
-    if (!_ext_opts.list_mode && _ext_opts.out_dir.empty()) {
-        error(u"an output directory must be specified with --output-directory (or use --list)");
-        return false;
-    }
-    return true;
+    return _args.loadArgs(*this);
 }
 
-
-//----------------------------------------------------------------------------
-// Start method
-//----------------------------------------------------------------------------
 
 bool ts::DSMCCPlugin::start()
 {
     duck.loadArgs(*this);
-    _extractor = std::make_unique<DSMCCExtractor>(duck, _ext_opts);
-    _extractor->setPID(_pid);
+    _extractor = std::make_unique<DSMCCExtractor>(duck, _args.options);
+    _extractor->setPID(_args.pid);
     return true;
 }
 
-
-//----------------------------------------------------------------------------
-// Stop method
-//----------------------------------------------------------------------------
 
 bool ts::DSMCCPlugin::stop()
 {
@@ -133,10 +71,6 @@ bool ts::DSMCCPlugin::stop()
     return true;
 }
 
-
-//----------------------------------------------------------------------------
-// Packet processing method
-//----------------------------------------------------------------------------
 
 ts::ProcessorPlugin::Status ts::DSMCCPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& /*pkt_data*/)
 {
