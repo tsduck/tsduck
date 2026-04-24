@@ -13,6 +13,9 @@ VERSION 3.44-4616 (April 2026)
     In  object  mode , File  objects  under the ServiceGateway are extracted to
     <outdir>/files/<path>.  Options  --list  (inspect without writing), --dump-
     modules (keep raw assembled payloads) and --data-carousel are supported.
+  * Added  command  "tsdsmcc":  Standalone  DSM-CC  carousel  extraction  tool,
+    one-shot equivalent of "tsp -I file ... -P dsmcc ... -O drop". Shares  its
+    extraction engine with the plugin and exposes the same option set.
 
 [IMP] Improvements on existing commands and plugins:
 
