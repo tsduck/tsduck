@@ -66,7 +66,8 @@ namespace ts {
         //! Context for a single Module in the carousel.
         //!
         struct ModuleContext {
-            uint16_t module_id = 0;       //!< Module identifier from the DII.
+            uint32_t download_id = 0;     //!< download_id from the DII; maps to the carousel group in data-carousel mode.
+            uint16_t module_id = 0;       //!< Module identifier from the DII (only unique within a download_id).
             uint32_t module_size = 0;     //!< Total module size in bytes.
             uint8_t module_version = 0;   //!< Module version, incremented by the broadcaster on update.
             uint16_t block_size = 4066;   //!< Block size in bytes, announced by the DII.
@@ -117,17 +118,23 @@ namespace ts {
 
         DuckContext& _duck;
 
+        // (download_id, module_id) — module_id alone is only unique within a
+        // DII group, so both tracking maps use the composite key. For
+        // single-group streams download_id is effectively constant and this
+        // behaves identically to the old single-key design.
+        using ModuleKey = std::pair<uint32_t, uint16_t>;
+
         // Module Tracking
-        std::map<uint16_t, ModuleContext> _modules {};
+        std::map<ModuleKey, ModuleContext> _modules {};
 
         // DDB payload received before the DII that announces the module.
-        // Keyed by module_id; each entry holds the version and the payload to
-        // replay once the DII arrives.
+        // Keyed by (download_id, module_id); each entry holds the version and
+        // the payload to replay once the DII arrives.
         struct OrphanBlock {
             uint8_t   module_version = 0;
             ByteBlock block_data {};
         };
-        std::map<uint16_t, std::vector<OrphanBlock>> _orphan_ddbs {};
+        std::map<ModuleKey, std::vector<OrphanBlock>> _orphan_ddbs {};
 
         void processDII(const DSMCCUserToNetworkMessage& unm);
         void processDDB(DSMCCDownloadDataMessage& ddm);

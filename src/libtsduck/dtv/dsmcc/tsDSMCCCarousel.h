@@ -73,9 +73,10 @@ namespace ts {
 
         //!
         //! Callback type for module completion events.
-        //! Parameters: module id, decompressed payload.
+        //! Parameters: `download_id` (maps to the carousel group in
+        //! data-carousel mode), module id, decompressed payload.
         //!
-        using ModuleHandler = std::function<void(uint16_t module_id, const ByteBlock& payload)>;
+        using ModuleHandler = std::function<void(uint32_t download_id, uint16_t module_id, const ByteBlock& payload)>;
 
         //!
         //! Set a callback to be invoked when a module is fully loaded and decompressed.

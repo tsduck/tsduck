@@ -83,7 +83,7 @@ namespace ts {
 
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;
 
-        void onModuleCompleted(uint16_t module_id, const ByteBlock& payload);
+        void onModuleCompleted(uint32_t download_id, uint16_t module_id, const ByteBlock& payload);
         void onObjectReady(uint16_t module_id, const UString& name, const BIOPMessage& msg);
         void extractFile(const UString& name, const BIOPFileMessage& file);
         void printListSummary();

@@ -22,8 +22,8 @@ ts::DSMCCExtractor::DSMCCExtractor(DuckContext& duck, const Options& options) :
 {
     _carousel.setScanBIOP(!_options.data_carousel);
 
-    _carousel.setModuleCompletedHandler([this](uint16_t module_id, const ByteBlock& payload) {
-        onModuleCompleted(module_id, payload);
+    _carousel.setModuleCompletedHandler([this](uint32_t download_id, uint16_t module_id, const ByteBlock& payload) {
+        onModuleCompleted(download_id, module_id, payload);
     });
 
     if (!_options.data_carousel) {
@@ -84,9 +84,10 @@ void ts::DSMCCExtractor::handleTable(SectionDemux&, const BinaryTable& table)
 }
 
 
-void ts::DSMCCExtractor::onModuleCompleted(uint16_t module_id, const ByteBlock& payload)
+void ts::DSMCCExtractor::onModuleCompleted(uint32_t download_id, uint16_t module_id, const ByteBlock& payload)
 {
-    _duck.report().verbose(u"Module complete: ID 0x%X (size: %d)", module_id, payload.size());
+    _duck.report().verbose(u"Module complete: download_id=0x%X id=0x%X size=%d",
+                           download_id, module_id, payload.size());
 
     if (_options.list_mode) {
         return;

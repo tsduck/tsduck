@@ -73,11 +73,13 @@ void ts::DSMCCModuleAssembler::processDII(const DSMCCUserToNetworkMessage& unm)
     for (const auto& it : dii->modules) {
         const auto& mod_info = it.second;
         const uint16_t mod_id = mod_info.module_id;
+        const ModuleKey key {dii->download_id, mod_id};
 
-        auto& ctx = _modules[mod_id];
+        auto& ctx = _modules[key];
 
         // If new or version changed, reset context
         if (ctx.status == ModuleContext::Status::UNKNOWN || ctx.module_version != mod_info.module_version) {
+            ctx.download_id = dii->download_id;
             ctx.module_id = mod_id;
             ctx.module_version = mod_info.module_version;
             ctx.setSize(mod_info.module_size, dii->block_size);
@@ -93,8 +95,8 @@ void ts::DSMCCModuleAssembler::processDII(const DSMCCUserToNetworkMessage& unm)
                 }
             }
 
-            _duck.report().verbose(u"Discovered Module ID: 0x%X, Size: %d, Version: %d, Original Size: %d",
-                                   mod_id, ctx.module_size, ctx.module_version, ctx.original_size);
+            _duck.report().verbose(u"Discovered Module: download_id=0x%X id=0x%X size=%d version=%d original_size=%d",
+                                   ctx.download_id, mod_id, ctx.module_size, ctx.module_version, ctx.original_size);
 
             replayOrphans(ctx);
         }
@@ -108,13 +110,14 @@ void ts::DSMCCModuleAssembler::processDII(const DSMCCUserToNetworkMessage& unm)
 
 void ts::DSMCCModuleAssembler::processDDB(DSMCCDownloadDataMessage& ddm)
 {
-    auto it = _modules.find(ddm.module_id);
+    const ModuleKey key {ddm.header.download_id, ddm.module_id};
+    auto it = _modules.find(key);
     if (it == _modules.end()) {
         // DDB arrived before the DII that declares this module.
         // Buffer it and replay once the DII catches up.
-        _duck.report().verbose(u"Buffering orphan DDB: Module 0x%X Ver %d (%d bytes)",
-                               ddm.module_id, ddm.module_version, ddm.block_data.size());
-        _orphan_ddbs[ddm.module_id].push_back({ddm.module_version, std::move(ddm.block_data)});
+        _duck.report().verbose(u"Buffering orphan DDB: download_id=0x%X module=0x%X ver=%d (%d bytes)",
+                               ddm.header.download_id, ddm.module_id, ddm.module_version, ddm.block_data.size());
+        _orphan_ddbs[key].push_back({ddm.module_version, std::move(ddm.block_data)});
         return;
     }
 
@@ -125,7 +128,8 @@ void ts::DSMCCModuleAssembler::processDDB(DSMCCDownloadDataMessage& ddm)
         return;
     }
 
-    _duck.report().verbose(u"Module 0x%X Complete! (Size: %d)", ctx.module_id, ddm.block_data.size());
+    _duck.report().verbose(u"Module complete: download_id=0x%X id=0x%X size=%d",
+                           ctx.download_id, ctx.module_id, ddm.block_data.size());
 
     // Invariant: ddm.block_data already contains the full module payload — the upstream
     // DSMCC section layer concatenates DDB blocks before handing us the DDM. Do not
@@ -146,7 +150,8 @@ void ts::DSMCCModuleAssembler::processDDB(DSMCCDownloadDataMessage& ddm)
 
 void ts::DSMCCModuleAssembler::replayOrphans(ModuleContext& ctx)
 {
-    auto it = _orphan_ddbs.find(ctx.module_id);
+    const ModuleKey key {ctx.download_id, ctx.module_id};
+    auto it = _orphan_ddbs.find(key);
     if (it == _orphan_ddbs.end()) {
         return;
     }
@@ -158,8 +163,8 @@ void ts::DSMCCModuleAssembler::replayOrphans(ModuleContext& ctx)
         if (orphan.module_version != ctx.module_version) {
             continue;
         }
-        _duck.report().verbose(u"Replaying orphan DDB: Module 0x%X Ver %d (%d bytes)",
-                               ctx.module_id, ctx.module_version, orphan.block_data.size());
+        _duck.report().verbose(u"Replaying orphan DDB: download_id=0x%X module=0x%X ver=%d (%d bytes)",
+                               ctx.download_id, ctx.module_id, ctx.module_version, orphan.block_data.size());
         ctx.payload = std::move(orphan.block_data);
         ctx.status = ModuleContext::Status::COMPLETE;
         if (_on_module_complete) {
@@ -192,8 +197,8 @@ ts::UString ts::DSMCCModuleAssembler::listModules() const
         const UString comp = ctx.is_compressed
             ? UString::Format(u"yes (orig %d)", ctx.original_size)
             : UString(u"no");
-        out += UString::Format(u"ID: %04X | Ver: %d | Size: %6d | Blocks: %3d | Compressed: %s | Status: %s\n",
-                               ctx.module_id, ctx.module_version, ctx.module_size,
+        out += UString::Format(u"Dl: %08X | ID: %04X | Ver: %d | Size: %6d | Blocks: %3d | Compressed: %s | Status: %s\n",
+                               ctx.download_id, ctx.module_id, ctx.module_version, ctx.module_size,
                                ctx.expected_blocks, comp,
                                ctx.isComplete() ? u"COMPLETE" : u"PENDING");
     }

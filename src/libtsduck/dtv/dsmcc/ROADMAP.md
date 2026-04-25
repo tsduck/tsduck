@@ -85,7 +85,7 @@ structure the spec gives us:
   needed.
 - [ ] **Group hierarchy.** Track groups as first-class citizens; expose
   `carousel → group → module` instead of the flat module list.
-- [ ] **Group-scoped module ids.** Today modules are keyed purely by
+- [x] **Group-scoped module ids.** Today modules are keyed purely by
   `module_id`; a multi-group carousel requires `(group_id, module_id)`.
 - [ ] **Wire module/group/carousel descriptors into the extractor.**
   The descriptor classes already exist under but `DSMCCExtractor`

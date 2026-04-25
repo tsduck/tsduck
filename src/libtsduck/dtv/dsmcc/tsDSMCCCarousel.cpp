@@ -113,7 +113,7 @@ void ts::DSMCCCarousel::onAssemblerModuleComplete(const DSMCCModuleAssembler::Mo
     }
 
     if (_on_module) {
-        _on_module(ctx.module_id, payload);
+        _on_module(ctx.download_id, ctx.module_id, payload);
     }
 }
 
