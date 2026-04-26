@@ -58,8 +58,9 @@ namespace ts {
         {
             TS_NOBUILD_NOCOPY(TCPListener);
         public:
-            // Constructor.
+            // Constructor and destructor.
             TCPListener(DataInjectPlugin* plugin);
+            ~TCPListener();
 
             // Terminate the thread.
             void stop();
@@ -79,8 +80,9 @@ namespace ts {
         {
             TS_NOBUILD_NOCOPY(UDPListener);
         public:
-            // Constructor.
+            // Constructor and destructor.
             UDPListener(DataInjectPlugin* plugin);
+            ~UDPListener();
 
             // Open the UDP socket.
             bool open();
@@ -109,12 +111,12 @@ namespace ts {
         IPSocketAddress    _udp_address {};                  // UDP port and optional local address.
         bool               _reuse_port = false;              // Reuse port option.
         size_t             _sock_buf_size = 0;               // Socket receive buffer size.
+        tlv::Logger        _logger {*this, Severity::Debug}; // Message logger.
         TCPServer          _server {this};                   // EMMG/PDG <=> MUX TCP server
         TCPListener        _tcp_listener {this};             // TCP listener thread.
         UDPListener        _udp_listener {this};             // UDP listener thread.
         PacketQueue        _packet_queue {};                 // Queue of incoming TS packets.
         SectionQueue       _section_queue {};                // Queue of incoming sections.
-        tlv::Logger        _logger {*this, Severity::Debug}; // Message logger.
         volatile bool      _channel_established = false;     // Data channel open.
         volatile bool      _stream_established = false;      // Data stream open.
         volatile bool      _req_bitrate_changed = false;     // Requested bitrate has changed.
@@ -549,6 +551,11 @@ ts::DataInjectPlugin::TCPListener::TCPListener(DataInjectPlugin* plugin) :
 {
 }
 
+ts::DataInjectPlugin::TCPListener::~TCPListener()
+{
+    waitForTermination();
+}
+
 void ts::DataInjectPlugin::TCPListener::stop()
 {
     // Switch off error messages from the network client.
@@ -763,6 +770,11 @@ ts::DataInjectPlugin::UDPListener::UDPListener(DataInjectPlugin* plugin) :
     _report(Severity::Info, UString(), plugin),
     _client(&_report)
 {
+}
+
+ts::DataInjectPlugin::UDPListener::~UDPListener()
+{
+    waitForTermination();
 }
 
 bool ts::DataInjectPlugin::UDPListener::open()
