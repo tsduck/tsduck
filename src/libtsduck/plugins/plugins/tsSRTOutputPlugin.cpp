@@ -62,7 +62,7 @@ bool ts::SRTOutputPlugin::getOptions()
     _multiple = present(u"multiple");
     getChronoValue(_restart_delay, u"restart-delay");
 
-    return _sock.setAddresses(listener, rendezvous, IPAddress(), *this) &&
+    return _sock.setAddresses(listener, rendezvous, IPAddress()) &&
            _sock.loadArgs(duck, *this) &&
            _datagram.loadArgs(duck, *this);
 }
@@ -74,14 +74,14 @@ bool ts::SRTOutputPlugin::getOptions()
 
 bool ts::SRTOutputPlugin::start()
 {
-    bool success = _datagram.open(*this);
+    bool success = _datagram.open();
     IPSocketAddress local, remote;
     if (success) {
-        success = _sock.open(_datagram.maxPayloadSize(), *this);
+        success = _sock.open(_datagram.maxPayloadSize());
         if (!success) {
-            _datagram.close(0, true, *this);
+            _datagram.close(0, true);
         }
-        else if (_sock.getPeers(local, remote, *this)) {
+        else if (_sock.getPeers(local, remote)) {
             verbose(u"connected to %s (local: %s)", remote, local);
         }
     }
@@ -95,8 +95,8 @@ bool ts::SRTOutputPlugin::start()
 
 bool ts::SRTOutputPlugin::stop()
 {
-    _datagram.close(tsp->bitrate(), false, *this);
-    _sock.close(*this);
+    _datagram.close(tsp->bitrate(), false);
+    _sock.close();
     return true;
 }
 
@@ -107,7 +107,7 @@ bool ts::SRTOutputPlugin::stop()
 
 bool ts::SRTOutputPlugin::send(const TSPacket* packets, const TSPacketMetadata* metadata, size_t packet_count)
 {
-    return _datagram.send(packets, metadata, packet_count, tsp->bitrate(), *this);
+    return _datagram.send(packets, metadata, packet_count, tsp->bitrate());
 }
 
 
@@ -115,12 +115,12 @@ bool ts::SRTOutputPlugin::send(const TSPacket* packets, const TSPacketMetadata* 
 // Implementation of TSDatagramOutputHandlerInterface: send one datagram.
 //----------------------------------------------------------------------------
 
-bool ts::SRTOutputPlugin::sendDatagram(const void* address, size_t size, Report& report)
+bool ts::SRTOutputPlugin::sendDatagram(const void* address, size_t size)
 {
     // Loop on restart with multiple sessions.
     for (;;) {
         // Send the datagram.
-        if (_sock.send(address, size, report)) {
+        if (_sock.send(address, size)) {
             return true;
         }
         // Send error.
@@ -128,14 +128,14 @@ bool ts::SRTOutputPlugin::sendDatagram(const void* address, size_t size, Report&
             // Actual error, not a clean disconnection from the receiver, do not retry, even with --multiple.
             return false;
         }
-        report.verbose(u"receiver disconnected%s", _multiple ? u", waiting for another one" : u"");
+        verbose(u"receiver disconnected%s", _multiple ? u", waiting for another one" : u"");
         if (!_multiple) {
             // No multiple sessions, terminate here.
             return false;
         }
         // Multiple sessions, close socket and re-open to acquire another receiver.
-        _datagram.close(tsp->bitrate(), true, *this);
-        _sock.close(*this);
+        _datagram.close(tsp->bitrate(), true);
+        _sock.close();
         if (_restart_delay > cn::milliseconds::zero()) {
             std::this_thread::sleep_for(_restart_delay);
         }

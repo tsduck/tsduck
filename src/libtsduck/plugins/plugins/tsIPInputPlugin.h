@@ -37,6 +37,6 @@ namespace ts {
 
     private:
         UDPReceiverArgs _sock_args {};
-        UDPReceiver     _sock {*tsp};
+        UDPReceiver     _sock {this};
     };
 }

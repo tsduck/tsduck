@@ -31,7 +31,8 @@ const int ts::TLSConnection::FEATURE = 0;
 // Constructors and destructor.
 //----------------------------------------------------------------------------
 
-ts::TLSConnection::TLSConnection()
+ts::TLSConnection::TLSConnection(Report* report) :
+    SuperClass(report, false)
 {
     allocateGuts();
     CheckNonNull(_guts);
@@ -78,8 +79,8 @@ void ts::TLSConnection::addVerifyServer(const UString& name)
 // Receive data until buffer is full.
 //----------------------------------------------------------------------------
 
-bool ts::TLSConnection::receive(void* buffer, size_t size, const AbortInterface* abort, Report& report)
+bool ts::TLSConnection::receive(void* buffer, size_t size, const AbortInterface* abort)
 {
     // The superclass implements its fixed-length method using the variable-length method.
-    return SuperClass::receive(buffer, size, abort, report);
+    return SuperClass::receive(buffer, size, abort);
 }

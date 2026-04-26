@@ -8,9 +8,12 @@
 
 #include "tsForkPipe.h"
 #include "tsNullReport.h"
-#include "tsMemory.h"
+#include "tsInitZero.h"
 #include "tsSysUtils.h"
 #include "tsIntegerUtils.h"
+#if defined(TS_WINDOWS)
+    #include "tsWinUtils.h"
+#endif
 
 // Index of pipe file descriptors on UNIX.
 #define PIPE_READFD  0
@@ -96,11 +99,11 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
 
 #if defined(TS_WINDOWS)
 
-    _handle = INVALID_HANDLE_VALUE;
-    _process = INVALID_HANDLE_VALUE;
-    ::HANDLE read_handle = INVALID_HANDLE_VALUE;
-    ::HANDLE write_handle = INVALID_HANDLE_VALUE;
-    ::HANDLE null_handle = INVALID_HANDLE_VALUE;
+    _handle = nullptr;
+    _process = nullptr;
+    ::HANDLE read_handle = nullptr;
+    ::HANDLE write_handle = nullptr;
+    ::HANDLE null_handle = nullptr;
 
     // Create a pipe
     if (_use_pipe) {
@@ -127,25 +130,24 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
 
     // Process startup info specifies standard handles.
     // Make sure our handles can be inherited when necessary.
-    ::STARTUPINFOW si;
-    TS_ZERO(si);
-    si.cb = sizeof(si);
-    si.dwFlags = STARTF_USESTDHANDLES;
+    InitZero<::STARTUPINFOW> si;
+    si.data.cb = sizeof(si);
+    si.data.dwFlags = STARTF_USESTDHANDLES;
 
     switch (_in_mode) {
         case STDIN_PIPE: {
-            si.hStdInput = read_handle;
+            si.data.hStdInput = read_handle;
             break;
         }
         case STDIN_PARENT: {
             ::SetHandleInformation(in_handle, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
-            si.hStdInput = in_handle;
+            si.data.hStdInput = in_handle;
             break;
         }
         case STDIN_NONE: {
             // Open the null device for reading.
             null_handle = ::CreateFileA("NUL:", GENERIC_READ, FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, 0, nullptr);
-            if (null_handle == INVALID_HANDLE_VALUE) {
+            if (!WinHandleValid(null_handle)) {
                 report.error(u"error opening NUL: %s", SysErrorCodeMessage());
                 if (_use_pipe) {
                     ::CloseHandle(read_handle);
@@ -155,7 +157,7 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
             }
             // Set the null device as standard input.
             ::SetHandleInformation(null_handle, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
-            si.hStdInput = null_handle;
+            si.data.hStdInput = null_handle;
             break;
         }
         default: {
@@ -172,28 +174,28 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
         case KEEP_BOTH: {
             ::SetHandleInformation(out_handle, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
             ::SetHandleInformation(err_handle, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
-            si.hStdOutput = out_handle;
-            si.hStdError = err_handle;
+            si.data.hStdOutput = out_handle;
+            si.data.hStdError = err_handle;
             break;
         }
         case STDOUT_ONLY: {
             ::SetHandleInformation(out_handle, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
-            si.hStdOutput = si.hStdError = out_handle;
+            si.data.hStdOutput = si.data.hStdError = out_handle;
             break;
         }
         case STDERR_ONLY: {
             ::SetHandleInformation(err_handle, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
-            si.hStdOutput = si.hStdError = err_handle;
+            si.data.hStdOutput = si.data.hStdError = err_handle;
             break;
         }
         case STDOUT_PIPE: {
             ::SetHandleInformation(err_handle, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
-            si.hStdError = err_handle;
-            si.hStdOutput = write_handle;
+            si.data.hStdError = err_handle;
+            si.data.hStdOutput = write_handle;
             break;
         }
         case STDOUTERR_PIPE: {
-            si.hStdOutput = si.hStdError = write_handle;
+            si.data.hStdOutput = si.data.hStdError = write_handle;
             break;
         }
         default: {
@@ -212,7 +214,7 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
 
     // Create the process
     ::PROCESS_INFORMATION pi;
-    if (::CreateProcessW(nullptr, cmdp, nullptr, nullptr, true, 0, nullptr, nullptr, &si, &pi) == 0) {
+    if (::CreateProcessW(nullptr, cmdp, nullptr, nullptr, true, 0, nullptr, nullptr, &si.data, &pi) == 0) {
         report.error(u"error creating process: %s", SysErrorCodeMessage());
         if (_use_pipe) {
             ::CloseHandle(read_handle);
@@ -225,7 +227,7 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
     switch (_wait_mode) {
         case ASYNCHRONOUS: {
             // Process handle is useless, we won't use it.
-            _process = INVALID_HANDLE_VALUE;
+            _process = nullptr;
             ::CloseHandle(pi.hProcess);
             break;
         }
@@ -259,7 +261,7 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
     }
 
     // Close other no longer used handles.
-    if (null_handle != INVALID_HANDLE_VALUE) {
+    if (WinHandleValid(null_handle)) {
         ::CloseHandle(null_handle);
     }
 
@@ -478,7 +480,7 @@ bool ts::ForkPipe::close(Report& report)
         result = false;
     }
 
-    if (_process != INVALID_HANDLE_VALUE) {
+    if (WinHandleValid(_process)) {
         report.debug(u"closing process handle");
         ::CloseHandle(_process);
     }
@@ -520,7 +522,7 @@ void ts::ForkPipe::abortPipeReadWrite()
         // Close pipe handle, ignore errors.
 #if defined(TS_WINDOWS)
         ::CloseHandle(_handle);
-        _handle = INVALID_HANDLE_VALUE;
+        _handle = nullptr;
 #else // UNIX
         ::close(_fd);
         _fd = -1;

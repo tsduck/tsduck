@@ -62,10 +62,11 @@ namespace ts {
 
         //!
         //! Constructor.
+        //! @param [in,out] report Where to report errors.
         //! @param [in] flags List of options.
         //! @param [in] output Output handler for datagrams. If null, raw UDP output is used.
         //!
-        explicit TSDatagramOutput(TSDatagramOutputOptions flags, TSDatagramOutputHandlerInterface* output = nullptr);
+        TSDatagramOutput(Report& report, TSDatagramOutputOptions flags, TSDatagramOutputHandlerInterface* output = nullptr);
 
         //!
         //! Add command line option definitions in an Args.
@@ -84,20 +85,18 @@ namespace ts {
 
         //!
         //! Open and initialize the TS packet output.
-        //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool open(Report& report);
+        bool open();
 
         //!
         //! Close the TS packet output.
         //! Flush pending packets, if any.
         //! @param [in] bitrate Current of last bitrate to compute timestamps for buffered packets. Ignored if zero.
         //! @param [in] abort If true, do not flush pending packets.
-        //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool close(const BitRate& bitrate, bool abort, Report& report);
+        bool close(const BitRate& bitrate, bool abort);
 
         //!
         //! Send TS packets.
@@ -106,10 +105,9 @@ namespace ts {
         //! @param [in] metadata Address of first packet metadata (can be null).
         //! @param [in] packet_count Number of packets to send.
         //! @param [in] bitrate Current bitrate to compute timestamps. Ignored if zero.
-        //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool send(const TSPacket* packets, const TSPacketMetadata* metadata, size_t packet_count, const BitRate& bitrate, Report& report);
+        bool send(const TSPacket* packets, const TSPacketMetadata* metadata, size_t packet_count, const BitRate& bitrate);
 
         //!
         //! Get the maximum datagram payload size, according to options --packet-burst and --rs204.
@@ -119,6 +117,7 @@ namespace ts {
 
     private:
         // Configuration and command line options.
+        Report&                           _report;
         TSDatagramOutputOptions           const _flags;    // Configuration flags.
         TSDatagramOutputHandlerInterface* const _output;   // Datagram output handler.
         bool                              const _raw_udp;  // Use raw UDP socket.
@@ -158,11 +157,11 @@ namespace ts {
         size_t          _out_count = 0;              // Number of packets in _out_buffer
         TSPacketVector  _out_buffer {};              // Buffered packets for output with --enforce-burst
         TSPacketMetadataVector _out_buffer_rs {};    // Buffered RS trailers with --enforce-burst --rs204
-        UDPSocket       _sock {};                    // Outgoing socket for raw UDP
+        UDPSocket       _sock {&_report};            // Outgoing socket for raw UDP
 
         // Implementation of TSDatagramOutputHandlerInterface.
         // The object is its own handler in case of raw UDP output.
-        virtual bool sendDatagram(const void* address, size_t size, Report& report) override;
+        virtual bool sendDatagram(const void* address, size_t size) override;
 
         // Copy packets in the internal buffer.
         void bufferPackets(const TSPacket* packet, const TSPacketMetadata* metadata, size_t count);
@@ -171,6 +170,6 @@ namespace ts {
         void serialize(uint8_t* buffer, size_t buffer_size, const TSPacket* packet, const TSPacketMetadata* metadata, size_t count);
 
         // Send contiguous packets in one single datagram.
-        bool sendPackets(const TSPacket* packet, const TSPacketMetadata* metadata, size_t count, const BitRate& bitrate, Report& report);
+        bool sendPackets(const TSPacket* packet, const TSPacketMetadata* metadata, size_t count, const BitRate& bitrate);
     };
 }

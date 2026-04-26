@@ -58,7 +58,7 @@ bool ts::SRTInputPlugin::getOptions()
 
     // Get command line arguments for superclass and socket.
     return AbstractDatagramInputPlugin::getOptions() &&
-           _sock.setAddresses(rendezvous, remote, IPAddress(), *this) &&
+           _sock.setAddresses(rendezvous, remote, IPAddress()) &&
            _sock.loadArgs(duck, *this);
 }
 
@@ -70,9 +70,9 @@ bool ts::SRTInputPlugin::getOptions()
 bool ts::SRTInputPlugin::start()
 {
     // Initialize superclass and UDP socket.
-    const bool success = AbstractDatagramInputPlugin::start() && _sock.open(NPOS, *this);
+    const bool success = AbstractDatagramInputPlugin::start() && _sock.open();
     IPSocketAddress local, remote;
-    if (success && _sock.getPeers(local, remote, *this)) {
+    if (success && _sock.getPeers(local, remote)) {
         verbose(u"connected from %s (local: %s)", remote, local);
     }
     return success;
@@ -86,7 +86,7 @@ bool ts::SRTInputPlugin::start()
 bool ts::SRTInputPlugin::stop()
 {
     AbstractDatagramInputPlugin::stop();
-    _sock.close(*this);
+    _sock.close();
     return true;
 }
 
@@ -97,7 +97,7 @@ bool ts::SRTInputPlugin::stop()
 
 bool ts::SRTInputPlugin::abortInput()
 {
-    _sock.close(*this);
+    _sock.close();
     return true;
 }
 
@@ -113,7 +113,7 @@ bool ts::SRTInputPlugin::receiveDatagram(uint8_t* buffer, size_t buffer_size, si
     // Loop on restart with multiple sessions.
     for (;;) {
         // Receive packets.
-        if (_sock.receive(buffer, buffer_size, ret_size, timestamp, *this)) {
+        if (_sock.receive(buffer, buffer_size, ret_size, timestamp)) {
             return true;
         }
         // Receive error.

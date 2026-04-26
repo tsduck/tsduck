@@ -47,7 +47,7 @@ bool ts::IPInputPlugin::getOptions()
 bool ts::IPInputPlugin::start()
 {
     // Initialize superclass and UDP socket.
-    return AbstractDatagramInputPlugin::start() && _sock.open(*this);
+    return AbstractDatagramInputPlugin::start() && _sock.open();
 }
 
 
@@ -57,7 +57,7 @@ bool ts::IPInputPlugin::start()
 
 bool ts::IPInputPlugin::stop()
 {
-    _sock.close(*this);
+    _sock.close();
     return AbstractDatagramInputPlugin::stop();
 }
 
@@ -69,7 +69,7 @@ bool ts::IPInputPlugin::stop()
 bool ts::IPInputPlugin::abortInput()
 {
     debug(u"aborting IP input");
-    _sock.close(*this);
+    _sock.close();
     return true;
 }
 
@@ -96,7 +96,7 @@ bool ts::IPInputPlugin::receiveDatagram(uint8_t* buffer, size_t buffer_size, siz
     IPSocketAddress sender;
     IPSocketAddress destination;
     UDPSocket::TimeStampType ts_type = UDPSocket::TimeStampType::NONE;
-    const bool ok = _sock.receive(buffer, buffer_size, ret_size, sender, destination, tsp, *this, &timestamp, &ts_type);
+    const bool ok = _sock.receive(buffer, buffer_size, ret_size, sender, destination, tsp, &timestamp, &ts_type);
     switch (ts_type) {
         case UDPSocket::TimeStampType::SOFTWARE:
             timesource = TimeSource::KERNEL;

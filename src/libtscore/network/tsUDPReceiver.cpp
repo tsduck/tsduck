@@ -25,23 +25,23 @@ void ts::UDPReceiver::setReceiveTimeoutArg(cn::milliseconds timeout)
 // Open the socket. Override UDPSocket::open().
 //----------------------------------------------------------------------------
 
-bool ts::UDPReceiver::open(Report& report)
+bool ts::UDPReceiver::open()
 {
     // Ignore generation parameter, will be derived from UDPReceiverArgs.
-    return open(IP::Any, report);
+    return open(IP::Any);
 }
 
-bool ts::UDPReceiver::open(IP gen, Report& report)
+bool ts::UDPReceiver::open(IP gen)
 {
     // Check if UDP parameters were specified.
     if (!_args.destination.hasPort()) {
-        report.error(u"no UDP receiver address specified");
+        report().error(u"no UDP receiver address specified");
         return false;
     }
 
     // If a destination address is specified, it must be a multicast address.
     if (_args.destination.hasAddress() && !_args.destination.isMulticast()) {
-        report.error(u"address %s is not multicast", _args.destination);
+        report().error(u"address %s is not multicast", _args.destination);
         return false;
     }
 
@@ -75,13 +75,13 @@ bool ts::UDPReceiver::open(IP gen, Report& report)
     // Create UDP socket from the superclass.
     // Note: On Windows, bind must be done *before* joining multicast groups.
     bool ok =
-        UDPSocket::open(gen, report) &&
-        reusePort(_args.reuse_port, report) &&
-        setReceiveTimestamps(_args.receive_timestamps, report) &&
-        setMulticastLoop(_args.mc_loopback, report) &&
-        (_args.receive_bufsize <= 0 || setReceiveBufferSize(_args.receive_bufsize, report)) &&
-        (_args.receive_timeout < cn::milliseconds::zero() || setReceiveTimeout(_args.receive_timeout, report)) &&
-        bind(local_addr, report);
+        UDPSocket::open(gen) &&
+        reusePort(_args.reuse_port) &&
+        setReceiveTimestamps(_args.receive_timestamps) &&
+        setMulticastLoop(_args.mc_loopback) &&
+        (_args.receive_bufsize <= 0 || setReceiveBufferSize(_args.receive_bufsize)) &&
+        (_args.receive_timeout < cn::milliseconds::zero() || setReceiveTimeout(_args.receive_timeout)) &&
+        bind(local_addr);
 
     // Optional SSM source address.
     IPAddress ssm_source;
@@ -92,19 +92,19 @@ bool ts::UDPReceiver::open(IP gen, Report& report)
     // Join multicast group.
     if (ok && _args.destination.hasAddress()) {
         if (_args.default_interface) {
-            ok = addMembershipDefault(_args.destination, ssm_source, report);
+            ok = addMembershipDefault(_args.destination, ssm_source);
         }
         else if (_args.local_address.hasAddress()) {
-            ok = addMembership(_args.destination, _args.local_address, ssm_source, report);
+            ok = addMembership(_args.destination, _args.local_address, ssm_source);
         }
         else {
             // By default, listen on all interfaces.
-            ok = addMembershipAll(_args.destination, ssm_source, !_args.no_link_local, report);
+            ok = addMembershipAll(_args.destination, ssm_source, !_args.no_link_local);
         }
     }
 
     if (!ok) {
-        close(report);
+        close(true);
     }
     return ok;
 }
@@ -120,22 +120,22 @@ bool ts::UDPReceiver::receive(void* data,
                               ts::IPSocketAddress& sender,
                               ts::IPSocketAddress& destination,
                               const ts::AbortInterface* abort,
-                              ts::Report& report,
                               cn::microseconds* timestamp,
-                              TimeStampType* timestamp_type)
+                              TimeStampType* timestamp_type,
+                              IOSB* iosb)
 {
     // Loop on packet reception until one matching filtering criteria is found.
     for (;;) {
 
         // Wait for a UDP message from the superclass.
-        if (!UDPSocket::receive(data, max_size, ret_size, sender, destination, abort, report, timestamp, timestamp_type)) {
+        if (!UDPSocket::receive(data, max_size, ret_size, sender, destination, abort, timestamp, timestamp_type, iosb)) {
             return false;
         }
 
         // Debug (level 2) message for each message.
-        if (report.maxSeverity() >= 2) {
+        if (report().maxSeverity() >= 2) {
             // Prior report level checking to avoid evaluating parameters when not necessary.
-            report.log(2, u"received UDP packet, source: %s, destination: %s, timestamp: %'d", sender, destination, timestamp != nullptr ? timestamp->count() : -1);
+            report().log(2, u"received UDP packet, source: %s, destination: %s, timestamp: %'d", sender, destination, timestamp != nullptr ? timestamp->count() : -1);
         }
 
         // Check the destination address to exclude packets from other streams.
@@ -155,9 +155,9 @@ bool ts::UDPReceiver::receive(void* data,
 
         if (destination.hasAddress() && ((_args.destination.hasAddress() && destination != _args.destination) || (!_args.destination.hasAddress() && destination.isMulticast()))) {
             // This is a spurious packet.
-            if (report.maxSeverity() >= Severity::Debug) {
+            if (report().maxSeverity() >= Severity::Debug) {
                 // Prior report level checking to avoid evaluating parameters when not necessary.
-                report.debug(u"rejecting packet, destination: %s, expecting: %s", destination, _args.destination);
+                report().debug(u"rejecting packet, destination: %s, expecting: %s", destination, _args.destination);
             }
             continue;
         }
@@ -171,7 +171,7 @@ bool ts::UDPReceiver::receive(void* data,
             // With option --first-source, use this one to filter packets.
             if (_args.use_first_source) {
                 _args.source = sender;
-                report.verbose(u"now filtering on source address %s", sender);
+                report().verbose(u"now filtering on source address %s", sender);
             }
         }
 
@@ -182,19 +182,19 @@ bool ts::UDPReceiver::receive(void* data,
             // With source filtering, this is just an informational verbose-level message.
             const int level = _args.source.hasAddress() ? Severity::Verbose : Severity::Warning;
             if (_sources.size() == 1) {
-                report.log(level, u"detected multiple sources for the same destination %s with potentially distinct streams", destination);
-                report.log(level, u"detected source: %s", _first_source);
+                report().log(level, u"detected multiple sources for the same destination %s with potentially distinct streams", destination);
+                report().log(level, u"detected source: %s", _first_source);
             }
-            report.log(level, u"detected source: %s", sender);
+            report().log(level, u"detected source: %s", sender);
             _sources.insert(sender);
         }
 
         // Filter packets based on source address if requested.
         if (!sender.match(_args.source)) {
             // Not the expected source, this is a spurious packet.
-            if (report.maxSeverity() >= Severity::Debug) {
+            if (report().maxSeverity() >= Severity::Debug) {
                 // Prior report level checking to avoid evaluating parameters when not necessary.
-                report.debug(u"rejecting packet, source: %s, expecting: %s", sender, _args.source);
+                report().debug(u"rejecting packet, source: %s, expecting: %s", sender, _args.source);
             }
             continue;
         }

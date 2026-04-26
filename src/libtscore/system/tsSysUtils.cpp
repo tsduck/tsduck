@@ -10,6 +10,7 @@
 #include "tsFileUtils.h"
 #include "tsTime.h"
 #include "tsArgs.h"
+#include "tsInitZero.h"
 
 #if defined(TS_WINDOWS)
     #include "tsWinUtils.h"
@@ -184,10 +185,9 @@ fs::path ts::CallerLibraryFile()
     // Get return address of current function (in caller code).
     void* const ret = __builtin_return_address(0);
     // Get the shared library into which this address can be found.
-    ::Dl_info info;
-    TS_ZERO(info);
-    if (ret != nullptr && ::dladdr(ret, &info) != 0 && info.dli_fname != nullptr) {
-        return fs::path(info.dli_fname);
+    InitZero<::Dl_info> info;
+    if (ret != nullptr && ::dladdr(ret, &info.data) != 0 && info.data.dli_fname != nullptr) {
+        return fs::path(info.data.dli_fname);
     }
     else {
         return fs::path();
@@ -258,12 +258,11 @@ size_t ts::GetProcessVirtualSize()
 {
 #if defined(TS_WINDOWS)
 
-    ::PROCESS_MEMORY_COUNTERS_EX mem_counters;
-    TS_ZERO(mem_counters);
-    if (::GetProcessMemoryInfo(::GetCurrentProcess(), (::PROCESS_MEMORY_COUNTERS*)&mem_counters, sizeof(mem_counters)) == 0) {
+    InitZero<::PROCESS_MEMORY_COUNTERS_EX> mem_counters;
+    if (::GetProcessMemoryInfo(::GetCurrentProcess(), reinterpret_cast<::PROCESS_MEMORY_COUNTERS*>(&mem_counters.data), sizeof(mem_counters.data)) == 0) {
         throw ts::Exception(u"GetProcessMemoryInfo error", ::GetLastError());
     }
-    return size_t(mem_counters.PrivateUsage);
+    return size_t(mem_counters.data.PrivateUsage);
 
 #elif defined(TS_LINUX)
 
@@ -560,6 +559,58 @@ bool ts::StdErrIsTerminal()
     return StdHandleIsATerminal(STD_ERROR_HANDLE);
 #else
     return ::isatty(STDERR_FILENO);
+#endif
+}
+
+
+//----------------------------------------------------------------------------
+// Close a file descriptor on fork().
+//----------------------------------------------------------------------------
+
+#if defined(TS_UNIX)
+// Set of file descriptors to close on fork().
+TS_STATIC_VARIABLE(std::mutex, CloseOnForkExecMutex);
+TS_STATIC_VARIABLE(std::set<int>, CloseOnForkExecList);
+
+// A handler which is invoked once after fork() in the child process.
+namespace {
+    void CloseOnForkExecHandler()
+    {
+        // Close all file descriptors. No need to use the mutex here, in the child process.
+        auto& list(CloseOnForkExecList());
+        for (int fd : list) {
+            ::close(fd);
+        }
+    }
+}
+#endif
+
+// Add a file descriptor in the list.
+void ts::AddCloseOnForkExec(int fd, bool cloexec)
+{
+#if defined(TS_UNIX)
+    // Register the fork() handler the first time.
+    static std::once_flag CloseOnForkExecOnceFlag;
+    std::call_once(CloseOnForkExecOnceFlag, ::pthread_atfork, nullptr, nullptr, CloseOnForkExecHandler);
+
+    // Also set CLOEXEC flag on the file descriptor.
+    if (cloexec) {
+        ::fcntl(fd, F_SETFD, ::fcntl(fd, F_GETFD) | FD_CLOEXEC);
+    }
+
+    // Store the file descriptor in the list.
+    std::lock_guard<std::mutex> lock(CloseOnForkExecMutex());
+    CloseOnForkExecList().insert(fd);
+#endif
+}
+
+// Remove a file descriptor from the list.
+void ts::RemoveCloseOnForkExec(int fd)
+{
+#if defined(TS_UNIX)
+    // Remove the file descriptor from the list.
+    std::lock_guard<std::mutex> lock(CloseOnForkExecMutex());
+    CloseOnForkExecList().insert(fd);
 #endif
 }
 

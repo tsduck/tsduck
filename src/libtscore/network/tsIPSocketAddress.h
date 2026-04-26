@@ -58,7 +58,7 @@ namespace ts {
         //! @param [in] addr Address.
         //! @param [in] port Port number as an integer in host byte order.
         //!
-        IPSocketAddress(const IPAddress addr, Port port) :
+        IPSocketAddress(const IPAddress& addr, Port port) :
             IPAddress(addr),
             _port(port)
         {}

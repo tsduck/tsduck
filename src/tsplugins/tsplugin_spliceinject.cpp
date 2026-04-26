@@ -19,7 +19,7 @@
 #include "tsPacketizer.h"
 #include "tsMessagePriorityQueue.h"
 #include "tsThread.h"
-#include "tsNullReport.h"
+#include "tsReporterGuard.h"
 #include "tsReportBuffer.h"
 #include "tsErrCodeReport.h"
 
@@ -170,7 +170,7 @@ namespace ts {
         private:
             SpliceInjectPlugin* const _plugin;
             volatile bool _terminate = false;
-            UDPReceiver _client {*_plugin};
+            UDPReceiver _client {_plugin};
 
             // Implementation of Thread.
             virtual void main() override;
@@ -1059,7 +1059,7 @@ bool ts::SpliceInjectPlugin::UDPListener::open()
     UDPReceiverArgs args;
     args.setUnicast(_plugin->_server_address, _plugin->_reuse_port, _plugin->_sock_buf_size);
     _client.setParameters(args);
-    return _client.open(*_plugin);
+    return _client.open();
 }
 
 // Terminate the thread.
@@ -1068,7 +1068,7 @@ void ts::SpliceInjectPlugin::UDPListener::stop()
     // Close the UDP receiver.
     // This will force the server thread to terminate.
     _terminate = true;
-    _client.close(NULLREP);
+    _client.close(true);
 
     // Wait for actual thread termination
     Thread::waitForTermination();
@@ -1086,14 +1086,17 @@ void ts::SpliceInjectPlugin::UDPListener::main()
 
     // Get receive errors in a buffer since some errors are normal.
     ReportBuffer<ThreadSafety::None> error(_plugin->maxSeverity());
+    {
+        ReporterGuard repguard(_client, &error);
 
-    // Loop on incoming messages.
-    while (_client.receive(inbuf, sizeof(inbuf), insize, sender, destination, _plugin->tsp, error)) {
-        _plugin->verbose(u"received message, %d bytes, from %s", insize, sender);
-        _plugin->processSectionMessage(inbuf, insize);
+        // Loop on incoming messages.
+        while (_client.receive(inbuf, sizeof(inbuf), insize, sender, destination, _plugin->tsp)) {
+            _plugin->verbose(u"received message, %d bytes, from %s", insize, sender);
+            _plugin->processSectionMessage(inbuf, insize);
+        }
     }
 
-    // If termination was requested, receive error is not an error.
+    // Display errors. If termination was requested, receive error is not an error.
     if (!_terminate && !error.empty()) {
         _plugin->info(error.messages());
     }

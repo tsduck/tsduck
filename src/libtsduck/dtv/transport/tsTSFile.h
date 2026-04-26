@@ -198,7 +198,7 @@ namespace ts {
         bool          _regular = false;      //!< Is a regular file (ie. not a pipe or special device)
         bool          _std_inout = false;    //!< File is standard input or output.
 #if defined(TS_WINDOWS)
-        ::HANDLE      _handle = INVALID_HANDLE_VALUE;
+        ::HANDLE      _handle = nullptr;
 #else
         int           _fd = -1;
 #endif

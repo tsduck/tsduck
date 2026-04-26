@@ -79,15 +79,15 @@ bool ts::HTTPOutputPlugin::getOptions()
 
 bool ts::HTTPOutputPlugin::start()
 {
-    if (!_server.open(IP::Any, *this)) {
+    if (!_server.open(IP::Any)) {
         return false;
     }
-    if (!_server.reusePort(_reuse_port, *this) ||
-        (_tcp_buffer_size > 0 && !_server.setSendBufferSize(_tcp_buffer_size, *this)) ||
-        !_server.bind(_server_address, *this) ||
-        !_server.listen(SERVER_BACKLOG, *this))
+    if (!_server.reusePort(_reuse_port) ||
+        (_tcp_buffer_size > 0 && !_server.setSendBufferSize(_tcp_buffer_size)) ||
+        !_server.bind(_server_address) ||
+        !_server.listen(SERVER_BACKLOG))
     {
-        _server.close(*this);
+        _server.close();
         return false;
     }
     return true;
@@ -101,12 +101,12 @@ bool ts::HTTPOutputPlugin::start()
 bool ts::HTTPOutputPlugin::stop()
 {
     if (_client.isConnected()) {
-        _client.disconnect(*this);
+        _client.disconnect();
     }
     if (_client.isOpen()) {
-        _client.close(*this);
+        _client.close();
     }
-    _server.close(*this);
+    _server.close();
     return true;
 }
 
@@ -124,7 +124,7 @@ bool ts::HTTPOutputPlugin::send(const TSPacket* buffer, const TSPacketMetadata* 
             // Wait for a new incoming client.
             IPSocketAddress client_address;
             debug(u"waiting for incoming client connection");
-            if (!_server.accept(_client, client_address, *this)) {
+            if (!_server.accept(_client, client_address)) {
                 // Error while accepting a client is fatal.
                 return false;
             }
@@ -137,21 +137,21 @@ bool ts::HTTPOutputPlugin::send(const TSPacket* buffer, const TSPacketMetadata* 
             }
 
             // Session initialization error, close the connection.
-            _client.disconnect(*this);
-            _client.close(*this);
+            _client.disconnect();
+            _client.close();
             if (!_multiple_clients) {
                 return false;
             }
         }
 
         // Send the TS packets to the client.
-        if (_client.send(buffer, packet_count * PKT_SIZE, *this)) {
+        if (_client.send(buffer, packet_count * PKT_SIZE)) {
             return true;
         }
 
         // Send error, close the connection.
-        _client.disconnect(*this);
-        _client.close(*this);
+        _client.disconnect();
+        _client.close();
         if (!_multiple_clients) {
             return false;
         }
@@ -168,7 +168,7 @@ bool ts::HTTPOutputPlugin::sendResponseHeader(const std::string& line)
     debug(u"response header: %s", line);
     std::string data(line);
     data += "\r\n";
-    return _client.send(data.data(), data.size(), *this);
+    return _client.send(data.data(), data.size());
 }
 
 
@@ -189,7 +189,7 @@ bool ts::HTTPOutputPlugin::startSession()
         const size_t previous = data.size();
         size_t ret_size = 0;
         data.resize(previous + 512);
-        if (!_client.receive(data.data() + previous, data.size() - previous, ret_size, nullptr, *this)) {
+        if (!_client.receive(data.data() + previous, data.size() - previous, ret_size, nullptr)) {
             return false; // receive error
         }
         data.resize(previous + ret_size);

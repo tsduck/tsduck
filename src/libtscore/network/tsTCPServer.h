@@ -42,7 +42,7 @@ namespace ts {
     //!
     class TSCOREDLL TCPServer: public TCPSocket
     {
-        TS_NOCOPY(TCPServer);
+        TS_NOBUILD_NOCOPY(TCPServer);
     public:
         //!
         //! Reference to the superclass.
@@ -50,9 +50,12 @@ namespace ts {
         using SuperClass = TCPSocket;
 
         //!
-        //! Constructor
+        //! Constructor.
+        //! @param [in] report Where to report errors. The @a report object must remain valid as long as this object
+        //! exists or setReport() is used with another Report object. If @a report is null, log messages are discarded.
+        //! @param [in] non_blocking It true, the device is initially set in non-blocking mode.
         //!
-        TCPServer() = default;
+        explicit TCPServer(Report* report, bool non_blocking = false) : TCPSocket(report, non_blocking) {}
 
         //!
         //! Start the server.
@@ -69,10 +72,9 @@ namespace ts {
         //! value is a minimum queue size. But the kernel may accept more. There is
         //! no guarantee that additional incoming connections will be rejected if more
         //! than @a backlog are already queueing.
-        //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        virtual bool listen(int backlog, Report& report = CERR);
+        virtual bool listen(int backlog);
 
         //!
         //! Wait for an incoming client connection.
@@ -84,13 +86,12 @@ namespace ts {
         //! @param [out] addr This object receives the socket address of the client.
         //! If the server wants to filter client connections based on their IP address,
         //! it may use @a addr for that.
-        //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //! @see listen()
         //!
-        virtual bool accept(TCPConnection& client, IPSocketAddress& addr, Report& report = CERR);
+        virtual bool accept(TCPConnection& client, IPSocketAddress& addr);
 
         // Inherited methods.
-        virtual bool close(Report& report = CERR) override;
+        virtual bool close(bool silent = false) override;
     };
 }

@@ -693,19 +693,19 @@ namespace {
             // Connect to the server.
             const ts::IPSocketAddress serverAddress(ts::IPAddress::LocalHost4, _portNumber);
             const ts::IPSocketAddress clientAddress(ts::IPAddress::LocalHost4, ts::IPSocketAddress::AnyPort);
-            ts::TCPConnection session;
+            ts::TCPConnection session(&CERR);
             TSUNIT_ASSERT(!session.isOpen());
             TSUNIT_ASSERT(!session.isConnected());
-            TSUNIT_ASSERT(session.open(ts::IP::v4, CERR));
-            TSUNIT_ASSERT(session.setSendBufferSize(1024, CERR));
-            TSUNIT_ASSERT(session.setReceiveBufferSize(1024, CERR));
-            TSUNIT_ASSERT(session.bind(clientAddress, CERR));
-            TSUNIT_ASSERT(session.connect(serverAddress, CERR));
+            TSUNIT_ASSERT(session.open(ts::IP::v4));
+            TSUNIT_ASSERT(session.setSendBufferSize(1024));
+            TSUNIT_ASSERT(session.setReceiveBufferSize(1024));
+            TSUNIT_ASSERT(session.bind(clientAddress));
+            TSUNIT_ASSERT(session.connect(serverAddress));
             TSUNIT_ASSERT(session.isOpen());
             TSUNIT_ASSERT(session.isConnected());
 
             ts::IPSocketAddress peer;
-            TSUNIT_ASSERT(session.getPeer(peer, CERR));
+            TSUNIT_ASSERT(session.getPeer(peer));
             TSUNIT_ASSERT(peer == serverAddress);
             TSUNIT_ASSERT(ts::IPAddress(peer) == ts::IPAddress::LocalHost4);
             TSUNIT_ASSERT(peer.port() == _portNumber);
@@ -713,17 +713,17 @@ namespace {
             // Send a message
             const char message[] = "Hello";
             CERR.debug(u"TCPSocketTest: client thread: sending \"%s\", %d bytes", message, sizeof(message));
-            TSUNIT_ASSERT(session.send(message, sizeof(message), CERR));
+            TSUNIT_ASSERT(session.send(message, sizeof(message)));
             CERR.debug(u"TCPSocketTest: client thread: data sent");
 
             // Say we won't send no more
-            TSUNIT_ASSERT(session.closeWriter(CERR));
+            TSUNIT_ASSERT(session.closeWriter());
 
             // Loop until on server response.
             size_t totalSize = 0;
             char buffer [1024];
             size_t size = 0;
-            while (totalSize < sizeof(buffer) && session.receive(buffer + totalSize, sizeof(buffer) - totalSize, size, nullptr, CERR)) {
+            while (totalSize < sizeof(buffer) && session.receive(buffer + totalSize, sizeof(buffer) - totalSize, size)) {
                 CERR.debug(u"TCPSocketTest: client thread: data received, %d bytes", size);
                 totalSize += size;
             }
@@ -732,8 +732,8 @@ namespace {
             TSUNIT_EQUAL(0, ts::MemCompare(message, buffer, totalSize));
 
             // Fully disconnect the session
-            session.disconnect(CERR);
-            session.close(CERR);
+            TSUNIT_ASSERT(session.disconnect());
+            TSUNIT_ASSERT(session.close());
             CERR.debug(u"TCPSocketTest: client thread: terminated");
         }
     };
@@ -749,25 +749,25 @@ TSUNIT_DEFINE_TEST(TCPSocket)
     // Create server socket
     CERR.debug(u"TCPSocketTest: main thread: create server");
     const ts::IPSocketAddress serverAddress(ts::IPAddress::LocalHost4, portNumber);
-    ts::TCPServer server;
+    ts::TCPServer server(&CERR);
     TSUNIT_ASSERT(!server.isOpen());
-    TSUNIT_ASSERT(server.open(ts::IP::v4, CERR));
+    TSUNIT_ASSERT(server.open(ts::IP::v4));
     TSUNIT_ASSERT(server.isOpen());
-    TSUNIT_ASSERT(server.reusePort(true, CERR));
-    TSUNIT_ASSERT(server.setSendBufferSize(1024, CERR));
-    TSUNIT_ASSERT(server.setReceiveBufferSize(1024, CERR));
-    TSUNIT_ASSERT(server.setTTL(1, CERR));
-    TSUNIT_ASSERT(server.bind(serverAddress, CERR));
-    TSUNIT_ASSERT(server.listen(5, CERR));
+    TSUNIT_ASSERT(server.reusePort(true));
+    TSUNIT_ASSERT(server.setSendBufferSize(1024));
+    TSUNIT_ASSERT(server.setReceiveBufferSize(1024));
+    TSUNIT_ASSERT(server.setTTL(1));
+    TSUNIT_ASSERT(server.bind(serverAddress));
+    TSUNIT_ASSERT(server.listen(5));
 
     CERR.debug(u"TCPSocketTest: main thread: starting client thread");
     TCPClient client(portNumber);
     client.start();
 
     CERR.debug(u"TCPSocketTest: main thread: waiting for a client");
-    ts::TCPConnection session;
+    ts::TCPConnection session(&CERR);
     ts::IPSocketAddress clientAddress;
-    TSUNIT_ASSERT(server.accept(session, clientAddress, CERR));
+    TSUNIT_ASSERT(server.accept(session, clientAddress));
     CERR.debug(u"TCPSocketTest: main thread: got a client");
     TSUNIT_ASSERT(ts::IPAddress(clientAddress) == ts::IPAddress::LocalHost4);
 
@@ -775,16 +775,16 @@ TSUNIT_DEFINE_TEST(TCPSocket)
     ts::IPSocketAddress sender;
     char buffer [1024];
     size_t size = 0;
-    while (session.receive(buffer, sizeof(buffer), size, nullptr, CERR)) {
+    while (session.receive(buffer, sizeof(buffer), size)) {
         CERR.debug(u"TCPSocketTest: main thread: data received, %d bytes", size);
-        TSUNIT_ASSERT(session.send(buffer, size, CERR));
+        TSUNIT_ASSERT(session.send(buffer, size));
         CERR.debug(u"TCPSocketTest: main thread: data sent back");
     }
 
     CERR.debug(u"TCPSocketTest: main thread: end of client session");
-    session.disconnect(CERR);
-    session.close(CERR);
-    TSUNIT_ASSERT(server.close(CERR));
+    session.disconnect();
+    session.close();
+    TSUNIT_ASSERT(server.close());
 
     CERR.debug(u"TCPSocketTest: main thread: terminated");
 }
@@ -816,19 +816,19 @@ namespace {
         {
             CERR.debug(u"UDPSocketTest: client thread started");
             // Create the client socket
-            ts::UDPSocket sock(true, ts::IP::v4);
+            ts::UDPSocket sock(&CERR, true, ts::IP::v4);
             TSUNIT_ASSERT(sock.isOpen());
-            TSUNIT_ASSERT(sock.setSendBufferSize(1024, CERR));
-            TSUNIT_ASSERT(sock.setReceiveBufferSize(1024, CERR));
-            TSUNIT_ASSERT(sock.bind(ts::IPSocketAddress(ts::IPAddress::LocalHost4, ts::IPSocketAddress::AnyPort), CERR));
-            TSUNIT_ASSERT(sock.setDefaultDestination(ts::IPSocketAddress(ts::IPAddress::LocalHost4, _portNumber), CERR));
+            TSUNIT_ASSERT(sock.setSendBufferSize(1024));
+            TSUNIT_ASSERT(sock.setReceiveBufferSize(1024));
+            TSUNIT_ASSERT(sock.bind(ts::IPSocketAddress(ts::IPAddress::LocalHost4, ts::IPSocketAddress::AnyPort)));
+            TSUNIT_ASSERT(sock.setDefaultDestination(ts::IPSocketAddress(ts::IPAddress::LocalHost4, _portNumber)));
             TSUNIT_ASSERT(ts::IPAddress(sock.getDefaultDestination()) == ts::IPAddress::LocalHost4);
             TSUNIT_ASSERT(sock.getDefaultDestination().port() == _portNumber);
 
             // Send a message
             const char message[] = "Hello";
             CERR.debug(u"UDPSocketTest: client thread: sending \"%s\", %d bytes", message, sizeof(message));
-            TSUNIT_ASSERT(sock.send(message, sizeof(message), CERR));
+            TSUNIT_ASSERT(sock.send(message, sizeof(message)));
             CERR.debug(u"UDPSocketTest: client thread: request sent");
 
             // Wait for a reply
@@ -836,7 +836,7 @@ namespace {
             ts::IPSocketAddress destination;
             char buffer [1024];
             size_t size;
-            TSUNIT_ASSERT(sock.receive(buffer, sizeof(buffer), size, sender, destination, nullptr, CERR));
+            TSUNIT_ASSERT(sock.receive(buffer, sizeof(buffer), size, sender, destination));
             CERR.debug(u"UDPSocketTest: client thread: reply received, %d bytes, sender: %s, destination: %s", size, sender, destination);
             TSUNIT_EQUAL(sizeof(message), size);
             TSUNIT_EQUAL(0, ts::MemCompare(message, buffer, size));
@@ -856,15 +856,15 @@ TSUNIT_DEFINE_TEST(UDPSocket)
     const uint16_t portNumber = 12345;
 
     // Create server socket
-    ts::UDPSocket sock;
+    ts::UDPSocket sock(&CERR);
     TSUNIT_ASSERT(!sock.isOpen());
-    TSUNIT_ASSERT(sock.open(ts::IP::v4, CERR));
+    TSUNIT_ASSERT(sock.open(ts::IP::v4));
     TSUNIT_ASSERT(sock.isOpen());
-    TSUNIT_ASSERT(sock.setSendBufferSize(1024, CERR));
-    TSUNIT_ASSERT(sock.setReceiveBufferSize(1024, CERR));
-    TSUNIT_ASSERT(sock.reusePort(true, CERR));
-    TSUNIT_ASSERT(sock.setTTL(1, false, CERR));
-    TSUNIT_ASSERT(sock.bind(ts::IPSocketAddress(ts::IPAddress::LocalHost4, portNumber), CERR));
+    TSUNIT_ASSERT(sock.setSendBufferSize(1024));
+    TSUNIT_ASSERT(sock.setReceiveBufferSize(1024));
+    TSUNIT_ASSERT(sock.reusePort(true));
+    TSUNIT_ASSERT(sock.setTTL(1, false));
+    TSUNIT_ASSERT(sock.bind(ts::IPSocketAddress(ts::IPAddress::LocalHost4, portNumber)));
 
     CERR.debug(u"UDPSocketTest: main thread: starting client thread");
     UDPClient client(portNumber);
@@ -875,11 +875,11 @@ TSUNIT_DEFINE_TEST(UDPSocket)
     ts::IPSocketAddress destination;
     char buffer [1024];
     size_t size;
-    TSUNIT_ASSERT(sock.receive(buffer, sizeof(buffer), size, sender, destination, nullptr, CERR));
+    TSUNIT_ASSERT(sock.receive(buffer, sizeof(buffer), size, sender, destination));
     CERR.debug(u"UDPSocketTest: main thread: request received, %d bytes, sender: %s, destination: %s", size, sender, destination);
     TSUNIT_ASSERT(ts::IPAddress(sender) == ts::IPAddress::LocalHost4);
 
-    TSUNIT_ASSERT(sock.send(buffer, size, sender, CERR));
+    TSUNIT_ASSERT(sock.send(buffer, size, sender));
     CERR.debug(u"UDPSocketTest: main thread: reply sent");
 }
 

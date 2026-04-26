@@ -60,7 +60,7 @@ namespace ts {
     //!
     class TSCOREDLL TCPConnection: public TCPSocket
     {
-        TS_NOCOPY(TCPConnection);
+        TS_NOBUILD_NOCOPY(TCPConnection);
     public:
         //!
         //! Reference to the superclass.
@@ -68,9 +68,12 @@ namespace ts {
         using SuperClass = TCPSocket;
 
         //!
-        //! Constructor
+        //! Constructor.
+        //! @param [in] report Where to report errors. The @a report object must remain valid as long as this object
+        //! exists or setReport() is used with another Report object. If @a report is null, log messages are discarded.
+        //! @param [in] non_blocking It true, the device is initially set in non-blocking mode.
         //!
-        TCPConnection() = default;
+        explicit TCPConnection(Report* report, bool non_blocking = false) : TCPSocket(report, non_blocking) {}
 
         //!
         //! Connect to a remote address and port.
@@ -80,10 +83,9 @@ namespace ts {
         //! to TCPServer::accept() which establishes the connection.
         //!
         //! @param [in] addr IP address and port of the server to connect.
-        //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        virtual bool connect(const IPSocketAddress& addr, Report& report = CERR);
+        virtual bool connect(const IPSocketAddress& addr);
 
         //!
         //! Check if the socket is connected.
@@ -94,16 +96,15 @@ namespace ts {
         //!
         //! Get the connected remote peer.
         //! @param [out] addr IP address and port of the remote socket.
-        //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool getPeer(IPSocketAddress& addr, Report& report = CERR) const;
+        bool getPeer(IPSocketAddress& addr);
 
         //!
         //! Get the connected remote peer as a string.
         //! @return A string representation of the IP address and port of the remote socket.
         //!
-        UString peerName() const;
+        UString peerName();
 
         //!
         //! Close the write direction of the connection.
@@ -112,26 +113,27 @@ namespace ts {
         //! message but may still want to receive messages, waiting for the
         //! peer to voluntary disconnect.
         //!
-        //! @param [in,out] report Where to report error.
+        //! @param [in] silent If true, do not report errors through the logger. This is typically useful when the socket
+        //! is in some error condition and closing it is necessary although it may generate additional meaningless errors.
         //! @return True on success, false on error.
         //!
-        virtual bool closeWriter(Report& report = CERR);
+        virtual bool closeWriter(bool silent = false);
 
         //!
         //! Disconnect from remote partner.
-        //! @param [in,out] report Where to report error.
+        //! @param [in] silent If true, do not report errors through the logger. This is typically useful when the socket
+        //! is in some error condition and closing it is necessary although it may generate additional meaningless errors.
         //! @return True on success, false on error.
         //!
-        virtual bool disconnect(Report& report = CERR);
+        virtual bool disconnect(bool silent = false);
 
         //!
         //! Send data.
         //! @param [in] data Address of the data to send.
         //! @param [in] size Size in bytes of the data to send.
-        //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        virtual bool send(const void* data, size_t size, Report& report = CERR);
+        virtual bool send(const void* data, size_t size);
 
         //!
         //! Receive data.
@@ -150,14 +152,9 @@ namespace ts {
         //! Will never be larger than @a max_size.
         //! @param [in] abort If non-zero, invoked when I/O is interrupted
         //! (in case of user-interrupt, return, otherwise retry).
-        //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        virtual bool receive(void* buffer,
-                             size_t max_size,
-                             size_t& ret_size,
-                             const AbortInterface* abort = nullptr,
-                             Report& report = CERR);
+        virtual bool receive(void* buffer, size_t max_size, size_t& ret_size, const AbortInterface* abort = nullptr);
 
         //!
         //! Receive data until buffer is full.
@@ -176,41 +173,35 @@ namespace ts {
         //! @param [in] size Size in bytes of the buffer.
         //! @param [in] abort If non-zero, invoked when I/O is interrupted
         //! (in case of user-interrupt, return, otherwise retry).
-        //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        virtual bool receive(void* buffer,
-                             size_t size,
-                             const AbortInterface* abort = nullptr,
-                             Report& report = CERR);
+        virtual bool receive(void* buffer, size_t size, const AbortInterface* abort = nullptr);
 
     protected:
         //!
         //! This virtual method can be overriden by subclasses to be notified of connection.
         //! All subclasses should explicitly invoke their superclass' handlers.
-        //! @param [in,out] report Where to report error.
         //!
-        virtual void handleConnected(Report& report = CERR);
+        virtual void handleConnected();
 
         //!
         //! This virtual method can be overriden by subclasses to be notified of disconnection.
         //! All subclasses should explicitly invoke their superclass' handlers.
-        //! @param [in,out] report Where to report error.
         //!
-        virtual void handleDisconnected(Report& report = CERR);
+        virtual void handleDisconnected();
 
         // Overriden methods
-        virtual void handleClosed(Report& report = CERR) override;
+        virtual void handleClosed() override;
 
     private:
         volatile bool _is_connected = false;
 
         // Declare that the socket has just become connected / disconnected.
-        void declareConnected(Report& report = CERR);
-        void declareDisconnected(Report& report = CERR);
+        void declareConnected();
+        void declareDisconnected();
         friend class TCPServer;
 
         // Shutdown the socket.
-        bool shutdownSocket(int how, Report& report = CERR);
+        bool shutdownSocket(int how, bool silent);
     };
 }

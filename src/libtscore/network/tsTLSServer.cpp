@@ -14,7 +14,8 @@
 // Constructors and destructor.
 //----------------------------------------------------------------------------
 
-ts::TLSServer::TLSServer()
+ts::TLSServer::TLSServer(Report* report) :
+    SuperClass(report, false)
 {
     allocateGuts();
     CheckNonNull(_guts);
@@ -45,14 +46,14 @@ void ts::TLSServer::setArgs(const TLSArgs& args)
 // Wait for a client (inherited version).
 //----------------------------------------------------------------------------
 
-bool ts::TLSServer::accept(TCPConnection& client, IPSocketAddress& addr, Report& report)
+bool ts::TLSServer::accept(TCPConnection& client, IPSocketAddress& addr)
 {
     TLSConnection* tls = dynamic_cast<TLSConnection*>(&client);
     if (tls != nullptr) {
-        return acceptTLS(*tls, addr, report);
+        return acceptTLS(*tls, addr);
     }
     else {
-        report.error(u"internal programming error: TLSServer::accept() needs a TLSConnection");
+        report().error(u"internal programming error: TLSServer::accept() needs a TLSConnection");
         return false;
     }
 }

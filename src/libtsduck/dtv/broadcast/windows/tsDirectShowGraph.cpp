@@ -9,7 +9,7 @@
 #include "tsDirectShowGraph.h"
 #include "tsDirectShowTest.h"
 #include "tsMediaTypeUtils.h"
-#include "tsMemory.h"
+#include "tsInitZero.h"
 #include "tsNullReport.h"
 
 
@@ -219,12 +219,11 @@ bool ts::DirectShowGraph::cleanupDownstream(::IBaseFilter* filter, Report& repor
 
         // Get next filter
         if (!next_pin.isNull()) {
-            ::PIN_INFO pin_info;
-            TS_ZERO(pin_info);
-            hr = next_pin->QueryPinInfo(&pin_info);
+            InitZero<::PIN_INFO> pin_info;
+            hr = next_pin->QueryPinInfo(&pin_info.data);
             ok = ComSuccess(hr, u"IPin::QueryPinInfo", report) && ok;
             // If not null, pFilter has a reference, manage it to release it later.
-            next_filter = pin_info.pFilter;
+            next_filter = pin_info.data.pFilter;
             // Pin is no longer needed. The object will be destroyed with the next
             // filter. We must no try to release next_pin afterward. So, release it now.
             next_pin.release();

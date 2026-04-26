@@ -29,14 +29,15 @@ namespace ts::tlv {
     //!
     class TSCOREDLL Logger
     {
-        TS_DEFAULT_COPY_MOVE(Logger);
+        TS_NOBUILD_NOCOPY(Logger);
     public:
         //!
         //! Default constructor.
+        //! @param [in] report Where to report messages. An internal reference is kept.
+        //! The @a report object must remain valid as long as this object exists.
         //! @param [in] default_level Default logging level of messages.
-        //! @param [in] default_report Where to report messages. Can be null.
         //!
-        Logger(int default_level = Severity::Info, Report* default_report = nullptr);
+        explicit Logger(Report& report, int default_level = Severity::Info);
 
         //!
         //! Set the default severity level.
@@ -73,27 +74,20 @@ namespace ts::tlv {
         void resetSeverities(int default_level = Severity::Info);
 
         //!
-        //! Set a new default report object.
-        //! @param [in] default_report Where to report messages. Can be null.
-        //!
-        void setReport(Report* default_report);
-
-        //!
         //! Get a reference to the default report object.
         //! @return A reference to the default report object.
         //!
-        Report& report() { return *_report; }
+        Report& report() { return _report; }
 
         //!
         //! Report a TLV message.
         //! @param [in] msg The message to log.
         //! @param [in] comment Optional leading comment line (before the message).
-        //! @param [in] report Where to report the message. If null, use the default report.
         //!
-        void log(const Message& msg, const UString& comment = UString(), Report* report = nullptr);
+        void log(const Message& msg, const UString& comment = UString());
 
     private:
-        Report* volatile  _report;         // Default report.
+        Report&           _report;
         int               _default_level;  // Default severity level.
         std::map<TAG,int> _levels {};      // Map of severity by message tag.
     };

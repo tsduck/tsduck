@@ -405,9 +405,11 @@ namespace ts {
     TSCOREDLL inline int SysCloseSocket(SysSocketType sock)
     {
 #if defined(TS_WINDOWS)
-        return ::closesocket(sock);
+        const int res = ::closesocket(sock);
+        return res == 0 ? 0 : ::WSAGetLastError();
 #elif defined(TS_UNIX)
-        return ::close(sock);
+        const int res = ::close(sock);
+        return res == 0 ? 0 : errno;
 #else
         #error "Unsupported operating system"
 #endif

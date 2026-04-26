@@ -15,6 +15,7 @@
     #include "tsBeforeStandardHeaders.h"
     #include <io.h>
     #include "tsAfterStandardHeaders.h"
+    #include "tsWinUtils.h"
 #else
     #include "tsBeforeStandardHeaders.h"
     #include <sys/types.h>
@@ -60,7 +61,7 @@ ts::TSFile::TSFile(TSFile&& other) noexcept :
     // Mark other object as closed, just in case.
     other._is_open = false;
 #if defined(TS_WINDOWS)
-    other._handle = INVALID_HANDLE_VALUE;
+    other._handle = nullptr;
 #else
     other._fd = -1;
 #endif
@@ -232,7 +233,7 @@ bool ts::TSFile::openInternal(bool reopen, Report& report)
     // Close first if this is a reopen.
     if (reopen) {
         ::CloseHandle(_handle);
-        _handle = INVALID_HANDLE_VALUE;
+        _handle = nullptr;
     }
 
     if (read_only) {
@@ -251,7 +252,7 @@ bool ts::TSFile::openInternal(bool reopen, Report& report)
     if (!_std_inout) {
         // Actual file name, open it. On Windows, fs::path uses 16-bit wchar_t.
         _handle = ::CreateFileW(_filename.c_str(), access_mask, shared, nullptr, winflags, attrib, nullptr);
-        if (_handle == INVALID_HANDLE_VALUE) {
+        if (!WinHandleValid(_handle)) {
             const int err = LastSysErrorCode();
             report.log(_severity, u"cannot open %s: %s", getDisplayFileName(), SysErrorCodeMessage(err));
             return false;
@@ -761,7 +762,7 @@ void ts::TSFile::abort()
         // Close pipe handle, ignore errors.
 #if defined(TS_WINDOWS)
         ::CloseHandle(_handle);
-        _handle = INVALID_HANDLE_VALUE;
+        _handle = nullptr;
 #else // UNIX
         ::close(_fd);
         _fd = -1;

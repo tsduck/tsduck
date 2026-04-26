@@ -155,10 +155,10 @@ namespace ts {
         PacketCounter     _partial_scrambling = 0;      // Do not scramble all packets if > 1
         cn::seconds       _clear_period {0};            // Clear period before scrambling commences
         ECMGClientArgs    _ecmg_args {};                // Parameters for ECMG client
-        tlv::Logger       _logger {Severity::Debug, this}; // Message logger for ECMG <=> SCS protocol
-        ecmgscs::Protocol      _ecmgscs {};                // ECMG <=> SCS protocol instance.
-        ecmgscs::ChannelStatus _channel_status {_ecmgscs}; // Initial response to ECMG channel_setup
-        ecmgscs::StreamStatus  _stream_status {_ecmgscs};  // Initial response to ECMG stream_setup
+        tlv::Logger       _logger {*this, Severity::Debug}; // Message logger for ECMG <=> SCS protocol
+        ecmgscs::Protocol      _ecmgscs {};                 // ECMG <=> SCS protocol instance.
+        ecmgscs::ChannelStatus _channel_status {_ecmgscs};  // Initial response to ECMG channel_setup
+        ecmgscs::StreamStatus  _stream_status {_ecmgscs};   // Initial response to ECMG stream_setup
 
         // ScramblerPlugin state
         volatile bool     _abort = false;               // Error (service not found, etc)
@@ -172,7 +172,7 @@ namespace ts {
         PacketCounter     _pkt_change_cw = 0;           // Transition point for next CW change
         PacketCounter     _pkt_change_ecm = 0;          // Transition point for next ECM change
         BitRate           _ts_bitrate = 0;              // Saved TS bitrate
-        ECMGClient        _ecmg {_ecmgscs, ASYNC_HANDLER_EXTRA_STACK_SIZE}; // Connection with the ECMG
+        ECMGClient        _ecmg {_logger, _ecmgscs, ASYNC_HANDLER_EXTRA_STACK_SIZE}; // Connection with the ECMG
         uint8_t           _ecm_cc = 0;                  // Continuity counter in ECM PID.
         PIDSet            _scrambled_pids {};           // List of pids to scramble
         PIDSet            _conflict_pids {};            // List of pids to scramble with scrambled input packets
@@ -421,7 +421,7 @@ bool ts::ScramblerPlugin::start()
             error(u"--super-cas-id is required with --ecmg");
             return false;
         }
-        else if (!_ecmg.connect(_ecmg_args, _channel_status, _stream_status, tsp, _logger)) {
+        else if (!_ecmg.connect(_ecmg_args, _channel_status, _stream_status, tsp)) {
             // Error connecting to ECMG, error message already reported
             return false;
         }

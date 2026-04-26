@@ -46,7 +46,7 @@ bool ts::RestServer::getLine(TCPConnection& conn, UString& line)
     ByteBlock bb;
     bb.reserve(2048);
     uint8_t byte = 0;
-    while (conn.receive(&byte, 1, nullptr, _report)) {
+    while (conn.receive(&byte, 1, nullptr)) {
         bb.append(byte);
         if (byte == LINE_FEED) {
             break;
@@ -74,8 +74,8 @@ bool ts::RestServer::getRequestLine(TCPConnection& conn)
     // Receive first text line.
     UString line;
     if (!getLine(conn, line)) {
-        _report.error(u"error reading HTTP request line");
-        conn.close(NULLREP);
+        conn.report().error(u"error reading HTTP request line");
+        conn.close(true);
         return false;
     }
 
@@ -106,8 +106,8 @@ bool ts::RestServer::getRequestLine(TCPConnection& conn)
     }
 
     if (!success) {
-        _report.error(u"invalid HTTP request line: \"%s\"", line);
-        conn.close(NULLREP);
+        conn.report().error(u"invalid HTTP request line: \"%s\"", line);
+        conn.close();
     }
     return success;
 }
@@ -131,8 +131,8 @@ bool ts::RestServer::getRequest(TCPConnection& conn)
     UString line;
     for (;;) {
         if (!getLine(conn, line)) {
-            _report.error(u"error reading HTTP header line");
-            conn.close(NULLREP);
+            conn.report().error(u"error reading HTTP header line");
+            conn.close(true);
             return false;
         }
         if (line.empty()) {
@@ -155,19 +155,19 @@ bool ts::RestServer::getRequest(TCPConnection& conn)
 
     // Check if the client address is authorized.
     IPSocketAddress client_address;
-    conn.getPeer(client_address, _report);
+    conn.getPeer(client_address);
     bool authorized = _args.isAllowed(client_address);
 
     // If the server requires an autorization content, check it or reject the client.
     if (authorized && !_args.auth_token.empty() && _request_token != _args.auth_token) {
         // Vade retro Satanas !
         authorized = false;
-        _report.error(u"invalid authorization token '%s' from client at %s", _request_token, client_address);
+        conn.report().error(u"invalid authorization token '%s' from client at %s", _request_token, client_address);
     }
 
     // Reject unauthorized client.
     if (!authorized) {
-        _report.error(u"client %s rejected", client_address);
+        conn.report().error(u"client %s rejected", client_address);
         setResponse(u"Unauthorized\r\n");
         sendResponse(conn, 401, true);
         return false;
@@ -195,7 +195,7 @@ bool ts::RestServer::getRequest(TCPConnection& conn)
             const size_t previous = _post_data.size();
             const size_t chunk = unbounded ? default_chunk : std::min(default_chunk, data_length - _post_data.size());
             _post_data.resize(previous + chunk);
-            ok = conn.receive(&_post_data[previous], chunk, ret_size, nullptr, _report);
+            ok = conn.receive(&_post_data[previous], chunk, ret_size, nullptr);
             _post_data.resize(previous + ret_size);
         }
     }
@@ -337,15 +337,15 @@ bool ts::RestServer::sendResponse(TCPConnection& conn, int http_status, bool clo
     crlf.appendUTF8(init);
 
     // Send full response.
-    const bool success = conn.send(init.data(), init.size(), _report) && conn.send(_response_data.data(), _response_data.size(), _report);
+    const bool success = conn.send(init.data(), init.size()) && conn.send(_response_data.data(), _response_data.size());
 
     // Close connection on error or on demand.
     if (close) {
-        conn.disconnect(NULLREP);
-        conn.close(NULLREP);
+        conn.disconnect(true);
+        conn.close(true);
     }
     else if (!success) {
-        conn.close(NULLREP);
+        conn.close(true);
     }
     return success;
 }

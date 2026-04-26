@@ -72,6 +72,12 @@ namespace ts {
         DuckContext& duck() { return _duck; }
 
         //!
+        //! Get the associated report.
+        //! @return A reference to the report.
+        //!
+        Report& report() { return _duck.report(); }
+
+        //!
         //! Get the output stream.
         //! @return A reference to the output stream.
         //!

@@ -6,51 +6,37 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tstlvLogger.h"
+#include "tsReporterBase.h"
 
 
 //----------------------------------------------------------------------------
-// Constructors.
+// Virtual destructor.
 //----------------------------------------------------------------------------
 
-ts::tlv::Logger::Logger(Report& report, int default_level) :
-    _report(report),
-    _default_level(default_level)
+ts::ReporterBase::~ReporterBase()
 {
 }
 
 
 //----------------------------------------------------------------------------
-// Severity levels.
+// Associate this object with another Report to log errors.
 //----------------------------------------------------------------------------
 
-int ts::tlv::Logger::severity(TAG tag) const
+ts::Report* ts::ReporterBase::setReport(Report* report)
 {
-    auto it = _levels.find(tag);
-    return it == _levels.end() ? _default_level : it->second;
-}
-
-void ts::tlv::Logger::resetSeverities(int default_level)
-{
-    _default_level = default_level;
-    _levels.clear();
+    Report* previous = _report;
+    _report = report;
+    return previous;
 }
 
 
 //----------------------------------------------------------------------------
-// Report a TLV message.
+// Temporarily mute the associated report.
 //----------------------------------------------------------------------------
 
-void ts::tlv::Logger::log(const Message& msg, const UString& comment)
+bool ts::ReporterBase::muteReport(bool mute)
 {
-    const int level = severity(msg.tag());
-    if (_report.maxSeverity() >= level) {
-        const UString dump(msg.dump(4));
-        if (comment.empty()) {
-            _report.log(level, dump);
-        }
-        else {
-            _report.log(level, u"%s\n%s", comment, dump);
-        }
-    }
+    const bool previous = _mute;
+    _mute = mute;
+    return previous;
 }

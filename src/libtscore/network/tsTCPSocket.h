@@ -14,7 +14,6 @@
 #pragma once
 #include "tsSocket.h"
 #include "tsIPSocketAddress.h"
-#include "tsCerrReport.h"
 
 namespace ts {
     //!
@@ -33,12 +32,15 @@ namespace ts {
     //!
     class TSCOREDLL TCPSocket: public Socket
     {
-        TS_NOCOPY(TCPSocket);
+        TS_NOBUILD_NOCOPY(TCPSocket);
     public:
         //!
         //! Constructor.
+        //! @param [in] report Where to report errors. The @a report object must remain valid as long as this object
+        //! exists or setReport() is used with another Report object. If @a report is null, log messages are discarded.
+        //! @param [in] non_blocking It true, the device is initially set in non-blocking mode.
         //!
-        TCPSocket() = default;
+        explicit TCPSocket(Report* report, bool non_blocking = false) : Socket(report, non_blocking) {}
 
         //!
         //! Destructor.
@@ -47,36 +49,31 @@ namespace ts {
 
         //!
         //! Set the Time To Live (TTL) option.
-        //! @param [in] ttl The TTL value, ie. the maximum number of "hops" between
-        //! routers before an IP packet is dropped.
-        //! @param [in,out] report Where to report error.
+        //! @param [in] ttl The TTL value, ie. the maximum number of "hops" between routers before an IP packet is dropped.
         //! @return True on success, false on error.
         //!
-        bool setTTL(int ttl, Report& report = CERR);
+        bool setTTL(int ttl);
 
         //!
         //! Remove the linger time option.
-        //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool setNoLinger(Report& report = CERR);
+        bool setNoLinger();
 
         //!
         //! Set the linger time option.
         //! @param [in] seconds Number of seconds to wait after shuting down the socket.
-        //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool setLingerTime(int seconds, Report& report = CERR);
+        bool setLingerTime(int seconds);
 
         //!
         //! Set the "keep alive" option.
         //! @param [in] active If true, the socket periodically sends "keep alive"
         //! packets when the connection is idle.
-        //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool setKeepAlive(bool active, Report& report = CERR);
+        bool setKeepAlive(bool active);
 
         //!
         //! Set the "no delay" option.
@@ -84,10 +81,9 @@ namespace ts {
         //! By default, a TCP socket waits a small amount of time after a send()
         //! operation to get a chance to group outgoing data from successive send()
         //! operations into one single packet.
-        //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool setNoDelay(bool active, Report& report = CERR);
+        bool setNoDelay(bool active);
 
         //!
         //! Bind to a local address and port.
@@ -108,14 +104,13 @@ namespace ts {
         //!   operation fails, unless the "reuse port" option has already been set.
         //!
         //! @param [in] addr Local socket address to bind to.
-        //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool bind(const IPSocketAddress& addr, Report& report = CERR);
+        bool bind(const IPSocketAddress& addr);
 
         // Implementation of Socket interface.
-        virtual bool open(IP gen, Report& report = CERR) override;
-        virtual bool close(Report& report = CERR) override;
+        virtual bool open(IP gen) override;
+        virtual bool close(bool silent = false) override;
 
     protected:
         std::recursive_mutex _mutex {}; //!< Mutex protecting this object.
@@ -123,18 +118,16 @@ namespace ts {
         //!
         //! This virtual method can be overriden by subclasses to be notified of open.
         //! All subclasses should explicitly invoke their superclass' handlers.
-        //! @param [in,out] report Where to report error.
         //!
-        virtual void handleOpened(Report& report);
+        virtual void handleOpened();
 
         //!
         //! This virtual method can be overriden by subclasses to be notified of close.
         //! All subclasses should explicitly invoke their superclass' handlers.
-        //! @param [in,out] report Where to report error.
         //!
-        virtual void handleClosed(Report& report);
+        virtual void handleClosed();
 
         // Implementation of Socket interface.
-        virtual void declareOpened(SysSocketType sock, Report& report) override;
+        virtual void declareOpened(SysSocketType sock) override;
     };
 }

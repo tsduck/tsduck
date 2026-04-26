@@ -54,7 +54,7 @@ namespace {
         EMMGOptions(int argc, char *argv[]);
 
         ts::DuckContext       duck {this};               // TSDuck execution context.
-        ts::tlv::Logger       logger {ts::Severity::Debug, this}; // Message logger.
+        ts::tlv::Logger       logger {*this, ts::Severity::Debug}; // Message logger.
         ts::emmgmux::Protocol emmgmux {};                // EMMG <=> MUX protocol instance.
         ts::UStringVector     inputFiles {};             // Input file names.
         ts::SectionPtrVector  sections{};                // Loaded sections from input files.
@@ -408,7 +408,7 @@ int MainCode(int argc, char *argv[])
     EMMGOptions opt(argc, argv);
 
     // An object to manage the TCP connection with the MUX.
-    ts::EMMGClient client(opt.duck, opt.emmgmux);
+    ts::EMMGClient client(opt.duck, opt.logger, opt.emmgmux);
     ts::emmgmux::ChannelStatus channelStatus(opt.emmgmux);
     ts::emmgmux::StreamStatus streamStatus(opt.emmgmux);
 
@@ -423,9 +423,7 @@ int MainCode(int argc, char *argv[])
                         opt.dataType,
                         opt.sectionMode,
                         channelStatus,
-                        streamStatus,
-                        nullptr,
-                        opt.logger))
+                        streamStatus))
     {
         return EXIT_FAILURE;
     }

@@ -9,6 +9,7 @@
 #include "tsIPAddress.h"
 #include "tsMemory.h"
 #include "tsUString.h"
+#include "tsInitZero.h"
 #include "tsSysUtils.h"
 #include "tsIPUtils.h" // Windows
 
@@ -878,20 +879,19 @@ bool ts::IPAddress::ResolveAllAddresses(IPAddressVector& addresses, const UStrin
         return nullptr;
     }
 
-    ::addrinfo hints;
-    TS_ZERO(hints);
+    InitZero<::addrinfo> hints;
     if (gen == IP::v4) {
-        hints.ai_family = AF_INET;
+        hints.data.ai_family = AF_INET;
     }
     else if (gen == IP::v6) {
-        hints.ai_family = AF_INET6;
+        hints.data.ai_family = AF_INET6;
     }
     else {
-        hints.ai_family = AF_UNSPEC;
+        hints.data.ai_family = AF_UNSPEC;
     }
 
     ::addrinfo* res = nullptr;
-    const int status = ::getaddrinfo(name.toUTF8().c_str(), nullptr, &hints, &res);
+    const int status = ::getaddrinfo(name.toUTF8().c_str(), nullptr, &hints.data, &res);
 
     // Error processing depending on operating system and class of error.
     if (status != 0) {

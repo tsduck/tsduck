@@ -10,8 +10,9 @@
 #include "tsComPtr.h"
 #include "tsSysUtils.h"
 #include "tsRegistry.h"
-#include "tsMemory.h"
+#include "tsInitZero.h"
 #include "tsFatal.h"
+#include "tsIP.h"
 
 #include "tsBeforeStandardHeaders.h"
 #include <errors.h>
@@ -178,30 +179,58 @@ void* ts::GetFunctionFromDLL(const char* function, std::initializer_list<const c
 
 
 //-----------------------------------------------------------------------------
+// Search a Windows Socket extension function (Windows-specific).
+//-----------------------------------------------------------------------------
+
+void* ts::GetWSAFunction(::GUID& guid, int& error)
+{
+    // No error by default.
+    error = 0;
+
+    // Create a temporary socket to access the WSA library.
+    const ::SOCKET sock = ::socket(AF_INET, SOCK_DGRAM, 0);
+    if (sock == INVALID_SOCKET) {
+        error = ::WSAGetLastError();
+        return nullptr;
+    }
+
+    // Get the function address from WSA.
+    void* addr = nullptr;
+    ::DWORD bytes = 0;
+    if (::WSAIoctl(sock, SIO_GET_EXTENSION_FUNCTION_POINTER, &guid, sizeof(guid), &addr, sizeof(addr), &bytes, nullptr, nullptr) != 0) {
+        error = ::WSAGetLastError();
+    }
+
+    // Close the temporary socket.
+    ::closesocket(sock);
+    return addr;
+}
+
+
+//-----------------------------------------------------------------------------
 // Start an application with elevated privileges (Windows-specific).
 //-----------------------------------------------------------------------------
 
 bool ts::WinCreateElevatedProcess(const UString& exeName, bool synchronous, Report& report)
 {
-    ::SHELLEXECUTEINFOW info;
-    TS_ZERO(info);
-    info.cbSize = sizeof(info);
+    InitZero<::SHELLEXECUTEINFOW> info;
+    info.data.cbSize = sizeof(info);
 
-    info.fMask = synchronous ? SEE_MASK_NOCLOSEPROCESS : SEE_MASK_DEFAULT;
-    info.lpVerb = L"runas";
-    info.lpFile = exeName.wc_str();
-    info.lpParameters = L"";
-    info.nShow = SW_SHOW;
+    info.data.fMask = synchronous ? SEE_MASK_NOCLOSEPROCESS : SEE_MASK_DEFAULT;
+    info.data.lpVerb = L"runas";
+    info.data.lpFile = exeName.wc_str();
+    info.data.lpParameters = L"";
+    info.data.nShow = SW_SHOW;
 
-    if (!::ShellExecuteExW(&info)) {
+    if (!::ShellExecuteExW(&info.data)) {
         report.error(u"error starting %s: %s", exeName, WinErrorMessage(::GetLastError()));
         return false;
     }
 
     // Wait for process termination.
     if (synchronous) {
-        ::WaitForSingleObject(info.hProcess, INFINITE);
-        ::CloseHandle(info.hProcess);
+        ::WaitForSingleObject(info.data.hProcess, INFINITE);
+        ::CloseHandle(info.data.hProcess);
     }
     return true;
 }
@@ -308,14 +337,14 @@ TS_POP_WARNING()
     report.log(2, u"WinUtils.GetHandleFromObject: getting IKsObject interface");
     ks.queryInterface(obj, IID_IKsObject, report);
     if (ks.isNull()) {
-        return INVALID_HANDLE_VALUE;
+        return nullptr;
     }
 
-    // Return the handle. Note that KsGetObjectHandle returns zero on error, not INVALID_HANDLE_VALUE.
+    // Return the handle.
     report.log(2, u"WinUtils.GetHandleFromObject: IKsObject found, calling KsGetObjectHandle");
     const ::HANDLE h = ks->KsGetObjectHandle();
     report.log(2, u"WinUtils.GetHandleFromObject: handle: 0x%X", uintptr_t(h));
-    return h == nullptr ? INVALID_HANDLE_VALUE : h;
+    return WinHandleValid(h) ? h : nullptr;
 }
 
 

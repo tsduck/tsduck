@@ -485,8 +485,8 @@ ECMGConnection::ECMGConnection(const CmdOptions& opt, CmdStatistics& stat, Event
     _opt(opt),
     _stat(stat),
     _events(events),
-    _logger(_opt.log_protocol, &report),
-    _conn(_opt.ecmgscs, true, 3),
+    _logger(report,_opt.log_protocol),
+    _conn(_logger, _opt.ecmgscs, true, 3),
     _channel_id(_opt.first_ecm_channel_id + index),
     _first_ecm_id(_opt.first_ecm_id + index * _opt.streams_per_channel),
     _first_stream_id(_opt.first_ecm_stream_id),
@@ -498,11 +498,11 @@ ECMGConnection::ECMGConnection(const CmdOptions& opt, CmdStatistics& stat, Event
     _logger.setSeverity(ts::ecmgscs::Tags::ECM_response, _opt.log_data);
 
     // Perform TCP connection to ECMG server
-    if (!_conn.open(_opt.ecmg_address.generation(), _logger.report())) {
+    if (!_conn.open(_opt.ecmg_address.generation())) {
         return;
     }
-    if (!_conn.connect(_opt.ecmg_address, _logger.report())) {
-        _conn.close(_logger.report());
+    if (!_conn.connect(_opt.ecmg_address)) {
+        _conn.close();
         return;
     }
 
@@ -510,7 +510,7 @@ ECMGConnection::ECMGConnection(const CmdOptions& opt, CmdStatistics& stat, Event
     ts::ecmgscs::ChannelSetup channel_setup(_opt.ecmgscs);
     channel_setup.channel_id = _channel_id;
     channel_setup.Super_CAS_id = _opt.super_cas_id;
-    if (!_conn.sendMessage(channel_setup, _logger)) {
+    if (!_conn.sendMessage(channel_setup)) {
         abort();
         return;
     }
@@ -570,7 +570,7 @@ void ECMGConnection::terminate()
                 ts::ecmgscs::StreamCloseRequest msg(_opt.ecmgscs);
                 msg.channel_id = _channel_id;
                 msg.stream_id = uint16_t(_first_stream_id + i);
-                _conn.sendMessage(msg, _logger);
+                _conn.sendMessage(msg);
                 _streams[i].ready = false;
                 _streams[i].closing = true;
             }
@@ -597,7 +597,7 @@ void ECMGConnection::terminate()
         // Send a final channel_close.
         ts::ecmgscs::ChannelClose msg(_opt.ecmgscs);
         msg.channel_id = _channel_id;
-        _conn.sendMessage(msg, _logger);
+        _conn.sendMessage(msg);
     }
 
     // Close the session.
@@ -608,9 +608,8 @@ void ECMGConnection::terminate()
 // Abort connection with the ECMG.
 void ECMGConnection::abort()
 {
-    _logger.setReport(&NULLREP);
-    _conn.disconnect(_logger.report());
-    _conn.close(_logger.report());
+    _conn.disconnect(true);
+    _conn.close(true);
 }
 
 // Send a stream_setup command.
@@ -628,7 +627,7 @@ bool ECMGConnection::sendStreamSetup(uint16_t stream_id)
         msg.stream_id = stream_id;
         msg.ECM_id = uint16_t(_first_ecm_id + index);
         msg.nominal_CP_duration = uint16_t(_opt.cp_duration.count()); // unit is 100 ms
-        return _conn.sendMessage(msg, _logger);
+        return _conn.sendMessage(msg);
     }
 }
 
@@ -661,7 +660,7 @@ bool ECMGConnection::sendRequest(uint16_t stream_id)
         _stat.oneRequest();
 
         // Send the message.
-        return _conn.sendMessage(msg, _logger);
+        return _conn.sendMessage(msg);
     }
 }
 
@@ -679,7 +678,7 @@ void ECMGConnection::main()
     ts::ecmgscs::ChannelStatus channel_status(_opt.ecmgscs);
     channel_status.channel_id = _channel_id;
 
-    while (ok && _conn.receiveMessage(msg, nullptr, _logger)) {
+    while (ok && _conn.receiveMessage(msg)) {
         switch (msg->tag()) {
 
             case ts::ecmgscs::Tags::channel_status: {
@@ -700,7 +699,7 @@ void ECMGConnection::main()
                 ts::ecmgscs::ChannelTest* const mp = dynamic_cast<ts::ecmgscs::ChannelTest*>(msg.get());
                 if (checkChannelMessage(mp, u"channel_test")) {
                     // Automatic reply to channel_test
-                    ok = _conn.sendMessage(channel_status, _logger);
+                    ok = _conn.sendMessage(channel_status);
                 }
                 break;
             }
@@ -732,7 +731,7 @@ void ECMGConnection::main()
                     resp.channel_id = _channel_id;
                     resp.stream_id = mp->stream_id;
                     resp.ECM_id = _first_ecm_id + mp->stream_id - _first_stream_id;
-                    ok = _conn.sendMessage(resp, _logger);
+                    ok = _conn.sendMessage(resp);
                 }
                 break;
             }

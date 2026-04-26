@@ -21,8 +21,7 @@ ts::tsswitch::EventDispatcher::EventDispatcher(const InputSwitcherArgs& opt, Rep
     _log(log),
     _sendCommand(!_opt.event_command.empty()),
     _sendUDP(_opt.event_udp.hasAddress() && _opt.event_udp.hasPort()),
-    _userData(_opt.event_user_data),
-    _socket()
+    _userData(_opt.event_user_data)
 {
 }
 
@@ -55,13 +54,13 @@ bool ts::tsswitch::EventDispatcher::sendUDP(const UString& eventName, json::Obje
 {
     // Open socket the first time.
     if (!_socket.isOpen()) {
-        if (!_socket.open(_opt.event_udp.generation(), _log) ||
-            !_socket.setDefaultDestination(_opt.event_udp, _log) ||
-            (_opt.sock_buffer_size > 0 && !_socket.setSendBufferSize(_opt.sock_buffer_size, _log)) ||
-            (_opt.event_local_address.hasAddress() && !_socket.setOutgoingMulticast(_opt.event_local_address, _log)) ||
-            (_opt.event_ttl > 0 && !_socket.setTTL(_opt.event_ttl, _log)))
+        if (!_socket.open(_opt.event_udp.generation()) ||
+            !_socket.setDefaultDestination(_opt.event_udp) ||
+            (_opt.sock_buffer_size > 0 && !_socket.setSendBufferSize(_opt.sock_buffer_size)) ||
+            (_opt.event_local_address.hasAddress() && !_socket.setOutgoingMulticast(_opt.event_local_address)) ||
+            (_opt.event_ttl > 0 && !_socket.setTTL(_opt.event_ttl)))
         {
-            _socket.close(_log);
+            _socket.close();
             return false;
         }
     }
@@ -81,7 +80,7 @@ bool ts::tsswitch::EventDispatcher::sendUDP(const UString& eventName, json::Obje
     const std::string line(text.toString().toUTF8());
 
     // Send the packet.
-    return _socket.send(line.data(), line.size(), _log);
+    return _socket.send(line.data(), line.size());
 }
 
 

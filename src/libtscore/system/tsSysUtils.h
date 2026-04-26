@@ -212,6 +212,50 @@ namespace ts {
     TSCOREDLL bool SetBinaryModeStdout(Report& report = CERR);
 
     //!
+    //! Close a file descriptor on @c fork().
+    //! @ingroup system
+    //!
+    //! On UNIX systems, open file descriptors are inherited on @c fork() and @c exec().
+    //! Most of the time (but not always), a file descriptor has no meaning outside the process
+    //! which created it and it is better to close it after @c fork() (in the child process) and
+    //! after @c exec() (in the new program). It is possible to automatically close a file descriptor
+    //! after @c exec() using the @c FD_CLOEXEC and @c O_CLOEXEC flags. However, there is no
+    //! equivalent flog to close the file descriptor in a child process after @c fork(). This
+    //! function is a solution to that problem.
+    //!
+    //! The provided file descriptor is stored in a global list. After @c fork(), in the child process,
+    //! all file descriptors from that list are closed.
+    //!
+    //! Warning 1: There is still a possible race condition if a child process is created between the
+    //! creation of the file descriptor and the call to AddCloseOnFork().
+    //!
+    //! Warning 2: Do not forget to call RemoveCloseOnFork() just before closing the file descriptor.
+    //! If you fail to do so, the file descriptor may be reallocated to a new device and it would be
+    //! unintentionally closed on @c fork(). Be sure to call RemoveCloseOnFork() before closing the
+    //! file descriptor, not after. If called after, there is a possible race condition if the file
+    //! descriptor is immediately reallocated by the system.
+    //!
+    //! This function is specific to UNIX systems and does nothing on Windows.
+    //!
+    //! @param [in] fd File descriptor to close on @c fork().
+    //! @param [in] cloexec When true (the default), the flag @c FD_CLOEXEC is also set on the file
+    //! descriptor to enforce a close on @c exec().
+    //! @see RemoveCloseOnFork()
+    //!
+    TSCOREDLL void AddCloseOnForkExec(int fd, bool cloexec = true);
+
+    //!
+    //! Remove a file descriptor from the list of those to close on @c fork().
+    //! @ingroup system
+    //!
+    //! This function is specific to UNIX systems and does nothing on Windows.
+    //!
+    //! @param [in] fd File descriptor to no longer close after @a fork().
+    //! @see AddCloseOnFork()
+    //!
+    TSCOREDLL void RemoveCloseOnForkExec(int fd);
+
+    //!
     //! Get the name of a class from the @c type_index of a class.
     //! The result may be not portable.
     //! @ingroup cpp

@@ -76,12 +76,12 @@ bool ts::tsp::ControlServer::open()
     }
     else if (_options.control.use_tls) {
         // Open the TCP/TLS server.
-        if (!_tls_server.open(_options.control.server_addr.generation(), _log) ||
-            !_tls_server.reusePort(_options.control.reuse_port, _log) ||
-            !_tls_server.bind(_options.control.server_addr, _log) ||
-            !_tls_server.listen(16, _log))
+        if (!_tls_server.open(_options.control.server_addr.generation()) ||
+            !_tls_server.reusePort(_options.control.reuse_port) ||
+            !_tls_server.bind(_options.control.server_addr) ||
+            !_tls_server.listen(16))
         {
-            _tls_server.close(NULLREP);
+            _tls_server.close(true);
             return false;
         }
         // Do not request client certificate (this is the default anyway).
@@ -91,12 +91,12 @@ bool ts::tsp::ControlServer::open()
         // Open the TCP/Telnet server.
         // The server will accept and process one client at a time.
         // Therefore, be generous with the backlog.
-        if (!_telnet_server.open(_options.control.server_addr.generation(), _log) ||
-            !_telnet_server.reusePort(_options.control.reuse_port, _log) ||
-            !_telnet_server.bind(_options.control.server_addr, _log) ||
-            !_telnet_server.listen(16, _log))
+        if (!_telnet_server.open(_options.control.server_addr.generation()) ||
+            !_telnet_server.reusePort(_options.control.reuse_port) ||
+            !_telnet_server.bind(_options.control.server_addr) ||
+            !_telnet_server.listen(16))
         {
-            _telnet_server.close(NULLREP);
+            _telnet_server.close(true);
             _log.error(u"error starting TCP server for control commands.");
             return false;
         }
@@ -113,11 +113,11 @@ void ts::tsp::ControlServer::close()
         // Close the server. This will force the server thread to terminate.
         _terminate = true;
         if (_options.control.use_tls) {
-            _tls_client.close(NULLREP);
-            _tls_server.close(NULLREP);
+            _tls_client.close(true);
+            _tls_server.close(true);
         }
         else {
-            _telnet_server.close(NULLREP);
+            _telnet_server.close(true);
         }
 
         // Wait for the termination of the thread.
@@ -140,17 +140,23 @@ void ts::tsp::ControlServer::main()
 
     // Client address and connection.
     IPSocketAddress client_addr;
-    TCPConnection client;
+    TCPConnection client(&_log);
     UString command_line;
 
     // Loop on incoming connections.
     // Since the commands are expected to be short, treat only one at a time.
     if (_options.control.use_tls) {
+
         // Loop on incoming TLS/TCP clients.
         while (!_terminate) {
 
+            // Accept a client. Temporarily get errors from TLS server in a buffer.
             // Do not terminate on accept() failure, this may be a client which fails the TLS handshake.
-            if (_tls_server.accept(_tls_client, client_addr, error)) {
+            Report* previous = _tls_server.setReport(&error);
+            const bool accepted = _tls_server.accept(_tls_client, client_addr);
+            _tls_server.setReport(previous);
+
+            if (accepted) {
 
                 // Process a request. In case of error, getRequest() closes the connection
                 RestServer rest(_options.control, _log);
@@ -187,20 +193,30 @@ void ts::tsp::ControlServer::main()
                 }
             }
         }
-
     }
     else {
+
         // Loop on incoming clear TCP connections.
-        while (!_terminate && _telnet_server.accept(client, client_addr, error)) {
+        while (!_terminate) {
+
+            // Accept a client. Temporarily get errors from TCP server in a buffer.
+            Report* previous = _telnet_server.setReport(&error);
+            const bool accepted = _telnet_server.accept(client, client_addr);
+            _telnet_server.setReport(previous);
+
+            // Unlike TLS, terminate on accept() failure.
+            if (!accepted) {
+                break;
+            }
 
             TelnetConnection telnet(client);
 
             // Filter allowed sources. Set receive timeout on the connection and read one line.
             if (!_options.control.isAllowed(IPAddress(client_addr))) {
                 _log.warning(u"connection attempt from unauthorized source %s (ignored)", client_addr);
-                telnet.sendLine("error: client address is not authorized", _log);
+                telnet.sendLine("error: client address is not authorized");
             }
-            else if (client.setReceiveTimeout(_options.control.receive_timeout, _log) && telnet.receiveLine(command_line, nullptr, _log)) {
+            else if (client.setReceiveTimeout(_options.control.receive_timeout) && telnet.receiveLine(command_line, nullptr)) {
                 _log.verbose(u"received from %s: %s", client_addr, command_line);
 
                 // Reset the severity of the connection before analysing the line.
@@ -213,8 +229,8 @@ void ts::tsp::ControlServer::main()
                 }
             }
 
-            client.closeWriter(_log);
-            client.close(_log);
+            client.closeWriter();
+            client.close();
         }
     }
 

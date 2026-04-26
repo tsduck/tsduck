@@ -18,6 +18,9 @@
 #include "tsMemory.h"
 #include "tsTime.h"
 #include "tsErrCodeReport.h"
+#if defined(TS_WINDOWS)
+    #include "tsWinUtils.h"
+#endif
 
 namespace ts {
     //!
@@ -338,7 +341,7 @@ bool ts::ExpandWildcardAndAppend(CONTAINER& container, const UString& pattern)
 
     // Initiate the search
     ::HANDLE handle = ::FindFirstFileW(pattern.wc_str(), &fdata);
-    if (handle == INVALID_HANDLE_VALUE) {
+    if (!WinHandleValid(handle)) {
         // No file matching the pattern is not an error
         const ::DWORD status = ::GetLastError();
         return status == ERROR_SUCCESS || status == ERROR_FILE_NOT_FOUND;

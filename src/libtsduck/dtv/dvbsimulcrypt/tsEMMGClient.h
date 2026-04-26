@@ -17,14 +17,12 @@
 #pragma once
 #include "tsEMMGMUX.h"
 #include "tstlvConnection.h"
+#include "tsDuckContext.h"
 #include "tsUDPSocket.h"
 #include "tsTablesPtr.h"
 #include "tsThread.h"
 
 namespace ts {
-
-    class DuckContext;
-
     //!
     //! A DVB-EMMG client which connects to any MUX to inject data.
     //!
@@ -41,10 +39,12 @@ namespace ts {
         //!
         //! Constructor.
         //! @param [in] duck TSDuck execution context. The reference is kept inside the packetizer.
+        //! @param [in,out] logger Where to report errors and messages. An internal reference is kept.
+        //! The @a logger object must remain valid as long as this object exists.
         //! @param [in] protocol Instance of EMMG/PDG <=> SCS protocol to use.
         //! A reference to the protocol instance is kept inside the object.
         //!
-        EMMGClient(const DuckContext& duck, const emmgmux::Protocol& protocol);
+        EMMGClient(const DuckContext& duck, tlv::Logger& logger, const emmgmux::Protocol& protocol);
 
         //!
         //! Destructor.
@@ -68,7 +68,6 @@ namespace ts {
         //! @param [out] channel_status Initial response to channel_setup
         //! @param [out] stream_status Initial response to stream_setup
         //! @param [in] abort An interface to check if the application is interrupted.
-        //! @param [in] logger Where to report errors and messages.
         //! @return True on success, false on error.
         //!
         bool connect(const IPSocketAddress& mux,
@@ -81,8 +80,7 @@ namespace ts {
                      bool section_format,
                      emmgmux::ChannelStatus& channel_status,
                      emmgmux::StreamStatus& stream_status,
-                     const AbortInterface* abort,
-                     const tlv::Logger& logger);
+                     const AbortInterface* abort = nullptr);
 
         //!
         //! Send a bandwidth request.
@@ -182,14 +180,15 @@ namespace ts {
 
         // Private members
         const DuckContext&           _duck;
+        tlv::Logger&                 _logger;
         const emmgmux::Protocol&     _protocol;
+        Report&                      _report {_logger.report()};
         volatile State               _state = INITIAL;
         IPSocketAddress              _udp_address {};
         uint64_t                     _total_bytes = 0;
         const AbortInterface*        _abort = nullptr;
-        tlv::Logger                  _logger {};
-        tlv::Connection<ThreadSafety::Full> _connection {_protocol, true, 3};  // connection with MUX server
-        UDPSocket                    _udp_socket {};              // where to send data_provision if UDP is used
+        tlv::Connection<ThreadSafety::Full> _connection {_logger, _protocol, true, 3};  // connection with MUX server
+        UDPSocket                    _udp_socket {&_report};      // where to send data_provision if UDP is used
         emmgmux::ChannelStatus       _channel_status {_protocol}; // automatic response to channel_test
         emmgmux::StreamStatus        _stream_status {_protocol};  // automatic response to stream_test
         mutable std::recursive_mutex _mutex {};            // exclusive access to protected fields

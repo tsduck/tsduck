@@ -26,7 +26,7 @@
 ts::TablesLogger::TablesLogger(TablesDisplay& display) :
     _display(display),
     _duck(_display.duck()),
-    _report(_duck.report())
+    _report(_display.report())
 {
     // Create an instance of each registered section filter.
     TablesLoggerFilterRepository::Instance().createFilters(_section_filters);
@@ -397,7 +397,7 @@ bool ts::TablesLogger::open()
         _bin_file.close();
     }
     if (_sock.isOpen()) {
-        _sock.close(_report);
+        _sock.close();
     }
 
     // Set PID's to filter.
@@ -473,12 +473,12 @@ bool ts::TablesLogger::open()
         // Create UDP socket.
         _abort =
             !dest.resolve(_udp_destination, _report) ||
-            !_sock.open(dest.generation(), _report) ||
-            !_sock.setDefaultDestination(dest, _report) ||
-            (!_udp_local.empty() && !_sock.setOutgoingMulticast(_udp_local, _report)) ||
-            (_udp_ttl > 0 && !_sock.setTTL(_udp_ttl, _report));
+            !_sock.open(dest.generation()) ||
+            !_sock.setDefaultDestination(dest) ||
+            (!_udp_local.empty() && !_sock.setOutgoingMulticast(_udp_local)) ||
+            (_udp_ttl > 0 && !_sock.setTTL(_udp_ttl));
         if (_abort) {
-            _sock.close(_report);
+            _sock.close();
             return false;
         }
     }
@@ -510,7 +510,7 @@ void ts::TablesLogger::close()
             _bin_file.close();
         }
         if (_sock.isOpen()) {
-            _sock.close(_report);
+            _sock.close();
         }
 
         // Now completed.
@@ -935,7 +935,7 @@ void ts::TablesLogger::sendUDP(const ts::BinaryTable& table)
             const UString line(_udp_format == SectionFormat::XML ? doc.oneLiner() : buildJSON(doc));
             std::string utf8;
             line.toUTF8(utf8);
-            _sock.send(utf8.data(), utf8.size(), _report);
+            _sock.send(utf8.data(), utf8.size());
         }
     }
     else if (_udp_raw) {
@@ -946,7 +946,7 @@ void ts::TablesLogger::sendUDP(const ts::BinaryTable& table)
             const Section& sect(*table.sectionAt(i));
             bin.append(sect.content(), sect.size());
         }
-        _sock.send(bin.data(), bin.size(), _report);
+        _sock.send(bin.data(), bin.size());
     }
     else {
         // Build a TLV message with all sections.
@@ -960,7 +960,7 @@ void ts::TablesLogger::sendUDP(const ts::BinaryTable& table)
         }
         tlv::Serializer serial(bin);
         msg.serialize(serial);
-        _sock.send(bin->data(), bin->size(), _report);
+        _sock.send(bin->data(), bin->size());
     }
 }
 
@@ -975,7 +975,7 @@ void ts::TablesLogger::sendUDP(const ts::Section& section)
     if (_udp_format == SectionFormat::BINARY) {
         if (_udp_raw) {
             // Send raw content of section as one single UDP message
-            _sock.send(section.content(), section.size(), _report);
+            _sock.send(section.content(), section.size());
         }
         else {
             // Build a TLV message.
@@ -990,7 +990,7 @@ void ts::TablesLogger::sendUDP(const ts::Section& section)
             msg.serialize(serial);
 
             // Send TLV message over UDP
-            _sock.send(bin->data(), bin->size(), _report);
+            _sock.send(bin->data(), bin->size());
         }
     }
 }

@@ -43,12 +43,12 @@ bool ts::tsswitch::CommandListener::open()
         // Initialize TCP server.
         // The server will accept and process one client at a time.
         // Therefore, be generous with the backlog.
-        if (!_tls_server.open(_opt.remote_control.server_addr.generation(), _log) ||
-            !_tls_server.reusePort(_opt.remote_control.reuse_port, _log) ||
-            !_tls_server.bind(_opt.remote_control.server_addr, _log) ||
-            !_tls_server.listen(16, _log))
+        if (!_tls_server.open(_opt.remote_control.server_addr.generation()) ||
+            !_tls_server.reusePort(_opt.remote_control.reuse_port) ||
+            !_tls_server.bind(_opt.remote_control.server_addr) ||
+            !_tls_server.listen(16))
         {
-            _tls_server.close(NULLREP);
+            _tls_server.close(true);
             return false;
         }
         // Do not request client certificate (this is the default anyway).
@@ -59,7 +59,7 @@ bool ts::tsswitch::CommandListener::open()
         UDPReceiverArgs sock_args;
         sock_args.setUnicast(_opt.remote_control.server_addr, _opt.remote_control.reuse_port, _opt.sock_buffer_size);
         _udp_server.setParameters(sock_args);
-        if (!_udp_server.open(_log)) {
+        if (!_udp_server.open()) {
             return false;
         }
     }
@@ -73,11 +73,11 @@ void ts::tsswitch::CommandListener::close()
     // Close the receiver. This will force the server thread to terminate.
     _terminate = true;
     if (_opt.remote_control.use_tls) {
-        _tls_client.close(NULLREP);
-        _tls_server.close(NULLREP);
+        _tls_client.close(true);
+        _tls_server.close(true);
     }
     else {
-        _udp_server.close(NULLREP);
+        _udp_server.close(true);
     }
 }
 
@@ -102,9 +102,15 @@ void ts::tsswitch::CommandListener::main()
     if (_opt.remote_control.use_tls) {
         // Loop on incoming TLS/TCP clients.
         while (!_terminate) {
-            IPSocketAddress client_addr;
+
+            // Accept a client. Temporarily get errors from TLS server in a buffer.
             // Do not terminate on accept() failure, this may be a client which fails the TLS handshake.
-            if (_tls_server.accept(_tls_client, client_addr, _log)) {
+            IPSocketAddress client_addr;
+            Report* previous = _tls_server.setReport(&error);
+            const bool accepted = _tls_server.accept(_tls_client, client_addr);
+            _tls_server.setReport(previous);
+
+            if (accepted) {
                 // Process a request. In case of error, getRequest() closes the connection
                 RestServer rest(_opt.remote_control, _log);
                 if (rest.getRequest(_tls_client)) {
@@ -124,7 +130,17 @@ void ts::tsswitch::CommandListener::main()
     }
     else {
         // Loop on incoming UDP datagrams.
-        while (!_terminate && _udp_server.receive(inbuf, sizeof(inbuf), insize, sender, destination, nullptr, error)) {
+        while (!_terminate) {
+
+            // Receive a command datagram. Temporarily get errors from socket in a buffer.
+            Report* previous = _udp_server.setReport(&error);
+            const bool received = _udp_server.receive(inbuf, sizeof(inbuf), insize, sender, destination);
+            _udp_server.setReport(previous);
+
+            // Unlike TLS, terminate on receive() failure.
+            if (!received) {
+                break;
+            }
 
             // Filter out unauthorized remote systems.
             if (!_opt.remote_control.isAllowed(sender)) {
@@ -149,6 +165,7 @@ void ts::tsswitch::CommandListener::main()
     }
     _log.debug(u"remote control server thread completed");
 }
+
 
 //----------------------------------------------------------------------------
 // Execute a remote command.

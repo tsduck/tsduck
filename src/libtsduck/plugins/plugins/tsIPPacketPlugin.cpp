@@ -39,15 +39,15 @@ bool ts::IPPacketPlugin::getOptions()
 
 bool ts::IPPacketPlugin::start()
 {
-    return _datagram.open(*this);
+    return _datagram.open();
 }
 
 bool ts::IPPacketPlugin::stop()
 {
-    return _datagram.close(tsp->bitrate(), false, *this);
+    return _datagram.close(tsp->bitrate(), false);
 }
 
 ts::ProcessorPlugin::Status ts::IPPacketPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
-    return _datagram.send(&pkt, &pkt_data, 1, tsp->bitrate(), *this) ? TSP_OK : TSP_END;
+    return _datagram.send(&pkt, &pkt_data, 1, tsp->bitrate()) ? TSP_OK : TSP_END;
 }

@@ -30,7 +30,6 @@ class ThreadTest: public tsunit::Test
 
 public:
     virtual void beforeTestSuite() override;
-    virtual void afterTestSuite() override;
 
 private:
     cn::milliseconds _precision {};
@@ -49,11 +48,6 @@ void ThreadTest::beforeTestSuite()
     _precision = cn::milliseconds(2);
     ts::SetTimersPrecision(_precision);
     debug() << "ThreadTest: timer precision = " << ts::UString::Chrono(_precision) << std::endl;
-}
-
-// Test suite cleanup method.
-void ThreadTest::afterTestSuite()
-{
 }
 
 

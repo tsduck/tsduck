@@ -38,7 +38,7 @@ bool ts::RISTOutputPlugin::getOptions() NORIST_ERROR
 bool ts::RISTOutputPlugin::start() NORIST_ERROR
 bool ts::RISTOutputPlugin::stop() NORIST_ERROR
 bool ts::RISTOutputPlugin::send(const TSPacket*, const TSPacketMetadata*, size_t) NORIST_ERROR
-bool ts::RISTOutputPlugin::sendDatagram(const void*, size_t, Report&) NORIST_ERROR
+bool ts::RISTOutputPlugin::sendDatagram(const void*, size_t) NORIST_ERROR
 
 #else
 
@@ -59,7 +59,7 @@ public:
 
      // Constructor.
      Guts(RISTOutputPlugin* plugin) :
-         datagram(TSDatagramOutputOptions::ALLOW_RS204, plugin),
+         datagram(*plugin, TSDatagramOutputOptions::ALLOW_RS204, plugin),
          rist(*plugin)
      {
      }
@@ -115,7 +115,7 @@ bool ts::RISTOutputPlugin::start()
     }
 
     // Initialize the datagram output.
-    if (!_guts->datagram.open(*this)) {
+    if (!_guts->datagram.open()) {
         return false;
     }
 
@@ -123,21 +123,21 @@ bool ts::RISTOutputPlugin::start()
     debug(u"calling rist_sender_create, profile: %d", _guts->rist.profile);
     if (::rist_sender_create(&_guts->rist.ctx, _guts->rist.profile, 0, &_guts->rist.log) != 0) {
         error(u"error in rist_sender_create");
-        _guts->datagram.close(0, true, *this);
+        _guts->datagram.close(0, true);
         return false;
     }
 
     // Add null packet deletion option if requested.
     if (_guts->npd && ::rist_sender_npd_enable(_guts->rist.ctx) < 0) {
         error(u"error setting null-packet deletion");
-        _guts->datagram.close(0, true, *this);
+        _guts->datagram.close(0, true);
         _guts->rist.cleanup();
         return false;
     }
 
     // Add all peers to the RIST context.
     if (!_guts->rist.addPeers()) {
-        _guts->datagram.close(0, true, *this);
+        _guts->datagram.close(0, true);
         return false;
     }
 
@@ -145,7 +145,7 @@ bool ts::RISTOutputPlugin::start()
     debug(u"calling rist_start");
     if (::rist_start(_guts->rist.ctx) != 0) {
         error(u"error starting RIST transmission");
-        _guts->datagram.close(0, true, *this);
+        _guts->datagram.close(0, true);
         _guts->rist.cleanup();
         return false;
     }
@@ -160,7 +160,7 @@ bool ts::RISTOutputPlugin::start()
 
 bool ts::RISTOutputPlugin::stop()
 {
-    _guts->datagram.close(tsp->bitrate(), true, *this);
+    _guts->datagram.close(tsp->bitrate(), true);
     _guts->rist.cleanup();
     return true;
 }
@@ -172,7 +172,7 @@ bool ts::RISTOutputPlugin::stop()
 
 bool ts::RISTOutputPlugin::send(const TSPacket* packets, const TSPacketMetadata* metadata, size_t packet_count)
 {
-    return _guts->datagram.send(packets, metadata, packet_count, tsp->bitrate(), *this);
+    return _guts->datagram.send(packets, metadata, packet_count, tsp->bitrate());
 }
 
 
@@ -180,7 +180,7 @@ bool ts::RISTOutputPlugin::send(const TSPacket* packets, const TSPacketMetadata*
 // Implementation of TSDatagramOutputHandlerInterface: send one datagram.
 //----------------------------------------------------------------------------
 
-bool ts::RISTOutputPlugin::sendDatagram(const void* address, size_t size, Report& report)
+bool ts::RISTOutputPlugin::sendDatagram(const void* address, size_t size)
 {
     // Build a RIST data block describing the data to send.
     ::rist_data_block dblock;
@@ -191,12 +191,12 @@ bool ts::RISTOutputPlugin::sendDatagram(const void* address, size_t size, Report
     // Send the RIST message.
     const int sent = ::rist_sender_data_write(_guts->rist.ctx, &dblock);
     if (sent < 0) {
-        report.error(u"error sending data to RIST");
+        error(u"error sending data to RIST");
         return false;
     }
     else if (size_t(sent) != size) {
         // Don't really know what to do, retry with the rest?
-        report.warning(u"sent %d bytes to RIST, only %d were written", size, sent);
+        warning(u"sent %d bytes to RIST, only %d were written", size, sent);
     }
     return true;
 }

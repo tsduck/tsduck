@@ -39,15 +39,15 @@ bool ts::IPOutputPlugin::getOptions()
 
 bool ts::IPOutputPlugin::start()
 {
-    return _datagram.open(*this);
+    return _datagram.open();
 }
 
 bool ts::IPOutputPlugin::stop()
 {
-    return _datagram.close(tsp->bitrate(), false, *this);
+    return _datagram.close(tsp->bitrate(), false);
 }
 
 bool ts::IPOutputPlugin::send(const TSPacket* packets, const TSPacketMetadata* metadata, size_t packet_count)
 {
-    return _datagram.send(packets, metadata, packet_count, tsp->bitrate(), *this);
+    return _datagram.send(packets, metadata, packet_count, tsp->bitrate());
 }

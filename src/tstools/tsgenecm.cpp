@@ -137,10 +137,10 @@ namespace {
 int MainCode(int argc, char *argv[])
 {
     GenECMOptions opt(argc, argv);
-    ts::tlv::Logger logger(ts::Severity::Debug, &opt);
+    ts::tlv::Logger logger(opt, ts::Severity::Debug);
     ts::ecmgscs::ChannelStatus channelStatus(opt.ecmgscs);
     ts::ecmgscs::StreamStatus streamStatus(opt.ecmgscs);
-    ts::ECMGClient ecmg(opt.ecmgscs);
+    ts::ECMGClient ecmg(logger, opt.ecmgscs);
 
     // Set logging levels.
     logger.setDefaultSeverity(opt.ecmg.log_protocol);
@@ -148,7 +148,7 @@ int MainCode(int argc, char *argv[])
     logger.setSeverity(ts::ecmgscs::Tags::ECM_response, opt.ecmg.log_data);
 
     // Connect to ECMG.
-    if (!ecmg.connect(opt.ecmg, channelStatus, streamStatus, nullptr, logger)) {
+    if (!ecmg.connect(opt.ecmg, channelStatus, streamStatus)) {
         // Error connecting to ECMG, error message already reported
         return EXIT_FAILURE;
     }

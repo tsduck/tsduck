@@ -13,7 +13,7 @@
 #endif
 
 // External calls to environment variables are not reentrant. Use a global mutex.
-TS_STATIC_MUTEX(std::mutex, EnvironmentMutex);
+TS_STATIC_VARIABLE(std::mutex, EnvironmentMutex);
 
 
 //----------------------------------------------------------------------------

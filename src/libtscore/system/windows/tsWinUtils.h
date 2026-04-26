@@ -28,6 +28,18 @@ namespace ts {
     constexpr ::DWORD US_ENGLISH_CODE = 0x0409;
 
     //!
+    //! Check if a Windows handle is valid (Windows-specific).
+    //! The Win32 API is full of inconsistencies. One of them is the way to indicate errors in Win32 functions
+    //! which return a handle. Sometimes, the documented return value for error is NULL and sometimes it is
+    //! INVALID_HANDLE_VALUE. It is easy to test the wrong value in application code and fail to detect an
+    //! error. This inline function checks all documented invalid handle values.
+    //! @param [in] h The handle to check.
+    //! @return True if @a h seems a valid handle.
+    //! False if @a h is one of the documented invalid handle values.
+    //! 
+    TSCOREDLL inline bool WinHandleValid(::HANDLE h) { return h != nullptr && h != INVALID_HANDLE_VALUE; }
+
+    //!
     //! Format a Windows error message (Windows-specific).
     //! @param [in] code An error status code.
     //! @return The corresponding message string.
@@ -135,7 +147,7 @@ namespace ts {
     //! Get the handle of a COM object (Windows-specific).
     //! @param [in] obj COM object.
     //! @param [in,out] report Where to report errors.
-    //! @return The handle or INVALID_HANDLE_VALUE on error.
+    //! @return The handle or nullptr on error.
     //!
     TSCOREDLL ::HANDLE GetHandleFromObject(::IUnknown* obj, Report& report);
 
@@ -157,6 +169,16 @@ namespace ts {
     //! @return The address of the function or a null pointer if not found.
     //!
     TSCOREDLL void* GetFunctionFromDLL(const char* function, std::initializer_list<const char*> dll);
+
+    //!
+    //! Search a Windows Socket extension function (Windows-specific).
+    //! This kind of function is not exported by any DLL and should be retrieved using WSAIoctl().
+    //! This function is typically used in "static const" declarations to find functions once.
+    //! @param [in] guid Identity of the function to get.
+    //! @param [out] error Error code if the function is not found. Zero on success.
+    //! @return The address of the function or a null pointer if not found.
+    //!
+    TSCOREDLL void* GetWSAFunction(::GUID& guid, int& error);
 
     //!
     //! Start an application with elevated privileges (Windows-specific).

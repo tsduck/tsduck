@@ -55,9 +55,9 @@ namespace ts {
 
         // Working data:
         PacketCounter    _lastPacket = INVALID_PACKET_COUNTER; // Last action packet.
-        Time             _lastTime {};         // UTC time of last action.
-        UDPSocket        _sock {false, IP::Any, *this}; // Output socket.
-        TSPacketLabelSet _currentLabels {};    // Trigger on packets with these labels, during processing.
+        Time             _lastTime {};           // UTC time of last action.
+        UDPSocket        _sock {this};           // Output socket.
+        TSPacketLabelSet _currentLabels {};      // Trigger on packets with these labels, during processing.
 
         // Trigger the actions (exec, UDP).
         void trigger();
@@ -203,14 +203,14 @@ bool ts::TriggerPlugin::start()
 
     // Initialize UDP output.
     if (_udpDestination.hasAddress()) {
-        if (!_sock.open(_udpDestination.generation(), *this)) {
+        if (!_sock.open(_udpDestination.generation())) {
             return false;
         }
-        if (!_sock.setDefaultDestination(_udpDestination, *this) ||
-            (!_udpLocal.hasAddress() && !_sock.setOutgoingMulticast(_udpLocal, *this)) ||
-            (_udpTTL > 0 && !_sock.setTTL(_udpTTL, *this)))
+        if (!_sock.setDefaultDestination(_udpDestination) ||
+            (!_udpLocal.hasAddress() && !_sock.setOutgoingMulticast(_udpLocal)) ||
+            (_udpTTL > 0 && !_sock.setTTL(_udpTTL)))
         {
-            _sock.close(*this);
+            _sock.close();
             return false;
         }
     }
@@ -235,7 +235,7 @@ bool ts::TriggerPlugin::stop()
     }
 
     if (_sock.isOpen()) {
-        _sock.close(*this);
+        _sock.close();
     }
     return true;
 }
@@ -289,6 +289,6 @@ void ts::TriggerPlugin::trigger()
 
     // Send message over a socket.
     if (_sock.isOpen()) {
-        _sock.send(_udpMessage.data(), _udpMessage.size(), *this);
+        _sock.send(_udpMessage.data(), _udpMessage.size());
     }
 }

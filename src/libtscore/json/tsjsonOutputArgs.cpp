@@ -20,9 +20,9 @@
 ts::json::OutputArgs::~OutputArgs()
 {
     if (_tcp_sock.isOpen()) {
-        _tcp_sock.closeWriter(NULLREP);
-        _tcp_sock.disconnect(NULLREP);
-        _tcp_sock.close(NULLREP);
+        _tcp_sock.closeWriter(true);
+        _tcp_sock.disconnect(true);
+        _tcp_sock.close(true);
     }
 }
 
@@ -121,8 +121,8 @@ bool ts::json::OutputArgs::loadArgs(Args& args)
     args.getSocketValue(_udp_destination, u"json-udp");
 
     // Force reinit of UDP and TCP session in case the arguments are reloaded.
-    udpClose(args);
-    tcpDisconnect(true, args);
+    udpClose();
+    tcpDisconnect(true);
     return true;
 }
 
@@ -136,25 +136,27 @@ bool ts::json::OutputArgs::udpOpen(Report& rep)
     if (_udp_sock.isOpen()) {
         return true;
     }
-    else if (!_udp_sock.open(_udp_destination.generation(), rep)) {
+
+    _udp_sock.setReport(&rep);
+    if (!_udp_sock.open(_udp_destination.generation())) {
         return false;
     }
-    else if (_udp_sock.setDefaultDestination(_udp_destination, rep) &&
-             (_sock_buffer_size == 0 || _udp_sock.setSendBufferSize(_sock_buffer_size, rep)) &&
-             (!_udp_local.hasAddress() || _udp_sock.setOutgoingMulticast(_udp_local, rep)) &&
-             (_udp_ttl <= 0 || _udp_sock.setTTL(_udp_ttl, rep)))
+
+    if (_udp_sock.setDefaultDestination(_udp_destination) &&
+        (_sock_buffer_size == 0 || _udp_sock.setSendBufferSize(_sock_buffer_size)) &&
+        (!_udp_local.hasAddress() || _udp_sock.setOutgoingMulticast(_udp_local)) &&
+        (_udp_ttl <= 0 || _udp_sock.setTTL(_udp_ttl)))
     {
         return true;
     }
-    else {
-        _udp_sock.close(rep);
-        return false;
-    }
+
+    _udp_sock.close(true);
+    return false;
 }
 
-bool ts::json::OutputArgs::udpClose(Report& rep)
+bool ts::json::OutputArgs::udpClose()
 {
-    return !_udp_sock.isOpen() || _udp_sock.close(rep);
+    return !_udp_sock.isOpen() || _udp_sock.close();
 }
 
 
@@ -167,28 +169,30 @@ bool ts::json::OutputArgs::tcpConnect(Report& rep)
     if (_tcp_sock.isOpen()) {
         return true;
     }
-    else if (!_tcp_sock.open(_tcp_destination.generation(), rep)) {
+
+    _tcp_sock.setReport(&rep);
+    if (!_tcp_sock.open(_tcp_destination.generation())) {
         return false;
     }
-    else if ((_sock_buffer_size == 0 || _tcp_sock.setSendBufferSize(_sock_buffer_size, rep)) &&
-             _tcp_sock.bind(IPSocketAddress::AnySocketAddress4, rep) &&
-             _tcp_sock.connect(_tcp_destination, rep))
+
+    if ((_sock_buffer_size == 0 || _tcp_sock.setSendBufferSize(_sock_buffer_size)) &&
+        _tcp_sock.bind(IPSocketAddress::AnySocketAddress4) &&
+        _tcp_sock.connect(_tcp_destination))
     {
         _telnet_sock.reset();
         return true;
     }
-    else {
-        _tcp_sock.close(rep);
-        return false;
-    }
+
+    _tcp_sock.close(true);
+    return false;
 }
 
-bool ts::json::OutputArgs::tcpDisconnect(bool force, Report& rep)
+bool ts::json::OutputArgs::tcpDisconnect(bool force)
 {
     bool ok = true;
     if (_tcp_sock.isOpen() && (force || !_json_tcp_keep)) {
-        ok = _tcp_sock.closeWriter(rep) && _tcp_sock.disconnect(rep);
-        ok = _tcp_sock.close(rep) && ok;
+        ok = _tcp_sock.closeWriter() && _tcp_sock.disconnect();
+        ok = _tcp_sock.close() && ok;
     }
     return ok;
 }
@@ -262,22 +266,22 @@ bool ts::json::OutputArgs::report(const json::Value& root, Report& rep)
 
         // Report through UDP. Open socket the first time.
         if (_json_udp) {
-            udp_ok = udpOpen(rep) && _udp_sock.send(line8.data(), line8.size(), rep);
+            udp_ok = udpOpen(rep) && _udp_sock.send(line8.data(), line8.size());
         }
 
         // Report through TCP. Connect to TCP server the first time (--json-tcp-keep) or every time.
         if (_json_tcp) {
             tcp_ok = tcpConnect(rep);
             if (tcp_ok) {
-                tcp_ok = _telnet_sock.sendLine(line8, rep);
+                tcp_ok = _telnet_sock.sendLine(line8);
                 // In case of send error, retry opening the socket once.
                 // This is useful when the session is kept open and the server disconnected since last time.
                 if (!tcp_ok) {
-                    tcpDisconnect(true, rep);
-                    tcp_ok = tcpConnect(rep) && _telnet_sock.sendLine(line8, rep);
+                    tcpDisconnect(true);
+                    tcp_ok = tcpConnect(rep) && _telnet_sock.sendLine(line8);
                 }
                 // Disconnect on error or when the connection shall not be kept open.
-                tcpDisconnect(!tcp_ok, rep);
+                tcpDisconnect(!tcp_ok);
             }
         }
     }

@@ -22,13 +22,15 @@ namespace ts {
     //!
     class TSCOREDLL UDPReceiver: public UDPSocket
     {
-        TS_NOCOPY(UDPReceiver);
+        TS_NOBUILD_NOCOPY(UDPReceiver);
     public:
         //!
         //! Constructor.
-        //! @param [in,out] report Where to report error.
+        //! @param [in] report Where to report errors. The @a report object must remain valid as long as this object
+        //! exists or setReport() is used with another Report object. If @a report is null, log messages are discarded.
+        //! @param [in] non_blocking It true, the device is initially set in non-blocking mode.
         //!
-        explicit UDPReceiver(Report& report = CERR) : UDPSocket(false, IP::Any, report) {}
+        explicit UDPReceiver(Report* report, bool non_blocking = false) : UDPSocket(report, false, IP::Any, non_blocking) {}
 
         //!
         //! Set UDP reception parameters.
@@ -51,22 +53,21 @@ namespace ts {
 
         //!
         //! Open the UDP receiver.
-        //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool open(Report& report = CERR);
+        bool open();
 
         // Override UDPSocket methods
-        virtual bool open(IP gen, Report& report = CERR) override;
+        virtual bool open(IP gen) override;
         virtual bool receive(void* data,
                              size_t max_size,
                              size_t& ret_size,
                              IPSocketAddress& sender,
                              IPSocketAddress& destination,
                              const AbortInterface* abort = nullptr,
-                             Report& report = CERR,
                              cn::microseconds* timestamp = nullptr,
-                             TimeStampType* timestamp_type = nullptr) override;
+                             TimeStampType* timestamp_type = nullptr,
+                             IOSB* iosb = nullptr) override;
 
     private:
         UDPReceiverArgs    _args {};          // Reception parameters (typically from the command line).

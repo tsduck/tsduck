@@ -68,88 +68,79 @@ namespace ts {
         //!
         //! Send a string to the server.
         //! @param [in] str The string to sendText to the server.
-        //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool sendText(const std::string& str, Report& report);
+        bool sendText(const std::string& str);
 
         //!
         //! Send a string to the server.
         //! @param [in] str The string to sendText to the server.
-        //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool sendText(const UString& str, Report& report);
+        bool sendText(const UString& str);
 
         //!
         //! Send a text line to the server.
         //! @param [in] str The line to send to the server.
-        //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool sendLine(const std::string& str, Report& report);
+        bool sendLine(const std::string& str);
 
         //!
         //! Send a text line to the server.
         //! @param [in] str The line to send to the server.
-        //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool sendLine(const UString& str, Report& report);
+        bool sendLine(const UString& str);
 
         //!
         //! Receive character data.
         //! @param [out] data The received data.
         //! @param [in] abort If non-zero, invoked when I/O is interrupted
         //! (in case of user-interrupt, return, otherwise retry).
-        //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //! Return true until the last line of the replies has been received.
         //!
-        bool receiveText(std::string& data, const AbortInterface* abort, Report& report);
+        bool receiveText(std::string& data, const AbortInterface* abort = nullptr);
 
         //!
         //! Receive character data.
         //! @param [out] data The received data.
         //! @param [in] abort If non-zero, invoked when I/O is interrupted
         //! (in case of user-interrupt, return, otherwise retry).
-        //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //! Return true until the last line of the replies has been received.
         //!
-        bool receiveText(UString& data, const AbortInterface* abort, Report& report);
+        bool receiveText(UString& data, const AbortInterface* abort = nullptr);
 
         //!
         //! Receive a line.
         //! @param [out] line The received line.
         //! @param [in] abort If non-zero, invoked when I/O is interrupted
         //! (in case of user-interrupt, return, otherwise retry).
-        //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //! Return true until the last line of the replies has been received.
         //!
-        bool receiveLine(std::string& line, const AbortInterface* abort, Report& report);
+        bool receiveLine(std::string& line, const AbortInterface* abort = nullptr);
 
         //!
         //! Receive a line.
         //! @param [out] line The received line.
         //! @param [in] abort If non-zero, invoked when I/O is interrupted
         //! (in case of user-interrupt, return, otherwise retry).
-        //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //! Return true until the last line of the replies has been received.
         //!
-        bool receiveLine(UString& line, const AbortInterface* abort, Report& report);
+        bool receiveLine(UString& line, const AbortInterface* abort = nullptr);
 
         //!
         //! Receive a prompt.
         //! Do not wait if the prompt is empty.
         //! @param [in] abort If non-zero, invoked when I/O is interrupted
         //! (in case of user-interrupt, return, otherwise retry).
-        //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool waitForPrompt(const AbortInterface* abort, Report& report);
+        bool waitForPrompt(const AbortInterface* abort = nullptr);
 
         //!
         //! Get currently buffered input data and flush that buffer.
@@ -175,6 +166,6 @@ namespace ts {
         std::string    _prompt {};
 
         // Receive all characters until a delimitor has been received.
-        bool waitForChunk(const std::string& eol, std::string& data, const AbortInterface*, Report&);
+        bool waitForChunk(const std::string& eol, std::string& data, const AbortInterface*);
     };
 }

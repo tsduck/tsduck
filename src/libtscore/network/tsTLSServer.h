@@ -56,7 +56,7 @@ namespace ts {
     //!
     class TSCOREDLL TLSServer: public TCPServer
     {
-        TS_NOCOPY(TLSServer);
+        TS_NOBUILD_NOCOPY(TLSServer);
     public:
         //!
         //! Reference to the superclass.
@@ -65,14 +65,18 @@ namespace ts {
 
         //!
         //! Constructor.
+        //! @param [in] report Where to report errors. The @a report object must remain valid as long as this object
+        //! exists or setReport() is used with another Report object. If @a report is null, log messages are discarded.
         //!
-        TLSServer();
+        explicit TLSServer(Report* report);
 
         //!
         //! Constructor with initial arguments.
+        //! @param [in] report Where to report errors. The @a report object must remain valid as long as this object
+        //! exists or setReport() is used with another Report object. If @a report is null, log messages are discarded.
         //! @param [in] args Initial TLS arguments.
         //!
-        TLSServer(const TLSArgs& args) : TLSServer() { setArgs(args); }
+        TLSServer(Report* report, const TLSArgs& args) : TLSServer(report) { setArgs(args); }
 
         //!
         //! Set command line arguments for the server.
@@ -128,9 +132,9 @@ namespace ts {
 
         // Inherited methods.
         virtual ~TLSServer() override;
-        virtual bool listen(int backlog, Report& report = CERR) override;
-        virtual bool accept(TCPConnection& client, IPSocketAddress& addr, Report& report = CERR) override;
-        virtual bool close(Report& report = CERR) override;
+        virtual bool listen(int backlog) override;
+        virtual bool accept(TCPConnection& client, IPSocketAddress& addr) override;
+        virtual bool close(bool silent = false) override;
 
     private:
         // System-specific parts are stored in a private structure.
@@ -148,6 +152,6 @@ namespace ts {
         void deleteGuts();
 
         // Version of accept() with an explicit TLSConnection.
-        bool acceptTLS(TLSConnection& client, IPSocketAddress& addr, Report& report = CERR);
+        bool acceptTLS(TLSConnection& client, IPSocketAddress& addr);
     };
 }

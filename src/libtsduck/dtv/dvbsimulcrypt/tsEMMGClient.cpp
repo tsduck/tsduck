@@ -17,9 +17,10 @@
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::EMMGClient::EMMGClient(const DuckContext& duck, const emmgmux::Protocol& protocol) :
+ts::EMMGClient::EMMGClient(const DuckContext& duck, tlv::Logger& logger, const emmgmux::Protocol& protocol) :
     Thread(ThreadAttributes().setStackSize(RECEIVER_STACK_SIZE)),
     _duck(duck),
+    _logger(logger),
     _protocol(protocol)
 {
 }
@@ -36,10 +37,9 @@ ts::EMMGClient::~EMMGClient()
 
         // Break connection, if not already done
         _abort = nullptr;
-        _logger.setReport(&NULLREP);
-        _connection.disconnect(NULLREP);
-        _connection.close(NULLREP);
-        _udp_socket.close(NULLREP);
+        _connection.disconnect(true);
+        _connection.close(true);
+        _udp_socket.close(true);
 
         // Notify receiver thread to terminate
         _state = DESTRUCTING;
@@ -60,16 +60,15 @@ bool ts::EMMGClient::abortConnection(const UString& message)
     }
 
     if (_udp_address.hasPort()) {
-        _udp_socket.close(_logger.report());
+        _udp_socket.close();
     }
 
     std::lock_guard<std::recursive_mutex> lock(_mutex);
     _state = DISCONNECTED;
-    _connection.disconnect(_logger.report());
-    _connection.close(_logger.report());
+    _connection.disconnect();
+    _connection.close();
     _work_to_do.notify_one();
 
-    _logger.setReport(&NULLREP);
     return false;
 }
 
@@ -107,8 +106,7 @@ bool ts::EMMGClient::connect(const IPSocketAddress& mux,
                              bool section_format,
                              emmgmux::ChannelStatus& channel_status,
                              emmgmux::StreamStatus& stream_status,
-                             const AbortInterface* abort,
-                             const tlv::Logger& logger)
+                             const AbortInterface* abort)
 {
     // Initial state check
     {
@@ -119,20 +117,18 @@ bool ts::EMMGClient::connect(const IPSocketAddress& mux,
             Thread::start();
         }
         if (_state != DISCONNECTED) {
-            tlv::Logger log(logger);
-            log.report().error(u"EMMG client already connected");
+            _report.error(u"EMMG client already connected");
             return false;
         }
         _abort = abort;
-        _logger = logger;
     }
 
     // Perform TCP connection to EMMG server
-    if (!_connection.open(mux.generation(), _logger.report())) {
+    if (!_connection.open(mux.generation())) {
         return false;
     }
-    if (!_connection.connect(mux, _logger.report())) {
-        _connection.close(_logger.report());
+    if (!_connection.connect(mux)) {
+        _connection.close();
         return false;
     }
 
@@ -144,7 +140,7 @@ bool ts::EMMGClient::connect(const IPSocketAddress& mux,
 
     // Create UDP socket if we need UDP.
     // If the UDP destination address is a broadast address, force it.
-    if (_udp_address.hasPort() && (!_udp_socket.open(_udp_address.generation(), _logger.report()) || !_udp_socket.setBroadcastIfRequired(_udp_address, _logger.report()))) {
+    if (_udp_address.hasPort() && (!_udp_socket.open(_udp_address.generation()) || !_udp_socket.setBroadcastIfRequired(_udp_address))) {
         return abortConnection();
     }
 
@@ -168,7 +164,7 @@ bool ts::EMMGClient::connect(const IPSocketAddress& mux,
     channel_setup.channel_id = data_channel_id;
     channel_setup.client_id = client_id;
     channel_setup.section_TSpkt_flag = !section_format;
-    if (!_connection.sendMessage(channel_setup, _logger)) {
+    if (!_connection.sendMessage(channel_setup)) {
         return abortConnection();
     }
 
@@ -198,7 +194,7 @@ bool ts::EMMGClient::connect(const IPSocketAddress& mux,
     stream_setup.client_id = client_id;
     stream_setup.data_id = data_id;
     stream_setup.data_type = data_type;
-    if (!_connection.sendMessage(stream_setup, _logger)) {
+    if (!_connection.sendMessage(stream_setup)) {
         return abortConnection();
     }
 
@@ -260,14 +256,14 @@ bool ts::EMMGClient::disconnect()
         req.channel_id = _stream_status.channel_id;
         req.stream_id = _stream_status.stream_id;
         req.client_id = _stream_status.client_id;
-        ok = _connection.sendMessage(req, _logger) && waitResponse() == emmgmux::Tags::stream_close_response;
+        ok = _connection.sendMessage(req) && waitResponse() == emmgmux::Tags::stream_close_response;
 
         // If we get a polite reply, send a channel_close
         if (ok) {
             emmgmux::ChannelClose cc(_protocol);
             cc.channel_id = _channel_status.channel_id;
             cc.client_id = _channel_status.client_id;
-            ok = _connection.sendMessage(cc, _logger);
+            ok = _connection.sendMessage(cc);
         }
     }
 
@@ -275,8 +271,8 @@ bool ts::EMMGClient::disconnect()
     std::lock_guard<std::recursive_mutex> lock(_mutex);
     if (previous_state == CONNECTING || previous_state == CONNECTED) {
         _state = DISCONNECTED;
-        ok = _connection.disconnect(_logger.report()) && ok;
-        ok = _connection.close(_logger.report()) && ok;
+        ok = _connection.disconnect() && ok;
+        ok = _connection.close() && ok;
         _work_to_do.notify_one();
     }
 
@@ -285,7 +281,6 @@ bool ts::EMMGClient::disconnect()
         ok = _udp_socket.close() && ok;
     }
 
-    _logger.setReport(&NULLREP);
     return ok;
 }
 
@@ -306,7 +301,7 @@ bool ts::EMMGClient::requestBandwidth(uint16_t bandwidth, bool synchronous)
     request.client_id = _stream_status.client_id;
     request.has_bandwidth = true;
     request.bandwidth = bandwidth;
-    if (!_connection.sendMessage(request, _logger)) {
+    if (!_connection.sendMessage(request)) {
         return false;
     }
 
@@ -395,12 +390,12 @@ bool ts::EMMGClient::dataProvision(const std::vector<ByteBlockPtr>& data)
         tlv::Serializer serial(bbp);
         request.serialize(serial);
         _logger.log(request, u"sending UDP message to " + _udp_address.toString());
-        return _udp_socket.send(bbp->data(), bbp->size(), _udp_address, _logger.report());
+        return _udp_socket.send(bbp->data(), bbp->size(), _udp_address);
     }
     else {
         // Send data_provision messages using TCP.
         // The data_provision message is automatically serialized by the tlv::Connection object.
-        return _connection.sendMessage(request, _logger);
+        return _connection.sendMessage(request);
     }
 }
 
@@ -477,7 +472,7 @@ void ts::EMMGClient::main()
         // Loop on message reception
         tlv::MessagePtr msg;
         bool ok = true;
-        while (ok && _connection.receiveMessage(msg, abort, _logger)) {
+        while (ok && _connection.receiveMessage(msg, abort)) {
             // Is this kind of response worth reporting to the application?
             bool reportResponse = true;
 
@@ -485,13 +480,13 @@ void ts::EMMGClient::main()
                 case emmgmux::Tags::channel_test: {
                     // Automatic reply to channel_test
                     reportResponse = false;
-                    ok = _connection.sendMessage(_channel_status, _logger);
+                    ok = _connection.sendMessage(_channel_status);
                     break;
                 }
                 case emmgmux::Tags::stream_test: {
                     // Automatic reply to stream_test
                     reportResponse = false;
-                    ok = _connection.sendMessage(_stream_status, _logger);
+                    ok = _connection.sendMessage(_stream_status);
                     break;
                 }
                 case emmgmux::Tags::stream_BW_allocation: {
@@ -548,8 +543,8 @@ void ts::EMMGClient::main()
             }
             if (_state != DISCONNECTED) {
                 _state = DISCONNECTED;
-                _connection.disconnect(NULLREP);
-                _connection.close(NULLREP);
+                _connection.disconnect(true);
+                _connection.close(true);
             }
         }
     }

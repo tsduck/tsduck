@@ -37,6 +37,6 @@ namespace ts {
     private:
         bool             _multiple = false;  // Accept multiple (sequential) connections.
         cn::milliseconds _restart_delay {};  // If _multiple, wait before reconnecting.
-        SRTSocket        _sock {};           // Incoming SRT socket.
+        SRTSocket        _sock {this};       // Incoming SRT socket.
     };
 }

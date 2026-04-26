@@ -63,15 +63,15 @@ ts::TLSServer::SystemGuts::~SystemGuts()
 // Start the server
 //----------------------------------------------------------------------------
 
-bool ts::TLSServer::listen(int backlog, Report& report)
+bool ts::TLSServer::listen(int backlog)
 {
     // Get TLS server certificate the first time listen is called.
-    if (_guts->cert == nullptr && (_guts->cert = GetCertificate(getCertificateStore(), getCertificatePath(), report)) == nullptr) {
+    if (_guts->cert == nullptr && (_guts->cert = GetCertificate(getCertificateStore(), getCertificatePath(), report())) == nullptr) {
         return false;
     }
 
     // Create the TCP server.
-    return SuperClass::listen(backlog, report);
+    return SuperClass::listen(backlog);
 }
 
 
@@ -79,17 +79,17 @@ bool ts::TLSServer::listen(int backlog, Report& report)
 // Wait for a TLS client.
 //----------------------------------------------------------------------------
 
-bool ts::TLSServer::acceptTLS(TLSConnection& client, IPSocketAddress& addr, Report& report)
+bool ts::TLSServer::acceptTLS(TLSConnection& client, IPSocketAddress& addr)
 {
     // Accept one TCP client.
-    if (!SuperClass::accept(client, addr, report)) {
+    if (!SuperClass::accept(client, addr)) {
         return false;
     }
 
     // Perform handshake with the client.
-    if (!client.setServerContext(_guts->cert, report)) {
+    if (!client.setServerContext(_guts->cert)) {
         // Close the underlying TCP socket.
-        client.SuperClass::close(report);
+        client.SuperClass::close(true);
         return false;
     }
 
@@ -101,8 +101,8 @@ bool ts::TLSServer::acceptTLS(TLSConnection& client, IPSocketAddress& addr, Repo
 // Close the server resources.
 //----------------------------------------------------------------------------
 
-bool ts::TLSServer::close(Report& report)
+bool ts::TLSServer::close(bool silent)
 {
     _guts->clear();
-    return SuperClass::close(report);
+    return SuperClass::close(silent);
 }

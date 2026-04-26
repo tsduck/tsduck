@@ -17,7 +17,8 @@
 // Constructor.
 //----------------------------------------------------------------------------
 
-ts::TSDatagramOutput::TSDatagramOutput(TSDatagramOutputOptions flags, TSDatagramOutputHandlerInterface* output) :
+ts::TSDatagramOutput::TSDatagramOutput(Report& report, TSDatagramOutputOptions flags, TSDatagramOutputHandlerInterface* output) :
+    _report(report),
     _flags(flags),
     _output(output != nullptr ? output : this),
     _raw_udp(output == nullptr)
@@ -180,10 +181,10 @@ bool ts::TSDatagramOutput::loadArgs(DuckContext& duck, Args& args)
 // Open and initialize the TS packet output.
 //----------------------------------------------------------------------------
 
-bool ts::TSDatagramOutput::open(Report& report)
+bool ts::TSDatagramOutput::open()
 {
     if (_is_open) {
-        report.error(u"TSDatagramOutput is already open");
+        _report.error(u"TSDatagramOutput is already open");
         return false;
     }
 
@@ -202,14 +203,14 @@ bool ts::TSDatagramOutput::open(Report& report)
             _rtp_sequence = _rtp_start_sequence;
         }
         else if (!prng.readInt(_rtp_sequence)) {
-            report.error(u"random number generation error");
+            _report.error(u"random number generation error");
             return false;
         }
         if (_rtp_fixed_ssrc) {
             _rtp_ssrc = _rtp_user_ssrc;
         }
         else if (!prng.readInt(_rtp_ssrc)) {
-            report.error(u"random number generation error");
+            _report.error(u"random number generation error");
             return false;
         }
     }
@@ -219,19 +220,19 @@ bool ts::TSDatagramOutput::open(Report& report)
         // IP generation selection
         const IPSocketAddress local(_local_addr, _local_port);
         const IP gen = (local.hasAddress() && local.generation() != _destination.generation()) ? IP::v6 : _destination.generation();
-        if (!_sock.open(gen, report)) {
+        if (!_sock.open(gen)) {
             return false;
         }
-        if ((_local_port != IPAddress::AnyPort && !_sock.reusePort(true, report)) ||
-            !_sock.bind(local, report) ||
-            !_sock.setDefaultDestination(_destination, report) ||
-            !_sock.setMulticastLoop(_mc_loopback, report) ||
-            (_force_mc_local && _destination.isMulticast() && _local_addr.hasAddress() && !_sock.setOutgoingMulticast(_local_addr, report)) ||
-            (_send_bufsize > 0 && !_sock.setSendBufferSize(_send_bufsize, report)) ||
-            (_tos >= 0 && !_sock.setTOS(_tos, report)) ||
-            (_ttl > 0 && !_sock.setTTL(_ttl, report)))
+        if ((_local_port != IPAddress::AnyPort && !_sock.reusePort(true)) ||
+            !_sock.bind(local) ||
+            !_sock.setDefaultDestination(_destination) ||
+            !_sock.setMulticastLoop(_mc_loopback) ||
+            (_force_mc_local && _destination.isMulticast() && _local_addr.hasAddress() && !_sock.setOutgoingMulticast(_local_addr)) ||
+            (_send_bufsize > 0 && !_sock.setSendBufferSize(_send_bufsize)) ||
+            (_tos >= 0 && !_sock.setTOS(_tos)) ||
+            (_ttl > 0 && !_sock.setTTL(_ttl)))
         {
-            _sock.close(report);
+            _sock.close();
             return false;
         }
     }
@@ -253,17 +254,17 @@ bool ts::TSDatagramOutput::open(Report& report)
 // Close the TS packet output.
 //----------------------------------------------------------------------------
 
-bool ts::TSDatagramOutput::close(const BitRate& bitrate, bool abort, Report& report)
+bool ts::TSDatagramOutput::close(const BitRate& bitrate, bool abort)
 {
     bool success = true;
     if (_is_open) {
         // Flush incomplete datagram, if any.
         if (_out_count > 0 && !abort) {
-            success = sendPackets(_out_buffer.data(), _out_buffer_rs.data(), _out_count, bitrate, report);
+            success = sendPackets(_out_buffer.data(), _out_buffer_rs.data(), _out_count, bitrate);
             _out_count = 0;
         }
         if (_raw_udp) {
-            _sock.close(report);
+            _sock.close();
         }
         _is_open = false;
     }
@@ -321,10 +322,10 @@ void ts::TSDatagramOutput::serialize(uint8_t* buffer, size_t buffer_size, const 
 // Send TS packets.
 //----------------------------------------------------------------------------
 
-bool ts::TSDatagramOutput::send(const TSPacket* pkt, const TSPacketMetadata* metadata, size_t packet_count, const BitRate& bitrate, Report& report)
+bool ts::TSDatagramOutput::send(const TSPacket* pkt, const TSPacketMetadata* metadata, size_t packet_count, const BitRate& bitrate)
 {
     if (!_is_open) {
-        report.error(u"TSDatagramOutput is not open");
+        _report.error(u"TSDatagramOutput is not open");
         return false;
     }
 
@@ -346,7 +347,7 @@ bool ts::TSDatagramOutput::send(const TSPacket* pkt, const TSPacketMetadata* met
 
         // Send the output buffer when full.
         if (_out_count == _pkt_burst) {
-            if (!sendPackets(_out_buffer.data(), _out_buffer_rs.data(), _out_count, bitrate, report)) {
+            if (!sendPackets(_out_buffer.data(), _out_buffer_rs.data(), _out_count, bitrate)) {
                 return false;
             }
             _out_count = 0;
@@ -356,7 +357,7 @@ bool ts::TSDatagramOutput::send(const TSPacket* pkt, const TSPacketMetadata* met
     // Send subsequent packets from the global buffer.
     while (packet_count >= min_burst) {
         size_t count = std::min(packet_count, _pkt_burst);
-        if (!sendPackets(pkt, metadata, count, bitrate, report)) {
+        if (!sendPackets(pkt, metadata, count, bitrate)) {
             return false;
         }
         if (metadata != nullptr) {
@@ -378,7 +379,7 @@ bool ts::TSDatagramOutput::send(const TSPacket* pkt, const TSPacketMetadata* met
 // Send contiguous packets in one single datagram.
 //----------------------------------------------------------------------------
 
-bool ts::TSDatagramOutput::sendPackets(const TSPacket* pkt, const TSPacketMetadata* metadata, size_t packet_count, const BitRate& bitrate, Report& report)
+bool ts::TSDatagramOutput::sendPackets(const TSPacket* pkt, const TSPacketMetadata* metadata, size_t packet_count, const BitRate& bitrate)
 {
     bool status = true;
 
@@ -439,8 +440,8 @@ bool ts::TSDatagramOutput::sendPackets(const TSPacket* pkt, const TSPacketMetada
                 // For this time only, we keep the extrapolated PCR.
                 // Compute the difference between PCR and RTP timestamps.
                 _rtp_pcr_offset = pcr - rtp_pcr;
-                report.verbose(u"RTP timestamps resynchronized with PCR PID %n", _pcr_pid);
-                report.debug(u"new PCR-RTP offset: %d", _rtp_pcr_offset);
+                _report.verbose(u"RTP timestamps resynchronized with PCR PID %n", _pcr_pid);
+                _report.debug(u"new PCR-RTP offset: %d", _rtp_pcr_offset);
             }
             else {
                 // PCR are normally increasing, drop extrapolated value, resynchronize with PCR.
@@ -448,7 +449,7 @@ bool ts::TSDatagramOutput::sendPackets(const TSPacket* pkt, const TSPacketMetada
                 if (adjusted_rtp_pcr <= _last_rtp_pcr) {
                     // The adjustment would make the RTP timestamp go backward. We do not want that.
                     // We increase the RTP timestamp "more slowly", by 25% of the extrapolated value.
-                    report.debug(u"RTP adjustment from PCR would step backward by %d", ((_last_rtp_pcr - adjusted_rtp_pcr) * RTP_RATE_MP2T) / SYSTEM_CLOCK_FREQ);
+                    _report.debug(u"RTP adjustment from PCR would step backward by %d", ((_last_rtp_pcr - adjusted_rtp_pcr) * RTP_RATE_MP2T) / SYSTEM_CLOCK_FREQ);
                     adjusted_rtp_pcr = _last_rtp_pcr + (rtp_pcr - _last_rtp_pcr) / 4;
                 }
                 rtp_pcr = adjusted_rtp_pcr;
@@ -476,17 +477,17 @@ bool ts::TSDatagramOutput::sendPackets(const TSPacket* pkt, const TSPacketMetada
             MemCopy(buf, pkt, packet_count * PKT_SIZE);
             buffer.resize(RTP_HEADER_SIZE + packet_count * PKT_SIZE);
         }
-        status = _output->sendDatagram(buffer.data(), buffer.size(), report);
+        status = _output->sendDatagram(buffer.data(), buffer.size());
     }
     else if (_rs204_format) {
         // No RTP header, add TS trailer after each packet.
         ByteBlock buffer(packet_count * PKT_RS_SIZE);
         serialize(buffer.data(), buffer.size(), pkt, metadata, packet_count);
-        status = _output->sendDatagram(buffer.data(), buffer.size(), report);
+        status = _output->sendDatagram(buffer.data(), buffer.size());
     }
     else {
         // No RTP, no trailer, send TS packets directly as datagram.
-        status = _output->sendDatagram(pkt, packet_count * PKT_SIZE, report);
+        status = _output->sendDatagram(pkt, packet_count * PKT_SIZE);
     }
 
     // Count packets datagram per datagram.
@@ -501,7 +502,7 @@ bool ts::TSDatagramOutput::sendPackets(const TSPacket* pkt, const TSPacketMetada
 // The object is its own handler in case of raw UDP output.
 //----------------------------------------------------------------------------
 
-bool ts::TSDatagramOutput::sendDatagram(const void* address, size_t size, Report& report)
+bool ts::TSDatagramOutput::sendDatagram(const void* address, size_t size)
 {
-    return _sock.send(address, size, report);
+    return _sock.send(address, size);
 }

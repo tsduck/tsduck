@@ -28,7 +28,7 @@ ts::UserInterrupt* volatile ts::UserInterrupt::_active_instance = nullptr;
 #endif
 
 // A local mutex to avoid multiple activations.
-TS_STATIC_MUTEX(std::recursive_mutex, ActivationMutex);
+TS_STATIC_VARIABLE(std::recursive_mutex, ActivationMutex);
 
 
 //----------------------------------------------------------------------------

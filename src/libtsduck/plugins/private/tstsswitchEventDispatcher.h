@@ -44,10 +44,10 @@ namespace ts {
         private:
             const InputSwitcherArgs& _opt;
             Report&   _log;
-            bool      _sendCommand;
-            bool      _sendUDP;
-            UString   _userData;
-            UDPSocket _socket;
+            bool      _sendCommand = false;
+            bool      _sendUDP = false;
+            UString   _userData {};
+            UDPSocket _socket {&_log};
 
             // Send command and UDP message.
             bool sendCommand(const UString& eventName, const UString& otherParameters = UString());

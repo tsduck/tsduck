@@ -14,7 +14,7 @@
 #define FOOLPROOF 1000
 
 // Global mutex. Used when delegations are modified. See comment in header file.
-TS_STATIC_MUTEX(std::recursive_mutex, GlobalReportMutex);
+TS_STATIC_VARIABLE(std::recursive_mutex, GlobalReportMutex);
 
 
 //----------------------------------------------------------------------------

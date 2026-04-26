@@ -204,8 +204,8 @@ namespace ts {
         volatile bool _broken_pipe = false;      // Pipe is broken, do not attempt to write.
         volatile bool _eof = false;              // Got end of file on input pipe.
 #if defined(TS_WINDOWS)
-        ::HANDLE      _handle = INVALID_HANDLE_VALUE;  // Pipe output handle.
-        ::HANDLE      _process = INVALID_HANDLE_VALUE; // Handle to child process.
+        ::HANDLE      _handle = nullptr;         // Pipe output handle.
+        ::HANDLE      _process = nullptr;        // Handle to child process.
 #else
         ::pid_t       _fpid = 0;                 // Forked process id (UNIX PID, not MPEG PID!)
         int           _fd = -1;                  // Pipe output file descriptor.

@@ -40,24 +40,24 @@ bool ts::TelnetConnection::reset()
 // Send a request to the server.
 //----------------------------------------------------------------------------
 
-bool ts::TelnetConnection::sendText(const std::string& str, Report& report)
+bool ts::TelnetConnection::sendText(const std::string& str)
 {
-    return _connection.send(str.c_str(), str.size(), report);
+    return _connection.send(str.c_str(), str.size());
 }
 
-bool ts::TelnetConnection::sendText(const UString& str, Report& report)
+bool ts::TelnetConnection::sendText(const UString& str)
 {
-    return sendText(str.toUTF8(), report);
+    return sendText(str.toUTF8());
 }
 
-bool ts::TelnetConnection::sendLine(const std::string& str, Report& report)
+bool ts::TelnetConnection::sendLine(const std::string& str)
 {
-    return sendText(str, report) && sendText(EOL, report);
+    return sendText(str) && sendText(EOL);
 }
 
-bool ts::TelnetConnection::sendLine(const UString& str, Report& report)
+bool ts::TelnetConnection::sendLine(const UString& str)
 {
-    return sendText(str, report) && sendText(EOL, report);
+    return sendText(str) && sendText(EOL);
 }
 
 
@@ -67,7 +67,7 @@ bool ts::TelnetConnection::sendLine(const UString& str, Report& report)
 
 void ts::TelnetConnection::writeLog(int severity, const UString& msg)
 {
-    sendLine(Severity::AddHeader(severity, msg), NULLREP);
+    sendLine(Severity::AddHeader(severity, msg));
 }
 
 
@@ -86,7 +86,7 @@ void ts::TelnetConnection::getAndFlush(ByteBlock& data)
 // Receive all characters until a delimitor has been received.
 //----------------------------------------------------------------------------
 
-bool ts::TelnetConnection::waitForChunk(const std::string& eol, std::string& data, const AbortInterface* abort, Report& report)
+bool ts::TelnetConnection::waitForChunk(const std::string& eol, std::string& data, const AbortInterface* abort)
 {
     // Already allocated memory.
     const size_t capacity = _buffer.capacity();
@@ -115,7 +115,7 @@ bool ts::TelnetConnection::waitForChunk(const std::string& eol, std::string& dat
         // EOL not yet received, read some data from the socket.
         _buffer.resize(capacity);
         size_t size = 0;
-        const bool result = _connection.receive(&_buffer[previous_size], capacity - previous_size, size, abort, report);
+        const bool result = _connection.receive(&_buffer[previous_size], capacity - previous_size, size, abort);
         _buffer.resize(previous_size + size);
 
         // In case of error, either return what is in the buffer or an error.
@@ -131,10 +131,10 @@ bool ts::TelnetConnection::waitForChunk(const std::string& eol, std::string& dat
 // Receive a prompt.
 //----------------------------------------------------------------------------
 
-bool ts::TelnetConnection::waitForPrompt(const AbortInterface* abort, Report& report)
+bool ts::TelnetConnection::waitForPrompt(const AbortInterface* abort)
 {
     std::string unused;
-    return _prompt.empty() || waitForChunk(_prompt, unused, abort, report);
+    return _prompt.empty() || waitForChunk(_prompt, unused, abort);
 }
 
 
@@ -142,15 +142,15 @@ bool ts::TelnetConnection::waitForPrompt(const AbortInterface* abort, Report& re
 // Receive a line.
 //----------------------------------------------------------------------------
 
-bool ts::TelnetConnection::receiveText(std::string& data, const AbortInterface* abort, Report& report)
+bool ts::TelnetConnection::receiveText(std::string& data, const AbortInterface* abort)
 {
-    return waitForChunk(std::string(), data, abort, report);
+    return waitForChunk(std::string(), data, abort);
 }
 
-bool ts::TelnetConnection::receiveText(UString& data, const AbortInterface* abort, Report& report)
+bool ts::TelnetConnection::receiveText(UString& data, const AbortInterface* abort)
 {
     std::string sdata;
-    const bool result = receiveText(sdata, abort, report);
+    const bool result = receiveText(sdata, abort);
     if (result) {
         data.assignFromUTF8(sdata);
     }
@@ -160,10 +160,10 @@ bool ts::TelnetConnection::receiveText(UString& data, const AbortInterface* abor
     return result;
 }
 
-bool ts::TelnetConnection::receiveLine(std::string& line, const AbortInterface* abort, Report& report)
+bool ts::TelnetConnection::receiveLine(std::string& line, const AbortInterface* abort)
 {
     // Read until new-line (end of EOL).
-    if (!waitForChunk("\n", line, abort, report)) {
+    if (!waitForChunk("\n", line, abort)) {
         return false;
     }
 
@@ -174,10 +174,10 @@ bool ts::TelnetConnection::receiveLine(std::string& line, const AbortInterface* 
     return true;
 }
 
-bool ts::TelnetConnection::receiveLine(UString& line, const AbortInterface* abort, Report& report)
+bool ts::TelnetConnection::receiveLine(UString& line, const AbortInterface* abort)
 {
     std::string sline;
-    const bool result = receiveLine(sline, abort, report);
+    const bool result = receiveLine(sline, abort);
     if (result) {
         line.assignFromUTF8(sline);
     }

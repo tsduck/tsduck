@@ -279,7 +279,7 @@ fs::path ts::UserHomeDirectory()
 {
 #if defined(TS_WINDOWS)
 
-    ::HANDLE process = INVALID_HANDLE_VALUE;
+    ::HANDLE process = nullptr;
     if (::OpenProcessToken(::GetCurrentProcess(), TOKEN_QUERY, &process) == 0) {
         throw ts::Exception(u"cannot open current process", ::GetLastError());
     }
@@ -343,7 +343,7 @@ bool ts::SetFileModificationTimeUTC(const UString& path, const Time& time)
 {
 #if defined(TS_WINDOWS)
     const ::HANDLE h = ::CreateFileW(path.wc_str(), FILE_WRITE_ATTRIBUTES, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
-    if (h == INVALID_HANDLE_VALUE) {
+    if (!WinHandleValid(h)) {
         return false;
     }
     ::FILETIME ft;
@@ -355,8 +355,8 @@ bool ts::SetFileModificationTimeUTC(const UString& path, const Time& time)
     const cn::microseconds usec = std::max(cn::microseconds::zero(), cn::duration_cast<cn::microseconds>(time - Time::UnixEpoch));
     ::timeval times[2];
     // times[0] specifies the new access time, and times[1] specifies the new modification time.
-    times[0].tv_sec = times[1].tv_sec = decltype(times[0].tv_sec)(usec.count() / 1'000'000);
-    times[0].tv_usec = times[1].tv_usec = decltype(times[0].tv_usec)(usec.count() % 1'000'000);
+    times[0].tv_sec = times[1].tv_sec = timeval_sec_t(usec.count() / 1'000'000);
+    times[0].tv_usec = times[1].tv_usec = timeval_usec_t(usec.count() % 1'000'000);
     return ::utimes(path.toUTF8().c_str(), times) == 0;
 #endif
 }

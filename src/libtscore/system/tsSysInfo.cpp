@@ -8,7 +8,7 @@
 
 #include "tsSysInfo.h"
 #include "tsEnvironment.h"
-#include "tsMemory.h"
+#include "tsInitZero.h"
 #include "tsCryptoAcceleration.h"
 #include "tsFeatures.h"
 
@@ -214,12 +214,11 @@ ts::SysInfo::SysInfo() :
 
     // System version.
     if (RtlGetVersionAddr != nullptr) {
-        ::OSVERSIONINFOW info;
-        TS_ZERO(info);
-        info.dwOSVersionInfoSize = sizeof(info);
-        if (RtlGetVersionAddr(&info) == ERROR_SUCCESS) {
-            _systemBuild = int(info.dwBuildNumber);
-            _systemVersion = UString::Format(u"Windows %d.%d Build %d %s", info.dwMajorVersion, info.dwMinorVersion, info.dwBuildNumber, UString(info.szCSDVersion));
+        InitZero<::OSVERSIONINFOW> info;
+        info.data.dwOSVersionInfoSize = sizeof(info.data);
+        if (RtlGetVersionAddr(&info.data) == ERROR_SUCCESS) {
+            _systemBuild = int(info.data.dwBuildNumber);
+            _systemVersion = UString::Format(u"Windows %d.%d Build %d %s", info.data.dwMajorVersion, info.data.dwMinorVersion, info.data.dwBuildNumber, UString(info.data.szCSDVersion));
             _systemVersion.trim();
         }
     }

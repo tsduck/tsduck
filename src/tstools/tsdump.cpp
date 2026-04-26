@@ -210,9 +210,9 @@ namespace {
     void DumpRawUDP(Options& opt, std::ostream& out)
     {
         // Initializ◊e the UDP reception.
-        ts::UDPReceiver sock(opt);
+        ts::UDPReceiver sock(&opt);
         sock.setParameters(opt.udp);
-        if (!sock.open(opt)) {
+        if (!sock.open()) {
             return;
         }
 
@@ -225,7 +225,7 @@ namespace {
         const bool headers = opt.dump.dump_flags & ts::TSPacket::DUMP_TS_HEADER;
 
         for (ts::PacketCounter packet_index = 0;
-             out && packet_index < opt.max_packets && sock.receive(buffer.data(), buffer.size(), size, sender, destination, nullptr, opt);
+             out && packet_index < opt.max_packets && sock.receive(buffer.data(), buffer.size(), size, sender, destination);
              packet_index++)
         {
             if (headers) {
@@ -237,7 +237,7 @@ namespace {
             }
             out << ts::UString::Dump(buffer.data(), size, opt.raw_flags, 0, opt.raw_bpl);
         }
-        sock.close(opt);
+        sock.close();
     }
 }
 

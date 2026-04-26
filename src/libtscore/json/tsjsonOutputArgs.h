@@ -120,16 +120,16 @@ namespace ts::json {
         IPAddress         _udp_local {};            // Name of outgoing local address.
         int               _udp_ttl = 0;             // Time-to-live socket option.
         size_t            _sock_buffer_size = 0;    // Socket buffer size (TCP and UDP).
-        UDPSocket         _udp_sock {};             // Output UDP socket.
-        TCPConnection     _tcp_sock {};             // Output TCP socket.
+        UDPSocket         _udp_sock {nullptr};      // Output UDP socket.
+        TCPConnection     _tcp_sock {nullptr};      // Output TCP socket.
         TelnetConnection  _telnet_sock {_tcp_sock}; // Output TCP socket.
 
         // Open/close the UDP socket.
         bool udpOpen(Report& rep);
-        bool udpClose(Report& rep);
+        bool udpClose();
 
         // Connect/disconnect the TCP session.
         bool tcpConnect(Report& rep);
-        bool tcpDisconnect(bool force, Report& rep);
+        bool tcpDisconnect(bool force);
     };
 }

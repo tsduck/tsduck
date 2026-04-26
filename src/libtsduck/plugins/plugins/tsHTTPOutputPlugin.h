@@ -40,8 +40,8 @@ namespace ts {
         size_t          _tcp_buffer_size = 0;
 
         // Working data:
-        TCPServer     _server {};
-        TCPConnection _client {};
+        TCPServer     _server {this};
+        TCPConnection _client {this};
 
         // Process request headers from new client, send response headers.
         bool startSession();

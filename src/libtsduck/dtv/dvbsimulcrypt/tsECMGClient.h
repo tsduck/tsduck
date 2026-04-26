@@ -37,13 +37,15 @@ namespace ts {
     public:
         //!
         //! Constructor.
+        //! @param [in,out] logger Where to report errors and messages. An internal reference is kept.
+        //! The @a logger object must remain valid as long as this object exists.
         //! @param [in] protocol Instance of ECMG <=> SCS protocol to use.
         //! A reference to the protocol instance is kept inside the object.
         //! @param [in] extra_handler_stack_size If asynchronous ECM notification is used,
         //! an internal thread is created. This parameter gives the minimum amount of stack
         //! size for the execution of the handler. Zero for defaults.
         //!
-        ECMGClient(const ecmgscs::Protocol& protocol, size_t extra_handler_stack_size = 0);
+        ECMGClient(tlv::Logger& logger, const ecmgscs::Protocol& protocol, size_t extra_handler_stack_size = 0);
 
         //!
         //! Destructor.
@@ -58,14 +60,12 @@ namespace ts {
         //! @param [out] channel_status Initial response to channel_setup
         //! @param [out] stream_status Initial response to stream_setup
         //! @param [in] abort An interface to check if the application is interrupted.
-        //! @param [in] logger Where to report errors and messages.
         //! @return True on success, false on error.
         //!
         bool connect(const ECMGClientArgs& args,
                      ecmgscs::ChannelStatus& channel_status,
                      ecmgscs::StreamStatus& stream_status,
-                     const AbortInterface* abort,
-                     const tlv::Logger& logger);
+                     const AbortInterface* abort = nullptr);
 
         //!
         //! Synchronously generate an ECM.
@@ -144,11 +144,11 @@ namespace ts {
         using AsyncRequests = std::map <uint16_t, ECMGClientHandlerInterface*>;
 
         // Private members
+        tlv::Logger&                 _logger;
         const ecmgscs::Protocol&     _protocol;
         volatile State               _state = INITIAL;
         const AbortInterface*        _abort = nullptr;
-        tlv::Logger                  _logger {};
-        tlv::Connection<ThreadSafety::None> _connection {_protocol, true, 3}; // connection with ECMG server
+        tlv::Connection<ThreadSafety::None> _connection {_logger, _protocol, true, 3}; // connection with ECMG server
         ecmgscs::ChannelStatus       _channel_status {_protocol};   // initial response to channel_setup
         ecmgscs::StreamStatus        _stream_status {_protocol};    // initial response to stream_setup
         mutable std::recursive_mutex _mutex {};                     // exclusive access to protected fields

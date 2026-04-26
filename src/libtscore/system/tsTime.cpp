@@ -528,8 +528,8 @@ cn::nanoseconds ts::Time::UnixClockNanoSeconds(clockid_t clock, const cn::millis
 void ts::Time::GetUnixClock(::timespec& result, clockid_t clock, const cn::milliseconds& delay)
 {
     const cn::nanoseconds nanoseconds = UnixClockNanoSeconds(clock, delay);
-    result.tv_nsec = long(nanoseconds.count() % std::nano::den);
-    result.tv_sec = time_t(nanoseconds.count() / std::nano::den);
+    result.tv_nsec = timespec_nsec_t(nanoseconds.count() % std::nano::den);
+    result.tv_sec = timespec_sec_t(nanoseconds.count() / std::nano::den);
 }
 
 #endif

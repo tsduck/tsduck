@@ -1732,8 +1732,8 @@ size_t ts::TunerDevice::receive(TSPacket* buffer, size_t max_packets, const Abor
         // Arm the receive timer.
         // Note that _receive_timeout is in milliseconds and ::itimerspec is in nanoseconds.
         ::itimerspec timeout;
-        timeout.it_value.tv_sec = long(_receive_timeout.count() / 1000);
-        timeout.it_value.tv_nsec = long(1000000 * (_receive_timeout.count() % 1000));
+        timeout.it_value.tv_sec = timespec_sec_t(_receive_timeout.count() / 1000);
+        timeout.it_value.tv_nsec = timespec_nsec_t(1000000 * (_receive_timeout.count() % 1000));
         timeout.it_interval.tv_sec = 0;
         timeout.it_interval.tv_nsec = 0;
         if (::timer_settime(_rt_timer, 0, &timeout, nullptr) < 0) {

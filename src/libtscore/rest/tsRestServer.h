@@ -24,7 +24,6 @@ namespace ts {
     class TSCOREDLL RestServer
     {
         TS_NOBUILD_NOCOPY(RestServer);
-
     public:
         //!
         //! Constructor.

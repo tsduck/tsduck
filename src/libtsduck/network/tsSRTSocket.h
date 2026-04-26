@@ -12,11 +12,11 @@
 //----------------------------------------------------------------------------
 
 #pragma once
+#include "tsReporterBase.h"
 #include "tsIPSocketAddress.h"
 #include "tsUString.h"
 #include "tsReport.h"
 #include "tsEnumUtils.h"
-#include "tsCerrReport.h"
 
 namespace ts {
     //!
@@ -58,29 +58,30 @@ namespace ts {
     //! @see https://www.srtalliance.org/
     //! @ingroup libtsduck net
     //!
-    class TSDUCKDLL SRTSocket
+    class TSDUCKDLL SRTSocket : public ReporterBase
     {
-        TS_NOCOPY(SRTSocket);
+        TS_NOBUILD_NOCOPY(SRTSocket);
     public:
         //!
         //! Constructor.
+        //! @param [in] report Where to report errors. The @a report object must remain valid as long as this object
+        //! exists or setReport() is used with another Report object. If @a report is null, log messages are discarded.
         //!
-        SRTSocket();
+        explicit SRTSocket(Report* report);
 
         //!
         //! Destructor.
         //!
-        ~SRTSocket();
+        virtual ~SRTSocket() override;
 
         //!
         //! Open the socket using parameters from the command line.
         //! @param [in] max_payload Maximum payload size in bytes. Unset if NPOS.
-        //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool open(size_t max_payload = NPOS, Report& report = CERR)
+        bool open(size_t max_payload = NPOS)
         {
-            return open(SRTSocketMode::DEFAULT, IPSocketAddress(), IPSocketAddress(), max_payload, report);
+            return open(SRTSocketMode::DEFAULT, IPSocketAddress(), IPSocketAddress(), max_payload);
         }
 
         //!
@@ -89,17 +90,17 @@ namespace ts {
         //! @param [in] local Local socket address. Ignored in DEFAULT mode. Optional local IP address used in CALLER mode.
         //! @param [in] remote Remote socket address. Ignored in DEFAULT and LISTENER modes.
         //! @param [in] max_payload Maximum payload size in bytes. Unset if NPOS.
-        //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool open(SRTSocketMode mode, const IPSocketAddress& local, const IPSocketAddress& remote, size_t max_payload = NPOS, Report& report = CERR);
+        bool open(SRTSocketMode mode, const IPSocketAddress& local, const IPSocketAddress& remote, size_t max_payload = NPOS);
 
         //!
         //! Close the socket.
-        //! @param [in,out] report Where to report error.
+        //! @param [in] silent If true, do not report errors through the logger. This is typically useful when the socket
+        //! is in some error condition and closing it is necessary although it may generate additional meaningless errors.
         //! @return True on success, false on error.
         //!
-        bool close(Report& report = CERR);
+        bool close(bool silent = false);
 
         //!
         //! Add command line option definitions in an Args.
@@ -126,41 +127,37 @@ namespace ts {
         //! @param [in] listener Local "[address:]port".
         //! @param [in] caller Remote "address:port".
         //! @param [in] local Optional, can be empty. In caller mode, specify the local outgoing IP address.
-        //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool setAddresses(const IPSocketAddress& listener, const IPSocketAddress& caller, const IPAddress& local = IPAddress(), Report& report = CERR)
+        bool setAddresses(const IPSocketAddress& listener, const IPSocketAddress& caller, const IPAddress& local = IPAddress())
         {
-            return setAddressesInternal(listener, caller, local, true, report);
+            return setAddressesInternal(listener, caller, local, true);
         }
 
         //!
         //! Get the socket peers, local and remote.
         //! @param [out] local Local socket address.
         //! @param [out] remote Remote socket address.
-        //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool getPeers(IPSocketAddress& local, IPSocketAddress& remote, Report& report = CERR);
+        bool getPeers(IPSocketAddress& local, IPSocketAddress& remote);
 
         //!
         //! Send a message to the default destination address and port.
         //! @param [in] data Address of the message to send.
         //! @param [in] size Size in bytes of the message to send.
-        //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool send(const void* data, size_t size, Report& report = CERR);
+        bool send(const void* data, size_t size);
 
         //!
         //! Receive a message.
         //! @param [out] data Address of the buffer for the received message.
         //! @param [in] max_size Size in bytes of the reception buffer.
         //! @param [out] ret_size Size in bytes of the received message. Will never be larger than @a max_size.
-        //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool receive(void* data, size_t max_size, size_t& ret_size, Report& report = CERR);
+        bool receive(void* data, size_t max_size, size_t& ret_size);
 
         //!
         //! Receive a message with timestamp.
@@ -168,10 +165,9 @@ namespace ts {
         //! @param [in] max_size Size in bytes of the reception buffer.
         //! @param [out] ret_size Size in bytes of the received message. Will never be larger than @a max_size.
         //! @param [out] timestamp Source timestamp in micro-seconds, negative if not available.
-        //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool receive(void* data, size_t max_size, size_t& ret_size, cn::microseconds& timestamp, Report& report = CERR);
+        bool receive(void* data, size_t max_size, size_t& ret_size, cn::microseconds& timestamp);
 
         //!
         //! Get the total number of sent bytes since the socket was opened.
@@ -195,10 +191,9 @@ namespace ts {
         //!
         //! Get statistics about the socket and report them.
         //! @param [in] mode Type of statistics to report (or'ing bitmask values is allowed).
-        //! @param [in,out] report Where to report statistics and errors.
         //! @return True on success, false on error.
         //!
-        bool reportStatistics(SRTStatMode mode = SRTStatMode::ALL, Report& report = CERR);
+        bool reportStatistics(SRTStatMode mode = SRTStatMode::ALL);
 
         //!
         //! Get SRT option.
@@ -208,10 +203,9 @@ namespace ts {
         //! @param [in] optNameStr Option name as ASCII string.
         //! @param [out] optval Address of returned value.
         //! @param [in,out] optlen Size of returned buffer (input), updated to size of returned value.
-        //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool getSockOpt(int optName, const char* optNameStr, void* optval, int& optlen, Report& report = CERR) const;
+        bool getSockOpt(int optName, const char* optNameStr, void* optval, int& optlen) const;
 
         //!
         //! Get the underlying SRT socket handle (use with care).
@@ -238,6 +232,6 @@ namespace ts {
         Guts* _guts;
 
         // Internal verson of setAddresses().
-        bool setAddressesInternal(const IPSocketAddress& listener, const IPSocketAddress& caller, const IPAddress& local, bool reset, Report& report);
+        bool setAddressesInternal(const IPSocketAddress& listener, const IPSocketAddress& caller, const IPAddress& local, bool reset);
     };
 }

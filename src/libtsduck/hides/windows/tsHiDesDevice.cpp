@@ -69,12 +69,12 @@ namespace {
 class ts::HiDesDevice::Guts
 {
 public:
-    ComPtr<::IBaseFilter> filter;                  // Associated DirectShow filter.
-    ::HANDLE              handle;                  // Handle to it950x device.
-    ::OVERLAPPED          overlapped;              // For overlapped operations.
-    ::KSPROPERTY          kslist[ite::KSLIST_MAX]; // Non-const version of KSLIST (required by DeviceIoControl).
-    bool                  transmitting;            // Transmission in progress.
-    HiDesDeviceInfo       info;                    // Portable device information.
+    ComPtr<::IBaseFilter> filter {};                   // Associated DirectShow filter.
+    ::HANDLE              handle = nullptr;            // Handle to it950x device.
+    ::OVERLAPPED          overlapped {};               // For overlapped operations.
+    ::KSPROPERTY          kslist[ite::KSLIST_MAX] {};  // Non-const version of KSLIST (required by DeviceIoControl).
+    bool                  transmitting = false;        // Transmission in progress.
+    HiDesDeviceInfo       info {};                     // Portable device information.
 
     // Constructor, destructor.
     Guts();
@@ -131,13 +131,7 @@ ts::HiDesDevice::~HiDesDevice()
 // Guts, constructor and destructor.
 //----------------------------------------------------------------------------
 
-ts::HiDesDevice::Guts::Guts() :
-    filter(),
-    handle(INVALID_HANDLE_VALUE),
-    overlapped(),
-    kslist(),
-    transmitting(false),
-    info()
+ts::HiDesDevice::Guts::Guts()
 {
     TS_ZERO(overlapped);
     assert(sizeof(kslist) == sizeof(kslist_template));
@@ -302,7 +296,7 @@ bool ts::HiDesDevice::Guts::getDeviceInfo(const ComPtr<::IMoniker>& moniker, Rep
     // WARNING: in case of problem here, see GetHandleFromObject in tsWinUtils.cpp.
     report.log(2, u"HiDesDevice: calling GetHandleFromObject");
     handle = GetHandleFromObject(filter.pointer(), report);
-    if (handle == INVALID_HANDLE_VALUE) {
+    if (!WinHandleValid(handle)) {
         close();
         return false;
     }
@@ -311,7 +305,7 @@ bool ts::HiDesDevice::Guts::getDeviceInfo(const ComPtr<::IMoniker>& moniker, Rep
     // Create an event for overlapped operations.
     report.log(2, u"HiDesDevice: creating event for overlapped");
     overlapped.hEvent = ::CreateEventW(nullptr, true, false, nullptr);
-    if (overlapped.hEvent == nullptr) {
+    if (!WinHandleValid(overlapped.hEvent)) {
         report.error(u"CreateEvent error: %s", WinErrorMessage(::GetLastError()));
         close();
         return false;
@@ -533,16 +527,12 @@ void ts::HiDesDevice::Guts::close()
     // "invalid handle" exception. It is probable that this handle is not
     // recognized as the kind of handle which is open by the system.
     //
-    // if (handle != 0 && handle != INVALID_HANDLE_VALUE) {
-    //     ::CloseHandle(handle);
-    // }
-    //
-    handle = INVALID_HANDLE_VALUE;
+    handle = nullptr;
 
     // Close event handle used in overlapped operations.
-    if (overlapped.hEvent != 0 && overlapped.hEvent != INVALID_HANDLE_VALUE) {
+    if (WinHandleValid(overlapped.hEvent)) {
         ::CloseHandle(overlapped.hEvent);
-        overlapped.hEvent = INVALID_HANDLE_VALUE;
+        overlapped.hEvent = nullptr;
     }
 }
 

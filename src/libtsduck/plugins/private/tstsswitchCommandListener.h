@@ -59,9 +59,9 @@ namespace ts {
             Report&       _log;
             Core&         _core;
             const InputSwitcherArgs& _opt;
-            UDPReceiver   _udp_server {_log};
-            TLSServer     _tls_server {_opt.remote_control};
-            TLSConnection _tls_client {_opt.remote_control};
+            UDPReceiver   _udp_server {&_log};
+            TLSServer     _tls_server {&_log, _opt.remote_control};
+            TLSConnection _tls_client {&_log, _opt.remote_control};
             volatile bool _terminate = false;
 
             // Implementation of Thread.

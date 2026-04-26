@@ -224,10 +224,10 @@ public:
     ts::tlv::Logger& logger() { return _logger; }
 
 private:
-    ts::AsyncReport    _report;       // Asynchronous message report.
-    ts::tlv::Logger    _logger;       // Protocol message logger.
-    std::mutex         _mutex {};     // Protect shared data.
-    std::set<uint16_t> _channels {};  // Active channels.
+    ts::AsyncReport    _report;            // Asynchronous message report.
+    ts::tlv::Logger    _logger {_report};  // Protocol message logger.
+    std::mutex         _mutex {};          // Protect shared data.
+    std::set<uint16_t> _channels {};       // Active channels.
 };
 
 
@@ -237,10 +237,10 @@ private:
 
 // Constructor.
 ECMGSharedData::ECMGSharedData(const ECMGOptions& opt) :
-    _report(opt.maxSeverity(), opt.logArgs),
-    _logger(opt.logProtocol, &_report)
+    _report(opt.maxSeverity(), opt.logArgs)
 {
     // The CW/ECM data messages have a distinct log level.
+    _logger.setDefaultSeverity(opt.logProtocol);
     _logger.setSeverity(ts::ecmgscs::Tags::CW_provision, opt.logData);
     _logger.setSeverity(ts::ecmgscs::Tags::ECM_response, opt.logData);
 }
@@ -302,10 +302,7 @@ private:
     bool handleCWProvision(ts::ecmgscs::CWProvision* msg);
 
     // Send a response message.
-    bool send(const ts::tlv::Message* msg)
-    {
-        return _conn->sendMessage(*msg, _shared->logger());
-    }
+    bool send(const ts::tlv::Message* msg) { return _conn->sendMessage(*msg); }
 
     // Send an error related to the msg.
     bool sendErrorResponse(const ts::tlv::Message* msg, uint16_t errorStatus);
@@ -352,7 +349,7 @@ void ECMGClientHandler::main()
     // Loop on message reception
     ts::tlv::MessagePtr msg;
     bool ok = true;
-    while (ok && _conn->receiveMessage(msg, nullptr, _shared->logger())) {
+    while (ok && _conn->receiveMessage(msg)) {
         switch (msg->tag()) {
             case ts::ecmgscs::Tags::channel_setup:
                 ok = handleChannelSetup(dynamic_cast<ts::ecmgscs::ChannelSetup*>(msg.get()));
@@ -389,8 +386,8 @@ void ECMGClientHandler::main()
     }
 
     // Error while receiving or sending messages, most likely a client disconnection.
-    _conn->disconnect(NULLREP);
-    _conn->close(_shared->report());
+    _conn->disconnect(true);
+    _conn->close();
 
     // Make sure to release the channel if not done by the clients.
     if (_channel.has_value()) {
@@ -669,11 +666,11 @@ int MainCode(int argc, char *argv[])
     ECMGSharedData shared(opt);
 
     // Initialize a TCP server.
-    ts::TCPServer server;
-    if (!server.open(opt.serverAddress.generation(), shared.report()) ||
-        !server.reusePort(opt.reusePort, shared.report()) ||
-        !server.bind(opt.serverAddress, shared.report()) ||
-        !server.listen(5, shared.report()))
+    ts::TCPServer server(&opt);
+    if (!server.open(opt.serverAddress.generation()) ||
+        !server.reusePort(opt.reusePort) ||
+        !server.bind(opt.serverAddress) ||
+        !server.listen(5))
     {
         return EXIT_FAILURE;
     }
@@ -690,9 +687,9 @@ int MainCode(int argc, char *argv[])
 
         // Accept one incoming connection.
         ts::IPSocketAddress clientAddress;
-        ECMGConnectionPtr conn(new ECMGConnection(opt.ecmgscs, true, 3));
+        ECMGConnectionPtr conn(new ECMGConnection(shared.logger(), opt.ecmgscs, true, 3));
         ts::CheckNonNull(conn.get());
-        if (!server.accept(*conn, clientAddress, shared.report())) {
+        if (!server.accept(*conn, clientAddress)) {
             break;
         }
 

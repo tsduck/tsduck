@@ -41,6 +41,8 @@ namespace ts::tlv {
 
         //!
         //! Constructor.
+        //! @param [in,out] logger Where to report errors and messages. An internal reference is kept.
+        //! The @a logger object must remain valid as long as this object exists.
         //! @param [in] protocol The incoming messages are interpreted
         //! according to this protocol. The reference is kept in this object.
         //! @param [in] auto_error_response When an invalid message is
@@ -50,23 +52,14 @@ namespace ts::tlv {
         //! automatically disconnected when the number of consecutive
         //! invalid messages has reached this value.
         //!
-        explicit Connection(const Protocol& protocol, bool auto_error_response = true, size_t max_invalid_msg = 0);
+        Connection(Logger& logger, const Protocol& protocol, bool auto_error_response = true, size_t max_invalid_msg = 0);
 
         //!
         //! Serialize and sendMessage a TLV message.
         //! @param [in] msg The message to sendMessage.
-        //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool sendMessage(const Message& msg, Report& report);
-
-        //!
-        //! Serialize and sendMessage a TLV message.
-        //! @param [in] msg The message to sendMessage.
-        //! @param [in,out] logger Where to report errors and messages.
-        //! @return True on success, false on error.
-        //!
-        bool sendMessage(const Message& msg, Logger& logger);
+        bool sendMessage(const Message& msg);
 
         //!
         //! Receive a TLV message.
@@ -75,22 +68,9 @@ namespace ts::tlv {
         //! @param [out] msg A safe pointer to the received message.
         //! @param [in] abort If non-zero, invoked when I/O is interrupted
         //! (in case of user-interrupt, return, otherwise retry).
-        //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool receiveMessage(MessagePtr& msg, const AbortInterface* abort, Report& report);
-
-        //!
-        //! Receive a TLV message.
-        //! Wait for the message, deserialize it and validate it.
-        //! Process invalid messages and loop until a valid message is received.
-        //! @param [out] msg A safe pointer to the received message.
-        //! @param [in] abort If non-zero, invoked when I/O is interrupted
-        //! (in case of user-interrupt, return, otherwise retry).
-        //! @param [in,out] logger Where to report errors and messages.
-        //! @return True on success, false on error.
-        //!
-        bool receiveMessage(MessagePtr& msg, const AbortInterface* abort, Logger& logger);
+        bool receiveMessage(MessagePtr& msg, const AbortInterface* abort = nullptr);
 
         //!
         //! Get invalid incoming messages processing.
@@ -122,9 +102,10 @@ namespace ts::tlv {
 
     protected:
         // Inherited from TCPConnection
-        virtual void handleConnected(Report&) override;
+        virtual void handleConnected() override;
 
     private:
+        Logger&         _logger;
         const Protocol& _protocol;
         bool            _auto_error_response = false;
         size_t          _max_invalid_msg = 0;
@@ -141,8 +122,9 @@ namespace ts::tlv {
 
 // Constructor.
 template <ts::ThreadSafety SAFETY>
-ts::tlv::Connection<SAFETY>::Connection(const Protocol& protocol, bool auto_error_response, size_t max_invalid_msg) :
-    ts::TCPConnection(),
+ts::tlv::Connection<SAFETY>::Connection(Logger& logger, const Protocol& protocol, bool auto_error_response, size_t max_invalid_msg) :
+    ts::TCPConnection(&logger.report()),
+    _logger(logger),
     _protocol(protocol),
     _auto_error_response(auto_error_response),
     _max_invalid_msg(max_invalid_msg)
@@ -155,46 +137,30 @@ ts::tlv::Connection<SAFETY>::Connection(const Protocol& protocol, bool auto_erro
 TS_PUSH_WARNING()
 TS_MSC_NOWARNING(4505)
 template <ts::ThreadSafety SAFETY>
-void ts::tlv::Connection<SAFETY>::handleConnected(Report& report)
+void ts::tlv::Connection<SAFETY>::handleConnected()
 {
-    SuperClass::handleConnected(report);
+    SuperClass::handleConnected();
     _invalid_msg_count = 0;
 }
 TS_POP_WARNING()
 
 // Serialize and sendMessage a TLV message.
 template <ts::ThreadSafety SAFETY>
-bool ts::tlv::Connection<SAFETY>::sendMessage(const Message& msg, Report& report)
+bool ts::tlv::Connection<SAFETY>::sendMessage(const Message& msg)
 {
-    tlv::Logger logger(Severity::Debug, &report);
-    return sendMessage(msg, logger);
-}
-
-// Serialize and sendMessage a TLV message.
-template <ts::ThreadSafety SAFETY>
-bool ts::tlv::Connection<SAFETY>::sendMessage(const Message& msg, Logger& logger)
-{
-    logger.log(msg, u"sending message to " + peerName());
+    _logger.log(msg, u"sending message to " + peerName());
 
     ByteBlockPtr bbp(new ByteBlock);
     Serializer serial(bbp);
     msg.serialize(serial);
 
     std::lock_guard<MutexType> lock(_send_mutex);
-    return SuperClass::send(bbp->data(), bbp->size(), logger.report());
+    return SuperClass::send(bbp->data(), bbp->size());
 }
 
 // Receive a TLV message (wait for the message, deserialize it and validate it)
 template <ts::ThreadSafety SAFETY>
-bool ts::tlv::Connection<SAFETY>::receiveMessage(MessagePtr& msg, const AbortInterface* abort, Report& report)
-{
-    tlv::Logger logger(Severity::Debug, &report);
-    return receiveMessage(msg, abort, logger);
-}
-
-// Receive a TLV message (wait for the message, deserialize it and validate it)
-template <ts::ThreadSafety SAFETY>
-bool ts::tlv::Connection<SAFETY>::receiveMessage(MessagePtr& msg, const AbortInterface* abort, Logger& logger)
+bool ts::tlv::Connection<SAFETY>::receiveMessage(MessagePtr& msg, const AbortInterface* abort)
 {
     const bool has_version(_protocol.hasVersion());
     const size_t header_size(has_version ? 5 : 4);
@@ -209,14 +175,14 @@ bool ts::tlv::Connection<SAFETY>::receiveMessage(MessagePtr& msg, const AbortInt
             std::lock_guard<MutexType> lock(_receive_mutex);
 
             // Read message header
-            if (!SuperClass::receive(bb.data(), header_size, abort, logger.report())) {
+            if (!SuperClass::receive(bb.data(), header_size, abort)) {
                 return false;
             }
 
             // Get message length and read message payload
             const size_t length = GetUInt16(bb.data() + length_offset);
             bb.resize(header_size + length);
-            if (!SuperClass::receive(bb.data() + header_size, length, abort, logger.report())) {
+            if (!SuperClass::receive(bb.data() + header_size, length, abort)) {
                 return false;
             }
         }
@@ -227,7 +193,7 @@ bool ts::tlv::Connection<SAFETY>::receiveMessage(MessagePtr& msg, const AbortInt
             _invalid_msg_count = 0;
             mf.factory(msg);
             if (msg != nullptr) {
-                logger.log(*msg, u"received message from " + peerName());
+                _logger.log(*msg, u"received message from " + peerName());
             }
             return true;
         }
@@ -239,15 +205,15 @@ bool ts::tlv::Connection<SAFETY>::receiveMessage(MessagePtr& msg, const AbortInt
         if (_auto_error_response) {
             MessagePtr resp;
             mf.buildErrorResponse(resp);
-            if (!sendMessage(*resp, logger.report())) {
+            if (!sendMessage(*resp)) {
                 return false;
             }
         }
 
         // If invalid message max has been reached, break the connection
         if (_max_invalid_msg > 0 && _invalid_msg_count >= _max_invalid_msg) {
-            logger.report().error(u"too many invalid messages from %s, disconnecting", peerName());
-            disconnect(logger.report());
+            _logger.report().error(u"too many invalid messages from %s, disconnecting", peerName());
+            disconnect();
             return false;
         }
     }

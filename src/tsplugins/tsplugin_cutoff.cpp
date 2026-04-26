@@ -16,7 +16,7 @@
 #include "tsUDPReceiver.h"
 #include "tsMessageQueue.h"
 #include "tsThread.h"
-#include "tsAlgorithm.h"
+#include "tsReporterGuard.h"
 
 #define DEFAULT_MAX_QUEUED_COMMANDS  128
 #define SERVER_THREAD_STACK_SIZE     (128 * 1024)
@@ -46,7 +46,7 @@ namespace ts {
         size_t           _max_queued = DEFAULT_MAX_QUEUED_COMMANDS;
         IPAddressSet     _allowedRemote {};
         UDPReceiverArgs  _sock_args {};
-        UDPReceiver      _sock {*this};
+        UDPReceiver      _sock {this};
         CommandQueue     _command_queue {DEFAULT_MAX_QUEUED_COMMANDS};
         TSPacketLabelSet _set_labels {};
 
@@ -118,7 +118,7 @@ bool ts::CutoffPlugin::getOptions()
 bool ts::CutoffPlugin::start()
 {
     // Create UDP socket
-    if (!_sock.open(*this)) {
+    if (!_sock.open()) {
         return false;
     }
 
@@ -140,11 +140,11 @@ bool ts::CutoffPlugin::start()
 
 bool ts::CutoffPlugin::stop()
 {
-    // Close the UDP socket.
-    // This will force the server thread to terminate on receive error.
-    // In case the server does not properly notify the error, set a flag.
+    // Close the UDP socket. This will force the server thread to terminate on receive error.
+    // In case the server does not properly notify the error, set a flag. Do not log errors
+    // on close to avoid interfering with error reporting in reception thread.
     _terminate = true;
-    _sock.close(*this);
+    _sock.close(true);
 
     // Wait for actual thread termination
     Thread::waitForTermination();
@@ -213,31 +213,34 @@ void ts::CutoffPlugin::main()
 
     // Get receive errors in a buffer since some errors are normal.
     ReportBuffer<ts::ThreadSafety::None> error(tsp->maxSeverity());
+    {
+        ReporterGuard repguard(_sock, &error);
 
-    // Loop on incoming messages.
-    while (_sock.receive(inbuf, sizeof(inbuf), insize, sender, destination, tsp, error)) {
+        // Loop on incoming messages.
+        while (_sock.receive(inbuf, sizeof(inbuf), insize, sender, destination, tsp)) {
 
-        // Filter out unauthorized remote systems.
-        if (!_allowedRemote.empty() && !_allowedRemote.contains(sender)) {
-            warning(u"rejected remote command from unauthorized host %s", sender);
-            continue;
-        }
+            // Filter out unauthorized remote systems.
+            if (!_allowedRemote.empty() && !_allowedRemote.contains(sender)) {
+                warning(u"rejected remote command from unauthorized host %s", sender);
+                continue;
+            }
 
-        // We expect ASCII commands. Locate first non-ASCII character in message.
-        size_t len = 0;
-        while (len < insize && inbuf[len] >= 0x20 && inbuf[len] <= 0x7E) {
-            len++;
-        }
+            // We expect ASCII commands. Locate first non-ASCII character in message.
+            size_t len = 0;
+            while (len < insize && inbuf[len] >= 0x20 && inbuf[len] <= 0x7E) {
+                len++;
+            }
 
-        // Extract trimmed lowercase ASCII command.
-        CommandQueue::MessagePtr cmd(new UString(UString::FromUTF8(inbuf, len)));
-        cmd->toLower();
-        cmd->trim();
-        verbose(u"received command \"%s\", from %s (%d bytes)", *cmd, sender, insize);
+            // Extract trimmed lowercase ASCII command.
+            CommandQueue::MessagePtr cmd(new UString(UString::FromUTF8(inbuf, len)));
+            cmd->toLower();
+            cmd->trim();
+            verbose(u"received command \"%s\", from %s (%d bytes)", *cmd, sender, insize);
 
-        // Enqueue the command immediately. Never wait.
-        if (!cmd->empty()) {
-            _command_queue.enqueue(cmd, cn::milliseconds::zero());
+            // Enqueue the command immediately. Never wait.
+            if (!cmd->empty()) {
+                _command_queue.enqueue(cmd, cn::milliseconds::zero());
+            }
         }
     }
 

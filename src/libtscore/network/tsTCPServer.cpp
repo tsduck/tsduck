@@ -9,18 +9,18 @@
 #include "tsTCPServer.h"
 #include "tsIPUtils.h"
 #include "tsSysUtils.h"
-#include "tsMemory.h"
+#include "tsInitZero.h"
 
 
 //----------------------------------------------------------------------------
 // Start the server
 //----------------------------------------------------------------------------
 
-bool ts::TCPServer::listen(int backlog, Report& report)
+bool ts::TCPServer::listen(int backlog)
 {
-    report.debug(u"server listen, backlog is %d", backlog);
+    report().debug(u"server listen, backlog is %d", backlog);
     if (::listen(getSocket(), backlog) != 0) {
-        report.error(u"error starting TCP server: %s", SysErrorCodeMessage());
+        report().error(u"error starting TCP server: %s", SysErrorCodeMessage());
         return false;
     }
     return true;
@@ -31,37 +31,36 @@ bool ts::TCPServer::listen(int backlog, Report& report)
 // Wait for a client
 //----------------------------------------------------------------------------
 
-bool ts::TCPServer::accept(TCPConnection& client, IPSocketAddress& client_address, Report& report)
+bool ts::TCPServer::accept(TCPConnection& client, IPSocketAddress& client_address)
 {
     if (client.isConnected()) {
-        report.error(u"invalid client in accept(): already connected");
+        report().error(u"invalid client in accept(): already connected");
         return false;
     }
 
     if (client.isOpen()) {
-        report.error(u"invalid client in accept(): already open");
+        report().error(u"invalid client in accept(): already open");
         return false;
     }
 
-    report.debug(u"server accepting clients");
-    ::sockaddr_storage sock_addr;
-    SysSocketLengthType len = sizeof(sock_addr);
-    TS_ZERO(sock_addr);
-    SysSocketType client_sock = ::accept(getSocket(), reinterpret_cast<::sockaddr*>(&sock_addr), &len);
+    report().debug(u"server accepting clients");
+    InitZero<::sockaddr_storage> sock_addr;
+    SysSocketLengthType len = sizeof(sock_addr.data);
+    SysSocketType client_sock = ::accept(getSocket(), reinterpret_cast<::sockaddr*>(&sock_addr.data), &len);
 
     if (client_sock == SYS_SOCKET_INVALID) {
         std::lock_guard<std::recursive_mutex> lock(_mutex);
         if (isOpen()) {
-            report.error(u"error accepting TCP client: %s", SysErrorCodeMessage());
+            report().error(u"error accepting TCP client: %s", SysErrorCodeMessage());
         }
         return false;
     }
 
-    client_address = IPSocketAddress(sock_addr);
-    report.debug(u"received connection from %s", client_address);
+    client_address = IPSocketAddress(sock_addr.data);
+    report().debug(u"received connection from %s", client_address);
 
-    client.declareOpened(client_sock, report);
-    client.declareConnected(report);
+    client.declareOpened(client_sock);
+    client.declareConnected();
     return true;
 }
 
@@ -70,17 +69,17 @@ bool ts::TCPServer::accept(TCPConnection& client, IPSocketAddress& client_addres
 // Close the server resources.
 //----------------------------------------------------------------------------
 
-bool ts::TCPServer::close(Report& report)
+bool ts::TCPServer::close(bool silent)
 {
     // Shutdown server socket.
     // Do not report "not connected" errors since they are normal when the client disconnects first.
     if (::shutdown(getSocket(), SYS_SOCKET_SHUT_RDWR) != 0) {
         const int errcode = LastSysErrorCode();
-        if (errcode != SYS_SOCKET_ERR_NOTCONN) {
-            report.error(u"error shutdowning server socket: %s", SysErrorCodeMessage(errcode));
+        if (errcode != SYS_SOCKET_ERR_NOTCONN && !silent) {
+            report().error(u"error shutdowning server socket: %s", SysErrorCodeMessage(errcode));
         }
     }
 
     // Then invoke superclass
-    return SuperClass::close(report);
+    return SuperClass::close(silent);
 }

@@ -95,6 +95,14 @@ gprof:
 m32:
 	+@$(MAKE) M32=true
 
+# Build without all removeable external library dependencies.
+
+.PHONY: nodep
+nodep:
+	+@$(MAKE) BINDIR_SUFFIX=-nodep NODEKTEC=1 NODTAPI=1 NOHIDES=1 NOVATEK=1 NOCURL=1 NOPCSC=1 \
+	    NOOPENSSL=1 NOZLIB=1 NOSRT=1 NORIST=1 NOJAVA=1 NOPYTHON=1 NOEDITLINE=1 NOHWACCEL=1
+
+
 # Generate the documentation.
 
 DOC_TARGETS = doxygen docs docs-html docs-pdf \

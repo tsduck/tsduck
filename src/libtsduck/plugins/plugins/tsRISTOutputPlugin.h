@@ -40,6 +40,6 @@ namespace ts {
         Guts* _guts = nullptr;
 
         // Implementation of TSDatagramOutputHandlerInterface.
-        virtual bool sendDatagram(const void* address, size_t size, Report& report) override;
+        virtual bool sendDatagram(const void* address, size_t size) override;
     };
 }

@@ -38,7 +38,7 @@ namespace ts {
     //!
     class TSCOREDLL TLSConnection: public TCPConnection
     {
-        TS_NOCOPY(TLSConnection);
+        TS_NOBUILD_NOCOPY(TLSConnection);
     public:
         //!
         //! Reference to the superclass.
@@ -47,14 +47,18 @@ namespace ts {
 
         //!
         //! Constructor.
+        //! @param [in] report Where to report errors. The @a report object must remain valid as long as this object
+        //! exists or setReport() is used with another Report object. If @a report is null, log messages are discarded.
         //!
-        TLSConnection();
+        explicit TLSConnection(Report* report);
 
         //!
         //! Constructor with initial client arguments.
+        //! @param [in] report Where to report errors. The @a report object must remain valid as long as this object
+        //! exists or setReport() is used with another Report object. If @a report is null, log messages are discarded.
         //! @param [in] args Initial TLS client arguments.
         //!
-        TLSConnection(const TLSArgs& args) : TLSConnection() { setArgs(args); }
+        TLSConnection(Report* report, const TLSArgs& args) : TLSConnection(report) { setArgs(args); }
 
         //!
         //! Set command line arguments for the client.
@@ -85,12 +89,12 @@ namespace ts {
 
         // Inherited methods.
         virtual ~TLSConnection() override;
-        virtual bool connect(const IPSocketAddress&, Report& = CERR) override;
-        virtual bool closeWriter(Report& = CERR) override;
-        virtual bool disconnect(Report& = CERR) override;
-        virtual bool send(const void*, size_t, Report& = CERR) override;
-        virtual bool receive(void*, size_t, size_t&, const AbortInterface* = nullptr, Report& = CERR) override;
-        virtual bool receive(void*, size_t, const AbortInterface* = nullptr, Report& = CERR) override;
+        virtual bool connect(const IPSocketAddress&) override;
+        virtual bool closeWriter(bool silent = false) override;
+        virtual bool disconnect(bool silent = false) override;
+        virtual bool send(const void*, size_t) override;
+        virtual bool receive(void*, size_t, size_t&, const AbortInterface* = nullptr) override;
+        virtual bool receive(void*, size_t, const AbortInterface* = nullptr) override;
 
         //!
         //! Get the version of the underlying SSL/TLS library.
@@ -123,6 +127,6 @@ namespace ts {
         // - On UNIX systems with OpenSSL, a pointer to ::SSL.
         // - On Windows systems whith SChannel, a pointer to ::CERT_CONTEXT.
         friend class TLSServer;
-        bool setServerContext(const void* param, Report& report);
+        bool setServerContext(const void* param);
     };
 }

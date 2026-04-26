@@ -78,19 +78,19 @@ namespace ts {
             ReceiverThread(MPEInjectPlugin* plugin, const UDPReceiverArgs& opt, size_t index, size_t receiver_count);
 
             // Open/close UDP socket.
-            bool openSocket() { return _sock.open(*_plugin); }
-            bool closeSocket() { return _sock.close(*_plugin); }
+            bool openSocket() { return _sock.open(); }
+            bool closeSocket() { return _sock.close(); }
 
         protected:
             // Invoked in the context of the server thread.
             virtual void main() override;
 
         private:
-            MPEInjectPlugin* const _plugin;  // Parent plugin.
-            IPSocketAddress _new_source {};  // Masquerade source socket in MPE section.
-            IPSocketAddress _new_dest {};    // Masquerade destination socket in MPE section.
-            UDPReceiver     _sock;           // Incoming socket with associated command line options.
-            size_t          _index;          // Receiver index.
+            MPEInjectPlugin* const _plugin;   // Parent plugin.
+            IPSocketAddress _new_source {};   // Masquerade source socket in MPE section.
+            IPSocketAddress _new_dest {};     // Masquerade destination socket in MPE section.
+            UDPReceiver     _sock {_plugin};  // Incoming socket with associated command line options.
+            size_t          _index;           // Receiver index.
         };
     };
 }
@@ -195,7 +195,6 @@ bool ts::MPEInjectPlugin::getOptions()
 ts::MPEInjectPlugin::ReceiverThread::ReceiverThread(MPEInjectPlugin* plugin, const UDPReceiverArgs& opt, size_t index, size_t receiver_count) :
     Thread(ThreadAttributes().setStackSize(SERVER_THREAD_STACK_SIZE)),
     _plugin(plugin),
-    _sock(*_plugin),
     _index(index)
 {
     // Set UDP socket options.
@@ -337,7 +336,7 @@ void ts::MPEInjectPlugin::ReceiverThread::main()
     ByteBlock buffer(MAX_IP_SIZE);
 
     // Loop on message reception until a receive error (probably an end of execution).
-    while (!_plugin->_terminate && _sock.receive(buffer.data(), buffer.size(), insize, sender, destination, _plugin->tsp, *_plugin)) {
+    while (!_plugin->_terminate && _sock.receive(buffer.data(), buffer.size(), insize, sender, destination, _plugin->tsp)) {
 
         // Rebuild source and destination addresses if required.
         if (_new_source.hasAddress()) {

@@ -110,9 +110,9 @@ namespace {
     bool DumpUDP(Options& opt)
     {
         // Initialize UDP receiver.
-        ts::UDPReceiver sock(opt);
+        ts::UDPReceiver sock(&opt);
         sock.setParameters(opt.udp);
-        if (!sock.open(opt)) {
+        if (!sock.open()) {
             return false;
         }
 
@@ -132,7 +132,7 @@ namespace {
 
             // Wait for a UDP message
             size_t insize = 0;
-            ok = sock.receive(packet.data(), packet.size(), insize, sender, destination, nullptr, opt);
+            ok = sock.receive(packet.data(), packet.size(), insize, sender, destination);
 
             // Check packet.
             assert(insize <= packet.size());
@@ -174,7 +174,7 @@ namespace {
         }
 
         // Terminate UDP reception.
-        ok = sock.close(opt) && ok;
+        ok = sock.close() && ok;
         return ok;
     }
 }
