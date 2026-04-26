@@ -38,15 +38,16 @@ summarized in the following table.
 | Distro   | Image name        | Equivalent  | Architectures
 | -------- | ----------------- | ----------- | -------------
 | Ubuntu   | ubuntu:latest     | 24.04       | x64, arm64
-|          | ubuntu:25.04      |             | x64, arm64
+|          | ubuntu:26.04      |             | x64, arm64
+|          | ubuntu:25.10      |             | x64, arm64
 |          | ubuntu:24.04      |             | x64, arm64
-| Debian   | debian:latest     | 12          | x64, arm64
-|          | debian:trixie     |             | x64, arm64
+| Debian   | debian:latest     | 13          | x64, arm64
+|          | debian:13         |             | x64, arm64
 |          | debian:12         |             | x64, arm64
-| Fedora   | fedora:latest     | 42          | x64, arm64
-|          | fedora:42         |             | x64, arm64
-|          | fedora:41         |             | x64, arm64
-| Red Hat  | almalinux:latest  | 9           | x64, arm64
+| Fedora   | fedora:latest     | 43          | x64, arm64
+|          | fedora:44         |             | x64, arm64
+|          | fedora:43         |             | x64, arm64
+| Red Hat  | almalinux:latest  | 10          | x64, arm64
 |          | almalinux:10      |             | x64, arm64
 |          | almalinux:9       |             | x64, arm64
 |          | rockylinux:9      | (no latest) | x64, arm64

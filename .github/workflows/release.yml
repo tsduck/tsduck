@@ -54,6 +54,7 @@ on:
         options:
         - none
         - ubuntu:latest
+        - ubuntu:26.04
         - ubuntu:25.10
         - ubuntu:24.04
       debian_image:
@@ -73,8 +74,8 @@ on:
         options:
         - none
         - fedora:latest
+        - fedora:44
         - fedora:43
-        - fedora:42
       redhat_image:
         description: 'Red Hat docker image'
         type: choice
