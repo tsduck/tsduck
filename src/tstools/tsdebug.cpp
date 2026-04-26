@@ -1066,7 +1066,7 @@ ts::CommandStatus ts::URLCommands::geturl(const UString& command, Args& args)
     args.getPathValue(output, u"output");
     args.getValues(headers, u"header");
 
-    WebRequest request(args);
+    WebRequest request(&args);
     request.setInsecure(insecure);
     for (const auto& h : headers) {
         const size_t colon = h.find(':');

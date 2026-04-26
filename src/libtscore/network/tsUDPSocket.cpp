@@ -46,6 +46,14 @@ ts::UDPSocket::UDPSocket(Report* report, bool auto_open, IP gen, bool non_blocki
     }
 }
 
+ts::UDPSocket::UDPSocket(ReporterBase* delegate, bool auto_open, IP gen, bool non_blocking) :
+    Socket(delegate, non_blocking)
+{
+    if (auto_open) {
+        UDPSocket::open(gen);
+    }
+}
+
 ts::UDPSocket::~UDPSocket()
 {
     UDPSocket::close(true);

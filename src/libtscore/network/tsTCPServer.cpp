@@ -75,8 +75,8 @@ bool ts::TCPServer::close(bool silent)
     // Do not report "not connected" errors since they are normal when the client disconnects first.
     if (::shutdown(getSocket(), SYS_SOCKET_SHUT_RDWR) != 0) {
         const int errcode = LastSysErrorCode();
-        if (errcode != SYS_SOCKET_ERR_NOTCONN && !silent) {
-            report().error(u"error shutdowning server socket: %s", SysErrorCodeMessage(errcode));
+        if (errcode != SYS_SOCKET_ERR_NOTCONN) {
+            report().log(SilentLevel(silent), u"error shutdowning server socket: %s", SysErrorCodeMessage(errcode));
         }
     }
 

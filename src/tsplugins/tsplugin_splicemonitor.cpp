@@ -120,7 +120,7 @@ namespace ts {
         SectionDemux                _section_demux {duck, this}; // Section filter for splice information.
         SignalizationDemux          _sig_demux {duck, this};     // Signalization demux to get PMT's.
         TSClock                     _ts_clock {duck};            // Compute playout time based on real time, PCR or input timestamps.
-        InfluxSender                _influx_server {*this};      // Send requests to InfluxDB server.
+        InfluxSender                _influx_server {this};       // Send requests to InfluxDB server.
         xml::JSONConverter          _x2j_conv {*this};           // XML-to-JSON converter.
         json::RunningDocument       _json_doc {*this};           // JSON document, built on-the-fly.
 
@@ -664,7 +664,7 @@ void ts::SpliceMonitorPlugin::sendInflux(PID splice_pid, const SpliceEvent& even
             debug(u"current stream clock: %s, event clock: %s", current_clock, event_clock);
 
             // Build data to post. Use a shared pointer to send to the message queue.
-            auto req = std::make_shared<InfluxRequest>(*this, _influx_args);
+            auto req = std::make_shared<InfluxRequest>(this, _influx_args);
             req->start(current_clock);
 
             // Event tags.

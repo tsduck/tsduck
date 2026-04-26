@@ -53,8 +53,8 @@
 class ts::WebRequest::SystemGuts {};
 void ts::WebRequest::allocateGuts() { _guts = new SystemGuts; }
 void ts::WebRequest::deleteGuts() { delete _guts; }
-bool ts::WebRequest::startTransfer() { _report.error(TS_NO_CURL_MESSAGE); return false; }
-bool ts::WebRequest::receive(void*, size_t, size_t&) { _report.error(TS_NO_CURL_MESSAGE); return false; }
+bool ts::WebRequest::startTransfer() { report().error(TS_NO_CURL_MESSAGE); return false; }
+bool ts::WebRequest::receive(void*, size_t, size_t&) { report().error(TS_NO_CURL_MESSAGE); return false; }
 bool ts::WebRequest::close() { return true; }
 void ts::WebRequest::abort() {}
 ts::UString ts::WebRequest::GetLibraryVersion() { return UString(); }
@@ -304,7 +304,7 @@ bool ts::WebRequest::receive(void* buffer, size_t maxSize, size_t& retSize)
         return _guts->receive(buffer, maxSize, &retSize, nullptr);
     }
     else {
-        _report.error(u"transfer not started");
+        report().error(u"transfer not started");
         return false;
     }
 }
@@ -332,7 +332,7 @@ bool ts::WebRequest::SystemGuts::startTransfer(CertState certState)
 {
     // Check that libcurl was correctly initialized.
     if (LibCurlInit::Instance().initStatus != ::CURLE_OK) {
-        _request._report.error(easyMessage(u"libcurl initialization error", LibCurlInit::Instance().initStatus));
+        _request.report().error(easyMessage(u"libcurl initialization error", LibCurlInit::Instance().initStatus));
         return false;
     }
 
@@ -340,7 +340,7 @@ bool ts::WebRequest::SystemGuts::startTransfer(CertState certState)
     size_t retries = 0;
     cn::milliseconds retryInterval;
     LibCurlInit::Instance().getRetry(_request._original_url, retries, retryInterval);
-    _request._report.debug(u"curl retries: %d, interval: %!s", retries, retryInterval);
+    _request.report().debug(u"curl retries: %d, interval: %!s", retries, retryInterval);
 
     // Loop until all retries are exhausted.
     for (;;) {
@@ -359,14 +359,14 @@ bool ts::WebRequest::SystemGuts::startTransfer(CertState certState)
         if (certState == CERT_EXISTING && certFileExists && (Time::CurrentUTC() - GetFileModificationTimeUTC(_certFile)) < cn::days(1)) {
             // The cert file is "fresh" (updated less than one day aga), no need to retry to load it, let's pretend we just downloaded it.
             certState = CERT_DOWNLOAD;
-            _request._report.debug(u"reusing recent CA cert file %s", _certFile);
+            _request.report().debug(u"reusing recent CA cert file %s", _certFile);
         }
         else if ((certState == CERT_EXISTING && !certFileExists) || certState == CERT_DOWNLOAD) {
             // We need to download it. Jump to CERT_DOWNLOAD if there was no file.
             certState = CERT_DOWNLOAD;
-            _request._report.verbose(u"encountered certificate issue, downloading a fresh CA list from %s", FRESH_CACERT_URL);
+            _request.report().verbose(u"encountered certificate issue, downloading a fresh CA list from %s", FRESH_CACERT_URL);
 
-            WebRequest certRequest(_request._report);
+            WebRequest certRequest(&_request);
             certRequest.setAutoRedirect(true);
             certRequest.setProxyHost(_request._proxy_host, _request._proxy_port);
             certRequest.setProxyUser(_request._proxy_user, _request._proxy_password);
@@ -375,7 +375,7 @@ bool ts::WebRequest::SystemGuts::startTransfer(CertState certState)
             certRequest._guts->_certFile.clear(); // don't recurse in case of cert issue!
 
             if (!certRequest.downloadFile(FRESH_CACERT_URL, _certFile) || !fs::exists(_certFile)) {
-                _request._report.verbose(u"failed to get a fresh CA list, use default list");
+                _request.report().verbose(u"failed to get a fresh CA list, use default list");
                 certState = CERT_NONE;
             }
         }
@@ -388,11 +388,11 @@ bool ts::WebRequest::SystemGuts::startTransfer(CertState certState)
 #endif
             // Initialize curl_multi and curl_easy
             if ((_curlm = ::curl_multi_init()) == nullptr) {
-                _request._report.error(u"libcurl 'curl_multi' initialization error");
+                _request.report().error(u"libcurl 'curl_multi' initialization error");
                 return false;
             }
             if ((_curl = ::curl_easy_init()) == nullptr) {
-                _request._report.error(u"libcurl 'curl_easy' initialization error");
+                _request.report().error(u"libcurl 'curl_easy' initialization error");
                 clearUnderLock();
                 return false;
             }
@@ -400,7 +400,7 @@ bool ts::WebRequest::SystemGuts::startTransfer(CertState certState)
             // Register the curl_easy handle inside the curl_multi handle.
             ::CURLMcode mstatus = ::curl_multi_add_handle(_curlm, _curl);
             if (mstatus != ::CURLM_OK) {
-                _request._report.error(multiMessage(u"curl_multi_add_handle error", mstatus));
+                _request.report().error(multiMessage(u"curl_multi_add_handle error", mstatus));
                 clearUnderLock();
                 return false;
             }
@@ -532,7 +532,7 @@ bool ts::WebRequest::SystemGuts::startTransfer(CertState certState)
 
         // Now process setopt error.
         if (status != ::CURLE_OK) {
-            _request._report.error(easyMessage(u"libcurl setopt error", status));
+            _request.report().error(easyMessage(u"libcurl setopt error", status));
             clear();
             return false;
         }
@@ -550,7 +550,7 @@ bool ts::WebRequest::SystemGuts::startTransfer(CertState certState)
         }
         else if (_canRetry) {
             // No data received and some remaining retries.
-            _request._report.debug(u"cannot start transfer, retrying after %s", retryInterval);
+            _request.report().debug(u"cannot start transfer, retrying after %s", retryInterval);
             retries--;
             std::this_thread::sleep_for(retryInterval);
         }
@@ -582,7 +582,7 @@ bool ts::WebRequest::SystemGuts::downloadError(const UString& msg, bool* certErr
     }
 
     // Display the error message at the appropriate level.
-    _request._report.log(level, msg);
+    _request.report().log(level, msg);
     return false;
 }
 
@@ -641,7 +641,7 @@ bool ts::WebRequest::SystemGuts::receive(void* buffer, size_t maxSize, size_t* r
 
     // Immediate error on interrupt.
     if (_request._interrupted) {
-        _request._report.debug(u"curl: request was interrupted");
+        _request.report().debug(u"curl: request was interrupted");
         return false;
     }
 
@@ -654,7 +654,7 @@ bool ts::WebRequest::SystemGuts::receive(void* buffer, size_t maxSize, size_t* r
                 // End of transfer.
                 if (msg->data.result == ::CURLE_OK) {
                     // Successful end of transfer, return true and let retSize be zero.
-                    _request._report.debug(u"curl: end of transfer");
+                    _request.report().debug(u"curl: end of transfer");
                     return true;
                 }
                 else {
@@ -666,7 +666,7 @@ bool ts::WebRequest::SystemGuts::receive(void* buffer, size_t maxSize, size_t* r
         // At this point, there is no data, no completion, no running handler, we are lost...
         // It has been observed that this happens when there is no reponse data (only headers).
         // So, let's assume that the transfer was successful.
-        _request._report.debug(u"curl: no data, no more running handle");
+        _request.report().debug(u"curl: no data, no more running handle");
         return true;
     }
 

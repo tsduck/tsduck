@@ -21,7 +21,6 @@
 #include "tsMessageQueue.h"
 #include "tstlvMessageFactory.h"
 #include "tsContinuityAnalyzer.h"
-#include "tsNullReport.h"
 #include "tsThread.h"
 
 #define DEFAULT_PROTOCOL_VERSION  2     // Default protocol version for EMMG/PDG <=> MUX.
@@ -60,7 +59,7 @@ namespace ts {
         public:
             // Constructor and destructor.
             TCPListener(DataInjectPlugin* plugin);
-            ~TCPListener();
+            virtual ~TCPListener() override;
 
             // Terminate the thread.
             void stop();
@@ -82,7 +81,7 @@ namespace ts {
         public:
             // Constructor and destructor.
             UDPListener(DataInjectPlugin* plugin);
-            ~UDPListener();
+            virtual ~UDPListener() override;
 
             // Open the UDP socket.
             bool open();

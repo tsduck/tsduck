@@ -15,7 +15,14 @@
 //----------------------------------------------------------------------------
 
 ts::TLSServer::TLSServer(Report* report) :
-    SuperClass(report, false)
+    TCPServer(report, false)
+{
+    allocateGuts();
+    CheckNonNull(_guts);
+}
+
+ts::TLSServer::TLSServer(ReporterBase* delegate) :
+    TCPServer(delegate, false)
 {
     allocateGuts();
     CheckNonNull(_guts);

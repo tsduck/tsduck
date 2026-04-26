@@ -99,7 +99,7 @@ int MainCode(int argc, char *argv[])
 
     if (opt.rest.use_tls) {
         // Use a Web API.
-        ts::RestClient api(opt.rest, opt);
+        ts::RestClient api(&opt, opt.rest);
         api.setAcceptTypes(u"text/plain");
         if (api.call(u"/", opt.command)) {
             ts::UString resp;

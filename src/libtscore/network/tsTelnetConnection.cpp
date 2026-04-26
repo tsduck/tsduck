@@ -7,7 +7,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsTelnetConnection.h"
-#include "tsNullReport.h"
 
 // A telnet end-of-line sequence.
 const std::string ts::TelnetConnection::EOL("\r\n");

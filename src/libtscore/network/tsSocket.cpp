@@ -22,6 +22,11 @@ ts::Socket::Socket(Report* report, bool non_blocking) :
 {
 }
 
+ts::Socket::Socket(ReporterBase* delegate, bool non_blocking) :
+    NonBlockingDevice(delegate, non_blocking)
+{
+}
+
 ts::Socket::~Socket()
 {
     Socket::close(true);
@@ -174,8 +179,8 @@ bool ts::Socket::close(bool silent)
 
         // Actually close the socket.
         const int err = SysCloseSocket(previous);
-        if (err != 0 && !silent) {
-            report().error(u"error closing socket: %s", SysErrorCodeMessage(err));
+        if (err != 0) {
+            report().log(SilentLevel(silent), u"error closing socket: %s", SysErrorCodeMessage(err));
         }
 
         // Notify all subscribers that the socket is now closed.

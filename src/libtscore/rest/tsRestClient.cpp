@@ -10,12 +10,26 @@
 
 
 //----------------------------------------------------------------------------
-// Constructor.
+// Constructors and destructor.
 //----------------------------------------------------------------------------
 
-ts::RestClient::RestClient(const RestArgs& args, Report& report) :
-    _args(args),
-    _report(report)
+ts::RestClient::RestClient(const RestArgs& args) :
+    ReporterBase(),
+    _args(args)
+{
+}
+ts::RestClient::RestClient(Report* report, const RestArgs& args) :
+    ReporterBase(report),
+    _args(args)
+{
+}
+ts::RestClient::RestClient(ReporterBase* delegate, const RestArgs& args) :
+    ReporterBase(delegate),
+    _args(args)
+{
+}
+
+ts::RestClient::~RestClient()
 {
 }
 
@@ -88,5 +102,5 @@ bool ts::RestClient::getResponseJSON(json::ValuePtr& value) const
 {
     UString text;
     getResponseText(text);
-    return json::Parse(value, text, _report);
+    return json::Parse(value, text, report());
 }

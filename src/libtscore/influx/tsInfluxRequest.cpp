@@ -13,24 +13,47 @@
 // Constructors and destructor.
 //----------------------------------------------------------------------------
 
-ts::InfluxRequest::InfluxRequest(Report& report, const InfluxArgs& args) :
+ts::InfluxRequest::InfluxRequest(const InfluxArgs& args) :
+    WebRequest(),
+    _args(args)
+{
+    InitAdditionalFlags();
+}
+
+ts::InfluxRequest::InfluxRequest(Report* report, const InfluxArgs& args) :
     WebRequest(report),
     _args(args)
 {
-    // Preformat additional tags.
+    InitAdditionalFlags();
+}
+
+ts::InfluxRequest::InfluxRequest(ReporterBase* delegate, const InfluxArgs& args) :
+    WebRequest(delegate),
+    _args(args)
+{
+    InitAdditionalFlags();
+}
+
+ts::InfluxRequest::~InfluxRequest()
+{
+}
+
+
+//----------------------------------------------------------------------------
+// Initialize _additional_tags from _args.
+//----------------------------------------------------------------------------
+
+void ts::InfluxRequest::InitAdditionalFlags()
+{
     for (auto& tv : _args.additional_tags) {
         const size_t equal = tv.find(u'=');
         if (equal == NPOS) {
-            report.error(u"invalid --tag definition '%s', use name=value", tv);
+            report().error(u"invalid --tag definition '%s', use name=value", tv);
         }
         else {
             _additional_tags.format(u",%s=%s", ToKey(tv.substr(0, equal)), ToKey(tv.substr(equal + 1)));
         }
     }
-}
-
-ts::InfluxRequest::~InfluxRequest()
-{
 }
 
 

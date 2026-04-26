@@ -7,6 +7,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsReporterBase.h"
+#include "tsNullReport.h"
 
 
 //----------------------------------------------------------------------------
@@ -19,6 +20,27 @@ ts::ReporterBase::~ReporterBase()
 
 
 //----------------------------------------------------------------------------
+// Access the Report which is associated with this object.
+//----------------------------------------------------------------------------
+
+ts::Report& ts::ReporterBase::report() const
+{
+    if (_mute) {
+        return NULLREP;
+    }
+    else if (_delegate != nullptr) {
+        return _delegate->report();
+    }
+    else if (_report != nullptr) {
+        return *_report;
+    }
+    else {
+        return NULLREP;
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Associate this object with another Report to log errors.
 //----------------------------------------------------------------------------
 
@@ -26,6 +48,13 @@ ts::Report* ts::ReporterBase::setReport(Report* report)
 {
     Report* previous = _report;
     _report = report;
+    return previous;
+}
+
+ts::ReporterBase* ts::ReporterBase::setReport(ReporterBase* delegate)
+{
+    ReporterBase* previous = _delegate;
+    _delegate = delegate;
     return previous;
 }
 

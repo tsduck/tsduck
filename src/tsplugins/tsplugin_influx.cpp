@@ -97,7 +97,7 @@ namespace ts {
         PacketCounter      _ts_packets = 0;     // All TS packets in period.
         PIDContextMap      _pids {};            // PID's description in period.
         ServiceContextMap  _services {};        // Services descriptions.
-        InfluxSender       _server {*this};     // Send requests to InfluxDB server.
+        InfluxSender       _server {this};      // Send requests to InfluxDB server.
 
         // Get the representable name of a service, from an iterator in _service.
         UString serviceName(const ServiceContextMap::value_type&) const;
@@ -428,7 +428,7 @@ void ts::InfluxPlugin::reportMetrics(bool force)
 void ts::InfluxPlugin::reportMetrics(const Time& timestamp, cn::milliseconds duration)
 {
     // Build data to post. Use a shared pointer to send to the message queue.
-    auto req = std::make_shared<InfluxRequest>(*this, _influx_args);
+    auto req = std::make_shared<InfluxRequest>(this, _influx_args);
     req->start(timestamp);
 
     // The total TS bitrate is always present and first.

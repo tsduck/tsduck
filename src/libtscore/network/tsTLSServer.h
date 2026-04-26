@@ -56,7 +56,7 @@ namespace ts {
     //!
     class TSCOREDLL TLSServer: public TCPServer
     {
-        TS_NOBUILD_NOCOPY(TLSServer);
+        TS_NOCOPY(TLSServer);
     public:
         //!
         //! Reference to the superclass.
@@ -68,7 +68,13 @@ namespace ts {
         //! @param [in] report Where to report errors. The @a report object must remain valid as long as this object
         //! exists or setReport() is used with another Report object. If @a report is null, log messages are discarded.
         //!
-        explicit TLSServer(Report* report);
+        explicit TLSServer(Report* report = nullptr);
+
+        //!
+        //! Constructor.
+        //! @param [in] delegate Use the report of another ReporterBase. If @a delegate is null, log messages are discarded.
+        //!
+        explicit TLSServer(ReporterBase* delegate);
 
         //!
         //! Constructor with initial arguments.
@@ -77,6 +83,13 @@ namespace ts {
         //! @param [in] args Initial TLS arguments.
         //!
         TLSServer(Report* report, const TLSArgs& args) : TLSServer(report) { setArgs(args); }
+
+        //!
+        //! Constructor with initial arguments.
+        //! @param [in] delegate Use the report of another ReporterBase. If @a delegate is null, log messages are discarded.
+        //! @param [in] args Initial TLS arguments.
+        //!
+        TLSServer(ReporterBase* delegate, const TLSArgs& args) : TLSServer(delegate) { setArgs(args); }
 
         //!
         //! Set command line arguments for the server.

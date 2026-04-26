@@ -60,7 +60,7 @@ namespace ts {
     //!
     class TSCOREDLL TCPConnection: public TCPSocket
     {
-        TS_NOBUILD_NOCOPY(TCPConnection);
+        TS_NOCOPY(TCPConnection);
     public:
         //!
         //! Reference to the superclass.
@@ -73,7 +73,14 @@ namespace ts {
         //! exists or setReport() is used with another Report object. If @a report is null, log messages are discarded.
         //! @param [in] non_blocking It true, the device is initially set in non-blocking mode.
         //!
-        explicit TCPConnection(Report* report, bool non_blocking = false) : TCPSocket(report, non_blocking) {}
+        explicit TCPConnection(Report* report = nullptr, bool non_blocking = false) : TCPSocket(report, non_blocking) {}
+
+        //!
+        //! Constructor.
+        //! @param [in] delegate Use the report of another ReporterBase. If @a delegate is null, log messages are discarded.
+        //! @param [in] non_blocking It true, the device is initially set in non-blocking mode.
+        //!
+        explicit TCPConnection(ReporterBase* delegate, bool non_blocking = false) : TCPSocket(delegate, non_blocking) {}
 
         //!
         //! Connect to a remote address and port.

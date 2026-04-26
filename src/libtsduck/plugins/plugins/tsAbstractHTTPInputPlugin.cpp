@@ -17,7 +17,7 @@
 
 ts::AbstractHTTPInputPlugin::AbstractHTTPInputPlugin(TSP* tsp_, const UString& description, const UString& syntax) :
     InputPlugin(tsp_, description, syntax),
-    _request(*this)
+    _request(this)
 {
     webArgs.defineArgs(*this);
 }

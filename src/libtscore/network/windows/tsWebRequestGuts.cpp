@@ -123,7 +123,7 @@ bool ts::WebRequest::receive(void* buffer, size_t maxSize, size_t& retSize)
         return _guts->receive(buffer, maxSize, retSize);
     }
     else {
-        _report.error(u"transfer not started");
+        report().error(u"transfer not started");
         return false;
     }
 }
@@ -149,10 +149,10 @@ void ts::WebRequest::abort()
 void ts::WebRequest::SystemGuts::error(const UString& message, ::DWORD code)
 {
     if (code == ERROR_SUCCESS) {
-        _request._report.error(u"Web error: %s", message);
+        _request.report().error(u"Web error: %s", message);
     }
     else {
-        _request._report.error(u"Web error: %s (%s)", message, WinErrorMessage(code));
+        _request.report().error(u"Web error: %s (%s)", message, WinErrorMessage(code));
     }
 }
 

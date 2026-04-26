@@ -64,8 +64,15 @@ ts::UString ts::WebRequest::_default_proxy_assword(DefaultProxy::Instance().url.
 // Constructors and destructor.
 //----------------------------------------------------------------------------
 
-ts::WebRequest::WebRequest(Report& report) :
-    _report(report)
+ts::WebRequest::WebRequest(Report* report) :
+    ReporterBase(report)
+{
+    allocateGuts();
+    CheckNonNull(_guts);
+}
+
+ts::WebRequest::WebRequest(ReporterBase* delegate) :
+    ReporterBase(delegate)
 {
     allocateGuts();
     CheckNonNull(_guts);
@@ -168,8 +175,8 @@ bool ts::WebRequest::deleteCookiesFile() const
         return true;
     }
     else {
-        _report.debug(u"deleting cookies file %s", _cookies_file_name);
-        return fs::remove(_cookies_file_name, &ErrCodeReport(_report, u"error deleting", _cookies_file_name));
+        report().debug(u"deleting cookies file %s", _cookies_file_name);
+        return fs::remove(_cookies_file_name, &ErrCodeReport(report(), u"error deleting", _cookies_file_name));
     }
 }
 
@@ -309,7 +316,7 @@ void ts::WebRequest::processReponseHeaders(const UString& text)
     // Process headers one by one.
     for (const auto& line : lines) {
 
-        _report.debug(u"HTTP header: %s", line);
+        report().debug(u"HTTP header: %s", line);
         const size_t colon = line.find(u':');
         size_t size = 0;
 
@@ -325,7 +332,7 @@ void ts::WebRequest::processReponseHeaders(const UString& text)
             UStringVector fields;
             line.split(fields, u' ', true, true);
             if (fields.size() < 2 || !fields[1].toInteger(_http_status)) {
-                _report.warning(u"no HTTP status found in header: %s", line);
+                report().warning(u"no HTTP status found in header: %s", line);
             }
 
             // Create a pseudo header for status line.
@@ -344,7 +351,7 @@ void ts::WebRequest::processReponseHeaders(const UString& text)
             // Process specific headers.
             if (name.similar(u"Location")) {
                 _final_url = std::move(value);
-                _report.debug(u"redirected to %s", _final_url);
+                report().debug(u"redirected to %s", _final_url);
             }
             else if (name.similar(u"Content-length") && value.toInteger(size)) {
                 _header_content_size = size;
@@ -361,12 +368,12 @@ void ts::WebRequest::processReponseHeaders(const UString& text)
 bool ts::WebRequest::open(const UString& url)
 {
     if (url.empty()) {
-        _report.error(u"no URL specified");
+        report().error(u"no URL specified");
         return false;
     }
 
     if (_is_open) {
-        _report.error(u"internal error, transfer already started, cannot download %s", url);
+        report().error(u"internal error, transfer already started, cannot download %s", url);
         return false;
     }
 
@@ -464,7 +471,7 @@ bool ts::WebRequest::downloadFile(const UString& url, const fs::path& fileName, 
     // Create the output file.
     std::ofstream file(fileName, std::ios::out | std::ios::binary);
     if (!file) {
-        _report.error(u"error creating file %s", fileName);
+        report().error(u"error creating file %s", fileName);
         close();
         return false;
     }
@@ -484,7 +491,7 @@ bool ts::WebRequest::downloadFile(const UString& url, const fs::path& fileName, 
 
         file.write(buffer.data(), thisSize);
         if (!file) {
-            _report.error(u"error saving download to %s", fileName);
+            report().error(u"error saving download to %s", fileName);
             success = false;
             break;
         }

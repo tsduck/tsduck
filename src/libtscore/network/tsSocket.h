@@ -33,7 +33,14 @@ namespace ts {
         //! exists or setReport() is used with another Report object. If @a report is null, log messages are discarded.
         //! @param [in] non_blocking It true, the device is initially set in non-blocking mode.
         //!
-        explicit Socket(Report* report, bool non_blocking = false);
+        explicit Socket(Report* report = nullptr, bool non_blocking = false);
+
+        //!
+        //! Constructor.
+        //! @param [in] delegate Use the report of another ReporterBase. If @a delegate is null, log messages are discarded.
+        //! @param [in] non_blocking It true, the device is initially set in non-blocking mode.
+        //!
+        explicit Socket(ReporterBase* delegate, bool non_blocking = false);
 
         //!
         //! Destructor.

@@ -38,7 +38,7 @@ namespace ts {
     //!
     class TSCOREDLL TLSConnection: public TCPConnection
     {
-        TS_NOBUILD_NOCOPY(TLSConnection);
+        TS_NOCOPY(TLSConnection);
     public:
         //!
         //! Reference to the superclass.
@@ -50,7 +50,13 @@ namespace ts {
         //! @param [in] report Where to report errors. The @a report object must remain valid as long as this object
         //! exists or setReport() is used with another Report object. If @a report is null, log messages are discarded.
         //!
-        explicit TLSConnection(Report* report);
+        explicit TLSConnection(Report* report = nullptr);
+
+        //!
+        //! Constructor.
+        //! @param [in] delegate Use the report of another ReporterBase. If @a delegate is null, log messages are discarded.
+        //!
+        explicit TLSConnection(ReporterBase* delegate);
 
         //!
         //! Constructor with initial client arguments.
@@ -59,6 +65,13 @@ namespace ts {
         //! @param [in] args Initial TLS client arguments.
         //!
         TLSConnection(Report* report, const TLSArgs& args) : TLSConnection(report) { setArgs(args); }
+
+        //!
+        //! Constructor with initial client arguments.
+        //! @param [in] delegate Use the report of another ReporterBase. If @a delegate is null, log messages are discarded.
+        //! @param [in] args Initial TLS client arguments.
+        //!
+        TLSConnection(ReporterBase* delegate, const TLSArgs& args) : TLSConnection(delegate) { setArgs(args); }
 
         //!
         //! Set command line arguments for the client.

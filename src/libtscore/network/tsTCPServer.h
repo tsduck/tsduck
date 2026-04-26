@@ -42,7 +42,7 @@ namespace ts {
     //!
     class TSCOREDLL TCPServer: public TCPSocket
     {
-        TS_NOBUILD_NOCOPY(TCPServer);
+        TS_NOCOPY(TCPServer);
     public:
         //!
         //! Reference to the superclass.
@@ -55,7 +55,14 @@ namespace ts {
         //! exists or setReport() is used with another Report object. If @a report is null, log messages are discarded.
         //! @param [in] non_blocking It true, the device is initially set in non-blocking mode.
         //!
-        explicit TCPServer(Report* report, bool non_blocking = false) : TCPSocket(report, non_blocking) {}
+        explicit TCPServer(Report* report = nullptr, bool non_blocking = false) : TCPSocket(report, non_blocking) {}
+
+        //!
+        //! Constructor.
+        //! @param [in] delegate Use the report of another ReporterBase. If @a delegate is null, log messages are discarded.
+        //! @param [in] non_blocking It true, the device is initially set in non-blocking mode.
+        //!
+        explicit TCPServer(ReporterBase* delegate, bool non_blocking = false) : TCPSocket(delegate, non_blocking) {}
 
         //!
         //! Start the server.

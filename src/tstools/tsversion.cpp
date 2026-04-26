@@ -377,7 +377,7 @@ namespace {
         }
 
         // Download the file.
-        ts::WebRequest web(opt);
+        ts::WebRequest web(&opt);
         std::cout << "Downloading " << file << " ..." << std::endl;
         return web.downloadFile(url, file);
     }

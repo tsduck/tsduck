@@ -35,7 +35,7 @@ void ts::hls::PlayList::clear()
     _alt_playlists.clear();
     _loaded_content.clear();
     _extra_tags.clear();
-    // Preserve _autoSaveDir
+    // Preserve _auto_save_dir
 }
 
 
@@ -495,7 +495,7 @@ bool ts::hls::PlayList::loadURL(const URL& url, bool strict, const WebRequestArg
     _type = type;
 
     // Build a web request to download the playlist.
-    WebRequest web(report);
+    WebRequest web(&report);
     web.setArgs(args);
     if (args.useCookies) {
         web.enableCookies(args.cookiesFile);

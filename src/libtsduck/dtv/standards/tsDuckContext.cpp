@@ -18,11 +18,11 @@
 
 
 //----------------------------------------------------------------------------
-// Constructor and destructors.
+// Constructors and destructor.
 //----------------------------------------------------------------------------
 
 ts::DuckContext::DuckContext(Report* report, std::ostream* output) :
-    _report(report != nullptr ? report : &CERR),
+    ReporterBase(report != nullptr ? report : &CERR),
     _initial_out(output != nullptr ? output : &std::cout),
     _out(_initial_out),
     _charset_in(&DVBCharset::DVB),  // default DVB charset
@@ -50,6 +50,10 @@ ts::DuckContext::DuckContext(Report* report, std::ostream* output) :
     }
 }
 
+ts::DuckContext::~DuckContext()
+{
+}
+
 
 //----------------------------------------------------------------------------
 // Reset the TSDuck context to initial configuration.
@@ -74,16 +78,6 @@ void ts::DuckContext::reset()
 
 
 //----------------------------------------------------------------------------
-// Set a new report for log and error messages.
-//----------------------------------------------------------------------------
-
-void ts::DuckContext::setReport(Report* report)
-{
-    _report = report != nullptr ? report : &CERR;
-}
-
-
-//----------------------------------------------------------------------------
 // Set the DVB character sets (default DVB character set if null).
 //----------------------------------------------------------------------------
 
@@ -104,8 +98,8 @@ void ts::DuckContext::setDefaultCharsetOut(const Charset* charset)
 
 void ts::DuckContext::addStandards(Standards mask)
 {
-    if (_report->debug() && (_acc_standards | mask) != _acc_standards) {
-        _report->debug(u"adding standards %s to %s", StandardsNames(mask), StandardsNames(_acc_standards));
+    if (report().debug() && (_acc_standards | mask) != _acc_standards) {
+        report().debug(u"adding standards %s to %s", StandardsNames(mask), StandardsNames(_acc_standards));
     }
     _acc_standards |= mask;
 }
@@ -114,8 +108,8 @@ void ts::DuckContext::resetStandards(Standards mask)
 {
     _acc_standards = _cmd_standards | mask;
 
-    if (_report->debug()) {
-        _report->debug(u"resetting standards to %s", StandardsNames(_acc_standards));
+    if (report().debug()) {
+        report().debug(u"resetting standards to %s", StandardsNames(_acc_standards));
     }
 }
 
@@ -158,17 +152,17 @@ ts::UString ts::DuckContext::defaultHFRegion() const
 
 const ts::HFBand* ts::DuckContext::hfBand(const UString& name, bool silent_band) const
 {
-    return HFBand::GetBand(defaultHFRegion(), name, *_report, silent_band);
+    return HFBand::GetBand(defaultHFRegion(), name, report(), silent_band);
 }
 
 const ts::HFBand* ts::DuckContext::vhfBand() const
 {
-    return HFBand::GetBand(defaultHFRegion(), u"VHF", *_report);
+    return HFBand::GetBand(defaultHFRegion(), u"VHF", report());
 }
 
 const ts::HFBand* ts::DuckContext::uhfBand() const
 {
-    return HFBand::GetBand(defaultHFRegion(), u"UHF", *_report);
+    return HFBand::GetBand(defaultHFRegion(), u"UHF", report());
 }
 
 
@@ -290,10 +284,10 @@ bool ts::DuckContext::setOutput(const fs::path& fileName, bool override)
 
         // Open new file if any.
         if (!fileName.empty() && fileName != u"-") {
-            _report->verbose(u"creating %s", fileName);
+            report().verbose(u"creating %s", fileName);
             _outFile.open(fileName, std::ios::out);
             if (!_outFile) {
-                _report->error(u"cannot create %s", fileName);
+                report().error(u"cannot create %s", fileName);
                 return false;
             }
             _out = &_outFile;
@@ -401,7 +395,7 @@ void ts::DuckContext::defineOptions(Args& args, int cmd_options_mask)
         args.help(u"hf-band-region", u"name",
             u"Specify the region for UHF/VHF band frequency layout. "
             u"The available regions are " +
-            UString::Join(HFBand::GetAllRegions(*_report)) + u".");
+            UString::Join(HFBand::GetAllRegions(report())) + u".");
     }
 
     // Options relating to default CAS identification.

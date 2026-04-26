@@ -12,6 +12,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
+#include "tsReporterBase.h"
 #include "tsRestArgs.h"
 #include "tsjson.h"
 #include "tsWebRequest.h"
@@ -21,16 +22,35 @@ namespace ts {
     //! Basic helper for REST API clients.
     //! @ingroup libtscore app
     //!
-    class TSCOREDLL RestClient
+    class TSCOREDLL RestClient : public ReporterBase
     {
         TS_NOBUILD_NOCOPY(RestClient);
     public:
         //!
         //! Constructor.
         //! @param [in] args Initial REST operation arguments. This instance will keep a copy of it.
-        //! @param [in,out] report Where to report errors. This instance will keep a reference to it.
         //!
-        RestClient(const RestArgs& args, Report& report);
+        RestClient(const RestArgs& args);
+
+        //!
+        //! Constructor.
+        //! @param [in] report Where to report errors. The @a report object must remain valid as long as this object
+        //! exists or setReport() is used with another Report object. If @a report is null, log messages are discarded.
+        //! @param [in] args Initial REST operation arguments. This instance will keep a copy of it.
+        //!
+        RestClient(Report* report, const RestArgs& args);
+
+        //!
+        //! Constructor.
+        //! @param [in] delegate Use the report of another ReporterBase. If @a delegate is null, log messages are discarded.
+        //! @param [in] args Initial REST operation arguments. This instance will keep a copy of it.
+        //!
+        RestClient(ReporterBase* delegate, const RestArgs& args);
+
+        //!
+        //! Destructor.
+        //!
+        virtual ~RestClient() override;
 
         //!
         //! Set the accepted MIME types for the response.
@@ -95,8 +115,7 @@ namespace ts {
 
     private:
         RestArgs   _args;
-        Report&    _report;
-        WebRequest _request {_report};
+        WebRequest _request {this};
         ByteBlock  _response {};
         UString    _accept {};
     };

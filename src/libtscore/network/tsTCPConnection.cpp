@@ -251,9 +251,7 @@ bool ts::TCPConnection::shutdownSocket(int how, bool silent)
         std::lock_guard<std::recursive_mutex> lock(_mutex);
         // Do not report "not connected" errors since they are normal when the peer disconnects first.
         if (isOpen() && errcode != SYS_SOCKET_ERR_NOTCONN) {
-            if (!silent) {
-                report().error(u"error shutting down socket: %s", SysErrorCodeMessage(errcode));
-            }
+            report().log(SilentLevel(silent), u"error shutting down socket: %s", SysErrorCodeMessage(errcode));
             return false;
         }
     }

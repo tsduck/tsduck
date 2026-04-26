@@ -88,7 +88,7 @@ ts::Report& WebRequestTest::report()
 
 void WebRequestTest::testURL(const ts::UString& url, bool expectRedirection, bool expectSSL, bool expectTextContent, bool expectInvariant)
 {
-    ts::WebRequest request(report());
+    ts::WebRequest request(&report());
 
     // Test binary download
     ts::ByteBlock data;
@@ -187,7 +187,7 @@ TSUNIT_DEFINE_TEST(ReadMeFile)
 
 TSUNIT_DEFINE_TEST(NoRedirection)
 {
-    ts::WebRequest request(report());
+    ts::WebRequest request(&report());
     request.setAutoRedirect(false);
 
     ts::ByteBlock data;
@@ -207,7 +207,7 @@ TSUNIT_DEFINE_TEST(NoRedirection)
 TSUNIT_DEFINE_TEST(NonExistentHost)
 {
     ts::ReportBuffer<ts::ThreadSafety::None> rep;
-    ts::WebRequest request(rep);
+    ts::WebRequest request(&rep);
 
     ts::ByteBlock data;
     TSUNIT_ASSERT(!request.downloadBinaryContent(u"http://non.existent.fake-domain/", data));
@@ -218,7 +218,7 @@ TSUNIT_DEFINE_TEST(NonExistentHost)
 TSUNIT_DEFINE_TEST(InvalidURL)
 {
     ts::ReportBuffer<ts::ThreadSafety::None> rep;
-    ts::WebRequest request(rep);
+    ts::WebRequest request(&rep);
 
     ts::ByteBlock data;
     TSUNIT_ASSERT(!request.downloadBinaryContent(u"pouette://tagada/tsoin/tsoin", data));
@@ -234,7 +234,7 @@ TSUNIT_DEFINE_TEST(Post)
     const ts::UString url(u"https://httpbin.org/post");
     const ts::UString post(u"foo bar\nqsdf=tif,dft=ty ryhrh=12,af\nfoo bar");
 
-    ts::WebRequest request(report());
+    ts::WebRequest request(&report());
     request.setPostData(post);
 
     // Use assumption instead of assertion because we do not fully trust the reliability to that site.

@@ -12,6 +12,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
+#include "tsReporterBase.h"
 #include "tsWebRequestArgs.h"
 #include "tsReport.h"
 #include "tsByteBlock.h"
@@ -34,26 +35,27 @@ namespace ts {
     //! is used (system configuration on Windows, http_proxy environment on
     //! Unix systems).
     //!
-    class TSCOREDLL WebRequest
+    class TSCOREDLL WebRequest : public ReporterBase
     {
-        TS_NOBUILD_NOCOPY(WebRequest);
+        TS_NOCOPY(WebRequest);
     public:
         //!
         //! Constructor.
-        //! @param [in,out] report Where to report errors.
+        //! @param [in] report Where to report errors. The @a report object must remain valid as long as this object
+        //! exists or setReport() is used with another Report object. If @a report is null, log messages are discarded.
         //!
-        WebRequest(Report& report);
+        WebRequest(Report* report = nullptr);
+
+        //!
+        //! Constructor.
+        //! @param [in] delegate Use the report of another ReporterBase. If @a delegate is null, log messages are discarded.
+        //!
+        WebRequest(ReporterBase* delegate);
 
         //!
         //! Destructor.
         //!
-        virtual ~WebRequest();
-
-        //!
-        //! Use the Report object of this instance.
-        //! @return A reference to the Report object of this instance.
-        //!
-        Report& report() { return _report; }
+        virtual ~WebRequest() override;
 
         //!
         //! Default TCP port for HTTP.
@@ -412,7 +414,6 @@ namespace ts {
         // This is done to avoid inclusion of specialized headers in this public file.
         class SystemGuts;
 
-        Report&          _report;
         UString          _user_agent {DEFAULT_USER_AGENT};
         UString          _original_url {};
         UString          _final_url {};

@@ -32,8 +32,13 @@ namespace ts {
     //!
     class TSCOREDLL UDPSocket: public Socket
     {
-        TS_NOBUILD_NOCOPY(UDPSocket);
+        TS_NOCOPY(UDPSocket);
     public:
+        //!
+        //! Reference to the superclass.
+        //!
+        using SuperClass = Socket;
+
         //!
         //! Constructor.
         //! @param [in] report Where to report errors. The @a report object must remain valid as long as this object
@@ -44,7 +49,18 @@ namespace ts {
         //! If @a gen is IP::v6, the socket is created with option IPV6_V6ONLY set.
         //! @param [in] non_blocking It true, the device is initially set in non-blocking mode.
         //!
-        explicit UDPSocket(Report* report, bool auto_open = false, IP gen = IP::Any, bool non_blocking = false);
+        explicit UDPSocket(Report* report = nullptr, bool auto_open = false, IP gen = IP::Any, bool non_blocking = false);
+
+        //!
+        //! Constructor.
+        //! @param [in] delegate Use the report of another ReporterBase. If @a delegate is null, log messages are discarded.
+        //! @param [in] auto_open If true, call open() immediately.
+        //! @param [in] gen IP generation, IPv4 or IPv6.
+        //! If set to IP::Any, this socket can receive IPv4 and IPv6 datagrams.
+        //! If @a gen is IP::v6, the socket is created with option IPV6_V6ONLY set.
+        //! @param [in] non_blocking It true, the device is initially set in non-blocking mode.
+        //!
+        explicit UDPSocket(ReporterBase* delegate, bool auto_open = false, IP gen = IP::Any, bool non_blocking = false);
 
         //!
         //! Destructor.

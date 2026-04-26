@@ -32,7 +32,14 @@ const int ts::TLSConnection::FEATURE = 0;
 //----------------------------------------------------------------------------
 
 ts::TLSConnection::TLSConnection(Report* report) :
-    SuperClass(report, false)
+    TCPConnection(report, false)
+{
+    allocateGuts();
+    CheckNonNull(_guts);
+}
+
+ts::TLSConnection::TLSConnection(ReporterBase* delegate) :
+    TCPConnection(delegate, false)
 {
     allocateGuts();
     CheckNonNull(_guts);

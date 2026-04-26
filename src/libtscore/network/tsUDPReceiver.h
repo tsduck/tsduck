@@ -22,15 +22,27 @@ namespace ts {
     //!
     class TSCOREDLL UDPReceiver: public UDPSocket
     {
-        TS_NOBUILD_NOCOPY(UDPReceiver);
+        TS_NOCOPY(UDPReceiver);
     public:
+        //!
+        //! Reference to the superclass.
+        //!
+        using SuperClass = UDPSocket;
+
         //!
         //! Constructor.
         //! @param [in] report Where to report errors. The @a report object must remain valid as long as this object
         //! exists or setReport() is used with another Report object. If @a report is null, log messages are discarded.
         //! @param [in] non_blocking It true, the device is initially set in non-blocking mode.
         //!
-        explicit UDPReceiver(Report* report, bool non_blocking = false) : UDPSocket(report, false, IP::Any, non_blocking) {}
+        explicit UDPReceiver(Report* report = nullptr, bool non_blocking = false) : UDPSocket(report, false, IP::Any, non_blocking) {}
+
+        //!
+        //! Constructor.
+        //! @param [in] delegate Use the report of another ReporterBase. If @a delegate is null, log messages are discarded.
+        //! @param [in] non_blocking It true, the device is initially set in non-blocking mode.
+        //!
+        explicit UDPReceiver(ReporterBase* delegate, bool non_blocking = false) : UDPSocket(delegate, false, IP::Any, non_blocking) {}
 
         //!
         //! Set UDP reception parameters.

@@ -89,7 +89,7 @@ bool ts::GitHubRelease::CallGitHub(json::ValuePtr& response, json::Type expected
     }
 
     // Build the request.
-    WebRequest req(report);
+    WebRequest req(&report);
     const UString url(github + u"/repos/" + owner + u"/" + repository + request);
 
     // Look for an optional GitHub authorization token.

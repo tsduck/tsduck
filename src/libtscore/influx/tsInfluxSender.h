@@ -12,6 +12,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
+#include "tsReporterBase.h"
 #include "tsThread.h"
 #include "tsMessageQueue.h"
 #include "tsInfluxArgs.h"
@@ -24,15 +25,16 @@ namespace ts {
     //! Using a thread avoid slowing down the packet transmission.
     //! @ingroup libtscore net
     //!
-    class TSCOREDLL InfluxSender : private Thread
+    class TSCOREDLL InfluxSender : public ReporterBase, private Thread
     {
-        TS_NOBUILD_NOCOPY(InfluxSender);
+        TS_NOCOPY(InfluxSender);
     public:
         //!
         //! Constructor.
-        //! @param [in,out] report Where to report errors. A reference is internally kept in the object.
+        //! @param [in] report Where to report errors. The @a report object must remain valid as long as this object
+        //! exists or setReport() is used with another Report object. If @a report is null, log messages are discarded.
         //!
-        InfluxSender(Report& report);
+        InfluxSender(Report* report = nullptr);
 
         //!
         //! Start the asynchronous sender.
@@ -56,7 +58,6 @@ namespace ts {
         bool send(InfluxRequestPtr& request);
 
     private:
-        Report& _report;
         MessageQueue<InfluxRequest> _queue {};
 
         // Thread main code.
