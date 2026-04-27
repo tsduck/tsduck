@@ -190,22 +190,28 @@ void ts::DSMCCUserToNetworkMessage::deserializePayload(PSIBuffer& buf, const Sec
             module.module_size = buf.getUInt32();
             module.module_version = buf.getUInt8();
 
-            buf.skipBytes(1);  // module_info_length
+            buf.pushReadSizeFromLength(8);  // module_info_length
 
-            module.module_timeout = buf.getUInt32();
-            module.block_timeout = buf.getUInt32();
-            module.min_block_time = buf.getUInt32();
+            if (buf.remainingReadBytes() > 0) {
 
-            const uint8_t taps_count = buf.getUInt8();
+                module.module_timeout = buf.getUInt32();
+                module.block_timeout = buf.getUInt32();
+                module.min_block_time = buf.getUInt32();
 
-            for (size_t j = 0; j < taps_count; j++) {
-                DSMCCTap& tap(module.taps.emplace_back());
-                tap.deserialize(buf);
+                const uint8_t taps_count = buf.getUInt8();
+
+                for (size_t j = 0; j < taps_count; j++) {
+                    DSMCCTap& tap(module.taps.emplace_back());
+                    tap.deserialize(buf);
+                }
+
+                uint8_t user_info_length = buf.getUInt8();
+
+                buf.getDescriptorList(module.descs, user_info_length);
+
             }
 
-            uint8_t user_info_length = buf.getUInt8();
-
-            buf.getDescriptorList(module.descs, user_info_length);
+            buf.popState();  // close module_info_length
         }
 
         uint16_t private_data_length = buf.getUInt16();
@@ -292,6 +298,7 @@ void ts::DSMCCUserToNetworkMessage::serializePayload(BinaryTable& table, PSIBuff
             // but UserInfoLength is only 1 byte instead of 2 assumed
             // by above method
             buf.putDescriptorList(module.second.descs);
+            // buf.putDescriptorListWithLength(module.second.descs, 0, NPOS, 8);
 
             buf.popState();  // close user_info_length
 
@@ -380,27 +387,32 @@ void ts::DSMCCUserToNetworkMessage::DisplaySection(TablesDisplay& disp, const ts
             disp << margin << UString::Format(u"Module size: %n", module_size) << std::endl;
             disp << margin << UString::Format(u"Module version: %n", module_version) << std::endl;
 
-            buf.skipBytes(1);  // module_info_length
+            buf.pushReadSizeFromLength(8);  // module_info_length
 
-            uint32_t module_timeout = buf.getUInt32();
-            uint32_t block_timeout = buf.getUInt32();
-            uint32_t min_block_time = buf.getUInt32();
-            uint8_t taps_count = buf.getUInt8();
+            if (buf.remainingReadBytes() > 0) {
 
-            disp << margin << UString::Format(u"Module timeout: %n", module_timeout) << std::endl;
-            disp << margin << UString::Format(u"Block timeout: %n", block_timeout) << std::endl;
-            disp << margin << UString::Format(u"Min block time: %n", min_block_time) << std::endl;
-            disp << margin << UString::Format(u"Taps count: %n", taps_count) << std::endl;
+                uint32_t module_timeout = buf.getUInt32();
+                uint32_t block_timeout = buf.getUInt32();
+                uint32_t min_block_time = buf.getUInt32();
+                uint8_t taps_count = buf.getUInt8();
 
-            bool ok = true;
-            for (size_t k = 0; ok && k < taps_count; k++) {
-                ok = DSMCCTap::Display(disp, buf, margin);
+                disp << margin << UString::Format(u"Module timeout: %n", module_timeout) << std::endl;
+                disp << margin << UString::Format(u"Block timeout: %n", block_timeout) << std::endl;
+                disp << margin << UString::Format(u"Min block time: %n", min_block_time) << std::endl;
+                disp << margin << UString::Format(u"Taps count: %n", taps_count) << std::endl;
+
+                bool ok = true;
+                for (size_t k = 0; ok && k < taps_count; k++) {
+                    ok = DSMCCTap::Display(disp, buf, margin);
+                }
+
+                uint8_t user_info_length = buf.getUInt8();
+
+                DescriptorContext context(disp.duck(), section.tableId(), section.definingStandards(disp.duck().standards()));
+                disp.displayDescriptorList(section, context, false, buf, margin, u"Descriptor List:", u"None", user_info_length);
             }
 
-            uint8_t user_info_length = buf.getUInt8();
-
-            DescriptorContext context(disp.duck(), section.tableId(), section.definingStandards(disp.duck().standards()));
-            disp.displayDescriptorList(section, context, false, buf, margin, u"Descriptor List:", u"None", user_info_length);
+            buf.popState();  // close module_info_length
         }
 
         uint16_t private_data_length = buf.getUInt16();
