@@ -22,6 +22,26 @@
 TS_REGISTER_TABLE(MY_CLASS, {MY_TID}, MY_STD, MY_XML_NAME, MY_CLASS::DisplaySection);
 
 
+namespace {
+    // Object Carousel DSI's IOR has type_id == "srg".
+    // Wire layout: type_id_length(32) | 's' 'r' 'g' | pad. Inspect the next
+    // 7+ bytes without consuming them; if they match, treat the DSI's
+    // private_data as an IOR, otherwise as a GroupInfoIndication.
+    bool LooksLikeObjectCarouselDSI(const uint8_t* private_data, size_t size)
+    {
+        if (size < 7) {
+            return false;
+        }
+        const uint32_t type_id_length =
+            (uint32_t(private_data[0]) << 24) |
+            (uint32_t(private_data[1]) << 16) |
+            (uint32_t(private_data[2]) << 8) |
+             uint32_t(private_data[3]);
+        return type_id_length == 4 && private_data[4] == 's' && private_data[5] == 'r' && private_data[6] == 'g';
+    }
+}
+
+
 //----------------------------------------------------------------------------
 // Constructors and assignment.
 //----------------------------------------------------------------------------
@@ -166,9 +186,12 @@ void ts::DSMCCUserToNetworkMessage::deserializePayload(PSIBuffer& buf, const Sec
         // Private_data_length
         buf.pushReadSizeFromLength(16);  // private_data_length
 
-        dsi.ior.deserialize(buf);
-
-        buf.skipBytes(4);  // download_taps_count + service_context_list_count + user_info_length
+        if (LooksLikeObjectCarouselDSI(buf.currentReadAddress(), buf.remainingReadBytes())) {
+            dsi.ior.deserialize(buf); // Object carousel: IOR
+            buf.skipBytes(4);  // download_taps_count + service_context_list_count + user_info_length
+        } else {
+            dsi.group_info.deserialize(buf); // Data carousel: GroupInfoIndication
+        }
 
         buf.popState();
     }
@@ -248,12 +271,15 @@ void ts::DSMCCUserToNetworkMessage::serializePayload(BinaryTable& table, PSIBuff
 
         buf.pushWriteSequenceWithLeadingLength(16);  // private_data
 
-        // IOP::IOR
-        dsi->ior.serialize(buf);
-
-        buf.putUInt8(0x00);     // download_taps_count
-        buf.putUInt8(0x00);     // service_context_list_count
-        buf.putUInt16(0x0000);  // user_info_length
+        if (!dsi->group_info.groups.empty()) {
+            dsi->group_info.serialize(buf);
+        }
+        else {
+            dsi->ior.serialize(buf);
+            buf.putUInt8(0x00);     // download_taps_count
+            buf.putUInt8(0x00);     // service_context_list_count
+            buf.putUInt16(0x0000);  // user_info_length
+        }
 
         buf.popState();  // close private_data
     }
@@ -355,15 +381,20 @@ void ts::DSMCCUserToNetworkMessage::DisplaySection(TablesDisplay& disp, const ts
         DSMCCCompatibilityDescriptor::Display(disp, buf, margin);
         buf.pushReadSizeFromLength(16);  //private_data_length
 
-        DSMCCIOR::Display(disp, buf, margin);
+        if (LooksLikeObjectCarouselDSI(buf.currentReadAddress(), buf.remainingReadBytes())) {
+            DSMCCIOR::Display(disp, buf, margin);
 
-        uint8_t download_taps_count = buf.getUInt8();
-        uint8_t service_context_list_count = buf.getUInt8();
-        uint16_t user_info_length = buf.getUInt16();
+            uint8_t download_taps_count = buf.getUInt8();
+            uint8_t service_context_list_count = buf.getUInt8();
+            uint16_t user_info_length = buf.getUInt16();
 
-        disp << margin << UString::Format(u"Download taps count: %n", download_taps_count) << std::endl;
-        disp << margin << UString::Format(u"Service context list count: %n", service_context_list_count) << std::endl;
-        disp << margin << UString::Format(u"User info length: %n", user_info_length) << std::endl;
+            disp << margin << UString::Format(u"Download taps count: %n", download_taps_count) << std::endl;
+            disp << margin << UString::Format(u"Service context list count: %n", service_context_list_count) << std::endl;
+            disp << margin << UString::Format(u"User info length: %n", user_info_length) << std::endl;
+        }
+        else {
+            DSMCCGroupInfoIndication::Display(disp, buf, margin);
+        }
 
         buf.popState();
     }
@@ -443,7 +474,12 @@ void ts::DSMCCUserToNetworkMessage::buildXML(DuckContext& duck, xml::Element* ro
         dsi_xml->addHexaTextChild(u"server_id", dsi->server_id, true);
         compatibility_descriptor.toXML(duck, dsi_xml, true);
 
-        dsi->ior.toXML(duck, dsi_xml);
+        if (!dsi->group_info.groups.empty()) {
+            dsi->group_info.toXML(duck, dsi_xml);
+        }
+        else {
+            dsi->ior.toXML(duck, dsi_xml);
+        }
     }
     else if (const auto* dii = toDII()) {
 
@@ -495,12 +531,23 @@ bool ts::DSMCCUserToNetworkMessage::analyzeXML(DuckContext& duck, const xml::Ele
         ok = dsi_element->getHexaTextChild(dsi.server_id, u"server_id") &&
             compatibility_descriptor.fromXML(duck, dsi_element, false);
 
-        const xml::Element* ior_element = dsi_element->findFirstChild(u"IOR", true);
-        if (!ok || ior_element == nullptr) {
+        if (!ok) {
             return false;
         }
 
-        ok = dsi.ior.fromXML(duck, ior_element);
+        // Accept either an <IOR> child (object carousel) or a <GroupInfoIndication> child (data carousel).
+        const xml::Element* ior_element = dsi_element->findFirstChild(u"IOR", false);
+        const xml::Element* gii_element = dsi_element->findFirstChild(u"GroupInfoIndication", false);
+
+        if (ior_element != nullptr) {
+            ok = dsi.ior.fromXML(duck, ior_element);
+        }
+        else if (gii_element != nullptr) {
+            ok = dsi.group_info.fromXML(duck, gii_element);
+        }
+        else {
+            return false;
+        }
     }
     else if (header.message_id == DSMCC_MSGID_DII) {
         const xml::Element* dii_element = element->findFirstChild(u"DII", true);

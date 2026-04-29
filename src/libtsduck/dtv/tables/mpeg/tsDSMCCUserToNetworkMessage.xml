@@ -14,12 +14,14 @@
       <_any in="_metadata"/>
 
       <!-- required when message_id == 0x1006 (DownloadServerInitiate) -->
+      <!-- exactly one of <IOR> (object carousel) or <GroupInfoIndication> (data carousel) -->
       <DSI>
         <server_id>
           Hexadecimal content
         </server_id>
         <_any in="_dsmccCompatibilityDescriptor"/>
         <_any in="_dsmccIOR"/>
+        <_any in="_dsmccGroupInfoIndication"/>
       </DSI>
 
       <!-- required when message_id == 0x1002 (DownloadInfoIndication) -->

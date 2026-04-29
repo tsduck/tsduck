@@ -60,14 +60,17 @@ void ts::DSMCCCarousel::flushPendingObjects()
 
 void ts::DSMCCCarousel::feedUserToNetwork(const DSMCCUserToNetworkMessage& unm)
 {
-    // SRG bootstrap only applies to object carousels. In data-carousel mode
-    // (DVB-SSU, etc.) the DSI's private_data is a GroupInfoIndication, not an
-    // IOR pointing to a ServiceGateway — the upstream UNM parser reads it as
-    // an IOR regardless, so dsi.ior would be garbage here. Skip bootstrap; the
-    // assembler still consumes DII as usual.
-    if (_scan_biop) {
-        if (const auto* dsi = unm.toDSI()) {
+    if (const auto* dsi = unm.toDSI()) {
+        // Object-carousel DSI: ior is populated, bootstrap the SRG location.
+        // Data-carousel DSI: group_info is populated; log a per-group summary.
+        if (_scan_biop) {
             bootstrapFromDSI(*dsi);
+        }
+        else if (!dsi->group_info.groups.empty()) {
+            for (const auto& group : dsi->group_info.groups) {
+                _duck.report().verbose(u"DSI group: id=0x%X, size=%d, %d compatibility descriptor(s)",
+                                       group.group_id, group.group_size, group.group_compatibility.descs.size());
+            }
         }
     }
     _assembler.feedUserToNetwork(unm);

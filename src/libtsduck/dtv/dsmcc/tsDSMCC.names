@@ -65,11 +65,14 @@ Bits = 16
 0x80b0 = ServerSessionInProgressRequest
 
 [DSMCC.descriptorType]
-# ISO/IEC 13818-6, 6.1
+# ISO/IEC 13818-6, 6.1; DVB-reserved range from ETSI TR 101 202.
 Bits = 8
-0x00 = Pad descriptor
-0x01 = System Hardware descriptor
-0x02 = System Software descriptor
+0x00      = Pad descriptor
+0x01      = System Hardware descriptor
+0x02      = System Software descriptor
+0x03-0x3F = ISO/IEC 13818-6 reserved
+0x40-0x7F = DVB reserved
+0x80-0xFF = User defined
 
 [DSMCC.specifierType]
 # ISO/IEC 13818-6, 6.1

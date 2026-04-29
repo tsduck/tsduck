@@ -17,6 +17,7 @@
 #include "tsDSMCCTap.h"
 #include "tsDSMCCCompatibilityDescriptor.h"
 #include "tsDSMCCIOR.h"
+#include "tsDSMCCGroupInfoIndication.h"
 
 namespace ts {
     //!
@@ -61,8 +62,9 @@ namespace ts {
         //! DSM-CC DownloadServerInitiate (DSI) message body.
         //!
         struct TSDUCKDLL DownloadServerInitiate {
-            ByteBlock server_id {};  //!< Field shall be set to 20 bytes with the value 0xFF.
-            DSMCCIOR ior {};         //!< Interoperable Object Reference (IOR) structure.
+            ByteBlock server_id {};                 //!< Field shall be set to 20 bytes with the value 0xFF.
+            DSMCCIOR ior {};                        //!< IOR structure (object carousel; populated when type_id == "srg").
+            DSMCCGroupInfoIndication group_info {}; //!< GroupInfoIndication (data carousel; populated otherwise).
 
             //!
             //! Reset the DSI body to its default state.
@@ -71,6 +73,7 @@ namespace ts {
             {
                 server_id.clear();
                 ior.clear();
+                group_info.clear();
             }
         };
 
