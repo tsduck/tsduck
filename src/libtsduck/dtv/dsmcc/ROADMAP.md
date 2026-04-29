@@ -78,13 +78,11 @@ there from the signalling:
 Enough to pull bytes off a DVB-SSU stream, but it drops most of the
 structure the spec gives us:
 
-- [ ] **`GroupInfoIndication` parsing.** DSI's `private_data` in
+- [x] **`GroupInfoIndication` parsing.** DSI's `private_data` in
   data-carousel mode carries a `GroupInfoIndication` listing the
   carousel's groups (not an IOR). The UNM table parser currently
   always reads it as an IOR; proper dispatch by carousel type is
   needed.
-- [ ] **`SuperGroupInfoIndication`** for the (rarer) case where groups
-  are themselves grouped.
 - [ ] **Group hierarchy.** Track groups as first-class citizens; expose
   `carousel → group → module` instead of the flat module list.
 - [ ] **Group-scoped module ids.** Today modules are keyed purely by

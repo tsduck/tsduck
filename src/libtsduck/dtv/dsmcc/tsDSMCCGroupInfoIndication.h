@@ -85,7 +85,7 @@ namespace ts {
         //!
         //! Decode the GroupInfoIndication from XML.
         //! @param [in,out] duck TSDuck execution context.
-        //! @param [in] element The XML <GroupInfoIndication> element.
+        //! @param [in] element The XML GroupInfoIndication element.
         //! @return True on success, false on error.
         //!
         bool fromXML(DuckContext& duck, const xml::Element* element);

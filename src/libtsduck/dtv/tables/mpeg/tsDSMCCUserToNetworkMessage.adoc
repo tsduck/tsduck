@@ -35,6 +35,7 @@ Defined by MPEG in <<ISO-13818-6>>.
       </descriptor>
     </compatibilityDescriptor>
 
+    <!-- DSM-CC IOR() structure (object-carousel DSI body) -->
     <IOR>
       <type_id>
         Hexadecimal content
@@ -90,6 +91,33 @@ Defined by MPEG in <<ISO-13818-6>>.
         </Unknown_profile_body>
       </tagged_profile>
     </IOR>
+
+    <!-- DSM-CC GroupInfoIndication() structure (data-carousel DSI body) -->
+    <GroupInfoIndication>
+      <!-- Zero or more groups -->
+      <group group_id="uint32, required" group_size="uint32, required">
+        <compatibilityDescriptor>
+          <!-- Zero or more descriptors -->
+          <descriptor
+              descriptorType="uint8, required"
+              specifierType="uint8, default=1"
+              specifierData="uint24, required"
+              model="uint16, default=0"
+              version="uint16, default=0">
+            <!-- Zero or more subdescriptors -->
+            <subDescriptor subDescriptorType="uint8, required">
+              Hexadecimal content
+            </subDescriptor>
+          </descriptor>
+        </compatibilityDescriptor>
+        <group_info>
+          Hexadecimal content
+        </group_info>
+      </group>
+      <private_data>
+        Hexadecimal content
+      </private_data>
+    </GroupInfoIndication>
 
   </DSI>
 
