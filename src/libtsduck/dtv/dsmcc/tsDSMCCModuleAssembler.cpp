@@ -9,6 +9,8 @@
 #include "tsDSMCCModuleAssembler.h"
 #include "tsPSIBuffer.h"
 #include "tsDSMCCCompressedModuleDescriptor.h"
+#include "tsDSMCCNameDescriptor.h"
+#include "tsDID.h"
 
 //----------------------------------------------------------------------------
 // Constructor
@@ -86,6 +88,11 @@ void ts::DSMCCModuleAssembler::processDII(const DSMCCUserToNetworkMessage& unm)
             ctx.setSize(mod_info.module_size, dii->block_size);
             ctx.status = ModuleContext::Status::PENDING;
 
+            // Snapshot the DII's per-module descriptor list. Consumers decode
+            // recognized DIDs on demand; the assembler itself only inspects
+            // compressed_module_descriptor below.
+            ctx.descs = mod_info.descs;
+
             // Look for compressed_module_descriptor
             const size_t index = mod_info.descs.search(DID_DSMCC_COMPRESSED_MODULE);
             if (index < mod_info.descs.count()) {
@@ -134,9 +141,6 @@ void ts::DSMCCModuleAssembler::processDDB(DSMCCDownloadDataMessage& ddm)
     if (ctx.module_version != ddm.module_version || ctx.status == ModuleContext::Status::COMPLETE) {
         return;
     }
-
-    _duck.report().verbose(u"Module complete: download_id=0x%X id=0x%X size=%d",
-                           ctx.download_id, ctx.module_id, ddm.block_data.size());
 
     // Invariant: ddm.block_data already contains the full module payload — the upstream
     // DSMCC section layer concatenates DDB blocks before handing us the DDM. Do not
@@ -196,6 +200,13 @@ void ts::DSMCCModuleAssembler::ModuleContext::setSize(uint32_t size, uint16_t bl
 }
 
 
+const ts::DSMCCModuleAssembler::ModuleContext* ts::DSMCCModuleAssembler::module(uint32_t download_id, uint16_t module_id) const
+{
+    const auto it = _modules.find(ModuleKey {download_id, module_id});
+    return it == _modules.end() ? nullptr : &it->second;
+}
+
+
 ts::UString ts::DSMCCModuleAssembler::listModules() const
 {
     UString out;
@@ -204,10 +215,18 @@ ts::UString ts::DSMCCModuleAssembler::listModules() const
         const UString comp = ctx.is_compressed
             ? UString::Format(u"yes (orig %d)", ctx.original_size)
             : UString(u"no");
-        out += UString::Format(u"Dl: %08X | ID: %04X | Ver: %d | Size: %6d | Blocks: %3d | Compressed: %s | Status: %s\n",
+        out += UString::Format(u"Dl: %08X | ID: %04X | Ver: %d | Size: %6d | Blocks: %3d | Compressed: %s | Status: %s",
                                ctx.download_id, ctx.module_id, ctx.module_version, ctx.module_size,
                                ctx.expected_blocks, comp,
                                ctx.isComplete() ? u"COMPLETE" : u"PENDING");
+        const size_t ni = ctx.descs.search(DID_DSMCC_NAME);
+        if (ni < ctx.descs.count()) {
+            const DSMCCNameDescriptor nd(_duck, ctx.descs[ni]);
+            if (nd.isValid() && !nd.name.empty()) {
+                out += UString::Format(u" | Name: \"%s\"", nd.name);
+            }
+        }
+        out += u"\n";
     }
     return out;
 }

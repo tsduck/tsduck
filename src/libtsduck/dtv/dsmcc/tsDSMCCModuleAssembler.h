@@ -16,6 +16,7 @@
 #include "tsDSMCC.h"
 #include "tsDSMCCUserToNetworkMessage.h"
 #include "tsDSMCCDownloadDataMessage.h"
+#include "tsDescriptorList.h"
 #include <functional>
 #include <map>
 
@@ -63,6 +64,11 @@ namespace ts {
         UString listModules() const;
 
         //!
+        //! Composite key used internally for tracking modules.
+        //!
+        using ModuleKey = std::pair<uint32_t, uint16_t>;
+
+        //!
         //! Context for a single Module in the carousel.
         //!
         struct ModuleContext {
@@ -72,10 +78,11 @@ namespace ts {
             uint8_t module_version = 0;   //!< Module version, incremented by the broadcaster on update.
             uint16_t block_size = 4066;   //!< Block size in bytes, announced by the DII.
 
-            size_t expected_blocks = 0;   //!< Number of DDB blocks expected (ceil(module_size / block_size)).
-            bool is_compressed = false;   //!< True if a compressed_module_descriptor is present.
-            uint32_t original_size = 0;   //!< Uncompressed size from compressed_module_descriptor.
-            ByteBlock payload {};         //!< Complete module payload assembled from DDBs.
+            size_t expected_blocks = 0;     //!< Number of DDB blocks expected (ceil(module_size / block_size)).
+            bool is_compressed = false;     //!< True if a compressed_module_descriptor is present.
+            uint32_t original_size = 0;     //!< Uncompressed size from compressed_module_descriptor.
+            ByteBlock payload {};           //!< Complete module payload assembled from DDBs.
+            DescriptorList descs {nullptr}; //!< Copy of the DII module's user_info descriptor list. Decoded by consumers on demand.
 
             //!
             //! Completion status of this module.
@@ -100,6 +107,20 @@ namespace ts {
             //!
             bool isComplete() const { return status == Status::COMPLETE; }
         };
+
+        //!
+        //! Snapshot of all known modules, keyed by (download_id, module_id).
+        //! @return The internal module map.
+        //!
+        const std::map<ModuleKey, ModuleContext>& modules() const { return _modules; }
+
+        //!
+        //! Look up a module by (download_id, module_id).
+        //! @param [in] download_id The download_id.
+        //! @param [in] module_id The module_id.
+        //! @return Pointer to the module context, or nullptr if not found.
+        //!
+        const ModuleContext* module(uint32_t download_id, uint16_t module_id) const;
 
         //!
         //! Callback type for module completion events.
@@ -137,8 +158,8 @@ namespace ts {
         // (download_id, module_id) — module_id alone is only unique within a
         // DII group, so both tracking maps use the composite key. For
         // single-group streams download_id is effectively constant and this
-        // behaves identically to the old single-key design.
-        using ModuleKey = std::pair<uint32_t, uint16_t>;
+        // behaves identically to the old single-key design. Type alias is
+        // declared in the public section.
 
         // Module Tracking
         std::map<ModuleKey, ModuleContext> _modules {};

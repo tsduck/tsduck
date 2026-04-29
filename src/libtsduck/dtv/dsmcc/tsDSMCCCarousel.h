@@ -67,6 +67,20 @@ namespace ts {
         UString listModules() const { return _assembler.listModules(); }
 
         //!
+        //! Snapshot of all known modules, keyed by (download_id, module_id).
+        //! @return The internal module map.
+        //!
+        const std::map<DSMCCModuleAssembler::ModuleKey, DSMCCModuleAssembler::ModuleContext>& modules() const { return _assembler.modules(); }
+
+        //!
+        //! Look up a module by (download_id, module_id).
+        //! @param [in] download_id The download_id.
+        //! @param [in] module_id The module_id.
+        //! @return Pointer to the module context, or nullptr if not found.
+        //!
+        const DSMCCModuleAssembler::ModuleContext* module(uint32_t download_id, uint16_t module_id) const { return _assembler.module(download_id, module_id); }
+
+        //!
         //! Per-group bookkeeping for the carousel. One entry per `download_id`
         //! observed in DDB headers (which equals `group_id` from the DSI's
         //! GroupInfoIndication in data-carousel mode). Object carousels

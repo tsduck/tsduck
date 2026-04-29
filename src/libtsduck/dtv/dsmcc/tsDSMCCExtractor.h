@@ -87,5 +87,7 @@ namespace ts {
         void onObjectReady(uint16_t module_id, const UString& name, const BIOPMessage& msg);
         void extractFile(const UString& name, const BIOPFileMessage& file);
         void printListSummary();
+        UString describeModule(const DSMCCModuleAssembler::ModuleContext& ctx) const;
+        UString moduleFilename(uint32_t download_id, uint16_t module_id) const;
     };
 }  // namespace ts

@@ -11,6 +11,8 @@
 #include "tsDSMCCModuleAssembler.h"
 #include "tsDSMCCUserToNetworkMessage.h"
 #include "tsDSMCCDownloadDataMessage.h"
+#include "tsDSMCCNameDescriptor.h"
+#include "tsDID.h"
 #include "tsDuckContext.h"
 #include "tsunit.h"
 
@@ -22,6 +24,7 @@ class DSMCCModuleAssemblerTest: public tsunit::Test
     TSUNIT_DECLARE_TEST(DiscoveryFiresOncePerKey);
     TSUNIT_DECLARE_TEST(DiscoverySuppressedOnVersionBump);
     TSUNIT_DECLARE_TEST(DiscoveryFiresOnceWhenDDBPrecedesDII);
+    TSUNIT_DECLARE_TEST(DescriptorsSurfacedFromDII);
 };
 
 TSUNIT_REGISTER(DSMCCModuleAssemblerTest);
@@ -180,6 +183,41 @@ TSUNIT_DEFINE_TEST(DiscoveryFiresOnceWhenDDBPrecedesDII)
     assembler.feedUserToNetwork(dii);
 
     TSUNIT_EQUAL(1u, discovery_count);
+}
+
+
+// A DII carrying a name_descriptor must produce a ModuleContext whose descs
+// field is non-empty and from which the name round-trips correctly.
+TSUNIT_DEFINE_TEST(DescriptorsSurfacedFromDII)
+{
+    ts::DuckContext duck;
+    ts::DSMCCModuleAssembler assembler(duck);
+
+    ts::DSMCCUserToNetworkMessage unm;
+    unm.header.message_id = ts::DSMCC_MSGID_DII;
+    auto& dii = unm.body.emplace<ts::DSMCCUserToNetworkMessage::DownloadInfoIndication>(&unm);
+    dii.download_id = 0x1234;
+    dii.block_size = 16;
+    auto& mod = dii.modules.newEntry();
+    mod.module_id = 0x0001;
+    mod.module_size = 16;
+    mod.module_version = 0;
+
+    ts::DSMCCNameDescriptor name_desc;
+    name_desc.name = u"hello";
+    mod.descs.add(duck, name_desc);
+
+    assembler.feedUserToNetwork(unm);
+
+    const auto* ctx = assembler.module(0x1234, 0x0001);
+    TSUNIT_ASSERT(ctx != nullptr);
+    TSUNIT_ASSERT(ctx->descs.count() > 0);
+
+    const size_t ni = ctx->descs.search(ts::DID_DSMCC_NAME);
+    TSUNIT_ASSERT(ni < ctx->descs.count());
+    ts::DSMCCNameDescriptor decoded(duck, ctx->descs[ni]);
+    TSUNIT_ASSERT(decoded.isValid());
+    TSUNIT_EQUAL(u"hello", decoded.name);
 }
 
 
