@@ -26,6 +26,11 @@ ts::DSMCCExtractor::DSMCCExtractor(DuckContext& duck, const Options& options) :
         onModuleCompleted(download_id, module_id, payload);
     });
 
+    _carousel.setGroupCompletedHandler([this](const DSMCCCarousel::GroupContext& gctx) {
+        _duck.report().verbose(u"Group complete: download_id=0x%X, %d module(s)",
+                               gctx.download_id, gctx.module_ids.size());
+    });
+
     if (!_options.data_carousel) {
         _carousel.setObjectHandler([this](uint16_t module_id, const UString& name, const BIOPMessage& msg) {
             onObjectReady(module_id, name, msg);
@@ -220,6 +225,12 @@ void ts::DSMCCExtractor::printListSummary()
         }
 
         text += UString::Format(u"\nFiles: %d (%d byte(s) total)\n", sorted.size(), total_bytes);
+    }
+
+    const UString groups = _carousel.listGroups();
+    if (!groups.empty()) {
+        text += u"\nGroups:\n";
+        text += groups;
     }
 
     text += u"\nModules:\n";

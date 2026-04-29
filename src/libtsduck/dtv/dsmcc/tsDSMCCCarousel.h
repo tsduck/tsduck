@@ -16,6 +16,8 @@
 #include "tsDSMCCModuleAssembler.h"
 #include "tsDSMCCBIOPMessage.h"
 #include "tsDSMCCBIOPNameResolver.h"
+#include "tsDSMCCCompatibilityDescriptor.h"
+#include <set>
 
 namespace ts {
 
@@ -65,6 +67,40 @@ namespace ts {
         UString listModules() const { return _assembler.listModules(); }
 
         //!
+        //! Per-group bookkeeping for the carousel. One entry per `download_id`
+        //! observed in DDB headers (which equals `group_id` from the DSI's
+        //! GroupInfoIndication in data-carousel mode). Object carousels
+        //! produce a single synthesized group on first DII.
+        //!
+        struct GroupContext {
+            uint32_t download_id = 0;                       //!< DDB download_id; matches GroupInfoIndication group_id in data-carousel mode.
+            uint32_t group_size = 0;                        //!< Size in bytes from the DSI (0 when no DSI announces this group).
+            bool announced_by_dsi = false;                  //!< True if the group was announced by a DSI's GroupInfoIndication.
+            DSMCCCompatibilityDescriptor compatibility {};  //!< Per-group compatibilityDescriptor (data-carousel only).
+            std::set<uint16_t> module_ids {};               //!< module_ids announced via DII for this group.
+            size_t modules_complete = 0;                    //!< Modules in COMPLETE state.
+
+            //!
+            //! @return True iff at least one module is known and all known
+            //! modules have reached COMPLETE.
+            //!
+            bool isComplete() const { return !module_ids.empty() && modules_complete == module_ids.size(); }
+        };
+
+        //!
+        //! Snapshot of all known groups, keyed by download_id.
+        //! @return The internal group map.
+        //!
+        const std::map<uint32_t, GroupContext>& groups() const { return _groups; }
+
+        //!
+        //! Render the status of current groups as a UString. One line per
+        //! group; empty if no DSI/DII has been seen yet.
+        //! @return Multi-line string, trailing newline per line.
+        //!
+        UString listGroups() const;
+
+        //!
         //! Flush any BIOP objects that were buffered while waiting for their parent
         //! directory to be parsed. Objects whose names still cannot be resolved are
         //! emitted with an empty name.
@@ -100,6 +136,19 @@ namespace ts {
         void setObjectHandler(ObjectHandler handler) { _on_object = std::move(handler); }
 
         //!
+        //! Callback type for group completion events.
+        //! Fires exactly once per group when all known modules reach COMPLETE.
+        //! Parameters: the completed GroupContext (by const ref).
+        //!
+        using GroupHandler = std::function<void(const GroupContext&)>;
+
+        //!
+        //! Set a callback to be invoked when all known modules in a group complete.
+        //! @param [in] handler The callback function.
+        //!
+        void setGroupCompletedHandler(GroupHandler handler) { _on_group = std::move(handler); }
+
+        //!
         //! Enable or disable BIOP parsing of completed modules. When disabled, the
         //! module handler still fires but no object handler callbacks occur. Use
         //! this for plain data carousels (e.g. DVB-SSU) where module payloads are
@@ -113,11 +162,16 @@ namespace ts {
         DSMCCModuleAssembler _assembler;
         ModuleHandler _on_module = nullptr;
         ObjectHandler _on_object = nullptr;
+        GroupHandler _on_group = nullptr;
         BIOPNameResolver _names {};
         bool _scan_biop = true;
 
+        std::map<uint32_t, GroupContext> _groups {};
+
         void onAssemblerModuleComplete(const DSMCCModuleAssembler::ModuleContext& ctx);
+        void onAssemblerModuleDiscovered(uint32_t download_id, uint16_t module_id);
         void scanBIOPObjects(uint16_t module_id, const ByteBlock& payload);
         void bootstrapFromDSI(const DSMCCUserToNetworkMessage::DownloadServerInitiate& dsi);
+        void recordDSIGroups(const DSMCCUserToNetworkMessage::DownloadServerInitiate& dsi);
     };
 }  // namespace ts

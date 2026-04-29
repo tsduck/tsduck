@@ -19,6 +19,9 @@ class DSMCCModuleAssemblerTest: public tsunit::Test
 {
     TSUNIT_DECLARE_TEST(MultiGroupSameModuleIdDoesNotCollide);
     TSUNIT_DECLARE_TEST(SingleGroupBehaviourPreserved);
+    TSUNIT_DECLARE_TEST(DiscoveryFiresOncePerKey);
+    TSUNIT_DECLARE_TEST(DiscoverySuppressedOnVersionBump);
+    TSUNIT_DECLARE_TEST(DiscoveryFiresOnceWhenDDBPrecedesDII);
 };
 
 TSUNIT_REGISTER(DSMCCModuleAssemblerTest);
@@ -98,6 +101,85 @@ TSUNIT_DEFINE_TEST(MultiGroupSameModuleIdDoesNotCollide)
     TSUNIT_EQUAL(block_size, payloads[1].size());
     TSUNIT_EQUAL(0xAAu, payloads[0][0]);
     TSUNIT_EQUAL(0xBBu, payloads[1][0]);
+}
+
+
+// Discovery callback fires exactly once per (download_id, module_id) pair on
+// the first DII that announces it.
+TSUNIT_DEFINE_TEST(DiscoveryFiresOncePerKey)
+{
+    ts::DuckContext duck;
+    ts::DSMCCModuleAssembler assembler(duck);
+
+    std::vector<std::pair<uint32_t, uint16_t>> discovered;
+    assembler.setModuleDiscoveredHandler(
+        [&](uint32_t download_id, uint16_t module_id) {
+            discovered.emplace_back(download_id, module_id);
+        });
+
+    auto dii_1 = makeDII(0x000A, 0x0001, 16, 0);
+    auto dii_2 = makeDII(0x000A, 0x0002, 16, 0);
+    auto dii_3 = makeDII(0x000B, 0x0001, 16, 0);
+
+    assembler.feedUserToNetwork(dii_1);
+    assembler.feedUserToNetwork(dii_2);
+    assembler.feedUserToNetwork(dii_3);
+    // Re-feeding the same DII must not re-discover.
+    assembler.feedUserToNetwork(dii_1);
+
+    TSUNIT_EQUAL(3u, discovered.size());
+    TSUNIT_EQUAL(0x000Au, discovered[0].first);
+    TSUNIT_EQUAL(0x0001u, discovered[0].second);
+    TSUNIT_EQUAL(0x000Au, discovered[1].first);
+    TSUNIT_EQUAL(0x0002u, discovered[1].second);
+    TSUNIT_EQUAL(0x000Bu, discovered[2].first);
+    TSUNIT_EQUAL(0x0001u, discovered[2].second);
+}
+
+
+// A version bump on an already-known module must not re-fire discovery —
+// the module has already been counted by the carousel-level group accounting.
+TSUNIT_DEFINE_TEST(DiscoverySuppressedOnVersionBump)
+{
+    ts::DuckContext duck;
+    ts::DSMCCModuleAssembler assembler(duck);
+
+    size_t discovery_count = 0;
+    assembler.setModuleDiscoveredHandler(
+        [&](uint32_t, uint16_t) { ++discovery_count; });
+
+    auto dii_v0 = makeDII(0x000A, 0x0001, 16, 0);
+    auto dii_v1 = makeDII(0x000A, 0x0001, 16, 1);
+
+    assembler.feedUserToNetwork(dii_v0);
+    assembler.feedUserToNetwork(dii_v1);
+
+    TSUNIT_EQUAL(1u, discovery_count);
+}
+
+
+// DDB arriving before its DII goes into the orphan buffer. When the DII
+// finally arrives, discovery must fire exactly once (from the DII path),
+// not also from the orphan replay path.
+TSUNIT_DEFINE_TEST(DiscoveryFiresOnceWhenDDBPrecedesDII)
+{
+    ts::DuckContext duck;
+    ts::DSMCCModuleAssembler assembler(duck);
+
+    size_t discovery_count = 0;
+    assembler.setModuleDiscoveredHandler(
+        [&](uint32_t, uint16_t) { ++discovery_count; });
+
+    const uint16_t block_size = 16;
+    const ts::ByteBlock payload(block_size, 0xCC);
+
+    auto ddb = makeDDB(0x000A, 0x0001, 0, payload);
+    assembler.feedDownloadData(ddb);  // orphaned
+
+    auto dii = makeDII(0x000A, 0x0001, block_size, 0);
+    assembler.feedUserToNetwork(dii);
+
+    TSUNIT_EQUAL(1u, discovery_count);
 }
 
 

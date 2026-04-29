@@ -79,6 +79,7 @@ void ts::DSMCCModuleAssembler::processDII(const DSMCCUserToNetworkMessage& unm)
 
         // If new or version changed, reset context
         if (ctx.status == ModuleContext::Status::UNKNOWN || ctx.module_version != mod_info.module_version) {
+            const bool first_announcement = ctx.status == ModuleContext::Status::UNKNOWN;
             ctx.download_id = dii->download_id;
             ctx.module_id = mod_id;
             ctx.module_version = mod_info.module_version;
@@ -97,6 +98,12 @@ void ts::DSMCCModuleAssembler::processDII(const DSMCCUserToNetworkMessage& unm)
 
             _duck.report().verbose(u"Discovered Module: download_id=0x%X id=0x%X size=%d version=%d original_size=%d",
                                    ctx.download_id, mod_id, ctx.module_size, ctx.module_version, ctx.original_size);
+
+            // Fire discovery only on first announcement, not on version bumps —
+            // group accounting expects one event per (download_id, module_id).
+            if (first_announcement && _on_module_discovered) {
+                _on_module_discovered(ctx.download_id, ctx.module_id);
+            }
 
             replayOrphans(ctx);
         }

@@ -42,6 +42,9 @@ ts::DSMCCCarousel::DSMCCCarousel(DuckContext& duck) :
     _assembler.setModuleCompletedHandler([this](const DSMCCModuleAssembler::ModuleContext& ctx) {
         onAssemblerModuleComplete(ctx);
     });
+    _assembler.setModuleDiscoveredHandler([this](uint32_t download_id, uint16_t module_id) {
+        onAssemblerModuleDiscovered(download_id, module_id);
+    });
 }
 
 
@@ -49,6 +52,7 @@ void ts::DSMCCCarousel::clear()
 {
     _assembler.clear();
     _names.clear();
+    _groups.clear();
 }
 
 
@@ -62,18 +66,46 @@ void ts::DSMCCCarousel::feedUserToNetwork(const DSMCCUserToNetworkMessage& unm)
 {
     if (const auto* dsi = unm.toDSI()) {
         // Object-carousel DSI: ior is populated, bootstrap the SRG location.
-        // Data-carousel DSI: group_info is populated; log a per-group summary.
+        // Data-carousel DSI: group_info is populated; record each group so
+        // module-completion accounting can attribute DDBs to the right group.
         if (_scan_biop) {
             bootstrapFromDSI(*dsi);
         }
-        else if (!dsi->group_info.groups.empty()) {
-            for (const auto& group : dsi->group_info.groups) {
-                _duck.report().verbose(u"DSI group: id=0x%X, size=%d, %d compatibility descriptor(s)",
-                                       group.group_id, group.group_size, group.group_compatibility.descs.size());
-            }
+        else {
+            recordDSIGroups(*dsi);
         }
     }
     _assembler.feedUserToNetwork(unm);
+}
+
+
+ts::UString ts::DSMCCCarousel::listGroups() const
+{
+    UString out;
+    for (const auto& pair : _groups) {
+        const auto& ctx = pair.second;
+        out += UString::Format(u"Dl: %08X | Size: %10d | Modules: %3d | Complete: %3d | DSI: %s | Compat: %d\n",
+                               ctx.download_id, ctx.group_size,
+                               ctx.module_ids.size(), ctx.modules_complete,
+                               ctx.announced_by_dsi ? u"yes" : u"no ",
+                               ctx.compatibility.descs.size());
+    }
+    return out;
+}
+
+
+void ts::DSMCCCarousel::recordDSIGroups(const DSMCCUserToNetworkMessage::DownloadServerInitiate& dsi)
+{
+    for (const auto& group : dsi.group_info.groups) {
+        // group_id == download_id
+        GroupContext& ctx = _groups[group.group_id];
+        ctx.download_id = group.group_id;
+        ctx.group_size = group.group_size;
+        ctx.compatibility = group.group_compatibility;
+        ctx.announced_by_dsi = true;
+        _duck.report().verbose(u"DSI group: id=0x%X, size=%d, %d compatibility descriptor(s)",
+                               group.group_id, group.group_size, group.group_compatibility.descs.size());
+    }
 }
 
 
@@ -115,6 +147,27 @@ void ts::DSMCCCarousel::onAssemblerModuleComplete(const DSMCCModuleAssembler::Mo
     if (_on_module) {
         _on_module(ctx.download_id, ctx.module_id, payload);
     }
+
+    // Group-level accounting. The discovery callback already inserted
+    // module_id into module_ids; here we tally completions and emit a
+    // group-completion event the first time the group fills up.
+    auto it = _groups.find(ctx.download_id);
+    if (it != _groups.end()) {
+        GroupContext& gctx = it->second;
+        const bool was_complete = gctx.isComplete();
+        ++gctx.modules_complete;
+        if (!was_complete && gctx.isComplete() && _on_group) {
+            _on_group(gctx);
+        }
+    }
+}
+
+
+void ts::DSMCCCarousel::onAssemblerModuleDiscovered(uint32_t download_id, uint16_t module_id)
+{
+    GroupContext& ctx = _groups[download_id];
+    ctx.download_id = download_id;
+    ctx.module_ids.insert(module_id);
 }
 
 

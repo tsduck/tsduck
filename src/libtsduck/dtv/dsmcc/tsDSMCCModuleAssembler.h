@@ -113,8 +113,24 @@ namespace ts {
         //!
         void setModuleCompletedHandler(ModuleHandler handler) { _on_module_complete = std::move(handler); }
 
+        //!
+        //! Callback type for module discovery events. Fired once per
+        //! `(download_id, module_id)` pair when its DII is first parsed.
+        //! Not fired on version bumps of an already-known module, nor on
+        //! orphan-DDB replay (the discovery already happened when the DII
+        //! that announced the module arrived).
+        //!
+        using DiscoveryHandler = std::function<void(uint32_t download_id, uint16_t module_id)>;
+
+        //!
+        //! Set a callback to be invoked when a new module is announced via DII.
+        //! @param [in] handler The callback function.
+        //!
+        void setModuleDiscoveredHandler(DiscoveryHandler handler) { _on_module_discovered = std::move(handler); }
+
     private:
         ModuleHandler _on_module_complete = nullptr;
+        DiscoveryHandler _on_module_discovered = nullptr;
 
         DuckContext& _duck;
 
