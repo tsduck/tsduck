@@ -23,12 +23,18 @@ error() { echo >&2 "$SCRIPT: $HOOK: $*"; exit 1; }
 info()  { echo >&2 "$SCRIPT: $HOOK: $*"; }
 debug() { [[ -n "$GIT_HOOK_DEBUG" ]] && echo >&2 "$SCRIPT: (debug) $HOOK: $*"; }
 
-# Get current branch (output and syntax varies across versions of git).
-BRANCH=$(git branch | sed -e '/^$/d' -e '/^[^*]/d' -e 's/^\* *//' 2>/dev/null)
+# Use GNU variants of sed and grep when available.
+# Add /usr/local and Homebrew at end of PATH in case we can find them there.
+export PATH="$PATH:/opt/homebrew/bin:/usr/local/bin"
+[[ -n "$(which gsed 2>/dev/null)" ]] && sed() { gsed "$@"; }
+[[ -n "$(which ggrep 2>/dev/null)" ]] && grep() { ggrep "$@"; }
+
+# Get current branch.
+BRANCH=$(git branch --show-current)
 debug "entering git hook, branch '$BRANCH'"
 
 # Name of the master branch.
-MASTER=master
+MASTER=$(git branch --format "%(refname:short)" | grep -e master -e main | head -1)
 
 # Do nothing if branch is not "master".
 [[ "$BRANCH" == "$MASTER" ]] || exit 0
@@ -36,12 +42,6 @@ MASTER=master
 # Do nothing on git pull, we don't want to update the version.
 debug "GIT_REFLOG_ACTION='$GIT_REFLOG_ACTION'"
 [[ $GIT_REFLOG_ACTION == pull* ]] && exit 0
-
-# Use GNU variants of sed and grep when available.
-# Add /usr/local/bin at end of PATH in case we can find them there.
-export PATH=$PATH:/usr/local/bin
-[[ -n "$(which gsed 2>/dev/null)" ]] && sed() { gsed "$@"; }
-[[ -n "$(which ggrep 2>/dev/null)" ]] && grep() { ggrep "$@"; }
 
 # The commit number is in tsVersion.h
 SRCFILE="$ROOTDIR/src/libtscore/tsVersion.h"
@@ -75,6 +75,11 @@ get-commit-count() {
     echo $commit
 }
 
+# Compute expected next commit number.
+get-next-commit() {
+    echo $(($(max $(get-commit-count) $(get-src-commit)) + 1))
+}
+
 # Filter by hook.
 case "$HOOK" in
     pre-commit)
@@ -82,14 +87,27 @@ case "$HOOK" in
             debug "Forced commit: $TS_GIT_COMMIT"
             set-src-commit $TS_GIT_COMMIT
         else
-            set-src-commit $(($(max $(get-commit-count) $(get-src-commit)) + 1))
+            set-src-commit $(get-next-commit)
         fi
         ;;
     post-merge)
         # --> Disable forced commit count update after merge. Will see later if we need to restore this.
-        # export TS_GIT_COMMIT=$(($(max $(get-commit-count) $(get-src-commit)) + 1))
+        # export TS_GIT_COMMIT=$(get-next-commit)
         # set-src-commit $TS_GIT_COMMIT
         # git commit -m "Updated commit count to $TS_GIT_COMMIT after merge"
+        ;;
+    bump)
+        # Fake hook, to be manually invoked ("git-hook.sh bump") to bump the commit number to the correct one.
+        # Typically used after several merge commits, when the commit number is way behind what it should be.
+        current=$(get-src-commit)
+        next=$(get-next-commit)
+        debug "Bump: current commit = $current, next = $next"
+        if [[ $(($current + 1)) -lt $next ]]; then
+            set-src-commit $next
+            git add "$ROOTDIR"
+            export TS_GIT_COMMIT=$next
+            git commit -m "Bump commit number to $next"
+        fi
         ;;
     *)
         ;;
