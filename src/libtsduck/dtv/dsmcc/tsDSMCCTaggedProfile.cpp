@@ -109,7 +109,7 @@ void ts::DSMCCTaggedProfile::toXML(DuckContext& duck, xml::Element* parent) cons
         }
     }
     else {
-        xml::Element* unknown_profile = tagged_profile->addElement(u"Unknown_profile");
+        xml::Element* unknown_profile = tagged_profile->addElement(u"Unknown_profile_body");
 
         if (profile_data.has_value()) {
             unknown_profile->addHexaTextChild(u"profile_data", profile_data.value(), true);
@@ -124,15 +124,15 @@ bool ts::DSMCCTaggedProfile::fromXML(DuckContext& duck, const xml::Element* elem
     if (!ok)
         return false;
 
-    if (profile_id_tag == DSMCC_TAG_BIOP) {  // TAG_BIOP (BIOP Profile Body):w
+    if (profile_id_tag == DSMCC_TAG_BIOP) {  // TAG_BIOP (BIOP Profile Body)
         const xml::Element* biop_profile_body = element->findFirstChild(u"BIOP_profile_body", true);
         if (biop_profile_body != nullptr) {
             for (auto& lite_component : biop_profile_body->children(u"lite_component", &ok)) {
-                ok = lite_components.emplace_back().fromXML(duck, &lite_component);
+                ok = ok && lite_components.emplace_back().fromXML(duck, &lite_component);
             }
         }
     }
-    else if (profile_id_tag == DSMCC_TAG_LITE_OPTIONS) {  // TODO: TAG_LITE_OPTIONS (Lite Options Profile Body)
+    else if (profile_id_tag == DSMCC_TAG_LITE_OPTIONS) {  // TAG_LITE_OPTIONS (Lite Options Profile Body)
         const xml::Element* lite_options_profile_body = element->findFirstChild(u"Lite_options_profile_body");
         if (lite_options_profile_body == nullptr) {
             return false;

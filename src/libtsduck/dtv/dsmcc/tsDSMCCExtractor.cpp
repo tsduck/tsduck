@@ -26,6 +26,7 @@
 #include "tsDSMCCGroupLinkDescriptor.h"
 #include <algorithm>
 #include <filesystem>
+#include <numeric>
 
 
 ts::DSMCCExtractor::DSMCCExtractor(DuckContext& duck, const Options& options) :
@@ -239,23 +240,26 @@ ts::UString ts::DSMCCExtractor::renderGroupTree() const
 
 ts::UString ts::DSMCCExtractor::renderObjectTree() const
 {
-    std::vector<FileEntry> sorted = _resolved_files;
-    std::sort(sorted.begin(), sorted.end(),
-              [](const FileEntry& a, const FileEntry& b) { return a.path < b.path; });
+    // Sort by index to avoid copying every FileEntry's UString path.
+    std::vector<size_t> idx(_resolved_files.size());
+    std::iota(idx.begin(), idx.end(), 0);
+    std::sort(idx.begin(), idx.end(),
+              [this](size_t a, size_t b) { return _resolved_files[a].path < _resolved_files[b].path; });
 
     size_t total_bytes = 0;
-    for (const auto& f : sorted) {
+    for (const auto& f : _resolved_files) {
         total_bytes += f.size;
     }
 
     UString text = u"Carousel tree:\n";
-    if (sorted.empty()) {
+    if (idx.empty()) {
         text += u"  (no resolved objects)\n";
     }
     else {
         text += u"/\n";
         UStringVector prev_dirs;
-        for (const auto& f : sorted) {
+        for (size_t i : idx) {
+            const auto& f = _resolved_files[i];
             UStringVector segs;
             f.path.split(segs, u'/', true, true);
             if (segs.empty()) {
@@ -266,15 +270,15 @@ ts::UString ts::DSMCCExtractor::renderObjectTree() const
             while (common < dirs.size() && common < prev_dirs.size() && dirs[common] == prev_dirs[common]) {
                 ++common;
             }
-            for (size_t i = common; i < dirs.size(); ++i) {
-                text += UString(2 * (i + 1), u' ') + dirs[i] + u"/\n";
+            for (size_t k = common; k < dirs.size(); ++k) {
+                text += UString(2 * (k + 1), u' ') + dirs[k] + u"/\n";
             }
             text += UString(2 * (dirs.size() + 1), u' ') + segs.back()
                   + UString::Format(u"  (%d bytes)\n", f.size);
             prev_dirs = dirs;
         }
     }
-    text += UString::Format(u"\nFiles: %d (%d byte(s) total)\n", sorted.size(), total_bytes);
+    text += UString::Format(u"\nFiles: %d (%d byte(s) total)\n", idx.size(), total_bytes);
     return text;
 }
 

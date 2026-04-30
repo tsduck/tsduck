@@ -30,9 +30,11 @@ void ts::DSMCCExtractorArgs::defineArgs(Args& args)
     args.option(u"data-carousel");
     args.help(u"data-carousel", u"Treat the PID as a plain data carousel (e.g. DVB-SSU) "
                                 u"instead of an object carousel: skip BIOP parsing and "
-                                u"write each completed module directly as "
-                                u"<output-directory>/module_XXXX.bin. Mutually exclusive "
-                                u"with --dump-modules.");
+                                u"write each completed module under "
+                                u"<output-directory>/<download_id>/<label_or_module_XXXX>.bin, "
+                                u"mirroring the carousel's group hierarchy on disk. The "
+                                u"leaf file name is taken from the module's label_descriptor "
+                                u"when present. Mutually exclusive with --dump-modules.");
 }
 
 

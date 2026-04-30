@@ -12,6 +12,21 @@
 #include <cstring>
 
 
+namespace {
+    // BIOP wire format pads kind/id byte fields with trailing NULs. Return the
+    // length without those trailing zeros; callers then build a string of their
+    // chosen type from data() up to that length.
+    size_t TrimmedSize(const ts::ByteBlock& bytes)
+    {
+        size_t len = bytes.size();
+        while (len > 0 && bytes[len - 1] == 0) {
+            --len;
+        }
+        return len;
+    }
+}
+
+
 //----------------------------------------------------------------------------
 // Out-of-line destructors: give the empty leaf classes a vtable anchor.
 //----------------------------------------------------------------------------
@@ -170,11 +185,7 @@ bool ts::BIOPMessageHeader::Display(TablesDisplay& disp, PSIBuffer& buf, const U
 
 std::string ts::BIOPMessage::kindTag() const
 {
-    size_t len = object_kind.size();
-    while (len > 0 && object_kind[len - 1] == 0) {
-        --len;
-    }
-    return std::string(reinterpret_cast<const char*>(object_kind.data()), len);
+    return std::string(reinterpret_cast<const char*>(object_kind.data()), TrimmedSize(object_kind));
 }
 
 
@@ -340,21 +351,13 @@ bool ts::BIOPFileMessage::deserializeBody(PSIBuffer& buf)
 
 ts::UString ts::BIOPNameComponent::idString() const
 {
-    size_t len = id.size();
-    while (len > 0 && id[len - 1] == 0) {
-        --len;
-    }
-    return UString::FromUTF8(reinterpret_cast<const char*>(id.data()), len);
+    return UString::FromUTF8(reinterpret_cast<const char*>(id.data()), TrimmedSize(id));
 }
 
 
 std::string ts::BIOPNameComponent::kindTag() const
 {
-    size_t len = kind.size();
-    while (len > 0 && kind[len - 1] == 0) {
-        --len;
-    }
-    return std::string(reinterpret_cast<const char*>(kind.data()), len);
+    return std::string(reinterpret_cast<const char*>(kind.data()), TrimmedSize(kind));
 }
 
 
