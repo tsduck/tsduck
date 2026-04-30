@@ -83,7 +83,7 @@ structure the spec gives us:
   carousel's groups (not an IOR). The UNM table parser currently
   always reads it as an IOR; proper dispatch by carousel type is
   needed.
-- [ ] **Group hierarchy.** Track groups as first-class citizens; expose
+- [x] **Group hierarchy.** Track groups as first-class citizens; expose
   `carousel → group → module` instead of the flat module list.
 - [x] **Group-scoped module ids.** Today modules are keyed purely by
   `module_id`; a multi-group carousel requires `(group_id, module_id)`.
@@ -116,8 +116,6 @@ DSM-CC shows up in more places than European DVB. Current scope:
 
 ## Diagnostics
 
-- [ ] `--raw-modules` flag to dump post-assembly, pre-BIOP module
-  bytes.
 - [ ] Hex trace of BIOP messages behind a verbose flag.
 - [ ] Coverage report scoped to the dsmcc subdirectory.
 

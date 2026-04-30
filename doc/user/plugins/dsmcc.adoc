@@ -33,8 +33,11 @@ DSM-CC defines two carousel variants over the same DSI/DII/DDB transport:
 * *Data carousel.* Each module is an opaque payload with no BIOP structure,
   typically used for DVB System Software Update (<<ETSI-102-006>>) or
   custom private data. Pass `--data-carousel` to skip BIOP parsing and
-  write each completed module directly to
-  `_directory_/module_XXXX.bin`.
+  write each completed module under
+  `_directory_/<download_id>/<label_or_module_XXXX>.bin`. The on-disk layout
+  mirrors the carousel's group hierarchy: each `download_id` (= group id)
+  becomes a subdirectory, and the file name is taken from the module's
+  `label_descriptor` when present, falling back to `module_XXXX.bin`.
 
 See <<ISO-13818-6>> for the DSM-CC specification.
 
@@ -74,9 +77,12 @@ escape the output directory.
 *--list*
 
 [.optdoc]
-List-only mode: print the resolved file tree, the module table (including
-compression info) and summary statistics; do not write anything to disk.
-`--output-directory` is not required in this mode.
+List-only mode: print the resolved file tree (object carousel) or the
+group/module tree (data carousel), the per-group summary, the module table
+(compression info, name when a `name_descriptor` is present), and the
+per-module DII descriptors (name, label, type, info, caching priority,
+CRC32, etc.). Do not write anything to disk. `--output-directory` is not
+required in this mode.
 
 [.opt]
 *--dump-modules*
@@ -92,9 +98,12 @@ and with `--data-carousel`.
 
 [.optdoc]
 Treat the PID as a plain data carousel (e.g. DVB-SSU) instead of an object
-carousel. BIOP parsing is skipped and each completed module is written
-directly as `_directory_/module_XXXX.bin`. No `files/` or `modules/`
-subdirectory is created. Mutually exclusive with `--dump-modules`.
+carousel. BIOP parsing is skipped and each completed module is written under
+`_directory_/<download_id>/<label_or_module_XXXX>.bin`, mirroring the
+carousel's group hierarchy on disk. The leaf file name is taken from the
+module's `label_descriptor` when present, falling back to `module_XXXX.bin`.
+No `files/` or `modules/` subdirectory is created. Mutually exclusive with
+`--dump-modules`.
 
 [.usage]
 Examples
