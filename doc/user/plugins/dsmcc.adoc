@@ -18,8 +18,9 @@ present), and either interprets them as an **object carousel** or leaves
 them as opaque blobs for a **data carousel**.
 
 The plugin passes the original transport stream through unchanged, so it
-can be chained with other plugins. A `--list` mode is also available for
-inspection without writing anything.
+can be chained with other plugins. When `--output-directory` is omitted,
+the plugin runs in list-only mode: it inspects the carousel and prints
+its contents without writing any files.
 
 DSM-CC defines two carousel variants over the same DSI/DII/DDB transport:
 
@@ -66,23 +67,18 @@ PID carrying the DSM-CC Object Carousel (DSI/DII/DDB sections). Required.
 [.optdoc]
 Directory where extracted files are written. Resolved BIOP File objects are
 written under `_directory_/files/<path>` preserving the carousel tree.
-Required unless `--list` is used.
+
+[.optdoc]
+When omitted, the plugin runs in list-only mode: it prints the resolved
+file tree (object carousel) or the group/module tree (data carousel), the
+per-group summary, the module table (compression info, name when a
+`name_descriptor` is present), and the per-module DII descriptors (name,
+label, type, info, caching priority, CRC32, etc.) without writing any
+files.
 
 [.optdoc]
 Path segments equal to `..` or `.` are rejected so a crafted carousel cannot
 escape the output directory.
-
-[.opt]
-*-l* +
-*--list*
-
-[.optdoc]
-List-only mode: print the resolved file tree (object carousel) or the
-group/module tree (data carousel), the per-group summary, the module table
-(compression info, name when a `name_descriptor` is present), and the
-per-module DII descriptors (name, label, type, info, caching priority,
-CRC32, etc.). Do not write anything to disk. `--output-directory` is not
-required in this mode.
 
 [.opt]
 *--dump-modules*
@@ -90,8 +86,8 @@ required in this mode.
 [.optdoc]
 Also write the raw assembled module payloads (after decompression) to
 `_directory_/modules/module_XXXX.bin`, one file per module id. Useful for
-offline inspection of the raw payloads. Mutually exclusive with `--list`
-and with `--data-carousel`.
+offline inspection of the raw payloads. Requires `--output-directory`.
+Mutually exclusive with `--data-carousel`.
 
 [.opt]
 *--data-carousel*
@@ -109,11 +105,11 @@ No `files/` or `modules/` subdirectory is created. Mutually exclusive with
 Examples
 
 List the contents of a carousel on PID `0x76A` in a captured TS file, without
-writing anything:
+writing anything (no `--output-directory`):
 
 [source,shell]
 ----
-$ tsp -P dsmcc --pid 0x76A --list -I file capture.ts -O drop
+$ tsp -P dsmcc --pid 0x76A -I file capture.ts -O drop
 ----
 
 Extract the files from the same carousel into `./out/files/`:

@@ -16,16 +16,14 @@ void ts::DSMCCExtractorArgs::defineArgs(Args& args)
 
     args.option(u"output-directory", 'o', Args::STRING);
     args.help(u"output-directory", u"Directory where carousel files will be extracted. "
-                                   u"Required unless --list is set.");
-
-    args.option(u"list", 'l');
-    args.help(u"list", u"List-only mode: print the carousel tree, module table and statistics "
-                       u"without writing any files. --output-directory is not required.");
+                                   u"When omitted, the extractor runs in list-only mode: "
+                                   u"prints the carousel tree, group/module table and "
+                                   u"per-module DII descriptors without writing any files.");
 
     args.option(u"dump-modules");
     args.help(u"dump-modules", u"Also write raw assembled module payloads to "
-                               u"<output-directory>/modules/. Mutually exclusive "
-                               u"with --list and with --data-carousel.");
+                               u"<output-directory>/modules/. Requires --output-directory. "
+                               u"Mutually exclusive with --data-carousel.");
 
     args.option(u"data-carousel");
     args.help(u"data-carousel", u"Treat the PID as a plain data carousel (e.g. DVB-SSU) "
@@ -42,7 +40,7 @@ bool ts::DSMCCExtractorArgs::loadArgs(Args& args)
 {
     args.getIntValue(pid, u"pid");
     args.getValue(options.out_dir, u"output-directory");
-    options.list_mode = args.present(u"list");
+    options.list_mode = options.out_dir.empty();
     options.dump_modules = args.present(u"dump-modules");
     options.data_carousel = args.present(u"data-carousel");
 
@@ -55,11 +53,7 @@ bool ts::DSMCCExtractorArgs::loadArgs(Args& args)
         return false;
     }
     if (options.list_mode && options.dump_modules) {
-        args.error(u"--list and --dump-modules are mutually exclusive");
-        return false;
-    }
-    if (!options.list_mode && options.out_dir.empty()) {
-        args.error(u"an output directory must be specified with --output-directory (or use --list)");
+        args.error(u"--dump-modules requires --output-directory");
         return false;
     }
     return true;

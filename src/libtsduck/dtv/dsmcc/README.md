@@ -32,7 +32,7 @@ that can supply parsed DSM-CC messages can drive it.
   |   Runs a SectionDemux on the carousel PID, passes DSM-CC        |
   |   tables into the library, writes results to disk.              |
   |                                                                 |
-  |   Options: --pid  --output-directory  --list                    |
+  |   Options: --pid  --output-directory                            |
   |            --dump-modules  --data-carousel                      |
   +--------------------------------+--------------------------------+
                                    |
@@ -114,7 +114,13 @@ its `.h` / `.cpp`, following the usual TSDuck convention.
   directory.
 - **Data carousel** — `setScanBIOP(false)`, enabled in the plugin via
   `--data-carousel`. Module payloads are opaque; only the module
-  callback fires. The plugin writes each module flat as
-  `<output-directory>/module_XXXX.bin`. Intended for DVB-SSU (ETSI TS
-  102 006) and other streams where module contents are private.
+  callback fires. The plugin writes each module under
+  `<output-directory>/<download_id>/<label_or_module_XXXX>.bin`,
+  mirroring the carousel's group hierarchy on disk. Intended for
+  DVB-SSU (ETSI TS 102 006) and other streams where module contents
+  are private.
+
+When `--output-directory` is omitted, the plugin runs in list-only
+mode: it walks the carousel and prints the resolved tree, group/module
+table and per-module DII descriptors without writing any files.
 
