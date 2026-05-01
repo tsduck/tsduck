@@ -348,15 +348,6 @@ namespace ts {
         static std::unique_ptr<BIOPMessage> CreateForKind(const std::string& tag);
 
         //!
-        //! Deserialize the fields common to all BIOP messages, up to (and excluding) the body.
-        //! After this call the buffer read position is at the first byte of the body.
-        //! @param [in,out] buf Deserialization buffer.
-        //! @param [out] body_length Size in bytes of the upcoming message body.
-        //! @return True on success.
-        //!
-        bool deserializeCommon(PSIBuffer& buf, uint32_t& body_length);
-
-        //!
         //! Deserialize the subclass-specific message body.
         //! @param [in,out] buf Deserialization buffer. Exactly the body bytes are available.
         //! @return True on success.

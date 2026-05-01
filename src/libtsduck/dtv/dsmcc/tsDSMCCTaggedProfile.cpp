@@ -12,6 +12,13 @@
 //----------------------------------------------------------------------------
 // TaggedProfile
 //----------------------------------------------------------------------------
+void ts::DSMCCTaggedProfile::clear()
+{
+    profile_id_tag = 0;
+    profile_data_byte_order = 0;
+    lite_components.clear();
+    profile_data.reset();
+}
 
 void ts::DSMCCTaggedProfile::serialize(PSIBuffer& buf) const
 {

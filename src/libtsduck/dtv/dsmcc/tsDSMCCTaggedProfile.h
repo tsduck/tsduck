@@ -38,6 +38,11 @@ namespace ts {
         DSMCCTaggedProfile() = default;
 
         //!
+        //! Reset the TaggedProfile to its default state.
+        //!
+        void clear();
+
+        //!
         //! Serialize the TaggedProfile structure.
         //! @param [in,out] buf Serialization buffer.
         //!

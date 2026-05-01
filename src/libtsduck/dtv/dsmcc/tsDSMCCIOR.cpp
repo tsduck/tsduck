@@ -11,6 +11,29 @@
 //----------------------------------------------------------------------------
 // IOR
 //----------------------------------------------------------------------------
+namespace {
+    // CDR rule (CORBA encoding): variable-length opaque fields are padded to
+    // a 4-byte boundary. Both readers and writers must honor it.
+    constexpr size_t CDR_ALIGN = 4;
+
+    void writeCDRPad(ts::PSIBuffer& buf, size_t length)
+    {
+        if (length % CDR_ALIGN != 0) {
+            const size_t pad = CDR_ALIGN - (length % CDR_ALIGN);
+            for (size_t i = 0; i < pad; ++i) {
+                buf.putUInt8(0);
+            }
+        }
+    }
+
+    void skipCDRPad(ts::PSIBuffer& buf, size_t length)
+    {
+        if (length % CDR_ALIGN != 0) {
+            buf.skipBytes(CDR_ALIGN - (length % CDR_ALIGN));
+        }
+    }
+}
+
 
 void ts::DSMCCIOR::clear()
 {
@@ -22,12 +45,7 @@ void ts::DSMCCIOR::serialize(PSIBuffer& buf) const
 {
     buf.putUInt32(uint32_t(type_id.size()));
     buf.putBytes(type_id);
-
-    if (type_id.size() % 4 != 0) {
-        for (size_t i = 0; i < 4 - (type_id.size() % 4); ++i) {
-            buf.putUInt8(0);
-        }
-    }
+    writeCDRPad(buf, type_id.size());
 
     buf.putUInt32(uint32_t(tagged_profiles.size()));
 
@@ -39,15 +57,8 @@ void ts::DSMCCIOR::serialize(PSIBuffer& buf) const
 void ts::DSMCCIOR::deserialize(PSIBuffer& buf)
 {
     const uint32_t type_id_length = buf.getUInt32();
-
-    for (size_t i = 0; i < type_id_length; i++) {
-        type_id.appendUInt8(buf.getUInt8());
-    }
-
-    // CDR alignment rule
-    if (type_id_length % 4 != 0) {
-        buf.skipBytes(4 - (type_id_length % 4));
-    }
+    buf.getBytes(type_id, type_id_length);
+    skipCDRPad(buf, type_id_length);
 
     const uint32_t tagged_profiles_count = buf.getUInt32();
 
@@ -61,12 +72,8 @@ void ts::DSMCCIOR::Display(TablesDisplay& disp, PSIBuffer& buf, const UString& m
     const uint32_t type_id_length = buf.getUInt32();
 
     ByteBlock type_id {};
-
     buf.getBytes(type_id, type_id_length);
-
-    if (type_id_length % 4 != 0) {
-        buf.skipBytes(4 - (type_id_length % 4));
-    }
+    skipCDRPad(buf, type_id_length);
 
     disp.displayVector(u"Type id: ", type_id, margin);
 

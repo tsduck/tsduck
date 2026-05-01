@@ -16,6 +16,7 @@
 #include "tsSectionDemux.h"
 #include "tsTableHandlerInterface.h"
 #include "tsTSPacket.h"
+#include <filesystem>
 
 namespace ts {
 
@@ -94,5 +95,12 @@ namespace ts {
         UString renderDescriptors() const;
         UString describeModule(const DSMCCModuleAssembler::ModuleContext& ctx) const;
         UString moduleFilename(uint32_t download_id, uint16_t module_id) const;
+
+        // Compute the on-disk (directory, leaf-name) pair for a completed module.
+        // Layout depends on data_carousel vs. dump_modules.
+        std::pair<std::filesystem::path, UString> computeOutputPath(uint32_t download_id, uint16_t module_id) const;
+
+        // Create directory (recursively); report and return false on error.
+        bool ensureDir(const std::filesystem::path& dir);
     };
 }  // namespace ts

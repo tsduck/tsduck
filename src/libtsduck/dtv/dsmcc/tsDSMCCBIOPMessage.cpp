@@ -82,7 +82,6 @@ bool ts::BIOPMessageHeader::serialize(PSIBuffer& buf) const
         return false;
     }
 
-    // Write header fields
     buf.putUInt32(magic);
     buf.putUInt8(version_major);
     buf.putUInt8(version_minor);
@@ -190,69 +189,6 @@ std::string ts::BIOPMessage::kindTag() const
 
 
 //----------------------------------------------------------------------------
-// BIOPMessage - deserializeCommon
-//----------------------------------------------------------------------------
-
-bool ts::BIOPMessage::deserializeCommon(PSIBuffer& buf, uint32_t& body_length)
-{
-    body_length = 0;
-
-    if (!header.deserialize(buf)) {
-        return false;
-    }
-
-    // message_size is checked explicitly so we don't push a scope larger than the buffer.
-    const uint32_t message_size = buf.getUInt32();
-    if (buf.error() || buf.remainingReadBytes() < message_size) {
-        buf.setUserError();
-        return false;
-    }
-
-    // Constrain subsequent reads to message_size. The body-length scope is pushed
-    // again inside Parse() once we know the body length. RAII guard pops the scope
-    // on any failure path; on success we release it so Parse() can pop it itself.
-    buf.pushReadSize(buf.currentReadByteOffset() + message_size);
-    struct ScopeGuard {
-        PSIBuffer& buf;
-        bool released = false;
-        ~ScopeGuard() { if (!released) { buf.popState(); } }
-    } scope_guard{buf};
-
-    // From here on, PSIBuffer self-checks overruns — `getBytes` / `getUIntN` flip the
-    // buffer into error state on underflow, and later reads become no-ops. A single
-    // `!buf.error()` at the bottom catches every failure path.
-
-    const uint8_t key_len = buf.getUInt8();
-    buf.getBytes(object_key, key_len);
-
-    const uint32_t kind_len = buf.getUInt32();
-    buf.getBytes(object_kind, kind_len);
-
-    const uint16_t info_len = buf.getUInt16();
-    buf.getBytes(object_info, info_len);
-
-    const uint8_t svc_count = buf.getUInt8();
-    service_contexts.clear();
-    service_contexts.reserve(svc_count);
-    for (uint8_t i = 0; i < svc_count; ++i) {
-        BIOPServiceContext ctx;
-        ctx.context_id = buf.getUInt32();
-        const uint16_t ctx_len = buf.getUInt16();
-        buf.getBytes(ctx.context_data, ctx_len);
-        service_contexts.push_back(std::move(ctx));
-    }
-
-    body_length = buf.getUInt32();
-    if (buf.error() || buf.remainingReadBytes() < body_length) {
-        return false;
-    }
-
-    scope_guard.released = true;
-    return true;
-}
-
-
-//----------------------------------------------------------------------------
 // BIOPMessage - CreateForKind factory
 //----------------------------------------------------------------------------
 
@@ -276,62 +212,108 @@ std::unique_ptr<ts::BIOPMessage> ts::BIOPMessage::CreateForKind(const std::strin
 //----------------------------------------------------------------------------
 
 namespace {
-    // Smallest concrete BIOPMessage we can use as a temporary holder for the common
-    // fields before we know the object_kind. Body deserialization is a no-op; the
-    // instance exists only long enough to read the header/object_key/object_kind
-    // and then have its fields moved into the real subclass.
-    class BIOPCommonHolder : public ts::BIOPMessage
-    {
-        TS_NOCOPY(BIOPCommonHolder);
-
-    public:
-        BIOPCommonHolder() = default;
-
-        bool readCommon(ts::PSIBuffer& buf, uint32_t& body_length)
-        {
-            return deserializeCommon(buf, body_length);
-        }
-    protected:
-        bool deserializeBody(ts::PSIBuffer&) override { return true; }
-        void toXMLBody(ts::DuckContext&, ts::xml::Element*) const override {}
-        bool fromXMLBody(ts::DuckContext&, const ts::xml::Element*) override { return true; }
+    // Common fields read from the wire before the object_kind tells us which
+    // BIOPMessage subclass to construct. Filled by readBIOPCommon, then moved
+    // into the real subclass once we know its kind.
+    struct BIOPCommonFields {
+        ts::BIOPMessageHeader               header {};
+        ts::ByteBlock                       object_key {};
+        ts::ByteBlock                       object_kind {};
+        ts::ByteBlock                       object_info {};
+        std::vector<ts::BIOPServiceContext> service_contexts {};
     };
+
+    // On success, leaves the message_size read-scope pushed on `buf` for Parse
+    // to pop after body deserialization. On failure, pops the scope itself.
+    bool readBIOPCommon(ts::PSIBuffer& buf, BIOPCommonFields& out, uint32_t& body_length)
+    {
+        body_length = 0;
+
+        if (!out.header.deserialize(buf)) {
+            return false;
+        }
+
+        // message_size is checked explicitly so we don't push a scope larger than the buffer.
+        const uint32_t message_size = buf.getUInt32();
+        if (buf.error() || buf.remainingReadBytes() < message_size) {
+            buf.setUserError();
+            return false;
+        }
+
+        // Constrain subsequent reads to message_size. The body-length scope is pushed
+        // again inside Parse() once we know the body length. RAII guard pops the scope
+        // on any failure path; on success we release it so Parse() can pop it itself.
+        buf.pushReadSize(buf.currentReadByteOffset() + message_size);
+        struct ScopeGuard {
+            ts::PSIBuffer& buf;
+            bool released = false;
+            ~ScopeGuard() { if (!released) { buf.popState(); } }
+        } scope_guard{buf};
+
+        // From here on, PSIBuffer self-checks overruns — `getBytes` / `getUIntN` flip the
+        // buffer into error state on underflow, and later reads become no-ops. A single
+        // `!buf.error()` at the bottom catches every failure path.
+
+        const uint8_t key_len = buf.getUInt8();
+        buf.getBytes(out.object_key, key_len);
+
+        const uint32_t kind_len = buf.getUInt32();
+        buf.getBytes(out.object_kind, kind_len);
+
+        const uint16_t info_len = buf.getUInt16();
+        buf.getBytes(out.object_info, info_len);
+
+        const uint8_t svc_count = buf.getUInt8();
+        out.service_contexts.reserve(svc_count);
+        for (uint8_t i = 0; i < svc_count; ++i) {
+            ts::BIOPServiceContext ctx;
+            ctx.context_id = buf.getUInt32();
+            const uint16_t ctx_len = buf.getUInt16();
+            buf.getBytes(ctx.context_data, ctx_len);
+            out.service_contexts.push_back(std::move(ctx));
+        }
+
+        body_length = buf.getUInt32();
+        if (buf.error() || buf.remainingReadBytes() < body_length) {
+            return false;
+        }
+
+        scope_guard.released = true;
+        return true;
+    }
 }
 
 std::unique_ptr<ts::BIOPMessage> ts::BIOPMessage::Parse(PSIBuffer& buf)
 {
-    std::unique_ptr<ts::BIOPMessage> msg;
-    BIOPCommonHolder common;
+    BIOPCommonFields common;
     uint32_t body_length = 0;
-    if (common.readCommon(buf, body_length)) {
-        msg = CreateForKind(common.kindTag());
-        if (!msg) {
-            // Unsupported kind: popState jumps to the end of the message_size scope,
-            // swallowing the remaining body bytes so the next Parse() can resume cleanly.
-            buf.popState();
-        }
-        else {
-            // Transfer common fields.
-            msg->header = common.header;
-            msg->object_key = std::move(common.object_key);
-            msg->object_kind = std::move(common.object_kind);
-            msg->object_info = std::move(common.object_info);
-            msg->service_contexts = std::move(common.service_contexts);
-
-            // Constrain body reads to messageBody_length.
-            buf.pushReadSize(buf.currentReadByteOffset() + body_length);
-            const bool ok = msg->deserializeBody(buf);
-            buf.popState();  // body scope
-            buf.popState();  // message_size scope from deserializeCommon
-
-            if (!ok) {
-                msg.reset();
-            }
-        }
+    if (!readBIOPCommon(buf, common, body_length)) {
+        return nullptr;
     }
-    return msg;
-}
 
+    const std::string tag(reinterpret_cast<const char*>(common.object_kind.data()), TrimmedSize(common.object_kind));
+    auto msg = CreateForKind(tag);
+    if (!msg) {
+        // Unsupported kind: popState jumps to the end of the message_size scope,
+        // swallowing the remaining body bytes so the next Parse() can resume cleanly.
+        buf.popState();
+        return nullptr;
+    }
+
+    msg->header = std::move(common.header);
+    msg->object_key = std::move(common.object_key);
+    msg->object_kind = std::move(common.object_kind);
+    msg->object_info = std::move(common.object_info);
+    msg->service_contexts = std::move(common.service_contexts);
+
+    // Constrain body reads to messageBody_length.
+    buf.pushReadSize(buf.currentReadByteOffset() + body_length);
+    const bool ok = msg->deserializeBody(buf);
+    buf.popState();  // body scope
+    buf.popState();  // message_size scope from readBIOPCommon
+
+    return ok ? std::move(msg) : nullptr;
+}
 
 //----------------------------------------------------------------------------
 // BIOPFileMessage - deserializeBody

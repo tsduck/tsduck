@@ -29,6 +29,14 @@
 #include <numeric>
 
 
+namespace {
+    ts::UString pathToUString(const std::filesystem::path& p)
+    {
+        return ts::UString::FromUTF8(p.string());
+    }
+}
+
+
 ts::DSMCCExtractor::DSMCCExtractor(DuckContext& duck, const Options& options) :
     _duck(duck),
     _options(options),
@@ -117,33 +125,43 @@ void ts::DSMCCExtractor::onModuleCompleted(uint32_t download_id, uint16_t module
     }
 
     namespace fs = std::filesystem;
-    const fs::path out = fs::path(_options.out_dir.toUTF8());
-
-    fs::path dir;
-    UString leaf;
-    if (_options.data_carousel) {
-        // Group hierarchy: out/<download_id_hex>/<label_or_module_XXXX>.bin
-        dir = out / UString::Format(u"%08X", download_id).toUTF8();
-        leaf = moduleFilename(download_id, module_id);
-    }
-    else {
-        // Object-carousel dump_modules: out/modules/module_XXXX.bin
-        dir = out / "modules";
-        leaf = UString::Format(u"module_%04X.bin", module_id);
-    }
-
-    std::error_code ec;
-    fs::create_directories(dir, ec);
-    if (ec) {
-        _duck.report().error(u"Cannot create directory %s: %s",
-                             UString::FromUTF8(dir.string()),
-                             UString::FromUTF8(ec.message()));
+    auto [dir, leaf] = computeOutputPath(download_id, module_id);
+    if (!ensureDir(dir)) {
         return;
     }
-    const UString filename = UString::FromUTF8((dir / leaf.toUTF8()).string());
+    const UString filename = pathToUString(dir / leaf.toUTF8());
     if (payload.saveToFile(filename, &_duck.report())) {
         _duck.report().verbose(u"  -> Saved to %s", filename);
     }
+}
+
+
+std::pair<std::filesystem::path, ts::UString> ts::DSMCCExtractor::computeOutputPath(uint32_t download_id, uint16_t module_id) const
+{
+    namespace fs = std::filesystem;
+    const fs::path out = fs::path(_options.out_dir.toUTF8());
+
+    if (_options.data_carousel) {
+        // Group hierarchy: out/<download_id_hex>/<label_or_module_XXXX>.bin
+        return {out / UString::Format(u"%08X", download_id).toUTF8(),
+                moduleFilename(download_id, module_id)};
+    }
+    // Object-carousel dump_modules: out/modules/module_XXXX.bin
+    return {out / "modules", UString::Format(u"module_%04X.bin", module_id)};
+}
+
+
+bool ts::DSMCCExtractor::ensureDir(const std::filesystem::path& dir)
+{
+    std::error_code ec;
+    std::filesystem::create_directories(dir, ec);
+    if (ec) {
+        _duck.report().error(u"Cannot create directory %s: %s",
+                             pathToUString(dir),
+                             UString::FromUTF8(ec.message()));
+        return false;
+    }
+    return true;
 }
 
 
@@ -190,16 +208,11 @@ void ts::DSMCCExtractor::extractFile(const UString& name, const BIOPFileMessage&
     const fs::path out = fs::path(_options.out_dir.toUTF8());
     const fs::path full = out / "files" / rel;
 
-    std::error_code ec;
-    fs::create_directories(full.parent_path(), ec);
-    if (ec) {
-        _duck.report().error(u"Cannot create directory %s: %s",
-                             UString::FromUTF8(full.parent_path().string()),
-                             UString::FromUTF8(ec.message()));
+    if (!ensureDir(full.parent_path())) {
         return;
     }
 
-    const UString out_path = UString::FromUTF8(full.string());
+    const UString out_path = pathToUString(full);
     if (file.content.saveToFile(out_path, &_duck.report())) {
         _duck.report().verbose(u"Extracted %s (%d bytes)", out_path, file.content.size());
     }
