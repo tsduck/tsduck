@@ -10,17 +10,20 @@
 === tsvatek
 
 [.cmd-header]
-List VATek-based modulator devices
+List AstroMeta-based modulator devices
 
-This utility lists modulator devices which are based on chips from Vision Advance Technology Inc. (VATek).
+This utility lists modulator devices which are based on chips from https://www.astrometa.com.tw/[AstroMeta].
 The final modulator device products can be from different manufacturers.
+
+NOTE: AstroMeta was formerly known as Vision Advance Technology Inc. (VATek).
+The name of the command remained `tsvatek` for compatibility only.
 
 [.usage]
 System support
 
 Unlike Dektec and HiDes devices which are available on Linux and Windows only,
-VATek-based devices are available on all operating systems, including macOS,
-because VATek chips do not need a dedicated device driver.
+AstroMeta-based devices are available on all operating systems, including macOS,
+because AstroMeta chips do not need a dedicated device driver.
 They are accessed through the portable `libusb` library which is available on all operating systems.
 
 [.usage]
@@ -28,14 +31,14 @@ Usage
 
 [source,shell]
 ----
-$ tshides [options] [device]
+$ tsvatek [options] [device]
 ----
 
 [.usage]
 Parameters
 
 [.optdoc]
-The optional device index, from 0 to N-1 (with N being the number of VATek-based devices in the system)
+The optional device index, from 0 to N-1 (with N being the number of AstroMeta-based devices in the system)
 indicates which device to display.
 
 [.optdoc]
@@ -50,6 +53,6 @@ Options
 *--all*
 
 [.optdoc]
-List all VATek-based devices available on the system.
+List all AstroMeta-based devices available on the system.
 
 include::{docdir}/opt/group-common-commands.adoc[tags=!*]

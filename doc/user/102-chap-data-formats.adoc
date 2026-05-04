@@ -37,7 +37,7 @@ HLS output is possible with the help of an independent HTTP server such as Apach
 The `hls` output plugin produces the playlist and segment files.
 These files can then be served by any HTTP server.
 
-Additionally, output plugins are provided for HiDes and VATek modulator devices.
+Additionally, output plugins are provided for HiDes and AstroMeta modulator devices.
 These devices do not have input equivalent and the plugins are output only.
 
 [#ts-formats]

@@ -26,7 +26,7 @@ In practice, TSDuck is used for:
   - Cheap DVB, ATSC or ISDB tuners (USB, PCI).
   - Professional [Dektec](https://www.dektec.com) devices, ASI, modulators (USB, PCI).
   - [HiDes](http://www.hides.com.tw/product_cg74469_eng.html) modulators (USB).
-  - [VATek](https://www.vatek.com.tw/A%20series/)-based modulators (USB) such as the
+  - [AstroMeta](https://www.astrometa.com.tw/A%20series/A_Series.html)-based USB modulators (formerly VATek) such as the
     [Suntechtv U3](https://www.suntechtv.com/web/Home/ProductDetail?key=e593s&productId=23673).
 - Re-route transport streams to other applications.
 - Extract specific encapsulated data (Teletext, T2-MI).

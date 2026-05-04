@@ -1084,29 +1084,29 @@ In <<HiDes>>, the documentation states that the maximum required power is 390 mA
 But it is currently unclear if the HiDes device requires more than the normalized maximum of 500 mA from the USB port or
 if some USB ports fail to provide the required 500 mA.
 
-=== VATek-based modulators
+=== AstroMeta-based modulators (formerly VATek)
 
 ==== Overview
 
-Vision Advance Technology Inc. (aka. VATek, see <<VATek>>) is a company from Taiwan which designs modulator chips.
+AstroMeta (formerly known as VATek) is a company from Taiwan which designs modulator chips.
 The final modulator device products can be from different manufacturers.
 
 Note that, unlike Dektec and HiDes devices which are available on Linux and Windows only,
-VATek-based devices are available on all operating systems, including macOS,
-because VATek chips do not need a dedicated device driver.
+AstroMeta-based devices are available on all operating systems, including macOS,
+because AstroMeta chips do not need a dedicated device driver.
 They are accessed through the portable `libusb` library which is available on all operating systems.
 
-There is no "device name" for VATek-based modulators, only device indexes, from 0 to N-1
-(with N being the number of VATek-based devices in the system).
+There is no "device name" for AstroMeta-based modulators, only device indexes, from 0 to N-1
+(with N being the number of AstroMeta-based devices in the system).
 
 ==== Tested devices
 
-The tested devices were based on the A3 chip from VATek:
+The tested devices were based on the A3 chip from AstroMeta:
 
 [.compact-list]
-* A3 developer board from VATek.
+* A3 developer board from AstroMeta.
 * Suntechtv U3 USB modulator (see <<Suntech>>).
 
 Note that the software (the `tsvatek` command and the `vatek` output plugin)
-is developed and maintained by VATek and controls all devices using VATek chips.
+is developed and maintained by AstroMeta and controls all devices using AstroMeta chips.
 Thus, all modulator products based on the A3 chip should work identically.

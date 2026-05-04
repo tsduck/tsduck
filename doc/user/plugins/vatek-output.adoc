@@ -10,15 +10,21 @@
 === vatek (output)
 
 [.cmd-header]
-Send the transport stream to a VATek-based modulator device
+Send the transport stream to an AstroMeta-based modulator device
 
 This plugin sends the output transport stream to a modulator device
-which is based on chips from Vision Advance Technology Inc. (VATek).
+which is based on chips from https://www.astrometa.com.tw/[AstroMeta].
 The final modulator device product can be from a different manufacturer.
 
-NOTE: Unlike Dektec and HiDes devices which are available on Linux and Windows only,
-VATek-based devices are available on all operating systems, including macOS,
-because VATek chips do not need a dedicated device driver.
+NOTE: AstroMeta was formerly known as Vision Advance Technology Inc. (VATek).
+The name of the plugin remained `vatek` for compatibility only.
+
+[.usage]
+System support
+
+Unlike Dektec and HiDes devices which are available on Linux and Windows only,
+AstroMeta-based devices are available on all operating systems, including macOS,
+because AstroMeta chips do not need a dedicated device driver.
 They are accessed through the portable `libusb` library which is available on all operating systems.
 
 [.usage]
@@ -79,13 +85,13 @@ The default is `5/6`.
 *--device* _value_
 
 [.optdoc]
-Device index, from 0 to N-1 (with N being the number of VATek-based devices in the system).
+Device index, from 0 to N-1 (with N being the number of AstroMeta-based devices in the system).
 
 [.optdoc]
 Use the command `tsvatek --all` to have a complete list of devices in the system.
 
 [.optdoc]
-By default, use the first VATek-based device (index 0).
+By default, use the first AstroMeta-based device (index 0).
 
 [.opt]
 *--dmb-carrier* _value_

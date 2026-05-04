@@ -269,6 +269,7 @@
   https://www.arib.or.jp/english/std_tr/
 * [[[Astra-LCN]]] SES Astra, July 2015:
   "Logical Channel Numbering (LCN), Technical Specification v2.6"
+* [[[AstroMeta]]] AstroMeta (formerly VATek) corporate home page: https://www.astrometa.com.tw/
 * [[[ATSC-A52]]] ATSC A/52, January 2018:
   "Digital Audio Compression (AC-3, E-AC-3)".
 * [[[ATSC-A53-3]]] ATSC A/53 Part 3, February 2023:
@@ -409,7 +410,7 @@ https://openssf.org/public-policy/eu-cyber-resilience-act/
 * [[[SMPTE-2038]]] SMPTE ST 2038:2021, December 2020:
   "SMPTE Standard; Carriage of Ancillary Data Packets in an MPEG-2 Transport Stream"
 * [[[SRT]]] SRT, libsrt site, https://github.com/Haivision/srt/
-* [[[Suntech]]] Suntechtv U3 USB modulator (VATek-based),
+* [[[Suntech]]] Suntechtv U3 USB modulator (AstroMeta-based),
   https://www.suntechtv.com/web/Home/ProductDetail?key=e593s&productId=23673
 * [[[TSDuck]]] TSDuck Web site, {home}
 * [[[TSDuck-Dev]]] TSDuck Developer Guide, {home}docs/tsduck-dev.html
@@ -419,6 +420,6 @@ https://openssf.org/public-policy/eu-cyber-resilience-act/
 * [[[TSDuck-User]]] TSDuck User Guide, {home}docs/tsduck.html
 * [[[UWA]]] UHD World Association, T/UWA 005.2-1-2022
   "HDR Video Technology Part 2-1 Application Guide to System Integration".
-* [[[VATek]]] Vision Advance Technology Inc (VATek) corporate home page: https://www.vatek.com.tw/
-* [[[VATek-SDK]]] VATek SDK source code: https://github.com/VisionAdvanceTechnologyInc/vatek_sdk_2
+* [[[VATek]]] See <<AstroMeta>>.
+* [[[VATek-SDK]]] AstroMeta SDK source code: https://github.com/VisionAdvanceTechnologyInc/vatek_sdk_2
 * [[[VLC]]] VideoLAN VLC Media Player home page, http://www.videolan.org/vlc/

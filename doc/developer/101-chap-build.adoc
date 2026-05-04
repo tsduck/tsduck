@@ -36,7 +36,7 @@ TSDuck can be built on Windows, Linux, macOS and BSD systems.
 
 Support for Dektec devices, DVB tuners and HiDes modulators is implemented only on Windows and Linux.
 MacOS and BSD systems can only support files and networking for TS input and output.
-VATek-based modulators, however, are supported on all platforms.
+AstroMeta-based modulators, however, are supported on all platforms.
 
 Some protocols such as SRT and RIST require external libraries which may
 not be available on all platforms or all versions of a specific distro.
@@ -166,7 +166,7 @@ https://git-scm.com/download/win[Git downloads],
 https://github.com/Haivision/srt/releases/latest[SRT downloads],
 https://github.com/tsduck/rist-installer/releases/latest[RIST downloads],
 https://www.dektec.com/downloads/SDK[Dektec downloads],
-https://github.com/VisionAdvanceTechnologyInc/vatek_sdk_2/releases/latest[VATek downloads],
+https://github.com/VisionAdvanceTechnologyInc/vatek_sdk_2/releases/latest[AstroMeta downloads],
 https://adoptium.net/[Java downloads],
 https://www.python.org/downloads/windows/[Python downloads],
 http://www.doxygen.org/download.html[Doxygen downloads],
@@ -505,11 +505,11 @@ with the GNU libc. Non-Intel systems (for instance Arm-based devices such as Ras
 cannot use Dektec devices. Similarly, Intel-based distros using a non-standard libc
 (for instance Alpine Linux which uses musl libc) cannot use Dektec devices either.
 
-*VATek API:* On Linux, the command `make` at the top level will automatically download the
-Linux version of the VATek API from the GitHub. There is currectly no Linux package for
-the VATek API in the standard distros. On Windows and macOS, binary packages are available
-and are installed by the `install-prerequisites` scripts. Using VATek devices on BSD systems
-is currently not supported but should work if necessary (accessing VATek devices is performed
+*AstroMeta API:* On Linux, the command `make` at the top level will automatically download the
+Linux version of the AstroMeta API from the GitHub. There is currectly no Linux package for
+the AstroMeta API in the standard distros. On Windows and macOS, binary packages are available
+and are installed by the `install-prerequisites` scripts. Using AstroMeta devices on BSD systems
+is currently not supported but should work if necessary (accessing AstroMeta devices is performed
 through `libusb` and not a specific kernel driver).
 
 [#buildunix]
@@ -550,7 +550,7 @@ The following `make` variables can be defined:
 |NOTEST |Do not build unitary tests.
 |NODEKTEC |No Dektec device support, remove dependency to `DTAPI`.
 |NOHIDES |No HiDes device support.
-|NOVATEK |No VATek device support (modulators based on VATek chips), remove dependency to `libvatek`.
+|NOVATEK |No AstroMeta device support (modulators based on AstroMeta chips, formerly VATek), remove dependency to `libvatek`.
 |NOOPENSSL |No cryptographic support, remove dependency to `openssl`.
 |NOZLIB |Don't use zlib, use embedded "Small Deflate" instead, remove dependency to `zlib`.
 |NOSDEFL |Don't build "Small Deflate", only in case of compilation issue.

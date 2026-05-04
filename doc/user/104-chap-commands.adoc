@@ -149,7 +149,7 @@ endif::[]
 |Test a DVB SimulCrypt compliant ECMG with an artificial load.
 
 |tsvatek
-|List VATek-based modulator devices.
+|List AstroMeta-based modulator devices (AstroMeta was formerly known as VATek).
 
 |tsversion
 |Check version, download and upgrade TSDuck.
@@ -326,7 +326,7 @@ endif::[]
 |Version of the SSL/TLS library.
 
 |vatek
-|Version of the VATek library (for VATek-based modulators).
+|Version of the AstroMeta library (for AstroMeta-based modulators).
 
 |zlib
 |Version of the zlib library (or compatible library).

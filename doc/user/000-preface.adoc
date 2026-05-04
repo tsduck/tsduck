@@ -35,7 +35,7 @@ Structure of this guide:
 * The xref:chap-troubleshooting[xrefstyle=short] provides some troubleshooting guidelines
   when encountering problems when using TSDuck.
 * The xref:chap-hardware[xrefstyle=short] describes the level of test and support for some hardware devices,
-  mainly DVB receivers and Dektec, HiDes or VATek devices.
+  mainly DVB receivers and Dektec, HiDes or AstroMeta (formerly VATek) devices.
 
 The world of Digital Television is built on top of a set of robust standards from various bodies.
 Understanding these standards and how they interact is essential to use TSDuck.

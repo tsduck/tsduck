@@ -240,18 +240,18 @@ The code for the `hides` output plugin and the `tshides` command is located in t
 locations `src/tsplugins` and `src/tstools` respectively. To access the HiDes devices, they
 call the classes `HiDesDevice` and `HiDesDeviceInfo` which are part of the TSDuck library.
 
-==== VATek-based modulators
+=== AstroMeta-based modulators (formerly VATek)
 
-VATek-based USB devices do not need a dedicated device driver. They are accessed through the
+AstroMeta-based USB devices do not need a dedicated device driver. They are accessed through the
 portable `libusb` library which is available on all operating systems.
-At application level, VATek devices are accessed through an open-source user-mode library
-which is provided by Vision Advance Technology Inc. (VATek).
+At application level, AstroMeta devices are accessed through an open-source user-mode library
+which is provided by AstroMeta.
 
-Most of the TSDuck code for VATek support is located in `src/libtsduck/dtv/vatek`.
+Most of the TSDuck code for AstroMeta support is located in `src/libtsduck/dtv/vatek`.
 The `vatek` plugin is implemented in the class `VatekOutputPlugin` and is completely embedded
 inside the TSDuck library. The main code of the `tsvatek` utility is in `src/tstools` but this is
 a simple wrapper around the class `VatekControl` which is inside the TSDuck library as well.
 
-All code in `src/libtsduck/dtv/vatek` is a free contrbution from Vision Advance Technology Inc. (VATek).
+All code in `src/libtsduck/dtv/vatek` is a free contrbution from AstroMeta (formerly VATek).
 In case of problem, before trying to modify the code, it is recommended to contact the author,
-Richie Chang from VATek, `a83912a` on GitHub.
+Richie Chang, initially from VATek, then AstroMeta, `a83912a` on GitHub.

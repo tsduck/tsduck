@@ -41,7 +41,7 @@ The following table summaries the pros and cons of using TSDuck on the various o
 |Availability of a powerful shell environment, just another UNIX system, just like Linux.
  Powerful user-friendly system.
 |Currently no support for hardware tuners and Dektec devices.
- Recommended only when dealing with transport stream files, IP networking or VATek-based modulators.
+ Recommended only when dealing with transport stream files, IP networking or AstroMeta-based modulators.
 
 |BSD
 |For aficionados only.
