@@ -106,6 +106,41 @@ namespace ts {
         bool reusePort(bool reuse_port);
 
         //!
+        //! Bind to a local address and port.
+        //!
+        //! The IP address part of the socket address must one of:
+        //!
+        //! - IPAddress::AnyAddress4.
+        //!   - UDP: Any local interface may be used to send or receive UDP datagrams. For each
+        //!     outgoing packet, the actual interface is selected by the kernel based on the
+        //!     routing rules. Incoming UDP packets for the selected port will be accepted from
+        //!     any local interface.
+        //!   - TCP client: Any local interface may be used to connect to a server.
+        //!   - TCP server: Any local interface may be used to receive incoming client connections.
+        //! - The IP address of an interface of the local system.
+        //!   - UDP: Outgoing packets will be unconditionally sent through this interface. Incoming
+        //!     UDP packets for the selected port will be accepted only when they arrive through
+        //!     the selected interface.
+        //!   - TCP client: Outgoing connections will be only allowed through this interface.
+        //!   - TCP server: Incoming client connections will be accepted only when they arrive
+        //!     through the selected interface.
+        //!
+        //! Special note for receiving multicast on most Unix systems (at least Linux and macOS):
+        //! The IP address shall be either AnyAddress4 or the <b>multicast group address</b>.
+        //! Do not specify a local address to receive multicast on Unix.
+        //!
+        //! The port number part of the socket address must be one of:
+        //! - IPSocketAddress::AnyPort. The socket is bound to an arbitrary unused local UDP or TCP port.
+        //!   This is the usual configuration for a TCP client.
+        //! - A specific port number. If this UDP or TCP port is already bound by another local socket of
+        //!   the same type, the bind operation fails, unless the "reuse port" option has already been set.
+        //!
+        //! @param [in] addr Local socket address to bind to.
+        //! @return True on success, false on error.
+        //!
+        bool bind(const IPSocketAddress& addr);
+
+        //!
         //! Get local socket address
         //! @param [out] addr Local socket address of the connection.
         //! @return True on success, false on error.

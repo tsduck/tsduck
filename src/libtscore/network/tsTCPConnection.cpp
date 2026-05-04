@@ -106,22 +106,35 @@ ts::UString ts::TCPConnection::peerName()
 // Send data.
 //----------------------------------------------------------------------------
 
-bool ts::TCPConnection::send(const void* buffer, size_t size)
+bool ts::TCPConnection::send(const void* buffer, size_t size, IOSB* iosb)
 {
+    // Check that the application uses the right blocking mode.
+    if (!checkNonBlocking(iosb, u"TCPConnection::send")) {
+        return false;
+    }
+
+    //@@@ TODO: handle asynchronous send on Windows.
+
     const char* data = reinterpret_cast<const char*>(buffer);
     size_t remain = size;
 
     while (remain > 0) {
         SysSocketSignedSizeType gone = ::send(getSocket(), SysSendBufferPointer(data), int(remain), 0);
+        [[maybe_unused]] const int err_code = LastSysErrorCode();
         if (gone > 0) {
             assert(size_t(gone) <= remain);
             data += gone;
             remain -= gone;
         }
-#if !defined(TS_WINDOWS)
-        else if (errno == EINTR) {
+#if defined(TS_UNIX)
+        else if (err_code == EINTR) {
             // Ignore signal, retry
             report().debug(u"send() interrupted by signal, retrying");
+        }
+        else if (isNonBlocking() && err_code == EAGAIN) {
+            // Non-blocking socket with no enough available outgoing buffer space.
+            assert(iosb != nullptr);
+            iosb->pending = true;
         }
 #endif
         else {
@@ -138,22 +151,29 @@ bool ts::TCPConnection::send(const void* buffer, size_t size)
 // Receive data.
 //----------------------------------------------------------------------------
 
-bool ts::TCPConnection::receive(void* data, size_t max_size, size_t& ret_size, const AbortInterface* abort)
+bool ts::TCPConnection::receive(void* data, size_t max_size, size_t& ret_size, const AbortInterface* abort, IOSB* iosb)
 {
+    // Check that the application uses the right blocking mode.
+    if (!checkNonBlocking(iosb, u"TCPConnection::receive")) {
+        return false;
+    }
+
+    //@@@ TODO: handle asynchronous receive on Windows.
+
     // Clear returned values
     ret_size = 0;
 
     // Loop on unsollicited interrupts
     for (;;) {
         SysSocketSignedSizeType got = ::recv(getSocket(), SysRecvBufferPointer(data), int(max_size), 0);
-        const int errcode = LastSysErrorCode();
+        [[maybe_unused]] const int err_code = LastSysErrorCode();
         if (got > 0) {
             // Received some data
             assert(size_t(got) <= max_size);
             ret_size = size_t(got);
             return true;
         }
-        else if (got == 0 || errcode == SYS_SOCKET_ERR_RESET) {
+        else if (got == 0 || err_code == SYS_SOCKET_ERR_RESET) {
             // End of connection (graceful or aborted). Do not report an error.
             declareDisconnected();
             return false;
@@ -163,16 +183,21 @@ bool ts::TCPConnection::receive(void* data, size_t max_size, size_t& ret_size, c
             return false;
         }
 #if defined(TS_UNIX)
-        else if (errcode == EINTR) {
+        else if (err_code == EINTR) {
             // Ignore signal, retry.
             report().debug(u"recv() interrupted by signal, retrying");
+        }
+        else if (isNonBlocking() && err_code == EAGAIN) {
+            // Non-blocking socket with no available incoming data.
+            assert(iosb != nullptr);
+            iosb->pending = true;
         }
 #endif
         else {
             std::lock_guard<std::recursive_mutex> lock(_mutex);
             if (isOpen()) {
                 // Report the error only if the error does not result from a close in another thread.
-                report().error(u"error receiving data from socket: %s", SysErrorCodeMessage(errcode));
+                report().error(u"error receiving data from socket: %s", SysErrorCodeMessage(err_code));
             }
             return false;
         }
@@ -205,13 +230,17 @@ bool ts::TCPConnection::receive(void* buffer, size_t size, const AbortInterface*
 
 //----------------------------------------------------------------------------
 // Connect to a remote address and port.
-// Use this method when acting as TCP client.
-// Do not use on server side: the TCPConnection object is passed
-// to TCPServer::accept() which establishes the connection.
 //----------------------------------------------------------------------------
 
-bool ts::TCPConnection::connect(const IPSocketAddress& addr)
+bool ts::TCPConnection::connect(const IPSocketAddress& addr, IOSB* iosb)
 {
+    // Check that the application uses the right blocking mode.
+    if (!checkNonBlocking(iosb, u"TCPConnection::connect")) {
+        return false;
+    }
+
+    //@@@ TODO: handle asynchronous connect on Windows.
+
     IPSocketAddress addr2(addr);
     if (!convert(addr2)) {
         return false;
@@ -226,10 +255,15 @@ bool ts::TCPConnection::connect(const IPSocketAddress& addr)
             declareConnected();
             return true;
         }
-#if !defined(TS_WINDOWS)
+#if defined(TS_UNIX)
         else if (errno == EINTR) {
             // Ignore signal, retry
             report().debug(u"connect() interrupted by signal, retrying");
+        }
+        else if (isNonBlocking() && errno == EAGAIN) {
+            // Non-blocking socket with no immediate connection.
+            assert(iosb != nullptr);
+            iosb->pending = true;
         }
 #endif
         else {

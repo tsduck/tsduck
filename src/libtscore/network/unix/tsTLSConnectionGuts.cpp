@@ -144,8 +144,21 @@ bool ts::TLSConnection::SystemGuts::abort(const UString& message)
 // Connect to a remote address and port.
 //----------------------------------------------------------------------------
 
-bool ts::TLSConnection::connect(const IPSocketAddress& addr)
+bool ts::TLSConnection::connect(const IPSocketAddress& addr, IOSB* iosb)
 {
+    // Check that the application uses the right blocking mode.
+    if (!checkNonBlocking(iosb, u"TLSConnection::connect")) {
+        return false;
+    }
+
+    //@@@ to be implemented.
+    if (isNonBlocking()) {
+        report().error(u"non-blocking TLS is not yet implemented");
+        return false;
+    }
+    //@@@
+
+    // Terminate previous session.
     _guts->terminate();
 
     // Create SSL client context.
@@ -278,8 +291,20 @@ bool ts::TLSConnection::disconnect(bool silent)
 // Send data.
 //----------------------------------------------------------------------------
 
-bool ts::TLSConnection::send(const void* data, size_t size)
+bool ts::TLSConnection::send(const void* data, size_t size, IOSB* iosb)
 {
+    // Check that the application uses the right blocking mode.
+    if (!checkNonBlocking(iosb, u"TLSConnection::send")) {
+        return false;
+    }
+
+    //@@@ to be implemented.
+    if (isNonBlocking()) {
+        report().error(u"non-blocking TLS is not yet implemented");
+        return false;
+    }
+    //@@@
+
     if (_guts->ssl == nullptr) {
         report().error(u"TLS connection not established");
         return false;
@@ -305,8 +330,20 @@ bool ts::TLSConnection::send(const void* data, size_t size)
 // Receive data.
 //----------------------------------------------------------------------------
 
-bool ts::TLSConnection::receive(void* buffer, size_t max_size, size_t& ret_size, const AbortInterface* abort)
+bool ts::TLSConnection::receive(void* buffer, size_t max_size, size_t& ret_size, const AbortInterface* abort, IOSB* iosb)
 {
+    // Check that the application uses the right blocking mode.
+    if (!checkNonBlocking(iosb, u"TLSConnection::receive")) {
+        return false;
+    }
+
+    //@@@ to be implemented.
+    if (isNonBlocking()) {
+        report().error(u"non-blocking TLS is not yet implemented");
+        return false;
+    }
+    //@@@
+
     if (_guts->ssl == nullptr) {
         report().error(u"TLS connection not established");
         return false;

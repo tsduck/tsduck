@@ -148,26 +148,3 @@ bool ts::TCPSocket::setNoDelay(bool active)
     }
     return true;
 }
-
-
-//----------------------------------------------------------------------------
-// Bind to a local address and port.
-//----------------------------------------------------------------------------
-
-bool ts::TCPSocket::bind(const IPSocketAddress& addr)
-{
-    IPSocketAddress addr2(addr);
-    if (!convert(addr2)) {
-        return false;
-    }
-
-    ::sockaddr_storage sock_addr;
-    const size_t sock_size = addr2.get(sock_addr);
-
-    report().debug(u"binding socket to %s", addr2);
-    if (::bind(getSocket(), reinterpret_cast<::sockaddr*>(&sock_addr), socklen_t(sock_size)) != 0) {
-        report().error(u"error binding socket to local address %s: %s", addr2, SysErrorCodeMessage());
-        return false;
-    }
-    return true;
-}

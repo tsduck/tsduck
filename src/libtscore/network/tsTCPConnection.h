@@ -90,9 +90,13 @@ namespace ts {
         //! to TCPServer::accept() which establishes the connection.
         //!
         //! @param [in] addr IP address and port of the server to connect.
+        //! @param [in,out] iosb Address of an IOSB structure. If non-null, the socket must be in non-blocking mode.
+        //! When null, the socket must be in blocking mode (the default). See the description of IOSB.
+        //! Important: The parameter @a iosb should not be used by applications. It should be used only by
+        //! "reactive classes", which work in combination with a Reactor.
         //! @return True on success, false on error.
         //!
-        virtual bool connect(const IPSocketAddress& addr);
+        virtual bool connect(const IPSocketAddress& addr, IOSB* iosb = nullptr);
 
         //!
         //! Check if the socket is connected.
@@ -138,48 +142,52 @@ namespace ts {
         //! Send data.
         //! @param [in] data Address of the data to send.
         //! @param [in] size Size in bytes of the data to send.
+        //! @param [in,out] iosb Address of an IOSB structure. If non-null, the socket must be in non-blocking mode.
+        //! When null, the socket must be in blocking mode (the default). See the description of IOSB.
+        //! Important: The parameter @a iosb should not be used by applications. It should be used only by
+        //! "reactive classes", which work in combination with a Reactor.
         //! @return True on success, false on error.
         //!
-        virtual bool send(const void* data, size_t size);
+        virtual bool send(const void* data, size_t size, IOSB* iosb = nullptr);
 
         //!
         //! Receive data.
         //!
-        //! This version of receiveMessage() returns when "some" data are received into
-        //! the user buffer. The actual received data may be shorter than the
-        //! user buffer size.
+        //! This version of receiveMessage() returns when "some" data are received into the user buffer.
+        //! The actual received data may be shorter than the user buffer size.
         //!
-        //! The version is typically useful when the application cannot predict
-        //! how much data will be received and must respond even if the user
-        //! buffer is not full.
+        //! The version is typically useful when the application cannot predict how much data will be
+        //! received and must respond even if the user buffer is not full.
         //!
         //! @param [out] buffer Address of the buffer for the received data.
         //! @param [in] max_size Size in bytes of the reception buffer.
-        //! @param [out] ret_size Size in bytes of the received data.
-        //! Will never be larger than @a max_size.
-        //! @param [in] abort If non-zero, invoked when I/O is interrupted
-        //! (in case of user-interrupt, return, otherwise retry).
+        //! @param [out] ret_size Size in bytes of the received data. Will never be larger than @a max_size.
+        //! @param [in] abort If non-zero, invoked when I/O is interrupted (in case of user-interrupt, return, otherwise retry).
+        //! @param [in,out] iosb Address of an IOSB structure. If non-null, the socket must be in non-blocking mode.
+        //! When null, the socket must be in blocking mode (the default). See the description of IOSB.
+        //! Important: The parameter @a iosb should not be used by applications. It should be used only by
+        //! "reactive classes", which work in combination with a Reactor.
         //! @return True on success, false on error.
         //!
-        virtual bool receive(void* buffer, size_t max_size, size_t& ret_size, const AbortInterface* abort = nullptr);
+        virtual bool receive(void* buffer, size_t max_size, size_t& ret_size, const AbortInterface* abort = nullptr, IOSB* iosb = nullptr);
 
         //!
         //! Receive data until buffer is full.
         //!
-        //! This version of receiveMessage() returns only when sufficient data are
-        //! received to completely fill the user buffer. The size of the actual
-        //! received data is identical to the user buffer size.
+        //! This version of receive() returns only when sufficient data are received to completely fill the user buffer.
+        //! The size of the actual received data is identical to the user buffer size. If some data, but not all, were
+        //! received before the connection was closed, these data are ignored and the method returns false. The version
+        //! is typically useful when the application knows that a certain amount of data is expected and must wait for them.
         //!
-        //! The version is typically useful when the application knows that
-        //! a certain amount of data is expected and must wait for them.
+        //! This method is only allowed when the socket is in blocking-mode (the default) because this method is blocking
+        //! by definition. Therefore, there is no @a iosb parameter.
         //!
-        //! This base implementation uses the variable-length version of receiveMessage().
-        //! Therefore, a subclass may only override the variable-length version.
+        //! This base implementation uses the variable-length version of receive(). Therefore, a subclass may only override
+        //! the variable-length version and not this one.
         //!
         //! @param [out] buffer Address of the buffer for the received data.
         //! @param [in] size Size in bytes of the buffer.
-        //! @param [in] abort If non-zero, invoked when I/O is interrupted
-        //! (in case of user-interrupt, return, otherwise retry).
+        //! @param [in] abort If non-zero, invoked when I/O is interrupted (in case of user-interrupt, return, otherwise retry).
         //! @return True on success, false on error.
         //!
         virtual bool receive(void* buffer, size_t size, const AbortInterface* abort = nullptr);

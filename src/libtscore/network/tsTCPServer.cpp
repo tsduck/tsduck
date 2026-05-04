@@ -31,8 +31,13 @@ bool ts::TCPServer::listen(int backlog)
 // Wait for a client
 //----------------------------------------------------------------------------
 
-bool ts::TCPServer::accept(TCPConnection& client, IPSocketAddress& client_address)
+bool ts::TCPServer::accept(TCPConnection& client, IPSocketAddress& client_address, IOSB* iosb)
 {
+    // Check that the application uses the right blocking mode.
+    if (!checkNonBlocking(iosb, u"TCPServer::accept")) {
+        return false;
+    }
+
     if (client.isConnected()) {
         report().error(u"invalid client in accept(): already connected");
         return false;
@@ -42,6 +47,8 @@ bool ts::TCPServer::accept(TCPConnection& client, IPSocketAddress& client_addres
         report().error(u"invalid client in accept(): already open");
         return false;
     }
+
+    //@@@ TODO: handle non-blocking/asynchronous accept.
 
     report().debug(u"server accepting clients");
     InitZero<::sockaddr_storage> sock_addr;
