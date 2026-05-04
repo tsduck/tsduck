@@ -106,12 +106,13 @@ its `.h` / `.cpp`, following the usual TSDuck convention.
 ## Two carousel modes
 
 - **Object carousel** (default) — `setScanBIOP(true)`. The library
-  pathrses each completed module as BIOP, resolves absolute paths from
+  parses each completed module as BIOP, resolves absolute paths from
   ServiceGateway / Directory bindings, and fires the object callback
   per BIOP message. The plugin writes resolved `File` objects under
-  `<output-directory>/files/<path>`. Path segments equal to `..` or
-  `.` are rejected so a crafted carousel cannot escape the output
-  directory.
+  `<output-directory>/files/<path>` and materialises empty
+  `Directory` objects as on-disk directories under the same root.
+  Path segments equal to `..` or `.` are rejected so a crafted
+  carousel cannot escape the output directory.
 - **Data carousel** — `setScanBIOP(false)`, enabled in the plugin via
   `--data-carousel`. Module payloads are opaque; only the module
   callback fires. The plugin writes each module under
@@ -121,6 +122,15 @@ its `.h` / `.cpp`, following the usual TSDuck convention.
   are private.
 
 When `--output-directory` is omitted, the plugin runs in list-only
-mode: it walks the carousel and prints the resolved tree, group/module
-table and per-module DII descriptors without writing any files.
+mode and prints a hierarchical, `tstables`-style report: one `*`
+block per carousel/`download_id`, modules as `- Module 0xNNNN`
+sub-blocks (version, blocks, size, compression, status, BIOP-object
+list with kinds, per-DII descriptor decode), then a final
+`* Carousel Tree` section showing the resolved file/directory tree
+with byte sizes.
+
+`--dump-modules` (object-carousel mode) writes raw assembled module
+payloads to `<output-directory>/modules/<download_id>/module_XXXX.bin`,
+nested under the download_id so multi-group streams with overlapping
+`module_id`s do not collide.
 

@@ -18,7 +18,7 @@
 namespace ts {
     //!
     //! The protocolDiscriminator field is used to indicate that the message is a MPEG-2 DSM-CC message.
-    //! @see ISO/IEC 13818-6, section 2.
+    //! @see ISO/IEC 13818-6
     //!
     constexpr uint8_t DSMCC_PROTOCOL_DISCRIMINATOR = 0x11;
 
@@ -29,7 +29,7 @@ namespace ts {
 
     //!
     //! DSM-CC types, in dsmccMessageHeader() structures.
-    //! @see ISO/IEC 13818-6, table 2-2.
+    //! @see ISO/IEC 13818-6
     //!
     enum : uint8_t {
         DSMCC_TYPE_UN_CONFIG_MESSAGE   = 0x01,  //!< User-to-Network configuration message.

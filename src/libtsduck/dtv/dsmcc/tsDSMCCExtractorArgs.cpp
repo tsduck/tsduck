@@ -22,8 +22,8 @@ void ts::DSMCCExtractorArgs::defineArgs(Args& args)
 
     args.option(u"dump-modules");
     args.help(u"dump-modules", u"Also write raw assembled module payloads to "
-                               u"<output-directory>/modules/. Requires --output-directory. "
-                               u"Mutually exclusive with --data-carousel.");
+                               u"<output-directory>/modules/<download_id>/module_XXXX.bin. "
+                               u"Requires --output-directory. Mutually exclusive with --data-carousel.");
 
     args.option(u"data-carousel");
     args.help(u"data-carousel", u"Treat the PID as a plain data carousel (e.g. DVB-SSU) "

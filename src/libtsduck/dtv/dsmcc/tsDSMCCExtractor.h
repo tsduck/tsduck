@@ -17,6 +17,7 @@
 #include "tsTableHandlerInterface.h"
 #include "tsTSPacket.h"
 #include <filesystem>
+#include <optional>
 
 namespace ts {
 
@@ -42,7 +43,7 @@ namespace ts {
         struct Options {
             UString out_dir {};          //!< Directory where carousel files are written. Required unless list_mode.
             bool    list_mode = false;   //!< If true, parse and report but write nothing.
-            bool    dump_modules = false;//!< If true, also dump raw assembled module payloads under out_dir/modules/.
+            bool    dump_modules = false;//!< If true, also dump raw assembled module payloads under out_dir/modules/<download_id>/.
             bool    data_carousel = false;//!< If true, skip BIOP parsing and write each module as out_dir/module_XXXX.bin.
         };
 
@@ -71,34 +72,50 @@ namespace ts {
         void flush();
 
     private:
-        struct FileEntry {
-            UString path {};
-            size_t  size = 0;
+        struct ObjectEntry {
+            uint32_t    download_id = 0;
+            uint16_t    module_id = 0;
+            UString     path {};
+            std::string kind {};
+            size_t      size = 0;
         };
 
-        DuckContext&            _duck;
-        Options                 _options;
-        DSMCCCarousel           _carousel;
-        SectionDemux            _demux;
-        std::vector<FileEntry>  _resolved_files {};
+        using ObjectList = std::vector<ObjectEntry>;
+        using ObjectByModuleMap = std::map<std::pair<uint32_t, uint16_t>, std::vector<size_t>>;
+
+        DuckContext&        _duck;
+        Options             _options;
+        DSMCCCarousel       _carousel;
+        SectionDemux        _demux;
+        PID                 _pid = PID_NULL;
+        ObjectList          _objects {};
+        ObjectByModuleMap   _objects_by_module {};
 
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;
 
         void onModuleCompleted(uint32_t download_id, uint16_t module_id, const ByteBlock& payload);
-        void onObjectReady(uint16_t module_id, const UString& name, const BIOPMessage& msg);
+
+        void onObjectReady(uint32_t download_id, uint16_t module_id, const UString& name, const BIOPMessage& msg);
         void extractFile(const UString& name, const BIOPFileMessage& file);
+        void extractDirectory(const UString& name);
+
+        // Methods for rendering carousel state.
         void printListSummary();
-        UString renderGroupTree() const;
-        UString renderObjectTree() const;
-        UString renderGroups() const;
-        UString renderModules() const;
-        UString renderDescriptors() const;
-        UString describeModule(const DSMCCModuleAssembler::ModuleContext& ctx) const;
+        UString renderCarousels() const;
+        UString renderGroupBlock(const DSMCCCarousel::GroupContext& gctx) const;
+        UString renderModuleBlock(const DSMCCModuleAssembler::ModuleContext& ctx) const;
+        UString renderObjectsForModule(uint32_t download_id, uint16_t module_id) const;
+        UString renderDescriptorList(const DescriptorList& descs) const;
+        UString renderOneDescriptor(size_t index, const Descriptor& raw) const;
+        UString renderFileTreeFinal() const;
         UString moduleFilename(uint32_t download_id, uint16_t module_id) const;
 
         // Compute the on-disk (directory, leaf-name) pair for a completed module.
-        // Layout depends on data_carousel vs. dump_modules.
         std::pair<std::filesystem::path, UString> computeOutputPath(uint32_t download_id, uint16_t module_id) const;
+
+        // Resolve a BIOP object path into the corresponding on-disk path under
+        // out_dir/files.
+        std::optional<std::filesystem::path> safeOutputPath(const UString& name) const;
 
         // Create directory (recursively); report and return false on error.
         bool ensureDir(const std::filesystem::path& dir);

@@ -101,11 +101,13 @@ namespace ts {
             bool isComplete() const { return !module_ids.empty() && modules_complete == module_ids.size(); }
         };
 
+        using GroupMap = std::map<uint32_t, GroupContext>;
+
         //!
         //! Snapshot of all known groups, keyed by download_id.
         //! @return The internal group map.
         //!
-        const std::map<uint32_t, GroupContext>& groups() const { return _groups; }
+        const GroupMap& groups() const { return _groups; }
 
         //!
         //! Render the status of current groups as a UString. One line per
@@ -137,11 +139,12 @@ namespace ts {
         //!
         //! Callback type for BIOP object events.
         //! Invoked once per BIOP message parsed from a completed module.
-        //! Parameters: module id, resolved object path (joined NameComponents from
-        //! the parent SRG/Directory bindings; empty if the parent has not been
-        //! parsed yet), parsed BIOP message.
+        //! Parameters: download_id of the owning carousel group, module id,
+        //! resolved object path (joined NameComponents from the parent
+        //! SRG/Directory bindings; empty if the parent has not been parsed
+        //! yet), parsed BIOP message.
         //!
-        using ObjectHandler = std::function<void(uint16_t module_id, const UString& name, const BIOPMessage& msg)>;
+        using ObjectHandler = std::function<void(uint32_t download_id, uint16_t module_id, const UString& name, const BIOPMessage& msg)>;
 
         //!
         //! Set a callback to be invoked for each BIOP object extracted from a module.
@@ -180,11 +183,17 @@ namespace ts {
         BIOPNameResolver _names {};
         bool _scan_biop = true;
 
-        std::map<uint32_t, GroupContext> _groups {};
+        using ModuleToDownloadMap = std::map<uint32_t, uint16_t>;
+
+        GroupMap            _groups {};
+        ModuleToDownloadMap _module_to_dl {};
 
         void onAssemblerModuleComplete(const DSMCCModuleAssembler::ModuleContext& ctx);
         void onAssemblerModuleDiscovered(uint32_t download_id, uint16_t module_id);
+
         void scanBIOPObjects(uint16_t module_id, const ByteBlock& payload);
+        void emitObject(uint16_t module_id, const UString& name, const BIOPMessage& msg);
+
         void bootstrapFromDSI(const DSMCCUserToNetworkMessage::DownloadServerInitiate& dsi);
         void recordDSIGroups(const DSMCCUserToNetworkMessage::DownloadServerInitiate& dsi);
     };

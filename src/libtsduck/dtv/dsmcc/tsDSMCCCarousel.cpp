@@ -13,9 +13,6 @@
 
 
 namespace {
-    // Decompress the assembled module payload when ctx.is_compressed is set. Returns an
-    // empty ByteBlock on decompression failure so the caller can skip BIOP parsing
-    // rather than feeding compressed bytes into it.
     void DecompressIfNeeded(ts::ByteBlock& out, const ts::DSMCCModuleAssembler::ModuleContext& ctx, ts::Report& report)
     {
         if (!ctx.is_compressed) {
@@ -53,12 +50,26 @@ void ts::DSMCCCarousel::clear()
     _assembler.clear();
     _names.clear();
     _groups.clear();
+    _module_to_dl.clear();
 }
 
 
 void ts::DSMCCCarousel::flushPendingObjects()
 {
-    _names.flush(_on_object);
+    _names.flush([this](uint16_t module_id, const UString& name, const BIOPMessage& msg) {
+        emitObject(module_id, name, msg);
+    });
+}
+
+
+void ts::DSMCCCarousel::emitObject(uint16_t module_id, const UString& name, const BIOPMessage& msg)
+{
+    if (!_on_object) {
+        return;
+    }
+    const auto it = _module_to_dl.find(module_id);
+    const uint32_t dl = (it != _module_to_dl.end()) ? it->second : 0;
+    _on_object(dl, module_id, name, msg);
 }
 
 
@@ -114,17 +125,17 @@ void ts::DSMCCCarousel::recordDSIGroups(const DSMCCUserToNetworkMessage::Downloa
 // scanBIOPObjects() to catch the SRG when its module is parsed.
 void ts::DSMCCCarousel::bootstrapFromDSI(const DSMCCUserToNetworkMessage::DownloadServerInitiate& dsi)
 {
-    for (const auto& tp : dsi.ior.tagged_profiles) {
-        if (tp.profile_id_tag != DSMCC_TAG_BIOP) {
+    for (const auto& profile : dsi.ior.tagged_profiles) {
+        if (profile.profile_id_tag != DSMCC_TAG_BIOP) {
             continue;
         }
-        for (const auto& lc : tp.lite_components) {
-            if (lc.component_id_tag != DSMCC_TAG_OBJECT_LOCATION) {
+        for (const auto& comp : profile.lite_components) {
+            if (comp.component_id_tag != DSMCC_TAG_OBJECT_LOCATION) {
                 continue;
             }
-            _names.addRoot({lc.module_id, lc.object_key_data});
+            _names.addRoot({comp.module_id, comp.object_key_data});
             _duck.report().verbose(u"DSI bootstrap: ServiceGateway at carousel_id=0x%X module_id=0x%X (object_key %d bytes)",
-                                   lc.carousel_id, lc.module_id, lc.object_key_data.size());
+                                   comp.carousel_id, comp.module_id, comp.object_key_data.size());
             return;
         }
     }
@@ -137,9 +148,7 @@ void ts::DSMCCCarousel::onAssemblerModuleComplete(const DSMCCModuleAssembler::Mo
     ByteBlock payload;
     DecompressIfNeeded(payload, ctx, _duck.report());
 
-    // Skip BIOP parsing when decompression failed (payload empty) — parsing would
-    // otherwise chew through random bytes and flood the log with spurious errors.
-    // Also skip when the caller has explicitly disabled it (data carousel mode).
+    // Skip BIOP parsing when decompression failed (payload empty) or parsing disabled
     if (_scan_biop && !payload.empty()) {
         scanBIOPObjects(ctx.module_id, payload);
     }
@@ -151,6 +160,7 @@ void ts::DSMCCCarousel::onAssemblerModuleComplete(const DSMCCModuleAssembler::Mo
     // Group-level accounting. The discovery callback already inserted
     // module_id into module_ids; here we tally completions and emit a
     // group-completion event the first time the group fills up.
+    // TODO: This is ugly, to be refactored
     auto it = _groups.find(ctx.download_id);
     if (it != _groups.end()) {
         GroupContext& gctx = it->second;
@@ -168,6 +178,7 @@ void ts::DSMCCCarousel::onAssemblerModuleDiscovered(uint32_t download_id, uint16
     GroupContext& ctx = _groups[download_id];
     ctx.download_id = download_id;
     ctx.module_ids.insert(module_id);
+    _module_to_dl[module_id] = download_id;
 }
 
 
@@ -181,6 +192,7 @@ void ts::DSMCCCarousel::scanBIOPObjects(uint16_t module_id, const ByteBlock& pay
     // (roots and parent->child name links) to the resolver, and queue the message
     // for emission. Resolution happens in drain(), so it's insensitive to message
     // order within the module and across modules.
+    // TODO: to be refactored, this is a bit of a hack
     while (buf.remainingReadBytes() >= BIOPMessageHeader::HEADER_SIZE && !buf.error()) {
         const size_t before = buf.currentReadByteOffset();
         auto msg = BIOPMessage::Parse(buf);
@@ -201,7 +213,9 @@ void ts::DSMCCCarousel::scanBIOPObjects(uint16_t module_id, const ByteBlock& pay
         }
     }
 
-    _names.drain(_on_object);
+    _names.drain([this](uint16_t mid, const UString& name, const BIOPMessage& msg) {
+        emitObject(mid, name, msg);
+    });
 
     _duck.report().verbose(u"Module 0x%X: %d BIOP object(s), %d supported, %d bytes trailing",
                            module_id, count, supported, buf.remainingReadBytes());
