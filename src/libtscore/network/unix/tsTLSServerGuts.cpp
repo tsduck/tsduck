@@ -26,7 +26,7 @@ class ts::TLSServer::SystemGuts {};
 void ts::TLSServer::allocateGuts() { _guts = new SystemGuts; }
 void ts::TLSServer::deleteGuts() { delete _guts; }
 bool ts::TLSServer::listen(int) TS_NOT_IMPL
-bool ts::TLSServer::acceptTLS(TLSConnection&, IPSocketAddress&) TS_NOT_IMPL
+bool ts::TLSServer::acceptTLS(TLSConnection&, IPSocketAddress&, IOSB*) TS_NOT_IMPL
 bool ts::TLSServer::close(bool silent) TS_NOT_IMPL
 
 #else

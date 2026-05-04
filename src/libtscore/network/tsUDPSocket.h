@@ -367,7 +367,7 @@ namespace ts {
                               IPSocketAddress& sender,
                               IPSocketAddress& destination,
                               cn::microseconds* timestamp = nullptr,
-                              TimeStampType* timestamp_type = nullptr);
+                              TimeStampType* timestamp_type = nullptr) const;
 
         // Implementation of Socket interface.
         virtual bool open(IP gen) override;
@@ -451,7 +451,7 @@ namespace ts {
             void setUserBuffer(void* address, size_t size);
 
             // After receive: Extract the message characteristics.
-            void getMessageProperties(IPSocketAddress& sender, IPSocketAddress& destination, cn::microseconds* timestamp, TimeStampType* timestamp_type);
+            void getMessageProperties(const UDPSocket& socket, IPSocketAddress& sender, IPSocketAddress& destination, cn::microseconds* timestamp, TimeStampType* timestamp_type);
         };
 #endif
     };

@@ -29,12 +29,12 @@ TS_GCC_NOWARNING(old-style-cast)
 class ts::TLSConnection::SystemGuts {};
 void ts::TLSConnection::allocateGuts() { _guts = new SystemGuts; }
 void ts::TLSConnection::deleteGuts() { delete _guts; }
-bool ts::TLSConnection::connect(const IPSocketAddress&) TS_NOT_IMPL
+bool ts::TLSConnection::connect(const IPSocketAddress&, IOSB*) TS_NOT_IMPL
 bool ts::TLSConnection::setServerContext(const void*) TS_NOT_IMPL
 bool ts::TLSConnection::closeWriter(bool silent) TS_NOT_IMPL
 bool ts::TLSConnection::disconnect(bool silent) TS_NOT_IMPL
-bool ts::TLSConnection::send(const void*, size_t) TS_NOT_IMPL
-bool ts::TLSConnection::receive(void*, size_t, size_t&, const AbortInterface*) TS_NOT_IMPL
+bool ts::TLSConnection::send(const void*, size_t, IOSB*) TS_NOT_IMPL
+bool ts::TLSConnection::receive(void*, size_t, size_t&, const AbortInterface*, IOSB*) TS_NOT_IMPL
 ts::UString ts::TLSConnection::GetLibraryVersion() { return UString(); }
 
 #else
@@ -191,7 +191,7 @@ bool ts::TLSConnection::connect(const IPSocketAddress& addr, IOSB* iosb)
     }
 
     // Perform a TCP connection.
-    if (!SuperClass::connect(addr)) {
+    if (!SuperClass::connect(addr, iosb)) {
         return _guts->abort();
     }
 

@@ -738,7 +738,7 @@ int ts::UDPSocket::receiveOne(void* data,
         }
 
         // I/O has immediately completed, extract reception parameters.
-        params->getMessageProperties(sender, destination, timestamp, timestamp_type);
+        params->getMessageProperties(*this, sender, destination, timestamp, timestamp_type);
     }
     else {
         // Synchronous I/O reception parameters.
@@ -751,7 +751,7 @@ int ts::UDPSocket::receiveOne(void* data,
         }
 
         // Extract reception parameters.
-        params.getMessageProperties(sender, destination, timestamp, timestamp_type);
+        params.getMessageProperties(*this, sender, destination, timestamp, timestamp_type);
     }
 
 #else
@@ -917,7 +917,7 @@ bool ts::UDPSocket::getReceiveStatus(IOSB* iosb,
                                      IPSocketAddress& sender,
                                      IPSocketAddress& destination,
                                      cn::microseconds* timestamp,
-                                     TimeStampType* timestamp_type)
+                                     TimeStampType* timestamp_type) const
 {
 #if defined(TS_WINDOWS)
     RecvBuffers* params = iosb == nullptr ? nullptr : dynamic_cast<RecvBuffers*>(iosb->io_data.get());
@@ -926,7 +926,7 @@ bool ts::UDPSocket::getReceiveStatus(IOSB* iosb,
         return false;
     }
     else {
-        params->getMessageProperties(sender, destination, timestamp, timestamp_type);
+        params->getMessageProperties(*this, sender, destination, timestamp, timestamp_type);
         return true;
     }
 #else
@@ -970,7 +970,7 @@ void ts::UDPSocket::RecvBuffers::setUserBuffer(void* address, size_t size)
 }
 
 // After receive: Extract the message characteristics.
-void ts::UDPSocket::RecvBuffers::getMessageProperties(IPSocketAddress& sender, IPSocketAddress& destination, cn::microseconds* timestamp, TimeStampType* timestamp_type)
+void ts::UDPSocket::RecvBuffers::getMessageProperties(const UDPSocket& socket, IPSocketAddress& sender, IPSocketAddress& destination, cn::microseconds* timestamp, TimeStampType* timestamp_type)
 {
     // Clear optional returned data, can be found in ancil_data, or not.
     destination.clear();
@@ -988,11 +988,11 @@ void ts::UDPSocket::RecvBuffers::getMessageProperties(IPSocketAddress& sender, I
     for (::WSACMSGHDR* cmsg = WSA_CMSG_FIRSTHDR(&msg); cmsg != nullptr; cmsg = WSA_CMSG_NXTHDR(&msg, cmsg)) {
         if (cmsg->cmsg_level == IPPROTO_IP && cmsg->cmsg_type == IP_PKTINFO && cmsg->cmsg_len >= sizeof(::IN_PKTINFO)) {
             const ::IN_PKTINFO* info = reinterpret_cast<const ::IN_PKTINFO*>(WSA_CMSG_DATA(cmsg));
-            destination = IPSocketAddress(info->ipi_addr);
+            destination = IPSocketAddress(info->ipi_addr, IPAddress::AnyPort);
         }
         else if (cmsg->cmsg_level == IPPROTO_IPV6 && cmsg->cmsg_type == IPV6_PKTINFO && cmsg->cmsg_len >= sizeof(::IN6_PKTINFO)) {
             const ::IN6_PKTINFO* info = reinterpret_cast<const ::IN6_PKTINFO*>(WSA_CMSG_DATA(cmsg));
-            destination = IPSocketAddress(info->ipi6_addr);
+            destination = IPSocketAddress(info->ipi6_addr, IPAddress::AnyPort);
         }
         else if (timestamp != nullptr && cmsg->cmsg_level == SOL_SOCKET && cmsg->cmsg_type == SO_TIMESTAMP && cmsg->cmsg_len >= sizeof(uint64_t)) {
             const uint64_t* ts = reinterpret_cast<const uint64_t*>(WSA_CMSG_DATA(cmsg));
@@ -1014,7 +1014,7 @@ void ts::UDPSocket::RecvBuffers::getMessageProperties(IPSocketAddress& sender, I
     // If the destination address was found, the port can only be the local port of this socket.
     if (destination.hasAddress()) {
         IPSocketAddress local;
-        getLocalAddress(local);
+        socket.getLocalAddress(local);
         destination.setPort(local.port());
     }
 
