@@ -115,6 +115,7 @@ namespace ts {
         //! may get rid of data buffers.
         //! @param [in] handler Handler class to call when the close operation completes.
         //! @param [in] silent If true, do not report errors through the logger.
+        //! @return True on success, false on error.
         //!
         bool startClose(ReactiveUDPHandlerInterface* handler, bool silent = false);
 
