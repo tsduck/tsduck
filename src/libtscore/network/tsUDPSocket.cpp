@@ -9,6 +9,7 @@
 #include "tsUDPSocket.h"
 #include "tsNetworkInterface.h"
 #include "tsSysUtils.h"
+#include "tsFatal.h"
 
 #if defined(TS_WINDOWS)
     #include "tsBeforeStandardHeaders.h"
@@ -652,6 +653,19 @@ bool ts::UDPSocket::receive(void* data,
     if (timestamp != nullptr) {
         *timestamp = cn::microseconds(-1);
     }
+    if (timestamp_type != nullptr) {
+        *timestamp_type = TimeStampType::NONE;
+    }
+
+    // On macOS and FreeBSD (and possibly other BSD systems), there is a bug when the reception buffer size is zero.
+    // Instead of waiting for the next datagram (or return -1/EAGAIN in non-blocking mode), recv, recvfrom, recvmsg
+    // immediately return with a zero size and no error. See https://bugs.freebsd.org/bugzilla/show_bug.cgi?id=295009
+#if defined(TS_MAC) || defined(TS_BSD)
+    if (max_size == 0) {
+        report().error(u"zero-size buffer, receiving UDP datagrams in a zero-size buffer is known to fail on this system");
+        return false;
+    }
+#endif
 
     // Loop on unsollicited interrupts
     for (;;) {
@@ -665,11 +679,7 @@ bool ts::UDPSocket::receive(void* data,
         }
         else if (err == 0) {
             // Successful message reception.
-            // Sometimes, we get "successful" empty message coming from nowhere. Ignore them.
-            if (ret_size > 0 || sender.hasAddress()) {
-                // Non-empty message or identified sender, keep this one.
-                return true;
-            }
+            return true;
         }
 #if defined(TS_UNIX)
         else if (err == EINTR) {
@@ -712,20 +722,21 @@ int ts::UDPSocket::receiveOne(void* data,
     if (timestamp_type != nullptr) {
         *timestamp_type = TimeStampType::NONE;
     }
-
-    // Reserve a socket address to receive the sender address.
-    InitZero<::sockaddr_storage> sender_sock;
+    if (iosb != nullptr) {
+        iosb->pending = false;
+    }
 
 #if defined(TS_WINDOWS)
-
+    //
     // Get the address of WSARecvMsg the first time we use it.
-    // Thread-safe init-safe static data pattern:
+    // Thread-safe init-safe static data pattern.
     // NOTE: On all operating systems, recvmsg() is used to receive a UDP message with additional information such as
     // sender address, timestamps and other info. On Windows, all socket operations are smoothly emulated, including
     // recvfrom, allowing a reasonable portability. However, in the specific case of recvmsg, there is no equivalent
     // but a similar - and carefully incompatible - function named WSARecvMsg. Not only this function is different
     // from recvmsg, but it is also not exported from any DLL. Its address must be queried dynamically using WSAIoctl().
     // The stupid idiot who had this pervert idea at Microsoft deserves to burn in hell (twice) !!
+    //
     static ::GUID wsa_recvmsg_guid = WSAID_WSARECVMSG;
     static int wsa_recvmsg_error = 0;
     static const ::LPFN_WSARECVMSG wsa_recvmsg = reinterpret_cast<::LPFN_WSARECVMSG>(GetWSAFunction(wsa_recvmsg_guid, wsa_recvmsg_error));
@@ -733,55 +744,39 @@ int ts::UDPSocket::receiveOne(void* data,
         return wsa_recvmsg_error;
     }
 
-    // Build an WSABUF pointing to the message.
-    InitZero<::WSABUF> vec;
-    vec.data.buf = reinterpret_cast<CHAR*>(data);
-    vec.data.len = ::ULONG(max_size);
-
-    // Reserve a buffer to receive packet ancillary data.
-    ::CHAR ancil_data[1024];
-    TS_ZERO(ancil_data);
-
-    // Build a WSAMSG for WSARecvMsg.
-    InitZero<::WSAMSG> msg;
-    msg.data.name = reinterpret_cast<::sockaddr*>(&sender_sock.data);
-    msg.data.namelen = sizeof(sender_sock.data);
-    msg.data.lpBuffers = &vec.data;
-    msg.data.dwBufferCount = 1;  // number of WSAMSG
-    msg.data.Control.buf = ancil_data;
-    msg.data.Control.len = ::ULONG(sizeof(ancil_data));
-
-    // Wait for a message.
     ::DWORD insize = 0;
-    if (wsa_recvmsg(getSocket(), &msg.data, &insize, nullptr, nullptr) != 0) {
-        return LastSysErrorCode();
-    }
 
-    // Browse returned ancillary data.
-    for (::WSACMSGHDR* cmsg = WSA_CMSG_FIRSTHDR(&msg.data); cmsg != nullptr; cmsg = WSA_CMSG_NXTHDR(&msg.data, cmsg)) {
-        if (cmsg->cmsg_level == IPPROTO_IP && cmsg->cmsg_type == IP_PKTINFO && cmsg->cmsg_len >= sizeof(::IN_PKTINFO)) {
-            const ::IN_PKTINFO* info = reinterpret_cast<const ::IN_PKTINFO*>(WSA_CMSG_DATA(cmsg));
-            destination = IPSocketAddress(info->ipi_addr, _local_address.port());
+    if (isNonBlocking()) {
+        assert(iosb != nullptr);
+
+        // The reception parameters are stored in the IOSB.
+        RecvBuffers* params = new RecvBuffers;
+        CheckNonNull(params);
+        iosb->io_data.reset(params);
+        params->setUserBuffer(data, max_size);
+
+        // Start an asynchronous I/O.
+        if (wsa_recvmsg(getSocket(), &params->msg, &insize, &iosb->overlap, nullptr) != 0) {
+            const auto err = LastSysErrorCode();
+            iosb->pending = err == WSA_IO_PENDING;
+            return err;
         }
-        else if (cmsg->cmsg_level == IPPROTO_IPV6 && cmsg->cmsg_type == IPV6_PKTINFO && cmsg->cmsg_len >= sizeof(::IN6_PKTINFO)) {
-            const ::IN6_PKTINFO* info = reinterpret_cast<const ::IN6_PKTINFO*>(WSA_CMSG_DATA(cmsg));
-            destination = IPSocketAddress(info->ipi6_addr, _local_address.port());
+
+        // I/O has immediately completed, extract reception parameters.
+        params->getMessageProperties(sender, destination, _local_address.port(), timestamp, timestamp_type);
+    }
+    else {
+        // Synchronous I/O reception parameters.
+        RecvBuffers params;
+        params.setUserBuffer(data, max_size);
+
+        // Wait for a message.
+        if (wsa_recvmsg(getSocket(), &params.msg, &insize, nullptr, nullptr) != 0) {
+            return LastSysErrorCode();
         }
-        else if (timestamp != nullptr && cmsg->cmsg_level == SOL_SOCKET && cmsg->cmsg_type == SO_TIMESTAMP && cmsg->cmsg_len >= sizeof(uint64_t)) {
-            const uint64_t* ts = reinterpret_cast<const uint64_t*>(WSA_CMSG_DATA(cmsg));
-            if (ts != nullptr && *ts != 0) {
-                // Got a timestamp. Its frequency is returned by QueryPerformanceFrequency().
-                // Return the same value all the time, call it once only.
-                static ::LARGE_INTEGER freq = {.QuadPart = 0};
-                static const bool qpf_ok = QueryPerformanceFrequency(&freq) && freq.QuadPart > 0;
-                if (qpf_ok) {
-                    *timestamp = cn::microseconds((*ts * 1'000'000) / freq.QuadPart);
-                    if (timestamp_type != nullptr) {
-                        *timestamp_type = TimeStampType::SOFTWARE;
-                    }
-                }
-            }
-        }
+
+        // Extract reception parameters.
+        params.getMessageProperties(sender, destination, _local_address.port(), timestamp, timestamp_type);
     }
 
 #else
@@ -791,6 +786,9 @@ int ts::UDPSocket::receiveOne(void* data,
     InitZero<::iovec> vec;
     vec.data.iov_base = data;
     vec.data.iov_len = max_size;
+
+    // Reserve a socket address to receive the sender address.
+    InitZero<::sockaddr_storage> sender_sock;
 
     // Reserve a buffer to receive packet ancillary data.
     uint8_t ancil_data[1024];
@@ -808,10 +806,15 @@ int ts::UDPSocket::receiveOne(void* data,
 
     // Wait for a message.
     SysSocketSignedSizeType insize = ::recvmsg(getSocket(), &hdr, 0);
+    int err = errno;
 
+    // Extract sender socket address.
+    sender = IPSocketAddress(sender_sock.data);
+
+    // Process receive error.
     if (insize < 0) {
-        const int err = errno;
         if (isNonBlocking() && err == EAGAIN) {
+            // Non-blocking socket with no available datagram.
             assert(iosb != nullptr);
             iosb->pending = true;
         }
@@ -920,7 +923,116 @@ int ts::UDPSocket::receiveOne(void* data,
 
     // Successfully received a message
     ret_size = size_t(insize);
-    sender = IPSocketAddress(sender_sock.data);
 
     return 0; // success
 }
+
+
+//----------------------------------------------------------------------------
+// Get the result of an asynchronous receive().
+//----------------------------------------------------------------------------
+
+bool ts::UDPSocket::getReceiveStatus(IOSB* iosb,
+                                     IPSocketAddress& sender,
+                                     IPSocketAddress& destination,
+                                     cn::microseconds* timestamp,
+                                     TimeStampType* timestamp_type)
+{
+#if defined(TS_WINDOWS)
+    RecvBuffers* params = iosb == nullptr ? nullptr : dynamic_cast<RecvBuffers*>(iosb->io_data.get());
+    if (params == nullptr) {
+        report().error(u"asynchronous I/O not used");
+        return false;
+    }
+    else {
+        params->getMessageProperties(sender, destination, _local_address.port(), timestamp, timestamp_type);
+        return true;
+    }
+#else
+    report().error(u"asynchronous I/O are not supported on this system");
+    return false;
+#endif
+}
+
+
+//----------------------------------------------------------------------------
+// Parameters buffer for WSARecvMsg.
+//----------------------------------------------------------------------------
+
+#if defined(TS_WINDOWS)
+
+// Virtual destructor.
+ts::UDPSocket::RecvBuffers::~RecvBuffers()
+{
+}
+
+// Before receive: Initializes all internal structures and set the address and size of the user's reception buffer.
+void ts::UDPSocket::RecvBuffers::setUserBuffer(void* address, size_t size)
+{
+    // Clear all reception data.
+    TS_ZERO(msg);
+    TS_ZERO(vec);
+    TS_ZERO(sender_sock);
+    TS_ZERO(ancil_data);
+
+    // Build an WSABUF pointing to the message.
+    vec.buf = reinterpret_cast<CHAR*>(address);
+    vec.len = ::ULONG(size);
+
+    // Build a WSAMSG for WSARecvMsg.
+    msg.name = reinterpret_cast<::sockaddr*>(&sender_sock);
+    msg.namelen = sizeof(sender_sock);
+    msg.lpBuffers = &vec;
+    msg.dwBufferCount = 1;  // number of WSAMSG
+    msg.Control.buf = ancil_data;
+    msg.Control.len = ::ULONG(sizeof(ancil_data));
+}
+
+// After receive: Extract the message characteristics.
+void ts::UDPSocket::RecvBuffers::getMessageProperties(IPSocketAddress& sender,
+                                                      IPSocketAddress& destination,
+                                                      IPAddress::Port destination_port,
+                                                      cn::microseconds* timestamp,
+                                                      TimeStampType* timestamp_type)
+{
+    // Clear optional returned data, can be found in ancil_data, or not.
+    destination.clear();
+    if (timestamp != nullptr) {
+        *timestamp = cn::microseconds(-1);
+    }
+    if (timestamp_type != nullptr) {
+        *timestamp_type = TimeStampType::NONE;
+    }
+
+    // Extract sender socket address.
+    sender = IPSocketAddress(sender_sock);
+
+    // Browse returned ancillary data.
+    for (::WSACMSGHDR* cmsg = WSA_CMSG_FIRSTHDR(&msg); cmsg != nullptr; cmsg = WSA_CMSG_NXTHDR(&msg, cmsg)) {
+        if (cmsg->cmsg_level == IPPROTO_IP && cmsg->cmsg_type == IP_PKTINFO && cmsg->cmsg_len >= sizeof(::IN_PKTINFO)) {
+            const ::IN_PKTINFO* info = reinterpret_cast<const ::IN_PKTINFO*>(WSA_CMSG_DATA(cmsg));
+            destination = IPSocketAddress(info->ipi_addr, destination_port);
+        }
+        else if (cmsg->cmsg_level == IPPROTO_IPV6 && cmsg->cmsg_type == IPV6_PKTINFO && cmsg->cmsg_len >= sizeof(::IN6_PKTINFO)) {
+            const ::IN6_PKTINFO* info = reinterpret_cast<const ::IN6_PKTINFO*>(WSA_CMSG_DATA(cmsg));
+            destination = IPSocketAddress(info->ipi6_addr, destination_port);
+        }
+        else if (timestamp != nullptr && cmsg->cmsg_level == SOL_SOCKET && cmsg->cmsg_type == SO_TIMESTAMP && cmsg->cmsg_len >= sizeof(uint64_t)) {
+            const uint64_t* ts = reinterpret_cast<const uint64_t*>(WSA_CMSG_DATA(cmsg));
+            if (ts != nullptr && *ts != 0) {
+                // Got a timestamp. Its frequency is returned by QueryPerformanceFrequency().
+                // Return the same value all the time, call it once only.
+                static ::LARGE_INTEGER freq = {.QuadPart = 0};
+                static const bool qpf_ok = QueryPerformanceFrequency(&freq) && freq.QuadPart > 0;
+                if (qpf_ok) {
+                    *timestamp = cn::microseconds((*ts * 1'000'000) / freq.QuadPart);
+                    if (timestamp_type != nullptr) {
+                        *timestamp_type = TimeStampType::SOFTWARE;
+                    }
+                }
+            }
+        }
+    }
+}
+
+#endif // TS_WINDOWS

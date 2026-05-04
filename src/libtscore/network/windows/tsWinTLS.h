@@ -24,7 +24,7 @@ namespace ts {
     //! Maximum size of a TLS packet.
     //! Max TLS message size is 2^14 (16384).
     //! Extra overhead includes header/mac/padding (overestimated at 512).
-    //! 
+    //!
     constexpr size_t TLS_MAX_PACKET_SIZE = 16384 + 512;
 
     //!
@@ -86,7 +86,7 @@ namespace ts {
     //! @param [in] desc Buffer descriptor.
     //! @param [in] type The channel type to search.
     //! @return Address of the first buffer of type @a type or the null pointer if there is none.
-    //! 
+    //!
     TSCOREDLL ::SecBuffer* GetSecBufferByType(const ::SecBufferDesc& desc, unsigned long type);
 
     //!

@@ -27,13 +27,21 @@ namespace ts {
     //! operating system. This is why this class shall be used by specialized classes
     //! which exactly know what they are doing.
     //!
+    //! There are two distinct I/O models:
+    //!
+    //! - Non-blocking I/O (UNIX).
+    //! - Asynchronous I/O (Windows).
+    //!
     //! Differences in semantics:
-    //! 
+    //!
     //! - On UNIX systems (Linux, macOS, BSD), non-blocking means that a read or write
     //!   operation fails if it cannot be immediately served. The corresponding error is
     //!   EAGAIN.
+    //!
     //! - On Windows systems, non-blocking means using "overlapped" I/O. For anyone with a
-    //!   basic system culture, this means "asynchronous" I/O.
+    //!   basic system culture, this means "asynchronous" I/O. An asynchronous I/O operation
+    //!   can either immediately succeed or fail with error ERROR_IO_PENDING, meaning that the
+    //!   operation executes in the background.
     //!
     //! Differences in usage:
     //!
@@ -43,13 +51,25 @@ namespace ts {
     //!   On Windows systems, the application starts an I/O and control immediately returns.
     //!   The I/O data exchange continues in the background. The event dispatcher notifies the
     //!   application when the I/O completes.
-    //! 
+    //!
     //! - Data buffer usage: On UNIX, an I/O is either immediate or failed. On Windows, the
     //!   I/O is in progress as long as it is not completed. This means that, on Windows,
     //!   I/O buffers which are used for read or write must be available during the asynchronous
     //!   phase of the I/O, because the data can come in or go out at any time. On UNIX systems,
     //!   on the contrary, no buffer is used while waiting for some I/O to become possible.
     //!
+    //! Important differences in canceling I/O and closing file descriptors or handles:
+    //!
+    //! - On UNIX, a non-blocking I/O is either immediate or failed. No I/O is ever "in progress".
+    //!   Closing a file descriptor is possible at any time without restriction.
+    //!
+    //! - On Windows, a pending I/O can be canceled either explicitly or as the result of closing
+    //!   the device handle. In that case, the I/O completion is notified later with an I/O error status.
+    //!   This means that the I/O data buffer and IOSB (see below) shall remain valid as long as this
+    //!   corresponding I/O completion has not been received. It is of the utmost importance that the
+    //!   application keeps track of all pending asynchronous I/O and always waits for the reception of
+    //!   all corresponding I/O completions before releasing the memory for the data buffers, including
+    //!   when closing the device handle.
     //!
     class TSCOREDLL NonBlockingDevice : public ReporterBase
     {
@@ -94,9 +114,19 @@ namespace ts {
         bool isNonBlocking() const { return _is_non_blocking; }
 
         //!
+        //! Virtual base class for ancillary data in IOSB.
+        //! Subclasses can be defined to hold specific data which must remain available during an asynchronous or non-blocking I/O.
+        //!
+        class TSCOREDLL AncillaryData
+        {
+        public:
+            virtual ~AncillaryData();  //!< Virtual destructor.
+        };
+
+        //!
         //! This structure indicates the status of a non-blocking I/O.
         //! You must be a former OpenVMS expert to understand the name...
-        //! 
+        //!
         //! The subclasses which implement non-blocking I/O should use an IOSB* parameter for any I/O operation
         //! which can be non-blocking. Typically, if the instance of the subclass is in blocking mode (the default),
         //! this parameter must be null. When the instance is in non-blocking mode, this parameter must not be null.
@@ -112,12 +142,53 @@ namespace ts {
             //!   Use the field @a overlap to synchronize on the I/O completion.
             //!
             bool pending = false;
+
+            //!
+            //! Pointer to application data.
+            //! This is typically set by the application before starting the I/O.
+            //!
+            std::shared_ptr<AncillaryData> app_data {};
+
 #if defined(TS_WINDOWS) || defined(DOXYGEN)
+            // Memory marker to identify an overlap structure which belongs to an IOSB structure.
+            // When an asynchronous I/O returns the address of an OVERLAPPED structure, check if
+            // memory before the OVERLAPPED contains some magic marker.
+            //! @cond nodoxygen
+            volatile uint32_t iosb_marker = iosb_marker_value;
+            static constexpr uint32_t iosb_marker_value = 0x494F5342; // "IOSB"
+            //! @endcond
+
             //!
-            //! OVERLAPPED structure for an asynchronous I/O on Windows.
+            //! OVERLAPPED structure for an asynchronous I/O (Windows-specific).
             //!
-            OVERLAPPED overlap {};
+            ::OVERLAPPED overlap {};
+
+            //!
+            //! Pointer to I/O data (Windows-specific).
+            //! This is typically set by "reactive I/O" before starting the asynchronous I/O.
+            //!
+            std::shared_ptr<AncillaryData> io_data {};
+
+            //!
+            //! Check if an OVERLAPPED structure is part of an IOSB.
+            //! @param [in] overlap Address of an OVERLAPPED structure.
+            //! @return Address of the IOSB which contains the OVERLAPPED or nullptr if @a overlap is not part of an IOSB.
+            //!
+            static IOSB* ParentIOSB(::OVERLAPPED* overlap);
+
+            //! @cond nodoxygen
+            IOSB();
+            ~IOSB();
+            //! @endcond
+#else
+            //! @cond nodoxygen
+            IOSB() = default;
+            //! @endcond
 #endif
+            //!
+            //! Reset the IOSB for a new I/O operation.
+            //!
+            void reset();
         };
 
     protected:

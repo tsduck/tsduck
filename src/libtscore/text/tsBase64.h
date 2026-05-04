@@ -59,7 +59,7 @@ namespace ts {
         //! @param [in,out] b64 Output string. Produced characters are appended at the end of @a output.
         //! @param [in] data Address of data to encode.
         //! @param [in] size Size in bytes of data to encode.
-        //! 
+        //!
         void encodeAdd(UString& b64, const void* data, size_t size);
 
         //!

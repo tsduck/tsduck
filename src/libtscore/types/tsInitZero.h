@@ -24,7 +24,7 @@ namespace ts {
     struct InitZero {
         //!
         //! Encapsulated plain old C data structure.
-        //! 
+        //!
         STRUCT data;
 
         //!
@@ -45,7 +45,7 @@ namespace ts {
         //! Comparator for containers, no real semantic.
         //! @param other Other data structure to compare.
         //! @return True if the binary content of this data structure is locally less than the content of @a other.
-        //! 
+        //!
         bool operator<(const InitZero<STRUCT>& other) const
         {
             return MemCompare(&data, &other.data, SIZE) < 0;

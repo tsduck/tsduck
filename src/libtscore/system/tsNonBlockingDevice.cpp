@@ -18,6 +18,10 @@ ts::NonBlockingDevice::~NonBlockingDevice()
 {
 }
 
+ts::NonBlockingDevice::AncillaryData::~AncillaryData()
+{
+}
+
 
 //----------------------------------------------------------------------------
 // Set the device in non-blocking mode.
@@ -47,14 +51,6 @@ bool ts::NonBlockingDevice::allowSetNonBlocking() const
 
 bool ts::NonBlockingDevice::checkNonBlocking(bool non_blocking, const UChar* opname)
 {
-#if defined(TS_WINDOWS)
-    // To be removed when we fully support asynchronous I/O on Windows.
-    if (_is_non_blocking) {
-        report().error(u"internal error: asynchronous I/O not yet supported on Windows");
-        return false;
-    }
-#endif
-
     if (non_blocking == _is_non_blocking) {
         return true;
     }
@@ -113,3 +109,66 @@ bool ts::NonBlockingDevice::setSystemNonBlocking(SysSocketType fd, bool non_bloc
 
     return true;
 }
+
+
+//----------------------------------------------------------------------------
+// Reset the IOSB for a new I/O operation.
+//----------------------------------------------------------------------------
+
+void ts::NonBlockingDevice::IOSB::reset()
+{
+    pending = false;
+    app_data.reset();
+#if defined(TS_WINDOWS)
+    TS_ZERO(overlap);
+    io_data.reset();
+#endif
+}
+
+
+//----------------------------------------------------------------------------
+// Support for Windows asynchronous I/O.
+//----------------------------------------------------------------------------
+
+#if defined(TS_WINDOWS)
+
+// IOSB constructor.
+ts::NonBlockingDevice::IOSB::IOSB()
+{
+    TS_ZERO(overlap);
+}
+
+// IOSB destructor.
+ts::NonBlockingDevice::IOSB::~IOSB()
+{
+    // Make sure that the iosb_marker becomes invalid.
+    iosb_marker = 0;
+}
+
+// Check if an OVERLAPPED structure is part of an IOSB.
+ts::NonBlockingDevice::IOSB* ts::NonBlockingDevice::IOSB::ParentIOSB(::OVERLAPPED* overlap)
+{
+    static constexpr size_t marker_offset = offsetof(IOSB, iosb_marker);
+    static constexpr size_t overlap_offset = offsetof(IOSB, overlap);
+    static_assert(marker_offset < overlap_offset);
+
+    if (overlap == nullptr || size_t(overlap) < overlap_offset) {
+        return nullptr;
+    }
+    try {
+        char* ov = reinterpret_cast<char*>(overlap);
+        if (*reinterpret_cast<uint32_t*>(ov - overlap_offset + marker_offset) == iosb_marker_value) {
+            // Found the expected value for an IOSB marker, we probably are in an IOSB.
+            return reinterpret_cast<IOSB*>(ov - overlap_offset);
+        }
+        else {
+            return nullptr;
+        }
+    }
+    catch (...) {
+        // Probably an invalid memory access.
+        return nullptr;
+    }
+}
+
+#endif

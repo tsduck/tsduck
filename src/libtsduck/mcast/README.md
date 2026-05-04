@@ -148,7 +148,7 @@ The current implementation of DVB-NIP in TSDuck assumes that FLUTE is used, not 
       - A service list file (`.xml`).
       - A HLS play list (`.m3u8`) for a service.
       - A MPEG-DASH manifest (`.mpd`) for a service.
-    
+
 - The "bootstrap" file is a MulticastGatewayConfiguration.
   - It contains several "transport sessions".
   - A transport session contains:

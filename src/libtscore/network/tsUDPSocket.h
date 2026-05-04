@@ -356,8 +356,7 @@ namespace ts {
         //! @param [out] ret_size Size in bytes of the received message.
         //! Will never be larger than @a max_size.
         //! @param [out] sender Socket address of the sender.
-        //! @param [out] destination Socket address of the packet destination.
-        //! Can be useful to check in multicast packets.
+        //! @param [out] destination Socket address of the packet destination. Can be useful to check in multicast packets.
         //! @param [in] abort If non-zero, invoked when I/O is interrupted
         //! (in case of user-interrupt, return, otherwise retry).
         //! @param [out] timestamp When not null, return the receive timestamp in micro-seconds.
@@ -379,6 +378,25 @@ namespace ts {
                              cn::microseconds* timestamp = nullptr,
                              TimeStampType* timestamp_type = nullptr,
                              IOSB* iosb = nullptr);
+
+        //!
+        //! Get the result of an asynchronous receive().
+        //! This method shall be used with asynchronous I/O only. It returns an error when the system
+        //! uses non-blocking I/O instead of asynchronous I/O.
+        //! @param [in,out] iosb Address of the IOSB structure which was used when receive() was called.
+        //! @param [out] sender Socket address of the sender.
+        //! @param [out] destination Socket address of the packet destination. Can be useful to check in multicast packets.
+        //! @param [out] timestamp When not null, return the receive timestamp in micro-seconds.
+        //! Use setReceiveTimestamps() to enable the generation of receive timestamps.
+        //! If the returned value is negative, no timestamp is available.
+        //! @param [out] timestamp_type When not null, return the type of receive timestamp.
+        //! @return True on success, false on error.
+        //!
+        bool getReceiveStatus(IOSB* iosb,
+                              IPSocketAddress& sender,
+                              IPSocketAddress& destination,
+                              cn::microseconds* timestamp = nullptr,
+                              TimeStampType* timestamp_type = nullptr);
 
         // Implementation of Socket interface.
         virtual bool open(IP gen) override;
@@ -439,5 +457,36 @@ namespace ts {
 
         // Add multicast membership common code, local interface by index or by address.
         bool addMembershipImpl(const IPAddress& multicast, const IPAddress& local, int interface_index, const IPAddress& source);
+
+#if defined(TS_WINDOWS)
+        // The function WSARecvMsg uses a complex structure of buffers.
+        // For asynchronous I/O, we need to keep everything in one single structure
+        // which lives during the I/O. This structure must be non-copyable because
+        // it contains pointers to its own fields.
+        // See https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/ms741687(v=vs.85)
+        class TSCOREDLL RecvBuffers : public AncillaryData
+        {
+            TS_NOCOPY(RecvBuffers);
+        public:
+            ::WSAMSG msg {};                    // Reception parameters, contain pointers to subsequent fields.
+            ::WSABUF vec {};                    // Pointer to user's reception buffer.
+            ::sockaddr_storage sender_sock {};  // Will receive the sender's socket address.
+            ::CHAR ancil_data[1024] {};         // Will receive other reception data (destination socket, timestamp).
+
+            // Constructor.
+            RecvBuffers() = default;
+            virtual ~RecvBuffers() override;
+
+            // Before receive: Initializes all internal structures and set the address and size of the user's reception buffer.
+            void setUserBuffer(void* address, size_t size);
+
+            // After receive: Extract the message characteristics.
+            void getMessageProperties(IPSocketAddress& sender,
+                                      IPSocketAddress& destination,
+                                      IPAddress::Port destination_port,
+                                      cn::microseconds* timestamp,
+                                      TimeStampType* timestamp_type);
+        };
+#endif
     };
 }

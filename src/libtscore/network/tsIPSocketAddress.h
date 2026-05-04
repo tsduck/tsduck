@@ -202,7 +202,7 @@ namespace ts {
         //!
         //! Remove the port number from a "addr[:port]" or "[addr:]port" string.
         //! @param [in,out] name A string where the port number is removed.
-        //! 
+        //!
         static void RemovePort(UString& name);
 
         //!

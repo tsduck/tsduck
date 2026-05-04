@@ -9,6 +9,7 @@
 #include "tstsswitchCommandListener.h"
 #include "tstsswitchCore.h"
 #include "tsRestServer.h"
+#include "tsReporterGuard.h"
 #include "tsReportBuffer.h"
 #include "tsFatal.h"
 
@@ -96,7 +97,7 @@ void ts::tsswitch::CommandListener::main()
     IPSocketAddress destination;
 
     // Get receive errors in a buffer since some errors are normal.
-    ReportBuffer<ThreadSafety::None> error(_log.maxSeverity());
+    ReportBuffer<ThreadSafety::None> error_buffer(_log.maxSeverity());
 
     // Process commands, either from the TLS/TCP server or UDP socket.
     if (_opt.remote_control.use_tls) {
@@ -106,10 +107,11 @@ void ts::tsswitch::CommandListener::main()
             // Accept a client. Temporarily get errors from TLS server in a buffer.
             // Do not terminate on accept() failure, this may be a client which fails the TLS handshake.
             IPSocketAddress client_addr;
-            Report* previous = _tls_server.setReport(&error);
-            const bool accepted = _tls_server.accept(_tls_client, client_addr);
-            _tls_server.setReport(previous);
-
+            bool accepted = false;
+            {
+                ReporterGuard guard(_tls_server, &error_buffer);
+                accepted = _tls_server.accept(_tls_client, client_addr);
+            }
             if (accepted) {
                 // Process a request. In case of error, getRequest() closes the connection
                 RestServer rest(_opt.remote_control, _log);
@@ -133,13 +135,12 @@ void ts::tsswitch::CommandListener::main()
         while (!_terminate) {
 
             // Receive a command datagram. Temporarily get errors from socket in a buffer.
-            Report* previous = _udp_server.setReport(&error);
-            const bool received = _udp_server.receive(inbuf, sizeof(inbuf), insize, sender, destination);
-            _udp_server.setReport(previous);
-
-            // Unlike TLS, terminate on receive() failure.
-            if (!received) {
-                break;
+            {
+                ReporterGuard guard(_udp_server, &error_buffer);
+                if (!_udp_server.receive(inbuf, sizeof(inbuf), insize, sender, destination)) {
+                    // Unlike TLS, terminate on receive() failure.
+                    break;
+                }
             }
 
             // Filter out unauthorized remote systems.
@@ -160,8 +161,8 @@ void ts::tsswitch::CommandListener::main()
     }
 
     // If termination was requested, receive error is not an error.
-    if (!_terminate && !error.empty()) {
-        _log.info(error.messages());
+    if (!_terminate && !error_buffer.empty()) {
+        _log.info(error_buffer.messages());
     }
     _log.debug(u"remote control server thread completed");
 }

@@ -100,7 +100,7 @@ namespace ts {
         //! On the server side, check if a client address is allowed, based on sets of allowed and denied clients.
         //! @param [in] client Incoming client address.
         //! @return True if the client is allowed, false if it is denied.
-        //! 
+        //!
         bool isAllowed(const IPAddress& client) const;
 
     protected:

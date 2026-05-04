@@ -71,7 +71,6 @@ namespace ts {
         //!
         bool muteReport(bool mute);
 
-    protected:
         //!
         //! Compute a log severity level from a "silent" parameter.
         //! Some subclass methods have a "silent" parameter to avoid reporting errors which may be insignificant,
@@ -79,8 +78,7 @@ namespace ts {
         //! errors if the previous error left the device in an inconsistent state. While those errors should not
         //! be displayed as errors, we still display them at debug level.
         //! @param [in] silent If true, do not report errors, report debug messages instead.
-        //! @return Error when @a silent is false, Debug otherwise..
-        //!
+        //! @return Error when @a silent is false, Debug otherwise.
         //!
         static inline int SilentLevel(bool silent) { return silent ? Severity::Debug : Severity::Error; }
 

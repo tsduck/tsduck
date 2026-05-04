@@ -400,9 +400,9 @@ TSUNIT_DEFINE_TEST(ErrorCode)
 #endif
 
     const ts::UString codeMessage(ts::SysErrorCodeMessage(code));
-    const ts::UString successMessage(ts::SysErrorCodeMessage(0));
+    const ts::UString successMessage(ts::SysErrorCodeMessage(ts::SYS_SUCCESS));
 
-    debug() << "SysUtilsTest: SUCCESS message = \"" << successMessage << "\"" << std::endl
+    debug() << "SysUtilsTest: SYS_SUCCESS message = \"" << successMessage << "\"" << std::endl
             << "SysUtilsTest: test code = " << code << std::endl
             << "SysUtilsTest: test code message = \"" << codeMessage << "\"" << std::endl;
 

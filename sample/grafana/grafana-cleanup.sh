@@ -6,7 +6,7 @@
 cd $(dirname $0)
 for cont in grafana influxdb; do
     docker ps | grep -qw $cont && docker stop $cont
-    docker ps -a | grep -qw $cont && docker rm $cont    
+    docker ps -a | grep -qw $cont && docker rm $cont
 done
 # Try to delete the data without privilege.
 rm -rf data 2>/dev/null

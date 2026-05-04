@@ -46,6 +46,10 @@ Generic core classes.
   @ingroup core
   Networking features.
 
+  @defgroup reactor Reactor
+  @ingroup core
+  Single-thread event dispatching reactor.
+
   @defgroup log Message logging
   @ingroup core
   Unified message logging.

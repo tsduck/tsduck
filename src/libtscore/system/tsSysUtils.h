@@ -54,6 +54,27 @@ namespace ts {
     }
 
     //!
+    //! An error code value which means "no error" on all operating systems.
+    //! Note that some Windows error codes indicate success without being equal to zero.
+    //! This SYS_SUCCESS value can be used as a synthetic value to indicate success.
+    //!
+    constexpr int SYS_SUCCESS = 0;
+
+    //!
+    //! A synthetic error code value which means "unspecified error".
+    //! This value is not a valid error code on any operating system.
+    //! It can be used by application to indicate some error without further detail.
+    //!
+    constexpr int SYS_ERROR = -1;
+
+    //!
+    //! A synthetic error code value which means "canceled operation".
+    //! This value is not a valid error code on any operating system.
+    //! It can be used by application to indicate some kind of cancelation, without actual error.
+    //!
+    constexpr int SYS_CANCELED = -2;
+
+    //!
     //! Format a system error code into a string.
     //! @ingroup system
     //! @param [in] code An error code from the operating system.

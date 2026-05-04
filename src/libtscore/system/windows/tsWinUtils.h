@@ -36,7 +36,7 @@ namespace ts {
     //! @param [in] h The handle to check.
     //! @return True if @a h seems a valid handle.
     //! False if @a h is one of the documented invalid handle values.
-    //! 
+    //!
     TSCOREDLL inline bool WinHandleValid(::HANDLE h) { return h != nullptr && h != INVALID_HANDLE_VALUE; }
 
     //!
