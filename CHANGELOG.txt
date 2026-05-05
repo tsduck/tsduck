@@ -11,13 +11,16 @@ VERSION 3.44-4624 (April 2026)
     interprets  them  as  a BIOP object carousel (default) or downloads them as
     opaque  modules  for a data carousel (DVB-SSU style, with --data-carousel).
     In  object  mode , File  objects  under the ServiceGateway are extracted to
-    <outdir>/files/<path>.  Options  --list  (inspect without writing), --dump-
-    modules (keep raw assembled payloads) and --data-carousel are supported.
-    Multi-group  carousels are tracked as first-class entities; modules keyed
-    by (download_id, module_id). Per-module DII descriptors (name, label, type,
-    info,  caching priority, CRC32, etc.) are surfaced in --list  output.  In
-    data-carousel mode, output mirrors the carousel's group hierarchy on disk
-    (<outdir>/<download_id>/<label_or_module_XXXX>.bin).
+    <outdir>/files/<path>.    When  --output-directory  is  omitted, the plugin
+    runs  in  list-only  mode and prints a hierarchical report (per group, per
+    module, per DII descriptor, plus the resolved file tree). Option --dump-
+    modules keeps the raw assembled payloads alongside  the  extracted  files,
+    and  --data-carousel switches to plain data-carousel handling. Multi-group
+    carousels are tracked as first-class entities; modules keyed by
+    (download_id, module_id). Per-module DII descriptors (name, label, type,
+    info,  caching  priority,  CRC32,  etc.)  are surfaced in the list-only
+    output. In data-carousel mode, output mirrors the carousel's group
+    hierarchy on disk (<outdir>/<download_id>/<label_or_module_XXXX>.bin).
   * Added  command  "tsdsmcc":  Standalone  DSM-CC  carousel  extraction  tool,
     one-shot equivalent of "tsp -I file ... -P dsmcc ... -O drop".  Shares  its
     extraction engine with the plugin and exposes the same option set.

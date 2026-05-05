@@ -69,12 +69,13 @@ Directory where extracted files are written. Resolved BIOP File objects are
 written under `_directory_/files/<path>` preserving the carousel tree.
 
 [.optdoc]
-When omitted, the plugin runs in list-only mode: it prints the resolved
-file tree (object carousel) or the group/module tree (data carousel), the
-per-group summary, the module table (compression info, name when a
-`name_descriptor` is present), and the per-module DII descriptors (name,
-label, type, info, caching priority, CRC32, etc.) without writing any
-files.
+When omitted, the plugin runs in list-only mode and prints a hierarchical
+report without writing any files: one block per carousel group
+(`download_id`, module count, completion state), then per-module sub-blocks
+(version, blocks, size, compression, status, BIOP-object list with kinds,
+per-DII descriptor decode -- name, label, type, info, caching priority,
+CRC32, etc.), then a final `Carousel Tree` section with the resolved
+file/directory tree and byte sizes.
 
 [.optdoc]
 Path segments equal to `..` or `.` are rejected so a crafted carousel cannot
@@ -85,9 +86,10 @@ escape the output directory.
 
 [.optdoc]
 Also write the raw assembled module payloads (after decompression) to
-`_directory_/modules/module_XXXX.bin`, one file per module id. Useful for
-offline inspection of the raw payloads. Requires `--output-directory`.
-Mutually exclusive with `--data-carousel`.
+`_directory_/modules/<download_id>/module_XXXX.bin`, nested under the
+`download_id` so multi-group streams with overlapping `module_id` values do
+not collide. Useful for offline inspection of the raw payloads. Requires
+`--output-directory`. Mutually exclusive with `--data-carousel`.
 
 [.opt]
 *--data-carousel*

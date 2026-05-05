@@ -90,21 +90,6 @@ void ts::DSMCCCarousel::feedUserToNetwork(const DSMCCUserToNetworkMessage& unm)
 }
 
 
-ts::UString ts::DSMCCCarousel::listGroups() const
-{
-    UString out;
-    for (const auto& pair : _groups) {
-        const auto& ctx = pair.second;
-        out += UString::Format(u"Dl: %08X | Size: %10d | Modules: %3d | Complete: %3d | DSI: %s | Compat: %d\n",
-                               ctx.download_id, ctx.group_size,
-                               ctx.module_ids.size(), ctx.modules_complete,
-                               ctx.announced_by_dsi ? u"yes" : u"no ",
-                               ctx.compatibility.descs.size());
-    }
-    return out;
-}
-
-
 void ts::DSMCCCarousel::recordDSIGroups(const DSMCCUserToNetworkMessage::DownloadServerInitiate& dsi)
 {
     for (const auto& group : dsi.group_info.groups) {

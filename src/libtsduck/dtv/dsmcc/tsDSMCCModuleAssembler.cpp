@@ -9,7 +9,6 @@
 #include "tsDSMCCModuleAssembler.h"
 #include "tsPSIBuffer.h"
 #include "tsDSMCCCompressedModuleDescriptor.h"
-#include "tsDSMCCNameDescriptor.h"
 #include "tsDID.h"
 
 //----------------------------------------------------------------------------
@@ -192,10 +191,8 @@ void ts::DSMCCModuleAssembler::replayOrphans(ModuleContext& ctx)
 
 void ts::DSMCCModuleAssembler::ModuleContext::setSize(uint32_t size, uint16_t blk_size)
 {
-    // Fall back to the DSM-CC default block size if the DII announces 0 —
-    // the spec forbids it but malformed carousels show up and we must not divide by zero.
     module_size = size;
-    block_size = blk_size > 0 ? blk_size : 4066;
+    block_size = blk_size > 0 ? blk_size : DEFAULT_BLOCK_SIZE;
     expected_blocks = (size + block_size - 1) / block_size;
 }
 
@@ -207,26 +204,3 @@ const ts::DSMCCModuleAssembler::ModuleContext* ts::DSMCCModuleAssembler::module(
 }
 
 
-ts::UString ts::DSMCCModuleAssembler::listModules() const
-{
-    UString out;
-    for (const auto& pair : _modules) {
-        const auto& ctx = pair.second;
-        const UString comp = ctx.is_compressed
-            ? UString::Format(u"yes (orig %d)", ctx.original_size)
-            : UString(u"no");
-        out += UString::Format(u"Dl: %08X | ID: %04X | Ver: %d | Size: %6d | Blocks: %3d | Compressed: %s | Status: %s",
-                               ctx.download_id, ctx.module_id, ctx.module_version, ctx.module_size,
-                               ctx.expected_blocks, comp,
-                               ctx.isComplete() ? u"COMPLETE" : u"PENDING");
-        const size_t ni = ctx.descs.search(DID_DSMCC_NAME);
-        if (ni < ctx.descs.count()) {
-            const DSMCCNameDescriptor nd(_duck, ctx.descs[ni]);
-            if (nd.isValid() && !nd.name.empty()) {
-                out += UString::Format(u" | Name: \"%s\"", nd.name);
-            }
-        }
-        out += u"\n";
-    }
-    return out;
-}

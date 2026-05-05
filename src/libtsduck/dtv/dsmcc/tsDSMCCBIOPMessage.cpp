@@ -24,15 +24,13 @@ namespace {
         }
         return len;
     }
+
+    // Build a NUL-trimmed std::string from a BIOP kind/id byte block.
+    std::string KindFromBytes(const ts::ByteBlock& bytes)
+    {
+        return std::string(reinterpret_cast<const char*>(bytes.data()), TrimmedSize(bytes));
+    }
 }
-
-
-//----------------------------------------------------------------------------
-// Out-of-line destructors: give the empty leaf classes a vtable anchor.
-//----------------------------------------------------------------------------
-
-ts::BIOPServiceGatewayMessage::~BIOPServiceGatewayMessage() = default;
-ts::BIOPDirectoryMessage::~BIOPDirectoryMessage() = default;
 
 
 //----------------------------------------------------------------------------
@@ -184,7 +182,7 @@ bool ts::BIOPMessageHeader::Display(TablesDisplay& disp, PSIBuffer& buf, const U
 
 std::string ts::BIOPMessage::kindTag() const
 {
-    return std::string(reinterpret_cast<const char*>(object_kind.data()), TrimmedSize(object_kind));
+    return KindFromBytes(object_kind);
 }
 
 
@@ -197,11 +195,8 @@ std::unique_ptr<ts::BIOPMessage> ts::BIOPMessage::CreateForKind(const std::strin
     if (tag == BIOPObjectKind::FILE) {
         return std::make_unique<BIOPFileMessage>();
     }
-    if (tag == BIOPObjectKind::SERVICE_GATEWAY) {
-        return std::make_unique<BIOPServiceGatewayMessage>();
-    }
-    if (tag == BIOPObjectKind::DIRECTORY) {
-        return std::make_unique<BIOPDirectoryMessage>();
+    if (tag == BIOPObjectKind::SERVICE_GATEWAY || tag == BIOPObjectKind::DIRECTORY) {
+        return std::make_unique<BIOPBindingListMessage>();
     }
     return nullptr;
 }
@@ -224,7 +219,7 @@ std::unique_ptr<ts::BIOPMessage> ts::BIOPMessage::Parse(PSIBuffer& buf)
     buf.getBytes(key, buf.getUInt8());
     buf.getBytes(kind, buf.getUInt32());
 
-    auto msg = CreateForKind(std::string(reinterpret_cast<const char*>(kind.data()), TrimmedSize(kind)));
+    auto msg = CreateForKind(KindFromBytes(kind));
     bool ok = false;
     if (msg) {
         msg->header = std::move(header);
@@ -232,11 +227,9 @@ std::unique_ptr<ts::BIOPMessage> ts::BIOPMessage::Parse(PSIBuffer& buf)
         msg->object_kind = std::move(kind);
         buf.getBytes(msg->object_info, buf.getUInt16());
 
-        const uint8_t svc_count = buf.getUInt8();
-        msg->service_contexts.resize(svc_count);
+        msg->service_contexts.resize(buf.getUInt8());
         for (auto& ctx : msg->service_contexts) {
-            ctx.context_id = buf.getUInt32();
-            buf.getBytes(ctx.context_data, buf.getUInt16());
+            ctx.deserialize(buf);
         }
 
         buf.pushReadSizeFromLength(32);  // messageBody_length
@@ -377,6 +370,18 @@ bool ts::BIOPMessageHeader::fromXML(DuckContext& duck, const xml::Element* eleme
            element->getIntAttribute(version_minor, u"version_minor", false, BIOP_VERSION_MINOR) &&
            element->getIntAttribute(byte_order, u"byte_order", false, BIOP_BYTE_ORDER_BIG_ENDIAN) &&
            element->getIntAttribute(message_type, u"message_type", false, BIOP_MESSAGE_TYPE_STANDARD);
+}
+
+
+//----------------------------------------------------------------------------
+// BIOPServiceContext - deserialize
+//----------------------------------------------------------------------------
+
+bool ts::BIOPServiceContext::deserialize(PSIBuffer& buf)
+{
+    context_id = buf.getUInt32();
+    buf.getBytes(context_data, buf.getUInt16());
+    return !buf.error();
 }
 
 

@@ -57,11 +57,10 @@ namespace ts {
         void feedDownloadData(DSMCCDownloadDataMessage& ddm);
 
         //!
-        //! Render the status of current modules as a UString.
-        //! @return One line per module (trailing newline), empty if no modules
-        //! have been seen yet.
+        //! Default block_size when the DII announces 0 (the spec forbids it but malformed
+        //! carousels show up and we must not divide by zero).
         //!
-        UString listModules() const;
+        static constexpr uint16_t DEFAULT_BLOCK_SIZE = 4066;
 
         //!
         //! Composite key used internally for tracking modules.
@@ -76,7 +75,7 @@ namespace ts {
             uint16_t module_id = 0;       //!< Module identifier from the DII (only unique within a download_id).
             uint32_t module_size = 0;     //!< Total module size in bytes.
             uint8_t module_version = 0;   //!< Module version, incremented by the broadcaster on update.
-            uint16_t block_size = 4066;   //!< Block size in bytes, announced by the DII.
+            uint16_t block_size = DEFAULT_BLOCK_SIZE;  //!< Block size in bytes, announced by the DII.
 
             size_t expected_blocks = 0;     //!< Number of DDB blocks expected (ceil(module_size / block_size)).
             bool is_compressed = false;     //!< True if a compressed_module_descriptor is present.

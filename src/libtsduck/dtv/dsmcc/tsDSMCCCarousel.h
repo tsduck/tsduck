@@ -60,13 +60,6 @@ namespace ts {
         void feedDownloadData(DSMCCDownloadDataMessage& ddm) { _assembler.feedDownloadData(ddm); }
 
         //!
-        //! Render the status of current modules as a UString.
-        //! @return One line per module (trailing newline), empty if no modules
-        //! have been seen yet.
-        //!
-        UString listModules() const { return _assembler.listModules(); }
-
-        //!
         //! Snapshot of all known modules, keyed by (download_id, module_id).
         //! @return The internal module map.
         //!
@@ -108,13 +101,6 @@ namespace ts {
         //! @return The internal group map.
         //!
         const GroupMap& groups() const { return _groups; }
-
-        //!
-        //! Render the status of current groups as a UString. One line per
-        //! group; empty if no DSI/DII has been seen yet.
-        //! @return Multi-line string, trailing newline per line.
-        //!
-        UString listGroups() const;
 
         //!
         //! Flush any BIOP objects that were buffered while waiting for their parent

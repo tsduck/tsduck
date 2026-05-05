@@ -28,14 +28,12 @@
 #include <algorithm>
 #include <filesystem>
 #include <map>
+#include <set>
 
 
 namespace {
     constexpr auto FILES_SUBDIR = "files";
     constexpr auto MODULES_SUBDIR = "modules";
-
-    constexpr ts::UChar INDENT_2[] {u' ', u' ', u'\0'};
-    constexpr ts::UChar INDENT_4[] {u' ', u' ', u' ', u' ', u'\0'};
 
     ts::UString pathToUString(const std::filesystem::path& p)
     {
@@ -132,7 +130,6 @@ void ts::DSMCCExtractor::onModuleCompleted(uint32_t download_id, uint16_t module
         return;
     }
 
-    namespace fs = std::filesystem;
     auto [dir, leaf] = computeOutputPath(download_id, module_id);
     if (!ensureDir(dir)) {
         return;
@@ -271,9 +268,9 @@ ts::UString ts::DSMCCExtractor::renderGroupBlock(const DSMCCCarousel::GroupConte
 {
     UString out;
     out += UString::Format(u"* DSM-CC Carousel, PID 0x%04X (%d)\n", _pid, _pid);
-    out += UString::Format(u"%sDownload id: 0x%08X (%d)\n", INDENT_2, gctx.download_id, gctx.download_id);
-    out += UString::Format(u"%sModules discovered: %d\n", INDENT_2, gctx.module_ids.size());
-    out += UString::Format(u"%sGroup complete: %s\n", INDENT_2, gctx.isComplete() ? u"yes" : u"no");
+    out += UString::Format(u"%sDownload id: 0x%08X (%d)\n", u"  ", gctx.download_id, gctx.download_id);
+    out += UString::Format(u"%sModules discovered: %d\n", u"  ", gctx.module_ids.size());
+    out += UString::Format(u"%sGroup complete: %s\n", u"  ", gctx.isComplete() ? u"yes" : u"no");
     for (uint16_t mid : gctx.module_ids) {
         const auto* mctx = _carousel.module(gctx.download_id, mid);
         if (mctx != nullptr) {
@@ -292,11 +289,11 @@ ts::UString ts::DSMCCExtractor::renderModuleBlock(const DSMCCModuleAssembler::Mo
         : UString();
 
     UString out;
-    out += UString::Format(u"\n%s- Module 0x%04X\n", INDENT_2, ctx.module_id);
-    out += UString::Format(u"%sVersion: %d, blocks: %d\n", INDENT_4, ctx.module_version, ctx.expected_blocks);
-    out += UString::Format(u"%sSize: %d bytes%s\n", INDENT_4, ctx.module_size, size_extra);
-    out += UString::Format(u"%sCompression: %s\n", INDENT_4, ctx.is_compressed ? u"yes" : u"no");
-    out += UString::Format(u"%sStatus: %s\n", INDENT_4, ctx.isComplete() ? u"COMPLETE" : u"PENDING");
+    out += UString::Format(u"\n%s- Module 0x%04X\n", u"  ", ctx.module_id);
+    out += UString::Format(u"%sVersion: %d, blocks: %d\n", u"    ", ctx.module_version, ctx.expected_blocks);
+    out += UString::Format(u"%sSize: %d bytes%s\n", u"    ", ctx.module_size, size_extra);
+    out += UString::Format(u"%sCompression: %s\n", u"    ", ctx.is_compressed ? u"yes" : u"no");
+    out += UString::Format(u"%sStatus: %s\n", u"    ", ctx.isComplete() ? u"COMPLETE" : u"PENDING");
     out += renderObjectsForModule(ctx.download_id, ctx.module_id);
     out += renderDescriptorList(ctx.descs);
     return out;
@@ -308,14 +305,14 @@ ts::UString ts::DSMCCExtractor::renderObjectsForModule(uint32_t download_id, uin
     UString out;
     const auto it = _objects_by_module.find({download_id, module_id});
     const size_t n = (it == _objects_by_module.end()) ? 0 : it->second.size();
-    out += UString::Format(u"\n%sBIOP objects: %d\n", INDENT_4, n);
+    out += UString::Format(u"\n%sBIOP objects: %d\n", u"    ", n);
     if (n == 0) {
         return out;
     }
     for (size_t i = 0; i < n; ++i) {
         const auto& obj = _objects[it->second[i]];
         out += UString::Format(u"%s- Object %d: \"%s\" [%s]\n",
-                               INDENT_4,
+                               u"    ",
                                i,
                                obj.path.empty() ? u"(unresolved)" : obj.path,
                                UString::FromUTF8(obj.kind));
@@ -458,6 +455,24 @@ ts::UString ts::DSMCCExtractor::renderFileTreeFinal() const
     UString out;
     out += u"\n* Carousel Tree\n";
 
+    // FILE path prefixes will emit their parent dirs implicitly during the tree walk.
+    // Skip DIRECTORY entries whose path is already covered, otherwise the dir line
+    // would be emitted twice. Standalone DIRECTORY entries (empty dirs) are kept.
+    std::set<UString> implicit_dirs;
+    for (const auto& obj : _objects) {
+        if (obj.kind != BIOPObjectKind::FILE || obj.path.empty()) {
+            continue;
+        }
+        UStringVector segs;
+        obj.path.split(segs, u'/', true, true);
+        UString prefix;
+        for (size_t k = 0; k + 1 < segs.size(); ++k) {
+            prefix += u"/";
+            prefix += segs[k];
+            implicit_dirs.insert(prefix);
+        }
+    }
+
     std::vector<const ObjectEntry*> entries;
     size_t file_count = 0;
     size_t total_bytes = 0;
@@ -470,7 +485,7 @@ ts::UString ts::DSMCCExtractor::renderFileTreeFinal() const
             ++file_count;
             total_bytes += obj.size;
         }
-        else if (obj.kind == BIOPObjectKind::DIRECTORY) {
+        else if (obj.kind == BIOPObjectKind::DIRECTORY && !implicit_dirs.contains(obj.path)) {
             entries.push_back(&obj);
         }
     }
@@ -521,6 +536,9 @@ ts::UString ts::DSMCCExtractor::renderFileTreeFinal() const
         const UString indent(2 * (dirs.size() + 2), u' ');
         if (e->kind == BIOPObjectKind::DIRECTORY) {
             out += indent + segs.back() + u"/\n";
+            // Track this dir as emitted so a subsequent file under it skips re-emit.
+            prev_dirs = dirs;
+            prev_dirs.push_back(segs.back());
         }
         else {
             UString dir_key;
@@ -534,8 +552,8 @@ ts::UString ts::DSMCCExtractor::renderFileTreeFinal() const
                 leaf += UString(pad - leaf.length(), u' ');
             }
             out += indent + leaf + UString::Format(u" (%d bytes)\n", e->size);
+            prev_dirs = dirs;
         }
-        prev_dirs = dirs;
     }
 
     out += UString::Format(u"\n  Files: %d\n", file_count);

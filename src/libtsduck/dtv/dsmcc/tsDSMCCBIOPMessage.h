@@ -161,6 +161,13 @@ namespace ts {
         ByteBlock context_data {}; //!< Context data.
 
         //!
+        //! Deserialize one ServiceContext from a buffer.
+        //! @param [in,out] buf Deserialization buffer.
+        //! @return True on success.
+        //!
+        bool deserialize(PSIBuffer& buf);
+
+        //!
         //! This method converts a BIOPServiceContext to XML.
         //! @param [in,out] duck TSDuck execution context.
         //! @param [in,out] parent The parent node for the XML element.
@@ -393,11 +400,13 @@ namespace ts {
 
 
     //!
-    //! Common base for BIOP messages whose body is a list of Bindings.
+    //! BIOP message whose body is a list of Bindings.
     //!
-    //! Both Directory and ServiceGateway use the identical body layout.
-    //! The subclasses below exist only so callers can distinguish them
-    //! by type; all serialization logic lives here.
+    //! Used for both `BIOP::Directory` and `BIOP::ServiceGateway` — the wire format
+    //! and XML schema are identical; the only difference is the `object_kind` tag,
+    //! which is preserved on the base `BIOPMessage::object_kind` field. Callers that
+    //! need to distinguish them check `kindTag()` against `BIOPObjectKind::DIRECTORY`
+    //! or `BIOPObjectKind::SERVICE_GATEWAY`.
     //!
     //! @see ISO/IEC 13818-6 sections 8.6.3.1 and 8.6.3.2
     //! @ingroup libtsduck mpeg
@@ -417,32 +426,5 @@ namespace ts {
         virtual bool deserializeBody(PSIBuffer& buf) override;
         virtual void toXMLBody(DuckContext& duck, xml::Element* msg_element) const override;
         virtual bool fromXMLBody(DuckContext& duck, const xml::Element* msg_element) override;
-    };
-
-    //!
-    //! BIOP ServiceGateway Message.
-    //! The ServiceGateway is the root of the carousel's object hierarchy.
-    //! @ingroup libtsduck mpeg
-    //!
-    class TSDUCKDLL BIOPServiceGatewayMessage : public BIOPBindingListMessage
-    {
-        TS_NOCOPY(BIOPServiceGatewayMessage);
-
-    public:
-        BIOPServiceGatewayMessage() = default;
-        virtual ~BIOPServiceGatewayMessage() override;
-    };
-
-    //!
-    //! BIOP Directory Message.
-    //! @ingroup libtsduck mpeg
-    //!
-    class TSDUCKDLL BIOPDirectoryMessage : public BIOPBindingListMessage
-    {
-        TS_NOCOPY(BIOPDirectoryMessage);
-
-    public:
-        BIOPDirectoryMessage() = default;
-        virtual ~BIOPDirectoryMessage() override;
     };
 }  // namespace ts

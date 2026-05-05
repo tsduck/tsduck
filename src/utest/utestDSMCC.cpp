@@ -484,7 +484,7 @@ TSUNIT_DEFINE_TEST(BIOP_DirectoryMessageParse)
     TSUNIT_ASSERT(msg != nullptr);
     TSUNIT_EQUAL("dir", msg->kindTag());
 
-    auto* dir = dynamic_cast<ts::BIOPDirectoryMessage*>(msg.get());
+    auto* dir = dynamic_cast<ts::BIOPBindingListMessage*>(msg.get());
     TSUNIT_ASSERT(dir != nullptr);
     TSUNIT_EQUAL(1u, dir->bindings.size());
 
@@ -499,12 +499,12 @@ TSUNIT_DEFINE_TEST(BIOP_DirectoryMessageParse)
 }
 
 
-// XML round-trip for BIOPDirectoryMessage.
+// XML round-trip for a BIOP Directory message.
 TSUNIT_DEFINE_TEST(BIOP_DirectoryMessageXMLRoundTrip)
 {
     ts::DuckContext duck;
 
-    ts::BIOPDirectoryMessage orig;
+    ts::BIOPBindingListMessage orig;
     orig.object_key = {0x00, 0x00, 0x00, 0x02};
     orig.object_kind = {0x64, 0x69, 0x72, 0x00};
 
@@ -527,7 +527,7 @@ TSUNIT_DEFINE_TEST(BIOP_DirectoryMessageXMLRoundTrip)
     TSUNIT_ASSERT(restored != nullptr);
     TSUNIT_EQUAL("dir", restored->kindTag());
 
-    auto* dir = dynamic_cast<ts::BIOPDirectoryMessage*>(restored.get());
+    auto* dir = dynamic_cast<ts::BIOPBindingListMessage*>(restored.get());
     TSUNIT_ASSERT(dir != nullptr);
     TSUNIT_EQUAL(1u, dir->bindings.size());
     TSUNIT_EQUAL(u"root", dir->bindings[0].name[0].idString());
@@ -839,7 +839,7 @@ TSUNIT_DEFINE_TEST(BIOP_ServiceGatewayMessageParse)
     TSUNIT_EQUAL(0x01, msg->object_key[0]);
     TSUNIT_EQUAL(0u, msg->service_contexts.size());
 
-    auto* sg = dynamic_cast<ts::BIOPServiceGatewayMessage*>(msg.get());
+    auto* sg = dynamic_cast<ts::BIOPBindingListMessage*>(msg.get());
     TSUNIT_ASSERT(sg != nullptr);
     TSUNIT_EQUAL(3u, sg->bindings.size());
 
@@ -870,7 +870,7 @@ TSUNIT_DEFINE_TEST(BIOP_ServiceGatewayMessageParse)
 }
 
 
-// XML round-trip for BIOPServiceGatewayMessage (3 bindings with IOR).
+// XML round-trip for a BIOP ServiceGateway message (3 bindings with IOR).
 TSUNIT_DEFINE_TEST(BIOP_ServiceGatewayMessageXMLRoundTrip)
 {
     ts::DuckContext duck;
@@ -896,7 +896,7 @@ TSUNIT_DEFINE_TEST(BIOP_ServiceGatewayMessageXMLRoundTrip)
         return b;
     };
 
-    ts::BIOPServiceGatewayMessage orig;
+    ts::BIOPBindingListMessage orig;
     orig.object_key = {0x01};
     orig.object_kind = {0x73, 0x72, 0x67, 0x00};
     orig.bindings.push_back(makeBinding({0x64, 0x65, 0x6A, 0x61, 0x2E, 0x74, 0x74, 0x66, 0x00}, 2, 0x02));
@@ -915,7 +915,7 @@ TSUNIT_DEFINE_TEST(BIOP_ServiceGatewayMessageXMLRoundTrip)
     TSUNIT_EQUAL("srg", restored->kindTag());
     TSUNIT_ASSERT(orig.object_key == restored->object_key);
 
-    auto* sg = dynamic_cast<ts::BIOPServiceGatewayMessage*>(restored.get());
+    auto* sg = dynamic_cast<ts::BIOPBindingListMessage*>(restored.get());
     TSUNIT_ASSERT(sg != nullptr);
     TSUNIT_EQUAL(3u, sg->bindings.size());
 
