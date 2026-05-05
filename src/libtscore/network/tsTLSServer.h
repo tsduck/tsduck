@@ -146,7 +146,7 @@ namespace ts {
         // Inherited methods.
         virtual ~TLSServer() override;
         virtual bool listen(int backlog) override;
-        virtual bool accept(TCPConnection& client, IPSocketAddress& addr) override;
+        virtual bool accept(TCPConnection& client, IPSocketAddress& addr, IOSB* = nullptr) override;
         virtual bool close(bool silent = false) override;
 
     private:
@@ -165,6 +165,6 @@ namespace ts {
         void deleteGuts();
 
         // Version of accept() with an explicit TLSConnection.
-        bool acceptTLS(TLSConnection& client, IPSocketAddress& addr);
+        bool acceptTLS(TLSConnection& client, IPSocketAddress& addr, IOSB* iosb);
     };
 }

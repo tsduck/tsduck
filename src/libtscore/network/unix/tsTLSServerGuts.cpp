@@ -26,7 +26,7 @@ class ts::TLSServer::SystemGuts {};
 void ts::TLSServer::allocateGuts() { _guts = new SystemGuts; }
 void ts::TLSServer::deleteGuts() { delete _guts; }
 bool ts::TLSServer::listen(int) TS_NOT_IMPL
-bool ts::TLSServer::acceptTLS(TLSConnection&, IPSocketAddress&) TS_NOT_IMPL
+bool ts::TLSServer::acceptTLS(TLSConnection&, IPSocketAddress&, IOSB*) TS_NOT_IMPL
 bool ts::TLSServer::close(bool silent) TS_NOT_IMPL
 
 #else
@@ -134,9 +134,19 @@ bool ts::TLSServer::listen(int backlog)
 // Wait for a TLS client.
 //----------------------------------------------------------------------------
 
-bool ts::TLSServer::acceptTLS(TLSConnection& client, IPSocketAddress& addr)
+bool ts::TLSServer::acceptTLS(TLSConnection& client, IPSocketAddress& addr, IOSB* iosb)
 {
-    const UChar* error = nullptr;
+    // Check that the application uses the right blocking mode.
+    if (!checkNonBlocking(iosb, u"TLSServer::acceptTLS")) {
+        return false;
+    }
+
+    //@@@ to be implemented.
+    if (isNonBlocking()) {
+        report().error(u"non-blocking TLS is not yet implemented");
+        return false;
+    }
+    //@@@
 
     if (_guts->ssl_ctx == nullptr) {
         report().error(u"TLS server is not listening");
@@ -144,12 +154,13 @@ bool ts::TLSServer::acceptTLS(TLSConnection& client, IPSocketAddress& addr)
     }
 
     // Accept one TCP client.
-    if (!SuperClass::accept(client, addr)) {
+    if (!SuperClass::accept(client, addr, iosb)) {
         return false;
     }
 
     // Create an SSL context for that connection.
     SSL* ssl = SSL_new(_guts->ssl_ctx);
+    const UChar* error = nullptr;
     if (ssl == nullptr) {
         error = u"error creating TLS client context";
     }

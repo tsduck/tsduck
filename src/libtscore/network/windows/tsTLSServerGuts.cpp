@@ -79,10 +79,22 @@ bool ts::TLSServer::listen(int backlog)
 // Wait for a TLS client.
 //----------------------------------------------------------------------------
 
-bool ts::TLSServer::acceptTLS(TLSConnection& client, IPSocketAddress& addr)
+bool ts::TLSServer::acceptTLS(TLSConnection& client, IPSocketAddress& addr, IOSB* iosb)
 {
+    // Check that the application uses the right blocking mode.
+    if (!checkNonBlocking(iosb, u"TLSServer::acceptTLS")) {
+        return false;
+    }
+
+    //@@@ to be implemented.
+    if (isNonBlocking()) {
+        report().error(u"non-blocking TLS is not yet implemented");
+        return false;
+    }
+    //@@@
+
     // Accept one TCP client.
-    if (!SuperClass::accept(client, addr)) {
+    if (!SuperClass::accept(client, addr, iosb)) {
         return false;
     }
 

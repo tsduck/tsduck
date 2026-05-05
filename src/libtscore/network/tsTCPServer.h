@@ -86,17 +86,19 @@ namespace ts {
         //!
         //! Wait for an incoming client connection.
         //!
-        //! @param [out] client This object receives the new connection. Upon successful
-        //! return from accept(), the TCPConnection object is a properly connected TCP
-        //! session. Once the connection is completed, the TCPConnection objects on the
-        //! client side and the server side are symmetric and can be used the same way.
-        //! @param [out] addr This object receives the socket address of the client.
-        //! If the server wants to filter client connections based on their IP address,
-        //! it may use @a addr for that.
+        //! @param [out] client This object receives the new connection. Upon successful return from accept(),
+        //! the TCPConnection object is a properly connected TCP session. Once the connection is completed, the
+        //! TCPConnection objects on the client side and the server side are symmetric and can be used the same way.
+        //! @param [out] addr This object receives the socket address of the client. If the server wants to filter
+        //! client connections based on their IP address, it may use @a addr for that.
+        //! @param [in,out] iosb Address of an IOSB structure. If non-null, the socket must be in non-blocking mode.
+        //! When null, the socket must be in blocking mode (the default). See the description of IOSB.
+        //! Important: The parameter @a iosb should not be used by applications. It should be used only by
+        //! "reactive classes", which work in combination with a Reactor.
         //! @return True on success, false on error.
         //! @see listen()
         //!
-        virtual bool accept(TCPConnection& client, IPSocketAddress& addr);
+        virtual bool accept(TCPConnection& client, IPSocketAddress& addr, IOSB* iosb = nullptr);
 
         // Inherited methods.
         virtual bool close(bool silent = false) override;

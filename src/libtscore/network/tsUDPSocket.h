@@ -68,35 +68,6 @@ namespace ts {
         virtual ~UDPSocket() override;
 
         //!
-        //! Bind to a local address and port.
-        //!
-        //! The IP address part of the socket address must one of:
-        //! - IPAddress::AnyAddress4. Any local interface may be used
-        //!   to send or receive UDP datagrams. For each outgoing packet, the actual
-        //!   interface is selected by the kernel based on the routing rules. Incoming
-        //!   UDP packets for the selected port will be accepted from any local interface.
-        //! - The IP address of an interface of the local system. Outgoing packets will be
-        //!   unconditionally sent through this interface. Incoming UDP packets for the
-        //!   selected port will be accepted only when they arrive through the selected
-        //!   interface.
-        //!
-        //! Special note for receiving multicast on most Unix systems (at least Linux
-        //! and macOS): The IP address shall be either AnyAddress4 or the <b>multicast
-        //! group address</b>. Do not specify a local address to receive multicast on Unix.
-        //!
-        //! The port number part of the socket address must be one of:
-        //! - IPSocketAddress::AnyPort. The socket is bound to an
-        //!   arbitrary unused local UDP port.
-        //! - A specific port number. If this UDP port is already bound by another
-        //!   local UDP socket, the bind operation fails, unless the "reuse port"
-        //!   option has already been set.
-        //!
-        //! @param [in] addr Local socket address to bind to.
-        //! @return True on success, false on error.
-        //!
-        bool bind(const IPSocketAddress& addr);
-
-        //!
         //! Set a default destination address and port for outgoing messages.
         //!
         //! There are two versions of the send() method. One of them explicitly
@@ -396,7 +367,7 @@ namespace ts {
                               IPSocketAddress& sender,
                               IPSocketAddress& destination,
                               cn::microseconds* timestamp = nullptr,
-                              TimeStampType* timestamp_type = nullptr);
+                              TimeStampType* timestamp_type = nullptr) const;
 
         // Implementation of Socket interface.
         virtual bool open(IP gen) override;
@@ -443,7 +414,6 @@ namespace ts {
 #endif
 
         // Private members
-        IPSocketAddress _local_address {};
         IPSocketAddress _default_destination {};
         MReqSet         _mcast {};    // Current set of IPv4 multicast memberships
         MReq6Set        _mcast6 {};   // Current set of IPv6 multicast memberships
@@ -481,11 +451,7 @@ namespace ts {
             void setUserBuffer(void* address, size_t size);
 
             // After receive: Extract the message characteristics.
-            void getMessageProperties(IPSocketAddress& sender,
-                                      IPSocketAddress& destination,
-                                      IPAddress::Port destination_port,
-                                      cn::microseconds* timestamp,
-                                      TimeStampType* timestamp_type);
+            void getMessageProperties(const UDPSocket& socket, IPSocketAddress& sender, IPSocketAddress& destination, cn::microseconds* timestamp, TimeStampType* timestamp_type);
         };
 #endif
     };

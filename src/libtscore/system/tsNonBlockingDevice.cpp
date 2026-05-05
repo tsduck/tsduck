@@ -63,6 +63,7 @@ bool ts::NonBlockingDevice::checkNonBlocking(bool non_blocking, const UChar* opn
 bool ts::NonBlockingDevice::checkNonBlocking(IOSB* iosb, const UChar* opname)
 {
     if (iosb != nullptr) {
+        // Reset the low-level indicators but not app_data or io_data.
         iosb->pending = false;
 #if defined(TS_WINDOWS)
         TS_ZERO(iosb->overlap);

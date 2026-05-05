@@ -102,11 +102,11 @@ namespace ts {
 
         // Inherited methods.
         virtual ~TLSConnection() override;
-        virtual bool connect(const IPSocketAddress&) override;
+        virtual bool connect(const IPSocketAddress&, IOSB* = nullptr) override;
         virtual bool closeWriter(bool silent = false) override;
         virtual bool disconnect(bool silent = false) override;
-        virtual bool send(const void*, size_t) override;
-        virtual bool receive(void*, size_t, size_t&, const AbortInterface* = nullptr) override;
+        virtual bool send(const void*, size_t, IOSB* = nullptr) override;
+        virtual bool receive(void*, size_t, size_t&, const AbortInterface* = nullptr, IOSB* = nullptr) override;
         virtual bool receive(void*, size_t, const AbortInterface* = nullptr) override;
 
         //!

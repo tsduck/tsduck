@@ -97,29 +97,6 @@ namespace ts {
         //!
         bool setNoDelay(bool active);
 
-        //!
-        //! Bind to a local address and port.
-        //!
-        //! The IP address part of the socket address must one of:
-        //! - IPAddress::AnyAddress4. Any local interface may be used to connect to a server
-        //!   (client side) or to receive incoming client connections (server side).
-        //! - The IP address of an interface of the local system. Outgoing connections
-        //!   (client side) will be only allowed through this interface. Incoming client
-        //!   connections (server side) will be accepted only when they arrive through
-        //!   the selected interface.
-        //!
-        //! The port number part of the socket address must be one of:
-        //! - IPSocketAddress::AnyPort. The socket is bound to an arbitrary unused
-        //!   local TCP port. This is the usual configuration for a TCP client.
-        //! - A specific port number. This is the usual configuration for a TCP server.
-        //!   If this TCP port is already bound by another local TCP socket, the bind
-        //!   operation fails, unless the "reuse port" option has already been set.
-        //!
-        //! @param [in] addr Local socket address to bind to.
-        //! @return True on success, false on error.
-        //!
-        bool bind(const IPSocketAddress& addr);
-
         // Implementation of Socket interface.
         virtual bool open(IP gen) override;
         virtual bool close(bool silent = false) override;
