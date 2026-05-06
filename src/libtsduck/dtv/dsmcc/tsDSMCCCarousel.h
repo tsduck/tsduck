@@ -94,6 +94,9 @@ namespace ts {
             bool isComplete() const { return !module_ids.empty() && modules_complete == module_ids.size(); }
         };
 
+        //!
+        //! Map of carousel groups keyed by `download_id`.
+        //!
         using GroupMap = std::map<uint32_t, GroupContext>;
 
         //!
@@ -169,7 +172,7 @@ namespace ts {
         BIOPNameResolver _names {};
         bool _scan_biop = true;
 
-        using ModuleToDownloadMap = std::map<uint32_t, uint16_t>;
+        using ModuleToDownloadMap = std::map<uint16_t, uint32_t>;  // module_id -> download_id
 
         GroupMap            _groups {};
         ModuleToDownloadMap _module_to_dl {};

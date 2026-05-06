@@ -2,9 +2,10 @@
 
 This directory holds the DSM-CC (Digital Storage Media Command and
 Control) data structures that aren't tables or descriptors, together
-with the carousel-extraction engine used by the `dsmcc` TSP plugin.
-The wire format is defined by MPEG in ISO/IEC 13818-6; DVB adds
-extensions in ETSI EN 301 192, and ATSC adds more in A/90.
+with the carousel-extraction engine shared by the `dsmcc` TSP plugin
+and the `tsdsmcc` standalone command. The wire format is defined by
+MPEG in ISO/IEC 13818-6; DVB adds extensions in ETSI EN 301 192, and
+ATSC adds more in A/90.
 
 ## What lives where
 
@@ -12,8 +13,9 @@ extensions in ETSI EN 301 192, and ATSC adds more in A/90.
 | --- | --- |
 | `libtsduck/dtv/tables/mpeg` | DSM-CC **sections and tables** defined by MPEG (DSI, DII, DDB — carried in `UserToNetworkMessage` / `DownloadDataMessage` envelopes). |
 | `libtsduck/dtv/tables/{mpeg,dvb,atsc}` | **Descriptors** carried inside those tables, split by the standard that defines them (e.g. `compressed_module_descriptor` in MPEG). |
-| `libtsduck/dtv/dsmcc` *(this directory)* | **Everything else**: BIOP messages, IOR / TaggedProfile / LiteComponent, the descriptors (`compatibility`, `resource`, `tap`) that live inside BIOP objects rather than in DVB SI, plus the **carousel** and **module-assembler** classes. |
-| `src/tsplugins/tsplugin_dsmcc.cpp` | The `dsmcc` TSP plugin — a thin shell that wires a `SectionDemux` to `DSMCCCarousel` and writes the results to disk. |
+| `libtsduck/dtv/dsmcc` *(this directory)* | **Everything else**: BIOP messages, IOR / TaggedProfile / LiteComponent, the descriptors (`compatibility`, `resource`, `tap`) that live inside BIOP objects rather than in DVB SI, plus the **carousel**, **module-assembler** and **extractor** classes. |
+| `src/tsplugins/tsplugin_dsmcc.cpp` | The `dsmcc` TSP plugin — a thin shell that wires a `SectionDemux` to `DSMCCExtractor` and forwards TS packets. |
+| `src/tstools/tsdsmcc.cpp` | The `tsdsmcc` command — a one-shot equivalent of `tsp -P dsmcc`, sharing the same library engine and option set. |
 
 Roadmap for what's still missing (stream events, auto-discovery,
 carousel generation as input plugin, etc.) lives in
@@ -21,23 +23,32 @@ carousel generation as input plugin, etc.) lives in
 
 ## High-level architecture
 
-The carousel engine is a pure library — no demux, no filesystem, no
-`tsp` dependency. The plugin is the only consumer today, but anything
-that can supply parsed DSM-CC messages can drive it.
+The carousel engine is a pure library — no `tsp` dependency below the
+extractor layer. `DSMCCExtractor` owns the section demux + on-disk
+output policy; `DSMCCCarousel` is purely message-driven and can be
+driven by anything that can supply parsed DSM-CC messages.
 
 ```
   +-----------------------------------------------------------------+
-  |                   dsmcc TSP plugin  (thin)                      |
+  |  dsmcc TSP plugin  (thin)        |   tsdsmcc command  (thin)    |
   |                                                                 |
-  |   Runs a SectionDemux on the carousel PID, passes DSM-CC        |
-  |   tables into the library, writes results to disk.              |
+  |  Both wire raw TS packets to the same DSMCCExtractor and share  |
+  |  one option set (--pid, --output-directory, --dump-modules,     |
+  |  --data-carousel) via DSMCCExtractorArgs.                       |
+  +--------------------------------+--------------------------------+
+                                   |
+                          feed TS packets
+                                   |
+                                   v
+  +-----------------------------------------------------------------+
+  |                   DSMCCExtractor  (library driver)              |
   |                                                                 |
-  |   Options: --pid  --output-directory                            |
-  |            --dump-modules  --data-carousel                      |
+  |   - Holds the SectionDemux, the carousel engine and the output  |
+  |     policy. Renders the list-mode hierarchical report.          |
   +--------------------------------+--------------------------------+
                                    |
                       feed DSI/DII/DDB, receive
-                      module + object callbacks
+                      module / object / group callbacks
                                    |
                                    v
   +-----------------------------------------------------------------+
@@ -48,14 +59,14 @@ that can supply parsed DSM-CC messages can drive it.
   |   |                         |     |       +                 |   |
   |   |  - FSM over DSI/DII/DDB |     |   BIOPNameResolver      |   |
   |   |  - buffers orphan DDBs  |     |                         |   |
-  |   |  - decompresses gzipped |     |  - absolute-path         |   |
-  |   |    modules              |     |    resolution            |   |
+  |   |  - decompresses gzipped |     |  - absolute-path        |   |
+  |   |    modules              |     |    resolution           |   |
   |   +-------------------------+     |  - deferred emission    |   |
   |                                   +-------------------------+   |
   |                                                                 |
-  |   supporting structures: DSMCCIOR, DSMCCTaggedProfile,          |
-  |   DSMCCLiteComponent, DSMCCTap,                                 |
-  |   DSMCCCompatibilityDescriptor, DSMCCResourceDescriptor         |
+  |   per-(download_id) GroupContext bookkeeping; supporting        |
+  |   structures: DSMCCIOR, DSMCCTaggedProfile, DSMCCLiteComponent, |
+  |   DSMCCTap, DSMCCCompatibilityDescriptor, DSMCCResourceDescriptor|
   +--------------------------------+--------------------------------+
                                    |
                              built on top of
@@ -74,20 +85,28 @@ that can supply parsed DSM-CC messages can drive it.
 
 ## Key classes
 
+- **`DSMCCExtractor`** — library-level driver. Owns the section demux
+  and on-disk output policy; renders the list-mode hierarchical report.
+  Shared between the `dsmcc` plugin and the `tsdsmcc` command via
+  `DSMCCExtractorArgs`.
 - **`DSMCCCarousel`** — library facade. Holds the assembler and name
-  resolver, exposes two callbacks (module complete, BIOP object) and
+  resolver, exposes module / object / group-completion callbacks and
   a `setScanBIOP()` switch that picks between object-carousel and
-  data-carousel behaviour.
-- **`DSMCCModuleAssembler`** — state machine over DSI/DII/DDB. Learns
-  each module's size, block count, version and compression flag from
-  the DII; gathers DDB blocks into a payload; decompresses when a
+  data-carousel behaviour. Tracks each `download_id` as a first-class
+  `GroupContext` (announced by the DSI's `GroupInfoIndication` or
+  synthesized from the first DII).
+- **`DSMCCModuleAssembler`** — state machine over DSI/DII/DDB, keys
+  modules by `(download_id, module_id)`. Learns each module's size,
+  block count, version and compression flag from the DII; gathers DDB
+  blocks into a payload; decompresses when a
   `compressed_module_descriptor` is present. Buffers DDBs that arrive
   before their DII and replays them once the module is registered —
   this is what makes small service-gateway modules complete in
   finite-file captures.
-- **`BIOPMessage`** and its subclasses — parsers for BIOP
-  `ServiceGateway`, `Directory`, `File`, with `Stream` / `StreamEvent`
-  still partial (see [ROADMAP.md](ROADMAP.md)).
+- **`BIOPMessage`** and its subclasses — parsers for BIOP `File` and
+  `BindingList` messages (used for both `Directory` and
+  `ServiceGateway`), with `Stream` / `StreamEvent` still partial (see
+  [ROADMAP.md](ROADMAP.md)).
 - **`BIOPNameResolver`** — walks the name bindings in SRG and
   Directory messages and emits each child object with its absolute
   path. Objects whose parent hasn't been parsed yet stay deferred

@@ -43,7 +43,7 @@ namespace ts {
         struct Options {
             UString out_dir {};          //!< Directory where carousel files are written. Required unless list_mode.
             bool    list_mode = false;   //!< If true, parse and report but write nothing.
-            bool    dump_modules = false;//!< If true, also dump raw assembled module payloads under out_dir/modules/<download_id>/.
+            bool    dump_modules = false;//!< If true, also dump raw assembled module payloads under out_dir/modules/download_id/.
             bool    data_carousel = false;//!< If true, skip BIOP parsing and write each module as out_dir/module_XXXX.bin.
         };
 
