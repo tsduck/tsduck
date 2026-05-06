@@ -1,0 +1,582 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2026, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+[#cas-examples]
+=== Conditional Access Systems (CAS)
+
+[#sample-cas-scan]
+==== Scanning all services by CAS operator
+
+The following complex example scans a complete satellite network,
+looking for the list of services which are scrambled for an operator.
+
+We assume that we have a DVB-S adapter and a dish which is pointed to the Astra satellite.
+
+The first command scans the NIT (Network Information Table) of a known transponder.
+The output is the list of all transponders in the network.
+This list is sorted and duplicate lines are removed (`sort -u`).
+
+Then, each transponder is analyzed during 3 seconds (`-P until -s 3`)
+and the result of the analysis in _normalized_ format is saved in a temporary file.
+From this analysis file, we extract the PID's carrying ECM's
+with CA system id 256 (MediaGuard) and MediaGuard OPI 128 (CanalSat).
+For each ECM PID, we extract the list of services this PID belongs to.
+
+Thus, for each transponder, we get a list of services (actually, a list of service ids)
+which are scrambled for the CanalSat MediaGuard operator.
+Finally, we use again the transponder analysis in normalized format to get the service name for each of these service ids.
+
+For this kind of complex examples, we now use shell-scripts instead of interactive commands.
+
+[source,shell]
+----
+inittune='-f 11856000000'  # Initial transponder to scan the NIT
+cas=256                    # MediaGuard CA system id
+opi=128                    # MediaGuard OPI for CanalSat
+
+tsp -I dvb $inittune -P nitscan -t -O drop | \
+sort -u | \
+while read tune; do
+    tsp -I dvb -t $tune \
+        -P until -s 3 \
+        -P analyze --normalized -o tmp.tmp \
+        -O drop
+    grep "^pid:" tmp.tmp | \
+    grep ":ecm:" | \
+    grep ":cas=$cas:" | \
+    grep ":operator=$opi:" | \
+    sed -e 's/^.*:servlist=//' -e 's/:.*$//' -e 's/,/\n/' | \
+    while read serv; do
+        grep "^service:" tmp.tmp | \
+        grep ":id=$serv:" | \
+        sed -e "s/^.*:name=/Transponder: $tune  Service: /"
+    done
+    rm -f tmp.tmp
+done
+----
+
+The output of this script gives the following output (107 lines):
+
+[source,text]
+----
+Transponder: 11739:v:0:27500  Service: MTV F
+Transponder: 11739:v:0:27500  Service: MTV HITS.
+Transponder: 11739:v:0:27500  Service: MTV Base.
+...
+Transponder: 12640:v:0:22000  Service: TOON DISNEY
+Transponder: 12640:v:0:22000  Service: MOTORS TV
+Transponder: 12640:v:0:22000  Service: E! ENTERTAINMENT
+----
+
+==== Monitoring EMM's
+
+The following example demonstrates how to monitor the EMM's for a given operator.
+
+The first command determines on which PID the EMM's are sent.
+This command analyzes the satellite transponder which carries the channel Canal+ during 2 seconds.
+Instead of the full human-readable analysis report, we ask for a _normalized_ output format
+and we filter the conditions we need:
+a line starting with `pid:` for description of a PID,
+`:emm:` for a PID carrying EMM's,
+`:cas=256:` to filter EMM's for CA System Id 256 (0x100, ie. MediaGuard).
+
+[source,shell]
+----
+$ tsp -I dvb -c canal+ \
+      -P until -s 2 \
+      -P analyze --normalized \
+      -O drop | \
+      grep ^pid: | grep :emm: | grep :cas=256:
+----
+
+The output of this command is:
+
+[source,text]
+----
+pid:pid=193:emm:cas=256:access=clear: […]
+pid:pid=196:emm:cas=256:operator=129:access=clear: […]
+----
+
+We now know that PID 193 carries the MediaGuard individual EMM's
+and PID 196 carries the MediaGuard group EMM's for operator 129 (OPI of Canal+).
+
+The second command, below, filters the contents of those two PID's
+and formats the contents of the MPEG tables that are carried in those PID's.
+
+[source,shell]
+----
+$ tsp -I dvb -c canal+ -P filter -p 193 -p 196 -P tables -O drop
+----
+
+Of course, since EMM's are ciphered, their contents are obscure to the user and the display looks like:
+
+[source,text]
+----
+* EMM (0x82), TID 130 (0x82), PID 193 (0x00C1)
+  Version: 0, sections: 1, total size: 117 bytes
+  - Section 0:
+    0000:  00 00 09 F3 87 00 00 80 00 B0 10 01 5E E7 07 85  ...ó.....°..^ç..
+    0010:  22 C3 DB 13 75 43 3B 5C 1E 08 DC 4A 05 35 AD 54  "ÃÛ.uC;\..ÜJ.5­T
+    0020:  B5 52 35 B1 61 FB 37 BB EC 6D 55 F5 21 B6 4C 58  µR5±aû7»ìmUõ!LX
+    0030:  80 F4 FA FB D9 C5 D0 A2 C7 22 BA 77 51 B9 C8 96  .ôúûÙÅÐ¢Ç"ºwQ¹È.
+    0040:  A3 79 9E 5A 24 74 2A 01 7D 00 62 A3 EC D4 AF DF  £y.Z$t*.}.b£ìÔ¯ß
+    0050:  F2 43 B1 3A 72 B5 B3 E0 C9 22 68 2D 50 F0 FE 82  òC±:rµ³àÉ"h-Pðþ.
+    0060:  47 1F AC 95 5F D2 59 E6 C8 C6 78 BE F3 C5 A9 CF  G.._ÒYæÈÆx¾óÅ©Ï
+    0070:  05 90                                            ..
+
+* EMM (0x82), TID 130 (0x82), PID 193 (0x00C1)
+  Version: 0, sections: 1, total size: 105 bytes
+  - Section 0:
+    0000:  00 00 F1 F2 F3 F4 00 00 00 B0 10 01 98 3E EF 81  ..ñòóô...°...>ï.
+    0010:  45 E1 A1 D3 76 B9 B0 21 D6 F9 5F AB 4B 07 9D 13  Eá¡Óv¹°!Öù_«K...
+    ...
+----
+
+==== Conditional Access System scrambling and ECM functional tests
+
+The following command receives a DVB-T live stream on UHF channel 21
+and remodulates it on the same frequency using a Dektec modulator.
+
+In the middle, the service named BFM TV is scrambled.
+
+[.compact-list]
+* An external ECMG is used (host name `ecmg1`, on TCP port 10000).
+* The crypto-periods are scheduled using the default duration of 10 seconds.
+* A new control word is generated for each crypto-period.
+* The corresponding ECM's are generated using the specified ECMG
+  (Super_CAS_Id and access criteria specified by options `-s` and `-a`) and inserted in the TS.
+* The PMT of the service is modified to include a _CA_descriptor_.
+  The private part of this descriptor is specified using option `-p`.
+
+[source,shell]
+----
+$ tsp -I dvb -u 21 \
+      -P scrambler bfmtv \
+         -e ecmg1:10000 \
+         -s 0x4ADC0001 \
+         -a 6B0A010100000000000000006B0A0102000000000000000061050000005000660400000002 \
+         -p FE \
+      -O dektec -u 21 --conv 2/3 --guard 1/32
+----
+
+==== Complete Conditional Access System test bed
+
+The following command implements a complete Conditional Access System test bed in one single `tsp` process.
+It emulates all functions of a MUX system for testing a CAS.
+
+The command uses the French DVB-T network, but it can be easily adapted to any environment.
+
+.Conditional Access System sample test bed
+image::castest.png[align="center",width=600,alt="CAS sample test bed"]
+
+The command transforms the R2 MUX into a new R9 MUX with new services (actually renamed services from R2)
+and outputs the resulting TS to a modulator on a different UHF channel.
+In the meantime, the service named "Gulli Test" is scrambled using an external ECMG
+and EMM injection is allowed from an external EMMG.
+
+The modulated output stream can be used alone (direct connection to a set-top box)
+or mixed with the public antenna signals using a UHF coupler.
+
+For the sake of clarity of this example, all significant parameters are first assigned into environment
+variables, then the `tsp` command references these variables.
+
+[source,shell]
+----
+# Transmission parameters:
+UHF_INPUT=21
+UHF_OUTPUT=60
+
+# EMM parameters
+MUX_SERVER_PORT=32000
+CAS_ID=0x4ADC
+EMM_PID=0x01F0
+EMM_MAX_BITRATE=50000
+CAT_CADESC_PRIVATE=FF0001
+
+# ECM parameters
+ECMG=ecmg1:10000
+SUPER_CAS_ID=0x4ADC0001
+ECM_PID=0x01F1
+ECM_BITRATE=30000
+PMT_CADESC_PRIVATE=FE
+AC=6B0A010100000000000000006B0A0102000000000000000061050000005000660400000002
+
+# One single command implementing the CAS test bed:
+tsp -v \
+    -I dvb -u $UHF_INPUT \
+    -P tsrename -t 9 -a \
+    -P svrename direct8  -i 0x0901 -l 41 -n "Direct 8 Test" \
+    -P svrename bfmtv    -i 0x0903 -l 42 -n "BFM TV Test" \
+    -P svrename 'i>tele' -i 0x0904 -l 43 -n "i>TELE Test" \
+    -P svrename virgin17 -i 0x0905 -l 44 -n "Virgin 17 Test" \
+    -P svrename gulli    -i 0x0906 -l 45 -n "Gulli Test" \
+    -P svrename france4  -i 0x0907 -l 46 -n "France 4 Test" \
+    -P svrename 0x02FF   -i 0x09FF \
+    -P scrambler GulliTest -e $ECMG -s $SUPER_CAS_ID -p $PMT_CADESC_PRIVATE \
+                 -a $AC -b $ECM_BITRATE --pid $ECM_PID \
+    -P cat -c -a $CAS_ID/$EMM_PID/$CAT_CADESC_PRIVATE \
+    -P datainject -r -s $MUX_SERVER_PORT -b $EMM_MAX_BITRATE -p $EMM_PID \
+    -O dektec --uhf $UHF_OUTPUT --convolution 2/3 --guard 1/32
+----
+
+==== Emulation of a Conditional Access head-end
+
+This example is a variant of the previous one.
+Instead of using a real ECMG from a real Conditional Access System, we use the command `tsecmg`.
+
+The utility `tsecmg` implements the DVB SimulCrypt ECMG{d-arrow}SCS protocol and behaves like a real ECMG.
+All ECM generation requests are accepted but, instead of generating robust ciphered proprietary ECM's,
+`tsecmg` returns pseudo ECM's which contain the control words and the access criteria in the clear.
+
+The utility `tsecmg` can be used anywhere a DVB SimulCrypt ECMG can be used.
+Consequently, it can be used from any real MUX or from the `tsp` plugin `scrambler`.
+Used from a real MUX, `tsecmg` becomes a useful debugging tool.
+All ECMG{d-arrow}SCS messages are displayed (using option `--verbose`).
+The returned ECM's are inserted in the stream like any real ECM.
+Since these ECM's contain the access criteria in the clear, this is also a useful debug tool for the EIS or ACG or both.
+
+*Important:* Note that the control words are also inserted in the clear.
+It is consequently obvious that `tsecmg` shall never be used on a production system,
+alone or in addition to any real operational CAS.
+This is a debug tool, nothing more.
+
+The `tsp` plugin `descrambler` is normally a static descrambler using fixed control words.
+But, to facilitate the prototyping of end-to-end systems,
+the plugin `descrambler` can also recognize the clear ECM's which are generated by `tsecmg`
+and use their control words to descramble the stream.
+
+Thus, it is easy to build a complete end-to-end Conditional Access System using TSDuck components only.
+This kind of configuration is mainly useless in itself (except maybe as a tutorial for DVB SimulCrypt).
+But because all components are replaceable, this can become a very useful integration framework.
+
+First, start with a complete configuration using TSDuck components only.
+Verify that the system works as expected.
+Then, replace the TSDuck components one by one with the real components which shall be tested.
+
+Sample configurations:
+
+* Testing a MUX: Replace the plugin `scrambler` with the real MUX.
+  Use `tsecmg` to generate ECM's.
+  Use the plugin `analyze` to analyze the output of the MUX.
+  Use the plugin `descrambler` to verify the insertion and synchronization of ECM's.
+* Testing a CAS: Replace `tsecmg` with the real ECMG.
+  Replace the plugin `descrambler` with a real set-top box.
+  Use plugin `scrambler` to make the link between to two end-points of the CAS (ECMG and STB).
+
+Let's have a look at a real demo.
+
+First, run the utility `tsecmg`.
+Without option, it simply creates a TCP server on port 2222.
+The option `--verbose` (or simply `-v`) is useful to dump all protocol exchanges.
+
+[source,shell]
+----
+$ tsecmg -v
+* TCP server listening on 0.0.0.0:2222, using ECMG <=> SCS protocol version 2
+----
+
+Then, the following command performs a complete end-to-end CAS demo in one single process,
+using a live satellite stream as input:
+
+[source,shell]
+----
+$ tsp -v \
+      -I dvb --freq 12,012,000,000 --symbol 29,700,000 --fec 5/6 --polarity vertical \
+             --delivery DVB-S2 --modulation QPSK \
+      -P scrambler cnews --ecmg localhost:2222 --super-cas-id 0xDEADBEEF \
+             --access-criteria 0123456789 \
+      -P analyze --interval 30 -o cas_scrambled.txt \
+      -P descrambler cnews \
+      -P analyze --interval 30 -o cas_descrambled.txt \
+      -P zap cnews \
+      -O play
+----
+
+The first plugin receives a live transport stream from a DVB-S2 satellite.
+In this TS, there is a clear service named "CNEWS".
+We are going to use this clear channel as a test.
+
+The next plugin scrambles the service using our instance of `tsecmg` on the same system.
+The Super CAS Id is here a fake value (`tsecmg`, unlike a real ECMG, accepts to serve any Super CAS Id).
+The access criteria are also fake values.
+
+The next plugin permanently analyzes the stream at this point in the chain
+and produces a report every 30 seconds in a text file named `cas_scrambled.txt`.
+Looking at this text file, we can see that the service "CNEWS" is now scrambled
+and there is an ECM stream in its PMT with CA_system_id 0xDEAD (the MSB part of the Super CAS Id).
+The bitrate of the ECM stream is reported as 30 kb/s, the default ECM bitrate for the plugin `scrambler`.
+
+The next plugin is a descrambler.
+Only the service name is required.
+The plugin automatically locates the ECM stream in the PMT (there is only one here),
+collects the ECM's and uses the clear control words from these fake ECM's to descramble the stream.
+
+The next plugin performs the same periodic analysis as the previous one.
+This time, the report demonstrates that the service "CNEWS" is back in the clear.
+
+Finally, the plugin `zap` extracts the service "CNEWS"
+and the output plugin `play` sends the output to a media player (VLC by default).
+
+We can see that the service is in the clear and plays correctly.
+If we restart the command without the plugin `descrambler`,
+the player stays with a black screen because the service stays scrambled.
+
+If we are interested in the DVB SimulCrypt ECMG{d-arrow}SCS protocol,
+the option `--verbose` of `tsecmg` displays all exchanges, as listed below.
+This can be useful to debug an ECMG{d-arrow}SCS integration.
+
+[source,text]
+----
+* 127.0.0.1:1302: 2018/04/10 23:11:58: session started
+* 127.0.0.1:1302: 2018/04/10 23:11:58: received message:
+    channel_setup (ECMG<=>SCS)
+    protocol_version = 0x02
+    message_type = 0x0001
+    ECM_channel_id = 0x0001
+    Super_CAS_id = 0xDEADBEEF
+
+* 127.0.0.1:1302: 2018/04/10 23:11:58: sending message:
+    channel_status (ECMG<=>SCS)
+    protocol_version = 0x02
+    message_type = 0x0003
+    ECM_channel_id = 0x0001
+    section_TSpkt_flag = 1
+    AC_delay_start = 200
+    AC_delay_stop = 200
+    delay_start = 200
+    delay_stop = 200
+    transition_delay_start = -500
+    transition_delay_stop = 0
+    ECM_rep_period = 100
+    max_streams = 0
+    min_CP_duration = 10
+    lead_CW = 1
+    CW_per_msg = 2
+    max_comp_time = 100
+
+* 127.0.0.1:1302: 2018/04/10 23:11:58: received message:
+    stream_setup (ECMG<=>SCS)
+    protocol_version = 0x02
+    message_type = 0x0101
+    ECM_channel_id = 0x0001
+    ECM_stream_id = 0x0001
+    ECM_id = 0x0001
+    nominal_CP_duration = 100
+
+* 127.0.0.1:1302: 2018/04/10 23:11:58: sending message:
+    stream_status (ECMG<=>SCS)
+    protocol_version = 0x02
+    message_type = 0x0103
+    ECM_channel_id = 0x0001
+    ECM_stream_id = 0x0001
+    ECM_id = 0x0001
+    access_criteria_transfer_mode = 0
+
+* 127.0.0.1:1302: 2018/04/10 23:11:58: received message:
+    CW_provision (ECMG<=>SCS)
+    protocol_version = 0x02
+    message_type = 0x0201
+    ECM_channel_id = 0x0001
+    ECM_stream_id = 0x0001
+    CP_number = 0
+    CP_duration = 100
+    access_criteria (5 bytes) =
+        01 23 45 67 89
+    CP = 0
+    CW (8 bytes) = 26 E9 2C D9 C8 96 06 B2
+    CP = 1
+    CW (8 bytes) = 8B 37 0B 94 69 64 93 CE
+
+* 127.0.0.1:1302: 2018/04/10 23:11:58: sending message:
+    ECM_response (ECMG<=>SCS)
+    protocol_version = 0x02
+    message_type = 0x0202
+    ECM_channel_id = 0x0001
+    ECM_stream_id = 0x0001
+    CP_number = 0
+    ECM_datagram (188 bytes) =
+        47 5F FF 10 00 80 70 26 80 AA 03 00 21 00 10 00 08 26 E9 2C D9 C8
+        96 06 B2 00 11 00 08 8B 37 0B 94 69 64 93 CE 00 12 00 05 01 23 45
+        67 89 FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF
+        FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF
+        FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF
+        FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF
+        FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF
+        FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF
+        FF FF FF FF FF FF FF FF FF FF FF FF
+----
+
+The returned ECM is a TS packet containing a section with _table_id_ 0x80 (an ECM).
+The payload of the ECM is a TLV structure following the same syntax as DVB SimulCrypt protocols.
+The command and parameter tags are private to TSDuck and documented in its development documentation
+(Doxygen-generated, available online).
+
+To create a more realistic environment, we can split the big command into two parts,
+a "head-end part" which can be replaced by a real MUX and a "set-top box part" which can be replaced by a real set-top box.
+The communication between the two parts can be done using a modulator-tuner pair, an ASI link or UDP/IP.
+All these interconnections are supported by TSDuck and can be driven directly from `tsp`.
+
+Let's have a look at the head-end emulation command, using an UDP/IP output link:
+
+[source,shell]
+----
+$ tsp -v \
+      -I dvb --freq 12,012,000,000 --symbol 29,700,000 --fec 5/6 --polarity vertical \
+             --delivery DVB-S2 --modulation QPSK \
+      -P scrambler cnews --ecmg localhost:2222 --super-cas-id 0xDEADBEEF \
+             --access-criteria 0123456789 --atis-idsa \
+      -P zap cnews \
+      -O ip 224.10.11.12:9999
+----
+
+The output is a multicast address.
+
+Also note that we used the option `--atis-idsa` in the plugin `scrambler`.
+This means that we use the ATIS IIF Default Scrambling Algorithm (IDSA)
+instead of the default DVB Common Scrambling Algorithm (CSA2).
+ATIS being based on AES-128, we can see in the ECMG{d-arrow}SCS exchanges that the control words are now 16-byte long.
+There is no particular reason to use ATIS in this demo
+(except that ATIS is typically used in IP-TV while DVB-CSA2 is mainly used in broadcast).
+
+The set-top box emulation command is simply:
+
+[source,shell]
+----
+$ tsp -v \
+      -I ip 224.10.11.12:9999 \
+      -P descrambler cnews \
+      -O play
+----
+
+Note that we do not need to specify `--atis-idsa` in the plugin `descrambler`.
+During the scrambling, the plugin `scrambler` has inserted a _scrambling_descriptor_ in the PMT of the service
+to indicate the non-default scrambling type.
+This descriptor is automatically recognized by the plugin `descrambler`
+and the right descrambling algorithm is used, just like any properly integrated set-top box would do.
+
+[#tspcap-examples]
+==== tspcap examples
+
+The `tspcap` utility analyzes `.pcapng` files, as saved by Wireshark.
+While Wireshark remains the easiest and most useful tool to investigate network problems and analyze `.pcapng` files,
+let's see how `tspcap` can help in the analysis of a real-world problem.
+
+A problem has been identified in the communication between an EMMG and a MUX.
+A network capture has been saved.
+When analyzing the capture using Wireshark, we can see that the EMMG/PDG{d-arrow}MUX protocol is implemented correctly but,
+by the end of the capture, the MUX reports a stream error with an exceed bandwidth message.
+Is there really an increase of EMM bandwidth and by how much?
+Using Wireshark, it is not easy to precisely answer that question.
+So, let's use `tspcap`.
+
+First, let's get a global summary of the file content:
+
+[source,shell]
+----
+$ tspcap test.pcapng
+
+File summary:
+  Total packets in file: 704
+  Total IP packets:      698
+  File size:             707,960 bytes
+  Total packets size:    684,150 bytes
+  Total IP size:         674,018 bytes
+
+Filtered packets summary:
+  Packets:               698
+  Packets size:          674,018
+  Payload data size:     646,098
+  Start time:            2021/08/14 15:39:44.011 (+0 micro-seconds)
+  End time:              2021/08/14 15:39:46.593 (+2,582,174 micro-seconds)
+  Duration:              2,582,174 micro-seconds
+  IP bitrate:            2,088,218 bits/second
+  Data bitrate:          2,001,717 bits/second
+----
+
+Now, let's identify which streams are present in the file:
+
+[source,shell]
+----
+$ tspcap test.pcapng --list-streams
+
+Source                 Destination            Protocol  Packets   Data bytes     Bitrate
+192.168.201.18:5000    192.168.201.100:59054  TCP           208        1,572       4,870
+192.168.201.100:59054  192.168.201.18:5000    TCP           490      644,526   1,996,847
+----
+
+The MUX accepts connections on the TCP port 5000.
+Let's list the statistics of the connection to that destination by intervals of 200 milliseconds (200,000 micro-seconds):
+
+[source,shell]
+----
+$ tspcap test.pcapng --destination 192.168.201.18:5000 --interval 200,000
+
+Date                        Micro-seconds     Packets      Data bytes      Bitrate
+2021/08/14 15:39:44.011               +13           4           3,368      134,720
+2021/08/14 15:39:44.211          +200,013           3           3,032      121,280
+2021/08/14 15:39:44.411          +400,013           2           2,882      115,280
+2021/08/14 15:39:44.611          +600,013           3           3,144      125,760
+2021/08/14 15:39:44.811          +800,013           4           3,256      130,240
+2021/08/14 15:39:45.011        +1,000,013           2           2,882      115,280
+2021/08/14 15:39:45.211        +1,200,013           3           3,144      125,760
+2021/08/14 15:39:45.411        +1,400,013         136         165,210    6,608,400
+2021/08/14 15:39:45.611        +1,600,013          60          84,568    3,382,720
+2021/08/14 15:39:45.811        +1,800,013          61          84,300    3,372,000
+2021/08/14 15:39:46.011        +2,000,013          57          77,872    3,114,880
+2021/08/14 15:39:46.211        +2,200,013          60          83,696    3,347,840
+2021/08/14 15:39:46.411        +2,400,013          95         127,172    5,086,880
+----
+
+Now we see the problem.
+The bitrate of the stream from the EMMG to the MUX is stable above 100 kb/s
+(the EMM bandwidth is 100 kb/s but the displayed bitrate includes the EMMG/PDG{d-arrow}MUX protocol overhead).
+
+And, at some point, the EMM bandwidth suddenly jumps to 6 Mb/s and then remains stable at 3 Mb/s.
+Now, we know that the problem is on the EMMG side.
+
+==== tssmartcard examples
+
+Listing all smartcard readers in the system:
+
+[source,shell]
+----
+$ tssmartcard
+OmniKey CardMan 3121 00 00
+OmniKey CardMan 3121 01 00
+OmniKey CardMan 3121 02 00
+OmniKey CardMan 3121 03 00
+----
+
+Listing all smartcard readers in the system, in verbose (`-v`) format:
+
+
+[source,shell]
+----
+$ tssmartcard -v
+OmniKey CardMan 3121 00 00: empty
+OmniKey CardMan 3121 01 00: smartcard present
+    ATR: 3B DE 18 00 40 11 90 28 43 29 4C 6F 67 69 77 61 79 73 AA 55
+OmniKey CardMan 3121 02 00: empty
+OmniKey CardMan 3121 03 00: smartcard present
+    ATR: 3B DE 18 00 40 11 90 28 43 29 4C 6F 67 69 77 61 79 73 AA 55
+----
+
+Perform a warm (`-w`) reset on the second smartcard then list all readers in verbose format again:
+the smartcard now returns its "warm reset" ATR.
+
+[source,shell]
+----
+$ tssmartcard "OmniKey CardMan 3121 01 00" -w
+$ tssmartcard -v
+OmniKey CardMan 3121 00 00: empty
+OmniKey CardMan 3121 01 00: smartcard present
+    ATR: 3B D3 18 00 40 11 90 AA 55
+OmniKey CardMan 3121 02 00: empty
+OmniKey CardMan 3121 03 00: smartcard present
+    ATR: 3B DE 18 00 40 11 90 28 43 29 4C 6F 67 69 77 61 79 73 AA 55
+----

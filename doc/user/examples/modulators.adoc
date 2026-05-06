@@ -1,0 +1,142 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2026, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+[#modulators-examples]
+=== Specific modulator devices
+
+==== tsdektec examples
+
+Listing all (`-a`) Dektec devices:
+
+[source,shell]
+----
+$ tsdektec -a
+0: DTA-110 (DTA-110T Modulator with UHF Upconverter)
+1: DTA-140 (DTA-140 DVB/ASI Input+Output)
+----
+
+Listing all (`-a`) Dektec devices in verbose format (`-v`):
+
+[source,shell]
+----
+$ tsdektec -av
+
+DTAPI version: 4.1.1.108
+PCI device driver: 2.2.0.124
+USB device driver: unknown
+
+* Device 0: DTA-110 (DTA-110T Modulator with UHF Upconverter)
+  Physical ports: 1
+  Channels: input: 0, output: 1
+  Output 0: Port 1, Modulator, Failsafe, ATSC/VSB, DVB-T/DVB-H, DVB-C,
+      QAM-B (USA), QAM-C (Japan), UHF
+  Subsystem id: 0xD10A (DTA-110)
+  Subsystem vendor id: 0x14B4
+  Device id: 0x9056
+  Vendor id: 0x10B5
+  Serial number: 00000000F50268FF
+  Firmware version: 4 (0x00000004)
+  Firmware variant: 4 (0x00000004)
+  PCI bus: 5, slot: 5
+  Customer id: 301819
+  Engineering change level: Rev 3
+  Manufacture id: 03
+  Production date: 2002.07
+  Part number: DTA-110T
+  Serial number: 4110575871
+  Crystal stability: RF:1ppm;Sym:25ppm
+
+* Device 1: DTA-140 (DTA-140 DVB/ASI Input+Output)
+  Physical ports: 2
+  Channels: input: 1, output: 1
+  Input 0: Port 1, top socket, ASI/SDI, ASI
+  Output 0: Port 2, ASI/SDI, ASI
+  Subsystem id: 0xD128 (DTA-140)
+  Subsystem vendor id: 0x14B4
+  Device id: 0x9056
+  Vendor id: 0x10B5
+  Serial number: 00000000F6C458E8
+  Firmware version: 2 (0x00000002)
+  Firmware variant: 0 (0x00000000)
+  PCI bus: 5, slot: 6
+  Customer id: 301819
+  Engineering change level: Rev 1A
+  Manufacture id: 03
+  Production date: 2003.05
+  Part number: DTA-140
+  Serial number: 4140062952
+  Crystal stability: 10ppm
+----
+
+==== tshides examples
+
+The command `tshides` lists the HiDes devices, typically cheap modulators.
+Since these devices are simple encapsulations around chips from ITE Technologies,
+using device drivers from ITE, they usually appear as ITE 950x,
+from the model name of the main chip in the HiDes device.
+
+Using `tshides` on Windows:
+
+[source,powershell]
+----
+C:\> tshides
+0: "IT9507 TX Filter"
+
+C:\> tshides -v
+Found 1 HiDes device
+
+Index ........... 0
+Name ............ "IT9507 TX Filter"
+Device .......... \\?\usb#vid_048d&pid_9507#ut100cv4201504240422#{fbf6f530-07b9-11d2-
+a71e-0000f8004788}\{9963cc0e-ee70-11e0-ba8f-92d34824019b}
+USB mode ........ 0x0200
+Vendor id ....... 0x048D
+Product id ...... 0x9507
+Chip type ....... 0x9507
+Device type ..... 11
+Driver version .. 21.17.39.1
+Link firmware ... 255.39.2.0
+OFDM firmware ... 255.9.11.0
+----
+
+The option `--gain-range` is used to display the adjustable gain range for a given frequency and a given bandwidth.
+Sample usage on Windows, using the default values for frequency and bandwidth:
+
+[source,shell]
+----
+C:\> tshides --gain-range
+Device: 0: "IT9507 TX Filter"
+Frequency: 474,000,000 Hz
+Bandwidth: 8-MHz
+Min. gain: -52 dB
+Max. gain: 6 dB
+----
+
+Using `tshides` on Linux with the same HiDes device.
+Notice the naming difference.
+
+[source,shell]
+----
+$ tshides
+0: "usb-it950x0" (/dev/usb-it950x0)
+$
+$ tshides -v
+Found 1 HiDes device
+
+Index ........... 0
+Name ............ "usb-it950x0"
+Device .......... /dev/usb-it950x0
+Chip type ....... 0x9507
+Device type ..... 11
+Driver version .. v16.11.10.1
+API version ..... 1.3.20160929.0
+Link firmware ... 255.39.2.0
+OFDM firmware ... 255.9.11.0
+Company ......... ITEtech
+Hardware info ... Eagle DVBT
+----

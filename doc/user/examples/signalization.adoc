@@ -1,0 +1,321 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2026, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+[#signalization-examples]
+=== Altering the signalization
+
+==== On-the-fly replacement of an SI table
+
+The following example tests an updated version of a Bouquet Association Table (BAT) on a live transport stream.
+The updated stream is then reinjected in a local network or set-top box.
+
+We assume to have a DVB-T tuner card to capture live streams and a Dektec DTA-110T DVB-T modulator (PCI card)
+to send the modified stream into a local distribution network (or even to one single directly-connected STB).
+
+We capture one transport stream (the "R4" from the French DTTV network, on UHF channel 24).
+We remove the BAT of the 'Tv Numéric' operator and we replace it with a new one, the table we wish to test.
+The new table is stored in binary section format into a file named `BAT_TvNumeric_V3.si`.
+
+First, we capture all tables from the PID 0x0011 (the one which carries the SDT's and the BAT's).
+
+[source,shell]
+----
+$ tsp -I dvb --uhf 24 -P until -s 10 -P filter -p 0x011 | tstables -m -b r4.si
+$ rm -f r4_p0011_t4A_e0086_*.si # remove current Tv Numeric BAT
+----
+
+These commands capture and save all tables (SDT's and BAT's) in binary files named `r4_p0011_*.si` during 10 seconds.
+Each section is stored in a separate file (option `-m` in tstables).
+The current "TV Numeric" BAT is removed.
+Note the file name `r4_p0011_t4A_e0086_*.si` which means all sections from PID 0x0011
+with TID 0x4A (BAT) and TID extension 0x0086 (bouquet identifier for operator "TV Numeric").
+
+The following command now performs the live replacement.
+The `inject` plugin is used to replace the content of PID 0x0011 with the sections in all the specified files.
+These files are all the previously captured sections from this PID (minus the previous BAT which was deleted) and the new BAT.
+
+[source,shell]
+----
+$ tsp -I dvb -u 24 \
+      -P inject --replace 0x0011 r4_p0011_*.si BAT_TvNumeric_V3.si \
+      -O dektec -u 24 --convolution 2/3 --guard 1/32
+----
+
+==== Injecting a System Software Update (SSU) service
+
+This example illustrates how to inject a new System Software Update (SSU) service
+into a transport stream as defined in <<ETSI-102-006>>.
+This type of procedure can be used to test the SSU capabilities of a set-top box in real conditions,
+using a live transport stream.
+
+The test scenario is the following:
+
+* A DVB-T transport stream is received on UHF channel 24.
+* This transport stream has at least 56 kb/s of stuffing packets (much more actually).
+  Our `tsp` command steals 56 kb/s of stuffing and replaces them with a new service
+  (16 kb/s for the new service's PMT and 40 kb/s for the SSU data PID).
+* The STB software provider delivers three types of SSU tables: a DSI, a DII and a lot of DDB's.
+  The tables are provided as binary files containing the sections.
+  There is one file `dsi.bin` containing the DSI section,
+  one file `dii.bin` containing the DII section,
+  and one file `ddb.bin` containing all DDB sections.
+* These tables are multiplexed in the same SSU data PID but have different repetition rates constraints.
+  Here, we use 14 seconds for the DSI and 60 seconds for the DII.
+  The DDB use the rest of the available bitrate in the SSU data PID.
+* After analysis of the transport stream,
+  the new SSU service will use the service id 0x04F0 and PID values 0x1F00 (SSU data) and 0x1F01 (PMT).
+  These values are chosen since they are not used in the original transport stream.
+* The resulting transport stream with the added SSU service in sent to an embedded Dektec OFDM modulator
+  on the same frequency as the original service.
+  The output of the modulator can be directly connected to a STB.
+
+The PMT of the service is defined as follow in file `pmt.xml`:
+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <PMT service_id="0x04F0">
+    <component elementary_PID="0x1F00" stream_type="0x0B">
+      <data_broadcast_id_descriptor data_broadcast_id="0x000A">
+        <selector_bytes>
+          0C 00 12 22 F1 DF 06 FF FF FF FF F0 F0
+        </selector_bytes>
+      </data_broadcast_id_descriptor>
+    </component>
+  </PMT>
+</tsduck>
+----
+
+In this example, the specified OUI value and selector bytes are those which are used by Logiways SSU on Skardin-based STB.
+
+The files `pmt.xml`, `dsi.bin`, `dii.bin` and `ddb.bin` are injected in the transport stream using the following command:
+
+[source,shell]
+----
+$ tsp -I dvb -u 24 \
+      -P pat -a 0x04F0/0x1F01 --increment-version \
+      -P inject -b 16000 -p 0x1F01 -s pmt.xml \
+      -P inject -b 40000 -p 0x1F00 -s dsi.bin=14000 dii.bin=60000 ddb.bin \
+      -O dektec -u 24 --convolution 2/3 --guard 1/32
+----
+
+By incrementing the version of the PAT, we state that the content of the PAT has changed.
+Thus, the STB will analyze it again and will discover the new service.
+
+In case the transport stream does not initially contain enough stuffing to inject the SSU service,
+it is possible to remove a service and replace it with stuffing.
+In the following command, the service named AB1 is first replaced by stuffing, representing a stuffing increase of 4 Mb/s.
+
+[source,shell]
+----
+$ tsp -I dvb -u 24 \
+      -P svremove -s AB1 \
+      -P pat -a 0x04F0/0x1F01 --increment-version \
+      -P inject -b 16000 -p 0x1F01 -s pmt.xml \
+      -P inject -b 40000 -p 0x1F00 -s dsi.bin=14000 dii.bin=60000 ddb.bin \
+      -O dektec -u 24 --convolution 2/3 --guard 1/32
+----
+
+[#tsxml-examples]
+==== tsxml examples
+
+The `tsxml` utility is mainly used to test the effect of XML patch files,
+as used with option `--patch-xml` in various plugins.
+
+In this example, we want to patch PAT's, the simplest form of table.
+
+Consider the following patch file:
+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+
+  <!-- The following transformations are applied on all PAT's -->
+  <PAT>
+    <!-- Add this service in all PAT's -->
+    <service service_id="123" program_map_PID="7777" x-node="add"/>
+    <!-- Change PMT PID of service 102 in any PAT -->
+    <service service_id="102" x-update-program_map_PID="2121"/>
+    <!-- Delete service 202 in any PAT -->
+    <service service_id="202" x-node="delete"/>
+  </PAT>
+
+  <!-- The following transformations are applied only on PAT's with TS id 2 -->
+  <PAT transport_stream_id="2">
+    <!-- Add this service in all PAT's with TS id 2 -->
+    <service service_id="456" program_map_PID="8888" x-node="add"/>
+  </PAT>
+
+</tsduck>
+----
+
+Consider the following input file:
+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <PAT transport_stream_id="1">
+    <service service_id="101" program_map_PID="1111"/>
+    <service service_id="102" program_map_PID="1222"/>
+    <service service_id="103" program_map_PID="1333"/>
+  </PAT>
+  <PAT transport_stream_id="2">
+    <service service_id="201" program_map_PID="2111"/>
+    <service service_id="202" program_map_PID="2222"/>
+    <service service_id="203" program_map_PID="2333"/>
+    <service service_id="204" program_map_PID="2444"/>
+    <service service_id="205" program_map_PID="2555"/>
+  </PAT>
+</tsduck>
+----
+
+Let's apply the XML patch on it:
+
+[source,shell]
+----
+$ tsxml pat.xml --patch patch.xml -o updated-pat.xml
+----
+
+The output file contains this:
+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <PAT transport_stream_id="1">
+    <service service_id="101" program_map_PID="1111"/>
+    <service service_id="102" program_map_pid="2121"/>
+    <service service_id="103" program_map_PID="1333"/>
+    <service service_id="123" program_map_PID="7777"/>
+  </PAT>
+  <PAT transport_stream_id="2">
+    <service service_id="201" program_map_PID="2111"/>
+    <service service_id="203" program_map_PID="2333"/>
+    <service service_id="204" program_map_PID="2444"/>
+    <service service_id="205" program_map_PID="2555"/>
+    <service service_id="123" program_map_PID="7777"/>
+    <service service_id="456" program_map_PID="8888"/>
+  </PAT>
+</tsduck>
+----
+
+[#sample-envpatch]
+==== Using environment variables in XML patch files
+
+This example demonstrates how to use environment variables to dynamically update XML patch files.
+
+See xref:xml-envexpand[xrefstyle=short] for more details on expansion of environment variables in XML files.
+
+The objective of this example is to add a component tag value 0x03 on the video PID of the service named "France 2".
+We only know the service by name. We don't know it's service id, its PMT PID, its video PID.
+
+We use the plugin `identify` to find the video PID of that service.
+When the video PID is found, the plugin `identify` defines the environment variable `VIDEO_PID` with that PID value.
+In a XML patch file, we specify that a PMT shall be patched so that the component with PID `${VIDEO_PID}` shall
+receive a new _stream_identifier_descriptor_ with the given component tag.
+
+The XML patch file is the following:
+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <PMT>
+    <component elementary_PID="${VIDEO_PID}">
+      <stream_identifier_descriptor component_tag="0x03" x-node="add"/>
+    </component>
+  </PMT>
+</tsduck>
+----
+
+The patch will match any `<PMT>` structure, with a `<component>` substructure,
+into which the value of the attribute `elementary_PID` is the value of the environment variable `VIDEO_PID`.
+
+The `stream_identifier_descriptor` structure contains an attribute `x-node="add"`.
+As explained in xref:xml-patch[xrefstyle=short], this means that the `stream_identifier_descriptor` structure
+is not part of the structure to match.
+It means that the `stream_identifier_descriptor` structure is added into a matching parent structure.
+
+In practice, this means that whenever we get a `<PMT>` containing a `<component>` with attributes `elementary_PID`
+equal to the value of the environment variable `VIDEO_PID`, we add `<stream_identifier_descriptor component_tag="0x03"/>`
+into the `<component>`.
+This is exactly the objective of this example.
+
+The complete command is the following (input and output plugins are left to the user's choice).
+
+[source,shell]
+----
+$ tsp -I ... \
+      -P identify --service france2 --video --set-environment-variable VIDEO_PID --all-set-label 3 \
+      -P pmt --only-label 3 --service france2 --increment-version --patch-xml patch.xml --expand-patch-xml \
+      -O ...
+----
+
+The plugin `identify` locates the video PID of the service named "France 2"
+(remember that service names can be specified ignoring spaces and case-insensitive,
+which is more user-friendly on the command line).
+More precisely, the plugin `identify` locates all PID's which match criteria
+"belongs to service France 2" (`--service france2`) and "is a video PID" (`--video`),
+which usually results in one single PID.
+
+When that PID is identified, the environment variable `VIDEO_PID` is set to the value of that PID
+(`--set-environment-variable VIDEO_PID`).
+The environment variable is set inside the process `tsp` and becomes accessible to all threads of the process,
+meaning all plugins, including the next plugin `pmt` which is in charge of patching the PMT for the service.
+
+The XML patch file uses the value `${VIDEO_PID}` to reference the video PID.
+However, we have seen that the environment variable `VIDEO_PID` is defined only when the PID is identified,
+meaning after receiving the SDT (to known which service id has France 2), after receiving the PAT
+(to know on which PID is the PMT of the service), and after receiving the PMT
+(to know on which PID is the video).
+
+As explained in the description of option `--expand-patch-xml` of the various plugins which define it,
+_"it expands all environment variables in the patch files before patching.
+The expansion is performed each time a patch file is used.
+Therefore, if the values of the environment variables changed between two usages of the patch file,
+the latest up-to-date environment values are always used."_
+
+So, when `tsp` starts, the plugin `pmt` loads the XML patch file but the content of the attribute
+remains the literal string `${VIDEO_PID}`.
+The name is expanded each time the patch file used, meaning each time we process a PMT.
+For this reason, we must ensure that the plugin `pmt` remains idle as long as the
+environment variable `VIDEO_PID` is not defined.
+
+This is achieved using the option `--all-set-label 3` in plugin `identify`.
+It means that the plugin will set label number 3 (any other number between 0 and 31 would be ok)
+on all packets of the transport stream after the PID has been identified.
+Therefore, when any plugin downstream the chain processes a TS packet with label 3,
+it is guaranteed that the video of the service has been identified and that the
+environment variable `VIDEO_PID` has been defined.
+
+NOTE: With the plugin `identify`, the option `--all-set-label` shall not be confused with option `--set-label`.
+The latter sets a label on all packets of the identified PID's, while the former sets a label on all packets
+of the transport stream after identifying the PID.
+The latter is used to identify packets of the identified PID's, while the former is used to identify the point
+where it is guaranteed that the PID has been identified.
+
+This is why the plugin `pmt` uses the option `--only-label 3`.
+This is a generic option which is common to all packet processing plugins.
+It means that the plugin is called only on packets with label 3.
+All other packets are transparently passed to the next plugin, bypassing the plugin `pmt`.
+This is exactly what we wanted to achieve: start to process packets in the plugin after the video PID is identified,
+and after the environment variable `VIDEO_PID` is defined.
+
+Also note the following points:
+
+* The option `--increment-version` increments the version of the PMT when patching it.
+  This is required because other unpatched instances of the PMT may have already flown
+  through the plugin (or bypassing it before label 3 is set on packets).
+  The receiver needs to differentiate the new patched PMT from the previous unpatched one.
+  This is achieved using a version change.
+* The options `--expand-patch-xml` is required to expand environment variables in the patch files.
+  Otherwise, by default, the content of the XML patch file is unmodified and expressions such as
+  `${VIDEO_PID}` remain unchanged.

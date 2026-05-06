@@ -1,0 +1,533 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2026, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+[#broadcast-examples]
+=== Broadcast environments
+
+==== Capturing a TS from an external source
+
+The following example captures 20 seconds of the satellite transponder containing the Canal+ service and saves it into a file.
+
+We assume that we have a DVB-S adapter and a dish which is pointed to the Astra satellite.
+We also assume that we have a fully defined _channel file_ with the description of services
+(see xref:chap-chanconfig[xrefstyle=short] for a description of channel files).
+
+[source,shell]
+----
+$ tsp -I dvb --channel canal+ \
+      -P until --seconds 20 \
+      -O file ts_capture.ts
+----
+
+Same example, using specific tuning information for the satellite transponder
+(carrier 11.856 GHz, vertical polarity, 27.5 mega-symbols / second):
+
+[source,shell]
+----
+$ tsp -I dvb --frequency 11,856,000,000 --polarity vertical --symbol-rate 27,500,000 \
+      -P until --seconds 20 \
+      -O file ts_capture.ts
+----
+
+Same example using short names for options, knowing that the default polarity is vertical:
+
+[source,shell]
+----
+$ tsp -I dvb -f 11856000000 -s 27500000 -P until -s 20 -O file ts_capture.ts
+----
+
+==== tslsdvb examples
+
+The example lists all DVB receiver devices on a Linux system with a dual-tuner Hauppauge Nova-T 500.
+Each tuner of the single PCI board is seen as one DVB receiver device:
+
+[source,shell]
+----
+$ tslsdvb
+/dev/dvb/adapter0 (DiBcom 3000MC/P, DVB-T)
+/dev/dvb/adapter1 (DiBcom 3000MC/P, DVB-T)
+----
+
+The DVB receiver device name is `/dev/dvb/adapter0` but it can also be specified using the option
+`--adapter` (`-a`) in all TSDuck commands:
+the options `--device-name /dev/dvb/adapter1` and `-a 1` are equivalent.
+
+Listing all DVB receiver devices on a Windows system with one USB receiver:
+
+[source,powershell]
+----
+C:\> tslsdvb
+0: "Nova-T Stick DVB-T Tuner (Dev1 Path0)" (DVB-T)
+----
+
+The DVB receiver device name is "Nova-T Stick DVB-T Tuner (Dev1 Path0)".
+This is the name of the DirectShow tuner filter supplied by the hardware vendor.
+
+Listing all DVB receiver devices on a Windows system with two other USB receivers:
+
+[source,powershell]
+----
+C:\> tslsdvb
+0: "Cinergy T USB XE (MKII) Tuner" (DVB-T)
+1: "PCTV DiBcom BDA Digital Tuner (Dev1 Path0)" (DVB-T)
+----
+
+Listing all DVB receiver devices on a Linux system in verbose (`-v`) format.
+Note that the current modulation parameters are usually accessible on Linux systems only.
+On Windows systems, most tuner drivers do not return them and
+`tslsdvb` cannot display the characteristics of the current transponder.
+
+[source,shell]
+----
+$ tslsdvb -v
+
+/dev/dvb/adapter0 (DiBcom 3000MC/P, DVB-T)
+
+  Status: has signal, has carrier, has viterbi, has sync, has lock
+
+  Bit error rate ................................. 0 (0%)
+  Signal/noise ratio ............................. 0 (0%)
+  Signal strength ........................... 39,586 (60%)
+  Uncorrected blocks ............................. 0
+  Frequencies:
+    Current ............................ 562,000,000 Hz
+    UHF channel ................................. 32
+    Min ................................. 48,000,000 Hz
+    Max ................................ 860,000,000 Hz
+    Step .................................... 62,500 Hz
+    Tolerance .................................... 0 Hz
+  Spectral inversion .......................... auto
+  Bandwidth .................................. 8-MHz
+  FEC (high priority) .......................... 2/3
+  FEC (low priority) ........................... 1/2
+  Constellation ............................. 64-QAM
+  Transmission mode ............................. 8K
+  Guard interval .............................. 1/32
+  Hierarchy ................................... none
+
+  Capabilities: inversion auto, FEC 1/2, FEC 2/3, FEC 3/4, FEC 5/6, FEC 7/8,
+    FEC auto, QPSK, 16-QAM, 64-QAM, QAM auto, transmission mode auto,
+    guard interval auto, hierarchy auto, recover
+
+/dev/dvb/adapter1 (DiBcom 3000MC/P, DVB-T)
+
+  Status: has signal, has carrier, has viterbi, has sync, has lock
+
+  Bit error rate ................................. 0 (0%)
+  Signal/noise ratio ............................. 0 (0%)
+  Signal strength ........................... 40,690 (62%)
+  Uncorrected blocks ............................. 0
+  Frequencies:
+    Current ............................ 490,000,000 Hz
+    UHF channel ................................. 23
+    Min ................................. 48,000,000 Hz
+    Max ................................ 860,000,000 Hz
+    Step .................................... 62,500 Hz
+    Tolerance .................................... 0 Hz
+  Spectral inversion .......................... auto
+  Bandwidth .................................. 8-MHz
+  FEC (high priority) .......................... 2/3
+  FEC (low priority) ........................... 1/2
+  Constellation ............................. 16-QAM
+  Transmission mode ............................. 8K
+  Guard interval .............................. 1/32
+  Hierarchy ................................... none
+
+  Capabilities: inversion auto, FEC 1/2, FEC 2/3, FEC 3/4, FEC 5/6, FEC 7/8,
+    FEC auto, QPSK, 16-QAM, 64-QAM, QAM auto, transmission mode auto,
+    guard interval auto, hierarchy auto, recover
+----
+
+==== tsscan examples
+
+UHF-band scanning, including a global service list at end of network scanning:
+
+[source,shell]
+----
+$ tsscan -g
+* UHF channel 21, offset +1 (474.166 MHz), strength: 59%
+  Transport stream id: 2, 0x0002
+* UHF channel 23, offset +1 (490.166 MHz), strength: 62%
+  Transport stream id: 8, 0x0008
+* UHF channel 24, offset +1 (498.166 MHz), strength: 62%
+  Transport stream id: 4, 0x0004
+* UHF channel 27, offset +1 (522.166 MHz), strength: 63%
+  Transport stream id: 3, 0x0003
+* UHF channel 32, offset +1 (562.166 MHz), strength: 61%
+  Transport stream id: 6, 0x0006
+* UHF channel 35, offset +1 (586.166 MHz), strength: 63%
+  Transport stream id: 1, 0x0001
+
+LCN Name             Provider ServId TSId   ONetId Type PMTPID
+--- ---------------- -------- ------ ------ ------ ---- ------
+
+  1 TF1              SMR6     0x0601 0x0006 0x20FA 0x01 0x0064
+  2 France 2         GR1      0x0101 0x0001 0x20FA 0x01 0x006E
+  3 France 3         GR1      0x0111 0x0001 0x20FA 0x01 0x00D2
+  4 CANAL+           CNH      0x0301 0x0003 0x20FA 0x01 0x0500
+  5 France 5         GR1      0x0104 0x0001 0x20FA 0x01 0x0136
+  6 M6               MULTI4   0x0401 0x0004 0x20FA 0x01 0x006E
+  7 ARTE             GR1      0x0105 0x0001 0x20FA 0x01 0x01FE
+  8 Direct 8         NTN      0x0201 0x0002 0x20FA 0x01 0x0500
+  9 W9               MULTI4   0x0402 0x0004 0x20FA 0x01 0x00D2
+ 10 TMC              SMR6     0x0606 0x0006 0x20FA 0x01 0x0258
+ 11 NT1              MULTI4   0x0403 0x0004 0x20FA 0x01 0x0136
+ 12 NRJ12            SMR6     0x0602 0x0006 0x20FA 0x01 0x00C8
+ 13 LCP              GR1      0x0106 0x0001 0x20FA 0x01 0x0262
+ 14 France 4         NTN      0x0207 0x0002 0x20FA 0x01 0x0506
+ 15 BFM TV           NTN      0x0203 0x0002 0x20FA 0x01 0x0502
+ 16 i>TELE           NTN      0x0204 0x0002 0x20FA 0x01 0x0503
+ 17 Virgin 17        NTN      0x0205 0x0002 0x20FA 0x01 0x0504
+ 18 Gulli            NTN      0x0206 0x0002 0x20FA 0x01 0x0505
+ 20 France Ô         GR1      0x0176 0x0001 0x20FA 0x01 0x02C6
+ 21 Canal 21         Multi-7  0x0802 0x0008 0x20FA 0x01 0x10E1
+ 22 IDF1             Multi-7  0x0803 0x0008 0x20FA 0x01 0x10E2
+ 23 NRJ Paris        Multi-7  0x0804 0x0008 0x20FA 0x01 0x10E3
+ 24 CAP 24           Multi-7  0x0805 0x0008 0x20FA 0x01 0x10E4
+ 30 TPS STAR         CNH      0x0306 0x0003 0x20FA 0x01 0x0505
+ 31 PARIS PREMIERE   MULTI4   0x0404 0x0004 0x20FA 0x01 0x019A
+ 32 CANAL+ SPORT     CNH      0x0303 0x0003 0x20FA 0x01 0x0502
+ 33 CANAL+ CINEMA    CNH      0x0302 0x0003 0x20FA 0x01 0x0501
+ 34 AB1              MULTI4   0x0406 0x0004 0x20FA 0x01 0x0262
+ 35 PLANETE          CNH      0x0304 0x0003 0x20FA 0x01 0x0503
+ 36 TF6              MULTI4   0x0405 0x0004 0x20FA 0x01 0x01FE
+ 37 CANAL J          CNH      0x0305 0x0003 0x20FA 0x01 0x0504
+ 38 LCI              SMR6     0x0603 0x0006 0x20FA 0x01 0x012C
+ 39 Eurosport France SMR6     0x0604 0x0006 0x20FA 0x01 0x0190
+                              0x01FF 0x0001 0x20FA      0x03F2
+                              0x02FF 0x0002 0x20FA      0x050A
+                     CNH      0x03F0 0x0003 0x20FA 0x0C 0x050A
+                     CNH      0x03F1 0x0003 0x20FA 0x0C 0x050B
+                              0x04FF 0x0004 0x20FA 0x0C 0x03F2
+----
+
+UHF-band scanning, including modulation parameters information
+(usually unavailable on Windows, depending on the tuner driver):
+
+[source,shell]
+----
+$ tsscan -m
+* UHF channel 21, offset +1 (474.166 MHz), strength: 59%
+  Transport stream id: 2, 0x0002
+  Carrier frequency: 474,166,666 Hz
+  Constellation: 64-QAM
+  HP streams FEC: 2/3
+  LP streams FEC: 1/2
+  Guard interval: 1/32
+  Transmission mode: 8K
+  Hierarchy: none
+* UHF channel 23, offset +1 (490.166 MHz), strength: 62%
+  Transport stream id: 8, 0x0008
+  Carrier frequency: 490,166,666 Hz
+  Constellation: 16-QAM
+  HP streams FEC: 2/3
+  LP streams FEC: 1/2
+  Guard interval: 1/32
+  Transmission mode: 8K
+  Hierarchy: none
+* UHF channel 24, offset +1 (498.166 MHz), strength: 62%
+  Transport stream id: 4, 0x0004
+  Carrier frequency: 498,166,666 Hz
+  Constellation: 64-QAM
+  HP streams FEC: 2/3
+  LP streams FEC: 1/2
+  Guard interval: 1/32
+  Transmission mode: 8K
+  Hierarchy: none
+* UHF channel 27, offset +1 (522.166 MHz), strength: 63%
+  Transport stream id: 3, 0x0003
+  Carrier frequency: 522,166,666 Hz
+  Constellation: 64-QAM
+  HP streams FEC: 2/3
+  LP streams FEC: 1/2
+  Guard interval: 1/32
+  Transmission mode: 8K
+  Hierarchy: none
+* UHF channel 32, offset +1 (562.166 MHz), strength: 61%
+  Transport stream id: 6, 0x0006
+  Carrier frequency: 562,166,666 Hz
+  Constellation: 64-QAM
+  HP streams FEC: 2/3
+  LP streams FEC: 1/2
+  Guard interval: 1/32
+  Transmission mode: 8K
+  Hierarchy: none
+* UHF channel 35, offset +1 (586.166 MHz), strength: 63%
+  Transport stream id: 1, 0x0001
+  Carrier frequency: 586,166,666 Hz
+  Constellation: 64-QAM
+  HP streams FEC: 3/4
+  LP streams FEC: 1/2
+  Guard interval: 1/8
+  Transmission mode: 8K
+  Hierarchy: none
+----
+
+[#tuner-emulator-example]
+==== tsscan using a tuner emulator
+
+The command `tsscan` scans a broadcast network using a tuner.
+In case of problem analysis, the user must be present in the corresponding geographical area
+or have an easy access to a remote system with a reception equipment in that area.
+To simulate the environment elsewhere, it is possible to locally collect one capture file per frequency
+and use them to emulate the tuning operations.
+
+See xref:tuner-emulator[xrefstyle=short] for more details on tuner emulators.
+
+The following XML file `tuner.xml` describes our tuner emulator:
+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <defaults delivery="DVB-T" bandwidth="4,000,000" directory="../italy-sardinia-dttv"/>
+  <channel frequency="474,000,000" file="mux1rai.ts"/>
+  <channel frequency="482,000,000" file="mux2canaleitalia.ts"/>
+  <channel frequency="490,000,000" file="mux3mediaset.ts"/>
+  <channel frequency="498,000,000" file="mux4rai.ts"/>
+  <channel frequency="506,000,000" file="muxsardegna1.ts"/>
+  <channel frequency="514,000,000" file="muxtcs.ts"/>
+  <channel frequency="522,000,000" file="muxtelesardegna.ts"/>
+  <channel frequency="530,000,000" file="muxvideolina.ts"/>
+</tsduck>
+----
+
+The frequencies are chosen from UHF channels 21 to 28 in Western Europe (the default HF band region in TSDuck).
+The listed files were captured in a local area and are available in <<TSDuck-Streams>>.
+
+The files are organized as follow:
+
+----
+test:
+    tuner.xml
+italy-sardinia-dttv:
+    mux1rai.ts
+    mux2canaleitalia.ts
+    mux3mediaset.ts
+    mux4rai.ts
+    muxsardegna1.ts
+    muxtcs.ts
+    muxtelesardegna.ts
+    muxvideolina.ts
+----
+
+The following command is a standard `tsscan` operation,
+except that the tuner device name is the XML file which describes the tuner emulator.
+
+The option `--default-pds eacem` is required because the signalization of these streams is incorrect,
+the private data specifier descriptors are missing.
+
+[source,shell]
+----
+$ tsscan -d test/tuner.xml -u -l --last-channel 28 --default-pds eacem
+
+* UHF channel 21 (474 MHz), strength: 100%, quality: 100%
+  Transport stream id: 1, 0x0001
+
+  LCN Name               Provider ServId TSId   ONetId Type PMTPID
+  --- ------------------ -------- ------ ------ ------ ---- ------
+    1 Rai 1              RAI      0x0D49 0x0001 0x013E 0x01 0x0102
+    2 Rai 2              RAI      0x0D4A 0x0001 0x013E 0x01 0x0101
+    3 Rai 3 TGR Sardegna RAI      0x0D4B 0x0001 0x013E 0x01 0x0100
+   48 Rai News 24        RAI      0x0D53 0x0001 0x013E 0x01 0x0118
+  100 Test HEVC main10   Rai      0x0D52 0x0001 0x013E 0x1F 0x012C
+      Rai Radio1         RAI      0x0D4C 0x0001 0x013E 0x02 0x0103
+      Rai Radio2         RAI      0x0D4D 0x0001 0x013E 0x02 0x0104
+      Rai Radio3         RAI      0x0D4E 0x0001 0x013E 0x02 0x0105
+
+* UHF channel 22 (482 MHz), strength: 100%, quality: 100%
+  Transport stream id: 18385, 0x47D1
+
+  ServId TSId   ONetId PMTPID
+  ------ ------ ------ ------
+  0x0001 0x47D1 0x217C 0x0064
+  0x0002 0x47D1 0x217C 0x0020
+  0x0003 0x47D1 0x217C 0x0021
+  0x0004 0x47D1 0x217C 0x0022
+  0x0005 0x47D1 0x217C 0x0023
+  0x0006 0x47D1 0x217C 0x0024
+  0x0007 0x47D1 0x217C 0x0025
+  0x0008 0x47D1 0x217C 0x0026
+  0x0009 0x47D1 0x217C 0x0027
+  0x000A 0x47D1 0x217C 0x0028
+  0x000B 0x47D1 0x217C 0x0029
+  0x000C 0x47D1 0x217C 0x002A
+  0x000D 0x47D1 0x217C 0x002B
+  0x000E 0x47D1 0x217C 0x002C
+  0x000F 0x47D1 0x217C 0x002D
+  0x0010 0x47D1 0x217C 0x002E
+  0x0011 0x47D1 0x217C 0x002F
+  0x0012 0x47D1 0x217C 0x0030
+  0x0013 0x47D1 0x217C 0x0031
+  0x0014 0x47D1 0x217C 0x0032
+  0x0015 0x47D1 0x217C 0x0033
+  0x0016 0x47D1 0x217C 0x0034
+  0x0017 0x47D1 0x217C 0x0035
+  0x0018 0x47D1 0x217C 0x0036
+  0x0019 0x47D1 0x217C 0x0038
+  0x001A 0x47D1 0x217C 0x0039
+  0x001B 0x47D1 0x217C 0x003A
+  0x001C 0x47D1 0x217C 0x003C
+  0x001D 0x47D1 0x217C 0x003B
+  0x001E 0x47D1 0x217C 0x003E
+  0x001F 0x47D1 0x217C 0x003D
+  0x0020 0x47D1 0x217C 0x0037
+
+* UHF channel 23 (490 MHz), strength: 100%, quality: 100%
+  Transport stream id: 930, 0x03A2
+
+  LCN Name                ServId TSId   ONetId Type PMTPID
+  --- ------------------- ------ ------ ------ ---- ------
+    4 Rete4 HD            0x0BBC 0x03A2 0x0110 0x19 0x00D6
+    5 Canale5 HD          0x0BBD 0x03A2 0x0110 0x19 0x00D7
+    6 Italia1 HD          0x0BBE 0x03A2 0x0110 0x19 0x0041
+   55 Mediaset Extra      0x0BEF 0x03A2 0x0110 0x01 0x00FF
+   66 Mediaset Italia Due 0x0BFA 0x03A2 0x0110 0x01 0x010A
+  504 Rete4 HD            0x0C20 0x03A2 0x0110 0x19 0x00CC
+  505 Canale5 HD          0x0C21 0x03A2 0x0110 0x19 0x00CD
+  506 Italia1 HD          0x0C22 0x03A2 0x0110 0x19 0x00CE
+  566 Mediaset Italia Due 0x0C5E 0x03A2 0x0110 0x01 0x010B
+      Servizio 31         0x001F 0x03A2 0x0110      0x0065
+      Servizio 32         0x0020 0x03A2 0x0110      0x0066
+      Servizio 33         0x0021 0x03A2 0x0110      0x0067
+      Servizio 34         0x0022 0x03A2 0x0110      0x0068
+      Servizio 35         0x0023 0x03A2 0x0110      0x0069
+      Servizio 36         0x0024 0x03A2 0x0110      0x006A
+      Servizio 37         0x0025 0x03A2 0x0110      0x006B
+      Servizio 38         0x0026 0x03A2 0x0110      0x006C
+      Servizio 39         0x0027 0x03A2 0x0110      0x006D
+      Ghost               0x0063 0x03A2 0x0110      0x0063
+
+* UHF channel 24 (498 MHz), strength: 100%, quality: 100%
+  Transport stream id: 5, 0x0005
+
+  LCN Name           Provider ServId TSId   ONetId Type PMTPID
+  --- -------------- -------- ------ ------ ------ ---- ------
+   57 Rai Sport + HD Rai      0x2197 0x0005 0x013E 0x01 0x0211
+  502 Rai 2 HD       Rai      0x2190 0x0005 0x013E 0x01 0x020D
+  503 Rai 3 HD       Rai      0x2191 0x0005 0x013E 0x01 0x0229
+
+* UHF channel 25 (506 MHz), strength: 100%, quality: 100%
+  Transport stream id: 6001, 0x1771
+
+  LCN Name               Provider     ServId TSId   ONetId Type PMTPID
+  --- ------------------ ------------ ------ ------ ------ ---- ------
+   19 Sardegna1          Sardegna1 TV 0x0001 0x1771 0x1F41 0x01 0x0100
+  172 Sardegna2 - EjaTV  Sardegna1 TV 0x0002 0x1771 0x1F41 0x01 0x0200
+  272 Sardegna3 - MATEX  Sardegna1 TV 0x0003 0x1771 0x1F41 0x01 0x0300
+  607 Canale40 Regionale SARDEGNA TV  0x000B 0x1771 0x1F41 0x01 0x0BBE
+  641 Sardegna4          Sardegna1 TV 0x0007 0x1771 0x1F41 0x01 0x010A
+  642 Sardegna5          Sardegna1 TV 0x0008 0x1771 0x1F41 0x01 0x0114
+  643 Sardegna6          Sardegna1 TV 0x0009 0x1771 0x1F41 0x01 0x011E
+      Radio SuperSound   Sardegna1 TV 0x0006 0x1771 0x1F41 0x02 0x00E3
+
+* UHF channel 26 (514 MHz), strength: 100%, quality: 100%
+  Transport stream id: 130, 0x0082
+
+  LCN Name              Provider  ServId TSId   ONetId Type PMTPID
+  --- ----------------- --------- ------ ------ ------ ---- ------
+   13 Telecostasmeralda Harmonic  0x0001 0x0082 0x01CA 0x01 0x1029
+  113 TCS 2             videolina 0x000D 0x0082 0x01CA 0x01 0x0110
+
+* UHF channel 27 (522 MHz), strength: 100%, quality: 100%
+  Transport stream id: 43008, 0xA800
+
+  LCN Name             Provider         ServId TSId   ONetId Type PMTPID
+  --- ---------------- ---------------- ------ ------ ------ ---- ------
+   14 Telesardegna     Telesardegna     0x0001 0xA800 0x3001 0x01 0x0820
+  114 Telesardegna 1   Telesardegna     0x0002 0xA800 0x3001 0x01 0x0821
+  214 Telesardegna 2   Telesardegna     0x0003 0xA800 0x3001 0x01 0x0822
+  609 Telesardegna 3   Telesardegna     0x0004 0xA800 0x3001 0x01 0x0823
+
+* UHF channel 28 (530 MHz), strength: 100%, quality: 100%
+  Transport stream id: 297, 0x0129
+
+  LCN Name              Provider  ServId TSId   ONetId Type PMTPID
+  --- ----------------- --------- ------ ------ ------ ---- ------
+   10 Videolina         Videolina 0x0001 0x0129 0x217C 0x01 0x0405
+   13 TeleCostaSmeralda Videolina 0x0005 0x0129 0x217C 0x01 0x0407
+  110 Videolina 2       Videolina 0x0002 0x0129 0x217C 0x01 0x0402
+  210 Videolina  3      Videolina 0x0003 0x0129 0x217C 0x01 0x0403
+  510 Videolina HD Test Videolina 0x0006 0x0129 0x217C 0x01 0x0406
+  601 Videolina 4       Videolina 0x0004 0x0129 0x217C 0x01 0x0404
+      Radiolina         Videolina 0x000A 0x0129 0x217C 0x02 0x0210
+      Rad1              Videolina 0x000B 0x0129 0x217C 0x0C 0x006F
+      Radio Bonaria     Videolina 0x000C 0x0129 0x217C 0x02 0x0070
+----
+
+[#tsterinfo-examples]
+==== tsterinfo examples
+
+Converting UHF channels to frequencies:
+
+[source,shell]
+----
+$ tsterinfo -u 21
+Carrier Frequency: 474,000,000 Hz
+$
+$ tsterinfo -u 21 -o 1
+Carrier Frequency: 474,166,666 Hz
+$
+$ tsterinfo -u 21 -o 1 -s
+474166666
+----
+
+Converting frequencies to UHF channels:
+
+[source,shell]
+----
+$ tsterinfo -f 474166666
+UHF channel: 21, offset: 1
+$
+$ tsterinfo -f 474166000
+UHF channel: 21, offset: 1
+Warning: exact frequency for channel 21, offset 1 is 474,166,666 Hz, differ by -666 Hz
+----
+
+Computing transport stream bitrate from OFDM modulation parameters:
+
+[source,shell]
+----
+$ tsterinfo -h 2/3 -g 1/32
+Transport stream bitrate: 24,128,342 b/s
+$
+$ tsterinfo -h 2/3 -g 1/32 -c QPSK
+Transport stream bitrate: 8,042,780 b/s
+$
+$ tsterinfo -h 2/3 -g 1/32 -c QPSK -s
+8042780
+----
+
+Retrieving OFDM modulation parameters from the transport stream bitrate.
+Note that the second example gives two possible sets of parameters with the same bitrate difference.
+
+[source,shell]
+----
+$ tsterinfo -b 24128300
+  Nominal bitrate .......... 24,128,342 b/s
+  Bitrate difference .............. -42 b/s
+  Bandwidth ..................... 8-MHz
+  FEC (high priority) ............. 2/3
+  Constellation ................ 64-QAM
+  Guard interval ................. 1/32
+$
+$ tsterinfo -b 24882000
+  Nominal bitrate .......... 24,882,352 b/s
+  Bitrate difference ............. -352 b/s
+  Bandwidth ..................... 8-MHz
+  FEC (high priority) ............. 3/4
+  Constellation ................ 64-QAM
+  Guard interval .................. 1/8
+
+  Nominal bitrate .......... 24,882,352 b/s
+  Bitrate difference ............. -352 b/s
+  Bandwidth ..................... 8-MHz
+  FEC (high priority) ............. 5/6
+  Constellation ................ 64-QAM
+  Guard interval .................. 1/4
+----

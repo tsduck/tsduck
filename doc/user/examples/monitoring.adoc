@@ -1,0 +1,889 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2026, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+[#monitoring-examples]
+=== Analysis and monitoring
+
+[#sample-ts-analysis]
+==== Performing the global analysis of a transponder
+
+The following command receives a DVB-T transport stream from UHF channel 35 during 100 seconds
+and produces an analysis report in the text file `R1.analysis`.
+The first 5000 packets are ignored since the signal may not be quite stable right after the tuning operation.
+
+[source,shell]
+----
+$ tsp -I dvb --uhf-channel 35 \
+      -P skip 5000 \
+      -P until -s 100 \
+      -P analyze --title "R1 (Channel 35)" -o R1.analysis \
+      -O drop
+----
+
+The report file is quite large:
+
+[source,text]
+----
+===============================================================================
+|  TRANSPORT STREAM ANALYSIS REPORT                          R1 (Channel 35)  |
+|=============================================================================|
+|  Transport Stream Id: .......... 1 (0x0001)  |  PID's: Total: ......... 35  |
+|  Bytes: ....................... 317,825,468  |         Clear: ......... 35  |
+|  TS packets: .................... 1,690,561  |         Scrambled: ...... 0  |
+|  Invalid TS packets: .................... 0  |         With PCR's: ..... 6  |
+|  Services: .............................. 7  |         Unreferenced: ... 0  |
+|-----------------------------------------------------------------------------|
+|  Transport stream bitrate, based on ....... 188 bytes/pkt    204 bytes/pkt  |
+|  User-specified: ......................... 24,882,352 b/s   26,999,998 b/s  |
+|  Estimated based on PCR's: ............... 24,882,351 b/s   26,999,998 b/s  |
+|-----------------------------------------------------------------------------|
+|  Broadcast time: ................................... 102 sec (1 mn 42 sec)  |
+|  First TDT time stamp: ............................... 2008/06/11 09:34:25  |
+|  Last TDT time stamp: ................................ 2008/06/11 09:35:37  |
+|  TOT country code: ................................................... FRA  |
+|-----------------------------------------------------------------------------|
+| Serv.Id  Service Name                              Access          Bitrate  |
+|  0x0101  France 2 ....................................  C    3,637,078 b/s  |
+|  0x0104  France 5 ....................................  C    4,567,443 b/s  |
+|  0x0105  ARTE ........................................  C    3,688,018 b/s  |
+|  0x0106  LCP .........................................  C    3,554,581 b/s  |
+|  0x0111  France 3 ....................................  C    4,828,238 b/s  |
+|  0x0176  .France Ô ...................................  C    3,286,441 b/s  |
+|  0x01FF  (System Software Update) ....................  C       35,015 b/s  |
+|                                                                             |
+|  Note 1: C=Clear, S=Scrambled                                               |
+|  Note 2: Unless specified otherwise, bitrates are based on 188 bytes/pkt    |
+===============================================================================
+
+
+===============================================================================
+|  SERVICES ANALYSIS REPORT                                  R1 (Channel 35)  |
+|=============================================================================|
+|  Global PID's                                                               |
+|  TS packets: 87,342, PID's: 7 (clear: 7, scrambled: 0)                      |
+|-----------------------------------------------------------------------------|
+|     PID  Usage                                     Access          Bitrate  |
+|   Total  Global PID's  ...............................  C    1,285,534 b/s  |
+|  0x0000  PAT  ........................................  C       15,027 b/s  |
+|  0x0010  DVB-NIT  ....................................  C        4,503 b/s  |
+|  0x0011  SDT/BAT  ....................................  C          750 b/s  |
+|  0x0012  EIT  ........................................  C       37,075 b/s  |
+|  0x0014  TDT/TOT  ....................................  C          132 b/s  |
+|  0x0015  Network Synchronization  ....................  C        2,737 b/s  |
+|  0x1FFF  Stuffing  ...................................  C    1,225,306 b/s  |
+|=============================================================================|
+|  Service: 257 (0x0101), TS: 1 (0x0001), Original Netw: 8442 (0x20FA)        |
+|  Service name: France 2, provider: GR1                                      |
+|  Service type: 1 (0x01), Digital television service                         |
+|  TS packets: 247,111, PID's: 4 (clear: 4, scrambled: 0)                     |
+|  PMT PID: 110 (0x006E), PCR PID: 120 (0x0078)                               |
+|-----------------------------------------------------------------------------|
+|     PID  Usage                                     Access          Bitrate  |
+|   Total  Digital television service  .................  C    3,637,078 b/s  |
+|  0x006E  PMT  ........................................  C       15,042 b/s  |
+|  0x0078  MPEG-2 Video  ...............................  C    3,404,836 b/s  |
+|  0x0082  MPEG-1 Audio (fra)  .........................  C      198,433 b/s  |
+|  0x008C  Subtitles (fra, DVB subtitles, no aspect rati  C       18,765 b/s  |
+|          (C=Clear, S=Scrambled, +=Shared)                                   |
+|=============================================================================|
+|  Service: 260 (0x0104), TS: 1 (0x0001), Original Netw: 8442 (0x20FA)        |
+
+… more services skipped …
+
+|=============================================================================|
+|  Service: 511 (0x01FF), TS: 1 (0x0001), Original Netw: 8442 (0x20FA)        |
+|  Service name: (System Software Update), provider: (unknown)                |
+|  Service type: 0 (0x00), Reserved service type 0x00                         |
+|  TS packets: 2,379, PID's: 2 (clear: 2, scrambled: 0)                       |
+|  PMT PID: 1010 (0x03F2), PCR PID: None                                      |
+|-----------------------------------------------------------------------------|
+|     PID  Usage                                     Access          Bitrate  |
+|   Total  Reserved service type 0x00  .................  C       35,015 b/s  |
+|  0x0294  DSM-CC U-N (SSU Sagem Communication)  .......  C       19,987 b/s  |
+|  0x03F2  PMT  ........................................  C       15,027 b/s  |
+|          (C=Clear, S=Scrambled, +=Shared)                                   |
+===============================================================================
+
+
+===============================================================================
+|  PIDS ANALYSIS REPORT                                      R1 (Channel 35)  |
+|=============================================================================|
+|  PID: 0 (0x0000)                                                       PAT  |
+|-----------------------------------------------------------------------------|
+|  Global PID                Transport:                Discontinuities:       |
+|  Bitrate: .... 15,027 b/s  Packets: ......... 1,021  Expected: ......... 0  |
+|  Access: Clear             Adapt.F.: ............ 0  Unexpect: ......... 0  |
+|                            Duplicated: .......... 0  Sections:              |
+|                            PCR: ................. 0  Unit start: ... 1,021  |
+|                                                                             |
+|=============================================================================|
+|  PID: 16 (0x0010)                                                  DVB-NIT  |
+
+… more PID's skipped …
+
+|=============================================================================|
+|  PID: 8191 (0x1FFF)                                               Stuffing  |
+|-----------------------------------------------------------------------------|
+|  Global PID                Transport:                Discontinuities:       |
+|  Bitrate: . 1,225,306 b/s  Packets: ........ 83,250  Expected: ......... 0  |
+|  Access: Clear             Adapt.F.: ............ 0  Unexpect: ......... 0  |
+|                            Duplicated: .......... 0  Sections:              |
+|                            PCR: ................. 0  Unit start: ....... 0  |
+|                                                                             |
+===============================================================================
+----
+
+[#sample-network-analysis]
+==== Performing the global analysis of a network
+
+This section presents an automated way to analyze a network (here, the French terrestrial network) using a GNU makefile.
+
+Using the simple command `make`, each known transport stream (designated by its UHF channel number) is analyzed.
+For each TS, for instance the one named "R1", the following text files are created:
+
+[.compact-list]
+* `R1.analysis`: Global analysis of the TS in human-readable format, as in xref:sample-ts-analysis[xrefstyle=short].
+* `R1.anl`: Global analysis of the TS in normalized format, for use by other scripts.
+* `R1.psi`: Analysis of the main PSI/SI tables (PAT, CAT, PMT, SDT, NIT, BAT).
+
+Individual targets, such as `make R1`, can be used to analyze only one TS.
+Use the make option `-B` to force the analysis again when the files already exist.
+
+The command `make capture` captures 120 seconds of each TS in files named `R1.ts`, `R2.ts`, etc.
+Similarly, commands like `make R1.ts` capture only one TS.
+
+The content of the makefile is the following:
+
+[source,make]
+----
+# === This is a GNU makefile ===
+
+# List of UHF channels:
+
+ALL_CHAN = R1 R2 R3 R4 R5 R6 L8
+
+R1_CHAN = 35
+R2_CHAN = 21
+R3_CHAN = 27
+R4_CHAN = 24
+R5_CHAN = 29
+R6_CHAN = 32
+L8_CHAN = 23
+
+# Channel full names:
+
+$(foreach R,$(ALL_CHAN),$(eval $R_NAME=$R (Channel $($R_CHAN))))
+
+# Default target is analysis of all TS
+
+all: $(ALL_CHAN)
+
+$(ALL_CHAN): %: %.analysis %.anl %.psi
+
+%.analysis %.services %.anl %.psi:
+	tsp -I dvb $(DEVICE) --uhf $($(*F)_CHAN) \
+	    -P skip 5000 \
+	    -P until -s 100 \
+	    -P analyze --title "$($(*F)_NAME)" -o $*.analysis \
+	    -P analyze --title "$($(*F)_NAME)" -o $*.anl --normalized \
+	    -P psi -a -o $*.psi \
+	    -O drop
+
+# Capture TS content:
+
+capture: $(foreach R,$(ALL_CHAN),$R.ts)
+
+%.ts:
+	tsp -I dvb $(DEVICE) --uhf $($(*F)_CHAN) \
+	    -P skip 5000 \
+	    -P until -s 120 \
+	    -O file $@
+----
+
+[#sample-mon-stuffing]
+==== Monitoring the stuffing rate of all transponders in a network
+
+The following script monitors the stuffing bitrate of a list of selected transport streams.
+The output is suitable for import into Microsoft Excel so that further analysis can be performed.
+It can be executed on Linux or Windows (using the Cygwin shell).
+
+In this script, the transport streams are designated by a list of UHF channels, meaning DVB-T only.
+Here, the UHF channels represent the 5 main MUX of the French DTTV in the Paris area.
+
+[source,shell]
+----
+# List of UHF channels
+UHF_CHANNELS="35 21 27 24 32"
+
+# Analysis time per TS, in seconds
+ANALYSIS_TIME=20
+
+# Sample interval, in seconds
+SAMPLE_INTERVAL=300
+
+# Excel separator character for "csv" files (depends on Excel locale)
+EXCEL_SEPARATOR=';'
+
+# Main loop
+while true; do
+
+    # Current date in seconds since epoch
+    curtime=$(date "+%s")
+
+    # Loop on all TS
+    outline=
+    for uhf in $UHF_CHANNELS; do
+        stuffing=$(
+            tsp -I dvb --uhf-channel $uhf \
+                -P until -s $ANALYSIS_TIME \
+                -P analyze --normalized \
+                -O drop | \
+                grep '^pid:' | \
+                grep ':pid=8191:' | \
+                sed -e 's/^.*:bitrate=//' -e 's/:.*//')
+        outline="${outline}${EXCEL_SEPARATOR}${stuffing}"
+    done
+
+    # Current date and stuffing rates in Excel format
+    echo "$(date -d @$curtime '+%d/%m/%Y %H:%M')${outline}"
+
+    # Sleep until next sample time
+    sleeptime=$(( $curtime + $SAMPLE_INTERVAL - $(date "+%s") ))
+    [[ $sleeptime -le 0 ]] || sleep $sleeptime
+done
+----
+
+The script runs infinitely and produces the following output:
+
+[source,text]
+----
+12/06/2008 14:01;1208706;4501497;3762828;626932;1145037
+12/06/2008 14:06;1232543;4505620;3782431;621524;1172479
+12/06/2008 14:11;1225293;4505553;3487315;613616;1151119
+12/06/2008 14:16;1231288;4505958;3415868;665393;1156933
+....
+----
+
+It may be imported into Microsoft Excel to produce the following graph:
+
+.Stuffing bitrate sample diagram
+image::stuffing-graph.png[align="center",alt="Stuffing bitrate diagram"]
+
+[#sample-analyze-bitrate]
+==== Analyzing the bitrate of all services in a network
+
+The following script demonstrates a way to produce a report of the bitrate of all services in a network.
+
+First, you need to analyze all TS in the network and get the result in normalized format
+(see xref:sample-network-analysis[xrefstyle=short] for an example).
+Then run the following script on all normalized analysis files.
+
+[source,shell]
+----
+echo "MUX  Service                    Bitrate   Video bitrate  Access"
+echo "---  ------------------  --------------  --------------  ---------"
+
+for f in $*; do
+    tsid=$(grep '^ts:' $f | sed -e 's/.*:id=//' -e 's/:.*//')
+    grep '^service:' $f | grep ':servtype=1:' | \
+    while read line; do
+        name=$(sed <<<"$line" -e 's/.*:name=//')
+        bitrate=$(sed <<<"$line" -e 's/.*:bitrate=//' -e 's/:.*//')
+        access=$(sed <<<"$line" -e 's/.*:access=//' -e 's/:.*//')
+        pidgrep=$(sed <<<"$line" -e 's/.*:pidlist=//' -e 's/:.*//' \
+                                 -e 's/^/-e :pid=/' \
+                                 -e 's/,/: -e :pid=/g' -e 's/$/:/')
+        vbitrate=0
+        for br in $(grep '^pid:' $f | grep $pidgrep | grep ':video:' | \
+                    sed -e 's/.*:bitrate=//' -e 's/:.*//')
+        do
+            vbitrate=$(( $vbitrate + $br ))
+        done
+        printf "R%d   %-18s  %'10d b/s  %'10d b/s  %s\n" \
+            $tsid "$name" $bitrate $vbitrate $access
+    done
+done
+----
+
+Let's name that script `bitrate-summary`.
+When used in conjunction with the makefile from xref:sample-network-analysis[xrefstyle=short], you get:
+
+[source,shell]
+----
+$ make -f Makefile.tnt
+...
+$ bitrate-summary *.anl
+
+MUX  Service                    Bitrate   Video bitrate  Access
+---  ------------------  --------------  --------------  ---------
+R8   Canal 21             2,803,938 b/s   2,588,374 b/s  clear
+R8   IDF1                 3,502,350 b/s   3,254,550 b/s  clear
+R8   NRJ Paris            6,462,333 b/s   6,214,518 b/s  clear
+R8   CAP 24               2,929,000 b/s   2,681,200 b/s  clear
+R1   France 2             3,655,962 b/s   3,419,466 b/s  clear
+R1   France 5             4,600,309 b/s   4,379,003 b/s  clear
+R1   ARTE                 5,052,002 b/s   4,627,464 b/s  clear
+R1   LCP                  2,867,453 b/s   2,649,782 b/s  clear
+R1   France 3             3,510,985 b/s   3,293,801 b/s  clear
+R1   .France Ô            3,857,456 b/s   3,643,981 b/s  clear
+R2   Direct 8             2,740,873 b/s   2,432,179 b/s  clear
+R2   BFM TV               3,120,068 b/s   2,913,715 b/s  clear
+R2   i>TELE               2,699,497 b/s   2,493,143 b/s  clear
+R2   Virgin 17            4,947,397 b/s   4,676,283 b/s  clear
+R2   Gulli                3,280,344 b/s   3,036,397 b/s  clear
+R2   France 4             2,748,753 b/s   2,477,639 b/s  clear
+R3   CANAL+               8,369,816 b/s   7,477,442 b/s  scrambled
+R3   CANAL+ CINEMA        2,975,779 b/s   2,531,416 b/s  scrambled
+R3   CANAL+ SPORT         2,930,938 b/s   2,493,595 b/s  scrambled
+R3   PLANETE              2,340,974 b/s   2,095,053 b/s  scrambled
+R3   CANAL J              2,609,858 b/s   2,371,848 b/s  scrambled
+R3   TPS STAR             3,203,408 b/s   2,779,778 b/s  scrambled
+R4   M6                   4,628,819 b/s   3,834,868 b/s  clear
+R4   W9                   3,231,344 b/s   2,694,826 b/s  clear
+R4   NT1                  3,278,883 b/s   2,887,844 b/s  clear
+R4   PARIS PREMIERE       4,009,594 b/s   3,404,277 b/s  scrambled
+R4   ARTE HD              7,725,247 b/s   7,171,310 b/s  clear
+R5   TF1 HD               9,032,166 b/s   8,635,108 b/s  clear
+R5   France 2 HD          7,593,045 b/s   7,080,227 b/s  clear
+R5   M6HD                 7,301,165 b/s   6,714,945 b/s  clear
+R6   TF1                  5,022,465 b/s   3,951,056 b/s  clear
+R6   NRJ12                6,883,049 b/s   6,026,657 b/s  clear
+R6   LCI                  1,379,288 b/s   1,224,422 b/s  scrambled
+R6   Eurosport            3,535,155 b/s   3,380,304 b/s  scrambled
+R6   TF6                  1,701,739 b/s   1,543,181 b/s  scrambled
+R6   TMC                  4,103,693 b/s   3,890,212 b/s  clear
+----
+
+[#sample-pcr-per-sec]
+==== Analyzing the number of PCR per second
+
+It is sometimes useful to get a complete overview of the number of PCR per second in each service of a network.
+The following script illustrates this.
+
+First, you need to analyze all TS in the network and get the result in _normalized format_
+(see xref:sample-network-analysis[xrefstyle=short] for an example).
+Then run the following script on all normalized analysis files.
+
+[source,shell]
+----
+for file in $*; do
+    sec=$(grep '^ts:' $file | grep ':duration=' | \
+          sed -e 's/.*:duration=//' -e 's/:.*//')
+    if [[ "$sec" -gt 1 ]]; then
+        grep '^service:' $file | grep ':pcrpid=' | grep ':name=' |
+        while read line; do
+            pid=$(sed <<<$line -e 's/.*:pcrpid=//' -e 's/:.*//')
+            name=$(sed <<<$line -e 's/.*:name=//')
+            count=$(grep '^pid:' $file | grep ":pid=$pid:" | grep ':pcr=' | \
+                    sed -e 's/.*:pcr=//' -e 's/:.*//')
+            if [[ "$count" -ne 0 ]]; then
+                printf "%4d PCR/s - %s\n" \
+                       $((($count + ($sec / 2)) / $sec)) "$name"
+            fi
+        done
+    fi
+done | sort
+----
+
+Let's name that script `pcrrate`.
+When used in conjunction with the makefile from xref:sample-network-analysis[xrefstyle=short], you get:
+
+[source,shell]
+----
+$ make -f Makefile.tnt
+...
+$ pcrrate *.anl
+
+  29 PCR/s - France 2 HD
+  29 PCR/s - TF1 HD
+  30 PCR/s - ARTE
+  30 PCR/s - ARTE HD
+  30 PCR/s - BFM TV
+  30 PCR/s - Canal 21
+  30 PCR/s - CAP 24
+  30 PCR/s - Direct 8
+  30 PCR/s - France 2
+  30 PCR/s - France 3
+  30 PCR/s - France 4
+  30 PCR/s - France 5
+  30 PCR/s - .France Ô
+  30 PCR/s - Gulli
+  30 PCR/s - IDF1
+  30 PCR/s - i>TELE
+  30 PCR/s - LCP
+  30 PCR/s - M6
+  30 PCR/s - M6HD
+  30 PCR/s - NRJ12
+  30 PCR/s - NRJ Paris
+  30 PCR/s - NT1
+  30 PCR/s - Virgin 17
+  30 PCR/s - W9
+  31 PCR/s - CANAL+
+  31 PCR/s - TF1
+  31 PCR/s - TMC
+  50 PCR/s - CANAL+ CINEMA
+  50 PCR/s - CANAL J
+  50 PCR/s - CANAL+ SPORT
+  50 PCR/s - Eurosport
+  50 PCR/s - LCI
+  50 PCR/s - PARIS PREMIERE
+  50 PCR/s - PLANETE
+  50 PCR/s - TF6
+  50 PCR/s - TPS STAR
+----
+
+[#sample-epg-analysis]
+==== Analyzing EPG data
+
+This example illustrates how to analyze EIT sections and report which service supports EPG data (EIT schedule)
+and for how many days.
+The command analyzes the content of UHF channel 27 (DVB-T) during 30 seconds and reports a summary of EIT analysis.
+
+[source,shell]
+----
+$ tsp -I dvb -u 27 -P until -s 30 -P eit -O drop
+Summary
+-------
+TS id:         3 (0x0003)
+Last UTC:      2008/08/13 14:19:28
+EITp/f actual: 186
+EITp/f other:  435
+EITs actual:   461
+EITs other:    0
+
+TS      Services  With EITp/f  With EITs  EPG days
+------  --------  -----------  ---------  --------
+Actual         8            6          6         3
+Other         66           66          0         0
+
+A/O  TS Id   Srv Id  Name           EITp/f  EITs  EPG days
+---  ------  ------  -------------  ------  ----  --------
+Oth  0x0001  0x0101                 Yes     No           0
+Oth  0x0001  0x0104                 Yes     No           0
+Oth  0x0001  0x0105                 Yes     No           0
+Oth  0x0001  0x0106                 Yes     No           0
+Oth  0x0001  0x0110                 Yes     No           0
+Oth  0x0001  0x0111                 Yes     No           0
+Oth  0x0001  0x0112                 Yes     No           0
+Oth  0x0001  0x0113                 Yes     No           0
+Oth  0x0001  0x0114                 Yes     No           0
+Oth  0x0001  0x0115                 Yes     No           0
+Oth  0x0001  0x0116                 Yes     No           0
+Oth  0x0001  0x0117                 Yes     No           0
+Oth  0x0001  0x0118                 Yes     No           0
+Oth  0x0001  0x0119                 Yes     No           0
+Oth  0x0001  0x011A                 Yes     No           0
+Oth  0x0001  0x011B                 Yes     No           0
+Oth  0x0001  0x011C                 Yes     No           0
+Oth  0x0001  0x011D                 Yes     No           0
+Oth  0x0001  0x011E                 Yes     No           0
+Oth  0x0001  0x011F                 Yes     No           0
+Oth  0x0001  0x0120                 Yes     No           0
+Oth  0x0001  0x0121                 Yes     No           0
+Oth  0x0001  0x0122                 Yes     No           0
+Oth  0x0001  0x0123                 Yes     No           0
+Oth  0x0001  0x0124                 Yes     No           0
+Oth  0x0001  0x0125                 Yes     No           0
+Oth  0x0001  0x0126                 Yes     No           0
+Oth  0x0001  0x0127                 Yes     No           0
+Oth  0x0001  0x0128                 Yes     No           0
+Oth  0x0001  0x0129                 Yes     No           0
+Oth  0x0001  0x012A                 Yes     No           0
+Oth  0x0001  0x012B                 Yes     No           0
+Oth  0x0001  0x012C                 Yes     No           0
+Oth  0x0001  0x012D                 Yes     No           0
+Oth  0x0001  0x012E                 Yes     No           0
+Oth  0x0001  0x012F                 Yes     No           0
+Oth  0x0001  0x0130                 Yes     No           0
+Oth  0x0001  0x0131                 Yes     No           0
+Oth  0x0001  0x0132                 Yes     No           0
+Oth  0x0001  0x0133                 Yes     No           0
+Oth  0x0001  0x0134                 Yes     No           0
+Oth  0x0001  0x0135                 Yes     No           0
+Oth  0x0001  0x0136                 Yes     No           0
+Oth  0x0001  0x0137                 Yes     No           0
+Oth  0x0001  0x0138                 Yes     No           0
+Oth  0x0001  0x0139                 Yes     No           0
+Oth  0x0001  0x013A                 Yes     No           0
+Oth  0x0001  0x013B                 Yes     No           0
+Oth  0x0001  0x0176                 Yes     No           0
+Oth  0x0002  0x0201                 Yes     No           0
+Oth  0x0002  0x0203                 Yes     No           0
+Oth  0x0002  0x0204                 Yes     No           0
+Oth  0x0002  0x0205                 Yes     No           0
+Oth  0x0002  0x0206                 Yes     No           0
+Oth  0x0002  0x0207                 Yes     No           0
+Act  0x0003  0x0301  CANAL+         Yes     Yes          3
+Act  0x0003  0x0302  CANAL+ CINEMA  Yes     Yes          3
+Act  0x0003  0x0303  CANAL+ SPORT   Yes     Yes          3
+Act  0x0003  0x0304  PLANETE        Yes     Yes          3
+Act  0x0003  0x0305  CANAL J        Yes     Yes          3
+Act  0x0003  0x0306  TPS STAR       Yes     Yes          3
+Act  0x0003  0x03F0                 No      No           0
+Act  0x0003  0x03F1                 No      No           0
+Oth  0x0004  0x0401                 Yes     No           0
+Oth  0x0004  0x0402                 Yes     No           0
+Oth  0x0004  0x0403                 Yes     No           0
+Oth  0x0004  0x0404                 Yes     No           0
+Oth  0x0004  0x0405                 Yes     No           0
+Oth  0x0004  0x0406                 Yes     No           0
+Oth  0x0006  0x0601                 Yes     No           0
+Oth  0x0006  0x0602                 Yes     No           0
+Oth  0x0006  0x0603                 Yes     No           0
+Oth  0x0006  0x0604                 Yes     No           0
+Oth  0x0006  0x0606                 Yes     No           0
+----
+
+==== Analyzing audio and video attributes
+
+This example illustrates how to display the audio and video attributes from a captured transport stream file.
+
+[source,shell]
+----
+$ tsp -I file cap.ts -P pes -a -v -O drop
+* PID 0x0083, stream_id 0xC0 (Audio 0), audio attributes:
+  Audio layer II, 160 kb/s, sampled at 48,000 Hz, stereo
+* PID 0x014A, stream_id 0xC0 (Audio 0), audio attributes:
+  Audio layer II, 192 kb/s, sampled at 48,000 Hz, stereo
+* PID 0x0085, stream_id 0xC0 (Audio 0), audio attributes:
+  Audio layer II, 64 kb/s, sampled at 48,000 Hz, single channel
+* PID 0x0082, stream_id 0xC0 (Audio 0), audio attributes:
+  Audio layer II, 192 kb/s, sampled at 48,000 Hz, stereo
+* PID 0x0276, stream_id 0xC0 (Audio 0), audio attributes:
+  Audio layer II, 192 kb/s, sampled at 48,000 Hz, stereo
+* PID 0x01AE, stream_id 0xC0 (Audio 0), audio attributes:
+  Audio layer II, 256 kb/s, sampled at 48,000 Hz, stereo
+* PID 0x00E6, stream_id 0xC0 (Audio 0), audio attributes:
+  Audio layer II, 256 kb/s, sampled at 48,000 Hz, stereo
+* PID 0x0078, stream_id 0xE0 (Video 0), video attributes:
+  720x576i, 25 Hz, 16/9, 4:2:0
+  Maximum bitrate: 15,000,000 b/s, VBV buffer size: 1,835,008 bits
+* PID 0x01A4, stream_id 0xE0 (Video 0), AVC video attributes:
+  720x576, AVC main profile (77), level 30
+* PID 0x00DC, stream_id 0xE0 (Video 0), video attributes:
+  720x576i, 25 Hz, 16/9, 4:2:0
+  Maximum bitrate: 15,000,000 b/s, VBV buffer size: 1,835,008 bits
+* PID 0x026C, stream_id 0xE0 (Video 0), video attributes:
+  720x576i, 24 Hz, 4/3, 4:2:0
+  Maximum bitrate: 15,000,000 b/s, VBV buffer size: 1,835,008 bits
+* PID 0x0140, stream_id 0xE0 (Video 0), AVC video attributes:
+  704x576, AVC main profile (77), level 30
+----
+
+[#sample-json-analyze]
+==== JSON analysis of a transport stream
+
+The option `--json` is used with `tsanalyze` or the plugin `analyze` to produce a JSON output.
+Such output can be used with many tools.
+In shell scripts, the open source tool `jq` (for "JSON Query") is extremely powerful.
+
+Getting a JSON analysis of a transport stream from the TSDuck repository:
+
+[source,shell]
+----
+$ tsp -I http https://tsduck.io/streams/france-dttv/tnt-uhf30-546MHz-2019-01-22.ts \
+      -P analyze --json -o ts.json \
+      -O drop
+----
+
+First sample commands using `jq` to get the number of services and their names:
+
+[source,shell]
+----
+$ jq <ts.json -r '.services | length'
+5
+$ jq <ts.json -r '.services[].name'
+M6
+W9
+Arte
+France 5
+6ter
+----
+
+Now, let's write a shell script to display all services and a description of each of their PID's.
+This illustrates the power of `jq`, including field selection and array lookup based on the value of a property.
+
+[source,shell]
+----
+JSON=ts.json
+SRVCOUNT=$(jq <$JSON -r ".services | length")
+
+for ((i=0; i<$SRVCOUNT; i++)); do
+    SRVNAME=$(jq <$JSON -r ".services[$i].name")
+    PIDCOUNT=$(jq <$JSON -r ".services[$i].pids | length")
+    echo "Service $SRVNAME, $PIDCOUNT PID's"
+    for ((p=0; p<$PIDCOUNT; p++)); do
+        PID=$(jq <$JSON -r ".services[$i].pids[$p]")
+        DESC=$(jq <$JSON -r ".pids[] | select(.id==$PID) | .description")
+        printf "  PID 0x%04X, %s\n" "$PID" "$DESC"
+    done
+done
+----
+
+The output of this script is the following (truncated for clarity):
+
+[source,text]
+----
+Service M6, 9 PID's
+  PID 0x0064, PMT
+  PID 0x0078, AVC video (1920x1080, high profile, level 4.0, 4:2:0)
+  PID 0x0082, E-AC-3 Audio (fra, E-AC-3, 3/2 (L,C,R,SL,SR), @48,000 Hz, complete m...
+  PID 0x0083, E-AC-3 Audio (qad, E-AC-3, stereo (L,R), @48,000 Hz, visually impair...
+  PID 0x0084, E-AC-3 Audio (qaa, E-AC-3, stereo (L,R), @48,000 Hz, complete main, ...
+  PID 0x008C, Subtitles (fra, DVB subtitles for hard of hearing, high definition)
+  PID 0x008D, Subtitles (fra, DVB subtitles, high definition)
+  PID 0x00AA, MPEG-2 Private sections (AIT)
+  PID 0x00AB, DSM-CC U-N (HbbTV)
+Service W9, 9 PID's
+  PID 0x00C8, PMT
+  PID 0x00DC, AVC video (1920x1080, high profile, level 4.0, 4:2:0)
+  PID 0x00E6, E-AC-3 Audio (fra, E-AC-3, 3/2 (L,C,R,SL,SR), @48,000 Hz, complete m...
+  PID 0x00E7, E-AC-3 Audio (qad, E-AC-3, stereo (L,R), @48,000 Hz, visually impair...
+  PID 0x00E8, E-AC-3 Audio (qaa, E-AC-3, stereo (L,R), @48,000 Hz, complete main, ...
+  PID 0x00F0, Subtitles (fra, DVB subtitles for hard of hearing, high definition)
+  PID 0x00F1, Subtitles (fra, DVB subtitles, high definition)
+  PID 0x010E, MPEG-2 Private sections (AIT)
+  PID 0x010F, DSM-CC U-N (HbbTV)
+Service Arte, 11 PID's
+  PID 0x012C, PMT
+  PID 0x0140, AVC video (1920x1080, high profile, level 4.0, 4:2:0)
+  ...
+----
+
+[#sample-mon-pid]
+==== Monitoring the bitrate of a PID
+
+This example demonstrates how to monitor the bitrate of a PID,
+and raise alarms when the bitrate of that PID goes out of range or back to normal.
+
+Here, we want to make sure that the bitrate of the PID 100 of a transport stream remains in the 1 to 2 Mb/s range.
+Assuming that the input is a UDP/IP stream on local UDP port 12345, the monitoring command is the following:
+
+[source,shell]
+----
+$ tsp --timed-log \
+      -I ip 12345 \
+      -P bitrate_monitor --pid 100 --min 1,000,000 --max 2,000,000 \
+                         --time-interval 1 --alarm-command './alarm.sh' \
+      -O drop
+----
+
+This command analyzes the bitrate of PID 100 by periods of 1 second.
+Each time the bitrate goes out of range or back to normal, the script `alarm.sh` is run.
+
+The sample `alarm.sh` script contains:
+
+[source,shell]
+----
+#!/usr/bin/env bash
+(
+    echo -n "Date: "; date '+%Y/%m/%d %H:%M:%S'
+    echo "Message: $1"
+    echo "Target PID: $2"
+    echo "Alarm state: $3"
+    echo "Current bitrate: $4"
+    echo "Minimum bitrate: $5"
+    echo "Maximum bitrate: $6"
+    echo
+) >>monitor.log
+----
+
+This script simply accumulates the alarms in a log file.
+See the xref:bitratemonitor-ref[reference description of the `bitrate_monitor` plugin]
+for a description of the six parameters which are passed to the alarm command.
+
+To exercise the script, we run the following shell script:
+
+[source,shell]
+----
+for bitrate in 1,500,000 500,000 1,500,000 2,500,000 1,500,000; do
+    tsp -I craft --pid 100 \
+        -P regulate --bitrate $bitrate \
+        -P until --seconds 10 \
+        -O ip localhost:12345
+done
+----
+
+This script simply generates a transport stream full of PID 100 packets.
+By sequences of 10 seconds, the stream has a bitrate of 1.5, 0.5, 1.5, 2.5, 1.5 Mb/s.
+Thus, the bitrate of the monitored PID is first in range, then too low, back in range, to high, back in range and finally zero.
+
+The test scenario is the following:
+
+* Run the source command from one terminal.
+* Immediately after, run the monitoring command from another terminal.
+* Once the source command completes, we may interrupt the monitoring command.
+
+The monitoring command generates warning messages each time an alarm is raised:
+
+[source,text]
+----
+* 2020/12/30 15:01:17 - Warning: bitrate_monitor: PID 0x0064 (100) bitrate (964,064 bits/s) is lower than allowed minimum (1,000,000 bits/s)
+* 2020/12/30 15:01:28 - Warning: bitrate_monitor: PID 0x0064 (100) bitrate (1,516,032 bits/s) is back in allowed range (1,000,000-2,000,000 bits/s)
+* 2020/12/30 15:01:38 - Warning: bitrate_monitor: PID 0x0064 (100) bitrate (2,496,640 bits/s) is greater than allowed maximum (2,000,000 bits/s)
+* 2020/12/30 15:01:48 - Warning: bitrate_monitor: PID 0x0064 (100) bitrate (1,491,968 bits/s) is back in allowed range (1,000,000-2,000,000 bits/s)
+* 2020/12/30 15:01:58 - Warning: bitrate_monitor: PID 0x0064 (100) bitrate (0 bits/s) is lower than allowed minimum (1,000,000 bits/s)
+----
+
+The file `monitor.log` is filled with the various alarms and contains the following:
+
+[source,text]
+----
+Date: 2020/12/30 15:01:17
+Message: PID 0x0064 (100) bitrate (964,064 bits/s) is lower than allowed minimum (1,000,000 bits/s)
+Target PID: 100
+Alarm state: lower
+Current bitrate: 964064
+Minimum bitrate: 1000000
+Maximum bitrate: 2000000
+
+Date: 2020/12/30 15:01:28
+Message: PID 0x0064 (100) bitrate (1,516,032 bits/s) is back in allowed range (1,000,000-2,000,000 bits/s)
+Target PID: 100
+Alarm state: normal
+Current bitrate: 1516032
+Minimum bitrate: 1000000
+Maximum bitrate: 2000000
+
+Date: 2020/12/30 15:01:38
+Message: PID 0x0064 (100) bitrate (2,496,640 bits/s) is greater than allowed maximum (2,000,000 bits/s)
+Target PID: 100
+Alarm state: greater
+Current bitrate: 2496640
+Minimum bitrate: 1000000
+Maximum bitrate: 2000000
+
+Date: 2020/12/30 15:01:48
+Message: PID 0x0064 (100) bitrate (1,491,968 bits/s) is back in allowed range (1,000,000-2,000,000 bits/s)
+Target PID: 100
+Alarm state: normal
+Current bitrate: 1491968
+Minimum bitrate: 1000000
+Maximum bitrate: 2000000
+
+Date: 2020/12/30 15:01:58
+Message: PID 0x0064 (100) bitrate (0 bits/s) is lower than allowed minimum (1,000,000 bits/s)
+Target PID: 100
+Alarm state: lower
+Current bitrate: 0
+Minimum bitrate: 1000000
+Maximum bitrate: 2000000
+----
+
+NOTE: The same example can be used to monitor the global bitrate of the transport stream.
+Just remove the `--pid` option in the `bitrate_monitor` plugin.
+
+[#sample-grafana]
+==== Creating Grafana dashboards with the plugin influx
+
+Grafana is a generic visualization framework which is now a de-facto standard.
+Grafana pulls the data to visualize from various "data sources".
+For real-time monitoring, the most common data source is "InfluxDB".
+These real-time metrics are named "timeseries" in InfluxDB and Grafana.
+
+Applications send data to InfluxDB using a Web API.
+These data are stored in InfluxDB, with a given retention duration.
+Grafana polls new information from InfluxDB for display.
+
+TSDuck can send real-time bitrate monitoring metrics to InfluxDB using the plugin `influx`.
+This information can be used to build various monitoring graphs using Grafana.
+
+Currently, the plugin `influx` can send bitrate metrics for:
+
+[.compact-list]
+* The global transport stream.
+* Selected PID's (or all of them).
+* Services, by name or service id.
+* Data types (audio, video, subtitles, etc.)
+
+See the reference documentation for the plugin `influx` in xref:_influx[xrefstyle=short] for more details.
+
+A sample live display of the stacked bandwidths of the various data types in a transport stream is shown in the diagram below.
+
+.Grafana sample dashboard with TS data types
+image::grafanademo.png[align="center",alt="Grafana sample dashboard"]
+
+To reproduce this, you need to setup Grafana and InfluxDB.
+If you don't have such an environment already, the directory
+https://github.com/tsduck/tsduck/tree/master/sample/grafana[`sample/grafana`]
+in the TSDuck source code provides explanations and scripts to setup
+a basic Grafana demo environment.
+
+The first step is to send live bitrate metrics to InfluxDB.
+The following command receives a broadcast stream from a tuner and sends bitrate metrics
+about data types (option `--type`) to InfluxDB.
+All other options identify the InfluxDB server and the required credentials.
+
+[source,shell]
+----
+tsp -I dvb ... \
+    -P influx --type -h http://localhost:8086/ -o demo-org -t demo-token -b demo-bucket \
+    -O drop
+----
+
+There is no need to provide all InfluxDB information with each command.
+The plugin `influx` accepts the same environment variables as <<InfluxDB-CLI>>,
+the command line interface to InfluxDB.
+The following definitions, for instance, provide the same information:
+
+[source,shell]
+----
+export INFLUX_HOST=http://localhost:8086/
+export INFLUX_ORG=demo-org
+export INFLUX_TOKEN=demo-token
+export INFLUX_BUCKET_NAME=demo-bucket
+----
+
+With these environment variables, the identification of the InfluxDB server is implicit.
+The following command plays a TS file in real time (`-P regulate`) and sends the bitrate
+metrics about data types.
+
+[source,shell]
+----
+tsp -I file input.ts -P regulate -P influx --type -O drop
+----
+
+Now, we need to tell Grafana to pull data from InfluxDB.
+Use the browser to connect to Grafana.
+Depending on the version, the UI may vary.
+Adapt the following procedure if necessary.
+Here, we use the same sample InfluxDB credentials.
+
+[.compact-list]
+* In left panel, under "Connections", select "Data sources".
+* Select "Add data source".
+* Select "InfluxDB".
+* Configure InfluxDB:
+** Query language: "Flux", instead of the default "InfluxQL".
+** HTTP URL: "http://influxdb:8086" (important: specify "influxdb", literally, not "localhost")
+** Auth: Keep "Basic Auth", which should be already selected.
+** Scroll down to InfluxDB Details.
+** Organization: "demo-org".
+** Token: "demo-token".
+** Default Bucket: "demo-bucket".
+** Click on the blue button "Save & test".
+** You should see a message similar to "datasource is working. 3 buckets found".
+
+Grafana can now extract data from InfluxDB.
+We need to create various dashboards to display these data in real-time.
+
+A dashboard can be manually created or imported from a "JSON Model".
+The directory https://github.com/tsduck/tsduck/tree/master/sample/grafana[`sample/grafana`]
+in the TSDuck source code contains the model of the dashboard above, presenting data types,
+in file `sample-graph.json`.
+
+In the Grafana user interface:
+
+[.compact-list]
+* Select "Dashboards" on the top line (in "Home > Dashboards").
+* On the top right corner, select "New", then "Import".
+* Select "Upload dashboard JSON file" or drag an drop `sample-graph.json` into that tab.
+* Select "Import".
+* Possibly set auto-refresh to 5s in top right corner.
+
+Then, you should see the same display as above.

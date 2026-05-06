@@ -29,7 +29,7 @@ image::tsp.png[align="center",alt="tsp diagram",width=500]
 
 This section describes the general syntax and usage of the `tsp` command.
 All plugins are documented in detail, in alphabetical order, in xref:chap-plugins[xrefstyle=short].
-The xref:tsp-examples[xrefstyle=short] gives a few examples of `tsp` commands, both simple and complex examples.
+The xref:chap-examples[xrefstyle=short] gives a few examples of `tsp` commands, both simple and complex examples.
 
 [.usage]
 Usage

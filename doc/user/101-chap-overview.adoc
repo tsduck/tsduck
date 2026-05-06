@@ -23,7 +23,7 @@ The following table summaries the pros and cons of using TSDuck on the various o
 |Availability of a powerful shell environment. TSDuck is a lightweight toolkit with elementary
  tools and plugins which can be combined in an infinite number of ways.
  The user can obtain even more flexibility when combining them with the bash shell and all standard
- UNIX utilities (`grep`, `sed`, `awk`, etc.) See some complex examples in xref:tsp-examples[xrefstyle=short].
+ UNIX utilities (`grep`, `sed`, `awk`, etc.) See some complex examples in xref:chap-examples[xrefstyle=short].
 |When used in a mobile environment, a laptop PC with Linux is required. +
  Some DVB tuners are not supported on Linux.
  Some supported tuners do not work well on Linux.

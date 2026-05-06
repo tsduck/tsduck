@@ -1,0 +1,144 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2026, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+=== Injecting SCTE 35 cue information
+
+SCTE 35 cue information are single-section tables which are sent in one dedicated PID in a service.
+These commands are used to signal video splicing points where alternate content (typically ads) can replace the original video content.
+The video splicing points are defined by PTS (presentation timestamp) values in the video PID of the service.
+
+Inserting SCTE 35 cue information is consequently different from traditional signalization.
+Each section defines one specific splicing event.
+It is not cycled.
+It is inserted once or twice only in the PID.
+The traffic on this PID is very low and not regular (it depends on the occurrences of the splicing events).
+
+The splicing points are usually defined on the fly, with the cooperation of the video encoder.
+The exact PTS values of the splicing points are defined in real time.
+It is usually impossible to define in advance the list of all splicing events in the life of a service.
+Moreover, inserting cue information section needs to be synchronized with the associated video PID.
+Typically, a splice event is signaled twice, once two seconds before the event and once one second before.
+
+Because of this dynamics, there are two distinct use cases: real-time live streams and offline test files.
+
+==== Real-time live stream
+
+This example illustrates the insertion of cue information in a real-time live transport stream.
+We receive a DTTV stream from a DVB-T tuner, we insert cue information for one service,
+and we restream the result through a DVB-T modulator.
+
+The transmission chain is processed by a `tsp` command.
+The generation of the cue information is externally performed by some real-time system,
+cooperating with the content management system and the video encoder.
+The format of the splice commands is defined by <<SCTE-35>>.
+Splice information sections can be provided in binary or XML format (see xref:psisi-sig[xrefstyle=short]).
+
+Here is an XML example of a pair of splice commands, a _splice out_ event, followed 20 seconds later by a _splice in_ event.
+This is typically an ads replacement opportunity.
+Here, the sections are minimal.
+You may want to add break duration information or additional descriptors.
+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+
+  <splice_information_table>
+    <splice_insert splice_event_id="100" unique_program_id="1"
+                   out_of_network="true" pts_time="0x078CA4459"/>
+  </splice_information_table>
+
+  <splice_information_table>
+    <splice_insert splice_event_id="100" unique_program_id="1"
+                   out_of_network="false" pts_time="0x78E5BB99"/>
+  </splice_information_table>
+
+</tsduck>
+----
+
+The PTS timestamps are synchronized with the video PID.
+Moreover, these timestamp shall correspond to video splice points,
+i.e. frames where the binary replacement of the encoded video content is smooth.
+This is why splicing shall be done with the cooperation of the video encoder.
+
+The following command performs the real-time processing.
+
+[source,shell]
+----
+$ tsp -I dvb -u 24 \
+      -P pmt --service 1010 --add-programinfo-id 0x43554549 --add-pid 600/0x86 \
+      -P spliceinject --service 1010 --files 'splice-*.xml' --udp 4444 \
+      -O dektec -u 24 --convolution 2/3 --guard 1/32
+----
+
+The input plugin `dvb` reads a DVB-T live stream from UHF channel 24.
+At the end of the processing, the output plugin `dektec` sends the stream to a Dektec DVB-T modulator on the same frequency.
+
+The transport stream contains several services.
+We will add cue information on service id 1010.
+We could process multiple services using successive instances of the plugin `spliceinject` in the same command.
+
+The plugin `pmt` modifies the PMT of the target service on the fly.
+To comply with the SCTE 35 standard, we add a _registration_descriptor_ with id 0x43554549,
+and we add the declaration of the PID 600 with stream type 0x86 (meaning SCTE 35 cue information).
+
+The plugin `spliceinject` performs the injection.
+The service id is sufficient to locate the target PID:
+the plugin searches the service and then searches a component with stream type 0x86 in its PMT.
+
+The splice information sections can be supplied in real time using two methods: file (binary or XML) and UDP datagrams.
+Here, for the sake of the example, we use both.
+We can also use only one.
+The file specification is a wildcard because different files can be provided.
+It is also possible to rewrite the same file.
+Each time a file is modified, it is reloaded.
+We can also receive UDP datagrams (here on port number 4444).
+The datagram can contain binary or XML sections.
+
+See the xref:spliceinject-ref[reference documentation of the plugin `spliceinject`] for more details.
+
+==== Cue insertion in offline files
+
+Sometimes, it is necessary to prepare a transport stream file for demo or test.
+Usually, the same `tsp` command can be used indifferently on live streams and offline files.
+For SCTE 35 cue information, this is a bit different because of the dynamics.
+
+The plugin `spliceinject` processes a transport stream and, on the other hand, it asynchronously receives splice information sections.
+On a real time stream, the events are received slightly in advance but in a timely fashion.
+The plugin does not expect any section file to be present at the time the processing starts.
+It does not wait for the section files.
+
+With an offline transport stream file, the processing is very fast, running at the speed of the disk storage.
+So, even if the splice information section files are already present, they are read asynchronously from the transport stream processing.
+Specifically, they can be read after the processing the target event in the stream.
+In that case, no section would be injected.
+To avoid this problem, we use the option `--wait-first-batch`
+which forces the transport stream processing to wait for at least the first batch of splice section files.
+Thus, if the section files are present at the time the command is run, it is guaranteed that they are loaded and injected.
+
+Additionally, in the following example, we use a SPTS file (containing only one service).
+These files usually contain no stuffing.
+However, `tsp` cannot insert new packets in a transport stream.
+It can only replace stuffing packets.
+So, unlike broadcast transport streams which always contain some stuffing, nothing can be injected in such a stream.
+To make room for insertion, we use the tsp option `--add-input-stuffing` which artificially injects null packets at input level
+(here one null packet every 10 input packets).
+This artificial stuffing will be used by `spliceinject` to insert its sections.
+Note that we remove the extra unused stuffing before the output plugin using the plugin `filter`.
+
+The rest of the command is similar to the previous example.
+
+[source,shell]
+----
+$ tsp --add-input-stuffing 1/10 \
+      -I file spts.ts \
+      -P pmt --service 1010 --add-programinfo-id 0x43554549 --add-pid 600/0x86 \
+      -P spliceinject --service 1010 --files splice.xml --wait-first-batch \
+      -P filter --negate --pid 0x1FFF \
+      -O file spts-out.ts
+----

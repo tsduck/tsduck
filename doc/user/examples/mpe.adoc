@@ -1,0 +1,440 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2026, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+[#mpe-examples]
+=== Multi-Protocol Encapsulation (MPE)
+
+These examples describe a test bed or demo infrastructure for MPE injection and MPE extraction.
+See <<ETSI-301-192>> for more details on MPE.
+
+==== MPE insertion in an existing transport stream
+
+In this example, we insert MPE in an existing transport stream.
+The input TS is read from a tuner, the MPE stream is inserted on the fly and the resulting TS is output on a modulator.
+
+The network infrastructure is illustrated in the diagram below.
+
+.Multi-Protocol Encapsulation (MPE) sample test bed
+image::mpedemo.png[align="center",width=700,alt="MPE sample test bed"]
+
+In network 1, a media server multicasts a transport stream on address 224.250.250.1, port 9000.
+
+We want to encapsulate this UDP multicast stream in an existing transport stream using MPE.
+We do this using `tsp`.
+We also change the multicast destination address for the UDP stream to 230.2.3.4, port 7000, in the MPE-encapsulated datagrams.
+There is no particular reason for this, we just illustrate the feasibility.
+
+The resulting transport stream with embedded MPE is then broadcast.
+Here, the broadcast network is a Dektec modulator, followed by another computer using a DVB tuner.
+
+The receiving computer is connected to a second network.
+Another instance of `tsp` extracts the datagrams from the MPE stream
+and multicasts them on its network using the modified destination address.
+
+Let's review the various steps and commands in detail.
+
+The existing transport stream is here a live satellite TS which is received on a Linux or Windows computer using a DVB tuner.
+The insertion of the MPE stream adds two new services.
+We carefully select service ids and PID's which are not used in the existing transport stream.
+
+[.compact-list]
+* A service carrying the IP/MAC Notification Table (INT).
+** Service id: 700
+** Service name: "Demo INT"
+** PMT PID: 5000
+** PID of the component carrying the INT: 5001
+* A service carrying the MPE stream. Such a service may carry many MPE streams. Here, we use only one.
+** Service id: 701
+** Service name: "Demo MPE"
+** PMT PID: 5002
+** PID of the component carrying the MPE stream: 5003
+
+We need to create three tables from scratch, the PMT's of the two new services and the INT.
+We create them using XML files.
+
+PMT of the service carrying the INT (file `pmt-int.xml`):
+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <!-- See ETSI EN 301 192, section 8.3 -->
+  <PMT service_id="700">
+    <component elementary_PID="5001" stream_type="0x05">
+      <data_broadcast_id_descriptor data_broadcast_id="0x000B"/>
+    </component>
+  </PMT>
+</tsduck>
+----
+
+PMT of the service carrying the MPE stream (file `pmt-mpe.xml`):
+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <!-- See ETSI EN 301 192, section 7.2 -->
+  <PMT service_id="701">
+    <component elementary_PID="5003" stream_type="0x0D">
+      <stream_identifier_descriptor component_tag="1"/>
+      <data_broadcast_id_descriptor data_broadcast_id="0x0005"/>
+    </component>
+  </PMT>
+</tsduck>
+----
+
+IP/MAC Notification Table (file `int.xml`):
+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <!-- See ETSI EN 301 192, section 8.4 -->
+  <INT platform_id="0x123456">
+    <IPMAC_platform_name_descriptor language_code="eng" text="Demo"/>
+    <IPMAC_platform_provider_name_descriptor language_code="eng" text="TSDuck"/>
+    <device>
+      <target>
+        <target_IP_slash_descriptor>
+          <address IPv4_addr="230.2.3.4" IPv4_slash_mask="32"/>
+        </target_IP_slash_descriptor>
+      </target>
+      <operational>
+        <IPMAC_stream_location_descriptor
+            network_id="1"
+            original_network_id="1"
+            transport_stream_id="1080"
+            service_id="701"
+            component_tag="1"/>
+      </operational>
+    </device>
+  </INT>
+</tsduck>
+----
+
+On the first system, the following command is used to insert the MPE stream:
+
+[source,shell]
+----
+$ tsp -I dvb --frequency ... \
+      -P svremove Service1 --stuffing \
+      -P pat --add-service 700/5000 --add-service 701/5002 \
+      -P inject pmt-int.xml --pid 5000 --bitrate 15000 \
+      -P inject int.xml --pid 5001 --bitrate 15000 \
+      -P inject pmt-mpe.xml --pid 5002 --bitrate 15000 \
+      -P sdt --service-id 700 --name "Demo INT" --provider "TSDuck" --type 0x0C \
+      -P sdt --service-id 701 --name "Demo MPE" --provider "TSDuck" --type 0x0C \
+      -P mpeinject 224.250.250.1:9000 --max-queue 512 \
+                   --new-destination 230.2.3.4:7000 --pid 5003 \
+      -O dektec --frequency ...
+----
+
+The following chain of plugins is used:
+
+[.compact-list]
+* The input plugin `dvb` receives an existing satellite stream.
+* The plugin `svremove` removes one service from the TS and replaces it with stuffing.
+  We are going to insert an MPE stream and we need bandwidth for it.
+  If the existing TS does not have enough stuffing bandwidth, we need to create some.
+  Depending on the target MPE bandwidth, we may need to remove several existing services.
+* The plugin `pat` adds the two new services in the PAT.
+* The three `plugin` inject insert the three XML tables we created, each one on its own PID.
+* The two plugins `sdt` add the descriptions of the two new services in the SDT.
+* The plugin `mpeinject` inserts the MPE stream.
+  It receives the UDP multicast datagrams for address 224.250.250.1, port 9000.
+  In each datagram, the destination address is modified as 230.2.3.4, port 7000.
+  The UDP datagrams are encapsulated into MPE sections which are injected in PID 5003.
+  The option `--max-queue` is a tuning parameter.
+  It specifies the number of UDP datagrams which can be buffered before insertion in the MPE stream.
+  The parameter shall be tuned according to the receiving multicast rate and bursts,
+  and the placement of stuffing packets in the exiting TS.
+  We need to tune it when we get "UDP overflow" messages.
+* Finally, the plugin `dektec` sends the resulting TS on a modulator.
+
+On the second system, the following command is used to extract the MPE stream and to re-multicast it on the network 2:
+
+[source,shell]
+----
+$ tsp -I dvb --frequency ... -P mpe --udp-forward -O drop
+----
+
+Here, the command is simple since we assume that there is only one MPE stream in the TS
+and it is properly signaled in the PSI/SI.
+If there are several MPE streams in the TS, more options are required in the plugin `mpe`.
+
+The option `--udp-forward` specifies that the UDP datagrams shall be forwarded on the local network.
+Note that when the UDP packets are multicast and the system running `tsp` has several network interfaces,
+it may be necessary to specify the `--local-address` option to select
+through which local interface the multicast packets shall be sent.
+
+We may want to use `tsanalyze` on the intermediate transport stream.
+The two services we created are described as follow:
+
+[source,text]
+----
+|=============================================================================|
+|  Service: 0x02BC (700), TS: 0x0438 (1080), Original Netw: 0x0001 (1)        |
+|  Service name: Demo INT, provider: TSDuck                                   |
+|  Service type: 0x0C (Data broadcast service)                                |
+|  TS packets: 600, PID's: 2 (clear: 2, scrambled: 0)                         |
+|  PMT PID: 0x1388 (5000), PCR PID: None                                      |
+|-----------------------------------------------------------------------------|
+|     PID  Usage                                     Access          Bitrate  |
+|   Total  Data broadcast service ....................... C       29,938 b/s  |
+|  0x1388  PMT .......................................... C       14,969 b/s  |
+|  0x1389  MPEG-2 Private sections (INT, IP/MAC Notifica  C       14,969 b/s  |
+|          (C=Clear, S=Scrambled, +=Shared)                                   |
+|=============================================================================|
+|  Service: 0x02BD (701), TS: 0x0438 (1080), Original Netw: 0x0001 (1)        |
+|  Service name: Demo MPE, provider: TSDuck                                   |
+|  Service type: 0x0C (Data broadcast service)                                |
+|  TS packets: 154,507, PID's: 2 (clear: 2, scrambled: 0)                     |
+|  PMT PID: 0x138A (5002), PCR PID: None                                      |
+|-----------------------------------------------------------------------------|
+|     PID  Usage                                     Access          Bitrate  |
+|   Total  Data broadcast service ....................... C    7,709,471 b/s  |
+|  0x138A  PMT .......................................... C       14,969 b/s  |
+|  0x138B  DSM-CC Sections (MPE) ........................ C    7,694,502 b/s  |
+|          (C=Clear, S=Scrambled, +=Shared)                                   |
+|=============================================================================|
+----
+
+==== Creating a transport stream from scratch
+
+This example is a variant of the previous one.
+This time, we do not have access to an existing transport stream.
+Instead, a new transport stream is created from scratch by TSDuck and MPE is inserted on the fly.
+The resulting stream is a SPTS (single program transport stream) which is output on UDP/IP.
+This UDP/IP stream is then typically collected by a MUX for insertion in a MPTS (multiple programs transport stream).
+
+The generated TS is not really a SPTS because it contains two services, one for the INT and one for the MPE sections.
+This is how MPE is structured.
+But, logically, the two services serve a common function: an MPE stream.
+So, by extension, we will call it a SPTS.
+
+Creating a TS from scratch using TSDuck is usually done using the input plugin `null`,
+a plugin which generates an endless stream of null packets.
+Then, all tables and elementary streams are inserted using appropriate plugins.
+Remember that inserting packets means replacing null packets.
+
+The TS will contain the same two services which were created in the previous example.
+We already have XML files for their PMT.
+To create a minimal TS, we also need a PAT and an SDT.
+For the sake of consistency, we reuse the same PID's as the previous example.
+
+PAT of the new TS (file `pat.xml`):
+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <PAT transport_stream_id="1">
+    <service service_id="700" program_map_PID="5000"/>
+    <service service_id="701" program_map_PID="5002"/>
+  </PAT>
+</tsduck>
+----
+
+SDT of the new TS (file `sdt.xml`):
+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <SDT transport_stream_id="1" original_network_id="1">
+    <service service_id="700" running_status="running">
+      <service_descriptor service_type="0x0C"
+                          service_name="MPE Demo (INT)"
+                          service_provider_name="TSDuck"/>
+    </service>
+    <service service_id="701" running_status="running">
+      <service_descriptor service_type="0x0C"
+                          service_name="MPE Demo"
+                          service_provider_name="TSDuck"/>
+    </service>
+  </SDT>
+</tsduck>
+----
+
+The `tsp` command which generates the TS and inserts MPE is the following:
+
+[source,shell]
+----
+$ tsp --verbose --bitrate 30,000,000 --max-flushed-packets 70 \
+      -I null \
+      -P regulate --packet-burst 14 \
+      -P inject pat.xml --pid 0 --bitrate 15000 \
+      -P inject sdt.xml --pid 17 --bitrate 15000 \
+      -P inject pmt-int.xml --pid 5000 --bitrate 15000 \
+      -P inject int.xml --pid 5001 --bitrate 15000 \
+      -P inject pmt-mpe.xml --pid 5002 --bitrate 15000 \
+      -P mpeinject 230.2.3.4:4000 --pid 5003 --max-queue 512 \
+      -O ip 230.5.6.7:4500 --packet-burst 7 --enforce-burst
+----
+
+The following chain of plugins is used:
+
+[.compact-list]
+* The input plugin `null` generates null packets.
+* The plugin `regulate` slows down the playout speed at the target TS bitrate.
+  Unlike the previous example where the playout speed was naturally regulated at the input speed of the tuner,
+  here the input plugin generates null packets at full speed (CPU-bound).
+  Note that the bitrate is specified here at `tsp` level and is propagated to all plugins.
+  We have chosen an arbitrary value of 30 Mb/s.
+* The subsequent plugins are similar to the previous example,
+  except that the PAT and SDT are inserted from XML file because they did not exist in the input TS.
+* The output plugin `ip` sends the resulting SPTS to multicast IP address 230.5.6.7, port 4500.
+
+==== Creating a transport stream from scratch with PCR
+
+Most the time, the command in the previous example will do the job.
+The generated SPTS is perfectly valid and can be multiplexed in a MPTS when necessary.
+
+However, this SPTS contains only section data (basic signalization, INT and DSM-CC sections for MPE).
+It does not contain any clock reference.
+There is no PCR.
+Usually, this is not a problem since there is no need for a clock in the absence of video or audio streams.
+However, some MUX or monitoring equipment may generate errors in the absence of PCR.
+
+Additionally, on the receiving side, TSDuck will not be able to determine the bitrate of this MPTS
+(not important in practice, but annoying for us).
+
+Let's see how to modify the previous `tsp` command to generate a valid PCR stream.
+
+We will create a dedicated PCR PID and attach it to the service carrying the MPE stream.
+We need to modify the XML file for its PMT to reference the new PCR PID.
+
+PMT of the service carrying the MPE stream (file `pmt-mpe-with-pcr.xml`) with and add `PCR_PID` attribute:
+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <!-- See ETSI EN 301 192, section 7.2 -->
+  <PMT service_id="701" PCR_PID="5004">
+    <component elementary_PID="5003" stream_type="0x0D">
+      <stream_identifier_descriptor component_tag="1"/>
+      <data_broadcast_id_descriptor data_broadcast_id="0x0005"/>
+    </component>
+  </PMT>
+</tsduck>
+----
+
+The new `tsp` command is the following:
+
+[source,shell]
+----
+BITRATE=30000000
+PCR_PER_SEC=5
+PCR_DISTANCE=$(( $BITRATE / $(( $PCR_PER_SEC * 188 * 8 )) ))
+PCR_PID=5004
+
+tsp --verbose --bitrate $BITRATE --max-flushed-packets 70 \
+    -I null \
+    -P regulate --packet-burst 14 \
+    -P filter --every $PCR_DISTANCE --set-label 1 \
+    -P craft --only-label 1 --pid $PCR_PID --no-payload --pcr 0 \
+    -P continuity --pid $PCR_PID --fix \
+    -P pcradjust --pid $PCR_PID \
+    -P inject pat.xml --pid 0 --bitrate 15000 \
+    -P inject sdt.xml --pid 17 --bitrate 15000 \
+    -P inject pmt-int.xml --pid 5000 --bitrate 15000 \
+    -P inject int.xml --pid 5001 --bitrate 15000 \
+    -P inject pmt-mpe-with-pcr.xml --pid 5002 --bitrate 15000 \
+    -P mpeinject 230.2.3.4:4000 --pid 5003 --max-queue 512 \
+    -O ip 230.5.6.7:4500 --packet-burst 7 --enforce-burst
+----
+
+Note the initial shell variables.
+We decide that the number of PCR's per second shall be 5 (`PCR_PER_SEC`).
+From the bitrate (30 Mb/s, now in variable `BITRATE`), we compute the interval between two PCR packets (`PCR_DISTANCE`).
+This is the number of TS packets between two packets containing a PCR.
+
+To generate a PCR PID in the TS, the following chain of plugins was added:
+
+[.compact-list]
+* The plugin `filter` selects one packet every `PCR_DISTANCE` packets.
+  The selected packets will become the PCR packets.
+  Note that we use the option `--set-label 1` which means that the selected packets are flagged with label 1.
+  No modification is applied to the TS, only flagging some packets.
+* The plugin `craft` is applied only on the previously selected packets (option `--only-label 1`).
+  The plugin `craft` performs low-level modifications on the packets.
+  Here, we modify the PID value, we remove the payload and we insert a PCR (with value zero for now).
+* The plugin `continuity` fixes the continuity counters on the PCR PID.
+* The plugin `pcradjust` fixes the PCR values based on the bitrate.
+
+We now have a valid PCR PID in the MPE service.
+Let's see how `tsanalyze` evaluates the generated SPTS:
+
+[source,text]
+----
+===============================================================================
+|  TRANSPORT STREAM ANALYSIS REPORT                                           |
+|=============================================================================|
+|  Transport Stream Id: .......... 1 (0x0001)  |  Services: .............. 2  |
+|  Bytes: ....................... 112,355,004  |  PID's: Total: .......... 8  |
+|  TS packets: ...................... 597,633  |         Clear: .......... 8  |
+|     With invalid sync: .................. 0  |         Scrambled: ...... 0  |
+|     With transport error: ............... 0  |         With PCR's: ..... 1  |
+|     Suspect and ignored: ................ 0  |         Unreferenced: ... 0  |
+|-----------------------------------------------------------------------------|
+|  Transport stream bitrate, based on ....... 188 bytes/pkt    204 bytes/pkt  |
+|  User-specified: ......................... 29,996,462 b/s   32,549,352 b/s  |
+|  Estimated based on PCR's: ............... 29,934,196 b/s   32,481,787 b/s  |
+|-----------------------------------------------------------------------------|
+|  Broadcast time: ................................... 29 sec (0 min 29 sec)  |
+|-----------------------------------------------------------------------------|
+|  Srv Id  Service Name                              Access          Bitrate  |
+|  0x02BC  MPE Demo (INT) ............................... C       30,115 b/s  |
+|  0x02BD  MPE Demo ..................................... C    6,638,107 b/s  |
+|                                                                             |
+|  Note 1: C=Clear, S=Scrambled                                               |
+|  Note 2: Unless specified otherwise, bitrates are based on 188 bytes/pkt    |
+===============================================================================
+
+
+===============================================================================
+|  SERVICES ANALYSIS REPORT                                                   |
+|=============================================================================|
+|  Global PID's                                                               |
+|  TS packets: 464,779, PID's: 3 (clear: 3, scrambled: 0)                     |
+|-----------------------------------------------------------------------------|
+|     PID  Usage                                     Access          Bitrate  |
+|   Total  Global PID's ................................. C   23,328,239 b/s  |
+|   Subt.  Global PSI/SI PID's (0x00-0x1F) .............. C       30,115 b/s  |
+|  0x0000  PAT .......................................... C       15,057 b/s  |
+|  0x0011  SDT/BAT ...................................... C       15,057 b/s  |
+|  0x1FFF  Stuffing ..................................... C   23,298,123 b/s  |
+|=============================================================================|
+|  Service: 0x02BC (700), TS: 0x0001 (1), Original Netw: 0x0001 (1)           |
+|  Service name: MPE Demo (INT), provider: TSDuck                             |
+|  Service type: 0x0C (Data broadcast service)                                |
+|  TS packets: 600, PID's: 2 (clear: 2, scrambled: 0)                         |
+|  PMT PID: 0x1388 (5000), PCR PID: None                                      |
+|-----------------------------------------------------------------------------|
+|     PID  Usage                                     Access          Bitrate  |
+|   Total  Data broadcast service ....................... C       30,115 b/s  |
+|  0x1388  PMT .......................................... C       15,057 b/s  |
+|  0x1389  MPEG-2 Private sections (INT) ................ C       15,057 b/s  |
+|          (C=Clear, S=Scrambled, +=Shared)                                   |
+|=============================================================================|
+|  Service: 0x02BD (701), TS: 0x0001 (1), Original Netw: 0x0001 (1)           |
+|  Service name: MPE Demo, provider: TSDuck                                   |
+|  Service type: 0x0C (Data broadcast service)                                |
+|  TS packets: 132,254, PID's: 3 (clear: 3, scrambled: 0)                     |
+|  PMT PID: 0x138A (5002), PCR PID: 0x138C (5004)                             |
+|-----------------------------------------------------------------------------|
+|     PID  Usage                                     Access          Bitrate  |
+|   Total  Data broadcast service ....................... C    6,638,107 b/s  |
+|  0x138A  PMT .......................................... C       15,057 b/s  |
+|  0x138B  DSM-CC Sections (MPE) ........................ C    6,615,571 b/s  |
+|  0x138C  PCR (not otherwise referenced) ............... C        7,478 b/s  |
+|          (C=Clear, S=Scrambled, +=Shared)                                   |
+===============================================================================
+----
+

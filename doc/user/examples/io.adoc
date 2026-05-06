@@ -1,0 +1,696 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2026, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+[#io-examples]
+=== Receiving and routing transport streams
+
+==== Routing a TS between several physical transports
+
+The following example reads the same satellite transponder and redirects its content to the first Dektec DVB-ASI output device.
+The output bitrate of the ASI stream is locked to the input bitrate (from the satellite transponder).
+
+[source,shell]
+----
+$ tsp -I dvb -t 11856:v:0:27500 -O dektec
+----
+
+==== Using IP multicast
+
+The following example reads a transport stream from the second Dektec DVB-ASI input device ("device 1"),
+extracts the service named "Arte", with French audio track only (identified as "fra" in the PMT)
+and broadcasts the resulting SPTS on the LAN using multicast IP (port 1000 on multicast address 224.10.11.12).
+
+[source,shell]
+----
+$ tsp -I dektec -d 1 \
+      -P zap arte -a fra \
+      -O ip 224.10.11.12:1000
+----
+
+Then, the service Arte can be received from any workstation on the LAN using, for instance, the free VLC media player.
+
+As an alternative to VLC, the Linux receivers may use the following example to view the channel
+using another standard Linux media player:
+
+[source,shell]
+----
+$ tsp -I ip 224.10.11.12:1000 | mplayer -
+----
+
+==== Scheduling the recording of a program
+
+The following example records the contents of the channel named "France 2" between 17:15 and 17:30, the 6th of July 2006.
+
+[source,shell]
+----
+$ tsp -I dvb -c france2 \
+      -P time --drop "" --pass "2006/07/06:17:15:00" --stop "2006/07/06:17:30:00" \
+      -P zap france2 \
+      -O file program.ts
+----
+
+The `-I` option selects the first DVB input device, tuning on the transponder containing the channel named "France 2".
+
+The first `-P` option specifies to:
+
+[.compact-list]
+* Initially drop packets (`--drop ""`)
+* Start passing packets at 17:15 the 6th of July 2006.
+* Stop packet processing (and make `tsp` terminate) at 17:30 the 6th of July 2006.
+
+The second `-P` option extracts only the service named "France 2"
+and the `-O` option finally saves the resulting SPTS in the file `program.ts`.
+
+==== Regulating the output speed
+
+The following example reads a captured transport stream file, extracts the service Arte and broadcasts it on the LAN.
+
+[source,shell]
+----
+$ tsp -I file -i ts_capture.ts \
+      -P zap arte \
+      -P pcrbitrate \
+      -P regulate \
+      -O ip 224.10.11.12:1000
+----
+
+Since reading a file can be extremely fast, it is not reasonable to broadcast the TS packets without regulation.
+If the receivers wish to play the TV program, the TS packets arrive too fast.
+The `pcrbitrate` plugin re-computes the expected TS bitrate after extraction of the selected service.
+Then, the `regulate` plugin introduces wait periods to slow down the stream to the previously computed bitrate.
+
+On the contrary, when the input source is a live transponder,
+this kind of regulation is useless since the input source is already regulated at the appropriate speed.
+
+Unfortunately, this is not completely true in all cases.
+The average bitrate is regulated by the source (the live transponder) but there is a potential burst problem.
+If the broadcaster system and all receivers use the same type in connection to the LAN (1 Gb/s for instance)
+and if the LAN backbone does not slow down the bandwidth, this is fine.
+However, there is a problem if the broadcaster has a faster connection to the LAN than the receivers (say 1 Gb/s vs. 100 Mb/s).
+Of course, 100 Mb/s is enough to receive one service which usually needs around 4 Mb/s.
+However, there is a potential burst problem.
+
+To avoid burst in case of non-homogeneous access speed to the LAN, the broadcaster should smooth the flow at all stages,
+as illustrated in the following command:
+
+[source,shell]
+----
+$ tsp --max-input-packets 128 \
+      -I dvb -c arte \
+      -P zap arte \
+      -P pcrbitrate --min-pcr 256 \
+      -P regulate --packet-burst 128 \
+      -O ip 224.10.11.12:1000 --packet-burst 128
+----
+
+==== Extracting selected packets
+
+The following silly example dumps the content of the 20^th^ TS packet with the payload unit start indicator set in PID 0x0208:
+
+[source,shell]
+----
+$ tsp -I file /data1/mpeg/test/frtv_tnt.mpg \
+      -P filter --pid 0x208 \
+      -P filter --unit-start \
+      -P skip 19 \
+      -P until --packets 1 \
+      -P dump \
+      -O drop
+----
+
+Note that the filter `plugin` selects packets matching any of the specified conditions (an "or" selection).
+Here, to select packets matching two conditions (an "and" selection), we chain two `filter` plugins.
+
+==== Interleaving input files and merging their PSI
+
+This example command reads two input files `file1.ts` and `file2.ts`.
+We assume here that the two files have no conflicting allocation of service ids and no conflicting PID's into services.
+Only the PSI/SI PID's are common.
+
+Using the option `--interleave` in the file input plugin, we read one packet of `file1.ts`,
+then one packet of `file2.ts`, then one packet of `file1.ts` again, and so on.
+So, the two input files are multiplexed one by one.
+
+Using the option `--label-base`, we assign the label 1 to all packets from `file1.ts` and label 2 to all packets from `file2.ts`.
+
+[source,shell]
+----
+$ tsp -I file --interleave file1.ts file2.ts --label-base 1 \
+      -P psimerge --main-label 1 --merge-label 2 \
+      ...
+----
+
+The plugin `psimerge` uses all packets with label 1 as a main stream and all packets with label 2 as a merge stream.
+It merges the PSI/SI from the two streams, creating a PAT and SDT-Actual containing all services from the two streams,
+creating a CAT containing all EMM PID's from the two streams.
+All EIT sections are multiplexed into the EIT PID.
+
+[#tsswitch-examples]
+==== tsswitch examples
+
+The following diagram illustrates a sample usage of the `tsswitch` command.
+
+.Sample input switching configuration
+image::tsswitch.png[align="center",alt="Sample input switching"]
+
+In the example above, four inputs are used.
+Each input contains an SPTS (single-program transport stream).
+
+Two of these inputs are network streams already containing an SPTS.
+They can be directly received by an input plugin in `tsswitch`
+(the plugin `ip` is used to receive an UDP/IP multicast stream and the plugin `http` is used to receive an HTTP unicast stream).
+
+The two other inputs are taken from broadcast transport streams which contain multiple services.
+The target service must be extracted before input to `tsswitch`.
+To achieve that, we run two `tsp` commands which extract the target services
+and we inject the output into an input of `tsswitch`.
+
+The complete command skeleton is the following:
+
+[source,shell]
+----
+$ tsswitch --remote 4444 \
+           -I fork 'tsp -I dvb ... -P zap service0' \
+           -I ip 226.2.2.2:1234 \
+           -I http --infinite http://server.foo.com/service2/ \
+           -I fork 'tsp -I dvb ... -P zap service3' \
+  | tsp -P ... -O ...
+----
+
+In this command, the remote control will send commands to UDP port 4444. For instance:
+
+[source,shell]
+----
+$ echo >/dev/udp/127.0.0.1/4444 2
+$ echo >/dev/udp/127.0.0.1/4444 0
+$ echo >/dev/udp/127.0.0.1/4444 next
+$ echo >/dev/udp/127.0.0.1/4444 prev
+----
+
+Note that the syntax `>/dev/udp/127.0.0.1/4444` is a feature of the `bash` shell
+to redirect the command output into a UDP datagram.
+This a feature of `bash`, not a Linux feature.
+It is available on all platforms, including macOS and Cygwin or Msys on Windows, as long as you use `bash`.
+
+==== Using Secure Reliable Transport (SRT) transmission
+
+The input and output plugins `srt` can be used to send and receive a transport stream
+using the Secure Reliable Transport (SRT) protocol.
+
+These plugins are not available everywhere, the `libsrt` (SRT library, see <<SRT>>)
+must be present during the compilation of TSDuck.
+
+First example: On a system named `vmfedora`, a `tsp` command sends a stream (here, a simple file playback) using SRT.
+The system is the SRT listener.
+It waits for an incoming connection on port 12345.
+
+[source,shell]
+----
+$ tsp -v \
+      -I file input.ts --infinite \
+      -P regulate \
+      -O srt --listener 12345 --transtype live --messageapi
+----
+
+On a receiver system, a `tsp` command connects to `vmfedora` on port 12345 and receives the stream over SRT.
+Here, the processing of the stream is simply an analysis during 30 seconds.
+
+[source,shell]
+----
+$ tsp -v \
+      -I srt --caller vmfedora:12345 --transtype live --messageapi --conn-timeout 100000 \
+      -P until --seconds 30 \
+      -P analyze \
+      -O drop
+----
+
+Second example with encrypted transmission: The passphrase is used to derive the encryption key.
+The passphrase must be 10 to 64 characters long.
+The option `--pbkeylen` selects the actual derived encryption key length.
+The option `--min-version` rejects connection with a libsrt version lower than 1.4.0 in this case.
+
+[source,shell]
+----
+$ tsp -v \
+      -I file input.ts --infinite \
+      -P regulate \
+      -O srt --listener 12345 --transtype live --messageapi \
+             --passphrase baguettess --pbkeylen 16 \
+             --enforce-encryption --min-version 0x010400
+----
+
+On the receiver system:
+
+[source,shell]
+----
+$ tsp -v \
+      -I srt --caller vmfedora:12345 --transtype live --messageapi \
+             --passphrase baguettess --pbkeylen 16 \
+      -P until --seconds 30 \
+      -P analyze \
+      -O drop
+----
+
+Third example using `--transtype` file and buffer API (equivalent to not setting `--messageapi`).
+
+[source,shell]
+----
+$ tsp -v \
+      -I file input.ts --infinite \
+      -P regulate \
+      -O srt --listener 12345 --transtype file
+----
+
+On the receiver system:
+
+[source,shell]
+----
+$ tsp -v \
+      -I srt --caller vmfedora:12345 --transtype file --conn-timeout 100000 \
+      -P until --seconds 30 \
+      -P analyze \
+      -O drop
+----
+
+==== DVB-T2 Modulator Interface (T2-MI)
+
+A DVB T2-MI stream is encapsulated into one PID of a TS.
+A DVB-T2 stream may contain several Physical Layer Pipes (PLP).
+Each PLP contains a complete TS.
+The plugin `t2mi` is designed to extract the TS from a PLP of a T2-MI stream.
+
+With a fully DVB-compliant signalization, the PID carrying T2-MI is signaled in the PMT of its service using a T2-MI descriptor.
+
+Sample PMT using tstables:
+
+[source,text]
+----
+* PMT, TID 2 (0x02), PID 33 (0x0021)
+  Version: 11, sections: 1, total size: 27 bytes
+  - Section 0:
+    Program: 800 (0x0320), PCR PID: none
+    Elementary stream: type 0x06 (MPEG-2 PES private data), PID: 64 (0x0040)
+    - Descriptor 0: Extension Descriptor (0x7F, 127), 4 bytes
+      Extended descriptor: T2MI (0x11, 17)
+      T2-MI stream id: 0, T2-MI stream count: 1, PCR/ISCR common clock: no
+----
+
+Excerpt from `tsanalyze` for the service containing the T2-MI stream:
+
+[source,text]
+----
+|=============================================================================|
+|  Service: 0x0320 (800), TS: 0x03A2 (930), Original Netw: 0x0000 (0)         |
+|  Service name: (T2-MI), provider: (unknown)                                 |
+|  Service type: 0x00 (unknown)                                               |
+|  TS packets: 145,024, PID's: 2 (clear: 2, scrambled: 0)                     |
+|  PMT PID: 0x0021 (33), PCR PID: None                                        |
+|-----------------------------------------------------------------------------|
+|     PID  Usage                                     Access          Bitrate  |
+|   Total  unknown (0x00) ............................... C          Unknown  |
+|  0x0021  PMT .......................................... C          Unknown  |
+|  0x0040  T2-MI (PLP: 0x66 (102)) ...................... C          Unknown  |
+|          (C=Clear, S=Scrambled, +=Shared)                                   |
+|=============================================================================|
+----
+
+The option `--identify` of the plugin `t2mi` lists the same information.
+With this option, the plugin does not modify the stream, it only identify T2-MI PID's and PLP's.
+
+[source,shell]
+----
+$ tsp -I dvb ... -P t2mi --identify -O drop
+* t2mi: found T2-MI PID 0x0040 (64)
+* t2mi: PID 0x0040 (64), found PLP 102
+^C
+* tsp: user interrupt, terminating...
+* t2mi: summary: found 1 PID's with T2-MI
+* t2mi: PID 0x0040 (64): PLP 102
+$
+----
+
+But since T2-MI streams are received by designated professional equipment,
+many operators do not setup the required signalization and it is necessary to guess which PID in which service may carry T2-MI.
+
+Example service which is a good candidate for T2-MI:
+
+[source,text]
+----
+|=============================================================================|
+|  Service: 0x0320 (800), TS: 0x03A2 (930), Original Netw: 0x0000 (0)         |
+|  Service name: (unknown), provider: (unknown)                               |
+|  Service type: 0x00 (unknown)                                               |
+|  TS packets: 27,805,661, PID's: 2 (clear: 2, scrambled: 0)                  |
+|  PMT PID: 0x0100 (256), PCR PID: None                                       |
+|-----------------------------------------------------------------------------|
+|     PID  Usage                                     Access          Bitrate  |
+|   Total  unknown (0x00) ............................... C          Unknown  |
+|  0x0100  PMT .......................................... C          Unknown  |
+|  0x1000  MPEG-2 PES private data ...................... C          Unknown  |
+|          (C=Clear, S=Scrambled, +=Shared)                                   |
+|=============================================================================|
+----
+
+In this example, the TS contains only one service.
+This service contains only one component and it carries private sections.
+Since there is no video PID, there is no PCR and `tsanalyze` is not able to compute bitrates.
+If we know, from other sources, that the TS contains T2-MI, it must be there.
+In this case, we need to explicitly provide the PID number to the plugin `t2mi`:
+
+[source,shell]
+----
+$ tsp -I dvb ... -P t2mi --pid 0x1000 --identify -O drop
+* t2mi: PID 0x1000 (4096), found PLP 0
+* t2mi: PID 0x1000 (4096), found PLP 2
+* t2mi: PID 0x1000 (4096), found PLP 1
+^C
+* tsp: user interrupt, terminating...
+* t2mi: summary: found 1 PID's with T2-MI
+* t2mi: PID 0x1000 (4096): PLP 0, 1, 2
+$
+----
+
+If we want to redistribute on a local DVB network one of these PLP's, the command is the following:
+
+[source,shell]
+----
+$ tsp -I dvb ... -P t2mi --pid 0x1000 --plp 1 -O dektec ...
+----
+
+Without the option `--identify`, the plugin `t2mi` extracts the TS from the specified PLP
+and completely replaces the TS with the extracted one.
+The output of the plugin is the extracted TS, the original TS carrying T2-MI has disappeared.
+The final output is a Dektec modulator (or ASI board) which broadcasts the extracted TS.
+
+The plugin `t2mi` can extract only one PLP because this is the basic principle of `tsp`:
+end-to-end processing of one single TS.
+Even if one plugin produces a radical transformation such as completely replacing the TS with another one
+(here, the extracted PLP), there is only one TS at all points in the chain.
+
+If we want to process all PLP's at the same time, we must re-route the original TS in parallel instances of `tsp` using the plugin fork.
+Each instance of `tsp` extracts one PLP.
+
+This is illustrated by the following command:
+
+[source,shell]
+----
+$ tsp -I dvb ... \
+      -P until --seconds 30 \
+      -P fork 'tsp -P t2mi --pid 0x1000 --plp 0 -P analyze -o plp0.txt -O drop' \
+      -P fork 'tsp -P t2mi --pid 0x1000 --plp 1 -P analyze -o plp1.txt -O drop' \
+      -P fork 'tsp -P t2mi --pid 0x1000 --plp 2 -P analyze -o plp2.txt -O drop' \
+      -P analyze -o main.txt
+      -O drop
+----
+
+This command analyzes the enclosing stream and the three different PLP's in parallel during 30 seconds.
+Each plugin `fork` creates a process and passes the complete TS to this process.
+Each created process runs another instance of `tsp` which extracts one PLP.
+Note that the default input plugin of `tsp` is the plugin `file` which, by default, reads the standard input.
+
+==== Merging transport streams
+
+The plugin `merge` can be used to merge a transport stream into another one.
+The service references are correctly merged into the final transport stream.
+
+Let's illustrate this using two live transport streams from satellite Astra 19.2 E.
+We use one transport stream as base.
+We remove one service from this stream and we replace it with another live service coming from another transport stream.
+
+We use the transport stream with id 1028 as base.
+Using the plugin `dvb`, the tuning options are:
+
+[source,shell]
+----
+--frequency 11,626,500,000 --symbol 22,000,000 --fec 5/6 --polarity vertical --delivery DVB-S
+----
+
+To simplify the command lines, we save these options, one per line,
+in a text file named `ts1028.txt` to be used by partial command line redirection (see xref:cmd-redirection[xrefstyle=short]).
+
+The structure of this transport stream can be seen using the plugin `analyze`.
+Here is the list of services from the analyze output:
+
+[source,text]
+----
+|-----------------------------------------------------------------------------|
+|  Srv Id  Service Name                              Access          Bitrate  |
+|  0x1131  TVE INTERNACIONAL EUROPA ..................... C    3,572,410 b/s  |
+|  0x1132  CANAL 24 HORAS ............................... C    3,423,043 b/s  |
+|  0x113B  RNE RADIO 1 .................................. C      140,998 b/s  |
+|  0x113C  RNE RADIO 3 .................................. C      278,941 b/s  |
+|  0x113D  RNE RADIO 4 .................................. C      141,045 b/s  |
+|  0x113E  RNE RADIO 5 TODO NOTICIAS .................... C      141,092 b/s  |
+|  0x113F  RNE RADIO CLASICA ............................ C      347,819 b/s  |
+|  0x1140  RNE RADIO EXTERIOR DE ESPAÑA ................. C      141,139 b/s  |
+|  0x1146  CNN Int. ..................................... C    4,008,806 b/s  |
+|  0x114E  DW (English) ................................. C    3,488,065 b/s  |
+|  0x1158  Al Jazeera English ........................... C    3,803,631 b/s  |
+|-----------------------------------------------------------------------------|
+----
+
+We use the transport stream with id 1022 to extract a service and inject it into the previous transport stream.
+The `dvb` tuning options are:
+
+[source,shell]
+----
+--frequency 11,538,000,000 --symbol 22,000,000 --fec 5/6 --polarity vertical --delivery DVB-S
+----
+
+Again, we save them, one by line, in a text file named `ts1022.txt`.
+
+The list of services from transport stream 1022 is shown below.
+Note that we use transport streams with clear channels only to be able to watch the result.
+
+[source,text]
+----
+|-----------------------------------------------------------------------------|
+|  Srv Id  Service Name                              Access          Bitrate  |
+|  0x1AF4  DATASYSTEM ................................... C       44,884 b/s  |
+|  0x1AF8  Russia Today ................................. C    4,038,071 b/s  |
+|  0x1AF9  France 24 (en Français) ...................... C    2,703,659 b/s  |
+|  0x1AFA  France 24 (in English) ....................... C    2,700,842 b/s  |
+|  0x1AFE  France 24 (in Arabic) ........................ C    2,465,576 b/s  |
+|  0x1B00  CGTN Documentary ............................. C    2,504,263 b/s  |
+|  0x1B01  CGTN F ....................................... C    2,247,071 b/s  |
+|  0x1B02  CGTN ......................................... C    2,443,463 b/s  |
+|  0x1B03  TV5MONDE EUROPE .............................. C    3,619,747 b/s  |
+|  0x1B06  TRT World HD ................................. C    5,984,240 b/s  |
+|-----------------------------------------------------------------------------|
+----
+
+We assume that we have two satellite tuners in the system.
+Adapter 0 will be used to receive TS 1022 and adapter 1 will be used to receive TS 1028.
+
+We also have a Dektec modulator to redistribute the resulting transport stream.
+Again, to shorten the command line, we place all modulation options into one text file named `modulation.txt`.
+
+In our example, we extract the service "TV5MONDE EUROPE" from TS 1022 and we merge it into TS 1028.
+To make sure that the transport stream has enough free space, we remove the service "Al Jazeera English" from TS 1028 before the merge.
+
+NOTE: In practice, on the day of this experiment,
+the TS 1028 had more than enough stuffing to insert one or two services without removing any other.
+However, in the general case, we need to make some room first. So, let's do it anyway.
+
+The merging command is the following:
+
+[source,shell]
+----
+$ tsp -I dvb -a 1 @ts1028.txt \
+      -P svremove -s AlJazeeraEnglish \
+      -P merge "tsp -I dvb -a 0 @ts1022.txt -P zap TV5MondeEurope" \
+      -P analyze -i 30 -o merged.txt \
+      -O dektec @modulation.txt
+----
+
+Note that the service "Al Jazeera English" is replaced by stuffing (option -s) in TS 1028.
+
+In the created command, everything is removed from TS 1022, except service "TV5MONDE EUROPE"
+(the service names are not case-sensitive and spaces are ignored).
+
+The final plugin `analyze` continuously analyzes the output stream and produces a report file every 30 seconds.
+Here is the merged list of services from this report:
+
+[source,text]
+----
+|-----------------------------------------------------------------------------|
+|  Srv Id  Service Name                              Access          Bitrate  |
+|  0x1131  TVE INTERNACIONAL EUROPA ..................... C    3,529,507 b/s  |
+|  0x1132  CANAL 24 HORAS ............................... C    3,382,237 b/s  |
+|  0x113B  RNE RADIO 1 .................................. C      139,475 b/s  |
+|  0x113C  RNE RADIO 3 .................................. C      275,915 b/s  |
+|  0x113D  RNE RADIO 4 .................................. C      139,425 b/s  |
+|  0x113E  RNE RADIO 5 TODO NOTICIAS .................... C      139,374 b/s  |
+|  0x113F  RNE RADIO CLASICA ............................ C      343,831 b/s  |
+|  0x1140  RNE RADIO EXTERIOR DE ESPAÑA ................. C      139,425 b/s  |
+|  0x1146  CNN Int. ..................................... C    3,963,218 b/s  |
+|  0x114E  DW (English) ................................. C    3,448,180 b/s  |
+|  0x1B03  TV5MONDE EUROPE .............................. C    3,566,805 b/s  |
+|-----------------------------------------------------------------------------|
+----
+
+We can see that the service "Al Jazeera English" has been replaced with "TV5MONDE EUROPE".
+
+Luckily, there was no PID or service id conflict between the two transport streams.
+If the same service id or PID had existed in the two streams,
+the plugin `merge` would have reported an error and the component from the merged stream would have been dropped.
+In case of conflict, we use the plugin `remap` to modify PID's or the plugin `svrename` to rename a service
+(including modifying its service id).
+
+==== Encapsulating PID's into a private tunnel
+
+In this example, we start from a transport stream containing two services, "CANAL+ DECALE" (id 0x2262) and "CNEWS" (id 0x226A).
+We want to process the first service through some external equipment (transcoder, transrater, etc.)
+However, this equipment can only process SPTS (single-program transport stream).
+
+To preserve the structure of the transport stream while crossing this equipment, we use the following trick.
+We encapsulate the second service into one single "tunnel" PID and then we erase this service from the structure of the TS.
+This tunnel PID is added as a private component of the first service.
+Now, we have a true SPTS which can be processed by the external equipment.
+
+The structure of the service "CNEWS" is reported as follow by `tsanalyze`:
+
+[source,text]
+----
+|=============================================================================|
+|  Service: 0x226A (8810), TS: 0x0438 (1080), Original Netw: 0x0001 (1)       |
+|  Service name: CNEWS, provider: CSAT                                        |
+|  Service type: 0x19 (Advanced codec HD digital television service)          |
+|  TS packets: 9,298, PID's: 4 (clear: 4, scrambled: 0)                       |
+|  PMT PID: 0x03E8 (1000), PCR PID: 0x03F2 (1010)                             |
+|-----------------------------------------------------------------------------|
+|     PID  Usage                                     Access          Bitrate  |
+|   Total  Advanced codec HD digital television service . C    3,983,427 b/s  |
+|  0x03E8  PMT .......................................... C       14,994 b/s  |
+|  0x03F2  AVC video (1920x1080, high profile, level 4.0  C    3,771,361 b/s  |
+|  0x03FD  AC-3 Audio (fra, AC-3, stereo (L,R), @48,000   C      197,072 b/s  |
+|  0x0413  Subtitles (fra, DVB subtitles for hard of hea  C            0 b/s  |
+|          (C=Clear, S=Scrambled, +=Shared)                                   |
+|=============================================================================|
+----
+
+The first step is performed using the following command.
+
+[source,shell]
+----
+$ tsp -I ... \
+      -P encap -o 0x1000 -p 0x03E8 -p 0x03F2 -p 0x03FD -p 0x0413 \
+      -P pat --remove-service 0x226A \
+      -P sdt --remove-service 0x226A \
+      -P pmt -s 0x2262 -a 0x1000/0x99 \
+      -O ...
+----
+
+The plugin `encap` creates a tunnel PID 0x1000.
+This tunnel contains the 4 PID's of the service "CNEWS", PMT, video, audio and subtitles.
+The plugins `pat` and `sdt` remove the service from the PAT and SDT, respectively.
+At this point, the service "CNEWS" has disappeared but the new PID 0x1000 is orphan.
+
+To preserve this PID through the processing of the service "CANAL+ DECALE",
+we add it to the PMT of the service using the plugin `pmt`.
+We use the reserve stream type 0x99 for this PID to indicate some private type (any other reserved stream type should be OK).
+
+After processing the SPTS through the external equipment
+(and hoping that the equipment has preserved the private components of the service),
+we restore the structure of the transport stream using the following command:
+
+[source,shell]
+----
+$ tsp -I ... \
+      -P decap -p 0x1000 \
+      -P pat -a 0x226A/0x03E8 \
+      -P sdt -s 0x226A -n CNEWS -p CSAT \
+      -P pmt -s 0x2262 -r 0x1000 \
+      -O ...
+----
+
+The plugin `decap` decapsulates the content of the tunnel PID 0x1000.
+It is replaced by all original PID's of the service "CNEWS".
+Then, we need to restore the reference to the service in the PAT and SDT using the plugins `pat` and `sdt`.
+Finally, since the private component 0x1000 no longer exists, we remove it from the PMT of the service "CANAL+ DECALE" using the plugin `pmt`.
+
+NOTE: In a real-life example, the MPTS would probably contain more than two services.
+In that case, we would encapsulate all other services in the private tunnel PID as well.
+The principle remains the same.
+The command is only a bit longer.
+
+==== Preserving EIT's through ffmpeg processing
+
+TSDuck is often used in combination with `ffmpeg`.
+The former processes the system layer and the latter processes the video and audio.
+
+However, `ffmpeg` removes the TS signalization, system or data PID's.
+So, while `ffmpeg` is extremely useful to transcode video and audio, it is inconvenient to process a complete TS.
+In this example, we demonstrate how to process an SPTS through `ffmpeg` while preserving EIT's.
+It can be easily adapted to preserve any other data PID.
+
+The plugin `encap` encapsulates one or more PID's into one tunnel PID.
+There are several encapsulation modes, include a _PES mode_ which builds a PES stream
+containing the encapsulated data (see the xref:encap-ref[`encap` reference documentation]).
+
+We use this trick to preserve EIT's through `ffmpeg`.
+
+[source,shell]
+----
+$ tsp --add-input-stuffing 1/10 \
+      -I dvb --uhf-channel 30 \
+      -P zap arte --audio fra --no-subtitles --eit --stuffing \
+      -P encap --pes-mode fixed --pid 0x12 --output-pid 0x900 \
+      -P pmt --add-pid 0x900/0x06 --add-pid-registration 0x900/0x4B4C5641 \
+      -P filter --negate --pid 0x1FFF | \
+  ffmpeg -f mpegts -i - \
+      -map 0:d -codec:d copy \
+      -map 0:v -codec:v ... \
+      -map 0:a -codec:a ... \
+      -mpegts_start_pid 0x900 \
+      -mpegts_transport_stream_id 0x0004 \
+      -mpegts_original_network_id 0x20FA \
+      -mpegts_service_id 0x0407 \
+      -metadata service_name="Arte" \
+      -f mpegts - | \
+  tsp -P decap --pid 0x900 \
+      -P pmt --remove-pid 0x900 \
+      -P filter --negate --pid 0x1FFF \
+      -O ...
+----
+
+In this example, we extract one service named "Arte" from a DVB-T transport stream on UHF channel 30.
+
+Analysis of this command:
+
+[.compact-list]
+* Initial `tsp` command:
+** Add one null packet every 10 input packets (`--add-input-stuffing 1/10`) to accommodate the encapsulation overhead.
+   In this specific example, this is useless because a broadcast TS always contain some stuffing.
+   But it would be required if you read an IP stream without stuffing, for instance.
+** Receive a DVB-T transport stream from a tuner on UHF channel 30.
+** Extract the service named "Arte", using the French audio track, no subtitles and keep all EIT's for this service.
+** Encapsulate the PID 0x12 (EIT's) in PES mode, creating a tunnel PID 0x900.
+   Make sure that this PID number is not already used in your stream.
+** Reference this PID in the PMT of the service with stream type 0x06 (PES private data)
+   and registration type KLVA (0x4B4C5641).
+   Thus, the encapsulated EIT's become a data component of the service.
+** Remove remaining null packets.
+* Intermediate `ffmpeg` command:
+** Map the first "data" stream `0:d` to output and use `copy` codec (ie. no transformation of the PES stream).
+   Thus, the PES stream containing the encapsulated EIT's will pass unmodified.
+** Then, map video and audio PID's `0:v` and `0:a` with their respective codecs
+   (unspecified here, select your favorite codecs).
+** Important: Be sure to map the data stream first to enforce it as first output PID.
+   This way, you can specify exactly the first PID using the ffmpeg option `-mpegts_start_pid` afterwards.
+** Respecify the original TS id, original network id and service id using dedicated `ffmpeg` options.
+   This is important to preserve the references of the EIT's.
+   By default, `ffmpeg` would generate TS id 1 and service id 1 which would not match with the EIT's.
+   We also respecify the original service name (`ffmpeg` generates a dummy name by default).
+   All these values shall be adapted according to the input stream.
+* Final `tsp` command:
+** Decapsulate the tunnel PID. We have forced it in `ffmpeg` as PID 0x900 using `-mpegts_start_pid`.
+   The PID 0x12 (EIT's) reappears in the stream.
+** Dereference the PID 0x900 from the PMT.
+   The tunnel PID disappears after decapsulation and it is cleaner to dereference it.
+** Remove spurious null packets which were created from encapsulation overhead.
