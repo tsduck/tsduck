@@ -6,7 +6,257 @@
 //
 //----------------------------------------------------------------------------
 
-// TO BE COMPLETED
-//
-// [#dsmcc-examples]
-// === Digital Storage Media Command and Control (DSM-CC)
+[#dsmcc-examples]
+=== Digital Storage Media Command and Control (DSM-CC)
+
+These examples illustrate the extraction of content from a DSM-CC carousel.
+DSM-CC defines two carousel variants over the same DSI/DII/DDB transport
+(see <<ISO-13818-6>>):
+
+[.compact-list]
+* *Object carousel.* Each module contains a tree of BIOP messages
+  (ServiceGateway, Directory, File). Used by interactive broadcast applications
+  such as MHP, HbbTV and OpenTV.
+* *Data carousel.* Each module is an opaque payload, typically used for
+  DVB System Software Update (<<ETSI-102-006>>) or custom private data.
+
+Both variants are handled by the `tsp` plugin `dsmcc` and by the standalone
+utility `tsdsmcc`. The plugin and the utility share the same extraction engine
+and accept the same options, so the choice between them depends only on the
+context: the plugin is used inside a live `tsp` pipeline, while the utility is
+the one-shot equivalent for an offline capture file.
+
+==== Locating the DSM-CC PID
+
+A DSM-CC component is signaled in the PMT of its service with a
+`stream_type` of `0x0B` (DSM-CC type B, U-N messages) and a
+`data_broadcast_id_descriptor` whose `data_broadcast_id` identifies the
+carousel profile (see the registry in <<ETSI-101-162>>). Two values are
+frequently encountered:
+
+[.compact-list]
+* `0x000A` -- DVB System Software Update (DVB-SSU, data carousel,
+  see <<ETSI-102-006>>).
+* `0x00F0` -- MHP Object Carousel.
+* `0x0123` -- HbbTV Object Carousel.
+
+The `tspsi` command lists all PSI/SI tables of the input stream and is the
+simplest way to find the PID of a DSM-CC component:
+
+[source,shell]
+----
+$ tspsi --dvb capture.ts | less
+----
+
+In the PMT of the relevant service, look for an entry similar to:
+
+[source,text]
+----
+* PMT, TID 0x02 (2), PID 0x0762 (1890)
+  Version: 28, sections: 1, total size: 63 bytes
+  - Section 0:
+    ... (other elementary streams)
+    Elementary stream: type 0x0B (DSM-CC U-N), PID: 0x076A (1898)
+    - Descriptor 0: Stream Identifier (0x52, 82), 1 bytes
+      Component tag: 0x0A (10)
+    - Descriptor 1: DSM-CC Carousel Identifier (0x13, 19), 5 bytes
+      Carousel id: 0x0000000A (10)
+      Private data (1 bytes): 00
+    - Descriptor 2: Data Broadcast Id (0x66, 102), 4 bytes
+      Data broadcast id: 0x0123 (291, HbbTV Carousel)
+      Data Broadcast selector (2 bytes): 80 10
+----
+
+Here, the carousel is on PID `0x076A`. This PID value is reused in the
+following examples.
+
+==== Listing the contents of an object carousel
+
+When `--output-directory` is omitted, the plugin and the utility run in
+list-only mode. They inspect the carousel and print a hierarchical report
+without writing any file. This is convenient to check what a carousel
+contains before extracting anything to disk.
+
+[source,shell]
+----
+$ tsdsmcc --pid 0x76A capture.ts
+----
+
+Or, equivalently, inside a `tsp` pipeline:
+
+[source,shell]
+----
+$ tsp -P dsmcc --pid 0x76A -I file capture.ts -O drop
+----
+
+The output reports each carousel group (`download_id`), then each module
+(version, blocks, size, compression status, BIOP-object list, decoded DII
+descriptors), and finally a `Carousel Tree` section with the resolved
+file/directory tree and byte sizes:
+
+[source,text]
+----
+* DSM-CC Carousel, PID 0x076A (1898)
+  Download id: 0x0000000A (10)
+  Modules discovered: 3
+  Group complete: yes
+
+  - Module 0x0001
+    Version: 125, blocks: 1
+    Size: 133 bytes, original size: 294 bytes
+    Compression: yes
+    Status: COMPLETE
+
+    BIOP objects: 1
+    - Object 0: "/" [srg]
+
+    - Descriptor 0: Compressed Module, 5 bytes
+      Compression method: 0x78
+      Original size: 294 bytes
+
+  - Module 0x0002
+    Version: 125, blocks: 94
+    Size: 379138 bytes, original size: 756113 bytes
+    Compression: yes
+    Status: COMPLETE
+
+    BIOP objects: 1
+    - Object 0: "/deja.ttf" [fil]
+
+    - Descriptor 0: Compressed Module, 5 bytes
+      Compression method: 0x78
+      Original size: 756113 bytes
+
+  - Module 0x0003
+    Version: 125, blocks: 8
+    Size: 29806 bytes, original size: 31946 bytes
+    Compression: yes
+    Status: COMPLETE
+
+    BIOP objects: 2
+    - Object 0: "/index.html" [fil]
+    - Object 1: "/rj45.gif" [fil]
+
+    - Descriptor 0: Compressed Module, 5 bytes
+      Compression method: 0x78
+      Original size: 31946 bytes
+
+
+* Carousel Tree
+  /
+    deja.ttf   (756072 bytes)
+    index.html (2497 bytes)
+    rj45.gif   (29367 bytes)
+
+  Files: 3
+  Total size: 787936 bytes
+----
+
+==== Extracting an object carousel to disk
+
+To actually write the files to disk, pass `--output-directory`. Each resolved
+BIOP File object is written under `_directory_/files/<path>` so the carousel
+tree is preserved as a normal directory hierarchy.
+
+[source,shell]
+----
+$ tsdsmcc --pid 0x76A -o ./out capture.ts
+$ tree out
+out
+└── files
+    ├── deja.ttf
+    ├── index.html
+    └── rj45.gif
+
+2 directories, 3 files
+----
+
+The plugin form is identical, with the input and output stages of the `tsp`
+pipeline made explicit:
+
+[source,shell]
+----
+$ tsp -I file capture.ts -P dsmcc --pid 0x76A -o ./out -O drop
+----
+
+NOTE: Path segments equal to `..` or `.` are rejected so a crafted carousel
+cannot escape the output directory.
+
+==== Inspecting raw module payloads
+
+For offline analysis or debugging, `--dump-modules` writes the raw assembled
+module payloads -- after BIOP parsing and after decompression of any module
+flagged with a `compressed_module_descriptor` -- under
+`_directory_/modules/<download_id>/module_XXXX.bin`. The nesting under
+`download_id` avoids collisions when the same `module_id` appears in several
+groups.
+
+[source,shell]
+----
+$ tsdsmcc --pid 0x76A -o ./out --dump-modules capture.ts
+$ tree out
+out
+├── files
+│   ├── deja.ttf
+│   ├── index.html
+│   └── rj45.gif
+└── modules
+    └── 0000000A
+        ├── module_0001.bin
+        ├── module_0002.bin
+        └── module_0003.bin
+
+4 directories, 6 files
+----
+
+This is useful to feed the raw BIOP payload to an external parser, or to
+diff two captures of the same carousel at byte level.
+
+==== Extracting a data carousel (DVB-SSU)
+
+For a DVB System Software Update or any other data carousel, BIOP parsing
+must be skipped: the modules are opaque blobs, not BIOP trees. The
+`--data-carousel` option enables that mode. Each completed module is written
+under `_directory_/<download_id>/<label_or_module_XXXX>.bin`, which mirrors
+the carousel's group hierarchy on disk. The leaf file name is taken from the
+module's `label_descriptor` when present, falling back to `module_XXXX.bin`.
+
+[source,shell]
+----
+$ tsdsmcc -p 0x189 -o ./ssu --data-carousel update.ts
+$ tree ssu
+ssu
+└── 80000002
+    ├── firmware_main.bin
+    ├── firmware_boot.bin
+    └── module_0200.bin
+
+2 directories, 3 files
+----
+
+`--dump-modules` and `--data-carousel` are mutually exclusive: a data
+carousel produces only opaque modules, so there is nothing extra to dump.
+
+==== Extracting from a live tuner
+
+Both modes work identically on a live input. The following command extracts
+an HbbTV object carousel directly from a DVB-S2 tuner and keeps the raw module
+payloads alongside the resolved files:
+
+[source,shell]
+----
+$ tsp -I dvb --frequency 11642460000 --polarity horizontal --symbol-rate 27500000 \
+      -P dsmcc --pid 0x76A -o ./out --dump-modules \
+      -O drop
+----
+
+The plugin lets the transport stream pass through unchanged, so additional
+processing or output stages can be chained after the `dsmcc` plugin without
+disturbing the extraction.
+
+NOTE: A live carousel is cyclic. The plugin processes one full cycle per
+group: a module reaches `Status: COMPLETE` once all its blocks have been
+seen at the current version (and decompressed if compressed). The carousel's
+`Group complete: yes` line is reported once every module of the group has
+reached that state. Stop `tsp` (with Ctrl+C or the `-P until` plugin) once
+the expected groups are complete.
