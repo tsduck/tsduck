@@ -13,6 +13,7 @@
 #include "tsTime.h"
 #include "tsMemory.h"
 #include "tsNullReport.h"
+#include "tsCerrReport.h"
 #include "tsFatal.h"
 #include "tsFeatures.h"
 
@@ -332,13 +333,17 @@ namespace {
     // Singleton constructor, initialize SRT once.
     SRTInit::SRTInit()
     {
+        CERR.debug(u"calling srt_startup()");
         ::srt_startup();
+        CERR.debug(u"back from srt_startup()");
     }
 
     // Singleton destructor, cleanup SRT on application exit.
     SRTInit::~SRTInit()
     {
+        CERR.debug(u"calling srt_cleanup()");
         ::srt_cleanup();
+        CERR.debug(u"back from srt_cleanup()");
     }
 }
 
@@ -927,6 +932,7 @@ bool ts::SRTSocket::Guts::srtListen(const IPSocketAddress& addr)
     }
 
     // Install a listen callback which will reject all subsequent connections after the first one.
+    _parent->report().debug(u"calling srt_listen_callback()");
     if (::srt_listen_callback(sock, listenCallback, this) < 0) {
         _parent->report().error(u"error during srt_listen_callback(): %s", ::srt_getlasterror_str());
         return false;
@@ -990,6 +996,7 @@ bool ts::SRTSocket::Guts::srtConnect(const IPSocketAddress& addr)
         const int err = ::srt_getlasterror(&errno);
         std::string err_str(::srt_strerror(err, errno));
         if (err == SRT_ECONNREJ) {
+            _parent->report().debug(u"calling srt_getrejectreason()");
             const SRT_RejectReason reason = ::srt_getrejectreason(sock);
             _parent->report().debug(u"srt_connect rejected, reason: %d", reason);
 #if defined(HAS_SRT_ACCESS_CONTROL)
@@ -1056,6 +1063,7 @@ bool ts::SRTSocket::Guts::send(const void* data, size_t size, const IPSocketAddr
         return false;
     }
 
+    _parent->report().log(2, u"calling srt_send(), %d bytes", size);
     const int ret = ::srt_send(sock, reinterpret_cast<const char*>(data), int(size));
     if (ret < 0) {
         // Differentiate peer disconnection (aka "end of file") and actual errors.
@@ -1099,6 +1107,7 @@ bool ts::SRTSocket::receive(void* data, size_t max_size, size_t& ret_size, cn::m
     ::SRT_MSGCTRL ctrl;
     TS_ZERO(ctrl);
 
+    report().log(2, u"calling srt_recvmsg2(), buffer size: %d bytes", max_size);
     const int ret = ::srt_recvmsg2(_guts->sock, reinterpret_cast<char*>(data), int(max_size), &ctrl);
     if (ret < 0) {
         // Differentiate peer disconnection (aka "end of file") and actual errors.
@@ -1116,6 +1125,7 @@ bool ts::SRTSocket::receive(void* data, size_t max_size, size_t& ret_size, cn::m
         timestamp = cn::microseconds(cn::microseconds::rep(ctrl.srctime));
     }
     ret_size = size_t(ret);
+    report().log(2, u"srt_recvmsg2(), received %d bytes", ret_size);
     _guts->total_received_bytes += ret_size;
     return _guts->reportStats();
 }
@@ -1154,6 +1164,7 @@ bool ts::SRTSocket::reportStatistics(SRTStatMode mode)
     TS_ZERO(stats);
     const int clear = (mode & SRTStatMode::INTERVAL) == SRTStatMode::NONE ? 0 : 1;
 
+    report().log(2, u"calling srt_bstats()");
     if (::srt_bstats(_guts->sock, &stats, clear) < 0) {
         int sys_error = 0;
         const int srt_error = ::srt_getlasterror(&sys_error);

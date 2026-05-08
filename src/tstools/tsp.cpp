@@ -154,6 +154,8 @@ int MainCode(int argc, char *argv[])
     version_check.startNewVersionDetection();
 
     // And wait for TS processing termination.
+    report.debug(u"main(): wait for TSProcessor termination");
     tsproc.waitForTermination();
+    report.debug(u"main(): exit application");
     return EXIT_SUCCESS;
 }

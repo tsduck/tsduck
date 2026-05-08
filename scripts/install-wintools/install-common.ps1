@@ -128,6 +128,18 @@ function To-Int($Data, $Default = $null)
     }
 }
 
+# Extract a 3-component version value from a string. Return 0 if there is none.
+function Get-VersionValue([string]$str)
+{
+    if ($str -match '(\d+)[\.-](\d+)[\.-](\d+)') {
+        return [int]$Matches[1] * 10000 + [int]$Matches[2] * 100 + [int]$Matches[3]
+    }
+    else {
+        return 0
+    }
+}
+
+
 # Install a Windows Capability.
 function Install-Windows-Capability([string]$Name)
 {
@@ -231,7 +243,8 @@ function Get-URL-In-HTML([string]$Url, [string]$Pattern, [string]$FallbackURL = 
 
 # Get the JSON description of the 20 latest releases of a repo in GitHub.
 # With -Latest, only check the release which is labelled "latest".
-function Get-Releases-In-GitHub([string]$Repo, [switch]$Latest = $false)
+# $SkipTags contains the tag of versions to ignore (broken or buggy for instance).
+function Get-Releases-In-GitHub([string]$Repo, [switch]$Latest = $false, [string[]]$SkipTags = @())
 {
     # If the environment variable GITHUB_TOKEN is not empty, use it to authenticate.
     if (-not $env:GITHUB_TOKEN) {
@@ -242,20 +255,24 @@ function Get-Releases-In-GitHub([string]$Repo, [switch]$Latest = $false)
         $Headers = @{Authorization="Basic $Cred"}
     }
 
-    $Request = if ($Latest) { "releases/latest" } else { "releases?per_page=20" }
+    $Request = if ($Latest -and $SkipTags.Count -eq 0) { "releases/latest" } else { "releases?per_page=30" }
     $Response = (Invoke-WebRequest -UseBasicParsing -UserAgent $UserAgent -Headers $Headers -Uri "https://api.github.com/repos/$Repo/$Request")
     $Remain = (To-Int $Response.Headers['X-RateLimit-Remaining'] 99999)
     if ($Remain -lt 10) {
         Write-Output "Warning: GitHub API rate limit remaining is $Remain"
     }
 
-    return (ConvertFrom-Json $Response.Content)
+    # Must use an intermediate variable. Why?
+    $json = ConvertFrom-Json $Response.Content
+    return $json | Where-Object tag_name -NotIn $SkipTags
 }
 
 # Get an URL matching a pattern in a GitHub project release.
-function Get-URL-In-GitHub([string]$Repo, $Patterns, [switch]$Latest = $false)
+# With -Latest, only check the release which is labelled "latest".
+# $SkipTags contains the tag of versions to ignore (broken or buggy for instance).
+function Get-URL-In-GitHub([string]$Repo, [string[]]$Patterns, [switch]$Latest = $false, [string[]]$SkipTags = @())
 {
-    $Url = (Get-Releases-In-GitHub $Repo -Latest:$Latest |
+    $Url = (Get-Releases-In-GitHub $Repo -Latest:$Latest -SkipTags:$SkipTags |
             ForEach-Object { $_.assets } |
             ForEach-Object { $_.browser_download_url } |
             Select-String $Patterns |
@@ -312,9 +329,10 @@ function Install-Standard-Exe([string]$ReleasePage, [string]$Pattern, [string]$F
 
 # Standard installation procedure for an executable installer from GitHub release assets.
 # With -Latest, only check the release which is labelled "latest".
-function Install-GitHub-Exe([string]$Repo, [string]$Pattern, [string[]]$InstallerParams = @(), [switch]$Latest = $false)
+# $SkipTags contains the tag of versions to ignore (broken or buggy for instance).
+function Install-GitHub-Exe([string]$Repo, [string]$Pattern, [string[]]$InstallerParams = @(), [switch]$Latest = $false, [string[]]$SkipTags = @())
 {
-    $Url = Get-URL-In-GitHub $Repo $Pattern -Latest:$Latest
+    $Url = Get-URL-In-GitHub $Repo $Pattern -Latest:$Latest -SkipTags:$SkipTags
     $InstallerName = Get-URL-Local $Url
     $InstallerPath = "$Destination\$InstallerName"
     Download-Package $Url $InstallerPath

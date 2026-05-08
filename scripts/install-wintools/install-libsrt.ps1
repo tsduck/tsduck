@@ -17,22 +17,28 @@ param(
     [switch]$NoPause = $false
 )
 
+# SRT version 1.5.5 is broken on Windows.
+$Broken = @("v1.5.5")
+
 Write-Output "==== libsrt download and installation procedure"
 
 . "$PSScriptRoot\install-common.ps1"
 
-if ($env:PROCESSOR_ARCHITECTURE -like 'Arm64*') {
-    Exit-Script "libsrt is not available on Arm64"
-}
-
 # Get the URL of the latest installer.
-$URL = (Get-URL-In-GitHub "Haivision/srt" @("/libsrt-.*\.exe$", "/libsrt-.*-win-installer\.zip$"))
+$URL = (Get-URL-In-GitHub "Haivision/srt" @("/libsrt-.*\.exe$", "/libsrt-.*-win-installer\.zip$") -SkipTags $Broken)
+$InstallerName = Get-URL-Local $URL
 
 if (-not ($URL -match "\.zip$") -and -not ($URL -match "\.exe$")) {
     Exit-Script "Unexpected URL, not .exe, not .zip: $URL"
 }
 
-$InstallerName = Get-URL-Local $URL
+# SRT binary installer support Arm64 starting with 1.5.5.
+$Version = Get-VersionValue $InstallerName
+if ($env:PROCESSOR_ARCHITECTURE -like 'Arm64*' -and $Version -ne 0 -and $Version -lt 10505) {
+    Exit-Script "libsrt is not available on Arm64"
+}
+
+# Download the installer.
 $InstallerPath = "$Destination\$InstallerName"
 Download-Package $URL $InstallerPath
 
