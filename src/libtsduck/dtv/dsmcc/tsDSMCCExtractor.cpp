@@ -259,8 +259,13 @@ void ts::DSMCCExtractor::printListSummary()
 ts::UString ts::DSMCCExtractor::renderCarousels() const
 {
     UString out;
+    bool first = true;
     for (const auto& [dl, gctx] : _carousel.groups()) {
+        if (!first) {
+            out += u"\n";
+        }
         out += renderGroupBlock(gctx);
+        first = false;
     }
     return out;
 }
@@ -295,7 +300,9 @@ ts::UString ts::DSMCCExtractor::renderModuleBlock(const DSMCCModuleAssembler::Mo
     out += UString::Format(u"%sSize: %d bytes%s\n", u"    ", ctx.module_size, size_extra);
     out += UString::Format(u"%sCompression: %s\n", u"    ", ctx.is_compressed ? u"yes" : u"no");
     out += UString::Format(u"%sStatus: %s\n", u"    ", ctx.isComplete() ? u"COMPLETE" : u"PENDING");
-    out += renderObjectsForModule(ctx.download_id, ctx.module_id);
+    if (!_options.data_carousel) {
+        out += renderObjectsForModule(ctx.download_id, ctx.module_id);
+    }
     out += renderDescriptorList(ctx.descs);
     return out;
 }
@@ -304,9 +311,6 @@ ts::UString ts::DSMCCExtractor::renderModuleBlock(const DSMCCModuleAssembler::Mo
 ts::UString ts::DSMCCExtractor::renderObjectsForModule(uint32_t download_id, uint16_t module_id) const
 {
     UString out;
-    if (_options.data_carousel) {
-        return out;
-    }
     const auto it = _objects_by_module.find({download_id, module_id});
     const size_t n = (it == _objects_by_module.end()) ? 0 : it->second.size();
     out += UString::Format(u"%sBIOP objects: %d\n", u"    ", n);
