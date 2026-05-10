@@ -249,7 +249,9 @@ std::optional<std::filesystem::path> ts::DSMCCExtractor::safeOutputPath(const US
 void ts::DSMCCExtractor::printListSummary()
 {
     UString text = renderCarousels();
-    text += renderFileTreeFinal();
+    if (!_options.data_carousel) {
+        text += renderFileTreeFinal();
+    }
     _duck.report().info(u"%s", text);
 }
 
@@ -277,7 +279,6 @@ ts::UString ts::DSMCCExtractor::renderGroupBlock(const DSMCCCarousel::GroupConte
             out += renderModuleBlock(*mctx);
         }
     }
-    out += u"\n";
     return out;
 }
 
@@ -289,7 +290,7 @@ ts::UString ts::DSMCCExtractor::renderModuleBlock(const DSMCCModuleAssembler::Mo
         : UString();
 
     UString out;
-    out += UString::Format(u"\n%s- Module 0x%04X\n", u"  ", ctx.module_id);
+    out += UString::Format(u"%s- Module 0x%04X\n", u"  ", ctx.module_id);
     out += UString::Format(u"%sVersion: %d, blocks: %d\n", u"    ", ctx.module_version, ctx.expected_blocks);
     out += UString::Format(u"%sSize: %d bytes%s\n", u"    ", ctx.module_size, size_extra);
     out += UString::Format(u"%sCompression: %s\n", u"    ", ctx.is_compressed ? u"yes" : u"no");
@@ -303,9 +304,12 @@ ts::UString ts::DSMCCExtractor::renderModuleBlock(const DSMCCModuleAssembler::Mo
 ts::UString ts::DSMCCExtractor::renderObjectsForModule(uint32_t download_id, uint16_t module_id) const
 {
     UString out;
+    if (_options.data_carousel) {
+        return out;
+    }
     const auto it = _objects_by_module.find({download_id, module_id});
     const size_t n = (it == _objects_by_module.end()) ? 0 : it->second.size();
-    out += UString::Format(u"\n%sBIOP objects: %d\n", u"    ", n);
+    out += UString::Format(u"%sBIOP objects: %d\n", u"    ", n);
     if (n == 0) {
         return out;
     }
@@ -444,7 +448,7 @@ ts::UString ts::DSMCCExtractor::renderOneDescriptor(size_t index, const Descript
     }
 
     UString out;
-    out += UString::Format(u"\n    - Descriptor %d: %s, %d bytes\n", index, header, bytes);
+    out += UString::Format(u"    - Descriptor %d: %s, %d bytes\n", index, header, bytes);
     out += body;
     return out;
 }
