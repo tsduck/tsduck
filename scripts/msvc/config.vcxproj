@@ -22,7 +22,7 @@
     <CallTarget Targets='BuildTSCoreHeader'/>
     <CallTarget Targets='BuildTSDuckHeader'/>
     <CallTarget Targets='BuildTablesModel'/>
-    <CallTarget Targets='BuildTSDuckJar'/>
+    <CallTarget Targets='BuildTSDuckJar' Condition="'$(TS_NO_JAVA)' == ''"/>
   </Target>
 
   <!-- Build all config files, as called in build-config-files.ps1 -->
@@ -39,6 +39,7 @@
   <ImportGroup>
     <Import Project='msvc-common-base.props' />
     <Import Project='msvc-use-dtapi.props'/>
+    <Import Project='msvc-use-java.props'/>
     <Import Project='msvc-build-config-files.props'/>
     <Import Project='msvc-build-dtv-names.props'/>
     <Import Project='msvc-build-dektec-names.props'/>
