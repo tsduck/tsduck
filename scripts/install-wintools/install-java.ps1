@@ -68,7 +68,7 @@ Download-Package $InstallerURL $InstallerPath
 
 if (-not $NoInstall) {
     Write-Output "Installing $InstallerName"
-    Start-Process -Verb runas -FilePath msiexec.exe -ArgumentList @("/i", $InstallerPath, "INSTALLLEVEL=3", "/quiet", "/qn", "/norestart") -Wait
+    Start-Process -Verb runas -FilePath msiexec.exe -ArgumentList @("/i", $InstallerPath, "ADDLOCAL=FeatureMain,FeatureEnvironment,FeatureJarFileRunWith,FeatureJavaHome", "/quiet", "/qn", "/norestart") -Wait
 }
 
 Propagate-Environment "JAVA_HOME"
