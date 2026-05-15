@@ -107,6 +107,7 @@ namespace ts {
         UString renderObjectsForModule(uint32_t download_id, uint16_t module_id) const;
         UString renderDescriptorList(const DescriptorList& descs) const;
         UString renderOneDescriptor(size_t index, const Descriptor& raw) const;
+        UString renderCompatibilityDescriptor(const DSMCCCompatibilityDescriptor& compat_desc) const;
         UString renderFileTreeFinal() const;
         UString moduleFilename(uint32_t download_id, uint16_t module_id) const;
 

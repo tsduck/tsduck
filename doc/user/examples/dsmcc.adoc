@@ -99,6 +99,7 @@ file/directory tree and byte sizes:
 * DSM-CC Carousel, PID 0x076A (1898)
   Download id: 0x0000000A (10)
   Modules discovered: 3
+  Modules complete: 3 / 3
   Group complete: yes
   - Module 0x0001
     Version: 125, blocks: 1
@@ -201,6 +202,49 @@ out
 
 This is useful to feed the raw BIOP payload to an external parser, or to
 diff two captures of the same carousel at byte level.
+
+==== Listing a data carousel
+
+`--data-carousel` also works in list-only mode (no `--output-directory`).
+BIOP-object lines and the `Carousel Tree` are omitted; the group-level
+`compatibilityDescriptor()` is surfaced instead, naming the target
+hardware/software via DSM-CC descriptor types and an IEEE OUI specifier
+(see <<ISO-13818-6>> 6.1):
+
+[source,shell]
+----
+$ tsdsmcc --pid 0x189 --data-carousel update.ts
+----
+
+[source,text]
+----
+* DSM-CC Carousel, PID 0x0189 (393)
+  Download id: 0x80000002 (2147483650)
+  Modules discovered: 1
+  Modules complete: 1 / 1
+  Group complete: yes
+  Compatibility descriptor: 3 descriptor(s)
+    - Descriptor 0: type 0x01 (System Hardware descriptor)
+      Specifier type: 0x01 (IEEE OUI)
+      Specifier data: 0x00237C (NEOTION)
+      Model: 0x0088, Version: 0x0016
+      Subdescriptors: 0
+    - Descriptor 1: type 0x02 (System Software descriptor)
+      Specifier type: 0x01 (IEEE OUI)
+      Specifier data: 0x00237C (NEOTION)
+      Model: 0x0180, Version: 0x0002
+      Subdescriptors: 0
+    - Descriptor 2: type 0x40 (DVB reserved)
+      Specifier type: 0x01 (IEEE OUI)
+      Specifier data: 0x00237C (NEOTION)
+      Model: 0x0000, Version: 0x0000
+      Subdescriptors: 0
+  - Module 0x0200
+    Version: 0, blocks: 90
+    Size: 362592 bytes
+    Compression: no
+    Status: COMPLETE
+----
 
 ==== Extracting a data carousel (DVB-SSU)
 

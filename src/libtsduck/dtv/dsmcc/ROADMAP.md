@@ -92,12 +92,14 @@ structure the spec gives us:
   CRC32/location/est_download_time/group_link/compressed_module/
   ssu_module_type/subgroup_association/label/caching_priority/
   content_type) are decoded in the list-only report.
-- [ ] **Wire group/carousel-level descriptors into the extractor.**
-  `GroupContext.compatibility` is populated from the DSI but
-  `renderGroupBlock` does not print it. Surface the group's
-  `compatibilityDescriptor()` (specifier/OUI, model, version,
-  sub-descriptors).
-- [ ] **Per-group completeness stats** alongside the per-module ones.
+- [x] **Wire group/carousel-level descriptors into the extractor.**
+  `renderGroupBlock` now prints the group's
+  `compatibilityDescriptor()` (descriptor type, specifier type/data,
+  model, version, sub-descriptor types and sizes) when
+  `GroupContext.compatibility` is non-empty.
+- [x] **Per-group completeness stats** alongside the per-module ones.
+  `renderGroupBlock` prints `Modules complete: X / Y` derived from
+  `GroupContext.modules_complete` / `module_ids.size()`.
 - [x] **Output layout.** The data-carousel writer mirrors the
   carousel's group hierarchy on disk
   (`<out>/<download_id>/<label_or_module_XXXX>.bin`) and uses the

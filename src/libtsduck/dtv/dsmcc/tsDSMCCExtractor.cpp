@@ -25,6 +25,9 @@
 #include "tsDSMCCSubgroupAssociationDescriptor.h"
 #include "tsDSMCCGroupLinkDescriptor.h"
 #include "tsDSMCCCompressedModuleDescriptor.h"
+#include "tsNames.h"
+#include "tsOUI.h"
+#include "tsDSMCC.h"
 #include <algorithm>
 #include <filesystem>
 #include <map>
@@ -277,7 +280,12 @@ ts::UString ts::DSMCCExtractor::renderGroupBlock(const DSMCCCarousel::GroupConte
     out += UString::Format(u"* DSM-CC Carousel, PID 0x%04X (%d)\n", _pid, _pid);
     out += UString::Format(u"%sDownload id: 0x%08X (%d)\n", u"  ", gctx.download_id, gctx.download_id);
     out += UString::Format(u"%sModules discovered: %d\n", u"  ", gctx.module_ids.size());
+    out += UString::Format(u"%sModules complete: %d / %d\n", u"  ",
+                           gctx.modules_complete, gctx.module_ids.size());
     out += UString::Format(u"%sGroup complete: %s\n", u"  ", gctx.isComplete() ? u"yes" : u"no");
+    if (!gctx.compatibility.empty()) {
+        out += renderCompatibilityDescriptor(gctx.compatibility);
+    }
     for (uint16_t mid : gctx.module_ids) {
         const auto* mctx = _carousel.module(gctx.download_id, mid);
         if (mctx != nullptr) {
@@ -334,6 +342,34 @@ ts::UString ts::DSMCCExtractor::renderDescriptorList(const DescriptorList& descs
     UString out;
     for (size_t i = 0; i < descs.count(); ++i) {
         out += renderOneDescriptor(i, descs[i]);
+    }
+    return out;
+}
+
+
+ts::UString ts::DSMCCExtractor::renderCompatibilityDescriptor(const DSMCCCompatibilityDescriptor& compat_desc) const
+{
+    UString out;
+    out += UString::Format(u"%sCompatibility descriptor: %d descriptor(s)\n", u"  ", compat_desc.descs.size());
+    size_t idx = 0;
+    for (const auto& desc : compat_desc.descs) {
+        const UString desc_type = NameFromSection(u"dtv", u"DSMCC.descriptorType", desc.descriptorType, NamesFlags::HEX_VALUE_NAME);
+        const UString specifier_type = NameFromSection(u"dtv", u"DSMCC.specifierType", desc.specifierType, NamesFlags::HEX_VALUE_NAME);
+        const UString specifier_data = (desc.specifierType == DSMCC_SPTYPE_OUI)
+            ? OUIName(desc.specifierData, NamesFlags::HEX_VALUE_NAME)
+            : UString::Format(u"0x%06X", desc.specifierData);
+        out += UString::Format(u"    - Descriptor %d: type %s\n", idx, desc_type);
+        out += UString::Format(u"      Specifier type: %s\n", specifier_type);
+        out += UString::Format(u"      Specifier data: %s\n", specifier_data);
+        out += UString::Format(u"      Model: 0x%04X, Version: 0x%04X\n", desc.model, desc.version);
+        out += UString::Format(u"      Subdescriptors: %d\n", desc.subdescs.size());
+        size_t sub_idx = 0;
+        for (const auto& subdesc : desc.subdescs) {
+            out += UString::Format(u"      - Subdescriptor %d: type 0x%02X, %d bytes\n",
+                                   sub_idx, subdesc.subDescriptorType, subdesc.additionalInformation.size());
+            ++sub_idx;
+        }
+        ++idx;
     }
     return out;
 }
