@@ -25,6 +25,9 @@
 #include "tsDSMCCSubgroupAssociationDescriptor.h"
 #include "tsDSMCCGroupLinkDescriptor.h"
 #include "tsDSMCCCompressedModuleDescriptor.h"
+#include "tsNames.h"
+#include "tsOUI.h"
+#include "tsDSMCC.h"
 #include <algorithm>
 #include <filesystem>
 #include <map>
@@ -249,7 +252,9 @@ std::optional<std::filesystem::path> ts::DSMCCExtractor::safeOutputPath(const US
 void ts::DSMCCExtractor::printListSummary()
 {
     UString text = renderCarousels();
-    text += renderFileTreeFinal();
+    if (!_options.data_carousel) {
+        text += renderFileTreeFinal();
+    }
     _duck.report().info(u"%s", text);
 }
 
@@ -257,8 +262,13 @@ void ts::DSMCCExtractor::printListSummary()
 ts::UString ts::DSMCCExtractor::renderCarousels() const
 {
     UString out;
+    bool first = true;
     for (const auto& [dl, gctx] : _carousel.groups()) {
+        if (!first) {
+            out += u"\n";
+        }
         out += renderGroupBlock(gctx);
+        first = false;
     }
     return out;
 }
@@ -270,14 +280,18 @@ ts::UString ts::DSMCCExtractor::renderGroupBlock(const DSMCCCarousel::GroupConte
     out += UString::Format(u"* DSM-CC Carousel, PID 0x%04X (%d)\n", _pid, _pid);
     out += UString::Format(u"%sDownload id: 0x%08X (%d)\n", u"  ", gctx.download_id, gctx.download_id);
     out += UString::Format(u"%sModules discovered: %d\n", u"  ", gctx.module_ids.size());
+    out += UString::Format(u"%sModules complete: %d / %d\n", u"  ",
+                           gctx.modules_complete, gctx.module_ids.size());
     out += UString::Format(u"%sGroup complete: %s\n", u"  ", gctx.isComplete() ? u"yes" : u"no");
+    if (!gctx.compatibility.empty()) {
+        out += renderCompatibilityDescriptor(gctx.compatibility);
+    }
     for (uint16_t mid : gctx.module_ids) {
         const auto* mctx = _carousel.module(gctx.download_id, mid);
         if (mctx != nullptr) {
             out += renderModuleBlock(*mctx);
         }
     }
-    out += u"\n";
     return out;
 }
 
@@ -289,12 +303,14 @@ ts::UString ts::DSMCCExtractor::renderModuleBlock(const DSMCCModuleAssembler::Mo
         : UString();
 
     UString out;
-    out += UString::Format(u"\n%s- Module 0x%04X\n", u"  ", ctx.module_id);
+    out += UString::Format(u"%s- Module 0x%04X\n", u"  ", ctx.module_id);
     out += UString::Format(u"%sVersion: %d, blocks: %d\n", u"    ", ctx.module_version, ctx.expected_blocks);
     out += UString::Format(u"%sSize: %d bytes%s\n", u"    ", ctx.module_size, size_extra);
     out += UString::Format(u"%sCompression: %s\n", u"    ", ctx.is_compressed ? u"yes" : u"no");
     out += UString::Format(u"%sStatus: %s\n", u"    ", ctx.isComplete() ? u"COMPLETE" : u"PENDING");
-    out += renderObjectsForModule(ctx.download_id, ctx.module_id);
+    if (!_options.data_carousel) {
+        out += renderObjectsForModule(ctx.download_id, ctx.module_id);
+    }
     out += renderDescriptorList(ctx.descs);
     return out;
 }
@@ -305,7 +321,7 @@ ts::UString ts::DSMCCExtractor::renderObjectsForModule(uint32_t download_id, uin
     UString out;
     const auto it = _objects_by_module.find({download_id, module_id});
     const size_t n = (it == _objects_by_module.end()) ? 0 : it->second.size();
-    out += UString::Format(u"\n%sBIOP objects: %d\n", u"    ", n);
+    out += UString::Format(u"%sBIOP objects: %d\n", u"    ", n);
     if (n == 0) {
         return out;
     }
@@ -326,6 +342,34 @@ ts::UString ts::DSMCCExtractor::renderDescriptorList(const DescriptorList& descs
     UString out;
     for (size_t i = 0; i < descs.count(); ++i) {
         out += renderOneDescriptor(i, descs[i]);
+    }
+    return out;
+}
+
+
+ts::UString ts::DSMCCExtractor::renderCompatibilityDescriptor(const DSMCCCompatibilityDescriptor& compat_desc) const
+{
+    UString out;
+    out += UString::Format(u"%sCompatibility descriptor: %d descriptor(s)\n", u"  ", compat_desc.descs.size());
+    size_t idx = 0;
+    for (const auto& desc : compat_desc.descs) {
+        const UString desc_type = NameFromSection(u"dtv", u"DSMCC.descriptorType", desc.descriptorType, NamesFlags::HEX_VALUE_NAME);
+        const UString specifier_type = NameFromSection(u"dtv", u"DSMCC.specifierType", desc.specifierType, NamesFlags::HEX_VALUE_NAME);
+        const UString specifier_data = (desc.specifierType == DSMCC_SPTYPE_OUI)
+            ? OUIName(desc.specifierData, NamesFlags::HEX_VALUE_NAME)
+            : UString::Format(u"0x%06X", desc.specifierData);
+        out += UString::Format(u"    - Descriptor %d: type %s\n", idx, desc_type);
+        out += UString::Format(u"      Specifier type: %s\n", specifier_type);
+        out += UString::Format(u"      Specifier data: %s\n", specifier_data);
+        out += UString::Format(u"      Model: 0x%04X, Version: 0x%04X\n", desc.model, desc.version);
+        out += UString::Format(u"      Subdescriptors: %d\n", desc.subdescs.size());
+        size_t sub_idx = 0;
+        for (const auto& subdesc : desc.subdescs) {
+            out += UString::Format(u"      - Subdescriptor %d: type 0x%02X, %d bytes\n",
+                                   sub_idx, subdesc.subDescriptorType, subdesc.additionalInformation.size());
+            ++sub_idx;
+        }
+        ++idx;
     }
     return out;
 }
@@ -444,7 +488,7 @@ ts::UString ts::DSMCCExtractor::renderOneDescriptor(size_t index, const Descript
     }
 
     UString out;
-    out += UString::Format(u"\n    - Descriptor %d: %s, %d bytes\n", index, header, bytes);
+    out += UString::Format(u"    - Descriptor %d: %s, %d bytes\n", index, header, bytes);
     out += body;
     return out;
 }

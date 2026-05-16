@@ -87,14 +87,23 @@ structure the spec gives us:
   `carousel → group → module` instead of the flat module list.
 - [x] **Group-scoped module ids.** Today modules are keyed purely by
   `module_id`; a multi-group carousel requires `(group_id, module_id)`.
-- [ ] **Wire module/group/carousel descriptors into the extractor.**
-  The descriptor classes already exist under but `DSMCCExtractor`
-  only looks up `compressed_module_descriptor`. Extend the DII
-  handling to surface the rest.
-- [ ] **Per-group completeness stats** alongside the per-module ones.
-- [ ] **Output layout.** Mirror the group hierarchy on disk and use
-  `label_descriptor` contents when present, so data-carousel output
-  is self-describing.
+- [x] **Wire module-level DII descriptors into the extractor.** All 14
+  DSM-CC module-info descriptor types (type/name/info/module_link/
+  CRC32/location/est_download_time/group_link/compressed_module/
+  ssu_module_type/subgroup_association/label/caching_priority/
+  content_type) are decoded in the list-only report.
+- [x] **Wire group/carousel-level descriptors into the extractor.**
+  `renderGroupBlock` now prints the group's
+  `compatibilityDescriptor()` (descriptor type, specifier type/data,
+  model, version, sub-descriptor types and sizes) when
+  `GroupContext.compatibility` is non-empty.
+- [x] **Per-group completeness stats** alongside the per-module ones.
+  `renderGroupBlock` prints `Modules complete: X / Y` derived from
+  `GroupContext.modules_complete` / `module_ids.size()`.
+- [x] **Output layout.** The data-carousel writer mirrors the
+  carousel's group hierarchy on disk
+  (`<out>/<download_id>/<label_or_module_XXXX>.bin`) and uses the
+  module's `label_descriptor` contents for the leaf name when present.
 
 ## Output
 
