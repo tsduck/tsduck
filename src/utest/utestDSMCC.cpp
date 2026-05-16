@@ -31,6 +31,8 @@ class DSMCCTest: public tsunit::Test
     TSUNIT_DECLARE_TEST(Assembler_DiscoverySuppressedOnVersionBump);
     TSUNIT_DECLARE_TEST(Assembler_MultiGroupSameModuleIdDoesNotCollide);
     TSUNIT_DECLARE_TEST(Assembler_SingleGroupBehaviourPreserved);
+    TSUNIT_DECLARE_TEST(Assembler_MultiBlockModuleAssembly);
+    TSUNIT_DECLARE_TEST(Assembler_MultiBlockOutOfOrder);
 
     // --- Carousel ---
     TSUNIT_DECLARE_TEST(Carousel_DataCarouselDSIPopulatesGroups);
@@ -68,7 +70,8 @@ TSUNIT_REGISTER(DSMCCTest);
 namespace {
 
     // Single-module DII (used by assembler tests).
-    ts::DSMCCUserToNetworkMessage makeDII(uint32_t download_id, uint16_t module_id, uint16_t block_size, uint8_t module_version)
+    // When module_size is 0 (default), uses block_size — i.e. a single-block module.
+    ts::DSMCCUserToNetworkMessage makeDII(uint32_t download_id, uint16_t module_id, uint16_t block_size, uint8_t module_version, uint32_t module_size = 0)
     {
         ts::DSMCCUserToNetworkMessage unm;
         unm.header.message_id = ts::DSMCC_MSGID_DII;
@@ -77,7 +80,7 @@ namespace {
         dii.block_size = block_size;
         auto& mod = dii.modules.newEntry();
         mod.module_id = module_id;
-        mod.module_size = block_size;
+        mod.module_size = (module_size > 0) ? module_size : block_size;
         mod.module_version = module_version;
         return unm;
     }
@@ -102,13 +105,14 @@ namespace {
         return unm;
     }
 
-    ts::DSMCCDownloadDataMessage makeDDB(uint32_t download_id, uint16_t module_id, uint8_t module_version, const ts::ByteBlock& payload)
+    ts::DSMCCDownloadDataMessage makeDDB(uint32_t download_id, uint16_t module_id, uint8_t module_version, const ts::ByteBlock& payload, uint16_t block_number = 0)
     {
         ts::DSMCCDownloadDataMessage ddm;
         ddm.header.message_id = ts::DSMCC_MSGID_DDB;
         ddm.header.download_id = download_id;
         ddm.module_id = module_id;
         ddm.module_version = module_version;
+        ddm.block_number = block_number;
         ddm.block_data = payload;
         return ddm;
     }
@@ -253,7 +257,7 @@ TSUNIT_DEFINE_TEST(Assembler_MultiGroupSameModuleIdDoesNotCollide)
     ts::DSMCCModuleAssembler assembler(duck);
 
     std::vector<std::pair<uint32_t, uint16_t>> completed;
-    std::vector<ts::ByteBlock>                 payloads;
+    std::vector<ts::ByteBlock> payloads;
     assembler.setModuleCompletedHandler(
         [&](const ts::DSMCCModuleAssembler::ModuleContext& ctx) {
             completed.emplace_back(ctx.download_id, ctx.module_id);
@@ -300,18 +304,109 @@ TSUNIT_DEFINE_TEST(Assembler_SingleGroupBehaviourPreserved)
             ++count;
         });
 
-    const uint32_t dlid = 0x1234;
+    const uint32_t download_id = 0x1234;
     const uint16_t block_size = 8;
     const ts::ByteBlock pad(block_size, 0x00);
 
-    for (uint16_t m = 1; m <= 3; ++m) {
-        auto dii = makeDII(dlid, m, block_size, 0);
+    for (uint16_t mod = 1; mod <= 3; ++mod) {
+        auto dii = makeDII(download_id, mod, block_size, 0);
         assembler.feedUserToNetwork(dii);
-        auto ddb = makeDDB(dlid, m, 0, pad);
+        auto ddb = makeDDB(download_id, mod, 0, pad);
         assembler.feedDownloadData(ddb);
     }
 
     TSUNIT_EQUAL(3u, count);
+}
+
+
+// When a module is larger than a single block, the assembler must stitch
+// multiple DDB sections together at the correct offsets. This is the common
+// case for real-world carousels (e.g. a 350-byte module with 100-byte blocks
+// needs 4 DDB sections: 100 + 100 + 100 + 50).
+TSUNIT_DEFINE_TEST(Assembler_MultiBlockModuleAssembly)
+{
+    ts::DuckContext duck;
+    ts::DSMCCModuleAssembler assembler(duck);
+
+    ts::ByteBlock completed_payload;
+    assembler.setModuleCompletedHandler(
+        [&](const ts::DSMCCModuleAssembler::ModuleContext& ctx) {
+            completed_payload = ctx.payload;
+        });
+
+    const uint32_t download_id = 0x0000002A;
+    const uint16_t module_id = 0x0002;
+    const uint16_t block_size = 100;
+    const uint32_t module_size = 350;  // 4 blocks: 100 + 100 + 100 + 50
+
+    // Announce the module via DII with explicit multi-block geometry.
+    auto dii = makeDII(download_id, module_id, block_size, 1, module_size);
+    assembler.feedUserToNetwork(dii);
+
+    // Feed all 4 blocks sequentially. Each block is filled with a distinct
+    // byte so we can verify placement after assembly.
+    for (uint16_t block = 0; block < 4; ++block) {
+        const size_t this_block_size = (block < 3) ? block_size : (module_size - 3 * block_size);
+        const ts::ByteBlock data(this_block_size, static_cast<uint8_t>(block + 1));
+        auto ddb = makeDDB(download_id, module_id, 1, data, block);
+        assembler.feedDownloadData(ddb);
+    }
+
+    // The module should now be fully assembled.
+    TSUNIT_EQUAL(module_size, completed_payload.size());
+
+    // Spot-check that each block landed at the right offset.
+    TSUNIT_EQUAL(1u, completed_payload[0]);    // first byte of block 0
+    TSUNIT_EQUAL(1u, completed_payload[99]);   // last byte of block 0
+    TSUNIT_EQUAL(2u, completed_payload[100]);  // first byte of block 1
+    TSUNIT_EQUAL(3u, completed_payload[200]);  // first byte of block 2
+    TSUNIT_EQUAL(4u, completed_payload[300]);  // first byte of block 3 (final, 50 bytes)
+    TSUNIT_EQUAL(4u, completed_payload[349]);  // last byte of the module
+}
+
+
+// In broadcast streams, DDB sections often arrive out of order due to
+// interleaving across PIDs or simply because the muxer doesn't guarantee
+// sequential delivery. The assembler must handle blocks arriving in any
+// sequence and only fire completion once every block is in place.
+TSUNIT_DEFINE_TEST(Assembler_MultiBlockOutOfOrder)
+{
+    ts::DuckContext duck;
+    ts::DSMCCModuleAssembler assembler(duck);
+
+    ts::ByteBlock completed_payload;
+    assembler.setModuleCompletedHandler(
+        [&](const ts::DSMCCModuleAssembler::ModuleContext& ctx) {
+            completed_payload = ctx.payload;
+        });
+
+    const uint32_t download_id = 0x0000002A;
+    const uint16_t module_id = 0x0005;
+    const uint16_t block_size = 64;
+    const uint32_t module_size = 192;  // exactly 3 blocks of 64 bytes
+
+    auto dii = makeDII(download_id, module_id, block_size, 0, module_size);
+    assembler.feedUserToNetwork(dii);
+
+    // Helper: send a single block filled with a recognizable byte pattern.
+    auto feedBlock = [&](uint16_t block) {
+        const ts::ByteBlock data(block_size, static_cast<uint8_t>(block + 0x10));
+        auto ddb = makeDDB(download_id, module_id, 0, data, block);
+        assembler.feedDownloadData(ddb);
+    };
+
+    // Deliver blocks in reverse order: 2, 0, 1.
+    feedBlock(2);  // only 1 of 3 — should not complete
+    TSUNIT_ASSERT(completed_payload.empty());
+    feedBlock(0);  // 2 of 3 — still waiting for block 1
+    TSUNIT_ASSERT(completed_payload.empty());
+    feedBlock(1);  // all 3 received — module should now be complete
+
+    TSUNIT_EQUAL(module_size, completed_payload.size());
+    // Each block's fill byte lets us verify correct placement.
+    TSUNIT_EQUAL(0x10u, completed_payload[0]);    // block 0 data
+    TSUNIT_EQUAL(0x11u, completed_payload[64]);   // block 1 data
+    TSUNIT_EQUAL(0x12u, completed_payload[128]);  // block 2 data
 }
 
 

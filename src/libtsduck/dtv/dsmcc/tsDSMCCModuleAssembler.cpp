@@ -10,6 +10,7 @@
 #include "tsPSIBuffer.h"
 #include "tsDSMCCCompressedModuleDescriptor.h"
 #include "tsDID.h"
+#include "tsMemory.h"
 
 //----------------------------------------------------------------------------
 // Constructor
@@ -128,9 +129,9 @@ void ts::DSMCCModuleAssembler::processDDB(DSMCCDownloadDataMessage& ddm)
     if (it == _modules.end()) {
         // DDB arrived before the DII that declares this module.
         // Buffer it and replay once the DII catches up.
-        _duck.report().verbose(u"Buffering orphan DDB: download_id=0x%X module=0x%X ver=%d (%d bytes)",
-                               ddm.header.download_id, ddm.module_id, ddm.module_version, ddm.block_data.size());
-        _orphan_ddbs[key].push_back({ddm.module_version, std::move(ddm.block_data)});
+        _duck.report().verbose(u"Buffering orphan DDB: download_id=0x%X module=0x%X ver=%d block=%d (%d bytes)",
+                               ddm.header.download_id, ddm.module_id, ddm.module_version, ddm.block_number, ddm.block_data.size());
+        _orphan_ddbs[key].push_back({ddm.module_version, ddm.block_number, std::move(ddm.block_data)});
         return;
     }
 
@@ -141,16 +142,44 @@ void ts::DSMCCModuleAssembler::processDDB(DSMCCDownloadDataMessage& ddm)
         return;
     }
 
-    // Invariant: ddm.block_data already contains the full module payload — the upstream
-    // DSMCC section layer concatenates DDB blocks before handing us the DDM. Do not
-    // reintroduce a per-block bitmap here unless that layer changes.
-    ctx.payload = std::move(ddm.block_data);
+    insertBlock(ctx, ddm.block_number, ddm.block_data);
+}
 
-    ctx.status = ModuleContext::Status::COMPLETE;
 
-    if (_on_module_complete) {
-        _on_module_complete(ctx);
+//----------------------------------------------------------------------------
+// Insert a single block into a module. Returns true if module became complete.
+//----------------------------------------------------------------------------
+
+bool ts::DSMCCModuleAssembler::insertBlock(ModuleContext& ctx, uint16_t block_number, const ByteBlock& data)
+{
+    // Skip duplicate blocks.
+    if (ctx.received_blocks.count(block_number) > 0) {
+        return false;
     }
+
+    // Ensure payload buffer is allocated.
+    if (ctx.payload.size() < ctx.module_size) {
+        ctx.payload.resize(ctx.module_size, 0);
+    }
+
+    // Copy block data to the correct offset within the module payload.
+    const size_t offset = static_cast<size_t>(block_number) * ctx.block_size;
+    const size_t copy_size = std::min(data.size(), static_cast<size_t>(ctx.module_size) - offset);
+    if (offset < ctx.module_size && copy_size > 0) {
+        MemCopy(ctx.payload.data() + offset, data.data(), copy_size);
+        ctx.received_blocks.insert(block_number);
+    }
+
+    // Check if all blocks have been received.
+    if (ctx.received_blocks.size() >= ctx.expected_blocks) {
+        ctx.payload.resize(ctx.module_size);
+        ctx.status = ModuleContext::Status::COMPLETE;
+        if (_on_module_complete) {
+            _on_module_complete(ctx);
+        }
+        return true;
+    }
+    return false;
 }
 
 
@@ -168,18 +197,16 @@ void ts::DSMCCModuleAssembler::replayOrphans(ModuleContext& ctx)
 
     for (auto& orphan : it->second) {
         if (ctx.status == ModuleContext::Status::COMPLETE) {
-            break;  // Already assembled; remaining orphans are redundant duplicates.
+            break;
         }
         if (orphan.module_version != ctx.module_version) {
             continue;
         }
-        _duck.report().verbose(u"Replaying orphan DDB: download_id=0x%X module=0x%X ver=%d (%d bytes)",
-                               ctx.download_id, ctx.module_id, ctx.module_version, orphan.block_data.size());
-        ctx.payload = std::move(orphan.block_data);
-        ctx.status = ModuleContext::Status::COMPLETE;
-        if (_on_module_complete) {
-            _on_module_complete(ctx);
-        }
+
+        _duck.report().verbose(u"Replaying orphan DDB: download_id=0x%X module=0x%X ver=%d block=%d (%d bytes)",
+                               ctx.download_id, ctx.module_id, ctx.module_version, orphan.block_number, orphan.block_data.size());
+
+        insertBlock(ctx, orphan.block_number, orphan.block_data);
     }
     _orphan_ddbs.erase(it);
 }

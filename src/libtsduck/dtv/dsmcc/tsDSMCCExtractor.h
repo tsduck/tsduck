@@ -14,7 +14,7 @@
 #pragma once
 #include "tsDSMCCCarousel.h"
 #include "tsSectionDemux.h"
-#include "tsTableHandlerInterface.h"
+#include "tsSectionHandlerInterface.h"
 #include "tsTSPacket.h"
 #include <filesystem>
 #include <optional>
@@ -32,7 +32,7 @@ namespace ts {
     //!
     //! @ingroup libtsduck mpeg
     //!
-    class TSDUCKDLL DSMCCExtractor : private TableHandlerInterface
+    class TSDUCKDLL DSMCCExtractor : private SectionHandlerInterface
     {
         TS_NOCOPY(DSMCCExtractor);
 
@@ -86,12 +86,12 @@ namespace ts {
         DuckContext&        _duck;
         Options             _options;
         DSMCCCarousel       _carousel;
-        SectionDemux        _demux;
+        SectionDemux        _demux;           //!< Section-level demux (no table assembly, avoids DDB inconsistency noise).
         PID                 _pid = PID_NULL;
         ObjectList          _objects {};
         ObjectByModuleMap   _objects_by_module {};
 
-        virtual void handleTable(SectionDemux&, const BinaryTable&) override;
+        virtual void handleSection(SectionDemux&, const Section&) override;
 
         void onModuleCompleted(uint32_t download_id, uint16_t module_id, const ByteBlock& payload);
 

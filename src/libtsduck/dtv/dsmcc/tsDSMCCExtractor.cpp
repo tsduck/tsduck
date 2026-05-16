@@ -10,6 +10,7 @@
 #include "tsDSMCCUserToNetworkMessage.h"
 #include "tsDSMCCDownloadDataMessage.h"
 #include "tsBinaryTable.h"
+#include "tsMemory.h"
 #include "tsDID.h"
 #include "tsDSMCCNameDescriptor.h"
 #include "tsDSMCCTypeDescriptor.h"
@@ -30,8 +31,6 @@
 #include "tsDSMCC.h"
 #include <algorithm>
 #include <filesystem>
-#include <map>
-#include <set>
 
 
 namespace {
@@ -49,7 +48,7 @@ ts::DSMCCExtractor::DSMCCExtractor(DuckContext& duck, const Options& options) :
     _duck(duck),
     _options(options),
     _carousel(duck),
-    _demux(duck, this, nullptr)
+    _demux(duck, nullptr, this)
 {
     _carousel.setScanBIOP(!_options.data_carousel);
 
@@ -95,16 +94,56 @@ void ts::DSMCCExtractor::flush()
 }
 
 
-void ts::DSMCCExtractor::handleTable(SectionDemux&, const BinaryTable& table)
+void ts::DSMCCExtractor::handleSection(SectionDemux&, const Section& section)
 {
-    switch (table.tableId()) {
+    if (!section.isValid() || !section.isLongSection()) {
+        return;
+    }
+
+    switch (section.tableId()) {
         case TID_DSMCC_UNM: {
-            DSMCCUserToNetworkMessage unm(_duck, table);
-            _carousel.feedUserToNetwork(unm);
+            // UNM (DSI/DII): build a single-section BinaryTable and parse.
+            BinaryTable table;
+            table.addNewSection(section, ShareMode::SHARE);
+            if (table.isValid()) {
+                DSMCCUserToNetworkMessage unm(_duck, table);
+                _carousel.feedUserToNetwork(unm);
+            }
             break;
         }
         case TID_DSMCC_DDM: {
-            DSMCCDownloadDataMessage ddm(_duck, table);
+            // DDB: parse section payload directly for per-block assembly.
+            const uint8_t* data = section.payload();
+            const size_t size = section.payloadSize();
+            constexpr size_t MIN_DDB_HEADER = 18;  // 12 (dsmcc header) + 6 (module_id + version + reserved + block_number)
+
+            if (size < MIN_DDB_HEADER) {
+                return;
+            }
+
+            const uint32_t download_id = GetUInt32(data + 4);
+            const uint8_t adaptation_length = data[9];
+
+            const size_t block_fields_offset = 12 + adaptation_length;
+            if (size < block_fields_offset + 6) {
+                return;
+            }
+
+            const uint16_t module_id = GetUInt16(data + block_fields_offset);
+            const uint8_t module_version = data[block_fields_offset + 2];
+            const uint16_t block_number = GetUInt16(data + block_fields_offset + 4);
+
+            const size_t block_data_offset = block_fields_offset + 6;
+            const size_t block_data_size = size - block_data_offset;
+
+            DSMCCDownloadDataMessage ddm;
+            ddm.header.download_id = download_id;
+            ddm.header.message_id = DSMCC_MSGID_DDB;
+            ddm.module_id = module_id;
+            ddm.module_version = module_version;
+            ddm.block_number = block_number;
+            ddm.block_data.copy(data + block_data_offset, block_data_size);
+
             _carousel.feedDownloadData(ddm);
             break;
         }

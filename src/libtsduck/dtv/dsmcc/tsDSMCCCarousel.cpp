@@ -51,6 +51,7 @@ void ts::DSMCCCarousel::clear()
     _names.clear();
     _groups.clear();
     _module_to_dl.clear();
+    _dsi_bootstrapped = false;
 }
 
 
@@ -75,7 +76,7 @@ void ts::DSMCCCarousel::emitObject(uint16_t module_id, const UString& name, cons
 
 void ts::DSMCCCarousel::feedUserToNetwork(const DSMCCUserToNetworkMessage& unm)
 {
-    if (const auto* dsi = unm.toDSI()) {
+    if (const auto* dsi = unm.toDSI(); dsi != nullptr && !_dsi_bootstrapped) {
         // Object-carousel DSI: ior is populated, bootstrap the SRG location.
         // Data-carousel DSI: group_info is populated; record each group so
         // module-completion accounting can attribute DDBs to the right group.
@@ -92,6 +93,8 @@ void ts::DSMCCCarousel::feedUserToNetwork(const DSMCCUserToNetworkMessage& unm)
 
 void ts::DSMCCCarousel::recordDSIGroups(const DSMCCUserToNetworkMessage::DownloadServerInitiate& dsi)
 {
+    _dsi_bootstrapped = true;
+
     for (const auto& group : dsi.group_info.groups) {
         // group_id == download_id
         GroupContext& ctx = _groups[group.group_id];
@@ -119,6 +122,7 @@ void ts::DSMCCCarousel::bootstrapFromDSI(const DSMCCUserToNetworkMessage::Downlo
                 continue;
             }
             _names.addRoot({comp.module_id, comp.object_key_data});
+            _dsi_bootstrapped = true;
             _duck.report().verbose(u"DSI bootstrap: ServiceGateway at carousel_id=0x%X module_id=0x%X (object_key %d bytes)",
                                    comp.carousel_id, comp.module_id, comp.object_key_data.size());
             return;

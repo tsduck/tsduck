@@ -19,6 +19,7 @@
 #include "tsDescriptorList.h"
 #include <functional>
 #include <map>
+#include <set>
 
 namespace ts {
 
@@ -81,6 +82,7 @@ namespace ts {
             bool is_compressed = false;     //!< True if a compressed_module_descriptor is present.
             uint32_t original_size = 0;     //!< Uncompressed size from compressed_module_descriptor.
             ByteBlock payload {};           //!< Complete module payload assembled from DDBs.
+            std::set<uint16_t> received_blocks {}; //!< Set of block_numbers received so far.
             DescriptorList descs {nullptr}; //!< Copy of the DII module's user_info descriptor list. Decoded by consumers on demand.
 
             //!
@@ -168,12 +170,17 @@ namespace ts {
         // the payload to replay once the DII arrives.
         struct OrphanBlock {
             uint8_t   module_version = 0;
+            uint16_t  block_number = 0;
             ByteBlock block_data {};
         };
         std::map<ModuleKey, std::vector<OrphanBlock>> _orphan_ddbs {};
 
         void processDII(const DSMCCUserToNetworkMessage& unm);
         void processDDB(DSMCCDownloadDataMessage& ddm);
+
+        // Insert a single block into a module context.
+        // Returns true if the module became complete as a result.
+        bool insertBlock(ModuleContext& ctx, uint16_t block_number, const ByteBlock& data);
 
         // Apply any buffered DDB whose version matches the freshly registered module.
         void replayOrphans(ModuleContext& ctx);

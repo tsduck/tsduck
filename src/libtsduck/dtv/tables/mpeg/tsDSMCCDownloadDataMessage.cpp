@@ -55,6 +55,7 @@ void ts::DSMCCDownloadDataMessage::clearContent()
     header.clear();
     module_id = 0;
     module_version = 0;
+    block_number = 0;
     block_data.clear();
 }
 
@@ -113,7 +114,7 @@ void ts::DSMCCDownloadDataMessage::deserializePayload(PSIBuffer& buf, const Sect
     module_version = buf.getUInt8();
 
     buf.skipBytes(1);  // reserved
-    buf.skipBytes(2);  // block_number
+    block_number = buf.getUInt16();
 
     buf.getBytesAppend(block_data);
 }
@@ -133,7 +134,7 @@ void ts::DSMCCDownloadDataMessage::serializePayload(BinaryTable& table, PSIBuffe
 
     buf.pushState();
 
-    uint16_t block_number = 0x0000;
+    uint16_t cur_block_number = 0x0000;
     size_t   block_data_index = 0;
 
     while (block_data_index < block_data.size()) {
@@ -143,14 +144,14 @@ void ts::DSMCCDownloadDataMessage::serializePayload(BinaryTable& table, PSIBuffe
         buf.putUInt8(module_version);
         buf.putUInt8(0xFF);  // reserved
 
-        buf.putUInt16(block_number);
+        buf.putUInt16(cur_block_number);
         block_data_index += buf.putBytes(block_data, block_data_index, std::min(block_data.size() - block_data_index, buf.remainingWriteBytes()));
 
         buf.popState();  // message_length
 
         addOneSection(table, buf);
 
-        block_number++;
+        cur_block_number++;
     }
 }
 

@@ -171,6 +171,7 @@ namespace ts {
         GroupHandler _on_group = nullptr;
         BIOPNameResolver _names {};
         bool _scan_biop = true;
+        bool _dsi_bootstrapped = false;
 
         using ModuleToDownloadMap = std::map<uint16_t, uint32_t>;  // module_id -> download_id
 
