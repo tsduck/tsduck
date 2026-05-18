@@ -151,12 +151,11 @@ bool ts::TLSConnection::connect(const IPSocketAddress& addr, IOSB* iosb)
         return false;
     }
 
-    //@@@ to be implemented.
     if (isNonBlocking()) {
+        //@@@ to be implemented.
         report().error(u"non-blocking TLS is not yet implemented");
         return false;
     }
-    //@@@
 
     // Terminate previous session.
     _guts->terminate();
@@ -298,12 +297,11 @@ bool ts::TLSConnection::send(const void* data, size_t size, IOSB* iosb)
         return false;
     }
 
-    //@@@ to be implemented.
     if (isNonBlocking()) {
+        //@@@ to be implemented.
         report().error(u"non-blocking TLS is not yet implemented");
         return false;
     }
-    //@@@
 
     if (_guts->ssl == nullptr) {
         report().error(u"TLS connection not established");
@@ -337,12 +335,11 @@ bool ts::TLSConnection::receive(void* buffer, size_t max_size, size_t& ret_size,
         return false;
     }
 
-    //@@@ to be implemented.
     if (isNonBlocking()) {
+        //@@@ to be implemented.
         report().error(u"non-blocking TLS is not yet implemented");
         return false;
     }
-    //@@@
 
     if (_guts->ssl == nullptr) {
         report().error(u"TLS connection not established");

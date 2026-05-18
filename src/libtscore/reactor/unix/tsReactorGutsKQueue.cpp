@@ -25,13 +25,41 @@
 
 // Aliases for types in kevent structure (not the same types on all platforms).
 // Don't use "::kevent" as type name because ::kevent() is also a system call.
-using kevent_t = struct kevent;
-using kevent_ident_t = decltype(kevent_t::ident);
+using kevent_t        = struct kevent;
+using kevent_ident_t  = decltype(kevent_t::ident);
 using kevent_filter_t = decltype(kevent_t::filter);
-using kevent_flags_t = decltype(kevent_t::flags);
+using kevent_flags_t  = decltype(kevent_t::flags);
 using kevent_fflags_t = decltype(kevent_t::fflags);
-using kevent_data_t = decltype(kevent_t::data);
-using kevent_udata_t = decltype(kevent_t::udata);
+using kevent_data_t   = decltype(kevent_t::data);
+using kevent_udata_t  = decltype(kevent_t::udata);
+
+
+//----------------------------------------------------------------------------
+// Reactor::EventData, the data for an EventId.
+//----------------------------------------------------------------------------
+
+class ts::Reactor::EventData
+{
+    TS_DEFAULT_COPY_MOVE(EventData);
+public:
+    Canary                   canary {};          // First field in memory.
+    EventType                type = EVT_NONE;    // Event type.
+    bool                     repeat = false;     // Repeatable timer or notification.
+    ReactorHandlerInterface* handler = nullptr;  // Application handler.
+    int                      fd = -1;            // General-purpose file descriptor.
+
+    EventData() = default;
+};
+
+ts::Reactor::EventData* ts::Reactor::allocateEventData()
+{
+    return new EventData;
+}
+
+void ts::Reactor::deallocateEventData(EventData* evd)
+{
+    delete evd;
+}
 
 
 //----------------------------------------------------------------------------
@@ -49,7 +77,6 @@ public:
     virtual ~Guts() override {}
     virtual bool open() override;
     virtual bool close(bool silent) override;
-    virtual bool isActiveEvent(EventId id) override;
     virtual void processEventLoop() override;
     virtual void* newTimer(ReactorHandlerInterface* handler, cn::milliseconds duration, bool repeat) override;
     virtual bool cancelTimer(EventId id, bool silent) override;
@@ -62,26 +89,8 @@ public:
     virtual bool deleteWriteNotify(EventId id, bool silent) override;
 
 private:
-    // EventData is the data for an EventId.
-    class EventData
-    {
-        TS_DEFAULT_COPY_MOVE(EventData);
-    public:
-        Canary                   canary {};          // First field in memory.
-        EventType                type = EVT_NONE;    // Event type.
-        bool                     repeat = false;     // Repeatable timer or notification.
-        ReactorHandlerInterface* handler = nullptr;  // Application handler.
-        int                      fd = -1;            // General-purpose file descriptor.
-
-        EventData() = default;
-    };
-
-    // A canary is more efficient when at the start of its data structure.
-    static_assert(offsetof(EventData, canary) == 0);
-
-    // Guts private fields.
-    std::set<EventData*> _events {};       // Existing allocated events.
-    int                  _kqueue_fd = -1;  // File descriptor for kqueue().
+    // File descriptor for kqueue().
+    int _kqueue_fd = -1;
 
     // Using kqueue, read and write for the same file descriptor have distinct EventData.
     // We need a map from file-descriptor/event-type to EventData to retrieve the EventData.
@@ -96,21 +105,19 @@ private:
     // Deregister and delete an EventData.
     void deleteEventData(EventData*);
 
-    // Check that an EventData pointer is valid.
-    bool validateEventData(EventData* evd, bool silent);
-
     // Common code for event deletion.
     // When ident_is_evd is true, the kqueue ident is the EventData pointer. When false, the kqueue ident is the file descriptor.
     bool deleteFilter(EventId, EventType, bool ident_is_evd, ::kevent_filter_t, bool silent);
     bool sysDelete(EventData*, bool ident_is_evd, ::kevent_filter_t, bool silent);
+
+    // Common code for EV_SET() + kevent().
+    bool callKevent(::kevent_ident_t ident, ::kevent_filter_t filter, ::kevent_flags_t flags, ::kevent_fflags_t fflags, ::kevent_data_t data, ::kevent_udata_t udata, const UChar* name, bool silent = false);
+
+    // In all implementations of EventData, the first field must be a Canary.
+    static_assert(offsetof(ts::Reactor::EventData, canary) == 0);
 };
 
-
-
-//----------------------------------------------------------------------------
 // Guts allocation.
-//----------------------------------------------------------------------------
-
 ts::Reactor::GutsBase* ts::Reactor::allocateGuts()
 {
     return new Guts(*this);
@@ -122,70 +129,43 @@ ts::Reactor::GutsBase* ts::Reactor::allocateGuts()
 //----------------------------------------------------------------------------
 
 // Retrieve or allocate/register an event data for a given file descriptor.
-ts::Reactor::Guts::EventData* ts::Reactor::Guts::newEventData(EventType type, int fd)
+ts::Reactor::EventData* ts::Reactor::Guts::newEventData(EventType type, int fd)
 {
     // Check if the file descriptor already has an EventData for that event type.
     if (fd >= 0) {
         const auto it = _file_descs_map.find(FileDescIndex(type, fd));
         if (it != _file_descs_map.end()) {
             if (Canary::Error(&it->second->canary) == nullptr) {
-                _reactor.trace(u"reuse EventData(%X, %X, %d)", uintptr_t(it->second), it->second->type, it->second->fd);
+                _reactor.trace(u"reuse EventData @%X, type 0x%X, fd %d)", uintptr_t(it->second), it->second->type, it->second->fd);
                 assert(it->second->fd == fd);
                 assert(it->second->type == type);
                 return it->second;
             }
             else {
                 // Cleanup an old EventData. Bug?
-                _reactor.trace(u"remove obsolete EventData(%X, %X, %d)", uintptr_t(it->second), it->second->type, it->second->fd);
+                _reactor.trace(u"remove obsolete EventData @%X, type 0x%X, fd %d", uintptr_t(it->second), it->second->type, it->second->fd);
                 _file_descs_map.erase(it);
             }
         }
     }
 
     // Allocate and register a new EventData.
-    EventData* evd = new EventData;
+    EventData* evd = _reactor.newEventData(type);
     evd->type = type;
     if (fd >= 0) {
         evd->fd = fd;
         _file_descs_map.insert(std::make_pair(FileDescIndex(type, fd), evd));
     }
-    _events.insert(evd);
-    _reactor.trace(u"new EventData(%X, %X, %d)", uintptr_t(evd), evd->type, evd->fd);
     return evd;
 }
 
 // Deregister and delete an EventData.
 void ts::Reactor::Guts::deleteEventData(EventData* evd)
 {
-    _reactor.trace(u"delete EventData(%X, %X, %d)", uintptr_t(evd), evd->type, evd->fd);
     if (evd->fd >= 0) {
         _file_descs_map.erase(FileDescIndex(evd->type, evd->fd));
     }
-    _events.erase(evd);
-    delete evd;
-}
-
-// Check that an EventData pointer is valid.
-bool ts::Reactor::Guts::validateEventData(EventData* evd, bool silent)
-{
-    const UChar* cause = Canary::Error(&evd->canary);
-    if (cause == nullptr && !_events.contains(evd)) {
-        cause = u"EventData no longer in use in Reactor";
-    }
-    if (cause != nullptr) {
-        _reactor.report().log(SilentLevel(silent), u"reactor internal error: invalid EventData pointer, %s", cause);
-    }
-    return cause == nullptr;
-}
-
-
-//----------------------------------------------------------------------------
-// Check if an event is still active in the reactor.
-//----------------------------------------------------------------------------
-
-bool ts::Reactor::Guts::isActiveEvent(EventId id)
-{
-    return _events.contains(reinterpret_cast<EventData*>(id._ptr));
+    _reactor.deleteEventData(evd, evd->type);
 }
 
 
@@ -195,6 +175,8 @@ bool ts::Reactor::Guts::isActiveEvent(EventId id)
 
 bool ts::Reactor::Guts::open()
 {
+    _file_descs_map.clear();
+
     // Initialize the kernel queue.
     // Unlike epoll, the kqueue file descriptor is not inherited by a child created with fork().
     assert(_kqueue_fd < 0);
@@ -203,8 +185,6 @@ bool ts::Reactor::Guts::open()
         return false;
     }
     else {
-        _events.clear();
-        _file_descs_map.clear();
         return true;
     }
 }
@@ -220,8 +200,8 @@ bool ts::Reactor::Guts::close(bool silent)
     bool success = true;
 
     // Force system close of pending events, if there are any.
-    for (auto evd : _events) {
-        if (validateEventData(evd, silent)) {
+    for (auto evd : _reactor._events) {
+        if (_reactor.validateEventData(evd, silent)) {
             if (evd->type == EVT_EVENT) {
                 sysDelete(evd, true, EVFILT_USER, silent);
             }
@@ -244,7 +224,7 @@ bool ts::Reactor::Guts::close(bool silent)
             success = false;
         }
     }
-    _events.clear();
+    _reactor._events.clear();
     _file_descs_map.clear();
 
     // Cleanup kqueue().
@@ -261,16 +241,17 @@ bool ts::Reactor::Guts::close(bool silent)
 
 void ts::Reactor::Guts::processEventLoop()
 {
-    // List of signalled events. The type SysEventStructure depends on the operating system.
+    // List of signalled events.
     std::vector<::kevent_t> sysevents(MIN_WAIT_EVENTS);
 
     // Main event loop.
     while (!_reactor._exit_requested) {
 
         // Adjust the size of the system structures describing events to wait for.
-        _reactor.adjustEventVector(_events, sysevents);
+        _reactor.adjustEventVector(sysevents);
 
         // Wait for events. No timeouts, use timers to timeout.
+        _reactor.trace(u"kqueue: ---- wait for events");
         size_t evcount = 0;
         const int status = ::kevent(_kqueue_fd, nullptr, 0, &sysevents[0], int(sysevents.size()), nullptr);
         if (status >= 0) {
@@ -286,31 +267,41 @@ void ts::Reactor::Guts::processEventLoop()
             _reactor._exit_success = false;
             break;
         }
-        _reactor.trace(u"---- processEventLoop: got %d events", evcount);
+        _reactor.trace(u"kqueue: ---- got %d events", evcount);
 
         // Process all returned events.
         for (size_t i = 0; i < evcount && !_reactor._exit_requested; i++) {
 
-            // Get and check the associated EventData block.
+            // Get the associated EventData block.
             auto& sysev(sysevents[i]);
             EventData* sysevd = reinterpret_cast<EventData*>(sysev.udata);
-            if (!validateEventData(sysevd, false)) {
+
+            // Check that this event wasn't deleted in the processing of a previous event.
+            if (_reactor._deleted_previous_current.contains(sysevd)) {
+                _reactor.trace(u"kqueue: event #%d, ignoring deleted EventData @%X", i, uintptr_t(sysevd));
+                continue;
+            }
+
+            // Check the integrity of the EventData.
+            if (!_reactor.validateEventData(sysevd, false)) {
+                _reactor.trace(u"kqueue: event #%d, dropped EventData @%X", i, uintptr_t(sysevd));
                 continue;
             }
             const EventId id(sysevd);
-            _reactor.trace(u"-- processing EventData(%X, %X, %d)", uintptr_t(sysevd), sysevd->type, sysevd->fd);
 
             // Warning: events can be invalidated if the user-handler updates the reactor. So, keep a copy of it.
             const EventData evd(*sysevd);
 
             // Process the event, based on a copy of the EventData block.
             if (evd.type == EVT_EVENT) {
+                _reactor.trace(u"kqueue: event #%d, user event completed", i);
                 // Call the user event callback.
                 if (evd.handler != nullptr) {
                     evd.handler->handleUserEvent(_reactor, id);
                 }
             }
             else if (evd.type == EVT_TIMER) {
+                _reactor.trace(u"kqueue: event #%d, timer completed", i);
                 if (!evd.repeat) {
                     // In case of one-shot event, manually remove the one-shot timer before calling the handler.
                     // With kqueue(), one-shot timers are automatically disarmed, no need to disable it.
@@ -322,6 +313,7 @@ void ts::Reactor::Guts::processEventLoop()
                 }
             }
             else if (evd.type == EVT_READ) {
+                _reactor.trace(u"kqueue: event #%d, read ready", i);
                 // The data field contains either the pending I/O size or error code.
                 const int error_code = (sysev.flags & EV_ERROR) ? int(sysev.data) : SYS_SUCCESS;
 
@@ -331,6 +323,7 @@ void ts::Reactor::Guts::processEventLoop()
                 }
             }
             else if (evd.type == EVT_WRITE) {
+                _reactor.trace(u"kqueue: event #%d, write ready", i);
                 // The data field contains either the remaining output buffer size or error code.
                 // We cannot really use the output buffer size, so ignore it.
                 const int error_code = (sysev.flags & EV_ERROR) ? int(sysev.data) : SYS_SUCCESS;
@@ -341,10 +334,31 @@ void ts::Reactor::Guts::processEventLoop()
                 }
             }
             else {
+                _reactor.trace(u"kqueue: event #%d, unexpected type 0x%X", i, evd.type);
                 _reactor.report().warning(u"reactor got unexpected event type %X", evd.type);
             }
         }
+        _reactor.trace(u"kqueue: ---- end of event processing");
+        _reactor.endOfEventProcessing();
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Common code for EV_SET() + kevent().
+//----------------------------------------------------------------------------
+
+bool ts::Reactor::Guts::callKevent(::kevent_ident_t ident, ::kevent_filter_t filter, ::kevent_flags_t flags, ::kevent_fflags_t fflags, ::kevent_data_t data, ::kevent_udata_t udata, const UChar* name, bool silent)
+{
+    _reactor.trace(u"kevent(%d, %d / 0x%X, %d, 0x%X, 0x%X, %d, 0x%X): %s", _kqueue_fd, ident, ident, filter, flags, fflags, data, uintptr_t(udata), name);
+
+    ::kevent_t ev;
+    EV_SET(&ev, ident, filter, flags, fflags, data, udata);
+    if (::kevent(_kqueue_fd, &ev, 1, nullptr, 0, nullptr) < 0) {
+        _reactor.report().log(SilentLevel(silent), u"error %s in kqueue: %s", name, SysErrorCodeMessage());
+        return false;
+    }
+    return true;
 }
 
 
@@ -359,18 +373,12 @@ void* ts::Reactor::Guts::newTimer(ReactorHandlerInterface* handler, cn::millisec
     evd->handler = handler;
     evd->repeat = repeat;
 
-    _reactor.trace(u"kqueue add EventData(%X, %X, %d)", uintptr_t(evd), evd->type, evd->fd);
-
     // With kqueue(), the timers ids are arbitrary values. Register the event in the kqueue.
     // In kevent, the default value for timer is in milliseconds.
-    ::kevent_t ev;
-    EV_SET(&ev, ::kevent_ident_t(evd), EVFILT_TIMER, EV_ADD | EV_ENABLE | (repeat ? 0 : EV_ONESHOT), 0, ::kevent_data_t(duration.count()), evd);
-    if (::kevent(_kqueue_fd, &ev, 1, nullptr, 0, nullptr) < 0) {
-        _reactor.report().error(u"error registering timer in kqueue: %s", SysErrorCodeMessage());
+    if (!callKevent(::kevent_ident_t(evd), EVFILT_TIMER, EV_ADD | EV_ENABLE | (repeat ? 0 : EV_ONESHOT), 0, ::kevent_data_t(duration.count()), evd, u"registering timer")) {
         deleteEventData(evd);
         return nullptr;
     }
-
     return evd;
 }
 
@@ -394,14 +402,9 @@ void* ts::Reactor::Guts::newEvent(ReactorHandlerInterface* handler)
     EventData* evd = newEventData(EVT_EVENT, -1);
     evd->handler = handler;
 
-    _reactor.trace(u"kqueue add EventData(%X, %X, %d)", uintptr_t(evd), evd->type, evd->fd);
-
     // With kqueue(), the user-defined events are arbitrary values. Register the event in the kqueue.
     // Note: user data is nullptr here, it is non-null on trigger only.
-    ::kevent_t ev;
-    EV_SET(&ev, ::kevent_ident_t(evd), EVFILT_USER, EV_ADD | EV_ENABLE | EV_CLEAR, 0, 0, nullptr);
-    if (::kevent(_kqueue_fd, &ev, 1, nullptr, 0, nullptr) < 0) {
-        _reactor.report().error(u"error registering user event in kqueue: %s", SysErrorCodeMessage());
+    if (!callKevent(::kevent_ident_t(evd), EVFILT_USER, EV_ADD | EV_ENABLE | EV_CLEAR, 0, 0, nullptr, u"registering user event")) {
         deleteEventData(evd);
         return nullptr;
     }
@@ -416,18 +419,10 @@ void* ts::Reactor::Guts::newEvent(ReactorHandlerInterface* handler)
 
 bool ts::Reactor::Guts::signalEvent(EventId id)
 {
-    _reactor.trace(u"kqueue trigger EventData(%X)", uintptr_t(id._ptr));
+    _reactor.trace(u"kqueue trigger EventData @%X", uintptr_t(id._ptr));
 
     // Simple trigger, only use the kqueue file descriptor, don't do anything else.
-    ::kevent_t ev;
-    EV_SET(&ev, ::kevent_ident_t(id._ptr), EVFILT_USER, 0, NOTE_TRIGGER, 0, id._ptr);
-    if (::kevent(_kqueue_fd, &ev, 1, nullptr, 0, nullptr) < 0) {
-        _reactor.report().error(u"error triggering user event in kqueue: %s", SysErrorCodeMessage());
-        return false;
-    }
-    else {
-        return true;
-    }
+    return callKevent(::kevent_ident_t(id._ptr), EVFILT_USER, 0, NOTE_TRIGGER, 0, id._ptr, u"triggering user event");
 }
 
 
@@ -451,13 +446,8 @@ void* ts::Reactor::Guts::newReadNotify(ReactorHandlerInterface* handler, SysSock
     EventData* evd = newEventData(EVT_READ, sock);
     evd->handler = handler;
 
-    _reactor.trace(u"kqueue add EventData(%X, %X, %d)", uintptr_t(evd), evd->type, evd->fd);
-
     // Add the event in the kqueue.
-    ::kevent_t ev;
-    EV_SET(&ev, ::kevent_ident_t(sock), EVFILT_READ, EV_ADD | EV_ENABLE | EV_CLEAR, 0, 0, evd);
-    if (::kevent(_kqueue_fd, &ev, 1, nullptr, 0, nullptr) < 0) {
-        _reactor.report().error(u"error registering read event in kqueue: %s", SysErrorCodeMessage());
+    if (!callKevent(::kevent_ident_t(sock), EVFILT_READ, EV_ADD | EV_ENABLE | EV_CLEAR, 0, 0, evd, u"registering read event")) {
         deleteEventData(evd);
         return nullptr;
     }
@@ -487,13 +477,8 @@ void* ts::Reactor::Guts::newWriteNotify(ReactorHandlerInterface* handler, SysSoc
     EventData* evd = newEventData(EVT_WRITE, sock);
     evd->handler = handler;
 
-    _reactor.trace(u"kqueue add EventData(%X, %X, %d)", uintptr_t(evd), evd->type, evd->fd);
-
     // Add the event in the kqueue.
-    ::kevent_t ev;
-    EV_SET(&ev, ::kevent_ident_t(sock), EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, evd);
-    if (::kevent(_kqueue_fd, &ev, 1, nullptr, 0, nullptr) < 0) {
-        _reactor.report().error(u"error registering write event in kqueue: %s", SysErrorCodeMessage());
+    if (!callKevent(::kevent_ident_t(sock), EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, evd, u"registering write event")) {
         deleteEventData(evd);
         return nullptr;
     }
@@ -520,7 +505,7 @@ bool ts::Reactor::Guts::deleteWriteNotify(EventId id, bool silent)
 bool ts::Reactor::Guts::deleteFilter(EventId id, EventType type, bool ident_is_evd, ::kevent_filter_t filter, bool silent)
 {
     EventData* evd = reinterpret_cast<EventData*>(id._ptr);
-    bool success = validateEventData(evd, silent);
+    bool success = _reactor.validateEventData(evd, silent);
     if (success) {
         success = sysDelete(evd, ident_is_evd, filter, silent);
         deleteEventData(evd);
@@ -531,19 +516,9 @@ bool ts::Reactor::Guts::deleteFilter(EventId id, EventType type, bool ident_is_e
 // Close the system part of the event.
 bool ts::Reactor::Guts::sysDelete(EventData* evd, bool ident_is_evd, ::kevent_filter_t filter, bool silent)
 {
-    _reactor.trace(u"kqueue delete EventData(%X, %X, %d)", uintptr_t(evd), evd->type, evd->fd);
-
     // Delete the event from the kqueue.
-    ::kevent_t ev;
     const ::kevent_ident_t ident = ident_is_evd ? ::kevent_ident_t(evd) : ::kevent_ident_t(evd->fd);
-    EV_SET(&ev, ident, filter, EV_DELETE | EV_DISABLE, 0, 0, nullptr);
-    if (::kevent(_kqueue_fd, &ev, 1, nullptr, 0, nullptr) < 0) {
-        _reactor.report().log(SilentLevel(silent), u"error deleting event from kqueue: %s", SysErrorCodeMessage());
-        return false;
-    }
-    else {
-        return true;
-    }
+    return callKevent(ident, filter, EV_DELETE | EV_DISABLE, 0, 0, nullptr, u"deleting event", silent);
 }
 
 #endif // TS_USE_KQUEUE

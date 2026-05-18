@@ -54,6 +54,20 @@ namespace ts {
     }
 
     //!
+    //! Force the error code of the last operating system call.
+    //! @ingroup system
+    //! @param [in] error_code The error code to force.
+    //!
+    TSCOREDLL inline void SetLastSysErrorCode(int error_code)
+    {
+#if defined(TS_WINDOWS)
+        ::SetLastError(::DWORD(error_code));
+#else
+        errno = error_code;
+#endif
+    }
+
+    //!
     //! An error code value which means "no error" on all operating systems.
     //! Note that some Windows error codes indicate success without being equal to zero.
     //! This SYS_SUCCESS value can be used as a synthetic value to indicate success.
@@ -75,6 +89,29 @@ namespace ts {
     constexpr int SYS_CANCELED = -2;
 
     //!
+    //! A synthetic error code value which means "end of file".
+    //! This value is not a valid error code on any operating system.
+    //! It can be used by application to indicate that an end of file or end of stream is reached.
+    //!
+    constexpr int SYS_EOF = -3;
+
+    //!
+    //! A synthetic error code value which means "rejected".
+    //! This value is not a valid error code on any operating system.
+    //! It can be used by application to indicate that some kind of operation was explicitly rejected.
+    //!
+    constexpr int SYS_REJECTED = -4;
+
+    //!
+    //! Translate an error code, mapping to some portable code.
+    //! All successful status are translated into SYS_SUCCESS.
+    //! Cancelation and end-of-file conditions are translated into SYS_CANCELED and SYS_EOF.
+    //! @param [in] code An error code from the operating system.
+    //! @return A translated error code.
+    //!
+    TSCOREDLL int TranslateError(int code);
+
+    //!
     //! Format a system error code into a string.
     //! @ingroup system
     //! @param [in] code An error code from the operating system.
@@ -82,10 +119,7 @@ namespace ts {
     //! @param [in] category Error category, system by default.
     //! @return A string describing the error.
     //!
-    TSCOREDLL inline std::string SysErrorCodeMessage(int code = LastSysErrorCode(), const std::error_category& category = std::system_category())
-    {
-        return std::error_code(code, category).message();
-    }
+    TSCOREDLL std::string SysErrorCodeMessage(int code = LastSysErrorCode(), const std::error_category& category = std::system_category());
 
     //!
     //! Portable type for ioctl() request parameter.

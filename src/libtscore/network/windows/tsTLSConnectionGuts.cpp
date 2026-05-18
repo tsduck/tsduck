@@ -384,12 +384,11 @@ bool ts::TLSConnection::connect(const IPSocketAddress& addr, IOSB* iosb)
         return false;
     }
 
-    //@@@ to be implemented.
     if (isNonBlocking()) {
+        //@@@ to be implemented.
         report().error(u"non-blocking TLS is not yet implemented");
         return false;
     }
-    //@@@
 
     // Perform a TCP connection.
     if (!SuperClass::connect(addr, iosb)) {
@@ -496,12 +495,11 @@ bool ts::TLSConnection::send(const void* data, size_t size, IOSB* iosb)
         return false;
     }
 
-    //@@@ to be implemented.
     if (isNonBlocking()) {
+        //@@@ to be implemented.
         report().error(u"non-blocking TLS is not yet implemented");
         return false;
     }
-    //@@@
 
     if (!isConnected()) {
         report().error(u"not connected");
@@ -575,12 +573,11 @@ bool ts::TLSConnection::receive(void* buffer, size_t max_size, size_t& ret_size,
         return false;
     }
 
-    //@@@ to be implemented.
     if (isNonBlocking()) {
+        //@@@ to be implemented.
         report().error(u"non-blocking TLS is not yet implemented");
         return false;
     }
-    //@@@
 
     ret_size = 0;
     if (!isConnected()) {

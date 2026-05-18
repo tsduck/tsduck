@@ -31,15 +31,15 @@ const int ts::TLSConnection::FEATURE = 0;
 // Constructors and destructor.
 //----------------------------------------------------------------------------
 
-ts::TLSConnection::TLSConnection(Report* report) :
-    TCPConnection(report, false)
+ts::TLSConnection::TLSConnection(Report* report, Object* owner) :
+    TCPConnection(report, false, owner)
 {
     allocateGuts();
     CheckNonNull(_guts);
 }
 
-ts::TLSConnection::TLSConnection(ReporterBase* delegate) :
-    TCPConnection(delegate, false)
+ts::TLSConnection::TLSConnection(ReporterBase* delegate, Object* owner) :
+    TCPConnection(delegate, false, owner)
 {
     allocateGuts();
     CheckNonNull(_guts);

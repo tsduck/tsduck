@@ -339,7 +339,6 @@ namespace ts {
             virtual ~GutsBase();
             virtual bool open() = 0;
             virtual bool close(bool silent) = 0;
-            virtual bool isActiveEvent(EventId id) = 0;
             virtual void processEventLoop() = 0;
             virtual void* newTimer(ReactorHandlerInterface* handler, cn::milliseconds duration, bool repeat) = 0;
             virtual bool cancelTimer(EventId id, bool silent) = 0;
@@ -360,15 +359,6 @@ namespace ts {
         class Guts;
         GutsBase* allocateGuts();
 
-        // Reactor private members.
-        GutsBase* _guts = nullptr;
-        bool      _is_open = false;
-        bool      _exit_requested = false;   // Exit event loop when possible.
-        bool      _exit_success = true;      // Exit status for event loop.
-
-        static const bool    _active_trace;  // Check if trace() shall report messages.
-        static const UString _trace_prefix;  // Prefix of trace() messages.
-
         // Types of source events. Can be used as bit mask in rare cases (read+write with epoll for instance).
         enum EventType : uint8_t {
             EVT_NONE  = 0x00,
@@ -380,11 +370,61 @@ namespace ts {
         };
         static const Names& EventTypeNames();
 
+        // EventData is the data for an EventId. Its address is in the internal pointer of the EventId.
+        // In all implementation, the first field must be a Canary.
+        class EventData;
+        EventData* allocateEventData();
+        void deallocateEventData(EventData*);
+
+        // Reactor private members.
+        GutsBase* _guts = nullptr;
+        bool      _is_open = false;
+        bool      _exit_requested = false;   // Exit event loop when possible.
+        bool      _exit_success = true;      // Exit status for event loop.
+        std::set<EventData*> _events {};     // Existing allocated events.
+
+        static const bool    _active_trace;  // Check if trace() shall report messages.
+        static const UString _trace_prefix;  // Prefix of trace() messages.
+
+        // Deletion of EventData: An EventData can be triggered (event, timer, I/O) and then canceled or deleted
+        // by the application. However, the trigger remains in the kernel queue (epoll, kqueue, IOCP) and will be
+        // immediately reported the next time the kernel queue is called to wait for events. Additionally, when
+        // processing a list of triggered event, the application may cancel or delete an event which is already
+        // reported in the current list of triggered events, but farther in the list, not yet processed.
+        // To tackle this, we keep a list of recently canceled/deleted events so that if these events are reported
+        // by the kernel queue, we can safely ignore them. The "recently deleted" events are those which were
+        // deleted just before getting the current event list or during the processing of previous events in
+        // the current event list. We keep two sets of events: those which were deleted during the processing
+        // of the current event lists, and a superset of it which also contains the event which were deleted
+        // during the processing of the previous event list.
+        std::set<EventData*> _deleted_current {};
+        std::set<EventData*> _deleted_previous_current {};
+
+        // This method adjusts _deleted_previous_current and _deleted_current after processing a set of events
+        // as returned by the kernel queue.
+        void endOfEventProcessing()
+        {
+            // Swap the sets of deleted events.
+            _deleted_previous_current.swap(_deleted_current);
+            _deleted_current.clear();
+        }
+
+        // Allocate a new EventData that is not a reuse of a recently deallocated one in _deleted_previous_current.
+        // This is useful if the new data structure immediately generates a new event. Otherwise it could be ignored.
+        // The new event is registered in _events. The "type" argument is informational only, for trace messages.
+        EventData* newEventData(EventType type);
+
+        // Deregister and delete an EventData. The "type" argument is informational only, for trace messages.
+        void deleteEventData(EventData* evd, EventType type);
+
         // Implementation of public template methods.
         EventId newTimerImpl(ReactorHandlerInterface* handler, cn::milliseconds duration, bool repeat);
 
         // Verify that the reactor is initialized.
         bool checkOpen(bool silent);
+
+        // Check that an EventData pointer is valid.
+        bool validateEventData(EventData* evd, bool silent);
 
         // All implementations are based on some form of kernel queue. The core of the event loop is a wait system
         // call which uses an array of system structures to receive the completed events. The vector of these
@@ -393,12 +433,12 @@ namespace ts {
         static constexpr size_t MIN_WAIT_EVENTS = 16;
 
         // Adjust the size of the vector of system structures from the number of pending events in the reactor.
-        template <class REACTOR_EVENTS, class SYSTEM_EVENTS>
-        void adjustEventVector(REACTOR_EVENTS& reactor_events, SYSTEM_EVENTS& system_events)
+        template <class SYSTEM_EVENTS>
+        void adjustEventVector(SYSTEM_EVENTS& system_events)
         {
-            if (system_events.size() < reactor_events.size() || system_events.size() > reactor_events.size() + 10 * MIN_WAIT_EVENTS) {
+            if (system_events.size() < _events.size() || system_events.size() > _events.size() + 10 * MIN_WAIT_EVENTS) {
                 // Current vector is too small or significantly too large.
-                system_events.resize(reactor_events.size() + MIN_WAIT_EVENTS);
+                system_events.resize(_events.size() + MIN_WAIT_EVENTS);
             }
         }
     };

@@ -13,7 +13,9 @@
 
 #pragma once
 #include "tsReporterBase.h"
+#include "tsObject.h"
 #include "tsIPUtils.h"
+#include "tsSysUtils.h"
 
 namespace ts {
     //!
@@ -114,14 +116,11 @@ namespace ts {
         bool isNonBlocking() const { return _is_non_blocking; }
 
         //!
-        //! Virtual base class for ancillary data in IOSB.
-        //! Subclasses can be defined to hold specific data which must remain available during an asynchronous or non-blocking I/O.
+        //! This static method checks if a system error code means "I/O in progress" (asynchronous I/O) or "I/O would block" (non-blocking I/O).
+        //! @param [in] error_code System error code.
+        //! @return True if @a error_code is an in-progress/would-block one.
         //!
-        class TSCOREDLL AncillaryData
-        {
-        public:
-            virtual ~AncillaryData();  //!< Virtual destructor.
-        };
+        static bool IsPendingStatus(int error_code);
 
         //!
         //! This structure indicates the status of a non-blocking I/O.
@@ -130,6 +129,12 @@ namespace ts {
         //! The subclasses which implement non-blocking I/O should use an IOSB* parameter for any I/O operation
         //! which can be non-blocking. Typically, if the instance of the subclass is in blocking mode (the default),
         //! this parameter must be null. When the instance is in non-blocking mode, this parameter must not be null.
+        //!
+        //! As a general rule, when an I/O method accepts an IOSB* parameter and the I/O is pending (meaning not possible
+        //! now with non-blocking I/O or in progress with asynchronous I/O), the I/O method sets the @a pending field tp
+        //! true and returns a success status. The success returned status means that the I/O was successfully started and
+        //! the @a pending field set to true means that the I/O is not completed yet.
+        //!
         //! @see checkNonBlocking()
         //!
         class TSCOREDLL IOSB
@@ -144,10 +149,28 @@ namespace ts {
             bool pending = false;
 
             //!
-            //! Pointer to application data.
-            //! This is typically set by the application before starting the I/O.
+            //! Current error code for the I/O.
+            //! The value may evolve during the I/O, until completion.
             //!
-            std::shared_ptr<AncillaryData> app_data {};
+            int error_code = SYS_SUCCESS;
+
+            //!
+            //! When @a pending is true, indicate how many bytes were successfully sent before the I/O would block.
+            //! Apply to non-blocking I/O only, not asynchronous I/O.
+            //!
+            size_t sent_size = 0;
+
+            //!
+            //! Pointer to application data.
+            //! This is typically set before starting the I/O at application level.
+            //!
+            std::shared_ptr<Object> app_data {};
+
+            //!
+            //! Pointer to reactive I/O data.
+            //! This is typically set before starting the I/O at "reactive I/O" level.
+            //!
+            std::shared_ptr<Object> react_data {};
 
 #if defined(TS_WINDOWS) || defined(DOXYGEN)
             // Memory marker to identify an overlap structure which belongs to an IOSB structure.
@@ -164,10 +187,10 @@ namespace ts {
             ::OVERLAPPED overlap {};
 
             //!
-            //! Pointer to I/O data (Windows-specific).
-            //! This is typically set by "reactive I/O" before starting the asynchronous I/O.
+            //! Pointer to asynchronous I/O data (Windows-specific).
+            //! This is typically set before starting the asynchronous I/O at socket level.
             //!
-            std::shared_ptr<AncillaryData> io_data {};
+            std::shared_ptr<Object> async_data {};
 
             //!
             //! Check if an OVERLAPPED structure is part of an IOSB.
@@ -222,11 +245,34 @@ namespace ts {
         virtual bool allowSetNonBlocking() const;
 
         //!
-        //! Convenience method to set a system file descriptor or socket handle in non-blocking mode.
-        //! @param [in] fd System file descriptor (UNIX) or socket handle (Windows). On Windows,
-        //! non-socket devices shall be opened with flag FILE_FLAG_OVERLAPPED instead of using this method.
+        //! Low-level method to set a system file or socket descriptor in non-blocking mode.
+        //! @param [in] fd System file or socket descriptor.
         //! @param [in] non_blocking It true, the device is set in non-blocking mode.
         //! @return True on success, false on error.
+        //!
+        //! Summary: Do not use this method unless you exactly know what you are doing.
+        //!
+        //! UNIX: Depending on the way a file descriptor is created, it may be possible to specify the non-blocking mode from the
+        //! beginning. Or it can be somehow inherited. However, this is not portable.
+        //!
+        //! Examples:
+        //! - On Linux and FreeBSD, a socket can be directly created in non-blocking mode using the flag SOCK_NONBLOCK in the 'type'
+        //!   parameter of the socket() system call. However, it does not work on macOS.
+        //! - On macOS (and maybe FreeBSD), when a server socket is in non-blocking mode, all client session sockets which are
+        //!   created by accept() are also in non-blocking mode. However, on Linux, they are in blocking mode.
+        //!
+        //! In all cases, it is possible to set a file descriptor in non-blocking mode at any time using the method setSystemNonBlocking().
+        //! This method uses fcntl(F_SETFL) to alter the file descriptor's flags.
+        //!
+        //! Windows: The natural way of not being blocked on I/O on Windows is asynchronous I/O. To increase the general confusion,
+        //! there is some form of non-blocking mode on Windows sockets, and only sockets, not other forms of file handles. This mode
+        //! is activated using "ioctlsocket(fd, FIONBIO, &mode)". When this mode is active, socket I/O become similar to UNIX: they
+        //! immediately either succeed or fail, but never block. However, there is no way to get notified when the I/O becomes possible.
+        //! There is no equivalent to epoll (Linux) or kqueue (macOS and BSD). The Windows I/O Completion Ports can only work on
+        //! asynchronous I/O, using OVERLAPPED structures. Because this form of non-blocking mode is mostly useless in practice, we do
+        //! not use it and the method setSystemNonBlocking() does nothing on Windows.
+        //!
+        //! @see https://learn.microsoft.com/en-us/archive/blogs/csliu/io-concept-blockingnon-blocking-vs-syncasync
         //!
         bool setSystemNonBlocking(SysSocketType fd, bool non_blocking);
 

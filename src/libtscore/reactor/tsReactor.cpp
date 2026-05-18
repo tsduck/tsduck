@@ -31,6 +31,7 @@
 
 #include "tsReactor.h"
 #include "tsEnvironment.h"
+#include "tsCanary.h"
 #include "tsFatal.h"
 #include "tsNames.h"
 
@@ -123,12 +124,78 @@ bool ts::Reactor::checkOpen(bool silent)
 
 
 //----------------------------------------------------------------------------
+// Allocate a new EventData that is not a reuse of a recently deallocated one.
+//----------------------------------------------------------------------------
+
+ts::Reactor::EventData* ts::Reactor::newEventData(EventType type)
+{
+    // Allocate a new EventData. However, we don't want to reuse a previous memory which is flagged as "deleted".
+    // So, we allocate EventData until one is not part of the deleted ones and we free (again) those which were
+    // already flagged as deleted. Report some traces to evaluate the cost of this heavy-handed algorithms.
+    EventData* evd = allocateEventData();
+    std::set<EventData*> to_free;
+    while (_deleted_previous_current.contains(evd)) {
+        to_free.insert(evd);
+        evd = allocateEventData();
+    }
+    for (EventData* e : to_free) {
+        deallocateEventData(e);
+    }
+
+    // Register the new EventData.
+    _events.insert(evd);
+    trace(u"new EventData: @%X, type 0x%X, after %d failed attempts", uintptr_t(evd), type, to_free.size());
+    return evd;
+}
+
+
+//----------------------------------------------------------------------------
+// Deregister and delete an EventData.
+//----------------------------------------------------------------------------
+
+void ts::Reactor::deleteEventData(EventData* evd, EventType type)
+{
+    // Deregister from active EventData.
+    _events.erase(evd);
+
+    // Keep track of recently deallocated EventData.
+    _deleted_current.insert(evd);
+    _deleted_previous_current.insert(evd);
+
+    // Actual deallocation.
+    trace(u"delete EventData: @%X, type 0x%X", uintptr_t(evd), type);
+    deallocateEventData(evd);
+}
+
+
+//----------------------------------------------------------------------------
+// Check that an EventData pointer is valid.
+//----------------------------------------------------------------------------
+
+bool ts::Reactor::validateEventData(EventData* evd, bool silent)
+{
+    // In all implementations of EventData, the first field must be a Canary.
+    const UChar* cause = Canary::Error(reinterpret_cast<Canary*>(evd));
+    if (cause == nullptr && !_events.contains(evd)) {
+        cause = u"EventData no longer in use in Reactor";
+    }
+    if (cause != nullptr) {
+        report().log(SilentLevel(silent), u"reactor internal error: invalid EventData pointer, %s", cause);
+        return false;
+    }
+    else {
+        return true;
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Check if an event is still active in the reactor.
 //----------------------------------------------------------------------------
 
 bool ts::Reactor::isActiveEvent(EventId id)
 {
-    return id.isValid() && _guts->isActiveEvent(id);
+    return id.isValid() && _events.contains(reinterpret_cast<EventData*>(id._ptr));
 }
 
 
@@ -143,6 +210,9 @@ bool ts::Reactor::open()
         return false;
     }
     else {
+        _events.clear();
+        _deleted_current.clear();
+        _deleted_previous_current.clear();
         return _is_open = _guts->open();
     }
 }

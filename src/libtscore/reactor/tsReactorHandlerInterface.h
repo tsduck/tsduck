@@ -65,10 +65,9 @@ namespace ts {
         //! @param [in,out] reactor Reactor into which the handler is invoked.
         //! @param [in] id Id of the event which was signaled.
         //! @param [in,out] iosb IOSB structure which was used when the asynchronous I/O was started.
+        //! A system-specific error code is in @a iosb, SYS_CANCELED if the I/O was canceled before completion.
         //! @param [in] io_size Size of the I/O in bytes.
-        //! @param [in] error_code System-specific error code, zero on success, SYS_ERROR in case of unknown error,
-        //! SYS_CANCELED if the I/O was canceled before completion.
         //!
-        virtual void handleAsynchronousIO(Reactor& reactor, EventId id, NonBlockingDevice::IOSB& iosb, size_t io_size, int error_code);
+        virtual void handleAsynchronousIO(Reactor& reactor, EventId id, NonBlockingDevice::IOSB& iosb, size_t io_size);
     };
 }

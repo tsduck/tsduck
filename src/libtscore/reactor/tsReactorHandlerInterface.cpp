@@ -14,4 +14,4 @@ void ts::ReactorHandlerInterface::handleTimer(Reactor&, EventId) {}
 void ts::ReactorHandlerInterface::handleUserEvent(Reactor&, EventId) {}
 void ts::ReactorHandlerInterface::handleReadReady(Reactor&, EventId, int) {}
 void ts::ReactorHandlerInterface::handleWriteReady(Reactor&, EventId, int) {}
-void ts::ReactorHandlerInterface::handleAsynchronousIO(Reactor&, EventId, NonBlockingDevice::IOSB&, size_t, int) {}
+void ts::ReactorHandlerInterface::handleAsynchronousIO(Reactor&, EventId, NonBlockingDevice::IOSB&, size_t) {}

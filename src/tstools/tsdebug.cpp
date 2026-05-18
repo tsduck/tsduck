@@ -68,7 +68,7 @@ ts::ErrorCommands::ErrorCommands(CommandLine& cmdline, int flags)
 {
     Args* cmd = cmdline.command(u"error", u"Interpret system error code", u"[options] code", flags);
     cmdline.setCommandLineHandler(this, &ErrorCommands::error, u"error");
-    cmd->option(u"", 0, Args::UINT32);
+    cmd->option(u"", 0, Args::INT32);
     cmd->help(u"", u"Error code values.");
     cmd->option(u"category", 'c', _category_names);
     cmd->help(u"category", u"C++ category (std::error_category).");

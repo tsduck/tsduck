@@ -67,14 +67,16 @@ namespace ts {
         //! Constructor.
         //! @param [in] report Where to report errors. The @a report object must remain valid as long as this object
         //! exists or setReport() is used with another Report object. If @a report is null, log messages are discarded.
+        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        explicit TLSServer(Report* report = nullptr);
+        explicit TLSServer(Report* report = nullptr, Object* owner = nullptr);
 
         //!
         //! Constructor.
         //! @param [in] delegate Use the report of another ReporterBase. If @a delegate is null, log messages are discarded.
+        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        explicit TLSServer(ReporterBase* delegate);
+        explicit TLSServer(ReporterBase* delegate, Object* owner = nullptr);
 
         //!
         //! Constructor with initial arguments.
@@ -147,7 +149,10 @@ namespace ts {
         virtual ~TLSServer() override;
         virtual bool listen(int backlog) override;
         virtual bool accept(TCPConnection& client, IPSocketAddress& addr, IOSB* = nullptr) override;
-        virtual bool close(bool silent = false) override;
+
+    protected:
+        // Inherited methods.
+        virtual bool closeImplementation(bool silent) override;
 
     private:
         // System-specific parts are stored in a private structure.

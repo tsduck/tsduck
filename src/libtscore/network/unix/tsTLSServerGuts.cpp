@@ -27,7 +27,7 @@ void ts::TLSServer::allocateGuts() { _guts = new SystemGuts; }
 void ts::TLSServer::deleteGuts() { delete _guts; }
 bool ts::TLSServer::listen(int) TS_NOT_IMPL
 bool ts::TLSServer::acceptTLS(TLSConnection&, IPSocketAddress&, IOSB*) TS_NOT_IMPL
-bool ts::TLSServer::close(bool silent) TS_NOT_IMPL
+bool ts::TLSServer::closeImplementation(bool silent) TS_NOT_IMPL
 
 #else
 
@@ -141,12 +141,11 @@ bool ts::TLSServer::acceptTLS(TLSConnection& client, IPSocketAddress& addr, IOSB
         return false;
     }
 
-    //@@@ to be implemented.
     if (isNonBlocking()) {
+        //@@@ to be implemented.
         report().error(u"non-blocking TLS is not yet implemented");
         return false;
     }
-    //@@@
 
     if (_guts->ssl_ctx == nullptr) {
         report().error(u"TLS server is not listening");
@@ -195,10 +194,10 @@ bool ts::TLSServer::acceptTLS(TLSConnection& client, IPSocketAddress& addr, IOSB
 // Close the server resources.
 //----------------------------------------------------------------------------
 
-bool ts::TLSServer::close(bool silent)
+bool ts::TLSServer::closeImplementation(bool silent)
 {
     _guts->terminate();
-    return SuperClass::close(silent);
+    return SuperClass::closeImplementation(silent);
 }
 
 #endif // TS_NO_OPENSSL

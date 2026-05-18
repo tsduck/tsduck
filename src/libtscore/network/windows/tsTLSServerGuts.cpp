@@ -86,12 +86,11 @@ bool ts::TLSServer::acceptTLS(TLSConnection& client, IPSocketAddress& addr, IOSB
         return false;
     }
 
-    //@@@ to be implemented.
     if (isNonBlocking()) {
+        //@@@ to be implemented.
         report().error(u"non-blocking TLS is not yet implemented");
         return false;
     }
-    //@@@
 
     // Accept one TCP client.
     if (!SuperClass::accept(client, addr, iosb)) {
@@ -113,8 +112,8 @@ bool ts::TLSServer::acceptTLS(TLSConnection& client, IPSocketAddress& addr, IOSB
 // Close the server resources.
 //----------------------------------------------------------------------------
 
-bool ts::TLSServer::close(bool silent)
+bool ts::TLSServer::closeImplementation(bool silent)
 {
     _guts->clear();
-    return SuperClass::close(silent);
+    return SuperClass::closeImplementation(silent);
 }

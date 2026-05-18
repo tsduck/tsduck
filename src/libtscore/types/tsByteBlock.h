@@ -95,9 +95,10 @@ namespace ts {
         //! Find the first occurrence of a byte value in a byte block.
         //! @param [in] value The byte value to search.
         //! @param [in] start Index where to start (at the beginning by default).
+        //! @param [in] end Index where to stop the search (at the end by default).
         //! @return The index of the first occurrence of @a value in the byte block or @a NPOS if not found.
         //!
-        TSCOREDLL size_type find(uint8_t value, size_type start = 0);
+        TSCOREDLL size_type find(uint8_t value, size_type start = 0, size_type end = NPOS) const;
 
         //!
         //! Replace the content of a byte block.

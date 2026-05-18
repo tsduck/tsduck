@@ -25,7 +25,7 @@ namespace ts::tlv {
     //! @tparam SAFETY The required type of thread-safety.
     //!
     template <ThreadSafety SAFETY>
-    class Connection: public ts::TCPConnection
+    class Connection: public ts::TCPConnection, protected ts::SocketHandlerInterface
     {
         TS_NOBUILD_NOCOPY(Connection);
     public:
@@ -43,16 +43,14 @@ namespace ts::tlv {
         //! Constructor.
         //! @param [in,out] logger Where to report errors and messages. An internal reference is kept.
         //! The @a logger object must remain valid as long as this object exists.
-        //! @param [in] protocol The incoming messages are interpreted
-        //! according to this protocol. The reference is kept in this object.
-        //! @param [in] auto_error_response When an invalid message is
-        //! received, the corresponding error message is automatically
+        //! @param [in] protocol The incoming messages are interpreted according to this protocol. The reference is kept in this object.
+        //! @param [in] auto_error_response When an invalid message is received, the corresponding error message is automatically
         //! sent back to the sender when @a auto_error_response is true.
-        //! @param [in] max_invalid_msg When non-zero, the connection is
-        //! automatically disconnected when the number of consecutive
+        //! @param [in] max_invalid_msg When non-zero, the connection is automatically disconnected when the number of consecutive
         //! invalid messages has reached this value.
+        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        Connection(Logger& logger, const Protocol& protocol, bool auto_error_response = true, size_t max_invalid_msg = 0);
+        Connection(Logger& logger, const Protocol& protocol, bool auto_error_response = true, size_t max_invalid_msg = 0, Object* owner = nullptr);
 
         //!
         //! Serialize and sendMessage a TLV message.
@@ -101,8 +99,8 @@ namespace ts::tlv {
         void setMaxInvalidMessages(size_t n) {_max_invalid_msg = n;}
 
     protected:
-        // Inherited from TCPConnection
-        virtual void handleConnected() override;
+        // Inherited methods.
+        virtual void handleSocketConnected(TCPConnection& sock) override;
 
     private:
         Logger&         _logger;
@@ -122,27 +120,23 @@ namespace ts::tlv {
 
 // Constructor.
 template <ts::ThreadSafety SAFETY>
-ts::tlv::Connection<SAFETY>::Connection(Logger& logger, const Protocol& protocol, bool auto_error_response, size_t max_invalid_msg) :
-    ts::TCPConnection(&logger.report()),
+ts::tlv::Connection<SAFETY>::Connection(Logger& logger, const Protocol& protocol, bool auto_error_response, size_t max_invalid_msg, Object* owner) :
+    ts::TCPConnection(&logger.report(), false, owner),
     _logger(logger),
     _protocol(protocol),
     _auto_error_response(auto_error_response),
     _max_invalid_msg(max_invalid_msg)
 {
+    // Subscribe to our own notifications.
+    addSubscription(this);
 }
 
-// Invoked when connection is established.
-// With MSVC, we get a bogus warning:
-// warning C4505: 'ts::tlv::Connection<ts::Mutex>::handleConnected': unreferenced local function has been removed
-TS_PUSH_WARNING()
-TS_MSC_NOWARNING(4505)
+// Invoked when connection is established, because we subcribed to our own notifications.
 template <ts::ThreadSafety SAFETY>
-void ts::tlv::Connection<SAFETY>::handleConnected()
+void ts::tlv::Connection<SAFETY>::handleSocketConnected(TCPConnection& sock)
 {
-    SuperClass::handleConnected();
     _invalid_msg_count = 0;
 }
-TS_POP_WARNING()
 
 // Serialize and sendMessage a TLV message.
 template <ts::ThreadSafety SAFETY>

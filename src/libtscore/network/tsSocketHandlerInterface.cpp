@@ -11,6 +11,18 @@
 
 
 //----------------------------------------------------------------------------
+// Default implementations do nothing.
+//----------------------------------------------------------------------------
+
+void ts::SocketHandlerInterface::handleSocketOpenStart(Socket&) {}
+void ts::SocketHandlerInterface::handleSocketOpenComplete(Socket&, bool) {}
+void ts::SocketHandlerInterface::handleSocketConnected(TCPConnection&) {}
+void ts::SocketHandlerInterface::handleSocketDisconnected(TCPConnection&, bool) {}
+void ts::SocketHandlerInterface::handleSocketCloseStart(Socket&, bool) {}
+void ts::SocketHandlerInterface::handleSocketCloseComplete(Socket&, bool, bool) {}
+
+
+//----------------------------------------------------------------------------
 // Register / deregister the suscription to a socket.
 //----------------------------------------------------------------------------
 

@@ -17,24 +17,28 @@
 // Constructors & destructor
 //----------------------------------------------------------------------------
 
-ts::Socket::Socket(Report* report, bool non_blocking) :
-    NonBlockingDevice(report, non_blocking)
+ts::Socket::Socket(Report* report, bool non_blocking, Object* owner) :
+    NonBlockingDevice(report, non_blocking),
+    OwnedObject(owner)
 {
 }
 
-ts::Socket::Socket(ReporterBase* delegate, bool non_blocking) :
-    NonBlockingDevice(delegate, non_blocking)
+ts::Socket::Socket(ReporterBase* delegate, bool non_blocking, Object* owner) :
+    NonBlockingDevice(delegate, non_blocking),
+    OwnedObject(owner)
 {
 }
 
 ts::Socket::~Socket()
 {
-    Socket::close(true);
+    if (isOpen()) {
+        Socket::close(true);
+    }
 
     // Tell all registered subscribers to deregister from this object before destroying it.
-    for (auto subs : _subscribers) {
+    callSubscribers([this](SocketHandlerInterface* subs) {
         subs->deregisterSocket(this);
-    }
+    });
     _subscribers.clear();
 }
 
@@ -88,11 +92,13 @@ bool ts::Socket::createSocket(IP gen, int type, int protocol)
         return false;
     }
 
-    // Notify all subscribers that we are about to open the socket.
-    for (auto subs : _subscribers) {
-        subs->handleSocketOpen(*this);
-    }
-
+    // Nonblocking mode
+    // ----------------
+    // On Windows, socket() always create a socket in overlapped mode (the asynchronous I/O are used only
+    // when an OVERLAPPED structure is specified). By default, the OVERLAPPED is posted to I/O Control Ports
+    // in all cases, including when the I/O immediately completes. We keep this default behaviour to ensure
+    // that I/O completions are processed in the right order. If we wanted to change this, then use:
+    // ::SetFileCompletionNotificationModes(::HANDLE(_sock), FILE_SKIP_COMPLETION_PORT_ON_SUCCESS)
     // On some UNIX systems, the socket can be set in non-blocking mode from the beginning.
     // On macOS, the file descriptor must be manually set in non-blocking mode afterwards.
     int type_flags = 0;
@@ -113,7 +119,7 @@ bool ts::Socket::createSocket(IP gen, int type, int protocol)
     }
 
     // Set the file descriptor in non-blocking mode if not set when the socket was created.
-#if defined(TS_MAC) || defined(TS_WINDOWS)
+#if defined(TS_MAC)
     if (isNonBlocking() && !setSystemNonBlocking(_sock, true)) {
         SysCloseSocket(_sock);
         return false;
@@ -148,47 +154,97 @@ void ts::Socket::declareOpened(SysSocketType sock)
         throw ImplementationError(u"socket already open");
     }
 
-    // Notify all subscribers that we are about to open the socket.
-    // In practice, the underlying socket is already open, but not this Socket object.
-    for (auto subs : _subscribers) {
-        subs->handleSocketOpen(*this);
-    }
+    // Notify all subscribers that the socket is about to open.
+    callSubscribers([this](SocketHandlerInterface* subs) {
+        subs->handleSocketOpenStart(*this);
+    });
 
     // Remember the system socket descriptor.
     _sock = sock;
+
+    // Notify all subscribers of the open success.
+    callSubscribers([this](SocketHandlerInterface* subs) {
+        subs->handleSocketOpenComplete(*this, true);
+    });
 }
 
 
 //----------------------------------------------------------------------------
-// Close the socket
+// Open the socket.
+//----------------------------------------------------------------------------
+
+bool ts::Socket::open(IP gen)
+{
+    // Early filtering of already opened socket.
+    if (_sock != SYS_SOCKET_INVALID) {
+        report().error(u"socket already open");
+        return false;
+    }
+
+    // Notify all subscribers that the socket is about to open.
+    callSubscribers([this](SocketHandlerInterface* subs) {
+        subs->handleSocketOpenStart(*this);
+    });
+
+    // Actual implementation.
+    const bool success = openImplementation(gen);
+
+    // Notify all subscribers of the open status.
+    callSubscribers([this, success](SocketHandlerInterface* subs) {
+        subs->handleSocketOpenComplete(*this, success);
+    });
+    return success;
+}
+
+//----------------------------------------------------------------------------
+// Close the socket.
 //----------------------------------------------------------------------------
 
 bool ts::Socket::close(bool silent)
 {
-    if (_sock != SYS_SOCKET_INVALID) {
-        // Mark the socket as invalid. If the close generates reception errors in other threads,
-        // these threads can immediately check if this is a real error or the result of a close.
-        const SysSocketType previous = _sock;
-        _sock = SYS_SOCKET_INVALID;
-
-        // Shutdown should not be necessary here. However, on Linux, not using shutdown makes
-        // a blocking receive hangs forever when close() is invoked by another thread. By using
-        // shutdown() before close(), the blocking call is released. This is especially true on
-        // UDP sockets where shutdown() is normally meaningless.
-        ::shutdown(previous, SYS_SOCKET_SHUT_RDWR);
-
-        // Actually close the socket.
-        const int err = SysCloseSocket(previous);
-        if (err != 0) {
-            report().log(SilentLevel(silent), u"error closing socket: %s", SysErrorCodeMessage(err));
-        }
-
-        // Notify all subscribers that the socket is now closed.
-        for (auto subs : _subscribers) {
-            subs->handleSocketClose(*this);
-        }
+    // Early filtering of already closed socket.
+    if (_sock == SYS_SOCKET_INVALID) {
+        report().log(SilentLevel(silent), u"socket not open");
+        return false;
     }
-    return true;
+
+    // Notify all subscribers that the socket is about to open.
+    callSubscribers([this, silent](SocketHandlerInterface* subs) {
+        subs->handleSocketCloseStart(*this, silent);
+    });
+
+    // Actual implementation.
+    const bool success = closeImplementation(silent);
+
+    // Notify all subscribers of the close status.
+    callSubscribers([this, silent, success](SocketHandlerInterface* subs) {
+        subs->handleSocketCloseComplete(*this, silent, success);
+    });
+    return success;
+}
+
+bool ts::Socket::closeImplementation(bool silent)
+{
+    // Mark the socket as invalid. If the close generates reception errors in other threads,
+    // these threads can immediately check if this is a real error or the result of a close.
+    const SysSocketType previous = _sock;
+    _sock = SYS_SOCKET_INVALID;
+
+    // Shutdown should not be necessary here. However, on Linux, not using shutdown makes
+    // a blocking receive hangs forever when close() is invoked by another thread. By using
+    // shutdown() before close(), the blocking call is released. This is especially true on
+    // UDP sockets where shutdown() is normally meaningless.
+    ::shutdown(previous, SYS_SOCKET_SHUT_RDWR);
+
+    // Actually close the socket.
+    const int err = SysCloseSocket(previous);
+    if (err == SYS_SUCCESS) {
+        return true;
+    }
+    else {
+        report().log(SilentLevel(silent), u"error closing socket: %s", SysErrorCodeMessage(err));
+        return false;
+    }
 }
 
 
@@ -331,4 +387,14 @@ bool ts::Socket::getLocalAddress(IPSocketAddress& addr) const
     }
     addr.set(sock_addr.data);
     return true;
+}
+
+ts::UString ts::Socket::localName()
+{
+    // Get socket address without error message.
+    IPSocketAddress addr;
+    const bool mute = muteReport(true);
+    const bool success = getLocalAddress(addr);
+    muteReport(mute);
+    return success ? addr.toString() : u"";
 }

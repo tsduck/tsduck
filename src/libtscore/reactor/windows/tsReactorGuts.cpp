@@ -27,6 +27,35 @@
 
 
 //----------------------------------------------------------------------------
+// Reactor::EventData, the data for an EventId.
+//----------------------------------------------------------------------------
+
+class ts::Reactor::EventData
+{
+    TS_DEFAULT_COPY_MOVE(EventData);
+public:
+    Canary                   canary {};          // First field in memory.
+    Reactor::Guts*           guts = nullptr;     // Link to parent reactor, when called in APC.
+    EventType                type = EVT_NONE;    // Event type (can be read+write with epoll).
+    bool                     repeat = false;     // Repeatable timer or notification.
+    ReactorHandlerInterface* handler = nullptr;  // Generic handler.
+    ::HANDLE                 handle = nullptr;   // General-purpose handle.
+
+    EventData() = default;
+};
+
+ts::Reactor::EventData* ts::Reactor::allocateEventData()
+{
+    return new EventData;
+}
+
+void ts::Reactor::deallocateEventData(EventData* evd)
+{
+    delete evd;
+}
+
+
+//----------------------------------------------------------------------------
 // Reactor::Guts, the system-specific internal data structure.
 //----------------------------------------------------------------------------
 
@@ -41,7 +70,6 @@ public:
     virtual ~Guts() override {}
     virtual bool open() override;
     virtual bool close(bool silent) override;
-    virtual bool isActiveEvent(EventId id) override;
     virtual void processEventLoop() override;
     virtual void* newTimer(ReactorHandlerInterface* handler, cn::milliseconds duration, bool repeat) override;
     virtual bool cancelTimer(EventId id, bool silent) override;
@@ -54,35 +82,11 @@ public:
     virtual bool deleteAsynchronousIO(EventId id, bool silent) override;
 
 private:
-    // EventData is the data for an EventId.
-    class EventData
-    {
-        TS_DEFAULT_COPY_MOVE(EventData);
-    public:
-        Canary                   canary {};          // First field in memory.
-        Reactor::Guts*           guts = nullptr;     // Link to parent reactor, when called in APC.
-        EventType                type = EVT_NONE;    // Event type (can be read+write with epoll).
-        bool                     repeat = false;     // Repeatable timer or notification.
-        ReactorHandlerInterface* handler = nullptr;  // Generic handler.
-        ::HANDLE                 handle = nullptr;   // General-purpose handle.
+    // Handle for the I/O completion port.
+    ::HANDLE _iocp_handle = nullptr;
 
-        // The constructor automatically register the EventData.
-        EventData(Guts*, EventType);
-        EventData() = delete;
-    };
-
-    // A canary is more efficient when at the start of its data structure.
-    static_assert(offsetof(EventData, canary) == 0);
-
-    // Guts private fields.
-    std::set<EventData*> _events {};              // Existing allocated events.
-    ::HANDLE             _iocp_handle = nullptr;  // Handle for the I/O completion port.
-
-    // Deregister and delete an EventData.
-    void deleteEventData(EventData*);
-
-    // Check that an EventData pointer is valid. If event type is not EVT_NONE, check it.
-    bool validateEventData(EventData* evd, EventType type, bool silent);
+    // Allocate and register an event data for a given event type.
+    EventData* newEventData(EventType type, ReactorHandlerInterface* handler);
 
     // Close the system part of an event.
     bool sysDeleteTimer(EventData*, bool silent);
@@ -90,13 +94,12 @@ private:
 
     // Asynchronous timer completion routine.
     static void APIENTRY WinTimerCompletion(::LPVOID arg, ::DWORD timer_low, ::DWORD time_high);
+
+    // In all implementations of EventData, the first field must be a Canary.
+    static_assert(offsetof(ts::Reactor::EventData, canary) == 0);
 };
 
-
-//----------------------------------------------------------------------------
 // Guts allocation.
-//----------------------------------------------------------------------------
-
 ts::Reactor::GutsBase* ts::Reactor::allocateGuts()
 {
     return new Guts(*this);
@@ -104,55 +107,17 @@ ts::Reactor::GutsBase* ts::Reactor::allocateGuts()
 
 
 //----------------------------------------------------------------------------
-// EventData management.
+// Allocate and register an event data for a given event type.
 //----------------------------------------------------------------------------
 
-// EventData constructor automatically registers it.
-ts::Reactor::Guts::EventData::EventData(Guts* g, EventType t) :
-    guts(g),
-    type(t)
+ts::Reactor::EventData* ts::Reactor::Guts::newEventData(EventType type, ReactorHandlerInterface* handler)
 {
-    guts->_reactor.trace(u"new EventData: %X", uintptr_t(this));
-    guts->_events.insert(this);
-}
-
-// Deregister and delete an EventData.
-void ts::Reactor::Guts::deleteEventData(EventData* evd)
-{
-    _events.erase(evd);
-    _reactor.trace(u"delete EventData: %X", uintptr_t(this));
-    delete evd;
-}
-
-// Check that an EventData pointer is valid.
-bool ts::Reactor::Guts::validateEventData(EventData* evd, EventType type, bool silent)
-{
-    const UChar* cause = Canary::Error(&evd->canary);
-    if (cause == nullptr && !_events.contains(evd)) {
-        cause = u"EventData no longer in use in Reactor";
-    }
-    if (cause != nullptr) {
-        _reactor.report().log(SilentLevel(silent), u"reactor internal error: invalid EventData pointer, %s", cause);
-        return false;
-    }
-    else if (type != EVT_NONE && evd->type != type) {
-        _reactor.report().log(SilentLevel(silent), u"reactor internal error: unexpected EventData type, expected %s, got %d",
-                              EventTypeNames().name(type), EventTypeNames().name(evd->type));
-        return false;
-    }
-    else {
-        return true;
-    }
-}
-
-
-//----------------------------------------------------------------------------
-// Check if an event is still active in the reactor.
-//----------------------------------------------------------------------------
-
-bool ts::Reactor::Guts::isActiveEvent(EventId id)
-{
-    return _events.contains(reinterpret_cast<EventData*>(id._ptr));
+    // Allocate a new EventData.
+    EventData* evd = _reactor.newEventData(type);
+    evd->guts = this;
+    evd->type = type;
+    evd->handler = handler;
+    return evd;
 }
 
 
@@ -167,7 +132,6 @@ bool ts::Reactor::Guts::open()
     _iocp_handle = ::CreateIoCompletionPort(INVALID_HANDLE_VALUE, nullptr, 0, 0);
 
     if (WinHandleValid(_iocp_handle)) {
-        _events.clear();
         return true;
     }
     else {
@@ -187,8 +151,8 @@ bool ts::Reactor::Guts::close(bool silent)
     bool success = true;
 
     // Force system close of pending events, if there are any.
-    for (auto evd : _events) {
-        if (validateEventData(evd, EVT_NONE, silent)) {
+    for (auto evd : _reactor._events) {
+        if (_reactor.validateEventData(evd, silent)) {
             if (evd->type == EVT_EVENT) {
                 sysDeleteEvent(evd, silent);
             }
@@ -205,7 +169,7 @@ bool ts::Reactor::Guts::close(bool silent)
             success = false;
         }
     }
-    _events.clear();
+    _reactor._events.clear();
 
     // Close the I/O completion port.
     assert(WinHandleValid(_iocp_handle));
@@ -228,10 +192,11 @@ void ts::Reactor::Guts::processEventLoop()
     while (!_reactor._exit_requested) {
 
         // Adjust the size of the system structures describing events to wait for.
-        _reactor.adjustEventVector(_events, sysevents);
+        _reactor.adjustEventVector(sysevents);
 
         // Wait for events. No timeouts, use timers to timeout.
         // Important: specify to wait in alertable state (last parameter) to allow timer APC.
+        _reactor.trace(u"IOCP: ---- wait for events");
         ::ULONG retcount = 0;
         size_t evcount = 0;
         if (::GetQueuedCompletionStatusEx(_iocp_handle, &sysevents[0], ::ULONG(sysevents.size()), &retcount, INFINITE, true)) {
@@ -248,15 +213,24 @@ void ts::Reactor::Guts::processEventLoop()
             _reactor._exit_success = false;
             break;
         }
-        _reactor.trace(u"processEventLoop: got %d events", evcount);
+        _reactor.trace(u"IOCP: ---- got %d events", evcount);
 
         // Process all returned events.
         for (size_t i = 0; i < evcount && !_reactor._exit_requested; i++) {
 
-            // Get and check the associated EventData block.
+            // Get the associated EventData block.
             auto& sysev(sysevents[i]);
             EventData* sysevd = reinterpret_cast<EventData*>(sysev.lpCompletionKey);
-            if (!validateEventData(sysevd, EVT_NONE, false)) {
+
+            // Check that this event wasn't deleted in the processing of a previous event.
+            if (_reactor._deleted_previous_current.contains(sysevd)) {
+                _reactor.trace(u"IOCP: event #%d, ignoring deleted EventData @%X", i, uintptr_t(sysevd));
+                continue;
+            }
+
+            // Check the integrity of the EventData.
+            if (!_reactor.validateEventData(sysevd, false)) {
+                _reactor.trace(u"IOCP: event #%d, dropped EventData @%X", i, uintptr_t(sysevd));
                 continue;
             }
             const EventId id(sysevd);
@@ -266,17 +240,19 @@ void ts::Reactor::Guts::processEventLoop()
 
             // Process the event, based on a copy of the EventData block.
             if (evd.type == EVT_EVENT) {
+                _reactor.trace(u"IOCP: event #%d, user event completed", i);
                 // Call the user event callback.
                 if (evd.handler != nullptr) {
                     evd.handler->handleUserEvent(_reactor, id);
                 }
             }
             else if (evd.type == EVT_TIMER) {
+                _reactor.trace(u"IOCP: event #%d, timer completed", i);
                 if (!evd.repeat) {
                     // In case of one-shot event, the timer must be explicitly closed.
                     sysDeleteTimer(sysevd, true);
                     // Manually remove the one-shot timer before calling the handler.
-                    deleteEventData(sysevd);
+                    _reactor.deleteEventData(sysevd, evd.type);
                 }
                 // Call the timer callback.
                 if (evd.handler != nullptr) {
@@ -285,27 +261,29 @@ void ts::Reactor::Guts::processEventLoop()
             }
             else if (evd.type == EVT_ASYNC) {
                 // Asynchronous I/O. Try to find the IOSB from the OVERLAPPED address.
+                _reactor.trace(u"IOCP: event #%d, asynchronous I/O completed, overlapped @%X", i, uintptr_t(sysev.lpOverlapped));
                 NonBlockingDevice::IOSB* iosb = NonBlockingDevice::IOSB::ParentIOSB(sysev.lpOverlapped);
                 if (iosb == nullptr) {
                     _reactor.report().error(u"reactor received an asynchronous I/O completion without identified IOSB");
                 }
                 else if (evd.handler != nullptr) {
                     // Translate the content of the OVERLAPPED.
-                    int error_code = SYS_SUCCESS;
+                    iosb->error_code = SYS_SUCCESS;
                     ::DWORD io_size = 0;
                     if (!::GetOverlappedResult(evd.handle, &iosb->overlap, &io_size, false)) {
                         // When the I/O completed on error, GetOverlappedResult set LastError and returns false.
-                        // In case of I/O cancelation, the error status is ERROR_OPERATION_ABORTED.
-                        error_code = int(::GetLastError());
-                        if (error_code == ERROR_OPERATION_ABORTED) {
-                            // If the operation was aborted, make it an explicit portable code.
-                            error_code = SYS_CANCELED;
-                        }
+                        iosb->error_code = TranslateError(LastSysErrorCode());
                     }
-                    evd.handler->handleAsynchronousIO(_reactor, id, *iosb, size_t(io_size), error_code);
+                    evd.handler->handleAsynchronousIO(_reactor, id, *iosb, size_t(io_size));
                 }
             }
+            else {
+                _reactor.trace(u"IOCP: event #%d, unexpected EventData @%X, type 0x%X", i, uintptr_t(sysev.lpOverlapped), evd.type);
+                _reactor.report().error(u"reactor received unexpected event type 0x%X", evd.type);
+            }
         }
+        _reactor.trace(u"IOCP: ---- end of event processing");
+        _reactor.endOfEventProcessing();
     }
 }
 
@@ -317,15 +295,14 @@ void ts::Reactor::Guts::processEventLoop()
 void* ts::Reactor::Guts::newTimer(ReactorHandlerInterface* handler, cn::milliseconds duration, bool repeat)
 {
     // Create the EventData
-    EventData* evd = new EventData(this, EVT_TIMER);
-    evd->handler = handler;
+    EventData* evd = newEventData(EVT_TIMER, handler);
     evd->repeat = repeat;
 
     // Create a waitable timer.
     evd->handle = ::CreateWaitableTimerW(nullptr, true, nullptr);
     if (!WinHandleValid(evd->handle)) {
         _reactor.report().error(u"error creating waitable timer: %s", SysErrorCodeMessage());
-        deleteEventData(evd);
+        _reactor.deleteEventData(evd, evd->type);
         return nullptr;
     }
 
@@ -339,7 +316,7 @@ void* ts::Reactor::Guts::newTimer(ReactorHandlerInterface* handler, cn::millisec
     if (!::SetWaitableTimer(evd->handle, &expiration, ::ULONG(repeat ? duration.count() : 0), Reactor::Guts::WinTimerCompletion, evd, false)) {
         _reactor.report().error(u"error setting waitable timer: %s", SysErrorCodeMessage());
         ::CloseHandle(evd->handle);
-        deleteEventData(evd);
+        _reactor.deleteEventData(evd, evd->type);
         return nullptr;
     }
 
@@ -354,10 +331,10 @@ void* ts::Reactor::Guts::newTimer(ReactorHandlerInterface* handler, cn::millisec
 bool ts::Reactor::Guts::cancelTimer(EventId id, bool silent)
 {
     EventData* evd = reinterpret_cast<EventData*>(id._ptr);
-    bool success = validateEventData(evd, EVT_TIMER, silent);
+    bool success = _reactor.validateEventData(evd, silent);
     if (success) {
         success = sysDeleteTimer(evd, silent);
-        deleteEventData(evd);
+        _reactor.deleteEventData(evd, evd->type);
     }
     return success;
 }
@@ -395,12 +372,8 @@ void ts::Reactor::Guts::WinTimerCompletion(::LPVOID arg, ::DWORD timer_low, ::DW
 
 void* ts::Reactor::Guts::newEvent(ReactorHandlerInterface* handler)
 {
-    // Create the EventData
-    EventData* evd = new EventData(this, EVT_EVENT);
-    evd->handler = handler;
-
     // An event has no specific system handle. The event is explicitly pushed in the I/O completion queue.
-    return evd;
+    return newEventData(EVT_EVENT, handler);
 }
 
 
@@ -429,10 +402,10 @@ bool ts::Reactor::Guts::signalEvent(EventId id)
 bool ts::Reactor::Guts::deleteEvent(EventId id, bool silent)
 {
     EventData* evd = reinterpret_cast<EventData*>(id._ptr);
-    bool success = validateEventData(evd, EVT_EVENT, silent);
+    bool success = _reactor.validateEventData(evd, silent);
     if (success) {
         success = sysDeleteEvent(evd, silent);
-        deleteEventData(evd);
+        _reactor.deleteEventData(evd, evd->type);
     }
     return success;
 }
@@ -450,15 +423,14 @@ bool ts::Reactor::Guts::sysDeleteEvent(EventData* evd, bool silent)
 
 void* ts::Reactor::Guts::newAsynchronousIO(ReactorHandlerInterface* handler, SysSocketType sock)
 {
-    // Create the EventData
-    EventData* evd = new EventData(this, EVT_ASYNC);
-    evd->handler = handler;
+    // Create the EventData.
+    EventData* evd = newEventData(EVT_ASYNC, handler);
     evd->handle = ::HANDLE(sock);
 
     // Add the system handle to the I/O completion port.
     if (!WinHandleValid(::CreateIoCompletionPort(::HANDLE(sock), _iocp_handle, ::ULONG_PTR(evd), 0))) {
         _reactor.report().error(u"error adding handle to I/O completion port: %s", SysErrorCodeMessage());
-        deleteEventData(evd);
+        _reactor.deleteEventData(evd, evd->type);
         return nullptr;
     }
     return evd;
@@ -472,7 +444,7 @@ void* ts::Reactor::Guts::newAsynchronousIO(ReactorHandlerInterface* handler, Sys
 bool ts::Reactor::Guts::cancelAsynchronousIO(EventId id, bool silent)
 {
     EventData* evd = reinterpret_cast<EventData*>(id._ptr);
-    bool success = validateEventData(evd, EVT_ASYNC, silent);
+    bool success = _reactor.validateEventData(evd, silent);
     if (success) {
         // Cancel all I/O on the associated handle.
         success = ::CancelIoEx(evd->handle, nullptr);
@@ -496,7 +468,7 @@ bool ts::Reactor::Guts::cancelAsynchronousIO(EventId id, bool silent)
 bool ts::Reactor::Guts::cancelAndWaitAsynchronousIO(EventId id, NonBlockingDevice::IOSB& iosb, bool silent)
 {
     EventData* evd = reinterpret_cast<EventData*>(id._ptr);
-    bool success = validateEventData(evd, EVT_ASYNC, silent);
+    bool success = _reactor.validateEventData(evd, silent);
     if (success) {
         success = ::CancelIoEx(evd->handle, &iosb.overlap);
         int err = LastSysErrorCode();
@@ -525,7 +497,7 @@ bool ts::Reactor::Guts::cancelAndWaitAsynchronousIO(EventId id, NonBlockingDevic
 bool ts::Reactor::Guts::deleteAsynchronousIO(EventId id, bool silent)
 {
     EventData* evd = reinterpret_cast<EventData*>(id._ptr);
-    bool success = validateEventData(evd, EVT_ASYNC, silent);
+    bool success = _reactor.validateEventData(evd, silent);
     if (success) {
         // Here, we face another stupid design idea of Microsoft: Once we have added a device handle
         // to an I/O completion port, there is no way to remove it. We need to wait for the closing
@@ -533,7 +505,7 @@ bool ts::Reactor::Guts::deleteAsynchronousIO(EventId id, bool silent)
         // the handle, this reactor will continue to receive notifications for this handle. We rely
         // on the fact that the EventData is no longer allocated to detect that these completions
         // should be ignored.
-        deleteEventData(evd);
+        _reactor.deleteEventData(evd, evd->type);
     }
     return success;
 }

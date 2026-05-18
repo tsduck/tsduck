@@ -182,7 +182,7 @@ void* ts::GetFunctionFromDLL(const char* function, std::initializer_list<const c
 // Search a Windows Socket extension function (Windows-specific).
 //-----------------------------------------------------------------------------
 
-void* ts::GetWSAFunction(::GUID& guid, int& error)
+void* ts::GetWSAFunction(const ::GUID& guid, int& error)
 {
     // No error by default.
     error = 0;
@@ -197,7 +197,7 @@ void* ts::GetWSAFunction(::GUID& guid, int& error)
     // Get the function address from WSA.
     void* addr = nullptr;
     ::DWORD bytes = 0;
-    if (::WSAIoctl(sock, SIO_GET_EXTENSION_FUNCTION_POINTER, &guid, sizeof(guid), &addr, sizeof(addr), &bytes, nullptr, nullptr) != 0) {
+    if (::WSAIoctl(sock, SIO_GET_EXTENSION_FUNCTION_POINTER, const_cast<::GUID*>(&guid), sizeof(guid), &addr, sizeof(addr), &bytes, nullptr, nullptr) != 0) {
         error = ::WSAGetLastError();
     }
 

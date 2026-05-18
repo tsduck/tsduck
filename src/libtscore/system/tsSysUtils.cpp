@@ -61,6 +61,55 @@
 
 
 //----------------------------------------------------------------------------
+// Translate an error code, mapping to some portable code.
+//----------------------------------------------------------------------------
+
+int ts::TranslateError(int code)
+{
+#if defined(TS_WINDOWS)
+    // Warning: do not use SUCCEEDED(code). It works only on HRESULT values and considers that
+    // bit 31 equals to zero means success, which is incorrect for all GetLastError() values.
+    if (code == ERROR_OPERATION_ABORTED) {
+        return SYS_CANCELED;
+    }
+    else if (code == WSAECONNRESET || code == WSAEDISCON) {
+        return SYS_EOF;
+    }
+#else
+    if (code == EPIPE) {
+        return SYS_EOF;
+    }
+#endif
+
+    // Other non-translatable codes.
+    return code;
+}
+
+
+//----------------------------------------------------------------------------
+// Format a system error code into a string.
+//----------------------------------------------------------------------------
+
+std::string ts::SysErrorCodeMessage(int code, const std::error_category& category)
+{
+    // With the default category, try the synthetic code first.
+    if (&category == &std::system_category()) {
+        switch (code) {
+            case SYS_SUCCESS:  return "success";
+            case SYS_ERROR:    return "unknown error";
+            case SYS_CANCELED: return "canceled";
+            case SYS_EOF:      return "end of file";
+            case SYS_REJECTED: return "rejected";
+            default: break;
+        }
+    }
+
+    // Standard implementation.
+    return std::error_code(code, category).message();
+}
+
+
+//----------------------------------------------------------------------------
 // Return the name of the current application executable file.
 //----------------------------------------------------------------------------
 

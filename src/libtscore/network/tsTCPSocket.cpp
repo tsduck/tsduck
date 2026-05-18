@@ -12,25 +12,14 @@
 
 
 //----------------------------------------------------------------------------
-// Constructors and destructors.
+// Constructors and destructor.
 //----------------------------------------------------------------------------
 
 ts::TCPSocket::~TCPSocket()
 {
-    TCPSocket::close(true);
-}
-
-
-//----------------------------------------------------------------------------
-// Default implementations of handlers.
-//----------------------------------------------------------------------------
-
-void ts::TCPSocket::handleOpened()
-{
-}
-
-void ts::TCPSocket::handleClosed()
-{
+    if (isOpen()) {
+        TCPSocket::close(true);
+    }
 }
 
 
@@ -38,30 +27,21 @@ void ts::TCPSocket::handleClosed()
 // Open the socket
 //----------------------------------------------------------------------------
 
-bool ts::TCPSocket::open(IP gen)
+bool ts::TCPSocket::openImplementation(IP gen)
 {
-    {
-        std::lock_guard<std::recursive_mutex> lock(_mutex);
-        if (!createSocket(gen, SOCK_STREAM, IPPROTO_TCP)) {
-            return false;
-        }
-    }
-    handleOpened();
-    return true;
+    std::lock_guard<std::recursive_mutex> lock(_mutex);
+    return createSocket(gen, SOCK_STREAM, IPPROTO_TCP);
 }
 
 
 //----------------------------------------------------------------------------
-// This method is used by a server to declare that the socket has just become opened.
+// Called by a server to declare that the socket has just become opened.
 //----------------------------------------------------------------------------
 
 void ts::TCPSocket::declareOpened(SysSocketType sock)
 {
-    {
-        std::lock_guard<std::recursive_mutex> lock(_mutex);
-        Socket::declareOpened(sock);
-    }
-    handleOpened();
+    std::lock_guard<std::recursive_mutex> lock(_mutex);
+    SuperClass::declareOpened(sock);
 }
 
 
@@ -69,16 +49,10 @@ void ts::TCPSocket::declareOpened(SysSocketType sock)
 // Close the socket
 //----------------------------------------------------------------------------
 
-bool ts::TCPSocket::close(bool silent)
+bool ts::TCPSocket::closeImplementation(bool silent)
 {
-    bool ok = true;
-    {
-        std::lock_guard<std::recursive_mutex> lock(_mutex);
-        // Close socket, without proper disconnection
-        ok = Socket::close(silent);
-    }
-    handleClosed();
-    return ok;
+    std::lock_guard<std::recursive_mutex> lock(_mutex);
+    return SuperClass::closeImplementation(silent);
 }
 
 

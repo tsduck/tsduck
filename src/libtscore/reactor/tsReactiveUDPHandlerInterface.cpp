@@ -10,7 +10,7 @@
 
 
 ts::ReactiveUDPHandlerInterface::~ReactiveUDPHandlerInterface() {}
-void ts::ReactiveUDPHandlerInterface::handleUDPSend(ReactiveUDPSocket&, const void*, size_t, const IPSocketAddress&, int) {}
+void ts::ReactiveUDPHandlerInterface::handleUDPSend(ReactiveUDPSocket&, const void*, size_t, const IPSocketAddress&, int, const ObjectPtr&) {}
 void ts::ReactiveUDPHandlerInterface::handleUDPReceive(ReactiveUDPSocket&, const ByteBlockPtr&, const IPSocketAddress&, const IPSocketAddress&,
-                                                       cn::microseconds, UDPSocket::TimeStampType, int) {}
-void ts::ReactiveUDPHandlerInterface::handleUDPClosed(ReactiveUDPSocket&) {}
+                                                       cn::microseconds, UDPSocket::TimeStampType, int, const ObjectPtr&) {}
+void ts::ReactiveUDPHandlerInterface::handleUDPClosed(ReactiveUDPSocket&, const ObjectPtr&) {}

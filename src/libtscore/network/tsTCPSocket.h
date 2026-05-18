@@ -44,15 +44,17 @@ namespace ts {
         //! @param [in] report Where to report errors. The @a report object must remain valid as long as this object
         //! exists or setReport() is used with another Report object. If @a report is null, log messages are discarded.
         //! @param [in] non_blocking It true, the device is initially set in non-blocking mode.
+        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        explicit TCPSocket(Report* report = nullptr, bool non_blocking = false) : Socket(report, non_blocking) {}
+        explicit TCPSocket(Report* report = nullptr, bool non_blocking = false, Object* owner = nullptr) : Socket(report, non_blocking, owner) {}
 
         //!
         //! Constructor.
         //! @param [in] delegate Use the report of another ReporterBase. If @a delegate is null, log messages are discarded.
         //! @param [in] non_blocking It true, the device is initially set in non-blocking mode.
+        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        explicit TCPSocket(ReporterBase* delegate, bool non_blocking = false) : Socket(delegate, non_blocking) {}
+        explicit TCPSocket(ReporterBase* delegate, bool non_blocking = false, Object* owner = nullptr) : Socket(delegate, non_blocking, owner) {}
 
         //!
         //! Destructor.
@@ -97,26 +99,12 @@ namespace ts {
         //!
         bool setNoDelay(bool active);
 
-        // Implementation of Socket interface.
-        virtual bool open(IP gen) override;
-        virtual bool close(bool silent = false) override;
-
     protected:
         std::recursive_mutex _mutex {}; //!< Mutex protecting this object.
 
-        //!
-        //! This virtual method can be overriden by subclasses to be notified of open.
-        //! All subclasses should explicitly invoke their superclass' handlers.
-        //!
-        virtual void handleOpened();
-
-        //!
-        //! This virtual method can be overriden by subclasses to be notified of close.
-        //! All subclasses should explicitly invoke their superclass' handlers.
-        //!
-        virtual void handleClosed();
-
         // Implementation of Socket interface.
+        virtual bool openImplementation(IP gen) override;
+        virtual bool closeImplementation(bool silent) override;
         virtual void declareOpened(SysSocketType sock) override;
     };
 }

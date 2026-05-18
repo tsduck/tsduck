@@ -48,8 +48,9 @@ namespace ts {
         //! If set to IP::Any, this socket can receive IPv4 and IPv6 datagrams.
         //! If @a gen is IP::v6, the socket is created with option IPV6_V6ONLY set.
         //! @param [in] non_blocking It true, the device is initially set in non-blocking mode.
+        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        explicit UDPSocket(Report* report = nullptr, bool auto_open = false, IP gen = IP::Any, bool non_blocking = false);
+        explicit UDPSocket(Report* report = nullptr, bool auto_open = false, IP gen = IP::Any, bool non_blocking = false, Object* owner = nullptr);
 
         //!
         //! Constructor.
@@ -59,8 +60,9 @@ namespace ts {
         //! If set to IP::Any, this socket can receive IPv4 and IPv6 datagrams.
         //! If @a gen is IP::v6, the socket is created with option IPV6_V6ONLY set.
         //! @param [in] non_blocking It true, the device is initially set in non-blocking mode.
+        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        explicit UDPSocket(ReporterBase* delegate, bool auto_open = false, IP gen = IP::Any, bool non_blocking = false);
+        explicit UDPSocket(ReporterBase* delegate, bool auto_open = false, IP gen = IP::Any, bool non_blocking = false, Object* owner = nullptr);
 
         //!
         //! Destructor.
@@ -293,7 +295,8 @@ namespace ts {
         //! When null, the socket must be in blocking mode (the default). See the description of IOSB.
         //! Important: The parameter @a iosb should not be used by applications. It should be used only by
         //! "reactive classes", which work in combination with a Reactor.
-        //! @return True on success, false on error.
+        //! @return True on success, false on error. In case of non-blocking mode, if the I/O is successfully started
+        //! but still pending, iosb->pending is set to true and the method returns true.
         //!
         virtual bool send(const void* data, size_t size, const IPSocketAddress& destination, IOSB* iosb = nullptr);
 
@@ -306,7 +309,8 @@ namespace ts {
         //! When null, the socket must be in blocking mode (the default). See the description of IOSB.
         //! Important: The parameter @a iosb should not be used by applications. It should be used only by
         //! "reactive classes", which work in combination with a Reactor.
-        //! @return True on success, false on error.
+        //! @return True on success, false on error. In case of non-blocking mode, if the I/O is successfully started
+        //! but still pending, iosb->pending is set to true and the method returns true.
         //!
         virtual bool send(const void* data, size_t size, IOSB* iosb = nullptr);
 
@@ -338,7 +342,8 @@ namespace ts {
         //! When null, the socket must be in blocking mode (the default). See the description of IOSB.
         //! Important: The parameter @a iosb should not be used by applications. It should be used only by
         //! "reactive classes", which work in combination with a Reactor.
-        //! @return True on success, false on error.
+        //! @return True on success, false on error. In case of non-blocking mode, if the I/O is successfully started
+        //! but still pending, iosb->pending is set to true and the method returns true.
         //!
         virtual bool receive(void* data,
                              size_t max_size,
@@ -369,9 +374,10 @@ namespace ts {
                               cn::microseconds* timestamp = nullptr,
                               TimeStampType* timestamp_type = nullptr) const;
 
+    protected:
         // Implementation of Socket interface.
-        virtual bool open(IP gen) override;
-        virtual bool close(bool silent = false) override;
+        virtual bool openImplementation(IP gen) override;
+        virtual bool closeImplementation(bool silent) override;
 
     private:
         // Encapsulate an ip_mreq
@@ -429,29 +435,33 @@ namespace ts {
         bool addMembershipImpl(const IPAddress& multicast, const IPAddress& local, int interface_index, const IPAddress& source);
 
 #if defined(TS_WINDOWS)
-        // The function WSARecvMsg uses a complex structure of buffers.
+        // The functions WSASendTo and WSARecvMsg use complex structures of buffers.
         // For asynchronous I/O, we need to keep everything in one single structure
         // which lives during the I/O. This structure must be non-copyable because
         // it contains pointers to its own fields.
         // See https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/ms741687(v=vs.85)
-        class TSCOREDLL RecvBuffers : public AncillaryData
+        class TSCOREDLL AsyncBuffers: public Object
         {
-            TS_NOCOPY(RecvBuffers);
+            TS_NOCOPY(AsyncBuffers);
         public:
-            ::WSAMSG msg {};                    // Reception parameters, contain pointers to subsequent fields.
-            ::WSABUF vec {};                    // Pointer to user's reception buffer.
-            ::sockaddr_storage sender_sock {};  // Will receive the sender's socket address.
-            ::CHAR ancil_data[1024] {};         // Will receive other reception data (destination socket, timestamp).
+            ::WSAMSG msg {};                  // Reception parameters, contain pointers to subsequent fields.
+            ::WSABUF buf {};                  // Pointer to user's buffer.
+            ::sockaddr_storage peer_sock {};  // Send: destination socket address. Receive: receive the sender's socket address.
+            int peer_sock_len = 0;            // Send: destination socket address length.
+            ::CHAR ancil_data[1024] {};       // Receive: other reception data (destination socket, timestamp).
 
             // Constructor.
-            RecvBuffers() = default;
-            virtual ~RecvBuffers() override;
+            AsyncBuffers() = default;
+            virtual ~AsyncBuffers() override;
+
+            // Before send: Initializes all internal structures and set the address and size of the user's send buffer.
+            void setSendBuffer(const void* address, size_t size, const IPSocketAddress& dest);
 
             // Before receive: Initializes all internal structures and set the address and size of the user's reception buffer.
-            void setUserBuffer(void* address, size_t size);
+            void setReceiveBuffer(void* address, size_t size);
 
             // After receive: Extract the message characteristics.
-            void getMessageProperties(const UDPSocket& socket, IPSocketAddress& sender, IPSocketAddress& destination, cn::microseconds* timestamp, TimeStampType* timestamp_type);
+            void getReceiveResult(const UDPSocket& socket, IPSocketAddress& sender, IPSocketAddress& destination, cn::microseconds* timestamp, TimeStampType* timestamp_type);
         };
 #endif
     };

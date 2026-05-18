@@ -9,7 +9,6 @@
 #include "tsUDPSocket.h"
 #include "tsNetworkInterface.h"
 #include "tsSysUtils.h"
-#include "tsFatal.h"
 
 #if defined(TS_WINDOWS)
     #include "tsBeforeStandardHeaders.h"
@@ -39,16 +38,16 @@
 // Constructors and destructor.
 //----------------------------------------------------------------------------
 
-ts::UDPSocket::UDPSocket(Report* report, bool auto_open, IP gen, bool non_blocking) :
-    Socket(report, non_blocking)
+ts::UDPSocket::UDPSocket(Report* report, bool auto_open, IP gen, bool non_blocking, Object* owner) :
+    Socket(report, non_blocking, owner)
 {
     if (auto_open) {
         UDPSocket::open(gen);
     }
 }
 
-ts::UDPSocket::UDPSocket(ReporterBase* delegate, bool auto_open, IP gen, bool non_blocking) :
-    Socket(delegate, non_blocking)
+ts::UDPSocket::UDPSocket(ReporterBase* delegate, bool auto_open, IP gen, bool non_blocking, Object* owner) :
+    Socket(delegate, non_blocking, owner)
 {
     if (auto_open) {
         UDPSocket::open(gen);
@@ -57,7 +56,9 @@ ts::UDPSocket::UDPSocket(ReporterBase* delegate, bool auto_open, IP gen, bool no
 
 ts::UDPSocket::~UDPSocket()
 {
-    UDPSocket::close(true);
+    if (isOpen()) {
+        UDPSocket::close(true);
+    }
 }
 
 
@@ -65,7 +66,7 @@ ts::UDPSocket::~UDPSocket()
 // Open the socket
 //----------------------------------------------------------------------------
 
-bool ts::UDPSocket::open(IP gen)
+bool ts::UDPSocket::openImplementation(IP gen)
 {
     // Create a datagram socket.
     if (!createSocket(gen, SOCK_DGRAM, IPPROTO_UDP)) {
@@ -105,7 +106,6 @@ bool ts::UDPSocket::open(IP gen)
         }
 #endif
     }
-
     return true;
 }
 
@@ -114,15 +114,13 @@ bool ts::UDPSocket::open(IP gen)
 // Close the socket
 //----------------------------------------------------------------------------
 
-bool ts::UDPSocket::close(bool silent)
+bool ts::UDPSocket::closeImplementation(bool silent)
 {
     // Leave all multicast groups.
-    if (isOpen()) {
-        dropMembership();
-    }
+    const bool success = dropMembership();
 
     // Close socket
-    return Socket::close(silent);
+    return Socket::closeImplementation(silent) && success;
 }
 
 
@@ -586,18 +584,43 @@ bool ts::UDPSocket::send(const void* data, size_t size, const IPSocketAddress& d
         return false;
     }
 
+#if defined(TS_WINDOWS)
+    // On Windows with asynchronous I/O, use overlapped I/O.
+    // With standard blocking I/O, use the same standard socket calls as UNIX.
+    if (isNonBlocking()) {
+        assert(iosb != nullptr);
+
+        // The reception parameters are stored in the IOSB.
+        auto params = std::make_shared<AsyncBuffers>();
+        params->setSendBuffer(data, size, dest);
+        iosb->async_data = params;
+
+        // Start an asynchronous I/O.
+        // Consider that the I/O is pending if it immediately completed because an asynchronous I/O completion will be posted.
+        int err = SYS_SUCCESS;
+        if (::WSASendTo(getSocket(), &params->buf, 1, nullptr, 0, reinterpret_cast<::sockaddr*>(&params->peer_sock),
+                        params->peer_sock_len, &iosb->overlap, nullptr) != 0)
+        {
+            err = LastSysErrorCode();
+        }
+        iosb->pending = err == SYS_SUCCESS || IsPendingStatus(err);
+        if (!iosb->pending) {
+            report().error(u"error sending UDP message: %s", SysErrorCodeMessage(err));
+        }
+        return iosb->pending;
+    }
+#endif
+
     ::sockaddr_storage addr;
     const size_t addr_size = dest.get(addr);
 
     if (::sendto(getSocket(), SysSendBufferPointer(data), SysSendSizeType(size), 0, reinterpret_cast<::sockaddr*>(&addr), socklen_t(addr_size)) < 0) {
         const int err = LastSysErrorCode();
-#if defined(TS_UNIX)
-        if (isNonBlocking() && err == EAGAIN) {
+        if (isNonBlocking() && IsPendingStatus(err)) {
             assert(iosb != nullptr);
             iosb->pending = true;
-            return false;
+            return true;
         }
-#endif
         report().error(u"error sending UDP message: %s", SysErrorCodeMessage(err));
         return false;
     }
@@ -648,11 +671,11 @@ bool ts::UDPSocket::receive(void* data,
         // Wait for a message.
         const int err = receiveOne(data, max_size, ret_size, sender, destination, timestamp, timestamp_type, iosb);
 
-        if ((abort != nullptr && abort->aborting()) || (isNonBlocking() && iosb->pending)) {
-            // User-interrupt or non-blocking I/O, end of processing but no error message
+        if (abort != nullptr && abort->aborting()) {
+            // User-interrupt, end of processing but no error message.
             return false;
         }
-        else if (err == 0) {
+        else if (err == SYS_SUCCESS) {
             // Successful message reception.
             return true;
         }
@@ -712,7 +735,7 @@ int ts::UDPSocket::receiveOne(void* data,
     // from recvmsg, but it is also not exported from any DLL. Its address must be queried dynamically using WSAIoctl().
     // The stupid idiot who had this pervert idea at Microsoft deserves to burn in hell (twice) !!
     //
-    static ::GUID wsa_recvmsg_guid = WSAID_WSARECVMSG;
+    static const ::GUID wsa_recvmsg_guid = WSAID_WSARECVMSG;
     static int wsa_recvmsg_error = 0;
     static const ::LPFN_WSARECVMSG wsa_recvmsg = reinterpret_cast<::LPFN_WSARECVMSG>(GetWSAFunction(wsa_recvmsg_guid, wsa_recvmsg_error));
     if (wsa_recvmsg == nullptr) {
@@ -725,25 +748,23 @@ int ts::UDPSocket::receiveOne(void* data,
         assert(iosb != nullptr);
 
         // The reception parameters are stored in the IOSB.
-        RecvBuffers* params = new RecvBuffers;
-        CheckNonNull(params);
-        iosb->io_data.reset(params);
-        params->setUserBuffer(data, max_size);
+        auto params = std::make_shared<AsyncBuffers>();
+        params->setReceiveBuffer(data, max_size);
+        iosb->async_data = params;
 
         // Start an asynchronous I/O.
+        // Consider that the I/O is pending if it immediately completed because an asynchronous I/O completion will be posted.
+        int err = SYS_SUCCESS;
         if (wsa_recvmsg(getSocket(), &params->msg, &insize, &iosb->overlap, nullptr) != 0) {
-            const auto err = LastSysErrorCode();
-            iosb->pending = err == WSA_IO_PENDING;
-            return err;
+            err = LastSysErrorCode();
         }
-
-        // I/O has immediately completed, extract reception parameters.
-        params->getMessageProperties(*this, sender, destination, timestamp, timestamp_type);
+        iosb->pending = err == SYS_SUCCESS || IsPendingStatus(err);
+        return iosb->pending ? SYS_SUCCESS : err;
     }
     else {
         // Synchronous I/O reception parameters.
-        RecvBuffers params;
-        params.setUserBuffer(data, max_size);
+        AsyncBuffers params;
+        params.setReceiveBuffer(data, max_size);
 
         // Wait for a message.
         if (wsa_recvmsg(getSocket(), &params.msg, &insize, nullptr, nullptr) != 0) {
@@ -751,19 +772,19 @@ int ts::UDPSocket::receiveOne(void* data,
         }
 
         // Extract reception parameters.
-        params.getMessageProperties(*this, sender, destination, timestamp, timestamp_type);
+        params.getReceiveResult(*this, sender, destination, timestamp, timestamp_type);
     }
 
 #else
     // UNIX implementation, use a standard recvmsg sequence.
 
     // Build an iovec pointing to the message.
-    InitZero<::iovec> vec;
-    vec.data.iov_base = data;
-    vec.data.iov_len = max_size;
+    InitZero<::iovec> buf;
+    buf.data.iov_base = data;
+    buf.data.iov_len = max_size;
 
     // Reserve a socket address to receive the sender address.
-    InitZero<::sockaddr_storage> sender_sock;
+    InitZero<::sockaddr_storage> peer_sock;
 
     // Reserve a buffer to receive packet ancillary data.
     uint8_t ancil_data[1024];
@@ -772,9 +793,9 @@ int ts::UDPSocket::receiveOne(void* data,
     // Build a msghdr structure for recvmsg().
     ::msghdr hdr;
     TS_ZERO(hdr);
-    hdr.msg_name = &sender_sock.data;
-    hdr.msg_namelen = sizeof(sender_sock.data);
-    hdr.msg_iov = &vec.data;
+    hdr.msg_name = &peer_sock.data;
+    hdr.msg_namelen = sizeof(peer_sock.data);
+    hdr.msg_iov = &buf.data;
     hdr.msg_iovlen = 1; // number of iovec structures
     hdr.msg_control = ancil_data;
     hdr.msg_controllen = sizeof(ancil_data);
@@ -784,14 +805,15 @@ int ts::UDPSocket::receiveOne(void* data,
     int err = errno;
 
     // Extract sender socket address.
-    sender = IPSocketAddress(sender_sock.data);
+    sender = IPSocketAddress(peer_sock.data);
 
     // Process receive error.
     if (insize < 0) {
-        if (isNonBlocking() && err == EAGAIN) {
+        if (isNonBlocking() && IsPendingStatus(err)) {
             // Non-blocking socket with no available datagram.
             assert(iosb != nullptr);
             iosb->pending = true;
+            return SYS_SUCCESS;
         }
         return err;
     }
@@ -920,16 +942,21 @@ bool ts::UDPSocket::getReceiveStatus(IOSB* iosb,
                                      TimeStampType* timestamp_type) const
 {
 #if defined(TS_WINDOWS)
-    RecvBuffers* params = iosb == nullptr ? nullptr : dynamic_cast<RecvBuffers*>(iosb->io_data.get());
+    std::shared_ptr<AsyncBuffers> params;
+    if (iosb != nullptr) {
+        params = std::dynamic_pointer_cast<AsyncBuffers>(iosb->async_data);
+    }
     if (params == nullptr) {
+        iosb->error_code = SYS_ERROR;
         report().error(u"asynchronous I/O not used");
         return false;
     }
     else {
-        params->getMessageProperties(*this, sender, destination, timestamp, timestamp_type);
+        params->getReceiveResult(*this, sender, destination, timestamp, timestamp_type);
         return true;
     }
 #else
+    iosb->error_code = SYS_ERROR;
     report().error(u"asynchronous I/O are not supported on this system");
     return false;
 #endif
@@ -937,40 +964,55 @@ bool ts::UDPSocket::getReceiveStatus(IOSB* iosb,
 
 
 //----------------------------------------------------------------------------
-// Parameters buffer for WSARecvMsg.
+// Parameters buffer for WSARecvMsg and WSASendTo.
 //----------------------------------------------------------------------------
 
 #if defined(TS_WINDOWS)
 
 // Virtual destructor.
-ts::UDPSocket::RecvBuffers::~RecvBuffers()
+ts::UDPSocket::AsyncBuffers::~AsyncBuffers()
 {
 }
 
+// Before send: Initializes all internal structures and set the address and size of the user's send buffer.
+void ts::UDPSocket::AsyncBuffers::setSendBuffer(const void* address, size_t size, const IPSocketAddress& dest)
+{
+    // Clear all reception data.
+    TS_ZERO(buf);
+    TS_ZERO(peer_sock);
+
+    // Build an WSABUF pointing to the message.
+    buf.buf = reinterpret_cast<CHAR*>(const_cast<void*>(address));
+    buf.len = ::ULONG(size);
+
+    // Set destination socket.
+    peer_sock_len = int(dest.get(peer_sock));
+}
+
 // Before receive: Initializes all internal structures and set the address and size of the user's reception buffer.
-void ts::UDPSocket::RecvBuffers::setUserBuffer(void* address, size_t size)
+void ts::UDPSocket::AsyncBuffers::setReceiveBuffer(void* address, size_t size)
 {
     // Clear all reception data.
     TS_ZERO(msg);
-    TS_ZERO(vec);
-    TS_ZERO(sender_sock);
+    TS_ZERO(buf);
+    TS_ZERO(peer_sock);
     TS_ZERO(ancil_data);
 
     // Build an WSABUF pointing to the message.
-    vec.buf = reinterpret_cast<CHAR*>(address);
-    vec.len = ::ULONG(size);
+    buf.buf = reinterpret_cast<CHAR*>(address);
+    buf.len = ::ULONG(size);
 
     // Build a WSAMSG for WSARecvMsg.
-    msg.name = reinterpret_cast<::sockaddr*>(&sender_sock);
-    msg.namelen = sizeof(sender_sock);
-    msg.lpBuffers = &vec;
+    msg.name = reinterpret_cast<::sockaddr*>(&peer_sock);
+    msg.namelen = sizeof(peer_sock);
+    msg.lpBuffers = &buf;
     msg.dwBufferCount = 1;  // number of WSAMSG
     msg.Control.buf = ancil_data;
     msg.Control.len = ::ULONG(sizeof(ancil_data));
 }
 
 // After receive: Extract the message characteristics.
-void ts::UDPSocket::RecvBuffers::getMessageProperties(const UDPSocket& socket, IPSocketAddress& sender, IPSocketAddress& destination, cn::microseconds* timestamp, TimeStampType* timestamp_type)
+void ts::UDPSocket::AsyncBuffers::getReceiveResult(const UDPSocket& socket, IPSocketAddress& sender, IPSocketAddress& destination, cn::microseconds* timestamp, TimeStampType* timestamp_type)
 {
     // Clear optional returned data, can be found in ancil_data, or not.
     destination.clear();
@@ -982,7 +1024,7 @@ void ts::UDPSocket::RecvBuffers::getMessageProperties(const UDPSocket& socket, I
     }
 
     // Extract sender socket address.
-    sender = IPSocketAddress(sender_sock);
+    sender = IPSocketAddress(peer_sock);
 
     // Browse returned ancillary data.
     for (::WSACMSGHDR* cmsg = WSA_CMSG_FIRSTHDR(&msg); cmsg != nullptr; cmsg = WSA_CMSG_NXTHDR(&msg, cmsg)) {
@@ -1017,7 +1059,6 @@ void ts::UDPSocket::RecvBuffers::getMessageProperties(const UDPSocket& socket, I
         socket.getLocalAddress(local);
         destination.setPort(local.port());
     }
-
 }
 
 #endif // TS_WINDOWS

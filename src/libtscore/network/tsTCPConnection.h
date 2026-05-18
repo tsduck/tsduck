@@ -72,15 +72,17 @@ namespace ts {
         //! @param [in] report Where to report errors. The @a report object must remain valid as long as this object
         //! exists or setReport() is used with another Report object. If @a report is null, log messages are discarded.
         //! @param [in] non_blocking It true, the device is initially set in non-blocking mode.
+        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        explicit TCPConnection(Report* report = nullptr, bool non_blocking = false) : TCPSocket(report, non_blocking) {}
+        explicit TCPConnection(Report* report = nullptr, bool non_blocking = false, Object* owner = nullptr) : TCPSocket(report, non_blocking, owner) {}
 
         //!
         //! Constructor.
         //! @param [in] delegate Use the report of another ReporterBase. If @a delegate is null, log messages are discarded.
         //! @param [in] non_blocking It true, the device is initially set in non-blocking mode.
+        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        explicit TCPConnection(ReporterBase* delegate, bool non_blocking = false) : TCPSocket(delegate, non_blocking) {}
+        explicit TCPConnection(ReporterBase* delegate, bool non_blocking = false, Object* owner = nullptr) : TCPSocket(delegate, non_blocking, owner) {}
 
         //!
         //! Connect to a remote address and port.
@@ -89,14 +91,25 @@ namespace ts {
         //! Do not use on server side: the TCPConnection object is passed
         //! to TCPServer::accept() which establishes the connection.
         //!
-        //! @param [in] addr IP address and port of the server to connect.
+        //! @param [in] addr IP address and port of the server to connect to.
         //! @param [in,out] iosb Address of an IOSB structure. If non-null, the socket must be in non-blocking mode.
         //! When null, the socket must be in blocking mode (the default). See the description of IOSB.
         //! Important: The parameter @a iosb should not be used by applications. It should be used only by
         //! "reactive classes", which work in combination with a Reactor.
-        //! @return True on success, false on error.
+        //! @return True on success, false on error. In case of non-blocking mode, if the connection is successfully started
+        //! but still pending, iosb->pending is set to true and the method returns true.
         //!
         virtual bool connect(const IPSocketAddress& addr, IOSB* iosb = nullptr);
+
+        //!
+        //! Update the status of an asynchronous connect().
+        //! - With non-blocking I/O, @a error_code shall be the error from the write-ready notification.
+        //! - With asynchronous I/O, @a iosb is used to complete the socket state.
+        //! @param [in,out] iosb Address of the IOSB structure which was used when connect() was called.
+        //! @param [in] error_code Error code in the context of the connection.
+        //! @return True on success, false on error.
+        //!
+        bool setConnectStatus(IOSB* iosb, int error_code);
 
         //!
         //! Check if the socket is connected.
@@ -146,7 +159,8 @@ namespace ts {
         //! When null, the socket must be in blocking mode (the default). See the description of IOSB.
         //! Important: The parameter @a iosb should not be used by applications. It should be used only by
         //! "reactive classes", which work in combination with a Reactor.
-        //! @return True on success, false on error.
+        //! @return True on success, false on error. In case of non-blocking mode, if the I/O is successfully started
+        //! but still pending, iosb->pending is set to true and the method returns true.
         //!
         virtual bool send(const void* data, size_t size, IOSB* iosb = nullptr);
 
@@ -167,7 +181,8 @@ namespace ts {
         //! When null, the socket must be in blocking mode (the default). See the description of IOSB.
         //! Important: The parameter @a iosb should not be used by applications. It should be used only by
         //! "reactive classes", which work in combination with a Reactor.
-        //! @return True on success, false on error.
+        //! @return True on success, false on error. In case of non-blocking mode, if the I/O is successfully started
+        //! but still pending, iosb->pending is set to true and the method returns true.
         //!
         virtual bool receive(void* buffer, size_t max_size, size_t& ret_size, const AbortInterface* abort = nullptr, IOSB* iosb = nullptr);
 
@@ -192,31 +207,35 @@ namespace ts {
         //!
         virtual bool receive(void* buffer, size_t size, const AbortInterface* abort = nullptr);
 
-    protected:
-        //!
-        //! This virtual method can be overriden by subclasses to be notified of connection.
-        //! All subclasses should explicitly invoke their superclass' handlers.
-        //!
-        virtual void handleConnected();
-
-        //!
-        //! This virtual method can be overriden by subclasses to be notified of disconnection.
-        //! All subclasses should explicitly invoke their superclass' handlers.
-        //!
-        virtual void handleDisconnected();
-
-        // Overriden methods
-        virtual void handleClosed() override;
-
     private:
         volatile bool _is_connected = false;
 
+        // Implementation of Socket interface.
+        virtual bool closeImplementation(bool silent) override;
+
         // Declare that the socket has just become connected / disconnected.
         void declareConnected();
-        void declareDisconnected();
+        void declareDisconnected(bool silent);
         friend class TCPServer;
 
         // Shutdown the socket.
         bool shutdownSocket(int how, bool silent);
+
+#if defined(TS_WINDOWS)
+        // For Windows asynchronous I/O, we need to keep parameter in one single structure which lives during the I/O.
+        class TSCOREDLL AsyncBuffers: public Object
+        {
+            TS_NOCOPY(AsyncBuffers);
+        public:
+            ::WSABUF buf {};                  // Pointer to user's buffer (send/receive).
+            ::DWORD flags = 0;                // WSARecv flags.
+            ::sockaddr_storage peer_sock {};  // Peer socket (connect).
+            int peer_sock_len = 0;            // Actual length of peer_socket.
+
+            // Constructor and destructor.
+            AsyncBuffers() = default;
+            virtual ~AsyncBuffers() override;
+        };
+#endif
     };
 }

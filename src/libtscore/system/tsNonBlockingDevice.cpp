@@ -18,10 +18,6 @@ ts::NonBlockingDevice::~NonBlockingDevice()
 {
 }
 
-ts::NonBlockingDevice::AncillaryData::~AncillaryData()
-{
-}
-
 
 //----------------------------------------------------------------------------
 // Set the device in non-blocking mode.
@@ -63,8 +59,9 @@ bool ts::NonBlockingDevice::checkNonBlocking(bool non_blocking, const UChar* opn
 bool ts::NonBlockingDevice::checkNonBlocking(IOSB* iosb, const UChar* opname)
 {
     if (iosb != nullptr) {
-        // Reset the low-level indicators but not app_data or io_data.
+        // Reset the low-level indicators but not react_data or async_data.
         iosb->pending = false;
+        iosb->sent_size = 0;
 #if defined(TS_WINDOWS)
         TS_ZERO(iosb->overlap);
 #endif
@@ -74,7 +71,24 @@ bool ts::NonBlockingDevice::checkNonBlocking(IOSB* iosb, const UChar* opname)
 
 
 //----------------------------------------------------------------------------
-// Set a system file descriptor or socket handle in non-blocking mode.
+// Checks if a system error code is an in-progress/would-block one.
+//----------------------------------------------------------------------------
+
+bool ts::NonBlockingDevice::IsPendingStatus(int err)
+{
+#if defined(TS_WINDOWS)
+    // ERROR_IO_PENDING and WSA_IO_PENDING may be the same.
+    return err == ERROR_IO_PENDING || err == WSA_IO_PENDING;
+#else
+    // Usually EAGAIN and EWOULDBLOCK are the same. They indicate blocking I/O.
+    // EINPROGRESS is usually for connect(). It indicates asynchronous I/O.
+    return err == EAGAIN || err == EWOULDBLOCK || err == EINPROGRESS;
+#endif
+}
+
+
+//----------------------------------------------------------------------------
+// Set a system file or spcket descriptor in non-blocking mode.
 //----------------------------------------------------------------------------
 
 bool ts::NonBlockingDevice::setSystemNonBlocking(SysSocketType fd, bool non_blocking)
@@ -97,15 +111,6 @@ bool ts::NonBlockingDevice::setSystemNonBlocking(SysSocketType fd, bool non_bloc
         return false;
     }
 
-#elif defined(TS_WINDOWS)
-
-    // This works on sockets only. Other devices shall be opened with flag FILE_FLAG_OVERLAPPED.
-    ::u_long mode = non_blocking ? 1 : 0;
-    if (::ioctlsocket(fd, FIONBIO, &mode) != 0) {
-        report().error(u"error setting socket non-blocking mode: %s", SysErrorCodeMessage());
-        return false;
-    }
-
 #endif
 
     return true;
@@ -119,10 +124,13 @@ bool ts::NonBlockingDevice::setSystemNonBlocking(SysSocketType fd, bool non_bloc
 void ts::NonBlockingDevice::IOSB::reset()
 {
     pending = false;
+    error_code = SYS_SUCCESS;
+    sent_size = 0;
     app_data.reset();
+    react_data.reset();
 #if defined(TS_WINDOWS)
     TS_ZERO(overlap);
-    io_data.reset();
+    async_data.reset();
 #endif
 }
 
@@ -143,7 +151,7 @@ ts::NonBlockingDevice::IOSB::IOSB()
 ts::NonBlockingDevice::IOSB::~IOSB()
 {
     // Make sure that the iosb_marker becomes invalid.
-    iosb_marker = 0;
+    iosb_marker = 0x42534F49; // "BSOI"
 }
 
 // Check if an OVERLAPPED structure is part of an IOSB.
@@ -158,11 +166,13 @@ ts::NonBlockingDevice::IOSB* ts::NonBlockingDevice::IOSB::ParentIOSB(::OVERLAPPE
     }
     try {
         char* ov = reinterpret_cast<char*>(overlap);
-        if (*reinterpret_cast<uint32_t*>(ov - overlap_offset + marker_offset) == iosb_marker_value) {
+        const uint32_t marker = *reinterpret_cast<uint32_t*>(ov - overlap_offset + marker_offset);
+        if (marker == iosb_marker_value) {
             // Found the expected value for an IOSB marker, we probably are in an IOSB.
             return reinterpret_cast<IOSB*>(ov - overlap_offset);
         }
         else {
+            CERR.debug(u"invalid IOSB, marker: 0x%X", marker);
             return nullptr;
         }
     }

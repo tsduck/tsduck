@@ -178,7 +178,7 @@ namespace ts {
     //! @param [out] error Error code if the function is not found. Zero on success.
     //! @return The address of the function or a null pointer if not found.
     //!
-    TSCOREDLL void* GetWSAFunction(::GUID& guid, int& error);
+    TSCOREDLL void* GetWSAFunction(const ::GUID& guid, int& error);
 
     //!
     //! Start an application with elevated privileges (Windows-specific).

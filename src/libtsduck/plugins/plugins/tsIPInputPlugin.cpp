@@ -69,7 +69,9 @@ bool ts::IPInputPlugin::stop()
 bool ts::IPInputPlugin::abortInput()
 {
     debug(u"aborting IP input");
-    _sock.close();
+    if (_sock.isOpen()) {
+        _sock.close();
+    }
     return true;
 }
 

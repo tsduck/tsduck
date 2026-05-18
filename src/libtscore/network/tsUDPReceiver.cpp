@@ -10,6 +10,21 @@
 
 
 //----------------------------------------------------------------------------
+// Constructors.
+//----------------------------------------------------------------------------
+
+ts::UDPReceiver::UDPReceiver(Report* report, bool non_blocking, Object* owner) :
+    UDPSocket(report, false, IP::Any, non_blocking, owner)
+{
+}
+
+ts::UDPReceiver::UDPReceiver(ReporterBase* delegate, bool non_blocking, Object* owner) :
+    UDPSocket(delegate, false, IP::Any, non_blocking, owner)
+{
+}
+
+
+//----------------------------------------------------------------------------
 // Set reception timeout.
 //----------------------------------------------------------------------------
 
@@ -22,17 +37,13 @@ void ts::UDPReceiver::setReceiveTimeoutArg(cn::milliseconds timeout)
 
 
 //----------------------------------------------------------------------------
-// Open the socket. Override UDPSocket::open().
+// Open the socket.
+// Ignore generation parameter, will be derived from UDPReceiverArgs.
 //----------------------------------------------------------------------------
 
-bool ts::UDPReceiver::open()
+bool ts::UDPReceiver::openImplementation(IP gen)
 {
-    // Ignore generation parameter, will be derived from UDPReceiverArgs.
-    return open(IP::Any);
-}
 
-bool ts::UDPReceiver::open(IP gen)
-{
     // Check if UDP parameters were specified.
     if (!_args.destination.hasPort()) {
         report().error(u"no UDP receiver address specified");
@@ -75,7 +86,7 @@ bool ts::UDPReceiver::open(IP gen)
     // Create UDP socket from the superclass.
     // Note: On Windows, bind must be done *before* joining multicast groups.
     bool ok =
-        UDPSocket::open(gen) &&
+        SuperClass::openImplementation(gen) &&
         reusePort(_args.reuse_port) &&
         setReceiveTimestamps(_args.receive_timestamps) &&
         setMulticastLoop(_args.mc_loopback) &&

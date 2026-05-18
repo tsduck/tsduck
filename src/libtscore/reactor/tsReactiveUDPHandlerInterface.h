@@ -33,10 +33,11 @@ namespace ts {
         //! @param [in] data Address of the message which was sent. For information only.
         //! @param [in] size Size in bytes of the sent message. For information only.
         //! @param [in] destination Socket address of the destination. For information only.
-        //! @param [in] error_code System-specific error code, zero on success, SYS_ERROR in case of unknown error,
+        //! @param [in] error_code System-specific error code, SYS_SUCCESS on success, SYS_ERROR in case of unknown error,
         //! SYS_CANCELED if the I/O was canceled before completion.
+        //! @param [in] user_data The user-data shared pointer which was passed to startSend().
         //!
-        virtual void handleUDPSend(ReactiveUDPSocket& sock, const void* data, size_t size, const IPSocketAddress& destination, int error_code);
+        virtual void handleUDPSend(ReactiveUDPSocket& sock, const void* data, size_t size, const IPSocketAddress& destination, int error_code, const ObjectPtr& user_data);
 
         //!
         //! Handle the reception of a UDP datagram.
@@ -46,7 +47,8 @@ namespace ts {
         //! @param [in] destination Socket address of the packet destination. Useful in multicast packets.
         //! @param [in] timestamp Receive timestamp in micro-seconds. If the value is negative, no timestamp is available.
         //! @param [in] timestamp_type Type of receive timestamp.
-        //! @param [in] error_code System-specific error code, zero on success, SYS_ERROR in case of unknown error.
+        //! @param [in] error_code System-specific error code, SYS_SUCCESS on success, SYS_ERROR in case of unknown error.
+        //! @param [in] user_data The user-data shared pointer which was passed to startReceive().
         //!
         virtual void handleUDPReceive(ReactiveUDPSocket& sock,
                                       const ByteBlockPtr& data,
@@ -54,7 +56,8 @@ namespace ts {
                                       const IPSocketAddress& destination,
                                       cn::microseconds timestamp,
                                       UDPSocket::TimeStampType timestamp_type,
-                                      int error_code);
+                                      int error_code,
+                                      const ObjectPtr& user_data);
 
         //!
         //! Handle the completion of closing a UDP socket.
@@ -65,7 +68,8 @@ namespace ts {
         //! of the these I/O are completed, after closing the socket. The application shall therefore wait for the
         //! handleUDPClosed() handler to destroy the data buffers and consider the socket as completely done.
         //! @param [in,out] sock UDP socket for which the handler is invoked.
+        //! @param [in] user_data The user-data shared pointer which was passed to startClose().
         //!
-        virtual void handleUDPClosed(ReactiveUDPSocket& sock);
+        virtual void handleUDPClosed(ReactiveUDPSocket& sock, const ObjectPtr& user_data);
     };
 }

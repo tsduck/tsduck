@@ -22,6 +22,35 @@
 
 
 //----------------------------------------------------------------------------
+// Reactor::EventData, the data for an EventId.
+//----------------------------------------------------------------------------
+
+class ts::Reactor::EventData
+{
+    TS_DEFAULT_COPY_MOVE(EventData);
+public:
+    Canary                   canary {};               // First field in memory.
+    EventType                type = EVT_NONE;         // Event type (can be read+write with epoll).
+    bool                     repeat = false;          // Repeatable timer or notification.
+    ReactorHandlerInterface* handler = nullptr;       // Generic handler for all events except read.
+    ReactorHandlerInterface* read_handler = nullptr;  // Read-notify handler.
+    int                      fd = -1;                 // General-purpose file descriptor.
+
+    EventData() = default;
+};
+
+ts::Reactor::EventData* ts::Reactor::allocateEventData()
+{
+    return new EventData;
+}
+
+void ts::Reactor::deallocateEventData(EventData* evd)
+{
+    delete evd;
+}
+
+
+//----------------------------------------------------------------------------
 // Reactor::Guts, the system-specific internal data structure.
 //----------------------------------------------------------------------------
 
@@ -36,7 +65,6 @@ public:
     virtual ~Guts() override {}
     virtual bool open() override;
     virtual bool close(bool silent) override;
-    virtual bool isActiveEvent(EventId id) override;
     virtual void processEventLoop() override;
     virtual void* newTimer(ReactorHandlerInterface* handler, cn::milliseconds duration, bool repeat) override;
     virtual bool cancelTimer(EventId id, bool silent) override;
@@ -49,27 +77,8 @@ public:
     virtual bool deleteWriteNotify(EventId id, bool silent) override;
 
 private:
-    // EventData is the data for an EventId.
-    class EventData
-    {
-        TS_DEFAULT_COPY_MOVE(EventData);
-    public:
-        Canary                   canary {};               // First field in memory.
-        EventType                type = EVT_NONE;         // Event type (can be read+write with epoll).
-        bool                     repeat = false;          // Repeatable timer or notification.
-        ReactorHandlerInterface* handler = nullptr;       // Generic handler for all events except read.
-        ReactorHandlerInterface* read_handler = nullptr;  // Read-notify handler.
-        int                      fd = -1;                 // General-purpose file descriptor.
-
-        EventData() = default;
-    };
-
-    // A canary is more efficient when at the start of its data structure.
-    static_assert(offsetof(EventData, canary) == 0);
-
-    // Guts private fields.
-    std::set<EventData*> _events {};      // Existing allocated events.
-    int                  _epoll_fd = -1;  // File descriptor for epoll().
+    // File descriptor for epoll().
+    int _epoll_fd = -1;
 
     // Using epoll, read and write for the same file descriptor share the same EventData.
     // We need a map from file descriptor to EventData to retrieve the EventData from a file descriptor.
@@ -77,27 +86,26 @@ private:
 
     // Retrieve or allocate/register an event data for a given file descriptor.
     // There is only one EventData per file descriptor, sharing EVT_READ and EVT_WRITE.
-    // On return, if not null, *new_type is true is the EventData is new or if it didn't contain that EventType.
-    EventData* newEventData(EventType type, int fd, bool* new_type);
+    // On return, new_type is true is the EventData is new or if it didn't contain that EventType.
+    EventData* newEventData(EventType type, int fd, bool& new_type);
 
     // Deregister and delete an EventData if no longer used after removing an event type.
     void deleteEventData(EventData*, EventType);
 
-    // Check that an EventData pointer is valid.
-    bool validateEventData(EventData* evd, bool silent);
+    // Common code for epoll_ctl().
+    bool callEpollCtl(int op, int fd, uint32_t events, void* data, const UChar* name, bool silent = false);
 
     // Close the system part of an event.
     bool sysDeleteTimer(EventData*, bool silent);
     bool sysDeleteEvent(EventData*, bool silent);
     bool sysDeleteRead(EventData*, bool silent);
     bool sysDeleteWrite(EventData*, bool silent);
+
+    // In all implementations of EventData, the first field must be a Canary.
+    static_assert(offsetof(ts::Reactor::EventData, canary) == 0);
 };
 
-
-//----------------------------------------------------------------------------
 // Guts allocation.
-//----------------------------------------------------------------------------
-
 ts::Reactor::GutsBase* ts::Reactor::allocateGuts()
 {
     return new Guts(*this);
@@ -109,7 +117,7 @@ ts::Reactor::GutsBase* ts::Reactor::allocateGuts()
 //----------------------------------------------------------------------------
 
 // Retrieve or allocate/register an event data for a given file descriptor.
-ts::Reactor::Guts::EventData* ts::Reactor::Guts::newEventData(EventType type, int fd, bool* new_type)
+ts::Reactor::EventData* ts::Reactor::Guts::newEventData(EventType type, int fd, bool& new_type)
 {
     // Check if the file descriptor already has an EventData.
     if (fd >= 0) {
@@ -117,34 +125,28 @@ ts::Reactor::Guts::EventData* ts::Reactor::Guts::newEventData(EventType type, in
         if (it != _file_descs_map.end()) {
             if (Canary::Error(&it->second->canary) == nullptr) {
                 // Found a valid EventData for the same file descriptor. Add the event.
-                _reactor.trace(u"reuse EventData %X", uintptr_t(it->second));
                 assert(it->second->fd == fd);
-                if (new_type != nullptr) {
-                    *new_type = (it->second->type & type) == type;
-                }
+                new_type = (it->second->type & type) != type;
                 it->second->type = EventType(type | it->second->type);
+                _reactor.trace(u"reuse EventData @%X, type 0x%X", uintptr_t(it->second), it->second->type);
                 return it->second;
             }
             else {
                 // Cleanup an old EventData. Bug?
-                _reactor.trace(u"remove obsolete EventData %X for file descriptor %d", uintptr_t(it->second), fd);
+                _reactor.trace(u"remove obsolete EventData @%X for file descriptor %d", uintptr_t(it->second), fd);
                 _file_descs_map.erase(it);
             }
         }
     }
 
     // Allocate and register a new EventData.
-    EventData* evd = new EventData;
+    EventData* evd = _reactor.newEventData(type);
     evd->type = type;
-    if (new_type != nullptr) {
-        *new_type = true;
-    }
+    new_type = true;
     if (fd >= 0) {
         evd->fd = fd;
         _file_descs_map.insert(std::make_pair(fd, evd));
     }
-    _events.insert(evd);
-    _reactor.trace(u"new EventData: %X", uintptr_t(evd));
     return evd;
 }
 
@@ -162,33 +164,8 @@ void ts::Reactor::Guts::deleteEventData(EventData* evd, EventType type)
         if (evd->fd >= 0) {
             _file_descs_map.erase(evd->fd);
         }
-        _events.erase(evd);
-        _reactor.trace(u"delete EventData: %X", uintptr_t(evd));
-        delete evd;
+        _reactor.deleteEventData(evd, type);
     }
-}
-
-// Check that an EventData pointer is valid.
-bool ts::Reactor::Guts::validateEventData(EventData* evd, bool silent)
-{
-    const UChar* cause = Canary::Error(&evd->canary);
-    if (cause == nullptr && !_events.contains(evd)) {
-        cause = u"EventData no longer in use in Reactor";
-    }
-    if (cause != nullptr) {
-        _reactor.report().log(SilentLevel(silent), u"reactor internal error: invalid EventData pointer, %s", cause);
-    }
-    return cause == nullptr;
-}
-
-
-//----------------------------------------------------------------------------
-// Check if an event is still active in the reactor.
-//----------------------------------------------------------------------------
-
-bool ts::Reactor::Guts::isActiveEvent(EventId id)
-{
-    return _events.contains(reinterpret_cast<EventData*>(id._ptr));
 }
 
 
@@ -198,6 +175,8 @@ bool ts::Reactor::Guts::isActiveEvent(EventId id)
 
 bool ts::Reactor::Guts::open()
 {
+    _file_descs_map.clear();
+
     // Initialize the epoll event queue.
     assert(_epoll_fd < 0);
     if ((_epoll_fd = ::epoll_create1(EPOLL_CLOEXEC)) < 0) {
@@ -205,11 +184,10 @@ bool ts::Reactor::Guts::open()
         return false;
     }
     else {
+        _reactor.trace(u"open epoll, fd %d", _epoll_fd);
         // Unlike kqueue, the epoll file descriptor is inherited by a child created with fork().
         // Register it to be closed in child process after fork().
         AddCloseOnForkExec(_epoll_fd, false);
-        _events.clear();
-        _file_descs_map.clear();
         return true;
     }
 }
@@ -224,8 +202,8 @@ bool ts::Reactor::Guts::close(bool silent)
     bool success = true;
 
     // Force system close of pending events, if there are any.
-    for (auto evd : _events) {
-        if (validateEventData(evd, silent)) {
+    for (auto evd : _reactor._events) {
+        if (_reactor.validateEventData(evd, silent)) {
             if (evd->type == EVT_EVENT) {
                 sysDeleteEvent(evd, silent);
             }
@@ -251,12 +229,13 @@ bool ts::Reactor::Guts::close(bool silent)
             success = false;
         }
     }
-    _events.clear();
+    _reactor._events.clear();
     _file_descs_map.clear();
 
     // Cleanup epoll queue.
     assert(_epoll_fd >= 0);
     RemoveCloseOnForkExec(_epoll_fd);
+    _reactor.trace(u"close epoll, fd %d", _epoll_fd);
     ::close(_epoll_fd);
     _epoll_fd = -1;
     return success;
@@ -269,16 +248,17 @@ bool ts::Reactor::Guts::close(bool silent)
 
 void ts::Reactor::Guts::processEventLoop()
 {
-    // List of signalled events. The type SysEventStructure depends on the operating system.
+    // List of signalled events.
     std::vector<::epoll_event> sysevents(MIN_WAIT_EVENTS);
 
     // Main event loop.
     while (!_reactor._exit_requested) {
 
         // Adjust the size of the system structures describing events to wait for.
-        _reactor.adjustEventVector(_events, sysevents);
+        _reactor.adjustEventVector(sysevents);
 
         // Wait for events. No timeouts, use timers to timeout.
+        _reactor.trace(u"epoll: ---- wait for events");
         size_t evcount = 0;
         const int status = ::epoll_wait(_epoll_fd, &sysevents[0], int(sysevents.size()), -1);
         if (status >= 0) {
@@ -294,15 +274,24 @@ void ts::Reactor::Guts::processEventLoop()
             _reactor._exit_success = false;
             break;
         }
-        _reactor.trace(u"processEventLoop: got %d events", evcount);
+        _reactor.trace(u"epoll: ---- got %d events", evcount);
 
         // Process all returned events.
         for (size_t i = 0; i < evcount && !_reactor._exit_requested; i++) {
 
-            // Get and check the associated EventData block.
+            // Get the associated EventData block.
             auto& sysev(sysevents[i]);
             EventData* sysevd = reinterpret_cast<EventData*>(sysev.data.ptr);
-            if (!validateEventData(sysevd, false)) {
+
+            // Check that this event wasn't deleted in the processing of a previous event.
+            if (_reactor._deleted_previous_current.contains(sysevd)) {
+                _reactor.trace(u"epoll: event #%d, ignoring deleted EventData @%X", i, uintptr_t(sysevd));
+                continue;
+            }
+
+            // Check the integrity of the EventData.
+            if (!_reactor.validateEventData(sysevd, false)) {
+                _reactor.trace(u"epoll: event #%d, dropped EventData @%X", i, uintptr_t(sysevd));
                 continue;
             }
             const EventId id(sysevd);
@@ -312,10 +301,11 @@ void ts::Reactor::Guts::processEventLoop()
 
             // Process the event, based on a copy of the EventData block.
             if (evd.type == EVT_EVENT) {
+                _reactor.trace(u"epoll: event #%d, user event completed", i);
                 // Try to read from the event file descriptor to verify that the event is actually pending. Loop on EAGAIN.
                 uint64_t data = 0;
                 bool success = ::read(evd.fd, &data, sizeof(data)) > 0;
-                if (!success && errno != EAGAIN) {
+                if (!success && !NonBlockingDevice::IsPendingStatus(errno)) {
                     // Actual error, delete the event.
                     _reactor.report().error(u"error reading user event: %s", SysErrorCodeMessage());
                     sysDeleteEvent(sysevd, false);
@@ -326,10 +316,11 @@ void ts::Reactor::Guts::processEventLoop()
                 }
             }
             else if (evd.type == EVT_TIMER) {
+                _reactor.trace(u"epoll: event #%d, timer completed", i);
                 // Try to read the number of expirations.
                 uint64_t data = 0;
                 bool success = ::read(evd.fd, &data, sizeof(data)) > 0;
-                if (!success && errno != EAGAIN) {
+                if (!success && !NonBlockingDevice::IsPendingStatus(errno)) {
                     // Actual error, delete the timer.
                     _reactor.report().error(u"error reading timer: %s", SysErrorCodeMessage());
                     sysDeleteTimer(sysevd, false);
@@ -349,6 +340,7 @@ void ts::Reactor::Guts::processEventLoop()
                 }
             }
             else {
+                _reactor.trace(u"epoll: event #%d, completed I/O", i);
                 // Read and write can be on the same EventData.
                 bool event_is_valid = true;
 
@@ -374,7 +366,7 @@ void ts::Reactor::Guts::processEventLoop()
 
                     // Check if the read handler has removed the event. In that case, don't try to call the write handler.
                     // Also check if the same address has been reallocated to another EventData.
-                    event_is_valid = _events.contains(sysevd) && sysevd->fd == evd.fd;
+                    event_is_valid = _reactor._events.contains(sysevd) && sysevd->fd == evd.fd;
                 }
 
                 // Then, process write events.
@@ -399,7 +391,30 @@ void ts::Reactor::Guts::processEventLoop()
                 }
             }
         }
+        _reactor.trace(u"epoll: ---- end of event processing");
+        _reactor.endOfEventProcessing();
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Common code for epoll_ctl().
+//----------------------------------------------------------------------------
+
+bool ts::Reactor::Guts::callEpollCtl(int op, int fd, uint32_t events, void* data, const UChar* name, bool silent)
+{
+    _reactor.trace(u"epoll_ctl(%d, %d, %d, {0x%X, 0x%X}): %s", _epoll_fd, op, fd, events, uintptr_t(data), name);
+
+    ::epoll_event event;
+    TS_ZERO(event);
+    event.events = events;
+    event.data.ptr = data;
+
+    if (::epoll_ctl(_epoll_fd, op, fd, &event) < 0) {
+        _reactor.report().log(SilentLevel(silent), u"error %s in epoll: %s", name, SysErrorCodeMessage());
+        return false;
+    }
+    return true;
 }
 
 
@@ -410,7 +425,8 @@ void ts::Reactor::Guts::processEventLoop()
 void* ts::Reactor::Guts::newTimer(ReactorHandlerInterface* handler, cn::milliseconds duration, bool repeat)
 {
     // Create the EventData
-    EventData* evd = newEventData(EVT_TIMER, -1, nullptr);
+    bool new_type = false;
+    EventData* evd = newEventData(EVT_TIMER, -1, new_type);
     evd->handler = handler;
     evd->repeat = repeat;
 
@@ -426,12 +442,7 @@ void* ts::Reactor::Guts::newTimer(ReactorHandlerInterface* handler, cn::millisec
     _file_descs_map.insert(std::make_pair(evd->fd, evd));
 
     // Register time in epoll queue.
-    ::epoll_event event;
-    TS_ZERO(event);
-    event.events = EPOLLIN | EPOLLET;
-    event.data.ptr = evd;
-    if (::epoll_ctl(_epoll_fd, EPOLL_CTL_ADD, evd->fd, &event) < 0) {
-        _reactor.report().error(u"error adding  timer to epoll: %s", SysErrorCodeMessage());
+    if (!callEpollCtl(EPOLL_CTL_ADD, evd->fd, EPOLLIN | EPOLLET, evd, u"adding timer")) {
         ::close(evd->fd);
         deleteEventData(evd, EVT_TIMER);
         return nullptr;
@@ -448,7 +459,7 @@ void* ts::Reactor::Guts::newTimer(ReactorHandlerInterface* handler, cn::millisec
     }
     if (::timerfd_settime(evd->fd, 0, &its, nullptr) < 0) {
         _reactor.report().error(u"error in timerfd_settime: %s", SysErrorCodeMessage());
-        ::epoll_ctl(_epoll_fd, EPOLL_CTL_DEL, evd->fd, nullptr);
+        callEpollCtl(EPOLL_CTL_DEL, evd->fd, 0, nullptr, u"removing timer");
         ::close(evd->fd);
         deleteEventData(evd, EVT_TIMER);
         return nullptr;
@@ -467,7 +478,7 @@ void* ts::Reactor::Guts::newTimer(ReactorHandlerInterface* handler, cn::millisec
 bool ts::Reactor::Guts::cancelTimer(EventId id, bool silent)
 {
     EventData* evd = reinterpret_cast<EventData*>(id._ptr);
-    bool success = validateEventData(evd, silent);
+    bool success = _reactor.validateEventData(evd, silent);
     if (success) {
         // Cancel and delete the timer.
         success = sysDeleteTimer(evd, silent);
@@ -479,8 +490,7 @@ bool ts::Reactor::Guts::cancelTimer(EventId id, bool silent)
 bool ts::Reactor::Guts::sysDeleteTimer(EventData* evd, bool silent)
 {
     // Remove timer from epoll queue.
-    if (::epoll_ctl(_epoll_fd, EPOLL_CTL_DEL, evd->fd, nullptr) < 0) {
-        _reactor.report().log(SilentLevel(silent), u"error removing timer from epoll: %s", SysErrorCodeMessage());
+    if (!callEpollCtl(EPOLL_CTL_DEL, evd->fd, 0, nullptr, u"removing timer", silent)) {
         return false;
     }
     else {
@@ -497,7 +507,8 @@ bool ts::Reactor::Guts::sysDeleteTimer(EventData* evd, bool silent)
 
 void* ts::Reactor::Guts::newEvent(ReactorHandlerInterface* handler)
 {
-    EventData* evd = newEventData(EVT_EVENT, -1, nullptr);
+    bool new_type = false;
+    EventData* evd = newEventData(EVT_EVENT, -1, new_type);
     evd->handler = handler;
 
     // Open a event file descriptor.
@@ -512,12 +523,7 @@ void* ts::Reactor::Guts::newEvent(ReactorHandlerInterface* handler)
     _file_descs_map.insert(std::make_pair(evd->fd, evd));
 
     // Register event in epoll queue.
-    ::epoll_event event;
-    TS_ZERO(event);
-    event.events = EPOLLIN | EPOLLET;
-    event.data.ptr = evd;
-    if (::epoll_ctl(_epoll_fd, EPOLL_CTL_ADD, evd->fd, &event) < 0) {
-        _reactor.report().error(u"error adding user event to epoll: %s", SysErrorCodeMessage());
+    if (!callEpollCtl(EPOLL_CTL_ADD, evd->fd, EPOLLIN | EPOLLET, evd, u"adding user event")) {
         ::close(evd->fd);
         deleteEventData(evd, EVT_EVENT);
         return nullptr;
@@ -557,7 +563,7 @@ bool ts::Reactor::Guts::signalEvent(EventId id)
 bool ts::Reactor::Guts::deleteEvent(EventId id, bool silent)
 {
     EventData* evd = reinterpret_cast<EventData*>(id._ptr);
-    bool success = validateEventData(evd, silent);
+    bool success =_reactor.validateEventData(evd, silent);
     if (success) {
         success = sysDeleteEvent(evd, silent);
         deleteEventData(evd, EVT_EVENT);
@@ -568,8 +574,7 @@ bool ts::Reactor::Guts::deleteEvent(EventId id, bool silent)
 bool ts::Reactor::Guts::sysDeleteEvent(EventData* evd, bool silent)
 {
     // Remove event from epoll queue.
-    if (::epoll_ctl(_epoll_fd, EPOLL_CTL_DEL, evd->fd, nullptr) < 0) {
-        _reactor.report().log(SilentLevel(silent), u"error removing user event from epoll: %s", SysErrorCodeMessage());
+    if (!callEpollCtl(EPOLL_CTL_DEL, evd->fd, 0, nullptr, u"removing user event", silent)) {
         return false;
     }
     else {
@@ -588,7 +593,7 @@ void* ts::Reactor::Guts::newReadNotify(ReactorHandlerInterface* handler, SysSock
 {
     // Create the EventData
     bool new_type = false;
-    EventData* evd = newEventData(EVT_READ, sock, &new_type);
+    EventData* evd = newEventData(EVT_READ, sock, new_type);
     evd->read_handler = handler;
 
     // Add or update event in epoll queue.
@@ -596,15 +601,8 @@ void* ts::Reactor::Guts::newReadNotify(ReactorHandlerInterface* handler, SysSock
         // The file descriptor was not already monitored for read.
         const bool also_write = (evd->type & EVT_WRITE) != 0;
         const int op = also_write ? EPOLL_CTL_MOD : EPOLL_CTL_ADD;
-        ::epoll_event event;
-        TS_ZERO(event);
-        event.events = EPOLLIN | EPOLLET;
-        if (also_write) {
-            event.events |= EPOLLOUT;
-        }
-        event.data.ptr = evd;
-        if (::epoll_ctl(_epoll_fd, op, evd->fd, &event) < 0) {
-            _reactor.report().error(u"error adding read notification to epoll: %s", SysErrorCodeMessage());
+        const uint32_t events = EPOLLIN | EPOLLET | (also_write ? int(EPOLLOUT) : 0);
+        if (!callEpollCtl(op, evd->fd, events, evd, u"adding read notification")) {
             if (!also_write) {
                 // The EventData was just created, remove it.
                 deleteEventData(evd, EVT_READ);
@@ -623,7 +621,7 @@ void* ts::Reactor::Guts::newReadNotify(ReactorHandlerInterface* handler, SysSock
 bool ts::Reactor::Guts::deleteReadNotify(EventId id, bool silent)
 {
     EventData* evd = reinterpret_cast<EventData*>(id._ptr);
-    bool success = validateEventData(evd, silent);
+    bool success = _reactor.validateEventData(evd, silent);
     if (success) {
         success = sysDeleteRead(evd, silent);
         deleteEventData(evd, EVT_READ);
@@ -636,17 +634,8 @@ bool ts::Reactor::Guts::sysDeleteRead(EventData* evd, bool silent)
     // Delete or update event in epoll queue.
     const bool also_write = (evd->type & EVT_WRITE) != 0;
     const int op = also_write ? EPOLL_CTL_MOD : EPOLL_CTL_DEL;
-    ::epoll_event event;
-    TS_ZERO(event);
-    if (also_write) {
-        event.events = EPOLLOUT | EPOLLET;
-        event.data.ptr = evd;
-    }
-    if (::epoll_ctl(_epoll_fd, op, evd->fd, &event) < 0) {
-        _reactor.report().log(SilentLevel(silent), u"error removing read notification from epoll: %s", SysErrorCodeMessage());
-        return false;
-    }
-    return true;
+    const uint32_t events = also_write ? (EPOLLOUT | EPOLLET) : 0;
+    return callEpollCtl(op, evd->fd, events, evd, u"removing read notification");
 }
 
 
@@ -658,7 +647,7 @@ void* ts::Reactor::Guts::newWriteNotify(ReactorHandlerInterface* handler, SysSoc
 {
     // Create the EventData
     bool new_type = false;
-    EventData* evd = newEventData(EVT_WRITE, sock, &new_type);
+    EventData* evd = newEventData(EVT_WRITE, sock, new_type);
     evd->handler = handler;
 
     // Add or update event in epoll queue.
@@ -666,15 +655,8 @@ void* ts::Reactor::Guts::newWriteNotify(ReactorHandlerInterface* handler, SysSoc
         // The file descriptor was not already monitored for write.
         const bool also_read = (evd->type & EVT_READ) != 0;
         const int op = also_read ? EPOLL_CTL_MOD : EPOLL_CTL_ADD;
-        ::epoll_event event;
-        TS_ZERO(event);
-        event.events = EPOLLOUT | EPOLLET;
-        if (also_read) {
-            event.events |= EPOLLIN;
-        }
-        event.data.ptr = evd;
-        if (::epoll_ctl(_epoll_fd, op, evd->fd, &event) < 0) {
-            _reactor.report().error(u"error adding write notification to epoll: %s", SysErrorCodeMessage());
+        const uint32_t events = EPOLLOUT | EPOLLET | (also_read ? int(EPOLLIN) : 0);
+        if (!callEpollCtl(op, evd->fd, events, evd, u"adding write notification")) {
             if (!also_read) {
                 // The EventData was just created, remove it.
                 deleteEventData(evd, EVT_WRITE);
@@ -693,7 +675,7 @@ void* ts::Reactor::Guts::newWriteNotify(ReactorHandlerInterface* handler, SysSoc
 bool ts::Reactor::Guts::deleteWriteNotify(EventId id, bool silent)
 {
     EventData* evd = reinterpret_cast<EventData*>(id._ptr);
-    bool success = validateEventData(evd, silent);
+    bool success = _reactor.validateEventData(evd, silent);
     if (success) {
         success = sysDeleteWrite(evd, silent);
         deleteEventData(evd, EVT_WRITE);
@@ -706,15 +688,6 @@ bool ts::Reactor::Guts::sysDeleteWrite(EventData* evd, bool silent)
     // Delete or update event in epoll queue.
     const bool also_read = (evd->type & EVT_READ) != 0;
     const int op = also_read ? EPOLL_CTL_MOD : EPOLL_CTL_DEL;
-    ::epoll_event event;
-    TS_ZERO(event);
-    if (also_read) {
-        event.events = EPOLLIN | EPOLLET;
-        event.data.ptr = evd;
-    }
-    if (::epoll_ctl(_epoll_fd, op, evd->fd, &event) < 0) {
-        _reactor.report().log(SilentLevel(silent), u"error removing write notification from epoll: %s", SysErrorCodeMessage());
-        return false;
-    }
-    return true;
+    const uint32_t events = also_read ? (EPOLLIN | EPOLLET) : 0;
+    return callEpollCtl(op, evd->fd, events, evd, u"removing write notification");
 }

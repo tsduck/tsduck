@@ -13,6 +13,7 @@
 
 #pragma once
 #include "tsNonBlockingDevice.h"
+#include "tsOwnedObject.h"
 #include "tsSocketHandlerInterface.h"
 #include "tsIPSocketAddress.h"
 #include "tsIPUtils.h"
@@ -23,7 +24,7 @@ namespace ts {
     //! Base class for TCP and UDP sockets.
     //! @ingroup libtscore net
     //!
-    class TSCOREDLL Socket : public NonBlockingDevice
+    class TSCOREDLL Socket : public NonBlockingDevice, public OwnedObject
     {
         TS_NOCOPY(Socket);
     public:
@@ -32,15 +33,17 @@ namespace ts {
         //! @param [in] report Where to report errors. The @a report object must remain valid as long as this object
         //! exists or setReport() is used with another Report object. If @a report is null, log messages are discarded.
         //! @param [in] non_blocking It true, the device is initially set in non-blocking mode.
+        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        explicit Socket(Report* report = nullptr, bool non_blocking = false);
+        explicit Socket(Report* report = nullptr, bool non_blocking = false, Object* owner = nullptr);
 
         //!
         //! Constructor.
         //! @param [in] delegate Use the report of another ReporterBase. If @a delegate is null, log messages are discarded.
         //! @param [in] non_blocking It true, the device is initially set in non-blocking mode.
+        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        explicit Socket(ReporterBase* delegate, bool non_blocking = false);
+        explicit Socket(ReporterBase* delegate, bool non_blocking = false, Object* owner = nullptr);
 
         //!
         //! Destructor.
@@ -49,19 +52,20 @@ namespace ts {
 
         //!
         //! Open the socket.
+        //! Subclasses are not permitted to override this one, they should implement openImplementation().
         //! @param [in] gen IP generation, IPv4 or IPv6. If set to IP::Any, open an IPv6 socket (IPv4 connections allowed).
         //! @return True on success, false on error.
         //!
-        virtual bool open(IP gen) = 0;
+        virtual bool open(IP gen = IP::Any) final;
 
         //!
         //! Close the socket.
-        //! If overridden by a subclass, the superclass must be called at the end of the overridden close().
+        //! Subclasses are not permitted to override this one, they should implement closeImplementation().
         //! @param [in] silent If true, do not report errors through the logger. This is typically useful when the socket
         //! is in some error condition and closing it is necessary although it may generate additional meaningless errors.
         //! @return True on success, false on error.
         //!
-        virtual bool close(bool silent = false);
+        virtual bool close(bool silent = false) final;
 
         //!
         //! Check if socket is open.
@@ -148,6 +152,12 @@ namespace ts {
         bool getLocalAddress(IPSocketAddress& addr) const;
 
         //!
+        //! Get the local address as a string.
+        //! @return A string representation of the IP address and port of the socket.
+        //!
+        UString localName();
+
+        //!
         //! Get the underlying socket device handle (use with care).
         //!
         //! This method is reserved for low-level operations and should
@@ -172,6 +182,24 @@ namespace ts {
 
     protected:
         //!
+        //! Open the socket, actual implementation which must be overriden by subclasses.
+        //! Never called when the application tries to open a socket which is already open.
+        //! @param [in] gen IP generation, IPv4 or IPv6. If set to IP::Any, open an IPv6 socket (IPv4 connections allowed).
+        //! @return True on success, false on error.
+        //!
+        virtual bool openImplementation(IP gen) = 0;
+
+        //!
+        //! Close the socket, actual implementation which may be overriden by subclasses.
+        //! Never called when the application tries to close a socket which is not open.
+        //! If overridden by a subclass, the superclass must be called at the end of the overridden close().
+        //! @param [in] silent If true, do not report errors through the logger. This is typically useful when the socket
+        //! is in some error condition and closing it is necessary although it may generate additional meaningless errors.
+        //! @return True on success, false on error.
+        //!
+        virtual bool closeImplementation(bool silent);
+
+        //!
         //! Create the socket.
         //! @param [in] gen IP generation.
         //! @param [in] type Socket type: SOCK_STREAM, SOCK_DGRAM
@@ -195,12 +223,28 @@ namespace ts {
         //!
         bool convert(IPAddress& addr) const;
 
+        //!
+        //! Call a handler on all subscribers, using a lambda expression.
+        //! @param [in] func Function to call as lambda expression.
+        //!
+        template <typename F>
+        void callSubscribers(F&& func) {
+            // We must iterate over a copy of the set because we call a handler at each iteration
+            // and the handler may modify the socket state.
+            for (auto subs : SocketHandlerSet(_subscribers)) {
+                func(subs);
+            }
+        }
+
         // Overloaded methods.
         virtual bool allowSetNonBlocking() const override;
 
     private:
-        volatile SysSocketType            _sock = SYS_SOCKET_INVALID;
-        IP                                _gen = IP::v4;    // Current generation of the IP address. Never IP::Any.
-        std::set<SocketHandlerInterface*> _subscribers {};  // Subscribers to open/close notifications.
+        // Set of handlers.
+        using SocketHandlerSet = std::set<SocketHandlerInterface*>;
+
+        volatile SysSocketType _sock = SYS_SOCKET_INVALID;
+        IP                     _gen = IP::v4;    // Current generation of the IP address. Never IP::Any.
+        SocketHandlerSet       _subscribers {};  // Subscribers to open/close notifications.
     };
 }
