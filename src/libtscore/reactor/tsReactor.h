@@ -24,7 +24,7 @@
 #if !defined(DOXYGEN)
     #if defined(TS_LINUX)
         // Use epoll(), a Linux specific feature.
-        // In the future, we may consider
+        // In the future, we may consider io_uring, although it may be overkill for small servers.
         #define TS_USE_EPOLL 1
     #elif defined(TS_MAC) || defined(TS_BSD)
         // Use kqueue(), as found on macOS and all BSD systems.
@@ -40,9 +40,20 @@
 #if defined(TS_USE_EPOLL) || defined(TS_USE_KQUEUE) || defined(DOXYGEN)
     //!
     //! This macro is defined when the Reactor uses a non-blocking I/O model.
+    //!
     //! Reactive classes which manage I/O shall repeatedly attempt I/O operations as long
     //! as they succeed. When they fail with a "would block" status, the reactive class
     //! shall request the Reactor to be notified when the I/O becomes possible.
+    //!
+    //! The macros TS_USE_NON_BLOCKING_IO and TS_USE_ASYNCHRONOUS_IO should be used only
+    //! when contitional compilation is required for syntactic reasons. A reactive I/O
+    //! class should use "if constexpr" structures using the static methods UseNonBlockingIO()
+    //! and UseAsynchronousIO().
+    //!
+    //! @see TS_USE_ASYNCHRONOUS_IO
+    //! @see ts::Reactor::UseNonBlockingIO()
+    //! @see ts::Reactor::UseAsynchronousIO()
+    //! @see ts::NonBlockingDevice
     //!
     #define TS_USE_NON_BLOCKING_IO 1
 #endif
@@ -50,10 +61,21 @@
 #if defined(TS_USE_IOCP) || defined(DOXYGEN)
     //!
     //! This macro is defined when the Reactor uses an asynchronous I/O model.
+    //!
     //! Reactive classes which manage I/O shall start I/O operations and, if the operation
     //! completes with a "pending" status, the reactive class shall request the Reactor to
     //! be notified when the I/O completes. In the meantime, the reactive class shall ensure
     //! that the I/O buffers remain valid, as they are used in the background by the I/O.
+    //!
+    //! The macros TS_USE_NON_BLOCKING_IO and TS_USE_ASYNCHRONOUS_IO should be used only
+    //! when contitional compilation is required for syntactic reasons. A reactive I/O
+    //! class should use "if constexpr" structures using the static methods UseNonBlockingIO()
+    //! and UseAsynchronousIO().
+    //!
+    //! @see TS_USE_NON_BLOCKING_IO
+    //! @see ts::Reactor::UseNonBlockingIO()
+    //! @see ts::Reactor::UseAsynchronousIO()
+    //! @see ts::NonBlockingDevice
     //!
     #define TS_USE_ASYNCHRONOUS_IO 1
 #endif
@@ -63,7 +85,39 @@ namespace ts {
     //! Event-driven reactor class implementing the "event loop" pattern.
     //! @ingroup libtscore reactor
     //!
-    //! To be completed...
+    //! A reactor is a single-threaded design pattern based on an "event loop". The application classes
+    //! register handlers to be called when "events" occur in the future. The application-defined handlers
+    //! typically start other background tasks (timers, I/O) and register other handlers to be called when
+    //! these tasks complete.
+    //!
+    //! Timers and user-defined events (which can be triggered from other tasks) are directly handled by
+    //! the class Reactor. Other types of features such as message queues and input/output are handled in
+    //! "reactive classes" which execute on top of the Reactor.
+    //!
+    //! I/O multiplexing
+    //! ----------------
+    //! There are two distinct reactive I/O models, with different implementations:
+    //!
+    //! - Non-blocking I/O (UNIX systems)
+    //!   - kqueue (macOS, FreeBSD)
+    //!   - epoll (Linux)
+    //! - Asynchronous I/O (Windows)
+    //!   - I/O completion ports (aka IOCP)
+    //!
+    //! See the documentation of class NonBlockingDevice for a detailed explanation of the differences.
+    //!
+    //! The class Reactor encapsulates the various implementations and proposes a portable interface.
+    //! However, while it is possible to unify the various types of non-blocking I/O (kqueue and epoll)
+    //! in one single interface, it is impossible to unify non-blocking I/O and asynchronous I/O into
+    //! the same interface. The way they shall be used, as well as the way the data buffers are managed,
+    //! are too different. Therefore, the class Reactor exposes interfaces for both models. The application
+    //! shall check the current I/O model using the "consteval" static methods UseNonBlockingIO() and
+    //! UseAsynchronousIO() and then adopt the correct strategy.
+    //!
+    //! In practice, the I/O multiplexing features of the class Reactor are not used by applications.
+    //! They are used in a few specialized "reactive I/O" classes such as ReactiveUDPSocket or
+    //! ReactiveTCPConnection. These classes are implemented on top of Reactor and have fully portable
+    //! and homogeneous interfaces.
     //!
     //! Synchronisation
     //! ---------------
@@ -71,7 +125,7 @@ namespace ts {
     //! shall be invoked from the thread of the reactor, where the event loop is run.
     //! All handlers are invoked in the context of the thread which invoked processEventLoop(),
     //! except worker handlers which are invoked in the context of a worker thread. Therefore,
-    //! worker handlers are not allowed to called methods of the reactor.
+    //! worker handlers are not allowed to call methods of the reactor.
     //!
     class TSCOREDLL Reactor : public ReporterBase
     {
@@ -97,8 +151,25 @@ namespace ts {
         virtual ~Reactor() override;
 
         //!
-        //! This static function returns the reactive I/O model.
+        //! This static function returns whether the Reactor uses an asynchronous I/O model.
         //! @return True when asynchronous I/O are used, false when non-blocking I/O are used.
+        //!
+        //! Reactive classes which manage I/O shall start I/O operations and, if the operation
+        //! completes with a "pending" status, the reactive class shall request the Reactor to
+        //! be notified when the I/O completes. In the meantime, the reactive class shall ensure
+        //! that the I/O buffers remain valid, as they are used in the background by the I/O.
+        //!
+        //! This method is typically used in "if constexpr" structures, which are preferred to
+        //! conditional compilation using the macro TS_USE_ASYNCHRONOUS_IO.
+        //!
+        //! Example:
+        //! @code
+        //! if constexpr (Reactor::UseAsynchronousIO()) {
+        //!     ....
+        //! }
+        //! @endcode
+        //! @see UseNonBlockingIO()
+        //! @see NonBlockingDevice
         //!
         static consteval bool UseAsynchronousIO()
         {
@@ -112,8 +183,24 @@ namespace ts {
         }
 
         //!
-        //! This static function returns the reactive I/O model.
+        //! This static function returns whether the Reactor uses a non-blocking I/O model.
         //! @return True when non-blocking I/O are used, false when asynchronous I/O are used.
+        //!
+        //! Reactive classes which manage I/O shall repeatedly attempt I/O operations as long
+        //! as they succeed. When they fail with a "would block" status, the reactive class
+        //! shall request the Reactor to be notified when the I/O becomes possible.
+        //!
+        //! This method is typically used in "if constexpr" structures, which are preferred to
+        //! conditional compilation using the macro TS_USE_NON_BLOCKING_IO.
+        //!
+        //! Example:
+        //! @code
+        //! if constexpr (Reactor::UseNonBlockingIO()) {
+        //!     ....
+        //! }
+        //! @endcode
+        //! @see UseAsynchronousIO()
+        //! @see NonBlockingDevice
         //!
         static consteval bool UseNonBlockingIO() { return !UseAsynchronousIO(); }
 
