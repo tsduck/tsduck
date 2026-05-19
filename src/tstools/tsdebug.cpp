@@ -73,7 +73,7 @@ ts::ErrorCommands::ErrorCommands(CommandLine& cmdline, int flags)
     cmd->option(u"category", 'c', _category_names);
     cmd->help(u"category", u"C++ category (std::error_category).");
     cmd->option(u"windows", 'w');
-    cmd->help(u"windows", u"On Windwos, use Win32 functions instead of C++ standard functions.");
+    cmd->help(u"windows", u"On Windows, use Win32 functions instead of C++ standard functions.");
 }
 
 ts::ErrorCommands::~ErrorCommands()
@@ -438,6 +438,10 @@ ts::NetworkCommands::NetworkCommands(CommandLine& cmdline, int flags)
     defineIPGenArgs(*cmd);
     cmd->option(u"no-loopback", 'n');
     cmd->help(u"no-loopback", u"Exclude loopback interfaces.");
+    cmd->option(u"no-link-local");
+    cmd->help(u"no-link-local", u"Exclude link-local interfaces.");
+    cmd->option(u"up", 'u');
+    cmd->help(u"up", u"List only interfaces which are up and running.");
 
     cmd = cmdline.command(u"resolve", u"Resolve a network name, as in applications", u"[options] name ...", flags);
     cmdline.setCommandLineHandler(this, &NetworkCommands::resolve, u"resolve");
@@ -461,6 +465,8 @@ ts::CommandStatus ts::NetworkCommands::iflist(const UString& command, Args& args
 {
     loadIPGenArgs(args);
     const bool no_loopback = args.present(u"no-loopback");
+    const bool no_link_local = args.present(u"no-link-local");
+    const bool up_only = args.present(u"up");
 
     NetworkInterfaceVector net;
     if (!NetworkInterface::GetAll(net, !no_loopback, ip_gen, false, args)) {
@@ -469,7 +475,9 @@ ts::CommandStatus ts::NetworkCommands::iflist(const UString& command, Args& args
 
     std::cout << "Local interfaces: " << net.size() << std::endl;
     for (const auto& n : net) {
-        std::cout << "  " << n << std::endl;
+        if (!(up_only && n.down) && !(no_link_local && n.link_local)) {
+            std::cout << "  " << n << std::endl;
+        }
     }
     return CommandStatus::SUCCESS;
 }

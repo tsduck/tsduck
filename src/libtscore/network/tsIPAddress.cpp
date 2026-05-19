@@ -437,7 +437,7 @@ bool ts::IPAddress::isSSM() const
     }
     else {
         // IPv4 SSM addresses are in the range 232.0.0.0/8.
-        return (_addr4 & 0xFF000000) == 0xE800'0000;
+        return (_addr4 & 0xFF00'0000) == 0xE800'0000;
     }
 }
 
@@ -451,7 +451,7 @@ bool ts::IPAddress::isLinkLocal() const
     }
     else {
         // IPv4 link-local address are 169.254.0.0/16.
-        return (_addr4 & 0xFFFF0000) == 0xA9FE'0000;
+        return (_addr4 & 0xFFFF'0000) == 0xA9FE'0000;
     }
 }
 

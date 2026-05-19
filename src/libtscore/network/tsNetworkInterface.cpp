@@ -39,6 +39,12 @@ ts::UString ts::NetworkInterface::toString() const
     if (loopback) {
         str.append(u", loopback");
     }
+    if (link_local) {
+        str.append(u", link-local");
+    }
+    if (down) {
+        str.append(u", down");
+    }
     if (index >= 0) {
         str.format(u", index %d", index);
     }
@@ -105,6 +111,8 @@ bool ts::NetworkInterface::InterfaceRepository::reload(bool force_reload, Report
                 net.address.setMask(IPAddress(*ifa->ifa_netmask));
             }
             net.loopback = (ifa->ifa_flags & IFF_LOOPBACK) != 0;
+            net.link_local = net.address.isLinkLocal();
+            net.down = (ifa->ifa_flags & (IFF_UP | IFF_RUNNING)) != (IFF_UP | IFF_RUNNING);
             if (ifa->ifa_name != nullptr) {
                 net.name.assignFromUTF8(ifa->ifa_name);
                 const int i = int(if_nametoindex(ifa->ifa_name));
@@ -160,6 +168,8 @@ bool ts::NetworkInterface::InterfaceRepository::reload(bool force_reload, Report
                 NetworkInterface net;
                 net.address = IPAddressMask(*addr->Address.lpSockaddr, size_t(addr->OnLinkPrefixLength));
                 net.loopback = adap->IfType == IF_TYPE_SOFTWARE_LOOPBACK;
+                net.link_local = net.address.isLinkLocal();
+                net.down = adap->OperStatus != IfOperStatusUp;
                 net.name.assignFromWChar(adap->FriendlyName);
                 net.index = int(adap->Ipv6IfIndex);
                 add(net);

@@ -504,10 +504,10 @@ bool ts::UDPSocket::addMembershipAll(const IPAddress& multicast, const IPAddress
     // interface when used by index. On macOS, at least, it generates an error "Address already in use".
     std::set<int> indexes;
 
-    // Add all memberships
+    // Add memberships to all interfaces which are not down.
     bool ok = true;
     for (const auto& loc : locals) {
-        if (link_local || !loc.address.isLinkLocal()) {
+        if (!loc.down && (link_local || !loc.link_local)) {
             if (gen == IP::v4 || loc.index < 0) {
                 // On IPv4, use local IP address. Also on IPv6 if interface index is unknown.
                 ok = addMembershipImpl(multicast, loc.address, -1, source) && ok;

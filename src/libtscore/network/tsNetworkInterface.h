@@ -38,6 +38,8 @@ namespace ts {
         IPAddressMask address {};           //!< IP address and mask/prefix.
         UString       name {};              //!< Interface name, system specific.
         bool          loopback = false;     //!< This is a software loopback interface.
+        bool          link_local = false;   //!< This is a link-local address.
+        bool          down = false;         //!< The interface is down, disconnected, not usable, etc.
         int           index = -1;           //!< Interface index, system specific, negative if meaningless.
 
         static constexpr int AnyIndex = 0;  //!< Interface index value meaning "any interface" in IPv6 system API.

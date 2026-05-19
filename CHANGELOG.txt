@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.44-4659 (April 2026)
+VERSION 3.44-4674 (May 2026)
 
 [NEW] New commands and plugins:
 
@@ -45,6 +45,9 @@ VERSION 3.44-4659 (April 2026)
     the TSDuck source code. Remaining cases may still be present. Please report
     them and they will be fixed.
   * Fixed issue #1705: Incorrect display of ATSC service_location_descriptor.
+  * Fixed issue #1722:  On  Windows,  the  input  plugin  "ip"  tried  to  join
+    multicast  groups  from  all local addresses, included automatic link-local
+    addresses of interfaces which were down. These addresses are now ignored.
 
 -------------------------------------------------------------------------------
 
