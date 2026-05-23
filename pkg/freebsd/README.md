@@ -122,11 +122,15 @@ the new version of TSDuck in `/usr/ports/distfiles`.
 Build TSDuck and install it into an intermediate "stage" location.
 
 ~~~
+make clean
 make stage
 ~~~
 
-This command takes time. It rebuilds TSDuck from sources and installs it in
-the subdirectory `work/stage/usr/local`. Review that the build generates no
+The command `make clean` is necessary when the same repository has already
+been used to build TSDuck, for the previous release for instance.
+
+The command `make statge` takes time. It rebuilds TSDuck from sources and installs
+it in the subdirectory `work/stage/usr/local`. Review that the build generates no
 error and the files are correctly installed.
 
 Now, regenerate the file `pkg-plist`. It contains the list of all files which
