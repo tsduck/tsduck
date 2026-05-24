@@ -157,6 +157,9 @@ jobs:
         #   std: 23
     name: Build on ${{ matrix.target }} with VC++, C++${{ matrix.std }}
     runs-on: windows-latest
+    defaults:
+      run:
+        shell: powershell # instead of default pwsh
     env:
       STDCPP: stdcpp${{ matrix.std }}
       ORIGIN_REPO: ${{ github.event.pull_request.head.repo.full_name || github.repository }}

@@ -640,5 +640,5 @@ namespace ts {
     //! Names of packet procesing status values.
     //! @return A constant reference to the enumeration description.
     //!
-    const Names& PacketProcessingStatusNames();
+    TSDUCKDLL const Names& PacketProcessingStatusNames();
 }

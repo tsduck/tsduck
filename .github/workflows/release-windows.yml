@@ -52,6 +52,9 @@ jobs:
     name: Build on ${{ inputs.runner }}
     if: inputs.build && (inputs.build_x64 || inputs.build_arm64)
     runs-on: ${{ inputs.runner }}
+    defaults:
+      run:
+        shell: powershell # instead of default pwsh
     steps:
 
     - name: Get TSDuck repo
