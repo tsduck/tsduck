@@ -19,7 +19,7 @@ namespace ts {
         virtual bool start() override;
         virtual bool stop() override;
         virtual BitRate getBitrate() override;
-        virtual ts::PacketProcessingStatus processPacket(TSPacket&, TSPacketMetadata&) override;
+        virtual ts::PacketProcessStatus processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
         // Command line options, stay unchanged after getOptions():
@@ -104,10 +104,10 @@ ts::BitRate ts::SamplePlugin::getBitrate()
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::PacketProcessingStatus ts::SamplePlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pktData)
+ts::PacketProcessStatus ts::SamplePlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pktData)
 {
     if (doCount) {
         counter++;
     }
-    return TSP_OK;
+    return ts::TSP_OK;
 }
