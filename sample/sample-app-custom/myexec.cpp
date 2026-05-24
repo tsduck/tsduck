@@ -42,7 +42,7 @@ public:
     virtual bool getOptions() override;
     virtual bool start() override;
     virtual bool stop() override;
-    virtual PacketProcessingStatus processPacket(ts::TSPacket&, ts::TSPacketMetadata&) override;
+    virtual ts::PacketProcessingStatus processPacket(ts::TSPacket&, ts::TSPacketMetadata&) override;
 
 private:
     // Command line options:

@@ -19,7 +19,7 @@ namespace ts {
         virtual bool start() override;
         virtual bool stop() override;
         virtual BitRate getBitrate() override;
-        virtual PacketProcessingStatus processPacket(TSPacket&, TSPacketMetadata&) override;
+        virtual ts::PacketProcessingStatus processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
         // Command line options, stay unchanged after getOptions():
