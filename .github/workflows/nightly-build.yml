@@ -14,9 +14,11 @@
 name: Nightly build
 
 on:
-  # Trigger the workflow every day at 00:40 UTC.
+  # Trigger the workflow every day at 14:37 UTC.
+  # Using 00:40 UTC, the execution was slowly dritfing by 4 hours.
+  # So, we try to find a quieter moment during the day.
   schedule:
-  - cron: '40 0 * * *'
+  - cron: '37 14 * * *'
   # Allow manual trigger.
   workflow_dispatch:
 
