@@ -41,7 +41,7 @@ namespace ts {
         // Implementation of plugin API
         virtual bool start() override;
         virtual bool stop() override;
-        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
+        virtual PacketProcessStatus processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
         // TS packets or sections are passed from the server thread to the plugin thread using a message queue.
@@ -338,7 +338,7 @@ bool ts::DataInjectPlugin::stop()
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::DataInjectPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
+ts::PacketProcessStatus ts::DataInjectPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
     // Abort if data PID is already present in TS
     const PID pid = pkt.getPID();

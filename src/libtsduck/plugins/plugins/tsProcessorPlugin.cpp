@@ -35,22 +35,6 @@ ts::ProcessorPlugin::ProcessorPlugin(TSP* tsp_, const UString& description, cons
 
 
 //----------------------------------------------------------------------------
-// Thread-safe init-safe static data patterns.
-//----------------------------------------------------------------------------
-
-const ts::Names& ts::ProcessorPlugin::StatusNames()
-{
-    static const Names data({
-        {u"pass", TSP_OK},
-        {u"stop", TSP_END},
-        {u"drop", TSP_DROP},
-        {u"null", TSP_NULL}
-    });
-    return data;
-}
-
-
-//----------------------------------------------------------------------------
 // Get the content of the --only/except-label options (packet plugins only).
 //----------------------------------------------------------------------------
 
@@ -75,7 +59,7 @@ size_t ts::ProcessorPlugin::getPacketWindowSize()
     return 0;
 }
 
-ts::ProcessorPlugin::Status ts::ProcessorPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
+ts::PacketProcessStatus ts::ProcessorPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
     return TSP_OK;
 }
@@ -108,7 +92,7 @@ size_t ts::ProcessorPlugin::processPacketWindow(TSPacketWindow& win)
 
     while (processed_packets < win.size()) {
         if (win.get(processed_packets, pkt, mdata)) {
-            const Status status = processPacket(*pkt, *mdata);
+            const PacketProcessStatus status = processPacket(*pkt, *mdata);
             if (status == TSP_NULL) {
                 win.nullify(processed_packets);
             }

@@ -29,14 +29,14 @@ namespace ts {
     public:
         // Implementation of plugin API
         virtual bool start() override;
-        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
+        virtual PacketProcessStatus processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
-        CASSelectionArgs _cas_args {};            // CAS selection
-        bool             _pass_pmt = false;       // Pass PIDs containing PMT
-        Status           _drop_status = TSP_DROP; // Status for dropped packets
-        PIDSet           _pass_pids {};           // List of PIDs to pass
-        SectionDemux     _demux {duck, this};     // Section filter
+        CASSelectionArgs    _cas_args {};            // CAS selection
+        bool                _pass_pmt = false;       // Pass PIDs containing PMT
+        PacketProcessStatus _drop_status = TSP_DROP; // Status for dropped packets
+        PIDSet              _pass_pids {};           // List of PIDs to pass
+        SectionDemux        _demux {duck, this};     // Section filter
 
         // Invoked by the demux when a complete table is available.
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;
@@ -216,7 +216,7 @@ void ts::SIFilterPlugin::processPAT(const PAT& pat)
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::SIFilterPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
+ts::PacketProcessStatus ts::SIFilterPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
     _demux.feedPacket(pkt);
     return _pass_pids[pkt.getPID()] ? TSP_OK : _drop_status;

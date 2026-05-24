@@ -27,7 +27,7 @@ namespace ts {
         // Implementation of plugin API
         virtual bool getOptions() override;
         virtual bool start() override;
-        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
+        virtual PacketProcessStatus processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
         TSFuzzingArgs _fuzz_opt {};
@@ -58,7 +58,7 @@ bool ts::FuzzPlugin::start()
     return _fuzzer.start(_fuzz_opt);
 }
 
-ts::ProcessorPlugin::Status ts::FuzzPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
+ts::PacketProcessStatus ts::FuzzPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
     return _fuzzer.processPacket(pkt) ? TSP_OK : TSP_END;
 }

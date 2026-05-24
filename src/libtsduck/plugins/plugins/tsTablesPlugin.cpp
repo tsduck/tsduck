@@ -87,7 +87,7 @@ void ts::TablesPlugin::handleSection(SectionDemux&, const Section& sect)
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::TablesPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
+ts::PacketProcessStatus ts::TablesPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
     if (_terminated) {
         // Typically waiting for joint termination, pass packet without processing.

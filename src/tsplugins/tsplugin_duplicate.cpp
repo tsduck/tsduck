@@ -29,7 +29,7 @@ namespace ts {
         // Implementation of plugin API
         virtual bool getOptions() override;
         virtual bool start() override;
-        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
+        virtual PacketProcessStatus processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
         using TSPacketPtr = std::shared_ptr<TSPacket>;
@@ -97,7 +97,7 @@ bool ts::DuplicatePlugin::start()
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::DuplicatePlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
+ts::PacketProcessStatus ts::DuplicatePlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
     // Get old and new PID.
     const PID pid = pkt.getPID();

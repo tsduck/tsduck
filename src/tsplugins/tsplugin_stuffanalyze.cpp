@@ -33,7 +33,7 @@ namespace ts {
         // Implementation of plugin API
         virtual bool start() override;
         virtual bool stop() override;
-        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
+        virtual PacketProcessStatus processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
         // Analysis context for a PID.
@@ -271,7 +271,7 @@ void ts::StuffAnalyzePlugin::handleSection(SectionDemux& demux, const Section& s
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::StuffAnalyzePlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
+ts::PacketProcessStatus ts::StuffAnalyzePlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
     _psi_demux.feedPacket(pkt);
     _analyze_demux.feedPacket(pkt);

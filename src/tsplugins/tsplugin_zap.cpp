@@ -35,7 +35,7 @@ namespace ts {
         // Implementation of plugin API
         virtual bool getOptions() override;
         virtual bool start() override;
-        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
+        virtual PacketProcessStatus processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
         // Each service to keep is described by one structure.
@@ -84,7 +84,7 @@ namespace ts {
         bool                 _include_eit = false;     // Include EIT's for the specified service
         bool                 _pes_only = false;        // Keep PES streams only
         bool                 _ignore_absent = false;   // Do not stop if a service is not present
-        Status               _drop_status = TSP_DROP;  // Status for dropped packets
+        PacketProcessStatus  _drop_status = TSP_DROP;  // Status for dropped packets
 
         // Plugin working data:
         bool                 _abort = false;           // Error (service not found, etc)
@@ -806,7 +806,7 @@ bool ts::ZapPlugin::keepComponent(PID pid, const DescriptorList& descs, const US
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::ZapPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
+ts::PacketProcessStatus ts::ZapPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
     const PID pid = pkt.getPID();
 

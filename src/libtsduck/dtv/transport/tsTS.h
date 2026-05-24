@@ -620,4 +620,25 @@ namespace ts {
         AFDID_LABELING        = 0x0C,  //!< Labeling Descriptor
         AFDID_HEVC_TILE       = 0x0D,  //!< HEVC_tile_substream_af_descriptor
     };
+
+    //---------------------------------------------------------------------
+    // Transport stream packet processing.
+    //---------------------------------------------------------------------
+
+    //!
+    //! Status of a packet processing.
+    //! Typically returned by a packet processing plugin after processing one packet.
+    //!
+    enum PacketProcessStatus {
+        TSP_OK   = 0,  //!< OK, pass packet to next processor or output.
+        TSP_END  = 1,  //!< End of processing, tell everybody to terminate.
+        TSP_DROP = 2,  //!< Drop this packet.
+        TSP_NULL = 3   //!< Replace this packet with a null packet.
+    };
+
+    //!
+    //! Names of packet procesing status values.
+    //! @return A constant reference to the enumeration description.
+    //!
+    const Names& PacketProcessingStatusNames();
 }

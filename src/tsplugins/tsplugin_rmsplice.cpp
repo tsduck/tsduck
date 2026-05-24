@@ -34,7 +34,7 @@ namespace ts {
         // Implementation of plugin API
         virtual bool getOptions() override;
         virtual bool start() override;
-        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
+        virtual PacketProcessStatus processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
         // ------------------------------------------------------------
@@ -99,19 +99,19 @@ namespace ts {
         // Plugin Implementation
         // ------------------------------------------------------------
 
-        bool               _abort = false;               // Error (service not found, etc)
-        bool               _continue = false;            // Continue processing if no splice information is found.
-        bool               _adjustTime = false;          // Adjust PTS and DTS time stamps.
-        bool               _fixCC = false;               // Fix continuity counters.
-        Status             _dropStatus = TSP_DROP;       // Status for dropped packets
-        ServiceDiscovery   _service {duck, this};        // Service name & id.
-        SectionDemux       _demux {duck, nullptr, this}; // Section filter for splice information.
-        TagByPID           _tagsByPID {};                // Mapping between PID's and component tags in the service.
-        StateByPID         _states {};                   // Map of current state by PID in the service.
-        std::set<uint32_t> _eventIDs {};                 // Set of event IDs of interest
-        bool               _dryRun = false;              // Just report what it would do
-        PID                _videoPID = PID_NULL;         // First video PID, if there is one
-        ContinuityAnalyzer _ccFixer {NoPID(), this};     // To fix continuity counters in spliced PID's.
+        bool                _abort = false;               // Error (service not found, etc)
+        bool                _continue = false;            // Continue processing if no splice information is found.
+        bool                _adjustTime = false;          // Adjust PTS and DTS time stamps.
+        bool                _fixCC = false;               // Fix continuity counters.
+        PacketProcessStatus _dropStatus = TSP_DROP;       // Status for dropped packets
+        ServiceDiscovery    _service {duck, this};        // Service name & id.
+        SectionDemux        _demux {duck, nullptr, this}; // Section filter for splice information.
+        TagByPID            _tagsByPID {};                // Mapping between PID's and component tags in the service.
+        StateByPID          _states {};                   // Map of current state by PID in the service.
+        std::set<uint32_t>  _eventIDs {};                 // Set of event IDs of interest
+        bool                _dryRun = false;              // Just report what it would do
+        PID                 _videoPID = PID_NULL;         // First video PID, if there is one
+        ContinuityAnalyzer  _ccFixer {NoPID(), this};     // To fix continuity counters in spliced PID's.
 
         // Implementation of interfaces.
         virtual void handleSection(SectionDemux&, const Section&) override;
@@ -406,10 +406,10 @@ void ts::RMSplicePlugin::PIDState::cancelEvent(uint32_t event_id)
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::RMSplicePlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
+ts::PacketProcessStatus ts::RMSplicePlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
     const PID pid = pkt.getPID();
-    Status pktStatus = TSP_OK;
+    PacketProcessStatus pktStatus = TSP_OK;
 
     // Feed the various analyzers with the packet.
     _service.feedPacket(pkt);

@@ -41,7 +41,7 @@ namespace ts {
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual bool stop() override;
-        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
+        virtual PacketProcessStatus processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
         // Description of one PID
@@ -484,7 +484,7 @@ void ts::HistoryPlugin::analyzeCADescriptors(const DescriptorList& dlist, uint16
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::HistoryPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
+ts::PacketProcessStatus ts::HistoryPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
     // Make sure we know how long to wait for suspended PID, compute number of packets for a PID to disappear.
     // If --suspend-packet-threshold is not specified ...

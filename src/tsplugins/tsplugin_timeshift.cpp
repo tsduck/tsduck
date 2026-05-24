@@ -28,7 +28,7 @@ namespace ts {
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual bool stop() override;
-        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
+        virtual PacketProcessStatus processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
         bool             _drop_initial = false;  // Drop initial packets instead of null.
@@ -162,7 +162,7 @@ bool ts::TimeShiftPlugin::stop()
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::TimeShiftPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
+ts::PacketProcessStatus ts::TimeShiftPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
     // If buffer is not yet open, we are waiting for a valid bitrate to size it.
     if (!_buffer.isOpen()) {

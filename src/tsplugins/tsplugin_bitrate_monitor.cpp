@@ -33,7 +33,7 @@ namespace ts {
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual bool stop() override;
-        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
+        virtual PacketProcessStatus processPacket(TSPacket&, TSPacketMetadata&) override;
         virtual bool handlePacketTimeout() override;
 
     private:
@@ -530,7 +530,7 @@ bool ts::BitrateMonitorPlugin::handlePacketTimeout()
 // Packet processing method.
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::BitrateMonitorPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
+ts::PacketProcessStatus ts::BitrateMonitorPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
     // If packet's PID matches, increment the number of packets received during the current second.
     if (_pids.test(pkt.getPID())) {

@@ -39,7 +39,7 @@ namespace ts {
         virtual bool getOptions() override;
         virtual bool stop() override;
         virtual bool isRealTime() override {return true;}
-        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
+        virtual PacketProcessStatus processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
         // Each UDP receiver is executed in a thread. There is a vector of receiver threads.
@@ -279,7 +279,7 @@ bool ts::MPEInjectPlugin::stop()
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::MPEInjectPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
+ts::PacketProcessStatus ts::MPEInjectPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
     // Abort if data PID is already present in TS and --replace is not specified.
     const PID pid = pkt.getPID();

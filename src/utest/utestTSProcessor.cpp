@@ -66,7 +66,7 @@ namespace {
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual bool stop() override;
-        virtual Status processPacket(ts::TSPacket&, ts::TSPacketMetadata&) override;
+        virtual ts::PacketProcessStatus processPacket(ts::TSPacket&, ts::TSPacketMetadata&) override;
 
         // A factory static method which creates an instance of that class.
         static ts::ProcessorPlugin* CreateInstance(ts::TSP*);
@@ -117,13 +117,13 @@ bool TestPlugin::stop()
     return true;
 }
 
-TestPlugin::Status TestPlugin::processPacket(ts::TSPacket& pkt, ts::TSPacketMetadata& metadata)
+ts::PacketProcessStatus TestPlugin::processPacket(ts::TSPacket& pkt, ts::TSPacketMetadata& metadata)
 {
     if (tsp->pluginPackets() % _count == 0) {
         TestPluginData data(int(tsp->pluginPackets() / _count));
         tsp->signalPluginEvent(EVENT_PACKET, &data);
     }
-    return TSP_OK;
+    return ts::TSP_OK;
 }
 
 

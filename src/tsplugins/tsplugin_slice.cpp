@@ -27,35 +27,35 @@ namespace ts {
     public:
         // Implementation of plugin API
         virtual bool start() override;
-        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
+        virtual PacketProcessStatus processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
         // Event description
         struct SliceEvent
         {
             // Public fields
-            Status   status;   // Packet status to return ...
-            uint64_t value;    // ... after this packet or milli-second
+            PacketProcessStatus status;   // Packet status to return ...
+            uint64_t            value;    // ... after this packet or milli-second
 
             // Constructor
-            SliceEvent(const Status& s, const uint64_t& v) : status(s), value(v) {}
+            SliceEvent(const PacketProcessStatus& s, const uint64_t& v) : status(s), value(v) {}
 
             // Comparison, for sort algorithm
-            bool operator< (const SliceEvent& e) const {return value < e.value;}
+            bool operator<(const SliceEvent& e) const { return value < e.value; }
         };
         using SliceEventVector = std::vector<SliceEvent>;
 
         // SlicePlugin private members
-        bool              _use_time = false;    // Use milliseconds in SliceEvent::value
-        bool              _ignore_pcr = false;  // Do not use PCR's, rely on previous plugins' bitrate
-        Status            _status = TSP_OK;     // Current packet status to return
-        uint64_t          _time_factor = 0;     // Factor to apply to get milli-seconds
-        PCRAnalyzer       _pcr_analyzer {};     // PCR analyzer for time stamping
-        SliceEventVector  _events {};           // Sorted list of time events to apply
-        size_t            _next_index = 0;      // Index of next SliceEvent to apply
+        bool                _use_time = false;    // Use milliseconds in SliceEvent::value
+        bool                _ignore_pcr = false;  // Do not use PCR's, rely on previous plugins' bitrate
+        PacketProcessStatus _status = TSP_OK;     // Current packet status to return
+        uint64_t            _time_factor = 0;     // Factor to apply to get milli-seconds
+        PCRAnalyzer         _pcr_analyzer {};     // PCR analyzer for time stamping
+        SliceEventVector    _events {};           // Sorted list of time events to apply
+        size_t              _next_index = 0;      // Index of next SliceEvent to apply
 
         // Add event in the list from one option.
-        void addEvents(const UChar* option, Status status);
+        void addEvents(const UChar* option, PacketProcessStatus status);
     };
 }
 
@@ -135,9 +135,9 @@ bool ts::SlicePlugin::start()
     _next_index = 0;
 
     if (verbose()) {
-        verbose(u"initial packet processing: %s", StatusNames().name(_status));
+        verbose(u"initial packet processing: %s", PacketProcessingStatusNames().name(_status));
         for (auto& it : _events) {
-            verbose(u"packet %s after %'d %s", StatusNames().name(it.status), it.value, _use_time ? u"ms" : u"packets");
+            verbose(u"packet %s after %'d %s", PacketProcessingStatusNames().name(it.status), it.value, _use_time ? u"ms" : u"packets");
         }
     }
 
@@ -149,7 +149,7 @@ bool ts::SlicePlugin::start()
 // Add events in the list fro one option.
 //----------------------------------------------------------------------------
 
-void ts::SlicePlugin::addEvents(const UChar* opt, Status status)
+void ts::SlicePlugin::addEvents(const UChar* opt, PacketProcessStatus status)
 {
     for (size_t index = 0; index < count(opt); ++index) {
         uint64_t value = intValue<uint64_t>(opt, 0, index);
@@ -168,7 +168,7 @@ void ts::SlicePlugin::addEvents(const UChar* opt, Status status)
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::SlicePlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
+ts::PacketProcessStatus ts::SlicePlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
     // Feed PCR analyzer if necessary
     if (_use_time && !_ignore_pcr) {
@@ -204,7 +204,7 @@ ts::ProcessorPlugin::Status ts::SlicePlugin::processPacket(TSPacket& pkt, TSPack
         // Yes, we just passed a schedule
         _status = _events[_next_index].status;
         _next_index++;
-        verbose(u"new packet processing: %s after %'d packets", StatusNames().name(_status), tsp->pluginPackets());
+        verbose(u"new packet processing: %s after %'d packets", PacketProcessingStatusNames().name(_status), tsp->pluginPackets());
     }
     return _status;
 }

@@ -38,7 +38,7 @@ namespace ts {
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual bool stop() override;
-        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
+        virtual PacketProcessStatus processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
         // Command line options:
@@ -300,7 +300,7 @@ void ts::FeedPlugin::resyncBuffer()
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::FeedPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
+ts::PacketProcessStatus ts::FeedPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
     // Feed the signalization demux as long as we haven't identified the tunnel PID.
     if (_extract_pid == PID_NULL) {
@@ -327,7 +327,7 @@ ts::ProcessorPlugin::Status ts::FeedPlugin::processPacket(TSPacket& pkt, TSPacke
     }
 
     // Predicted status.
-    Status status = _replace_ts ? TSP_DROP : TSP_OK;
+    PacketProcessStatus status = _replace_ts ? TSP_DROP : TSP_OK;
 
     // Process extracted packets.
     if (_outdata.size() >= PKT_SIZE) {

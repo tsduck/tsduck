@@ -56,7 +56,7 @@ namespace ts {
     public:
         // Implementation of plugin API
         virtual bool getOptions() override;
-        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
+        virtual PacketProcessStatus processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
         // Command line options:
@@ -652,7 +652,7 @@ bool ts::CraftPlugin::getOptions()
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::CraftPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
+ts::PacketProcessStatus ts::CraftPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
     // Hack the packet header. Just overwrite a few bits in place, nothing to move.
     if (_clearTransportError) {

@@ -30,33 +30,33 @@ namespace ts {
     public:
         // Implementation of plugin API
         virtual bool start() override;
-        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
+        virtual PacketProcessStatus processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
         // Time event description
         struct TimeEvent
         {
             // Public fields
-            Status status;   // Packet status to return ...
-            Time   time;     // ... after this UTC time
+            PacketProcessStatus status;   // Packet status to return ...
+            Time                time;     // ... after this UTC time
 
             // Constructor
-            TimeEvent(const Status& s, const Time& t) : status (s), time (t) {}
+            TimeEvent(const PacketProcessStatus& s, const Time& t) : status (s), time (t) {}
 
             // Comparison, for sort algorithm
-            bool operator<(const TimeEvent& t) const {return time < t.time;}
+            bool operator<(const TimeEvent& t) const { return time < t.time; }
         };
         using TimeEventVector = std::vector<TimeEvent>;
 
         // TimePlugin private members
-        Status            _status = TSP_DROP;  // Packet status to return
-        bool              _relative = false;   // Use relative time from the beginning
-        bool              _use_utc = false;    // Use UTC time
-        bool              _use_tdt = false;    // Use TDT as time reference
-        Time              _last_time {};       // Last measured time
-        SectionDemux      _demux {duck, this}; // Section filter
-        TimeEventVector   _events {};          // Sorted list of time events to apply
-        size_t            _next_index = 0;     // Index of next TimeEvent to apply
+        PacketProcessStatus _status = TSP_DROP;  // Packet status to return
+        bool                _relative = false;   // Use relative time from the beginning
+        bool                _use_utc = false;    // Use UTC time
+        bool                _use_tdt = false;    // Use TDT as time reference
+        Time                _last_time {};       // Last measured time
+        SectionDemux        _demux {duck, this}; // Section filter
+        TimeEventVector     _events {};          // Sorted list of time events to apply
+        size_t              _next_index = 0;     // Index of next TimeEvent to apply
 
         // Invoked by the demux when a complete table is available.
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;
@@ -65,7 +65,7 @@ namespace ts {
         Time currentTime() const { return _use_utc ? Time::CurrentUTC() : Time::CurrentLocalTime(); }
 
         // Add time events in the list fro one option. Return false if a time string is invalid
-        bool addEvents(const UChar* option, Status status);
+        bool addEvents(const UChar* option, PacketProcessStatus status);
     };
 }
 
@@ -153,9 +153,9 @@ bool ts::TimePlugin::start()
     std::sort(_events.begin(), _events.end());
 
     if (verbose()) {
-        verbose(u"initial packet processing: %s", StatusNames().name(_status));
+        verbose(u"initial packet processing: %s", PacketProcessingStatusNames().name(_status));
         for (auto& it : _events) {
-            verbose(u"packet %s after %s", StatusNames().name(it.status), it.time.format(Time::DATETIME));
+            verbose(u"packet %s after %s", PacketProcessingStatusNames().name(it.status), it.time.format(Time::DATETIME));
         }
     }
 
@@ -176,7 +176,7 @@ bool ts::TimePlugin::start()
 // Add time events in the list for one option.
 //----------------------------------------------------------------------------
 
-bool ts::TimePlugin::addEvents(const UChar* opt, Status status)
+bool ts::TimePlugin::addEvents(const UChar* opt, PacketProcessStatus status)
 {
     const Time start_time(currentTime());
 
@@ -232,7 +232,7 @@ void ts::TimePlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::TimePlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
+ts::PacketProcessStatus ts::TimePlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
     // Filter sections
     _demux.feedPacket(pkt);
@@ -250,7 +250,7 @@ ts::ProcessorPlugin::Status ts::TimePlugin::processPacket(TSPacket& pkt, TSPacke
         _next_index++;
 
         if (verbose()) {
-            verbose(u"%s: new packet processing: %s", _last_time.format(Time::DATETIME), StatusNames().name(_status));
+            verbose(u"%s: new packet processing: %s", _last_time.format(Time::DATETIME), PacketProcessingStatusNames().name(_status));
         }
     }
 

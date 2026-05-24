@@ -31,7 +31,7 @@ namespace ts {
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual bool isRealTime() override {return true;}
-        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
+        virtual PacketProcessStatus processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
         // Command line options:
@@ -138,7 +138,7 @@ bool ts::RegulatePlugin::start()
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::RegulatePlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
+ts::PacketProcessStatus ts::RegulatePlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
     bool flush = false;
     bool bitrate_changed = false;

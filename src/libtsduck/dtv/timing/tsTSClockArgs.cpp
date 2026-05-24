@@ -33,20 +33,20 @@ void ts::TSClockArgs::defineArgs(Args& args)
 
     args.option((_prefix + u"pcr-based").c_str());
     args.help((_prefix + u"pcr-based").c_str(),
-         u"Use playout time based on PCR values. "
-         u"By default, the time is based on the wall-clock time (real time).");
+              u"Use playout time based on PCR values. "
+              u"By default, the time is based on the wall-clock time (real time).");
 
     args.option((_prefix + u"timestamp-based").c_str());
     args.help((_prefix + u"timestamp-based").c_str(),
-         u"Use playout time based on timestamp values from the input plugin. "
-         u"When input timestamps are not available or not monotonic, fallback to --" + _prefix + u"pcr-based. "
-         u"By default, the time is based on the wall-clock time (real time).");
+              u"Use playout time based on timestamp values from the input plugin. "
+              u"When input timestamps are not available or not monotonic, fallback to --" + _prefix + u"pcr-based. "
+              u"By default, the time is based on the wall-clock time (real time).");
 
     args.option((_prefix + u"start-time").c_str(), 0, Args::STRING);
     args.help((_prefix + u"start-time").c_str(), u"year/month/day:hour:minute:second",
-         u"With --" + _prefix + u"pcr-based or --" + _prefix + u"timestamp-based, specify the initial date & time reference. "
-         u"By default, with --" + _prefix + u"pcr-based or --" + _prefix + u"timestamp-based, "
-         u"the activity starts at the first UTC time which is found in a DVB TDT or ATSC STT.");
+              u"With --" + _prefix + u"pcr-based or --" + _prefix + u"timestamp-based, specify the initial date & time reference. "
+              u"By default, with --" + _prefix + u"pcr-based or --" + _prefix + u"timestamp-based, "
+              u"the activity starts at the first UTC time which is found in a DVB TDT or ATSC STT.");
 }
 
 

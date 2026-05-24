@@ -35,25 +35,25 @@ namespace ts {
     public:
         // Implementation of plugin API
         virtual bool start() override;
-        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
+        virtual PacketProcessStatus processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
-        bool              _abort = false;          // Error (service not found, etc)
-        bool              _ready = false;          // Ready to pass packets
-        bool              _transparent = false;    // Transparent mode, pass all packets
-        Service           _service {};             // Service name & id
-        bool              _ignore_absent = false;  // Ignore service if absent
-        bool              _ignore_bat = false;     // Do not modify the BAT
-        bool              _ignore_eit = false;     // Do not modify the EIT's
-        bool              _ignore_nit = false;     // Do not modify the NIT
-        Status            _drop_status = TSP_DROP; // Status for dropped packets
-        PIDSet            _drop_pids {};           // List of PIDs to drop
-        PIDSet            _ref_pids {};            // List of other referenced PIDs
-        SectionDemux      _demux {duck, this};     // Section demux
-        CyclingPacketizer _pzer_pat {duck, PID_PAT, CyclingPacketizer::StuffingPolicy::ALWAYS};
-        CyclingPacketizer _pzer_sdt_bat {duck, PID_SDT, CyclingPacketizer::StuffingPolicy::ALWAYS};
-        CyclingPacketizer _pzer_nit {duck, PID_NIT, CyclingPacketizer::StuffingPolicy::ALWAYS};
-        EITProcessor      _eit_process {duck, PID_EIT};
+        bool                _abort = false;          // Error (service not found, etc)
+        bool                _ready = false;          // Ready to pass packets
+        bool                _transparent = false;    // Transparent mode, pass all packets
+        Service             _service {};             // Service name & id
+        bool                _ignore_absent = false;  // Ignore service if absent
+        bool                _ignore_bat = false;     // Do not modify the BAT
+        bool                _ignore_eit = false;     // Do not modify the EIT's
+        bool                _ignore_nit = false;     // Do not modify the NIT
+        PacketProcessStatus _drop_status = TSP_DROP; // Status for dropped packets
+        PIDSet              _drop_pids {};           // List of PIDs to drop
+        PIDSet              _ref_pids {};            // List of other referenced PIDs
+        SectionDemux        _demux {duck, this};     // Section demux
+        CyclingPacketizer   _pzer_pat {duck, PID_PAT, CyclingPacketizer::StuffingPolicy::ALWAYS};
+        CyclingPacketizer   _pzer_sdt_bat {duck, PID_SDT, CyclingPacketizer::StuffingPolicy::ALWAYS};
+        CyclingPacketizer   _pzer_nit {duck, PID_NIT, CyclingPacketizer::StuffingPolicy::ALWAYS};
+        EITProcessor        _eit_process {duck, PID_EIT};
 
         // Invoked by the demux when a complete table is available.
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;
@@ -532,7 +532,7 @@ void ts::SVRemovePlugin::processNITBATDescriptorList(DescriptorList& dlist)
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::SVRemovePlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
+ts::PacketProcessStatus ts::SVRemovePlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
     const PID pid = pkt.getPID();
 

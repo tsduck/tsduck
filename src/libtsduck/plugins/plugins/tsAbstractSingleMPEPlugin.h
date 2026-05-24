@@ -29,7 +29,7 @@ namespace ts {
         // If overridden by subclass, superclass must be explicitly invoked.
         virtual bool getOptions() override;
         virtual bool start() override;
-        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
+        virtual PacketProcessStatus processPacket(TSPacket&, TSPacketMetadata&) override;
 
         //!
         //! Handle one MPE packet (to be implemented by subclasses).

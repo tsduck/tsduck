@@ -81,7 +81,7 @@ namespace ts {
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual bool stop() override;
-        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
+        virtual PacketProcessStatus processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
         // Description of a crypto-period.
@@ -742,7 +742,7 @@ void ts::ScramblerPlugin::changeECM()
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::ScramblerPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
+ts::PacketProcessStatus ts::ScramblerPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
     // Count packets
     _packet_count++;

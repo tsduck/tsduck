@@ -41,7 +41,7 @@ namespace ts {
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual bool stop() override;
-        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
+        virtual PacketProcessStatus processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
         // Command line options.
@@ -89,7 +89,7 @@ namespace ts {
         virtual void main() override;
 
         // Process one packet coming from the merged stream.
-        Status processMergePacket(TSPacket&, TSPacketMetadata&);
+        PacketProcessStatus processMergePacket(TSPacket&, TSPacketMetadata&);
     };
 }
 
@@ -487,7 +487,7 @@ void ts::MergePlugin::main()
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::MergePlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
+ts::PacketProcessStatus ts::MergePlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
     const PID pid = pkt.getPID();
 
@@ -518,7 +518,7 @@ ts::ProcessorPlugin::Status ts::MergePlugin::processPacket(TSPacket& pkt, TSPack
 // Process one packet coming from the merged stream.
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::MergePlugin::processMergePacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
+ts::PacketProcessStatus ts::MergePlugin::processMergePacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
     const PacketCounter current_pkt = tsp->pluginPackets();
     const BitRate main_bitrate = tsp->bitrate();

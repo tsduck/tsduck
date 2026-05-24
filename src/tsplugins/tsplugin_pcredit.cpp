@@ -27,7 +27,7 @@ namespace ts {
     public:
         // Implementation of plugin API
         virtual bool getOptions() override;
-        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
+        virtual PacketProcessStatus processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
         // Type of units for PCR, PTS, DTS values.
@@ -174,7 +174,7 @@ int64_t ts::PCREditPlugin::adjust(int64_t value)
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::PCREditPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
+ts::PacketProcessStatus ts::PCREditPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
     if (_pids.test(pkt.getPID())) {
         if (_ignore_scrambled && pkt.isScrambled()) {

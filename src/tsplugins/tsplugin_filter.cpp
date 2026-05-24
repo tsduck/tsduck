@@ -31,7 +31,7 @@ namespace ts {
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual bool stop() override;
-        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
+        virtual PacketProcessStatus processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
         // Packet intervals and list of them.
@@ -39,7 +39,7 @@ namespace ts {
         using PacketRangeList = std::list<PacketRange>;
 
         // Command line options:
-        Status             _drop_status = TSP_DROP;     // Return status for unselected packets
+        PacketProcessStatus _drop_status = TSP_DROP;    // Return status for unselected packets
         int                _scrambling_ctrl = 0;        // Scrambling control value (<0: no filter)
         bool               _need_demux = false;         // Need the help of the signalization demux.
         bool               _with_payload = false;       // Packets with payload
@@ -468,7 +468,7 @@ bool ts::FilterPlugin::stop()
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::FilterPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
+ts::PacketProcessStatus ts::FilterPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
     const PID pid = pkt.getPID();
 

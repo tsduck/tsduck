@@ -42,7 +42,7 @@ bool ts::FilePacketPlugin::stop()
     return _file.close(*this);
 }
 
-ts::ProcessorPlugin::Status ts::FilePacketPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
+ts::PacketProcessStatus ts::FilePacketPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
     return _file.write(&pkt, &pkt_data, 1, *this, tsp) ? TSP_OK : TSP_END;
 }

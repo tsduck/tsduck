@@ -36,7 +36,7 @@ namespace ts {
         virtual bool start() override;
         virtual bool stop() override;
         virtual bool isRealTime() override {return true;}
-        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
+        virtual PacketProcessStatus processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
         using CommandQueue = MessageQueue<UString>;
@@ -156,7 +156,7 @@ bool ts::CutoffPlugin::stop()
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::CutoffPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
+ts::PacketProcessStatus ts::CutoffPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
     // Process all enqueued commands from the UDP listener thread.
     CommandQueue::MessagePtr cmd;

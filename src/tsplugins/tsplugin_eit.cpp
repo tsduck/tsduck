@@ -42,7 +42,7 @@ namespace ts {
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual bool stop() override;
-        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
+        virtual PacketProcessStatus processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
         // Description of one event (for full EPG dump).
@@ -232,7 +232,7 @@ bool ts::EITPlugin::stop()
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::EITPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
+ts::PacketProcessStatus ts::EITPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
     _sig_demux.feedPacket(pkt);
     _sec_demux.feedPacket(pkt);

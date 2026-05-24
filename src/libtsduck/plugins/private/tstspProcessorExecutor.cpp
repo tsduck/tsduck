@@ -170,7 +170,7 @@ void ts::tsp::ProcessorExecutor::processIndividualPackets()
                 const bool was_null = pkt->getPID() == PID_NULL;
                 pkt_data->setFlush(false);
                 pkt_data->setBitrateChanged(false);
-                ProcessorPlugin::Status status = ProcessorPlugin::TSP_OK;
+                PacketProcessStatus status = TSP_OK;
                 if (!_suspended && (only_labels.none() || pkt_data->hasAnyLabel(only_labels)) && !pkt_data->hasAnyLabel(except_labels)) {
                     // Packet not excluded by --only-label or --except-label => process it.
                     status = _processor->processPacket(*pkt, *pkt_data);
@@ -184,20 +184,20 @@ void ts::tsp::ProcessorExecutor::processIndividualPackets()
 
                 // Use the returned status
                 switch (status) {
-                    case ProcessorPlugin::TSP_OK:
+                    case TSP_OK:
                         // Normal case, pass packet
                         passed_packets++;
                         break;
-                    case ProcessorPlugin::TSP_NULL:
+                    case TSP_NULL:
                         // Replace the packet with a complete null packet
                         *pkt = NullPacket;
                         break;
-                    case ProcessorPlugin::TSP_DROP:
+                    case TSP_DROP:
                         // Drop this packet.
                         pkt->b[0] = 0;
                         dropped_packets++;
                         break;
-                    case ProcessorPlugin::TSP_END:
+                    case TSP_END:
                         // Signal end of input to successors and abort to predecessors
                         debug(u"plugin requests termination");
                         input_end = aborted = true;

@@ -99,7 +99,7 @@ bool ts::ForkPacketPlugin::stop()
 }
 
 
-ts::ProcessorPlugin::Status ts::ForkPacketPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
+ts::PacketProcessStatus ts::ForkPacketPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
     // If packets are sent one by one, just send it.
     if (_buffer_size == 0) {

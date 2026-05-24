@@ -335,17 +335,17 @@ bool ProcessorPluginExecutor::process(ts::TSPacket* packets, ts::TSPacketMetadat
         else {
             metadata[i].setBitrateChanged(false);
             switch (plugin()->processPacket(packets[i], metadata[i])) {
-                case ts::ProcessorPlugin::TSP_END:
+                case ts::TSP_END:
                     return false;
-                case ts::ProcessorPlugin::TSP_DROP:
+                case ts::TSP_DROP:
                     packets[i].b[0] = 0;
                     addNonPluginPackets(1);
                     break;
-                case ts::ProcessorPlugin::TSP_NULL:
+                case ts::TSP_NULL:
                     packets[i] = ts::NullPacket;
                     addPluginPackets(1);
                     break;
-                case ts::ProcessorPlugin::TSP_OK:
+                case ts::TSP_OK:
                     addPluginPackets(1);
                     break;
                 default:

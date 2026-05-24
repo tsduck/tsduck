@@ -85,7 +85,7 @@ bool ts::DebugPlugin::start()
 // Packet processing.
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::DebugPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
+ts::PacketProcessStatus ts::DebugPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
     if (tsp->pluginPackets() < _packet) {
         return TSP_OK; // not yet the first debugged packet

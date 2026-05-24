@@ -86,7 +86,7 @@ bool ts::AbstractSingleMPEPlugin::start()
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::AbstractSingleMPEPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& mdata)
+ts::PacketProcessStatus ts::AbstractSingleMPEPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& mdata)
 {
     if (mdata.hasInputTimeStamp()) {
         _last_timestamp = mdata.getInputTimeStamp();

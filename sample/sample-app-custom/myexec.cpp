@@ -42,7 +42,7 @@ public:
     virtual bool getOptions() override;
     virtual bool start() override;
     virtual bool stop() override;
-    virtual Status processPacket(ts::TSPacket&, ts::TSPacketMetadata&) override;
+    virtual PacketProcessingStatus processPacket(ts::TSPacket&, ts::TSPacketMetadata&) override;
 
 private:
     // Command line options:
@@ -88,7 +88,7 @@ bool FooBarPlugin::stop()
 }
 
 // Called every packet in the stream.
-ts::ProcessorPlugin::Status FooBarPlugin::processPacket(ts::TSPacket& pkt, ts::TSPacketMetadata& metadata)
+ts::PacketProcessingStatus FooBarPlugin::processPacket(ts::TSPacket& pkt, ts::TSPacketMetadata& metadata)
 {
     if (pkt.getPID() == _pid) {
         // Count packets in the specified PID.

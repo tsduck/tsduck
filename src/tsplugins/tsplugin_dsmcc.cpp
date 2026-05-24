@@ -29,7 +29,7 @@ namespace ts {
         virtual bool start() override;
         virtual bool stop() override;
         virtual bool getOptions() override;
-        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
+        virtual PacketProcessStatus processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
         DSMCCExtractorArgs              _args {};
@@ -72,7 +72,7 @@ bool ts::DSMCCPlugin::stop()
 }
 
 
-ts::ProcessorPlugin::Status ts::DSMCCPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& /*pkt_data*/)
+ts::PacketProcessStatus ts::DSMCCPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& /*pkt_data*/)
 {
     _extractor->feedPacket(pkt);
     return TSP_OK;

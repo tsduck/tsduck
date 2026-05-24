@@ -28,7 +28,7 @@ namespace ts {
         // Implementation of plugin API
         virtual bool start() override;
         virtual bool stop() override;
-        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
+        virtual PacketProcessStatus processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
         TSFile        _file {};                       // Input file
@@ -239,7 +239,7 @@ bool ts::MuxPlugin::stop()
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::MuxPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
+ts::PacketProcessStatus ts::MuxPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
     // Initialization sequences (executed only once). Executed if there is a target bitrate.
     if (tsp->pluginPackets() == 0 && _bitrate != 0) {

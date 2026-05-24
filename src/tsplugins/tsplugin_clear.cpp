@@ -32,20 +32,20 @@ namespace ts {
     public:
         // Implementation of plugin API
         virtual bool start() override;
-        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
+        virtual PacketProcessStatus processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
         bool          _abort = false;         // Error (service not found, etc)
-        Service       _service {};            // Service name & id
         bool          _pass_packets = false;  // Pass packets trigger
-        Status        _drop_status = TSP_OK;  // Status for dropped packets
         bool          _video_only = false;    // Check video PIDs only
         bool          _audio_only = false;    // Check audio PIDs only
+        Service       _service {};            // Service name & id
         TOT           _last_tot {};           // Last received TOT
         PacketCounter _drop_after = 0;        // Number of packets after last clear
         PacketCounter _last_clear_pkt = 0;    // Last clear packet number
         PIDSet        _clear_pids {};         // List of PIDs to check for clear packets
         SectionDemux  _demux {duck, this};    // Section demux
+        PacketProcessStatus _drop_status = TSP_OK;  // Status for dropped packets
 
         // Invoked by the demux when a complete table is available.
         virtual void handleTable (SectionDemux&, const BinaryTable&) override;
@@ -276,7 +276,7 @@ void ts::ClearPlugin::processPMT(PMT& pmt)
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::ClearPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
+ts::PacketProcessStatus ts::ClearPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
     const PID pid = pkt.getPID();
     bool previous_pass = _pass_packets;

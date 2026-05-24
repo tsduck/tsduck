@@ -29,7 +29,7 @@ namespace ts::mcast {
         // Implementation of plugin API
         virtual bool getOptions() override;
         virtual bool start() override;
-        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
+        virtual PacketProcessStatus processPacket(TSPacket&, TSPacketMetadata&) override;
         virtual void handleSingleMPEPacket(PCR timestamp, TimeSource source, const MPEPacket& mpe) override;
 
     private:
@@ -155,10 +155,10 @@ bool ts::mcast::NIPExtractPlugin::start()
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::mcast::NIPExtractPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
+ts::PacketProcessStatus ts::mcast::NIPExtractPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
     // Call superclass to filter and decapsulate MPE.
-    Status status = AbstractSingleMPEPlugin::processPacket(pkt, pkt_data);
+    PacketProcessStatus status = AbstractSingleMPEPlugin::processPacket(pkt, pkt_data);
 
     // If superclass does not want to terminate, pull a replacement packet from the extracted service.
     if (status != TSP_END) {
