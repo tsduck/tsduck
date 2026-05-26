@@ -70,6 +70,17 @@ All packets are passed unmodified after the specified time.
 Several `--pass` options may be specified.
 
 [.opt]
+*--preserve-units*
+
+[.optdoc]
+Preserve payload unit boundaries (PUSI) when starting to pass or starting to drop packets.
+When transitioning from passing to dropping packets, continue to pass each PID until the next payload unit boundary.
+When transitioning from dropping to passing packets, start to pass each PID at the next payload unit boundary.
+
+[.optdoc]
+By default, the transport stream is abruptly cut at transition points.
+
+[.opt]
 *-r* +
 *--relative*
 
@@ -79,6 +90,15 @@ All time values are interpreted as a number of seconds relative to the `tsp` sta
 [.optdoc]
 By default, all time values are interpreted as an absolute time in the format `YYYY/MM/DD:hh:mm:ss`.
 Option `--relative` is incompatible with `--tdt` or `--utc`.
+
+[.opt]
+*--silent-after* _value_
+
+[.optdoc]
+With option `--preserve-unit`, specify the maximum number of packets after which a PID is considered as silent during a transition period.
+
+[.optdoc]
+The default is 5000 packets (7.3 Mbits).
 
 [.opt]
 *-s* _time_ +
@@ -102,5 +122,15 @@ Since the TDT contains UTC time, all time values in the command line must be UTC
 [.optdoc]
 Specifies that all time values in the command line are in UTC.
 By default, the time values are interpreted as system local time.
+
+[.opt]
+*--stuffing*
+
+[.optdoc]
+With option `--preserve-unit`, maintain the global bitrate of the transport stream during transition periods
+by replacing dropped packets with null packets.
+
+[.optdoc]
+By default, during transition periods, the bitrate is gradually decreasing or increasing.
 
 include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

@@ -72,6 +72,17 @@ Several `--pass` options may be specified.
 This is the default for the initial packets.
 
 [.opt]
+*--preserve-units*
+
+[.optdoc]
+Preserve payload unit boundaries (PUSI) when starting to pass or starting to drop packets.
+When transitioning from passing to dropping packets, continue to pass each PID until the next payload unit boundary.
+When transitioning from dropping to passing packets, start to pass each PID at the next payload unit boundary.
+
+[.optdoc]
+By default, the transport stream is abruptly cut at transition points.
+
+[.opt]
 *--seconds*
 
 [.optdoc]
@@ -79,10 +90,29 @@ With options `--drop`, `--null`, `--pass` and `--stop`, interpret the integer va
 Time is measured based on bitrate and packet count, not on real time.
 
 [.opt]
+*--silent-after* _value_
+
+[.optdoc]
+With option `--preserve-unit`, specify the maximum number of packets after which a PID is considered as silent during a transition period.
+
+[.optdoc]
+The default is 5000 packets (7.3 Mbits).
+
+[.opt]
 *-s* _value_ +
 *--stop* _value_
 
 [.optdoc]
 Packet transmission stops after the specified packet number and `tsp` terminates.
+
+[.opt]
+*--stuffing*
+
+[.optdoc]
+With option `--preserve-unit`, maintain the global bitrate of the transport stream during transition periods
+by replacing dropped packets with null packets.
+
+[.optdoc]
+By default, during transition periods, the bitrate is gradually decreasing or increasing.
 
 include::{docdir}/opt/group-common-plugins.adoc[tags=!*]
