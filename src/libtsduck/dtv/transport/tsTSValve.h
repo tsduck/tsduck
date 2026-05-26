@@ -26,6 +26,7 @@ namespace ts {
     //!
     class TSDUCKDLL TSValve
     {
+        TS_NOCOPY(TSValve);
     private:
         TSValve() = delete;
     public:
