@@ -2,6 +2,16 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
+VERSION 3.45-4684 (May 2026)
+
+[IMP] Improvements on existing commands and plugins:
+
+  * New options in existing commands and plugins:
+    - Options  --preserve-units,  --silent-after, --stuffing in plugins "slice"
+      and "time".
+
+-------------------------------------------------------------------------------
+
 VERSION 3.44-4676 (May 2026)
 
 [NEW] New commands and plugins:
@@ -27,8 +37,8 @@ VERSION 3.44-4676 (May 2026)
 
 [IMP] Improvements on existing commands and plugins:
 
-  * With  "tsp --upgrade",  do  not upgrate the development environment package
-    (tsduck-devel or tsduck-dev) if one exists for the operating system  and it
+  * With  "tsversion --upgrade",  do  not  upgrade  the development environment
+    package (tsduck-devel or tsduck-dev) if one exists for the operating system  and it
     is not installed.
   * New options in existing commands and plugins:
     - Option --meta-base64-sections in "tstables  and  plugins  "splicemonitor"

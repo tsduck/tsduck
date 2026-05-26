@@ -13,6 +13,7 @@
 
 #pragma once
 #include "tsUString.h"
+#include "tsTS.h"
 
 namespace ts {
 
@@ -32,8 +33,14 @@ namespace ts {
         TSValveArgs(const UString& prefix = UString());
 
         // Public fields, by options.
-        bool preserve_units = false;  //!< -\-preserve-units
-        bool stuffing = false;        //!< -\-stuffing
+        bool          preserve_units = false;                 //!< -\-preserve-units
+        bool          stuffing = false;                       //!< -\-stuffing
+        PacketCounter pid_max_silent = DEFAULT_SILENT_AFTER;  //!< -\-silent-after
+
+        //!
+        //! Default value for -\-silent-after.
+        //!
+        static constexpr PacketCounter DEFAULT_SILENT_AFTER = 5'000;
 
         //!
         //! Add command line option definitions in an Args.

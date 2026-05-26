@@ -12,7 +12,8 @@
 //----------------------------------------------------------------------------
 
 #include "tsPluginRepository.h"
-#include "tsPCRAnalyzer.h"
+#include "tsTSClock.h"
+#include "tsTSValve.h"
 #include "tsNames.h"
 
 
@@ -26,6 +27,7 @@ namespace ts {
         TS_PLUGIN_CONSTRUCTORS(SlicePlugin);
     public:
         // Implementation of plugin API
+        virtual bool getOptions() override;
         virtual bool start() override;
         virtual PacketProcessStatus processPacket(TSPacket&, TSPacketMetadata&) override;
 
@@ -35,7 +37,7 @@ namespace ts {
         {
             // Public fields
             PacketProcessStatus status;   // Packet status to return ...
-            uint64_t            value;    // ... after this packet or milli-second
+            uint64_t            value;    // ... after this packet number or milli-seconds
 
             // Constructor
             SliceEvent(const PacketProcessStatus& s, const uint64_t& v) : status(s), value(v) {}
@@ -45,14 +47,20 @@ namespace ts {
         };
         using SliceEventVector = std::vector<SliceEvent>;
 
-        // SlicePlugin private members
-        bool                _use_time = false;    // Use milliseconds in SliceEvent::value
-        bool                _ignore_pcr = false;  // Do not use PCR's, rely on previous plugins' bitrate
-        PacketProcessStatus _status = TSP_OK;     // Current packet status to return
-        uint64_t            _time_factor = 0;     // Factor to apply to get milli-seconds
-        PCRAnalyzer         _pcr_analyzer {};     // PCR analyzer for time stamping
-        SliceEventVector    _events {};           // Sorted list of time events to apply
-        size_t              _next_index = 0;      // Index of next SliceEvent to apply
+        // Command line options:
+        bool                _use_time = false;      // Use milliseconds in SliceEvent::value
+        bool                _ignore_pcr = false;    // Do not use PCR's, rely on previous plugins' bitrate
+        PacketProcessStatus _first_status = TSP_OK; // Current packet status to return
+        uint64_t            _time_factor = 0;       // Factor to apply to get milli-seconds
+        SliceEventVector    _events {};             // Sorted list of events to apply
+        TSClockArgs         _clock_args {};         // Command-line arguments for _clock (fixed option --pcr-based).
+        TSValveArgs         _valve_args {};         // Command-line arguments for _valve.
+
+        // Working data:
+        size_t              _next_index = 0;        // Index of next SliceEvent to apply
+        TSClock             _clock {duck};          // Transport stream clock.
+        TSValve             _valve {*this};         // Open/close packet flow.
+        const Names&        _names {PacketProcessingStatusNames()};
 
         // Add event in the list from one option.
         void addEvents(const UChar* option, PacketProcessStatus status);
@@ -69,6 +77,8 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"slice", ts::SlicePlugin);
 ts::SlicePlugin::SlicePlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Pass or drop packets based on packet numbers", u"[options]")
 {
+    _valve_args.defineArgs(*this);
+
     option(u"drop",'d', UNSIGNED, 0, UNLIMITED_COUNT);
     help(u"drop",
          u"All packets are dropped after the specified packet number. "
@@ -111,42 +121,33 @@ ts::SlicePlugin::SlicePlugin(TSP* tsp_) :
 
 
 //----------------------------------------------------------------------------
-// Start method
+// Get command line options.
 //----------------------------------------------------------------------------
 
-bool ts::SlicePlugin::start()
+bool ts::SlicePlugin::getOptions()
 {
-    // Get command line options
-    _status = TSP_OK;
     _use_time = present(u"milli-seconds") || present(u"seconds");
     _time_factor = present(u"seconds") ? 1000 : 1;
     _ignore_pcr = present(u"ignore-pcr");
-    _pcr_analyzer.reset();
 
-    // Get list of time events
+    // Get list of events, sort them by value.
     _events.clear();
+    _first_status = TSP_OK;
     addEvents(u"drop", TSP_DROP);
     addEvents(u"null", TSP_NULL);
     addEvents(u"pass", TSP_OK);
     addEvents(u"stop", TSP_END);
-
-    // Sort events by value
     std::sort(_events.begin(), _events.end());
-    _next_index = 0;
 
-    if (verbose()) {
-        verbose(u"initial packet processing: %s", PacketProcessingStatusNames().name(_status));
-        for (auto& it : _events) {
-            verbose(u"packet %s after %'d %s", PacketProcessingStatusNames().name(it.status), it.value, _use_time ? u"ms" : u"packets");
-        }
-    }
+    // Always use PCR to evaluate the clock.
+    _clock_args.pcr_based = true;
 
-    return true;
+    return _valve_args.loadArgs(*this);
 }
 
 
 //----------------------------------------------------------------------------
-// Add events in the list fro one option.
+// Add events in the list from one option.
 //----------------------------------------------------------------------------
 
 void ts::SlicePlugin::addEvents(const UChar* opt, PacketProcessStatus status)
@@ -155,7 +156,7 @@ void ts::SlicePlugin::addEvents(const UChar* opt, PacketProcessStatus status)
         uint64_t value = intValue<uint64_t>(opt, 0, index);
         if (value == 0) {
             // First packet, this is the initial action
-            _status = status;
+            _first_status = status;
         }
         else {
             _events.push_back(SliceEvent(status, value * _time_factor));
@@ -165,32 +166,50 @@ void ts::SlicePlugin::addEvents(const UChar* opt, PacketProcessStatus status)
 
 
 //----------------------------------------------------------------------------
+// Start method
+//----------------------------------------------------------------------------
+
+bool ts::SlicePlugin::start()
+{
+    _next_index = 0;
+    _clock.reset(_clock_args);
+    _valve.reset(_valve_args, TSP_DROP, _first_status);
+
+    if (verbose()) {
+        verbose(u"initial packet processing: %s", _names.name(_first_status));
+        for (auto& it : _events) {
+            verbose(u"packet %s after %'d %s", _names.name(it.status), it.value, _use_time ? u"ms" : u"packets");
+        }
+    }
+
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
 // Packet processing method
 //----------------------------------------------------------------------------
 
 ts::PacketProcessStatus ts::SlicePlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
-    // Feed PCR analyzer if necessary
+    // Feed the clock if necessary
     if (_use_time && !_ignore_pcr) {
-        _pcr_analyzer.feedPacket(pkt);
+        _clock.feedPacket(pkt, pkt_data);
     }
 
     // Compute current "value" (depends on interpretation);
-    uint64_t current_value;
+    uint64_t current_value = 0;
     if (!_use_time) {
         // By default, use packet count
         current_value = tsp->pluginPackets();
     }
+    else if (!_ignore_pcr) {
+        // Use milliseconds duration from the clock using PCR.
+        current_value = _clock.durationMS().count();
+    }
     else {
         // Get current bitrate
-        BitRate bitrate;
-        if (_ignore_pcr || !_pcr_analyzer.bitrateIsValid()) {
-            // Do not use PCR, use previous plugins' bitrate
-            bitrate = tsp->bitrate();
-        }
-        else {
-            bitrate = _pcr_analyzer.bitrate188();
-        }
+        const BitRate bitrate = tsp->bitrate();
         if (bitrate == 0) {
             error(u"unknown bitrate, cannot compute time offset");
             return TSP_END;
@@ -202,9 +221,10 @@ ts::PacketProcessStatus ts::SlicePlugin::processPacket(TSPacket& pkt, TSPacketMe
     // Is it time to change the action?
     while (_next_index < _events.size() && _events[_next_index].value <= current_value) {
         // Yes, we just passed a schedule
-        _status = _events[_next_index].status;
+        _valve.change(_events[_next_index].status);
         _next_index++;
-        verbose(u"new packet processing: %s after %'d packets", PacketProcessingStatusNames().name(_status), tsp->pluginPackets());
+        verbose(u"new packet processing: %s after %'d packets", _names.name(_valve.current()), tsp->pluginPackets());
     }
-    return _status;
+
+    return _valve.processPacket(pkt);
 }
