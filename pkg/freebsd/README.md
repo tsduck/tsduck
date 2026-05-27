@@ -3,6 +3,15 @@
 This directory contains instructions to maintain the status of TSDuck as a
 package for FreeBSD systems.
 
+**Contents:**
+
+* [FreeBSD ports](#freebsd-ports)
+* [Updating the FreeBSD port for TSDuck](#updating-the-freebsd-port-for-tsduck)
+  * [Setting up a FreeBSD system for ports maintenance](#setting-up-a-freebsd-system-for-ports-maintenance)
+  * [Updating the TSDuck port](#updating-the-tsduck-port)
+* [Quarterly and latest ports](#quarterly-and-latest-ports)
+* [Sample scripts](#sample-scripts)
+
 There are lots of FreeBSD online documentations and forums. However, the instructions
 are not always clear or consistent. It seems that the FreeBSD ecosystem experimented
 successive workflows to manage packages. Several alternative methods seem possible to
@@ -197,3 +206,13 @@ FreeBSD: {
     mirror_type : "SRV"
 }
 ~~~
+
+## Sample scripts
+
+This directory contains the following sample files:
+
+- `Makefile.sample`: sample Makefile for the TSDuck Port. This file is typically
+  in `/usr/ports/multimedia/tsduck/Makefile`. Adapt to the current TSDuck version.
+
+- `build-poudriere.sh`: sample script to build a binary package for the TSDuck Port
+  on the current system.
