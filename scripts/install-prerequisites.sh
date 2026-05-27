@@ -249,7 +249,7 @@ elif [[ "$DISTRO" == "Ubuntu" ]]; then
     [[ -z $NOVATEK                                         ]] && PKGLIST+=(libusb-1.0-0-dev)
     [[ -z $NOJAVA                                          ]] && PKGLIST+=(default-jdk)
     [[ -z $NODOXYGEN                                       ]] && PKGLIST+=(doxygen graphviz)
-    [[ -z $NODOC                                           ]] && PKGLIST+=(asciidoctor qpdf)
+    [[ -z $NODOC                                           ]] && PKGLIST+=(ruby-dev asciidoctor qpdf)
     [[ -z $NODOC                                           ]] && GEMLIST+=(asciidoctor-pdf rouge)
 
     # On Ubuntu 22.04, the default clang is clang-14. There is a bug which prevents C++20
@@ -283,7 +283,7 @@ elif [[ "$DISTRO" == "Linuxmint" ]]; then
     [[ -z $NOVATEK                                 ]] && PKGLIST+=(libusb-1.0-0-dev)
     [[ -z $NOJAVA                                  ]] && PKGLIST+=(default-jdk)
     [[ -z $NODOXYGEN                               ]] && PKGLIST+=(doxygen graphviz)
-    [[ -z $NODOC                                   ]] && PKGLIST+=(asciidoctor qpdf)
+    [[ -z $NODOC                                   ]] && PKGLIST+=(ruby-dev asciidoctor qpdf)
     [[ -z $NODOC                                   ]] && GEMLIST+=(asciidoctor-pdf rouge)
 
     echo "Packages: ${PKGLIST[*]}"
@@ -321,7 +321,7 @@ elif [[ "$DISTRO" = "Debian" || "$DISTRO" = "Raspbian" ]]; then
     [[ -z $NOVATEK                 ]] && PKGLIST+=(libusb-1.0-0-dev)
     [[ -z $NOJAVA                  ]] && PKGLIST+=(default-jdk)
     [[ -z $NODOXYGEN               ]] && PKGLIST+=(doxygen graphviz)
-    [[ -z $NODOC                   ]] && PKGLIST+=(asciidoctor qpdf)
+    [[ -z $NODOC                   ]] && PKGLIST+=(ruby-dev asciidoctor qpdf)
     [[ -z $NODOC                   ]] && GEMLIST+=(asciidoctor-pdf rouge)
 
     echo "Packages: ${PKGLIST[*]}"
@@ -357,7 +357,7 @@ elif [[ -f /etc/fedora-release ]]; then
     [[ -z $NOJAVA               ]] && PKGLIST+=(java-25-openjdk-devel)
     [[ -z $NODOXYGEN            ]] && PKGLIST+=(doxygen graphviz)
     [[ -n $STATIC               ]] && PKGLIST+=(glibc-static libstdc++-static)
-    [[ -z $NODOC                ]] && PKGLIST+=(rubygem-asciidoctor qpdf)
+    [[ -z $NODOC                ]] && PKGLIST+=(ruby-devel rubygem-asciidoctor qpdf)
     [[ -z $NODOC                ]] && GEMLIST+=(asciidoctor-pdf rouge)
 
     echo "Packages: ${PKGLIST[*]}"
