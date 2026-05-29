@@ -74,12 +74,10 @@ namespace ts {
             bool new_pid = true;             // Detect insertion of a new entry in the map.
         };
 
-        // Meaningful status are OK, DROP, NULL TSP_END does not mean anything here.
-        static PacketProcessStatus NormalizeStatus(PacketProcessStatus);
-
         Report&                  _report;
         PacketCounter            _total_packets = 0;        // Packet counter in TS since reset().
         PacketCounter            _next_silent_check = 0;    // Index in TS of next time we need to check for silent PID's.
+        bool                     _transitioning = false;    // In a transition period, waiting for unit boundaries (--preserve-units).
         size_t                   _transitioning_pids = 0;   // Number of PIDs waiting for a unit boundary.
         PacketProcessStatus      _previous_status = TSP_OK;
         PacketProcessStatus      _current_status = TSP_OK;
