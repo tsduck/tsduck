@@ -42,6 +42,7 @@ ipch
 *.obj
 *.opensdf
 *.out
+*.pkg
 *.pro.user
 *.pro.user.*
 *.pyc
