@@ -242,7 +242,7 @@ bool ts::EITGenerator::deleteEvent(const ServiceIdTriplet& service, uint16_t eve
                     // Mark all EIT schedule in this segment as to be regenerated.
                     _regenerate = srv.regenerate = (*iseg)->regenerate = true;
 
-                    // Check if that event is in the EIT p/f for the sevice.
+                    // Check if that event is in the EIT p/f for the service.
                     for (const auto& sec : srv.pf) {
                         if (sec != nullptr &&
                             sec->section != nullptr &&
@@ -491,9 +491,9 @@ void ts::EITGenerator::saveEITs(SectionPtrVector& sections)
 
     // Loop on all services, saving all EIT p/f.
     for (const auto& it1 : _services) {
-        for (size_t i = 0; i < it1.second.pf.size(); ++i) {
-            if (it1.second.pf[i] != nullptr) {
-                sections.push_back(it1.second.pf[i]->section);
+        for (const auto& it2 : it1.second.pf) {
+            if (it2 != nullptr) {
+                sections.push_back(it2->section);
                 pf_count++;
             }
         }
@@ -560,15 +560,15 @@ void ts::EITGenerator::setTransportStreamId(uint16_t new_ts_id)
                 }
                 else {
                     // Loop on EIT p & f sections.
-                    for (size_t i = 0; i < srv.pf.size(); ++i) {
+                    for (auto& sec : srv.pf) {
                         if (need_eit) {
-                            assert(srv.pf[i] != nullptr);
-                            srv.pf[i]->toggleActual(new_actual);
+                            assert(sec != nullptr);
+                            sec->toggleActual(new_actual);
                         }
-                        else if (srv.pf[i] != nullptr) {
+                        else if (sec != nullptr) {
                             // The existing section is no longer needed.
-                            markObsoleteSection(*srv.pf[i]);
-                            srv.pf[i].reset();
+                            markObsoleteSection(*sec);
+                            sec.reset();
                         }
                     }
                 }
@@ -652,10 +652,10 @@ void ts::EITGenerator::setOptions(EITOptions options)
             if (pf_changed) {
                 if (!need_eit || !(_options & GEN_PF)) {
                     // Remove existing EIT p/f sections.
-                    for (size_t i = 0; i < srv.pf.size(); ++i) {
-                        if (srv.pf[i] != nullptr) {
-                            markObsoleteSection(*srv.pf[i]);
-                            srv.pf[i].reset();
+                    for (auto& sec : srv.pf) {
+                        if (sec != nullptr) {
+                            markObsoleteSection(*sec);
+                            sec.reset();
                         }
                     }
                 }
@@ -832,10 +832,10 @@ void ts::EITGenerator::regeneratePresentFollowing(const ServiceIdTriplet& servic
 
     if (!(_options & GEN_PF)) {
         // This type of EIT cannot be (no time ref) or shall not be (excluded) generated. If sections exist, delete them.
-        for (size_t i = 0; i < srv.pf.size(); ++i) {
-            if (srv.pf[i] != nullptr) {
-                markObsoleteSection(*srv.pf[i]);
-                srv.pf[i].reset();
+        for (auto& sec : srv.pf) {
+            if (sec != nullptr) {
+                markObsoleteSection(*sec);
+                sec.reset();
             }
         }
     }
@@ -850,15 +850,34 @@ void ts::EITGenerator::regeneratePresentFollowing(const ServiceIdTriplet& servic
             }
         }
 
+        // Midnight trick, see below.
+        bool keep_midnight_event = false;
+
         // If the first event is not yet current, make it the "following" one.
         if (events[0] != nullptr && now < events[0]->start_time) {
+
+            // Move current event to following.
             events[1] = events[0];
             events[0].reset();
+
+            // Midnight trick: When the current event spans over midnight, and we are after midnight now, the event was
+            // removed from the service database because its start date is before last midnight (ETSI TS 101 211 rule).
+            // However, it is still current because it is not finished yet. So we must keep it in the EIT p/f, even so the
+            // DVB rules excludes it from the EIT schedules. Try to detect that situation and keep that event in EIT p/f.
+            if (srv.pf[0] != nullptr && srv.pf[0]->section != nullptr && srv.pf[0]->section->payloadSize() >= EIT::EIT_PAYLOAD_FIXED_SIZE + EIT::EIT_EVENT_FIXED_SIZE) {
+                // We have an existing section with an event in it. Get its start and end time.
+                const uint8_t* event = srv.pf[0]->section->payload() + EIT::EIT_PAYLOAD_FIXED_SIZE;
+                Time start_time, end_time;
+                DecodeMJD(event + 2, MJD_FULL, start_time);
+                end_time = start_time + cn::hours(DecodeBCD(event[7])) + cn::minutes(DecodeBCD(event[8])) + cn::seconds(DecodeBCD(event[9]));
+                // Keep that event if it spans over midnight.
+                keep_midnight_event = end_time > now && start_time < now.thisDay();
+            }
         }
 
         // Rebuild the two sections when necessary.
         const TID tid = actual ? TID_EIT_PF_ACT : TID_EIT_PF_OTH;
-        const bool modp = regeneratePresentFollowingSection(service_id, srv.pf[0], tid, 0, events[0], now);
+        const bool modp = !keep_midnight_event && regeneratePresentFollowingSection(service_id, srv.pf[0], tid, 0, events[0], now);
         const bool modf = regeneratePresentFollowingSection(service_id, srv.pf[1], tid, 1, events[1], now);
 
         // With SYNC_VERSIONS, if any section is modified, update both versions.
