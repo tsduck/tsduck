@@ -20,7 +20,8 @@ ts::TLSArgs::TLSArgs(const UString& description, const UString& prefix) :
     _opt_insecure(_prefix + u"insecure"),
     _opt_certificate_store(_prefix + u"store"),
     _opt_certificate_path(_prefix + u"certificate-path"),
-    _opt_key_path(_prefix + u"key-path")
+    _opt_key_path(_prefix + u"key-path"),
+    _opt_ephemeral_rsa_bits(_prefix + u"ephemeral-rsa-bits")
 {
 }
 
@@ -64,6 +65,15 @@ void ts::TLSArgs::defineServerArgs(Args& args)
               u"On Windows, the possible values are \"system\" (Cert:\\LocalMachine\\My) "
               u"and \"user\" (Cert:\\CurrentUser\\My). The default is \"user\".\n"
               u"On UNIX systems, this parameter is unused.");
+
+    args.option(_opt_ephemeral_rsa_bits.c_str(), 0, Args::POSITIVE);
+    args.help(_opt_ephemeral_rsa_bits.c_str(),
+              u"With --" + _opt_tls + u", create an ephemeral self-signed certificate for the " + _description + u". "
+              u"The value specifies the size in bits of the ephemeral RSA key which it generated. "
+              u"The default value is the value of environment variable TSDUCK_TLS_EPHEMERAL_RSA_BITS.\n"
+              u"Keep in mind that ephemeral self-signed certificates are considered as \"invalid\" or \"insecure\" by client applications. "
+              u"Be sure to disable the verification of the TLS server's certificate on the client side. "
+              u"By default, the " + _description + u" needs a designated persistent certificate.");
 }
 
 
@@ -80,10 +90,27 @@ bool ts::TLSArgs::loadServerArgs(Args& args, const UChar* server_option)
         u"";
 #endif
 
+    // Load TLS server options.
     use_tls = args.present(_opt_tls.c_str());
     args.getValue(certificate_path, _opt_certificate_path.c_str(), GetEnvironment(u"TSDUCK_TLS_CERTIFICATE").c_str());
     args.getValue(key_path, _opt_key_path.c_str(), GetEnvironment(u"TSDUCK_TLS_KEY").c_str());
     args.getValue(certificate_store, _opt_certificate_store.c_str(), GetEnvironment(u"TSDUCK_TLS_STORE", default_store).c_str());
+    args.getIntValue(ephemeral_rsa_bits, _opt_ephemeral_rsa_bits.c_str(), GetIntEnvironment(u"TSDUCK_TLS_EPHEMERAL_RSA_BITS", 0));
+
+    // Check combinations of option.
+    const bool use_ephemeral = args.present(_opt_ephemeral_rsa_bits.c_str());
+    const bool use_persistent = args.present(_opt_certificate_path.c_str()) || args.present(_opt_key_path.c_str()) || args.present(_opt_certificate_store.c_str());
+    if (use_ephemeral && use_persistent) {
+        args.error(u"option --%s is incompatible with --%s, --%s, --%s", _opt_ephemeral_rsa_bits, _opt_certificate_path, _opt_key_path, _opt_certificate_store);
+        return false;
+    }
+
+    // If a persistent certificate is explicitly specified, disable the default from TSDUCK_TLS_EPHEMERAL_RSA_BITS.
+    if (use_persistent) {
+        ephemeral_rsa_bits = 0;
+    }
+
+    // Call superclass to load other server options.
     return SuperClass::loadServerArgs(args, server_option);
 }
 

@@ -17,6 +17,19 @@
 
 
 //----------------------------------------------------------------------------
+// Called by a server to declare that the socket has just become opened.
+//----------------------------------------------------------------------------
+
+void ts::TCPConnection::declareOpened(SysSocketType sock)
+{
+    // This will be a server-side connection.
+    _is_server_side = true;
+
+    SuperClass::declareOpened(sock);
+}
+
+
+//----------------------------------------------------------------------------
 // This method is used by specific subclass to declare that the socket
 // has just become connected.
 //----------------------------------------------------------------------------
@@ -121,7 +134,7 @@ bool ts::TCPConnection::send(const void* buffer, size_t size, IOSB* iosb)
         assert(iosb != nullptr);
 
         // The reception parameters are stored in the IOSB.
-        auto params = std::make_shared<AsyncBuffers>();
+        auto params = std::make_shared<AsyncBuffers>(SocketOp::SEND);
         TS_ZERO(params->buf);
         params->buf.buf = reinterpret_cast<CHAR*>(const_cast<void*>(buffer));
         params->buf.len = ::ULONG(size);
@@ -133,7 +146,7 @@ bool ts::TCPConnection::send(const void* buffer, size_t size, IOSB* iosb)
         if (::WSASend(getSocket(), &params->buf, 1, nullptr, 0, &iosb->overlap, nullptr) != 0) {
             err = LastSysErrorCode();
         }
-        iosb->pending = err == SYS_SUCCESS || IsPendingStatus(err);
+        iosb->pending = SysSuccess(err) || IsPendingStatus(err);
         if (!iosb->pending) {
             report().error(u"error sending data to socket: %s", SysErrorCodeMessage(err));
         }
@@ -198,7 +211,7 @@ bool ts::TCPConnection::receive(void* data, size_t max_size, size_t& ret_size, c
         assert(iosb != nullptr);
 
         // The reception parameters are stored in the IOSB.
-        auto params = std::make_shared<AsyncBuffers>();
+        auto params = std::make_shared<AsyncBuffers>(SocketOp::RECEIVE);
         TS_ZERO(params->buf);
         params->buf.buf = reinterpret_cast<CHAR*>(data);
         params->buf.len = ::ULONG(max_size);
@@ -212,7 +225,7 @@ bool ts::TCPConnection::receive(void* data, size_t max_size, size_t& ret_size, c
         if (::WSARecv(getSocket(), &params->buf, 1, nullptr, &params->flags, &iosb->overlap, nullptr) != 0) {
             err = LastSysErrorCode();
         }
-        iosb->pending = err == SYS_SUCCESS || IsPendingStatus(err);
+        iosb->pending = SysSuccess(err) || IsPendingStatus(err);
         if (!iosb->pending) {
             report().error(u"error receiving data from socket: %s", SysErrorCodeMessage(err));
         }
@@ -305,6 +318,9 @@ bool ts::TCPConnection::connect(const IPSocketAddress& addr, IOSB* iosb)
         return false;
     }
 
+    // This will be a client-side connection.
+    _is_server_side = false;
+
 #if defined(TS_WINDOWS)
     // On Windows with asynchronous I/O, use overlapped I/O.
     // With standard blocking I/O, use the same standard socket calls as UNIX.
@@ -322,7 +338,7 @@ bool ts::TCPConnection::connect(const IPSocketAddress& addr, IOSB* iosb)
         }
 
         // The reception parameters are stored in the IOSB.
-        auto params = std::make_shared<AsyncBuffers>();
+        auto params = std::make_shared<AsyncBuffers>(SocketOp::CONNECT);
         TS_ZERO(params->peer_sock);
         params->peer_sock_len = int(server_addr.get(params->peer_sock));
         iosb->async_data = params;
@@ -333,7 +349,7 @@ bool ts::TCPConnection::connect(const IPSocketAddress& addr, IOSB* iosb)
         if (!connect_ex(getSocket(), reinterpret_cast<::sockaddr*>(&params->peer_sock), params->peer_sock_len, nullptr, 0, nullptr, &iosb->overlap)) {
             err = LastSysErrorCode();
         }
-        iosb->pending = err == SYS_SUCCESS || IsPendingStatus(err);
+        iosb->pending = SysSuccess(err) || IsPendingStatus(err);
         if (!iosb->pending) {
             report().error(u"error connecting socket: %s", SysErrorCodeMessage(err));
         }
@@ -382,6 +398,7 @@ bool ts::TCPConnection::connect(const IPSocketAddress& addr, IOSB* iosb)
 bool ts::TCPConnection::setConnectStatus(IOSB* iosb, int error_code)
 {
 #if defined(TS_WINDOWS)
+
     std::shared_ptr<AsyncBuffers> params;
     if (iosb != nullptr) {
         params = std::dynamic_pointer_cast<AsyncBuffers>(iosb->async_data);
@@ -398,7 +415,9 @@ bool ts::TCPConnection::setConnectStatus(IOSB* iosb, int error_code)
         declareConnected();
         return true;
     }
+
 #else
+
     if (error_code == SYS_SUCCESS) {
         declareConnected();
         return true;
@@ -406,6 +425,7 @@ bool ts::TCPConnection::setConnectStatus(IOSB* iosb, int error_code)
     else {
         return false;
     }
+
 #endif
 }
 

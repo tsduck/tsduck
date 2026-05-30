@@ -461,12 +461,12 @@ namespace {
     {
         _debug << "TelnetClient::handleTCPConnected: error code: " << error_code << std::endl;
         TSUNIT_ASSERT(_rtclient.startReceive(this));
-        TSUNIT_ASSERT(_rtclient.startSendLine(u"GET / HTTP/1.1", false));
+        TSUNIT_ASSERT(_rtclient.startSendLine(u"GET / HTTP/1.0", false));
         TSUNIT_ASSERT(_rtclient.startSendLine(u"Host: " + _server_name, false));
         TSUNIT_ASSERT(_rtclient.startSendLine(u"User-Agent: tsduck", false));
         TSUNIT_ASSERT(_rtclient.startSendLine(u"Accept: text/html", false));
+        TSUNIT_ASSERT(_rtclient.startSendLine(u"Connection: close", false));
         TSUNIT_ASSERT(_rtclient.startSendLine(u""));
-        TSUNIT_ASSERT(_rclient.startCloseWriter(nullptr));
     }
 
     void TelnetClient::handleTelnetLine(ts::ReactiveTelnetConnection& sock, const ts::UString& line, int error_code)
@@ -532,7 +532,7 @@ namespace {
         TestServerConnection* _accepting = nullptr;
         std::set<TestServerConnection*> _clients {};
 
-        virtual void handleTCPClientAccepted(ts::ReactiveTCPServer& server, ts::ReactiveTCPConnection& sock, ts::IPSocketAddress& addr, int error_code, const ts::ObjectPtr& user_data) override;
+        virtual void handleTCPClientAccepted(ts::ReactiveTCPServer& server, ts::ReactiveTCPConnection& sock, const ts::IPSocketAddress& addr, int error_code, const ts::ObjectPtr& user_data) override;
         virtual void handleTCPServerClosed(ts::ReactiveTCPServer& server, const ts::ObjectPtr& user_data) override;
     };
 
@@ -620,7 +620,7 @@ namespace {
         TSUNIT_ASSERT(_rserver.startAccept(this, _accepting->connection()));
     }
 
-    void TestServer::handleTCPClientAccepted(ts::ReactiveTCPServer& server, ts::ReactiveTCPConnection& sock, ts::IPSocketAddress& addr, int error_code, const ts::ObjectPtr& user_data)
+    void TestServer::handleTCPClientAccepted(ts::ReactiveTCPServer& server, ts::ReactiveTCPConnection& sock, const ts::IPSocketAddress& addr, int error_code, const ts::ObjectPtr& user_data)
     {
         _debug << "TestServer::handleTCPClientAccepted, error code: " << error_code << ", client: " << sock.socket().peerName() << ", local: " << sock.socket().localName() << std::endl;
         TSUNIT_ASSERT(&server == &_rserver);
@@ -645,19 +645,22 @@ namespace {
         TSUNIT_ASSERT(client != nullptr);
         _debug << "TestServer::removeClient, client id: " << client->clientId() << std::endl;
 
-        TSUNIT_ASSERT(_clients.contains(client) || client == _accepting);
         if (client == _accepting) {
             _accepting = nullptr;
+            delete client;
+            if (_clients.empty()) {
+                _reactor.exitEventLoop();
+            }
         }
         else {
+            TSUNIT_ASSERT(_clients.contains(client));
             _clients.erase(client);
-        }
-        delete client;
-
-        _debug << "TestServer::removeClient, remaining clients: " << _clients.size() << std::endl;
-        if (_clients.empty()) {
-            _debug << "TestServer::removeClient, start close" << std::endl;
-            TSUNIT_ASSERT(_rserver.startClose(this));
+            delete client;
+            _debug << "TestServer::removeClient, remaining clients: " << _clients.size() << std::endl;
+            if (_clients.empty()) {
+                _debug << "TestServer::removeClient, start close" << std::endl;
+                TSUNIT_ASSERT(_rserver.startClose(this));
+            }
         }
     }
 
@@ -666,9 +669,11 @@ namespace {
         _debug << "TestServer::handleTCPClosed" << std::endl;
         TSUNIT_ASSERT(&server == &_rserver);
         TSUNIT_ASSERT(_clients.empty());
-        TSUNIT_ASSERT(_accepting == nullptr);
         TSUNIT_EQUAL(5, _request_count);
-        _reactor.exitEventLoop();
+
+        if (_accepting == nullptr) {
+            _reactor.exitEventLoop();
+        }
     }
 
     //------------------------------------------------------------------------

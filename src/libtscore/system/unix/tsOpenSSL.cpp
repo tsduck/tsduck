@@ -79,9 +79,9 @@ void ts::OpenSSL::ReportErrors(Report& report, int severity)
 
 int ts::OpenSSL::GetErrorsCallback(const char* str, size_t len, void* u)
 {
-    ts::UStringList* list = reinterpret_cast<ts::UStringList*>(u);
+    UStringList* list = reinterpret_cast<UStringList*>(u);
     if (list != nullptr) {
-        list->push_back(ts::UString::FromUTF8(str, len).toTrimmed(false));
+        list->push_back(UString::FromUTF8(str, len).toTrimmed(false));
     }
     return 0; // undocumented in OpenSSL man pages...
 }

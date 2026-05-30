@@ -12,7 +12,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsReactiveBase.h"
+#include "tsReactiveSocketBase.h"
 #include "tsReactiveUDPHandlerInterface.h"
 #include "tsUDPSocket.h"
 #include "tsIPProtocols.h"
@@ -28,7 +28,7 @@ namespace ts {
     //! The application shall not directly call send(), receive(), or close() on this socket and delegate
     //! these operations to startSend(), startReceive(), and startClose() in class ReactiveUDPSocket.
     //!
-    class TSCOREDLL ReactiveUDPSocket: public ReactiveBase, private SocketHandlerInterface
+    class TSCOREDLL ReactiveUDPSocket: public ReactiveSocketBase, private SocketHandlerInterface
     {
         TS_NOBUILD_NOCOPY(ReactiveUDPSocket);
     public:
@@ -186,7 +186,7 @@ namespace ts {
         void callReceiveHandler(const std::shared_ptr<ReceiveRequest>&, int error_code);
 
         // Inherited methods.
-        virtual void processCompletedIO() override;
+        virtual void processQueuedOperations() override;
         virtual void handleReadReady(Reactor&, EventId, int) override;
         virtual void handleWriteReady(Reactor&, EventId, int) override;
         virtual void handleAsynchronousIO(Reactor&, EventId, IOSB&, size_t) override;

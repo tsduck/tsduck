@@ -86,7 +86,7 @@ bool ts::TCPServer::accept(TCPConnection& client, IPSocketAddress& client_addres
         if (!accept_ex(getSocket(), client.getSocket(), params->buf, 0, AsyncBuffers::ADDR_BUFLEN, AsyncBuffers::ADDR_BUFLEN, &ret_size, &iosb->overlap)) {
             err = LastSysErrorCode();
         }
-        iosb->pending = err == SYS_SUCCESS || IsPendingStatus(err);
+        iosb->pending = SysSuccess(err) || IsPendingStatus(err);
         if (!iosb->pending) {
             report().error(u"error accepting TCP client: %s", SysErrorCodeMessage(err));
             client.close(true);

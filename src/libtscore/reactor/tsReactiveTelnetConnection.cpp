@@ -14,7 +14,7 @@
 //----------------------------------------------------------------------------
 
 ts::ReactiveTelnetConnection::ReactiveTelnetConnection(ReactiveTCPConnection& socket, Object* owner) :
-    ReactiveBase(socket.reactor(), socket.socket(), owner),
+    ReactiveSocketBase(socket.reactor(), socket.socket(), owner),
     _socket(socket)
 {
     // Get notified of connection and disconnection.
@@ -127,7 +127,7 @@ bool ts::ReactiveTelnetConnection::startReceive(ReactiveTelnetConnectionHandlerI
 void ts::ReactiveTelnetConnection::handleTCPReceive(ReactiveTCPConnection& sock, const ByteBlock& data, ReactiveTCPInputControl& control, int error_code, const ObjectPtr& user_data)
 {
     if (_receive_handler != nullptr) {
-        if (error_code != SYS_SUCCESS) {
+        if (!SysSuccess(error_code)) {
             // Report an error to application.
             _receive_handler->handleTelnetLine(*this, UString(), error_code);
         }
@@ -153,7 +153,6 @@ void ts::ReactiveTelnetConnection::handleTCPReceive(ReactiveTCPConnection& sock,
             // Indicate where we stopped consuming the buffer.
             control.used_size = start;
             // Indicate that we need a line-feed;
-            control.min_next_size = NPOS;
             control.next_delimiter = '\n';
         }
     }

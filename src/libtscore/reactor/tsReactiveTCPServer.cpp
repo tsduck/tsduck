@@ -14,7 +14,7 @@
 //----------------------------------------------------------------------------
 
 ts::ReactiveTCPServer::ReactiveTCPServer(Reactor& reactor, TCPServer& socket, Object* owner) :
-    ReactiveBase(reactor, socket, owner),
+    ReactiveSocketBase(reactor, socket, owner),
     _socket(socket)
 {
 }
@@ -36,7 +36,7 @@ ts::ReactiveTCPServer::CloseRequest::~CloseRequest() {}
 // Process completed I/O operations.
 //----------------------------------------------------------------------------
 
-void ts::ReactiveTCPServer::processCompletedIO()
+void ts::ReactiveTCPServer::processQueuedOperations()
 {
     reactor().trace(u"ReactiveTCPServer: processing %d completed I/O", _completed_io.size());
 
@@ -54,7 +54,7 @@ void ts::ReactiveTCPServer::processCompletedIO()
             // Notify that the server accepted a connection (or reported an error).
             req->handler->handleTCPClientAccepted(*this, *req->client, req->client_addr, iosb->error_code, iosb->app_data);
             // If there was no error but the connection is not open, the server's handler break the connection (e.g. client is rejected).
-            if (iosb->error_code == SYS_SUCCESS && !req->client->isOpen()) {
+            if (SysSuccess(iosb->error_code) && !req->client->isOpen()) {
                 iosb->error_code = SYS_REJECTED;
             }
             req->client->declareConnected(*this, iosb->error_code);
@@ -123,7 +123,7 @@ bool ts::ReactiveTCPServer::startAccept(ReactiveTCPServerHandlerInterface* handl
         // Immediate success. Enqueue a completed request. Will be processed in a reactor handler.
         _completed_io.push_back(iosb);
         // Notify the completion event to call the user's notification in the context of the reactor.
-        return signalCompletedIO();
+        return signalQueuedOperations();
     }
 }
 
@@ -161,7 +161,7 @@ void ts::ReactiveTCPServer::handleReadReady(Reactor& reactor, EventId id, int er
     }
 
     // Now process all completed accepts.
-    processCompletedIO();
+    processQueuedOperations();
 
     // When no more pending operation, stop being notified of read-ready.
     if (_pending_accept.empty()) {
@@ -194,13 +194,13 @@ void ts::ReactiveTCPServer::handleAsynchronousIO(Reactor& reactor, EventId id, N
     }
 
     // Get the parameters of the accept.
-    if (iosb.error_code == SYS_SUCCESS && !_socket.setAcceptStatus(acpt->client->socket(), acpt->client_addr, &iosb)) {
+    if (SysSuccess(iosb.error_code) && !_socket.setAcceptStatus(acpt->client->socket(), acpt->client_addr, &iosb)) {
         iosb.error_code = SYS_ERROR;
     }
 
     // Process the request.
     _completed_io.push_back(req);
-    processCompletedIO();
+    processQueuedOperations();
 }
 
 
@@ -220,7 +220,7 @@ void ts::ReactiveTCPServer::cancelAccept(bool silent)
         // Mark all pending accept requests as canceled.
         cancelQueue<AcceptRequest>(_pending_accept, _completed_io);
         // Handle all completions in reactor context.
-        signalCompletedIO();
+        signalQueuedOperations();
     }
 }
 
@@ -261,7 +261,7 @@ bool ts::ReactiveTCPServer::startClose(ReactiveTCPServerHandlerInterface* handle
 
     // If there is no more pending accept request, process the close request in reactor context.
     if (_pending_accept.empty()) {
-        signalCompletedIO();
+        signalQueuedOperations();
     }
     return true;
 }

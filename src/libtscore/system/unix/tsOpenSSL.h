@@ -23,6 +23,8 @@
     #include <openssl/evp.h>
     #include <openssl/err.h>
     #include <openssl/ssl.h>
+    #include <openssl/x509.h>
+    #include <openssl/x509v3.h>
     #if !defined(OPENSSL_VERSION_MAJOR) // before v3
         #define OPENSSL_VERSION_MAJOR (OPENSSL_VERSION_NUMBER >> 28)
     #endif
@@ -115,7 +117,7 @@ namespace ts {
         //!
         //! Base class for objects which must be terminated with OpenSSL.
         //! When the application terminates, OpenSSL does its own cleanup.
-        //! After this cleanup, no OpenSSL operation is possible. I can lead to crashes.
+        //! After this cleanup, no OpenSSL operation is possible. It can lead to crashes.
         //! A class which uses OpenSSL shall terminate all its processing no later than
         //! the OpenSSL cleanup. This is enforced by this base class.
         //!

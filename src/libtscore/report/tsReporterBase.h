@@ -13,13 +13,14 @@
 
 #pragma once
 #include "tsReport.h"
+#include "tsObject.h"
 
 namespace ts {
     //!
     //! Base class for classes using a Report object.
     //! @ingroup libtscore log
     //!
-    class TSCOREDLL ReporterBase
+    class TSCOREDLL ReporterBase: public Object
     {
         TS_DEFAULT_COPY_MOVE(ReporterBase);
     public:
@@ -39,7 +40,7 @@ namespace ts {
         //!
         //! Destructor.
         //!
-        virtual ~ReporterBase();
+        virtual ~ReporterBase() override;
 
         //!
         //! Access the Report which is associated with this object.

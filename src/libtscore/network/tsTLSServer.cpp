@@ -38,29 +38,22 @@ ts::TLSServer::~TLSServer()
 
 
 //----------------------------------------------------------------------------
-// Server properties.
-//----------------------------------------------------------------------------
-
-void ts::TLSServer::setArgs(const TLSArgs& args)
-{
-    _certificate_store = args.certificate_store;
-    _certificate_path = args.certificate_path;
-    _key_path = args.key_path;
-}
-
-
-//----------------------------------------------------------------------------
 // Wait for a client (inherited version).
 //----------------------------------------------------------------------------
 
 bool ts::TLSServer::accept(TCPConnection& client, IPSocketAddress& addr, IOSB* iosb)
 {
     TLSConnection* tls = dynamic_cast<TLSConnection*>(&client);
-    if (tls != nullptr) {
-        return acceptTLS(*tls, addr, iosb);
+
+    if (isNonBlocking()) {
+        report().error(u"internal error: TLSServer called in non-blocking mode, use ReactiveTLSServer");
+        return false;
     }
-    else {
+    else if (tls == nullptr) {
         report().error(u"internal programming error: TLSServer::accept() needs a TLSConnection");
         return false;
+    }
+    else {
+        return acceptTLS(*tls, addr, iosb);
     }
 }

@@ -12,7 +12,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsReactiveBase.h"
+#include "tsReactiveSocketBase.h"
 #include "tsReactiveTCPConnectionHandlerInterface.h"
 #include "tsReactiveTCPInputControl.h"
 #include "tsTCPConnection.h"
@@ -29,7 +29,7 @@ namespace ts {
     //! delegate these operations to startConnect(), startSend(), startReceive(), startCloseWriter() and startClose() in
     //! class ReactiveTCPConnection.
     //!
-    class TSCOREDLL ReactiveTCPConnection: public ReactiveBase
+    class TSCOREDLL ReactiveTCPConnection: public ReactiveSocketBase
     {
         TS_NOBUILD_NOCOPY(ReactiveTCPConnection);
     public:
@@ -69,7 +69,7 @@ namespace ts {
         //! @return True on success, false on error. Success means that the connection was successfully started.
         //! The final status of the I/O will be transmitted in the @a handler.
         //!
-        bool startConnect(ReactiveTCPConnectionHandlerInterface* handler, const IPSocketAddress& addr, const ObjectPtr& user_data = ObjectPtr());
+        virtual bool startConnect(ReactiveTCPConnectionHandlerInterface* handler, const IPSocketAddress& addr, const ObjectPtr& user_data = ObjectPtr());
 
         //!
         //! Define the handler to call when accepted as a client session by a TCP server.
@@ -78,7 +78,7 @@ namespace ts {
         //! The method handleTCPAccepted() will be called. If nullptr, no handler is called.
         //! @param [in] user_data A shared pointer which will be passed unmodified to @a handler.
         //!
-        void whenAccepted(ReactiveTCPConnectionHandlerInterface* handler, const ObjectPtr& user_data = ObjectPtr());
+        virtual void whenAccepted(ReactiveTCPConnectionHandlerInterface* handler, const ObjectPtr& user_data = ObjectPtr());
 
         //!
         //! Start the operation of sending data over the TCP connection.
@@ -91,7 +91,7 @@ namespace ts {
         //! @return True on success, false on error. Success means that the I/O was successfully started.
         //! The final status of the I/O will be transmitted in the @a handler.
         //!
-        bool startSend(ReactiveTCPConnectionHandlerInterface* handler, const void* data, size_t size, const ObjectPtr& user_data = ObjectPtr());
+        virtual bool startSend(ReactiveTCPConnectionHandlerInterface* handler, const void* data, size_t size, const ObjectPtr& user_data = ObjectPtr());
 
         //!
         //! Start closing the send direction of the socket.
@@ -105,7 +105,7 @@ namespace ts {
         //! @param [in] user_data A shared pointer which will be passed unmodified to @a handler.
         //! @return True on success, false on error.
         //!
-        bool startCloseWriter(ReactiveTCPConnectionHandlerInterface* handler, bool silent = false, const ObjectPtr& user_data = ObjectPtr());
+        virtual bool startCloseWriter(ReactiveTCPConnectionHandlerInterface* handler, bool silent = false, const ObjectPtr& user_data = ObjectPtr());
 
         //!
         //! Default buffer size for receive operations.
@@ -122,14 +122,14 @@ namespace ts {
         //! @return True on success, false on error. Success means that the I/O was successfully started.
         //! The final status of the I/O will be transmitted in the @a handler.
         //!
-        bool startReceive(ReactiveTCPConnectionHandlerInterface* handler, size_t buffer_size = DEFAULT_RECEIVE_BUFFER_SIZE, const ObjectPtr& user_data = ObjectPtr());
+        virtual bool startReceive(ReactiveTCPConnectionHandlerInterface* handler, size_t buffer_size = DEFAULT_RECEIVE_BUFFER_SIZE, const ObjectPtr& user_data = ObjectPtr());
 
         //!
         //! Cancel any pending send or receive operation on this socket.
         //! If a repeated reception operation is in progress, the repetition is canceled as well.
         //! @param [in] silent If true, do not report errors through the logger.
         //!
-        void cancelSendReceive(bool silent = false);
+        virtual void cancelSendReceive(bool silent = false);
 
         //!
         //! Start closing the socket.
@@ -150,11 +150,23 @@ namespace ts {
         //! @param [in] user_data A shared pointer which will be passed unmodified to @a handler.
         //! @return True on success, false on error.
         //!
-        bool startClose(ReactiveTCPConnectionHandlerInterface* handler, bool silent = false, const ObjectPtr& user_data = ObjectPtr());
+        virtual bool startClose(ReactiveTCPConnectionHandlerInterface* handler, bool silent = false, const ObjectPtr& user_data = ObjectPtr());
 
-    private:
+    protected:
+        //! Internal shorter name for handler interface.
         using HandlerType = ReactiveTCPConnectionHandlerInterface;
 
+        //!
+        //! Invoke the receive handler as many times as possible on a data buffer.
+        //! @param [in,out] data Data buffer containing the received data. On output, data which are processed by the handler are removed.
+        //! @param [in,out] control Input control. On input, this is the previously returned value from the handler. Modified by the handler.
+        //! @param [in] handler Application handler.
+        //! @param [in] error_code Receive error code. If not success, the handler is called exactly once.
+        //! @param [in] user_data User data for the handler.
+        //! 
+        void processReceiveBuffer(ByteBlock& data, ReactiveTCPInputControl& control, HandlerType* handler, int error_code, const ObjectPtr& user_data);
+
+    private:
         // Description of a connect request.
         class TSCOREDLL ConnectRequest: public Object
         {
@@ -222,15 +234,15 @@ namespace ts {
         HandlerType*          _accept_handler = nullptr; // Called when accepted as a client session in a server.
         ObjectPtr             _accept_user_data {};      // Used in _accept_handler.
 
-        // Declare that the socket has just become connecte as a client session in a server. Must be called in reactor context.
+        // Declare that the socket has just become connected as a TCP client session in a server. Must be called in reactor context.
         friend class ReactiveTCPServer;
         void declareConnected(ReactiveTCPServer& server, int error_code);
 
         // Process receive buffer. Must be called in the context of a Reactor handler, when no asynchronous I/O is in progress.
-        void processReceiveBuffer(const std::shared_ptr<IOSB>& iosb, const std::shared_ptr<ReceiveRequest>& req);
+        void processReceiveBuffer();
 
         // Inherited methods.
-        virtual void processCompletedIO() override;
+        virtual void processQueuedOperations() override;
         virtual void handleReadReady(Reactor&, EventId, int) override;
         virtual void handleWriteReady(Reactor&, EventId, int) override;
         virtual void handleAsynchronousIO(Reactor&, EventId, IOSB&, size_t) override;

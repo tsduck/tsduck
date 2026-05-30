@@ -15,6 +15,7 @@
 
 #pragma once
 #include "tsTCPSocket.h"
+#include "tsSocketOp.h"
 #include "tsAbortInterface.h"
 
 namespace ts {
@@ -118,6 +119,13 @@ namespace ts {
         bool isConnected() const { return isOpen() && _is_connected; }
 
         //!
+        //! Check if the socket is the server-side end of a connection.
+        //! @return True if the socket is the server-side end of a connection, where the connection is the result of an
+        //! accept(). False if the socket is the client-side end of a connection, where the connection used connect().
+        //!
+        bool isServerSide() const { return _is_server_side; }
+
+        //!
         //! Get the connected remote peer.
         //! @param [out] addr IP address and port of the remote socket.
         //! @return True on success, false on error.
@@ -209,8 +217,10 @@ namespace ts {
 
     private:
         volatile bool _is_connected = false;
+        volatile bool _is_server_side = false;
 
         // Implementation of Socket interface.
+        virtual void declareOpened(SysSocketType sock) override;
         virtual bool closeImplementation(bool silent) override;
 
         // Declare that the socket has just become connected / disconnected.
@@ -225,15 +235,16 @@ namespace ts {
         // For Windows asynchronous I/O, we need to keep parameter in one single structure which lives during the I/O.
         class TSCOREDLL AsyncBuffers: public Object
         {
-            TS_NOCOPY(AsyncBuffers);
+            TS_NOBUILD_NOCOPY(AsyncBuffers);
         public:
+            SocketOp type;                    // Operation type, for debug purpose.
             ::WSABUF buf {};                  // Pointer to user's buffer (send/receive).
             ::DWORD flags = 0;                // WSARecv flags.
             ::sockaddr_storage peer_sock {};  // Peer socket (connect).
             int peer_sock_len = 0;            // Actual length of peer_socket.
 
             // Constructor and destructor.
-            AsyncBuffers() = default;
+            AsyncBuffers(SocketOp op) : type(op) {}
             virtual ~AsyncBuffers() override;
         };
 #endif

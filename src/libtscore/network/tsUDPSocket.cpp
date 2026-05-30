@@ -603,7 +603,7 @@ bool ts::UDPSocket::send(const void* data, size_t size, const IPSocketAddress& d
         {
             err = LastSysErrorCode();
         }
-        iosb->pending = err == SYS_SUCCESS || IsPendingStatus(err);
+        iosb->pending = SysSuccess(err) || IsPendingStatus(err);
         if (!iosb->pending) {
             report().error(u"error sending UDP message: %s", SysErrorCodeMessage(err));
         }
@@ -675,7 +675,7 @@ bool ts::UDPSocket::receive(void* data,
             // User-interrupt, end of processing but no error message.
             return false;
         }
-        else if (err == SYS_SUCCESS) {
+        else if (SysSuccess(err)) {
             // Successful message reception.
             return true;
         }
@@ -758,7 +758,7 @@ int ts::UDPSocket::receiveOne(void* data,
         if (wsa_recvmsg(getSocket(), &params->msg, &insize, &iosb->overlap, nullptr) != 0) {
             err = LastSysErrorCode();
         }
-        iosb->pending = err == SYS_SUCCESS || IsPendingStatus(err);
+        iosb->pending = SysSuccess(err) || IsPendingStatus(err);
         return iosb->pending ? SYS_SUCCESS : err;
     }
     else {

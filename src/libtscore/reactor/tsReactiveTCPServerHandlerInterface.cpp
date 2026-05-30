@@ -9,5 +9,5 @@
 #include "tsReactiveTCPServerHandlerInterface.h"
 
 ts::ReactiveTCPServerHandlerInterface::~ReactiveTCPServerHandlerInterface() {}
-void ts::ReactiveTCPServerHandlerInterface::handleTCPClientAccepted(ReactiveTCPServer&, ReactiveTCPConnection&, IPSocketAddress&, int, const ObjectPtr&) {}
+void ts::ReactiveTCPServerHandlerInterface::handleTCPClientAccepted(ReactiveTCPServer&, ReactiveTCPConnection&, const IPSocketAddress&, int, const ObjectPtr&) {}
 void ts::ReactiveTCPServerHandlerInterface::handleTCPServerClosed(ReactiveTCPServer&, const ObjectPtr&) {}

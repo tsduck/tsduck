@@ -11,7 +11,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsTLSServer.h"
-#include "tsWinTLS.h"
+#include "tsSChannelCertificate.h"
 
 
 //----------------------------------------------------------------------------
@@ -20,14 +20,10 @@
 
 class ts::TLSServer::SystemGuts
 {
-    TS_NOCOPY(SystemGuts);
+    TS_NOBUILD_NOCOPY(SystemGuts);
 public:
-    ::PCCERT_CONTEXT cert = nullptr;
-
-    // Constructor and destructor.
-    SystemGuts() = default;
-    ~SystemGuts();
-    void clear();
+    SChannelCertificate cert;
+    SystemGuts(TLSServer* server) : cert(server) {}
 };
 
 
@@ -37,25 +33,12 @@ public:
 
 void ts::TLSServer::allocateGuts()
 {
-    _guts = new SystemGuts;
+    _guts = new SystemGuts(this);
 }
 
 void ts::TLSServer::deleteGuts()
 {
     delete _guts;
-}
-
-void ts::TLSServer::SystemGuts::clear()
-{
-    if (cert != nullptr) {
-        ::CertFreeCertificateContext(cert);
-        cert = nullptr;
-    }
-}
-
-ts::TLSServer::SystemGuts::~SystemGuts()
-{
-    clear();
 }
 
 
@@ -65,13 +48,7 @@ ts::TLSServer::SystemGuts::~SystemGuts()
 
 bool ts::TLSServer::listen(int backlog)
 {
-    // Get TLS server certificate the first time listen is called.
-    if (_guts->cert == nullptr && (_guts->cert = GetCertificate(getCertificateStore(), getCertificatePath(), report())) == nullptr) {
-        return false;
-    }
-
-    // Create the TCP server.
-    return SuperClass::listen(backlog);
+    return _guts->cert.initServerCertificate(*this) && TCPServer::listen(backlog);
 }
 
 
@@ -81,26 +58,15 @@ bool ts::TLSServer::listen(int backlog)
 
 bool ts::TLSServer::acceptTLS(TLSConnection& client, IPSocketAddress& addr, IOSB* iosb)
 {
-    // Check that the application uses the right blocking mode.
-    if (!checkNonBlocking(iosb, u"TLSServer::acceptTLS")) {
-        return false;
-    }
-
-    if (isNonBlocking()) {
-        //@@@ to be implemented.
-        report().error(u"non-blocking TLS is not yet implemented");
-        return false;
-    }
-
     // Accept one TCP client.
-    if (!SuperClass::accept(client, addr, iosb)) {
+    if (!TCPServer::accept(client, addr, iosb)) {
         return false;
     }
 
     // Perform handshake with the client.
-    if (!client.setServerContext(_guts->cert)) {
+    if (!client.setServerContext(_guts->cert.getCertificate())) {
         // Close the underlying TCP socket.
-        client.SuperClass::close(true);
+        client.close(true);
         return false;
     }
 
@@ -114,6 +80,6 @@ bool ts::TLSServer::acceptTLS(TLSConnection& client, IPSocketAddress& addr, IOSB
 
 bool ts::TLSServer::closeImplementation(bool silent)
 {
-    _guts->clear();
-    return SuperClass::closeImplementation(silent);
+    _guts->cert.reset();
+    return TCPServer::closeImplementation(silent);
 }

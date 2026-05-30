@@ -40,15 +40,16 @@ namespace ts {
         TLSArgs(const UString& description = u"server", const UString& prefix = UString());
 
         // Common client and server options.
-        bool use_tls = false;          //!< Use SSL/TLS.
+        bool use_tls = false;            //!< Use SSL/TLS.
 
         // Server-specific options.
-        UString certificate_store {};  //!< TLS server certificate store. @see TLSServer::setCertificateStore()
-        UString certificate_path {};   //!< TLS server certificate path. @see TLSServer::setCertificatePath()
-        UString key_path {};           //!< TLS server private key path. @see TLSServer::setKeyPath()
+        UString certificate_store {};    //!< TLS server certificate store. @see TLSServerBase::setCertificateStore()
+        UString certificate_path {};     //!< TLS server certificate path. @see TLSServerBase::setCertificatePath()
+        UString key_path {};             //!< TLS server private key path. @see TLSServerBase::setKeyPath()
+        size_t  ephemeral_rsa_bits = 0;  //!< TLS server ephemeral certificate RSA kiey size in bits, when not zero.
 
         // Client-specific options.
-        bool insecure = false;         //!< Do not verify TLS server's certificate.
+        bool insecure = false;           //!< Do not verify TLS server's certificate.
 
         // Inherited methods.
         virtual void defineServerArgs(Args& args) override;
@@ -62,5 +63,6 @@ namespace ts {
         UString _opt_certificate_store;  //!< Option name for --[prefix-]store.
         UString _opt_certificate_path;   //!< Option name for --[prefix-]certificate-path.
         UString _opt_key_path;           //!< Option name for --[prefix-]key-path.
+        UString _opt_ephemeral_rsa_bits; //!< Option name for --[prefix-]ephemeral-rsa-bits.
     };
 }

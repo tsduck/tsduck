@@ -112,6 +112,16 @@ namespace ts {
     TSCOREDLL int TranslateError(int code);
 
     //!
+    //! Check if a system error code means success.
+    //! @param [in] code An error code from the operating system.
+    //! @return True is @a code indicate success, false otherwise.
+    //!
+    TSCOREDLL inline bool SysSuccess(int code)
+    {
+        return TranslateError(code) == SYS_SUCCESS;
+    }
+
+    //!
     //! Format a system error code into a string.
     //! @ingroup system
     //! @param [in] code An error code from the operating system.
@@ -119,7 +129,7 @@ namespace ts {
     //! @param [in] category Error category, system by default.
     //! @return A string describing the error.
     //!
-    TSCOREDLL std::string SysErrorCodeMessage(int code = LastSysErrorCode(), const std::error_category& category = std::system_category());
+    TSCOREDLL std::string SysErrorCodeMessage(int code = LastSysErrorCode(), const std::error_category* category = nullptr);
 
     //!
     //! Portable type for ioctl() request parameter.

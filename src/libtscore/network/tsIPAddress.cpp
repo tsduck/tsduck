@@ -902,7 +902,7 @@ bool ts::IPAddress::ResolveAllAddresses(IPAddressVector& addresses, const UStrin
             report.error(u"%s: %s", name, SysErrorCodeMessage(LastSysErrorCode()));
         }
         else {
-            report.error(u"%s: %s", name, SysErrorCodeMessage(status, getaddrinfo_category()));
+            report.error(u"%s: %s", name, SysErrorCodeMessage(status, &getaddrinfo_category()));
         }
     #endif
     }

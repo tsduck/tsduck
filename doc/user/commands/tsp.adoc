@@ -528,6 +528,16 @@ With `--control-tls`, path to the certificate for the control commands.
 See xref:opt-tls[xrefstyle=short] for more details.
 
 [.opt]
+*--control-ephemeral-rsa-bits* _value_
+
+[.optdoc]
+With `--control-tls`, create an ephemeral self-signed certificate for the control port.
+The value specifies the size in bits of the ephemeral RSA key which it generated.
+Keep in mind that ephemeral self-signed certificates are considered as "invalid" or "insecure" by client applications.
+Be sure to disable the verification of the TLS server's certificate on the client side.
+By default, the control port needs a designated persistent certificate.
+
+[.opt]
 *--control-key-path* _name_
 
 [.optdoc]

@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <!-- Check that the Vatek property file exists and not disabled (env var TS_NO_VATEK) -->
-  <PropertyGroup Label="UserMacros" Condition="'$(TS_NO_VATEK)' == '' AND Exists('$(DefaultVatekProps)') AND ('$(Platform)' == 'x64' OR '$(Platform)' == 'Win64')">
+  <PropertyGroup Label="UserMacros" Condition="'$(TS_NO_VATEK)' == '' AND Exists('$(DefaultVatekProps)') AND '$(Configuration)' != 'ASan' AND ('$(Platform)' == 'x64' OR '$(Platform)' == 'Win64')">
     <VatekProps>$(DefaultVatekProps)</VatekProps>
   </PropertyGroup>
 
