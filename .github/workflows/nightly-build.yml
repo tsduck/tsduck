@@ -9,18 +9,20 @@
 #  Builds installers for Windows and Ubuntu. Build programmer's doc package.
 #  Upload them all as artifacts of this workflow.
 #
+#  This is a daily scheduled job which can also be manually triggered.
+#  The initial daily schedule was 00:40 UTC. Over the years, the execution was
+#  slowly drifting, up to more than 4 hours (start around 05:00 UTC). We tried
+#  14:37 UTC, hoping for a more quiet time of the day. Immediately, the delay
+#  was 3h 30mn (start around 17:50 UTC). Now, we try 23:11 UTC.
+#
 #-----------------------------------------------------------------------------
 
 name: Nightly build
 
 on:
-  # Trigger the workflow every day at 14:37 UTC.
-  # Using 00:40 UTC, the execution was slowly dritfing by 4 hours.
-  # So, we try to find a quieter moment during the day.
-  schedule:
-  - cron: '37 14 * * *'
-  # Allow manual trigger.
   workflow_dispatch:
+  schedule:
+  - cron: '11 23 * * *'
 
 jobs:
   # Get current TSDuck version in the repo and latest nightly builds on tsduck.io.
