@@ -41,6 +41,13 @@
     <When Condition="'$(DtapiVC)' != ''">
       <!-- Already externally defined, nothing to do -->
     </When>
+    <!-- Visual Studio 2026 -->
+    <When Condition="'$(MSBuildToolsVersion)' == '18.0' OR '$(MSBuildAssemblyVersion)' == '18.0'">
+      <PropertyGroup Label="UserMacros">
+        <!-- No VC18 so far in Dektec SDK -->
+        <DtapiVC>VC17</DtapiVC>
+      </PropertyGroup>
+    </When>
     <!-- Visual Studio 2022 -->
     <When Condition="'$(MSBuildToolsVersion)' == '17.0' OR '$(MSBuildAssemblyVersion)' == '17.0'">
       <PropertyGroup Label="UserMacros">
