@@ -225,6 +225,16 @@ Must be one of `ATSC-VSB`, `DAB`, `DVB-C2`, `DVB-S`, `DVB-S-QPSK` (same as `DVB-
 `ISDB-T`, `QAM` (auto-detection of QAM type), `16-QAM`, `32-QAM`, `64-QAM`, `128-QAM`, `256-QAM`.
 
 [.opt]
+*--no-lnb-control*
+
+[.optdoc]
+DVB-S/S2 receivers: do not send any control command to the LNB
+The intermediate frequency is still computed from `--satellite-frequency` and `--lnb` if specified.
+
+[.optdoc]
+This is useful on receivers that do not support LNB control
+
+[.opt]
 *--polarity* _value_
 
 [.optdoc]

@@ -2,6 +2,15 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
+VERSION 3.45-4693 (May 2026)
+
+[IMP] Improvements on existing commands and plugins:
+
+  * New options in existing commands and plugins:
+    - Option --no-lnb-control added in input plugin "dektec".
+
+-------------------------------------------------------------------------------
+
 VERSION 3.45-4684 (May 2026)
 
 [IMP] Improvements on existing commands and plugins:

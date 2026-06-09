@@ -247,6 +247,10 @@ ts::DektecInputPlugin::DektecInputPlugin(TSP* tsp_) :
          u"The supported modulation types depend on the device model. "
          u"The default modulation type is DVB-S.\n");
 
+    option(u"no-lnb-control");
+    help(u"no-lnb-control",
+         u"DVB-S/S2 receivers: do not send any control command to the LNB");
+
     option(u"polarity", 0, PolarizationEnum());
     help(u"polarity",
          u"DVB-S/S2 receivers: indicate the polarity. The default is \"vertical\".");
@@ -505,6 +509,11 @@ bool ts::DektecInputPlugin::getOptions()
             tsp->error(u"invalid Dektec demodulation parameters: %s", DektecStrError(status));
             success = false;
         }
+    }
+
+    // Skip LNB setup if no-lnb-control option is present
+    if (present(u"no-lnb-control")) {
+        _guts->lnb_setup = false;
     }
 
     return success;
