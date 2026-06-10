@@ -225,6 +225,17 @@ Must be one of `ATSC-VSB`, `DAB`, `DVB-C2`, `DVB-S`, `DVB-S-QPSK` (same as `DVB-
 `ISDB-T`, `QAM` (auto-detection of QAM type), `16-QAM`, `32-QAM`, `64-QAM`, `128-QAM`, `256-QAM`.
 
 [.opt]
+*--no-lnb-control*
+
+[.optdoc]
+DVB-S/S2 receivers: do not send any control command to the LNB.
+The intermediate frequency is still computed from `--satellite-frequency` and `--lnb` if specified.
+
+[.optdoc]
+This is useful to explicitly disable LNB control in a lab where sending those signals on the cable is a problem.
+Note: even without this option, LNB control is automatically skipped on input channels which do not support it.
+
+[.opt]
 *--polarity* _value_
 
 [.optdoc]

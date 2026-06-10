@@ -247,6 +247,10 @@ ts::DektecInputPlugin::DektecInputPlugin(TSP* tsp_) :
          u"The supported modulation types depend on the device model. "
          u"The default modulation type is DVB-S.\n");
 
+    option(u"no-lnb-control");
+    help(u"no-lnb-control",
+         u"DVB-S/S2 receivers: do not send any control command to the LNB");
+
     option(u"polarity", 0, PolarizationEnum());
     help(u"polarity",
          u"DVB-S/S2 receivers: indicate the polarity. The default is \"vertical\".");
@@ -507,6 +511,11 @@ bool ts::DektecInputPlugin::getOptions()
         }
     }
 
+    // Skip LNB setup if no-lnb-control option is present
+    if (present(u"no-lnb-control")) {
+        _guts->lnb_setup = false;
+    }
+
     return success;
 }
 
@@ -637,9 +646,14 @@ bool ts::DektecInputPlugin::start()
     // Apply demodulation settings
     if (_guts->demod_freq > 0) {
 
-        // Configure the LNB for satellite reception.
-        if (_guts->lnb_setup && !configureLNB()) {
-            return false;
+        // Configure the LNB for satellite reception, only if input channel supports it
+        if (_guts->lnb_setup) {
+            if ((dt_flags & DTAPI_CAP_LNB) == 0) {
+                tsp->verbose(u"input channel does not support LNB control, skipping it");
+            }
+            else if (!configureLNB()) {
+                return false;
+            }
         }
 
         // Tune to the frequency and demodulation parameters.
