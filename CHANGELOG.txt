@@ -7,7 +7,12 @@ VERSION 3.45-4693 (May 2026)
 [IMP] Improvements on existing commands and plugins:
 
   * New options in existing commands and plugins:
-    - Option --no-lnb-control added in input plugin "dektec".
+    - Option --no-lnb-control in plugin "dektec" (input) to explicitly disable
+      LNB control on DVB-S/S2 receivers.
+
+  * Plugin "dektec" (input): on DVB-S/S2 receivers, LNB control is now
+    automatically skipped on input channels which do not support it instead of 
+    failing.
 
 -------------------------------------------------------------------------------
 

@@ -646,9 +646,14 @@ bool ts::DektecInputPlugin::start()
     // Apply demodulation settings
     if (_guts->demod_freq > 0) {
 
-        // Configure the LNB for satellite reception.
-        if (_guts->lnb_setup && !configureLNB()) {
-            return false;
+        // Configure the LNB for satellite reception, only if input channel supports it
+        if (_guts->lnb_setup) {
+            if ((dt_flags & DTAPI_CAP_LNB) == 0) {
+                tsp->verbose(u"input channel does not support LNB control, skipping it");
+            }
+            else if (!configureLNB()) {
+                return false;
+            }
         }
 
         // Tune to the frequency and demodulation parameters.

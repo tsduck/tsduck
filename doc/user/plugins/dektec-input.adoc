@@ -228,11 +228,12 @@ Must be one of `ATSC-VSB`, `DAB`, `DVB-C2`, `DVB-S`, `DVB-S-QPSK` (same as `DVB-
 *--no-lnb-control*
 
 [.optdoc]
-DVB-S/S2 receivers: do not send any control command to the LNB
+DVB-S/S2 receivers: do not send any control command to the LNB.
 The intermediate frequency is still computed from `--satellite-frequency` and `--lnb` if specified.
 
 [.optdoc]
-This is useful on receivers that do not support LNB control
+This is useful to explicitly disable LNB control in a lab where sending those signals on the cable is a problem.
+Note: even without this option, LNB control is automatically skipped on input channels which do not support it.
 
 [.opt]
 *--polarity* _value_
