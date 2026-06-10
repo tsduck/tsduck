@@ -19,74 +19,54 @@
     <TS_NO_DTAPI>1</TS_NO_DTAPI>
   </PropertyGroup>
 
-  <!-- Define DtapiHeaderDir if DTAPI.h found in some predefined locations -->
+  <!-- Find Visual Studio main version, depending on various evolutions -->
+  <PropertyGroup Label="UserMacros" Condition="'$(TSMSVersion)' == ''">
+    <TSMSVersion>$([System.Text.RegularExpressions.Regex]::Match($(MSBuildToolsVersion), `^\d+`))</TSMSVersion>
+  </PropertyGroup>
+  <PropertyGroup Label="UserMacros" Condition="'$(TSMSVersion)' == ''">
+    <TSMSVersion>$([System.Text.RegularExpressions.Regex]::Match($(MSBuildAssemblyVersion), `^\d+`))</TSMSVersion>
+  </PropertyGroup>
+  <PropertyGroup Label="UserMacros" Condition="'$(TSMSVersion)' == ''">
+    <TSMSVersion>$([System.Text.RegularExpressions.Regex]::Match($(VisualStudioVersion), `^\d+`))</TSMSVersion>
+  </PropertyGroup>
+
+  <!-- Define DtapiRoot base on location of DTAPI.h -->
   <Choose>
-    <When Condition="'$(DtapiHeaderDir)' != ''">
+    <When Condition="'$(DtapiRoot)' != ''">
       <!-- Already externally defined, nothing to do -->
     </When>
     <When Condition="Exists('C:\Program Files (x86)\DekTec\SDKs\WinSDK\DTAPI\Include\DTAPI.h')">
       <PropertyGroup Label="UserMacros">
-        <DtapiHeaderDir>C:\Program Files (x86)\DekTec\SDKs\WinSDK\DTAPI\Include\</DtapiHeaderDir>
+        <DtapiRoot>C:\Program Files (x86)\DekTec\SDKs\WinSDK\DTAPI\</DtapiRoot>
       </PropertyGroup>
     </When>
     <When Condition="Exists('C:\Program Files\DekTec\SDKs\WinSDK\DTAPI\Include\DTAPI.h')">
       <PropertyGroup Label="UserMacros">
-        <DtapiHeaderDir>C:\Program Files\DekTec\SDKs\WinSDK\DTAPI\Include\</DtapiHeaderDir>
+        <DtapiRoot>C:\Program Files\DekTec\SDKs\WinSDK\DTAPI\</DtapiRoot>
       </PropertyGroup>
     </When>
   </Choose>
 
-  <!-- Define DtapiVC based on build tools version -->
-  <Choose>
-    <When Condition="'$(DtapiVC)' != ''">
-      <!-- Already externally defined, nothing to do -->
-    </When>
-    <!-- Visual Studio 2026 -->
-    <When Condition="'$(MSBuildToolsVersion)' == '18.0' OR '$(MSBuildAssemblyVersion)' == '18.0'">
-      <PropertyGroup Label="UserMacros">
-        <!-- No VC18 so far in Dektec SDK -->
-        <DtapiVC>VC17</DtapiVC>
-      </PropertyGroup>
-    </When>
-    <!-- Visual Studio 2022 -->
-    <When Condition="'$(MSBuildToolsVersion)' == '17.0' OR '$(MSBuildAssemblyVersion)' == '17.0'">
-      <PropertyGroup Label="UserMacros">
-        <DtapiVC>VC17</DtapiVC>
-      </PropertyGroup>
-    </When>
-    <!-- Visual Studio 2019 -->
-    <When Condition="'$(MSBuildToolsVersion)' == '16.0' OR '$(MSBuildAssemblyVersion)' == '16.0'">
-      <PropertyGroup Label="UserMacros">
-        <DtapiVC>VC16</DtapiVC>
-      </PropertyGroup>
-    </When>
-    <!-- Visual Studio 2017 -->
-    <When Condition="'$(MSBuildToolsVersion)' == '15.0' OR '$(MSBuildAssemblyVersion)' == '15.0'">
-      <PropertyGroup Label="UserMacros">
-        <DtapiVC>VC15</DtapiVC>
-      </PropertyGroup>
-    </When>
-    <!-- Visual Studio 2015 -->
-    <When Condition="'$(MSBuildToolsVersion)' == '14.0' OR '$(MSBuildAssemblyVersion)' == '14.0'">
-      <PropertyGroup Label="UserMacros">
-        <DtapiVC>VC14</DtapiVC>
-      </PropertyGroup>
-    </When>
-  </Choose>
+  <!-- Define DtapiHeaderDir as predefined subdirectory of DtapiRoot -->
+  <PropertyGroup Label="UserMacros" Condition="'$(DtapiRoot)' != ''">
+    <DtapiHeaderDir>$(DtapiRoot)Include\</DtapiHeaderDir>
+  </PropertyGroup>
 
   <!-- Define DtapiLibDir if DTAPI found in some predefined locations -->
   <Choose>
     <When Condition="'$(DtapiLibDir)' != ''">
       <!-- Already externally defined, nothing to do -->
     </When>
-    <When Condition="Exists('C:\Program Files (x86)\DekTec\SDKs\WinSDK\DTAPI\Lib\$(DtapiVC)')">
+    <When Condition="Exists('$(DtapiRoot)Lib\VC$(TSMSVersion)')">
+      <!-- Exact match found -->
       <PropertyGroup Label="UserMacros">
-        <DtapiLibDir>C:\Program Files (x86)\DekTec\SDKs\WinSDK\DTAPI\Lib\$(DtapiVC)\</DtapiLibDir>
+        <DtapiLibDir>$(DtapiRoot)Lib\VC$(TSMSVersion)\</DtapiLibDir>
       </PropertyGroup>
     </When>
-    <When Condition="Exists('C:\Program Files\DekTec\SDKs\WinSDK\DTAPI\Lib\$(DtapiVC)')">
+    <When Condition="Exists('$(DtapiRoot)Lib\VC17') AND '$(TSMSVersion)' != '' AND $(TSMSVersion) &gt; 17">
+      <!-- More recent than Visual Studio 2022 (version 17) but no matching DTAPI, fallback to DTAPI for VC17 -->
       <PropertyGroup Label="UserMacros">
-        <DtapiLibDir>C:\Program Files\DekTec\SDKs\WinSDK\DTAPI\Lib\$(DtapiVC)\</DtapiLibDir>
+        <DtapiLibDir>$(DtapiRoot)Lib\VC17\</DtapiLibDir>
       </PropertyGroup>
     </When>
   </Choose>
