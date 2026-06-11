@@ -655,6 +655,14 @@ bool ts::DektecInputPlugin::start()
                 return false;
             }
         }
+        else if ((dt_flags & DTAPI_CAP_LNB) != 0) {
+            // If channel has LNB capability but lnb_setup is false, we force LNB disabling
+            debug(u"disabling LNB control");
+            status = _guts->chan.LnbEnable(false);
+            if (status != DTAPI_OK) {
+                return startError(u"error disabling LNB control", status);
+            }
+        }
 
         // Tune to the frequency and demodulation parameters.
         debug(u"tuning to frequency %'d Hz, demod: %s", _guts->demod_freq, demodParsToXml());
