@@ -185,13 +185,8 @@ bool ts::MPEG2VideoAttributes::moreBinaryData(const uint8_t* udata, size_t size)
         // Compute final values:
         size_t hsize = _sh_hsize | (hsize_ext << 12);
         size_t vsize = _sh_vsize | (vsize_ext << 12);
-        size_t fr_num = FRNum(_sh_fr_code);
-        size_t fr_div = FRDiv(_sh_fr_code);
-        if (fr_num == 0) {
-            // Not a valid aspect ratio code
-            fr_num = size_t(_sh_ar_code) * (fr_ext_n + 1);
-            fr_div = fr_ext_d + 1;
-        }
+        size_t fr_num = FRNum(_sh_fr_code) * (fr_ext_n + 1);
+        size_t fr_div = FRDiv(_sh_fr_code) * (fr_ext_d + 1);
         uint32_t bitrate = _sh_bitrate | (bitrate_ext << 18);
         size_t vbv_size = _sh_vbv_size | (vbv_ext << 10);
 
