@@ -185,8 +185,8 @@ bool ts::MPEG2VideoAttributes::moreBinaryData(const uint8_t* udata, size_t size)
         // Compute final values:
         size_t hsize = _sh_hsize | (hsize_ext << 12);
         size_t vsize = _sh_vsize | (vsize_ext << 12);
-        size_t fr_num = FRNum(_sh_ar_code);
-        size_t fr_div = FRDiv(_sh_ar_code);
+        size_t fr_num = FRNum(_sh_fr_code);
+        size_t fr_div = FRDiv(_sh_fr_code);
         if (fr_num == 0) {
             // Not a valid aspect ratio code
             fr_num = size_t(_sh_ar_code) * (fr_ext_n + 1);
@@ -220,8 +220,8 @@ bool ts::MPEG2VideoAttributes::moreBinaryData(const uint8_t* udata, size_t size)
     }
     else {
         // No extension data after sequence header => MPEG-1
-        size_t fr_num = FRNum(_sh_ar_code);
-        size_t fr_div = FRDiv(_sh_ar_code);
+        size_t fr_num = FRNum(_sh_fr_code);
+        size_t fr_div = FRDiv(_sh_fr_code);
         bool changed = !_is_valid || _hsize != _sh_hsize || _vsize != _sh_vsize ||
             _ar_code != _sh_ar_code || _progressive || _interlaced || _cf_code != 0 ||
             _fr_num != fr_num || _fr_div != fr_div || _bitrate != _sh_bitrate ||

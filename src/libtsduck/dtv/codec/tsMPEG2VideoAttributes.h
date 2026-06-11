@@ -159,7 +159,7 @@ namespace ts {
         size_t   _sh_hsize = 0;    // Horizontal size in pixel
         size_t   _sh_vsize = 0;    // Vertical size in pixel
         uint8_t  _sh_ar_code = 0;  // Aspect ratio code (AR_* from tsMPEG.h)
-        size_t   _sh_fr_code = 0;  // Frame rate code
+        uint8_t  _sh_fr_code = 0;  // Frame rate code
         uint32_t _sh_bitrate = 0;  // Maximum bitrate
         size_t   _sh_vbv_size = 0; // Video Buffering Verifier size in bits
 

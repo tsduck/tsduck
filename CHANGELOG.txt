@@ -2,19 +2,24 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.45-4695 (June 2026)
+VERSION 3.45-4702 (June 2026)
 
 [IMP] Improvements on existing commands and plugins:
 
   * Plugin  "dektec"  (input):  on  DVB-S/S2  receivers,  LNB  control  is  now
     automatically  skipped on input channels which do not support it instead of
     failing.
-  * Plugin "dektec" (input): If channel has LNB capability but should not be
-    enabled, we force LNB disabling instead of skipping LNB enabling
+  * Plugin  "dektec"  (input):  If channel has LNB capability but should not be
+    enabled, we force LNB disabling instead of skipping LNB enabling.
   * New options in existing commands and plugins:
     - Options  --preserve-units,  --silent-after, --stuffing in plugins "slice"
       and "time".
     - Option --no-lnb-control in input plugin "dektec".
+
+[BUG] Bug fixes:
+
+  * Fixed issue #1729:  Frame  rate  was  incorrectly interpreted on MPEG-2 and
+    MPEG-1 video streams.
 
 -------------------------------------------------------------------------------
 
@@ -44,8 +49,8 @@ VERSION 3.44-4676 (May 2026)
 [IMP] Improvements on existing commands and plugins:
 
   * With  "tsversion --upgrade",  do  not  upgrade  the development environment
-    package (tsduck-devel or tsduck-dev) if one exists for the operating system  and it
-    is not installed.
+    package (tsduck-devel or tsduck-dev) if one exists for the operating system
+    and it is not installed.
   * New options in existing commands and plugins:
     - Option --meta-base64-sections in "tstables  and  plugins  "splicemonitor"
       and "tables".
