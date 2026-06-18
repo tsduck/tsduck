@@ -238,7 +238,7 @@ bool ts::Socket::closeImplementation(bool silent)
 
     // Actually close the socket.
     const int err = SysCloseSocket(previous);
-    if (err == SYS_SUCCESS) {
+    if (SysSuccess(err)) {
         return true;
     }
     else {

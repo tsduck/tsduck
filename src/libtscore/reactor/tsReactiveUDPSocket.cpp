@@ -15,7 +15,7 @@
 //----------------------------------------------------------------------------
 
 ts::ReactiveUDPSocket::ReactiveUDPSocket(Reactor& reactor, UDPSocket& socket, Object* owner) :
-    ReactiveBase(reactor, socket, owner),
+    ReactiveSocketBase(reactor, socket, owner),
     _socket(socket)
 {
 }
@@ -50,7 +50,7 @@ ts::ReactiveUDPSocket::CloseRequest::~CloseRequest() {}
 // Process completed I/O operations (here, only close requests).
 //----------------------------------------------------------------------------
 
-void ts::ReactiveUDPSocket::processCompletedIO()
+void ts::ReactiveUDPSocket::processQueuedOperations()
 {
     // Complete a close request if no more I/O is pending.
     if (_pending_close != nullptr && _pending_send.empty() && _pending_receive == nullptr) {
@@ -334,7 +334,7 @@ void ts::ReactiveUDPSocket::handleAsynchronousIO(Reactor& reactor, EventId id, N
         recv->recv_size = io_size;
 
         // Extract the reception parameters from the IOSB.
-        if (iosb.error_code == SYS_SUCCESS) {
+        if (SysSuccess(iosb.error_code)) {
             _socket.getReceiveStatus(&iosb, recv->sender, recv->destination, &recv->timestamp, &recv->timestamp_type);
         }
 
@@ -348,7 +348,7 @@ void ts::ReactiveUDPSocket::handleAsynchronousIO(Reactor& reactor, EventId id, N
         else if (_pending_receive.get() != &iosb) {
             report().error(u"unreferenced completed asynchronous UDP receive request");
         }
-        else if (iosb.error_code == SYS_SUCCESS && _max_receive_size > 0) {
+        else if (SysSuccess(iosb.error_code) && _max_receive_size > 0) {
             // Successful reception, restart a new one, with a new buffer.
             recv = std::make_shared<ReceiveRequest>(_max_receive_size);
             iosb.react_data = recv;
@@ -371,7 +371,7 @@ void ts::ReactiveUDPSocket::handleAsynchronousIO(Reactor& reactor, EventId id, N
     }
 
     // Process any completed I/O.
-    processCompletedIO();
+    processQueuedOperations();
 }
 
 
@@ -433,5 +433,5 @@ bool ts::ReactiveUDPSocket::startClose(ReactiveUDPHandlerInterface* handler, boo
     cancelSendReceive(silent);
 
     // Try to close in the reactor context. If I/O are in progress, this will be done when they complete.
-    return signalCompletedIO();
+    return signalQueuedOperations();
 }

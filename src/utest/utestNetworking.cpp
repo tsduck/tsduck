@@ -703,6 +703,7 @@ namespace {
             TSUNIT_ASSERT(session.connect(serverAddress));
             TSUNIT_ASSERT(session.isOpen());
             TSUNIT_ASSERT(session.isConnected());
+            TSUNIT_ASSERT(!session.isServerSide());
 
             ts::IPSocketAddress peer;
             TSUNIT_ASSERT(session.getPeer(peer));
@@ -767,9 +768,13 @@ TSUNIT_DEFINE_TEST(TCPSocket)
     CERR.debug(u"TCPSocketTest: main thread: waiting for a client");
     ts::TCPConnection session(&CERR);
     ts::IPSocketAddress clientAddress;
+    TSUNIT_ASSERT(!session.isOpen());
     TSUNIT_ASSERT(server.accept(session, clientAddress));
     CERR.debug(u"TCPSocketTest: main thread: got a client");
     TSUNIT_ASSERT(ts::IPAddress(clientAddress) == ts::IPAddress::LocalHost4);
+    TSUNIT_ASSERT(session.isOpen());
+    TSUNIT_ASSERT(session.isConnected());
+    TSUNIT_ASSERT(session.isServerSide());
 
     CERR.debug(u"TCPSocketTest: main thread: waiting for data");
     ts::IPSocketAddress sender;

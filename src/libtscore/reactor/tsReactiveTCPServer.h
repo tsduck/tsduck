@@ -12,7 +12,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsReactiveBase.h"
+#include "tsReactiveSocketBase.h"
 #include "tsReactiveTCPServerHandlerInterface.h"
 #include "tsReactiveTCPConnection.h"
 #include "tsTCPServer.h"
@@ -28,14 +28,14 @@ namespace ts {
     //! The application shall not directly call accept(), or close() on this socket and delegate
     //! these operations to startAccept() and startClose() in class ReactiveTCPServer.
     //!
-    class TSCOREDLL ReactiveTCPServer: public ReactiveBase
+    class TSCOREDLL ReactiveTCPServer: public ReactiveSocketBase
     {
         TS_NOBUILD_NOCOPY(ReactiveTCPServer);
     public:
         //!
         //! Constructor.
         //! @param [in,out] reactor Associated reactor. The reactor object must remain valid as long as this object is valid.
-        //! @param [in,out] socket Associated sserver socket. The socket object must remain valid as long as this object is valid.
+        //! @param [in,out] socket Associated server socket. The socket object must remain valid as long as this object is valid.
         //! The ReactiveTCPServer must be initialized before the @a socket is opened.
         //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
@@ -69,13 +69,13 @@ namespace ts {
         //! @return True on success, false on error. Success means that the connection was successfully started.
         //! The final status of the I/O will be transmitted in the @a handler.
         //!
-        bool startAccept(ReactiveTCPServerHandlerInterface* handler, ReactiveTCPConnection& client, const ObjectPtr& user_data = ObjectPtr());
+        virtual bool startAccept(ReactiveTCPServerHandlerInterface* handler, ReactiveTCPConnection& client, const ObjectPtr& user_data = ObjectPtr());
 
         //!
         //! Cancel any pending accept operation on this socket.
         //! @param [in] silent If true, do not report errors through the logger.
         //!
-        void cancelAccept(bool silent = false);
+        virtual void cancelAccept(bool silent = false);
 
         //!
         //! Start closing the socket.
@@ -90,11 +90,13 @@ namespace ts {
         //! @param [in] user_data A shared pointer which will be passed unmodified to @a handler.
         //! @return True on success, false on error.
         //!
-        bool startClose(ReactiveTCPServerHandlerInterface* handler, bool silent = false, const ObjectPtr& user_data = ObjectPtr());
+        virtual bool startClose(ReactiveTCPServerHandlerInterface* handler, bool silent = false, const ObjectPtr& user_data = ObjectPtr());
 
-    private:
+    protected:
+        //! Internal shorter name for handler interface.
         using HandlerType = ReactiveTCPServerHandlerInterface;
 
+    private:
         // Description of an accept request.
         class TSCOREDLL AcceptRequest: public Object
         {
@@ -127,7 +129,7 @@ namespace ts {
         std::shared_ptr<IOSB> _pending_close {};   // Close request, waiting for asynchronous I/O to complete.
 
         // Inherited methods.
-        virtual void processCompletedIO() override;
+        virtual void processQueuedOperations() override;
         virtual void handleReadReady(Reactor&, EventId, int) override;
         virtual void handleAsynchronousIO(Reactor&, EventId, IOSB&, size_t) override;
     };

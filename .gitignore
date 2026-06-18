@@ -24,6 +24,7 @@ Debug-*/
 *.dll
 .DS_Store
 *.dylib
+enc_temp_folder
 .envrc
 *.exe
 *.gcov
@@ -42,6 +43,7 @@ ipch
 *.obj
 *.opensdf
 *.out
+perf.data*
 *.pkg
 *.pro.user
 *.pro.user.*
@@ -73,4 +75,3 @@ vgcore.*
 .vs
 x64
 *.zip
-perf.data*

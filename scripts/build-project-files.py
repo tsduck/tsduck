@@ -197,29 +197,18 @@ with open(ms_dir + '/tsduck.sln', 'w', encoding = 'utf-8-sig', newline = '\r\n')
 
     f.write('Global\n')
     f.write('\tGlobalSection(SolutionConfigurationPlatforms) = preSolution\n')
-    f.write('\t\tDebug|Win32 = Debug|Win32\n')
-    f.write('\t\tDebug|x64 = Debug|x64\n')
-    f.write('\t\tDebug|ARM64 = Debug|ARM64\n')
-    f.write('\t\tRelease|Win32 = Release|Win32\n')
-    f.write('\t\tRelease|x64 = Release|x64\n')
-    f.write('\t\tRelease|ARM64 = Release|ARM64\n')
+    for configuration in ['Release', 'Debug', 'ASan']:
+        for platform in ['x64', 'Win32', 'ARM64']:
+            f.write('\t\t%s|%s = %s|%s\n' % (configuration, platform, configuration, platform))
     f.write('\tEndGlobalSection\n')
     f.write('\tGlobalSection(ProjectConfigurationPlatforms) = postSolution\n')
 
     for name in others + plugins + tools:
         guid = get_guid(name)
-        f.write('\t\t{%s}.Debug|Win32.ActiveCfg = Debug|Win32\n' % (guid))
-        f.write('\t\t{%s}.Debug|Win32.Build.0 = Debug|Win32\n' % (guid))
-        f.write('\t\t{%s}.Debug|x64.ActiveCfg = Debug|x64\n' % (guid))
-        f.write('\t\t{%s}.Debug|x64.Build.0 = Debug|x64\n' % (guid))
-        f.write('\t\t{%s}.Debug|ARM64.ActiveCfg = Debug|ARM64\n' % (guid))
-        f.write('\t\t{%s}.Debug|ARM64.Build.0 = Debug|ARM64\n' % (guid))
-        f.write('\t\t{%s}.Release|Win32.ActiveCfg = Release|Win32\n' % (guid))
-        f.write('\t\t{%s}.Release|Win32.Build.0 = Release|Win32\n' % (guid))
-        f.write('\t\t{%s}.Release|x64.ActiveCfg = Release|x64\n' % (guid))
-        f.write('\t\t{%s}.Release|x64.Build.0 = Release|x64\n' % (guid))
-        f.write('\t\t{%s}.Release|ARM64.ActiveCfg = Release|ARM64\n' % (guid))
-        f.write('\t\t{%s}.Release|ARM64.Build.0 = Release|ARM64\n' % (guid))
+        for configuration in ['Release', 'Debug', 'ASan']:
+            for platform in ['x64', 'Win32', 'ARM64']:
+                f.write('\t\t{%s}.%s|%s.ActiveCfg = %s|%s\n' % (guid, configuration, platform, configuration, platform))
+                f.write('\t\t{%s}.%s|%s.Build.0 = %s|%s\n' % (guid, configuration, platform, configuration, platform))
 
     f.write('\tEndGlobalSection\n')
     f.write('\tGlobalSection(SolutionProperties) = preSolution\n')

@@ -68,7 +68,7 @@ ts::ErrorCommands::ErrorCommands(CommandLine& cmdline, int flags)
 {
     Args* cmd = cmdline.command(u"error", u"Interpret system error code", u"[options] code", flags);
     cmdline.setCommandLineHandler(this, &ErrorCommands::error, u"error");
-    cmd->option(u"", 0, Args::INT32);
+    cmd->option(u"", 0, Args::INT64, 0, Args::UNLIMITED_COUNT);
     cmd->help(u"", u"Error code values.");
     cmd->option(u"category", 'c', _category_names);
     cmd->help(u"category", u"C++ category (std::error_category).");
@@ -85,10 +85,16 @@ ts::CommandStatus ts::ErrorCommands::error(const UString& command, Args& args)
     std::vector<int> codes;
     args.getIntValues(codes, u"");
 
-    const auto category = _categories.find(args.intValue<Category>(u"category", SYSTEM));
-    if (category == _categories.end()) {
-        args.error(u"invalid category");
-        return CommandStatus::ERROR;
+    const std::error_category* category = nullptr;
+    if (args.present(u"category")) {
+        Category cat = SYSTEM;
+        args.getIntValue(cat, u"category");
+        const auto it = _categories.find(cat);
+        if (it == _categories.end()) {
+            args.error(u"invalid category");
+            return CommandStatus::ERROR;
+        }
+        category = it->second;
     }
 
 #if defined(TS_WINDOWS)
@@ -105,7 +111,7 @@ ts::CommandStatus ts::ErrorCommands::error(const UString& command, Args& args)
 #endif
         }
         else {
-            message = UString(SysErrorCodeMessage(code, *category->second));
+            message = UString(SysErrorCodeMessage(code, category));
         }
         std::cout << UString::Format(u"%X: \"%s\"", code, message) << std::endl;
     }
@@ -910,7 +916,7 @@ ts::CommandStatus ts::ServerCommands::server(const UString& command, Args& args)
             }
 
             // Send a "no data" response.
-            telnet.sendLine(u"HTTP/1.1 204 No Content");
+            telnet.sendLine(u"HTTP/1.0 204 No Content");
             telnet.sendLine("Server: TSDuck");
             telnet.sendLine("Connection: close");
             telnet.sendLine(u"");
@@ -985,7 +991,7 @@ ts::CommandStatus ts::ClientCommands::client(const UString& command, Args& args)
     headers.push_front(u"Connection: close");
     headers.push_front(u"User-Agent: TSDuck");
     headers.push_front(u"Host: " + _tls_args.server_name);
-    headers.push_front(request + u" HTTP/1.1");
+    headers.push_front(request + u" HTTP/1.0");
     headers.push_back(u"");
 
     auto status = CommandStatus::SUCCESS;

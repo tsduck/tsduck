@@ -15,11 +15,11 @@
 
 #pragma once
 #include "tsTCPConnection.h"
-#include "tsTLSArgs.h"
+#include "tsTLSConnectionBase.h"
 
 namespace ts {
     //!
-    //! Base class for a TLS session.
+    //! SSL/TLS connected socket, for data communication.
     //! @ingroup libtscore net
     //!
     //! This class is used in two contexts:
@@ -36,15 +36,10 @@ namespace ts {
     //! - https://pinning-test.badssl.com/
     //! - see more details at https://badssl.com/
     //!
-    class TSCOREDLL TLSConnection: public TCPConnection
+    class TSCOREDLL TLSConnection: public TCPConnection, public TLSConnectionBase
     {
         TS_NOCOPY(TLSConnection);
     public:
-        //!
-        //! Reference to the superclass.
-        //!
-        using SuperClass = TCPConnection;
-
         //!
         //! Constructor.
         //! @param [in] report Where to report errors. The @a report object must remain valid as long as this object
@@ -75,33 +70,6 @@ namespace ts {
         //!
         TLSConnection(ReporterBase* delegate, const TLSArgs& args) : TLSConnection(delegate) { setArgs(args); }
 
-        //!
-        //! Set command line arguments for the client.
-        //! @param [in] args TLS arguments.
-        //!
-        void setArgs(const TLSArgs& args);
-
-        //!
-        //! Check if the peer's certificate shall be verified.
-        //! @param [in] on If true, the peer's certificate will be verified.
-        //!
-        void setVerifyPeer(bool on) { _verify_peer = on; }
-
-        //!
-        //! For a client connection, specify the server name to be used in SNI (Server Name Indication).
-        //! @param [in] server_name Main server name, as specified in SNI (Server Name Indication).
-        //! Also used to verify the server's certificate when setVerifyPeer() is true.
-        //!
-        void setServerName(const UString& server_name);
-
-        //!
-        //! For a client connection, add another accepted host name for the server's certificate verification during connect().
-        //! The list is reset by setVerifyServer().
-        //! @param [in] name Additional accepted host name used to verify the server's certificate.
-        //! @see setVerifyServer()
-        //!
-        void addVerifyServer(const UString& name);
-
         // Inherited methods.
         virtual ~TLSConnection() override;
         virtual bool connect(const IPSocketAddress&, IOSB* = nullptr) override;
@@ -128,14 +96,12 @@ namespace ts {
         class SystemGuts;
         SystemGuts* _guts = nullptr;
 
-        // Common properties.
-        bool        _verify_peer = false;
-        UString     _server_name {};
-        UStringList _additional_names {};
-
         // Allocate and deallocate guts (depend on implementations).
         void allocateGuts();
         void deleteGuts();
+
+        // TLSConnection must use blocking I/O. Use ReactiveTLSConnection in reactor environment.
+        bool checkBlocking();
 
         // Pass information from server accepting new clients.
         // The parameter is:

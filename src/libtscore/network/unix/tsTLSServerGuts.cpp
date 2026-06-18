@@ -11,7 +11,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsTLSServer.h"
-#include "tsOpenSSL.h"
+#include "tsOpenSSLCertificate.h"
 
 
 //----------------------------------------------------------------------------
@@ -36,20 +36,14 @@ bool ts::TLSServer::closeImplementation(bool silent) TS_NOT_IMPL
 // System-specific parts are stored in a private structure.
 //----------------------------------------------------------------------------
 
-class ts::TLSServer::SystemGuts: public OpenSSL::Controlled
+class ts::TLSServer::SystemGuts
 {
     TS_NOBUILD_NOCOPY(SystemGuts);
 public:
-    // Constructor and destructor.
     SystemGuts(TLSServer* s) : serv(s) {}
-    virtual ~SystemGuts() override;
 
-    // Implementation of OpenSSL::Controlled.
-    virtual void terminate() override;
-
-    // OpenSSL parameters.
     TLSServer* serv;
-    SSL_CTX* ssl_ctx = nullptr;
+    OpenSSLCertificate cert {serv};
 };
 
 
@@ -67,19 +61,6 @@ void ts::TLSServer::deleteGuts()
     delete _guts;
 }
 
-ts::TLSServer::SystemGuts::~SystemGuts()
-{
-    SystemGuts::terminate();
-}
-
-void ts::TLSServer::SystemGuts::terminate()
-{
-    if (ssl_ctx != nullptr) {
-        SSL_CTX_free(ssl_ctx);
-        ssl_ctx = nullptr;
-    }
-}
-
 
 //----------------------------------------------------------------------------
 // Start the server
@@ -87,46 +68,7 @@ void ts::TLSServer::SystemGuts::terminate()
 
 bool ts::TLSServer::listen(int backlog)
 {
-    // We need a certificate and a key.
-    const UString certificate_path(getCertificatePath());
-    const UString key_path(getKeyPath());
-    if (certificate_path.empty()) {
-        report().error(u"no certificate set in TLS server");
-        return false;
-    }
-    if (key_path.empty()) {
-        report().error(u"no private key set in TLS server");
-        return false;
-    }
-
-    // Cleanup previous SSL context, if any.
-    if (_guts->ssl_ctx != nullptr) {
-        SSL_CTX_free(_guts->ssl_ctx);
-    }
-
-    // Create SSL server context.
-    if ((_guts->ssl_ctx = OpenSSL::CreateContext(true, false, report())) == nullptr) {
-        report().error(u"error creating TLS server context");
-        OpenSSL::ReportErrors(report());
-        return false;
-    }
-
-    // Load certificate file (public key).
-    if (SSL_CTX_use_certificate_file(_guts->ssl_ctx, certificate_path.toUTF8().c_str(), SSL_FILETYPE_PEM) <= 0) {
-        report().error(u"error loading TLS certificate file %s", certificate_path);
-        OpenSSL::ReportErrors(report());
-        return false;
-    }
-
-    // Load private key file.
-    if (SSL_CTX_use_PrivateKey_file(_guts->ssl_ctx, key_path.toUTF8().c_str(), SSL_FILETYPE_PEM) <= 0) {
-        report().error(u"error loading TLS private key file %s", key_path);
-        OpenSSL::ReportErrors(report());
-        return false;
-    }
-
-    // Create the TCP server.
-    return SuperClass::listen(backlog);
+    return _guts->cert.initServerCertificate(*this) && TCPServer::listen(backlog);
 }
 
 
@@ -136,29 +78,18 @@ bool ts::TLSServer::listen(int backlog)
 
 bool ts::TLSServer::acceptTLS(TLSConnection& client, IPSocketAddress& addr, IOSB* iosb)
 {
-    // Check that the application uses the right blocking mode.
-    if (!checkNonBlocking(iosb, u"TLSServer::acceptTLS")) {
-        return false;
-    }
-
-    if (isNonBlocking()) {
-        //@@@ to be implemented.
-        report().error(u"non-blocking TLS is not yet implemented");
-        return false;
-    }
-
-    if (_guts->ssl_ctx == nullptr) {
+    if (!_guts->cert.isValid()) {
         report().error(u"TLS server is not listening");
         return false;
     }
 
     // Accept one TCP client.
-    if (!SuperClass::accept(client, addr, iosb)) {
+    if (!TCPServer::accept(client, addr, iosb)) {
         return false;
     }
 
     // Create an SSL context for that connection.
-    SSL* ssl = SSL_new(_guts->ssl_ctx);
+    SSL* ssl = SSL_new(_guts->cert.getCertificate());
     const UChar* error = nullptr;
     if (ssl == nullptr) {
         error = u"error creating TLS client context";
@@ -196,8 +127,8 @@ bool ts::TLSServer::acceptTLS(TLSConnection& client, IPSocketAddress& addr, IOSB
 
 bool ts::TLSServer::closeImplementation(bool silent)
 {
-    _guts->terminate();
-    return SuperClass::closeImplementation(silent);
+    _guts->cert.terminate();
+    return TCPServer::closeImplementation(silent);
 }
 
 #endif // TS_NO_OPENSSL

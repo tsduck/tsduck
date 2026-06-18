@@ -167,6 +167,17 @@ namespace ts {
     TSCOREDLL UString HTTPStatusText(int status);
 
     //------------------------------------------------------------------------
+    // Transport Layer Security (TLS), formerly SSL.
+    //------------------------------------------------------------------------
+
+    //!
+    //! Maximum size of a TLS packet.
+    //! Max TLS message size is 2^14 (16384).
+    //! Extra overhead includes header/mac/padding (overestimated at 512).
+    //!
+    constexpr size_t TLS_MAX_PACKET_SIZE = 16384 + 512;
+
+    //------------------------------------------------------------------------
     // VLAN encapsulation.
     //------------------------------------------------------------------------
 

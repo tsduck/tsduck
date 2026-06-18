@@ -49,30 +49,33 @@ namespace ts {
         //!
         ReactiveTCPInputControl() = default;
         //!
-        //! On return, the handler sets the number of bytes which were used in @a used_size. If the returned value
-        //! of @a used_size is less than the input data size, the remaining unused data stay in the input buffer
-        //! and will be present at the beginning of the @a data buffer the next time this handler will be called.
+        //! Reset the content to the original values, suitable for processing an input buffer.
+        //! 
+        void reset();
         //!
-        //! On input, @a used_size is set to some value equal to or greater than the input data size, meaning that
-        //! it is assumed that then handler uses the entire buffer. This means that @a used_size needs to be updated
-        //! only if the handler doesn't use all input data in the buffer.
+        //! Number of used bytes in the handler.
+        //! In input, @a used_size is unset. On return, the handler may set the number of bytes which were used
+        //! in @a used_size. If the returned value of @a used_size is less than the input data size, the remaining
+        //! unused data stay in the input buffer and will be present at the beginning of the @a data buffer the
+        //! next time this handler will be called. If @a used_size is left unset, all input data are assumed to
+        //! be used by the handler.
         //!
-        size_t used_size = NPOS;
+        std::optional<size_t> used_size {};
         //!
-        //! On return, the handler can specify in @a min_next_size the minimum data size to receive before being
-        //! called again. This is the minimum size of the data buffer, including remaining unused data when
-        //! @a used_size is set to a value lower that @a data size. This means that if @a min_next_size is less than
-        //! the remaining unused bytes in the buffer, the handler will be immediately called again on return.
+        //! Minimum data size for next call.
+        //! In input, @a min_next_size is unset. On return, the handler can specify in @a min_next_size the minimum
+        //! data size to receive before being called again. This is the minimum size of the data buffer, including
+        //! remaining unused data when @a used_size is set to a value lower that @a data size. This means that if
+        //! @a min_next_size is less than the remaining unused bytes in the buffer, the handler will be immediately
+        //! called again on return.
         //!
-        //! On input, @a min_next_size is set to zero, meaning that the handler will be called when any amount of data
-        //! is available, including unused bytes if @a used_size is less than @a data size.
+        std::optional<size_t> min_next_size {};
         //!
-        size_t min_next_size = 0;
+        //! Required end-of-message delimiter for next call.
+        //! In input, @a next_delimiter is unset. On return, if @a next_delimiter is set, its value is used as a
+        //! delimiter for the next message. This means that the handler will be called again only when input data
+        //! contains the corresponding byte value, including unused bytes if @a used_size is less than @a data size.
         //!
-        //! If @a next_min_size is set to @a NPOS, the returned byte value in @a next_delimiter is used as a delimiter
-        //! for the next message. This means that the handler will be called again only when input data contains the
-        //! corresponding byte value, including unused bytes if @a used_size is less than @a data size.
-        //!
-        uint8_t next_delimiter = 0;
+        std::optional<uint8_t> next_delimiter {};
     };
 }

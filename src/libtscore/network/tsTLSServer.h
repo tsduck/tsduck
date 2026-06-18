@@ -13,7 +13,7 @@
 
 #pragma once
 #include "tsTCPServer.h"
-#include "tsTLSArgs.h"
+#include "tsTLSServerBase.h"
 #include "tsTLSConnection.h"
 
 namespace ts {
@@ -54,15 +54,10 @@ namespace ts {
     //! openssl s_client -showcerts -servername <name> -connect <name>:<port> </dev/null | openssl x509 -noout -text
     //! @endcode
     //!
-    class TSCOREDLL TLSServer: public TCPServer
+    class TSCOREDLL TLSServer: public TCPServer, public TLSServerBase
     {
         TS_NOCOPY(TLSServer);
     public:
-        //!
-        //! Reference to the superclass.
-        //!
-        using SuperClass = TCPServer;
-
         //!
         //! Constructor.
         //! @param [in] report Where to report errors. The @a report object must remain valid as long as this object
@@ -93,58 +88,6 @@ namespace ts {
         //!
         TLSServer(ReporterBase* delegate, const TLSArgs& args) : TLSServer(delegate) { setArgs(args); }
 
-        //!
-        //! Set command line arguments for the server.
-        //! @param [in] args TLS arguments.
-        //!
-        void setArgs(const TLSArgs& args);
-
-        //!
-        //! Set the certificate path for the server.
-        //! @param [in] path Path to the certificate.
-        //! - On UNIX systems (with OpenSSL), this is the path name of the certificate file in PEM format.
-        //! - On Windows, this is the name of a certificate, either its "friendly name", its subject name (without "CN="), its DNS name.
-        //!
-        void setCertificatePath(const UString& path) { _certificate_path = path; }
-
-        //!
-        //! Get the certificate path for the server.
-        //! @return A constant reference to the path to the certificate.
-        //! @see setCertificatePath()
-        //!
-        const UString& getCertificatePath() const { return _certificate_path; }
-
-        //!
-        //! Set the private key path for the server.
-        //! @param [in] path Path to the private key.
-        //! - On UNIX systems (with OpenSSL), this is the path name of the private key file in PEM format.
-        //! - On Windows, the private key is retrieved with the certificate and this parameter is unused.
-        //!
-        void setKeyPath(const UString& path) { _key_path = path; }
-
-        //!
-        //! Get the private key path for the server.
-        //! @return A constant reference to the path to the private key.
-        //! @see setKeyPath()
-        //!
-        const UString& getKeyPath() const { return _key_path; }
-
-        //!
-        //! Set the certificate store.
-        //! @param [in] name
-        //! - On UNIX systems (with OpenSSL), this parameter is unused.
-        //! - On Windows, the possible values are "system" (<code>Cert:\\LocalMachine\\My</code>)
-        //!   and "user" (<code>Cert:\\CurrentUser\\My</code>). The default is "user".
-        //!
-        void setCertificateStore(const UString& name) { _certificate_store = name; }
-
-        //!
-        //! Get the certificate store.
-        //! @return A constant reference to the name of the certificate store.
-        //! @see setCertificateStore()
-        //!
-        const UString& getCertificateStore() const { return _certificate_store; }
-
         // Inherited methods.
         virtual ~TLSServer() override;
         virtual bool listen(int backlog) override;
@@ -159,11 +102,6 @@ namespace ts {
         // This is done to avoid inclusion of specialized headers in this public file.
         class SystemGuts;
         SystemGuts* _guts = nullptr;
-
-        // Common properties.
-        UString _certificate_store {};
-        UString _certificate_path {};
-        UString _key_path {};
 
         // Allocate and deallocate guts (depend on implementations).
         void allocateGuts();

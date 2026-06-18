@@ -64,8 +64,7 @@ public:
     // Implementation of OpenSSL::Controlled.
     virtual void terminate() override;
 
-    // OpenSSL parameters. SSL_shutdown() shall be called up to tso times,
-    // until the two-way shutdown is complete.
+    // OpenSSL parameters. SSL_shutdown() shall be called up to two times, until the two-way shutdown is complete.
     TLSConnection* conn;
     SSL_CTX*       ssl_ctx = nullptr;
     SSL*           ssl = nullptr;
@@ -135,7 +134,7 @@ bool ts::TLSConnection::SystemGuts::abort(const UString& message)
     }
     OpenSSL::ReportErrors(conn->report());
     terminate();
-    conn->SuperClass::disconnect(true);
+    conn->TCPConnection::disconnect(true);
     return false;
 }
 
@@ -147,13 +146,7 @@ bool ts::TLSConnection::SystemGuts::abort(const UString& message)
 bool ts::TLSConnection::connect(const IPSocketAddress& addr, IOSB* iosb)
 {
     // Check that the application uses the right blocking mode.
-    if (!checkNonBlocking(iosb, u"TLSConnection::connect")) {
-        return false;
-    }
-
-    if (isNonBlocking()) {
-        //@@@ to be implemented.
-        report().error(u"non-blocking TLS is not yet implemented");
+    if (!checkBlocking()) {
         return false;
     }
 
@@ -161,7 +154,7 @@ bool ts::TLSConnection::connect(const IPSocketAddress& addr, IOSB* iosb)
     _guts->terminate();
 
     // Create SSL client context.
-    if ((_guts->ssl_ctx = OpenSSL::CreateContext(false, _verify_peer, report())) == nullptr) {
+    if ((_guts->ssl_ctx = OpenSSL::CreateContext(false, verifyPeer(), report())) == nullptr) {
         return false;
     }
 
@@ -171,18 +164,18 @@ bool ts::TLSConnection::connect(const IPSocketAddress& addr, IOSB* iosb)
     }
 
     // Set host name for SNI.
-    if (!_server_name.empty() && !::SSL_set_tlsext_host_name(_guts->ssl, _server_name.toUTF8().c_str())) {
+    if (!serverName().empty() && !::SSL_set_tlsext_host_name(_guts->ssl, serverName().toUTF8().c_str())) {
         return _guts->abort(u"error setting TLS SNI server name (SSL_set_tlsext_host_name)");
     }
 
     // Set DNS names for verification of the server's certificate.
-    if (_verify_peer && !_server_name.empty()) {
+    if (verifyPeer() && !serverName().empty()) {
         // Set main server name.
-        if (!::SSL_set1_host(_guts->ssl, _server_name.toUTF8().c_str())) {
+        if (!::SSL_set1_host(_guts->ssl, serverName().toUTF8().c_str())) {
             return _guts->abort(u"error setting TLS server name (SSL_set1_host)");
         }
         // Set additional names.
-        for (const auto& name : _additional_names) {
+        for (const auto& name : additionalServerNames()) {
             if (!name.empty() && !::SSL_add1_host(_guts->ssl, name.toUTF8().c_str())) {
                 return _guts->abort(u"error setting TLS additional server name (SSL_add1_host)");
             }
@@ -190,7 +183,7 @@ bool ts::TLSConnection::connect(const IPSocketAddress& addr, IOSB* iosb)
     }
 
     // Perform a TCP connection.
-    if (!SuperClass::connect(addr, iosb)) {
+    if (!TCPConnection::connect(addr, iosb)) {
         return _guts->abort();
     }
 
@@ -250,7 +243,7 @@ bool ts::TLSConnection::closeWriter(bool silent)
     }
 
     // Call superclass in all cases.
-    return SuperClass::closeWriter(silent) && success;
+    return TCPConnection::closeWriter(silent) && success;
 }
 
 
@@ -282,7 +275,7 @@ bool ts::TLSConnection::disconnect(bool silent)
     }
 
     // Call superclass in all cases.
-    return SuperClass::disconnect(silent) && success;
+    return TCPConnection::disconnect(silent) && success;
 }
 
 
@@ -293,13 +286,7 @@ bool ts::TLSConnection::disconnect(bool silent)
 bool ts::TLSConnection::send(const void* data, size_t size, IOSB* iosb)
 {
     // Check that the application uses the right blocking mode.
-    if (!checkNonBlocking(iosb, u"TLSConnection::send")) {
-        return false;
-    }
-
-    if (isNonBlocking()) {
-        //@@@ to be implemented.
-        report().error(u"non-blocking TLS is not yet implemented");
+    if (!checkBlocking()) {
         return false;
     }
 
@@ -331,13 +318,7 @@ bool ts::TLSConnection::send(const void* data, size_t size, IOSB* iosb)
 bool ts::TLSConnection::receive(void* buffer, size_t max_size, size_t& ret_size, const AbortInterface* abort, IOSB* iosb)
 {
     // Check that the application uses the right blocking mode.
-    if (!checkNonBlocking(iosb, u"TLSConnection::receive")) {
-        return false;
-    }
-
-    if (isNonBlocking()) {
-        //@@@ to be implemented.
-        report().error(u"non-blocking TLS is not yet implemented");
+    if (!checkBlocking()) {
         return false;
     }
 

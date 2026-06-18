@@ -108,6 +108,14 @@ namespace ts {
         TSCOREDLL void copy(const void* data, size_type size);
 
         //!
+        //! Replace the content of a byte block from another byte block.
+        //! @param [in] bb Copy data from this byte block.
+        //! @param [in] start Start index in @a bb. Copy nothing if after end of @a bb.
+        //! @param [in] count Number of bytes to copy. Extra bytes afet end of @a bb are ignored.
+        //!
+        TSCOREDLL void copy(const ByteBlock& bb, size_type start = 0, size_type count = NPOS);
+
+        //!
         //! Remove 'size' elements at index 'first'.
         //! The STL equivalent uses iterators, not indices.
         //! @param [in] first Index of the first byte to erase.
@@ -135,13 +143,12 @@ namespace ts {
         }
 
         //!
-        //! Append a byte block to a byte block.
-        //! @param [in] bb Byte block to append.
+        //! Append a slice of a byte block to a byte block.
+        //! @param [in] bb Append data from this byte block.
+        //! @param [in] start Start index in @a bb. Copy nothing if after end of @a bb.
+        //! @param [in] count Number of bytes to copy. Extra bytes afet end of @a bb are ignored.
         //!
-        void append(const ByteBlock& bb)
-        {
-            append(bb.data(), bb.size());
-        }
+        TSCOREDLL void append(const ByteBlock& bb, size_type start = 0, size_type count = NPOS);
 
         //!
         //! Append a string to a byte block.

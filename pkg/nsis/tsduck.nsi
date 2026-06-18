@@ -161,6 +161,7 @@ Section "Tools & Plugins" SectionTools
     File "${BinDir}\ts*.dll"
     File "${BinDir}\ts*.xml"
     File "${BinDir}\ts*.names"
+    File "${RootDir}\scripts\tscleanuptempkeys.ps1"
 
 SectionEnd
 

@@ -15,7 +15,7 @@
 //----------------------------------------------------------------------------
 
 ts::ReactiveTCPConnection::ReactiveTCPConnection(Reactor& reactor, TCPConnection& socket, Object* owner) :
-    ReactiveBase(reactor, socket, owner),
+    ReactiveSocketBase(reactor, socket, owner),
     _socket(socket)
 {
 }
@@ -39,7 +39,7 @@ ts::ReactiveTCPConnection::CloseRequest::~CloseRequest() {}
 // Process completed I/O operations.
 //----------------------------------------------------------------------------
 
-void ts::ReactiveTCPConnection::processCompletedIO()
+void ts::ReactiveTCPConnection::processQueuedOperations()
 {
     reactor().trace(u"ReactiveTCPConnection: processing %d completed I/O", _completed_io.size());
 
@@ -170,7 +170,7 @@ bool ts::ReactiveTCPConnection::startConnect(ReactiveTCPConnectionHandlerInterfa
         else {
             // Connection already completed. Enqueue for processing.
             _completed_io.push_back(iosb);
-            return signalCompletedIO();
+            return signalQueuedOperations();
         }
     }
 
@@ -223,7 +223,7 @@ bool ts::ReactiveTCPConnection::startSend(ReactiveTCPConnectionHandlerInterface*
 
 
 //----------------------------------------------------------------------------
-// Start closing the send direction of the socket.b
+// Start closing the send direction of the socket.
 //----------------------------------------------------------------------------
 
 bool ts::ReactiveTCPConnection::startCloseWriter(ReactiveTCPConnectionHandlerInterface* handler, bool silent, const ObjectPtr& user_data)
@@ -246,7 +246,7 @@ bool ts::ReactiveTCPConnection::startCloseWriter(ReactiveTCPConnectionHandlerInt
     if (_pending_send.empty()) {
         // No pending send request, directly enqueue in completed I/O.
         _completed_io.push_back(iosb);
-        return signalCompletedIO();
+        return signalQueuedOperations();
     }
     else {
         // Will be executed after all pending requests.
@@ -284,7 +284,7 @@ void ts::ReactiveTCPConnection::handleWriteReady(Reactor& reactor, EventId id, i
         _pending_connect.reset();
 
         // In case of connection error, nothing can be sent.
-        if (error_code != SYS_SUCCESS) {
+        if (!SysSuccess(error_code)) {
             _pending_send.clear();
             return;
         }
@@ -349,7 +349,7 @@ void ts::ReactiveTCPConnection::handleWriteReady(Reactor& reactor, EventId id, i
     }
 
     // Now process all completed sent messages.
-    processCompletedIO();
+    processQueuedOperations();
 
     // When no more pending send operation, stop being notified of send-ready.
     if (_pending_connect == nullptr && _pending_send.empty()) {
@@ -364,6 +364,8 @@ void ts::ReactiveTCPConnection::handleWriteReady(Reactor& reactor, EventId id, i
 
 bool ts::ReactiveTCPConnection::startReceive(ReactiveTCPConnectionHandlerInterface* handler, size_t buffer_size, const ObjectPtr& user_data)
 {
+    reactor().trace(u"reactive TCP: start receive");
+
     // Unlike send operation, the handler cannot be null because there is no other way to get received data.
     if (handler == nullptr) {
         report().error(u"internal error: null handler in ReactiveTCPConnection::startReceive");
@@ -438,11 +440,8 @@ void ts::ReactiveTCPConnection::handleReadReady(Reactor& reactor, EventId id, in
             // Receive error.
             req->new_data = true;
             _pending_receive->error_code = LastSysErrorCode();
-            // Report the error to the application.
-            processReceiveBuffer(_pending_receive, req);
-            // Stop receiving.
-            _pending_receive.reset();
-            deactivateReadReady(true);
+            // Report the error to the application. This will also stop reception.
+            processReceiveBuffer();
         }
         else if (_pending_receive->pending) {
             // No receive is possible now, retry later on read-notification.
@@ -455,12 +454,12 @@ void ts::ReactiveTCPConnection::handleReadReady(Reactor& reactor, EventId id, in
             // Successfully receiving zero means end of connection.
             _pending_receive->error_code = retsize == 0 ? SYS_EOF : SYS_SUCCESS;
             // Let the application process the buffer.
-            processReceiveBuffer(_pending_receive, req);
+            processReceiveBuffer();
         }
     }
 
     // Process any completed I/O.
-    processCompletedIO();
+    processQueuedOperations();
 }
 
 
@@ -468,66 +467,79 @@ void ts::ReactiveTCPConnection::handleReadReady(Reactor& reactor, EventId id, in
 // Process receive buffer in the context of a Reactor handler.
 //----------------------------------------------------------------------------
 
-void ts::ReactiveTCPConnection::processReceiveBuffer(const std::shared_ptr<IOSB>& iosb, const std::shared_ptr<ReceiveRequest>& req)
+void ts::ReactiveTCPConnection::processReceiveBuffer()
 {
+    assert(_pending_receive != nullptr);
+    auto req = std::dynamic_pointer_cast<ReceiveRequest>(_pending_receive->react_data);
+    assert(req != nullptr);
+
     // Mark the buffer as processed.
     req->new_data = false;
 
+    // Resize the data buffer to the exact received size for the handler.
+    // Keep the previous size, will restore it later, hoping that there will be no reallocation / memory move.
+    const size_t previous_size = req->data.size();
+    req->data.resize(req->next_read);
+
     // Loop on calls to handler, when the handler uses only a part of the buffer.
-    for (;;) {
+    processReceiveBuffer(req->data, req->control, req->handler, _pending_receive->error_code, _pending_receive->app_data);
 
-        // Check if we have the required condition to call the handler.
-        // Always call the handler once in case of error.
-        bool call_handler = iosb->error_code != SYS_SUCCESS;
-        if (!call_handler) {
-            // Check user-requested conditions.
-            if (req->control.min_next_size == NPOS) {
-                // Need a specific delimiter byte in the received data.
-                call_handler = req->data.find(req->control.next_delimiter, 0, req->next_read) != NPOS;
-            }
-            else {
-                // Need a minimum amount of received data.
-                call_handler = req->next_read > 0 && req->next_read >= req->control.min_next_size;
-            }
+    // If receive buffer processing did not cancel reception.
+    if (_pending_receive != nullptr) {
+        // In case of receive error, cancel receive.
+        if (!SysSuccess(_pending_receive->error_code)) {
+            deactivateReadReady(true);  // non-blocking IO only
+            _pending_receive.reset();
         }
-        if (!call_handler) {
-            break;
+        else {
+            // Restore previous buffer size, hoping that there will be no reallocation / memory move.
+            assert(req == std::dynamic_pointer_cast<ReceiveRequest>(_pending_receive->react_data));
+            assert(previous_size >= req->data.size());
+            req->next_read = req->data.size();
+            req->data.resize(previous_size);
         }
+    }
+}
 
+
+//----------------------------------------------------------------------------
+// Invoke the receive handler as many times as possible on a data buffer.
+//----------------------------------------------------------------------------
+
+void ts::ReactiveTCPConnection::processReceiveBuffer(ByteBlock& data, ReactiveTCPInputControl& control, HandlerType* handler, int error_code, const ObjectPtr& user_data)
+{
+    // Loop on calls to handler, when the handler uses only a part of the buffer.
+    // Check if we have the required condition to call the handler.
+    // Always call the handler once in case of error.
+    while (!SysSuccess(error_code) ||
+           (!data.empty() &&
+            // Need a minimum amount of received data.
+            (!control.min_next_size.has_value() || data.size() >= control.min_next_size.value()) &&
+            // Need a specific delimiter byte in the received data.
+            (!control.next_delimiter.has_value() || data.find(control.next_delimiter.value()) != NPOS)))
+    {
         // Default values for the input control, may be updated later by the handler.
-        req->control.used_size = req->next_read;
-        req->control.min_next_size = 0;
-        req->control.next_delimiter = 0;
-
-        // Resize the data buffer to the exact received size for the handler.
-        // Keep the previous size, will restore it later, hoping that there will be no reallocation / memory move.
-        const size_t previous_size = req->data.size();
-        req->data.resize(req->next_read);
+        control.reset();
 
         // Call the handler with the content of the buffer.
-        assert(req->handler != nullptr);
-        req->handler->handleTCPReceive(*this, req->data, req->control, iosb->error_code, iosb->app_data);
+        if (handler != nullptr) {
+            handler->handleTCPReceive(*this, data, control, error_code, user_data);
+        }
 
-        // In case of receive error, call the handler only once and cancel receive.
-        if (iosb->error_code != SYS_SUCCESS) {
-            deactivateReadReady(true); // non-blocking IO only
-            _pending_receive->reset();
+        // In case of receive error, call the handler only once.
+        if (!SysSuccess(error_code)) {
             break;
         }
 
         // Adjust unread data in the buffer.
-        if (req->control.used_size < req->next_read) {
+        if (control.used_size.value_or(NPOS) < data.size()) {
             // The buffer was not entirely read by the application, compact it.
-            req->data.erase(0, req->control.used_size);
-            req->next_read -= req->control.used_size;
+            data.erase(0, control.used_size.value());
         }
         else {
             // The buffer was entirely read, no need to move memory.
-            req->next_read = 0;
+            data.clear();
         }
-
-        // Restore previous buffer size, hoping that there will be no reallocation / memory move.
-        req->data.resize(previous_size);
     }
 }
 
@@ -539,7 +551,7 @@ void ts::ReactiveTCPConnection::processReceiveBuffer(const std::shared_ptr<IOSB>
 
 void ts::ReactiveTCPConnection::handleAsynchronousIO(Reactor& reactor, EventId id, NonBlockingDevice::IOSB& iosb, size_t io_size)
 {
-    // At this point, we only have an IOSB, not a std::shared_ptr.
+    // At this point, we only have an IOSB, not a std::shared_ptr<IOSB>.
     // Our custom request is in the react_data of the IOSB.
     std::shared_ptr<ConnectRequest> conn;
     std::shared_ptr<ReceiveRequest> recv;
@@ -553,7 +565,7 @@ void ts::ReactiveTCPConnection::handleAsynchronousIO(Reactor& reactor, EventId i
         }
         else {
             // Update the request result.
-            if (_pending_connect->error_code == SYS_SUCCESS && !_socket.setConnectStatus(&iosb, _pending_connect->error_code)) {
+            if (SysSuccess(_pending_connect->error_code) && !_socket.setConnectStatus(&iosb, _pending_connect->error_code)) {
                 _pending_connect->error_code = SYS_ERROR;
             }
             // Move the receive request into the completed queue.
@@ -597,16 +609,16 @@ void ts::ReactiveTCPConnection::handleAsynchronousIO(Reactor& reactor, EventId i
         }
         else {
             // Successfully receiving zero means end of connection.
-            if (_pending_receive->error_code == SYS_SUCCESS && io_size == 0) {
+            if (SysSuccess(_pending_receive->error_code) && io_size == 0) {
                 _pending_receive->error_code = SYS_EOF;
             }
             // Update the request result.
             recv->new_data = true;
             recv->next_read = std::min(recv->next_read + io_size, recv->data.size());
             // Directly call processReceiveBuffer() because we are in reactor handler context.
-            processReceiveBuffer(_pending_receive, recv);
+            processReceiveBuffer();
             // Start the next receive operation if necesary.
-            if (_pending_receive == nullptr || _pending_receive->error_code != SYS_SUCCESS || !_socket.isConnected()) {
+            if (_pending_receive == nullptr || !SysSuccess(_pending_receive->error_code) || !_socket.isConnected()) {
                 // There was a receive error or the socket is closed, maybe from a handler, stop receiving.
                 _pending_receive.reset();
             }
@@ -625,11 +637,11 @@ void ts::ReactiveTCPConnection::handleAsynchronousIO(Reactor& reactor, EventId i
         }
     }
     else {
-        report().error(u"unexpected completed asynchronous TCP request, not connect, not send, not receive");
+        report().error(u"unexpected completed asynchronous TCP request, error code: %d, I/O size: %d", iosb.error_code, io_size);
     }
 
     // Process any completed I/O.
-    processCompletedIO();
+    processQueuedOperations();
 }
 
 
@@ -700,5 +712,5 @@ bool ts::ReactiveTCPConnection::startClose(ReactiveTCPConnectionHandlerInterface
 
     // Notify the completion event to call the user's notification in the context of the reactor.
     // If no I/O is in progress, this will complete the close.
-    return signalCompletedIO();
+    return signalQueuedOperations();
 }

@@ -55,30 +55,18 @@ ts::TLSConnection::~TLSConnection()
 
 
 //----------------------------------------------------------------------------
-// Set command line arguments for the client.
+// TLSConnection must use blocking I/O.
 //----------------------------------------------------------------------------
 
-void ts::TLSConnection::setArgs(const TLSArgs& args)
+bool ts::TLSConnection::checkBlocking()
 {
-    setServerName(args.server_name);
-    _verify_peer = !args.insecure;
-}
-
-
-//----------------------------------------------------------------------------
-// For a client connection, specify the server names.
-//----------------------------------------------------------------------------
-
-void ts::TLSConnection::setServerName(const UString& server_name)
-{
-    _server_name = server_name;
-    _additional_names.clear();
-    IPSocketAddress::RemovePort(_server_name);
-}
-
-void ts::TLSConnection::addVerifyServer(const UString& name)
-{
-    _additional_names.push_back(name);
+    if (isNonBlocking()) {
+        report().error(u"internal error: TLSConnection called in non-blocking mode, use ReactiveTLSConnection");
+        return false;
+    }
+    else {
+        return true;
+    }
 }
 
 
@@ -89,5 +77,5 @@ void ts::TLSConnection::addVerifyServer(const UString& name)
 bool ts::TLSConnection::receive(void* buffer, size_t size, const AbortInterface* abort)
 {
     // The superclass implements its fixed-length method using the variable-length method.
-    return SuperClass::receive(buffer, size, abort);
+    return TCPConnection::receive(buffer, size, abort);
 }

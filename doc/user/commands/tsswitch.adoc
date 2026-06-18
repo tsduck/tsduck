@@ -424,6 +424,13 @@ With `--remote-tls`, path to the certificate for the remote control.
 See xref:opt-tls[xrefstyle=short] for more details.
 
 [.opt]
+*--remote-ephemeral-rsa-bits* _value_
+
+[.optdoc]
+With `--remote-tls`, create an ephemeral self-signed certificate for the remote control.
+See xref:opt-tls[xrefstyle=short] for more details.
+
+[.opt]
 *--remote-key-path* _name_
 
 [.optdoc]

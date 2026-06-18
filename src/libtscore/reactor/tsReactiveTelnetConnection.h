@@ -12,7 +12,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsReactiveBase.h"
+#include "tsReactiveSocketBase.h"
 #include "tsReactiveTelnetConnectionHandlerInterface.h"
 #include "tsReactiveTCPConnection.h"
 
@@ -24,7 +24,7 @@ namespace ts {
     //! The class ReactiveTelnetConnection is a wrapper around ReactiveTCPConnection to handle reactive I/O.
     //!
     class TSCOREDLL ReactiveTelnetConnection:
-        public ReactiveBase,
+        public ReactiveSocketBase,
         private ReactiveTCPConnectionHandlerInterface,
         private SocketHandlerInterface
     {

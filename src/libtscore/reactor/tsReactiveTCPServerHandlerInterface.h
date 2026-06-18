@@ -37,7 +37,7 @@ namespace ts {
         //! SYS_ERROR in case of unknown error.
         //! @param [in] user_data The user-data shared pointer which was passed to startAccept().
         //!
-        virtual void handleTCPClientAccepted(ReactiveTCPServer& server, ReactiveTCPConnection& sock, IPSocketAddress& addr, int error_code, const ObjectPtr& user_data);
+        virtual void handleTCPClientAccepted(ReactiveTCPServer& server, ReactiveTCPConnection& sock, const IPSocketAddress& addr, int error_code, const ObjectPtr& user_data);
 
         //!
         //! Handle the completion of closing a TCP server socket.

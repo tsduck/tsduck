@@ -66,6 +66,7 @@
 
 int ts::TranslateError(int code)
 {
+    // On UNIX and Windows, zero is the usual success code, directly equivalent to SYS_SUCCESS.
 #if defined(TS_WINDOWS)
     // Warning: do not use SUCCEEDED(code). It works only on HRESULT values and considers that
     // bit 31 equals to zero means success, which is incorrect for all GetLastError() values.
@@ -90,10 +91,10 @@ int ts::TranslateError(int code)
 // Format a system error code into a string.
 //----------------------------------------------------------------------------
 
-std::string ts::SysErrorCodeMessage(int code, const std::error_category& category)
+std::string ts::SysErrorCodeMessage(int code, const std::error_category* category)
 {
     // With the default category, try the synthetic code first.
-    if (&category == &std::system_category()) {
+    if (category == nullptr) {
         switch (code) {
             case SYS_SUCCESS:  return "success";
             case SYS_ERROR:    return "unknown error";
@@ -105,7 +106,7 @@ std::string ts::SysErrorCodeMessage(int code, const std::error_category& categor
     }
 
     // Standard implementation.
-    return std::error_code(code, category).message();
+    return std::error_code(code, category != nullptr ? *category : std::system_category()).message();
 }
 
 

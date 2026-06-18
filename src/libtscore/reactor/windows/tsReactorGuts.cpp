@@ -443,6 +443,7 @@ void* ts::Reactor::Guts::newAsynchronousIO(ReactorHandlerInterface* handler, Sys
 
 bool ts::Reactor::Guts::cancelAsynchronousIO(EventId id, bool silent)
 {
+    _reactor.trace(u"cancel asynchronous I/O");
     EventData* evd = reinterpret_cast<EventData*>(id._ptr);
     bool success = _reactor.validateEventData(evd, silent);
     if (success) {
@@ -467,6 +468,7 @@ bool ts::Reactor::Guts::cancelAsynchronousIO(EventId id, bool silent)
 
 bool ts::Reactor::Guts::cancelAndWaitAsynchronousIO(EventId id, NonBlockingDevice::IOSB& iosb, bool silent)
 {
+    _reactor.trace(u"cancel and wait asynchronous I/O");
     EventData* evd = reinterpret_cast<EventData*>(id._ptr);
     bool success = _reactor.validateEventData(evd, silent);
     if (success) {
@@ -496,6 +498,7 @@ bool ts::Reactor::Guts::cancelAndWaitAsynchronousIO(EventId id, NonBlockingDevic
 
 bool ts::Reactor::Guts::deleteAsynchronousIO(EventId id, bool silent)
 {
+    _reactor.trace(u"delete asynchronous I/O notification");
     EventData* evd = reinterpret_cast<EventData*>(id._ptr);
     bool success = _reactor.validateEventData(evd, silent);
     if (success) {

@@ -107,8 +107,7 @@ were allowed to connect and send instructions. This filtering is highly recommen
 open environments.
 
 This model is sufficient within the boundaries of a lab, for experimentations.
-As TSDuck was used in production environments, with open networks, these features created
-opportunities for security issues.
+As TSDuck was used in production environments, with open networks, these features created opportunities for security issues.
 Even the white lists of IP addresses are not sufficient to mitigate IP-spoofing attacks.
 
 Therefore, starting with version 3.42, new and more secure mechanisms were introduced.
@@ -120,8 +119,7 @@ The advantages are:
 
 * Use TLS-encrypted connections for confidentiality and integrity.
 * Use tokens for authentication. The clients must provide the right authentication token or they are rejected.
-* Use standard mechanisms which are accessible from the command line using `curl`
-  or any standard Web or REST library.
+* Use standard mechanisms which are accessible from the command line using `curl` or any standard Web or REST library.
 
 [#tls-cert]
 ==== TLS certificates
@@ -130,7 +128,7 @@ Because there is no such thing as a free lunch, these improvements come at a pri
 Specifically, using TLS on the server side requires a X.509 certificate on each server.
 The server must also handle the corresponding asymmetric private key.
 
-There are typically three ways to setup a server certificate.
+There are typically four ways to setup a server certificate.
 In increasing order of ease of use:
 
 1. Use an official certificate that you received from a public Certification Authority (CA).
@@ -139,14 +137,23 @@ In increasing order of ease of use:
    is feasible for tech-savvy administrators. There are multiple online examples using
    OpenSSL commands. Do not forget to add the root certificate of your own CA in the trust
    store of the client machines.
-3. Generate self-signed certificates. This solution is not fully secure. On the client side,
-   the identity of the server cannot be enforced and the connections are vulnerable to
-   "Man-in-the-Middle attacks" (MitM). The option `--insecure` shall be specified
+3. Generate persistent self-signed certificates. This solution is not fully secure.
+   On the client side, the identity of the server cannot be enforced and the connections are
+   vulnerable to "Man-in-the-Middle attacks" (MitM). The option `--insecure` shall be specified
    in the client commands to avoid the validation of the server certificate.
+4. Generate ephemeral self-signed certificates, on the fly, at each execution of a TSDuck
+   command which opens a TLS server. The same security restrictions apply as in the previous case.
+   It is easier because there is no need to use complex commands to generate self-signed certificates.
+   Each server automatically creates its own self-signed certificate on the fly.
 
 The first two solutions shall be used by experienced administrators.
+They provide the best level of security and trust.
 
-Let's review the ways to implement the third solution.
+The fourth solution is activated using options such as `--ephemeral-rsa-bits`.
+This option specifies the size in bits of a new RSA key which is generated on the fly
+and used as the server's private key, using a self-signed certificate for clients.
+
+Let's now review the ways to implement the third solution.
 
 [#sscert-unix]
 ==== Generating self-signed certificates on UNIX systems
@@ -248,6 +255,17 @@ When the expression _"See xref:opt-tls[xrefstyle=short] for more details"_ is me
 (this section), see the description of the corresponding option below, without prefix,
 for instance `--tls` instead of `--remote-tls`.
 
+To determine the type of certificate to use in a TLS server, the following algorithm is used:
+
+* If `--ephemeral-rsa-bits` is specified, use an ephemeral certificate.
+* If any of `--certificate-path`, `--key-path`, `--store` is specified, use the corresponding
+  persistent certificate. On {unix}, `--certificate-path` and `--key-path` are used.
+  On Windows systems, `--certificate-path` and `--store` are used. If only one is specified,
+  the other one is read from its default value in environment variables.
+* If environment variable `TSDUCK_TLS_EPHEMERAL_RSA_BITS` is defined, use an ephemeral certificate.
+* The last alternative is using the persistent certificate as defined by environment variables
+  `TSDUCK_TLS_CERTIFICATE`, `TSDUCK_TLS_KEY`, `TSDUCK_TLS_STORE`.
+
 [.usage]
 Common options for clients and servers
 
@@ -315,6 +333,22 @@ On {unix}, this is the path name of the certificate file in PEM format.
 
 [.optdoc]
 On Windows, this is the "friendly name" or "DNS name" of a certificate in the user or system store.
+
+[.opt]
+*--ephemeral-rsa-bits* _value_
+
+[.optdoc]
+With `--tls`, create an ephemeral self-signed certificate for the server.
+The value specifies the size in bits of the ephemeral RSA key which it generated.
+The default value is the value of environment variable `TSDUCK_TLS_EPHEMERAL_RSA_BITS`.
+
+[.optdoc]
+Keep in mind that ephemeral self-signed certificates are considered as "invalid" or "insecure" by client applications.
+Be sure to disable the verification of the TLS server's certificate on the client side.
+
+[.optdoc]
+By default, the TLS server needs a designated persistent certificate, either using explicit options
+or the corresponding environment variables.
 
 [.opt]
 *--key-path* _name_

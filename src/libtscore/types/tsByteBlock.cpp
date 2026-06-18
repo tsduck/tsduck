@@ -91,6 +91,28 @@ void ts::ByteBlock::copy(const void* data_, size_type size_)
 }
 
 //----------------------------------------------------------------------------
+// Replace the content of a byte block from another byte block.
+//----------------------------------------------------------------------------
+
+void ts::ByteBlock::copy(const ByteBlock& bb, size_type start, size_type count)
+{
+    start = std::min(start, bb.size());
+    count = std::min(bb.size() - start, count);
+    copy(&bb[start], count);
+}
+
+//----------------------------------------------------------------------------
+// Append a slice of a byte block to a byte block.
+//----------------------------------------------------------------------------
+
+void ts::ByteBlock::append(const ByteBlock& bb, size_type start, size_type count)
+{
+    start = std::min(start, bb.size());
+    count = std::min(bb.size() - start, count);
+    append(&bb[start], count);
+}
+
+//----------------------------------------------------------------------------
 // Increase size by n and return pointer to new n-byte area
 //----------------------------------------------------------------------------
 
