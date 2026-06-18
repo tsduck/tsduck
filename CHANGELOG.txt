@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.45-4702 (June 2026)
+VERSION 3.45-4704 (June 2026)
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -11,10 +11,16 @@ VERSION 3.45-4702 (June 2026)
     failing.
   * Plugin  "dektec"  (input):  If channel has LNB capability but should not be
     enabled, we force LNB disabling instead of skipping LNB enabling.
+  * In  commands  which  create  TLS  servers  for which no trusted certificate
+    exists,  it  is  no  longer  necessary  to  create  an external self-signed
+    certificate  using  complex systems commands. It it now possible to request
+    the creation of an ephemeral self-signed certificate in memory.
   * New options in existing commands and plugins:
     - Options  --preserve-units,  --silent-after, --stuffing in plugins "slice"
       and "time".
     - Option --no-lnb-control in input plugin "dektec".
+    - Option --control-ephemeral-rsa-bits in command "tsp".
+    - Option --remote-ephemeral-rsa-bits in command "tsswitch".
 
 [BUG] Bug fixes:
 

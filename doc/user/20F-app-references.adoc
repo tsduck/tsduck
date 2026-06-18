@@ -245,16 +245,27 @@
 
 * [[[ABNT-Docs]]] ABNT technical standards, Brazilian digital terrestrial television system,
   https://forumsbtvd.org.br/legislacao-e-normas-tecnicas/normas-tecnicas-da-tv-digital/english/
+* [[[ABNT-NBR-15603-1]]] ABNT NBR 15603-1, Third edition, February 2023:
+  "Digital terrestrial television – Multiplexing and service information (SI) - Part 1: SI for digital broadcasting systems".
+* [[[ABNT-NBR-15603-2]]] ABNT NBR 15603-2, Sixth edition, February 2023:
+  "Digital terrestrial television — Multiplexing and service information (SI) -
+  Part 2: Data structure and definitions of basic information of SI".
+* [[[ABNT-NBR-15603-3]]] ABNT NBR 15603-3, First edition, Corr. V3, June 2020:
+  "Digital terrestrial television — Multiplexing and service information (SI) —
+  Part 3: Syntaxes and definitions of extension information of SI".
+* [[[ABNT-NBR-15608-3]]] ABNT NBR 15608-3, Sixth edition, February 2023:
+  "Digital terrestrial television — Operational guideline -
+  Part 3: Multiplexing and service information (SI) — Guideline for implementation of ABNT NBR 15603".
 * [[[AOM-AV1]]] Alliance for Open Media (AOM):
   "Carriage of AV1 in MPEG-2 TS", October 2021, https://aomediacodec.github.io/av1-mpeg2-ts/
-* [[[ARIB-B10]]] ARIB STD-B10, V4.6, June 2008:
-  "Service Information for digital broadcasting system" (English version).
+* [[[ARIB-B10]]] ARIB STD-B10, V5.13, December 2019:
+  "Service Information for digital broadcasting system".
 * [[[ARIB-B10J]]] ARIB STD-B10, V5.7, December 2015:
   "Service Information for digital broadcasting system" (Japanese version).
 * [[[ARIB-B16]]] ARIB STD-B16, V1.1, February 1999:
   "Digital receiver commonly used for digital satellite; Broadcasting services using communication satellites" (Japanese version).
 * [[[ARIB-B21]]] ARIB STD-B21, V5.11, December 2019:
-  "Receiver for digital broadcasting" (English version).
+  "Receiver for digital broadcasting".
 * [[[ARIB-B24]]] ARIB STD-B24, V6.4, July 2017:
   "Data Coding and Transmission Specification for Digital Broadcasting".
 * [[[ARIB-B25]]] ARIB STD-B25, V5.0, March 2007:
@@ -267,6 +278,8 @@
   "Receiver for Advanced Wide Band Digital Satellite Broadcasting".
 * [[[ARIB-Docs]]] ARIB standards and technical reports,
   https://www.arib.or.jp/english/std_tr/
+* [[[ARIB-TRB14]]] ARIB TR-B14, V6.7, September 2020:
+  "Operational Guidelines for Digital Terrestrial Television Broadcasting".
 * [[[Astra-LCN]]] SES Astra, July 2015:
   "Logical Channel Numbering (LCN), Technical Specification v2.6"
 * [[[AstroMeta]]] AstroMeta (formerly VATek) corporate home page: https://www.astrometa.com.tw/

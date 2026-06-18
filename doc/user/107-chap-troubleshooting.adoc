@@ -219,3 +219,22 @@ When there is not enough or no null packets, no data can be inserted.
 The more appropriate way to do this depends on the context.
 See the xref:tsp-reference[`tsp` reference documentation] in xref:chap-commands[xrefstyle=short],
 especially the section named xref:inserting-packets["modifying, inserting and deleting packets"].
+
+[#win-ephemeral-keys]
+*On Windows, lots of small files accumulate in `%APPDATA%\Microsoft\Crypto\Keys`*
+
+[.optdoc]
+This is likely due to TSDuck commands which open a TLS server with an ephemeral certificate and
+which were killed before termination. On Windows, it is not possible to create a certificate with
+a key which is in memory only. The key must be in a "named container" (i.e. a file). When the
+application terminates, the key is properly deleted. However, if the application is killed or
+interrupted before its normal termination, the key file remains.
+
+[.optdoc]
+*Solution*: From a PowerShell session, run command `tscleanuptempkeys.ps1`. This is a PowerShell
+script which is installed with TSDuck. It deletes all remaining ephemeral keys which were created
+as ephemeral RSA keys for TLS servers.
+
+[.optdoc]
+*Note*: This problem occurs on Windows only. On {unix}, the ephemeral key and certificate remain
+in memory.
