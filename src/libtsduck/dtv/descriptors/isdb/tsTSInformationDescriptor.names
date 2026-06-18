@@ -1,0 +1,15 @@
+[TS_information_descriptor.tti_type]
+# transmission_type_info, transmission parameter type
+Bits = 2
+0 = Type a
+1 = Type b
+2 = Type c
+3 = Reserved
+
+[TS_information_descriptor.tti_modulation]
+# transmission_type_info, modulation system
+Bits = 2
+0 = 64QAM
+1 = 16QAM
+2 = QPSK
+3 = Reserved

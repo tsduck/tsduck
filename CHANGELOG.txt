@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.45-4704 (June 2026)
+VERSION 3.45-4705 (June 2026)
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -26,6 +26,8 @@ VERSION 3.45-4704 (June 2026)
 
   * Fixed issue #1729:  Frame  rate  was  incorrectly interpreted on MPEG-2 and
     MPEG-1 video streams.
+  * Fixed issue #1730:  On  ISDB-T  systems,  display the interpretation of the
+    transmission_type_info of the TS_information_descriptor.
 
 -------------------------------------------------------------------------------
 

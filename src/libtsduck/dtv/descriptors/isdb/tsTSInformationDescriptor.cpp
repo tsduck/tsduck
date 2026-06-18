@@ -110,7 +110,15 @@ void ts::TSInformationDescriptor::DisplayDescriptor(TablesDisplay& disp, const t
         disp << margin << "TS name: \"" << buf.getString(nlen) << "\"" << std::endl;
 
         for (size_t i1 = 0; buf.canReadBytes(2) && i1 < tcount; ++i1) {
-            disp << margin << UString::Format(u"- Transmission type info: %n", buf.getUInt8()) << std::endl;
+            // According to ARIB STD-B10, Part 2, 6.2.42, the transmission_type_info byte is generic and depends on the transmission system.
+            // For ARIB ISDB-T, the usage is defined in ARIB TR-B14, Fascicle 4, 30.4.3.4.
+            // For ARIB ISDB-S, no usage is defined in ARIB TR-B15 and the descriptor seems to be unused.
+            // For ABNT ISDB-Tb, ABNT NBR 15603-3 does not define the usage but existing streams seem to use the same encoding as ARIB ISDB-T.
+            // Therefore, we use that interpretation everywhere.
+            const uint8_t tti = buf.getUInt8();
+            disp << margin
+                 << UString::Format(u"- Transmission type info: %n (%s, %s)", tti, DataName(MY_XML_NAME, u"tti_type", tti >> 6), DataName(MY_XML_NAME, u"tti_modulation", (tti >> 4) & 0x03))
+                 << std::endl;
             const size_t scount = buf.getUInt8();
             for (size_t i2 = 0; buf.canReadBytes(2) && i2 < scount; ++i2) {
                 disp << margin << UString::Format(u"  Service id: %n", buf.getUInt16()) << std::endl;
