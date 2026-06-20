@@ -52,7 +52,7 @@ namespace ts {
         //! @param [in] delegate Use the report of another ReporterBase. If @a delegate is null, log messages are discarded.
         //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        WebRequest(ReporterBase* delegate = nullptr, Object* owner = nullptr);
+        WebRequest(ReporterBase* delegate, Object* owner = nullptr);
 
         //!
         //! Destructor.
