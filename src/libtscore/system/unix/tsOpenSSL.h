@@ -57,6 +57,7 @@
     // Placeholders for OpenSSL types.
     struct SSL_CTX;
     struct SSL;
+    struct X509;
 
 #endif
 //! @endcond

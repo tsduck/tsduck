@@ -18,14 +18,12 @@
 //----------------------------------------------------------------------------
 
 ts::Socket::Socket(Report* report, bool non_blocking, Object* owner) :
-    NonBlockingDevice(report, non_blocking),
-    OwnedObject(owner)
+    NonBlockingDevice(report, non_blocking, owner)
 {
 }
 
 ts::Socket::Socket(ReporterBase* delegate, bool non_blocking, Object* owner) :
-    NonBlockingDevice(delegate, non_blocking),
-    OwnedObject(owner)
+    NonBlockingDevice(delegate, non_blocking, owner)
 {
 }
 

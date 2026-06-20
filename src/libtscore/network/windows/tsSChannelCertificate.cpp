@@ -22,13 +22,13 @@
 // Constructors and destructor.
 //-----------------------------------------------------------------------------
 
-ts::SChannelCertificate::SChannelCertificate(Report* report) :
-    ReporterBase(report)
+ts::SChannelCertificate::SChannelCertificate(Report* report, Object* owner) :
+    ReporterBase(report, owner)
 {
 }
 
-ts::SChannelCertificate::SChannelCertificate(ReporterBase* delegate) :
-    ReporterBase(delegate)
+ts::SChannelCertificate::SChannelCertificate(ReporterBase* delegate, Object* owner) :
+    ReporterBase(delegate, owner)
 {
 }
 

@@ -13,7 +13,6 @@
 
 #pragma once
 #include "tsNonBlockingDevice.h"
-#include "tsOwnedObject.h"
 #include "tsSocketHandlerInterface.h"
 #include "tsIPSocketAddress.h"
 #include "tsIPUtils.h"
@@ -24,7 +23,7 @@ namespace ts {
     //! Base class for TCP and UDP sockets.
     //! @ingroup libtscore net
     //!
-    class TSCOREDLL Socket : public NonBlockingDevice, public OwnedObject
+    class TSCOREDLL Socket : public NonBlockingDevice
     {
         TS_NOCOPY(Socket);
     public:

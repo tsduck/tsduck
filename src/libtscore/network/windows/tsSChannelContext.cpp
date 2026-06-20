@@ -14,8 +14,8 @@
 // Constructors and destructor.
 //-----------------------------------------------------------------------------
 
-ts::SChannelContext::SChannelContext(ReporterBase* delegate, const TLSConnectionBase& params) :
-    ReporterBase(delegate),
+ts::SChannelContext::SChannelContext(ReporterBase* delegate, const TLSConnectionBase& params, Object* owner) :
+    ReporterBase(delegate, owner),
     _params(params)
 {
 }

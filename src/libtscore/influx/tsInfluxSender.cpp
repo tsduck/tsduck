@@ -13,8 +13,8 @@
 // Constructor.
 //----------------------------------------------------------------------------
 
-ts::InfluxSender::InfluxSender(Report* report) :
-    ReporterBase(report)
+ts::InfluxSender::InfluxSender(Report* report, Object* owner) :
+    ReporterBase(report, owner)
 {
 }
 

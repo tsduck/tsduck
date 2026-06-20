@@ -7,28 +7,29 @@
 //----------------------------------------------------------------------------
 
 #include "tsInfluxRequest.h"
+#include "tsNullReport.h"
 
 
 //----------------------------------------------------------------------------
 // Constructors and destructor.
 //----------------------------------------------------------------------------
 
-ts::InfluxRequest::InfluxRequest(const InfluxArgs& args) :
-    WebRequest(),
+ts::InfluxRequest::InfluxRequest(const InfluxArgs& args, Object* owner) :
+    WebRequest(&NULLREP, owner),
     _args(args)
 {
     InitAdditionalFlags();
 }
 
-ts::InfluxRequest::InfluxRequest(Report* report, const InfluxArgs& args) :
-    WebRequest(report),
+ts::InfluxRequest::InfluxRequest(Report* report, const InfluxArgs& args, Object* owner) :
+    WebRequest(report, owner),
     _args(args)
 {
     InitAdditionalFlags();
 }
 
-ts::InfluxRequest::InfluxRequest(ReporterBase* delegate, const InfluxArgs& args) :
-    WebRequest(delegate),
+ts::InfluxRequest::InfluxRequest(ReporterBase* delegate, const InfluxArgs& args, Object* owner) :
+    WebRequest(delegate, owner),
     _args(args)
 {
     InitAdditionalFlags();

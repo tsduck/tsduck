@@ -13,29 +13,31 @@
 
 #pragma once
 #include "tsReport.h"
-#include "tsObject.h"
+#include "tsOwnedObject.h"
 
 namespace ts {
     //!
     //! Base class for classes using a Report object.
     //! @ingroup libtscore log
     //!
-    class TSCOREDLL ReporterBase: public Object
+    class TSCOREDLL ReporterBase: public OwnedObject
     {
-        TS_DEFAULT_COPY_MOVE(ReporterBase);
+        TS_NOCOPY(ReporterBase);
     public:
         //!
         //! Constructor.
         //! @param [in] report Where to report errors. The @a report object must remain valid as long as this object
         //! exists or setReport() is used with another Report object. If @a report is null, log messages are discarded.
+        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        explicit ReporterBase(Report* report = nullptr) : _report(report) {}
+        explicit ReporterBase(Report* report = nullptr, Object* owner = nullptr) : OwnedObject(owner), _report(report) {}
 
         //!
         //! Constructor.
         //! @param [in] delegate Use the report of another ReporterBase. If @a delegate is null, log messages are discarded.
+        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        explicit ReporterBase(ReporterBase* delegate) : _delegate(delegate) {}
+        explicit ReporterBase(ReporterBase* delegate, Object* owner = nullptr) : OwnedObject(owner), _delegate(delegate) {}
 
         //!
         //! Destructor.

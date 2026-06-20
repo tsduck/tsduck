@@ -64,15 +64,15 @@ ts::UString ts::WebRequest::_default_proxy_assword(DefaultProxy::Instance().url.
 // Constructors and destructor.
 //----------------------------------------------------------------------------
 
-ts::WebRequest::WebRequest(Report* report) :
-    ReporterBase(report)
+ts::WebRequest::WebRequest(Report* report, Object* owner) :
+    ReporterBase(report, owner)
 {
     allocateGuts();
     CheckNonNull(_guts);
 }
 
-ts::WebRequest::WebRequest(ReporterBase* delegate) :
-    ReporterBase(delegate)
+ts::WebRequest::WebRequest(ReporterBase* delegate, Object* owner) :
+    ReporterBase(delegate, owner)
 {
     allocateGuts();
     CheckNonNull(_guts);

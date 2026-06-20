@@ -12,7 +12,6 @@
 #include "tsjsonObject.h"
 #include "tsTime.h"
 #include "tsMemory.h"
-#include "tsNullReport.h"
 #include "tsCerrReport.h"
 #include "tsFatal.h"
 #include "tsFeatures.h"
@@ -289,7 +288,7 @@ void ts::SRTSocket::defineArgs(ts::Args& args)
 #define NOSRT_ERROR_MSG u"This version of TSDuck was compiled without SRT support"
 #define NOSRT_ERROR { report().error(NOSRT_ERROR_MSG); return false; }
 
-ts::SRTSocket::SRTSocket(Report* report) : ReporterBase(report), _guts(nullptr) {}
+ts::SRTSocket::SRTSocket(Report* report, Object* owner) : ReporterBase(report, owner), _guts(nullptr) {}
 ts::SRTSocket::~SRTSocket() {}
 bool ts::SRTSocket::open(SRTSocketMode, const IPSocketAddress&, const IPSocketAddress&, size_t) NOSRT_ERROR
 bool ts::SRTSocket::close(bool silent) NOSRT_ERROR
@@ -471,8 +470,8 @@ private:
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::SRTSocket::SRTSocket(Report* report) :
-    ReporterBase(report),
+ts::SRTSocket::SRTSocket(Report* report, Object* owner) :
+    ReporterBase(report, owner),
     _guts(new Guts(this))
 {
     CheckNonNull(_guts);

@@ -30,27 +30,27 @@ namespace ts {
     public:
         //!
         //! Constructor.
-        //! @param [in] args The connection information to the InfluxDB server.
-        //! A reference is kept in this object.
+        //! @param [in] args The connection information to the InfluxDB server. A reference is kept in this object.
+        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        InfluxRequest(const InfluxArgs& args);
+        InfluxRequest(const InfluxArgs& args, Object* owner = nullptr);
 
         //!
         //! Constructor.
         //! @param [in] report Where to report errors. The @a report object must remain valid as long as this object
         //! exists or setReport() is used with another Report object. If @a report is null, log messages are discarded.
-        //! @param [in] args The connection information to the InfluxDB server.
-        //! A reference is kept in this object.
+        //! @param [in] args The connection information to the InfluxDB server. A reference is kept in this object.
+        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        InfluxRequest(Report* report, const InfluxArgs& args);
+        InfluxRequest(Report* report, const InfluxArgs& args, Object* owner = nullptr);
 
         //!
         //! Constructor.
         //! @param [in] delegate Use the report of another ReporterBase. If @a delegate is null, log messages are discarded.
-        //! @param [in] args The connection information to the InfluxDB server.
-        //! A reference is kept in this object.
+        //! @param [in] args The connection information to the InfluxDB server. A reference is kept in this object.
+        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        InfluxRequest(ReporterBase* delegate, const InfluxArgs& args);
+        InfluxRequest(ReporterBase* delegate, const InfluxArgs& args, Object* owner = nullptr);
 
         //!
         //! Destructor.

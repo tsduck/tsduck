@@ -66,15 +66,15 @@ const ts::Names& ts::Reactor::EventTypeNames()
 // Reactor constructors and destructor.
 //----------------------------------------------------------------------------
 
-ts::Reactor::Reactor(Report* report) :
-    ReporterBase(report),
+ts::Reactor::Reactor(Report* report, Object* owner) :
+    ReporterBase(report, owner),
     _guts(allocateGuts())
 {
     CheckNonNull(_guts);
 }
 
-ts::Reactor::Reactor(ReporterBase* delegate) :
-    ReporterBase(delegate),
+ts::Reactor::Reactor(ReporterBase* delegate, Object* owner) :
+    ReporterBase(delegate, owner),
     _guts(allocateGuts())
 {
     CheckNonNull(_guts);

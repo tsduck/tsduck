@@ -14,13 +14,13 @@
 // Constructors & destructor.
 //-----------------------------------------------------------------------------
 
-ts::OpenSSLCertificate::OpenSSLCertificate(Report* report) :
-    ReporterBase(report)
+ts::OpenSSLCertificate::OpenSSLCertificate(Report* report, Object* owner) :
+    ReporterBase(report, owner)
 {
 }
 
-ts::OpenSSLCertificate::OpenSSLCertificate(ReporterBase* delegate) :
-    ReporterBase(delegate)
+ts::OpenSSLCertificate::OpenSSLCertificate(ReporterBase* delegate, Object* owner) :
+    ReporterBase(delegate, owner)
 {
 }
 

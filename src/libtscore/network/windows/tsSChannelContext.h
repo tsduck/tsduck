@@ -33,8 +33,9 @@ namespace ts {
         //! Constructor.
         //! @param [in] delegate Use the report of another ReporterBase. If @a delegate is null, log messages are discarded.
         //! @param [in] params TLS connection parameters.
+        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        SChannelContext(ReporterBase* delegate, const TLSConnectionBase& params);
+        SChannelContext(ReporterBase* delegate, const TLSConnectionBase& params, Object* owner = nullptr);
 
         //!
         //! Destructor.
