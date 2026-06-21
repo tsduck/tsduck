@@ -31,3 +31,15 @@
    fun:zsinflate
    ...
 }
+
+# Starting with OpenSSL 3.5 or so, the initialization sequence of libcrypto has a 56-byte
+# leaked block. Calling OPENSSL_cleanup() - which is now documented as unnecessary - does
+# not fix this 56-byte block leak. This is maybe an OpenSSL issue but it it not relevant
+# for the application and shall be ignored.
+{
+   Ignore dlopen allocated data.
+   Memcheck:Leak
+   ...
+   fun:CRYPTO_THREAD_run_once
+   ...
+}
