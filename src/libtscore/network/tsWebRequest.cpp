@@ -12,7 +12,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsWebRequest.h"
-#include "tsFatal.h"
 #include "tsFileUtils.h"
 #include "tsErrCodeReport.h"
 #include "tsURL.h"
@@ -68,14 +67,12 @@ ts::WebRequest::WebRequest(Report* report, Object* owner) :
     ReporterBase(report, owner)
 {
     allocateGuts();
-    CheckNonNull(_guts);
 }
 
 ts::WebRequest::WebRequest(ReporterBase* delegate, Object* owner) :
     ReporterBase(delegate, owner)
 {
     allocateGuts();
-    CheckNonNull(_guts);
 }
 
 ts::WebRequest::~WebRequest()

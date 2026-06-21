@@ -438,7 +438,7 @@ size_t ts::PcapInputPlugin::extractDataProvision(uint8_t* buffer, size_t buffer_
         return 0;
     }
     mf.factory(ptr);
-    emmgmux::DataProvision* dprov = dynamic_cast<emmgmux::DataProvision*>(ptr.get());
+    const auto dprov = std::dynamic_pointer_cast<emmgmux::DataProvision>(ptr);
     if (dprov == nullptr) {
         return 0;
     }

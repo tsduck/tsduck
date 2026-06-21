@@ -318,7 +318,7 @@ void ts::NITScanPlugin::processNIT(const NIT& nit)
 
     // Try to get input tuning parameter, and specifically the delivery system.
     const ObjectPtr input_params(ObjectRepository::Instance().retrieve(u"tsp.dvb.params"));
-    const ModulationArgs* input = dynamic_cast<const ModulationArgs*>(input_params.get());
+    const auto input = std::dynamic_pointer_cast<ModulationArgs>(input_params);
     const DeliverySystem delsys = input == nullptr ? DS_UNDEFINED : input->delivery_system.value_or(DS_UNDEFINED);
 
     // Process each TS descriptor list

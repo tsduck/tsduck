@@ -101,7 +101,7 @@ TSUNIT_DEFINE_TEST(ECMG)
     refMessage.serialize(zer);
 
     debug() << "TagLengthValueTest::testECMG: serialized:" << std::endl
-                 << ts::UString::Dump(*data, ts::UString::HEXA, 2) << std::endl;
+            << ts::UString::Dump(*data, ts::UString::HEXA, 2) << std::endl;
 
     TSUNIT_EQUAL(sizeof(refData), data->size());
     TSUNIT_EQUAL(0, ts::MemCompare(refData, data->data(), sizeof(data)));
@@ -110,7 +110,7 @@ TSUNIT_DEFINE_TEST(ECMG)
     ts::tlv::MessagePtr msg(fac.factory());
     TSUNIT_ASSERT(msg != nullptr);
     TSUNIT_EQUAL(ts::ecmgscs::Tags::channel_status, msg->tag());
-    ts::ecmgscs::ChannelStatus* ptr = dynamic_cast<ts::ecmgscs::ChannelStatus*>(msg.get());
+    std::shared_ptr<ts::ecmgscs::ChannelStatus> ptr = std::dynamic_pointer_cast<ts::ecmgscs::ChannelStatus>(msg);
     TSUNIT_ASSERT(ptr != nullptr);
     TSUNIT_EQUAL(refMessage.channel_id, ptr->channel_id);
     TSUNIT_EQUAL(refMessage.section_TSpkt_flag, ptr->section_TSpkt_flag);
@@ -178,7 +178,7 @@ TSUNIT_DEFINE_TEST(EMMG)
     ts::tlv::MessagePtr msg(fac.factory());
     TSUNIT_ASSERT(msg != nullptr);
     TSUNIT_EQUAL(ts::emmgmux::Tags::stream_BW_allocation, msg->tag());
-    ts::emmgmux::StreamBWAllocation* ptr = dynamic_cast<ts::emmgmux::StreamBWAllocation*>(msg.get());
+    std::shared_ptr<ts::emmgmux::StreamBWAllocation> ptr = std::dynamic_pointer_cast<ts::emmgmux::StreamBWAllocation>(msg);
     TSUNIT_ASSERT(ptr != nullptr);
     TSUNIT_EQUAL(refMessage.channel_id, ptr->channel_id);
     TSUNIT_EQUAL(refMessage.stream_id, ptr->stream_id);
@@ -234,7 +234,7 @@ TSUNIT_DEFINE_TEST(ECMGError)
     ts::tlv::MessagePtr msg(fac.factory());
     TSUNIT_ASSERT(msg != nullptr);
     TSUNIT_EQUAL(ts::ecmgscs::Tags::stream_error, msg->tag());
-    ts::ecmgscs::StreamError* ptr = dynamic_cast<ts::ecmgscs::StreamError*>(msg.get());
+    std::shared_ptr<ts::ecmgscs::StreamError> ptr = std::dynamic_pointer_cast<ts::ecmgscs::StreamError>(msg);
     TSUNIT_ASSERT(ptr != nullptr);
     TSUNIT_EQUAL(refMessage.channel_id, ptr->channel_id);
     TSUNIT_EQUAL(refMessage.stream_id, ptr->stream_id);
@@ -292,7 +292,7 @@ TSUNIT_DEFINE_TEST(EMMGError)
     ts::tlv::MessagePtr msg(fac.factory());
     TSUNIT_ASSERT(msg != nullptr);
     TSUNIT_EQUAL(ts::tlv::TAG(ts::emmgmux::Tags::stream_error), msg->tag());
-    ts::emmgmux::StreamError* ptr = dynamic_cast<ts::emmgmux::StreamError*>(msg.get());
+    std::shared_ptr<ts::emmgmux::StreamError> ptr = std::dynamic_pointer_cast<ts::emmgmux::StreamError>(msg);
     TSUNIT_ASSERT(ptr != nullptr);
     TSUNIT_EQUAL(refMessage.channel_id, ptr->channel_id);
     TSUNIT_EQUAL(refMessage.stream_id, ptr->stream_id);

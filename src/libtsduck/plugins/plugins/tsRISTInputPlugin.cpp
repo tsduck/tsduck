@@ -10,7 +10,6 @@
 #include "tsRISTPluginData.h"
 #include "tsPluginRepository.h"
 #include "tsIPProtocols.h"
-#include "tsFatal.h"
 
 
 //----------------------------------------------------------------------------
@@ -83,7 +82,6 @@ ts::RISTInputPlugin::RISTInputPlugin(TSP* tsp_) :
                                 TSDatagramInputOptions::REAL_TIME | TSDatagramInputOptions::ALLOW_RS204)
 {
     _guts = new Guts(*this);
-    CheckNonNull(_guts);
     _guts->rist.defineArgs(*this);
 }
 

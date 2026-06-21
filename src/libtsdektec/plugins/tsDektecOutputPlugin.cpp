@@ -16,7 +16,6 @@
 #include "tsDVBT2ParamsEvaluator.h"
 #include "tsModulation.h"
 #include "tsIntegerUtils.h"
-#include "tsFatal.h"
 
 #define DEFAULT_PRELOAD_FIFO_PERCENTAGE 80
 #define DEFAULT_MAINTAIN_PRELOAD_THRESHOLD_SIZE 20116 // a little over 20k in packets, byte size for exactly 107 packets
@@ -76,8 +75,6 @@ ts::DektecOutputPlugin::DektecOutputPlugin(TSP* tsp_) :
     OutputPlugin(tsp_, u"Send packets to a Dektec DVB-ASI or modulator device", u"[options]"),
     _guts(new Guts)
 {
-    CheckNonNull(_guts);
-
     // Share same option --bandwidth for DVB-T2 and DVB-T/H
     assert(DTAPI_DVBT2_5MHZ == DTAPI_MOD_DVBT_5MHZ);
     assert(DTAPI_DVBT2_6MHZ == DTAPI_MOD_DVBT_6MHZ);
@@ -1146,7 +1143,7 @@ bool ts::DektecOutputPlugin::setModulation(int& modulation_type)
     // Get input plugin modulation parameters if required
     const bool use_input_modulation = present(u"input-modulation");
     const ObjectPtr input_params(use_input_modulation ? ObjectRepository::Instance().retrieve(u"tsp.dvb.params") : nullptr);
-    const ModulationArgs* input = dynamic_cast<const ModulationArgs*>(input_params.get());
+    const auto input = std::dynamic_pointer_cast<ModulationArgs>(input_params);
     ModulationArgs other_args;
 
     // Modulation type is initially unknown.

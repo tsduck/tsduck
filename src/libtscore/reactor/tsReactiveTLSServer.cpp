@@ -18,7 +18,6 @@ ts::ReactiveTLSServer::ReactiveTLSServer(Reactor& reactor, TCPServer& socket, Ob
     ReactiveTCPServer(reactor, socket, owner)
 {
     allocateGuts();
-    CheckNonNull(_guts);
 
     // The socket must be an instance of TCPServer, not an instance of TLSServer.
     // Detect and report trivial misusages.

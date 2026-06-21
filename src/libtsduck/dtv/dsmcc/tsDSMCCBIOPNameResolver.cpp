@@ -38,7 +38,7 @@ void ts::BIOPNameResolver::recordBindings(const NameKey& parent, const std::vect
 }
 
 
-void ts::BIOPNameResolver::defer(uint16_t module_id, std::unique_ptr<BIOPMessage> msg)
+void ts::BIOPNameResolver::defer(uint16_t module_id, std::shared_ptr<BIOPMessage> msg)
 {
     _pending.push_back(PendingEmit{module_id, std::move(msg)});
 }

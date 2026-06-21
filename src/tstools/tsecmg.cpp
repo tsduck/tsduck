@@ -13,8 +13,6 @@
 #include "tsMain.h"
 #include "tsDuckContext.h"
 #include "tsAsyncReport.h"
-#include "tsNullReport.h"
-#include "tsFatal.h"
 #include "tsThread.h"
 #include "tsSysUtils.h"
 #include "tsECMGSCS.h"
@@ -293,19 +291,19 @@ private:
     std::map<uint16_t,uint16_t> _streams {};    // Map of current stream id => ECM id.
 
     // Handle the various ECMG client messages.
-    bool handleChannelSetup(ts::ecmgscs::ChannelSetup* msg);
-    bool handleChannelTest(ts::ecmgscs::ChannelTest* msg);
-    bool handleChannelClose(ts::ecmgscs::ChannelClose* msg);
-    bool handleStreamSetup(ts::ecmgscs::StreamSetup* msg);
-    bool handleStreamTest(ts::ecmgscs::StreamTest* msg);
-    bool handleStreamCloseRequest(ts::ecmgscs::StreamCloseRequest* msg);
-    bool handleCWProvision(ts::ecmgscs::CWProvision* msg);
+    bool handleChannelSetup(const std::shared_ptr<ts::ecmgscs::ChannelSetup>& msg);
+    bool handleChannelTest(const std::shared_ptr<ts::ecmgscs::ChannelTest>& msg);
+    bool handleChannelClose(const std::shared_ptr<ts::ecmgscs::ChannelClose>& msg);
+    bool handleStreamSetup(const std::shared_ptr<ts::ecmgscs::StreamSetup>& msg);
+    bool handleStreamTest(const std::shared_ptr<ts::ecmgscs::StreamTest>& msg);
+    bool handleStreamCloseRequest(const std::shared_ptr<ts::ecmgscs::StreamCloseRequest>& msg);
+    bool handleCWProvision(const std::shared_ptr<ts::ecmgscs::CWProvision>& msg);
 
     // Send a response message.
-    bool send(const ts::tlv::Message* msg) { return _conn->sendMessage(*msg); }
+    bool send(const ts::tlv::Message& msg) { return _conn->sendMessage(msg); }
 
     // Send an error related to the msg.
-    bool sendErrorResponse(const ts::tlv::Message* msg, uint16_t errorStatus);
+    bool sendErrorResponse(const std::shared_ptr<ts::tlv::Message>& msg, uint16_t errorStatus);
 };
 
 
@@ -352,25 +350,25 @@ void ECMGClientHandler::main()
     while (ok && _conn->receiveMessage(msg)) {
         switch (msg->tag()) {
             case ts::ecmgscs::Tags::channel_setup:
-                ok = handleChannelSetup(dynamic_cast<ts::ecmgscs::ChannelSetup*>(msg.get()));
+                ok = handleChannelSetup(std::dynamic_pointer_cast<ts::ecmgscs::ChannelSetup>(msg));
                 break;
             case ts::ecmgscs::Tags::channel_test:
-                ok = handleChannelTest(dynamic_cast<ts::ecmgscs::ChannelTest*>(msg.get()));
+                ok = handleChannelTest(std::dynamic_pointer_cast<ts::ecmgscs::ChannelTest>(msg));
                 break;
             case ts::ecmgscs::Tags::channel_close:
-                ok = handleChannelClose(dynamic_cast<ts::ecmgscs::ChannelClose*>(msg.get()));
+                ok = handleChannelClose(std::dynamic_pointer_cast<ts::ecmgscs::ChannelClose>(msg));
                 break;
             case ts::ecmgscs::Tags::stream_setup:
-                ok = handleStreamSetup(dynamic_cast<ts::ecmgscs::StreamSetup*>(msg.get()));
+                ok = handleStreamSetup(std::dynamic_pointer_cast<ts::ecmgscs::StreamSetup>(msg));
                 break;
             case ts::ecmgscs::Tags::stream_test:
-                ok = handleStreamTest(dynamic_cast<ts::ecmgscs::StreamTest*>(msg.get()));
+                ok = handleStreamTest(std::dynamic_pointer_cast<ts::ecmgscs::StreamTest>(msg));
                 break;
             case ts::ecmgscs::Tags::stream_close_request:
-                ok = handleStreamCloseRequest(dynamic_cast<ts::ecmgscs::StreamCloseRequest*>(msg.get()));
+                ok = handleStreamCloseRequest(std::dynamic_pointer_cast<ts::ecmgscs::StreamCloseRequest>(msg));
                 break;
             case ts::ecmgscs::Tags::CW_provision:
-                ok = handleCWProvision(dynamic_cast<ts::ecmgscs::CWProvision*>(msg.get()));
+                ok = handleCWProvision(std::dynamic_pointer_cast<ts::ecmgscs::CWProvision>(msg));
                 break;
             case ts::ecmgscs::Tags::channel_status:
             case ts::ecmgscs::Tags::stream_status:
@@ -380,7 +378,7 @@ void ECMGClientHandler::main()
                 break;
             default:
                 // Received an invalid message for ECMG.
-                ok = sendErrorResponse(msg.get(), ts::ecmgscs::Errors::inv_message);
+                ok = sendErrorResponse(msg, ts::ecmgscs::Errors::inv_message);
                 break;
         }
     }
@@ -403,37 +401,34 @@ void ECMGClientHandler::main()
 // Send an error related to the msg.
 //----------------------------------------------------------------------------
 
-bool ECMGClientHandler::sendErrorResponse(const ts::tlv::Message* msg, uint16_t errorStatus)
+bool ECMGClientHandler::sendErrorResponse(const std::shared_ptr<ts::tlv::Message>& msg, uint16_t errorStatus)
 {
-    const ts::tlv::ChannelMessage* channelMsg = nullptr;
-    const ts::tlv::StreamMessage* streamMsg = nullptr;
-    ts::ecmgscs::ChannelError channelError(_opt.ecmgscs);
-    ts::ecmgscs::StreamError streamError(_opt.ecmgscs);
-    ts::tlv::Message* resp = nullptr;
+    std::shared_ptr<ts::tlv::ChannelMessage> channel_msg;
+    std::shared_ptr<ts::tlv::StreamMessage> stream_msg;
 
     // Build the appropriate response.
-    if ((streamMsg = dynamic_cast<const ts::tlv::StreamMessage*>(msg)) != nullptr) {
+    if ((stream_msg = std::dynamic_pointer_cast<ts::tlv::StreamMessage>(msg)) != nullptr) {
         // Response to a stream message.
-        streamError.channel_id = streamMsg->channel_id;
-        streamError.stream_id = streamMsg->stream_id;
-        streamError.error_status.push_back(errorStatus);
-        resp = &streamError;
+        ts::ecmgscs::StreamError stream_error(_opt.ecmgscs);
+        stream_error.channel_id = stream_msg->channel_id;
+        stream_error.stream_id = stream_msg->stream_id;
+        stream_error.error_status.push_back(errorStatus);
+        return send(stream_error);
     }
-    else if ((channelMsg = dynamic_cast<const ts::tlv::ChannelMessage*>(msg)) != nullptr) {
+    else if ((channel_msg = std::dynamic_pointer_cast<ts::tlv::ChannelMessage>(msg)) != nullptr) {
         // Response to a channel message.
-        channelError.channel_id = channelMsg->channel_id;
-        channelError.error_status.push_back(errorStatus);
-        resp = &channelError;
+        ts::ecmgscs::ChannelError channel_error(_opt.ecmgscs);
+        channel_error.channel_id = channel_msg->channel_id;
+        channel_error.error_status.push_back(errorStatus);
+        return send(channel_error);
     }
     else {
         // Response to garbage.
-        channelError.channel_id = 0;
-        channelError.error_status.push_back(errorStatus);
-        resp = &channelError;
+        ts::ecmgscs::ChannelError channel_error(_opt.ecmgscs);
+        channel_error.channel_id = 0;
+        channel_error.error_status.push_back(errorStatus);
+        return send(channel_error);
     }
-
-    // Send the response.
-    return send(resp);
 }
 
 
@@ -441,7 +436,7 @@ bool ECMGClientHandler::sendErrorResponse(const ts::tlv::Message* msg, uint16_t 
 // Handle the various types of messages from the client.
 //----------------------------------------------------------------------------
 
-bool ECMGClientHandler::handleChannelSetup(ts::ecmgscs::ChannelSetup* msg)
+bool ECMGClientHandler::handleChannelSetup(const std::shared_ptr<ts::ecmgscs::ChannelSetup>& msg)
 {
     assert(msg != nullptr);
     if (_channel.has_value()) {
@@ -457,12 +452,12 @@ bool ECMGClientHandler::handleChannelSetup(ts::ecmgscs::ChannelSetup* msg)
         _channel = msg->channel_id;
         ts::ecmgscs::ChannelStatus resp(_opt.channelStatus);
         resp.channel_id = msg->channel_id;
-        return send(&resp);
+        return send(resp);
     }
 }
 
 
-bool ECMGClientHandler::handleChannelTest(ts::ecmgscs::ChannelTest* msg)
+bool ECMGClientHandler::handleChannelTest(const std::shared_ptr<ts::ecmgscs::ChannelTest>& msg)
 {
     assert(msg != nullptr);
     if (_channel != msg->channel_id) {
@@ -474,12 +469,12 @@ bool ECMGClientHandler::handleChannelTest(ts::ecmgscs::ChannelTest* msg)
         _channel = msg->channel_id;
         ts::ecmgscs::ChannelStatus resp(_opt.channelStatus);
         resp.channel_id = msg->channel_id;
-        return send(&resp);
+        return send(resp);
     }
 }
 
 
-bool ECMGClientHandler::handleChannelClose(ts::ecmgscs::ChannelClose* msg)
+bool ECMGClientHandler::handleChannelClose(const std::shared_ptr<ts::ecmgscs::ChannelClose>& msg)
 {
     assert(msg != nullptr);
     if (_channel != msg->channel_id) {
@@ -496,7 +491,7 @@ bool ECMGClientHandler::handleChannelClose(ts::ecmgscs::ChannelClose* msg)
 }
 
 
-bool ECMGClientHandler::handleStreamSetup(ts::ecmgscs::StreamSetup* msg)
+bool ECMGClientHandler::handleStreamSetup(const std::shared_ptr<ts::ecmgscs::StreamSetup>& msg)
 {
     assert(msg != nullptr);
     if (_channel != msg->channel_id) {
@@ -514,12 +509,12 @@ bool ECMGClientHandler::handleStreamSetup(ts::ecmgscs::StreamSetup* msg)
         resp.channel_id = msg->channel_id;
         resp.stream_id = msg->stream_id;
         resp.ECM_id = msg->ECM_id;
-        return send(&resp);
+        return send(resp);
     }
 }
 
 
-bool ECMGClientHandler::handleStreamTest(ts::ecmgscs::StreamTest* msg)
+bool ECMGClientHandler::handleStreamTest(const std::shared_ptr<ts::ecmgscs::StreamTest>& msg)
 {
     assert(msg != nullptr);
     if (_channel != msg->channel_id) {
@@ -536,12 +531,12 @@ bool ECMGClientHandler::handleStreamTest(ts::ecmgscs::StreamTest* msg)
         resp.channel_id = msg->channel_id;
         resp.stream_id = msg->stream_id;
         resp.ECM_id = _streams[msg->stream_id];
-        return send(&resp);
+        return send(resp);
     }
 }
 
 
-bool ECMGClientHandler::handleStreamCloseRequest(ts::ecmgscs::StreamCloseRequest* msg)
+bool ECMGClientHandler::handleStreamCloseRequest(const std::shared_ptr<ts::ecmgscs::StreamCloseRequest>& msg)
 {
     assert(msg != nullptr);
     if (_channel != msg->channel_id) {
@@ -558,12 +553,12 @@ bool ECMGClientHandler::handleStreamCloseRequest(ts::ecmgscs::StreamCloseRequest
         ts::ecmgscs::StreamCloseResponse resp(_opt.ecmgscs);
         resp.channel_id = msg->channel_id;
         resp.stream_id = msg->stream_id;
-        return send(&resp);
+        return send(resp);
     }
 }
 
 
-bool ECMGClientHandler::handleCWProvision(ts::ecmgscs::CWProvision* msg)
+bool ECMGClientHandler::handleCWProvision(const std::shared_ptr<ts::ecmgscs::CWProvision>& msg)
 {
     assert(msg != nullptr);
     if (_channel != msg->channel_id) {
@@ -649,7 +644,7 @@ bool ECMGClientHandler::handleCWProvision(ts::ecmgscs::CWProvision* msg)
             std::this_thread::sleep_for(_opt.ecmCompTime);
         }
 
-        return send(&resp);
+        return send(resp);
     }
 }
 
@@ -687,8 +682,7 @@ int MainCode(int argc, char *argv[])
 
         // Accept one incoming connection.
         ts::IPSocketAddress clientAddress;
-        ECMGConnectionPtr conn(new ECMGConnection(shared.logger(), opt.ecmgscs, true, 3));
-        ts::CheckNonNull(conn.get());
+        ECMGConnectionPtr conn = std::make_shared<ECMGConnection>(shared.logger(), opt.ecmgscs, true, 3);
         if (!server.accept(*conn, clientAddress)) {
             break;
         }
@@ -704,7 +698,6 @@ int MainCode(int argc, char *argv[])
             // Otherwise, create a thread and forget about it.
             // The thread will deallocate itself automatically when it completes.
             ECMGClientHandler* client = new ECMGClientHandler(opt, conn, &shared, true);
-            ts::CheckNonNull(client);
             client->start();
         }
     }

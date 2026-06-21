@@ -33,7 +33,7 @@ namespace ts {
 
     private:
         DSMCCExtractorArgs              _args {};
-        std::unique_ptr<DSMCCExtractor> _extractor {};
+        std::shared_ptr<DSMCCExtractor> _extractor {};
     };
 }
 

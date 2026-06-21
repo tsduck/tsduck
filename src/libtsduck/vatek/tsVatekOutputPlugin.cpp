@@ -14,7 +14,6 @@ bool tsVatekOutputPluginIsEmpty = true; // Avoid warning about empty module.
 #else
 
 #include "tsPluginRepository.h"
-#include "tsFatal.h"
 
 #include "tsBeforeStandardHeaders.h"
 #include <vatek_sdk_usbstream.h>
@@ -126,8 +125,6 @@ ts::VatekOutputPlugin::VatekOutputPlugin(TSP* tsp_) :
     OutputPlugin(tsp_, u"Send packets to an AstroMeta (formerly VATek) modulator device", u"[options]"),
     _guts(new Guts(this))
 {
-    CheckNonNull(_guts);
-
     option(u"device", 'd', UNSIGNED);
     help(u"device",
          u"Device index, from 0 to N-1 (with N being the number of AstroMeta devices in the system). "

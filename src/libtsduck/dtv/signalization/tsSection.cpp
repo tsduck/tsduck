@@ -12,7 +12,6 @@
 #include "tsCRC32.h"
 #include "tsSHA1.h"
 #include "tsMemory.h"
-#include "tsFatal.h"
 
 
 //----------------------------------------------------------------------------
@@ -592,7 +591,6 @@ std::istream& ts::Section::read(std::istream& strm, CRC32::Validation crc_op, Re
     if (insize == 3) {
         secsize += GetUInt16(header + 1) & 0x0FFF;
         secdata = std::make_shared<ByteBlock>(secsize);
-        CheckNonNull(secdata.get());
         MemCopy(secdata->data(), header, 3);
         strm.read(reinterpret_cast <char*>(secdata->data() + 3), std::streamsize(secsize - 3));
         insize += size_t(strm.gcount());

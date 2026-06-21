@@ -579,7 +579,7 @@ TSUNIT_DEFINE_TEST(BIOP_DirectoryMessageParse)
     TSUNIT_ASSERT(msg != nullptr);
     TSUNIT_EQUAL("dir", msg->kindTag());
 
-    auto* dir = dynamic_cast<ts::BIOPBindingListMessage*>(msg.get());
+    const auto dir = std::dynamic_pointer_cast<ts::BIOPBindingListMessage>(msg);
     TSUNIT_ASSERT(dir != nullptr);
     TSUNIT_EQUAL(1u, dir->bindings.size());
 
@@ -622,7 +622,7 @@ TSUNIT_DEFINE_TEST(BIOP_DirectoryMessageXMLRoundTrip)
     TSUNIT_ASSERT(restored != nullptr);
     TSUNIT_EQUAL("dir", restored->kindTag());
 
-    auto* dir = dynamic_cast<ts::BIOPBindingListMessage*>(restored.get());
+    const auto dir = std::dynamic_pointer_cast<ts::BIOPBindingListMessage>(restored);
     TSUNIT_ASSERT(dir != nullptr);
     TSUNIT_EQUAL(1u, dir->bindings.size());
     TSUNIT_EQUAL(u"root", dir->bindings[0].name[0].idString());
@@ -656,7 +656,7 @@ TSUNIT_DEFINE_TEST(BIOP_FileMessageParse)
     };
 
     ts::PSIBuffer buf(duck, data, sizeof(data), true);
-    auto msg = ts::BIOPMessage::Parse(buf);
+    const auto msg = ts::BIOPMessage::Parse(buf);
 
     TSUNIT_ASSERT(msg != nullptr);
     TSUNIT_ASSERT(msg->header.isValid());
@@ -669,7 +669,7 @@ TSUNIT_DEFINE_TEST(BIOP_FileMessageParse)
     TSUNIT_EQUAL(0x68u, msg->object_info[7]);
     TSUNIT_EQUAL(0u, msg->service_contexts.size());
 
-    auto* file = dynamic_cast<ts::BIOPFileMessage*>(msg.get());
+    const auto file = std::dynamic_pointer_cast<ts::BIOPFileMessage>(msg);
     TSUNIT_ASSERT(file != nullptr);
     TSUNIT_EQUAL(20u, file->content.size());
     TSUNIT_EQUAL(0x00u, file->content[0]);
@@ -701,14 +701,14 @@ TSUNIT_DEFINE_TEST(BIOP_FileMessageXMLRoundTrip)
     const ts::xml::Element* xmsg = root->findFirstChild(u"BIOP_message", true);
     TSUNIT_ASSERT(xmsg != nullptr);
 
-    auto restored = ts::BIOPMessage::FromXML(duck, xmsg);
+    const auto restored = ts::BIOPMessage::FromXML(duck, xmsg);
     TSUNIT_ASSERT(restored != nullptr);
     TSUNIT_EQUAL("fil", restored->kindTag());
     TSUNIT_ASSERT(orig.object_key == restored->object_key);
     TSUNIT_ASSERT(orig.object_info == restored->object_info);
     TSUNIT_ASSERT(restored->header.isValid());
 
-    auto* file = dynamic_cast<ts::BIOPFileMessage*>(restored.get());
+    const auto file = std::dynamic_pointer_cast<ts::BIOPFileMessage>(restored);
     TSUNIT_ASSERT(file != nullptr);
     TSUNIT_EQUAL(orig.content.size(), file->content.size());
     TSUNIT_ASSERT(orig.content == file->content);
@@ -934,7 +934,7 @@ TSUNIT_DEFINE_TEST(BIOP_ServiceGatewayMessageParse)
     TSUNIT_EQUAL(0x01, msg->object_key[0]);
     TSUNIT_EQUAL(0u, msg->service_contexts.size());
 
-    auto* sg = dynamic_cast<ts::BIOPBindingListMessage*>(msg.get());
+    const auto sg = std::dynamic_pointer_cast<ts::BIOPBindingListMessage>(msg);
     TSUNIT_ASSERT(sg != nullptr);
     TSUNIT_EQUAL(3u, sg->bindings.size());
 
@@ -1005,12 +1005,12 @@ TSUNIT_DEFINE_TEST(BIOP_ServiceGatewayMessageXMLRoundTrip)
     const ts::xml::Element* xmsg = root->findFirstChild(u"BIOP_message", true);
     TSUNIT_ASSERT(xmsg != nullptr);
 
-    auto restored = ts::BIOPMessage::FromXML(duck, xmsg);
+    const auto restored = ts::BIOPMessage::FromXML(duck, xmsg);
     TSUNIT_ASSERT(restored != nullptr);
     TSUNIT_EQUAL("srg", restored->kindTag());
     TSUNIT_ASSERT(orig.object_key == restored->object_key);
 
-    auto* sg = dynamic_cast<ts::BIOPBindingListMessage*>(restored.get());
+    const auto sg = std::dynamic_pointer_cast<ts::BIOPBindingListMessage>(restored);
     TSUNIT_ASSERT(sg != nullptr);
     TSUNIT_EQUAL(3u, sg->bindings.size());
 

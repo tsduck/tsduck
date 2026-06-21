@@ -320,7 +320,7 @@ namespace ts {
         //! @param [in,out] buf Deserialization buffer.
         //! @return Parsed message, or nullptr on error or unsupported kind.
         //!
-        static std::unique_ptr<BIOPMessage> Parse(PSIBuffer& buf);
+        static std::shared_ptr<BIOPMessage> Parse(PSIBuffer& buf);
 
         //!
         //! This method converts a BIOPMessage to XML.
@@ -344,7 +344,7 @@ namespace ts {
         //! @param [in] element The XML element to parse.
         //! @return Parsed message, or nullptr on error or unsupported kind.
         //!
-        static std::unique_ptr<BIOPMessage> FromXML(DuckContext& duck, const xml::Element* element);
+        static std::shared_ptr<BIOPMessage> FromXML(DuckContext& duck, const xml::Element* element);
 
     protected:
         //!
@@ -352,7 +352,7 @@ namespace ts {
         //! @param [in] tag Trimmed object_kind string (e.g. "fil", "dir", "srg").
         //! @return A new, empty subclass instance, or nullptr if the kind is unsupported.
         //!
-        static std::unique_ptr<BIOPMessage> CreateForKind(const std::string& tag);
+        static std::shared_ptr<BIOPMessage> CreateForKind(const std::string& tag);
 
         //!
         //! Deserialize the subclass-specific message body.

@@ -14,7 +14,6 @@
 #include "tsjsonNumber.h"
 #include "tsjsonObject.h"
 #include "tsjsonString.h"
-#include "tsFatal.h"
 
 const ts::UString ts::xml::JSONConverter::HashName(u"#name");
 const ts::UString ts::xml::JSONConverter::HashNodes(u"#nodes");
@@ -74,8 +73,7 @@ ts::json::ValuePtr ts::xml::JSONConverter::convertToJSON(const Document& source,
 ts::json::ValuePtr ts::xml::JSONConverter::convertElementToJSON(const Element* model, const Element* source, const Tweaks& xml_tweaks) const
 {
     // Build the JSON object for the node.
-    json::ValuePtr jobj(new json::Object());
-    CheckNonNull(jobj.get());
+    json::ValuePtr jobj = std::make_shared<json::Object>();
     jobj->add(HashName, source->name());
 
     // Get all attributes of the XML element.
@@ -167,8 +165,7 @@ ts::json::ValuePtr ts::xml::JSONConverter::convertElementToJSON(const Element* m
 ts::json::ValuePtr ts::xml::JSONConverter::convertChildrenToJSON(const Element* model, const Element* parent, const Tweaks& xml_tweaks) const
 {
     // All JSON children are placed in an array.
-    json::ValuePtr jchildren(new json::Array());
-    CheckNonNull(jchildren.get());
+    json::ValuePtr jchildren = std::make_shared<json::Array>();
 
     // Content of the text children in the model.
     UString textModel;

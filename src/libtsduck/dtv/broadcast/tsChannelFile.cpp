@@ -13,7 +13,6 @@
 #include "tsxmlElement.h"
 #include "tsFileUtils.h"
 #include "tsErrCodeReport.h"
-#include "tsFatal.h"
 
 
 //----------------------------------------------------------------------------
@@ -88,7 +87,6 @@ bool ts::ChannelFile::TransportStream::addService(const ServicePtr& srv, ShareMo
         if (_services[i]->id == srv->id) {
             if (replace) {
                 _services[i] = copy == ShareMode::SHARE ? srv : std::make_shared<Service>(*srv);
-                CheckNonNull(_services[i].get());
                 return true;
             }
             else {
@@ -99,7 +97,6 @@ bool ts::ChannelFile::TransportStream::addService(const ServicePtr& srv, ShareMo
 
     // Add new service.
     _services.push_back(copy == ShareMode::SHARE ? srv : std::make_shared<Service>(*srv));
-    CheckNonNull(_services.back().get());
     return true;
 }
 
@@ -358,8 +355,7 @@ bool ts::ChannelFile::parseDocument(const xml::Document& doc)
     for (auto itnet : xnets) {
 
         // Build a new Network object at end of our list of networks.
-        const NetworkPtr net(new Network);
-        CheckNonNull(net.get());
+        const NetworkPtr net = std::make_shared<Network>();
         _networks.push_back(net);
 
         // Get network properties.
@@ -391,8 +387,7 @@ bool ts::ChannelFile::parseDocument(const xml::Document& doc)
                 for (const xml::Element* e = itts->firstChildElement(); e != nullptr; e = e->nextSiblingElement()) {
                     if (e->nameMatch(u"service")) {
                         // Get a service description.
-                        const ServicePtr srv(new Service);
-                        CheckNonNull(srv.get());
+                        const ServicePtr srv = std::make_shared<Service>();
 
                         // Get service properties.
                         success =

@@ -9,7 +9,6 @@
 #include "tsTablePatchXML.h"
 #include "tsxmlPatchDocument.h"
 #include "tsxmlElement.h"
-#include "tsFatal.h"
 #include "tsArgs.h"
 #include "tsEIT.h"
 #include "tsDuckContext.h"
@@ -88,8 +87,7 @@ bool ts::TablePatchXML::loadPatchFiles(const xml::Tweaks& tweaks)
     // Load Xml files one by one.
     bool ok = true;
     for (size_t i = 0; i < _patchFiles.size(); ++i) {
-        PatchDocumentPtr doc(new xml::PatchDocument(_duck.report()));
-        CheckNonNull(doc.get());
+        PatchDocumentPtr doc = std::make_shared<xml::PatchDocument>(_duck.report());
         doc->setTweaks(tweaks);
         if (doc->load(_patchFiles[i], false)) {
             _patches.push_back(doc);

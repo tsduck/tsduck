@@ -22,7 +22,6 @@
 #include "tsTSPacketQueue.h"
 #include "tsPacketInsertionController.h"
 #include "tsThread.h"
-#include "tsFatal.h"
 
 #define DEFAULT_MAX_QUEUED_PACKETS  1000            // Default size in packet of the inter-thread queue.
 #define SERVER_THREAD_STACK_SIZE    (128 * 1024)    // Size in byte of the thread stack.
@@ -337,7 +336,6 @@ bool ts::MergePlugin::startStopCommand(bool do_close, bool do_restart)
     // Allocate the new object. Atomically swap the safe pointer. This action
     // will synchronously deallocate the previous object.
     _pipe = std::make_shared<TSForkPipe>();
-    CheckNonNull(_pipe.get());
 
     // Note on buffer size: we use DEFAULT_MAX_QUEUED_PACKETS instead of _max_queue
     // because this is the size of the system pipe buffer (Windows only). This is

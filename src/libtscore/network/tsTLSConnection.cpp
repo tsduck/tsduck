@@ -8,7 +8,6 @@
 
 #include "tsTLSConnection.h"
 #include "tsFeatures.h"
-#include "tsFatal.h"
 
 
 //----------------------------------------------------------------------------
@@ -35,14 +34,12 @@ ts::TLSConnection::TLSConnection(Report* report, Object* owner) :
     TCPConnection(report, false, owner)
 {
     allocateGuts();
-    CheckNonNull(_guts);
 }
 
 ts::TLSConnection::TLSConnection(ReporterBase* delegate, Object* owner) :
     TCPConnection(delegate, false, owner)
 {
     allocateGuts();
-    CheckNonNull(_guts);
 }
 
 ts::TLSConnection::~TLSConnection()

@@ -1039,23 +1039,23 @@ bool ts::TablesLogger::AnalyzeUDPMessage(const duck::Protocol& protocol, const u
         tlv::MessagePtr msg(mf.factory());
 
         // We expected only two possible messages:
-        const duck::LogSection* logSection = dynamic_cast<const duck::LogSection*>(msg.get());
-        const duck::LogTable* logTable = dynamic_cast<const duck::LogTable*>(msg.get());
+        const auto log_section = std::dynamic_pointer_cast<duck::LogSection>(msg);
+        const auto log_table = std::dynamic_pointer_cast<duck::LogTable>(msg);
 
-        if (logSection != nullptr) {
-            scDate = logSection->timestamp;
-            pid = logSection->pid;
-            if (logSection->section == nullptr || !logSection->section->isValid()) {
+        if (log_section != nullptr) {
+            scDate = log_section->timestamp;
+            pid = log_section->pid;
+            if (log_section->section == nullptr || !log_section->section->isValid()) {
                 return false;
             }
             else {
-                sections.push_back(logSection->section);
+                sections.push_back(log_section->section);
             }
         }
-        else if (logTable != nullptr) {
-            scDate = logTable->timestamp;
-            pid = logTable->pid;
-            sections = logTable->sections;
+        else if (log_table != nullptr) {
+            scDate = log_table->timestamp;
+            pid = log_table->pid;
+            sections = log_table->sections;
         }
         else {
             return false;

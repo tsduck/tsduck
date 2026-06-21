@@ -8,7 +8,6 @@
 
 #include "tsMuxer.h"
 #include "tstsmuxCore.h"
-#include "tsFatal.h"
 
 
 //----------------------------------------------------------------------------
@@ -58,7 +57,6 @@ bool ts::Muxer::start(const MuxerArgs& args)
 
     // Allocate a muxer core object.
     _core = new tsmux::Core(args, *this, _report);
-    CheckNonNull(_core);
     return _core->start();
 }
 

@@ -12,7 +12,6 @@
 #include "tsxmlComment.h"
 #include "tsxmlUnknown.h"
 #include "tsFileUtils.h"
-#include "tsFatal.h"
 
 
 //----------------------------------------------------------------------------
@@ -256,11 +255,8 @@ ts::xml::Element* ts::xml::Document::initialize(const UString& rootName, const U
     clear();
 
     // Create the initial declaration.
-    Declaration* decl = new Declaration(this, declaration);
-    CheckNonNull(decl);
+    new Declaration(this, declaration);
 
     // Create the document root.
-    Element* root = new Element(this, rootName);
-    CheckNonNull(root);
-    return root;
+    return new Element(this, rootName);
 }

@@ -378,7 +378,7 @@ TSUNIT_DEFINE_TEST(PrivateDescriptors)
     desc = pmt.streams[100].descs[1].deserialize(duck, context2);
     TSUNIT_ASSERT(desc != nullptr);
 
-    ts::CueIdentifierDescriptor* cue_desc = dynamic_cast<ts::CueIdentifierDescriptor*>(desc.get());
+    auto cue_desc = std::dynamic_pointer_cast<ts::CueIdentifierDescriptor>(desc);
     TSUNIT_ASSERT(cue_desc != nullptr);
     TSUNIT_EQUAL(ts::CUE_SEGMENTATION, cue_desc->cue_stream_type);
 
@@ -407,7 +407,7 @@ TSUNIT_DEFINE_TEST(PrivateDescriptors)
     desc = pmt.streams[100].descs[4].deserialize(duck, context4);
     TSUNIT_ASSERT(desc != nullptr);
 
-    ts::EacemStreamIdentifierDescriptor* esi_desc = dynamic_cast<ts::EacemStreamIdentifierDescriptor*>(desc.get());
+    auto esi_desc = std::dynamic_pointer_cast<ts::EacemStreamIdentifierDescriptor>(desc);
     TSUNIT_ASSERT(esi_desc != nullptr);
     TSUNIT_EQUAL(9, esi_desc->version);
 }

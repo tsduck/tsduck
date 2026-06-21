@@ -7,7 +7,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsBuffer.h"
-#include "tsFatal.h"
 
 
 //----------------------------------------------------------------------------
@@ -68,7 +67,6 @@ ts::Buffer::Buffer(size_t size) :
     _state(false, size)
 {
     _buffer = new uint8_t[_buffer_size];
-    CheckNonNull(_buffer);
 }
 
 
@@ -89,7 +87,6 @@ void ts::Buffer::reset(size_t size)
     if (!_allocated || _buffer == nullptr) {
         _buffer_size = std::max(MINIMUM_SIZE, size);
         _buffer = new uint8_t[_buffer_size];
-        CheckNonNull(_buffer);
     }
 
     // Reset other properties.
@@ -219,7 +216,6 @@ ts::Buffer::Buffer(const Buffer& other) :
     if (_buffer != nullptr && _allocated) {
         // Private internal buffer, copy resources.
         _buffer = new uint8_t[_buffer_size];
-        CheckNonNull(_buffer);
         MemCopy(_buffer, other._buffer, _buffer_size);
     }
 }
@@ -277,7 +273,6 @@ ts::Buffer& ts::Buffer::operator=(const Buffer& other)
         if (_buffer != nullptr && _allocated) {
             // Private internal buffer, copy resources.
             _buffer = new uint8_t[_buffer_size];
-            CheckNonNull(_buffer);
             MemCopy(_buffer, other._buffer, _buffer_size);
         }
     }
@@ -547,7 +542,6 @@ bool ts::Buffer::resize(size_t size, bool reallocate)
         // Allocate new buffer.
         const size_t new_buffer_size = std::max(MINIMUM_SIZE, new_size);
         uint8_t* const new_buffer = new uint8_t[new_buffer_size];
-        CheckNonNull(new_buffer);
 
         // Copy previous buffer and deallocate it.
         if (_buffer != nullptr) {

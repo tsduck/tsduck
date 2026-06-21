@@ -11,7 +11,6 @@
 #include "tstspOutputExecutor.h"
 #include "tstspProcessorExecutor.h"
 #include "tstspControlServer.h"
-#include "tsFatal.h"
 
 
 //----------------------------------------------------------------------------
@@ -110,11 +109,7 @@ bool ts::TSProcessor::start(const TSProcessorArgs& args)
         // high as the input which must remain the top-most priority?
 
         _input = new tsp::InputExecutor(_args, *this, _args.input, ThreadAttributes().setPriority(ts::ThreadAttributes::GetMaximumPriority()), _global_mutex, &_report);
-        CheckNonNull(_input);
-
         _output = new tsp::OutputExecutor(_args, *this, _args.output, ThreadAttributes().setPriority(ts::ThreadAttributes::GetHighPriority()), _global_mutex, &_report);
-        CheckNonNull(_output);
-
         _output->ringInsertAfter(_input);
 
         // Check if at least one plugin prefers real-time defaults.
@@ -122,7 +117,6 @@ bool ts::TSProcessor::start(const TSProcessorArgs& args)
 
         for (size_t i = 0; i < _args.plugins.size(); ++i) {
             tsp::PluginExecutor* p = new tsp::ProcessorExecutor(_args, *this, i, ThreadAttributes(), _global_mutex, &_report);
-            CheckNonNull(p);
             p->ringInsertBefore(_output);
             realtime = realtime || p->isRealTime();
         }
@@ -158,7 +152,6 @@ bool ts::TSProcessor::start(const TSProcessorArgs& args)
 
         // Allocate a memory-resident buffer of TS packets
         _packet_buffer = new PacketBuffer(_args.ts_buffer_size / ts::PKT_SIZE);
-        CheckNonNull(_packet_buffer);
         if (!_packet_buffer->isLocked()) {
             _report.debug(u"tsp: buffer failed to lock into physical memory (%d: %s), risk of real-time issue",
                           _packet_buffer->lockErrorCode().value(), _packet_buffer->lockErrorCode().message());
@@ -168,7 +161,6 @@ bool ts::TSProcessor::start(const TSProcessorArgs& args)
         // Buffer for the packet metadata.
         // A packet and its metadata have the same index in their respective buffer.
         _metadata_buffer = new PacketMetadataBuffer(_packet_buffer->count());
-        CheckNonNull(_metadata_buffer);
 
         // End of locked section.
     }
@@ -207,7 +199,6 @@ bool ts::TSProcessor::start(const TSProcessorArgs& args)
 
     // Create a control server thread. Display but ignore errors (not a fatal error).
     _control = new tsp::ControlServer(_args, _report, _global_mutex, _input);
-    CheckNonNull(_control);
     _control->open();
 
     return true;

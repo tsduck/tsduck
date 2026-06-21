@@ -14,7 +14,6 @@
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
-#include "tsFatal.h"
 
 #define MY_XML_NAME u"SDT"
 #define MY_CLASS ts::SDT
@@ -301,8 +300,7 @@ void ts::SDT::ServiceEntry::setString(DuckContext& duck, UString ServiceDescript
         // No valid service_descriptor, add a new one.
         ServiceDescriptor sd(service_type);
         sd.*field = value;
-        DescriptorPtr dp(new Descriptor);
-        CheckNonNull(dp.get());
+        DescriptorPtr dp = std::make_shared<Descriptor>();
         sd.serialize(duck, *dp);
         if (dp->isValid()) {
             descs.add(dp);

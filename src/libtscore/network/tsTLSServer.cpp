@@ -7,7 +7,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsTLSServer.h"
-#include "tsFatal.h"
 
 
 //----------------------------------------------------------------------------
@@ -18,14 +17,12 @@ ts::TLSServer::TLSServer(Report* report, Object* owner) :
     TCPServer(report, false,owner)
 {
     allocateGuts();
-    CheckNonNull(_guts);
 }
 
 ts::TLSServer::TLSServer(ReporterBase* delegate, Object* owner) :
     TCPServer(delegate, false, owner)
 {
     allocateGuts();
-    CheckNonNull(_guts);
 }
 
 ts::TLSServer::~TLSServer()

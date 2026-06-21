@@ -9,7 +9,6 @@
 #include "tsInputSwitcher.h"
 #include "tstsswitchCore.h"
 #include "tstsswitchCommandListener.h"
-#include "tsFatal.h"
 
 
 //----------------------------------------------------------------------------
@@ -69,13 +68,11 @@ bool ts::InputSwitcher::start(const InputSwitcherArgs& args)
 
     // Create the tsswitch core instance.
     _core = new tsswitch::Core(_args, *this, _report);
-    CheckNonNull(_core);
     _success = !_report.gotErrors();
 
     // If a remote control is specified, start a UDP listener thread.
     if (_success && _args.remote_control.server_addr.hasPort()) {
         _remote = new tsswitch::CommandListener(*_core, _args, _report);
-        CheckNonNull(_remote);
         _success = _remote->open();
     }
 

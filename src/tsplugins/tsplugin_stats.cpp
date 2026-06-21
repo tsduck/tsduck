@@ -16,7 +16,6 @@
 #include "tsSingleDataStatistics.h"
 #include "tsFileNameGenerator.h"
 #include "tsFileUtils.h"
-#include "tsFatal.h"
 
 
 //----------------------------------------------------------------------------
@@ -369,8 +368,7 @@ ts::StatsPlugin::ContextPtr ts::StatsPlugin::getContext(size_t index)
         return it->second;
     }
     else {
-        ContextPtr ptr(new Context);
-        CheckNonNull(ptr.get());
+        ContextPtr ptr = std::make_shared<Context>();
         _ctx_map[index] = ptr;
         return ptr;
     }

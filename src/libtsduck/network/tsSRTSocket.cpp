@@ -474,7 +474,6 @@ ts::SRTSocket::SRTSocket(Report* report, Object* owner) :
     ReporterBase(report, owner),
     _guts(new Guts(this))
 {
-    CheckNonNull(_guts);
 }
 
 

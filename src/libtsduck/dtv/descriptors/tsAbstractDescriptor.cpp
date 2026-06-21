@@ -11,7 +11,6 @@
 #include "tsDescriptorList.h"
 #include "tsPSIBuffer.h"
 #include "tsPSIRepository.h"
-#include "tsFatal.h"
 
 
 //----------------------------------------------------------------------------
@@ -72,8 +71,7 @@ bool ts::AbstractDescriptor::serialize(DuckContext& duck, Descriptor& bin) const
         duck.addStandards(definingStandards());
 
         // Allocate a byte block of the maximum descriptor size.
-        ByteBlockPtr bbp(new ByteBlock(MAX_DESCRIPTOR_SIZE));
-        CheckNonNull(bbp.get());
+        ByteBlockPtr bbp = std::make_shared<ByteBlock>(MAX_DESCRIPTOR_SIZE);
 
         // Map a serialization buffer over the payload part.
         PSIBuffer buf(duck, bbp->data() + 2, bbp->size() - 2, false);

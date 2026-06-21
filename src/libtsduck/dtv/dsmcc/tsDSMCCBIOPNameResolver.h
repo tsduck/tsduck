@@ -69,9 +69,9 @@ namespace ts {
         //!
         //! Defer a BIOP message for later emission, in arrival order.
         //! @param [in] module_id Module the message was parsed from.
-        //! @param [in] msg The parsed message (ownership transferred).
+        //! @param [in] msg The parsed message.
         //!
-        void defer(uint16_t module_id, std::unique_ptr<BIOPMessage> msg);
+        void defer(uint16_t module_id, std::shared_ptr<BIOPMessage> msg);
 
         //!
         //! Emit every deferred message whose name now resolves. Messages that still
@@ -101,7 +101,7 @@ namespace ts {
 
         struct PendingEmit {
             uint16_t module_id {};
-            std::unique_ptr<BIOPMessage> msg {};
+            std::shared_ptr<BIOPMessage> msg {};
         };
 
         std::map<NameKey, ParentLink> _parent_link {};

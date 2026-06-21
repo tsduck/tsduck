@@ -16,7 +16,6 @@
 #include "tsSectionDemux.h"
 #include "tsPacketizer.h"
 #include "tsBoolPredicate.h"
-#include "tsFatal.h"
 
 
 //----------------------------------------------------------------------------
@@ -347,8 +346,7 @@ void ts::SectionsPlugin::handleSection(SectionDemux& demux, const Section& secti
         // At this point, we need to keep the section.
 
         // Build a copy of it for insertion in the queue.
-        SectionPtr sp(new Section(section, ShareMode::SHARE));
-        CheckNonNull(sp.get());
+        SectionPtr sp = std::make_shared<Section>(section, ShareMode::SHARE);
 
         // Process XML patching.
         if (!_patch_xml.applyPatches(sp)) {

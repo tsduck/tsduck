@@ -9,6 +9,12 @@
 //!  @file
 //!  Handle some fatal situations.
 //!
+//!  *Important*: By default, without specific "nothrow" form of allocator,
+//!  the operator "new" and std::make_shared() never return a null pointer.
+//!  They throw std::bad_alloc in case of allocation failure. Therefore, it
+//!  is useless to test such new pointers for a null value and trigger a
+//!  fatal error.
+//!
 //----------------------------------------------------------------------------
 
 #pragma once
@@ -40,27 +46,4 @@ namespace ts {
     //! in a static way. In that kind of fatal error, we can't even dare to call strlen().
     //!
     [[noreturn]] TSCOREDLL void FatalError(const char* message, size_t length);
-
-    //!
-    //! Handle fatal memory allocation failure.
-    //! Out of virtual memory, very dangerous situation, really can't
-    //! recover from that, need to abort immediately. An emergency error
-    //! message is output and the application is terminated.
-    //! @ingroup app
-    //!
-    [[noreturn]] TSCOREDLL void FatalMemoryAllocation();
-
-    //!
-    //! Check the value of a pointer and abort the application when zero.
-    //! This function is typically after a new.
-    //! @ingroup app
-    //! @param [in] ptr The pointer to check.
-    //! @see FatalMemoryAllocation()
-    //!
-    TSCOREDLL inline void CheckNonNull(const void* ptr)
-    {
-        if (ptr == nullptr) {
-            FatalMemoryAllocation();
-        }
-    }
 }

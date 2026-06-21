@@ -418,7 +418,7 @@ void ts::DataInjectPlugin::provideSection(SectionCounter counter, SectionPtr& se
 bool ts::DataInjectPlugin::processBandwidthRequest(const tlv::MessagePtr& request, emmgmux::StreamBWAllocation& response)
 {
     // Interpret the message as a stream_BW_request.
-    emmgmux::StreamBWRequest* m = dynamic_cast<emmgmux::StreamBWRequest*>(request.get());
+    const auto m = std::dynamic_pointer_cast<emmgmux::StreamBWRequest>(request);
     if (m == nullptr) {
         error(u"incorrect message, expected stream_BW_request");
         return false;
@@ -457,7 +457,7 @@ bool ts::DataInjectPlugin::processBandwidthRequest(const tlv::MessagePtr& reques
 bool ts::DataInjectPlugin::processDataProvision(const tlv::MessagePtr& msg)
 {
     // Interpret the message as a stream_BW_request.
-    emmgmux::DataProvision* m = dynamic_cast<emmgmux::DataProvision*>(msg.get());
+    const auto m = std::dynamic_pointer_cast<emmgmux::DataProvision>(msg);
     if (m == nullptr) {
         error(u"incorrect message, expected data_provision");
         return false;
@@ -607,7 +607,7 @@ void ts::DataInjectPlugin::TCPListener::main()
                             ok = false;
                         }
                         else {
-                            emmgmux::ChannelSetup* m = dynamic_cast<emmgmux::ChannelSetup*>(msg.get());
+                            const auto m = std::dynamic_pointer_cast<emmgmux::ChannelSetup>(msg);
                             assert (m != nullptr);
                             // First, declare the channel as established.
                             {
@@ -667,7 +667,7 @@ void ts::DataInjectPlugin::TCPListener::main()
                             ok = false;
                         }
                         else {
-                            emmgmux::StreamSetup* m = dynamic_cast<emmgmux::StreamSetup*>(msg.get());
+                            const auto m = std::dynamic_pointer_cast<emmgmux::StreamSetup>(msg);
                             assert(m != nullptr);
                             // First, declare the stream as established.
                             _plugin->_data_id = m->data_id;
@@ -719,7 +719,7 @@ void ts::DataInjectPlugin::TCPListener::main()
                             // First, declare the stream as closed.
                             _plugin->_stream_established = false;
                             // Send the stream_close_response
-                            emmgmux::StreamCloseRequest* m = dynamic_cast<emmgmux::StreamCloseRequest*>(msg.get());
+                            const auto m = std::dynamic_pointer_cast<emmgmux::StreamCloseRequest>(msg);
                             assert (m != nullptr);
                             resp.channel_id = m->channel_id;
                             resp.stream_id = m->stream_id;

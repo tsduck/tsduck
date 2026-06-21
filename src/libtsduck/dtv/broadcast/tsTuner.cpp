@@ -10,7 +10,6 @@
 #include "tsTunerDevice.h"
 #include "tsTunerEmulator.h"
 #include "tsDuckContext.h"
-#include "tsFatal.h"
 
 
 //-----------------------------------------------------------------------------
@@ -24,7 +23,6 @@ ts::Tuner::Tuner(DuckContext& duck) :
     _device(new TunerDevice(duck)),
     _current(_device)
 {
-    CheckNonNull(_device);
 }
 
 ts::Tuner::Tuner(DuckContext& duck, const UString& device_name, bool info_only) :
@@ -64,7 +62,6 @@ bool ts::Tuner::open(const UString& device_name, bool info_only)
         if (_emulator == nullptr) {
             // First time we use an emulator, allocate one.
             _emulator = new TunerEmulator(_duck);
-            CheckNonNull(_emulator);
         }
         if (_emulator->open(device_name, info_only)) {
             // Use the emulator as current device only when successfully used.

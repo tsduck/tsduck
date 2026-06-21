@@ -9,9 +9,7 @@
 #include "tsPSIMerger.h"
 #include "tsCADescriptor.h"
 #include "tsTSPacket.h"
-#include "tsAlgorithm.h"
 #include "tsEIT.h"
-#include "tsFatal.h"
 
 
 //----------------------------------------------------------------------------
@@ -363,8 +361,7 @@ void ts::PSIMerger::handleSection(SectionDemux& demux, const Section& section)
     if (is_eit && (_options & MERGE_EIT) != 0) {
 
         // Create a copy of the section object (shared section data).
-        const SectionPtr sp(new Section(section, ShareMode::SHARE));
-        CheckNonNull(sp.get());
+        const SectionPtr sp = std::make_shared<Section>(section, ShareMode::SHARE);
 
         if (demux.demuxId() != DEMUX_MERGE_EIT || !is_actual) {
             // Not an EIT-Actual from the merge stream, pass section without modification.

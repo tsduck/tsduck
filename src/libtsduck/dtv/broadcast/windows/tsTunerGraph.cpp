@@ -9,7 +9,6 @@
 #include "tsTunerGraph.h"
 #include "tsDuckContext.h"
 #include "tsDirectShowUtils.h"
-#include "tsFatal.h"
 
 
 //-----------------------------------------------------------------------------
@@ -277,7 +276,6 @@ bool ts::TunerGraph::buildGraphAtTee(const ComPtr<::IBaseFilter>& base_filter, R
 
     // Create branch A of graph: Create a sink filter, add it to the graph and connect it to the tee.
     ComPtr<SinkFilter> sink(new SinkFilter(report));
-    CheckNonNull(sink.pointer());
     ok = ok &&
          addFilter(sink.pointer(), L"Sink/Capture", report) &&
          connectFilters(tee_filter.pointer(), sink.pointer(), debug_report);

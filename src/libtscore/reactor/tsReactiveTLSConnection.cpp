@@ -8,7 +8,6 @@
 
 #include "tsReactiveTLSConnection.h"
 #include "tsTLSConnection.h"
-#include "tsFatal.h"
 
 
 //----------------------------------------------------------------------------
@@ -19,7 +18,6 @@ ts::ReactiveTLSConnection::ReactiveTLSConnection(Reactor& reactor, TCPConnection
     ReactiveTCPConnection(reactor, socket, owner)
 {
     allocateGuts();
-    CheckNonNull(_guts);
 
     // The socket must be an instance of TCPConnection, not an instance of TLSConnection.
     // Detect and report trivial misusages.

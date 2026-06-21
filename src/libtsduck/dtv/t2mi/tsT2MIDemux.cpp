@@ -12,7 +12,6 @@
 #include "tsBinaryTable.h"
 #include "tsPAT.h"
 #include "tsMemory.h"
-#include "tsFatal.h"
 
 
 //----------------------------------------------------------------------------
@@ -96,7 +95,6 @@ void ts::T2MIDemux::feedPacket(const TSPacket& pkt)
     PIDContextPtr& pc(_pids[pid]);
     if (pc == nullptr) {
         pc = std::make_shared<PIDContext>();
-        CheckNonNull(pc.get());
     }
 
     // Ignore packets without a payload (their CC should not be incremented, no need to check the synchronization).
@@ -271,7 +269,6 @@ void ts::T2MIDemux::demuxTS(PID pid, PIDContext& pc, const T2MIPacket& pkt)
     PLPContextPtr& plpp(pc.plps[plp]);
     if (plpp == nullptr) {
         plpp = std::make_shared<PLPContext>();
-        CheckNonNull(plpp.get());
     }
 
     if (syncd == 0xFFFF) {

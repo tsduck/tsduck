@@ -10,7 +10,6 @@
 #include "tsRISTPluginData.h"
 #include "tsTSDatagramOutput.h"
 #include "tsPluginRepository.h"
-#include "tsFatal.h"
 
 
 //----------------------------------------------------------------------------
@@ -74,8 +73,6 @@ ts::RISTOutputPlugin::RISTOutputPlugin(TSP* tsp_) :
     OutputPlugin(tsp_, u"Send TS packets using Reliable Internet Stream Transport (RIST)", u"[options] url [url...]"),
     _guts(new Guts(this))
 {
-    CheckNonNull(_guts);
-
     _guts->datagram.defineArgs(*this);
     _guts->rist.defineArgs(*this);
 

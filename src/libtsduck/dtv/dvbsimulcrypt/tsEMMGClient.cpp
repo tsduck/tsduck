@@ -491,7 +491,7 @@ void ts::EMMGClient::main()
                 }
                 case emmgmux::Tags::stream_BW_allocation: {
                     // Store returned bandwidth.
-                        emmgmux::StreamBWAllocation* const resp = dynamic_cast<emmgmux::StreamBWAllocation*>(msg.get());
+                    const auto resp = std::dynamic_pointer_cast<emmgmux::StreamBWAllocation>(msg);
                     assert(resp != nullptr);
                     {
                         std::lock_guard<std::recursive_mutex> lock(_mutex);
@@ -501,7 +501,7 @@ void ts::EMMGClient::main()
                 }
                 case emmgmux::Tags::stream_error: {
                     // Store returned error.
-                        emmgmux::StreamError* const resp = dynamic_cast<emmgmux::StreamError*>(msg.get());
+                    const auto resp = std::dynamic_pointer_cast<emmgmux::StreamError>(msg);
                     assert(resp != nullptr);
                     {
                         std::lock_guard<std::recursive_mutex> lock(_mutex);
@@ -512,7 +512,7 @@ void ts::EMMGClient::main()
                 }
                 case emmgmux::Tags::channel_error: {
                     // Store returned error.
-                        emmgmux::ChannelError* const resp = dynamic_cast<emmgmux::ChannelError*>(msg.get());
+                    const auto resp = std::dynamic_pointer_cast<emmgmux::ChannelError>(msg);
                     assert(resp != nullptr);
                     {
                         std::lock_guard<std::recursive_mutex> lock(_mutex);

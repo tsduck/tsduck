@@ -17,7 +17,6 @@
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
-#include "tsFatal.h"
 
 #define MY_XML_NAME u"EIT"
 #define MY_CLASS ts::EIT
@@ -590,8 +589,7 @@ ts::EIT::BinaryEvent::BinaryEvent(TID tid, const uint8_t*& data, size_t& size) :
 ts::SectionPtr ts::EIT::BuildEmptySection(TID tid, uint8_t section_number, const ServiceIdTriplet& serv, SectionPtrVector& sections)
 {
     // Build section data.
-    ByteBlockPtr section_data(new ByteBlock(LONG_SECTION_HEADER_SIZE + EIT_PAYLOAD_FIXED_SIZE + SECTION_CRC32_SIZE));
-    CheckNonNull(section_data.get());
+    ByteBlockPtr section_data = std::make_shared<ByteBlock>(LONG_SECTION_HEADER_SIZE + EIT_PAYLOAD_FIXED_SIZE + SECTION_CRC32_SIZE);
     uint8_t* data = section_data->data();
 
     // Section header

@@ -15,7 +15,6 @@
 #include "tsxmlJSONConverter.h"
 #include "tsjsonNull.h"
 #include "tsEIT.h"
-#include "tsFatal.h"
 
 
 //----------------------------------------------------------------------------
@@ -140,8 +139,7 @@ size_t ts::SectionFile::packOrphanSections()
         }
 
         // Build a binary table from orphan sections.
-        BinaryTablePtr table(new BinaryTable);
-        CheckNonNull(table.get());
+        BinaryTablePtr table = std::make_shared<BinaryTable>();
         table->addSections(first, end, true, true);
 
         // Compress all sections to make a valid table.
@@ -218,8 +216,7 @@ void ts::SectionFile::collectLastTable()
     }
 
     // We have now identified sections for a complete table.
-    BinaryTablePtr table(new BinaryTable);
-    CheckNonNull(table.get());
+    BinaryTablePtr table = std::make_shared<BinaryTable>();
     if (!table->addSections(first, _orphanSections.end(), false, false) || !table->isValid()) {
         // Invalid table after all.
         return;
@@ -570,8 +567,7 @@ bool ts::SectionFile::parseDocument(const xml::Document& doc)
 
     // Analyze all tables in the document.
     for (const xml::Element* node = root == nullptr ? nullptr : root->firstChildElement(); node != nullptr; node = node->nextSiblingElement()) {
-        BinaryTablePtr bin(new BinaryTable);
-        CheckNonNull(bin.get());
+        BinaryTablePtr bin = std::make_shared<BinaryTable>();
         if (bin->fromXML(_duck, node) && bin->isValid()) {
             add(bin);
         }

@@ -24,16 +24,3 @@ void ts::FatalError(const char* message, size_t length)
 #endif
     std::exit(EXIT_FAILURE);
 }
-
-
-//----------------------------------------------------------------------------
-// Out of virtual memory, very dangerous situation, really can't
-// recover from that, need to abort immediately. We can't even
-// try to use some sophisticated C++ library since it may require
-// memory allocation.
-//----------------------------------------------------------------------------
-
-void ts::FatalMemoryAllocation()
-{
-    TS_FATAL("Fatal virtual memory allocation failure");
-}

@@ -32,7 +32,6 @@
 #include "tsReactor.h"
 #include "tsEnvironment.h"
 #include "tsCanary.h"
-#include "tsFatal.h"
 #include "tsNames.h"
 
 
@@ -70,14 +69,12 @@ ts::Reactor::Reactor(Report* report, Object* owner) :
     ReporterBase(report, owner),
     _guts(allocateGuts())
 {
-    CheckNonNull(_guts);
 }
 
 ts::Reactor::Reactor(ReporterBase* delegate, Object* owner) :
     ReporterBase(delegate, owner),
     _guts(allocateGuts())
 {
-    CheckNonNull(_guts);
 }
 
 ts::Reactor::~Reactor()

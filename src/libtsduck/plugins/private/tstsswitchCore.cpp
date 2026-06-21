@@ -7,8 +7,6 @@
 //----------------------------------------------------------------------------
 
 #include "tstsswitchCore.h"
-#include "tsAlgorithm.h"
-#include "tsFatal.h"
 
 
 //----------------------------------------------------------------------------
@@ -27,7 +25,6 @@ ts::tsswitch::Core::Core(const InputSwitcherArgs& opt, const PluginEventHandlerR
     // Load all input plugins, analyze their options.
     for (size_t i = 0; i < _inputs.size(); ++i) {
         _inputs[i] = new InputExecutor(opt, handlers, i, *this, log);
-        CheckNonNull(_inputs[i]);
         // Set the asynchronous logger as report method for all executors.
         _inputs[i]->delegateReport(&_log);
         _inputs[i]->setMaxSeverity(_log.maxSeverity());

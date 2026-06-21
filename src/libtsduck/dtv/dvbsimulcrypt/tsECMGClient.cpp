@@ -121,7 +121,7 @@ bool ts::ECMGClient::connect(const ECMGClientArgs& args,
     if (msg->tag() != ecmgscs::Tags::channel_status) {
         return abortConnection(u"unexpected response from ECMG (expected channel_status):\n" + msg->dump(4));
     }
-    ecmgscs::ChannelStatus* const csp = dynamic_cast<ecmgscs::ChannelStatus*>(msg.get());
+    const auto csp = std::dynamic_pointer_cast<ecmgscs::ChannelStatus>(msg);
     assert(csp != nullptr);
     channel_status = _channel_status = *csp;
 
@@ -142,7 +142,7 @@ bool ts::ECMGClient::connect(const ECMGClientArgs& args,
     if (msg->tag() != ecmgscs::Tags::stream_status) {
         return abortConnection(u"unexpected response from ECMG (expected stream_status):\n" + msg->dump(4));
     }
-    ecmgscs::StreamStatus* const ssp = dynamic_cast<ecmgscs::StreamStatus*>(msg.get());
+    const auto ssp = std::dynamic_pointer_cast<ecmgscs::StreamStatus>(msg);
     assert(ssp != nullptr);
     stream_status = _stream_status = *ssp;
 
@@ -280,7 +280,7 @@ bool ts::ECMGClient::generateECM(uint16_t cp_number,
         return false;
     }
     if (resp->tag() == ecmgscs::Tags::ECM_response) {
-        ecmgscs::ECMResponse* const ep = dynamic_cast <ecmgscs::ECMResponse*>(resp.get());
+        const auto ep = std::dynamic_pointer_cast<ecmgscs::ECMResponse>(resp);
         assert(ep != nullptr);
         if (ep->CP_number == cp_number) {
             // This is our ECM
@@ -378,7 +378,7 @@ void ts::ECMGClient::main()
                 }
                 case ecmgscs::Tags::ECM_response: {
                     // Check if this is an asynchronous ECM response
-                        ecmgscs::ECMResponse* const resp = dynamic_cast <ecmgscs::ECMResponse*>(msg.get());
+                    const auto resp = std::dynamic_pointer_cast<ecmgscs::ECMResponse>(msg);
                     assert(resp != nullptr);
                     ECMGClientHandlerInterface* handler = nullptr;
                     {

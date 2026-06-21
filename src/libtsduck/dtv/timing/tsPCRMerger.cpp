@@ -7,7 +7,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsPCRMerger.h"
-#include "tsFatal.h"
 
 
 //----------------------------------------------------------------------------
@@ -173,8 +172,7 @@ ts::PCRMerger::PIDContextPtr ts::PCRMerger::getContext(PID pid)
         return ctx->second;
     }
     else {
-        PIDContextPtr ptr(new PIDContext(pid));
-        CheckNonNull(ptr.get());
+        PIDContextPtr ptr = std::make_shared<PIDContext>(pid);
         _pid_ctx[pid] = ptr;
         return ptr;
     }

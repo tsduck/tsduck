@@ -11,7 +11,6 @@
 #include "tsDektecArgsUtils.h"
 #include "tsDektecDevice.h"
 #include "tsModulation.h"
-#include "tsFatal.h"
 #include "tsLNB.h"
 
 // Consider that the first 5 receive() are "initialization". If a full input FIFO is
@@ -77,8 +76,6 @@ ts::DektecInputPlugin::DektecInputPlugin(TSP* tsp_) :
     InputPlugin(tsp_, u"Receive packets from a Dektec DVB-ASI or demodulator device", u"[options]"),
     _guts(new Guts)
 {
-    CheckNonNull(_guts);
-
     // Share same option --dvbt-bandwidth for DVB-T2 and DVB-T.
     assert(DTAPI_DVBT2_5MHZ == DTAPI_MOD_DVBT_5MHZ);
     assert(DTAPI_DVBT2_6MHZ == DTAPI_MOD_DVBT_6MHZ);

@@ -7,7 +7,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsDSMCCBIOPMessage.h"
-#include "tsNames.h"
 #include "tsxmlElement.h"
 #include <cstring>
 
@@ -190,7 +189,7 @@ std::string ts::BIOPMessage::kindTag() const
 // BIOPMessage - CreateForKind factory
 //----------------------------------------------------------------------------
 
-std::unique_ptr<ts::BIOPMessage> ts::BIOPMessage::CreateForKind(const std::string& tag)
+std::shared_ptr<ts::BIOPMessage> ts::BIOPMessage::CreateForKind(const std::string& tag)
 {
     if (tag == BIOPObjectKind::FILE) {
         return std::make_unique<BIOPFileMessage>();
@@ -206,7 +205,7 @@ std::unique_ptr<ts::BIOPMessage> ts::BIOPMessage::CreateForKind(const std::strin
 // BIOPMessage - static Parse factory
 //----------------------------------------------------------------------------
 
-std::unique_ptr<ts::BIOPMessage> ts::BIOPMessage::Parse(PSIBuffer& buf)
+std::shared_ptr<ts::BIOPMessage> ts::BIOPMessage::Parse(PSIBuffer& buf)
 {
     BIOPMessageHeader header;
     if (!header.deserialize(buf)) {
@@ -506,9 +505,9 @@ bool ts::BIOPMessage::fromXML(DuckContext& duck, const xml::Element* element)
 // BIOPMessage - FromXML static factory
 //----------------------------------------------------------------------------
 
-std::unique_ptr<ts::BIOPMessage> ts::BIOPMessage::FromXML(DuckContext& duck, const xml::Element* element)
+std::shared_ptr<ts::BIOPMessage> ts::BIOPMessage::FromXML(DuckContext& duck, const xml::Element* element)
 {
-    std::unique_ptr<ts::BIOPMessage> msg;
+    std::shared_ptr<ts::BIOPMessage> msg;
     UString kind_str;
     if (element->getAttribute(kind_str, u"object_kind", true)) {
         msg = CreateForKind(kind_str.toUTF8());

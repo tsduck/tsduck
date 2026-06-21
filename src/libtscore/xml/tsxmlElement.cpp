@@ -421,9 +421,7 @@ bool ts::xml::Element::getHexaText(ByteBlock& data, size_t min_size, size_t max_
 
 ts::xml::Element* ts::xml::Element::addElement(const UString& childName)
 {
-    Element* child = new Element(this, childName);
-    CheckNonNull(child);
-    return child;
+    return new Element(this, childName);
 }
 
 
@@ -437,9 +435,7 @@ ts::xml::Text* ts::xml::Element::addText(const UString& text, bool only_not_empt
         return nullptr;
     }
     else {
-        Text* child = new Text(this, text);
-        CheckNonNull(child);
-        return child;
+        return new Text(this, text);
     }
 }
 

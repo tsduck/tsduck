@@ -7,7 +7,6 @@
 //----------------------------------------------------------------------------
 
 #include "tstsmuxCore.h"
-#include "tsFatal.h"
 #include "tsBinaryTable.h"
 #include "tsCADescriptor.h"
 #include "tsTDT.h"
@@ -33,7 +32,6 @@ ts::tsmux::Core::Core(const MuxerArgs& opt, const PluginEventHandlerRegistry& ha
     // Load all input plugins, analyze their options.
     for (size_t i = 0; i < _opt.inputs.size(); ++i) {
         _inputs[i] = new Input(*this, i);
-        CheckNonNull(_inputs[i]);
     }
 }
 
@@ -844,8 +842,7 @@ void ts::tsmux::Core::Input::handleSection(SectionDemux& demux, const Section& s
     if (is_eit && _core._opt.eitScope != TableScope::NONE && (is_actual || _core._opt.eitScope == TableScope::ALL)) {
 
         // Create a copy of the EIT section object (shared section data).
-        const SectionPtr sp(new Section(section, ShareMode::SHARE));
-        CheckNonNull(sp.get());
+        const SectionPtr sp = std::make_shared<Section>(section, ShareMode::SHARE);
 
         // If this is an EIT-Actual, patch the EIT with output TS id.
         if (is_actual && sp->payloadSize() >= 4) {

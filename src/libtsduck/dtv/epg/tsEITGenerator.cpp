@@ -11,7 +11,6 @@
 #include "tsEIT.h"
 #include "tsMJD.h"
 #include "tsBCD.h"
-#include "tsFatal.h"
 
 
 //----------------------------------------------------------------------------
@@ -112,8 +111,7 @@ ts::EITGenerator::Event::Event(const uint8_t*& data, size_t& size, cn::seconds o
 ts::EITGenerator::ESection::ESection(EITGenerator* gen, const ServiceIdTriplet& srv, TID tid, uint8_t section_number, uint8_t last_section_number)
 {
     // Build section data.
-    ByteBlockPtr section_data(new ByteBlock(LONG_SECTION_HEADER_SIZE + EIT::EIT_PAYLOAD_FIXED_SIZE + SECTION_CRC32_SIZE));
-    CheckNonNull(section_data.get());
+    ByteBlockPtr section_data = std::make_shared<ByteBlock>(LONG_SECTION_HEADER_SIZE + EIT::EIT_PAYLOAD_FIXED_SIZE + SECTION_CRC32_SIZE);
     uint8_t* data = section_data->data();
 
     // Section header
@@ -133,7 +131,6 @@ ts::EITGenerator::ESection::ESection(EITGenerator* gen, const ServiceIdTriplet& 
     // Build a section from the binary data.
     section = std::make_shared<Section>(section_data, PID_NULL, CRC32::IGNORE);
     updateVersion(gen, false);
-    CheckNonNull(section.get());
 }
 
 
@@ -1009,8 +1006,7 @@ void ts::EITGenerator::regenerateSchedule(const Time& now)
             // Make sure that the first segment exists for last midnight.
             if (srv.segments.empty() || srv.segments.front()->start_time != last_midnight) {
                 _duck.report().debug(u"creating EIT segment starting at %s for %s", last_midnight, service_id);
-                const ESegmentPtr seg(new ESegment(last_midnight));
-                CheckNonNull(seg.get());
+                const ESegmentPtr seg = std::make_shared<ESegment>(last_midnight);
                 srv.segments.push_front(seg);
             }
 
@@ -1023,8 +1019,7 @@ void ts::EITGenerator::regenerateSchedule(const Time& now)
                 if ((*seg_iter)->start_time != segment_start_time) {
                     _duck.report().debug(u"creating EIT segment starting at %s for %s", segment_start_time, service_id);
                     assert((*seg_iter)->start_time > segment_start_time);
-                    const ESegmentPtr seg(new ESegment(segment_start_time));
-                    CheckNonNull(seg.get());
+                    const ESegmentPtr seg = std::make_shared<ESegment>(segment_start_time);
                     seg_iter = srv.segments.insert(seg_iter, seg);
                 }
                 ESegment& seg(**seg_iter);
@@ -1077,8 +1072,7 @@ void ts::EITGenerator::regenerateSchedule(const Time& now)
                         }
 
                         // The section is no longer valid or does not exist, rebuild it.
-                        const ESectionPtr sec(new ESection(this, service_id, table_id, section_number, section_number));
-                        CheckNonNull(sec.get());
+                        const ESectionPtr sec = std::make_shared<ESection>(this, service_id, table_id, section_number, section_number);
                         if (sec_iter != seg.sections.end()) {
                             // Existing section, invalidate it and replace it.
                             markObsoleteSection(**sec_iter);
@@ -1127,8 +1121,7 @@ void ts::EITGenerator::regenerateSchedule(const Time& now)
 
                     // We need at least one section, possibly empty, in each segment.
                     if (seg.sections.empty()) {
-                        const ESectionPtr sec(new ESection(this, service_id, table_id, first_section_number, first_section_number));
-                        CheckNonNull(sec.get());
+                        const ESectionPtr sec = std::make_shared<ESection>(this, service_id, table_id, first_section_number, first_section_number);
                         seg.sections.push_back(sec);
                         enqueueInjectSection(sec, getCurrentTime(), true);
                     }
