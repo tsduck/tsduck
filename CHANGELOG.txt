@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.45-4705 (June 2026)
+VERSION 3.45-4711 (June 2026)
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -28,6 +28,8 @@ VERSION 3.45-4705 (June 2026)
     MPEG-1 video streams.
   * Fixed issue #1730:  On  ISDB-T  systems,  display the interpretation of the
     transmission_type_info of the TS_information_descriptor.
+  * Fixed issue #1733:  Frequency  rounding  error in ISDB terrestrial delivery
+    system descriptor.
 
 -------------------------------------------------------------------------------
 

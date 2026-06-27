@@ -72,8 +72,10 @@ namespace ts {
         static const Names& GuardIntervalNames();
         static const Names& TransmissionModeNames();
 
-        // The frequency in the descriptor is in units of 1/7 MHz. Conversion functions:
-        static uint64_t BinToHz(uint16_t bin) { return (1000000 * uint64_t(bin)) / 7; }
-        static uint16_t HzToBin(uint64_t freq) { return uint16_t((7 * freq) / 1000000); }
+        // The frequency in the descriptor is in units of 1/7 MHz. Conversion functions here.
+        // Warning: because 1/7 MHz is not an integral number of Hz, we need to compensate the
+        // floor division in BinToHz with a ceiling division in HzToBin (issue #1733).
+        static uint64_t BinToHz(uint16_t bin) { return (1'000'000 * uint64_t(bin)) / 7; }
+        static uint16_t HzToBin(uint64_t freq) { return uint16_t((7 * freq + 999'999) / 1'000'000); }
     };
 }
