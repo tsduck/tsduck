@@ -1,64 +1,112 @@
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2026, Thierry Lelegard
 // BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------
+//
+// SSL/TLS certificate - Windows specific parts.
+//
+//----------------------------------------------------------------------------
 
-#include "tsSChannelCertificate.h"
+#include "tsTLSCertificate.h"
 #include "tsEnvironment.h"
 #include "tsSysUtils.h"
 #include "tsSysInfo.h"
 #include "tsNames.h"
-
-#include "tsBeforeStandardHeaders.h"
-#include <wincrypt.h>
-#include <ncrypt.h>
-#include "tsAfterStandardHeaders.h"
+#include "tsWinTLS.h"
 
 
-//-----------------------------------------------------------------------------
-// Constructors and destructor.
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------
+// System-specific parts are stored in a private structure.
+//----------------------------------------------------------------------------
 
-ts::SChannelCertificate::SChannelCertificate(Report* report, Object* owner) :
-    ReporterBase(report, owner)
+class ts::TLSCertificate::SystemGuts
 {
+    TS_NOBUILD_NOCOPY(SystemGuts);
+public:
+    TLSCertificate&      tls;
+    ::PCCERT_CONTEXT     cert = nullptr;
+    ::NCRYPT_PROV_HANDLE provider = 0;
+    ::NCRYPT_KEY_HANDLE  key = 0;
+
+    // Constructor and destructor.
+    SystemGuts(TLSCertificate& c) : tls(c) {}
+    ~SystemGuts();
+
+    // Reset the guts.
+    void reset();
+
+    // Get the name of a certificate name for a given type (CERT_NAME_FRIENDLY_DISPLAY_TYPE, CERT_NAME_xxx).
+    static UString GetCertificateName(::PCCERT_CONTEXT cert, ::DWORD type);
+
+    // Repository of Windows certificate stores.
+    // The certificate stores must remain open all the time, once open.
+    // They are closed on termination of the singleton.
+    class CertStoreRepository
+    {
+        TS_SINGLETON(CertStoreRepository);
+    public:
+        // Destructor: close opened stores.
+        ~CertStoreRepository();
+
+        // Get or open a certificate store. Name of certificate store must be "system" or "user".
+        ::HCERTSTORE getStore(const UString& store_name, Report& report);
+
+    private:
+        std::mutex _mutex {};
+        std::map<UString, ::HCERTSTORE> _stores {};
+    };
+};
+
+
+//----------------------------------------------------------------------------
+// System-specific constructor and destructor.
+//----------------------------------------------------------------------------
+
+void ts::TLSCertificate::allocateGuts()
+{
+    _guts = new SystemGuts(*this);
 }
 
-ts::SChannelCertificate::SChannelCertificate(ReporterBase* delegate, Object* owner) :
-    ReporterBase(delegate, owner)
+void ts::TLSCertificate::deleteGuts()
 {
+    delete _guts;
 }
 
-ts::SChannelCertificate::~SChannelCertificate()
+ts::TLSCertificate::SystemGuts::~SystemGuts()
 {
     reset();
 }
 
-
-//-----------------------------------------------------------------------------
-// Reset the content of the certificate.
-//-----------------------------------------------------------------------------
-
-void ts::SChannelCertificate::reset()
+void ts::TLSCertificate::SystemGuts::reset()
 {
-    if (_cert != nullptr) {
-        ::CertFreeCertificateContext(_cert);
-        _cert = nullptr;
+    if (cert != nullptr) {
+        ::CertFreeCertificateContext(cert);
+        cert = nullptr;
     }
-    if (_key != 0) {
-        const ::SECURITY_STATUS status = ::NCryptDeleteKey(_key, NCRYPT_SILENT_FLAG);
-        _key = 0;
+    if (key != 0) {
+        const ::SECURITY_STATUS status = ::NCryptDeleteKey(key, NCRYPT_SILENT_FLAG);
+        key = 0;
         if (!SysSuccess(status)) {
-            report().error(u"failed to delete temporary RSA key: %s", WinErrorMessage(status));
+            tls.report().error(u"failed to delete temporary RSA key: %s", WinErrorMessage(status));
         }
     }
-    if (_provider != 0) {
-        ::NCryptFreeObject(_provider);
-        _provider = 0;
+    if (provider != 0) {
+        ::NCryptFreeObject(provider);
+        provider = 0;
     }
+}
+
+void ts::TLSCertificate::reset()
+{
+    _guts->reset();
+}
+
+void* ts::TLSCertificate::getCertificate() const
+{
+    return const_cast<::PCERT_CONTEXT>(_guts->cert);
 }
 
 
@@ -66,7 +114,7 @@ void ts::SChannelCertificate::reset()
 // Get a certificate name.
 //----------------------------------------------------------------------------
 
-ts::UString ts::SChannelCertificate::GetCertificateName(::PCCERT_CONTEXT cert, ::DWORD type)
+ts::UString ts::TLSCertificate::SystemGuts::GetCertificateName(::PCCERT_CONTEXT cert, ::DWORD type)
 {
     ::DWORD size = ::CertGetNameStringW(cert, type, 0, nullptr, nullptr, 0);
     std::vector<::WCHAR> name(std::max<size_t>(1, size));
@@ -79,10 +127,10 @@ ts::UString ts::SChannelCertificate::GetCertificateName(::PCCERT_CONTEXT cert, :
 // Create an ephemeral self-signed certificate.
 //-----------------------------------------------------------------------------
 
-bool ts::SChannelCertificate::createEphemeralCertificate(size_t rsa_bits)
+bool ts::TLSCertificate::createEphemeralCertificate(size_t rsa_bits)
 {
     // Clear previous certificate.
-    reset();
+    _guts->reset();
 
     // Various resources to cleanup at the end.
     ::PBYTE eku_data = nullptr;  // Allocated by LocalAlloc in CryptEncodeObjectEx().
@@ -93,7 +141,7 @@ bool ts::SChannelCertificate::createEphemeralCertificate(size_t rsa_bits)
     // Use a "do {} while (false)" pattern to allow early "break" and jump to cleanup in case of error.
     do {
         // Open the default crypto provider.
-        ::SECURITY_STATUS status = ::NCryptOpenStorageProvider(&_provider, MS_KEY_STORAGE_PROVIDER, 0);
+        ::SECURITY_STATUS status = ::NCryptOpenStorageProvider(&_guts->provider, MS_KEY_STORAGE_PROVIDER, 0);
         if (!SysSuccess(status)) {
             report().error(u"failed to open key storage provider: %s", WinErrorMessage(status));
             break;
@@ -106,7 +154,7 @@ bool ts::SChannelCertificate::createEphemeralCertificate(size_t rsa_bits)
         key_name.format(u"ts-temp-key-%d-%d", ::GetCurrentProcessId(), ::GetTickCount64());
 
         // Start the key definition (not created yet).
-        status = ::NCryptCreatePersistedKey(_provider, &_key, BCRYPT_RSA_ALGORITHM, key_name.wc_str(), 0, NCRYPT_OVERWRITE_KEY_FLAG);
+        status = ::NCryptCreatePersistedKey(_guts->provider, &_guts->key, BCRYPT_RSA_ALGORITHM, key_name.wc_str(), 0, NCRYPT_OVERWRITE_KEY_FLAG);
         if (!SysSuccess(status)) {
             report().error(u"failed to create an ephemeral RSA key: %s", WinErrorMessage(status));
             break;
@@ -114,7 +162,7 @@ bool ts::SChannelCertificate::createEphemeralCertificate(size_t rsa_bits)
 
         // Set the key size property (in bits).
         ::DWORD key_len = ::DWORD(rsa_bits);
-        status = ::NCryptSetProperty(_key, NCRYPT_LENGTH_PROPERTY, ::PBYTE(&key_len), ::DWORD(sizeof(key_len)), NCRYPT_SILENT_FLAG);
+        status = ::NCryptSetProperty(_guts->key, NCRYPT_LENGTH_PROPERTY, ::PBYTE(&key_len), ::DWORD(sizeof(key_len)), NCRYPT_SILENT_FLAG);
         if (!SysSuccess(status)) {
             report().error(u"failed to set ephemeral RSA key size: %s", WinErrorMessage(status));
             break;
@@ -122,14 +170,14 @@ bool ts::SChannelCertificate::createEphemeralCertificate(size_t rsa_bits)
 
         // Private key usage: decrypt and sign.
         ::DWORD key_usage = NCRYPT_ALLOW_SIGNING_FLAG | NCRYPT_ALLOW_DECRYPT_FLAG;
-        status = ::NCryptSetProperty(_key, NCRYPT_KEY_USAGE_PROPERTY, ::PBYTE(&key_usage), ::DWORD(sizeof(key_usage)), NCRYPT_SILENT_FLAG);
+        status = ::NCryptSetProperty(_guts->key, NCRYPT_KEY_USAGE_PROPERTY, ::PBYTE(&key_usage), ::DWORD(sizeof(key_usage)), NCRYPT_SILENT_FLAG);
         if (!SysSuccess(status)) {
             report().error(u"failed to set ephemeral RSA key usage: %s", WinErrorMessage(status));
             break;
         }
 
         // Now create the key.
-        status = ::NCryptFinalizeKey(_key, NCRYPT_SILENT_FLAG);
+        status = ::NCryptFinalizeKey(_guts->key, NCRYPT_SILENT_FLAG);
         if (!SysSuccess(status)) {
             report().error(u"failed to create ephemeral RSA key: %s", WinErrorMessage(status));
             break;
@@ -201,7 +249,7 @@ bool ts::SChannelCertificate::createEphemeralCertificate(size_t rsa_bits)
             .rgProvParam = nullptr,
             .dwKeySpec = 0,
         };
-        
+
         // Use PKCS#1 v1.5 with SHA-256 as signature algorithm.
         // We could use szOID_RSA_SSA_PSS but we would need to add CRYPT_RSA_SSA_PSS_PARAMETERS.
         // Since this is a self-signed certificate for tests, no need to use complicated structures.
@@ -209,8 +257,8 @@ bool ts::SChannelCertificate::createEphemeralCertificate(size_t rsa_bits)
 
         // Create the certificate for the key and self-sign it.
         // The default validity dates are now to one year from now (both nullptr here).
-        _cert = ::CertCreateSelfSignCertificate(0, &subject_blob, 0, &prov_info, &sig_algo, nullptr, nullptr, &cert_exts);
-        if (_cert == nullptr) {
+        _guts->cert = ::CertCreateSelfSignCertificate(0, &subject_blob, 0, &prov_info, &sig_algo, nullptr, nullptr, &cert_exts);
+        if (_guts->cert == nullptr) {
             report().error(u"failed to create a self-signed certificate: %s", WinErrorMessage(LastSysErrorCode()));
             break;
         }
@@ -243,30 +291,30 @@ bool ts::SChannelCertificate::createEphemeralCertificate(size_t rsa_bits)
 // Load a certificate from a store.
 //-----------------------------------------------------------------------------
 
-bool ts::SChannelCertificate::loadCertificate(const UString& store_name, const UString& cert_name)
+bool ts::TLSCertificate::loadCertificate(const UString& certificate_path, const UString& key_path, const UString& store_name)
 {
     // Clear previous certificate.
-    reset();
+    _guts->reset();
 
     // We need a certificate name.
-    if (cert_name.empty()) {
+    if (certificate_path.empty()) {
         report().error(u"no TLS certificate is specified");
         return false;
     }
 
     // Get the certificate store.
-    ::HCERTSTORE store = CertStoreRepository::Instance().getStore(store_name, report());
+    ::HCERTSTORE store = SystemGuts::CertStoreRepository::Instance().getStore(store_name, report());
     if (store == nullptr) {
         return false;
     }
 
     // Search the certificate in the store. Only consider certificates with a private key.
-    while ((_cert = ::CertFindCertificateInStore(store, X509_ASN_ENCODING | PKCS_7_ASN_ENCODING, 0, CERT_FIND_HAS_PRIVATE_KEY, nullptr, _cert)) != nullptr) {
-        if (GetCertificateName(_cert, CERT_NAME_FRIENDLY_DISPLAY_TYPE) == cert_name ||
-            GetCertificateName(_cert, CERT_NAME_SIMPLE_DISPLAY_TYPE) == cert_name ||
-            GetCertificateName(_cert, CERT_NAME_DNS_TYPE) == cert_name)
+    while ((_guts->cert = ::CertFindCertificateInStore(store, X509_ASN_ENCODING | PKCS_7_ASN_ENCODING, 0, CERT_FIND_HAS_PRIVATE_KEY, nullptr, _guts->cert)) != nullptr) {
+        if (SystemGuts::GetCertificateName(_guts->cert, CERT_NAME_FRIENDLY_DISPLAY_TYPE) == certificate_path ||
+            SystemGuts::GetCertificateName(_guts->cert, CERT_NAME_SIMPLE_DISPLAY_TYPE) == certificate_path ||
+            SystemGuts::GetCertificateName(_guts->cert, CERT_NAME_DNS_TYPE) == certificate_path)
         {
-            report().debug(u"found certificate \"%s\"", cert_name);
+            report().debug(u"found certificate \"%s\"", certificate_path);
             return true;
         }
     }
@@ -274,33 +322,12 @@ bool ts::SChannelCertificate::loadCertificate(const UString& store_name, const U
     // Certificate not found: not found or error?
     const ::DWORD err = ::GetLastError();
     if (err == CRYPT_E_NOT_FOUND) {
-        report().error(u"certificate \"%s\" not found", cert_name);
+        report().error(u"certificate \"%s\" not found", certificate_path);
     }
     else {
-        report().error(u"error searching certificate \"%s\": %s", cert_name, WinErrorMessage(err));
+        report().error(u"error searching certificate \"%s\": %s", certificate_path, WinErrorMessage(err));
     }
     return false;
-}
-
-
-//-----------------------------------------------------------------------------
-// Initialize (get or create) a server certificate, if not already done.
-//-----------------------------------------------------------------------------
-
-bool ts::SChannelCertificate::initServerCertificate(const TLSServerBase& params)
-{
-    if (_cert != nullptr) {
-        // Get or create the certificate the first time only.
-        return true;
-    }
-    else if (params.getEphemeralRSABits() > 0) {
-        // Create an ephemeral certificate.
-        return createEphemeralCertificate(params.getEphemeralRSABits());
-    }
-    else {
-        // Fetch an existing certificate.
-        return loadCertificate(params.getCertificateStore(), params.getCertificatePath());
-    }
 }
 
 
@@ -308,11 +335,11 @@ bool ts::SChannelCertificate::initServerCertificate(const TLSServerBase& params)
 // Certificate stores.
 //----------------------------------------------------------------------------
 
-TS_DEFINE_SINGLETON(ts::SChannelCertificate::CertStoreRepository);
-ts::SChannelCertificate::CertStoreRepository::CertStoreRepository() {}
+TS_DEFINE_SINGLETON(ts::TLSCertificate::SystemGuts::CertStoreRepository);
+ts::TLSCertificate::SystemGuts::CertStoreRepository::CertStoreRepository() {}
 
 // Destructor: close opened stores.
-ts::SChannelCertificate::CertStoreRepository::~CertStoreRepository()
+ts::TLSCertificate::SystemGuts::CertStoreRepository::~CertStoreRepository()
 {
     std::lock_guard<std::mutex> lock(_mutex);
     for (auto& it : _stores) {
@@ -324,7 +351,7 @@ ts::SChannelCertificate::CertStoreRepository::~CertStoreRepository()
 }
 
 // Get or open a certificate store.
-::HCERTSTORE ts::SChannelCertificate::CertStoreRepository::getStore(const UString& store_name, Report& report)
+::HCERTSTORE ts::TLSCertificate::SystemGuts::CertStoreRepository::getStore(const UString& store_name, Report& report)
 {
     // Resolve certificate store name.
     ::DWORD flags = CERT_STORE_OPEN_EXISTING_FLAG | CERT_STORE_READONLY_FLAG;

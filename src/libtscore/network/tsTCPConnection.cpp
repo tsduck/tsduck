@@ -227,7 +227,16 @@ bool ts::TCPConnection::receive(void* data, size_t max_size, size_t& ret_size, c
         }
         iosb->pending = SysSuccess(err) || IsPendingStatus(err);
         if (!iosb->pending) {
-            report().error(u"error receiving data from socket: %s", SysErrorCodeMessage(err));
+            static const std::set<::DWORD> eof_status {WSAEDISCON, WSAECONNRESET, WSAECONNABORTED, WSAENETRESET, WSA_OPERATION_ABORTED};
+            if (eof_status.contains(err)) {
+                // End of connection (graceful or aborted). Do not report an error.
+                declareDisconnected(true);
+                SetLastSysErrorCode(SYS_EOF);
+            }
+            else {
+                // Actual error.
+                report().error(u"error receiving data from socket: %s", SysErrorCodeMessage(err));
+            }
         }
         return iosb->pending;
     }

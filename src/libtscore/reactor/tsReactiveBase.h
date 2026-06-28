@@ -12,7 +12,6 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsOwnedObject.h"
 #include "tsReactor.h"
 
 namespace ts {
@@ -20,7 +19,7 @@ namespace ts {
     //! Virtual base class for reactive classes in a Reactor environment
     //! @ingroup libtscore reactor
     //!
-    class TSCOREDLL ReactiveBase: public OwnedObject, protected ReactorHandlerInterface
+    class TSCOREDLL ReactiveBase: public ReporterBase, protected ReactorHandlerInterface
     {
         TS_NOBUILD_NOCOPY(ReactiveBase);
     public:
@@ -43,18 +42,13 @@ namespace ts {
         Reactor& reactor() { return _reactor; }
 
         //!
-        //! Get a reference to the associated report.
-        //! @return A reference to the associated report.
-        //!
-        Report& report() { return _reactor.report(); }
-
-        //!
         //! Trigger the execution of processQueuedOperations() in the context of a Reactor handler.
         //! Create if necessary and then signal a dedicated user event.
         //! @return True on success, false on error.
         //!
         bool signalQueuedOperations();
 
+    protected:
         //!
         //! Deactivate the execution of processQueuedOperations() in the context of a Reactor handler.
         //! Deactivate and delete the dedicated user event.
@@ -62,7 +56,6 @@ namespace ts {
         //!
         void deactivateQueuedOperations(bool silent);
 
-    protected:
         //!
         //! This virtual method processes operations in the context of a Reactor handler.
         //! This is dedicated to operations which must be serialized from an application perspective.

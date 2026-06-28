@@ -243,9 +243,7 @@ ts::UString ts::Args::IOption::valueDescription(ValueContext ctx) const
 {
     UString desc(syntax);
     if (syntax.empty()) {
-        TS_PUSH_WARNING()
-        TS_LLVM_NOWARNING(switch-enum)
-        TS_MSC_NOWARNING(4061)
+        TS_PARTIAL_SWITCH_BEGIN()
         switch (type) {
             case NONE:           break;
             case FILENAME:       desc = u"file-name"; break;
@@ -259,7 +257,7 @@ ts::UString ts::Args::IOption::valueDescription(ValueContext ctx) const
             case CHRONO:         desc = UString::ChronoUnit(num, den, false, true); break;
             default:             desc = u"value"; break;
         }
-        TS_POP_WARNING()
+        TS_PARTIAL_SWITCH_END()
     }
 
     if (type == NONE || (flags & (IOPT_OPTVALUE | IOPT_OPTVAL_NOHELP)) == (IOPT_OPTVALUE | IOPT_OPTVAL_NOHELP)) {

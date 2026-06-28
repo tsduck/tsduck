@@ -193,13 +193,9 @@ bool ts::GetDektecCodeRate(int& fec, const ModulationArgs& args)
 
 bool ts::ToDektecCodeRate(int& fec, InnerFEC in_enum)
 {
-    // Not all enum values used in switch, intentionally.
-    TS_PUSH_WARNING()
-    TS_GCC_NOWARNING(switch-default)
-    TS_LLVM_NOWARNING(switch-enum)
-    TS_MSC_NOWARNING(4061)
-
     bool supported = true;
+
+    TS_PARTIAL_SWITCH_BEGIN()
     switch (in_enum) {
         case FEC_1_2:  fec = DTAPI_MOD_1_2; break;
         case FEC_1_3:  fec = DTAPI_MOD_1_3; break;
@@ -216,9 +212,9 @@ bool ts::ToDektecCodeRate(int& fec, InnerFEC in_enum)
         case FEC_9_10: fec = DTAPI_MOD_9_10; break;
         default: supported = false; break;
     }
-    return supported;
+    TS_PARTIAL_SWITCH_END()
 
-    TS_POP_WARNING()
+    return supported;
 }
 
 
@@ -228,14 +224,9 @@ bool ts::ToDektecCodeRate(int& fec, InnerFEC in_enum)
 
 bool ts::GetDektecModulationType(int& type, const ModulationArgs& args)
 {
-    // Not all enum values used in switch, intentionally.
-    TS_PUSH_WARNING()
-    TS_GCC_NOWARNING(switch-default)
-    TS_LLVM_NOWARNING(switch-enum)
-    TS_MSC_NOWARNING(4061)
-
-    // Determine modulation type.
     bool supported = true;
+
+    TS_PARTIAL_SWITCH_BEGIN()
     switch (args.delivery_system.value_or(DS_UNDEFINED)) {
         case DS_DVB_S:   type = DTAPI_MOD_DVBS_QPSK; break;
         case DS_DVB_T:   type = DTAPI_MOD_DVBT; break;
@@ -272,9 +263,9 @@ bool ts::GetDektecModulationType(int& type, const ModulationArgs& args)
             supported = false;
             break;
     }
-    return supported;
+    TS_PARTIAL_SWITCH_END()
 
-    TS_POP_WARNING()
+    return supported;
 }
 
 

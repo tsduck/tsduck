@@ -542,8 +542,7 @@ bool ts::HiDesDevice::tune(const ModulationArgs& in_params, Report& report)
     TS_ZERO(modRequest);
 
     // Many switch/case structures here use only a subset of the enum type.
-    TS_PUSH_WARNING()
-    TS_LLVM_NOWARNING(switch-enum)
+    TS_PARTIAL_SWITCH_BEGIN()
 
     switch (params.modulation.value()) {
         case QPSK:
@@ -634,7 +633,7 @@ bool ts::HiDesDevice::tune(const ModulationArgs& in_params, Report& report)
             return false;
     }
 
-    TS_POP_WARNING()
+    TS_PARTIAL_SWITCH_END()
 
     // Now all parameters are validated, call the driver.
     errno = 0;

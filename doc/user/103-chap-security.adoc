@@ -129,7 +129,7 @@ Specifically, using TLS on the server side requires a X.509 certificate on each 
 The server must also handle the corresponding asymmetric private key.
 
 There are typically four ways to setup a server certificate.
-In increasing order of ease of use:
+In increasing order of ease of use (and unfortunately decreasing order of security):
 
 1. Use an official certificate that you received from a public Certification Authority (CA).
    This is possible if you run your own public Web servers.
@@ -143,7 +143,7 @@ In increasing order of ease of use:
    in the client commands to avoid the validation of the server certificate.
 4. Generate ephemeral self-signed certificates, on the fly, at each execution of a TSDuck
    command which opens a TLS server. The same security restrictions apply as in the previous case.
-   It is easier because there is no need to use complex commands to generate self-signed certificates.
+   It is easier because there is no need to use complex commands to generate persistent self-signed certificates.
    Each server automatically creates its own self-signed certificate on the fly.
 
 The first two solutions shall be used by experienced administrators.

@@ -604,10 +604,7 @@ ts::UString ts::Names::Format(uint_t value, const UString& name, NamesFlags flag
         return *display_name;
     }
 
-    TS_PUSH_WARNING()
-    TS_LLVM_NOWARNING(switch-enum) // enumeration values not explicitly handled in switch
-    TS_MSC_NOWARNING(4061)         // enumerator in switch of enum is not explicitly handled by a case label
-
+    TS_PARTIAL_SWITCH_BEGIN()
     switch (flags & (NamesFlags::VALUE_NAME | NamesFlags::DECIMAL | NamesFlags::HEXA)) {
         case NamesFlags::DECIMAL:
             return UString::Format(u"%s (%d)", *display_name, value);
@@ -625,8 +622,7 @@ ts::UString ts::Names::Format(uint_t value, const UString& name, NamesFlags flag
             assert(false);
             return UString();
     }
-
-    TS_POP_WARNING()
+    TS_PARTIAL_SWITCH_END()
 }
 
 

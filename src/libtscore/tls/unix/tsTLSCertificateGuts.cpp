@@ -1,57 +1,115 @@
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2026, Thierry Lelegard
 // BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------
+//
+// SSL/TLS certificate - UNIX specific parts with OpenSSL.
+//
+//----------------------------------------------------------------------------
 
-#include "tsOpenSSLCertificate.h"
+#include "tsTLSCertificate.h"
 #include "tsSysInfo.h"
+#include "tsOpenSSL.h"
+
+// Some OpenSSL macros use C-style casts and we need to disable warnings.
+TS_LLVM_NOWARNING(old-style-cast)
+TS_GCC_NOWARNING(old-style-cast)
 
 
-//-----------------------------------------------------------------------------
-// Constructors & destructor.
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------
+// Stubs when OpenSSL is not available.
+//----------------------------------------------------------------------------
 
-ts::OpenSSLCertificate::OpenSSLCertificate(Report* report, Object* owner) :
-    ReporterBase(report, owner)
-{
-}
-
-ts::OpenSSLCertificate::OpenSSLCertificate(ReporterBase* delegate, Object* owner) :
-    ReporterBase(delegate, owner)
-{
-}
-
-ts::OpenSSLCertificate::~OpenSSLCertificate()
-{
-    OpenSSLCertificate::terminate();
-}
-
-void ts::OpenSSLCertificate::terminate()
-{
-#if !defined(TS_NO_OPENSSL)
-    if (_ssl_ctx != nullptr) {
-        SSL_CTX_free(_ssl_ctx);
-        _ssl_ctx = nullptr;
-    }
-#endif
-}
-
-
-//-----------------------------------------------------------------------------
-// Add to certificate 'cert' X.509v3 extension id 'nid'
-//-----------------------------------------------------------------------------
-
-bool ts::OpenSSLCertificate::addExtension(X509* cert, int nid, const char* value)
-{
 #if defined(TS_NO_OPENSSL)
-    return false;
+
+#define TS_NOT_IMPL { report().error(TS_NO_OPENSSL_MESSAGE); return false; }
+
+class ts::TLSCertificate::SystemGuts {};
+void ts::TLSCertificate::allocateGuts() { _guts = new SystemGuts; }
+void ts::TLSCertificate::deleteGuts() { delete _guts; }
+void ts::TLSCertificate::reset() {}
+void* ts::TLSCertificate::getCertificate() const { return nullptr; }
+bool ts::TLSCertificate::createEphemeralCertificate(size_t) TS_NOT_IMPL
+bool ts::TLSCertificate::loadCertificate(const UString&, const UString&, const UString&) TS_NOT_IMPL
+
 #else
 
-    // No external configuration database, use only literal values without reference to other sections.
+//----------------------------------------------------------------------------
+// System-specific parts are stored in a private structure.
+//----------------------------------------------------------------------------
+
+class ts::TLSCertificate::SystemGuts: public OpenSSL::Controlled
+{
+    TS_NOBUILD_NOCOPY(SystemGuts);
+public:
+    TLSCertificate& cert;
+    SSL_CTX* ssl_ctx = nullptr;
+
+    // Constructor and destructor.
+    SystemGuts(TLSCertificate& c) : cert(c) {}
+    virtual ~SystemGuts() override;
+
+    // Implementation of OpenSSL::Controlled.
+    virtual void terminate() override;
+
+    // Create the SSL server context.
+    bool initServerContext();
+
+    // Add to certificate 'cert' X.509v3 extension id 'nid'
+    bool addExtension(X509* cert, int nid, const char* value);
+};
+
+
+//----------------------------------------------------------------------------
+// System-specific constructor and destructor.
+//----------------------------------------------------------------------------
+
+void ts::TLSCertificate::allocateGuts()
+{
+    _guts = new SystemGuts(*this);
+}
+
+void ts::TLSCertificate::deleteGuts()
+{
+    delete _guts;
+}
+
+ts::TLSCertificate::SystemGuts::~SystemGuts()
+{
+    SystemGuts::terminate();
+}
+
+void ts::TLSCertificate::SystemGuts::terminate()
+{
+    if (ssl_ctx != nullptr) {
+        SSL_CTX_free(ssl_ctx);
+        ssl_ctx = nullptr;
+    }
+}
+
+void ts::TLSCertificate::reset()
+{
+    _guts->terminate();
+}
+
+void* ts::TLSCertificate::getCertificate() const
+{
+    return _guts->ssl_ctx;
+}
+
+
+//-----------------------------------------------------------------------------
+// Add to certificate 'x509' X.509v3 extension id 'nid'
+//-----------------------------------------------------------------------------
+
+bool ts::TLSCertificate::SystemGuts::addExtension(X509* x509, int nid, const char* value)
+{
     X509V3_CTX ctx {};
+
+    // No external configuration database, use only literal values without reference to other sections.
     TS_PUSH_WARNING()
     TS_LLVM_NOWARNING(extra-semi-stmt) // OpenSSL: X509V3_set_ctx_nodb macro is defined with extraneous ';'
     TS_GCC_NOWARNING(extra-semi-stmt)
@@ -59,17 +117,40 @@ bool ts::OpenSSLCertificate::addExtension(X509* cert, int nid, const char* value
     TS_POP_WARNING()
 
     // Self-signed: issuer = subject = current certificate.
-    X509V3_set_ctx(&ctx, cert, cert, nullptr, nullptr, 0);
+    X509V3_set_ctx(&ctx, x509, x509, nullptr, nullptr, 0);
     X509_EXTENSION* ext = X509V3_EXT_nconf_nid(nullptr, &ctx, nid, value);
     if (ext == nullptr) {
         return false;
     }
 
-    const bool success = X509_add_ext(cert, ext, -1);
+    const bool success = X509_add_ext(x509, ext, -1);
     X509_EXTENSION_free(ext);
     return success;
+}
 
-#endif
+
+//-----------------------------------------------------------------------------
+// Create the SSL server context.
+//-----------------------------------------------------------------------------
+
+bool ts::TLSCertificate::SystemGuts::initServerContext()
+{
+    // Clear previous certificate.
+    terminate();
+
+    // Create SSL server context.
+    if ((ssl_ctx = SSL_CTX_new(TLS_server_method())) == nullptr) {
+        cert.report().error(u"error creating OpenSSL context");
+        return false;
+    }
+
+    // Ignore unexpected EOF when the peer does not send close-notify.
+    // Well-known servers such as google.com do this, so let's ignore it.
+    SSL_CTX_set_options(ssl_ctx, SSL_OP_IGNORE_UNEXPECTED_EOF);
+
+    // Accept only TLS 1.2 and 1.3, others are obsolete.
+    SSL_CTX_set_min_proto_version(ssl_ctx, TLS1_2_VERSION);
+    return true;
 }
 
 
@@ -77,16 +158,8 @@ bool ts::OpenSSLCertificate::addExtension(X509* cert, int nid, const char* value
 // Create an ephemeral self-signed certificate.
 //-----------------------------------------------------------------------------
 
-bool ts::OpenSSLCertificate::createEphemeralCertificate(size_t rsa_bits)
+bool ts::TLSCertificate::createEphemeralCertificate(size_t rsa_bits)
 {
-#if defined(TS_NO_OPENSSL)
-    report().error(TS_NO_OPENSSL_MESSAGE);
-    return false;
-#else
-
-    // Clear previous certificate.
-    terminate();
-
     EVP_PKEY*  pkey = nullptr;
     X509*      x509 = nullptr;
     const long cert_validity_seconds = 365 * 24 * 3600; // one year
@@ -95,10 +168,16 @@ bool ts::OpenSSLCertificate::createEphemeralCertificate(size_t rsa_bits)
     // Use a "do {} while (false)" pattern to allow early "break" and jump to cleanup in case of error.
     do {
         // Create SSL server context.
-        if ((_ssl_ctx = OpenSSL::CreateContext(true, false, report())) == nullptr) {
-            report().error(u"error creating OpenSSL context");
+        if (!_guts->initServerContext()) {
             break;
         }
+
+        // Ignore unexpected EOF when the peer does not send close-notify.
+        // Well-known servers such as google.com do this, so let's ignore it.
+        SSL_CTX_set_options(_guts->ssl_ctx, SSL_OP_IGNORE_UNEXPECTED_EOF);
+
+        // Accept only TLS 1.2 and 1.3, others are obsolete.
+        SSL_CTX_set_min_proto_version(_guts->ssl_ctx, TLS1_2_VERSION);
 
         // Generate ephemeral RSA key.
         TS_PUSH_WARNING()
@@ -153,19 +232,19 @@ bool ts::OpenSSLCertificate::createEphemeralCertificate(size_t rsa_bits)
         }
 
         // Set "basicConstraints" extension. Set as critical.
-        if (!addExtension(x509, NID_basic_constraints, "critical,CA:FALSE")) {
+        if (!_guts->addExtension(x509, NID_basic_constraints, "critical,CA:FALSE")) {
             report().error(u"error setting basic constraints of certificate");
             break;
         }
 
         // keyUsage : digitalSignature (sign) + keyEncipherment (decrypt).
-        if (!addExtension(x509, NID_key_usage, "critical,digitalSignature,keyEncipherment")) {
+        if (!_guts->addExtension(x509, NID_key_usage, "critical,digitalSignature,keyEncipherment")) {
             report().error(u"error setting key usage of certificate");
             break;
         }
 
         // extendedKeyUsage : TLS server authentication.
-        if (!addExtension(x509, NID_ext_key_usage, "serverAuth")) {
+        if (!_guts->addExtension(x509, NID_ext_key_usage, "serverAuth")) {
             report().error(u"error setting extended key usage of certificate");
             break;
         }
@@ -173,7 +252,7 @@ bool ts::OpenSSLCertificate::createEphemeralCertificate(size_t rsa_bits)
         // subjectAltName : host name, local address
         UString alt_names;
         alt_names.format(u"DNS:%s, DNS:localhost, IP:127.0.0.1", host_name);
-        if (!addExtension(x509, NID_subject_alt_name, alt_names.toUTF8().c_str())) {
+        if (!_guts->addExtension(x509, NID_subject_alt_name, alt_names.toUTF8().c_str())) {
             report().error(u"error setting alternate names of certificate");
             break;
         }
@@ -186,17 +265,17 @@ bool ts::OpenSSLCertificate::createEphemeralCertificate(size_t rsa_bits)
 
         // Load the certificate in the SSL context. The context increments the reference count
         // of the certificate and the key. Therefore, we need to free our reference before returning.
-        if (SSL_CTX_use_certificate(_ssl_ctx, x509) != 1) {
+        if (SSL_CTX_use_certificate(_guts->ssl_ctx, x509) != 1) {
             report().error(u"error loading self-signed certificate in SSL context");
             break;
         }
-        if (SSL_CTX_use_PrivateKey(_ssl_ctx, pkey) != 1) {
+        if (SSL_CTX_use_PrivateKey(_guts->ssl_ctx, pkey) != 1) {
             report().error(u"error loading private key in SSL context");
             break;
         }
 
         // Check key / certificate consistency.
-        if (SSL_CTX_check_private_key(_ssl_ctx) != 1) {
+        if (SSL_CTX_check_private_key(_guts->ssl_ctx) != 1) {
             report().error(u"invalid key / certificate consistency");
             break;
         }
@@ -216,11 +295,9 @@ bool ts::OpenSSLCertificate::createEphemeralCertificate(size_t rsa_bits)
     // Cleanup partially built resources in case of failure.
     if (!success) {
         OpenSSL::ReportErrors(report());
-        terminate();
+        _guts->terminate();
     }
     return success;
-
-#endif
 }
 
 
@@ -228,16 +305,8 @@ bool ts::OpenSSLCertificate::createEphemeralCertificate(size_t rsa_bits)
 // Load a certificate from a store.
 //-----------------------------------------------------------------------------
 
-bool ts::OpenSSLCertificate::loadCertificate(const UString& certificate_path, const UString& key_path)
+bool ts::TLSCertificate::loadCertificate(const UString& certificate_path, const UString& key_path, const UString& store_name)
 {
-#if defined(TS_NO_OPENSSL)
-    report().error(TS_NO_OPENSSL_MESSAGE);
-    return false;
-#else
-
-    // Clear previous certificate.
-    terminate();
-
     // We need a certificate and a key.
     if (certificate_path.empty()) {
         report().error(u"no certificate set in TLS server");
@@ -252,19 +321,18 @@ bool ts::OpenSSLCertificate::loadCertificate(const UString& certificate_path, co
     bool success = false;
     do {
         // Create SSL server context.
-        if ((_ssl_ctx = OpenSSL::CreateContext(true, false, report())) == nullptr) {
-            report().error(u"error creating OpenSSL context");
+        if (!_guts->initServerContext()) {
             break;
         }
 
         // Load certificate file (public key).
-        if (SSL_CTX_use_certificate_file(_ssl_ctx, certificate_path.toUTF8().c_str(), SSL_FILETYPE_PEM) <= 0) {
+        if (SSL_CTX_use_certificate_file(_guts->ssl_ctx, certificate_path.toUTF8().c_str(), SSL_FILETYPE_PEM) <= 0) {
             report().error(u"error loading TLS certificate file %s", certificate_path);
             break;
         }
 
         // Load private key file.
-        if (SSL_CTX_use_PrivateKey_file(_ssl_ctx, key_path.toUTF8().c_str(), SSL_FILETYPE_PEM) <= 0) {
+        if (SSL_CTX_use_PrivateKey_file(_guts->ssl_ctx, key_path.toUTF8().c_str(), SSL_FILETYPE_PEM) <= 0) {
             report().error(u"error loading TLS private key file %s", key_path);
             break;
         }
@@ -276,30 +344,9 @@ bool ts::OpenSSLCertificate::loadCertificate(const UString& certificate_path, co
     // Cleanup partially built resources in case of failure.
     if (!success) {
         OpenSSL::ReportErrors(report());
-        terminate();
+        _guts->terminate();
     }
     return success;
-
-#endif
 }
 
-
-//-----------------------------------------------------------------------------
-// Initialize (get or create) a server certificate, if not already done.
-//-----------------------------------------------------------------------------
-
-bool ts::OpenSSLCertificate::initServerCertificate(const TLSServerBase& params)
-{
-    if (_ssl_ctx != nullptr) {
-        // Get or create the certificate the first time only.
-        return true;
-    }
-    else if (params.getEphemeralRSABits() > 0) {
-        // Create an ephemeral certificate.
-        return createEphemeralCertificate(params.getEphemeralRSABits());
-    }
-    else {
-        // Fetch an existing certificate.
-        return loadCertificate(params.getCertificatePath(), params.getKeyPath());
-    }
-}
+#endif // TS_NO_OPENSSL

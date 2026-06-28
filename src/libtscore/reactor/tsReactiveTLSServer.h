@@ -15,6 +15,7 @@
 #include "tsReactiveTCPServer.h"
 #include "tsReactiveTLSConnection.h"
 #include "tsTLSServerBase.h"
+#include "tsTLSCertificate.h"
 
 namespace ts {
     //!
@@ -61,17 +62,7 @@ namespace ts {
         virtual void handleTCPClientAccepted(ReactiveTCPServer& server, ReactiveTCPConnection& sock, const IPSocketAddress& addr, int error_code, const ObjectPtr& user_data) override;
 
     private:
-        // System-specific parts are stored in a private structure.
-        // This is done to avoid inclusion of specialized headers in this public file.
-        class SystemGuts;
-        SystemGuts* _guts = nullptr;
-
-        // Allocate and deallocate guts (depend on implementations).
-        void allocateGuts();
-        void deleteGuts();
-
-        // System-specific TLS initialization, called at the beginning of each startAccept().
-        bool initTLS(ReactiveTLSConnection& client);
+        TLSCertificate _cert {this, this};
 
         // On server side, while performing the initial handshake, an accept request is carried in an object.
         class TSCOREDLL AcceptRequest: public Object

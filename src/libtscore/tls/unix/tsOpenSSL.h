@@ -107,15 +107,6 @@ namespace ts {
         static bool Debug();
 
         //!
-        //! Create and configure a SSL_CTX context.
-        //! @param [in] server True for server side, false for client side.
-        //! @param [in] verify_peer Verify the certificate of the peer.
-        //! @param [in,out] report Where to report errors.
-        //! @return The new SSL_CTX, nullptr on error.
-        //!
-        static SSL_CTX* CreateContext(bool server, bool verify_peer, Report& report);
-
-        //!
         //! Base class for objects which must be terminated with OpenSSL.
         //! When the application terminates, OpenSSL does its own cleanup.
         //! After this cleanup, no OpenSSL operation is possible. It can lead to crashes.
