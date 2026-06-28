@@ -7,6 +7,7 @@
 //-----------------------------------------------------------------------------
 
 #include "tsTLSCertificate.h"
+#include "tsSysInfo.h"
 
 
 //----------------------------------------------------------------------------
@@ -52,4 +53,17 @@ bool ts::TLSCertificate::initServerCertificate(const TLSServerBase& params)
         // Fetch an existing certificate.
         return loadCertificate(params.getCertificatePath(), params.getKeyPath(), params.getCertificateStore());
     }
+}
+
+
+//-----------------------------------------------------------------------------
+// Get the certificate subject (CN), built from the hostname.
+//-----------------------------------------------------------------------------
+
+ts::UString ts::TLSCertificate::Subject()
+{
+    // The CN field is limited to 64 characters and this function returns the 64 right-most characters of the hostname.
+    static constexpr size_t max_size = 64;
+    const UString name(SysInfo::Instance().hostName());
+    return name.size() <= max_size ? name : name.substr(name.size() - max_size);
 }

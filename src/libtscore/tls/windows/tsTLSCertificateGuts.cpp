@@ -185,8 +185,7 @@ bool ts::TLSCertificate::createEphemeralCertificate(size_t rsa_bits)
 
         // Certificate subject string ("CN=hostname").
         // Encode in two steps: first step returns the required size, second step encodes in a properly sized buffer.
-        UString host_name = SysInfo::Instance().hostName();
-        UString subject_string = u"CN=" + host_name;
+        UString subject_string = u"CN=" + Subject();
         std::vector<::BYTE> subject_data;
         ::DWORD subject_size = 0;
         bool ok = ::CertStrToNameW(X509_ASN_ENCODING, subject_string.wc_str(), CERT_X500_NAME_STR, nullptr, nullptr, &subject_size, nullptr);
@@ -211,6 +210,7 @@ bool ts::TLSCertificate::createEphemeralCertificate(size_t rsa_bits)
 
         // Subject Alternative Names (SAN) certificate extension.
         UString local_host = u"localhost";
+        UString host_name = SysInfo::Instance().hostName();
         std::vector<::CERT_ALT_NAME_ENTRY> san_names {
             {.dwAltNameChoice = CERT_ALT_NAME_DNS_NAME, .pwszDNSName = host_name.wc_str()},
             {.dwAltNameChoice = CERT_ALT_NAME_DNS_NAME, .pwszDNSName = local_host.wc_str()},

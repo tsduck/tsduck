@@ -105,5 +105,10 @@ namespace ts {
         // Allocate and deallocate guts (depend on implementations).
         void allocateGuts();
         void deleteGuts();
+
+        // Get the certificate subject (CN), built from the hostname.
+        // Note: CN is now informational only and no longer used in certificate validation by most clients.
+        // The CN field is limited to 64 characters and this function returns the 64 right-most characters of the hostname.
+        static UString Subject();
     };
 }

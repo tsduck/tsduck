@@ -219,10 +219,9 @@ bool ts::TLSCertificate::createEphemeralCertificate(size_t rsa_bits)
             break;
         }
 
-        // Set subject name (CN) and issuer to host name (this is a sel-signed certificate).
-        UString host_name(SysInfo::Instance().hostName());
+        // Set subject name (CN) and issuer to host name (this is a self-signed certificate).
         X509_NAME* subject_name = X509_get_subject_name(x509); // internal pointer inside x509
-        if (!X509_NAME_add_entry_by_txt(subject_name, "CN", MBSTRING_ASC, reinterpret_cast<const unsigned char*>(host_name.toUTF8().c_str()), -1, -1, 0)) {
+        if (!X509_NAME_add_entry_by_txt(subject_name, "CN", MBSTRING_ASC, reinterpret_cast<const unsigned char*>(Subject().toUTF8().c_str()), -1, -1, 0)) {
             report().error(u"error setting subject of certificate");
             break;
         }
@@ -251,7 +250,7 @@ bool ts::TLSCertificate::createEphemeralCertificate(size_t rsa_bits)
 
         // subjectAltName : host name, local address
         UString alt_names;
-        alt_names.format(u"DNS:%s, DNS:localhost, IP:127.0.0.1", host_name);
+        alt_names.format(u"DNS:%s, DNS:localhost, IP:127.0.0.1", SysInfo::Instance().hostName());
         if (!_guts->addExtension(x509, NID_subject_alt_name, alt_names.toUTF8().c_str())) {
             report().error(u"error setting alternate names of certificate");
             break;
