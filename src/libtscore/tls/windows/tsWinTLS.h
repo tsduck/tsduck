@@ -23,6 +23,8 @@
 #include <subauth.h>
 #include <sspi.h>
 #include <schannel.h>
+#include <wincrypt.h>
+#include <ncrypt.h>
 #include "tsAfterStandardHeaders.h"
 
 #if defined(TS_MSC)

@@ -16,6 +16,7 @@
 #pragma once
 #include "tsTCPConnection.h"
 #include "tsTLSConnectionBase.h"
+#include "tsTLSContext.h"
 
 namespace ts {
     //!
@@ -79,35 +80,27 @@ namespace ts {
         virtual bool receive(void*, size_t, size_t&, const AbortInterface* = nullptr, IOSB* = nullptr) override;
         virtual bool receive(void*, size_t, const AbortInterface* = nullptr) override;
 
-        //!
-        //! Get the version of the underlying SSL/TLS library.
-        //! @return The library version.
-        //!
-        static UString GetLibraryVersion();
-
-        // A symbol to reference to force the TLS feature in static link.
-        //! @cond nodoxygen
-        static const int FEATURE;
-        //! @endcond
-
     private:
-        // System-specific parts are stored in a private structure.
-        // This is done to avoid inclusion of specialized headers in this public file.
-        class SystemGuts;
-        SystemGuts* _guts = nullptr;
-
-        // Allocate and deallocate guts (depend on implementations).
-        void allocateGuts();
-        void deleteGuts();
+        TLSContext _sctx {this, this};
+        ByteBlock  _tls_data {};          // Incoming TLS data which cannot be processed now.
+        ByteBlock  _clear_data {};        // Incoming clear data.
+        size_t     _tls_data_next = 0;    // Next index to consume from _recv_tls_data.
+        size_t     _clear_data_next = 0;  // Next index to consume from _recv_clear_data.
 
         // TLSConnection must use blocking I/O. Use ReactiveTLSConnection in reactor environment.
         bool checkBlocking();
 
+        // Process some incoming TLS data, wait for network data if necessary.
+        bool flushInput();
+
+        // Perform all required send and receive operations for TLS protocol.
+        bool flushSession();
+
         // Pass information from server accepting new clients.
         // The parameter is:
-        // - On UNIX systems with OpenSSL, a pointer to ::SSL.
+        // - On UNIX systems with OpenSSL, a pointer to ::SSL_CTX.
         // - On Windows systems whith SChannel, a pointer to ::CERT_CONTEXT.
         friend class TLSServer;
-        bool setServerContext(const void* param);
+        bool setServerContext(void* param);
     };
 }

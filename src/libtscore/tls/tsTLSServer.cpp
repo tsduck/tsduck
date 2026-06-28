@@ -16,21 +16,25 @@
 ts::TLSServer::TLSServer(Report* report, Object* owner) :
     TCPServer(report, false,owner)
 {
-    allocateGuts();
 }
 
 ts::TLSServer::TLSServer(ReporterBase* delegate, Object* owner) :
     TCPServer(delegate, false, owner)
 {
-    allocateGuts();
 }
 
 ts::TLSServer::~TLSServer()
 {
-    if (_guts != nullptr) {
-        deleteGuts();
-        _guts = nullptr;
-    }
+}
+
+
+//----------------------------------------------------------------------------
+// Start the server
+//----------------------------------------------------------------------------
+
+bool ts::TLSServer::listen(int backlog)
+{
+    return _cert.initServerCertificate(*this) && TCPServer::listen(backlog);
 }
 
 
@@ -50,7 +54,25 @@ bool ts::TLSServer::accept(TCPConnection& client, IPSocketAddress& addr, IOSB* i
         report().error(u"internal programming error: TLSServer::accept() needs a TLSConnection");
         return false;
     }
-    else {
-        return acceptTLS(*tls, addr, iosb);
+    else if (!TCPServer::accept(client, addr, iosb)) {
+        return false;
     }
+    else if (!tls->setServerContext(_cert.getCertificate())) {
+        // Close the underlying TCP socket.
+        client.close(true);
+        return false;
+    }
+
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Close the server resources.
+//----------------------------------------------------------------------------
+
+bool ts::TLSServer::closeImplementation(bool silent)
+{
+    _cert.reset();
+    return TCPServer::closeImplementation(silent);
 }

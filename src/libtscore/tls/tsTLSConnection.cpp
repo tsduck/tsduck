@@ -5,62 +5,81 @@
 // BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
-//
-// SSL/TLS connection - Windows specific parts with SChannel.
-//
-//----------------------------------------------------------------------------
 
 #include "tsTLSConnection.h"
-#include "tsSChannelContext.h"
-#include "tsWinModuleInfo.h"
-#include "tsNullReport.h"
-#include "tsMemory.h"
-#include "tsNames.h"
+#include "tsIPProtocols.h"
 
 
 //----------------------------------------------------------------------------
-// Library version.
+// Constructors and destructor.
 //----------------------------------------------------------------------------
 
-ts::UString ts::TLSConnection::GetLibraryVersion()
+ts::TLSConnection::TLSConnection(Report* report, Object* owner) :
+    TCPConnection(report, false, owner)
 {
-    return WinModuleInfo(u"schannel.dll").summary();
+}
+
+ts::TLSConnection::TLSConnection(ReporterBase* delegate, Object* owner) :
+    TCPConnection(delegate, false, owner)
+{
+}
+
+ts::TLSConnection::~TLSConnection()
+{
 }
 
 
 //----------------------------------------------------------------------------
-// System-specific parts are stored in a private structure.
+// TLSConnection must use blocking I/O.
 //----------------------------------------------------------------------------
 
-class ts::TLSConnection::SystemGuts
+bool ts::TLSConnection::checkBlocking()
 {
-    TS_NOBUILD_NOCOPY(SystemGuts);
-public:
-    TLSConnection&  conn;         // Parent object.
-    SChannelContext sctx;         // TLS context.
-    ByteBlock       incoming {};  // Incoming clear data.
-    size_t          in_next = 0;  // Next index to return from incoming.
-
-    // Constructor and destructor.
-    SystemGuts(TLSConnection& c) : conn(c), sctx(&c, c) {}
-
-    // Perform all required send and receive operation for TLS protocol.
-    bool flushSession();
-};
-
-
-//----------------------------------------------------------------------------
-// SystemGuts allocation.
-//----------------------------------------------------------------------------
-
-void ts::TLSConnection::allocateGuts()
-{
-    _guts = new SystemGuts(*this);
+    if (isNonBlocking()) {
+        report().error(u"internal error: TLSConnection called in non-blocking mode, use ReactiveTLSConnection");
+        return false;
+    }
+    else {
+        return true;
+    }
 }
 
-void ts::TLSConnection::deleteGuts()
+
+//----------------------------------------------------------------------------
+// Receive data until buffer is full.
+//----------------------------------------------------------------------------
+
+bool ts::TLSConnection::receive(void* buffer, size_t size, const AbortInterface* abort)
 {
-    delete _guts;
+    // The superclass implements its fixed-length method using the variable-length method.
+    return TCPConnection::receive(buffer, size, abort);
+}
+
+
+//----------------------------------------------------------------------------
+// Process some incoming TLS data, wait for network data if necessary.
+//----------------------------------------------------------------------------
+
+bool ts::TLSConnection::flushInput()
+{
+    size_t ret_size = 0;
+
+    // Receive more data from the network if none is buffered.
+    if (_tls_data_next >= _tls_data.size()) {
+        if (_tls_data.size() < TLS_MAX_PACKET_SIZE) {
+            _tls_data.resize(TLS_MAX_PACKET_SIZE);
+        }
+        _tls_data_next = 0;
+        if (!TCPConnection::receive(_tls_data.data(), _tls_data.size(), ret_size)) {
+            return false;
+        }
+        _tls_data.resize(ret_size);
+    }
+
+    // Provide received TLS data to TLS context and collect incoming clear data.
+    const bool success = _sctx.provideReceivedData(_tls_data.data() + _tls_data_next, _tls_data.size() - _tls_data_next, ret_size, _clear_data);
+    _tls_data_next += ret_size;
+    return success;
 }
 
 
@@ -68,20 +87,21 @@ void ts::TLSConnection::deleteGuts()
 // Perform all required send and receive operation for TLS protocol.
 //----------------------------------------------------------------------------
 
-bool ts::TLSConnection::SystemGuts::flushSession()
+bool ts::TLSConnection::flushSession()
 {
     bool success = true;
-    while (success && (sctx.needSend() || sctx.needReceive())) {
+    while (success && (_sctx.needSend() || _sctx.needReceive())) {
 
         // First, send all available outgoing data.
-        while (success && sctx.needSend()) {
-            success = conn.TCPConnection::send(sctx.sendAddress(), sctx.sendSize()) && sctx.sendCompleted();
+        while (success && _sctx.needSend()) {
+            ByteBlock data;
+            _sctx.getDataToSend(data);
+            success = TCPConnection::send(data.data(), data.size());
         }
 
-        // Then, receive more input.
-        if (success && sctx.needReceive()) {
-            size_t retsize = 0;
-            success = conn.TCPConnection::receive(sctx.receiveAddress(), sctx.receiveSize(), retsize) && sctx.receiveCompleted(retsize, incoming);
+        // Then, receive and process more input.
+        if (success && _sctx.needReceive()) {
+            success = flushInput();
         }
     }
     return success;
@@ -92,7 +112,7 @@ bool ts::TLSConnection::SystemGuts::flushSession()
 // Pass information from server accepting new clients.
 //----------------------------------------------------------------------------
 
-bool ts::TLSConnection::setServerContext(const void* vcred)
+bool ts::TLSConnection::setServerContext(void* param)
 {
     // Check that the application uses the right blocking mode.
     if (!checkBlocking()) {
@@ -100,13 +120,14 @@ bool ts::TLSConnection::setServerContext(const void* vcred)
     }
 
     // Initialize input stream.
-    _guts->incoming.clear();
-    _guts->in_next = 0;
+    _tls_data.clear();
+    _clear_data.clear();
+    _tls_data_next = _clear_data_next = 0;
 
     // Perform server-side TLS handshake.
-    const bool success = _guts->sctx.initServer(reinterpret_cast<::PCCERT_CONTEXT>(vcred)) && _guts->flushSession();
+    const bool success = _sctx.initServer(param) && flushSession();
     if (!success) {
-        _guts->sctx.reset();
+        _sctx.reset();
         TCPConnection::disconnect(true);
     }
     return success;
@@ -126,13 +147,14 @@ bool ts::TLSConnection::connect(const IPSocketAddress& addr, IOSB* iosb)
     }
 
     // Initialize input stream.
-    _guts->incoming.clear();
-    _guts->in_next = 0;
+    _tls_data.clear();
+    _clear_data.clear();
+    _tls_data_next = _clear_data_next = 0;
 
     // Perform client-side TLS handshake.
-    const bool success = _guts->sctx.initClient() && _guts->flushSession();
+    const bool success = _sctx.initClient(*this) && flushSession();
     if (!success) {
-        _guts->sctx.reset();
+        _sctx.reset();
         TCPConnection::disconnect(true);
     }
     return success;
@@ -146,12 +168,12 @@ bool ts::TLSConnection::connect(const IPSocketAddress& addr, IOSB* iosb)
 bool ts::TLSConnection::closeWriter(bool silent)
 {
     if (!isConnected()) {
-        report().error(u"not connected");
+        report().log(SilentLevel(silent), u"not connected");
         return false;
     }
 
     // Generate shutdown message and send outgoing data.
-    return _guts->sctx.initShutdown() && _guts->flushSession();
+    return _sctx.initShutdown(silent) && flushSession() && TCPConnection::closeWriter(silent);
 }
 
 
@@ -162,12 +184,12 @@ bool ts::TLSConnection::closeWriter(bool silent)
 bool ts::TLSConnection::disconnect(bool silent)
 {
     // Send the shutdown message (if not already done).
-    bool success = closeWriter(silent);
+    bool success = !isConnected() || closeWriter(silent);
 
-    // Cleanup SChannel resources.
-    _guts->sctx.reset();
+    // Cleanup TLS resources.
+    _sctx.reset();
 
-    // Shutdown the socket, regardless of SChannel success.
+    // Shutdown the socket, regardless of TLS context success.
     return TCPConnection::disconnect(silent) && success;
 }
 
@@ -190,7 +212,11 @@ bool ts::TLSConnection::send(const void* data, size_t size, IOSB* iosb)
     // Generate and send chunks of output data.
     bool success = true;
     while (success && size > 0) {
-        success = _guts->sctx.sendUserData(data, size) && _guts->flushSession();
+        size_t ret_size = 0;
+        success = _sctx.provideClearData(data, size, ret_size) && flushSession();
+        assert(ret_size <= size);
+        data = reinterpret_cast<const uint8_t*>(data) + ret_size;
+        size -= ret_size;
     }
     return success;
 }
@@ -215,31 +241,20 @@ bool ts::TLSConnection::receive(void* buffer, size_t max_size, size_t& ret_size,
 
     // Loop until we have something to return.
     while (ret_size == 0) {
-        if (_guts->in_next < _guts->incoming.size()) {
-            // There are some data in the internal buffer. Read them.
-            ret_size = std::min(max_size, _guts->incoming.size() - _guts->in_next);
-            MemCopy(buffer, &_guts->incoming[_guts->in_next], ret_size);
-            _guts->in_next += ret_size;
-            if (_guts->in_next >= _guts->incoming.size()) {
-                _guts->incoming.clear();
-                _guts->in_next = 0;
+        // If there are some clear data in the internal buffer, return them.
+        if (_clear_data_next < _clear_data.size()) {
+            ret_size = std::min(max_size, _clear_data.size() - _clear_data_next);
+            MemCopy(buffer, &_clear_data[_clear_data_next], ret_size);
+            _clear_data_next += ret_size;
+            if (_clear_data_next >= _clear_data.size()) {
+                // All buffered clear data are now returned.
+                _clear_data.clear();
+                _clear_data_next = 0;
             }
         }
-        else {
-            // Need to read from the network.
-            if (_guts->sctx.receiveSize() == 0) {
-                report().error(u"TLS error, input buffer full, no valid TLS packet found");
-                return false;
-            }
-
-            // Read TLS protocol data from the peer.
-            size_t received = 0;
-            if (!TCPConnection::receive(_guts->sctx.receiveAddress(), _guts->sctx.receiveSize(), received, abort) ||
-                !_guts->sctx.receiveCompleted(received, _guts->incoming) ||
-                !_guts->flushSession())
-            {
-                return false;
-            }
+        // Otherwise, read from the network.
+        else if (!flushInput() || !flushSession()) {
+            return false;
         }
     }
     return true;

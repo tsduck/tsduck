@@ -15,6 +15,7 @@
 #include "tsTCPServer.h"
 #include "tsTLSServerBase.h"
 #include "tsTLSConnection.h"
+#include "tsTLSCertificate.h"
 
 namespace ts {
     //!
@@ -98,16 +99,6 @@ namespace ts {
         virtual bool closeImplementation(bool silent) override;
 
     private:
-        // System-specific parts are stored in a private structure.
-        // This is done to avoid inclusion of specialized headers in this public file.
-        class SystemGuts;
-        SystemGuts* _guts = nullptr;
-
-        // Allocate and deallocate guts (depend on implementations).
-        void allocateGuts();
-        void deleteGuts();
-
-        // Version of accept() with an explicit TLSConnection.
-        bool acceptTLS(TLSConnection& client, IPSocketAddress& addr, IOSB* iosb);
+        TLSCertificate _cert {this, this};
     };
 }

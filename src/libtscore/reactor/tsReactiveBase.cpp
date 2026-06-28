@@ -14,7 +14,7 @@
 //----------------------------------------------------------------------------
 
 ts::ReactiveBase::ReactiveBase(Reactor& reactor, Object* owner) :
-    OwnedObject(owner),
+    ReporterBase(&reactor, owner),
     _reactor(reactor)
 {
 }

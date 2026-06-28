@@ -23,11 +23,38 @@
 
 class ReactiveTLSTest: public tsunit::Test
 {
-    TSUNIT_DECLARE_TEST(Telnet);
-    TSUNIT_DECLARE_TEST(TCP);
+    TSUNIT_DECLARE_TEST(Client);
+    TSUNIT_DECLARE_TEST(Server);
+
+public:
+    virtual void beforeTest() override;
+    virtual void afterTest() override;
+
+private:
+    int _previousSeverity = 0;
 };
 
 TSUNIT_REGISTER(ReactiveTLSTest);
+
+
+//----------------------------------------------------------------------------
+// Initialization.
+//----------------------------------------------------------------------------
+
+// Test suite initialization method.
+void ReactiveTLSTest::beforeTest()
+{
+    _previousSeverity = CERR.maxSeverity();
+    if (tsunit::Test::debugMode()) {
+        CERR.setMaxSeverity(ts::Severity::Debug);
+    }
+}
+
+// Test suite cleanup method.
+void ReactiveTLSTest::afterTest()
+{
+    CERR.setMaxSeverity(_previousSeverity);
+}
 
 
 //----------------------------------------------------------------------------
@@ -99,19 +126,14 @@ namespace {
     }
 }
 
-TSUNIT_DEFINE_TEST(Telnet)
+TSUNIT_DEFINE_TEST(Client)
 {
-// Reactive TLS not yet implemented on UNIX
-#if defined(TS_WINDOWS)
-
     TSUNIT_ASSERT(ts::IPInitialize());
     ts::Reactor reactor(&CERR);
     TSUNIT_ASSERT(reactor.open());
     TelnetClient test(reactor, debug());
     TSUNIT_ASSERT(reactor.processEventLoop());
     TSUNIT_ASSERT(reactor.close());
-
-#endif
 }
 
 
@@ -129,26 +151,29 @@ namespace {
     // The TCP server.
     //------------------------------------------------------------------------
 
-    class TestServer: public ts::Object, private ts::ReactiveTCPServerHandlerInterface
+    class TestServer: public ts::Object, private ts::ReactorHandlerInterface, private ts::ReactiveTCPServerHandlerInterface
     {
         TS_NOBUILD_NOCOPY(TestServer);
     public:
-        [[maybe_unused]] TestServer(ts::Reactor& reactor, std::ostream& debug);
+        TestServer(ts::Reactor& reactor, std::ostream& debug);
         void addRequest() { _request_count++; }
         void removeClient(TestServerConnection*);
         static constexpr ts::IPAddress::Port PORT = 14752;
 
     private:
-        ts::Reactor&          _reactor;
-        std::ostream&         _debug;
-        ts::TCPServer         _server {};
-        ts::ReactiveTLSServer _rserver {_reactor, _server, this};
-        size_t                _request_count = 0;
-        TestServerConnection* _accepting = nullptr;
+        ts::Reactor&            _reactor;
+        std::ostream&           _debug;
+        ts::TCPServer           _server {};
+        ts::ReactiveTLSServer   _rserver {_reactor, _server, this};
+        size_t                  _request_count = 0;
+        ts::EventId             _delete_clients_event_id {};
+        TestServerConnection*   _accepting {};
         std::set<TestServerConnection*> _clients {};
+        std::set<TestServerConnection*> _pending_delete {};
 
-        virtual void handleTCPClientAccepted(ts::ReactiveTCPServer& server, ts::ReactiveTCPConnection& sock, const ts::IPSocketAddress& addr, int error_code, const ts::ObjectPtr& user_data) override;
-        virtual void handleTCPServerClosed(ts::ReactiveTCPServer& server, const ts::ObjectPtr& user_data) override;
+        virtual void handleUserEvent(ts::Reactor&, ts::EventId) override;
+        virtual void handleTCPClientAccepted(ts::ReactiveTCPServer&, ts::ReactiveTCPConnection& sock, const ts::IPSocketAddress& addr, int error_code, const ts::ObjectPtr& user_data) override;
+        virtual void handleTCPServerClosed(ts::ReactiveTCPServer&, const ts::ObjectPtr& user_data) override;
     };
 
     //------------------------------------------------------------------------
@@ -161,6 +186,7 @@ namespace {
         TS_NOBUILD_NOCOPY(TestServerConnection);
     public:
         TestServerConnection(ts::Reactor& reactor, std::ostream& debug);
+        virtual ~TestServerConnection() override;
         ts::ReactiveTCPConnection& connection() { return _rclient; }
         size_t clientId() const { return _client_id; }
 
@@ -190,7 +216,7 @@ namespace {
     {
         TS_NOBUILD_NOCOPY(TestClient);
     public:
-        [[maybe_unused]] TestClient(ts::Reactor& reactor, std::ostream& debug, cn::milliseconds delay, size_t request_count);
+        TestClient(ts::Reactor& reactor, std::ostream& debug, cn::milliseconds delay, size_t request_count);
 
     private:
         ts::Reactor&              _reactor;
@@ -224,6 +250,9 @@ namespace {
     {
         _debug << "TestServer: initialize the server socket" << std::endl;
 
+        _delete_clients_event_id = _reactor.newEvent(this);
+        TSUNIT_ASSERT(_delete_clients_event_id.isValid());
+
         // Initialize the server.
         TSUNIT_ASSERT(_server.open(ts::IP::v4));
         TSUNIT_ASSERT(_server.reusePort(true));
@@ -251,7 +280,7 @@ namespace {
             // Register client.
             TSUNIT_EQUAL(ts::SYS_SUCCESS, error_code);
             _debug << "TestServer::handleTCPClientAccepted, client id: " << client->clientId() << std::endl;
-            _clients.insert(client);
+            _clients.insert(_accepting);
             // Start accepting a new client.
             _accepting = new TestServerConnection(_reactor, _debug);
             TSUNIT_ASSERT(_rserver.startAccept(this, _accepting->connection()));
@@ -261,22 +290,36 @@ namespace {
     void TestServer::removeClient(TestServerConnection* client)
     {
         TSUNIT_ASSERT(client != nullptr);
-        _debug << "TestServer::removeClient, client id: " << client->clientId() << std::endl;
+        _debug << "TestServer::removeClient, client id: " << client->clientId() << (client == _accepting ? " (accepting)" : "") << std::endl;
 
         if (client == _accepting) {
             _accepting = nullptr;
-            delete client;
-            if (_clients.empty()) {
-                _reactor.exitEventLoop();
-            }
         }
         else {
             TSUNIT_ASSERT(_clients.contains(client));
             _clients.erase(client);
-            delete client;
-            _debug << "TestServer::removeClient, remaining clients: " << _clients.size() << std::endl;
-            if (_clients.empty()) {
-                _debug << "TestServer::removeClient, start close" << std::endl;
+        }
+
+        if (_clients.empty()) {
+            _rserver.cancelAccept();
+        }
+
+        // Actual deletions will occur later, outside all calling handlers.
+        _pending_delete.insert(client);
+        TSUNIT_ASSERT(_reactor.signalEvent(_delete_clients_event_id));
+    }
+
+    void TestServer::handleUserEvent(ts::Reactor&, ts::EventId id)
+    {
+        if (id == _delete_clients_event_id) {
+            _debug << "TestServer::handleUserEvent, deleting " << _pending_delete.size() << " clients" << std::endl;
+            for (auto client : _pending_delete) {
+                _debug << "TestServer::handleUserEvent, deleting client id " << client->clientId() << std::endl;
+                delete client;
+            }
+            _pending_delete.clear();
+            if (_clients.empty() && _accepting == nullptr) {
+                _debug << "TestServer::handleUserEvent, start close" << std::endl;
                 TSUNIT_ASSERT(_rserver.startClose(this));
             }
         }
@@ -290,6 +333,7 @@ namespace {
         TSUNIT_EQUAL(5, _request_count);
 
         if (_accepting == nullptr) {
+            _debug << "TestServer::removeClient, exiting event loop" << std::endl;
             _reactor.exitEventLoop();
         }
     }
@@ -307,6 +351,11 @@ namespace {
     {
         _debug << "TestServerConnection: initialize client session id " << _client_id << std::endl;
         _rclient.whenAccepted(this);
+    }
+
+    TestServerConnection::~TestServerConnection()
+    {
+        _debug << "TestServerConnection: destruction of client session id " << _client_id << " @" << ts::UString::Hexa(uintptr_t(this)) << std::endl;
     }
 
     void TestServerConnection::handleTCPAccepted(ts::ReactiveTCPServer& server, ts::ReactiveTCPConnection& sock, int error_code, const ts::ObjectPtr& user_data)
@@ -466,11 +515,8 @@ namespace {
     }
 }
 
-TSUNIT_DEFINE_TEST(TCP)
+TSUNIT_DEFINE_TEST(Server)
 {
-// Reactive TLS not yet implemented on UNIX
-#if defined(TS_WINDOWS)
-
     TSUNIT_ASSERT(ts::IPInitialize());
     ts::Reactor reactor(&CERR);
     TSUNIT_ASSERT(reactor.open());
@@ -479,6 +525,4 @@ TSUNIT_DEFINE_TEST(TCP)
     TestClient client2(reactor, debug(), cn::milliseconds(80), 2);
     TSUNIT_ASSERT(reactor.processEventLoop());
     TSUNIT_ASSERT(reactor.close());
-
-#endif
 }

@@ -713,9 +713,7 @@ bool ts::HiDesDevice::tune(const ModulationArgs& in_params, Report& report)
     }
 
     // Not all enum values used in switch, intentionally.
-    TS_PUSH_WARNING()
-    TS_LLVM_NOWARNING(switch-enum)
-    TS_MSC_NOWARNING(4061)
+    TS_PARTIAL_SWITCH_BEGIN()
 
     // Build modulation parameters.
     // Translate TSDuck enums into HiDes codes.
@@ -790,7 +788,7 @@ bool ts::HiDesDevice::tune(const ModulationArgs& in_params, Report& report)
             return false;
     }
 
-    TS_POP_WARNING()
+    TS_PARTIAL_SWITCH_END()
 
     // Don't know how to set spectral inversion on Windows.
 

@@ -25,7 +25,7 @@
 #include "tsVatekUtils.h"
 #include "tsRIST.h"
 #include "tsSRTSocket.h"
-#include "tsTLSConnection.h"
+#include "tsTLSContext.h"
 #include "tsunit.h"
 
 // Force inclusion of some modules if statically linked.
@@ -34,7 +34,7 @@ TS_STATIC_REFERENCE(Ref, reinterpret_cast<const void*>(ts::GetCryptographicLibra
 TS_STATIC_REFERENCE(Ref, reinterpret_cast<const void*>(ts::HasDektecSupport));
 TS_STATIC_REFERENCE(Ref, reinterpret_cast<const void*>(ts::SRTSocket::GetLibraryVersion));
 TS_STATIC_REFERENCE(Ref, reinterpret_cast<const void*>(ts::GetRISTLibraryVersion));
-TS_STATIC_REFERENCE(Ref, reinterpret_cast<const void*>(&ts::TLSConnection::FEATURE));
+TS_STATIC_REFERENCE(Ref, reinterpret_cast<const void*>(ts::TLSContext::GetLibraryVersion));
 TS_STATIC_REFERENCE(Ref, reinterpret_cast<const void*>(ts::GetVatekVersion));
 
 

@@ -17,8 +17,6 @@
 ts::ReactiveTLSServer::ReactiveTLSServer(Reactor& reactor, TCPServer& socket, Object* owner) :
     ReactiveTCPServer(reactor, socket, owner)
 {
-    allocateGuts();
-
     // The socket must be an instance of TCPServer, not an instance of TLSServer.
     // Detect and report trivial misusages.
     if (dynamic_cast<TLSServer*>(&socket) != nullptr) {
@@ -34,10 +32,6 @@ ts::ReactiveTLSServer::ReactiveTLSServer(Reactor& reactor, TCPServer& socket, co
 
 ts::ReactiveTLSServer::~ReactiveTLSServer()
 {
-    if (_guts != nullptr) {
-        deleteGuts();
-        _guts = nullptr;
-    }
 }
 
 ts::ReactiveTLSServer::AcceptRequest::~AcceptRequest()
@@ -57,8 +51,8 @@ bool ts::ReactiveTLSServer::startAccept(ReactiveTCPServerHandlerInterface* handl
         return false;
     }
 
-    // System-specific TLS initialization.
-    if (!initTLS(*tls_client)) {
+    // Get or create the TLS server certificate the first time listen is called.
+    if (!_cert.initServerCertificate(*this) || !tls_client->initServerContext(this, _cert.getCertificate())) {
         return false;
     }
 

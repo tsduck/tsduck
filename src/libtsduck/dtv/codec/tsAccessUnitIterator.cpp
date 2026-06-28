@@ -70,19 +70,14 @@ void ts::AccessUnitIterator::reset()
 
 bool ts::AccessUnitIterator::currentAccessUnitIsSEI() const
 {
-    // Not all enum values used in switch, intentionally.
-    TS_PUSH_WARNING()
-    TS_LLVM_NOWARNING(switch-enum)
-    TS_MSC_NOWARNING(4061)
-
+    TS_PARTIAL_SWITCH_BEGIN()
     switch (_format) {
         case CodecType::AVC: return _nalunit_type == AVC_AUT_SEI;
         case CodecType::HEVC: return _nalunit_type == HEVC_AUT_PREFIX_SEI_NUT || _nalunit_type == HEVC_AUT_SUFFIX_SEI_NUT;
         case CodecType::VVC: return _nalunit_type == VVC_AUT_PREFIX_SEI_NUT || _nalunit_type == VVC_AUT_SUFFIX_SEI_NUT;
         default: return false;
     }
-
-    TS_POP_WARNING()
+    TS_PARTIAL_SWITCH_END()
 }
 
 

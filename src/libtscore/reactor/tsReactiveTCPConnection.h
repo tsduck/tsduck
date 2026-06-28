@@ -166,6 +166,12 @@ namespace ts {
         //! 
         void processReceiveBuffer(ByteBlock& data, ReactiveTCPInputControl& control, HandlerType* handler, int error_code, const ObjectPtr& user_data);
 
+        // Inherited methods (implementation of protected interface).
+        virtual void processQueuedOperations() override;
+        virtual void handleReadReady(Reactor&, EventId, int) override;
+        virtual void handleWriteReady(Reactor&, EventId, int) override;
+        virtual void handleAsynchronousIO(Reactor&, EventId, IOSB&, size_t) override;
+
     private:
         // Description of a connect request.
         class TSCOREDLL ConnectRequest: public Object
@@ -240,11 +246,5 @@ namespace ts {
 
         // Process receive buffer. Must be called in the context of a Reactor handler, when no asynchronous I/O is in progress.
         void processReceiveBuffer();
-
-        // Inherited methods.
-        virtual void processQueuedOperations() override;
-        virtual void handleReadReady(Reactor&, EventId, int) override;
-        virtual void handleWriteReady(Reactor&, EventId, int) override;
-        virtual void handleAsynchronousIO(Reactor&, EventId, IOSB&, size_t) override;
     };
 }

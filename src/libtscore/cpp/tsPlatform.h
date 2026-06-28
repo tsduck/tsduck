@@ -664,6 +664,50 @@
 
 #endif // DOXYGEN
 
+//!
+//! Allow switch-case on enumeration values without listing all possible values.
+//!
+//! When using a switch-case on an enumeration value, the highest warning level detects missing values
+//! in the "case" alternatives. This is usually a good thing because it detects which code needs to be
+//! modified when new values are added to an enumeration type. However, there are exceptional situations
+//! where a "switch" structure only uses a subset of the declared enumeration values, on purpose. In that
+//! case, the corresponding warning must be temporarily disabled for all compilers around the "switch"
+//! structure. The macros TS_PARTIAL_SWITCH_BEGIN() and TS_PARTIAL_SWITCH_END() encapsulates this.
+//!
+//! Example:
+//! @code
+//! TS_PARTIAL_SWITCH_BEGIN()
+//! switch (value_of_an_enum_type) {
+//!     case VALUE_1:
+//!         ...
+//!     // Some enum values are omitted on purpose
+//!     default:
+//!         ...
+//! }
+//! TS_PARTIAL_SWITCH_END()
+//! @endcode
+//!
+//! @hideinitializer
+//! @ingroup cpp
+//! @see TS_PARTIAL_SWITCH_END()
+//!
+#define TS_PARTIAL_SWITCH_BEGIN() \
+    TS_PUSH_WARNING() \
+    TS_MSC_NOWARNING(4061) \
+    TS_GCC_NOWARNING(switch-default) \
+    TS_GCC_NOWARNING(switch-enum) \
+    TS_LLVM_NOWARNING(switch-default) \
+    TS_LLVM_NOWARNING(switch-enum)
+
+//!
+//! Mark the end of a switch-case on partial enumeration values.
+//! Must be preceded by TS_PARTIAL_SWITCH_BEGIN().
+//! @hideinitializer
+//! @ingroup cpp
+//! @see TS_PARTIAL_SWITCH_BEGIN()
+//!
+#define TS_PARTIAL_SWITCH_END() TS_POP_WARNING()
+
 //
 // Disable some warnings, application-wide, for various compilers.
 //

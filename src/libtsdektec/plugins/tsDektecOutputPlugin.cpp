@@ -1135,11 +1135,6 @@ bool ts::DektecOutputPlugin::setBitrate(const BitRate& bitrate)
 
 bool ts::DektecOutputPlugin::setModulation(int& modulation_type)
 {
-    // Many switch/case structures here use only a subset of the enum type.
-    TS_PUSH_WARNING()
-    TS_LLVM_NOWARNING(switch-enum)
-    TS_MSC_NOWARNING(4061)
-
     // Get input plugin modulation parameters if required
     const bool use_input_modulation = present(u"input-modulation");
     const ObjectPtr input_params(use_input_modulation ? ObjectRepository::Instance().retrieve(u"tsp.dvb.params") : nullptr);
@@ -1218,6 +1213,7 @@ bool ts::DektecOutputPlugin::setModulation(int& modulation_type)
 
     // Set modulation parameters
     Dtapi::DTAPI_RESULT status = DTAPI_OK;
+    TS_PARTIAL_SWITCH_BEGIN()
     switch (modulation_type) {
 
         case DTAPI_MOD_DVBS_QPSK:
@@ -1538,6 +1534,7 @@ bool ts::DektecOutputPlugin::setModulation(int& modulation_type)
             return startError(u"unsupported modulation type", DTAPI_OK);
         }
     }
+    TS_PARTIAL_SWITCH_END()
 
     if (status != DTAPI_OK) {
         return startError(u"error while setting modulation mode", status);
@@ -1559,8 +1556,6 @@ bool ts::DektecOutputPlugin::setModulation(int& modulation_type)
 
     // Finally ok
     return true;
-
-    TS_POP_WARNING()
 }
 
 
