@@ -13,7 +13,6 @@
 #include "tsTime.h"
 #include "tsMemory.h"
 #include "tsCerrReport.h"
-#include "tsFatal.h"
 #include "tsFeatures.h"
 
 
@@ -236,6 +235,17 @@ void ts::SRTSocket::defineArgs(ts::Args& args)
     args.help(u"sndbuf", u"Send Buffer Size. Warning: configured in bytes, converted in packets, "
               u"when set, based on MSS value. For desired result, configure MSS first.");
 
+    args.option(u"snddropdelay", 0, Args::INTEGER, 0, 1, -1, std::numeric_limits<int32_t>::max());
+    args.help(u"snddropdelay",
+              u"Sets an extra delay, in milliseconds, before --tlpktdrop is triggered on the data sender. "
+              u"This delay is added to the default drop delay time interval value. "
+              u"Keep in mind that the longer the delay, the more probable it becomes that packets would be "
+              u"retransmitted uselessly because they will be dropped by the receiver anyway. "
+              u"Option --tlpktdrop discards packets reported as lost if it is already too late to send them "
+              u"(the receiver would discard them even if received). "
+              u"With the special value -1, do not drop packets on the sender at all (retransmit them always when requested). "
+              u"The default is 0 in live mode and -1 in file mode.");
+
     args.option(u"tlpktdrop", 0, Args::INTEGER, 0, 1, 0, 1);
     args.help(u"tlpktdrop",
               u"Too-late Packet Drop. When enabled on receiver, it skips missing packets that "
@@ -453,6 +463,8 @@ public:
     int32_t     peer_idle_timeout = -1;
     int32_t     peer_latency = -1;
     int32_t     rcv_latency = -1;
+    int32_t     snddropdelay = -1;
+    bool        use_snddropdelay = false;
     bool        tlpktdrop = false;
     bool        disconnected = false;
     bool        final_stats = false;
@@ -770,6 +782,8 @@ bool ts::SRTSocket::loadArgs(DuckContext& duck, Args& args)
     _guts->messageapi = !args.present(u"bufferapi"); // --messageapi is now the default
     _guts->nakreport = args.present(u"nakreport");
     _guts->tlpktdrop = args.present(u"tlpktdrop");
+    _guts->use_snddropdelay = args.present(u"snddropdelay");
+    args.getIntValue(_guts->snddropdelay, u"snddropdelay");
     args.getIntValue(_guts->conn_timeout, u"conn-timeout", -1);
     args.getIntValue(_guts->ffs, u"ffs", -1);
     args.getIntValue(_guts->input_bw, u"input-bw", -1);
@@ -873,7 +887,8 @@ bool ts::SRTSocket::Guts::setSockOptPre()
         (rcvbuf > 0 && !setSockOpt(SRTO_RCVBUF, "SRTO_RCVBUF", &rcvbuf, sizeof(rcvbuf))) ||
         (rcv_latency > 0 && !setSockOpt(SRTO_RCVLATENCY, "SRTO_RCVLATENCY", &rcv_latency, sizeof(rcv_latency))) ||
         (sndbuf > 0 && !setSockOpt(SRTO_SNDBUF, "SRTO_SNDBUF", &sndbuf, sizeof(sndbuf))) ||
-        (tlpktdrop && !setSockOpt(SRTO_TLPKTDROP, "SRTO_TLPKTDROP", &tlpktdrop, sizeof(tlpktdrop))))
+        (tlpktdrop && !setSockOpt(SRTO_TLPKTDROP, "SRTO_TLPKTDROP", &tlpktdrop, sizeof(tlpktdrop))) ||
+        (use_snddropdelay && !setSockOpt(SRTO_SNDDROPDELAY, "SRTO_SNDDROPDELAY", &snddropdelay, sizeof(snddropdelay))))
     {
         return false;
     }

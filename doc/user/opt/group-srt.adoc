@@ -344,6 +344,25 @@ Warning: configured in bytes, converted in packets, when set, based on MSS value
 For desired result, configure MSS first.
 
 [.opt]
+*--snddropdelay* _value_
+
+[.optdoc]
+Sets an extra delay, in milliseconds, before `--tlpktdrop` is triggered on the data sender.
+This delay is added to the default drop delay time interval value.
+Keep in mind that the longer the delay, the more probable it becomes that packets would
+be retransmitted uselessly because they will be dropped by the receiver anyway.
+
+[.optdoc]
+Option `--tlpktdrop` discards packets reported as lost if it is already too late to send them
+(the receiver would discard them even if received).
+
+[.optdoc]
+With the special value -1, do not drop packets on the sender at all (retransmit them always when requested).
+
+[.optdoc]
+The default is 0 in live mode and -1 in file mode.
+
+[.opt]
 *--statistics-interval* _milliseconds_
 
 [.optdoc]

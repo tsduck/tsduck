@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.45-4711 (June 2026)
+VERSION 3.45-4712 (June 2026)
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -21,6 +21,7 @@ VERSION 3.45-4711 (June 2026)
     - Option --no-lnb-control in input plugin "dektec".
     - Option --control-ephemeral-rsa-bits in command "tsp".
     - Option --remote-ephemeral-rsa-bits in command "tsswitch".
+    - Option --snddropdelay in input and output plugins "srt".
 
 [BUG] Bug fixes:
 
