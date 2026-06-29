@@ -1169,7 +1169,7 @@ namespace ts {
     //! Constant meaning "no size", "not found" or "do not resize".
     //! An alternative value for the standard @c std::string::npos value.
     //! Required on Windows to avoid linking issue.
-//! @ingroup cpp
+    //! @ingroup cpp
     //!
 #if defined(TS_WINDOWS)
     constexpr size_t NPOS = size_t(-1);

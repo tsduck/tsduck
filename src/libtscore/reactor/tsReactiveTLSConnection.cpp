@@ -367,7 +367,6 @@ void ts::ReactiveTLSConnection::handleTCPSend(ReactiveTCPConnection& sock, size_
 
 void ts::ReactiveTLSConnection::processQueuedOperations()
 {
-    report().debug(u"@@@ processQueuedOperations: begin, %d requests, first: %s, need send: %s, need receive: %s", _user_requests.size(), _user_requests.empty() ? u"(none)" :SocketOpNames().name(_user_requests.front()->type), _sctx.needSend(), _sctx.needReceive());
     // Call superclass first.
     ReactiveTCPConnection::processQueuedOperations();
 
@@ -467,7 +466,6 @@ void ts::ReactiveTLSConnection::processQueuedOperations()
 
 void ts::ReactiveTLSConnection::handleTCPReceive(ReactiveTCPConnection& sock, const ByteBlock& data, ReactiveTCPInputControl& control, int error_code, const ObjectPtr& user_data)
 {
-    report().debug(u"@@@ handleTCPReceive: %d bytes", data.size());
     if (!SysSuccess(error_code)) {
         // Report receive errors to application.
         callReceiveError(error_code);

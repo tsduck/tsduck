@@ -14,6 +14,7 @@
 #include "tsReactiveUDPSocket.h"
 #include "tsReactiveTCPConnection.h"
 #include "tsReactiveTCPServer.h"
+#include "tsReactiveServer.h"
 #include "tsReactiveTelnetConnection.h"
 #include "tsTime.h"
 #include "tsCerrReport.h"
@@ -30,8 +31,8 @@ class ReactorTest: public tsunit::Test
 {
     TSUNIT_DECLARE_TEST(Timer);
     TSUNIT_DECLARE_TEST(UDP);
-    TSUNIT_DECLARE_TEST(TCP);
-    TSUNIT_DECLARE_TEST(Telnet);
+    TSUNIT_DECLARE_TEST(Server);
+    TSUNIT_DECLARE_TEST(Client);
 
 public:
     virtual void beforeTestSuite() override;
@@ -489,7 +490,7 @@ namespace {
     }
 }
 
-TSUNIT_DEFINE_TEST(Telnet)
+TSUNIT_DEFINE_TEST(Client)
 {
     TSUNIT_ASSERT(ts::IPInitialize());
     ts::Reactor reactor(&CERR);
@@ -506,67 +507,6 @@ TSUNIT_DEFINE_TEST(Telnet)
 
 namespace {
 
-    class TestServer;
-    class TestServerConnection;
-    class TestClient;
-
-    //------------------------------------------------------------------------
-    // The TCP server.
-    //------------------------------------------------------------------------
-
-    class TestServer: public ts::Object, private ts::ReactiveTCPServerHandlerInterface
-    {
-        TS_NOBUILD_NOCOPY(TestServer);
-    public:
-        TestServer(ts::Reactor& reactor, std::ostream& debug);
-        void addRequest() { _request_count++; }
-        void removeClient(TestServerConnection*);
-        static constexpr ts::IPAddress::Port PORT = 14752;
-
-    private:
-        ts::Reactor&          _reactor;
-        std::ostream&         _debug;
-        ts::TCPServer         _server {};
-        ts::ReactiveTCPServer _rserver {_reactor, _server, this};
-        size_t                _request_count = 0;
-        TestServerConnection* _accepting = nullptr;
-        std::set<TestServerConnection*> _clients {};
-
-        virtual void handleTCPClientAccepted(ts::ReactiveTCPServer& server, ts::ReactiveTCPConnection& sock, const ts::IPSocketAddress& addr, int error_code, const ts::ObjectPtr& user_data) override;
-        virtual void handleTCPServerClosed(ts::ReactiveTCPServer& server, const ts::ObjectPtr& user_data) override;
-    };
-
-    //------------------------------------------------------------------------
-    // A client connection on the server side.
-    // Each request is a 4-byte integer. Increment it and return it.
-    //------------------------------------------------------------------------
-
-    class TestServerConnection: public ts::Object, private ts::ReactiveTCPConnectionHandlerInterface
-    {
-        TS_NOBUILD_NOCOPY(TestServerConnection);
-    public:
-        TestServerConnection(ts::Reactor& reactor, std::ostream& debug);
-        ts::ReactiveTCPConnection& connection() { return _rclient; }
-        size_t clientId() const { return _client_id; }
-
-    private:
-        ts::Reactor&              _reactor;
-        std::ostream&             _debug;
-        size_t                    _client_id = 0;
-        ts::TCPConnection         _client {};
-        ts::ReactiveTCPConnection _rclient {_reactor, _client, this};
-        TestServer*               _tserver = nullptr;
-        uint32_t                  _response = 0;
-        size_t                    _expected_send_position = 0;
-
-        static size_t _id_counter;
-
-        virtual void handleTCPAccepted(ts::ReactiveTCPServer& server, ts::ReactiveTCPConnection& sock, int error_code, const ts::ObjectPtr& user_data) override;
-        virtual void handleTCPSend(ts::ReactiveTCPConnection& sock, size_t position, int error_code, const ts::ObjectPtr& user_data) override;
-        virtual void handleTCPReceive(ts::ReactiveTCPConnection& sock, const ts::ByteBlock& data, ts::ReactiveTCPInputControl& control, int error_code, const ts::ObjectPtr& user_data) override;
-        virtual void handleTCPClosed(ts::ReactiveTCPConnection& sock, const ts::ObjectPtr& user_data) override;
-    };
-
     //------------------------------------------------------------------------
     // A client.
     //------------------------------------------------------------------------
@@ -575,20 +515,20 @@ namespace {
     {
         TS_NOBUILD_NOCOPY(TestClient);
     public:
-        TestClient(ts::Reactor& reactor, std::ostream& debug, cn::milliseconds delay, size_t request_count);
+        TestClient(ts::Reactor& reactor, std::ostream& debug, cn::milliseconds delay, size_t request_count, uint16_t server_port);
 
     private:
         ts::Reactor&              _reactor;
         std::ostream&             _debug;
         cn::milliseconds          _delay;
         size_t                    _request_count;
+        const ts::IPSocketAddress _server_address;
         size_t                    _client_id = 0;
         ts::TCPConnection         _client {};
         ts::ReactiveTCPConnection _rclient {_reactor, _client};
         ts::EventId               _timer_id {};
         uint32_t                  _request = 0;
         size_t                    _expected_send_position = 0;
-        const ts::IPSocketAddress _server_address {ts::IPAddress::LocalHost4, TestServer::PORT};
 
         static size_t _id_counter;
 
@@ -599,167 +539,14 @@ namespace {
         virtual void handleTCPClosed(ts::ReactiveTCPConnection& sock, const ts::ObjectPtr& user_data) override;
     };
 
-    //------------------------------------------------------------------------
-    // Implementation of the TCP server.
-    //------------------------------------------------------------------------
-
-    TestServer::TestServer(ts::Reactor& reactor, std::ostream& debug) :
-        _reactor(reactor),
-        _debug(debug)
-    {
-        _debug << "TestServer: initialize the server socket" << std::endl;
-
-        // Initialize the server.
-        TSUNIT_ASSERT(_server.open(ts::IP::v4));
-        TSUNIT_ASSERT(_server.reusePort(true));
-        TSUNIT_ASSERT(_server.bind(ts::IPSocketAddress(ts::IPAddress::LocalHost4, PORT)));
-        TSUNIT_ASSERT(_server.listen(5));
-
-        // Accept the first client.
-        _accepting = new TestServerConnection(_reactor, _debug);
-        TSUNIT_ASSERT(_rserver.startAccept(this, _accepting->connection()));
-    }
-
-    void TestServer::handleTCPClientAccepted(ts::ReactiveTCPServer& server, ts::ReactiveTCPConnection& sock, const ts::IPSocketAddress& addr, int error_code, const ts::ObjectPtr& user_data)
-    {
-        _debug << "TestServer::handleTCPClientAccepted, error code: " << error_code << ", client: " << sock.socket().peerName() << ", local: " << sock.socket().localName() << std::endl;
-        TSUNIT_ASSERT(&server == &_rserver);
-
-        auto client = sock.owner<TestServerConnection>();
-        TSUNIT_ASSERT(client != nullptr);
-        TSUNIT_ASSERT(client == _accepting);
-
-        if (error_code == ts::SYS_SUCCESS) {
-            // Register client.
-            TSUNIT_EQUAL(ts::SYS_SUCCESS, error_code);
-            _debug << "TestServer::handleTCPClientAccepted, client id: " << client->clientId() << std::endl;
-            _clients.insert(client);
-            // Start accepting a new client.
-            _accepting = new TestServerConnection(_reactor, _debug);
-            TSUNIT_ASSERT(_rserver.startAccept(this, _accepting->connection()));
-        }
-    }
-
-    void TestServer::removeClient(TestServerConnection* client)
-    {
-        TSUNIT_ASSERT(client != nullptr);
-        _debug << "TestServer::removeClient, client id: " << client->clientId() << std::endl;
-
-        if (client == _accepting) {
-            _accepting = nullptr;
-            delete client;
-            if (_clients.empty()) {
-                _reactor.exitEventLoop();
-            }
-        }
-        else {
-            TSUNIT_ASSERT(_clients.contains(client));
-            _clients.erase(client);
-            delete client;
-            _debug << "TestServer::removeClient, remaining clients: " << _clients.size() << std::endl;
-            if (_clients.empty()) {
-                _debug << "TestServer::removeClient, start close" << std::endl;
-                TSUNIT_ASSERT(_rserver.startClose(this));
-            }
-        }
-    }
-
-    void TestServer::handleTCPServerClosed(ts::ReactiveTCPServer& server, const ts::ObjectPtr& user_data)
-    {
-        _debug << "TestServer::handleTCPClosed" << std::endl;
-        TSUNIT_ASSERT(&server == &_rserver);
-        TSUNIT_ASSERT(_clients.empty());
-        TSUNIT_EQUAL(5, _request_count);
-
-        if (_accepting == nullptr) {
-            _reactor.exitEventLoop();
-        }
-    }
-
-    //------------------------------------------------------------------------
-    // Implementation of the client connection on the server side.
-    //------------------------------------------------------------------------
-
-    size_t TestServerConnection::_id_counter = 0;
-
-    TestServerConnection::TestServerConnection(ts::Reactor& reactor, std::ostream& debug) :
-        _reactor(reactor),
-        _debug(debug),
-        _client_id(++_id_counter)
-    {
-        _debug << "TestServerConnection: initialize client session id " << _client_id << std::endl;
-        _rclient.whenAccepted(this);
-    }
-
-    void TestServerConnection::handleTCPAccepted(ts::ReactiveTCPServer& server, ts::ReactiveTCPConnection& sock, int error_code, const ts::ObjectPtr& user_data)
-    {
-        _debug << "TestServerConnection::handleTCPAccepted, client id: " << _client_id << ", error code: " << error_code
-               << ", client: " << sock.socket().peerName() << ", local: " << sock.socket().localName() << std::endl;
-        TSUNIT_ASSERT(&sock == &_rclient);
-        _tserver = server.owner<TestServer>();
-        TSUNIT_ASSERT(_tserver != nullptr);
-        if (error_code != ts::SYS_SUCCESS) {
-            _tserver->removeClient(this);
-        }
-        else {
-            TSUNIT_ASSERT(_rclient.startReceive(this));
-        }
-    }
-
-    void TestServerConnection::handleTCPSend(ts::ReactiveTCPConnection& sock, size_t position, int error_code, const ts::ObjectPtr& user_data)
-    {
-        _debug << "TestServerConnection::handleTCPSend, client id: " << _client_id << ", position: " << position << ", error code: " << error_code << std::endl;
-        TSUNIT_ASSERT(&sock == &_rclient);
-        TSUNIT_EQUAL(_expected_send_position, position);
-    }
-
-    void TestServerConnection::handleTCPReceive(ts::ReactiveTCPConnection& sock, const ts::ByteBlock& data, ts::ReactiveTCPInputControl& control, int error_code, const ts::ObjectPtr& user_data)
-    {
-        TSUNIT_ASSERT(&sock == &_rclient);
-        if (error_code == ts::SYS_EOF) {
-            // Client disconnected.
-            _debug << "TestServerConnection::handleTCPReceive, client id: " << _client_id << ", end of session" << std::endl;
-            TSUNIT_ASSERT(_rclient.startClose(this));
-        }
-        else {
-            _debug << "TestServerConnection::handleTCPReceive, client id: " << _client_id << ", error code: " << error_code << ", size: " << data.size() << std::endl;
-            TSUNIT_EQUAL(ts::SYS_SUCCESS, error_code);
-            // Need at least 4 bytes.
-            if (data.size() < sizeof(uint32_t)) {
-                control.used_size = 0;
-                control.min_next_size = sizeof(uint32_t);
-            }
-            else {
-                const uint32_t request = *reinterpret_cast<const uint32_t*>(data.data());
-                _debug << "TestServerConnection::handleTCPReceive, client id: " << _client_id << ", request: " << request << std::endl;
-                control.used_size = sizeof(uint32_t);
-                _response = request + 1;
-                _tserver->addRequest();
-                TSUNIT_ASSERT(_rclient.startSend(this, &_response, sizeof(_response)));
-                _expected_send_position += sizeof(_response);
-            }
-        }
-    }
-
-    void TestServerConnection::handleTCPClosed(ts::ReactiveTCPConnection& sock, const ts::ObjectPtr& user_data)
-    {
-        _debug << "TestServerConnection::handleTCPClosed, client id: " << _client_id << std::endl;
-        TSUNIT_ASSERT(&sock == &_rclient);
-        TSUNIT_ASSERT(_tserver != nullptr);
-        _tserver->removeClient(this);
-    }
-
-    //------------------------------------------------------------------------
-    // Implementation of the client side.
-    //------------------------------------------------------------------------
-
     size_t TestClient::_id_counter = 0;
 
-    TestClient::TestClient(ts::Reactor& reactor, std::ostream& debug, cn::milliseconds delay, size_t request_count) :
+    TestClient::TestClient(ts::Reactor& reactor, std::ostream& debug, cn::milliseconds delay, size_t request_count, uint16_t server_port) :
         _reactor(reactor),
         _debug(debug),
         _delay(delay),
         _request_count(request_count),
+        _server_address(ts::IPAddress::LocalHost4, server_port),
         _client_id(++_id_counter)
     {
         _debug << "TestClient: initialize client id " << _client_id << std::endl;
@@ -845,16 +632,177 @@ namespace {
         _debug << "TestClient::handleTCPClosed, client id: " << _client_id << std::endl;
         TSUNIT_ASSERT(&sock == &_rclient);
     }
+
+    //------------------------------------------------------------------------
+    // A client connection on the server side.
+    // Each request is a 4-byte integer. Increment it and return it.
+    //------------------------------------------------------------------------
+
+    class TestServerConnection: public ts::ReactiveServerSessionInterface, private ts::ReactiveTCPConnectionHandlerInterface
+    {
+        TS_NOBUILD_NOCOPY(TestServerConnection);
+    public:
+        TestServerConnection(ts::Reactor& reactor, std::ostream& debug);
+        virtual ~TestServerConnection() override;
+        ts::ReactiveTCPConnection& connection() { return _rclient; }
+        size_t clientId() const { return _client_id; }
+
+    private:
+        ts::Reactor&              _reactor;
+        std::ostream&             _debug;
+        size_t                    _client_id = 0;
+        ts::TCPConnection         _client {};
+        ts::ReactiveTCPConnection _rclient {_reactor, _client};
+        uint32_t                  _response = 0;
+        size_t                    _expected_send_position = 0;
+
+        static size_t _id_counter;
+
+        virtual ts::ReactiveTCPConnection& getConnection() override;
+        virtual void handleTCPAccepted(ts::ReactiveTCPServer& server, ts::ReactiveTCPConnection& sock, int error_code, const ts::ObjectPtr& user_data) override;
+        virtual void handleTCPSend(ts::ReactiveTCPConnection& sock, size_t position, int error_code, const ts::ObjectPtr& user_data) override;
+        virtual void handleTCPReceive(ts::ReactiveTCPConnection& sock, const ts::ByteBlock& data, ts::ReactiveTCPInputControl& control, int error_code, const ts::ObjectPtr& user_data) override;
+        virtual void handleTCPClosed(ts::ReactiveTCPConnection& sock, const ts::ObjectPtr& user_data) override;
+    };
+
+    size_t TestServerConnection::_id_counter = 0;
+
+    TestServerConnection::TestServerConnection(ts::Reactor& reactor, std::ostream& debug) :
+        _reactor(reactor),
+        _debug(debug),
+        _client_id(++_id_counter)
+    {
+        _debug << "TestServerConnection: initialize client session id " << _client_id << std::endl;
+        _rclient.whenAccepted(this);
+    }
+
+    TestServerConnection::~TestServerConnection()
+    {
+        _debug << "TestServerConnection: destruction of client session id " << _client_id << " @" << ts::UString::Hexa(uintptr_t(this)) << std::endl;
+    }
+
+    ts::ReactiveTCPConnection& TestServerConnection::getConnection()
+    {
+        return _rclient;
+    }
+
+    void TestServerConnection::handleTCPAccepted(ts::ReactiveTCPServer& server, ts::ReactiveTCPConnection& sock, int error_code, const ts::ObjectPtr& user_data)
+    {
+        _debug << "TestServerConnection::handleTCPAccepted, client id: " << _client_id << ", error code: " << error_code
+               << ", client: " << sock.socket().peerName() << ", local: " << sock.socket().localName() << std::endl;
+        TSUNIT_ASSERT(&sock == &_rclient);
+        if (error_code == ts::SYS_SUCCESS) {
+            TSUNIT_ASSERT(_rclient.startReceive(this));
+        }
+    }
+
+    void TestServerConnection::handleTCPSend(ts::ReactiveTCPConnection& sock, size_t position, int error_code, const ts::ObjectPtr& user_data)
+    {
+        _debug << "TestServerConnection::handleTCPSend, client id: " << _client_id << ", position: " << position << ", error code: " << error_code << std::endl;
+        TSUNIT_ASSERT(&sock == &_rclient);
+        TSUNIT_EQUAL(_expected_send_position, position);
+    }
+
+    void TestServerConnection::handleTCPReceive(ts::ReactiveTCPConnection& sock, const ts::ByteBlock& data, ts::ReactiveTCPInputControl& control, int error_code, const ts::ObjectPtr& user_data)
+    {
+        TSUNIT_ASSERT(&sock == &_rclient);
+        if (error_code == ts::SYS_EOF) {
+            // Client disconnected.
+            _debug << "TestServerConnection::handleTCPReceive, client id: " << _client_id << ", end of session" << std::endl;
+            TSUNIT_ASSERT(_rclient.startClose(this));
+        }
+        else {
+            _debug << "TestServerConnection::handleTCPReceive, client id: " << _client_id << ", error code: " << error_code << ", size: " << data.size() << std::endl;
+            TSUNIT_EQUAL(ts::SYS_SUCCESS, error_code);
+            // Need at least 4 bytes.
+            if (data.size() < sizeof(uint32_t)) {
+                control.used_size = 0;
+                control.min_next_size = sizeof(uint32_t);
+            }
+            else {
+                const uint32_t request = *reinterpret_cast<const uint32_t*>(data.data());
+                _debug << "TestServerConnection::handleTCPReceive, client id: " << _client_id << ", request: " << request << std::endl;
+                control.used_size = sizeof(uint32_t);
+                _response = request + 1;
+                TSUNIT_ASSERT(_rclient.startSend(this, &_response, sizeof(_response)));
+                _expected_send_position += sizeof(_response);
+            }
+        }
+    }
+
+    void TestServerConnection::handleTCPClosed(ts::ReactiveTCPConnection& sock, const ts::ObjectPtr& user_data)
+    {
+        _debug << "TestServerConnection::handleTCPClosed, client id: " << _client_id << std::endl;
+        TSUNIT_ASSERT(&sock == &_rclient);
+    }
+
+    //------------------------------------------------------------------------
+    // Factory for server sessions.
+    // Also used as handler to trace server events.
+    //------------------------------------------------------------------------
+
+    class TestFactory: public ts::ReactiveServerFactoryInterface, public ts::ReactiveServerHandlerInterface
+    {
+        TS_NOBUILD_NOCOPY(TestFactory);
+    public:
+        TestFactory(ts::Reactor& reactor, std::ostream& debug, uint16_t server_port);
+
+    private:
+        ts::Reactor&  _reactor;
+        std::ostream& _debug;
+        uint16_t      _server_port;
+
+        virtual ts::ReactiveServerSessionInterface* newClientSession() override;
+        virtual void handleServerExited(ts::ReactiveServer& server, const ts::ObjectPtr& user_data) override;
+    };
+
+    TestFactory::TestFactory(ts::Reactor& reactor, std::ostream& debug, uint16_t server_port) :
+        _reactor(reactor),
+        _debug(debug),
+        _server_port(server_port)
+    {
+        _debug << "TestFactory: server port: " << _server_port << std::endl;
+    }
+
+    ts::ReactiveServerSessionInterface* TestFactory::newClientSession()
+    {
+        const auto session = new TestServerConnection(_reactor, _debug);
+        _debug << "TestFactory: create client session id " << session->clientId() << std::endl;
+        return session;
+    }
+
+    void TestFactory::handleServerExited(ts::ReactiveServer& server, const ts::ObjectPtr& user_data)
+    {
+        _debug << "TestFactory: server exited" << std::endl;
+    }
 }
 
-TSUNIT_DEFINE_TEST(TCP)
+TSUNIT_DEFINE_TEST(Server)
 {
+    static constexpr uint16_t PORT = 12345;
+
     TSUNIT_ASSERT(ts::IPInitialize());
-    ts::Reactor reactor(&CERR);
+
+    ts::Reactor           reactor(&CERR);
+    TestFactory           factory(reactor, debug(), PORT);
+    ts::TCPServer         tcp_server(&CERR);
+    ts::ReactiveTCPServer rtcp_server(reactor, tcp_server);
+    ts::ReactiveServer    server(rtcp_server);
+
     TSUNIT_ASSERT(reactor.open());
-    TestServer server(reactor, debug());
-    TestClient client1(reactor, debug(), cn::milliseconds(50), 3);
-    TestClient client2(reactor, debug(), cn::milliseconds(80), 2);
+
+    TSUNIT_ASSERT(tcp_server.open(ts::IP::v4));
+    TSUNIT_ASSERT(tcp_server.reusePort(true));
+    TSUNIT_ASSERT(tcp_server.bind(ts::IPSocketAddress(ts::IPAddress::LocalHost4, PORT)));
+    TSUNIT_ASSERT(tcp_server.listen(5));
+
+    server.setExitAfterClientCount(2);
+    server.setExitEventLoop(true);
+    server.start(&factory, &factory);
+
+    TestClient client1(reactor, debug(), cn::milliseconds(50), 3, PORT);
+    TestClient client2(reactor, debug(), cn::milliseconds(80), 2, PORT);
+
     TSUNIT_ASSERT(reactor.processEventLoop());
     TSUNIT_ASSERT(reactor.close());
 }

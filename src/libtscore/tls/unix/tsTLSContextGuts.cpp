@@ -493,14 +493,14 @@ bool ts::TLSContext::provideReceivedData(const void* data, size_t size, size_t& 
             else {
                 // Nothing more to read.
                 clear_data.resize(start);
-                debug(u"@@@ provide received data: used %d/%d bytes, got %d clear bytes", ret_size, size, clear_data.size() - previous_clear_data_size);
+                debug(2, u"provide received data: used %d/%d bytes, got %d clear bytes", ret_size, size, clear_data.size() - previous_clear_data_size);
                 // In case of error, we still report success if some clear data were returned. We keep the EOF information for later.
                 return _guts->processStatus(ret, u"SSL_read") || start > previous_clear_data_size;
             }
         }
     }
 
-    debug(u"@@@ provide received data: used %d/%d bytes, got %d clear bytes", ret_size, size, clear_data.size() - previous_clear_data_size);
+    debug(2, u"provide received data: used %d/%d bytes, got %d clear bytes", ret_size, size, clear_data.size() - previous_clear_data_size);
     return true;
 }
 
