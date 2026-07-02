@@ -544,7 +544,7 @@ void ts::EITPlugin::handleSection(SectionDemux& demux, const Section& sect)
     }
 
     // Use the section as if it was a complete table, to deserialize it as an EIT.
-    SectionPtr newsec(new Section(sect, ShareMode::COPY));
+    const auto newsec = std::make_shared<Section>(sect, ShareMode::COPY);
     newsec->setSectionNumber(0, false);
     newsec->setLastSectionNumber(0, true);
     BinaryTable table;

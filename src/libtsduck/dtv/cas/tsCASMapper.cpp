@@ -93,7 +93,7 @@ void ts::CASMapper::analyzeCADescriptors(const DescriptorList& descs, bool is_ec
     for (size_t i = 0; i < descs.count(); ++i) {
         const Descriptor& desc(descs[i]);
         if (desc.tag() == DID_MPEG_CA) {
-            const CADescriptorPtr cadesc(new CADescriptor(_duck, desc));
+            const auto cadesc = std::make_shared<CADescriptor>(_duck, desc);
             if (cadesc != nullptr && cadesc->isValid()) {
                 const std::string cas_name(CASIdName(_duck, cadesc->cas_id).toUTF8());
                 _pids[cadesc->ca_pid] = PIDDescription(cadesc->cas_id, is_ecm, cadesc);

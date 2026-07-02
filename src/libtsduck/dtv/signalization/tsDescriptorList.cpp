@@ -180,7 +180,7 @@ bool ts::DescriptorList::merge(DuckContext& duck, const AbstractDescriptor& desc
                     const AbstractDescriptorPtr dp(_list[index]->deserialize(duck, edid));
                     if (dp != nullptr && dp->merge(desc)) {
                         // Descriptor successfully merged. Reserialize it and replace it.
-                        DescriptorPtr newdesc = std::make_shared<Descriptor>();
+                        const auto newdesc = std::make_shared<Descriptor>();
                         dp->serialize(duck, *newdesc);
                         if (newdesc->isValid()) {
                             _list[index] = std::move(newdesc);

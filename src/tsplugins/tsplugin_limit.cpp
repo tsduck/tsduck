@@ -213,7 +213,7 @@ ts::LimitPlugin::PIDContextPtr ts::LimitPlugin::getContext(PID pid)
         return it->second;
     }
     else {
-        PIDContextPtr pc(new PIDContext(pid));
+        const auto pc = std::make_shared<PIDContext>(pid);
         _pidContexts.insert(std::make_pair(pid, pc));
         return pc;
     }

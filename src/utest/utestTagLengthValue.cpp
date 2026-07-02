@@ -96,7 +96,7 @@ TSUNIT_DEFINE_TEST(ECMG)
         u"  CW_per_msg = 2\n"
         u"  max_comp_time = 500\n";
 
-    ts::ByteBlockPtr data(new ts::ByteBlock);
+    ts::ByteBlockPtr data = std::make_shared<ts::ByteBlock>();
     ts::tlv::Serializer zer(data);
     refMessage.serialize(zer);
 
@@ -164,7 +164,7 @@ TSUNIT_DEFINE_TEST(EMMG)
         u"  data_stream_id = 0x5678\n"
         u"  bandwidth = 200\n";
 
-    ts::ByteBlockPtr data(new ts::ByteBlock);
+    ts::ByteBlockPtr data = std::make_shared<ts::ByteBlock>();
     ts::tlv::Serializer zer(data);
     refMessage.serialize(zer);
 
@@ -220,7 +220,7 @@ TSUNIT_DEFINE_TEST(ECMGError)
         u"  error_status = 0x000D (ECMG out of computational resources)\n"
         u"  error_information = 0x1234\n";
 
-    ts::ByteBlockPtr data(new ts::ByteBlock);
+    ts::ByteBlockPtr data = std::make_shared<ts::ByteBlock>();
     ts::tlv::Serializer zer(data);
     refMessage.serialize(zer);
 
@@ -278,7 +278,7 @@ TSUNIT_DEFINE_TEST(EMMGError)
         u"  error_status = 0x0014 (client_id value already in use)\n"
         u"  error_information = 0x1234\n";
 
-    ts::ByteBlockPtr data(new ts::ByteBlock);
+    ts::ByteBlockPtr data = std::make_shared<ts::ByteBlock>();
     ts::tlv::Serializer zer(data);
     refMessage.serialize(zer);
 

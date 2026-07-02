@@ -386,7 +386,7 @@ bool ts::EMMGClient::dataProvision(const std::vector<ByteBlockPtr>& data)
             return false;
         }
         // Manually serialize the data_provision message.
-        ByteBlockPtr bbp(new ByteBlock);
+        const auto bbp = std::make_shared<ByteBlock>();
         tlv::Serializer serial(bbp);
         request.serialize(serial);
         _logger.log(request, u"sending UDP message to " + _udp_address.toString());

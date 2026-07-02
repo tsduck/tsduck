@@ -22,7 +22,7 @@ namespace ts::tlv {
     //!
     //! TCP connection using TLV messages.
     //! @ingroup libtscore net tlv
-    //! @tparam SAFETY The required type of thread-safety.
+    //! @tparam SAFETY The required type of thread-safety (if multiply threads read or write in the socket).
     //!
     template <ThreadSafety SAFETY>
     class Connection: public ts::TCPConnection, protected ts::SocketHandlerInterface
@@ -144,7 +144,7 @@ bool ts::tlv::Connection<SAFETY>::sendMessage(const Message& msg)
 {
     _logger.log(msg, u"sending message to " + peerName());
 
-    ByteBlockPtr bbp(new ByteBlock);
+    ByteBlockPtr bbp = std::make_shared<ByteBlock>();
     Serializer serial(bbp);
     msg.serialize(serial);
 

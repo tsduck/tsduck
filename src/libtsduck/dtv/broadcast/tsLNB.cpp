@@ -338,7 +338,7 @@ bool ts::LNB::LNBRepository::load(Report& report)
     for (const xml::Element* node = root == nullptr ? nullptr : root->firstChildElement(); node != nullptr; node = node->nextSiblingElement()) {
 
         // Allocate LNB object.
-        LNBPtr lnb(new LNB);
+        LNBPtr lnb = std::make_shared<LNB>();
         if (lnb == nullptr) {
             success = false;
             break;

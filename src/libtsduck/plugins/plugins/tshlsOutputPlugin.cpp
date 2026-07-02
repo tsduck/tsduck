@@ -24,7 +24,7 @@ TS_REGISTER_OUTPUT_PLUGIN(u"hls", ts::hls::OutputPlugin);
 ts::hls::OutputPlugin::OutputPlugin(TSP* tsp_) :
     ts::OutputPlugin(tsp_, u"Generate HTTP Live Streaming (HLS) media", u"[options] filename"),
     _demux(duck, this),
-    _ccFixer(NoPID(), this)
+    _cc_fixer(NoPID(), this)
 {
     option(u"", 0, FILENAME, 1, 1);
     help(u"",
@@ -147,41 +147,41 @@ bool ts::hls::OutputPlugin::isRealTime()
 
 bool ts::hls::OutputPlugin::getOptions()
 {
-    getPathValue(_segmentTemplate, u"");
-    getPathValue(_playlistFile, u"playlist");
-    _intraClose = present(u"intra-close");
-    _useBitrateTag = !present(u"no-bitrate");
-    _alignFirstSegment = present(u"align-first-segment");
-    _sliceOnly = present(u"slice-only");
-    getIntValue(_liveDepth, u"live");
-    getIntValue(_liveExtraDepth, u"live-extra-segments", DEFAULT_LIVE_EXTRA_DEPTH);
-    getChronoValue(_targetDuration, u"duration", _liveDepth == 0 ? DEFAULT_OUT_DURATION : DEFAULT_OUT_LIVE_DURATION);
-    getChronoValue(_maxExtraDuration, u"max-extra-duration", DEFAULT_EXTRA_DURATION);
-    _fixedSegmentSize = intValue<PacketCounter>(u"fixed-segment-size") / PKT_SIZE;
-    getIntValue(_initialMediaSeq, u"start-media-sequence", 0);
-    getIntValues(_closeLabels, u"label-close");
-    getValues(_customTags, u"custom-tag");
+    getPathValue(_segment_template, u"");
+    getPathValue(_playlist_file, u"playlist");
+    _intra_close = present(u"intra-close");
+    _use_bitrate_tag = !present(u"no-bitrate");
+    _align_first_segment = present(u"align-first-segment");
+    _slice_only = present(u"slice-only");
+    getIntValue(_live_depth, u"live");
+    getIntValue(_live_extra_depth, u"live-extra-segments", DEFAULT_LIVE_EXTRA_DEPTH);
+    getChronoValue(_target_duration, u"duration", _live_depth == 0 ? DEFAULT_OUT_DURATION : DEFAULT_OUT_LIVE_DURATION);
+    getChronoValue(_max_extra_duration, u"max-extra-duration", DEFAULT_EXTRA_DURATION);
+    _fixed_segment_size = intValue<PacketCounter>(u"fixed-segment-size") / PKT_SIZE;
+    getIntValue(_initial_media_seq, u"start-media-sequence", 0);
+    getIntValues(_close_labels, u"label-close");
+    getValues(_custom_tags, u"custom-tag");
 
     if (present(u"event")) {
-        _playlistType = hls::PlayListType::EVENT;
-        if (_liveDepth > 0) {
+        _playlist_type = hls::PlayListType::EVENT;
+        if (_live_depth > 0) {
             error(u"options --live and --event are incompatible");
             return false;
         }
     }
-    else if (_liveDepth > 0) {
-        _playlistType = hls::PlayListType::LIVE;
+    else if (_live_depth > 0) {
+        _playlist_type = hls::PlayListType::LIVE;
     }
     else {
-        _playlistType = hls::PlayListType::VOD;
+        _playlist_type = hls::PlayListType::VOD;
     }
 
-    if (_fixedSegmentSize > 0 && _closeLabels.any()) {
+    if (_fixed_segment_size > 0 && _close_labels.any()) {
         error(u"options --fixed-segment-size and --label-close are incompatible");
         return false;
     }
 
-    if (_sliceOnly && _alignFirstSegment) {
+    if (_slice_only && _align_first_segment) {
         error(u"options --slice-only and --align-first-segment are incompatible");
         return false;
     }
@@ -197,37 +197,37 @@ bool ts::hls::OutputPlugin::getOptions()
 bool ts::hls::OutputPlugin::start()
 {
     // Analyze the segment file name template to isolate segments.
-    _nameGenerator.initCounter(_segmentTemplate);
+    _name_generator.initCounter(_segment_template);
 
     // Initialize the demux to get the PAT and PMT.
     _demux.reset();
     _demux.setPIDFilter(NoPID());
     _demux.addPID(PID_PAT);
-    _patPackets.clear();
-    _pmtPackets.clear();
-    _pmtPID = PID_NULL;
-    _videoPID = PID_NULL;
-    _videoStreamType = ST_NULL;
-    _pcrAnalyzer.reset();
-    _previousBitrate = 0;
+    _pat_packets.clear();
+    _pmt_packets.clear();
+    _pmt_pid = PID_NULL;
+    _video_pid = PID_NULL;
+    _video_stream_type = ST_NULL;
+    _pcr_analyzer.reset();
+    _previous_bitrate = 0;
 
     // Fix continuity counters in PAT PID. Will add the PMT PID when found.
-    _ccFixer.reset();
-    _ccFixer.setGenerator(true);
-    _ccFixer.setPIDFilter(NoPID());
-    _ccFixer.addPID(PID_PAT);
+    _cc_fixer.reset();
+    _cc_fixer.setGenerator(true);
+    _cc_fixer.setPIDFilter(NoPID());
+    _cc_fixer.addPID(PID_PAT);
 
     // Initialize the segment and playlist files.
-    _liveSegmentFiles.clear();
-    _segStarted = false;
-    _segClosePending = false;
-    if (_segmentFile.isOpen()) {
-        _segmentFile.close(*this);
+    _live_segment_files.clear();
+    _seg_started = false;
+    _seg_close_pending = false;
+    if (_segment_file.isOpen()) {
+        _segment_file.close(*this);
     }
-    if (!_playlistFile.empty()) {
-        _playlist.reset(_playlistType, _playlistFile);
-        _playlist.setTargetDuration(_targetDuration, *this);
-        _playlist.setMediaSequence(_initialMediaSeq, *this);
+    if (!_playlist_file.empty()) {
+        _playlist.reset(_playlist_type, _playlist_file);
+        _playlist.setTargetDuration(_target_duration, *this);
+        _playlist.setMediaSequence(_initial_media_seq, *this);
     }
     return true;
 }
@@ -256,23 +256,23 @@ bool ts::hls::OutputPlugin::createNextSegment()
     }
 
     // Generate a new segment file name.
-    const UString fileName(_nameGenerator.newFileName());
+    const UString file_name(_name_generator.newFileName());
 
     // Create the segment file.
-    verbose(u"creating media segment %s", fileName);
-    if (!_segmentFile.open(fileName, TSFile::WRITE | TSFile::SHARED, *this)) {
+    verbose(u"creating media segment %s", file_name);
+    if (!_segment_file.open(file_name, TSFile::WRITE | TSFile::SHARED, *this)) {
         return false;
     }
 
     // Reset the PCR analysis in each segment to get to bitrate of this segment.
-    _pcrAnalyzer.reset();
+    _pcr_analyzer.reset();
 
     // Reset the indication to close the segment file.
-    _segClosePending = false;
+    _seg_close_pending = false;
 
     // Add a copy of the PAT and PMT at the beginning of each segment.
-    if (!_sliceOnly) {
-        return writePackets(_patPackets.data(), _patPackets.size()) && writePackets(_pmtPackets.data(), _pmtPackets.size());
+    if (!_slice_only) {
+        return writePackets(_pat_packets.data(), _pat_packets.size()) && writePackets(_pmt_packets.data(), _pmt_packets.size());
     }
 
     return true;
@@ -287,68 +287,68 @@ bool ts::hls::OutputPlugin::createNextSegment()
 bool ts::hls::OutputPlugin::closeCurrentSegment(bool endOfStream)
 {
     // If no segment file is open, there is nothing to do.
-    if (!_segmentFile.isOpen()) {
+    if (!_segment_file.isOpen()) {
         return true;
     }
 
     // Get the segment file name and size (to be inserted in the playlist).
-    const UString segName(_segmentFile.getFileName());
-    const PacketCounter segPackets = _segmentFile.writePacketsCount();
+    const UString seg_name(_segment_file.getFileName());
+    const PacketCounter seg_packets = _segment_file.writePacketsCount();
 
     // Close the TS file.
-    if (!_segmentFile.close(*this)) {
+    if (!_segment_file.close(*this)) {
         return false;
     }
 
     // On live streams, we need to maintain a list of active segments.
-    if (_liveDepth > 0) {
-        _liveSegmentFiles.push_back(segName);
+    if (_live_depth > 0) {
+        _live_segment_files.push_back(seg_name);
     }
 
     // Create or regenerate the playlist file.
-    if (!_playlistFile.empty()) {
+    if (!_playlist_file.empty()) {
 
         // Set end of stream indicator in the playlist.
         _playlist.setEndList(endOfStream, *this);
 
         // Declare a new segment.
         hls::MediaSegment seg;
-        _playlist.buildURL(seg, segName);
+        _playlist.buildURL(seg, seg_name);
 
         // Estimate duration and bitrate of the segment. We use PCR's from the
         // segment to compute the average bitrate. Then we compute the duration
         // from the bitrate and segment file size. If we cannot get the bitrate
         // of a segment but got one from previous segment, assume that bitrate
         // did not change and reuse previous one.
-        if (_pcrAnalyzer.bitrateIsValid()) {
+        if (_pcr_analyzer.bitrateIsValid()) {
             // We have an estimation of the bitrate of the segment file.
-            _previousBitrate = _pcrAnalyzer.bitrate188();
+            _previous_bitrate = _pcr_analyzer.bitrate188();
         }
-        if (_previousBitrate > 0) {
+        if (_previous_bitrate > 0) {
             // Compute duration based on segment bitrate (or previous one).
-            seg.bitrate = _useBitrateTag ? _previousBitrate : 0;
-            seg.duration = PacketInterval(_previousBitrate, segPackets);
+            seg.bitrate = _use_bitrate_tag ? _previous_bitrate : 0;
+            seg.duration = PacketInterval(_previous_bitrate, seg_packets);
         }
         else {
             // Completely unknown bitrate, we build a fake one based on the target duration.
-            seg.duration = cn::duration_cast<cn::milliseconds>(_targetDuration);
-            seg.bitrate = _useBitrateTag ? PacketBitRate(segPackets, seg.duration) : 0;
+            seg.duration = cn::duration_cast<cn::milliseconds>(_target_duration);
+            seg.bitrate = _use_bitrate_tag ? PacketBitRate(seg_packets, seg.duration) : 0;
         }
         _playlist.addSegment(seg, *this);
 
         // With live playlists, remove obsolete segments from the playlist.
-        while (_liveDepth > 0 && _playlist.segmentCount() > _liveDepth) {
+        while (_live_depth > 0 && _playlist.segmentCount() > _live_depth) {
             _playlist.popFirstSegment();
         }
 
         // Add custom tags.
         _playlist.clearCustomTags();
-        for (const auto& tag : _customTags) {
+        for (const auto& tag : _custom_tags) {
             _playlist.addCustomTag(tag);
         }
 
         // Use #EXT-X-INDEPENDENT-SEGMENTS if all segments are really independent.
-        if (!_sliceOnly) {
+        if (!_slice_only) {
             _playlist.addCustomTag(u"EXT-X-INDEPENDENT-SEGMENTS");
         }
 
@@ -366,26 +366,26 @@ bool ts::hls::OutputPlugin::closeCurrentSegment(bool endOfStream)
     }
 
     // Keep a list of segments we fail to delete (maybe because they are locked by the Web server).
-    UStringList failedDelete;
+    UStringList failed_delete;
 
     // On live streams, purge obsolete segment files.
-    while (_liveDepth > 0 && _liveSegmentFiles.size() > _liveDepth + _liveExtraDepth) {
+    while (_live_depth > 0 && _live_segment_files.size() > _live_depth + _live_extra_depth) {
 
         // Remove name of the file to delete from the list of active segment.
-        const UString name(_liveSegmentFiles.front());
-        _liveSegmentFiles.pop_front();
+        const UString name(_live_segment_files.front());
+        _live_segment_files.pop_front();
 
         // Delete the segment file.
         verbose(u"deleting obsolete segment file %s", name);
         if (!fs::remove(name, &ErrCodeReport(*this, u"error deleting", name)) && fs::exists(name)) {
             // Failed to delete, keep it to retry later.
-            failedDelete.push_back(name);
+            failed_delete.push_back(name);
         }
     }
 
     // Re-insert segments we failed to delete at head of list so that we will retry to delete them next time.
-    if (!failedDelete.empty()) {
-        _liveSegmentFiles.insert(_liveSegmentFiles.begin(), failedDelete.begin(), failedDelete.end());
+    if (!failed_delete.empty()) {
+        _live_segment_files.insert(_live_segment_files.begin(), failed_delete.begin(), failed_delete.end());
     }
 
     return true;
@@ -405,14 +405,14 @@ void ts::hls::OutputPlugin::handleTable(SectionDemux& demux, const BinaryTable& 
         case TID_PAT: {
             const PAT pat(duck, table);
             if (pat.isValid()) {
-                packets = &_patPackets;
+                packets = &_pat_packets;
                 // Get the PMT of the first service.
                 if (!pat.pmts.empty()) {
                     const uint16_t srv(pat.pmts.begin()->first);
-                    _pmtPID = pat.pmts.begin()->second;
-                    _demux.addPID(_pmtPID);
-                    _ccFixer.addPID(_pmtPID);
-                    verbose(u"using service id %n as reference, PMT PID %n", srv, _pmtPID);
+                    _pmt_pid = pat.pmts.begin()->second;
+                    _demux.addPID(_pmt_pid);
+                    _cc_fixer.addPID(_pmt_pid);
+                    verbose(u"using service id %n as reference, PMT PID %n", srv, _pmt_pid);
                 }
             }
             break;
@@ -420,14 +420,14 @@ void ts::hls::OutputPlugin::handleTable(SectionDemux& demux, const BinaryTable& 
         case TID_PMT: {
             const PMT pmt(duck, table);
             if (pmt.isValid()) {
-                packets = &_pmtPackets;
-                _videoPID = pmt.firstVideoPID(duck);
-                if (_videoPID == PID_NULL) {
+                packets = &_pmt_packets;
+                _video_pid = pmt.firstVideoPID(duck);
+                if (_video_pid == PID_NULL) {
                     warning(u"no video PID found in service %n", pmt.service_id);
                 }
                 else {
-                    _videoStreamType = pmt.streams[_videoPID].stream_type;
-                    verbose(u"using video PID %n as reference", _videoPID);
+                    _video_stream_type = pmt.streams[_video_pid].stream_type;
+                    verbose(u"using video PID %n as reference", _video_pid);
                 }
             }
             break;
@@ -463,22 +463,22 @@ bool ts::hls::OutputPlugin::writePackets(const TSPacket* pkt, size_t packetCount
         const TSPacket* p = pkt + i;
 
         // If the packet comes from the PAT or PMT, get a copy and fix continuity counter.
-        if (!_sliceOnly) {
+        if (!_slice_only) {
             const PID pid = pkt[i].getPID();
             if (pid == PID_PAT) {
                 tmp = *p;
-                _ccFixer.feedPacket(tmp);
+                _cc_fixer.feedPacket(tmp);
                 p = &tmp;
             }
-            else if (_pmtPID != PID_NULL && pid == _pmtPID) {
+            else if (_pmt_pid != PID_NULL && pid == _pmt_pid) {
                 tmp = *p;
-                _ccFixer.feedPacket(tmp);
+                _cc_fixer.feedPacket(tmp);
                 p = &tmp;
             }
         }
 
         // Write the packet in the segment file.
-        if (!_segmentFile.writePackets(p, nullptr, 1, *this)) {
+        if (!_segment_file.writePackets(p, nullptr, 1, *this)) {
             return false;
         }
     }
@@ -492,78 +492,78 @@ bool ts::hls::OutputPlugin::writePackets(const TSPacket* pkt, size_t packetCount
 
 bool ts::hls::OutputPlugin::send(const TSPacket* pkt, const TSPacketMetadata* pktData, size_t packetCount)
 {
-    const TSPacket* const lastPkt = pkt + packetCount;
+    const TSPacket* const last_pkt = pkt + packetCount;
     bool ok = true;
 
     // Process packets one by one.
-    while (ok && pkt < lastPkt) {
+    while (ok && pkt < last_pkt) {
 
         // Pass all packets into the demux.
-        if (!_sliceOnly) {
+        if (!_slice_only) {
             _demux.feedPacket(*pkt);
         }
 
         // Analyze PCR's from all packets.
-        _pcrAnalyzer.feedPacket(*pkt);
+        _pcr_analyzer.feedPacket(*pkt);
 
         // Check if we can start the generation of output segments.
-        if (!_segStarted) {
-            if (!_alignFirstSegment) {
+        if (!_seg_started) {
+            if (!_align_first_segment) {
                 // Without --align-first-segment, always start immediately.
-                _segStarted = true;
+                _seg_started = true;
             }
-            else if (!_patPackets.empty() && !_pmtPackets.empty() && _videoPID != PID_NULL && pkt->getPID() == _videoPID && pkt->getPUSI()) {
+            else if (!_pat_packets.empty() && !_pmt_packets.empty() && _video_pid != PID_NULL && pkt->getPID() == _video_pid && pkt->getPUSI()) {
                 // With --align-first-segment, need at least a PAT, PMT, PES packet on video PID.
                 // When --intra-close is also specified, start on intra image.
-                _segStarted = !_intraClose || (pkt->isClear() && PESPacket::FindIntraImage(pkt->getPayload(), pkt->getPayloadSize(), _videoStreamType) != NPOS);
+                _seg_started = !_intra_close || (pkt->isClear() && PESPacket::FindIntraImage(pkt->getPayload(), pkt->getPayloadSize(), _video_stream_type) != NPOS);
             }
-            if (_segStarted) {
+            if (_seg_started) {
                 // Create the first segment file.
                 ok = createNextSegment();
             }
         }
 
         // Process output packet only when the generation of segments is started.
-        if (ok && _segStarted) {
+        if (ok && _seg_started) {
 
             // Check if we should close the current segment and create a new one.
             bool renewNow = false;
             bool renewOnPUSI = false;
-            if (_fixedSegmentSize > 0) {
+            if (_fixed_segment_size > 0) {
                 // Each segment shall have a fixed size.
-                renewNow = _segmentFile.writePacketsCount() >= _fixedSegmentSize;
+                renewNow = _segment_file.writePacketsCount() >= _fixed_segment_size;
             }
-            else if (!_segClosePending) {
-                if (pktData->hasAnyLabel(_closeLabels)) {
+            else if (!_seg_close_pending) {
+                if (pktData->hasAnyLabel(_close_labels)) {
                     // This packet is a trigger to close the segment as soon as possible.
-                    _segClosePending = true;
+                    _seg_close_pending = true;
                 }
-                else if (_pcrAnalyzer.bitrateIsValid()) {
+                else if (_pcr_analyzer.bitrateIsValid()) {
                     // The segment file shall be closed when the estimated duration exceeds the target duration.
-                    const cn::milliseconds segDuration = PacketInterval(_pcrAnalyzer.bitrate188(), _segmentFile.writePacketsCount());
-                    _segClosePending = segDuration >= _targetDuration;
+                    const cn::milliseconds segDuration = PacketInterval(_pcr_analyzer.bitrate188(), _segment_file.writePacketsCount());
+                    _seg_close_pending = segDuration >= _target_duration;
                     // With --intra-close, force renew on next PES packet if extra duration is exceeded.
-                    renewOnPUSI = segDuration >= _targetDuration + _maxExtraDuration;
+                    renewOnPUSI = segDuration >= _target_duration + _max_extra_duration;
                 }
             }
 
             // We close only when we start a new PES packet or new intra-image on the video PID.
-            if (_segClosePending) {
-                if (_videoPID == PID_NULL) {
+            if (_seg_close_pending) {
+                if (_video_pid == PID_NULL) {
                     debug(u"closing segment, no video PID was identified for synchronization");
                     renewNow = true;
                 }
-                else if (pkt->getPID() == _videoPID && pkt->getPUSI()) {
+                else if (pkt->getPID() == _video_pid && pkt->getPUSI()) {
                     // On a new video PES packet.
-                    if (!_intraClose) {
+                    if (!_intra_close) {
                         debug(u"starting new segment on new PES packet");
                         renewNow = true;
                     }
                     else if (renewOnPUSI) {
-                        debug(u"no I-frame found in last %s, starting new segment on new PES packet", _maxExtraDuration);
+                        debug(u"no I-frame found in last %s, starting new segment on new PES packet", _max_extra_duration);
                         renewNow = true;
                     }
-                    else if (pkt->isClear() && PESPacket::FindIntraImage(pkt->getPayload(), pkt->getPayloadSize(), _videoStreamType) != NPOS) {
+                    else if (pkt->isClear() && PESPacket::FindIntraImage(pkt->getPayload(), pkt->getPayloadSize(), _video_stream_type) != NPOS) {
                         debug(u"starting new segment on new I-frame");
                         renewNow = true;
                     }

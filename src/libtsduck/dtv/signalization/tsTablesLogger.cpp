@@ -950,7 +950,7 @@ void ts::TablesLogger::sendUDP(const ts::BinaryTable& table)
     }
     else {
         // Build a TLV message with all sections.
-        ByteBlockPtr bin(new ByteBlock);
+        const auto bin = std::make_shared<ByteBlock>();
         bin->reserve(table.totalSize() + 32 + 4 * table.sectionCount());
         duck::LogTable msg(_duck_protocol);
         msg.pid = table.sourcePID();
@@ -985,7 +985,7 @@ void ts::TablesLogger::sendUDP(const ts::Section& section)
             msg.section = std::make_shared<Section>(section, ShareMode::SHARE);
 
             // Serialize the message.
-            ByteBlockPtr bin(new ByteBlock);
+            const auto bin = std::make_shared<ByteBlock>();
             tlv::Serializer serial(bin);
             msg.serialize(serial);
 
@@ -1024,7 +1024,7 @@ bool ts::TablesLogger::AnalyzeUDPMessage(const duck::Protocol& protocol, const u
             if (sect_size == 0) {
                 return false;
             }
-            const SectionPtr section(new Section(data, sect_size, ts::PID_NULL, ts::CRC32::CHECK));
+            const auto section = std::make_shared<Section>(data, sect_size, ts::PID_NULL, ts::CRC32::CHECK);
             if (!section->isValid()) {
                 return false;
             }

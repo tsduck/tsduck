@@ -300,7 +300,7 @@ bool ts::EITGenerator::loadEventsImpl(const ServiceIdTriplet& service_id, const 
     while (size >= EIT::EIT_EVENT_FIXED_SIZE) {
 
         // Get the next binary event.
-        const EventPtr ev(new Event(data, size, origin == Origin::DATA ? _data_offset : _input_offset));
+        const auto ev = std::make_shared<Event>(data, size, origin == Origin::DATA ? _data_offset : _input_offset);
         if (ev->event_data.empty()) {
             _duck.report().error(u"error loading EPG event, truncated data");
             success = false;
@@ -367,7 +367,7 @@ bool ts::EITGenerator::loadEventsImpl(const ServiceIdTriplet& service_id, const 
         if (seg_iter == srv->segments.end() || (*seg_iter)->start_time != seg_start_time) {
             // The segment does not exist, create it.
             _duck.report().debug(u"create EIT segment starting at %s for %s", seg_start_time, service_id);
-            const ESegmentPtr seg(new ESegment(seg_start_time));
+            const auto seg = std::make_shared<ESegment>(seg_start_time);
             seg_iter = srv->segments.insert(seg_iter, seg);
         }
         ESegment& seg(**seg_iter);

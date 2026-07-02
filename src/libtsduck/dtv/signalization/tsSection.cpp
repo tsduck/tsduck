@@ -163,7 +163,7 @@ void ts::Section::reload(TID tid, bool is_private_section, const void* payload, 
 {
     clear();
     if (SHORT_SECTION_HEADER_SIZE + payload_size <= MAX_PRIVATE_SECTION_SIZE) {
-        ByteBlockPtr data(new ByteBlock(SHORT_SECTION_HEADER_SIZE + payload_size));
+        auto data = std::make_shared<ByteBlock>(SHORT_SECTION_HEADER_SIZE + payload_size);
         PutUInt8(data->data(), tid);
         PutUInt16(data->data() + 1, (is_private_section ? 0x4000 : 0x0000) | 0x3000 | uint16_t (payload_size & 0x0FFF));
         MemCopy(data->data() + 3, payload, payload_size);
@@ -191,7 +191,7 @@ void ts::Section::reload(TID tid,
     if (section_number <= last_section_number && version <= 31 &&
         LONG_SECTION_HEADER_SIZE + payload_size + SECTION_CRC32_SIZE <= MAX_PRIVATE_SECTION_SIZE)
     {
-        ByteBlockPtr data(new ByteBlock(LONG_SECTION_HEADER_SIZE + payload_size + SECTION_CRC32_SIZE));
+        auto data = std::make_shared<ByteBlock>(LONG_SECTION_HEADER_SIZE + payload_size + SECTION_CRC32_SIZE);
         PutUInt8(data->data(), tid);
         PutUInt16(data->data() + 1,
                   0x8000 | (is_private_section ? 0x4000 : 0x0000) | 0x3000 |

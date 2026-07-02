@@ -134,7 +134,7 @@ void ts::CyclingPacketizer::addScheduledSection(const SectionDescPtr& sect)
 void ts::CyclingPacketizer::addSection(const SectionPtr& sect, cn::milliseconds rep_rate)
 {
     if (sect != nullptr && sect->isValid()) {
-        SectionDescPtr desc(new SectionDesc(sect, rep_rate));
+        const auto desc = std::make_shared<SectionDesc>(sect, rep_rate);
 
         if (rep_rate == cn::milliseconds::zero() || _bitrate == 0) {
             // Unschedule section, simply add it at end of queue

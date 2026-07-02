@@ -45,38 +45,38 @@ namespace ts {
 
         private:
             // Command line options.
-            fs::path           _segmentTemplate {};         // Command line segment file names template.
-            fs::path           _playlistFile {};            // Playlist file name.
-            bool               _intraClose = false;         // Try to start segments on intra images.
-            bool               _useBitrateTag = false;      // Specify EXT-X-BITRATE tags for each segment in the playlist.
-            bool               _alignFirstSegment = false;  // Align first segment to the first PAT and PMT.
-            bool               _sliceOnly = false;          // Don't add PAT and PMT to the segments.
-            hls::PlayListType  _playlistType = hls::PlayListType::UNKNOWN;
-            size_t             _liveDepth = 0;              // Number of simultaneous segments in live streams.
-            size_t             _liveExtraDepth = 0;         // Number of additional segments to keep in live streams.
-            cn::seconds        _targetDuration {};          // Segment target duration in seconds.
-            cn::seconds        _maxExtraDuration {};        // Segment target max extra duration in seconds when intra image is not found.
-            PacketCounter      _fixedSegmentSize = 0;       // Optional fixed segment size in packets.
-            size_t             _initialMediaSeq = 0;        // Initial media sequence value.
-            UStringVector      _customTags {};              // Additional custom tags.
-            TSPacketLabelSet   _closeLabels {};             // Close segment on packets with any of these labels.
+            fs::path           _segment_template {};          // Command line segment file names template.
+            fs::path           _playlist_file {};             // Playlist file name.
+            bool               _intra_close = false;          // Try to start segments on intra images.
+            bool               _use_bitrate_tag = false;      // Specify EXT-X-BITRATE tags for each segment in the playlist.
+            bool               _align_first_segment = false;  // Align first segment to the first PAT and PMT.
+            bool               _slice_only = false;           // Don't add PAT and PMT to the segments.
+            hls::PlayListType  _playlist_type = hls::PlayListType::UNKNOWN;
+            size_t             _live_depth = 0;               // Number of simultaneous segments in live streams.
+            size_t             _live_extra_depth = 0;         // Number of additional segments to keep in live streams.
+            cn::seconds        _target_duration {};           // Segment target duration in seconds.
+            cn::seconds        _max_extra_duration {};        // Segment target max extra duration in seconds when intra image is not found.
+            PacketCounter      _fixed_segment_size = 0;       // Optional fixed segment size in packets.
+            size_t             _initial_media_seq = 0;        // Initial media sequence value.
+            UStringVector      _custom_tags {};               // Additional custom tags.
+            TSPacketLabelSet   _close_labels {};              // Close segment on packets with any of these labels.
 
             // Working data.
-            FileNameGenerator  _nameGenerator {};           // Generate the segment file names.
-            SectionDemux       _demux;                      // Demux to extract PAT and PMT.
-            TSPacketVector     _patPackets {};              // TS packets for the PAT at start of each segment file.
-            TSPacketVector     _pmtPackets {};              // TS packets for the PMT at start of each segment file, after the PAT.
-            PID                _pmtPID = PID_NULL;          // PID of the PMT of the reference service.
-            PID                _videoPID = PID_NULL;        // Video PID on which the segmentation is evaluated.
-            uint8_t            _videoStreamType = ST_NULL;  // Stream type for video PID in PMT.
-            bool               _segStarted = false;         // Generation of output segments has started.
-            bool               _segClosePending = false;    // Close the current segment when possible.
-            TSFile             _segmentFile {};             // Output segment file.
-            UStringList        _liveSegmentFiles {};        // List of current segments in a live stream.
-            hls::PlayList      _playlist {};                // Generated playlist.
-            PCRAnalyzer        _pcrAnalyzer {1, 4};         // PCR analyzer to compute bitrates. Minimum required: 1 PID, 4 PCR.
-            BitRate            _previousBitrate = 0;        // Bitrate of previous segment.
-            ContinuityAnalyzer _ccFixer;                    // To fix continuity counters in PAT and PMT PID's.
+            FileNameGenerator  _name_generator {};            // Generate the segment file names.
+            SectionDemux       _demux;                        // Demux to extract PAT and PMT.
+            TSPacketVector     _pat_packets {};               // TS packets for the PAT at start of each segment file.
+            TSPacketVector     _pmt_packets {};               // TS packets for the PMT at start of each segment file, after the PAT.
+            PID                _pmt_pid = PID_NULL;           // PID of the PMT of the reference service.
+            PID                _video_pid = PID_NULL;         // Video PID on which the segmentation is evaluated.
+            uint8_t            _video_stream_type = ST_NULL;  // Stream type for video PID in PMT.
+            bool               _seg_started = false;          // Generation of output segments has started.
+            bool               _seg_close_pending = false;    // Close the current segment when possible.
+            TSFile             _segment_file {};              // Output segment file.
+            UStringList        _live_segment_files {};        // List of current segments in a live stream.
+            hls::PlayList      _playlist {};                  // Generated playlist.
+            PCRAnalyzer        _pcr_analyzer {1, 4};          // PCR analyzer to compute bitrates. Minimum required: 1 PID, 4 PCR.
+            BitRate            _previous_bitrate = 0;         // Bitrate of previous segment.
+            ContinuityAnalyzer _cc_fixer;                     // To fix continuity counters in PAT and PMT PID's.
 
             static constexpr cn::seconds DEFAULT_OUT_DURATION      = cn::seconds(10); // Default segment target duration for output streams.
             static constexpr cn::seconds DEFAULT_OUT_LIVE_DURATION = cn::seconds(5);  // Default segment target duration for output live streams.

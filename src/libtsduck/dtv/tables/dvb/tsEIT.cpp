@@ -607,7 +607,7 @@ ts::SectionPtr ts::EIT::BuildEmptySection(TID tid, uint8_t section_number, const
     PutUInt8(data + 13, tid);  // last table id
 
     // Build a section from the binary data.
-    const SectionPtr sec(new Section(section_data, PID_NULL, CRC32::IGNORE));
+    const auto sec = std::make_shared<Section>(section_data, PID_NULL, CRC32::IGNORE);
 
     // Insert the section in the list of them before returning it.
     sections.push_back(sec);
@@ -650,7 +650,7 @@ void ts::EIT::ExtractBinaryEvents(const SectionPtr& section, BinaryEventPtrMap& 
         size -= EIT_PAYLOAD_FIXED_SIZE;
         while (size >= EIT_EVENT_FIXED_SIZE) {
             // Get the next binary event.
-            BinaryEventPtr ev(new BinaryEvent(section->tableId(), data, size));
+            const auto ev = std::make_shared<BinaryEvent>(section->tableId(), data, size);
             if (ev->event_data.empty()) {
                 // Could not get the event, EIT payload is probably corrupted.
                 break;

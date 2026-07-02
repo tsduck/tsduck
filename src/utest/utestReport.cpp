@@ -36,7 +36,7 @@ public:
     virtual void afterTest() override;
 
 private:
-    fs::path _fileName {};
+    fs::path _file_name {};
 };
 
 TSUNIT_REGISTER(ReportTest);
@@ -49,15 +49,15 @@ TSUNIT_REGISTER(ReportTest);
 // Test suite initialization method.
 void ReportTest::beforeTest()
 {
-    _fileName = ts::TempFile();
-    fs::remove(_fileName, &ts::ErrCodeReport());
+    _file_name = ts::TempFile();
+    fs::remove(_file_name, &ts::ErrCodeReport());
 }
 
 // Test suite cleanup method.
 void ReportTest::afterTest()
 {
     // Returned value ignored on purpose, end of test, temporary file may not even exists.
-    fs::remove(_fileName, &ts::ErrCodeReport());
+    fs::remove(_file_name, &ts::ErrCodeReport());
 }
 
 
@@ -244,7 +244,7 @@ TSUNIT_DEFINE_TEST(Printf)
 TSUNIT_DEFINE_TEST(ByName)
 {
     {
-        ts::ReportFile<ts::ThreadSafety::Full> log(_fileName, false, false);
+        ts::ReportFile<ts::ThreadSafety::Full> log(_file_name, false, false);
         log.info(u"info %d 1");
         log.error(u"error %s 1");
     }
@@ -254,11 +254,11 @@ TSUNIT_DEFINE_TEST(ByName)
     ref.push_back(u"Error: error %s 1");
 
     ts::UStringVector value;
-    ts::UString::Load(value, _fileName);
+    ts::UString::Load(value, _file_name);
     TSUNIT_ASSERT(value == ref);
 
     {
-        ts::ReportFile<ts::ThreadSafety::Full> log(_fileName, true, false);
+        ts::ReportFile<ts::ThreadSafety::Full> log(_file_name, true, false);
         log.info(u"info 2");
         log.error(u"error 2");
     }
@@ -266,14 +266,14 @@ TSUNIT_DEFINE_TEST(ByName)
     ref.push_back(u"info 2");
     ref.push_back(u"Error: error 2");
 
-    ts::UString::Load(value, _fileName);
+    ts::UString::Load(value, _file_name);
     TSUNIT_ASSERT(value == ref);
 }
 
 // Test case: log file on open stream
 TSUNIT_DEFINE_TEST(ByStream)
 {
-    std::ofstream stream(_fileName);
+    std::ofstream stream(_file_name);
     TSUNIT_ASSERT(stream.is_open());
 
     {
@@ -291,7 +291,7 @@ TSUNIT_DEFINE_TEST(ByStream)
     ref.push_back(u"Error: error 1");
 
     ts::UStringVector value;
-    ts::UString::Load(value, _fileName);
+    ts::UString::Load(value, _file_name);
     TSUNIT_ASSERT(value == ref);
 }
 

@@ -43,7 +43,7 @@ namespace ts {
         //! Set new parsing and formatting tweaks for XML files.
         //! @param [in] tweaks XML tweaks.
         //!
-        void setTweaks(const xml::Tweaks& tweaks) { _xmlTweaks = tweaks; }
+        void setTweaks(const xml::Tweaks& tweaks) { _xml_tweaks = tweaks; }
 
         //!
         //! Clear all networks.
@@ -94,7 +94,7 @@ namespace ts {
         //! Get the file name from which the channel database was loaded.
         //! @return The file name. Empty string if no file was loaded.
         //!
-        UString fileName() const { return _fileName; }
+        UString fileName() const { return _file_name; }
 
         //!
         //! Get a description of the file from which the channel database was loaded.
@@ -374,9 +374,9 @@ namespace ts {
         bool serviceToTuning(ModulationArgs& tune, const DeliverySystemSet& delsys, const UString& name, bool strict = true, Report& report = CERR) const;
 
     private:
-        NetworkVector _networks {};    // List of networks in the configuration.
-        xml::Tweaks   _xmlTweaks {};   // XML formatting and parsing tweaks.
-        UString       _fileName {};    // Name of loaded file.
+        NetworkVector _networks {};     // List of networks in the configuration.
+        xml::Tweaks   _xml_tweaks {};   // XML formatting and parsing tweaks.
+        UString       _file_name {};    // Name of loaded file.
 
         // Parse an XML document and load the content into this object.
         bool parseDocument(const xml::Document& doc);

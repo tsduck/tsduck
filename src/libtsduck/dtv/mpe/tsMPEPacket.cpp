@@ -242,7 +242,7 @@ void ts::MPEPacket::createSection(Section& section) const
     // Create a buffer for the section content.
     // The allocated area will be directly used by the section object.
     // The initial size is the fixed part of the section, before the datagram.
-    ByteBlockPtr bbp(new ByteBlock(12));
+    auto bbp = std::make_shared<ByteBlock>(12);
     ByteBlock& data(*bbp);
 
     // Section is a DSM-CC Private Data.

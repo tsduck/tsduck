@@ -74,8 +74,8 @@ void ts::duck::Protocol::factory(const tlv::MessageFactory& fact, tlv::MessagePt
 
 void ts::duck::Protocol::buildErrorResponse(const tlv::MessageFactory& fact, tlv::MessagePtr& msg) const
 {
-    // Create an error message
-    std::shared_ptr<Error> errmsg(new Error(version()));
+    // Create an error message.
+    std::shared_ptr<Error> errmsg = std::make_shared<Error>(version());
 
     // Convert general TLV error code into protocol error_status
     switch (fact.errorStatus()) {

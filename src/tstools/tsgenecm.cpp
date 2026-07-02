@@ -31,13 +31,13 @@ namespace {
     public:
         GenECMOptions(int argc, char *argv[]);
 
-        ts::DuckContext       duck {this};   // TSDuck execution context.
-        ts::ecmgscs::Protocol ecmgscs {};    // ECMG <=> SCS protocol instance.
-        ts::UString           outFile {};    // Name of binary output file.
-        ts::ECMGClientArgs    ecmg {};       // ECMG parameters
-        uint16_t              cpNumber = 0;  // Crypto-period number
-        ts::ByteBlock         cwCurrent {};  // Current CW
-        ts::ByteBlock         cwNext {};     // Next CW
+        ts::DuckContext       duck {this};    // TSDuck execution context.
+        ts::ecmgscs::Protocol ecmgscs {};     // ECMG <=> SCS protocol instance.
+        ts::UString           out_file {};    // Name of binary output file.
+        ts::ECMGClientArgs    ecmg {};        // ECMG parameters
+        uint16_t              cp_number = 0;  // Crypto-period number
+        ts::ByteBlock         cw_current {};  // Current CW
+        ts::ByteBlock         cw_next {};     // Next CW
     };
 }
 
@@ -69,10 +69,10 @@ GenECMOptions::GenECMOptions(int argc, char *argv[]) :
 
     // Analyze parameters.
     ecmg.loadArgs(duck, *this);
-    getValue(outFile, u"");
-    getIntValue(cpNumber, u"cp-number", 0);
-    getHexaValue(cwCurrent, u"cw-current");
-    getHexaValue(cwNext, u"cw-next");
+    getValue(out_file, u"");
+    getIntValue(cp_number, u"cp-number", 0);
+    getHexaValue(cw_current, u"cw-current");
+    getHexaValue(cw_next, u"cw-next");
 
     // Specify which ECMG <=> SCS version to use.
     ecmgscs.setVersion(ecmg.dvbsim_version);
@@ -115,7 +115,7 @@ namespace {
             while ((size = ts::Section::SectionSize(data, remain)) > 0) {
                 // Get one section.
                 assert(size <= remain);
-                ts::SectionPtr section(new ts::Section(data, size));
+                const auto section = std::make_shared<ts::Section>(data, size);
                 if (section == nullptr || !section->isValid()) {
                     opt.error(u"ECMG returned an invalid section");
                     return false;
@@ -155,7 +155,7 @@ int MainCode(int argc, char *argv[])
 
     // Request the ECM (synchronous operation).
     ts::ecmgscs::ECMResponse response(opt.ecmgscs);
-    if (!ecmg.generateECM(opt.cpNumber, opt.cwCurrent, opt.cwNext, opt.ecmg.access_criteria, opt.ecmg.cp_duration, response)) {
+    if (!ecmg.generateECM(opt.cp_number, opt.cw_current, opt.cw_next, opt.ecmg.access_criteria, opt.ecmg.cp_duration, response)) {
         ecmg.disconnect();
         return EXIT_FAILURE;
     }
@@ -171,5 +171,5 @@ int MainCode(int argc, char *argv[])
     }
 
     // Save the binary file containing the ECM's.
-    return ecmFile.saveBinary(opt.outFile) ? EXIT_SUCCESS : EXIT_FAILURE;
+    return ecmFile.saveBinary(opt.out_file) ? EXIT_SUCCESS : EXIT_FAILURE;
 }

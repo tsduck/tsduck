@@ -51,9 +51,9 @@ ts::ChannelFile::ServicePtr ts::ChannelFile::TransportStream::serviceGetOrCreate
 ts::ChannelFile::ServicePtr ts::ChannelFile::TransportStream::serviceByName(const UString& name, bool strict) const
 {
     // Check if the name has "major.minor" syntax.
-    uint16_t majorId = 0;
-    uint16_t minorId = 0;
-    const bool atscId = !strict && name.scan(u"%d.%d", &majorId, &minorId);
+    uint16_t major_id = 0;
+    uint16_t minor_id = 0;
+    const bool atscId = !strict && name.scan(u"%d.%d", &major_id, &minor_id);
 
     // Now lookup all services in transport.
     for (size_t i = 0; i < _services.size(); ++i) {
@@ -61,7 +61,7 @@ ts::ChannelFile::ServicePtr ts::ChannelFile::TransportStream::serviceByName(cons
         assert(srv != nullptr);
         if ((strict && srv->name == name) ||
             (!strict && name.similar(srv->name)) ||
-            (atscId && srv->atscMajorId == majorId && srv->atscMinorId == minorId))
+            (atscId && srv->atscMajorId == major_id && srv->atscMinorId == minor_id))
         {
             return srv;
         }
@@ -280,7 +280,7 @@ bool ts::ChannelFile::searchService(NetworkPtr& net,
 
 ts::UString ts::ChannelFile::fileDescription() const
 {
-    return _fileName.empty() ? u"channel database" : _fileName;
+    return _file_name.empty() ? u"channel database" : _file_name;
 }
 
 
@@ -301,27 +301,27 @@ ts::UString ts::ChannelFile::DefaultFileName()
 bool ts::ChannelFile::load(const UString& fileName, Report& report)
 {
     clear();
-    _fileName = fileName.empty() ? DefaultFileName() : fileName;
+    _file_name = fileName.empty() ? DefaultFileName() : fileName;
     xml::Document doc(report);
-    doc.setTweaks(_xmlTweaks);
-    return doc.load(_fileName, false) && parseDocument(doc);
+    doc.setTweaks(_xml_tweaks);
+    return doc.load(_file_name, false) && parseDocument(doc);
 }
 
 bool ts::ChannelFile::load(std::istream& strm, Report& report)
 {
     clear();
-    _fileName.clear();
+    _file_name.clear();
     xml::Document doc(report);
-    doc.setTweaks(_xmlTweaks);
+    doc.setTweaks(_xml_tweaks);
     return doc.load(strm) && parseDocument(doc);
 }
 
 bool ts::ChannelFile::parse(const UString& text, Report& report)
 {
     clear();
-    _fileName.clear();
+    _file_name.clear();
     xml::Document doc(report);
-    doc.setTweaks(_xmlTweaks);
+    doc.setTweaks(_xml_tweaks);
     return doc.parse(text) && parseDocument(doc);
 }
 
@@ -435,14 +435,14 @@ bool ts::ChannelFile::save(const fs::path& fileName, bool createDirectories, Rep
     }
 
     xml::Document doc(report);
-    doc.setTweaks(_xmlTweaks);
+    doc.setTweaks(_xml_tweaks);
     return generateDocument(doc) && doc.save(fileName);
 }
 
 ts::UString ts::ChannelFile::toXML(Report& report) const
 {
     xml::Document doc(report);
-    doc.setTweaks(_xmlTweaks);
+    doc.setTweaks(_xml_tweaks);
     return generateDocument(doc) ? doc.toString() : UString();
 }
 

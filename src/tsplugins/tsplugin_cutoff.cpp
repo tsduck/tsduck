@@ -232,7 +232,8 @@ void ts::CutoffPlugin::main()
             }
 
             // Extract trimmed lowercase ASCII command.
-            CommandQueue::MessagePtr cmd(new UString(UString::FromUTF8(inbuf, len)));
+            auto cmd = std::make_shared<UString>();
+            cmd->assignFromUTF8(inbuf, len);
             cmd->toLower();
             cmd->trim();
             verbose(u"received command \"%s\", from %s (%d bytes)", *cmd, sender, insize);

@@ -15,10 +15,10 @@
 // Constructor.
 //----------------------------------------------------------------------------
 
-ts::MacPList::MacPList(const ts::UString& fileName, Report& report) : SuperClass()
+ts::MacPList::MacPList(const ts::UString& file_name, Report& report) : SuperClass()
 {
-    if (!fileName.empty()) {
-        load(fileName, report);
+    if (!file_name.empty()) {
+        load(file_name, report);
     }
 }
 
@@ -27,11 +27,11 @@ ts::MacPList::MacPList(const ts::UString& fileName, Report& report) : SuperClass
 // Reload from a MacOS XML PList file.
 //----------------------------------------------------------------------------
 
-bool ts::MacPList::load(const ts::UString& fileName, Report& report)
+bool ts::MacPList::load(const ts::UString& file_name, Report& report)
 {
     // Load the XML file.
     xml::Document doc(report);
-    if (!doc.load(fileName, false)) {
+    if (!doc.load(file_name, false)) {
         return false;
     }
 

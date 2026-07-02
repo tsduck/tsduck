@@ -1542,14 +1542,14 @@ bool ts::Args::processArgsRedirection(UStringVector& args)
             // Replace the line with the content of a file.
 
             // Get the file name.
-            const UString fileName(it->substr(1));
+            const UString file_name(it->substr(1));
 
             // Remove the line from the argument array.
             it = args.erase(it);
 
             // Load the text file.
             UStringVector lines;
-            if (UString::Load(lines, fileName)) {
+            if (UString::Load(lines, file_name)) {
                 // Insert the loaded lines. Then, make "it" point to the first inserted element.
                 // This means that the loaded content will now be processed, allowing nested '@' directives.
                 it = args.insert(it, lines.begin(), lines.end());
@@ -1557,7 +1557,7 @@ bool ts::Args::processArgsRedirection(UStringVector& args)
             else {
                 // Error loading file.
                 result = false;
-                error(u"error reading command line arguments from file \"%s\"", fileName);
+                error(u"error reading command line arguments from file \"%s\"", file_name);
             }
         }
         else {

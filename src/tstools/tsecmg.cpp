@@ -581,13 +581,13 @@ bool ECMGClientHandler::handleCWProvision(const std::shared_ptr<ts::ecmgscs::CWP
         resp.CP_number = msg->CP_number;
 
         // Check if 16-bit crypto-period numbers wrap over 0xFFFF.
-        const uint16_t cpMax = msg->CP_number + _opt.channelStatus.lead_CW;
-        const bool cpWrap = cpMax < msg->CP_number;
+        const uint16_t cp_max = msg->CP_number + _opt.channelStatus.lead_CW;
+        const bool cp_wrap = cp_max < msg->CP_number;
 
         // Add all CW's in the ECM (in the clear, yeah, but that's a fake/test ECMG).
         ts::duck::ClearECM ecm(_protocol);
         for (auto it = msg->CP_CW_combination.begin(); it != msg->CP_CW_combination.end(); ++it) {
-            if ((!cpWrap && (it->CP < msg->CP_number || it->CP > cpMax)) || (cpWrap && it->CP > cpMax && it->CP < msg->CP_number)) {
+            if ((!cp_wrap && (it->CP < msg->CP_number || it->CP > cp_max)) || (cp_wrap && it->CP > cp_max && it->CP < msg->CP_number)) {
                 // Incorrect CP/CW combination.
                 return sendErrorResponse(msg, ts::ecmgscs::Errors::not_enough_CW);
             }
@@ -607,8 +607,8 @@ bool ECMGClientHandler::handleCWProvision(const std::shared_ptr<ts::ecmgscs::CWP
         }
 
         // Serialize the ECM section payload.
-        ts::ByteBlockPtr ecmBin(new ts::ByteBlock);
-        ts::tlv::Serializer serial(ecmBin);
+        const auto ecm_bin = std::make_shared<ts::ByteBlock>();
+        ts::tlv::Serializer serial(ecm_bin);
         ecm.serialize(serial);
 
         // Compute the table id for the ECM, 0x80 or 0x81. There are two incompatible possibilities.
@@ -621,22 +621,22 @@ bool ECMGClientHandler::handleCWProvision(const std::shared_ptr<ts::ecmgscs::CWP
         const ts::TID tid = ts::TID(ts::TID_ECM_80 | (msg->CP_number & 0x01));
 
         // Build the ECM section.
-        ts::SectionPtr ecmSection(new ts::Section(tid, true, ecmBin->data(), ecmBin->size()));
+        const auto ecm_section = std::make_shared<ts::Section>(tid, true, ecm_bin->data(), ecm_bin->size());
 
         // Format ECM for the response message.
         if (_opt.channelStatus.section_TSpkt_flag) {
             // Send ECM as TS packets, packetize the section.
-            ts::TSPacketVector ecmPackets;
+            ts::TSPacketVector ecm_packets;
             ts::OneShotPacketizer zer(_opt.duck);
-            zer.addSection(ecmSection);
-            zer.getPackets(ecmPackets);
-            if (!ecmPackets.empty()) {
-                resp.ECM_datagram.copy(ecmPackets[0].b, ecmPackets.size() * ts::PKT_SIZE);
+            zer.addSection(ecm_section);
+            zer.getPackets(ecm_packets);
+            if (!ecm_packets.empty()) {
+                resp.ECM_datagram.copy(ecm_packets[0].b, ecm_packets.size() * ts::PKT_SIZE);
             }
         }
         else {
             // Send ECM as a section.
-            resp.ECM_datagram.copy(ecmSection->content(), ecmSection->size());
+            resp.ECM_datagram.copy(ecm_section->content(), ecm_section->size());
         }
 
         // Emulate the computation time of a real ECMG.
@@ -681,9 +681,9 @@ int MainCode(int argc, char *argv[])
     for (;;) {
 
         // Accept one incoming connection.
-        ts::IPSocketAddress clientAddress;
+        ts::IPSocketAddress client_address;
         ECMGConnectionPtr conn = std::make_shared<ECMGConnection>(shared.logger(), opt.ecmgscs, true, 3);
-        if (!server.accept(*conn, clientAddress)) {
+        if (!server.accept(*conn, client_address)) {
             break;
         }
 

@@ -970,7 +970,7 @@ void ts::ScramblerPlugin::CryptoPeriod::handleECM(const ecmgscs::ECMResponse& re
 {
     if (_plugin->_channel_status.section_TSpkt_flag == 0) {
         // ECMG returns ECM in section format
-        SectionPtr sp(new Section(response.ECM_datagram));
+        const auto sp = std::make_shared<Section>(response.ECM_datagram);
         if (!sp->isValid()) {
             _plugin->error(u"ECMG returned an invalid ECM section (%d bytes)", response.ECM_datagram.size());
             _plugin->_abort = true;

@@ -240,7 +240,7 @@ TSUNIT_DEFINE_TEST(Chrono)
 TSUNIT_DEFINE_TEST(SharedPtr)
 {
     using Ptr = std::shared_ptr<uint64_t>;
-    Ptr ptr1(new uint64_t(0x0123456789ABCDEF));
+    Ptr ptr1 = std::make_shared<uint64_t>(0x0123456789ABCDEF);
 
     if (debugMode()) {
         // May trigger memory errors depending on implementations.

@@ -102,7 +102,7 @@ namespace ts {
     };
 
     //!
-    //! Safe pointer to a CADescriptor (thread-safe).
+    //! Safe pointer to a CADescriptor.
     //!
     using CADescriptorPtr = std::shared_ptr<CADescriptor>;
 }

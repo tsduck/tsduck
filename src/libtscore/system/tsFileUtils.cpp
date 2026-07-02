@@ -168,7 +168,7 @@ ts::UString ts::AbsoluteFilePath(const UString& path, const UString& base)
 // Build a relative form of a file path, relative to a base directory.
 //----------------------------------------------------------------------------
 
-ts::UString ts::RelativeFilePath(const ts::UString &path, const ts::UString &base, ts::CaseSensitivity caseSensitivity, bool portableSlashes)
+ts::UString ts::RelativeFilePath(const ts::UString &path, const ts::UString &base, ts::CaseSensitivity case_sensitivity, bool portable_slashes)
 {
     // Build absolute file path of the target.
     UString target(AbsoluteFilePath(path));
@@ -178,7 +178,7 @@ ts::UString ts::RelativeFilePath(const ts::UString &path, const ts::UString &bas
     ref.append(fs::path::preferred_separator);
 
     // See how many leading characters are matching.
-    size_t same = target.commonPrefixSize(ref, caseSensitivity);
+    size_t same = target.commonPrefixSize(ref, case_sensitivity);
 
     // Move backward right after the previous path separator to
     // get the length of the common directory parts
@@ -206,7 +206,7 @@ ts::UString ts::RelativeFilePath(const ts::UString &path, const ts::UString &bas
     }
 
     // Convert portable slashes.
-    if (portableSlashes && fs::path::preferred_separator != u'/') {
+    if (portable_slashes && fs::path::preferred_separator != u'/') {
         target.substitute(fs::path::preferred_separator, u'/');
     }
 
@@ -371,15 +371,15 @@ bool ts::SetFileModificationTimeLocal(const UString& path, const Time& time)
 // Search an executable file.
 //----------------------------------------------------------------------------
 
-ts::UString ts::SearchExecutableFile(const UString& fileName, const UString& pathName)
+ts::UString ts::SearchExecutableFile(const UString& file_name, const UString& path_name)
 {
     // Don't search if empty.
-    if (fileName.empty()) {
+    if (file_name.empty()) {
         return UString();
     }
 
     // Adjust file name with the executable suffix.
-    UString name(fileName);
+    UString name(file_name);
     if (!name.ends_with(EXECUTABLE_FILE_SUFFIX, FILE_SYSTEM_CASE_SENSITVITY)) {
         name.append(EXECUTABLE_FILE_SUFFIX);
     }
@@ -388,14 +388,14 @@ ts::UString ts::SearchExecutableFile(const UString& fileName, const UString& pat
     const fs::perms exec = fs::perms::owner_exec | fs::perms::group_exec | fs::perms::others_exec;
 
     // If there is at least one path separator in the middle, there is a directory specified, don't search.
-    if (LastPathSeparator(fileName) != NPOS) {
+    if (LastPathSeparator(file_name) != NPOS) {
         // If the file does not exist or is not executable, not suitable.
         return fs::exists(name) && (fs::status(name, &ErrCodeReport()).permissions() & exec) != fs::perms::none ? name : UString();
     }
 
     // Search in the path.
     UStringList dirs;
-    GetEnvironmentPath(dirs, pathName);
+    GetEnvironmentPath(dirs, path_name);
     for (const auto& dir : dirs) {
         const UString full(dir + fs::path::preferred_separator + name);
         if (fs::exists(full) && (fs::status(full, &ErrCodeReport()).permissions() & exec) != fs::perms::none) {
@@ -436,17 +436,17 @@ const ts::UString& ts::DefaultPackageInstallationRoot()
 // Search a configuration file.
 //----------------------------------------------------------------------------
 
-ts::UString ts::SearchConfigurationFile(const UString& fileName)
+ts::UString ts::SearchConfigurationFile(const UString& file_name)
 {
-    if (fileName.empty()) {
+    if (file_name.empty()) {
         // No file specified, no file found...
         return UString();
     }
-    if (fs::exists(fileName)) {
+    if (fs::exists(file_name)) {
         // The file exists as is, no need to search.
-        return fileName;
+        return file_name;
     }
-    if (LastPathSeparator(fileName) != NPOS) {
+    if (LastPathSeparator(file_name) != NPOS) {
         // There is a path separator, there is a directory specified and the file does not exist, don't search.
         return UString();
     }
@@ -491,7 +491,7 @@ ts::UString ts::SearchConfigurationFile(const UString& fileName)
 
     // Search the file.
     for (const auto& dir : dirList) {
-        const UString path(dir + fs::path::preferred_separator + fileName);
+        const UString path(dir + fs::path::preferred_separator + file_name);
         CERR.debug(u"looking for %s", path);
         if (fs::exists(path)) {
             return path;
@@ -507,7 +507,7 @@ ts::UString ts::SearchConfigurationFile(const UString& fileName)
 // Build the name of a user-specific configuration file.
 //----------------------------------------------------------------------------
 
-ts::UString ts::UserConfigurationFileName(const UString& fileName, const UString& winFileName)
+ts::UString ts::UserConfigurationFileName(const UString& file_name, const UString& win_file_name)
 {
 #if defined(TS_WINDOWS)
     UString root(GetEnvironment(u"APPDATA"));
@@ -517,8 +517,8 @@ ts::UString ts::UserConfigurationFileName(const UString& fileName, const UString
     else {
         root.append(u"\\tsduck");
     }
-    return root + u"\\" + (winFileName.empty() ? fileName : winFileName);
+    return root + u"\\" + (win_file_name.empty() ? file_name : win_file_name);
 #else
-    return UserHomeDirectory() + u"/" + fileName;
+    return UserHomeDirectory() + u"/" + file_name;
 #endif
 }

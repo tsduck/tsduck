@@ -132,7 +132,7 @@ ts::PacketProcessStatus ts::DuplicatePlugin::processPacket(TSPacket& pkt, TSPack
             }
         }
         // Copy the packet in the buffer with the new PID.
-        const TSPacketPtr newpkt(new TSPacket(pkt));
+        const auto newpkt = std::make_shared<TSPacket>(pkt);
         newpkt->setPID(newpid);
         _queue.push_back(newpkt);
     }

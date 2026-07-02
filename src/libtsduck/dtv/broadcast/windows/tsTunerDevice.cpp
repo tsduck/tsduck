@@ -620,9 +620,8 @@ bool ts::TunerDevice::FindTuners(DuckContext& duck, TunerDevice* tuner, TunerPtr
 
         // If we search one specific tuner (tuner != nullptr), use this one.
         // If we are building a list of all tuners (tuner_list != nullptr), allocate a new tuner.
-        TunerDevice* new_tuner = tuner == nullptr ? new TunerDevice(duck) : nullptr;
-        TunerPtr tptr(new_tuner);
-        TunerDevice& tref(tuner == nullptr ? *new_tuner : *tuner);
+        std::shared_ptr<TunerDevice> tptr = tuner == nullptr ? std::make_shared<TunerDevice>(duck) : nullptr;
+        TunerDevice& tref(tuner == nullptr ? *tptr : *tuner);
 
         // Try to build a graph from this network provider and tuner
         if (tref._graph.initialize(tuner_name, tuner_monikers[moniker_index].pointer(), tref._delivery_systems, report)) {

@@ -486,7 +486,7 @@ bool ts::DataInjectPlugin::processDataProvision(const tlv::MessagePtr& msg)
     if (_section_mode) {
         // Section mode, one section per datagram parameter, enqueue them.
         for (size_t i = 0; i < m->datagram.size(); ++i) {
-            SectionPtr sp(new Section(m->datagram[i]));
+            auto sp = std::make_shared<Section>(m->datagram[i]);
             if (sp->isValid()) {
                 processPacketLoss(u"sections", _section_queue.enqueue(sp, cn::milliseconds::zero()));
             }
@@ -505,7 +505,7 @@ bool ts::DataInjectPlugin::processDataProvision(const tlv::MessagePtr& msg)
                     error(u"invalid TS packet");
                 }
                 else {
-                    PacketPtr p(new TSPacket());
+                    auto p = std::make_shared<TSPacket>();
                     p->copyFrom(data);
                     processPacketLoss(u"packets", _packet_queue.enqueue(p, cn::milliseconds::zero()));
                     data += PKT_SIZE;

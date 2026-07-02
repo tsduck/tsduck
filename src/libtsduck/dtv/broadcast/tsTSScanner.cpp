@@ -165,7 +165,7 @@ void ts::TSScanner::handleTable(SectionDemux&, const BinaryTable& table)
     switch (table.tableId()) {
 
         case TID_PAT: {
-            std::shared_ptr<PAT> pat(new PAT(_duck, table));
+            std::shared_ptr<PAT> pat = std::make_shared<PAT>(_duck, table);
             if (pat->isValid()) {
                 _pat = std::move(pat);
                 // Collect the NIT.
@@ -197,7 +197,7 @@ void ts::TSScanner::handleTable(SectionDemux&, const BinaryTable& table)
         }
 
         case TID_SDT_ACT: {
-            std::shared_ptr<SDT> sdt(new SDT(_duck, table));
+            std::shared_ptr<SDT> sdt = std::make_shared<SDT>(_duck, table);
             if (sdt->isValid()) {
                 _sdt = std::move(sdt);
             }
@@ -205,7 +205,7 @@ void ts::TSScanner::handleTable(SectionDemux&, const BinaryTable& table)
         }
 
         case TID_NIT_ACT: {
-            std::shared_ptr<NIT> nit(new NIT(_duck, table));
+            std::shared_ptr<NIT> nit = std::make_shared<NIT>(_duck, table);
             if (nit->isValid()) {
                 _nit = std::move(nit);
                 _lcn.addFromNIT(*_nit);
@@ -214,7 +214,7 @@ void ts::TSScanner::handleTable(SectionDemux&, const BinaryTable& table)
         }
 
         case TID_MGT: {
-            std::shared_ptr<MGT> mgt(new MGT(_duck, table));
+            std::shared_ptr<MGT> mgt = std::make_shared<MGT>(_duck, table);
             if (mgt->isValid()) {
                 _mgt = mgt;
                 // Intercept TVCT and CVCT, they contain the service names.
@@ -233,7 +233,7 @@ void ts::TSScanner::handleTable(SectionDemux&, const BinaryTable& table)
         }
 
         case TID_TVCT: {
-            std::shared_ptr<VCT> vct(new TVCT(_duck, table));
+            std::shared_ptr<VCT> vct = std::make_shared<TVCT>(_duck, table);
             if (vct->isValid()) {
                 _vct = std::move(vct);
             }
@@ -241,7 +241,7 @@ void ts::TSScanner::handleTable(SectionDemux&, const BinaryTable& table)
         }
 
         case TID_CVCT: {
-            std::shared_ptr<VCT> vct(new CVCT(_duck, table));
+            std::shared_ptr<VCT> vct = std::make_shared<CVCT>(_duck, table);
             if (vct->isValid()) {
                 _vct = std::move(vct);
             }

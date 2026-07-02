@@ -74,8 +74,7 @@ namespace ts {
         virtual void handleSection(SectionDemux& demux, const Section& section) override;
 
         // Keep a map of all PMT's per service id.
-        using PMTPtr = std::shared_ptr<PMT>;
-        using PMTMap = std::map<uint16_t, PMTPtr>;
+        using PMTMap = std::map<uint16_t, std::shared_ptr<PMT>>;
 
         // We record here all MPE PID's from the IP/MAC Notification Table (INT).
         // In the INT, an MPE PID is defined by a 16-bit service id and an 8-bit component tag.

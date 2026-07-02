@@ -36,7 +36,7 @@ void ts::SectionFile::clear()
 {
     _tables.clear();
     _sections.clear();
-    _orphanSections.clear();
+    _orphan_sections.clear();
 }
 
 
@@ -47,7 +47,7 @@ void ts::SectionFile::clear()
 void ts::SectionFile::add(const AbstractTablePtr& table)
 {
     if (table != nullptr && table->isValid()) {
-        BinaryTablePtr bin(new BinaryTable);
+        auto bin = std::make_shared<BinaryTable>();
         table->serialize(_duck, *bin);
         if (bin->isValid()) {
             add(bin);
@@ -105,7 +105,7 @@ void ts::SectionFile::add(const SectionPtr& section)
         // Make the section part of the global list of sections.
         _sections.push_back(section);
         // Temporary push this section in the orphan list.
-        _orphanSections.push_back(section);
+        _orphan_sections.push_back(section);
         // Try to build a table from the list of orphans.
         collectLastTable();
     }
@@ -121,7 +121,7 @@ size_t ts::SectionFile::packOrphanSections()
     size_t createCount = 0;
 
     // Loop on all orphan sections, locating sets of sections from the same table.
-    for (auto first = _orphanSections.begin(); first != _orphanSections.end(); ) {
+    for (auto first = _orphan_sections.begin(); first != _orphan_sections.end(); ) {
         assert(*first != nullptr);
         assert((*first)->isValid());
 
@@ -133,7 +133,7 @@ size_t ts::SectionFile::packOrphanSections()
         if ((*first)->isLongSection()) {
             const TID tid = (*first)->tableId();
             const uint16_t tidExt = (*first)->tableIdExtension();
-            while (end != _orphanSections.end() && (*end)->tableId() == tid && (*end)->tableIdExtension() == tidExt) {
+            while (end != _orphan_sections.end() && (*end)->tableId() == tid && (*end)->tableIdExtension() == tidExt) {
                 ++end;
             }
         }
@@ -155,25 +155,25 @@ size_t ts::SectionFile::packOrphanSections()
     }
 
     // Clear the list of orphan sections, they are now in tables.
-    _orphanSections.clear();
+    _orphan_sections.clear();
 
     return createCount;
 }
 
 
 //----------------------------------------------------------------------------
-// Check it a table can be formed using the last sections in _orphanSections.
+// Check it a table can be formed using the last sections in _orphan_sections.
 //----------------------------------------------------------------------------
 
 void ts::SectionFile::collectLastTable()
 {
     // If there is no orphan section, nothing to do.
-    if (_orphanSections.empty()) {
+    if (_orphan_sections.empty()) {
         return;
     }
 
     // Get a iterator to last section.
-    auto first = _orphanSections.end();
+    auto first = _orphan_sections.end();
     --first;
     assert(*first != nullptr);
     assert((*first)->isValid());
@@ -206,7 +206,7 @@ void ts::SectionFile::collectLastTable()
             }
 
             // Move to previous section.
-            if (first == _orphanSections.begin()) {
+            if (first == _orphan_sections.begin()) {
                 return; // beginning of the table is missing.
             }
             else {
@@ -217,14 +217,14 @@ void ts::SectionFile::collectLastTable()
 
     // We have now identified sections for a complete table.
     BinaryTablePtr table = std::make_shared<BinaryTable>();
-    if (!table->addSections(first, _orphanSections.end(), false, false) || !table->isValid()) {
+    if (!table->addSections(first, _orphan_sections.end(), false, false) || !table->isValid()) {
         // Invalid table after all.
         return;
     }
 
     // Built a valid table.
     _tables.push_back(table);
-    _orphanSections.erase(first, _orphanSections.end());
+    _orphan_sections.erase(first, _orphan_sections.end());
 }
 
 
@@ -240,14 +240,14 @@ void ts::SectionFile::reorganizeEITs(const ts::Time& reftime, EITOptions options
 
 
 //----------------------------------------------------------------------------
-// Rebuild _tables and _orphanSections from _sections.
+// Rebuild _tables and _orphan_sections from _sections.
 //----------------------------------------------------------------------------
 
 void ts::SectionFile::rebuildTables()
 {
     // Restart from scratch.
     _tables.clear();
-    _orphanSections.clear();
+    _orphan_sections.clear();
 
     // Rebuild tables from consecutive sections.
     for (size_t i = 0; i < _sections.size(); ++i) {
@@ -260,7 +260,7 @@ void ts::SectionFile::rebuildTables()
         }
         else if (_sections[i]->sectionNumber() != 0 || i + _sections[i]->lastSectionNumber() >= _sections.size()) {
             // Orphan section, not preceded by logically adjacent sections or section #0 without enough following sections.
-            _orphanSections.push_back(_sections[i]);
+            _orphan_sections.push_back(_sections[i]);
         }
         else {
             // We have a long section #0, try to match all following sections.
@@ -282,7 +282,7 @@ void ts::SectionFile::rebuildTables()
             }
             else {
                 // Cannot find a complete table. Push first section as orphan.
-                _orphanSections.push_back(_sections[i]);
+                _orphan_sections.push_back(_sections[i]);
             }
         }
     }
@@ -321,7 +321,7 @@ bool ts::SectionFile::loadBinary(std::istream& strm, Report& report)
 {
     // Read all binary sections one by one.
     for (;;) {
-        SectionPtr sp(new Section);
+        auto sp = std::make_shared<Section>();
         if (sp->read(strm, _crc_op, report)) {
             add(sp);
         }
@@ -387,7 +387,7 @@ bool ts::SectionFile::loadBuffer(const void* buffer, size_t size)
         if (section_size > size) {
             break;
         }
-        SectionPtr sp(new Section(data, section_size, PID_NULL, CRC32::CHECK));
+        auto sp = std::make_shared<Section>(data, section_size, PID_NULL, CRC32::CHECK);
         if (sp != nullptr && sp->isValid()) {
             add(sp);
         }
@@ -697,8 +697,8 @@ bool ts::SectionFile::generateDocument(xml::Document& doc) const
     }
 
     // Issue a warning if incomplete tables were not saved.
-    if (!_orphanSections.empty()) {
-        doc.report().warning(u"%d orphan sections not saved in XML document (%d tables saved)", _orphanSections.size(), _tables.size());
+    if (!_orphan_sections.empty()) {
+        doc.report().warning(u"%d orphan sections not saved in XML document (%d tables saved)", _orphan_sections.size(), _tables.size());
     }
 
     return true;

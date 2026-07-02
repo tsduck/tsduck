@@ -103,16 +103,16 @@ namespace ts {
     //! @param [in] path A file path.
     //! @param [in] base The base directory to use.
     //! By default, when @a base is empty, the current working directory is used.
-    //! @param [in] caseSensitivity Case sensitivity of file names comparison.
+    //! @param [in] case_sensitivity Case sensitivity of file names comparison.
     //! By default, use the local file system case sensitivity.
-    //! @param [in] portableSlashes If true, the relative path contains forward slashes ('/'),
+    //! @param [in] portable_slashes If true, the relative path contains forward slashes ('/'),
     //! even on Windows. The resulting path can be used in relative URL's for instance.
     //! @return The absolute form of @a path after cleanup.
     //!
     TSCOREDLL UString RelativeFilePath(const UString& path,
                                        const UString& base = UString(),
-                                       CaseSensitivity caseSensitivity = FILE_SYSTEM_CASE_SENSITVITY,
-                                       bool portableSlashes = false);
+                                       CaseSensitivity case_sensitivity = FILE_SYSTEM_CASE_SENSITVITY,
+                                       bool portable_slashes = false);
 
     //!
     //! Cleanup a file path.
@@ -266,11 +266,11 @@ namespace ts {
     //!
     //! Search an executable file.
     //! @ingroup files
-    //! @param [in] fileName Name of the file to search.
-    //! @param [in] pathName Name of the seach path environment variable.
+    //! @param [in] file_name Name of the file to search.
+    //! @param [in] path_name Name of the seach path environment variable.
     //! @return The path to an existing file or an empty path if not found.
     //!
-    TSCOREDLL UString SearchExecutableFile(const UString& fileName, const UString& pathName = PATH_ENVIRONMENT_VARIABLE);
+    TSCOREDLL UString SearchExecutableFile(const UString& file_name, const UString& path_name = PATH_ENVIRONMENT_VARIABLE);
 
     //!
     //! Get the system-dependent root of installed packages.
@@ -292,7 +292,7 @@ namespace ts {
     //!
     //! Search a configuration file.
     //! @ingroup files
-    //! @param [in] fileName Name of the file to search.
+    //! @param [in] file_name Name of the file to search.
     //! If @a fileName is not found and does not contain any directory part, search this file
     //! in the following places:
     //! - All directories in @c TSPLUGINS_PATH environment variable.
@@ -306,19 +306,19 @@ namespace ts {
     //! - All directories in @c PATH (UNIX) or @c Path (Windows) environment variable.
     //! @return The path to an existing file or an empty string if not found.
     //!
-    TSCOREDLL UString SearchConfigurationFile(const UString& fileName);
+    TSCOREDLL UString SearchConfigurationFile(const UString& file_name);
 
     //!
     //! Build the name of a user-specific configuration file.
     //! @ingroup files
-    //! @param [in] fileName Base name of the configuration file.
-    //! @param [in] winFileName Alternative base name on Windows. If empty, @a fileName is used.
+    //! @param [in] file_name Base name of the configuration file.
+    //! @param [in] win_file_name Alternative base name on Windows. If empty, @a file_name is used.
     //! @return The path to the user-specific configuration file. The file may exist or not.
     //! The default file location depends on the operating system:
     //! - Windows: @c \%APPDATA%\\tsduck
     //! - Unix: @c $HOME
     //!
-    TSCOREDLL UString UserConfigurationFileName(const UString& fileName, const UString& winFileName = UString());
+    TSCOREDLL UString UserConfigurationFileName(const UString& file_name, const UString& win_file_name = UString());
 }
 
 

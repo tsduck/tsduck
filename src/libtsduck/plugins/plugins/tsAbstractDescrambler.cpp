@@ -104,7 +104,7 @@ ts::AbstractDescrambler::ECMStreamPtr ts::AbstractDescrambler::getOrCreateECMStr
         return ecm_it->second;
     }
     else {
-        ECMStreamPtr p(new ECMStream(this));
+        const auto p = std::make_shared<ECMStream>(this);
         _ecm_streams.insert(std::make_pair(ecm_pid, p));
         return p;
     }

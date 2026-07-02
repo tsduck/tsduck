@@ -135,12 +135,12 @@ namespace ts {
 
         //!
         //! Enable the use of cookies for all requests using this instance.
-        //! @param [in] fileName The name of the file to use to load and store cookies.
+        //! @param [in] file_name The name of the file to use to load and store cookies.
         //! On Windows, there is an implicit per-user cookie repository and @a fileName
         //! is ignored. On Unix systems, this file is used to store and retrieve cookies
         //! in the libcurl format. When @a fileName is empty, use a temporary file name.
         //!
-        void enableCookies(const fs::path& fileName = fs::path());
+        void enableCookies(const fs::path& file_name = fs::path());
 
         //!
         //! Disable the use of cookies for all requests.
@@ -377,10 +377,10 @@ namespace ts {
         //! The open/read/close session is embedded in this method.
         //! @param [in] url The complete URL to fetch.
         //! @param [out] data The content of the URL.
-        //! @param [in] chunkSize Individual download chunk size.
+        //! @param [in] chunk_size Individual download chunk size.
         //! @return True on success, false on error.
         //!
-        bool downloadBinaryContent(const UString& url, ByteBlock& data, size_t chunkSize = DEFAULT_CHUNK_SIZE);
+        bool downloadBinaryContent(const UString& url, ByteBlock& data, size_t chunk_size = DEFAULT_CHUNK_SIZE);
 
         //!
         //! Download the content of the URL as text in one operation.
@@ -389,21 +389,21 @@ namespace ts {
         //! End of lines are normalized as LF.
         //! @param [in] url The complete URL to fetch.
         //! @param [out] text The content of the URL.
-        //! @param [in] chunkSize Individual download chunk size.
+        //! @param [in] chunk_size Individual download chunk size.
         //! @return True on success, false on error.
         //!
-        bool downloadTextContent(const UString& url, UString& text, size_t chunkSize = DEFAULT_CHUNK_SIZE);
+        bool downloadTextContent(const UString& url, UString& text, size_t chunk_size = DEFAULT_CHUNK_SIZE);
 
         //!
         //! Download the content of the URL in a file in one operation.
         //! The open/read/close session is embedded in this method..
         //! No transformation is applied to the data.
         //! @param [in] url The complete URL to fetch.
-        //! @param [in] fileName Name of the file to create.
-        //! @param [in] chunkSize Individual download chunk size.
+        //! @param [in] file_name Name of the file to create.
+        //! @param [in] chunk_size Individual download chunk size.
         //! @return True on success, false on error.
         //!
-        bool downloadFile(const UString& url, const fs::path& fileName, size_t chunkSize = DEFAULT_CHUNK_SIZE);
+        bool downloadFile(const UString& url, const fs::path& file_name, size_t chunk_size = DEFAULT_CHUNK_SIZE);
 
         //!
         //! Get the version of the underlying HTTP library.

@@ -20,7 +20,7 @@ namespace ts::tlv {
     class MessageFactory;
 
     //!
-    //! Safe pointer for MessageFactory (not thread-safe).
+    //! Safe pointer for MessageFactory.
     //!
     using MessageFactoryPtr = std::shared_ptr<MessageFactory>;
 

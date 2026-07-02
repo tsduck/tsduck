@@ -367,7 +367,7 @@ void ts::MPEInjectPlugin::ReceiverThread::main()
         mpe.setUDPMessage(buffer.data(), insize);
 
         // Create an MPE section for the datagram.
-        SectionQueue::MessagePtr section(new Section());
+        auto section = std::make_shared<Section>();
         mpe.createSection(*section);
 
         // Enqueue the section immediately. Never wait.

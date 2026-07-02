@@ -29,20 +29,20 @@ namespace {
     public:
         Options(int argc, char *argv[]);
 
-        ts::DuckContext     duck {this};             // Execution context.
-        ts::UStringVector   inFiles {};              // Input file names, strings, not fs::path, can be inlined XML or JSON.
-        fs::path            outFile {};              // Output file path.
-        bool                outIsDir = false;        // Output name is a directory.
-        bool                useStdIn = false;        // At least one input file is the standard input.
-        bool                useStdOut = false;       // Use standard output for all input files.
-        bool                compile = false;         // Explicit compilation.
-        bool                decompile = false;       // Explicit decompilation.
-        bool                fromJSON = false;        // All input files are JSON.
-        bool                toJSON = false;          // Decompile to JSON.
-        bool                xmlModel = false;        // Display XML model instead of compilation.
-        bool                withExtensions = false;  // XML model with extensions.
-        ts::SectionFileArgs sectionOptions {};       // Section file processing options.
-        ts::xml::Tweaks     xmlTweaks {};            // XML formatting options.
+        ts::DuckContext     duck {this};              // Execution context.
+        ts::UStringVector   in_files {};              // Input file names, strings, not fs::path, can be inlined XML or JSON.
+        fs::path            out_file {};              // Output file path.
+        bool                out_is_dir = false;       // Output name is a directory.
+        bool                use_std_in = false;       // At least one input file is the standard input.
+        bool                use_std_out = false;      // Use standard output for all input files.
+        bool                compile = false;          // Explicit compilation.
+        bool                decompile = false;        // Explicit decompilation.
+        bool                from_json = false;        // All input files are JSON.
+        bool                to_json = false;          // Decompile to JSON.
+        bool                xml_model = false;        // Display XML model instead of compilation.
+        bool                with_extensions = false;  // XML model with extensions.
+        ts::SectionFileArgs section_opts {};          // Section file processing options.
+        ts::xml::Tweaks     xml_tweaks {};            // XML formatting options.
     };
 }
 
@@ -54,8 +54,8 @@ Options::Options(int argc, char *argv[]) :
     duck.defineArgsForCharset(*this);
     duck.defineArgsForPDS(*this);
     duck.defineArgsForFixingPDS(*this);
-    sectionOptions.defineArgs(*this);
-    xmlTweaks.defineArgs(*this);
+    section_opts.defineArgs(*this);
+    xml_tweaks.defineArgs(*this);
 
     option(u"", 0, FILENAME);
     help(u"",
@@ -115,31 +115,31 @@ Options::Options(int argc, char *argv[]) :
     analyze(argc, argv);
 
     duck.loadArgs(*this);
-    sectionOptions.loadArgs(duck, *this);
-    xmlTweaks.loadArgs(*this);
+    section_opts.loadArgs(duck, *this);
+    xml_tweaks.loadArgs(*this);
 
-    getValues(inFiles, u"");
-    getPathValue(outFile, u"output");
+    getValues(in_files, u"");
+    getPathValue(out_file, u"output");
     compile = present(u"compile");
     decompile = present(u"decompile");
-    fromJSON = present(u"from-json");
-    toJSON = present(u"json") || ts::UString(outFile.extension()).similar(ts::DEFAULT_JSON_FILE_SUFFIX);
-    xmlModel = present(u"xml-model");
-    withExtensions = present(u"extensions");
-    useStdIn = ts::UString(u"-").isContainedSimilarIn(inFiles);
-    useStdOut = present(u"output") && (outFile.empty() || outFile == u"-");
-    outIsDir = !useStdOut && fs::is_directory(outFile);
+    from_json = present(u"from-json");
+    to_json = present(u"json") || ts::UString(out_file.extension()).similar(ts::DEFAULT_JSON_FILE_SUFFIX);
+    xml_model = present(u"xml-model");
+    with_extensions = present(u"extensions");
+    use_std_in = ts::UString(u"-").isContainedSimilarIn(in_files);
+    use_std_out = present(u"output") && (out_file.empty() || out_file == u"-");
+    out_is_dir = !use_std_out && fs::is_directory(out_file);
 
-    if (useStdOut) {
-        outFile.clear();
+    if (use_std_out) {
+        out_file.clear();
     }
-    if (!inFiles.empty() && xmlModel) {
+    if (!in_files.empty() && xml_model) {
         error(u"do not specify input files with --xml-model");
     }
-    if (useStdIn && !compile && !decompile) {
+    if (use_std_in && !compile && !decompile) {
         error(u"with standard input, --compile or --decompile must be specified");
     }
-    if (inFiles.size() > 1 && !outFile.empty() && !useStdOut && !outIsDir) {
+    if (in_files.size() > 1 && !out_file.empty() && !use_std_out && !out_is_dir) {
         error(u"with more than one input file, --output must be a directory or standard output");
     }
     if (compile && decompile) {
@@ -158,8 +158,8 @@ namespace {
     bool DisplayModel(Options& opt)
     {
         // Save to a file. Default to stdout.
-        fs::path outName(opt.outFile);
-        if (opt.outIsDir) {
+        fs::path outName(opt.out_file);
+        if (opt.out_is_dir) {
             // Specified output is a directory, add default name.
             outName /= ts::SectionFile::XML_TABLES_MODEL;
         }
@@ -169,7 +169,7 @@ namespace {
 
         // Load and save the model.
         ts::xml::Document doc;
-        return ts::SectionFile::LoadModel(doc, opt.withExtensions) && doc.save(outName);
+        return ts::SectionFile::LoadModel(doc, opt.with_extensions) && doc.save(outName);
     }
 }
 
@@ -181,35 +181,35 @@ namespace {
 namespace {
     bool ProcessFile(Options& opt, const ts::UString& infile)
     {
-        const ts::SectionFormat inType = opt.fromJSON ? ts::SectionFormat::JSON : ts::GetSectionFileFormat(infile);
-        const bool useStdIn = infile.empty() || infile == u"-";
-        const bool useStdOut = opt.useStdOut || (useStdIn && opt.outFile.empty());
-        const bool compile = opt.compile || inType == ts::SectionFormat::XML || inType == ts::SectionFormat::JSON;
-        const bool decompile = opt.decompile || inType == ts::SectionFormat::BINARY;
-        const ts::SectionFormat outType = compile ? ts::SectionFormat::BINARY : (opt.toJSON ? ts::SectionFormat::JSON : ts::SectionFormat::XML);
+        const ts::SectionFormat in_type = opt.from_json ? ts::SectionFormat::JSON : ts::GetSectionFileFormat(infile);
+        const bool use_std_in = infile.empty() || infile == u"-";
+        const bool use_std_out = opt.use_std_out || (use_std_in && opt.out_file.empty());
+        const bool compile = opt.compile || in_type == ts::SectionFormat::XML || in_type == ts::SectionFormat::JSON;
+        const bool decompile = opt.decompile || in_type == ts::SectionFormat::BINARY;
+        const ts::SectionFormat out_type = compile ? ts::SectionFormat::BINARY : (opt.to_json ? ts::SectionFormat::JSON : ts::SectionFormat::XML);
 
         // Set standard input or output in binary mode when necessary.
-        if (useStdIn && decompile) {
+        if (use_std_in && decompile) {
             ts::SetBinaryModeStdin(opt);
         }
-        if (useStdOut && compile) {
+        if (use_std_out && compile) {
             ts::SetBinaryModeStdout(opt);
         }
 
         // Compute output file name with default file type.
-        fs::path outname(opt.outFile);
+        fs::path outname(opt.out_file);
         const fs::path inname(infile);
-        if (!useStdOut) {
+        if (!use_std_out) {
             if (outname.empty()) {
-                outname = ts::BuildSectionFileName(inname, outType);
+                outname = ts::BuildSectionFileName(inname, out_type);
             }
-            else if (opt.outIsDir) {
-                outname /= ts::BuildSectionFileName(inname.filename(), outType);
+            else if (opt.out_is_dir) {
+                outname /= ts::BuildSectionFileName(inname.filename(), out_type);
             }
         }
 
         ts::SectionFile file(opt.duck);
-        file.setTweaks(opt.xmlTweaks);
+        file.setTweaks(opt.xml_tweaks);
         file.setCRCValidation(ts::CRC32::CHECK);
 
         // Process the input file, starting with error cases.
@@ -217,27 +217,27 @@ namespace {
             opt.error(u"don't know what to do with file %s, unknown file type, specify --compile or --decompile", infile);
             return false;
         }
-        else if (compile && inType == ts::SectionFormat::BINARY) {
+        else if (compile && in_type == ts::SectionFormat::BINARY) {
             opt.error(u"cannot compile binary file %s", infile);
             return false;
         }
-        else if (decompile && (inType == ts::SectionFormat::XML || inType == ts::SectionFormat::JSON)) {
+        else if (decompile && (in_type == ts::SectionFormat::XML || in_type == ts::SectionFormat::JSON)) {
             opt.error(u"cannot decompile XML or JSON file %s", infile);
             return false;
         }
         else if (compile) {
             // Load XML file and save binary sections.
             opt.verbose(u"Compiling %s to %s", infile, outname);
-            return (inType == ts::SectionFormat::JSON ? file.loadJSON(infile) : file.loadXML(infile)) &&
-                   opt.sectionOptions.processSectionFile(file, opt) &&
+            return (in_type == ts::SectionFormat::JSON ? file.loadJSON(infile) : file.loadXML(infile)) &&
+                   opt.section_opts.processSectionFile(file, opt) &&
                    file.saveBinary(outname);
         }
         else {
             // Load binary sections and save XML file.
             opt.verbose(u"Decompiling %s to %s", infile, outname);
             return file.loadBinary(infile) &&
-                   opt.sectionOptions.processSectionFile(file, opt) &&
-                   (opt.toJSON ? file.saveJSON(outname) : file.saveXML(outname));
+                   opt.section_opts.processSectionFile(file, opt) &&
+                   (opt.to_json ? file.saveJSON(outname) : file.saveXML(outname));
         }
     }
 }
@@ -251,13 +251,13 @@ int MainCode(int argc, char *argv[])
 {
     Options opt(argc, argv);
     bool ok = true;
-    if (opt.xmlModel) {
+    if (opt.xml_model) {
         ok = DisplayModel(opt);
     }
     else {
-        for (size_t i = 0; i < opt.inFiles.size(); ++i) {
-            if (!opt.inFiles[i].empty()) {
-                ok = ProcessFile(opt, opt.inFiles[i]) && ok;
+        for (size_t i = 0; i < opt.in_files.size(); ++i) {
+            if (!opt.in_files[i].empty()) {
+                ok = ProcessFile(opt, opt.in_files[i]) && ok;
             }
         }
     }

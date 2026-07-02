@@ -170,8 +170,8 @@ ts::UString ts::emmgmux::Errors::Name(uint16_t status)
 
 void ts::emmgmux::Protocol::buildErrorResponse(const tlv::MessageFactory& fact, tlv::MessagePtr& msg) const
 {
-    // Create a channel_error message
-    std::shared_ptr<ChannelError> errmsg(new ChannelError(version()));
+    // Create a channel_error message.
+    std::shared_ptr<ChannelError> errmsg = std::make_shared<ChannelError>(version());
 
     // Try to get an data_channel_id from the incoming message.
     try {
