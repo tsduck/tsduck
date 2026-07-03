@@ -789,7 +789,7 @@ TSUNIT_DEFINE_TEST(RunningDocumentEmpty)
 TSUNIT_DEFINE_TEST(RunningDocument)
 {
     ts::json::RunningDocument doc(CERR);
-    ts::json::ValuePtr root = std::make_shared<ts::json::Object>());
+    ts::json::ValuePtr root = std::make_shared<ts::json::Object>();
     root->query(u"init_obj1.subobj1", true).add(u"val1", u"zeval1");
     root->query(u"init_obj1.subobj1", true).add(u"val2", u"zeval2");
     root->query(u"init_obj1.subobj2", true).add(u"val3", u"zeval3");
