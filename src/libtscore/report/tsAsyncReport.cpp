@@ -45,7 +45,8 @@ void ts::AsyncReport::terminate()
     if (!_terminated) {
         // Insert an "end of report" message in the queue.
         // This message will tell the logging thread to terminate.
-        _log_queue.forceEnqueue(new LogMessage {true, 0, UString()});
+        auto ptr = std::make_shared<LogMessage>(true, 0, UString());
+        _log_queue.forceEnqueue(ptr);
 
         // Wait for termination of the logging thread
         waitForTermination();
@@ -70,14 +71,14 @@ void ts::AsyncReport::writeLog(int severity, const UString &msg)
 #endif
 
     if (!_terminated) {
-        LogMessage* p = new LogMessage {false, severity, msg};
+        auto ptr = std::make_shared<LogMessage>(false, severity, msg);
         if (_synchronous) {
             // Synchronous mode, wait infinitely until the message is queued.
-            _log_queue.enqueue(p);
+            _log_queue.enqueue(ptr);
         }
         else {
             // Enqueue the message immediately (timeout = 0), drop message on overflow.
-            _log_queue.enqueue(p, cn::milliseconds::zero());
+            _log_queue.enqueue(ptr, cn::milliseconds::zero());
         }
     }
 }
