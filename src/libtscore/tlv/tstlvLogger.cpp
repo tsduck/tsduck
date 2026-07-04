@@ -10,12 +10,22 @@
 
 
 //----------------------------------------------------------------------------
-// Constructors.
+// Constructors and destructor.
 //----------------------------------------------------------------------------
 
-ts::tlv::Logger::Logger(Report& report, int default_level) :
-    _report(report),
+ts::tlv::Logger::Logger(Report* report, int default_level, Object* owner) :
+    ReporterBase(report, owner),
     _default_level(default_level)
+{
+}
+
+ts::tlv::Logger::Logger(ReporterBase* delegate, int default_level, Object* owner) :
+    ReporterBase(delegate, owner),
+    _default_level(default_level)
+{
+}
+
+ts::tlv::Logger::~Logger()
 {
 }
 
@@ -44,13 +54,13 @@ void ts::tlv::Logger::resetSeverities(int default_level)
 void ts::tlv::Logger::log(const Message& msg, const UString& comment)
 {
     const int level = severity(msg.tag());
-    if (_report.maxSeverity() >= level) {
+    if (report().maxSeverity() >= level) {
         const UString dump(msg.dump(4));
         if (comment.empty()) {
-            _report.log(level, dump);
+            report().log(level, dump);
         }
         else {
-            _report.log(level, u"%s\n%s", comment, dump);
+            report().log(level, u"%s\n%s", comment, dump);
         }
     }
 }

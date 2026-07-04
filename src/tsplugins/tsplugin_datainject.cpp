@@ -110,7 +110,7 @@ namespace ts {
         IPSocketAddress    _udp_address {};                  // UDP port and optional local address.
         bool               _reuse_port = false;              // Reuse port option.
         size_t             _sock_buf_size = 0;               // Socket receive buffer size.
-        tlv::Logger        _logger {*this, Severity::Debug}; // Message logger.
+        tlv::Logger        _logger {this, Severity::Debug};  // Message logger.
         TCPServer          _server {this};                   // EMMG/PDG <=> MUX TCP server
         TCPListener        _tcp_listener {this};             // TCP listener thread.
         UDPListener        _udp_listener {this};             // UDP listener thread.

@@ -155,7 +155,7 @@ namespace ts {
         PacketCounter     _partial_scrambling = 0;      // Do not scramble all packets if > 1
         cn::seconds       _clear_period {0};            // Clear period before scrambling commences
         ECMGClientArgs    _ecmg_args {};                // Parameters for ECMG client
-        tlv::Logger       _logger {*this, Severity::Debug}; // Message logger for ECMG <=> SCS protocol
+        tlv::Logger       _logger {this, Severity::Debug};  // Message logger for ECMG <=> SCS protocol
         ecmgscs::Protocol      _ecmgscs {};                 // ECMG <=> SCS protocol instance.
         ecmgscs::ChannelStatus _channel_status {_ecmgscs};  // Initial response to ECMG channel_setup
         ecmgscs::StreamStatus  _stream_status {_ecmgscs};   // Initial response to ECMG stream_setup

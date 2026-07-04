@@ -62,6 +62,24 @@ namespace ts::tlv {
         }
 
         //!
+        //! Get the offset in bytes of the "tag" field in binary messages.
+        //! @return The offset in bytes of the "tag" field in binary messages.
+        //!
+        size_t tagOffset() const { return _has_version ? sizeof(VERSION) : 0; }
+
+        //!
+        //! Get the offset in bytes of the "length" field in binary messages.
+        //! @return The offset in bytes of the "length" field in binary messages.
+        //!
+        size_t lengthOffset() const { return tagOffset() + sizeof(TAG); }
+
+        //!
+        //! Get the size in bytes of the header in binary messages.
+        //! @return The size in bytes of the header in binary messages.
+        //!
+        size_t headerSize() const { return lengthOffset() + sizeof(LENGTH); }
+
+        //!
         //! This method declares a command tag in the protocol.
         //! Required only for commands without parameters.
         //! @param [in] cmd_tag Message tag.

@@ -54,7 +54,7 @@ namespace ts::tlv {
 
         //!
         //! Serialize and sendMessage a TLV message.
-        //! @param [in] msg The message to sendMessage.
+        //! @param [in] msg The message to send.
         //! @return True on success, false on error.
         //!
         bool sendMessage(const Message& msg);
@@ -75,7 +75,7 @@ namespace ts::tlv {
         //! @return True if, when an invalid message is received, the corresponding
         //! error message is automatically sent back to the sender.
         //!
-        bool getAutoErrorResponse() const {return _auto_error_response;}
+        bool getAutoErrorResponse() const { return _auto_error_response; }
 
         //!
         //! Set invalid incoming messages processing.
@@ -89,14 +89,14 @@ namespace ts::tlv {
         //! @return When non-zero, the connection is automatically disconnected
         //! when the number of consecutive invalid messages has reached this value.
         //!
-        size_t getMaxInvalidMessages() const {return _max_invalid_msg;}
+        size_t getMaxInvalidMessages() const { return _max_invalid_msg; }
 
         //!
         //! Set invalid message threshold.
         //! @param [in] n When non-zero, the connection is automatically disconnected
         //! when the number of consecutive invalid messages has reached this value.
         //!
-        void setMaxInvalidMessages(size_t n) {_max_invalid_msg = n;}
+        void setMaxInvalidMessages(size_t n) { _max_invalid_msg = n; }
 
     protected:
         // Inherited methods.
@@ -156,12 +156,9 @@ bool ts::tlv::Connection<SAFETY>::sendMessage(const Message& msg)
 template <ts::ThreadSafety SAFETY>
 bool ts::tlv::Connection<SAFETY>::receiveMessage(MessagePtr& msg, const AbortInterface* abort)
 {
-    const bool has_version(_protocol.hasVersion());
-    const size_t header_size(has_version ? 5 : 4);
-    const size_t length_offset(has_version ? 3 : 2);
-
     // Loop until a valid message is received
     for (;;) {
+        const size_t header_size = _protocol.headerSize();
         ByteBlock bb(header_size);
 
         // Receive complete message
@@ -174,7 +171,7 @@ bool ts::tlv::Connection<SAFETY>::receiveMessage(MessagePtr& msg, const AbortInt
             }
 
             // Get message length and read message payload
-            const size_t length = GetUInt16(bb.data() + length_offset);
+            const size_t length = GetUInt16(bb.data() + _protocol.lengthOffset());
             bb.resize(header_size + length);
             if (!SuperClass::receive(bb.data() + header_size, length, abort)) {
                 return false;

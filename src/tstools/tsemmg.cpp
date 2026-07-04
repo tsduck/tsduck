@@ -54,7 +54,7 @@ namespace {
         EMMGOptions(int argc, char *argv[]);
 
         ts::DuckContext       duck {this};               // TSDuck execution context.
-        ts::tlv::Logger       logger {*this, ts::Severity::Debug}; // Message logger.
+        ts::tlv::Logger       logger {this, ts::Severity::Debug}; // Message logger.
         ts::emmgmux::Protocol emmgmux {};                // EMMG <=> MUX protocol instance.
         ts::UStringVector     inputFiles {};             // Input file names.
         ts::SectionPtrVector  sections{};                // Loaded sections from input files.

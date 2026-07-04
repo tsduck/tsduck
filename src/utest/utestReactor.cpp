@@ -524,7 +524,7 @@ namespace {
         size_t                    _request_count;
         const ts::IPSocketAddress _server_address;
         size_t                    _client_id = 0;
-        ts::TCPConnection         _client {};
+        ts::TCPConnection         _client {&_reactor.report()};
         ts::ReactiveTCPConnection _rclient {_reactor, _client};
         ts::EventId               _timer_id {};
         uint32_t                  _request = 0;
@@ -644,14 +644,13 @@ namespace {
     public:
         TestServerConnection(ts::Reactor& reactor, std::ostream& debug);
         virtual ~TestServerConnection() override;
-        ts::ReactiveTCPConnection& connection() { return _rclient; }
         size_t clientId() const { return _client_id; }
 
     private:
         ts::Reactor&              _reactor;
         std::ostream&             _debug;
         size_t                    _client_id = 0;
-        ts::TCPConnection         _client {};
+        ts::TCPConnection         _client {&_reactor.report()};
         ts::ReactiveTCPConnection _rclient {_reactor, _client};
         uint32_t                  _response = 0;
         size_t                    _expected_send_position = 0;
@@ -745,23 +744,21 @@ namespace {
     {
         TS_NOBUILD_NOCOPY(TestFactory);
     public:
-        TestFactory(ts::Reactor& reactor, std::ostream& debug, uint16_t server_port);
+        TestFactory(ts::Reactor& reactor, std::ostream& debug);
 
     private:
         ts::Reactor&  _reactor;
         std::ostream& _debug;
-        uint16_t      _server_port;
 
         virtual ts::ReactiveServerSessionInterface* newClientSession() override;
         virtual void handleServerExited(ts::ReactiveServer& server, const ts::ObjectPtr& user_data) override;
     };
 
-    TestFactory::TestFactory(ts::Reactor& reactor, std::ostream& debug, uint16_t server_port) :
+    TestFactory::TestFactory(ts::Reactor& reactor, std::ostream& debug) :
         _reactor(reactor),
-        _debug(debug),
-        _server_port(server_port)
+        _debug(debug)
     {
-        _debug << "TestFactory: server port: " << _server_port << std::endl;
+        _debug << "TestFactory: initialized"<< std::endl;
     }
 
     ts::ReactiveServerSessionInterface* TestFactory::newClientSession()
@@ -784,7 +781,7 @@ TSUNIT_DEFINE_TEST(Server)
     TSUNIT_ASSERT(ts::IPInitialize());
 
     ts::Reactor           reactor(&CERR);
-    TestFactory           factory(reactor, debug(), PORT);
+    TestFactory           factory(reactor, debug());
     ts::TCPServer         tcp_server(&CERR);
     ts::ReactiveTCPServer rtcp_server(reactor, tcp_server);
     ts::ReactiveServer    server(rtcp_server);

@@ -426,7 +426,7 @@ namespace {
         TS_NOBUILD_NOCOPY(ECMGConnection);
     public:
         // Constructor / Destructor.
-        ECMGConnection(const CmdOptions& opt, CmdStatistics& stat, EventQueue& events, ts::Report& report, uint16_t index);
+        ECMGConnection(const CmdOptions& opt, CmdStatistics& stat, EventQueue& events, ts::Report* report, uint16_t index);
         virtual ~ECMGConnection() override;
 
         // Send an ECM request.
@@ -480,7 +480,7 @@ namespace {
 }
 
 // Constructor.
-ECMGConnection::ECMGConnection(const CmdOptions& opt, CmdStatistics& stat, EventQueue& events, ts::Report& report, uint16_t index) :
+ECMGConnection::ECMGConnection(const CmdOptions& opt, CmdStatistics& stat, EventQueue& events, ts::Report* report, uint16_t index) :
     _opt(opt),
     _stat(stat),
     _events(events),
@@ -795,7 +795,7 @@ int MainCode(int argc, char *argv[])
     std::vector<ECMGConnectionPtr> connections;
     connections.reserve(opt.channel_count);
     for (uint16_t index = 0; index < opt.channel_count; ++index) {
-        connections.push_back(std::make_shared<ECMGConnection>(opt, stat, events, report, index));
+        connections.push_back(std::make_shared<ECMGConnection>(opt, stat, events, &report, index));
     }
 
     // Send ECM requests based on scheduled dates.

@@ -137,7 +137,7 @@ namespace {
 int MainCode(int argc, char *argv[])
 {
     GenECMOptions opt(argc, argv);
-    ts::tlv::Logger logger(opt, ts::Severity::Debug);
+    ts::tlv::Logger logger(&opt, ts::Severity::Debug);
     ts::ecmgscs::ChannelStatus channelStatus(opt.ecmgscs);
     ts::ecmgscs::StreamStatus streamStatus(opt.ecmgscs);
     ts::ECMGClient ecmg(logger, opt.ecmgscs);

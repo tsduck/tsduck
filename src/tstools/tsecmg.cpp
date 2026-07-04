@@ -222,10 +222,10 @@ public:
     ts::tlv::Logger& logger() { return _logger; }
 
 private:
-    ts::AsyncReport    _report;            // Asynchronous message report.
-    ts::tlv::Logger    _logger {_report};  // Protocol message logger.
-    std::mutex         _mutex {};          // Protect shared data.
-    std::set<uint16_t> _channels {};       // Active channels.
+    ts::AsyncReport    _report;             // Asynchronous message report.
+    ts::tlv::Logger    _logger {&_report};  // Protocol message logger.
+    std::mutex         _mutex {};           // Protect shared data.
+    std::set<uint16_t> _channels {};        // Active channels.
 };
 
 

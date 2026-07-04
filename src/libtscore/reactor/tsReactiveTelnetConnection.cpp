@@ -51,23 +51,35 @@ void ts::ReactiveTelnetConnection::handleSocketDisconnected(TCPConnection& sock,
 
 ts::ReactiveTelnetConnection::SendUserDataPtr ts::ReactiveTelnetConnection::getBuffer(bool flush)
 {
+    // Output buffer is _unflushed_data if not empty, a new empty buffer otherwise.
     SendUserDataPtr buf = _unflushed_data != nullptr ? _unflushed_data : std::make_shared<SendUserData>();
+
     if (flush) {
+        // This I/O is final and the output buffer will be used for asynchronous I/O.
+        // Reset _unflushed_data pointer to make sure we use a new buffer next time.
         _unflushed_data.reset();
     }
     else if (_unflushed_data == nullptr) {
+        // This I/O is not final. Make sure it will be used next time to append into it.
         _unflushed_data = buf;
     }
+
     return buf;
 }
 
 bool ts::ReactiveTelnetConnection::startSendData(SendUserDataPtr& buf, bool eol, bool flush)
 {
+    // Add CR-LF (Telnet protocol end-of-line marker) when necessary.
     if (eol) {
         buf->buffer.append("\r\n");
     }
+
+    // Start the I/O when necessay. The buffer pointer is used as user-data to make sure that the shared pointer
+    // is saved as long as the I/O is in progress. Thus, we guarantee that 1) the buffer remains valid during
+    // the I/O and 2) it is automatically freed as the end of the I/O.
     return !flush || _socket.startSend(nullptr, buf->buffer.data(), buf->buffer.size(), buf);
 }
+
 
 //----------------------------------------------------------------------------
 // Start the operation of sending text over the TCP connection.

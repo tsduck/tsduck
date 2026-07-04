@@ -102,6 +102,8 @@ namespace ts {
 
     private:
         // The send user-data is a buffer containing the formatted binary data to send.
+        // As long as we don't flush, we append in the _unflushed_data buffer.
+        // When we flush, the buffer must not change until the I/O is in progress.
         class TSCOREDLL SendUserData: public Object
         {
         public:
