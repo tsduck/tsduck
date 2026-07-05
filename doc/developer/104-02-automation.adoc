@@ -74,9 +74,12 @@ Every night, if there were any modification in the TSDuck repo during the last d
 "nightly builds" are automatically produced and published on the {home}prerelease/[TSDuck web site].
 No manual action is required, everything is automated.
 
-The workflow `nightly-build.yml` is automatically run every day at 00:40 UTC.
+The workflow `nightly-build.yml` is automatically run every night (UTC).
+Note that the load of the GitHub CI/CD pipeline is increasing every year
+and the scheduled time is sometimes delayed by several hours.
+Therefore, there is no guarantee on the publication time.
 
-* On Linux Ubuntu and Windows (64 bits only), the TSDuck binary packages are built
+* On Linux Ubuntu and Windows (64-bit Intel only), the TSDuck binary packages are built
   for the current state of the master branch in the repository.
 * The produced binaries are installed on the CI/CD system.
 * The full test-suite is downloaded and run.
@@ -86,7 +89,7 @@ The workflow `nightly-build.yml` is automatically run every day at 00:40 UTC.
   published as "artefacts" of the workflow. They are publicly downloadable from
   {repo}actions/[GitHub].
 
-At the end of the workflow `nightly-build.yml`, when all build jobs are completed,
+At the end of the nightly build workflow, when all build jobs are completed,
 the update job triggers a signal on the {home}[TSDuck web site].
 A PHP script is automatically run on the web site to retrieve, download and publish the
 latest {home}prerelease/[nighly binaries] and documentation.

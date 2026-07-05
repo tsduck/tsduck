@@ -45,6 +45,8 @@ ts::ReactiveTLVConnection::SendUserData::~SendUserData()
 
 bool ts::ReactiveTLVConnection::startSendMessage(const tlv::Message& msg)
 {
+    _logger.log(msg, u"sending message to " + _socket.socket().peerName());
+
     // Allocate a buffer into which we serialize the message. We need a ByteBlockPtr to serialize the message.
     // We need to encapsulate it into a subclass of Object to use it as user-data for asynchronous I/O.
     SendUserDataPtr buf = std::make_shared<SendUserData>();

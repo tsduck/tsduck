@@ -51,7 +51,7 @@ void ts::tlv::Logger::resetSeverities(int default_level)
 // Report a TLV message.
 //----------------------------------------------------------------------------
 
-void ts::tlv::Logger::log(const Message& msg, const UString& comment)
+void ts::tlv::Logger::log(const Message& msg, const UString& comment) const
 {
     const int level = severity(msg.tag());
     if (report().maxSeverity() >= level) {

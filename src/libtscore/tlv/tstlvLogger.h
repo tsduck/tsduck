@@ -92,7 +92,7 @@ namespace ts::tlv {
         //! @param [in] msg The message to log.
         //! @param [in] comment Optional leading comment line (before the message).
         //!
-        void log(const Message& msg, const UString& comment = UString());
+        void log(const Message& msg, const UString& comment = UString()) const;
 
     private:
         int               _default_level;  // Default severity level.

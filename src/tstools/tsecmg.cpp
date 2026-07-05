@@ -11,65 +11,56 @@
 //----------------------------------------------------------------------------
 
 #include "tsMain.h"
-#include "tsDuckContext.h"
-#include "tsAsyncReport.h"
-#include "tsThread.h"
-#include "tsSysUtils.h"
 #include "tsECMGSCS.h"
-#include "tsTCPServer.h"
-#include "tstlvConnection.h"
+#include "tsDuckContext.h"
 #include "tsDuckProtocol.h"
 #include "tsOneShotPacketizer.h"
+#include "tsReactiveTLVConnection.h"
+#include "tsReactiveTCPServer.h"
+#include "tsReactiveServer.h"
 TS_MAIN(MainCode);
 
-namespace {
-    // Command line default arguments.
-    static const uint16_t DEFAULT_SERVER_PORT       = 2222;
-    static const uint16_t DEFAULT_REPETITION        = 100;
-    static const int16_t  DEFAULT_DELAY_START       = 200;
-    static const int16_t  DEFAULT_DELAY_STOP        = 200;
-    static const int16_t  DEFAULT_TRANS_DELAY_START = -500;
-    static const int16_t  DEFAULT_TRANS_DELAY_STOP  = 0;
-
-    // Stack size for execution of the client connection thread
-    static constexpr size_t CLIENT_STACK_SIZE = 128 * 1024;
-
-    // Instantiation of a TCP connection in a multi-thread context for TLV messages.
-    using ECMGConnection = ts::tlv::Connection<ts::ThreadSafety::Full>;
-    using ECMGConnectionPtr = std::shared_ptr<ECMGConnection>;
-}
-
 
 //----------------------------------------------------------------------------
-// Command line options
+// ECMG command line options.
 //----------------------------------------------------------------------------
 
-namespace {
-    class ECMGOptions: public ts::Args
+namespace ts {
+    class ECMGOptions: public Args
     {
         TS_NOBUILD_NOCOPY(ECMGOptions);
     public:
-        ECMGOptions(int argc, char *argv[]);
+        // Command line default values.
+        static constexpr uint16_t DEFAULT_SERVER_PORT       = 2222;
+        static constexpr uint16_t DEFAULT_REPETITION        = 100;
+        static constexpr int16_t  DEFAULT_DELAY_START       = 200;
+        static constexpr int16_t  DEFAULT_DELAY_STOP        = 200;
+        static constexpr int16_t  DEFAULT_TRANS_DELAY_START = -500;
+        static constexpr int16_t  DEFAULT_TRANS_DELAY_STOP  = 0;
+        static constexpr int      DEFAULT_ECMGSCS_VERSION   = 2;
 
-        ts::DuckContext            duck {this};              // TSDuck execution context.
-        ts::AsyncReportArgs        log_args {};              // Options for asynchronous log.
-        ts::ecmgscs::Protocol      ecmgscs {};               // ECMG <=> SCS protocol instance.
-        int                        log_protocol = ts::Severity::Debug;  // Log level for ECMG <=> SCS protocol.
-        int                        log_data = ts::Severity::Debug;      // Log level for CW/ECM data messages.
-        bool                       once = false;             // Accept only one client.
-        bool                       reuse_port = false;       // Socket option.
-        cn::milliseconds           ecm_comp_time {};         // ECM computation time.
-        ts::IPSocketAddress        server_address {};        // TCP server local address.
-        ts::ecmgscs::ChannelStatus channel_status {ecmgscs}; // Standard parameters required by this ECMG.
-        ts::ecmgscs::StreamStatus  stream_status {ecmgscs};  // Standard parameters required by this ECMG.
+        DuckContext            duck {this};              // TSDuck execution context.
+        ecmgscs::Protocol      ecmgscs {};               // ECMG <=> SCS protocol instance.
+        tlv::Logger            logger {this};            // ECMG <=> SCS protocol message logger.
+        bool                   once = false;             // Accept only one client.
+        bool                   reuse_port = false;       // Socket option.
+        int                    listen_backlog = 5;       // TCP server listen backlog (hard-coded)
+        cn::milliseconds       ecm_comp_time {};         // ECM computation time.
+        IPSocketAddress        server_address {};        // TCP server local address.
+        std::set<uint32_t>     super_cas_ids {};         // Allowed super CAS ids.
+        ecmgscs::ChannelStatus channel_status {ecmgscs}; // Standard parameters required by this ECMG.
+        ecmgscs::StreamStatus  stream_status {ecmgscs};  // Standard parameters required by this ECMG.
+
+        // Constructor and destructor.
+        ECMGOptions(int argc, char* argv[]);
+        virtual ~ECMGOptions() override;
     };
 }
 
-ECMGOptions::ECMGOptions(int argc, char *argv[]) :
-    ts::Args(u"Minimal generic DVB SimulCrypt-compliant ECMG", u"[options]")
+// Constructor.
+ts::ECMGOptions::ECMGOptions(int argc, char *argv[]) :
+    Args(u"Minimal generic DVB SimulCrypt-compliant ECMG", u"[options]")
 {
-    log_args.defineArgs(*this);
-
     option(u"ac-delay-start", 0, INT16);
     help(u"ac-delay-start",
          u"This option sets the DVB SimulCrypt option 'AC_delay_start', in "
@@ -97,25 +88,26 @@ ECMGOptions::ECMGOptions(int argc, char *argv[]) :
     option(u"delay-start", 0, INT16);
     help(u"delay-start",
          u"This option sets the DVB SimulCrypt option 'delay_start', in milliseconds. "
-         u"Default: " + ts::UString::Decimal(DEFAULT_DELAY_START, 0, true, u"") + u" ms.");
+         u"Default: " + UString::Decimal(DEFAULT_DELAY_START, 0, true, u"") + u" ms.");
 
     option(u"delay-stop", 0, INT16);
     help(u"delay-stop",
          u"This option sets the DVB SimulCrypt option 'delay_stop', in milliseconds. "
-         u"Default: " + ts::UString::Decimal(DEFAULT_DELAY_STOP, 0, true, u"") + u" ms.");
+         u"Default: " + UString::Decimal(DEFAULT_DELAY_STOP, 0, true, u"") + u" ms.");
 
     option(u"ecmg-scs-version", 0, INTEGER, 0, 1, 2, 3);
     help(u"ecmg-scs-version",
          u"Specify the version of the ECMG <=> SCS DVB SimulCrypt protocol. "
-         u"Valid values are 2 and 3. The default is 2.");
+         u"Valid values are 2 and 3. "
+         u"The default is " + UString::Decimal(DEFAULT_ECMGSCS_VERSION) + u".");
 
-    option(u"log-data", 0, ts::Severity::Enums(), 0, 1, true);
+    option(u"log-data", 0, Severity::Enums(), 0, 1, true);
     help(u"log-data", u"level",
          u"Same as --log-protocol but applies to CW_provision and ECM_response "
          u"messages only. To debug the session management without being flooded by "
          u"data messages, use --log-protocol=info --log-data=debug");
 
-    option(u"log-protocol", 0, ts::Severity::Enums(), 0, 1, true);
+    option(u"log-protocol", 0, Severity::Enums(), 0, 1, true);
     help(u"log-protocol", u"level",
          u"Log all ECMG <=> SCS protocol messages using the specified level. If the "
          u"option is not present, the messages are logged at debug level only. If the "
@@ -128,18 +120,23 @@ ECMGOptions::ECMGOptions(int argc, char *argv[]) :
          u"--comp-time (which is itself zero by default) plus 100 ms.");
 
     option(u"no-reuse-port", 0);
-    help(u"no-reuse-port", u"Disable the reuse port socket option. Do not use unless completely necessary.");
+    help(u"no-reuse-port",
+         u"Disable the reuse port socket option. Do not use unless completely necessary.");
 
     option(u"once", 'o');
-    help(u"once", u"Accept only one client and exit at the end of the session.");
+    help(u"once",
+         u"Accept only one client and exit at the end of the session.");
 
-    option(u"port", 'p', UINT16);
-    help(u"port", u"TCP port number of the ECMG server. Default: " + ts::UString::Decimal(DEFAULT_SERVER_PORT) + u".");
+    option(u"port", 'p', IPSOCKADDR_OA);
+    help(u"port",
+         u"TCP port number of the ECMG server. "
+         u"The default port is " + UString::Decimal(DEFAULT_SERVER_PORT, 0, true, u"") + u". "
+         u"If an optional address is specified, it must be a local interface and the server listens to that interface only.");
 
     option(u"repetition", 'r', UINT16);
     help(u"repetition",
          u"This option sets the DVB SimulCrypt option 'ECM_rep_period', the requested "
-         u"repetition period of ECM's, in milliseconds. Default: " + ts::UString::Decimal(DEFAULT_REPETITION) + u" ms.");
+         u"repetition period of ECM's, in milliseconds. Default: " + UString::Decimal(DEFAULT_REPETITION) + u" ms.");
 
     option(u"section-mode", 's');
     help(u"section-mode",
@@ -147,27 +144,34 @@ ECMGOptions::ECMGOptions(int argc, char *argv[]) :
          u"parameter 'section_TSpkt_flag' to zero. By default, ECM's are returned "
          u"in TS packet format.");
 
+    option(u"super-cas-id", 0, UINT32, 0, UNLIMITED_COUNT);
+    help(u"super-cas-id",
+         u"Specify which Super CAS Id is accepted. "
+         u"Several options --super-cas-id can be specified to accept several Super CAS Ids. "
+         u"By default, accept any Super CAS Id.");
+
     option(u"transition-delay-start", 0, INT16);
     help(u"transition-delay-start",
          u"This option sets the DVB SimulCrypt option 'transition_delay_start', in "
-         u"milliseconds. Default: " + ts::UString::Decimal(DEFAULT_TRANS_DELAY_START) + u" ms.");
+         u"milliseconds. Default: " + UString::Decimal(DEFAULT_TRANS_DELAY_START) + u" ms.");
 
     option(u"transition-delay-stop", 0, INT16);
     help(u"transition-delay-stop",
          u"This option sets the DVB SimulCrypt option 'transition_delay_stop', in "
-         u"milliseconds. Default: " + ts::UString::Decimal(DEFAULT_TRANS_DELAY_STOP) + u" ms.");
+         u"milliseconds. Default: " + UString::Decimal(DEFAULT_TRANS_DELAY_STOP) + u" ms.");
 
     analyze(argc, argv);
 
-    log_args.loadArgs(*this);
-    server_address.setPort(intValue<uint16_t>(u"port", DEFAULT_SERVER_PORT));
-    once = present(u"once");
+    // TCP server parameters.
+    getSocketValue(server_address, u"port", IPSocketAddress(IPAddress::AnyAddress6, DEFAULT_SERVER_PORT));
     reuse_port = !present(u"no-reuse-port");
-    getChronoValue(ecm_comp_time, u"comp-time");
-    log_protocol = present(u"log-protocol") ? intValue<int>(u"log-protocol", ts::Severity::Info) : ts::Severity::Debug;
-    log_data = present(u"log-data") ? intValue<int>(u"log-data", ts::Severity::Info) : log_protocol;
-    const ts::tlv::VERSION protocol_version = intValue<ts::tlv::VERSION>(u"ecmg-scs-version", 2);
+    once = present(u"once");
 
+    // ECMG parameters.
+    getIntValues(super_cas_ids, u"super-cas-id");
+    getChronoValue(ecm_comp_time, u"comp-time");
+
+    // ECM channel parameters.
     channel_status.section_TSpkt_flag = !present(u"section-mode");
     getIntValue(channel_status.CW_per_msg, u"cw-per-ecm", 2);
     channel_status.lead_CW = channel_status.CW_per_msg - 1;
@@ -184,216 +188,258 @@ ECMGOptions::ECMGOptions(int argc, char *argv[]) :
     getIntValue(channel_status.transition_delay_stop, u"transition-delay-stop", DEFAULT_TRANS_DELAY_STOP);
     getIntValue(channel_status.max_comp_time, u"max-comp-time", uint16_t(cn::milliseconds(ecm_comp_time).count() + 100));
 
+    // The CW/ECM data messages have a distinct log level.
+    // If the option is specified without value, it is info level.
+    // If the option not is specified, it is debug level.
+    int log_protocol = 0, log_data = 0;
+    getIntValue(log_protocol, u"log-protocol", present(u"log-protocol") ? Severity::Info : Severity::Debug);
+    getIntValue(log_data, u"log-data", present(u"log-data") ? Severity::Info : log_protocol);
+    logger.setDefaultSeverity(log_protocol);
+    logger.setSeverity(ecmgscs::Tags::CW_provision, log_data);
+    logger.setSeverity(ecmgscs::Tags::ECM_response, log_data);
+
     // Specify which ECMG <=> SCS version to use.
+    tlv::VERSION protocol_version = 0;
+    getIntValue(protocol_version, u"ecmg-scs-version", DEFAULT_ECMGSCS_VERSION);
     ecmgscs.setVersion(protocol_version);
     channel_status.forceProtocolVersion(protocol_version);
     stream_status.forceProtocolVersion(protocol_version);
 
     // Other hard-coded ECMG parameters.
     channel_status.max_streams = 0;       // No specified max number of streams per channel.
-    channel_status.min_CP_duration = 10;  // Minimum crypto period in 100 x ms, 1 second here.
+    channel_status.min_CP_duration = 10;  // Minimum crypto period in units of 100 x ms, 1 second here.
     stream_status.access_criteria_transfer_mode = false;  // We don't really need access criteria.
 
     exitOnError();
 }
 
-
-//----------------------------------------------------------------------------
-// A class implementing the ECMG shared data, used from all threads.
-//----------------------------------------------------------------------------
-
-class ECMGSharedData
+// Destructor.
+ts::ECMGOptions::~ECMGOptions()
 {
-    TS_NOBUILD_NOCOPY(ECMGSharedData);
-public:
-    // Constructor.
-    ECMGSharedData(const ECMGOptions& opt);
-
-    // Declare a new ECM_channel_id. Return false if already active.
-    bool openChannel(uint16_t id);
-
-    // Release a ECM_channel_id. Return false if not active.
-    bool closeChannel(uint16_t id);
-
-    // Get the shared asynchronous report facility.
-    ts::Report& report() { return _report; }
-
-    // Get the shared asynchronous protocol message logger.
-    ts::tlv::Logger& logger() { return _logger; }
-
-private:
-    ts::AsyncReport    _report;             // Asynchronous message report.
-    ts::tlv::Logger    _logger {&_report};  // Protocol message logger.
-    std::mutex         _mutex {};           // Protect shared data.
-    std::set<uint16_t> _channels {};        // Active channels.
-};
+}
 
 
 //----------------------------------------------------------------------------
-// Implementation of ECMGSharedData.
+// Global state of the ECMG, all connections included.
 //----------------------------------------------------------------------------
 
-// Constructor.
-ECMGSharedData::ECMGSharedData(const ECMGOptions& opt) :
-    _report(opt.maxSeverity(), opt.log_args)
-{
-    // The CW/ECM data messages have a distinct log level.
-    _logger.setDefaultSeverity(opt.log_protocol);
-    _logger.setSeverity(ts::ecmgscs::Tags::CW_provision, opt.log_data);
-    _logger.setSeverity(ts::ecmgscs::Tags::ECM_response, opt.log_data);
+namespace ts {
+    class ECMGState
+    {
+    public:
+        // Constructor.
+        ECMGState() = default;
+
+        // Declare a new ECM_channel_id. Return false if already active.
+        bool openChannel(uint16_t id);
+
+        // Release a ECM_channel_id. Return false if not active.
+        bool closeChannel(uint16_t id);
+
+    private:
+        std::set<uint16_t> _channel_ids {};  // Active channels.
+    };
 }
 
 // Declare a new ECM_channel_id. Return false if already active.
-bool ECMGSharedData::openChannel(uint16_t id)
+bool ts::ECMGState::openChannel(uint16_t id)
 {
-    std::lock_guard<std::mutex> lock(_mutex);
-    const bool ok = _channels.count(id) == 0;
-    _channels.insert(id);
+    const bool ok = !_channel_ids.contains(id);
+    _channel_ids.insert(id);
     return ok;
 }
 
 // Release a ECM_channel_id. Return false if not active.
-bool ECMGSharedData::closeChannel(uint16_t id)
+bool ts::ECMGState::closeChannel(uint16_t id)
 {
-    std::lock_guard<std::mutex> lock(_mutex);
-    const bool ok = _channels.count(id) != 0;
-    _channels.erase(id);
+    const bool ok = _channel_ids.contains(id);
+    _channel_ids.erase(id);
     return ok;
 }
 
 
 //----------------------------------------------------------------------------
-// A class implementing a thread which manages a client connection.
+// State of a TCP connection and ECM channel (the ECMG<=>SCS protocol
+// specifies that exactly one ECM channel is required per TCP connection).
 //----------------------------------------------------------------------------
 
-class ECMGClientHandler: public ts::Thread
-{
-    TS_NOBUILD_NOCOPY(ECMGClientHandler);
-public:
-    // Constructor.
-    // When deleteWhenTerminated is true, this object is automatically deleted when the thread terminates.
-    ECMGClientHandler(const ECMGOptions& opt, const ECMGConnectionPtr& conn, ECMGSharedData* shared, bool deleteWhenTerminated);
+namespace ts {
+    class ECMGChannel:
+        public ReactiveServerSessionInterface,
+        private ReactorHandlerInterface,
+        private ReactiveTLVConnectionHandlerInterface,
+        private ReactiveTCPConnectionHandlerInterface
+    {
+        TS_NOBUILD_NOCOPY(ECMGChannel);
+    public:
+        // Constructor and destructor.
+        ECMGChannel(Reactor& reactor, ECMGOptions& opt, ECMGState& state);
+        virtual ~ECMGChannel() override;
 
-    // Destructor.
-    virtual ~ECMGClientHandler() override;
+        // Implementation of ReactiveServerSessionInterface.
+        virtual ts::ReactiveTCPConnection& getConnection() override;
 
-    // Main code of the thread.
-    // Make it a public methof to invoke it synchronously with --once.
-    virtual void main() override;
+    private:
+        Reactor&                _reactor;
+        ECMGOptions&            _opt;
+        ECMGState&              _state;
+        TCPConnection           _tcp_client {&_opt};
+        ReactiveTCPConnection   _react_client {_reactor, _tcp_client};
+        ReactiveTLVConnection   _tlv_client {_opt.logger, _opt.ecmgscs, _react_client, true, 3};
+        UString                 _peer {};
+        std::optional<uint16_t> _channel_id {};
+        std::map<uint16_t, uint16_t> _stream_ids {};  // Map of current stream id => ECM id.
+        std::map<EventId, tlv::MessagePtr> _delayed_responses {};  // Delayed responses, by timer id.
 
-private:
-    const ECMGOptions&          _opt;
-    ts::duck::Protocol          _protocol {};   // To encode ECM structure.
-    ECMGSharedData*             _shared = nullptr;
-    ECMGConnectionPtr           _conn {};
-    ts::UString                 _peer {};
-    std::optional<uint16_t>     _channel {};    // Current channel id.
-    std::map<uint16_t,uint16_t> _streams {};    // Map of current stream id => ECM id.
+        // Send a response message. The message is serialized and asynchronously sent.
+        bool send(const tlv::Message& msg) { return _tlv_client.startSendMessage(msg); }
 
-    // Handle the various ECMG client messages.
-    bool handleChannelSetup(const std::shared_ptr<ts::ecmgscs::ChannelSetup>& msg);
-    bool handleChannelTest(const std::shared_ptr<ts::ecmgscs::ChannelTest>& msg);
-    bool handleChannelClose(const std::shared_ptr<ts::ecmgscs::ChannelClose>& msg);
-    bool handleStreamSetup(const std::shared_ptr<ts::ecmgscs::StreamSetup>& msg);
-    bool handleStreamTest(const std::shared_ptr<ts::ecmgscs::StreamTest>& msg);
-    bool handleStreamCloseRequest(const std::shared_ptr<ts::ecmgscs::StreamCloseRequest>& msg);
-    bool handleCWProvision(const std::shared_ptr<ts::ecmgscs::CWProvision>& msg);
+        // Send an error related to the msg.
+        bool sendErrorResponse(const tlv::MessagePtr& msg, uint16_t error_status);
 
-    // Send a response message.
-    bool send(const ts::tlv::Message& msg) { return _conn->sendMessage(msg); }
+        // Free the channel number.
+        void freeChannel();
 
-    // Send an error related to the msg.
-    bool sendErrorResponse(const std::shared_ptr<ts::tlv::Message>& msg, uint16_t errorStatus);
-};
+        // Handle the various ECMG client messages. Return false on unrecoverable error (e.g. network error).
+        bool handleChannelSetup(const std::shared_ptr<ecmgscs::ChannelSetup>& msg);
+        bool handleChannelTest(const std::shared_ptr<ecmgscs::ChannelTest>& msg);
+        bool handleChannelClose(const std::shared_ptr<ecmgscs::ChannelClose>& msg);
+        bool handleStreamSetup(const std::shared_ptr<ecmgscs::StreamSetup>& msg);
+        bool handleStreamTest(const std::shared_ptr<ecmgscs::StreamTest>& msg);
+        bool handleStreamCloseRequest(const std::shared_ptr<ecmgscs::StreamCloseRequest>& msg);
+        bool handleCWProvision(const std::shared_ptr<ecmgscs::CWProvision>& msg);
 
+        // Implementation of reactive connection handler interfaces.
+        virtual void handleTimer(Reactor& reactor, EventId id) override;
+        virtual void handleTCPAccepted(ReactiveTCPServer& server, ReactiveTCPConnection& sock, int error_code, const ObjectPtr& user_data) override;
+        virtual void handleReceivedMessage(ReactiveTLVConnection& sock, const tlv::MessagePtr& msg, int error_code) override;
+        virtual void handleTCPClosed(ReactiveTCPConnection& sock, const ObjectPtr& user_data) override;
+    };
+}
 
-//----------------------------------------------------------------------------
-// ECMG client constructor and destructor.
-//----------------------------------------------------------------------------
-
-ECMGClientHandler::ECMGClientHandler(const ECMGOptions& opt, const ECMGConnectionPtr& conn, ECMGSharedData* shared, bool delete_when_terminated) :
+// Constructor.
+ts::ECMGChannel::ECMGChannel(Reactor& reactor, ECMGOptions& opt, ECMGState& state) :
+    _reactor(reactor),
     _opt(opt),
-    _shared(shared),
-    _conn(conn)
+    _state(state)
 {
-    // Set thread attributes. Beware of deleteWhenTerminated...
-    ts::ThreadAttributes attr;
-    attr.setStackSize(CLIENT_STACK_SIZE);
-    attr.setDeleteWhenTerminated(delete_when_terminated);
-    setAttributes(attr);
+    // Call this object back when a client connection is accepted.
+    _react_client.whenAccepted(this);
 }
 
-ECMGClientHandler::~ECMGClientHandler()
+// Destructor.
+ts::ECMGChannel::~ECMGChannel()
 {
-    // Wait for completion of the thread.
-    waitForTermination();
+    // Cleanup channel registration in case of abort.
+    freeChannel();
+}
+
+// Implementation of ReactiveServerSessionInterface.
+ts::ReactiveTCPConnection& ts::ECMGChannel::getConnection()
+{
+    // Return the ReactiveTCPConnection component for the server.
+    return _react_client;
 }
 
 
 //----------------------------------------------------------------------------
-// Main code of the client connection thread.
+// Free the channel number.
 //----------------------------------------------------------------------------
 
-void ECMGClientHandler::main()
+void ts::ECMGChannel::freeChannel()
 {
-    _peer = _conn->peerName();
-    _shared->report().verbose(u"%s: session started", _peer);
+    if (_channel_id.has_value()) {
+        if (_state.closeChannel(_channel_id.value())) {
+            _opt.debug(u"released ECM_channel_id %d", _channel_id.value());
+        }
+        else {
+            _opt.error(u"error releasing ECM_channel_id %d, unknown channel id", _channel_id.value());
+        }
+        _channel_id.reset();
+    }
+}
 
-    // Normally, an ECMG should handle incoming and outgoing messages independently.
-    // However, here we have a minimal implementation. We never send any request to
-    // the client and the ECM generation is instantaneous. So, we simply wait for
-    // requests from the client and respond to them immediately.
 
-    // Loop on message reception
-    ts::tlv::MessagePtr msg;
-    bool ok = true;
-    while (ok && _conn->receiveMessage(msg)) {
+//----------------------------------------------------------------------------
+// Called when an incoming client is accepted.
+//----------------------------------------------------------------------------
+
+void ts::ECMGChannel::handleTCPAccepted(ReactiveTCPServer& server, ReactiveTCPConnection& sock, int error_code, const ObjectPtr& user_data)
+{
+    _peer = _tcp_client.peerName();
+    _opt.verbose(u"%s: session started", _peer);
+
+    // Call this object back when a message is received.
+    _tlv_client.startReceive(this);
+}
+
+
+//----------------------------------------------------------------------------
+// Called when the client session is completed.
+//----------------------------------------------------------------------------
+
+void ts::ECMGChannel::handleTCPClosed(ReactiveTCPConnection& sock, const ObjectPtr& user_data)
+{
+    _opt.verbose(u"%s: session terminated", _peer);
+    freeChannel(); // if not already done
+}
+
+
+//----------------------------------------------------------------------------
+// Called when a message is received from the client.
+//----------------------------------------------------------------------------
+
+void ts::ECMGChannel::handleReceivedMessage(ReactiveTLVConnection& sock, const tlv::MessagePtr& msg, int error_code)
+{
+    // If case of error, an error message is already reported if not an end-of-file.
+    bool ok = SysSuccess(error_code);
+
+    // Process the incoming message.
+    if (ok) {
+        assert(msg != nullptr);
         switch (msg->tag()) {
-            case ts::ecmgscs::Tags::channel_setup:
-                ok = handleChannelSetup(std::dynamic_pointer_cast<ts::ecmgscs::ChannelSetup>(msg));
+            case ecmgscs::Tags::channel_setup:
+                ok = handleChannelSetup(std::dynamic_pointer_cast<ecmgscs::ChannelSetup>(msg));
                 break;
-            case ts::ecmgscs::Tags::channel_test:
-                ok = handleChannelTest(std::dynamic_pointer_cast<ts::ecmgscs::ChannelTest>(msg));
+            case ecmgscs::Tags::channel_test:
+                ok = handleChannelTest(std::dynamic_pointer_cast<ecmgscs::ChannelTest>(msg));
                 break;
-            case ts::ecmgscs::Tags::channel_close:
-                ok = handleChannelClose(std::dynamic_pointer_cast<ts::ecmgscs::ChannelClose>(msg));
+            case ecmgscs::Tags::channel_close:
+                ok = handleChannelClose(std::dynamic_pointer_cast<ecmgscs::ChannelClose>(msg));
                 break;
-            case ts::ecmgscs::Tags::stream_setup:
-                ok = handleStreamSetup(std::dynamic_pointer_cast<ts::ecmgscs::StreamSetup>(msg));
+            case ecmgscs::Tags::stream_setup:
+                ok = handleStreamSetup(std::dynamic_pointer_cast<ecmgscs::StreamSetup>(msg));
                 break;
-            case ts::ecmgscs::Tags::stream_test:
-                ok = handleStreamTest(std::dynamic_pointer_cast<ts::ecmgscs::StreamTest>(msg));
+            case ecmgscs::Tags::stream_test:
+                ok = handleStreamTest(std::dynamic_pointer_cast<ecmgscs::StreamTest>(msg));
                 break;
-            case ts::ecmgscs::Tags::stream_close_request:
-                ok = handleStreamCloseRequest(std::dynamic_pointer_cast<ts::ecmgscs::StreamCloseRequest>(msg));
+            case ecmgscs::Tags::stream_close_request:
+                ok = handleStreamCloseRequest(std::dynamic_pointer_cast<ecmgscs::StreamCloseRequest>(msg));
                 break;
-            case ts::ecmgscs::Tags::CW_provision:
-                ok = handleCWProvision(std::dynamic_pointer_cast<ts::ecmgscs::CWProvision>(msg));
+            case ecmgscs::Tags::CW_provision:
+                ok = handleCWProvision(std::dynamic_pointer_cast<ecmgscs::CWProvision>(msg));
                 break;
-            case ts::ecmgscs::Tags::channel_status:
-            case ts::ecmgscs::Tags::stream_status:
-            case ts::ecmgscs::Tags::channel_error:
-            case ts::ecmgscs::Tags::stream_error:
-                // Silently ignore unsollicited status or error messages.
+            case ecmgscs::Tags::channel_status:
+            case ecmgscs::Tags::stream_status:
+                // Silently ignore unsollicited status.
+                break;
+            case ecmgscs::Tags::channel_error:
+            case ecmgscs::Tags::stream_error:
+                // Report error messages but don't do anything. Let the client close the connection if it bothers.
+                _opt.logger.log(*msg, u"error received from client " + _peer);
                 break;
             default:
-                // Received an invalid message for ECMG.
-                ok = sendErrorResponse(msg, ts::ecmgscs::Errors::inv_message);
+                // Received an unexpected message for ECMG (typically a server message).
+                ok = sendErrorResponse(msg, ecmgscs::Errors::inv_message);
                 break;
         }
     }
 
-    // Error while receiving or sending messages, most likely a client disconnection.
-    _conn->disconnect(true);
-    _conn->close();
-
-    // Make sure to release the channel if not done by the clients.
-    if (_channel.has_value()) {
-        _shared->closeChannel(_channel.value());
-        _channel.reset();
+    // In case of fatal error, close the connection.
+    if (!ok) {
+        freeChannel();
+        _react_client.startClose(this, !SysSuccess(error_code));
     }
-
-    _shared->report().verbose(u"%s: session completed", _peer);
 }
 
 
@@ -401,111 +447,111 @@ void ECMGClientHandler::main()
 // Send an error related to the msg.
 //----------------------------------------------------------------------------
 
-bool ECMGClientHandler::sendErrorResponse(const std::shared_ptr<ts::tlv::Message>& msg, uint16_t errorStatus)
+bool ts::ECMGChannel::sendErrorResponse(const tlv::MessagePtr& msg, uint16_t error_status)
 {
-    std::shared_ptr<ts::tlv::ChannelMessage> channel_msg;
-    std::shared_ptr<ts::tlv::StreamMessage> stream_msg;
+    // Check if the message is a subclass of a stream message.
+    const std::shared_ptr<tlv::StreamMessage> stream_msg = std::dynamic_pointer_cast<tlv::StreamMessage>(msg);
 
-    // Build the appropriate response.
-    if ((stream_msg = std::dynamic_pointer_cast<ts::tlv::StreamMessage>(msg)) != nullptr) {
+    if (stream_msg != nullptr) {
         // Response to a stream message.
-        ts::ecmgscs::StreamError stream_error(_opt.ecmgscs);
+        ecmgscs::StreamError stream_error(_opt.ecmgscs);
         stream_error.channel_id = stream_msg->channel_id;
         stream_error.stream_id = stream_msg->stream_id;
-        stream_error.error_status.push_back(errorStatus);
+        stream_error.error_status.push_back(error_status);
         return send(stream_error);
     }
-    else if ((channel_msg = std::dynamic_pointer_cast<ts::tlv::ChannelMessage>(msg)) != nullptr) {
-        // Response to a channel message.
-        ts::ecmgscs::ChannelError channel_error(_opt.ecmgscs);
-        channel_error.channel_id = channel_msg->channel_id;
-        channel_error.error_status.push_back(errorStatus);
-        return send(channel_error);
-    }
     else {
-        // Response to garbage.
-        ts::ecmgscs::ChannelError channel_error(_opt.ecmgscs);
-        channel_error.channel_id = 0;
-        channel_error.error_status.push_back(errorStatus);
+        // Response to a channel message or garbage.
+        const std::shared_ptr<tlv::ChannelMessage> channel_msg = std::dynamic_pointer_cast<tlv::ChannelMessage>(msg);
+        ecmgscs::ChannelError channel_error(_opt.ecmgscs);
+        channel_error.channel_id = channel_msg != nullptr ? channel_msg->channel_id : 0;
+        channel_error.error_status.push_back(error_status);
         return send(channel_error);
     }
 }
 
 
 //----------------------------------------------------------------------------
-// Handle the various types of messages from the client.
+// Handle channel management messages from the client.
 //----------------------------------------------------------------------------
 
-bool ECMGClientHandler::handleChannelSetup(const std::shared_ptr<ts::ecmgscs::ChannelSetup>& msg)
+bool ts::ECMGChannel::handleChannelSetup(const std::shared_ptr<ecmgscs::ChannelSetup>& msg)
 {
     assert(msg != nullptr);
-    if (_channel.has_value()) {
+    if (_channel_id.has_value()) {
         // Channel already set in this session.
-        return sendErrorResponse(msg, ts::ecmgscs::Errors::inv_channel_id);
+        return sendErrorResponse(msg, ecmgscs::Errors::inv_channel_id);
     }
-    else if (!_shared->openChannel(msg->channel_id)) {
+    else if (!_state.openChannel(msg->channel_id)) {
         // Channel id already in use.
-        return sendErrorResponse(msg, ts::ecmgscs::Errors::channel_id_in_use);
+        return sendErrorResponse(msg, ecmgscs::Errors::channel_id_in_use);
+    }
+    else if (!_opt.super_cas_ids.empty() && !_opt.super_cas_ids.contains(msg->Super_CAS_id)) {
+        // Super_CAS_id is not one of those we support.
+        return sendErrorResponse(msg, ecmgscs::Errors::inv_Super_CAS_id);
     }
     else {
         // Channel accepted.
-        _channel = msg->channel_id;
-        ts::ecmgscs::ChannelStatus resp(_opt.channel_status);
+        _channel_id = msg->channel_id;
+        ecmgscs::ChannelStatus resp(_opt.channel_status);
         resp.channel_id = msg->channel_id;
         return send(resp);
     }
 }
 
 
-bool ECMGClientHandler::handleChannelTest(const std::shared_ptr<ts::ecmgscs::ChannelTest>& msg)
+bool ts::ECMGChannel::handleChannelTest(const std::shared_ptr<ecmgscs::ChannelTest>& msg)
 {
     assert(msg != nullptr);
-    if (_channel != msg->channel_id) {
+    if (_channel_id != msg->channel_id) {
         // Not the right channel.
-        return sendErrorResponse(msg, ts::ecmgscs::Errors::inv_channel_id);
+        return sendErrorResponse(msg, ecmgscs::Errors::inv_channel_id);
     }
     else {
         // Channel ok.
-        _channel = msg->channel_id;
-        ts::ecmgscs::ChannelStatus resp(_opt.channel_status);
+        ecmgscs::ChannelStatus resp(_opt.channel_status);
         resp.channel_id = msg->channel_id;
         return send(resp);
     }
 }
 
 
-bool ECMGClientHandler::handleChannelClose(const std::shared_ptr<ts::ecmgscs::ChannelClose>& msg)
+bool ts::ECMGChannel::handleChannelClose(const std::shared_ptr<ecmgscs::ChannelClose>& msg)
 {
     assert(msg != nullptr);
-    if (_channel != msg->channel_id) {
+    if (_channel_id != msg->channel_id) {
         // Not the right channel.
-        return sendErrorResponse(msg, ts::ecmgscs::Errors::inv_channel_id);
+        return sendErrorResponse(msg, ecmgscs::Errors::inv_channel_id);
     }
     else {
         // Channel ok, close everything, no response expected.
-        _shared->closeChannel(msg->channel_id);
-        _channel.reset();
-        _streams.clear();
+        _state.closeChannel(msg->channel_id);
+        _channel_id.reset();
+        _stream_ids.clear();
         return true;
     }
 }
 
 
-bool ECMGClientHandler::handleStreamSetup(const std::shared_ptr<ts::ecmgscs::StreamSetup>& msg)
+//----------------------------------------------------------------------------
+// Handle stream management messages from the client.
+//----------------------------------------------------------------------------
+
+bool ts::ECMGChannel::handleStreamSetup(const std::shared_ptr<ecmgscs::StreamSetup>& msg)
 {
     assert(msg != nullptr);
-    if (_channel != msg->channel_id) {
+    if (_channel_id != msg->channel_id) {
         // Not the right channel.
-        return sendErrorResponse(msg, ts::ecmgscs::Errors::inv_channel_id);
+        return sendErrorResponse(msg, ecmgscs::Errors::inv_channel_id);
     }
-    else if (_streams.count(msg->stream_id) != 0) {
+    else if (_stream_ids.contains(msg->stream_id)) {
         // Stream already in use in this channel.
-        return sendErrorResponse(msg, ts::ecmgscs::Errors::stream_id_in_use);
+        return sendErrorResponse(msg, ecmgscs::Errors::stream_id_in_use);
     }
     else {
         // Stream ok.
-        _streams[msg->stream_id] = msg->ECM_id;
-        ts::ecmgscs::StreamStatus resp(_opt.stream_status);
+        _stream_ids[msg->stream_id] = msg->ECM_id;
+        ecmgscs::StreamStatus resp(_opt.stream_status);
         resp.channel_id = msg->channel_id;
         resp.stream_id = msg->stream_id;
         resp.ECM_id = msg->ECM_id;
@@ -514,43 +560,43 @@ bool ECMGClientHandler::handleStreamSetup(const std::shared_ptr<ts::ecmgscs::Str
 }
 
 
-bool ECMGClientHandler::handleStreamTest(const std::shared_ptr<ts::ecmgscs::StreamTest>& msg)
+bool ts::ECMGChannel::handleStreamTest(const std::shared_ptr<ecmgscs::StreamTest>& msg)
 {
     assert(msg != nullptr);
-    if (_channel != msg->channel_id) {
+    if (_channel_id != msg->channel_id) {
         // Not the right channel.
-        return sendErrorResponse(msg, ts::ecmgscs::Errors::inv_channel_id);
+        return sendErrorResponse(msg, ecmgscs::Errors::inv_channel_id);
     }
-    else if (_streams.count(msg->stream_id) == 0) {
+    else if (!_stream_ids.contains(msg->stream_id)) {
         // Stream not in use in this channel.
-        return sendErrorResponse(msg, ts::ecmgscs::Errors::inv_stream_id);
+        return sendErrorResponse(msg, ecmgscs::Errors::inv_stream_id);
     }
     else {
         // Stream ok.
-        ts::ecmgscs::StreamStatus resp(_opt.stream_status);
+        ecmgscs::StreamStatus resp(_opt.stream_status);
         resp.channel_id = msg->channel_id;
         resp.stream_id = msg->stream_id;
-        resp.ECM_id = _streams[msg->stream_id];
+        resp.ECM_id = _stream_ids[msg->stream_id];
         return send(resp);
     }
 }
 
 
-bool ECMGClientHandler::handleStreamCloseRequest(const std::shared_ptr<ts::ecmgscs::StreamCloseRequest>& msg)
+bool ts::ECMGChannel::handleStreamCloseRequest(const std::shared_ptr<ecmgscs::StreamCloseRequest>& msg)
 {
     assert(msg != nullptr);
-    if (_channel != msg->channel_id) {
+    if (_channel_id != msg->channel_id) {
         // Not the right channel.
-        return sendErrorResponse(msg, ts::ecmgscs::Errors::inv_channel_id);
+        return sendErrorResponse(msg, ecmgscs::Errors::inv_channel_id);
     }
-    else if (_streams.count(msg->stream_id) == 0) {
+    else if (!_stream_ids.contains(msg->stream_id)) {
         // Stream not in use in this channel.
-        return sendErrorResponse(msg, ts::ecmgscs::Errors::inv_stream_id);
+        return sendErrorResponse(msg, ecmgscs::Errors::inv_stream_id);
     }
     else {
         // Stream ok, close it.
-        _streams.erase(msg->stream_id);
-        ts::ecmgscs::StreamCloseResponse resp(_opt.ecmgscs);
+        _stream_ids.erase(msg->stream_id);
+        ecmgscs::StreamCloseResponse resp(_opt.ecmgscs);
         resp.channel_id = msg->channel_id;
         resp.stream_id = msg->stream_id;
         return send(resp);
@@ -558,38 +604,43 @@ bool ECMGClientHandler::handleStreamCloseRequest(const std::shared_ptr<ts::ecmgs
 }
 
 
-bool ECMGClientHandler::handleCWProvision(const std::shared_ptr<ts::ecmgscs::CWProvision>& msg)
+//----------------------------------------------------------------------------
+// Handle ECM request from the client.
+//----------------------------------------------------------------------------
+
+bool ts::ECMGChannel::handleCWProvision(const std::shared_ptr<ecmgscs::CWProvision>& msg)
 {
     assert(msg != nullptr);
-    if (_channel != msg->channel_id) {
+    if (_channel_id != msg->channel_id) {
         // Not the right channel.
-        return sendErrorResponse(msg, ts::ecmgscs::Errors::inv_channel_id);
+        return sendErrorResponse(msg, ecmgscs::Errors::inv_channel_id);
     }
-    else if (_streams.count(msg->stream_id) == 0) {
+    else if (!_stream_ids.contains(msg->stream_id)) {
         // Stream not in use in this channel.
-        return sendErrorResponse(msg, ts::ecmgscs::Errors::inv_stream_id);
+        return sendErrorResponse(msg, ecmgscs::Errors::inv_stream_id);
     }
     else if (msg->CP_CW_combination.size() != _opt.channel_status.CW_per_msg) {
         // Not the right number of CW in the request.
-        return sendErrorResponse(msg, ts::ecmgscs::Errors::not_enough_CW);
+        return sendErrorResponse(msg, ecmgscs::Errors::not_enough_CW);
     }
     else {
         // Start to build the response.
-        ts::ecmgscs::ECMResponse resp(_opt.ecmgscs);
-        resp.channel_id = msg->channel_id;
-        resp.stream_id = msg->stream_id;
-        resp.CP_number = msg->CP_number;
+        // We use a pointer because we may need to store it in _delayed_responses.
+        const auto resp = std::make_shared<ecmgscs::ECMResponse>(_opt.ecmgscs);
+        resp->channel_id = msg->channel_id;
+        resp->stream_id = msg->stream_id;
+        resp->CP_number = msg->CP_number;
 
         // Check if 16-bit crypto-period numbers wrap over 0xFFFF.
         const uint16_t cp_max = msg->CP_number + _opt.channel_status.lead_CW;
         const bool cp_wrap = cp_max < msg->CP_number;
 
         // Add all CW's in the ECM (in the clear, yeah, but that's a fake/test ECMG).
-        ts::duck::ClearECM ecm(_protocol);
+        duck::ClearECM ecm(duck::CURRENT_VERSION);
         for (auto it = msg->CP_CW_combination.begin(); it != msg->CP_CW_combination.end(); ++it) {
             if ((!cp_wrap && (it->CP < msg->CP_number || it->CP > cp_max)) || (cp_wrap && it->CP > cp_max && it->CP < msg->CP_number)) {
                 // Incorrect CP/CW combination.
-                return sendErrorResponse(msg, ts::ecmgscs::Errors::not_enough_CW);
+                return sendErrorResponse(msg, ecmgscs::Errors::not_enough_CW);
             }
             if ((it->CP & 0x01) == 0) {
                 ecm.cw_even = it->CW;
@@ -598,7 +649,7 @@ bool ECMGClientHandler::handleCWProvision(const std::shared_ptr<ts::ecmgscs::CWP
                 ecm.cw_odd = it->CW;
             }
             // In debug mode, display if CW has reduced entropy.
-            _shared->report().debug(u"incoming CW entropy: %s", it->CW.size() == ts::DVBCSA2::KEY_SIZE && ts::DVBCSA2::IsReducedCW(it->CW.data()) ? u"reduced" : u"not reduced");
+            _opt.debug(u"incoming CW entropy: %s", it->CW.size() == DVBCSA2::KEY_SIZE && DVBCSA2::IsReducedCW(it->CW.data()) ? u"reduced" : u"not reduced");
         }
 
         // Add optional access criteria in ECM.
@@ -607,8 +658,8 @@ bool ECMGClientHandler::handleCWProvision(const std::shared_ptr<ts::ecmgscs::CWP
         }
 
         // Serialize the ECM section payload.
-        const auto ecm_bin = std::make_shared<ts::ByteBlock>();
-        ts::tlv::Serializer serial(ecm_bin);
+        const auto ecm_bin = std::make_shared<ByteBlock>();
+        tlv::Serializer serial(ecm_bin);
         ecm.serialize(serial);
 
         // Compute the table id for the ECM, 0x80 or 0x81. There are two incompatible possibilities.
@@ -618,34 +669,105 @@ bool ECMGClientHandler::handleCWProvision(const std::shared_ptr<ts::ecmgscs::CWP
         // case some CAS relies on it. On the other hand, if the SCS sends non-consecutive CP
         // numbers, it is possible that two adjacent CP have the same parity. Anyway, since there
         // is no perfect solution, we use the first one since it is simpler.
-        const ts::TID tid = ts::TID(ts::TID_ECM_80 | (msg->CP_number & 0x01));
+        const TID tid = TID(TID_ECM_80 | (msg->CP_number & 0x01));
 
         // Build the ECM section.
-        const auto ecm_section = std::make_shared<ts::Section>(tid, true, ecm_bin->data(), ecm_bin->size());
+        const auto ecm_section = std::make_shared<Section>(tid, true, ecm_bin->data(), ecm_bin->size());
 
         // Format ECM for the response message.
         if (_opt.channel_status.section_TSpkt_flag) {
             // Send ECM as TS packets, packetize the section.
-            ts::TSPacketVector ecm_packets;
-            ts::OneShotPacketizer zer(_opt.duck);
+            TSPacketVector ecm_packets;
+            OneShotPacketizer zer(_opt.duck);
             zer.addSection(ecm_section);
             zer.getPackets(ecm_packets);
             if (!ecm_packets.empty()) {
-                resp.ECM_datagram.copy(ecm_packets[0].b, ecm_packets.size() * ts::PKT_SIZE);
+                resp->ECM_datagram.copy(ecm_packets[0].b, ecm_packets.size() * PKT_SIZE);
             }
         }
         else {
             // Send ECM as a section.
-            resp.ECM_datagram.copy(ecm_section->content(), ecm_section->size());
+            resp->ECM_datagram.copy(ecm_section->content(), ecm_section->size());
         }
 
-        // Emulate the computation time of a real ECMG.
-        if (_opt.ecm_comp_time > cn::milliseconds::zero()) {
-            std::this_thread::sleep_for(_opt.ecm_comp_time);
+        // The ECM can be sent either immediately or after emulating the computation time of a real ECMG.
+        if (_opt.ecm_comp_time <= cn::milliseconds::zero()) {
+            // Send the ECM now.
+            return send(*resp);
         }
-
-        return send(resp);
+        else {
+            // Create a timer to send the message later.
+            const EventId id = _reactor.newTimer(this, _opt.ecm_comp_time, false);
+            if (id.isValid()) {
+                if (_delayed_responses.contains(id)) {
+                    _opt.error(u"internal error, duplicated timer id %s", id.toString());
+                }
+                _delayed_responses[id] = resp;
+            }
+            return id.isValid();
+        }
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Handle delayed messages.
+//----------------------------------------------------------------------------
+
+void ts::ECMGChannel::handleTimer(Reactor& reactor, EventId id)
+{
+    const auto it = _delayed_responses.find(id);
+    if (it == _delayed_responses.end()) {
+        _opt.error(u"internal error, unregistered or lost timer id %s", id.toString());
+    }
+    else {
+        // Get and erase delayed response.
+        const auto resp = it->second;
+        _delayed_responses.erase(it);
+        // Send the response, disconnect in case of error.
+        if (!send(*resp)) {
+            freeChannel();
+            _react_client.startClose(this, true);
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Factory for server sessions.
+// Used by the server each time a new client connects.
+//----------------------------------------------------------------------------
+
+namespace ts {
+    class ECMGSessionFactory: public ReactiveServerFactoryInterface
+    {
+        TS_NOBUILD_NOCOPY(ECMGSessionFactory);
+    public:
+        // Constructor.
+        ECMGSessionFactory(Reactor& reactor, ECMGOptions& opt, ECMGState& state);
+
+        // Implementation of session factory.
+        virtual ReactiveServerSessionInterface* newClientSession() override;
+
+    private:
+        Reactor&     _reactor;
+        ECMGOptions& _opt;
+        ECMGState&   _state;
+    };
+}
+
+// Constructor.
+ts::ECMGSessionFactory::ECMGSessionFactory(Reactor& reactor, ECMGOptions& opt, ECMGState& state) :
+    _reactor(reactor),
+    _opt(opt),
+    _state(state)
+{
+}
+
+// Implementation of session factory.
+ts::ReactiveServerSessionInterface* ts::ECMGSessionFactory::newClientSession()
+{
+    return new ECMGChannel(_reactor, _opt, _state);
 }
 
 
@@ -655,21 +777,14 @@ bool ECMGClientHandler::handleCWProvision(const std::shared_ptr<ts::ecmgscs::CWP
 
 int MainCode(int argc, char *argv[])
 {
-    ECMGOptions opt(argc, argv);
-
-    // Create ECMG shared data (including the asynchronous report).
-    ECMGSharedData shared(opt);
-
-    // Initialize a TCP server.
-    ts::TCPServer server(&opt);
-    if (!server.open(opt.server_address.generation()) ||
-        !server.reusePort(opt.reuse_port) ||
-        !server.bind(opt.server_address) ||
-        !server.listen(5))
-    {
-        return EXIT_FAILURE;
-    }
-    shared.report().verbose(u"TCP server listening on %s, using ECMG <=> SCS protocol version %d", opt.server_address, opt.ecmgscs.version());
+    // Decode command line options.
+    ts::ECMGOptions opt(argc, argv);
+    ts::ECMGState state;
+    ts::Reactor reactor(&opt);
+    ts::ECMGSessionFactory factory(reactor, opt, state);
+    ts::TCPServer tcp_server(&opt);
+    ts::ReactiveTCPServer react_tcp_server(reactor, tcp_server);
+    ts::ReactiveServer react_server(react_tcp_server);
 
     // On UNIX systems, ignore SIGPIPE. This signal is raised when trying to write to a disconnected
     // socket. This may happen when a client disconnects after sending stream_close_request without
@@ -677,30 +792,28 @@ int MainCode(int argc, char *argv[])
     // the client disconnects, creating a SIGPIPE signal.
     ts::IgnorePipeSignal();
 
-    // Manage incoming client connections.
-    for (;;) {
+    // Initialize a TCP server inside a reactor (mono-thread event dispatcher).
+    if (!reactor.open() ||
+        !tcp_server.open(opt.server_address.generation()) ||
+        !tcp_server.reusePort(opt.reuse_port) ||
+        !tcp_server.bind(opt.server_address) ||
+        !tcp_server.listen(opt.listen_backlog) ||
+        !react_server.start(&factory))
+    {
+        return EXIT_FAILURE;
+    }
+    opt.verbose(u"TCP server listening on %s, using ECMG <=> SCS protocol version %d", opt.server_address, opt.ecmgscs.version());
 
-        // Accept one incoming connection.
-        ts::IPSocketAddress client_address;
-        ECMGConnectionPtr conn = std::make_shared<ECMGConnection>(shared.logger(), opt.ecmgscs, true, 3);
-        if (!server.accept(*conn, client_address)) {
-            break;
-        }
-
-        // Process the connection.
-        if (opt.once) {
-            // If --once is specified, run once in the context of the main thread and exit.
-            ECMGClientHandler client(opt, conn, &shared, false);
-            client.main();
-            break;
-        }
-        else {
-            // Otherwise, create a thread and forget about it.
-            // The thread will deallocate itself automatically when it completes.
-            ECMGClientHandler* client = new ECMGClientHandler(opt, conn, &shared, true);
-            client->start();
-        }
+    // Exit after one client session when specified.
+    if (opt.once) {
+        react_server.setExitAfterClientCount(1);
     }
 
+    // Exit the reactor event loop when the server terminates.
+    react_server.setExitEventLoop(true);
+
+    // Process events.
+    reactor.processEventLoop();
+    reactor.close();
     return EXIT_SUCCESS;
 }
