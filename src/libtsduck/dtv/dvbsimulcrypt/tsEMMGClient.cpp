@@ -10,7 +10,6 @@
 #include "tsOneShotPacketizer.h"
 #include "tstlvSerializer.h"
 #include "tsTSPacket.h"
-#include "tsNullReport.h"
 
 
 //----------------------------------------------------------------------------

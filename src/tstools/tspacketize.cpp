@@ -41,9 +41,9 @@ namespace {
         ts::CRC32::Validation crc_op = ts::CRC32::COMPUTE;
         ts::PID               pid = ts::PID_NULL;  // Target PID
         ts::BitRate           bitrate = 0;         // Target PID bitrate
-        fs::path              outfile {};          // Output file
-        ts::FileNameRateList  infiles {};          // Input file names and repetition rates
-        ts::SectionFormat     inType = ts::SectionFormat::UNSPECIFIED;
+        fs::path              out_file {};         // Output file
+        ts::FileNameRateList  in_files {};         // Input file names and repetition rates
+        ts::SectionFormat     in_type = ts::SectionFormat::UNSPECIFIED;
         ts::SectionFileArgs   sections_opt {};     // Section file options
     };
 }
@@ -117,20 +117,20 @@ Options::Options(int argc, char *argv[]) :
     crc_op = present(u"force-crc") ? ts::CRC32::COMPUTE : ts::CRC32::CHECK;
     getIntValue(pid, u"pid", ts::PID_NULL);
     getValue(bitrate, u"bitrate");
-    getPathValue(outfile, u"output");
-    infiles.getArgs(*this);
+    getPathValue(out_file, u"output");
+    in_files.getArgs(*this);
     if (present(u"xml")) {
-        inType = ts::SectionFormat::XML;
+        in_type = ts::SectionFormat::XML;
     }
     else if (present(u"json")) {
-        inType = ts::SectionFormat::JSON;
+        in_type = ts::SectionFormat::JSON;
     }
     else if (present(u"binary")) {
-        inType = ts::SectionFormat::BINARY;
+        in_type = ts::SectionFormat::BINARY;
     }
 
     // If any non-zero repetition rate is specified, make sure that a bitrate is specified.
-    for (const auto& it : infiles) {
+    for (const auto& it : in_files) {
         if (it.repetition != cn::milliseconds::zero() && bitrate == 0) {
             error(u"the PID bitrate must be specified when repetition rates are used");
             break;
@@ -148,20 +148,20 @@ Options::Options(int argc, char *argv[]) :
 int MainCode(int argc, char *argv[])
 {
     Options opt(argc, argv);
-    ts::OutputRedirector output(opt.outfile, opt);
+    ts::OutputRedirector output(opt.out_file, opt);
     ts::CyclingPacketizer pzer(opt.duck, opt.pid, opt.stuffing_policy, opt.bitrate);
     ts::SectionFile file(opt.duck);
     file.setCRCValidation(opt.crc_op);
 
     // Load sections
-    if (opt.infiles.size() == 0) {
+    if (opt.in_files.size() == 0) {
         // Read sections from standard input.
-        if (opt.inType != ts::SectionFormat::XML && opt.inType != ts::SectionFormat::JSON) {
+        if (opt.in_type != ts::SectionFormat::XML && opt.in_type != ts::SectionFormat::JSON) {
             // Default type for standard input is binary.
             SetBinaryModeStdin(opt);
-            opt.inType = ts::SectionFormat::BINARY;
+            opt.in_type = ts::SectionFormat::BINARY;
         }
-        if (!file.load(std::cin, opt.inType) || !opt.sections_opt.processSectionFile(file, opt)) {
+        if (!file.load(std::cin, opt.in_type) || !opt.sections_opt.processSectionFile(file, opt)) {
             return EXIT_FAILURE;
         }
         pzer.addSections(file.sections());
@@ -170,9 +170,9 @@ int MainCode(int argc, char *argv[])
         }
     }
     else {
-        for (const auto& it : opt.infiles) {
+        for (const auto& it : opt.in_files) {
             file.clear();
-            if (!file.load(it.file_name, opt.inType) || !opt.sections_opt.processSectionFile(file, opt)) {
+            if (!file.load(it.file_name, opt.in_type) || !opt.sections_opt.processSectionFile(file, opt)) {
                 return EXIT_FAILURE;
             }
             pzer.addSections(file.sections(), it.repetition);

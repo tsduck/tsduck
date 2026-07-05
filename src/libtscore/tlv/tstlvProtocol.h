@@ -141,7 +141,7 @@ namespace ts::tlv {
         virtual UString name() const = 0;
 
     private:
-        // The class MessageFactory acceeses the internal representation of the protocol.
+        // The class MessageFactory accesses the internal representation of the protocol.
         friend class MessageFactory;
 
         // Description of a parameter:
