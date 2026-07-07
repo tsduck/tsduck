@@ -220,7 +220,7 @@ namespace ts {
 
         // Start/stop the test.
         bool start();
-        void stop(int silent);
+        void stop(bool silent);
         bool isTerminated() const { return _terminated; }
 
         // Inform that one more request is sent.
@@ -321,7 +321,7 @@ bool ts::TestECMGGlobalData::start()
 }
 
 // Stop the test.
-void ts::TestECMGGlobalData::stop(int silent)
+void ts::TestECMGGlobalData::stop(bool silent)
 {
     // Terminate only once.
     if (!_terminated) {
