@@ -26,36 +26,9 @@ class ReactiveTLSTest: public tsunit::Test
 {
     TSUNIT_DECLARE_TEST(Client);
     TSUNIT_DECLARE_TEST(Server);
-
-public:
-    virtual void beforeTest() override;
-    virtual void afterTest() override;
-
-private:
-    int _previousSeverity = 0;
 };
 
 TSUNIT_REGISTER(ReactiveTLSTest);
-
-
-//----------------------------------------------------------------------------
-// Initialization.
-//----------------------------------------------------------------------------
-
-// Test suite initialization method.
-void ReactiveTLSTest::beforeTest()
-{
-    _previousSeverity = CERR.maxSeverity();
-    if (tsunit::Test::debugMode()) {
-        CERR.setMaxSeverity(ts::Severity::Debug);
-    }
-}
-
-// Test suite cleanup method.
-void ReactiveTLSTest::afterTest()
-{
-    CERR.setMaxSeverity(_previousSeverity);
-}
 
 
 //----------------------------------------------------------------------------
@@ -154,6 +127,11 @@ namespace {
     public:
         TestClient(ts::Reactor& reactor, std::ostream& debug, cn::milliseconds delay, size_t request_count, uint16_t server_port);
 
+        size_t handle_connected_count = 0;
+        size_t handle_closed_count = 0;
+        size_t send_count = 0;
+        size_t receive_count = 0;
+
     private:
         ts::Reactor&              _reactor;
         std::ostream&             _debug;
@@ -187,6 +165,7 @@ namespace {
         _client_id(++_id_counter)
     {
         _debug << "TestClient: initialize client id " << _client_id << std::endl;
+        _reactor.addExitReference();
         TSUNIT_ASSERT(_delay > cn::milliseconds::zero());
         TSUNIT_ASSERT(_request_count > 0);
         _timer_id = _reactor.newTimer(this, _delay, false);
@@ -211,6 +190,7 @@ namespace {
             _request++;
             _debug << "TestClient::handleTimer, client id: " << _client_id << ", start send request " << _request << std::endl;
             TSUNIT_ASSERT(_rclient.startSend(this, &_request, sizeof(_request)));
+            send_count++;
             _expected_send_position += sizeof(_request);
         }
     }
@@ -221,6 +201,7 @@ namespace {
         TSUNIT_ASSERT(&sock == &_rclient);
         TSUNIT_EQUAL(ts::SYS_SUCCESS, error_code);
         TSUNIT_ASSERT(_rclient.startReceive(this));
+        handle_connected_count++;
 
         // Send request after next timer.
         _timer_id = _reactor.newTimer(this, _delay, false);
@@ -251,6 +232,7 @@ namespace {
             control.used_size = sizeof(uint32_t);
             _debug << "TestClient::handleTCPReceive, client id: " << _client_id << ", request: " << _request << ", response: " << response << std::endl;
             TSUNIT_EQUAL(_request + 1, response);
+            receive_count++;
 
             if (_request < _request_count) {
                 // Wait before sending the next request.
@@ -269,6 +251,8 @@ namespace {
     {
         _debug << "TestClient::handleTCPClosed, client id: " << _client_id << std::endl;
         TSUNIT_ASSERT(&sock == &_rclient);
+        _reactor.freeExitReference();
+        handle_closed_count++;
     }
 
     //------------------------------------------------------------------------
@@ -283,6 +267,9 @@ namespace {
         TestServerConnection(ts::Reactor& reactor, std::ostream& debug);
         virtual ~TestServerConnection() override;
         size_t clientId() const { return _client_id; }
+
+        static size_t handle_accepted_count;
+        static size_t handle_closed_count;
 
     private:
         ts::Reactor&              _reactor;
@@ -302,6 +289,8 @@ namespace {
         virtual void handleTCPClosed(ts::ReactiveTCPConnection& sock, const ts::ObjectPtr& user_data) override;
     };
 
+    size_t TestServerConnection::handle_accepted_count = 0;
+    size_t TestServerConnection::handle_closed_count = 0;
     size_t TestServerConnection::_id_counter = 0;
 
     TestServerConnection::TestServerConnection(ts::Reactor& reactor, std::ostream& debug) :
@@ -328,6 +317,7 @@ namespace {
         _debug << "TestServerConnection::handleTCPAccepted, client id: " << _client_id << ", error code: " << error_code
                << ", client: " << sock.socket().peerName() << ", local: " << sock.socket().localName() << std::endl;
         TSUNIT_ASSERT(&sock == &_rclient);
+        handle_accepted_count++;
         if (error_code == ts::SYS_SUCCESS) {
             TSUNIT_ASSERT(_rclient.startReceive(this));
         }
@@ -371,6 +361,7 @@ namespace {
     {
         _debug << "TestServerConnection::handleTCPClosed, client id: " << _client_id << std::endl;
         TSUNIT_ASSERT(&sock == &_rclient);
+        handle_closed_count++;
     }
 
     //------------------------------------------------------------------------
@@ -383,6 +374,9 @@ namespace {
         TS_NOBUILD_NOCOPY(TestFactory);
     public:
         TestFactory(ts::Reactor& reactor, std::ostream& debug);
+
+        size_t client_count = 0;
+        size_t server_exited_count = 0;
 
     private:
         ts::Reactor&  _reactor;
@@ -403,12 +397,15 @@ namespace {
     {
         const auto session = new TestServerConnection(_reactor, _debug);
         _debug << "TestFactory: create client session id " << session->clientId() << std::endl;
+        client_count++;
         return session;
     }
 
     void TestFactory::handleServerExited(ts::ReactiveServer& server, const ts::ObjectPtr& user_data)
     {
         _debug << "TestFactory: server exited" << std::endl;
+        server_exited_count++;
+        _reactor.freeExitReference();
     }
 }
 
@@ -430,12 +427,12 @@ TSUNIT_DEFINE_TEST(Server)
     TSUNIT_ASSERT(tcp_server.reusePort(true));
     TSUNIT_ASSERT(tcp_server.bind(ts::IPSocketAddress(ts::IPAddress::LocalHost4, PORT)));
     TSUNIT_ASSERT(tcp_server.listen(5));
+    TSUNIT_EQUAL(1, reactor.addExitReference()); // server
 
     // Use an ephemeral untrusted server certificate.
     rtls_server.setEphemeralRSABits(2048);
 
     server.setExitAfterClientCount(2);
-    server.setExitEventLoop(true);
     server.start(&factory, &factory);
 
     TestClient client1(reactor, debug(), cn::milliseconds(50), 3, PORT);
@@ -443,4 +440,20 @@ TSUNIT_DEFINE_TEST(Server)
 
     TSUNIT_ASSERT(reactor.processEventLoop());
     TSUNIT_ASSERT(reactor.close());
+
+    TSUNIT_EQUAL(1, client1.handle_connected_count);
+    TSUNIT_EQUAL(1, client1.handle_closed_count);
+    TSUNIT_EQUAL(3, client1.send_count);
+    TSUNIT_EQUAL(3, client1.receive_count);
+
+    TSUNIT_EQUAL(1, client2.handle_connected_count);
+    TSUNIT_EQUAL(1, client2.handle_closed_count);
+    TSUNIT_EQUAL(2, client2.send_count);
+    TSUNIT_EQUAL(2, client2.receive_count);
+
+    TSUNIT_EQUAL(2, factory.client_count);
+    TSUNIT_EQUAL(1, factory.server_exited_count);
+
+    TSUNIT_EQUAL(2, TestServerConnection::handle_accepted_count);
+    TSUNIT_EQUAL(2, TestServerConnection::handle_closed_count);
 }

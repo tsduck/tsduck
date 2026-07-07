@@ -207,6 +207,9 @@ bool ts::Reactor::open()
         return false;
     }
     else {
+        _exit_requested = false;
+        _exit_success = true;
+        _exit_counter = 0;
         _events.clear();
         _deleted_current.clear();
         _deleted_previous_current.clear();
@@ -243,6 +246,29 @@ void ts::Reactor::exitEventLoop(bool success)
 
 
 //----------------------------------------------------------------------------
+// Coordinated exitEventLoop().
+//----------------------------------------------------------------------------
+
+int ts::Reactor::addExitReference()
+{
+    return checkOpen(false) ? ++_exit_counter : 0;
+}
+
+int ts::Reactor::freeExitReference(bool success)
+{
+    if (checkOpen(false)) {
+        if (--_exit_counter <= 0) {
+            _exit_requested = true;
+        }
+        if (!success) {
+            _exit_success = false;
+        }
+    }
+    return _exit_counter;
+}
+
+
+//----------------------------------------------------------------------------
 // Process events until exit is requested.
 //----------------------------------------------------------------------------
 
@@ -251,12 +277,18 @@ bool ts::Reactor::processEventLoop()
     if (!checkOpen(false)) {
         return false;
     }
-    else {
-        _exit_requested = false;
-        _exit_success = true;
+
+    // Process events until the "exit request" condition is set, including before entering processEventLoop().
+    while (!_exit_requested) {
         _guts->processEventLoop();
-        return _exit_success;
     }
+
+    // Reset the "exit request" condition.
+    const bool success = _exit_success;
+    _exit_requested = false;
+    _exit_success = true;
+    _exit_counter = 0;
+    return success;
 }
 
 

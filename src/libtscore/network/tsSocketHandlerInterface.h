@@ -17,6 +17,7 @@
 namespace ts {
 
     class Socket;
+    class SocketSubscriptionBase;
     class TCPConnection;
 
     //!
@@ -74,11 +75,11 @@ namespace ts {
 
     private:
         // The class Socket is allowed to call register/deregister.
-        friend class Socket;
-        void registerSocket(Socket*);
-        void deregisterSocket(Socket*);
+        friend class SocketSubscriptionBase;
+        void registerSocket(SocketSubscriptionBase*);
+        void deregisterSocket(SocketSubscriptionBase*);
 
         bool _destructing = false;                   // True during destructor.
-        std::set<Socket*> _registered_sockets {};    // List of sockets for which we are registered.
+        std::set<SocketSubscriptionBase*> _registered_sockets {};    // List of sockets for which we are registered.
     };
 }

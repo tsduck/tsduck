@@ -13,7 +13,7 @@
 
 #pragma once
 #include "tsNonBlockingDevice.h"
-#include "tsSocketHandlerInterface.h"
+#include "tsSocketSubscriptionBase.h"
 #include "tsIPSocketAddress.h"
 #include "tsIPUtils.h"
 #include "tsReport.h"
@@ -23,7 +23,7 @@ namespace ts {
     //! Base class for TCP and UDP sockets.
     //! @ingroup libtscore net
     //!
-    class TSCOREDLL Socket : public NonBlockingDevice
+    class TSCOREDLL Socket : public NonBlockingDevice, public SocketSubscriptionBase
     {
         TS_NOCOPY(Socket);
     public:
@@ -167,18 +167,6 @@ namespace ts {
         //!
         SysSocketType getSocket() const { return _sock; }
 
-        //!
-        //! Add a subscriber to open/close events.
-        //! @param [in] handler The object to call on open() and close().
-        //!
-        void addSubscription(SocketHandlerInterface* handler);
-
-        //!
-        //! Remove a subscriber to open/close events.
-        //! @param [in] handler The object to no longer call on open() and close().
-        //!
-        void cancelSubscription(SocketHandlerInterface* handler);
-
     protected:
         //!
         //! Open the socket, actual implementation which must be overriden by subclasses.
@@ -222,28 +210,11 @@ namespace ts {
         //!
         bool convert(IPAddress& addr) const;
 
-        //!
-        //! Call a handler on all subscribers, using a lambda expression.
-        //! @param [in] func Function to call as lambda expression.
-        //!
-        template <typename F>
-        void callSubscribers(F&& func) {
-            // We must iterate over a copy of the set because we call a handler at each iteration
-            // and the handler may modify the socket state.
-            for (auto subs : SocketHandlerSet(_subscribers)) {
-                func(subs);
-            }
-        }
-
         // Overloaded methods.
         virtual bool allowSetNonBlocking() const override;
 
     private:
-        // Set of handlers.
-        using SocketHandlerSet = std::set<SocketHandlerInterface*>;
-
         volatile SysSocketType _sock = SYS_SOCKET_INVALID;
         IP                     _gen = IP::v4;    // Current generation of the IP address. Never IP::Any.
-        SocketHandlerSet       _subscribers {};  // Subscribers to open/close notifications.
     };
 }

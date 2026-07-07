@@ -18,6 +18,8 @@ ts::ReactiveTCPConnection::ReactiveTCPConnection(Reactor& reactor, TCPConnection
     ReactiveSocketBase(reactor, socket, owner),
     _socket(socket)
 {
+    // Subscribe to our socket's events.
+    _socket.addSubscription(this);
 }
 
 ts::ReactiveTCPConnection::~ReactiveTCPConnection()
@@ -33,6 +35,47 @@ ts::ReactiveTCPConnection::ConnectRequest::~ConnectRequest() {}
 ts::ReactiveTCPConnection::SendRequest::~SendRequest() {}
 ts::ReactiveTCPConnection::ReceiveRequest::~ReceiveRequest() {}
 ts::ReactiveTCPConnection::CloseRequest::~CloseRequest() {}
+
+
+//----------------------------------------------------------------------------
+// Redirect all events from the underlying Socket to our own subscribers,
+// except handleSocketCloseComplete().
+//----------------------------------------------------------------------------
+
+void ts::ReactiveTCPConnection::handleSocketOpenStart(Socket& sock)
+{
+    callSubscribers([&sock](SocketHandlerInterface* subs) {
+        subs->handleSocketOpenStart(sock);
+    });
+}
+
+void ts::ReactiveTCPConnection::handleSocketOpenComplete(Socket& sock, bool success)
+{
+    callSubscribers([&sock, success](SocketHandlerInterface* subs) {
+        subs->handleSocketOpenComplete(sock, success);
+    });
+}
+
+void ts::ReactiveTCPConnection::handleSocketConnected(TCPConnection& sock)
+{
+    callSubscribers([&sock](SocketHandlerInterface* subs) {
+        subs->handleSocketConnected(sock);
+    });
+}
+
+void ts::ReactiveTCPConnection::handleSocketDisconnected(TCPConnection& sock, bool silent)
+{
+    callSubscribers([&sock, silent](SocketHandlerInterface* subs) {
+        subs->handleSocketDisconnected(sock, silent);
+    });
+}
+
+void ts::ReactiveTCPConnection::handleSocketCloseStart(Socket& sock, bool silent)
+{
+    callSubscribers([&sock, silent](SocketHandlerInterface* subs) {
+        subs->handleSocketCloseStart(sock, silent);
+    });
+}
 
 
 //----------------------------------------------------------------------------
@@ -95,7 +138,6 @@ void ts::ReactiveTCPConnection::processQueuedOperations()
         // Clear all states. Don't notify of anything else.
         assert(_pending_send.empty());
         _completed_io.clear();
-        _pending_receive.reset();
         _pending_close.reset();
         deactivateAll(silent);
 
@@ -103,6 +145,10 @@ void ts::ReactiveTCPConnection::processQueuedOperations()
         if (handler != nullptr) {
             handler->handleTCPClosed(*this, app_data);
         }
+        // Notify our subscribers.
+        callSubscribers([this, silent](SocketHandlerInterface* subs) {
+            subs->handleSocketCloseComplete(_socket, silent, true);
+        });
     }
 }
 
@@ -659,8 +705,9 @@ void ts::ReactiveTCPConnection::cancelSendReceive(bool silent)
     cancelAsynchronousIO(silent);
 
     if constexpr (Reactor::UseNonBlockingIO()) {
-        // Discard pending send requests, they are not started yet.
+        // Discard pending send and receive requests, they are not started yet.
         _pending_send.clear();
+        _pending_receive.reset();
     }
 }
 

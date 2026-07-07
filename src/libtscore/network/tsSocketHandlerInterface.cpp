@@ -26,14 +26,14 @@ void ts::SocketHandlerInterface::handleSocketCloseComplete(Socket&, bool, bool) 
 // Register / deregister the suscription to a socket.
 //----------------------------------------------------------------------------
 
-void ts::SocketHandlerInterface::registerSocket(Socket* sock)
+void ts::SocketHandlerInterface::registerSocket(SocketSubscriptionBase* sock)
 {
     if (sock != nullptr) {
         _registered_sockets.insert(sock);
     }
 }
 
-void ts::SocketHandlerInterface::deregisterSocket(Socket* sock)
+void ts::SocketHandlerInterface::deregisterSocket(SocketSubscriptionBase* sock)
 {
     // Avoid modifying _registered_sockets during destructor.
     if (!_destructing) {

@@ -13,6 +13,7 @@
 
 #pragma once
 #include "tsReactiveSocketBase.h"
+#include "tsSocketSubscriptionBase.h"
 #include "tsReactiveTCPConnectionHandlerInterface.h"
 #include "tsReactiveTCPInputControl.h"
 #include "tsTCPConnection.h"
@@ -29,7 +30,11 @@ namespace ts {
     //! delegate these operations to startConnect(), startSend(), startReceive(), startCloseWriter() and startClose() in
     //! class ReactiveTCPConnection.
     //!
-    class TSCOREDLL ReactiveTCPConnection: public ReactiveSocketBase
+    //! The class implements the same subscription mechanism as the class Socket. The events are the same as the internal
+    //! Socket element, except the handleSocketCloseComplete() event which occurs at the end of the asynchronous completion
+    //! of the reactive socket.
+    //!
+    class TSCOREDLL ReactiveTCPConnection: public ReactiveSocketBase, public SocketSubscriptionBase, private SocketHandlerInterface
     {
         TS_NOBUILD_NOCOPY(ReactiveTCPConnection);
     public:
@@ -163,7 +168,7 @@ namespace ts {
         //! @param [in] handler Application handler.
         //! @param [in] error_code Receive error code. If not success, the handler is called exactly once.
         //! @param [in] user_data User data for the handler.
-        //! 
+        //!
         void processReceiveBuffer(ByteBlock& data, ReactiveTCPInputControl& control, HandlerType* handler, int error_code, const ObjectPtr& user_data);
 
         // Inherited methods (implementation of protected interface).
@@ -246,5 +251,12 @@ namespace ts {
 
         // Process receive buffer. Must be called in the context of a Reactor handler, when no asynchronous I/O is in progress.
         void processReceiveBuffer();
+
+        // Capture all events from the underlying Socket, except handleSocketCloseComplete().
+        virtual void handleSocketOpenStart(Socket& sock) override;
+        virtual void handleSocketOpenComplete(Socket& sock, bool success) override;
+        virtual void handleSocketConnected(TCPConnection& sock) override;
+        virtual void handleSocketDisconnected(TCPConnection& sock, bool silent) override;
+        virtual void handleSocketCloseStart(Socket& sock, bool silent) override;
     };
 }

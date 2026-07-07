@@ -45,6 +45,11 @@ namespace {
     public:
         TestClient(ts::Reactor& reactor, ts::tlv::Logger& logger, const ts::tlv::Protocol& protocol, std::ostream& debug, uint16_t server_port);
 
+        size_t handle_connected_count = 0;
+        size_t handle_closed_count = 0;
+        size_t send_count = 0;
+        size_t receive_count = 0;
+
     private:
         ts::Reactor&              _reactor;
         ts::tlv::Logger&          _logger;
@@ -54,10 +59,10 @@ namespace {
         ts::TCPConnection         _tcp_client;
         ts::ReactiveTCPConnection _react_client;
         ts::ReactiveTLVConnection _tlv_client;
-        size_t                    _msg_count = 0;
 
         virtual void handleTCPConnected(ts::ReactiveTCPConnection& sock, int error_code, const ts::ObjectPtr& user_data) override;
         virtual void handleReceivedMessage(ts::ReactiveTLVConnection& sock, const ts::tlv::MessagePtr& msg, int error_code) override;
+        virtual void handleTCPSend(ts::ReactiveTCPConnection& sock, size_t position, int error_code, const ts::ObjectPtr& user_data) override;
         virtual void handleTCPClosed(ts::ReactiveTCPConnection& sock, const ts::ObjectPtr& user_data) override;
     };
 
@@ -75,6 +80,7 @@ namespace {
         TSUNIT_ASSERT(_tcp_client.open(ts::IP::v4));
         TSUNIT_ASSERT(_tcp_client.bind(ts::IPSocketAddress::AnySocketAddress4));
         TSUNIT_ASSERT(_react_client.startConnect(this, _server_address));
+        _reactor.addExitReference();
     }
 
     void TestClient::handleTCPConnected(ts::ReactiveTCPConnection& sock, int error_code, const ts::ObjectPtr& user_data)
@@ -83,12 +89,13 @@ namespace {
         TSUNIT_ASSERT(&sock == &_react_client);
         TSUNIT_EQUAL(ts::SYS_SUCCESS, error_code);
         TSUNIT_ASSERT(_tlv_client.startReceive(this));
+        handle_connected_count++;
 
         // Send first request.
         ts::ecmgscs::ChannelSetup msg(_protocol);
         msg.channel_id = 100;
         TSUNIT_ASSERT(_tlv_client.startSendMessage(msg));
-        _msg_count++;
+        send_count++;
     }
 
     void TestClient::handleReceivedMessage(ts::ReactiveTLVConnection& sock, const ts::tlv::MessagePtr& msg, int error_code)
@@ -96,8 +103,9 @@ namespace {
         _debug << "TLV client: received tag: " << (msg == nullptr ? -1 : int(msg->tag())) << ", error code: " << error_code << std::endl;
         TSUNIT_ASSERT(&sock == &_tlv_client);
         TSUNIT_EQUAL(ts::SYS_SUCCESS, error_code);
+        receive_count++;
 
-        if (_msg_count == 1) {
+        if (send_count == 1) {
             // Expect channel status in response to channel setup.
             TSUNIT_EQUAL(ts::ecmgscs::Tags::channel_status, msg->tag());
             const auto cmd = std::dynamic_pointer_cast<ts::ecmgscs::ChannelStatus>(msg);
@@ -110,10 +118,10 @@ namespace {
             msg2.channel_id = 100;
             msg2.stream_id = 200;
             TSUNIT_ASSERT(_tlv_client.startSendMessage(msg2));
-            _msg_count++;
+            send_count++;
         }
         else {
-            TSUNIT_EQUAL(2, _msg_count);
+            TSUNIT_EQUAL(2, send_count);
             // Expect stream status in response to stream setup.
             TSUNIT_EQUAL(ts::ecmgscs::Tags::stream_status, msg->tag());
             const auto cmd = std::dynamic_pointer_cast<ts::ecmgscs::StreamStatus>(msg);
@@ -123,15 +131,23 @@ namespace {
             TSUNIT_EQUAL(200, cmd->stream_id);
 
             // Session completed.
-            TSUNIT_ASSERT(_react_client.startClose(this));
+            TSUNIT_ASSERT(_react_client.startCloseWriter(this));
         }
+    }
+
+    void TestClient::handleTCPSend(ts::ReactiveTCPConnection& sock, size_t position, int error_code, const ts::ObjectPtr& user_data)
+    {
+        _debug << "TLV client: message sent, error code: " << error_code << std::endl;
+        TSUNIT_EQUAL(ts::SYS_EOF, error_code); // only used with startCloseWriter()
+        TSUNIT_ASSERT(_react_client.startClose(this));
     }
 
     void TestClient::handleTCPClosed(ts::ReactiveTCPConnection& sock, const ts::ObjectPtr& user_data)
     {
         _debug << "TLV client: closed" << std::endl;
         TSUNIT_ASSERT(&sock == &_react_client);
-        TSUNIT_EQUAL(2, _msg_count);
+        _reactor.freeExitReference();
+        handle_closed_count++;
     }
 
     //------------------------------------------------------------------------
@@ -143,6 +159,9 @@ namespace {
         TS_NOBUILD_NOCOPY(TestServerConnection);
     public:
         TestServerConnection(ts::Reactor& reactor, ts::tlv::Logger& logger, const ts::tlv::Protocol& protocol, std::ostream& debug);
+
+        static size_t handle_accepted_count;
+        static size_t handle_closed_count;
 
     private:
         ts::Reactor&              _reactor;
@@ -159,6 +178,9 @@ namespace {
         virtual void handleReceivedMessage(ts::ReactiveTLVConnection& sock, const ts::tlv::MessagePtr& msg, int error_code) override;
         virtual void handleTCPClosed(ts::ReactiveTCPConnection& sock, const ts::ObjectPtr& user_data) override;
     };
+
+    size_t TestServerConnection::handle_accepted_count = 0;
+    size_t TestServerConnection::handle_closed_count = 0;
 
     TestServerConnection::TestServerConnection(ts::Reactor& reactor, ts::tlv::Logger& logger, const ts::tlv::Protocol& protocol, std::ostream& debug) :
         _reactor(reactor),
@@ -183,7 +205,10 @@ namespace {
         _debug << "TLV server session: accepted, error code: " << error_code << std::endl;
         TSUNIT_ASSERT(&sock == &_react_client);
         TSUNIT_EQUAL(ts::SYS_SUCCESS, error_code);
-        TSUNIT_ASSERT(_tlv_client.startReceive(this));
+        handle_accepted_count++;
+        if (error_code == ts::SYS_SUCCESS) {
+            TSUNIT_ASSERT(_tlv_client.startReceive(this));
+        }
     }
 
     void TestServerConnection::handleReceivedMessage(ts::ReactiveTLVConnection& sock, const ts::tlv::MessagePtr& msg, int error_code)
@@ -236,6 +261,7 @@ namespace {
         _debug << "TLV server session: closed" << std::endl;
         TSUNIT_ASSERT(&sock == &_react_client);
         TSUNIT_EQUAL(2, _msg_count);
+        handle_closed_count++;
     }
 
     //------------------------------------------------------------------------
@@ -248,6 +274,9 @@ namespace {
         TS_NOBUILD_NOCOPY(TestFactory);
     public:
         TestFactory(ts::Reactor& reactor, ts::tlv::Logger& logger, const ts::tlv::Protocol& protocol, std::ostream& debug);
+
+        size_t client_count = 0;
+        size_t server_exited_count = 0;
 
     private:
         ts::Reactor&             _reactor;
@@ -271,12 +300,15 @@ namespace {
     ts::ReactiveServerSessionInterface* TestFactory::newClientSession()
     {
         _debug << "TestFactory: create client session" << std::endl;
+        client_count++;
         return new TestServerConnection(_reactor, _logger, _protocol, _debug);
     }
 
     void TestFactory::handleServerExited(ts::ReactiveServer& server, const ts::ObjectPtr& user_data)
     {
         _debug << "TestFactory: server exited" << std::endl;
+        server_exited_count++;
+        _reactor.freeExitReference();
     }
 }
 
@@ -300,13 +332,24 @@ TSUNIT_DEFINE_TEST(Server)
     TSUNIT_ASSERT(tcp_server.reusePort(true));
     TSUNIT_ASSERT(tcp_server.bind(ts::IPSocketAddress(ts::IPAddress::LocalHost4, PORT)));
     TSUNIT_ASSERT(tcp_server.listen(5));
+    TSUNIT_EQUAL(1, reactor.addExitReference()); // server
 
     server.setExitAfterClientCount(1);
-    server.setExitEventLoop(true);
     server.start(&factory, &factory);
 
     TestClient client(reactor, logger, protocol, debug(), PORT);
 
     TSUNIT_ASSERT(reactor.processEventLoop());
     TSUNIT_ASSERT(reactor.close());
+
+    TSUNIT_EQUAL(1, client.handle_connected_count);
+    TSUNIT_EQUAL(1, client.handle_closed_count);
+    TSUNIT_EQUAL(2, client.send_count);
+    TSUNIT_EQUAL(2, client.receive_count);
+
+    TSUNIT_EQUAL(1, factory.client_count);
+    TSUNIT_EQUAL(1, factory.server_exited_count);
+
+    TSUNIT_EQUAL(1, TestServerConnection::handle_accepted_count);
+    TSUNIT_EQUAL(1, TestServerConnection::handle_closed_count);
 }

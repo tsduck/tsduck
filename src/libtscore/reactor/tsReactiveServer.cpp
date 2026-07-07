@@ -131,8 +131,9 @@ bool ts::ReactiveServer::createNewSession()
     Socket* sock = &new_session->getConnection().socket();
     _sockets[sock] = new_session;
 
-    // Subscribe to events on that socket.
-    sock->addSubscription(this);
+    // Subscribe to events on the reactive socket. We subscribe to events on the reactive socket, not on the internal
+    // socket, to make sure that handleSocketCloseComplete() is called at the end of the asynchronous close.
+    new_session->getConnection().addSubscription(this);
 
     // Start accepting a new connection.
     _accepting = new_session;

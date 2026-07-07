@@ -440,7 +440,7 @@ void ts::ReactiveTLSConnection::processQueuedOperations()
                     req2->silent = req->silent;
                     _user_requests.push_front(req2);
                 }
-                else if (isOpen() && !ReactiveTCPConnection::startClose(this, req->silent)) {
+                else if (!ReactiveTCPConnection::startClose(this, req->silent)) {
                     callFrontHandlerAndRemove(SYS_ERROR);
                 }
                 else {

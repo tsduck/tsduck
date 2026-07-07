@@ -245,10 +245,37 @@ namespace ts {
 
         //!
         //! Exit processEventLoop() as soon as possible.
-        //! This method is typically invoked from a handler.
+        //! This method is typically invoked from a handler. If it is invoked before processEventLoop(), then processEventLoop()
+        //! exits immediately. The "exit request" condition is reset only when processEventLoop() returns.
         //! @param [in] success The value that processEventLoop() shall return.
         //!
         void exitEventLoop(bool success = true);
+
+        //!
+        //! Coordinate future exitEventLoop().
+        //! When several participants share the same reactor, we may want to exit the event loop when all participants are properly terminated.
+        //! In that case, it is difficult for a participant to decide how to call exitEventLoop(). To coordinate a proper exitEventLoop()
+        //! when all participants are terminated, each of them calls addExitReference() once on initialization, either inside the event loop
+        //! or even before entering the event loop. When a participant considers itself as terminated, it calls freeExitReference(). When
+        //! the number of references falls to zero, exitEventLoop() is automatically called.
+        //! @return The number of current references. This is informational only.
+        //! @see freeExitReference()
+        //! @see exitEventLoop()
+        //!
+        int addExitReference();
+
+        //!
+        //! Coordinated exitEventLoop().
+        //! This function shall be called once for each addExitReference(). It decrements the reference counter of participants.
+        //! @param [in] success The value that processEventLoop() shall return. Each participant sets its own value. If at least
+        //! one participant sets @a success to false, processEventLoop() will return false. If all participants set @a success to
+        //! true, processEventLoop() will return true.
+        //! @return The number of remaining references. This is informational only. If the returned value is zero or negative, the
+        //! application knows that exitEventLoop() has been called.
+        //! @see addExitReference()
+        //! @see exitEventLoop()
+        //!
+        int freeExitReference(bool success = true);
 
         //--------------------------------------------------------------------
         // TIMERS
@@ -470,6 +497,7 @@ namespace ts {
         bool      _is_open = false;
         bool      _exit_requested = false;   // Exit event loop when possible.
         bool      _exit_success = true;      // Exit status for event loop.
+        int       _exit_counter = 0;         // Reference counter for addExitReference() / freeExitReference().
         std::set<EventData*> _events {};     // Existing allocated events.
 
         static const bool    _active_trace;  // Check if trace() shall report messages.
