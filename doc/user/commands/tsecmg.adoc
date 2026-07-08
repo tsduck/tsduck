@@ -42,6 +42,16 @@ $ tsecmg [options]
 Network options
 
 [.opt]
+*--client-limit* _value_
+
+[.optdoc]
+This option limits the number of client sessions to the specified value.
+When the specified number of client sessions are terminated, the command terminates.
+
+[.optdoc]
+By default, `tsecmg` runs indefinitely and accepts an unlimited number of sessions.
+
+[.opt]
 *--no-reuse-port*
 
 [.optdoc]
@@ -54,6 +64,7 @@ Do not use unless completely necessary.
 
 [.optdoc]
 Accept only one client and exit at the end of the session.
+This is equivalent to `--client-limit 1`.
 
 [.opt]
 *-p* _[ip-address:]port_ +

@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.45-4726 (July 2026)
+VERSION 3.45-4727 (July 2026)
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -22,7 +22,7 @@ VERSION 3.45-4726 (July 2026)
     - Option --control-ephemeral-rsa-bits in command "tsp".
     - Option --remote-ephemeral-rsa-bits in command "tsswitch".
     - Option --snddropdelay in input and output plugins "srt".
-    - Option --super-cas-id in "tsecmg".
+    - Options --super-cas-id and --client-limit in "tsecmg".
   * Removed options in existing commands and plugins:
     - Options --log-message-count, --synchronous-log, --timed-log  in  "tsecmg"
       and "tstestecmg".

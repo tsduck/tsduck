@@ -42,7 +42,7 @@ namespace ts {
         DuckContext            duck {this};              // TSDuck execution context.
         ecmgscs::Protocol      ecmgscs {};               // ECMG <=> SCS protocol instance.
         tlv::Logger            logger {this};            // ECMG <=> SCS protocol message logger.
-        bool                   once = false;             // Accept only one client.
+        size_t                 client_limit = 0;         // Terminate after that number of client sessions.
         bool                   reuse_port = false;       // Socket option.
         int                    listen_backlog = 5;       // TCP server listen backlog (hard-coded)
         cn::milliseconds       ecm_comp_time {};         // ECM computation time.
@@ -70,6 +70,11 @@ ts::ECMGOptions::ECMGOptions(int argc, char *argv[]) :
     help(u"ac-delay-stop",
          u"This option sets the DVB SimulCrypt option 'AC_delay_stop', in "
          u"milliseconds. By default, use the same value as --delay-stop.");
+
+    option(u"client-limit", 0, POSITIVE);
+    help(u"client-limit",
+         u"This option limits the number of client sessions to the specified value. "
+         u"When the specified number of client sessions are terminated, the command terminates.");
 
     option<cn::milliseconds>(u"comp-time");
     help(u"comp-time",
@@ -125,7 +130,8 @@ ts::ECMGOptions::ECMGOptions(int argc, char *argv[]) :
 
     option(u"once", 'o');
     help(u"once",
-         u"Accept only one client and exit at the end of the session.");
+         u"Accept only one client and exit at the end of the session. "
+         u"This is equivalent to --client-limit 1.");
 
     option(u"port", 'p', IPSOCKADDR_OA);
     help(u"port",
@@ -165,7 +171,7 @@ ts::ECMGOptions::ECMGOptions(int argc, char *argv[]) :
     // TCP server parameters.
     getSocketValue(server_address, u"port", IPSocketAddress(IPAddress::AnyAddress6, DEFAULT_SERVER_PORT));
     reuse_port = !present(u"no-reuse-port");
-    once = present(u"once");
+    getIntValue(client_limit, u"client-limit", present(u"once") ? 1 : 0);
 
     // ECMG parameters.
     getIntValues(super_cas_ids, u"super-cas-id");
@@ -804,9 +810,9 @@ int MainCode(int argc, char *argv[])
     }
     opt.verbose(u"TCP server listening on %s, using ECMG <=> SCS protocol version %d", opt.server_address, opt.ecmgscs.version());
 
-    // Exit after one client session when specified.
-    if (opt.once) {
-        react_server.setExitAfterClientCount(1);
+    // Exit after a specific number of client sessions when specified.
+    if (opt.client_limit > 0) {
+        react_server.setExitAfterClientCount(opt.client_limit);
     }
 
     // Exit the reactor event loop when the server terminates.
