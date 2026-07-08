@@ -342,6 +342,62 @@ bool ts::Reactor::deleteEvent(EventId id, bool silent)
 
 
 //----------------------------------------------------------------------------
+// Signal a broadcast event in the reactor.
+//----------------------------------------------------------------------------
+
+bool ts::Reactor::signalBroadcastEvent(int error_code, const ObjectPtr& user_data)
+{
+    return _broadcast.signal(error_code, user_data);
+}
+
+// Broadcast handler destructor.
+ts::Reactor::BroadcastHandler::~BroadcastHandler()
+{
+    if (_broadcast_id.isValid()) {
+        _reactor.deleteEvent(_broadcast_id, true);
+        _broadcast_id.invalidate();
+    }
+}
+
+// Signal a broadcast event.
+bool ts::Reactor::BroadcastHandler::signal(int error_code, const ObjectPtr& user_data)
+{
+    // Create the user-event if not yet done.
+    if (!_broadcast_id.isValid() && !(_broadcast_id = _reactor.newEvent(this)).isValid()) {
+        return false;
+    }
+    // Enqueue another broadcast event.
+    _events.emplace_back(std::make_pair(error_code, user_data));
+    // Signal the user event.
+    return _reactor.signalEvent(_broadcast_id);
+}
+
+// User-event handler which calls all handlers for all broadcast events.
+void ts::Reactor::BroadcastHandler::handleUserEvent(Reactor& reactor, EventId id)
+{
+    // Repeat, in case a called handler adds a new broadcast event.
+    while (!_events.empty()) {
+        // Copy and clear the broadcast event queue because a called handler may update it.
+        decltype(_events) events;
+        _events.swap(events);
+
+        // Get a copy of all handlers to call.
+        std::set<ReactorHandlerInterface*> handlers;
+        _reactor._guts->getAllHandlers(handlers);
+
+        // Call all handlers for all events.
+        for (const auto& e : events) {
+            for (auto h : handlers) {
+                if (h != nullptr) {
+                    h->handleBroadcastEvent(_reactor, e.first, e.second);
+                }
+            }
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Asynchronous I/O notifications.
 //----------------------------------------------------------------------------
 

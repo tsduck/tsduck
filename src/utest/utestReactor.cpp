@@ -30,6 +30,7 @@
 class ReactorTest: public tsunit::Test
 {
     TSUNIT_DECLARE_TEST(Timer);
+    TSUNIT_DECLARE_TEST(Broadcast);
     TSUNIT_DECLARE_TEST(UDP);
     TSUNIT_DECLARE_TEST(Server);
     TSUNIT_DECLARE_TEST(Client);
@@ -172,6 +173,95 @@ TSUNIT_DEFINE_TEST(Timer)
     TSUNIT_ASSERT(reactor.isOpen());
     TSUNIT_ASSERT(reactor.close());
     TSUNIT_ASSERT(!reactor.isOpen());
+}
+
+
+//----------------------------------------------------------------------------
+// Unitary test : broadcast event.
+//----------------------------------------------------------------------------
+
+namespace {
+    class Foo : public ts::Object
+    {
+    public:
+        int value;
+        Foo() = delete;
+        Foo(int v) : value(v) {}
+        virtual ~Foo() override;
+    };
+
+    Foo::~Foo()
+    {
+    }
+
+    class HandlerBroadcast: public ts::ReactorHandlerInterface
+    {
+    private:
+        ts::Reactor&  _reactor;
+        std::ostream& _debug;
+        ts::EventId   _event_id {};
+
+    public:
+        HandlerBroadcast() = delete;
+        HandlerBroadcast(ts::Reactor& reactor, std::ostream& debug);
+
+        size_t event_count = 0;
+        size_t broadcast_count = 0;
+
+        virtual void handleUserEvent(ts::Reactor& reactor, ts::EventId id) override;
+        virtual void handleBroadcastEvent(ts::Reactor& reactor, int error_code, const ts::ObjectPtr& user_data) override;
+    };
+
+    HandlerBroadcast::HandlerBroadcast(ts::Reactor& reactor, std::ostream& debug) :
+        _reactor(reactor),
+        _debug(debug)
+    {
+        _debug << "HandlerBroadcast constructor" << std::endl;
+        _event_id = _reactor.newEvent(this);
+        TSUNIT_ASSERT(_event_id.isValid());
+        _reactor.addExitReference();
+    }
+
+    void HandlerBroadcast::handleUserEvent(ts::Reactor& reactor, ts::EventId id)
+    {
+        _debug << "HandlerBroadcast::handleUserEvent: should not be there" << std::endl;
+        event_count++;
+    }
+
+    void HandlerBroadcast::handleBroadcastEvent(ts::Reactor& reactor, int error_code, const ts::ObjectPtr& user_data)
+    {
+        auto foo = std::dynamic_pointer_cast<Foo>(user_data);
+        TSUNIT_ASSERT(foo != nullptr);
+        _debug << "HandlerBroadcast::handleBroadcastEvent: error_code = " << error_code << ", user data: " << foo->value << std::endl;
+        broadcast_count++;
+        TSUNIT_EQUAL(broadcast_count, error_code);
+        TSUNIT_EQUAL(broadcast_count, foo->value);
+        if (broadcast_count >= 2) {
+            _reactor.freeExitReference();
+        }
+    }
+}
+
+TSUNIT_DEFINE_TEST(Broadcast)
+{
+    ts::Reactor reactor(&CERR);
+    TSUNIT_ASSERT(reactor.open());
+
+    HandlerBroadcast test1(reactor, debug());
+    HandlerBroadcast test2(reactor, debug());
+    HandlerBroadcast test3(reactor, debug());
+
+    TSUNIT_ASSERT(reactor.signalBroadcastEvent(1, std::make_shared<Foo>(1)));
+    TSUNIT_ASSERT(reactor.signalBroadcastEvent(2, std::make_shared<Foo>(2)));
+    TSUNIT_ASSERT(reactor.processEventLoop());
+    TSUNIT_ASSERT(reactor.close());
+
+    TSUNIT_EQUAL(0, test1.event_count);
+    TSUNIT_EQUAL(2, test1.broadcast_count);
+    TSUNIT_EQUAL(0, test2.event_count);
+    TSUNIT_EQUAL(2, test2.broadcast_count);
+    TSUNIT_EQUAL(0, test3.event_count);
+    TSUNIT_EQUAL(2, test3.broadcast_count);
 }
 
 

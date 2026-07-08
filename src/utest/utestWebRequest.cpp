@@ -231,7 +231,7 @@ TSUNIT_DEFINE_TEST(Post)
     // These servers are known to return POST data into a JSON string.
     // 1. https://httpbin.org/post
     // 2. https://postman-echo.com/post
-    const ts::UString url(u"https://httpbin.org/post");
+    const ts::UString url(u"https://postman-echo.com/post");
     const ts::UString post(u"foo bar\nqsdf=tif,dft=ty ryhrh=12,af\nfoo bar");
 
     ts::WebRequest request(&report());
@@ -248,13 +248,16 @@ TSUNIT_DEFINE_TEST(Post)
             << "    Content size: " << request.contentSize() << std::endl
             << "    Content text: \"" << response << "\"" << std::endl;
 
-    ts::json::ValuePtr jv;
-    bool success = true;
-    TSUNIT_ASSUME(success = ts::json::Parse(jv, response, CERR));
-    if (success) {
-        TSUNIT_ASSERT(jv != nullptr);
-        TSUNIT_ASSERT(jv->isObject());
-        TSUNIT_ASSERT(jv->value(u"data").isString());
-        TSUNIT_EQUAL(post, jv->value(u"data").toString());
+    // Sometimes, these servers don't respond because they filter their load. So, ignore server errors.
+    if (!request.httpServerError()) {
+        ts::json::ValuePtr jv;
+        bool success = true;
+        TSUNIT_ASSUME(success = ts::json::Parse(jv, response, CERR));
+        if (success) {
+            TSUNIT_ASSERT(jv != nullptr);
+            TSUNIT_ASSERT(jv->isObject());
+            TSUNIT_ASSERT(jv->value(u"data").isString());
+            TSUNIT_EQUAL(post, jv->value(u"data").toString());
+        }
     }
 }

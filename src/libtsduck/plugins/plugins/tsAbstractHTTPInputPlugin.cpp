@@ -124,7 +124,7 @@ bool ts::AbstractHTTPInputPlugin::startTransfer()
 
     // Get content type and size from response headers.
     const UString mime(_request.mimeType());
-    const size_t size = _request.announdedContentSize();
+    const size_t size = _request.announcedContentSize();
 
     // Print a message.
     verbose(u"downloading from %s", _request.finalURL());

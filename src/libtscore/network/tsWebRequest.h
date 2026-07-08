@@ -280,15 +280,27 @@ namespace ts {
         //! - 5xx server error – the server failed to fulfil an apparently valid request
         //! @return True if the HTTP status code indicates success.
         //!
-        int httpSuccess() const { return _http_status < 400; }
+        bool httpSuccess() const { return _http_status < 400; }
+
+        //!
+        //! Check if the HTTP status code indicates a client error.
+        //! @return True if the HTTP status code indicates a client error.
+        //!
+        bool httpClientError() const { return _http_status >= 400 && _http_status < 500; }
+
+        //!
+        //! Check if the HTTP status code indicates a server error.
+        //! @return True if the HTTP status code indicates a server error.
+        //!
+        bool httpServerError() const { return _http_status >= 500 && _http_status < 600; }
 
         //!
         //! Get the announced content size in bytes.
         //! This is the value which was sent in the content headers.
-        //! This mat  be zero, this may not be the actual size of the content to download.
+        //! This may be zero, this may not be the actual size of the content to download.
         //! @return Announced content size in bytes.
         //!
-        size_t announdedContentSize() const { return _header_content_size; }
+        size_t announcedContentSize() const { return _header_content_size; }
 
         //!
         //! Get all response headers.

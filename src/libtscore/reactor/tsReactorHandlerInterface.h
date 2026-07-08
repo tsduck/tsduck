@@ -42,6 +42,15 @@ namespace ts {
         virtual void handleUserEvent(Reactor& reactor, EventId id);
 
         //!
+        //! Handle a broadcast event in a Reactor.
+        //! A broadcast event is sent to all currently registered events in the reactor.
+        //! @param [in,out] reactor Reactor into which the handler is invoked.
+        //! @param [in] error_code Application-specific error code which was passed to Reactor::signalBroadcastEvent().
+        //! @param [in] user_data The user-data shared pointer which was passed to Reactor::signalBroadcastEvent().
+        //!
+        virtual void handleBroadcastEvent(Reactor& reactor, int error_code, const ObjectPtr& user_data);
+
+        //!
         //! Handle a read-ready event in a Reactor.
         //! This handler is only invoked in the non-blocking I/O model.
         //! @param [in,out] reactor Reactor into which the handler is invoked.

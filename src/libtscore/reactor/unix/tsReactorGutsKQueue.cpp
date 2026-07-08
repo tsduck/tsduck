@@ -78,6 +78,7 @@ public:
     virtual bool open() override;
     virtual bool close(bool silent) override;
     virtual void processEventLoop() override;
+    virtual void getAllHandlers(std::set<ReactorHandlerInterface*>& handlers) override;
     virtual void* newTimer(ReactorHandlerInterface* handler, cn::milliseconds duration, bool repeat) override;
     virtual bool cancelTimer(EventId id, bool silent) override;
     virtual void* newEvent(ReactorHandlerInterface* handler) override;
@@ -166,6 +167,20 @@ void ts::Reactor::Guts::deleteEventData(EventData* evd)
         _file_descs_map.erase(FileDescIndex(evd->type, evd->fd));
     }
     _reactor.deleteEventData(evd, evd->type);
+}
+
+
+//----------------------------------------------------------------------------
+// Get all registered handlers.
+//----------------------------------------------------------------------------
+
+void ts::Reactor::Guts::getAllHandlers(std::set<ReactorHandlerInterface*>& handlers)
+{
+    for (const auto& ev : _reactor._events) {
+        if (ev != nullptr) {
+            handlers.insert(ev->handler);
+        }
+    }
 }
 
 

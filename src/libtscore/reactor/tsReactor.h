@@ -335,6 +335,25 @@ namespace ts {
         bool deleteEvent(EventId id, bool silent = false);
 
         //--------------------------------------------------------------------
+        // BROADCAST EVENTS
+        //--------------------------------------------------------------------
+
+        //!
+        //! Signal a broadcast event in the reactor.
+        //!
+        //! A broadcast event is sent to all currently registered handlers in the reactor. If the same handler is registered
+        //! for several events (e.g. two timers, one user event and one I/O), the handler is called only once per broadcast event.
+        //!
+        //! A broadcast event is typically used to wake all objects which are waiting for something and signal to them that the
+        //! application is terminating, for instance, and they should cleanup and close.
+        //!
+        //! @param [in] error_code Application-specific error code, passed to the handler.
+        //! @param [in] user_data Application-specific user-data shared pointer, passed to the handler.
+        //! @return True on success, false on error.
+        //!
+        bool signalBroadcastEvent(int error_code = SYS_SUCCESS, const ObjectPtr& user_data = nullptr);
+
+        //--------------------------------------------------------------------
         // ASYNCHRONOUS I/O EVENTS
         //--------------------------------------------------------------------
 
@@ -456,6 +475,7 @@ namespace ts {
             virtual bool open() = 0;
             virtual bool close(bool silent) = 0;
             virtual void processEventLoop() = 0;
+            virtual void getAllHandlers(std::set<ReactorHandlerInterface*>& handlers) = 0;
             virtual void* newTimer(ReactorHandlerInterface* handler, cn::milliseconds duration, bool repeat) = 0;
             virtual bool cancelTimer(EventId id, bool silent) = 0;
             virtual void* newEvent(ReactorHandlerInterface* handler) = 0;
@@ -492,16 +512,35 @@ namespace ts {
         EventData* allocateEventData();
         void deallocateEventData(EventData*);
 
+        // Broadcast event handler.
+        // There is only only instance of it, containing a queue of broadcast events.
+        class TSCOREDLL BroadcastHandler: public ReactorHandlerInterface
+        {
+        private:
+            Reactor& _reactor;          // Parent reactor.
+            EventId  _broadcast_id {};  // User event to trigger broadcast events.
+            std::list<std::pair<int, ObjectPtr>> _events {}; // Queue of broadcast events.
+        public:
+            // Constructor and destructor.
+            BroadcastHandler(Reactor& parent) : _reactor(parent) {}
+            virtual ~BroadcastHandler() override;
+            // Signal a broadcast event.
+            bool signal(int error_code, const ObjectPtr& user_data);
+            // User-event handler which calls all handlers.
+            virtual void handleUserEvent(Reactor& reactor, EventId id) override;
+        };
+
         // Reactor private members.
         GutsBase* _guts = nullptr;
         bool      _is_open = false;
-        bool      _exit_requested = false;   // Exit event loop when possible.
-        bool      _exit_success = true;      // Exit status for event loop.
-        int       _exit_counter = 0;         // Reference counter for addExitReference() / freeExitReference().
-        std::set<EventData*> _events {};     // Existing allocated events.
+        bool      _exit_requested = false;    // Exit event loop when possible.
+        bool      _exit_success = true;       // Exit status for event loop.
+        int       _exit_counter = 0;          // Reference counter for addExitReference() / freeExitReference().
+        std::set<EventData*> _events {};      // Existing allocated events.
+        BroadcastHandler _broadcast {*this};  // Handler for broadcast events.
 
-        static const bool    _active_trace;  // Check if trace() shall report messages.
-        static const UString _trace_prefix;  // Prefix of trace() messages.
+        static const bool    _active_trace;   // Check if trace() shall report messages.
+        static const UString _trace_prefix;   // Prefix of trace() messages.
 
         // Deletion of EventData: An EventData can be triggered (event, timer, I/O) and then canceled or deleted
         // by the application. However, the trigger remains in the kernel queue (epoll, kqueue, IOCP) and will be
