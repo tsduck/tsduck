@@ -30,16 +30,22 @@ ts::ReactiveBase::~ReactiveBase()
 // Signal the completed event, so that processQueuedOperations() is called.
 //----------------------------------------------------------------------------
 
+// Create, if necessary, the dedicated user event for signalQueuedOperations().
+bool ts::ReactiveBase::createSignalQueuedOperations()
+{
+    return _queued_ops_event_id.isValid() || (_queued_ops_event_id = _reactor.newEvent(this)).isValid();
+}
+
+// Trigger the execution of processQueuedOperations() from another thread.
+bool ts::ReactiveBase::uncheckedSignalQueuedOperations()
+{
+    return _reactor.signalEvent(_queued_ops_event_id);
+}
+
 // The completion event is created the first time it is used.
 bool ts::ReactiveBase::signalQueuedOperations()
 {
-    if (!_queued_ops_event_id.isValid()) {
-        _queued_ops_event_id = _reactor.newEvent(this);
-        if (!_queued_ops_event_id.isValid()) {
-            return false;
-        }
-    }
-    return _reactor.signalEvent(_queued_ops_event_id);
+    return createSignalQueuedOperations() && uncheckedSignalQueuedOperations();
 }
 
 // Deactivate and delete the user event for processQueuedOperations().

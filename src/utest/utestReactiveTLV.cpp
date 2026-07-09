@@ -21,12 +21,12 @@
 // The test fixture
 //----------------------------------------------------------------------------
 
-class ReactiveTLV: public tsunit::Test
+class ReactiveTLVTest: public tsunit::Test
 {
     TSUNIT_DECLARE_TEST(Server);
 };
 
-TSUNIT_REGISTER(ReactiveTLV);
+TSUNIT_REGISTER(ReactiveTLVTest);
 
 
 //----------------------------------------------------------------------------

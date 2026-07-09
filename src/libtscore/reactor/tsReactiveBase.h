@@ -57,6 +57,20 @@ namespace ts {
         void deactivateQueuedOperations(bool silent);
 
         //!
+        //! Create, if necessary, the dedicated user event for signalQueuedOperations().
+        //! Useless if signalQueuedOperations() is used. Only required with use of uncheckedSignalQueuedOperations().
+        //! @return True on success, false on error.
+        //!
+        bool createSignalQueuedOperations();
+
+        //!
+        //! Trigger the execution of processQueuedOperations() from another thread.
+        //! The event must have been previously created, either using createSignalQueuedOperations() or signalQueuedOperations().
+        //! @return True on success, false on error.
+        //!
+        bool uncheckedSignalQueuedOperations();
+
+        //!
         //! This virtual method processes operations in the context of a Reactor handler.
         //! This is dedicated to operations which must be serialized from an application perspective.
         //! These operations are typically queued when triggered from a method which is called by the application.

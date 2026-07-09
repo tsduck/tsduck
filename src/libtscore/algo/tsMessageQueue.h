@@ -66,6 +66,14 @@ namespace ts {
         void setMaxMessages(size_t maxMessages);
 
         //!
+        //! Get the current queue size.
+        //! @return The current number of messages in the queue. This is an instantaneous value. Because
+        //! messages can be inserted or removed at any time, the actual number of messages in the queue
+        //! may change immediately after this methods returns.
+        //!
+        size_t currentQueueSize();
+
+        //!
         //! Insert a message in the queue.
         //! If the queue is full, the calling thread waits until some space becomes available in the queue.
         //! @param [in,out] msg The message to enqueue. The ownership of the pointed object
@@ -238,6 +246,13 @@ void ts::MessageQueue<MSG>::setMaxMessages(size_t max)
 {
     std::lock_guard<std::mutex> lock(_mutex);
     _maxMessages = max;
+}
+
+template <typename MSG>
+size_t ts::MessageQueue<MSG>::currentQueueSize()
+{
+    std::lock_guard<std::mutex> lock(_mutex);
+    return _queue.size();
 }
 
 

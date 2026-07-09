@@ -13,12 +13,12 @@
 // Default operating system priorities
 //----------------------------------------------------------------------------
 
-volatile bool ts::ThreadAttributes::_priorityInitialized = false;
-int ts::ThreadAttributes::_minimumPriority = 0;
-int ts::ThreadAttributes::_lowPriority = 0;
-int ts::ThreadAttributes::_normalPriority = 0;
-int ts::ThreadAttributes::_highPriority = 0;
-int ts::ThreadAttributes::_maximumPriority = 0;
+volatile bool ts::ThreadAttributes::_priority_initialized = false;
+int ts::ThreadAttributes::_minimum_priority = 0;
+int ts::ThreadAttributes::_low_priority = 0;
+int ts::ThreadAttributes::_normal_priority = 0;
+int ts::ThreadAttributes::_high_priority = 0;
+int ts::ThreadAttributes::_maximum_priority = 0;
 
 
 //----------------------------------------------------------------------------
@@ -30,11 +30,11 @@ void ts::ThreadAttributes::InitializePriorities()
 #if defined(TS_WINDOWS)
 
     // Windows priority mapping: see Win32Priority() below
-    _minimumPriority = 0;  // THREAD_PRIORITY_IDLE
-    _lowPriority = 2;      // THREAD_PRIORITY_BELOW_NORMAL
-    _normalPriority = 3;   // THREAD_PRIORITY_NORMAL
-    _highPriority = 4;     // THREAD_PRIORITY_ABOVE_NORMAL;
-    _maximumPriority = 6;  // THREAD_PRIORITY_TIME_CRITICAL
+    _minimum_priority = 0;  // THREAD_PRIORITY_IDLE
+    _low_priority = 2;      // THREAD_PRIORITY_BELOW_NORMAL
+    _normal_priority = 3;   // THREAD_PRIORITY_NORMAL
+    _high_priority = 4;     // THREAD_PRIORITY_ABOVE_NORMAL;
+    _maximum_priority = 6;  // THREAD_PRIORITY_TIME_CRITICAL
 
 #else
 
@@ -47,15 +47,15 @@ void ts::ThreadAttributes::InitializePriorities()
         const int prioMin = ::sched_get_priority_min(schedPolicy);
         const int prioMax = ::sched_get_priority_max(schedPolicy);
         // On error, keep default values
-        _minimumPriority = prioMin >= 0 ? prioMin : 0;
-        _maximumPriority = prioMax >= 0 ? std::max(_minimumPriority, prioMax) : _minimumPriority;
-        _normalPriority = (_minimumPriority + _maximumPriority) / 2;
-        _lowPriority = (_minimumPriority + _normalPriority) / 2;
-        _highPriority = (_normalPriority + _maximumPriority) / 2;
+        _minimum_priority = prioMin >= 0 ? prioMin : 0;
+        _maximum_priority = prioMax >= 0 ? std::max(_minimum_priority, prioMax) : _minimum_priority;
+        _normal_priority = (_minimum_priority + _maximum_priority) / 2;
+        _low_priority = (_minimum_priority + _normal_priority) / 2;
+        _high_priority = (_normal_priority + _maximum_priority) / 2;
     }
 
 #endif
-    _priorityInitialized = true;
+    _priority_initialized = true;
 }
 
 
@@ -65,7 +65,7 @@ void ts::ThreadAttributes::InitializePriorities()
 
 int ts::ThreadAttributes::GetPriority(const int& staticPriority)
 {
-    if (!_priorityInitialized) {
+    if (!_priority_initialized) {
         InitializePriorities();
     }
     return staticPriority;
@@ -131,10 +131,10 @@ int ts::ThreadAttributes::Win32Priority(int priority)
 
 ts::ThreadAttributes::ThreadAttributes()
 {
-    if (!_priorityInitialized) {
+    if (!_priority_initialized) {
         InitializePriorities();
     }
-    _priority = _normalPriority;
+    _priority = _normal_priority;
 }
 
 
@@ -146,6 +146,6 @@ ts::ThreadAttributes& ts::ThreadAttributes::setPriority(int priority)
 {
     // Force within allowed range. Note that the static values where already
     // initialized, no later than the constructor.
-    _priority = std::max(_minimumPriority, std::min(_maximumPriority, priority));
+    _priority = std::max(_minimum_priority, std::min(_maximum_priority, priority));
     return *this;
 }

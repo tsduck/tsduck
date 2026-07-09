@@ -183,7 +183,7 @@ bool ts::Thread::start()
 
     // Windows implementation.
     // Create the thread in suspended state.
-    _handle = ::CreateThread(nullptr, _attributes._stackSize, Thread::ThreadProc, this, CREATE_SUSPENDED, &_thread_id);
+    _handle = ::CreateThread(nullptr, _attributes._stack_size, Thread::ThreadProc, this, CREATE_SUSPENDED, &_thread_id);
     if (_handle == nullptr) {
         return false;
     }
@@ -212,9 +212,9 @@ bool ts::Thread::start()
     }
 
     // Set required stack size.
-    if (_attributes._stackSize > 0) {
+    if (_attributes._stack_size > 0) {
         // Round to a multiple of the page size. This is required on macOS.
-        const size_t size = round_up(std::max<size_t>(PTHREAD_STACK_MIN, _attributes._stackSize), SysInfo::Instance().memoryPageSize());
+        const size_t size = round_up(std::max<size_t>(PTHREAD_STACK_MIN, _attributes._stack_size), SysInfo::Instance().memoryPageSize());
         if (::pthread_attr_setstacksize(&attr, size) != 0) {
             ::pthread_attr_destroy(&attr);
             return false;
@@ -280,7 +280,7 @@ bool ts::Thread::waitForTermination()
 
         // If "delete when terminated" is true, we cannot wait.
         // The thread will cleanup itself.
-        if (_attributes._deleteWhenTerminated) {
+        if (_attributes._delete_when_terminated) {
             return false;
         }
 
@@ -390,7 +390,7 @@ void ts::Thread::mainWrapper()
     thread->mainWrapper();
 
     // Perform auto-deallocation
-    if (thread->_attributes._deleteWhenTerminated) {
+    if (thread->_attributes._delete_when_terminated) {
         ::CloseHandle(thread->_handle);
         thread->_started = false;
         delete thread;
@@ -416,7 +416,7 @@ void* ts::Thread::ThreadProc(void* parameter)
     thread->mainWrapper();
 
     // Perform auto-deallocation
-    if (thread->_attributes._deleteWhenTerminated) {
+    if (thread->_attributes._delete_when_terminated) {
         ::pthread_detach(thread->_pthread);
         thread->_started = false;
         delete thread;

@@ -57,7 +57,7 @@ An event loop shall include the following features:
   callback is then responsible for removing messages from the queue, until it
   becomes empty.
 
-- Asynchronous I/O, depending on feasability on each OS or library. Specify one
+- Asynchronous I/O, depending on feasibility on each OS or library. Specify one
   callback when starting the I/O operation.
   - Raw UDP and TCP.
   - Asynchronous TLS.

@@ -62,7 +62,7 @@ namespace ts {
         //!
         ThreadAttributes& setStackSize(size_t size)
         {
-            _stackSize = size;
+            _stack_size = size;
             return *this;
         }
 
@@ -75,7 +75,7 @@ namespace ts {
         //!
         size_t getStackSize() const
         {
-            return _stackSize;
+            return _stack_size;
         }
 
         //!
@@ -105,7 +105,7 @@ namespace ts {
         //!
         ThreadAttributes& setDeleteWhenTerminated(bool dwt)
         {
-            _deleteWhenTerminated = dwt;
+            _delete_when_terminated = dwt;
             return *this;
         }
 
@@ -117,7 +117,7 @@ namespace ts {
         //!
         bool getDeleteWhenTerminated() const
         {
-            return _deleteWhenTerminated;
+            return _delete_when_terminated;
         }
 
         //!
@@ -133,7 +133,7 @@ namespace ts {
         //!
         ThreadAttributes& setExitOnException(bool eoe)
         {
-            _exitOnException = eoe;
+            _exit_on_exception = eoe;
             return *this;
         }
 
@@ -145,7 +145,7 @@ namespace ts {
         //!
         bool getExitOnException() const
         {
-            return _exitOnException;
+            return _exit_on_exception;
         }
 
         //!
@@ -222,7 +222,7 @@ namespace ts {
         //!
         static inline int GetMinimumPriority()
         {
-            return GetPriority(_minimumPriority);
+            return GetPriority(_minimum_priority);
         }
 
         //!
@@ -233,7 +233,7 @@ namespace ts {
         //!
         static inline int GetLowPriority()
         {
-            return GetPriority(_lowPriority);
+            return GetPriority(_low_priority);
         }
 
         //!
@@ -244,7 +244,7 @@ namespace ts {
         //!
         static inline int GetNormalPriority()
         {
-            return GetPriority(_normalPriority);
+            return GetPriority(_normal_priority);
         }
 
         //!
@@ -255,7 +255,7 @@ namespace ts {
         //!
         static inline int GetHighPriority()
         {
-            return GetPriority(_highPriority);
+            return GetPriority(_high_priority);
         }
 
         //!
@@ -265,13 +265,13 @@ namespace ts {
         //!
         static inline int GetMaximumPriority()
         {
-            return GetPriority(_maximumPriority);
+            return GetPriority(_maximum_priority);
         }
 
     private:
-        size_t  _stackSize = 0;
-        bool    _deleteWhenTerminated = false;
-        bool    _exitOnException = false;
+        size_t  _stack_size = 0;
+        bool    _delete_when_terminated = false;
+        bool    _exit_on_exception = false;
         int     _priority = 0;
         UString _name {};
 
@@ -284,12 +284,12 @@ namespace ts {
         // - Consequently, when these data are accessed in a thread other than the
         //   main thread, the flag _PriorityInitialized is already true.
         //
-        static volatile bool _priorityInitialized;
-        static int _minimumPriority;
-        static int _lowPriority;
-        static int _normalPriority;
-        static int _highPriority;
-        static int _maximumPriority;
+        static volatile bool _priority_initialized;
+        static int _minimum_priority;
+        static int _low_priority;
+        static int _normal_priority;
+        static int _high_priority;
+        static int _maximum_priority;
 
         //!
         //! Initializes the operating system priority range.
