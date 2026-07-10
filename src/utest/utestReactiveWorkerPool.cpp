@@ -50,8 +50,8 @@ namespace {
         virtual void handleWorkerCompletion(ts::ReactiveWorkerPool& pool, int error_code, const ts::ObjectPtr& user_data) override;
 
         std::mutex mutex {};
-        std::set<int> work_values;
-        std::set<int> completion_values;
+        std::set<int> work_values {};
+        std::set<int> completion_values {};
 
     private:
         ts::ReactiveWorkerPool& _wpool;

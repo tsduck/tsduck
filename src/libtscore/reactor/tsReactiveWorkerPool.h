@@ -128,6 +128,7 @@ namespace ts {
         // Description of one work to be done.
         class TSCOREDLL Work
         {
+            TS_DEFAULT_COPY_MOVE(Work);
         public:
             Work() = default;
             ReactiveWorkerInterface*        work = nullptr;
