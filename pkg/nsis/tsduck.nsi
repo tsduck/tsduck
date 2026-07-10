@@ -157,7 +157,7 @@ Section "Tools & Plugins" SectionTools
     ; Create folder for binaries
     CreateDirectory "$INSTDIR\bin"
     SetOutPath "$INSTDIR\bin"
-    File /x *_static.exe /x tsprofiling.exe /x tsmux.exe /x tsnet.exe /x tszlib.exe "${BinDir}\ts*.exe"
+    File /x *_static.exe "${BinDir}\ts*.exe"
     File "${BinDir}\ts*.dll"
     File "${BinDir}\ts*.xml"
     File "${BinDir}\ts*.names"

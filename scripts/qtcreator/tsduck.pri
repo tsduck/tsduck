@@ -127,8 +127,6 @@ tsplugin {
     SOURCES += $$SRCROOT/tsplugins/$${TARGET}.cpp
     QMAKE_POST_LINK += mkdir -p ../tsp $$escape_expand(\\n\\t)
     QMAKE_POST_LINK += cp $${TARGET}$$SO ../tsp $$escape_expand(\\n\\t)
-    QMAKE_POST_LINK += mkdir -p ../tsprofiling $$escape_expand(\\n\\t)
-    QMAKE_POST_LINK += cp $${TARGET}$$SO ../tsprofiling $$escape_expand(\\n\\t)
 }
 libtscore {
     # Applications using libtscore shall use "CONFIG += libtscore".
