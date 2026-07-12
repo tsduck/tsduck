@@ -22,6 +22,8 @@ first: default
 EMPTY =
 SPACE = $(EMPTY) $(EMPTY)
 COMMA = ,
+QUOTE = '
+# ' (only to restore emacs quote synchronization after previous line)
 define NL
 
 
@@ -47,18 +49,26 @@ SHELL = /usr/bin/env bash --noprofile --norc $(if $(SHELL_VERBOSE),-x)
 
 _SHELL_LINES = $(subst -=EOL=-,$(NL),$(shell ($(1)) | sed 's/$$/-=EOL=-/'))
 
-# Build most make variables from a script. This used to be done here in the makefile but
-# it became too complicated and was moved to a script. All input variables are passed on
-# the command line. In the generated output, all variables are exported and transmitted
-# to sub-makes. To avoid "argument too long" on the input command line, we remove known
-# long variables which are either useless or rebuilt from scratch in the script.
-# Note about _ROOTDIR: The directory which contains the currently included Makefile is
-# the project root.
+# Warning: black magic ahead, think twice before modifying...
+
+# Build most make variables from a script. This used to be done here in the makefile but it became
+# too complicated and was moved to a script. All input variables are passed on the command line.
+# In the generated output, all variables are exported and transmitted to sub-makes.
+# Notes:
+# - _ROOTDIR: The directory which contains the currently included Makefile is the project root.
+# - _VARIABLES: List of variables to pass to the script command line.
+# - To avoid "argument too long" on the input command line, we remove known long variables which
+#   are either useless or rebuilt from scratch in the script. The excluded variables name patterns
+#   are in _EXCLUDES.
+# - To avoid syntactic errors in the called scripts, all variables which contain a quote are also
+#   excluded (the "foreach" expression in definition of _VARIABLES).
 
 _ROOTDIR := $(abspath $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST)))))
 _EXCLUDES = ^% @% *% \%% <% >% +% -% _% ?% .% PS1 PS2 PROMPT_% DBUS_% HIST% ALL_% ANDROID_% PREPROCESS.% COMPILE.% LINK.% LINT.% CPPFLAGS CXXFLAGS %_INCLUDES GITHUB_%
-_VARIABLES = $(filter-out $(_EXCLUDES),$(.VARIABLES)) ALL_INCLUDES
+_VARIABLES = $(foreach v,$(filter-out $(_EXCLUDES),$(.VARIABLES)),$(if $(findstring $(QUOTE),$($(v))),,$(v))) ALL_INCLUDES
 $(eval $(call _SHELL_LINES,$(_ROOTDIR)/scripts/make-config.sh $(foreach v,$(_VARIABLES),$(v)='$($(v))')))
+
+# End of black magic, you can breathe....
 
 # Compilation rules
 
