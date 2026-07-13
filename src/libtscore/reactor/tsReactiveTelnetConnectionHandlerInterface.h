@@ -21,6 +21,7 @@ namespace ts {
     //!
     //! Interface class for Telnet connection Reactor handlers.
     //! An application shall use ReactiveTCPConnectionHandlerInterface for the non-Telnet parts of the connection.
+    //! @ingroup libtscore reactor
     //!
     class TSCOREDLL ReactiveTelnetConnectionHandlerInterface
     {

@@ -47,7 +47,7 @@ void ts::TCPConnection::declareConnected()
         _is_connected = true;
 
         // Notify all subscribers that the socket is connected.
-        callSubscribers([this](SocketHandlerInterface* subs) {
+        callSubscribers<SocketHandlerInterface>([this](SocketHandlerInterface* subs) {
             subs->handleSocketConnected(*this);
         });
     }
@@ -68,7 +68,7 @@ void ts::TCPConnection::declareDisconnected(bool silent)
         _is_connected = false;
 
         // Notify all subscribers that the socket is disconnected.
-        callSubscribers([this, silent](SocketHandlerInterface* subs) {
+        callSubscribers<SocketHandlerInterface>([this, silent](SocketHandlerInterface* subs) {
             subs->handleSocketDisconnected(*this, silent);
         });
     }

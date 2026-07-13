@@ -19,6 +19,7 @@
 namespace ts {
     //!
     //! Generic TCP server in a Reactor environment.
+    //! @ingroup libtscore reactor
     //!
     //! This class works on an application-provided ReactiveTCPServer, meaning that any specialized subclass
     //! such as ReactiveTLSServer can be used. The (subclass of) ReactiveTCPServer object and its associated

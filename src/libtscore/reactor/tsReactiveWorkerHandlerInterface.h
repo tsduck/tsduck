@@ -21,6 +21,7 @@ namespace ts {
     //!
     //! Interface class for reactive worker handlers.
     //! This interface shall be implemented by classes which delegate lengthy tasks to worker threads.
+    //! @ingroup libtscore reactor
     //!
     class TSCOREDLL ReactiveWorkerHandlerInterface
     {

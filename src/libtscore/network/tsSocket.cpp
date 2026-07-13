@@ -120,7 +120,7 @@ void ts::Socket::declareOpened(SysSocketType sock)
     }
 
     // Notify all subscribers that the socket is about to open.
-    callSubscribers([this](SocketHandlerInterface* subs) {
+    callSubscribers<SocketHandlerInterface>([this](SocketHandlerInterface* subs) {
         subs->handleSocketOpenStart(*this);
     });
 
@@ -128,7 +128,7 @@ void ts::Socket::declareOpened(SysSocketType sock)
     _sock = sock;
 
     // Notify all subscribers of the open success.
-    callSubscribers([this](SocketHandlerInterface* subs) {
+    callSubscribers<SocketHandlerInterface>([this](SocketHandlerInterface* subs) {
         subs->handleSocketOpenComplete(*this, true);
     });
 }
@@ -147,7 +147,7 @@ bool ts::Socket::open(IP gen)
     }
 
     // Notify all subscribers that the socket is about to open.
-    callSubscribers([this](SocketHandlerInterface* subs) {
+    callSubscribers<SocketHandlerInterface>([this](SocketHandlerInterface* subs) {
         subs->handleSocketOpenStart(*this);
     });
 
@@ -155,11 +155,12 @@ bool ts::Socket::open(IP gen)
     const bool success = openImplementation(gen);
 
     // Notify all subscribers of the open status.
-    callSubscribers([this, success](SocketHandlerInterface* subs) {
+    callSubscribers<SocketHandlerInterface>([this, success](SocketHandlerInterface* subs) {
         subs->handleSocketOpenComplete(*this, success);
     });
     return success;
 }
+
 
 //----------------------------------------------------------------------------
 // Close the socket.
@@ -174,7 +175,7 @@ bool ts::Socket::close(bool silent)
     }
 
     // Notify all subscribers that the socket is about to open.
-    callSubscribers([this, silent](SocketHandlerInterface* subs) {
+    callSubscribers<SocketHandlerInterface>([this, silent](SocketHandlerInterface* subs) {
         subs->handleSocketCloseStart(*this, silent);
     });
 
@@ -182,7 +183,7 @@ bool ts::Socket::close(bool silent)
     const bool success = closeImplementation(silent);
 
     // Notify all subscribers of the close status.
-    callSubscribers([this, silent, success](SocketHandlerInterface* subs) {
+    callSubscribers<SocketHandlerInterface>([this, silent, success](SocketHandlerInterface* subs) {
         subs->handleSocketCloseComplete(*this, silent, success);
     });
     return success;

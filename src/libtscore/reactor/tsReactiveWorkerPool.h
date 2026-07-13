@@ -21,6 +21,7 @@
 namespace ts {
     //!
     //! Pool of worker threads in a Reactor environment.
+    //! @ingroup libtscore reactor
     //!
     //! A Reactor event loop is a mono-thread synchronous environment. Each callback shall run without blocking I/O
     //! and without lengthy operations. When an application needs to run lengthy tasks in reactor callbacks, it must
@@ -47,7 +48,7 @@ namespace ts {
 
         //!
         //! Default maximum number of worker threads in the pool for newly created ReactiveWorkerPool instances.
-        //! 
+        //!
         static constexpr size_t DEFAULT_MAX_THREADS = 8;
 
         //!

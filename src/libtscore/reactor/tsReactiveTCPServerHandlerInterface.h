@@ -23,6 +23,7 @@ namespace ts {
     //!
     //! Interface class for TCP server Reactor handlers.
     //! All methods are empty by default. An application may implement the required ones only.
+    //! @ingroup libtscore reactor
     //!
     class TSCOREDLL ReactiveTCPServerHandlerInterface
     {

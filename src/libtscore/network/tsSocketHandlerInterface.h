@@ -12,7 +12,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsPlatform.h"
+#include "tsSubscriptionHandlerInterface.h"
 
 namespace ts {
 
@@ -23,10 +23,11 @@ namespace ts {
     //!
     //! Interface class for notification of open/close on sockets.
     //! All methods are empty by default. An application may implement the required ones only.
+    //! @ingroup libtscore net
     //!
-    class TSCOREDLL SocketHandlerInterface
+    class TSCOREDLL SocketHandlerInterface: public SubscriptionHandlerInterface
     {
-        TS_INTERFACE(SocketHandlerInterface);
+        TS_SUBINTERFACE(SocketHandlerInterface);
     public:
         //!
         //! Called when a socket is about to be opened.
@@ -72,14 +73,5 @@ namespace ts {
         //! The socket shall be considered as closed on all cases, regardless of @a success.
         //!
         virtual void handleSocketCloseComplete(Socket& sock, bool silent, bool success);
-
-    private:
-        // The class Socket is allowed to call register/deregister.
-        friend class SocketSubscriptionBase;
-        void registerSocket(SocketSubscriptionBase*);
-        void deregisterSocket(SocketSubscriptionBase*);
-
-        bool _destructing = false;                   // True during destructor.
-        std::set<SocketSubscriptionBase*> _registered_sockets {};    // List of sockets for which we are registered.
     };
 }

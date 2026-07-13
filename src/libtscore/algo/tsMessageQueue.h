@@ -12,23 +12,32 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsPlatform.h"
+#include "tsSubscriptionBase.h"
+#include "tsMessageQueueHandlerInterface.h"
 
 namespace ts {
     //!
     //! Template message queue for inter-thread communication.
     //! @ingroup libtscore thread
     //!
-    //! The ts::MessageQueue template class implements a synchronized
-    //! access to a shared queue of generic messages.
+    //! This class implements a synchronized access to a shared queue of generic messages.
+    //! Messages are manipulated using shared pointers (std::shared_ptr).
+    //!
+    //! Subscription to enqueue and dequese is possible using MessageQueueHandlerInterface.
+    //! @see SubscriptionBase
     //!
     //! @tparam MSG The type of the messages to exchange.
     //!
     template <typename MSG>
-    class MessageQueue
+    class MessageQueue: public SubscriptionBase
     {
         TS_NOCOPY(MessageQueue);
     public:
+        //!
+        //! Common renaming of the message type.
+        //!
+        using MessageType = MSG;
+
         //!
         //! Safe pointer to messages.
         //!
@@ -40,15 +49,15 @@ namespace ts {
 
         //!
         //! Constructor.
-        //! @param [in] maxMessages Maximum number of messages in the queue.
+        //! @param [in] max_messages Maximum number of messages in the queue.
         //! @see setMaxMessages()
         //!
-        MessageQueue(size_t maxMessages = 0);
+        MessageQueue(size_t max_messages = 0);
 
         //!
         //! Destructor
         //!
-        virtual ~MessageQueue();
+        virtual ~MessageQueue() override;
 
         //!
         //! Get the maximum allowed messages in the queue.
@@ -58,12 +67,12 @@ namespace ts {
 
         //!
         //! Change the maximum allowed messages in the queue.
-        //! @param [in] maxMessages Maximum number of messages in the queue. When a thread attempts to
+        //! @param [in] max_messages Maximum number of messages in the queue. When a thread attempts to
         //! enqueue a message and the queue is full, the thread waits until at least one message is dequeued.
-        //! If @a maxMessages is 0, the queue is unlimited. In that case, the logic of the application must
+        //! If @a max_messages is 0, the queue is unlimited. In that case, the logic of the application must
         //! ensure that the queue is bounded somehow, otherwise the queue may exhaust all the process memory.
         //!
-        void setMaxMessages(size_t maxMessages);
+        void setMaxMessages(size_t max_messages);
 
         //!
         //! Get the current queue size.
@@ -108,7 +117,7 @@ namespace ts {
         //! @param [in] msg A pointer to the message to enqueue. This pointer shall not
         //! be owned by a safe pointer. When the message is successfully enqueued, the
         //! pointer becomes owned by a safe pointer and will be deallocated when no
-        //! longer used. In case of timeout, the object is not equeued and immediately
+        //! longer used. In case of timeout, the object is not enqueued and immediately
         //! deallocated.
         //! @param [in] timeout Maximum time to wait in milliseconds.
         //! @return True on success, false on error (queue still full after timeout).
@@ -191,13 +200,11 @@ namespace ts {
         virtual typename MessageList::iterator dequeuePlacement(MessageList& list);
 
     private:
-        // The _mutex is used to syn
-        // Private members.
-        mutable std::mutex              _mutex {};         // Protect access to all private members (must be std::mutext, not MutexType)
-        mutable std::condition_variable _enqueued {};      // Signaled when some message is inserted
-        mutable std::condition_variable _dequeued {};      // Signaled when some message is removed
-        size_t                          _maxMessages = 0;  // Max number of messages in the queue
-        MessageList                     _queue {};         // Actual message queue
+        mutable std::mutex              _mutex {};          // Protect access to all private members (must be std::mutext, not MutexType)
+        mutable std::condition_variable _enqueued {};       // Signaled when some message is inserted
+        mutable std::condition_variable _dequeued {};       // Signaled when some message is removed
+        size_t                          _max_messages = 0;  // Max number of messages in the queue
+        MessageList                     _queue {};          // Actual message queue
 
         // Enqueue/dequeue a safe pointer in the list and signal the corresponding condition.
         // Dequeue returns false if the list is empty. Must be executed under the protection of the lock.
@@ -217,7 +224,7 @@ namespace ts {
 
 template <typename MSG>
 ts::MessageQueue<MSG>::MessageQueue(size_t maxMessages) :
-    _maxMessages(maxMessages)
+    _max_messages(maxMessages)
 {
 }
 
@@ -238,14 +245,14 @@ template <typename MSG>
 size_t ts::MessageQueue<MSG>::getMaxMessages() const
 {
     std::lock_guard<std::mutex> lock(_mutex);
-    return _maxMessages;
+    return _max_messages;
 }
 
 template <typename MSG>
 void ts::MessageQueue<MSG>::setMaxMessages(size_t max)
 {
     std::lock_guard<std::mutex> lock(_mutex);
-    _maxMessages = max;
+    _max_messages = max;
 }
 
 template <typename MSG>
@@ -316,15 +323,15 @@ bool ts::MessageQueue<MSG>::dequeuePtr(MessagePtr& ptr)
 template <typename MSG>
 void ts::MessageQueue<MSG>::waitFreeSpace(std::unique_lock<std::mutex>& lock)
 {
-    if (_maxMessages != 0) {
-        _dequeued.wait(lock, [this]() { return _queue.size() < _maxMessages; });
+    if (_max_messages != 0) {
+        _dequeued.wait(lock, [this]() { return _queue.size() < _max_messages; });
     }
 }
 
 template <typename MSG>
 bool ts::MessageQueue<MSG>::waitFreeSpace(std::unique_lock<std::mutex>& lock, cn::milliseconds timeout)
 {
-    return _maxMessages == 0 || _dequeued.wait_for(lock, timeout, [this]() { return _queue.size() < _maxMessages; });
+    return _max_messages == 0 || _dequeued.wait_for(lock, timeout, [this]() { return _queue.size() < _max_messages; });
 }
 
 
@@ -335,48 +342,87 @@ bool ts::MessageQueue<MSG>::waitFreeSpace(std::unique_lock<std::mutex>& lock, cn
 template <typename MSG>
 void ts::MessageQueue<MSG>::enqueue(MessagePtr& msg)
 {
-    std::unique_lock<std::mutex> lock(_mutex);
-    waitFreeSpace(lock);
-    enqueuePtr(msg);
+    size_t size = 0;
+    {
+        std::unique_lock<std::mutex> lock(_mutex);
+        waitFreeSpace(lock);
+        enqueuePtr(msg);
+        size = _queue.size();
+    }
     msg.reset();
+
+    // Notify all subscribers.
+    callSubscribers<MessageQueueHandlerInterface>([size](MessageQueueHandlerInterface* subs) {
+        subs->handleMessageEnqueued(size);
+    });
 }
 
 template <typename MSG>
 bool ts::MessageQueue<MSG>::enqueue(MessagePtr& msg, cn::milliseconds timeout)
 {
-    std::unique_lock<std::mutex> lock(_mutex);
-    if (waitFreeSpace(lock, timeout)) {
-        enqueuePtr(msg);
-        msg.reset();
-        return true;
+    size_t size = 0;
+    {
+        std::unique_lock<std::mutex> lock(_mutex);
+        if (waitFreeSpace(lock, timeout)) {
+            enqueuePtr(msg);
+            size = _queue.size();
+        }
+        else {
+            // Timeout, queue still full.
+            return false;
+        }
     }
-    else {
-        // Timeout, queue still full.
-        return false;
-    }
+    msg.reset();
+
+    // Notify all subscribers.
+    callSubscribers<MessageQueueHandlerInterface>([size](MessageQueueHandlerInterface* subs) {
+        subs->handleMessageEnqueued(size);
+    });
+    return true;
 }
 
 template <typename MSG>
 void ts::MessageQueue<MSG>::enqueue(MSG* msg)
 {
-    std::unique_lock<std::mutex> lock(_mutex);
-    waitFreeSpace(lock);
-    enqueuePtr(MessagePtr(msg));
+    size_t size = 0;
+    {
+        std::unique_lock<std::mutex> lock(_mutex);
+        waitFreeSpace(lock);
+        enqueuePtr(MessagePtr(msg));
+        size = _queue.size();
+    }
+
+    // Notify all subscribers.
+    callSubscribers<MessageQueueHandlerInterface>([size](MessageQueueHandlerInterface* subs) {
+        subs->handleMessageEnqueued(size);
+    });
 }
 
 template <typename MSG>
 bool ts::MessageQueue<MSG>::enqueue(MSG* msg, cn::milliseconds timeout)
 {
-    std::unique_lock<std::mutex> lock(_mutex);
-    if (waitFreeSpace(lock, timeout)) {
-        enqueuePtr(MessagePtr(msg));
-        return true;
+    bool enqueued = false; // Timeout, queue still full.
+    size_t size = 0;
+    {
+        std::unique_lock<std::mutex> lock(_mutex);
+        if (waitFreeSpace(lock, timeout)) {
+            enqueuePtr(MessagePtr(msg));
+            size = _queue.size();
+            enqueued = true;
+        }
+    }
+
+    if (enqueued) {
+        // Notify all subscribers.
+        callSubscribers<MessageQueueHandlerInterface>([size](MessageQueueHandlerInterface* subs) {
+            subs->handleMessageEnqueued(size);
+        });
     }
     else {
         // Timeout, queue still full. Deallocated the message.
         delete msg;
-        return false;
     }
+    return enqueued;
 }
 
 
@@ -387,16 +433,34 @@ bool ts::MessageQueue<MSG>::enqueue(MSG* msg, cn::milliseconds timeout)
 template <typename MSG>
 void ts::MessageQueue<MSG>::forceEnqueue(MessagePtr& msg)
 {
-    std::lock_guard<std::mutex> lock(_mutex);
-    enqueuePtr(msg);
+    size_t size = 0;
+    {
+        std::lock_guard<std::mutex> lock(_mutex);
+        enqueuePtr(msg);
+        size = _queue.size();
+    }
     msg.reset();
+
+    // Notify all subscribers.
+    callSubscribers<MessageQueueHandlerInterface>([size](MessageQueueHandlerInterface* subs) {
+        subs->handleMessageEnqueued(size);
+    });
 }
 
 template <typename MSG>
 void ts::MessageQueue<MSG>::forceEnqueue(MSG* msg)
 {
-    std::lock_guard<std::mutex> lock(_mutex);
-    enqueuePtr(MessagePtr(msg));
+    size_t size = 0;
+    {
+        std::lock_guard<std::mutex> lock(_mutex);
+        enqueuePtr(MessagePtr(msg));
+        size = _queue.size();
+    }
+
+    // Notify all subscribers.
+    callSubscribers<MessageQueueHandlerInterface>([size](MessageQueueHandlerInterface* subs) {
+        subs->handleMessageEnqueued(size);
+    });
 }
 
 
@@ -407,9 +471,22 @@ void ts::MessageQueue<MSG>::forceEnqueue(MSG* msg)
 template <typename MSG>
 void ts::MessageQueue<MSG>::dequeue(MessagePtr& msg)
 {
-    std::unique_lock<std::mutex> lock(_mutex);
-    _enqueued.wait(lock, [this]() { return !_queue.empty(); });
-    if (!dequeuePtr(msg)) {
+    bool dequeued = false;
+    size_t size = 0;
+    {
+        std::unique_lock<std::mutex> lock(_mutex);
+        _enqueued.wait(lock, [this]() { return !_queue.empty(); });
+        dequeued = dequeuePtr(msg);
+        size = _queue.size();
+    }
+
+    if (dequeued) {
+        // Notify all subscribers.
+        callSubscribers<MessageQueueHandlerInterface>([size](MessageQueueHandlerInterface* subs) {
+            subs->handleMessageDequeued(size);
+        });
+    }
+    else {
         // Queue cannot be empty at end of wait without timeout.
         msg.reset();
     }
@@ -419,9 +496,22 @@ void ts::MessageQueue<MSG>::dequeue(MessagePtr& msg)
 template <typename MSG>
 bool ts::MessageQueue<MSG>::dequeue(MessagePtr& msg, cn::milliseconds timeout)
 {
-    std::unique_lock<std::mutex> lock(_mutex);
-    _enqueued.wait_for(lock, timeout, [this]() { return !_queue.empty(); });
-    return dequeuePtr(msg);
+    bool dequeued = false;
+    size_t size = 0;
+    {
+        std::unique_lock<std::mutex> lock(_mutex);
+        _enqueued.wait_for(lock, timeout, [this]() { return !_queue.empty(); });
+        dequeued = dequeuePtr(msg);
+        size = _queue.size();
+    }
+
+    if (dequeued) {
+        // Notify all subscribers.
+        callSubscribers<MessageQueueHandlerInterface>([size](MessageQueueHandlerInterface* subs) {
+            subs->handleMessageDequeued(size);
+        });
+    }
+    return dequeued;
 }
 
 

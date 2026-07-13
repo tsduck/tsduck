@@ -13,7 +13,7 @@
 
 #pragma once
 #include "tsReactiveSocketBase.h"
-#include "tsSocketSubscriptionBase.h"
+#include "tsSubscriptionBase.h"
 #include "tsReactiveTCPConnectionHandlerInterface.h"
 #include "tsReactiveTCPInputControl.h"
 #include "tsTCPConnection.h"
@@ -34,7 +34,7 @@ namespace ts {
     //! Socket element, except the handleSocketCloseComplete() event which occurs at the end of the asynchronous completion
     //! of the reactive socket.
     //!
-    class TSCOREDLL ReactiveTCPConnection: public ReactiveSocketBase, public SocketSubscriptionBase, private SocketHandlerInterface
+    class TSCOREDLL ReactiveTCPConnection: public ReactiveSocketBase, public SubscriptionBase, private SocketHandlerInterface
     {
         TS_NOBUILD_NOCOPY(ReactiveTCPConnection);
     public:

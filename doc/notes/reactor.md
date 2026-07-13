@@ -2,6 +2,16 @@
 
 **Contents:**
 
+* [Summary](#summary)
+* [Reactor features](#reactor-features)
+* [Current status](#current-status)
+  * [Core Reactor](#core-reactor)
+  * [Socket layer, including TLS](#socket-layer-including-tls)
+  * [Presentation layer (Telnet, TLV)](#presentation-layer-telnet-tlv)
+  * [Generic server](#generic-server)
+  * [Worker delegation](#worker-delegation)
+  * [Remaining work](#remaining-work)
+
 ## Summary
 
 TSDuck uses a classical multi-threaded blocking-I/O architecture. There are
@@ -79,3 +89,67 @@ An event loop shall include the following features:
   worker thread, 2) executed in a newly created worker thread if none were
   idle, 3) queued for later execution if the maximum number of worker threads
   is reached.
+
+## Current status
+
+### Core Reactor
+
+Class `Reactor` is implemented. Based on epoll (Linux), kqueue (macOS and BSD), I/O
+Completion Ports (Windows). Timers and user events are included. Non-blocking I/O
+(epoll, kqueue) and asynchronous I/O (IOCP) are implemented using distinct API's.
+
+Timers and user events are directly usable by applications. I/O management should
+be reserved to specialized "reactive" classes.
+
+We differentiate the class `Reactor` which is the core class for event dispatching
+and "reactive" classes. The latter are specialized classes which use a common
+instance of `Reactor` to dispatch events.
+
+`Reactor` and reactive classes never block. They only implement services to "start
+something". When that "something" completes, a handler interface classes is called.
+
+### Socket layer, including TLS
+
+UDP and TCP sockets are implemented in separate classes. Internally, they use
+distinct code paths for non-blocking and asynchronous I/O. TCP client and server
+are implemented. TLS subclasses encapsulate TLS 1.2 and 1.3.
+
+### Presentation layer (Telnet, TLV)
+
+Distinct classes implement data encoding and decoding in various formats. Current
+formats are text lines (Telnet protocol) and TLV (tag-length-value, as used in
+DVB SimulCrypt protocols).
+
+The presentation classes `ReactiveTelnetConnection` and `ReactiveTLVConnection`
+need an associated instance of a reactive TCP class. An association relationship
+was preferred to inheritance to allow any subclass of `ReactiveTCPConnection`.
+Thus, a line-based or TLV connection can be transparently implemented over a
+clear TCP connection as well as over a TLS tunnel.
+
+### Generic server
+
+Class `ReactiveServer` implements the logic of a generic TCP server. It manages
+the connections of incoming clients and the creation of "client sessions", one
+per client connection.
+
+Using a user-supplied factory class, any kind of transport (clear TCP or TLS)
+and any kind of data presentation (raw, text lines, TLV) can be used.
+
+### Message queues
+
+Template class `ReactiveMessageQueue` is a wrapper around an instance of template
+class `MessageQueue` which receives the messages in a reactor context.
+
+### Worker delegation
+
+Class `ReactiveWorkerPool` implements delegation of lengthy or blocking tasks to
+a pool of threads. It uses two distinct handler interface classes. One is used
+in the context of a worker thread to perform the lengthy task. The other one
+is used in the context of the reactor thread to notify the application of the
+completion of the delegated task.
+
+### Remaining work
+
+- HTTP session (libcurl, WinInet).
+- Pipes.
+- Generic files.

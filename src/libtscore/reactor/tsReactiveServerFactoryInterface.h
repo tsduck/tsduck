@@ -17,6 +17,7 @@
 namespace ts {
     //!
     //! This interface creates server-side client sessions used by ReactiveServer.
+    //! @ingroup libtscore reactor
     //!
     //! Each time a new incoming client is accepted by a ReactiveServer, the server uses
     //! an instance of ReactiveServerFactoryInterface to create the object which drives

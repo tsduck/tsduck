@@ -13,7 +13,8 @@
 
 #pragma once
 #include "tsNonBlockingDevice.h"
-#include "tsSocketSubscriptionBase.h"
+#include "tsSubscriptionBase.h"
+#include "tsSocketHandlerInterface.h"
 #include "tsIPSocketAddress.h"
 #include "tsIPUtils.h"
 #include "tsReport.h"
@@ -23,7 +24,10 @@ namespace ts {
     //! Base class for TCP and UDP sockets.
     //! @ingroup libtscore net
     //!
-    class TSCOREDLL Socket : public NonBlockingDevice, public SocketSubscriptionBase
+    //! Subscription to open/close and connect/disconnect is possible using SocketHandlerInterface.
+    //! @see SubscriptionBase
+    //!
+    class TSCOREDLL Socket : public NonBlockingDevice, public SubscriptionBase
     {
         TS_NOCOPY(Socket);
     public:

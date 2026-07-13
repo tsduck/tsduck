@@ -18,6 +18,7 @@ namespace ts {
     //!
     //! An identifier for sources of events in a Reactor (I/O, timers, etc).
     //! This is a small object which can be passed by value at zero cost.
+    //! @ingroup libtscore reactor
     //!
     class TSCOREDLL EventId
     {

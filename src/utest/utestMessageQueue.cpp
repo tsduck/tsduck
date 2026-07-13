@@ -58,6 +58,49 @@ void MessageQueueTest::afterTestSuite()
 
 
 //----------------------------------------------------------------------------
+// Test message queue handler.
+//----------------------------------------------------------------------------
+
+namespace {
+
+    class TestHandler: public ts::MessageQueueHandlerInterface
+    {
+    public:
+        size_t enqueued_count = 0;
+        size_t dequeued_count = 0;
+        size_t queue_size = 0;
+
+        TestHandler() = default;
+        virtual ~TestHandler() override;
+        void reset();
+        virtual void handleMessageEnqueued(size_t queue_size) override;
+        virtual void handleMessageDequeued(size_t queue_size) override;
+    };
+
+    TestHandler::~TestHandler()
+    {
+    }
+
+    void TestHandler::reset()
+    {
+        enqueued_count = dequeued_count = queue_size = 0;
+    }
+
+    void TestHandler::handleMessageEnqueued(size_t size)
+    {
+        enqueued_count++;
+        queue_size = size;
+    }
+
+    void TestHandler::handleMessageDequeued(size_t size)
+    {
+        dequeued_count++;
+        queue_size = size;
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Unitary tests.
 //----------------------------------------------------------------------------
 
@@ -178,59 +221,139 @@ TSUNIT_DEFINE_TEST(PriorityQueue)
     Queue queue;
     Queue::MessagePtr msg;
 
-    TSUNIT_ASSERT(queue.enqueue(new Message(1, 1), cn::milliseconds::zero()));
-    TSUNIT_ASSERT(queue.enqueue(new Message(5, 2), cn::milliseconds::zero()));
-    TSUNIT_ASSERT(queue.enqueue(new Message(2, 3), cn::milliseconds::zero()));
-    TSUNIT_ASSERT(queue.enqueue(new Message(6, 4), cn::milliseconds::zero()));
-    TSUNIT_ASSERT(queue.enqueue(new Message(3, 5), cn::milliseconds::zero()));
-    TSUNIT_ASSERT(queue.enqueue(new Message(2, 6), cn::milliseconds::zero()));
-    TSUNIT_ASSERT(queue.enqueue(new Message(0, 7), cn::milliseconds::zero()));
-    TSUNIT_ASSERT(queue.enqueue(new Message(0, 8), cn::milliseconds::zero()));
+    TestHandler handler;
+    queue.addSubscription(&handler);
 
+    handler.reset();
+    TSUNIT_ASSERT(queue.enqueue(new Message(1, 1), cn::milliseconds::zero()));
+    TSUNIT_EQUAL(1, handler.enqueued_count);
+    TSUNIT_EQUAL(0, handler.dequeued_count);
+    TSUNIT_EQUAL(1, handler.queue_size);
+
+    handler.reset();
+    TSUNIT_ASSERT(queue.enqueue(new Message(5, 2), cn::milliseconds::zero()));
+    TSUNIT_EQUAL(1, handler.enqueued_count);
+    TSUNIT_EQUAL(0, handler.dequeued_count);
+    TSUNIT_EQUAL(2, handler.queue_size);
+
+    handler.reset();
+    TSUNIT_ASSERT(queue.enqueue(new Message(2, 3), cn::milliseconds::zero()));
+    TSUNIT_EQUAL(1, handler.enqueued_count);
+    TSUNIT_EQUAL(0, handler.dequeued_count);
+    TSUNIT_EQUAL(3, handler.queue_size);
+
+    handler.reset();
+    TSUNIT_ASSERT(queue.enqueue(new Message(6, 4), cn::milliseconds::zero()));
+    TSUNIT_EQUAL(1, handler.enqueued_count);
+    TSUNIT_EQUAL(0, handler.dequeued_count);
+    TSUNIT_EQUAL(4, handler.queue_size);
+
+    handler.reset();
+    TSUNIT_ASSERT(queue.enqueue(new Message(3, 5), cn::milliseconds::zero()));
+    TSUNIT_EQUAL(1, handler.enqueued_count);
+    TSUNIT_EQUAL(0, handler.dequeued_count);
+    TSUNIT_EQUAL(5, handler.queue_size);
+
+    handler.reset();
+    TSUNIT_ASSERT(queue.enqueue(new Message(2, 6), cn::milliseconds::zero()));
+    TSUNIT_EQUAL(1, handler.enqueued_count);
+    TSUNIT_EQUAL(0, handler.dequeued_count);
+    TSUNIT_EQUAL(6, handler.queue_size);
+
+    handler.reset();
+    TSUNIT_ASSERT(queue.enqueue(new Message(0, 7), cn::milliseconds::zero()));
+    TSUNIT_EQUAL(1, handler.enqueued_count);
+    TSUNIT_EQUAL(0, handler.dequeued_count);
+    TSUNIT_EQUAL(7, handler.queue_size);
+
+    handler.reset();
+    TSUNIT_ASSERT(queue.enqueue(new Message(0, 8), cn::milliseconds::zero()));
+    TSUNIT_EQUAL(1, handler.enqueued_count);
+    TSUNIT_EQUAL(0, handler.dequeued_count);
+    TSUNIT_EQUAL(8, handler.queue_size);
+
+    handler.reset();
     TSUNIT_ASSERT(queue.dequeue(msg, cn::milliseconds::zero()));
     TSUNIT_ASSERT(msg != nullptr);
     TSUNIT_EQUAL(0, msg->a);
     TSUNIT_EQUAL(7, msg->b);
+    TSUNIT_EQUAL(0, handler.enqueued_count);
+    TSUNIT_EQUAL(1, handler.dequeued_count);
+    TSUNIT_EQUAL(7, handler.queue_size);
 
+    handler.reset();
     msg = queue.peek();
     TSUNIT_ASSERT(msg != nullptr);
     TSUNIT_EQUAL(0, msg->a);
     TSUNIT_EQUAL(8, msg->b);
+    TSUNIT_EQUAL(0, handler.enqueued_count);
+    TSUNIT_EQUAL(0, handler.dequeued_count);
 
+    handler.reset();
     TSUNIT_ASSERT(queue.dequeue(msg, cn::milliseconds::zero()));
     TSUNIT_ASSERT(msg != nullptr);
     TSUNIT_EQUAL(0, msg->a);
     TSUNIT_EQUAL(8, msg->b);
+    TSUNIT_EQUAL(0, handler.enqueued_count);
+    TSUNIT_EQUAL(1, handler.dequeued_count);
+    TSUNIT_EQUAL(6, handler.queue_size);
 
+    handler.reset();
     TSUNIT_ASSERT(queue.dequeue(msg, cn::milliseconds::zero()));
     TSUNIT_ASSERT(msg != nullptr);
     TSUNIT_EQUAL(1, msg->a);
     TSUNIT_EQUAL(1, msg->b);
+    TSUNIT_EQUAL(0, handler.enqueued_count);
+    TSUNIT_EQUAL(1, handler.dequeued_count);
+    TSUNIT_EQUAL(5, handler.queue_size);
 
+    handler.reset();
     TSUNIT_ASSERT(queue.dequeue(msg, cn::milliseconds::zero()));
     TSUNIT_ASSERT(msg != nullptr);
     TSUNIT_EQUAL(2, msg->a);
     TSUNIT_EQUAL(3, msg->b);
+    TSUNIT_EQUAL(0, handler.enqueued_count);
+    TSUNIT_EQUAL(1, handler.dequeued_count);
+    TSUNIT_EQUAL(4, handler.queue_size);
 
+    handler.reset();
     TSUNIT_ASSERT(queue.dequeue(msg, cn::milliseconds::zero()));
     TSUNIT_ASSERT(msg != nullptr);
     TSUNIT_EQUAL(2, msg->a);
     TSUNIT_EQUAL(6, msg->b);
+    TSUNIT_EQUAL(0, handler.enqueued_count);
+    TSUNIT_EQUAL(1, handler.dequeued_count);
+    TSUNIT_EQUAL(3, handler.queue_size);
 
+    handler.reset();
     TSUNIT_ASSERT(queue.dequeue(msg, cn::milliseconds::zero()));
     TSUNIT_ASSERT(msg != nullptr);
     TSUNIT_EQUAL(3, msg->a);
     TSUNIT_EQUAL(5, msg->b);
+    TSUNIT_EQUAL(0, handler.enqueued_count);
+    TSUNIT_EQUAL(1, handler.dequeued_count);
+    TSUNIT_EQUAL(2, handler.queue_size);
 
+    handler.reset();
     TSUNIT_ASSERT(queue.dequeue(msg, cn::milliseconds::zero()));
     TSUNIT_ASSERT(msg != nullptr);
     TSUNIT_EQUAL(5, msg->a);
     TSUNIT_EQUAL(2, msg->b);
+    TSUNIT_EQUAL(0, handler.enqueued_count);
+    TSUNIT_EQUAL(1, handler.dequeued_count);
+    TSUNIT_EQUAL(1, handler.queue_size);
 
+    handler.reset();
     TSUNIT_ASSERT(queue.dequeue(msg, cn::milliseconds::zero()));
     TSUNIT_ASSERT(msg != nullptr);
     TSUNIT_EQUAL(6, msg->a);
     TSUNIT_EQUAL(4, msg->b);
+    TSUNIT_EQUAL(0, handler.enqueued_count);
+    TSUNIT_EQUAL(1, handler.dequeued_count);
+    TSUNIT_EQUAL(0, handler.queue_size);
 
+    handler.reset();
     TSUNIT_ASSERT(!queue.dequeue(msg, cn::milliseconds::zero()));
+    TSUNIT_EQUAL(0, handler.enqueued_count);
+    TSUNIT_EQUAL(0, handler.dequeued_count);
 }

@@ -6,17 +6,17 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsSocketSubscriptionBase.h"
+#include "tsSubscriptionBase.h"
 
 
 //----------------------------------------------------------------------------
 // Constructors & destructor
 //----------------------------------------------------------------------------
 
-ts::SocketSubscriptionBase::~SocketSubscriptionBase()
+ts::SubscriptionBase::~SubscriptionBase()
 {
     // Tell all registered subscribers to deregister from this object before destroying it.
-    callSubscribers([this](SocketHandlerInterface* subs) {
+    callSubscribers<SubscriptionHandlerInterface>([this](SubscriptionHandlerInterface* subs) {
         subs->deregisterSocket(this);
     });
     _subscribers.clear();
@@ -27,7 +27,7 @@ ts::SocketSubscriptionBase::~SocketSubscriptionBase()
 // Add/remove a subscriber to open/close events.
 //----------------------------------------------------------------------------
 
-void ts::SocketSubscriptionBase::addSubscription(SocketHandlerInterface* handler)
+void ts::SubscriptionBase::addSubscription(SubscriptionHandlerInterface* handler)
 {
     if (handler != nullptr) {
         // Make sure we can call the handler.
@@ -38,7 +38,7 @@ void ts::SocketSubscriptionBase::addSubscription(SocketHandlerInterface* handler
     }
 }
 
-void ts::SocketSubscriptionBase::cancelSubscription(SocketHandlerInterface* handler)
+void ts::SubscriptionBase::cancelSubscription(SubscriptionHandlerInterface* handler)
 {
     if (handler != nullptr) {
         // No longer call the handler.

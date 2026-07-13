@@ -20,6 +20,7 @@ namespace ts {
 
     //!
     //! Interface class for reactive workers.
+    //! @ingroup libtscore reactor
     //!
     class TSCOREDLL ReactiveWorkerInterface
     {

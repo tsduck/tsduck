@@ -17,6 +17,7 @@
 namespace ts {
     //!
     //! This interface shall be implemented by all server-side client sessions used by ReactiveServer.
+    //! @ingroup libtscore reactor
     //!
     //! A session object is created each time a new incoming client is accepted. This object shall
     //! contain a ReactiveTCPConnection object (or from a subclass of it). This interface is defined

@@ -44,35 +44,35 @@ ts::ReactiveTCPConnection::CloseRequest::~CloseRequest() {}
 
 void ts::ReactiveTCPConnection::handleSocketOpenStart(Socket& sock)
 {
-    callSubscribers([&sock](SocketHandlerInterface* subs) {
+    callSubscribers<SocketHandlerInterface>([&sock](SocketHandlerInterface* subs) {
         subs->handleSocketOpenStart(sock);
     });
 }
 
 void ts::ReactiveTCPConnection::handleSocketOpenComplete(Socket& sock, bool success)
 {
-    callSubscribers([&sock, success](SocketHandlerInterface* subs) {
+    callSubscribers<SocketHandlerInterface>([&sock, success](SocketHandlerInterface* subs) {
         subs->handleSocketOpenComplete(sock, success);
     });
 }
 
 void ts::ReactiveTCPConnection::handleSocketConnected(TCPConnection& sock)
 {
-    callSubscribers([&sock](SocketHandlerInterface* subs) {
+    callSubscribers<SocketHandlerInterface>([&sock](SocketHandlerInterface* subs) {
         subs->handleSocketConnected(sock);
     });
 }
 
 void ts::ReactiveTCPConnection::handleSocketDisconnected(TCPConnection& sock, bool silent)
 {
-    callSubscribers([&sock, silent](SocketHandlerInterface* subs) {
+    callSubscribers<SocketHandlerInterface>([&sock, silent](SocketHandlerInterface* subs) {
         subs->handleSocketDisconnected(sock, silent);
     });
 }
 
 void ts::ReactiveTCPConnection::handleSocketCloseStart(Socket& sock, bool silent)
 {
-    callSubscribers([&sock, silent](SocketHandlerInterface* subs) {
+    callSubscribers<SocketHandlerInterface>([&sock, silent](SocketHandlerInterface* subs) {
         subs->handleSocketCloseStart(sock, silent);
     });
 }
@@ -146,7 +146,7 @@ void ts::ReactiveTCPConnection::processQueuedOperations()
             handler->handleTCPClosed(*this, app_data);
         }
         // Notify our subscribers.
-        callSubscribers([this, silent](SocketHandlerInterface* subs) {
+        callSubscribers<SocketHandlerInterface>([this, silent](SocketHandlerInterface* subs) {
             subs->handleSocketCloseComplete(_socket, silent, true);
         });
     }

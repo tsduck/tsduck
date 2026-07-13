@@ -18,6 +18,7 @@ namespace ts {
     //!
     //! The class describes input data, as provided by a ReactiveTCPConnection to a ReactiveTCPConnectionHandlerInterface.
     //! The handler updates the ReactiveTCPInputControl structure depending on its processing of the input data.
+    //! @ingroup libtscore reactor
     //!
     //! Sample scenario for ReactiveTCPConnectionHandlerInterface::handleTCPReceive(), using a message format consisting
     //! of a message header, containing the payload size, followed by a payload of that size.
@@ -50,7 +51,7 @@ namespace ts {
         ReactiveTCPInputControl() = default;
         //!
         //! Reset the content to the original values, suitable for processing an input buffer.
-        //! 
+        //!
         void reset();
         //!
         //! Number of used bytes in the handler.

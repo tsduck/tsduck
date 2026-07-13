@@ -21,6 +21,7 @@ namespace ts {
     //!
     //! Interface class for TLV-messages connection Reactor handlers.
     //! An application shall use ReactiveTCPConnectionHandlerInterface for the non-TLV parts of the connection.
+    //! @ingroup libtscore reactor
     //!
     class TSCOREDLL ReactiveTLVConnectionHandlerInterface
     {
