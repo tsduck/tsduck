@@ -36,18 +36,7 @@
 
 ts::ForkPipe::~ForkPipe()
 {
-    close(NULLREP);
-}
-
-
-//----------------------------------------------------------------------------
-// Implementation of AbstractOutputStream
-//----------------------------------------------------------------------------
-
-bool ts::ForkPipe::writeStreamBuffer(const void* addr, size_t size)
-{
-    size_t outsize = 0;
-    return writeStream(addr, size, outsize, NULLREP);
+    ForkPipe::close(NULLREP);
 }
 
 
@@ -457,11 +446,6 @@ bool ts::ForkPipe::close(Report& report)
     // Silent error is already closed
     if (!_is_open) {
         return false;
-    }
-
-    // Flush the output buffer, if any.
-    if (_in_pipe) {
-        flush(); // from std::basic_ostream
     }
 
     bool result = true;

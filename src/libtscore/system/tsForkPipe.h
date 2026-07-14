@@ -12,7 +12,6 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsAbstractOutputStream.h"
 #include "tsAbstractReadStreamInterface.h"
 #include "tsAbstractWriteStreamInterface.h"
 #include "tsReport.h"
@@ -22,12 +21,7 @@ namespace ts {
     //! Fork a process and create an optional pipe to its standard input.
     //! @ingroup libtscore system
     //!
-    //! This class can be used as any output stream when the output is a pipe.
-    //!
-    class TSCOREDLL ForkPipe:
-        public AbstractOutputStream,
-        public AbstractReadStreamInterface,
-        public AbstractWriteStreamInterface
+    class TSCOREDLL ForkPipe: public AbstractReadStreamInterface, public AbstractWriteStreamInterface
     {
         TS_NOCOPY(ForkPipe);
     public:
@@ -96,7 +90,7 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool close(Report& report);
+        virtual bool close(Report& report);
 
         //!
         //! Check if the process is running and the pipe is open (when used).
@@ -187,10 +181,6 @@ namespace ts {
 
         // Implementation of AbstractWriteStreamInterface
         virtual bool writeStream(const void* addr, size_t size, size_t& written_size, Report& report) override;
-
-    protected:
-        // Implementation of AbstractOutputStream
-        virtual bool writeStreamBuffer(const void* addr, size_t size) override;
 
     private:
         InputMode     _in_mode = STDIN_PIPE;     // Input mode for the created process.

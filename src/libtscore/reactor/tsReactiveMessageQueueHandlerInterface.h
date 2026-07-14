@@ -45,7 +45,7 @@ namespace ts {
 // Template definitions.
 //----------------------------------------------------------------------------
 
-#if !defined(DOXYGEN) // doxygen complains about undefined desctructor, bug ?
+#if !defined(DOXYGEN) // doxygen complains about undefined destructor, bug ?
 TS_PUSH_WARNING()
 TS_LLVM_NOWARNING(dtor-name)
 template <typename MSG>

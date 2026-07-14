@@ -12,7 +12,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsForkPipe.h"
+#include "tsForkPipeOutputStream.h"
 #include "tsUString.h"
 
 namespace ts {
@@ -22,7 +22,7 @@ namespace ts {
     //! If neither stdout nor stderr are terminals, paging is not allowed.
     //! @ingroup libtscore system
     //!
-    class TSCOREDLL OutputPager : public ForkPipe
+    class TSCOREDLL OutputPager : public ForkPipeOutputStream
     {
         TS_NOCOPY(OutputPager);
     public:
