@@ -128,7 +128,7 @@ clean distclean:
 
 .PHONY: sample
 sample:
-	@$(MAKE) -C sample $@
+	@$(MAKE) -C sample
 
 # Display the built version
 

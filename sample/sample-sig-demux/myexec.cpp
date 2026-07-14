@@ -63,7 +63,7 @@ void Analyzer::analyze(const ts::UString& filename)
 {
     std::cout << "==== Analyzing " << filename << std::endl;
 
-    ts::TSFile file;
+    ts::TSFile file(&CERR);
     ts::TSPacketVector pkt(1000);
     ts::TSPacketMetadataVector meta(pkt.size());
     size_t count = 0;
@@ -72,13 +72,13 @@ void Analyzer::analyze(const ts::UString& filename)
     _demux.reset();
     _demux.addFullFilters();
 
-    if (file.open(filename, ts::TSFile::READ, CERR)) {
-        while ((count = file.readPackets(&pkt[0], &meta[0], pkt.size(), CERR)) > 0) {
+    if (file.open(filename, ts::TSFile::READ)) {
+        while ((count = file.readPackets(&pkt[0], &meta[0], pkt.size())) > 0) {
             for (size_t i = 0; i < count; ++i) {
                 _demux.feedPacket(pkt[i]);
             }
         }
-        file.close(CERR);
+        file.close();
     }
 }
 
