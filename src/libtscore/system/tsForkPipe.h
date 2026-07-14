@@ -12,7 +12,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsReporterBase.h"
+#include "tsNonBlockingDevice.h"
 #include "tsAbstractStream.h"
 #include "tsReport.h"
 
@@ -21,7 +21,7 @@ namespace ts {
     //! Fork a process and create an optional pipe to its standard input.
     //! @ingroup libtscore system
     //!
-    class TSCOREDLL ForkPipe: public ReporterBase, public AbstractStream
+    class TSCOREDLL ForkPipe: public NonBlockingDevice, public AbstractStream
     {
         TS_NOBUILD_NOCOPY(ForkPipe);
     public:
@@ -29,16 +29,18 @@ namespace ts {
         //! Constructor.
         //! @param [in] report Where to report errors. The @a report object must remain valid as long as this object
         //! exists or setReport() is used with another Report object. If @a report is null, log messages are discarded.
+        //! @param [in] non_blocking It true, the file is initially set in non-blocking mode.
         //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        explicit ForkPipe(Report* report, Object* owner = nullptr);
+        explicit ForkPipe(Report* report, bool non_blocking = false, Object* owner = nullptr);
 
         //!
         //! Constructor.
         //! @param [in] delegate Use the report of another ReporterBase. If @a delegate is null, log messages are discarded.
+        //! @param [in] non_blocking It true, the file is initially set in non-blocking mode.
         //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        explicit ForkPipe(ReporterBase* delegate, Object* owner = nullptr);
+        explicit ForkPipe(ReporterBase* delegate, bool non_blocking = false, Object* owner = nullptr);
 
         //!
         //! Destructor.
@@ -187,8 +189,8 @@ namespace ts {
 
         // Implementation of AbstractStream
         virtual bool endOfStream() override;
-        virtual bool readStream(void* addr, size_t max_size, size_t& ret_size) override;
-        virtual bool writeStream(const void* addr, size_t size, size_t& written_size) override;
+        virtual bool readStream(void* addr, size_t max_size, size_t& ret_size, const AbortInterface* abort = nullptr, IOSB* iosb = nullptr) override;
+        virtual bool writeStream(const void* addr, size_t size, size_t& written_size, IOSB* iosb = nullptr) override;
 
     private:
         InputMode     _in_mode = STDIN_PIPE;     // Input mode for the created process.

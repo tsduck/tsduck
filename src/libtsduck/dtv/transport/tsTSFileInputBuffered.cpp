@@ -73,6 +73,11 @@ bool ts::TSFileInputBuffered::openRead(const fs::path& filename, size_t repeat_c
 // Make sure that the generic open() returns an error.
 //----------------------------------------------------------------------------
 
+bool ts::TSFileInputBuffered::open(const fs::path& filename, OpenFlags flags)
+{
+    return open(filename, flags, TSPacketFormat::AUTODETECT);
+}
+
 bool ts::TSFileInputBuffered::open(const fs::path& filename, OpenFlags flags, TSPacketFormat format)
 {
     // Accept read-only mode only.

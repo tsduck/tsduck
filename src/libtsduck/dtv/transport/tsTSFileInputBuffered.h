@@ -171,6 +171,7 @@ namespace ts {
 
         // Make sure that the generic open() returns an error.
         virtual bool open(const fs::path& filename, OpenFlags flags, TSPacketFormat format) override;
+        virtual bool open(const fs::path& filename, OpenFlags flags) override;
 
         // Make rewind inaccessible.
         bool rewind(Report&) = delete;

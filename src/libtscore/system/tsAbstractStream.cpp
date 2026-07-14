@@ -22,14 +22,14 @@ ts::AbstractStream::~AbstractStream()
 // Default implementation of readStreamComplete() using readStream()
 //----------------------------------------------------------------------------
 
-bool ts::AbstractStream::readStreamComplete(void* addr, size_t max_size, size_t& ret_size)
+bool ts::AbstractStream::readStreamComplete(void* addr, size_t max_size, size_t& ret_size, const AbortInterface* abort)
 {
     uint8_t* data = reinterpret_cast<uint8_t*>(addr);
     size_t insize = 0;
     ret_size = 0;
 
     while (max_size > 0) {
-        if (!readStream(data, max_size, insize) || insize == 0) {
+        if (!readStream(data, max_size, insize, abort) || insize == 0) {
             return ret_size > 0; // error or end of file only if nothing read at all
         }
         assert(insize <= max_size);
@@ -45,7 +45,7 @@ bool ts::AbstractStream::readStreamComplete(void* addr, size_t max_size, size_t&
 // Default implementation of readStreamComplete() using readStreamPartial()
 //----------------------------------------------------------------------------
 
-bool ts::AbstractStream::readStreamChunks(void* addr, size_t max_size, size_t chunk_size, size_t& ret_size)
+bool ts::AbstractStream::readStreamChunks(void* addr, size_t max_size, size_t chunk_size, size_t& ret_size, const AbortInterface* abort)
 {
     ret_size = 0;
 
@@ -59,13 +59,13 @@ bool ts::AbstractStream::readStreamChunks(void* addr, size_t max_size, size_t ch
     }
 
     // Initial read operation.
-    bool success = readStream(addr, max_size, ret_size);
+    bool success = readStream(addr, max_size, ret_size, abort);
 
     // Read end of chunk if ends in the middle of a chunk.
     if (success && chunk_size > 0 && ret_size % chunk_size != 0) {
         uint8_t* data = reinterpret_cast<uint8_t*>(addr);
         size_t insize = 0;
-        success = readStreamComplete(data + ret_size, chunk_size - ret_size % chunk_size, insize);
+        success = readStreamComplete(data + ret_size, chunk_size - ret_size % chunk_size, insize, abort);
         ret_size += insize;
     }
 

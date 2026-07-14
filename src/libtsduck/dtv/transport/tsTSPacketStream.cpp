@@ -73,7 +73,7 @@ size_t ts::TSPacketStream::packetTrailerSize() const
 // Read TS packets. Return the actual number of read packets.
 //----------------------------------------------------------------------------
 
-size_t ts::TSPacketStream::readPackets(TSPacket *buffer, TSPacketMetadata *metadata, size_t max_packets)
+size_t ts::TSPacketStream::readPackets(TSPacket* buffer, TSPacketMetadata* metadata, size_t max_packets)
 {
     if (_stream == nullptr) {
         _reporter.report().error(u"internal error, cannot read TS packets from this stream");

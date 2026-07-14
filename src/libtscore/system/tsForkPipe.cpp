@@ -33,14 +33,14 @@
 // Constructors and destructor.
 //----------------------------------------------------------------------------
 
-ts::ForkPipe::ForkPipe(Report* report, Object* owner) :
-    ReporterBase(report, owner),
+ts::ForkPipe::ForkPipe(Report* report, bool non_blocking, Object* owner) :
+    NonBlockingDevice(report, non_blocking, owner),
     AbstractStream(*static_cast<ReporterBase*>(this))
 {
 }
 
-ts::ForkPipe::ForkPipe(ReporterBase* delegate, Object* owner) :
-    ReporterBase(delegate, owner),
+ts::ForkPipe::ForkPipe(ReporterBase* delegate, bool non_blocking, Object* owner) :
+    NonBlockingDevice(delegate, non_blocking, owner),
     AbstractStream(*static_cast<ReporterBase*>(this))
 {
 }
@@ -99,6 +99,8 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
     report().debug(u"creating process \"%s\"", command);
 
 #if defined(TS_WINDOWS)
+
+    //@@@ Asynchronous I/O
 
     _handle = nullptr;
     _process = nullptr;
@@ -268,6 +270,10 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
 
 #else // UNIX
 
+    // Reset state.
+    _fpid = 0;
+    _fd = -1;
+
     // Create a pipe
     int filedes[PIPE_COUNT];
     if (_use_pipe && ::pipe(filedes) < 0) {
@@ -329,6 +335,11 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
             _fd = filedes[PIPE_READFD];
             ::fcntl(_fd, F_SETFD, FD_CLOEXEC);
             ::close(filedes[PIPE_WRITEFD]);
+        }
+        // Set the file descriptor in non-blocking mode if necessary.
+        if (_fd >= 0 && isNonBlocking() && !setSystemNonBlocking(_fd, true)) {
+            ::close(_fd);
+            return false;
         }
     }
     else {
@@ -532,10 +543,14 @@ void ts::ForkPipe::abortPipeReadWrite()
 // Implementation of AbstractStream
 //----------------------------------------------------------------------------
 
-bool ts::ForkPipe::writeStream(const void* addr, size_t size, size_t& written_size)
+bool ts::ForkPipe::writeStream(const void* addr, size_t size, size_t& written_size, IOSB* iosb)
 {
     written_size = 0;
 
+    if (!checkNonBlocking(iosb, u"BinaryFile::writeStream")) {
+        // Not the right blocking mode.
+        return false;
+    }
     if (!_is_open) {
         report().error(u"pipe is not open");
         return false;
@@ -551,9 +566,11 @@ bool ts::ForkPipe::writeStream(const void* addr, size_t size, size_t& written_si
     }
 
     bool error = false;
-    int errcode = 0;
+    int err_code = 0;
 
 #if defined(TS_WINDOWS)
+
+    //@@@ Asynchronous I/O
 
     const char* data = reinterpret_cast<const char*>(addr);
     ::DWORD remain = ::DWORD(size);
@@ -569,11 +586,11 @@ bool ts::ForkPipe::writeStream(const void* addr, size_t size, size_t& written_si
         }
         else {
             // Write error
-            errcode = ::GetLastError();
+            err_code = ::GetLastError();
             error = true;
             // MSDN documentation on WriteFile says ERROR_BROKEN_PIPE,
             // experience says ERROR_NO_DATA.
-            _broken_pipe = errcode == ERROR_BROKEN_PIPE || errcode == ERROR_NO_DATA;
+            _broken_pipe = err_code == ERROR_BROKEN_PIPE || err_code == ERROR_NO_DATA;
         }
     }
 
@@ -584,6 +601,7 @@ bool ts::ForkPipe::writeStream(const void* addr, size_t size, size_t& written_si
 
     while (remain > 0 && !error) {
         ssize_t outsize = ::write(_fd, data, remain);
+        err_code = errno;
         if (outsize > 0) {
             // Normal case, some data were written
             assert(size_t(outsize) <= remain);
@@ -591,12 +609,20 @@ bool ts::ForkPipe::writeStream(const void* addr, size_t size, size_t& written_si
             remain -= std::max(remain, size_t(outsize));
             written_size += size_t(outsize);
         }
-        else if ((errcode = errno) != EINTR) {
+        else if (isNonBlocking() && IsPendingStatus(err_code)) {
+            // Non-blocking file with no enough available outgoing buffer space.
+            assert(iosb != nullptr);
+            iosb->pending = true;
+            iosb->sent_size = written_size;
+            break;
+        }
+        else if (err_code != EINTR) {
             // Actual error (not an interrupt)
             error = true;
-            _broken_pipe = errcode == EPIPE;
+            _broken_pipe = err_code == EPIPE;
         }
     }
+
 #endif
 
     if (!error) {
@@ -604,7 +630,7 @@ bool ts::ForkPipe::writeStream(const void* addr, size_t size, size_t& written_si
     }
     else if (!_broken_pipe) {
         // Always report non-pipe error (message + error status).
-        report().error(u"error writing to pipe: %s", SysErrorCodeMessage(errcode));
+        report().error(u"error writing to pipe: %s", SysErrorCodeMessage(err_code));
         return false;
     }
     else if (_ignore_abort) {
@@ -627,10 +653,14 @@ bool ts::ForkPipe::writeStream(const void* addr, size_t size, size_t& written_si
 // Implementation of AbstractStream
 //----------------------------------------------------------------------------
 
-bool ts::ForkPipe::readStream(void *addr, size_t max_size, size_t& ret_size)
+bool ts::ForkPipe::readStream(void *addr, size_t max_size, size_t& ret_size, const AbortInterface* abort, IOSB* iosb)
 {
     ret_size = 0;
 
+    if (!checkNonBlocking(iosb, u"ForkPipe::readStream")) {
+        // Not the right blocking mode.
+        return false;
+    }
     if (!_is_open) {
         report().error(u"pipe is not open");
         return false;
@@ -650,7 +680,9 @@ bool ts::ForkPipe::readStream(void *addr, size_t max_size, size_t& ret_size)
 
 #if defined(TS_WINDOWS)
 
-    ::DWORD errcode = ERROR_SUCCESS;
+    //@@@ Asynchronous I/O
+
+    ::DWORD err_code = ERROR_SUCCESS;
     ::DWORD insize = 0;
     if (::ReadFile(_handle, addr, ::DWORD(max_size), &insize, nullptr) != 0) {
         // Normal case, some data were read.
@@ -659,14 +691,14 @@ bool ts::ForkPipe::readStream(void *addr, size_t max_size, size_t& ret_size)
         ret_size = size_t(insize);
         return true;
     }
-    else if ((errcode = ::GetLastError()) == ERROR_HANDLE_EOF || errcode == ERROR_BROKEN_PIPE) {
+    else if ((err_code = ::GetLastError()) == ERROR_HANDLE_EOF || err_code == ERROR_BROKEN_PIPE) {
         // End of file, not a real "error".
         _eof = true;
         return false;
     }
     else {
         // This is a real error.
-        report().error(u"error reading from pipe: %s", SysErrorCodeMessage(errcode));
+        report().error(u"error reading from pipe: %s", SysErrorCodeMessage(err_code));
         return false;
     }
 
@@ -674,6 +706,7 @@ bool ts::ForkPipe::readStream(void *addr, size_t max_size, size_t& ret_size)
 
     for (;;) {
         const ssize_t insize = ::read(_fd, addr, max_size);
+        const int err_code = errno;
         if (insize == 0) {
             // End of file.
             _eof = true;
@@ -685,12 +718,23 @@ bool ts::ForkPipe::readStream(void *addr, size_t max_size, size_t& ret_size)
             ret_size = size_t(insize);
             return true;
         }
-        else if (errno != EINTR) {
+        else if (abort != nullptr && abort->aborting()) {
+            // User-interrupt, end of processing but no error message
+            return false;
+        }
+        else if (isNonBlocking() && IsPendingStatus(err_code)) {
+            // Non-blocking file with no immediately available data to read.
+            assert(iosb != nullptr);
+            iosb->pending = true;
+            return true;
+        }
+        else if (err_code != EINTR) {
             // Actual error (not an interrupt)
-            report().error(u"error reading from pipe: %s", SysErrorCodeMessage());
+            report().error(u"error reading from pipe: %s", SysErrorCodeMessage(err_code));
             return false;
         }
     }
+
 #endif
 }
 

@@ -7,7 +7,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsTSFileOutputResync.h"
-#include "tsMemory.h"
 
 
 //----------------------------------------------------------------------------
@@ -36,6 +35,11 @@ ts::TSFileOutputResync::~TSFileOutputResync()
 //----------------------------------------------------------------------------
 // Open method
 //----------------------------------------------------------------------------
+
+bool ts::TSFileOutputResync::open(const fs::path& filename, OpenFlags flags)
+{
+    return open(filename, flags, TSPacketFormat::AUTODETECT);
+}
 
 bool ts::TSFileOutputResync::open(const fs::path& filename, OpenFlags flags, TSPacketFormat format)
 {

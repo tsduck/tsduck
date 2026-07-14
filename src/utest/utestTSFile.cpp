@@ -96,6 +96,7 @@ TSUNIT_DEFINE_TEST(TS)
     TSUNIT_EQUAL(0, file.readPackets(&inpackets[0], nullptr, inpackets.size()));
     TSUNIT_EQUAL(100, file.writePacketsCount());
     TSUNIT_EQUAL(100, file.readPacketsCount());
+    TSUNIT_ASSERT(file.endOfStream());
     TSUNIT_ASSERT(file.close());
     TSUNIT_ASSERT(fs::exists(_tempFileName));
     TSUNIT_EQUAL(18800, fs::file_size(_tempFileName, &ts::ErrCodeReport(CERR)));

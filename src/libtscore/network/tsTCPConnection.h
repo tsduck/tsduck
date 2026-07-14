@@ -15,7 +15,6 @@
 
 #pragma once
 #include "tsTCPSocket.h"
-#include "tsSocketOp.h"
 #include "tsAbortInterface.h"
 
 namespace ts {

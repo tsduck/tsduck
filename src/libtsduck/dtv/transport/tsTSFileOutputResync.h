@@ -49,7 +49,8 @@ namespace ts {
         virtual ~TSFileOutputResync() override;
 
         // Overrides TSFile methods
-        virtual bool open(const fs::path& filename, OpenFlags flags, TSPacketFormat format = TSPacketFormat::AUTODETECT) override;
+        virtual bool open(const fs::path& filename, OpenFlags flags, TSPacketFormat format) override;
+        virtual bool open(const fs::path& filename, OpenFlags flags) override;
 
         //!
         //! Write TS packets to the file.
