@@ -256,7 +256,7 @@ bool ts::TSFile::openInternal(bool reopen)
     _regular = ::GetFileType(_handle) == FILE_TYPE_DISK;
 
     // Check if seek is required or possible.
-    if (!seekCheck(report)) {
+    if (!seekCheck()) {
         if (!_std_inout) {
             ::CloseHandle(_handle);
         }
