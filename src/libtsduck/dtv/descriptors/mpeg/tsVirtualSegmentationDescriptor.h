@@ -22,7 +22,7 @@ namespace ts {
     //! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.6.120.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL VirtualSegmentationDescriptor : public AbstractDescriptor
+    class TSDUCKDLL VirtualSegmentationDescriptor: public AbstractDescriptor
     {
     public:
         //!

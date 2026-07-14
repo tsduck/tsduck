@@ -45,7 +45,7 @@ namespace ts {
     //! - For decryption, the next key is used each time a new scrambling_control
     //!   value is found in a TS header.
     //!
-    class TSDUCKDLL TSScrambling : private BlockCipherAlertInterface
+    class TSDUCKDLL TSScrambling: private BlockCipherAlertInterface
     {
     public:
         //!

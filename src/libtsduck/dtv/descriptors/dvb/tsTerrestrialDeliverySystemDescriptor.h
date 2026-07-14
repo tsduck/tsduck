@@ -20,7 +20,7 @@ namespace ts {
     //! @see ETSI EN 300 468, 6.2.13.4.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL TerrestrialDeliverySystemDescriptor : public AbstractDeliverySystemDescriptor
+    class TSDUCKDLL TerrestrialDeliverySystemDescriptor: public AbstractDeliverySystemDescriptor
     {
     public:
         // TerrestrialDeliverySystemDescriptor public members:

@@ -46,7 +46,7 @@ namespace ts {
 
     private:
         // File listener internal thread.
-        class FileListener : public Thread, private PollFilesListener
+        class FileListener: public Thread, private PollFilesListener
         {
             TS_NOBUILD_NOCOPY(FileListener);
         public:

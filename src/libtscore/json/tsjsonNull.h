@@ -19,7 +19,7 @@ namespace ts::json {
     //! Implementation of a JSON null literal.
     //! @ingroup libtscore json
     //!
-    class TSCOREDLL Null : public Value
+    class TSCOREDLL Null: public Value
     {
     public:
         //! Default constructor.

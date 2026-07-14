@@ -21,7 +21,7 @@ namespace ts {
     //! @see ETSI EN 300 468, annex G.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL DVBDTSUHDDescriptor : public AbstractDescriptor
+    class TSDUCKDLL DVBDTSUHDDescriptor: public AbstractDescriptor
     {
     public:
         // Public members:

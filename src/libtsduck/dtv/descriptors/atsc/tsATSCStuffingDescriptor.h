@@ -21,7 +21,7 @@ namespace ts {
     //! @see ATSC A/65, section 6.9.8.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL ATSCStuffingDescriptor : public AbstractDescriptor
+    class TSDUCKDLL ATSCStuffingDescriptor: public AbstractDescriptor
     {
     public:
         // Public members:

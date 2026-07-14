@@ -13,10 +13,10 @@
 // Constructors and destructors.
 //----------------------------------------------------------------------------
 
-ts::TSPacketStream::TSPacketStream(TSPacketFormat format, AbstractReadStreamInterface* reader, AbstractWriteStreamInterface* writer) :
+ts::TSPacketStream::TSPacketStream(ReporterInterface& reporter, TSPacketFormat format, AbstractStream* stream) :
+    _reporter(reporter),
     _format(format),
-    _reader(reader),
-    _writer(writer)
+    _stream(stream)
 {
 }
 
@@ -29,13 +29,12 @@ ts::TSPacketStream::~TSPacketStream()
 // Reset the stream format and counters.
 //----------------------------------------------------------------------------
 
-void ts::TSPacketStream::resetPacketStream(TSPacketFormat format, AbstractReadStreamInterface* reader, AbstractWriteStreamInterface* writer)
+void ts::TSPacketStream::resetPacketStream(TSPacketFormat format, AbstractStream* stream)
 {
     _total_read = 0;
     _total_write = 0;
     _format = format;
-    _reader = reader;
-    _writer = writer;
+    _stream = stream;
     _last_timestamp = PCR::zero();
     _trail_size = 0;
 }
@@ -74,10 +73,10 @@ size_t ts::TSPacketStream::packetTrailerSize() const
 // Read TS packets. Return the actual number of read packets.
 //----------------------------------------------------------------------------
 
-size_t ts::TSPacketStream::readPackets(TSPacket *buffer, TSPacketMetadata *metadata, size_t max_packets, Report &report)
+size_t ts::TSPacketStream::readPackets(TSPacket *buffer, TSPacketMetadata *metadata, size_t max_packets)
 {
-    if (_reader == nullptr) {
-        report.error(u"internal error, cannot read TS packets from this stream");
+    if (_stream == nullptr) {
+        _reporter.report().error(u"internal error, cannot read TS packets from this stream");
         return 0;
     }
 
@@ -94,7 +93,7 @@ size_t ts::TSPacketStream::readPackets(TSPacket *buffer, TSPacketMetadata *metad
     if (_format == TSPacketFormat::AUTODETECT) {
 
         // Read one packet.
-        if (!_reader->readStreamComplete(buffer, PKT_SIZE, read_size, report) || read_size < PKT_SIZE) {
+        if (!_stream->readStreamComplete(buffer, PKT_SIZE, read_size) || read_size < PKT_SIZE) {
             return 0; // less than one packet in that file
         }
 
@@ -117,7 +116,7 @@ size_t ts::TSPacketStream::readPackets(TSPacket *buffer, TSPacketMetadata *metad
             mdata.deserialize(buffer->b, TSPacketMetadata::SERIALIZATION_SIZE);
         }
         else {
-            report.error(u"cannot detect TS file format");
+            _reporter.report().error(u"cannot detect TS file format");
             return 0;
         }
 
@@ -127,7 +126,7 @@ size_t ts::TSPacketStream::readPackets(TSPacket *buffer, TSPacketMetadata *metad
         if (header_size > 0) {
             char* data = reinterpret_cast<char*>(buffer);
             MemCopy(data, data + header_size, PKT_SIZE - header_size);
-            if (!_reader->readStreamComplete(data + PKT_SIZE - header_size, header_size, read_size, report) || read_size < header_size) {
+            if (!_stream->readStreamComplete(data + PKT_SIZE - header_size, header_size, read_size) || read_size < header_size) {
                 return 0; // less than one packet in that file
             }
         }
@@ -137,7 +136,7 @@ size_t ts::TSPacketStream::readPackets(TSPacket *buffer, TSPacketMetadata *metad
             // Read enough data in a trailer buffer. If there is no trailer, it will be used as start of next packet.
             // Ignore errors since the input can be simply one packet.
             assert(sizeof(_trail) > RS_SIZE);
-            _reader->readStreamComplete(_trail, RS_SIZE + 1, _trail_size, report);
+            _stream->readStreamComplete(_trail, RS_SIZE + 1, _trail_size);
             if (_trail_size == RS_SIZE + 1 && _trail[0] != SYNC_BYTE && _trail[RS_SIZE] == SYNC_BYTE) {
                 // Found a Reed-Solomon trailer.
                 _format = TSPacketFormat::RS204;
@@ -157,13 +156,13 @@ size_t ts::TSPacketStream::readPackets(TSPacket *buffer, TSPacketMetadata *metad
             *metadata++ = mdata;
         }
 
-        report.debug(u"detected TS file format %s", packetFormatString());
+        _reporter.report().debug(u"detected TS file format %s", packetFormatString());
     }
 
     // Repeat reading packets until the buffer is full or error.
     // Rewind on end of file if repeating is set.
     bool success = true;
-    while (success && max_packets > 0 && !_reader->endOfStream()) {
+    while (success && max_packets > 0 && !_stream->endOfStream()) {
 
         switch (_format) {
             case TSPacketFormat::AUTODETECT: {
@@ -176,7 +175,7 @@ size_t ts::TSPacketStream::readPackets(TSPacket *buffer, TSPacketMetadata *metad
                 // Make sure that the trailer buffer from first packet is used in second packet.
                 uint8_t* const cbuffer = reinterpret_cast<uint8_t*>(buffer);
                 MemCopy(cbuffer, _trail, _trail_size);
-                success = _reader->readStreamComplete(cbuffer + _trail_size, max_packets * PKT_SIZE - _trail_size, read_size, report);
+                success = _stream->readStreamComplete(cbuffer + _trail_size, max_packets * PKT_SIZE - _trail_size, read_size);
                 read_size += _trail_size;
                 _trail_size = 0;
                 // Count packets. Truncate incomplete packets at end of file.
@@ -195,12 +194,12 @@ size_t ts::TSPacketStream::readPackets(TSPacket *buffer, TSPacketMetadata *metad
                 // Read packet. Make sure that the trailer buffer from first packet is used in second packet.
                 uint8_t* const cbuffer = reinterpret_cast<uint8_t*>(buffer);
                 MemCopy(cbuffer, _trail, _trail_size);
-                success = _reader->readStreamComplete(cbuffer + _trail_size, PKT_SIZE - _trail_size, read_size, report);
+                success = _stream->readStreamComplete(cbuffer + _trail_size, PKT_SIZE - _trail_size, read_size);
                 read_size += _trail_size;
                 _trail_size = 0;
                 if (success && read_size == PKT_SIZE) {
                     // Read trailer.
-                    success = _reader->readStreamComplete(_trail, RS_SIZE, read_size, report) && read_size == RS_SIZE;
+                    success = _stream->readStreamComplete(_trail, RS_SIZE, read_size) && read_size == RS_SIZE;
                     // Move to next packet.
                     read_packets++;
                     buffer++;
@@ -216,9 +215,9 @@ size_t ts::TSPacketStream::readPackets(TSPacket *buffer, TSPacketMetadata *metad
             case TSPacketFormat::M2TS:
             case TSPacketFormat::DUCK: {
                 // Read header + packet. No trailer was read at first packet.
-                success = _reader->readStreamComplete(header, header_size, read_size, report);
+                success = _stream->readStreamComplete(header, header_size, read_size);
                 if (success && read_size == header_size) {
-                    success = _reader->readStreamComplete(buffer, PKT_SIZE, read_size, report);
+                    success = _stream->readStreamComplete(buffer, PKT_SIZE, read_size);
                     if (success && read_size == PKT_SIZE) {
                         read_packets++;
                         buffer++;
@@ -239,7 +238,7 @@ size_t ts::TSPacketStream::readPackets(TSPacket *buffer, TSPacketMetadata *metad
                 break;
             }
             default: {
-                report.error(u"internal error, invalid TS file format %s", packetFormatString());
+                _reporter.report().error(u"internal error, invalid TS file format %s", packetFormatString());
                 return 0;
             }
         }
@@ -255,10 +254,10 @@ size_t ts::TSPacketStream::readPackets(TSPacket *buffer, TSPacketMetadata *metad
 // Write TS packets.
 //----------------------------------------------------------------------------
 
-bool ts::TSPacketStream::writePackets(const TSPacket* buffer, const TSPacketMetadata* metadata, size_t packet_count, Report& report)
+bool ts::TSPacketStream::writePackets(const TSPacket* buffer, const TSPacketMetadata* metadata, size_t packet_count)
 {
-    if (_writer == nullptr) {
-        report.error(u"internal error, cannot write TS packets to this stream");
+    if (_stream == nullptr) {
+        _reporter.report().error(u"internal error, cannot write TS packets to this stream");
         return 0;
     }
 
@@ -271,7 +270,7 @@ bool ts::TSPacketStream::writePackets(const TSPacket* buffer, const TSPacketMeta
             _format = TSPacketFormat::TS;
             // Bulk write in TS format.
             size_t written_size = 0;
-            success = _writer->writeStream(buffer, packet_count * PKT_SIZE, written_size, report);
+            success = _stream->writeStream(buffer, packet_count * PKT_SIZE, written_size);
             _total_write += written_size / PKT_SIZE;
             break;
         }
@@ -289,8 +288,8 @@ bool ts::TSPacketStream::writePackets(const TSPacket* buffer, const TSPacketMeta
                     MemSet(trailer, 0xFF, sizeof(trailer));
                     trailer_ff = true;
                 }
-                success = _writer->writeStream(&buffer[i], PKT_SIZE, written_size, report) &&
-                          _writer->writeStream(trailer, sizeof(trailer), written_size, report);
+                success = _stream->writeStream(&buffer[i], PKT_SIZE, written_size) &&
+                          _stream->writeStream(trailer, sizeof(trailer), written_size);
                 if (success) {
                     _total_write++;
                 }
@@ -323,8 +322,8 @@ bool ts::TSPacketStream::writePackets(const TSPacket* buffer, const TSPacketMeta
                 }
                 // Write header, then packet.
                 size_t written_size = 0;
-                success = _writer->writeStream(header, header_size, written_size, report) &&
-                          _writer->writeStream(&buffer[i], PKT_SIZE, written_size, report);
+                success = _stream->writeStream(header, header_size, written_size) &&
+                          _stream->writeStream(&buffer[i], PKT_SIZE, written_size);
                 if (success) {
                     _total_write++;
                 }
@@ -332,7 +331,7 @@ bool ts::TSPacketStream::writePackets(const TSPacket* buffer, const TSPacketMeta
             break;
         }
         default: {
-            report.error(u"internal error, invalid TS file format %s", packetFormatString());
+            _reporter.report().error(u"internal error, invalid TS file format %s", packetFormatString());
             return false;
         }
     }

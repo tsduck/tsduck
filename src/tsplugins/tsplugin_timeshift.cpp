@@ -33,7 +33,7 @@ namespace ts {
     private:
         bool             _drop_initial = false;  // Drop initial packets instead of null.
         cn::milliseconds _time_shift_ms {};      // Time-shift in milliseconds.
-        TimeShiftBuffer  _buffer {};             // The timeshift buffer logic.
+        TimeShiftBuffer  _buffer {this};         // The timeshift buffer logic.
 
         // Try to initialize the buffer using the time as size.
         // Return false on fatal error only.
@@ -128,7 +128,7 @@ bool ts::TimeShiftPlugin::initBufferByTime()
             }
             else {
                 _buffer.setTotalPackets(size_t(packets));
-                return _buffer.open(*this);
+                return _buffer.open();
             }
         }
     }
@@ -143,7 +143,7 @@ bool ts::TimeShiftPlugin::initBufferByTime()
 bool ts::TimeShiftPlugin::start()
 {
     // Initialize the buffer only when its size is specified in packets or the bitrate is already known.
-    return _time_shift_ms == cn::milliseconds::zero() ? _buffer.open(*this) : initBufferByTime();
+    return _time_shift_ms == cn::milliseconds::zero() ? _buffer.open() : initBufferByTime();
 }
 
 
@@ -153,7 +153,7 @@ bool ts::TimeShiftPlugin::start()
 
 bool ts::TimeShiftPlugin::stop()
 {
-    _buffer.close(*this);
+    _buffer.close();
     return true;
 }
 
@@ -186,7 +186,7 @@ ts::PacketProcessStatus ts::TimeShiftPlugin::processPacket(TSPacket& pkt, TSPack
     else {
         // Check if we are in the initial filling phase.
         const bool init_phase = !_buffer.full();
-        if (!_buffer.shift(pkt, pkt_data, *this)) {
+        if (!_buffer.shift(pkt, pkt_data)) {
             return TSP_END; // fatal error
         }
         return init_phase && _drop_initial ? TSP_DROP : TSP_OK;

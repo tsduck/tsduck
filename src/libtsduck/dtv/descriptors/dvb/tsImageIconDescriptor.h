@@ -21,7 +21,7 @@ namespace ts {
     //! @see ETSI EN 300 468, 6.4.7.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL ImageIconDescriptor : public AbstractDescriptor
+    class TSDUCKDLL ImageIconDescriptor: public AbstractDescriptor
     {
     public:
         // ImageIconDescriptor public members:

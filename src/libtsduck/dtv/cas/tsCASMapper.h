@@ -23,7 +23,7 @@ namespace ts {
     //! All packets are passed through this object. It tracks the location of all
     //! EMM and ECM PID's and records the corresponding CAS attributes.
     //!
-    class TSDUCKDLL CASMapper : private TableHandlerInterface
+    class TSDUCKDLL CASMapper: private TableHandlerInterface
     {
         TS_NOBUILD_NOCOPY(CASMapper);
     public:

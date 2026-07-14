@@ -12,8 +12,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsAbstractReadStreamInterface.h"
-#include "tsAbstractWriteStreamInterface.h"
+#include "tsAbstractStream.h"
 #include "tsTSPacketFormat.h"
 #include "tsTSPacketMetadata.h"
 #include "tsTSPacket.h"
@@ -29,15 +28,16 @@ namespace ts {
     //!
     class TSDUCKDLL TSPacketStream
     {
-        TS_NOCOPY(TSPacketStream);
+        TS_NOBUILD_NOCOPY(TSPacketStream);
     public:
         //!
         //! Constructor.
+        //! @param [in,out] reporter Reference to an object providing a Report.
+        //! This reference is kept in the constructed object instance.
         //! @param [in] format Initial packet format.
-        //! @param [in] reader Reader interface. If null, all read operations will fail.
-        //! @param [in] writer Writer interface. If null, all write operations will fail.
+        //! @param [in] stream Stream read/write interface. Can be null and replaced later.
         //!
-        TSPacketStream(TSPacketFormat format = TSPacketFormat::AUTODETECT, AbstractReadStreamInterface* reader = nullptr, AbstractWriteStreamInterface* writer = nullptr);
+        TSPacketStream(ReporterInterface& reporter, TSPacketFormat format = TSPacketFormat::AUTODETECT, AbstractStream* stream = nullptr);
 
         //!
         //! Destructor.
@@ -51,10 +51,9 @@ namespace ts {
         //! time stamps, they are set in the metadata. Ignored if null pointer.
         //! @param [in] max_packets Size of @a buffer in packets.
         //! Also size of @a metadata in number of objects (when specified).
-        //! @param [in,out] report Where to report errors.
         //! @return The actual number of read packets. Returning zero means error or end of stream.
         //!
-        virtual size_t readPackets(TSPacket* buffer, TSPacketMetadata* metadata, size_t max_packets, Report& report);
+        virtual size_t readPackets(TSPacket* buffer, TSPacketMetadata* metadata, size_t max_packets);
 
         //!
         //! Write TS packets to the stream.
@@ -65,10 +64,9 @@ namespace ts {
         //! written timestamp is repeated.
         //! @param [in] packet_count Number of packets to write.
         //! Also size of @a metadata in number of objects (when specified).
-        //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        virtual bool writePackets(const TSPacket* buffer, const TSPacketMetadata* metadata, size_t packet_count, Report& report);
+        virtual bool writePackets(const TSPacket* buffer, const TSPacketMetadata* metadata, size_t packet_count);
 
         //!
         //! Get the number of read packets.
@@ -124,20 +122,19 @@ namespace ts {
         //!
         //! Reset the stream format and counters.
         //! @param [in] format Initial packet format.
-        //! @param [in] reader Reader interface. If null, all read operations will fail.
-        //! @param [in] writer Writer interface. If null, all write operations will fail.
+        //! @param [in] stream Stream read/write interface.
         //!
-        void resetPacketStream(TSPacketFormat format, AbstractReadStreamInterface* reader, AbstractWriteStreamInterface* writer);
+        void resetPacketStream(TSPacketFormat format, AbstractStream* stream);
 
         PacketCounter _total_read = 0;   //!< Total read packets.
         PacketCounter _total_write = 0;  //!< Total written packets.
 
     private:
-        TSPacketFormat                _format = TSPacketFormat::TS;
-        AbstractReadStreamInterface*  _reader = nullptr;
-        AbstractWriteStreamInterface* _writer = nullptr;
-        PCR     _last_timestamp {};              // Last write time stamp in PCR units (M2TS files).
-        size_t  _trail_size = 0;                 // Number of meaningful bytes in _trail
-        uint8_t _trail[MAX_TRAILER_SIZE+1] {};   // Transient buffer for auto-detection of trailer
+        ReporterInterface& _reporter;
+        TSPacketFormat     _format = TSPacketFormat::TS;
+        AbstractStream*    _stream = nullptr;
+        PCR                _last_timestamp {};              // Last write time stamp in PCR units (M2TS files).
+        size_t             _trail_size = 0;                 // Number of meaningful bytes in _trail
+        uint8_t            _trail[MAX_TRAILER_SIZE+1] {};   // Transient buffer for auto-detection of trailer
     };
 }

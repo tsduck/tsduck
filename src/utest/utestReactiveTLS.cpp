@@ -275,7 +275,7 @@ namespace {
         ts::Reactor&              _reactor;
         std::ostream&             _debug;
         size_t                    _client_id = 0;
-        ts::TCPConnection         _client {};
+        ts::TCPConnection         _client {&_reactor};
         ts::ReactiveTLSConnection _rclient {_reactor, _client};
         uint32_t                  _response = 0;
         size_t                    _expected_send_position = 0;

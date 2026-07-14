@@ -32,7 +32,7 @@ TSUNIT_REGISTER(CommandLineTest);
 //----------------------------------------------------------------------------
 
 namespace {
-    class TestCommand : public ts::CommandLineHandler
+    class TestCommand: public ts::CommandLineHandler
     {
         TS_NOBUILD_NOCOPY(TestCommand);
     public:

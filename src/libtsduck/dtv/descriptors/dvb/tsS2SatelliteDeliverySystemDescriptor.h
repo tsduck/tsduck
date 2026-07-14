@@ -20,7 +20,7 @@ namespace ts {
     //! @see ETSI EN 300 468, 6.2.13.3.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL S2SatelliteDeliverySystemDescriptor : public AbstractDeliverySystemDescriptor
+    class TSDUCKDLL S2SatelliteDeliverySystemDescriptor: public AbstractDeliverySystemDescriptor
     {
     public:
         // Public members:

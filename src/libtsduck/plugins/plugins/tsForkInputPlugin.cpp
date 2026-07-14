@@ -55,7 +55,6 @@ bool ts::ForkInputPlugin::start()
     return _pipe.open(_command,
                       _nowait ? ForkPipe::ASYNCHRONOUS : ForkPipe::SYNCHRONOUS,
                       PKT_SIZE * _buffer_size,  // Pipe buffer size (Windows only, zero meaning default).
-                      *this,                    // Error reporting.
                       ForkPipe::STDOUT_PIPE,    // Output: send stdout to pipe, keep same stderr as tsp.
                       ForkPipe::STDIN_NONE,     // Input: null device (do not use the same stdin as tsp).
                       _format);                 // Expected TS format, usually autodetect.
@@ -64,7 +63,7 @@ bool ts::ForkInputPlugin::start()
 bool ts::ForkInputPlugin::stop()
 {
     debug(u"stopping input");
-    return _pipe.close(*this);
+    return _pipe.close();
 }
 
 bool ts::ForkInputPlugin::abortInput()
@@ -76,5 +75,5 @@ bool ts::ForkInputPlugin::abortInput()
 
 size_t ts::ForkInputPlugin::receive(TSPacket* buffer, TSPacketMetadata* pkt_data, size_t max_packets)
 {
-    return _pipe.readPackets(buffer, pkt_data, max_packets, *this);
+    return _pipe.readPackets(buffer, pkt_data, max_packets);
 }

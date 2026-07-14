@@ -12,17 +12,17 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsReport.h"
 #include "tsOwnedObject.h"
+#include "tsReporterInterface.h"
 
 namespace ts {
     //!
     //! Base class for classes using a Report object.
     //! @ingroup libtscore log
     //!
-    class TSCOREDLL ReporterBase: public OwnedObject
+    class TSCOREDLL ReporterBase: public OwnedObject, public ReporterInterface
     {
-        TS_NOCOPY(ReporterBase);
+        TS_NOBUILD_NOCOPY(ReporterBase);
     public:
         //!
         //! Constructor.
@@ -30,7 +30,7 @@ namespace ts {
         //! exists or setReport() is used with another Report object. If @a report is null, log messages are discarded.
         //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        explicit ReporterBase(Report* report = nullptr, Object* owner = nullptr) : OwnedObject(owner), _report(report) {}
+        explicit ReporterBase(Report* report, Object* owner = nullptr) : OwnedObject(owner), _report(report) {}
 
         //!
         //! Constructor.
@@ -44,12 +44,8 @@ namespace ts {
         //!
         virtual ~ReporterBase() override;
 
-        //!
-        //! Access the Report which is associated with this object.
-        //! Can be called from another thread only if the Report object is thread-safe.
-        //! @return A reference to the associated report.
-        //!
-        Report& report() const;
+        // Implementation of ReporterInterface.
+        virtual Report& report() const override;
 
         //!
         //! Associate this object with another Report to log errors.
@@ -81,9 +77,10 @@ namespace ts {
         //! errors if the previous error left the device in an inconsistent state. While those errors should not
         //! be displayed as errors, we still display them at debug level.
         //! @param [in] silent If true, do not report errors, report debug messages instead.
+        //! @param [in] default_severity Default severity, in non-silent mode (error by default).
         //! @return Error when @a silent is false, Debug otherwise.
         //!
-        static inline int SilentLevel(bool silent) { return silent ? Severity::Debug : Severity::Error; }
+        static inline int SilentLevel(bool silent, int default_severity = Severity::Error) { return silent ? Severity::Debug : default_severity; }
 
     private:
         ReporterBase* _delegate = nullptr;

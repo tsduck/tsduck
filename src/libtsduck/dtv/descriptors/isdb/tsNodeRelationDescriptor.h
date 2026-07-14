@@ -20,7 +20,7 @@ namespace ts {
     //! @see ARIB STD-B10, Part 3, 5.2.3
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL NodeRelationDescriptor : public AbstractDescriptor
+    class TSDUCKDLL NodeRelationDescriptor: public AbstractDescriptor
     {
     public:
         // NodeRelationDescriptor public members:

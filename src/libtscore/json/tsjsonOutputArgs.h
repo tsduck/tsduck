@@ -27,12 +27,14 @@ namespace ts::json {
     //!
     class TSCOREDLL OutputArgs
     {
-        TS_NOCOPY(OutputArgs);
+        TS_NOBUILD_NOCOPY(OutputArgs);
     public:
         //!
-        //! Default constructor.
+        //! Constructor.
+        //! @param [in] report Where to report errors. The @a report object must remain valid as long as this object
+        //! exists. If @a report is null, log messages are discarded.
         //!
-        OutputArgs() = default;
+        explicit OutputArgs(Report* report);
 
         //!
         //! Virtual destructor.
@@ -120,8 +122,8 @@ namespace ts::json {
         IPAddress         _udp_local {};            // Name of outgoing local address.
         int               _udp_ttl = 0;             // Time-to-live socket option.
         size_t            _sock_buffer_size = 0;    // Socket buffer size (TCP and UDP).
-        UDPSocket         _udp_sock {};             // Output UDP socket.
-        TCPConnection     _tcp_sock {};             // Output TCP socket.
+        UDPSocket         _udp_sock;                // Output UDP socket.
+        TCPConnection     _tcp_sock;                // Output TCP socket.
         TelnetConnection  _telnet_sock {_tcp_sock}; // Output TCP socket.
 
         // Open/close the UDP socket.

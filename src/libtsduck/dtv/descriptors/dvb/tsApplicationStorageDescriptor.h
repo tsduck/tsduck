@@ -24,7 +24,7 @@ namespace ts {
     //! @see ETSI TS 102 809, 5.3.10.1.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL ApplicationStorageDescriptor : public AbstractDescriptor
+    class TSDUCKDLL ApplicationStorageDescriptor: public AbstractDescriptor
     {
     public:
         // ApplicationStorageDescriptor public members:

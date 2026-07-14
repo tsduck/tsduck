@@ -135,7 +135,7 @@ namespace ts {
     // Specialization for std::chrono::duration types.
     //! @cond nodoxygen
     template <class DURATION>
-    class SingleDataStatistics<DURATION, double, typename std::enable_if<std::is_arithmetic<typename DURATION::rep>::value>::type> :
+    class SingleDataStatistics<DURATION, double, typename std::enable_if<std::is_arithmetic<typename DURATION::rep>::value>::type>:
         public SingleDataStatistics<typename DURATION::rep, double>
     {
     private:

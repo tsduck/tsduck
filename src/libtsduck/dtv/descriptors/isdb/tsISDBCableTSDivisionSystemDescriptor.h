@@ -64,7 +64,7 @@ namespace ts {
     //!
     //! FEC inner: This is a 4-bit field that indicates the inner code. The value of this field shall be '1111'.
     //!
-    class TSDUCKDLL ISDBCableTSDivisionSystemDescriptor : public AbstractDescriptor
+    class TSDUCKDLL ISDBCableTSDivisionSystemDescriptor: public AbstractDescriptor
     {
     public:
         //!

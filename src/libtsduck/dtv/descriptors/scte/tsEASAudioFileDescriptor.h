@@ -25,7 +25,7 @@ namespace ts {
     //! @see SCTE 18, 5.1.3
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL EASAudioFileDescriptor : public AbstractDescriptor
+    class TSDUCKDLL EASAudioFileDescriptor: public AbstractDescriptor
     {
     public:
         //!

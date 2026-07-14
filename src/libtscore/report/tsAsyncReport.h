@@ -35,7 +35,7 @@ namespace ts {
     //!
     //! Messages are displayed on the standard error device by default.
     //!
-    class TSCOREDLL AsyncReport : public Report, private Thread
+    class TSCOREDLL AsyncReport: public Report, private Thread
     {
         TS_NOCOPY(AsyncReport);
     public:

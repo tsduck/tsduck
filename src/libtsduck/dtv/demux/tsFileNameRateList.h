@@ -21,7 +21,7 @@ namespace ts {
     //! This is typically used to handle section files to inject into transport streams.
     //! @ingroup libtsduck cmd
     //!
-    class TSDUCKDLL FileNameRateList : public std::list<FileNameRate>
+    class TSDUCKDLL FileNameRateList: public std::list<FileNameRate>
     {
     public:
         //!

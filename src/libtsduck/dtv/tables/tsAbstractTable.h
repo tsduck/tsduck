@@ -186,7 +186,7 @@ namespace ts {
         //! for such entries, combined with the template container classes
         //! AttachedEntryList and AttachedEntryMap.
         //!
-        class TSDUCKDLL EntryWithDescriptors : public AttachedEntry
+        class TSDUCKDLL EntryWithDescriptors: public AttachedEntry
         {
             TS_NO_DEFAULT_CONSTRUCTORS(EntryWithDescriptors);
         public:
@@ -242,7 +242,7 @@ namespace ts {
         //!
         template<typename KEY, class ENTRY>
             requires std::derived_from<ENTRY, ts::AbstractTable::AttachedEntry>
-        class AttachedEntryMap : public std::map<KEY, ENTRY>, public AbstractTableAttachment
+        class AttachedEntryMap: public std::map<KEY, ENTRY>, public AbstractTableAttachment
         {
             TS_NO_DEFAULT_CONSTRUCTORS(AttachedEntryMap);
         public:
@@ -345,7 +345,7 @@ namespace ts {
         //!
         template<class ENTRY>
             requires std::derived_from<ENTRY, AttachedEntry>
-        class AttachedEntryList : public AttachedEntryMap<size_t, ENTRY>
+        class AttachedEntryList: public AttachedEntryMap<size_t, ENTRY>
         {
             TS_NO_DEFAULT_CONSTRUCTORS(AttachedEntryList);
         public:

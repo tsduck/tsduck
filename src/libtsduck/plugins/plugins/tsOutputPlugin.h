@@ -25,7 +25,7 @@ namespace ts {
     //! All shared libraries providing output capability shall return
     //! an object implementing this abstract interface.
     //!
-    class TSDUCKDLL OutputPlugin : public Plugin
+    class TSDUCKDLL OutputPlugin: public Plugin
     {
         TS_NOBUILD_NOCOPY(OutputPlugin);
     public:

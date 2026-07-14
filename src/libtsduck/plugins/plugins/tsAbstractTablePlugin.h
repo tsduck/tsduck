@@ -22,7 +22,7 @@ namespace ts {
     //! Abstract base class for plugins which process one type of table (PAT, CAT, etc.)
     //! @ingroup libtsduck plugin
     //!
-    class TSDUCKDLL AbstractTablePlugin : public ProcessorPlugin, protected TableHandlerInterface
+    class TSDUCKDLL AbstractTablePlugin: public ProcessorPlugin, protected TableHandlerInterface
     {
         TS_NOBUILD_NOCOPY(AbstractTablePlugin);
     public:

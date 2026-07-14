@@ -24,7 +24,7 @@ namespace ts {
     //! @see ETSI TS 102 006, 9.5.2.14
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL SSUEnhancedMessageDescriptor : public AbstractDescriptor
+    class TSDUCKDLL SSUEnhancedMessageDescriptor: public AbstractDescriptor
     {
     public:
         // SSUEnhancedMessageDescriptor public members:

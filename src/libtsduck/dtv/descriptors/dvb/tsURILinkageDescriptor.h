@@ -45,7 +45,7 @@ namespace ts {
     //! @see ETSI EN 300 468, 6.4.15.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL URILinkageDescriptor : public AbstractDescriptor
+    class TSDUCKDLL URILinkageDescriptor: public AbstractDescriptor
     {
     public:
         //!

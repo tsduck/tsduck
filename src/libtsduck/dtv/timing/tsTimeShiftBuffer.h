@@ -12,7 +12,6 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsUString.h"
 #include "tsTSFile.h"
 #include "tsTSPacketMetadata.h"
 #include "tsReport.h"
@@ -26,9 +25,9 @@ namespace ts {
     //! The buffer is partly implemented in virtual memory and partly on disk.
     //! @ingroup libtsduck mpeg
     //!
-    class TSDUCKDLL TimeShiftBuffer
+    class TSDUCKDLL TimeShiftBuffer: public ReporterBase
     {
-        TS_NOCOPY(TimeShiftBuffer);
+        TS_NOBUILD_NOCOPY(TimeShiftBuffer);
     public:
         //!
         //! Minimum size in packets of a time shift buffer.
@@ -49,14 +48,25 @@ namespace ts {
 
         //!
         //! Constructor.
+        //! @param [in] report Where to report errors. The @a report object must remain valid as long as this object
+        //! exists or setReport() is used with another Report object. If @a report is null, log messages are discarded.
         //! @param [in] count Max number of packets in the buffer.
+        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        TimeShiftBuffer(size_t count = DEFAULT_TOTAL_PACKETS);
+        explicit TimeShiftBuffer(Report* report, size_t count = DEFAULT_TOTAL_PACKETS, Object* owner = nullptr);
+
+        //!
+        //! Constructor.
+        //! @param [in] delegate Use the report of another ReporterBase. If @a delegate is null, log messages are discarded.
+        //! @param [in] count Max number of packets in the buffer.
+        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
+        //!
+        explicit TimeShiftBuffer(ReporterBase* delegate, size_t count = DEFAULT_TOTAL_PACKETS, Object* owner = nullptr);
 
         //!
         //! Destructor.
         //!
-        virtual ~TimeShiftBuffer();
+        virtual ~TimeShiftBuffer() override;
 
         //!
         //! Set the total size of the time shift buffer in packets.
@@ -88,18 +98,18 @@ namespace ts {
 
         //!
         //! Open the buffer.
-        //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool open(Report& report);
+        bool open();
 
         //!
         //! Close the buffer.
         //! The memory is freed and the disk backup file is deleted.
-        //! @param [in,out] report Where to report errors.
+        //! @param [in] silent If true, do not report errors. This is typically useful when the object is in some error
+        //! condition and closing it is necessary although it may generate additional meaningless errors.
         //! @return True on success, false on error.
         //!
-        bool close(Report& report);
+        bool close(bool silent = false);
 
         //!
         //! Check if the buffer is open.
@@ -149,10 +159,9 @@ namespace ts {
         //! @param [in,out] packet On input, contains the packet to push.
         //! On output, contains the time-shifted packet.
         //! @param [in,out] metadata Packet metadata.
-        //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool shift(TSPacket& packet, TSPacketMetadata& metadata, Report& report);
+        bool shift(TSPacket& packet, TSPacketMetadata& metadata);
 
     private:
         bool     _is_open = false;          // Buffer is open.
@@ -160,7 +169,7 @@ namespace ts {
         size_t   _total_packets = DEFAULT_TOTAL_PACKETS; // Total capacity of the buffer.
         size_t   _mem_packets = DEFAULT_MEMORY_PACKETS;  // Max packets in memory.
         fs::path _directory {};             // Where to store the backup file.
-        TSFile   _file {};                  // Backup file on disk.
+        TSFile   _file {this};              // Backup file on disk.
         size_t   _next_read = 0;            // Index in buffer of next packet to read.
         size_t   _next_write = 0;           // Index in buffer of next packet to write.
         size_t   _wcache_next = 0;          // Next index to write in _wcache (up to end of _wcache).
@@ -172,8 +181,8 @@ namespace ts {
         TSPacketMetadataVector _rmdata {};  // Packet metadata for _rcache.
 
         // Seek, read, write in the backup file.
-        bool seekFile(size_t index, Report& report);
-        bool writeFile(size_t index, const TSPacket* buffer, const TSPacketMetadata* mdata, size_t count, Report& report);
-        size_t readFile(size_t index, TSPacket* buffer, TSPacketMetadata* mdata, size_t count, Report& report);
+        bool seekFile(size_t index);
+        bool writeFile(size_t index, const TSPacket* buffer, const TSPacketMetadata* mdata, size_t count);
+        size_t readFile(size_t index, TSPacket* buffer, TSPacketMetadata* mdata, size_t count);
     };
 }

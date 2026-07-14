@@ -178,7 +178,7 @@ namespace ts {
     //! @code
     //! namespace ts {
     //!     // The class:
-    //!     class TextFormatter : public std::basic_ostream<char>
+    //!     class TextFormatter: public std::basic_ostream<char>
     //!     {
     //!     public:
     //!         TextFormatter& margin();
@@ -220,7 +220,7 @@ namespace ts {
     //! @code
     //! namespace ts {
     //!     // The class:
-    //!     class TextFormatter : public std::basic_ostream<char>
+    //!     class TextFormatter: public std::basic_ostream<char>
     //!     {
     //!     public:
     //!         TextFormatter& setMarginSize(size_t margin);

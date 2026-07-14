@@ -20,7 +20,7 @@ namespace ts {
     //! @see ARIB STD-B10, Part 2, 6.2.31
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL ISDBTerrestrialDeliverySystemDescriptor : public AbstractDeliverySystemDescriptor
+    class TSDUCKDLL ISDBTerrestrialDeliverySystemDescriptor: public AbstractDeliverySystemDescriptor
     {
     public:
         // ISDBTerrestrialDeliverySystemDescriptor public members:

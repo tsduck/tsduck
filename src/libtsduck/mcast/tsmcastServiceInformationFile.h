@@ -24,7 +24,7 @@ namespace ts::mcast {
     //! @see NetworkInformationFile
     //! @ingroup libtsduck mpeg
     //!
-    class TSDUCKDLL ServiceInformationFile : public FluteFile
+    class TSDUCKDLL ServiceInformationFile: public FluteFile
     {
         TS_RULE_OF_FIVE(ServiceInformationFile, override);
     public:

@@ -22,7 +22,7 @@ namespace ts {
     //! @see ATSC A/81, section 9.9.3.
     //! @ingroup libtsduck table
     //!
-    class TSDUCKDLL AETT : public AbstractLongTable
+    class TSDUCKDLL AETT: public AbstractLongTable
     {
     public:
         //!

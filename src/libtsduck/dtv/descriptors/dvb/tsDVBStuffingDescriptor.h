@@ -21,7 +21,7 @@ namespace ts {
     //! @see ETSI EN 300 468, 6.2.40.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL DVBStuffingDescriptor : public AbstractDescriptor
+    class TSDUCKDLL DVBStuffingDescriptor: public AbstractDescriptor
     {
     public:
         // DVBStuffingDescriptor public members:

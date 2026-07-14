@@ -24,7 +24,7 @@ namespace ts {
     //! @see ANSI/SCTE 35, 9.2.
     //! @ingroup libtsduck table
     //!
-    class TSDUCKDLL SpliceInformationTable : public AbstractTable
+    class TSDUCKDLL SpliceInformationTable: public AbstractTable
     {
     public:
         // Public members:

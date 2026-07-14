@@ -25,7 +25,7 @@ namespace ts {
     //! @see ETSI TS 102 006, 9.5.2.6
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL UpdateDescriptor : public AbstractDescriptor
+    class TSDUCKDLL UpdateDescriptor: public AbstractDescriptor
     {
     public:
         // UpdateDescriptor public members:

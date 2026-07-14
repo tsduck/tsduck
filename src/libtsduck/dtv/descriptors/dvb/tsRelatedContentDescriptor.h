@@ -20,7 +20,7 @@ namespace ts {
     //! @see ETSI TS 102 323, 10.3.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL RelatedContentDescriptor : public AbstractDescriptor
+    class TSDUCKDLL RelatedContentDescriptor: public AbstractDescriptor
     {
     public:
         //!

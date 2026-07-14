@@ -35,7 +35,7 @@ namespace {
         ts::DuckContext duck {this};
         ts::UString     input_file {};
         ts::PcapFilter  file {};
-        ts::PagerArgs   pager {true, true};
+        ts::PagerArgs   pager {this, true, true};
         ts::mcast::FluteAnalyzerArgs flute {};
     };
 }
@@ -88,7 +88,7 @@ int MainCode(int argc, char *argv[])
     opt.file.setProtocolFilterUDP();
 
     // Setup an output pager if necessary.
-    std::ostream& out(opt.pager.output(opt));
+    std::ostream& out(opt.pager.output());
     ts::ReportFile<ts::ThreadSafety::None> report(out, opt.maxSeverity());
     report.setReportPrefix(u"* ");
     opt.duck.setReport(&report);

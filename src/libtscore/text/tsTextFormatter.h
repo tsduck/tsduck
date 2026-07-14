@@ -12,7 +12,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsAbstractOutputStream.h"
+#include "tsAbstractStandardOutputStream.h"
 #include "tsNullReport.h"
 #include "tsAlgorithm.h"
 
@@ -25,7 +25,7 @@ namespace ts {
     //! It is a subclass of <code>std::ostream</code> and can be used as any output stream.
     //! It also defines additional I/O manipulators to handle indentation.
     //!
-    class TSCOREDLL TextFormatter: public AbstractOutputStream
+    class TSCOREDLL TextFormatter: public AbstractStandardOutputStream
     {
         TS_NOCOPY(TextFormatter);
     public:
@@ -228,7 +228,7 @@ namespace ts {
         }
 
     protected:
-        // Implementation of AbstractOutputStream
+        // Implementation of AbstractStandardOutputStream
         virtual bool writeStreamBuffer(const void* addr, size_t size) override;
 
     private:

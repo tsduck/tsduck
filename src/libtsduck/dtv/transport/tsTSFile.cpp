@@ -26,51 +26,27 @@
 
 
 //----------------------------------------------------------------------------
-// Constructors and destructors.
+// Constructors and destructor.
 //----------------------------------------------------------------------------
 
-ts::TSFile::TSFile() :
-    TSPacketStream(TSPacketFormat::AUTODETECT, this, this)
+ts::TSFile::TSFile(Report* report, Object* owner) :
+    ReporterBase(report, owner),
+    TSPacketStream(*static_cast<ReporterBase*>(this)),
+    AbstractStream(*static_cast<ReporterBase*>(this))
 {
 }
 
-ts::TSFile::TSFile(TSFile&& other) noexcept :
-    TSPacketStream(other.packetFormat(), this, this),
-    _filename(std::move(other._filename)),
-    _repeat(other._repeat),
-    _counter(other._counter),
-    _start_offset(other._start_offset),
-    _open_null(other._open_null),
-    _close_null(other._close_null),
-    _open_null_read(other._open_null_read),
-    _close_null_read(other._close_null_read),
-    _is_open(other._is_open),
-    _flags(other._flags),
-    _severity(other._severity),
-    _at_eof(other._at_eof),
-    _aborted(other._aborted),
-    _rewindable(other._rewindable),
-    _regular(other._regular),
-    _std_inout(other._std_inout),
-#if defined(TS_WINDOWS)
-    _handle(other._handle)
-#else
-    _fd(other._fd)
-#endif
+ts::TSFile::TSFile(ReporterBase* delegate, Object* owner) :
+    ReporterBase(delegate, owner),
+    TSPacketStream(*static_cast<ReporterBase*>(this)),
+    AbstractStream(*static_cast<ReporterBase*>(this))
 {
-    // Mark other object as closed, just in case.
-    other._is_open = false;
-#if defined(TS_WINDOWS)
-    other._handle = nullptr;
-#else
-    other._fd = -1;
-#endif
 }
 
 ts::TSFile::~TSFile()
 {
     if (_is_open) {
-        close(NULLREP);
+        close(true);
     }
 }
 
@@ -111,10 +87,10 @@ void ts::TSFile::setStuffing(size_t initial, size_t final)
 // Open file for read in a rewindable mode.
 //----------------------------------------------------------------------------
 
-bool ts::TSFile::openRead(const fs::path& filename, uint64_t start_offset, Report& report, TSPacketFormat format)
+bool ts::TSFile::openRead(const fs::path& filename, uint64_t start_offset, TSPacketFormat format)
 {
     if (_is_open) {
-        report.log(_severity, u"already open");
+        report().log(_severity, u"already open");
         return false;
     }
 
@@ -125,8 +101,8 @@ bool ts::TSFile::openRead(const fs::path& filename, uint64_t start_offset, Repor
     _rewindable = true;
     _flags = READ;
 
-    resetPacketStream(format, this, this);
-    return openInternal(false, report);
+    resetPacketStream(format, this);
+    return openInternal(false);
 }
 
 
@@ -134,10 +110,10 @@ bool ts::TSFile::openRead(const fs::path& filename, uint64_t start_offset, Repor
 // Open file for read with optional repetition.
 //----------------------------------------------------------------------------
 
-bool ts::TSFile::openRead(const fs::path& filename, size_t repeat_count, uint64_t start_offset, Report& report, TSPacketFormat format)
+bool ts::TSFile::openRead(const fs::path& filename, size_t repeat_count, uint64_t start_offset, TSPacketFormat format)
 {
     if (_is_open) {
-        report.log(_severity, u"already open");
+        report().log(_severity, u"already open");
         return false;
     }
 
@@ -148,8 +124,8 @@ bool ts::TSFile::openRead(const fs::path& filename, size_t repeat_count, uint64_
     _rewindable = false;
     _flags = READ | REOPEN_SPEC;
 
-    resetPacketStream(format, this, this);
-    return openInternal(false, report);
+    resetPacketStream(format, this);
+    return openInternal(false);
 }
 
 
@@ -157,7 +133,7 @@ bool ts::TSFile::openRead(const fs::path& filename, size_t repeat_count, uint64_
 // Open file, generic form.
 //----------------------------------------------------------------------------
 
-bool ts::TSFile::open(const fs::path& filename, OpenFlags flags, Report& report, TSPacketFormat format)
+bool ts::TSFile::open(const fs::path& filename, OpenFlags flags, TSPacketFormat format)
 {
     // Enforce WRITE if APPEND is specified.
     if ((flags & APPEND) != 0) {
@@ -165,15 +141,15 @@ bool ts::TSFile::open(const fs::path& filename, OpenFlags flags, Report& report,
     }
 
     if (_is_open) {
-        report.log(_severity, u"already open");
+        report().log(_severity, u"already open");
         return false;
     }
     else if ((flags & (READ | WRITE)) == 0) {
-        report.log(_severity, u"no read or write mode specified");
+        report().log(_severity, u"no read or write mode specified");
         return false;
     }
     else if (filename.empty() && (flags & READ) != 0 && (flags & WRITE) != 0) {
-        report.log(_severity, u"cannot both read and write on standard input or output");
+        report().log(_severity, u"cannot both read and write on standard input or output");
         return false;
     }
 
@@ -184,8 +160,8 @@ bool ts::TSFile::open(const fs::path& filename, OpenFlags flags, Report& report,
     _rewindable = true;
     _flags = flags;
 
-    resetPacketStream(format, this, this);
-    return openInternal(false, report);
+    resetPacketStream(format, this);
+    return openInternal(false);
 }
 
 
@@ -193,7 +169,7 @@ bool ts::TSFile::open(const fs::path& filename, OpenFlags flags, Report& report,
 // Internal open
 //----------------------------------------------------------------------------
 
-bool ts::TSFile::openInternal(bool reopen, Report& report)
+bool ts::TSFile::openInternal(bool reopen)
 {
     const bool read_access = (_flags & READ) != 0;
     const bool write_access = (_flags & WRITE) != 0;
@@ -208,11 +184,11 @@ bool ts::TSFile::openInternal(bool reopen, Report& report)
     // Only named files can be reopened.
     if (reopen) {
         if (_std_inout) {
-            report.log(_severity, u"internal error, cannot reopen standard input or output");
+            report().log(_severity, u"internal error, cannot reopen standard input or output");
             return false;
         }
         else {
-            report.debug(u"closing and reopening %s", _filename);
+            report().debug(u"closing and reopening %s", _filename);
         }
     }
 
@@ -254,13 +230,13 @@ bool ts::TSFile::openInternal(bool reopen, Report& report)
         _handle = ::CreateFileW(_filename.c_str(), access_mask, shared, nullptr, winflags, attrib, nullptr);
         if (!WinHandleValid(_handle)) {
             const int err = LastSysErrorCode();
-            report.log(_severity, u"cannot open %s: %s", getDisplayFileName(), SysErrorCodeMessage(err));
+            report().log(_severity, u"cannot open %s: %s", getDisplayFileName(), SysErrorCodeMessage(err));
             return false;
         }
         // Move to end of file if --append
         if (append_access && ::SetFilePointer(_handle, 0, nullptr, FILE_END) == INVALID_SET_FILE_POINTER) {
             const int err = LastSysErrorCode();
-            report.log(_severity, u"cannot append to %s: %s", getDisplayFileName(), SysErrorCodeMessage(err));
+            report().log(_severity, u"cannot append to %s: %s", getDisplayFileName(), SysErrorCodeMessage(err));
             ::CloseHandle(_handle);
             return false;
         }
@@ -293,7 +269,7 @@ bool ts::TSFile::openInternal(bool reopen, Report& report)
         ::LARGE_INTEGER offset(*(::LARGE_INTEGER*)(&_start_offset));
         if (::SetFilePointerEx(_handle, offset, nullptr, FILE_BEGIN) == 0) {
             const int err = LastSysErrorCode();
-            report.log(_severity, u"error seeking file %s: %s", _filename, SysErrorCodeMessage(err));
+            report().log(_severity, u"error seeking file %s: %s", _filename, SysErrorCodeMessage(err));
             if (!_filename.empty()) {
                 ::CloseHandle(_handle);
             }
@@ -336,12 +312,12 @@ bool ts::TSFile::openInternal(bool reopen, Report& report)
     else {
         // Open a named file.
         if ((_fd = ::open(_filename.c_str(), uflags, mode)) < 0) {
-            report.log(_severity, u"cannot open file %s: %s", getDisplayFileName(), SysErrorCodeMessage());
+            report().log(_severity, u"cannot open file %s: %s", getDisplayFileName(), SysErrorCodeMessage());
             return false;
         }
         // Move to end of file if --append.
         if (append_access && ::lseek(_fd, 0, SEEK_END) == off_t(-1)) {
-            report.log(_severity, u"error seeking at end of %s: %s", getDisplayFileName(), SysErrorCodeMessage());
+            report().log(_severity, u"error seeking at end of %s: %s", getDisplayFileName(), SysErrorCodeMessage());
             ::close(_fd);
             return false;
         }
@@ -355,7 +331,7 @@ bool ts::TSFile::openInternal(bool reopen, Report& report)
     // Check if this is a regular file.
     struct stat st {};
     if (::fstat(_fd, &st) < 0) {
-        report.log(_severity, u"cannot stat input file %s: %s", getDisplayFileName(), SysErrorCodeMessage());
+        report().log(_severity, u"cannot stat input file %s: %s", getDisplayFileName(), SysErrorCodeMessage());
         if (!_std_inout) {
             ::close(_fd);
         }
@@ -364,7 +340,7 @@ bool ts::TSFile::openInternal(bool reopen, Report& report)
     _regular = S_ISREG(st.st_mode);
 
     // Check if seek is required or possible.
-    if (!seekCheck(report)) {
+    if (!seekCheck()) {
         if (!_std_inout) {
             ::close(_fd);
         }
@@ -373,7 +349,7 @@ bool ts::TSFile::openInternal(bool reopen, Report& report)
 
     // If an initial offset is specified, move here
     if (_start_offset != 0 && ::lseek(_fd, off_t(_start_offset), SEEK_SET) == off_t(-1)) {
-        report.log(_severity, u"error seeking input file %s: %s", getDisplayFileName(), SysErrorCodeMessage());
+        report().log(_severity, u"error seeking input file %s: %s", getDisplayFileName(), SysErrorCodeMessage());
         if (!_std_inout) {
             ::close(_fd);
         }
@@ -393,8 +369,8 @@ bool ts::TSFile::openInternal(bool reopen, Report& report)
     _is_open = true;
 
     // In write mode, write initial null packets.
-    if (write_access && !reopen && _open_null > 0 && !writeStuffing(_open_null, report)) {
-        close(report);
+    if (write_access && !reopen && _open_null > 0 && !writeStuffing(_open_null)) {
+        close();
         return false;
     }
 
@@ -407,7 +383,7 @@ bool ts::TSFile::openInternal(bool reopen, Report& report)
 // Return false if seeking is required but not possible.
 //----------------------------------------------------------------------------
 
-bool ts::TSFile::seekCheck(Report& report)
+bool ts::TSFile::seekCheck()
 {
     if (_regular || (_repeat == 1 && _start_offset == 0)) {
         // Regular disk files can always be seeked.
@@ -421,24 +397,24 @@ bool ts::TSFile::seekCheck(Report& report)
     }
     else {
         // We need to seek but we can't.
-        report.log(_severity, u"input file %s is not a regular file, cannot %s", getDisplayFileName(), _repeat != 1 ? u"repeat" : u"specify start offset");
+        report().log(_severity, u"input file %s is not a regular file, cannot %s", getDisplayFileName(), _repeat != 1 ? u"repeat" : u"specify start offset");
         return false;
     }
 }
 
 
 //----------------------------------------------------------------------------
-// Internal seek. Rewind to specified start offset plus specified index.
+// Rewind to specified start offset plus specified index.
 //----------------------------------------------------------------------------
 
-bool ts::TSFile::seekInternal(uint64_t index, Report& report)
+bool ts::TSFile::seekByte(uint64_t index)
 {
     // If seeking at the beginning and REOPEN is set, close and reopen the file.
     if (index == 0 && (_flags & REOPEN) != 0) {
-        return openInternal(true, report);
+        return openInternal(true);
     }
 
-    report.debug(u"seeking %s at offset %'d", _filename, _start_offset + index);
+    report().debug(u"seeking %s at offset %'d", _filename, _start_offset + index);
 
 #if defined(TS_WINDOWS)
     // In Win32, LARGE_INTEGER is a 64-bit structure, not an integer type
@@ -448,7 +424,7 @@ bool ts::TSFile::seekInternal(uint64_t index, Report& report)
 #else
     if (::lseek(_fd, off_t(_start_offset + index), SEEK_SET) == off_t(-1)) {
 #endif
-        report.log(_severity, u"error seeking file %s: %s", getDisplayFileName(), SysErrorCodeMessage());
+        report().log(_severity, u"error seeking file %s: %s", getDisplayFileName(), SysErrorCodeMessage());
         return false;
     }
     else {
@@ -462,18 +438,18 @@ bool ts::TSFile::seekInternal(uint64_t index, Report& report)
 // Seek the file to the specified packet_index plus the start_offset.
 //----------------------------------------------------------------------------
 
-bool ts::TSFile::seek(PacketCounter packet_index, Report& report)
+bool ts::TSFile::seekPacket(PacketCounter packet_index)
 {
     if (!_is_open) {
-        report.log(_severity, u"not open");
+        report().log(_severity, u"not open");
         return false;
     }
     else if (!_rewindable) {
-        report.log(_severity, u"file %s is not rewindable", getDisplayFileName());
+        report().log(_severity, u"file %s is not rewindable", getDisplayFileName());
         return false;
     }
     else {
-        return seekInternal(packet_index * (packetHeaderSize() + PKT_SIZE), report);
+        return seekByte(packet_index * (packetHeaderSize() + PKT_SIZE));
     }
 }
 
@@ -482,16 +458,16 @@ bool ts::TSFile::seek(PacketCounter packet_index, Report& report)
 // Close file.
 //----------------------------------------------------------------------------
 
-bool ts::TSFile::close(Report& report)
+bool ts::TSFile::close(bool silent)
 {
     if (!_is_open) {
-        report.log(_severity, u"not open");
+        report().log(SilentLevel(silent, _severity), u"not open");
         return false;
     }
 
     // In write mode, write final null packets.
     if ((_flags & WRITE) != 0 && _close_null > 0) {
-        writeStuffing(_close_null, report);
+        writeStuffing(_close_null);
     }
 
     if (!_std_inout) {
@@ -514,7 +490,7 @@ bool ts::TSFile::close(Report& report)
 
 
 //----------------------------------------------------------------------------
-// Implementation of AbstractReadStreamInterface
+// Implementation of AbstractStream (read).
 //----------------------------------------------------------------------------
 
 bool ts::TSFile::endOfStream()
@@ -522,12 +498,12 @@ bool ts::TSFile::endOfStream()
     return _at_eof;
 }
 
-bool ts::TSFile::readStreamPartial(void* buffer, size_t request_size, size_t& read_size, Report& report)
+bool ts::TSFile::readStream(void* buffer, size_t request_size, size_t& read_size)
 {
     read_size = 0;
 
     if (!_is_open) {
-        report.error(u"%s is not open", getDisplayFileName());
+        report().error(u"%s is not open", getDisplayFileName());
         return false;
     }
     if (_at_eof) {
@@ -556,7 +532,7 @@ bool ts::TSFile::readStreamPartial(void* buffer, size_t request_size, size_t& re
         _at_eof = _at_eof || errcode == ERROR_HANDLE_EOF || errcode == ERROR_BROKEN_PIPE;
         if (!_at_eof) {
             // Actual error, not an EOF.
-            report.error(u"error reading from %s: %s", getDisplayFileName(), SysErrorCodeMessage(errcode));
+            report().error(u"error reading from %s: %s", getDisplayFileName(), SysErrorCodeMessage(errcode));
         }
         return false;
     }
@@ -579,7 +555,7 @@ bool ts::TSFile::readStreamPartial(void* buffer, size_t request_size, size_t& re
         }
         else if (errno != EINTR) {
             // Actual error (not an interrupt)
-            report.log(_severity, u"error reading %s: %s", getDisplayFileName(), SysErrorCodeMessage());
+            report().log(_severity, u"error reading %s: %s", getDisplayFileName(), SysErrorCodeMessage());
             return false;
         }
     }
@@ -593,15 +569,15 @@ bool ts::TSFile::readStreamPartial(void* buffer, size_t request_size, size_t& re
 // Override TSPacketStream implementation
 //----------------------------------------------------------------------------
 
-size_t ts::TSFile::readPackets(TSPacket* buffer, TSPacketMetadata* metadata, size_t max_packets, Report& report)
+size_t ts::TSFile::readPackets(TSPacket* buffer, TSPacketMetadata* metadata, size_t max_packets)
 {
     size_t ret_count = 0;
 
     // Initial artificial stuffing.
     if (_open_null_read > 0 && max_packets > 0) {
         const size_t count = std::min(max_packets, _open_null_read);
-        report.debug(u"reading %d starting null packets", count);
-        readStuffing(buffer, metadata, count, report);
+        report().debug(u"reading %d starting null packets", count);
+        readStuffing(buffer, metadata, count);
         _total_read += count;
         ret_count += count;
         max_packets -= count;
@@ -613,7 +589,7 @@ size_t ts::TSFile::readPackets(TSPacket* buffer, TSPacketMetadata* metadata, siz
     while (max_packets > 0 && !_at_eof) {
 
         // Invoke superclass.
-        const size_t count = TSPacketStream::readPackets(buffer, metadata, max_packets, report);
+        const size_t count = TSPacketStream::readPackets(buffer, metadata, max_packets);
 
         if (count == 0 && !_at_eof) {
             break; // actual error
@@ -630,7 +606,7 @@ size_t ts::TSFile::readPackets(TSPacket* buffer, TSPacketMetadata* metadata, siz
         // At end of file, if the file must be repeated a finite number of times,
         // check if this was the last time. If the file must be repeated again,
         // rewind to original start offset.
-        if (_at_eof && (_repeat == 0 || ++_counter < _repeat) && !seekInternal(0, report)) {
+        if (_at_eof && (_repeat == 0 || ++_counter < _repeat) && !seekByte(0)) {
             break; // rewind error
         }
     }
@@ -638,8 +614,8 @@ size_t ts::TSFile::readPackets(TSPacket* buffer, TSPacketMetadata* metadata, siz
     // Final artificial stuffing.
     if (_at_eof && _close_null_read > 0 && max_packets > 0) {
         const size_t count = std::min(max_packets, _close_null_read);
-        report.debug(u"reading %d stopping null packets", count);
-        readStuffing(buffer, metadata, count, report);
+        report().debug(u"reading %d stopping null packets", count);
+        readStuffing(buffer, metadata, count);
         _total_read += count;
         ret_count += count;
         _close_null_read -= count;
@@ -650,10 +626,10 @@ size_t ts::TSFile::readPackets(TSPacket* buffer, TSPacketMetadata* metadata, siz
 
 
 //----------------------------------------------------------------------------
-// Implementation of AbstractWriteStreamInterface
+// Implementation of AbstractStream (write).
 //----------------------------------------------------------------------------
 
-bool ts::TSFile::writeStream(const void* buffer, size_t data_size, size_t& written_size, Report& report)
+bool ts::TSFile::writeStream(const void* buffer, size_t data_size, size_t& written_size)
 {
     written_size = 0;
 
@@ -683,7 +659,7 @@ bool ts::TSFile::writeStream(const void* buffer, size_t data_size, size_t& writt
         }
         else {
             // Write error
-            report.log(_severity, u"error writing %s: %s", getDisplayFileName(), SysErrorCodeMessage(errcode));
+            report().log(_severity, u"error writing %s: %s", getDisplayFileName(), SysErrorCodeMessage(errcode));
             return false;
         }
     }
@@ -709,7 +685,7 @@ bool ts::TSFile::writeStream(const void* buffer, size_t data_size, size_t& writt
         else if (errno != EINTR) {
             // Actual error (not an interrupt). Don't report error on broken pipe.
             if (errno != EPIPE) {
-                report.log(_severity, u"error writing %s: %s", getDisplayFileName(), SysErrorCodeMessage());
+                report().log(_severity, u"error writing %s: %s", getDisplayFileName(), SysErrorCodeMessage());
             }
             return false;
         }
@@ -724,7 +700,7 @@ bool ts::TSFile::writeStream(const void* buffer, size_t data_size, size_t& writt
 // Read/write artificial stuffing.
 //----------------------------------------------------------------------------
 
-void ts::TSFile::readStuffing(TSPacket*& buffer, TSPacketMetadata*& metadata, size_t count, Report& report)
+void ts::TSFile::readStuffing(TSPacket*& buffer, TSPacketMetadata*& metadata, size_t count)
 {
     while (count-- > 0) {
         *buffer++ = NullPacket;
@@ -735,12 +711,12 @@ void ts::TSFile::readStuffing(TSPacket*& buffer, TSPacketMetadata*& metadata, si
     }
 }
 
-bool ts::TSFile::writeStuffing(size_t count, Report& report)
+bool ts::TSFile::writeStuffing(size_t count)
 {
     TSPacketMetadata mdata;
     mdata.setInputStuffing(true);
     for (size_t i = 0; i < count; ++i) {
-        if (!writePackets(&NullPacket, &mdata, 1, report)) {
+        if (!writePackets(&NullPacket, &mdata, 1)) {
             return false;
         }
     }

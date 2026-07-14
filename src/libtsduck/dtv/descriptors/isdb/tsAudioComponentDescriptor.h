@@ -20,7 +20,7 @@ namespace ts {
     //! @see ARIB STD-B10, Part 2, 6.2.26
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL AudioComponentDescriptor : public AbstractDescriptor
+    class TSDUCKDLL AudioComponentDescriptor: public AbstractDescriptor
     {
     public:
         // AudioComponentDescriptor public members:

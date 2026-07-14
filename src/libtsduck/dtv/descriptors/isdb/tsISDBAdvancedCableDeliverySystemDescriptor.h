@@ -60,7 +60,7 @@ namespace ts {
     //! }
     //! @endcode
     //!
-    class TSDUCKDLL ISDBAdvancedCableDeliverySystemDescriptor : public AbstractDescriptor
+    class TSDUCKDLL ISDBAdvancedCableDeliverySystemDescriptor: public AbstractDescriptor
     {
     public:
         //!

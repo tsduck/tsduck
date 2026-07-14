@@ -37,7 +37,7 @@ namespace {
 
         ts::DuckContext       duck {this};               // TSDuck execution context.
         ts::TablesDisplay     display {duck};            // Options about displaying tables
-        ts::PagerArgs         pager {true, true};        // Output paging options.
+        ts::PagerArgs         pager {this, true, true};  // Output paging options.
         ts::UDPReceiverArgs   udp {};                    // Options about receiving UDP tables
         ts::duck::Protocol    duck_protocol {};          // To analyze incoming UDP messages
         std::vector<fs::path> infiles {};                // Input file names
@@ -125,7 +125,7 @@ namespace {
         ts::SectionPtrVector sections;
 
         // Redirect display on pager process or stdout only.
-        opt.duck.setOutput(&opt.pager.output(opt), false);
+        opt.duck.setOutput(&opt.pager.output(), false);
 
         // Receive UDP packets.
         while (ok && opt.max_tables > 0) {
@@ -189,7 +189,7 @@ namespace {
     {
         // Report file name in case of multiple files
         if (opt.verbose() && opt.infiles.size() > 1) {
-            opt.pager.output(opt) << "* File: " << file_name << std::endl << std::endl;
+            opt.pager.output() << "* File: " << file_name << std::endl << std::endl;
         }
 
         // Load all sections
@@ -208,7 +208,7 @@ namespace {
 
         if (ok) {
             // Display all sections.
-            opt.duck.setOutput(&opt.pager.output(opt), false);
+            opt.duck.setOutput(&opt.pager.output(), false);
             for (auto it = file.sections().begin(); opt.max_tables > 0 && it != file.sections().end(); ++it) {
                 opt.display.displaySection(**it);
                 opt.display.out() << std::endl;
@@ -232,7 +232,7 @@ int MainCode(int argc, char *argv[])
     bool ok = true;
 
     // Dump files or network packets.
-    opt.pager.output(opt) << std::endl;
+    opt.pager.output() << std::endl;
     if (opt.udp.destination.hasPort()) {
         ok = DumpUDP(opt);
     }

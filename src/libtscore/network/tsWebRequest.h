@@ -35,9 +35,9 @@ namespace ts {
     //! is used (system configuration on Windows, http_proxy environment on
     //! Unix systems).
     //!
-    class TSCOREDLL WebRequest : public ReporterBase
+    class TSCOREDLL WebRequest: public ReporterBase
     {
-        TS_NOCOPY(WebRequest);
+        TS_NOBUILD_NOCOPY(WebRequest);
     public:
         //!
         //! Constructor.
@@ -45,14 +45,14 @@ namespace ts {
         //! exists or setReport() is used with another Report object. If @a report is null, log messages are discarded.
         //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        WebRequest(Report* report = nullptr, Object* owner = nullptr);
+        explicit WebRequest(Report* report, Object* owner = nullptr);
 
         //!
         //! Constructor.
         //! @param [in] delegate Use the report of another ReporterBase. If @a delegate is null, log messages are discarded.
         //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        WebRequest(ReporterBase* delegate, Object* owner = nullptr);
+        explicit WebRequest(ReporterBase* delegate, Object* owner = nullptr);
 
         //!
         //! Destructor.

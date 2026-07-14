@@ -319,12 +319,12 @@ bool ts::TunerEmulator::start()
 
     const Channel& chan(_channels[_tune_index]);
     if (!chan.file.empty()) {
-        if (!_file.openRead(chan.file, 0, 0, _duck.report())) {
+        if (!_file.openRead(chan.file, 0, 0)) {
             return false;
         }
     }
     else if (!chan.pipe.empty()) {
-        if (!_pipe.open(chan.pipe, ForkPipe::SYNCHRONOUS, 0, _duck.report(), ForkPipe::STDOUT_PIPE, ForkPipe::STDIN_NONE)) {
+        if (!_pipe.open(chan.pipe, ForkPipe::SYNCHRONOUS, 0, ForkPipe::STDOUT_PIPE, ForkPipe::STDIN_NONE)) {
             return false;
         }
     }
@@ -342,10 +342,10 @@ bool ts::TunerEmulator::stop(bool silent)
 {
     // Close resources, regardless of state.
     if (_file.isOpen()) {
-        _file.close(silent ? NULLREP : _duck.report());
+        _file.close(silent);
     }
     if (_pipe.isOpen()) {
-        _pipe.close(silent ? NULLREP : _duck.report());
+        _pipe.close(silent);
     }
     // Change state only if started.
     if (_state == State::STARTED) {
@@ -365,10 +365,10 @@ size_t ts::TunerEmulator::receive(TSPacket* buffer, size_t max_packets, const Ab
         return 0;  // error
     }
     else if (_file.isOpen()) {
-        return _file.readPackets(buffer, nullptr, max_packets, _duck.report());
+        return _file.readPackets(buffer, nullptr, max_packets);
     }
     else if (_pipe.isOpen()) {
-        return _pipe.readPackets(buffer, nullptr, max_packets, _duck.report());
+        return _pipe.readPackets(buffer, nullptr, max_packets);
     }
     else {
         return 0;  // error

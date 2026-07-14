@@ -56,7 +56,7 @@ namespace ts {
     //! The class DuckContext is not thread-safe. It shall be used from one
     //! single thread or explicit synchronization is required.
     //!
-    class TSDUCKDLL DuckContext : public ReporterBase
+    class TSDUCKDLL DuckContext: public ReporterBase
     {
         TS_NOCOPY(DuckContext);
     public:

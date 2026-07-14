@@ -332,7 +332,7 @@ bool EMMGOptions::adjustBandwidth(uint16_t allocated)
 // A class which provides sections to send.
 //----------------------------------------------------------------------------
 
-class EMMGSectionProvider : public ts::SectionProviderInterface
+class EMMGSectionProvider: public ts::SectionProviderInterface
 {
     TS_NOBUILD_NOCOPY(EMMGSectionProvider);
 public:
@@ -356,7 +356,7 @@ private:
 };
 
 // Constructor.
-EMMGSectionProvider::EMMGSectionProvider(const EMMGOptions& opt) :
+EMMGSectionProvider::EMMGSectionProvider(const EMMGOptions& opt):
     _opt(opt),
     _emm_table_id(opt.emm_min_table_id)
 {

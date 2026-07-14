@@ -22,7 +22,7 @@ namespace ts {
         //! Plugin event handler with forwarding to a Java class.
         //! @ingroup libtsduck java
         //!
-        class TSDUCKDLL PluginEventHandler : public ts::PluginEventHandlerInterface
+        class TSDUCKDLL PluginEventHandler: public ts::PluginEventHandlerInterface
         {
             TS_NOBUILD_NOCOPY(PluginEventHandler);
         public:

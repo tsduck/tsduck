@@ -21,7 +21,7 @@ namespace ts {
     //! @see ETSI EN 300 468, 6.4.11.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL SupplementaryAudioDescriptor : public AbstractDescriptor
+    class TSDUCKDLL SupplementaryAudioDescriptor: public AbstractDescriptor
     {
     public:
         // Public members:

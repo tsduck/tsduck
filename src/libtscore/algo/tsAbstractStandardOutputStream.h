@@ -15,7 +15,7 @@
 #include "tsPlatform.h"
 
 namespace ts {
-    // warning C5291: 'ts::AbstractOutputStream': deriving from the base class 'std::basic_ostream<char,std::char_traits<char>>'
+    // warning C5291: 'ts::AbstractStandardOutputStream': deriving from the base class 'std::basic_ostream<char,std::char_traits<char>>'
     // can cause potential runtime issues due to an ABI bug. Recommend adding a 4-byte data member to the base class for the
     // padding at the end of it to work around this bug.
     TS_PUSH_WARNING()
@@ -25,12 +25,12 @@ namespace ts {
     //! Intermediate abstract class to help implementing @c std::ostream.
     //! @ingroup libtscore cpp
     //!
-    class TSCOREDLL AbstractOutputStream:
+    class TSCOREDLL AbstractStandardOutputStream:
         public std::basic_ostream<char>,     // Public base
         private std::basic_streambuf<char>   // Internally use a streambuf
     {
         TS_POP_WARNING()
-        TS_NOCOPY(AbstractOutputStream);
+        TS_NOCOPY(AbstractStandardOutputStream);
     public:
         //!
         //! Explicit reference to the public superclass.
@@ -58,12 +58,12 @@ namespace ts {
         //! Constructor.
         //! @param [in] bufferSize Buffer size in bytes.
         //!
-        explicit AbstractOutputStream(size_t bufferSize = DEFAULT_STREAM_BUFFER_SIZE);
+        explicit AbstractStandardOutputStream(size_t bufferSize = DEFAULT_STREAM_BUFFER_SIZE);
 
         //!
         //! Destructor.
         //!
-        virtual ~AbstractOutputStream() override;
+        virtual ~AbstractStandardOutputStream() override;
 
     protected:
         //!

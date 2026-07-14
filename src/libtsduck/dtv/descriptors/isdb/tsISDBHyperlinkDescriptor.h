@@ -22,7 +22,7 @@ namespace ts {
     //! @see ARIB STD-B10, Part 2, 6.2.29
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL ISDBHyperlinkDescriptor : public AbstractDescriptor
+    class TSDUCKDLL ISDBHyperlinkDescriptor: public AbstractDescriptor
     {
     public:
         //!
@@ -60,7 +60,7 @@ namespace ts {
         //!
         //! Event triplet (quadruplet in fact).
         //!
-        class TSDUCKDLL EventTriplet : public ServiceTriplet
+        class TSDUCKDLL EventTriplet: public ServiceTriplet
         {
             TS_DEFAULT_COPY_MOVE(EventTriplet);
         public:
@@ -90,7 +90,7 @@ namespace ts {
         //!
         //! Module triplet.
         //!
-        class TSDUCKDLL ModuleTriplet : public EventTriplet
+        class TSDUCKDLL ModuleTriplet: public EventTriplet
         {
             TS_DEFAULT_COPY_MOVE(ModuleTriplet);
         public:
@@ -121,7 +121,7 @@ namespace ts {
         //!
         //! Content triplet.
         //!
-        class TSDUCKDLL ContentTriplet : public ServiceTriplet
+        class TSDUCKDLL ContentTriplet: public ServiceTriplet
         {
             TS_DEFAULT_COPY_MOVE(ContentTriplet);
         public:
@@ -151,7 +151,7 @@ namespace ts {
         //!
         //! Content module triplet.
         //!
-        class TSDUCKDLL ContentModuleTriplet : public ContentTriplet
+        class TSDUCKDLL ContentModuleTriplet: public ContentTriplet
         {
             TS_DEFAULT_COPY_MOVE(ContentModuleTriplet);
         public:

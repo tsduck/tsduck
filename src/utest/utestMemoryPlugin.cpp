@@ -34,7 +34,7 @@ TSUNIT_REGISTER(MemoryPluginTest);
 //----------------------------------------------------------------------------
 
 namespace {
-    class TestReport : public ts::AsyncReport
+    class TestReport: public ts::AsyncReport
     {
         TS_NOBUILD_NOCOPY(TestReport);
     public:
@@ -66,7 +66,7 @@ namespace {
 //----------------------------------------------------------------------------
 
 namespace {
-    class Input : public ts::PluginEventHandlerInterface
+    class Input: public ts::PluginEventHandlerInterface
     {
         TS_NOBUILD_NOCOPY(Input);
     public:
@@ -100,7 +100,7 @@ namespace {
 //----------------------------------------------------------------------------
 
 namespace {
-    class Output : public ts::PluginEventHandlerInterface
+    class Output: public ts::PluginEventHandlerInterface
     {
         TS_NOBUILD_NOCOPY(Output);
     public:

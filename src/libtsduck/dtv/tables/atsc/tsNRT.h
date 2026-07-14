@@ -22,7 +22,7 @@ namespace ts {
     //! @see ATSC A/90, section 12.3.
     //! @ingroup libtsduck table
     //!
-    class TSDUCKDLL NRT : public AbstractLongTable
+    class TSDUCKDLL NRT: public AbstractLongTable
     {
         TS_DEFAULT_COPY_MOVE(NRT);
     public:

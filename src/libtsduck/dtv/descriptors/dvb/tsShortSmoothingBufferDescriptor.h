@@ -21,7 +21,7 @@ namespace ts {
     //! @see ETSI EN 300 468, 6.2.38.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL ShortSmoothingBufferDescriptor : public AbstractDescriptor
+    class TSDUCKDLL ShortSmoothingBufferDescriptor: public AbstractDescriptor
     {
     public:
         // Public members:

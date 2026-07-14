@@ -23,7 +23,7 @@ namespace ts::mcast {
     //!
     //! If a file is not content-encoded, the transfer length is the same as the file length.
     //!
-    class TSDUCKDLL FECTransmissionInformation : public StringifyInterface
+    class TSDUCKDLL FECTransmissionInformation: public StringifyInterface
     {
     public:
         uint8_t  fec_encoding_id = 0;          //!< FEC Encoding ID which was used to parse the structure (not part of the structore).

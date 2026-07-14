@@ -39,7 +39,7 @@ namespace ts {
     //!
     class TSCOREDLL TLSConnection: public TCPConnection, public TLSConnectionBase
     {
-        TS_NOCOPY(TLSConnection);
+        TS_NOBUILD_NOCOPY(TLSConnection);
     public:
         //!
         //! Constructor.
@@ -47,7 +47,7 @@ namespace ts {
         //! exists or setReport() is used with another Report object. If @a report is null, log messages are discarded.
         //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        explicit TLSConnection(Report* report = nullptr, Object* owner = nullptr);
+        explicit TLSConnection(Report* report, Object* owner = nullptr);
 
         //!
         //! Constructor.

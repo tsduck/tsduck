@@ -21,7 +21,7 @@ namespace ts {
     //! @see ETSI EN 300 468, D.5.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL DVBEnhancedAC3Descriptor : public AbstractDescriptor
+    class TSDUCKDLL DVBEnhancedAC3Descriptor: public AbstractDescriptor
     {
     public:
         // Public members:

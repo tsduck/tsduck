@@ -57,7 +57,7 @@ namespace ts {
     //!
     class TSCOREDLL TLSServer: public TCPServer, public TLSServerBase
     {
-        TS_NOCOPY(TLSServer);
+        TS_NOBUILD_NOCOPY(TLSServer);
     public:
         //!
         //! Constructor.
@@ -65,7 +65,7 @@ namespace ts {
         //! exists or setReport() is used with another Report object. If @a report is null, log messages are discarded.
         //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        explicit TLSServer(Report* report = nullptr, Object* owner = nullptr);
+        explicit TLSServer(Report* report, Object* owner = nullptr);
 
         //!
         //! Constructor.

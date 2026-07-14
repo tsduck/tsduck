@@ -24,7 +24,7 @@ namespace ts {
     //! @see ETSI TS 101 812, 10.8.3.2.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL PrefetchDescriptor : public AbstractDescriptor
+    class TSDUCKDLL PrefetchDescriptor: public AbstractDescriptor
     {
     public:
         //!

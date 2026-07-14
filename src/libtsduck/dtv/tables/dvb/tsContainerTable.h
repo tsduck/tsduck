@@ -20,7 +20,7 @@ namespace ts {
     //! @see ETSI TS 102 323, 7.3.1.4
     //! @ingroup libtsduck table
     //!
-    class TSDUCKDLL ContainerTable : public AbstractLongTable
+    class TSDUCKDLL ContainerTable: public AbstractLongTable
     {
     public:
         // ContainerTable public members:

@@ -20,7 +20,7 @@ namespace ts {
     //! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.6.46.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL ExternalESIdDescriptor : public AbstractDescriptor
+    class TSDUCKDLL ExternalESIdDescriptor: public AbstractDescriptor
     {
     public:
         // ExternalESIdDescriptor public members:

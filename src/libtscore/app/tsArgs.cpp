@@ -1484,11 +1484,11 @@ void ts::Args::processHelp()
     const UString text(getHelpText(format));
 
     // Create a pager process if we intend to exit immediately after a full help text.
-    OutputPager pager;
-    if (format == HELP_FULL && (_flags & NO_EXIT_ON_HELP) == 0 && pager.canPage() && pager.open(true, 0, *this)) {
-        pager.write(text, *this);
-        pager.write(u"\n", *this);
-        pager.close(*this);
+    OutputPager pager(this);
+    if (format == HELP_FULL && (_flags & NO_EXIT_ON_HELP) == 0 && pager.canPage() && pager.open(true, 0)) {
+        pager.write(text);
+        pager.write(u"\n");
+        pager.close();
     }
     else if ((_flags & HELP_ON_THIS) != 0) {
         info(text);

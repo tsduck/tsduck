@@ -18,7 +18,7 @@
 namespace {
 
     // A repository of all CAS.
-    class CASRepository : private ts::Names::Visitor
+    class CASRepository: private ts::Names::Visitor
     {
         TS_SINGLETON(CASRepository);
     public:

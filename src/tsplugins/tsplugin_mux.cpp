@@ -31,7 +31,7 @@ namespace ts {
         virtual PacketProcessStatus processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
-        TSFile        _file {};                       // Input file
+        TSFile        _file {this};                   // Input file
         bool          _terminate = false;             // Terminate processing after last new packet.
         bool          _update_cc = false;             // Ignore continuity counters.
         bool          _check_pid_conflict = false;    // Check new PIDs in TS
@@ -220,7 +220,6 @@ bool ts::MuxPlugin::start()
     return _file.openRead(value(u""),
                           intValue<size_t>(u"repeat", 0),
                           intValue<uint64_t>(u"byte-offset", intValue<uint64_t>(u"packet-offset", 0) * PKT_SIZE),
-                          *this,
                           _file_format);
 }
 
@@ -231,7 +230,7 @@ bool ts::MuxPlugin::start()
 
 bool ts::MuxPlugin::stop()
 {
-    return _file.close(*this);
+    return _file.close();
 }
 
 
@@ -315,7 +314,7 @@ ts::PacketProcessStatus ts::MuxPlugin::processPacket(TSPacket& pkt, TSPacketMeta
     }
 
     // Now, it is time to insert a new packet, read it. Directly overwrite the memory area of current stuffing pkt
-    if (_file.readPackets(&pkt, nullptr, 1, *this) == 0) {
+    if (_file.readPackets(&pkt, nullptr, 1) == 0) {
         // File read error, error message already reported
         // If processing terminated, either exit or transparently pass packets
         if (tsp->useJointTermination()) {

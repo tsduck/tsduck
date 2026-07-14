@@ -15,7 +15,7 @@
 //----------------------------------------------------------------------------
 
 ts::TextFormatter::TextFormatter(Report& report) :
-    AbstractOutputStream(),
+    AbstractStandardOutputStream(),
     _report(report),
     _out(&_out_file)  // _out is never null, points by default to a closed file (discard output)
 {
@@ -167,7 +167,7 @@ ts::TextFormatter& ts::TextFormatter::setMarginSize(size_t margin)
 
 
 //----------------------------------------------------------------------------
-// Implementation of AbstractOutputStream
+// Implementation of AbstractStandardOutputStream
 //----------------------------------------------------------------------------
 
 bool ts::TextFormatter::writeStreamBuffer(const void* addr, size_t size)

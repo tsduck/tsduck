@@ -11,24 +11,23 @@
 
 
 //----------------------------------------------------------------------------
-// Constructor
+// Constructors and destructor.
 //----------------------------------------------------------------------------
 
-ts::PCRRegulator::PCRRegulator(Report* report, int log_level) :
-    _report(report == nullptr ? &NULLREP : report),
+ts::PCRRegulator::PCRRegulator(Report* report, int log_level, Object* owner) :
+    ReporterBase(report, owner),
     _log_level(log_level)
 {
 }
 
-
-//----------------------------------------------------------------------------
-// Set a new report.
-//----------------------------------------------------------------------------
-
-void ts::PCRRegulator::setReport(ts::Report *report, int log_level)
+ts::PCRRegulator::PCRRegulator(ReporterBase* delegate, int log_level, Object* owner) :
+    ReporterBase(delegate, owner),
+    _log_level(log_level)
 {
-    _report = report == nullptr ? &NULLREP : report;
-    _log_level = log_level;
+}
+
+ts::PCRRegulator::~PCRRegulator()
+{
 }
 
 
@@ -71,7 +70,7 @@ bool ts::PCRRegulator::regulate(const TSPacket& pkt)
     // Select first PID with PCR's when unspecified by user.
     if (has_pcr && _pid == PID_NULL) {
         _pid = pid;
-        _report->log(_log_level, u"using PID %n for PCR reference", pid);
+        report().log(_log_level, u"using PID %n for PCR reference", pid);
     }
 
     // Do something only on PCR's from the reference PID.
@@ -91,7 +90,7 @@ bool ts::PCRRegulator::regulate(const TSPacket& pkt)
 
         // Try to detect incorrect PCR sequences (such as cycling input).
         if (_started && !valid_pcr_seq) {
-            _report->warning(u"out of sequence PCR, maybe source was cycling, restarting regulation");
+            report().warning(u"out of sequence PCR, maybe source was cycling, restarting regulation");
             _started = false;
         }
 

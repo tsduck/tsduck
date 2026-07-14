@@ -12,33 +12,54 @@
 
 
 //----------------------------------------------------------------------------
-// Constructors and destructors.
+// Constructors and destructor.
 //----------------------------------------------------------------------------
 
-ts::OutputPager::OutputPager(const UString& envName, bool stdoutOnly)
+ts::OutputPager::OutputPager(Report* report, const UString& env_name, bool stdout_only, Object* owner) :
+    ForkPipeOutputStream(report, owner)
+{
+    init(env_name, stdout_only);
+}
+
+ts::OutputPager::OutputPager(ReporterBase* delegate, const UString& env_name, bool stdout_only, Object* owner) :
+    ForkPipeOutputStream(delegate, owner)
+{
+    init(env_name, stdout_only);
+}
+
+ts::OutputPager::~OutputPager()
+{
+}
+
+
+//----------------------------------------------------------------------------
+// Constructors common code.
+//----------------------------------------------------------------------------
+
+void ts::OutputPager::init(const UString& env_name, bool stdout_only)
 {
     // Check if we have a terminal.
-    const bool outTerm = StdOutIsTerminal();
-    const bool errTerm = StdErrIsTerminal();
-    _hasTerminal = outTerm || (!stdoutOnly && errTerm);
+    const bool out_term = StdOutIsTerminal();
+    const bool err_term = StdErrIsTerminal();
+    _has_terminal = out_term || (!stdout_only && err_term);
 
     // Check if we should redirect one output.
-    if (outTerm && !errTerm) {
-        _outputMode = STDOUT_ONLY;
+    if (out_term && !err_term) {
+        _output_mode = STDOUT_ONLY;
     }
-    else if (!outTerm && errTerm) {
-        _outputMode = STDERR_ONLY;
+    else if (!out_term && err_term) {
+        _output_mode = STDERR_ONLY;
     }
 
     // Get the pager command.
     // First, check if the PAGER variable contains something.
-    if (!envName.empty()) {
-        _pagerCommand = ts::GetEnvironment(envName);
-        _pagerCommand.trim();
+    if (!env_name.empty()) {
+        _pager_command = ts::GetEnvironment(env_name);
+        _pager_command.trim();
     }
 
     // If there is no pager command, try to find one.
-    if (_pagerCommand.empty()) {
+    if (_pager_command.empty()) {
 
         // Get the path search list.
         UStringList dirs;
@@ -55,24 +76,24 @@ ts::OutputPager::OutputPager(const UString& envName, bool stdoutOnly)
         });
 
         // Search the predefined pager commands in the path.
-        for (auto itPager = pagers.begin(); itPager != pagers.end() && _pagerCommand.empty(); ++itPager) {
-            for (auto itDir = dirs.begin(); itDir != dirs.end() && _pagerCommand.empty(); ++itDir) {
+        for (auto it_pager = pagers.begin(); it_pager != pagers.end() && _pager_command.empty(); ++it_pager) {
+            for (auto it_dir = dirs.begin(); it_dir != dirs.end() && _pager_command.empty(); ++it_dir) {
                 // Full path of executable file.
-                const UString exe(*itDir + fs::path::preferred_separator + itPager->command + EXECUTABLE_FILE_SUFFIX);
+                const UString exe(*it_dir + fs::path::preferred_separator + it_pager->command + EXECUTABLE_FILE_SUFFIX);
                 if (fs::exists(exe)) {
                     // The executable exists.
-                    bool useParameters = true;
+                    bool use_parameters = true;
                     // On Linux, with the BusyBox environment, many commands are redirected to the busybox executable.
                     // In that case, the busybox version may not understand some options of the GNU version.
                     #if defined(TS_LINUX)
-                        useParameters = !UString(fs::weakly_canonical(exe, &ErrCodeReport())).contains(u"busybox", CASE_INSENSITIVE);
+                        use_parameters = !UString(fs::weakly_canonical(exe, &ErrCodeReport())).contains(u"busybox", CASE_INSENSITIVE);
                     #endif
                     // Same thing with UnxUtils (sometimes spelled UnixUtils) on Windows.
                     #if defined(TS_WINDOWS)
-                        useParameters = !exe.contains(u"unxutils", CASE_INSENSITIVE) && !exe.contains(u"unixutils", CASE_INSENSITIVE);
+                        use_parameters = !exe.contains(u"unxutils", CASE_INSENSITIVE) && !exe.contains(u"unixutils", CASE_INSENSITIVE);
                     #endif
                     // Build the command line.
-                    _pagerCommand = u'"' + exe + u"\" " + (useParameters ? itPager->parameters : UString());
+                    _pager_command = u'"' + exe + u"\" " + (use_parameters ? it_pager->parameters : UString());
                 }
             }
         }
@@ -80,14 +101,10 @@ ts::OutputPager::OutputPager(const UString& envName, bool stdoutOnly)
 
     // On Windows, we can always use the embedded "more" command.
 #if defined(TS_WINDOWS)
-    if (_pagerCommand.empty()) {
-        _pagerCommand = u"cmd /d /q /c more";
+    if (_pager_command.empty()) {
+        _pager_command = u"cmd /d /q /c more";
     }
 #endif
-}
-
-ts::OutputPager::~OutputPager()
-{
 }
 
 
@@ -95,18 +112,18 @@ ts::OutputPager::~OutputPager()
 // Create the process, open the pipe.
 //----------------------------------------------------------------------------
 
-bool ts::OutputPager::open(bool synchronous, size_t buffer_size, Report& report)
+bool ts::OutputPager::open(bool synchronous, size_t buffer_size)
 {
-    if (!_hasTerminal) {
-        report.error(u"not a terminal, cannot page");
+    if (!_has_terminal) {
+        report().error(u"not a terminal, cannot page");
         return false;
     }
-    else if (_pagerCommand.empty()) {
-        report.error(u"no pager command found, cannot page");
+    else if (_pager_command.empty()) {
+        report().error(u"no pager command found, cannot page");
         return false;
     }
     else {
-        return ForkPipe::open(_pagerCommand, synchronous ? ForkPipe::SYNCHRONOUS : ForkPipe::ASYNCHRONOUS, buffer_size, report, _outputMode, STDIN_PIPE);
+        return ForkPipeOutputStream::open(_pager_command, synchronous ? ForkPipe::SYNCHRONOUS : ForkPipe::ASYNCHRONOUS, buffer_size, _output_mode, STDIN_PIPE);
     }
 }
 
@@ -115,9 +132,9 @@ bool ts::OutputPager::open(bool synchronous, size_t buffer_size, Report& report)
 // Write data to the pipe (received at process' standard input).
 //----------------------------------------------------------------------------
 
-bool ts::OutputPager::write(const UString& text, Report& report)
+bool ts::OutputPager::write(const UString& text)
 {
     const std::string utf8Text(text.toUTF8());
     size_t outsize = 0;
-    return ForkPipe::writeStream(utf8Text.data(), utf8Text.size(), outsize, report);
+    return ForkPipeOutputStream::writeStream(utf8Text.data(), utf8Text.size(), outsize);
 }

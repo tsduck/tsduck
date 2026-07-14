@@ -24,7 +24,7 @@ namespace ts {
     //! See document "Via Eutelsat Fransat set-top-box specification",
     //! Version 0.0.7, October 2009, section 2.2.3.
     //!
-    class TSDUCKDLL EutelsatChannelNumberDescriptor : public AbstractDescriptor
+    class TSDUCKDLL EutelsatChannelNumberDescriptor: public AbstractDescriptor
     {
     public:
         //!

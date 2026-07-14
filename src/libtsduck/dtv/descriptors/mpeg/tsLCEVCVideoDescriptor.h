@@ -21,7 +21,7 @@ namespace ts {
     //! @see ISO/IEC 13818-1 (Amd.1) 2.6.137, ITU-T Rec. H.222.0.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL LCEVCVideoDescriptor : public AbstractDescriptor
+    class TSDUCKDLL LCEVCVideoDescriptor: public AbstractDescriptor
     {
     public:
         // Public members:

@@ -38,7 +38,7 @@ namespace ts {
     //! the PushInputPlugin is no longer used in TSDuck. It remains here jsut in case
     //! some future input plugin has to work in push mode.
     //!
-    class TSDUCKDLL PushInputPlugin : public InputPlugin
+    class TSDUCKDLL PushInputPlugin: public InputPlugin
     {
         TS_NOBUILD_NOCOPY(PushInputPlugin);
     public:
@@ -115,7 +115,7 @@ namespace ts {
 
     private:
         // Internal thread which receives TS packets.
-        class Receiver : public Thread
+        class Receiver: public Thread
         {
             TS_NOBUILD_NOCOPY(Receiver);
         public:

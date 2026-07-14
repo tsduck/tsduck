@@ -21,7 +21,7 @@ namespace ts {
     //! @see ARIB STD-B10, Part 2, 6.2.20
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL DataComponentDescriptor : public AbstractDescriptor
+    class TSDUCKDLL DataComponentDescriptor: public AbstractDescriptor
     {
     public:
         // DataComponentDescriptor public members:

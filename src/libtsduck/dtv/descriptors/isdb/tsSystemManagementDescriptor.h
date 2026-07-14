@@ -21,7 +21,7 @@ namespace ts {
     //! @see ARIB STD-B10, Part 2, 6.2.21
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL SystemManagementDescriptor : public AbstractDescriptor
+    class TSDUCKDLL SystemManagementDescriptor: public AbstractDescriptor
     {
     public:
         // SystemManagementDescriptor public members:

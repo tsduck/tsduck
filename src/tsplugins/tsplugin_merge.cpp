@@ -316,7 +316,7 @@ bool ts::MergePlugin::startStopCommand(bool do_close, bool do_restart)
 
     if (do_close) {
         debug(u"closing merge process pipe");
-        _pipe->close(*this);
+        _pipe->close();
     }
 
     if (_stopping || !do_restart) {
@@ -335,7 +335,7 @@ bool ts::MergePlugin::startStopCommand(bool do_close, bool do_restart)
 
     // Allocate the new object. Atomically swap the safe pointer. This action
     // will synchronously deallocate the previous object.
-    _pipe = std::make_shared<TSForkPipe>();
+    _pipe = std::make_shared<TSForkPipe>(this);
 
     // Note on buffer size: we use DEFAULT_MAX_QUEUED_PACKETS instead of _max_queue
     // because this is the size of the system pipe buffer (Windows only). This is
@@ -346,7 +346,6 @@ bool ts::MergePlugin::startStopCommand(bool do_close, bool do_restart)
     return _pipe->open(_command,
                        _no_wait ? ForkPipe::ASYNCHRONOUS : ForkPipe::SYNCHRONOUS,
                        PKT_SIZE * DEFAULT_MAX_QUEUED_PACKETS,
-                       *this,
                        ForkPipe::STDOUT_PIPE,
                        ForkPipe::STDIN_NONE,
                        _format);
@@ -458,7 +457,7 @@ void ts::MergePlugin::main()
             // in the meantime (when the plugin stops) but no one will restart it.
             // So, the object which is pointed to by _pipe does not change.
 
-            pkt_count = _pipe->readPackets(buffer, mdata, max_pkt_count, *this);
+            pkt_count = _pipe->readPackets(buffer, mdata, max_pkt_count);
             success = pkt_count > 0;
 
             if (!success) {

@@ -22,12 +22,22 @@ namespace ts {
     //!
     class TSDUCKDLL TSForkPipe: public ForkPipe, public TSPacketStream
     {
-        TS_NOCOPY(TSForkPipe);
+        TS_NOBUILD_NOCOPY(TSForkPipe);
     public:
         //!
-        //! Default constructor.
+        //! Constructor.
+        //! @param [in] report Where to report errors. The @a report object must remain valid as long as this object
+        //! exists or setReport() is used with another Report object. If @a report is null, log messages are discarded.
+        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        TSForkPipe();
+        explicit TSForkPipe(Report* report, Object* owner = nullptr);
+
+        //!
+        //! Constructor.
+        //! @param [in] delegate Use the report of another ReporterBase. If @a delegate is null, log messages are discarded.
+        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
+        //!
+        explicit TSForkPipe(ReporterBase* delegate, Object* owner = nullptr);
 
         //!
         //! Destructor.
@@ -39,7 +49,6 @@ namespace ts {
         //! @param [in] command The command to execute.
         //! @param [in] wait_mode How to wait for process termination in close().
         //! @param [in] buffer_size The pipe buffer size in bytes. Used on Windows only. Zero means default.
-        //! @param [in,out] report Where to report errors.
         //! @param [in] out_mode How to handle stdout and stderr.
         //! @param [in] in_mode How to handle stdin. Use the pipe by default.
         //! When set to KEEP_STDIN, no pipe is created.
@@ -50,7 +59,6 @@ namespace ts {
         bool open(const UString& command,
                   WaitMode wait_mode,
                   size_t buffer_size,
-                  Report& report,
                   OutputMode out_mode,
                   InputMode in_mode,
                   TSPacketFormat format = TSPacketFormat::AUTODETECT);

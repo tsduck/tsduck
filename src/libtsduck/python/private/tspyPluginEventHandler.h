@@ -20,7 +20,7 @@ namespace ts {
         //! Plugin event handler with notification to a Python class.
         //! @ingroup libtsduck python
         //!
-        class TSDUCKDLL PluginEventHandler : public PluginEventHandlerInterface
+        class TSDUCKDLL PluginEventHandler: public PluginEventHandlerInterface
         {
             TS_NOBUILD_NOCOPY(PluginEventHandler);
         public:

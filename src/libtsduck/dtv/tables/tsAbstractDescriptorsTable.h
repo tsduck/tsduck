@@ -20,7 +20,7 @@ namespace ts {
     //! Base class for MPEG tables containing only a list of descriptors (eg. CAT, TSDT).
     //! @ingroup libtsduck table
     //!
-    class TSDUCKDLL AbstractDescriptorsTable : public AbstractLongTable
+    class TSDUCKDLL AbstractDescriptorsTable: public AbstractLongTable
     {
     public:
         DescriptorList descs; //!< List of descriptors.

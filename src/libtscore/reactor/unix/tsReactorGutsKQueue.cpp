@@ -66,7 +66,7 @@ void ts::Reactor::deallocateEventData(EventData* evd)
 // Reactor::Guts, the system-specific internal data structure.
 //----------------------------------------------------------------------------
 
-class ts::Reactor::Guts : public Reactor::GutsBase
+class ts::Reactor::Guts: public Reactor::GutsBase
 {
     TS_NOBUILD_NOCOPY(Guts);
 public:

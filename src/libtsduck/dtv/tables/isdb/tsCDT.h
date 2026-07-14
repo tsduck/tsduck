@@ -21,7 +21,7 @@ namespace ts {
     //! @see ARIB STD-B21, 12.2.2.2
     //! @ingroup libtsduck table
     //!
-    class TSDUCKDLL CDT : public AbstractLongTable
+    class TSDUCKDLL CDT: public AbstractLongTable
     {
     public:
         // CDT public members:

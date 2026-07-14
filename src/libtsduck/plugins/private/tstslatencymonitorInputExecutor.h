@@ -25,7 +25,7 @@ namespace ts {
         //! Execution context of a tslatencymonitor input plugin.
         //! @ingroup libtsduck plugin
         //!
-        class InputExecutor : public PluginThread
+        class InputExecutor: public PluginThread
         {
             TS_NOBUILD_NOCOPY(InputExecutor);
         public:

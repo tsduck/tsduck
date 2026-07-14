@@ -25,7 +25,7 @@ namespace ts {
     //! @see ETSI TS 102 809, 5.3.5.6.1.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL ApplicationNameDescriptor : public AbstractMultilingualDescriptor
+    class TSDUCKDLL ApplicationNameDescriptor: public AbstractMultilingualDescriptor
     {
     public:
         //!

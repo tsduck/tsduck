@@ -96,7 +96,7 @@ namespace ts {
     //! a switch supporting four satellite positions 0,4,8,...,60 all alias to
     //! the same satellite.
     //!
-    class TSDUCKDLL Unicable : public StringifyInterface
+    class TSDUCKDLL Unicable: public StringifyInterface
     {
     public:
         //!

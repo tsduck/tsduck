@@ -29,7 +29,7 @@ namespace ts::tlv {
     //!
     class TSCOREDLL Logger: public ReporterBase
     {
-        TS_NOCOPY(Logger);
+        TS_NOBUILD_NOCOPY(Logger);
     public:
         //!
         //! Constructor.
@@ -38,7 +38,7 @@ namespace ts::tlv {
         //! @param [in] default_level Default logging level of messages.
         //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        explicit Logger(Report* report = nullptr, int default_level = Severity::Info, Object* owner = nullptr);
+        explicit Logger(Report* report, int default_level = Severity::Info, Object* owner = nullptr);
 
         //!
         //! Constructor.

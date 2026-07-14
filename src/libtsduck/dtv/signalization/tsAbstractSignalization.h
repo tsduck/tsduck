@@ -33,7 +33,7 @@ namespace ts {
     //! call a new pure virtual method. The "final" attribute is here to detect
     //! old subclasses which do not yet use the new scheme.
     //!
-    class TSDUCKDLL AbstractSignalization : public AbstractDefinedByStandards
+    class TSDUCKDLL AbstractSignalization: public AbstractDefinedByStandards
     {
     public:
         //!

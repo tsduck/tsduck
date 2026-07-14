@@ -21,7 +21,7 @@ namespace ts {
     //! @see ARIB STD-B10, Part 2, 6.2.22
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL HierarchicalTransmissionDescriptor : public AbstractDescriptor
+    class TSDUCKDLL HierarchicalTransmissionDescriptor: public AbstractDescriptor
     {
     public:
         // HierarchicalTransmissionDescriptor public members:

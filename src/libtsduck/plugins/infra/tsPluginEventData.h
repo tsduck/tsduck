@@ -26,7 +26,7 @@ namespace ts {
     //! the context of the thread plugin. The referenced binary data can be local
     //! data inside the plugin. The event handler may not saved a reference to it.
     //!
-    class TSDUCKDLL PluginEventData : public Object
+    class TSDUCKDLL PluginEventData: public Object
     {
         // Prevent copy to allow safe storage of references.
         TS_NOBUILD_NOCOPY(PluginEventData);

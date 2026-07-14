@@ -135,15 +135,15 @@ bool ts::AbstractHTTPInputPlugin::startTransfer()
 
     // Create the auto-save file when necessary.
     UString name(BaseName(URL(_request.finalURL()).getPath()));
-    if (!_autoSaveDir.empty() && !name.empty()) {
-        name = _autoSaveDir + fs::path::preferred_separator + name;
+    if (!_auto_save_dir.empty() && !name.empty()) {
+        name = _auto_save_dir + fs::path::preferred_separator + name;
         verbose(u"saving input TS to %s", name);
         // Display errors but do not fail, this is just auto save.
-        _outSave.open(name, TSFile::WRITE | TSFile::SHARED, *this);
+        _out_save.open(name, TSFile::WRITE | TSFile::SHARED);
     }
 
     // Reinitialize partial packet if some bytes were left from a previous iteration.
-    _partialSize = 0;
+    _partial_size = 0;
     return true;
 }
 
@@ -154,11 +154,11 @@ bool ts::AbstractHTTPInputPlugin::startTransfer()
 
 bool ts::AbstractHTTPInputPlugin::stopTransfer()
 {
-    _partialSize = 0;
+    _partial_size = 0;
 
     // Close auto save file if one was open.
-    if (_outSave.isOpen()) {
-        _outSave.close(*this);
+    if (_out_save.isOpen()) {
+        _out_save.close();
     }
 
     // Terminate any pending transfer.
@@ -170,60 +170,60 @@ bool ts::AbstractHTTPInputPlugin::stopTransfer()
 // Receive packets in current transfer.
 //----------------------------------------------------------------------------
 
-size_t ts::AbstractHTTPInputPlugin::receiveTransfer(TSPacket* buffer, size_t maxPackets)
+size_t ts::AbstractHTTPInputPlugin::receiveTransfer(TSPacket* buffer, size_t max_packets)
 {
     // Eliminate invalid or empty buffer.
-    if (buffer == nullptr || maxPackets == 0) {
+    if (buffer == nullptr || max_packets == 0) {
         return 0;
     }
 
-    TSPacket* curBuffer = buffer;
-    size_t packetCount = 0;
-    size_t receiveSize = 0;
+    TSPacket* cur_buffer = buffer;
+    size_t packet_count = 0;
+    size_t receive_size = 0;
 
     // Repeat until at least one packet is received.
     do {
         // If a partial packet is present, try to fill it.
-        if (_partialSize > 0) {
-            assert(_partialSize < PKT_SIZE);
+        if (_partial_size > 0) {
+            assert(_partial_size < PKT_SIZE);
 
             // Receive more data into partial packet. We must receive at least one packet because returning zero means end of transfer.
-            while (_partialSize < PKT_SIZE) {
-                if (!_request.receive(_partial.b + _partialSize, PKT_SIZE - _partialSize, receiveSize) || receiveSize == 0) {
+            while (_partial_size < PKT_SIZE) {
+                if (!_request.receive(_partial.b + _partial_size, PKT_SIZE - _partial_size, receive_size) || receive_size == 0) {
                     // Error or end of transfer.
                     return 0;
                 }
-                _partialSize += receiveSize;
+                _partial_size += receive_size;
             }
-            assert(_partialSize == PKT_SIZE);
+            assert(_partial_size == PKT_SIZE);
 
             // Copy the initial packet in the user buffer.
-            *curBuffer++ = _partial;
-            maxPackets--;
-            packetCount++;
-            _partialSize = 0;
+            *cur_buffer++ = _partial;
+            max_packets--;
+            packet_count++;
+            _partial_size = 0;
         }
 
         // Receive subsequent data directly in the caller's buffer.
         // Don't check the returned bool, we only need the returned size (O on error).
-        receiveSize = 0;
-        _request.receive(curBuffer->b, PKT_SIZE * maxPackets, receiveSize);
+        receive_size = 0;
+        _request.receive(cur_buffer->b, PKT_SIZE * max_packets, receive_size);
 
         // Compute residue after last complete packet.
-        _partialSize = receiveSize % PKT_SIZE;
-        packetCount += (receiveSize - _partialSize) / PKT_SIZE;
+        _partial_size = receive_size % PKT_SIZE;
+        packet_count += (receive_size - _partial_size) / PKT_SIZE;
 
         // Save residue in partial packet.
-        if (_partialSize > 0) {
-            MemCopy(_partial.b, buffer[packetCount].b, _partialSize);
+        if (_partial_size > 0) {
+            MemCopy(_partial.b, buffer[packet_count].b, _partial_size);
         }
 
-    } while (packetCount == 0 && receiveSize != 0);
+    } while (packet_count == 0 && receive_size != 0);
 
     // If an intermediate save file was specified, save the packets.
     // Display errors but do not fail, this is just auto save.
-    if (_outSave.isOpen() && !_outSave.writePackets(buffer, nullptr, packetCount, *this)) {
-        _outSave.close(*this);
+    if (_out_save.isOpen() && !_out_save.writePackets(buffer, nullptr, packet_count)) {
+        _out_save.close();
     }
-    return packetCount;
+    return packet_count;
 }

@@ -21,7 +21,7 @@ namespace ts {
     //! @see ETSI EN 300 468, 6.4.9.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL NetworkChangeNotifyDescriptor : public AbstractDescriptor
+    class TSDUCKDLL NetworkChangeNotifyDescriptor: public AbstractDescriptor
     {
     public:
         //!

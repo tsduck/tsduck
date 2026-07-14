@@ -20,7 +20,7 @@ namespace ts {
     //! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.6.10.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL DataStreamAlignmentDescriptor : public AbstractDescriptor
+    class TSDUCKDLL DataStreamAlignmentDescriptor: public AbstractDescriptor
     {
     public:
         // DataStreamAlignmentDescriptor public members:

@@ -20,7 +20,7 @@ namespace ts {
     //! @see ATSC A/65, section 6.3.2.
     //! @ingroup libtsduck table
     //!
-    class TSDUCKDLL CVCT : public VCT
+    class TSDUCKDLL CVCT: public VCT
     {
     public:
         //!

@@ -23,7 +23,7 @@ namespace ts {
     //! @see ARIB STD-B61, Volume 2, 4.4.7.1
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL ISDBDownloadProtectionDescriptor : public AbstractDescriptor
+    class TSDUCKDLL ISDBDownloadProtectionDescriptor: public AbstractDescriptor
     {
     public:
         // ISDBDownloadProtectionDescriptor public members:

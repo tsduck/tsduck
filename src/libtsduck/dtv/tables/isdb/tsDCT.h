@@ -102,7 +102,7 @@ namespace ts {
     //! in the DLT with the same maker_id/model_id/version_id. It takes the same
     //! value as the middle 8 bits of last_Lsection_number in the DLT.
     //!
-    class TSDUCKDLL DCT : public AbstractLongTable
+    class TSDUCKDLL DCT: public AbstractLongTable
     {
     public:
         //!

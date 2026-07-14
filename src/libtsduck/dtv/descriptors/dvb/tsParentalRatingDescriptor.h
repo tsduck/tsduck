@@ -20,7 +20,7 @@ namespace ts {
     //! @see ETSI EN 300 468, 6.2.28.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL ParentalRatingDescriptor : public AbstractDescriptor
+    class TSDUCKDLL ParentalRatingDescriptor: public AbstractDescriptor
     {
     public:
         //!

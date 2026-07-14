@@ -32,7 +32,7 @@ TSUNIT_REGISTER(ReactiveWorkerPoolTest);
 
 namespace {
 
-    class Value : public ts::Object
+    class Value: public ts::Object
     {
     public:
         int value;
@@ -40,7 +40,7 @@ namespace {
         Value(int v) : value(v) {}
     };
 
-    class Actor : public ts::ReactiveWorkerInterface, private ts::ReactiveWorkerHandlerInterface
+    class Actor: public ts::ReactiveWorkerInterface, private ts::ReactiveWorkerHandlerInterface
     {
     public:
         Actor() = delete;

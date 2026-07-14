@@ -22,7 +22,7 @@ namespace ts {
     //!
     //! Secure Reliable Transport (SRT) socket mode.
     //!
-    enum class SRTSocketMode : int {
+    enum class SRTSocketMode: int {
         DEFAULT    = -1,  //!< Unspecified, use command line mode.
         LISTENER   =  0,  //!< Listener mode.
         CALLER     =  1,  //!< Caller mode.
@@ -34,7 +34,7 @@ namespace ts {
     //! Secure Reliable Transport (SRT) statistics mode.
     //! Can be used as bitmask.
     //!
-    enum class SRTStatMode : uint16_t {
+    enum class SRTStatMode: uint16_t {
         NONE     = 0x0000,  //!< Reports nothing.
         RECEIVE  = 0x0001,  //!< Receive statistics (ignored if nothing was received).
         SEND     = 0x0002,  //!< Sender statistics (ignored if nothing was sent).
@@ -58,7 +58,7 @@ namespace ts {
     //! @see https://www.srtalliance.org/
     //! @ingroup libtsduck net
     //!
-    class TSDUCKDLL SRTSocket : public ReporterBase
+    class TSDUCKDLL SRTSocket: public ReporterBase
     {
         TS_NOBUILD_NOCOPY(SRTSocket);
     public:

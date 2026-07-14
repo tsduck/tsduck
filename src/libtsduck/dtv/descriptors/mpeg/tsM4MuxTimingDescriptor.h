@@ -20,7 +20,7 @@ namespace ts {
     //! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.6.54.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL M4MuxTimingDescriptor : public AbstractDescriptor
+    class TSDUCKDLL M4MuxTimingDescriptor: public AbstractDescriptor
     {
     public:
         // Public members:

@@ -37,7 +37,7 @@ namespace ts {
     //! @see ARIB STD-B10, Part 2, 6.2.6.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL SatelliteDeliverySystemDescriptor : public AbstractDeliverySystemDescriptor
+    class TSDUCKDLL SatelliteDeliverySystemDescriptor: public AbstractDeliverySystemDescriptor
     {
     public:
         // SatelliteDeliverySystemDescriptor public members:

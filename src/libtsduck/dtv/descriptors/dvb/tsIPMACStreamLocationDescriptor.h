@@ -24,7 +24,7 @@ namespace ts {
     //! @see ETSI EN 301 192, 8.4.5.14.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL IPMACStreamLocationDescriptor : public AbstractDescriptor
+    class TSDUCKDLL IPMACStreamLocationDescriptor: public AbstractDescriptor
     {
     public:
         // IPMACStreamLocationDescriptor public members:

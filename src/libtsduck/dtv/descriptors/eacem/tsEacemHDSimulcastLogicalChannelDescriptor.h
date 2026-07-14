@@ -22,7 +22,7 @@ namespace ts {
     //! This is a private descriptor, must be preceded by the EACEM/EICTA PDS.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL EacemHDSimulcastLogicalChannelDescriptor : public AbstractLogicalChannelDescriptor
+    class TSDUCKDLL EacemHDSimulcastLogicalChannelDescriptor: public AbstractLogicalChannelDescriptor
     {
     public:
         //!

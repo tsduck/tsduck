@@ -208,7 +208,7 @@ namespace ts {
         using ECMStreamMap = std::map<PID, ECMStreamPtr>;
 
         // ECM deciphering thread
-        class ECMThread : public Thread
+        class ECMThread: public Thread
         {
             TS_NOBUILD_NOCOPY(ECMThread);
         public:

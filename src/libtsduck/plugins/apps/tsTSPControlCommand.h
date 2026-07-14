@@ -20,7 +20,7 @@ namespace ts {
     //! These commands are used with the @a tspcontrol utility to inspect or modify a running @a tsp command.
     //! @ingroup libtsduck plugin
     //!
-    class TSDUCKDLL TSPControlCommand : public CommandLine
+    class TSDUCKDLL TSPControlCommand: public CommandLine
     {
         TS_NOCOPY(TSPControlCommand);
     public:

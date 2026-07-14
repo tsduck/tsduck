@@ -54,7 +54,7 @@ namespace ts {
         bool              _sync = false;                // Synchronized extraction of packets.
         uint8_t           _last_cc = 0xFF;              // Continuity counter from last packet in the PID.
         PID               _extract_pid = PID_NULL;      // PID carrying the T2-MI encapsulation.
-        TSFile            _outfile {};                  // Output file for extracted stream.
+        TSFile            _outfile {this};              // Output file for extracted stream.
         ByteBlock         _outdata {};                  // Output data buffer.
         SectionDemux      _demux {duck, this};          // A demux to extract all interesting tables.
         std::set<uint16_t>          _all_services {};   // All declared service ids in the TS.
@@ -158,7 +158,7 @@ bool ts::FeedPlugin::start()
     _outdata.reserve(8 * PKT_SIZE);
 
     // Open output file if present.
-    return _replace_ts || _outfile.open(_outfile_name, _outfile_flags , *this);
+    return _replace_ts || _outfile.open(_outfile_name, _outfile_flags);
 }
 
 
@@ -169,7 +169,7 @@ bool ts::FeedPlugin::start()
 bool ts::FeedPlugin::stop()
 {
     if (_outfile.isOpen()) {
-        _outfile.close(*this);
+        _outfile.close();
     }
     return true;
 }
@@ -345,7 +345,7 @@ ts::PacketProcessStatus ts::FeedPlugin::processPacket(TSPacket& pkt, TSPacketMet
             while (end + PKT_SIZE <= _outdata.size() && _outdata[end] == SYNC_BYTE) {
                 end += PKT_SIZE;
             }
-            if (!_outfile.writePackets(reinterpret_cast<const TSPacket*>(_outdata.data()), nullptr, end / PKT_SIZE, *this)) {
+            if (!_outfile.writePackets(reinterpret_cast<const TSPacket*>(_outdata.data()), nullptr, end / PKT_SIZE)) {
                 // Write error on output file.
                 return TSP_END;
             }

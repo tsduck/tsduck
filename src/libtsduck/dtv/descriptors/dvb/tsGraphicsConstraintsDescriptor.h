@@ -25,7 +25,7 @@ namespace ts {
     //! @see ETSI TS 102 809, 5.3.5.8.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL GraphicsConstraintsDescriptor : public AbstractDescriptor
+    class TSDUCKDLL GraphicsConstraintsDescriptor: public AbstractDescriptor
     {
     public:
         // GraphicsConstraintsDescriptor public members:

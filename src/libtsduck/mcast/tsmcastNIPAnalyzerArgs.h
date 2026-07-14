@@ -19,7 +19,7 @@ namespace ts::mcast {
     //! Command line arguments for the class NIPAnalyzer.
     //! @ingroup libtsduck mpeg
     //!
-    class TSDUCKDLL NIPAnalyzerArgs : public FluteDemuxArgs
+    class TSDUCKDLL NIPAnalyzerArgs: public FluteDemuxArgs
     {
     public:
         //!

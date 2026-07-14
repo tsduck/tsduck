@@ -21,7 +21,7 @@ namespace ts {
     //! @see ARIB STD-B63, 13.1.2.1
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL ISDBCharacterCodeDescriptor : public AbstractDescriptor
+    class TSDUCKDLL ISDBCharacterCodeDescriptor: public AbstractDescriptor
     {
     public:
         // ISDBCharacterCodeDescriptor public members:

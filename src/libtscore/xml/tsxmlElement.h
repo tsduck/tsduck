@@ -193,7 +193,7 @@ namespace ts::xml {
         //! A constant iterator over child elements of a parent element.
         //! Dereferencing an iterator accesses a constant Element instance.
         //!
-        class TSCOREDLL ConstElementIterator : private std::vector<const Element*>::const_iterator
+        class TSCOREDLL ConstElementIterator: private std::vector<const Element*>::const_iterator
         {
         private:
             // A ConstElementIterator is a const_iterator on the vector of Element* in a specific ConstElementSet.

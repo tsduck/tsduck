@@ -175,7 +175,7 @@ namespace ts {
     //!
     //! Vector of audio language options.
     //!
-    class TSDUCKDLL AudioLanguageOptionsVector : public std::vector<AudioLanguageOptions>
+    class TSDUCKDLL AudioLanguageOptionsVector: public std::vector<AudioLanguageOptions>
     {
     public:
         //!

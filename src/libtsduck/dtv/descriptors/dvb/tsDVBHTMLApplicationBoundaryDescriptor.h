@@ -24,7 +24,7 @@ namespace ts {
     //! @see ETSI TS 101 812, 10.10.3.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL DVBHTMLApplicationBoundaryDescriptor : public AbstractDescriptor
+    class TSDUCKDLL DVBHTMLApplicationBoundaryDescriptor: public AbstractDescriptor
     {
     public:
         // DVBHTMLApplicationBoundaryDescriptor public members:

@@ -21,7 +21,7 @@ namespace ts {
     //! The data_broadcast_id is 0x000A.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL SSUDataBroadcastIdDescriptor : public AbstractDescriptor
+    class TSDUCKDLL SSUDataBroadcastIdDescriptor: public AbstractDescriptor
     {
     public:
         //!

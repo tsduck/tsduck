@@ -39,7 +39,7 @@ namespace ts {
     //! Bitwise combinations are allowed.
     //! @ingroup cpp
     //!
-    enum : uint32_t {
+    enum: uint32_t {
         CCHAR_LETTER   = 0x0001,  //!< The character is a letter.
         CCHAR_DIGIT    = 0x0002,  //!< The character is a digit.
         CCHAR_HEXA     = 0x0004,  //!< The character is an hexadecimal digit.

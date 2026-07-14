@@ -20,7 +20,7 @@ namespace ts {
     //! @see ETSI EN 300 468, clause 6.4.17.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL VVCSubpicturesDescriptor : public AbstractDescriptor
+    class TSDUCKDLL VVCSubpicturesDescriptor: public AbstractDescriptor
     {
     public:
         // Public members:

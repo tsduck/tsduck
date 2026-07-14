@@ -40,7 +40,7 @@ namespace ts {
     //! A class to create a singleton with a preset hash context for OpenSSL.
     //! This method speeds up the creation of hash context (the standard EVP scenario is too slow).
     //!
-    class FetchHashAlgorithm : public OpenSSL::Controlled
+    class FetchHashAlgorithm: public OpenSSL::Controlled
     {
         TS_NOBUILD_NOCOPY(FetchHashAlgorithm);
     public:
@@ -57,7 +57,7 @@ namespace ts {
     //!
     //! A class to create a singleton with a preset cipher algorithm for OpenSSL.
     //!
-    class FetchCipherAlgorithm : public OpenSSL::Controlled
+    class FetchCipherAlgorithm: public OpenSSL::Controlled
     {
         TS_NOBUILD_NOCOPY(FetchCipherAlgorithm);
     public:

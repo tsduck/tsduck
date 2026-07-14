@@ -23,7 +23,7 @@ namespace ts {
     //! All values may be "set" or "unset", depending on command line arguments.
     //! All options for all types of tuners are included here.
     //!
-    class TSDUCKDLL TunerArgs : public ModulationArgs
+    class TSDUCKDLL TunerArgs: public ModulationArgs
     {
     public:
         // Public fields

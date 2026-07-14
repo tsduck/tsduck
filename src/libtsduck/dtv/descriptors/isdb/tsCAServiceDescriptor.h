@@ -20,7 +20,7 @@ namespace ts {
     //! @see ARIB STD-B25, Part 1, 4.7.3
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL CAServiceDescriptor : public AbstractDescriptor
+    class TSDUCKDLL CAServiceDescriptor: public AbstractDescriptor
     {
     public:
         // CAServiceDescriptor public members:

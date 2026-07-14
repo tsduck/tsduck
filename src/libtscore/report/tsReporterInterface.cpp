@@ -6,8 +6,6 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsAbstractWriteStreamInterface.h"
+#include "tsReporterInterface.h"
 
-ts::AbstractWriteStreamInterface::~AbstractWriteStreamInterface()
-{
-}
+ts::ReporterInterface::~ReporterInterface() {}

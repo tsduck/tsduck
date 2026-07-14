@@ -142,7 +142,7 @@ namespace ts {
         //! Generic description of the ECMG <=> SCS protocol.
         //---------------------------------------------------------------------
 
-        class TSDUCKDLL Protocol : public tlv::Protocol
+        class TSDUCKDLL Protocol: public tlv::Protocol
         {
             TS_NOCOPY(Protocol);
         public:
@@ -165,7 +165,7 @@ namespace ts {
         //!
         //! ECMG <=> SCS channel_setup command
         //!
-        class TSDUCKDLL ChannelSetup : public tlv::ChannelMessage
+        class TSDUCKDLL ChannelSetup: public tlv::ChannelMessage
         {
             TS_VERSIONED_TLV_MESSAGE(ChannelSetup, Tags::channel_setup);
         public:
@@ -177,7 +177,7 @@ namespace ts {
         //!
         //! ECMG <=> SCS channel_test command
         //!
-        class TSDUCKDLL ChannelTest : public tlv::ChannelMessage
+        class TSDUCKDLL ChannelTest: public tlv::ChannelMessage
         {
             TS_VERSIONED_TLV_MESSAGE(ChannelTest, Tags::channel_test);
         public:
@@ -188,7 +188,7 @@ namespace ts {
         //!
         //! ECMG <=> SCS channel_status command
         //!
-        class TSDUCKDLL ChannelStatus : public tlv::ChannelMessage
+        class TSDUCKDLL ChannelStatus: public tlv::ChannelMessage
         {
             TS_VERSIONED_TLV_MESSAGE(ChannelStatus, Tags::channel_status);
         public:
@@ -216,7 +216,7 @@ namespace ts {
         //!
         //! ECMG <=> SCS channel_close command
         //!
-        class TSDUCKDLL ChannelClose : public tlv::ChannelMessage
+        class TSDUCKDLL ChannelClose: public tlv::ChannelMessage
         {
             TS_VERSIONED_TLV_MESSAGE(ChannelClose, Tags::channel_close);
         public:
@@ -227,7 +227,7 @@ namespace ts {
         //!
         //! ECMG <=> SCS channel_error command
         //!
-        class TSDUCKDLL ChannelError : public tlv::ChannelMessage
+        class TSDUCKDLL ChannelError: public tlv::ChannelMessage
         {
             TS_VERSIONED_TLV_MESSAGE(ChannelError, Tags::channel_error);
         public:
@@ -240,7 +240,7 @@ namespace ts {
         //!
         //! ECMG <=> SCS stream_setup command
         //!
-        class TSDUCKDLL StreamSetup : public tlv::StreamMessage
+        class TSDUCKDLL StreamSetup: public tlv::StreamMessage
         {
             TS_VERSIONED_TLV_MESSAGE(StreamSetup, Tags::stream_setup);
         public:
@@ -254,7 +254,7 @@ namespace ts {
         //!
         //! ECMG <=> SCS stream_test command
         //!
-        class TSDUCKDLL StreamTest : public tlv::StreamMessage
+        class TSDUCKDLL StreamTest: public tlv::StreamMessage
         {
             TS_VERSIONED_TLV_MESSAGE(StreamTest, Tags::stream_test);
         public:
@@ -266,7 +266,7 @@ namespace ts {
         //!
         //! ECMG <=> SCS stream_status command
         //!
-        class TSDUCKDLL StreamStatus : public tlv::StreamMessage
+        class TSDUCKDLL StreamStatus: public tlv::StreamMessage
         {
             TS_VERSIONED_TLV_MESSAGE(StreamStatus, Tags::stream_status);
         public:
@@ -280,7 +280,7 @@ namespace ts {
         //!
         //! ECMG <=> SCS stream_close_request command
         //!
-        class TSDUCKDLL StreamCloseRequest : public tlv::StreamMessage
+        class TSDUCKDLL StreamCloseRequest: public tlv::StreamMessage
         {
             TS_VERSIONED_TLV_MESSAGE(StreamCloseRequest, Tags::stream_close_request);
         public:
@@ -292,7 +292,7 @@ namespace ts {
         //!
         //! ECMG <=> SCS stream_close_response command
         //!
-        class TSDUCKDLL StreamCloseResponse : public tlv::StreamMessage
+        class TSDUCKDLL StreamCloseResponse: public tlv::StreamMessage
         {
             TS_VERSIONED_TLV_MESSAGE(StreamCloseResponse, Tags::stream_close_response);
         public:
@@ -304,7 +304,7 @@ namespace ts {
         //!
         //! ECMG <=> SCS stream_error command
         //!
-        class TSDUCKDLL StreamError : public tlv::StreamMessage
+        class TSDUCKDLL StreamError: public tlv::StreamMessage
         {
             TS_VERSIONED_TLV_MESSAGE(StreamError, Tags::stream_error);
         public:
@@ -350,7 +350,7 @@ namespace ts {
         //!
         //! ECMG <=> SCS CW_provision command
         //!
-        class TSDUCKDLL CWProvision : public tlv::StreamMessage
+        class TSDUCKDLL CWProvision: public tlv::StreamMessage
         {
             TS_VERSIONED_TLV_MESSAGE(CWProvision, Tags::CW_provision);
         public:
@@ -370,7 +370,7 @@ namespace ts {
         //!
         //! ECMG <=> SCS ECM_response command
         //!
-        class TSDUCKDLL ECMResponse : public tlv::StreamMessage
+        class TSDUCKDLL ECMResponse: public tlv::StreamMessage
         {
             TS_VERSIONED_TLV_MESSAGE(ECMResponse, Tags::ECM_response);
         public:

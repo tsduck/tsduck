@@ -24,7 +24,7 @@ namespace ts {
     //! @tparam YEARBASE The base year for the dates (CAS dependent).
     //!
     template <int YEARBASE>
-    class CASDate : public StringifyInterface
+    class CASDate: public StringifyInterface
     {
     private:
         // The underlying encoding is a 16-bit value:

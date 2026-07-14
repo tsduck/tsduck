@@ -21,7 +21,7 @@ namespace ts {
     //! @see ETSI EN 300 468, 6.2.48.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL VBITeletextDescriptor : public TeletextDescriptor
+    class TSDUCKDLL VBITeletextDescriptor: public TeletextDescriptor
     {
     public:
         //!

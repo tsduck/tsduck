@@ -21,7 +21,7 @@ namespace ts {
     //! @see ETSI EN 300 468, 6.4.1.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL CIAncillaryDataDescriptor : public AbstractDescriptor
+    class TSDUCKDLL CIAncillaryDataDescriptor: public AbstractDescriptor
     {
     public:
         // CIAncillaryDataDescriptor public members:

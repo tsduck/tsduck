@@ -21,7 +21,7 @@ namespace ts {
     //! @see ETSI EN 301 192, 9.5.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL TimeSliceFECIdentifierDescriptor : public AbstractDescriptor
+    class TSDUCKDLL TimeSliceFECIdentifierDescriptor: public AbstractDescriptor
     {
     public:
         // Public members:

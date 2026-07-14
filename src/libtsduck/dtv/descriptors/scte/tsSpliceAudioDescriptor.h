@@ -25,7 +25,7 @@ namespace ts {
     //! @see SCTE 35, 10.3.5
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL SpliceAudioDescriptor : public AbstractDescriptor
+    class TSDUCKDLL SpliceAudioDescriptor: public AbstractDescriptor
     {
     public:
         //!

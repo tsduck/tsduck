@@ -31,7 +31,7 @@ namespace ts::mcast {
     //! notified about received files using a NIPDemux. All low-level events from
     //! the FLUTE layer are also available by inheriting from FluteHandlerInterface.
     //!
-    class TSDUCKDLL NIPHandlerInterface : public FluteHandlerInterface
+    class TSDUCKDLL NIPHandlerInterface: public FluteHandlerInterface
     {
         TS_SUBINTERFACE(NIPHandlerInterface);
     public:

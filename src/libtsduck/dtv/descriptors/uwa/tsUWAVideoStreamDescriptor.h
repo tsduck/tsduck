@@ -20,7 +20,7 @@ namespace ts {
     //! @see T/UWA 005-2.1.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL UWAVideoStreamDescriptor : public AbstractDescriptor
+    class TSDUCKDLL UWAVideoStreamDescriptor: public AbstractDescriptor
     {
     public:
         // Public members:

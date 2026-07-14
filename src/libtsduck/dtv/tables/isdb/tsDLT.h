@@ -94,7 +94,7 @@ namespace ts {
     //! method section of the ISO/IEC13818-1 standard. It indicates the CRC value
     //! for the entire section.
     //!
-    class TSDUCKDLL DLT : public AbstractTable
+    class TSDUCKDLL DLT: public AbstractTable
     {
     public:
         // DLT public members:

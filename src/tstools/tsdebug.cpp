@@ -210,7 +210,7 @@ void ts::WinModuleCommands::displayInt(const UString& name, size_t width, uint64
 //----------------------------------------------------------------------------
 
 namespace ts {
-    class ZlibCommands : public CommandLineHandler
+    class ZlibCommands: public CommandLineHandler
     {
         TS_NOBUILD_NOCOPY(ZlibCommands);
     public:
@@ -423,7 +423,7 @@ ts::UString ts::NetworkBase::Format(const IPAddress& addr)
 //----------------------------------------------------------------------------
 
 namespace ts {
-    class NetworkCommands : public CommandLineHandler, protected NetworkBase
+    class NetworkCommands: public CommandLineHandler, protected NetworkBase
     {
         TS_NOBUILD_NOCOPY(NetworkCommands);
     public:
@@ -743,7 +743,7 @@ ts::CommandStatus ts::SendRecvCommands::receive(const UString& command, Args& ar
 //----------------------------------------------------------------------------
 
 namespace ts {
-    class ServerCommands : public CommandLineHandler, protected NetworkBase
+    class ServerCommands: public CommandLineHandler, protected NetworkBase
     {
         TS_NOBUILD_NOCOPY(ServerCommands);
     public:

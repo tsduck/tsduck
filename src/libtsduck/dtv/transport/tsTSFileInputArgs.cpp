@@ -7,7 +7,25 @@
 //----------------------------------------------------------------------------
 
 #include "tsTSFileInputArgs.h"
-#include "tsAlgorithm.h"
+
+
+//----------------------------------------------------------------------------
+// Constructors and destructor.
+//----------------------------------------------------------------------------
+
+ts::TSFileInputArgs::TSFileInputArgs(Report* report, Object* owner) :
+    ReporterBase(report, owner)
+{
+}
+
+ts::TSFileInputArgs::TSFileInputArgs(ReporterBase* delegate, Object* owner) :
+    ReporterBase(delegate, owner)
+{
+}
+
+ts::TSFileInputArgs::~TSFileInputArgs()
+{
+}
 
 
 //----------------------------------------------------------------------------
@@ -127,26 +145,42 @@ bool ts::TSFileInputArgs::loadArgs(DuckContext& duck, Args& args)
 
 
 //----------------------------------------------------------------------------
+// Get/allocate a file by index.
+//----------------------------------------------------------------------------
+
+ts::TSFile& ts::TSFileInputArgs::getFile(size_t file_index)
+{
+    auto it = _files.find(file_index);
+    if (it == _files.end()) {
+        return _files.emplace(file_index, this).first->second;
+    }
+    else {
+        return it->second;
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Open one input file.
 //----------------------------------------------------------------------------
 
-bool ts::TSFileInputArgs::openFile(size_t name_index, size_t file_index, Report& report)
+bool ts::TSFileInputArgs::openFile(size_t name_index, size_t file_index)
 {
     assert(name_index < _filenames.size());
-    assert(file_index < _files.size());
     const fs::path& name(_filenames[name_index]);
 
     // Report file name when there are more than one file.
     // No need to report this with --interleave since all files are open at startup.
     if (!_interleave && _filenames.size() > 1) {
-        report.verbose(u"reading file %s", name.empty() ? u"'stdin'" : name);
+        report().verbose(u"reading file %s", name.empty() ? u"'stdin'" : name);
     }
 
     // Preset artificial stuffing.
-    _files[file_index].setStuffing(_start_stuffing[name_index], _stop_stuffing[name_index]);
+    auto& file(getFile(file_index));
+    file.setStuffing(_start_stuffing[name_index], _stop_stuffing[name_index]);
 
     // Actually open the file.
-    return _files[file_index].openRead(name, _repeat_count, _start_offset, report, _file_format);
+    return file.openRead(name, _repeat_count, _start_offset, _file_format);
 }
 
 
@@ -154,12 +188,12 @@ bool ts::TSFileInputArgs::openFile(size_t name_index, size_t file_index, Report&
 // Close all files which are currently open.
 //----------------------------------------------------------------------------
 
-bool ts::TSFileInputArgs::closeAllFiles(Report& report)
+bool ts::TSFileInputArgs::closeAllFiles(bool silent)
 {
     bool ok = true;
     for (auto& file : _files) {
-        if (file.isOpen()) {
-            ok = file.close(report) && ok;
+        if (file.second.isOpen()) {
+            ok = file.second.close(silent) && ok;
         }
     }
     return ok;
@@ -170,7 +204,7 @@ bool ts::TSFileInputArgs::closeAllFiles(Report& report)
 // Open the input file or files.
 //----------------------------------------------------------------------------
 
-bool ts::TSFileInputArgs::open(Report& report)
+bool ts::TSFileInputArgs::open()
 {
     // Check that loadArgs() was called().
     if (_filenames.empty()) {
@@ -179,17 +213,15 @@ bool ts::TSFileInputArgs::open(Report& report)
 
     // With --interleave, all files are simultaneously open.
     // Without it, only one file is open at a time.
-    _files.resize(_interleave ? _filenames.size() : 1);
-
-    // Open files.
+    const size_t open_count = _interleave ? _filenames.size() : 1;
     bool ok = true;
-    for (size_t n = 0; ok && n < _files.size(); ++n) {
-        ok = openFile(n, n, report);
+    for (size_t n = 0; ok && n < open_count; ++n) {
+        ok = openFile(n, n);
     }
 
     // If one open failed, close all files which were already open.
     if (!ok) {
-        closeAllFiles(report);
+        closeAllFiles(false);
     }
 
     // Start with first file.
@@ -206,9 +238,9 @@ bool ts::TSFileInputArgs::open(Report& report)
 // Close the input file or files.
 //----------------------------------------------------------------------------
 
-bool ts::TSFileInputArgs::close(Report& report)
+bool ts::TSFileInputArgs::close(bool silent)
 {
-    return closeAllFiles(report);
+    return closeAllFiles(silent);
 }
 
 
@@ -223,7 +255,7 @@ void ts::TSFileInputArgs::abort()
 
     // Abort current operations on all files.
     for (auto& file : _files) {
-        file.abort();
+        file.second.abort();
     }
 }
 
@@ -232,7 +264,7 @@ void ts::TSFileInputArgs::abort()
 // Read packets.
 //----------------------------------------------------------------------------
 
-size_t ts::TSFileInputArgs::read(TSPacket* buffer, TSPacketMetadata* pkt_data, size_t max_packets, Report& report)
+size_t ts::TSFileInputArgs::read(TSPacket* buffer, TSPacketMetadata* pkt_data, size_t max_packets)
 {
     size_t read_count = 0;
 
@@ -260,7 +292,7 @@ size_t ts::TSFileInputArgs::read(TSPacket* buffer, TSPacketMetadata* pkt_data, s
         }
         else {
             // Read packets from the file.
-            count = _files[_current_file].readPackets(buffer + read_count, pkt_data + read_count, count, report);
+            count = getFile(_current_file).readPackets(buffer + read_count, pkt_data + read_count, count);
         }
 
         // Mark all read packets with a label.
@@ -278,18 +310,18 @@ size_t ts::TSFileInputArgs::read(TSPacket* buffer, TSPacketMetadata* pkt_data, s
         // Process end of file.
         if (!already_eof && count == 0) {
             // Close current file.
-            _files[_current_file].close(report);
+            getFile(_current_file).close();
             _eof.insert(_current_filename);
 
             // With --interleave --first-terminate, exit at first end of file.
             if (_interleave && _first_terminate) {
-                report.debug(u"end of file %s, terminating", _filenames[_current_filename]);
+                report().debug(u"end of file %s, terminating", _filenames[_current_filename]);
                 _aborted = true;
                 break;
             }
 
             // Without --interleave, open the next file if there is one.
-            if (!_interleave && (++_current_filename >= _filenames.size() || !openFile(_current_filename, _current_file, report))) {
+            if (!_interleave && (++_current_filename >= _filenames.size() || !openFile(_current_filename, _current_file))) {
                 // No more input file or error opening the next one.
                 _aborted = true;
                 break;

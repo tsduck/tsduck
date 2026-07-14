@@ -30,7 +30,7 @@ namespace ts {
     //! A WatchDog instance contains an internal thread which is started in the constructor
     //! and terminated in the destructor.
     //!
-    class TSCOREDLL WatchDog : private Thread
+    class TSCOREDLL WatchDog: private Thread
     {
         TS_NOCOPY(WatchDog);
     public:

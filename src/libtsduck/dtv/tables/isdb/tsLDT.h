@@ -21,7 +21,7 @@ namespace ts {
     //! @see ARIB STD-B10, Part 2, 5.2.15
     //! @ingroup libtsduck table
     //!
-    class TSDUCKDLL LDT : public AbstractLongTable
+    class TSDUCKDLL LDT: public AbstractLongTable
     {
     public:
         //!
@@ -30,7 +30,7 @@ namespace ts {
         //! Note: by inheriting from EntryWithDescriptors, there is a
         //! public field "DescriptorList descs".
         //!
-        class TSDUCKDLL Description : public EntryWithDescriptors
+        class TSDUCKDLL Description: public EntryWithDescriptors
         {
             TS_NO_DEFAULT_CONSTRUCTORS(Description);
             TS_DEFAULT_ASSIGMENTS(Description);

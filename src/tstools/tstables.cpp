@@ -36,7 +36,7 @@ namespace {
         ts::DuckContext    duck {this};                // TSDuck execution context.
         ts::TablesDisplay  display {duck};             // Table formatting.
         ts::TablesLogger   logger {display};           // Table logging.
-        ts::PagerArgs      pager {true, true};         // Output paging options.
+        ts::PagerArgs      pager {this, true, true};   // Output paging options.
         fs::path           infile {};                  // Input file name.
         ts::TSPacketFormat format = ts::TSPacketFormat::AUTODETECT;
         bool               psi_info = false;           // PSI/SI information only, no inut file.
@@ -113,7 +113,7 @@ int MainCode(int argc, char *argv[])
     Options opt(argc, argv);
 
     // Redirect display on pager process or stdout only.
-    opt.duck.setOutput(&opt.pager.output(opt), false);
+    opt.duck.setOutput(&opt.pager.output(), false);
 
     // Process PSI/SI information options.
     if (opt.psi_info) {
@@ -153,17 +153,17 @@ int MainCode(int argc, char *argv[])
     }
 
     // Open the TS file.
-    ts::TSFile file;
-    if (!file.openRead(opt.infile, 1, 0, opt, opt.format)) {
+    ts::TSFile file(&opt);
+    if (!file.openRead(opt.infile, 1, 0, opt.format)) {
         return EXIT_FAILURE;
     }
 
     // Read all packets in the file and pass them to the logger
     ts::TSPacket pkt;
-    while (!opt.logger.completed() && file.readPackets(&pkt, nullptr, 1, opt) > 0) {
+    while (!opt.logger.completed() && file.readPackets(&pkt, nullptr, 1) > 0) {
         opt.logger.feedPacket(pkt);
     }
-    file.close(opt);
+    file.close();
     opt.logger.close();
 
     // Report errors

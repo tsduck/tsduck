@@ -23,7 +23,7 @@ namespace ts {
     //!
     //! Note: SOGI = Service Of General Interest
     //!
-    class TSDUCKDLL DVBServiceProminenceDescriptor : public AbstractDescriptor
+    class TSDUCKDLL DVBServiceProminenceDescriptor: public AbstractDescriptor
     {
     public:
         //!

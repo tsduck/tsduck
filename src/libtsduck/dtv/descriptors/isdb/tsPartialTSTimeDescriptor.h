@@ -21,7 +21,7 @@ namespace ts {
     //! @see ARIB STD-B21, 9.1.8.3 (3)
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL PartialTSTimeDescriptor : public AbstractDescriptor
+    class TSDUCKDLL PartialTSTimeDescriptor: public AbstractDescriptor
     {
     public:
         // PartialTSTimeDescriptor public members:

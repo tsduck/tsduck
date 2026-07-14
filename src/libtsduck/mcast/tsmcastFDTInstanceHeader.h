@@ -21,7 +21,7 @@ namespace ts::mcast {
     //! @see IETF RFC 3926, section 3.4.1
     //! @ingroup libtsduck mpeg
     //!
-    class TSDUCKDLL FDTInstanceHeader : public StringifyInterface
+    class TSDUCKDLL FDTInstanceHeader: public StringifyInterface
     {
     public:
         uint8_t  flute_version = 0;    //!< Version of the FLUTE protocol (4 bits).

@@ -52,7 +52,7 @@ namespace ts::xml {
     //!   inside the string.
     //! - XML declarations, comments and "unknown" nodes are dropped.
     //!
-    class TSCOREDLL JSONConverter : public ModelDocument
+    class TSCOREDLL JSONConverter: public ModelDocument
     {
         TS_NOCOPY(JSONConverter);
     public:

@@ -7,7 +7,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsPagerArgs.h"
-#include "tsNullReport.h"
 #include "tsArgs.h"
 
 
@@ -15,18 +14,15 @@
 // Constructors and destructors.
 //----------------------------------------------------------------------------
 
-ts::PagerArgs::PagerArgs(bool page_by_default, bool stdout_only) :
+ts::PagerArgs::PagerArgs(Report* report, bool page_by_default, bool stdout_only) :
     use_pager(page_by_default),
     _page_by_default(page_by_default),
-    _pager(ts::OutputPager::DEFAULT_PAGER, stdout_only)
+    _pager(report, OutputPager::DEFAULT_PAGER, stdout_only)
 {
 }
 
 ts::PagerArgs::~PagerArgs()
 {
-    if (_pager.isOpen()) {
-        _pager.close(NULLREP);
-    }
 }
 
 
@@ -71,9 +67,9 @@ bool ts::PagerArgs::loadArgs(Args& args)
 // Return the output device for display.
 //----------------------------------------------------------------------------
 
-std::ostream& ts::PagerArgs::output(Report& report)
+std::ostream& ts::PagerArgs::output()
 {
-    if (use_pager && _pager.canPage() && (_pager.isOpen() || _pager.open(true, 0, report))) {
+    if (use_pager && _pager.canPage() && (_pager.isOpen() || _pager.open(true, 0))) {
         // Paging is in use.
         return _pager;
     }

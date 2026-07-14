@@ -456,9 +456,9 @@ namespace {
         std::cout << "Running: " << cmd << std::endl;
 
         // Run the upgrade command and exit current process.
-        ts::ForkPipe process;
-        bool success = process.open(cmd, ts::ForkPipe::EXIT_PROCESS, 0, CERR, ts::ForkPipe::KEEP_BOTH, ts::ForkPipe::STDIN_PARENT);
-        process.close(NULLREP);
+        ts::ForkPipe process(&opt);
+        bool success = process.open(cmd, ts::ForkPipe::EXIT_PROCESS, 0, ts::ForkPipe::KEEP_BOTH, ts::ForkPipe::STDIN_PARENT);
+        process.close(true);
         return success;
     }
 }

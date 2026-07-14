@@ -21,7 +21,7 @@ namespace ts {
     //! @see ETSI EN 300 468, 7.1.1
     //! @ingroup libtsduck table
     //!
-    class TSDUCKDLL DiscontinuityInformationTable : public AbstractTable
+    class TSDUCKDLL DiscontinuityInformationTable: public AbstractTable
     {
     public:
         // Public members:

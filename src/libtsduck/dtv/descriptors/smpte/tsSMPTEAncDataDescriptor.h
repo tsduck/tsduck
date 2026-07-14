@@ -24,7 +24,7 @@ namespace ts {
     //! @see SMPTE ST 2038, 4.1.2
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL SMPTEAncDataDescriptor : public AbstractDescriptor
+    class TSDUCKDLL SMPTEAncDataDescriptor: public AbstractDescriptor
     {
     public:
         // SMPTEAncDataDescriptor public members:

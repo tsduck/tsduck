@@ -21,7 +21,7 @@ namespace ts {
     //! @see ISO/IEC 13818-1 | ITU-T H.222.0 clause 2.6.74 and ISO/IEC 23002-3
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL AuxiliaryVideoStreamDescriptor : public AbstractDescriptor
+    class TSDUCKDLL AuxiliaryVideoStreamDescriptor: public AbstractDescriptor
     {
     public:
         //!

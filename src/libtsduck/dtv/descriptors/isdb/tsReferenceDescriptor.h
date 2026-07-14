@@ -20,7 +20,7 @@ namespace ts {
     //! @see ARIB STD-B10, Part 3, 5.2.2
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL ReferenceDescriptor : public AbstractDescriptor
+    class TSDUCKDLL ReferenceDescriptor: public AbstractDescriptor
     {
     public:
         //!

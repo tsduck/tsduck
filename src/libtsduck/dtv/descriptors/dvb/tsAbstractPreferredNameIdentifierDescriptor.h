@@ -20,7 +20,7 @@ namespace ts {
     //! Abstract representation of a preferred_name_identifier_descriptor for different private data specifiers.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL AbstractPreferredNameIdentifierDescriptor : public AbstractDescriptor
+    class TSDUCKDLL AbstractPreferredNameIdentifierDescriptor: public AbstractDescriptor
     {
     public:
         // AbstractPreferredNameIdentifierDescriptor public members:

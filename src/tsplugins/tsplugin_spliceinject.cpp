@@ -101,7 +101,7 @@ namespace ts {
         // Splice command object as stored internally
         // ------------------------------------------
 
-        class SpliceCommand : public StringifyInterface
+        class SpliceCommand: public StringifyInterface
         {
             TS_NOBUILD_NOCOPY(SpliceCommand);
         private:
@@ -135,7 +135,7 @@ namespace ts {
         // File listener thread
         // --------------------
 
-        class FileListener : public Thread, private PollFilesListener
+        class FileListener: public Thread, private PollFilesListener
         {
             TS_NOBUILD_NOCOPY(FileListener);
         public:
@@ -159,7 +159,7 @@ namespace ts {
         // UDP listener thread
         // -------------------
 
-        class UDPListener : public Thread
+        class UDPListener: public Thread
         {
             TS_NOBUILD_NOCOPY(UDPListener);
         public:

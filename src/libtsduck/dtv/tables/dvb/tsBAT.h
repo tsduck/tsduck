@@ -20,7 +20,7 @@ namespace ts {
     //! @see ETSI EN 300 468, 5.2.2
     //! @ingroup libtsduck table
     //!
-    class TSDUCKDLL BAT : public AbstractTransportListTable
+    class TSDUCKDLL BAT: public AbstractTransportListTable
     {
     public:
         // BAT public members:

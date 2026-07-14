@@ -213,7 +213,7 @@ namespace ts {
     //!
     TS_PUSH_WARNING()
     TS_GCC_NOWARNING(non-virtual-dtor) // The derived class allocates nothing and we only need the base destructor
-    class TSCOREDLL VLANIdStack : public std::vector<VLANId>, public StringifyInterface
+    class TSCOREDLL VLANIdStack: public std::vector<VLANId>, public StringifyInterface
     {
         TS_DEFAULT_COPY_MOVE(VLANIdStack);
     public:

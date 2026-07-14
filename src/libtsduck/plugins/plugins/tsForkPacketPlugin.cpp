@@ -17,15 +17,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"fork", ts::ForkPacketPlugin);
 //----------------------------------------------------------------------------
 
 ts::ForkPacketPlugin::ForkPacketPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Fork a process and send TS packets to its standard input", u"[options] 'command'"),
-    _command(),
-    _nowait(false),
-    _format(TSPacketFormat::TS),
-    _buffer_size(0),
-    _buffer_count(0),
-    _buffer(),
-    _mdata(),
-    _pipe()
+    ProcessorPlugin(tsp_, u"Fork a process and send TS packets to its standard input", u"[options] 'command'")
 {
     DefineTSPacketFormatOutputOption(*this);
 
@@ -80,7 +72,6 @@ bool ts::ForkPacketPlugin::start()
     return _pipe.open(_command,
                       _nowait ? ForkPipe::ASYNCHRONOUS : ForkPipe::SYNCHRONOUS,
                       PKT_SIZE * _buffer_size,  // Pipe buffer size (Windows only), same as internal buffer size.
-                      *this,                    // Error reporting.
                       ForkPipe::KEEP_BOTH,      // Output: same stdout and stderr as tsp process.
                       ForkPipe::STDIN_PIPE,     // Input: use the pipe.
                       _format);
@@ -91,11 +82,11 @@ bool ts::ForkPacketPlugin::stop()
 {
     // Flush buffered packets.
     if (_buffer_count > 0) {
-        _pipe.writePackets(_buffer.data(), _mdata.data(), _buffer_count, *this);
+        _pipe.writePackets(_buffer.data(), _mdata.data(), _buffer_count);
     }
 
     // Close the pipe
-    return _pipe.close(*this);
+    return _pipe.close();
 }
 
 
@@ -103,7 +94,7 @@ ts::PacketProcessStatus ts::ForkPacketPlugin::processPacket(TSPacket& pkt, TSPac
 {
     // If packets are sent one by one, just send it.
     if (_buffer_size == 0) {
-        return _pipe.writePackets(&pkt, &pkt_data, 1, *this) ? TSP_OK : TSP_END;
+        return _pipe.writePackets(&pkt, &pkt_data, 1) ? TSP_OK : TSP_END;
     }
 
     // Add the packet to the buffer
@@ -114,7 +105,7 @@ ts::PacketProcessStatus ts::ForkPacketPlugin::processPacket(TSPacket& pkt, TSPac
     // Flush the buffer when full
     if (_buffer_count == _buffer.size()) {
         _buffer_count = 0;
-        return _pipe.writePackets(_buffer.data(), _mdata.data(), _buffer.size(), *this) ? TSP_OK : TSP_END;
+        return _pipe.writePackets(_buffer.data(), _mdata.data(), _buffer.size()) ? TSP_OK : TSP_END;
     }
 
     return TSP_OK;

@@ -14,8 +14,14 @@
 
 
 //----------------------------------------------------------------------------
-// Constructors and destructors.
+// Constructors and destructor.
 //----------------------------------------------------------------------------
+
+ts::json::OutputArgs::OutputArgs(Report* report) :
+    _udp_sock(report),
+    _tcp_sock(report)
+{
+}
 
 ts::json::OutputArgs::~OutputArgs()
 {

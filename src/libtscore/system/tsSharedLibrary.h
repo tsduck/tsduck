@@ -21,7 +21,7 @@ namespace ts {
     //! Bit masks options to load shared libraries.
     //! @ingroup system
     //!
-    enum class SharedLibraryFlags : uint16_t {
+    enum class SharedLibraryFlags: uint16_t {
         NONE      = 0x00,  //!< No option
         PERMANENT = 0x01,  //!< The shared library remains active when the SharedLibrary object is destroyed (unloaded otherwise).
     };

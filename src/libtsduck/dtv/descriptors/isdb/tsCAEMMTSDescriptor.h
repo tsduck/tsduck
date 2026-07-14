@@ -20,7 +20,7 @@ namespace ts {
     //! @see ARIB STD-B25, Part 1, 4.7.1
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL CAEMMTSDescriptor : public AbstractDescriptor
+    class TSDUCKDLL CAEMMTSDescriptor: public AbstractDescriptor
     {
     public:
         // CAEMMTSDescriptor public members:

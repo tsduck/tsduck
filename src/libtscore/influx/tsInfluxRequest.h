@@ -24,7 +24,7 @@ namespace ts {
     //! @see https://docs.influxdata.com/influxdb/v2/reference/syntax/line-protocol/
     //! @see https://docs.influxdata.com/influxdb/v2/api/v2/#operation/PostWrite
     //!
-    class TSCOREDLL InfluxRequest : public WebRequest
+    class TSCOREDLL InfluxRequest: public WebRequest
     {
         TS_NOBUILD_NOCOPY(InfluxRequest);
     public:
@@ -33,7 +33,7 @@ namespace ts {
         //! @param [in] args The connection information to the InfluxDB server. A reference is kept in this object.
         //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        InfluxRequest(const InfluxArgs& args, Object* owner = nullptr);
+        explicit InfluxRequest(const InfluxArgs& args, Object* owner = nullptr);
 
         //!
         //! Constructor.

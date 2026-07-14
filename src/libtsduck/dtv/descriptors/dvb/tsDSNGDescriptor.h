@@ -22,7 +22,7 @@ namespace ts {
     //! @see ETSI 301 210, Annex D.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL DSNGDescriptor : public AbstractDescriptor
+    class TSDUCKDLL DSNGDescriptor: public AbstractDescriptor
     {
     public:
         // DSNGDescriptor public members:

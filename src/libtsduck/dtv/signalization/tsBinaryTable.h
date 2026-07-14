@@ -35,7 +35,7 @@ namespace ts {
     //! the first section is added. Subsequent sections must have the
     //! same properties.
     //!
-    class TSDUCKDLL BinaryTable : public AbstractDefinedByStandards
+    class TSDUCKDLL BinaryTable: public AbstractDefinedByStandards
     {
     public:
         //!

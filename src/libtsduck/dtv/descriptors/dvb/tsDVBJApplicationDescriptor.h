@@ -24,7 +24,7 @@ namespace ts {
     //! @see ETSI TS 101 812, 10.9.1.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL DVBJApplicationDescriptor : public AbstractDescriptor
+    class TSDUCKDLL DVBJApplicationDescriptor: public AbstractDescriptor
     {
     public:
         // DVBJApplicationDescriptor public members:

@@ -23,7 +23,7 @@ namespace ts {
     //! @see EACEM Technical Report Number TR-030, 9.2.11.2.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL EacemLogicalChannelNumberDescriptor : public AbstractLogicalChannelDescriptor
+    class TSDUCKDLL EacemLogicalChannelNumberDescriptor: public AbstractLogicalChannelDescriptor
 
     {
     public:

@@ -20,7 +20,7 @@ namespace ts {
     //! @see ARIB STD-B10, Part 2, 6.2.58
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL HybridInformationDescriptor : public AbstractDescriptor
+    class TSDUCKDLL HybridInformationDescriptor: public AbstractDescriptor
     {
     public:
         // HybridInformationDescriptor public members:

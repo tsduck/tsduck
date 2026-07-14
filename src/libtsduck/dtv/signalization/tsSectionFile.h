@@ -15,6 +15,7 @@
 #include "tsxmlJSONConverter.h"
 #include "tsjson.h"
 #include "tsTime.h"
+#include "tsDuckContext.h"
 #include "tsSectionFormat.h"
 #include "tsBinaryTable.h"
 #include "tsCRC32.h"
@@ -234,10 +235,7 @@ namespace ts {
         //! @param [in,out] strm A standard stream in input mode (binary mode).
         //! @return True on success, false on error.
         //!
-        bool loadBinary(std::istream& strm)
-        {
-            return loadBinary(strm, _report);
-        }
+        bool loadBinary(std::istream& strm);
 
         //!
         //! Load a binary section file.
@@ -253,10 +251,7 @@ namespace ts {
         //! @param [in,out] strm A standard stream in output mode (binary mode).
         //! @return True on success, false on error.
         //!
-        bool saveBinary(std::ostream& strm) const
-        {
-            return saveBinary(strm, _report);
-        }
+        bool saveBinary(std::ostream& strm) const;
 
         //!
         //! Save a binary section file.
@@ -433,20 +428,15 @@ namespace ts {
 
     private:
         DuckContext&         _duck;                   // Reference to TSDuck execution context.
-        Report&              _report;                 // Where to report errors.
         BinaryTablePtrVector _tables {};              // Loaded tables.
         SectionPtrVector     _sections {};            // All sections from the file.
         SectionPtrVector     _orphan_sections {};     // Sections which do not belong to any table.
-        xml::JSONConverter   _model {_report};        // XML model for tables.
+        xml::JSONConverter   _model {_duck.report()}; // XML model for tables.
         xml::Tweaks          _xmlTweaks {};           // XML formatting and parsing tweaks.
         CRC32::Validation    _crc_op = CRC32::IGNORE; // Processing of CRC32 when loading sections.
 
         // Load the XML model in this instance, if not already done.
         bool loadThisModel();
-
-        // Load/save a binary section file from a stream with specific report.
-        bool loadBinary(std::istream& strm, Report& report);
-        bool saveBinary(std::ostream& strm, Report& report) const;
 
         // Rebuild _tables and _orphan_sections from _sections.
         void rebuildTables();

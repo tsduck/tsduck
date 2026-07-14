@@ -20,7 +20,7 @@ namespace ts {
     //! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.6.88.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL StereoscopicVideoInfoDescriptor : public AbstractDescriptor
+    class TSDUCKDLL StereoscopicVideoInfoDescriptor: public AbstractDescriptor
     {
     public:
         // StereoscopicVideoInfoDescriptor public members:

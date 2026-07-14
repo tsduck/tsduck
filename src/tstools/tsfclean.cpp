@@ -130,8 +130,8 @@ namespace ts {
         // File cleaner private fields:
         bool              _success = true;
         FileCleanOptions& _opt;
-        TSFile            _in_file {};
-        TSFile            _out_file {};
+        TSFile            _in_file {&_opt};
+        TSFile            _out_file {&_opt};
         PAT               _pat {};
         CyclingPacketizer _pat_pzer {_opt.duck, PID_PAT, CyclingPacketizer::StuffingPolicy::ALWAYS};
         CAT               _cat {};
@@ -182,13 +182,13 @@ ts::FileCleaner::FileCleaner(FileCleanOptions& opt, const fs::path& infile_name)
     _opt.verbose(u"cleaning %s -> %s", infile_name, outfile_name);
 
     // Open the input file in rewindable mode.
-    if (!_in_file.openRead(infile_name, 0, _opt)) {
+    if (!_in_file.openRead(infile_name, 0)) {
         errorCleanup();
         return;
     }
 
     // Create output file before first pass to avoid spending time on first pass in case of error when creating output.
-    if (!_out_file.open(outfile_name, TSFile::WRITE, _opt)) {
+    if (!_out_file.open(outfile_name, TSFile::WRITE)) {
         errorCleanup();
         return;
     }
@@ -196,7 +196,7 @@ ts::FileCleaner::FileCleaner(FileCleanOptions& opt, const fs::path& infile_name)
     // First pass: read all packets, process TS structure.
     SignalizationDemux sig(_opt.duck, this, {TID_PAT, TID_CAT, TID_PMT, TID_SDT_ACT});
     TSPacket pkt;
-    while (_success && _in_file.readPackets(&pkt, nullptr, 1, _opt) == 1) {
+    while (_success && _in_file.readPackets(&pkt, nullptr, 1) == 1) {
         sig.feedPacket(pkt);
     }
 
@@ -236,7 +236,7 @@ ts::FileCleaner::FileCleaner(FileCleanOptions& opt, const fs::path& infile_name)
     }
 
     // Rewind input file to prepare for second pass.
-    _success = _success && _in_file.rewind(_opt);
+    _success = _success && _in_file.rewind();
 
     // Delete output file in case of error in first pass.
     if (!_success) {
@@ -261,7 +261,7 @@ ts::FileCleaner::FileCleaner(FileCleanOptions& opt, const fs::path& infile_name)
     }
 
     // Second pass: read input file again, write output file.
-    while (_success && _in_file.readPackets(&pkt, nullptr, 1, _opt) == 1) {
+    while (_success && _in_file.readPackets(&pkt, nullptr, 1) == 1) {
 
         // Count input packets per PID.
         const PacketCounter pkt_index = pids[pkt.getPID()].packets++;
@@ -343,8 +343,8 @@ ts::FileCleaner::FileCleaner(FileCleanOptions& opt, const fs::path& infile_name)
     }
 
     // Close files.
-    _success = _in_file.close(_opt) && _success;
-    _success = _out_file.close(_opt) && _success;
+    _success = _in_file.close() && _success;
+    _success = _out_file.close() && _success;
 }
 
 
@@ -355,11 +355,11 @@ ts::FileCleaner::FileCleaner(FileCleanOptions& opt, const fs::path& infile_name)
 void ts::FileCleaner::errorCleanup()
 {
     if (_in_file.isOpen()) {
-        _in_file.close(_opt);
+        _in_file.close();
     }
     if (_out_file.isOpen()) {
         const fs::path filename(_out_file.getFileName());
-        _out_file.close(_opt);
+        _out_file.close();
         fs::remove(filename, &ErrCodeReport(_opt, u"error deleting", filename));
     }
     _success = false;
@@ -527,7 +527,7 @@ void ts::FileCleaner::initCycle(AbstractLongTable& table, CyclingPacketizer& pze
 void ts::FileCleaner::writePacket(const TSPacket& pkt)
 {
     if (_success) {
-        _success = _out_file.writePackets(&pkt, nullptr, 1, _opt);
+        _success = _out_file.writePackets(&pkt, nullptr, 1);
     }
 }
 
@@ -535,7 +535,7 @@ void ts::FileCleaner::writeFromPacketizer(Packetizer& pzer)
 {
     TSPacket pkt;
     if (_success && pzer.getNextPacket(pkt)) {
-        _success = _out_file.writePackets(&pkt, nullptr, 1, _opt);
+        _success = _out_file.writePackets(&pkt, nullptr, 1);
     }
 }
 

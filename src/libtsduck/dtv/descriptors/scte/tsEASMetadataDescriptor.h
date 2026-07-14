@@ -25,7 +25,7 @@ namespace ts {
     //! @see SCTE 164, 5.0
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL EASMetadataDescriptor : public AbstractDescriptor
+    class TSDUCKDLL EASMetadataDescriptor: public AbstractDescriptor
     {
     public:
         // EASMetadataDescriptor public members:

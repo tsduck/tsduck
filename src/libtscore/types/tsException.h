@@ -19,7 +19,7 @@ namespace ts {
     //! Base class for all exceptions in TSDuck.
     //! @ingroup libtscore cpp
     //!
-    class TSCOREDLL Exception : public std::exception
+    class TSCOREDLL Exception: public std::exception
     {
         TS_RULE_OF_FIVE(Exception, noexcept override);
     private:

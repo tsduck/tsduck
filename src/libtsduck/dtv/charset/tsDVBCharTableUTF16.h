@@ -24,7 +24,7 @@ namespace ts {
     //! @see ETSI EN 300 468, Annex A.
     //! @ingroup libtsduck mpeg
     //!
-    class TSDUCKDLL DVBCharTableUTF16 : public DVBCharTable
+    class TSDUCKDLL DVBCharTableUTF16: public DVBCharTable
     {
         TS_NOCOPY(DVBCharTableUTF16);
     public:

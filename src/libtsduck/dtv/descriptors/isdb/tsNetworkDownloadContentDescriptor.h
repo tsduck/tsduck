@@ -22,7 +22,7 @@ namespace ts {
     //! @see ARIB STD-B21, 12.2.1.1
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL NetworkDownloadContentDescriptor : public AbstractDownloadContentDescriptor
+    class TSDUCKDLL NetworkDownloadContentDescriptor: public AbstractDownloadContentDescriptor
     {
     public:
         // NetworkDownloadContentDescriptor public members:

@@ -27,9 +27,9 @@ namespace ts {
     //! Subscription to open/close and connect/disconnect is possible using SocketHandlerInterface.
     //! @see SubscriptionBase
     //!
-    class TSCOREDLL Socket : public NonBlockingDevice, public SubscriptionBase
+    class TSCOREDLL Socket: public NonBlockingDevice, public SubscriptionBase
     {
-        TS_NOCOPY(Socket);
+        TS_NOBUILD_NOCOPY(Socket);
     public:
         //!
         //! Constructor.
@@ -38,7 +38,7 @@ namespace ts {
         //! @param [in] non_blocking It true, the device is initially set in non-blocking mode.
         //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        explicit Socket(Report* report = nullptr, bool non_blocking = false, Object* owner = nullptr);
+        explicit Socket(Report* report, bool non_blocking = false, Object* owner = nullptr);
 
         //!
         //! Constructor.

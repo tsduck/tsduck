@@ -21,7 +21,7 @@ namespace ts {
     //! @see ETSI EN 300 468, 6.2.20.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL LocalTimeOffsetDescriptor : public AbstractDescriptor
+    class TSDUCKDLL LocalTimeOffsetDescriptor: public AbstractDescriptor
     {
     public:
         //!

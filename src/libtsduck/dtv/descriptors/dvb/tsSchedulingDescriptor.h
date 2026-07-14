@@ -26,7 +26,7 @@ namespace ts {
     //! @see ETSI TS 102 006, 9.5.2.9
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL SchedulingDescriptor : public AbstractDescriptor
+    class TSDUCKDLL SchedulingDescriptor: public AbstractDescriptor
     {
     public:
         // SchedulingDescriptor public members:

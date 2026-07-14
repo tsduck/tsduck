@@ -57,7 +57,7 @@ namespace ts {
         //! Set a directory name where all loaded files are automatically saved.
         //! @param [in] dir A directory name.
         //!
-        void setAutoSaveDirectory(const UString& dir) { _autoSaveDir = dir; }
+        void setAutoSaveDirectory(const UString& dir) { _auto_save_dir = dir; }
 
         //!
         //! Delete the cookies file, if there is one.
@@ -71,15 +71,15 @@ namespace ts {
         WebRequestArgs webArgs {};
 
     private:
-        WebRequest _request;          // Current Web transfer in progress.
-        TSPacket   _partial {};       // Buffer for incomplete packets.
-        size_t     _partialSize = 0;  // Number of bytes in partial.
-        UString    _autoSaveDir {};   // If not empty, automatically save loaded files to this directory.
-        TSFile     _outSave {};       // TS file where to store the loaded file.
+        WebRequest _request;           // Current Web transfer in progress.
+        TSPacket   _partial {};        // Buffer for incomplete packets.
+        size_t     _partial_size = 0;  // Number of bytes in partial.
+        UString    _auto_save_dir {};  // If not empty, automatically save loaded files to this directory.
+        TSFile     _out_save {this};   // TS file where to store the loaded file.
 
         // Start/receive/stop on one single transfer.
         bool startTransfer();
-        size_t receiveTransfer(TSPacket*, size_t);
+        size_t receiveTransfer(TSPacket*, size_t max_packets);
         bool stopTransfer();
     };
 }

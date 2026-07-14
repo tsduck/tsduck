@@ -70,7 +70,7 @@ namespace ts {
     //! sizes is larger than the size of the global buffer, the stream processing can enter a deadlock and
     //! stops. The global @c tsp command shall be carefully tuned to avoid that.
     //!
-    class TSDUCKDLL ProcessorPlugin : public Plugin
+    class TSDUCKDLL ProcessorPlugin: public Plugin
     {
         TS_NOBUILD_NOCOPY(ProcessorPlugin);
     public:

@@ -22,7 +22,7 @@ namespace ts {
     //! @see ETSI TS 102 772, section 5.2
     //! @ingroup libtsduck table
     //!
-    class TSDUCKDLL MPEIFECTable : public AbstractLongTable
+    class TSDUCKDLL MPEIFECTable: public AbstractLongTable
     {
     public:
         //!

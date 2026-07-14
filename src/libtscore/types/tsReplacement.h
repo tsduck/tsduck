@@ -22,7 +22,7 @@ namespace ts {
     //! Can be used as a bit mask.
     //! @ingroup cpp
     //!
-    enum class Replacement : uint8_t {
+    enum class Replacement: uint8_t {
         NONE    = 0x00,  //!< No known standard
         UPDATE  = 0x01,  //!< Update data structures with similar "identifier".
         REPLACE = 0x02,  //!< Replace data structures with similar "identifier".

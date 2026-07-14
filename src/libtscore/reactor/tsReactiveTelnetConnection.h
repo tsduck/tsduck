@@ -35,7 +35,7 @@ namespace ts {
         //! @param [in,out] socket Associated reactive TCP socket. The socket object must remain valid as long as this object is valid.
         //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        ReactiveTelnetConnection(ReactiveTCPConnection& socket, Object* owner = nullptr);
+        explicit ReactiveTelnetConnection(ReactiveTCPConnection& socket, Object* owner = nullptr);
 
         //!
         //! Destructor.

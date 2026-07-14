@@ -29,9 +29,20 @@ namespace ts {
     public:
         //!
         //! Constructor.
+        //! @param [in] report Where to report errors. The @a report object must remain valid as long as this object
+        //! exists or setReport() is used with another Report object. If @a report is null, log messages are discarded.
         //! @param [in] buffer_size Size of the seekable buffer in number of TS packets.
+        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        TSFileInputBuffered(size_t buffer_size);
+        TSFileInputBuffered(Report* report, size_t buffer_size, Object* owner = nullptr);
+
+        //!
+        //! Constructor.
+        //! @param [in] delegate Use the report of another ReporterBase. If @a delegate is null, log messages are discarded.
+        //! @param [in] buffer_size Size of the seekable buffer in number of TS packets.
+        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
+        //!
+        TSFileInputBuffered(ReporterBase* delegate, size_t buffer_size, Object* owner = nullptr);
 
         //!
         //! Destructor.
@@ -48,10 +59,9 @@ namespace ts {
         //! Set the buffer size.
         //! Can be done only when the file is closed.
         //! @param [in] buffer_size Size of the seekable buffer in number of TS packets.
-        //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool setBufferSize(size_t buffer_size, Report& report);
+        bool setBufferSize(size_t buffer_size);
 
         //!
         //! Get the buffer size.
@@ -81,11 +91,10 @@ namespace ts {
         //! file until all repeat are done. If zero, infinitely repeat.
         //! @param [in] start_offset Offset in bytes from the beginning of the file
         //! where to start reading packets at each iteration.
-        //! @param [in,out] report Where to report errors.
         //! @param [in] format Expected format of the TS file.
         //! @return True on success, false on error.
         //!
-        bool openRead(const fs::path& filename, size_t repeat_count, uint64_t start_offset, Report& report, TSPacketFormat format = TSPacketFormat::AUTODETECT);
+        bool openRead(const fs::path& filename, size_t repeat_count, uint64_t start_offset, TSPacketFormat format = TSPacketFormat::AUTODETECT);
 
         //!
         //! Read TS packets.
@@ -94,13 +103,12 @@ namespace ts {
         //! reading packets transparently loops back at end if file.
         //! @param [out] buffer Address of reception packet buffer.
         //! @param [in] max_packets Size of @a buffer in packets.
-        //! @param [in,out] report Where to report errors.
         //! @param [in,out] metadata Optional packet metadata. If the file format provides
         //! time stamps, they are set in the metadata. Ignored if null pointer.
         //! @return The actual number of read packets. Returning zero means
         //! error or end of file repetition.
         //!
-        size_t read(TSPacket* buffer, size_t max_packets, Report& report, TSPacketMetadata* metadata = nullptr);
+        size_t read(TSPacket* buffer, size_t max_packets, TSPacketMetadata* metadata = nullptr);
 
         //!
         //! Get the backward seekable distance inside the buffer.
@@ -121,19 +129,17 @@ namespace ts {
         //! Seek the file backward the specified number of packets.
         //! @param [in] packet_count The number of packets to seek
         //! backward from the current position.
-        //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool seekBackward(size_t packet_count, Report& report);
+        bool seekPacketBackward(size_t packet_count);
 
         //!
         //! Seek the file forward the specified number of packets.
         //! @param [in] packet_count The number of packets to seek
         //! forward from the current position.
-        //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool seekForward(size_t packet_count, Report& report);
+        bool seekPacketForward(size_t packet_count);
 
         //!
         //! Get the number of read packets.
@@ -152,10 +158,9 @@ namespace ts {
         //!
         //! Seek to the specified absolute position, if it is inside the buffer.
         //! @param [in] position Absolute packet index in the file.
-        //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool seek(PacketCounter position, Report& report);
+        bool seekPacket(PacketCounter position);
 
     private:
         TSPacketVector         _buffer;             // Seekable packet circular buffer.
@@ -165,7 +170,7 @@ namespace ts {
         size_t                 _total_count = 0;    // Total count of valid packets in buffer.
 
         // Make sure that the generic open() returns an error.
-        virtual bool open(const fs::path& filename, OpenFlags flags, Report& report, TSPacketFormat format) override;
+        virtual bool open(const fs::path& filename, OpenFlags flags, TSPacketFormat format) override;
 
         // Make rewind inaccessible.
         bool rewind(Report&) = delete;

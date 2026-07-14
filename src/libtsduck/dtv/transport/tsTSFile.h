@@ -12,9 +12,9 @@
 //----------------------------------------------------------------------------
 
 #pragma once
+#include "tsReporterBase.h"
 #include "tsTSPacketStream.h"
-#include "tsAbstractReadStreamInterface.h"
-#include "tsAbstractWriteStreamInterface.h"
+#include "tsAbstractStream.h"
 #include "tsEnumUtils.h"
 
 namespace ts {
@@ -25,24 +25,24 @@ namespace ts {
     //! Transport stream file, input and/or output.
     //! @ingroup libtsduck mpeg
     //!
-    class TSDUCKDLL TSFile :
-        public TSPacketStream,
-        private AbstractReadStreamInterface,
-        private AbstractWriteStreamInterface
+    class TSDUCKDLL TSFile: public ReporterBase, public TSPacketStream, private AbstractStream
     {
+        TS_NOBUILD_NOCOPY(TSFile);
     public:
         //!
-        //! Default constructor.
+        //! Constructor.
+        //! @param [in] report Where to report errors. The @a report object must remain valid as long as this object
+        //! exists or setReport() is used with another Report object. If @a report is null, log messages are discarded.
+        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        TSFile();
+        explicit TSFile(Report* report, Object* owner = nullptr);
 
         //!
-        //! Move constructor.
-        //! The full state is moved
-        //! The move constructor is required to have vectors of TSFile.
-        //! @param [in,out] other Other instance to move. Closed on return.
+        //! Constructor.
+        //! @param [in] delegate Use the report of another ReporterBase. If @a delegate is null, log messages are discarded.
+        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        TSFile(TSFile&& other) noexcept;
+        explicit TSFile(ReporterBase* delegate, Object* owner = nullptr);
 
         //!
         //! Destructor.
@@ -59,11 +59,10 @@ namespace ts {
         //! file until all repeat are done. If zero, infinitely repeat.
         //! @param [in] start_offset Offset in bytes from the beginning of the file
         //! where to start reading packets at each iteration.
-        //! @param [in,out] report Where to report errors.
         //! @param [in] format Expected format of the TS file.
         //! @return True on success, false on error.
         //!
-        bool openRead(const fs::path& filename, size_t repeat_count, uint64_t start_offset, Report& report, TSPacketFormat format = TSPacketFormat::AUTODETECT);
+        bool openRead(const fs::path& filename, size_t repeat_count, uint64_t start_offset, TSPacketFormat format = TSPacketFormat::AUTODETECT);
 
         //!
         //! Open the file for read in rewindable mode.
@@ -72,13 +71,12 @@ namespace ts {
         //! @param [in] filename File name. If empty or "-", use standard input.
         //! @param [in] start_offset Offset in bytes from the beginning of the file
         //! where to start reading packets.
-        //! @param [in,out] report Where to report errors.
         //! @param [in] format Expected format of the TS file.
         //! @return True on success, false on error.
         //! @see rewind()
         //! @see seek()
         //!
-        bool openRead(const fs::path& filename, uint64_t start_offset, Report& report, TSPacketFormat format = TSPacketFormat::AUTODETECT);
+        bool openRead(const fs::path& filename, uint64_t start_offset, TSPacketFormat format = TSPacketFormat::AUTODETECT);
 
         //!
         //! Flags for open().
@@ -101,11 +99,10 @@ namespace ts {
         //! @param [in] filename File name. If empty or "-", use standard input or output.
         //! If @a filename is empty, @a flags cannot contain both READ and WRITE.
         //! @param [in] flags Bit mask of open flags.
-        //! @param [in,out] report Where to report errors.
         //! @param [in] format Format of the TS file.
         //! @return True on success, false on error.
         //!
-        virtual bool open(const fs::path& filename, OpenFlags flags, Report& report, TSPacketFormat format = TSPacketFormat::AUTODETECT);
+        virtual bool open(const fs::path& filename, OpenFlags flags, TSPacketFormat format = TSPacketFormat::AUTODETECT);
 
         //!
         //! Check if the file is open.
@@ -128,10 +125,11 @@ namespace ts {
 
         //!
         //! Close the file.
-        //! @param [in,out] report Where to report errors.
+        //! @param [in] silent If true, do not report errors. This is typically useful when the object is in some error
+        //! condition and closing it is necessary although it may generate additional meaningless errors.
         //! @return True on success, false on error.
         //!
-        bool close(Report& report);
+        bool close(bool silent = false);
 
         //!
         //! Set initial and final artificial stuffing.
@@ -162,23 +160,28 @@ namespace ts {
         //! The file must have been opened in rewindable mode.
         //! If the file file was opened with a @a start_offset different from 0,
         //! rewinding the file means restarting at this @a start_offset.
-        //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool rewind(Report& report) { return seek(0, report); }
+        bool rewind() { return seekPacket(0); }
 
         //!
         //! Seek the file at a specified packet index.
         //! The file must have been opened in rewindable mode.
-        //! @param [in] packet_index Seek the file to this specified packet index
-        //! (plus the specified @a start_offset from open()).
-        //! @param [in,out] report Where to report errors.
+        //! @param [in] packet_index Seek the file to this specified packet index (plus the specified @a start_offset from open()).
         //! @return True on success, false on error.
         //!
-        bool seek(PacketCounter packet_index, Report& report);
+        bool seekPacket(PacketCounter packet_index);
+
+        //!
+        //! Seek the file at a specified byte index.
+        //! The file must have been opened in rewindable mode.
+        //! @param [in] byte_index Seek the file to this specified byte index (plus the specified @a start_offset from open()).
+        //! @return True on success, false on error.
+        //!
+        bool seekByte(uint64_t byte_index);
 
         // Override TSPacketStream implementation
-        virtual size_t readPackets(TSPacket* buffer, TSPacketMetadata* metadata, size_t max_packets, Report& report) override;
+        virtual size_t readPackets(TSPacket* buffer, TSPacketMetadata* metadata, size_t max_packets) override;
 
     private:
         fs::path      _filename {};          //!< Input file name.
@@ -203,26 +206,18 @@ namespace ts {
         int           _fd = -1;
 #endif
 
-        // Implementation of AbstractReadStreamInterface
+        // Implementation of AbstractStream
         virtual bool endOfStream() override;
-        virtual bool readStreamPartial(void* addr, size_t max_size, size_t& ret_size, Report& report) override;
-
-        // Implementation of AbstractWriteStreamInterface
-        virtual bool writeStream(const void* addr, size_t size, size_t& written_size, Report& report) override;
+        virtual bool readStream(void* addr, size_t max_size, size_t& ret_size) override;
+        virtual bool writeStream(const void* addr, size_t size, size_t& written_size) override;
 
         // Read/write artificial stuffing.
-        void readStuffing(TSPacket*& buffer, TSPacketMetadata*& metadata, size_t count, Report& report);
-        bool writeStuffing(size_t count, Report& report);
+        void readStuffing(TSPacket*& buffer, TSPacketMetadata*& metadata, size_t count);
+        bool writeStuffing(size_t count);
 
         // Internal methods
-        bool openInternal(bool reopen, Report& report);
-        bool seekCheck(Report& report);
-        bool seekInternal(uint64_t index, Report& report);
-
-        // Inaccessible operations. Same as TS_NOCOPY() except that we keep the move constructor (required for vectors).
-        TSFile(const TSFile&) = delete;
-        TSFile& operator=(const TSFile&) = delete;
-        TSFile& operator=(TSFile&&) = delete;
+        bool openInternal(bool reopen);
+        bool seekCheck();
     };
 }
 

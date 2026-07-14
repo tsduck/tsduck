@@ -21,7 +21,7 @@ namespace ts {
     //! @see ARIB STD-B10, Part 2, 5.2.13
     //! @ingroup libtsduck table
     //!
-    class TSDUCKDLL BIT : public AbstractLongTable
+    class TSDUCKDLL BIT: public AbstractLongTable
     {
     public:
         //!
@@ -30,7 +30,7 @@ namespace ts {
         //! Note: by inheriting from EntryWithDescriptors, there is a
         //! public field "DescriptorList descs".
         //!
-        class TSDUCKDLL Broadcaster : public EntryWithDescriptors
+        class TSDUCKDLL Broadcaster: public EntryWithDescriptors
         {
             TS_NO_DEFAULT_CONSTRUCTORS(Broadcaster);
             TS_DEFAULT_ASSIGMENTS(Broadcaster);

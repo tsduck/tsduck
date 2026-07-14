@@ -21,7 +21,7 @@ namespace ts {
     //! Abstract base class for plugins which process one single Multi-Protocol Encapsulation (MPE) PID.
     //! @ingroup libtsduck plugin
     //!
-    class TSDUCKDLL AbstractSingleMPEPlugin : public ProcessorPlugin, private MPEHandlerInterface
+    class TSDUCKDLL AbstractSingleMPEPlugin: public ProcessorPlugin, private MPEHandlerInterface
     {
         TS_NOBUILD_NOCOPY(AbstractSingleMPEPlugin);
     public:

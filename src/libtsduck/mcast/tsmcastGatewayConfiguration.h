@@ -25,7 +25,7 @@ namespace ts::mcast {
     //! @see ETSI TS 103 769, section 10.2.1.2
     //! @ingroup libtsduck mpeg
     //!
-    class TSDUCKDLL GatewayConfiguration : public FluteFile
+    class TSDUCKDLL GatewayConfiguration: public FluteFile
     {
         TS_RULE_OF_FIVE(GatewayConfiguration, override);
     public:

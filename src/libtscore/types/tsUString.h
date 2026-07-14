@@ -2831,7 +2831,7 @@ namespace ts {
         //!
         //! Analysis context of a Format string.
         //!
-        class ArgMixInContext : public ArgMixContext
+        class ArgMixInContext: public ArgMixContext
         {
             TS_NOBUILD_NOCOPY(ArgMixInContext);
         public:
@@ -2866,7 +2866,7 @@ namespace ts {
         //!
         //! Analysis context of a Scan string.
         //!
-        class ArgMixOutContext : public ArgMixContext
+        class ArgMixOutContext: public ArgMixContext
         {
             TS_NOBUILD_NOCOPY(ArgMixOutContext);
         public:

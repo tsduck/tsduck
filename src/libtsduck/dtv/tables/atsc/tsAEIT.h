@@ -23,14 +23,14 @@ namespace ts {
     //! @see ATSC A/81, section 9.9.2.
     //! @ingroup libtsduck table
     //!
-    class TSDUCKDLL AEIT : public AbstractLongTable
+    class TSDUCKDLL AEIT: public AbstractLongTable
     {
     public:
         //!
         //! Description of a data event.
         //! Note: by inheriting from EntryWithDescriptors, there is a public field "DescriptorList descs".
         //!
-        class TSDUCKDLL Event : public EntryWithDescriptors
+        class TSDUCKDLL Event: public EntryWithDescriptors
         {
             TS_NO_DEFAULT_CONSTRUCTORS(Event);
             TS_DEFAULT_ASSIGMENTS(Event);
@@ -57,7 +57,7 @@ namespace ts {
         //!
         //! Description of an event source.
         //!
-        class TSDUCKDLL Source : public AttachedEntry
+        class TSDUCKDLL Source: public AttachedEntry
         {
             TS_NO_DEFAULT_CONSTRUCTORS(Source);
             TS_DEFAULT_ASSIGMENTS(Source);

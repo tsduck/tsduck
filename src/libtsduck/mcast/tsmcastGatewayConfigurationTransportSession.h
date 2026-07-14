@@ -24,7 +24,7 @@ namespace ts::mcast {
     //! @see ETSI TS 103 769, section 10.2.5
     //! @ingroup libtsduck mpeg
     //!
-    class TSDUCKDLL GatewayConfigurationTransportSession : public BaseMulticastTransportSession
+    class TSDUCKDLL GatewayConfigurationTransportSession: public BaseMulticastTransportSession
     {
     public:
         //!

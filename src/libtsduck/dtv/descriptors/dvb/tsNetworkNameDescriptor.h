@@ -21,7 +21,7 @@ namespace ts {
     //! @see ETSI EN 300 468, 6.2.27.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL NetworkNameDescriptor : public AbstractDescriptor
+    class TSDUCKDLL NetworkNameDescriptor: public AbstractDescriptor
     {
     public:
         // NetworkNameDescriptor public members:

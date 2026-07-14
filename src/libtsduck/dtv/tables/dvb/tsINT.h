@@ -21,13 +21,13 @@ namespace ts {
     //! @see ETSI EN 301 192, 8.4.3
     //! @ingroup libtsduck table
     //!
-    class TSDUCKDLL INT : public AbstractLongTable
+    class TSDUCKDLL INT: public AbstractLongTable
     {
     public:
         //!
         //! Description of a device.
         //!
-        class TSDUCKDLL Device : public AttachedEntry
+        class TSDUCKDLL Device: public AttachedEntry
         {
         public:
             DescriptorList target_descs;       //!< Target descriptor loop, describes the target device.

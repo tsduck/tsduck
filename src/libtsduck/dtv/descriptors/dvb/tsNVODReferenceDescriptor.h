@@ -20,7 +20,7 @@ namespace ts {
     //! @see ETSI EN 300 468, 6.2.26.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL NVODReferenceDescriptor : public AbstractDescriptor
+    class TSDUCKDLL NVODReferenceDescriptor: public AbstractDescriptor
     {
     public:
         //!

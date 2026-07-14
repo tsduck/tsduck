@@ -20,7 +20,7 @@ namespace ts::tlv {
     //! Base class for DVB SimulCrypt TLV messages operating on channels.
     //! @ingroup libtsduck mpeg tlv
     //!
-    class TSDUCKDLL ChannelMessage : public Message
+    class TSDUCKDLL ChannelMessage: public Message
     {
         TS_RULE_OF_FIVE(ChannelMessage, override);
     protected:

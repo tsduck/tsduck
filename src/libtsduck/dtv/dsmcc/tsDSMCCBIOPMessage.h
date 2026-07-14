@@ -383,7 +383,7 @@ namespace ts {
     //! @see ISO/IEC 13818-6 section 8
     //! @ingroup libtsduck mpeg
     //!
-    class TSDUCKDLL BIOPFileMessage : public BIOPMessage
+    class TSDUCKDLL BIOPFileMessage: public BIOPMessage
     {
         TS_NOCOPY(BIOPFileMessage);
 
@@ -411,7 +411,7 @@ namespace ts {
     //! @see ISO/IEC 13818-6 sections 8.6.3.1 and 8.6.3.2
     //! @ingroup libtsduck mpeg
     //!
-    class TSDUCKDLL BIOPBindingListMessage : public BIOPMessage
+    class TSDUCKDLL BIOPBindingListMessage: public BIOPMessage
     {
         TS_NOCOPY(BIOPBindingListMessage);
 

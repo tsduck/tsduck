@@ -21,7 +21,7 @@ namespace ts {
     //! @see ATSC A/52, A.4.3.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL ATSCAC3AudioStreamDescriptor : public AbstractDescriptor
+    class TSDUCKDLL ATSCAC3AudioStreamDescriptor: public AbstractDescriptor
     {
     public:
         // ATSCAC3AudioStreamDescriptor public members:

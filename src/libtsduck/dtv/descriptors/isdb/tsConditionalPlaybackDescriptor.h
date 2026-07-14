@@ -22,7 +22,7 @@ namespace ts {
     //! @see ARIB STD-B25, Part 2, 2.3.2.6.4
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL ConditionalPlaybackDescriptor : public AbstractDescriptor
+    class TSDUCKDLL ConditionalPlaybackDescriptor: public AbstractDescriptor
     {
     public:
         // ConditionalPlaybackDescriptor public members:

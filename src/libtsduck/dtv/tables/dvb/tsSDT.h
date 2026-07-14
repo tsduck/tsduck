@@ -23,7 +23,7 @@ namespace ts {
     //! @see ETSI EN 300 468, 5.2.3
     //! @ingroup libtsduck table
     //!
-    class TSDUCKDLL SDT : public AbstractLongTable
+    class TSDUCKDLL SDT: public AbstractLongTable
     {
     public:
         //!
@@ -32,7 +32,7 @@ namespace ts {
         //! Note: by inheriting from EntryWithDescriptors, there is a
         //! public field "DescriptorList descs".
         //!
-        class TSDUCKDLL ServiceEntry : public EntryWithDescriptors
+        class TSDUCKDLL ServiceEntry: public EntryWithDescriptors
         {
             TS_NO_DEFAULT_CONSTRUCTORS(ServiceEntry);
             TS_DEFAULT_ASSIGMENTS(ServiceEntry);

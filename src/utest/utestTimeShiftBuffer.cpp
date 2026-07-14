@@ -38,10 +38,10 @@ TSUNIT_REGISTER(TimeShiftBufferTest);
 
 void TimeShiftBufferTest::testCommon(uint8_t total, uint8_t memory)
 {
-    ts::TimeShiftBuffer buf(total);
+    ts::TimeShiftBuffer buf(&CERR, total);
     TSUNIT_ASSERT(buf.setMemoryPackets(memory));
     TSUNIT_ASSERT(!buf.isOpen());
-    TSUNIT_ASSERT(buf.open(CERR));
+    TSUNIT_ASSERT(buf.open());
     TSUNIT_ASSERT(buf.isOpen());
     TSUNIT_EQUAL(total, buf.size());
     TSUNIT_EQUAL(0, buf.count());
@@ -68,7 +68,7 @@ void TimeShiftBufferTest::testCommon(uint8_t total, uint8_t memory)
         TSUNIT_EQUAL(i, buf.count());
         TSUNIT_ASSERT(!buf.full());
 
-        TSUNIT_ASSERT(buf.shift(pkt, mdata, CERR));
+        TSUNIT_ASSERT(buf.shift(pkt, mdata));
 
         TSUNIT_EQUAL(ts::PID_NULL, pkt.getPID());
         TSUNIT_ASSERT(mdata.getInputStuffing());
@@ -90,7 +90,7 @@ void TimeShiftBufferTest::testCommon(uint8_t total, uint8_t memory)
         TSUNIT_EQUAL(total, buf.count());
         TSUNIT_ASSERT(buf.full());
 
-        TSUNIT_ASSERT(buf.shift(pkt, mdata, CERR));
+        TSUNIT_ASSERT(buf.shift(pkt, mdata));
 
         TSUNIT_EQUAL(184, pkt.getPayloadSize());
         TSUNIT_EQUAL(i - total, pkt.getPID());
@@ -102,7 +102,7 @@ void TimeShiftBufferTest::testCommon(uint8_t total, uint8_t memory)
         TSUNIT_ASSERT(!mdata.hasLabel(out_label));
     }
 
-    TSUNIT_ASSERT(buf.close(CERR));
+    TSUNIT_ASSERT(buf.close());
     TSUNIT_ASSERT(!buf.isOpen());
 }
 

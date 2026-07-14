@@ -38,7 +38,7 @@ namespace ts {
     //! Teletext data unit ids.
     //! @see ETSI EN 300 472
     //!
-    enum class TeletextDataUnitId : uint8_t {
+    enum class TeletextDataUnitId: uint8_t {
         NON_SUBTITLE    = 0x02,  //!< Data_unit_id for EBU Teletext non-subtitle data.
         SUBTITLE        = 0x03,  //!< Data_unit_id for EBU Teletext subtitle data.
         INVERTED        = 0x0C,  //!< Data_unit_id for EBU EBU Teletext Inverted (extension ?).

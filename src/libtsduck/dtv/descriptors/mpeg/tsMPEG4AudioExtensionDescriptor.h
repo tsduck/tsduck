@@ -25,7 +25,7 @@ namespace ts {
     //! as a binary blob. A future version may chose to describe the internal structure
     //! of this data block.
     //!
-    class TSDUCKDLL MPEG4AudioExtensionDescriptor : public AbstractDescriptor
+    class TSDUCKDLL MPEG4AudioExtensionDescriptor: public AbstractDescriptor
     {
     public:
         // MPEG4AudioExtensionDescriptor public members:

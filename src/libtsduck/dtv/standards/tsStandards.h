@@ -20,7 +20,7 @@ namespace ts {
     //! Bit masks for standards, used to qualify the signalization.
     //! @ingroup mpeg
     //!
-    enum class Standards : uint16_t {
+    enum class Standards: uint16_t {
         NONE    = 0x0000,  //!< No known standard
         MPEG    = 0x0001,  //!< Defined by MPEG, common to all standards
         DVB     = 0x0002,  //!< Defined by ETSI/DVB.

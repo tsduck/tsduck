@@ -42,7 +42,7 @@ namespace ts {
     //!
     class TSCOREDLL TCPServer: public TCPSocket
     {
-        TS_NOCOPY(TCPServer);
+        TS_NOBUILD_NOCOPY(TCPServer);
     public:
         //!
         //! Reference to the superclass.
@@ -56,7 +56,7 @@ namespace ts {
         //! @param [in] non_blocking It true, the device is initially set in non-blocking mode.
         //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        explicit TCPServer(Report* report = nullptr, bool non_blocking = false, Object* owner = nullptr) : TCPSocket(report, non_blocking, owner) {}
+        explicit TCPServer(Report* report, bool non_blocking = false, Object* owner = nullptr) : TCPSocket(report, non_blocking, owner) {}
 
         //!
         //! Constructor.

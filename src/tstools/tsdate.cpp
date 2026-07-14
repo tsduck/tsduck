@@ -191,17 +191,17 @@ int MainCode(int argc, char *argv[])
     demux.addPID(ts::PID_TDT);  // also equal PID_TOT
 
     // Open the TS file.
-    ts::TSFile file;
-    if (!file.openRead(opt.infile, 1, 0, opt, opt.format)) {
+    ts::TSFile file(&opt);
+    if (!file.openRead(opt.infile, 1, 0, opt.format)) {
         return EXIT_FAILURE;
     }
 
     // Read all packets in the file until the date is found.
     ts::TSPacket pkt;
-    while (!handler.completed() && file.readPackets(&pkt, nullptr, 1, opt) > 0 ) {
+    while (!handler.completed() && file.readPackets(&pkt, nullptr, 1) > 0 ) {
         demux.feedPacket(pkt);
     }
-    file.close(opt);
+    file.close();
 
     return EXIT_SUCCESS;
 }

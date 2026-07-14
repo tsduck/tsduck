@@ -23,7 +23,7 @@ namespace ts {
     //! @see Astra LCN Technical Specification, 2.3.2
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL AstraBouquetListDescriptor : public AbstractDescriptor
+    class TSDUCKDLL AstraBouquetListDescriptor: public AbstractDescriptor
     {
     public:
         // AstraBouquetListDescriptor public members:

@@ -28,7 +28,7 @@ namespace ts::xml {
     //! internal characteristics of Node. However, if we make this inheritance private,
     //! the dynamic_cast operations in RingNode fail. This is a very annoying C++ feature.
     //!
-    class TSCOREDLL Node : public RingNode
+    class TSCOREDLL Node: public RingNode
     {
     public:
         //!

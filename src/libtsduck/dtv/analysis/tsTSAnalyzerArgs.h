@@ -28,12 +28,19 @@ namespace ts {
     //!
     class TSDUCKDLL TSAnalyzerArgs
     {
-        TS_NOCOPY(TSAnalyzerArgs);
+        TS_NOBUILD_NOCOPY(TSAnalyzerArgs);
     public:
         //!
         //! Constructor.
+        //! @param [in] report Where to report errors. The @a report object must remain valid as long as this object
+        //! exists. If @a report is null, log messages are discarded.
         //!
-        TSAnalyzerArgs() = default;
+        explicit TSAnalyzerArgs(Report* report);
+
+        //!
+        //! Virtual destructor.
+        //!
+        virtual ~TSAnalyzerArgs();
 
         // Full analysis options:
         bool ts_analysis = false;            //!< Option -\-ts-analysis
@@ -46,7 +53,7 @@ namespace ts {
         // Normalized output:
         bool normalized = false;             //!< Option -\-normalized
         bool deterministic = false;          //!< Option -\-deterministic
-        json::OutputArgs json {};            //!< Options -\-json and -\-json-line
+        json::OutputArgs json;               //!< Options -\-json and -\-json-line
 
         // One-line report options:
         bool service_list = false;           //!< Option -\-service-list

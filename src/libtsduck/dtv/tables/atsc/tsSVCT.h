@@ -22,14 +22,14 @@ namespace ts {
     //! @see ATSC A/81, section 9.9.1.
     //! @ingroup libtsduck table
     //!
-    class TSDUCKDLL SVCT : public AbstractLongTable
+    class TSDUCKDLL SVCT: public AbstractLongTable
     {
     public:
         //!
         //! Description of a virtual channel.
         //! Note: by inheriting from EntryWithDescriptors, there is a public field "DescriptorList descs".
         //!
-        class TSDUCKDLL Channel : public EntryWithDescriptors
+        class TSDUCKDLL Channel: public EntryWithDescriptors
         {
             TS_NO_DEFAULT_CONSTRUCTORS(Channel);
             TS_DEFAULT_ASSIGMENTS(Channel);

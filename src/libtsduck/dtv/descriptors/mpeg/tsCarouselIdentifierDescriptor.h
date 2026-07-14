@@ -21,7 +21,7 @@ namespace ts {
     //! @see ISO/IEC 13818-6 (DSM-CC), 11.4.1.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL CarouselIdentifierDescriptor : public AbstractDescriptor
+    class TSDUCKDLL CarouselIdentifierDescriptor: public AbstractDescriptor
     {
     public:
         // CarouselIdentifierDescriptor public members:

@@ -35,7 +35,7 @@ namespace ts {
     //! @ingroup libtsduck mpeg
     //! @see ETSI TS 102 773 V1.4.1, section 5.1
     //!
-    class TSDUCKDLL T2MIPacket : public DemuxedData
+    class TSDUCKDLL T2MIPacket: public DemuxedData
     {
     public:
         //!

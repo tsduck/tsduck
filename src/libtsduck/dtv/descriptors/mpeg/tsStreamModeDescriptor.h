@@ -21,7 +21,7 @@ namespace ts {
     //! @see ISO/IEC 13818-6, 8.2.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL StreamModeDescriptor : public AbstractDescriptor
+    class TSDUCKDLL StreamModeDescriptor: public AbstractDescriptor
     {
     public:
         // StreamModeDescriptor public members:

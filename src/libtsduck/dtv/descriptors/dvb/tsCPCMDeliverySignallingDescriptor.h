@@ -22,7 +22,7 @@ namespace ts {
     //! @see ETSI TS 102 825-9, clause 4.1.5 and ETSI TS 102 825-4 clause 5.4.5.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL CPCMDeliverySignallingDescriptor : public AbstractDescriptor
+    class TSDUCKDLL CPCMDeliverySignallingDescriptor: public AbstractDescriptor
     {
     public:
         //!

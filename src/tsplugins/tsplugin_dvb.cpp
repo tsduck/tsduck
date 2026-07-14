@@ -49,7 +49,7 @@ namespace ts {
     private:
         Tuner            _tuner {duck};          // DVB tuner device.
         TunerArgs        _tuner_args {false};    // Command-line tuning arguments.
-        json::OutputArgs _json_args {};          // JSON status reporting.
+        json::OutputArgs _json_args {this};      // JSON status reporting.
         cn::seconds      _json_interval {};      // Interval between JSON status reports.
         BitRate          _previous_bitrate = 0;  // Previous value from getBitrate().
         Time             _next_json_report {};   // UTC time of next JSON report.

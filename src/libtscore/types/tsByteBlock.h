@@ -25,7 +25,7 @@ namespace ts {
     //! This is a subclass of @c std::vector on @c uint8_t.
     //! @ingroup libtscore cpp
     //!
-    class ByteBlock : public std::vector<uint8_t>
+    class ByteBlock: public std::vector<uint8_t>
     {
     public:
         // Implementation note: This class is exported out of the TSDuck library

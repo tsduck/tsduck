@@ -7,17 +7,22 @@
 //----------------------------------------------------------------------------
 
 #include "tsTSFileOutputArgs.h"
-#include "tsNullReport.h"
-#include "tsSysUtils.h"
 #include "tsErrCodeReport.h"
 
 
 //----------------------------------------------------------------------------
-// Default constructor.
+// Constructors and destructor.
 //----------------------------------------------------------------------------
 
-ts::TSFileOutputArgs::TSFileOutputArgs(bool allow_stdout) :
-    _allow_stdout(allow_stdout)
+ts::TSFileOutputArgs::TSFileOutputArgs(Report* report, bool allow_stdout, Object* owner) :
+    _allow_stdout(allow_stdout),
+    _file(report, owner)
+{
+}
+
+ts::TSFileOutputArgs::TSFileOutputArgs(ReporterBase* delegate, bool allow_stdout, Object* owner) :
+    _allow_stdout(allow_stdout),
+    _file(delegate, owner)
 {
 }
 
@@ -138,7 +143,7 @@ bool ts::TSFileOutputArgs::loadArgs(DuckContext& duck, Args& args)
 // Open the output file.
 //----------------------------------------------------------------------------
 
-bool ts::TSFileOutputArgs::open(Report& report, AbortInterface* abort)
+bool ts::TSFileOutputArgs::open(AbortInterface* abort)
 {
     if (_file.isOpen()) {
         return false; // already open
@@ -153,7 +158,7 @@ bool ts::TSFileOutputArgs::open(Report& report, AbortInterface* abort)
     _current_files.clear();
     _file.setStuffing(_start_stuffing, _stop_stuffing);
     size_t retry_allowed = _retry_max == 0 ? std::numeric_limits<size_t>::max() : _retry_max;
-    return openAndRetry(false, retry_allowed, report, abort);
+    return openAndRetry(false, retry_allowed, abort);
 }
 
 
@@ -161,9 +166,9 @@ bool ts::TSFileOutputArgs::open(Report& report, AbortInterface* abort)
 // Close the output file.
 //----------------------------------------------------------------------------
 
-bool ts::TSFileOutputArgs::close(Report& report)
+bool ts::TSFileOutputArgs::close(bool silent)
 {
-    return closeAndCleanup(report);
+    return closeAndCleanup(silent);
 }
 
 
@@ -171,7 +176,7 @@ bool ts::TSFileOutputArgs::close(Report& report)
 // Open the file, retry on error if necessary.
 //----------------------------------------------------------------------------
 
-bool ts::TSFileOutputArgs::openAndRetry(bool initial_wait, size_t& retry_allowed, Report& report, AbortInterface* abort)
+bool ts::TSFileOutputArgs::openAndRetry(bool initial_wait, size_t& retry_allowed, AbortInterface* abort)
 {
     bool done_once = false;
 
@@ -186,9 +191,9 @@ bool ts::TSFileOutputArgs::openAndRetry(bool initial_wait, size_t& retry_allowed
         // Try to open the file.
         const fs::path name(_multiple_files ? _name_gen.newFileName() : _name);
         if (!name.empty()) { // stdout otherwise
-            report.verbose(u"creating file %s", name);
+            _file.report().verbose(u"creating file %s", name);
         }
-        const bool success = _file.open(name, _flags, report, _file_format);
+        const bool success = _file.open(name, _flags, _file_format);
 
         // Remember the list of created files if we need to limit their number.
         if (success && _multiple_files && _max_files > 0) {
@@ -211,7 +216,7 @@ bool ts::TSFileOutputArgs::openAndRetry(bool initial_wait, size_t& retry_allowed
 
         // Check if we can try again.
         if (retry_allowed == 0) {
-            report.error(u"reached max number of output retries, aborting");
+            _file.report().error(u"reached max number of output retries, aborting");
             return false;
         }
 
@@ -224,10 +229,10 @@ bool ts::TSFileOutputArgs::openAndRetry(bool initial_wait, size_t& retry_allowed
 // Close the current file, cleanup oldest files when necessary.
 //----------------------------------------------------------------------------
 
-bool ts::TSFileOutputArgs::closeAndCleanup(Report& report)
+bool ts::TSFileOutputArgs::closeAndCleanup(bool silent)
 {
     // Close the current file.
-    if (_file.isOpen() && !_file.close(report)) {
+    if (_file.isOpen() && !_file.close(silent)) {
         return false;
     }
 
@@ -242,8 +247,8 @@ bool ts::TSFileOutputArgs::closeAndCleanup(Report& report)
         _current_files.pop_front();
 
         // Delete the file.
-        report.verbose(u"deleting obsolete file %s", name);
-        if (!fs::remove(name, &ErrCodeReport(report, u"error deleting", name)) && fs::exists(name)) {
+        _file.report().verbose(u"deleting obsolete file %s", name);
+        if (!fs::remove(name, &ErrCodeReport(_file.report(), u"error deleting", name)) && fs::exists(name)) {
             // Failed to delete, keep it to retry later.
             failed_delete.push_back(name);
         }
@@ -262,7 +267,7 @@ bool ts::TSFileOutputArgs::closeAndCleanup(Report& report)
 // Write packets.
 //----------------------------------------------------------------------------
 
-bool ts::TSFileOutputArgs::write(const TSPacket* buffer, const TSPacketMetadata* pkt_data, size_t packet_count, Report& report, AbortInterface* abort)
+bool ts::TSFileOutputArgs::write(const TSPacket* buffer, const TSPacketMetadata* pkt_data, size_t packet_count, AbortInterface* abort)
 {
     // Total number of retries.
     size_t retry_allowed = _retry_max == 0 ? std::numeric_limits<size_t>::max() : _retry_max;
@@ -272,15 +277,15 @@ bool ts::TSFileOutputArgs::write(const TSPacket* buffer, const TSPacketMetadata*
 
         // Close and reopen file when necessary (multiple output files).
         if ((_max_size > 0 && _current_size >= _max_size) || (_max_duration > cn::seconds::zero() && Time::CurrentUTC() >= _next_open_time)) {
-            closeAndCleanup(report);
-            if (!openAndRetry(false, retry_allowed, report, abort)) {
+            closeAndCleanup(false);
+            if (!openAndRetry(false, retry_allowed, abort)) {
                 return false;
             }
         }
 
         // Write some packets.
         const PacketCounter where = _file.writePacketsCount();
-        const bool success = _file.writePackets(buffer, pkt_data, packet_count, report);
+        const bool success = _file.writePackets(buffer, pkt_data, packet_count);
         const size_t written = std::min(size_t(_file.writePacketsCount() - where), packet_count);
         _current_size += written * PKT_SIZE;
 
@@ -295,10 +300,10 @@ bool ts::TSFileOutputArgs::write(const TSPacket* buffer, const TSPacketMetadata*
         packet_count -= written;
 
         // Close the file and try to reopen it a number of times.
-        closeAndCleanup(NULLREP);
+        closeAndCleanup(true);
 
         // Reopen multiple times. Wait before open only when we already waited and reopened.
-        if (!openAndRetry(done_once, retry_allowed, report, abort)) {
+        if (!openAndRetry(done_once, retry_allowed, abort)) {
             return false;
         }
         done_once = true;

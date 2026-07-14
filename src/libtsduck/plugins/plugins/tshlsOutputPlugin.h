@@ -71,7 +71,7 @@ namespace ts {
             uint8_t            _video_stream_type = ST_NULL;  // Stream type for video PID in PMT.
             bool               _seg_started = false;          // Generation of output segments has started.
             bool               _seg_close_pending = false;    // Close the current segment when possible.
-            TSFile             _segment_file {};              // Output segment file.
+            TSFile             _segment_file {this};          // Output segment file.
             UStringList        _live_segment_files {};        // List of current segments in a live stream.
             hls::PlayList      _playlist {};                  // Generated playlist.
             PCRAnalyzer        _pcr_analyzer {1, 4};          // PCR analyzer to compute bitrates. Minimum required: 1 PID, 4 PCR.

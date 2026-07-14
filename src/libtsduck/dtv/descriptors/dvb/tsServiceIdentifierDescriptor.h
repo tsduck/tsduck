@@ -22,7 +22,7 @@ namespace ts {
     //! @see ETSI TS 101 812, 10.12.1.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL ServiceIdentifierDescriptor : public AbstractDescriptor
+    class TSDUCKDLL ServiceIdentifierDescriptor: public AbstractDescriptor
     {
     public:
         // ServiceIdentifierDescriptor public members:

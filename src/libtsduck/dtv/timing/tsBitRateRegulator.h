@@ -12,8 +12,8 @@
 //----------------------------------------------------------------------------
 
 #pragma once
+#include "tsReporterBase.h"
 #include "tsTS.h"
-#include "tsReport.h"
 
 namespace ts {
     //!
@@ -21,23 +21,31 @@ namespace ts {
     //! @ingroup libtsduck mpeg
     //! @see PCRRegulator
     //!
-    class TSDUCKDLL BitRateRegulator
+    class TSDUCKDLL BitRateRegulator: public ReporterBase
     {
-         TS_NOCOPY(BitRateRegulator);
+         TS_NOBUILD_NOCOPY(BitRateRegulator);
     public:
         //!
         //! Constructor.
-        //! @param [in,out] report Where to report errors.
+        //! @param [in] report Where to report errors. The @a report object must remain valid as long as this object
+        //! exists or setReport() is used with another Report object. If @a report is null, log messages are discarded.
         //! @param [in] log_level Severity level for information messages.
+        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        BitRateRegulator(Report* report = nullptr, int log_level = Severity::Verbose);
+        explicit BitRateRegulator(Report* report, int log_level = Severity::Verbose, Object* owner = nullptr);
 
         //!
-        //! Set a new report.
-        //! @param [in,out] report Where to report errors.
+        //! Constructor.
+        //! @param [in] delegate Use the report of another ReporterBase. If @a delegate is null, log messages are discarded.
         //! @param [in] log_level Severity level for information messages.
+        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        void setReport(Report* report = nullptr, int log_level = Severity::Verbose);
+        explicit BitRateRegulator(ReporterBase* delegate, int log_level = Severity::Verbose, Object* owner = nullptr);
+
+        //!
+        //! Destructor.
+        //!
+        virtual ~BitRateRegulator() override;
 
         //!
         //! Set the number of packets to burst at a time.
@@ -86,7 +94,6 @@ namespace ts {
         };
 
         // Private members.
-        Report*         _report = nullptr;
         int             _log_level = Severity::Info;
         bool            _starting = false;    // Starting, no packet processed so far
         bool            _regulated = false;   // Currently regulated at known bitrate

@@ -21,7 +21,7 @@ namespace ts {
     //! @see ARIB STD-B10, Part 3, 5.1.3
     //! @ingroup libtsduck table
     //!
-    class TSDUCKDLL ITT : public AbstractLongTable
+    class TSDUCKDLL ITT: public AbstractLongTable
     {
     public:
         // ITT public members:

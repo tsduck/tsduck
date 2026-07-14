@@ -32,7 +32,7 @@ namespace ts {
     //!
     class TSCOREDLL UDPSocket: public Socket
     {
-        TS_NOCOPY(UDPSocket);
+        TS_NOBUILD_NOCOPY(UDPSocket);
     public:
         //!
         //! Reference to the superclass.
@@ -50,7 +50,7 @@ namespace ts {
         //! @param [in] non_blocking It true, the device is initially set in non-blocking mode.
         //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        explicit UDPSocket(Report* report = nullptr, bool auto_open = false, IP gen = IP::Any, bool non_blocking = false, Object* owner = nullptr);
+        explicit UDPSocket(Report* report, bool auto_open = false, IP gen = IP::Any, bool non_blocking = false, Object* owner = nullptr);
 
         //!
         //! Constructor.

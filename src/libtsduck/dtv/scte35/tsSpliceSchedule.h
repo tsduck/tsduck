@@ -22,7 +22,7 @@ namespace ts {
     //! @see ANSI/SCTE 35, 9.3.2.
     //! @ingroup libtsduck mpeg
     //!
-    class TSDUCKDLL SpliceSchedule : public AbstractSignalization
+    class TSDUCKDLL SpliceSchedule: public AbstractSignalization
     {
     public:
         //!

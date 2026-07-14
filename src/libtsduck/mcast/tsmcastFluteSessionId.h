@@ -22,7 +22,7 @@ namespace ts::mcast {
     //! Representation of a FLUTE session identification.
     //! @ingroup libtsduck mpeg
     //!
-    class TSDUCKDLL FluteSessionId : public StringifyInterface
+    class TSDUCKDLL FluteSessionId: public StringifyInterface
     {
     public:
         IPAddress       source {};          //!< Source IP address.

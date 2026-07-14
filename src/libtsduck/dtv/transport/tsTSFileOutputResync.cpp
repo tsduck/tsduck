@@ -14,10 +14,18 @@
 // Constructors and destructors.
 //----------------------------------------------------------------------------
 
-ts::TSFileOutputResync::TSFileOutputResync()
+ts::TSFileOutputResync::TSFileOutputResync(Report* report, Object* owner) :
+    TSFile(report, owner)
 {
     // Continuity counters are generated regardless of previous values.
-    _ccFixer.setGenerator(true);
+    _cc_fixer.setGenerator(true);
+}
+
+ts::TSFileOutputResync::TSFileOutputResync(ReporterBase* delegate, Object* owner) :
+    TSFile(delegate, owner)
+{
+    // Continuity counters are generated regardless of previous values.
+    _cc_fixer.setGenerator(true);
 }
 
 ts::TSFileOutputResync::~TSFileOutputResync()
@@ -29,20 +37,20 @@ ts::TSFileOutputResync::~TSFileOutputResync()
 // Open method
 //----------------------------------------------------------------------------
 
-bool ts::TSFileOutputResync::open(const fs::path& filename, OpenFlags flags, Report& report, TSPacketFormat format)
+bool ts::TSFileOutputResync::open(const fs::path& filename, OpenFlags flags, TSPacketFormat format)
 {
     // Forbid input access.
     if ((flags & READ) != 0) {
-        report.error(u"read mode not allowed on TSFileOutputResync");
+        report().error(u"read mode not allowed on TSFileOutputResync");
         return false;
     }
 
     // Invoke superclass for actual file opening. Force write mode.
-    const bool ok = TSFile::open(filename, flags | WRITE, report, format);
+    const bool ok = TSFile::open(filename, flags | WRITE, format);
 
     // Reset continuity counters.
     if (ok) {
-        _ccFixer.reset();
+        _cc_fixer.reset();
     }
 
     return ok;
@@ -53,9 +61,9 @@ bool ts::TSFileOutputResync::open(const fs::path& filename, OpenFlags flags, Rep
 // Write packets: make the read-only inherited writePackets inaccessible.
 //----------------------------------------------------------------------------
 
-bool ts::TSFileOutputResync::writePackets(const TSPacket* buffer, const TSPacketMetadata* metadata, size_t packet_count, Report& report)
+bool ts::TSFileOutputResync::writePackets(const TSPacket* buffer, const TSPacketMetadata* metadata, size_t packet_count)
 {
-    report.error(u"internal error, read-only TSFileOutputResync::writePackets() invoked, should not get there");
+    report().error(u"internal error, read-only TSFileOutputResync::writePackets() invoked, should not get there");
     return false;
 }
 
@@ -64,15 +72,15 @@ bool ts::TSFileOutputResync::writePackets(const TSPacket* buffer, const TSPacket
 // Write packets, update their continuity counters (packets are modified)
 //----------------------------------------------------------------------------
 
-bool ts::TSFileOutputResync::writePackets(TSPacket* buffer, const TSPacketMetadata* metadata, size_t packet_count, Report& report)
+bool ts::TSFileOutputResync::writePackets(TSPacket* buffer, const TSPacketMetadata* metadata, size_t packet_count)
 {
     // Update continuity counters
     for (size_t n = 0; n < packet_count; ++n) {
-        _ccFixer.feedPacket(buffer[n]);
+        _cc_fixer.feedPacket(buffer[n]);
     }
 
     // Invoke superclass
-    return TSFile::writePackets(buffer, metadata, packet_count, report);
+    return TSFile::writePackets(buffer, metadata, packet_count);
 }
 
 
@@ -80,10 +88,10 @@ bool ts::TSFileOutputResync::writePackets(TSPacket* buffer, const TSPacketMetada
 // Write packets, force PID value
 //----------------------------------------------------------------------------
 
-bool ts::TSFileOutputResync::writePackets(TSPacket* buffer, const TSPacketMetadata* metadata, size_t packet_count, PID pid, Report& report)
+bool ts::TSFileOutputResync::writePackets(TSPacket* buffer, const TSPacketMetadata* metadata, size_t packet_count, PID pid)
 {
     for (size_t n = 0; n < packet_count; ++n) {
         buffer[n].setPID(pid);
     }
-    return writePackets(buffer, metadata, packet_count, report);
+    return writePackets(buffer, metadata, packet_count);
 }

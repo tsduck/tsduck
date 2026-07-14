@@ -20,7 +20,7 @@ namespace ts {
     //! @see ETSI EN 300 468, 6.2.22.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL MultilingualBouquetNameDescriptor : public AbstractMultilingualDescriptor
+    class TSDUCKDLL MultilingualBouquetNameDescriptor: public AbstractMultilingualDescriptor
     {
     public:
         //!

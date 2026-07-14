@@ -26,7 +26,7 @@ namespace ts {
     //! @see ETSI TS 102 006, 6.5.2.3
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL TargetIPAddressDescriptor : public AbstractDescriptor
+    class TSDUCKDLL TargetIPAddressDescriptor: public AbstractDescriptor
     {
     public:
         // TargetIPAddressDescriptor public members:

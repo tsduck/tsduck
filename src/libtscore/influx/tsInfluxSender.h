@@ -25,9 +25,9 @@ namespace ts {
     //! Using a thread avoid slowing down the packet transmission.
     //! @ingroup libtscore net
     //!
-    class TSCOREDLL InfluxSender : public ReporterBase, private Thread
+    class TSCOREDLL InfluxSender: public ReporterBase, private Thread
     {
-        TS_NOCOPY(InfluxSender);
+        TS_NOBUILD_NOCOPY(InfluxSender);
     public:
         //!
         //! Constructor.
@@ -35,7 +35,7 @@ namespace ts {
         //! exists or setReport() is used with another Report object. If @a report is null, log messages are discarded.
         //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        InfluxSender(Report* report = nullptr, Object* owner = nullptr);
+        explicit InfluxSender(Report* report, Object* owner = nullptr);
 
         //!
         //! Start the asynchronous sender.

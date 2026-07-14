@@ -34,7 +34,7 @@ TSUNIT_REGISTER(TSProcessorTest);
 //----------------------------------------------------------------------------
 
 namespace {
-    class TestPluginData : public ts::Object
+    class TestPluginData: public ts::Object
     {
     public:
         // Public fields
@@ -56,7 +56,7 @@ namespace {
 //----------------------------------------------------------------------------
 
 namespace {
-    class TestPlugin : ts::ProcessorPlugin
+    class TestPlugin: public ts::ProcessorPlugin
     {
     public:
         // Constructor.
@@ -136,7 +136,7 @@ ts::PacketProcessStatus TestPlugin::processPacket(ts::TSPacket& pkt, ts::TSPacke
 //----------------------------------------------------------------------------
 
 namespace {
-    class TestEventHandler : public ts::PluginEventHandlerInterface
+    class TestEventHandler: public ts::PluginEventHandlerInterface
     {
     public:
         TestEventHandler();

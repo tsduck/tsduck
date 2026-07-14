@@ -21,7 +21,7 @@ namespace ts {
     //! @see ATSC A/65, section 6.6.
     //! @ingroup libtsduck table
     //!
-    class TSDUCKDLL ETT : public AbstractLongTable
+    class TSDUCKDLL ETT: public AbstractLongTable
     {
     public:
         // ETT public members:

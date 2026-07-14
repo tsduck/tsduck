@@ -20,7 +20,7 @@ namespace ts {
     //! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.6.4.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL AudioStreamDescriptor : public AbstractDescriptor
+    class TSDUCKDLL AudioStreamDescriptor: public AbstractDescriptor
     {
     public:
         // AudioStreamDescriptor public members:

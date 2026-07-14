@@ -24,7 +24,7 @@ namespace ts {
     //! @see Free TV Australia Operational Practice OP-41, section 2.2
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL AustraliaLogicalChannelDescriptor : public AbstractLogicalChannelDescriptor
+    class TSDUCKDLL AustraliaLogicalChannelDescriptor: public AbstractLogicalChannelDescriptor
     {
     public:
         //!

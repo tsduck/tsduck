@@ -12,8 +12,8 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsAbstractReadStreamInterface.h"
-#include "tsAbstractWriteStreamInterface.h"
+#include "tsReporterBase.h"
+#include "tsAbstractStream.h"
 #include "tsReport.h"
 
 namespace ts {
@@ -21,14 +21,24 @@ namespace ts {
     //! Fork a process and create an optional pipe to its standard input.
     //! @ingroup libtscore system
     //!
-    class TSCOREDLL ForkPipe: public AbstractReadStreamInterface, public AbstractWriteStreamInterface
+    class TSCOREDLL ForkPipe: public ReporterBase, public AbstractStream
     {
-        TS_NOCOPY(ForkPipe);
+        TS_NOBUILD_NOCOPY(ForkPipe);
     public:
         //!
-        //! Default constructor.
+        //! Constructor.
+        //! @param [in] report Where to report errors. The @a report object must remain valid as long as this object
+        //! exists or setReport() is used with another Report object. If @a report is null, log messages are discarded.
+        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        ForkPipe() = default;
+        explicit ForkPipe(Report* report, Object* owner = nullptr);
+
+        //!
+        //! Constructor.
+        //! @param [in] delegate Use the report of another ReporterBase. If @a delegate is null, log messages are discarded.
+        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
+        //!
+        explicit ForkPipe(ReporterBase* delegate, Object* owner = nullptr);
 
         //!
         //! Destructor.
@@ -75,22 +85,22 @@ namespace ts {
         //! @param [in] command The command to execute.
         //! @param [in] wait_mode How to wait for process termination in close().
         //! @param [in] buffer_size The pipe buffer size in bytes. Used on Windows only. Zero means default.
-        //! @param [in,out] report Where to report errors.
         //! @param [in] out_mode How to handle stdout and stderr.
         //! @param [in] in_mode How to handle stdin. Use the pipe by default.
         //! When set to KEEP_STDIN, no pipe is created.
         //! @return True on success, false on error.
         //! Do not return on success when @a wait_mode is EXIT_PROCESS.
         //!
-        bool open(const UString& command, WaitMode wait_mode, size_t buffer_size, Report& report, OutputMode out_mode, InputMode in_mode);
+        bool open(const UString& command, WaitMode wait_mode, size_t buffer_size, OutputMode out_mode, InputMode in_mode);
 
         //!
         //! Close the pipe.
         //! Optionally wait for process termination if @a wait_mode was SYNCHRONOUS on open().
-        //! @param [in,out] report Where to report errors.
+        //! @param [in] silent If true, do not report errors. This is typically useful when the object is in some error
+        //! condition and closing it is necessary although it may generate additional meaningless errors.
         //! @return True on success, false on error.
         //!
-        virtual bool close(Report& report);
+        virtual bool close(bool silent = false);
 
         //!
         //! Check if the process is running and the pipe is open (when used).
@@ -175,12 +185,10 @@ namespace ts {
         //!
         static bool GetOutput(UString& output, const UString& command, Report& report, bool include_stderr = false);
 
-        // Implementation of AbstractReadStreamInterface
+        // Implementation of AbstractStream
         virtual bool endOfStream() override;
-        virtual bool readStreamPartial(void* addr, size_t max_size, size_t& ret_size, Report& report) override;
-
-        // Implementation of AbstractWriteStreamInterface
-        virtual bool writeStream(const void* addr, size_t size, size_t& written_size, Report& report) override;
+        virtual bool readStream(void* addr, size_t max_size, size_t& ret_size) override;
+        virtual bool writeStream(const void* addr, size_t size, size_t& written_size) override;
 
     private:
         InputMode     _in_mode = STDIN_PIPE;     // Input mode for the created process.

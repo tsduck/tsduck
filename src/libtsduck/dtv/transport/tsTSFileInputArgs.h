@@ -23,14 +23,29 @@ namespace ts {
     //! Transport stream file input with command-line arguments.
     //! @ingroup libtsduck mpeg
     //!
-    class TSDUCKDLL TSFileInputArgs
+    class TSDUCKDLL TSFileInputArgs: public ReporterBase
     {
-        TS_NOCOPY(TSFileInputArgs);
+        TS_NOBUILD_NOCOPY(TSFileInputArgs);
     public:
         //!
-        //! Default constructor.
+        //! Constructor.
+        //! @param [in] report Where to report errors. The @a report object must remain valid as long as this object
+        //! exists or setReport() is used with another Report object. If @a report is null, log messages are discarded.
+        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        TSFileInputArgs() = default;
+        explicit TSFileInputArgs(Report* report, Object* owner = nullptr);
+
+        //!
+        //! Constructor.
+        //! @param [in] delegate Use the report of another ReporterBase. If @a delegate is null, log messages are discarded.
+        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
+        //!
+        explicit TSFileInputArgs(ReporterBase* delegate, Object* owner = nullptr);
+
+        //!
+        //! Destructor.
+        //!
+        virtual ~TSFileInputArgs() override;
 
         //!
         //! Add command line option definitions in an Args.
@@ -50,28 +65,27 @@ namespace ts {
         //!
         //! Open the input file or files.
         //! All parameters where loaded from the command line by loadArgs().
-        //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool open(Report& report);
+        bool open();
 
         //!
         //! Close the input file or files.
-        //! @param [in,out] report Where to report errors.
+        //! @param [in] silent If true, do not report errors. This is typically useful when the object is in some error
+        //! condition and closing it is necessary although it may generate additional meaningless errors.
         //! @return True on success, false on error.
         //!
-        bool close(Report& report);
+        bool close(bool silent = false);
 
         //!
         //! Read packets.
         //! @param [out] buffer Address of the buffer for incoming packets.
         //! @param [in,out] pkt_data Array of metadata for incoming packets.
         //! @param [in] max_packets Size of @a buffer in number of packets.
-        //! @param [in,out] report Where to report errors.
         //! @return The number of actually received packets (in the range
         //! 1 to @a max_packets). Returning zero means error or end of input.
         //!
-        size_t read(TSPacket* buffer, TSPacketMetadata* pkt_data, size_t max_packets, Report& report);
+        size_t read(TSPacket* buffer, TSPacketMetadata* pkt_data, size_t max_packets);
 
         //!
         //! Abort the input operation currently in progress.
@@ -96,12 +110,15 @@ namespace ts {
         std::vector<size_t> _start_stuffing {};
         std::vector<size_t> _stop_stuffing {};
         std::set<size_t>    _eof {};                  // Set of file indexes having reached end of file.
-        std::vector<TSFile> _files {};                // Array of open files, only one without interleave.
+        std::map<size_t,TSFile> _files {};            // Array of open files. Implemented as a map since TSFile is not copyable.
+
+        // Get/allocate a file by index.
+        TSFile& getFile(size_t file_index);
 
         // Open one input file.
-        bool openFile(size_t name_index, size_t file_index, Report& report);
+        bool openFile(size_t name_index, size_t file_index);
 
         // Close all files which are currently open.
-        bool closeAllFiles(Report& report);
+        bool closeAllFiles(bool silent);
     };
 }

@@ -24,7 +24,7 @@ namespace ts {
     //! @see ETSI EN 301 192, 8.4.5.3.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL IPMACPlatformProviderNameDescriptor : public AbstractDescriptor
+    class TSDUCKDLL IPMACPlatformProviderNameDescriptor: public AbstractDescriptor
     {
     public:
         // IPMACPlatformProviderNameDescriptor public members:

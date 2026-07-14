@@ -55,7 +55,7 @@ namespace ts {
         bool                   _abort = false;       // Error, abort asap.
         std::optional<PID>     _extract_pid {};      // The PID containing the T2MI stream to extract.
         std::optional<uint8_t> _extract_plp {};      // The PLP to extract in that PID.
-        TSFile                 _ts_file {};          // Output file for extracted TS.
+        TSFile                 _ts_file {this};      // Output file for extracted TS.
         std::ofstream          _t2mi_file {};        // Output file for extracted T2-MI packets.
         PacketCounter          _t2mi_count = 0;      // Number of input T2-MI packets.
         PacketCounter          _ts_count = 0;        // Number of extracted TS packets.
@@ -189,7 +189,7 @@ bool ts::T2MIPlugin::start()
     _abort = false;
 
     // Open output files.
-    if (!_ts_file_name.empty() && !_ts_file.open(_ts_file_name, _ts_file_flags , *this)) {
+    if (!_ts_file_name.empty() && !_ts_file.open(_ts_file_name, _ts_file_flags)) {
         return false;
     }
     if (!_t2mi_file_name.empty()) {
@@ -197,7 +197,7 @@ bool ts::T2MIPlugin::start()
         if (!_t2mi_file) {
             error(u"error creating %s", _t2mi_file_name);
             if (_ts_file.isOpen()) {
-                _ts_file.close(*this);
+                _ts_file.close();
             }
             return false;
         }
@@ -217,7 +217,7 @@ bool ts::T2MIPlugin::stop()
         _t2mi_file.close();
     }
     if (_ts_file.isOpen()) {
-        _ts_file.close(*this);
+        _ts_file.close();
     }
 
     // With --extract, display a summary.
@@ -347,7 +347,7 @@ void ts::T2MIPlugin::handleTSPacket(T2MIDemux& demux, const T2MIPacket& t2mi, co
         }
         else {
             // Write the packet to output file.
-            _abort = !_ts_file.writePackets(&ts, nullptr, 1, *this);
+            _abort = !_ts_file.writePackets(&ts, nullptr, 1);
             _ts_count++;
         }
     }

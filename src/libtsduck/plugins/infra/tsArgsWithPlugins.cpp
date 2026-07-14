@@ -336,7 +336,7 @@ void ts::ArgsWithPlugins::processListPlugins()
     const UString text(PluginRepository::Instance().listPlugins(true, *this, op));
 
     // Try to page, raw output otherwise.
-    OutputPager pager;
+    OutputPager pager(this);
     if ((getFlags() & HELP_ON_THIS) != 0) {
         // Use this report object.
         info(text);
@@ -345,11 +345,11 @@ void ts::ArgsWithPlugins::processListPlugins()
         // Compact output, no paging, no extra line.
         std::cout << text;
     }
-    else if ((getFlags() & NO_EXIT_ON_HELP) == 0 && pager.canPage() && pager.open(true, 0, *this)) {
+    else if ((getFlags() & NO_EXIT_ON_HELP) == 0 && pager.canPage() && pager.open(true, 0)) {
         // Paginated full output.
-        pager.write(text, *this);
-        pager.write(u"\n", *this);
-        pager.close(*this);
+        pager.write(text);
+        pager.write(u"\n");
+        pager.close();
     }
     else {
         // Non-paginated full output.

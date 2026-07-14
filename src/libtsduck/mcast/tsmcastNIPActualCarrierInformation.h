@@ -22,7 +22,7 @@ namespace ts::mcast {
     //! @see ETSI TS 103 876, section 8.7.3
     //! @ingroup libtsduck mpeg
     //!
-    class TSDUCKDLL NIPActualCarrierInformation : public StringifyInterface
+    class TSDUCKDLL NIPActualCarrierInformation: public StringifyInterface
     {
     public:
         NIPStreamId stream_id {};             //!< NIP stream id.

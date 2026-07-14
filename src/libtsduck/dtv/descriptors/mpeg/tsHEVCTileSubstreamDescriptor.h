@@ -24,7 +24,7 @@ namespace ts {
     //! @see ISO/IEC 13818-1 clasue 2.6.122
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL HEVCTileSubstreamDescriptor : public AbstractDescriptor
+    class TSDUCKDLL HEVCTileSubstreamDescriptor: public AbstractDescriptor
     {
     public:
         // Public members:

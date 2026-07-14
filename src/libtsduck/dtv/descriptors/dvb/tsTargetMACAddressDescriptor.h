@@ -26,7 +26,7 @@ namespace ts {
     //! @see ETSI TS 102 006, 6.5.2.2
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL TargetMACAddressDescriptor : public AbstractDescriptor
+    class TSDUCKDLL TargetMACAddressDescriptor: public AbstractDescriptor
     {
     public:
         // TargetMACAddressDescriptor public members:

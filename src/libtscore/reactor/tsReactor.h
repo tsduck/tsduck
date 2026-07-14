@@ -127,9 +127,9 @@ namespace ts {
     //! except worker handlers which are invoked in the context of a worker thread. Therefore,
     //! worker handlers are not allowed to call methods of the reactor.
     //!
-    class TSCOREDLL Reactor : public ReporterBase
+    class TSCOREDLL Reactor: public ReporterBase
     {
-        TS_NOCOPY(Reactor);
+        TS_NOBUILD_NOCOPY(Reactor);
     public:
         //!
         //! Constructor.
@@ -137,14 +137,14 @@ namespace ts {
         //! exists or setReport() is used with another Report object. If @a report is null, log messages are discarded.
         //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        Reactor(Report* report = nullptr, Object* owner = nullptr);
+        explicit Reactor(Report* report, Object* owner = nullptr);
 
         //!
         //! Constructor.
         //! @param [in] delegate Use the report of another ReporterBase. If @a delegate is null, log messages are discarded.
         //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        Reactor(ReporterBase* delegate, Object* owner = nullptr);
+        explicit Reactor(ReporterBase* delegate, Object* owner = nullptr);
 
         //!
         //! Destructor.

@@ -24,7 +24,7 @@ namespace ts {
     //! @see The D-Book 7 Part A (DTG), section 8.5.3.9
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL DTGServiceAttributeDescriptor : public AbstractDescriptor
+    class TSDUCKDLL DTGServiceAttributeDescriptor: public AbstractDescriptor
     {
     public:
         //!

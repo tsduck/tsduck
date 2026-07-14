@@ -53,7 +53,7 @@ namespace ts {
         using SectionPtr = SectionQueue::MessagePtr;
 
         // TCP listener thread.
-        class TCPListener : public Thread
+        class TCPListener: public Thread
         {
             TS_NOBUILD_NOCOPY(TCPListener);
         public:
@@ -75,7 +75,7 @@ namespace ts {
         };
 
         // UDP listener thread.
-        class UDPListener : public Thread
+        class UDPListener: public Thread
         {
             TS_NOBUILD_NOCOPY(UDPListener);
         public:

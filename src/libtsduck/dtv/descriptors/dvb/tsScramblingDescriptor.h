@@ -20,7 +20,7 @@ namespace ts {
     //! @see ETSI EN 300 468, 6.2.32.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL ScramblingDescriptor : public AbstractDescriptor
+    class TSDUCKDLL ScramblingDescriptor: public AbstractDescriptor
     {
     public:
         // ScramblingDescriptor public members:

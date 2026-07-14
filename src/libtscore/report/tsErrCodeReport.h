@@ -56,7 +56,7 @@ namespace ts {
     //! various common combinations of parameter types. More constructors may need to be defined with
     //! new code.
     //!
-    class TSCOREDLL ErrCodeReport : public std::error_code
+    class TSCOREDLL ErrCodeReport: public std::error_code
     {
         TS_NOCOPY(ErrCodeReport);
     public:

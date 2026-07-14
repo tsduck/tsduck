@@ -22,7 +22,7 @@ namespace ts {
     //! Abstract base class for DVB delivery system descriptors.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL AbstractDeliverySystemDescriptor : public AbstractDescriptor
+    class TSDUCKDLL AbstractDeliverySystemDescriptor: public AbstractDescriptor
     {
         TS_RULE_OF_FIVE(AbstractDeliverySystemDescriptor, override);
     public:

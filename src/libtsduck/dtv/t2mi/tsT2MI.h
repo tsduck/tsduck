@@ -25,7 +25,7 @@ namespace ts {
     //! T2-MI packet types.
     //! @see ETSI EN 102 773, section 5.1.
     //!
-    enum class T2MIPacketType : uint8_t {
+    enum class T2MIPacketType: uint8_t {
         BASEBAND_FRAME        = 0x00, //!< Baseband Frame.
         AUX_IQ_DATA           = 0x01, //!< Auxiliary stream I/Q data.
         ARBITRARY_CELL        = 0x02, //!< Arbitrary cell insertion.

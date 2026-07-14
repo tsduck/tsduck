@@ -21,7 +21,7 @@ namespace ts::mcast {
     //! FLUTE analyzer with extraction and reporting.
     //! @ingroup libtsduck mpeg
     //!
-    class TSDUCKDLL FluteAnalyzer : private FluteHandlerInterface
+    class TSDUCKDLL FluteAnalyzer: private FluteHandlerInterface
     {
         TS_NOBUILD_NOCOPY(FluteAnalyzer);
     public:

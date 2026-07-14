@@ -35,7 +35,7 @@ namespace ts {
     //! Representation of MPEG PES packets.
     //! @ingroup libtsduck mpeg
     //!
-    class TSDUCKDLL PESPacket : public DemuxedData
+    class TSDUCKDLL PESPacket: public DemuxedData
     {
     public:
         //!

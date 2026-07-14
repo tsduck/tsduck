@@ -21,7 +21,7 @@ namespace ts {
     //! @see ARIB STD-B10, Part 2, 6.2.45
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL ContentAvailabilityDescriptor : public AbstractDescriptor
+    class TSDUCKDLL ContentAvailabilityDescriptor: public AbstractDescriptor
     {
     public:
         // ContentAvailabilityDescriptor public members:

@@ -20,7 +20,7 @@ namespace ts {
     //! @see ARIB STD-B10, Part 2, 6.2.30
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL VideoDecodeControlDescriptor : public AbstractDescriptor
+    class TSDUCKDLL VideoDecodeControlDescriptor: public AbstractDescriptor
     {
     public:
         // VideoDecodeControlDescriptor public members:

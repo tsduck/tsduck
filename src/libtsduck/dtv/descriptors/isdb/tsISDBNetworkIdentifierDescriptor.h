@@ -21,7 +21,7 @@ namespace ts {
     //! @see ARIB STD-B21, Part 2, 9.1.8.3
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL ISDBNetworkIdentifierDescriptor : public AbstractDescriptor
+    class TSDUCKDLL ISDBNetworkIdentifierDescriptor: public AbstractDescriptor
     {
 
     public:

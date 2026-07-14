@@ -29,7 +29,7 @@ namespace ts {
     //! By default, the clock is based on real UTC time and TS packets are unused.
     //! @ingroup libtsduck mpeg
     //!
-    class TSDUCKDLL TSClock : private TableHandlerInterface, SectionHandlerInterface
+    class TSDUCKDLL TSClock: private TableHandlerInterface, SectionHandlerInterface
     {
         TS_NOBUILD_NOCOPY(TSClock);
     public:

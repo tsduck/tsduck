@@ -38,7 +38,7 @@ namespace ts {
     //! }
     //! @endcode
     //!
-    class TSDUCKDLL ISDBScramblerDescriptor : public AbstractDescriptor
+    class TSDUCKDLL ISDBScramblerDescriptor: public AbstractDescriptor
     {
     public:
         // ISDBScramblerDescriptor public members:

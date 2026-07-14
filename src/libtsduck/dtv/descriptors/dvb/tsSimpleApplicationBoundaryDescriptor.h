@@ -24,7 +24,7 @@ namespace ts {
     //! @see ETSI TS 102 809, 5.3.8.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL SimpleApplicationBoundaryDescriptor : public AbstractDescriptor
+    class TSDUCKDLL SimpleApplicationBoundaryDescriptor: public AbstractDescriptor
     {
     public:
         // SimpleApplicationBoundaryDescriptor public members:

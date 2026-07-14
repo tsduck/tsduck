@@ -20,7 +20,7 @@ namespace ts {
     //! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.6.18.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL ISO639LanguageDescriptor : public AbstractDescriptor
+    class TSDUCKDLL ISO639LanguageDescriptor: public AbstractDescriptor
     {
     public:
         //!

@@ -45,7 +45,7 @@ namespace ts {
     //! Converting to an integer returns the actual generation number (4 or 6).
     //! @ingroup net
     //!
-    enum class IP : uint8_t {
+    enum class IP: uint8_t {
         Any = 0,  //!< Any generation of IP networks.
         v4  = 4,  //!< IPv4.
         v6  = 6,  //!< IPv6.

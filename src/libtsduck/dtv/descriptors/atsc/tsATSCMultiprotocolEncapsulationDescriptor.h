@@ -20,7 +20,7 @@ namespace ts {
     //! @see ATSC A/90, 12.2.4.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL ATSCMultiprotocolEncapsulationDescriptor : public AbstractDescriptor
+    class TSDUCKDLL ATSCMultiprotocolEncapsulationDescriptor: public AbstractDescriptor
     {
     public:
         // Public members:

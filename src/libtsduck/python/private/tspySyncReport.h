@@ -20,7 +20,7 @@ namespace ts {
         //! Synchronous message report with notification to a Python class.
         //! @ingroup libtsduck python
         //!
-        class TSDUCKDLL SyncReport : public ts::Report
+        class TSDUCKDLL SyncReport: public ts::Report
         {
             TS_NOBUILD_NOCOPY(SyncReport);
         public:

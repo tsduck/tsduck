@@ -22,7 +22,7 @@ namespace ts {
     //! @see ARIB STD-B10, Part 2, 6.2.55
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL AreaBroadcastingInformationDescriptor : public AbstractDescriptor
+    class TSDUCKDLL AreaBroadcastingInformationDescriptor: public AbstractDescriptor
     {
     public:
         //!

@@ -21,7 +21,7 @@ namespace ts {
     //! @see ETSI EN 301 192, 9.7.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL ECMRepetitionRateDescriptor : public AbstractDescriptor
+    class TSDUCKDLL ECMRepetitionRateDescriptor: public AbstractDescriptor
     {
     public:
         // Public members:

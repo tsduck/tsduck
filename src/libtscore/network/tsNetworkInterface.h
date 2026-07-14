@@ -30,7 +30,7 @@ namespace ts {
     //! IP address. Depending on the system, several NetworkInterface instances may have the same
     //! interface name.
     //!
-    class TSCOREDLL NetworkInterface : public StringifyInterface
+    class TSCOREDLL NetworkInterface: public StringifyInterface
     {
         TS_RULE_OF_FIVE(NetworkInterface, override);
     public:

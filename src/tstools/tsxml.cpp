@@ -57,7 +57,7 @@ namespace {
         size_t                   indent = 2;              // Output indentation.
         ts::xml::Tweaks          xml_tweaks {};           // XML formatting options.
         ts::xml::MergeAttributes merge_attr = ts::xml::MergeAttributes::NONE; // How to merge attributes (with merge_inputs);
-        ts::json::OutputArgs     json {};                 // JSON output options.
+        ts::json::OutputArgs     json {this};             // JSON output options.
     };
 }
 

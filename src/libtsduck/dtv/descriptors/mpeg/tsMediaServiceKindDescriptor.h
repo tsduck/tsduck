@@ -30,7 +30,7 @@ namespace ts {
     //! If the same media component is described at a Program Leveland an Elementary Level, then
     //! the Elementary stream media_service_kind description shall take precedence.
     //!
-    class TSDUCKDLL MediaServiceKindDescriptor : public AbstractDescriptor
+    class TSDUCKDLL MediaServiceKindDescriptor: public AbstractDescriptor
     {
     public:
         //!

@@ -42,7 +42,7 @@ namespace ts {
         //! A reference is kept in this instance.
         //! @param [in] prompt Prompt string to send to the client.
         //!
-        TelnetConnection(TCPConnection& connection, const std::string& prompt = std::string());
+        explicit TelnetConnection(TCPConnection& connection, const std::string& prompt = std::string());
 
         //!
         //! Virtual destructor

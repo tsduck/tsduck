@@ -23,14 +23,14 @@ namespace ts {
     //! @see ATSC A/65, section 6.2.
     //! @ingroup libtsduck table
     //!
-    class TSDUCKDLL MGT : public AbstractLongTable
+    class TSDUCKDLL MGT: public AbstractLongTable
     {
     public:
         //!
         //! Description of a table type.
         //! Note: by inheriting from EntryWithDescriptors, there is a public field "DescriptorList descs".
         //!
-        class TSDUCKDLL TableType : public EntryWithDescriptors
+        class TSDUCKDLL TableType: public EntryWithDescriptors
         {
             TS_NO_DEFAULT_CONSTRUCTORS(TableType);
             TS_DEFAULT_ASSIGMENTS(TableType);
@@ -106,7 +106,7 @@ namespace ts {
     private:
         // An Enumeration type for table_type.
         // Need a specific constructor because of the large list of values.
-        class TableTypeNames : public Names
+        class TableTypeNames: public Names
         {
         public:
             TableTypeNames();

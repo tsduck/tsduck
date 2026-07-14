@@ -210,7 +210,7 @@ ts::UString ts::EITMainOptions::getHelpText(HelpFormat format, size_t line_width
 //----------------------------------------------------------------------------
 
 namespace ts {
-    class EITCommand : public CommandLineHandler
+    class EITCommand: public CommandLineHandler
     {
         TS_NOBUILD_NOCOPY(EITCommand);
     public:
@@ -370,23 +370,23 @@ ts::CommandStatus ts::EITCommand::process(const UString& command, Args& args)
     const size_t repeat_count = args.intValue<size_t>(u"repeat", args.present(u"infinite") ? 0 : 1);
     PacketCounter packet_count = 0;
     Time until;
-    TSFile infile;
-    TSFile outfile;
+    TSFile infile(&args);
+    TSFile outfile(&args);
     TSPacket pkt;
 
     if (!getDurationOptions(packet_count, until, args) ||
-        !infile.openRead(infile_name, repeat_count, start_offset, args) ||
-        !outfile.open(outfile_name, TSFile::WRITE, args))
+        !infile.openRead(infile_name, repeat_count, start_offset) ||
+        !outfile.open(outfile_name, TSFile::WRITE))
     {
         return CommandStatus::ERROR;
     }
 
     for (PacketCounter count = 0;
-         (packet_count == 0 || count < packet_count) && (until == Time::Epoch || _eit_gen.getCurrentTime() < until) && infile.readPackets(&pkt, nullptr, 1, args);
+         (packet_count == 0 || count < packet_count) && (until == Time::Epoch || _eit_gen.getCurrentTime() < until) && infile.readPackets(&pkt, nullptr, 1);
          ++count)
     {
         _eit_gen.processPacket(pkt);
-        if (!outfile.writePackets(&pkt, nullptr, 1, args)) {
+        if (!outfile.writePackets(&pkt, nullptr, 1)) {
             return CommandStatus::ERROR;
         }
     }
@@ -407,8 +407,8 @@ ts::CommandStatus ts::EITCommand::generate(const UString& command, Args& args)
         return CommandStatus::ERROR;
     }
 
-    TSFile file;
-    if (!file.open(outputFileName(args.value(u"")), TSFile::WRITE, args)) {
+    TSFile file(&args);
+    if (!file.open(outputFileName(args.value(u"")), TSFile::WRITE)) {
         return CommandStatus::ERROR;
     }
 
@@ -416,7 +416,7 @@ ts::CommandStatus ts::EITCommand::generate(const UString& command, Args& args)
     for (size_t count = 0; (packet_count == 0 || count < packet_count) && (until == Time::Epoch || _eit_gen.getCurrentTime() < until); ++count) {
         pkt = NullPacket;
         _eit_gen.processPacket(pkt);
-        if (!file.writePackets(&pkt, nullptr, 1, args)) {
+        if (!file.writePackets(&pkt, nullptr, 1)) {
             return CommandStatus::ERROR;
         }
     }

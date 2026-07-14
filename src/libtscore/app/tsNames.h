@@ -22,7 +22,7 @@ namespace ts {
     //! Values can be used as bit-masks.
     //! @ingroup app
     //!
-    enum class NamesFlags : uint16_t {
+    enum class NamesFlags: uint16_t {
         NAME          = 0x0000,   //!< Name only, no value. This is the default.
         NAME_VALUE    = 0x0001,   //!< Include the value after name: "name (value)".
         VALUE_NAME    = 0x0002,   //!< Same with value first: "value (name)".

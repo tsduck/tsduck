@@ -25,7 +25,7 @@ namespace ts {
     //! @see SCTE 35, 10.3.4
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL SpliceTimeDescriptor : public AbstractDescriptor
+    class TSDUCKDLL SpliceTimeDescriptor: public AbstractDescriptor
     {
     public:
         // SpliceTimeDescriptor public members:

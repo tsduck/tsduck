@@ -138,7 +138,7 @@ namespace ts {
         //! Generic description of the EMMG/PDG <=> MUX protocol.
         //---------------------------------------------------------------------
 
-        class TSDUCKDLL Protocol : public tlv::Protocol
+        class TSDUCKDLL Protocol: public tlv::Protocol
         {
             TS_NOCOPY(Protocol);
         public:
@@ -161,7 +161,7 @@ namespace ts {
         //!
         //! EMMG/PDG <=> MUX channel_setup command
         //!
-        class TSDUCKDLL ChannelSetup : public tlv::ChannelMessage
+        class TSDUCKDLL ChannelSetup: public tlv::ChannelMessage
         {
             TS_VERSIONED_TLV_MESSAGE(ChannelSetup, Tags::channel_setup);
         public:
@@ -174,7 +174,7 @@ namespace ts {
         //!
         //! EMMG/PDG <=> MUX channel_test command
         //!
-        class TSDUCKDLL ChannelTest : public tlv::ChannelMessage
+        class TSDUCKDLL ChannelTest: public tlv::ChannelMessage
         {
             TS_VERSIONED_TLV_MESSAGE(ChannelTest, Tags::channel_test);
         public:
@@ -186,7 +186,7 @@ namespace ts {
         //!
         //! EMMG/PDG <=> MUX channel_status command
         //!
-        class TSDUCKDLL ChannelStatus : public tlv::ChannelMessage
+        class TSDUCKDLL ChannelStatus: public tlv::ChannelMessage
         {
             TS_VERSIONED_TLV_MESSAGE(ChannelStatus, Tags::channel_status);
         public:
@@ -199,7 +199,7 @@ namespace ts {
         //!
         //! EMMG/PDG <=> MUX channel_close command
         //!
-        class TSDUCKDLL ChannelClose : public tlv::ChannelMessage
+        class TSDUCKDLL ChannelClose: public tlv::ChannelMessage
         {
             TS_VERSIONED_TLV_MESSAGE(ChannelClose, Tags::channel_close);
         public:
@@ -211,7 +211,7 @@ namespace ts {
         //!
         //! EMMG/PDG <=> MUX channel_error command
         //!
-        class TSDUCKDLL ChannelError : public tlv::ChannelMessage
+        class TSDUCKDLL ChannelError: public tlv::ChannelMessage
         {
             TS_VERSIONED_TLV_MESSAGE(ChannelError, Tags::channel_error);
         public:
@@ -225,7 +225,7 @@ namespace ts {
         //!
         //! EMMG/PDG <=> MUX stream_setup command
         //!
-        class TSDUCKDLL StreamSetup : public tlv::StreamMessage
+        class TSDUCKDLL StreamSetup: public tlv::StreamMessage
         {
             TS_VERSIONED_TLV_MESSAGE(StreamSetup, Tags::stream_setup);
         public:
@@ -240,7 +240,7 @@ namespace ts {
         //!
         //! EMMG/PDG <=> MUX stream_test command
         //!
-        class TSDUCKDLL StreamTest : public tlv::StreamMessage
+        class TSDUCKDLL StreamTest: public tlv::StreamMessage
         {
             TS_VERSIONED_TLV_MESSAGE(StreamTest, Tags::stream_test);
         public:
@@ -253,7 +253,7 @@ namespace ts {
         //!
         //! EMMG/PDG <=> MUX stream_status command
         //!
-        class TSDUCKDLL StreamStatus : public tlv::StreamMessage
+        class TSDUCKDLL StreamStatus: public tlv::StreamMessage
         {
             TS_VERSIONED_TLV_MESSAGE(StreamStatus, Tags::stream_status);
         public:
@@ -268,7 +268,7 @@ namespace ts {
         //!
         //! EMMG/PDG <=> MUX stream_close_request command
         //!
-        class TSDUCKDLL StreamCloseRequest : public tlv::StreamMessage
+        class TSDUCKDLL StreamCloseRequest: public tlv::StreamMessage
         {
             TS_VERSIONED_TLV_MESSAGE(StreamCloseRequest, Tags::stream_close_request);
         public:
@@ -281,7 +281,7 @@ namespace ts {
         //!
         //! EMMG/PDG <=> MUX stream_close_response command
         //!
-        class TSDUCKDLL StreamCloseResponse : public tlv::StreamMessage
+        class TSDUCKDLL StreamCloseResponse: public tlv::StreamMessage
         {
             TS_VERSIONED_TLV_MESSAGE(StreamCloseResponse, Tags::stream_close_response);
         public:
@@ -294,7 +294,7 @@ namespace ts {
         //!
         //! EMMG/PDG <=> MUX stream_error command
         //!
-        class TSDUCKDLL StreamError : public tlv::StreamMessage
+        class TSDUCKDLL StreamError: public tlv::StreamMessage
         {
             TS_VERSIONED_TLV_MESSAGE(StreamError, Tags::stream_error);
         public:
@@ -309,7 +309,7 @@ namespace ts {
         //!
         //! EMMG/PDG <=> MUX stream_BW_request command
         //!
-        class TSDUCKDLL StreamBWRequest : public tlv::StreamMessage
+        class TSDUCKDLL StreamBWRequest: public tlv::StreamMessage
         {
             TS_VERSIONED_TLV_MESSAGE(StreamBWRequest, Tags::stream_BW_request);
         public:
@@ -324,7 +324,7 @@ namespace ts {
         //!
         //! EMMG/PDG <=> MUX stream_BW_allocation command
         //!
-        class TSDUCKDLL StreamBWAllocation : public tlv::StreamMessage
+        class TSDUCKDLL StreamBWAllocation: public tlv::StreamMessage
         {
             TS_VERSIONED_TLV_MESSAGE(StreamBWAllocation, Tags::stream_BW_allocation);
         public:
@@ -339,7 +339,7 @@ namespace ts {
         //!
         //! EMMG/PDG <=> MUX data_provision command
         //!
-        class TSDUCKDLL DataProvision : public tlv::StreamMessage
+        class TSDUCKDLL DataProvision: public tlv::StreamMessage
         {
             TS_VERSIONED_TLV_MESSAGE(DataProvision, Tags::data_provision);
         public:

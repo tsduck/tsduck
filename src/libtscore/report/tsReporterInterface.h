@@ -7,7 +7,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  A singleton implementing Report which drops all messages.
+//!  Interface for classes using an associated Report object.
 //!
 //----------------------------------------------------------------------------
 
@@ -16,19 +16,18 @@
 
 namespace ts {
     //!
-    //! A singleton implementing Report which drops all messages.
+    //! Interface for classes using an associated Report object.
     //! @ingroup libtscore log
     //!
-    class TSCOREDLL NullReport: public Report
+    class TSCOREDLL ReporterInterface
     {
-        TS_SINGLETON(NullReport);
-    protected:
-        // String interface implementation
-        virtual void writeLog(int severity, const UString& msg) override;
+        TS_INTERFACE(ReporterInterface);
+    public:
+        //!
+        //! Access the Report which is associated with this object.
+        //! Can be called from another thread only if the Report object is thread-safe.
+        //! @return A reference to the associated report.
+        //!
+        virtual Report& report() const = 0;
     };
 }
-
-//!
-//! Macro for fast access to the ts::NullReport singleton.
-//!
-#define NULLREP (ts::NullReport::Instance())

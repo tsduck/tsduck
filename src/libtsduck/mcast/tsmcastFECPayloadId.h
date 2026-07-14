@@ -23,7 +23,7 @@ namespace ts::mcast {
     //!
     //! If a file is not content-encoded, the transfer length is the same as the file length.
     //!
-    class TSDUCKDLL FECPayloadId : public StringifyInterface
+    class TSDUCKDLL FECPayloadId: public StringifyInterface
     {
     public:
         bool    valid = false;            //!< The information was successfully parsed.

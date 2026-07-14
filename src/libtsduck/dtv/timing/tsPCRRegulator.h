@@ -12,7 +12,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsReport.h"
+#include "tsReporterBase.h"
 #include "tsTSPacket.h"
 
 namespace ts {
@@ -21,23 +21,31 @@ namespace ts {
     //! @ingroup libtsduck mpeg
     //! @see BitRateRegulator
     //!
-    class TSDUCKDLL PCRRegulator
+    class TSDUCKDLL PCRRegulator: public ReporterBase
     {
-        TS_NOCOPY(PCRRegulator);
+        TS_NOBUILD_NOCOPY(PCRRegulator);
     public:
         //!
         //! Constructor.
-        //! @param [in,out] report Where to report errors.
+        //! @param [in] report Where to report errors. The @a report object must remain valid as long as this object
+        //! exists or setReport() is used with another Report object. If @a report is null, log messages are discarded.
         //! @param [in] log_level Severity level for information messages.
+        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        PCRRegulator(Report* report = nullptr, int log_level = Severity::Verbose);
+        explicit PCRRegulator(Report* report, int log_level = Severity::Verbose, Object* owner = nullptr);
 
         //!
-        //! Set a new report.
-        //! @param [in,out] report Where to report errors.
+        //! Constructor.
+        //! @param [in] delegate Use the report of another ReporterBase. If @a delegate is null, log messages are discarded.
         //! @param [in] log_level Severity level for information messages.
+        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        void setReport(Report* report = nullptr, int log_level = Severity::Verbose);
+        explicit PCRRegulator(ReporterBase* delegate, int log_level = Severity::Verbose, Object* owner = nullptr);
+
+        //!
+        //! Destructor.
+        //!
+        virtual ~PCRRegulator() override;
 
         //!
         //! Set the number of packets to burst at a time.
@@ -83,7 +91,6 @@ namespace ts {
         bool regulate(const TSPacket& pkt);
 
     private:
-        Report*          _report = nullptr;
         int              _log_level = Severity::Info;
         PID              _user_pid = PID_NULL;      // User-specified reference PID.
         PID              _pid = PID_NULL;           // Current reference PID.
@@ -115,7 +122,7 @@ void ts::PCRRegulator::setMinimimWait(const cn::duration<Rep,Period>& d)
         cn::microseconds precision = cn::milliseconds(2);
         SetTimersPrecision(precision);
         _wait_min = std::max(cn::duration_cast<cn::microseconds>(d), precision);
-        _report->log(_log_level, u"minimum wait: %s, using %s", precision, _wait_min);
+        report().log(_log_level, u"minimum wait: %s, using %s", precision, _wait_min);
     }
 }
 

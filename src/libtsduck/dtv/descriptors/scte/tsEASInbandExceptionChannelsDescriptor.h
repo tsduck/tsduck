@@ -25,7 +25,7 @@ namespace ts {
     //! @see SCTE 18, 5.1.2
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL EASInbandExceptionChannelsDescriptor : public AbstractDescriptor
+    class TSDUCKDLL EASInbandExceptionChannelsDescriptor: public AbstractDescriptor
     {
     public:
         //!

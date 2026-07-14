@@ -163,7 +163,7 @@ namespace ts {
     //! A set of delivery system values (ts::DeliverySystem).
     //! Typically used to indicate the list of standards which are supported by a tuner.
     //!
-    class TSDUCKDLL DeliverySystemSet : public std::set<DeliverySystem>, public StringifyInterface
+    class TSDUCKDLL DeliverySystemSet: public std::set<DeliverySystem>, public StringifyInterface
     {
         TS_DEFAULT_COPY_MOVE(DeliverySystemSet);
     public:
@@ -209,8 +209,8 @@ namespace ts {
         //! @cond nodoxygen
         // Trampolines to superclass constructors.
         DeliverySystemSet() = default;
-        DeliverySystemSet(std::initializer_list<value_type> init) : SuperClass(init) {}
-        template<class InputIt> DeliverySystemSet(InputIt first, InputIt last) : SuperClass(first, last) {}
+        DeliverySystemSet(std::initializer_list<value_type> init): SuperClass(init) {}
+        template<class InputIt> DeliverySystemSet(InputIt first, InputIt last): SuperClass(first, last) {}
         //! @endcond
     };
 

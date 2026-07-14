@@ -20,7 +20,7 @@ namespace ts {
     //! @see ETSI EN 300 468, 6.2.44.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL TimeShiftedEventDescriptor : public AbstractDescriptor
+    class TSDUCKDLL TimeShiftedEventDescriptor: public AbstractDescriptor
     {
     public:
         // Public members:

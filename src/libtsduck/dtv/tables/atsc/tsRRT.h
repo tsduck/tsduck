@@ -22,7 +22,7 @@ namespace ts {
     //! @see ATSC A/65, section 6.4.
     //! @ingroup libtsduck table
     //!
-    class TSDUCKDLL RRT : public AbstractLongTable
+    class TSDUCKDLL RRT: public AbstractLongTable
     {
     public:
         class Dimension;       //!< Description of a dimension.

@@ -41,7 +41,7 @@ namespace ts {
         // Working data:
         bool             _pass_all = false;       // Pass all packets after an error.
         PacketCounter    _init_packets = 0;       // Count packets in PID's to shift during initial evaluation phase.
-        TimeShiftBuffer  _buffer {};              // The timeshift buffer logic.
+        TimeShiftBuffer  _buffer {this};          // The timeshift buffer logic.
 
         static constexpr cn::milliseconds DEF_EVAL_MS = cn::milliseconds(1000);  // Default initial evaluation duration in milliseconds.
         static constexpr PacketCounter MAX_EVAL_PACKETS = 30000;                 // Max number of packets after which the bitrate must be known.
@@ -148,7 +148,7 @@ bool ts::PIDShiftPlugin::start()
     if (_shift_packets > 0) {
         // Initialize the buffer only when its size is specified in packets.
         _buffer.setTotalPackets(_shift_packets);
-        return _buffer.open(*this);
+        return _buffer.open();
     }
     else {
         // Need an evaluation phase.
@@ -165,7 +165,7 @@ bool ts::PIDShiftPlugin::start()
 
 bool ts::PIDShiftPlugin::stop()
 {
-    _buffer.close(*this);
+    _buffer.close();
     return true;
 }
 
@@ -215,7 +215,7 @@ ts::PacketProcessStatus ts::PIDShiftPlugin::processPacket(TSPacket& pkt, TSPacke
             _buffer.setTotalPackets(size_t(count));
 
             // Open the shift buffer.
-            if (!_buffer.open(*this)) {
+            if (!_buffer.open()) {
                 _pass_all = true;
                 return _ignore_errors ? TSP_OK : TSP_END;
             }
@@ -232,7 +232,7 @@ ts::PacketProcessStatus ts::PIDShiftPlugin::processPacket(TSPacket& pkt, TSPacke
     }
 
     // No longer in evaluation phase, shift packets.
-    if (_pids.test(pid) && !_buffer.shift(pkt, pkt_data, *this)) {
+    if (_pids.test(pid) && !_buffer.shift(pkt, pkt_data)) {
         _pass_all = true;
         return _ignore_errors ? TSP_OK : TSP_END;
     }

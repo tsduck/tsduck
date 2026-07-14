@@ -39,7 +39,7 @@ namespace ts {
         bool       _use_mplayer = false;
         bool       _use_ffplay = false;
         bool       _use_xine = false;
-        TSForkPipe _pipe {};
+        TSForkPipe _pipe {this};
 
         // Search a file in a search path. Return true is found
         bool searchInPath(UString& result, const UStringVector& path, const UString& name);
@@ -83,7 +83,7 @@ ts::PlayPlugin::PlayPlugin(TSP* tsp_) :
 
 bool ts::PlayPlugin::stop()
 {
-    return _pipe.close(*this);
+    return _pipe.close();
 }
 
 
@@ -93,7 +93,7 @@ bool ts::PlayPlugin::stop()
 
 bool ts::PlayPlugin::send(const TSPacket* buffer, const TSPacketMetadata* pkt_data, size_t packet_count)
 {
-    return _pipe.writePackets(buffer, pkt_data, packet_count, *this);
+    return _pipe.writePackets(buffer, pkt_data, packet_count);
 }
 
 
@@ -253,5 +253,5 @@ bool ts::PlayPlugin::start()
     // Create pipe & process
     verbose(u"using media player command: %s", command);
     _pipe.setIgnoreAbort(false);
-    return _pipe.open(command, ForkPipe::SYNCHRONOUS, PIPE_BUFFER_SIZE, *this, ForkPipe::KEEP_BOTH, ForkPipe::STDIN_PIPE);
+    return _pipe.open(command, ForkPipe::SYNCHRONOUS, PIPE_BUFFER_SIZE, ForkPipe::KEEP_BOTH, ForkPipe::STDIN_PIPE);
 }

@@ -7,27 +7,36 @@
 //----------------------------------------------------------------------------
 
 #include "tsForkPipeOutputStream.h"
-#include "tsNullReport.h"
 
 
 //----------------------------------------------------------------------------
-// Constructor / destructor
+// Constructors and destructor.
 //----------------------------------------------------------------------------
+
+ts::ForkPipeOutputStream::ForkPipeOutputStream(Report* report, Object* owner) :
+    ForkPipe(report, owner)
+{
+}
+
+ts::ForkPipeOutputStream::ForkPipeOutputStream(ReporterBase* delegate, Object* owner) :
+    ForkPipe(delegate, owner)
+{
+}
 
 ts::ForkPipeOutputStream::~ForkPipeOutputStream()
 {
-    ForkPipeOutputStream::close(NULLREP);
+    ForkPipeOutputStream::close(true);
 }
 
 
 //----------------------------------------------------------------------------
-// Implementation of AbstractOutputStream
+// Implementation of AbstractStandardOutputStream
 //----------------------------------------------------------------------------
 
 bool ts::ForkPipeOutputStream::writeStreamBuffer(const void* addr, size_t size)
 {
     size_t outsize = 0;
-    return writeStream(addr, size, outsize, NULLREP);
+    return writeStream(addr, size, outsize);
 }
 
 
@@ -35,7 +44,7 @@ bool ts::ForkPipeOutputStream::writeStreamBuffer(const void* addr, size_t size)
 // Close the pipe.
 //----------------------------------------------------------------------------
 
-bool ts::ForkPipeOutputStream::close(Report& report)
+bool ts::ForkPipeOutputStream::close(bool silent)
 {
     // Flush the output buffer, if any.
     if (isOpen()) {
@@ -43,5 +52,5 @@ bool ts::ForkPipeOutputStream::close(Report& report)
     }
 
     // The rest is done in superclass.
-    return ForkPipe::close(report);
+    return ForkPipe::close(silent);
 }

@@ -23,7 +23,7 @@ namespace ts {
     //! @see ETSI EN 300 468, 5.2.6
     //! @ingroup libtsduck table
     //!
-    class TSDUCKDLL TOT : public AbstractTable
+    class TSDUCKDLL TOT: public AbstractTable
     {
     public:
         using Region = LocalTimeOffsetDescriptor::Region;              //!< Alias from LocalTimeOffsetDescriptor.

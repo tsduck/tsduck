@@ -181,7 +181,7 @@ TSUNIT_DEFINE_TEST(Timer)
 //----------------------------------------------------------------------------
 
 namespace {
-    class Foo : public ts::Object
+    class Foo: public ts::Object
     {
     public:
         int value;
@@ -291,8 +291,8 @@ namespace {
         ts::Time                  _start_timer {};
         ts::EventId               _timer {};
         ts::Reactor               _reactor {&CERR};
-        ts::UDPSocket             _client {};
-        ts::UDPSocket             _server {};
+        ts::UDPSocket             _client {&_reactor};
+        ts::UDPSocket             _server {&_reactor};
         ts::ReactiveUDPSocket     _rclient {_reactor, _client};
         ts::ReactiveUDPSocket     _rserver {_reactor, _server};
         const ts::IPSocketAddress _server_address {ts::IPAddress::LocalHost4, 19654};
@@ -525,7 +525,7 @@ namespace {
     private:
         ts::Reactor&                 _reactor;
         std::ostream&                _debug;
-        ts::TCPConnection            _client {};
+        ts::TCPConnection            _client {&_reactor};
         ts::ReactiveTCPConnection    _rclient {_reactor, _client};
         ts::ReactiveTelnetConnection _rtclient {_rclient};
         const ts::UString            _server_name {ts::GetEnvironment(u"TS_UTEST_TELNET_HOST", u"tsduck.io")};

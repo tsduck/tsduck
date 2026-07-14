@@ -41,7 +41,7 @@ namespace ts {
     //!
     //! @ingroup libtsduck mpeg
     //!
-    class TSDUCKDLL PSIRepository : private Names::Visitor
+    class TSDUCKDLL PSIRepository: private Names::Visitor
     {
         TS_SINGLETON(PSIRepository);
     public:
@@ -85,7 +85,7 @@ namespace ts {
         //!
         //! Description of a table class.
         //!
-        class TSDUCKDLL TableClass : public SignalizationClass
+        class TSDUCKDLL TableClass: public SignalizationClass
         {
         public:
             Standards              standards = Standards::NONE;  //!< Standards for this table id.
@@ -105,7 +105,7 @@ namespace ts {
         //!
         //! Description of a descriptor class.
         //!
-        class TSDUCKDLL DescriptorClass : public SignalizationClass
+        class TSDUCKDLL DescriptorClass: public SignalizationClass
         {
         public:
             EDID                      edid {};             //!< Extended descriptor id.

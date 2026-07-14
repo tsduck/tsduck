@@ -22,7 +22,7 @@ namespace ts {
     //! @see ETSI TS 102 727, 10.17.3.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL XAITPIDDescriptor : public AbstractDescriptor
+    class TSDUCKDLL XAITPIDDescriptor: public AbstractDescriptor
     {
     public:
         // XAITPIDDescriptor public members:

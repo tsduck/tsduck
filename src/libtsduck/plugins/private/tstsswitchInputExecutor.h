@@ -22,7 +22,7 @@ namespace ts {
         //! Execution context of a tsswitch input plugin.
         //! @ingroup libtsduck plugin
         //!
-        class InputExecutor : public PluginExecutor
+        class InputExecutor: public PluginExecutor
         {
             TS_NOBUILD_NOCOPY(InputExecutor);
         public:

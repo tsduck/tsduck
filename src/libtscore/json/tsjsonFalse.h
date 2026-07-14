@@ -19,7 +19,7 @@ namespace ts::json {
     //! Implementation of a JSON false literal.
     //! @ingroup libtscore json
     //!
-    class TSCOREDLL False : public Value
+    class TSCOREDLL False: public Value
     {
     public:
         //! Default constructor.

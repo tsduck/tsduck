@@ -20,7 +20,7 @@ namespace ts {
     //! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.4.4.12
     //! @ingroup libtsduck table
     //!
-    class TSDUCKDLL TSDT : public AbstractDescriptorsTable
+    class TSDUCKDLL TSDT: public AbstractDescriptorsTable
     {
     public:
         //!

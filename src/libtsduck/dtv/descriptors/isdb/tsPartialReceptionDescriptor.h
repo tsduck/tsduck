@@ -21,7 +21,7 @@ namespace ts {
     //! @see ARIB STD-B10, Part 2, 6.2.32
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL PartialReceptionDescriptor : public AbstractDescriptor
+    class TSDUCKDLL PartialReceptionDescriptor: public AbstractDescriptor
     {
     public:
         // PartialReceptionDescriptor public members:

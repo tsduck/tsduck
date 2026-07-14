@@ -20,7 +20,7 @@ TS_MAIN(MainCode);
 
 
 //----------------------------------------------------------------------------
-//  Command line options
+// Command line options
 //----------------------------------------------------------------------------
 
 namespace {
@@ -30,12 +30,12 @@ namespace {
     public:
         Options(int argc, char *argv[]);
 
-        ts::DuckContext    duck {this};         // TSDuck execution context.
-        ts::BitRate        bitrate = 0;         // Expected bitrate (188-byte packets)
-        fs::path           infile {};           // Input file name
+        ts::DuckContext    duck {this};               // TSDuck execution context.
+        ts::BitRate        bitrate = 0;               // Expected bitrate (188-byte packets)
+        fs::path           infile {};                 // Input file name
         ts::TSPacketFormat format = ts::TSPacketFormat::AUTODETECT; // Input file format.
-        ts::TSAnalyzerArgs analysis {};         // Analysis options.
-        ts::PagerArgs      pager {true, true};  // Output paging options.
+        ts::TSAnalyzerArgs analysis {this};           // Analysis options.
+        ts::PagerArgs      pager {this, true, true};  // Output paging options.
     };
 }
 
@@ -76,7 +76,7 @@ Options::Options(int argc, char *argv[]) :
 
 
 //----------------------------------------------------------------------------
-//  Program entry point
+// Program entry point
 //----------------------------------------------------------------------------
 
 int MainCode(int argc, char *argv[])
@@ -89,21 +89,21 @@ int MainCode(int argc, char *argv[])
     analyzer.setAnalysisOptions(opt.analysis);
 
     // Open the TS file.
-    ts::TSFile file;
-    if (!file.openRead(opt.infile, 1, 0, opt, opt.format)) {
+    ts::TSFile file(&opt);
+    if (!file.openRead(opt.infile, 1, 0, opt.format)) {
         return EXIT_FAILURE;
     }
 
     // Analyze all packets in the file.
     ts::TSPacket pkt;
     ts::TSPacketMetadata mdata;
-    while (file.readPackets(&pkt, &mdata, 1, opt) > 0) {
+    while (file.readPackets(&pkt, &mdata, 1) > 0) {
         analyzer.feedPacket(pkt, mdata);
     }
-    file.close(opt);
+    file.close();
 
     // Display analysis results.
-    analyzer.report(opt.pager.output(opt), opt.analysis, opt);
+    analyzer.report(opt.pager.output(), opt.analysis, opt);
 
     return EXIT_SUCCESS;
 }

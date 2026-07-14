@@ -25,7 +25,7 @@ namespace ts {
     //! Information about version identification of TSDuck.
     //! @ingroup libtscore app
     //!
-    class TSCOREDLL VersionInfo : private Thread
+    class TSCOREDLL VersionInfo: private Thread
     {
         TS_NOBUILD_NOCOPY(VersionInfo);
     public:

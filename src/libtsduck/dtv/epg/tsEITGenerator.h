@@ -151,9 +151,7 @@ namespace ts {
     //! @see ETSI EN 300 468, 5.2.4
     //! @see ETSI TS 101 211, 4.1.4
     //!
-    class TSDUCKDLL EITGenerator :
-        private SectionHandlerInterface,
-        private SectionProviderInterface
+    class TSDUCKDLL EITGenerator: private SectionHandlerInterface, private SectionProviderInterface
     {
         TS_NOBUILD_NOCOPY(EITGenerator);
     public:

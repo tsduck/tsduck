@@ -21,7 +21,7 @@ namespace ts {
     //! @see ITU J.1041 clause 7.2.1
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL DTMBDRMDescriptor : public AbstractDescriptor
+    class TSDUCKDLL DTMBDRMDescriptor: public AbstractDescriptor
     {
     public:
         // Public members:

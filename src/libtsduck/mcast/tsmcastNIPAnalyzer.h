@@ -22,7 +22,7 @@ namespace ts::mcast {
     //! DVB-NIP analyzer with extraction and reporting.
     //! @ingroup libtsduck mpeg
     //!
-    class TSDUCKDLL NIPAnalyzer : private NIPHandlerInterface
+    class TSDUCKDLL NIPAnalyzer: private NIPHandlerInterface
     {
         TS_NOBUILD_NOCOPY(NIPAnalyzer);
     public:

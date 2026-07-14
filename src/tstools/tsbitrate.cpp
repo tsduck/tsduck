@@ -115,15 +115,15 @@ int MainCode(int argc, char *argv[])
     }
 
     // Open the TS file.
-    ts::TSFile file;
-    if (!file.openRead(opt.infile, 1, 0, opt, opt.format)) {
+    ts::TSFile file(&opt);
+    if (!file.openRead(opt.infile, 1, 0, opt.format)) {
         return EXIT_FAILURE;
     }
 
     // Read all packets in the file and pass them to the PCR analyzer.
     ts::TSPacket pkt;
-    while (file.readPackets(&pkt, nullptr, 1, opt) > 0 && (!zer.feedPacket(pkt) || opt.all)) {}
-    file.close(opt);
+    while (file.readPackets(&pkt, nullptr, 1) > 0 && (!zer.feedPacket(pkt) || opt.all)) {}
+    file.close();
 
     // Display results.
     ts::PCRAnalyzer::Status status;

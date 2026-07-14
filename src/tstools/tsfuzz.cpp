@@ -86,8 +86,8 @@ int MainCode(int argc, char *argv[])
         opt.verbose(u"Fuzzing %s", infile_name);
 
         // Open input file.
-        ts::TSFile infile;
-        if (!infile.openRead(infile_name, 0, opt)) {
+        ts::TSFile infile(&opt);
+        if (!infile.openRead(infile_name, 0)) {
             success = false;
             continue;
         }
@@ -100,8 +100,8 @@ int MainCode(int argc, char *argv[])
         }
 
         // Create output file.
-        ts::TSFile outfile;
-        if (!outfile.open(outfile_name, ts::TSFile::WRITE, opt)) {
+        ts::TSFile outfile(&opt);
+        if (!outfile.open(outfile_name, ts::TSFile::WRITE)) {
             success = false;
             continue;
         }
@@ -115,14 +115,14 @@ int MainCode(int argc, char *argv[])
         // Process all packets.
         ts::TSPacketVector pkts(1000);
         size_t count = 0;
-        while ((count = infile.readPackets(pkts.data(), nullptr, pkts.size(), opt)) > 0) {
+        while ((count = infile.readPackets(pkts.data(), nullptr, pkts.size())) > 0) {
             for (size_t i = 0; i < count; ++i) {
                 if (!fuzzer.processPacket(pkts[i])) {
                     success = false;
                     break;
                 }
             }
-            if (!outfile.writePackets(pkts.data(), nullptr, count, opt)) {
+            if (!outfile.writePackets(pkts.data(), nullptr, count)) {
                 success = false;
                 break;
             }

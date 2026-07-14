@@ -20,7 +20,7 @@ namespace ts {
     //! Base class for ISDB download content descriptors.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL AbstractDownloadContentDescriptor : public AbstractDescriptor
+    class TSDUCKDLL AbstractDownloadContentDescriptor: public AbstractDescriptor
     {
         TS_RULE_OF_FIVE(AbstractDownloadContentDescriptor, override);
     public:

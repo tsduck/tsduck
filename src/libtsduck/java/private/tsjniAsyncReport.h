@@ -22,7 +22,7 @@ namespace ts {
         //! Asynchronous message report with notification to a Java class.
         //! @ingroup libtsduck java
         //!
-        class TSDUCKDLL AsyncReport : public ts::AsyncReport
+        class TSDUCKDLL AsyncReport: public ts::AsyncReport
         {
             TS_NOBUILD_NOCOPY(AsyncReport);
         public:

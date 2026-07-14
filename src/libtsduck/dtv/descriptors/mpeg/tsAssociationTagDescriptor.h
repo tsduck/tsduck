@@ -21,7 +21,7 @@ namespace ts {
     //! @see ISO/IEC 13818-6 (DSM-CC), 11.4.2.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL AssociationTagDescriptor : public AbstractDescriptor
+    class TSDUCKDLL AssociationTagDescriptor: public AbstractDescriptor
     {
     public:
         // AssociationTagDescriptor public members:

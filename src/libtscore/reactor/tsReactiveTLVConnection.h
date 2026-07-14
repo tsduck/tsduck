@@ -25,7 +25,7 @@ namespace ts {
     //!
     //! The class ReactiveTLVConnection is a wrapper around ReactiveTCPConnection to handle reactive I/O.
     //!
-    class TSCOREDLL ReactiveTLVConnection : public OwnedObject, private ReactiveTCPConnectionHandlerInterface
+    class TSCOREDLL ReactiveTLVConnection: public OwnedObject, private ReactiveTCPConnectionHandlerInterface
     {
         TS_NOBUILD_NOCOPY(ReactiveTLVConnection);
     public:

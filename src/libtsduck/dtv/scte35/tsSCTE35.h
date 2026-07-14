@@ -50,7 +50,7 @@ namespace ts {
     //! This is a 33-bit PTS value which can be set or unset.
     //! @ingroup libtsduck mpeg
     //!
-    class TSDUCKDLL SpliceTime : public std::optional<uint64_t>
+    class TSDUCKDLL SpliceTime: public std::optional<uint64_t>
     {
     private:
         using SuperClass = std::optional<uint64_t>;

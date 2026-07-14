@@ -222,7 +222,7 @@ bool ts::hls::OutputPlugin::start()
     _seg_started = false;
     _seg_close_pending = false;
     if (_segment_file.isOpen()) {
-        _segment_file.close(*this);
+        _segment_file.close();
     }
     if (!_playlist_file.empty()) {
         _playlist.reset(_playlist_type, _playlist_file);
@@ -260,7 +260,7 @@ bool ts::hls::OutputPlugin::createNextSegment()
 
     // Create the segment file.
     verbose(u"creating media segment %s", file_name);
-    if (!_segment_file.open(file_name, TSFile::WRITE | TSFile::SHARED, *this)) {
+    if (!_segment_file.open(file_name, TSFile::WRITE | TSFile::SHARED)) {
         return false;
     }
 
@@ -296,7 +296,7 @@ bool ts::hls::OutputPlugin::closeCurrentSegment(bool endOfStream)
     const PacketCounter seg_packets = _segment_file.writePacketsCount();
 
     // Close the TS file.
-    if (!_segment_file.close(*this)) {
+    if (!_segment_file.close()) {
         return false;
     }
 
@@ -478,7 +478,7 @@ bool ts::hls::OutputPlugin::writePackets(const TSPacket* pkt, size_t packetCount
         }
 
         // Write the packet in the segment file.
-        if (!_segment_file.writePackets(p, nullptr, 1, *this)) {
+        if (!_segment_file.writePackets(p, nullptr, 1)) {
             return false;
         }
     }
@@ -527,11 +527,11 @@ bool ts::hls::OutputPlugin::send(const TSPacket* pkt, const TSPacketMetadata* pk
         if (ok && _seg_started) {
 
             // Check if we should close the current segment and create a new one.
-            bool renewNow = false;
-            bool renewOnPUSI = false;
+            bool renew_now = false;
+            bool renew_on_pusi = false;
             if (_fixed_segment_size > 0) {
                 // Each segment shall have a fixed size.
-                renewNow = _segment_file.writePacketsCount() >= _fixed_segment_size;
+                renew_now = _segment_file.writePacketsCount() >= _fixed_segment_size;
             }
             else if (!_seg_close_pending) {
                 if (pktData->hasAnyLabel(_close_labels)) {
@@ -540,10 +540,10 @@ bool ts::hls::OutputPlugin::send(const TSPacket* pkt, const TSPacketMetadata* pk
                 }
                 else if (_pcr_analyzer.bitrateIsValid()) {
                     // The segment file shall be closed when the estimated duration exceeds the target duration.
-                    const cn::milliseconds segDuration = PacketInterval(_pcr_analyzer.bitrate188(), _segment_file.writePacketsCount());
-                    _seg_close_pending = segDuration >= _target_duration;
+                    const cn::milliseconds seg_duration = PacketInterval(_pcr_analyzer.bitrate188(), _segment_file.writePacketsCount());
+                    _seg_close_pending = seg_duration >= _target_duration;
                     // With --intra-close, force renew on next PES packet if extra duration is exceeded.
-                    renewOnPUSI = segDuration >= _target_duration + _max_extra_duration;
+                    renew_on_pusi = seg_duration >= _target_duration + _max_extra_duration;
                 }
             }
 
@@ -551,28 +551,28 @@ bool ts::hls::OutputPlugin::send(const TSPacket* pkt, const TSPacketMetadata* pk
             if (_seg_close_pending) {
                 if (_video_pid == PID_NULL) {
                     debug(u"closing segment, no video PID was identified for synchronization");
-                    renewNow = true;
+                    renew_now = true;
                 }
                 else if (pkt->getPID() == _video_pid && pkt->getPUSI()) {
                     // On a new video PES packet.
                     if (!_intra_close) {
                         debug(u"starting new segment on new PES packet");
-                        renewNow = true;
+                        renew_now = true;
                     }
-                    else if (renewOnPUSI) {
+                    else if (renew_on_pusi) {
                         debug(u"no I-frame found in last %s, starting new segment on new PES packet", _max_extra_duration);
-                        renewNow = true;
+                        renew_now = true;
                     }
                     else if (pkt->isClear() && PESPacket::FindIntraImage(pkt->getPayload(), pkt->getPayloadSize(), _video_stream_type) != NPOS) {
                         debug(u"starting new segment on new I-frame");
-                        renewNow = true;
+                        renew_now = true;
                     }
                 }
             }
 
             // Close current segment and recreate a new one when necessary.
             // Finally write the packet.
-            ok = (!renewNow || createNextSegment()) && writePackets(pkt, 1);
+            ok = (!renew_now || createNextSegment()) && writePackets(pkt, 1);
         }
 
         // Process next packet.

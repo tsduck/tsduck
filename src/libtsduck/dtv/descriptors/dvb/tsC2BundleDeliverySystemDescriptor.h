@@ -22,7 +22,7 @@ namespace ts {
     //! @see C2DeliverySystemDescriptor
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL C2BundleDeliverySystemDescriptor : public AbstractDeliverySystemDescriptor
+    class TSDUCKDLL C2BundleDeliverySystemDescriptor: public AbstractDeliverySystemDescriptor
     {
     public:
         //!

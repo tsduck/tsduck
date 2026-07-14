@@ -99,7 +99,7 @@ namespace ts {
         //!
         //! Enumeration of descriptor types.
         //!
-        enum class Type : uint8_t {
+        enum class Type: uint8_t {
             REGULAR    = 0x00,  //!< Regular descriptor for the specified standard.
             PRIVATE    = 0x01,  //!< Private MPEG or DVB descriptor, needs a REGID or PDS.
             EXTENDED   = 0x02,  //!< MPEG or DVB extension descriptor. The descriptor tag must be 0x3F or 0x7F.

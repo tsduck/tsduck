@@ -21,7 +21,7 @@ namespace ts {
     //! @see ANSI/SCTE 35, 8.2.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL CueIdentifierDescriptor : public AbstractDescriptor
+    class TSDUCKDLL CueIdentifierDescriptor: public AbstractDescriptor
     {
     public:
         // CueIdentifierDescriptor public members:

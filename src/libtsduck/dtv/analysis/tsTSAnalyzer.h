@@ -412,7 +412,7 @@ namespace ts {
             };
 
             // Singleton repository of these known PID's.
-            class KnownPIDMap : public std::map<PID, KnownPID>
+            class KnownPIDMap: public std::map<PID, KnownPID>
             {
                 TS_SINGLETON(KnownPIDMap);
             public:

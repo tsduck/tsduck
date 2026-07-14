@@ -10,20 +10,22 @@
 
 
 //----------------------------------------------------------------------------
-// Constructor
+// Constructors and destructor.
 //----------------------------------------------------------------------------
 
-ts::TSFileInputBuffered::TSFileInputBuffered(size_t buffer_size) :
-    TSFile(),
+ts::TSFileInputBuffered::TSFileInputBuffered(Report* report, size_t buffer_size, Object* owner) :
+    TSFile(report, owner),
     _buffer(std::max(buffer_size, MIN_BUFFER_SIZE)),
     _metadata(_buffer.size())
 {
 }
 
-
-//----------------------------------------------------------------------------
-// Destructor
-//----------------------------------------------------------------------------
+ts::TSFileInputBuffered::TSFileInputBuffered(ReporterBase* delegate, size_t buffer_size, Object* owner) :
+    TSFile(delegate, owner),
+    _buffer(std::max(buffer_size, MIN_BUFFER_SIZE)),
+    _metadata(_buffer.size())
+{
+}
 
 ts::TSFileInputBuffered::~TSFileInputBuffered()
 {
@@ -34,10 +36,10 @@ ts::TSFileInputBuffered::~TSFileInputBuffered()
 // Set the buffer size. Can be done only when the file is closed.
 //----------------------------------------------------------------------------
 
-bool ts::TSFileInputBuffered::setBufferSize(size_t buffer_size, Report& report)
+bool ts::TSFileInputBuffered::setBufferSize(size_t buffer_size)
 {
     if (isOpen()) {
-        report.error(u"file %s is already open, cannot resize buffer", getFileName());
+        report().error(u"file %s is already open, cannot resize buffer", getFileName());
         return false;
     }
     else {
@@ -52,17 +54,17 @@ bool ts::TSFileInputBuffered::setBufferSize(size_t buffer_size, Report& report)
 // Open file. Override TSFile::openRead().
 //----------------------------------------------------------------------------
 
-bool ts::TSFileInputBuffered::openRead(const fs::path& filename, size_t repeat_count, uint64_t start_offset, Report& report, TSPacketFormat format)
+bool ts::TSFileInputBuffered::openRead(const fs::path& filename, size_t repeat_count, uint64_t start_offset, TSPacketFormat format)
 {
     if (isOpen()) {
-        report.error(u"file %s is already open", getFileName());
+        report().error(u"file %s is already open", getFileName());
         return false;
     }
     else {
         _first_index = 0;
         _current_offset = 0;
         _total_count = 0;
-        return TSFile::openRead(filename, repeat_count, start_offset, report, format);
+        return TSFile::openRead(filename, repeat_count, start_offset, format);
     }
 }
 
@@ -71,10 +73,10 @@ bool ts::TSFileInputBuffered::openRead(const fs::path& filename, size_t repeat_c
 // Make sure that the generic open() returns an error.
 //----------------------------------------------------------------------------
 
-bool ts::TSFileInputBuffered::open(const fs::path& filename, OpenFlags flags, Report& report, TSPacketFormat format)
+bool ts::TSFileInputBuffered::open(const fs::path& filename, OpenFlags flags, TSPacketFormat format)
 {
     // Accept read-only mode only.
-    return (flags & (READ | WRITE | APPEND)) == READ && openRead(filename, 1, 0, report, format);
+    return (flags & (READ | WRITE | APPEND)) == READ && openRead(filename, 1, 0, format);
 }
 
 
@@ -107,14 +109,14 @@ bool ts::TSFileInputBuffered::canSeek(PacketCounter pos) const
 // Seek to the specified absolute position, if it is inside the buffer.
 //----------------------------------------------------------------------------
 
-bool ts::TSFileInputBuffered::seek(PacketCounter pos, Report& report)
+bool ts::TSFileInputBuffered::seekPacket(PacketCounter pos)
 {
     if (canSeek(pos)) {
         _current_offset = size_t(int64_t(_current_offset) + int64_t(pos) - int64_t(readPacketsCount()));
         return true;
     }
     else {
-        report.error(u"trying to seek buffered TS input file outside input buffer");
+        report().error(u"trying to seek buffered TS input file outside input buffer");
         return false;
     }
 }
@@ -124,14 +126,14 @@ bool ts::TSFileInputBuffered::seek(PacketCounter pos, Report& report)
 // Relative seek the file inside the buffer.
 //----------------------------------------------------------------------------
 
-bool ts::TSFileInputBuffered::seekBackward(size_t packet_count, Report& report)
+bool ts::TSFileInputBuffered::seekPacketBackward(size_t packet_count)
 {
     if (!isOpen()) {
-        report.error(u"file not open");
+        report().error(u"file not open");
         return false;
     }
     else if (packet_count > _current_offset) {
-        report.error(u"trying to seek TS input file backward too far");
+        report().error(u"trying to seek TS input file backward too far");
         return false;
     }
     else {
@@ -141,14 +143,14 @@ bool ts::TSFileInputBuffered::seekBackward(size_t packet_count, Report& report)
 }
 
 
-bool ts::TSFileInputBuffered::seekForward(size_t packet_count, Report& report)
+bool ts::TSFileInputBuffered::seekPacketForward(size_t packet_count)
 {
     if (!isOpen()) {
-        report.error(u"file not open");
+        report().error(u"file not open");
         return false;
     }
     else if (_current_offset + packet_count > _total_count) {
-        report.error(u"trying to seek TS input file forward too far");
+        report().error(u"trying to seek TS input file forward too far");
         return false;
     }
     else {
@@ -162,10 +164,10 @@ bool ts::TSFileInputBuffered::seekForward(size_t packet_count, Report& report)
 // Read TS packets. Override TSFile::read().
 //----------------------------------------------------------------------------
 
-size_t ts::TSFileInputBuffered::read(TSPacket* user_buffer, size_t max_packets, Report& report, TSPacketMetadata* user_metadata)
+size_t ts::TSFileInputBuffered::read(TSPacket* user_buffer, size_t max_packets, TSPacketMetadata* user_metadata)
 {
     if (!isOpen()) {
-        report.error(u"file not open");
+        report().error(u"file not open");
         return false;
     }
 
@@ -197,7 +199,7 @@ size_t ts::TSFileInputBuffered::read(TSPacket* user_buffer, size_t max_packets, 
     }
 
     // Then, read the rest directly from the file into the user's buffer.
-    size_t user_count = TSFile::readPackets(user_buffer, user_metadata, max_packets, report);
+    size_t user_count = TSFile::readPackets(user_buffer, user_metadata, max_packets);
     _in_packets += user_count;
 
     // Finally, read back the rest into our buffer. We do the exchanges that way to

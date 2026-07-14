@@ -26,7 +26,7 @@ namespace ts {
     //! @see ETSI TS 102 006, 9.5.2.1
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL TargetSmartcardDescriptor : public AbstractDescriptor
+    class TSDUCKDLL TargetSmartcardDescriptor: public AbstractDescriptor
     {
     public:
         // TargetSmartcardDescriptor public members:

@@ -20,7 +20,7 @@ namespace ts {
     //! @see ATSC A/90, 7.2.3.5.3.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL ATSCCRC32Descriptor : public AbstractDescriptor
+    class TSDUCKDLL ATSCCRC32Descriptor: public AbstractDescriptor
     {
     public:
         // Public members:

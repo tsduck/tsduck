@@ -29,7 +29,7 @@ namespace ts::mcast {
     //! @see IETF RFC 5651
     //! @ingroup libtsduck mpeg
     //!
-    class TSDUCKDLL LCTHeader : public StringifyInterface
+    class TSDUCKDLL LCTHeader: public StringifyInterface
     {
     public:
         FileTransport protocol = FT_UNKNOWN;  //!< Higher level protocol.

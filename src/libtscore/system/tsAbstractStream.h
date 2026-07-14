@@ -7,34 +7,56 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Abstract interface to read raw data from a stream.
+//!  Abstract base class to read/write raw data from/to a stream.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsReport.h"
+#include "tsReporterInterface.h"
 
 namespace ts {
     //!
-    //! Abstract interface to read raw data from a stream.
+    //! Abstract base class to read/write raw data from/to a stream.
     //! @ingroup libtscore system
     //!
-    class TSCOREDLL AbstractReadStreamInterface
+    class TSCOREDLL AbstractStream
     {
-        TS_INTERFACE(AbstractReadStreamInterface);
+        TS_NOBUILD_NOCOPY(AbstractStream);
     public:
         //!
-        //! Read partial data from the stream.
+        //! Constructor.
+        //! @param [in,out] reporter Reference to an object providing a Report.
+        //! This reference is kept in the constructed object instance.
+        //!
+        AbstractStream(ReporterInterface& reporter) : _reporter(reporter) {}
+
+        //!
+        //! Virtual destructor.
+        //!
+        virtual ~AbstractStream();
+
+        //!
+        //! Write data to the stream.
+        //! All bytes are written to the stream, blocking or retrying when necessary.
+        //! @param [in] addr Address of the data to write.
+        //! @param [in] size Size in bytes of the data to write.
+        //! @param [out] written_size Actually written size in bytes.
+        //! Can be less than @a size in case of error in the middle of the write.
+        //! @return True on success, false on error.
+        //!
+        virtual bool writeStream(const void* addr, size_t size, size_t& written_size) = 0;
+
+        //!
+        //! Read data from the stream.
         //! Wait and read at least one byte. Don't try to read exactly @a max_size bytes.
         //! If @a ret_size is less than @a max_bytes, it is possible to read more.
         //! @param [out] addr Address of the buffer for the incoming data.
         //! @param [in] max_size Maximum size in bytes of the buffer.
         //! @param [out] ret_size Returned input size in bytes.
         //! If zero, end of file has been reached or an error occurred.
-        //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        virtual bool readStreamPartial(void* addr, size_t max_size, size_t& ret_size, Report& report) = 0;
+        virtual bool readStream(void* addr, size_t max_size, size_t& ret_size) = 0;
 
         //!
         //! Read complete data from the stream.
@@ -43,10 +65,9 @@ namespace ts {
         //! @param [out] addr Address of the buffer for the incoming data.
         //! @param [in] max_size Maximum size in bytes of the buffer.
         //! @param [out] ret_size Returned input size in bytes.
-        //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        virtual bool readStreamComplete(void* addr, size_t max_size, size_t& ret_size, Report& report);
+        virtual bool readStreamComplete(void* addr, size_t max_size, size_t& ret_size);
 
         //!
         //! Read chunks of data from the stream.
@@ -56,15 +77,17 @@ namespace ts {
         //! a multiple of @a chunk_size. If the initial read ends in the middle of a @e chunk,
         //! read again and again, up to the end of the current chunk or end of file.
         //! @param [out] ret_size Returned input size in bytes.
-        //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        virtual bool readStreamChunks(void* addr, size_t max_size, size_t chunk_size, size_t& ret_size, Report& report);
+        virtual bool readStreamChunks(void* addr, size_t max_size, size_t chunk_size, size_t& ret_size);
 
         //!
-        //! Check if the end of stream was reached.
+        //! Check if the end of stream was reached while reading.
         //! @return True on end of stream, false otherwise.
         //!
         virtual bool endOfStream() = 0;
+
+    private:
+        ReporterInterface& _reporter;
     };
 }

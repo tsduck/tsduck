@@ -20,7 +20,7 @@ namespace ts {
     //! @see ETSI EN 300 468, 5.2.1
     //! @ingroup libtsduck table
     //!
-    class TSDUCKDLL NIT : public AbstractTransportListTable
+    class TSDUCKDLL NIT: public AbstractTransportListTable
     {
     public:
         // NIT public members:

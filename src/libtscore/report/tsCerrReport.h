@@ -25,7 +25,7 @@ namespace ts {
     //!
     //! This class is a singleton. Use static Instance() method to access the single instance.
     //!
-    class TSCOREDLL CerrReport : public Report
+    class TSCOREDLL CerrReport: public Report
     {
         TS_SINGLETON(CerrReport);
     public:

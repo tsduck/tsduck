@@ -20,7 +20,7 @@ namespace ts {
     //! @see ATSC A/65, section 6.9.6.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL ATSCTimeShiftedServiceDescriptor : public AbstractDescriptor
+    class TSDUCKDLL ATSCTimeShiftedServiceDescriptor: public AbstractDescriptor
     {
     public:
         //!

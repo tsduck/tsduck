@@ -21,7 +21,7 @@ namespace ts {
     //! the multilingual names loop.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL AbstractMultilingualDescriptor : public AbstractDescriptor
+    class TSDUCKDLL AbstractMultilingualDescriptor: public AbstractDescriptor
     {
     public:
         //!

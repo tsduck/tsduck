@@ -40,6 +40,6 @@ namespace ts {
         size_t                 _buffer_count = 0;  // Number of packets currently in buffer.
         TSPacketVector         _buffer {};         // Packet buffer.
         TSPacketMetadataVector _mdata {};          // Metadata for packets in buffer.
-        TSForkPipe             _pipe {};           // The pipe device.
+        TSForkPipe             _pipe {this};       // The pipe device.
     };
 }

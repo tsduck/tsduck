@@ -23,7 +23,7 @@ namespace ts {
     //! @see The D-Book 7 Part A (DTG), section 8.5.3.8
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL DTGPreferredNameIdentifierDescriptor : public AbstractPreferredNameIdentifierDescriptor
+    class TSDUCKDLL DTGPreferredNameIdentifierDescriptor: public AbstractPreferredNameIdentifierDescriptor
     {
     public:
         //!

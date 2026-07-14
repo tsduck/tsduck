@@ -26,12 +26,22 @@ namespace ts {
     //!
     class TSDUCKDLL TSFileOutputResync: public TSFile
     {
-        TS_NOCOPY(TSFileOutputResync);
+        TS_NOBUILD_NOCOPY(TSFileOutputResync);
     public:
         //!
-        //! Default constructor.
+        //! Constructor.
+        //! @param [in] report Where to report errors. The @a report object must remain valid as long as this object
+        //! exists or setReport() is used with another Report object. If @a report is null, log messages are discarded.
+        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        TSFileOutputResync();
+        explicit TSFileOutputResync(Report* report, Object* owner = nullptr);
+
+        //!
+        //! Constructor.
+        //! @param [in] delegate Use the report of another ReporterBase. If @a delegate is null, log messages are discarded.
+        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
+        //!
+        explicit TSFileOutputResync(ReporterBase* delegate, Object* owner = nullptr);
 
         //!
         //! Destructor.
@@ -39,41 +49,39 @@ namespace ts {
         virtual ~TSFileOutputResync() override;
 
         // Overrides TSFile methods
-        virtual bool open(const fs::path& filename, OpenFlags flags, Report& report, TSPacketFormat format = TSPacketFormat::AUTODETECT) override;
+        virtual bool open(const fs::path& filename, OpenFlags flags, TSPacketFormat format = TSPacketFormat::AUTODETECT) override;
 
         //!
         //! Write TS packets to the file.
         //! @param [in,out] buffer Address of first packet to write.
         //! The continuity counters of all packets are modified.
-        //! @param [in] packet_count Number of packets to write.
-        //! @param [in,out] report Where to report errors.
         //! @param [in] metadata Optional packet metadata containing time stamps.
         //! If the file format requires time stamps, @a metadata must not be a null
         //! pointer and all packets must have a time stamp.
+        //! @param [in] packet_count Number of packets to write.
         //! @return True on success, false on error.
         //!
-        bool writePackets(TSPacket* buffer, const TSPacketMetadata* metadata, size_t packet_count, Report& report);
+        bool writePackets(TSPacket* buffer, const TSPacketMetadata* metadata, size_t packet_count);
 
         //!
         //! Write TS packets to the file.
         //! @param [in,out] buffer Address of first packet to write.
         //! The continuity counters of all packets are modified.
+        //! @param [in] metadata Optional packet metadata containing time stamps.
+        //! If the file format requires time stamps, @a metadata must not be a null
+        //! pointer and all packets must have a time stamp.
         //! @param [in] packet_count Number of packets to write.
         //! @param [in] pid The PID of all packets is forced to this value.
-        //! @param [in,out] report Where to report errors.
-        //! @param [in] metadata Optional packet metadata containing time stamps.
-        //! If the file format requires time stamps, @a metadata must not be a null
-        //! pointer and all packets must have a time stamp.
         //! @return True on success, false on error.
         //!
-        bool writePackets(TSPacket* buffer, const TSPacketMetadata* metadata, size_t packet_count, PID pid, Report& report);
+        bool writePackets(TSPacket* buffer, const TSPacketMetadata* metadata, size_t packet_count, PID pid);
 
     private:
-        ContinuityAnalyzer _ccFixer {AllPIDs()};
+        ContinuityAnalyzer _cc_fixer {AllPIDs()};
 
         // Make openRead() and read-only writePackets() inaccessible.
         bool openRead(const fs::path&, size_t, uint64_t, Report&) = delete;
         bool openRead(const fs::path&, uint64_t, Report&) = delete;
-        virtual bool writePackets(const TSPacket* buffer, const TSPacketMetadata* metadata, size_t packet_count, Report& report) override;
+        virtual bool writePackets(const TSPacket* buffer, const TSPacketMetadata* metadata, size_t packet_count) override;
     };
 }

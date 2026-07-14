@@ -38,7 +38,7 @@ namespace {
         Options(int argc, char *argv[]);
 
         ts::DuckContext       duck {this};
-        ts::PagerArgs         pager {true, true};
+        ts::PagerArgs         pager {this, true, true};
         fs::path              input_file {};
         fs::path              output_file {};
         bool                  print_summary = false;
@@ -806,7 +806,7 @@ int MainCode(int argc, char *argv[])
     bool status = true;
 
     // Output device, may be paginated.
-    std::ostream& out(opt.save_tcp ? std::cout : opt.pager.output(opt));
+    std::ostream& out(opt.save_tcp ? std::cout : opt.pager.output());
 
     if (opt.extract_tcp) {
         // TCP session dump.

@@ -34,7 +34,7 @@ namespace ts {
     //! To be notified of all STT sections with a SectionDemux, it is necessary
     //! to provide a section handler, not a table handler.
     //!
-    class TSDUCKDLL STT : public AbstractLongTable
+    class TSDUCKDLL STT: public AbstractLongTable
     {
     public:
         // STT public members:

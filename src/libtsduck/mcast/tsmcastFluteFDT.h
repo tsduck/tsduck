@@ -22,7 +22,7 @@ namespace ts::mcast {
     //! @see IETF RFC 3926, section 3.4.2
     //! @ingroup libtsduck mpeg
     //!
-    class TSDUCKDLL FluteFDT : public FluteFile
+    class TSDUCKDLL FluteFDT: public FluteFile
     {
         TS_RULE_OF_FIVE(FluteFDT, override);
     public:

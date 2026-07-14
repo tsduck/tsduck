@@ -21,7 +21,7 @@ namespace ts {
     //! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.6.82.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL MVCOperationPointDescriptor : public AbstractDescriptor
+    class TSDUCKDLL MVCOperationPointDescriptor: public AbstractDescriptor
     {
     public:
         //!

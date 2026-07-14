@@ -68,16 +68,16 @@ int MainCode(int argc, char *argv[])
     ts::DSMCCExtractor extractor(opt.duck, opt.ext.options);
     extractor.setPID(opt.ext.pid);
 
-    ts::TSFile file;
-    if (!file.openRead(opt.infile, 1, 0, opt, opt.format)) {
+    ts::TSFile file(&opt);
+    if (!file.openRead(opt.infile, 1, 0, opt.format)) {
         return EXIT_FAILURE;
     }
 
     ts::TSPacket pkt;
-    while (file.readPackets(&pkt, nullptr, 1, opt) > 0) {
+    while (file.readPackets(&pkt, nullptr, 1) > 0) {
         extractor.feedPacket(pkt);
     }
-    file.close(opt);
+    file.close();
 
     extractor.flush();
 

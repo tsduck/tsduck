@@ -36,7 +36,7 @@ namespace ts {
     //! change them because they indicate at which time the frame shall be
     //! _processed_, not _transmitted_.
     //!
-    class TSDUCKDLL PCRMerger : private SignalizationHandlerInterface
+    class TSDUCKDLL PCRMerger: private SignalizationHandlerInterface
     {
         TS_NOCOPY(PCRMerger);
     public:

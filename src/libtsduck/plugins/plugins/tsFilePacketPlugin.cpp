@@ -34,15 +34,15 @@ bool ts::FilePacketPlugin::getOptions()
 
 bool ts::FilePacketPlugin::start()
 {
-    return _file.open(*this, tsp);
+    return _file.open(tsp);
 }
 
 bool ts::FilePacketPlugin::stop()
 {
-    return _file.close(*this);
+    return _file.close();
 }
 
 ts::PacketProcessStatus ts::FilePacketPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
-    return _file.write(&pkt, &pkt_data, 1, *this, tsp) ? TSP_OK : TSP_END;
+    return _file.write(&pkt, &pkt_data, 1, tsp) ? TSP_OK : TSP_END;
 }

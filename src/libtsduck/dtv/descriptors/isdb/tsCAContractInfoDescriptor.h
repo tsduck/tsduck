@@ -21,7 +21,7 @@ namespace ts {
     //! @see ARIB STD-B25, Part 1, 4.7.2
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL CAContractInfoDescriptor : public AbstractDescriptor
+    class TSDUCKDLL CAContractInfoDescriptor: public AbstractDescriptor
     {
     public:
         // CAContractInfoDescriptor public members:

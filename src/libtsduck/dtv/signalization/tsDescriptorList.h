@@ -27,7 +27,7 @@ namespace ts {
     //! List of MPEG PSI/SI descriptors.
     //! @ingroup libtsduck mpeg
     //!
-    class TSDUCKDLL DescriptorList : public AbstractTableAttachment
+    class TSDUCKDLL DescriptorList: public AbstractTableAttachment
     {
         TS_NO_DEFAULT_CONSTRUCTORS(DescriptorList);
     public:
@@ -122,7 +122,7 @@ namespace ts {
         //! An iterator over binary descriptors in the list.
         //! Dereferencing an iterator accesses a Descriptor instance.
         //!
-        class TSDUCKDLL iterator : private std::vector<DescriptorPtr>::iterator
+        class TSDUCKDLL iterator: private std::vector<DescriptorPtr>::iterator
         {
         private:
             using SuperClass = std::vector<DescriptorPtr>::iterator;
@@ -142,7 +142,7 @@ namespace ts {
         //! A constant iterator over binary descriptors in the list.
         //! Dereferencing an iterator accesses a constant Descriptor instance.
         //!
-        class TSDUCKDLL const_iterator : private std::vector<DescriptorPtr>::const_iterator
+        class TSDUCKDLL const_iterator: private std::vector<DescriptorPtr>::const_iterator
         {
         private:
             using SuperClass = std::vector<DescriptorPtr>::const_iterator;

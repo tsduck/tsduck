@@ -21,7 +21,7 @@ namespace ts {
     //! @see ARIB STD-B10, Part 2, 6.2.46
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL CarouselCompatibleCompositeDescriptor : public AbstractDescriptor
+    class TSDUCKDLL CarouselCompatibleCompositeDescriptor: public AbstractDescriptor
     {
     public:
         //!

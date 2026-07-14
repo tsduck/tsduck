@@ -24,7 +24,7 @@ namespace utest {
     //! around the main code of a thread. In case of assertion failure, a TSUnit
     //! error is displayed and the application properly exits.
     //!
-    class TSUnitThread : public ts::Thread
+    class TSUnitThread: public ts::Thread
     {
         TS_NOCOPY(TSUnitThread);
     public:

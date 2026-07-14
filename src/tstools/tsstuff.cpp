@@ -168,7 +168,7 @@ public:
     // Constructor
     Stuffer(Options& opt) :
         _opt(opt),
-        _input(opt.buffer_size / ts::PKT_SIZE)
+        _input(&_opt, opt.buffer_size / ts::PKT_SIZE)
     {
     }
 
@@ -179,7 +179,7 @@ private:
     // Private members
     Options&                 _opt;                         // Command-line options.
     ts::TSFileInputBuffered  _input;                       // Input file, including seek buffer for at least one segment.
-    ts::TSFile               _output {};                   // Output file.
+    ts::TSFile               _output {&_opt};              // Output file.
     std::optional<TimeStamp> _tstamp1 {};                  // First timestamp in current segment.
     std::optional<TimeStamp> _tstamp2 {};                  // Second timestamp in current segment.
     uint64_t                 _current_inter_packet = 0;    // Number of null packets to add between all input packets in segment.
@@ -248,7 +248,7 @@ bool Stuffer::getTimeStamp(const ts::TSPacket& pkt, uint64_t& tstamp) const
 void Stuffer::writeStuffing(uint64_t count)
 {
     while (count > 0) {
-        if (!_output.writePackets(&ts::NullPacket, nullptr, 1, _opt)) {
+        if (!_output.writePackets(&ts::NullPacket, nullptr, 1)) {
             fatalError();
         }
         count--;
@@ -265,8 +265,8 @@ void Stuffer::simpleInterPacketStuffing(uint64_t inter_packet, uint64_t end_pack
     assert(_input.readPacketsCount() < end_packet);
 
     ts::TSPacket pkt;
-    while (_input.readPacketsCount() < end_packet && _input.read(&pkt, 1, _opt) == 1) {
-        if (!_output.writePackets(&pkt, nullptr, 1, _opt)) {
+    while (_input.readPacketsCount() < end_packet && _input.read(&pkt, 1) == 1) {
+        if (!_output.writePackets(&pkt, nullptr, 1)) {
             fatalError();
         }
         writeStuffing(inter_packet);
@@ -290,7 +290,7 @@ void Stuffer::evaluateNextStuffing()
 
     // Read packets until both _tstamp1 and _tstamp2 are set (or end of file)
     ts::TSPacket pkt;
-    while (!_tstamp2 && _input.canSeek(initial_position) && _input.read(&pkt, 1, _opt) == 1) {
+    while (!_tstamp2 && _input.canSeek(initial_position) && _input.read(&pkt, 1) == 1) {
         uint64_t tstamp = 0;
         if (getTimeStamp(pkt, tstamp)) {
             if (_opt.reference_pid == ts::PID_NULL) {
@@ -334,7 +334,7 @@ void Stuffer::evaluateNextStuffing()
     }
 
     // Restore initial position in the file
-    if (!_input.seekBackward(size_t(_input.readPacketsCount() - initial_position), _opt)) {
+    if (!_input.seekPacketBackward(size_t(_input.readPacketsCount() - initial_position))) {
         fatalError();
     }
 
@@ -393,7 +393,7 @@ void Stuffer::evaluateNextStuffing()
 void Stuffer::stuff()
 {
     // Open input file
-    if (!_input.openRead(_opt.input_file, 1, 0, _opt, _opt.input_format)) {
+    if (!_input.openRead(_opt.input_file, 1, 0, _opt.input_format)) {
         fatalError();
     }
 
@@ -410,7 +410,7 @@ void Stuffer::stuff()
     assert(_tstamp2.has_value());
 
     // Create output file
-    if (!_output.open(_opt.output_file, ts::TSFile::WRITE | ts::TSFile::SHARED, _opt, _opt.output_format)) {
+    if (!_output.open(_opt.output_file, ts::TSFile::WRITE | ts::TSFile::SHARED, _opt.output_format)) {
         fatalError();
     }
 
@@ -426,9 +426,9 @@ void Stuffer::stuff()
 
         // Perform stuffing on current segment, loop on input packets, one by one.
         ts::TSPacket pkt;
-        while (_input.readPacketsCount() < _tstamp2->packet && _input.read(&pkt, 1, _opt) == 1) {
+        while (_input.readPacketsCount() < _tstamp2->packet && _input.read(&pkt, 1) == 1) {
             // Write the input packet.
-            if (!_output.writePackets(&pkt, nullptr, 1, _opt)) {
+            if (!_output.writePackets(&pkt, nullptr, 1)) {
                 fatalError();
             }
             // Write stuffing packets after each input packet.
@@ -456,8 +456,8 @@ void Stuffer::stuff()
     _opt.verbose(u"stuffing completed, read %'d packets, written %'d packets", _input.readPacketsCount(), _output.writePacketsCount());
 
     // Close files
-    _output.close(_opt);
-    _input.close(_opt);
+    _output.close();
+    _input.close();
 }
 
 

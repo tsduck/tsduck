@@ -21,7 +21,7 @@ namespace ts {
     //! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.6.110.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL MPEGH3DAudioSceneDescriptor : public AbstractDescriptor
+    class TSDUCKDLL MPEGH3DAudioSceneDescriptor: public AbstractDescriptor
     {
     public:
         //!

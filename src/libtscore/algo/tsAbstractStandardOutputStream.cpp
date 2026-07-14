@@ -6,14 +6,14 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsAbstractOutputStream.h"
+#include "tsAbstractStandardOutputStream.h"
 
 
 //----------------------------------------------------------------------------
 // Constructors and destructor.
 //----------------------------------------------------------------------------
 
-ts::AbstractOutputStream::AbstractOutputStream(size_t bufferSize) :
+ts::AbstractStandardOutputStream::AbstractStandardOutputStream(size_t bufferSize) :
     std::basic_ostream<char>(this),
     std::basic_streambuf<char>()
 {
@@ -21,7 +21,7 @@ ts::AbstractOutputStream::AbstractOutputStream(size_t bufferSize) :
     resetBuffer();
 }
 
-ts::AbstractOutputStream::~AbstractOutputStream()
+ts::AbstractStandardOutputStream::~AbstractStandardOutputStream()
 {
 }
 
@@ -30,7 +30,7 @@ ts::AbstractOutputStream::~AbstractOutputStream()
 // This is called when buffer becomes full.
 //----------------------------------------------------------------------------
 
-ts::AbstractOutputStream::int_type ts::AbstractOutputStream::overflow(int_type c)
+ts::AbstractStandardOutputStream::int_type ts::AbstractStandardOutputStream::overflow(int_type c)
 {
     // Flush content of the buffer.
     bool ok = writeStreamBuffer(pbase(), pptr() - pbase());
@@ -51,7 +51,7 @@ ts::AbstractOutputStream::int_type ts::AbstractOutputStream::overflow(int_type c
 // This function is called when the stream is flushed.
 //----------------------------------------------------------------------------
 
-int ts::AbstractOutputStream::sync()
+int ts::AbstractStandardOutputStream::sync()
 {
     bool ok = writeStreamBuffer(pbase(), pptr() - pbase());
     resetBuffer();

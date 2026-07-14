@@ -22,7 +22,7 @@ namespace ts {
     //! Basic helper for REST API clients.
     //! @ingroup libtscore app
     //!
-    class TSCOREDLL RestClient : public ReporterBase
+    class TSCOREDLL RestClient: public ReporterBase
     {
         TS_NOBUILD_NOCOPY(RestClient);
     public:

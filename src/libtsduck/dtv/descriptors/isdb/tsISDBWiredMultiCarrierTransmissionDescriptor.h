@@ -61,7 +61,7 @@ namespace ts {
     //! indicates information that identifies the carrier group that transmits the multiplexed frame using
     //! the extended information, and the value 0x00 shall not be used.
     //!
-    class TSDUCKDLL ISDBWiredMultiCarrierTransmissionDescriptor : public AbstractDescriptor
+    class TSDUCKDLL ISDBWiredMultiCarrierTransmissionDescriptor: public AbstractDescriptor
     {
     public:
         //!

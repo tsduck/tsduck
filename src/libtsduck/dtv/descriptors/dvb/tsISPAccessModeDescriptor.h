@@ -24,7 +24,7 @@ namespace ts {
     //! @see ETSI EN 301 192, 8.4.5.16.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL ISPAccessModeDescriptor : public AbstractDescriptor
+    class TSDUCKDLL ISPAccessModeDescriptor: public AbstractDescriptor
     {
     public:
         // ISPAccessModeDescriptor public members:

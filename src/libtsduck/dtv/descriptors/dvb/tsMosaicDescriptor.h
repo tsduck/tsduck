@@ -21,7 +21,7 @@ namespace ts {
     //! @see ETSI EN 300 468, 6.2.21.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL MosaicDescriptor : public AbstractDescriptor
+    class TSDUCKDLL MosaicDescriptor: public AbstractDescriptor
     {
     public:
         //!

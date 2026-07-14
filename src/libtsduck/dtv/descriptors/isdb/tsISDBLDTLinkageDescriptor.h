@@ -20,7 +20,7 @@ namespace ts {
     //! @see ARIB STD-B10, Part 2, 6.2.40
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL ISDBLDTLinkageDescriptor : public AbstractDescriptor
+    class TSDUCKDLL ISDBLDTLinkageDescriptor: public AbstractDescriptor
     {
     public:
         //!

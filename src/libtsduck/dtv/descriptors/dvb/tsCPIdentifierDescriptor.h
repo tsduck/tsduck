@@ -20,7 +20,7 @@ namespace ts {
     //! @see ETSI EN 300 468, 6.4.3.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL CPIdentifierDescriptor : public AbstractDescriptor
+    class TSDUCKDLL CPIdentifierDescriptor: public AbstractDescriptor
     {
     public:
         // CPIdentifierDescriptor public members:

@@ -21,7 +21,7 @@ namespace ts {
     //! @see ARIB STD-B10, Part 3, 5.2.6
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL MaterialInformationDescriptor : public AbstractDescriptor
+    class TSDUCKDLL MaterialInformationDescriptor: public AbstractDescriptor
     {
     public:
         //!

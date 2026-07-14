@@ -21,7 +21,7 @@ namespace ts {
     //! @see https://aomediacodec.github.io/av1-mpeg2-ts/
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL AV1VideoDescriptor : public AbstractDescriptor
+    class TSDUCKDLL AV1VideoDescriptor: public AbstractDescriptor
     {
     public:
         // Public members:

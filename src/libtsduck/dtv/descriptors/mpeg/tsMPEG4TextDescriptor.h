@@ -21,7 +21,7 @@ namespace ts {
     //! @see ITU-T H.222.0 clause 2.6.70 and ISO/IEC 14496-17
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL MPEG4TextDescriptor : public AbstractDescriptor
+    class TSDUCKDLL MPEG4TextDescriptor: public AbstractDescriptor
     {
     public:
         //!

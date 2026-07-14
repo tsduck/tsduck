@@ -21,14 +21,14 @@ namespace ts {
     //! @see Astra LCN Technical Specification, 2.1
     //! @ingroup libtsduck table
     //!
-    class TSDUCKDLL SGT : public AbstractLongTable
+    class TSDUCKDLL SGT: public AbstractLongTable
     {
     public:
         //!
         //! Description of a service.
         //! Note: by inheriting from EntryWithDescriptors, there is a public field "DescriptorList descs".
         //!
-        class TSDUCKDLL Service : public EntryWithDescriptors
+        class TSDUCKDLL Service: public EntryWithDescriptors
         {
             TS_NO_DEFAULT_CONSTRUCTORS(Service);
             TS_DEFAULT_ASSIGMENTS(Service);

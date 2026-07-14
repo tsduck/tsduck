@@ -25,7 +25,7 @@ namespace ts {
         //! Execution context of a tsswitch plugin.
         //! @ingroup libtsduck plugin
         //!
-        class PluginExecutor : public PluginThread
+        class PluginExecutor: public PluginThread
         {
             TS_NOBUILD_NOCOPY(PluginExecutor);
         public:

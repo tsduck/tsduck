@@ -23,7 +23,7 @@ namespace ts {
     //! @see NorDig Unified Requirements ver. 3.1.1, 12.2.9.2.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL NorDigLogicalChannelDescriptorV1 : public AbstractDescriptor
+    class TSDUCKDLL NorDigLogicalChannelDescriptorV1: public AbstractDescriptor
     {
     public:
         //!

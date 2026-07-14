@@ -22,7 +22,7 @@ namespace ts {
     //! @see ISO/IEC 13818-6, 8.3.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL StreamEventDescriptor : public AbstractDescriptor
+    class TSDUCKDLL StreamEventDescriptor: public AbstractDescriptor
     {
     public:
         // StreamEventDescriptor public members:

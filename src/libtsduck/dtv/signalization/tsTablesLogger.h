@@ -32,7 +32,7 @@ namespace ts {
     //! This class logs sections and tables.
     //! @ingroup libtsduck mpeg
     //!
-    class TSDUCKDLL TablesLogger :
+    class TSDUCKDLL TablesLogger:
         protected TableHandlerInterface,
         protected SectionHandlerInterface,
         protected InvalidSectionHandlerInterface

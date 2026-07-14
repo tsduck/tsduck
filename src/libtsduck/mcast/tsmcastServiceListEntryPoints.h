@@ -23,7 +23,7 @@ namespace ts::mcast {
     //! @see ETSI TS 103 770, section 5.3
     //! @ingroup libtsduck mpeg
     //!
-    class TSDUCKDLL ServiceListEntryPoints : public FluteFile
+    class TSDUCKDLL ServiceListEntryPoints: public FluteFile
     {
         TS_RULE_OF_FIVE(ServiceListEntryPoints, override);
     public:

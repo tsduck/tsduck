@@ -21,7 +21,7 @@ namespace ts {
     //! @see ISO/IEC 13818-6, 8.1.5.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL NPTEndpointDescriptor : public AbstractDescriptor
+    class TSDUCKDLL NPTEndpointDescriptor: public AbstractDescriptor
     {
     public:
         // NPTEndpointDescriptor public members:

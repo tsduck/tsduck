@@ -21,7 +21,7 @@ namespace ts {
     //! @see ARIB STD-B10, Part 3, 5.2.1
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL BasicLocalEventDescriptor : public AbstractDescriptor
+    class TSDUCKDLL BasicLocalEventDescriptor: public AbstractDescriptor
     {
     public:
         // BasicLocalEventDescriptor public members:

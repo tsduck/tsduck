@@ -13,7 +13,6 @@
 
 #pragma once
 #include "tsReporterBase.h"
-#include "tsObject.h"
 #include "tsIPUtils.h"
 #include "tsSysUtils.h"
 
@@ -73,8 +72,9 @@ namespace ts {
     //!   all corresponding I/O completions before releasing the memory for the data buffers, including
     //!   when closing the device handle.
     //!
-    class TSCOREDLL NonBlockingDevice : public ReporterBase
+    class TSCOREDLL NonBlockingDevice: public ReporterBase
     {
+        TS_NOBUILD_NOCOPY(NonBlockingDevice);
     public:
         //!
         //! Constructor.
@@ -83,7 +83,7 @@ namespace ts {
         //! @param [in] non_blocking It true, the device is initially set in non-blocking mode.
         //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        explicit NonBlockingDevice(Report* report = nullptr, bool non_blocking = false, Object* owner = nullptr) : ReporterBase(report, owner), _is_non_blocking(non_blocking) {}
+        explicit NonBlockingDevice(Report* report, bool non_blocking = false, Object* owner = nullptr) : ReporterBase(report, owner), _is_non_blocking(non_blocking) {}
 
         //!
         //! Constructor.

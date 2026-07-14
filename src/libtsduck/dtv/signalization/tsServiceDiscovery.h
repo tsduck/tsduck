@@ -26,7 +26,7 @@ namespace ts {
     //! This subclass of Service automatically detects the properties of the
     //! service based on TS packets from the transport stream.
     //!
-    class TSDUCKDLL ServiceDiscovery : public Service, private TableHandlerInterface
+    class TSDUCKDLL ServiceDiscovery: public Service, private TableHandlerInterface
     {
         TS_NOBUILD_NOCOPY(ServiceDiscovery);
     public:

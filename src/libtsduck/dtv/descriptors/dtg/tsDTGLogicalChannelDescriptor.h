@@ -23,7 +23,7 @@ namespace ts {
     //! @see The D-Book 7 Part A (DTG), section 8.5.3.6
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL DTGLogicalChannelDescriptor : public AbstractLogicalChannelDescriptor
+    class TSDUCKDLL DTGLogicalChannelDescriptor: public AbstractLogicalChannelDescriptor
     {
     public:
         //!

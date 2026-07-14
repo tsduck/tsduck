@@ -23,7 +23,7 @@ namespace ts {
     //! @see ETSI TS 102 006, 6.1.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL SSULinkageDescriptor : public AbstractDescriptor
+    class TSDUCKDLL SSULinkageDescriptor: public AbstractDescriptor
     {
     public:
         //!

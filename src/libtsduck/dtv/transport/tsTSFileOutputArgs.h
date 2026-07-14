@@ -30,10 +30,21 @@ namespace ts {
         TS_NOBUILD_NOCOPY(TSFileOutputArgs);
     public:
         //!
-        //! Default constructor.
+        //! Constructor.
+        //! @param [in] report Where to report errors. The @a report object must remain valid as long as this object
+        //! exists or setReport() is used with another Report object. If @a report is null, log messages are discarded.
         //! @param [in] allow_stdout If true, the file name is optional and standard output is used by default.
+        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        TSFileOutputArgs(bool allow_stdout);
+        TSFileOutputArgs(Report* report, bool allow_stdout, Object* owner = nullptr);
+
+        //!
+        //! Constructor.
+        //! @param [in] delegate Use the report of another ReporterBase. If @a delegate is null, log messages are discarded.
+        //! @param [in] allow_stdout If true, the file name is optional and standard output is used by default.
+        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
+        //!
+        TSFileOutputArgs(ReporterBase* delegate, bool allow_stdout, Object* owner = nullptr);
 
         //!
         //! Add command line option definitions in an Args.
@@ -53,18 +64,18 @@ namespace ts {
         //!
         //! Open the output file.
         //! All parameters where loaded from the command line by loadArgs().
-        //! @param [in,out] report Where to report errors.
         //! @param [in] abort An optional abort interface to detect abort requests.
         //! @return True on success, false on error.
         //!
-        bool open(Report& report, AbortInterface* abort = nullptr);
+        bool open(AbortInterface* abort = nullptr);
 
         //!
         //! Close the output file.
-        //! @param [in,out] report Where to report errors.
+        //! @param [in] silent If true, do not report errors. This is typically useful when the object is in some error
+        //! condition and closing it is necessary although it may generate additional meaningless errors.
         //! @return True on success, false on error.
         //!
-        bool close(Report& report);
+        bool close(bool silent = false);
 
         //!
         //! Write packets.
@@ -72,11 +83,10 @@ namespace ts {
         //! @param [in] pkt_data Array of metadata for packets.
         //! A packet and its metadata have the same index in their respective arrays.
         //! @param [in] packet_count Number of packets to send from @a buffer.
-        //! @param [in,out] report Where to report errors.
         //! @param [in] abort An optional abort interface to detect abort requests.
         //! @return True on success, false on error.
         //!
-        bool write(const TSPacket* buffer, const TSPacketMetadata* pkt_data, size_t packet_count, Report& report, AbortInterface* abort = nullptr);
+        bool write(const TSPacket* buffer, const TSPacketMetadata* pkt_data, size_t packet_count, AbortInterface* abort = nullptr);
 
         //!
         //! Default retry interval in milliseconds.
@@ -100,7 +110,7 @@ namespace ts {
         bool              _multiple_files = false;
 
         // Working data:
-        TSFile            _file {};
+        TSFile            _file;
         FileNameGenerator _name_gen {};
         uint64_t          _current_size = 0;
         Time              _next_open_time {};
@@ -108,9 +118,9 @@ namespace ts {
 
         // Open the file, retry on error if necessary.
         // Use max number of retries. Updated with remaining number of retries.
-        bool openAndRetry(bool initial_wait, size_t& retry_allowed, Report& report, AbortInterface* abort);
+        bool openAndRetry(bool initial_wait, size_t& retry_allowed, AbortInterface* abort);
 
         // Close the current file, cleanup oldest files when necessary.
-        bool closeAndCleanup(Report& report);
+        bool closeAndCleanup(bool silent);
     };
 }

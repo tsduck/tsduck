@@ -30,7 +30,7 @@ namespace ts::mcast {
     //! DVB-NIP demux, extracting files and tables.
     //! @ingroup libtsduck mpeg
     //!
-    class TSDUCKDLL NIPDemux : private FluteHandlerInterface
+    class TSDUCKDLL NIPDemux: private FluteHandlerInterface
     {
         TS_NOBUILD_NOCOPY(NIPDemux);
     public:

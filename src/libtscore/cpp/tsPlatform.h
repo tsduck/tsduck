@@ -930,28 +930,27 @@ TS_MSC_NOWARNING(5045)  // Compiler will insert Spectre mitigation for memory lo
 #endif
 
 //!
-//! A macro to disable object copy in the declaration of a class.
-//! The copy and move constructors and assignments are explicitly deleted.
-//! @ingroup cpp
-//! @param classname Name of the enclosing class.
-//!
-#define TS_NOCOPY(classname)                        \
-    private:                                        \
-        classname(classname&&) = delete;            \
-        classname(const classname&) = delete;       \
-        classname& operator=(classname&&) = delete; \
-        classname& operator=(const classname&) = delete
-
-//!
 //! A macro to disable object move in the declaration of a class.
 //! The move constructor and assignment are explicitly deleted.
 //! @ingroup cpp
 //! @param classname Name of the enclosing class.
 //!
-#define TS_NOMOVE(classname)         \
-private:                             \
-    classname(classname&&) = delete; \
-    classname& operator=(classname&&) = delete
+#define TS_NOMOVE(classname)             \
+    private:                             \
+        classname(classname&&) = delete; \
+        classname& operator=(classname&&) = delete
+
+//!
+//! A macro to disable object copy in the declaration of a class.
+//! The copy and move constructors and assignments are explicitly deleted.
+//! @ingroup cpp
+//! @param classname Name of the enclosing class.
+//!
+#define TS_NOCOPY(classname)                  \
+    private:                                  \
+        TS_NOMOVE(classname);                 \
+        classname(const classname&) = delete; \
+        classname& operator=(const classname&) = delete
 
 //!
 //! A macro to disable default constructor and object copy in the declaration of a class.
@@ -959,13 +958,10 @@ private:                             \
 //! @ingroup cpp
 //! @param classname Name of the enclosing class.
 //!
-#define TS_NOBUILD_NOCOPY(classname)                \
-    private:                                        \
-        classname() = delete;                       \
-        classname(classname&&) = delete;            \
-        classname(const classname&) = delete;       \
-        classname& operator=(classname&&) = delete; \
-        classname& operator=(const classname&) = delete
+#define TS_NOBUILD_NOCOPY(classname) \
+    private:                         \
+        TS_NOCOPY(classname);        \
+        classname() = delete
 
 //!
 //! A macro to disable default constructors in the declaration of a class.
@@ -996,13 +992,12 @@ private:                             \
 //! @ingroup cpp
 //! @param classname Name of the enclosing class.
 //!
-#define TS_DEFAULT_COPY_MOVE(classname)                   \
-    public:                                               \
-        /** @cond nodoxygen */                            \
-        classname(classname&&) = default;                 \
-        classname(const classname&) = default;            \
-        classname& operator=(classname&&) = default;      \
-        classname& operator=(const classname&) = default  \
+#define TS_DEFAULT_COPY_MOVE(classname)       \
+    public:                                   \
+        TS_DEFAULT_ASSIGMENTS(classname);     \
+        /** @cond nodoxygen */                \
+        classname(classname&&) = default;     \
+        classname(const classname&) = default \
         /** @endcond */
 
 //!
@@ -1012,14 +1007,11 @@ private:                             \
 //! @param classname Name of the enclosing class.
 //! @param dtor_attributes Post attributes for the destructor.
 //!
-#define TS_RULE_OF_FIVE(classname, dtor_attributes)       \
-    public:                                               \
-        /** @cond nodoxygen */                            \
-        classname(classname&&) = default;                 \
-        classname(const classname&) = default;            \
-        classname& operator=(classname&&) = default;      \
-        classname& operator=(const classname&) = default; \
-        virtual ~classname() dtor_attributes              \
+#define TS_RULE_OF_FIVE(classname, dtor_attributes) \
+    public:                                         \
+        TS_DEFAULT_COPY_MOVE(classname);            \
+        /** @cond nodoxygen */                      \
+        virtual ~classname() dtor_attributes        \
         /** @endcond */
 
 //!
@@ -1027,34 +1019,28 @@ private:                             \
 //! @ingroup cpp
 //! @param classname Name of the enclosing class.
 //!
-#define TS_INTERFACE(classname)                            \
-    public:                                                \
-        /** @cond nodoxygen */                             \
-        classname() = default;                             \
-        classname(classname&&) = default;                  \
-        classname(const classname&) = default;             \
-        classname& operator=(classname&&) = default;       \
-        classname& operator=(const classname&) = default;  \
-        virtual ~classname();                              \
-        auto operator<=>(const classname&) const = default \
-        /** @endcond */
+#define TS_INTERFACE(classname)                             \
+    public:                                                 \
+        /** @cond nodoxygen */                              \
+        classname() = default;                              \
+        virtual ~classname();                               \
+        auto operator<=>(const classname&) const = default; \
+        /** @endcond */                                     \
+        TS_DEFAULT_COPY_MOVE(classname)
 
 //!
 //! A macro to declare the basic operators in the declaration of an interface class which is a subclass of another interface.
 //! @ingroup cpp
 //! @param classname Name of the enclosing class.
 //!
-#define TS_SUBINTERFACE(classname)                         \
-    public:                                                \
-        /** @cond nodoxygen */                             \
-        classname() = default;                             \
-        classname(classname&&) = default;                  \
-        classname(const classname&) = default;             \
-        classname& operator=(classname&&) = default;       \
-        classname& operator=(const classname&) = default;  \
-        virtual ~classname() override;                     \
-        auto operator<=>(const classname&) const = default \
-        /** @endcond */
+#define TS_SUBINTERFACE(classname)                          \
+    public:                                                 \
+        /** @cond nodoxygen */                              \
+        classname() = default;                              \
+        virtual ~classname() override;                      \
+        auto operator<=>(const classname&) const = default; \
+        /** @endcond */                                     \
+        TS_DEFAULT_COPY_MOVE(classname)
 
 //!
 //! Singleton class declaration.

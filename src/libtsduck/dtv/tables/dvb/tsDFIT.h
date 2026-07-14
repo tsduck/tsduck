@@ -20,7 +20,7 @@ namespace ts {
     //! @see ETSI EN 303 560, 5.3.2.3
     //! @ingroup libtsduck table
     //!
-    class TSDUCKDLL DFIT : public AbstractLongTable
+    class TSDUCKDLL DFIT: public AbstractLongTable
     {
     public:
         //!

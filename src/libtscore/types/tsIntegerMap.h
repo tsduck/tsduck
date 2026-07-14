@@ -28,7 +28,7 @@ namespace ts {
     //!
     template <typename KEY, typename VALUE, const UChar* NAMESFILE = nullptr, const UChar* KEYNAMESECTION = nullptr>
         requires std::integral<KEY> && std::integral<VALUE>
-    class IntegerMap : public std::map<KEY, VALUE>
+    class IntegerMap: public std::map<KEY, VALUE>
     {
     public:
         using SuperClass = std::map<KEY, VALUE>;   //!< Identification of the superclass.

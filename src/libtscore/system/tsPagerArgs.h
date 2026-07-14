@@ -13,7 +13,6 @@
 
 #pragma once
 #include "tsOutputPager.h"
-#include "tsCerrReport.h"
 
 namespace ts {
 
@@ -25,19 +24,21 @@ namespace ts {
     //!
     class TSCOREDLL PagerArgs
     {
-        TS_NOCOPY(PagerArgs);
+        TS_NOBUILD_NOCOPY(PagerArgs);
     public:
         // Public fields
-       bool use_pager = false;  //!< Actually use a page process.
+        bool use_pager = false;  //!< Actually use a page process.
 
         //!
         //! Default constructor.
+        //! @param [in] report Where to report errors. The @a report object must remain valid as long as this object
+        //! exists. If @a report is null, log messages are discarded.
         //! @param [in] page_by_default If true, paging is enabled by default and option @c -\-no-pager
         //! is defined. If false, do not page by default and option @c -\-pager is defined.
         //! @param [in] stdout_only If true, use only stdout. If false, if stdout is not a terminal but
         //! stderr is one, then use stderr for paging.
         //!
-        PagerArgs(bool page_by_default = false, bool stdout_only = true);
+        explicit PagerArgs(Report* report, bool page_by_default = false, bool stdout_only = true);
 
         //!
         //! Destructor.
@@ -60,10 +61,9 @@ namespace ts {
 
         //!
         //! Return the output device for display.
-        //! @param [in,out] report Where to report errors.
         //! @return A reference to the output device, either @c std::cout or a pager stream.
         //!
-        std::ostream& output(Report& report = CERR);
+        std::ostream& output();
 
     private:
         bool _page_by_default = false;

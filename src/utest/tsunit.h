@@ -337,7 +337,7 @@ namespace tsunit {
     };
 
     // Definition of a test case (one method in a user test class).
-    class TestCase : public Named
+    class TestCase: public Named
     {
     public:
         TestCase(const std::string& name) : Named(name) {}
@@ -394,7 +394,7 @@ namespace tsunit {
     // Definition of a test suite (all test methods in a user test class).
     // The Test object and all test cases are owned by the instance of TestSuite;
     // they are deallocated in the destructor.
-    class TestSuite : public Named
+    class TestSuite: public Named
     {
     public:
         TestSuite(const std::string& name, Test* test);

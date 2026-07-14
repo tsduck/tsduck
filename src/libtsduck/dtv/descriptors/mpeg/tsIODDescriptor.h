@@ -25,7 +25,7 @@ namespace ts {
     //! as a binary blob. A future version may chose to describe the internal structure
     //! of this data block.
     //!
-    class TSDUCKDLL IODDescriptor : public AbstractDescriptor
+    class TSDUCKDLL IODDescriptor: public AbstractDescriptor
     {
     public:
         // IODDescriptor public members:

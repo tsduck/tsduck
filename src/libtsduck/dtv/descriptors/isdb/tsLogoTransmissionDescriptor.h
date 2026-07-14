@@ -21,7 +21,7 @@ namespace ts {
     //! @see ARIB STD-B10, Part 2, 6.2.44
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL LogoTransmissionDescriptor : public AbstractDescriptor
+    class TSDUCKDLL LogoTransmissionDescriptor: public AbstractDescriptor
     {
     public:
         // LogoTransmissionDescriptor public members:

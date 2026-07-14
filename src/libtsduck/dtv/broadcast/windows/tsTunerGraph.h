@@ -34,7 +34,7 @@ namespace ts {
     //!   - MPEG-2 demultiplexer
     //!   - TIF (Transport Information Filter)
     //!
-    class TSDUCKDLL TunerGraph : public DirectShowGraph
+    class TSDUCKDLL TunerGraph: public DirectShowGraph
     {
         TS_NOCOPY(TunerGraph);
     public:

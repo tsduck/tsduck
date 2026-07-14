@@ -26,7 +26,7 @@ namespace ts {
     //!
     //! Sources of time information for transport streams.
     //!
-    enum class TimeSource : uint8_t {
+    enum class TimeSource: uint8_t {
         UNDEFINED = 0,  //!< Undefined source of time information.
         HARDWARE,       //!< Hardware-generated time, any local hardware (NIC for instance).
         KERNEL,         //!< OS kernel time stamp.

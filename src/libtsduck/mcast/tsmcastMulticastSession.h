@@ -63,7 +63,7 @@ namespace ts::mcast {
         //! An entry of \<MulticastTransportSession>.
         //! @see ETSI TS 103 769, section 10.2.3.1
         //!
-        class TSDUCKDLL MulticastTransportSession : public BaseMulticastTransportSession
+        class TSDUCKDLL MulticastTransportSession: public BaseMulticastTransportSession
         {
         public:
             MulticastTransportSession() = default;   //!< Constructor.

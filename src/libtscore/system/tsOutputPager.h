@@ -22,9 +22,9 @@ namespace ts {
     //! If neither stdout nor stderr are terminals, paging is not allowed.
     //! @ingroup libtscore system
     //!
-    class TSCOREDLL OutputPager : public ForkPipeOutputStream
+    class TSCOREDLL OutputPager: public ForkPipeOutputStream
     {
-        TS_NOCOPY(OutputPager);
+        TS_NOBUILD_NOCOPY(OutputPager);
     public:
         //!
         //! Default name of the environment variable containing the pager command.
@@ -33,12 +33,23 @@ namespace ts {
         static constexpr const UChar* const DEFAULT_PAGER = u"PAGER";
 
         //!
-        //! Default constructor.
-        //! @param [in] envName Name of the optional environment variable containing the pager command name.
-        //! @param [in] stdoutOnly If true, use only stdout. If false, if stdout is not a terminal but stderr
-        //! is one, then use stderr for paging.
+        //! Constructor.
+        //! @param [in] report Where to report errors. The @a report object must remain valid as long as this object
+        //! exists or setReport() is used with another Report object. If @a report is null, log messages are discarded.
+        //! @param [in] env_name Name of the optional environment variable containing the pager command name.
+        //! @param [in] stdout_only If true, use only stdout. If false, if stdout is not a terminal but stderr is one, then use stderr for paging.
+        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        explicit OutputPager(const UString& envName = DEFAULT_PAGER, bool stdoutOnly = false);
+        explicit OutputPager(Report* report, const UString& env_name = DEFAULT_PAGER, bool stdout_only = false, Object* owner = nullptr);
+
+        //!
+        //! Constructor.
+        //! @param [in] delegate Use the report of another ReporterBase. If @a delegate is null, log messages are discarded.
+        //! @param [in] env_name Name of the optional environment variable containing the pager command name.
+        //! @param [in] stdout_only If true, use only stdout. If false, if stdout is not a terminal but stderr is one, then use stderr for paging.
+        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
+        //!
+        explicit OutputPager(ReporterBase* delegate, const UString& env_name = DEFAULT_PAGER, bool stdout_only = false, Object* owner = nullptr);
 
         //!
         //! Destructor.
@@ -50,34 +61,35 @@ namespace ts {
         //! To run a pager, we must have found a valid pager command and either stdout or stderr must be a terminal.
         //! @return True if we can page.
         //!
-        bool canPage() const { return _hasTerminal && !_pagerCommand.empty(); }
+        bool canPage() const { return _has_terminal && !_pager_command.empty(); }
 
         //!
         //! Get the pager command which is used.
         //! @return The pager command which is used.
         //!
-        UString pagerCommand() const { return _pagerCommand; }
+        UString pagerCommand() const { return _pager_command; }
 
         //!
         //! Create the process, open the pipe.
         //! @param [in] synchronous If true, wait for process termination in close().
         //! @param [in] buffer_size The pipe buffer size in bytes. Used on Windows only. Zero means default.
-        //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool open(bool synchronous, size_t buffer_size, Report& report);
+        bool open(bool synchronous, size_t buffer_size);
 
         //!
         //! Write data to the pipe (received at process' standard input).
         //! @param [in] text Text to write.
-        //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool write(const UString& text, Report& report);
+        bool write(const UString& text);
 
     private:
-        bool       _hasTerminal = false;
-        OutputMode _outputMode {KEEP_BOTH};
-        UString    _pagerCommand {};
+        bool       _has_terminal = false;
+        OutputMode _output_mode = KEEP_BOTH;
+        UString    _pager_command {};
+
+        // Constructors common code.
+        void init(const UString& env_name, bool stdout_only);
     };
 }

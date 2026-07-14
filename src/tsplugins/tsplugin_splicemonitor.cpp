@@ -35,9 +35,9 @@
 
 namespace ts {
     class SpliceMonitorPlugin:
-            public ProcessorPlugin,
-            private TableHandlerInterface,
-            private SignalizationHandlerInterface
+        public ProcessorPlugin,
+        private TableHandlerInterface,
+        private SignalizationHandlerInterface
     {
         TS_PLUGIN_CONSTRUCTORS(SpliceMonitorPlugin);
     public:
@@ -106,7 +106,7 @@ namespace ts {
         size_t           _max_repetition = 0;      // Maximum number of occurrences per command.
         cn::milliseconds _min_preroll {};          // Minimum pre-roll time in milliseconds.
         cn::milliseconds _max_preroll {};          // Maximum pre-roll time in milliseconds.
-        json::OutputArgs _json_args {};            // JSON output.
+        json::OutputArgs _json_args {this};        // JSON output.
         std::bitset<256> _log_cmds {};             // List of splice commands to display.
         TSClockArgs      _ts_clock_args {u"influx"};
         InfluxArgs       _influx_args {true, false};

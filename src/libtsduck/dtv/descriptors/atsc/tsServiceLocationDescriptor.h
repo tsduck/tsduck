@@ -21,7 +21,7 @@ namespace ts {
     //! @see ATSC A/65, section 6.9.5.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL ServiceLocationDescriptor : public AbstractDescriptor
+    class TSDUCKDLL ServiceLocationDescriptor: public AbstractDescriptor
     {
     public:
         //!

@@ -39,7 +39,7 @@ namespace ts {
     //! Typically, if the ByteBlock comes from the wire, use CHECK.
     //! If the ByteBlock is built by the application, use COMPUTE,
     //!
-    class TSDUCKDLL Section : public DemuxedData, public AbstractDefinedByStandards
+    class TSDUCKDLL Section: public DemuxedData, public AbstractDefinedByStandards
     {
     public:
         //!

@@ -20,7 +20,7 @@ namespace ts {
     //! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.6.14.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL VideoWindowDescriptor : public AbstractDescriptor
+    class TSDUCKDLL VideoWindowDescriptor: public AbstractDescriptor
     {
     public:
         // VideoWindowDescriptor public members:

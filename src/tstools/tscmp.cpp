@@ -52,7 +52,7 @@ namespace ts {
         bool             pid_ignore = false;
         bool             cc_ignore = false;
         bool             continue_all = false;
-        json::OutputArgs json {};
+        json::OutputArgs json {this};
     };
 }
 
@@ -331,7 +331,7 @@ namespace ts {
 
         TSCompareOptions&           _opt;
         std::map<PID,PacketCounter> _by_pid {};            // Packet counter per PID.
-        TSFile                      _file {};
+        TSFile                      _file {&_opt};
         TSPacketVector              _packets_buffer {};
         std::vector<PacketData>     _packets_data {};      // One entry per packet at same index in _packets_buffer.
         PacketCounter               _packet_index = 0;     // Index in file of first packet in buffer.
@@ -359,7 +359,7 @@ ts::FileToCompare::FileToCompare(TSCompareOptions& opt, const UString& filename)
     _opt(opt),
     _packets_buffer(_opt.buffered_packets),
     _packets_data(_opt.buffered_packets),
-    _end_of_file(!_file.openRead(filename, 1, _opt.byte_offset, _opt, _opt.format))
+    _end_of_file(!_file.openRead(filename, 1, _opt.byte_offset, _opt.format))
 {
     fillBuffer();
 }
@@ -403,7 +403,7 @@ void ts::FileToCompare::readContiguousPackets()
     // Read up to the end of buffer.
     const size_t start = size_t((_packet_index + _packet_count) % _packets_buffer.size());
     const size_t max_count = std::min(_packets_buffer.size() - size_t(_packet_count), _packets_buffer.size() - start);
-    const size_t count = _file.readPackets(&_packets_buffer[start], nullptr, max_count, _opt);
+    const size_t count = _file.readPackets(&_packets_buffer[start], nullptr, max_count);
     _end_of_file = count < max_count;
     _packet_count += count;
 

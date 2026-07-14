@@ -27,7 +27,7 @@ namespace ts {
     //! Representation of a MPEG PSI/SI descriptors in binary format.
     //! @ingroup libtsduck mpeg
     //!
-    class TSDUCKDLL Descriptor : public DataBlock<8, 8>
+    class TSDUCKDLL Descriptor: public DataBlock<8, 8>
     {
         TS_DEFAULT_ASSIGMENTS(Descriptor);
     public:

@@ -31,6 +31,6 @@ namespace ts {
         virtual PacketProcessStatus processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
-        TSFileOutputArgs _file {false}; // stdout not allowed
+        TSFileOutputArgs _file {this, false}; // stdout not allowed
     };
 }

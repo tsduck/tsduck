@@ -32,7 +32,7 @@ namespace ts {
     //!
     //! @ingroup libtsduck mpeg
     //!
-    class TSDUCKDLL DSMCCExtractor : private SectionHandlerInterface
+    class TSDUCKDLL DSMCCExtractor: private SectionHandlerInterface
     {
         TS_NOCOPY(DSMCCExtractor);
 

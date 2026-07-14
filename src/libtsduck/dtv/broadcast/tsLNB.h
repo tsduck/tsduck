@@ -34,7 +34,7 @@ namespace ts {
     //!
     //! Note: all frequencies are in Hz in parameters.
     //!
-    class TSDUCKDLL LNB : public StringifyInterface
+    class TSDUCKDLL LNB: public StringifyInterface
     {
     public:
         //!

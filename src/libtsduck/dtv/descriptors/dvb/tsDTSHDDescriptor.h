@@ -21,7 +21,7 @@ namespace ts {
     //! @see ETSI EN 300 468, G.3.1.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL DTSHDDescriptor : public AbstractDescriptor
+    class TSDUCKDLL DTSHDDescriptor: public AbstractDescriptor
     {
     public:
         //!

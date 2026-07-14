@@ -24,7 +24,7 @@ namespace ts {
     //! @see ETSI TS 101 812, 10.8.2.
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL IPSignallingDescriptor : public AbstractDescriptor
+    class TSDUCKDLL IPSignallingDescriptor: public AbstractDescriptor
     {
     public:
         // IPSignallingDescriptor public members:

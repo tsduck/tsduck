@@ -25,7 +25,7 @@ namespace ts {
     //! @see ETSI EN 301 192, 8.4.5.13
     //! @ingroup libtsduck descriptor
     //!
-    class TSDUCKDLL TargetIPv6SourceSlashDescriptor : public AbstractDescriptor
+    class TSDUCKDLL TargetIPv6SourceSlashDescriptor: public AbstractDescriptor
     {
     public:
         //!

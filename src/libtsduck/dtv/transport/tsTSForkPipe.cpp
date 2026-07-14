@@ -13,9 +13,15 @@
 // Constructor / destructor
 //----------------------------------------------------------------------------
 
-ts::TSForkPipe::TSForkPipe() :
-    ForkPipe(),
-    TSPacketStream(TSPacketFormat::AUTODETECT, this, this)
+ts::TSForkPipe::TSForkPipe(Report* report, Object* owner) :
+    ForkPipe(report, owner),
+    TSPacketStream(*static_cast<ReporterBase*>(this))
+{
+}
+
+ts::TSForkPipe::TSForkPipe(ReporterBase* delegate, Object* owner) :
+    ForkPipe(delegate, owner),
+    TSPacketStream(*static_cast<ReporterBase*>(this))
 {
 }
 
@@ -28,8 +34,8 @@ ts::TSForkPipe::~TSForkPipe()
 // Create the process, open the optional pipe.
 //----------------------------------------------------------------------------
 
-bool ts::TSForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffer_size, Report& report, OutputMode out_mode, InputMode in_mode, TSPacketFormat format)
+bool ts::TSForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffer_size, OutputMode out_mode, InputMode in_mode, TSPacketFormat format)
 {
-    resetPacketStream(format, this, this);
-    return ForkPipe::open(command, wait_mode, buffer_size, report, out_mode, in_mode);
+    resetPacketStream(format, this);
+    return ForkPipe::open(command, wait_mode, buffer_size, out_mode, in_mode);
 }

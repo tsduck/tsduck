@@ -41,7 +41,7 @@ namespace ts {
     //! All values may be "set" or "unset", depending on command line arguments.
     //! All options for all types of tuners are included here.
     //!
-    class TSDUCKDLL ModulationArgs : public Object, public DisplayInterface
+    class TSDUCKDLL ModulationArgs: public Object, public DisplayInterface
     {
     public:
         //!

@@ -165,7 +165,7 @@ namespace ts {
         //!
         //! A singleton which manages OpenSSL cryptographic providers.
         //!
-        class Providers : public OpenSSL::Controlled
+        class Providers: public OpenSSL::Controlled
         {
             TS_SINGLETON(Providers);
         public:
