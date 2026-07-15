@@ -43,7 +43,11 @@ namespace ts {
 
     //!
     //! Data type for socket descriptors as returned by the socket() system call.
+    //! On Windows, this type is not directly compatible with SysHandleType (file handles are pointers
+    //! while socket descriptors are integer). However, the two are guaranteed to have the same size and
+    //! can be safely converted on some operations.
     //! @ingroup net
+    //! @see SysHandleType
     //!
 #if defined(DOXYGEN)
     using SysSocketType = platform_specific;

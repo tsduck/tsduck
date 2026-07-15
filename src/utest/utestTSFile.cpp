@@ -235,9 +235,11 @@ TSUNIT_DEFINE_TEST(Duck)
     TSUNIT_EQUAL(ts::TimeSource::PCR, mdata.getInputTimeSource());
 
     TSUNIT_EQUAL(0, file.readPackets(&packet, &mdata, 1));
+    TSUNIT_ASSERT(file.endOfStream());
 
     TSUNIT_EQUAL(4, file.readPacketsCount());
     TSUNIT_EQUAL(0, file.readPackets(&packet, &mdata, 1));
+    TSUNIT_ASSERT(file.endOfStream());
     TSUNIT_ASSERT(file.close());
 }
 

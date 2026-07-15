@@ -7,7 +7,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsNonBlockingDevice.h"
-#include "tsSysUtils.h"
+#include "tsIPUtils.h"
 
 
 //----------------------------------------------------------------------------
@@ -71,33 +71,16 @@ bool ts::NonBlockingDevice::checkNonBlocking(IOSB* iosb, const UChar* opname)
 
 
 //----------------------------------------------------------------------------
-// Checks if a system error code is an in-progress/would-block one.
-//----------------------------------------------------------------------------
-
-bool ts::NonBlockingDevice::IsPendingStatus(int err)
-{
-#if defined(TS_WINDOWS)
-    // ERROR_IO_PENDING and WSA_IO_PENDING may be the same.
-    return err == ERROR_IO_PENDING || err == WSA_IO_PENDING;
-#else
-    // Usually EAGAIN and EWOULDBLOCK are the same. They indicate blocking I/O.
-    // EINPROGRESS is usually for connect(). It indicates asynchronous I/O.
-    return err == EAGAIN || err == EWOULDBLOCK || err == EINPROGRESS;
-#endif
-}
-
-
-//----------------------------------------------------------------------------
 // Set a system file or spcket descriptor in non-blocking mode.
 //----------------------------------------------------------------------------
 
-bool ts::NonBlockingDevice::setSystemNonBlocking(SysSocketType fd, bool non_blocking)
+bool ts::NonBlockingDevice::setSystemNonBlocking(SysHandleType fd, bool non_blocking)
 {
 #if defined(TS_UNIX)
 
     int flags = ::fcntl(fd, F_GETFL, 0);
     if (flags == -1) {
-        report().error(u"error getting socket flags: %s", SysErrorCodeMessage());
+        report().error(u"error getting file or socket flags: %s", SysErrorCodeMessage());
         return false;
     }
     if (non_blocking) {
@@ -107,7 +90,7 @@ bool ts::NonBlockingDevice::setSystemNonBlocking(SysSocketType fd, bool non_bloc
         flags &= ~O_NONBLOCK;
     }
     if (::fcntl(fd, F_SETFL, flags) == -1) {
-        report().error(u"error setting socket non-blocking mode: %s", SysErrorCodeMessage());
+        report().error(u"error setting file or socket non-blocking mode: %s", SysErrorCodeMessage());
         return false;
     }
 
@@ -131,6 +114,193 @@ void ts::NonBlockingDevice::IOSB::reset()
 #if defined(TS_WINDOWS)
     TS_ZERO(overlap);
     async_data.reset();
+#endif
+}
+
+
+//----------------------------------------------------------------------------
+// Generic system write operation.
+//----------------------------------------------------------------------------
+
+int ts::NonBlockingDevice::genericSystemWrite(SysHandleType hfd, const void* addr, size_t size, size_t& written_size, NonBlockingDevice::IOSB* iosb)
+{
+    written_size = 0;
+    int err_code = SYS_SUCCESS;
+
+    if (!checkNonBlocking(iosb, u"system write")) {
+        // Not the right blocking mode.
+        return SYS_ERROR;
+    }
+    if (size == 0) {
+        // Trivial case of zero-write.
+        return SYS_SUCCESS;
+    }
+
+#if defined(TS_WINDOWS)
+
+    if (isNonBlocking()) {
+        // On Windows with asynchronous I/O, use overlapped I/O.
+        assert(iosb != nullptr);
+        if (!::WriteFile(hfd, addr, ::DWORD(size), nullptr, &iosb->overlap)) {
+            err_code = TranslateError(::GetLastError());
+        }
+        if (SysSuccess(err_code) || err_code == SYS_PENDING_IO) {
+            iosb->pending = true;
+            err_code = SYS_SUCCESS;
+        }
+    }
+    else {
+        // Blocking I/O: loop until everything is sent.
+        const char* data = reinterpret_cast<const char*>(addr);
+        ::DWORD remain = ::DWORD(size);
+        ::DWORD outsize = 0;
+        while (remain > 0) {
+            if (::WriteFile(hfd, data, remain, &outsize, nullptr) != 0) {
+                // Normal case, some data were written
+                assert(outsize <= remain);
+                data += outsize;
+                remain -= std::max(remain, outsize);
+                written_size += size_t(outsize);
+            }
+            else {
+                // Write error
+                err_code = TranslateError(::GetLastError());
+                break;
+            }
+        }
+    }
+
+#else  // UNIX
+
+    const char* data = reinterpret_cast<const char*>(addr);
+    size_t remain = size;
+    while (remain > 0) {
+        ssize_t outsize = ::write(hfd, data, remain);
+        err_code = TranslateError(errno);
+        if (outsize > 0) {
+            // Normal case, some data were written
+            assert(size_t(outsize) <= remain);
+            data += outsize;
+            remain -= std::max(remain, size_t(outsize));
+            written_size += size_t(outsize);
+            err_code = SYS_SUCCESS;
+        }
+        else if (isNonBlocking() && err_code == SYS_PENDING_IO) {
+            // Non-blocking file with no enough available outgoing buffer space.
+            assert(iosb != nullptr);
+            iosb->pending = true;
+            iosb->sent_size = written_size;
+            err_code = SYS_SUCCESS;
+            break;
+        }
+        else if (err_code != EINTR) {
+            // Actual error (not an interrupt)
+            break;
+        }
+    }
+
+#endif
+
+    if (!SysSuccess(err_code) && err_code != SYS_EOF) {
+        report().error(u"write error: %s", SysErrorCodeMessage(err_code));
+    }
+    return err_code;
+}
+
+
+//----------------------------------------------------------------------------
+// Generic system read operation.
+//----------------------------------------------------------------------------
+
+int ts::NonBlockingDevice::genericSystemRead(SysHandleType hfd, void* addr, size_t max_size, size_t& ret_size, const AbortInterface* abort, NonBlockingDevice::IOSB* iosb)
+{
+    ret_size = 0;
+    int err_code = SYS_SUCCESS;
+
+    if (!checkNonBlocking(iosb, u"system read")) {
+        // Not the right blocking mode.
+        return SYS_ERROR;
+    }
+    if (max_size == 0) {
+        // Trivial case of zero-read.
+        return SYS_SUCCESS;
+    }
+
+#if defined(TS_WINDOWS)
+
+    if (isNonBlocking()) {
+        // On Windows with asynchronous I/O, use overlapped I/O.
+        assert(iosb != nullptr);
+        if (!::ReadFile(hfd, addr, ::DWORD(max_size), nullptr, &iosb->overlap)) {
+            err_code = TranslateError(::GetLastError());
+        }
+        if (SysSuccess(err_code) || err_code == SYS_PENDING_IO) {
+            iosb->pending = true;
+            return SYS_SUCCESS;
+        }
+        else {
+            report().error(u"read error: %s", SysErrorCodeMessage(err_code));
+            return err_code;
+        }
+    }
+    else {
+        // Blocking I/O.
+        ::DWORD insize = 0;
+        if (::ReadFile(hfd, addr, ::DWORD(max_size), &insize, nullptr) != 0) {
+            // Normal case, some data were read.
+            assert(insize <= ::DWORD(max_size));
+            if (insize <= 0) {
+                return SYS_EOF;
+            }
+            else {
+                ret_size = size_t(insize);
+                return SYS_SUCCESS;
+            }
+        }
+        err_code = TranslateError(::GetLastError());
+        if (abort != nullptr && abort->aborting()) {
+            // User-interrupt, end of processing but no error message
+            return SYS_CANCELED;
+        }
+        if (err_code != SYS_EOF) {
+            // End of file is not a real "error", no error message.
+            report().error(u"error reading from pipe: %s", SysErrorCodeMessage(err_code));
+        }
+        return err_code;
+    }
+
+#else  // UNIX
+
+    for (;;) {
+        const ssize_t insize = ::read(hfd, addr, max_size);
+        err_code = TranslateError(errno);
+        if (insize == 0) {
+            // End of file.
+            return SYS_EOF;
+        }
+        else if (insize > 0) {
+            // Normal case, some data were read.
+            assert(size_t(insize) <= max_size);
+            ret_size = size_t(insize);
+            return SYS_SUCCESS;
+        }
+        else if (abort != nullptr && abort->aborting()) {
+            // User-interrupt, end of processing but no error message
+            return SYS_CANCELED;
+        }
+        else if (isNonBlocking() && err_code == SYS_PENDING_IO) {
+            // Non-blocking file with no immediately available data to read.
+            assert(iosb != nullptr);
+            iosb->pending = true;
+            return SYS_SUCCESS;
+        }
+        else if (err_code != EINTR) {
+            // Actual error (not an interrupt)
+            report().error(u"error reading from pipe: %s", SysErrorCodeMessage(err_code));
+            return err_code;
+        }
+    }
+
 #endif
 }
 

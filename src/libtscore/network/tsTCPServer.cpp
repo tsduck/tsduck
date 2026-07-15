@@ -110,9 +110,11 @@ bool ts::TCPServer::accept(TCPConnection& client, IPSocketAddress& client_addres
         // explicitely set. On macOS, it seems to be in non-blocking mode, although not documented. On Windows,
         // all sockets have the "overlapped" capability by default, they do not use non-blocking mode. Let's force
         // non-blocking mode on all operating systems when the server is also in that mode. At worse, it does nothing.
+#if defined(TS_UNIX)
         if (isNonBlocking() && !setSystemNonBlocking(client_sock, true)) {
             return false;
         }
+#endif
 
         // Initialize the client socket.
         client.declareOpened(client_sock);

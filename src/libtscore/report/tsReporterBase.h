@@ -87,4 +87,16 @@ namespace ts {
         Report*       _report = nullptr;
         bool          _mute = false;
     };
+
+    //!
+    //! Fully typed null pointer for Report.
+    //! Typically used in overloaded contructors using Report* and ReporterBase* parameters.
+    //! 
+    constexpr Report* ReportNullPtr = nullptr;
+
+    //!
+    //! Fully typed null pointer for ReporterBase.
+    //! Typically used in overloaded contructors using Report* and ReporterBase* parameters.
+    //!
+    constexpr ReporterBase* ReporterBaseNullPtr = nullptr;
 }

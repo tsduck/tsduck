@@ -103,6 +103,14 @@ namespace ts {
     constexpr int SYS_REJECTED = -4;
 
     //!
+    //! A synthetic error code value which means "I/O not completed".
+    //! This value is not a valid error code on any operating system.
+    //! On UNIX systems, it means "non-blocking I/O not started".
+    //! On Windows systems, it means "asynchronous I/O in progress".
+    //!
+    constexpr int SYS_PENDING_IO = -5;
+
+    //!
     //! Translate an error code, mapping to some portable code.
     //! All successful status are translated into SYS_SUCCESS.
     //! Cancelation and end-of-file conditions are translated into SYS_CANCELED and SYS_EOF.
@@ -130,6 +138,31 @@ namespace ts {
     //! @return A string describing the error.
     //!
     TSCOREDLL std::string SysErrorCodeMessage(int code = LastSysErrorCode(), const std::error_category* category = nullptr);
+
+    //!
+    //! Data type for system file or device handler or descriptor.
+    //! @ingroup system
+    //! @see SysSocketType
+    //!
+    #if defined(DOXYGEN)
+        using SysHandleType = platform_specific;
+    #elif defined(TS_WINDOWS)
+        using SysHandleType = ::HANDLE;
+    #elif defined(TS_UNIX)
+        using SysHandleType = int;
+    #endif
+
+    //!
+    //! Value of type SysHandleType which is invalid.
+    //! @ingroup system
+    //!
+    #if defined(DOXYGEN)
+        constexpr SysHandleType SYS_HANDLE_INVALID = platform_specific;
+    #elif defined(TS_WINDOWS)
+        constexpr SysHandleType SYS_HANDLE_INVALID = nullptr;
+    #elif defined(TS_UNIX)
+        constexpr SysHandleType SYS_HANDLE_INVALID = -1;
+    #endif
 
     //!
     //! Portable type for ioctl() request parameter.

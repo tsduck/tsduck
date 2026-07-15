@@ -177,17 +177,11 @@ namespace ts {
         bool          _rewindable = false;   // Opened in rewindable mode
         bool          _regular = false;      // Is a regular file (ie. not a pipe or special device)
         bool          _std_inout = false;    // File is standard input or output.
-#if defined(TS_WINDOWS)
-        ::HANDLE      _handle = nullptr;
-#else
-        int           _fd = -1;
-#endif
+        SysHandleType _hfd = SYS_HANDLE_INVALID;  // File handle / file descriptor.
+
         // Common code.
         bool openInternal(bool reopen);
         bool seekByteInternal(uint64_t byte_index);
-
-        // Read once, possibly set _at_eof.
-        bool readOnce(void* addr, size_t max_size, size_t& ret_size, const AbortInterface* abort, IOSB* iosb);
 
         // Check if seek is possible. Called during open to see if we can reach the start point.
         bool initialSeekCheck();

@@ -73,12 +73,25 @@ int ts::TranslateError(int code)
     if (code == ERROR_OPERATION_ABORTED) {
         return SYS_CANCELED;
     }
-    else if (code == WSAECONNRESET || code == WSAEDISCON || code == ERROR_HANDLE_EOF || code == ERROR_BROKEN_PIPE) {
+    else if (code == WSAECONNRESET || code == WSAEDISCON || code == ERROR_HANDLE_EOF || code == ERROR_BROKEN_PIPE || code == ERROR_NO_DATA) {
+        // Various types of "end of file", or "end of communication" when the partner disconnected or broke.
+        // ERROR_NO_DATA (= 232) means "the pipe is being closed". It is returned when a pipe is closing.
         return SYS_EOF;
+    }
+    else if (code == ERROR_IO_PENDING || code == WSA_IO_PENDING) {
+        // ERROR_IO_PENDING and WSA_IO_PENDING may be the same.
+        return SYS_PENDING_IO;
     }
 #else
     if (code == EPIPE) {
+        // UNIX has no real errno for eof, read() returns zero.
+        // Broken pipe is the only explicit eof status.
         return SYS_EOF;
+    }
+    else if (code == EAGAIN || code == EWOULDBLOCK || code == EINPROGRESS) {
+        // Usually EAGAIN and EWOULDBLOCK are the same. They indicate blocking I/O.
+        // EINPROGRESS is usually for connect(). It indicates asynchronous I/O.
+        return SYS_PENDING_IO;
     }
 #endif
 
@@ -96,11 +109,12 @@ std::string ts::SysErrorCodeMessage(int code, const std::error_category* categor
     // With the default category, try the synthetic code first.
     if (category == nullptr) {
         switch (code) {
-            case SYS_SUCCESS:  return "success";
-            case SYS_ERROR:    return "unknown error";
-            case SYS_CANCELED: return "canceled";
-            case SYS_EOF:      return "end of file";
-            case SYS_REJECTED: return "rejected";
+            case SYS_SUCCESS:    return "success";
+            case SYS_ERROR:      return "unknown error";
+            case SYS_CANCELED:   return "canceled";
+            case SYS_EOF:        return "end of file";
+            case SYS_REJECTED:   return "rejected";
+            case SYS_PENDING_IO: return "pending I/O";
             default: break;
         }
     }

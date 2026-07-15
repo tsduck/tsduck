@@ -192,12 +192,11 @@ namespace ts {
         bool          _ignore_abort = false;     // Ignore early termination of child process.
         volatile bool _broken_pipe = false;      // Pipe is broken, do not attempt to write.
         volatile bool _eof = false;              // Got end of file on input pipe.
+        SysHandleType _hfd = SYS_HANDLE_INVALID; // Pipe input or output handle / file descriptor.
 #if defined(TS_WINDOWS)
-        ::HANDLE      _handle = nullptr;         // Pipe input or output handle.
         ::HANDLE      _process = nullptr;        // Handle to child process.
 #else
         ::pid_t       _fpid = 0;                 // Forked process id (UNIX PID, not MPEG PID!)
-        int           _fd = -1;                  // Pipe input or output file descriptor.
 #endif
     };
 }

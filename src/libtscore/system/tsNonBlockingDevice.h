@@ -13,7 +13,7 @@
 
 #pragma once
 #include "tsReporterBase.h"
-#include "tsIPUtils.h"
+#include "tsAbortInterface.h"
 #include "tsSysUtils.h"
 
 namespace ts {
@@ -122,7 +122,7 @@ namespace ts {
         //! @param [in] error_code System error code.
         //! @return True if @a error_code is an in-progress/would-block one.
         //!
-        static bool IsPendingStatus(int error_code);
+        static inline bool IsPendingStatus(int error_code) { return TranslateError(error_code) == SYS_PENDING_IO; }
 
         //!
         //! This structure indicates the status of a non-blocking I/O.
@@ -276,7 +276,40 @@ namespace ts {
         //!
         //! @see https://learn.microsoft.com/en-us/archive/blogs/csliu/io-concept-blockingnon-blocking-vs-syncasync
         //!
-        bool setSystemNonBlocking(SysSocketType fd, bool non_blocking);
+        bool setSystemNonBlocking(SysHandleType fd, bool non_blocking);
+
+        //!
+        //! Generic system write operation.
+        //! This is a convenience method which can be used (or not) by subclasses when the system calls
+        //! write() (UNIX) or WriteFile() (Windows) are appropriate.
+        //! @param [in] hfd System handle or file descriptor.
+        //! @param [in] addr Address of the data to write.
+        //! @param [in] size Size in bytes of the data to write.
+        //! @param [out] written_size Actually written size in bytes.
+        //! Can be less than @a size in case of error in the middle of the write.
+        //! @param [in,out] iosb Address of an IOSB structure. If non-null, the stream must be in non-blocking mode.
+        //! When null, the stream must be in blocking mode (the default). See the description of ts::NonBlockingDevice::IOSB.
+        //! @return Error code. When the I/O is non-blocking/asynchronous and pending, return SYS_SUCCESS and iosb->pending is true.
+        //! Return SYS_EOF when it is no longer possible to write (e.g. broken pipe).
+        //!
+        int genericSystemWrite(SysHandleType hfd, const void* addr, size_t size, size_t& written_size, NonBlockingDevice::IOSB* iosb);
+
+        //!
+        //! Generic system read operation.
+        //! This is a convenience method which can be used (or not) by subclasses when the system calls
+        //! read() (UNIX) or ReadFile() (Windows) are appropriate.
+        //! @param [in] hfd System handle or file descriptor.
+        //! @param [out] addr Address of the buffer for the incoming data.
+        //! @param [in] max_size Maximum size in bytes of the buffer.
+        //! @param [out] ret_size Returned input size in bytes.
+        //! If zero, end of file has been reached or an error occurred.
+        //! @param [in] abort If non-zero, invoked when I/O is interrupted (in case of user-interrupt, return, otherwise retry).
+        //! @param [in,out] iosb Address of an IOSB structure. If non-null, the stream must be in non-blocking mode.
+        //! When null, the stream must be in blocking mode (the default). See the description of ts::NonBlockingDevice::IOSB.
+        //! @return Error code. When the I/O is non-blocking/asynchronous and pending, return SYS_SUCCESS and iosb->pending is true.
+        //! Return SYS_EOF when it is no longer possible to read.
+        //!
+        int genericSystemRead(SysHandleType hfd, void* addr, size_t max_size, size_t& ret_size, const AbortInterface* abort, NonBlockingDevice::IOSB* iosb);
 
     private:
         bool _is_non_blocking;
