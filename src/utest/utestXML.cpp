@@ -50,7 +50,7 @@ public:
     virtual void afterTest() override;
 
 private:
-    fs::path _tempFileName {};
+    fs::path _temp_file_name {};
     ts::Report& report();
 };
 
@@ -64,16 +64,16 @@ TSUNIT_REGISTER(XMLTest);
 // Test suite initialization method.
 void XMLTest::beforeTest()
 {
-    if (_tempFileName.empty()) {
-        _tempFileName = ts::TempFile(u".tmp.xml");
+    if (_temp_file_name.empty()) {
+        _temp_file_name = ts::TempFile(u".tmp.xml");
     }
-    fs::remove(_tempFileName, &ts::ErrCodeReport());
+    fs::remove(_temp_file_name, &ts::ErrCodeReport());
 }
 
 // Test suite cleanup method.
 void XMLTest::afterTest()
 {
-    fs::remove(_tempFileName, &ts::ErrCodeReport());
+    fs::remove(_temp_file_name, &ts::ErrCodeReport());
 }
 
 ts::Report& XMLTest::report()
@@ -196,10 +196,10 @@ TSUNIT_DEFINE_TEST(FileBOM)
     const ts::UString childText1(u"\n    f<>\n  ");
     const ts::UString childText2(u"f<>");
 
-    TSUNIT_ASSERT(fileData.saveToFile(_tempFileName, &report()));
+    TSUNIT_ASSERT(fileData.saveToFile(_temp_file_name, &report()));
 
     ts::xml::Document doc(report());
-    TSUNIT_ASSERT(doc.load(_tempFileName));
+    TSUNIT_ASSERT(doc.load(_temp_file_name));
 
     ts::xml::Element* root = doc.rootElement();
     TSUNIT_EQUAL(2, doc.childrenCount());
@@ -215,7 +215,7 @@ TSUNIT_DEFINE_TEST(FileBOM)
     TSUNIT_EQUAL(childText1, elem->text(false));
     TSUNIT_EQUAL(childText2, elem->text(true));
 
-    TSUNIT_ASSERT(fs::remove(_tempFileName, &ts::ErrCodeReport(CERR, u"error deleting", _tempFileName)));
+    TSUNIT_ASSERT(fs::remove(_temp_file_name, &ts::ErrCodeReport(CERR, u"error deleting", _temp_file_name)));
 }
 
 TSUNIT_DEFINE_TEST(Validation)

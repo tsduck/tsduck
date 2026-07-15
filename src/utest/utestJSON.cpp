@@ -45,10 +45,10 @@ public:
     virtual void afterTest() override;
 
 private:
-    fs::path _tempFileName {};
+    fs::path _temp_file_name {};
 
     static ts::UString LoadFile(const ts::UString& filename);
-    ts::UString loadTempFile() const { return LoadFile(_tempFileName); }
+    ts::UString loadTempFile() const { return LoadFile(_temp_file_name); }
 };
 
 TSUNIT_REGISTER(JsonTest);
@@ -61,16 +61,16 @@ TSUNIT_REGISTER(JsonTest);
 // Test suite initialization method.
 void JsonTest::beforeTest()
 {
-    if (_tempFileName.empty()) {
-        _tempFileName = ts::TempFile(u".tmp.json");
+    if (_temp_file_name.empty()) {
+        _temp_file_name = ts::TempFile(u".tmp.json");
     }
-    fs::remove(_tempFileName, &ts::ErrCodeReport());
+    fs::remove(_temp_file_name, &ts::ErrCodeReport());
 }
 
 // Test suite cleanup method.
 void JsonTest::afterTest()
 {
-    fs::remove(_tempFileName, &ts::ErrCodeReport());
+    fs::remove(_temp_file_name, &ts::ErrCodeReport());
 }
 
 // Load the content of a text file.
@@ -762,8 +762,8 @@ TSUNIT_DEFINE_TEST(RunningDocumentEmpty)
 {
     ts::json::RunningDocument doc(CERR);
 
-    TSUNIT_ASSERT(!fs::exists(_tempFileName));
-    TSUNIT_ASSERT(doc.open(ts::json::ValuePtr(), _tempFileName));
+    TSUNIT_ASSERT(!fs::exists(_temp_file_name));
+    TSUNIT_ASSERT(doc.open(ts::json::ValuePtr(), _temp_file_name));
 
     doc.add(ts::json::String(u"foo"));
     doc.add(ts::json::Number(-23));
@@ -772,7 +772,7 @@ TSUNIT_DEFINE_TEST(RunningDocumentEmpty)
     doc.add(obj1);
     doc.close();
 
-    TSUNIT_ASSERT(fs::exists(_tempFileName));
+    TSUNIT_ASSERT(fs::exists(_temp_file_name));
     TSUNIT_EQUAL(u"[\n"
                  u"  \"foo\",\n"
                  u"  -23,\n"
@@ -797,8 +797,8 @@ TSUNIT_DEFINE_TEST(RunningDocument)
     root->query(u"init_obj2.subobj4", true).add(u"val5", u"zeval5");
     root->query(u"init_obj3.subobj5", true).add(u"val6", u"zeval6");
 
-    TSUNIT_ASSERT(!fs::exists(_tempFileName));
-    TSUNIT_ASSERT(doc.open(root, _tempFileName));
+    TSUNIT_ASSERT(!fs::exists(_temp_file_name));
+    TSUNIT_ASSERT(doc.open(root, _temp_file_name));
 
     doc.add(ts::json::String(u"foo"));
     doc.add(ts::json::Number(-23));
@@ -807,7 +807,7 @@ TSUNIT_DEFINE_TEST(RunningDocument)
     doc.add(obj1);
     doc.close();
 
-    TSUNIT_ASSERT(fs::exists(_tempFileName));
+    TSUNIT_ASSERT(fs::exists(_temp_file_name));
     TSUNIT_EQUAL(u"{\n"
                  u"  \"init_obj1\": {\n"
                  u"    \"subobj1\": {\n"

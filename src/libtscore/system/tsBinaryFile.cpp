@@ -48,6 +48,17 @@ ts::BinaryFile::~BinaryFile()
 
 
 //----------------------------------------------------------------------------
+// Check that the non-blocking mode can be set.
+//----------------------------------------------------------------------------
+
+bool ts::BinaryFile::allowSetNonBlocking() const
+{
+    // Cannot change the blocking mode after open.
+    return !isOpen();
+}
+
+
+//----------------------------------------------------------------------------
 // Get the file name as a display string.
 //----------------------------------------------------------------------------
 
@@ -384,6 +395,7 @@ bool ts::BinaryFile::initialSeekCheck()
 // Rewind to specified start offset plus specified index.
 //----------------------------------------------------------------------------
 
+// Public version, check that the file rewindable.
 bool ts::BinaryFile::seekByte(uint64_t index)
 {
     if (!_is_open) {
@@ -394,7 +406,14 @@ bool ts::BinaryFile::seekByte(uint64_t index)
         report().error(u"file %s is not rewindable", getDisplayFileName());
         return false;
     }
+    else {
+        return seekByteInternal(index);
+    }
+}
 
+// Internal version, technical seek.
+bool ts::BinaryFile::seekByteInternal(uint64_t index)
+{
     // If seeking at the beginning and REOPEN is set, close and reopen the file.
     if (index == 0 && (_flags & REOPEN) != 0) {
         return openInternal(true);
@@ -481,14 +500,24 @@ bool ts::BinaryFile::readStream(void* buffer, size_t request_size, size_t& read_
         // Trivial case, successfully read zero bytes.
         return true;
     }
-    if (_at_eof) {
-        // We are at eof for this iteration, but more are allowed. Rewind the file.
-        if (!rewind()) {
-            return false;
-        }
-        _input_counter++;
-    }
 
+    // Try to read once.
+    bool ok = readOnce(buffer, request_size, read_size, abort, iosb);
+
+    // If we are at eof, rewind and retry.
+    if (!ok && _at_eof && (_repeat_input == 0 || ++_input_counter < _repeat_input)) {
+        ok = seekByteInternal(0) && readOnce(buffer, request_size, read_size, abort, iosb);
+    }
+    return ok;
+}
+
+
+//----------------------------------------------------------------------------
+// Read once, possibly set _at_eof.
+//----------------------------------------------------------------------------
+
+bool ts::BinaryFile::readOnce(void* buffer, size_t request_size, size_t& read_size, const AbortInterface* abort, IOSB* iosb)
+{
 #if defined(TS_WINDOWS)
 
     //@@@ Asynchronous I/O
@@ -505,7 +534,7 @@ bool ts::BinaryFile::readStream(void* buffer, size_t request_size, size_t& read_
     else {
         // Error case.
         const int errcode = LastSysErrorCode();
-        _at_eof = _at_eof || errcode == ERROR_HANDLE_EOF || errcode == ERROR_BROKEN_PIPE;
+        _at_eof = _at_eof || TranslateError(errcode) == SYS_EOF;
         if (!_at_eof) {
             // Actual error, not an EOF.
             report().error(u"error reading from %s: %s", getDisplayFileName(), SysErrorCodeMessage(errcode));

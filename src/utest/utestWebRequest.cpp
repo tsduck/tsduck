@@ -43,7 +43,7 @@ public:
     virtual void afterTest() override;
 
 private:
-    fs::path _tempFileName {};
+    fs::path _temp_file_name {};
     ts::Report& report();
     void testURL(const ts::UString& url, bool expectRedirection, bool expectSSL, bool expectTextContent, bool expectInvariant);
 };
@@ -58,16 +58,16 @@ TSUNIT_REGISTER(WebRequestTest);
 // Test suite initialization method.
 void WebRequestTest::beforeTest()
 {
-    if (_tempFileName.empty()) {
-        _tempFileName = ts::TempFile();
+    if (_temp_file_name.empty()) {
+        _temp_file_name = ts::TempFile();
     }
-    fs::remove(_tempFileName, &ts::ErrCodeReport());
+    fs::remove(_temp_file_name, &ts::ErrCodeReport());
 }
 
 // Test suite cleanup method.
 void WebRequestTest::afterTest()
 {
-    fs::remove(_tempFileName, &ts::ErrCodeReport());
+    fs::remove(_temp_file_name, &ts::ErrCodeReport());
 }
 
 ts::Report& WebRequestTest::report()
@@ -131,9 +131,9 @@ void WebRequestTest::testURL(const ts::UString& url, bool expectRedirection, boo
     }
 
     // Test file download
-    TSUNIT_ASSERT(!fs::exists(_tempFileName));
-    TSUNIT_ASSERT(request.downloadFile(url, _tempFileName));
-    TSUNIT_ASSERT(fs::exists(_tempFileName));
+    TSUNIT_ASSERT(!fs::exists(_temp_file_name));
+    TSUNIT_ASSERT(request.downloadFile(url, _temp_file_name));
+    TSUNIT_ASSERT(fs::exists(_temp_file_name));
     TSUNIT_EQUAL(url, request.originalURL());
     TSUNIT_ASSERT(!request.finalURL().empty());
     if (expectRedirection) {
@@ -145,7 +145,7 @@ void WebRequestTest::testURL(const ts::UString& url, bool expectRedirection, boo
 
     // Load downloaded file.
     ts::ByteBlock fileContent;
-    TSUNIT_ASSERT(fileContent.loadFromFile(_tempFileName, 10000000, &report()));
+    TSUNIT_ASSERT(fileContent.loadFromFile(_temp_file_name, 10000000, &report()));
     debug() << "WebRequestTest::testURL: downloaded file size: " << fileContent.size() << std::endl;
     TSUNIT_ASSERT(!fileContent.empty());
     if (expectInvariant) {

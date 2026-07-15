@@ -73,7 +73,7 @@ int ts::TranslateError(int code)
     if (code == ERROR_OPERATION_ABORTED) {
         return SYS_CANCELED;
     }
-    else if (code == WSAECONNRESET || code == WSAEDISCON) {
+    else if (code == WSAECONNRESET || code == WSAEDISCON || code == ERROR_HANDLE_EOF || code == ERROR_BROKEN_PIPE) {
         return SYS_EOF;
     }
 #else

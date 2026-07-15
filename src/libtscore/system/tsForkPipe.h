@@ -108,47 +108,32 @@ namespace ts {
         //! Check if the process is running and the pipe is open (when used).
         //! @return True if the process is running and the pipe is open.
         //!
-        bool isOpen() const
-        {
-            return _is_open;
-        }
+        bool isOpen() const { return _is_open; }
 
         //!
         //! Check if the pipe was broken.
         //! @return True if was broken (unexpected process termination for instance).
         //!
-        bool isBroken() const
-        {
-            return _broken_pipe;
-        }
+        bool isBroken() const { return _broken_pipe; }
 
         //!
         //! Check if synchronous mode is active (ie. will wait for process termination).
         //! @return True if synchronous mode is active.
         //!
-        bool isSynchronous() const
-        {
-            return _wait_mode == SYNCHRONOUS;
-        }
+        bool isSynchronous() const { return _wait_mode == SYNCHRONOUS; }
 
         //!
         //! Set "ignore abort".
         //! @param [in] on If true and the process aborts, do not report error when writing data.
         //! when writing data.
         //!
-        void setIgnoreAbort(bool on)
-        {
-            _ignore_abort = on;
-        }
+        void setIgnoreAbort(bool on) { _ignore_abort = on; }
 
         //!
         //! Get "ignore abort".
         //! @return True if, when the process aborts, do not report error when writing data.
         //!
-        bool getIgnoreAbort() const
-        {
-            return _ignore_abort;
-        }
+        bool getIgnoreAbort() const { return _ignore_abort; }
 
         //!
         //! Abort any currenly input/output operation in the pipe.
@@ -192,6 +177,10 @@ namespace ts {
         virtual bool readStream(void* addr, size_t max_size, size_t& ret_size, const AbortInterface* abort = nullptr, IOSB* iosb = nullptr) override;
         virtual bool writeStream(const void* addr, size_t size, size_t& written_size, IOSB* iosb = nullptr) override;
 
+    protected:
+        // Overloaded methods.
+        virtual bool allowSetNonBlocking() const override;
+
     private:
         InputMode     _in_mode = STDIN_PIPE;     // Input mode for the created process.
         OutputMode    _out_mode = KEEP_BOTH;     // Output mode for the created process.
@@ -204,11 +193,11 @@ namespace ts {
         volatile bool _broken_pipe = false;      // Pipe is broken, do not attempt to write.
         volatile bool _eof = false;              // Got end of file on input pipe.
 #if defined(TS_WINDOWS)
-        ::HANDLE      _handle = nullptr;         // Pipe output handle.
+        ::HANDLE      _handle = nullptr;         // Pipe input or output handle.
         ::HANDLE      _process = nullptr;        // Handle to child process.
 #else
         ::pid_t       _fpid = 0;                 // Forked process id (UNIX PID, not MPEG PID!)
-        int           _fd = -1;                  // Pipe output file descriptor.
+        int           _fd = -1;                  // Pipe input or output file descriptor.
 #endif
     };
 }

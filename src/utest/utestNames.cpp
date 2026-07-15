@@ -86,7 +86,7 @@ public:
     virtual void afterTest() override;
 
 private:
-    fs::path _tempFileName {};
+    fs::path _temp_file_name {};
 };
 
 TSUNIT_REGISTER(NamesTest);
@@ -99,14 +99,14 @@ TSUNIT_REGISTER(NamesTest);
 // Test suite initialization method.
 void NamesTest::beforeTest()
 {
-    _tempFileName = ts::TempFile(u".names");
-    fs::remove(_tempFileName, &ts::ErrCodeReport());
+    _temp_file_name = ts::TempFile(u".names");
+    fs::remove(_temp_file_name, &ts::ErrCodeReport());
 }
 
 // Test suite cleanup method.
 void NamesTest::afterTest()
 {
-    fs::remove(_tempFileName, &ts::ErrCodeReport());
+    fs::remove(_temp_file_name, &ts::ErrCodeReport());
 }
 
 
@@ -578,9 +578,9 @@ TSUNIT_DEFINE_TEST(Inheritance)
         u"Bits = 8",
         u"Inherit = level2",
         u"3 = value3",
-    }), _tempFileName));
+    }), _temp_file_name));
 
-    ts::NamesPtr sec = ts::Names::GetSection(_tempFileName, u"level3", false);
+    ts::NamesPtr sec = ts::Names::GetSection(_temp_file_name, u"level3", false);
     TSUNIT_ASSERT(sec != nullptr);
 
     TSUNIT_ASSERT(sec->contains(3));
@@ -623,11 +623,11 @@ TSUNIT_DEFINE_TEST(Inheritance)
 TSUNIT_DEFINE_TEST(Extension)
 {
     // Create a temporary names file.
-    debug() << "NamesTest::testExtension: extension file: " << _tempFileName << std::endl;
-    TSUNIT_ASSERT(ts::UString::Save(ts::UStringVector({u"[CASystemId]", u"0xF123 = test-cas"}), _tempFileName));
+    debug() << "NamesTest::testExtension: extension file: " << _temp_file_name << std::endl;
+    TSUNIT_ASSERT(ts::UString::Save(ts::UStringVector({u"[CASystemId]", u"0xF123 = test-cas"}), _temp_file_name));
 
     ts::DuckContext duck;
     TSUNIT_EQUAL(u"unknown (0xF123)", ts::CASIdName(duck, 0xF123));
-    ts::Names::RegisterExtensionFile reg(_tempFileName);
+    ts::Names::RegisterExtensionFile reg(_temp_file_name);
     TSUNIT_EQUAL(u"test-cas", ts::CASIdName(duck, 0xF123));
 }

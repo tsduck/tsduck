@@ -14,12 +14,12 @@
 //----------------------------------------------------------------------------
 
 ts::ForkPipeOutputStream::ForkPipeOutputStream(Report* report, Object* owner) :
-    ForkPipe(report, owner)
+    ForkPipe(report, false, owner)
 {
 }
 
 ts::ForkPipeOutputStream::ForkPipeOutputStream(ReporterBase* delegate, Object* owner) :
-    ForkPipe(delegate, owner)
+    ForkPipe(delegate, false, owner)
 {
 }
 

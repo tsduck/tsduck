@@ -15,6 +15,7 @@
 
 #pragma once
 #include "tsTCPSocket.h"
+#include "tsSocketOp.h"
 #include "tsAbortInterface.h"
 
 namespace ts {
@@ -232,9 +233,9 @@ namespace ts {
 
 #if defined(TS_WINDOWS)
         // For Windows asynchronous I/O, we need to keep parameter in one single structure which lives during the I/O.
-        class TSCOREDLL AsyncBuffers: public Object
+        class TSCOREDLL TCPAsyncBuffers: public Object
         {
-            TS_NOBUILD_NOCOPY(AsyncBuffers);
+            TS_NOBUILD_NOCOPY(TCPAsyncBuffers);
         public:
             SocketOp type;                    // Operation type, for debug purpose.
             ::WSABUF buf {};                  // Pointer to user's buffer (send/receive).
@@ -243,8 +244,8 @@ namespace ts {
             int peer_sock_len = 0;            // Actual length of peer_socket.
 
             // Constructor and destructor.
-            AsyncBuffers(SocketOp op) : type(op) {}
-            virtual ~AsyncBuffers() override;
+            TCPAsyncBuffers(SocketOp op) : type(op) {}
+            virtual ~TCPAsyncBuffers() override;
         };
 #endif
     };

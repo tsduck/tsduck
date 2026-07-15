@@ -134,7 +134,7 @@ bool ts::TCPConnection::send(const void* buffer, size_t size, IOSB* iosb)
         assert(iosb != nullptr);
 
         // The reception parameters are stored in the IOSB.
-        auto params = std::make_shared<AsyncBuffers>(SocketOp::SEND);
+        auto params = std::make_shared<TCPAsyncBuffers>(SocketOp::SEND);
         TS_ZERO(params->buf);
         params->buf.buf = reinterpret_cast<CHAR*>(const_cast<void*>(buffer));
         params->buf.len = ::ULONG(size);
@@ -211,7 +211,7 @@ bool ts::TCPConnection::receive(void* data, size_t max_size, size_t& ret_size, c
         assert(iosb != nullptr);
 
         // The reception parameters are stored in the IOSB.
-        auto params = std::make_shared<AsyncBuffers>(SocketOp::RECEIVE);
+        auto params = std::make_shared<TCPAsyncBuffers>(SocketOp::RECEIVE);
         TS_ZERO(params->buf);
         params->buf.buf = reinterpret_cast<CHAR*>(data);
         params->buf.len = ::ULONG(max_size);
@@ -347,7 +347,7 @@ bool ts::TCPConnection::connect(const IPSocketAddress& addr, IOSB* iosb)
         }
 
         // The reception parameters are stored in the IOSB.
-        auto params = std::make_shared<AsyncBuffers>(SocketOp::CONNECT);
+        auto params = std::make_shared<TCPAsyncBuffers>(SocketOp::CONNECT);
         TS_ZERO(params->peer_sock);
         params->peer_sock_len = int(server_addr.get(params->peer_sock));
         iosb->async_data = params;
@@ -408,9 +408,9 @@ bool ts::TCPConnection::setConnectStatus(IOSB* iosb, int error_code)
 {
 #if defined(TS_WINDOWS)
 
-    std::shared_ptr<AsyncBuffers> params;
+    std::shared_ptr<TCPAsyncBuffers> params;
     if (iosb != nullptr) {
-        params = std::dynamic_pointer_cast<AsyncBuffers>(iosb->async_data);
+        params = std::dynamic_pointer_cast<TCPAsyncBuffers>(iosb->async_data);
     }
     if (params == nullptr) {
         report().error(u"asynchronous I/O not used");
@@ -488,7 +488,7 @@ bool ts::TCPConnection::disconnect(bool silent)
 #if defined(TS_WINDOWS)
 
 // Virtual destructor.
-ts::TCPConnection::AsyncBuffers::~AsyncBuffers()
+ts::TCPConnection::TCPAsyncBuffers::~TCPAsyncBuffers()
 {
 }
 

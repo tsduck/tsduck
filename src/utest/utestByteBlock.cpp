@@ -32,7 +32,7 @@ public:
     virtual void afterTest() override;
 
 private:
-    fs::path _tempFileName {};
+    fs::path _temp_file_name {};
 };
 
 TSUNIT_REGISTER(ByteBlockTest);
@@ -45,16 +45,16 @@ TSUNIT_REGISTER(ByteBlockTest);
 // Test initialization method.
 void ByteBlockTest::beforeTest()
 {
-    if (_tempFileName.empty()) {
-        _tempFileName = ts::TempFile(u".tmp.xml");
+    if (_temp_file_name.empty()) {
+        _temp_file_name = ts::TempFile(u".tmp.xml");
     }
-    fs::remove(_tempFileName, &ts::ErrCodeReport());
+    fs::remove(_temp_file_name, &ts::ErrCodeReport());
 }
 
 // Test cleanup method.
 void ByteBlockTest::afterTest()
 {
-    fs::remove(_tempFileName, &ts::ErrCodeReport());
+    fs::remove(_temp_file_name, &ts::ErrCodeReport());
 }
 
 
@@ -255,10 +255,10 @@ TSUNIT_DEFINE_TEST(File)
     });
 
     TSUNIT_EQUAL(999, bb.size());
-    TSUNIT_ASSERT(bb.saveToFile(_tempFileName));
+    TSUNIT_ASSERT(bb.saveToFile(_temp_file_name));
 
     ts::ByteBlock bb1;
-    TSUNIT_ASSERT(bb1.loadFromFile(_tempFileName));
+    TSUNIT_ASSERT(bb1.loadFromFile(_temp_file_name));
 
     TSUNIT_EQUAL(999, bb1.size());
     TSUNIT_ASSERT(bb1 == bb);

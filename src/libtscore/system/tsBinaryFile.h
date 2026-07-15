@@ -21,7 +21,7 @@ namespace ts {
     //! Binary stream file, with optional asynchronous I/O.
     //! @ingroup libtsduck mpeg
     //!
-    class TSDUCKDLL BinaryFile: public NonBlockingDevice, public AbstractStream
+    class TSCOREDLL BinaryFile: public NonBlockingDevice, public AbstractStream
     {
         TS_NOBUILD_NOCOPY(BinaryFile);
     public:
@@ -161,6 +161,10 @@ namespace ts {
         virtual bool readStream(void* addr, size_t max_size, size_t& ret_size, const AbortInterface* abort = nullptr, IOSB* iosb = nullptr) override;
         virtual bool writeStream(const void* addr, size_t size, size_t& written_size, IOSB* iosb = nullptr) override;
 
+    protected:
+        // Overloaded methods.
+        virtual bool allowSetNonBlocking() const override;
+
     private:
         fs::path      _filename {};          // Input file name.
         size_t        _repeat_input = 0;     // Repeat count (0 means infinite)
@@ -178,8 +182,12 @@ namespace ts {
 #else
         int           _fd = -1;
 #endif
-        // Comme open code.
+        // Common code.
         bool openInternal(bool reopen);
+        bool seekByteInternal(uint64_t byte_index);
+
+        // Read once, possibly set _at_eof.
+        bool readOnce(void* addr, size_t max_size, size_t& ret_size, const AbortInterface* abort, IOSB* iosb);
 
         // Check if seek is possible. Called during open to see if we can reach the start point.
         bool initialSeekCheck();

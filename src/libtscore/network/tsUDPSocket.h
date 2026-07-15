@@ -440,9 +440,9 @@ namespace ts {
         // which lives during the I/O. This structure must be non-copyable because
         // it contains pointers to its own fields.
         // See https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/ms741687(v=vs.85)
-        class TSCOREDLL AsyncBuffers: public Object
+        class TSCOREDLL UDPAsyncBuffers: public Object
         {
-            TS_NOCOPY(AsyncBuffers);
+            TS_NOCOPY(UDPAsyncBuffers);
         public:
             ::WSAMSG msg {};                  // Reception parameters, contain pointers to subsequent fields.
             ::WSABUF buf {};                  // Pointer to user's buffer.
@@ -451,8 +451,8 @@ namespace ts {
             ::CHAR ancil_data[1024] {};       // Receive: other reception data (destination socket, timestamp).
 
             // Constructor.
-            AsyncBuffers() = default;
-            virtual ~AsyncBuffers() override;
+            UDPAsyncBuffers() = default;
+            virtual ~UDPAsyncBuffers() override;
 
             // Before send: Initializes all internal structures and set the address and size of the user's send buffer.
             void setSendBuffer(const void* address, size_t size, const IPSocketAddress& dest);

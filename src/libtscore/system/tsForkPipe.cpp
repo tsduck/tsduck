@@ -52,6 +52,17 @@ ts::ForkPipe::~ForkPipe()
 
 
 //----------------------------------------------------------------------------
+// Check that the non-blocking mode can be set.
+//----------------------------------------------------------------------------
+
+bool ts::ForkPipe::allowSetNonBlocking() const
+{
+    // Cannot change the blocking mode after open.
+    return !isOpen();
+}
+
+
+//----------------------------------------------------------------------------
 // Check end-of-file on input.
 // Implementation of AbstractStream
 //----------------------------------------------------------------------------
@@ -100,8 +111,6 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
 
 #if defined(TS_WINDOWS)
 
-    //@@@ Asynchronous I/O
-
     _handle = nullptr;
     _process = nullptr;
     ::HANDLE read_handle = nullptr;
@@ -115,14 +124,52 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
         sa.nLength = sizeof(sa);
         sa.lpSecurityDescriptor = nullptr;
         sa.bInheritHandle = true;
-        if (::CreatePipe(&read_handle, &write_handle, &sa, bufsize) == 0) {
-            report().error(u"error creating pipe: %s", SysErrorCodeMessage());
-            return false;
+
+        if (isNonBlocking()) {
+            // On Windows, asynchronous I/O are not supported in anonymous pipes (as created by CreatePipe).
+            // - https://learn.microsoft.com/en-us/windows/win32/ipc/anonymous-pipe-operations
+            // - https://stackoverflow.com/a/419736
+            // Overlapped I/O can be used on named pipes only.
+            // - https://learn.microsoft.com/en-us/windows/win32/ipc/named-pipe-server-using-overlapped-i-o
+            // - https://learn.microsoft.com/en-us/windows/win32/ipc/named-pipe-client
+
+            // Create a "unique" pipe name. Note that named pipes disappear when the last handle is closed.
+            // Therefore, we don't need to care about deleting the named pipe.
+            static std::atomic_uint64_t sequence {0};
+            UString pipe_name;
+            pipe_name.format(u"\\\\.\\pipe\\ts.%08X.%08X", ::GetCurrentProcessId(), ++sequence);
+
+            // Only one end of the pipe is asynchronous: the one on which we read or write.
+            const ::DWORD read_flags = PIPE_ACCESS_INBOUND | FILE_FLAG_FIRST_PIPE_INSTANCE | (_out_pipe ? FILE_FLAG_OVERLAPPED : 0);
+            const ::DWORD write_flags = FILE_ATTRIBUTE_NORMAL | (_in_pipe ? FILE_FLAG_OVERLAPPED : 0);
+
+            // Create the named pipe. Get the read handle.
+            read_handle = ::CreateNamedPipeW(pipe_name.wc_str(), read_flags, PIPE_TYPE_BYTE | PIPE_WAIT, 1, bufsize, bufsize, 0, &sa);
+            if (!WinHandleValid(read_handle)) {
+                report().error(u"error creating named pipe %s: %s", pipe_name, SysErrorCodeMessage());
+                return false;
+            }
+
+            // Get a write handle to this named pipe.
+            write_handle = ::CreateFileW(pipe_name.wc_str(), GENERIC_WRITE, 0, &sa, OPEN_EXISTING, write_flags, nullptr);
+            if (!WinHandleValid(write_handle)) {
+                report().error(u"error opening named pipe %s: %s", pipe_name, SysErrorCodeMessage());
+                ::CloseHandle(read_handle);
+                return false;
+            }
+        }
+        else {
+            // No asynchronous I/O required, use an anonymous pipe.
+            if (::CreatePipe(&read_handle, &write_handle, &sa, bufsize) == 0) {
+                report().error(u"error creating pipe: %s", SysErrorCodeMessage());
+                return false;
+            }
         }
 
         // CreatePipe can only inherit none or both handles. Since we need the
         // one handle to be inherited by the child process, we said "inherit".
         // Now, make sure that our end of the pipe is not inherited.
+        // Named pipes do not have the same limitation but we use the same method for consistency.
         ::SetHandleInformation(_in_pipe ? write_handle : read_handle, HANDLE_FLAG_INHERIT, 0);
     }
 
@@ -337,7 +384,7 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
             ::close(filedes[PIPE_WRITEFD]);
         }
         // Set the file descriptor in non-blocking mode if necessary.
-        if (_fd >= 0 && isNonBlocking() && !setSystemNonBlocking(_fd, true)) {
+        if (_use_pipe && isNonBlocking() && !setSystemNonBlocking(_fd, true)) {
             ::close(_fd);
             return false;
         }
@@ -566,32 +613,44 @@ bool ts::ForkPipe::writeStream(const void* addr, size_t size, size_t& written_si
     }
 
     bool error = false;
-    int err_code = 0;
+    int err_code = SYS_SUCCESS;
 
 #if defined(TS_WINDOWS)
 
-    //@@@ Asynchronous I/O
-
-    const char* data = reinterpret_cast<const char*>(addr);
-    ::DWORD remain = ::DWORD(size);
-    ::DWORD outsize = 0;
-
-    while (remain > 0 && !error) {
-        if (::WriteFile(_handle, data, remain, &outsize, nullptr) != 0) {
-            // Normal case, some data were written
-            assert(outsize <= remain);
-            data += outsize;
-            remain -= std::max(remain, outsize);
-            written_size += size_t(outsize);
-        }
-        else {
-            // Write error
+    if (isNonBlocking()) {
+        // On Windows with asynchronous I/O, use overlapped I/O.
+        assert(iosb != nullptr);
+        if (!::WriteFile(_handle, addr, ::DWORD(size), nullptr, &iosb->overlap)) {
             err_code = ::GetLastError();
-            error = true;
-            // MSDN documentation on WriteFile says ERROR_BROKEN_PIPE,
-            // experience says ERROR_NO_DATA.
-            _broken_pipe = err_code == ERROR_BROKEN_PIPE || err_code == ERROR_NO_DATA;
         }
+        iosb->pending = SysSuccess(err_code) || IsPendingStatus(err_code);
+        error = !iosb->pending;
+    }
+    else {
+        // Blocking I/O: loop until everything is sent.
+        const char* data = reinterpret_cast<const char*>(addr);
+        ::DWORD remain = ::DWORD(size);
+        ::DWORD outsize = 0;
+
+        while (remain > 0 && !error) {
+            if (::WriteFile(_handle, data, remain, &outsize, nullptr) != 0) {
+                // Normal case, some data were written
+                assert(outsize <= remain);
+                data += outsize;
+                remain -= std::max(remain, outsize);
+                written_size += size_t(outsize);
+            }
+            else {
+                // Write error
+                err_code = ::GetLastError();
+                error = true;
+            }
+        }
+    }
+
+    // MSDN documentation on WriteFile says ERROR_BROKEN_PIPE, experience says ERROR_NO_DATA.
+    if (error) {
+        _broken_pipe = err_code == ERROR_BROKEN_PIPE || err_code == ERROR_NO_DATA;
     }
 
 #else // UNIX
@@ -680,26 +739,39 @@ bool ts::ForkPipe::readStream(void *addr, size_t max_size, size_t& ret_size, con
 
 #if defined(TS_WINDOWS)
 
-    //@@@ Asynchronous I/O
-
     ::DWORD err_code = ERROR_SUCCESS;
-    ::DWORD insize = 0;
-    if (::ReadFile(_handle, addr, ::DWORD(max_size), &insize, nullptr) != 0) {
-        // Normal case, some data were read.
-        assert(insize <= ::DWORD(max_size));
-        insize = std::max(::DWORD(0), insize);  // just in case we got a negative value
-        ret_size = size_t(insize);
-        return true;
-    }
-    else if ((err_code = ::GetLastError()) == ERROR_HANDLE_EOF || err_code == ERROR_BROKEN_PIPE) {
-        // End of file, not a real "error".
-        _eof = true;
-        return false;
+    if (isNonBlocking()) {
+        // On Windows with asynchronous I/O, use overlapped I/O.
+        assert(iosb != nullptr);
+        if (!::ReadFile(_handle, addr, ::DWORD(max_size), nullptr, &iosb->overlap)) {
+            err_code = ::GetLastError();
+        }
+        iosb->pending = SysSuccess(err_code) || IsPendingStatus(err_code);
+        if (!iosb->pending) {
+            report().error(u"error reading from pipe: %s", SysErrorCodeMessage(err_code));
+        }
+        return iosb->pending;
     }
     else {
-        // This is a real error.
-        report().error(u"error reading from pipe: %s", SysErrorCodeMessage(err_code));
-        return false;
+        // Blocking I/O.
+        ::DWORD insize = 0;
+        if (::ReadFile(_handle, addr, ::DWORD(max_size), &insize, nullptr) != 0) {
+            // Normal case, some data were read.
+            assert(insize <= ::DWORD(max_size));
+            insize = std::max(::DWORD(0), insize);  // just in case we got a negative value
+            ret_size = size_t(insize);
+            return true;
+        }
+        else if ((err_code = ::GetLastError()) == ERROR_HANDLE_EOF || err_code == ERROR_BROKEN_PIPE) {
+            // End of file, not a real "error".
+            _eof = true;
+            return false;
+        }
+        else {
+            // This is a real error.
+            report().error(u"error reading from pipe: %s", SysErrorCodeMessage(err_code));
+            return false;
+        }
     }
 
 #else // UNIX

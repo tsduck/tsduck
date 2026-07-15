@@ -14,13 +14,13 @@
 //----------------------------------------------------------------------------
 
 ts::TSForkPipe::TSForkPipe(Report* report, Object* owner) :
-    ForkPipe(report, owner),
+    ForkPipe(report, false, owner),
     TSPacketStream(*static_cast<ReporterBase*>(this))
 {
 }
 
 ts::TSForkPipe::TSForkPipe(ReporterBase* delegate, Object* owner) :
-    ForkPipe(delegate, owner),
+    ForkPipe(delegate, false, owner),
     TSPacketStream(*static_cast<ReporterBase*>(this))
 {
 }

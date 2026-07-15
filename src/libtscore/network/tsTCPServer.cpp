@@ -75,7 +75,7 @@ bool ts::TCPServer::accept(TCPConnection& client, IPSocketAddress& client_addres
         }
 
         // The reception parameters are stored in the IOSB.
-        auto params = std::make_shared<AsyncBuffers>();
+        auto params = std::make_shared<AcceptAsyncBuffers>();
         TS_ZERO(params->buf);
         iosb->async_data = params;
 
@@ -83,7 +83,7 @@ bool ts::TCPServer::accept(TCPConnection& client, IPSocketAddress& client_addres
         // Consider that the I/O is pending if it immediately completed because an asynchronous I/O completion will be posted.
         int err = SYS_SUCCESS;
         ::DWORD ret_size = 0;
-        if (!accept_ex(getSocket(), client.getSocket(), params->buf, 0, AsyncBuffers::ADDR_BUFLEN, AsyncBuffers::ADDR_BUFLEN, &ret_size, &iosb->overlap)) {
+        if (!accept_ex(getSocket(), client.getSocket(), params->buf, 0, AcceptAsyncBuffers::ADDR_BUFLEN, AcceptAsyncBuffers::ADDR_BUFLEN, &ret_size, &iosb->overlap)) {
             err = LastSysErrorCode();
         }
         iosb->pending = SysSuccess(err) || IsPendingStatus(err);
@@ -145,9 +145,9 @@ bool ts::TCPServer::setAcceptStatus(TCPConnection& client, IPSocketAddress& clie
 #if defined(TS_WINDOWS)
 
     // Get the reception buffer from the IOSB.
-    std::shared_ptr<AsyncBuffers> params;
+    std::shared_ptr<AcceptAsyncBuffers> params;
     if (iosb != nullptr) {
-        params = std::dynamic_pointer_cast<AsyncBuffers>(iosb->async_data);
+        params = std::dynamic_pointer_cast<AcceptAsyncBuffers>(iosb->async_data);
     }
     if (params == nullptr) {
         iosb->error_code = SYS_ERROR;
@@ -179,7 +179,7 @@ bool ts::TCPServer::setAcceptStatus(TCPConnection& client, IPSocketAddress& clie
     ::sockaddr* remote_addr = nullptr;
     int local_len = 0;
     int remote_len = 0;
-    getacceptex(params->buf, 0, AsyncBuffers::ADDR_BUFLEN, AsyncBuffers::ADDR_BUFLEN, &local_addr, &local_len, &remote_addr, &remote_len);
+    getacceptex(params->buf, 0, AcceptAsyncBuffers::ADDR_BUFLEN, AcceptAsyncBuffers::ADDR_BUFLEN, &local_addr, &local_len, &remote_addr, &remote_len);
     if (remote_addr == nullptr || !client_address.set(*remote_addr)) {
         iosb->error_code = SYS_ERROR;
         report().error(u"cannot find client address after GetAcceptExSockaddrs");
@@ -227,7 +227,7 @@ bool ts::TCPServer::closeImplementation(bool silent)
 #if defined(TS_WINDOWS)
 
 // Virtual destructor.
-ts::TCPServer::AsyncBuffers::~AsyncBuffers()
+ts::TCPServer::AcceptAsyncBuffers::~AcceptAsyncBuffers()
 {
 }
 

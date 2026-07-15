@@ -591,7 +591,7 @@ bool ts::UDPSocket::send(const void* data, size_t size, const IPSocketAddress& d
         assert(iosb != nullptr);
 
         // The reception parameters are stored in the IOSB.
-        auto params = std::make_shared<AsyncBuffers>();
+        auto params = std::make_shared<UDPAsyncBuffers>();
         params->setSendBuffer(data, size, dest);
         iosb->async_data = params;
 
@@ -748,7 +748,7 @@ int ts::UDPSocket::receiveOne(void* data,
         assert(iosb != nullptr);
 
         // The reception parameters are stored in the IOSB.
-        auto params = std::make_shared<AsyncBuffers>();
+        auto params = std::make_shared<UDPAsyncBuffers>();
         params->setReceiveBuffer(data, max_size);
         iosb->async_data = params;
 
@@ -763,7 +763,7 @@ int ts::UDPSocket::receiveOne(void* data,
     }
     else {
         // Synchronous I/O reception parameters.
-        AsyncBuffers params;
+        UDPAsyncBuffers params;
         params.setReceiveBuffer(data, max_size);
 
         // Wait for a message.
@@ -942,9 +942,9 @@ bool ts::UDPSocket::getReceiveStatus(IOSB* iosb,
                                      TimeStampType* timestamp_type) const
 {
 #if defined(TS_WINDOWS)
-    std::shared_ptr<AsyncBuffers> params;
+    std::shared_ptr<UDPAsyncBuffers> params;
     if (iosb != nullptr) {
-        params = std::dynamic_pointer_cast<AsyncBuffers>(iosb->async_data);
+        params = std::dynamic_pointer_cast<UDPAsyncBuffers>(iosb->async_data);
     }
     if (params == nullptr) {
         iosb->error_code = SYS_ERROR;
@@ -970,12 +970,12 @@ bool ts::UDPSocket::getReceiveStatus(IOSB* iosb,
 #if defined(TS_WINDOWS)
 
 // Virtual destructor.
-ts::UDPSocket::AsyncBuffers::~AsyncBuffers()
+ts::UDPSocket::UDPAsyncBuffers::~UDPAsyncBuffers()
 {
 }
 
 // Before send: Initializes all internal structures and set the address and size of the user's send buffer.
-void ts::UDPSocket::AsyncBuffers::setSendBuffer(const void* address, size_t size, const IPSocketAddress& dest)
+void ts::UDPSocket::UDPAsyncBuffers::setSendBuffer(const void* address, size_t size, const IPSocketAddress& dest)
 {
     // Clear all reception data.
     TS_ZERO(buf);
@@ -990,7 +990,7 @@ void ts::UDPSocket::AsyncBuffers::setSendBuffer(const void* address, size_t size
 }
 
 // Before receive: Initializes all internal structures and set the address and size of the user's reception buffer.
-void ts::UDPSocket::AsyncBuffers::setReceiveBuffer(void* address, size_t size)
+void ts::UDPSocket::UDPAsyncBuffers::setReceiveBuffer(void* address, size_t size)
 {
     // Clear all reception data.
     TS_ZERO(msg);
@@ -1012,7 +1012,7 @@ void ts::UDPSocket::AsyncBuffers::setReceiveBuffer(void* address, size_t size)
 }
 
 // After receive: Extract the message characteristics.
-void ts::UDPSocket::AsyncBuffers::getReceiveResult(const UDPSocket& socket, IPSocketAddress& sender, IPSocketAddress& destination, cn::microseconds* timestamp, TimeStampType* timestamp_type)
+void ts::UDPSocket::UDPAsyncBuffers::getReceiveResult(const UDPSocket& socket, IPSocketAddress& sender, IPSocketAddress& destination, cn::microseconds* timestamp, TimeStampType* timestamp_type)
 {
     // Clear optional returned data, can be found in ancil_data, or not.
     destination.clear();

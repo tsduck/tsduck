@@ -122,9 +122,9 @@ namespace ts {
     private:
 #if defined(TS_WINDOWS)
         // For Windows asynchronous I/O, we need to keep parameter in one single structure which lives during the I/O.
-        class TSCOREDLL AsyncBuffers: public Object
+        class TSCOREDLL AcceptAsyncBuffers: public Object
         {
-            TS_NOCOPY(AsyncBuffers);
+            TS_NOCOPY(AcceptAsyncBuffers);
         public:
             // The remote and local socket addresses are returned into a buffer. The Microsoft documentation says that
             // "the number of bytes reserved for the address information must be at least 16 bytes more than the maximum
@@ -135,8 +135,8 @@ namespace ts {
             uint8_t buf[2 * ADDR_BUFLEN] {};
 
             // Constructor and destructor.
-            AsyncBuffers() = default;
-            virtual ~AsyncBuffers() override;
+            AcceptAsyncBuffers() = default;
+            virtual ~AcceptAsyncBuffers() override;
         };
 #endif
     };
