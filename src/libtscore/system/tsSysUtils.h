@@ -165,6 +165,33 @@ namespace ts {
     #endif
 
     //!
+    //! Data type for system process id.
+    //! @ingroup system
+    //!
+#if defined(DOXYGEN)
+    using SysProcessIdType = platform_specific;
+#elif defined(TS_WINDOWS)
+    using SysProcessIdType = ::DWORD;
+#elif defined(TS_UNIX)
+    using SysProcessIdType = ::pid_t;
+#endif
+
+    // Need to ensure a process id can fit into an int.
+    static_assert(sizeof(SysProcessIdType) <= sizeof(int));
+
+    //!
+    //! Value of type SysProcessIdType which is invalid.
+    //! @ingroup system
+    //!
+#if defined(DOXYGEN)
+    constexpr SysProcessIdType SYS_PROCESS_ID_INVALID = platform_specific;
+#elif defined(TS_WINDOWS)
+    constexpr SysProcessIdType SYS_PROCESS_ID_INVALID = 0;
+#elif defined(TS_UNIX)
+    constexpr SysProcessIdType SYS_PROCESS_ID_INVALID = -1;
+#endif
+
+    //!
     //! Portable type for ioctl() request parameter.
     //! @ingroup system
     //!

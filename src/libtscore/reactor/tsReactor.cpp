@@ -56,6 +56,7 @@ const ts::Names& ts::Reactor::EventTypeNames()
         {u"read",      EVT_READ},
         {u"write",     EVT_WRITE},
         {u"async-I/O", EVT_ASYNC},
+        {u"process",   EVT_PROC},
     };
     return data;
 }
@@ -93,10 +94,12 @@ ts::Reactor::~Reactor()
 // Base class for Guts.
 //----------------------------------------------------------------------------
 
+#define TS_NO_PRH  _reactor.report().error(u"process handles are not supported on this system")
 #define TS_NO_AIO  _reactor.report().error(u"asynchronous I/O are not supported on this system")
 #define TS_NO_NBIO _reactor.report().error(u"non-blocking I/O are not supported on this system")
 
 ts::Reactor::GutsBase::~GutsBase() {}
+void* ts::Reactor::GutsBase::newProcessHandleTermination(ReactorHandlerInterface*, SysHandleType) { TS_NO_PRH; return nullptr; }
 void* ts::Reactor::GutsBase::newAsynchronousIO(ReactorHandlerInterface*, SysSocketType) { TS_NO_AIO; return nullptr; }
 bool ts::Reactor::GutsBase::cancelAsynchronousIO(EventId, bool) { TS_NO_AIO; return false; }
 bool ts::Reactor::GutsBase::cancelAndWaitAsynchronousIO(EventId, NonBlockingDevice::IOSB&, bool) { TS_NO_AIO; return false; }
@@ -117,6 +120,22 @@ bool ts::Reactor::checkOpen(bool silent)
         report().log(SilentLevel(silent), u"reactor is not initialized");
     }
     return _is_open;
+}
+
+
+//----------------------------------------------------------------------------
+// Verify that a handler is not null.
+//----------------------------------------------------------------------------
+
+bool ts::Reactor::checkNonNull(ReactorHandlerInterface* handler, const UChar* name)
+{
+    if (handler != nullptr) {
+        return true;
+    }
+    else {
+        report().error(u"internal error: null handler passed to reactor %s", name);
+        return false;
+    }
 }
 
 
@@ -299,7 +318,7 @@ bool ts::Reactor::processEventLoop()
 ts::EventId ts::Reactor::newTimerImpl(ReactorHandlerInterface* handler, cn::milliseconds duration, bool repeat)
 {
     EventId id;
-    if (checkOpen(false)) {
+    if (checkOpen(false) && checkNonNull(handler, u"timer")) {
         if (duration <= cn::milliseconds::zero()) {
             report().error(u"invalid reactor timer value");
         }
@@ -323,7 +342,7 @@ bool ts::Reactor::cancelTimer(EventId id, bool silent)
 ts::EventId ts::Reactor::newEvent(ReactorHandlerInterface* handler)
 {
     EventId id;
-    if (checkOpen(false)) {
+    if (checkOpen(false) && checkNonNull(handler, u"user event")) {
         id._ptr = _guts->newEvent(handler);
     }
     return id;
@@ -397,6 +416,37 @@ void ts::Reactor::BroadcastHandler::handleUserEvent(Reactor& reactor, EventId id
 }
 
 
+//--------------------------------------------------------------------
+// Process terminations.
+//--------------------------------------------------------------------
+
+// Add a process termination event in the reactor, using a process id.
+ts::EventId ts::Reactor::newProcessIdTermination(ReactorHandlerInterface* handler, SysProcessIdType pid)
+{
+    EventId id;
+    if (checkOpen(false) && checkNonNull(handler, u"process termination")) {
+        id._ptr = _guts->newProcessIdTermination(handler, pid);
+    }
+    return id;
+}
+
+// Add a process termination event in the reactor, using a process handle.
+ts::EventId ts::Reactor::newProcessHandleTermination(ReactorHandlerInterface* handler, SysHandleType process_handle)
+{
+    EventId id;
+    if (checkOpen(false) && checkNonNull(handler, u"process termination")) {
+        id._ptr = _guts->newProcessHandleTermination(handler, process_handle);
+    }
+    return id;
+}
+
+// Cancel a process termination event.
+bool ts::Reactor::cancelProcessTermination(EventId id, bool silent)
+{
+    return checkOpen(silent) && id.isValid() && _guts->cancelProcessTermination(id, silent);
+}
+
+
 //----------------------------------------------------------------------------
 // Asynchronous I/O notifications.
 //----------------------------------------------------------------------------
@@ -404,7 +454,7 @@ void ts::Reactor::BroadcastHandler::handleUserEvent(Reactor& reactor, EventId id
 ts::EventId ts::Reactor::newAsynchronousIO(ReactorHandlerInterface* handler, SysSocketType sock)
 {
     EventId id;
-    if (checkOpen(false)) {
+    if (checkOpen(false) && checkNonNull(handler, u"asynchronous I/O")) {
         id._ptr = _guts->newAsynchronousIO(handler, sock);
     }
     return id;
@@ -433,7 +483,7 @@ bool ts::Reactor::deleteAsynchronousIO(EventId id, bool silent)
 ts::EventId ts::Reactor::newReadNotify(ReactorHandlerInterface* handler, SysSocketType sock)
 {
     EventId id;
-    if (checkOpen(false)) {
+    if (checkOpen(false) && checkNonNull(handler, u"non-blocking read notification")) {
         id._ptr = _guts->newReadNotify(handler, sock);
     }
     return id;
@@ -447,7 +497,7 @@ bool ts::Reactor::deleteReadNotify(EventId id, bool silent)
 ts::EventId ts::Reactor::newWriteNotify(ReactorHandlerInterface* handler, SysSocketType sock)
 {
     EventId id;
-    if (checkOpen(false)) {
+    if (checkOpen(false) && checkNonNull(handler, u"non-blocking write notification")) {
         id._ptr = _guts->newWriteNotify(handler, sock);
     }
     return id;

@@ -13,6 +13,7 @@ ts::ReactorHandlerInterface::~ReactorHandlerInterface() {}
 void ts::ReactorHandlerInterface::handleTimer(Reactor&, EventId) {}
 void ts::ReactorHandlerInterface::handleUserEvent(Reactor&, EventId) {}
 void ts::ReactorHandlerInterface::handleBroadcastEvent(Reactor&, int, const ObjectPtr&) {}
+void ts::ReactorHandlerInterface::handleProcessTermination(Reactor&, EventId, int) {}
 void ts::ReactorHandlerInterface::handleReadReady(Reactor&, EventId, int) {}
 void ts::ReactorHandlerInterface::handleWriteReady(Reactor&, EventId, int) {}
 void ts::ReactorHandlerInterface::handleAsynchronousIO(Reactor&, EventId, NonBlockingDevice::IOSB&, size_t) {}

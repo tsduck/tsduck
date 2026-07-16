@@ -52,6 +52,17 @@ namespace ts {
         virtual void handleBroadcastEvent(Reactor& reactor, int error_code, const ObjectPtr& user_data);
 
         //!
+        //! Handle a process termination event in a Reactor.
+        //! This handler is invoked when the process is no longer there. It is possible that the process was already
+        //! terminated for a while. It is even possible that the process never really started. There is no portable
+        //! way to get the process termination status.
+        //! @param [in,out] reactor Reactor into which the handler is invoked.
+        //! @param [in] id Id of the event which was signaled.
+        //! @param [in] pid Process id of the terminated process.
+        //!
+        virtual void handleProcessTermination(Reactor& reactor, EventId id, int pid);
+
+        //!
         //! Handle a read-ready event in a Reactor.
         //! This handler is only invoked in the non-blocking I/O model.
         //! @param [in,out] reactor Reactor into which the handler is invoked.

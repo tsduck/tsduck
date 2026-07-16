@@ -18,6 +18,7 @@
 #include <sys/epoll.h>
 #include <sys/eventfd.h>
 #include <sys/timerfd.h>
+#include <sys/syscall.h>
 #include "tsAfterStandardHeaders.h"
 
 
@@ -35,6 +36,7 @@ public:
     ReactorHandlerInterface* handler = nullptr;       // Generic handler for all events except read.
     ReactorHandlerInterface* read_handler = nullptr;  // Read-notify handler.
     int                      fd = -1;                 // General-purpose file descriptor.
+    ::pid_t                  pid = -1;                // Process id.
 
     EventData() = default;
 };
@@ -72,6 +74,8 @@ public:
     virtual void* newEvent(ReactorHandlerInterface* handler) override;
     virtual bool signalEvent(EventId id) override;
     virtual bool deleteEvent(EventId id, bool silent) override;
+    virtual void* newProcessIdTermination(ReactorHandlerInterface* handler, SysProcessIdType pid) override;
+    virtual bool cancelProcessTermination(EventId id, bool silent) override;
     virtual void* newReadNotify(ReactorHandlerInterface* handler, SysSocketType sock) override;
     virtual bool deleteReadNotify(EventId id, bool silent) override;
     virtual void* newWriteNotify(ReactorHandlerInterface* handler, SysSocketType sock) override;
@@ -84,6 +88,9 @@ private:
     // Using epoll, read and write for the same file descriptor share the same EventData.
     // We need a map from file descriptor to EventData to retrieve the EventData from a file descriptor.
     std::map<int,EventData*> _file_descs_map {};
+
+    // List of process termination events which could not be registered, presumably because the process was already dead.
+    std::list<EventData*> _dead_processes {};
 
     // Retrieve or allocate/register an event data for a given file descriptor.
     // There is only one EventData per file descriptor, sharing EVT_READ and EVT_WRITE.
@@ -99,6 +106,7 @@ private:
     // Close the system part of an event.
     bool sysDeleteTimer(EventData*, bool silent);
     bool sysDeleteEvent(EventData*, bool silent);
+    bool sysDeleteProcess(EventData*, bool silent);
     bool sysDeleteRead(EventData*, bool silent);
     bool sysDeleteWrite(EventData*, bool silent);
 
@@ -192,6 +200,7 @@ void ts::Reactor::Guts::getAllHandlers(std::set<ReactorHandlerInterface*>& handl
 bool ts::Reactor::Guts::open()
 {
     _file_descs_map.clear();
+    _dead_processes.clear();
 
     // Initialize the epoll event queue.
     assert(_epoll_fd < 0);
@@ -226,6 +235,9 @@ bool ts::Reactor::Guts::close(bool silent)
             else if (evd->type == EVT_TIMER) {
                 sysDeleteTimer(evd, silent);
             }
+            else if (evd->type == EVT_PROC) {
+                sysDeleteProcess(evd, silent);
+            }
             else {
                 // Read and write can be on the same EventData.
                 if ((evd->type & EVT_READ) != 0) {
@@ -247,6 +259,7 @@ bool ts::Reactor::Guts::close(bool silent)
     }
     _reactor._events.clear();
     _file_descs_map.clear();
+    _dead_processes.clear();
 
     // Cleanup epoll queue.
     assert(_epoll_fd >= 0);
@@ -269,6 +282,35 @@ void ts::Reactor::Guts::processEventLoop()
 
     // Main event loop.
     while (!_reactor._exit_requested) {
+
+        // Initial step before waiting: process dead processes which could not be registered in the epoll.
+        while (!_dead_processes.empty()) {
+            // Dequeue dead process.
+            EventData* sysevd = _dead_processes.front();
+            _dead_processes.pop_front();
+
+            // Manually remove the event before calling the handler. So, keep a copy of it.
+            const EventId id(sysevd);
+            const EventData evd(*sysevd);
+            deleteEventData(sysevd, EVT_PROC);
+
+            // Call waitpid to reap the process, just in case. Don't wait (WNOHANG), ignore error.
+            int st = 0;
+            ::waitpid(evd.pid, &st, WNOHANG);
+
+            // Close the pidfd.
+            ::close(evd.fd);
+
+            // Call the callback.
+            if (evd.handler != nullptr) {
+                evd.handler->handleProcessTermination(_reactor, id, evd.pid);
+            }
+        }
+
+        // Handle exit request from a handler.
+        if (_reactor._exit_requested) {
+            break;
+        }
 
         // Adjust the size of the system structures describing events to wait for.
         _reactor.adjustEventVector(sysevents);
@@ -352,6 +394,30 @@ void ts::Reactor::Guts::processEventLoop()
                     // Call the timer callback.
                     if (evd.handler != nullptr) {
                         evd.handler->handleTimer(_reactor, id);
+                    }
+                }
+            }
+            else if (evd.type == EVT_PROC) {
+                _reactor.trace(u"epoll: event #%d, process terminated", i);
+                // Try to wait on the process.
+                ::siginfo_t info;
+                TS_ZERO(info);
+                if (::waitid(P_PIDFD, evd.fd, &info, WEXITED | WNOHANG) < 0) {
+                    // Actual error, delete the process termination.
+                    _reactor.report().error(u"error reading process state: %s", SysErrorCodeMessage());
+                    sysDeleteProcess(sysevd, false);
+                    deleteEventData(sysevd, EVT_PROC);
+                    ::close(evd.fd);
+                }
+                else if (info.si_pid != 0) {
+                    // The process is terminated (not a spurious wake-up).
+                    sysDeleteProcess(sysevd, false);
+                    deleteEventData(sysevd, EVT_PROC);
+                    // Close the pidfd.
+                    ::close(evd.fd);
+                    // Call the callback.
+                    if (evd.handler != nullptr) {
+                        evd.handler->handleProcessTermination(_reactor, id, evd.pid);
                     }
                 }
             }
@@ -595,6 +661,70 @@ bool ts::Reactor::Guts::sysDeleteEvent(EventData* evd, bool silent)
     }
     else {
         RemoveCloseOnForkExec(evd->fd);
+        ::close(evd->fd);
+        return true;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Add a process termination event in the reactor, using a process id.
+//----------------------------------------------------------------------------
+
+void* ts::Reactor::Guts::newProcessIdTermination(ReactorHandlerInterface* handler, SysProcessIdType pid)
+{
+    // Create the EventData
+    bool new_type = false;
+    EventData* evd = newEventData(EVT_PROC, -1, new_type);
+    evd->handler = handler;
+    evd->pid = pid;
+
+    // Open a file descriptor on the process.
+    evd->fd = ::syscall(SYS_pidfd_open, pid, 0);
+    if (evd->fd < 0) {
+        // Error. Consider that the process is already dead. Directly enqueue the notification.
+        _reactor.trace(u"cannot open process %d, direct notification", pid);
+        _dead_processes.push_back(evd);
+    }
+    else {
+        // Need to register the file descriptor we set in EventData.
+        _file_descs_map.insert(std::make_pair(evd->fd, evd));
+
+        // Register time in epoll queue.
+        if (!callEpollCtl(EPOLL_CTL_ADD, evd->fd, EPOLLIN | EPOLLET, evd, u"adding process termination")) {
+            ::close(evd->fd);
+            deleteEventData(evd, EVT_PROC);
+            return nullptr;
+        }
+    }
+    return evd;
+}
+
+
+//----------------------------------------------------------------------------
+// Cancel a process termination event.
+//----------------------------------------------------------------------------
+
+bool ts::Reactor::Guts::cancelProcessTermination(EventId id, bool silent)
+{
+    EventData* evd = reinterpret_cast<EventData*>(id._ptr);
+    bool success = _reactor.validateEventData(evd, silent);
+    if (success) {
+        // Cancel and delete the process event.
+        success = sysDeleteProcess(evd, silent);
+        deleteEventData(evd, EVT_PROC);
+    }
+    return success;
+}
+
+bool ts::Reactor::Guts::sysDeleteProcess(EventData* evd, bool silent)
+{
+    // Remove pidfd from epoll queue.
+    if (!callEpollCtl(EPOLL_CTL_DEL, evd->fd, 0, nullptr, u"removing process termination", silent)) {
+        return false;
+    }
+    else {
+        // Close the pidfd (no longer needed).
         ::close(evd->fd);
         return true;
     }

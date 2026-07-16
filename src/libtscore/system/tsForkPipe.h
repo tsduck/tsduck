@@ -123,6 +123,21 @@ namespace ts {
         bool isSynchronous() const { return _wait_mode == SYNCHRONOUS; }
 
         //!
+        //! Get the created process id.
+        //! On UNIX systems, the returned value is meaningful only for processes with SYNCHRONOUS wait mode.
+        //! @return The process id or SYS_PROCESS_ID_INVALID in case of error.
+        //!
+        SysProcessIdType getProcessId() const;
+
+        //!
+        //! Get the created process handle.
+        //! Note: only Windows identifies a process by handle, in addition to process id.
+        //! On other operating systems, this method always returns SYS_HANDLE_INVALID.
+        //! @return The process id or SYS_HANDLE_INVALID in case of error.
+        //!
+        SysHandleType getProcessHandle() const;
+
+        //!
         //! Set "ignore abort".
         //! @param [in] on If true and the process aborts, do not report error when writing data.
         //! when writing data.
@@ -194,9 +209,9 @@ namespace ts {
         volatile bool _eof = false;              // Got end of file on input pipe.
         SysHandleType _hfd = SYS_HANDLE_INVALID; // Pipe input or output handle / file descriptor.
 #if defined(TS_WINDOWS)
-        ::HANDLE      _process = nullptr;        // Handle to child process.
+        SysHandleType _process = SYS_HANDLE_INVALID;     // Handle to child process.
 #else
-        ::pid_t       _fpid = 0;                 // Forked process id (UNIX PID, not MPEG PID!)
+        SysProcessIdType _fpid = SYS_PROCESS_ID_INVALID; // Forked process id.
 #endif
     };
 }

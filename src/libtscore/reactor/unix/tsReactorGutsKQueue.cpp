@@ -84,6 +84,8 @@ public:
     virtual void* newEvent(ReactorHandlerInterface* handler) override;
     virtual bool signalEvent(EventId id) override;
     virtual bool deleteEvent(EventId id, bool silent) override;
+    virtual void* newProcessIdTermination(ReactorHandlerInterface* handler, SysProcessIdType pid) override;
+    virtual bool cancelProcessTermination(EventId id, bool silent) override;
     virtual void* newReadNotify(ReactorHandlerInterface* handler, SysSocketType sock) override;
     virtual bool deleteReadNotify(EventId id, bool silent) override;
     virtual void* newWriteNotify(ReactorHandlerInterface* handler, SysSocketType sock) override;
@@ -96,6 +98,9 @@ private:
     // Using kqueue, read and write for the same file descriptor have distinct EventData.
     // We need a map from file-descriptor/event-type to EventData to retrieve the EventData.
     std::map<uint64_t,EventData*> _file_descs_map {};
+
+    // List of process termination events which could not be registered, presumably because the process was already dead.
+    std::list<EventData*> _dead_processes {};
 
     // We store the event type in the MSB of the index. We assume that a file descriptor is always less than 2^56.
     static uint64_t FileDescIndex(EventType type, int fd) { return (uint64_t(type) << 56) | uint64_t(fd); }
@@ -191,6 +196,7 @@ void ts::Reactor::Guts::getAllHandlers(std::set<ReactorHandlerInterface*>& handl
 bool ts::Reactor::Guts::open()
 {
     _file_descs_map.clear();
+    _dead_processes.clear();
 
     // Initialize the kernel queue.
     // Unlike epoll, the kqueue file descriptor is not inherited by a child created with fork().
@@ -223,6 +229,9 @@ bool ts::Reactor::Guts::close(bool silent)
             else if (evd->type == EVT_TIMER) {
                 sysDelete(evd, true, EVFILT_TIMER, silent);
             }
+            else if (evd->type == EVT_PROC) {
+                sysDelete(evd, false, EVFILT_PROC, silent);
+            }
             else if (evd->type == EVT_READ) {
                 sysDelete(evd, false, EVFILT_READ, silent);
             }
@@ -241,6 +250,7 @@ bool ts::Reactor::Guts::close(bool silent)
     }
     _reactor._events.clear();
     _file_descs_map.clear();
+    _dead_processes.clear();
 
     // Cleanup kqueue().
     assert(_kqueue_fd >= 0);
@@ -261,6 +271,32 @@ void ts::Reactor::Guts::processEventLoop()
 
     // Main event loop.
     while (!_reactor._exit_requested) {
+
+        // Initial step before waiting: process dead processes which could not be registered in the kqueue.
+        while (!_dead_processes.empty()) {
+            // Dequeue dead process.
+            EventData* sysevd = _dead_processes.front();
+            _dead_processes.pop_front();
+
+            // Manually remove the event before calling the handler. So, keep a copy of it.
+            const EventId id(sysevd);
+            const EventData evd(*sysevd);
+            deleteEventData(sysevd);
+
+            // Call waitpid to reap the process. Don't wait (WNOHANG), ignore error. The field fd is used to store the pid.
+            int st = 0;
+            ::waitpid(evd.fd, &st, WNOHANG);
+
+            // Call the callback.
+            if (evd.handler != nullptr) {
+                evd.handler->handleProcessTermination(_reactor, id, evd.fd);
+            }
+        }
+
+        // Handle exit request from a handler.
+        if (_reactor._exit_requested) {
+            break;
+        }
 
         // Adjust the size of the system structures describing events to wait for.
         _reactor.adjustEventVector(sysevents);
@@ -325,6 +361,20 @@ void ts::Reactor::Guts::processEventLoop()
                 // Call the timer callback.
                 if (evd.handler != nullptr) {
                     evd.handler->handleTimer(_reactor, id);
+                }
+            }
+            else if (evd.type == EVT_PROC) {
+                _reactor.trace(u"kqueue: event #%d, process terminated", i);
+                // Call waitpid to reap the process. Don't wait (WNOHANG), ignore error. The field fd is used to store the pid.
+                int st = 0;
+                ::waitpid(evd.fd, &st, WNOHANG);
+
+                // Manually remove the event before calling the handler.
+                deleteEventData(sysevd);
+
+                // Call the callback.
+                if (evd.handler != nullptr) {
+                    evd.handler->handleProcessTermination(_reactor, id, evd.fd);
                 }
             }
             else if (evd.type == EVT_READ) {
@@ -448,6 +498,36 @@ bool ts::Reactor::Guts::signalEvent(EventId id)
 bool ts::Reactor::Guts::deleteEvent(EventId id, bool silent)
 {
     return deleteFilter(id, EVT_EVENT, true, EVFILT_USER, silent);
+}
+
+
+//----------------------------------------------------------------------------
+// Add a process termination event in the reactor, using a process id.
+//----------------------------------------------------------------------------
+
+void* ts::Reactor::Guts::newProcessIdTermination(ReactorHandlerInterface* handler, SysProcessIdType pid)
+{
+    // Create the EventData
+    EventData* evd = newEventData(EVT_PROC, pid); // pid is not a file desc but it is used as event id
+    evd->handler = handler;
+
+    // Add the event in the kqueue. Make it silent because it fails if the process is already dead.
+    if (!callKevent(::kevent_ident_t(pid), EVFILT_PROC, EV_ADD | EV_ONESHOT, NOTE_EXIT, 0, evd, u"registering process termination", true)) {
+        // Error. Consider that the process is already dead. Directly enqueue the notification.
+        _reactor.trace(u"cannot register process %d in kqueue, direct notification", pid);
+        _dead_processes.push_back(evd);
+    }
+    return evd;
+}
+
+
+//----------------------------------------------------------------------------
+// Cancel a process termination event.
+//----------------------------------------------------------------------------
+
+bool ts::Reactor::Guts::cancelProcessTermination(EventId id, bool silent)
+{
+    return deleteFilter(id, EVT_PROC, false, EVFILT_PROC, silent);
 }
 
 

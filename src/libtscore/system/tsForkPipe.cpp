@@ -112,7 +112,7 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
 #if defined(TS_WINDOWS)
 
     _hfd = SYS_HANDLE_INVALID;
-    _process = nullptr;
+    _process = SYS_HANDLE_INVALID;
     ::HANDLE read_handle = nullptr;
     ::HANDLE write_handle = nullptr;
     ::HANDLE null_handle = nullptr;
@@ -277,7 +277,7 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
     switch (_wait_mode) {
         case ASYNCHRONOUS: {
             // Process handle is useless, we won't use it.
-            _process = nullptr;
+            _process = SYS_HANDLE_INVALID;
             ::CloseHandle(pi.hProcess);
             break;
         }
@@ -318,7 +318,7 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
 #else // UNIX
 
     // Reset state.
-    _fpid = 0;
+    _fpid = SYS_PROCESS_ID_INVALID;
     _hfd = SYS_HANDLE_INVALID;
 
     // Create a pipe
@@ -328,9 +328,10 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
         return false;
     }
 
-    // Create the forked process
+    // Create the forked process. In the child process, fork() returns zero.
     if (_wait_mode == EXIT_PROCESS) {
         // Don't fork, the parent process will directly call exec().
+        // Setting _fpid to 0 indicates that we as in the "created" process.
         _fpid = 0;
     }
     else if ((_fpid = ::fork()) < 0) {
@@ -352,12 +353,16 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
             // In the parent process, wait for the intermediate child to die immediately.
             // Failing to do so, the intermediate process would remain zombie.
             ::waitpid(_fpid, nullptr, 0);
+            // Mark the intermediate process PID as unusable (but keep it != 0 to indicate the parent process).
+            static_assert(SYS_PROCESS_ID_INVALID != 0);
+            _fpid = SYS_PROCESS_ID_INVALID;
         }
         else {
             // In the intermediate process. First make it a session leader.
             ::setsid();
             // Then create the grand-child process.
-            if (::fork() != 0) {
+            const ::pid_t sub_pid = ::fork();
+            if (sub_pid != 0) {
                 // In the intermediate process, die immediately.
                 std::exit(EXIT_SUCCESS);
             }
@@ -507,6 +512,30 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
 
 
 //----------------------------------------------------------------------------
+// Get the created process id and handle.
+//----------------------------------------------------------------------------
+
+ts::SysHandleType ts::ForkPipe::getProcessHandle() const
+{
+#if defined(TS_WINDOWS)
+    return _process;
+#else
+    return SYS_HANDLE_INVALID;
+#endif
+}
+
+ts::SysProcessIdType ts::ForkPipe::getProcessId() const
+{
+#if defined(TS_WINDOWS)
+    const ::DWORD id = ::GetProcessId(_process);
+    return id == 0 ? SYS_PROCESS_ID_INVALID : id;
+#else
+    return _fpid;
+#endif
+}
+
+
+//----------------------------------------------------------------------------
 // Close the pipe. Optionally wait for process termination.
 // Return true on success, false on error.
 //----------------------------------------------------------------------------
@@ -549,6 +578,7 @@ bool ts::ForkPipe::close(bool silent)
     // Wait for termination of forked process
     if (_wait_mode == SYNCHRONOUS) {
         assert(_fpid != 0);
+        report().debug(u"waiting for process id %n", _fpid);
         if (::waitpid(_fpid, nullptr, 0) < 0) {
             report().log(SilentLevel(silent), u"error waiting for process termination: %s", SysErrorCodeMessage());
             result = false;

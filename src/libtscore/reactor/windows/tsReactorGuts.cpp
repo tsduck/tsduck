@@ -34,12 +34,15 @@ class ts::Reactor::EventData
 {
     TS_DEFAULT_COPY_MOVE(EventData);
 public:
-    Canary                   canary {};          // First field in memory.
-    Reactor::Guts*           guts = nullptr;     // Link to parent reactor, when called in APC.
-    EventType                type = EVT_NONE;    // Event type (can be read+write with epoll).
-    bool                     repeat = false;     // Repeatable timer or notification.
-    ReactorHandlerInterface* handler = nullptr;  // Generic handler.
-    ::HANDLE                 handle = nullptr;   // General-purpose handle.
+    Canary                   canary {};            // First field in memory.
+    Reactor::Guts*           guts = nullptr;       // Link to parent reactor, when called in APC.
+    EventType                type = EVT_NONE;      // Event type (can be read+write with epoll).
+    bool                     repeat = false;       // Repeatable timer or notification.
+    bool                     close_handle = false; // Handle must be closed.
+    ReactorHandlerInterface* handler = nullptr;    // Generic handler.
+    ::HANDLE                 handle = nullptr;     // General-purpose handle.
+    ::HANDLE                 job_object = nullptr; // JobObject for process termination.
+    ::DWORD                  pid = 0;              // Process id.
 
     EventData() = default;
 };
@@ -77,6 +80,9 @@ public:
     virtual void* newEvent(ReactorHandlerInterface* handler) override;
     virtual bool signalEvent(EventId id) override;
     virtual bool deleteEvent(EventId id, bool silent) override;
+    virtual void* newProcessIdTermination(ReactorHandlerInterface* handler, SysProcessIdType pid) override;
+    virtual void* newProcessHandleTermination(ReactorHandlerInterface* handler, SysHandleType process_handle) override;
+    virtual bool cancelProcessTermination(EventId id, bool silent) override;
     virtual void* newAsynchronousIO(ReactorHandlerInterface* handler, SysSocketType sock) override;
     virtual bool cancelAsynchronousIO(EventId id, bool silent) override;
     virtual bool cancelAndWaitAsynchronousIO(EventId id, NonBlockingDevice::IOSB& iosb, bool silent) override;
@@ -86,12 +92,19 @@ private:
     // Handle for the I/O completion port.
     ::HANDLE _iocp_handle = nullptr;
 
+    // List of process termination events which could not be registered, presumably because the process was already dead.
+    std::list<EventData*> _dead_processes {};
+
     // Allocate and register an event data for a given event type.
     EventData* newEventData(EventType type, ReactorHandlerInterface* handler);
 
     // Close the system part of an event.
     bool sysDeleteTimer(EventData*, bool silent);
     bool sysDeleteEvent(EventData*, bool silent);
+    bool sysDeleteProcess(EventData*, bool silent);
+
+    // Add a process termination event: common code.
+    EventData* setProcessTermination(EventData* evd);
 
     // Asynchronous timer completion routine.
     static void APIENTRY WinTimerCompletion(::LPVOID arg, ::DWORD timer_low, ::DWORD time_high);
@@ -142,6 +155,8 @@ void ts::Reactor::Guts::getAllHandlers(std::set<ReactorHandlerInterface*>& handl
 
 bool ts::Reactor::Guts::open()
 {
+    _dead_processes.clear();
+
     // Create an empty I/O completion port.
     assert(!WinHandleValid(_iocp_handle));
     _iocp_handle = ::CreateIoCompletionPort(INVALID_HANDLE_VALUE, nullptr, 0, 0);
@@ -174,6 +189,9 @@ bool ts::Reactor::Guts::close(bool silent)
             else if (evd->type == EVT_TIMER) {
                 sysDeleteTimer(evd, silent);
             }
+            else if (evd->type == EVT_PROC) {
+                sysDeleteProcess(evd, silent);
+            }
             // Free the EventData only if it was validated. Cases where an invalid EventData remains
             // in a reactor are bugs. In that case, we don't try to delete it (a memory leak is still
             // better than a potential double-free which may lead to memory corruption).
@@ -185,6 +203,7 @@ bool ts::Reactor::Guts::close(bool silent)
         }
     }
     _reactor._events.clear();
+    _dead_processes.clear();
 
     // Close the I/O completion port.
     assert(WinHandleValid(_iocp_handle));
@@ -205,6 +224,29 @@ void ts::Reactor::Guts::processEventLoop()
 
     // Main event loop.
     while (!_reactor._exit_requested) {
+
+        // Initial step before waiting: process dead processes which could not be registered in the epoll.
+        while (!_dead_processes.empty()) {
+            // Dequeue dead process.
+            EventData* sysevd = _dead_processes.front();
+            _dead_processes.pop_front();
+
+            // Manually remove the event before calling the handler. So, keep a copy of it. Only the process PID
+            // is significant. Handles (process and job object) are not used, don't call sysDeleteProcess().
+            const EventId id(sysevd);
+            const EventData evd(*sysevd);
+            _reactor.deleteEventData(sysevd, EVT_PROC);
+
+            // Call the callback.
+            if (evd.handler != nullptr) {
+                evd.handler->handleProcessTermination(_reactor, id, evd.pid);
+            }
+        }
+
+        // Handle exit request from a handler.
+        if (_reactor._exit_requested) {
+            break;
+        }
 
         // Adjust the size of the system structures describing events to wait for.
         _reactor.adjustEventVector(sysevents);
@@ -272,6 +314,37 @@ void ts::Reactor::Guts::processEventLoop()
                 // Call the timer callback.
                 if (evd.handler != nullptr) {
                     evd.handler->handleTimer(_reactor, id);
+                }
+            }
+            else if (evd.type == EVT_PROC) {
+                _reactor.trace(u"IOCP: event #%d, process terminated", i);
+                bool process_terminated = true;
+                // The field dwNumberOfBytesTransferred of the event is the message type.
+                const ::DWORD msg = ::DWORD(sysev.dwNumberOfBytesTransferred);
+                if (msg == JOB_OBJECT_MSG_ABNORMAL_EXIT_PROCESS || msg == JOB_OBJECT_MSG_EXIT_PROCESS) {
+                    // Explicit termination of a process. The field lpOverlapped of the event is the process PID, not an overlopped pointer.
+                    const SysProcessIdType pid = SysProcessIdType(uintptr_t(sysev.lpOverlapped));
+                    _reactor.trace(u"IOCP: process id %n terminated", pid);
+                    if (pid != evd.pid) {
+                        _reactor.report().warning(u"unexpected termination process PID %n (expected %d)", pid, evd.pid);
+                        process_terminated = false;
+                    }
+                }
+                else if (msg == JOB_OBJECT_MSG_ACTIVE_PROCESS_ZERO) {
+                    // No more process in the job object. We did not get the process terminateion. Suspicious but the process is terminated anyway.
+                    _reactor.trace(u"IOCP: job object empty, termination of process %n was missed", evd.pid);
+                }
+                else {
+                    process_terminated = false;
+                }
+                if (process_terminated) {
+                    // Delete the registration before calling the handler.
+                    sysDeleteProcess(sysevd, true);
+                    _reactor.deleteEventData(sysevd, evd.type);
+                    // Call the user callback.
+                    if (evd.handler != nullptr) {
+                        evd.handler->handleProcessTermination(_reactor, id, evd.pid);
+                    }
                 }
             }
             else if (evd.type == EVT_ASYNC) {
@@ -428,6 +501,138 @@ bool ts::Reactor::Guts::deleteEvent(EventId id, bool silent)
 bool ts::Reactor::Guts::sysDeleteEvent(EventData* evd, bool silent)
 {
     // Nothing to close at system level.
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Add a process termination event in the reactor, using a process id.
+//----------------------------------------------------------------------------
+
+void* ts::Reactor::Guts::newProcessIdTermination(ReactorHandlerInterface* handler, SysProcessIdType pid)
+{
+    // Create the EventData
+    EventData* evd = newEventData(EVT_PROC, handler);
+    evd->pid = pid;
+
+    // Open a handle to the process from the pid. This handler will need to be closed later.
+    evd->close_handle = true;
+    evd->handle = ::OpenProcess(SYNCHRONIZE | PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_SET_QUOTA | PROCESS_TERMINATE, false, pid);
+    if (!WinHandleValid(evd->handle)) {
+        // Error, cannot access process by PID. Consider that the process is already dead. Directly enqueue the notification.
+        _reactor.trace(u"cannot register process %d in IOCP, direct notification", pid);
+        _dead_processes.push_back(evd);
+        return evd;
+    }
+
+    return setProcessTermination(evd);
+}
+
+
+//----------------------------------------------------------------------------
+// Add a process termination event in the reactor, using a process handle.
+//----------------------------------------------------------------------------
+
+void* ts::Reactor::Guts::newProcessHandleTermination(ReactorHandlerInterface* handler, SysHandleType process_handle)
+{
+    // Create the EventData. Use the provided handler. Don't close it later.
+    EventData* evd = newEventData(EVT_PROC, handler);
+    evd->handle = process_handle;
+
+    // Get the process id (for the callback, later).
+    evd->pid = ::GetProcessId(process_handle);
+    if (evd->pid == 0) {
+        // Unlike access by PID, this case is a real error, invalid handle means invalid call.
+        _reactor.report().error(u"error getting process PID from handle: %s", SysErrorCodeMessage());
+        _reactor.deleteEventData(evd, evd->type);
+        return nullptr;
+    }
+
+    return setProcessTermination(evd);
+}
+
+
+//----------------------------------------------------------------------------
+// Add a process termination event: common code.
+//----------------------------------------------------------------------------
+
+ts::Reactor::EventData* ts::Reactor::Guts::setProcessTermination(EventData* evd)
+{
+    // Use a "do {} while (false)" pattern to allow early "break" and jump to cleanup in case of error.
+    bool success = false;
+    bool process_already_dead = false;
+    do {
+        // Create a job object with default attributes.
+        evd->job_object = ::CreateJobObjectW(nullptr, nullptr);
+        if (!WinHandleValid(evd->job_object)) {
+            _reactor.report().error(u"error job object: %s", SysErrorCodeMessage());
+            break;
+        }
+
+        // Associate the job object to the I/O completion port.
+        ::JOBOBJECT_ASSOCIATE_COMPLETION_PORT assoc = {
+            .CompletionKey = evd,
+            .CompletionPort = _iocp_handle,
+        };
+        if (!::SetInformationJobObject(evd->job_object, JobObjectAssociateCompletionPortInformation, &assoc, sizeof(assoc))) {
+            _reactor.report().error(u"error associating job object to I/O completion port: %s", SysErrorCodeMessage());
+            break;
+        }
+
+        // At this point, we successfully established the context.
+        success = true;
+
+        // Add the process to monitor to the job object.
+        if (!::AssignProcessToJobObject(evd->job_object, evd->handle)) {
+            // Cannot add the process to the job control, process may be already dead.
+            _reactor.trace(u"cannot add process %n in job control, maybe already dead, direct notification: %s", evd->pid, SysErrorCodeMessage());
+            // Delete the job object, but not the event data, keep the PID.
+            sysDeleteProcess(evd, true);
+            // Enqeue the process for direct notification.
+            _dead_processes.push_back(evd);
+        }
+    } while (false);
+
+    // Cleanup partially built resources in case of failure.
+    if (success) {
+        return evd;
+    }
+    else {
+        sysDeleteProcess(evd, true);
+        _reactor.deleteEventData(evd, evd->type);
+        return nullptr;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Cancel a process termination event.
+//----------------------------------------------------------------------------
+
+bool ts::Reactor::Guts::cancelProcessTermination(EventId id, bool silent)
+{
+    EventData* evd = reinterpret_cast<EventData*>(id._ptr);
+    bool success = _reactor.validateEventData(evd, silent);
+    if (success) {
+        success = sysDeleteProcess(evd, silent);
+        _reactor.deleteEventData(evd, evd->type);
+    }
+    return success;
+}
+
+bool ts::Reactor::Guts::sysDeleteProcess(EventData* evd, bool silent)
+{
+    // Close the job object if valid.
+    if (WinHandleValid(evd->job_object)) {
+        ::CloseHandle(evd->job_object);
+        evd->job_object = nullptr;
+    }
+    
+    // If the process was opened by id, we must close the handle.
+    if (evd->close_handle) {
+        ::CloseHandle(evd->handle);
+        evd->handle = nullptr;
+    }
     return true;
 }
 

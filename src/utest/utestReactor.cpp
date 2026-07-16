@@ -16,9 +16,11 @@
 #include "tsReactiveTCPServer.h"
 #include "tsReactiveServer.h"
 #include "tsReactiveTelnetConnection.h"
+#include "tsForkPipe.h"
 #include "tsTime.h"
 #include "tsCerrReport.h"
 #include "tsSysUtils.h"
+#include "tsSysInfo.h"
 #include "tsEnvironment.h"
 #include "tsunit.h"
 
@@ -34,6 +36,7 @@ class ReactorTest: public tsunit::Test
     TSUNIT_DECLARE_TEST(UDP);
     TSUNIT_DECLARE_TEST(Server);
     TSUNIT_DECLARE_TEST(Client);
+    TSUNIT_DECLARE_TEST(Process);
 
 public:
     virtual void beforeTestSuite() override;
@@ -66,15 +69,11 @@ namespace {
     class HandlerTimer: public ts::ReactorHandlerInterface
     {
     private:
-        std::ostream&    _debug;
         cn::milliseconds _precision;
 
     public:
         HandlerTimer() = delete;
-        HandlerTimer(std::ostream& debug, cn::milliseconds precision) :
-            _debug(debug),
-            _precision(precision)
-        {}
+        HandlerTimer(cn::milliseconds precision) : _precision(precision) {}
 
         ts::Time start {};
 
@@ -92,7 +91,7 @@ namespace {
 
     void HandlerTimer::handleTimer(ts::Reactor& reactor, ts::EventId id)
     {
-        _debug << "HandlerTimer::handleTimer: id: " << id.toString() << ", timer1 count: " << timer1_count << ", timer2 count: " << timer2_count << std::endl;
+        tsunit::Test::debug() << "HandlerTimer::handleTimer: id: " << id.toString() << ", timer1 count: " << timer1_count << ", timer2 count: " << timer2_count << std::endl;
 
         if (id == timer1) {
             // Repeated timer: 200 ms
@@ -126,7 +125,7 @@ namespace {
 
     void HandlerTimer::handleUserEvent(ts::Reactor& reactor, ts::EventId id)
     {
-        _debug << "HandlerTimer::handleUserEvent: id: " << id.toString() << ", event1 count: " << event1_count << std::endl;
+        tsunit::Test::debug() << "HandlerTimer::handleUserEvent: id: " << id.toString() << ", event1 count: " << event1_count << std::endl;
 
         const ts::Time now(ts::Time::CurrentUTC());
         TSUNIT_ASSERT(id == event1);
@@ -142,7 +141,7 @@ namespace {
 TSUNIT_DEFINE_TEST(Timer)
 {
     ts::Reactor reactor(&CERR);
-    HandlerTimer test(debug(), _precision);
+    HandlerTimer test(_precision);
 
     TSUNIT_ASSERT(!reactor.isOpen());
     TSUNIT_ASSERT(reactor.open());
@@ -197,13 +196,11 @@ namespace {
     class HandlerBroadcast: public ts::ReactorHandlerInterface
     {
     private:
-        ts::Reactor&  _reactor;
-        std::ostream& _debug;
-        ts::EventId   _event_id {};
+        ts::EventId _event_id {};
 
     public:
         HandlerBroadcast() = delete;
-        HandlerBroadcast(ts::Reactor& reactor, std::ostream& debug);
+        HandlerBroadcast(ts::Reactor& reactor);
 
         size_t event_count = 0;
         size_t broadcast_count = 0;
@@ -212,19 +209,17 @@ namespace {
         virtual void handleBroadcastEvent(ts::Reactor& reactor, int error_code, const ts::ObjectPtr& user_data) override;
     };
 
-    HandlerBroadcast::HandlerBroadcast(ts::Reactor& reactor, std::ostream& debug) :
-        _reactor(reactor),
-        _debug(debug)
+    HandlerBroadcast::HandlerBroadcast(ts::Reactor& reactor)
     {
-        _debug << "HandlerBroadcast constructor" << std::endl;
-        _event_id = _reactor.newEvent(this);
+        tsunit::Test::debug() << "HandlerBroadcast constructor" << std::endl;
+        _event_id = reactor.newEvent(this);
         TSUNIT_ASSERT(_event_id.isValid());
-        _reactor.addExitReference();
+        reactor.addExitReference();
     }
 
     void HandlerBroadcast::handleUserEvent(ts::Reactor& reactor, ts::EventId id)
     {
-        _debug << "HandlerBroadcast::handleUserEvent: should not be there" << std::endl;
+        tsunit::Test::debug() << "HandlerBroadcast::handleUserEvent: should not be there" << std::endl;
         event_count++;
     }
 
@@ -232,12 +227,12 @@ namespace {
     {
         auto foo = std::dynamic_pointer_cast<Foo>(user_data);
         TSUNIT_ASSERT(foo != nullptr);
-        _debug << "HandlerBroadcast::handleBroadcastEvent: error_code = " << error_code << ", user data: " << foo->value << std::endl;
+        tsunit::Test::debug() << "HandlerBroadcast::handleBroadcastEvent: error_code = " << error_code << ", user data: " << foo->value << std::endl;
         broadcast_count++;
         TSUNIT_EQUAL(broadcast_count, error_code);
         TSUNIT_EQUAL(broadcast_count, foo->value);
         if (broadcast_count >= 2) {
-            _reactor.freeExitReference();
+            reactor.freeExitReference();
         }
     }
 }
@@ -247,9 +242,9 @@ TSUNIT_DEFINE_TEST(Broadcast)
     ts::Reactor reactor(&CERR);
     TSUNIT_ASSERT(reactor.open());
 
-    HandlerBroadcast test1(reactor, debug());
-    HandlerBroadcast test2(reactor, debug());
-    HandlerBroadcast test3(reactor, debug());
+    HandlerBroadcast test1(reactor);
+    HandlerBroadcast test2(reactor);
+    HandlerBroadcast test3(reactor);
 
     TSUNIT_ASSERT(reactor.signalBroadcastEvent(1, std::make_shared<Foo>(1)));
     TSUNIT_ASSERT(reactor.signalBroadcastEvent(2, std::make_shared<Foo>(2)));
@@ -283,10 +278,9 @@ namespace {
     {
     public:
         HandlerUDP() = delete;
-        HandlerUDP(std::ostream& debug, cn::milliseconds precision);
+        HandlerUDP(cn::milliseconds precision);
 
     private:
-        std::ostream&             _debug;
         cn::milliseconds          _precision;
         ts::Time                  _start_timer {};
         ts::EventId               _timer {};
@@ -329,8 +323,7 @@ namespace {
                                       const ts::ObjectPtr& user_data) override;
     };
 
-    HandlerUDP::HandlerUDP(std::ostream& debug, cn::milliseconds precision) :
-        _debug(debug),
+    HandlerUDP::HandlerUDP(cn::milliseconds precision) :
         _precision(precision)
     {
         TSUNIT_ASSERT(!_reactor.isOpen());
@@ -358,7 +351,7 @@ namespace {
 
     void HandlerUDP::handleTimer(ts::Reactor& reactor, ts::EventId id)
     {
-        _debug << "HandlerUDP::handleTimer: id: " << id.toString() << std::endl;
+        tsunit::Test::debug() << "HandlerUDP::handleTimer: id: " << id.toString() << std::endl;
         TSUNIT_ASSERT(id == _timer);
         TSUNIT_ASSERT(ts::Time::CurrentUTC() >= _start_timer + cn::milliseconds(100) - _precision);
         TSUNIT_ASSERT(_rclient.startSend(this, &_request2, sizeof(_request2), std::make_shared<UserData>(u"send", _request2)));
@@ -370,7 +363,7 @@ namespace {
         TSUNIT_ASSERT(data != nullptr);
         const uint32_t value = *reinterpret_cast<const uint32_t*>(data);
 
-        _debug << "HandlerUDP::handleUDPSend: socket: " << name(sock) << ", value: " << name(data) << ", destination: " << destination << ", error: " << error_code << std::endl;
+        tsunit::Test::debug() << "HandlerUDP::handleUDPSend: socket: " << name(sock) << ", value: " << name(data) << ", destination: " << destination << ", error: " << error_code << std::endl;
 
         auto udata = std::dynamic_pointer_cast<UserData>(user_data);
         TSUNIT_ASSERT(udata != nullptr);
@@ -413,7 +406,7 @@ namespace {
         TSUNIT_EQUAL(sizeof(uint32_t), data->size());
         const uint32_t value = *reinterpret_cast<const uint32_t*>(data->data());
 
-        _debug << "HandlerUDP::handleUDPReceive: socket: " << name(sock) << ", value: " << name(value) << ", error: " << error_code
+        tsunit::Test::debug() << "HandlerUDP::handleUDPReceive: socket: " << name(sock) << ", value: " << name(value) << ", error: " << error_code
                << ", sender: " << sender << ", destination: " << destination << std::endl;
 
         auto udata = std::dynamic_pointer_cast<UserData>(user_data);
@@ -454,7 +447,7 @@ namespace {
 
     void HandlerUDP::handleUDPClosed(ts::ReactiveUDPSocket& sock, const ts::ObjectPtr& user_data)
     {
-        _debug << "HandlerUDP::handleUDPClosed: socket: " << name(sock) << std::endl;
+        tsunit::Test::debug() << "HandlerUDP::handleUDPClosed: socket: " << name(sock) << std::endl;
 
         auto udata = std::dynamic_pointer_cast<UserData>(user_data);
         TSUNIT_ASSERT(udata != nullptr);
@@ -507,7 +500,7 @@ namespace {
 TSUNIT_DEFINE_TEST(UDP)
 {
     TSUNIT_ASSERT(ts::IPInitialize());
-    HandlerUDP test(debug(), _precision);
+    HandlerUDP test(_precision);
 }
 
 
@@ -520,11 +513,10 @@ namespace {
     {
     public:
         TelnetClient() = delete;
-        TelnetClient(ts::Reactor& reactor, std::ostream& debug);
+        TelnetClient(ts::Reactor& reactor);
 
     private:
         ts::Reactor&                 _reactor;
-        std::ostream&                _debug;
         ts::TCPConnection            _client {&_reactor};
         ts::ReactiveTCPConnection    _rclient {_reactor, _client};
         ts::ReactiveTelnetConnection _rtclient {_rclient};
@@ -538,11 +530,10 @@ namespace {
         virtual void handleTCPClosed(ts::ReactiveTCPConnection& sock, const ts::ObjectPtr& user_data) override;
     };
 
-    TelnetClient::TelnetClient(ts::Reactor& reactor, std::ostream& debug) :
-        _reactor(reactor),
-        _debug(debug)
+    TelnetClient::TelnetClient(ts::Reactor& reactor) :
+        _reactor(reactor)
     {
-        _debug << "TelnetClient: connecting to " << _server_name << " (" << _server_socket << ")" << std::endl;
+        tsunit::Test::debug() << "TelnetClient: connecting to " << _server_name << " (" << _server_socket << ")" << std::endl;
         TSUNIT_ASSERT(_client.open(ts::IP::v4));
         TSUNIT_ASSERT(_client.bind(ts::IPSocketAddress::AnySocketAddress4));
         TSUNIT_ASSERT(_rclient.startConnect(this, _server_socket));
@@ -550,7 +541,7 @@ namespace {
 
     void TelnetClient::handleTCPConnected(ts::ReactiveTCPConnection& sock, int error_code, const ts::ObjectPtr& user_data)
     {
-        _debug << "TelnetClient::handleTCPConnected: error code: " << error_code << std::endl;
+        tsunit::Test::debug() << "TelnetClient::handleTCPConnected: error code: " << error_code << std::endl;
         TSUNIT_ASSERT(_rtclient.startReceive(this));
         TSUNIT_ASSERT(_rtclient.startSendLine(u"GET / HTTP/1.0", false));
         TSUNIT_ASSERT(_rtclient.startSendLine(u"Host: " + _server_name, false));
@@ -563,18 +554,18 @@ namespace {
     void TelnetClient::handleTelnetLine(ts::ReactiveTelnetConnection& sock, const ts::UString& line, int error_code)
     {
         if (error_code == ts::SYS_EOF) {
-            _debug << "TelnetClient::handleTelnetLine: end of response" << std::endl;
+            tsunit::Test::debug() << "TelnetClient::handleTelnetLine: end of response" << std::endl;
             TSUNIT_ASSERT(_client.disconnect());
             TSUNIT_ASSERT(_rclient.startClose(this));
         }
         else {
-            _debug << "TelnetClient::handleTelnetLine: \"" << line << "\", error code: " << error_code << std::endl;
+            tsunit::Test::debug() << "TelnetClient::handleTelnetLine: \"" << line << "\", error code: " << error_code << std::endl;
         }
     }
 
     void TelnetClient::handleTCPClosed(ts::ReactiveTCPConnection& sock, const ts::ObjectPtr& user_data)
     {
-        _debug << "TelnetClient::handleTCPClosed" << std::endl;
+        tsunit::Test::debug() << "TelnetClient::handleTCPClosed" << std::endl;
         TSUNIT_ASSERT(!_client.isOpen());
         sock.reactor().exitEventLoop();
     }
@@ -585,7 +576,7 @@ TSUNIT_DEFINE_TEST(Client)
     TSUNIT_ASSERT(ts::IPInitialize());
     ts::Reactor reactor(&CERR);
     TSUNIT_ASSERT(reactor.open());
-    TelnetClient test(reactor, debug());
+    TelnetClient test(reactor);
     TSUNIT_ASSERT(reactor.processEventLoop());
     TSUNIT_ASSERT(reactor.close());
 }
@@ -605,7 +596,7 @@ namespace {
     {
         TS_NOBUILD_NOCOPY(TestClient);
     public:
-        TestClient(ts::Reactor& reactor, std::ostream& debug, cn::milliseconds delay, size_t request_count, uint16_t server_port);
+        TestClient(ts::Reactor& reactor, cn::milliseconds delay, size_t request_count, uint16_t server_port);
 
         size_t handle_connected_count = 0;
         size_t handle_closed_count = 0;
@@ -614,7 +605,6 @@ namespace {
 
     private:
         ts::Reactor&              _reactor;
-        std::ostream&             _debug;
         cn::milliseconds          _delay;
         size_t                    _request_count;
         const ts::IPSocketAddress _server_address;
@@ -636,15 +626,14 @@ namespace {
 
     size_t TestClient::_id_counter = 0;
 
-    TestClient::TestClient(ts::Reactor& reactor, std::ostream& debug, cn::milliseconds delay, size_t request_count, uint16_t server_port) :
+    TestClient::TestClient(ts::Reactor& reactor, cn::milliseconds delay, size_t request_count, uint16_t server_port) :
         _reactor(reactor),
-        _debug(debug),
         _delay(delay),
         _request_count(request_count),
         _server_address(ts::IPAddress::LocalHost4, server_port),
         _client_id(++_id_counter)
     {
-        _debug << "TestClient: initialize client id " << _client_id << std::endl;
+        tsunit::Test::debug() << "TestClient: initialize client id " << _client_id << std::endl;
         _reactor.addExitReference();
         TSUNIT_ASSERT(_delay > cn::milliseconds::zero());
         TSUNIT_ASSERT(_request_count > 0);
@@ -654,12 +643,12 @@ namespace {
 
     void TestClient::handleTimer(ts::Reactor& reactor, ts::EventId id)
     {
-        _debug << "TestClient::handleTimer, client id: " << _client_id << std::endl;
+        tsunit::Test::debug() << "TestClient::handleTimer, client id: " << _client_id << std::endl;
         TSUNIT_ASSERT(id == _timer_id);
 
         if (!_client.isConnected()) {
             // First time: start connecting.
-            _debug << "TestClient::handleTimer, client id: " << _client_id << ", start connection" << std::endl;
+            tsunit::Test::debug() << "TestClient::handleTimer, client id: " << _client_id << ", start connection" << std::endl;
             TSUNIT_ASSERT(_client.open(ts::IP::v4));
             TSUNIT_ASSERT(_client.bind(ts::IPSocketAddress::AnySocketAddress4));
             TSUNIT_ASSERT(_rclient.startConnect(this, _server_address));
@@ -667,7 +656,7 @@ namespace {
         else {
             // Next times: send a request.
             _request++;
-            _debug << "TestClient::handleTimer, client id: " << _client_id << ", start send request " << _request << std::endl;
+            tsunit::Test::debug() << "TestClient::handleTimer, client id: " << _client_id << ", start send request " << _request << std::endl;
             TSUNIT_ASSERT(_rclient.startSend(this, &_request, sizeof(_request)));
             send_count++;
             _expected_send_position += sizeof(_request);
@@ -676,7 +665,7 @@ namespace {
 
     void TestClient::handleTCPConnected(ts::ReactiveTCPConnection& sock, int error_code, const ts::ObjectPtr& user_data)
     {
-        _debug << "TestClient::handleTCPConnected, client id: " << _client_id << ", error code: " << error_code << std::endl;
+        tsunit::Test::debug() << "TestClient::handleTCPConnected, client id: " << _client_id << ", error code: " << error_code << std::endl;
         TSUNIT_ASSERT(&sock == &_rclient);
         TSUNIT_EQUAL(ts::SYS_SUCCESS, error_code);
         TSUNIT_ASSERT(_rclient.startReceive(this));
@@ -689,14 +678,14 @@ namespace {
 
     void TestClient::handleTCPSend(ts::ReactiveTCPConnection& sock, size_t position, int error_code, const ts::ObjectPtr& user_data)
     {
-        _debug << "TestClient::handleTCPSend, client id: " << _client_id << ", position: " << position << ", error code: " << error_code << std::endl;
+        tsunit::Test::debug() << "TestClient::handleTCPSend, client id: " << _client_id << ", position: " << position << ", error code: " << error_code << std::endl;
         TSUNIT_ASSERT(&sock == &_rclient);
         TSUNIT_EQUAL(_expected_send_position, position);
     }
 
     void TestClient::handleTCPReceive(ts::ReactiveTCPConnection& sock, const ts::ByteBlock& data, ts::ReactiveTCPInputControl& control, int error_code, const ts::ObjectPtr& user_data)
     {
-        _debug << "TestClient::handleTCPReceive, client id: " << _client_id << ", error code: " << error_code << ", size: " << data.size() << std::endl;
+        tsunit::Test::debug() << "TestClient::handleTCPReceive, client id: " << _client_id << ", error code: " << error_code << ", size: " << data.size() << std::endl;
         TSUNIT_ASSERT(&sock == &_rclient);
         TSUNIT_EQUAL(ts::SYS_SUCCESS, error_code);
 
@@ -709,7 +698,7 @@ namespace {
             // Verify response.
             const uint32_t response = *reinterpret_cast<const uint32_t*>(data.data());
             control.used_size = sizeof(uint32_t);
-            _debug << "TestClient::handleTCPReceive, client id: " << _client_id << ", request: " << _request << ", response: " << response << std::endl;
+            tsunit::Test::debug() << "TestClient::handleTCPReceive, client id: " << _client_id << ", request: " << _request << ", response: " << response << std::endl;
             TSUNIT_EQUAL(_request + 1, response);
             receive_count++;
 
@@ -720,7 +709,7 @@ namespace {
             }
             else {
                 // Session completed.
-                _debug << "TestClient::handleTCPReceive, start close, client id: " << _client_id << std::endl;
+                tsunit::Test::debug() << "TestClient::handleTCPReceive, start close, client id: " << _client_id << std::endl;
                 TSUNIT_ASSERT(_rclient.startClose(this));
             }
         }
@@ -728,7 +717,7 @@ namespace {
 
     void TestClient::handleTCPClosed(ts::ReactiveTCPConnection& sock, const ts::ObjectPtr& user_data)
     {
-        _debug << "TestClient::handleTCPClosed, client id: " << _client_id << std::endl;
+        tsunit::Test::debug() << "TestClient::handleTCPClosed, client id: " << _client_id << std::endl;
         TSUNIT_ASSERT(&sock == &_rclient);
         _reactor.freeExitReference();
         handle_closed_count++;
@@ -743,7 +732,7 @@ namespace {
     {
         TS_NOBUILD_NOCOPY(TestServerConnection);
     public:
-        TestServerConnection(ts::Reactor& reactor, std::ostream& debug);
+        TestServerConnection(ts::Reactor& reactor);
         virtual ~TestServerConnection() override;
         size_t clientId() const { return _client_id; }
 
@@ -752,7 +741,6 @@ namespace {
 
     private:
         ts::Reactor&              _reactor;
-        std::ostream&             _debug;
         size_t                    _client_id = 0;
         ts::TCPConnection         _client {&_reactor.report()};
         ts::ReactiveTCPConnection _rclient {_reactor, _client};
@@ -772,18 +760,17 @@ namespace {
     size_t TestServerConnection::handle_closed_count = 0;
     size_t TestServerConnection::_id_counter = 0;
 
-    TestServerConnection::TestServerConnection(ts::Reactor& reactor, std::ostream& debug) :
+    TestServerConnection::TestServerConnection(ts::Reactor& reactor) :
         _reactor(reactor),
-        _debug(debug),
         _client_id(++_id_counter)
     {
-        _debug << "TestServerConnection: initialize client session id " << _client_id << std::endl;
+        tsunit::Test::debug() << "TestServerConnection: initialize client session id " << _client_id << std::endl;
         _rclient.whenAccepted(this);
     }
 
     TestServerConnection::~TestServerConnection()
     {
-        _debug << "TestServerConnection: destruction of client session id " << _client_id << " @" << ts::UString::Hexa(uintptr_t(this)) << std::endl;
+        tsunit::Test::debug() << "TestServerConnection: destruction of client session id " << _client_id << " @" << ts::UString::Hexa(uintptr_t(this)) << std::endl;
     }
 
     ts::ReactiveTCPConnection& TestServerConnection::getConnection()
@@ -793,7 +780,7 @@ namespace {
 
     void TestServerConnection::handleTCPAccepted(ts::ReactiveTCPServer& server, ts::ReactiveTCPConnection& sock, int error_code, const ts::ObjectPtr& user_data)
     {
-        _debug << "TestServerConnection::handleTCPAccepted, client id: " << _client_id << ", error code: " << error_code
+        tsunit::Test::debug() << "TestServerConnection::handleTCPAccepted, client id: " << _client_id << ", error code: " << error_code
                << ", client: " << sock.socket().peerName() << ", local: " << sock.socket().localName() << std::endl;
         TSUNIT_ASSERT(&sock == &_rclient);
         handle_accepted_count++;
@@ -804,7 +791,7 @@ namespace {
 
     void TestServerConnection::handleTCPSend(ts::ReactiveTCPConnection& sock, size_t position, int error_code, const ts::ObjectPtr& user_data)
     {
-        _debug << "TestServerConnection::handleTCPSend, client id: " << _client_id << ", position: " << position << ", error code: " << error_code << std::endl;
+        tsunit::Test::debug() << "TestServerConnection::handleTCPSend, client id: " << _client_id << ", position: " << position << ", error code: " << error_code << std::endl;
         TSUNIT_ASSERT(&sock == &_rclient);
         TSUNIT_EQUAL(_expected_send_position, position);
     }
@@ -814,11 +801,11 @@ namespace {
         TSUNIT_ASSERT(&sock == &_rclient);
         if (error_code == ts::SYS_EOF) {
             // Client disconnected.
-            _debug << "TestServerConnection::handleTCPReceive, client id: " << _client_id << ", end of session" << std::endl;
+            tsunit::Test::debug() << "TestServerConnection::handleTCPReceive, client id: " << _client_id << ", end of session" << std::endl;
             TSUNIT_ASSERT(_rclient.startClose(this));
         }
         else {
-            _debug << "TestServerConnection::handleTCPReceive, client id: " << _client_id << ", error code: " << error_code << ", size: " << data.size() << std::endl;
+            tsunit::Test::debug() << "TestServerConnection::handleTCPReceive, client id: " << _client_id << ", error code: " << error_code << ", size: " << data.size() << std::endl;
             TSUNIT_EQUAL(ts::SYS_SUCCESS, error_code);
             // Need at least 4 bytes.
             if (data.size() < sizeof(uint32_t)) {
@@ -827,7 +814,7 @@ namespace {
             }
             else {
                 const uint32_t request = *reinterpret_cast<const uint32_t*>(data.data());
-                _debug << "TestServerConnection::handleTCPReceive, client id: " << _client_id << ", request: " << request << std::endl;
+                tsunit::Test::debug() << "TestServerConnection::handleTCPReceive, client id: " << _client_id << ", request: " << request << std::endl;
                 control.used_size = sizeof(uint32_t);
                 _response = request + 1;
                 TSUNIT_ASSERT(_rclient.startSend(this, &_response, sizeof(_response)));
@@ -838,7 +825,7 @@ namespace {
 
     void TestServerConnection::handleTCPClosed(ts::ReactiveTCPConnection& sock, const ts::ObjectPtr& user_data)
     {
-        _debug << "TestServerConnection::handleTCPClosed, client id: " << _client_id << std::endl;
+        tsunit::Test::debug() << "TestServerConnection::handleTCPClosed, client id: " << _client_id << std::endl;
         TSUNIT_ASSERT(&sock == &_rclient);
         handle_closed_count++;
     }
@@ -852,37 +839,35 @@ namespace {
     {
         TS_NOBUILD_NOCOPY(TestFactory);
     public:
-        TestFactory(ts::Reactor& reactor, std::ostream& debug);
+        TestFactory(ts::Reactor& reactor);
 
         size_t client_count = 0;
         size_t server_exited_count = 0;
 
     private:
-        ts::Reactor&  _reactor;
-        std::ostream& _debug;
+        ts::Reactor& _reactor;
 
         virtual ts::ReactiveServerSessionInterface* newClientSession() override;
         virtual void handleServerExited(ts::ReactiveServer& server, const ts::ObjectPtr& user_data) override;
     };
 
-    TestFactory::TestFactory(ts::Reactor& reactor, std::ostream& debug) :
-        _reactor(reactor),
-        _debug(debug)
+    TestFactory::TestFactory(ts::Reactor& reactor) :
+        _reactor(reactor)
     {
-        _debug << "TestFactory: initialized"<< std::endl;
+        tsunit::Test::debug() << "TestFactory: initialized"<< std::endl;
     }
 
     ts::ReactiveServerSessionInterface* TestFactory::newClientSession()
     {
-        const auto session = new TestServerConnection(_reactor, _debug);
-        _debug << "TestFactory: create client session id " << session->clientId() << std::endl;
+        const auto session = new TestServerConnection(_reactor);
+        tsunit::Test::debug() << "TestFactory: create client session id " << session->clientId() << std::endl;
         client_count++;
         return session;
     }
 
     void TestFactory::handleServerExited(ts::ReactiveServer& server, const ts::ObjectPtr& user_data)
     {
-        _debug << "TestFactory: server exited" << std::endl;
+        tsunit::Test::debug() << "TestFactory: server exited" << std::endl;
         server_exited_count++;
         _reactor.freeExitReference();
     }
@@ -895,7 +880,7 @@ TSUNIT_DEFINE_TEST(Server)
     TSUNIT_ASSERT(ts::IPInitialize());
 
     ts::Reactor           reactor(&CERR);
-    TestFactory           factory(reactor, debug());
+    TestFactory           factory(reactor);
     ts::TCPServer         tcp_server(&CERR);
     ts::ReactiveTCPServer rtcp_server(reactor, tcp_server);
     ts::ReactiveServer    server(rtcp_server);
@@ -911,8 +896,8 @@ TSUNIT_DEFINE_TEST(Server)
     server.setExitAfterClientCount(2);
     server.start(&factory, &factory);
 
-    TestClient client1(reactor, debug(), cn::milliseconds(50), 3, PORT);
-    TestClient client2(reactor, debug(), cn::milliseconds(80), 2, PORT);
+    TestClient client1(reactor, cn::milliseconds(50), 3, PORT);
+    TestClient client2(reactor, cn::milliseconds(80), 2, PORT);
 
     TSUNIT_ASSERT(reactor.processEventLoop());
     TSUNIT_ASSERT(reactor.close());
@@ -932,4 +917,109 @@ TSUNIT_DEFINE_TEST(Server)
 
     TSUNIT_EQUAL(2, TestServerConnection::handle_accepted_count);
     TSUNIT_EQUAL(2, TestServerConnection::handle_closed_count);
+}
+
+
+//----------------------------------------------------------------------------
+// Unitary test : process.
+//----------------------------------------------------------------------------
+
+namespace {
+    class HandlerProcess: public ts::ReactorHandlerInterface
+    {
+    public:
+        HandlerProcess() = default;
+
+        ts::ForkPipe         proc {&CERR};
+        ts::EventId          init_timer {};
+        ts::EventId          timeout {};
+        ts::EventId          fake_process {};
+        ts::EventId          real_process {};
+        size_t               process_count = 0;
+        ts::SysProcessIdType fake_pid = 0xC0FFEE;
+        ts::SysProcessIdType real_pid = ts::SYS_PROCESS_ID_INVALID;
+
+        virtual void handleTimer(ts::Reactor& reactor, ts::EventId id) override;
+        virtual void handleProcessTermination(ts::Reactor& reactor, ts::EventId id, int pid) override;
+    };
+
+    void HandlerProcess::handleTimer(ts::Reactor& reactor, ts::EventId id)
+    {
+        if (id == init_timer) {
+            tsunit::Test::debug() << "HandlerProcess::handleTimer: initial timer" << std::endl;
+            init_timer.invalidate();
+
+            // Subscribe to a fake process (emulate situation where a process is already terminated).
+            fake_process = reactor.newProcessIdTermination(this, fake_pid);
+            TSUNIT_ASSERT(fake_process.isValid());
+
+            // Create a real process.
+            const ts::UString cmd = ts::SysInfo::Instance().os() == ts::SysInfo::WINDOWS ?
+                u"powershell Start-Sleep -Milliseconds 200" : u"sleep 0.2";
+            tsunit::Test::debug() << "HandlerProcess: starting process \"" << cmd << "\"" << std::endl;
+
+            TSUNIT_ASSERT(proc.open(cmd, ts::ForkPipe::SYNCHRONOUS, 0, ts::ForkPipe::KEEP_BOTH, ts::ForkPipe::STDIN_NONE));
+            real_pid = proc.getProcessId();
+            tsunit::Test::debug() << "HandlerProcess::handleTimer: process pid: " << real_pid << std::endl;
+
+            // Subscribe to real process.
+            real_process = reactor.newProcessIdTermination(this, real_pid);
+            TSUNIT_ASSERT(real_process.isValid());
+        }
+        else if (id == timeout) {
+            tsunit::Test::debug() << "HandlerProcess::handleTimer: timeout" << std::endl;
+            timeout.invalidate();
+            TSUNIT_ASSERT(false);
+        }
+        else {
+            tsunit::Test::debug() << "HandlerProcess::handleTimer: invalid time id: " << id.toString() << std::endl;
+            TSUNIT_ASSERT(false);
+        }
+    }
+
+    void HandlerProcess::handleProcessTermination(ts::Reactor& reactor, ts::EventId id, int pid)
+    {
+        process_count++;
+        tsunit::Test::debug() << "HandlerProcess::handleProcessTermination: pid: " << pid << ", process count: " << process_count << std::endl;
+
+        if (process_count == 1) {
+            TSUNIT_EQUAL(fake_pid, pid);
+            TSUNIT_ASSERT(id == fake_process);
+        }
+        else if (process_count == 2) {
+            TSUNIT_EQUAL(real_pid, pid);
+            TSUNIT_ASSERT(id == real_process);
+            reactor.exitEventLoop();
+        }
+        else {
+            TSUNIT_ASSERT(false);
+        }
+    }
+}
+
+TSUNIT_DEFINE_TEST(Process)
+{
+    ts::Reactor reactor(&CERR);
+    HandlerProcess test;
+
+    TSUNIT_ASSERT(!reactor.isOpen());
+    TSUNIT_ASSERT(reactor.open());
+    TSUNIT_ASSERT(reactor.isOpen());
+
+    test.init_timer = reactor.newTimer(&test, cn::milliseconds(50), false);
+    TSUNIT_ASSERT(test.init_timer.isValid());
+
+    test.timeout = reactor.newTimer(&test, cn::seconds(10), false);
+    TSUNIT_ASSERT(test.timeout.isValid());
+
+    TSUNIT_ASSERT(reactor.processEventLoop());
+
+    TSUNIT_EQUAL(2, test.process_count);
+    TSUNIT_ASSERT(!test.init_timer.isValid());
+    TSUNIT_ASSERT(test.timeout.isValid());
+    TSUNIT_ASSERT(test.real_pid > 0);
+
+    TSUNIT_ASSERT(reactor.isOpen());
+    TSUNIT_ASSERT(reactor.close());
+    TSUNIT_ASSERT(!reactor.isOpen());
 }

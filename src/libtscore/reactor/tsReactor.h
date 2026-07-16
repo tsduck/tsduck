@@ -354,6 +354,42 @@ namespace ts {
         bool signalBroadcastEvent(int error_code = SYS_SUCCESS, const ObjectPtr& user_data = nullptr);
 
         //--------------------------------------------------------------------
+        // PROCESS TERMINATION EVENTS
+        //--------------------------------------------------------------------
+
+        //!
+        //! Add a process termination event in the reactor, using a process id.
+        //! Note: On UNIX systems, with ForkPipe, the process id is meaningful only for processes with SYNCHRONOUS wait mode.
+        //! @param [in] handler Address of a handler to call when the process terminates. Return an error if set as @c nullptr.
+        //! The @a handler is invoked when the process is no longer there. It is possible that the process was already
+        //! terminated for a while. It is even possible that the process never really started.
+        //! @param [in] pid Process id to watch. If that process id is unknown, it is assumed that the process is already
+        //! terminated and the @a handler will be called as soon as possible.
+        //! @return The identity of the reactor event. Invalid in case of error.
+        //!
+        EventId newProcessIdTermination(ReactorHandlerInterface* handler, SysProcessIdType pid);
+
+        //!
+        //! Add a process termination event in the reactor, using a process handle.
+        //! Note: Only Windows identifies a process by handle, in addition to process id. On other operating systems, this
+        //! method always reports an error.
+        //! @param [in] handler Address of a handler to call when the process terminates. Return an error if set as @c nullptr.
+        //! The @a handler is invoked when the process is no longer there. It is possible that the process was already
+        //! terminated for a while. It is even possible that the process never really started.
+        //! @param [in] process_handle Process handle to watch.
+        //! @return The identity of the reactor event. Invalid in case of error.
+        //!
+        EventId newProcessHandleTermination(ReactorHandlerInterface* handler, SysHandleType process_handle);
+
+        //!
+        //! Cancel a process termination event.
+        //! @param [in] id Event to delete.
+        //! @param [in] silent If true, do not report errors through the logger.
+        //! @return True on success, false on error.
+        //!
+        bool cancelProcessTermination(EventId id, bool silent = false);
+
+        //--------------------------------------------------------------------
         // ASYNCHRONOUS I/O EVENTS
         //--------------------------------------------------------------------
 
@@ -481,6 +517,9 @@ namespace ts {
             virtual void* newEvent(ReactorHandlerInterface* handler) = 0;
             virtual bool signalEvent(EventId id) = 0;
             virtual bool deleteEvent(EventId id, bool silent) = 0;
+            virtual void* newProcessIdTermination(ReactorHandlerInterface* handler, SysProcessIdType pid) = 0;
+            virtual void* newProcessHandleTermination(ReactorHandlerInterface* handler, SysHandleType process_handle);
+            virtual bool cancelProcessTermination(EventId id, bool silent) = 0;
             virtual void* newAsynchronousIO(ReactorHandlerInterface* handler, SysSocketType sock);
             virtual bool cancelAsynchronousIO(EventId id, bool silent);
             virtual bool cancelAndWaitAsynchronousIO(EventId id, NonBlockingDevice::IOSB& iosb, bool silent);
@@ -503,6 +542,7 @@ namespace ts {
             EVT_READ  = 0x04,
             EVT_WRITE = 0x08,
             EVT_ASYNC = 0x10,
+            EVT_PROC  = 0x20,
         };
         static const Names& EventTypeNames();
 
@@ -578,6 +618,9 @@ namespace ts {
 
         // Verify that the reactor is initialized.
         bool checkOpen(bool silent);
+
+        // Verify that a handler is not null.
+        bool checkNonNull(ReactorHandlerInterface* handler, const UChar* name);
 
         // Check that an EventData pointer is valid.
         bool validateEventData(EventData* evd, bool silent);
