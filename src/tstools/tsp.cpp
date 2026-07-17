@@ -34,6 +34,7 @@ namespace {
         TSPOptions(int argc, char *argv[]);
 
         // Option values
+        bool                dot = false;         // Output the plugin chain in Graphviz DOT format.
         bool                monitor = false;     // Run a resource monitoring thread in the background.
         ts::UString         monitor_config {};   // System monitoring configuration file.S
         ts::DuckContext     duck {this};         // TSDuck context
@@ -55,6 +56,11 @@ TSPOptions::TSPOptions(int argc, char *argv[]) :
     log_args.defineArgs(*this);
     tsp_args.defineArgs(*this);
 
+    option(u"dot");
+    help(u"dot",
+         u"Output the top-level plugin chain in Graphviz DOT format and exit. "
+         u"Plugin options are not included.");
+
     option(u"monitor", 'm', STRING, 0, 1, 0, UNLIMITED_VALUE, true);
     help(u"monitor", u"filename",
          u"Continuously monitor the system resources which are used by tsp. "
@@ -66,6 +72,7 @@ TSPOptions::TSPOptions(int argc, char *argv[]) :
     analyze(argc, argv);
 
     // Load option values.
+    dot = present(u"dot");
     monitor = present(u"monitor");
     getValue(monitor_config, u"monitor");
     duck.loadArgs(*this);
@@ -74,6 +81,34 @@ TSPOptions::TSPOptions(int argc, char *argv[]) :
 
     // Final checking
     exitOnError();
+}
+
+
+//----------------------------------------------------------------------------
+//  Output the top-level plugin chain in Graphviz DOT format.
+//----------------------------------------------------------------------------
+
+namespace {
+    void OutputGraph(const ts::TSProcessorArgs& args)
+    {
+        std::cout << "digraph tsp {" << std::endl
+                  << "    rankdir = LR;" << std::endl
+                  << "    node [shape = box];" << std::endl
+                  << "    input [label = \"Input\\n" << args.input.name.toJSON() << "\"];" << std::endl;
+
+        ts::UString previous(u"input");
+        for (size_t index = 0; index < args.plugins.size(); ++index) {
+            const ts::UString current(ts::UString::Format(u"processor_%d", index));
+            std::cout << "    " << current << " [label = \"Processor " << index << "\\n"
+                      << args.plugins[index].name.toJSON() << "\"];" << std::endl
+                      << "    " << previous << " -> " << current << ";" << std::endl;
+            previous = current;
+        }
+
+        std::cout << "    output [label = \"Output\\n" << args.output.name.toJSON() << "\"];" << std::endl
+                  << "    " << previous << " -> output;" << std::endl
+                  << "}" << std::endl;
+    }
 }
 
 
@@ -122,6 +157,12 @@ int MainCode(int argc, char *argv[])
     // Get command line options.
     TSPOptions opt(argc, argv);
     CERR.setMaxSeverity(opt.maxSeverity());
+
+    // Describing the chain does not load plugins or process transport streams.
+    if (opt.dot) {
+        OutputGraph(opt.tsp_args);
+        return EXIT_SUCCESS;
+    }
 
     // Prevent from being killed when writing on broken pipes.
     ts::IgnorePipeSignal();

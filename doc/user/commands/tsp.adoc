@@ -386,6 +386,14 @@ See also the options `--max-input-packets` and `--max-flushed-packets`
 to adjust the latency without modifying the global buffer size.
 
 [.opt]
+*--dot*
+
+[.optdoc]
+Output the top-level plugin chain in Graphviz DOT format and exit without processing transport stream packets.
+The graph contains the input plugin, the ordered packet processing plugins, and the output plugin.
+Plugin options are not included.
+
+[.opt]
 *--final-wait* _milliseconds_
 
 [.optdoc]
