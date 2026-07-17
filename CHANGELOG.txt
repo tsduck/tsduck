@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.45-4727 (July 2026)
+VERSION 3.45-4744 (July 2026)
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -19,8 +19,7 @@ VERSION 3.45-4727 (July 2026)
     - Options  --preserve-units,  --silent-after, --stuffing in plugins "slice"
       and "time".
     - Option --no-lnb-control in input plugin "dektec".
-    - Option --control-ephemeral-rsa-bits in command "tsp".
-    - Option --dot in command "tsp".
+    - Options --control-ephemeral-rsa-bits, --dot in command "tsp".
     - Option --remote-ephemeral-rsa-bits in command "tsswitch".
     - Option --snddropdelay in input and output plugins "srt".
     - Options --super-cas-id and --client-limit in "tsecmg".

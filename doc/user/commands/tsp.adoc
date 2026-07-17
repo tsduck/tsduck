@@ -393,6 +393,14 @@ Output the top-level plugin chain in Graphviz DOT format and exit without proces
 The graph contains the input plugin, the ordered packet processing plugins, and the output plugin.
 Plugin options are not included.
 
+[.optdoc]
+Example:
+[source,shell]
+----
+$ tsp --dot -I file -P regulate -P tables -P psi -O drop | dot -T png -o sample-tsp-dot.png
+----
+image::sample-tsp-dot.png[align="center",alt="Sample command tsp --dot"]
+
 [.opt]
 *--final-wait* _milliseconds_
 

@@ -19,6 +19,7 @@ Gareth Fenn
 Martin Frétigné
 Thomas Göttgens
 Max Halldén
+John Hansen Aal
 Chris Hibbert
 Paul Higgs
 Harald Jordan
