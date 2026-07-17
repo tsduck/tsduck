@@ -402,6 +402,8 @@ void ts::Reactor::Guts::processEventLoop()
                 // Try to wait on the process.
                 ::siginfo_t info;
                 TS_ZERO(info);
+                TS_PUSH_WARNING()
+                TS_LLVM_NOWARNING(disabled-macro-expansion) // si_pid is a macro containing "si_pid" string
                 if (::waitid(P_PIDFD, evd.fd, &info, WEXITED | WNOHANG) < 0) {
                     // Actual error, delete the process termination.
                     _reactor.report().error(u"error reading process state: %s", SysErrorCodeMessage());
@@ -420,6 +422,7 @@ void ts::Reactor::Guts::processEventLoop()
                         evd.handler->handleProcessTermination(_reactor, id, evd.pid);
                     }
                 }
+                TS_POP_WARNING()
             }
             else {
                 _reactor.trace(u"epoll: event #%d, completed I/O", i);
@@ -680,7 +683,10 @@ void* ts::Reactor::Guts::newProcessIdTermination(ReactorHandlerInterface* handle
     evd->pid = pid;
 
     // Open a file descriptor on the process.
+    TS_PUSH_WARNING()
+    TS_LLVM_NOWARNING(shorten-64-to-32)  // ????
     evd->fd = ::syscall(SYS_pidfd_open, pid, 0);
+    TS_PUSH_WARNING()
     if (evd->fd < 0) {
         // Error. Consider that the process is already dead. Directly enqueue the notification.
         _reactor.trace(u"cannot open process %d, direct notification", pid);
