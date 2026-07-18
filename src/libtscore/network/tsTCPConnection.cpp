@@ -17,6 +17,21 @@
 
 
 //----------------------------------------------------------------------------
+// Constructors and destructor.
+//----------------------------------------------------------------------------
+
+ts::TCPConnection::TCPConnection(Report* report, bool non_blocking, Object* owner) :
+    TCPSocket(report, non_blocking, owner)
+{
+}
+
+ts::TCPConnection::TCPConnection(ReporterBase* delegate, bool non_blocking, Object* owner) :
+    TCPSocket(delegate, non_blocking, owner)
+{
+}
+
+
+//----------------------------------------------------------------------------
 // Called by a server to declare that the socket has just become opened.
 //----------------------------------------------------------------------------
 
@@ -45,6 +60,7 @@ void ts::TCPConnection::declareConnected()
     else {
         // Declare the socket as connected.
         _is_connected = true;
+        _end_of_input = false;
 
         // Notify all subscribers that the socket is connected.
         callSubscribers<SocketHandlerInterface>([this](SocketHandlerInterface* subs) {
@@ -117,13 +133,30 @@ ts::UString ts::TCPConnection::peerName()
 
 
 //----------------------------------------------------------------------------
-// Send data.
+// Detect end of input stream. Implementation of StreamInterface.
 //----------------------------------------------------------------------------
 
-bool ts::TCPConnection::send(const void* buffer, size_t size, IOSB* iosb)
+bool ts::TCPConnection::endOfStream()
 {
+    return !_is_connected || _end_of_input;
+}
+
+
+//----------------------------------------------------------------------------
+// Send data. Implementation of StreamInterface.
+//----------------------------------------------------------------------------
+
+bool ts::TCPConnection::writeStream(const void* buffer, size_t data_size, IOSB* iosb)
+{
+    return WriteStreamHelper<TCPConnection>(this, buffer, data_size, iosb);
+}
+
+bool ts::TCPConnection::writeStream(const void* buffer, size_t size, size_t& written_size, IOSB* iosb)
+{
+    written_size = 0;
+
     // Check that the application uses the right blocking mode.
-    if (!checkNonBlocking(iosb, u"TCPConnection::send")) {
+    if (!checkNonBlocking(iosb, u"TCPConnection::writeStream")) {
         return false;
     }
 
@@ -164,6 +197,7 @@ bool ts::TCPConnection::send(const void* buffer, size_t size, IOSB* iosb)
         if (gone > 0) {
             assert(size_t(gone) <= remain);
             data += gone;
+            written_size += gone;
             remain -= gone;
         }
 #if defined(TS_UNIX)
@@ -177,7 +211,7 @@ bool ts::TCPConnection::send(const void* buffer, size_t size, IOSB* iosb)
             // Windows: Asynchronous I/O in progress.
             assert(iosb != nullptr);
             iosb->pending = true;
-            iosb->sent_size = size - remain;
+            iosb->sent_size = written_size;
             return true;
         }
         else {
@@ -191,10 +225,15 @@ bool ts::TCPConnection::send(const void* buffer, size_t size, IOSB* iosb)
 
 
 //----------------------------------------------------------------------------
-// Receive data.
+// Receive data. Implementation of StreamInterface.
 //----------------------------------------------------------------------------
 
-bool ts::TCPConnection::receive(void* data, size_t max_size, size_t& ret_size, const AbortInterface* abort, IOSB* iosb)
+bool ts::TCPConnection::readStream(void* buffer, size_t size, const AbortInterface* abort)
+{
+    return ReadStreamHelper<TCPConnection>(this, buffer, size, abort);
+}
+
+bool ts::TCPConnection::readStream(void* data, size_t max_size, size_t& ret_size, const AbortInterface* abort, IOSB* iosb)
 {
     // Clear returned values
     ret_size = 0;
@@ -237,6 +276,8 @@ bool ts::TCPConnection::receive(void* data, size_t max_size, size_t& ret_size, c
                 // Actual error.
                 report().error(u"error receiving data from socket: %s", SysErrorCodeMessage(err));
             }
+            // In all cases, input error means end of input.
+            _end_of_input = true;
         }
         return iosb->pending;
     }
@@ -280,33 +321,12 @@ bool ts::TCPConnection::receive(void* data, size_t max_size, size_t& ret_size, c
             if (isOpen()) {
                 // Report the error only if the error does not result from a close in another thread.
                 report().error(u"error receiving data from socket: %s", SysErrorCodeMessage(err_code));
+                // In all cases, input error means end of input.
+                _end_of_input = true;
             }
             return false;
         }
     }
-}
-
-
-//----------------------------------------------------------------------------
-// Receive data until buffer is full.
-//----------------------------------------------------------------------------
-
-bool ts::TCPConnection::receive(void* buffer, size_t size, const AbortInterface* abort)
-{
-    char* data = reinterpret_cast<char*>(buffer);
-    size_t remain = size;
-
-    while (remain > 0) {
-        size_t got;
-        if (!receive(data, remain, got, abort)) {
-            return false;
-        }
-        assert(got <= remain);
-        data += got;
-        remain -= got;
-    }
-
-    return true;
 }
 
 

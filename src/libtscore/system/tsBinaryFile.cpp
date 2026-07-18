@@ -28,14 +28,12 @@
 //----------------------------------------------------------------------------
 
 ts::BinaryFile::BinaryFile(Report* report, bool non_blocking, Object* owner) :
-    NonBlockingDevice(report, non_blocking, owner),
-    AbstractStream(*static_cast<ReporterBase*>(this))
+    NonBlockingDevice(report, non_blocking, owner)
 {
 }
 
 ts::BinaryFile::BinaryFile(ReporterBase* delegate, bool non_blocking, Object* owner) :
-    NonBlockingDevice(delegate, non_blocking, owner),
-    AbstractStream(*static_cast<ReporterBase*>(this))
+    NonBlockingDevice(delegate, non_blocking, owner)
 {
 }
 
@@ -488,13 +486,18 @@ bool ts::BinaryFile::close(bool silent)
 
 
 //----------------------------------------------------------------------------
-// Implementation of AbstractStream (read).
+// Implementation of StreamInterface (read).
 //----------------------------------------------------------------------------
 
 bool ts::BinaryFile::endOfStream()
 {
     // Return an end-of-file at end of the last iteration.
     return _at_eof && _repeat_input != 0 && _input_counter >= _repeat_input;
+}
+
+bool ts::BinaryFile::readStream(void* buffer, size_t size, const AbortInterface* abort)
+{
+    return ReadStreamHelper<BinaryFile>(this, buffer, size, abort);
 }
 
 bool ts::BinaryFile::readStream(void* buffer, size_t request_size, size_t& read_size, const AbortInterface* abort, IOSB* iosb)
@@ -528,8 +531,13 @@ bool ts::BinaryFile::readStream(void* buffer, size_t request_size, size_t& read_
 
 
 //----------------------------------------------------------------------------
-// Implementation of AbstractStream (write).
+// Implementation of StreamInterface (write).
 //----------------------------------------------------------------------------
+
+bool ts::BinaryFile::writeStream(const void* buffer, size_t data_size, IOSB* iosb)
+{
+    return WriteStreamHelper<BinaryFile>(this, buffer, data_size, iosb);
+}
 
 bool ts::BinaryFile::writeStream(const void* buffer, size_t data_size, size_t& written_size, IOSB* iosb)
 {

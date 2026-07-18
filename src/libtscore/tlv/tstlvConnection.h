@@ -149,7 +149,7 @@ bool ts::tlv::Connection<SAFETY>::sendMessage(const Message& msg)
     msg.serialize(serial);
 
     std::lock_guard<MutexType> lock(_send_mutex);
-    return SuperClass::send(bbp->data(), bbp->size());
+    return SuperClass::writeStream(bbp->data(), bbp->size());
 }
 
 // Receive a TLV message (wait for the message, deserialize it and validate it)
@@ -166,14 +166,14 @@ bool ts::tlv::Connection<SAFETY>::receiveMessage(MessagePtr& msg, const AbortInt
             std::lock_guard<MutexType> lock(_receive_mutex);
 
             // Read message header
-            if (!SuperClass::receive(bb.data(), header_size, abort)) {
+            if (!SuperClass::readStream(bb.data(), header_size, abort)) {
                 return false;
             }
 
             // Get message length and read message payload
             const size_t length = GetUInt16(bb.data() + _protocol.lengthOffset());
             bb.resize(header_size + length);
-            if (!SuperClass::receive(bb.data() + header_size, length, abort)) {
+            if (!SuperClass::readStream(bb.data() + header_size, length, abort)) {
                 return false;
             }
         }

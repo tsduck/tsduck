@@ -178,7 +178,7 @@ namespace {
             // Send a message
             const char message[] = "Hello";
             CERR.debug(u"TLS Server: client thread: sending \"%s\", %d bytes", message, sizeof(message));
-            TSUNIT_ASSERT(session.send(message, sizeof(message)));
+            TSUNIT_ASSERT(session.writeStream(message, sizeof(message)));
             CERR.debug(u"TLS Server: client thread: data sent");
 
             // Say we won't send no more
@@ -188,7 +188,7 @@ namespace {
             size_t total_size = 0;
             char buffer[1024];
             size_t size = 0;
-            while (total_size < sizeof(buffer) && session.receive(buffer + total_size, sizeof(buffer) - total_size, size)) {
+            while (total_size < sizeof(buffer) && session.readStream(buffer + total_size, sizeof(buffer) - total_size, size)) {
                 CERR.debug(u"TLS Server: client thread: data received, %d bytes", size);
                 total_size += size;
             }
@@ -247,10 +247,10 @@ TSUNIT_DEFINE_TEST(Server)
     ts::IPSocketAddress sender;
     char buffer[1024];
     size_t size = 0;
-    while (session.receive(buffer, sizeof(buffer), size)) {
+    while (session.readStream(buffer, sizeof(buffer), size)) {
         CERR.debug(u"TLS Server: main thread: data received, %d bytes", size);
         TSUNIT_ASSERT(size <= sizeof(buffer));
-        TSUNIT_ASSERT(session.send(buffer, size));
+        TSUNIT_ASSERT(session.writeStream(buffer, size));
         CERR.debug(u"TLS Server: main thread: data sent back");
     }
 

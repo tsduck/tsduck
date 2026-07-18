@@ -714,7 +714,7 @@ namespace {
             // Send a message
             const char message[] = "Hello";
             CERR.debug(u"TCPSocketTest: client thread: sending \"%s\", %d bytes", message, sizeof(message));
-            TSUNIT_ASSERT(session.send(message, sizeof(message)));
+            TSUNIT_ASSERT(session.writeStream(message, sizeof(message)));
             CERR.debug(u"TCPSocketTest: client thread: data sent");
 
             // Say we won't send no more
@@ -724,7 +724,7 @@ namespace {
             size_t totalSize = 0;
             char buffer [1024];
             size_t size = 0;
-            while (totalSize < sizeof(buffer) && session.receive(buffer + totalSize, sizeof(buffer) - totalSize, size)) {
+            while (totalSize < sizeof(buffer) && session.readStream(buffer + totalSize, sizeof(buffer) - totalSize, size)) {
                 CERR.debug(u"TCPSocketTest: client thread: data received, %d bytes", size);
                 totalSize += size;
             }
@@ -780,9 +780,9 @@ TSUNIT_DEFINE_TEST(TCPSocket)
     ts::IPSocketAddress sender;
     char buffer [1024];
     size_t size = 0;
-    while (session.receive(buffer, sizeof(buffer), size)) {
+    while (session.readStream(buffer, sizeof(buffer), size)) {
         CERR.debug(u"TCPSocketTest: main thread: data received, %d bytes", size);
-        TSUNIT_ASSERT(session.send(buffer, size));
+        TSUNIT_ASSERT(session.writeStream(buffer, size));
         CERR.debug(u"TCPSocketTest: main thread: data sent back");
     }
 

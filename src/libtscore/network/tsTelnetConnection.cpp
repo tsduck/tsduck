@@ -41,7 +41,7 @@ bool ts::TelnetConnection::reset()
 
 bool ts::TelnetConnection::sendText(const std::string& str)
 {
-    return _connection.send(str.c_str(), str.size());
+    return _connection.writeStream(str.c_str(), str.size());
 }
 
 bool ts::TelnetConnection::sendText(const UString& str)
@@ -114,7 +114,7 @@ bool ts::TelnetConnection::waitForChunk(const std::string& eol, std::string& dat
         // EOL not yet received, read some data from the socket.
         _buffer.resize(capacity);
         size_t size = 0;
-        const bool result = _connection.receive(&_buffer[previous_size], capacity - previous_size, size, abort);
+        const bool result = _connection.readStream(&_buffer[previous_size], capacity - previous_size, size, abort);
         _buffer.resize(previous_size + size);
 
         // In case of error, either return what is in the buffer or an error.

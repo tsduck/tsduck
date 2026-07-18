@@ -257,7 +257,7 @@ bool ts::ReactiveTCPConnection::startSend(ReactiveTCPConnectionHandlerInterface*
 
     if constexpr (Reactor::UseAsynchronousIO()) {
         // Start the asynchronous send.
-        if (!_socket.send(data, size, iosb.get())) {
+        if (!_socket.writeStream(data, size, iosb.get())) {
             // Failed to start the operation.
             return false;
         }
@@ -353,8 +353,8 @@ void ts::ReactiveTCPConnection::handleWriteReady(Reactor& reactor, EventId id, i
             continue;
         }
 
-        // Try to send the message.
-        const bool success = _socket.send(req->data, req->size, iosb.get());
+        // Try to writeStream the message.
+        const bool success = _socket.writeStream(req->data, req->size, iosb.get());
         if (iosb->pending) {
             // Would block again.
             assert(iosb->sent_size < req->size);
@@ -452,7 +452,7 @@ bool ts::ReactiveTCPConnection::startReceive(ReactiveTCPConnectionHandlerInterfa
     if constexpr (Reactor::UseAsynchronousIO()) {
         // Start the first receive operation. Even if it immediately completes, an asynchronous I/O completion will be posted.
         size_t retsize = 0;
-        if (!_socket.receive(req->data.data(), req->data.size(), retsize, nullptr, _pending_receive.get())) {
+        if (!_socket.readStream(req->data.data(), req->data.size(), retsize, nullptr, _pending_receive.get())) {
             _pending_receive.reset();
             return false;
         }
@@ -462,7 +462,7 @@ bool ts::ReactiveTCPConnection::startReceive(ReactiveTCPConnectionHandlerInterfa
 
 
 //----------------------------------------------------------------------------
-// Called when a receive operation is possible.
+// Called when a readStream operation is possible.
 // Called only in the non-blocking I/O model.
 //----------------------------------------------------------------------------
 
@@ -482,7 +482,7 @@ void ts::ReactiveTCPConnection::handleReadReady(Reactor& reactor, EventId id, in
 
         // Try to receive once.
         size_t retsize = 0;
-        if (!_socket.receive(req->data.data() + req->next_read, req->data.size() - req->next_read, retsize, nullptr, _pending_receive.get())) {
+        if (!_socket.readStream(req->data.data() + req->next_read, req->data.size() - req->next_read, retsize, nullptr, _pending_receive.get())) {
             // Receive error.
             req->new_data = true;
             _pending_receive->error_code = LastSysErrorCode();
@@ -675,7 +675,7 @@ void ts::ReactiveTCPConnection::handleAsynchronousIO(Reactor& reactor, EventId i
                 }
                 // Start the next receive.
                 size_t retsize = 0;
-                if (!_socket.receive(recv->data.data() + recv->next_read, recv->data.size() - recv->next_read, retsize, nullptr, _pending_receive.get())) {
+                if (!_socket.readStream(recv->data.data() + recv->next_read, recv->data.size() - recv->next_read, retsize, nullptr, _pending_receive.get())) {
                     // Failed to start a new receive, stop receiving.
                     _pending_receive.reset();
                 }

@@ -46,7 +46,7 @@ bool ts::RestServer::getLine(TCPConnection& conn, UString& line)
     ByteBlock bb;
     bb.reserve(2048);
     uint8_t byte = 0;
-    while (conn.receive(&byte, 1, nullptr)) {
+    while (conn.readStream(&byte, 1, nullptr)) {
         bb.append(byte);
         if (byte == LINE_FEED) {
             break;
@@ -195,7 +195,7 @@ bool ts::RestServer::getRequest(TCPConnection& conn)
             const size_t previous = _post_data.size();
             const size_t chunk = unbounded ? default_chunk : std::min(default_chunk, data_length - _post_data.size());
             _post_data.resize(previous + chunk);
-            ok = conn.receive(&_post_data[previous], chunk, ret_size, nullptr);
+            ok = conn.readStream(&_post_data[previous], chunk, ret_size, nullptr);
             _post_data.resize(previous + ret_size);
         }
     }
@@ -337,7 +337,7 @@ bool ts::RestServer::sendResponse(TCPConnection& conn, int http_status, bool clo
     crlf.appendUTF8(init);
 
     // Send full response.
-    const bool success = conn.send(init.data(), init.size()) && conn.send(_response_data.data(), _response_data.size());
+    const bool success = conn.writeStream(init.data(), init.size()) && conn.writeStream(_response_data.data(), _response_data.size());
 
     // Close connection on error or on demand.
     if (close) {

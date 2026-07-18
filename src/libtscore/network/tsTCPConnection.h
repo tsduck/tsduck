@@ -15,6 +15,7 @@
 
 #pragma once
 #include "tsTCPSocket.h"
+#include "tsStreamInterface.h"
 #include "tsSocketOp.h"
 #include "tsAbortInterface.h"
 
@@ -59,7 +60,7 @@ namespace ts {
     //! considered as a session abort by the remote peer. The peer may thus consider
     //! that something went wrong may take unexpected corrective or rollback actions.
     //!
-    class TSCOREDLL TCPConnection: public TCPSocket
+    class TSCOREDLL TCPConnection: public TCPSocket, public StreamInterface
     {
         TS_NOBUILD_NOCOPY(TCPConnection);
     public:
@@ -75,7 +76,7 @@ namespace ts {
         //! @param [in] non_blocking It true, the device is initially set in non-blocking mode.
         //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        explicit TCPConnection(Report* report, bool non_blocking = false, Object* owner = nullptr) : TCPSocket(report, non_blocking, owner) {}
+        explicit TCPConnection(Report* report, bool non_blocking = false, Object* owner = nullptr);
 
         //!
         //! Constructor.
@@ -83,7 +84,7 @@ namespace ts {
         //! @param [in] non_blocking It true, the device is initially set in non-blocking mode.
         //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        explicit TCPConnection(ReporterBase* delegate, bool non_blocking = false, Object* owner = nullptr) : TCPSocket(delegate, non_blocking, owner) {}
+        explicit TCPConnection(ReporterBase* delegate, bool non_blocking = false, Object* owner = nullptr);
 
         //!
         //! Connect to a remote address and port.
@@ -159,65 +160,17 @@ namespace ts {
         //!
         virtual bool disconnect(bool silent = false);
 
-        //!
-        //! Send data.
-        //! @param [in] data Address of the data to send.
-        //! @param [in] size Size in bytes of the data to send.
-        //! @param [in,out] iosb Address of an IOSB structure. If non-null, the socket must be in non-blocking mode.
-        //! When null, the socket must be in blocking mode (the default). See the description of IOSB.
-        //! Important: The parameter @a iosb should not be used by applications. It should be used only by
-        //! "reactive classes", which work in combination with a Reactor.
-        //! @return True on success, false on error. In case of non-blocking mode, if the I/O is successfully started
-        //! but still pending, iosb->pending is set to true and the method returns true.
-        //!
-        virtual bool send(const void* data, size_t size, IOSB* iosb = nullptr);
-
-        //!
-        //! Receive data.
-        //!
-        //! This version of receiveMessage() returns when "some" data are received into the user buffer.
-        //! The actual received data may be shorter than the user buffer size.
-        //!
-        //! The version is typically useful when the application cannot predict how much data will be
-        //! received and must respond even if the user buffer is not full.
-        //!
-        //! @param [out] buffer Address of the buffer for the received data.
-        //! @param [in] max_size Size in bytes of the reception buffer.
-        //! @param [out] ret_size Size in bytes of the received data. Will never be larger than @a max_size.
-        //! @param [in] abort If non-zero, invoked when I/O is interrupted (in case of user-interrupt, return, otherwise retry).
-        //! @param [in,out] iosb Address of an IOSB structure. If non-null, the socket must be in non-blocking mode.
-        //! When null, the socket must be in blocking mode (the default). See the description of IOSB.
-        //! Important: The parameter @a iosb should not be used by applications. It should be used only by
-        //! "reactive classes", which work in combination with a Reactor.
-        //! @return True on success, false on error. In case of non-blocking mode, if the I/O is successfully started
-        //! but still pending, iosb->pending is set to true and the method returns true.
-        //!
-        virtual bool receive(void* buffer, size_t max_size, size_t& ret_size, const AbortInterface* abort = nullptr, IOSB* iosb = nullptr);
-
-        //!
-        //! Receive data until buffer is full.
-        //!
-        //! This version of receive() returns only when sufficient data are received to completely fill the user buffer.
-        //! The size of the actual received data is identical to the user buffer size. If some data, but not all, were
-        //! received before the connection was closed, these data are ignored and the method returns false. The version
-        //! is typically useful when the application knows that a certain amount of data is expected and must wait for them.
-        //!
-        //! This method is only allowed when the socket is in blocking-mode (the default) because this method is blocking
-        //! by definition. Therefore, there is no @a iosb parameter.
-        //!
-        //! This base implementation uses the variable-length version of receive(). Therefore, a subclass may only override
-        //! the variable-length version and not this one.
-        //!
-        //! @param [out] buffer Address of the buffer for the received data.
-        //! @param [in] size Size in bytes of the buffer.
-        //! @param [in] abort If non-zero, invoked when I/O is interrupted (in case of user-interrupt, return, otherwise retry).
-        //! @return True on success, false on error.
-        //!
-        virtual bool receive(void* buffer, size_t size, const AbortInterface* abort = nullptr);
+        // Implementation of StreamInterface.
+        virtual bool readStream(void* addr, size_t size, const AbortInterface* abort = nullptr) override;
+        virtual bool readStream(void* addr, size_t max_size, size_t& ret_size, const AbortInterface* abort = nullptr, IOSB* iosb = nullptr) override;
+        virtual bool writeStream(const void* addr, size_t size, IOSB* iosb = nullptr) override;
+        virtual bool writeStream(const void* addr, size_t size, size_t& written_size, IOSB* iosb = nullptr) override;
+        virtual bool endOfStream() override;
 
     private:
         volatile bool _is_connected = false;
         volatile bool _is_server_side = false;
+        volatile bool _end_of_input = false;
 
         // Implementation of Socket interface.
         virtual void declareOpened(SysSocketType sock) override;

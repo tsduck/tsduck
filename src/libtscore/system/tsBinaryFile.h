@@ -13,7 +13,7 @@
 
 #pragma once
 #include "tsNonBlockingDevice.h"
-#include "tsAbstractStream.h"
+#include "tsStreamInterface.h"
 #include "tsEnumUtils.h"
 
 namespace ts {
@@ -21,7 +21,7 @@ namespace ts {
     //! Binary stream file, with optional asynchronous I/O.
     //! @ingroup libtsduck mpeg
     //!
-    class TSCOREDLL BinaryFile: public NonBlockingDevice, public AbstractStream
+    class TSCOREDLL BinaryFile: public NonBlockingDevice, public StreamInterface
     {
         TS_NOBUILD_NOCOPY(BinaryFile);
     public:
@@ -156,10 +156,12 @@ namespace ts {
         //!
         bool seekByte(uint64_t byte_index);
 
-        // Implementation of AbstractStream
-        virtual bool endOfStream() override;
+        // Implementation of StreamInterface.
+        virtual bool readStream(void* addr, size_t size, const AbortInterface* abort = nullptr) override;
         virtual bool readStream(void* addr, size_t max_size, size_t& ret_size, const AbortInterface* abort = nullptr, IOSB* iosb = nullptr) override;
+        virtual bool writeStream(const void* addr, size_t size, IOSB* iosb = nullptr) override;
         virtual bool writeStream(const void* addr, size_t size, size_t& written_size, IOSB* iosb = nullptr) override;
+        virtual bool endOfStream() override;
 
     protected:
         // Overloaded methods.

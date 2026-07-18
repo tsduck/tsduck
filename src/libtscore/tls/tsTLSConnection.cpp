@@ -24,10 +24,6 @@ ts::TLSConnection::TLSConnection(ReporterBase* delegate, Object* owner) :
 {
 }
 
-ts::TLSConnection::~TLSConnection()
-{
-}
-
 
 //----------------------------------------------------------------------------
 // TLSConnection must use blocking I/O.
@@ -46,17 +42,6 @@ bool ts::TLSConnection::checkBlocking()
 
 
 //----------------------------------------------------------------------------
-// Receive data until buffer is full.
-//----------------------------------------------------------------------------
-
-bool ts::TLSConnection::receive(void* buffer, size_t size, const AbortInterface* abort)
-{
-    // The superclass implements its fixed-length method using the variable-length method.
-    return TCPConnection::receive(buffer, size, abort);
-}
-
-
-//----------------------------------------------------------------------------
 // Process some incoming TLS data, wait for network data if necessary.
 //----------------------------------------------------------------------------
 
@@ -70,7 +55,7 @@ bool ts::TLSConnection::flushInput()
             _tls_data.resize(TLS_MAX_PACKET_SIZE);
         }
         _tls_data_next = 0;
-        if (!TCPConnection::receive(_tls_data.data(), _tls_data.size(), ret_size)) {
+        if (!TCPConnection::readStream(_tls_data.data(), _tls_data.size(), ret_size)) {
             return false;
         }
         _tls_data.resize(ret_size);
@@ -96,7 +81,7 @@ bool ts::TLSConnection::flushSession()
         while (success && _sctx.needSend()) {
             ByteBlock data;
             _sctx.getDataToSend(data);
-            success = TCPConnection::send(data.data(), data.size());
+            success = TCPConnection::writeStream(data.data(), data.size());
         }
 
         // Then, receive and process more input.
@@ -195,11 +180,18 @@ bool ts::TLSConnection::disconnect(bool silent)
 
 
 //----------------------------------------------------------------------------
-// Send data.
+// Send data. Implementation of StreamInterface.
 //----------------------------------------------------------------------------
 
-bool ts::TLSConnection::send(const void* data, size_t size, IOSB* iosb)
+bool ts::TLSConnection::writeStream(const void* buffer, size_t data_size, IOSB* iosb)
 {
+    return WriteStreamHelper<TLSConnection>(this, buffer, data_size, iosb);
+}
+
+bool ts::TLSConnection::writeStream(const void* data, size_t size, size_t& written_size, IOSB* iosb)
+{
+    written_size = 0;
+
     // Check that the application uses the right blocking mode.
     if (!checkBlocking()) {
         return false;
@@ -216,6 +208,7 @@ bool ts::TLSConnection::send(const void* data, size_t size, IOSB* iosb)
         success = _sctx.provideClearData(data, size, ret_size) && flushSession();
         assert(ret_size <= size);
         data = reinterpret_cast<const uint8_t*>(data) + ret_size;
+        written_size += ret_size;
         size -= ret_size;
     }
     return success;
@@ -223,10 +216,15 @@ bool ts::TLSConnection::send(const void* data, size_t size, IOSB* iosb)
 
 
 //----------------------------------------------------------------------------
-// Receive data.
+// Receive data. Implementation of StreamInterface.
 //----------------------------------------------------------------------------
 
-bool ts::TLSConnection::receive(void* buffer, size_t max_size, size_t& ret_size, const AbortInterface* abort, IOSB* iosb)
+bool ts::TLSConnection::readStream(void* buffer, size_t size, const AbortInterface* abort)
+{
+    return ReadStreamHelper<TLSConnection>(this, buffer, size, abort);
+}
+
+bool ts::TLSConnection::readStream(void* buffer, size_t max_size, size_t& ret_size, const AbortInterface* abort, IOSB* iosb)
 {
     ret_size = 0;
 

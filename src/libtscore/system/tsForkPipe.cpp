@@ -34,14 +34,12 @@
 //----------------------------------------------------------------------------
 
 ts::ForkPipe::ForkPipe(Report* report, bool non_blocking, Object* owner) :
-    NonBlockingDevice(report, non_blocking, owner),
-    AbstractStream(*static_cast<ReporterBase*>(this))
+    NonBlockingDevice(report, non_blocking, owner)
 {
 }
 
 ts::ForkPipe::ForkPipe(ReporterBase* delegate, bool non_blocking, Object* owner) :
-    NonBlockingDevice(delegate, non_blocking, owner),
-    AbstractStream(*static_cast<ReporterBase*>(this))
+    NonBlockingDevice(delegate, non_blocking, owner)
 {
 }
 
@@ -64,7 +62,7 @@ bool ts::ForkPipe::allowSetNonBlocking() const
 
 //----------------------------------------------------------------------------
 // Check end-of-file on input.
-// Implementation of AbstractStream
+// Implementation of StreamInterface
 //----------------------------------------------------------------------------
 
 bool ts::ForkPipe::endOfStream()
@@ -616,8 +614,13 @@ void ts::ForkPipe::abortPipeReadWrite()
 
 //----------------------------------------------------------------------------
 // Write data to the pipe (received at process' standard input).
-// Implementation of AbstractStream
+// Implementation of StreamInterface
 //----------------------------------------------------------------------------
+
+bool ts::ForkPipe::writeStream(const void* buffer, size_t data_size, IOSB* iosb)
+{
+    return WriteStreamHelper<ForkPipe>(this, buffer, data_size, iosb);
+}
 
 bool ts::ForkPipe::writeStream(const void* addr, size_t size, size_t& written_size, IOSB* iosb)
 {
@@ -654,8 +657,13 @@ bool ts::ForkPipe::writeStream(const void* addr, size_t size, size_t& written_si
 
 //----------------------------------------------------------------------------
 // Read data from the pipe (sent from process' standard output or error).
-// Implementation of AbstractStream
+// Implementation of StreamInterface
 //----------------------------------------------------------------------------
+
+bool ts::ForkPipe::readStream(void* buffer, size_t size, const AbortInterface* abort)
+{
+    return ReadStreamHelper<ForkPipe>(this, buffer, size, abort);
+}
 
 bool ts::ForkPipe::readStream(void *addr, size_t max_size, size_t& ret_size, const AbortInterface* abort, IOSB* iosb)
 {
@@ -731,7 +739,7 @@ bool ts::ForkPipe::GetOutput(UString& output, const UString& command, Report& re
     size_t size = 0;
     size_t ret_size = 0;
     out8.resize(chunk_size);
-    while (exe.readStreamComplete(out8.data() + size, out8.size() - size, ret_size)) {
+    while (exe.readStream(out8.data() + size, out8.size() - size, ret_size)) {
         size = std::min(size + ret_size, out8.size());
         out8.resize(size + chunk_size);
     }

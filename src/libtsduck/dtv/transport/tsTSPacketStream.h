@@ -12,7 +12,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsAbstractStream.h"
+#include "tsStreamInterface.h"
 #include "tsTSPacketFormat.h"
 #include "tsTSPacketMetadata.h"
 #include "tsTSPacket.h"
@@ -37,7 +37,7 @@ namespace ts {
         //! @param [in] format Initial packet format.
         //! @param [in] stream Stream read/write interface. Can be null and replaced later.
         //!
-        TSPacketStream(ReporterInterface& reporter, TSPacketFormat format = TSPacketFormat::AUTODETECT, AbstractStream* stream = nullptr);
+        TSPacketStream(ReporterInterface& reporter, TSPacketFormat format = TSPacketFormat::AUTODETECT, StreamInterface* stream = nullptr);
 
         //!
         //! Destructor.
@@ -93,18 +93,34 @@ namespace ts {
         static constexpr size_t MAX_TRAILER_SIZE = ts::RS_SIZE;
 
         //!
-        //! Get the packet header size, based on the packet format.
+        //! Get the packet header size for a given packet format.
+        //! This "header" comes before the classical 188-byte TS packet.
+        //! @param [in] format Initial packet format.
+        //! @return The packet header size in bytes (before the TS packet).
+        //!
+        static size_t PacketHeaderSize(TSPacketFormat format);
+
+        //!
+        //! Get the packet trailer size for a given packet format.
+        //! This "trailer" comes after the classical 188-byte TS packet.
+        //! @param [in] format Initial packet format.
+        //! @return The packet trailer size in bytes (before the TS packet).
+        //!
+        static size_t PacketTrailerSize(TSPacketFormat format);
+
+        //!
+        //! Get the packet header size, based on the packet format of this file.
         //! This "header" comes before the classical 188-byte TS packet.
         //! @return The packet header size in bytes (before the TS packet).
         //!
-        size_t packetHeaderSize() const;
+        size_t packetHeaderSize() const { return PacketHeaderSize(_format); }
 
         //!
-        //! Get the packet trailer size, based on the packet format.
+        //! Get the packet trailer size, based on the packet format of this file.
         //! This "trailer" comes after the classical 188-byte TS packet.
         //! @return The packet trailer size in bytes (before the TS packet).
         //!
-        size_t packetTrailerSize() const;
+        size_t packetTrailerSize() const { return PacketTrailerSize(_format); }
 
         //!
         //! Get the file format.
@@ -124,7 +140,7 @@ namespace ts {
         //! @param [in] format Initial packet format.
         //! @param [in] stream Stream read/write interface.
         //!
-        void resetPacketStream(TSPacketFormat format, AbstractStream* stream);
+        void resetPacketStream(TSPacketFormat format, StreamInterface* stream);
 
         PacketCounter _total_read = 0;   //!< Total read packets.
         PacketCounter _total_write = 0;  //!< Total written packets.
@@ -132,7 +148,7 @@ namespace ts {
     private:
         ReporterInterface& _reporter;
         TSPacketFormat     _format = TSPacketFormat::TS;
-        AbstractStream*    _stream = nullptr;
+        StreamInterface*    _stream = nullptr;
         PCR                _last_timestamp {};              // Last write time stamp in PCR units (M2TS files).
         size_t             _trail_size = 0;                 // Number of meaningful bytes in _trail
         uint8_t            _trail[MAX_TRAILER_SIZE+1] {};   // Transient buffer for auto-detection of trailer

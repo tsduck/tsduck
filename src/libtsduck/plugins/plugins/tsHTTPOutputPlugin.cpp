@@ -145,7 +145,7 @@ bool ts::HTTPOutputPlugin::send(const TSPacket* buffer, const TSPacketMetadata* 
         }
 
         // Send the TS packets to the client.
-        if (_client.send(buffer, packet_count * PKT_SIZE)) {
+        if (_client.writeStream(buffer, packet_count * PKT_SIZE)) {
             return true;
         }
 
@@ -168,7 +168,7 @@ bool ts::HTTPOutputPlugin::sendResponseHeader(const std::string& line)
     debug(u"response header: %s", line);
     std::string data(line);
     data += "\r\n";
-    return _client.send(data.data(), data.size());
+    return _client.writeStream(data.data(), data.size());
 }
 
 
@@ -189,7 +189,7 @@ bool ts::HTTPOutputPlugin::startSession()
         const size_t previous = data.size();
         size_t ret_size = 0;
         data.resize(previous + 512);
-        if (!_client.receive(data.data() + previous, data.size() - previous, ret_size, nullptr)) {
+        if (!_client.readStream(data.data() + previous, data.size() - previous, ret_size, nullptr)) {
             return false; // receive error
         }
         data.resize(previous + ret_size);

@@ -13,7 +13,7 @@
 
 #pragma once
 #include "tsNonBlockingDevice.h"
-#include "tsAbstractStream.h"
+#include "tsStreamInterface.h"
 #include "tsReport.h"
 
 namespace ts {
@@ -21,7 +21,7 @@ namespace ts {
     //! Fork a process and create an optional pipe to its standard input.
     //! @ingroup libtscore system
     //!
-    class TSCOREDLL ForkPipe: public NonBlockingDevice, public AbstractStream
+    class TSCOREDLL ForkPipe: public NonBlockingDevice, public StreamInterface
     {
         TS_NOBUILD_NOCOPY(ForkPipe);
     public:
@@ -187,10 +187,12 @@ namespace ts {
         //!
         static bool GetOutput(UString& output, const UString& command, Report& report, bool include_stderr = false);
 
-        // Implementation of AbstractStream
-        virtual bool endOfStream() override;
+        // Implementation of StreamInterface.
+        virtual bool readStream(void* addr, size_t size, const AbortInterface* abort = nullptr) override;
         virtual bool readStream(void* addr, size_t max_size, size_t& ret_size, const AbortInterface* abort = nullptr, IOSB* iosb = nullptr) override;
+        virtual bool writeStream(const void* addr, size_t size, IOSB* iosb = nullptr) override;
         virtual bool writeStream(const void* addr, size_t size, size_t& written_size, IOSB* iosb = nullptr) override;
+        virtual bool endOfStream() override;
 
     protected:
         // Overloaded methods.

@@ -121,7 +121,7 @@ namespace ts {
         //!
         bool seekPacket(PacketCounter packet_index);
 
-        // Implementation of AbstractStream
+        // Implementation of StreamInterface
         virtual bool endOfStream() override;
 
         // Override TSPacketStream implementation

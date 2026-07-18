@@ -71,14 +71,16 @@ namespace ts {
         //!
         TLSConnection(ReporterBase* delegate, const TLSArgs& args) : TLSConnection(delegate) { setArgs(args); }
 
-        // Inherited methods.
-        virtual ~TLSConnection() override;
+        // Inherited methods from TCPConnection.
         virtual bool connect(const IPSocketAddress&, IOSB* = nullptr) override;
         virtual bool closeWriter(bool silent = false) override;
         virtual bool disconnect(bool silent = false) override;
-        virtual bool send(const void*, size_t, IOSB* = nullptr) override;
-        virtual bool receive(void*, size_t, size_t&, const AbortInterface* = nullptr, IOSB* = nullptr) override;
-        virtual bool receive(void*, size_t, const AbortInterface* = nullptr) override;
+
+        // Implementation of StreamInterface.
+        virtual bool readStream(void* addr, size_t size, const AbortInterface* abort = nullptr) override;
+        virtual bool readStream(void* addr, size_t max_size, size_t& ret_size, const AbortInterface* abort = nullptr, IOSB* iosb = nullptr) override;
+        virtual bool writeStream(const void* addr, size_t size, IOSB* iosb = nullptr) override;
+        virtual bool writeStream(const void* addr, size_t size, size_t& written_size, IOSB* iosb = nullptr) override;
 
     private:
         TLSContext _sctx {this, this};

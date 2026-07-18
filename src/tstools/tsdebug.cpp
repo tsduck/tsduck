@@ -883,7 +883,7 @@ ts::CommandStatus ts::ServerCommands::server(const UString& command, Args& args)
                 // We known how much more data we need.
                 const size_t previous_size = data.size();
                 data.resize(content_size);
-                success = client->receive(&data[previous_size], content_size - previous_size);
+                success = client->readStream(&data[previous_size], content_size - previous_size);
             }
             else if (content_size == 0 && expect_data) {
                 // Unknown content size but there must be some. This is an old client which disconnects at end of request.
@@ -892,7 +892,7 @@ ts::CommandStatus ts::ServerCommands::server(const UString& command, Args& args)
                     constexpr size_t more_size = 4096;
                     size_t ret_size = 0;
                     data.resize(previous_size + more_size);
-                    if (client->receive(&data[previous_size], more_size, ret_size)) {
+                    if (client->readStream(&data[previous_size], more_size, ret_size)) {
                         data.resize(previous_size + ret_size);
                     }
                     else {
