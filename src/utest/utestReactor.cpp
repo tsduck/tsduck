@@ -976,7 +976,9 @@ namespace {
 
             // Create a real process.
             const ts::UString cmd = ts::SysInfo::Instance().os() == ts::SysInfo::WINDOWS ?
-                u"powershell Start-Sleep -Milliseconds 200" :
+                // Windows command which writes the PID of the process in the temp file.
+                u"powershell -Command \"Start-Sleep -Milliseconds 200; $([System.Diagnostics.Process]::GetCurrentProcess().Id) | Out-File -Encoding ascii " + pid_file + u"\"":
+                // UNIX command which writes the PID of the shell in the temp file.
                 u"sleep 0.2; echo $$ >" + pid_file;
             tsunit::Test::debug() << "HandlerProcess: starting process \"" << cmd << "\"" << std::endl;
 

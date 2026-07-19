@@ -126,15 +126,7 @@ namespace ts {
         //! Get the created process id.
         //! @return The process id or SYS_PROCESS_ID_INVALID in case of error.
         //!
-        SysProcessIdType getProcessId() const;
-
-        //!
-        //! Get the created process handle.
-        //! Note: only Windows identifies a process by handle, in addition to process id.
-        //! On other operating systems, this method always returns SYS_HANDLE_INVALID.
-        //! @return The process id or SYS_HANDLE_INVALID in case of error.
-        //!
-        SysHandleType getProcessHandle() const;
+        SysProcessIdType getProcessId() const { return _fpid; }
 
         //!
         //! Set "ignore abort".
@@ -209,10 +201,7 @@ namespace ts {
         volatile bool    _broken_pipe = false;      // Pipe is broken, do not attempt to write.
         volatile bool    _eof = false;              // Got end of file on input pipe.
         SysHandleType    _hfd = SYS_HANDLE_INVALID; // Pipe input or output handle / file descriptor.
-#if defined(TS_WINDOWS)
-        SysHandleType    _process = SYS_HANDLE_INVALID;  // Handle to child process.
-#else
         SysProcessIdType _fpid = SYS_PROCESS_ID_INVALID; // Forked process id.
-#endif
+        SysHandleType    _process = SYS_HANDLE_INVALID;  // Handle to child process (Windows only).
     };
 }

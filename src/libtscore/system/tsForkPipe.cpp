@@ -268,6 +268,9 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
         return false;
     }
 
+    // Keep track of process PID.
+    _fpid = ::GetProcessId(pi.hProcess);
+
     // Close unused handles
     switch (_wait_mode) {
         case ASYNCHRONOUS: {
@@ -509,30 +512,6 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
 
     _is_open = true;
     return true;
-}
-
-
-//----------------------------------------------------------------------------
-// Get the created process id and handle.
-//----------------------------------------------------------------------------
-
-ts::SysHandleType ts::ForkPipe::getProcessHandle() const
-{
-#if defined(TS_WINDOWS)
-    return _process;
-#else
-    return SYS_HANDLE_INVALID;
-#endif
-}
-
-ts::SysProcessIdType ts::ForkPipe::getProcessId() const
-{
-#if defined(TS_WINDOWS)
-    const ::DWORD id = ::GetProcessId(_process);
-    return id == 0 ? SYS_PROCESS_ID_INVALID : id;
-#else
-    return _fpid;
-#endif
 }
 
 
