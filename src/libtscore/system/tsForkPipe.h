@@ -124,7 +124,6 @@ namespace ts {
 
         //!
         //! Get the created process id.
-        //! On UNIX systems, the returned value is meaningful only for processes with SYNCHRONOUS wait mode.
         //! @return The process id or SYS_PROCESS_ID_INVALID in case of error.
         //!
         SysProcessIdType getProcessId() const;
@@ -199,19 +198,19 @@ namespace ts {
         virtual bool allowSetNonBlocking() const override;
 
     private:
-        InputMode     _in_mode = STDIN_PIPE;     // Input mode for the created process.
-        OutputMode    _out_mode = KEEP_BOTH;     // Output mode for the created process.
-        volatile bool _is_open = false;          // Open and running.
-        WaitMode      _wait_mode = ASYNCHRONOUS; // How to wait for child process termination in close().
-        bool          _in_pipe = false;          // The process uses an input pipe.
-        bool          _out_pipe = false;         // The process uses an output pipe.
-        bool          _use_pipe = false;         // The process uses a pipe, somehow.
-        bool          _ignore_abort = false;     // Ignore early termination of child process.
-        volatile bool _broken_pipe = false;      // Pipe is broken, do not attempt to write.
-        volatile bool _eof = false;              // Got end of file on input pipe.
-        SysHandleType _hfd = SYS_HANDLE_INVALID; // Pipe input or output handle / file descriptor.
+        InputMode        _in_mode = STDIN_PIPE;     // Input mode for the created process.
+        OutputMode       _out_mode = KEEP_BOTH;     // Output mode for the created process.
+        volatile bool    _is_open = false;          // Open and running.
+        WaitMode         _wait_mode = ASYNCHRONOUS; // How to wait for child process termination in close().
+        bool             _in_pipe = false;          // The process uses an input pipe.
+        bool             _out_pipe = false;         // The process uses an output pipe.
+        bool             _use_pipe = false;         // The process uses a pipe, somehow.
+        bool             _ignore_abort = false;     // Ignore early termination of child process.
+        volatile bool    _broken_pipe = false;      // Pipe is broken, do not attempt to write.
+        volatile bool    _eof = false;              // Got end of file on input pipe.
+        SysHandleType    _hfd = SYS_HANDLE_INVALID; // Pipe input or output handle / file descriptor.
 #if defined(TS_WINDOWS)
-        SysHandleType _process = SYS_HANDLE_INVALID;     // Handle to child process.
+        SysHandleType    _process = SYS_HANDLE_INVALID;  // Handle to child process.
 #else
         SysProcessIdType _fpid = SYS_PROCESS_ID_INVALID; // Forked process id.
 #endif

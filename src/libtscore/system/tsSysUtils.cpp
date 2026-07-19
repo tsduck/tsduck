@@ -25,6 +25,7 @@
     #include "tsBeforeStandardHeaders.h"
     #include <sys/resource.h>
     #include <dlfcn.h>
+    #include <signal.h>
     #include "tsAfterStandardHeaders.h"
 #elif defined(TS_MAC)
     #include "tsBeforeStandardHeaders.h"
@@ -35,6 +36,7 @@
     #include <mach/task_info.h>
     #include <libproc.h>
     #include <dlfcn.h>
+    #include <signal.h>
     #include "tsAfterStandardHeaders.h"
 #elif defined(TS_BSD)
     #include "tsSysCtl.h"
@@ -451,6 +453,39 @@ size_t ts::GetProcessVirtualSize()
 
 #else
     #error "ts::GetProcessVirtualSize not implemented on this system"
+#endif
+}
+
+
+//----------------------------------------------------------------------------
+// Get the current process id.
+//----------------------------------------------------------------------------
+
+ts::SysProcessIdType ts::GetProcessId()
+{
+#if defined(TS_WINDOWS)
+    return ::GetCurrentProcessId();
+#else
+    return ::getpid();
+#endif
+}
+
+
+//----------------------------------------------------------------------------
+// Check if a process exists.
+//----------------------------------------------------------------------------
+
+bool ts::ProcessIdExists(SysProcessIdType pid)
+{
+#if defined(TS_WINDOWS)
+    ::HANDLE h = ::OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, pid);
+    if (WinHandleValid(h)) {
+        ::CloseHandle(h);
+        return true;
+    }
+    return ::GetLastError() == ERROR_ACCESS_DENIED;
+#else
+    return ::kill(pid, 0) == 0 || (errno != ESRCH && errno != ENOENT);
 #endif
 }
 

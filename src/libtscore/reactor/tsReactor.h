@@ -359,10 +359,10 @@ namespace ts {
 
         //!
         //! Add a process termination event in the reactor, using a process id.
-        //! Note: On UNIX systems, with ForkPipe, the process id is meaningful only for processes with SYNCHRONOUS wait mode.
         //! @param [in] handler Address of a handler to call when the process terminates. Return an error if set as @c nullptr.
         //! The @a handler is invoked when the process is no longer there. It is possible that the process was already
-        //! terminated for a while. It is even possible that the process never really started.
+        //! terminated for a while. It is even possible that the process never really started. In all cases, the @a handler
+        //! is invoked when the watched process doesn't exist, whether it is terminated or has never existed.
         //! @param [in] pid Process id to watch. If that process id is unknown, it is assumed that the process is already
         //! terminated and the @a handler will be called as soon as possible.
         //! @return The identity of the reactor event. Invalid in case of error.
@@ -375,7 +375,8 @@ namespace ts {
         //! method always reports an error.
         //! @param [in] handler Address of a handler to call when the process terminates. Return an error if set as @c nullptr.
         //! The @a handler is invoked when the process is no longer there. It is possible that the process was already
-        //! terminated for a while. It is even possible that the process never really started.
+        //! terminated for a while. It is even possible that the process never really started. In all cases, the @a handler
+        //! is invoked when the watched process doesn't exist, whether it is terminated or has never existed.
         //! @param [in] process_handle Process handle to watch.
         //! @return The identity of the reactor event. Invalid in case of error.
         //!

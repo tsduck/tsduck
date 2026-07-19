@@ -12,12 +12,9 @@
 #include "tsIntegerUtils.h"
 #if defined(TS_WINDOWS)
     #include "tsWinUtils.h"
+#else
+    #include "tsSysPipe.h"
 #endif
-
-// Index of pipe file descriptors on UNIX.
-#define PIPE_READFD  0
-#define PIPE_WRITEFD 1
-#define PIPE_COUNT   2
 
 // Path to default basic shell on UNIX systems.
 // Can be overridden on the command line, eg. make CXXFLAGS_EXTRA="-DTS_SHELL_PATH=/foo/bar/bin/sh"
@@ -320,9 +317,17 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
     _hfd = SYS_HANDLE_INVALID;
 
     // Create a pipe
-    int filedes[PIPE_COUNT];
-    if (_use_pipe && ::pipe(filedes) < 0) {
-        report().error(u"error creating pipe: %s", SysErrorCodeMessage());
+    SysPipe pipe_fd(this);
+    if (_use_pipe && !pipe_fd.create()) {
+        return false;
+    }
+
+    // When the created process is asynchronous, we need to create an intermediate process (see below).
+    // In thas case, the forked pid is not the one of the final process. We can't directly get the final
+    // pid. We create a pipe where the child process will write the pid of the grand-child process so that
+    // the parent process can read the pid of its grand-child process.
+    SysPipe pid_pipe(this);
+    if (_wait_mode == ASYNCHRONOUS && !pid_pipe.create()) {
         return false;
     }
 
@@ -334,10 +339,6 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
     }
     else if ((_fpid = ::fork()) < 0) {
         report().error(u"fork error: %s", SysErrorCodeMessage());
-        if (_use_pipe) {
-            ::close(filedes[PIPE_READFD]);
-            ::close(filedes[PIPE_WRITEFD]);
-        }
         return false;
     }
 
@@ -348,20 +349,24 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
     // intermediate process no longer exists.
     if (_wait_mode == ASYNCHRONOUS) {
         if (_fpid != 0) {
-            // In the parent process, wait for the intermediate child to die immediately.
-            // Failing to do so, the intermediate process would remain zombie.
-            ::waitpid(_fpid, nullptr, 0);
-            // Mark the intermediate process PID as unusable (but keep it != 0 to indicate the parent process).
-            static_assert(SYS_PROCESS_ID_INVALID != 0);
-            _fpid = SYS_PROCESS_ID_INVALID;
+            const SysProcessIdType inter_pid = _fpid;
+            // In the parent process. Read the grand-child pid from the dedicated pipe.
+            errno = EINVAL;
+            if (::read(pid_pipe.getRead(), &_fpid, sizeof(_fpid)) != sizeof(_fpid)) {
+                report().error(u"error reading final forked pid from pipe: %s", SysErrorCodeMessage());
+            }
+            // Wait for the intermediate child to die immediately. Failing to do so, the intermediate process would remain zombie.
+            ::waitpid(inter_pid, nullptr, 0);
         }
         else {
             // In the intermediate process. First make it a session leader.
             ::setsid();
             // Then create the grand-child process.
-            const ::pid_t sub_pid = ::fork();
+            const SysProcessIdType sub_pid = ::fork();
             if (sub_pid != 0) {
-                // In the intermediate process, die immediately.
+                // In the intermediate process, send the grand-child pid to the parent.
+                ::write(pid_pipe.getWrite(), &sub_pid, sizeof(sub_pid));
+                // Exit intermediate process and let grand-child execute the command.
                 std::exit(EXIT_SUCCESS);
             }
             // We are here in the grand-child process...
@@ -372,19 +377,16 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
         // In the context of the parent process.
         if (_in_pipe) {
             // Keep the writing end-point of pipe for data transmission.
-            _hfd = filedes[PIPE_WRITEFD];
+            _hfd = pipe_fd.fetchWrite();
             // But make it automatically closed on exec(). If the parent process
             // creates another child later, we do not want it to inherit this file
             // descriptor, assuming that fork() is always followed by exec().
             ::fcntl(_hfd, F_SETFD, FD_CLOEXEC);
-            // Close the reading end-point of pipe.
-            ::close(filedes[PIPE_READFD]);
         }
         else if (_out_pipe) {
             // Do the opposite.
-            _hfd = filedes[PIPE_READFD];
+            _hfd = pipe_fd.fetchRead();
             ::fcntl(_hfd, F_SETFD, FD_CLOEXEC);
-            ::close(filedes[PIPE_WRITEFD]);
         }
         // Set the file descriptor in non-blocking mode if necessary.
         if (_use_pipe && isNonBlocking() && !setSystemNonBlocking(_hfd, true)) {
@@ -419,7 +421,7 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
             }
             case STDIN_PIPE: {
                 // Redirect the reading end-point of the pipe to standard input
-                if (::dup2(filedes[PIPE_READFD], STDIN_FILENO) < 0) {
+                if (::dup2(pipe_fd.getRead(), STDIN_FILENO) < 0) {
                     error = errno;
                     message = "error redirecting stdin in forked process";
                 }
@@ -453,12 +455,12 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
             case STDOUT_PIPE:
             case STDOUTERR_PIPE: {
                 // Redirect stdout to the write end-point of the pipe.
-                if (::dup2(filedes[PIPE_WRITEFD], STDOUT_FILENO) < 0) {
+                if (::dup2(pipe_fd.getWrite(), STDOUT_FILENO) < 0) {
                     error = errno;
                     message = "error redirecting stdout to pipe";
                 }
                 // Same for stderr if requested.
-                if (out_mode == STDOUTERR_PIPE && ::dup2(filedes[PIPE_WRITEFD], STDERR_FILENO) < 0) {
+                if (out_mode == STDOUTERR_PIPE && ::dup2(pipe_fd.getWrite(), STDERR_FILENO) < 0) {
                     error = errno;
                     message = "error redirecting stderr to pipe";
                 }
@@ -474,8 +476,7 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
         // The original file descriptors of the pipe are now useless.
         // Either they were redirected to stdin/out/err or they are unused.
         if (_use_pipe) {
-            ::close(filedes[PIPE_WRITEFD]);
-            ::close(filedes[PIPE_READFD]);
+            pipe_fd.close();
         }
 
         // Execute the command if there was no prior error.

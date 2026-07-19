@@ -246,6 +246,21 @@ namespace ts {
     TSCOREDLL size_t GetProcessVirtualSize();
 
     //!
+    //! Get the current process id.
+    //! @ingroup system
+    //! @return The current process id.
+    //!
+    TSCOREDLL SysProcessIdType GetProcessId();
+
+    //!
+    //! Check if a process exists.
+    //! @param [in] pid Process id to check.
+    //! @ingroup system
+    //! @return True if the process exists, false otherwise.
+    //!
+    TSCOREDLL bool ProcessIdExists(SysProcessIdType pid);
+
+    //!
     //! Ensure that writing to a broken pipe does not kill the current process.
     //! @ingroup system
     //!

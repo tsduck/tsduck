@@ -57,8 +57,8 @@ private:
     // Unitary test for one table.
     void testTable(const char* name, const ts::UChar* ref_xml, const uint8_t* ref_sections, size_t ref_sections_size);
     ts::Report& report();
-    fs::path _tempFileNameBin {};
-    fs::path _tempFileNameXML {};
+    fs::path _temp_file_name_bin {};
+    fs::path _temp_file_name_xml {};
 };
 
 TSUNIT_REGISTER(SectionFileTest);
@@ -68,22 +68,22 @@ TSUNIT_REGISTER(SectionFileTest);
 // Initialization.
 //----------------------------------------------------------------------------
 
-// Test suite initialization method.
+// Test initialization method.
 void SectionFileTest::beforeTest()
 {
-    if (_tempFileNameBin.empty() || _tempFileNameXML.empty()) {
-        _tempFileNameBin = ts::TempFile(u".tmp.bin");
-        _tempFileNameXML = ts::TempFile(u".tmp.xml");
+    if (_temp_file_name_bin.empty() || _temp_file_name_xml.empty()) {
+        _temp_file_name_bin = ts::TempFile(u".tmp.bin");
+        _temp_file_name_xml = ts::TempFile(u".tmp.xml");
     }
-    fs::remove(_tempFileNameBin, &ts::ErrCodeReport());
-    fs::remove(_tempFileNameXML, &ts::ErrCodeReport());
+    fs::remove(_temp_file_name_bin, &ts::ErrCodeReport());
+    fs::remove(_temp_file_name_xml, &ts::ErrCodeReport());
 }
 
-// Test suite cleanup method.
+// Test cleanup method.
 void SectionFileTest::afterTest()
 {
-    fs::remove(_tempFileNameBin, &ts::ErrCodeReport());
-    fs::remove(_tempFileNameXML, &ts::ErrCodeReport());
+    fs::remove(_temp_file_name_bin, &ts::ErrCodeReport());
+    fs::remove(_temp_file_name_xml, &ts::ErrCodeReport());
 }
 
 ts::Report& SectionFileTest::report()
@@ -418,26 +418,26 @@ TSUNIT_DEFINE_TEST(BuildSections)
     TSUNIT_EQUAL(0, file.orphanSections().size());
 
     // Save files.
-    debug() << "SectionFileTest::testBuildSections: saving " << _tempFileNameBin << std::endl;
-    TSUNIT_ASSERT(!fs::exists(_tempFileNameBin));
-    TSUNIT_ASSERT(file.saveBinary(_tempFileNameBin));
-    TSUNIT_ASSERT(fs::exists(_tempFileNameBin));
+    debug() << "SectionFileTest::testBuildSections: saving " << _temp_file_name_bin << std::endl;
+    TSUNIT_ASSERT(!fs::exists(_temp_file_name_bin));
+    TSUNIT_ASSERT(file.saveBinary(_temp_file_name_bin));
+    TSUNIT_ASSERT(fs::exists(_temp_file_name_bin));
 
-    debug() << "SectionFileTest::testBuildSections: saving " << _tempFileNameXML << std::endl;
-    TSUNIT_ASSERT(!fs::exists(_tempFileNameXML));
-    TSUNIT_ASSERT(file.saveXML(_tempFileNameXML));
-    TSUNIT_ASSERT(fs::exists(_tempFileNameXML));
+    debug() << "SectionFileTest::testBuildSections: saving " << _temp_file_name_xml << std::endl;
+    TSUNIT_ASSERT(!fs::exists(_temp_file_name_xml));
+    TSUNIT_ASSERT(file.saveXML(_temp_file_name_xml));
+    TSUNIT_ASSERT(fs::exists(_temp_file_name_xml));
 
     // Reload files.
     ts::SectionFile binFile(duck);
     binFile.setCRCValidation(ts::CRC32::CHECK);
-    TSUNIT_ASSERT(binFile.loadBinary(_tempFileNameBin));
+    TSUNIT_ASSERT(binFile.loadBinary(_temp_file_name_bin));
     TSUNIT_EQUAL(3, binFile.tables().size());
     TSUNIT_EQUAL(5, binFile.sections().size());
     TSUNIT_EQUAL(0, binFile.orphanSections().size());
 
     ts::SectionFile xmlFile(duck);
-    TSUNIT_ASSERT(xmlFile.loadXML(_tempFileNameXML));
+    TSUNIT_ASSERT(xmlFile.loadXML(_temp_file_name_xml));
     TSUNIT_EQUAL(3, xmlFile.tables().size());
     TSUNIT_EQUAL(5, xmlFile.sections().size());
     TSUNIT_EQUAL(0, xmlFile.orphanSections().size());

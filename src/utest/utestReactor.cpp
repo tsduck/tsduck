@@ -21,7 +21,9 @@
 #include "tsCerrReport.h"
 #include "tsSysUtils.h"
 #include "tsSysInfo.h"
+#include "tsFileUtils.h"
 #include "tsEnvironment.h"
+#include "tsErrCodeReport.h"
 #include "tsunit.h"
 
 
@@ -40,9 +42,13 @@ class ReactorTest: public tsunit::Test
 
 public:
     virtual void beforeTestSuite() override;
+    virtual void beforeTest() override;
+    virtual void afterTest() override;
+
 
 private:
     cn::milliseconds _precision {};
+    fs::path _temp_file_name {};
 };
 
 TSUNIT_REGISTER(ReactorTest);
@@ -58,6 +64,19 @@ void ReactorTest::beforeTestSuite()
     _precision = cn::milliseconds(2);
     ts::SetTimersPrecision(_precision);
     debug() << "ReactorTest: timer precision = " << ts::UString::Chrono(_precision) << std::endl;
+}
+
+// ReactorTest initialization method.
+void ReactorTest::beforeTest()
+{
+    _temp_file_name = ts::TempFile(u".tmp");
+    fs::remove(_temp_file_name, &ts::ErrCodeReport());
+}
+
+// Test cleanup method.
+void ReactorTest::afterTest()
+{
+    fs::remove(_temp_file_name, &ts::ErrCodeReport());
 }
 
 
@@ -928,9 +947,11 @@ namespace {
     class HandlerProcess: public ts::ReactorHandlerInterface
     {
     public:
-        HandlerProcess() = default;
+        HandlerProcess() = delete;
+        HandlerProcess(const fs::path& file) : pid_file(file) {}
 
         ts::ForkPipe         proc {&CERR};
+        fs::path             pid_file {};
         ts::EventId          init_timer {};
         ts::EventId          timeout {};
         ts::EventId          fake_process {};
@@ -955,12 +976,13 @@ namespace {
 
             // Create a real process.
             const ts::UString cmd = ts::SysInfo::Instance().os() == ts::SysInfo::WINDOWS ?
-                u"powershell Start-Sleep -Milliseconds 200" : u"sleep 0.2";
+                u"powershell Start-Sleep -Milliseconds 200" :
+                u"sleep 0.2; echo $$ >" + pid_file;
             tsunit::Test::debug() << "HandlerProcess: starting process \"" << cmd << "\"" << std::endl;
 
-            TSUNIT_ASSERT(proc.open(cmd, ts::ForkPipe::SYNCHRONOUS, 0, ts::ForkPipe::KEEP_BOTH, ts::ForkPipe::STDIN_NONE));
+            TSUNIT_ASSERT(proc.open(cmd, ts::ForkPipe::ASYNCHRONOUS, 0, ts::ForkPipe::KEEP_BOTH, ts::ForkPipe::STDIN_NONE));
             real_pid = proc.getProcessId();
-            tsunit::Test::debug() << "HandlerProcess::handleTimer: process pid: " << real_pid << std::endl;
+            tsunit::Test::debug() << "HandlerProcess::handleTimer: process pid: " << real_pid << " (current: " << ts::GetProcessId() << ")" << std::endl;
 
             // Subscribe to real process.
             real_process = reactor.newProcessIdTermination(this, real_pid);
@@ -1000,7 +1022,7 @@ namespace {
 TSUNIT_DEFINE_TEST(Process)
 {
     ts::Reactor reactor(&CERR);
-    HandlerProcess test;
+    HandlerProcess test(_temp_file_name);
 
     TSUNIT_ASSERT(!reactor.isOpen());
     TSUNIT_ASSERT(reactor.open());
@@ -1018,6 +1040,15 @@ TSUNIT_DEFINE_TEST(Process)
     TSUNIT_ASSERT(!test.init_timer.isValid());
     TSUNIT_ASSERT(test.timeout.isValid());
     TSUNIT_ASSERT(test.real_pid > 0);
+
+    TSUNIT_ASSERT(fs::exists(_temp_file_name));
+    ts::UStringList lines;
+    TSUNIT_ASSERT(ts::UString::Load(lines, _temp_file_name));
+    ts::UString line(ts::UString::Join(lines, u""));
+    debug() << "ReactorTest::Process: temp file content: \"" << line << "\"" << std::endl;
+    ts::SysProcessIdType pid = 0;
+    TSUNIT_ASSERT(line.toInteger(pid));
+    TSUNIT_EQUAL(test.real_pid, pid);
 
     TSUNIT_ASSERT(reactor.isOpen());
     TSUNIT_ASSERT(reactor.close());
