@@ -552,7 +552,7 @@ void ts::ReactiveTCPConnection::processReceiveBuffer()
 // Invoke the receive handler as many times as possible on a data buffer.
 //----------------------------------------------------------------------------
 
-void ts::ReactiveTCPConnection::processReceiveBuffer(ByteBlock& data, ReactiveTCPInputControl& control, HandlerType* handler, int error_code, const ObjectPtr& user_data)
+void ts::ReactiveTCPConnection::processReceiveBuffer(ByteBlock& data, ReactiveInputControl& control, HandlerType* handler, int error_code, const ObjectPtr& user_data)
 {
     // Loop on calls to handler, when the handler uses only a part of the buffer.
     // Check if we have the required condition to call the handler.

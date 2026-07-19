@@ -76,7 +76,7 @@ namespace ts {
         virtual void handleTCPConnected(ReactiveTCPConnection& sock, int error_code, const ObjectPtr& user_data) override;
         virtual void handleTCPAccepted(ReactiveTCPServer& server, ReactiveTCPConnection& sock, int error_code, const ObjectPtr& user_data) override;
         virtual void handleTCPSend(ReactiveTCPConnection& sock, size_t position, int error_code, const ObjectPtr& user_data) override;
-        virtual void handleTCPReceive(ReactiveTCPConnection& sock, const ByteBlock& data, ReactiveTCPInputControl& control, int error_code, const ObjectPtr& user_data) override;
+        virtual void handleTCPReceive(ReactiveTCPConnection& sock, const ByteBlock& data, ReactiveInputControl& control, int error_code, const ObjectPtr& user_data) override;
         virtual void handleTCPClosed(ReactiveTCPConnection& sock, const ObjectPtr& user_data) override;
 
     private:
@@ -111,7 +111,7 @@ namespace ts {
         bool                    _eof_reported = false;     // End of input stream already reported to application.
         HandlerType*            _recv_handler = nullptr;   // User handler for data reception.
         ObjectPtr               _recv_user_data {};        // User data for data reception.
-        ReactiveTCPInputControl _recv_control {};          // User control of input data.
+        ReactiveInputControl _recv_control {};          // User control of input data.
         ByteBlock               _recv_tls_data {};         // Incoming TLS data which cannot be processed now.
         ByteBlock               _recv_clear_data {};       // Incoming clear data.
         HandlerType*            _accept_handler = nullptr; // User handler for accepted session, at TLS level.

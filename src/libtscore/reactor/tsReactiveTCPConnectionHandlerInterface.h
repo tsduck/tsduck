@@ -19,7 +19,7 @@ namespace ts {
 
     class ReactiveTCPServer;
     class ReactiveTCPConnection;
-    class ReactiveTCPInputControl;
+    class ReactiveInputControl;
 
     //!
     //! Interface class for TCP connection Reactor handlers.
@@ -68,7 +68,7 @@ namespace ts {
         //! SYS_ERROR in case of unknown error.
         //! @param [in] user_data The user-data shared pointer which was passed to startReceive().
         //!
-        virtual void handleTCPReceive(ReactiveTCPConnection& sock, const ByteBlock& data, ReactiveTCPInputControl& control, int error_code, const ObjectPtr& user_data);
+        virtual void handleTCPReceive(ReactiveTCPConnection& sock, const ByteBlock& data, ReactiveInputControl& control, int error_code, const ObjectPtr& user_data);
 
         //!
         //! Handle the completion of closing a TCP socket.

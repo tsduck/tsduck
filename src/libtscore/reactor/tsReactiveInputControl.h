@@ -7,7 +7,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Input data control for ReactiveTCPConnection.
+//!  Input data control for reactive streams.
 //!
 //----------------------------------------------------------------------------
 
@@ -16,11 +16,11 @@
 
 namespace ts {
     //!
-    //! The class describes input data, as provided by a ReactiveTCPConnection to a ReactiveTCPConnectionHandlerInterface.
-    //! The handler updates the ReactiveTCPInputControl structure depending on its processing of the input data.
+    //! The class describes input data, as provided by a ReactiveStream to a ReactiveStreamHandlerInterface.
+    //! The handler updates the ReactiveInputControl structure depending on its processing of the input data.
     //! @ingroup libtscore reactor
     //!
-    //! Sample scenario for ReactiveTCPConnectionHandlerInterface::handleTCPReceive(), using a message format consisting
+    //! Sample scenario for ReactiveStreamHandlerInterface::handleStreamRead(), using a message format consisting
     //! of a message header, containing the payload size, followed by a payload of that size.
     //!
     //! - If @a data size is less than the header size, set @a used_size to zero, set @a min_next_size to the
@@ -31,7 +31,7 @@ namespace ts {
     //! - Otherwise, process the message, set @a used_size to the total size of the processed message, set
     //!   @a min_next_size to the expected header size (for next message), and return.
     //!
-    //! Sample scenario for ReactiveTCPConnectionHandlerInterface::handleTCPReceive(), using a text line format where
+    //! Sample scenario for ReactiveStreamHandlerInterface::handleStreamRead(), using a text line format where
     //! each line is terminated by LF or a CR/LF combination.
     //!
     //! - Check if @a data contains a LF byte. If not, set @a used_size to zero, set @a min_next_size to @a NPOS,
@@ -42,13 +42,13 @@ namespace ts {
     //! In all cases, the handler shall check @a error_code and verify that it is equal to SYS_SUCCESS before proceeding.
     //! Otherwise, the connection shall be considered as lost or terminated.
     //!
-    class TSCOREDLL ReactiveTCPInputControl
+    class TSCOREDLL ReactiveInputControl
     {
     public:
         //!
         //! Default constructor.
         //!
-        ReactiveTCPInputControl() = default;
+        ReactiveInputControl() = default;
         //!
         //! Reset the content to the original values, suitable for processing an input buffer.
         //!

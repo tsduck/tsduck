@@ -15,7 +15,7 @@
 #include "tsReactiveSocketBase.h"
 #include "tsSubscriptionBase.h"
 #include "tsReactiveTCPConnectionHandlerInterface.h"
-#include "tsReactiveTCPInputControl.h"
+#include "tsReactiveInputControl.h"
 #include "tsTCPConnection.h"
 
 namespace ts {
@@ -169,7 +169,7 @@ namespace ts {
         //! @param [in] error_code Receive error code. If not success, the handler is called exactly once.
         //! @param [in] user_data User data for the handler.
         //!
-        void processReceiveBuffer(ByteBlock& data, ReactiveTCPInputControl& control, HandlerType* handler, int error_code, const ObjectPtr& user_data);
+        void processReceiveBuffer(ByteBlock& data, ReactiveInputControl& control, HandlerType* handler, int error_code, const ObjectPtr& user_data);
 
         // Inherited methods (implementation of protected interface).
         virtual void processQueuedOperations() override;
@@ -219,7 +219,7 @@ namespace ts {
             bool         new_data = false;  // Some new data were received since last time we examined the buffer.
             size_t       next_read = 0;     // Previously read in data but not yet consumed by application.
             size_t       buffer_size = DEFAULT_RECEIVE_BUFFER_SIZE;
-            ReactiveTCPInputControl control {};
+            ReactiveInputControl control {};
         };
 
         // Description of a close request.

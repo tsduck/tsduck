@@ -12,5 +12,5 @@ ts::ReactiveTCPConnectionHandlerInterface::~ReactiveTCPConnectionHandlerInterfac
 void ts::ReactiveTCPConnectionHandlerInterface::handleTCPConnected(ReactiveTCPConnection&, int, const ObjectPtr&) {}
 void ts::ReactiveTCPConnectionHandlerInterface::handleTCPAccepted(ReactiveTCPServer&, ReactiveTCPConnection&, int, const ObjectPtr&) {}
 void ts::ReactiveTCPConnectionHandlerInterface::handleTCPSend(ReactiveTCPConnection&, size_t, int, const ObjectPtr&) {}
-void ts::ReactiveTCPConnectionHandlerInterface::handleTCPReceive(ReactiveTCPConnection&, const ByteBlock&, ReactiveTCPInputControl&, int, const ObjectPtr&) {}
+void ts::ReactiveTCPConnectionHandlerInterface::handleTCPReceive(ReactiveTCPConnection&, const ByteBlock&, ReactiveInputControl&, int, const ObjectPtr&) {}
 void ts::ReactiveTCPConnectionHandlerInterface::handleTCPClosed(ReactiveTCPConnection&, const ObjectPtr&) {}

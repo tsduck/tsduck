@@ -126,6 +126,6 @@ namespace ts {
         ReactiveTLVConnectionHandlerInterface* _receive_handler = nullptr;
 
         // Inherited methods.
-        virtual void handleTCPReceive(ReactiveTCPConnection& sock, const ByteBlock& data, ReactiveTCPInputControl& control, int error_code, const ObjectPtr& user_data) override;
+        virtual void handleTCPReceive(ReactiveTCPConnection& sock, const ByteBlock& data, ReactiveInputControl& control, int error_code, const ObjectPtr& user_data) override;
     };
 }

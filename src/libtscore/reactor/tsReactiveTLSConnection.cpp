@@ -464,7 +464,7 @@ void ts::ReactiveTLSConnection::processQueuedOperations()
 // Called when a receive operation completes.
 //----------------------------------------------------------------------------
 
-void ts::ReactiveTLSConnection::handleTCPReceive(ReactiveTCPConnection& sock, const ByteBlock& data, ReactiveTCPInputControl& control, int error_code, const ObjectPtr& user_data)
+void ts::ReactiveTLSConnection::handleTCPReceive(ReactiveTCPConnection& sock, const ByteBlock& data, ReactiveInputControl& control, int error_code, const ObjectPtr& user_data)
 {
     if (!SysSuccess(error_code)) {
         // Report receive errors to application.

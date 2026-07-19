@@ -153,7 +153,7 @@ namespace ts {
 #if defined(TS_WINDOWS)
         //!
         //! Open a registry key.
-        //! @param [in] root_key Handle to the root key.
+        //! @param [in] root Handle to the root key.
         //! @param [in] key Name of the key below root key.
         //! @param [in] sam Requested security access mask.
         //! @param [out] handle Handle to the key.

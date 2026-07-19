@@ -83,7 +83,7 @@ bool ts::ReactiveTLVConnection::startReceive(ReactiveTLVConnectionHandlerInterfa
 // Invoked when binary data is received from the TCP connection.
 //----------------------------------------------------------------------------
 
-void ts::ReactiveTLVConnection::handleTCPReceive(ReactiveTCPConnection& sock, const ByteBlock& data, ReactiveTCPInputControl& control, int error_code, const ObjectPtr& user_data)
+void ts::ReactiveTLVConnection::handleTCPReceive(ReactiveTCPConnection& sock, const ByteBlock& data, ReactiveInputControl& control, int error_code, const ObjectPtr& user_data)
 {
     // Ignore all inputs if no handler is defined.
     if (_receive_handler == nullptr) {

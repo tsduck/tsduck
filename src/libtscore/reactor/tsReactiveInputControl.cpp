@@ -6,10 +6,10 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsReactiveTCPInputControl.h"
+#include "tsReactiveInputControl.h"
 
 
-void ts::ReactiveTCPInputControl::reset()
+void ts::ReactiveInputControl::reset()
 {
     used_size.reset();
     min_next_size.reset();

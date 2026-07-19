@@ -163,7 +163,7 @@ namespace ts {
         //!
         //! Fill the user's buffer with data from media samples in _sample_buffer.
         //! @param [in,out] buffer Address of user's buffer. Updated after last read packet.
-        //! @param [in,out] size Size in bytes of user's buffer. Updated after last read packet.
+        //! @param [in,out] buffer_size Size in bytes of user's buffer. Updated after last read packet.
         //!
         void FillBuffer(char*& buffer, size_t& buffer_size);
     };

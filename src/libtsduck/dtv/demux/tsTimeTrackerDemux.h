@@ -70,7 +70,7 @@ namespace ts {
             TimeTracker(uint64_t scale = PTS_DTS_SCALE) : _scale(scale) {}
             //!
             //! Check if values were set in the object and if we can collect info.
-            //! @returb True if we can collect valid info.
+            //! @return True if we can collect valid info.
             //!
             bool isValid() const { return _first < _scale; }
             //!

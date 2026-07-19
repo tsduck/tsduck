@@ -136,7 +136,7 @@ bool ts::ReactiveTelnetConnection::startReceive(ReactiveTelnetConnectionHandlerI
 // Invoked when binary data is received from the TCP connection.
 //----------------------------------------------------------------------------
 
-void ts::ReactiveTelnetConnection::handleTCPReceive(ReactiveTCPConnection& sock, const ByteBlock& data, ReactiveTCPInputControl& control, int error_code, const ObjectPtr& user_data)
+void ts::ReactiveTelnetConnection::handleTCPReceive(ReactiveTCPConnection& sock, const ByteBlock& data, ReactiveInputControl& control, int error_code, const ObjectPtr& user_data)
 {
     if (_receive_handler != nullptr) {
         if (!SysSuccess(error_code)) {

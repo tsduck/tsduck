@@ -150,7 +150,7 @@ namespace {
         virtual void handleTimer(ts::Reactor& reactor, ts::EventId id) override;
         virtual void handleTCPConnected(ts::ReactiveTCPConnection& sock, int error_code, const ts::ObjectPtr& user_data) override;
         virtual void handleTCPSend(ts::ReactiveTCPConnection& sock, size_t position, int error_code, const ts::ObjectPtr& user_data) override;
-        virtual void handleTCPReceive(ts::ReactiveTCPConnection& sock, const ts::ByteBlock& data, ts::ReactiveTCPInputControl& control, int error_code, const ts::ObjectPtr& user_data) override;
+        virtual void handleTCPReceive(ts::ReactiveTCPConnection& sock, const ts::ByteBlock& data, ts::ReactiveInputControl& control, int error_code, const ts::ObjectPtr& user_data) override;
         virtual void handleTCPClosed(ts::ReactiveTCPConnection& sock, const ts::ObjectPtr& user_data) override;
     };
 
@@ -215,7 +215,7 @@ namespace {
         TSUNIT_EQUAL(_expected_send_position, position);
     }
 
-    void TestClient::handleTCPReceive(ts::ReactiveTCPConnection& sock, const ts::ByteBlock& data, ts::ReactiveTCPInputControl& control, int error_code, const ts::ObjectPtr& user_data)
+    void TestClient::handleTCPReceive(ts::ReactiveTCPConnection& sock, const ts::ByteBlock& data, ts::ReactiveInputControl& control, int error_code, const ts::ObjectPtr& user_data)
     {
         _debug << "TestClient::handleTCPReceive, client id: " << _client_id << ", error code: " << error_code << ", size: " << data.size() << std::endl;
         TSUNIT_ASSERT(&sock == &_rclient);
@@ -285,7 +285,7 @@ namespace {
         virtual ts::ReactiveTCPConnection& getConnection() override;
         virtual void handleTCPAccepted(ts::ReactiveTCPServer& server, ts::ReactiveTCPConnection& sock, int error_code, const ts::ObjectPtr& user_data) override;
         virtual void handleTCPSend(ts::ReactiveTCPConnection& sock, size_t position, int error_code, const ts::ObjectPtr& user_data) override;
-        virtual void handleTCPReceive(ts::ReactiveTCPConnection& sock, const ts::ByteBlock& data, ts::ReactiveTCPInputControl& control, int error_code, const ts::ObjectPtr& user_data) override;
+        virtual void handleTCPReceive(ts::ReactiveTCPConnection& sock, const ts::ByteBlock& data, ts::ReactiveInputControl& control, int error_code, const ts::ObjectPtr& user_data) override;
         virtual void handleTCPClosed(ts::ReactiveTCPConnection& sock, const ts::ObjectPtr& user_data) override;
     };
 
@@ -330,7 +330,7 @@ namespace {
         TSUNIT_EQUAL(_expected_send_position, position);
     }
 
-    void TestServerConnection::handleTCPReceive(ts::ReactiveTCPConnection& sock, const ts::ByteBlock& data, ts::ReactiveTCPInputControl& control, int error_code, const ts::ObjectPtr& user_data)
+    void TestServerConnection::handleTCPReceive(ts::ReactiveTCPConnection& sock, const ts::ByteBlock& data, ts::ReactiveInputControl& control, int error_code, const ts::ObjectPtr& user_data)
     {
         TSUNIT_ASSERT(&sock == &_rclient);
         if (error_code == ts::SYS_EOF) {

@@ -122,7 +122,7 @@ namespace ts {
         bool startSendData(SendUserDataPtr& buf, bool eol, bool flush);
 
         // Inherited methods.
-        virtual void handleTCPReceive(ReactiveTCPConnection& sock, const ByteBlock& data, ReactiveTCPInputControl& control, int error_code, const ObjectPtr& user_data) override;
+        virtual void handleTCPReceive(ReactiveTCPConnection& sock, const ByteBlock& data, ReactiveInputControl& control, int error_code, const ObjectPtr& user_data) override;
         virtual void handleSocketConnected(TCPConnection& sock) override;
         virtual void handleSocketDisconnected(TCPConnection& sock, bool silent) override;
     };
