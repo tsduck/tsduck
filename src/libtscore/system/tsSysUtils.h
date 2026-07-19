@@ -415,4 +415,20 @@ namespace ts {
     {
         return ClassName(std::type_index(info));
     }
+
+    //!
+    //! Get the set of currently valid file descriptors in the process.
+    //! This is a debug feature which is meaningful on UNIX systems only.
+    //! It does nothing on Windows.
+    //! @param [out] descs Set of valid file descriptors.
+    //!
+    TSCOREDLL void GetValidFileDescriptors(std::set<int>& descs);
+
+    //!
+    //! Get the set of currently valid file descriptors in the process, as a string.
+    //! This is a debug feature which is meaningful on UNIX systems only.
+    //! It returns an empty string on Windows.
+    //! @return A string representing the set of valid file descriptors.
+    //!
+    TSCOREDLL UString GetValidFileDescriptorsString();
 }

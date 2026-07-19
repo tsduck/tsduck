@@ -365,7 +365,9 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
             const SysProcessIdType sub_pid = ::fork();
             if (sub_pid != 0) {
                 // In the intermediate process, send the grand-child pid to the parent.
-                ::write(pid_pipe.getWrite(), &sub_pid, sizeof(sub_pid));
+                if (::write(pid_pipe.getWrite(), &sub_pid, sizeof(sub_pid)) != sizeof(sub_pid)) {
+                    report().error(u"error writing final forked pid to pipe: %s", SysErrorCodeMessage());
+                }
                 // Exit intermediate process and let grand-child execute the command.
                 std::exit(EXIT_SUCCESS);
             }

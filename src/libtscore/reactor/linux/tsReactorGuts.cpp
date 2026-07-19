@@ -399,20 +399,19 @@ void ts::Reactor::Guts::processEventLoop()
             }
             else if (evd.type == EVT_PROC) {
                 _reactor.trace(u"epoll: event #%d, process terminated", i);
-                // Try to wait on the process.
+                // We need to check if the process is actually terminated or if this is a spurious wake-up.
+                // There are two cases which must be handled separately:
+                // 1. The process is a child process of ours. We need to wait() for it, otherwise it will remain a zombie.
+                // 2. The process is not our child process and wait() on it will fail. So, we can only check if the
+                //    process still exists. It is the responsability of the parent of the process to wait() for it.
+                // First, try to wait on the process without blocking. Will fail if not a child process of ours.
+                // Otherwise, solve the zombie issue if this is our child process.
                 ::siginfo_t info;
-                TS_ZERO(info);
-                TS_PUSH_WARNING()
-                TS_LLVM_NOWARNING(disabled-macro-expansion) // si_pid is a macro containing "si_pid" string
-                if (::waitid(P_PIDFD, evd.fd, &info, WEXITED | WNOHANG) < 0) {
-                    // Actual error, delete the process termination.
-                    _reactor.report().error(u"error reading process state: %s", SysErrorCodeMessage());
-                    sysDeleteProcess(sysevd, false);
-                    deleteEventData(sysevd, EVT_PROC);
-                    ::close(evd.fd);
-                }
-                else if (info.si_pid != 0) {
-                    // The process is terminated (not a spurious wake-up).
+                [[maybe_unused]] int res = ::waitid(P_PIDFD, evd.fd, &info, WEXITED | WNOHANG);
+                // Then, check if the process exists. kill(2) with signal 0 is just a process check.
+                if (::kill(evd.pid, 0) < 0 && errno == ESRCH) {
+                    // kill() fails with ESRCH error: the process does not exist, or no longer exists.
+                    // So, this is a valid event (not a spurious wake-up).
                     sysDeleteProcess(sysevd, false);
                     deleteEventData(sysevd, EVT_PROC);
                     // Close the pidfd.
@@ -422,7 +421,6 @@ void ts::Reactor::Guts::processEventLoop()
                         evd.handler->handleProcessTermination(_reactor, id, evd.pid);
                     }
                 }
-                TS_POP_WARNING()
             }
             else {
                 _reactor.trace(u"epoll: event #%d, completed I/O", i);

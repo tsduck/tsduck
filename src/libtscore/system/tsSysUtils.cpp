@@ -709,7 +709,7 @@ void ts::RemoveCloseOnForkExec(int fd)
 #if defined(TS_UNIX)
     // Remove the file descriptor from the list.
     std::lock_guard<std::mutex> lock(CloseOnForkExecMutex());
-    CloseOnForkExecList().insert(fd);
+    CloseOnForkExecList().erase(fd);
 #endif
 }
 
@@ -750,4 +750,44 @@ ts::UString ts::ClassName(const std::type_index index)
         }
     }
     return name;
+}
+
+
+//----------------------------------------------------------------------------
+// Get the set of currently valid file descriptors in the process.
+// This is a debug feature which is meaningful on UNIX systems only.
+//----------------------------------------------------------------------------
+
+void ts::GetValidFileDescriptors(std::set<int>& descs)
+{
+    descs.clear();
+
+#if defined(TS_UNIX)
+    // Loop on all possible file descriptors. The problem is that we don't know how many
+    // file descriptors exist. Looping up to RLIMIT_NOFILE is too large. So, we loop until
+    // we find a range of 256 unused file descriptors. This is not a proof that no higher
+    // file descriptor is valid, just a strong probability.
+    static constexpr int max_contig = 256;
+    int contig = 0;
+    for (int fd = 0; contig < max_contig && fd < std::numeric_limits<int>::max(); ++fd) {
+        if (fcntl(fd, F_GETFD) != -1) {
+            descs.insert(fd);
+            contig = 0;
+        }
+        else {
+            contig++;
+        }
+    }
+#endif
+}
+
+ts::UString ts::GetValidFileDescriptorsString()
+{
+    std::set<int> descs;
+    GetValidFileDescriptors(descs);
+    UString res;
+    for (auto fd : descs) {
+        res.format(u"%s%d", res.empty() ? u"" : u", ", fd);
+    }
+    return res;
 }
