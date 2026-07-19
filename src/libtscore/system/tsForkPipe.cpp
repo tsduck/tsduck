@@ -268,33 +268,16 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
         return false;
     }
 
-    // Keep track of process PID.
-    _fpid = ::GetProcessId(pi.hProcess);
-
-    // Close unused handles
-    switch (_wait_mode) {
-        case ASYNCHRONOUS: {
-            // Process handle is useless, we won't use it.
-            _process = SYS_HANDLE_INVALID;
-            ::CloseHandle(pi.hProcess);
-            break;
-        }
-        case SYNCHRONOUS: {
-            // Keep process handle to wait for it.
-            _process = pi.hProcess;
-            break;
-        }
-        case EXIT_PROCESS: {
-            // Exit parent process.
-            std::exit(EXIT_SUCCESS);
-            break;
-        }
-        default: {
-            // Should not get there.
-            assert(false);
-            break;
-        }
+    // In EXIT_PROCESS mode, exit the current process after creating the process.
+    if (_wait_mode == EXIT_PROCESS) {
+        std::exit(EXIT_SUCCESS);
     }
+
+    // Keep track of process handle and PID.
+    _process = pi.hProcess;
+    _fpid = pi.dwProcessId;
+
+    // Close unused handle to thread.
     ::CloseHandle(pi.hThread);
 
     // Keep our end-point of pipe for data transmission.

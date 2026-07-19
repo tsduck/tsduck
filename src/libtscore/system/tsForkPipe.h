@@ -129,6 +129,13 @@ namespace ts {
         SysProcessIdType getProcessId() const { return _fpid; }
 
         //!
+        //! Get the created process handle.
+        //! The concept of process handle exists on Windows only.
+        //! @return The process id or SYS_HANDLE_INVALID in case of error or when process handles are not supported.
+        //!
+        SysHandleType getProcessHandle() const { return _process; }
+
+        //!
         //! Set "ignore abort".
         //! @param [in] on If true and the process aborts, do not report error when writing data.
         //! when writing data.

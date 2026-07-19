@@ -986,8 +986,15 @@ namespace {
             real_pid = proc.getProcessId();
             tsunit::Test::debug() << "HandlerProcess::handleTimer: process pid: " << real_pid << " (current: " << ts::GetProcessId() << ")" << std::endl;
 
-            // Subscribe to real process.
-            real_process = reactor.newProcessIdTermination(this, real_pid);
+            // Subscribe to real process. By handle when possible, by PID otherwise.
+            if (proc.getProcessHandle() != ts::SYS_HANDLE_INVALID) {
+                tsunit::Test::debug() << "HandlerProcess::handleTimer: using process handle in reactor" << std::endl;
+                real_process = reactor.newProcessHandleTermination(this, proc.getProcessHandle());
+            }
+            else {
+                tsunit::Test::debug() << "HandlerProcess::handleTimer: using process PID in reactor" << std::endl;
+                real_process = reactor.newProcessIdTermination(this, real_pid);
+            }
             TSUNIT_ASSERT(real_process.isValid());
         }
         else if (id == timeout) {
