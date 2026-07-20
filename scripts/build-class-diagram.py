@@ -16,12 +16,13 @@ import os, sys, shutil, argparse, subprocess
 import xml.etree.ElementTree as etree
 
 # Calling script name, project root.
-SCRIPT    = os.path.basename(sys.argv[0])
-SCRIPTDIR = os.path.dirname(os.path.abspath(sys.argv[0]))
-ROOTDIR   = os.path.dirname(os.path.dirname(SCRIPTDIR))
-DOXYDIR   = os.sep.join([ROOTDIR, 'bin', 'doxy'])
-OUTDIR    = os.sep.join([ROOTDIR, 'bin', 'diagrams'])
-TAGFILE   = os.sep.join([DOXYDIR, 'tags.xml'])
+SCRIPT     = os.path.basename(sys.argv[0])
+SCRIPTDIR  = os.path.dirname(os.path.abspath(sys.argv[0]))
+ROOTDIR    = os.path.dirname(SCRIPTDIR)
+DOXYSRCDIR = os.sep.join([ROOTDIR, 'doc', 'doxy'])
+DOXYOUTDIR = os.sep.join([ROOTDIR, 'bin', 'doxy'])
+OUTDIR     = os.sep.join([ROOTDIR, 'bin', 'diagrams'])
+TAGFILE    = os.sep.join([DOXYOUTDIR, 'tags.xml'])
 
 # Set of values of attribute "kind" in structure "compound" which are considered as classes.
 CLASS_KINDS = {'class', 'struct', 'interface'}
@@ -179,7 +180,7 @@ if __name__ == '__main__':
     # Check if the doxygen-generated tag file is present. If not, run doxygen.
     if not os.path.exists(TAGFILE):
         print('Tag file %s not found, running doxygen' % (TAGFILE), file=sys.stderr)
-        subprocess.run([os.sep.join([SCRIPTDIR, 'build-doxygen.py'])])
+        subprocess.run([os.sep.join([DOXYSRCDIR, 'build-doxygen.py'])])
         if not os.path.exists(TAGFILE):
             sys.exit('Tag file %s still not found after running doxygen, aborting' % TAGFILE)
 
