@@ -15,7 +15,7 @@
 #include "tsReactiveTCPConnection.h"
 #include "tsReactiveTCPServer.h"
 #include "tsReactiveServer.h"
-#include "tsReactiveTelnetConnection.h"
+#include "tsReactiveTextConnection.h"
 #include "tsForkPipe.h"
 #include "tsTime.h"
 #include "tsCerrReport.h"
@@ -524,43 +524,43 @@ TSUNIT_DEFINE_TEST(UDP)
 
 
 //----------------------------------------------------------------------------
-// Unitary test : TCP socket in telnet mode.
+// Unitary test : TCP socket in text mode.
 //----------------------------------------------------------------------------
 
 namespace {
-    class TelnetClient: private ts::ReactiveTCPConnectionHandlerInterface, private ts::ReactiveTelnetConnectionHandlerInterface
+    class TextClient: private ts::ReactiveTCPConnectionHandlerInterface, private ts::ReactiveTextConnectionHandlerInterface
     {
     public:
-        TelnetClient() = delete;
-        TelnetClient(ts::Reactor& reactor);
+        TextClient() = delete;
+        TextClient(ts::Reactor& reactor);
 
     private:
         ts::Reactor&                 _reactor;
         ts::TCPConnection            _client {&_reactor};
         ts::ReactiveTCPConnection    _rclient {_reactor, _client};
-        ts::ReactiveTelnetConnection _rtclient {_rclient};
-        const ts::UString            _server_name {ts::GetEnvironment(u"TS_UTEST_TELNET_HOST", u"tsduck.io")};
+        ts::ReactiveTextConnection _rtclient {_rclient};
+        const ts::UString            _server_name {ts::GetEnvironment(u"TS_UTEST_TEXT_HOST", u"tsduck.io")};
         const ts::IPAddress          _server_address {_server_name, _reactor.report(), ts::IP::v4};
-        const ts::IPAddress::Port    _server_port = ts::GetIntEnvironment<ts::IPAddress::Port>(u"TS_UTEST_TELNET_PORT", 80);
+        const ts::IPAddress::Port    _server_port = ts::GetIntEnvironment<ts::IPAddress::Port>(u"TS_UTEST_TEXT_PORT", 80);
         const ts::IPSocketAddress    _server_socket {_server_address, _server_port};
 
         virtual void handleTCPConnected(ts::ReactiveTCPConnection& sock, int error_code, const ts::ObjectPtr& user_data) override;
-        virtual void handleTelnetLine(ts::ReactiveTelnetConnection& sock, const ts::UString& line, int error_code) override;
+        virtual void handleTextLine(ts::ReactiveTextConnection& sock, const ts::UString& line, int error_code) override;
         virtual void handleTCPClosed(ts::ReactiveTCPConnection& sock, const ts::ObjectPtr& user_data) override;
     };
 
-    TelnetClient::TelnetClient(ts::Reactor& reactor) :
+    TextClient::TextClient(ts::Reactor& reactor) :
         _reactor(reactor)
     {
-        tsunit::Test::debug() << "TelnetClient: connecting to " << _server_name << " (" << _server_socket << ")" << std::endl;
+        tsunit::Test::debug() << "TextClient: connecting to " << _server_name << " (" << _server_socket << ")" << std::endl;
         TSUNIT_ASSERT(_client.open(ts::IP::v4));
         TSUNIT_ASSERT(_client.bind(ts::IPSocketAddress::AnySocketAddress4));
         TSUNIT_ASSERT(_rclient.startConnect(this, _server_socket));
     }
 
-    void TelnetClient::handleTCPConnected(ts::ReactiveTCPConnection& sock, int error_code, const ts::ObjectPtr& user_data)
+    void TextClient::handleTCPConnected(ts::ReactiveTCPConnection& sock, int error_code, const ts::ObjectPtr& user_data)
     {
-        tsunit::Test::debug() << "TelnetClient::handleTCPConnected: error code: " << error_code << std::endl;
+        tsunit::Test::debug() << "TextClient::handleTCPConnected: error code: " << error_code << std::endl;
         TSUNIT_ASSERT(_rtclient.startReceive(this));
         TSUNIT_ASSERT(_rtclient.startSendLine(u"GET / HTTP/1.0", false));
         TSUNIT_ASSERT(_rtclient.startSendLine(u"Host: " + _server_name, false));
@@ -570,21 +570,21 @@ namespace {
         TSUNIT_ASSERT(_rtclient.startSendLine(u""));
     }
 
-    void TelnetClient::handleTelnetLine(ts::ReactiveTelnetConnection& sock, const ts::UString& line, int error_code)
+    void TextClient::handleTextLine(ts::ReactiveTextConnection& sock, const ts::UString& line, int error_code)
     {
         if (error_code == ts::SYS_EOF) {
-            tsunit::Test::debug() << "TelnetClient::handleTelnetLine: end of response" << std::endl;
+            tsunit::Test::debug() << "TextClient::handleTextLine: end of response" << std::endl;
             TSUNIT_ASSERT(_client.disconnect());
             TSUNIT_ASSERT(_rclient.startClose(this));
         }
         else {
-            tsunit::Test::debug() << "TelnetClient::handleTelnetLine: \"" << line << "\", error code: " << error_code << std::endl;
+            tsunit::Test::debug() << "TextClient::handleTextLine: \"" << line << "\", error code: " << error_code << std::endl;
         }
     }
 
-    void TelnetClient::handleTCPClosed(ts::ReactiveTCPConnection& sock, const ts::ObjectPtr& user_data)
+    void TextClient::handleTCPClosed(ts::ReactiveTCPConnection& sock, const ts::ObjectPtr& user_data)
     {
-        tsunit::Test::debug() << "TelnetClient::handleTCPClosed" << std::endl;
+        tsunit::Test::debug() << "TextClient::handleTCPClosed" << std::endl;
         TSUNIT_ASSERT(!_client.isOpen());
         sock.reactor().exitEventLoop();
     }
@@ -595,7 +595,7 @@ TSUNIT_DEFINE_TEST(Client)
     TSUNIT_ASSERT(ts::IPInitialize());
     ts::Reactor reactor(&CERR);
     TSUNIT_ASSERT(reactor.open());
-    TelnetClient test(reactor);
+    TextClient test(reactor);
     TSUNIT_ASSERT(reactor.processEventLoop());
     TSUNIT_ASSERT(reactor.close());
 }

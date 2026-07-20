@@ -12,7 +12,7 @@
 
 #include "tsIPAddress.h"
 #include "tsIPSocketAddress.h"
-#include "tsTelnetConnection.h"
+#include "tsTextConnection.h"
 #include "tsTLSConnection.h"
 #include "tsTLSServer.h"
 #include "tsEnvironment.h"
@@ -70,37 +70,37 @@ TSUNIT_DEFINE_TEST(Client)
 {
     TSUNIT_ASSERT(ts::IPInitialize());
 
-    const ts::UString         server_name(ts::GetEnvironment(u"TS_UTEST_TLS_TELNET_HOST", u"tsduck.io"));
+    const ts::UString         server_name(ts::GetEnvironment(u"TS_UTEST_TLS_HOST", u"tsduck.io"));
     const ts::IPAddress       server_address(server_name, CERR, ts::IP::v4);
-    const ts::IPAddress::Port server_port = ts::GetIntEnvironment<ts::IPAddress::Port>(u"TS_UTEST_TLS_TELNET_PORT", 443);
+    const ts::IPAddress::Port server_port = ts::GetIntEnvironment<ts::IPAddress::Port>(u"TS_UTEST_TLS_PORT", 443);
     const ts::IPSocketAddress server_socket(server_address, server_port);
 
-    ts::TLSConnection    client(&CERR);
-    ts::TelnetConnection telnet(client);
+    ts::TLSConnection  tls_client(&CERR);
+    ts::TextConnection text_client(tls_client);
 
-    client.setServerName(server_name);
-    TSUNIT_ASSERT(!client.isOpen());
-    TSUNIT_ASSERT(!client.isConnected());
-    TSUNIT_ASSERT(client.open(ts::IP::v4));
-    TSUNIT_ASSERT(client.bind(ts::IPSocketAddress::AnySocketAddress4));
-    TSUNIT_ASSERT(client.connect(server_socket));
-    TSUNIT_ASSERT(client.isOpen());
-    TSUNIT_ASSERT(client.isConnected());
-    TSUNIT_ASSERT(!client.isServerSide());
+    tls_client.setServerName(server_name);
+    TSUNIT_ASSERT(!tls_client.isOpen());
+    TSUNIT_ASSERT(!tls_client.isConnected());
+    TSUNIT_ASSERT(tls_client.open(ts::IP::v4));
+    TSUNIT_ASSERT(tls_client.bind(ts::IPSocketAddress::AnySocketAddress4));
+    TSUNIT_ASSERT(tls_client.connect(server_socket));
+    TSUNIT_ASSERT(tls_client.isOpen());
+    TSUNIT_ASSERT(tls_client.isConnected());
+    TSUNIT_ASSERT(!tls_client.isServerSide());
     debug() << "TLS::Client: connected" << std::endl;
 
-    TSUNIT_ASSERT(telnet.sendLine(u"GET / HTTP/1.0"));
-    TSUNIT_ASSERT(telnet.sendLine(u"Host: " + server_name));
-    TSUNIT_ASSERT(telnet.sendLine(u"User-Agent: tsduck"));
-    TSUNIT_ASSERT(telnet.sendLine(u"Accept: text/html"));
-    TSUNIT_ASSERT(telnet.sendLine(u"Connection: close"));
-    TSUNIT_ASSERT(telnet.sendLine(u""));
+    TSUNIT_ASSERT(text_client.sendLine(u"GET / HTTP/1.0"));
+    TSUNIT_ASSERT(text_client.sendLine(u"Host: " + server_name));
+    TSUNIT_ASSERT(text_client.sendLine(u"User-Agent: tsduck"));
+    TSUNIT_ASSERT(text_client.sendLine(u"Accept: text/html"));
+    TSUNIT_ASSERT(text_client.sendLine(u"Connection: close"));
+    TSUNIT_ASSERT(text_client.sendLine(u""));
     debug() << "TLS::Client: request sent" << std::endl;
 
     size_t line_count = 0;
     size_t empty_count = 0;
     ts::UString line;
-    while (telnet.receiveLine(line)) {
+    while (text_client.receiveLine(line)) {
         line_count++;
         empty_count += line.empty();
         if (line.size() > 70) {
@@ -111,8 +111,8 @@ TSUNIT_DEFINE_TEST(Client)
     }
     debug() << "TLS::Client: Received " << line_count << " lines, " << empty_count << " empty lines" << std::endl;
 
-    TSUNIT_ASSERT(client.disconnect());
-    TSUNIT_ASSERT(client.close());
+    TSUNIT_ASSERT(tls_client.disconnect());
+    TSUNIT_ASSERT(tls_client.close());
     TSUNIT_ASSERT(line_count > 0);
     TSUNIT_ASSERT(empty_count > 0);
 }

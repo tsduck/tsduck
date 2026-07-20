@@ -12,7 +12,7 @@
 
 #include "tsMain.h"
 #include "tsArgs.h"
-#include "tsTelnetConnection.h"
+#include "tsTextConnection.h"
 #include "tsTSPControlCommand.h"
 #include "tsRestClient.h"
 TS_MAIN(MainCode);
@@ -111,22 +111,22 @@ int MainCode(int argc, char *argv[])
     }
     else {
         // Open a text connection to the tsp server.
-        ts::TCPConnection client(&opt);
-        ts::TelnetConnection telnet(client);
+        ts::TCPConnection tcp_client(&opt);
+        ts::TextConnection text_client(tcp_client);
         ts::IPSocketAddress addr;
         ts::UString resp;
 
-        if (client.open(opt.rest.server_addr.generation()) &&
-            client.bind(addr) &&
-            client.connect(opt.rest.server_addr) &&
-            telnet.sendLine(opt.command) &&
-            client.closeWriter())
+        if (tcp_client.open(opt.rest.server_addr.generation()) &&
+            tcp_client.bind(addr) &&
+            tcp_client.connect(opt.rest.server_addr) &&
+            text_client.sendLine(opt.command) &&
+            tcp_client.closeWriter())
         {
             // Request successfully sent, read the responses.
-            while (telnet.receiveLine(resp)) {
+            while (text_client.receiveLine(resp)) {
                 std::cout << resp << std::endl;
             }
-            client.close(true);
+            tcp_client.close(true);
         }
     }
     return opt.valid() ? EXIT_SUCCESS : EXIT_FAILURE;

@@ -116,7 +116,7 @@ namespace ts {
         };
         using SendUserDataPtr = std::shared_ptr<SendUserData>;
 
-        // ReactiveTelnetConnection private fields.
+        // ReactiveTextConnection private fields.
         tlv::Logger&           _logger;
         const tlv::Protocol&   _protocol;
         ReactiveTCPConnection& _socket;

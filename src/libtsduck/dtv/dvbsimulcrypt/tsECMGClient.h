@@ -17,7 +17,7 @@
 #pragma once
 #include "tsECMGClientArgs.h"
 #include "tsECMGClientHandlerInterface.h"
-#include "tstlvConnection.h"
+#include "tsTLVConnection.h"
 #include "tsMessageQueue.h"
 #include "tsThread.h"
 
@@ -148,7 +148,8 @@ namespace ts {
         const ecmgscs::Protocol&     _protocol;
         volatile State               _state = INITIAL;
         const AbortInterface*        _abort = nullptr;
-        tlv::Connection<ThreadSafety::None> _connection {_logger, _protocol, true, 3}; // connection with ECMG server
+        TCPConnection                _tcp_client {&_logger};         // connection with ECMG server
+        TLVConnection                _tlv_client {_logger, _protocol, _tcp_client, true, 3};
         ecmgscs::ChannelStatus       _channel_status {_protocol};   // initial response to channel_setup
         ecmgscs::StreamStatus        _stream_status {_protocol};    // initial response to stream_setup
         mutable std::recursive_mutex _mutex {};                     // exclusive access to protected fields

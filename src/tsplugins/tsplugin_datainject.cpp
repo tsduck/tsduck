@@ -15,7 +15,7 @@
 #include "tsSection.h"
 #include "tsPacketizer.h"
 #include "tsEMMGMUX.h"
-#include "tstlvConnection.h"
+#include "tsTLVConnection.h"
 #include "tsTCPServer.h"
 #include "tsUDPReceiver.h"
 #include "tsMessageQueue.h"
@@ -70,8 +70,9 @@ namespace ts {
 
         private:
             DataInjectPlugin* const _plugin;
-            Report _report;
-            tlv::Connection<ThreadSafety::Full> _client;
+            Report        _report {Severity::Info, UString(), _plugin};
+            TCPConnection _tcp_client {_plugin};
+            TLVConnection _tlv_client {_plugin->_logger, _plugin->_protocol, _tcp_client, true, 3};
         };
 
         // UDP listener thread.
@@ -95,8 +96,8 @@ namespace ts {
 
         private:
             DataInjectPlugin* const _plugin;
-            Report _report;
-            UDPReceiver _client;
+            Report      _report {Severity::Info, UString(), _plugin};
+            UDPReceiver _client {&_report};
         };
 
         // Plugin private data
@@ -544,9 +545,7 @@ void ts::DataInjectPlugin::processPacketLoss(const UChar* type, bool enqueueSucc
 
 ts::DataInjectPlugin::TCPListener::TCPListener(DataInjectPlugin* plugin) :
     Thread(ThreadAttributes().setStackSize(SERVER_THREAD_STACK_SIZE)),
-    _plugin(plugin),
-    _report(Severity::Info, UString(), plugin),
-    _client(plugin->_logger, plugin->_protocol, true, 3)
+    _plugin(plugin)
 {
 }
 
@@ -563,8 +562,8 @@ void ts::DataInjectPlugin::TCPListener::stop()
     // Close the server, then break client connection.
     // This will force the server thread to terminate.
     _plugin->_server.close();
-    _client.disconnect(true);
-    _client.close(true);
+    _tcp_client.disconnect(true);
+    _tcp_client.close(true);
 
     // Wait for actual thread termination
     Thread::waitForTermination();
@@ -579,7 +578,7 @@ void ts::DataInjectPlugin::TCPListener::main()
     emmgmux::StreamStatus stream_status(_plugin->_protocol);
 
     // Loop on client acceptance (accept only one client at a time).
-    while (_plugin->_server.accept(_client, client_address)) {
+    while (_plugin->_server.accept(_tcp_client, client_address)) {
 
         _report.verbose(u"incoming connection from %s", client_address);
 
@@ -591,7 +590,7 @@ void ts::DataInjectPlugin::TCPListener::main()
         tlv::MessagePtr msg;
 
         // Loop on message reception from the client
-        while (ok && _client.receiveMessage(msg, _plugin->tsp)) {
+        while (ok && _tlv_client.receiveMessage(msg, _plugin->tsp)) {
 
             // Message handling.
             // We do not send errors back to client, we just disconnect
@@ -623,7 +622,7 @@ void ts::DataInjectPlugin::TCPListener::main()
                         }
                     }
                     if (send_status) {
-                        ok = _client.sendMessage(channel_status);
+                        ok = _tlv_client.sendMessage(channel_status);
                     }
                     break;
                 }
@@ -642,7 +641,7 @@ void ts::DataInjectPlugin::TCPListener::main()
                         }
                     }
                     if (send_status) {
-                        ok = _client.sendMessage(channel_status);
+                        ok = _tlv_client.sendMessage(channel_status);
                     }
                     break;
                 }
@@ -682,7 +681,7 @@ void ts::DataInjectPlugin::TCPListener::main()
                         }
                     }
                     if (send_status) {
-                        ok = _client.sendMessage(stream_status);
+                        ok = _tlv_client.sendMessage(stream_status);
                     }
                     break;
                 }
@@ -701,7 +700,7 @@ void ts::DataInjectPlugin::TCPListener::main()
                         }
                     }
                     if (send_status) {
-                        ok = _client.sendMessage(stream_status);
+                        ok = _tlv_client.sendMessage(stream_status);
                     }
                     break;
                 }
@@ -728,14 +727,14 @@ void ts::DataInjectPlugin::TCPListener::main()
                         }
                     }
                     if (send_resp) {
-                        ok = _client.sendMessage(resp);
+                        ok = _tlv_client.sendMessage(resp);
                     }
                     break;
                 }
 
                 case emmgmux::Tags::stream_BW_request: {
                     emmgmux::StreamBWAllocation response(_plugin->_protocol);
-                    ok = _plugin->processBandwidthRequest(msg, response) && _client.sendMessage(response);
+                    ok = _plugin->processBandwidthRequest(msg, response) && _tlv_client.sendMessage(response);
                     break;
                 }
 
@@ -751,8 +750,8 @@ void ts::DataInjectPlugin::TCPListener::main()
         }
 
         // Error while receiving messages during a client session, most likely a disconnection
-        _client.disconnect(true);
-        _client.close(true);
+        _tcp_client.disconnect(true);
+        _tcp_client.close(true);
     }
 
     _plugin->debug(u"TCP server thread completed");
@@ -765,9 +764,7 @@ void ts::DataInjectPlugin::TCPListener::main()
 
 ts::DataInjectPlugin::UDPListener::UDPListener(DataInjectPlugin* plugin) :
     Thread(ThreadAttributes().setStackSize(SERVER_THREAD_STACK_SIZE)),
-    _plugin(plugin),
-    _report(Severity::Info, UString(), plugin),
-    _client(&_report)
+    _plugin(plugin)
 {
 }
 

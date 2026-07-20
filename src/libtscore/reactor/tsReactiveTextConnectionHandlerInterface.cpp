@@ -6,6 +6,6 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsReactiveTelnetConnectionHandlerInterface.h"
+#include "tsReactiveTextConnectionHandlerInterface.h"
 
-ts::ReactiveTelnetConnectionHandlerInterface::~ReactiveTelnetConnectionHandlerInterface() {}
+ts::ReactiveTextConnectionHandlerInterface::~ReactiveTextConnectionHandlerInterface() {}

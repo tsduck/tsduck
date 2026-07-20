@@ -45,7 +45,7 @@ namespace ts {
         Tristate          realtime = Tristate::Maybe; //!< Use real-time options.
         cn::milliseconds  receive_timeout {};       //!< Timeout on input operations.
         cn::milliseconds  final_wait = cn::milliseconds(-1);     //!< Time to wait after last input packet. Zero means infinite, negative means none.
-        RestArgs          control {u"control port", u"control"}; //!< Options for remote control (TCP/Telnet or TCP/TLS).
+        RestArgs          control {u"control port", u"control"}; //!< Options for remote control (TCP/clear or TCP/TLS).
         DuckContext::SavedArgs duck_args {};        //!< Default TSDuck context options for all plugins. Each plugin can override them in its context.
         PluginOptions          input {};            //!< Input plugin description.
         PluginOptionsVector    plugins {};          //!< Packet processor plugins descriptions.

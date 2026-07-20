@@ -11,7 +11,7 @@
 #include "tsNullReport.h"
 #include "tsReporterGuard.h"
 #include "tsReportBuffer.h"
-#include "tsTelnetConnection.h"
+#include "tsTextConnection.h"
 #include "tsRestServer.h"
 #include "tsSysUtils.h"
 
@@ -89,15 +89,15 @@ bool ts::tsp::ControlServer::open()
         _tls_client.setVerifyPeer(false);
     }
     else {
-        // Open the TCP/Telnet server.
+        // Open the TCP/clear server.
         // The server will accept and process one client at a time.
         // Therefore, be generous with the backlog.
-        if (!_telnet_server.open(_options.control.server_addr.generation()) ||
-            !_telnet_server.reusePort(_options.control.reuse_port) ||
-            !_telnet_server.bind(_options.control.server_addr) ||
-            !_telnet_server.listen(16))
+        if (!_tcp_server.open(_options.control.server_addr.generation()) ||
+            !_tcp_server.reusePort(_options.control.reuse_port) ||
+            !_tcp_server.bind(_options.control.server_addr) ||
+            !_tcp_server.listen(16))
         {
-            _telnet_server.close(true);
+            _tcp_server.close(true);
             _log.error(u"error starting TCP server for control commands.");
             return false;
         }
@@ -118,7 +118,7 @@ void ts::tsp::ControlServer::close()
             _tls_server.close(true);
         }
         else {
-            _telnet_server.close(true);
+            _tcp_server.close(true);
         }
 
         // Wait for the termination of the thread.
@@ -141,7 +141,7 @@ void ts::tsp::ControlServer::main()
 
     // Client address and connection.
     IPSocketAddress client_addr;
-    TCPConnection client(&_log);
+    TCPConnection tcp_client(&_log);
     UString command_line;
 
     // Loop on incoming connections.
@@ -203,34 +203,34 @@ void ts::tsp::ControlServer::main()
 
             // Accept a client. Temporarily get errors from TCP server in a buffer.
             {
-                ReporterGuard guard(_telnet_server, &error_buffer);
-                if (!_telnet_server.accept(client, client_addr)) {
+                ReporterGuard guard(_tcp_server, &error_buffer);
+                if (!_tcp_server.accept(tcp_client, client_addr)) {
                     // Unlike TLS, terminate on accept() failure.
                     break;
                 }
             }
-            TelnetConnection telnet(client);
+            TextConnection text_client(tcp_client);
 
             // Filter allowed sources. Set receive timeout on the connection and read one line.
             if (!_options.control.isAllowed(IPAddress(client_addr))) {
                 _log.warning(u"connection attempt from unauthorized source %s (ignored)", client_addr);
-                telnet.sendLine("error: client address is not authorized");
+                text_client.sendLine("error: client address is not authorized");
             }
-            else if (client.setReceiveTimeout(_options.control.receive_timeout) && telnet.receiveLine(command_line, nullptr)) {
+            else if (tcp_client.setReceiveTimeout(_options.control.receive_timeout) && text_client.receiveLine(command_line, nullptr)) {
                 _log.verbose(u"received from %s: %s", client_addr, command_line);
 
                 // Reset the severity of the connection before analysing the line.
                 // A previous analysis may have used --verbose or --debug.
-                telnet.setMaxSeverity(Severity::Info);
+                text_client.setMaxSeverity(Severity::Info);
 
                 // Analyze the command, return errors on the client connection.
-                if (_reference.processCommand(command_line, &telnet) != CommandStatus::SUCCESS) {
-                    telnet.error(u"invalid tsp control command: %s", command_line);
+                if (_reference.processCommand(command_line, &text_client) != CommandStatus::SUCCESS) {
+                    text_client.error(u"invalid tsp control command: %s", command_line);
                 }
             }
 
-            client.closeWriter();
-            client.close();
+            tcp_client.closeWriter();
+            tcp_client.close();
         }
     }
 

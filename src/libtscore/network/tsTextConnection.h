@@ -7,7 +7,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Implementation of a half-duplex line oriented telnet connection.
+//!  Implementation of a half-duplex line-oriented Telnet-like connection.
 //!
 //----------------------------------------------------------------------------
 
@@ -17,10 +17,10 @@
 
 namespace ts {
     //!
-    //! Implementation of a half-duplex line oriented telnet connection.
+    //! Implementation of a half-duplex line-oriented Telnet-like connection.
     //! @ingroup libtscore net
     //!
-    //! This class supports the communication with a half-duplex line oriented telnet server:
+    //! This class supports the communication with a half-duplex line-oriented Telnet-like server:
     //! - The server sends a prompt.
     //! - The client sends a request.
     //! - The server replies by one or more lines followed by the prompt.
@@ -32,28 +32,28 @@ namespace ts {
     //! This class is also a subclass of Report, allowing it to be used to end
     //! log messages.
     //!
-    class TSCOREDLL TelnetConnection: public Report
+    class TSCOREDLL TextConnection: public Report, public OwnedObject
     {
-        TS_NOBUILD_NOCOPY(TelnetConnection);
+        TS_NOBUILD_NOCOPY(TextConnection);
     public:
         //!
         //! Constructor.
-        //! @param [in,out] connection The underlying connection.
-        //! A reference is kept in this instance.
+        //! @param [in,out] socket Associated TCP socket. The socket object must remain valid as long as this object is valid.
         //! @param [in] prompt Prompt string to send to the client.
+        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        explicit TelnetConnection(TCPConnection& connection, const std::string& prompt = std::string());
+        explicit TextConnection(TCPConnection& socket, const std::string& prompt = std::string(), Object* owner = nullptr);
 
         //!
         //! Virtual destructor
         //!
-        virtual ~TelnetConnection() override;
+        virtual ~TextConnection() override;
 
         //!
         //! Get a reference to the associated TCPConnection.
         //! @return A reference to the associated TCPConnection.
         //!
-        TCPConnection& connection() { return _connection; }
+        TCPConnection& socket() { return _socket; }
 
         //!
         //! Reset the internal buffer.
@@ -144,7 +144,7 @@ namespace ts {
 
         //!
         //! Get currently buffered input data and flush that buffer.
-        //! This method is useful when TCP connection switches from text mode (telnet protocol)
+        //! This method is useful when TCP connection switches from text mode (Telnet protocol)
         //! to binary mode. The returned data are the start of the input binary data. The remaining
         //! data can be received using methods from the parent class TCPConnection.
         //! @param [out] data Currently buffered data.
@@ -152,7 +152,8 @@ namespace ts {
         void getAndFlush(ByteBlock& data);
 
         //!
-        //! A telnet end-of-line sequence.
+        //! Standard end-of-line sequence.
+        //! The Telnet protocol defines CR-LF as end-of-line sequence.
         //!
         static const std::string EOL;
 
@@ -161,7 +162,7 @@ namespace ts {
         virtual void writeLog(int severity, const UString& msg) override;
 
     private:
-        TCPConnection& _connection;
+        TCPConnection& _socket;
         std::string    _buffer {};
         std::string    _prompt {};
 

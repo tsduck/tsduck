@@ -6,29 +6,30 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsTelnetConnection.h"
+#include "tsTextConnection.h"
 
-// A telnet end-of-line sequence.
-const std::string ts::TelnetConnection::EOL("\r\n");
+// The Telnet protocol defines CR-LF as end-of-line sequence.
+const std::string ts::TextConnection::EOL("\r\n");
 
 
 //----------------------------------------------------------------------------
 // Constructors and destructors.
 //----------------------------------------------------------------------------
 
-ts::TelnetConnection::TelnetConnection(TCPConnection& connection, const std::string& prompt) :
-    _connection(connection),
+ts::TextConnection::TextConnection(TCPConnection& socket, const std::string& prompt, Object* owner) :
+    OwnedObject(owner),
+    _socket(socket),
     _prompt(prompt)
 {
     // Maximum size we may read per line.
     _buffer.reserve(4096);
 }
 
-ts::TelnetConnection::~TelnetConnection()
+ts::TextConnection::~TextConnection()
 {
 }
 
-bool ts::TelnetConnection::reset()
+bool ts::TextConnection::reset()
 {
     _buffer.clear();
     return true;
@@ -39,22 +40,22 @@ bool ts::TelnetConnection::reset()
 // Send a request to the server.
 //----------------------------------------------------------------------------
 
-bool ts::TelnetConnection::sendText(const std::string& str)
+bool ts::TextConnection::sendText(const std::string& str)
 {
-    return _connection.writeStream(str.c_str(), str.size());
+    return _socket.writeStream(str.c_str(), str.size());
 }
 
-bool ts::TelnetConnection::sendText(const UString& str)
+bool ts::TextConnection::sendText(const UString& str)
 {
     return sendText(str.toUTF8());
 }
 
-bool ts::TelnetConnection::sendLine(const std::string& str)
+bool ts::TextConnection::sendLine(const std::string& str)
 {
     return sendText(str) && sendText(EOL);
 }
 
-bool ts::TelnetConnection::sendLine(const UString& str)
+bool ts::TextConnection::sendLine(const UString& str)
 {
     return sendText(str) && sendText(EOL);
 }
@@ -64,7 +65,7 @@ bool ts::TelnetConnection::sendLine(const UString& str)
 // Implementation of Report.
 //----------------------------------------------------------------------------
 
-void ts::TelnetConnection::writeLog(int severity, const UString& msg)
+void ts::TextConnection::writeLog(int severity, const UString& msg)
 {
     sendLine(Severity::AddHeader(severity, msg));
 }
@@ -74,7 +75,7 @@ void ts::TelnetConnection::writeLog(int severity, const UString& msg)
 // Get currently buffered input data and flush that buffer.
 //----------------------------------------------------------------------------
 
-void ts::TelnetConnection::getAndFlush(ByteBlock& data)
+void ts::TextConnection::getAndFlush(ByteBlock& data)
 {
     data.copy(_buffer.data(), _buffer.size());
     _buffer.clear();
@@ -85,7 +86,7 @@ void ts::TelnetConnection::getAndFlush(ByteBlock& data)
 // Receive all characters until a delimitor has been received.
 //----------------------------------------------------------------------------
 
-bool ts::TelnetConnection::waitForChunk(const std::string& eol, std::string& data, const AbortInterface* abort)
+bool ts::TextConnection::waitForChunk(const std::string& eol, std::string& data, const AbortInterface* abort)
 {
     // Already allocated memory.
     const size_t capacity = _buffer.capacity();
@@ -114,7 +115,7 @@ bool ts::TelnetConnection::waitForChunk(const std::string& eol, std::string& dat
         // EOL not yet received, read some data from the socket.
         _buffer.resize(capacity);
         size_t size = 0;
-        const bool result = _connection.readStream(&_buffer[previous_size], capacity - previous_size, size, abort);
+        const bool result = _socket.readStream(&_buffer[previous_size], capacity - previous_size, size, abort);
         _buffer.resize(previous_size + size);
 
         // In case of error, either return what is in the buffer or an error.
@@ -130,7 +131,7 @@ bool ts::TelnetConnection::waitForChunk(const std::string& eol, std::string& dat
 // Receive a prompt.
 //----------------------------------------------------------------------------
 
-bool ts::TelnetConnection::waitForPrompt(const AbortInterface* abort)
+bool ts::TextConnection::waitForPrompt(const AbortInterface* abort)
 {
     std::string unused;
     return _prompt.empty() || waitForChunk(_prompt, unused, abort);
@@ -141,12 +142,12 @@ bool ts::TelnetConnection::waitForPrompt(const AbortInterface* abort)
 // Receive a line.
 //----------------------------------------------------------------------------
 
-bool ts::TelnetConnection::receiveText(std::string& data, const AbortInterface* abort)
+bool ts::TextConnection::receiveText(std::string& data, const AbortInterface* abort)
 {
     return waitForChunk(std::string(), data, abort);
 }
 
-bool ts::TelnetConnection::receiveText(UString& data, const AbortInterface* abort)
+bool ts::TextConnection::receiveText(UString& data, const AbortInterface* abort)
 {
     std::string sdata;
     const bool result = receiveText(sdata, abort);
@@ -159,7 +160,7 @@ bool ts::TelnetConnection::receiveText(UString& data, const AbortInterface* abor
     return result;
 }
 
-bool ts::TelnetConnection::receiveLine(std::string& line, const AbortInterface* abort)
+bool ts::TextConnection::receiveLine(std::string& line, const AbortInterface* abort)
 {
     // Read until new-line (end of EOL).
     if (!waitForChunk("\n", line, abort)) {
@@ -173,7 +174,7 @@ bool ts::TelnetConnection::receiveLine(std::string& line, const AbortInterface* 
     return true;
 }
 
-bool ts::TelnetConnection::receiveLine(UString& line, const AbortInterface* abort)
+bool ts::TextConnection::receiveLine(UString& line, const AbortInterface* abort)
 {
     std::string sline;
     const bool result = receiveLine(sline, abort);

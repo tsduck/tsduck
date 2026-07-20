@@ -9,6 +9,7 @@
 *.bak
 *.bin
 bin
+*.bkp
 *.bz2
 callgrind.out*
 *.class

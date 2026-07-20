@@ -7,40 +7,37 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Line oriented Telnet connection for use in a Reactor environment
+//!  Line-oriented Telnet-like connection for use in a Reactor environment
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
 #include "tsReactiveSocketBase.h"
-#include "tsReactiveTelnetConnectionHandlerInterface.h"
+#include "tsReactiveTextConnectionHandlerInterface.h"
 #include "tsReactiveTCPConnection.h"
 
 namespace ts {
     //!
-    //! Line oriented Telnet connection for use in a Reactor environment
+    //! Line-oriented Telnet-like connection for use in a Reactor environment
     //! @ingroup libtscore reactor
     //!
-    //! The class ReactiveTelnetConnection is a wrapper around ReactiveTCPConnection to handle reactive I/O.
+    //! The class ReactiveTextConnection is a wrapper around ReactiveTCPConnection to handle reactive I/O.
     //!
-    class TSCOREDLL ReactiveTelnetConnection:
-        public ReactiveSocketBase,
-        private ReactiveTCPConnectionHandlerInterface,
-        private SocketHandlerInterface
+    class TSCOREDLL ReactiveTextConnection: public OwnedObject, private ReactiveTCPConnectionHandlerInterface, private SocketHandlerInterface
     {
-        TS_NOBUILD_NOCOPY(ReactiveTelnetConnection);
+        TS_NOBUILD_NOCOPY(ReactiveTextConnection);
     public:
         //!
         //! Constructor.
         //! @param [in,out] socket Associated reactive TCP socket. The socket object must remain valid as long as this object is valid.
         //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        explicit ReactiveTelnetConnection(ReactiveTCPConnection& socket, Object* owner = nullptr);
+        explicit ReactiveTextConnection(ReactiveTCPConnection& socket, Object* owner = nullptr);
 
         //!
         //! Destructor.
         //!
-        virtual ~ReactiveTelnetConnection() override;
+        virtual ~ReactiveTextConnection() override;
 
         //!
         //! Get a reference to the associated socket.
@@ -53,7 +50,7 @@ namespace ts {
         //! There is no completion handler because the sent data is kept in a dedicated buffer.
         //! @param [in] line Text line to send. The corresponding memory area is no longer used upon return.
         //! An end-of-line marker is automatically added.
-        //! @param [in] flush If false, data are buffered into the ReactiveTelnetConnection and no completion
+        //! @param [in] flush If false, data are buffered into the ReactiveTextConnection and no completion
         //! handler will be called. When true, all previously buffered data are sent with data from this call.
         //! @return True on success, false on error. Success means that the I/O was successfully started.
         //!
@@ -64,7 +61,7 @@ namespace ts {
         //! There is no completion handler because the sent data is kept in a dedicated buffer.
         //! @param [in] line Text line to send. The corresponding memory area is no longer used upon return.
         //! An end-of-line marker is automatically added.
-        //! @param [in] flush If false, data are buffered into the ReactiveTelnetConnection and no completion
+        //! @param [in] flush If false, data are buffered into the ReactiveTextConnection and no completion
         //! handler will be called. When true, all previously buffered data are sent with data from this call.
         //! @return True on success, false on error. Success means that the I/O was successfully started.
         //!
@@ -74,7 +71,7 @@ namespace ts {
         //! Start the operation of sending text over the TCP connection.
         //! There is no completion handler because the sent data is kept in a dedicated buffer.
         //! @param [in] text Text to send. The corresponding memory area is no longer used upon return. No end-of-line marker is added.
-        //! @param [in] flush If false, data are buffered into the ReactiveTelnetConnection and no completion
+        //! @param [in] flush If false, data are buffered into the ReactiveTextConnection and no completion
         //! handler will be called. When true, all previously buffered data are sent with data from this call.
         //! @return True on success, false on error. Success means that the I/O was successfully started.
         //!
@@ -84,7 +81,7 @@ namespace ts {
         //! Start the operation of sending text over the TCP connection.
         //! There is no completion handler because the sent data is kept in a dedicated buffer.
         //! @param [in] text Text to send. The corresponding memory area is no longer used upon return. No end-of-line marker is added.
-        //! @param [in] flush If false, data are buffered into the ReactiveTelnetConnection and no completion
+        //! @param [in] flush If false, data are buffered into the ReactiveTextConnection and no completion
         //! handler will be called. When true, all previously buffered data are sent with data from this call.
         //! @return True on success, false on error. Success means that the I/O was successfully started.
         //!
@@ -92,13 +89,13 @@ namespace ts {
 
         //!
         //! Start the operation of receiving messages from the socket.
-        //! @param [in] handler Handler class to call each time a text line is received. The method handleTelnetLine() will
+        //! @param [in] handler Handler class to call each time a text line is received. The method handleTextLine() will
         //! be called on each received line. Cannot be null. If a previous receive handler was registered, it is replaced.
         //! @param [in] buffer_size Size of input buffers to receive data.
         //! @return True on success, false on error. Success means that the I/O was successfully started.
         //! The final status of the I/O will be transmitted in the @a handler.
         //!
-        bool startReceive(ReactiveTelnetConnectionHandlerInterface* handler, size_t buffer_size = ReactiveTCPConnection::DEFAULT_RECEIVE_BUFFER_SIZE);
+        bool startReceive(ReactiveTextConnectionHandlerInterface* handler, size_t buffer_size = ReactiveTCPConnection::DEFAULT_RECEIVE_BUFFER_SIZE);
 
     private:
         // The send user-data is a buffer containing the formatted binary data to send.
@@ -112,9 +109,9 @@ namespace ts {
         };
         using SendUserDataPtr = std::shared_ptr<SendUserData>;
 
-        // ReactiveTelnetConnection private fields.
+        // ReactiveTextConnection private fields.
         ReactiveTCPConnection&                    _socket;
-        ReactiveTelnetConnectionHandlerInterface* _receive_handler = nullptr;
+        ReactiveTextConnectionHandlerInterface* _receive_handler = nullptr;
         SendUserDataPtr                           _unflushed_data {};
 
         // Get and send a formatted buffer.
