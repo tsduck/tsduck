@@ -6,25 +6,30 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsReactiveTextConnection.h"
+#include "tsReactiveTextStream.h"
+#include "tsSocket.h"
 
 
 //----------------------------------------------------------------------------
 // Constructor and destructor.
 //----------------------------------------------------------------------------
 
-ts::ReactiveTextConnection::ReactiveTextConnection(ReactiveTCPConnection& socket) :
-    _socket(socket)
+ts::ReactiveTextStream::ReactiveTextStream(ReactiveStream& stream, const std::string& eol) :
+    _stream(stream),
+    _eol(eol)
 {
-    // Get notified of connection and disconnection.
-    _socket.socket().addSubscription(this);
+    // Get notified of connection and disconnection if the device is a socket.
+    Socket* sock = dynamic_cast<Socket*>(&stream.stream());
+    if (sock != nullptr) {
+        sock->addSubscription(this);
+    }
 }
 
-ts::ReactiveTextConnection::~ReactiveTextConnection()
+ts::ReactiveTextStream::~ReactiveTextStream()
 {
 }
 
-ts::ReactiveTextConnection::SendUserData::~SendUserData()
+ts::ReactiveTextStream::SendUserData::~SendUserData()
 {
 }
 
@@ -33,12 +38,12 @@ ts::ReactiveTextConnection::SendUserData::~SendUserData()
 // Clear the flushable buffer on connect and disconnect.
 //----------------------------------------------------------------------------
 
-void ts::ReactiveTextConnection::handleSocketConnected(TCPConnection& sock)
+void ts::ReactiveTextStream::handleSocketConnected(TCPConnection& sock)
 {
     _unflushed_data.reset();
 }
 
-void ts::ReactiveTextConnection::handleSocketDisconnected(TCPConnection& sock, bool silent)
+void ts::ReactiveTextStream::handleSocketDisconnected(TCPConnection& sock, bool silent)
 {
     _unflushed_data.reset();
 }
@@ -48,7 +53,7 @@ void ts::ReactiveTextConnection::handleSocketDisconnected(TCPConnection& sock, b
 // Get and send a formatted buffer.
 //----------------------------------------------------------------------------
 
-ts::ReactiveTextConnection::SendUserDataPtr ts::ReactiveTextConnection::getBuffer(bool flush)
+ts::ReactiveTextStream::SendUserDataPtr ts::ReactiveTextStream::getBuffer(bool flush)
 {
     // Output buffer is _unflushed_data if not empty, a new empty buffer otherwise.
     SendUserDataPtr buf = _unflushed_data != nullptr ? _unflushed_data : std::make_shared<SendUserData>();
@@ -66,46 +71,46 @@ ts::ReactiveTextConnection::SendUserDataPtr ts::ReactiveTextConnection::getBuffe
     return buf;
 }
 
-bool ts::ReactiveTextConnection::startSendData(SendUserDataPtr& buf, bool eol, bool flush)
+bool ts::ReactiveTextStream::startSendData(SendUserDataPtr& buf, bool eol, bool flush)
 {
     // Add CR-LF (Telnet protocol end-of-line marker) when necessary.
     if (eol) {
-        buf->buffer.append("\r\n");
+        buf->buffer.append(_eol);
     }
 
     // Start the I/O when necessay. The buffer pointer is used as user-data to make sure that the shared pointer
     // is saved as long as the I/O is in progress. Thus, we guarantee that 1) the buffer remains valid during
     // the I/O and 2) it is automatically freed as the end of the I/O.
-    return !flush || _socket.startWriteStream(nullptr, buf->buffer.data(), buf->buffer.size(), buf);
+    return !flush || _stream.startWriteStream(nullptr, buf->buffer.data(), buf->buffer.size(), buf);
 }
 
 
 //----------------------------------------------------------------------------
-// Start the operation of sending text over the TCP connection.
+// Start the operation of sending text over the stream device.
 //----------------------------------------------------------------------------
 
-bool ts::ReactiveTextConnection::startSendLine(const std::string& line, bool flush)
+bool ts::ReactiveTextStream::startWriteLine(const std::string& line, bool flush)
 {
     auto buf = getBuffer(flush);
     buf->buffer.append(line);
     return startSendData(buf, true, flush);
 }
 
-bool ts::ReactiveTextConnection::startSendLine(const UString& line, bool flush)
+bool ts::ReactiveTextStream::startWriteLine(const UString& line, bool flush)
 {
     auto buf = getBuffer(flush);
     line.appendUTF8(buf->buffer);
     return startSendData(buf, true, flush);
 }
 
-bool ts::ReactiveTextConnection::startSendText(const std::string& line, bool flush)
+bool ts::ReactiveTextStream::startWriteText(const std::string& line, bool flush)
 {
     auto buf = getBuffer(flush);
     buf->buffer.append(line);
     return startSendData(buf, false, flush);
 }
 
-bool ts::ReactiveTextConnection::startSendText(const UString& line, bool flush)
+bool ts::ReactiveTextStream::startWriteText(const UString& line, bool flush)
 {
     auto buf = getBuffer(flush);
     line.appendUTF8(buf->buffer);
@@ -114,28 +119,28 @@ bool ts::ReactiveTextConnection::startSendText(const UString& line, bool flush)
 
 
 //----------------------------------------------------------------------------
-// Start the operation of receiving messages from the socket.
+// Start the operation of receiving messages from the stream device.
 //----------------------------------------------------------------------------
 
-bool ts::ReactiveTextConnection::startReceive(ReactiveTextConnectionHandlerInterface* handler, size_t buffer_size)
+bool ts::ReactiveTextStream::startReadText(ReactiveTextStreamHandlerInterface* handler, size_t buffer_size)
 {
     // The handler cannot be null because there is no other way to get received data.
     if (handler == nullptr) {
-        socket().report().error(u"internal error: null handler in ReactiveTextConnection::startReceive");
+        _stream.report().error(u"internal error: null handler in ReactiveTextStream::startReceive");
         return false;
     }
     else {
         _receive_handler = handler;
-        return _socket.startReadStream(this, buffer_size);
+        return _stream.startReadStream(this, buffer_size);
     }
 }
 
 
 //----------------------------------------------------------------------------
-// Invoked when binary data is received from the TCP connection.
+// Invoked when binary data is received from the stream device.
 //----------------------------------------------------------------------------
 
-void ts::ReactiveTextConnection::handleReadStream(ReactiveStream& stream, const ByteBlock& data, ReactiveInputControl& control, int error_code, const ObjectPtr& user_data)
+void ts::ReactiveTextStream::handleReadStream(ReactiveStream& stream, const ByteBlock& data, ReactiveInputControl& control, int error_code, const ObjectPtr& user_data)
 {
     if (_receive_handler != nullptr) {
         if (!SysSuccess(error_code)) {
@@ -146,7 +151,7 @@ void ts::ReactiveTextConnection::handleReadStream(ReactiveStream& stream, const 
             // Loop on searching for line-feed. Stop if a handler stopped the socket.
             size_t lf = NPOS;
             size_t start = 0;
-            while (start < data.size() && (lf = data.find('\n', start)) != NPOS && _socket.isOpen()) {
+            while (start < data.size() && (lf = data.find('\n', start)) != NPOS && _stream.stream().isReadStream()) {
                 assert(lf >= start);
                 assert(lf < data.size());
                 // Found a complete line.

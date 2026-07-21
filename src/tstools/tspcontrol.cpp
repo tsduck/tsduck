@@ -12,7 +12,8 @@
 
 #include "tsMain.h"
 #include "tsArgs.h"
-#include "tsTextConnection.h"
+#include "tsTextStream.h"
+#include "tsTCPConnection.h"
 #include "tsTSPControlCommand.h"
 #include "tsRestClient.h"
 TS_MAIN(MainCode);
@@ -112,18 +113,18 @@ int MainCode(int argc, char *argv[])
     else {
         // Open a text connection to the tsp server.
         ts::TCPConnection tcp_client(&opt);
-        ts::TextConnection text_client(tcp_client);
+        ts::TextStream text_client(tcp_client);
         ts::IPSocketAddress addr;
         ts::UString resp;
 
         if (tcp_client.open(opt.rest.server_addr.generation()) &&
             tcp_client.bind(addr) &&
             tcp_client.connect(opt.rest.server_addr) &&
-            text_client.sendLine(opt.command) &&
+            text_client.writeLine(opt.command) &&
             tcp_client.closeWriter())
         {
             // Request successfully sent, read the responses.
-            while (text_client.receiveLine(resp)) {
+            while (text_client.readLine(resp)) {
                 std::cout << resp << std::endl;
             }
             tcp_client.close(true);

@@ -6,6 +6,6 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsReactiveTextConnectionHandlerInterface.h"
+#include "tsReactiveTextStreamHandlerInterface.h"
 
-ts::ReactiveTextConnectionHandlerInterface::~ReactiveTextConnectionHandlerInterface() {}
+ts::ReactiveTextStreamHandlerInterface::~ReactiveTextStreamHandlerInterface() {}

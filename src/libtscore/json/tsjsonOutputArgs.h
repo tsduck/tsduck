@@ -14,7 +14,8 @@
 #pragma once
 #include "tsjson.h"
 #include "tsUDPSocket.h"
-#include "tsTextConnection.h"
+#include "tsTCPConnection.h"
+#include "tsTextStream.h"
 
 namespace ts {
     class Args;
@@ -124,7 +125,7 @@ namespace ts::json {
         size_t          _sock_buffer_size = 0;   // Socket buffer size (TCP and UDP).
         UDPSocket       _udp_sock;               // Output UDP socket.
         TCPConnection   _tcp_sock;               // Output TCP socket.
-        TextConnection  _text_sock {_tcp_sock};  // Output TCP socket.
+        TextStream      _text_sock {_tcp_sock};  // Output TCP socket.
 
         // Open/close the UDP socket.
         bool udpOpen(Report& rep);

@@ -13,7 +13,7 @@
 #include "tsReactiveTLSConnection.h"
 #include "tsReactiveTLSServer.h"
 #include "tsReactiveServer.h"
-#include "tsReactiveTextConnection.h"
+#include "tsReactiveTextStream.h"
 #include "tsEnvironment.h"
 #include "tsunit.h"
 
@@ -36,7 +36,7 @@ TSUNIT_REGISTER(ReactiveTLSTest);
 //----------------------------------------------------------------------------
 
 namespace {
-    class TextClient: private ts::ReactiveTCPConnectionHandlerInterface, private ts::ReactiveTextConnectionHandlerInterface
+    class TextClient: private ts::ReactiveTCPConnectionHandlerInterface, private ts::ReactiveTextStreamHandlerInterface
     {
     public:
         TextClient() = delete;
@@ -47,14 +47,14 @@ namespace {
         std::ostream&              _debug;
         ts::TCPConnection          _client {&_reactor.report()};
         ts::ReactiveTLSConnection  _rclient {_reactor, _client};
-        ts::ReactiveTextConnection _rtclient {_rclient};
+        ts::ReactiveTextStream _rtclient {_rclient};
         const ts::UString          _server_name {ts::GetEnvironment(u"TS_UTEST_TLS_HOST", u"tsduck.io")};
         const ts::IPAddress        _server_address {_server_name, _reactor.report(), ts::IP::v4};
         const ts::IPAddress::Port  _server_port = ts::GetIntEnvironment<ts::IPAddress::Port>(u"TS_UTEST_TLS_PORT", 443);
         const ts::IPSocketAddress  _server_socket {_server_address, _server_port};
 
         virtual void handleTCPConnected(ts::ReactiveTCPConnection& sock, int error_code, const ts::ObjectPtr& user_data) override;
-        virtual void handleTextLine(ts::ReactiveTextConnection& sock, const ts::UString& line, int error_code) override;
+        virtual void handleTextLine(ts::ReactiveTextStream& sock, const ts::UString& line, int error_code) override;
         virtual void handleTCPClosed(ts::ReactiveTCPConnection& sock, const ts::ObjectPtr& user_data) override;
     };
 
@@ -72,16 +72,16 @@ namespace {
     void TextClient::handleTCPConnected(ts::ReactiveTCPConnection& sock, int error_code, const ts::ObjectPtr& user_data)
     {
         _debug << "TextClient::handleTCPConnected: error code: " << error_code << std::endl;
-        TSUNIT_ASSERT(_rtclient.startReceive(this));
-        TSUNIT_ASSERT(_rtclient.startSendLine(u"GET / HTTP/1.0", false));
-        TSUNIT_ASSERT(_rtclient.startSendLine(u"Host: " + _server_name, false));
-        TSUNIT_ASSERT(_rtclient.startSendLine(u"User-Agent: tsduck", false));
-        TSUNIT_ASSERT(_rtclient.startSendLine(u"Accept: text/html", false));
-        TSUNIT_ASSERT(_rtclient.startSendLine(u"Connection: close", false));
-        TSUNIT_ASSERT(_rtclient.startSendLine(u""));
+        TSUNIT_ASSERT(_rtclient.startReadText(this));
+        TSUNIT_ASSERT(_rtclient.startWriteLine(u"GET / HTTP/1.0", false));
+        TSUNIT_ASSERT(_rtclient.startWriteLine(u"Host: " + _server_name, false));
+        TSUNIT_ASSERT(_rtclient.startWriteLine(u"User-Agent: tsduck", false));
+        TSUNIT_ASSERT(_rtclient.startWriteLine(u"Accept: text/html", false));
+        TSUNIT_ASSERT(_rtclient.startWriteLine(u"Connection: close", false));
+        TSUNIT_ASSERT(_rtclient.startWriteLine(u""));
     }
 
-    void TextClient::handleTextLine(ts::ReactiveTextConnection& sock, const ts::UString& line, int error_code)
+    void TextClient::handleTextLine(ts::ReactiveTextStream& sock, const ts::UString& line, int error_code)
     {
         if (error_code == ts::SYS_EOF) {
             _debug << "TextClient::handleTextLine: end of response" << std::endl;

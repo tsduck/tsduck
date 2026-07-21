@@ -11,7 +11,7 @@
 #include "tsNullReport.h"
 #include "tsReporterGuard.h"
 #include "tsReportBuffer.h"
-#include "tsTextConnection.h"
+#include "tsTextStream.h"
 #include "tsRestServer.h"
 #include "tsSysUtils.h"
 
@@ -209,14 +209,14 @@ void ts::tsp::ControlServer::main()
                     break;
                 }
             }
-            TextConnection text_client(tcp_client);
+            TextStream text_client(tcp_client);
 
             // Filter allowed sources. Set receive timeout on the connection and read one line.
             if (!_options.control.isAllowed(IPAddress(client_addr))) {
                 _log.warning(u"connection attempt from unauthorized source %s (ignored)", client_addr);
-                text_client.sendLine("error: client address is not authorized");
+                text_client.writeLine("error: client address is not authorized");
             }
-            else if (tcp_client.setReceiveTimeout(_options.control.receive_timeout) && text_client.receiveLine(command_line, nullptr)) {
+            else if (tcp_client.setReceiveTimeout(_options.control.receive_timeout) && text_client.readLine(command_line, nullptr)) {
                 _log.verbose(u"received from %s: %s", client_addr, command_line);
 
                 // Reset the severity of the connection before analysing the line.

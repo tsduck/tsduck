@@ -12,7 +12,7 @@
 
 #include "tsIPAddress.h"
 #include "tsIPSocketAddress.h"
-#include "tsTextConnection.h"
+#include "tsTextStream.h"
 #include "tsTLSConnection.h"
 #include "tsTLSServer.h"
 #include "tsEnvironment.h"
@@ -76,7 +76,7 @@ TSUNIT_DEFINE_TEST(Client)
     const ts::IPSocketAddress server_socket(server_address, server_port);
 
     ts::TLSConnection  tls_client(&CERR);
-    ts::TextConnection text_client(tls_client);
+    ts::TextStream text_client(tls_client);
 
     tls_client.setServerName(server_name);
     TSUNIT_ASSERT(!tls_client.isOpen());
@@ -89,18 +89,18 @@ TSUNIT_DEFINE_TEST(Client)
     TSUNIT_ASSERT(!tls_client.isServerSide());
     debug() << "TLS::Client: connected" << std::endl;
 
-    TSUNIT_ASSERT(text_client.sendLine(u"GET / HTTP/1.0"));
-    TSUNIT_ASSERT(text_client.sendLine(u"Host: " + server_name));
-    TSUNIT_ASSERT(text_client.sendLine(u"User-Agent: tsduck"));
-    TSUNIT_ASSERT(text_client.sendLine(u"Accept: text/html"));
-    TSUNIT_ASSERT(text_client.sendLine(u"Connection: close"));
-    TSUNIT_ASSERT(text_client.sendLine(u""));
+    TSUNIT_ASSERT(text_client.writeLine(u"GET / HTTP/1.0"));
+    TSUNIT_ASSERT(text_client.writeLine(u"Host: " + server_name));
+    TSUNIT_ASSERT(text_client.writeLine(u"User-Agent: tsduck"));
+    TSUNIT_ASSERT(text_client.writeLine(u"Accept: text/html"));
+    TSUNIT_ASSERT(text_client.writeLine(u"Connection: close"));
+    TSUNIT_ASSERT(text_client.writeLine(u""));
     debug() << "TLS::Client: request sent" << std::endl;
 
     size_t line_count = 0;
     size_t empty_count = 0;
     ts::UString line;
-    while (text_client.receiveLine(line)) {
+    while (text_client.readLine(line)) {
         line_count++;
         empty_count += line.empty();
         if (line.size() > 70) {

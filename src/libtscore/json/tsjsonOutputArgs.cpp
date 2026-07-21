@@ -279,12 +279,12 @@ bool ts::json::OutputArgs::report(const json::Value& root, Report& rep)
         if (_json_tcp) {
             tcp_ok = tcpConnect(rep);
             if (tcp_ok) {
-                tcp_ok = _text_sock.sendLine(line8);
+                tcp_ok = _text_sock.writeLine(line8);
                 // In case of send error, retry opening the socket once.
                 // This is useful when the session is kept open and the server disconnected since last time.
                 if (!tcp_ok) {
                     tcpDisconnect(true);
-                    tcp_ok = tcpConnect(rep) && _text_sock.sendLine(line8);
+                    tcp_ok = tcpConnect(rep) && _text_sock.writeLine(line8);
                 }
                 // Disconnect on error or when the connection shall not be kept open.
                 tcpDisconnect(!tcp_ok);

@@ -6,32 +6,50 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsTextConnection.h"
+#include "tsTextStream.h"
+#include "tsByteBlock.h"
+#include "tsSocket.h"
 
 // The Telnet protocol defines CR-LF as end-of-line sequence.
-const std::string ts::TextConnection::EOL("\r\n");
+const std::string ts::TextStream::DEFAULT_EOL("\r\n");
 
 
 //----------------------------------------------------------------------------
-// Constructors and destructors.
+// Constructors and destructor.
 //----------------------------------------------------------------------------
 
-ts::TextConnection::TextConnection(TCPConnection& socket, const std::string& prompt) :
-    _socket(socket),
+ts::TextStream::TextStream(StreamInterface& stream, const std::string& eol, const std::string& prompt) :
+    _stream(stream),
+    _eol(eol),
     _prompt(prompt)
 {
     // Maximum size we may read per line.
     _buffer.reserve(4096);
+
+    // Get notified of connection and disconnection if the device is a socket.
+    Socket* sock = dynamic_cast<Socket*>(&stream);
+    if (sock != nullptr) {
+        sock->addSubscription(this);
+    }
 }
 
-ts::TextConnection::~TextConnection()
+ts::TextStream::~TextStream()
 {
 }
 
-bool ts::TextConnection::reset()
+
+//----------------------------------------------------------------------------
+// Clear the flushable buffer on connect and disconnect.
+//----------------------------------------------------------------------------
+
+void ts::TextStream::handleSocketConnected(TCPConnection& sock)
 {
-    _buffer.clear();
-    return true;
+    reset();
+}
+
+void ts::TextStream::handleSocketDisconnected(TCPConnection& sock, bool silent)
+{
+    reset();
 }
 
 
@@ -39,24 +57,24 @@ bool ts::TextConnection::reset()
 // Send a request to the server.
 //----------------------------------------------------------------------------
 
-bool ts::TextConnection::sendText(const std::string& str)
+bool ts::TextStream::writeText(const std::string& str)
 {
-    return _socket.writeStream(str.c_str(), str.size());
+    return _stream.writeStream(str.c_str(), str.size());
 }
 
-bool ts::TextConnection::sendText(const UString& str)
+bool ts::TextStream::writeText(const UString& str)
 {
-    return sendText(str.toUTF8());
+    return writeText(str.toUTF8());
 }
 
-bool ts::TextConnection::sendLine(const std::string& str)
+bool ts::TextStream::writeLine(const std::string& str)
 {
-    return sendText(str) && sendText(EOL);
+    return writeText(str) && writeText(_eol);
 }
 
-bool ts::TextConnection::sendLine(const UString& str)
+bool ts::TextStream::writeLine(const UString& str)
 {
-    return sendText(str) && sendText(EOL);
+    return writeText(str) && writeText(_eol);
 }
 
 
@@ -64,9 +82,9 @@ bool ts::TextConnection::sendLine(const UString& str)
 // Implementation of Report.
 //----------------------------------------------------------------------------
 
-void ts::TextConnection::writeLog(int severity, const UString& msg)
+void ts::TextStream::writeLog(int severity, const UString& msg)
 {
-    sendLine(Severity::AddHeader(severity, msg));
+    writeLine(Severity::AddHeader(severity, msg));
 }
 
 
@@ -74,7 +92,7 @@ void ts::TextConnection::writeLog(int severity, const UString& msg)
 // Get currently buffered input data and flush that buffer.
 //----------------------------------------------------------------------------
 
-void ts::TextConnection::getAndFlush(ByteBlock& data)
+void ts::TextStream::getAndFlush(ByteBlock& data)
 {
     data.copy(_buffer.data(), _buffer.size());
     _buffer.clear();
@@ -85,7 +103,7 @@ void ts::TextConnection::getAndFlush(ByteBlock& data)
 // Receive all characters until a delimitor has been received.
 //----------------------------------------------------------------------------
 
-bool ts::TextConnection::waitForChunk(const std::string& eol, std::string& data, const AbortInterface* abort)
+bool ts::TextStream::waitForChunk(const std::string& eol, std::string& data, const AbortInterface* abort)
 {
     // Already allocated memory.
     const size_t capacity = _buffer.capacity();
@@ -111,10 +129,10 @@ bool ts::TextConnection::waitForChunk(const std::string& eol, std::string& data,
             return true;
         }
 
-        // EOL not yet received, read some data from the socket.
+        // EOL not yet received, read some data from the stream.
         _buffer.resize(capacity);
         size_t size = 0;
-        const bool result = _socket.readStream(&_buffer[previous_size], capacity - previous_size, size, abort);
+        const bool result = _stream.readStream(&_buffer[previous_size], capacity - previous_size, size, abort);
         _buffer.resize(previous_size + size);
 
         // In case of error, either return what is in the buffer or an error.
@@ -130,7 +148,7 @@ bool ts::TextConnection::waitForChunk(const std::string& eol, std::string& data,
 // Receive a prompt.
 //----------------------------------------------------------------------------
 
-bool ts::TextConnection::waitForPrompt(const AbortInterface* abort)
+bool ts::TextStream::waitForPrompt(const AbortInterface* abort)
 {
     std::string unused;
     return _prompt.empty() || waitForChunk(_prompt, unused, abort);
@@ -141,15 +159,15 @@ bool ts::TextConnection::waitForPrompt(const AbortInterface* abort)
 // Receive a line.
 //----------------------------------------------------------------------------
 
-bool ts::TextConnection::receiveText(std::string& data, const AbortInterface* abort)
+bool ts::TextStream::readText(std::string& data, const AbortInterface* abort)
 {
     return waitForChunk(std::string(), data, abort);
 }
 
-bool ts::TextConnection::receiveText(UString& data, const AbortInterface* abort)
+bool ts::TextStream::readText(UString& data, const AbortInterface* abort)
 {
     std::string sdata;
-    const bool result = receiveText(sdata, abort);
+    const bool result = readText(sdata, abort);
     if (result) {
         data.assignFromUTF8(sdata);
     }
@@ -159,7 +177,7 @@ bool ts::TextConnection::receiveText(UString& data, const AbortInterface* abort)
     return result;
 }
 
-bool ts::TextConnection::receiveLine(std::string& line, const AbortInterface* abort)
+bool ts::TextStream::readLine(std::string& line, const AbortInterface* abort)
 {
     // Read until new-line (end of EOL).
     if (!waitForChunk("\n", line, abort)) {
@@ -173,10 +191,10 @@ bool ts::TextConnection::receiveLine(std::string& line, const AbortInterface* ab
     return true;
 }
 
-bool ts::TextConnection::receiveLine(UString& line, const AbortInterface* abort)
+bool ts::TextStream::readLine(UString& line, const AbortInterface* abort)
 {
     std::string sline;
-    const bool result = receiveLine(sline, abort);
+    const bool result = readLine(sline, abort);
     if (result) {
         line.assignFromUTF8(sline);
     }

@@ -22,7 +22,7 @@
 #include "tsTCPServer.h"
 #include "tsTLSServer.h"
 #include "tsRestServer.h"
-#include "tsTextConnection.h"
+#include "tsTextStream.h"
 #include "tsWebRequest.h"
 #include "tsTLSArgs.h"
 #include "tsSysUtils.h"
@@ -628,7 +628,7 @@ ts::CommandStatus ts::SendRecvCommands::send(const UString& command, Args& args)
         TCPConnection tcp_client(&args);
         TLSConnection tls_client(&args, _tls_args);
         TCPConnection* const client = _tls_args.use_tls ? &tls_client : &tcp_client;
-        TextConnection text_client(*client);
+        TextStream text_client(*client);
 
         if (!client->open(ip_gen)) {
             return CommandStatus::ERROR;
@@ -639,8 +639,8 @@ ts::CommandStatus ts::SendRecvCommands::send(const UString& command, Args& args)
         if (client->bind(IPSocketAddress::AnySocketAddress(ip_gen)) &&
             client->connect(_tls_args.server_addr) &&
             client->getLocalAddress(addr) &&
-            text_client.sendLine(msg) &&
-            text_client.receiveLine(msg, nullptr))
+            text_client.writeLine(msg) &&
+            text_client.readLine(msg, nullptr))
         {
             args.info(u"Client address: %s", addr);
             args.info(u"Received line: \"%s\"", msg);
@@ -715,16 +715,16 @@ ts::CommandStatus ts::SendRecvCommands::receive(const UString& command, Args& ar
         TLSConnection tls_client(&args);
         tls_client.setVerifyPeer(false);
         TCPConnection* const client = _tls_args.use_tls ? &tls_client : &tcp_client;
-        TextConnection text_client(*client);
+        TextStream text_client(*client);
         IPSocketAddress addr;
         if (server->accept(*client, addr)) {
             args.info(u"Client connected from %s ...", addr);
             std::string msg;
-            if (text_client.receiveLine(msg)) {
+            if (text_client.readLine(msg)) {
                 args.info(u"Received line: \"%s\"", msg);
                 msg.insert(0, "-> [");
                 msg.append("]");
-                text_client.sendLine(msg);
+                text_client.writeLine(msg);
             }
             client->disconnect();
             client->close();
@@ -815,7 +815,7 @@ ts::CommandStatus ts::ServerCommands::server(const UString& command, Args& args)
         TLSConnection tls_client(&args);
         tls_client.setVerifyPeer(false);
         TCPConnection* const client = _tls_args.use_tls ? &tls_client : &tcp_client;
-        TextConnection text_client(*client);
+        TextStream text_client(*client);
 
         IPSocketAddress addr;
         if (!server->accept(*client, addr)) {
@@ -834,7 +834,7 @@ ts::CommandStatus ts::ServerCommands::server(const UString& command, Args& args)
         UStringList headers;
         args.info(u"==== Request headers:");
         do {
-            success = text_client.receiveLine(line);
+            success = text_client.readLine(line);
             // Analyze the header line.
             if (first_line) {
                 args.info(line);
@@ -916,10 +916,10 @@ ts::CommandStatus ts::ServerCommands::server(const UString& command, Args& args)
             }
 
             // Send a "no data" response.
-            text_client.sendLine(u"HTTP/1.0 204 No Content");
-            text_client.sendLine("Server: TSDuck");
-            text_client.sendLine("Connection: close");
-            text_client.sendLine(u"");
+            text_client.writeLine(u"HTTP/1.0 204 No Content");
+            text_client.writeLine("Server: TSDuck");
+            text_client.writeLine("Connection: close");
+            text_client.writeLine(u"");
         }
 
         client->disconnect();
@@ -998,7 +998,7 @@ ts::CommandStatus ts::ClientCommands::client(const UString& command, Args& args)
     TCPConnection tcp_client(&args);
     TLSConnection tls_client(&args, _tls_args);
     TCPConnection* const client = _tls_args.use_tls ? &tls_client : &tcp_client;
-    TextConnection text_client(*client);
+    TextStream text_client(*client);
 
     // Connect to the server.
     if (!client->open(ip_gen) ||
@@ -1010,14 +1010,14 @@ ts::CommandStatus ts::ClientCommands::client(const UString& command, Args& args)
 
     // Send all input lines.
     for (const auto& line : headers) {
-        if (!text_client.sendLine(line)) {
+        if (!text_client.writeLine(line)) {
             return CommandStatus::ERROR;
         }
     }
 
     // Receive responses.
     UString response;
-    while (text_client.receiveLine(response)) {
+    while (text_client.readLine(response)) {
         args.info(response);
     }
     client->close();

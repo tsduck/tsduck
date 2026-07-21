@@ -12,7 +12,8 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsTCPConnection.h"
+#include "tsSocketHandlerInterface.h"
+#include "tsStreamInterface.h"
 #include "tsUString.h"
 
 namespace ts {
@@ -29,68 +30,87 @@ namespace ts {
     //! - To send a request.
     //! - To get replies line until all the lines of the replies have been read.
     //!
-    //! This class is also a subclass of Report, allowing it to be used to end
-    //! log messages.
+    //! This class is also a subclass of Report, allowing it to be used to send log messages.
     //!
-    class TSCOREDLL TextConnection: public Report
+    //! Although this class is typically used on a TCPConnection (or a subclass of it), it can be
+    //! used on any class implementing StreamInterface. It the underlying device is not interactive
+    //! (a file for instance), don't try to use a prompt of course.
+    //!
+    class TSCOREDLL TextStream: public Report, private SocketHandlerInterface
     {
-        TS_NOBUILD_NOCOPY(TextConnection);
+        TS_NOBUILD_NOCOPY(TextStream);
     public:
         //!
         //! Constructor.
-        //! @param [in,out] socket Associated TCP socket. The socket object must remain valid as long as this object is valid.
+        //! @param [in,out] stream Associated stream device. The device object must remain valid as long as this object is valid.
+        //! @param [in] eol End-of-file sequence to send at end of each line. Input is auto-adaptive: a line is always read up
+        //! to a LF character and all previous CR characters are discarded.
         //! @param [in] prompt Prompt string to send to the client.
         //!
-        explicit TextConnection(TCPConnection& socket, const std::string& prompt = std::string());
+        explicit TextStream(StreamInterface& stream, const std::string& eol = DEFAULT_EOL, const std::string& prompt = std::string());
 
         //!
         //! Virtual destructor
         //!
-        virtual ~TextConnection() override;
+        virtual ~TextStream() override;
 
         //!
-        //! Get a reference to the associated TCPConnection.
-        //! @return A reference to the associated TCPConnection.
+        //! Default end-of-line sequence (CR-LF).
+        //! The Telnet protocol defines CR-LF as end-of-line sequence.
         //!
-        TCPConnection& socket() { return _socket; }
+        static const std::string DEFAULT_EOL;
+
+        //!
+        //! Set a new end-of-line sequence for output lines.
+        //! Input is auto-adaptive: a line is always read up to a LF character and all previous CR characters are discarded.
+        //! @param [in] eol End-of-file sequence to send at end of each line.
+        //!
+        void setEOL(const std::string& eol) { _eol = eol; }
+
+        //!
+        //! Get a reference to the associated stream device.
+        //! @return A reference to the associated stream device.
+        //!
+        StreamInterface& stream() { return _stream; }
 
         //!
         //! Reset the internal buffer.
-        //! If the underlying TCPConnection is reused for several connections,
-        //! reset() should be called each time a new connection is established.
-        //! Otherwise, the new connection would reuse unread bytes from the
-        //! previous connection.
-        //! @return Always true.
         //!
-        bool reset();
+        //! If the underlying stream device is reused for several connections or session, reset() should be called each time a
+        //! new connection is established. Otherwise, the new connection would reuse unread bytes from the previous connection.
+        //!
+        //! Note that if the stream device is a TCPConnection or a subclass of it, the reset is automatically performed when
+        //! the socket connects or disconnects.
+        //!
+        void reset() { _buffer.clear(); }
 
         //!
         //! Send a string to the server.
-        //! @param [in] str The string to sendText to the server.
+        //! @param [in] str The string to writeText to the server.
         //! @return True on success, false on error.
         //!
-        bool sendText(const std::string& str);
+        bool writeText(const std::string& str);
 
         //!
         //! Send a string to the server.
-        //! @param [in] str The string to sendText to the server.
+        //! @param [in] str The string to writeText to the server.
         //! @return True on success, false on error.
         //!
-        bool sendText(const UString& str);
+        bool writeText(const UString& str);
 
         //!
         //! Send a text line to the server.
         //! @param [in] str The line to send to the server.
         //! @return True on success, false on error.
         //!
-        bool sendLine(const std::string& str);
+        bool writeLine(const std::string& str);
 
         //!
         //! Send a text line to the server.
         //! @param [in] str The line to send to the server.
         //! @return True on success, false on error.
         //!
-        bool sendLine(const UString& str);
+        bool writeLine(const UString& str);
 
         //!
         //! Receive character data.
@@ -100,7 +120,7 @@ namespace ts {
         //! @return True on success, false on error.
         //! Return true until the last line of the replies has been received.
         //!
-        bool receiveText(std::string& data, const AbortInterface* abort = nullptr);
+        bool readText(std::string& data, const AbortInterface* abort = nullptr);
 
         //!
         //! Receive character data.
@@ -110,7 +130,7 @@ namespace ts {
         //! @return True on success, false on error.
         //! Return true until the last line of the replies has been received.
         //!
-        bool receiveText(UString& data, const AbortInterface* abort = nullptr);
+        bool readText(UString& data, const AbortInterface* abort = nullptr);
 
         //!
         //! Receive a line.
@@ -120,7 +140,7 @@ namespace ts {
         //! @return True on success, false on error.
         //! Return true until the last line of the replies has been received.
         //!
-        bool receiveLine(std::string& line, const AbortInterface* abort = nullptr);
+        bool readLine(std::string& line, const AbortInterface* abort = nullptr);
 
         //!
         //! Receive a line.
@@ -130,7 +150,7 @@ namespace ts {
         //! @return True on success, false on error.
         //! Return true until the last line of the replies has been received.
         //!
-        bool receiveLine(UString& line, const AbortInterface* abort = nullptr);
+        bool readLine(UString& line, const AbortInterface* abort = nullptr);
 
         //!
         //! Receive a prompt.
@@ -150,22 +170,21 @@ namespace ts {
         //!
         void getAndFlush(ByteBlock& data);
 
-        //!
-        //! Standard end-of-line sequence.
-        //! The Telnet protocol defines CR-LF as end-of-line sequence.
-        //!
-        static const std::string EOL;
-
     protected:
         // Implementation of Report.
         virtual void writeLog(int severity, const UString& msg) override;
 
     private:
-        TCPConnection& _socket;
-        std::string    _buffer {};
-        std::string    _prompt {};
+        StreamInterface& _stream;
+        std::string      _buffer {};
+        std::string      _eol {DEFAULT_EOL};
+        std::string      _prompt {};
 
         // Receive all characters until a delimitor has been received.
         bool waitForChunk(const std::string& eol, std::string& data, const AbortInterface*);
+
+        // Implementation of socket interface.
+        virtual void handleSocketConnected(TCPConnection& sock) override;
+        virtual void handleSocketDisconnected(TCPConnection& sock, bool silent) override;
     };
 }
