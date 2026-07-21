@@ -48,9 +48,8 @@ namespace ts {
         //! If set to IP::Any, this socket can receive IPv4 and IPv6 datagrams.
         //! If @a gen is IP::v6, the socket is created with option IPV6_V6ONLY set.
         //! @param [in] non_blocking It true, the device is initially set in non-blocking mode.
-        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        explicit UDPSocket(Report* report, bool auto_open = false, IP gen = IP::Any, bool non_blocking = false, Object* owner = nullptr);
+        explicit UDPSocket(Report* report, bool auto_open = false, IP gen = IP::Any, bool non_blocking = false);
 
         //!
         //! Constructor.
@@ -60,9 +59,8 @@ namespace ts {
         //! If set to IP::Any, this socket can receive IPv4 and IPv6 datagrams.
         //! If @a gen is IP::v6, the socket is created with option IPV6_V6ONLY set.
         //! @param [in] non_blocking It true, the device is initially set in non-blocking mode.
-        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        explicit UDPSocket(ReporterBase* delegate, bool auto_open = false, IP gen = IP::Any, bool non_blocking = false, Object* owner = nullptr);
+        explicit UDPSocket(ReporterBase* delegate, bool auto_open = false, IP gen = IP::Any, bool non_blocking = false);
 
         //!
         //! Destructor.

@@ -26,9 +26,8 @@ namespace ts {
         //!
         //! Constructor.
         //! @param [in,out] reactor Associated reactor. The reactor object must remain valid as long as this object is valid.
-        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        ReactiveBase(Reactor& reactor, Object* owner = nullptr);
+        explicit ReactiveBase(Reactor& reactor);
 
         //!
         //! Destructor.

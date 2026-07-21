@@ -14,8 +14,7 @@
 // Constructors and destructor.
 //----------------------------------------------------------------------------
 
-ts::TLVConnection::TLVConnection(tlv::Logger& logger, const tlv::Protocol& protocol, TCPConnection& socket, bool auto_error_response, size_t max_invalid_msg, Object* owner) :
-    OwnedObject(owner),
+ts::TLVConnection::TLVConnection(tlv::Logger& logger, const tlv::Protocol& protocol, TCPConnection& socket, bool auto_error_response, size_t max_invalid_msg) :
     _logger(logger),
     _protocol(protocol),
     _socket(socket),

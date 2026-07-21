@@ -15,14 +15,14 @@
 // Constructors and destructor.
 //----------------------------------------------------------------------------
 
-ts::OutputPager::OutputPager(Report* report, const UString& env_name, bool stdout_only, Object* owner) :
-    ForkPipeOutputStream(report, owner)
+ts::OutputPager::OutputPager(Report* report, const UString& env_name, bool stdout_only) :
+    ForkPipeOutputStream(report)
 {
     init(env_name, stdout_only);
 }
 
-ts::OutputPager::OutputPager(ReporterBase* delegate, const UString& env_name, bool stdout_only, Object* owner) :
-    ForkPipeOutputStream(delegate, owner)
+ts::OutputPager::OutputPager(ReporterBase* delegate, const UString& env_name, bool stdout_only) :
+    ForkPipeOutputStream(delegate)
 {
     init(env_name, stdout_only);
 }

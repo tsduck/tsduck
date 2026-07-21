@@ -43,9 +43,8 @@ namespace ts {
         //! @param [in,out] socket Associated socket. The socket object must remain valid as long as this object is valid.
         //! The ReactiveTLSConnection must be initialized before the @a socket is opened.
         //! Important: @a socket must be an instance of TCPConnection, not an instance of TLSConnection.
-        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        ReactiveTLSConnection(Reactor& reactor, TCPConnection& socket, Object* owner = nullptr);
+        ReactiveTLSConnection(Reactor& reactor, TCPConnection& socket);
 
         //!
         //! Constructor with initial client arguments.
@@ -54,9 +53,8 @@ namespace ts {
         //! The ReactiveTLSConnection must be initialized before the @a socket is opened.
         //! Important: @a socket must be an instance of TCPConnection, not an instance of TLSConnection.
         //! @param [in] args Initial TLS client arguments.
-        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        ReactiveTLSConnection(Reactor& reactor, TCPConnection& socket, const TLSArgs& args, Object* owner = nullptr);
+        ReactiveTLSConnection(Reactor& reactor, TCPConnection& socket, const TLSArgs& args);
 
         // Inherited methods.
         virtual ~ReactiveTLSConnection() override;
@@ -103,7 +101,7 @@ namespace ts {
         using RequestQueue = std::list<RequestPtr>;
 
         // ReactiveTLSConnection private fields.
-        TLSContext              _sctx {this, this};
+        TLSContext              _sctx {this};
         RequestQueue            _user_requests {};         // Queue of user request (connect, send, close).
         size_t                  _send_position = 0;        // Clear data sent.
         ByteBlock               _send_tls_data {};         // Outgoing TLS data, to send over the network.

@@ -29,26 +29,23 @@ namespace ts {
         //!
         //! Constructor.
         //! @param [in] args Initial REST operation arguments. This instance will keep a copy of it.
-        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        RestClient(const RestArgs& args, Object* owner = nullptr);
+        RestClient(const RestArgs& args);
 
         //!
         //! Constructor.
         //! @param [in] report Where to report errors. The @a report object must remain valid as long as this object
         //! exists or setReport() is used with another Report object. If @a report is null, log messages are discarded.
         //! @param [in] args Initial REST operation arguments. This instance will keep a copy of it.
-        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        RestClient(Report* report, const RestArgs& args, Object* owner = nullptr);
+        RestClient(Report* report, const RestArgs& args);
 
         //!
         //! Constructor.
         //! @param [in] delegate Use the report of another ReporterBase. If @a delegate is null, log messages are discarded.
         //! @param [in] args Initial REST operation arguments. This instance will keep a copy of it.
-        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        RestClient(ReporterBase* delegate, const RestArgs& args, Object* owner = nullptr);
+        RestClient(ReporterBase* delegate, const RestArgs& args);
 
         //!
         //! Destructor.

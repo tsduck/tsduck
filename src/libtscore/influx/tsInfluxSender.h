@@ -33,9 +33,8 @@ namespace ts {
         //! Constructor.
         //! @param [in] report Where to report errors. The @a report object must remain valid as long as this object
         //! exists or setReport() is used with another Report object. If @a report is null, log messages are discarded.
-        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        explicit InfluxSender(Report* report, Object* owner = nullptr);
+        explicit InfluxSender(Report* report);
 
         //!
         //! Start the asynchronous sender.

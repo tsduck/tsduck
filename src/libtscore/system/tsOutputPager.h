@@ -38,18 +38,16 @@ namespace ts {
         //! exists or setReport() is used with another Report object. If @a report is null, log messages are discarded.
         //! @param [in] env_name Name of the optional environment variable containing the pager command name.
         //! @param [in] stdout_only If true, use only stdout. If false, if stdout is not a terminal but stderr is one, then use stderr for paging.
-        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        explicit OutputPager(Report* report, const UString& env_name = DEFAULT_PAGER, bool stdout_only = false, Object* owner = nullptr);
+        explicit OutputPager(Report* report, const UString& env_name = DEFAULT_PAGER, bool stdout_only = false);
 
         //!
         //! Constructor.
         //! @param [in] delegate Use the report of another ReporterBase. If @a delegate is null, log messages are discarded.
         //! @param [in] env_name Name of the optional environment variable containing the pager command name.
         //! @param [in] stdout_only If true, use only stdout. If false, if stdout is not a terminal but stderr is one, then use stderr for paging.
-        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        explicit OutputPager(ReporterBase* delegate, const UString& env_name = DEFAULT_PAGER, bool stdout_only = false, Object* owner = nullptr);
+        explicit OutputPager(ReporterBase* delegate, const UString& env_name = DEFAULT_PAGER, bool stdout_only = false);
 
         //!
         //! Destructor.

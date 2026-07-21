@@ -32,7 +32,7 @@ namespace ts {
     //! This class is also a subclass of Report, allowing it to be used to end
     //! log messages.
     //!
-    class TSCOREDLL TextConnection: public Report, public OwnedObject
+    class TSCOREDLL TextConnection: public Report
     {
         TS_NOBUILD_NOCOPY(TextConnection);
     public:
@@ -40,9 +40,8 @@ namespace ts {
         //! Constructor.
         //! @param [in,out] socket Associated TCP socket. The socket object must remain valid as long as this object is valid.
         //! @param [in] prompt Prompt string to send to the client.
-        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        explicit TextConnection(TCPConnection& socket, const std::string& prompt = std::string(), Object* owner = nullptr);
+        explicit TextConnection(TCPConnection& socket, const std::string& prompt = std::string());
 
         //!
         //! Virtual destructor

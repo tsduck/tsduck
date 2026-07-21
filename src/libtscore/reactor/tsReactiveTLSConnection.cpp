@@ -16,8 +16,8 @@
 // Constructors and destructor.
 //----------------------------------------------------------------------------
 
-ts::ReactiveTLSConnection::ReactiveTLSConnection(Reactor& reactor, TCPConnection& socket, Object* owner) :
-    ReactiveTCPConnection(reactor, socket, owner)
+ts::ReactiveTLSConnection::ReactiveTLSConnection(Reactor& reactor, TCPConnection& socket) :
+    ReactiveTCPConnection(reactor, socket)
 {
     // The socket must be an instance of TCPConnection, not an instance of TLSConnection.
     // Detect and report trivial misusages.
@@ -26,8 +26,8 @@ ts::ReactiveTLSConnection::ReactiveTLSConnection(Reactor& reactor, TCPConnection
     }
 }
 
-ts::ReactiveTLSConnection::ReactiveTLSConnection(Reactor& reactor, TCPConnection& socket, const TLSArgs& args, Object* owner) :
-    ReactiveTLSConnection(reactor, socket, owner)
+ts::ReactiveTLSConnection::ReactiveTLSConnection(Reactor& reactor, TCPConnection& socket, const TLSArgs& args) :
+    ReactiveTLSConnection(reactor, socket)
 {
     setArgs(args);
 }

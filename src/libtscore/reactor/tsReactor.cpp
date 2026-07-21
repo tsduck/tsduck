@@ -66,14 +66,14 @@ const ts::Names& ts::Reactor::EventTypeNames()
 // Reactor constructors and destructor.
 //----------------------------------------------------------------------------
 
-ts::Reactor::Reactor(Report* report, Object* owner) :
-    ReporterBase(report, owner),
+ts::Reactor::Reactor(Report* report) :
+    ReporterBase(report),
     _guts(allocateGuts())
 {
 }
 
-ts::Reactor::Reactor(ReporterBase* delegate, Object* owner) :
-    ReporterBase(delegate, owner),
+ts::Reactor::Reactor(ReporterBase* delegate) :
+    ReporterBase(delegate),
     _guts(allocateGuts())
 {
 }

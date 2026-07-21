@@ -8,6 +8,4 @@
 
 #include "tsObject.h"
 
-ts::Object::~Object()
-{
-}
+ts::Object::~Object() {}

@@ -27,14 +27,14 @@ TS_REGISTER_FEATURE(u"tls", u"TLS library", SUPPORT, ts::TLSContext::GetLibraryV
 // Constructors and destructor.
 //----------------------------------------------------------------------------
 
-ts::TLSContext::TLSContext(Report* report, Object* owner) :
-    ReporterBase(report, owner)
+ts::TLSContext::TLSContext(Report* report) :
+    ReporterBase(report)
 {
     allocateGuts();
 }
 
-ts::TLSContext::TLSContext(ReporterBase* delegate, Object* owner) :
-    ReporterBase(delegate, owner)
+ts::TLSContext::TLSContext(ReporterBase* delegate) :
+    ReporterBase(delegate)
 {
     allocateGuts();
 }

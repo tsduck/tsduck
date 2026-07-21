@@ -30,17 +30,15 @@ namespace ts {
         //! @param [in] report Where to report errors. The @a report object must remain valid as long as this object
         //! exists or setReport() is used with another Report object. If @a report is null, log messages are discarded.
         //! @param [in] non_blocking It true, the file is initially set in non-blocking mode.
-        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        explicit ForkPipe(Report* report, bool non_blocking = false, Object* owner = nullptr);
+        explicit ForkPipe(Report* report, bool non_blocking = false);
 
         //!
         //! Constructor.
         //! @param [in] delegate Use the report of another ReporterBase. If @a delegate is null, log messages are discarded.
         //! @param [in] non_blocking It true, the file is initially set in non-blocking mode.
-        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        explicit ForkPipe(ReporterBase* delegate, bool non_blocking = false, Object* owner = nullptr);
+        explicit ForkPipe(ReporterBase* delegate, bool non_blocking = false);
 
         //!
         //! Destructor.
@@ -185,6 +183,10 @@ namespace ts {
         //!
         static bool GetOutput(UString& output, const UString& command, Report& report, bool include_stderr = false);
 
+        // Implementation of NonBlockingDevice.
+        virtual SysHandleType getHandle() const override;
+        virtual SysSocketType getSocket() const override;
+
         // Implementation of StreamInterface.
         virtual bool readStream(void* addr, size_t size, const AbortInterface* abort = nullptr) override;
         virtual bool readStream(void* addr, size_t max_size, size_t& ret_size, const AbortInterface* abort = nullptr, IOSB* iosb = nullptr) override;
@@ -193,7 +195,7 @@ namespace ts {
         virtual bool endOfStream() override;
 
     protected:
-        // Overloaded methods.
+        // Inherited methods.
         virtual bool allowSetNonBlocking() const override;
 
     private:

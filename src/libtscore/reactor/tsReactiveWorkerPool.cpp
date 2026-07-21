@@ -14,8 +14,8 @@
 // Constructors and destructor.
 //----------------------------------------------------------------------------
 
-ts::ReactiveWorkerPool::ReactiveWorkerPool(Reactor& reactor, Object* owner) :
-    ReactiveBase(reactor, owner)
+ts::ReactiveWorkerPool::ReactiveWorkerPool(Reactor& reactor) :
+    ReactiveBase(reactor)
 {
 }
 

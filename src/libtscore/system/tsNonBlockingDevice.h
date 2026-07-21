@@ -15,6 +15,7 @@
 #include "tsReporterBase.h"
 #include "tsAbortInterface.h"
 #include "tsSysUtils.h"
+#include "tsIPUtils.h"
 
 namespace ts {
     //!
@@ -81,17 +82,15 @@ namespace ts {
         //! @param [in] report Where to report errors. The @a report object must remain valid as long as this object
         //! exists or setReport() is used with another Report object. If @a report is null, log messages are discarded.
         //! @param [in] non_blocking It true, the device is initially set in non-blocking mode.
-        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        explicit NonBlockingDevice(Report* report, bool non_blocking = false, Object* owner = nullptr) : ReporterBase(report, owner), _is_non_blocking(non_blocking) {}
+        explicit NonBlockingDevice(Report* report, bool non_blocking = false) : ReporterBase(report), _is_non_blocking(non_blocking) {}
 
         //!
         //! Constructor.
         //! @param [in] delegate Use the report of another ReporterBase. If @a delegate is null, log messages are discarded.
         //! @param [in] non_blocking It true, the device is initially set in non-blocking mode.
-        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        explicit NonBlockingDevice(ReporterBase* delegate, bool non_blocking = false, Object* owner = nullptr) : ReporterBase(delegate, owner), _is_non_blocking(non_blocking) {}
+        explicit NonBlockingDevice(ReporterBase* delegate, bool non_blocking = false) : ReporterBase(delegate), _is_non_blocking(non_blocking) {}
 
         //!
         //! Destructor.
@@ -123,6 +122,44 @@ namespace ts {
         //! @return True if @a error_code is an in-progress/would-block one.
         //!
         static inline bool IsPendingStatus(int error_code) { return TranslateError(error_code) == SYS_PENDING_IO; }
+
+        //!
+        //! Get the underlying file descriptor or device handle.
+        //! This method is reserved for low-level operations and should not be used by normal applications.
+        //!
+        //! On UNIX systems, sockets are standard file descriptors. On Windows systems, sockets and devices handles are two
+        //! distinct types (SOCKET, an integer type, and HANDLE, a pointer type). However, SOCKET and HANDLE have the same
+        //! size and can be converted between each other. In practice, all Windows device handles are pointers. When Microsoft
+        //! decided to implement the BSD socket API, they needed to represent sockets as integers. The integer is simply a cast
+        //! of the HANDLE pointer.
+        //!
+        //! In practice, the methods getHandle() and getSocket() return the same value, represented as two different portable types,
+        //! SysHandleType and SysSocketType. Note that this types are defined as their real representation. On UNIX systems, both
+        //! are defined as int and are compatible. However, on Windows systems, they are defined as HANDLE and SOCKET and are not
+        //! compatible. So, accidentally mixing the two compiles on UNIX but not on Windows. Be careful to use the right type for
+        //! the right usage.
+        //!
+        //! By default, when not overriden by a subclass, the two methods return the "error" value, SYS_HANDLE_INVALID and
+        //! SYS_SOCKET_INVALID. Be careful, these constants have distinct binary values on Windows. This is the only case were it
+        //! is not possible to cast between a SysHandleType value and a SysSocketType value. This is why it is recommended to always
+        //! use getHandle() when a SysHandleType is required and getSocket() when a SysSocketType is required.
+        //!
+        //! When a subclass overrides one of these two methods, it must override the two. When the device is valid / open, the two
+        //! methods must return the same value. Otherwise, they must return the appropriate error value (not the same value in Windows).
+        //!
+        //! @return The underlying file descriptor or device handler. Return SYS_HANDLE_INVALID if the socket is device open.
+        //! @see getSocket()
+        //!
+        virtual SysHandleType getHandle() const;
+
+        //!
+        //! Get the underlying file descriptor or device handle as a system socket handle.
+        //! This method is reserved for low-level operations and should not be used by normal applications.
+        //! See more details in the documentation of getHandle().
+        //! @return The underlying socket descriptor. Return SYS_SOCKET_INVALID if the socket is not open.
+        //! @see getHandle()
+        //!
+        virtual SysSocketType getSocket() const;
 
         //!
         //! This structure indicates the status of a non-blocking I/O.
@@ -247,8 +284,7 @@ namespace ts {
         virtual bool allowSetNonBlocking() const;
 
         //!
-        //! Low-level method to set a system file or socket descriptor in non-blocking mode.
-        //! @param [in] fd System file or socket descriptor.
+        //! Low-level method to set the system file or socket descriptor in non-blocking mode.
         //! @param [in] non_blocking It true, the device is set in non-blocking mode.
         //! @return True on success, false on error.
         //!
@@ -276,13 +312,12 @@ namespace ts {
         //!
         //! @see https://learn.microsoft.com/en-us/archive/blogs/csliu/io-concept-blockingnon-blocking-vs-syncasync
         //!
-        bool setSystemNonBlocking(SysHandleType fd, bool non_blocking);
+        bool setSystemNonBlocking(bool non_blocking);
 
         //!
         //! Generic system write operation.
         //! This is a convenience method which can be used (or not) by subclasses when the system calls
         //! write() (UNIX) or WriteFile() (Windows) are appropriate.
-        //! @param [in] hfd System handle or file descriptor.
         //! @param [in] addr Address of the data to write.
         //! @param [in] size Size in bytes of the data to write.
         //! @param [out] written_size Actually written size in bytes.
@@ -292,13 +327,12 @@ namespace ts {
         //! @return Error code. When the I/O is non-blocking/asynchronous and pending, return SYS_SUCCESS and iosb->pending is true.
         //! Return SYS_EOF when it is no longer possible to write (e.g. broken pipe).
         //!
-        int genericSystemWrite(SysHandleType hfd, const void* addr, size_t size, size_t& written_size, NonBlockingDevice::IOSB* iosb);
+        int genericSystemWrite(const void* addr, size_t size, size_t& written_size, NonBlockingDevice::IOSB* iosb);
 
         //!
         //! Generic system read operation.
         //! This is a convenience method which can be used (or not) by subclasses when the system calls
         //! read() (UNIX) or ReadFile() (Windows) are appropriate.
-        //! @param [in] hfd System handle or file descriptor.
         //! @param [out] addr Address of the buffer for the incoming data.
         //! @param [in] max_size Maximum size in bytes of the buffer.
         //! @param [out] ret_size Returned input size in bytes.
@@ -309,7 +343,7 @@ namespace ts {
         //! @return Error code. When the I/O is non-blocking/asynchronous and pending, return SYS_SUCCESS and iosb->pending is true.
         //! Return SYS_EOF when it is no longer possible to read.
         //!
-        int genericSystemRead(SysHandleType hfd, void* addr, size_t max_size, size_t& ret_size, const AbortInterface* abort, NonBlockingDevice::IOSB* iosb);
+        int genericSystemRead(void* addr, size_t max_size, size_t& ret_size, const AbortInterface* abort, NonBlockingDevice::IOSB* iosb);
 
     private:
         bool _is_non_blocking;

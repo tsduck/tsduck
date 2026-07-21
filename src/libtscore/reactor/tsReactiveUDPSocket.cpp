@@ -14,8 +14,8 @@
 // Constructors and destructor.
 //----------------------------------------------------------------------------
 
-ts::ReactiveUDPSocket::ReactiveUDPSocket(Reactor& reactor, UDPSocket& socket, Object* owner) :
-    ReactiveSocketBase(reactor, socket, owner),
+ts::ReactiveUDPSocket::ReactiveUDPSocket(Reactor& reactor, UDPSocket& socket) :
+    ReactiveDevice(reactor, socket),
     _socket(socket)
 {
 }

@@ -30,17 +30,15 @@ namespace ts {
         //! @param [in] report Where to report errors. The @a report object must remain valid as long as this object
         //! exists or setReport() is used with another Report object. If @a report is null, log messages are discarded.
         //! @param [in] log_level Severity level for information messages.
-        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        explicit PCRRegulator(Report* report, int log_level = Severity::Verbose, Object* owner = nullptr);
+        explicit PCRRegulator(Report* report, int log_level = Severity::Verbose);
 
         //!
         //! Constructor.
         //! @param [in] delegate Use the report of another ReporterBase. If @a delegate is null, log messages are discarded.
         //! @param [in] log_level Severity level for information messages.
-        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        explicit PCRRegulator(ReporterBase* delegate, int log_level = Severity::Verbose, Object* owner = nullptr);
+        explicit PCRRegulator(ReporterBase* delegate, int log_level = Severity::Verbose);
 
         //!
         //! Destructor.

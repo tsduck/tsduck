@@ -54,17 +54,15 @@ namespace ts {
         //! @param [in] report Where to report errors. The @a report object must remain valid as long as this object
         //! exists or setReport() is used with another Report object. If @a report is null, log messages are discarded.
         //! @param [in] non_blocking It true, the device is initially set in non-blocking mode.
-        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        explicit TCPServer(Report* report, bool non_blocking = false, Object* owner = nullptr) : TCPSocket(report, non_blocking, owner) {}
+        explicit TCPServer(Report* report, bool non_blocking = false) : TCPSocket(report, non_blocking) {}
 
         //!
         //! Constructor.
         //! @param [in] delegate Use the report of another ReporterBase. If @a delegate is null, log messages are discarded.
         //! @param [in] non_blocking It true, the device is initially set in non-blocking mode.
-        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        explicit TCPServer(ReporterBase* delegate, bool non_blocking = false, Object* owner = nullptr) : TCPSocket(delegate, non_blocking, owner) {}
+        explicit TCPServer(ReporterBase* delegate, bool non_blocking = false) : TCPSocket(delegate, non_blocking) {}
 
         //!
         //! Start the server.

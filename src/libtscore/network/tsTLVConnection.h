@@ -22,7 +22,7 @@ namespace ts {
     //! TCP connection using TLV messages.
     //! @ingroup libtscore net tlv
     //!
-    class TLVConnection: public OwnedObject, protected SocketHandlerInterface
+    class TLVConnection: protected SocketHandlerInterface
     {
         TS_NOBUILD_NOCOPY(TLVConnection);
     public:
@@ -36,14 +36,8 @@ namespace ts {
         //! sent back to the sender when @a auto_error_response is true.
         //! @param [in] max_invalid_msg When non-zero, the connection is automatically disconnected when the number of consecutive
         //! invalid messages has reached this value.
-        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        TLVConnection(tlv::Logger& logger,
-                      const tlv::Protocol& protocol,
-                      TCPConnection& socket,
-                      bool auto_error_response = true,
-                      size_t max_invalid_msg = 0,
-                      Object* owner = nullptr);
+        TLVConnection(tlv::Logger& logger, const tlv::Protocol& protocol, TCPConnection& socket, bool auto_error_response = true, size_t max_invalid_msg = 0);
 
         //!
         //! Get a reference to the associated socket.

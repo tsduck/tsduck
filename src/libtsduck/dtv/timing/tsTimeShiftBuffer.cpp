@@ -14,14 +14,14 @@
 // Constructors and destructor
 //----------------------------------------------------------------------------
 
-ts::TimeShiftBuffer::TimeShiftBuffer(Report* report, size_t count, Object* owner) :
-    ReporterBase(report, owner),
+ts::TimeShiftBuffer::TimeShiftBuffer(Report* report, size_t count) :
+    ReporterBase(report),
     _total_packets(std::max(count, MIN_TOTAL_PACKETS))
 {
 }
 
-ts::TimeShiftBuffer::TimeShiftBuffer(ReporterBase* delegate, size_t count, Object* owner) :
-    ReporterBase(delegate, owner),
+ts::TimeShiftBuffer::TimeShiftBuffer(ReporterBase* delegate, size_t count) :
+    ReporterBase(delegate),
     _total_packets(std::max(count, MIN_TOTAL_PACKETS))
 {
 }

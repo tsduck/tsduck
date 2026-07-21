@@ -16,8 +16,7 @@ const std::string ts::TextConnection::EOL("\r\n");
 // Constructors and destructors.
 //----------------------------------------------------------------------------
 
-ts::TextConnection::TextConnection(TCPConnection& socket, const std::string& prompt, Object* owner) :
-    OwnedObject(owner),
+ts::TextConnection::TextConnection(TCPConnection& socket, const std::string& prompt) :
     _socket(socket),
     _prompt(prompt)
 {

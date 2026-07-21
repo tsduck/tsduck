@@ -38,9 +38,8 @@ namespace ts {
         //! @param [in,out] socket Associated server socket. The socket object must remain valid as long as this object is valid.
         //! The ReactiveTLSServer must be initialized before the @a socket is opened.
         //! Important: @a socket must be an instance of TCPServer, not an instance of TLSServer.
-        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        ReactiveTLSServer(Reactor& reactor, TCPServer& socket, Object* owner = nullptr);
+        ReactiveTLSServer(Reactor& reactor, TCPServer& socket);
 
         //!
         //! Constructor with initial arguments.
@@ -49,9 +48,8 @@ namespace ts {
         //! The ReactiveTLSServer must be initialized before the @a socket is opened.
         //! Important: @a socket must be an instance of TCPServer, not an instance of TLSServer.
         //! @param [in] args Initial TLS arguments.
-        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        ReactiveTLSServer(Reactor& reactor, TCPServer& socket, const TLSArgs& args, Object* owner = nullptr);
+        ReactiveTLSServer(Reactor& reactor, TCPServer& socket, const TLSArgs& args);
 
         // Inherited methods.
         virtual ~ReactiveTLSServer() override;
@@ -62,7 +60,7 @@ namespace ts {
         virtual void handleTCPClientAccepted(ReactiveTCPServer& server, ReactiveTCPConnection& sock, const IPSocketAddress& addr, int error_code, const ObjectPtr& user_data) override;
 
     private:
-        TLSCertificate _cert {this, this};
+        TLSCertificate _cert {this};
 
         // On server side, while performing the initial handshake, an accept request is carried in an object.
         class TSCOREDLL AcceptRequest: public Object

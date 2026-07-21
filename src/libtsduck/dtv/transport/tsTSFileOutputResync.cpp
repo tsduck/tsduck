@@ -13,15 +13,15 @@
 // Constructors and destructors.
 //----------------------------------------------------------------------------
 
-ts::TSFileOutputResync::TSFileOutputResync(Report* report, Object* owner) :
-    TSFile(report, owner)
+ts::TSFileOutputResync::TSFileOutputResync(Report* report) :
+    TSFile(report)
 {
     // Continuity counters are generated regardless of previous values.
     _cc_fixer.setGenerator(true);
 }
 
-ts::TSFileOutputResync::TSFileOutputResync(ReporterBase* delegate, Object* owner) :
-    TSFile(delegate, owner)
+ts::TSFileOutputResync::TSFileOutputResync(ReporterBase* delegate) :
+    TSFile(delegate)
 {
     // Continuity counters are generated regardless of previous values.
     _cc_fixer.setGenerator(true);

@@ -13,8 +13,8 @@
 // Constructor and destructor.
 //----------------------------------------------------------------------------
 
-ts::ReactiveTCPServer::ReactiveTCPServer(Reactor& reactor, TCPServer& socket, Object* owner) :
-    ReactiveSocketBase(reactor, socket, owner),
+ts::ReactiveTCPServer::ReactiveTCPServer(Reactor& reactor, TCPServer& socket) :
+    ReactiveDevice(reactor, socket),
     _socket(socket)
 {
 }

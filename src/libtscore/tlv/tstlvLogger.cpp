@@ -13,14 +13,14 @@
 // Constructors and destructor.
 //----------------------------------------------------------------------------
 
-ts::tlv::Logger::Logger(Report* report, int default_level, Object* owner) :
-    ReporterBase(report, owner),
+ts::tlv::Logger::Logger(Report* report, int default_level) :
+    ReporterBase(report),
     _default_level(default_level)
 {
 }
 
-ts::tlv::Logger::Logger(ReporterBase* delegate, int default_level, Object* owner) :
-    ReporterBase(delegate, owner),
+ts::tlv::Logger::Logger(ReporterBase* delegate, int default_level) :
+    ReporterBase(delegate),
     _default_level(default_level)
 {
 }

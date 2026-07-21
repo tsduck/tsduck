@@ -13,8 +13,8 @@
 // Constructor and destructor.
 //----------------------------------------------------------------------------
 
-ts::ReactiveBase::ReactiveBase(Reactor& reactor, Object* owner) :
-    ReporterBase(&reactor, owner),
+ts::ReactiveBase::ReactiveBase(Reactor& reactor) :
+    ReporterBase(&reactor),
     _reactor(reactor)
 {
 }

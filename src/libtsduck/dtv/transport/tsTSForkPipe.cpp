@@ -13,14 +13,14 @@
 // Constructor / destructor
 //----------------------------------------------------------------------------
 
-ts::TSForkPipe::TSForkPipe(Report* report, Object* owner) :
-    ForkPipe(report, false, owner),
+ts::TSForkPipe::TSForkPipe(Report* report) :
+    ForkPipe(report, false),
     TSPacketStream(*static_cast<ReporterBase*>(this))
 {
 }
 
-ts::TSForkPipe::TSForkPipe(ReporterBase* delegate, Object* owner) :
-    ForkPipe(delegate, false, owner),
+ts::TSForkPipe::TSForkPipe(ReporterBase* delegate) :
+    ForkPipe(delegate, false),
     TSPacketStream(*static_cast<ReporterBase*>(this))
 {
 }

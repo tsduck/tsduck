@@ -7,36 +7,35 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Base class for sockets in a Reactor environment
+//!  Base class for non-blocking devices in a Reactor environment
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
 #include "tsReactiveBase.h"
-#include "tsSocket.h"
+#include "tsNonBlockingDevice.h"
 #include "tsSysUtils.h"
 
 namespace ts {
     //!
-    //! Virtual base class for sockets in a Reactor environment
+    //! Virtual base class for non-blocking devices in a Reactor environment
     //! @ingroup libtscore reactor
     //!
-    class TSCOREDLL ReactiveSocketBase: public ReactiveBase
+    class TSCOREDLL ReactiveDevice: public ReactiveBase
     {
-        TS_NOBUILD_NOCOPY(ReactiveSocketBase);
+        TS_NOBUILD_NOCOPY(ReactiveDevice);
     public:
         //!
         //! Constructor.
         //! @param [in,out] reactor Associated reactor. The reactor object must remain valid as long as this object is valid.
-        //! @param [in,out] socket Associated socket. The socket object must remain valid as long as this object is valid.
-        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
+        //! @param [in,out] device Associated non-blocking device. The device object must remain valid as long as this object is valid.
         //!
-        ReactiveSocketBase(Reactor& reactor, Socket& socket, Object* owner = nullptr);
+        ReactiveDevice(Reactor& reactor, NonBlockingDevice& device);
 
         //!
         //! Destructor.
         //!
-        virtual ~ReactiveSocketBase() override;
+        virtual ~ReactiveDevice() override;
 
     protected:
         //! IOSB shortcut fpr subclasses.
@@ -135,7 +134,7 @@ namespace ts {
         void deactivateAll(bool silent);
 
     private:
-        Socket& _generic_socket;
+        NonBlockingDevice& _device;
         EventId _write_ready_id {};   // Reactor id for write-ready (non-blocking I/O).
         EventId _read_ready_id {};    // Reactor id for read-ready (non-blocking I/O).
         EventId _async_io_id {};      // Reactor id for I/O completion (asynchronous I/O).
@@ -149,7 +148,7 @@ namespace ts {
 
 // Transfer all requests from one queue to another and mark all I/O as canceled.
 template <class REQUEST> requires std::derived_from<REQUEST, ts::Object>
-void ts::ReactiveSocketBase::cancelQueue(IOQueue& inqueue, IOQueue& outqueue)
+void ts::ReactiveDevice::cancelQueue(IOQueue& inqueue, IOQueue& outqueue)
 {
     while (!inqueue.empty()) {
         // Remove front element from input queue.

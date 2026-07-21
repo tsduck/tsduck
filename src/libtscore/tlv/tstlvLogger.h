@@ -36,17 +36,15 @@ namespace ts::tlv {
         //! @param [in] report Where to report errors. The @a report object must remain valid as long as this object
         //! exists or setReport() is used with another Report object. If @a report is null, log messages are discarded.
         //! @param [in] default_level Default logging level of messages.
-        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        explicit Logger(Report* report, int default_level = Severity::Info, Object* owner = nullptr);
+        explicit Logger(Report* report, int default_level = Severity::Info);
 
         //!
         //! Constructor.
         //! @param [in] delegate Use the report of another ReporterBase. If @a delegate is null, log messages are discarded.
         //! @param [in] default_level Default logging level of messages.
-        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        explicit Logger(ReporterBase* delegate, int default_level = Severity::Info, Object* owner = nullptr);
+        explicit Logger(ReporterBase* delegate, int default_level = Severity::Info);
 
         //!
         //! Destructor.

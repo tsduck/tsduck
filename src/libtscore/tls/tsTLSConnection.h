@@ -45,16 +45,14 @@ namespace ts {
         //! Constructor.
         //! @param [in] report Where to report errors. The @a report object must remain valid as long as this object
         //! exists or setReport() is used with another Report object. If @a report is null, log messages are discarded.
-        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        explicit TLSConnection(Report* report, Object* owner = nullptr);
+        explicit TLSConnection(Report* report);
 
         //!
         //! Constructor.
         //! @param [in] delegate Use the report of another ReporterBase. If @a delegate is null, log messages are discarded.
-        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        explicit TLSConnection(ReporterBase* delegate, Object* owner = nullptr);
+        explicit TLSConnection(ReporterBase* delegate);
 
         //!
         //! Constructor with initial client arguments.
@@ -83,7 +81,7 @@ namespace ts {
         virtual bool writeStream(const void* addr, size_t size, size_t& written_size, IOSB* iosb = nullptr) override;
 
     private:
-        TLSContext _sctx {this, this};
+        TLSContext _sctx {this};
         ByteBlock  _tls_data {};          // Incoming TLS data which cannot be processed now.
         ByteBlock  _clear_data {};        // Incoming clear data.
         size_t     _tls_data_next = 0;    // Next index to consume from _recv_tls_data.

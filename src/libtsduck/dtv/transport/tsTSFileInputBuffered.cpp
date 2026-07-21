@@ -13,15 +13,15 @@
 // Constructors and destructor.
 //----------------------------------------------------------------------------
 
-ts::TSFileInputBuffered::TSFileInputBuffered(Report* report, size_t buffer_size, Object* owner) :
-    TSFile(report, owner),
+ts::TSFileInputBuffered::TSFileInputBuffered(Report* report, size_t buffer_size) :
+    TSFile(report),
     _buffer(std::max(buffer_size, MIN_BUFFER_SIZE)),
     _metadata(_buffer.size())
 {
 }
 
-ts::TSFileInputBuffered::TSFileInputBuffered(ReporterBase* delegate, size_t buffer_size, Object* owner) :
-    TSFile(delegate, owner),
+ts::TSFileInputBuffered::TSFileInputBuffered(ReporterBase* delegate, size_t buffer_size) :
+    TSFile(delegate),
     _buffer(std::max(buffer_size, MIN_BUFFER_SIZE)),
     _metadata(_buffer.size())
 {

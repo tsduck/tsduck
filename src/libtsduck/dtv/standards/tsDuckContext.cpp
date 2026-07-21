@@ -21,8 +21,8 @@
 // Constructors and destructor.
 //----------------------------------------------------------------------------
 
-ts::DuckContext::DuckContext(Report* report, std::ostream* output, Object* owner) :
-    ReporterBase(report != nullptr ? report : &CERR, owner),
+ts::DuckContext::DuckContext(Report* report, std::ostream* output) :
+    ReporterBase(report != nullptr ? report : &CERR),
     _initial_out(output != nullptr ? output : &std::cout),
     _out(_initial_out),
     _charset_in(&DVBCharset::DVB),  // default DVB charset

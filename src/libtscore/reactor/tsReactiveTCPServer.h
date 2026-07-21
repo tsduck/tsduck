@@ -12,7 +12,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsReactiveSocketBase.h"
+#include "tsReactiveDevice.h"
 #include "tsReactiveTCPServerHandlerInterface.h"
 #include "tsReactiveTCPConnection.h"
 #include "tsTCPServer.h"
@@ -28,7 +28,7 @@ namespace ts {
     //! The application shall not directly call accept(), or close() on this socket and delegate
     //! these operations to startAccept() and startClose() in class ReactiveTCPServer.
     //!
-    class TSCOREDLL ReactiveTCPServer: public ReactiveSocketBase
+    class TSCOREDLL ReactiveTCPServer: public ReactiveDevice
     {
         TS_NOBUILD_NOCOPY(ReactiveTCPServer);
     public:
@@ -37,9 +37,8 @@ namespace ts {
         //! @param [in,out] reactor Associated reactor. The reactor object must remain valid as long as this object is valid.
         //! @param [in,out] socket Associated server socket. The socket object must remain valid as long as this object is valid.
         //! The ReactiveTCPServer must be initialized before the @a socket is opened.
-        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        ReactiveTCPServer(Reactor& reactor, TCPServer& socket, Object* owner = nullptr);
+        ReactiveTCPServer(Reactor& reactor, TCPServer& socket);
 
         //!
         //! Destructor.

@@ -12,7 +12,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsReactiveSocketBase.h"
+#include "tsReactiveDevice.h"
 #include "tsSubscriptionBase.h"
 #include "tsReactiveTCPConnectionHandlerInterface.h"
 #include "tsReactiveInputControl.h"
@@ -34,7 +34,7 @@ namespace ts {
     //! Socket element, except the handleSocketCloseComplete() event which occurs at the end of the asynchronous completion
     //! of the reactive socket.
     //!
-    class TSCOREDLL ReactiveTCPConnection: public ReactiveSocketBase, public SubscriptionBase, private SocketHandlerInterface
+    class TSCOREDLL ReactiveTCPConnection: public ReactiveDevice, public SubscriptionBase, private SocketHandlerInterface
     {
         TS_NOBUILD_NOCOPY(ReactiveTCPConnection);
     public:
@@ -43,9 +43,8 @@ namespace ts {
         //! @param [in,out] reactor Associated reactor. The reactor object must remain valid as long as this object is valid.
         //! @param [in,out] socket Associated socket. The socket object must remain valid as long as this object is valid.
         //! The ReactiveTCPConnection must be initialized before the @a socket is opened.
-        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        ReactiveTCPConnection(Reactor& reactor, TCPConnection& socket, Object* owner = nullptr);
+        ReactiveTCPConnection(Reactor& reactor, TCPConnection& socket);
 
         //!
         //! Destructor.

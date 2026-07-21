@@ -36,17 +36,15 @@ namespace ts {
         //! @param [in] report Where to report errors. The @a report object must remain valid as long as this object
         //! exists or setReport() is used with another Report object. If @a report is null, log messages are discarded.
         //! @param [in] non_blocking It true, the device is initially set in non-blocking mode.
-        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        explicit Socket(Report* report, bool non_blocking = false, Object* owner = nullptr);
+        explicit Socket(Report* report, bool non_blocking = false);
 
         //!
         //! Constructor.
         //! @param [in] delegate Use the report of another ReporterBase. If @a delegate is null, log messages are discarded.
         //! @param [in] non_blocking It true, the device is initially set in non-blocking mode.
-        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        explicit Socket(ReporterBase* delegate, bool non_blocking = false, Object* owner = nullptr);
+        explicit Socket(ReporterBase* delegate, bool non_blocking = false);
 
         //!
         //! Destructor.
@@ -160,16 +158,9 @@ namespace ts {
         //!
         UString localName();
 
-        //!
-        //! Get the underlying socket device handle (use with care).
-        //!
-        //! This method is reserved for low-level operations and should
-        //! not be used by normal applications.
-        //!
-        //! @return The underlying socket system device handle or file descriptor.
-        //! Return SYS_SOCKET_INVALID if the socket is not open.
-        //!
-        SysSocketType getSocket() const { return _sock; }
+        // Implementation of NonBlockingDevice.
+        virtual SysHandleType getHandle() const override;
+        virtual SysSocketType getSocket() const override;
 
     protected:
         //!

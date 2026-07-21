@@ -38,16 +38,16 @@
 // Constructors and destructor.
 //----------------------------------------------------------------------------
 
-ts::UDPSocket::UDPSocket(Report* report, bool auto_open, IP gen, bool non_blocking, Object* owner) :
-    Socket(report, non_blocking, owner)
+ts::UDPSocket::UDPSocket(Report* report, bool auto_open, IP gen, bool non_blocking) :
+    Socket(report, non_blocking)
 {
     if (auto_open) {
         UDPSocket::open(gen);
     }
 }
 
-ts::UDPSocket::UDPSocket(ReporterBase* delegate, bool auto_open, IP gen, bool non_blocking, Object* owner) :
-    Socket(delegate, non_blocking, owner)
+ts::UDPSocket::UDPSocket(ReporterBase* delegate, bool auto_open, IP gen, bool non_blocking) :
+    Socket(delegate, non_blocking)
 {
     if (auto_open) {
         UDPSocket::open(gen);

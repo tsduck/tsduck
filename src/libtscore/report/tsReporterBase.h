@@ -12,7 +12,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsOwnedObject.h"
+#include "tsObject.h"
 #include "tsReporterInterface.h"
 
 namespace ts {
@@ -20,7 +20,7 @@ namespace ts {
     //! Base class for classes using a Report object.
     //! @ingroup libtscore log
     //!
-    class TSCOREDLL ReporterBase: public OwnedObject, public ReporterInterface
+    class TSCOREDLL ReporterBase: public Object, public ReporterInterface
     {
         TS_NOBUILD_NOCOPY(ReporterBase);
     public:
@@ -28,16 +28,14 @@ namespace ts {
         //! Constructor.
         //! @param [in] report Where to report errors. The @a report object must remain valid as long as this object
         //! exists or setReport() is used with another Report object. If @a report is null, log messages are discarded.
-        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        explicit ReporterBase(Report* report, Object* owner = nullptr) : OwnedObject(owner), _report(report) {}
+        explicit ReporterBase(Report* report) : _report(report) {}
 
         //!
         //! Constructor.
         //! @param [in] delegate Use the report of another ReporterBase. If @a delegate is null, log messages are discarded.
-        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        explicit ReporterBase(ReporterBase* delegate, Object* owner = nullptr) : OwnedObject(owner), _delegate(delegate) {}
+        explicit ReporterBase(ReporterBase* delegate) : _delegate(delegate) {}
 
         //!
         //! Destructor.
@@ -91,7 +89,7 @@ namespace ts {
     //!
     //! Fully typed null pointer for Report.
     //! Typically used in overloaded contructors using Report* and ReporterBase* parameters.
-    //! 
+    //!
     constexpr Report* ReportNullPtr = nullptr;
 
     //!

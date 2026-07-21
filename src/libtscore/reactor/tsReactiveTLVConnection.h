@@ -12,7 +12,6 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsOwnedObject.h"
 #include "tsReactiveTLVConnectionHandlerInterface.h"
 #include "tsReactiveTCPConnection.h"
 #include "tstlvMessage.h"
@@ -25,7 +24,7 @@ namespace ts {
     //!
     //! The class ReactiveTLVConnection is a wrapper around ReactiveTCPConnection to handle reactive I/O.
     //!
-    class TSCOREDLL ReactiveTLVConnection: public OwnedObject, private ReactiveTCPConnectionHandlerInterface
+    class TSCOREDLL ReactiveTLVConnection: private ReactiveTCPConnectionHandlerInterface
     {
         TS_NOBUILD_NOCOPY(ReactiveTLVConnection);
     public:
@@ -39,14 +38,8 @@ namespace ts {
         //! sent back to the sender when @a auto_error_response is true.
         //! @param [in] max_invalid_msg When non-zero, the connection is automatically disconnected when the number of consecutive
         //! invalid messages has reached this value.
-        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        ReactiveTLVConnection(tlv::Logger& logger,
-                              const tlv::Protocol& protocol,
-                              ReactiveTCPConnection& socket,
-                              bool auto_error_response = true,
-                              size_t max_invalid_msg = 0,
-                              Object* owner = nullptr);
+        ReactiveTLVConnection(tlv::Logger& logger, const tlv::Protocol& protocol, ReactiveTCPConnection& socket, bool auto_error_response = true, size_t max_invalid_msg = 0);
 
         //!
         //! Destructor.

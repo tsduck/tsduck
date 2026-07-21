@@ -32,17 +32,15 @@ namespace ts {
         //! @param [in] report Where to report errors. The @a report object must remain valid as long as this object
         //! exists or setReport() is used with another Report object. If @a report is null, log messages are discarded.
         //! @param [in] buffer_size Size of the seekable buffer in number of TS packets.
-        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        TSFileInputBuffered(Report* report, size_t buffer_size, Object* owner = nullptr);
+        TSFileInputBuffered(Report* report, size_t buffer_size);
 
         //!
         //! Constructor.
         //! @param [in] delegate Use the report of another ReporterBase. If @a delegate is null, log messages are discarded.
         //! @param [in] buffer_size Size of the seekable buffer in number of TS packets.
-        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        TSFileInputBuffered(ReporterBase* delegate, size_t buffer_size, Object* owner = nullptr);
+        TSFileInputBuffered(ReporterBase* delegate, size_t buffer_size);
 
         //!
         //! Destructor.

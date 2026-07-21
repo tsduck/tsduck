@@ -14,15 +14,15 @@
 // Constructors and destructor.
 //----------------------------------------------------------------------------
 
-ts::TSFileOutputArgs::TSFileOutputArgs(Report* report, bool allow_stdout, Object* owner) :
+ts::TSFileOutputArgs::TSFileOutputArgs(Report* report, bool allow_stdout) :
     _allow_stdout(allow_stdout),
-    _file(report, owner)
+    _file(report)
 {
 }
 
-ts::TSFileOutputArgs::TSFileOutputArgs(ReporterBase* delegate, bool allow_stdout, Object* owner) :
+ts::TSFileOutputArgs::TSFileOutputArgs(ReporterBase* delegate, bool allow_stdout) :
     _allow_stdout(allow_stdout),
-    _file(delegate, owner)
+    _file(delegate)
 {
 }
 

@@ -51,17 +51,15 @@ namespace ts {
         //! @param [in] report Where to report errors. The @a report object must remain valid as long as this object
         //! exists or setReport() is used with another Report object. If @a report is null, log messages are discarded.
         //! @param [in] count Max number of packets in the buffer.
-        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        explicit TimeShiftBuffer(Report* report, size_t count = DEFAULT_TOTAL_PACKETS, Object* owner = nullptr);
+        explicit TimeShiftBuffer(Report* report, size_t count = DEFAULT_TOTAL_PACKETS);
 
         //!
         //! Constructor.
         //! @param [in] delegate Use the report of another ReporterBase. If @a delegate is null, log messages are discarded.
         //! @param [in] count Max number of packets in the buffer.
-        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        explicit TimeShiftBuffer(ReporterBase* delegate, size_t count = DEFAULT_TOTAL_PACKETS, Object* owner = nullptr);
+        explicit TimeShiftBuffer(ReporterBase* delegate, size_t count = DEFAULT_TOTAL_PACKETS);
 
         //!
         //! Destructor.

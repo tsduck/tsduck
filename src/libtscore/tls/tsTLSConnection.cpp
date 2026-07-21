@@ -14,13 +14,13 @@
 // Constructors and destructor.
 //----------------------------------------------------------------------------
 
-ts::TLSConnection::TLSConnection(Report* report, Object* owner) :
-    TCPConnection(report, false, owner)
+ts::TLSConnection::TLSConnection(Report* report) :
+    TCPConnection(report, false)
 {
 }
 
-ts::TLSConnection::TLSConnection(ReporterBase* delegate, Object* owner) :
-    TCPConnection(delegate, false, owner)
+ts::TLSConnection::TLSConnection(ReporterBase* delegate) :
+    TCPConnection(delegate, false)
 {
 }
 

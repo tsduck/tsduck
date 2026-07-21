@@ -12,7 +12,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsReactiveSocketBase.h"
+#include "tsReactiveDevice.h"
 #include "tsReactiveUDPHandlerInterface.h"
 #include "tsUDPSocket.h"
 #include "tsIPProtocols.h"
@@ -28,7 +28,7 @@ namespace ts {
     //! The application shall not directly call send(), receive(), or close() on this socket and delegate
     //! these operations to startSend(), startReceive(), and startClose() in class ReactiveUDPSocket.
     //!
-    class TSCOREDLL ReactiveUDPSocket: public ReactiveSocketBase, private SocketHandlerInterface
+    class TSCOREDLL ReactiveUDPSocket: public ReactiveDevice, private SocketHandlerInterface
     {
         TS_NOBUILD_NOCOPY(ReactiveUDPSocket);
     public:
@@ -37,9 +37,8 @@ namespace ts {
         //! @param [in,out] reactor Associated reactor. The reactor object must remain valid as long as this object is valid.
         //! @param [in,out] socket Associated socket. The socket object must remain valid as long as this object is valid.
         //! The ReactiveUDPSocket must be initialized before the @a socket is opened.
-        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        ReactiveUDPSocket(Reactor& reactor, UDPSocket& socket, Object* owner = nullptr);
+        ReactiveUDPSocket(Reactor& reactor, UDPSocket& socket);
 
         //!
         //! Destructor.

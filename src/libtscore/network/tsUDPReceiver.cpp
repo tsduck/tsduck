@@ -13,13 +13,13 @@
 // Constructors.
 //----------------------------------------------------------------------------
 
-ts::UDPReceiver::UDPReceiver(Report* report, bool non_blocking, Object* owner) :
-    UDPSocket(report, false, IP::Any, non_blocking, owner)
+ts::UDPReceiver::UDPReceiver(Report* report, bool non_blocking) :
+    UDPSocket(report, false, IP::Any, non_blocking)
 {
 }
 
-ts::UDPReceiver::UDPReceiver(ReporterBase* delegate, bool non_blocking, Object* owner) :
-    UDPSocket(delegate, false, IP::Any, non_blocking, owner)
+ts::UDPReceiver::UDPReceiver(ReporterBase* delegate, bool non_blocking) :
+    UDPSocket(delegate, false, IP::Any, non_blocking)
 {
 }
 

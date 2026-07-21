@@ -42,9 +42,8 @@ namespace ts {
         //! Constructor.
         //! @param [in,out] reactor Associated reactor. The reactor object must remain valid as long as this object is valid.
         //! @param [in,out] queue Associated message queue. The message queue object must remain valid as long as this object is valid.
-        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        ReactiveMessageQueue(Reactor& reactor, MessageQueue<MSG>& queue, Object* owner = nullptr);
+        ReactiveMessageQueue(Reactor& reactor, MessageQueue<MSG>& queue);
 
         //!
         //! Destructor.
@@ -87,8 +86,8 @@ namespace ts {
 
 // Constructor.
 template <typename MSG>
-ts::ReactiveMessageQueue<MSG>::ReactiveMessageQueue(Reactor& reactor, MessageQueue<MSG>& queue, Object* owner) :
-    ReactiveBase(reactor, owner),
+ts::ReactiveMessageQueue<MSG>::ReactiveMessageQueue(Reactor& reactor, MessageQueue<MSG>& queue) :
+    ReactiveBase(reactor),
     _queue(queue)
 {
 }

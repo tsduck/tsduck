@@ -13,13 +13,13 @@
 // Constructors and destructor.
 //----------------------------------------------------------------------------
 
-ts::ForkPipeOutputStream::ForkPipeOutputStream(Report* report, Object* owner) :
-    ForkPipe(report, false, owner)
+ts::ForkPipeOutputStream::ForkPipeOutputStream(Report* report) :
+    ForkPipe(report, false)
 {
 }
 
-ts::ForkPipeOutputStream::ForkPipeOutputStream(ReporterBase* delegate, Object* owner) :
-    ForkPipe(delegate, false, owner)
+ts::ForkPipeOutputStream::ForkPipeOutputStream(ReporterBase* delegate) :
+    ForkPipe(delegate, false)
 {
 }
 

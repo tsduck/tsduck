@@ -33,16 +33,14 @@ namespace ts {
         //! Constructor.
         //! @param [in] report Where to report errors. The @a report object must remain valid as long as this object
         //! exists or setReport() is used with another Report object. If @a report is null, log messages are discarded.
-        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        explicit SysPipe(Report* report, Object* owner = nullptr) : ReporterBase(report, owner) {}
+        explicit SysPipe(Report* report) : ReporterBase(report) {}
 
         //!
         //! Constructor.
         //! @param [in] delegate Use the report of another ReporterBase. If @a delegate is null, log messages are discarded.
-        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        explicit SysPipe(ReporterBase* delegate, Object* owner = nullptr) : ReporterBase(delegate, owner) {}
+        explicit SysPipe(ReporterBase* delegate) : ReporterBase(delegate) {}
 
         //!
         //! Virtual destructor.

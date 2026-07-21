@@ -13,18 +13,18 @@
 // Constructors and destructor.
 //----------------------------------------------------------------------------
 
-ts::RestClient::RestClient(const RestArgs& args, Object* owner) :
-    ReporterBase(&NULLREP, owner),
+ts::RestClient::RestClient(const RestArgs& args) :
+    ReporterBase(&NULLREP),
     _args(args)
 {
 }
-ts::RestClient::RestClient(Report* report, const RestArgs& args, Object* owner) :
-    ReporterBase(report, owner),
+ts::RestClient::RestClient(Report* report, const RestArgs& args) :
+    ReporterBase(report),
     _args(args)
 {
 }
-ts::RestClient::RestClient(ReporterBase* delegate, const RestArgs& args, Object* owner) :
-    ReporterBase(delegate, owner),
+ts::RestClient::RestClient(ReporterBase* delegate, const RestArgs& args) :
+    ReporterBase(delegate),
     _args(args)
 {
 }

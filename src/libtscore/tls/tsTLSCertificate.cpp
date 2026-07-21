@@ -14,14 +14,14 @@
 // Constructors and destructor.
 //----------------------------------------------------------------------------
 
-ts::TLSCertificate::TLSCertificate(Report* report, Object* owner) :
-    ReporterBase(report, owner)
+ts::TLSCertificate::TLSCertificate(Report* report) :
+    ReporterBase(report)
 {
     allocateGuts();
 }
 
-ts::TLSCertificate::TLSCertificate(ReporterBase* delegate, Object* owner) :
-    ReporterBase(delegate, owner)
+ts::TLSCertificate::TLSCertificate(ReporterBase* delegate) :
+    ReporterBase(delegate)
 {
     allocateGuts();
 }

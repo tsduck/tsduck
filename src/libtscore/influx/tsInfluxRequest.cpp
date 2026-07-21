@@ -14,22 +14,22 @@
 // Constructors and destructor.
 //----------------------------------------------------------------------------
 
-ts::InfluxRequest::InfluxRequest(const InfluxArgs& args, Object* owner) :
-    WebRequest(&NULLREP, owner),
+ts::InfluxRequest::InfluxRequest(const InfluxArgs& args) :
+    WebRequest(&NULLREP),
     _args(args)
 {
     InitAdditionalFlags();
 }
 
-ts::InfluxRequest::InfluxRequest(Report* report, const InfluxArgs& args, Object* owner) :
-    WebRequest(report, owner),
+ts::InfluxRequest::InfluxRequest(Report* report, const InfluxArgs& args) :
+    WebRequest(report),
     _args(args)
 {
     InitAdditionalFlags();
 }
 
-ts::InfluxRequest::InfluxRequest(ReporterBase* delegate, const InfluxArgs& args, Object* owner) :
-    WebRequest(delegate, owner),
+ts::InfluxRequest::InfluxRequest(ReporterBase* delegate, const InfluxArgs& args) :
+    WebRequest(delegate),
     _args(args)
 {
     InitAdditionalFlags();

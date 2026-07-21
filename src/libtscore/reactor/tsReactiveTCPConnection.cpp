@@ -14,8 +14,8 @@
 // Constructor and destructor.
 //----------------------------------------------------------------------------
 
-ts::ReactiveTCPConnection::ReactiveTCPConnection(Reactor& reactor, TCPConnection& socket, Object* owner) :
-    ReactiveSocketBase(reactor, socket, owner),
+ts::ReactiveTCPConnection::ReactiveTCPConnection(Reactor& reactor, TCPConnection& socket) :
+    ReactiveDevice(reactor, socket),
     _socket(socket)
 {
     // Subscribe to our socket's events.

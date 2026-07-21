@@ -14,8 +14,8 @@
 // Constructors and destructor.
 //----------------------------------------------------------------------------
 
-ts::ReactiveTLSServer::ReactiveTLSServer(Reactor& reactor, TCPServer& socket, Object* owner) :
-    ReactiveTCPServer(reactor, socket, owner)
+ts::ReactiveTLSServer::ReactiveTLSServer(Reactor& reactor, TCPServer& socket) :
+    ReactiveTCPServer(reactor, socket)
 {
     // The socket must be an instance of TCPServer, not an instance of TLSServer.
     // Detect and report trivial misusages.
@@ -24,8 +24,8 @@ ts::ReactiveTLSServer::ReactiveTLSServer(Reactor& reactor, TCPServer& socket, Ob
     }
 }
 
-ts::ReactiveTLSServer::ReactiveTLSServer(Reactor& reactor, TCPServer& socket, const TLSArgs& args, Object* owner) :
-    ReactiveTLSServer(reactor, socket, owner)
+ts::ReactiveTLSServer::ReactiveTLSServer(Reactor& reactor, TCPServer& socket, const TLSArgs& args) :
+    ReactiveTLSServer(reactor, socket)
 {
     setArgs(args);
 }

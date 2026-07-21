@@ -17,13 +17,13 @@
 // Constructors & destructor
 //----------------------------------------------------------------------------
 
-ts::Socket::Socket(Report* report, bool non_blocking, Object* owner) :
-    NonBlockingDevice(report, non_blocking, owner)
+ts::Socket::Socket(Report* report, bool non_blocking) :
+    NonBlockingDevice(report, non_blocking)
 {
 }
 
-ts::Socket::Socket(ReporterBase* delegate, bool non_blocking, Object* owner) :
-    NonBlockingDevice(delegate, non_blocking, owner)
+ts::Socket::Socket(ReporterBase* delegate, bool non_blocking) :
+    NonBlockingDevice(delegate, non_blocking)
 {
 }
 
@@ -43,6 +43,21 @@ bool ts::Socket::allowSetNonBlocking() const
 {
     // Cannot change the blocking mode after open.
     return !isOpen();
+}
+
+
+//----------------------------------------------------------------------------
+// Get the underlying file descriptor or device handle.
+//----------------------------------------------------------------------------
+
+ts::SysHandleType ts::Socket::getHandle() const
+{
+    return _sock == SYS_SOCKET_INVALID ? SYS_HANDLE_INVALID : SysHandleType(_sock);
+}
+
+ts::SysSocketType ts::Socket::getSocket() const
+{
+    return _sock;
 }
 
 
@@ -85,7 +100,7 @@ bool ts::Socket::createSocket(IP gen, int type, int protocol)
 
     // Set the file descriptor in non-blocking mode if not set when the socket was created.
 #if defined(TS_MAC)
-    if (isNonBlocking() && !setSystemNonBlocking(_sock, true)) {
+    if (isNonBlocking() && !setSystemNonBlocking(true)) {
         SysCloseSocket(_sock);
         return false;
      }

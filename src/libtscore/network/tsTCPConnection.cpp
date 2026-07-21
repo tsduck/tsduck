@@ -20,13 +20,13 @@
 // Constructors and destructor.
 //----------------------------------------------------------------------------
 
-ts::TCPConnection::TCPConnection(Report* report, bool non_blocking, Object* owner) :
-    TCPSocket(report, non_blocking, owner)
+ts::TCPConnection::TCPConnection(Report* report, bool non_blocking) :
+    TCPSocket(report, non_blocking)
 {
 }
 
-ts::TCPConnection::TCPConnection(ReporterBase* delegate, bool non_blocking, Object* owner) :
-    TCPSocket(delegate, non_blocking, owner)
+ts::TCPConnection::TCPConnection(ReporterBase* delegate, bool non_blocking) :
+    TCPSocket(delegate, non_blocking)
 {
 }
 

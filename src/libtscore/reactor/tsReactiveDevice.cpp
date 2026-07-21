@@ -6,28 +6,28 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsReactiveSocketBase.h"
+#include "tsReactiveDevice.h"
 
 
 //----------------------------------------------------------------------------
 // Constructor and destructor.
 //----------------------------------------------------------------------------
 
-ts::ReactiveSocketBase::ReactiveSocketBase(Reactor& reactor, Socket& socket, Object* owner) :
-    ReactiveBase(reactor, owner),
-    _generic_socket(socket)
+ts::ReactiveDevice::ReactiveDevice(Reactor& reactor, NonBlockingDevice& device) :
+    ReactiveBase(reactor),
+    _device(device)
 {
-    // The socket must be set in non-blocking mode, a reactor can never block.
-    _generic_socket.setNonBlocking(true);
+    // The device must be set in non-blocking mode, a reactor can never block.
+    _device.setNonBlocking(true);
 
-    // Redirect all socket errors to the reactor.
-    _generic_socket.setReport(&ReactiveBase::reactor());
+    // Redirect all device errors to the reactor.
+    _device.setReport(&ReactiveBase::reactor());
 }
 
-ts::ReactiveSocketBase::~ReactiveSocketBase()
+ts::ReactiveDevice::~ReactiveDevice()
 {
-    if (_generic_socket.isOpen()) {
-        reactor().trace(u"warning: reactive socket is destroyed while the underlying socket is still open");
+    if (_device.getSocket() != SYS_SOCKET_INVALID) {
+        reactor().trace(u"warning: reactive device is destroyed while the underlying device is still open");
     }
 
     // Delete all registered ids in the reactor.
@@ -39,7 +39,7 @@ ts::ReactiveSocketBase::~ReactiveSocketBase()
 // Search and remove a shared_ptr to IOSB, based on an IOSB address.
 ///----------------------------------------------------------------------------
 
-std::shared_ptr<ts::ReactiveSocketBase::IOSB> ts::ReactiveSocketBase::removeFromQueue(IOQueue& queue, IOSB* iosb)
+std::shared_ptr<ts::ReactiveDevice::IOSB> ts::ReactiveDevice::removeFromQueue(IOQueue& queue, IOSB* iosb)
 {
     std::shared_ptr<IOSB> req;
     // Use reverse iterator since the completed I/O is likely on the front.
@@ -59,7 +59,7 @@ std::shared_ptr<ts::ReactiveSocketBase::IOSB> ts::ReactiveSocketBase::removeFrom
 // Delete and invalidate all registrations.
 //----------------------------------------------------------------------------
 
-void ts::ReactiveSocketBase::deactivateAll(bool silent)
+void ts::ReactiveDevice::deactivateAll(bool silent)
 {
     deactivateReadReady(silent);
     deactivateWriteReady(silent);
@@ -71,18 +71,18 @@ void ts::ReactiveSocketBase::deactivateAll(bool silent)
 // Activate / delete reactor events for non-blocking I/O.
 //----------------------------------------------------------------------------
 
-bool ts::ReactiveSocketBase::activateReadReady()
+bool ts::ReactiveDevice::activateReadReady()
 {
     if constexpr (Reactor::UseNonBlockingIO()) {
         if (!_read_ready_id.isValid()) {
-            _read_ready_id = reactor().newReadNotify(this, _generic_socket.getSocket());
+            _read_ready_id = reactor().newReadNotify(this, _device.getSocket());
             return _read_ready_id.isValid();
         }
     }
     return true;
 }
 
-void ts::ReactiveSocketBase::deactivateReadReady(bool silent)
+void ts::ReactiveDevice::deactivateReadReady(bool silent)
 {
     if constexpr (Reactor::UseNonBlockingIO()) {
         if (_read_ready_id.isValid()) {
@@ -92,18 +92,18 @@ void ts::ReactiveSocketBase::deactivateReadReady(bool silent)
     }
 }
 
-bool ts::ReactiveSocketBase::activateWriteReady()
+bool ts::ReactiveDevice::activateWriteReady()
 {
     if constexpr (Reactor::UseNonBlockingIO()) {
         if (!_write_ready_id.isValid()) {
-            _write_ready_id = reactor().newWriteNotify(this, _generic_socket.getSocket());
+            _write_ready_id = reactor().newWriteNotify(this, _device.getSocket());
             return _write_ready_id.isValid();
         }
     }
     return true;
 }
 
-void ts::ReactiveSocketBase::deactivateWriteReady(bool silent)
+void ts::ReactiveDevice::deactivateWriteReady(bool silent)
 {
     if constexpr (Reactor::UseNonBlockingIO()) {
         if (_write_ready_id.isValid()) {
@@ -118,18 +118,18 @@ void ts::ReactiveSocketBase::deactivateWriteReady(bool silent)
 // Activate / delete reactor events for non-blocking I/O.
 //----------------------------------------------------------------------------
 
-bool ts::ReactiveSocketBase::activateAsynchronousIO()
+bool ts::ReactiveDevice::activateAsynchronousIO()
 {
     if constexpr (Reactor::UseAsynchronousIO()) {
         if (!_async_io_id.isValid()) {
-            _async_io_id = reactor().newAsynchronousIO(this, _generic_socket.getSocket());
+            _async_io_id = reactor().newAsynchronousIO(this, _device.getSocket());
             return _async_io_id.isValid();
         }
     }
     return true;
 }
 
-void ts::ReactiveSocketBase::deactivateAsynchronousIO(bool silent)
+void ts::ReactiveDevice::deactivateAsynchronousIO(bool silent)
 {
     if constexpr (Reactor::UseAsynchronousIO()) {
         if (_async_io_id.isValid()) {
@@ -139,7 +139,7 @@ void ts::ReactiveSocketBase::deactivateAsynchronousIO(bool silent)
     }
 }
 
-void ts::ReactiveSocketBase::cancelAsynchronousIO(bool silent)
+void ts::ReactiveDevice::cancelAsynchronousIO(bool silent)
 {
     if constexpr (Reactor::UseAsynchronousIO()) {
         if (_async_io_id.isValid()) {
@@ -148,7 +148,7 @@ void ts::ReactiveSocketBase::cancelAsynchronousIO(bool silent)
     }
 }
 
-bool ts::ReactiveSocketBase::cancelAndWaitAsynchronousIO(NonBlockingDevice::IOSB& iosb, bool silent)
+bool ts::ReactiveDevice::cancelAndWaitAsynchronousIO(NonBlockingDevice::IOSB& iosb, bool silent)
 {
     if constexpr (Reactor::UseAsynchronousIO()) {
         if (_async_io_id.isValid()) {

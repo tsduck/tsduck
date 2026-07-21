@@ -30,13 +30,13 @@
 // Constructors and destructor.
 //----------------------------------------------------------------------------
 
-ts::ForkPipe::ForkPipe(Report* report, bool non_blocking, Object* owner) :
-    NonBlockingDevice(report, non_blocking, owner)
+ts::ForkPipe::ForkPipe(Report* report, bool non_blocking) :
+    NonBlockingDevice(report, non_blocking)
 {
 }
 
-ts::ForkPipe::ForkPipe(ReporterBase* delegate, bool non_blocking, Object* owner) :
-    NonBlockingDevice(delegate, non_blocking, owner)
+ts::ForkPipe::ForkPipe(ReporterBase* delegate, bool non_blocking) :
+    NonBlockingDevice(delegate, non_blocking)
 {
 }
 
@@ -54,6 +54,21 @@ bool ts::ForkPipe::allowSetNonBlocking() const
 {
     // Cannot change the blocking mode after open.
     return !isOpen();
+}
+
+
+//----------------------------------------------------------------------------
+// Get the underlying file descriptor or device handle.
+//----------------------------------------------------------------------------
+
+ts::SysHandleType ts::ForkPipe::getHandle() const
+{
+    return _hfd;
+}
+
+ts::SysSocketType ts::ForkPipe::getSocket() const
+{
+    return _hfd == SYS_HANDLE_INVALID ? SYS_SOCKET_INVALID : SysSocketType(_hfd);
 }
 
 
@@ -377,7 +392,7 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
             ::fcntl(_hfd, F_SETFD, FD_CLOEXEC);
         }
         // Set the file descriptor in non-blocking mode if necessary.
-        if (_use_pipe && isNonBlocking() && !setSystemNonBlocking(_hfd, true)) {
+        if (_use_pipe && isNonBlocking() && !setSystemNonBlocking(true)) {
             ::close(_hfd);
             return false;
         }
@@ -605,7 +620,7 @@ bool ts::ForkPipe::writeStream(const void* addr, size_t size, size_t& written_si
     }
 
     // Perform the write using generic code.
-    const int err_code = genericSystemWrite(_hfd, addr, size, written_size, iosb);
+    const int err_code = genericSystemWrite(addr, size, written_size, iosb);
 
     // EOF on write on pipe means broken pipe.
     _broken_pipe = err_code == SYS_EOF;
@@ -648,7 +663,7 @@ bool ts::ForkPipe::readStream(void *addr, size_t max_size, size_t& ret_size, con
     }
 
     // Perform the read using generic code.
-    const int err_code = genericSystemRead(_hfd, addr, max_size, ret_size, abort, iosb);
+    const int err_code = genericSystemRead(addr, max_size, ret_size, abort, iosb);
     _eof = err_code == SYS_EOF;
     return SysSuccess(err_code);
 }

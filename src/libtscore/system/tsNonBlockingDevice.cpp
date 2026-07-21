@@ -20,6 +20,22 @@ ts::NonBlockingDevice::~NonBlockingDevice()
 
 
 //----------------------------------------------------------------------------
+// Get the underlying file descriptor or device handle.
+// The default implementation return the error values.
+//----------------------------------------------------------------------------
+
+ts::SysHandleType ts::NonBlockingDevice::getHandle() const
+{
+    return SYS_HANDLE_INVALID;
+}
+
+ts::SysSocketType ts::NonBlockingDevice::getSocket() const
+{
+    return SYS_SOCKET_INVALID;
+}
+
+
+//----------------------------------------------------------------------------
 // Set the device in non-blocking mode.
 //----------------------------------------------------------------------------
 
@@ -74,11 +90,12 @@ bool ts::NonBlockingDevice::checkNonBlocking(IOSB* iosb, const UChar* opname)
 // Set a system file or spcket descriptor in non-blocking mode.
 //----------------------------------------------------------------------------
 
-bool ts::NonBlockingDevice::setSystemNonBlocking(SysHandleType fd, bool non_blocking)
+bool ts::NonBlockingDevice::setSystemNonBlocking(bool non_blocking)
 {
 #if defined(TS_UNIX)
 
-    int flags = ::fcntl(fd, F_GETFL, 0);
+    const SysHandleType hfd = getHandle();
+    int flags = ::fcntl(hfd, F_GETFL, 0);
     if (flags == -1) {
         report().error(u"error getting file or socket flags: %s", SysErrorCodeMessage());
         return false;
@@ -89,7 +106,7 @@ bool ts::NonBlockingDevice::setSystemNonBlocking(SysHandleType fd, bool non_bloc
     else {
         flags &= ~O_NONBLOCK;
     }
-    if (::fcntl(fd, F_SETFL, flags) == -1) {
+    if (::fcntl(hfd, F_SETFL, flags) == -1) {
         report().error(u"error setting file or socket non-blocking mode: %s", SysErrorCodeMessage());
         return false;
     }
@@ -122,10 +139,11 @@ void ts::NonBlockingDevice::IOSB::reset()
 // Generic system write operation.
 //----------------------------------------------------------------------------
 
-int ts::NonBlockingDevice::genericSystemWrite(SysHandleType hfd, const void* addr, size_t size, size_t& written_size, NonBlockingDevice::IOSB* iosb)
+int ts::NonBlockingDevice::genericSystemWrite(const void* addr, size_t size, size_t& written_size, NonBlockingDevice::IOSB* iosb)
 {
     written_size = 0;
     int err_code = SYS_SUCCESS;
+    const SysHandleType hfd = getHandle();
 
     if (!checkNonBlocking(iosb, u"system write")) {
         // Not the right blocking mode.
@@ -212,10 +230,11 @@ int ts::NonBlockingDevice::genericSystemWrite(SysHandleType hfd, const void* add
 // Generic system read operation.
 //----------------------------------------------------------------------------
 
-int ts::NonBlockingDevice::genericSystemRead(SysHandleType hfd, void* addr, size_t max_size, size_t& ret_size, const AbortInterface* abort, NonBlockingDevice::IOSB* iosb)
+int ts::NonBlockingDevice::genericSystemRead(void* addr, size_t max_size, size_t& ret_size, const AbortInterface* abort, NonBlockingDevice::IOSB* iosb)
 {
     ret_size = 0;
     int err_code = SYS_SUCCESS;
+    const SysHandleType hfd = getHandle();
 
     if (!checkNonBlocking(iosb, u"system read")) {
         // Not the right blocking mode.

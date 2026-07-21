@@ -14,14 +14,14 @@
 // Constructors and destructor.
 //----------------------------------------------------------------------------
 
-ts::BitRateRegulator::BitRateRegulator(Report* report, int log_level, Object* owner) :
-    ReporterBase(report, owner),
+ts::BitRateRegulator::BitRateRegulator(Report* report, int log_level) :
+    ReporterBase(report),
     _log_level(log_level)
 {
 }
 
-ts::BitRateRegulator::BitRateRegulator(ReporterBase* delegate, int log_level, Object* owner) :
-    ReporterBase(delegate, owner),
+ts::BitRateRegulator::BitRateRegulator(ReporterBase* delegate, int log_level) :
+    ReporterBase(delegate),
     _log_level(log_level)
 {
 }

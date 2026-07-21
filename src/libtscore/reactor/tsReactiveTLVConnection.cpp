@@ -15,13 +15,7 @@
 // Constructors and destructor.
 //----------------------------------------------------------------------------
 
-ts::ReactiveTLVConnection::ReactiveTLVConnection(tlv::Logger& logger,
-                                                 const tlv::Protocol& protocol,
-                                                 ReactiveTCPConnection& socket,
-                                                 bool auto_error_response,
-                                                 size_t max_invalid_msg,
-                                                 Object* owner) :
-    OwnedObject(owner),
+ts::ReactiveTLVConnection::ReactiveTLVConnection(tlv::Logger& logger, const tlv::Protocol& protocol, ReactiveTCPConnection& socket, bool auto_error_response, size_t max_invalid_msg) :
     _logger(logger),
     _protocol(protocol),
     _socket(socket),

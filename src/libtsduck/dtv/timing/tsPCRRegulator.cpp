@@ -14,14 +14,14 @@
 // Constructors and destructor.
 //----------------------------------------------------------------------------
 
-ts::PCRRegulator::PCRRegulator(Report* report, int log_level, Object* owner) :
-    ReporterBase(report, owner),
+ts::PCRRegulator::PCRRegulator(Report* report, int log_level) :
+    ReporterBase(report),
     _log_level(log_level)
 {
 }
 
-ts::PCRRegulator::PCRRegulator(ReporterBase* delegate, int log_level, Object* owner) :
-    ReporterBase(delegate, owner),
+ts::PCRRegulator::PCRRegulator(ReporterBase* delegate, int log_level) :
+    ReporterBase(delegate),
     _log_level(log_level)
 {
 }

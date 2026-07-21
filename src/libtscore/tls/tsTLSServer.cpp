@@ -13,13 +13,13 @@
 // Constructors and destructor.
 //----------------------------------------------------------------------------
 
-ts::TLSServer::TLSServer(Report* report, Object* owner) :
-    TCPServer(report, false,owner)
+ts::TLSServer::TLSServer(Report* report) :
+    TCPServer(report, false)
 {
 }
 
-ts::TLSServer::TLSServer(ReporterBase* delegate, Object* owner) :
-    TCPServer(delegate, false, owner)
+ts::TLSServer::TLSServer(ReporterBase* delegate) :
+    TCPServer(delegate, false)
 {
 }
 

@@ -14,14 +14,14 @@
 // Constructors and destructor.
 //----------------------------------------------------------------------------
 
-ts::TSFile::TSFile(Report* report, Object* owner) :
-    BinaryFile(report, false, owner),
+ts::TSFile::TSFile(Report* report) :
+    BinaryFile(report, false),
     TSPacketStream(*static_cast<ReporterBase*>(this))
 {
 }
 
-ts::TSFile::TSFile(ReporterBase* delegate, Object* owner) :
-    BinaryFile(delegate, false, owner),
+ts::TSFile::TSFile(ReporterBase* delegate) :
+    BinaryFile(delegate, false),
     TSPacketStream(*static_cast<ReporterBase*>(this))
 {
 }

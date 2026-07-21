@@ -64,9 +64,8 @@ namespace ts {
         //! Constructor.
         //! @param [in] report Address of the report for log and error messages. If null, use the standard error.
         //! @param [in] output The output stream to use, @c std::cout on null pointer.
-        //! @param [in] owner Optional address of an "owner" object, typically an instance of class containing this object.
         //!
-        DuckContext(Report* report = nullptr, std::ostream* output = nullptr, Object* owner = nullptr);
+        DuckContext(Report* report = nullptr, std::ostream* output = nullptr);
 
         //!
         //! Destructor.

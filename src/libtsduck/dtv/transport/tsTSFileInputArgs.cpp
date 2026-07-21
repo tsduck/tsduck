@@ -13,13 +13,13 @@
 // Constructors and destructor.
 //----------------------------------------------------------------------------
 
-ts::TSFileInputArgs::TSFileInputArgs(Report* report, Object* owner) :
-    ReporterBase(report, owner)
+ts::TSFileInputArgs::TSFileInputArgs(Report* report) :
+    ReporterBase(report)
 {
 }
 
-ts::TSFileInputArgs::TSFileInputArgs(ReporterBase* delegate, Object* owner) :
-    ReporterBase(delegate, owner)
+ts::TSFileInputArgs::TSFileInputArgs(ReporterBase* delegate) :
+    ReporterBase(delegate)
 {
 }
 

@@ -27,13 +27,13 @@
 // Constructors and destructor.
 //----------------------------------------------------------------------------
 
-ts::BinaryFile::BinaryFile(Report* report, bool non_blocking, Object* owner) :
-    NonBlockingDevice(report, non_blocking, owner)
+ts::BinaryFile::BinaryFile(Report* report, bool non_blocking) :
+    NonBlockingDevice(report, non_blocking)
 {
 }
 
-ts::BinaryFile::BinaryFile(ReporterBase* delegate, bool non_blocking, Object* owner) :
-    NonBlockingDevice(delegate, non_blocking, owner)
+ts::BinaryFile::BinaryFile(ReporterBase* delegate, bool non_blocking) :
+    NonBlockingDevice(delegate, non_blocking)
 {
 }
 
@@ -53,6 +53,21 @@ bool ts::BinaryFile::allowSetNonBlocking() const
 {
     // Cannot change the blocking mode after open.
     return !isOpen();
+}
+
+
+//----------------------------------------------------------------------------
+// Get the underlying file descriptor or device handle.
+//----------------------------------------------------------------------------
+
+ts::SysHandleType ts::BinaryFile::getHandle() const
+{
+    return _hfd;
+}
+
+ts::SysSocketType ts::BinaryFile::getSocket() const
+{
+    return _hfd == SYS_HANDLE_INVALID ? SYS_SOCKET_INVALID : SysSocketType(_hfd);
 }
 
 
@@ -338,7 +353,7 @@ bool ts::BinaryFile::openInternal(bool reopen)
     }
 
     // Set the file descriptor in non-blocking mode if necessary.
-    if (isNonBlocking() && !setSystemNonBlocking(_hfd, true)) {
+    if (isNonBlocking() && !setSystemNonBlocking(true)) {
         ::close(_hfd);
         return false;
     }
@@ -514,7 +529,7 @@ bool ts::BinaryFile::readStream(void* buffer, size_t request_size, size_t& read_
     }
 
     // Try to read once. Perform the read using generic code.
-    int err_code = genericSystemRead(_hfd, buffer, request_size, read_size, abort, iosb);
+    int err_code = genericSystemRead(buffer, request_size, read_size, abort, iosb);
     _at_eof = _at_eof || err_code == SYS_EOF;
 
     // If we are at eof, rewind and retry.
@@ -523,7 +538,7 @@ bool ts::BinaryFile::readStream(void* buffer, size_t request_size, size_t& read_
         if (!seekByteInternal(0)) {
             return false;
         }
-        err_code = genericSystemRead(_hfd, buffer, request_size, read_size, abort, iosb);
+        err_code = genericSystemRead(buffer, request_size, read_size, abort, iosb);
         _at_eof = _at_eof || err_code == SYS_EOF;
     }
     return SysSuccess(err_code);
@@ -542,7 +557,7 @@ bool ts::BinaryFile::writeStream(const void* buffer, size_t data_size, IOSB* ios
 bool ts::BinaryFile::writeStream(const void* buffer, size_t data_size, size_t& written_size, IOSB* iosb)
 {
     // Perform the write using generic code.
-    const int err_code = genericSystemWrite(_hfd, buffer, data_size, written_size, iosb);
+    const int err_code = genericSystemWrite(buffer, data_size, written_size, iosb);
     return SysSuccess(err_code);
 }
 

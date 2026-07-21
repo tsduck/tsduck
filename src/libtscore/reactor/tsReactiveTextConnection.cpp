@@ -13,8 +13,7 @@
 // Constructor and destructor.
 //----------------------------------------------------------------------------
 
-ts::ReactiveTextConnection::ReactiveTextConnection(ReactiveTCPConnection& socket, Object* owner) :
-    OwnedObject(owner),
+ts::ReactiveTextConnection::ReactiveTextConnection(ReactiveTCPConnection& socket) :
     _socket(socket)
 {
     // Get notified of connection and disconnection.
