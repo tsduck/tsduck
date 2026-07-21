@@ -39,5 +39,5 @@ namespace ts {
     //! Enumeration description of ts::SocketOp with meaningful names.
     //! @return A constant reference to the enumeration description.
     //!
-    TSDUCKDLL const Names& SocketOpNames();
+    TSCOREDLL const Names& SocketOpNames();
 }

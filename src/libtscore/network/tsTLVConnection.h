@@ -22,7 +22,7 @@ namespace ts {
     //! TCP connection using TLV messages.
     //! @ingroup libtscore net tlv
     //!
-    class TLVConnection: protected SocketHandlerInterface
+    class TSCOREDLL TLVConnection: protected SocketHandlerInterface
     {
         TS_NOBUILD_NOCOPY(TLVConnection);
     public:

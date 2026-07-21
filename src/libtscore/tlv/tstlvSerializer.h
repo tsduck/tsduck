@@ -383,7 +383,7 @@ namespace ts::tlv {
 //! @param [in] ser Serializer to dump.
 //! @return A reference to @a strm.
 //!
-TSDUCKDLL inline std::ostream& operator<<(std::ostream& strm, const ts::tlv::Serializer& ser)
+TSCOREDLL inline std::ostream& operator<<(std::ostream& strm, const ts::tlv::Serializer& ser)
 {
     return strm << ser.toString();
 }
