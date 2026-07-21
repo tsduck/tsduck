@@ -62,7 +62,7 @@ namespace {
 
         virtual void handleTCPConnected(ts::ReactiveTCPConnection& sock, int error_code, const ts::ObjectPtr& user_data) override;
         virtual void handleReceivedMessage(ts::ReactiveTLVConnection& sock, const ts::tlv::MessagePtr& msg, int error_code) override;
-        virtual void handleTCPSend(ts::ReactiveTCPConnection& sock, size_t position, int error_code, const ts::ObjectPtr& user_data) override;
+        virtual void handleWriteStream(ts::ReactiveStream& stream, int error_code, const ts::ObjectPtr& user_data) override;
         virtual void handleTCPClosed(ts::ReactiveTCPConnection& sock, const ts::ObjectPtr& user_data) override;
     };
 
@@ -135,7 +135,7 @@ namespace {
         }
     }
 
-    void TestClient::handleTCPSend(ts::ReactiveTCPConnection& sock, size_t position, int error_code, const ts::ObjectPtr& user_data)
+    void TestClient::handleWriteStream(ts::ReactiveStream& stream, int error_code, const ts::ObjectPtr& user_data)
     {
         _debug << "TLV client: message sent, error code: " << error_code << std::endl;
         TSUNIT_EQUAL(ts::SYS_EOF, error_code); // only used with startCloseWriter()

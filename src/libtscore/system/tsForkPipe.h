@@ -192,6 +192,8 @@ namespace ts {
         virtual bool readStream(void* addr, size_t max_size, size_t& ret_size, const AbortInterface* abort = nullptr, IOSB* iosb = nullptr) override;
         virtual bool writeStream(const void* addr, size_t size, IOSB* iosb = nullptr) override;
         virtual bool writeStream(const void* addr, size_t size, size_t& written_size, IOSB* iosb = nullptr) override;
+        virtual bool isReadStream() override;
+        virtual bool isWriteStream() override;
         virtual bool endOfStream() override;
 
     protected:

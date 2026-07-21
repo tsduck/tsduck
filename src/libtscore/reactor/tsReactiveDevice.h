@@ -18,7 +18,7 @@
 
 namespace ts {
     //!
-    //! Virtual base class for non-blocking devices in a Reactor environment
+    //! Base class for non-blocking devices in a Reactor environment
     //! @ingroup libtscore reactor
     //!
     class TSCOREDLL ReactiveDevice: public ReactiveBase
@@ -36,6 +36,12 @@ namespace ts {
         //! Destructor.
         //!
         virtual ~ReactiveDevice() override;
+
+        //!
+        //! Get a reference to the associated non-blocking device.
+        //! @return A reference to the associated non-blocking device.
+        //!
+        NonBlockingDevice& device() { return _device; }
 
     protected:
         //! IOSB shortcut fpr subclasses.

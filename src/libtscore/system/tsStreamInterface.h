@@ -89,6 +89,18 @@ namespace ts {
         virtual bool readStream(void* addr, size_t size, const AbortInterface* abort = nullptr) = 0;
 
         //!
+        //! Check if the stream is open for read.
+        //! @return True if readStream() is possible, false otherwise (write-only, closed, or disconnected stream).
+        //!
+        virtual bool isReadStream() = 0;
+
+        //!
+        //! Check if the stream is open for write.
+        //! @return True if writeStream() is possible, false otherwise (read-only, closed, or disconnected stream).
+        //!
+        virtual bool isWriteStream() = 0;
+
+        //!
         //! Check if the end of stream was reached while reading.
         //! @return True on end of stream, false otherwise.
         //!

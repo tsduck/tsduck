@@ -76,7 +76,7 @@ bool ts::ReactiveTextConnection::startSendData(SendUserDataPtr& buf, bool eol, b
     // Start the I/O when necessay. The buffer pointer is used as user-data to make sure that the shared pointer
     // is saved as long as the I/O is in progress. Thus, we guarantee that 1) the buffer remains valid during
     // the I/O and 2) it is automatically freed as the end of the I/O.
-    return !flush || _socket.startSend(nullptr, buf->buffer.data(), buf->buffer.size(), buf);
+    return !flush || _socket.startWriteStream(nullptr, buf->buffer.data(), buf->buffer.size(), buf);
 }
 
 
@@ -126,7 +126,7 @@ bool ts::ReactiveTextConnection::startReceive(ReactiveTextConnectionHandlerInter
     }
     else {
         _receive_handler = handler;
-        return _socket.startReceive(this, buffer_size);
+        return _socket.startReadStream(this, buffer_size);
     }
 }
 
@@ -135,7 +135,7 @@ bool ts::ReactiveTextConnection::startReceive(ReactiveTextConnectionHandlerInter
 // Invoked when binary data is received from the TCP connection.
 //----------------------------------------------------------------------------
 
-void ts::ReactiveTextConnection::handleTCPReceive(ReactiveTCPConnection& sock, const ByteBlock& data, ReactiveInputControl& control, int error_code, const ObjectPtr& user_data)
+void ts::ReactiveTextConnection::handleReadStream(ReactiveStream& stream, const ByteBlock& data, ReactiveInputControl& control, int error_code, const ObjectPtr& user_data)
 {
     if (_receive_handler != nullptr) {
         if (!SysSuccess(error_code)) {
@@ -146,7 +146,7 @@ void ts::ReactiveTextConnection::handleTCPReceive(ReactiveTCPConnection& sock, c
             // Loop on searching for line-feed. Stop if a handler stopped the socket.
             size_t lf = NPOS;
             size_t start = 0;
-            while (start < data.size() && (lf = data.find('\n', start)) != NPOS && sock.isOpen()) {
+            while (start < data.size() && (lf = data.find('\n', start)) != NPOS && _socket.isOpen()) {
                 assert(lf >= start);
                 assert(lf < data.size());
                 // Found a complete line.

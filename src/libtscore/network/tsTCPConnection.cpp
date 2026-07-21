@@ -133,8 +133,18 @@ ts::UString ts::TCPConnection::peerName()
 
 
 //----------------------------------------------------------------------------
-// Detect end of input stream. Implementation of StreamInterface.
+// Implementation of StreamInterface (control).
 //----------------------------------------------------------------------------
+
+bool ts::TCPConnection::isReadStream()
+{
+    return _is_connected;
+}
+
+bool ts::TCPConnection::isWriteStream()
+{
+    return _is_connected;
+}
 
 bool ts::TCPConnection::endOfStream()
 {
@@ -143,7 +153,7 @@ bool ts::TCPConnection::endOfStream()
 
 
 //----------------------------------------------------------------------------
-// Send data. Implementation of StreamInterface.
+// Implementation of StreamInterface (send / write).
 //----------------------------------------------------------------------------
 
 bool ts::TCPConnection::writeStream(const void* buffer, size_t data_size, IOSB* iosb)
@@ -225,7 +235,7 @@ bool ts::TCPConnection::writeStream(const void* buffer, size_t size, size_t& wri
 
 
 //----------------------------------------------------------------------------
-// Receive data. Implementation of StreamInterface.
+// Implementation of StreamInterface (receive / read).
 //----------------------------------------------------------------------------
 
 bool ts::TCPConnection::readStream(void* buffer, size_t size, const AbortInterface* abort)

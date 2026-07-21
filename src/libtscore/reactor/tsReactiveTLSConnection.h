@@ -60,10 +60,10 @@ namespace ts {
         virtual ~ReactiveTLSConnection() override;
         virtual bool startConnect(ReactiveTCPConnectionHandlerInterface* handler, const IPSocketAddress& addr, const ObjectPtr& user_data = ObjectPtr()) override;
         virtual void whenAccepted(ReactiveTCPConnectionHandlerInterface* handler, const ObjectPtr& user_data = ObjectPtr()) override;
-        virtual bool startSend(ReactiveTCPConnectionHandlerInterface* handler, const void* data, size_t size, const ObjectPtr& user_data = ObjectPtr()) override;
-        virtual bool startCloseWriter(ReactiveTCPConnectionHandlerInterface* handler, bool silent = false, const ObjectPtr& user_data = ObjectPtr()) override;
-        virtual bool startReceive(ReactiveTCPConnectionHandlerInterface* handler, size_t buffer_size = DEFAULT_RECEIVE_BUFFER_SIZE, const ObjectPtr& user_data = ObjectPtr()) override;
-        virtual void cancelSendReceive(bool silent = false) override;
+        virtual bool startReadStream(ReactiveStreamHandlerInterface* handler, size_t buffer_size = DEFAULT_RECEIVE_BUFFER_SIZE, const ObjectPtr& user_data = ObjectPtr()) override;
+        virtual bool startWriteStream(ReactiveStreamHandlerInterface* handler, const void* data, size_t size, const ObjectPtr& user_data = ObjectPtr()) override;
+        virtual void cancelReadWriteStream(bool silent = false) override;
+        virtual bool startCloseWriter(ReactiveStreamHandlerInterface* handler, bool silent = false, const ObjectPtr& user_data = ObjectPtr()) override;
         virtual bool startClose(ReactiveTCPConnectionHandlerInterface* handler, bool silent = false, const ObjectPtr& user_data = ObjectPtr()) override;
 
     protected:
@@ -73,9 +73,11 @@ namespace ts {
         // Implementation of ReactiveTCPConnectionHandlerInterface.
         virtual void handleTCPConnected(ReactiveTCPConnection& sock, int error_code, const ObjectPtr& user_data) override;
         virtual void handleTCPAccepted(ReactiveTCPServer& server, ReactiveTCPConnection& sock, int error_code, const ObjectPtr& user_data) override;
-        virtual void handleTCPSend(ReactiveTCPConnection& sock, size_t position, int error_code, const ObjectPtr& user_data) override;
-        virtual void handleTCPReceive(ReactiveTCPConnection& sock, const ByteBlock& data, ReactiveInputControl& control, int error_code, const ObjectPtr& user_data) override;
         virtual void handleTCPClosed(ReactiveTCPConnection& sock, const ObjectPtr& user_data) override;
+
+        // Implementation of ReactiveStreamHandlerInterface (inherited through ReactiveTCPConnectionHandlerInterface).
+        virtual void handleWriteStream(ReactiveStream& stream, int error_code, const ObjectPtr& user_data) override;
+        virtual void handleReadStream(ReactiveStream& stream, const ByteBlock& data, ReactiveInputControl& control, int error_code, const ObjectPtr& user_data) override;
 
     private:
         // Each of these requests may need several exchanges of TLS protocol. The request must be
@@ -94,26 +96,25 @@ namespace ts {
             bool               silent = false;
 
             // Constructor and destructor.
-            Request(SocketOp t, HandlerType* h, const ObjectPtr& u) : type(t), handler(h), user_data(u) {}
+            Request(SocketOp t, ReactiveTCPConnectionHandlerInterface* h, const ObjectPtr& u) : type(t), handler(h), user_data(u) {}
         };
 
         using RequestPtr = std::shared_ptr<Request>;
         using RequestQueue = std::list<RequestPtr>;
 
         // ReactiveTLSConnection private fields.
-        TLSContext              _sctx {this};
-        RequestQueue            _user_requests {};         // Queue of user request (connect, send, close).
-        size_t                  _send_position = 0;        // Clear data sent.
-        ByteBlock               _send_tls_data {};         // Outgoing TLS data, to send over the network.
-        bool                    _send_in_progress = false; // Sending TLS data in progress, waiting for send completion.
-        bool                    _eof_reported = false;     // End of input stream already reported to application.
-        HandlerType*            _recv_handler = nullptr;   // User handler for data reception.
-        ObjectPtr               _recv_user_data {};        // User data for data reception.
+        TLSContext           _sctx {this};
+        RequestQueue         _user_requests {};         // Queue of user request (connect, send, close).
+        ByteBlock            _send_tls_data {};         // Outgoing TLS data, to send over the network.
+        bool                 _send_in_progress = false; // Sending TLS data in progress, waiting for send completion.
+        bool                 _eof_reported = false;     // End of input stream already reported to application.
+        ReactiveStreamHandlerInterface* _recv_handler = nullptr;   // User handler for data reception.
+        ObjectPtr            _recv_user_data {};        // User data for data reception.
         ReactiveInputControl _recv_control {};          // User control of input data.
-        ByteBlock               _recv_tls_data {};         // Incoming TLS data which cannot be processed now.
-        ByteBlock               _recv_clear_data {};       // Incoming clear data.
-        HandlerType*            _accept_handler = nullptr; // User handler for accepted session, at TLS level.
-        ObjectPtr               _accept_user_data {};      // User data for _accept_handler.
+        ByteBlock            _recv_tls_data {};         // Incoming TLS data which cannot be processed now.
+        ByteBlock            _recv_clear_data {};       // Incoming clear data.
+        HandlerType*         _accept_handler = nullptr; // User handler for accepted session, at TLS level.
+        ObjectPtr            _accept_user_data {};      // User data for _accept_handler.
 
         // Reset connection state.
         void reset();

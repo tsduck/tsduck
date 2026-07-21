@@ -40,7 +40,6 @@ void ts::ReactiveTLSConnection::reset()
 {
     _sctx.reset();
     _user_requests.clear();
-    _send_position = 0;
     _send_tls_data.clear();
     _send_in_progress = false;
     _eof_reported = false;
@@ -90,10 +89,10 @@ void ts::ReactiveTLSConnection::callFrontHandlerAndRemove(int error_code, Socket
                     connection_completed = SysSuccess(error_code);
                     break;
                 case SocketOp::SEND:
-                    req->handler->handleTCPSend(*this, _send_position, error_code, req->user_data);
+                    req->handler->handleWriteStream(*this, error_code, req->user_data);
                     break;
                 case SocketOp::CLOSE_WRITER:
-                    req->handler->handleTCPSend(*this, _send_position, SYS_EOF, req->user_data);
+                    req->handler->handleWriteStream(*this, SYS_EOF, req->user_data);
                     break;
                 case SocketOp::CLOSE:
                     req->handler->handleTCPClosed(*this, req->user_data);
@@ -132,7 +131,7 @@ void ts::ReactiveTLSConnection::callReceiveError(int error_code)
     if (_recv_handler != nullptr && (error_code != SYS_EOF || !_eof_reported)) {
         static const ByteBlock empty_data;
         _recv_control.reset();
-        _recv_handler->handleTCPReceive(*this, empty_data, _recv_control, error_code, _recv_user_data);
+        _recv_handler->handleReadStream(*this, empty_data, _recv_control, error_code, _recv_user_data);
         _eof_reported = _eof_reported || error_code == SYS_EOF;
     }
 }
@@ -173,7 +172,7 @@ void ts::ReactiveTLSConnection::handleTCPConnected(ReactiveTCPConnection& sock, 
         // Connection errors.
         callFrontHandlerAndRemove(error_code);
     }
-    else if (!ReactiveTCPConnection::startReceive(this, TLS_MAX_PACKET_SIZE) || !_sctx.initClient(*this)) {
+    else if (!ReactiveTCPConnection::startReadStream(this, TLS_MAX_PACKET_SIZE) || !_sctx.initClient(*this)) {
         // Error starting TLS handshake.
         callFrontHandlerAndRemove(SYS_ERROR);
     }
@@ -236,7 +235,7 @@ void ts::ReactiveTLSConnection::handleTCPAccepted(ReactiveTCPServer& server, Rea
         // Connection errors.
         callFrontHandlerAndRemove(error_code);
     }
-    else if (!ReactiveTCPConnection::startReceive(this, TLS_MAX_PACKET_SIZE)) {
+    else if (!ReactiveTCPConnection::startReadStream(this, TLS_MAX_PACKET_SIZE)) {
         // Cannot set the reception handler.
         callFrontHandlerAndRemove(SYS_ERROR);
     }
@@ -249,10 +248,10 @@ void ts::ReactiveTLSConnection::handleTCPAccepted(ReactiveTCPServer& server, Rea
 // Start the operation of sending data over the TCP connection.
 //----------------------------------------------------------------------------
 
-bool ts::ReactiveTLSConnection::startSend(HandlerType* handler, const void* data, size_t size, const ObjectPtr& user_data)
+bool ts::ReactiveTLSConnection::startWriteStream(ReactiveStreamHandlerInterface* handler, const void* data, size_t size, const ObjectPtr& user_data)
 {
     // Build a send request.
-    std::shared_ptr<Request> req = std::make_shared<Request>(SocketOp::SEND, handler, user_data);
+    std::shared_ptr<Request> req = std::make_shared<Request>(SocketOp::SEND, static_cast<HandlerType*>(handler), user_data);
     req->send_data = data;
     req->send_size = size;
 
@@ -266,7 +265,7 @@ bool ts::ReactiveTLSConnection::startSend(HandlerType* handler, const void* data
 // Start the operation of receiving messages from the socket.
 //----------------------------------------------------------------------------
 
-bool ts::ReactiveTLSConnection::startReceive(HandlerType* handler, size_t buffer_size, const ObjectPtr& user_data)
+bool ts::ReactiveTLSConnection::startReadStream(ReactiveStreamHandlerInterface* handler, size_t buffer_size, const ObjectPtr& user_data)
 {
     // Because TLS protocol requires to receive data, data reception is always on after connection.
     // Just set which handler to call upon extraction of clear data from the TLS context.
@@ -281,13 +280,13 @@ bool ts::ReactiveTLSConnection::startReceive(HandlerType* handler, size_t buffer
 // Cancel any pending send or receive operation on this socket.
 //----------------------------------------------------------------------------
 
-void ts::ReactiveTLSConnection::cancelSendReceive(bool silent)
+void ts::ReactiveTLSConnection::cancelReadWriteStream(bool silent)
 {
     _recv_handler = nullptr;
     _recv_user_data.reset();
 
     // Break underlying TLS protocol stream.
-    ReactiveTCPConnection::cancelSendReceive(silent);
+    ReactiveTCPConnection::cancelReadWriteStream(silent);
 }
 
 
@@ -295,12 +294,12 @@ void ts::ReactiveTLSConnection::cancelSendReceive(bool silent)
 // Start closing the send direction of the socket.
 //----------------------------------------------------------------------------
 
-bool ts::ReactiveTLSConnection::startCloseWriter(HandlerType* handler, bool silent, const ObjectPtr& user_data)
+bool ts::ReactiveTLSConnection::startCloseWriter(ReactiveStreamHandlerInterface* handler, bool silent, const ObjectPtr& user_data)
 {
     report().debug(u"reactive TLS: start close-writer");
 
     // Build a close request.
-    RequestPtr req = std::make_shared<Request>(SocketOp::CLOSE_WRITER, handler, user_data);
+    RequestPtr req = std::make_shared<Request>(SocketOp::CLOSE_WRITER, static_cast<HandlerType*>(handler), user_data);
     req->silent = silent;
 
     // Enqueue the request and signal to process it in reactor context.
@@ -343,7 +342,7 @@ void ts::ReactiveTLSConnection::handleTCPClosed(ReactiveTCPConnection& sock, con
 // Called when a send operation completes.
 //----------------------------------------------------------------------------
 
-void ts::ReactiveTLSConnection::handleTCPSend(ReactiveTCPConnection& sock, size_t position, int error_code, const ObjectPtr& user_data)
+void ts::ReactiveTLSConnection::handleWriteStream(ReactiveStream& stream, int error_code, const ObjectPtr& user_data)
 {
     _send_in_progress = false;
 
@@ -379,7 +378,7 @@ void ts::ReactiveTLSConnection::processQueuedOperations()
             if (!_send_in_progress) {
                 _send_tls_data.clear();
                 _sctx.getDataToSend(_send_tls_data);
-                _send_in_progress = ReactiveTCPConnection::startSend(this, _send_tls_data.data(), _send_tls_data.size());
+                _send_in_progress = ReactiveTCPConnection::startWriteStream(this, _send_tls_data.data(), _send_tls_data.size());
             }
             if (!_send_in_progress) {
                 callFrontHandlerAndRemove(SYS_ERROR);
@@ -418,7 +417,6 @@ void ts::ReactiveTLSConnection::processQueuedOperations()
                     assert(ret_size <= req->send_size);
                     req->send_data = reinterpret_cast<const uint8_t*>(req->send_data) + ret_size;
                     req->send_size -= ret_size;
-                    _send_position += ret_size;
                     // If all data are sent, complete the request.
                     if (req->send_size == 0) {
                         callFrontHandlerAndRemove(SYS_SUCCESS);
@@ -464,7 +462,7 @@ void ts::ReactiveTLSConnection::processQueuedOperations()
 // Called when a receive operation completes.
 //----------------------------------------------------------------------------
 
-void ts::ReactiveTLSConnection::handleTCPReceive(ReactiveTCPConnection& sock, const ByteBlock& data, ReactiveInputControl& control, int error_code, const ObjectPtr& user_data)
+void ts::ReactiveTLSConnection::handleReadStream(ReactiveStream& stream, const ByteBlock& data, ReactiveInputControl& control, int error_code, const ObjectPtr& user_data)
 {
     if (!SysSuccess(error_code)) {
         // Report receive errors to application.

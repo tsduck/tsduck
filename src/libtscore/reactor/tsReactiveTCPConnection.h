@@ -12,10 +12,9 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsReactiveDevice.h"
+#include "tsReactiveStream.h"
 #include "tsSubscriptionBase.h"
 #include "tsReactiveTCPConnectionHandlerInterface.h"
-#include "tsReactiveInputControl.h"
 #include "tsTCPConnection.h"
 
 namespace ts {
@@ -34,7 +33,7 @@ namespace ts {
     //! Socket element, except the handleSocketCloseComplete() event which occurs at the end of the asynchronous completion
     //! of the reactive socket.
     //!
-    class TSCOREDLL ReactiveTCPConnection: public ReactiveDevice, public SubscriptionBase, private SocketHandlerInterface
+    class TSCOREDLL ReactiveTCPConnection: public ReactiveStream, public SubscriptionBase, private SocketHandlerInterface
     {
         TS_NOBUILD_NOCOPY(ReactiveTCPConnection);
     public:
@@ -85,55 +84,18 @@ namespace ts {
         virtual void whenAccepted(ReactiveTCPConnectionHandlerInterface* handler, const ObjectPtr& user_data = ObjectPtr());
 
         //!
-        //! Start the operation of sending data over the TCP connection.
-        //! @param [in] handler Handler class to call when the send operation completes. The method handleTCPSend()
-        //! will be called. If nullptr, no handler is called.
-        //! @param [in] data Address of the data to send. The corresponding memory area must remain valid until the
-        //! completion or cancelation of the send operation.
-        //! @param [in] size Size in bytes of the data to send.
-        //! @param [in] user_data A shared pointer which will be passed unmodified to @a handler.
-        //! @return True on success, false on error. Success means that the I/O was successfully started.
-        //! The final status of the I/O will be transmitted in the @a handler.
-        //!
-        virtual bool startSend(ReactiveTCPConnectionHandlerInterface* handler, const void* data, size_t size, const ObjectPtr& user_data = ObjectPtr());
-
-        //!
         //! Start closing the send direction of the socket.
         //!
         //! The peer will receive an end-of-file condition. All pending send operations are guaranteed to
         //! complete before that end-of-file is sent.
         //!
-        //! @param [in] handler Handler class to call when the close-writer operation completes. The method handleTCPSend()
+        //! @param [in] handler Handler class to call when the close-writer operation completes. The method handleWriteStream()
         //! will be called with its parameter @a error_code containing SYS_EOF. If nullptr, no handler is called.
         //! @param [in] silent If true, do not report errors through the logger.
         //! @param [in] user_data A shared pointer which will be passed unmodified to @a handler.
         //! @return True on success, false on error.
         //!
-        virtual bool startCloseWriter(ReactiveTCPConnectionHandlerInterface* handler, bool silent = false, const ObjectPtr& user_data = ObjectPtr());
-
-        //!
-        //! Default buffer size for receive operations.
-        //! @see startReceive()
-        //!
-        static constexpr size_t DEFAULT_RECEIVE_BUFFER_SIZE = 4096;
-
-        //!
-        //! Start the operation of receiving messages from the socket.
-        //! @param [in] handler Handler class to call each time data are received. The method handleTCPReceive() will be called
-        //! for each new message. Cannot be null. If a previous receive handler was registered, it is replaced.
-        //! @param [in] buffer_size Size of input buffers to receive data.
-        //! @param [in] user_data A shared pointer which will be passed unmodified to @a handler.
-        //! @return True on success, false on error. Success means that the I/O was successfully started.
-        //! The final status of the I/O will be transmitted in the @a handler.
-        //!
-        virtual bool startReceive(ReactiveTCPConnectionHandlerInterface* handler, size_t buffer_size = DEFAULT_RECEIVE_BUFFER_SIZE, const ObjectPtr& user_data = ObjectPtr());
-
-        //!
-        //! Cancel any pending send or receive operation on this socket.
-        //! If a repeated reception operation is in progress, the repetition is canceled as well.
-        //! @param [in] silent If true, do not report errors through the logger.
-        //!
-        virtual void cancelSendReceive(bool silent = false);
+        virtual bool startCloseWriter(ReactiveStreamHandlerInterface* handler, bool silent = false, const ObjectPtr& user_data = ObjectPtr());
 
         //!
         //! Start closing the socket.
@@ -157,22 +119,13 @@ namespace ts {
         virtual bool startClose(ReactiveTCPConnectionHandlerInterface* handler, bool silent = false, const ObjectPtr& user_data = ObjectPtr());
 
     protected:
-        //! Internal shorter name for handler interface.
+        //! Shorter name for handler type.
         using HandlerType = ReactiveTCPConnectionHandlerInterface;
 
-        //!
-        //! Invoke the receive handler as many times as possible on a data buffer.
-        //! @param [in,out] data Data buffer containing the received data. On output, data which are processed by the handler are removed.
-        //! @param [in,out] control Input control. On input, this is the previously returned value from the handler. Modified by the handler.
-        //! @param [in] handler Application handler.
-        //! @param [in] error_code Receive error code. If not success, the handler is called exactly once.
-        //! @param [in] user_data User data for the handler.
-        //!
-        void processReceiveBuffer(ByteBlock& data, ReactiveInputControl& control, HandlerType* handler, int error_code, const ObjectPtr& user_data);
-
         // Inherited methods (implementation of protected interface).
+        virtual int processCloseWriteStream(bool silent) override;
+        virtual bool tryCompletedIO(const std::shared_ptr<IOSB>& iosb) override;
         virtual void processQueuedOperations() override;
-        virtual void handleReadReady(Reactor&, EventId, int) override;
         virtual void handleWriteReady(Reactor&, EventId, int) override;
         virtual void handleAsynchronousIO(Reactor&, EventId, IOSB&, size_t) override;
 
@@ -185,40 +138,8 @@ namespace ts {
             ConnectRequest() = default;
             virtual ~ConnectRequest() override;
         public:
-            HandlerType*    handler = nullptr;
+            HandlerType* handler = nullptr;
             IPSocketAddress server {};
-        };
-
-        // Description of a send request.
-        class TSCOREDLL SendRequest: public Object
-        {
-            TS_NOCOPY(SendRequest);
-        public:
-            SendRequest() = default;
-            virtual ~SendRequest() override;
-        public:
-            HandlerType* handler = nullptr;
-            const void*  data = nullptr;
-            size_t       size = 0;
-            size_t       total_size = 0;  // Total sent size so far in the connection.
-            bool         eof = false;     // Send an end-of-file condition, ie. close the write direction.
-            bool         silent = false;  // Used with closeWrite().
-        };
-
-        // Description of a receive request.
-        class TSCOREDLL ReceiveRequest: public Object
-        {
-            TS_NOCOPY(ReceiveRequest);
-        public:
-            ReceiveRequest() = default;
-            virtual ~ReceiveRequest() override;
-        public:
-            HandlerType* handler = nullptr;
-            ByteBlock    data {};
-            bool         new_data = false;  // Some new data were received since last time we examined the buffer.
-            size_t       next_read = 0;     // Previously read in data but not yet consumed by application.
-            size_t       buffer_size = DEFAULT_RECEIVE_BUFFER_SIZE;
-            ReactiveInputControl control {};
         };
 
         // Description of a close request.
@@ -230,26 +151,19 @@ namespace ts {
             virtual ~CloseRequest() override;
         public:
             HandlerType* handler = nullptr;
-            bool         silent = false;
+            bool silent = false;
         };
 
         // ReactiveTCPConnection private fields.
         TCPConnection&        _socket;
-        size_t                _sent_bytes = 0;           // Number of completed sent bytes.
-        IOQueue               _pending_send {};          // Queue of pending send operations, waiting for write-ready or send completion.
-        IOQueue               _completed_io {};          // Queue of completed I/O operations, to be notified to application.
-        std::shared_ptr<IOSB> _pending_connect {};       // Only one pending connect operation at a time (non-blocking and asynchronous I/O).
-        std::shared_ptr<IOSB> _pending_receive {};       // Only one pending receive operation at a time (asynchronous I/O only).
-        std::shared_ptr<IOSB> _pending_close {};         // Close request, waiting for asynchronous I/O to complete.
-        HandlerType*          _accept_handler = nullptr; // Called when accepted as a client session in a server.
-        ObjectPtr             _accept_user_data {};      // Used in _accept_handler.
+        std::shared_ptr<IOSB> _pending_connect {};   // Only one pending connect operation at a time (non-blocking and asynchronous I/O).
+        std::shared_ptr<IOSB> _pending_close {};     // Close request, waiting for asynchronous I/O to complete.
+        ReactiveTCPConnectionHandlerInterface* _accept_handler = nullptr; // Called when accepted as a client session in a server.
+        ObjectPtr             _accept_user_data {};  // Used in _accept_handler.
 
         // Declare that the socket has just become connected as a TCP client session in a server. Must be called in reactor context.
         friend class ReactiveTCPServer;
         void declareConnected(ReactiveTCPServer& server, int error_code);
-
-        // Process receive buffer. Must be called in the context of a Reactor handler, when no asynchronous I/O is in progress.
-        void processReceiveBuffer();
 
         // Capture all events from the underlying Socket, except handleSocketCloseComplete().
         virtual void handleSocketOpenStart(Socket& sock) override;

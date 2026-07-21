@@ -501,14 +501,29 @@ bool ts::BinaryFile::close(bool silent)
 
 
 //----------------------------------------------------------------------------
-// Implementation of StreamInterface (read).
+// Implementation of StreamInterface (control).
 //----------------------------------------------------------------------------
+
+bool ts::BinaryFile::isReadStream()
+{
+    return _is_open && (_flags & READ) != 0;
+}
+
+bool ts::BinaryFile::isWriteStream()
+{
+    return _is_open && (_flags & WRITE) != 0;
+}
 
 bool ts::BinaryFile::endOfStream()
 {
     // Return an end-of-file at end of the last iteration.
     return _at_eof && _repeat_input != 0 && _input_counter >= _repeat_input;
 }
+
+
+//----------------------------------------------------------------------------
+// Implementation of StreamInterface (read).
+//----------------------------------------------------------------------------
 
 bool ts::BinaryFile::readStream(void* buffer, size_t size, const AbortInterface* abort)
 {

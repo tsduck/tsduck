@@ -51,7 +51,7 @@ bool ts::ReactiveTLVConnection::startSendMessage(const tlv::Message& msg)
     // Start the I/O. The buffer pointer is used as user-data to make sure that the shared pointer is
     // saved as long as the I/O is in progress. Thus, we guarantee that 1) the buffer remains valid
     // during the I/O and 2) it is automatically freed as the end of the I/O.
-    return _socket.startSend(nullptr, buf->buffer->data(), buf->buffer->size(), buf);
+    return _socket.startWriteStream(nullptr, buf->buffer->data(), buf->buffer->size(), buf);
 }
 
 
@@ -68,7 +68,7 @@ bool ts::ReactiveTLVConnection::startReceive(ReactiveTLVConnectionHandlerInterfa
     }
     else {
         _receive_handler = handler;
-        return _socket.startReceive(this, buffer_size);
+        return _socket.startReadStream(this, buffer_size);
     }
 }
 
@@ -77,7 +77,7 @@ bool ts::ReactiveTLVConnection::startReceive(ReactiveTLVConnectionHandlerInterfa
 // Invoked when binary data is received from the TCP connection.
 //----------------------------------------------------------------------------
 
-void ts::ReactiveTLVConnection::handleTCPReceive(ReactiveTCPConnection& sock, const ByteBlock& data, ReactiveInputControl& control, int error_code, const ObjectPtr& user_data)
+void ts::ReactiveTLVConnection::handleReadStream(ReactiveStream& stream, const ByteBlock& data, ReactiveInputControl& control, int error_code, const ObjectPtr& user_data)
 {
     // Ignore all inputs if no handler is defined.
     if (_receive_handler == nullptr) {

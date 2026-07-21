@@ -632,14 +632,13 @@ namespace {
         ts::ReactiveTCPConnection _rclient {_reactor, _client};
         ts::EventId               _timer_id {};
         uint32_t                  _request = 0;
-        size_t                    _expected_send_position = 0;
 
         static size_t _id_counter;
 
         virtual void handleTimer(ts::Reactor& reactor, ts::EventId id) override;
         virtual void handleTCPConnected(ts::ReactiveTCPConnection& sock, int error_code, const ts::ObjectPtr& user_data) override;
-        virtual void handleTCPSend(ts::ReactiveTCPConnection& sock, size_t position, int error_code, const ts::ObjectPtr& user_data) override;
-        virtual void handleTCPReceive(ts::ReactiveTCPConnection& sock, const ts::ByteBlock& data, ts::ReactiveInputControl& control, int error_code, const ts::ObjectPtr& user_data) override;
+        virtual void handleWriteStream(ts::ReactiveStream& stream, int error_code, const ts::ObjectPtr& user_data) override;
+        virtual void handleReadStream(ts::ReactiveStream& stream, const ts::ByteBlock& data, ts::ReactiveInputControl& control, int error_code, const ts::ObjectPtr& user_data) override;
         virtual void handleTCPClosed(ts::ReactiveTCPConnection& sock, const ts::ObjectPtr& user_data) override;
     };
 
@@ -676,9 +675,8 @@ namespace {
             // Next times: send a request.
             _request++;
             tsunit::Test::debug() << "TestClient::handleTimer, client id: " << _client_id << ", start send request " << _request << std::endl;
-            TSUNIT_ASSERT(_rclient.startSend(this, &_request, sizeof(_request)));
+            TSUNIT_ASSERT(_rclient.startWriteStream(this, &_request, sizeof(_request)));
             send_count++;
-            _expected_send_position += sizeof(_request);
         }
     }
 
@@ -687,7 +685,7 @@ namespace {
         tsunit::Test::debug() << "TestClient::handleTCPConnected, client id: " << _client_id << ", error code: " << error_code << std::endl;
         TSUNIT_ASSERT(&sock == &_rclient);
         TSUNIT_EQUAL(ts::SYS_SUCCESS, error_code);
-        TSUNIT_ASSERT(_rclient.startReceive(this));
+        TSUNIT_ASSERT(_rclient.startReadStream(this));
         handle_connected_count++;
 
         // Send request after next timer.
@@ -695,17 +693,16 @@ namespace {
         TSUNIT_ASSERT(_timer_id.isValid());
     }
 
-    void TestClient::handleTCPSend(ts::ReactiveTCPConnection& sock, size_t position, int error_code, const ts::ObjectPtr& user_data)
+    void TestClient::handleWriteStream(ts::ReactiveStream& stream, int error_code, const ts::ObjectPtr& user_data)
     {
-        tsunit::Test::debug() << "TestClient::handleTCPSend, client id: " << _client_id << ", position: " << position << ", error code: " << error_code << std::endl;
-        TSUNIT_ASSERT(&sock == &_rclient);
-        TSUNIT_EQUAL(_expected_send_position, position);
+        tsunit::Test::debug() << "TestClient::handleTCPSend, client id: " << _client_id << ", error code: " << error_code << std::endl;
+        TSUNIT_ASSERT(&stream == &_rclient);
     }
 
-    void TestClient::handleTCPReceive(ts::ReactiveTCPConnection& sock, const ts::ByteBlock& data, ts::ReactiveInputControl& control, int error_code, const ts::ObjectPtr& user_data)
+    void TestClient::handleReadStream(ts::ReactiveStream& stream, const ts::ByteBlock& data, ts::ReactiveInputControl& control, int error_code, const ts::ObjectPtr& user_data)
     {
         tsunit::Test::debug() << "TestClient::handleTCPReceive, client id: " << _client_id << ", error code: " << error_code << ", size: " << data.size() << std::endl;
-        TSUNIT_ASSERT(&sock == &_rclient);
+        TSUNIT_ASSERT(&stream == &_rclient);
         TSUNIT_EQUAL(ts::SYS_SUCCESS, error_code);
 
         // Need at least 4 bytes.
@@ -764,14 +761,13 @@ namespace {
         ts::TCPConnection         _client {&_reactor.report()};
         ts::ReactiveTCPConnection _rclient {_reactor, _client};
         uint32_t                  _response = 0;
-        size_t                    _expected_send_position = 0;
 
         static size_t _id_counter;
 
         virtual ts::ReactiveTCPConnection& getConnection() override;
         virtual void handleTCPAccepted(ts::ReactiveTCPServer& server, ts::ReactiveTCPConnection& sock, int error_code, const ts::ObjectPtr& user_data) override;
-        virtual void handleTCPSend(ts::ReactiveTCPConnection& sock, size_t position, int error_code, const ts::ObjectPtr& user_data) override;
-        virtual void handleTCPReceive(ts::ReactiveTCPConnection& sock, const ts::ByteBlock& data, ts::ReactiveInputControl& control, int error_code, const ts::ObjectPtr& user_data) override;
+        virtual void handleWriteStream(ts::ReactiveStream& stream, int error_code, const ts::ObjectPtr& user_data) override;
+        virtual void handleReadStream(ts::ReactiveStream& stream, const ts::ByteBlock& data, ts::ReactiveInputControl& control, int error_code, const ts::ObjectPtr& user_data) override;
         virtual void handleTCPClosed(ts::ReactiveTCPConnection& sock, const ts::ObjectPtr& user_data) override;
     };
 
@@ -804,20 +800,19 @@ namespace {
         TSUNIT_ASSERT(&sock == &_rclient);
         handle_accepted_count++;
         if (error_code == ts::SYS_SUCCESS) {
-            TSUNIT_ASSERT(_rclient.startReceive(this));
+            TSUNIT_ASSERT(_rclient.startReadStream(this));
         }
     }
 
-    void TestServerConnection::handleTCPSend(ts::ReactiveTCPConnection& sock, size_t position, int error_code, const ts::ObjectPtr& user_data)
+    void TestServerConnection::handleWriteStream(ts::ReactiveStream& stream, int error_code, const ts::ObjectPtr& user_data)
     {
-        tsunit::Test::debug() << "TestServerConnection::handleTCPSend, client id: " << _client_id << ", position: " << position << ", error code: " << error_code << std::endl;
-        TSUNIT_ASSERT(&sock == &_rclient);
-        TSUNIT_EQUAL(_expected_send_position, position);
+        tsunit::Test::debug() << "TestServerConnection::handleTCPSend, client id: " << _client_id << ", error code: " << error_code << std::endl;
+        TSUNIT_ASSERT(&stream == &_rclient);
     }
 
-    void TestServerConnection::handleTCPReceive(ts::ReactiveTCPConnection& sock, const ts::ByteBlock& data, ts::ReactiveInputControl& control, int error_code, const ts::ObjectPtr& user_data)
+    void TestServerConnection::handleReadStream(ts::ReactiveStream& stream, const ts::ByteBlock& data, ts::ReactiveInputControl& control, int error_code, const ts::ObjectPtr& user_data)
     {
-        TSUNIT_ASSERT(&sock == &_rclient);
+        TSUNIT_ASSERT(&stream == &_rclient);
         if (error_code == ts::SYS_EOF) {
             // Client disconnected.
             tsunit::Test::debug() << "TestServerConnection::handleTCPReceive, client id: " << _client_id << ", end of session" << std::endl;
@@ -836,8 +831,7 @@ namespace {
                 tsunit::Test::debug() << "TestServerConnection::handleTCPReceive, client id: " << _client_id << ", request: " << request << std::endl;
                 control.used_size = sizeof(uint32_t);
                 _response = request + 1;
-                TSUNIT_ASSERT(_rclient.startSend(this, &_response, sizeof(_response)));
-                _expected_send_position += sizeof(_response);
+                TSUNIT_ASSERT(_rclient.startWriteStream(this, &_response, sizeof(_response)));
             }
         }
     }

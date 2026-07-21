@@ -73,9 +73,18 @@ ts::SysSocketType ts::ForkPipe::getSocket() const
 
 
 //----------------------------------------------------------------------------
-// Check end-of-file on input.
 // Implementation of StreamInterface
 //----------------------------------------------------------------------------
+
+bool ts::ForkPipe::isReadStream()
+{
+    return _is_open && _out_pipe;
+}
+
+bool ts::ForkPipe::isWriteStream()
+{
+    return _is_open && _in_pipe;
+}
 
 bool ts::ForkPipe::endOfStream()
 {

@@ -90,9 +90,9 @@ namespace ts {
     //! typically start other background tasks (timers, I/O) and register other handlers to be called when
     //! these tasks complete.
     //!
-    //! Timers and user-defined events (which can be triggered from other tasks) are directly handled by
-    //! the class Reactor. Other types of features such as message queues and input/output are handled in
-    //! "reactive classes" which execute on top of the Reactor.
+    //! Timers, process termination, and user-defined events (which can be triggered from other tasks) are
+    //! directly handled by the class Reactor. Other types of features such as message queues, worker threads,
+    //! and input/output are handled in "reactive classes" which execute on top of the Reactor.
     //!
     //! I/O multiplexing
     //! ----------------

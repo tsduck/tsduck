@@ -108,16 +108,16 @@ namespace ts {
         using SendUserDataPtr = std::shared_ptr<SendUserData>;
 
         // ReactiveTextConnection private fields.
-        ReactiveTCPConnection&                    _socket;
+        ReactiveTCPConnection&                  _socket;
         ReactiveTextConnectionHandlerInterface* _receive_handler = nullptr;
-        SendUserDataPtr                           _unflushed_data {};
+        SendUserDataPtr                         _unflushed_data {};
 
         // Get and send a formatted buffer.
         SendUserDataPtr getBuffer(bool flush);
         bool startSendData(SendUserDataPtr& buf, bool eol, bool flush);
 
         // Inherited methods.
-        virtual void handleTCPReceive(ReactiveTCPConnection& sock, const ByteBlock& data, ReactiveInputControl& control, int error_code, const ObjectPtr& user_data) override;
+        virtual void handleReadStream(ReactiveStream& stream, const ByteBlock& data, ReactiveInputControl& control, int error_code, const ObjectPtr& user_data) override;
         virtual void handleSocketConnected(TCPConnection& sock) override;
         virtual void handleSocketDisconnected(TCPConnection& sock, bool silent) override;
     };

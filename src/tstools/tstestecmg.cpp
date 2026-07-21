@@ -437,7 +437,7 @@ namespace ts {
         virtual void handleTimer(Reactor& reactor, EventId id) override;
         virtual void handleTCPConnected(ReactiveTCPConnection& sock, int error_code, const ObjectPtr& user_data) override;
         virtual void handleReceivedMessage(ReactiveTLVConnection& sock, const tlv::MessagePtr& msg, int error_code) override;
-        virtual void handleTCPSend(ReactiveTCPConnection& sock, size_t position, int error_code, const ObjectPtr& user_data) override;
+        virtual void handleWriteStream(ReactiveStream& stream, int error_code, const ObjectPtr& user_data) override;
         virtual void handleTCPClosed(ReactiveTCPConnection& sock, const ObjectPtr& user_data) override;
     };
 }
@@ -648,7 +648,7 @@ void ts::TestECMGChannel::sendChannelClose()
 // Call after sending data (used only with startCloseWriter).
 //----------------------------------------------------------------------------
 
-void ts::TestECMGChannel::handleTCPSend(ReactiveTCPConnection& sock, size_t position, int error_code, const ObjectPtr& user_data)
+void ts::TestECMGChannel::handleWriteStream(ReactiveStream& stream, int error_code, const ObjectPtr& user_data)
 {
     // This handler is only used with startCloseWriter(). Therefore, the error code must be an EOF.
     if (error_code == SYS_EOF) {
