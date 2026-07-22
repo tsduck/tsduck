@@ -7,46 +7,46 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  TCP connection using TLV messages.
+//!  Exchanging TLV messages over a stream device.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsTCPConnection.h"
+#include "tsStreamInterface.h"
+#include "tsSocketHandlerInterface.h"
 #include "tstlvProtocol.h"
 #include "tstlvMessage.h"
 #include "tstlvLogger.h"
 
 namespace ts {
     //!
-    //! TCP connection using TLV messages.
+    //! Exchanging TLV messages over a stream device.
     //! @ingroup libtscore net tlv
     //!
-    class TSCOREDLL TLVConnection: protected SocketHandlerInterface
+    class TSCOREDLL TLVStream: protected SocketHandlerInterface
     {
-        TS_NOBUILD_NOCOPY(TLVConnection);
+        TS_NOBUILD_NOCOPY(TLVStream);
     public:
         //!
         //! Constructor.
-        //! @param [in,out] logger Where to report errors and messages. An internal reference is kept.
-        //! The @a logger object must remain valid as long as this object exists.
+        //! @param [in,out] logger Where to report errors and messages. The @a logger object must remain valid as long as this object exists.
         //! @param [in] protocol The incoming messages are interpreted according to this protocol. The reference is kept in this object.
-        //! @param [in,out] socket Associated TCP socket. The @a socket object must remain valid as long as this object is valid.
+        //! @param [in,out] stream Associated stream device. The device object must remain valid as long as this object is valid.
         //! @param [in] auto_error_response When an invalid message is received, the corresponding error message is automatically
         //! sent back to the sender when @a auto_error_response is true.
         //! @param [in] max_invalid_msg When non-zero, the connection is automatically disconnected when the number of consecutive
-        //! invalid messages has reached this value.
+        //! invalid messages has reached this value. This applies only when a stream object is a subclass of TCPConnection.
         //!
-        TLVConnection(tlv::Logger& logger, const tlv::Protocol& protocol, TCPConnection& socket, bool auto_error_response = true, size_t max_invalid_msg = 0);
+        TLVStream(tlv::Logger& logger, const tlv::Protocol& protocol, StreamInterface& stream, bool auto_error_response = true, size_t max_invalid_msg = 0);
 
         //!
-        //! Get a reference to the associated socket.
-        //! @return A reference to the associated socket.
+        //! Get a reference to the associated stream device.
+        //! @return A reference to the associated stream device.
         //!
-        TCPConnection& socket() { return _socket; }
+        StreamInterface& stream() { return _stream; }
 
         //!
-        //! Serialize and sendMessage a TLV message.
+        //! Serialize and send a TLV message.
         //! @param [in] msg The message to send.
         //! @return True on success, false on error.
         //!
@@ -79,6 +79,7 @@ namespace ts {
 
         //!
         //! Get invalid message threshold.
+        //! This applies only when a stream object is a subclass of TCPConnection.
         //! @return When non-zero, the connection is automatically disconnected
         //! when the number of consecutive invalid messages has reached this value.
         //!
@@ -86,6 +87,7 @@ namespace ts {
 
         //!
         //! Set invalid message threshold.
+        //! This applies only when a stream object is a subclass of TCPConnection.
         //! @param [in] n When non-zero, the connection is automatically disconnected
         //! when the number of consecutive invalid messages has reached this value.
         //!
@@ -98,11 +100,14 @@ namespace ts {
     private:
         tlv::Logger&         _logger;
         const tlv::Protocol& _protocol;
-        TCPConnection&       _socket;
+        StreamInterface&     _stream;
+        TCPConnection*       _socket = nullptr;
         bool                 _auto_error_response = false;
         size_t               _max_invalid_msg = 0;
         size_t               _invalid_msg_count = 0;
         std::mutex           _send_mutex {};     // mutex are used to enforce all bytes of the same message to be
         std::mutex           _receive_mutex {};  // contiguously read/written when several threads access the connection
+
+        // Log a
     };
 }

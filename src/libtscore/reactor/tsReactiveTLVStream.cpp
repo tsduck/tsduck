@@ -6,29 +6,27 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsReactiveTLVConnection.h"
+#include "tsReactiveTLVStream.h"
 #include "tstlvProtocol.h"
 #include "tstlvMessageFactory.h"
+#include "tsTCPConnection.h"
 
 
 //----------------------------------------------------------------------------
 // Constructors and destructor.
 //----------------------------------------------------------------------------
 
-ts::ReactiveTLVConnection::ReactiveTLVConnection(tlv::Logger& logger, const tlv::Protocol& protocol, ReactiveTCPConnection& socket, bool auto_error_response, size_t max_invalid_msg) :
+ts::ReactiveTLVStream::ReactiveTLVStream(tlv::Logger& logger, const tlv::Protocol& protocol, ReactiveStream& stream, bool auto_error_response, size_t max_invalid_msg) :
     _logger(logger),
     _protocol(protocol),
-    _socket(socket),
+    _stream(stream),
+    _socket(dynamic_cast<TCPConnection*>(&_stream.stream())),
     _auto_error_response(auto_error_response),
     _max_invalid_msg(max_invalid_msg)
 {
 }
 
-ts::ReactiveTLVConnection::~ReactiveTLVConnection()
-{
-}
-
-ts::ReactiveTLVConnection::SendUserData::~SendUserData()
+ts::ReactiveTLVStream::SendUserData::~SendUserData()
 {
 }
 
@@ -37,9 +35,14 @@ ts::ReactiveTLVConnection::SendUserData::~SendUserData()
 // Start the operation of sending a message over the TCP connection.
 //----------------------------------------------------------------------------
 
-bool ts::ReactiveTLVConnection::startSendMessage(const tlv::Message& msg)
+bool ts::ReactiveTLVStream::startSendMessage(const tlv::Message& msg)
 {
-    _logger.log(msg, u"sending message to " + _socket.socket().peerName());
+    if (_socket != nullptr) {
+        _logger.log(msg, u"sending message to " + _socket->peerName());
+    }
+    else {
+        _logger.log(msg, u"sending message");
+    }
 
     // Allocate a buffer into which we serialize the message. We need a ByteBlockPtr to serialize the message.
     // We need to encapsulate it into a subclass of Object to use it as user-data for asynchronous I/O.
@@ -51,7 +54,7 @@ bool ts::ReactiveTLVConnection::startSendMessage(const tlv::Message& msg)
     // Start the I/O. The buffer pointer is used as user-data to make sure that the shared pointer is
     // saved as long as the I/O is in progress. Thus, we guarantee that 1) the buffer remains valid
     // during the I/O and 2) it is automatically freed as the end of the I/O.
-    return _socket.startWriteStream(nullptr, buf->buffer->data(), buf->buffer->size(), buf);
+    return _stream.startWriteStream(nullptr, buf->buffer->data(), buf->buffer->size(), buf);
 }
 
 
@@ -59,16 +62,16 @@ bool ts::ReactiveTLVConnection::startSendMessage(const tlv::Message& msg)
 // Start the operation of receiving messages from the socket.
 //----------------------------------------------------------------------------
 
-bool ts::ReactiveTLVConnection::startReceive(ReactiveTLVConnectionHandlerInterface* handler, size_t buffer_size)
+bool ts::ReactiveTLVStream::startReceive(ReactiveTLVStreamHandlerInterface* handler, size_t buffer_size)
 {
     // The handler cannot be null because there is no other way to get received data.
     if (handler == nullptr) {
-        _logger.report().error(u"internal error: null handler in ReactiveTLVConnection::startReceive");
+        _logger.report().error(u"internal error: null handler in ReactiveTLVStream::startReceive");
         return false;
     }
     else {
         _receive_handler = handler;
-        return _socket.startReadStream(this, buffer_size);
+        return _stream.startReadStream(this, buffer_size);
     }
 }
 
@@ -77,7 +80,7 @@ bool ts::ReactiveTLVConnection::startReceive(ReactiveTLVConnectionHandlerInterfa
 // Invoked when binary data is received from the TCP connection.
 //----------------------------------------------------------------------------
 
-void ts::ReactiveTLVConnection::handleReadStream(ReactiveStream& stream, const ByteBlock& data, ReactiveInputControl& control, int error_code, const ObjectPtr& user_data)
+void ts::ReactiveTLVStream::handleReadStream(ReactiveStream& stream, const ByteBlock& data, ReactiveInputControl& control, int error_code, const ObjectPtr& user_data)
 {
     // Ignore all inputs if no handler is defined.
     if (_receive_handler == nullptr) {
@@ -120,7 +123,12 @@ void ts::ReactiveTLVConnection::handleReadStream(ReactiveStream& stream, const B
             _invalid_msg_count = 0;
 
             // Log the message, usually for debug or trace purpose.
-            _logger.log(*msg, u"received message from " + _socket.socket().peerName());
+            if (_socket != nullptr) {
+                _logger.log(*msg, u"received message from " + _socket->peerName());
+            }
+            else {
+                _logger.log(*msg, u"received message");
+            }
 
             // Call the application.
             _receive_handler->handleReceivedMessage(*this, msg, error_code);
@@ -140,6 +148,13 @@ void ts::ReactiveTLVConnection::handleReadStream(ReactiveStream& stream, const B
 
     // If invalid message max has been reached, break the connection.
     if (_max_invalid_msg > 0 && _invalid_msg_count >= _max_invalid_msg) {
+        if (_socket != nullptr) {
+            _logger.report().error(u"too many invalid messages from %s, disconnecting", _socket->peerName());
+            _socket->disconnect();
+        }
+        else {
+            _logger.report().error(u"too many invalid messages, aborting");
+        }
         // In practice, we report and end-of-session to allow the application to trigger and handle an asynchronous disconnection.
         _receive_handler->handleReceivedMessage(*this, nullptr, SYS_EOF);
     }

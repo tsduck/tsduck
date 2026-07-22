@@ -44,11 +44,6 @@ namespace ts {
         ReactiveStream(Reactor& reactor, NonBlockingDevice& device, StreamInterface& stream);
 
         //!
-        //! Destructor.
-        //!
-        virtual ~ReactiveStream() override;
-
-        //!
         //! Get a reference to the associated stream.
         //! Typically, device() and stream() return two views of the same object.
         //! @return A reference to the associated stream.

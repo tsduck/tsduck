@@ -393,7 +393,7 @@ bool ts::EMMGClient::dataProvision(const std::vector<ByteBlockPtr>& data)
     }
     else {
         // Send data_provision messages using TCP.
-        // The data_provision message is automatically serialized by the TLVConnection object.
+        // The data_provision message is automatically serialized by the TLVStream object.
         return _tlv_client.sendMessage(request);
     }
 }

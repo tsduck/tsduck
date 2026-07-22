@@ -20,10 +20,6 @@ ts::ReactiveStream::ReactiveStream(Reactor& reactor, NonBlockingDevice& device, 
 {
 }
 
-ts::ReactiveStream::~ReactiveStream()
-{
-}
-
 ts::ReactiveStream::SendRequest::~SendRequest()
 {
 }

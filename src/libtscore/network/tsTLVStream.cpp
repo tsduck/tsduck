@@ -6,7 +6,8 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsTLVConnection.h"
+#include "tsTLVStream.h"
+#include "tsTCPConnection.h"
 #include "tstlvMessageFactory.h"
 
 
@@ -14,15 +15,18 @@
 // Constructors and destructor.
 //----------------------------------------------------------------------------
 
-ts::TLVConnection::TLVConnection(tlv::Logger& logger, const tlv::Protocol& protocol, TCPConnection& socket, bool auto_error_response, size_t max_invalid_msg) :
+ts::TLVStream::TLVStream(tlv::Logger& logger, const tlv::Protocol& protocol, StreamInterface& stream, bool auto_error_response, size_t max_invalid_msg) :
     _logger(logger),
     _protocol(protocol),
-    _socket(socket),
+    _stream(stream),
+    _socket(dynamic_cast<TCPConnection*>(&_stream)),
     _auto_error_response(auto_error_response),
     _max_invalid_msg(max_invalid_msg)
 {
-    // Subscribe to notifications of the associated socket.
-    _socket.addSubscription(this);
+    // Get notified of connection and disconnection if the device is a socket.
+    if (_socket != nullptr) {
+        _socket->addSubscription(this);
+    }
 }
 
 
@@ -30,7 +34,7 @@ ts::TLVConnection::TLVConnection(tlv::Logger& logger, const tlv::Protocol& proto
 // Socket handler interface. Invoked when connection is established.
 //----------------------------------------------------------------------------
 
-void ts::TLVConnection::handleSocketConnected(TCPConnection& sock)
+void ts::TLVStream::handleSocketConnected(TCPConnection& sock)
 {
     _invalid_msg_count = 0;
 }
@@ -40,16 +44,21 @@ void ts::TLVConnection::handleSocketConnected(TCPConnection& sock)
 // Serialize and send a TLV message.
 //----------------------------------------------------------------------------
 
-bool ts::TLVConnection::sendMessage(const tlv::Message& msg)
+bool ts::TLVStream::sendMessage(const tlv::Message& msg)
 {
-    _logger.log(msg, u"sending message to " + _socket.peerName());
+    if (_socket != nullptr) {
+        _logger.log(msg, u"sending message to " + _socket->peerName());
+    }
+    else {
+        _logger.log(msg, u"sending message");
+    }
 
     ByteBlockPtr bbp = std::make_shared<ByteBlock>();
     tlv::Serializer serial(bbp);
     msg.serialize(serial);
 
     std::lock_guard<std::mutex> lock(_send_mutex);
-    return _socket.writeStream(bbp->data(), bbp->size());
+    return _stream.writeStream(bbp->data(), bbp->size());
 }
 
 
@@ -57,7 +66,7 @@ bool ts::TLVConnection::sendMessage(const tlv::Message& msg)
 // Receive a TLV message (wait for the message, deserialize and validate).
 //----------------------------------------------------------------------------
 
-bool ts::TLVConnection::receiveMessage(tlv::MessagePtr& msg, const AbortInterface* abort)
+bool ts::TLVStream::receiveMessage(tlv::MessagePtr& msg, const AbortInterface* abort)
 {
     // Loop until a valid message is received
     for (;;) {
@@ -69,14 +78,14 @@ bool ts::TLVConnection::receiveMessage(tlv::MessagePtr& msg, const AbortInterfac
             std::lock_guard<std::mutex> lock(_receive_mutex);
 
             // Read message header
-            if (!_socket.readStream(bb.data(), header_size, abort)) {
+            if (!_stream.readStream(bb.data(), header_size, abort)) {
                 return false;
             }
 
             // Get message length and read message payload
             const size_t length = GetUInt16(bb.data() + _protocol.lengthOffset());
             bb.resize(header_size + length);
-            if (!_socket.readStream(bb.data() + header_size, length, abort)) {
+            if (!_stream.readStream(bb.data() + header_size, length, abort)) {
                 return false;
             }
         }
@@ -87,7 +96,13 @@ bool ts::TLVConnection::receiveMessage(tlv::MessagePtr& msg, const AbortInterfac
             _invalid_msg_count = 0;
             mf.factory(msg);
             if (msg != nullptr) {
-                _logger.log(*msg, u"received message from " + _socket.peerName());
+                // Log the message, usually for debug or trace purpose.
+                if (_socket != nullptr) {
+                    _logger.log(*msg, u"received message from " + _socket->peerName());
+                }
+                else {
+                    _logger.log(*msg, u"received message");
+                }
             }
             return true;
         }
@@ -104,10 +119,15 @@ bool ts::TLVConnection::receiveMessage(tlv::MessagePtr& msg, const AbortInterfac
             }
         }
 
-        // If invalid message max has been reached, break the connection
+        // If invalid message max has been reached, break the connection or report an error.
         if (_max_invalid_msg > 0 && _invalid_msg_count >= _max_invalid_msg) {
-            _logger.report().error(u"too many invalid messages from %s, disconnecting", _socket.peerName());
-            _socket.disconnect();
+            if (_socket != nullptr) {
+                _logger.report().error(u"too many invalid messages from %s, disconnecting", _socket->peerName());
+                _socket->disconnect();
+            }
+            else {
+                _logger.report().error(u"too many invalid messages, aborting");
+            }
             return false;
         }
     }

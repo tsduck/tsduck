@@ -15,7 +15,7 @@
 #include "tsDuckContext.h"
 #include "tsTime.h"
 #include "tsReactiveTCPConnection.h"
-#include "tsReactiveTLVConnection.h"
+#include "tsReactiveTLVStream.h"
 #include "tstlvLogger.h"
 #include "tsSingleDataStatistics.h"
 TS_MAIN(MainCode);
@@ -362,7 +362,7 @@ void ts::TestECMGGlobalData::handleTimer(Reactor& reactor, EventId id)
 //----------------------------------------------------------------------------
 
 namespace ts {
-    class TestECMGChannel: private ReactorHandlerInterface, private ReactiveTLVConnectionHandlerInterface, private ReactiveTCPConnectionHandlerInterface
+    class TestECMGChannel: private ReactorHandlerInterface, private ReactiveTLVStreamHandlerInterface, private ReactiveTCPConnectionHandlerInterface
     {
         TS_NOBUILD_NOCOPY(TestECMGChannel);
     public:
@@ -397,7 +397,7 @@ namespace ts {
         State                  _channel_state = IDLE;
         TCPConnection          _tcp_client {&_opt};
         ReactiveTCPConnection  _react_client {_reactor, _tcp_client};
-        ReactiveTLVConnection  _tlv_client {_opt.logger, _opt.ecmgscs, _react_client, true, 3};
+        ReactiveTLVStream      _tlv_client {_opt.logger, _opt.ecmgscs, _react_client, true, 3};
         UString                _peer {};
         std::vector<Stream>    _streams {};                     // vector of stream contexts, index 0 is _first_stream_id
         std::map<EventId,uint16_t> _stream_timers {};           // stream ids, index by timer id for next crypto period
@@ -436,7 +436,7 @@ namespace ts {
         // Implementation of reactive connection handler interfaces.
         virtual void handleTimer(Reactor& reactor, EventId id) override;
         virtual void handleTCPConnected(ReactiveTCPConnection& sock, int error_code, const ObjectPtr& user_data) override;
-        virtual void handleReceivedMessage(ReactiveTLVConnection& sock, const tlv::MessagePtr& msg, int error_code) override;
+        virtual void handleReceivedMessage(ReactiveTLVStream& sock, const tlv::MessagePtr& msg, int error_code) override;
         virtual void handleWriteStream(ReactiveStream& stream, int error_code, const ObjectPtr& user_data) override;
         virtual void handleTCPClosed(ReactiveTCPConnection& sock, const ObjectPtr& user_data) override;
     };
@@ -736,7 +736,7 @@ void ts::TestECMGChannel::handleTimer(Reactor& reactor, EventId id)
 // Called when a message is received from the ECMG.
 //----------------------------------------------------------------------------
 
-void ts::TestECMGChannel::handleReceivedMessage(ReactiveTLVConnection& sock, const tlv::MessagePtr& msg, int error_code)
+void ts::TestECMGChannel::handleReceivedMessage(ReactiveTLVStream& sock, const tlv::MessagePtr& msg, int error_code)
 {
     // If case of error, an error message is already reported if not an end-of-file.
     bool ok = SysSuccess(error_code);

@@ -33,10 +33,6 @@ ts::TextStream::TextStream(StreamInterface& stream, const std::string& eol, cons
     }
 }
 
-ts::TextStream::~TextStream()
-{
-}
-
 
 //----------------------------------------------------------------------------
 // Clear the flushable buffer on connect and disconnect.

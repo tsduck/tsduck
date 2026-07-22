@@ -6,6 +6,6 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsReactiveTLVConnectionHandlerInterface.h"
+#include "tsReactiveTLVStreamHandlerInterface.h"
 
-ts::ReactiveTLVConnectionHandlerInterface::~ReactiveTLVConnectionHandlerInterface() {}
+ts::ReactiveTLVStreamHandlerInterface::~ReactiveTLVStreamHandlerInterface() {}

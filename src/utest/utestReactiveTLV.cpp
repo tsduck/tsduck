@@ -6,11 +6,11 @@
 //
 //----------------------------------------------------------------------------
 //
-//  TSUnit test suite for class ts::ReactiveTLVConnection
+//  TSUnit test suite for class ts::ReactiveTLVStream
 //
 //----------------------------------------------------------------------------
 
-#include "tsReactiveTLVConnection.h"
+#include "tsReactiveTLVStream.h"
 #include "tsReactiveTCPServer.h"
 #include "tsReactiveServer.h"
 #include "tsECMGSCS.h"
@@ -39,7 +39,7 @@ namespace {
     // A client.
     //------------------------------------------------------------------------
 
-    class TestClient: private ts::ReactiveTLVConnectionHandlerInterface, private ts::ReactiveTCPConnectionHandlerInterface
+    class TestClient: private ts::ReactiveTLVStreamHandlerInterface, private ts::ReactiveTCPConnectionHandlerInterface
     {
         TS_NOBUILD_NOCOPY(TestClient);
     public:
@@ -58,10 +58,10 @@ namespace {
         std::ostream&             _debug;
         ts::TCPConnection         _tcp_client;
         ts::ReactiveTCPConnection _react_client;
-        ts::ReactiveTLVConnection _tlv_client;
+        ts::ReactiveTLVStream     _tlv_client;
 
         virtual void handleTCPConnected(ts::ReactiveTCPConnection& sock, int error_code, const ts::ObjectPtr& user_data) override;
-        virtual void handleReceivedMessage(ts::ReactiveTLVConnection& sock, const ts::tlv::MessagePtr& msg, int error_code) override;
+        virtual void handleReceivedMessage(ts::ReactiveTLVStream& sock, const ts::tlv::MessagePtr& msg, int error_code) override;
         virtual void handleWriteStream(ts::ReactiveStream& stream, int error_code, const ts::ObjectPtr& user_data) override;
         virtual void handleTCPClosed(ts::ReactiveTCPConnection& sock, const ts::ObjectPtr& user_data) override;
     };
@@ -98,7 +98,7 @@ namespace {
         send_count++;
     }
 
-    void TestClient::handleReceivedMessage(ts::ReactiveTLVConnection& sock, const ts::tlv::MessagePtr& msg, int error_code)
+    void TestClient::handleReceivedMessage(ts::ReactiveTLVStream& sock, const ts::tlv::MessagePtr& msg, int error_code)
     {
         _debug << "TLV client: received tag: " << (msg == nullptr ? -1 : int(msg->tag())) << ", error code: " << error_code << std::endl;
         TSUNIT_ASSERT(&sock == &_tlv_client);
@@ -154,7 +154,7 @@ namespace {
     // A client connection on the server side.
     //------------------------------------------------------------------------
 
-    class TestServerConnection: public ts::ReactiveServerSessionInterface, private ts::ReactiveTLVConnectionHandlerInterface, private ts::ReactiveTCPConnectionHandlerInterface
+    class TestServerConnection: public ts::ReactiveServerSessionInterface, private ts::ReactiveTLVStreamHandlerInterface, private ts::ReactiveTCPConnectionHandlerInterface
     {
         TS_NOBUILD_NOCOPY(TestServerConnection);
     public:
@@ -170,12 +170,12 @@ namespace {
         std::ostream&             _debug;
         ts::TCPConnection         _tcp_client;
         ts::ReactiveTCPConnection _react_client;
-        ts::ReactiveTLVConnection _tlv_client;
+        ts::ReactiveTLVStream     _tlv_client;
         size_t                    _msg_count = 0;
 
         virtual ts::ReactiveTCPConnection& getConnection() override;
         virtual void handleTCPAccepted(ts::ReactiveTCPServer& server, ts::ReactiveTCPConnection& sock, int error_code, const ts::ObjectPtr& user_data) override;
-        virtual void handleReceivedMessage(ts::ReactiveTLVConnection& sock, const ts::tlv::MessagePtr& msg, int error_code) override;
+        virtual void handleReceivedMessage(ts::ReactiveTLVStream& sock, const ts::tlv::MessagePtr& msg, int error_code) override;
         virtual void handleTCPClosed(ts::ReactiveTCPConnection& sock, const ts::ObjectPtr& user_data) override;
     };
 
@@ -211,7 +211,7 @@ namespace {
         }
     }
 
-    void TestServerConnection::handleReceivedMessage(ts::ReactiveTLVConnection& sock, const ts::tlv::MessagePtr& msg, int error_code)
+    void TestServerConnection::handleReceivedMessage(ts::ReactiveTLVStream& sock, const ts::tlv::MessagePtr& msg, int error_code)
     {
         TSUNIT_ASSERT(&sock == &_tlv_client);
         if (error_code == ts::SYS_EOF) {

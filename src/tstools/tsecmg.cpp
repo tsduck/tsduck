@@ -15,7 +15,7 @@
 #include "tsDuckContext.h"
 #include "tsDuckProtocol.h"
 #include "tsOneShotPacketizer.h"
-#include "tsReactiveTLVConnection.h"
+#include "tsReactiveTLVStream.h"
 #include "tsReactiveTCPServer.h"
 #include "tsReactiveServer.h"
 TS_MAIN(MainCode);
@@ -273,7 +273,7 @@ namespace ts {
     class ECMGChannel:
         public ReactiveServerSessionInterface,
         private ReactorHandlerInterface,
-        private ReactiveTLVConnectionHandlerInterface,
+        private ReactiveTLVStreamHandlerInterface,
         private ReactiveTCPConnectionHandlerInterface
     {
         TS_NOBUILD_NOCOPY(ECMGChannel);
@@ -291,7 +291,7 @@ namespace ts {
         ECMGState&              _state;
         TCPConnection           _tcp_client {&_opt};
         ReactiveTCPConnection   _react_client {_reactor, _tcp_client};
-        ReactiveTLVConnection   _tlv_client {_opt.logger, _opt.ecmgscs, _react_client, true, 3};
+        ReactiveTLVStream       _tlv_client {_opt.logger, _opt.ecmgscs, _react_client, true, 3};
         UString                 _peer {};
         std::optional<uint16_t> _channel_id {};
         std::map<uint16_t, uint16_t> _stream_ids {};  // Map of current stream id => ECM id.
@@ -318,7 +318,7 @@ namespace ts {
         // Implementation of reactive connection handler interfaces.
         virtual void handleTimer(Reactor& reactor, EventId id) override;
         virtual void handleTCPAccepted(ReactiveTCPServer& server, ReactiveTCPConnection& sock, int error_code, const ObjectPtr& user_data) override;
-        virtual void handleReceivedMessage(ReactiveTLVConnection& sock, const tlv::MessagePtr& msg, int error_code) override;
+        virtual void handleReceivedMessage(ReactiveTLVStream& sock, const tlv::MessagePtr& msg, int error_code) override;
         virtual void handleTCPClosed(ReactiveTCPConnection& sock, const ObjectPtr& user_data) override;
     };
 }
@@ -395,7 +395,7 @@ void ts::ECMGChannel::handleTCPClosed(ReactiveTCPConnection& sock, const ObjectP
 // Called when a message is received from the client.
 //----------------------------------------------------------------------------
 
-void ts::ECMGChannel::handleReceivedMessage(ReactiveTLVConnection& sock, const tlv::MessagePtr& msg, int error_code)
+void ts::ECMGChannel::handleReceivedMessage(ReactiveTLVStream& sock, const tlv::MessagePtr& msg, int error_code)
 {
     // If case of error, an error message is already reported if not an end-of-file.
     bool ok = SysSuccess(error_code);

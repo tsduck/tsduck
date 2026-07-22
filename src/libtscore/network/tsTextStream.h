@@ -50,11 +50,6 @@ namespace ts {
         explicit TextStream(StreamInterface& stream, const std::string& eol = DEFAULT_EOL, const std::string& prompt = std::string());
 
         //!
-        //! Virtual destructor
-        //!
-        virtual ~TextStream() override;
-
-        //!
         //! Default end-of-line sequence (CR-LF).
         //! The Telnet protocol defines CR-LF as end-of-line sequence.
         //!

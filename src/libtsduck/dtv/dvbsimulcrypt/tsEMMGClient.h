@@ -16,8 +16,9 @@
 
 #pragma once
 #include "tsEMMGMUX.h"
-#include "tsTLVConnection.h"
+#include "tsTLVStream.h"
 #include "tsDuckContext.h"
+#include "tsTCPConnection.h"
 #include "tsUDPSocket.h"
 #include "tsTablesPtr.h"
 #include "tsThread.h"
@@ -188,7 +189,7 @@ namespace ts {
         uint64_t                     _total_bytes = 0;
         const AbortInterface*        _abort = nullptr;
         TCPConnection                _tcp_client {&_logger};      // connection with MUX server
-        TLVConnection                _tlv_client {_logger, _protocol, _tcp_client, true, 3};
+        TLVStream                    _tlv_client {_logger, _protocol, _tcp_client, true, 3};
         UDPSocket                    _udp_socket {&_report};      // where to send data_provision if UDP is used
         emmgmux::ChannelStatus       _channel_status {_protocol}; // automatic response to channel_test
         emmgmux::StreamStatus        _stream_status {_protocol};  // automatic response to stream_test

@@ -15,7 +15,7 @@
 #include "tsSection.h"
 #include "tsPacketizer.h"
 #include "tsEMMGMUX.h"
-#include "tsTLVConnection.h"
+#include "tsTLVStream.h"
 #include "tsTCPServer.h"
 #include "tsUDPReceiver.h"
 #include "tsMessageQueue.h"
@@ -72,7 +72,7 @@ namespace ts {
             DataInjectPlugin* const _plugin;
             Report        _report {Severity::Info, UString(), _plugin};
             TCPConnection _tcp_client {_plugin};
-            TLVConnection _tlv_client {_plugin->_logger, _plugin->_protocol, _tcp_client, true, 3};
+            TLVStream     _tlv_client {_plugin->_logger, _plugin->_protocol, _tcp_client, true, 3};
         };
 
         // UDP listener thread.

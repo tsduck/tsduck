@@ -16,16 +16,16 @@
 
 namespace ts {
 
-    class ReactiveTLVConnection;
+    class ReactiveTLVStream;
 
     //!
     //! Interface class for TLV-messages connection Reactor handlers.
     //! An application shall use ReactiveTCPConnectionHandlerInterface for the non-TLV parts of the connection.
     //! @ingroup libtscore reactor
     //!
-    class TSCOREDLL ReactiveTLVConnectionHandlerInterface
+    class TSCOREDLL ReactiveTLVStreamHandlerInterface
     {
-        TS_INTERFACE(ReactiveTLVConnectionHandlerInterface);
+        TS_INTERFACE(ReactiveTLVStreamHandlerInterface);
     public:
         //!
         //! Handle the reception of one valid message.
@@ -34,6 +34,6 @@ namespace ts {
         //! @param [in] error_code System-specific error code, SYS_SUCCESS on success, SYS_EOF if the peer has disconnected,
         //! SYS_ERROR in case of unknown error.
         //!
-        virtual void handleReceivedMessage(ReactiveTLVConnection& sock, const tlv::MessagePtr& msg, int error_code) = 0;
+        virtual void handleReceivedMessage(ReactiveTLVStream& sock, const tlv::MessagePtr& msg, int error_code) = 0;
     };
 }
