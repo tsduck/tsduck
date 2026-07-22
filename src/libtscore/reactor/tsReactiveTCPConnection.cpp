@@ -304,6 +304,9 @@ void ts::ReactiveTCPConnection::handleAsynchronousIO(Reactor& reactor, EventId i
         // Let superclass handles other types of asynchronous I/O completions.
         ReactiveStream::handleAsynchronousIO(reactor, id, iosb, io_size);
     }
+
+    // Process any completed I/O.
+    processQueuedOperations();
 }
 
 
