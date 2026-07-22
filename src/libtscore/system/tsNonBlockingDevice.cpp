@@ -139,7 +139,7 @@ void ts::NonBlockingDevice::IOSB::reset()
 // Generic system write operation.
 //----------------------------------------------------------------------------
 
-int ts::NonBlockingDevice::genericSystemWrite(const void* addr, size_t size, size_t& written_size, NonBlockingDevice::IOSB* iosb)
+int ts::NonBlockingDevice::genericSystemWrite(const void* addr, size_t size, size_t& written_size, NonBlockingDevice::IOSB* iosb, uint64_t position)
 {
     written_size = 0;
     int err_code = SYS_SUCCESS;
@@ -159,6 +159,10 @@ int ts::NonBlockingDevice::genericSystemWrite(const void* addr, size_t size, siz
     if (isNonBlocking()) {
         // On Windows with asynchronous I/O, use overlapped I/O.
         assert(iosb != nullptr);
+        // The absolute position of the write must be specified in the OVERLAPPED.
+        iosb->overlap.Offset = ::DWORD(position & 0xFFFFFFFF);
+        iosb->overlap.OffsetHigh = ::DWORD(position >> 32);
+        // Start the write operation.
         if (!::WriteFile(hfd, addr, ::DWORD(size), nullptr, &iosb->overlap)) {
             err_code = TranslateError(::GetLastError());
         }
@@ -230,7 +234,7 @@ int ts::NonBlockingDevice::genericSystemWrite(const void* addr, size_t size, siz
 // Generic system read operation.
 //----------------------------------------------------------------------------
 
-int ts::NonBlockingDevice::genericSystemRead(void* addr, size_t max_size, size_t& ret_size, const AbortInterface* abort, NonBlockingDevice::IOSB* iosb)
+int ts::NonBlockingDevice::genericSystemRead(void* addr, size_t max_size, size_t& ret_size, const AbortInterface* abort, NonBlockingDevice::IOSB* iosb, uint64_t position)
 {
     ret_size = 0;
     int err_code = SYS_SUCCESS;
@@ -250,6 +254,10 @@ int ts::NonBlockingDevice::genericSystemRead(void* addr, size_t max_size, size_t
     if (isNonBlocking()) {
         // On Windows with asynchronous I/O, use overlapped I/O.
         assert(iosb != nullptr);
+        // The absolute position of the read must be specified in the OVERLAPPED.
+        iosb->overlap.Offset = ::DWORD(position & 0xFFFFFFFF);
+        iosb->overlap.OffsetHigh = ::DWORD(position >> 32);
+        // Start the read operation.
         if (!::ReadFile(hfd, addr, ::DWORD(max_size), nullptr, &iosb->overlap)) {
             err_code = TranslateError(::GetLastError());
         }

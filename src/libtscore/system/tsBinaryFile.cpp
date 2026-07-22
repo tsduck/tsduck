@@ -44,6 +44,12 @@ ts::BinaryFile::~BinaryFile()
     }
 }
 
+#if defined(TS_WINDOWS)
+ts::BinaryFile::FileAsyncBuffers::~FileAsyncBuffers()
+{
+}
+#endif
+
 
 //----------------------------------------------------------------------------
 // Check that the non-blocking mode can be set.
@@ -389,6 +395,7 @@ bool ts::BinaryFile::openInternal(bool reopen)
 #endif
 
     // Clean initial state.
+    _position = _start_offset;
     _aborted = false;
     _at_eof = false;
     _is_open = true;
@@ -449,20 +456,22 @@ bool ts::BinaryFile::seekByteInternal(uint64_t index)
         return openInternal(true);
     }
 
-    report().debug(u"seeking %s at offset %'d", _filename, _start_offset + index);
+    // Actual position in the file.
+    uint64_t where = _start_offset + index;
+    report().debug(u"seeking %s at offset %'d", _filename, where);
 
 #if defined(TS_WINDOWS)
     // In Win32, LARGE_INTEGER is a 64-bit structure, not an integer type
-    uint64_t where = _start_offset + index;
     ::LARGE_INTEGER offset(*(::LARGE_INTEGER*)(&where));
     if (::SetFilePointerEx(_hfd, offset, nullptr, FILE_BEGIN) == 0) {
 #else
-    if (::lseek(_hfd, off_t(_start_offset + index), SEEK_SET) == off_t(-1)) {
+    if (::lseek(_hfd, off_t(where), SEEK_SET) == off_t(-1)) {
 #endif
         report().error(u"error seeking file %s: %s", getDisplayFileName(), SysErrorCodeMessage());
         return false;
     }
     else {
+        _position = where;
         _at_eof = false;
         return true;
     }
@@ -481,11 +490,7 @@ bool ts::BinaryFile::close(bool silent)
     }
 
     if (!_std_inout) {
-#if defined(TS_WINDOWS)
-        ::CloseHandle(_hfd);
-#else
-        ::close(_hfd);
-#endif
+        SysCloseHandle(_hfd);
     }
 
     _is_open = false;
@@ -543,8 +548,19 @@ bool ts::BinaryFile::readStream(void* buffer, size_t request_size, size_t& read_
         return false;
     }
 
+#if defined(TS_WINDOWS)
+    // On Windows with asynchronous I/O, use overlapped I/O. Store I/O parameters in the IOSB.
+    // With asynchronous read, the file position will be updated at the completion of the read
+    // because the actually read size can be far less than the requested size.
+    std::shared_ptr<FileAsyncBuffers> async_params;
+    if (iosb != nullptr) {
+        async_params = std::make_shared<FileAsyncBuffers>(false, request_size, _position);
+        iosb->async_data = async_params;
+    }
+#endif
+
     // Try to read once. Perform the read using generic code.
-    int err_code = genericSystemRead(buffer, request_size, read_size, abort, iosb);
+    int err_code = genericSystemRead(buffer, request_size, read_size, abort, iosb, _position);
     _at_eof = _at_eof || err_code == SYS_EOF;
 
     // If we are at eof, rewind and retry.
@@ -553,8 +569,18 @@ bool ts::BinaryFile::readStream(void* buffer, size_t request_size, size_t& read_
         if (!seekByteInternal(0)) {
             return false;
         }
-        err_code = genericSystemRead(buffer, request_size, read_size, abort, iosb);
+#if defined(TS_WINDOWS)
+        if (iosb != nullptr) {
+            async_params->req_position = _position;
+        }
+#endif
+        err_code = genericSystemRead(buffer, request_size, read_size, abort, iosb, _position);
         _at_eof = _at_eof || err_code == SYS_EOF;
+    }
+
+    // Update the position if the read completed now.
+    if (iosb == nullptr || !iosb->pending) {
+        _position += read_size;
     }
     return SysSuccess(err_code);
 }
@@ -571,9 +597,77 @@ bool ts::BinaryFile::writeStream(const void* buffer, size_t data_size, IOSB* ios
 
 bool ts::BinaryFile::writeStream(const void* buffer, size_t data_size, size_t& written_size, IOSB* iosb)
 {
+    const uint64_t pos = _position;
+
+#if defined(TS_WINDOWS)
+    // On Windows with asynchronous I/O, use overlapped I/O. Store I/O parameters in the IOSB.
+    // With asynchronous write, the file position is updated now. Thus, we "reserve" the space
+    // for the write and make sure that the next write will be performed at the end of the
+    // current one. When the write completes, we check that the actual size of the operation
+    // matches the requested size. If the written size is shorter, there is a hole and this
+    // is an error.
+    if (iosb != nullptr) {
+        iosb->async_data = std::make_shared<FileAsyncBuffers>(true, data_size, _position);
+        _position += data_size;
+    }
+#endif
+
     // Perform the write using generic code.
-    const int err_code = genericSystemWrite(buffer, data_size, written_size, iosb);
+    const int err_code = genericSystemWrite(buffer, data_size, written_size, iosb, pos);
+
+    // Update the position if the write completed now.
+    if (iosb == nullptr || !iosb->pending) {
+        _position = pos + written_size;
+    }
     return SysSuccess(err_code);
+}
+
+
+//----------------------------------------------------------------------------
+// Implementation of StreamInterface (completion of asynchronous I/O).
+//----------------------------------------------------------------------------
+
+bool ts::BinaryFile::asyncCompletedStream(IOSB* iosb)
+{
+    bool success = iosb != nullptr && SysSuccess(iosb->error_code); 
+#if defined(TS_WINDOWS)
+    if (success) {
+        // Get the BinaryFile asynchronous parameters.
+        auto params = std::dynamic_pointer_cast<FileAsyncBuffers>(iosb->async_data);
+        // Translate the content of the OVERLAPPED to get the I/O size.
+        ::DWORD io_size = 0;
+        if (!::GetOverlappedResult(_hfd, &iosb->overlap, &io_size, false)) {
+            success = false;
+        }
+        else if (params == nullptr) {
+            report().error(u"asynchronous I/O not used");
+            success = false;
+        }
+        else if (params->write_op) {
+            // Completion of writeStream.
+            if (size_t(io_size) < params->req_size) {
+                // Not everything was written. There could be a hole in the file.
+                if (_position == params->req_position + params->req_size) {
+                    // No other intermediate I/O changed the position, simply adjust it.
+                    _position = params->req_position + size_t(io_size);
+                }
+                else {
+                    // Something changed the position of the stream, there is a hole.
+                    report().error(u"truncated asynchronous write (%d/%d bytes), there is a hole in the file", size_t(io_size), params->req_size);
+                    success = false;
+                }
+            }
+        }
+        else {
+            // Completed readStream. If no other intermediate I/O changed the position, simply adjust it.
+            // If something else changed the position, don't change it.
+            if (_position == params->req_position) {
+                _position += size_t(io_size);
+            }
+        }
+    }
+#endif
+    return success;
 }
 
 
@@ -588,12 +682,8 @@ void ts::BinaryFile::abort()
         _aborted = true;
         _at_eof = true;
 
-        // Close file handle, ignore errors.
-#if defined(TS_WINDOWS)
-        ::CloseHandle(_hfd);
-#else // UNIX
-        ::close(_hfd);
-#endif
+        // Close file handle, even if stdin/stdout ignore errors.
+        SysCloseHandle(_hfd);
         _hfd = SYS_HANDLE_INVALID;
     }
 }

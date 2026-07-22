@@ -163,6 +163,7 @@ namespace ts {
         virtual bool readStream(void* addr, size_t max_size, size_t& ret_size, const AbortInterface* abort = nullptr, IOSB* iosb = nullptr) override;
         virtual bool writeStream(const void* addr, size_t size, IOSB* iosb = nullptr) override;
         virtual bool writeStream(const void* addr, size_t size, size_t& written_size, IOSB* iosb = nullptr) override;
+        virtual bool asyncCompletedStream(IOSB* iosb) override;
         virtual bool isReadStream() override;
         virtual bool isWriteStream() override;
         virtual bool endOfStream() override;
@@ -184,6 +185,7 @@ namespace ts {
         bool          _regular = false;      // Is a regular file (ie. not a pipe or special device)
         bool          _std_inout = false;    // File is standard input or output.
         SysHandleType _hfd = SYS_HANDLE_INVALID;  // File handle / file descriptor.
+        uint64_t      _position = 0;         // Current position in the file. Must be maintained for asynchronous I/O on Windows.
 
         // Common code.
         bool openInternal(bool reopen);
@@ -191,6 +193,23 @@ namespace ts {
 
         // Check if seek is possible. Called during open to see if we can reach the start point.
         bool initialSeekCheck();
+
+#if defined(TS_WINDOWS)
+        // For Windows asynchronous I/O, we need to keep parameters in one single structure which lives during the I/O.
+        // This is required because Windows does not maintain the file position in case of asynchronous I/O.
+        class TSCOREDLL FileAsyncBuffers: public Object
+        {
+            TS_NOBUILD_NOCOPY(FileAsyncBuffers);
+        public:
+            bool     write_op;      // Write vs. read operation.
+            size_t   req_size;      // Original I/O request size.
+            uint64_t req_position;  // Current position in the file at start of I/O.
+
+            // Constructor and destructor.
+            FileAsyncBuffers(bool wrt, size_t size, uint64_t pos) : write_op(wrt), req_size(size), req_position(pos) {}
+            virtual ~FileAsyncBuffers() override;
+        };
+#endif
     };
 }
 

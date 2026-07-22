@@ -151,6 +151,11 @@ bool ts::TCPConnection::endOfStream()
     return !_is_connected || _end_of_input;
 }
 
+bool ts::TCPConnection::asyncCompletedStream(IOSB* iosb)
+{
+    return iosb != nullptr && SysSuccess(iosb->error_code);  // No specific usage here.
+}
+
 
 //----------------------------------------------------------------------------
 // Implementation of StreamInterface (send / write).

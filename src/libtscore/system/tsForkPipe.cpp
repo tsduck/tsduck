@@ -10,10 +10,9 @@
 #include "tsInitZero.h"
 #include "tsSysUtils.h"
 #include "tsIntegerUtils.h"
+#include "tsSysPipe.h"
 #if defined(TS_WINDOWS)
     #include "tsWinUtils.h"
-#else
-    #include "tsSysPipe.h"
 #endif
 
 // Path to default basic shell on UNIX systems.
@@ -91,6 +90,11 @@ bool ts::ForkPipe::endOfStream()
     return _eof;
 }
 
+bool ts::ForkPipe::asyncCompletedStream(IOSB* iosb)
+{
+    return iosb != nullptr && SysSuccess(iosb->error_code);  // No specific usage here.
+}
+
 
 //----------------------------------------------------------------------------
 // Create the process, open the pipe.
@@ -120,83 +124,50 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
         return false;
     }
 
+    // Reset state.
     _in_mode = in_mode;
     _out_mode = out_mode;
     _broken_pipe = false;
     _wait_mode = wait_mode;
     _eof = !_out_pipe;
+    _hfd = SYS_HANDLE_INVALID;
+    _fpid = SYS_PROCESS_ID_INVALID;
+    _process = SYS_HANDLE_INVALID;
+
+    // Create the communicaton pipe when necessary.
+    SysPipe proc_pipe(this);
+    if (_use_pipe) {
+        const bool async = isNonBlocking();
+        SysPipe::Flags flags = SysPipe::NONE;
+        if (_in_pipe) {
+            flags |= SysPipe::READ_INHERIT;
+            if (async) {
+                flags |= SysPipe::WRITE_ASYNC;
+            }
+        }
+        if (_out_pipe) {
+            flags |= SysPipe::WRITE_INHERIT;
+            if (async) {
+                flags |= SysPipe::READ_ASYNC;
+            }
+        }
+        if (!proc_pipe.create(flags, buffer_size)) {
+            return false;
+        }
+    }
 
     report().debug(u"creating process \"%s\"", command);
 
 #if defined(TS_WINDOWS)
-
-    _hfd = SYS_HANDLE_INVALID;
-    _process = SYS_HANDLE_INVALID;
-    ::HANDLE read_handle = nullptr;
-    ::HANDLE write_handle = nullptr;
-    ::HANDLE null_handle = nullptr;
-
-    // Create a pipe
-    if (_use_pipe) {
-        ::DWORD bufsize = buffer_size == 0 ? 0 : ::DWORD(std::max<size_t>(32768, buffer_size));
-        ::SECURITY_ATTRIBUTES sa;
-        sa.nLength = sizeof(sa);
-        sa.lpSecurityDescriptor = nullptr;
-        sa.bInheritHandle = true;
-
-        if (isNonBlocking()) {
-            // On Windows, asynchronous I/O are not supported in anonymous pipes (as created by CreatePipe).
-            // - https://learn.microsoft.com/en-us/windows/win32/ipc/anonymous-pipe-operations
-            // - https://stackoverflow.com/a/419736
-            // Overlapped I/O can be used on named pipes only.
-            // - https://learn.microsoft.com/en-us/windows/win32/ipc/named-pipe-server-using-overlapped-i-o
-            // - https://learn.microsoft.com/en-us/windows/win32/ipc/named-pipe-client
-
-            // Create a "unique" pipe name. Note that named pipes disappear when the last handle is closed.
-            // Therefore, we don't need to care about deleting the named pipe.
-            static std::atomic_uint64_t sequence {0};
-            UString pipe_name;
-            pipe_name.format(u"\\\\.\\pipe\\ts.%08X.%08X", ::GetCurrentProcessId(), ++sequence);
-
-            // Only one end of the pipe is asynchronous: the one on which we read or write.
-            const ::DWORD read_flags = PIPE_ACCESS_INBOUND | FILE_FLAG_FIRST_PIPE_INSTANCE | (_out_pipe ? FILE_FLAG_OVERLAPPED : 0);
-            const ::DWORD write_flags = FILE_ATTRIBUTE_NORMAL | (_in_pipe ? FILE_FLAG_OVERLAPPED : 0);
-
-            // Create the named pipe. Get the read handle.
-            read_handle = ::CreateNamedPipeW(pipe_name.wc_str(), read_flags, PIPE_TYPE_BYTE | PIPE_WAIT, 1, bufsize, bufsize, 0, &sa);
-            if (!WinHandleValid(read_handle)) {
-                report().error(u"error creating named pipe %s: %s", pipe_name, SysErrorCodeMessage());
-                return false;
-            }
-
-            // Get a write handle to this named pipe.
-            write_handle = ::CreateFileW(pipe_name.wc_str(), GENERIC_WRITE, 0, &sa, OPEN_EXISTING, write_flags, nullptr);
-            if (!WinHandleValid(write_handle)) {
-                report().error(u"error opening named pipe %s: %s", pipe_name, SysErrorCodeMessage());
-                ::CloseHandle(read_handle);
-                return false;
-            }
-        }
-        else {
-            // No asynchronous I/O required, use an anonymous pipe.
-            if (::CreatePipe(&read_handle, &write_handle, &sa, bufsize) == 0) {
-                report().error(u"error creating pipe: %s", SysErrorCodeMessage());
-                return false;
-            }
-        }
-
-        // CreatePipe can only inherit none or both handles. Since we need the
-        // one handle to be inherited by the child process, we said "inherit".
-        // Now, make sure that our end of the pipe is not inherited.
-        // Named pipes do not have the same limitation but we use the same method for consistency.
-        ::SetHandleInformation(_in_pipe ? write_handle : read_handle, HANDLE_FLAG_INHERIT, 0);
-    }
 
     // Our standard handles.
     const ::HANDLE in_handle  = ::GetStdHandle(STD_INPUT_HANDLE);
     const ::HANDLE out_handle = ::GetStdHandle(STD_OUTPUT_HANDLE);
     const ::HANDLE err_handle = ::GetStdHandle(STD_ERROR_HANDLE);
 
+    // Handle for NUL: device
+    ::HANDLE null_handle = SYS_HANDLE_INVALID;
+    
     // Process startup info specifies standard handles.
     // Make sure our handles can be inherited when necessary.
     InitZero<::STARTUPINFOW> si;
@@ -205,10 +176,12 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
 
     switch (_in_mode) {
         case STDIN_PIPE: {
-            si.data.hStdInput = read_handle;
+            // Use the read end of the pipe in the child process, close it in current process.
+            si.data.hStdInput = proc_pipe.peekRead();
             break;
         }
         case STDIN_PARENT: {
+            // Use our stdin handle.
             ::SetHandleInformation(in_handle, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
             si.data.hStdInput = in_handle;
             break;
@@ -218,10 +191,6 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
             null_handle = ::CreateFileA("NUL:", GENERIC_READ, FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, 0, nullptr);
             if (!WinHandleValid(null_handle)) {
                 report().error(u"error opening NUL: %s", SysErrorCodeMessage());
-                if (_use_pipe) {
-                    ::CloseHandle(read_handle);
-                    ::CloseHandle(write_handle);
-                }
                 return false;
             }
             // Set the null device as standard input.
@@ -231,16 +200,14 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
         }
         default: {
             // Invalid enum value.
-            if (_use_pipe) {
-                ::CloseHandle(read_handle);
-                ::CloseHandle(write_handle);
-            }
+            report().error(u"invalid process input mode");
             return false;
         }
     }
 
     switch (out_mode) {
         case KEEP_BOTH: {
+            // Use our stdout and stderr handle.
             ::SetHandleInformation(out_handle, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
             ::SetHandleInformation(err_handle, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
             si.data.hStdOutput = out_handle;
@@ -248,31 +215,33 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
             break;
         }
         case STDOUT_ONLY: {
+            // Use our stdout as stdout and stderr in child process.
             ::SetHandleInformation(out_handle, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
             si.data.hStdOutput = si.data.hStdError = out_handle;
             break;
         }
         case STDERR_ONLY: {
+            // Use our stderr as stdout and stderr in child process.
             ::SetHandleInformation(err_handle, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
             si.data.hStdOutput = si.data.hStdError = err_handle;
             break;
         }
         case STDOUT_PIPE: {
+            // Use the write end of the pipe as stdout in the child process, close it in current process.
+            // Keep our stderr handle.
             ::SetHandleInformation(err_handle, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
             si.data.hStdError = err_handle;
-            si.data.hStdOutput = write_handle;
+            si.data.hStdOutput = proc_pipe.peekWrite();
             break;
         }
         case STDOUTERR_PIPE: {
-            si.data.hStdOutput = si.data.hStdError = write_handle;
+            // Use the write end of the pipe as stdout and stderr in the child process, close it in current process.
+            si.data.hStdOutput = si.data.hStdError = proc_pipe.peekWrite();
             break;
         }
         default: {
             // Invalid enum value.
-            if (_use_pipe) {
-                ::CloseHandle(read_handle);
-                ::CloseHandle(write_handle);
-            }
+            report().error(u"invalid process output mode");
             return false;
         }
     }
@@ -285,10 +254,6 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
     ::PROCESS_INFORMATION pi;
     if (::CreateProcessW(nullptr, cmdp, nullptr, nullptr, true, 0, nullptr, nullptr, &si.data, &pi) == 0) {
         report().error(u"error creating process: %s", SysErrorCodeMessage());
-        if (_use_pipe) {
-            ::CloseHandle(read_handle);
-            ::CloseHandle(write_handle);
-        }
         return false;
     }
 
@@ -305,14 +270,11 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
     ::CloseHandle(pi.hThread);
 
     // Keep our end-point of pipe for data transmission.
-    // Close the other end-point of pipe.
     if (_in_pipe) {
-        _hfd = write_handle;
-        ::CloseHandle(read_handle);
+        _hfd = proc_pipe.fetchWrite();
     }
     else if (_out_pipe) {
-        _hfd = read_handle;
-        ::CloseHandle(write_handle);
+        _hfd = proc_pipe.fetchRead();
     }
 
     // Close other no longer used handles.
@@ -321,16 +283,6 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
     }
 
 #else // UNIX
-
-    // Reset state.
-    _fpid = SYS_PROCESS_ID_INVALID;
-    _hfd = SYS_HANDLE_INVALID;
-
-    // Create a pipe
-    SysPipe pipe_fd(this);
-    if (_use_pipe && !pipe_fd.create()) {
-        return false;
-    }
 
     // When the created process is asynchronous, we need to create an intermediate process (see below).
     // In thas case, the forked pid is not the one of the final process. We can't directly get the final
@@ -362,7 +314,7 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
             const SysProcessIdType inter_pid = _fpid;
             // In the parent process. Read the grand-child pid from the dedicated pipe.
             errno = EINVAL;
-            if (::read(pid_pipe.getRead(), &_fpid, sizeof(_fpid)) != sizeof(_fpid)) {
+            if (::read(pid_pipe.peekRead(), &_fpid, sizeof(_fpid)) != sizeof(_fpid)) {
                 report().error(u"error reading final forked pid from pipe: %s", SysErrorCodeMessage());
             }
             // Wait for the intermediate child to die immediately. Failing to do so, the intermediate process would remain zombie.
@@ -375,7 +327,7 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
             const SysProcessIdType sub_pid = ::fork();
             if (sub_pid != 0) {
                 // In the intermediate process, send the grand-child pid to the parent.
-                if (::write(pid_pipe.getWrite(), &sub_pid, sizeof(sub_pid)) != sizeof(sub_pid)) {
+                if (::write(pid_pipe.peekWrite(), &sub_pid, sizeof(sub_pid)) != sizeof(sub_pid)) {
                     report().error(u"error writing final forked pid to pipe: %s", SysErrorCodeMessage());
                 }
                 // Exit intermediate process and let grand-child execute the command.
@@ -389,7 +341,7 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
         // In the context of the parent process.
         if (_in_pipe) {
             // Keep the writing end-point of pipe for data transmission.
-            _hfd = pipe_fd.fetchWrite();
+            _hfd = proc_pipe.fetchWrite();
             // But make it automatically closed on exec(). If the parent process
             // creates another child later, we do not want it to inherit this file
             // descriptor, assuming that fork() is always followed by exec().
@@ -397,13 +349,8 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
         }
         else if (_out_pipe) {
             // Do the opposite.
-            _hfd = pipe_fd.fetchRead();
+            _hfd = proc_pipe.fetchRead();
             ::fcntl(_hfd, F_SETFD, FD_CLOEXEC);
-        }
-        // Set the file descriptor in non-blocking mode if necessary.
-        if (_use_pipe && isNonBlocking() && !setSystemNonBlocking(true)) {
-            ::close(_hfd);
-            return false;
         }
     }
     else {
@@ -433,7 +380,7 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
             }
             case STDIN_PIPE: {
                 // Redirect the reading end-point of the pipe to standard input
-                if (::dup2(pipe_fd.getRead(), STDIN_FILENO) < 0) {
+                if (::dup2(proc_pipe.peekRead(), STDIN_FILENO) < 0) {
                     error = errno;
                     message = "error redirecting stdin in forked process";
                 }
@@ -467,12 +414,12 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
             case STDOUT_PIPE:
             case STDOUTERR_PIPE: {
                 // Redirect stdout to the write end-point of the pipe.
-                if (::dup2(pipe_fd.getWrite(), STDOUT_FILENO) < 0) {
+                if (::dup2(proc_pipe.peekWrite(), STDOUT_FILENO) < 0) {
                     error = errno;
                     message = "error redirecting stdout to pipe";
                 }
                 // Same for stderr if requested.
-                if (out_mode == STDOUTERR_PIPE && ::dup2(pipe_fd.getWrite(), STDERR_FILENO) < 0) {
+                if (out_mode == STDOUTERR_PIPE && ::dup2(proc_pipe.peekWrite(), STDERR_FILENO) < 0) {
                     error = errno;
                     message = "error redirecting stderr to pipe";
                 }
@@ -488,7 +435,7 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
         // The original file descriptors of the pipe are now useless.
         // Either they were redirected to stdin/out/err or they are unused.
         if (_use_pipe) {
-            pipe_fd.close();
+            proc_pipe.close();
         }
 
         // Execute the command if there was no prior error.
@@ -534,22 +481,22 @@ bool ts::ForkPipe::close(bool silent)
         return false;
     }
 
+    // Close the pipe handle
+    if (_use_pipe) {
+        SysCloseHandle(_hfd);
+        _hfd = SYS_HANDLE_INVALID;
+    }
+
+    // Wait for termination of child process
+    report().debug(u"waiting for process id %n", _fpid);
     bool result = true;
 
 #if defined(TS_WINDOWS)
 
-    // Close the pipe handle
-    if (_use_pipe) {
-        report().debug(u"closing pipe handle");
-        ::CloseHandle(_hfd);
-    }
-
-    // Wait for termination of child process
     if (_wait_mode == SYNCHRONOUS && ::WaitForSingleObject(_process, INFINITE) != WAIT_OBJECT_0) {
         report().log(SilentLevel(silent), u"error waiting for process termination: %s", SysErrorCodeMessage());
         result = false;
     }
-
     if (WinHandleValid(_process)) {
         report().debug(u"closing process handle");
         ::CloseHandle(_process);
@@ -557,19 +504,9 @@ bool ts::ForkPipe::close(bool silent)
 
 #else // UNIX
 
-    // Close the pipe file descriptor
-    if (_use_pipe) {
-        ::close(_hfd);
-    }
-
-    // Wait for termination of forked process
-    if (_wait_mode == SYNCHRONOUS) {
-        assert(_fpid != 0);
-        report().debug(u"waiting for process id %n", _fpid);
-        if (::waitpid(_fpid, nullptr, 0) < 0) {
-            report().log(SilentLevel(silent), u"error waiting for process termination: %s", SysErrorCodeMessage());
-            result = false;
-        }
+    if (_wait_mode == SYNCHRONOUS && ::waitpid(_fpid, nullptr, 0) < 0) {
+        report().log(SilentLevel(silent), u"error waiting for process termination: %s", SysErrorCodeMessage());
+        result = false;
     }
 
 #endif
@@ -591,11 +528,7 @@ void ts::ForkPipe::abortPipeReadWrite()
         _eof = true;
 
         // Close pipe handle, ignore errors.
-#if defined(TS_WINDOWS)
-        ::CloseHandle(_hfd);
-#else // UNIX
-        ::close(_hfd);
-#endif
+        SysCloseHandle(_hfd);
         _hfd = SYS_HANDLE_INVALID;
     }
 }
@@ -629,7 +562,7 @@ bool ts::ForkPipe::writeStream(const void* addr, size_t size, size_t& written_si
     }
 
     // Perform the write using generic code.
-    const int err_code = genericSystemWrite(addr, size, written_size, iosb);
+    const int err_code = genericSystemWrite(addr, size, written_size, iosb, 0);
 
     // EOF on write on pipe means broken pipe.
     _broken_pipe = err_code == SYS_EOF;
@@ -672,7 +605,7 @@ bool ts::ForkPipe::readStream(void *addr, size_t max_size, size_t& ret_size, con
     }
 
     // Perform the read using generic code.
-    const int err_code = genericSystemRead(addr, max_size, ret_size, abort, iosb);
+    const int err_code = genericSystemRead(addr, max_size, ret_size, abort, iosb, 0);
     _eof = err_code == SYS_EOF;
     return SysSuccess(err_code);
 }

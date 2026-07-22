@@ -200,13 +200,13 @@ namespace ts {
             size_t sent_size = 0;
 
             //!
-            //! Pointer to application data.
+            //! Shared pointer to application data.
             //! This is typically set before starting the I/O at application level.
             //!
             std::shared_ptr<Object> app_data {};
 
             //!
-            //! Pointer to reactive I/O data.
+            //! Shared pointer to reactive I/O data.
             //! This is typically set before starting the I/O at "reactive I/O" level.
             //!
             std::shared_ptr<Object> react_data {};
@@ -226,7 +226,7 @@ namespace ts {
             ::OVERLAPPED overlap {};
 
             //!
-            //! Pointer to asynchronous I/O data (Windows-specific).
+            //! Shared pointer to asynchronous I/O data (Windows-specific).
             //! This is typically set before starting the asynchronous I/O at socket level.
             //!
             std::shared_ptr<Object> async_data {};
@@ -324,10 +324,13 @@ namespace ts {
         //! Can be less than @a size in case of error in the middle of the write.
         //! @param [in,out] iosb Address of an IOSB structure. If non-null, the stream must be in non-blocking mode.
         //! When null, the stream must be in blocking mode (the default). See the description of ts::NonBlockingDevice::IOSB.
+        //! @param [in] position This value is only used on Windows with asynchronous I/O on disk file. On Windows, when asynchronous
+        //! I/O are used on random access files, the file position is not maintained. Each read or write operation is performed at
+        //! the specified absolute @a position.
         //! @return Error code. When the I/O is non-blocking/asynchronous and pending, return SYS_SUCCESS and iosb->pending is true.
         //! Return SYS_EOF when it is no longer possible to write (e.g. broken pipe).
         //!
-        int genericSystemWrite(const void* addr, size_t size, size_t& written_size, NonBlockingDevice::IOSB* iosb);
+        int genericSystemWrite(const void* addr, size_t size, size_t& written_size, NonBlockingDevice::IOSB* iosb, uint64_t position);
 
         //!
         //! Generic system read operation.
@@ -340,10 +343,13 @@ namespace ts {
         //! @param [in] abort If non-zero, invoked when I/O is interrupted (in case of user-interrupt, return, otherwise retry).
         //! @param [in,out] iosb Address of an IOSB structure. If non-null, the stream must be in non-blocking mode.
         //! When null, the stream must be in blocking mode (the default). See the description of ts::NonBlockingDevice::IOSB.
+        //! @param [in] position This value is only used on Windows with asynchronous I/O on disk file. On Windows, when asynchronous
+        //! I/O are used on random access files, the file position is not maintained. Each read or write operation is performed at
+        //! the specified absolute @a position.
         //! @return Error code. When the I/O is non-blocking/asynchronous and pending, return SYS_SUCCESS and iosb->pending is true.
         //! Return SYS_EOF when it is no longer possible to read.
         //!
-        int genericSystemRead(void* addr, size_t max_size, size_t& ret_size, const AbortInterface* abort, NonBlockingDevice::IOSB* iosb);
+        int genericSystemRead(void* addr, size_t max_size, size_t& ret_size, const AbortInterface* abort, NonBlockingDevice::IOSB* iosb, uint64_t position);
 
     private:
         bool _is_non_blocking;

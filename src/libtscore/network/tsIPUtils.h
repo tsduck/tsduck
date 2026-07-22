@@ -14,6 +14,7 @@
 
 #pragma once
 #include "tsCerrReport.h"
+#include "tsSysUtils.h"
 #include "tsIP.h"
 
 namespace ts {
@@ -410,10 +411,10 @@ namespace ts {
     {
 #if defined(TS_WINDOWS)
         const int res = ::closesocket(sock);
-        return res == 0 ? 0 : ::WSAGetLastError();
+        return res == 0 ? SYS_SUCCESS : ::WSAGetLastError();
 #elif defined(TS_UNIX)
         const int res = ::close(sock);
-        return res == 0 ? 0 : errno;
+        return res == 0 ? SYS_SUCCESS : errno;
 #else
         #error "Unsupported operating system"
 #endif

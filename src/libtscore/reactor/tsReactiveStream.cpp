@@ -470,6 +470,8 @@ void ts::ReactiveStream::handleAsynchronousIO(Reactor& reactor, EventId id, NonB
             report().error(u"unreferenced completed asynchronous TCP send request");
         }
         else {
+            // Adjust the stream object with the result.
+            _stream.asyncCompletedStream(&iosb);
             // Enqueue completed send request.
             _completed_io.push_back(req);
             // If next send request is an eof request, also pass it to completed I/O queue.
@@ -495,6 +497,8 @@ void ts::ReactiveStream::handleAsynchronousIO(Reactor& reactor, EventId id, NonB
             _pending_receive.reset();
         }
         else {
+            // Adjust the stream object with the result.
+            _stream.asyncCompletedStream(&iosb);
             // Successfully receiving zero means end of connection.
             if (SysSuccess(_pending_receive->error_code) && io_size == 0) {
                 _pending_receive->error_code = SYS_EOF;

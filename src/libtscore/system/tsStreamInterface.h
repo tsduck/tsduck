@@ -89,6 +89,14 @@ namespace ts {
         virtual bool readStream(void* addr, size_t size, const AbortInterface* abort = nullptr) = 0;
 
         //!
+        //! Update the status of an asynchronous readStream() or writeStream() after it completed.
+        //! This method applies to asynchronous I/O only (Windows), not non-blocking I/O (UNIX).
+        //! @param [in,out] iosb Address of the IOSB structure which was used when readStream() or writeStream() was called.
+        //! @return True on success, false on error.
+        //! 
+        virtual bool asyncCompletedStream(NonBlockingDevice::IOSB* iosb) = 0;
+
+        //!
         //! Check if the stream is open for read.
         //! @return True if readStream() is possible, false otherwise (write-only, closed, or disconnected stream).
         //!

@@ -163,6 +163,7 @@ namespace ts {
         virtual bool readStream(void* addr, size_t max_size, size_t& ret_size, const AbortInterface* abort = nullptr, IOSB* iosb = nullptr) override;
         virtual bool writeStream(const void* addr, size_t size, IOSB* iosb = nullptr) override;
         virtual bool writeStream(const void* addr, size_t size, size_t& written_size, IOSB* iosb = nullptr) override;
+        virtual bool asyncCompletedStream(IOSB* iosb) override;
         virtual bool isReadStream() override;
         virtual bool isWriteStream() override;
         virtual bool endOfStream() override;
@@ -185,7 +186,7 @@ namespace ts {
         bool shutdownSocket(int how, bool silent);
 
 #if defined(TS_WINDOWS)
-        // For Windows asynchronous I/O, we need to keep parameter in one single structure which lives during the I/O.
+        // For Windows asynchronous I/O, we need to keep parameters in one single structure which lives during the I/O.
         class TSCOREDLL TCPAsyncBuffers: public Object
         {
             TS_NOBUILD_NOCOPY(TCPAsyncBuffers);

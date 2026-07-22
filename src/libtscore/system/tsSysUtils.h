@@ -164,6 +164,26 @@ namespace ts {
         constexpr SysHandleType SYS_HANDLE_INVALID = -1;
     #endif
 
+
+    //!
+    //! The close() system call which applies to system file or device handler or descriptor.
+    //! @ingroup system
+    //! @param [in] hfd System file or device handler or descriptor.
+    //! @return Error code.
+    //!
+    TSCOREDLL inline int SysCloseHandle(SysHandleType hfd)
+    {
+#if defined(TS_WINDOWS)
+        const ::BOOL res = ::CloseHandle(hfd);
+        return res != 0 ? SYS_SUCCESS : ::GetLastError();
+#elif defined(TS_UNIX)
+        const int res = ::close(hfd);
+        return res == 0 ? SYS_SUCCESS : errno;
+#else
+        #error "Unsupported operating system"
+#endif
+    }
+
     //!
     //! Data type for system process id.
     //! @ingroup system
