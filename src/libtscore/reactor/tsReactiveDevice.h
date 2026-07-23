@@ -141,9 +141,10 @@ namespace ts {
 
     private:
         NonBlockingDevice& _device;
-        EventId _write_ready_id {};   // Reactor id for write-ready (non-blocking I/O).
-        EventId _read_ready_id {};    // Reactor id for read-ready (non-blocking I/O).
-        EventId _async_io_id {};      // Reactor id for I/O completion (asynchronous I/O).
+        EventId _write_ready_id {};     // Reactor id for write-ready (non-blocking I/O).
+        EventId _read_ready_id {};      // Reactor id for read-ready (non-blocking I/O).
+        EventId _read_async_io_id {};   // Reactor id for I/O completion (asynchronous I/O), read (and write if same handle).
+        EventId _write_async_io_id {};  // Reactor id for I/O completion (asynchronous I/O), write (if not the same handle).
     };
 }
 

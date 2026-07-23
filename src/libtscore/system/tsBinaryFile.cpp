@@ -66,14 +66,14 @@ bool ts::BinaryFile::allowSetNonBlocking() const
 // Get the underlying file descriptor or device handle.
 //----------------------------------------------------------------------------
 
-ts::SysHandleType ts::BinaryFile::getHandle() const
+ts::SysHandleType ts::BinaryFile::getReadHandle() const
 {
     return _hfd;
 }
 
-ts::SysSocketType ts::BinaryFile::getSocket() const
+ts::SysHandleType ts::BinaryFile::getWriteHandle() const
 {
-    return _hfd == SYS_HANDLE_INVALID ? SYS_SOCKET_INVALID : SysSocketType(_hfd);
+    return _hfd;
 }
 
 
@@ -583,7 +583,6 @@ bool ts::BinaryFile::readStream(void* buffer, size_t request_size, size_t& read_
     if (iosb == nullptr || !iosb->pending) {
         _position += read_size;
     }
-    SetLastSysErrorCode(err_code);
     return SysSuccess(err_code);
 }
 
@@ -621,7 +620,6 @@ bool ts::BinaryFile::writeStream(const void* buffer, size_t data_size, size_t& w
     if (iosb == nullptr || !iosb->pending) {
         _position = pos + written_size;
     }
-    SetLastSysErrorCode(err_code);
     return SysSuccess(err_code);
 }
 

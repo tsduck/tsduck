@@ -57,14 +57,16 @@ namespace ts {
     //! Force the error code of the last operating system call.
     //! @ingroup system
     //! @param [in] error_code The error code to force.
+    //! @return Value of @a error_code.
     //!
-    TSCOREDLL inline void SetLastSysErrorCode(int error_code)
+    TSCOREDLL inline int SetLastSysErrorCode(int error_code)
     {
 #if defined(TS_WINDOWS)
         ::SetLastError(::DWORD(error_code));
 #else
         errno = error_code;
 #endif
+        return error_code;
     }
 
     //!

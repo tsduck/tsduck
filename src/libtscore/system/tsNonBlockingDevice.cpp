@@ -21,17 +21,40 @@ ts::NonBlockingDevice::~NonBlockingDevice()
 
 //----------------------------------------------------------------------------
 // Get the underlying file descriptor or device handle.
-// The default implementation return the error values.
 //----------------------------------------------------------------------------
+
+ts::SysHandleType ts::NonBlockingDevice::getReadHandle() const
+{
+    return SYS_HANDLE_INVALID; // default implementation
+}
+
+ts::SysHandleType ts::NonBlockingDevice::getWriteHandle() const
+{
+    return SYS_HANDLE_INVALID; // default implementation
+}
 
 ts::SysHandleType ts::NonBlockingDevice::getHandle() const
 {
-    return SYS_HANDLE_INVALID;
+    const SysHandleType h = getReadHandle();
+    return h != SYS_HANDLE_INVALID ? h : getWriteHandle();
+}
+
+ts::SysSocketType ts::NonBlockingDevice::getReadSocket() const
+{
+    const SysHandleType h = getReadHandle();
+    return h != SYS_HANDLE_INVALID ? SysSocketType(h) : SYS_SOCKET_INVALID;
+}
+
+ts::SysSocketType ts::NonBlockingDevice::getWriteSocket() const
+{
+    const SysHandleType h = getWriteHandle();
+    return h != SYS_HANDLE_INVALID ? SysSocketType(h) : SYS_SOCKET_INVALID;
 }
 
 ts::SysSocketType ts::NonBlockingDevice::getSocket() const
 {
-    return SYS_SOCKET_INVALID;
+    const SysHandleType h = getHandle();
+    return h != SYS_HANDLE_INVALID ? SysSocketType(h) : SYS_SOCKET_INVALID;
 }
 
 
@@ -160,11 +183,11 @@ int ts::NonBlockingDevice::genericSystemWrite(const void* addr, size_t size, siz
 {
     written_size = 0;
     int err_code = SYS_SUCCESS;
-    const SysHandleType hfd = getHandle();
+    const SysHandleType hfd = getWriteHandle();
 
     if (!checkNonBlocking(iosb, u"system write")) {
         // Not the right blocking mode.
-        return SYS_ERROR;
+        return SetLastSysErrorCode(SYS_ERROR);
     }
     if (size == 0) {
         // Trivial case of zero-write.
@@ -243,7 +266,7 @@ int ts::NonBlockingDevice::genericSystemWrite(const void* addr, size_t size, siz
     if (!SysSuccess(err_code) && err_code != SYS_EOF) {
         report().error(u"write error: %s", SysErrorCodeMessage(err_code));
     }
-    return err_code;
+    return SetLastSysErrorCode(err_code);
 }
 
 
@@ -255,11 +278,11 @@ int ts::NonBlockingDevice::genericSystemRead(void* addr, size_t max_size, size_t
 {
     ret_size = 0;
     int err_code = SYS_SUCCESS;
-    const SysHandleType hfd = getHandle();
+    const SysHandleType hfd = getReadHandle();
 
     if (!checkNonBlocking(iosb, u"system read")) {
         // Not the right blocking mode.
-        return SYS_ERROR;
+        return SetLastSysErrorCode(SYS_ERROR);
     }
     if (max_size == 0) {
         // Trivial case of zero-read.
@@ -284,7 +307,7 @@ int ts::NonBlockingDevice::genericSystemRead(void* addr, size_t max_size, size_t
         }
         else {
             report().error(u"read error: %s", SysErrorCodeMessage(err_code));
-            return err_code;
+            return SetLastSysErrorCode(err_code);
         }
     }
     else {
@@ -294,7 +317,7 @@ int ts::NonBlockingDevice::genericSystemRead(void* addr, size_t max_size, size_t
             // Normal case, some data were read.
             assert(insize <= ::DWORD(max_size));
             if (insize <= 0) {
-                return SYS_EOF;
+                return SetLastSysErrorCode(SYS_EOF);
             }
             else {
                 ret_size = size_t(insize);
@@ -304,13 +327,13 @@ int ts::NonBlockingDevice::genericSystemRead(void* addr, size_t max_size, size_t
         err_code = TranslateError(::GetLastError());
         if (abort != nullptr && abort->aborting()) {
             // User-interrupt, end of processing but no error message
-            return SYS_CANCELED;
+            return SetLastSysErrorCode(SYS_CANCELED);
         }
         if (err_code != SYS_EOF) {
             // End of file is not a real "error", no error message.
             report().error(u"error reading from pipe: %s", SysErrorCodeMessage(err_code));
         }
-        return err_code;
+        return SetLastSysErrorCode(err_code);
     }
 
 #else  // UNIX
@@ -320,7 +343,7 @@ int ts::NonBlockingDevice::genericSystemRead(void* addr, size_t max_size, size_t
         err_code = TranslateError(errno);
         if (insize == 0) {
             // End of file.
-            return SYS_EOF;
+            return SetLastSysErrorCode(SYS_EOF);
         }
         else if (insize > 0) {
             // Normal case, some data were read.
@@ -330,7 +353,7 @@ int ts::NonBlockingDevice::genericSystemRead(void* addr, size_t max_size, size_t
         }
         else if (abort != nullptr && abort->aborting()) {
             // User-interrupt, end of processing but no error message
-            return SYS_CANCELED;
+            return SetLastSysErrorCode(SYS_CANCELED);
         }
         else if (isNonBlocking() && err_code == SYS_PENDING_IO) {
             // Non-blocking file with no immediately available data to read.
@@ -341,7 +364,7 @@ int ts::NonBlockingDevice::genericSystemRead(void* addr, size_t max_size, size_t
         else if (err_code != EINTR) {
             // Actual error (not an interrupt)
             report().error(u"error reading from pipe: %s", SysErrorCodeMessage(err_code));
-            return err_code;
+            return SetLastSysErrorCode(err_code);
         }
     }
 

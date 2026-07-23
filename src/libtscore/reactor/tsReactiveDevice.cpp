@@ -26,7 +26,7 @@ ts::ReactiveDevice::ReactiveDevice(Reactor& reactor, NonBlockingDevice& device) 
 
 ts::ReactiveDevice::~ReactiveDevice()
 {
-    if (_device.getSocket() != SYS_SOCKET_INVALID) {
+    if (_device.getReadHandle() != SYS_HANDLE_INVALID || _device.getWriteHandle() != SYS_HANDLE_INVALID) {
         reactor().trace(u"warning: reactive device is destroyed while the underlying device is still open");
     }
 
@@ -78,7 +78,7 @@ bool ts::ReactiveDevice::activateReadReady()
             return true;
         }
         if (!_read_ready_id.isValid()) {
-            _read_ready_id = reactor().newReadNotify(this, _device.getSocket());
+            _read_ready_id = reactor().newReadNotify(this, _device.getReadSocket());
             return _read_ready_id.isValid();
         }
     }
@@ -102,7 +102,7 @@ bool ts::ReactiveDevice::activateWriteReady()
             return true;
         }
         if (!_write_ready_id.isValid()) {
-            _write_ready_id = reactor().newWriteNotify(this, _device.getSocket());
+            _write_ready_id = reactor().newWriteNotify(this, _device.getWriteSocket());
             return _write_ready_id.isValid();
         }
     }
@@ -130,9 +130,19 @@ bool ts::ReactiveDevice::activateAsynchronousIO()
         if (!device().isSupportedByReactor()) {
             return true;
         }
-        if (!_async_io_id.isValid()) {
-            _async_io_id = reactor().newAsynchronousIO(this, _device.getSocket());
-            return _async_io_id.isValid();
+        if (!_read_async_io_id.isValid() && !_write_async_io_id.isValid()) {
+            const SysSocketType rd = _device.getReadSocket();
+            const SysSocketType wr = _device.getWriteSocket();
+            bool ok = true;
+            if (rd != SYS_SOCKET_INVALID) {
+                _read_async_io_id = reactor().newAsynchronousIO(this, rd);
+                ok = _read_async_io_id.isValid();
+            }
+            if (wr != SYS_SOCKET_INVALID && wr != rd) {
+                _write_async_io_id = reactor().newAsynchronousIO(this, wr);
+                ok = ok && _read_async_io_id.isValid();
+            }
+            return ok;
         }
     }
     return true;
@@ -141,9 +151,13 @@ bool ts::ReactiveDevice::activateAsynchronousIO()
 void ts::ReactiveDevice::deactivateAsynchronousIO(bool silent)
 {
     if constexpr (ReactorSupport::UseAsynchronousIO()) {
-        if (_async_io_id.isValid()) {
-            reactor().deleteAsynchronousIO(_async_io_id, silent);
-            _async_io_id.invalidate();
+        if (_write_async_io_id.isValid()) {
+            reactor().deleteAsynchronousIO(_write_async_io_id, silent);
+            _write_async_io_id.invalidate();
+        }
+        if (_read_async_io_id.isValid()) {
+            reactor().deleteAsynchronousIO(_read_async_io_id, silent);
+            _read_async_io_id.invalidate();
         }
     }
 }
@@ -151,8 +165,11 @@ void ts::ReactiveDevice::deactivateAsynchronousIO(bool silent)
 void ts::ReactiveDevice::cancelAsynchronousIO(bool silent)
 {
     if constexpr (ReactorSupport::UseAsynchronousIO()) {
-        if (_async_io_id.isValid()) {
-            reactor().cancelAsynchronousIO(_async_io_id, silent);
+        if (_write_async_io_id.isValid()) {
+            reactor().cancelAsynchronousIO(_write_async_io_id, silent);
+        }
+        if (_read_async_io_id.isValid()) {
+            reactor().cancelAsynchronousIO(_read_async_io_id, silent);
         }
     }
 }
@@ -160,8 +177,11 @@ void ts::ReactiveDevice::cancelAsynchronousIO(bool silent)
 bool ts::ReactiveDevice::cancelAndWaitAsynchronousIO(NonBlockingDevice::IOSB& iosb, bool silent)
 {
     if constexpr (ReactorSupport::UseAsynchronousIO()) {
-        if (_async_io_id.isValid()) {
-            reactor().cancelAndWaitAsynchronousIO(_async_io_id, iosb, silent);
+        if (_write_async_io_id.isValid()) {
+            reactor().cancelAndWaitAsynchronousIO(_write_async_io_id, iosb, silent);
+        }
+        if (_read_async_io_id.isValid()) {
+            reactor().cancelAndWaitAsynchronousIO(_read_async_io_id, iosb, silent);
         }
     }
     return true;

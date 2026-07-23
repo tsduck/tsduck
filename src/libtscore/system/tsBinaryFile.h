@@ -155,8 +155,8 @@ namespace ts {
         bool seekByte(uint64_t byte_index);
 
         // Implementation of NonBlockingDevice.
-        virtual SysHandleType getHandle() const override;
-        virtual SysSocketType getSocket() const override;
+        virtual SysHandleType getReadHandle() const override;
+        virtual SysHandleType getWriteHandle() const override;
 
         // Implementation of StreamInterface.
         virtual bool readStream(void* addr, size_t size, const AbortInterface* abort = nullptr) override;

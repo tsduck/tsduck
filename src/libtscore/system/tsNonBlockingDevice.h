@@ -146,27 +146,58 @@ namespace ts {
         //! compatible. So, accidentally mixing the two compiles on UNIX but not on Windows. Be careful to use the right type for
         //! the right usage.
         //!
-        //! By default, when not overriden by a subclass, the two methods return the "error" value, SYS_HANDLE_INVALID and
+        //! There is one important difference between getHandle() and getSocket(): the error values, SYS_HANDLE_INVALID and
         //! SYS_SOCKET_INVALID. Be careful, these constants have distinct binary values on Windows. This is the only case were it
         //! is not possible to cast between a SysHandleType value and a SysSocketType value. This is why it is recommended to always
         //! use getHandle() when a SysHandleType is required and getSocket() when a SysSocketType is required.
         //!
-        //! When a subclass overrides one of these two methods, it must override the two. When the device is valid / open, the two
-        //! methods must return the same value. Otherwise, they must return the appropriate error value (not the same value in Windows).
+        //! A subclass which uses file descriptors or device handles for read, write, or both, must override the methods
+        //! getReadHandle(), getWriteHandle(), or both. If the two types of operations use the same file descriptor, the two
+        //! methods must return the same value.
         //!
-        //! @return The underlying file descriptor or device handler. Return SYS_HANDLE_INVALID if the socket is device open.
-        //! @see getSocket()
+        //! An application should call getReadHandle() for read operations and getWriteHandle() for write operations. The method
+        //! getHandle() returns getReadHandle() if its returns a valid value, and getWriteHandle() otherwise.
         //!
-        virtual SysHandleType getHandle() const;
+        //! @return The underlying file descriptor or device handler. Return SYS_HANDLE_INVALID if the socket is not open.
+        //!
+        SysHandleType getHandle() const;
+
+        //!
+        //! Get the underlying file descriptor or device handle for read operations.
+        //! Subclasses should override this method.
+        //! @return The underlying file descriptor for read operations or SYS_HANDLE_INVALID if the device is not open for read.
+        //! @see getHandle()
+        //!
+        virtual SysHandleType getReadHandle() const;
+
+        //!
+        //! Get the underlying file descriptor or device handle for write operations.
+        //! Subclasses should override this method.
+        //! @return The underlying file descriptor for write operations or SYS_HANDLE_INVALID if the device is not open for write.
+        //! @see getHandle()
+        //!
+        virtual SysHandleType getWriteHandle() const;
 
         //!
         //! Get the underlying file descriptor or device handle as a system socket handle.
-        //! This method is reserved for low-level operations and should not be used by normal applications.
-        //! See more details in the documentation of getHandle().
         //! @return The underlying socket descriptor. Return SYS_SOCKET_INVALID if the socket is not open.
         //! @see getHandle()
         //!
-        virtual SysSocketType getSocket() const;
+        SysSocketType getSocket() const;
+
+        //!
+        //! Get the underlying file descriptor or device handle as a system socket handle for read operations.
+        //! @return The underlying file descriptor for read operations or SYS_SOCKET_INVALID if the socket is not open for read.
+        //! @see getHandle()
+        //!
+        SysSocketType getReadSocket() const;
+
+        //!
+        //! Get the underlying file descriptor or device handle as a system socket handle for write operations.
+        //! @return The underlying file descriptor for read operations or SYS_SOCKET_INVALID if the socket is not open for write.
+        //! @see getHandle()
+        //!
+         SysSocketType getWriteSocket() const;
 
         //!
         //! This structure indicates the status of a non-blocking I/O.

@@ -159,8 +159,8 @@ namespace ts {
         UString localName();
 
         // Implementation of NonBlockingDevice.
-        virtual SysHandleType getHandle() const override;
-        virtual SysSocketType getSocket() const override;
+        virtual SysHandleType getReadHandle() const override;
+        virtual SysHandleType getWriteHandle() const override;
 
     protected:
         //!

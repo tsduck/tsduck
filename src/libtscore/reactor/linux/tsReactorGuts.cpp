@@ -332,7 +332,7 @@ void ts::Reactor::Guts::processEventLoop()
             _reactor._exit_success = false;
             break;
         }
-        _reactor.trace(u"epoll: ---- got %d events", evcount);
+        _reactor.trace(u"epoll: ---- got %d/%d events", evcount, sysevents.size());
 
         // Process all returned events.
         for (size_t i = 0; i < evcount && !_reactor._exit_requested; i++) {
@@ -359,7 +359,7 @@ void ts::Reactor::Guts::processEventLoop()
 
             // Process the event, based on a copy of the EventData block.
             if (evd.type == EVT_EVENT) {
-                _reactor.trace(u"epoll: event #%d, user event completed", i);
+                _reactor.trace(u"epoll: event #%d, user event completed, fd: %d", i, evd.fd);
                 // Try to read from the event file descriptor to verify that the event is actually pending. Loop on EAGAIN.
                 uint64_t data = 0;
                 bool success = ::read(evd.fd, &data, sizeof(data)) > 0;
@@ -374,7 +374,7 @@ void ts::Reactor::Guts::processEventLoop()
                 }
             }
             else if (evd.type == EVT_TIMER) {
-                _reactor.trace(u"epoll: event #%d, timer completed", i);
+                _reactor.trace(u"epoll: event #%d, timer completed, fd: %d", i, evd.fd);
                 // Try to read the number of expirations.
                 uint64_t data = 0;
                 bool success = ::read(evd.fd, &data, sizeof(data)) > 0;
@@ -398,7 +398,7 @@ void ts::Reactor::Guts::processEventLoop()
                 }
             }
             else if (evd.type == EVT_PROC) {
-                _reactor.trace(u"epoll: event #%d, process terminated", i);
+                _reactor.trace(u"epoll: event #%d, process terminated, fd: %d", i, evd.fd);
                 // We need to check if the process is actually terminated or if this is a spurious wake-up.
                 // There are two cases which must be handled separately:
                 // 1. The process is a child process of ours. We need to wait() for it, otherwise it will remain a zombie.
@@ -423,7 +423,7 @@ void ts::Reactor::Guts::processEventLoop()
                 }
             }
             else {
-                _reactor.trace(u"epoll: event #%d, completed I/O", i);
+                _reactor.trace(u"epoll: event #%d, read/write-ready, fd: %d, ev: %X", i, evd.fd, uint32_t(sysev.events));
                 // Read and write can be on the same EventData.
                 bool event_is_valid = true;
 
@@ -436,6 +436,9 @@ void ts::Reactor::Guts::processEventLoop()
                         // No read event, this can be an error or a write notification.
                         if ((sysev.events & EPOLLERR) != 0) {
                             error_code = SYS_ERROR;
+                        }
+                        else if ((sysev.events & EPOLLHUP) != 0) {
+                            error_code = SYS_EOF;
                         }
                         else {
                             call_handler = false; // must be a write event only.
@@ -525,7 +528,7 @@ void* ts::Reactor::Guts::newTimer(ReactorHandlerInterface* handler, cn::millisec
     _file_descs_map.insert(std::make_pair(evd->fd, evd));
 
     // Register time in epoll queue.
-    if (!callEpollCtl(EPOLL_CTL_ADD, evd->fd, EPOLLIN | EPOLLET, evd, u"adding timer")) {
+    if (!callEpollCtl(EPOLL_CTL_ADD, evd->fd, EPOLLIN | EPOLLHUP | EPOLLERR | EPOLLET, evd, u"adding timer")) {
         ::close(evd->fd);
         deleteEventData(evd, EVT_TIMER);
         return nullptr;
@@ -606,7 +609,7 @@ void* ts::Reactor::Guts::newEvent(ReactorHandlerInterface* handler)
     _file_descs_map.insert(std::make_pair(evd->fd, evd));
 
     // Register event in epoll queue.
-    if (!callEpollCtl(EPOLL_CTL_ADD, evd->fd, EPOLLIN | EPOLLET, evd, u"adding user event")) {
+    if (!callEpollCtl(EPOLL_CTL_ADD, evd->fd, EPOLLIN | EPOLLHUP | EPOLLERR | EPOLLET, evd, u"adding user event")) {
         ::close(evd->fd);
         deleteEventData(evd, EVT_EVENT);
         return nullptr;
@@ -695,7 +698,7 @@ void* ts::Reactor::Guts::newProcessIdTermination(ReactorHandlerInterface* handle
         _file_descs_map.insert(std::make_pair(evd->fd, evd));
 
         // Register time in epoll queue.
-        if (!callEpollCtl(EPOLL_CTL_ADD, evd->fd, EPOLLIN | EPOLLET, evd, u"adding process termination")) {
+        if (!callEpollCtl(EPOLL_CTL_ADD, evd->fd, EPOLLIN | EPOLLHUP | EPOLLERR | EPOLLET, evd, u"adding process termination")) {
             ::close(evd->fd);
             deleteEventData(evd, EVT_PROC);
             return nullptr;
@@ -751,7 +754,7 @@ void* ts::Reactor::Guts::newReadNotify(ReactorHandlerInterface* handler, SysSock
         // The file descriptor was not already monitored for read.
         const bool also_write = (evd->type & EVT_WRITE) != 0;
         const int op = also_write ? EPOLL_CTL_MOD : EPOLL_CTL_ADD;
-        const uint32_t events = EPOLLIN | EPOLLET | (also_write ? int(EPOLLOUT) : 0);
+        const uint32_t events = EPOLLIN | EPOLLHUP | EPOLLERR | EPOLLET | (also_write ? int(EPOLLOUT) : 0);
         if (!callEpollCtl(op, evd->fd, events, evd, u"adding read notification")) {
             if (!also_write) {
                 // The EventData was just created, remove it.
@@ -784,7 +787,7 @@ bool ts::Reactor::Guts::sysDeleteRead(EventData* evd, bool silent)
     // Delete or update event in epoll queue.
     const bool also_write = (evd->type & EVT_WRITE) != 0;
     const int op = also_write ? EPOLL_CTL_MOD : EPOLL_CTL_DEL;
-    const uint32_t events = also_write ? (EPOLLOUT | EPOLLET) : 0;
+    const uint32_t events = also_write ? (EPOLLOUT | EPOLLHUP | EPOLLERR | EPOLLET) : 0;
     return callEpollCtl(op, evd->fd, events, evd, u"removing read notification");
 }
 
@@ -805,7 +808,7 @@ void* ts::Reactor::Guts::newWriteNotify(ReactorHandlerInterface* handler, SysSoc
         // The file descriptor was not already monitored for write.
         const bool also_read = (evd->type & EVT_READ) != 0;
         const int op = also_read ? EPOLL_CTL_MOD : EPOLL_CTL_ADD;
-        const uint32_t events = EPOLLOUT | EPOLLET | (also_read ? int(EPOLLIN) : 0);
+        const uint32_t events = EPOLLOUT | EPOLLHUP | EPOLLERR | EPOLLET | (also_read ? int(EPOLLIN) : 0);
         if (!callEpollCtl(op, evd->fd, events, evd, u"adding write notification")) {
             if (!also_read) {
                 // The EventData was just created, remove it.
@@ -838,6 +841,6 @@ bool ts::Reactor::Guts::sysDeleteWrite(EventData* evd, bool silent)
     // Delete or update event in epoll queue.
     const bool also_read = (evd->type & EVT_READ) != 0;
     const int op = also_read ? EPOLL_CTL_MOD : EPOLL_CTL_DEL;
-    const uint32_t events = also_read ? (EPOLLIN | EPOLLET) : 0;
+    const uint32_t events = also_read ? (EPOLLIN | EPOLLHUP | EPOLLERR | EPOLLET) : 0;
     return callEpollCtl(op, evd->fd, events, evd, u"removing write notification");
 }
