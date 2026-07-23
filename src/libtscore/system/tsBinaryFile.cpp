@@ -582,6 +582,7 @@ bool ts::BinaryFile::readStream(void* buffer, size_t request_size, size_t& read_
     if (iosb == nullptr || !iosb->pending) {
         _position += read_size;
     }
+    SetLastSysErrorCode(err_code);
     return SysSuccess(err_code);
 }
 
@@ -619,6 +620,7 @@ bool ts::BinaryFile::writeStream(const void* buffer, size_t data_size, size_t& w
     if (iosb == nullptr || !iosb->pending) {
         _position = pos + written_size;
     }
+    SetLastSysErrorCode(err_code);
     return SysSuccess(err_code);
 }
 
@@ -629,7 +631,7 @@ bool ts::BinaryFile::writeStream(const void* buffer, size_t data_size, size_t& w
 
 bool ts::BinaryFile::asyncCompletedStream(IOSB* iosb)
 {
-    bool success = iosb != nullptr && SysSuccess(iosb->error_code); 
+    bool success = iosb != nullptr && SysSuccess(iosb->error_code);
 #if defined(TS_WINDOWS)
     if (success) {
         // Get the BinaryFile asynchronous parameters.
