@@ -8,10 +8,12 @@
 
 #include "tsReactorSupport.h"
 
-#include "tsBeforeStandardHeaders.h"
-#include <sys/stat.h>
-#include <sys/epoll.h>
-#include "tsAfterStandardHeaders.h"
+#if defined(TS_USE_EPOLL)
+    #include "tsBeforeStandardHeaders.h"
+    #include <sys/stat.h>
+    #include <sys/epoll.h>
+    #include "tsAfterStandardHeaders.h"
+#endif
 
 
 //----------------------------------------------------------------------------
