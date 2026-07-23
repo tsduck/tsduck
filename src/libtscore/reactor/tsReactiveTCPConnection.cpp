@@ -130,7 +130,7 @@ void ts::ReactiveTCPConnection::processQueuedOperations()
 
         // Close the underlying socket. This must be done in asynchronous I/O only. With non-blocking I/O,
         // this was done in startWriteStream() because of potential connect in progress.
-        if constexpr (Reactor::UseAsynchronousIO()) {
+        if constexpr (ReactorSupport::UseAsynchronousIO()) {
             _socket.close(silent);
         }
 
@@ -203,7 +203,7 @@ bool ts::ReactiveTCPConnection::startConnect(ReactiveTCPConnectionHandlerInterfa
         return false;
     }
 
-    if constexpr (Reactor::UseNonBlockingIO()) {
+    if constexpr (ReactorSupport::UseNonBlockingIO()) {
         // With non-blocking I/O, the connection may have immediately succeeded.
         if (iosb->pending) {
             // Connection in progress. Register the request.
@@ -217,7 +217,7 @@ bool ts::ReactiveTCPConnection::startConnect(ReactiveTCPConnectionHandlerInterfa
         }
     }
 
-    if constexpr (Reactor::UseAsynchronousIO()) {
+    if constexpr (ReactorSupport::UseAsynchronousIO()) {
         // Connection in progress or completed, there will be an asynchronous I/O completion. Register the request.
         _pending_connect = iosb;
     }
@@ -347,7 +347,7 @@ bool ts::ReactiveTCPConnection::startClose(ReactiveTCPConnectionHandlerInterface
     // Disconnect the socket.
     _socket.disconnect(silent);
 
-    if constexpr (Reactor::UseNonBlockingIO()) {
+    if constexpr (ReactorSupport::UseNonBlockingIO()) {
         // With non-blocking I/O, send/receive immediately succeed or fail. However, a connect() operation is
         // asynchronous and one can be in progress, for possibly a long time if the server is irresponsive.
         // Unlike asynchronous I/O on Windows, there is no way to cancel a connect() in progress. The only way

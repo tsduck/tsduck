@@ -7,7 +7,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsNonBlockingDevice.h"
-#include "tsIPUtils.h"
+#include "tsReactorSupport.h"
 
 
 //----------------------------------------------------------------------------
@@ -83,6 +83,23 @@ bool ts::NonBlockingDevice::checkNonBlocking(IOSB* iosb, const UChar* opname)
 #endif
     }
     return checkNonBlocking(iosb != nullptr, opname);
+}
+
+
+//----------------------------------------------------------------------------
+// Check if the device is supported by a reactor.
+//----------------------------------------------------------------------------
+
+bool ts::NonBlockingDevice::isSupportedByReactor(bool recheck)
+{
+    if (recheck || !_reactor_supported_checked) {
+        _reactor_supported = ReactorSupport::SupportedDevice(getSocket());
+        _reactor_supported_checked = true;
+        if (!_reactor_supported) {
+            report().debug(u"warning: using blocking I/O on file descriptor %d", getSocket());
+        }
+    }
+    return _reactor_supported;
 }
 
 

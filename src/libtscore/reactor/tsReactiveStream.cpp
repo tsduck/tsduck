@@ -46,7 +46,7 @@ bool ts::ReactiveStream::hasPendingIO()
 bool ts::ReactiveStream::needsWriteReady()
 {
     // We need write-ready notifications when some send operations are pending.
-    return Reactor::UseNonBlockingIO() && !_pending_send.empty();
+    return ReactorSupport::UseNonBlockingIO() && !_pending_send.empty();
 }
 
 
@@ -79,23 +79,42 @@ bool ts::ReactiveStream::enqueueCompletedIO(const std::shared_ptr<IOSB>& iosb, b
 bool ts::ReactiveStream::tryCompletedIO(const std::shared_ptr<IOSB>& iosb)
 {
     // At the level of this class, we only handle send operations.
-    const std::shared_ptr<SendRequest> send = std::dynamic_pointer_cast<SendRequest>(iosb->react_data);
-    if (send == nullptr) {
+    const std::shared_ptr<SendRequest> req = std::dynamic_pointer_cast<SendRequest>(iosb->react_data);
+    if (req == nullptr) {
         // Don't know this request.
         return false;
     }
     else {
         // Completed send request or send eof request.
-        if (send->eof) {
+        if (req->eof) {
             // Call subclass to perform actual close of the write side.
-            iosb->error_code = processCloseWriteStream(send->silent);
+            iosb->error_code = processCloseWriteStream(req->silent);
             // The error code after a successful close-write operation is SYS_EOF.
             if (SysSuccess(iosb->error_code)) {
                 iosb->error_code = SYS_EOF;
             }
         }
-        if (send->handler != nullptr) {
-            send->handler->handleWriteStream(*this, iosb->error_code, iosb->app_data);
+        else if (req->blocking) {
+            // Perform a blocking write (device does not support insertion in reactor).
+            const uint8_t* addr = reinterpret_cast<const uint8_t*>(req->data);
+            size_t remain = req->size;
+            while (remain > 0) {
+                size_t ret_size = 0;
+                if (_stream.writeStream(addr, remain, ret_size, iosb.get())) {
+                    assert(ret_size <= remain);
+                    assert(!iosb->pending);
+                    addr += ret_size;
+                    remain -= ret_size;
+                    iosb->error_code = SYS_SUCCESS;
+                }
+                else {
+                    iosb->error_code = LastSysErrorCode();
+                    break;
+                }
+            }
+        }
+        if (req->handler != nullptr) {
+            req->handler->handleWriteStream(*this, iosb->error_code, iosb->app_data);
         }
         return true;
     }
@@ -123,6 +142,14 @@ void ts::ReactiveStream::processQueuedOperations()
             report().error(u"internal error in ReactiveStream: unexpected type of completed request");
         }
     }
+
+    // If a blocking read is required, read now (device does not support insertion in reactor).
+    if (_pending_receive != nullptr) {
+        auto req = std::dynamic_pointer_cast<ReceiveRequest>(_pending_receive->react_data);
+        if (req != nullptr && req->blocking) {
+            handleReadReady(reactor(), EventId(), SYS_SUCCESS);
+        }
+    }
 }
 
 
@@ -142,18 +169,23 @@ bool ts::ReactiveStream::startWriteStream(ReactiveStreamHandlerInterface* handle
     req->handler = handler;
     req->data = data;
     req->size = size;
+    req->blocking = !device().isSupportedByReactor();
     auto iosb = std::make_shared<IOSB>();
     iosb->app_data = user_data;
     iosb->react_data = req;
 
-    if constexpr (Reactor::UseNonBlockingIO()) {
+    if (req->blocking) {
+        // Cannot be notified of write-ready conditions, assumed to be "always ready".
+        // Will perform a blocking write (supposed to not block too long) in pot-processing queue.
+        enqueueCompletedIO(iosb, false);
+    }
+    else if constexpr (ReactorSupport::UseNonBlockingIO()) {
         // Enqueue the send request. Will be sent when write is possible.
         _pending_send.push_back(iosb);
         // Make sure to be notified when a send operation is possible.
         return activateWriteReady();
     }
-
-    if constexpr (Reactor::UseAsynchronousIO()) {
+    else if constexpr (ReactorSupport::UseAsynchronousIO()) {
         // Start the asynchronous send.
         if (!_stream.writeStream(data, size, iosb.get())) {
             // Failed to start the operation.
@@ -306,11 +338,17 @@ bool ts::ReactiveStream::startReadStream(ReactiveStreamHandlerInterface* handler
     req->handler = handler;
     req->buffer_size = buffer_size;
     req->data.resize(buffer_size);
+    req->blocking = !device().isSupportedByReactor();
     _pending_receive = std::make_shared<IOSB>();
     _pending_receive->app_data = user_data;
     _pending_receive->react_data = req;
 
-    if constexpr (Reactor::UseAsynchronousIO()) {
+    if (req->blocking) {
+        // Cannot be notified of read-ready conditions, assumed to be "always ready".
+        // Will perform a blocking read (supposed to not block too long) in pot-processing queue.
+        signalQueuedOperations();
+    }
+    else if constexpr (ReactorSupport::UseAsynchronousIO()) {
         // Start the first receive operation. Even if it immediately completes, an asynchronous I/O completion will be posted.
         size_t retsize = 0;
         if (!_stream.readStream(req->data.data(), req->data.size(), retsize, nullptr, _pending_receive.get())) {
@@ -352,6 +390,7 @@ void ts::ReactiveStream::handleReadReady(Reactor& reactor, EventId id, int error
         }
         else if (_pending_receive->pending) {
             // No receive is possible now, retry later on read-notification.
+            assert(!req->blocking);
             break;
         }
         else {
@@ -549,7 +588,7 @@ void ts::ReactiveStream::cancelReadWriteStream(bool silent)
     // Cancel asynchronous I/O currently in progress.
     cancelAsynchronousIO(silent);
 
-    if constexpr (Reactor::UseNonBlockingIO()) {
+    if constexpr (ReactorSupport::UseNonBlockingIO()) {
         // Discard pending send and receive requests, they are not started yet.
         _pending_send.clear();
         _pending_receive.reset();

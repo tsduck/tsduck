@@ -216,7 +216,7 @@ void ts::ReactiveTCPServer::cancelAccept(bool silent)
     // Cancel asynchronous I/O currently in progress (asynchronous I/O).
     cancelAsynchronousIO(silent);
 
-    if constexpr (Reactor::UseNonBlockingIO()) {
+    if constexpr (ReactorSupport::UseNonBlockingIO()) {
         // Mark all pending accept requests as canceled.
         cancelQueue<AcceptRequest>(_pending_accept, _completed_io);
         // Handle all completions in reactor context.

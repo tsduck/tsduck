@@ -24,7 +24,7 @@ ts::ReactiveUDPSocket::~ReactiveUDPSocket()
 {
     // It is an error to destroy a reactive socket without waiting for asynchronous I/O.
     // Force a blocking wait on all pending asynchronous I/O.
-    if constexpr (Reactor::UseAsynchronousIO()) {
+    if constexpr (ReactorSupport::UseAsynchronousIO()) {
         for (auto& iosb : _pending_send) {
             reactor().trace(u"warning: blocking wait for UDP pending asynchronous send");
             cancelAndWaitAsynchronousIO(*iosb, true);
@@ -111,14 +111,14 @@ bool ts::ReactiveUDPSocket::startSend(ReactiveUDPHandlerInterface* handler, cons
     //   send queue are in progress or completed. Don't test if the operation completed, this will be done
     //   in handleAsynchronousIO().
 
-    if constexpr (Reactor::UseNonBlockingIO()) {
+    if constexpr (ReactorSupport::UseNonBlockingIO()) {
         // Enqueue the send request. Will be sent when write is possible.
         _pending_send.push_back(iosb);
         // Make sure to be notified when a send operation is possible.
         return activateWriteReady();
     }
 
-    if constexpr (Reactor::UseAsynchronousIO()) {
+    if constexpr (ReactorSupport::UseAsynchronousIO()) {
         // Start the asynchronous send.
         if (!_socket.send(data, size, destination, iosb.get())) {
             // Failed to start the operation.
@@ -250,7 +250,7 @@ bool ts::ReactiveUDPSocket::startReceive(ReactiveUDPHandlerInterface* handler, s
         return true;
     }
 
-    if constexpr (Reactor::UseAsynchronousIO()) {
+    if constexpr (ReactorSupport::UseAsynchronousIO()) {
         // Start the first receive operation.
         auto req = std::make_shared<ReceiveRequest>(_max_receive_size);
         _pending_receive = std::make_shared<IOSB>();
@@ -258,7 +258,7 @@ bool ts::ReactiveUDPSocket::startReceive(ReactiveUDPHandlerInterface* handler, s
         return tryReceive(_pending_receive.get());
     }
 
-    if constexpr (Reactor::UseNonBlockingIO()) {
+    if constexpr (ReactorSupport::UseNonBlockingIO()) {
         // Non-blocking I/O model: Get notified when a reception operation is possible, if not already done.
         return activateReadReady();
     }
@@ -391,7 +391,7 @@ void ts::ReactiveUDPSocket::cancelSendReceive(bool silent)
     deactivateReadReady(silent);
     deactivateWriteReady(silent);
 
-    if constexpr (Reactor::UseNonBlockingIO()) {
+    if constexpr (ReactorSupport::UseNonBlockingIO()) {
         // Discard pending send requests, they are not started yet.
         _pending_send.clear();
     }

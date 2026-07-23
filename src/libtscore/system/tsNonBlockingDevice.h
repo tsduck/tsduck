@@ -117,6 +117,13 @@ namespace ts {
         bool isNonBlocking() const { return _is_non_blocking; }
 
         //!
+        //! Check if the device is supported by a reactor for non-blocking or asynchronous I/O.
+        //! @param [in] recheck If true, force a recheck. If false and the device was previously checked, return the previous cached value.
+        //! @return True if the device is supported by a reactor for non-blocking or asynchronous I/O, false otherwise.
+        //!
+        bool isSupportedByReactor(bool recheck = false);
+
+        //!
         //! This static method checks if a system error code means "I/O in progress" (asynchronous I/O) or "I/O would block" (non-blocking I/O).
         //! @param [in] error_code System error code.
         //! @return True if @a error_code is an in-progress/would-block one.
@@ -353,5 +360,7 @@ namespace ts {
 
     private:
         bool _is_non_blocking;
+        bool _reactor_supported = false;
+        bool _reactor_supported_checked = false;
     };
 }

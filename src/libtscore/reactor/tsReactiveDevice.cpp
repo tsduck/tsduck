@@ -73,7 +73,10 @@ void ts::ReactiveDevice::deactivateAll(bool silent)
 
 bool ts::ReactiveDevice::activateReadReady()
 {
-    if constexpr (Reactor::UseNonBlockingIO()) {
+    if constexpr (ReactorSupport::UseNonBlockingIO()) {
+        if (!device().isSupportedByReactor()) {
+            return true;
+        }
         if (!_read_ready_id.isValid()) {
             _read_ready_id = reactor().newReadNotify(this, _device.getSocket());
             return _read_ready_id.isValid();
@@ -84,7 +87,7 @@ bool ts::ReactiveDevice::activateReadReady()
 
 void ts::ReactiveDevice::deactivateReadReady(bool silent)
 {
-    if constexpr (Reactor::UseNonBlockingIO()) {
+    if constexpr (ReactorSupport::UseNonBlockingIO()) {
         if (_read_ready_id.isValid()) {
             reactor().deleteReadNotify(_read_ready_id, silent);
             _read_ready_id.invalidate();
@@ -94,7 +97,10 @@ void ts::ReactiveDevice::deactivateReadReady(bool silent)
 
 bool ts::ReactiveDevice::activateWriteReady()
 {
-    if constexpr (Reactor::UseNonBlockingIO()) {
+    if constexpr (ReactorSupport::UseNonBlockingIO()) {
+        if (!device().isSupportedByReactor()) {
+            return true;
+        }
         if (!_write_ready_id.isValid()) {
             _write_ready_id = reactor().newWriteNotify(this, _device.getSocket());
             return _write_ready_id.isValid();
@@ -105,7 +111,7 @@ bool ts::ReactiveDevice::activateWriteReady()
 
 void ts::ReactiveDevice::deactivateWriteReady(bool silent)
 {
-    if constexpr (Reactor::UseNonBlockingIO()) {
+    if constexpr (ReactorSupport::UseNonBlockingIO()) {
         if (_write_ready_id.isValid()) {
             reactor().deleteWriteNotify(_write_ready_id, silent);
             _write_ready_id.invalidate();
@@ -120,7 +126,10 @@ void ts::ReactiveDevice::deactivateWriteReady(bool silent)
 
 bool ts::ReactiveDevice::activateAsynchronousIO()
 {
-    if constexpr (Reactor::UseAsynchronousIO()) {
+    if constexpr (ReactorSupport::UseAsynchronousIO()) {
+        if (!device().isSupportedByReactor()) {
+            return true;
+        }
         if (!_async_io_id.isValid()) {
             _async_io_id = reactor().newAsynchronousIO(this, _device.getSocket());
             return _async_io_id.isValid();
@@ -131,7 +140,7 @@ bool ts::ReactiveDevice::activateAsynchronousIO()
 
 void ts::ReactiveDevice::deactivateAsynchronousIO(bool silent)
 {
-    if constexpr (Reactor::UseAsynchronousIO()) {
+    if constexpr (ReactorSupport::UseAsynchronousIO()) {
         if (_async_io_id.isValid()) {
             reactor().deleteAsynchronousIO(_async_io_id, silent);
             _async_io_id.invalidate();
@@ -141,7 +150,7 @@ void ts::ReactiveDevice::deactivateAsynchronousIO(bool silent)
 
 void ts::ReactiveDevice::cancelAsynchronousIO(bool silent)
 {
-    if constexpr (Reactor::UseAsynchronousIO()) {
+    if constexpr (ReactorSupport::UseAsynchronousIO()) {
         if (_async_io_id.isValid()) {
             reactor().cancelAsynchronousIO(_async_io_id, silent);
         }
@@ -150,7 +159,7 @@ void ts::ReactiveDevice::cancelAsynchronousIO(bool silent)
 
 bool ts::ReactiveDevice::cancelAndWaitAsynchronousIO(NonBlockingDevice::IOSB& iosb, bool silent)
 {
-    if constexpr (Reactor::UseAsynchronousIO()) {
+    if constexpr (ReactorSupport::UseAsynchronousIO()) {
         if (_async_io_id.isValid()) {
             reactor().cancelAndWaitAsynchronousIO(_async_io_id, iosb, silent);
         }

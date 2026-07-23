@@ -359,7 +359,8 @@ bool ts::BinaryFile::openInternal(bool reopen)
     }
 
     // Set the file descriptor in non-blocking mode if necessary.
-    if (isNonBlocking() && !setSystemNonBlocking(true)) {
+    // Force a recheck of reactor support because we opened a new file descriptor.
+    if (isNonBlocking() && isSupportedByReactor(true) && !setSystemNonBlocking(true)) {
         ::close(_hfd);
         return false;
     }

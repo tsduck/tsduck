@@ -171,8 +171,9 @@ namespace ts {
             ReactiveStreamHandlerInterface* handler = nullptr;
             const void* data = nullptr;
             size_t      size = 0;
-            bool        eof = false;     // Send an end-of-file condition, ie. close the write direction.
-            bool        silent = false;  // Used with startCloseWriteStream().
+            bool        blocking = false;  // Perform a blocking I/O in the completion queue.
+            bool        eof = false;       // Send an end-of-file condition, ie. close the write direction.
+            bool        silent = false;    // Used with startCloseWriteStream().
         };
 
         // Description of a read request.
@@ -186,6 +187,7 @@ namespace ts {
             ReactiveStreamHandlerInterface* handler = nullptr;
             ReactiveInputControl control {};
             ByteBlock data {};
+            bool      blocking = false;  // Perform a blocking I/O in the completion queue.
             bool      new_data = false;  // Some new data were received since last time we examined the buffer.
             size_t    next_read = 0;     // Previously read in data but not yet consumed by application.
             size_t    buffer_size = DEFAULT_RECEIVE_BUFFER_SIZE;
