@@ -7,7 +7,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Fork a process and create a pipe to its standard input.
+//!  Fork a process and create optional pipes to its standard input/output.
 //!
 //----------------------------------------------------------------------------
 
@@ -18,7 +18,7 @@
 
 namespace ts {
     //!
-    //! Fork a process and create an optional pipe to its standard input.
+    //! Fork a process and create optional pipes to its standard input/output.
     //! @ingroup libtscore system
     //!
     class TSCOREDLL ForkPipe: public NonBlockingDevice, public StreamInterface
@@ -59,13 +59,9 @@ namespace ts {
         //!
         //! How to standard input in the created process.
         //!
-        //! The pipe can be used either on input or output, but not both.
-        //! So, STDIN_PIPE is also forbidden with output mode is either
-        //! STDOUT_PIPE or STDOUTERR_PIPE.
-        //!
         enum InputMode {
             STDIN_PARENT,  //!< Keep same stdin as current (parent) process.
-            STDIN_PIPE,    //!< Use the pipe as stdin.
+            STDIN_PIPE,    //!< Use a pipe as stdin.
             STDIN_NONE,    //!< No standard input (the null device in fact).
         };
 
@@ -76,20 +72,18 @@ namespace ts {
             KEEP_BOTH,       //!< Keep same stdout and stderr as current (parent) process.
             STDOUT_ONLY,     //!< Merge stderr into current stdout.
             STDERR_ONLY,     //!< Merge stdout into current stderr.
-            STDOUT_PIPE,     //!< Use the pipe to receive stdout, keep same stderr as current (parent) process.
-            STDOUTERR_PIPE,  //!< Use the pipe to receive a merge of stdout and stderr.
+            STDOUT_PIPE,     //!< Use a pipe to receive stdout, keep same stderr as current (parent) process.
+            STDOUTERR_PIPE,  //!< Use a pipe to receive a merge of stdout and stderr.
         };
 
         //!
-        //! Create the process, open the optional pipe.
+        //! Create the process, open the optional pipes.
         //! @param [in] command The command to execute.
         //! @param [in] wait_mode How to wait for process termination in close().
-        //! @param [in] buffer_size The pipe buffer size in bytes. Used on Windows only. Zero means default.
+        //! @param [in] buffer_size The pipes buffer size in bytes. Used on Windows only. Zero means default.
         //! @param [in] out_mode How to handle stdout and stderr.
-        //! @param [in] in_mode How to handle stdin. Use the pipe by default.
-        //! When set to KEEP_STDIN, no pipe is created.
-        //! @return True on success, false on error.
-        //! Do not return on success when @a wait_mode is EXIT_PROCESS.
+        //! @param [in] in_mode How to handle stdin.
+        //! @return True on success, false on error. Do not return on success when @a wait_mode is EXIT_PROCESS.
         //!
         bool open(const UString& command, WaitMode wait_mode, size_t buffer_size, OutputMode out_mode, InputMode in_mode);
 
@@ -156,14 +150,9 @@ namespace ts {
         //! This static method launches a command, without pipe, optionally without waiting for the completion of the command process.
         //! @param [in] command The command to execute.
         //! @param [in,out] report Where to report errors.
-        //! @param [in] out_mode How to handle stdout and stderr.
-        //! Must be KEEP_BOTH (default), STDOUT_ONLY or STDERR_ONLY.
-        //! Output modes using pipes are forbidden.
-        //! @param [in] in_mode How to handle stdin.
-        //! Must be STDIN_PARENT (default) or STDIN_NONE.
-        //! Input modes using pipes are forbidden.
-        //! @param [in] wait_mode How to wait for the command process.
-        //! Must be ASYNCHRONOUS (default) or SYNCHRONOUS.
+        //! @param [in] out_mode How to handle stdout and stderr. Must be KEEP_BOTH (default), STDOUT_ONLY or STDERR_ONLY. Output modes using pipes are forbidden.
+        //! @param [in] in_mode How to handle stdin. Must be STDIN_PARENT (default) or STDIN_NONE. Input modes using pipes are forbidden.
+        //! @param [in] wait_mode How to wait for the command process. Must be ASYNCHRONOUS (default) or SYNCHRONOUS.
         //! @return True on success, false on error.
         //!
         static bool Launch(const UString& command,
@@ -184,8 +173,8 @@ namespace ts {
         static bool GetOutput(UString& output, const UString& command, Report& report, bool include_stderr = false);
 
         // Implementation of NonBlockingDevice.
-        virtual SysHandleType getHandle() const override;
-        virtual SysSocketType getSocket() const override;
+        virtual SysHandleType getReadHandle() const override;
+        virtual SysHandleType getWriteHandle() const override;
 
         // Implementation of StreamInterface.
         virtual bool readStream(void* addr, size_t size, const AbortInterface* abort = nullptr) override;
@@ -202,18 +191,18 @@ namespace ts {
         virtual bool allowSetNonBlocking() const override;
 
     private:
-        InputMode        _in_mode = STDIN_PIPE;     // Input mode for the created process.
-        OutputMode       _out_mode = KEEP_BOTH;     // Output mode for the created process.
-        volatile bool    _is_open = false;          // Open and running.
-        WaitMode         _wait_mode = ASYNCHRONOUS; // How to wait for child process termination in close().
-        bool             _in_pipe = false;          // The process uses an input pipe.
-        bool             _out_pipe = false;         // The process uses an output pipe.
-        bool             _use_pipe = false;         // The process uses a pipe, somehow.
-        bool             _ignore_abort = false;     // Ignore early termination of child process.
-        volatile bool    _broken_pipe = false;      // Pipe is broken, do not attempt to write.
-        volatile bool    _eof = false;              // Got end of file on input pipe.
-        SysHandleType    _hfd = SYS_HANDLE_INVALID; // Pipe input or output handle / file descriptor.
-        SysProcessIdType _fpid = SYS_PROCESS_ID_INVALID; // Forked process id.
-        SysHandleType    _process = SYS_HANDLE_INVALID;  // Handle to child process (Windows only).
+        InputMode        _in_mode = STDIN_NONE;           // Input mode for the created process.
+        OutputMode       _out_mode = KEEP_BOTH;           // Output mode for the created process.
+        volatile bool    _is_open = false;                // Open and running.
+        WaitMode         _wait_mode = ASYNCHRONOUS;       // How to wait for child process termination in close().
+        bool             _in_pipe = false;                // The process uses an input pipe.
+        bool             _out_pipe = false;               // The process uses an output pipe.
+        bool             _ignore_abort = false;           // Ignore early termination of child process.
+        volatile bool    _broken_pipe = false;            // Output pipe is broken, do not attempt to write.
+        volatile bool    _eof = false;                    // Got end of file on input pipe.
+        SysHandleType    _read_hfd = SYS_HANDLE_INVALID;  // File descriptor to read (output of process).
+        SysHandleType    _write_hfd = SYS_HANDLE_INVALID; // File descriptor to write (input of process).
+        SysProcessIdType _fpid = SYS_PROCESS_ID_INVALID;  // Forked process id.
+        SysHandleType    _process = SYS_HANDLE_INVALID;   // Handle to child process (Windows only).
     };
 }

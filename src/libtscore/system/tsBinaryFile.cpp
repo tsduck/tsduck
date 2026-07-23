@@ -66,14 +66,14 @@ bool ts::BinaryFile::allowSetNonBlocking() const
 // Get the underlying file descriptor or device handle.
 //----------------------------------------------------------------------------
 
-ts::SysHandleType ts::BinaryFile::getHandle() const
+ts::SysHandleType ts::BinaryFile::getReadHandle() const
 {
     return _hfd;
 }
 
-ts::SysSocketType ts::BinaryFile::getSocket() const
+ts::SysHandleType ts::BinaryFile::getWriteHandle() const
 {
-    return _hfd == SYS_HANDLE_INVALID ? SYS_SOCKET_INVALID : SysSocketType(_hfd);
+    return _hfd;
 }
 
 

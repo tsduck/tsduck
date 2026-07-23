@@ -11,7 +11,9 @@
 //----------------------------------------------------------------------------
 
 #include "tsReactiveStream.h"
+#include "tsReactiveTextStream.h"
 #include "tsBinaryFile.h"
+#include "tsForkPipe.h"
 #include "tsCerrReport.h"
 #include "tsFileUtils.h"
 #include "tsErrCodeReport.h"
@@ -25,6 +27,7 @@
 class ReactiveStreamTest: public tsunit::Test
 {
     TSUNIT_DECLARE_TEST(File);
+    TSUNIT_DECLARE_TEST(Process);
 
 public:
     virtual void beforeTest() override;
@@ -58,7 +61,7 @@ void ReactiveStreamTest::afterTest()
 
 
 //----------------------------------------------------------------------------
-// Unitary tests
+// Unitary test: write / read a file
 //----------------------------------------------------------------------------
 
 namespace {
@@ -145,6 +148,134 @@ TSUNIT_DEFINE_TEST(File)
 
     TSUNIT_EQUAL(WorkFile::max_messages, wfile.written_messages);
     TSUNIT_EQUAL(WorkFile::max_messages, wfile.read_messages);
+
+    fs::remove(_temp_file_name, &ts::ErrCodeReport());
+    TSUNIT_ASSERT(!fs::exists(_temp_file_name));
+}
+
+
+//----------------------------------------------------------------------------
+// Unitary test: write / read a file
+//----------------------------------------------------------------------------
+
+namespace {
+
+    class WorkProcess: public ts::ReactiveTextStreamHandlerInterface, public ts::ReactorHandlerInterface
+    {
+    private:
+        ts::ReactiveTextStream& _stream;
+
+        WorkProcess() = delete;
+
+    public:
+        ts::EventId process_evid {};
+        ts::SysProcessIdType process_pid = ts::SYS_PROCESS_ID_INVALID;
+        ts::UStringVector output {};
+        bool got_eof = false;
+        bool got_process = false;
+
+        WorkProcess(ts::ReactiveTextStream& str) :
+            _stream(str)
+        {
+        }
+
+        virtual void handleTextLine(ts::ReactiveTextStream& stream, const ts::UString& line, int error_code) override
+        {
+            tsunit::Test::debug() << "Reactive process: got line \"" << line << "\", error code: " << error_code << std::endl;
+            TSUNIT_ASSERT(&stream == &_stream);
+            TSUNIT_ASSERT(!got_eof);
+
+            if (error_code == ts::SYS_EOF) {
+                got_eof = true;
+                if (got_eof && got_process) {
+                    stream.stream().reactor().exitEventLoop();
+                }
+            }
+            else {
+                TSUNIT_ASSERT(ts::SysSuccess(error_code));
+                output.push_back(line);
+            }
+        }
+
+        virtual void handleProcessTermination(ts::Reactor& reactor, ts::EventId id, int pid) override
+        {
+            tsunit::Test::debug() << "Reactive process: process terminated, pid: " << pid << std::endl;
+            TSUNIT_ASSERT(&reactor == &_stream.stream().reactor());
+            TSUNIT_ASSERT(id == process_evid);
+            TSUNIT_EQUAL(process_pid, pid);
+
+            got_process = true;
+            if (got_eof && got_process) {
+                reactor.exitEventLoop();
+            }
+        }
+    };
+}
+
+TSUNIT_DEFINE_TEST(Process)
+{
+#if defined(TS_WINDOWS)
+    const ts::UString shell_command = u"powershell";
+    const ts::UString ls_command = u"Get-ChildItem ";
+    const ts::UString cat_command = u"Get-Content ";
+    const ts::UString exit_command = u"exit";
+    const std::string eol = "\r\n";
+#else
+    const ts::UString shell_command = u"sh";
+    const ts::UString ls_command = u"ls -l ";
+    const ts::UString cat_command = u"cat ";
+    const ts::UString exit_command = u"exit";
+    const std::string eol = "\n";
+#endif
+
+    debug() << "Reactive process: file name: " << _temp_file_name.string() << std::endl;
+
+    const ts::UStringVector file_content {
+        u"<<== this is a recognizable content ==>>",
+        u"[[[[---- second line ----]]]]"
+    };
+    TSUNIT_ASSERT(ts::UString::Save(file_content, _temp_file_name));
+    TSUNIT_ASSERT(fs::exists(_temp_file_name));
+
+    ts::Reactor reactor(&CERR);
+    ts::ForkPipe process(&reactor);
+    ts::ReactiveStream react_process(reactor, process, process);
+    ts::ReactiveTextStream text_process(react_process, eol);
+    WorkProcess wproc(text_process);
+
+    TSUNIT_ASSERT(reactor.open());
+    TSUNIT_ASSERT(process.open(shell_command, ts::ForkPipe::ASYNCHRONOUS, 0, ts::ForkPipe::STDOUT_PIPE, ts::ForkPipe::STDIN_PIPE));
+    TSUNIT_ASSERT(process.isOpen());
+    TSUNIT_ASSERT(!process.isBroken());
+    TSUNIT_ASSERT(!process.isSynchronous());
+
+    wproc.process_pid = process.getProcessId();
+    debug() << "Reactive process: process pid: " << wproc.process_pid << std::endl;
+    TSUNIT_ASSERT(wproc.process_pid != ts::SYS_PROCESS_ID_INVALID);
+
+    wproc.process_evid = reactor.newProcessIdTermination(&wproc, wproc.process_pid);
+    TSUNIT_ASSERT(wproc.process_evid.isValid());
+    TSUNIT_ASSERT(text_process.startReadText(&wproc));
+    TSUNIT_ASSERT(text_process.startWriteLine(ls_command + _temp_file_name));
+    TSUNIT_ASSERT(text_process.startWriteLine(cat_command + _temp_file_name));
+    TSUNIT_ASSERT(text_process.startWriteLine(exit_command));
+    TSUNIT_ASSERT(reactor.processEventLoop());
+    TSUNIT_ASSERT(process.close());
+    TSUNIT_ASSERT(reactor.close());
+
+    debug() << "Reactive process: received " << wproc.output.size() << " lines" << std::endl;
+    TSUNIT_ASSERT(!wproc.output.empty());
+
+    const ts::UString name(_temp_file_name.filename());
+    bool found_name = false;
+    size_t index = 0;
+    while (!found_name && index < wproc.output.size()) {
+        if (wproc.output[index++].contains(name)) {
+            found_name = true;
+        }
+    }
+
+    //@@@
 
     fs::remove(_temp_file_name, &ts::ErrCodeReport());
     TSUNIT_ASSERT(!fs::exists(_temp_file_name));

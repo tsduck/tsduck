@@ -21,17 +21,40 @@ ts::NonBlockingDevice::~NonBlockingDevice()
 
 //----------------------------------------------------------------------------
 // Get the underlying file descriptor or device handle.
-// The default implementation return the error values.
 //----------------------------------------------------------------------------
+
+ts::SysHandleType ts::NonBlockingDevice::getReadHandle() const
+{
+    return SYS_HANDLE_INVALID; // default implementation
+}
+
+ts::SysHandleType ts::NonBlockingDevice::getWriteHandle() const
+{
+    return SYS_HANDLE_INVALID; // default implementation
+}
 
 ts::SysHandleType ts::NonBlockingDevice::getHandle() const
 {
-    return SYS_HANDLE_INVALID;
+    const SysHandleType h = getReadHandle();
+    return h != SYS_HANDLE_INVALID ? h : getWriteHandle();
+}
+
+ts::SysSocketType ts::NonBlockingDevice::getReadSocket() const
+{
+    const SysHandleType h = getReadHandle();
+    return h != SYS_HANDLE_INVALID ? SysSocketType(h) : SYS_SOCKET_INVALID;
+}
+
+ts::SysSocketType ts::NonBlockingDevice::getWriteSocket() const
+{
+    const SysHandleType h = getWriteHandle();
+    return h != SYS_HANDLE_INVALID ? SysSocketType(h) : SYS_SOCKET_INVALID;
 }
 
 ts::SysSocketType ts::NonBlockingDevice::getSocket() const
 {
-    return SYS_SOCKET_INVALID;
+    const SysHandleType h = getHandle();
+    return h != SYS_HANDLE_INVALID ? SysSocketType(h) : SYS_SOCKET_INVALID;
 }
 
 
@@ -160,7 +183,7 @@ int ts::NonBlockingDevice::genericSystemWrite(const void* addr, size_t size, siz
 {
     written_size = 0;
     int err_code = SYS_SUCCESS;
-    const SysHandleType hfd = getHandle();
+    const SysHandleType hfd = getWriteHandle();
 
     if (!checkNonBlocking(iosb, u"system write")) {
         // Not the right blocking mode.
@@ -255,7 +278,7 @@ int ts::NonBlockingDevice::genericSystemRead(void* addr, size_t max_size, size_t
 {
     ret_size = 0;
     int err_code = SYS_SUCCESS;
-    const SysHandleType hfd = getHandle();
+    const SysHandleType hfd = getReadHandle();
 
     if (!checkNonBlocking(iosb, u"system read")) {
         // Not the right blocking mode.

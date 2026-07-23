@@ -50,14 +50,14 @@ bool ts::Socket::allowSetNonBlocking() const
 // Get the underlying file descriptor or device handle.
 //----------------------------------------------------------------------------
 
-ts::SysHandleType ts::Socket::getHandle() const
+ts::SysHandleType ts::Socket::getReadHandle() const
 {
     return _sock == SYS_SOCKET_INVALID ? SYS_HANDLE_INVALID : SysHandleType(_sock);
 }
 
-ts::SysSocketType ts::Socket::getSocket() const
+ts::SysHandleType ts::Socket::getWriteHandle() const
 {
-    return _sock;
+    return _sock == SYS_SOCKET_INVALID ? SYS_HANDLE_INVALID : SysHandleType(_sock);
 }
 
 
