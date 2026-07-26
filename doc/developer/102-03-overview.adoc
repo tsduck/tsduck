@@ -708,7 +708,7 @@ The class classref:Tuner[] interfaces DVB/ATSC/ISDB tuner devices in a portable 
 This is quite a challenge since Linux and Windows use very different tuner frameworks.
 Some very-specific features are available either only on Linux or Windows.
 
-The abstract class classref:TunerParameters[] is the root of a hierarchy of classes containing tuning parameters.
+The abstract class classref:TunerArgs[] is the root of a hierarchy of classes containing tuning parameters.
 Subclasses exist for DVB-S, DVB-T, DVB-C and ATSC.
 ISDB-S and ISDB-T are currently unsupported.
 

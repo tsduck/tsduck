@@ -1,4 +1,4 @@
-﻿#-----------------------------------------------------------------------------
+#-----------------------------------------------------------------------------
 #
 #  TSDuck - The MPEG Transport Stream Toolkit
 #  Copyright (c) 2005-2026, Thierry Lelegard
@@ -104,7 +104,7 @@ if (-not $Version) {
 }
 
 # Asciidoctor flags
-$ADocFlags     = @("-v", "-a", "revnumber=$Version", "-a", "revdate=$Date", "-a", "imagesdir=$ImagesDir", "-a", "includedir=$AdocDir")
+$ADocFlags     = @("-v", "-r", "$AdocDir/macros.rb", "-a", "revnumber=$Version", "-a", "revdate=$Date", "-a", "imagesdir=$ImagesDir", "-a", "includedir=$AdocDir")
 $ADocFlagsHtml = $ADocFlags + @("-a", "stylesheet=$CssFile", "-a", "rouge-style=$RougeHtml", "-a", "data-uri", "-a", "docinfo=shared", "-a", "docinfodir=$BinDocInfo")
 $ADocFlagsPdf  = $ADocFlags + @("-a", "pdf-themesdir=$AdocDir", "-a", "pdf-theme=$Theme", "-a", "rouge-style=$RougePdf")
 

@@ -9,7 +9,469 @@
 [#reactorevents]
 === The Reactor pattern and event dispatching
 
-To be completed.
+Some parts of TSDuck are based on a reactor pattern. The TSCore library provides
+an implementation of event dispatching based on a `Reactor` class. Because this
+topic is complex and not always well-understood, it deserves some specific
+explanations first.
+
+==== Multithreading vs. event dispatching
+
+Generally speaking, computing relies on three types of resources: CPU, memory,
+and I/O.  Most applications primarily need one type of resource which may become
+a bottleneck, a limiting factor which must be specifically addressed.
+
+* CPU-bound applications need more processing power than one CPU can
+provide. Ideally, they simultaneously use several CPUs of the same machine, or
+even several machines.
+
+* Memory-bound applications need mode memory than the machine can provide. They
+need additional storage media or remotely-accessible memory, and swap between
+them.
+
+* I/O-bound applications constantly wait for input or output operations. They
+need to multiplex independent I/O operations at the highest possible rate.
+
+An I/O-bound application (e.g. a server which processes simultaneous client
+connections) may use two possible types of implementation: multithreading and
+event dispatching.  These are two distinct paradigms using different programming
+techniques. They usually directly influence the architecture of the application.
+
+===== Multithreading architecture
+
+In a multithreading architecture, each sequential activity is linearly programmed
+in an independent thread of execution. A server typically contains one or two
+threads per client connection. If the client-server protocol is synchronous,
+with a strict request-response pattern, each client connection is implemented
+using one thread. It repeatedly reads a request, processes it, writes the
+response and waits for the next request. On the other hand, if the protocol is
+asynchronous, independent messages can flow in both directions at all time. In
+that case, a client connection is typically implemented using two threads: one
+thread processes incoming messages, the other thread generates outgoing
+messages.
+
+The development of that architecture is simple. The processing is implemented
+using linear programming, reading and writing data when necessary. The core
+model is "blocking-I/O".  Reading or writing a message suspends the execution of
+the thread during the I/O, until an incoming message is received or an outgoing
+message is fully sent.
+
+On the other hand, for an I/O-bound application, a multithreading architecture
+is costly for the two other types of resources: CPU and memory. Constant context
+switching between threads is costly in terms of CPU and kernel resources. The
+impact on memory is even worse: each thread needs an independent execution
+stack, while spending most of the time doing nothing but waiting for the current
+I/O operation.
+
+===== Event-dispatching architecture
+
+In an event-dispatching application, there is only one thread of execution. That
+thread starts all I/O operations but never waits for them to complete. Instead,
+after starting one I/O for a client connection, for instance, it does some
+processing for another connection, until that client connection starts another
+I/O, etc. The core model is "non-blocking I/O" or "asynchronous I/O" (we will
+see the difference between the two later).  The completion of each I/O is
+notified as an event. Processing that event means continuing the activity for
+the corresponding client connection, until it starts another I/O.
+
+Because the driving principle of this architecture is "reacting" to events, the
+core feature of the application is named a "reactor design pattern". Object
+classes which are connected to the reactor and activated on reception of events
+are named "reactive classes".
+
+I/O completion is one type of events but other types of events are possible:
+timers, used-defined events, process completions, message passing, etc.
+
+The core reactor waits on events. Each time an event is received, an
+application-defined "event handler" is invoked. The event handler shall be
+quick. It shall not block or execute lengthy CPU-bound processing. It can only
+starts I/O, not wait for them to complete. Then, the event handler returns
+control to the reactor.
+
+The benefit is obvious in terms of CPU and memory. There is only one thread with
+only one execution stack. Each client connection only requires its own
+contextual data. The kernel processes I/O only, not multiple threads and context
+switches.
+
+However, because any benefit has a price, the programming technique is more
+complex.  Each activity (e.g. a client connection) must be implemented as a
+state machine, using a specific data context and fragmented processing between
+I/O operations. Additionally, the sum of all CPU loads from the various
+activities shall not exceed the capability of one CPU.
+
+The main practical limitation of reactors is the necessity to control absolutely
+all types of input/output so that no code suspends the execution of the reactor
+thread during an I/O. This means that third-party libraries which perform I/O
+under the hood cannot be used.
+
+Some libraries, such as OpenSSL may have two modes: a simple one using linear
+programming and blocking I/O and a much more complex one where the library only
+performs data processing and lets the application perform the I/O. However,
+libraries such as libsrt and librist (which implement the SRT and RIST
+protocols, respectively) only have a linear API using blocking I/O. These
+libraries cannot be used in an application using an event dispatching
+architecture.
+
+The second practical limitation is reactors is the absence of standard API and
+portability.  The typical example of reactor-based or event-driven application
+is a graphical user interface (GUI). A GUI is the source of multiple events
+(mouse, keyboard, data sources) which can occur in any order, at any
+time. Absolutely all GUI systems are based on the principle of event
+dispatching: Microsoft Windows, GTK, Qt, X-Window, etc. However, each
+environment defines its own API for event dispatching. They use different and
+incompatible APIs. To add to the confusion, other non-GUI event dispatching
+frameworks exist with different APIs, from the legacy
+https://en.wikipedia.org/wiki/Adaptive_Communication_Environment[Adaptive
+Communication Environment (ACE)] to the modern https://libevent.org/[libevent].
+
+Because of the lack of a common unique, or universally accepted, standard API,
+it is not possible to develop portable applications. It is not possible to
+develop libraries which are based on a reactor API and smoothly integrate them
+in all event dispatching application. As an example, libsrt proposes a
+"non-blocking I/O" mode but it is based on a specific libsrt API and it can be
+used only in applications which use libsrt as their reactor.
+
+===== Multithreading vs. reactor comparison
+
+The typical use cases of these two architectures are:
+
+* Multithreading: CPU-bound applications, with a limited number of simultaneous
+  connections using synchronous protocols.
+* Reactor: I/O-bound applications, with a large number of simultaneous
+  connections, or using asynchronous protocols.
+
+// PDF backend does not correctly process "autowidth" tables.
+.Multithreading vs. reactor comparison
+ifndef::backend-pdf[]
+[cols="<1,<1,<1",stripes=none,stripes=none,options="autowidth"]
+endif::[]
+ifdef::backend-pdf[]
+[cols="<6,<47,<47",stripes=none,stripes=none]
+endif::[]
+|===
+| |Multithreading |Reactor (event dispatching)
+
+|Pros
+a|[.compact-list]
+* CPU load-balancing, take advantage of multi-core systems.
+* Natural integration with third-party libraries encapsulating blocking I/O.
+* Easier to code (linear programming).
+a|[.compact-list]
+* Scale well with the sources of I/O (e.g. simultaneous connections).
+* Handle asynchronous protocols.
+* High reactivity.
+
+|Cons
+a|[.compact-list]
+* Doesn't scale with the sources of I/O (e.g. simultaneous connections).
+* Large memory footprint.
+a|[.compact-list]
+* More difficult to code and debug (state machine programming).
+* Can't integrate third-party libraries encapsulating blocking I/O.
+* No standard API, several incompatible implementations.
+
+|===
+
+==== Non-blocking I/O and asynchronous I/O
+
+Traditional I/Os suspend the execution of the calling thread until the I/O
+operation completes. We call this "blocking I/O". In an event-dispatching
+architecture, no I/O should block the execution thread. However, there are
+several ways to perform I/O without blocking: non-blocking I/O and asynchronous
+I/O.
+
+These methods are different and implemented on different operating systems: UNIX
+systems uses non-blocking I/O and Windows uses asynchronous I/O. An application
+doesn't have the choice between non-blocking I/O and asynchronous I/O. This is
+imposed by the operating system.
+
+Because the two models impose different data management strategies on the
+application, it is particularly challenging to define a portable Reactor API.
+
+===== Non-blocking I/O (UNIX)
+
+A "non-blocking I/O" is immediate. Either it immediately completes or
+immediately fails but it never blocks. When a non-blocking I/O fails because it
+is not possible to immediately complete (e.g. because no incoming data is
+available), the process can be notified by the kernel when an I/O becomes
+possible. There are two possible I/O events: "read-ready" and "write-ready",
+when a read or write operation becomes possible. Note that "ready" does not mean
+"guaranteed". On a read-ready event, for instance, the application shall retry
+the read operation. It will likely immediately succeed but it may also fail
+again (spurious read-ready event).
+
+There is no specific constraint on the user data buffers. After an I/O call,
+whether it fails or succeeds, the user buffers are never used outside these I/O
+calls and the buffers can be disposed at any time. A device or socket can be
+closed at any time without impact on the data buffers.
+
+To make portability more difficult, distinct flavors of UNIX systems use
+different incompatible system calls and kernel mechanisms to handle non-blocking
+I/O event notification.
+
+* Traditionally, all UNIX systems provide the `select()` and `poll()`
+  system calls. However, they do not scale well with the number of
+  events and they should now be completely avoided.
+
+* macOS, FreeBSD, and other BSD systems use a mechanism named "kqueue" (kernel
+  queue).
+
+* Linux uses a mechanism named "epoll" (event poll). There is also a more recent
+  mechanism named "io_ring". It is more complex and particularly suited for
+  extremely large servers. We won't use it here.
+
+There are some limitations to the UNIX non-blocking model:
+
+* The "immediate" success of an I/O is a flawed concept. It works well on
+  network socket: is there any incoming data already present in the buffer, or
+  is there any free space in the outgoing buffer? Specifically, immediate input
+  works only in a push model, e.g. when a remote peer sends data and these data
+  are pushed into our reception buffer. However, it does not apply in a pull
+  model, when the application requests data to be read from a disk. In that
+  case, the "non-blocking I/O" blocks. The blocking time is limited thanks to
+  the speed of disks but it may have an impact on heavily loaded reactors.
+
+* Some operations are lengthy by design. The typical example is a TCP
+  `connect()` operation. It requires to wait for a response from a remote
+  server. This is much longer and more unpredictable than a disk I/O and it is
+  impossible to make it blocking, pretending it is not. In practice, a
+  non-blocking TCP `connect()` is asynchronous. It initially fails with a "try
+  again later" status, just like any other non-blocking I/O. However, the actual
+  connect operation continues in the background, in the kernel. When the
+  connection is completed, the event "write-ready" is notified by epoll or
+  kqueue.
+
+* There are some cases of non-portable operations which make the development
+  more complex. We have seen that some I/O are blocking by design but
+  sufficiently short to pretend they are not, with limited impact when the
+  number of events it not too high. On macOS and BSD systems, this is
+  transparent. The same code can be used for network sockets and files, in the
+  same reactor. On Linux, on the other hand, it fails. Regular files and a few
+  other classes of devices cannot be set in non-blocking mode (in practice when
+  the corresponding driver doesn't support the "poll" operation). All I/O must
+  be explicitly blocking. Files and sockets cannot be multiplexed in the same
+  reactor, making the code more complex and error-prone, without any performance
+  benefit.
+
+===== Asynchronous I/O (Windows)
+
+An "asynchronous I/O" always executes in the background. An I/O is first started
+using a classical read or write operation. In rare cases, it completes
+immediately (e.g. when data are already available from a kernel
+buffer). However, most of the time, the I/O is "pending", it runs in the
+background. Later, when the I/O completes, the completion event is reported to
+the application.
+
+Microsoft Windows uses the name "overlapped I/O" instead of asynchronous
+I/O. The event synchronization mechanism is named I/O Completion Port, or IOCP
+in short.
+
+Asynchronous I/O have an important impact on the data buffer management in the
+application. When a read operation starts, for instance, the address and size of
+the buffer are remembered in the kernel. This memory buffer is then written in
+the background, when data arrive. This means that the application must not reuse
+the buffer before the confirmation that the I/O completed, either successfully
+or with an error. If the application frees a data buffer during an asynchronous
+I/O, the following dangerous scenario becomes possible: the freed buffer is
+reused by some other part of the application and some precious data are stored
+there; then the asynchronous I/O continues and incoming data erase the reused
+buffer.
+
+Therefore, an application must be very careful about data buffers. They must
+never be freed or reused before the confirmation of the I/O completion. This can
+be challenging in error paths, when a device must be prematurely closed. The
+application shall not simply close the device and forget about it, as it would
+be with classical blocking I/O. The application shall explicitely cancel all
+pending I/Os, then wait for the cancelation to complete (i.e. the asynchronous
+I/O completes with a "canceled" status), then close the device, and sometimes
+wait for the completion of the close operation.
+
+The Windows asynchronous I/O model has its limitations too:
+
+* The read and write operations on disk files are asynchronous, but not the
+  operations which extend a file. So, when you write on a file and that
+  operation needs additional disk space, the file management part is blocking
+  and the data transfer part is not. Because the former is usually longer than
+  the latter, this makes the "asynchronous" attribute is bit useless.
+
+* Some devices cannot be used in "overlapped" mode, such as anonymous
+  pipes. This is a problem because an I/O on a pipe may block for hours if the
+  peer does not read or write on the pipe. This is worse than Linux which
+  forbids non-blocking I/O on disk files because these file I/O are always
+  fast. They may slightly impact the performances of the application but not
+  block it. Strangely enough, Windows named pipes can be used in overlapped
+  mode. So, it is possible to use named pipes instead of anonyous
+  pipes. However, it works only if the application creates the pipe. It doesn't
+  work if the pipe is already created, e.g. when used in standard input or
+  standard output. This means that there is no way to guarantee that the
+  standard input or output will always be usable for asynchronous I/O on
+  Windows.
+
+==== TSDuck hybrid architecture
+
+So, which architecture is best-suited for TSDuck, multithreading or event
+dispatching? As usual, it depends...
+
+TSDuck is an aggregate of heterogeneous blocks: libraries, executables, plugins,
+third-party libraries from various origins.
+
+Originally, TSDuck used a strict multithreading architecture. There were several
+reasons for this, mostly from the `tsp` requirements:
+
+* CPU load balancing between plugins. Some plugins can be CPU-intensive, such as
+  encryption plugins. We need to leverage multi-core architectures. From the
+  beginning, each plugin is executed in a dedicated thread.
+
+* Execution isolation between `tsp` plugins. Note that this is "execution
+  isolation" only. This means avoiding that a plugin using blocking-I/O blocks
+  other plugins (there is no memory or security isolation, as usual in
+  multithreaded environments).
+
+* Multiple third-party libraries which encapsulate blocking-I/O and cannot be
+  used in an event dispatcher (SRT and RIST for instance).
+
+* Multiple operating systems support. Windows, Linux, macOS, BSD have very
+  different ways of handling asynchronous I/O in an efficient way. No common
+  event dispatcher API was available.
+
+* TSDuck has always been designed as a flexible framework for debug and
+  experimentation. Flexibility and extensibility prevail over raw
+  performances. Using a multithreading architecture is more robust. An event
+  dispatcher would fail in case of accidental blocking I/Os, whether they come
+  from a third-party library or a bug in a plugin.
+
+However, there are cases where using a strictly multithreading architecture is
+less efficient or more difficult to write and maintain. Standalone tools such as
+`tsecmg` are pure TCP servers, using asynchronous protocols and no third-party
+library. Injection plugins (EMMs, MPE, SCTE-35) multiplex two sources of input:
+the upstream transport stream and TCP or UDP incoming data. Their original
+implementation included an additional thread to receive data from the network or
+to poll data files. They would benefit from an event dispatching architecture.
+
+Therefore, TSDuck is moving to a hybrid architecture, which mix multithreading
+and event dispatching.
+
+At high level, there are loosely coupled blocks, typically the plugins. The
+high-level architecture remains multithreaded. All plugins cannot be integrated
+into one single reactor. First, it would be too expensive to rewrite
+everything. More importantly, it would be too dangerous. One single plugin could
+block everything when using a third-party library with blocking I/O. One single
+CPU-bound plugin (e.g. encryption or decryption) could slow the entire system
+down.
+
+At local level, inside a specific tool or plugin, when appropriate, a reactor
+can be used to multiplex and dispatch events inside one thread. This
+architecture is not uncommon and is sometimes named "multi-reactor
+pattern". Most of the time, it is used to balance a reactive application over
+multiple CPU cores: a thread executes on each CPU core and manages its own
+reactor and event dispatcher.
+
+For this reason, the TSCore library has been extended in two ways:
+
+* The I/O classes were extended to support two modes: blocking and non-blocking.
+
+* A `Reactor` class and a set of associated reactive classes were added. They
+  implement a core event dispatching mechanism with a portable API over Linux
+  (epoll), macOS and BSD systems (kqueue), and Windows (IOCP). They also hide
+  the differences between non-blocking I/O (UNIX) and asynchronous I/O
+  (Windows).
+
+NOTE: For convenience, and unless specified otherwise, we will use the term
+"non-blocking I/O" in a general sense of I/Os which don't block the execution
+thread and are synchronized in a reactor. This indifferently includes the two
+principles of UNIX non-blocking I/O and Windows asynchronous I/O.
+
+==== Reactor and reactive classes
+
+In the TSCore library, the core of the event dispatching features is class
+classref:Reactor[]. An instance of this class is an event dispatcher. In the
+case of the TSDuck hybrid architecture, there is one `Reactor` instance per
+thread with an an event dispatching architecture.
+
+The typical scenario is the following:
+
+[.compact-list]
+* Instantiate and open a `Reactor`.
+* Define and instantiate application classes which will handle events from the reactor.
+  The event notification is done through "handler interface classes" that the application
+  classes should implement.
+* Instantiate and initialize a few reactive objects (network, files, processes, etc).
+  Make sure that the events will be notified to the application classes.
+* Enter the reactor method `processEventLoop()`.
+* The reactor calls event handlers in the various application classes, depending on events.
+  An event handler typically starts other non-blocking operations which will trigger other
+  handlers later.
+* If an event handler decides to terminate the event dispatching, it calls the reactor
+  method `exitEventLoop()`. After all event handlers return, the reactor method
+  `processEventLoop()` returns control to the application thread.
+
+The `Reactor` shall be used from one single thread. Unless specified otherwise,
+all methods shall be invoked from the thread of the reactor, where the event
+loop is run. All handlers are invoked in the context of the thread which
+invoked `processEventLoop()`.
+
+The `Reactor` and the associated reactive classes handle the following features:
+
+* Timers, either repeated or one-shot. A timer is identified by an id which is
+  passed in the completion handler. The id can also be used to cancel a timer
+  before it expires.
+
+* User-events. A user-event is created by the application and identified by an
+  id. The application can trigger that event at any time. As an exception, a
+  user-event can be triggered from an external thread. This is how
+  synchronization can be achieved between a reactor and other threads.
+
+* Message queues. The class classref:MessageQueue[] can be used in a `Reactor`.
+  An event handler is called each time a message is available from the queue.
+  Because `MessageQueue` is thread-safe by design, messages can be sent
+  from external threads.
+
+* Asynchronous I/O from the following types of devices:
+** UDP sockets.
+** TCP clients and servers.
+** Encrypted TLS clients and servers.
+** Binary files.
+** Pipes to and from process which are created by classref:ForkPipe[].
+
+* I/O cancellation. It is possible the cancel an I/O in progress. The event
+  handler for that I/O will be called with a "canceled" status.
+
+* Data presentation wrappers over asynchronous I/O channels:
+** Line-based text.
+** Tag-length-value (TLV) messages.
+
+* Process. An event handler is called when a process which was created by
+  classref:ForkPipe[] terminates.
+
+* Worker delegation. When an event handler needs to run some lengthy computing,
+  or call a library with blocking I/O, it cannot do that sequentially because it
+  would block the reactor. Instead, it should delegate that treatment to a
+  "worker" thread. A completion event handler will be called in the reactor when
+  the delegated task completes. There is a pool of a maximum number of worker
+  threads. A delegated task is either executed in an idle worker thread,
+  executed in a newly created worker thread if none were idle, queued for later
+  execution if the maximum number of worker threads is reached.
+
+Timers, user-events and process terminations are directly handled in class
+`Reactor`.
+
+The class `Reactor` encapsulates the various implementations of kernel event
+dispatchers and proposes a portable interface. However, while it is possible to
+unify the various types of non-blocking I/O (kqueue and epoll) in one single
+interface, it is impossible to unify non-blocking I/O and asynchronous I/O into
+the same interface. The way they shall be used, as well as the way the data
+buffers are managed, are too different. Therefore, class Reactor exposes
+interfaces for both models. The application shall check the current I/O model
+using the `consteval` static methods `UseNonBlockingIO()` and
+`UseAsynchronousIO()` and then adopt the correct strategy.
+
+In practice, the I/O multiplexing features of class `Reactor` are not used by
+applications. They are used in a few specialized "reactive I/O" classes such as
+classref:ReactiveUDPSocket[] or classref:ReactiveTCPConnection[]. These classes
+are implemented on top of classref:Reactor[] and have fully portable and
+homogeneous interfaces.
+
+The following UML-like class diagram summarizes the relationships between the
+I/O classes, classref:Reactor[] and the reactive classes.
 
 .Reactor class diagram
 image::reactor-class-diagram.png[align="center",alt="reactor class diagram"]
