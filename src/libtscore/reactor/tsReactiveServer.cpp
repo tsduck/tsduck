@@ -82,6 +82,8 @@ void ts::ReactiveServer::setExitAfterClientCount(size_t count)
 
 void ts::ReactiveServer::exit(bool silent)
 {
+    _reactor.report().debug(u"server exit requested, state: %d", _state);
+
     if (_state == ACCEPTING) {
         _state = EXITING;
         _server.startClose(this, silent);
@@ -114,7 +116,7 @@ bool ts::ReactiveServer::createNewSession()
     // Allocate the new session object.
     assert(_session_factory != nullptr);
     assert(_accepting == nullptr);
-    auto new_session = _session_factory->newClientSession();
+    auto new_session = _session_factory->newClientSession(*this);
 
     // Check the validity of the session object.
     if (new_session == nullptr) {
@@ -156,6 +158,7 @@ bool ts::ReactiveServer::createNewSession()
 
 void ts::ReactiveServer::handleTCPClientAccepted(ReactiveTCPServer& server, ReactiveTCPConnection& sock, const IPSocketAddress& addr, int error_code, const ObjectPtr& user_data)
 {
+    _reactor.report().debug(u"TCP client accepted: error %d", error_code);
     assert(&server == &_server);
     assert(_accepting != nullptr);
     assert(&_accepting->getConnection() == &sock);
@@ -175,7 +178,12 @@ void ts::ReactiveServer::handleTCPClientAccepted(ReactiveTCPServer& server, Reac
     }
     else {
         // Close the failed accepting socket. Let the close handler continue the processing.
-        _accepting->getConnection().socket().close(true);
+        if (_accepting->getConnection().socket().isOpen()) {
+            _accepting->getConnection().socket().close(true);
+        }
+        else {
+            scheduleDeletion(_accepting, true);
+        }
     }
 
     // Exit server when the max number of clients is reached.
@@ -198,6 +206,7 @@ void ts::ReactiveServer::handleSocketCloseComplete(Socket& sock, bool silent, bo
         _reactor.report().log(ReporterBase::SilentLevel(silent), u"spurious socket close notification @%X", uintptr_t(&sock));
     }
     else {
+        _reactor.report().debug(u"TCP client close completed");
         scheduleDeletion(it->second, silent);
     }
 }
@@ -231,6 +240,8 @@ void ts::ReactiveServer::handleUserEvent(Reactor& reactor, EventId id)
 {
     // Filter out other events (there should be none).
     if (id == _delete_id) {
+        _reactor.report().debug(u"cleanup closed sessions: active: %s, pending delete: %s", _clients.size(), _pending_delete.size());
+
         // Save and clear the structures containing sessions to protect against callbacks in destructors.
         decltype(_pending_delete) sessions;
         sessions.swap(_pending_delete);
@@ -258,6 +269,7 @@ void ts::ReactiveServer::handleUserEvent(Reactor& reactor, EventId id)
 
 void ts::ReactiveServer::handleTCPServerClosed(ReactiveTCPServer&, const ObjectPtr& user_data)
 {
+    _reactor.report().debug(u"TCP server now closed");
     _close_completed = true;
     exitWhenReady();
 }

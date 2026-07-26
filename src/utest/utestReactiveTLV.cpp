@@ -61,7 +61,7 @@ namespace {
         ts::ReactiveTLVStream     _tlv_client;
 
         virtual void handleTCPConnected(ts::ReactiveTCPConnection& sock, int error_code, const ts::ObjectPtr& user_data) override;
-        virtual void handleReceivedMessage(ts::ReactiveTLVStream& sock, const ts::tlv::MessagePtr& msg, int error_code) override;
+        virtual void handleReceiveMessage(ts::ReactiveTLVStream& sock, const ts::tlv::MessagePtr& msg, int error_code, const ts::ObjectPtr& user_data) override;
         virtual void handleWriteStream(ts::ReactiveStream& stream, int error_code, const ts::ObjectPtr& user_data) override;
         virtual void handleTCPClosed(ts::ReactiveTCPConnection& sock, const ts::ObjectPtr& user_data) override;
     };
@@ -94,11 +94,11 @@ namespace {
         // Send first request.
         ts::ecmgscs::ChannelSetup msg(_protocol);
         msg.channel_id = 100;
-        TSUNIT_ASSERT(_tlv_client.startSendMessage(msg));
+        TSUNIT_ASSERT(_tlv_client.startSendMessage(nullptr, msg));
         send_count++;
     }
 
-    void TestClient::handleReceivedMessage(ts::ReactiveTLVStream& sock, const ts::tlv::MessagePtr& msg, int error_code)
+    void TestClient::handleReceiveMessage(ts::ReactiveTLVStream& sock, const ts::tlv::MessagePtr& msg, int error_code, const ts::ObjectPtr& user_data)
     {
         _debug << "TLV client: received tag: " << (msg == nullptr ? -1 : int(msg->tag())) << ", error code: " << error_code << std::endl;
         TSUNIT_ASSERT(&sock == &_tlv_client);
@@ -117,7 +117,7 @@ namespace {
             ts::ecmgscs::StreamSetup msg2(_protocol);
             msg2.channel_id = 100;
             msg2.stream_id = 200;
-            TSUNIT_ASSERT(_tlv_client.startSendMessage(msg2));
+            TSUNIT_ASSERT(_tlv_client.startSendMessage(nullptr, msg2));
             send_count++;
         }
         else {
@@ -175,7 +175,7 @@ namespace {
 
         virtual ts::ReactiveTCPConnection& getConnection() override;
         virtual void handleTCPAccepted(ts::ReactiveTCPServer& server, ts::ReactiveTCPConnection& sock, int error_code, const ts::ObjectPtr& user_data) override;
-        virtual void handleReceivedMessage(ts::ReactiveTLVStream& sock, const ts::tlv::MessagePtr& msg, int error_code) override;
+        virtual void handleReceiveMessage(ts::ReactiveTLVStream& sock, const ts::tlv::MessagePtr& msg, int error_code, const ts::ObjectPtr& user_data) override;
         virtual void handleTCPClosed(ts::ReactiveTCPConnection& sock, const ts::ObjectPtr& user_data) override;
     };
 
@@ -211,7 +211,7 @@ namespace {
         }
     }
 
-    void TestServerConnection::handleReceivedMessage(ts::ReactiveTLVStream& sock, const ts::tlv::MessagePtr& msg, int error_code)
+    void TestServerConnection::handleReceiveMessage(ts::ReactiveTLVStream& sock, const ts::tlv::MessagePtr& msg, int error_code, const ts::ObjectPtr& user_data)
     {
         TSUNIT_ASSERT(&sock == &_tlv_client);
         if (error_code == ts::SYS_EOF) {
@@ -235,7 +235,7 @@ namespace {
                 // Send response.
                 ts::ecmgscs::ChannelStatus msg2(_protocol);
                 msg2.channel_id = cmd->channel_id;
-                TSUNIT_ASSERT(_tlv_client.startSendMessage(msg2));
+                TSUNIT_ASSERT(_tlv_client.startSendMessage(nullptr, msg2));
             }
             else {
                 TSUNIT_EQUAL(2, _msg_count);
@@ -251,7 +251,7 @@ namespace {
                 ts::ecmgscs::StreamStatus msg2(_protocol);
                 msg2.channel_id = cmd->channel_id;
                 msg2.stream_id = cmd->stream_id;
-                TSUNIT_ASSERT(_tlv_client.startSendMessage(msg2));
+                TSUNIT_ASSERT(_tlv_client.startSendMessage(nullptr, msg2));
             }
         }
     }
@@ -284,7 +284,7 @@ namespace {
         const ts::tlv::Protocol& _protocol;
         std::ostream&            _debug;
 
-        virtual ts::ReactiveServerSessionInterface* newClientSession() override;
+        virtual ts::ReactiveServerSessionInterface* newClientSession(ts::ReactiveServer& server) override;
         virtual void handleServerExited(ts::ReactiveServer& server, const ts::ObjectPtr& user_data) override;
     };
 
@@ -297,7 +297,7 @@ namespace {
         _debug << "TestFactory: initialized" << std::endl;
     }
 
-    ts::ReactiveServerSessionInterface* TestFactory::newClientSession()
+    ts::ReactiveServerSessionInterface* TestFactory::newClientSession(ts::ReactiveServer& server)
     {
         _debug << "TestFactory: create client session" << std::endl;
         client_count++;

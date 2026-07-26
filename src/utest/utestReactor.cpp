@@ -545,7 +545,7 @@ namespace {
         const ts::IPSocketAddress    _server_socket {_server_address, _server_port};
 
         virtual void handleTCPConnected(ts::ReactiveTCPConnection& sock, int error_code, const ts::ObjectPtr& user_data) override;
-        virtual void handleTextLine(ts::ReactiveTextStream& sock, const ts::UString& line, int error_code) override;
+        virtual void handleTextLine(ts::ReactiveTextStream& sock, const ts::UString& line, int error_code, const ts::ObjectPtr& user_data) override;
         virtual void handleTCPClosed(ts::ReactiveTCPConnection& sock, const ts::ObjectPtr& user_data) override;
     };
 
@@ -562,15 +562,15 @@ namespace {
     {
         tsunit::Test::debug() << "TextClient::handleTCPConnected: error code: " << error_code << std::endl;
         TSUNIT_ASSERT(_rtclient.startReadText(this));
-        TSUNIT_ASSERT(_rtclient.startWriteLine(u"GET / HTTP/1.0", false));
-        TSUNIT_ASSERT(_rtclient.startWriteLine(u"Host: " + _server_name, false));
-        TSUNIT_ASSERT(_rtclient.startWriteLine(u"User-Agent: tsduck", false));
-        TSUNIT_ASSERT(_rtclient.startWriteLine(u"Accept: text/html", false));
-        TSUNIT_ASSERT(_rtclient.startWriteLine(u"Connection: close", false));
-        TSUNIT_ASSERT(_rtclient.startWriteLine(u""));
+        TSUNIT_ASSERT(_rtclient.startWriteLine(nullptr, u"GET / HTTP/1.0", false));
+        TSUNIT_ASSERT(_rtclient.startWriteLine(nullptr, u"Host: " + _server_name, false));
+        TSUNIT_ASSERT(_rtclient.startWriteLine(nullptr, u"User-Agent: tsduck", false));
+        TSUNIT_ASSERT(_rtclient.startWriteLine(nullptr, u"Accept: text/html", false));
+        TSUNIT_ASSERT(_rtclient.startWriteLine(nullptr, u"Connection: close", false));
+        TSUNIT_ASSERT(_rtclient.startWriteLine(nullptr, u""));
     }
 
-    void TextClient::handleTextLine(ts::ReactiveTextStream& sock, const ts::UString& line, int error_code)
+    void TextClient::handleTextLine(ts::ReactiveTextStream& sock, const ts::UString& line, int error_code, const ts::ObjectPtr& user_data)
     {
         if (error_code == ts::SYS_EOF) {
             tsunit::Test::debug() << "TextClient::handleTextLine: end of response" << std::endl;
@@ -860,7 +860,7 @@ namespace {
     private:
         ts::Reactor& _reactor;
 
-        virtual ts::ReactiveServerSessionInterface* newClientSession() override;
+        virtual ts::ReactiveServerSessionInterface* newClientSession(ts::ReactiveServer& server) override;
         virtual void handleServerExited(ts::ReactiveServer& server, const ts::ObjectPtr& user_data) override;
     };
 
@@ -870,7 +870,7 @@ namespace {
         tsunit::Test::debug() << "TestFactory: initialized"<< std::endl;
     }
 
-    ts::ReactiveServerSessionInterface* TestFactory::newClientSession()
+    ts::ReactiveServerSessionInterface* TestFactory::newClientSession(ts::ReactiveServer& server)
     {
         const auto session = new TestServerConnection(_reactor);
         tsunit::Test::debug() << "TestFactory: create client session id " << session->clientId() << std::endl;

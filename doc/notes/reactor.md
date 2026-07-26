@@ -7,8 +7,9 @@
 * [Current status](#current-status)
   * [Core Reactor](#core-reactor)
   * [Socket layer, including TLS](#socket-layer-including-tls)
-  * [Presentation layer (Telnet, TLV)](#presentation-layer-telnet-tlv)
+  * [Presentation layer (Text, TLV)](#presentation-layer-text-tlv)
   * [Generic server](#generic-server)
+  * [Message queues](#message-queues)
   * [Worker delegation](#worker-delegation)
   * [Remaining work](#remaining-work)
 
@@ -80,6 +81,8 @@ An event loop shall include the following features:
   shall we invoke a specific callback to notify the class which expected the
   callback?
 
+- Process termination: Invoke a callback when a process terminates.
+
 - Worker delegation: When a callback in the reactor needs to run some lengthy
   computing, or call a library with blocking I/O, it cannot do it sequentially
   because it would block the reactor. Instead, it should delegate that
@@ -95,11 +98,12 @@ An event loop shall include the following features:
 ### Core Reactor
 
 Class `Reactor` is implemented. Based on epoll (Linux), kqueue (macOS and BSD), I/O
-Completion Ports (Windows). Timers and user events are included. Non-blocking I/O
-(epoll, kqueue) and asynchronous I/O (IOCP) are implemented using distinct API's.
+Completion Ports (Windows). Timers, user events, and synchronization on process
+termination are included. Non-blocking I/O (epoll, kqueue) and asynchronous I/O (IOCP)
+are implemented using distinct API's.
 
-Timers and user events are directly usable by applications. I/O management should
-be reserved to specialized "reactive" classes.
+Timers, user events, and process synchronization are directly usable by applications.
+I/O management should be reserved to specialized "reactive" classes.
 
 We differentiate the class `Reactor` which is the core class for event dispatching
 and "reactive" classes. The latter are specialized classes which use a common
@@ -108,23 +112,31 @@ instance of `Reactor` to dispatch events.
 `Reactor` and reactive classes never block. They only implement services to "start
 something". When that "something" completes, a handler interface classes is called.
 
+For more details on the relationships between the class `Reactor` and all related
+I/O and "reactive" classes, see the
+[Reactor class diagram](https://github.com/tsduck/tsduck-presentations/blob/master/diagrams/reactor-class-diagram.pdf).
+
 ### Socket layer, including TLS
 
 UDP and TCP sockets are implemented in separate classes. Internally, they use
 distinct code paths for non-blocking and asynchronous I/O. TCP client and server
 are implemented. TLS subclasses encapsulate TLS 1.2 and 1.3.
 
-### Presentation layer (Telnet, TLV)
+### Files and pipes
+
+All I/O classes which expose a `StreamInterface` can be integrated in a `Reactor`
+using the class `ReactiveStream`. This applies to files (classes `BinaryFiles` and
+`TSFile`) and pipes (classes `ForkPipe` and `TSForkPipe`).
+
+### Presentation layer (Text, TLV)
 
 Distinct classes implement data encoding and decoding in various formats. Current
-formats are text lines (Telnet protocol) and TLV (tag-length-value, as used in
-DVB SimulCrypt protocols).
+formats are text lines and TLV (tag-length-value, as used in DVB SimulCrypt protocols).
 
-The presentation classes `ReactiveTelnetConnection` and `ReactiveTLVConnection`
-need an associated instance of a reactive TCP class. An association relationship
-was preferred to inheritance to allow any subclass of `ReactiveTCPConnection`.
-Thus, a line-based or TLV connection can be transparently implemented over a
-clear TCP connection as well as over a TLS tunnel.
+The presentation classes `ReactiveTextStream` and `ReactiveTLVStream` need an associated
+instance of a reactive TCP class. An association relationship was preferred to inheritance
+to allow any subclass of `ReactiveStream`. Thus, a line-based or TLV connection can be
+transparently implemented over a pipe, a clear TCP connection as well as over a TLS tunnel.
 
 ### Generic server
 
@@ -134,6 +146,9 @@ per client connection.
 
 Using a user-supplied factory class, any kind of transport (clear TCP or TLS)
 and any kind of data presentation (raw, text lines, TLV) can be used.
+
+See a sample class diagram
+[here](https://github.com/tsduck/tsduck-presentations/blob/master/diagrams/reactive-server.pdf).
 
 ### Message queues
 
@@ -151,5 +166,3 @@ completion of the delegated task.
 ### Remaining work
 
 - HTTP session (libcurl, WinInet).
-- Pipes.
-- Generic files.

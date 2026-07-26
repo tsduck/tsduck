@@ -436,7 +436,7 @@ namespace ts {
         // Implementation of reactive connection handler interfaces.
         virtual void handleTimer(Reactor& reactor, EventId id) override;
         virtual void handleTCPConnected(ReactiveTCPConnection& sock, int error_code, const ObjectPtr& user_data) override;
-        virtual void handleReceivedMessage(ReactiveTLVStream& sock, const tlv::MessagePtr& msg, int error_code) override;
+        virtual void handleReceiveMessage(ReactiveTLVStream& sock, const tlv::MessagePtr& msg, int error_code, const ObjectPtr& user_data) override;
         virtual void handleWriteStream(ReactiveStream& stream, int error_code, const ObjectPtr& user_data) override;
         virtual void handleTCPClosed(ReactiveTCPConnection& sock, const ObjectPtr& user_data) override;
     };
@@ -563,7 +563,7 @@ void ts::TestECMGChannel::handleTCPClosed(ReactiveTCPConnection& sock, const Obj
 
 void ts::TestECMGChannel::send(const tlv::Message& msg)
 {
-    if (!_tlv_client.startSendMessage(msg)) {
+    if (!_tlv_client.startSendMessage(nullptr, msg)) {
         _react_client.startClose(this, true);
     }
 }
@@ -736,7 +736,7 @@ void ts::TestECMGChannel::handleTimer(Reactor& reactor, EventId id)
 // Called when a message is received from the ECMG.
 //----------------------------------------------------------------------------
 
-void ts::TestECMGChannel::handleReceivedMessage(ReactiveTLVStream& sock, const tlv::MessagePtr& msg, int error_code)
+void ts::TestECMGChannel::handleReceiveMessage(ReactiveTLVStream& sock, const tlv::MessagePtr& msg, int error_code, const ObjectPtr& user_data)
 {
     // If case of error, an error message is already reported if not an end-of-file.
     bool ok = SysSuccess(error_code);

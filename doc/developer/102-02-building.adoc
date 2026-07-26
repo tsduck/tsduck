@@ -1,0 +1,108 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2026, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+[#usinglibrary]
+=== Building an application with the TSDuck libraries
+
+[#libreq]
+==== Pre-requisites
+
+To be able to build applications or `tsp` plugins with the TSDuck libraries,
+you must install the TSDuck development environment first.
+
+* On Windows systems, you must select the optional "Development" component during the installation.
+* On Fedora, Red Hat and clones, you must install the package `tsduck-devel`.
+* On Ubuntu and the Debian family, you must install the package `tsduck-dev`.
+* On macOS systems, the development environment is always installed with TSDuck using Homebrew.
+* If you build TSDuck from sources, use `make install` (which is equivalent to `make install-tools install-devel`).
+
+==== Building applications on {unix}
+
+The command `tsconfig` generates the appropriate build options for the current operating system.
+See the TSDuck user guide for more details on `tsconfig`.
+
+The following sample makefile illustrates the creation of a simple
+application named `myexec` using one single source file `myexec.cpp`.
+
+[source,make]
+----
+CXXFLAGS += $(shell tsconfig --cflags)
+LDLIBS += $(shell tsconfig --libs)
+
+default: myexec
+----
+
+This is as simple as that.
+
+Just run `make` to build the application.
+
+[source,shell]
+----
+$ make
+----
+
+As explained in the user guide, use the `tsconfig` option `--tscore` if you want to
+use the TSCore library only, not the full TSDuck library for Digital TV.
+For instance:
+
+[source,make]
+----
+CXXFLAGS += $(shell tsconfig --tscore --cflags)
+LDLIBS += $(shell tsconfig --tscore --libs)
+----
+
+[.usage]
+{cpp} language level
+
+By default, the command `tsconfig --cflags` forces {cpp}20 as level of {cpp} language standard.
+If your application requires a more recent level, define the environment variable `TS_NOSTDCPP` to any non-empty value.
+This disables the {cpp} standard option in `tsconfig`.
+The application shall then define its own {cpp} standard in its command line.
+This user-specified {cpp} standard cannot be lower than {cpp}20.
+
+Alternatively, the command `tsconfig --nostdcpp --cflags` can be used to omit the {cpp} standard
+from the compilation options without defining the environment variable `TS_NOSTDCPP`.
+
+[#libwindows]
+==== Building applications on Windows
+
+The "Development" option of the TSDuck installer provides the build environment for Visual Studio 2022,
+in debug and release mode, for 64-bit Intel platforms.
+It may be compatible with Visual Studio 2019 or earlier, but without guarantee.
+
+The environment variable `TSDUCK` is defined to the root of the TSDuck installation tree.
+A Visual Studio property file named `tsduck.props` is installed here.
+It provides all definitions and options to use the TSDuck libraries.
+
+Create the solution and projects for your application.
+Then, manually edit the project file, named for instance `app.vcxproj`,
+and insert the following line just before the final `</Project>` closing tag:
+
+[source,xml]
+----
+<Import Project="$(TSDUCK)\tsduck.props"/>
+----
+
+Then build your project normally.
+
+If you want to use the TSCore library only, not the full TSDuck library for Digital TV,
+use the file `tscore.props` instead:
+
+[source,xml]
+----
+<Import Project="$(TSDUCK)\tscore.props"/>
+----
+
+[.usage]
+{cpp} language level
+
+By default, the property file `tsduck.props` forces {cpp}20 as level of {cpp} language standard.
+If your application requires a more recent level, define the environment variable `TS_NOSTDCPP` to any non-empty value.
+This disables the {cpp} standard option in `tsduck.props`.
+The application shall then define its own {cpp} standard in its project files.
+This user-specified {cpp} standard cannot be lower than {cpp}20.

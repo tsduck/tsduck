@@ -45,16 +45,16 @@ namespace {
     private:
         ts::Reactor&               _reactor;
         std::ostream&              _debug;
-        ts::TCPConnection          _client {&_reactor.report()};
+        ts::TCPConnection          _client {&_reactor};
         ts::ReactiveTLSConnection  _rclient {_reactor, _client};
-        ts::ReactiveTextStream _rtclient {_rclient};
+        ts::ReactiveTextStream     _rtclient {_rclient};
         const ts::UString          _server_name {ts::GetEnvironment(u"TS_UTEST_TLS_HOST", u"tsduck.io")};
         const ts::IPAddress        _server_address {_server_name, _reactor.report(), ts::IP::v4};
         const ts::IPAddress::Port  _server_port = ts::GetIntEnvironment<ts::IPAddress::Port>(u"TS_UTEST_TLS_PORT", 443);
         const ts::IPSocketAddress  _server_socket {_server_address, _server_port};
 
         virtual void handleTCPConnected(ts::ReactiveTCPConnection& sock, int error_code, const ts::ObjectPtr& user_data) override;
-        virtual void handleTextLine(ts::ReactiveTextStream& sock, const ts::UString& line, int error_code) override;
+        virtual void handleTextLine(ts::ReactiveTextStream& sock, const ts::UString& line, int error_code, const ts::ObjectPtr& user_data) override;
         virtual void handleTCPClosed(ts::ReactiveTCPConnection& sock, const ts::ObjectPtr& user_data) override;
     };
 
@@ -73,15 +73,15 @@ namespace {
     {
         _debug << "TextClient::handleTCPConnected: error code: " << error_code << std::endl;
         TSUNIT_ASSERT(_rtclient.startReadText(this));
-        TSUNIT_ASSERT(_rtclient.startWriteLine(u"GET / HTTP/1.0", false));
-        TSUNIT_ASSERT(_rtclient.startWriteLine(u"Host: " + _server_name, false));
-        TSUNIT_ASSERT(_rtclient.startWriteLine(u"User-Agent: tsduck", false));
-        TSUNIT_ASSERT(_rtclient.startWriteLine(u"Accept: text/html", false));
-        TSUNIT_ASSERT(_rtclient.startWriteLine(u"Connection: close", false));
-        TSUNIT_ASSERT(_rtclient.startWriteLine(u""));
+        TSUNIT_ASSERT(_rtclient.startWriteLine(nullptr, u"GET / HTTP/1.0", false));
+        TSUNIT_ASSERT(_rtclient.startWriteLine(nullptr, u"Host: " + _server_name, false));
+        TSUNIT_ASSERT(_rtclient.startWriteLine(nullptr, u"User-Agent: tsduck", false));
+        TSUNIT_ASSERT(_rtclient.startWriteLine(nullptr, u"Accept: text/html", false));
+        TSUNIT_ASSERT(_rtclient.startWriteLine(nullptr, u"Connection: close", false));
+        TSUNIT_ASSERT(_rtclient.startWriteLine(nullptr, u""));
     }
 
-    void TextClient::handleTextLine(ts::ReactiveTextStream& sock, const ts::UString& line, int error_code)
+    void TextClient::handleTextLine(ts::ReactiveTextStream& sock, const ts::UString& line, int error_code, const ts::ObjectPtr& user_data)
     {
         if (error_code == ts::SYS_EOF) {
             _debug << "TextClient::handleTextLine: end of response" << std::endl;
@@ -139,7 +139,7 @@ namespace {
         size_t                    _request_count;
         const ts::IPSocketAddress _server_address;
         size_t                    _client_id = 0;
-        ts::TCPConnection         _client {&_reactor.report()};
+        ts::TCPConnection         _client {&_reactor};
         ts::ReactiveTLSConnection _rclient {_reactor, _client};
         ts::EventId               _timer_id {};
         uint32_t                  _request = 0;
@@ -378,7 +378,7 @@ namespace {
         ts::Reactor&  _reactor;
         std::ostream& _debug;
 
-        virtual ts::ReactiveServerSessionInterface* newClientSession() override;
+        virtual ts::ReactiveServerSessionInterface* newClientSession(ts::ReactiveServer& server) override;
         virtual void handleServerExited(ts::ReactiveServer& server, const ts::ObjectPtr& user_data) override;
     };
 
@@ -389,7 +389,7 @@ namespace {
         _debug << "TestFactory: initialized" << std::endl;
     }
 
-    ts::ReactiveServerSessionInterface* TestFactory::newClientSession()
+    ts::ReactiveServerSessionInterface* TestFactory::newClientSession(ts::ReactiveServer& server)
     {
         const auto session = new TestServerConnection(_reactor, _debug);
         _debug << "TestFactory: create client session id " << session->clientId() << std::endl;
@@ -429,7 +429,7 @@ TSUNIT_DEFINE_TEST(Server)
     rtls_server.setEphemeralRSABits(2048);
 
     server.setExitAfterClientCount(2);
-    server.start(&factory, &factory);
+    TSUNIT_ASSERT(server.start(&factory, &factory));
 
     TestClient client1(reactor, debug(), cn::milliseconds(50), 3, PORT);
     TestClient client2(reactor, debug(), cn::milliseconds(80), 2, PORT);

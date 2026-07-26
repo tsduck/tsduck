@@ -52,11 +52,12 @@ namespace ts {
 
         //!
         //! Start the operation of sending a message over the stream.
-        //! There is no completion handler because the serialized data to send is kept in a dedicated buffer.
+        //! @param [in] handler Handler class to call when the write operation is complete.
         //! @param [in] msg The message to send.
+        //! @param [in] user_data A shared pointer which will be passed unmodified to @a handler.
         //! @return True on success, false on error. Success means that the I/O was successfully started.
         //!
-        bool startSendMessage(const tlv::Message& msg);
+        bool startSendMessage(ReactiveTLVStreamHandlerInterface* handler, const tlv::Message& msg, const ObjectPtr& user_data = ObjectPtr());
 
         //!
         //! Start the operation of receiving messages from the stream.
@@ -64,10 +65,11 @@ namespace ts {
         //! If a previous receive handler was registered, it is replaced.
         //! @param [in] buffer_size Size of input buffers to receive data. This is a tuning parameter only.
         //! It is automatically increased when necessary.
+        //! @param [in] user_data A shared pointer which will be passed unmodified to @a handler.
         //! @return True on success, false on error. Success means that the I/O was successfully started.
         //! The final status of the I/O will be transmitted in the @a handler.
         //!
-        bool startReceive(ReactiveTLVStreamHandlerInterface* handler, size_t buffer_size = ReactiveStream::DEFAULT_RECEIVE_BUFFER_SIZE);
+        bool startReceive(ReactiveTLVStreamHandlerInterface* handler, size_t buffer_size = ReactiveStream::DEFAULT_RECEIVE_BUFFER_SIZE, const ObjectPtr& user_data = ObjectPtr());
 
         //!
         //! Get invalid incoming messages processing.
@@ -104,22 +106,26 @@ namespace ts {
         class TSCOREDLL SendUserData: public Object
         {
         public:
-            ByteBlockPtr buffer{};
+            ReactiveTLVStreamHandlerInterface* handler = nullptr;
+            ObjectPtr                          user_data {};
+            ByteBlockPtr                       buffer{};
             virtual ~SendUserData() override;
         };
         using SendUserDataPtr = std::shared_ptr<SendUserData>;
 
         // ReactiveTextStream private fields.
-        tlv::Logger&           _logger;
-        const tlv::Protocol&   _protocol;
-        ReactiveStream&        _stream;
-        TCPConnection*         _socket = nullptr;
-        bool                   _auto_error_response = false;
-        size_t                 _max_invalid_msg = 0;
-        size_t                 _invalid_msg_count = 0;
+        tlv::Logger&         _logger;
+        const tlv::Protocol& _protocol;
+        ReactiveStream&      _stream;
+        TCPConnection*       _socket = nullptr;
+        bool                 _auto_error_response = false;
+        size_t               _max_invalid_msg = 0;
+        size_t               _invalid_msg_count = 0;
         ReactiveTLVStreamHandlerInterface* _receive_handler = nullptr;
+        ObjectPtr                          _receive_user_data {};
 
         // Implementation of ReactiveStreamHandlerInterface.
+        virtual void handleWriteStream(ReactiveStream& stream, int error_code, const ObjectPtr& user_data) override;
         virtual void handleReadStream(ReactiveStream& stream, const ByteBlock& data, ReactiveInputControl& control, int error_code, const ObjectPtr& user_data) override;
     };
 }

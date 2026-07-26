@@ -66,6 +66,18 @@ namespace ts {
         bool start(ReactiveServerFactoryInterface* session_factory, ReactiveServerHandlerInterface* handler = nullptr, const ObjectPtr& user_data = ObjectPtr());
 
         //!
+        //! Get the number of currently connected clients.
+        //! @return The number of currently connected clients.
+        //!
+        size_t connectedClientCount() const { return _clients.size(); }
+
+        //!
+        //! Get the total number of clients since the server started.
+        //! @return The total number of clients since the server started.
+        //!
+        size_t totalClientCount() const { return _client_count; }
+
+        //!
         //! Specify if the event loop of the reactor shall be exited when the server exits.
         //! This could be implemented in a handleServerExited() handler in the application but,
         //! since this is a common usage, provide a more straightforward way.

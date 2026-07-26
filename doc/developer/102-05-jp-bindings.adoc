@@ -1,0 +1,424 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2026, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+[#jpbindings]
+=== Java and Python bindings
+
+[#jpoverview]
+==== Overview
+
+Starting with version 3.25, TSDuck includes Java and Python bindings to some high-level features.
+
+Although subject to enhancements, these bindings will never aim at supporting
+the full TSDuck feature set since this would be too large.
+Only a small subset of TSDuck high-level features are targeted.
+
+The Java classes are documented in the groupref:java[Java bindings reference section].
+
+The Python classes are documented in the groupref:python[Python bindings reference section].
+
+Sample {source}sample/sample-java[Java] and {source}sample/sample-python[Python]
+applications are available in the TSDuck source tree.
+
+Currently, the TSDuck Java and Python bindings provide access to the features in the following table.
+Equivalences are provided between {cpp}, Java, Python and command line tools.
+
+The first three classes implement high-level features which have direct counterparts as command line tools.
+The others are support classes which are only required to use the high-level classes.
+
+// PDF backend does not correctly process "autowidth" tables.
+.Equivalence between commands, {cpp}, Java, Python classes
+ifndef::backend-pdf[]
+[cols="<1,<1m,<1m,<1m",stripes=none,options="autowidth"]
+endif::[]
+ifdef::backend-pdf[]
+[cols="<15m,<25m,<30m,<30m",stripes=none]
+endif::[]
+|===
+|Command |{cpp} class |Java class |Python class
+
+m|tsp
+|ts::TSProcessor
+|io.tsduck.TSProcessor
+|tsduck.TSProcessor
+
+m|tsswitch
+|ts::InputSwitcher
+|io.tsduck.InputSwitcher
+|tsduck.InputSwitcher
+
+m|tstabcomp
+|ts::SectionFile
+|io.tsduck.SectionFile
+|tsduck.SectionFile
+
+|n/a
+|ts::DuckContext
+|io.tsduck.DuckContext
+|tsduck.DuckContext
+
+|n/a
+|ts::Report
+|io.tsduck.AbstractSyncReport
+|tsduck.AbstractSyncReport
+
+|n/a
+|ts::AsyncReport
+|io.tsduck.AbstractAsyncReport
+|tsduck.AbstractAsyncReport
+
+|n/a
+|ts::SystemMonitor
+|io.tsduck.SystemMonitor
+|tsduck.SystemMonitor
+
+|n/a
+|ts::PluginEventHandlerInterface
+|io.tsduck.AbstractPluginEventHandler
+|tsduck.AbstractPluginEventHandler
+
+|n/a
+|ts::PluginEventContext
+|io.tsduck.PluginEventContext
+|tsduck.PluginEventContext
+
+|===
+
+[#jpsupportclasses]
+==== Support classes
+
+[#jpduckctx]
+===== TSDuck execution context
+
+The `DuckContext` class is used to define and accumulate regional or operator preferences.
+In the TSDuck {cpp} programming guide, it is referred to as _TSDuck execution context_.
+Most of the time, using the default state of a new instance is sufficient.
+
+The application _sample Japanese tables_, available in
+{source}sample/sample-java/SampleJapaneseTables.java[Java]
+and {source}sample/sample-python/sample-japanese-tables.py[Python],
+demonstrates how it can be necessary to override the defaults in specific cases.
+
+[#jpreporting]
+===== Reporting classes
+
+The reporting classes (classref:Report[] {cpp} class hierarchy) are used to report logs, errors and debug.
+They are consistently used all over TSDuck and are required to use the high level features.
+There is a large hierarchy of classes in the three languages which can be classified according to two sets of criteria:
+
+* Synchronous vs. asynchronous:
+** Synchronous report classes log messages in the same thread as the caller.
+   They are usually not thread-safe.
+** Asynchronous report classes, on the other hand, can be used in a multi-threaded environment and
+   the actual message logging (such as writing in a log file) is performed in a separate thread.
+   As a consequence, an asynchronous report instance must be explicitly _terminated_.
+   An asynchronous report class is required when using heavily multi-threaded classes
+   such as `TSProcessor` or `InputSwitcher`.
+* Native vs. abstract:
+** Native classes are the {cpp} classes which are used in all the TSDuck command line tools.
+   They are typically used to report to standard output, standard error, files or dropping the logs.
+   They can be used from Java and Python directly but cannot be derived or customized.
+   They are typically used when predefined error logging is sufficient.
+** Abstract classes are pure Java or Python base classes which are designed to be derived in applications.
+   Such application-defined classes shall override the method `logMessageHandler` (Java) or `log` (Python)
+   to intercept and process the message lines.
+
+The asynchronous abstract classes can be useful to collect events, tables and
+sections in XML, JSON or binary / hexadecimal form in Java or Python applications
+when using `TSProcessor` or `InputSwitcher`.
+Some of the sample Java and Python applications illustrate this mechanism.
+
+.Categories of report classes in {cpp}, Java, Python
+[cols="<1,<1m,<1m,<1m",stripes=none,options="autowidth"]
+|===
+|Category |{cpp} class |Java class |Python class
+
+.2+|Synchronous, native
+|ts::CerrReport
+|io.tsduck.ErrReport
+|tsduck.StdErrReport
+
+m|ts::NullReport
+|io.tsduck.NullReport
+|tsduck.NullReport
+
+|Asynchronous, native
+|ts::AsyncReport
+|io.tsduck.AsyncReport
+|tsduck.AsyncReport
+
+|Synchronous, abstract
+|ts::Report
+|io.tsduck.AbstractSyncReport
+|tsduck.AbstractSyncReport
+
+|Asynchronous, abstract
+|ts::AsyncReport
+|io.tsduck.AbstractAsyncReport
+|tsduck.AbstractAsyncReport
+
+|===
+
+[#jpmonitor]
+===== Resource monitoring
+
+The `SystemMonitor` class is available in all languages, {cpp}, Java and Python.
+It can be used at the top-level of an application to implement the `--monitor` option as found in `tsp` and `tsswitch`.
+An instance of a thread-safe `Report` class is used to report monitoring messages.
+
+The `SystemMonitor` class is very simple to use.
+Examples are available in
+{source}sample/sample-java/SampleMonitoring.java[Java] and
+{source}sample/sample-python/sample-monitoring.py[Python].
+
+[#jpevents]
+===== Plugin events
+
+For developers, TSDuck plugins can _signal events_ which can be handled by the application.
+Each event is signalled with a user-defined 32-bit _event code_.
+An application can register _event handlers_ in the classref:TSProcessor[] instance
+(see the class classref:PluginEventHandlerRegistry[], knowing that classref:TSProcessor[]
+is a subclass of classref:PluginEventHandlerRegistry[]).
+The event handler registration can include various _selection criteria_ such as
+event code value or originating plugin
+(see the inner class classref:PluginEventHandlerRegistry/Criteria[]).
+
+{cpp} developers who create their own plugins can signal any kind of event that they later handle in their application.
+This is illustrated in a
+{source}sample/sample-app-custom/myexec.cpp[{cpp} sample custom application].
+In this sample code, everything is customized in the application:
+the plugin, the event it signals, the associated event data, the application handling of the event.
+
+Since developing a TSDuck plugin is only possible in {cpp}, Java and Python developers have more limited options.
+Some standard TSDuck plugins such as `tables`, `psi` or `mpe` provide the option `--event-code`.
+Using this option, the plugins signal event using the specified event code for each data they handle
+(sections or MPE datagrams depending on the plugin).
+
+Java and Python applications can derive from class `AbstractPluginEventHandler`
+to define and register their own event handlers.
+Thus, binary sections or MPE datagrams can be handled directly from the plugin to the Java or Python application.
+
+Some plugins are even dedicated to application developers and are useless on `tsp` command lines.
+This is the case of the plugin `memory` (both an input and an output plugin).
+This plugin, when used in a `TSProcessor` instance, performs direct transport stream input and output
+from and to the application using memory buffers.
+The memory buffers are signalled using plugin events.
+The `memory` input plugin is an example of an application-defined event handler returning data to the plugin.
+See this {source}sample/sample-memory-plugins/[sample code]
+in the TSDuck source code tree.
+
+[#jpplugincomm]
+==== Application/plugin communication in Java or Python
+
+At high level, Java and Python applications can only run `TSProcessor` or `InputSwitcher` sessions,
+just like a shell-script would do with commands `tsp` and `tsswitch`.
+
+The communication from the Java and Python applications to the plugins is performed using plugin options.
+These options may contain file names or UDP ports which can be created by the application.
+
+More effectively, most file contents can be provided directly on the command line, avoiding
+the burden of creating temporary files. For instance, wherever an input XML file name is
+expected, it is possible to use the XML content instead.
+Any "XML file name" which starts with `<?xml` is considered as inline XML content.
+Similarly, if an input "JSON file name" starts with `{` or `[`, it is considered as inline JSON content.
+
+On reverse side, there is some limited form of communication from the plugins to the Java or Python application.
+There are basically two ways to handle plugin information in the application:
+the logging system and plugin events.
+
+[.usage]
+Using the logging system:
+
+Some plugins support options such as `--log-xml-line`, `--log-json-line` or `--log-hexa-line`.
+With these options, the extracted data (table, section, MPE datagram) are "displayed"
+as one single line in the designated format on the logging system.
+Using user-defined Java or Python xref:jpreporting[asynchronous abstract reporting classes],
+the application receives all logged lines and can filter and manipulate the data
+which were extracted and logged by the plugins.
+
+[.usage]
+Using plugin events:
+
+Some plugins support the option `--event-code`.
+With this option, the extracted data are _signalled_ by the plugin as an event.
+Using and registering user-defined Java or Python xref:jpevents[plugin event handlers],
+the application is directly notified of the data.
+
+Which mechanism, logging system or plugin events, should be used depends on the application.
+
+* Logging system:
+** Pros:
+*** The log lines are asynchronously processed in the context of the low-priority logging thread.
+    Any lengthy processing in the Java or Python application does not hurt the dynamics of the plugins.
+** Cons:
+*** If the application needs to process binary data, the additional serialization process
+    in the log line adds some useless overhead.
+*** Because the logging system is non-intrusive by design, log messages may be lost if there
+    are more messages than the logging thread can process without making plugin threads wait.
+    This can be mitigated using the _synchronous log_ option in the `AbstractAsyncReport` consttructor.
+* Plugin events:
+** Pros:
+*** The binary data are directly passed from the plugin to the application without any serialization,
+    logging or multi-threading overhead.
+** Cons:
+*** The application-defined event handlers execute in the context of the plugin thread.
+    Any lengthy processing at this stage slows down the plugin.
+
+The following sample applications can be used as a starting point:
+
+.Sample Java and Python communication applications
+[cols="<1,<1,<1",stripes=none,options="autowidth"]
+|===
+|Communication type |Java |Python
+
+|Logging (XML)
+|{source}sample/sample-java/SampleAnalyzeSDT.java[SampleAnalyzeSDT]
+|{source}sample/sample-python/sample-analyze-sdt.py[sample-analyze-sdt.py]
+
+|Logging (JSON)
+|{source}sample/sample-java/SampleAnalyzeTS.java[SampleAnalyzeTS]
+|{source}sample/sample-python/sample-analyze-ts.py[sample-analyze-ts.py]
+
+|Logging (bin/hexa)
+|{source}sample/sample-java/SampleFilterTablesLog.java[SampleFilterTablesLog]
+|{source}sample/sample-python/sample-filter-tables-log.py[sample-filter-tables-log.py]
+
+|Plugin events (sections)
+|{source}sample/sample-java/SampleFilterTablesEvent.java[SampleFilterTablesEvent]
+|{source}sample/sample-python/sample-filter-tables-event.py[sample-filter-tables-event.py]
+
+|Plugin events (MPE datagrams)
+|{source}sample/sample-java/SampleMPE.java[SampleMPE]
+|{source}sample/sample-python/sample-mpe.py[sample-mpe.py]
+
+|Plugin events (input/output)
+|{source}sample/sample-memory-plugins/SampleMemoryPlugins.java[SampleMemoryPlugins]
+|{source}sample/sample-memory-plugins/sample-memory-plugins.py[sample-memory-plugins.py]
+
+|===
+
+[#javausing]
+==== Using TSDuck Java bindings
+
+All TSDuck Java classes are defined in a package named `io.tsduck`.
+
+A few examples are provided in the directory
+{source}sample/sample-java[`sample/sample-java`]
+in the TSDuck source code package.
+
+[#javalinux]
+===== Linux
+
+The TSDuck Java bindings are installed with TSDuck in `/usr/share/tsduck/java`.
+All classes are in a JAR file named `tsduck.jar`.
+Simply add this JAR in the environment variable `CLASSPATH` to use TSDuck from any Java application:
+
+[source,shell]
+----
+$ export CLASSPATH="/usr/share/tsduck/java/tsduck.jar:$CLASSPATH"
+----
+
+[#javamac]
+===== macOS
+
+This is similar to Linux, except that instead of `/usr/share`,
+use `/usr/local/share` (Intel Macs) or `/opt/homebrew/share` (Apple Silicon Macs).
+
+[source,shell]
+----
+$ export CLASSPATH="/usr/local/share/tsduck/java/tsduck.jar:$CLASSPATH"
+$ export CLASSPATH="/opt/homebrew/share/tsduck/java/tsduck.jar:$CLASSPATH"
+----
+
+[#javawin]
+===== Windows
+
+On Windows, Java bindings are optional components of the TSDuck installer.
+When they are selected for installation, they are installed in the TSDuck area and
+the environment variable `CLASSPATH` is modified at system level
+to include the JAR file of the TSDuck Java bindings.
+
+Thus, any Java program can use TSDuck directly.
+
+[#pyusing]
+==== Using TSDuck Python bindings
+
+All TSDuck bindings are defined in a module named `tsduck`.
+All Python programs using TSDuck shall consequently start with:
+
+[source,python]
+----
+import tsduck
+----
+
+A few examples are provided in the directory
+{source}sample/sample-python[`sample/sample-python`]
+in the TSDuck source code package.
+
+[#pylinux]
+===== Linux
+
+The Python bindings are installed with TSDuck in `/usr/share/tsduck/python`.
+Simply add this directory in the environment variable `PYTHONPATH` to use TSDuck from any Python application:
+
+[source,shell]
+----
+$ export PYTHONPATH="/usr/share/tsduck/python:$PYTHONPATH"
+----
+
+[#pymac]
+===== macOS
+
+This is similar to Linux, except that instead of `/usr/share`,
+use `/usr/local/share` (Intel Macs) or `/opt/homebrew/share` (Apple Silicon Macs).
+
+[source,shell]
+----
+$ export PYTHONPATH="/usr/local/share/tsduck/python:$PYTHONPATH"
+$ export PYTHONPATH="/opt/homebrew/share/tsduck/python:$PYTHONPATH"
+----
+
+[#pywin]
+===== Windows
+
+On Windows, Python bindings are optional components of the TSDuck installer.
+When they are selected for installation, they are installed in the TSDuck area and
+the environment variable `PYTHONPATH` is modified at system level
+to include the root directory of the TSDuck Python bindings.
+
+Thus, any Python program can use TSDuck directly.
+
+[#pyprereq]
+===== Python prerequisites
+
+The code was initially tested with Python 3.7 and higher.
+Python 2.x is not supported.
+Intermediate versions may work but without guarantee.
+
+[#pyimplem]
+===== Implementation notes
+
+There are usually two ways to call C/{cpp} from Python:
+
+[.compact-list]
+* Using the predefined `ctypes` Python module to call C functions,
+* Implementating a full native Python module in C/{cpp}.
+
+The second option is usually more flexible and more generic.
+However, the generated binary depends on the version of Python.
+If such an option is used, the binary installation of TSDuck would require a specific version of Python
+(or a specific set of versions of it).
+But each system has it own requirements on Python and it is difficult
+for a product like TSDuck to impose a specific version of Python.
+
+Consequently, the less flexible `ctypes` approach was chosen.
+The TSDuck binary library contains {cpp} wrapper functions to some features of TSDuck and
+these carefully crafted functions are directly called from Python code using `ctypes`,
+regardless of the version of Python.
+Note, however, that these {cpp} functions are hidden inside the Python bindings and
+are invisible to the {cpp} application developer.

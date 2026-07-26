@@ -1,0 +1,50 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2026, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+[#twolibs]
+=== Two libraries: TSCore and TSDuck
+
+Starting with version 3.40, the TSDuck library has been split in two parts:
+
+* The TSCore library contains generic {cpp} classes and features which are not specific to Digital TV.
+
+* The TSDuck library contains all Digital TV classes and features. It depends on the TSCore library
+  for basic features.
+
+Although it does not compete with other widely used {cpp} utility libraries, the TSCore library can be
+useful to any type of application. It include features for networking, text processing (including XML
+and JSON handling), advanced strings, unified logging and reporting, data serialization and deserialization, etc.
+
+Before the split, the size of the TSDuck library became quite large. Most of it was made of {cpp}
+classes to handle Digital TV features, including nearly 400 classes to handle tables
+and descriptors which are defined by the various Digital TV standards. In addition to their large
+memory footprint, these classes self-register themselves at the initialization of the TSDuck
+library, slowing down the application startup on small systems.
+
+For applications which only used the basic features of the TSDuck library, the Digital TV features
+became too bulky. Therefore, these basic features were extracted as a new TSCore library.
+
+The TSCore shared library file is named `libtscore.so`, `libtscore.dylib`, or `tscore.dll`,
+depending on the operating system.
+The TSDuck shared library file is named `libtsduck.so`, `libtsduck.dylib`, or `tsduck.dll`,
+
+Their respective header files are installed in directories `include/tscore` and `include/tsduck`
+(the exact location of the `include` parent directory depends on the operating system).
+
+Therefore, the two development environments are separated.
+The various sections of this chapter explains in details how to use each of them.
+
+Since the TSDuck library uses the TSCore library, any application which uses the former
+has implicit access to the latter.
+Specifically, applications which already used the monolythic TSDuck library before
+version 3.40 can be built without any change.
+
+NOTE: Starting with version 3.42, TSDuck installs a third common shared library named `libtsdektec`.
+This library contains the common code to access the Dektec devices, as well as the Dektec-provided DTAPI proprietary code.
+It is only designed to provide common code for the `tsdektec` command and the two `dektec` plugins, input and output.
+This library is not accessible to third-party applications.

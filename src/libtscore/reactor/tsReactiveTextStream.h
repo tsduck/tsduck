@@ -56,55 +56,60 @@ namespace ts {
 
         //!
         //! Start the operation of sending a line of text over the stream device.
-        //! There is no completion handler because the sent data is kept in a dedicated buffer.
+        //! @param [in] handler Handler class to call when the write operation is complete. Ignored when @a flush is false.
         //! @param [in] line Text line to send. The corresponding memory area is no longer used upon return.
         //! An end-of-line marker is automatically added.
         //! @param [in] flush If false, data are buffered into the ReactiveTextStream and no completion
         //! handler will be called. When true, all previously buffered data are sent with data from this call.
+        //! @param [in] user_data A shared pointer which will be passed unmodified to @a handler.
         //! @return True on success, false on error. Success means that the I/O was successfully started.
         //!
-        bool startWriteLine(const std::string& line, bool flush = true);
+        bool startWriteLine(ReactiveTextStreamHandlerInterface* handler, const std::string& line, bool flush = true, const ObjectPtr& user_data = ObjectPtr());
 
         //!
         //! Start the operation of sending a line of text over the stream device.
-        //! There is no completion handler because the sent data is kept in a dedicated buffer.
+        //! @param [in] handler Handler class to call when the write operation is complete. Ignored when @a flush is false.
         //! @param [in] line Text line to send. The corresponding memory area is no longer used upon return.
         //! An end-of-line marker is automatically added.
         //! @param [in] flush If false, data are buffered into the ReactiveTextStream and no completion
         //! handler will be called. When true, all previously buffered data are sent with data from this call.
+        //! @param [in] user_data A shared pointer which will be passed unmodified to @a handler.
         //! @return True on success, false on error. Success means that the I/O was successfully started.
         //!
-        bool startWriteLine(const UString& line, bool flush = true);
+        bool startWriteLine(ReactiveTextStreamHandlerInterface* handler, const UString& line, bool flush = true, const ObjectPtr& user_data = ObjectPtr());
 
         //!
         //! Start the operation of sending text over the stream device.
-        //! There is no completion handler because the sent data is kept in a dedicated buffer.
+        //! @param [in] handler Handler class to call when the write operation is complete. Ignored when @a flush is false.
         //! @param [in] text Text to send. The corresponding memory area is no longer used upon return. No end-of-line marker is added.
         //! @param [in] flush If false, data are buffered into the ReactiveTextStream and no completion
         //! handler will be called. When true, all previously buffered data are sent with data from this call.
+        //! @param [in] user_data A shared pointer which will be passed unmodified to @a handler.
         //! @return True on success, false on error. Success means that the I/O was successfully started.
         //!
-        bool startWriteText(const std::string& text, bool flush = true);
+        bool startWriteText(ReactiveTextStreamHandlerInterface* handler, const std::string& text, bool flush = true, const ObjectPtr& user_data = ObjectPtr());
 
         //!
         //! Start the operation of sending text over the stream device.
-        //! There is no completion handler because the sent data is kept in a dedicated buffer.
+        //! @param [in] handler Handler class to call when the write operation is complete. Ignored when @a flush is false.
         //! @param [in] text Text to send. The corresponding memory area is no longer used upon return. No end-of-line marker is added.
         //! @param [in] flush If false, data are buffered into the ReactiveTextStream and no completion
         //! handler will be called. When true, all previously buffered data are sent with data from this call.
+        //! @param [in] user_data A shared pointer which will be passed unmodified to @a handler.
         //! @return True on success, false on error. Success means that the I/O was successfully started.
         //!
-        bool startWriteText(const UString& text, bool flush = true);
+        bool startWriteText(ReactiveTextStreamHandlerInterface* handler, const UString& text, bool flush = true, const ObjectPtr& user_data = ObjectPtr());
 
         //!
         //! Start the operation of receiving messages from the socket.
         //! @param [in] handler Handler class to call each time a text line is received. The method handleTextLine() will
         //! be called on each received line. Cannot be null. If a previous receive handler was registered, it is replaced.
         //! @param [in] buffer_size Size of input buffers to receive data.
+        //! @param [in] user_data A shared pointer which will be passed unmodified to @a handler.
         //! @return True on success, false on error. Success means that the I/O was successfully started.
         //! The final status of the I/O will be transmitted in the @a handler.
         //!
-        bool startReadText(ReactiveTextStreamHandlerInterface* handler, size_t buffer_size = ReactiveStream::DEFAULT_RECEIVE_BUFFER_SIZE);
+        bool startReadText(ReactiveTextStreamHandlerInterface* handler, size_t buffer_size = ReactiveStream::DEFAULT_RECEIVE_BUFFER_SIZE, const ObjectPtr& user_data = ObjectPtr());
 
     private:
         // The send user-data is a buffer containing the formatted binary data to send.
@@ -113,7 +118,9 @@ namespace ts {
         class TSCOREDLL SendUserData: public Object
         {
         public:
-            std::string buffer{};
+            ReactiveTextStreamHandlerInterface* handler = nullptr;
+            ObjectPtr                           user_data {};
+            std::string                         buffer{};
             virtual ~SendUserData() override;
         };
         using SendUserDataPtr = std::shared_ptr<SendUserData>;
@@ -121,14 +128,16 @@ namespace ts {
         // ReactiveTextStream private fields.
         ReactiveStream&                     _stream;
         ReactiveTextStreamHandlerInterface* _receive_handler = nullptr;
+        ObjectPtr                           _receive_user_data {};
         SendUserDataPtr                     _unflushed_data {};
         std::string                         _eol {TextStream::DEFAULT_EOL};
 
         // Get and send a formatted buffer.
-        SendUserDataPtr getBuffer(bool flush);
-        bool startSendData(SendUserDataPtr& buf, bool eol, bool flush);
+        SendUserDataPtr getBuffer(ReactiveTextStreamHandlerInterface* handler, bool flush, const ObjectPtr& user_data);
+        bool startSendData(ReactiveTextStreamHandlerInterface* handler, SendUserDataPtr& buf, bool eol, bool flush, const ObjectPtr& user_data);
 
         // Inherited methods.
+        virtual void handleWriteStream(ReactiveStream& stream, int error_code, const ObjectPtr& user_data) override;
         virtual void handleReadStream(ReactiveStream& stream, const ByteBlock& data, ReactiveInputControl& control, int error_code, const ObjectPtr& user_data) override;
         virtual void handleSocketConnected(TCPConnection& sock) override;
         virtual void handleSocketDisconnected(TCPConnection& sock, bool silent) override;

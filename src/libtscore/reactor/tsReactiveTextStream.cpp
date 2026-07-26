@@ -53,10 +53,12 @@ void ts::ReactiveTextStream::handleSocketDisconnected(TCPConnection& sock, bool 
 // Get and send a formatted buffer.
 //----------------------------------------------------------------------------
 
-ts::ReactiveTextStream::SendUserDataPtr ts::ReactiveTextStream::getBuffer(bool flush)
+ts::ReactiveTextStream::SendUserDataPtr ts::ReactiveTextStream::getBuffer(ReactiveTextStreamHandlerInterface* handler, bool flush, const ObjectPtr& user_data)
 {
     // Output buffer is _unflushed_data if not empty, a new empty buffer otherwise.
     SendUserDataPtr buf = _unflushed_data != nullptr ? _unflushed_data : std::make_shared<SendUserData>();
+    buf->handler = handler;
+    buf->user_data = user_data;
 
     if (flush) {
         // This I/O is final and the output buffer will be used for asynchronous I/O.
@@ -71,7 +73,7 @@ ts::ReactiveTextStream::SendUserDataPtr ts::ReactiveTextStream::getBuffer(bool f
     return buf;
 }
 
-bool ts::ReactiveTextStream::startSendData(SendUserDataPtr& buf, bool eol, bool flush)
+bool ts::ReactiveTextStream::startSendData(ReactiveTextStreamHandlerInterface* handler, SendUserDataPtr& buf, bool eol, bool flush, const ObjectPtr& user_data)
 {
     // Add CR-LF (Telnet protocol end-of-line marker) when necessary.
     if (eol) {
@@ -81,7 +83,7 @@ bool ts::ReactiveTextStream::startSendData(SendUserDataPtr& buf, bool eol, bool 
     // Start the I/O when necessay. The buffer pointer is used as user-data to make sure that the shared pointer
     // is saved as long as the I/O is in progress. Thus, we guarantee that 1) the buffer remains valid during
     // the I/O and 2) it is automatically freed as the end of the I/O.
-    return !flush || _stream.startWriteStream(nullptr, buf->buffer.data(), buf->buffer.size(), buf);
+    return !flush || _stream.startWriteStream(this, buf->buffer.data(), buf->buffer.size(), buf);
 }
 
 
@@ -89,32 +91,46 @@ bool ts::ReactiveTextStream::startSendData(SendUserDataPtr& buf, bool eol, bool 
 // Start the operation of sending text over the stream device.
 //----------------------------------------------------------------------------
 
-bool ts::ReactiveTextStream::startWriteLine(const std::string& line, bool flush)
+bool ts::ReactiveTextStream::startWriteLine(ReactiveTextStreamHandlerInterface* handler, const std::string& line, bool flush, const ObjectPtr& user_data)
 {
-    auto buf = getBuffer(flush);
+    auto buf = getBuffer(handler, flush, user_data);
     buf->buffer.append(line);
-    return startSendData(buf, true, flush);
+    return startSendData(handler, buf, true, flush, user_data);
 }
 
-bool ts::ReactiveTextStream::startWriteLine(const UString& line, bool flush)
+bool ts::ReactiveTextStream::startWriteLine(ReactiveTextStreamHandlerInterface* handler, const UString& line, bool flush, const ObjectPtr& user_data)
 {
-    auto buf = getBuffer(flush);
+    auto buf = getBuffer(handler, flush, user_data);
     line.appendUTF8(buf->buffer);
-    return startSendData(buf, true, flush);
+    return startSendData(handler, buf, true, flush, user_data);
 }
 
-bool ts::ReactiveTextStream::startWriteText(const std::string& line, bool flush)
+bool ts::ReactiveTextStream::startWriteText(ReactiveTextStreamHandlerInterface* handler, const std::string& line, bool flush, const ObjectPtr& user_data)
 {
-    auto buf = getBuffer(flush);
+    auto buf = getBuffer(handler, flush, user_data);
     buf->buffer.append(line);
-    return startSendData(buf, false, flush);
+    return startSendData(handler, buf, false, flush, user_data);
 }
 
-bool ts::ReactiveTextStream::startWriteText(const UString& line, bool flush)
+bool ts::ReactiveTextStream::startWriteText(ReactiveTextStreamHandlerInterface* handler, const UString& line, bool flush, const ObjectPtr& user_data)
 {
-    auto buf = getBuffer(flush);
+    auto buf = getBuffer(handler, flush, user_data);
     line.appendUTF8(buf->buffer);
-    return startSendData(buf, false, flush);
+    return startSendData(handler, buf, false, flush, user_data);
+}
+
+
+//----------------------------------------------------------------------------
+// Invoked when binary data is written on the stream device.
+//----------------------------------------------------------------------------
+
+void ts::ReactiveTextStream::handleWriteStream(ReactiveStream& stream, int error_code, const ObjectPtr& user_data)
+{
+    std::shared_ptr<SendUserData> buf = std::dynamic_pointer_cast<SendUserData>(user_data);
+
+    if (buf != nullptr && buf->handler != nullptr) {
+        buf->handler->handleWriteText(*this, buf->buffer, error_code, buf->user_data);
+    }
 }
 
 
@@ -122,7 +138,7 @@ bool ts::ReactiveTextStream::startWriteText(const UString& line, bool flush)
 // Start the operation of receiving messages from the stream device.
 //----------------------------------------------------------------------------
 
-bool ts::ReactiveTextStream::startReadText(ReactiveTextStreamHandlerInterface* handler, size_t buffer_size)
+bool ts::ReactiveTextStream::startReadText(ReactiveTextStreamHandlerInterface* handler, size_t buffer_size, const ObjectPtr& user_data)
 {
     // The handler cannot be null because there is no other way to get received data.
     if (handler == nullptr) {
@@ -131,6 +147,7 @@ bool ts::ReactiveTextStream::startReadText(ReactiveTextStreamHandlerInterface* h
     }
     else {
         _receive_handler = handler;
+        _receive_user_data = user_data;
         return _stream.startReadStream(this, buffer_size);
     }
 }
@@ -145,7 +162,7 @@ void ts::ReactiveTextStream::handleReadStream(ReactiveStream& stream, const Byte
     if (_receive_handler != nullptr) {
         if (!SysSuccess(error_code)) {
             // Report an error to application.
-            _receive_handler->handleTextLine(*this, UString(), error_code);
+            _receive_handler->handleTextLine(*this, UString(), error_code, _receive_user_data);
         }
         else {
             // Loop on searching for line-feed. Stop if a handler stopped the socket.
@@ -162,7 +179,7 @@ void ts::ReactiveTextStream::handleReadStream(ReactiveStream& stream, const Byte
                     line.pop_back();
                 }
                 // Call the application.
-                _receive_handler->handleTextLine(*this, line, error_code);
+                _receive_handler->handleTextLine(*this, line, error_code, _receive_user_data);
                 // Look for next line-feed.
                 start = lf + 1;
             }

@@ -168,7 +168,7 @@ namespace {
         void run();
 
     private:
-        virtual void handleTextLine(ts::ReactiveTextStream& stream, const ts::UString& line, int error_code) override;
+        virtual void handleTextLine(ts::ReactiveTextStream& stream, const ts::UString& line, int error_code, const ts::ObjectPtr& user_data) override;
         virtual void handleProcessTermination(ts::Reactor& reac, ts::EventId id, int pid) override;
 
 #if defined(TS_WINDOWS)
@@ -229,7 +229,7 @@ namespace {
         TSUNIT_ASSERT(process_evid.isValid());
 
         TSUNIT_ASSERT(text_process.startReadText(this));
-        TSUNIT_ASSERT(text_process.startWriteLine(ls_command + file_name));
+        TSUNIT_ASSERT(text_process.startWriteLine(nullptr, ls_command + file_name));
         expected = GET_LS;
 
         TSUNIT_ASSERT(reactor.processEventLoop());
@@ -244,7 +244,7 @@ namespace {
         TSUNIT_ASSERT(!fs::exists(file_name));
     }
 
-    void TestProcessStream::handleTextLine(ts::ReactiveTextStream& stream, const ts::UString& line, int error_code)
+    void TestProcessStream::handleTextLine(ts::ReactiveTextStream& stream, const ts::UString& line, int error_code, const ts::ObjectPtr& user_data)
     {
         debug << "TestProcessStream: got line \"" << line.toTrimmed(false) << "\", " << line.size() << " chars, error code: " << error_code << std::endl;
         TSUNIT_ASSERT(&stream == &text_process);
@@ -264,7 +264,7 @@ namespace {
             if (expected == GET_LS && line.contains(base_name) && !line.contains(ls_command)) {
                 // Filter file base name but exclude ls command (powershell echoes its commands).
                 debug << "TestProcessStream: got ls output, sending cat command" << std::endl;
-                TSUNIT_ASSERT(text_process.startWriteLine(cat_command + file_name));
+                TSUNIT_ASSERT(text_process.startWriteLine(nullptr, cat_command + file_name));
                 expected = GET_LINE_0;
             }
             else if (expected == GET_LINE_0 && line.contains(file_content[0])) {
@@ -273,7 +273,7 @@ namespace {
             }
             else if (expected == GET_LINE_1 && line.contains(file_content[1])) {
                 debug << "TestProcessStream: got cat output line 2, sending exit command" << std::endl;
-                TSUNIT_ASSERT(text_process.startWriteLine(exit_command));
+                TSUNIT_ASSERT(text_process.startWriteLine(nullptr, exit_command));
                 expected = END;
             }
         }

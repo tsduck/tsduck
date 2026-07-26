@@ -1,0 +1,27 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2026, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+[#reactorevents]
+=== The Reactor pattern and event dispatching
+
+To be completed.
+
+.Reactor class diagram
+image::reactor-class-diagram.png[align="center",alt="reactor class diagram"]
+
+To be completed.
+
+.Reactive interfaces
+image::reactive-interfaces.png[align="center",alt="reactive interfaces"]
+
+To be completed.
+
+.Sample ReactiveServer application
+image::reactive-server.png[align="center",alt="sample ReactiveServer application"]
+
+To be completed.

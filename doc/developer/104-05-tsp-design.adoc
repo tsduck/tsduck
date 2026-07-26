@@ -44,7 +44,7 @@ Inside a `ts::tsp::PluginExecutor` object, the sliding window which is currently
 plugin thread is defined by the index of its first packet (`_pkt_first`) and its size in
 packets (`_pkt_cnt`).
 
-.Flat (non-circular) view of the buffer:
+.Flat (non-circular) view of the buffer
 image::tspbuffer.png[align="center",alt="tsp packet buffer",width=500]
 
 When a thread terminates the processing of a bunch of packets, it moves up its first index and,

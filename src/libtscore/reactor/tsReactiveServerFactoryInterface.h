@@ -15,6 +15,9 @@
 #include "tsReactiveServerSessionInterface.h"
 
 namespace ts {
+
+    class ReactiveServer;
+
     //!
     //! This interface creates server-side client sessions used by ReactiveServer.
     //! @ingroup libtscore reactor
@@ -35,10 +38,11 @@ namespace ts {
     public:
         //!
         //! Create a new ReactiveServerSessionInterface.
+        //! @param [in,out] server Reactive server for which the factory is invoked.
         //! @return Pointer to a new instance of ReactiveServerSessionInterface. The ownership
         //! of the allocated object is transfered to the server. The object will be automatically
         //! deleted by the ReactiveServer.
         //!
-        virtual ReactiveServerSessionInterface* newClientSession() = 0;
+        virtual ReactiveServerSessionInterface* newClientSession(ReactiveServer& server) = 0;
     };
 }

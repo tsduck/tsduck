@@ -35,7 +35,7 @@ ts::ReactiveTLVStream::SendUserData::~SendUserData()
 // Start the operation of sending a message over the TCP connection.
 //----------------------------------------------------------------------------
 
-bool ts::ReactiveTLVStream::startSendMessage(const tlv::Message& msg)
+bool ts::ReactiveTLVStream::startSendMessage(ReactiveTLVStreamHandlerInterface* handler, const tlv::Message& msg, const ObjectPtr& user_data)
 {
     if (_socket != nullptr) {
         _logger.log(msg, u"sending message to " + _socket->peerName());
@@ -47,6 +47,8 @@ bool ts::ReactiveTLVStream::startSendMessage(const tlv::Message& msg)
     // Allocate a buffer into which we serialize the message. We need a ByteBlockPtr to serialize the message.
     // We need to encapsulate it into a subclass of Object to use it as user-data for asynchronous I/O.
     SendUserDataPtr buf = std::make_shared<SendUserData>();
+    buf->handler = handler;
+    buf->user_data = user_data;
     buf->buffer = std::make_shared<ByteBlock>();
     tlv::Serializer serial(buf->buffer);
     msg.serialize(serial);
@@ -54,7 +56,21 @@ bool ts::ReactiveTLVStream::startSendMessage(const tlv::Message& msg)
     // Start the I/O. The buffer pointer is used as user-data to make sure that the shared pointer is
     // saved as long as the I/O is in progress. Thus, we guarantee that 1) the buffer remains valid
     // during the I/O and 2) it is automatically freed as the end of the I/O.
-    return _stream.startWriteStream(nullptr, buf->buffer->data(), buf->buffer->size(), buf);
+    return _stream.startWriteStream(this, buf->buffer->data(), buf->buffer->size(), buf);
+}
+
+
+//----------------------------------------------------------------------------
+// Invoked when binary data is written on the stream device.
+//----------------------------------------------------------------------------
+
+void ts::ReactiveTLVStream::handleWriteStream(ReactiveStream& stream, int error_code, const ObjectPtr& user_data)
+{
+    std::shared_ptr<SendUserData> buf = std::dynamic_pointer_cast<SendUserData>(user_data);
+
+    if (buf != nullptr && buf->handler != nullptr) {
+        buf->handler->handleSendMessage(*this, buf->buffer, error_code, buf->user_data);
+    }
 }
 
 
@@ -62,7 +78,7 @@ bool ts::ReactiveTLVStream::startSendMessage(const tlv::Message& msg)
 // Start the operation of receiving messages from the socket.
 //----------------------------------------------------------------------------
 
-bool ts::ReactiveTLVStream::startReceive(ReactiveTLVStreamHandlerInterface* handler, size_t buffer_size)
+bool ts::ReactiveTLVStream::startReceive(ReactiveTLVStreamHandlerInterface* handler, size_t buffer_size, const ObjectPtr& user_data)
 {
     // The handler cannot be null because there is no other way to get received data.
     if (handler == nullptr) {
@@ -71,6 +87,7 @@ bool ts::ReactiveTLVStream::startReceive(ReactiveTLVStreamHandlerInterface* hand
     }
     else {
         _receive_handler = handler;
+        _receive_user_data = user_data;
         return _stream.startReadStream(this, buffer_size);
     }
 }
@@ -89,7 +106,7 @@ void ts::ReactiveTLVStream::handleReadStream(ReactiveStream& stream, const ByteB
 
     // Report errors to application.
     if (!SysSuccess(error_code)) {
-        _receive_handler->handleReceivedMessage(*this, nullptr, error_code);
+        _receive_handler->handleReceiveMessage(*this, nullptr, error_code, _receive_user_data);
         return;
     }
 
@@ -131,7 +148,7 @@ void ts::ReactiveTLVStream::handleReadStream(ReactiveStream& stream, const ByteB
             }
 
             // Call the application.
-            _receive_handler->handleReceivedMessage(*this, msg, error_code);
+            _receive_handler->handleReceiveMessage(*this, msg, error_code, _receive_user_data);
             return;
         }
     }
@@ -143,7 +160,7 @@ void ts::ReactiveTLVStream::handleReadStream(ReactiveStream& stream, const ByteB
     if (_auto_error_response) {
         tlv::MessagePtr resp;
         mf.buildErrorResponse(resp);
-        startSendMessage(*resp);
+        startSendMessage(nullptr, *resp);
     }
 
     // If invalid message max has been reached, break the connection.
@@ -156,6 +173,6 @@ void ts::ReactiveTLVStream::handleReadStream(ReactiveStream& stream, const ByteB
             _logger.report().error(u"too many invalid messages, aborting");
         }
         // In practice, we report and end-of-session to allow the application to trigger and handle an asynchronous disconnection.
-        _receive_handler->handleReceivedMessage(*this, nullptr, SYS_EOF);
+        _receive_handler->handleReceiveMessage(*this, nullptr, SYS_EOF, _receive_user_data);
     }
 }

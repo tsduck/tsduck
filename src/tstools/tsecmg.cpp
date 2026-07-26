@@ -298,7 +298,7 @@ namespace ts {
         std::map<EventId, tlv::MessagePtr> _delayed_responses {};  // Delayed responses, by timer id.
 
         // Send a response message. The message is serialized and asynchronously sent.
-        bool send(const tlv::Message& msg) { return _tlv_client.startSendMessage(msg); }
+        bool send(const tlv::Message& msg) { return _tlv_client.startSendMessage(nullptr, msg); }
 
         // Send an error related to the msg.
         bool sendErrorResponse(const tlv::MessagePtr& msg, uint16_t error_status);
@@ -318,7 +318,7 @@ namespace ts {
         // Implementation of reactive connection handler interfaces.
         virtual void handleTimer(Reactor& reactor, EventId id) override;
         virtual void handleTCPAccepted(ReactiveTCPServer& server, ReactiveTCPConnection& sock, int error_code, const ObjectPtr& user_data) override;
-        virtual void handleReceivedMessage(ReactiveTLVStream& sock, const tlv::MessagePtr& msg, int error_code) override;
+        virtual void handleReceiveMessage(ReactiveTLVStream& sock, const tlv::MessagePtr& msg, int error_code, const ObjectPtr& user_data) override;
         virtual void handleTCPClosed(ReactiveTCPConnection& sock, const ObjectPtr& user_data) override;
     };
 }
@@ -395,7 +395,7 @@ void ts::ECMGChannel::handleTCPClosed(ReactiveTCPConnection& sock, const ObjectP
 // Called when a message is received from the client.
 //----------------------------------------------------------------------------
 
-void ts::ECMGChannel::handleReceivedMessage(ReactiveTLVStream& sock, const tlv::MessagePtr& msg, int error_code)
+void ts::ECMGChannel::handleReceiveMessage(ReactiveTLVStream& sock, const tlv::MessagePtr& msg, int error_code, const ObjectPtr& user_data)
 {
     // If case of error, an error message is already reported if not an end-of-file.
     bool ok = SysSuccess(error_code);
@@ -753,7 +753,7 @@ namespace ts {
         ECMGSessionFactory(Reactor& reactor, ECMGOptions& opt, ECMGState& state);
 
         // Implementation of session factory.
-        virtual ReactiveServerSessionInterface* newClientSession() override;
+        virtual ReactiveServerSessionInterface* newClientSession(ReactiveServer& server) override;
 
     private:
         Reactor&     _reactor;
@@ -771,7 +771,7 @@ ts::ECMGSessionFactory::ECMGSessionFactory(Reactor& reactor, ECMGOptions& opt, E
 }
 
 // Implementation of session factory.
-ts::ReactiveServerSessionInterface* ts::ECMGSessionFactory::newClientSession()
+ts::ReactiveServerSessionInterface* ts::ECMGSessionFactory::newClientSession(ReactiveServer& server)
 {
     return new ECMGChannel(_reactor, _opt, _state);
 }

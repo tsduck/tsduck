@@ -9,3 +9,5 @@
 #include "tsReactiveTLVStreamHandlerInterface.h"
 
 ts::ReactiveTLVStreamHandlerInterface::~ReactiveTLVStreamHandlerInterface() {}
+void ts::ReactiveTLVStreamHandlerInterface::handleReceiveMessage(ReactiveTLVStream&, const tlv::MessagePtr&, int, const ObjectPtr&) {}
+void ts::ReactiveTLVStreamHandlerInterface::handleSendMessage(ReactiveTLVStream&, const ByteBlockPtr&, int, const ObjectPtr&) {}
