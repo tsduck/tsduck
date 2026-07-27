@@ -17,8 +17,8 @@ param(
     [switch]$NoPause = $false
 )
 
-# SRT version 1.5.5 is broken on Windows.
-$Broken = @("v1.5.5")
+# Some SRT versions are broken on Windows.
+$Broken = @("v1.5.5", "v1.5.6")
 
 Write-Output "==== libsrt download and installation procedure"
 

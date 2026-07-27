@@ -28,7 +28,7 @@ namespace ts {
     //!   The resulting data could be shorter with a prior global analysis
     //!   of the input string.
     //!
-    //! @see ARIB STD-B24, chapter 7
+    //! @see ARIB STD-B24, fascicle 1, part 2, chapter 7
     //! @see ARIB STD-B62, fascicle 1, part 2, chapter 5
     //! @see ISO/IEC 2022
     //! @see https://en.wikipedia.org/wiki/ARIB_STD_B24_character_set
