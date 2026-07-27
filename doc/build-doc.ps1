@@ -89,7 +89,7 @@ $RougeHtml = "thankful_eyes"
 $RougePdf  = "github"
 
 # Specific doc files.
-$UserSiXml = “$UserGuideDir\20D-app-si-xml.adoc”
+$UserSiXml = "$UserGuideDir\20D-app-si-xml.adoc"
 
 # Enforce English names.
 [System.Threading.Thread]::CurrentThread.CurrentUICulture = "en-US"
