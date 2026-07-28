@@ -508,10 +508,7 @@ namespace ts {
     //! The exact criteria is that @a pcr2 wraps up after @a pcr1 and their
     //! distance is within 20% of a full PCR range.
     //!
-    TSDUCKDLL inline bool WrapUpPCR(uint64_t pcr1, uint64_t pcr2)
-    {
-        return pcr2 < pcr1 && (pcr1 - pcr2) > ((4 * PCR_SCALE) / 5);
-    }
+    TSDUCKDLL bool WrapUpPCR(uint64_t pcr1, uint64_t pcr2);
 
     //!
     //! Compute the PCR of a packet, based on the PCR of a previous packet.
@@ -553,10 +550,7 @@ namespace ts {
     //! @param [in] pts2 Second PTS.
     //! @return True if @a pts2 is probably following @a pts1 after wrapping up at 2^33.
     //!
-    TSDUCKDLL inline bool WrapUpPTS(uint64_t pts1, uint64_t pts2)
-    {
-        return pts2 < pts1 && (pts1 - pts2) > 0x00000001F0000000LL;
-    }
+    TSDUCKDLL bool WrapUpPTS(uint64_t pts1, uint64_t pts2);
 
     //!
     //! Check if two Presentation Time Stamps are in sequence.
@@ -569,10 +563,7 @@ namespace ts {
     //! @param [in] pts2 Second PTS.
     //! @return True if @a pts2 is after @a pts1, possibly after wrapping up at 2**33.
     //!
-    TSDUCKDLL inline bool SequencedPTS(uint64_t pts1, uint64_t pts2)
-    {
-        return pts1 <= pts2 || WrapUpPTS(pts1, pts2);
-    }
+    TSDUCKDLL bool SequencedPTS(uint64_t pts1, uint64_t pts2);
 
     //!
     //! Compute the difference between PTS2 and PTS1.

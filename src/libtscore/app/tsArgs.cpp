@@ -107,6 +107,7 @@ ts::Args::IOption::IOption(Args*           parent,
         case INTEGER:
         case ANUMBER:
         case CHRONO:
+        case INTRANGE:
             if (max_value < min_value) {
                 parent->fatalArgError(u"invalid value range for " + display());
             }
@@ -249,6 +250,7 @@ ts::UString ts::Args::IOption::valueDescription(ValueContext ctx) const
             case FILENAME:       desc = u"file-name"; break;
             case DIRECTORY:      desc = u"directory-name"; break;
             case HEXADATA:       desc = u"hexa-data"; break;
+            case INTRANGE:       desc = u"minvalue[-maxvalue]"; break;
             case IPADDR:         desc = u"ip-address"; break;
             case IPSOCKADDR:     desc = u"ip-address:port"; break;
             case IPSOCKADDR_OA:  desc = u"[ip-address:]port"; break;
@@ -326,6 +328,9 @@ ts::UString ts::Args::IOption::optionType() const
                 desc += u":enum:";
                 desc += enumeration.nameList(u",");
             }
+            break;
+        case INTRANGE:
+            desc += u":intrange";
             break;
         case TRISTATE:
             desc += u":enum:true,false,unknown";
@@ -822,7 +827,7 @@ ts::UString ts::Args::value(const UChar* name, const UChar* def_value, size_t in
 void ts::Args::getValue(UString& value, const UChar* name, const UChar* def_value, size_t index) const
 {
     const IOption& opt(getIOption(name));
-    if (opt.type == INTEGER) {
+    if (opt.type == INTEGER || opt.type == INTRANGE) {
         fatalArgError(opt.name, u"is integer, cannot be accessed as string");
     }
     else if (index >= opt.values.size() || !opt.values[index].string.has_value()) {
@@ -836,7 +841,7 @@ void ts::Args::getValue(UString& value, const UChar* name, const UChar* def_valu
 void ts::Args::getOptionalValue(std::optional<UString>& value, const UChar* name, bool clear_if_absent) const
 {
     const IOption& opt(getIOption(name));
-    if (opt.type == INTEGER) {
+    if (opt.type == INTEGER || opt.type == INTRANGE) {
         fatalArgError(opt.name, u"is integer, cannot be accessed as string");
     }
     else if (!opt.values.empty() && opt.values[0].string.has_value()) {
@@ -869,7 +874,7 @@ void ts::Args::getPathValue(fs::path& value, const UChar* name, const fs::path& 
 void ts::Args::getTristateValue(Tristate& value, const UChar* name, size_t index) const
 {
     const IOption& opt(getIOption(name));
-    if (opt.type == INTEGER) {
+    if (opt.type == INTEGER || opt.type == INTRANGE) {
         fatalArgError(opt.name, u"is integer, cannot be accessed as tristate");
     }
     if (index >= opt.values.size()) {
@@ -1320,7 +1325,7 @@ bool ts::Args::validateParameter(IOption& opt, const std::optional<UString>& val
             return false;
         }
     }
-    else if (opt.type != INTEGER && opt.type != CHRONO) {
+    else if (opt.type != INTEGER && opt.type != CHRONO && opt.type != INTRANGE) {
         // These cases must have been previously eliminated.
         assert(opt.type != UNSIGNED);
         assert(opt.type != POSITIVE);
@@ -1344,7 +1349,7 @@ bool ts::Args::validateParameter(IOption& opt, const std::optional<UString>& val
         arg.int_count = 1;
     }
     else if (val->toInteger(arg.int_base, THOUSANDS_SEPARATORS, opt.decimals, DECIMAL_POINTS)) {
-        // Found exactly one integer value.
+        // Found exactly one integer value. For INTRANGE, this is a one-value range.
         arg.int_count = 1;
     }
     else if ((point = val->find(u'-')) != NPOS &&
@@ -1352,7 +1357,7 @@ bool ts::Args::validateParameter(IOption& opt, const std::optional<UString>& val
              val->substr(0, point).toInteger(arg.int_base, THOUSANDS_SEPARATORS, opt.decimals, DECIMAL_POINTS) &&
              val->substr(point + 1).toInteger(last, THOUSANDS_SEPARATORS, opt.decimals, DECIMAL_POINTS))
     {
-        // Found one range of integer values.
+        // Found one range of integer values. Can be an INTRANGE or all values in range for INTEGER.
         if (last < arg.int_base) {
             error(u"invalid range of integer values \"%s\" for %s", val.value(), opt.display());
             return false;
@@ -1365,7 +1370,7 @@ bool ts::Args::validateParameter(IOption& opt, const std::optional<UString>& val
     }
 
     // Check validity of integer values.
-    if (opt.type == INTEGER && arg.int_count > 0) {
+    if ((opt.type == INTEGER || opt.type == INTRANGE) && arg.int_count > 0) {
         if (arg.int_base < opt.min_value) {
             error(u"value for %s must be >= %'d", opt.display(), opt.min_value);
             return false;

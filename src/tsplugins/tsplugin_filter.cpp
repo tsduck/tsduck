@@ -14,7 +14,6 @@
 #include "tsPluginRepository.h"
 #include "tsSignalizationDemux.h"
 #include "tsISDBTInformation.h"
-#include "tsAlgorithm.h"
 #include "tsMemory.h"
 
 
@@ -38,6 +37,9 @@ namespace ts {
         using PacketRange = std::pair<PacketCounter, PacketCounter>;
         using PacketRangeList = std::list<PacketRange>;
 
+        // Optional ranges of PCR, PTS, DTS values.
+        using ClockRange = std::optional<std::pair<uint64_t, uint64_t>>;
+
         // Command line options:
         PacketProcessStatus _drop_status = TSP_DROP;    // Return status for unselected packets
         int                _scrambling_ctrl = 0;        // Scrambling control value (<0: no filter)
@@ -46,6 +48,8 @@ namespace ts {
         bool               _with_af = false;            // Packets with adaptation field
         bool               _with_pes = false;           // Packets with clear PES headers
         bool               _with_pcr = false;           // Packets with PCR or OPCR
+        bool               _with_pts = false;           // Packets with PTS in clear PES header
+        bool               _with_dts = false;           // Packets with DTS in clear PES header
         bool               _with_splice = false;        // Packets with splice_countdown in adaptation field
         bool               _unit_start = false;         // Packets with payload unit start
         bool               _intra_frame = false;        // Packets with start of video intra-frame
@@ -74,6 +78,9 @@ namespace ts {
         bool               _search_payload = false;     // Search pattern in payload only
         bool               _use_search_offset = false;  // Search at specified offset only
         size_t             _search_offset = 0;          // Offset where to search.
+        ClockRange         _pcr_range {};               // Range of PCR values.
+        ClockRange         _pts_range {};               // Range of PTS values.
+        ClockRange         _dts_range {};               // Range of DTS values.
         PacketRangeList    _ranges {};                  // Ranges of packets to filter.
         std::set<uint8_t>  _stream_ids {};              // PES stream ids to filter
         std::set<uint8_t>  _isdb_layers {};             // ISDB layers to filter
@@ -237,8 +244,23 @@ ts::FilterPlugin::FilterPlugin(TSP* tsp_) :
     option(u"pcr");
     help(u"pcr", u"Select packets with PCR or OPCR.");
 
+    option(u"pcr-range", 0, INTRANGE, 0, 0, 0, MAX_PCR);
+    help(u"pcr-range", u"Select packets with PCR or OPCR values in the specified range.");
+
+    option(u"pts");
+    help(u"pts", u"Select packets with a PTS (in a clear PES header).");
+
+    option(u"pts-range", 0, INTRANGE, 0, 0, 0, MAX_PTS_DTS);
+    help(u"pts-range", u"Select packets with PTS values in the specified range.");
+
+    option(u"dts");
+    help(u"dts", u"Select packets with a DTS (in a clear PES header).");
+
+    option(u"dts-range", 0, INTRANGE, 0, 0, 0, MAX_PTS_DTS);
+    help(u"dts-range", u"Select packets with DTS values in the specified range.");
+
     option(u"pes");
-    help(u"pes", u"Select packets with clear PES headers.");
+    help(u"pes", u"Select packets with a clear PES header.");
 
     option(u"pid", 'p', PIDVAL, 0, UNLIMITED_COUNT);
     help(u"pid", u"pid1[-pid2]",
@@ -333,6 +355,8 @@ bool ts::FilterPlugin::getOptions()
     _with_af = present(u"adaptation-field");
     _with_pes = present(u"pes");
     _with_pcr = present(u"pcr");
+    _with_pts = present(u"pts");
+    _with_dts = present(u"dts");
     _with_splice = present(u"has-splice-countdown");
     _unit_start = present(u"unit-start");
     _intra_frame = present(u"intra-frame");
@@ -369,6 +393,9 @@ bool ts::FilterPlugin::getOptions()
     _use_search_offset = present(u"search-offset");
     getIntValue(_search_offset, u"search-offset");
     getHexaValue(_pattern, u"pattern");
+    getOptionalIntRange(_pcr_range, u"pcr-range", true);
+    getOptionalIntRange(_pts_range, u"pts-range", true);
+    getOptionalIntRange(_dts_range, u"dts-range", true);
 
     // Decode all index ranges.
     _ranges.clear();
@@ -493,6 +520,7 @@ ts::PacketProcessStatus ts::FilterPlugin::processPacket(TSPacket& pkt, TSPacketM
 
     // Check if the packet matches one of the selected criteria.
     const PIDClass pidclass = _demux.pidClass(pid);
+    uint64_t clock = 0;
     bool ok = _explicit_pid[pid] ||
         pkt_data.hasAnyLabel(_labels) ||
         _stream_id_pid[pid] ||
@@ -513,6 +541,12 @@ ts::PacketProcessStatus ts::FilterPlugin::processPacket(TSPacket& pkt, TSPacketM
         (_valid && pkt.hasValidSync() && !pkt.getTEI()) ||
         (_scrambling_ctrl == pkt.getScrambling()) ||
         (_with_pcr && (pkt.hasPCR() || pkt.hasOPCR())) ||
+        (_with_pts && pkt.hasPTS()) ||
+        (_with_dts && pkt.hasDTS()) ||
+        (_pcr_range.has_value() && pkt.hasPCR() && (clock = pkt.getPCR()) >= _pcr_range->first && clock <= _pcr_range->second) ||
+        (_pcr_range.has_value() && pkt.hasOPCR() && (clock = pkt.getOPCR()) >= _pcr_range->first && clock <= _pcr_range->second) ||
+        (_pts_range.has_value() && pkt.hasPTS() && (clock = pkt.getPTS()) >= _pts_range->first && clock <= _pts_range->second) ||
+        (_dts_range.has_value() && pkt.hasDTS() && (clock = pkt.getDTS()) >= _dts_range->first && clock <= _dts_range->second) ||
         (_with_splice && pkt.hasSpliceCountdown()) ||
         (_splice >= -128 && pkt.hasSpliceCountdown() && pkt.getSpliceCountdown() == _splice) ||
         (_min_splice >= -128 && pkt.hasSpliceCountdown() && pkt.getSpliceCountdown() >= _min_splice) ||

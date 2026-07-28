@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.45-4771 (July 2026)
+VERSION 3.45-4773 (July 2026)
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -16,6 +16,8 @@ VERSION 3.45-4771 (July 2026)
     certificate  using  complex systems commands. It it now possible to request
     the creation of an ephemeral self-signed certificate in memory.
   * New options in existing commands and plugins:
+    - Options --dts, --dts-range, --pcr-range,  --pts,  --pts-range  in  plugin
+      "filter".
     - Options  --preserve-units,  --silent-after, --stuffing in plugins "slice"
       and "time".
     - Option --no-lnb-control in input plugin "dektec".

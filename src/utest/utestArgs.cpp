@@ -66,6 +66,7 @@ class ArgsTest: public tsunit::Test
     TSUNIT_DECLARE_TEST(Redirection);
     TSUNIT_DECLARE_TEST(Tristate);
     TSUNIT_DECLARE_TEST(Ranges);
+    TSUNIT_DECLARE_TEST(IntRange);
     TSUNIT_DECLARE_TEST(Decimals);
     TSUNIT_DECLARE_TEST(FixedPoint);
     TSUNIT_DECLARE_TEST(Fraction);
@@ -787,7 +788,7 @@ TSUNIT_DEFINE_TEST(Tristate)
     TSUNIT_EQUAL(ts::Tristate::Maybe, args.tristateValue(u"opt8"));
 }
 
-// Test case: ranges of integer values.
+// Test case: ranges of integer values, as list of individual values.
 TSUNIT_DEFINE_TEST(Ranges)
 {
     ts::Args args(u"description", u"syntax", ts::Args::NO_EXIT_ON_ERROR);
@@ -829,6 +830,50 @@ TSUNIT_DEFINE_TEST(Ranges)
     TSUNIT_EQUAL(9002, args.intValue<int>(u"opt3", -1, 4));
     TSUNIT_EQUAL(9003, args.intValue<int>(u"opt3", -1, 5));
     TSUNIT_EQUAL(-1,   args.intValue<int>(u"opt3", -1, 6));
+}
+
+// Test case: ranges of integer values.
+TSUNIT_DEFINE_TEST(IntRange)
+{
+    ts::Args args(u"description", u"syntax", ts::Args::NO_EXIT_ON_ERROR);
+    args.option(u"opt1", 0, ts::Args::INTRANGE, 0, 1, 1, 100);
+
+    ts::ReportBuffer<ts::ThreadSafety::None> log;
+    args.delegateReport(&log);
+
+    std::optional<std::pair<int,int>> val(std::in_place_t(), 0, 0);
+    TSUNIT_ASSERT(val.has_value());
+
+    TSUNIT_ASSERT(args.analyze(u"test"));
+    TSUNIT_ASSERT(!args.present(u"opt1"));
+    TSUNIT_EQUAL(0, args.count(u"opt1"));
+    args.getOptionalIntRange(val, u"opt1", true);
+    TSUNIT_ASSERT(!val.has_value());
+
+    TSUNIT_ASSERT(args.analyze(u"test", {u"--opt1", u"12"}));
+    TSUNIT_ASSERT(args.present(u"opt1"));
+    TSUNIT_EQUAL(1, args.count(u"opt1"));
+    args.getOptionalIntRange(val, u"opt1", true);
+    TSUNIT_ASSERT(val.has_value());
+    TSUNIT_EQUAL(12, val->first);
+    TSUNIT_EQUAL(12, val->second);
+
+    val.reset();
+    TSUNIT_ASSERT(args.analyze(u"test", {u"--opt1", u"17-88"}));
+    TSUNIT_ASSERT(args.present(u"opt1"));
+    TSUNIT_EQUAL(1, args.count(u"opt1"));
+    args.getOptionalIntRange(val, u"opt1", true);
+    TSUNIT_ASSERT(val.has_value());
+    TSUNIT_EQUAL(17, val->first);
+    TSUNIT_EQUAL(88, val->second);
+
+    TSUNIT_ASSERT(!args.analyze(u"test", {u"--opt1", u"0-12"}));
+    TSUNIT_EQUAL(u"Error: value for option --opt1 must be >= 1", log.messages());
+    log.clear();
+
+    TSUNIT_ASSERT(!args.analyze(u"test", {u"--opt1", u"13-12"}));
+    TSUNIT_EQUAL(u"Error: invalid range of integer values \"13-12\" for option --opt1", log.messages());
+    log.clear();
 }
 
 // Test case: decimal values.

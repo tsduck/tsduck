@@ -85,29 +85,25 @@ namespace ts {
 
         TS_POP_WARNING()
 
-        // Get the subfactor from PCR for a given data type.
-        static uint32_t pcrSubfactor(DataType type)
-        {
-            return (type == DataType::PTS || type == DataType::DTS) ? SYSTEM_CLOCK_SUBFACTOR : 1;
-        }
-
-        // Get the number of ticks per millisecond for a given data type.
-        static std::intmax_t ticksPerMS(DataType type)
-        {
-            return ((type == DataType::PTS || type == DataType::DTS) ? PTS::period::den : PCR::period::den) / 1000;
-        }
-
         // Description of one type of data in a PID: PCR, OPCR, PTS, DTS.
         class PIDData
         {
             TS_NOBUILD_NOCOPY(PIDData);
         public:
-            PIDData(DataType t) : type(t) {}
-            const DataType type;                       // Data type.
-            PacketCounter  count = 0;                  // Number of data of this type in this PID.
-            uint64_t       first_value = INVALID_PCR;  // First data value of this type in this PID.
-            uint64_t       last_value = INVALID_PCR;   // First data value of this type in this PID.
-            PacketCounter  last_packet = 0;            // Packet index in TS of last value.
+            const DataType      type;                       // Data type.
+            const uint32_t      pcr_subfactor;              // Subfactor from PCR for that data type.
+            const std::intmax_t ticks_per_ms;               // Number of ticks per millisecond for that data type.
+            PacketCounter       count = 0;                  // Number of data of this type in this PID.
+            uint64_t            first_value = INVALID_PCR;  // First data value of this type in this PID.
+            uint64_t            last_value = INVALID_PCR;   // First data value of this type in this PID.
+            PacketCounter       last_packet = 0;            // Packet index in TS of last value.
+
+            // Constructor.
+            PIDData(DataType t) :
+                type(t),
+                pcr_subfactor((t == DataType::PTS || t == DataType::DTS) ? SYSTEM_CLOCK_SUBFACTOR : 1),
+                ticks_per_ms(((t == DataType::PTS || t == DataType::DTS) ? PTS::period::den : PCR::period::den) / 1000)
+            {}
         };
 
         // Description of one PID carrying PCR, PTS or DTS.
@@ -115,7 +111,7 @@ namespace ts {
         {
             TS_NOBUILD_NOCOPY(PIDContext);
         public:
-            PIDContext(PID p) : pid(p) {}
+            PIDContext(PID p) : pid(p) {}      // Constructor.
             const PID     pid;                 // PID value.
             PacketCounter packet_count = 0;    // Number of packets in this PID.
             PID           pcr_pid = PID_NULL;  // PID containing PCR in the same service.
@@ -437,8 +433,6 @@ void ts::PCRExtractPlugin::processValue(PIDContext& ctx, PIDData PIDContext::* p
 {
     PIDData& data(ctx.*pdata);
     const UString name(_type_names.name(data.type));
-    const uint32_t pcr_subfactor = pcrSubfactor(data.type);
-    const std::intmax_t ticks = ticksPerMS(data.type);
 
     // Count values and remember first value.
     if (data.count++ == 0) {
@@ -459,7 +453,7 @@ void ts::PCRExtractPlugin::processValue(PIDContext& ctx, PIDData PIDContext::* p
                  << value << _separator
                  << since_start << _separator;
         if (pcr != INVALID_PCR) {
-            *_output << (int64_t(value) - int64_t(pcr / pcr_subfactor));
+            *_output << (int64_t(value) - int64_t(pcr / data.pcr_subfactor));
         }
         if (_input_time) {
             *_output << _separator;
@@ -472,7 +466,7 @@ void ts::PCRExtractPlugin::processValue(PIDContext& ctx, PIDData PIDContext::* p
             }
             *_output << _separator;
             if (mdata.hasInputTimeStamp()) {
-                *_output << (int64_t(value) - int64_t(mdata.getInputTimeStamp().count() / pcr_subfactor));
+                *_output << (int64_t(value) - int64_t(mdata.getInputTimeStamp().count() / data.pcr_subfactor));
             }
         }
         *_output << std::endl;
@@ -485,9 +479,9 @@ void ts::PCRExtractPlugin::processValue(PIDContext& ctx, PIDData PIDContext::* p
             trailer.format(u", input: 0x%011X", mdata.getInputTimeStamp().count());
         }
         // Number of hexa digits: 11 for PCR (42 bits) and 9 for PTS/DTS (33 bits).
-        const size_t width = pcr_subfactor == 1 ? 11 : 9;
+        const size_t width = data.pcr_subfactor == 1 ? 11 : 9;
         info(u"PID: %n, %s: 0x%0*X, (0x%0*X, %'d ms from start of PID, %'d ms from previous)%s",
-                  ctx.pid, name, width, value, width, since_start, since_start / ticks, since_previous / ticks, trailer);
+                  ctx.pid, name, width, value, width, since_start, since_start / data.ticks_per_ms, since_previous / data.ticks_per_ms, trailer);
     }
 
     // Remember last value.

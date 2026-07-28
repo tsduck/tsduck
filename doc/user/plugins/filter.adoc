@@ -78,6 +78,18 @@ The name must be one of `AAC`, `AC3`, `AC4`, `AES3Audio`, `AV1`, `AVC`,
 `MPEG-4-Video`, `Teletext`, `VC1`, `VC4`, `VP9`, `VVC`, `undefined`.
 
 [.opt]
+*--dts*
+
+[.optdoc]
+Select packets with a DTS (in a clear PES header).
+
+[.opt]
+*--dts-range* _minvalue[-maxvalue]_
+
+[.optdoc]
+Select packets with a DTS value in the specified range.
+
+[.opt]
 *--ecm*
 
 [.optdoc]
@@ -252,10 +264,16 @@ Select packets with a payload.
 Select packets with PCR or OPCR.
 
 [.opt]
+*--pcr-range* _minvalue[-maxvalue]_
+
+[.optdoc]
+Select packets with a PCR or OPCR value in the specified range.
+
+[.opt]
 *--pes*
 
 [.optdoc]
-Select packets with clear PES headers.
+Select packets with a clear PES header.
 
 [.opt]
 *-p* _pid1[-pid2]_ +
@@ -273,6 +291,18 @@ Several `--pid` options may be specified.
 [.optdoc]
 Select packets from any PSI/SI PID.
 This includes global signalization PID's for DVB, ATSC and ISDB standards as well as the PMT of each service.
+
+[.opt]
+*--pts*
+
+[.optdoc]
+Select packets with a PTS (in a clear PES header).
+
+[.opt]
+*--pts-range* _minvalue[-maxvalue]_
+
+[.optdoc]
+Select packets with a PTS value in the specified range.
 
 [.opt]
 *--reset-label* _label1[-label2]_

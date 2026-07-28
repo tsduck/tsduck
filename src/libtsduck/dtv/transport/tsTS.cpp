@@ -98,28 +98,30 @@ ts::BitRate ts::SelectBitrate(const BitRate& bitrate1, BitRateConfidence brc1, c
 
 
 //----------------------------------------------------------------------------
-// Compute the PCR of a packet, based on the PCR of a previous packet.
+// Computations on PCR.
 //----------------------------------------------------------------------------
 
+// Check if PCR2 follows PCR1 after wrap up.
+bool ts::WrapUpPCR(uint64_t pcr1, uint64_t pcr2)
+{
+    // pcr2 wraps up after pcr1 and their distance is within 20% of a full PCR range.
+    return pcr2 < pcr1 && (pcr1 - pcr2) > ((4 * PCR_SCALE) / 5);
+}
+
+
+// Compute the PCR of a packet, based on the PCR of a previous packet.
 uint64_t ts::NextPCR(uint64_t last_pcr, PacketCounter distance, const BitRate& bitrate)
 {
     if (last_pcr == INVALID_PCR || bitrate == 0) {
         return INVALID_PCR;
     }
-
-    uint64_t next_pcr = last_pcr + (BitRate(distance * PKT_SIZE_BITS * SYSTEM_CLOCK_FREQ) / bitrate).toInt();
-    if (next_pcr >= PCR_SCALE) {
-        next_pcr -= PCR_SCALE;
+    else {
+        return (last_pcr + (BitRate(distance * PKT_SIZE_BITS * SYSTEM_CLOCK_FREQ) / bitrate).toInt()) % PCR_SCALE;
     }
-
-    return next_pcr;
 }
 
 
-//----------------------------------------------------------------------------
 // Add a signed offset to a PCR.
-//----------------------------------------------------------------------------
-
 uint64_t ts::AddPCR(uint64_t pcr, int64_t offset)
 {
     if (pcr > MAX_PCR) {
@@ -137,10 +139,7 @@ uint64_t ts::AddPCR(uint64_t pcr, int64_t offset)
 }
 
 
-//----------------------------------------------------------------------------
 // Compute the difference between PCR2 and PCR1.
-//----------------------------------------------------------------------------
-
 uint64_t ts::DiffPCR(uint64_t pcr1, uint64_t pcr2)
 {
     if (pcr1 > MAX_PCR || pcr2 > MAX_PCR) {
@@ -151,6 +150,7 @@ uint64_t ts::DiffPCR(uint64_t pcr1, uint64_t pcr2)
     }
 }
 
+// Compute the absolute value of the difference between two PCR's, regardless of their order.
 uint64_t ts::AbsDiffPCR(uint64_t pcr1, uint64_t pcr2)
 {
     if (pcr1 > MAX_PCR || pcr2 > MAX_PCR) {
@@ -170,6 +170,24 @@ uint64_t ts::AbsDiffPCR(uint64_t pcr1, uint64_t pcr2)
     }
 }
 
+
+//----------------------------------------------------------------------------
+// Computations on PTS and DTS.
+//----------------------------------------------------------------------------
+
+// Check if PTS2 follows PTS1 after wrap up.
+bool ts::WrapUpPTS(uint64_t pts1, uint64_t pts2)
+{
+    return pts2 < pts1 && (pts1 - pts2) > 0x00000001F0000000LL;
+}
+
+// Check if two Presentation Time Stamps are in sequence.
+bool ts::SequencedPTS(uint64_t pts1, uint64_t pts2)
+{
+    return pts1 <= pts2 || WrapUpPTS(pts1, pts2);
+}
+
+// Compute the difference between PTS2 and PTS1.
 uint64_t ts::DiffPTS(uint64_t pts1, uint64_t pts2)
 {
     if (pts1 > MAX_PTS_DTS || pts2 > MAX_PTS_DTS) {

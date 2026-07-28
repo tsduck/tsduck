@@ -308,6 +308,7 @@ namespace ts {
             INT16,          //!< Integer -32,768..32,767.
             INT32,          //!< Integer -2,147,483,648..2,147,483,647.
             INT64,          //!< 64-bit signed.
+            INTRANGE,       //!< Range of integer values "first-last", must set min & max values.
             ANUMBER,        //!< A subclass of AbstractNumber.
             CHRONO,         //!< Any instantiation of std::chrono::duration.
             TRISTATE,       //!< Tristate value, ts::Maybe if absent.
@@ -897,6 +898,21 @@ namespace ts {
         void getOptionalIntValue(std::optional<INT>& value, const UChar* name = nullptr, bool clear_if_absent = false) const;
 
         //!
+        //! Get the value of an integer-range option in the last analyzed command line, only if present.
+        //!
+        //! @tparam INT An integer or enumeration type for the result.
+        //! @param [in,out] value A std::optional integer receiving the value of the option or parameter.
+        //! @param [in] name The full name of the option. If the parameter is a null pointer or
+        //! an empty string, this specifies a parameter, not an option. If the specified option
+        //! was not declared in the syntax of the command, a fatal error is reported.
+        //! @param [in] clear_if_absent When the option is not present, the std::optional object
+        //! is cleared (set to uninitialized) when @a clear_if_absent it true. Otherwise, it
+        //! is left unmodified.
+        //!
+        template <typename INT> requires ts::int_enum<INT>
+        void getOptionalIntRange(std::optional<std::pair<INT,INT>>& value, const UChar* name = nullptr, bool clear_if_absent = false) const;
+
+        //!
         //! Get all occurrences of an integer option in a vector of integers.
         //!
         //! @tparam INT An integer or enumeration type for the result.
@@ -1278,7 +1294,7 @@ namespace ts {
         public:
             std::optional<UString> string {};      // Orginal string value from command line (unset if option is present without value).
             int64_t                int_base = 0;   // First (or only) integer value.
-            size_t                 int_count = 0;  // Number of consecutive integer values.
+            size_t                 int_count = 0;  // Number of consecutive integer values (integers and INTRANGE).
             IPSocketAddress        address {};     // IP address or socket address value.
         };
 
@@ -1552,6 +1568,19 @@ void ts::Args::getOptionalIntValue(std::optional<INT>& value, const UChar* name,
     const IOption& opt(getIOption(name));
     if (opt.type == INTEGER && !opt.values.empty()) {
         value = static_cast<INT>(opt.values[0].int_base);
+    }
+    else if (clear_if_absent) {
+        value.reset();
+    }
+}
+
+template <typename INT> requires ts::int_enum<INT>
+void ts::Args::getOptionalIntRange(std::optional<std::pair<INT,INT>>& value, const UChar* name, bool clear_if_absent) const
+{
+    const IOption& opt(getIOption(name));
+    if (opt.type == INTRANGE && !opt.values.empty()) {
+        const auto& v(opt.values[0]);
+        value.emplace(static_cast<INT>(v.int_base), static_cast<INT>(v.int_base + (v.int_count - 1)));
     }
     else if (clear_if_absent) {
         value.reset();
