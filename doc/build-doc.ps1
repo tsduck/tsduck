@@ -171,14 +171,14 @@ if ($User) {
 
 # Generate adoc files for all standards for which tables or descriptors are defined.
 if ($User) {
-    foreach ($Type in @("tables", "descriptors")) {
+        foreach ($Type in @("tables", "descriptors")) {
         $Standards = Get-ChildItem "$SrcDir\libtsduck\dtv\$Type\*\*.adoc" | ForEach-Object { Split-Path -Leaf $_.DirectoryName } | Sort-Object -Unique
         foreach ($Std in $Standards) {
             $OutName = ".all.$Std.$Type.adoc"
             $OutFile = "$UserGuideDir\$OutName"
             # Check that this file is correctly referenced in the user guide.
             # If someone adds a new standard, created a new directory, and forgot to update the main document.
-            if (-not (Select-String -Path $UserSiXml -Pattern “^include::$OutName\[]” -Quiet)) {
+            if (-not (Select-String -Path $UserSiXml -Pattern "^include::$OutName\[]" -Quiet)) {
                 Write-Error "File $OutName not included in $UserSiXml"
             }
             # Generate the file.
