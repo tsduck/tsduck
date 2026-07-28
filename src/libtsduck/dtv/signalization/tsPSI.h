@@ -104,4 +104,9 @@ namespace ts {
     //! In theory, all 16-bit values can be valid service id. However, this one is "usually" not used.
     //!
     constexpr uint16_t INVALID_SERVICE_ID = 0xFFFF;
+
+    //!
+    //! Number of sections.
+    //!
+    using SectionCounter = uint64_t;
 }

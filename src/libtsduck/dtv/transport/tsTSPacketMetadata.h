@@ -14,7 +14,6 @@
 #pragma once
 #include "tsTS.h"
 #include "tsByteBlock.h"
-#include "tsTimeSource.h"
 #include "tsCompactBitSet.h"
 #include "tsResidentBuffer.h"
 

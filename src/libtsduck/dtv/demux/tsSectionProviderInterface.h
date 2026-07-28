@@ -13,7 +13,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsTS.h"
+#include "tsPSI.h"
 #include "tsTablesPtr.h"
 
 namespace ts {

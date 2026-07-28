@@ -131,7 +131,7 @@ uint64_t ts::AddPCR(uint64_t pcr, int64_t offset)
         // Beware of signed / unsigned conversions.
         // If the final value is negative, the '%' operation differs on the signedness of the modulus type.
         // - If the modulus is unsigned (as PCR_SCALE is), the negative lhs is first converted to unsigned and the result is absurd.
-        // - If the modulus is signed, the result is currect but also negative and must be adjusted.
+        // - If the modulus is signed, the result is correct but also negative and must be adjusted.
         // So, let's compute everything in signed form and adjust negative results.
         const int64_t res = (int64_t(pcr) + offset) % int64_t(PCR_SCALE);
         return res < 0 ? uint64_t(int64_t(PCR_SCALE) + res) : uint64_t(res);
@@ -244,6 +244,42 @@ ts::UString ts::PCRToString(uint64_t pcr, bool hexa, bool decimal, bool ms)
 ts::UString ts::PTSToString(uint64_t pts, bool hexa, bool decimal, bool ms)
 {
     return TimeStampToString(pts, hexa, decimal, ms, SYSTEM_CLOCK_SUBFREQ, 9);
+}
+
+
+//----------------------------------------------------------------------------
+// Check if a ts::TimeSource value is a monotonic clock.
+//----------------------------------------------------------------------------
+
+bool ts::MonotonicTimeSource(TimeSource source)
+{
+    using enum TimeSource;
+    static const std::set<TimeSource> mono {HARDWARE, KERNEL, TSP, SRT, RIST, PCAP};
+    return mono.contains(source);
+}
+
+
+//----------------------------------------------------------------------------
+// Enumeration description of ts::TimeSource.
+//----------------------------------------------------------------------------
+
+const ts::Names& ts::TimeSourceEnum()
+{
+    static const Names data {
+        {u"undefined", TimeSource::UNDEFINED},
+        {u"hardware",  TimeSource::HARDWARE},
+        {u"kernel",    TimeSource::KERNEL},
+        {u"tsp",       TimeSource::TSP},
+        {u"RTP",       TimeSource::RTP},
+        {u"SRT",       TimeSource::SRT},
+        {u"M2TS",      TimeSource::M2TS},
+        {u"PCR",       TimeSource::PCR},
+        {u"DTS",       TimeSource::DTS},
+        {u"PTS",       TimeSource::PTS},
+        {u"PCAP",      TimeSource::PCAP},
+        {u"RIST",      TimeSource::RIST},
+    };
+    return data;
 }
 
 

@@ -93,6 +93,7 @@ namespace ts {
             const DataType      type;                       // Data type.
             const uint32_t      pcr_subfactor;              // Subfactor from PCR for that data type.
             const std::intmax_t ticks_per_ms;               // Number of ticks per millisecond for that data type.
+            const uint64_t      scale;                      // Data type modulus.
             PacketCounter       count = 0;                  // Number of data of this type in this PID.
             uint64_t            first_value = INVALID_PCR;  // First data value of this type in this PID.
             uint64_t            last_value = INVALID_PCR;   // First data value of this type in this PID.
@@ -102,8 +103,31 @@ namespace ts {
             PIDData(DataType t) :
                 type(t),
                 pcr_subfactor((t == DataType::PTS || t == DataType::DTS) ? SYSTEM_CLOCK_SUBFACTOR : 1),
-                ticks_per_ms(((t == DataType::PTS || t == DataType::DTS) ? PTS::period::den : PCR::period::den) / 1000)
-            {}
+                ticks_per_ms(((t == DataType::PTS || t == DataType::DTS) ? PTS::period::den : PCR::period::den) / 1000),
+                scale((t == DataType::PTS || t == DataType::DTS) ? PTS_DTS_SCALE : PCR_SCALE)
+            {
+            }
+
+            // Check is two values are wrapping around the modulus.
+            bool wrap(uint64_t v1, uint64_t v2)
+            {
+                // Values wrap if their distance is within 10% of a full PCR range.
+                return (v1 > v2 ? v1 - v2 : v2 - v1) > (9 * scale) / 10;
+            }
+
+            // Compute the difference between two values (v1 - v2).
+            int64_t diff(uint64_t v1, uint64_t v2)
+            {
+                if (!wrap(v1, v2)) {
+                    return int64_t(v1) - int64_t(v2);
+                }
+                else if (v1 <= v2) {
+                    return int64_t(scale + v1) - int64_t(v2);
+                }
+                else {
+                    return int64_t(v1) - int64_t(scale + v2);
+                }
+            }
         };
 
         // Description of one PID carrying PCR, PTS or DTS.
@@ -436,12 +460,12 @@ void ts::PCRExtractPlugin::processValue(PIDContext& ctx, PIDData PIDContext::* p
 
     // Count values and remember first value.
     if (data.count++ == 0) {
-        data.first_value = value;
+        data.first_value = data.last_value = value;
     }
 
     // Time offset since first value of this type in the PID.
-    const uint64_t since_start = value - data.first_value;
-    const int64_t since_previous = data.last_value == INVALID_PCR ? 0 : int64_t(value) - int64_t(data.last_value);
+    const int64_t since_start = data.diff(value, data.first_value);
+    const int64_t since_previous = data.diff(value, data.last_value);
 
     // Report in CSV format.
     if (_csv_format && report_it) {
@@ -481,7 +505,7 @@ void ts::PCRExtractPlugin::processValue(PIDContext& ctx, PIDData PIDContext::* p
         // Number of hexa digits: 11 for PCR (42 bits) and 9 for PTS/DTS (33 bits).
         const size_t width = data.pcr_subfactor == 1 ? 11 : 9;
         info(u"PID: %n, %s: 0x%0*X, (0x%0*X, %'d ms from start of PID, %'d ms from previous)%s",
-                  ctx.pid, name, width, value, width, since_start, since_start / data.ticks_per_ms, since_previous / data.ticks_per_ms, trailer);
+             ctx.pid, name, width, value, width, since_start, since_start / data.ticks_per_ms, since_previous / data.ticks_per_ms, trailer);
     }
 
     // Remember last value.
