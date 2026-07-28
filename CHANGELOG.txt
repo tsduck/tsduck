@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.45-4744 (July 2026)
+VERSION 3.45-4771 (July 2026)
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -35,6 +35,12 @@ VERSION 3.45-4744 (July 2026)
     transmission_type_info of the TS_information_descriptor.
   * Fixed issue #1733:  Frequency  rounding  error in ISDB terrestrial delivery
     system descriptor.
+
+[REG] Regressions:
+
+  * SRT  support  has  been  removed  from  TSDuck on Windows, due to recurrent
+    issues  starting with libsrt 1.5.5. TSDuck continues to support SRT on UNIX
+    systems (Linux, macOS, FreeBSD).
 
 -------------------------------------------------------------------------------
 
