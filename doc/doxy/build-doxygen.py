@@ -14,13 +14,8 @@
 #
 #-----------------------------------------------------------------------------
 
-import re, os, sys, glob, shutil, subprocess
-
-# With option -e or --enforce-groups, update all "@ingroup" directives.
-update_groups = '-e' in sys.argv or '--enforce-groups' in sys.argv
-
-# With option -s or --skip-doxygen, do not call doxygen, assume already built.
-skip_doxygen = '-s' in sys.argv or '--skip-doxygen' in sys.argv
+import re, os, sys, glob, shutil, subprocess, argparse
+import xml.etree.ElementTree as etree
 
 # Calling script name, project root.
 SCRIPT     = os.path.basename(sys.argv[0])
@@ -28,17 +23,11 @@ SCRIPTDIR  = os.path.dirname(os.path.abspath(sys.argv[0]))
 ROOTDIR    = os.path.dirname(os.path.dirname(SCRIPTDIR))
 SRCDIRS    = [os.sep.join([ROOTDIR, 'src', 'libtscore']), os.sep.join([ROOTDIR, 'src', 'libtsduck'])]
 DOXYDIR    = os.sep.join([ROOTDIR, 'bin', 'doxy'])
+TAGFILE    = os.sep.join([DOXYDIR, 'tags.xml'])
 HTMLDIR    = os.sep.join([DOXYDIR, 'html'])
 GROUPDIR   = os.sep.join([HTMLDIR, 'group'])
 CLASSDIR   = os.sep.join([HTMLDIR, 'class'])
 GETVERSION = os.sep.join([ROOTDIR, 'scripts', 'get-version-from-sources.py'])
-
-# Display a warning or fatal error and exit.
-def warning(message):
-    print('%s: warning: %s', (SCRIPT, message), file=sys.stderr)
-def fatal(message):
-    print('%s: error: %s', (SCRIPT, message), file=sys.stderr)
-    exit(1)
 
 # Get the output of a command as a text string.
 def command_text(args):
@@ -108,92 +97,88 @@ def redirect_html(sourcedir, sourcefile, target):
         print('<body>Moved <a href="%s">here</a></body>' % reltarget, file=output)
         print('</html>', file=output)
 
-# Check and fix "@ingroup" directives in all header files.
-missing_group_names = 0
-if update_groups:
-    for dir in SRCDIRS:
-        missing_group_names += check_file_tree(dir, os.path.basename(dir))
+# Main entry point.
+if __name__ == '__main__':
+    # Decode command line.
+    parser = argparse.ArgumentParser(description='Build the TSDuck Doxygen documentation.')
+    parser.add_argument('-e', '--enforce-groups', action='store_true', help='update all "@ingroup" directives.')
+    parser.add_argument('-s', '--skip-doxygen', action='store_true', help='do not call doxygen, assume already built.')
+    args = parser.parse_args()
 
-# Search Doxygen and Dot.
-doxygen = which('doxygen', r'C:\Program Files*\Doxygen*\bin')
-dot = which('dot', r'C:\Program Files*\Graphviz*\bin')
-if doxygen is None:
-    fatal("doxygen is not installed")
-doxy_version, doxy_iversion = extract_version(command_text([doxygen, '--version']))
-if doxy_iversion < 10908:
-    warning('doxygen version is %s, recommended minimum is 1.9.8, expect spurious error messages' % doxy_version)
+    # Check and fix "@ingroup" directives in all header files.
+    missing_group_names = 0
+    if args.enforce_groups:
+        for dir in SRCDIRS:
+            missing_group_names += check_file_tree(dir, os.path.basename(dir))
 
-# Make sure that the output directory is created (doxygen does not create parent directories).
-os.makedirs(DOXYDIR, exist_ok=True)
+    # Make sure that the output directories are created (doxygen does not create parent directories).
+    os.makedirs(DOXYDIR, exist_ok=True)
+    os.makedirs(CLASSDIR, exist_ok=True)
+    os.makedirs(GROUPDIR, exist_ok=True)
 
-# Build an environment for execution of doxygen.
-env = os.environ.copy()
-env['TS_FULL_VERSION'] = command_text([sys.executable, GETVERSION]).strip()
-env['DOXY_INCLUDE_PATH'] = ' '.join(sum([[d[0] for d in os.walk(s)] for s in SRCDIRS], start=[]))
-if dot is None:
-    env['HAVE_DOT'] = 'NO'
-else:
-    env['HAVE_DOT'] = 'YES'
-    env['DOT_PATH'] = dot
-
-# Run doxygen in same directory as this script (where Doxyfile is).
-if skip_doxygen:
-    doxy_status = 0
-else:
-    print('Running doxygen version: %s ...' % doxy_version)
-    status = subprocess.run([doxygen], env=env, cwd=SCRIPTDIR)
-    doxy_status = status.returncode
-
-# Collect all 'group_*.html' files. Count files and directories.
-# Delete empty subdirectories (older versions of doxygen created many for nothing in case of hierachical output).
-groups = []
-dir_count = 0
-file_count = 0
-for root, dirs, files in os.walk(DOXYDIR, topdown=False):
-    fcount = len(files)
-    if len(dirs) == 0 and fcount == 0:
-        # Empty directory, remove it.
-        os.rmdir(root)
+    # Run doxygen.
+    if args.skip_doxygen:
+        doxy_status = 0
     else:
-        dir_count += 1
-        file_count += fcount
-        # Collect group files.
-        for f in files:
-            if f.startswith('group_') and f.endswith('.html'):
-                groups.append(os.path.join(root, f))
+        # Search Doxygen and Dot.
+        doxygen = which('doxygen', r'C:\Program Files*\Doxygen*\bin')
+        dot = which('dot', r'C:\Program Files*\Graphviz*\bin')
+        if doxygen is None:
+            parser.exit(1, '%s: doxygen is not installed' % SCRIPT)
+        doxy_version, doxy_iversion = extract_version(command_text([doxygen, '--version']))
+        if doxy_iversion < 10908:
+            print('%s: warning: doxygen version is %s, recommended minimum is 1.9.8, expect spurious error messages' % (SCRIPT, doxy_version), file=sys.stderr)
 
-# Create permanent links in a 'group' subdirectory.
-os.makedirs(GROUPDIR, exist_ok=True)
-for f in groups:
-    match = re.fullmatch(r'group_*(.*\.html)', os.path.basename(f))
-    if match is not None:
-        redirect_html(GROUPDIR, match.group(1), f)
-        file_count += 1
+        # Build an environment for execution of doxygen.
+        env = os.environ.copy()
+        env['TS_FULL_VERSION'] = command_text([sys.executable, GETVERSION]).strip()
+        env['DOXY_INCLUDE_PATH'] = ' '.join(sum([[d[0] for d in os.walk(s)] for s in SRCDIRS], start=[]))
+        if dot is None:
+            env['HAVE_DOT'] = 'NO'
+        else:
+            env['HAVE_DOT'] = 'YES'
+            env['DOT_PATH'] = dot
 
-# Create permanent links in a 'class' subdirectory for all classes in namespace 'ts'.
-os.makedirs(CLASSDIR, exist_ok=True)
-file_pattern = re.compile(r'href="([^"]*/classts_1_1[^"/]*\.html)"')
-title_pattern = re.compile(r'>ts::([A-Za-z0-9_:]+) +[Cc]lass +[Re]eference')
-with open(os.path.join(HTMLDIR, 'classes.html')) as input:
-    for line in input:
-        # Grab all href to "classts_1_1*.html" files.
-        for href in file_pattern.findall(line):
-            # Read the HTML file and find the class name.
-            hfile = os.path.join(HTMLDIR, href)
-            classname = None
-            with open(hfile) as hinput:
-                for hline in hinput:
-                    if 'class="headertitle"' in hline:
-                        match = title_pattern.search(hline)
-                        if match is not None:
-                            classname = match.group(1)
-                        break
-            if classname is not None:
-                redirect_html(CLASSDIR, classname.replace(':', '_') + '.html', hfile)
-                file_count += 1
+        # Run doxygen in same directory as this script (where Doxyfile is).
+        print('Running doxygen version: %s ...' % doxy_version)
+        status = subprocess.run([doxygen], env=env, cwd=SCRIPTDIR)
+        doxy_status = status.returncode
 
-print('Generated %d files in %d directories' % (file_count, dir_count))
-if missing_group_names > 0:
-    print('Missing %d libtscore or libtsduck group names' % missing_group_names)
+    # Parse the doxygen-generated tags.xml file.
+    try:
+        root = etree.parse(TAGFILE).getroot()
+        # Loop on all <compound> structures.
+        for compound in root.findall('compound'):
+            kind = compound.get('kind')
+            name = compound.find('name')
+            file = compound.find('filename')
+            if name is not None and file is not None:
+                if kind == 'group':
+                    # Create a group/<name>.html which redirects to the group doc.
+                    redirect_html(GROUPDIR, name.text + '.html', os.sep.join([HTMLDIR, file.text]))
+                elif kind in {'class', 'struct', 'interface'} and name.text.startswith('ts::'):
+                    # Create a class/<name>.html which redirects to the class doc.
+                    # Only keep classes starting in "ts::", others are not C++.
+                    redirect_html(CLASSDIR, name.text.removeprefix('ts::').replace(':', '_') + '.html', os.sep.join([HTMLDIR, file.text]))
+    except etree.ParseError as e:
+        parser.exit(1, '%s: XML error in %s: %s' % (SCRIPT, TAGFILE, e))
+    except OSError as e:
+        parser.exit(1, '%s: read error in %s: %s' % (SCRIPT, TAGFILE, e))
 
-exit(min(1, missing_group_names + doxy_status))
+    # Delete empty subdirectories (older versions of doxygen created many for nothing in case of hierachical output).
+    dir_count = 0
+    file_count = 0
+    for root, dirs, files in os.walk(DOXYDIR, topdown=False):
+        fcount = len(files)
+        if len(dirs) == 0 and fcount == 0:
+            # Empty directory, remove it.
+            os.rmdir(root)
+        else:
+            dir_count += 1
+            file_count += fcount
+
+    print('Generated %d files in %d directories' % (file_count, dir_count))
+    if missing_group_names > 0:
+        print('Missing %d libtscore or libtsduck group names' % missing_group_names)
+
+    exit(min(1, missing_group_names + doxy_status))
