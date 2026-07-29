@@ -146,7 +146,7 @@ void ts::SpliceInsert::display(TablesDisplay& disp, const UString& margin) const
             }
         }
         if (use_duration) {
-            disp << margin << "Duration PTS: " << PTSToString(duration_pts) << ", auto return: " << UString::YesNo(auto_return) << std::endl;
+            disp << margin << "Duration PTS: " << PTSTraits::ToString(duration_pts) << ", auto return: " << UString::YesNo(auto_return) << std::endl;
         }
         disp << margin << UString::Format(u"Unique program id: %n, avail: %n, avails expected: %d", program_id, avail_num, avails_expected) << std::endl;
     }

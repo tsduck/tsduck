@@ -253,8 +253,8 @@ bool ts::PCRAnalyzer::feedPacket(const TSPacket& pkt)
 
         // Get increment since last value, in PCR units.
         const uint64_t pcr_increment = ps.last_pcr_dts_value == INVALID_PCR ? 0 : (_use_dts ?
-            DiffPTS(ps.last_pcr_dts_value, pcr_dts) * SYSTEM_CLOCK_SUBFACTOR :
-            DiffPCR(ps.last_pcr_dts_value, pcr_dts));
+            PTSTraits::Diff(pcr_dts, ps.last_pcr_dts_value) * SYSTEM_CLOCK_SUBFACTOR :
+            PCRTraits::Diff(pcr_dts, ps.last_pcr_dts_value));
 
         // Adjust the clock of the current PID (accumulated PCR ticks).
         // Here, we do not care about discontinuities, we just use clock values.
@@ -293,8 +293,8 @@ bool ts::PCRAnalyzer::feedPacket(const TSPacket& pkt)
             while (!_packet_clock_index_map.empty()) {
                 const uint64_t earliestPCR_DTS = _packet_clock_index_map.begin()->first;
                 diff_values = _use_dts ?
-                    DiffPTS(earliestPCR_DTS, pcr_dts) * SYSTEM_CLOCK_SUBFACTOR :
-                    DiffPCR(earliestPCR_DTS, pcr_dts);
+                    PTSTraits::Diff(pcr_dts, earliestPCR_DTS) * SYSTEM_CLOCK_SUBFACTOR :
+                    PCRTraits::Diff(pcr_dts, earliestPCR_DTS);
                 if (diff_values > SYSTEM_CLOCK_FREQ) {
                     _packet_clock_index_map.erase(_packet_clock_index_map.begin());
                 }
@@ -321,8 +321,8 @@ bool ts::PCRAnalyzer::feedPacket(const TSPacket& pkt)
             // For instantaneous bitrates, these are the actual bitrates, and it doesn't use the "count" approach.
             if (!_packet_clock_index_map.empty()) {
                 diff_values = _use_dts ?
-                    DiffPTS(_packet_clock_index_map.begin()->first, pcr_dts) * SYSTEM_CLOCK_SUBFACTOR :
-                    DiffPCR(_packet_clock_index_map.begin()->first, pcr_dts);
+                    PTSTraits::Diff(pcr_dts, _packet_clock_index_map.begin()->first) * SYSTEM_CLOCK_SUBFACTOR :
+                    PCRTraits::Diff(pcr_dts, _packet_clock_index_map.begin()->first);
                 _inst_ts_bitrate_188 = diff_values == 0 ? 0 :
                     BitRate((_ts_pkt_cnt - _packet_clock_index_map.begin()->second) * SYSTEM_CLOCK_FREQ * PKT_SIZE_BITS) / diff_values;
                 _inst_ts_bitrate_204 = diff_values == 0 ? 0 :

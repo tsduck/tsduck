@@ -57,7 +57,7 @@ namespace ts {
         std::map<PID,PIDContext> _stats {};              // Per-PID statistics
 
         // PCR units per micro-second.
-        static constexpr int64_t PCR_PER_MICRO_SEC = int64_t(SYSTEM_CLOCK_FREQ) / cn::microseconds::period::den;
+        static constexpr int64_t PCR_PER_MICRO_SEC = int64_t(PCRTraits::TICKS) / cn::microseconds::period::den;
         static constexpr int64_t DEFAULT_JITTER_MAX_US = 1000; // 1000 us = 1 ms
         static constexpr int64_t DEFAULT_JITTER_UNREAL_US = 10 * cn::microseconds::period::den; // 10 seconds
         static constexpr int64_t DEFAULT_JITTER_MAX = DEFAULT_JITTER_MAX_US * PCR_PER_MICRO_SEC;
@@ -226,8 +226,8 @@ ts::PacketProcessStatus ts::PCRVerifyPlugin::processPacket(TSPacket& pkt, TSPack
 
             // Adjust second PCR if PCR's have looped back after max value.
             // Since a PCR is coded on 42 bits, adjusting the value remains within 64 bits.
-            if (ts::WrapUpPCR(pcr1, pcr2)) {
-                pcr2 += ts::PCR_SCALE;
+            if (PCRTraits::WrapUp(pcr1, pcr2)) {
+                pcr2 += PCRTraits::SCALE;
             }
 
             if (_input_synch) {

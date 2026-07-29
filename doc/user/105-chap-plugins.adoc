@@ -401,6 +401,10 @@ endif::[]
 |packet
 |Delay transmission by a fixed amount of packets
 
+|timewrap
+|packet
+|Detect PCR, PTS, DTS wrap-down to zero
+
 |trace
 |packet
 |Trace packets with a custom message
@@ -439,6 +443,5 @@ Please note the following:
   All secrecy and proprietary CAS information remain isolated inside these external systems and
   TSDuck does not attempt to access this type of secret and private information.
   TSDuck only interacts with these systems using their external communication protocols.
-
 
 include::.all.plugins.adoc[]

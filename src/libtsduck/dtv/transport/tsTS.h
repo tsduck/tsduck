@@ -409,196 +409,6 @@ namespace ts {
     //---------------------------------------------------------------------
 
     //!
-    //! MPEG-2 System Clock frequency in Hz, used by PCR (27 Mb/s).
-    //!
-    constexpr uint32_t SYSTEM_CLOCK_FREQ = 27000000;
-
-    //!
-    //! Subfactor of MPEG-2 System Clock subfrequency, used by PTS and DTS.
-    //!
-    constexpr uint32_t SYSTEM_CLOCK_SUBFACTOR = 300;
-
-    //!
-    //! MPEG-2 System Clock subfrequency in Hz, used by PTS and DTS (90 Kb/s).
-    //!
-    constexpr uint32_t SYSTEM_CLOCK_SUBFREQ = SYSTEM_CLOCK_FREQ / SYSTEM_CLOCK_SUBFACTOR;
-
-    //!
-    //! Definition of a number of PCR units as a std::chrono::duration type.
-    //!
-    using PCR = cn::duration<std::intmax_t, std::ratio<1, SYSTEM_CLOCK_FREQ>>;
-
-    //!
-    //! Definition of a number of PTS units as a std::chrono::duration type.
-    //! Same as DTS.
-    //!
-    using PTS = cn::duration<std::intmax_t, std::ratio<1, SYSTEM_CLOCK_SUBFREQ>>;
-
-    //!
-    //! Definition of a number of DTS units as a std::chrono::duration type.
-    //! Same as PTS.
-    //!
-    using DTS = cn::duration<std::intmax_t, std::ratio<1, SYSTEM_CLOCK_SUBFREQ>>;
-
-    //!
-    //! Size in bits of a PCR (Program Clock Reference).
-    //! Warning: A PCR value is not a linear value mod 2^42.
-    //! It is split into PCR_base and PCR_ext (see ISO 13818-1, 2.4.2.2).
-    //!
-    constexpr size_t PCR_BIT_SIZE = 42;
-
-    //!
-    //! Size in bits of a PTS (Presentation Time Stamp) or DTS (Decoding Time Stamp).
-    //! Unlike PCR, PTS and DTS are regular 33-bit binary values, wrapping up at 2^33.
-    //!
-    constexpr size_t PTS_DTS_BIT_SIZE = 33;
-
-    //!
-    //! Scale factor for PTS and DTS values (wrap up at 2^33).
-    //!
-    constexpr uint64_t PTS_DTS_SCALE = 1LL << PTS_DTS_BIT_SIZE;
-
-    //!
-    //! Mask for PTS and DTS values (wrap up at 2^33).
-    //!
-    constexpr uint64_t PTS_DTS_MASK = PTS_DTS_SCALE - 1;
-
-    //!
-    //! The maximum value possible for a PTS/DTS value.
-    //!
-    constexpr uint64_t MAX_PTS_DTS = PTS_DTS_SCALE - 1;
-
-    //!
-    //! Scale factor for PCR values.
-    //! This is not a power of 2, it does not wrap up at a number of bits.
-    //! The PCR_base part is equivalent to a PTS/DTS and wraps up at 2**33.
-    //! The PCR_ext part is a mod 300 value. Note that, since this not a
-    //! power of 2, there is no possible PCR_MASK value.
-    //!
-    constexpr uint64_t PCR_SCALE = PTS_DTS_SCALE * SYSTEM_CLOCK_SUBFACTOR;
-
-    //!
-    //! The maximum value possible for a PCR (Program Clock Reference) value.
-    //!
-    constexpr uint64_t MAX_PCR = PCR_SCALE - 1;
-
-    //!
-    //! An invalid PCR (Program Clock Reference) value, can be used as a marker.
-    //!
-    constexpr uint64_t INVALID_PCR = 0xFFFFFFFFFFFFFFFF;
-
-    //!
-    //! An invalid PTS value, can be used as a marker.
-    //!
-    constexpr uint64_t INVALID_PTS = 0xFFFFFFFFFFFFFFFF;
-
-    //!
-    //! An invalid DTS value, can be used as a marker.
-    //!
-    constexpr uint64_t INVALID_DTS = 0xFFFFFFFFFFFFFFFF;
-
-    //!
-    //! Check if PCR2 follows PCR1 after wrap up.
-    //! @param [in] pcr1 First PCR.
-    //! @param [in] pcr2 Second PCR.
-    //! @return True if @a pcr2 is probably following @a pcr1 after wrapping up.
-    //! The exact criteria is that @a pcr2 wraps up after @a pcr1 and their
-    //! distance is within 20% of a full PCR range.
-    //!
-    TSDUCKDLL bool WrapUpPCR(uint64_t pcr1, uint64_t pcr2);
-
-    //!
-    //! Compute the PCR of a packet, based on the PCR of a previous packet.
-    //! @param [in] last_pcr PCR in a previous packet.
-    //! @param [in] distance Number of TS packets since the packet with @a last_pcr.
-    //! @param [in] bitrate Constant bitrate of the stream in bits per second.
-    //! @return The PCR of the packet which is at the specified @a distance from the packet with @a last_pcr
-    //! or INVALID_PCR if a parameter is incorrect.
-    //!
-    TSDUCKDLL uint64_t NextPCR(uint64_t last_pcr, PacketCounter distance, const BitRate& bitrate);
-
-    //!
-    //! Add a signed offset to a PCR.
-    //! @param [in] pcr Initial PCR value.
-    //! @param [in] offset Signed offset.
-    //! @return The adjusted PCR value or INVALID_PCR if a parameter is incorrect.
-    //!
-    TSDUCKDLL uint64_t AddPCR(uint64_t pcr, int64_t offset);
-
-    //!
-    //! Compute the difference between PCR2 and PCR1 (PCR2 - PCR1).
-    //! @param [in] pcr1 First PCR.
-    //! @param [in] pcr2 Second PCR.
-    //! @return The difference between the two values or INVALID_PCR if a parameter is incorrect.
-    //!
-    TSDUCKDLL uint64_t DiffPCR(uint64_t pcr1, uint64_t pcr2);
-
-    //!
-    //! Compute the absolute value of the difference between two PCR's, regardless of their order.
-    //! @param [in] pcr1 First PCR.
-    //! @param [in] pcr2 Second PCR.
-    //! @return The difference between the two values or INVALID_PCR if a parameter is incorrect.
-    //!
-    TSDUCKDLL uint64_t AbsDiffPCR(uint64_t pcr1, uint64_t pcr2);
-
-    //!
-    //! Check if PTS2 follows PTS1 after wrap up.
-    //! @param [in] pts1 First PTS.
-    //! @param [in] pts2 Second PTS.
-    //! @return True if @a pts2 is probably following @a pts1 after wrapping up at 2^33.
-    //!
-    TSDUCKDLL bool WrapUpPTS(uint64_t pts1, uint64_t pts2);
-
-    //!
-    //! Check if two Presentation Time Stamps are in sequence.
-    //!
-    //! In MPEG video, B-frames are transported out-of-sequence.
-    //! Their PTS is typically lower than the previous D-frame or I-frame
-    //! in the transport. A "sequenced" PTS is one that is higher than
-    //! the previous sequenced PTS (with possible wrap up).
-    //! @param [in] pts1 First PTS.
-    //! @param [in] pts2 Second PTS.
-    //! @return True if @a pts2 is after @a pts1, possibly after wrapping up at 2**33.
-    //!
-    TSDUCKDLL bool SequencedPTS(uint64_t pts1, uint64_t pts2);
-
-    //!
-    //! Compute the difference between PTS2 and PTS1.
-    //! @param [in] pts1 First PTS.
-    //! @param [in] pts2 Second PTS.
-    //! @return The difference between the two values.
-    //! or INVALID_PTS if a parameter is incorrect.
-    //!
-    TSDUCKDLL uint64_t DiffPTS(uint64_t pts1, uint64_t pts2);
-
-    //!
-    //! Convert a PCR value to a string.
-    //! @param [in] pcr The PCR value.
-    //! @param [in] hexa If true (the defaul), include hexadecimal value.
-    //! @param [in] decimal If true (the defaul), include decimal value.
-    //! @param [in] ms If true (the defaul), include the equivalent duration in milliseconds.
-    //! @return The formatted string.
-    //!
-    TSDUCKDLL UString PCRToString(uint64_t pcr, bool hexa = true, bool decimal = true, bool ms = true);
-
-    //!
-    //! Convert a PTS or DTS value to a string.
-    //! @param [in] pts The PTS or DTS value.
-    //! @param [in] hexa If true (the defaul), include hexadecimal value.
-    //! @param [in] decimal If true (the defaul), include decimal value.
-    //! @param [in] ms If true (the defaul), include the equivalent duration in milliseconds.
-    //! @return The formatted string.
-    //!
-    TSDUCKDLL UString PTSToString(uint64_t pts, bool hexa = true, bool decimal = true, bool ms = true);
-
-    // GCC complains that PCR, DTS, PTS shadow the global types of the same name.
-    // However this is irrelevant because TimeSource is an enum class and the declared
-    // identifiers must be prefixed. ts::TimeSource::PCR is an enum identifier, ts::PCR
-    // is a type, without ambiguity.
-    TS_PUSH_WARNING()
-    TS_GCC_NOWARNING(shadow)
-
-    //!
     //! Sources of time information for transport streams.
     //!
     enum class TimeSource: uint8_t {
@@ -610,12 +420,18 @@ namespace ts {
         SRT,            //!< SRT (Secure Reliable Transport) source time.
         M2TS,           //!< M2TS Bluray-style time stamp.
         PCR,            //!< PCR (Program Clock Reference), the transport stream system clock.
+        OPCR,           //!< Original PCR (Program Clock Reference).
         DTS,            //!< DTS (Decoding Time Stamp), in a video or audio stream.
         PTS,            //!< PTS (Presentation Time Stamp), in a video or audio stream.
         PCAP,           //!< Timestamp from a pcap or pcap-ng file.
         RIST,           //!< RIST (Reliable Internet Stream Transport) source time.
     };
-    TS_POP_WARNING()
+
+    //!
+    //! Enumeration description of ts::TimeSource.
+    //! @return A constant reference to the enumeration description.
+    //!
+    TSDUCKDLL const Names& TimeSourceEnum();
 
     //!
     //! Check if a ts::TimeSource value is a monotonic clock.
@@ -626,10 +442,234 @@ namespace ts {
     TSDUCKDLL bool MonotonicTimeSource(TimeSource source);
 
     //!
-    //! Enumeration description of ts::TimeSource.
-    //! @return A constant reference to the enumeration description.
+    //! Traits superclass for TimeSource values.
+    //! There is no generic definition, there are only specializations.
     //!
-    TSDUCKDLL const Names& TimeSourceEnum();
+    template <TimeSource T, typename = void> class TimeSourceSuperTraits;
+
+    //!
+    //! TimeSourceSuperTraits specialization for PTS and DTS.
+    //!
+    template <TimeSource T>
+    class TimeSourceSuperTraits<T, typename std::enable_if<T == TimeSource::PTS || T == TimeSource::DTS>::type>
+    {
+    public:
+        //!
+        //! Clock frequency in Hz for PTS and DTS.
+        //!
+        static constexpr uint64_t TICKS = 90'000;
+        //!
+        //! Size in bits of PTS and DTS.
+        //!
+        static constexpr size_t BIT_SIZE = 33;
+        //!
+        //! Scale factor for PTS and DTS (modular time source).
+        //!
+        static constexpr uint64_t SCALE = 1LL << BIT_SIZE;
+        //!
+        //! Bit mask for PTS and DTS values (wrap up at 2^33).
+        //! The BIT_MASK value exists only for strictly binary time source which wrap up at 2^N.
+        //!
+        static constexpr uint64_t BIT_MASK = SCALE - 1;
+    };
+
+    //!
+    //! TimeSourceSuperTraits specialization for PCR and OPCR.
+    //! There is no BIT_MASK.
+    //!
+    template <TimeSource T>
+    class TimeSourceSuperTraits<T, typename std::enable_if<T == TimeSource::PCR || T == TimeSource::OPCR>::type>
+    {
+    public:
+        //!
+        //! Clock frequency in Hz for PCR.
+        //!
+        static constexpr uint64_t TICKS = 27'000'000;
+        //!
+        //! Size in bits of the time source.
+        //! Warning: A PCR value is not a linear value mod 2^42.
+        //! It is split into PCR_base and PCR_ext (see ISO 13818-1, 2.4.2.2).
+        //!
+        static constexpr size_t BIT_SIZE = 42;
+        //!
+        //! Scale factor for the modular time source.
+        //! For PCR, this is not a power of 2, it does not wrap up at a number of bits.
+        //! The PCR_base part is equivalent to a PTS/DTS and wraps up at 2**33.
+        //! The PCR_ext part is a mod 300 value. Note that, since this not a
+        //! power of 2, there is no possible PCR_MASK value.
+        //!
+        static constexpr uint64_t SCALE = TimeSourceSuperTraits<TimeSource::PTS>::SCALE * (TICKS / TimeSourceSuperTraits<TimeSource::PTS>::TICKS);
+    };
+
+    //!
+    //! Traits class for TimeSource values.
+    //! The traits class is generic, based on a specialization of TimeSourceSuperTraits.
+    //!
+    template <TimeSource T>
+    class TimeSourceTraits
+    {
+    public:
+        //!
+        //! Redefine the time source type as a local declaration.
+        //!
+        static constexpr TimeSource TYPE = T;
+        //!
+        //! Clock frequency in Hz for the time source.
+        //!
+        static constexpr uint64_t TICKS = TimeSourceSuperTraits<T>::TICKS;
+        //!
+        //! Size in bits of the time source.
+        //!
+        static constexpr size_t BIT_SIZE = TimeSourceSuperTraits<T>::BIT_SIZE;
+        //!
+        //! Scale factor for the modular time source.
+        //!
+        static constexpr uint64_t SCALE = TimeSourceSuperTraits<T>::SCALE;
+        //!
+        //! Definition of the time source as a std::chrono::duration type.
+        //!
+        using Duration = cn::duration<std::intmax_t, std::ratio<1, TICKS>>;
+        //!
+        //! The maximum possible value for the time source.
+        //!
+        static constexpr uint64_t MAX = SCALE - 1;
+        //!
+        //! An invalid PTS and DTS value, can be used as a marker.
+        //!
+        static constexpr uint64_t INVALID = 0xFFFFFFFFFFFFFFFF;
+        //!
+        //! Number of required hexadecimal digits to represent the time source.
+        //!
+        static constexpr size_t HEX_DIGITS = (BIT_SIZE + 3) / 4;        
+        //!
+        //! Minimum distance between two time stamp values to consider them as wrapping up after the maximum value.
+        //! Because time sources are modular values, they wrap up after MAX. It is common to consider, for instance,
+        //! that value 4 "follows" MAX-4, even though 4 < MAX-4. The exact criteria is that two time stamp values
+        //! are considered as following each other if their distance is within 20% of a full time source range.
+        //!
+        static constexpr uint64_t WRAPUP_THRESHOLD = (4 * SCALE) / 5;
+
+        //!
+        //! Check if time stamps @a t2 follows time @a t1 after wrap up.
+        //! @param [in] t1 First time value.
+        //! @param [in] t2 Second time value.
+        //! @return True if @a t2 is probably following @a t1 after wrapping up. The exact criteria is that
+        //! @a t2 wraps up after @a t1 and their distance is within 20% of a full time source range.
+        //!
+        static bool WrapUp(uint64_t t1, uint64_t t2)
+        {
+            return t2 < t1 && (t1 - t2) > WRAPUP_THRESHOLD;
+        }
+
+        //!
+        //! Check if time stamps @a t1 and @a t2 follow each othen, in any order, after wrap up.
+        //! @param [in] t1 First time value.
+        //! @param [in] t2 Second time value.
+        //! @return True if @a t1 and @a t2 follow each othen, in any order, after wrap up.
+        //!
+        static bool Wrap(uint64_t t1, uint64_t t2)
+        {
+            return (t1 > t2 ? t1 - t2 : t2 - t1) > WRAPUP_THRESHOLD;
+        }
+
+        //!
+        //! Check if two time stamps are in sequence.
+        //! Sample application: In MPEG video, B-frames are transported out-of-sequence. Their PTS is typically lower than the previous D-frame
+        //! or I-frame in the transport. A "sequenced" PTS is one that is higher than the previous sequenced PTS (with possible wrap up).
+        //! @param [in] t1 First time value.
+        //! @param [in] t2 Second time value.
+        //! @return True if @a t1 and @a t2 follow each othen, possibly after wrapping up at 2**33.
+        //!
+        static bool Sequenced(uint64_t t1, uint64_t t2)
+        {
+            return t1 <= t2 || (t1 - t2) > WRAPUP_THRESHOLD;
+        }
+
+        //!
+        //! Compute the time stamp of a packet, based on the equivalent time stamp of a previous packet.
+        //! @param [in] last Time stamp in a previous packet.
+        //! @param [in] distance Number of TS packets since the packet with @a last.
+        //! @param [in] bitrate Constant bitrate of the stream in bits per second.
+        //! @return The time stamp of the packet which is at the specified @a distance from the packet with @a last
+        //! or INVALID if a parameter is incorrect.
+        //!
+        static uint64_t Next(uint64_t last, PacketCounter distance, const BitRate& bitrate);
+
+        //!
+        //! Add a signed offset to a time stamp.
+        //! @param [in] t Initial time value.
+        //! @param [in] offset Signed offset.
+        //! @return The adjusted time value or INVALID if a parameter is incorrect.
+        //!
+        static uint64_t Add(uint64_t t, int64_t offset);
+
+        //!
+        //! Compute the difference between two time stamp values (t1 - t2).
+        //! @param [in] t1 First time value.
+        //! @param [in] t2 Second time value.
+        //! @return The difference between the two values or INVALID if a parameter is incorrect.
+        //!
+        static int64_t Diff(uint64_t t1, uint64_t t2);
+
+        //!
+        //! Convert a time stamp value to a string.
+        //! @param [in] t The time value.
+        //! @param [in] hexa If true (the defaul), include hexadecimal value.
+        //! @param [in] decimal If true (the defaul), include decimal value.
+        //! @param [in] ms If true (the defaul), include the equivalent duration in milliseconds.
+        //! @return The formatted string.
+        //!
+        static UString ToString(uint64_t t, bool hexa = true, bool decimal = true, bool ms = true);
+    };
+
+    // Convenience renammings.
+
+    using PCRTraits = TimeSourceTraits<TimeSource::PCR>;  //!< PCR traits class.
+    using PTSTraits = TimeSourceTraits<TimeSource::PTS>;  //!< PTS traits class.
+    using DTSTraits = TimeSourceTraits<TimeSource::DTS>;  //!< DTS traits class.
+
+    using PCR = PCRTraits::Duration;  //!< PCR units as a std::chrono::duration type.
+    using PTS = PTSTraits::Duration;  //!< PTS units as a std::chrono::duration type.
+    using DTS = DTSTraits::Duration;  //!< DTS units as a std::chrono::duration type.
+
+    constexpr uint64_t INVALID_PCR = PCRTraits::INVALID;  //!< An invalid PCR value, can be used as a marker.
+    constexpr uint64_t INVALID_PTS = PTSTraits::INVALID;  //!< An invalid PTS value, can be used as a marker.
+    constexpr uint64_t INVALID_DTS = DTSTraits::INVALID;  //!< An invalid DTS value, can be used as a marker.
+
+    //!
+    //! MPEG-2 System Clock frequency in Hz, used by PCR (27 Mb/s).
+    //!
+    constexpr uint64_t SYSTEM_CLOCK_FREQ = PCRTraits::TICKS;
+
+    //!
+    //! MPEG-2 System Clock subfrequency in Hz, used by PTS and DTS (90 Kb/s).
+    //!
+    constexpr uint64_t SYSTEM_CLOCK_SUBFREQ = PTSTraits::TICKS;
+
+    //!
+    //! Subfactor of MPEG-2 System Clock subfrequency, used by PTS and DTS.
+    //!
+    constexpr uint64_t SYSTEM_CLOCK_SUBFACTOR = PCRTraits::TICKS / PTSTraits::TICKS;
+
+    //!
+    //! Scale factor for PTS and DTS values (wrap up at 2^33).
+    //!
+    constexpr uint64_t PTS_DTS_SCALE = PTSTraits::SCALE;
+
+    //!
+    //! Mask for PTS and DTS values (wrap up at 2^33).
+    //!
+    constexpr uint64_t PTS_DTS_MASK = PTSTraits::SCALE - 1;
+
+    //!
+    //! Scale factor for PCR values.
+    //! This is not a power of 2, it does not wrap up at a number of bits.
+    //! The PCR_base part is equivalent to a PTS/DTS and wraps up at 2**33.
+    //! The PCR_ext part is a mod 300 value. Note that, since this not a
+    //! power of 2, there is no possible PCR_MASK value.
+    //!
+    constexpr uint64_t PCR_SCALE = PCRTraits::SCALE;
+
 
     //---------------------------------------------------------------------
     //! Adaptation field descriptor tags.
@@ -669,4 +709,81 @@ namespace ts {
     //! @return A constant reference to the enumeration description.
     //!
     TSDUCKDLL const Names& PacketProcessingStatusNames();
+}
+
+//----------------------------------------------------------------------------
+// Template definitions.
+//----------------------------------------------------------------------------
+
+// Compute the time stamp of a packet, based on the equivalent time stamp of a previous packet.
+template <ts::TimeSource T>
+uint64_t ts::TimeSourceTraits<T>::Next(uint64_t last, PacketCounter distance, const BitRate& bitrate)
+{
+    return last == INVALID || bitrate == 0 ? INVALID : (last + (BitRate(distance * PKT_SIZE_BITS * TICKS) / bitrate).toInt()) % SCALE;
+}
+
+// Add a signed offset to a time stamp.
+template <ts::TimeSource T>
+uint64_t ts::TimeSourceTraits<T>::Add(uint64_t t, int64_t offset)
+{
+    if (t > MAX) {
+        return INVALID;
+    }
+    else {
+        // Beware of signed / unsigned conversions.
+        // If the final value is negative, the '%' operation differs on the signedness of the modulus type.
+        // - If the modulus is unsigned (as SCALE is), the negative lhs is first converted to unsigned and the result is absurd.
+        // - If the modulus is signed, the result is correct but also negative and must be adjusted.
+        // So, let's compute everything in signed form and adjust negative results.
+        const int64_t res = (int64_t(t) + offset) % int64_t(SCALE);
+        return res < 0 ? uint64_t(int64_t(SCALE) + res) : uint64_t(res);
+    }
+}
+
+// Compute the difference between two time stamp values (t1 - t2).
+template <ts::TimeSource T>
+int64_t ts::TimeSourceTraits<T>::Diff(uint64_t t1, uint64_t t2)
+{
+    if (!Wrap(t1, t2)) {
+        return int64_t(t1) - int64_t(t2);
+    }
+    else if (t1 <= t2) {
+        return int64_t(SCALE + t1) - int64_t(t2);
+    }
+    else {
+        return int64_t(t1) - int64_t(SCALE + t2);
+    }
+}
+
+// Convert a time stamp value to a string.
+template <ts::TimeSource T>
+ts::UString ts::TimeSourceTraits<T>::ToString(uint64_t value, bool hexa, bool decimal, bool ms)
+{
+    int count = 0;
+    UString str;
+    if (hexa) {
+        str.format(u"0x%0*X", HEX_DIGITS, value);
+        count++;
+    }
+    if (decimal && (value != 0 || count == 0)) {
+        if (count == 1) {
+            str.append(u" (");
+        }
+        str.format(u"%'d", value);
+        count++;
+    }
+    if (ms && (value != 0 || count == 0)) {
+        if (count == 1) {
+            str.append(u" (");
+        }
+        else if (count > 1) {
+            str.append(u", ");
+        }
+        str.format(u"%'d ms", value / (TICKS / 1000));
+        count++;
+    }
+    if (count > 1) {
+        str.append(u')');
+    }
+    return str;
 }

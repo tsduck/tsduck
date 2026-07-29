@@ -2,7 +2,11 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.45-4773 (July 2026)
+VERSION 3.45-4776 (July 2026)
+
+[NEW] New commands and plugins:
+
+  * Added plugin "timewrap": Detect PCR, PTS, DTS wrap-down to zero.
 
 [IMP] Improvements on existing commands and plugins:
 

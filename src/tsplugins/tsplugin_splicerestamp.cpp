@@ -106,11 +106,11 @@ ts::SpliceRestampPlugin::SpliceRestampPlugin(TSP* tsp_) :
          u"Specify the PID carrying SCTE-35 sections to restamp. "
          u"By default, the first SCTE-35 PID is selected.");
 
-    option(u"rebase-pts", 0, UNSIGNED, 0, 1, 0, MAX_PTS_DTS);
+    option(u"rebase-pts", 0, UNSIGNED, 0, 1, 0, PTSTraits::MAX);
     help(u"rebase-pts",
          u"Set pts_adjustment as if the first PTS in the stream was set to the specified value.");
 
-    option(u"pts-adjustment", 'a', UNSIGNED, 0, 1, 0, MAX_PTS_DTS);
+    option(u"pts-adjustment", 'a', UNSIGNED, 0, 1, 0, PTSTraits::MAX);
     help(u"pts-adjustment",
          u"Add the specified value to the pts_adjustment field in the splice sections.");
 

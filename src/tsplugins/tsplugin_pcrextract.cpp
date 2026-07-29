@@ -99,6 +99,8 @@ namespace ts {
             uint64_t            last_value = INVALID_PCR;   // First data value of this type in this PID.
             PacketCounter       last_packet = 0;            // Packet index in TS of last value.
 
+            //@@@ TODO: rewrite with time source traits.
+
             // Constructor.
             PIDData(DataType t) :
                 type(t),
@@ -386,8 +388,8 @@ ts::PacketProcessStatus ts::PCRExtractPlugin::processPacket(TSPacket& pkt, TSPac
         // Get context of associated PCR PID.
         PIDContext& pcrpid(*getPIDContext(pc.pcr_pid));
         // Compute theoretical PCR at this point in the TS.
-        // Note that NextPCR() return INVALID_PCR if last_pcr or bitrate is incorrect.
-        pcr = NextPCR(pcrpid.pcr.last_value, tsp->pluginPackets() - pcrpid.pcr.last_packet, tsp->bitrate());
+        // Note that Next() return INVALID_PCR if last_pcr or bitrate is incorrect.
+        pcr = PCRTraits::Next(pcrpid.pcr.last_value, tsp->pluginPackets() - pcrpid.pcr.last_packet, tsp->bitrate());
     }
 
     // Check if we must analyze and display this PID.
@@ -405,7 +407,7 @@ ts::PacketProcessStatus ts::PCRExtractPlugin::processPacket(TSPacket& pkt, TSPac
             const uint64_t pts = pkt.getPTS();
             // Check if this is a "good" PTS, ie. greater than the last good PTS
             // (or wrapping around the max PTS value 2**33)
-            const bool good_pts = pc.pts.count == 0 || SequencedPTS(pc.last_good_pts, pts);
+            const bool good_pts = pc.pts.count == 0 || PTSTraits::Sequenced(pc.last_good_pts, pts);
             if (good_pts) {
                 pc.last_good_pts = pts;
             }

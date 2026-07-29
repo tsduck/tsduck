@@ -244,19 +244,19 @@ ts::FilterPlugin::FilterPlugin(TSP* tsp_) :
     option(u"pcr");
     help(u"pcr", u"Select packets with PCR or OPCR.");
 
-    option(u"pcr-range", 0, INTRANGE, 0, 0, 0, MAX_PCR);
+    option(u"pcr-range", 0, INTRANGE, 0, 0, 0, PCRTraits::MAX);
     help(u"pcr-range", u"Select packets with PCR or OPCR values in the specified range.");
 
     option(u"pts");
     help(u"pts", u"Select packets with a PTS (in a clear PES header).");
 
-    option(u"pts-range", 0, INTRANGE, 0, 0, 0, MAX_PTS_DTS);
+    option(u"pts-range", 0, INTRANGE, 0, 0, 0, PTSTraits::MAX);
     help(u"pts-range", u"Select packets with PTS values in the specified range.");
 
     option(u"dts");
     help(u"dts", u"Select packets with a DTS (in a clear PES header).");
 
-    option(u"dts-range", 0, INTRANGE, 0, 0, 0, MAX_PTS_DTS);
+    option(u"dts-range", 0, INTRANGE, 0, 0, 0, DTSTraits::MAX);
     help(u"dts-range", u"Select packets with DTS values in the specified range.");
 
     option(u"pes");

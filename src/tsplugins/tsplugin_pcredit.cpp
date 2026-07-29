@@ -183,7 +183,7 @@ ts::PacketProcessStatus ts::PCREditPlugin::processPacket(TSPacket& pkt, TSPacket
         }
         else {
             if (_add_pcr != 0 && pkt.hasPCR()) {
-                pkt.setPCR(AddPCR(pkt.getPCR(), adjust(_add_pcr)));
+                pkt.setPCR(PCRTraits::Add(pkt.getPCR(), adjust(_add_pcr)));
             }
             if (_add_pts != 0 && pkt.hasPTS()) {
                 pkt.setPTS((int64_t(pkt.getPTS()) + adjust(_add_pts)) & PTS_DTS_MASK);

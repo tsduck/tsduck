@@ -17,7 +17,7 @@
 // Convert the SpliceTime structure to string.
 ts::UString ts::SpliceTime::toString() const
 {
-    return has_value() ? PTSToString(value()) : u"unset";
+    return has_value() ? PTSTraits::ToString(value()) : u"unset";
 }
 
 // Deserialize a SpliceTime structure from binary data.

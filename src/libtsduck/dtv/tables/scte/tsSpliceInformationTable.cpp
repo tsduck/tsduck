@@ -414,7 +414,7 @@ void ts::SpliceInformationTable::DisplaySection(TablesDisplay& disp, const ts::S
             }
         }
         disp << std::endl;
-        disp << margin << "PTS adjustment: " << PTSToString(buf.getBits<uint64_t>(33)) << std::endl;
+        disp << margin << "PTS adjustment: " << PTSTraits::ToString(buf.getBits<uint64_t>(33)) << std::endl;
         disp << margin << UString::Format(u"CW index: %n", buf.getUInt8());
         disp << UString::Format(u", tier: 0x%03X (%<d)", buf.getBits<uint16_t>(12)) << std::endl;
         if (encrypted_packet != 0) {

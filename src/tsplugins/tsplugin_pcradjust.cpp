@@ -227,11 +227,11 @@ uint64_t ts::PCRAdjustPlugin::PIDContext::updatedPCR(PacketCounter packet_index,
 {
     if (last_updated_pcr != INVALID_PCR && (last_created_pcr == INVALID_PCR || last_created_packet < last_pcr_packet)) {
         // The most recent is an original packet with a previous PCR.
-        return NextPCR(last_updated_pcr, packet_index - last_pcr_packet, bitrate);
+        return PCRTraits::Next(last_updated_pcr, packet_index - last_pcr_packet, bitrate);
     }
     else if (last_created_pcr != INVALID_PCR && (last_updated_pcr == INVALID_PCR || last_pcr_packet < last_created_packet)) {
         // The most recent is a PCR we created in a null packet.
-        return NextPCR(last_created_pcr, packet_index - last_created_packet, bitrate);
+        return PCRTraits::Next(last_created_pcr, packet_index - last_created_packet, bitrate);
     }
     else {
         // No previous PCR was found, no reference.
@@ -275,7 +275,7 @@ uint64_t ts::PCRAdjustPlugin::PIDContext::updatedPDTS(PacketCounter packet_index
     else {
         // The difference between the PTS/DTS and the PCR is too high, update the PTS/DTS.
         // First, compute the original PCR for this packet:
-        const uint64_t original_pcr = NextPCR(pcr_ctx->last_original_pcr, packet_index - pcr_ctx->last_pcr_packet, bitrate);
+        const uint64_t original_pcr = PCRTraits::Next(pcr_ctx->last_original_pcr, packet_index - pcr_ctx->last_pcr_packet, bitrate);
 
         // Compute the difference between the original PTS and the original PCR.
         const int64_t diff = int64_t(original_pdts) - int64_t(original_pcr / SYSTEM_CLOCK_SUBFACTOR);

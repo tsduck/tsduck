@@ -1,0 +1,53 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2026, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== timewrap    
+
+[.cmd-header]
+Detect PCR, PTS, DTS wrap-down to zero
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P timewrap [options]
+----
+
+[.usage]
+Options
+
+[.opt]
+*--dts*
+
+[.optdoc]
+Check wrap-down on DTS. By default, check all time stamps.
+
+[.opt]
+*--pcr*
+
+[.optdoc]
+Check wrap-down on PCR. By default, check all time stamps.
+
+[.opt]
+*-p* _pid1[-pid2]_ +
+*--pid* _pid1[-pid2]_
+
+[.optdoc]
+PID filter: select packets with these PID values.
+Several `--pid` options may be specified.
+By default, if `--pid` is not specified, all PID's are selected.
+
+[.opt]
+*--pts*
+
+[.optdoc]
+Check wrap-down on PTS. By default, check all time stamps.
+
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

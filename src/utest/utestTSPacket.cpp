@@ -518,9 +518,9 @@ TSUNIT_DEFINE_TEST(BitRate)
 
 TSUNIT_DEFINE_TEST(PCR)
 {
-    TSUNIT_EQUAL(1100, ts::AddPCR(1000, 100));
-    TSUNIT_EQUAL(900, ts::AddPCR(1000, -100));
-    TSUNIT_EQUAL(10, ts::AddPCR(ts::PCR_SCALE - 90, 100));
-    TSUNIT_EQUAL(ts::PCR_SCALE - 90, ts::AddPCR(10, -100));
-    TSUNIT_EQUAL(ts::INVALID_PCR, ts::AddPCR(ts::PCR_SCALE, 100));
+    TSUNIT_EQUAL(1100, ts::PCRTraits::Add(1000, 100));
+    TSUNIT_EQUAL(900, ts::PCRTraits::Add(1000, -100));
+    TSUNIT_EQUAL(10, ts::PCRTraits::Add(ts::PCRTraits::SCALE - 90, 100));
+    TSUNIT_EQUAL(ts::PCRTraits::SCALE - 90, ts::PCRTraits::Add(10, -100));
+    TSUNIT_EQUAL(ts::PCRTraits::INVALID, ts::PCRTraits::Add(ts::PCRTraits::SCALE, 100));
 }

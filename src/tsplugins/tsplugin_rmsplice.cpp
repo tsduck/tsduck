@@ -336,7 +336,7 @@ void ts::RMSplicePlugin::PIDState::addEvent(uint64_t pts, bool spliceOut, uint32
     else {
         // Ignore invalid PTS or PTS from the past, before last PTS value in this PID.
         // Note that the initial "lastPTS" of a PID is an invalid value, indicating "not yet available".
-        if (pts <= PTS_DTS_MASK && (lastPTS > PTS_DTS_MASK || SequencedPTS(lastPTS, pts))) {
+        if (pts <= PTS_DTS_MASK && (lastPTS > PTS_DTS_MASK || PTSTraits::Sequenced(lastPTS, pts))) {
             // Simply replace the event if it already existed.
             events[pts] = Event(spliceOut, eventId);
         }

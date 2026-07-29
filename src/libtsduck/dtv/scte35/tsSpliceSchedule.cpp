@@ -75,7 +75,7 @@ void ts::SpliceSchedule::display(TablesDisplay& disp, const UString& margin) con
                 }
             }
             if (ev.use_duration) {
-                disp << margin << "  Duration PTS: " << PTSToString(ev.duration_pts) << ", auto return: " << UString::YesNo(ev.auto_return) << std::endl;
+                disp << margin << "  Duration PTS: " << PTSTraits::ToString(ev.duration_pts) << ", auto return: " << UString::YesNo(ev.auto_return) << std::endl;
             }
             disp << margin << UString::Format(u"  Unique program id: %n, avail: %n, avails expected: %d", ev.program_id, ev.avail_num, ev.avails_expected) << std::endl;
         }

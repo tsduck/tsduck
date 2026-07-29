@@ -680,7 +680,7 @@ void ts::SpliceInjectPlugin::provideSection(SectionCounter counter, SectionPtr& 
 
         // If the command has a termination PTS and this PTS is in the past,
         // drop the command and loop on next command from the queue.
-        if (cmd->last_pts != INVALID_PTS && SequencedPTS(cmd->last_pts, _last_pts)) {
+        if (cmd->last_pts != INVALID_PTS && PTSTraits::Sequenced(cmd->last_pts, _last_pts)) {
             CommandPtr cmd2;
             [[maybe_unused]] const bool dequeued = _queue.dequeue(cmd2, cn::milliseconds::zero());
             assert(dequeued);
@@ -689,7 +689,7 @@ void ts::SpliceInjectPlugin::provideSection(SectionCounter counter, SectionPtr& 
         }
         else {
             // Give up if the command is not immediate and not yet ready to start.
-            if (cmd->next_pts != INVALID_PTS && SequencedPTS(_last_pts, cmd->next_pts)) {
+            if (cmd->next_pts != INVALID_PTS && PTSTraits::Sequenced(_last_pts, cmd->next_pts)) {
                 break;
             }
 
@@ -707,7 +707,7 @@ void ts::SpliceInjectPlugin::provideSection(SectionCounter counter, SectionPtr& 
             if (cmd->count > 1) {
                 cmd->count--;
                 cmd->next_pts = (cmd->next_pts + cmd->interval) & PTS_DTS_MASK;
-                if (SequencedPTS(cmd->next_pts, cmd->last_pts)) {
+                if (PTSTraits::Sequenced(cmd->next_pts, cmd->last_pts)) {
                     // The next PTS is still in range, requeue at the next position.
                     verbose(u"requeueing %s", *cmd);
                     _queue.forceEnqueue(cmd);
@@ -882,7 +882,7 @@ ts::SpliceInjectPlugin::SpliceCommand::SpliceCommand(SpliceInjectPlugin* plugin,
                 // Compute the earliest PTS in all components.
                 for (const auto& it : sit.splice_insert.components_pts) {
                     if (it.second.has_value()) {
-                        if (last_pts == INVALID_PTS || SequencedPTS(it.second.value(), last_pts)) {
+                        if (last_pts == INVALID_PTS || PTSTraits::Sequenced(it.second.value(), last_pts)) {
                             last_pts = it.second.value();
                         }
                     }

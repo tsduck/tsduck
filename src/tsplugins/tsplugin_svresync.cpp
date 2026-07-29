@@ -240,12 +240,12 @@ ts::PacketProcessStatus ts::SVResyncPlugin::processPacket(TSPacket& pkt, TSPacke
 
         // Adjust PTS and DTS.
         if (pkt.hasPTS()) {
-            pkt.setPTS((pkt.getPTS() + _delta_pts) % PTS_DTS_SCALE);
+            pkt.setPTS((pkt.getPTS() + _delta_pts) % PTSTraits::SCALE);
             _pts_adjust_count++;
             _modified_pids.set(pid);
         }
         if (pkt.hasDTS()) {
-            pkt.setDTS((pkt.getDTS() + _delta_pts) % PTS_DTS_SCALE);
+            pkt.setDTS((pkt.getDTS() + _delta_pts) % DTSTraits::SCALE);
             _dts_adjust_count++;
             _modified_pids.set(pid);
         }

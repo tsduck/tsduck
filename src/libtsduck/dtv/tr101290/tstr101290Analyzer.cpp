@@ -181,7 +181,7 @@ void ts::tr101290::Analyzer::feedPacket(const PCR& timestamp, const TSPacket& pk
         // Explicit PCR discontinuity since last PCR:
         const bool exp_disc = pidctx.last_disc_timestamp >= PCR::zero() && (pidctx.last_pcr_timestamp < PCR::zero() || pidctx.last_disc_timestamp > pidctx.last_pcr_timestamp);
         const uint64_t pcr = pkt.getPCR();
-        if (!exp_disc && pidctx.last_pcr_value != INVALID_PCR && PCR(DiffPCR(pidctx.last_pcr_value, pcr)) > _max_pcr_difference) {
+        if (!exp_disc && pidctx.last_pcr_value != INVALID_PCR && PCR(std::abs(PCRTraits::Diff(pcr, pidctx.last_pcr_value))) > _max_pcr_difference) {
             // [[2.3/1]] PCR_error: PCR discontinuity of more than 100 ms occurring without specific indication.
             addErrorOnce(u"2.3/1", PCR_error, pid);
             // [[2.3.b]] PCR_discontinuity_indicator_error: The difference between two consecutive PCR values (PCRi+1 – PCRi) is outside the range of 0...100 ms without the discontinuity_indicator set.

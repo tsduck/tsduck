@@ -88,6 +88,12 @@ def check_file_tree(dirname, groupname):
                 missing += check_file(dir + os.sep + fnam, groupname)
     return missing
 
+# Cleanup a fully-qualified identifier to get a clean file name.
+def cleanup_id(name):
+    name = re.sub('([^A-Za-z0-9])ts::', '\1', name.replace(' ', '')).removeprefix('ts::')
+    name = re.sub('[^A-Za-z0-9]+', '_', name)
+    return re.sub('^_+', '', re.sub('_+$', '', name))
+
 # Create an html file which redirects to another one.
 def redirect_html(sourcedir, sourcefile, target):
     reltarget = os.path.relpath(target, sourcedir)
@@ -140,7 +146,7 @@ if __name__ == '__main__':
             env['DOT_PATH'] = dot
 
         # Run doxygen in same directory as this script (where Doxyfile is).
-        print('Running doxygen version: %s ...' % doxy_version)
+        print('Running doxygen version %s ...' % doxy_version)
         status = subprocess.run([doxygen], env=env, cwd=SCRIPTDIR)
         doxy_status = status.returncode
 
@@ -155,11 +161,11 @@ if __name__ == '__main__':
             if name is not None and file is not None:
                 if kind == 'group':
                     # Create a group/<name>.html which redirects to the group doc.
-                    redirect_html(GROUPDIR, name.text + '.html', os.sep.join([HTMLDIR, file.text]))
+                    redirect_html(GROUPDIR, cleanup_id(name.text) + '.html', os.sep.join([HTMLDIR, file.text]))
                 elif kind in {'class', 'struct', 'interface'} and name.text.startswith('ts::'):
                     # Create a class/<name>.html which redirects to the class doc.
                     # Only keep classes starting in "ts::", others are not C++.
-                    redirect_html(CLASSDIR, name.text.removeprefix('ts::').replace(':', '_') + '.html', os.sep.join([HTMLDIR, file.text]))
+                    redirect_html(CLASSDIR, cleanup_id(name.text) + '.html', os.sep.join([HTMLDIR, file.text]))
     except etree.ParseError as e:
         parser.exit(1, '%s: XML error in %s: %s' % (SCRIPT, TAGFILE, e))
     except OSError as e:

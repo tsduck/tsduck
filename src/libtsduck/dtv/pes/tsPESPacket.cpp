@@ -162,7 +162,7 @@ void ts::PESPacket::clear()
 void ts::PESPacket::setPCR(uint64_t pcr)
 {
     // Make sure that all invalid PCR values are represented by the same value.
-    _pcr = pcr <= MAX_PCR ? pcr : INVALID_PCR;
+    _pcr = pcr <= PCRTraits::MAX ? pcr : PCRTraits::INVALID;
 }
 
 
