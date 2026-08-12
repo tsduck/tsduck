@@ -68,7 +68,7 @@ namespace ts {
         //!
         //! Web command line options can be accessed by subclasses for additional web operations.
         //!
-        WebRequestArgs webArgs {};
+        WebRequestArgs web_args {};
 
     private:
         WebRequest _request;           // Current Web transfer in progress.

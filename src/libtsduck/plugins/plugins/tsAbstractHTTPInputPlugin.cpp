@@ -19,7 +19,7 @@ ts::AbstractHTTPInputPlugin::AbstractHTTPInputPlugin(TSP* tsp_, const UString& d
     InputPlugin(tsp_, description, syntax),
     _request(this)
 {
-    webArgs.defineArgs(*this);
+    web_args.defineArgs(*this);
 }
 
 
@@ -29,7 +29,7 @@ ts::AbstractHTTPInputPlugin::AbstractHTTPInputPlugin(TSP* tsp_, const UString& d
 
 bool ts::AbstractHTTPInputPlugin::getOptions()
 {
-    return webArgs.loadArgs(*this);
+    return web_args.loadArgs(*this);
 }
 
 
@@ -40,7 +40,7 @@ bool ts::AbstractHTTPInputPlugin::getOptions()
 bool ts::AbstractHTTPInputPlugin::setReceiveTimeout(cn::milliseconds timeout)
 {
     if (timeout > cn::milliseconds::zero()) {
-        webArgs.receiveTimeout = webArgs.connectionTimeout = timeout;
+        web_args.receive_timeout = web_args.connection_timeout = timeout;
     }
     return true;
 }
@@ -114,7 +114,7 @@ size_t ts::AbstractHTTPInputPlugin::receive(TSPacket* buffer, TSPacketMetadata* 
 bool ts::AbstractHTTPInputPlugin::startTransfer()
 {
     // Set common web request options.
-    _request.setArgs(webArgs);
+    _request.setArgs(web_args);
     _request.setAutoRedirect(true);
 
     // Let the subclass start the transfer.

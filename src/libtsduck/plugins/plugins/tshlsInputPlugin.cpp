@@ -146,42 +146,42 @@ bool ts::hls::InputPlugin::isRealTime()
 bool ts::hls::InputPlugin::getOptions()
 {
     _url.setURL(value(u""));
-    const UString saveDirectory(value(u"save-files"));
-    getIntValue(_maxSegmentCount, u"segment-count");
-    getValue(_minRate, u"min-bitrate");
-    getValue(_maxRate, u"max-bitrate");
-    getIntValue(_minWidth, u"min-width");
-    getIntValue(_maxWidth, u"max-width");
-    getIntValue(_minHeight, u"min-height");
-    getIntValue(_maxHeight, u"max-height");
-    getIntValue(_startSegment, u"start-segment");
-    _lowestRate = present(u"lowest-bitrate");
-    _highestRate = present(u"highest-bitrate");
-    _lowestRes = present(u"lowest-resolution");
-    _highestRes = present(u"highest-resolution");
-    _listVariants = present(u"list-variants");
+    const UString save_directory(value(u"save-files"));
+    getIntValue(_max_segment_count, u"segment-count");
+    getValue(_min_rate, u"min-bitrate");
+    getValue(_max_rate, u"max-bitrate");
+    getIntValue(_min_width, u"min-width");
+    getIntValue(_max_width, u"max-width");
+    getIntValue(_min_height, u"min-height");
+    getIntValue(_max_height, u"max-height");
+    getIntValue(_start_segment, u"start-segment");
+    _lowest_rate = present(u"lowest-bitrate");
+    _highest_rate = present(u"highest-bitrate");
+    _lowest_res = present(u"lowest-resolution");
+    _highest_res = present(u"highest-resolution");
+    _list_variants = present(u"list-variants");
 
-    getValue(_altGroupId, u"alt-group-id");
-    getValue(_altLanguage, u"alt-language");
-    getValue(_altName, u"alt-name");
-    getValue(_altType, u"alt-type");
-    _altSelection = !_altGroupId.empty() || !_altLanguage.empty() || !_altName.empty() || !_altType.empty();
+    getValue(_alt_group_id, u"alt-group-id");
+    getValue(_alt_language, u"alt-language");
+    getValue(_alt_name, u"alt-name");
+    getValue(_alt_type, u"alt-type");
+    _alt_selection = !_alt_group_id.empty() || !_alt_language.empty() || !_alt_name.empty() || !_alt_type.empty();
 
     // Invoke superclass to initialize webArgs.
     AbstractHTTPInputPlugin::getOptions();
 
     // Enable authentication tokens from master playlist to media playlist and from media playlists to media segments.
     // On Linux and macOS, use a specific cookies file to make sure that all Web requests use the same one.
-    webArgs.useCookies = true;
-    webArgs.cookiesFile = TempFile(u".cookies");
+    web_args.use_cookies = true;
+    web_args.cookies_file = TempFile(u".cookies");
 
     if (present(u"live")) {
         // With live streams, start at the last segment.
-        if (_startSegment != 0) {
+        if (_start_segment != 0) {
             error(u"--live and --start-segment are mutually exclusive");
             return false;
         }
-        _startSegment = -1;
+        _start_segment = -1;
     }
 
     if (!_url.isValid()) {
@@ -190,25 +190,25 @@ bool ts::hls::InputPlugin::getOptions()
     }
 
     // Check consistency of selection options.
-    const int singleSelect = _lowestRate + _highestRate + _lowestRes + _highestRes;
-    const bool multiSelect = _minRate > 0 || _maxRate > 0 || _minWidth > 0 || _maxWidth > 0 || _minHeight > 0 || _maxHeight > 0;
+    const int single_select = _lowest_rate + _highest_rate + _lowest_res + _highest_res;
+    const bool multi_select = _min_rate > 0 || _max_rate > 0 || _min_width > 0 || _max_width > 0 || _min_height > 0 || _max_height > 0;
 
-    if (singleSelect > 1) {
+    if (single_select > 1) {
         error(u"specify only one of --lowest-bitrate, --highest-bitrate, --lowest-resolution, --highest-resolution");
         return false;
     }
-    if (singleSelect > 0 && multiSelect) {
+    if (single_select > 0 && multi_select) {
         error(u"incompatible combination of stream selection options");
         return false;
     }
-    if (_altSelection && (singleSelect > 0 || multiSelect)) {
+    if (_alt_selection && (single_select > 0 || multi_select)) {
         error(u"--alt-* options and incompatible with main stream selection options");
         return false;
     }
 
     // Automatically save media segments and playlists.
-    setAutoSaveDirectory(saveDirectory);
-    _playlist.setAutoSaveDirectory(saveDirectory);
+    setAutoSaveDirectory(save_directory);
+    _playlist.setAutoSaveDirectory(save_directory);
 
     return true;
 }
@@ -222,7 +222,7 @@ bool ts::hls::InputPlugin::start()
 {
     // Load the HLS playlist, can be a master playlist or a media playlist.
     _playlist.clear();
-    if (!_playlist.loadURL(_url.toString(), false, webArgs, hls::PlayListType::UNKNOWN, *this)) {
+    if (!_playlist.loadURL(_url.toString(), false, web_args, hls::PlayListType::UNKNOWN, *this)) {
         return false;
     }
 
@@ -234,7 +234,7 @@ bool ts::hls::InputPlugin::start()
         PlayList master(_playlist);
 
         // List all variants when requested.
-        if (_listVariants) {
+        if (_list_variants) {
             for (size_t i = 0; i < master.playListCount(); ++i) {
                 info(master.playList(i).toString());
             }
@@ -247,10 +247,10 @@ bool ts::hls::InputPlugin::start()
         }
 
         // Apply command line selection criteria.
-        if (_altSelection) {
+        if (_alt_selection) {
             // Select an 'alternative rendition' playlist according to --alt-* parameters.
             _playlist.clear();
-            const size_t index = master.selectAltPlayList(_altType, _altName, _altGroupId, _altLanguage);
+            const size_t index = master.selectAltPlayList(_alt_type, _alt_name, _alt_group_id, _alt_language);
             if (index == NPOS) {
                 error(u"no alternative rendition media playlist found with selected criteria");
                 return false;
@@ -258,7 +258,7 @@ bool ts::hls::InputPlugin::start()
             else {
                 assert(index < master.altPlayListCount());
                 verbose(u"selected playlist: %s", master.altPlayList(index));
-                if (!_playlist.loadURL(master.altPlayList(index).urlString(), false, webArgs, hls::PlayListType::UNKNOWN, *this)) {
+                if (!_playlist.loadURL(master.altPlayList(index).urlString(), false, web_args, hls::PlayListType::UNKNOWN, *this)) {
                     return false;
                 }
             }
@@ -268,20 +268,20 @@ bool ts::hls::InputPlugin::start()
             // Loop until one media playlist is loaded (skip missing playlists).
             for (;;) {
                 size_t index = 0;
-                if (_lowestRate) {
+                if (_lowest_rate) {
                     index = master.selectPlayListLowestBitRate();
                 }
-                else if (_highestRate) {
+                else if (_highest_rate) {
                     index = master.selectPlayListHighestBitRate();
                 }
-                else if (_lowestRes) {
+                else if (_lowest_res) {
                     index = master.selectPlayListLowestResolution();
                 }
-                else if (_highestRes) {
+                else if (_highest_res) {
                     index = master.selectPlayListHighestResolution();
                 }
                 else {
-                    index = master.selectPlayList(_minRate, _maxRate, _minWidth, _maxWidth, _minHeight, _maxHeight);
+                    index = master.selectPlayList(_min_rate, _max_rate, _min_width, _max_width, _min_height, _max_height);
                 }
                 if (index == NPOS) {
                     error(u"could not find a matching stream in master playlist");
@@ -293,7 +293,7 @@ bool ts::hls::InputPlugin::start()
 
                 // Download selected media playlist.
                 _playlist.clear();
-                if (_playlist.loadURL(nextURL, false, webArgs, hls::PlayListType::UNKNOWN, *this)) {
+                if (_playlist.loadURL(nextURL, false, web_args, hls::PlayListType::UNKNOWN, *this)) {
                     break; // media playlist loaded
                 }
                 else if (master.playListCount() == 1) {
@@ -321,25 +321,25 @@ bool ts::hls::InputPlugin::start()
         error(u"empty HLS media playlist");
         return false;
     }
-    else if (_startSegment > 0) {
+    else if (_start_segment > 0) {
         // Start index from the start of playlist.
-        if (segCount + 1 < size_t(_startSegment)) {
+        if (segCount + 1 < size_t(_start_segment)) {
             warning(u"playlist has only %d segments, starting at last one", segCount);
             segCount = 1;
         }
         else {
             // Remaining number of segments to play.
-            segCount = segCount - size_t(_startSegment);
+            segCount = segCount - size_t(_start_segment);
         }
     }
-    else if (_startSegment < 0) {
+    else if (_start_segment < 0) {
         // Start index from the end of playlist.
-        if (segCount < size_t(- _startSegment)) {
+        if (segCount < size_t(- _start_segment)) {
             warning(u"playlist has only %d segments, starting at first one", segCount);
         }
         else {
             // Remaining number of segments to play.
-            segCount = size_t(- _startSegment);
+            segCount = size_t(- _start_segment);
         }
     }
 
@@ -349,7 +349,7 @@ bool ts::hls::InputPlugin::start()
         debug(u"dropped initial segment, %d remaining segments", _playlist.segmentCount());
     }
 
-    _segmentCount = 0;
+    _segment_count = 0;
 
     // Invoke superclass.
     return AbstractHTTPInputPlugin::start();
@@ -379,9 +379,9 @@ bool ts::hls::InputPlugin::openURL(WebRequest& request)
     // Check if the playlist is completed
     bool completed =
         // the playlist is originally empty
-        (_segmentCount == 0 && _playlist.segmentCount() == 0) ||
+        (_segment_count == 0 && _playlist.segmentCount() == 0) ||
         // reached maximum number of segments
-        (_maxSegmentCount > 0 && _segmentCount >= _maxSegmentCount) ||
+        (_max_segment_count > 0 && _segment_count >= _max_segment_count) ||
         // user interruption
         tsp->aborting();
 
@@ -389,7 +389,7 @@ bool ts::hls::InputPlugin::openURL(WebRequest& request)
     if (!completed && _playlist.segmentCount() < 2 && _playlist.isUpdatable()) {
 
         // Reload the playlist, ignore errors, continue to play next segments.
-        _playlist.reload(false, webArgs, *this);
+        _playlist.reload(false, web_args, *this);
 
         // If the playlist is still empty, this means that we have read all segments before the server
         // could produce new segments. For live streams, this is possible because new segments
@@ -400,7 +400,7 @@ bool ts::hls::InputPlugin::openURL(WebRequest& request)
             // The wait between two retries is half the target duration of a segment, with a minimum of 2 seconds.
             std::this_thread::sleep_for(std::max(cn::seconds(2), _playlist.targetDuration() / 2));
             // This time, we stop on reload error.
-            if (!_playlist.reload(false, webArgs, *this)) {
+            if (!_playlist.reload(false, web_args, *this)) {
                 break;
             }
         }
@@ -417,10 +417,10 @@ bool ts::hls::InputPlugin::openURL(WebRequest& request)
     // Remove first segment from the playlist.
     hls::MediaSegment seg;
     _playlist.popFirstSegment(seg);
-    _segmentCount++;
+    _segment_count++;
 
     // Open the segment.
     debug(u"downloading segment %s", seg.urlString());
-    request.enableCookies(webArgs.cookiesFile);
+    request.enableCookies(web_args.cookies_file);
     return request.open(seg.urlString());
 }

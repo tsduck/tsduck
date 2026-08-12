@@ -42,27 +42,27 @@ namespace ts {
         private:
             // Command line options:
             URL      _url {};
-            BitRate  _minRate = 0;
-            BitRate  _maxRate = 0;
-            size_t   _minWidth = 0;
-            size_t   _maxWidth = 0;
-            size_t   _minHeight = 0;
-            size_t   _maxHeight = 0;
-            int      _startSegment = 0;
-            bool     _listVariants = false;
-            bool     _lowestRate = false;
-            bool     _highestRate = false;
-            bool     _lowestRes = false;
-            bool     _highestRes = false;
-            size_t   _maxSegmentCount = 0;
-            bool     _altSelection = false;
-            UString  _altType {};
-            UString  _altName {};
-            UString  _altGroupId {};
-            UString  _altLanguage {};
+            BitRate  _min_rate = 0;
+            BitRate  _max_rate = 0;
+            size_t   _min_width = 0;
+            size_t   _max_width = 0;
+            size_t   _min_height = 0;
+            size_t   _max_height = 0;
+            int      _start_segment = 0;
+            bool     _list_variants = false;
+            bool     _lowest_rate = false;
+            bool     _highest_rate = false;
+            bool     _lowest_res = false;
+            bool     _highest_res = false;
+            size_t   _max_segment_count = 0;
+            bool     _alt_selection = false;
+            UString  _alt_type {};
+            UString  _alt_name {};
+            UString  _alt_group_id {};
+            UString  _alt_language {};
 
             // Working data:
-            size_t   _segmentCount = 0;
+            size_t   _segment_count = 0;
             PlayList _playlist {};
         };
     }

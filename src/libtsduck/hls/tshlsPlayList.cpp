@@ -497,8 +497,8 @@ bool ts::hls::PlayList::loadURL(const URL& url, bool strict, const WebRequestArg
     // Build a web request to download the playlist.
     WebRequest web(&report);
     web.setArgs(args);
-    if (args.useCookies) {
-        web.enableCookies(args.cookiesFile);
+    if (args.use_cookies) {
+        web.enableCookies(args.cookies_file);
     }
     else {
         web.disableCookies();
@@ -1017,7 +1017,7 @@ bool ts::hls::PlayList::autoSave(Report& report)
         return true;
     }
     else {
-        const UString name(_auto_save_dir + fs::path::preferred_separator + BaseName(_original));
+        const UString name(_auto_save_dir + fs::path::preferred_separator + BaseName(URL(_original).getPath()));
         report.verbose(u"saving playlist to %s", name);
         const bool ok = UString::Save(_loaded_content, name);
         if (!ok) {

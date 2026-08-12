@@ -184,25 +184,25 @@ bool ts::WebRequest::deleteCookiesFile() const
 
 void ts::WebRequest::setArgs(const ts::WebRequestArgs& args)
 {
-    if (!args.proxyHost.empty()) {
-        setProxyHost(args.proxyHost, args.proxyPort);
+    if (!args.proxy_host.empty()) {
+        setProxyHost(args.proxy_host, args.proxy_port);
     }
-    if (!args.proxyUser.empty()) {
-        setProxyUser(args.proxyUser, args.proxyPassword);
+    if (!args.proxy_user.empty()) {
+        setProxyUser(args.proxy_user, args.proxy_password);
     }
-    if (!args.userAgent.empty()) {
-        setUserAgent(args.userAgent);
+    if (!args.user_agent.empty()) {
+        setUserAgent(args.user_agent);
     }
-    if (args.connectionTimeout > cn::milliseconds::zero()) {
-        setConnectionTimeout(args.connectionTimeout);
+    if (args.connection_timeout > cn::milliseconds::zero()) {
+        setConnectionTimeout(args.connection_timeout);
     }
-    if (args.receiveTimeout > cn::milliseconds::zero()) {
-        setReceiveTimeout(args.receiveTimeout);
+    if (args.receive_timeout > cn::milliseconds::zero()) {
+        setReceiveTimeout(args.receive_timeout);
     }
-    if (args.useCookies) {
-        enableCookies(args.cookiesFile);
+    if (args.use_cookies) {
+        enableCookies(args.cookies_file);
     }
-    if (args.useCompression) {
+    if (args.use_compression) {
         enableCompression();
     }
     for (const auto& it : args.headers) {

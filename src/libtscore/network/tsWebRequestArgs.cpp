@@ -65,14 +65,14 @@ void ts::WebRequestArgs::defineArgs(Args& args)
 bool ts::WebRequestArgs::loadArgs(Args& args)
 {
     // Preserve previous timeout values
-    args.getChronoValue(connectionTimeout, u"connection-timeout", connectionTimeout);
-    args.getChronoValue(receiveTimeout, u"receive-timeout", receiveTimeout);
-    args.getIntValue(proxyPort, u"proxy-port");
-    args.getValue(proxyHost, u"proxy-host");
-    args.getValue(proxyUser, u"proxy-user");
-    args.getValue(proxyPassword, u"proxy-password");
-    args.getValue(userAgent, u"user-agent");
-    useCompression = args.present(u"compressed");
+    args.getChronoValue(connection_timeout, u"connection-timeout", connection_timeout);
+    args.getChronoValue(receive_timeout, u"receive-timeout", receive_timeout);
+    args.getIntValue(proxy_port, u"proxy-port");
+    args.getValue(proxy_host, u"proxy-host");
+    args.getValue(proxy_user, u"proxy-user");
+    args.getValue(proxy_password, u"proxy-password");
+    args.getValue(user_agent, u"user-agent");
+    use_compression = args.present(u"compressed");
 
     UStringVector headerStrings;
     args.getValues(headerStrings, u"headers");

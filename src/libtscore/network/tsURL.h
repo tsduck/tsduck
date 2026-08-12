@@ -143,7 +143,7 @@ namespace ts {
         type get##suffix() const { return field; }
 
         URL_PROPERTY(UString, Scheme, _scheme, scheme name without trailing colon)
-        URL_PROPERTY(UString, UserName, _username, optiona user name part)
+        URL_PROPERTY(UString, UserName, _username, optional user name part)
         URL_PROPERTY(UString, Password, _password, optional password)
         URL_PROPERTY(UString, Host, _host, host name)
         URL_PROPERTY(uint16_t, Port, _port, optional port number)

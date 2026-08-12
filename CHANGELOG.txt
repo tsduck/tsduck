@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.45-4776 (July 2026)
+VERSION 3.45-4777 (August 2026)
 
 [NEW] New commands and plugins:
 
@@ -41,6 +41,10 @@ VERSION 3.45-4776 (July 2026)
     transmission_type_info of the TS_information_descriptor.
   * Fixed issue #1733:  Frequency  rounding  error in ISDB terrestrial delivery
     system descriptor.
+  * In input plugin "hls" with option --save-files, the playlist files were not
+    correctly saved when their URL contained a query (after '?').  This problem
+    affected playlist files only.  The HLS segments were correctly saved in all
+    cases.
 
 [REG] Regressions:
 
