@@ -561,10 +561,10 @@ namespace ts {
         }
 
         //!
-        //! Check if time stamps @a t1 and @a t2 follow each othen, in any order, after wrap up.
+        //! Check if time stamps @a t1 and @a t2 follow each other, in any order, after wrap up.
         //! @param [in] t1 First time value.
         //! @param [in] t2 Second time value.
-        //! @return True if @a t1 and @a t2 follow each othen, in any order, after wrap up.
+        //! @return True if @a t1 and @a t2 follow each other, in any order, after wrap up.
         //!
         static bool Wrap(uint64_t t1, uint64_t t2)
         {
@@ -577,11 +577,11 @@ namespace ts {
         //! or I-frame in the transport. A "sequenced" PTS is one that is higher than the previous sequenced PTS (with possible wrap up).
         //! @param [in] t1 First time value.
         //! @param [in] t2 Second time value.
-        //! @return True if @a t1 and @a t2 follow each othen, possibly after wrapping up at 2**33.
+        //! @return True if @a t1 and @a t2 follow each other, possibly after wrapping down after max.
         //!
         static bool Sequenced(uint64_t t1, uint64_t t2)
         {
-            return t1 <= t2 || (t1 - t2) > WRAPUP_THRESHOLD;
+            return t1 > t2 ? t1 - t2 > WRAPUP_THRESHOLD : t2 - t1 < SCALE - WRAPUP_THRESHOLD;
         }
 
         //!
