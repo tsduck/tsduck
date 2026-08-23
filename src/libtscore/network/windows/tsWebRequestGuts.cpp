@@ -117,10 +117,10 @@ bool ts::WebRequest::startTransfer()
     return _guts->init();
 }
 
-bool ts::WebRequest::receive(void* buffer, size_t maxSize, size_t& retSize)
+bool ts::WebRequest::receive(void* buffer, size_t max_size, size_t& ret_size)
 {
     if (_is_open) {
-        return _guts->receive(buffer, maxSize, retSize);
+        return _guts->receive(buffer, max_size, ret_size);
     }
     else {
         report().error(u"transfer not started");

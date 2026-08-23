@@ -9,6 +9,8 @@
 #include "tshlsInputPlugin.h"
 #include "tsPluginRepository.h"
 #include "tsFileUtils.h"
+#include "tsAES128.h"
+#include "tsAES256.h"
 
 #if !defined(TS_UNIX) || !defined(TS_NO_CURL)
 TS_REGISTER_INPUT_PLUGIN(u"hls", ts::hls::InputPlugin);
@@ -220,6 +222,11 @@ bool ts::hls::InputPlugin::getOptions()
 
 bool ts::hls::InputPlugin::start()
 {
+    _seg_key.clear();
+    _seg_iv.clear();
+    _seg_data.clear();
+    _seg_size  = _seg_next = _seg_end = 0;
+
     // Load the HLS playlist, can be a master playlist or a media playlist.
     _playlist.clear();
     if (!_playlist.loadURL(_url.toString(), false, web_args, hls::PlayListType::UNKNOWN, *this)) {
@@ -415,18 +422,189 @@ bool ts::hls::InputPlugin::openURL(WebRequest& request)
     }
 
     // Remove first segment from the playlist.
-    hls::MediaSegment seg;
+    MediaSegment seg;
     _playlist.popFirstSegment(seg);
     _segment_count++;
 
-    // Encrypted HLS is not supported yet.
-    if (seg.key.isEncrypted()) {
-        error(u"encrypted HLS is not supported yet");
+    // Prepare decryption in case of encrypted HLS.
+    if (!initSegmentDecryption(request, seg)) {
         return false;
     }
 
     // Open the segment.
-    debug(u"downloading segment %s", seg.urlString());
+    const UString seg_url(seg.urlString());
+    debug(u"downloading segment %s", seg_url);
     request.enableCookies(web_args.cookies_file);
-    return request.open(seg.urlString());
+    return request.open(seg_url);
+}
+
+
+//----------------------------------------------------------------------------
+// Prepare segment decryption.
+//----------------------------------------------------------------------------
+
+bool ts::hls::InputPlugin::initSegmentDecryption(WebRequest& request, const MediaSegment& seg)
+{
+    // Encryption method is one of:
+    // - NONE : no encryption.
+    // - AES-128 : raw AES-128 CBC with explicit IV in #EXT-X-KEY.
+    // - SAMPLE-AES : encryption of audio/video samples, unsupported in TSDuck.
+    // - SAMPLE-AES-CTR (optional) : encryption of audio/video samples, unsupported in TSDuck.
+    // - AES-256-GCM (optional) : raw AES-256 GCM with 128-bit IV at start of segment and 128-bit authentication tag at end of segment.
+
+    size_t required_key_size = 0;
+    size_t required_iv_size = 0;
+
+    if (!seg.key.isEncrypted()) {
+        // Unencrypted segment.
+        _seg_key.clear();
+        _seg_iv.clear();
+        _seg_data.clear();
+        _seg_size = _seg_next = _seg_end = 0;
+        return true;
+    }
+    else if (seg.key.method.similar(u"AES-128")) {
+        required_key_size = AES128::KEY_SIZE;
+        required_iv_size = AES128::BLOCK_SIZE;
+    }
+    else if (seg.key.method.similar(u"AES-256-GCM")) {
+        required_key_size = AES256::KEY_SIZE;
+        required_iv_size = 0;  // will be at start of segment, not in #EXT-X-KEY
+        // TODO: add AES-256-GCM support
+        error(u"HLS encryption method \"%s\" is not supported yet, maybe later", seg.key.method);
+        return false;
+    }
+    else {
+        error(u"HLS encryption method \"%s\" is not supported", seg.key.method);
+        return false;
+    }
+
+    // Check initialization vector from #EXT-X-KEY.
+    if (seg.key.iv.size() != required_iv_size) {
+        error(u"invalid initialization vector size for HLS encryption method \"%s\", got %d bytes, expected %d", seg.key.method, seg.key.iv.size(), required_iv_size);
+        return false;
+    }
+    _seg_iv = seg.key.iv;
+
+    // Load decryption key.
+    if (!seg.key.isRawEncryptionKey()) {
+        error(u"HLS encryption key format \"%s\" is not supported", seg.key.format);
+        return false;
+    }
+    const UString key_url(seg.key.urlString());
+    if (key_url.empty()) {
+        error(u"no decryption key specified for HLS encryption method \"%s\"", seg.key.method);
+        return false;
+    }
+    debug(u"downloading decryption key %s", key_url);
+    if (!request.downloadBinaryContent(key_url, _seg_key)) {
+        return false;
+    }
+    if (_seg_key.size() != required_key_size) {
+        error(u"invalid key size for HLS encryption method \"%s\", got %d bytes, expected %d", seg.key.method, _seg_key.size(), required_key_size);
+        return false;
+    }
+
+    // The possible segment size is computed from the segment bitrate and duraction, if specified.
+    _seg_size = size_t(ByteDistance(seg.bitrate, seg.duration));
+    _seg_next = NPOS;
+    _seg_end = 0;
+
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Receive data from the URL.
+//----------------------------------------------------------------------------
+
+bool ts::hls::InputPlugin::receiveURL(WebRequest& request, void* buffer, size_t max_size, size_t& ret_size)
+{
+    ret_size = 0;
+
+    // With clear segment (most common case), let the superclass do the job.
+    if (_seg_key.empty()) {
+        return AbstractHTTPInputPlugin::receiveURL(request, buffer, max_size, ret_size);
+    }
+
+    // The first time, download the entire encrypted segment in memory.
+    if (_seg_next == NPOS) {
+        // Try to preallocate a large enough buffer.
+        static constexpr size_t chunk_size = WebRequest::DEFAULT_CHUNK_SIZE;
+        const size_t size = std::max(chunk_size, std::max(_seg_size, request.announcedContentSize())) + 128;
+        if (size > _seg_data.size()) {
+            _seg_data.resize(size);
+        }
+        _seg_next = _seg_end = 0;
+
+        // Download the encrypted segment.
+        for (;;) {
+            // Download one chunk.
+            size_t this_size = 0;
+            if (!request.receive(_seg_data.data() + _seg_end, _seg_data.size() - _seg_end, this_size)) {
+                return false;
+            }
+            _seg_end += std::min(this_size, _seg_data.size() - _seg_end);
+
+            // Error or end of transfer.
+            if (this_size == 0) {
+                break;
+            }
+
+            // Enlarge the buffer for next chunk. Don't do that too often in case of very short transfers.
+            if (_seg_data.size() - _seg_end < chunk_size / 2) {
+                _seg_data.resize(_seg_end + chunk_size);
+            }
+        }
+
+        // Decrypt the segment.
+        // Currently, only AES-128-CBC is supported.
+        debug(u"decrypting segment, %d bytes, %d-bit key", _seg_end, 8 * _seg_key.size());
+        CBC<AES128> algo;
+        if (!algo.setKey(_seg_key, _seg_iv)) {
+            error(u"error setting key/IV while decrypting HLS segment, segment size: %d, key size: %d, IV size: %d bytes", _seg_next, _seg_key.size(), _seg_iv.size());
+            return false;
+        }
+        if (!algo.decrypt(_seg_data.data(), _seg_end, _seg_data.data(), _seg_data.size(), &_seg_end)) {
+            error(u"error decrypting HLS segment, segment size: %d, key size: %d, IV size: %d bytes", _seg_next, _seg_key.size(), _seg_iv.size());
+            return false;
+        }
+
+        // AES-CBC encrypted block must be a multiple of the block size.
+        if (_seg_end < AES128::BLOCK_SIZE || _seg_end % AES128::BLOCK_SIZE != 0) {
+            error(u"invalid decrypted HLS segment size: %d", _seg_next);
+            return false;
+        }
+
+        // Check and remove PKCS #7 padding.
+        const size_t pad = _seg_data[_seg_end - 1];
+        bool pad_valid = pad <= AES128::BLOCK_SIZE;
+        for (size_t index = 2; pad_valid && index <= pad; ++index) {
+            pad_valid = _seg_data[_seg_end - index] == pad;
+        }
+        if (!pad_valid) {
+            error(u"invalid PKCS #7 padding in decrypted HLS segment, segment size: %d, last block: %s",
+                  _seg_next, UString::Dump(_seg_data.data() + _seg_end - AES128::BLOCK_SIZE, AES128::BLOCK_SIZE, UString::SINGLE_LINE));
+            return false;
+        }
+        _seg_end -= pad;
+
+        // Check that we got plausible TS packets.
+        if (_seg_end > 0) {
+            if (_seg_data[0] != SYNC_BYTE) {
+                error(u"invalid decrypted HLS segment, start with 0x%02X instead of 0x%02X", _seg_data[0], SYNC_BYTE);
+                return false;
+            }
+            if (_seg_end % PKT_SIZE != 0) {
+                warning(u"suspect decrypted HLS segment size: %d, not a multiple of %d", _seg_next, PKT_SIZE);
+            }
+        }
+    }
+
+    // Return part of decrypted segment.
+    assert(_seg_next <= _seg_end);
+    ret_size = std::min(max_size, _seg_end - _seg_next);
+    MemCopy(buffer, _seg_data.data() + _seg_next, ret_size);
+    _seg_next += ret_size;
+    return true;
 }

@@ -54,6 +54,20 @@ namespace ts {
         virtual bool openURL(WebRequest& request) = 0;
 
         //!
+        //! Receive data from the URL.
+        //! The default implementation simply calls WebRequest::receive().
+        //! A subclass may override it to add some intermediate processing, decryption for instance.
+        //! @param [in,out] request The request object.
+        //! @param [out] buffer Address of the buffer for the received data.
+        //! @param [in] max_size Size in bytes of the reception buffer.
+        //! @param [out] ret_size Size in bytes of the received data. Will never be larger than @a max_size.
+        //! When @a ret_size is zero, this is the end of the transfer.
+        //! @return True on success, false on error. A successful end of transfer is reported when
+        //! @a ret_size is zero and the returned value is true.
+        //!
+        virtual bool receiveURL(WebRequest& request, void* buffer, size_t max_size, size_t& ret_size);
+
+        //!
         //! Set a directory name where all loaded files are automatically saved.
         //! @param [in] dir A directory name.
         //!

@@ -56,6 +56,11 @@ Although HLS is inherently based on HTTP, it is possible to specify a local file
 either using a `file:` URI or a simple file specification.
 This is typically useful to test the files which are produced by the `hls` output plugin.
 
+[.optdoc]
+HLS encryption with method AES-128 is supported.
+The decryption key files which are specified in the playlist must be accessible
+without restriction other than cookies which are acquired with the playlist.
+
 [.usage]
 Options
 

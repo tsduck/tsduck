@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.45-4779 (August 2026)
+VERSION 3.45-4782 (August 2026)
 
 [NEW] New commands and plugins:
 
@@ -10,6 +10,8 @@ VERSION 3.45-4779 (August 2026)
 
 [IMP] Improvements on existing commands and plugins:
 
+  * Input plugin "hls" new supports encrypted HLS with method AES-128.  The key
+    files which are specified in the playlist must be accessible.
   * Plugin  "dektec"  (input):  on  DVB-S/S2  receivers,  LNB  control  is  now
     automatically  skipped on input channels which do not support it instead of
     failing.

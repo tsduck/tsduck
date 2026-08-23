@@ -167,6 +167,16 @@ bool ts::AbstractHTTPInputPlugin::stopTransfer()
 
 
 //----------------------------------------------------------------------------
+// Receive data from the URL (default implementation).
+//----------------------------------------------------------------------------
+
+bool ts::AbstractHTTPInputPlugin::receiveURL(WebRequest& request, void* buffer, size_t max_size, size_t& ret_size)
+{
+    return request.receive(buffer, max_size, ret_size);
+}
+
+
+//----------------------------------------------------------------------------
 // Receive packets in current transfer.
 //----------------------------------------------------------------------------
 
@@ -189,7 +199,7 @@ size_t ts::AbstractHTTPInputPlugin::receiveTransfer(TSPacket* buffer, size_t max
 
             // Receive more data into partial packet. We must receive at least one packet because returning zero means end of transfer.
             while (_partial_size < PKT_SIZE) {
-                if (!_request.receive(_partial.b + _partial_size, PKT_SIZE - _partial_size, receive_size) || receive_size == 0) {
+                if (!receiveURL(_request, _partial.b + _partial_size, PKT_SIZE - _partial_size, receive_size) || receive_size == 0) {
                     // Error or end of transfer.
                     return 0;
                 }
@@ -207,7 +217,7 @@ size_t ts::AbstractHTTPInputPlugin::receiveTransfer(TSPacket* buffer, size_t max
         // Receive subsequent data directly in the caller's buffer.
         // Don't check the returned bool, we only need the returned size (O on error).
         receive_size = 0;
-        _request.receive(cur_buffer->b, PKT_SIZE * max_packets, receive_size);
+        receiveURL(_request, cur_buffer->b, PKT_SIZE * max_packets, receive_size);
 
         // Compute residue after last complete packet.
         _partial_size = receive_size % PKT_SIZE;

@@ -351,13 +351,13 @@ namespace ts {
         //! Receive data.
         //!
         //! @param [out] buffer Address of the buffer for the received data.
-        //! @param [in] maxSize Size in bytes of the reception buffer.
-        //! @param [out] retSize Size in bytes of the received data. Will never be larger than @a max_size.
+        //! @param [in] max_size Size in bytes of the reception buffer.
+        //! @param [out] ret_size Size in bytes of the received data. Will never be larger than @a max_size.
         //! When @a ret_size is zero, this is the end of the transfer.
         //! @return True on success, false on error. A successful end of transfer is reported when
         //! @a ret_size is zero and the returned value is true.
         //!
-        bool receive(void* buffer, size_t maxSize, size_t& retSize);
+        bool receive(void* buffer, size_t max_size, size_t& ret_size);
 
         //!
         //! Close the transfer.

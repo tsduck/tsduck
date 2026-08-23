@@ -402,31 +402,31 @@ bool ts::WebRequest::downloadBinaryContent(const UString& url, ByteBlock& data, 
     }
 
     // Initialize download buffers.
-    size_t receivedSize = 0;
+    size_t received_size = 0;
     data.reserve(_header_content_size);
     data.resize(chunk_size);
     bool success = true;
 
     for (;;) {
         // Transfer one chunk.
-        size_t thisSize = 0;
-        success = receive(data.data() + receivedSize, data.size() - receivedSize, thisSize);
-        receivedSize += std::min(thisSize, data.size() - receivedSize);
+        size_t this_size = 0;
+        success = receive(data.data() + received_size, data.size() - received_size, this_size);
+        received_size += std::min(this_size, data.size() - received_size);
 
         // Error or end of transfer.
-        if (!success || thisSize == 0) {
+        if (!success || this_size == 0) {
             break;
         }
 
         // Enlarge the buffer for next chunk.
         // Don't do that too often in case of very short transfers.
-        if (data.size() - receivedSize < chunk_size / 2) {
-            data.resize(receivedSize + chunk_size);
+        if (data.size() - received_size < chunk_size / 2) {
+            data.resize(received_size + chunk_size);
         }
     }
 
     // Resize data buffer to actually transfered size.
-    data.resize(receivedSize);
+    data.resize(received_size);
     return close() && success;
 }
 
