@@ -495,8 +495,7 @@ namespace ts {
         //! Scale factor for the modular time source.
         //! For PCR, this is not a power of 2, it does not wrap up at a number of bits.
         //! The PCR_base part is equivalent to a PTS/DTS and wraps up at 2**33.
-        //! The PCR_ext part is a mod 300 value. Note that, since this not a
-        //! power of 2, there is no possible PCR_MASK value.
+        //! The PCR_ext part is a mod 300 value. Note that, since this not a power of 2, there is no possible PCR_MASK value.
         //!
         static constexpr uint64_t SCALE = TimeSourceSuperTraits<TimeSource::PTS>::SCALE * (TICKS / TimeSourceSuperTraits<TimeSource::PTS>::TICKS);
     };
@@ -540,7 +539,7 @@ namespace ts {
         //!
         //! Number of required hexadecimal digits to represent the time source.
         //!
-        static constexpr size_t HEX_DIGITS = (BIT_SIZE + 3) / 4;        
+        static constexpr size_t HEX_DIGITS = (BIT_SIZE + 3) / 4;
         //!
         //! Minimum distance between two time stamp values to consider them as wrapping up after the maximum value.
         //! Because time sources are modular values, they wrap up after MAX. It is common to consider, for instance,
@@ -652,24 +651,9 @@ namespace ts {
     constexpr uint64_t SYSTEM_CLOCK_SUBFACTOR = PCRTraits::TICKS / PTSTraits::TICKS;
 
     //!
-    //! Scale factor for PTS and DTS values (wrap up at 2^33).
-    //!
-    constexpr uint64_t PTS_DTS_SCALE = PTSTraits::SCALE;
-
-    //!
     //! Mask for PTS and DTS values (wrap up at 2^33).
     //!
-    constexpr uint64_t PTS_DTS_MASK = PTSTraits::SCALE - 1;
-
-    //!
-    //! Scale factor for PCR values.
-    //! This is not a power of 2, it does not wrap up at a number of bits.
-    //! The PCR_base part is equivalent to a PTS/DTS and wraps up at 2**33.
-    //! The PCR_ext part is a mod 300 value. Note that, since this not a
-    //! power of 2, there is no possible PCR_MASK value.
-    //!
-    constexpr uint64_t PCR_SCALE = PCRTraits::SCALE;
-
+    constexpr uint64_t PTS_DTS_MASK = TimeSourceSuperTraits<TimeSource::PTS>::BIT_MASK;
 
     //---------------------------------------------------------------------
     //! Adaptation field descriptor tags.

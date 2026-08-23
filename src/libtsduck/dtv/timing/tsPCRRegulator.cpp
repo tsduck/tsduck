@@ -85,7 +85,7 @@ bool ts::PCRRegulator::regulate(const TSPacket& pkt)
         constexpr uint64_t max_pcr_diff = 2 * SYSTEM_CLOCK_FREQ; // 2 seconds in PCR units
         const bool valid_pcr_seq = _started &&
             (_pcr_last == INVALID_PCR ||
-             (pcr < _pcr_last && pcr + PCR_SCALE < _pcr_last + max_pcr_diff) ||
+             (pcr < _pcr_last && pcr + PCRTraits::SCALE < _pcr_last + max_pcr_diff) ||
              (pcr > _pcr_last && pcr < _pcr_last + max_pcr_diff));
 
         // Try to detect incorrect PCR sequences (such as cycling input).
@@ -114,7 +114,7 @@ bool ts::PCRRegulator::regulate(const TSPacket& pkt)
             // In an uint64_t value, we can accumulate 21664 years in PCR units. So, we can safely assume that
             // there will be no overflow when accumulating PCR's on 64 bits.
             if (_pcr_last != INVALID_PCR && pcr < _pcr_last) {
-                _pcr_offset += PCR_SCALE;
+                _pcr_offset += PCRTraits::SCALE;
             }
 
             // Compute the number of PCR units since the first PCR.

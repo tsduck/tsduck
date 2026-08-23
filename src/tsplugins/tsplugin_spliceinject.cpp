@@ -87,7 +87,7 @@ namespace ts {
         size_t           _sock_buf_size = 0;
         size_t           _inject_count = 0;
         cn::milliseconds _inject_interval {};
-        cn::milliseconds _start_delay = {};
+        cn::milliseconds _start_delay {};
         cn::milliseconds _poll_interval {};
         cn::milliseconds _min_stable_delay {};
         std::uintmax_t   _max_file_size = 0;

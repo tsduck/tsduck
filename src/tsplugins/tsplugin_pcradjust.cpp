@@ -265,7 +265,7 @@ uint64_t ts::PCRAdjustPlugin::PIDContext::updatedPDTS(PacketCounter packet_index
         // If the difference between the PTS/DTS and the PCR is less than 10 second, we are still sync.
         // Take in account the case where there is a wrapup at PTS_DTS_SCALE.
         const uint64_t max_diff = SYSTEM_CLOCK_SUBFREQ * 10;
-        sync_pdts = diff < max_diff || diff > PTS_DTS_SCALE - max_diff;
+        sync_pdts = diff < max_diff || diff > PTSTraits::SCALE - max_diff;
     }
 
     if (sync_pdts) {

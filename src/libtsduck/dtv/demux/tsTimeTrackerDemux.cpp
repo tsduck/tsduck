@@ -63,8 +63,8 @@ ts::TimeTrackerDemux::TimeTrackerDemux(DuckContext& duck, const PIDSet& pid_filt
 void ts::TimeTrackerDemux::immediateReset()
 {
     SuperClass::immediateReset();
-    _pcrPID = PID_NULL;
-    _pcrTime.reset();
+    _pcr_pid = PID_NULL;
+    _pcr_time.reset();
     _pids.clear();
 }
 
@@ -87,12 +87,12 @@ void ts::TimeTrackerDemux::feedPacket(const TSPacket& pkt)
 
     // Track PCR's on the first PID with PCR.
     if (pkt.hasPCR()) {
-        if (_pcrPID == PID_NULL) {
+        if (_pcr_pid == PID_NULL) {
             // No PCR PID was found so far, use this one.
-            _pcrPID = pid;
+            _pcr_pid = pid;
         }
-        if (pid == _pcrPID) {
-            _pcrTime.set(pkt.getPCR());
+        if (pid == _pcr_pid) {
+            _pcr_time.set(pkt.getPCR());
         }
     }
 
@@ -114,9 +114,9 @@ cn::milliseconds ts::TimeTrackerDemux::pidDuration(PID pid) const
         // We have PTS references from the specified PID.
         return cn::milliseconds(cn::milliseconds::rep((it->second.duration() * 1000) / SYSTEM_CLOCK_SUBFREQ));
     }
-    else if (_pcrTime.isValid()) {
+    else if (_pcr_time.isValid()) {
         // Use PCR references from some other PID.
-        return cn::milliseconds(cn::milliseconds::rep((_pcrTime.duration() * 1000) / SYSTEM_CLOCK_FREQ));
+        return cn::milliseconds(cn::milliseconds::rep((_pcr_time.duration() * 1000) / SYSTEM_CLOCK_FREQ));
     }
     else {
         // No reference available, no timing information.

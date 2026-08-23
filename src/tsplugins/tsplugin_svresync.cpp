@@ -229,7 +229,7 @@ ts::PacketProcessStatus ts::SVResyncPlugin::processPacket(TSPacket& pkt, TSPacke
             // Compute difference between target and reference PCR.
             _delta_pts = ref_pcr >= pcr ?
                 (ref_pcr - pcr) / SYSTEM_CLOCK_SUBFACTOR :
-                PTS_DTS_SCALE - (pcr - ref_pcr) / SYSTEM_CLOCK_SUBFACTOR;
+                PTSTraits::SCALE - (pcr - ref_pcr) / SYSTEM_CLOCK_SUBFACTOR;
             debug(u"new delta PTS/DTS: 0x%09X (%'<d)", _delta_pts);
 
             // Replace PCR with extrapolated reference PCR.

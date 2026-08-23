@@ -84,7 +84,7 @@ void ts::PacketEncapsulation::setOutputPID(PID pid)
 
 void ts::PacketEncapsulation::setPESOffset(int32_t offset)
 {
-    _pes_offset = offset >= 0 ? uint64_t(offset) : PTS_DTS_SCALE - std::abs(offset);
+    _pes_offset = offset >= 0 ? uint64_t(offset) : PTSTraits::SCALE - std::abs(offset);
 }
 
 

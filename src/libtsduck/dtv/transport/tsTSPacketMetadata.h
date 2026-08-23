@@ -415,8 +415,8 @@ void ts::TSPacketMetadata::setInputTimeStamp(const cn::duration<Rep,Period>& tim
     const PCR pcr = cn::duration_cast<PCR>(timestamp);
     // Make sure we remain in the usual PCR range.
     // This can create an issue if the input value wraps up at 2^64.
-    // In which case, the PCR value will warp at another value than PCR_SCALE.
-    _input_time = uint64_t(pcr.count() % PCR_SCALE);
+    // In which case, the PCR value will warp at another value than PCRTraits::SCALE.
+    _input_time = uint64_t(pcr.count() % PCRTraits::SCALE);
 }
 
 #endif // DOXYGEN

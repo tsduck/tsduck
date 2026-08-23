@@ -72,64 +72,17 @@ namespace ts {
         SpliceContextMap _splices {};             // Per-PID splice information
         SectionDemux     _demux {duck, this};     // Section demux for service and SCTE 35 analysis
 
-        // GCC complains that PCR, DTS, PTS shadow the global types of the same name.
-        // However this is irrelevant because DataType is an enum class and the declared
-        // identifiers must be prefixed. ts::DataType::PCR is an enum identifier, ts::PCR
-        // is a type, without ambiguity.
-        TS_PUSH_WARNING()
-        TS_GCC_NOWARNING(shadow)
-
-        // Types of time stamps.
-        enum class DataType {PCR, OPCR, PTS, DTS};
-        static const Names _type_names;
-
-        TS_POP_WARNING()
-
         // Description of one type of data in a PID: PCR, OPCR, PTS, DTS.
+        template <TimeSource T>
         class PIDData
         {
-            TS_NOBUILD_NOCOPY(PIDData);
+            TS_NOCOPY(PIDData);
         public:
-            const DataType      type;                       // Data type.
-            const uint32_t      pcr_subfactor;              // Subfactor from PCR for that data type.
-            const std::intmax_t ticks_per_ms;               // Number of ticks per millisecond for that data type.
-            const uint64_t      scale;                      // Data type modulus.
-            PacketCounter       count = 0;                  // Number of data of this type in this PID.
-            uint64_t            first_value = INVALID_PCR;  // First data value of this type in this PID.
-            uint64_t            last_value = INVALID_PCR;   // First data value of this type in this PID.
-            PacketCounter       last_packet = 0;            // Packet index in TS of last value.
-
-            //@@@ TODO: rewrite with time source traits.
-
-            // Constructor.
-            PIDData(DataType t) :
-                type(t),
-                pcr_subfactor((t == DataType::PTS || t == DataType::DTS) ? SYSTEM_CLOCK_SUBFACTOR : 1),
-                ticks_per_ms(((t == DataType::PTS || t == DataType::DTS) ? PTS::period::den : PCR::period::den) / 1000),
-                scale((t == DataType::PTS || t == DataType::DTS) ? PTS_DTS_SCALE : PCR_SCALE)
-            {
-            }
-
-            // Check is two values are wrapping around the modulus.
-            bool wrap(uint64_t v1, uint64_t v2)
-            {
-                // Values wrap if their distance is within 10% of a full PCR range.
-                return (v1 > v2 ? v1 - v2 : v2 - v1) > (9 * scale) / 10;
-            }
-
-            // Compute the difference between two values (v1 - v2).
-            int64_t diff(uint64_t v1, uint64_t v2)
-            {
-                if (!wrap(v1, v2)) {
-                    return int64_t(v1) - int64_t(v2);
-                }
-                else if (v1 <= v2) {
-                    return int64_t(scale + v1) - int64_t(v2);
-                }
-                else {
-                    return int64_t(v1) - int64_t(scale + v2);
-                }
-            }
+            PIDData() = default;                      // Constructor.
+            PacketCounter count = 0;                  // Number of data of this type in this PID.
+            uint64_t      first_value = INVALID_PCR;  // First data value of this type in this PID.
+            uint64_t      last_value = INVALID_PCR;   // First data value of this type in this PID.
+            PacketCounter last_packet = 0;            // Packet index in TS of last value.
         };
 
         // Description of one PID carrying PCR, PTS or DTS.
@@ -137,15 +90,15 @@ namespace ts {
         {
             TS_NOBUILD_NOCOPY(PIDContext);
         public:
-            PIDContext(PID p) : pid(p) {}      // Constructor.
-            const PID     pid;                 // PID value.
-            PacketCounter packet_count = 0;    // Number of packets in this PID.
-            PID           pcr_pid = PID_NULL;  // PID containing PCR in the same service.
-            uint64_t      last_good_pts = INVALID_PTS;
-            PIDData       pcr {DataType::PCR};
-            PIDData       opcr {DataType::OPCR};
-            PIDData       pts {DataType::PTS};
-            PIDData       dts {DataType::DTS};
+            PIDContext(PID p) : pid(p) {}                  // Constructor.
+            const PID                 pid;                 // PID value.
+            PacketCounter             packet_count = 0;    // Number of packets in this PID.
+            PID                       pcr_pid = PID_NULL;  // PID containing PCR in the same service.
+            uint64_t                  last_good_pts = PTSTraits::INVALID;
+            PIDData<TimeSource::PCR>  pcr {};
+            PIDData<TimeSource::OPCR> opcr {};
+            PIDData<TimeSource::PTS>  pts {};
+            PIDData<TimeSource::DTS>  dts {};
         };
 
         // Description of one PID carrying SCTE 35 splice information.
@@ -171,7 +124,7 @@ namespace ts {
 
         // Report a value in csv or log format.
         void csvHeader();
-        void processValue(PIDContext&, PIDData PIDContext::*, uint64_t value, uint64_t pcr, bool report_it, const TSPacketMetadata& mdata);
+        template <TimeSource T> void processValue(PIDContext&, PIDData<T> PIDContext::*, uint64_t value, uint64_t pcr, bool report_it, const TSPacketMetadata& mdata);
     };
 }
 
@@ -256,18 +209,6 @@ ts::PCRExtractPlugin::PCRExtractPlugin(TSP* tsp_) :
     help(u"separator", u"string",
          u"Field separator string in CSV output (default: '" + UString(DEFAULT_CSV_SEPARATOR) + u"').");
 }
-
-
-//----------------------------------------------------------------------------
-// Substructures constructors
-//----------------------------------------------------------------------------
-
-const ts::Names ts::PCRExtractPlugin::_type_names({
-    {u"PCR",  DataType::PCR},
-    {u"OPCR", DataType::OPCR},
-    {u"DTS",  DataType::DTS},
-    {u"PTS",  DataType::PTS}
-});
 
 
 //----------------------------------------------------------------------------
@@ -455,10 +396,15 @@ void ts::PCRExtractPlugin::csvHeader()
 // Report a value in CSV and/or log format.
 //----------------------------------------------------------------------------
 
-void ts::PCRExtractPlugin::processValue(PIDContext& ctx, PIDData PIDContext::* pdata, uint64_t value, uint64_t pcr, bool report_it, const TSPacketMetadata& mdata)
+template <ts::TimeSource T>
+void ts::PCRExtractPlugin::processValue(PIDContext& ctx, PIDData<T> PIDContext::* pdata, uint64_t value, uint64_t pcr, bool report_it, const TSPacketMetadata& mdata)
 {
-    PIDData& data(ctx.*pdata);
-    const UString name(_type_names.name(data.type));
+    using Traits = TimeSourceTraits<T>;
+    static constexpr uint64_t pcr_subfactor = PCRTraits::TICKS / Traits::TICKS;
+    static constexpr uint64_t ticks_per_ms = Traits::TICKS / 1000;
+    static const UString name(TimeSourceEnum().name(T));
+
+    PIDData<T>& data(ctx.*pdata);
 
     // Count values and remember first value.
     if (data.count++ == 0) {
@@ -466,8 +412,8 @@ void ts::PCRExtractPlugin::processValue(PIDContext& ctx, PIDData PIDContext::* p
     }
 
     // Time offset since first value of this type in the PID.
-    const int64_t since_start = data.diff(value, data.first_value);
-    const int64_t since_previous = data.diff(value, data.last_value);
+    const int64_t since_start = Traits::Diff(value, data.first_value);
+    const int64_t since_previous = Traits::Diff(value, data.last_value);
 
     // Report in CSV format.
     if (_csv_format && report_it) {
@@ -478,8 +424,8 @@ void ts::PCRExtractPlugin::processValue(PIDContext& ctx, PIDData PIDContext::* p
                  << data.count << _separator
                  << value << _separator
                  << since_start << _separator;
-        if (pcr != INVALID_PCR) {
-            *_output << (int64_t(value) - int64_t(pcr / data.pcr_subfactor));
+        if (pcr != PCRTraits::INVALID) {
+            *_output << (int64_t(value) - int64_t(pcr / pcr_subfactor));
         }
         if (_input_time) {
             *_output << _separator;
@@ -492,7 +438,7 @@ void ts::PCRExtractPlugin::processValue(PIDContext& ctx, PIDData PIDContext::* p
             }
             *_output << _separator;
             if (mdata.hasInputTimeStamp()) {
-                *_output << (int64_t(value) - int64_t(mdata.getInputTimeStamp().count() / data.pcr_subfactor));
+                *_output << (int64_t(value) - int64_t(mdata.getInputTimeStamp().count() / pcr_subfactor));
             }
         }
         *_output << std::endl;
@@ -504,10 +450,8 @@ void ts::PCRExtractPlugin::processValue(PIDContext& ctx, PIDData PIDContext::* p
         if (_input_time && mdata.hasInputTimeStamp()) {
             trailer.format(u", input: 0x%011X", mdata.getInputTimeStamp().count());
         }
-        // Number of hexa digits: 11 for PCR (42 bits) and 9 for PTS/DTS (33 bits).
-        const size_t width = data.pcr_subfactor == 1 ? 11 : 9;
         info(u"PID: %n, %s: 0x%0*X, (0x%0*X, %'d ms from start of PID, %'d ms from previous)%s",
-             ctx.pid, name, width, value, width, since_start, since_start / data.ticks_per_ms, since_previous / data.ticks_per_ms, trailer);
+             ctx.pid, name, Traits::HEX_DIGITS, value, Traits::HEX_DIGITS, since_start, since_start / ticks_per_ms, since_previous / ticks_per_ms, trailer);
     }
 
     // Remember last value.

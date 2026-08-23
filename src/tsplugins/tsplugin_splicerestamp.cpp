@@ -238,7 +238,7 @@ void ts::SpliceRestampPlugin::handleTable(SectionDemux& demux, const BinaryTable
             // The idea of --rebase-pts is that the current PTS "min_pts" will be rebased as "_rebase_pts".
             // Compute the required pts_adjustment.
             if (min_pts != INVALID_PTS) {
-                _current_adjustment = min_pts > _rebase_pts ? PTS_DTS_SCALE - (min_pts - _rebase_pts) : _rebase_pts - min_pts;
+                _current_adjustment = min_pts > _rebase_pts ? PTSTraits::SCALE - (min_pts - _rebase_pts) : _rebase_pts - min_pts;
                 verbose(u"initial PTS adjustment is %'d", _current_adjustment.value());
                 debug(u"lowest PTS is %n", min_pts);
             }
@@ -337,16 +337,16 @@ ts::PacketProcessStatus ts::SpliceRestampPlugin::processPacket(TSPacket& pkt, TS
             if (bitrate > 0) {
                 if (_old_pcr_packet < _new_pcr_packet) {
                     // Adjust old PCR.
-                    old_pcr += (((_new_pcr_packet - _old_pcr_packet) * PKT_SIZE_BITS * SYSTEM_CLOCK_FREQ) / bitrate).toInt() % PCR_SCALE;
+                    old_pcr += (((_new_pcr_packet - _old_pcr_packet) * PKT_SIZE_BITS * SYSTEM_CLOCK_FREQ) / bitrate).toInt() % PTSTraits::SCALE;
                 }
                 else {
                     // Adjust new PCR.
-                    new_pcr += (((_old_pcr_packet - _new_pcr_packet) * PKT_SIZE_BITS * SYSTEM_CLOCK_FREQ) / bitrate).toInt() % PCR_SCALE;
+                    new_pcr += (((_old_pcr_packet - _new_pcr_packet) * PKT_SIZE_BITS * SYSTEM_CLOCK_FREQ) / bitrate).toInt() % PTSTraits::SCALE;
                 }
             }
             const uint64_t pts_adjust = new_pcr >= old_pcr ?
-                ((new_pcr - old_pcr) % PCR_SCALE) / SYSTEM_CLOCK_SUBFACTOR :
-                PTS_DTS_SCALE - ((old_pcr - new_pcr) % PCR_SCALE) / SYSTEM_CLOCK_SUBFACTOR;
+                ((new_pcr - old_pcr) % PTSTraits::SCALE) / SYSTEM_CLOCK_SUBFACTOR :
+                PTSTraits::SCALE - ((old_pcr - new_pcr) % PTSTraits::SCALE) / SYSTEM_CLOCK_SUBFACTOR;
             if (!_current_adjustment.has_value()) {
                 verbose(u"initial PTS adjustment is %'d", pts_adjust);
                 debug(u"old PCR: %'d 0x%<012X, new PCR: %'d 0x%<012X", old_pcr, new_pcr);
