@@ -67,19 +67,31 @@ void ts::hls::PlayList::buildURL(MediaElement& media, const UString& uri) const
     media.url.clear();
 
     if (_is_url) {
-        // Build a full URL, based on original URL.
+        // Build a full URL, based on original URL of the playlist.
         media.url.setURL(uri, _url);
         media.file_path = media.url.getPath();
     }
+    else if (_original.empty()) {
+        // The playlist has no file name of URL, use the provided URI only (must be fully specified).
+        media.relative_uri = uri;
+        media.url.setURL(uri);
+        if (media.url.isValid()) {
+            media.file_path.clear();
+        }
+        else {
+            media.file_path = uri;
+        }
+    }
     else if (uri.starts_with(u"/")) {
-        // The original URI was a file and the segment is an absolute file name.
+        // The original URI of the playlist was a file and the segment is an absolute file name.
         media.file_path = uri;
     }
     else {
-        // The original URI was a file and the segment is a relative file name.
+        // The original URI of the playlist was a file and the segment is a relative file name.
         media.file_path = _file_base + uri;
     }
 }
+
 
 //----------------------------------------------------------------------------
 // Update the URL or file paths of all media segments or playlists.
@@ -89,6 +101,9 @@ void ts::hls::PlayList::updateReferences()
 {
     for (auto& me : _segments) {
         buildURL(me, me.relative_uri);
+        if (me.key.isEncrypted()) {
+            buildURL(me.key, me.key.relative_uri);
+        }
     }
     for (auto& me : _playlists) {
         buildURL(me, me.relative_uri);
@@ -692,20 +707,20 @@ bool ts::hls::PlayList::parse(bool strict, Report& report)
 {
     // Global media segment or playlist information.
     // Contains properties which are valid until next occurrence of same property.
-    MediaPlayList plGlobal;
-    MediaSegment segGlobal;
+    MediaPlayList pl_global;
+    MediaSegment seg_global;
 
     // Next media segment or playlist information.
     // Contains properties which are valid for next URI only.
-    MediaPlayList plNext;
-    MediaSegment segNext;
+    MediaPlayList pl_next;
+    MediaSegment seg_next;
 
     // Current tag and parameters.
     Tag tag = Tag::EXTM3U;
-    UString tagParams;
+    UString tag_params;
 
     // The playlist must always start with #EXTM3U.
-    if (_loaded_content.empty() || !getTag(_loaded_content.front(), tag, tagParams, strict, report) || tag != Tag::EXTM3U) {
+    if (_loaded_content.empty() || !getTag(_loaded_content.front(), tag, tag_params, strict, report) || tag != Tag::EXTM3U) {
         report.error(u"invalid HLS playlist, does not start with #EXTM3U");
         return false;
     }
@@ -717,7 +732,7 @@ bool ts::hls::PlayList::parse(bool strict, Report& report)
     _utc_download = _utc_termination = Time::CurrentUTC();
 
     // Loop on all lines in file.
-    uint32_t lineNumber = 0;
+    uint32_t line_number = 0;
     for (const auto& it : _loaded_content) {
 
         // In non-strict mode, ignore leading and trailing spaces.
@@ -725,7 +740,7 @@ bool ts::hls::PlayList::parse(bool strict, Report& report)
         if (!strict) {
             line.trim();
         }
-        lineNumber++;
+        line_number++;
         report.log(2, u"playlist: %s", line);
 
         // A line is one of blank, comment, tag, URI.
@@ -733,42 +748,42 @@ bool ts::hls::PlayList::parse(bool strict, Report& report)
             // URI line, add media segment or media playlist description, depending on current playlist type.
             if (isMaster()) {
                 // Enqueue a new playlist description.
-                buildURL(plNext, line);
-                _playlists.push_back(plNext);
-                if (!plNext.file_path.ends_with(u".m3u8", CASE_INSENSITIVE)) {
+                buildURL(pl_next, line);
+                _playlists.push_back(pl_next);
+                if (!pl_next.file_path.ends_with(u".m3u8", CASE_INSENSITIVE)) {
                     report.debug(u"unexpected playlist file extension in reference URI: %s", line);
                 }
                 // Reset description of next playlist.
-                plNext = plGlobal;
+                pl_next = pl_global;
             }
             else if (isMedia()) {
                 // Enqueue a new media segment.
-                buildURL(segNext, line);
-                _utc_termination += segNext.duration;
-                _segments.push_back(segNext);
-                if (!segNext.file_path.ends_with(u".ts", CASE_INSENSITIVE)) {
+                buildURL(seg_next, line);
+                _utc_termination += seg_next.duration;
+                _segments.push_back(seg_next);
+                if (!seg_next.file_path.ends_with(u".ts", CASE_INSENSITIVE)) {
                     report.debug(u"unexpected segment file extension in reference URI: %s", line);
                 }
                 // Reset description of next segment.
-                segNext = segGlobal;
+                seg_next = seg_global;
             }
             else {
                 report.debug(u"unknown URI: %s", line);
                 _valid = false;
             }
         }
-        else if (getTag(line, tag, tagParams, strict, report)) {
+        else if (getTag(line, tag, tag_params, strict, report)) {
             // The line contains a tag.
             switch (tag) {
                 case Tag::EXTM3U: {
-                    if (strict && lineNumber > 1) {
+                    if (strict && line_number > 1) {
                         report.error(u"misplaced: %s", line);
                         _valid = false;
                     }
                     break;
                 }
                 case Tag::VERSION: {
-                    if (!tagParams.toInteger(_version) && strict) {
+                    if (!tag_params.toInteger(_version) && strict) {
                         report.error(u"invalid HLS playlist version: %s", line);
                         _valid = false;
                     }
@@ -777,23 +792,23 @@ bool ts::hls::PlayList::parse(bool strict, Report& report)
                 case Tag::EXTINF: {
                     // #EXTINF:duration,[title]
                     // Apply to next segment only.
-                    const size_t comma = tagParams.find(u",");  // can be NPOS
-                    if (!TagAttributes::ToMilliValue(segNext.duration, tagParams.substr(0, comma))) {
+                    const size_t comma = tag_params.find(u",");  // can be NPOS
+                    if (!TagAttributes::ToMilliValue(seg_next.duration, tag_params.substr(0, comma))) {
                         report.error(u"invalid segment duration in %s", line);
                         _valid = false;
                     }
                     if (comma != NPOS) {
-                        segNext.title.assign(tagParams, comma + 1);
-                        segNext.title.trim();
+                        seg_next.title.assign(tag_params, comma + 1);
+                        seg_next.title.trim();
                     }
                     break;
                 }
                 case Tag::BITRATE: {
                     // #EXT-X-BITRATE:<rate>
                     BitRate kilobits = 0;
-                    if (kilobits.fromString(tagParams)) {
+                    if (kilobits.fromString(tag_params)) {
                         // Apply to one or more segments.
-                        segGlobal.bitrate = segNext.bitrate = 1024 * kilobits;
+                        seg_global.bitrate = seg_next.bitrate = 1024 * kilobits;
                     }
                     else if (strict) {
                         report.error(u"invalid segment bitrate in %s", line);
@@ -804,12 +819,12 @@ bool ts::hls::PlayList::parse(bool strict, Report& report)
                 case Tag::GAP: {
                     // #EXT-X-GAP
                     // Apply to next segment only.
-                    segNext.gap = true;
+                    seg_next.gap = true;
                     break;
                 }
                 case Tag::TARGETDURATION: {
                     // #EXT-X-TARGETDURATION:s
-                    if (!tagParams.toChrono(_target_duration) && strict) {
+                    if (!tag_params.toChrono(_target_duration) && strict) {
                         report.error(u"invalid target duration in %s", line);
                         _valid = false;
                     }
@@ -817,7 +832,7 @@ bool ts::hls::PlayList::parse(bool strict, Report& report)
                 }
                 case Tag::MEDIA_SEQUENCE: {
                     // #EXT-X-MEDIA-SEQUENCE:number
-                    if (!tagParams.toInteger(_media_sequence) && strict) {
+                    if (!tag_params.toInteger(_media_sequence) && strict) {
                         report.error(u"invalid media sequence in %s", line);
                         _valid = false;
                     }
@@ -828,14 +843,14 @@ bool ts::hls::PlayList::parse(bool strict, Report& report)
                     break;
                 }
                 case Tag::PLAYLIST_TYPE: {
-                    if (tagParams.similar(u"VOD")) {
+                    if (tag_params.similar(u"VOD")) {
                         setType(PlayListType::VOD, report);
                     }
-                    else if (tagParams.similar(u"EVENT")) {
+                    else if (tag_params.similar(u"EVENT")) {
                         setType(PlayListType::EVENT, report);
                     }
                     else {
-                        report.error(u"invalid playlist type '%s' in %s", tagParams, line);
+                        report.error(u"invalid playlist type '%s' in %s", tag_params, line);
                         _valid = false;
                     }
                     break;
@@ -843,23 +858,23 @@ bool ts::hls::PlayList::parse(bool strict, Report& report)
                 case Tag::STREAM_INF: {
                     // #EXT-X-STREAM-INF:<attribute-list>
                     // Apply to next playlist only.
-                    const TagAttributes attr(tagParams);
-                    attr.getValue(plNext.bandwidth, u"BANDWIDTH");
-                    attr.getValue(plNext.average_bandwidth, u"AVERAGE-BANDWIDTH");
-                    attr.value(u"RESOLUTION").scan(u"%dx%d", &plNext.width, &plNext.height);
-                    attr.getMilliValue(plNext.frame_rate, u"FRAME-RATE");
-                    plNext.codecs = attr.value(u"CODECS");
-                    plNext.hdcp = attr.value(u"HDCP-LEVEL");
-                    plNext.video_range = attr.value(u"VIDEO-RANGE");
-                    plNext.video = attr.value(u"VIDEO");
-                    plNext.audio = attr.value(u"AUDIO");
-                    plNext.subtitles = attr.value(u"SUBTITLES");
-                    plNext.closed_captions = attr.value(u"CLOSED-CAPTIONS");
+                    const TagAttributes attr(tag_params);
+                    attr.getValue(pl_next.bandwidth, u"BANDWIDTH");
+                    attr.getValue(pl_next.average_bandwidth, u"AVERAGE-BANDWIDTH");
+                    attr.value(u"RESOLUTION").scan(u"%dx%d", &pl_next.width, &pl_next.height);
+                    attr.getMilliValue(pl_next.frame_rate, u"FRAME-RATE");
+                    pl_next.codecs = attr.value(u"CODECS");
+                    pl_next.hdcp = attr.value(u"HDCP-LEVEL");
+                    pl_next.video_range = attr.value(u"VIDEO-RANGE");
+                    pl_next.video = attr.value(u"VIDEO");
+                    pl_next.audio = attr.value(u"AUDIO");
+                    pl_next.subtitles = attr.value(u"SUBTITLES");
+                    pl_next.closed_captions = attr.value(u"CLOSED-CAPTIONS");
                     break;
                 }
                 case Tag::MEDIA: {
                     // #EXT-X-MEDIA:<attribute-list>
-                    const TagAttributes attr(tagParams);
+                    const TagAttributes attr(tag_params);
                     AltPlayList pl;
                     pl.name = attr.value(u"NAME");
                     pl.type = attr.value(u"TYPE");
@@ -883,9 +898,26 @@ bool ts::hls::PlayList::parse(bool strict, Report& report)
                     _alt_playlists.push_back(pl);
                     break;
                 }
+                case Tag::KEY: {
+                    // #EXT-X-KEY:<attribute-list>
+                    const TagAttributes attr(tag_params);
+                    buildURL(seg_global.key, attr.value(u"URI"));
+                    seg_global.key.method = attr.value(u"METHOD");
+                    seg_global.key.format = attr.value(u"KEYFORMAT");
+                    // The IV is specified as "a hexadecimal-sequence".
+                    // In practice, we see a leading "0x" in most playlists.
+                    UString iv(attr.value(u"IV"));
+                    iv.trim();
+                    iv.removePrefix(u"0x", CASE_INSENSITIVE);
+                    if (!iv.hexaDecode(seg_global.key.iv)) {
+                        report.error(u"invalid hexadecimal value '%s' for IV in %s", iv, line);
+                        _valid = false;
+                    }
+                    seg_next.key = seg_global.key;
+                    break;
+                }
                 case Tag::BYTERANGE:
                 case Tag::DISCONTINUITY:
-                case Tag::KEY:
                 case Tag::MAP:
                 case Tag::PROGRAM_DATE_TIME:
                 case Tag::DATERANGE:
@@ -1226,8 +1258,33 @@ ts::UString ts::hls::PlayList::textContent(ts::Report &report) const
         }
 
         // Loop on all media segments.
+        bool previous_encrypted = false;
         for (const auto& seg : _segments) {
             if (!seg.relative_uri.empty()) {
+                // Initial part is key encryption, if any.
+                const bool encrypted = seg.key.isEncrypted();
+                if (encrypted) {
+                    text.format(u"#%s:METHOD=%s", TagNames().name(Tag::KEY), seg.key.method);
+                    if (!seg.key.relative_uri.empty()) {
+                        text.format(u",URI=\"%s\"", seg.key.relative_uri);
+                    }
+                    if (!seg.key.isRawEncryptionKey()) {
+                        text.format(u",KEYFORMAT=\"%s\"", seg.key.format);
+                    }
+                    if (!seg.key.iv.empty()) {
+                        // The IV is specified as "a hexadecimal-sequence".
+                        // In practice, we see a leading "0x" in most playlists.
+                        text.append(u",IV=0x");
+                        text.appendDump(seg.key.iv, UString::COMPACT);
+                    }
+                    text.append(u"\n");
+                }
+                else if (previous_encrypted) {
+                    // Need to reset encryption.
+                    text.format(u"#%s:METHOD=NONE\n", TagNames().name(Tag::KEY));
+                }
+                previous_encrypted = encrypted;
+                // Then, add media segment description.
                 text.format(u"#%s:%d.%03d,%s\n", TagNames().name(Tag::EXTINF), seg.duration.count() / 1000, seg.duration.count() % 1000, seg.title);
                 if (seg.bitrate > 1024) {
                     text.format(u"#%s:%d\n", TagNames().name(Tag::BITRATE), (seg.bitrate / 1024).toInt());

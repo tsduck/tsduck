@@ -13,6 +13,7 @@
 
 #pragma once
 #include "tshlsMediaElement.h"
+#include "tshlsMediaKey.h"
 #include "tsBitRate.h"
 
 namespace ts::hls {
@@ -33,5 +34,6 @@ namespace ts::hls {
         cn::milliseconds duration {};  //!< Segment duration in milliseconds.
         BitRate          bitrate = 0;  //!< Indicative bitrate.
         bool             gap = false;  //!< Media is a "gap", should not be loaded by clients.
+        MediaKey         key {};       //!< Encryption key for the segment.
     };
 }

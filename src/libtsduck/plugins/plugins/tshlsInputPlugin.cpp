@@ -316,35 +316,35 @@ bool ts::hls::InputPlugin::start()
     verbose(u"downloaded %s", _playlist);
 
     // Manage the number of media segments and starting point.
-    size_t segCount = _playlist.segmentCount();
-    if (segCount == 0) {
+    size_t seg_count = _playlist.segmentCount();
+    if (seg_count == 0) {
         error(u"empty HLS media playlist");
         return false;
     }
     else if (_start_segment > 0) {
         // Start index from the start of playlist.
-        if (segCount + 1 < size_t(_start_segment)) {
-            warning(u"playlist has only %d segments, starting at last one", segCount);
-            segCount = 1;
+        if (seg_count + 1 < size_t(_start_segment)) {
+            warning(u"playlist has only %d segments, starting at last one", seg_count);
+            seg_count = 1;
         }
         else {
             // Remaining number of segments to play.
-            segCount = segCount - size_t(_start_segment);
+            seg_count = seg_count - size_t(_start_segment);
         }
     }
     else if (_start_segment < 0) {
         // Start index from the end of playlist.
-        if (segCount < size_t(- _start_segment)) {
-            warning(u"playlist has only %d segments, starting at first one", segCount);
+        if (seg_count < size_t(- _start_segment)) {
+            warning(u"playlist has only %d segments, starting at first one", seg_count);
         }
         else {
             // Remaining number of segments to play.
-            segCount = size_t(- _start_segment);
+            seg_count = size_t(- _start_segment);
         }
     }
 
     // If the start point is not the first segment, then drop unused initial segments.
-    while (_playlist.segmentCount() > segCount) {
+    while (_playlist.segmentCount() > seg_count) {
         _playlist.popFirstSegment();
         debug(u"dropped initial segment, %d remaining segments", _playlist.segmentCount());
     }
@@ -418,6 +418,12 @@ bool ts::hls::InputPlugin::openURL(WebRequest& request)
     hls::MediaSegment seg;
     _playlist.popFirstSegment(seg);
     _segment_count++;
+
+    // Encrypted HLS is not supported yet.
+    if (seg.key.isEncrypted()) {
+        error(u"encrypted HLS is not supported yet");
+        return false;
+    }
 
     // Open the segment.
     debug(u"downloading segment %s", seg.urlString());

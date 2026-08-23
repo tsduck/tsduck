@@ -23,6 +23,7 @@ class HLSTest: public tsunit::Test
     TSUNIT_DECLARE_TEST(MasterPlaylist);
     TSUNIT_DECLARE_TEST(MasterPlaylistWithAlternate);
     TSUNIT_DECLARE_TEST(MediaPlaylist);
+    TSUNIT_DECLARE_TEST(MediaPlaylistWithEncryption);
     TSUNIT_DECLARE_TEST(BuildMasterPlaylist);
     TSUNIT_DECLARE_TEST(BuildMediaPlaylist);
 
@@ -229,6 +230,90 @@ TSUNIT_DEFINE_TEST(MediaPlaylist)
     TSUNIT_EQUAL(2060 * 1024, seg.bitrate.toInt());
     TSUNIT_EQUAL(6000, seg.duration.count());
     TSUNIT_ASSERT(!seg.gap);
+}
+
+TSUNIT_DEFINE_TEST(MediaPlaylistWithEncryption)
+{
+    static const ts::UChar* const in_content =
+        u"#EXTM3U\n"
+        u"#EXT-X-VERSION:5\n"
+        u"#EXT-X-MEDIA-SEQUENCE:20\n"
+        u"#EXT-X-KEY:METHOD=AES-128,URI=\"https://foo.net/key1.key\",IV=0x0000000000000000000000000000abcd\n"
+        u"#EXTINF:5,\n"
+        u"https://foo.net/seg1.ts\n"
+        u"#EXT-X-KEY:METHOD=NONE\n"
+        u"#EXTINF:5,\n"
+        u"https://foo.net/seg2.ts\n"
+        u"#EXTINF:5,\n"
+        u"https://foo.net/seg3.ts\n"
+        u"#EXT-X-KEY:METHOD=AES-128,KEYFORMAT=identity,URI=\"https://foo.net/key4.key\",IV=0x00000000000000000000000000001234\n"
+        u"#EXTINF:5,\n"
+        u"https://foo.net/seg4.ts\n";
+
+    static const ts::UChar* const out_content =
+        u"#EXTM3U\n"
+        u"#EXT-X-VERSION:5\n"
+        u"#EXT-X-TARGETDURATION:0\n"
+        u"#EXT-X-MEDIA-SEQUENCE:20\n"
+        u"#EXT-X-KEY:METHOD=AES-128,URI=\"https://foo.net/key1.key\",IV=0x0000000000000000000000000000ABCD\n"
+        u"#EXTINF:5.000,\n"
+        u"https://foo.net/seg1.ts\n"
+        u"#EXT-X-KEY:METHOD=NONE\n"
+        u"#EXTINF:5.000,\n"
+        u"https://foo.net/seg2.ts\n"
+        u"#EXTINF:5.000,\n"
+        u"https://foo.net/seg3.ts\n"
+        u"#EXT-X-KEY:METHOD=AES-128,URI=\"https://foo.net/key4.key\",IV=0x00000000000000000000000000001234\n"
+        u"#EXTINF:5.000,\n"
+        u"https://foo.net/seg4.ts\n";
+
+    ts::hls::PlayList pl;
+    TSUNIT_ASSERT(pl.loadText(in_content));
+    TSUNIT_ASSERT(pl.isValid());
+    TSUNIT_EQUAL(ts::hls::PlayListType::LIVE, pl.type());
+    TSUNIT_EQUAL(5, pl.version());
+    TSUNIT_EQUAL(4, pl.segmentCount());
+    TSUNIT_EQUAL(0, pl.playListCount());
+    TSUNIT_EQUAL(0, pl.altPlayListCount());
+    TSUNIT_EQUAL(20, pl.mediaSequence());
+
+    TSUNIT_EQUAL(u"https://foo.net/seg1.ts", pl.segment(0).relative_uri);
+    TSUNIT_EQUAL(u"", pl.segment(0).title);
+    TSUNIT_EQUAL(5000, pl.segment(0).duration.count());
+    TSUNIT_ASSERT(!pl.segment(0).gap);
+    TSUNIT_ASSERT(pl.segment(0).key.isEncrypted());
+    TSUNIT_ASSERT(pl.segment(0).key.isRawEncryptionKey());
+    TSUNIT_EQUAL(u"AES-128", pl.segment(0).key.method);
+    TSUNIT_EQUAL(u"https://foo.net/key1.key", pl.segment(0).key.url.toString());
+    TSUNIT_EQUAL(u"https://foo.net/key1.key", pl.segment(0).key.relative_uri);
+    TSUNIT_EQUAL(u"0000000000000000000000000000ABCD", ts::UString::Dump(pl.segment(0).key.iv, ts::UString::COMPACT));
+
+    TSUNIT_EQUAL(u"https://foo.net/seg2.ts", pl.segment(1).relative_uri);
+    TSUNIT_EQUAL(u"", pl.segment(1).title);
+    TSUNIT_EQUAL(5000, pl.segment(1).duration.count());
+    TSUNIT_ASSERT(!pl.segment(1).gap);
+    TSUNIT_ASSERT(!pl.segment(1).key.isEncrypted());
+    TSUNIT_ASSERT(pl.segment(1).key.iv.empty());
+
+    TSUNIT_EQUAL(u"https://foo.net/seg3.ts", pl.segment(2).relative_uri);
+    TSUNIT_EQUAL(u"", pl.segment(2).title);
+    TSUNIT_EQUAL(5000, pl.segment(2).duration.count());
+    TSUNIT_ASSERT(!pl.segment(2).gap);
+    TSUNIT_ASSERT(!pl.segment(2).key.isEncrypted());
+    TSUNIT_ASSERT(pl.segment(2).key.iv.empty());
+
+    TSUNIT_EQUAL(u"https://foo.net/seg4.ts", pl.segment(3).relative_uri);
+    TSUNIT_EQUAL(u"", pl.segment(3).title);
+    TSUNIT_EQUAL(5000, pl.segment(3).duration.count());
+    TSUNIT_ASSERT(!pl.segment(3).gap);
+    TSUNIT_ASSERT(pl.segment(3).key.isEncrypted());
+    TSUNIT_ASSERT(pl.segment(3).key.isRawEncryptionKey());
+    TSUNIT_EQUAL(u"AES-128", pl.segment(3).key.method);
+    TSUNIT_EQUAL(u"https://foo.net/key4.key", pl.segment(3).key.url.toString());
+    TSUNIT_EQUAL(u"https://foo.net/key4.key", pl.segment(3).key.relative_uri);
+    TSUNIT_EQUAL(u"00000000000000000000000000001234", ts::UString::Dump(pl.segment(3).key.iv, ts::UString::COMPACT));
+
+    TSUNIT_EQUAL(out_content, pl.textContent());
 }
 
 TSUNIT_DEFINE_TEST(BuildMasterPlaylist)
