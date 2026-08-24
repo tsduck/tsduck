@@ -34,7 +34,7 @@ namespace ts {
     //! ----------------
     //! There are two distinct reactive I/O models, with different implementations:
     //!
-    //! - Non-blocking I/O (UNIX systems)
+    //! - Immediate I/O (UNIX systems)
     //!   - kqueue (macOS, FreeBSD)
     //!   - epoll (Linux)
     //! - Asynchronous I/O (Windows)
@@ -43,11 +43,11 @@ namespace ts {
     //! See the documentation of class NonBlockingDevice for a detailed explanation of the differences.
     //!
     //! The class Reactor encapsulates the various implementations and proposes a portable interface.
-    //! However, while it is possible to unify the various types of non-blocking I/O (kqueue and epoll)
-    //! in one single interface, it is impossible to unify non-blocking I/O and asynchronous I/O into
+    //! However, while it is possible to unify the various types of immediate I/O (kqueue and epoll)
+    //! in one single interface, it is impossible to unify immediate I/O and asynchronous I/O into
     //! the same interface. The way they shall be used, as well as the way the data buffers are managed,
     //! are too different. Therefore, the class Reactor exposes interfaces for both models. The application
-    //! shall check the current I/O model using the "consteval" static methods UseNonBlockingIO() and
+    //! shall check the current I/O model using the "consteval" static methods UseImmediateIO() and
     //! UseAsynchronousIO() and then adopt the correct strategy.
     //!
     //! In practice, the I/O multiplexing features of the class Reactor are not used by applications.
@@ -318,12 +318,12 @@ namespace ts {
         bool deleteAsynchronousIO(EventId id, bool silent = false);
 
         //--------------------------------------------------------------------
-        // NON-BLOCKING I/O EVENTS
+        // IMMEDIATE I/O EVENTS
         //--------------------------------------------------------------------
 
         //!
         //! Add in the reactor a notification of read-ready on a system file descriptor.
-        //! This method is normally never used in applications. It is used only by "reactive I/O classes", in the non-blocking I/O model.
+        //! This method is normally never used in applications. It is used only by "reactive I/O classes", in the immediate I/O model.
         //! @param [in] handler Address of a handler to call when the operation is ready. Return an error if set as @c nullptr.
         //! @param [in] sock A system-specific file descriptor or handle. This can be a socket or something else.
         //! @return The identity of the user event. Invalid in case of error.
@@ -332,7 +332,7 @@ namespace ts {
 
         //!
         //! Delete a notification of read-ready or read-completion.
-        //! This method is normally never used in applications. It is used only by "reactive I/O classes", in the non-blocking I/O model.
+        //! This method is normally never used in applications. It is used only by "reactive I/O classes", in the immediate I/O model.
         //! @param [in] id Event to delete.
         //! @param [in] silent If true, do not report errors through the logger.
         //! @return True on success, false on error.
@@ -341,7 +341,7 @@ namespace ts {
 
         //!
         //! Add in the reactor a notification of write-ready or read-completion on a system file descriptor.
-        //! This method is normally never used in applications. It is used only by "reactive I/O classes", in the non-blocking I/O model.
+        //! This method is normally never used in applications. It is used only by "reactive I/O classes", in the immediate I/O model.
         //! @param [in] handler Address of a handler to call when the operation is ready. Return an error if set as @c nullptr.
         //! @param [in] sock A system-specific file descriptor or handle. This can be a socket or something else.
         //! @return The identity of the user event. Invalid in case of error.
@@ -350,7 +350,7 @@ namespace ts {
 
         //!
         //! Delete a notification of write-ready or write-completion.
-        //! This method is normally never used in applications. It is used only by "reactive I/O classes", in the non-blocking I/O model.
+        //! This method is normally never used in applications. It is used only by "reactive I/O classes", in the immediate I/O model.
         //! @param [in] id Event to delete.
         //! @param [in] silent If true, do not report errors through the logger.
         //! @return True on success, false on error.
@@ -379,7 +379,7 @@ namespace ts {
     private:
         // All dirty system-specific stuff is moved into a Guts internal structure.
         // Basic common error checking is done at Reactor level. The rest is done in Guts.
-        // The virtual functions which only apply to non-blocking or asynchronous I/O have
+        // The virtual functions which only apply to immediate or asynchronous I/O have
         // a default implementation which return an error. An implementation of Reactor only
         // need to implement the supported model.
         class TSCOREDLL GutsBase

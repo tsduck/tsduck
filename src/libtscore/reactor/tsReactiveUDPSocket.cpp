@@ -104,14 +104,14 @@ bool ts::ReactiveUDPSocket::startSend(ReactiveUDPHandlerInterface* handler, cons
     iosb->react_data = req;
 
     // Pending send request processing:
-    // - With non-blocking I/O, we enqueue the request and it will be processed later in handleWriteReady().
+    // - With immediate I/O, we enqueue the request and it will be processed later in handleWriteReady().
     //   We shall not try to start it. If write suddenly becomes possible, we could successfully send a
     //   message while others are in the pending send queue. In case, messages would be sent in the wrong order.
     // - With asynchronous I/O, we need to start the send operation now. All send operations in the pending
     //   send queue are in progress or completed. Don't test if the operation completed, this will be done
     //   in handleAsynchronousIO().
 
-    if constexpr (ReactorSupport::UseNonBlockingIO()) {
+    if constexpr (ReactorSupport::UseImmediateIO()) {
         // Enqueue the send request. Will be sent when write is possible.
         _pending_send.push_back(iosb);
         // Make sure to be notified when a send operation is possible.
@@ -133,7 +133,7 @@ bool ts::ReactiveUDPSocket::startSend(ReactiveUDPHandlerInterface* handler, cons
 
 //----------------------------------------------------------------------------
 // Called in the Reactor context when a send operation is possible.
-// Called only in the non-blocking I/O model.
+// Called only in the immediate I/O model.
 //----------------------------------------------------------------------------
 
 void ts::ReactiveUDPSocket::handleWriteReady(Reactor& reactor, EventId id, int error_code)
@@ -258,8 +258,8 @@ bool ts::ReactiveUDPSocket::startReceive(ReactiveUDPHandlerInterface* handler, s
         return tryReceive(_pending_receive.get());
     }
 
-    if constexpr (ReactorSupport::UseNonBlockingIO()) {
-        // Non-blocking I/O model: Get notified when a reception operation is possible, if not already done.
+    if constexpr (ReactorSupport::UseImmediateIO()) {
+        // Immediate I/O model: Get notified when a reception operation is possible, if not already done.
         return activateReadReady();
     }
 }
@@ -267,7 +267,7 @@ bool ts::ReactiveUDPSocket::startReceive(ReactiveUDPHandlerInterface* handler, s
 
 //----------------------------------------------------------------------------
 // Called when a receive operation is possible.
-// Called only in the non-blocking I/O model.
+// Called only in the immediate I/O model.
 //----------------------------------------------------------------------------
 
 void ts::ReactiveUDPSocket::handleReadReady(Reactor& reactor, EventId id, int error_code)
@@ -391,7 +391,7 @@ void ts::ReactiveUDPSocket::cancelSendReceive(bool silent)
     deactivateReadReady(silent);
     deactivateWriteReady(silent);
 
-    if constexpr (ReactorSupport::UseNonBlockingIO()) {
+    if constexpr (ReactorSupport::UseImmediateIO()) {
         // Discard pending send requests, they are not started yet.
         _pending_send.clear();
     }

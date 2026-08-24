@@ -64,7 +64,7 @@ namespace ts {
 
         //!
         //! Handle a read-ready event in a Reactor.
-        //! This handler is only invoked in the non-blocking I/O model.
+        //! This handler is only invoked in the immediate I/O model.
         //! @param [in,out] reactor Reactor into which the handler is invoked.
         //! @param [in] id Id of the event which was signaled.
         //! @param [in] error_code System-specific error code, zero on success, SYS_ERROR in case of unknown error.
@@ -73,7 +73,7 @@ namespace ts {
 
         //!
         //! Handle a write-ready event in a Reactor.
-        //! This handler is only invoked in the non-blocking I/O model.
+        //! This handler is only invoked in the immediate I/O model.
         //! @param [in,out] reactor Reactor into which the handler is invoked.
         //! @param [in] id Id of the event which was signaled.
         //! @param [in] error_code System-specific error code, zero on success, SYS_ERROR in case of unknown error.

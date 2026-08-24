@@ -49,7 +49,7 @@ namespace ts {
 
         //!
         //! Queues of I/O requests are queues of shared_ptr to IOSB.
-        //! This is typically used with non-blocking I/O where we must process requests in order.
+        //! This is typically used with immediate I/O where we must process requests in order.
         //! Send and receive requests are structures which are stored in the react_data of the IOSB.
         //!
         using IOQueue = std::list<std::shared_ptr<IOSB>>;
@@ -82,25 +82,25 @@ namespace ts {
         void cancelQueue(IOQueue& inqueue, IOQueue& outqueue);
 
         //!
-        //! Activate read-ready notification for non-blocking I/O.
+        //! Activate read-ready notification for immediate I/O.
         //! @return True on success, false on error.
         //!
         bool activateReadReady();
 
         //!
-        //! Deactivate read-ready notification for non-blocking I/O.
+        //! Deactivate read-ready notification for immediate I/O.
         //! @param [in] silent If true, do not report errors through the logger.
         //!
         void deactivateReadReady(bool silent);
 
         //!
-        //! Activate write-ready notification for non-blocking I/O.
+        //! Activate write-ready notification for immediate I/O.
         //! @return True on success, false on error.
         //!
         bool activateWriteReady();
 
         //!
-        //! Deactivate write-ready notification for non-blocking I/O.
+        //! Deactivate write-ready notification for immediate I/O.
         //! @param [in] silent If true, do not report errors through the logger.
         //!
         void deactivateWriteReady(bool silent);
@@ -134,15 +134,15 @@ namespace ts {
         bool cancelAndWaitAsynchronousIO(NonBlockingDevice::IOSB& iosb, bool silent);
 
         //!
-        //! Deactivate all registrations for non-blocking and asynchronous I/O.
+        //! Deactivate all registrations for immediate and asynchronous I/O.
         //! @param [in] silent If true, do not report errors through the logger.
         //!
         void deactivateAll(bool silent);
 
     private:
         NonBlockingDevice& _device;
-        EventId _write_ready_id {};     // Reactor id for write-ready (non-blocking I/O).
-        EventId _read_ready_id {};      // Reactor id for read-ready (non-blocking I/O).
+        EventId _write_ready_id {};     // Reactor id for write-ready (immediate I/O).
+        EventId _read_ready_id {};      // Reactor id for read-ready (immediate I/O).
         EventId _read_async_io_id {};   // Reactor id for I/O completion (asynchronous I/O), read (and write if same handle).
         EventId _write_async_io_id {};  // Reactor id for I/O completion (asynchronous I/O), write (if not the same handle).
     };

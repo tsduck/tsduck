@@ -103,7 +103,7 @@ namespace ts {
 
         //!
         //! Update the status of an asynchronous connect().
-        //! - With non-blocking I/O, @a error_code shall be the error from the write-ready notification.
+        //! - With immediate I/O, @a error_code shall be the error from the write-ready notification.
         //! - With asynchronous I/O, @a iosb is used to complete the socket state.
         //! @param [in,out] iosb Address of the IOSB structure which was used when connect() was called.
         //! @param [in] error_code Error code in the context of the connection.

@@ -10,9 +10,9 @@
 === The Reactor pattern and event dispatching
 
 Some parts of TSDuck are based on a reactor pattern. The TSCore library provides
-an implementation of event dispatching based on a `Reactor` class. Because this
-topic is complex and not always well-understood, it deserves some specific
-explanations first.
+an implementation of event dispatching based on a "Reactor" class.
+Because this topic is complex and not always well-understood, it deserves some
+specific explanations first.
 
 ==== Multithreading vs. event dispatching
 
@@ -34,7 +34,8 @@ need to multiplex independent I/O operations at the highest possible rate.
 An I/O-bound application (e.g. a server which processes simultaneous client
 connections) may use two possible types of implementation: multithreading and
 event dispatching.  These are two distinct paradigms using different programming
-techniques. They usually directly influence the architecture of the application.
+techniques. Usually, the choice of paradigm directly influences the architecture
+of the application.
 
 ===== Multithreading architecture
 
@@ -68,7 +69,7 @@ In an event-dispatching application, there is only one thread of execution. That
 thread starts all I/O operations but never waits for them to complete. Instead,
 after starting one I/O for a client connection, for instance, it does some
 processing for another connection, until that client connection starts another
-I/O, etc. The core model is "non-blocking I/O" or "asynchronous I/O" (we will
+I/O, etc. The core model is "immediate I/O" or "asynchronous I/O" (we will
 see the difference between the two later).  The completion of each I/O is
 notified as an event. Processing that event means continuing the activity for
 the corresponding client connection, until it starts another I/O.
@@ -101,7 +102,8 @@ activities shall not exceed the capability of one CPU.
 The main practical limitation of reactors is the necessity to control absolutely
 all types of input/output so that no code suspends the execution of the reactor
 thread during an I/O. This means that third-party libraries which perform I/O
-under the hood cannot be used.
+under the hood cannot be used because calling a function of these libraries may
+block the reactor thread.
 
 Some libraries, such as OpenSSL may have two modes: a simple one using linear
 programming and blocking I/O and a much more complex one where the library only
@@ -111,22 +113,21 @@ protocols, respectively) only have a linear API using blocking I/O. These
 libraries cannot be used in an application using an event dispatching
 architecture.
 
-The second practical limitation is reactors is the absence of standard API and
-portability.  The typical example of reactor-based or event-driven application
-is a graphical user interface (GUI). A GUI is the source of multiple events
-(mouse, keyboard, data sources) which can occur in any order, at any
-time. Absolutely all GUI systems are based on the principle of event
-dispatching: Microsoft Windows, GTK, Qt, X-Window, etc. However, each
-environment defines its own API for event dispatching. They use different and
-incompatible APIs. To add to the confusion, other non-GUI event dispatching
-frameworks exist with different APIs, from the legacy
-https://en.wikipedia.org/wiki/Adaptive_Communication_Environment[Adaptive
+The second practical limitation of reactors is the absence of standard API and
+portability. The typical example of reactor-based or event-driven application is
+a graphical user interface (GUI). A GUI is the source of multiple events (mouse,
+keyboard, data sources) which can occur in any order, at any time. All GUI
+systems are based on the principle of event dispatching: Microsoft Windows, GTK,
+Qt, X-Window, etc. However, each environment defines its own API for event
+dispatching. They use different and incompatible APIs. To add to the confusion,
+other non-GUI event dispatching frameworks exist with different APIs, from the
+legacy https://en.wikipedia.org/wiki/Adaptive_Communication_Environment[Adaptive
 Communication Environment (ACE)] to the modern https://libevent.org/[libevent].
 
 Because of the lack of a common unique, or universally accepted, standard API,
 it is not possible to develop portable applications. It is not possible to
 develop libraries which are based on a reactor API and smoothly integrate them
-in all event dispatching application. As an example, libsrt proposes a
+in all event dispatching applications. As an example, libsrt proposes a
 "non-blocking I/O" mode but it is based on a specific libsrt API and it can be
 used only in applications which use libsrt as their reactor.
 
@@ -171,26 +172,26 @@ a|[.compact-list]
 
 |===
 
-==== Non-blocking I/O and asynchronous I/O
+==== Immediate I/O and asynchronous I/O
 
 Traditional I/Os suspend the execution of the calling thread until the I/O
 operation completes. We call this "blocking I/O". In an event-dispatching
 architecture, no I/O should block the execution thread. However, there are
-several ways to perform I/O without blocking: non-blocking I/O and asynchronous
+several ways to perform I/O without blocking: immediate I/O and asynchronous
 I/O.
 
 These methods are different and implemented on different operating systems: UNIX
-systems uses non-blocking I/O and Windows uses asynchronous I/O. An application
-doesn't have the choice between non-blocking I/O and asynchronous I/O. This is
+systems use immediate I/O and Windows uses asynchronous I/O. An application
+doesn't have the choice between immediate I/O and asynchronous I/O. This is
 imposed by the operating system.
 
 Because the two models impose different data management strategies on the
 application, it is particularly challenging to define a portable Reactor API.
 
-===== Non-blocking I/O (UNIX)
+===== Immediate I/O (UNIX)
 
-A "non-blocking I/O" is immediate. Either it immediately completes or
-immediately fails but it never blocks. When a non-blocking I/O fails because it
+An "immediate I/O" is ... immediate. Either it immediately completes or
+immediately fails but it never blocks. When an immediate I/O fails because it
 is not possible to immediately complete (e.g. because no incoming data is
 available), the process can be notified by the kernel when an I/O becomes
 possible. There are two possible I/O events: "read-ready" and "write-ready",
@@ -199,13 +200,21 @@ when a read or write operation becomes possible. Note that "ready" does not mean
 the read operation. It will likely immediately succeed but it may also fail
 again (spurious read-ready event).
 
-There is no specific constraint on the user data buffers. After an I/O call,
-whether it fails or succeeds, the user buffers are never used outside these I/O
-calls and the buffers can be disposed at any time. A device or socket can be
-closed at any time without impact on the data buffers.
+NOTE: The documentation of {unix} uses the term "non-blocking" for immediate I/O.
+In a pure UNIX context, this is appropriate because those I/Os don't block.
+However, in a wider context, there are different types of non-blocking I/O
+and the UNIX immediate I/O model is only one of them. In the TSDuck documentation,
+to avoid confusion between all types of non-blocking I/O, we use the term
+"immediate I/O" to refer to the UNIX model of non-blocking I/O.
+
+With immediate I/O, there is no specific constraint on the user data
+buffers. After an I/O call, whether it fails or succeeds, the user buffers are
+never used outside these I/O calls and the buffers can be disposed at any
+time. A device or socket can be closed at any time without impact on the data
+buffers.
 
 To make portability more difficult, distinct flavors of UNIX systems use
-different incompatible system calls and kernel mechanisms to handle non-blocking
+different incompatible system calls and kernel mechanisms to handle immediate
 I/O event notification.
 
 * Traditionally, all UNIX systems provide the `select()` and `poll()`
@@ -216,34 +225,34 @@ I/O event notification.
   queue).
 
 * Linux uses a mechanism named "epoll" (event poll). There is also a more recent
-  mechanism named "io_ring". It is more complex and particularly suited for
-  extremely large servers. We won't use it here.
+  mechanism named "io_uring". It is more complex and particularly suited for
+  extremely large servers. Currently, TSDuck uses epoll, not io_uring.
 
-There are some limitations to the UNIX non-blocking model:
+There are some limitations to the UNIX immediate I/O model:
 
 * The "immediate" success of an I/O is a flawed concept. It works well on
-  network socket: is there any incoming data already present in the buffer, or
+  network socket: is there any data available in the incoming buffer, or
   is there any free space in the outgoing buffer? Specifically, immediate input
   works only in a push model, e.g. when a remote peer sends data and these data
   are pushed into our reception buffer. However, it does not apply in a pull
   model, when the application requests data to be read from a disk. In that
-  case, the "non-blocking I/O" blocks. The blocking time is limited thanks to
+  case, the "immediate I/O" blocks. The blocking time is limited thanks to
   the speed of disks but it may have an impact on heavily loaded reactors.
 
 * Some operations are lengthy by design. The typical example is a TCP
   `connect()` operation. It requires to wait for a response from a remote
   server. This is much longer and more unpredictable than a disk I/O and it is
-  impossible to make it blocking, pretending it is not. In practice, a
-  non-blocking TCP `connect()` is asynchronous. It initially fails with a "try
-  again later" status, just like any other non-blocking I/O. However, the actual
-  connect operation continues in the background, in the kernel. When the
-  connection is completed, the event "write-ready" is notified by epoll or
-  kqueue.
+  impossible to make it blocking, pretending it is not. In practice, an
+  immediate TCP `connect()` is asynchronous. It always initially fails with a
+  "try again later" status, just like any other immediate I/O. However, unlike
+  other failed immediate I/Os, the actual connect operation continues in the
+  background, in the kernel. When the connection is completed, the event
+  "write-ready" is notified by epoll or kqueue.
 
 * There are some cases of non-portable operations which make the development
-  more complex. We have seen that some I/O are blocking by design but
-  sufficiently short to pretend they are not, with limited impact when the
-  number of events it not too high. On macOS and BSD systems, this is
+  more complex. With disk I/O, we have seen that some I/O are blocking by design
+  but sufficiently short to pretend that they are not, with limited impact when
+  the number of events is not too high. On macOS and BSD systems, this is
   transparent. The same code can be used for network sockets and files, in the
   same reactor. On Linux, on the other hand, it fails. Regular files and a few
   other classes of devices cannot be set in non-blocking mode (in practice when
@@ -276,14 +285,14 @@ reused by some other part of the application and some precious data are stored
 there; then the asynchronous I/O continues and incoming data erase the reused
 buffer.
 
-Therefore, an application must be very careful about data buffers. They must
-never be freed or reused before the confirmation of the I/O completion. This can
-be challenging in error paths, when a device must be prematurely closed. The
-application shall not simply close the device and forget about it, as it would
-be with classical blocking I/O. The application shall explicitely cancel all
-pending I/Os, then wait for the cancelation to complete (i.e. the asynchronous
-I/O completes with a "canceled" status), then close the device, and sometimes
-wait for the completion of the close operation.
+Therefore, an application must be very careful about data buffers. These buffers
+must never be freed or reused before the confirmation of the I/O
+completion. This can be challenging in error paths, when a device must be
+prematurely closed. The application shall not simply close the device and forget
+about it, as it would be with classical blocking I/O. The application shall
+explicitely cancel all pending I/Os, then wait for the cancelation to complete
+(i.e. the asynchronous I/O completes with a "canceled" status), then close the
+device, and sometimes wait for the completion of the close operation.
 
 The Windows asynchronous I/O model has its limitations too:
 
@@ -319,18 +328,18 @@ reasons for this, mostly from the `tsp` requirements:
 
 * CPU load balancing between plugins. Some plugins can be CPU-intensive, such as
   encryption plugins. We need to leverage multi-core architectures. From the
-  beginning, each plugin is executed in a dedicated thread.
+  beginning, each plugin was executed in a dedicated thread.
 
-* Execution isolation between `tsp` plugins. Note that this is "execution
-  isolation" only. This means avoiding that a plugin using blocking-I/O blocks
-  other plugins (there is no memory or security isolation, as usual in
-  multithreaded environments).
+* Execution isolation between `tsp` plugins. This means avoiding that a plugin
+  using blocking-I/O blocks other plugins. Note that this is "execution
+  isolation" only, there is no memory or security isolation, as usual in
+  multithreaded environments.
 
 * Multiple third-party libraries which encapsulate blocking-I/O and cannot be
   used in an event dispatcher (SRT and RIST for instance).
 
 * Multiple operating systems support. Windows, Linux, macOS, BSD have very
-  different ways of handling asynchronous I/O in an efficient way. No common
+  different ways of handling non-blocking I/Os in an efficient way. No common
   event dispatcher API was available.
 
 * TSDuck has always been designed as a flexible framework for debug and
@@ -347,7 +356,7 @@ the upstream transport stream and TCP or UDP incoming data. Their original
 implementation included an additional thread to receive data from the network or
 to poll data files. They would benefit from an event dispatching architecture.
 
-Therefore, TSDuck is moving to a hybrid architecture, which mix multithreading
+Therefore, TSDuck is moving to a hybrid architecture, which mixes multithreading
 and event dispatching.
 
 At high level, there are loosely coupled blocks, typically the plugins. The
@@ -359,8 +368,9 @@ CPU-bound plugin (e.g. encryption or decryption) could slow the entire system
 down.
 
 At local level, inside a specific tool or plugin, when appropriate, a reactor
-can be used to multiplex and dispatch events inside one thread. This
-architecture is not uncommon and is sometimes named "multi-reactor
+can be used to multiplex and dispatch events inside one single thread.
+
+This hybrid architecture is not uncommon and is sometimes named "multi-reactor
 pattern". Most of the time, it is used to balance a reactive application over
 multiple CPU cores: a thread executes on each CPU core and manages its own
 reactor and event dispatcher.
@@ -371,25 +381,24 @@ For this reason, the TSCore library has been extended in two ways:
 
 * A `Reactor` class and a set of associated reactive classes were added. They
   implement a core event dispatching mechanism with a portable API over Linux
-  (epoll), macOS and BSD systems (kqueue), and Windows (IOCP). They also hide
-  the differences between non-blocking I/O (UNIX) and asynchronous I/O
+  (epoll), macOS and BSD systems (kqueue), and Windows (IOCP). These classes
+  also hide the differences between immediate I/O (UNIX) and asynchronous I/O
   (Windows).
 
 NOTE: For convenience, and unless specified otherwise, we will use the term
 "non-blocking I/O" in a general sense of I/Os which don't block the execution
 thread and are synchronized in a reactor. This indifferently includes the two
-principles of UNIX non-blocking I/O and Windows asynchronous I/O.
+principles of UNIX immediate I/O and Windows asynchronous I/O.
 
 ==== Reactor and reactive classes
 
 In the TSCore library, the core of the event dispatching features is class
 classref:Reactor[]. An instance of this class is an event dispatcher. In the
 case of the TSDuck hybrid architecture, there is one `Reactor` instance per
-thread with an an event dispatching architecture.
+thread with an event dispatching architecture.
 
-The typical scenario is the following:
+The typical scenario of event dispatching is the following:
 
-[.compact-list]
 * Instantiate and open a `Reactor`.
 * Define and instantiate application classes which will handle events from the reactor.
   The event notification is done through "handler interface classes" that the application
@@ -430,10 +439,11 @@ The `Reactor` and the associated reactive classes handle the following features:
 ** TCP clients and servers.
 ** Encrypted TLS clients and servers.
 ** Binary files.
-** Pipes to and from process which are created by classref:ForkPipe[].
+** Pipes to and from processes which are created by classref:ForkPipe[].
 
 * I/O cancellation. It is possible the cancel an I/O in progress. The event
-  handler for that I/O will be called with a "canceled" status.
+  handler for the completion of that I/O will be called with a "canceled"
+  status.
 
 * Data presentation wrappers over asynchronous I/O channels:
 ** Line-based text.
@@ -456,34 +466,157 @@ Timers, user-events and process terminations are directly handled in class
 
 The class `Reactor` encapsulates the various implementations of kernel event
 dispatchers and proposes a portable interface. However, while it is possible to
-unify the various types of non-blocking I/O (kqueue and epoll) in one single
-interface, it is impossible to unify non-blocking I/O and asynchronous I/O into
-the same interface. The way they shall be used, as well as the way the data
-buffers are managed, are too different. Therefore, class Reactor exposes
+unify the various types of immediate I/O (kqueue and epoll) in one single
+interface, it is impossible to unify immediate I/O and asynchronous I/O into the
+same interface. The way they shall be used, as well as the way the data buffers
+are managed, are too different. Therefore, the class `Reactor` exposes
 interfaces for both models. The application shall check the current I/O model
-using the `consteval` static methods `UseNonBlockingIO()` and
-`UseAsynchronousIO()` and then adopt the correct strategy.
+using the `consteval` static methods `UseImmediateIO()` and
+`UseAsynchronousIO()` in class `ReactorSupport` and then adopt the correct
+strategy.
 
-In practice, the I/O multiplexing features of class `Reactor` are not used by
-applications. They are used in a few specialized "reactive I/O" classes such as
-classref:ReactiveUDPSocket[] or classref:ReactiveTCPConnection[]. These classes
-are implemented on top of classref:Reactor[] and have fully portable and
-homogeneous interfaces.
+In practice, because of this complexity, the I/O multiplexing features of class
+`Reactor` are not used by applications. They are used in a few specialized
+"reactive I/O" classes such as classref:ReactiveUDPSocket[] or
+classref:ReactiveTCPConnection[]. These classes are implemented on top of
+classref:Reactor[] and have fully portable and homogeneous interfaces where the
+differences between immediate I/O and synchronous I/O are hidden.
 
 The following UML-like class diagram summarizes the relationships between the
-I/O classes, classref:Reactor[] and the reactive classes.
+I/O classes, the `Reactor` class, and the reactive classes.
 
 .Reactor class diagram
 image::reactor-class-diagram.png[align="center",alt="reactor class diagram"]
 
-To be completed.
+===== Standard I/O classes
+
+On the left side of the diagram, the hierarchy of subclasses of
+classref:NonBlockingDevice[] contains all standard I/O classes.
+
+The name `NonBlockingDevice` means a device with the potential of being used in
+non-blocking mode. By default, instances of these classes work in blocking mode
+and are suitable for use in linear programming. Applications can use them directly.
+
+The three main types of I/O classes are binary files, pipes (to or from a forked
+process), and network sockets.
+
+Files and pipes have a subclass for transport streams each.
+
+TCP sockets, server and client connection, have a TLS subclass each, for
+encrypted servers and connections.
+
+Files, pipes, and TCP connections expose the interface
+classref:StreamInterface[].  This interface declares methods such as
+`writeStream()`, `readStream()`, and `endOfStream()` which can be indifferently
+used of files, pipes, and TCP connections.
+
+Any class which exposes classref:StreamInterface[] can be used by
+data-presentation classes such as classref:TextStream[] or classref:TLVStream[],
+to read and write text lines or TLV (tag, length, value) messages. Thus, it is
+possible to indifferently exchange these data formats over files, pipes, TCP or
+TLS connections.
+
+===== Reactive I/O classes
+
+On the right side of the Reactor class diagram, the hierarchy of subclasses of
+classref:ReactiveBase[] contains all "reactive classes". Each instance of a
+reactive class is attached to an instance of classref:Reactor[]. The same
+instance of classref:Reactor[] dispatches events for all reactive classes which
+use it.
+
+An instance of a reactive class does not implement I/O. It uses an associated
+instance of a standard I/O class.  The reactive class automatically sets the
+standard I/O class in non-blocking mode. The reactive class starts the I/O and
+uses the Reactor to synchronize on the I/O completion. When an I/O is completed,
+the reactive class calls a handler in a reactive interface.
+
+The Reactor class diagram shows which level of reactive class uses which level
+of standard I/O class. It is important to understand that there is only one
+instance of a standard I/O class per instance of reactive class. For instance,
+an instance of classref:ReactiveTCPConnection[] is associated to one instance of
+classref:TCPConnection[]. The superclass classref:ReactiveStream[] uses the
+superclass classref:StreamInterface[] and the superclass
+classref:ReactiveDevice[] uses the superclass classref:NonBlockingDevice[], but
+all these superclasses are implemented in the same two instances of
+classref:ReactiveTCPConnection[] and classref:TCPConnection[].
+
+The reactive handler interfaces are implemented by the application-defined
+classes.  When an application starts a non-blocking I/O, it specifies the
+handler which must be called upon completion. This is the address of an instance
+of an application class which implements the required handler.
+
+The following diagram summarizes all reactive handler interfaces, with their
+methods, and which reactive class calls them.
 
 .Reactive interfaces
 image::reactive-interfaces.png[align="center",alt="reactive interfaces"]
 
-To be completed.
+The application-defined classes need to implement the required handler
+interfaces, depending on which reactive class they use.
+
+The interface classref:ReactorHandlerInterface[] is directly called by the
+`Reactor`. The application may use it for timers, process completions, or user
+events.  Its methods `handleReadReady()`, `handleWriteReady()`, and
+`handleAsynchronousIO()` are used only inside the reactive I/O classes and are
+normally never used by an application.
+
+As a final note, the class classref:ReactiveServer[] implements a
+general-purpose TCP server in a `Reactor` environment. It is suitable to
+implement all kinds of servers, including SSL/TLS servers.  An instance of
+classref:ReactiveServer[] automatically creates application-defined session
+objects when incoming clients connect and automatically deletes the session
+object when they disconnect. The session objects are created by an instance of
+classref:ReactiveServerFactoryInterface[]. The session object class must
+implement classref:ReactiveServerSessionInterface[].
+
+===== Sample reactor-based application
+
+The TSDuck source code repository contains a sample TCP server based on
+classref:ReactiveServer[] in subdirectory
+{repo}tree/master/sample/sample-reactor-server[sample/sample-reactor-server].
+
+This sample application is single-threaded and uses one single instance of
+classref:Reactor[] to dispatch events in the TCP server and all client sessions.
+
+By default, the server uses raw TCP connections. However, using the command line
+option `--tls`, it creates a TLS server and encrypted connections. This
+illustrates how classref:ReactiveServer[] can indifferently use an instance of
+classref:ReactiveTCPServer[] or classref:ReactiveTLSServer[].
+
+The global instance of classref:ReactiveTCPServer[] (or its TLS counterpart)
+uses an instance of classref:TCPServer[]. Similarly, each client connection uses
+an instance of classref:ReactiveTCPConnections[] (or TLS), which uses an
+instance of classref:TCPConnection[].
+
+The server handles text lines (it is a simplified version of an HTTP server).
+It illustrates how classref:ReactiveTextStream[] can indifferently use an
+instance of classref:ReactiveTCPConnection[] or
+classref:ReactiveTLSConnection[].
+
+Each client session is implemented in an instance of the application-defined
+class `ClientConnection`. Each session instance contains:
+
+* `tcp_client`: an instance of classref:TCPConnection[] which handles the socket I/Os.
+
+* `react_client`: an instance of classref:ReactiveTCPConnection[] (or
+  classref:ReactiveTCPConnection[]) which manages the synchronization of
+  non-blocking I/Os and uses `tcp_client` for I/Os.
+
+* `text_client`: an instance of classref:ReactiveTextStream[] which manages the
+  data presentation (text lines) and uses `react_client` for non-blocking I/Os.
+
+The server management is implemented in an instance of the application-defined
+class `ServerControl`. This class is used by classref:ReactiveServer[] for two
+independent purposes:
+
+* Create instances of `ClientConnection` for incoming client connections though
+  the interface classref:ReactiveServerFactoryInterface[].
+
+* Handle global server events, such as server exit, though the interface
+  classref:ReactiveServerHandlerInterface[].
+
+This generic application structure is illustrated in the following general
+diagram which applies to all server applications.
 
 .Sample ReactiveServer application
 image::reactive-server.png[align="center",alt="sample ReactiveServer application"]
-
-To be completed.

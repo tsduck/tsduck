@@ -176,7 +176,7 @@ void ClientConnection::handleTextLine(ts::ReactiveTextStream& stream, const ts::
             case START: {
                 _opt.info(u"Session %s: request: %s", _session_name, line);
                 _text_client.startWriteLine(nullptr, u"HTTP/1.0 204 No Content");
-                _text_client.startWriteLine(nullptr, u"Server: Same-Reactor-Server");
+                _text_client.startWriteLine(nullptr, u"Server: Sample-Reactor-Server");
                 _text_client.startWriteLine(nullptr, u"Connection: close");
                 _text_client.startWriteLine(nullptr, u"X-Session-Name: " + _session_name);
                 _text_client.startWriteLine(nullptr, u"X-Echo-Request: " + line);

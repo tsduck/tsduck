@@ -90,7 +90,7 @@ namespace ts {
 
         //!
         //! Update the status of an asynchronous readStream() or writeStream() after it completed.
-        //! This method applies to asynchronous I/O only (Windows), not non-blocking I/O (UNIX).
+        //! This method applies to asynchronous I/O only (Windows), not immediate I/O (UNIX).
         //! @param [in,out] iosb Address of the IOSB structure which was used when readStream() or writeStream() was called.
         //! @return True on success, false on error.
         //! 

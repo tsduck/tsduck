@@ -356,7 +356,7 @@ namespace ts {
         //!
         //! Get the result of an asynchronous receive().
         //! This method shall be used with asynchronous I/O only. It returns an error when the system
-        //! uses non-blocking I/O instead of asynchronous I/O.
+        //! uses immediate I/O instead of asynchronous I/O.
         //! @param [in,out] iosb Address of the IOSB structure which was used when receive() was called.
         //! @param [out] sender Socket address of the sender.
         //! @param [out] destination Socket address of the packet destination. Can be useful to check in multicast packets.

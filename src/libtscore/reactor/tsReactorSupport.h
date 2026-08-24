@@ -37,23 +37,23 @@
 
 #if defined(TS_USE_EPOLL) || defined(TS_USE_KQUEUE) || defined(DOXYGEN)
     //!
-    //! This macro is defined when the Reactor uses a non-blocking I/O model.
+    //! This macro is defined when the Reactor uses an immediate I/O model.
     //!
     //! Reactive classes which manage I/O shall repeatedly attempt I/O operations as long
     //! as they succeed. When they fail with a "would block" status, the reactive class
     //! shall request the Reactor to be notified when the I/O becomes possible.
     //!
-    //! The macros TS_USE_NON_BLOCKING_IO and TS_USE_ASYNCHRONOUS_IO should be used only
+    //! The macros TS_USE_IMMEDIATE_IO and TS_USE_ASYNCHRONOUS_IO should be used only
     //! when contitional compilation is required for syntactic reasons. A reactive I/O
-    //! class should use "if constexpr" structures using the static methods UseNonBlockingIO()
+    //! class should use "if constexpr" structures using the static methods UseImmediateIO()
     //! and UseAsynchronousIO().
     //!
     //! @see TS_USE_ASYNCHRONOUS_IO
-    //! @see ts::ReactorSupport::UseNonBlockingIO()
+    //! @see ts::ReactorSupport::UseImmediateIO()
     //! @see ts::ReactorSupport::UseAsynchronousIO()
     //! @see ts::NonBlockingDevice
     //!
-    #define TS_USE_NON_BLOCKING_IO 1
+    #define TS_USE_IMMEDIATE_IO 1
 #endif
 
 #if defined(TS_USE_IOCP) || defined(DOXYGEN)
@@ -65,13 +65,13 @@
     //! be notified when the I/O completes. In the meantime, the reactive class shall ensure
     //! that the I/O buffers remain valid, as they are used in the background by the I/O.
     //!
-    //! The macros TS_USE_NON_BLOCKING_IO and TS_USE_ASYNCHRONOUS_IO should be used only
+    //! The macros TS_USE_IMMEDIATE_IO and TS_USE_ASYNCHRONOUS_IO should be used only
     //! when contitional compilation is required for syntactic reasons. A reactive I/O
-    //! class should use "if constexpr" structures using the static methods UseNonBlockingIO()
+    //! class should use "if constexpr" structures using the static methods UseImmediateIO()
     //! and UseAsynchronousIO().
     //!
-    //! @see TS_USE_NON_BLOCKING_IO
-    //! @see ts::ReactorSupport::UseNonBlockingIO()
+    //! @see TS_USE_IMMEDIATE_IO
+    //! @see ts::ReactorSupport::UseImmediateIO()
     //! @see ts::ReactorSupport::UseAsynchronousIO()
     //! @see ts::NonBlockingDevice
     //!
@@ -90,7 +90,7 @@ namespace ts {
     public:
         //!
         //! This static function returns whether the Reactor uses an asynchronous I/O model.
-        //! @return True when asynchronous I/O are used, false when non-blocking I/O are used.
+        //! @return True when asynchronous I/O are used, false when immediate I/O are used.
         //!
         //! Reactive classes which manage I/O shall start I/O operations and, if the operation
         //! completes with a "pending" status, the reactive class shall request the Reactor to
@@ -106,53 +106,53 @@ namespace ts {
         //!     ....
         //! }
         //! @endcode
-        //! @see UseNonBlockingIO()
+        //! @see UseImmediateIO()
         //! @see NonBlockingDevice
         //!
         static consteval bool UseAsynchronousIO()
         {
-#if defined(TS_USE_ASYNCHRONOUS_IO) && !defined(TS_USE_NON_BLOCKING_IO)
+#if defined(TS_USE_ASYNCHRONOUS_IO) && !defined(TS_USE_IMMEDIATE_IO)
             return true;
-#elif defined(TS_USE_NON_BLOCKING_IO) && !defined(TS_USE_ASYNCHRONOUS_IO)
+#elif defined(TS_USE_IMMEDIATE_IO) && !defined(TS_USE_ASYNCHRONOUS_IO)
             return false;
 #else
-    #error "invalid asynchronous vs. non-blocking configuration"
+    #error "invalid asynchronous vs. immediate I/O configuration"
 #endif
         }
 
         //!
-        //! This static function returns whether the Reactor uses a non-blocking I/O model.
-        //! @return True when non-blocking I/O are used, false when asynchronous I/O are used.
+        //! This static function returns whether the Reactor uses an immediate I/O model.
+        //! @return True when immediate I/O are used, false when asynchronous I/O are used.
         //!
         //! Reactive classes which manage I/O shall repeatedly attempt I/O operations as long
         //! as they succeed. When they fail with a "would block" status, the reactive class
         //! shall request the Reactor to be notified when the I/O becomes possible.
         //!
         //! This method is typically used in "if constexpr" structures, which are preferred to
-        //! conditional compilation using the macro TS_USE_NON_BLOCKING_IO.
+        //! conditional compilation using the macro TS_USE_IMMEDIATE_IO.
         //!
         //! Example:
         //! @code
-        //! if constexpr (ReactorSupport::UseNonBlockingIO()) {
+        //! if constexpr (ReactorSupport::UseImmediateIO()) {
         //!     ....
         //! }
         //! @endcode
         //! @see UseAsynchronousIO()
         //! @see NonBlockingDevice
         //!
-        static consteval bool UseNonBlockingIO() { return !UseAsynchronousIO(); }
+        static consteval bool UseImmediateIO() { return !UseAsynchronousIO(); }
 
         //!
         //! Check if a given file descriptor or handle is supported by the reactor.
         //!
-        //! On some operating systems, some types of devices do not support asynchronous or non-blocking I/O
+        //! On some operating systems, some types of devices do not support asynchronous or immediate I/O
         //! and cannot be used in a reactor. The most annoying case is regular files on Linux. Using a regular
         //! file with epoll on Linux ends with EPERM because regular files are considered as "always ready".
         //! On macOS and FreeBSD, regular files are also "always ready" but they can be used by kqueue, which
         //! means that the code can be generic, which is not the case on Linux.
         //!
         //! @param [in] sock A system-specific file descriptor or handle. This can be a socket or something else.
-        //! @return True if @a sock supports asynchronous or non-blocking I/O on this operating system, false otherwise.
+        //! @return True if @a sock supports asynchronous or immediate I/O on this operating system, false otherwise.
         //!
         static bool SupportedDevice(SysSocketType sock);
     };

@@ -99,7 +99,7 @@ An event loop shall include the following features:
 
 Class `Reactor` is implemented. Based on epoll (Linux), kqueue (macOS and BSD), I/O
 Completion Ports (Windows). Timers, user events, and synchronization on process
-termination are included. Non-blocking I/O (epoll, kqueue) and asynchronous I/O (IOCP)
+termination are included. Immediate I/O (epoll, kqueue) and asynchronous I/O (IOCP)
 are implemented using distinct API's.
 
 Timers, user events, and process synchronization are directly usable by applications.
@@ -119,7 +119,7 @@ I/O and "reactive" classes, see the
 ### Socket layer, including TLS
 
 UDP and TCP sockets are implemented in separate classes. Internally, they use
-distinct code paths for non-blocking and asynchronous I/O. TCP client and server
+distinct code paths for immediate and asynchronous I/O. TCP client and server
 are implemented. TLS subclasses encapsulate TLS 1.2 and 1.3.
 
 ### Files and pipes

@@ -71,10 +71,10 @@ namespace ts {
         //! 
         enum Flags {
             NONE          = 0x0000,  //!< No creation flag, use all default.
-            READ_ASYNC    = 0x0001,  //!< Set the read end in non-blocking / asynchronous mode.
-            WRITE_ASYNC   = 0x0002,  //!< Set the write end in non-blocking / asynchronous mode.
-            READ_CLOEXEC  = 0x0004,  //!< Set the flag "close on exe" on the read end (UNIX only).
-            WRITE_CLOEXEC = 0x0008,  //!< Set the flag "close on exe" on the write end (UNIX only).
+            READ_ASYNC    = 0x0001,  //!< Set the read end in immediate / asynchronous mode.
+            WRITE_ASYNC   = 0x0002,  //!< Set the write end in immediate / asynchronous mode.
+            READ_CLOEXEC  = 0x0004,  //!< Set the flag "close on exec" on the read end (UNIX only).
+            WRITE_CLOEXEC = 0x0008,  //!< Set the flag "close on exec" on the write end (UNIX only).
             READ_INHERIT  = 0x0010,  //!< The read end must be inherited in children processes (Windows only).
             WRITE_INHERIT = 0x0020,  //!< The write end must be inherited in children processes (Windows only).
         };

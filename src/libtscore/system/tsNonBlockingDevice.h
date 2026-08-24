@@ -29,16 +29,16 @@ namespace ts {
     //! operating system. This is why this class shall be used by specialized classes
     //! which exactly know what they are doing.
     //!
-    //! There are two distinct I/O models:
+    //! There are two distinct non-blocking I/O models:
     //!
-    //! - Non-blocking I/O (UNIX).
+    //! - Immediate I/O (UNIX).
     //! - Asynchronous I/O (Windows).
     //!
     //! Differences in semantics:
     //!
     //! - On UNIX systems (Linux, macOS, BSD), non-blocking means that a read or write
     //!   operation fails if it cannot be immediately served. The corresponding error is
-    //!   EAGAIN.
+    //!   EAGAIN. A non-blocking I/O immediately succeeds or fails.
     //!
     //! - On Windows systems, non-blocking means using "overlapped" I/O. For anyone with a
     //!   basic system culture, this means "asynchronous" I/O. An asynchronous I/O operation

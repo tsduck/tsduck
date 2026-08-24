@@ -96,7 +96,7 @@ void ts::ReactiveTCPServer::processQueuedOperations()
 bool ts::ReactiveTCPServer::startAccept(ReactiveTCPServerHandlerInterface* handler, ReactiveTCPConnection& client, const ObjectPtr& user_data)
 {
     // Asynchronous I/O model: Be notified of I/O completion.
-    // Non-blocking I/O model: Get notified when a read operation is possible, if not already done.
+    // Immediate I/O model: Get notified when a read operation is possible, if not already done.
     if (!activateAsynchronousIO() || !activateReadReady()) {
         return false;
     }
@@ -130,7 +130,7 @@ bool ts::ReactiveTCPServer::startAccept(ReactiveTCPServerHandlerInterface* handl
 
 //----------------------------------------------------------------------------
 // Called when a receive operation is possible.
-// Called only in the non-blocking I/O model.
+// Called only in the immediate I/O model.
 //----------------------------------------------------------------------------
 
 void ts::ReactiveTCPServer::handleReadReady(Reactor& reactor, EventId id, int error_code)
@@ -210,13 +210,13 @@ void ts::ReactiveTCPServer::handleAsynchronousIO(Reactor& reactor, EventId id, N
 
 void ts::ReactiveTCPServer::cancelAccept(bool silent)
 {
-    // Stop being notified of read-ready (non-blocking I/O).
+    // Stop being notified of read-ready (immediate I/O).
     deactivateReadReady(silent);
 
     // Cancel asynchronous I/O currently in progress (asynchronous I/O).
     cancelAsynchronousIO(silent);
 
-    if constexpr (ReactorSupport::UseNonBlockingIO()) {
+    if constexpr (ReactorSupport::UseImmediateIO()) {
         // Mark all pending accept requests as canceled.
         cancelQueue<AcceptRequest>(_pending_accept, _completed_io);
         // Handle all completions in reactor context.

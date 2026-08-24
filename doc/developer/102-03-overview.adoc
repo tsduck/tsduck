@@ -387,7 +387,7 @@ Multiple redirections and SSL/TLS are automatically handled.
 This class is built on top of native system libraries, _libcurl_ on {unix}, _WinInet_ on Windows.
 
 In addition to straightforward communication classes using blocking I/O, TSDuck also uses event
-dispatching on non-blocking or asynchronous I/O.
+dispatching on non-blocking I/O ("immediate" I/O on UNIX systems or "asynchronous" I/O on Windows).
 See xref:reactorevents[xrefstyle=short] for more details.
 
 [#sharelibs]

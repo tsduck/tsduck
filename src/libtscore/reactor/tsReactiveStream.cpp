@@ -40,13 +40,13 @@ bool ts::ReactiveStream::hasPendingIO()
 
 
 //----------------------------------------------------------------------------
-// With non-blocking I/O, check if we need to be notified of write-ready.
+// With immediate I/O, check if we need to be notified of write-ready.
 //----------------------------------------------------------------------------
 
 bool ts::ReactiveStream::needsWriteReady()
 {
     // We need write-ready notifications when some send operations are pending.
-    return ReactorSupport::UseNonBlockingIO() && !_pending_send.empty();
+    return ReactorSupport::UseImmediateIO() && !_pending_send.empty();
 }
 
 
@@ -179,7 +179,7 @@ bool ts::ReactiveStream::startWriteStream(ReactiveStreamHandlerInterface* handle
         // Will perform a blocking write (supposed to not block too long) in pot-processing queue.
         enqueueCompletedIO(iosb, false);
     }
-    else if constexpr (ReactorSupport::UseNonBlockingIO()) {
+    else if constexpr (ReactorSupport::UseImmediateIO()) {
         // Enqueue the send request. Will be sent when write is possible.
         _pending_send.push_back(iosb);
         // Make sure to be notified when a send operation is possible.
@@ -233,7 +233,7 @@ bool ts::ReactiveStream::startCloseWriteStream(ReactiveStreamHandlerInterface* h
 
 //----------------------------------------------------------------------------
 // Called in the Reactor context when a send operation is possible.
-// Called only in the non-blocking I/O model.
+// Called only in the immediate I/O model.
 //----------------------------------------------------------------------------
 
 void ts::ReactiveStream::handleWriteReady(Reactor& reactor, EventId id, int error_code)
@@ -328,7 +328,7 @@ bool ts::ReactiveStream::startReadStream(ReactiveStreamHandlerInterface* handler
     }
 
     // Asynchronous I/O model: Be notified of I/O completion.
-    // Non-blocking I/O model: Get notified when a reception operation is possible, if not already done.
+    // immediate I/O model: Get notified when a reception operation is possible, if not already done.
     if (!activateAsynchronousIO() || !activateReadReady()) {
         return false;
     }
@@ -362,7 +362,7 @@ bool ts::ReactiveStream::startReadStream(ReactiveStreamHandlerInterface* handler
 
 //----------------------------------------------------------------------------
 // Called when a readStream operation is possible.
-// Called only in the non-blocking I/O model.
+// Called only in the immediate I/O model.
 //----------------------------------------------------------------------------
 
 void ts::ReactiveStream::handleReadReady(Reactor& reactor, EventId id, int error_code)
@@ -434,7 +434,7 @@ void ts::ReactiveStream::processReceiveBuffer()
     if (_pending_receive != nullptr) {
         // In case of receive error, cancel receive.
         if (!SysSuccess(_pending_receive->error_code)) {
-            deactivateReadReady(true);  // non-blocking IO only
+            deactivateReadReady(true);  // immediate IO only
             _pending_receive.reset();
         }
         else {
@@ -588,7 +588,7 @@ void ts::ReactiveStream::cancelReadWriteStream(bool silent)
     // Cancel asynchronous I/O currently in progress.
     cancelAsynchronousIO(silent);
 
-    if constexpr (ReactorSupport::UseNonBlockingIO()) {
+    if constexpr (ReactorSupport::UseImmediateIO()) {
         // Discard pending send and receive requests, they are not started yet.
         _pending_send.clear();
         _pending_receive.reset();

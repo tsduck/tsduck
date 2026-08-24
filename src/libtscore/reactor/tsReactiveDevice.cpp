@@ -68,12 +68,12 @@ void ts::ReactiveDevice::deactivateAll(bool silent)
 
 
 //----------------------------------------------------------------------------
-// Activate / delete reactor events for non-blocking I/O.
+// Activate / delete reactor events for immediate I/O.
 //----------------------------------------------------------------------------
 
 bool ts::ReactiveDevice::activateReadReady()
 {
-    if constexpr (ReactorSupport::UseNonBlockingIO()) {
+    if constexpr (ReactorSupport::UseImmediateIO()) {
         if (!device().isSupportedByReactor()) {
             return true;
         }
@@ -87,7 +87,7 @@ bool ts::ReactiveDevice::activateReadReady()
 
 void ts::ReactiveDevice::deactivateReadReady(bool silent)
 {
-    if constexpr (ReactorSupport::UseNonBlockingIO()) {
+    if constexpr (ReactorSupport::UseImmediateIO()) {
         if (_read_ready_id.isValid()) {
             reactor().deleteReadNotify(_read_ready_id, silent);
             _read_ready_id.invalidate();
@@ -97,7 +97,7 @@ void ts::ReactiveDevice::deactivateReadReady(bool silent)
 
 bool ts::ReactiveDevice::activateWriteReady()
 {
-    if constexpr (ReactorSupport::UseNonBlockingIO()) {
+    if constexpr (ReactorSupport::UseImmediateIO()) {
         if (!device().isSupportedByReactor()) {
             return true;
         }
@@ -111,7 +111,7 @@ bool ts::ReactiveDevice::activateWriteReady()
 
 void ts::ReactiveDevice::deactivateWriteReady(bool silent)
 {
-    if constexpr (ReactorSupport::UseNonBlockingIO()) {
+    if constexpr (ReactorSupport::UseImmediateIO()) {
         if (_write_ready_id.isValid()) {
             reactor().deleteWriteNotify(_write_ready_id, silent);
             _write_ready_id.invalidate();
@@ -121,7 +121,7 @@ void ts::ReactiveDevice::deactivateWriteReady(bool silent)
 
 
 //----------------------------------------------------------------------------
-// Activate / delete reactor events for non-blocking I/O.
+// Activate / delete reactor events for immediate I/O.
 //----------------------------------------------------------------------------
 
 bool ts::ReactiveDevice::activateAsynchronousIO()

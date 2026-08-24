@@ -96,9 +96,9 @@ namespace ts {
         virtual bool hasPendingIO();
 
         //!
-        //! With non-blocking I/O, check if we need to be notified of write-ready conditions.
+        //! With immediate I/O, check if we need to be notified of write-ready conditions.
         //! If overriden by a subclass, the method must also call its superclass counterpart.
-        //! @return True if non-blocking write-ready notifications are required. False otherwise.
+        //! @return True if immediate write-ready notifications are required. False otherwise.
         //!
         virtual bool needsWriteReady();
 

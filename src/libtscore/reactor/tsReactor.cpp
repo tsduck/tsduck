@@ -96,7 +96,7 @@ ts::Reactor::~Reactor()
 
 #define TS_NO_PRH  _reactor.report().error(u"process handles are not supported on this system")
 #define TS_NO_AIO  _reactor.report().error(u"asynchronous I/O are not supported on this system")
-#define TS_NO_NBIO _reactor.report().error(u"non-blocking I/O are not supported on this system")
+#define TS_NO_NBIO _reactor.report().error(u"immediate I/O are not supported on this system")
 
 ts::Reactor::GutsBase::~GutsBase() {}
 void* ts::Reactor::GutsBase::newProcessHandleTermination(ReactorHandlerInterface*, SysHandleType) { TS_NO_PRH; return nullptr; }
@@ -477,13 +477,13 @@ bool ts::Reactor::deleteAsynchronousIO(EventId id, bool silent)
 
 
 //----------------------------------------------------------------------------
-// Non-blocking read/write notifications.
+// Immediate read/write notifications.
 //----------------------------------------------------------------------------
 
 ts::EventId ts::Reactor::newReadNotify(ReactorHandlerInterface* handler, SysSocketType sock)
 {
     EventId id;
-    if (checkOpen(false) && checkNonNull(handler, u"non-blocking read notification")) {
+    if (checkOpen(false) && checkNonNull(handler, u"immediate read notification")) {
         id._ptr = _guts->newReadNotify(handler, sock);
     }
     return id;
@@ -497,7 +497,7 @@ bool ts::Reactor::deleteReadNotify(EventId id, bool silent)
 ts::EventId ts::Reactor::newWriteNotify(ReactorHandlerInterface* handler, SysSocketType sock)
 {
     EventId id;
-    if (checkOpen(false) && checkNonNull(handler, u"non-blocking write notification")) {
+    if (checkOpen(false) && checkNonNull(handler, u"immediate write notification")) {
         id._ptr = _guts->newWriteNotify(handler, sock);
     }
     return id;

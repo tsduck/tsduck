@@ -27,19 +27,94 @@ following additional line, just before the final line:
 
 The included property file sets all required options to use the TSDuck library.
 
-### Sample usage
+### Command line syntax
 
-Start a clear server session:
+The sample program uses the TSDuck command line arguments features, including
+predefined options for TLS servers. Therefore, it displays its usage using the
+option `--help`.
+~~~
+$ ./reactor-server --help
+
+Sample line-based TLS server using the reactor pattern
+
+Usage: reactor-server [options] [local-address:]port
+
+Parameters:
+
+  TCP port number of the server. The default port is 7777. If an optional
+  address is specified, it must be a local interface and the server listens to
+  that interface only.
+
+Options:
+
+  --certificate-path name
+      With --tls, path to the certificate for the server. The default value is
+      the value of environment variable TSDUCK_TLS_CERTIFICATE.
+      On UNIX systems, this is the path name of the certificate file in PEM
+      format.
+      On Windows, this is the name of a certificate in the user or system
+      store.
+
+  -d[level]
+  --debug[=level]
+      Produce debug traces. The default level is 1. Higher levels produce more
+      messages.
+
+  --ephemeral-rsa-bits value
+      With --tls, create an ephemeral self-signed certificate for the server.
+      The value specifies the size in bits of the ephemeral RSA key which it
+      generated. The default value is the value of environment variable
+      TSDUCK_TLS_EPHEMERAL_RSA_BITS.
+      Keep in mind that ephemeral self-signed certificates are considered as
+      "invalid" or "insecure" by client applications. Be sure to disable the
+      verification of the TLS server's certificate on the client side. By
+      default, the server needs a designated persistent certificate.
+
+  --help
+      Display this help text.
+
+  --key-path name
+      With --tls, path to the private key for the server. The default value is
+      the value of environment variable TSDUCK_TLS_KEY.
+      On UNIX systems, this is the path name of the private key file in PEM
+      format.
+      On Windows, the private key is retrieved with the certificate and this
+      parameter is unused.
+
+  --store name
+      With --tls, path to the certificate store for the server. The default
+      value is the value of environment variable TSDUCK_TLS_STORE.
+      On Windows, the possible values are "system" (Cert:\LocalMachine\My) and
+      "user" (Cert:\CurrentUser\My). The default is "user".
+      On UNIX systems, this parameter is unused.
+
+  --tls
+      The server uses SSL/TLS. In that case, a server certificate is required.
+      By default, use unencrypted communications.
+
+  -v
+  --verbose
+      Produce verbose output.
+
+  --version[=name]
+      Display the TSDuck version number.
+      The 'name' must be one of "acceleration", "all", "compiler", "crypto",
+      "date", "http", "integer", "long", "short", "system", "tls", "zlib".
+~~~
+
+### Sample usages
+
+Start a clear (unencrypted) TCP server session:
 ~~~
 $ ./reactor-server
 Server listens on [::]:7777
 ~~~
 
-Test client using curl. The option `-i` includes the response headers in the output.
+Test client using curl: The option `-i` includes the response headers in the output.
 ~~~
 $ curl http://localhost:7777/ -i
 HTTP/1.0 204 No Content
-Server: Same-Reactor-Server
+Server: Sample-Reactor-Server
 Connection: close
 X-Session-Name: [::1]:52345-[::1]:7777
 X-Echo-Request: GET / HTTP/1.1
@@ -52,7 +127,7 @@ To exit the server, send a request with header "X-Exit".
 ~~~
 $ curl http://localhost:7777/ -i -H "X-Exit: true"
 HTTP/1.0 204 No Content
-Server: Same-Reactor-Server
+Server: Sample-Reactor-Server
 Connection: close
 X-Session-Name: [::1]:53162-[::1]:7777
 X-Echo-Request: GET / HTTP/1.1
@@ -72,14 +147,14 @@ Server listens on [::]:7777
 Because we don't have a valid server certificate in this test, we generate a
 self-signed certificate on the fly using a 2048-bit ephemeral RSA key pair.
 
-Test client using curl. We specify `https` to use TLS. We also specify option `-k`
+Test client using curl: We specify `https:` to use TLS. We also specify option `-k`
 which means "accept insecure server certificate". This is required because our
 server certificate is self-signed and cannot be verified from a valid Certification
 Authority (CA).
 ~~~
 $ curl https://localhost:7777/ -i -k
 HTTP/1.0 204 No Content
-Server: Same-Reactor-Server
+Server: Sample-Reactor-Server
 Connection: close
 X-Session-Name: [::1]:53182-[::1]:7777
 X-Echo-Request: GET / HTTP/1.1

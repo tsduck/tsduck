@@ -23,7 +23,7 @@ namespace ts {
     //!
     //! This class works on an application-provided ReactiveTCPServer, meaning that any specialized subclass
     //! such as ReactiveTLSServer can be used. The (subclass of) ReactiveTCPServer object and its associated
-    //! (subclass of) TCPServer  must be initialized in the application, up to and including listen(). The
+    //! (subclass of) TCPServer must be initialized in the application, up to and including listen(). The
     //! calls to accept() are performed by the ReactiveServer.
     //!
     //! This server automatically creates sessions when incoming clients connect and automatically deletes
