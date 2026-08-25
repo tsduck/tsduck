@@ -59,10 +59,7 @@ void ts::tsp::ProcessorExecutor::main()
     // defined to some non-zero integer value, force all plugins to use the
     // packet window processing method. This can be used to check that using
     // this method does not break a plugin or tsp itself.
-    size_t window_size = 0;
-    if (!GetEnvironment(u"TSP_FORCED_WINDOW_SIZE").toInteger(window_size)) {
-        window_size = 0; // invalid value, reset
-    }
+    size_t window_size = GetIntEnvironment<size_t>(u"TSP_FORCED_WINDOW_SIZE");
 
     // Check if the plugin works in packet-window mode (if not already forced).
     if (window_size == 0) {

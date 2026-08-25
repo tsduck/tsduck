@@ -12,7 +12,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsNonBlockingDevice.h"
+#include "tsDevice.h"
 #include "tsStreamInterface.h"
 #include "tsReport.h"
 
@@ -21,7 +21,7 @@ namespace ts {
     //! Fork a process and create optional pipes to its standard input/output.
     //! @ingroup libtscore system
     //!
-    class TSCOREDLL ForkPipe: public NonBlockingDevice, public StreamInterface
+    class TSCOREDLL ForkPipe: public Device, public StreamInterface
     {
         TS_NOBUILD_NOCOPY(ForkPipe);
     public:
@@ -172,7 +172,7 @@ namespace ts {
         //!
         static bool GetOutput(UString& output, const UString& command, Report& report, bool include_stderr = false);
 
-        // Implementation of NonBlockingDevice.
+        // Implementation of Device.
         virtual SysHandleType getReadHandle() const override;
         virtual SysHandleType getWriteHandle() const override;
 

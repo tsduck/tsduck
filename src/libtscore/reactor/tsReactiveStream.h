@@ -23,7 +23,7 @@ namespace ts {
     //! @ingroup libtscore reactor
     //!
     //! The class ReactiveStream is a wrapper around a stream device class to handle reactive I/O.
-    //! Typically, the device class is a subclass of NonBlockingDevice which implements StreamInterface.
+    //! Typically, the device class is a subclass of Device which implements StreamInterface.
     //!
     //! The stream device is a separate object. It is initialized and configured by the application.
     //! The application shall not directly call writeStream() or readStream() on this device and
@@ -37,11 +37,11 @@ namespace ts {
         //! Constructor.
         //! @param [in,out] reactor Associated reactor. The reactor object must remain valid as long as this object is valid.
         //! @param [in,out] device Associated non-blocking device. The device object must remain valid as long as this object is valid.
-        //! @param [in,out] stream Associated stream interface. Typically, the @a device class is a subclass of NonBlockingDevice which
+        //! @param [in,out] stream Associated stream interface. Typically, the @a device class is a subclass of Device which
         //! implements StreamInterface. Therefore, @a device and @a stream are two views of the same object. That device object must
         //! remain valid as long as this instance of ReactiveStream exists.
         //!
-        ReactiveStream(Reactor& reactor, NonBlockingDevice& device, StreamInterface& stream);
+        ReactiveStream(Reactor& reactor, Device& device, StreamInterface& stream);
 
         //!
         //! Get a reference to the associated stream.

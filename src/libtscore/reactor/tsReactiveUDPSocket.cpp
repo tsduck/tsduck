@@ -310,7 +310,7 @@ void ts::ReactiveUDPSocket::handleReadReady(Reactor& reactor, EventId id, int er
 // Called only in the asynchronous I/O model.
 //----------------------------------------------------------------------------
 
-void ts::ReactiveUDPSocket::handleAsynchronousIO(Reactor& reactor, EventId id, NonBlockingDevice::IOSB& iosb, size_t io_size)
+void ts::ReactiveUDPSocket::handleAsynchronousIO(Reactor& reactor, EventId id, Device::IOSB& iosb, size_t io_size)
 {
     // At this point, we only have an IOSB address, not a std::shared_ptr.
     std::shared_ptr<ReceiveRequest> recv;

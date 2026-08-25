@@ -175,7 +175,7 @@ void ts::ReactiveTCPServer::handleReadReady(Reactor& reactor, EventId id, int er
 // Called only in the asynchronous I/O model.
 //----------------------------------------------------------------------------
 
-void ts::ReactiveTCPServer::handleAsynchronousIO(Reactor& reactor, EventId id, NonBlockingDevice::IOSB& iosb, size_t io_size)
+void ts::ReactiveTCPServer::handleAsynchronousIO(Reactor& reactor, EventId id, Device::IOSB& iosb, size_t io_size)
 {
     // At this point, we only have an IOSB, not a std::shared_ptr.
     // Our custom request is in the react_data of the IOSB.

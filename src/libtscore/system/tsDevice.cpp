@@ -6,7 +6,7 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsNonBlockingDevice.h"
+#include "tsDevice.h"
 #include "tsReactorSupport.h"
 
 
@@ -14,7 +14,7 @@
 // Destructor.
 //----------------------------------------------------------------------------
 
-ts::NonBlockingDevice::~NonBlockingDevice()
+ts::Device::~Device()
 {
 }
 
@@ -23,35 +23,35 @@ ts::NonBlockingDevice::~NonBlockingDevice()
 // Get the underlying file descriptor or device handle.
 //----------------------------------------------------------------------------
 
-ts::SysHandleType ts::NonBlockingDevice::getReadHandle() const
+ts::SysHandleType ts::Device::getReadHandle() const
 {
     return SYS_HANDLE_INVALID; // default implementation
 }
 
-ts::SysHandleType ts::NonBlockingDevice::getWriteHandle() const
+ts::SysHandleType ts::Device::getWriteHandle() const
 {
     return SYS_HANDLE_INVALID; // default implementation
 }
 
-ts::SysHandleType ts::NonBlockingDevice::getHandle() const
+ts::SysHandleType ts::Device::getHandle() const
 {
     const SysHandleType h = getReadHandle();
     return h != SYS_HANDLE_INVALID ? h : getWriteHandle();
 }
 
-ts::SysSocketType ts::NonBlockingDevice::getReadSocket() const
+ts::SysSocketType ts::Device::getReadSocket() const
 {
     const SysHandleType h = getReadHandle();
     return h != SYS_HANDLE_INVALID ? SysSocketType(h) : SYS_SOCKET_INVALID;
 }
 
-ts::SysSocketType ts::NonBlockingDevice::getWriteSocket() const
+ts::SysSocketType ts::Device::getWriteSocket() const
 {
     const SysHandleType h = getWriteHandle();
     return h != SYS_HANDLE_INVALID ? SysSocketType(h) : SYS_SOCKET_INVALID;
 }
 
-ts::SysSocketType ts::NonBlockingDevice::getSocket() const
+ts::SysSocketType ts::Device::getSocket() const
 {
     const SysHandleType h = getHandle();
     return h != SYS_HANDLE_INVALID ? SysSocketType(h) : SYS_SOCKET_INVALID;
@@ -62,7 +62,7 @@ ts::SysSocketType ts::NonBlockingDevice::getSocket() const
 // Set the device in non-blocking mode.
 //----------------------------------------------------------------------------
 
-bool ts::NonBlockingDevice::setNonBlocking(bool non_blocking)
+bool ts::Device::setNonBlocking(bool non_blocking)
 {
     if (allowSetNonBlocking()) {
         _is_non_blocking = non_blocking;
@@ -73,7 +73,7 @@ bool ts::NonBlockingDevice::setNonBlocking(bool non_blocking)
     }
 }
 
-bool ts::NonBlockingDevice::allowSetNonBlocking() const
+bool ts::Device::allowSetNonBlocking() const
 {
     // The default implementation always allows setting the non-blocking mode.
     return true;
@@ -84,7 +84,7 @@ bool ts::NonBlockingDevice::allowSetNonBlocking() const
 // Check the blocking mode of a device.
 //----------------------------------------------------------------------------
 
-bool ts::NonBlockingDevice::checkNonBlocking(bool non_blocking, const UChar* opname)
+bool ts::Device::checkNonBlocking(bool non_blocking, const UChar* opname)
 {
     if (non_blocking == _is_non_blocking) {
         return true;
@@ -95,7 +95,7 @@ bool ts::NonBlockingDevice::checkNonBlocking(bool non_blocking, const UChar* opn
     }
 }
 
-bool ts::NonBlockingDevice::checkNonBlocking(IOSB* iosb, const UChar* opname)
+bool ts::Device::checkNonBlocking(IOSB* iosb, const UChar* opname)
 {
     if (iosb != nullptr) {
         // Reset the low-level indicators but not react_data or async_data.
@@ -113,7 +113,7 @@ bool ts::NonBlockingDevice::checkNonBlocking(IOSB* iosb, const UChar* opname)
 // Check if the device is supported by a reactor.
 //----------------------------------------------------------------------------
 
-bool ts::NonBlockingDevice::isSupportedByReactor(bool recheck)
+bool ts::Device::isSupportedByReactor(bool recheck)
 {
     if (recheck || !_reactor_supported_checked) {
         _reactor_supported = ReactorSupport::SupportedDevice(getSocket());
@@ -130,7 +130,7 @@ bool ts::NonBlockingDevice::isSupportedByReactor(bool recheck)
 // Set a system file or spcket descriptor in non-blocking mode.
 //----------------------------------------------------------------------------
 
-bool ts::NonBlockingDevice::setSystemNonBlocking(bool non_blocking)
+bool ts::Device::setSystemNonBlocking(bool non_blocking)
 {
 #if defined(TS_UNIX)
 
@@ -161,7 +161,7 @@ bool ts::NonBlockingDevice::setSystemNonBlocking(bool non_blocking)
 // Reset the IOSB for a new I/O operation.
 //----------------------------------------------------------------------------
 
-void ts::NonBlockingDevice::IOSB::reset()
+void ts::Device::IOSB::reset()
 {
     pending = false;
     error_code = SYS_SUCCESS;
@@ -179,7 +179,7 @@ void ts::NonBlockingDevice::IOSB::reset()
 // Generic system write operation.
 //----------------------------------------------------------------------------
 
-int ts::NonBlockingDevice::genericSystemWrite(const void* addr, size_t size, size_t& written_size, NonBlockingDevice::IOSB* iosb, uint64_t position)
+int ts::Device::genericSystemWrite(const void* addr, size_t size, size_t& written_size, Device::IOSB* iosb, uint64_t position)
 {
     written_size = 0;
     int err_code = SYS_SUCCESS;
@@ -274,7 +274,7 @@ int ts::NonBlockingDevice::genericSystemWrite(const void* addr, size_t size, siz
 // Generic system read operation.
 //----------------------------------------------------------------------------
 
-int ts::NonBlockingDevice::genericSystemRead(void* addr, size_t max_size, size_t& ret_size, const AbortInterface* abort, NonBlockingDevice::IOSB* iosb, uint64_t position)
+int ts::Device::genericSystemRead(void* addr, size_t max_size, size_t& ret_size, const AbortInterface* abort, Device::IOSB* iosb, uint64_t position)
 {
     ret_size = 0;
     int err_code = SYS_SUCCESS;
@@ -379,20 +379,20 @@ int ts::NonBlockingDevice::genericSystemRead(void* addr, size_t max_size, size_t
 #if defined(TS_WINDOWS)
 
 // IOSB constructor.
-ts::NonBlockingDevice::IOSB::IOSB()
+ts::Device::IOSB::IOSB()
 {
     TS_ZERO(overlap);
 }
 
 // IOSB destructor.
-ts::NonBlockingDevice::IOSB::~IOSB()
+ts::Device::IOSB::~IOSB()
 {
     // Make sure that the iosb_marker becomes invalid.
     iosb_marker = 0x42534F49; // "BSOI"
 }
 
 // Check if an OVERLAPPED structure is part of an IOSB.
-ts::NonBlockingDevice::IOSB* ts::NonBlockingDevice::IOSB::ParentIOSB(::OVERLAPPED* overlap)
+ts::Device::IOSB* ts::Device::IOSB::ParentIOSB(::OVERLAPPED* overlap)
 {
     static constexpr size_t marker_offset = offsetof(IOSB, iosb_marker);
     static constexpr size_t overlap_offset = offsetof(IOSB, overlap);

@@ -12,7 +12,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsNonBlockingDevice.h"
+#include "tsDevice.h"
 #include "tsStreamInterface.h"
 #include "tsEnumUtils.h"
 
@@ -21,7 +21,7 @@ namespace ts {
     //! Binary stream file, with optional asynchronous I/O.
     //! @ingroup libtsduck mpeg
     //!
-    class TSCOREDLL BinaryFile: public NonBlockingDevice, public StreamInterface
+    class TSCOREDLL BinaryFile: public Device, public StreamInterface
     {
         TS_NOBUILD_NOCOPY(BinaryFile);
     public:
@@ -154,7 +154,7 @@ namespace ts {
         //!
         bool seekByte(uint64_t byte_index);
 
-        // Implementation of NonBlockingDevice.
+        // Implementation of Device.
         virtual SysHandleType getReadHandle() const override;
         virtual SysHandleType getWriteHandle() const override;
 

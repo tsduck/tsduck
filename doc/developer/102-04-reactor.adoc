@@ -491,9 +491,9 @@ image::reactor-class-diagram.png[align="center",alt="reactor class diagram"]
 ===== Standard I/O classes
 
 On the left side of the diagram, the hierarchy of subclasses of
-classref:NonBlockingDevice[] contains all standard I/O classes.
+classref:Device[] contains all standard I/O classes.
 
-The name `NonBlockingDevice` means a device with the potential of being used in
+The class name `Device` means a device with the potential of being used in
 non-blocking mode. By default, instances of these classes work in blocking mode
 and are suitable for use in linear programming. Applications can use them directly.
 
@@ -533,11 +533,11 @@ the reactive class calls a handler in a reactive interface.
 The Reactor class diagram shows which level of reactive class uses which level
 of standard I/O class. It is important to understand that there is only one
 instance of a standard I/O class per instance of reactive class. For instance,
-an instance of classref:ReactiveTCPConnection[] is associated to one instance of
-classref:TCPConnection[]. The superclass classref:ReactiveStream[] uses the
+an instance of classref:ReactiveTCPConnection[] is associated to one instance
+of classref:TCPConnection[]. The superclass classref:ReactiveStream[] uses the
 superclass classref:StreamInterface[] and the superclass
-classref:ReactiveDevice[] uses the superclass classref:NonBlockingDevice[], but
-all these superclasses are implemented in the same two instances of
+classref:ReactiveDevice[] uses the superclass classref:Device[], but all these
+superclasses are implemented in the same two instances of
 classref:ReactiveTCPConnection[] and classref:TCPConnection[].
 
 The reactive handler interfaces are implemented by the application-defined

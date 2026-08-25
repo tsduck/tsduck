@@ -102,7 +102,7 @@ ts::Reactor::GutsBase::~GutsBase() {}
 void* ts::Reactor::GutsBase::newProcessHandleTermination(ReactorHandlerInterface*, SysHandleType) { TS_NO_PRH; return nullptr; }
 void* ts::Reactor::GutsBase::newAsynchronousIO(ReactorHandlerInterface*, SysSocketType) { TS_NO_AIO; return nullptr; }
 bool ts::Reactor::GutsBase::cancelAsynchronousIO(EventId, bool) { TS_NO_AIO; return false; }
-bool ts::Reactor::GutsBase::cancelAndWaitAsynchronousIO(EventId, NonBlockingDevice::IOSB&, bool) { TS_NO_AIO; return false; }
+bool ts::Reactor::GutsBase::cancelAndWaitAsynchronousIO(EventId, Device::IOSB&, bool) { TS_NO_AIO; return false; }
 bool ts::Reactor::GutsBase::deleteAsynchronousIO(EventId, bool) { TS_NO_AIO; return false; }
 void* ts::Reactor::GutsBase::newReadNotify(ReactorHandlerInterface*, SysSocketType) { TS_NO_NBIO; return nullptr; }
 bool ts::Reactor::GutsBase::deleteReadNotify(EventId, bool) { TS_NO_NBIO; return false; }
@@ -465,7 +465,7 @@ bool ts::Reactor::cancelAsynchronousIO(EventId id, bool silent)
     return checkOpen(silent) && id.isValid() && _guts->cancelAsynchronousIO(id, silent);
 }
 
-bool ts::Reactor::cancelAndWaitAsynchronousIO(EventId id, NonBlockingDevice::IOSB& iosb, bool silent)
+bool ts::Reactor::cancelAndWaitAsynchronousIO(EventId id, Device::IOSB& iosb, bool silent)
 {
     return checkOpen(silent) && id.isValid() && _guts->cancelAndWaitAsynchronousIO(id, iosb, silent);
 }

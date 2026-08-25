@@ -85,7 +85,7 @@ public:
     virtual bool cancelProcessTermination(EventId id, bool silent) override;
     virtual void* newAsynchronousIO(ReactorHandlerInterface* handler, SysSocketType sock) override;
     virtual bool cancelAsynchronousIO(EventId id, bool silent) override;
-    virtual bool cancelAndWaitAsynchronousIO(EventId id, NonBlockingDevice::IOSB& iosb, bool silent) override;
+    virtual bool cancelAndWaitAsynchronousIO(EventId id, Device::IOSB& iosb, bool silent) override;
     virtual bool deleteAsynchronousIO(EventId id, bool silent) override;
 
 private:
@@ -350,7 +350,7 @@ void ts::Reactor::Guts::processEventLoop()
             else if (evd.type == EVT_ASYNC) {
                 // Asynchronous I/O. Try to find the IOSB from the OVERLAPPED address.
                 _reactor.trace(u"IOCP: event #%d, asynchronous I/O completed, overlapped @%X", i, uintptr_t(sysev.lpOverlapped));
-                NonBlockingDevice::IOSB* iosb = NonBlockingDevice::IOSB::ParentIOSB(sysev.lpOverlapped);
+                Device::IOSB* iosb = Device::IOSB::ParentIOSB(sysev.lpOverlapped);
                 if (iosb == nullptr) {
                     _reactor.report().error(u"reactor received an asynchronous I/O completion without identified IOSB");
                 }
@@ -686,7 +686,7 @@ bool ts::Reactor::Guts::cancelAsynchronousIO(EventId id, bool silent)
 // Cancel and wait one pending asynchronous I/O (blocking call).
 //----------------------------------------------------------------------------
 
-bool ts::Reactor::Guts::cancelAndWaitAsynchronousIO(EventId id, NonBlockingDevice::IOSB& iosb, bool silent)
+bool ts::Reactor::Guts::cancelAndWaitAsynchronousIO(EventId id, Device::IOSB& iosb, bool silent)
 {
     _reactor.trace(u"cancel and wait asynchronous I/O");
     EventData* evd = reinterpret_cast<EventData*>(id._ptr);

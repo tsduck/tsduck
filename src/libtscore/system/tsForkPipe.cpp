@@ -30,12 +30,12 @@
 //----------------------------------------------------------------------------
 
 ts::ForkPipe::ForkPipe(Report* report, bool non_blocking) :
-    NonBlockingDevice(report, non_blocking)
+    Device(report, non_blocking)
 {
 }
 
 ts::ForkPipe::ForkPipe(ReporterBase* delegate, bool non_blocking) :
-    NonBlockingDevice(delegate, non_blocking)
+    Device(delegate, non_blocking)
 {
 }
 

@@ -13,7 +13,7 @@
 
 #pragma once
 #include "tsEventId.h"
-#include "tsNonBlockingDevice.h"
+#include "tsDevice.h"
 
 namespace ts {
 
@@ -89,6 +89,6 @@ namespace ts {
         //! A system-specific error code is in @a iosb, SYS_CANCELED if the I/O was canceled before completion.
         //! @param [in] io_size Size of the I/O in bytes.
         //!
-        virtual void handleAsynchronousIO(Reactor& reactor, EventId id, NonBlockingDevice::IOSB& iosb, size_t io_size);
+        virtual void handleAsynchronousIO(Reactor& reactor, EventId id, Device::IOSB& iosb, size_t io_size);
     };
 }

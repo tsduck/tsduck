@@ -13,7 +13,7 @@
 
 #pragma once
 #include "tsReactiveBase.h"
-#include "tsNonBlockingDevice.h"
+#include "tsDevice.h"
 #include "tsSysUtils.h"
 
 namespace ts {
@@ -30,7 +30,7 @@ namespace ts {
         //! @param [in,out] reactor Associated reactor. The reactor object must remain valid as long as this object is valid.
         //! @param [in,out] device Associated non-blocking device. The device object must remain valid as long as this object is valid.
         //!
-        ReactiveDevice(Reactor& reactor, NonBlockingDevice& device);
+        ReactiveDevice(Reactor& reactor, Device& device);
 
         //!
         //! Destructor.
@@ -41,11 +41,11 @@ namespace ts {
         //! Get a reference to the associated non-blocking device.
         //! @return A reference to the associated non-blocking device.
         //!
-        NonBlockingDevice& device() { return _device; }
+        Device& device() { return _device; }
 
     protected:
         //! IOSB shortcut fpr subclasses.
-        using IOSB = NonBlockingDevice::IOSB;
+        using IOSB = Device::IOSB;
 
         //!
         //! Queues of I/O requests are queues of shared_ptr to IOSB.
@@ -131,7 +131,7 @@ namespace ts {
         //! @param [in] silent If true, do not report errors through the logger.
         //! @return True on success, false on error.
         //!
-        bool cancelAndWaitAsynchronousIO(NonBlockingDevice::IOSB& iosb, bool silent);
+        bool cancelAndWaitAsynchronousIO(Device::IOSB& iosb, bool silent);
 
         //!
         //! Deactivate all registrations for immediate and asynchronous I/O.
@@ -140,7 +140,7 @@ namespace ts {
         void deactivateAll(bool silent);
 
     private:
-        NonBlockingDevice& _device;
+        Device& _device;
         EventId _write_ready_id {};     // Reactor id for write-ready (immediate I/O).
         EventId _read_ready_id {};      // Reactor id for read-ready (immediate I/O).
         EventId _read_async_io_id {};   // Reactor id for I/O completion (asynchronous I/O), read (and write if same handle).

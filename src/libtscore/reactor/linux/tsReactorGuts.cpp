@@ -363,7 +363,7 @@ void ts::Reactor::Guts::processEventLoop()
                 // Try to read from the event file descriptor to verify that the event is actually pending. Loop on EAGAIN.
                 uint64_t data = 0;
                 bool success = ::read(evd.fd, &data, sizeof(data)) > 0;
-                if (!success && !NonBlockingDevice::IsPendingStatus(errno)) {
+                if (!success && !Device::IsPendingStatus(errno)) {
                     // Actual error, delete the event.
                     _reactor.report().error(u"error reading user event: %s", SysErrorCodeMessage());
                     sysDeleteEvent(sysevd, false);
@@ -378,7 +378,7 @@ void ts::Reactor::Guts::processEventLoop()
                 // Try to read the number of expirations.
                 uint64_t data = 0;
                 bool success = ::read(evd.fd, &data, sizeof(data)) > 0;
-                if (!success && !NonBlockingDevice::IsPendingStatus(errno)) {
+                if (!success && !Device::IsPendingStatus(errno)) {
                     // Actual error, delete the timer.
                     _reactor.report().error(u"error reading timer: %s", SysErrorCodeMessage());
                     sysDeleteTimer(sysevd, false);

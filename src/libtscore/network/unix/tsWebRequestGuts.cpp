@@ -221,8 +221,8 @@ private:
     ::CURLM*      _curlm {nullptr};            // "curl_multi" handler.
     ::CURL*       _curl {nullptr};             // "curl_easy" handler.
     ::curl_slist* _headers {nullptr};          // Request headers.
-    bool          _canRetry {false};           // Can retry the connection later.
-    UString       _certFile {};                // Latest CA certificates file.
+    bool          _can_retry {false};           // Can retry the connection later.
+    UString       _cert_file {};                // Latest CA certificates file.
     ByteBlock     _data {};                    // Received data, filled by writeCallback(), emptied by receive().
     char          _error[CURL_ERROR_SIZE] {0}; // Error message buffer for libcurl.
 
@@ -245,7 +245,7 @@ private:
 
 ts::WebRequest::SystemGuts::SystemGuts(WebRequest& request) :
     _request(request),
-    _certFile(UserHomeDirectory() + u"/.tscacert.pem")
+    _cert_file(UserHomeDirectory() + u"/.tscacert.pem")
 {
 }
 
@@ -293,15 +293,25 @@ ts::UString ts::WebRequest::SystemGuts::message(const UString& title, ENUM code,
 // Download operations from the WebRequest class.
 //----------------------------------------------------------------------------
 
-bool ts::WebRequest::startTransfer()
+bool ts::WebRequest::startTransfer(IOSB* iosb)
 {
-    return _guts->startTransfer(CERT_INITIAL);
+    if (!checkNonBlocking(iosb, u"web start transfer")) {
+        // Not the right blocking mode.
+        return SetLastSysErrorCode(SYS_ERROR);
+    }
+    else {
+        return _guts->startTransfer(CERT_INITIAL);
+    }
 }
 
-bool ts::WebRequest::receive(void* buffer, size_t maxSize, size_t& retSize)
+bool ts::WebRequest::receive(void* buffer, size_t max_size, size_t& ret_size, IOSB* iosb)
 {
-    if (_is_open) {
-        return _guts->receive(buffer, maxSize, &retSize, nullptr);
+    if (!checkNonBlocking(iosb, u"web receive")) {
+        // Not the right blocking mode.
+        return SetLastSysErrorCode(SYS_ERROR);
+    }
+    else if (_is_open) {
+        return _guts->receive(buffer, max_size, &ret_size, nullptr);
     }
     else {
         report().error(u"transfer not started");
@@ -347,19 +357,19 @@ bool ts::WebRequest::SystemGuts::startTransfer(CertState certState)
 
         // Make sure we start from a clean state.
         clear();
-        _canRetry = retries > 0;
+        _can_retry = retries > 0;
 
         // If no CA certificate file is specified, bypass certificate processing.
-        if (_certFile.empty()) {
+        if (_cert_file.empty()) {
             certState = CERT_NONE;
         }
 
         // Download the CA certificate file from CURL if requested.
-        const bool certFileExists = certState != CERT_NONE && fs::exists(_certFile);
-        if (certState == CERT_EXISTING && certFileExists && (Time::CurrentUTC() - GetFileModificationTimeUTC(_certFile)) < cn::days(1)) {
+        const bool certFileExists = certState != CERT_NONE && fs::exists(_cert_file);
+        if (certState == CERT_EXISTING && certFileExists && (Time::CurrentUTC() - GetFileModificationTimeUTC(_cert_file)) < cn::days(1)) {
             // The cert file is "fresh" (updated less than one day aga), no need to retry to load it, let's pretend we just downloaded it.
             certState = CERT_DOWNLOAD;
-            _request.report().debug(u"reusing recent CA cert file %s", _certFile);
+            _request.report().debug(u"reusing recent CA cert file %s", _cert_file);
         }
         else if ((certState == CERT_EXISTING && !certFileExists) || certState == CERT_DOWNLOAD) {
             // We need to download it. Jump to CERT_DOWNLOAD if there was no file.
@@ -372,9 +382,9 @@ bool ts::WebRequest::SystemGuts::startTransfer(CertState certState)
             certRequest.setProxyUser(_request._proxy_user, _request._proxy_password);
             certRequest.setReceiveTimeout(_request._receive_timeout);
             certRequest.setConnectionTimeout(_request._connection_timeout);
-            certRequest._guts->_certFile.clear(); // don't recurse in case of cert issue!
+            certRequest._guts->_cert_file.clear(); // don't recurse in case of cert issue!
 
-            if (!certRequest.downloadFile(FRESH_CACERT_URL, _certFile) || !fs::exists(_certFile)) {
+            if (!certRequest.downloadFile(FRESH_CACERT_URL, _cert_file) || !fs::exists(_cert_file)) {
                 _request.report().verbose(u"failed to get a fresh CA list, use default list");
                 certState = CERT_NONE;
             }
@@ -434,7 +444,7 @@ bool ts::WebRequest::SystemGuts::startTransfer(CertState certState)
 
         // Set the CA certificate file.
         if (status == ::CURLE_OK && (certState == CERT_EXISTING || certState == CERT_DOWNLOAD)) {
-            status = ::curl_easy_setopt(_curl, CURLOPT_CAINFO, _certFile.toUTF8().c_str());
+            status = ::curl_easy_setopt(_curl, CURLOPT_CAINFO, _cert_file.toUTF8().c_str());
         }
 
         // Set HTTPS insecure mode.
@@ -548,7 +558,7 @@ bool ts::WebRequest::SystemGuts::startTransfer(CertState certState)
             // In case of certificate error, try with an updated list of CA certificates.
             certState = CertState(certState + 1);
         }
-        else if (_canRetry) {
+        else if (_can_retry) {
             // No data received and some remaining retries.
             _request.report().debug(u"cannot start transfer, retrying after %s", retryInterval);
             retries--;
@@ -568,7 +578,7 @@ bool ts::WebRequest::SystemGuts::startTransfer(CertState certState)
 bool ts::WebRequest::SystemGuts::downloadError(const UString& msg, bool* certError)
 {
     // If we can retry the connection, display the message in debug mode only.
-    int level = _canRetry ? Severity::Debug : Severity::Error;
+    int level = _can_retry ? Severity::Debug : Severity::Error;
 
     // There is no real deterministic way of diagnosing certificate error.
     // In practice, we get messages like this one:
@@ -591,15 +601,15 @@ bool ts::WebRequest::SystemGuts::downloadError(const UString& msg, bool* certErr
 // Wait for data to be present in the reception buffer.
 //----------------------------------------------------------------------------
 
-bool ts::WebRequest::SystemGuts::receive(void* buffer, size_t maxSize, size_t* retSize, bool* certError)
+bool ts::WebRequest::SystemGuts::receive(void* buffer, size_t max_size, size_t* ret_size, bool* cert_error)
 {
     // Preset returned size as zero.
-    if (retSize != nullptr) {
-        *retSize = 0;
+    if (ret_size != nullptr) {
+        *ret_size = 0;
     }
 
     ::CURLMcode mstatus = ::CURLM_OK;
-    int runningHandles = 0;
+    int running_handles = 0;
 
     // If the response buffer is empty, wait for data.
     while (_data.empty() && !_request._interrupted) {
@@ -611,14 +621,14 @@ bool ts::WebRequest::SystemGuts::receive(void* buffer, size_t maxSize, size_t* r
             mstatus = ::curl_multi_perform(_curlm, &runningHandles);
         } while (mstatus == CURLM_CALL_MULTI_PERFORM);
 #else
-        mstatus = ::curl_multi_perform(_curlm, &runningHandles);
+        mstatus = ::curl_multi_perform(_curlm, &running_handles);
 #endif
         if (mstatus != ::CURLM_OK) {
-            return downloadError(multiMessage(u"download error", mstatus), certError);
+            return downloadError(multiMessage(u"download error", mstatus), cert_error);
         }
 
         // If there is no more running handle, no need to wait for more.
-        if (runningHandles == 0 || _request._interrupted) {
+        if (running_handles == 0 || _request._interrupted) {
             break;
         }
 
@@ -634,7 +644,7 @@ bool ts::WebRequest::SystemGuts::receive(void* buffer, size_t maxSize, size_t* r
             mstatus = ::curl_multi_wait(_curlm, nullptr, 0, 1000, &numfds);
 #endif
             if (mstatus != ::CURLM_OK) {
-                return downloadError(multiMessage(u"download error", mstatus), certError);
+                return downloadError(multiMessage(u"download error", mstatus), cert_error);
             }
         }
     }
@@ -646,7 +656,7 @@ bool ts::WebRequest::SystemGuts::receive(void* buffer, size_t maxSize, size_t* r
     }
 
     // If the data buffer is empty and there is no more running transfer, check status.
-    if (_data.empty() && runningHandles == 0) {
+    if (_data.empty() && running_handles == 0) {
         ::CURLMsg* msg = nullptr;
         int remainingMsg = 0;
         while ((msg = ::curl_multi_info_read(_curlm, &remainingMsg)) != nullptr) {
@@ -659,7 +669,7 @@ bool ts::WebRequest::SystemGuts::receive(void* buffer, size_t maxSize, size_t* r
                 }
                 else {
                     // Transfer error.
-                    return downloadError(easyMessage(u"download error", msg->data.result), certError);
+                    return downloadError(easyMessage(u"download error", msg->data.result), cert_error);
                 }
             }
         }
@@ -671,7 +681,7 @@ bool ts::WebRequest::SystemGuts::receive(void* buffer, size_t maxSize, size_t* r
     }
 
     // Now transfer data to the user.
-    const size_t size = buffer == nullptr ? 0 : std::min(_data.size(), maxSize);
+    const size_t size = buffer == nullptr ? 0 : std::min(_data.size(), max_size);
     if (size > 0) {
         MemCopy(buffer, _data.data(), size);
         if (size >= _data.size()) {
@@ -681,8 +691,8 @@ bool ts::WebRequest::SystemGuts::receive(void* buffer, size_t maxSize, size_t* r
             _data.erase(0, size);
         }
     }
-    if (retSize != nullptr) {
-        *retSize = size;
+    if (ret_size != nullptr) {
+        *ret_size = size;
     }
     return true;
 }
@@ -747,7 +757,7 @@ void ts::WebRequest::SystemGuts::clearUnderLock()
 
     // Cleanup response data buffer.
     _data.clear();
-    _canRetry = false;
+    _can_retry = false;
 }
 
 
@@ -787,7 +797,7 @@ size_t ts::WebRequest::SystemGuts::WriteCallback(char *ptr, size_t size, size_t 
         const size_t dataSize = size * nmemb;
         guts->_data.append(ptr, dataSize);
         // After receiving some data, it is no longer possible to retry the connection.
-        guts->_canRetry = false;
+        guts->_can_retry = false;
         return dataSize;
     }
 }

@@ -40,7 +40,7 @@ namespace ts {
     //! - Asynchronous I/O (Windows)
     //!   - I/O completion ports (aka IOCP)
     //!
-    //! See the documentation of class NonBlockingDevice for a detailed explanation of the differences.
+    //! See the documentation of class Device for a detailed explanation of the differences.
     //!
     //! The class Reactor encapsulates the various implementations and proposes a portable interface.
     //! However, while it is possible to unify the various types of immediate I/O (kqueue and epoll)
@@ -293,7 +293,7 @@ namespace ts {
         //!
         //! IMPORTANT: After canceling all asynchronous I/O, the application shall wait for the reception
         //! of all I/O completions (presumably with an error status) before releasing the data buffers.
-        //! @see NonBlockingDevice
+        //! @see Device
         //!
         bool cancelAsynchronousIO(EventId id, bool silent = false);
 
@@ -306,7 +306,7 @@ namespace ts {
         //! @param [in] silent If true, do not report errors through the logger.
         //! @return True on success, false on error.
         //!
-        bool cancelAndWaitAsynchronousIO(EventId id, NonBlockingDevice::IOSB& iosb, bool silent = false);
+        bool cancelAndWaitAsynchronousIO(EventId id, Device::IOSB& iosb, bool silent = false);
 
         //!
         //! Delete a notification of asynchronous I/O.
@@ -403,7 +403,7 @@ namespace ts {
             virtual bool cancelProcessTermination(EventId id, bool silent) = 0;
             virtual void* newAsynchronousIO(ReactorHandlerInterface* handler, SysSocketType sock);
             virtual bool cancelAsynchronousIO(EventId id, bool silent);
-            virtual bool cancelAndWaitAsynchronousIO(EventId id, NonBlockingDevice::IOSB& iosb, bool silent);
+            virtual bool cancelAndWaitAsynchronousIO(EventId id, Device::IOSB& iosb, bool silent);
             virtual bool deleteAsynchronousIO(EventId id, bool silent);
             virtual void* newReadNotify(ReactorHandlerInterface* handler, SysSocketType sock);
             virtual bool deleteReadNotify(EventId id, bool silent);

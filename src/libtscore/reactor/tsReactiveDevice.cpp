@@ -13,7 +13,7 @@
 // Constructor and destructor.
 //----------------------------------------------------------------------------
 
-ts::ReactiveDevice::ReactiveDevice(Reactor& reactor, NonBlockingDevice& device) :
+ts::ReactiveDevice::ReactiveDevice(Reactor& reactor, Device& device) :
     ReactiveBase(reactor),
     _device(device)
 {
@@ -174,7 +174,7 @@ void ts::ReactiveDevice::cancelAsynchronousIO(bool silent)
     }
 }
 
-bool ts::ReactiveDevice::cancelAndWaitAsynchronousIO(NonBlockingDevice::IOSB& iosb, bool silent)
+bool ts::ReactiveDevice::cancelAndWaitAsynchronousIO(Device::IOSB& iosb, bool silent)
 {
     if constexpr (ReactorSupport::UseAsynchronousIO()) {
         if (_write_async_io_id.isValid()) {

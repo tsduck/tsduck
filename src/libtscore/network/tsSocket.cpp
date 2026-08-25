@@ -18,12 +18,12 @@
 //----------------------------------------------------------------------------
 
 ts::Socket::Socket(Report* report, bool non_blocking) :
-    NonBlockingDevice(report, non_blocking)
+    Device(report, non_blocking)
 {
 }
 
 ts::Socket::Socket(ReporterBase* delegate, bool non_blocking) :
-    NonBlockingDevice(delegate, non_blocking)
+    Device(delegate, non_blocking)
 {
 }
 

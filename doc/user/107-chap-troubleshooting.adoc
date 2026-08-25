@@ -95,8 +95,20 @@ endif::[]
 |On {unix}, define a retry policy for Web requests (HTTP, HLS, etc.)
  See xref:web-retry[xrefstyle=short] below.
 
+|TS_DEBUG_ARGS
+|For developers using the TSCore library, display debug messages on standard error
+ about command line arguments redefinition issues.
+
+|TS_DEBUG_NEW_VERSION
+|While searching for new versions of TSDuck (see `TSDUCK_NO_VERSION_CHECK`), display debug
+ messages on standard error. See `TS_CERR_DEBUG_LEVEL` to enable debug messages no standard error.
+
 |TS_DEBUG_OPENSSL
 |On {unix}, display OpenSSL error messages on standard error.
+
+|TS_FORCED_VERSION
+|When it contains a string in the form `x.y-z`, it is used as a fake version number for TSDuck.
+ This is only useful to test the detection of new versions. Avoid playing with this otherwise.
 
 |TS_NO_CRC32_INSTRUCTIONS
 |Do not use CRC32 accelerated instructions even when available on the current CPU.
@@ -105,9 +117,9 @@ endif::[]
 |TS_NO_HARDWARE_ACCELERATION
 |Do not use any form of accelerated instructions even when available on the current CPU.
 
-|TS_FORCED_VERSION
-|When it contains a string in the form `x.y-z`, it is used as a fake version number for TSDuck.
- This is only useful to test the detection of new versions. Avoid playing with this otherwise.
+|TS_REACTOR_TRACE
+|When defined to any non-empty value, display debug messages about low-level details of the "reactor" classes
+ (event dispatcher: epoll on Linux, kqueue on macOS and FreeBSD, IOCP on Windows).
 
 |TSDUCK_GITHUB_API_TOKEN
 |Used with `tsversion` to authenticate to GitHub when checking or downloading the TSDuck latest versions from GitHub.

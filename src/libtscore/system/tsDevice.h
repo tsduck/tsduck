@@ -73,9 +73,9 @@ namespace ts {
     //!   all corresponding I/O completions before releasing the memory for the data buffers, including
     //!   when closing the device handle.
     //!
-    class TSCOREDLL NonBlockingDevice: public ReporterBase
+    class TSCOREDLL Device: public ReporterBase
     {
-        TS_NOBUILD_NOCOPY(NonBlockingDevice);
+        TS_NOBUILD_NOCOPY(Device);
     public:
         //!
         //! Constructor.
@@ -83,19 +83,19 @@ namespace ts {
         //! exists or setReport() is used with another Report object. If @a report is null, log messages are discarded.
         //! @param [in] non_blocking It true, the device is initially set in non-blocking mode.
         //!
-        explicit NonBlockingDevice(Report* report, bool non_blocking = false) : ReporterBase(report), _is_non_blocking(non_blocking) {}
+        explicit Device(Report* report, bool non_blocking = false) : ReporterBase(report), _is_non_blocking(non_blocking) {}
 
         //!
         //! Constructor.
         //! @param [in] delegate Use the report of another ReporterBase. If @a delegate is null, log messages are discarded.
         //! @param [in] non_blocking It true, the device is initially set in non-blocking mode.
         //!
-        explicit NonBlockingDevice(ReporterBase* delegate, bool non_blocking = false) : ReporterBase(delegate), _is_non_blocking(non_blocking) {}
+        explicit Device(ReporterBase* delegate, bool non_blocking = false) : ReporterBase(delegate), _is_non_blocking(non_blocking) {}
 
         //!
         //! Destructor.
         //!
-        virtual ~NonBlockingDevice() override;
+        virtual ~Device() override;
 
         //!
         //! Set the device in non-blocking mode.
@@ -197,7 +197,7 @@ namespace ts {
         //! @return The underlying file descriptor for read operations or SYS_SOCKET_INVALID if the socket is not open for write.
         //! @see getHandle()
         //!
-         SysSocketType getWriteSocket() const;
+        SysSocketType getWriteSocket() const;
 
         //!
         //! This structure indicates the status of a non-blocking I/O.
@@ -361,14 +361,14 @@ namespace ts {
         //! @param [out] written_size Actually written size in bytes.
         //! Can be less than @a size in case of error in the middle of the write.
         //! @param [in,out] iosb Address of an IOSB structure. If non-null, the stream must be in non-blocking mode.
-        //! When null, the stream must be in blocking mode (the default). See the description of ts::NonBlockingDevice::IOSB.
+        //! When null, the stream must be in blocking mode (the default). See the description of ts::Device::IOSB.
         //! @param [in] position This value is only used on Windows with asynchronous I/O on disk file. On Windows, when asynchronous
         //! I/O are used on random access files, the file position is not maintained. Each read or write operation is performed at
         //! the specified absolute @a position.
         //! @return Error code. When the I/O is non-blocking/asynchronous and pending, return SYS_SUCCESS and iosb->pending is true.
         //! Return SYS_EOF when it is no longer possible to write (e.g. broken pipe).
         //!
-        int genericSystemWrite(const void* addr, size_t size, size_t& written_size, NonBlockingDevice::IOSB* iosb, uint64_t position);
+        int genericSystemWrite(const void* addr, size_t size, size_t& written_size, Device::IOSB* iosb, uint64_t position);
 
         //!
         //! Generic system read operation.
@@ -380,14 +380,14 @@ namespace ts {
         //! If zero, end of file has been reached or an error occurred.
         //! @param [in] abort If non-zero, invoked when I/O is interrupted (in case of user-interrupt, return, otherwise retry).
         //! @param [in,out] iosb Address of an IOSB structure. If non-null, the stream must be in non-blocking mode.
-        //! When null, the stream must be in blocking mode (the default). See the description of ts::NonBlockingDevice::IOSB.
+        //! When null, the stream must be in blocking mode (the default). See the description of ts::Device::IOSB.
         //! @param [in] position This value is only used on Windows with asynchronous I/O on disk file. On Windows, when asynchronous
         //! I/O are used on random access files, the file position is not maintained. Each read or write operation is performed at
         //! the specified absolute @a position.
         //! @return Error code. When the I/O is non-blocking/asynchronous and pending, return SYS_SUCCESS and iosb->pending is true.
         //! Return SYS_EOF when it is no longer possible to read.
         //!
-        int genericSystemRead(void* addr, size_t max_size, size_t& ret_size, const AbortInterface* abort, NonBlockingDevice::IOSB* iosb, uint64_t position);
+        int genericSystemRead(void* addr, size_t max_size, size_t& ret_size, const AbortInterface* abort, Device::IOSB* iosb, uint64_t position);
 
     private:
         bool _is_non_blocking;

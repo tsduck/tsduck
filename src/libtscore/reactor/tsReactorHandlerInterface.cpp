@@ -16,4 +16,4 @@ void ts::ReactorHandlerInterface::handleBroadcastEvent(Reactor&, int, const Obje
 void ts::ReactorHandlerInterface::handleProcessTermination(Reactor&, EventId, int) {}
 void ts::ReactorHandlerInterface::handleReadReady(Reactor&, EventId, int) {}
 void ts::ReactorHandlerInterface::handleWriteReady(Reactor&, EventId, int) {}
-void ts::ReactorHandlerInterface::handleAsynchronousIO(Reactor&, EventId, NonBlockingDevice::IOSB&, size_t) {}
+void ts::ReactorHandlerInterface::handleAsynchronousIO(Reactor&, EventId, Device::IOSB&, size_t) {}

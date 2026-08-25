@@ -28,12 +28,12 @@
 //----------------------------------------------------------------------------
 
 ts::BinaryFile::BinaryFile(Report* report, bool non_blocking) :
-    NonBlockingDevice(report, non_blocking)
+    Device(report, non_blocking)
 {
 }
 
 ts::BinaryFile::BinaryFile(ReporterBase* delegate, bool non_blocking) :
-    NonBlockingDevice(delegate, non_blocking)
+    Device(delegate, non_blocking)
 {
 }
 

@@ -63,14 +63,14 @@ ts::UString ts::WebRequest::_default_proxy_assword(DefaultProxy::Instance().url.
 // Constructors and destructor.
 //----------------------------------------------------------------------------
 
-ts::WebRequest::WebRequest(Report* report) :
-    ReporterBase(report)
+ts::WebRequest::WebRequest(Report* report, bool non_blocking) :
+    Device(report, non_blocking)
 {
     allocateGuts();
 }
 
-ts::WebRequest::WebRequest(ReporterBase* delegate) :
-    ReporterBase(delegate)
+ts::WebRequest::WebRequest(ReporterBase* delegate, bool non_blocking) :
+    Device(delegate, non_blocking)
 {
     allocateGuts();
 }
@@ -362,7 +362,7 @@ void ts::WebRequest::processReponseHeaders(const UString& text)
 // Open an URL and start the transfer.
 //----------------------------------------------------------------------------
 
-bool ts::WebRequest::open(const UString& url)
+bool ts::WebRequest::open(const UString& url, IOSB* iosb)
 {
     if (url.empty()) {
         report().error(u"no URL specified");
@@ -383,7 +383,7 @@ bool ts::WebRequest::open(const UString& url)
     _interrupted = false;
 
     // System-specific transfer initialization.
-    _is_open = startTransfer();
+    _is_open = startTransfer(iosb);
     return _is_open;
 }
 
@@ -395,6 +395,11 @@ bool ts::WebRequest::open(const UString& url)
 bool ts::WebRequest::downloadBinaryContent(const UString& url, ByteBlock& data, size_t chunk_size)
 {
     data.clear();
+
+    // The request must be in blocking mode.
+    if (!checkNonBlocking(false, u"web download")) {
+        return SetLastSysErrorCode(SYS_ERROR);
+    }
 
     // Transfer initialization.
     if (!open(url)) {
@@ -460,6 +465,11 @@ bool ts::WebRequest::downloadTextContent(const UString& url, UString& text, size
 
 bool ts::WebRequest::downloadFile(const UString& url, const fs::path& file_name, size_t chunk_size)
 {
+    // The request must be in blocking mode.
+    if (!checkNonBlocking(false, u"web download")) {
+        return SetLastSysErrorCode(SYS_ERROR);
+    }
+
     // Transfer initialization.
     if (!open(url)) {
         return false;

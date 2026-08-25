@@ -51,7 +51,7 @@
     //! @see TS_USE_ASYNCHRONOUS_IO
     //! @see ts::ReactorSupport::UseImmediateIO()
     //! @see ts::ReactorSupport::UseAsynchronousIO()
-    //! @see ts::NonBlockingDevice
+    //! @see ts::Device
     //!
     #define TS_USE_IMMEDIATE_IO 1
 #endif
@@ -73,7 +73,7 @@
     //! @see TS_USE_IMMEDIATE_IO
     //! @see ts::ReactorSupport::UseImmediateIO()
     //! @see ts::ReactorSupport::UseAsynchronousIO()
-    //! @see ts::NonBlockingDevice
+    //! @see ts::Device
     //!
     #define TS_USE_ASYNCHRONOUS_IO 1
 #endif
@@ -107,7 +107,7 @@ namespace ts {
         //! }
         //! @endcode
         //! @see UseImmediateIO()
-        //! @see NonBlockingDevice
+        //! @see Device
         //!
         static consteval bool UseAsynchronousIO()
         {
@@ -138,7 +138,7 @@ namespace ts {
         //! }
         //! @endcode
         //! @see UseAsynchronousIO()
-        //! @see NonBlockingDevice
+        //! @see Device
         //!
         static consteval bool UseImmediateIO() { return !UseAsynchronousIO(); }
 

@@ -14,7 +14,7 @@
 // Constructors and destructor.
 //----------------------------------------------------------------------------
 
-ts::ReactiveStream::ReactiveStream(Reactor& reactor, NonBlockingDevice& device, StreamInterface& stream) :
+ts::ReactiveStream::ReactiveStream(Reactor& reactor, Device& device, StreamInterface& stream) :
     ReactiveDevice(reactor, device),
     _stream(stream)
 {
@@ -495,7 +495,7 @@ void ts::ReactiveStream::processReceiveBuffer(ByteBlock& data, ReactiveInputCont
 // Called only in the asynchronous I/O model.
 //----------------------------------------------------------------------------
 
-void ts::ReactiveStream::handleAsynchronousIO(Reactor& reactor, EventId id, NonBlockingDevice::IOSB& iosb, size_t io_size)
+void ts::ReactiveStream::handleAsynchronousIO(Reactor& reactor, EventId id, Device::IOSB& iosb, size_t io_size)
 {
     // At this point, we only have an IOSB, not a std::shared_ptr<IOSB>.
     // Our custom request is in the react_data of the IOSB.
