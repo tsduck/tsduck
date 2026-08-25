@@ -310,15 +310,18 @@ bool ts::TLSContext::initClient(const TLSConnectionBase& params)
         // Set DNS names for verification of the server's certificate.
         bool names_ok = true;
         if (params.verifyPeer() && !params.serverName().empty()) {
+            // SSL_set1_host() and SSL_add1_host() are deprecated since OpenSSL 4.0.
+            // They were wrappers around these calls on the verification parameters.
+            X509_VERIFY_PARAM* const vparam = SSL_get0_param(_guts->ssl);
             // Set main server name.
-            if (!SSL_set1_host(_guts->ssl, params.serverName().toUTF8().c_str())) {
-                report().error(u"error setting TLS server name (SSL_set1_host)");
+            if (!X509_VERIFY_PARAM_set1_host(vparam, params.serverName().toUTF8().c_str(), 0)) {
+                report().error(u"error setting TLS server name (X509_VERIFY_PARAM_set1_host)");
                 break; // do {} while
             }
             // Set additional names.
             for (const auto& name : params.additionalServerNames()) {
-                if (!name.empty() && !SSL_add1_host(_guts->ssl, name.toUTF8().c_str())) {
-                    report().error(u"error setting TLS server name (SSL_set1_host)");
+                if (!name.empty() && !X509_VERIFY_PARAM_add1_host(vparam, name.toUTF8().c_str(), 0)) {
+                    report().error(u"error setting TLS server name (X509_VERIFY_PARAM_add1_host)");
                     names_ok = false;
                     break; // inner for() {} => need names_ok to exit outer do {} while
                 }

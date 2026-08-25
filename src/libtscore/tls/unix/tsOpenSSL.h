@@ -44,6 +44,11 @@
         // emulates OpenSSL v3, except that OPENSSL_atexit is not available.
         #define OPENSSL_atexit atexit
     #endif
+    #if OPENSSL_VERSION_MAJOR >= 4
+        // OpenSSL v4 removed OPENSSL_atexit().
+        #include <cstdlib>
+        #define OPENSSL_atexit atexit
+    #endif
     #include "tsAfterStandardHeaders.h"
 
 #else

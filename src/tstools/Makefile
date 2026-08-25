@@ -28,7 +28,7 @@ tsduck-completion.bash: $(addsuffix .cpp,$(ALLTOOLS))
 	$(call LOG,[GEN] $@) $(SED) -i -e 's/^__ts_cmds=(.*$$/__ts_cmds=($(ALLTOOLS))/' $@
 
 # Some executables depend on PCSC.
-$(BINDIR)/tssmartcard: LDLIBS_EXTRA = $(LDLIBS_PCSC)
+$(BINDIR)/tssmartcard: override LDLIBS_EXTRA += $(LDLIBS_PCSC)
 
 ifeq ($(STATIC),)
     # With dynamic link (the default), we use the shareable library.

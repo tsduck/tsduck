@@ -220,13 +220,20 @@ bool ts::TLSCertificate::createEphemeralCertificate(size_t rsa_bits)
         }
 
         // Set subject name (CN) and issuer to host name (this is a self-signed certificate).
-        X509_NAME* subject_name = X509_get_subject_name(x509); // internal pointer inside x509
-        if (!X509_NAME_add_entry_by_txt(subject_name, "CN", MBSTRING_ASC, reinterpret_cast<const unsigned char*>(Subject().toUTF8().c_str()), -1, -1, 0)) {
-            report().error(u"error setting subject of certificate");
+        // X509_get_subject_name() returns a const pointer since OpenSSL 4.0, so the
+        // name is built separately and handed to the certificate, which copies it.
+        X509_NAME* const subject_name = X509_NAME_new();
+        if (subject_name == nullptr) {
+            report().error(u"error allocating subject of certificate");
             break;
         }
-        if (!X509_set_issuer_name(x509, subject_name)) {
-            report().error(u"error setting issuer of certificate");
+        const bool subject_ok =
+            X509_NAME_add_entry_by_txt(subject_name, "CN", MBSTRING_ASC, reinterpret_cast<const unsigned char*>(Subject().toUTF8().c_str()), -1, -1, 0) &&
+            X509_set_subject_name(x509, subject_name) &&
+            X509_set_issuer_name(x509, subject_name);
+        X509_NAME_free(subject_name);
+        if (!subject_ok) {
+            report().error(u"error setting subject of certificate");
             break;
         }
 

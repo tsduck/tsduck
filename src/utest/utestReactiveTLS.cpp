@@ -72,6 +72,7 @@ namespace {
     void TextClient::handleTCPConnected(ts::ReactiveTCPConnection& sock, int error_code, const ts::ObjectPtr& user_data)
     {
         _debug << "TextClient::handleTCPConnected: error code: " << error_code << std::endl;
+        TSUNIT_EQUAL(ts::SYS_SUCCESS, error_code);
         TSUNIT_ASSERT(_rtclient.startReadText(this));
         TSUNIT_ASSERT(_rtclient.startWriteLine(nullptr, u"GET / HTTP/1.0", false));
         TSUNIT_ASSERT(_rtclient.startWriteLine(nullptr, u"Host: " + _server_name, false));
@@ -89,6 +90,7 @@ namespace {
         }
         else {
             _debug << "TextClient::handleTextLine: \"" << line << "\", error code: " << error_code << std::endl;
+            TSUNIT_EQUAL(ts::SYS_SUCCESS, error_code);
         }
     }
 
