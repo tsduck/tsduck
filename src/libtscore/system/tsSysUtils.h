@@ -113,10 +113,9 @@ namespace ts {
     constexpr int SYS_PENDING_IO = -5;
 
     //!
-    //! A synthetic error code value which means "I/O not completed".
-    //! This value is not a valid error code on any operating system.
-    //! On UNIX systems, it means "non-blocking I/O not started".
-    //! On Windows systems, it means "asynchronous I/O in progress".
+    //! A synthetic error code value which means that an I/O was invoked with the incorrect blocking mode.
+    //! When a device is in blocking mode (the default), the @a iosb parameter must always be nullptr.
+    //! When a device is in non-blocking mode, the @a iosb parameter must never be nullptr.
     //!
     constexpr int SYS_IO_BLOCKING = -6;
 
