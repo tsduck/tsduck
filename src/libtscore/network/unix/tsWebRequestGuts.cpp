@@ -295,9 +295,9 @@ ts::UString ts::WebRequest::SystemGuts::message(const UString& title, ENUM code,
 
 bool ts::WebRequest::startTransfer(IOSB* iosb)
 {
-    if (!checkNonBlocking(iosb, u"web start transfer")) {
+    if (!checkNonBlocking(iosb, u"WebRequest::startTransfer")) {
         // Not the right blocking mode.
-        return SetLastSysErrorCode(SYS_ERROR);
+        return false;
     }
     else {
         return _guts->startTransfer(CERT_INITIAL);
@@ -306,9 +306,9 @@ bool ts::WebRequest::startTransfer(IOSB* iosb)
 
 bool ts::WebRequest::receive(void* buffer, size_t max_size, size_t& ret_size, IOSB* iosb)
 {
-    if (!checkNonBlocking(iosb, u"web receive")) {
+    if (!checkNonBlocking(iosb, u"WebRequest::receive")) {
         // Not the right blocking mode.
-        return SetLastSysErrorCode(SYS_ERROR);
+        return false;
     }
     else if (_is_open) {
         return _guts->receive(buffer, max_size, &ret_size, nullptr);

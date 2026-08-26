@@ -113,6 +113,14 @@ namespace ts {
     constexpr int SYS_PENDING_IO = -5;
 
     //!
+    //! A synthetic error code value which means "I/O not completed".
+    //! This value is not a valid error code on any operating system.
+    //! On UNIX systems, it means "non-blocking I/O not started".
+    //! On Windows systems, it means "asynchronous I/O in progress".
+    //!
+    constexpr int SYS_IO_BLOCKING = -6;
+
+    //!
     //! Translate an error code, mapping to some portable code.
     //! All successful status are translated into SYS_SUCCESS.
     //! Cancelation and end-of-file conditions are translated into SYS_CANCELED and SYS_EOF.

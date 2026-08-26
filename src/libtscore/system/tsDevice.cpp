@@ -91,6 +91,7 @@ bool ts::Device::checkNonBlocking(bool non_blocking, const UChar* opname)
     }
     else {
         report().error(u"internal error: %s called in %sblocking mode", opname, non_blocking ? u"" : u"non-");
+        SetLastSysErrorCode(SYS_IO_BLOCKING);
         return false;
     }
 }
@@ -185,9 +186,9 @@ int ts::Device::genericSystemWrite(const void* addr, size_t size, size_t& writte
     int err_code = SYS_SUCCESS;
     const SysHandleType hfd = getWriteHandle();
 
-    if (!checkNonBlocking(iosb, u"system write")) {
+    if (!checkNonBlocking(iosb, u"Device::genericSystemWrite")) {
         // Not the right blocking mode.
-        return SetLastSysErrorCode(SYS_ERROR);
+        return SYS_IO_BLOCKING;
     }
     if (size == 0) {
         // Trivial case of zero-write.
@@ -280,9 +281,9 @@ int ts::Device::genericSystemRead(void* addr, size_t max_size, size_t& ret_size,
     int err_code = SYS_SUCCESS;
     const SysHandleType hfd = getReadHandle();
 
-    if (!checkNonBlocking(iosb, u"system read")) {
+    if (!checkNonBlocking(iosb, u"Device::genericSystemRead")) {
         // Not the right blocking mode.
-        return SetLastSysErrorCode(SYS_ERROR);
+        return SYS_IO_BLOCKING;
     }
     if (max_size == 0) {
         // Trivial case of zero-read.

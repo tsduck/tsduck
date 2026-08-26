@@ -397,8 +397,8 @@ bool ts::WebRequest::downloadBinaryContent(const UString& url, ByteBlock& data, 
     data.clear();
 
     // The request must be in blocking mode.
-    if (!checkNonBlocking(false, u"web download")) {
-        return SetLastSysErrorCode(SYS_ERROR);
+    if (!checkNonBlocking(false, u"WebRequest::downloadBinaryContent")) {
+        return false;
     }
 
     // Transfer initialization.
@@ -466,8 +466,8 @@ bool ts::WebRequest::downloadTextContent(const UString& url, UString& text, size
 bool ts::WebRequest::downloadFile(const UString& url, const fs::path& file_name, size_t chunk_size)
 {
     // The request must be in blocking mode.
-    if (!checkNonBlocking(false, u"web download")) {
-        return SetLastSysErrorCode(SYS_ERROR);
+    if (!checkNonBlocking(false, u"WebRequest::downloadFile")) {
+        return false;
     }
 
     // Transfer initialization.

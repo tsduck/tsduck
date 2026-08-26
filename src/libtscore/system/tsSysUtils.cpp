@@ -111,12 +111,13 @@ std::string ts::SysErrorCodeMessage(int code, const std::error_category* categor
     // With the default category, try the synthetic code first.
     if (category == nullptr) {
         switch (code) {
-            case SYS_SUCCESS:    return "success";
-            case SYS_ERROR:      return "unknown error";
-            case SYS_CANCELED:   return "canceled";
-            case SYS_EOF:        return "end of file";
-            case SYS_REJECTED:   return "rejected";
-            case SYS_PENDING_IO: return "pending I/O";
+            case SYS_SUCCESS:     return "success";
+            case SYS_ERROR:       return "unknown error";
+            case SYS_CANCELED:    return "canceled";
+            case SYS_EOF:         return "end of file";
+            case SYS_REJECTED:    return "rejected";
+            case SYS_PENDING_IO:  return "pending I/O";
+            case SYS_IO_BLOCKING: return "invalid I/O blocking mode";
             default: break;
         }
     }
