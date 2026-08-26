@@ -511,13 +511,7 @@ bool ts::hls::PlayList::loadURL(const URL& url, bool strict, const WebRequestArg
 
     // Build a web request to download the playlist.
     WebRequest web(&report);
-    web.setArgs(args);
-    if (args.use_cookies) {
-        web.enableCookies(args.cookies_file);
-    }
-    else {
-        web.disableCookies();
-    }
+    web.args() = args;
 
     // Download the content.
     UString text;
@@ -527,11 +521,11 @@ bool ts::hls::PlayList::loadURL(const URL& url, bool strict, const WebRequestArg
     }
 
     // Save the final URL in case of redirections.
-    _original = web.finalURL();
+    _original = web.status().finalURL();
     _url.setURL(_original);
 
     // Check MIME type of the downloaded content.
-    const UString mime(web.mimeType());
+    const UString mime(web.status().mimeType());
     report.debug(u"MIME type: %s", mime);
 
     // Check strict conformance: according to RFC 8216, a playlist must either ends in .m3u8 or .m3u - OR -

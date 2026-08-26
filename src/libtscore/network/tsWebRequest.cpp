@@ -12,7 +12,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsWebRequest.h"
-#include "tsFileUtils.h"
 #include "tsErrCodeReport.h"
 #include "tsURL.h"
 #include "tsFeatures.h"
@@ -29,34 +28,6 @@
 #endif
 
 TS_REGISTER_FEATURE(u"http", u"Web library", SUPPORT, ts::WebRequest::GetLibraryVersion);
-
-
-//----------------------------------------------------------------------------
-// A private singleton to initialize the default proxy from environment
-// variables https_proxy and http_proxy.
-//----------------------------------------------------------------------------
-
-namespace {
-    class DefaultProxy
-    {
-        TS_SINGLETON(DefaultProxy);
-    public:
-        const ts::URL url;
-    };
-
-    TS_DEFINE_SINGLETON(DefaultProxy);
-
-    DefaultProxy::DefaultProxy() :
-        url(ts::GetEnvironment(u"https_proxy", ts::GetEnvironment(u"http_proxy")))
-    {
-    }
-}
-
-// WebRequest static fields:
-ts::UString ts::WebRequest::_default_proxy_host(DefaultProxy::Instance().url.getHost());
-uint16_t    ts::WebRequest::_default_proxy_port = DefaultProxy::Instance().url.getPort();
-ts::UString ts::WebRequest::_default_proxy_user(DefaultProxy::Instance().url.getUserName());
-ts::UString ts::WebRequest::_default_proxy_assword(DefaultProxy::Instance().url.getPassword());
 
 
 //----------------------------------------------------------------------------
@@ -81,280 +52,7 @@ ts::WebRequest::~WebRequest()
         deleteGuts();
         _guts = nullptr;
     }
-    if (_delete_cookies_file) {
-        deleteCookiesFile();
-    }
-}
-
-
-//----------------------------------------------------------------------------
-// Set/get proxy options.
-//----------------------------------------------------------------------------
-
-void ts::WebRequest::setProxyHost(const UString& host, uint16_t port)
-{
-    _proxy_host = host;
-    _proxy_port = port;
-}
-
-void ts::WebRequest::setProxyUser(const UString& user, const UString& password)
-{
-    _proxy_user = user;
-    _proxy_password = password;
-}
-
-void ts::WebRequest::SetDefaultProxyHost(const UString& host, uint16_t port)
-{
-    _default_proxy_host = host;
-    _default_proxy_port = port;
-}
-
-void ts::WebRequest::SetDefaultProxyUser(const UString& user, const UString& password)
-{
-    _default_proxy_user = user;
-    _default_proxy_assword = password;
-}
-
-const ts::UString& ts::WebRequest::proxyHost() const
-{
-    return _proxy_host.empty() ? _default_proxy_host : _proxy_host;
-}
-
-uint16_t ts::WebRequest::proxyPort() const
-{
-    return _proxy_port == 0 ? _default_proxy_port : _proxy_port;
-}
-
-const ts::UString& ts::WebRequest::proxyUser() const
-{
-    return _proxy_user.empty() ? _default_proxy_user : _proxy_user;
-}
-
-const ts::UString& ts::WebRequest::proxyPassword() const
-{
-    return _proxy_password.empty() ? _default_proxy_assword : _proxy_password;
-}
-
-
-//----------------------------------------------------------------------------
-// Set global cookie management.
-//----------------------------------------------------------------------------
-
-void ts::WebRequest::enableCookies(const fs::path& file_name)
-{
-    _use_cookies = true;
-    // Delete previous cookies file.
-    if (_delete_cookies_file) {
-        deleteCookiesFile();
-    }
-    // If the file name is not specified, delete the temporary file in the destructor.
-    _delete_cookies_file = file_name.empty();
-    _cookies_file_name = _delete_cookies_file ? TempFile(u".cookies") : file_name;
-}
-
-void ts::WebRequest::disableCookies()
-{
-    _use_cookies = false;
-    if (_delete_cookies_file) {
-        deleteCookiesFile();
-    }
-}
-
-fs::path ts::WebRequest::getCookiesFileName() const
-{
-    return _cookies_file_name;
-}
-
-bool ts::WebRequest::deleteCookiesFile() const
-{
-    if (_cookies_file_name.empty() || !fs::exists(_cookies_file_name)) {
-        // No cookies file to delete.
-        return true;
-    }
-    else {
-        report().debug(u"deleting cookies file %s", _cookies_file_name);
-        return fs::remove(_cookies_file_name, &ErrCodeReport(report(), u"error deleting", _cookies_file_name));
-    }
-}
-
-
-//----------------------------------------------------------------------------
-// Set various arguments from command line.
-//----------------------------------------------------------------------------
-
-void ts::WebRequest::setArgs(const ts::WebRequestArgs& args)
-{
-    if (!args.proxy_host.empty()) {
-        setProxyHost(args.proxy_host, args.proxy_port);
-    }
-    if (!args.proxy_user.empty()) {
-        setProxyUser(args.proxy_user, args.proxy_password);
-    }
-    if (!args.user_agent.empty()) {
-        setUserAgent(args.user_agent);
-    }
-    if (args.connection_timeout > cn::milliseconds::zero()) {
-        setConnectionTimeout(args.connection_timeout);
-    }
-    if (args.receive_timeout > cn::milliseconds::zero()) {
-        setReceiveTimeout(args.receive_timeout);
-    }
-    if (args.use_cookies) {
-        enableCookies(args.cookies_file);
-    }
-    if (args.use_compression) {
-        enableCompression();
-    }
-    for (const auto& it : args.headers) {
-        setRequestHeader(it.first, it.second);
-    }
-}
-
-
-//----------------------------------------------------------------------------
-// Set POST data.
-//----------------------------------------------------------------------------
-
-void ts::WebRequest::setPostData(const UString& data, const UString content_type)
-{
-    data.toUTF8(_post_data);
-    if (!content_type.empty() && !_post_data.empty()) {
-        deleteRequestHeader(u"Content-Type");
-        setRequestHeader(u"Content-Type", content_type);
-    }
-}
-
-void ts::WebRequest::setPostData(const ByteBlock& data)
-{
-    _post_data = data;
-}
-
-void ts::WebRequest::clearPostData()
-{
-    _post_data.clear();
-}
-
-
-//----------------------------------------------------------------------------
-// Set request headers.
-//----------------------------------------------------------------------------
-
-void ts::WebRequest::setRequestHeader(const UString& name, const UString& value)
-{
-    // Check for duplicates on key AND value (multiple headers with the same key are permitted)
-    for (const auto& header : _request_headers) {
-        if (header.first == name && header.second == value) {
-            return;
-        }
-    }
-    _request_headers.insert(std::make_pair(name, value));
-}
-
-void ts::WebRequest::deleteRequestHeader(const UString& name)
-{
-    _request_headers.erase(name);
-}
-
-void ts::WebRequest::clearRequestHeaders()
-{
-    _request_headers.clear();
-}
-
-
-//----------------------------------------------------------------------------
-// Get the value of response headers.
-//----------------------------------------------------------------------------
-
-ts::UString ts::WebRequest::reponseHeader(const UString& name) const
-{
-    const auto it = _response_headers.find(name);
-    return it == _response_headers.end() ? UString() : it->second;
-}
-
-
-//----------------------------------------------------------------------------
-// Get the MIME type in the response headers.
-//----------------------------------------------------------------------------
-
-ts::UString ts::WebRequest::mimeType(bool simple, bool lowercase) const
-{
-    // Get complete MIME type.
-    UString mime(reponseHeader(u"Content-Type"));
-
-    // Get initial type, before ';', in simple form.
-    if (simple) {
-        const size_t semi = mime.find(u';');
-        if (semi != NPOS) {
-            mime.erase(semi);
-        }
-        mime.trim();
-    }
-
-    // Force case.
-    if (lowercase) {
-        mime.convertToLower();
-    }
-
-    return mime;
-}
-
-
-//----------------------------------------------------------------------------
-// Process a list of headers. Header lines are terminated by LF or CRLF.
-//----------------------------------------------------------------------------
-
-void ts::WebRequest::processReponseHeaders(const UString& text)
-{
-    // Split header lines.
-    const UString CR(1, u'\r');
-    UStringList lines;
-    text.toRemoved(CR).split(lines, u'\n', true, true);
-
-    // Process headers one by one.
-    for (const auto& line : lines) {
-
-        report().debug(u"HTTP header: %s", line);
-        const size_t colon = line.find(u':');
-        size_t size = 0;
-
-        if (line.starts_with(u"HTTP/")) {
-            // This is the initial header. When we receive this, this is either
-            // the first time we are called for this request or we have been
-            // redirected to another URL. In all cases, reset the context.
-            _response_headers.clear();
-            _header_content_size = 0;
-            _http_status = 0;
-
-            // The HTTP status is in the second field, as in "HTTP/1.1 200 OK".
-            UStringVector fields;
-            line.split(fields, u' ', true, true);
-            if (fields.size() < 2 || !fields[1].toInteger(_http_status)) {
-                report().warning(u"no HTTP status found in header: %s", line);
-            }
-
-            // Create a pseudo header for status line.
-            _response_headers.insert(std::make_pair(u"Status", line));
-        }
-        else if (colon != NPOS) {
-            // Found a real header.
-            UString name(line, 0, colon);
-            UString value(line, colon + 1, line.size() - colon - 1);
-            name.trim();
-            value.trim();
-
-            // Insert header.
-            _response_headers.insert(std::make_pair(name, value));
-
-            // Process specific headers.
-            if (name.similar(u"Location")) {
-                _final_url = std::move(value);
-                report().debug(u"redirected to %s", _final_url);
-            }
-            else if (name.similar(u"Content-length") && value.toInteger(size)) {
-                _header_content_size = size;
-            }
-        }
-    }
+    _args.deleteTemporaryCookiesFile(report());
 }
 
 
@@ -374,12 +72,7 @@ bool ts::WebRequest::open(const UString& url, IOSB* iosb)
         return false;
     }
 
-    _final_url = url;
-    _original_url = url;
-    _response_headers.clear();
-    _content_size = 0;
-    _header_content_size = 0;
-    _http_status = 0;
+    _status.reset(url);
     _interrupted = false;
 
     // System-specific transfer initialization.
@@ -408,7 +101,7 @@ bool ts::WebRequest::downloadBinaryContent(const UString& url, ByteBlock& data, 
 
     // Initialize download buffers.
     size_t received_size = 0;
-    data.reserve(_header_content_size);
+    data.reserve(_status.announcedContentSize());
     data.resize(chunk_size);
     bool success = true;
 

@@ -65,16 +65,16 @@ bool ts::RestClient::call(const UString& api, const UString& post_data)
     }
 
     // Set request parameters.
-    _request.clearRequestHeaders();
-    _request.setInsecure(_args.insecure);
-    _request.setPostData(post_data);
-    _request.setConnectionTimeout(_args.connection_timeout);
-    _request.setReceiveTimeout(_args.receive_timeout);
+    _request.args().clearRequestHeaders();
+    _request.args().setInsecure(_args.insecure);
+    _request.args().setPostData(post_data);
+    _request.args().setConnectionTimeout(_args.connection_timeout);
+    _request.args().setReceiveTimeout(_args.receive_timeout);
     if (!_args.auth_token.empty()) {
-        _request.setRequestHeader(u"Authorization", u"Token " + _args.auth_token);
+        _request.args().setRequestHeader(u"Authorization", u"Token " + _args.auth_token);
     }
     if (!_accept.empty()) {
-        _request.setRequestHeader(u"Accept", _accept);
+        _request.args().setRequestHeader(u"Accept", _accept);
     }
 
     // Call the REST API.

@@ -174,8 +174,7 @@ bool ts::hls::InputPlugin::getOptions()
 
     // Enable authentication tokens from master playlist to media playlist and from media playlists to media segments.
     // On Linux and macOS, use a specific cookies file to make sure that all Web requests use the same one.
-    web_args.use_cookies = true;
-    web_args.cookies_file = TempFile(u".cookies");
+    web_args.enableCookies();
 
     if (present(u"live")) {
         // With live streams, start at the last segment.
@@ -434,7 +433,6 @@ bool ts::hls::InputPlugin::openURL(WebRequest& request)
     // Open the segment.
     const UString seg_url(seg.urlString());
     debug(u"downloading segment %s", seg_url);
-    request.enableCookies(web_args.cookies_file);
     return request.open(seg_url);
 }
 
@@ -531,7 +529,7 @@ bool ts::hls::InputPlugin::receiveURL(WebRequest& request, void* buffer, size_t 
     if (_seg_next == NPOS) {
         // Try to preallocate a large enough buffer.
         static constexpr size_t chunk_size = WebRequest::DEFAULT_CHUNK_SIZE;
-        const size_t size = std::max(chunk_size, std::max(_seg_size, request.announcedContentSize())) + 128;
+        const size_t size = std::max(chunk_size, std::max(_seg_size, request.status().announcedContentSize())) + 128;
         if (size > _seg_data.size()) {
             _seg_data.resize(size);
         }

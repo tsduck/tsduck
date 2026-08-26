@@ -40,7 +40,8 @@ bool ts::AbstractHTTPInputPlugin::getOptions()
 bool ts::AbstractHTTPInputPlugin::setReceiveTimeout(cn::milliseconds timeout)
 {
     if (timeout > cn::milliseconds::zero()) {
-        web_args.receive_timeout = web_args.connection_timeout = timeout;
+        web_args.setReceiveTimeout(timeout);
+        web_args.setConnectionTimeout(timeout);
     }
     return true;
 }
@@ -114,8 +115,7 @@ size_t ts::AbstractHTTPInputPlugin::receive(TSPacket* buffer, TSPacketMetadata* 
 bool ts::AbstractHTTPInputPlugin::startTransfer()
 {
     // Set common web request options.
-    _request.setArgs(web_args);
-    _request.setAutoRedirect(true);
+    _request.args() = web_args;
 
     // Let the subclass start the transfer.
     if (tsp->aborting() || !openURL(_request)) {
@@ -123,18 +123,18 @@ bool ts::AbstractHTTPInputPlugin::startTransfer()
     }
 
     // Get content type and size from response headers.
-    const UString mime(_request.mimeType());
-    const size_t size = _request.announcedContentSize();
+    const UString mime(_request.status().mimeType());
+    const size_t size = _request.status().announcedContentSize();
 
     // Print a message.
-    verbose(u"downloading from %s", _request.finalURL());
+    verbose(u"downloading from %s", _request.status().finalURL());
     verbose(u"MIME type: %s, expected size: %s", mime.empty() ? u"unknown" : mime, size == 0 ? u"unknown" : UString::Format(u"%d bytes", size));
     if (!mime.empty() && !mime.similar(u"video/mp2t")) {
         warning(u"MIME type is %s, maybe not a valid transport stream", mime);
     }
 
     // Create the auto-save file when necessary.
-    UString name(BaseName(URL(_request.finalURL()).getPath()));
+    UString name(BaseName(URL(_request.status().finalURL()).getPath()));
     if (!_auto_save_dir.empty() && !name.empty()) {
         name = _auto_save_dir + fs::path::preferred_separator + name;
         verbose(u"saving input TS to %s", name);

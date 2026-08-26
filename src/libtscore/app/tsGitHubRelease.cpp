@@ -107,7 +107,7 @@ bool ts::GitHubRelease::CallGitHub(json::ValuePtr& response, json::Type expected
 
     // If a GitHub API token is found, add it in the request headers.
     if (!token.empty()) {
-        req.setRequestHeader(u"Authorization", u"token " + token);
+        req.args().setRequestHeader(u"Authorization", u"token " + token);
     }
 
     // Send the request, fetch the response, analyze the JSON.

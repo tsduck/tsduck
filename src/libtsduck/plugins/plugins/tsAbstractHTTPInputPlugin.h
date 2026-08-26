@@ -74,10 +74,10 @@ namespace ts {
         void setAutoSaveDirectory(const UString& dir) { _auto_save_dir = dir; }
 
         //!
-        //! Delete the cookies file, if there is one.
+        //! Delete the temporary cookies file, if there is one.
         //! @return True on success, false on error.
         //!
-        bool deleteCookiesFile() { return _request.deleteCookiesFile(); }
+        bool deleteCookiesFile() { return _request.args().deleteTemporaryCookiesFile(*this); }
 
         //!
         //! Web command line options can be accessed by subclasses for additional web operations.

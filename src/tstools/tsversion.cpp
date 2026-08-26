@@ -192,8 +192,8 @@ Options::Options(int argc, char *argv[]) :
     getValue(out_dir, u"output-directory");
 
     // Proxy settings.
-    ts::WebRequest::SetDefaultProxyHost(value(u"proxy-host"), intValue<uint16_t>(u"proxy-port"));
-    ts::WebRequest::SetDefaultProxyUser(value(u"proxy-user"), value(u"proxy-password"));
+    ts::WebRequestArgs::SetDefaultProxyHost(value(u"proxy-host"), intValue<uint16_t>(u"proxy-port"));
+    ts::WebRequestArgs::SetDefaultProxyUser(value(u"proxy-user"), value(u"proxy-password"));
 
     // Default download is --source.
     if (download && !binary && !source) {

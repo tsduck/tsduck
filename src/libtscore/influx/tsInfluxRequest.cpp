@@ -137,10 +137,10 @@ bool ts::InfluxRequest::send()
         report().error(u"no InfluxDB token specified");
         return false;
     }
-    clearRequestHeaders();
-    setRequestHeader(u"Authorization", u"Token " + _args.token);
-    setRequestHeader(u"Accept", u"application/json");
-    setPostData(_builder, u"text/plain; charset=utf-8");
+    args().clearRequestHeaders();
+    args().setRequestHeader(u"Authorization", u"Token " + _args.token);
+    args().setRequestHeader(u"Accept", u"application/json");
+    args().setPostData(_builder, u"text/plain; charset=utf-8");
 
     // Send the request.
     UString response;
@@ -148,8 +148,8 @@ bool ts::InfluxRequest::send()
         report().error(u"error sending request to Influx server %s", url);
         return false;
     }
-    else if (!httpSuccess()) {
-        report().error(u"error sending data to Influx server, HTTP status code %d, status line: %s", httpStatus(), reponseHeader(u"Status"));
+    else if (!status().httpSuccess()) {
+        report().error(u"error sending data to Influx server, HTTP status code %d, status line: %s", status().httpStatus(), status().reponseHeader(u"Status"));
         if (!response.empty()) {
             report().error(u"response: \"%s\"", response);
         }

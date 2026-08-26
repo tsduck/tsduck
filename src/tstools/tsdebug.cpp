@@ -1081,10 +1081,10 @@ ts::CommandStatus ts::URLCommands::geturl(const UString& command, Args& args)
     args.getValues(headers, u"header");
 
     WebRequest request(&args);
-    request.setInsecure(insecure);
+    request.args().setInsecure(insecure);
     for (const auto& h : headers) {
         const size_t colon = h.find(':');
-        request.setRequestHeader(h.substr(0, colon).toTrimmed(), colon == NPOS ? u"" : h.substr(colon+1).toTrimmed());
+        request.args().setRequestHeader(h.substr(0, colon).toTrimmed(), colon == NPOS ? u"" : h.substr(colon + 1).toTrimmed());
     }
 
     UString response;
@@ -1102,11 +1102,11 @@ ts::CommandStatus ts::URLCommands::geturl(const UString& command, Args& args)
     }
 
     args.info(u"==== Request");
-    args.info(u"HTTP status: %d", request.httpStatus());
-    args.info(u"Original URL: %d", request.originalURL());
-    args.info(u"Final URL: %d", request.finalURL());
+    args.info(u"HTTP status: %d", request.status().httpStatus());
+    args.info(u"Original URL: %d", request.status().originalURL());
+    args.info(u"Final URL: %d", request.status().finalURL());
     args.info(u"==== Response headers");
-    for (const auto& h : request.responseHeaders()) {
+    for (const auto& h : request.status().responseHeaders()) {
         args.info(u"%s: %s", h.first, h.second);
     }
     if (output.empty()) {
